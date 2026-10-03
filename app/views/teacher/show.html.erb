@@ -1,0 +1,47 @@
+<% content_for :title, t("teacher.home.title") %>
+<main class="page wide">
+  <h1><%= t("teacher.home.title") %></h1>
+
+  <section aria-labelledby="waiting-title">
+    <h2 id="waiting-title"><%= t("teacher.home.waiting") %></h2>
+    <ul class="plain" id="waiting-summary">
+      <li><%= t("teacher.home.subjects_waiting", count: @home.waiting_total) %></li>
+      <li><a href="/teacher/corrections"><%= t("teacher.home.corrections", count: @home.corrections) %></a></li>
+      <li><%= t("teacher.home.minutes_total", count: @home.minutes[:total]) %></li>
+      <li><%= @home.released? ? t("teacher.home.released") : t("teacher.home.not_released") %>
+          <%= t("teacher.home.consent_#{@home.consent_recorded? ? 'yes' : 'no'}") %></li>
+    </ul>
+  </section>
+
+  <h2><%= t("teacher.home.subjects") %></h2>
+  <ul class="subjects teacher-subjects">
+    <% @home.rows.each do |row| %>
+      <li class="subject" data-subject="<%= row.subject.key %>" data-stage="<%= row.stage %>">
+        <div class="subject-head">
+          <span class="subject-name"><%= row.subject.name_it %></span>
+          <span class="subject-state"><strong><%= stage_label(row.stage) %></strong></span>
+        </div>
+        <p class="counts">
+          <%= t("teacher.home.items", passed: row.items[:passed], total: row.items[:total]) %>
+          <% if row.items[:failed].positive? || row.items[:error].positive? %>
+            <%= t("teacher.home.items_trouble", count: row.items[:failed] + row.items[:error]) %>
+          <% end %>
+          · <%= minutes_text(row.minutes) %>
+        </p>
+        <% if row.waiting.any? %>
+          <ul class="plain waiting" aria-label="<%= t('teacher.home.waiting') %>">
+            <% row.waiting.each do |code, count| %>
+              <li data-waiting="<%= code %>"><strong><%= t("teacher.home.wait.#{code}", count: count.to_i) %></strong></li>
+            <% end %>
+          </ul>
+        <% end %>
+        <p class="links">
+          <% if row.has_graph %><a class="button secondary small" href="<%= teacher_graph_path(key: row.subject.key) %>"><%= t("teacher.home.open_graph") %></a><% end %>
+          <% if row.has_blueprint %><a class="button secondary small" href="<%= teacher_test_path(key: row.subject.key) %>"><%= t("teacher.home.open_test") %></a><% end %>
+          <a class="button secondary small" href="<%= teacher_report_path(key: row.subject.key) %>"><%= t("teacher.home.open_report") %></a>
+        </p>
+      </li>
+    <% end %>
+  </ul>
+  <p><a class="button" href="/teacher/preview"><%= t("teacher.preview.title") %></a></p>
+</main>

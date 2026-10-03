@@ -1,0 +1,2 @@
+class ReferenceText < ApplicationRecord
+end

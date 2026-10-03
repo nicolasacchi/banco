@@ -1,0 +1,26 @@
+{
+  "command": "work status",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/work/revisions/1"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "revision_id": 1,
+      "item": "eq-1",
+      "seq": 1,
+      "status": "passed",
+      "settled": true,
+      "instances": 3,
+      "teacher_comments": [],
+      "codes": [],
+      "findings": [],
+      "rules_version": "1",
+      "harness_version": "<sha256>",
+      "chrome_version": null,
+      "attempt": 1,
+      "validated_at": "<time>"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<% prefs = ui_preferences %>
+<html lang="it" data-theme="<%= prefs[:theme] %>" data-size="<%= prefs[:size] %>">
+  <head>
+    <title><%= content_for(:title) || t("diagnosis.title") %></title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <%= stylesheet_link_tag :app %>
+    <link rel="stylesheet" href="/vendor/katex@0.19.0/katex.min.css">
+    <%# One page, no Turbo: the diagnosis entry point loads Stimulus and our item templates only. %>
+    <%= javascript_importmap_tags "diagnosis", importmap: student_importmap %>
+  </head>
+  <body class="student">
+    <%= yield %>
+  </body>
+</html>

@@ -1,0 +1,161 @@
+{
+  "command": "diagnosis report",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/diagnosis/report",
+    "query": "subject=math"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "schema": "banco.diagnosis_report/1",
+      "rules_version": "diagnosis/1",
+      "engine_version": "engine/1",
+      "sitting_condition": "unsupervised",
+      "released": true,
+      "subjects": [
+        {
+          "subject": "math",
+          "name_it": "Matematica",
+          "status": "completed",
+          "graph_form": "fixed_form",
+          "entry_test": {
+            "blueprint_revision_id": 1,
+            "seq": 1,
+            "approved": true,
+            "approved_revision_id": 1,
+            "pending_revision": false
+          },
+          "run": {
+            "id": 1,
+            "sequence": 1,
+            "rules_version": "diagnosis/1",
+            "engine_version": "engine/1",
+            "closed": false,
+            "end_reason": null,
+            "waiting_on": "pending_answers",
+            "served": 4,
+            "grader_versions": [
+              {
+                "grader": "closed",
+                "grader_version": "<grader-version>"
+              }
+            ]
+          },
+          "sittings": [
+            {
+              "index": 1,
+              "started_at": "<time>",
+              "closed_at": null,
+              "close_reason": null,
+              "served": 4,
+              "condition": "unsupervised",
+              "counted_minutes": 0
+            }
+          ],
+          "counted_minutes": 0,
+          "groups": {
+            "demonstrated": 0,
+            "to_recover": 2,
+            "to_learn": 0,
+            "not_assessed": 0,
+            "pending": 1
+          },
+          "skills": [
+            {
+              "skill": "math.number",
+              "label_it": "Abilità number",
+              "state": "to_recover",
+              "reason": "two_wrong",
+              "group": "to_recover",
+              "scope": "studied",
+              "kind": "recover",
+              "evidence": [
+                "W",
+                "W"
+              ],
+              "served": 2,
+              "error_codes": [
+                "adds_wrong"
+              ],
+              "unclassified": true,
+              "lines": {
+                "prima": [],
+                "seconda": []
+              }
+            },
+            {
+              "skill": "math.choice",
+              "label_it": "Abilità choice",
+              "state": "to_recover",
+              "reason": "dont_know",
+              "group": "to_recover",
+              "scope": "studied",
+              "kind": "recover",
+              "evidence": [
+                "D"
+              ],
+              "served": 1,
+              "error_codes": [],
+              "unclassified": true,
+              "lines": {
+                "prima": [],
+                "seconda": []
+              }
+            },
+            {
+              "skill": "math.short-answer",
+              "label_it": "Abilità short-answer",
+              "state": "pending",
+              "reason": "grade_unconfirmed",
+              "group": "pending",
+              "scope": "studied",
+              "kind": "recover",
+              "evidence": [],
+              "served": 0,
+              "error_codes": [],
+              "unclassified": false,
+              "lines": {
+                "prima": [],
+                "seconda": []
+              }
+            }
+          ],
+          "errors_observed": [
+            {
+              "skill": "math.number",
+              "code": "adds_wrong",
+              "count": 2,
+              "example_attempts": [
+                1,
+                2
+              ]
+            }
+          ],
+          "unclassified": [
+            "math.number",
+            "math.choice"
+          ],
+          "pending": [
+            {
+              "skill": "math.short-answer",
+              "reason": "grade_unconfirmed"
+            }
+          ],
+          "signals": {
+            "sitting_condition": "unsupervised",
+            "rapid_share": 1.0,
+            "dont_know_share": 0.25,
+            "dont_know_count": 1,
+            "answers": 4,
+            "pending_answers": 1,
+            "flags": [
+              "rapid_share"
+            ]
+          },
+          "checks": []
+        }
+      ]
+    }
+  }
+}

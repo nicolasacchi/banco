@@ -1,0 +1,126 @@
+{
+  "command": "review submit",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/revisions/1/review",
+    "body": {
+      "review": {
+        "schema": "banco.review/1",
+        "schema_version": 1,
+        "revision": "1",
+        "checklist": [
+          {
+            "id": 1,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 1: nessun difetto trovato qui."
+          },
+          {
+            "id": 2,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 2: nessun difetto trovato qui."
+          },
+          {
+            "id": 3,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 3: nessun difetto trovato qui."
+          },
+          {
+            "id": 4,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 4: nessun difetto trovato qui."
+          },
+          {
+            "id": 5,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 5: nessun difetto trovato qui."
+          },
+          {
+            "id": 6,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 6: nessun difetto trovato qui."
+          },
+          {
+            "id": 7,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 7: nessun difetto trovato qui."
+          },
+          {
+            "id": 8,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 8: nessun difetto trovato qui."
+          },
+          {
+            "id": 9,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 9: nessun difetto trovato qui."
+          },
+          {
+            "id": 10,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 10: nessun difetto trovato qui."
+          },
+          {
+            "id": 11,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 11: nessun difetto trovato qui."
+          }
+        ],
+        "findings": [
+          {
+            "severity": "blocker",
+            "field": "instances/0/display/stem_it",
+            "quote": "Risolvi $x+2=9$.",
+            "problem_it": "La consegna ammette due risposte.",
+            "fix_it": "Aggiungi un dato che escluda la seconda.",
+            "instance": 1
+          },
+          {
+            "severity": "minor",
+            "field": "instances/0/display/stem_it",
+            "quote": "Risolvi l'equazione e scrivi il valore di $x$.",
+            "problem_it": "La consegna ammette due risposte.",
+            "fix_it": "Aggiungi un dato che escluda la seconda."
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 201,
+    "body": {
+      "review_id": 1,
+      "revision_id": 1,
+      "findings": [
+        {
+          "id": 1,
+          "source": "review",
+          "severity": "blocker",
+          "instance": 1,
+          "field": "instances/0/display/stem_it",
+          "quote": "Risolvi $x+2=9$.",
+          "problem_it": "La consegna ammette due risposte.",
+          "fix_it": "Aggiungi un dato che escluda la seconda."
+        },
+        {
+          "id": 2,
+          "source": "review",
+          "severity": "minor",
+          "field": "instances/0/display/stem_it",
+          "quote": "Risolvi l'equazione e scrivi il valore di $x$.",
+          "problem_it": "La consegna ammette due risposte.",
+          "fix_it": "Aggiungi un dato che escluda la seconda."
+        }
+      ],
+      "counts": {
+        "blocker": 1,
+        "minor": 1
+      },
+      "approvable": false,
+      "reasons": [
+        "no blind solve on this revision",
+        "1 blocker or major finding(s) without the teacher's disposition"
+      ],
+      "next": "stop here: the teacher disposes of the findings in the browser (banco status)"
+    }
+  }
+}

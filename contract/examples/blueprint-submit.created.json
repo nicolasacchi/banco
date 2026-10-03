@@ -1,0 +1,76 @@
+{
+  "command": "blueprint submit",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/subjects/math/blueprint",
+    "body": {
+      "blueprint": {
+        "schema": "banco.blueprint/1",
+        "schema_version": 1,
+        "subject": "math",
+        "graph_revision_id": "1",
+        "entries": [
+          {
+            "skill": "math.linear-equation-integer",
+            "items": [
+              "1",
+              "2"
+            ]
+          },
+          {
+            "skill": "math.percentages",
+            "items": [
+              "3",
+              "4"
+            ]
+          },
+          {
+            "skill": "math.factoring",
+            "items": [
+              "5",
+              "6"
+            ]
+          },
+          {
+            "skill": "math.decimal-operations",
+            "items": [
+              "7",
+              "8"
+            ]
+          }
+        ],
+        "descent": [
+          {
+            "skill": "math.integer-operations",
+            "items": [
+              "9",
+              "10"
+            ]
+          },
+          {
+            "skill": "math.fractions-operations",
+            "not_assessed_reason_it": "Argomento dei prerequisiti, non misurabile con item propri."
+          }
+        ],
+        "budget": {
+          "sitting_minutes": 30,
+          "sittings": 2
+        },
+        "depends_on_subjects": [],
+        "calculator": "no",
+        "intro_note_it": "Il test dura circa mezz'ora.",
+        "not_measured_it": "Non misura la geometria."
+      }
+    }
+  },
+  "response": {
+    "status": 201,
+    "body": {
+      "revision_id": 1,
+      "seq": 1,
+      "replayed": false,
+      "warnings": [],
+      "next": "banco status (stage: in_review)"
+    }
+  }
+}

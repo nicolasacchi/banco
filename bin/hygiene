@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Public-repository hygiene: fails when private material is tracked or named.
+# Run before every commit; CI runs it too.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+fail=0
+
+if [ "$(git ls-files prep | wc -l)" -ne 0 ]; then
+  echo "hygiene: files under prep/ are tracked" >&2; fail=1
+fi
+if ! grep -qx '/prep/' .gitignore; then
+  echo "hygiene: /prep/ is missing from .gitignore" >&2; fail=1
+fi
+if git ls-files | grep -E -i '(^|/)programma-(prima|seconda)' >/dev/null; then
+  echo "hygiene: a programme file is tracked" >&2; fail=1
+fi
+
+# Forbidden terms (case-insensitive) are private, so they are not in this file or
+# anywhere in git. They come from HYGIENE_TERMS (a CI secret; whitespace or
+# newline separated) and from the untracked file prep/hygiene-terms (one per line).
+# Without either, the term check is skipped with a notice.
+terms=()
+if [ -n "${HYGIENE_TERMS:-}" ]; then
+  read -r -a from_env <<<"$(echo "$HYGIENE_TERMS" | tr '\n' ' ')"
+  terms+=("${from_env[@]}")
+fi
+if [ -f prep/hygiene-terms ]; then
+  while IFS= read -r line; do
+    [ -n "$line" ] && terms+=("$line")
+  done < prep/hygiene-terms
+fi
+if [ "${#terms[@]}" -eq 0 ]; then
+  echo "hygiene: no forbidden-term list (HYGIENE_TERMS or prep/hygiene-terms); term check skipped" >&2
+else
+  pattern=$(IFS='|'; echo "${terms[*]}")
+  if git grep -n -I -i -E "$pattern" -- . ':(exclude)bin/hygiene' >&2; then
+    echo "hygiene: forbidden term found" >&2; fail=1
+  fi
+fi
+exit $fail

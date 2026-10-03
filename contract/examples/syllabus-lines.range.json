@@ -1,0 +1,31 @@
+{
+  "command": "syllabus lines",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/syllabus/prima-test/lines",
+    "query": "from=1&to=2"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "source": "prima-test",
+      "lines": 3,
+      "from": 1,
+      "to": 2,
+      "rows": [
+        {
+          "line": 1,
+          "text": "operazioni con i numeri relativi",
+          "origin": "pdf",
+          "citable": true
+        },
+        {
+          "line": 2,
+          "text": "PAGINA 2",
+          "origin": "transcript",
+          "citable": false
+        }
+      ]
+    }
+  }
+}

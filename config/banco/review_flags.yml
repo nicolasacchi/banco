@@ -1,0 +1,11 @@
+# What the teacher is told to look at on a skill graph (C-04): programme facts that are
+# not settled (operator Q3, open). Each flag marks the skills whose citations touch the
+# lines or the source named here; its text is in config/locales/teacher.it.yml under
+# teacher.graph.flags.<id>. Changing a flag changes a page, never a decision.
+flags:
+  - id: q3_lines_91_100
+    source: prima-2025-26
+    lines: [91, 100]
+  - id: q3_spanish_seconda_report
+    subject: spanish
+    not_source: prima-2025-26

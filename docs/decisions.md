@@ -1,0 +1,769 @@
+# Decisions
+
+Every deviation from the design and every answer of the operator is recorded here, as a new entry. Entries are added, never rewritten: a changed decision gets a new entry that supersedes the old one.
+
+Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, Why, Cost, Status, Back-port.
+
+## Index
+
+| Id | Date | Title | Status |
+|---|---|---|---|
+| D-001 | 2026-10-02 | operator G · diagnosis grading is hybrid | decided |
+| D-002 | 2026-10-02 | operator Q1 · release all together | decided |
+| D-003 | 2026-10-02 | operator Q2 · no daily teacher budget | decided |
+| D-004 | 2026-10-02 | operator Q11 · automatic second sitting | decided |
+| D-005 | 2026-10-02 | operator Q5 · Authelia with second factor and a cookie-only endpoint | decided |
+| D-006 | 2026-10-02 | operator Q6 · production steps and the secret in .env | decided |
+| D-007 | 2026-10-02 | operator Q7 · local-only backups | decided |
+| D-008 | 2026-10-02 | operator Q8 · other-family reviewer and blind solver, grader on Claude | decided |
+| D-009 | 2026-10-02 | operator Q9 · English names for routes, users and hosts | decided |
+| D-010 | 2026-10-02 | operator Q4 · no supervision | decided |
+| D-011 | 2026-10-02 | operator Q10 · near-miss answers | decided (changeable) |
+| D-012 | 2026-10-02 | operator days · daily limits | decided (changeable) |
+| D-013 | 2026-10-02 | operator calculator · calculator policy | decided (changeable) |
+| D-014 | 2026-10-02 | operator Q3 · facts about the programmes (open) | open (defaults in force) |
+| D-015 | 2026-10-03 | public repo hygiene | decided |
+| D-016 | 2026-10-03 | three listeners and edge trust by address | implemented in M1 (placeholders for /diagnosis, /teacher, /api/v1/schema) |
+| D-017 | 2026-10-03 | Rails skeleton without Solid Cache, Solid Cable and Active Storage | implemented in M1 |
+| D-018 | 2026-10-03 | Go CLI: standard library, module at the repository root | implemented in M1 (commands: version, schema) |
+| D-019 | 2026-10-03 | names in English | implemented in M1 |
+| D-020 | 2026-10-03 | CI runs the tests natively | open |
+| D-021 | 2026-10-03 | deferred question: which Visual Basic | deferred |
+| D-022 | 2026-10-03 | public repo hygiene: no programme file in the repository | implemented in M2 |
+| D-023 | 2026-10-03 | M2 ledger shape: every table append-only, item_served as a detail table | implemented in M2 |
+| D-024 | 2026-10-03 | programme import: origin tagging, sub-line addresses, Constitution source | implemented in M2 |
+| D-025 | 2026-10-03 | M3 frozen formats: schema members, entry counts, fixtures shipped in the image | implemented in M3 |
+| D-026 | 2026-10-03 | M3 briefs: names, front matter and the brief endpoint | implemented in M3 |
+| D-027 | 2026-10-03 | M3 rules note: gate on learn chains, guest skills, skill keys, Q11 constants | implemented in M3 |
+| D-028 | 2026-10-03 | M3 agent tokens: api_tokens reshaped to D-05 | implemented in M3 |
+| D-029 | 2026-10-03 | M4 expression worker: promoted checker, vendored engine, protocol and limits | implemented in M4 |
+| D-030 | 2026-10-03 | M4 how an answer reaches the grader: raw encodings, "Non lo so", id map | implemented in M4 |
+| D-031 | 2026-10-03 | M4 what a grading row carries: inverted pairs, give-up marker, retry schedule | implemented in M4 |
+| D-032 | 2026-10-03 | M4 closed graders: text policies, form violation names, number input | implemented in M4 |
+| D-033 | 2026-10-03 | M8 engine shape: Plan, Fold, Engine, Derivation and the event vocabulary | implemented in M8 |
+| D-034 | 2026-10-03 | M8 pool: descent targets draw on the subject's passed items | resolved: descent items pinned (D-038) |
+| D-035 | 2026-10-03 | M8 readings of the rules where the register is silent | implemented in M8 |
+| D-036 | 2026-10-03 | M8 simulate: bundle format, flat bare blueprint, --subject, scripts | implemented in M8 |
+| D-037 | 2026-10-03 | M8 adapter approximations to revisit when the item and grader code lands | open |
+| D-038 | 2026-10-03 | M5 descent pool pinned: banco.blueprint/1 gains a required descent | implemented in M5 |
+| D-039 | 2026-10-03 | M5 a run waits while an answer is pending or ungraded | implemented in M5 |
+| D-040 | 2026-10-03 | M5 ORTHOGRAPHY_SLIP: the rules note follows the code (accent_policy flag) | implemented in M5 |
+| D-041 | 2026-10-03 | M5 banco.item/1 gains optional case_sensitive | implemented in M5 |
+| D-042 | 2026-10-03 | M5 validation pipeline: job, harness, Chrome, retries, stored columns | implemented in M5 |
+| D-043 | 2026-10-03 | M5 readings of the A-06 codes where the register is silent | implemented in M5 |
+| D-044 | 2026-10-03 | M5 the content agent's API and CLI: submit semantics, folders, status stages | implemented in M5 |
+| D-045 | 2026-10-03 | M10 serve-time re-keying: ids, seeds, redraws and replay | implemented in M10 |
+| D-046 | 2026-10-03 | M10 which blueprint a run is pinned to, who can start, what "released" means | implemented in M10 |
+| D-047 | 2026-10-03 | M10 testlet instances: stored shape, one attempt, aggregated verdict | implemented in M10 (question for the operator) |
+| D-048 | 2026-10-03 | M10 the outbox in localStorage, resend, and what "Accedi di nuovo" does | implemented in M10 |
+| D-049 | 2026-10-03 | M10 delivery of the student's pages: own importmap, CSP, figures by digest | implemented in M10 |
+| D-050 | 2026-10-03 | M10 the warm-up: where it lives, how it is graded, when the editor is given up | implemented in M10 |
+| D-051 | 2026-10-03 | M10 end-of-subject screen, solutions, and the flag | implemented in M10 |
+| D-052 | 2026-10-03 | M10 the verify commands as Rails 8.1 runs them | implemented in M10 |
+| D-053 | 2026-10-03 | Integration: a run held open for pending answers in the student's pages | implemented in the M5 and M10 merge |
+| D-054 | 2026-10-03 | M6 sessions: integer ids, X-Banco-Session, roles and where the rules sit | implemented in M6 |
+| D-055 | 2026-10-03 | M6 providers.yml: families by pattern, per-role rules | implemented in M6 |
+| D-056 | 2026-10-03 | M6 expert review and blind solve: what is checked, what is stored | implemented in M6 |
+| D-057 | 2026-10-03 | M6 the gate approvable? and awaiting_teacher | implemented in M6 |
+| D-058 | 2026-10-03 | M6 grade proposals: codes, normalization, pending lists | implemented in M6 |
+| D-059 | 2026-10-03 | M9a DecisionRecorder, its guards and the decision routes | implemented in M9a |
+| D-060 | 2026-10-03 | M9a approval gates and what a run pins | implemented in M9a |
+| D-061 | 2026-10-03 | M9a release, consent, kind_override and confirm with edits | implemented in M9a |
+| D-062 | 2026-10-03 | M9a bin/reconcile-decisions reads the ledger only | implemented in M9a, proxy log later |
+| D-063 | 2026-10-03 | M9b the teacher's screens, Rimanda and the measured minutes | implemented in M9b |
+| D-064 | 2026-10-03 | M9b the report (B-09): shape, no student text in the API | implemented in M9b |
+| D-065 | 2026-10-03 | M9b banco health and bin/preflight | implemented in M9b, host measures with M7 |
+| D-066 | 2026-10-03 | M9b Atkinson Hyperlegible and the student's theme and size | implemented in M9b |
+| D-067 | 2026-10-03 | M9b structure.sql check and the Chrome lock test | implemented in M9b |
+| D-068 | 2026-10-03 | M9b how the teacher's forms decide and word refusals | implemented in M9b |
+| D-069 | 2026-10-03 | review fixes: privacy of the list, image and log; engine and grading corrections | implemented |
+
+## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
+
+- **Design ref:** Operator answer to the review panel's questions
+- **Design said:** Answers are graded by the agent, or by the browser.
+- **We do:** Option C: only what is certain is graded immediately (choice, ordering and matching by id, exact numbers and fractions, exact normalized text). Uncertain answers (expressions the checker cannot settle, short answers) go to the evening: the agent proposes, the teacher confirms. Table Rules::V1::EVIDENCE.
+- **Why:** The agent never decides alone and the student gets instant feedback where it is safe.
+- **Cost:** An evening review step for uncertain answers.
+- **Status:** decided
+- **Back-port:** The design pages predate this answer; none yet updated.
+
+## D-002 · 2026-10-02 · operator Q1 · release all together
+
+- **Design ref:** Operator answer to the review panel's questions
+- **Design said:** Release in waves.
+- **We do:** The student starts when all 11 subjects are approved; the Diagnosis screen shows every subject at once. release_diagnosis requires 11 approved subjects.
+- **Why:** A uniform experience was preferred over earlier starts.
+- **Cost:** The start date depends on teacher approval time.
+- **Status:** decided
+- **Back-port:** The design pages predate this answer; none yet updated.
+
+## D-003 · 2026-10-02 · operator Q2 · no daily teacher budget
+
+- **Design ref:** Operator answer to the review panel's questions
+- **Design said:** A daily cap on teacher time.
+- **We do:** No cap: show everything, the teacher handles it. Approval must be efficient; the opening date is computed from the measured pace (teacher_minutes).
+- **Why:** The teacher prefers to see everything and then work through it.
+- **Cost:** None beyond the stated behaviour.
+- **Status:** decided
+- **Back-port:** The design pages predate this answer; none yet updated.
+
+## D-004 · 2026-10-02 · operator Q11 · automatic second sitting
+
+- **Design ref:** Operator answer to the review panel's questions
+- **Design said:** A single sitting per subject.
+- **We do:** A second sitting starts automatically while skills remain to explore: up to 60 minutes in total for mathematics and 50 for the others, in blocks of 30 and 25. SITTINGS_PER_SUBJECT = 2, AUTO_SECOND_SITTING = true.
+- **Why:** Better coverage of the skill graph without a manual step.
+- **Cost:** Total student time of roughly 6 to 10 hours.
+- **Status:** decided
+- **Back-port:** The design pages predate this answer; none yet updated.
+
+## D-005 · 2026-10-02 · operator Q5 · Authelia with second factor and a cookie-only endpoint
+
+- **Design ref:** Operator answer to the review panel's questions
+- **Design said:** Basic and Bearer pass on every protected route today.
+- **We do:** TOTP and WebAuthn; a forward-auth endpoint that accepts only the session cookie; rules teacher = two_factor and student = one_factor; the student user only in the student group; one restart outside study hours; password and TOTP seed out of reach of the agent. Decision routes stay off until the operator's proofs pass.
+- **Why:** The decision routes are protected by identity, so the identity gate must be strong.
+- **Cost:** A restart that logs everyone out of every site.
+- **Status:** decided
+- **Back-port:** The design pages predate this answer; none yet updated.
+
+## D-006 · 2026-10-02 · operator Q6 · production steps and the secret in .env
+
+- **Design ref:** Operator answer to the review panel's questions
+- **Design said:** A secret file materialized from the password manager.
+- **We do:** DNS record, router and middleware, a dedicated edge network with the proxy at a fixed address, up --no-deps, deploy freeze during sittings. The single secret goes in .env like the other applications; the password manager stays the source.
+- **Why:** Consistency with the other applications on the host.
+- **Cost:** The value is visible in docker inspect, as for the other applications.
+- **Status:** decided
+- **Back-port:** The design pages predate this answer; none yet updated.
+
+## D-007 · 2026-10-02 · operator Q7 · local-only backups
+
+- **Design ref:** Operator answer to the review panel's questions
+- **Design said:** Off-site copies.
+- **We do:** Nightly sqlite3 .backup with rotation, local only; the host backup excludes the data directory and the copies. No student data leaves the house.
+- **Why:** Privacy of the student's data.
+- **Cost:** Accepted risk: a disk failure loses the ledger.
+- **Status:** decided
+- **Back-port:** The design pages predate this answer; none yet updated.
+
+## D-008 · 2026-10-02 · operator Q8 · other-family reviewer and blind solver, grader on Claude
+
+- **Design ref:** Operator answer to the review panel's questions
+- **Design said:** Same provider for everything.
+- **We do:** The reviewer and the blind solver run on a model from a different family than the author and receive only the item text; the answer grader runs on Claude. Rules in config/banco/providers.yml.
+- **Why:** Independence of the review; the student's answers stay with the provider already in use.
+- **Cost:** None beyond the stated behaviour.
+- **Status:** decided
+- **Back-port:** The design pages predate this answer; none yet updated.
+
+## D-009 · 2026-10-02 · operator Q9 · English names for routes, users and hosts
+
+- **Design ref:** Operator answer to the review panel's questions
+- **Design said:** Italian route names.
+- **We do:** /diagnosis, /teacher, /teacher/grades, user student, a pages host in phase 1b. Texts for the student and the teacher stay Italian.
+- **Why:** Firm rule 6.
+- **Cost:** None beyond the stated behaviour.
+- **Status:** decided
+- **Back-port:** The design pages predate this answer; none yet updated.
+
+## D-010 · 2026-10-02 · operator Q4 · no supervision
+
+- **Design ref:** Operator answer to the review panel's questions
+- **Design said:** A supervised sitting.
+- **We do:** Sittings are unsupervised; each sitting records condition: unsupervised and the report shows it. There is no record_sitting_condition decision.
+- **Why:** The student works alone.
+- **Cost:** None beyond the stated behaviour.
+- **Status:** decided
+- **Back-port:** The design pages predate this answer; none yet updated.
+
+## D-011 · 2026-10-02 · operator Q10 · near-miss answers
+
+- **Design ref:** Operator answer to the review panel's questions
+- **Design said:** All near misses are wrong.
+- **We do:** (a) A one-letter typo in a written answer goes to the teacher. (b) A right value in a form the measured skill does not ask for earns credit on the item skill plus an observation, only when the form is a declared separate skill. (c) An accent or apostrophe slip when the item does not measure spelling earns credit plus an observation. NEAR_MISS = :pending, WRONG_FORM_DECLARED = :credit, ORTHOGRAPHY_SLIP = :credit.
+- **Why:** Recommended default accepted; fair measurement of the intended skill.
+- **Cost:** A change raises rules_version.
+- **Status:** decided (changeable)
+- **Back-port:** The design pages predate this answer; none yet updated.
+
+## D-012 · 2026-10-02 · operator days · daily limits
+
+- **Design ref:** Operator answer to the review panel's questions
+- **Design said:** No limit.
+- **We do:** At most 2 subjects and about 75 counted minutes a day, in dependency order, mathematics first. Engine constants DAILY_MAX_SUBJECTS = 2 and DAILY_MAX_MINUTES = 75; two first sittings use at most 55 minutes.
+- **Why:** Recommended default accepted.
+- **Cost:** A slower start.
+- **Status:** decided (changeable)
+- **Back-port:** The design pages predate this answer; none yet updated.
+
+## D-013 · 2026-10-02 · operator calculator · calculator policy
+
+- **Design ref:** Operator answer to the review panel's questions
+- **Design said:** No policy.
+- **We do:** No calculator in mathematics, yes in business economics and chemistry, stated in the items; a calculator field in the entry test and a line on the start screen; lint W-CALCULATOR flags a missing sentence.
+- **Why:** Recommended default accepted.
+- **Cost:** Per-subject wording in items.
+- **Status:** decided (changeable)
+- **Back-port:** The design pages predate this answer; none yet updated.
+
+## D-014 · 2026-10-02 · operator Q3 · facts about the programmes (open)
+
+- **Design ref:** Operator answer to the review panel's questions
+- **Design said:** Unknown.
+- **We do:** Open question. Until answered, prudent defaults: a marked line means not yet studied; a marker on one line covers only the next line and the following lines are flagged to the teacher; factoring, algebraic fractions and fractional or literal equations are 'to learn'; a foreign-language report counts as the programme, flagged on the graph. Corrected at approval with kind_override.
+- **Why:** The programme files do not settle these points.
+- **Cost:** Wrong defaults cost a correction at approval.
+- **Status:** open (defaults in force)
+- **Back-port:** The design pages predate this answer; none yet updated.
+
+## D-015 · 2026-10-03 · public repo hygiene
+
+- **Design ref:** E-08, brief step 2 (programme files in db/syllabus/)
+- **Design said:** Only prep/ stays out of git; the first-year programme is copied into db/syllabus/ and imported by the production seed.
+- **We do:** The repository is public. Nothing about the student or the household is committed: no real name, school, city, exam session or programme files. prep/ is git-ignored and never committed. Both programmes are imported from files outside the repo (locally from prep/; in production by the operator with docker compose exec -T banco bin/rails banco:syllabus:import SOURCE=... FILE=- < file). Tests use small synthetic programmes under test/fixtures/syllabus/. The real-programme verify is a local rake task; tests that need prep/ skip with a clear message when it is absent, so CI passes without it. bin/hygiene (run by CI) fails when git ls-files prep is non-empty, when a forbidden term is found (the list lives in that script) or when a programme file is tracked. Documents describe the software generically (one student, the teacher/operator).
+- **Why:** A public repository must not leak a minor's data, and CI must be reproducible without private material.
+- **Cost:** The real-programme check cannot run in CI; the production seed no longer carries the first-year programme.
+- **Status:** decided
+- **Back-port:** Brief step 2 and the E-08 artifact list: the first-year programme is not copied into db/syllabus/.
+
+## D-016 · 2026-10-03 · three listeners and edge trust by address
+
+- **Design ref:** D-02, D-04; design page 05 'Deploy e accesso'
+- **Design said:** Two listeners; user identity trusted by container address.
+- **We do:** One Puma with three binds, WEB_PORT 3000, API_PORT 3100, HARNESS_PORT 3200 (never PORT). Banco::ListenerTag tags each request from the accepted socket's local port (env["puma.socket"]), never from request.port or Host; the test seam env["banco.test_listener"] is honoured only in the test environment. Remote-User and Remote-Groups are read with get_header only when remote_addr is inside BANCO_EDGE_PROXY (a single address) and the request came on the web listener; remote_ip is never used; trusted_proxies is that address only (or a never-matching value when unset). A comma in Remote-User is a 400. The teacher role needs group banco-teacher and a login in BANCO_TEACHER_USERS. Every route group is a 404 on the other listeners.
+- **Why:** The host has an address on every bridge, so a wide network trusts the host and the agent; remote_ip trusts a forged X-Forwarded-For.
+- **Cost:** A third listener and a constraint on every route group.
+- **Status:** implemented in M1 (placeholders for /diagnosis, /teacher, /api/v1/schema)
+- **Back-port:** Design 04 and 05: describe three listeners and trust by the proxy address.
+
+## D-017 · 2026-10-03 · Rails skeleton without Solid Cache, Solid Cable and Active Storage
+
+- **Design ref:** E-01; design page 05 'Lo stack'
+- **Design said:** Solid Cable and Active Storage in phase 1a.
+- **We do:** rails new with the skip flags, then Solid Cache and Solid Cable removed; cache_store :memory_store; Solid Queue in its own database, production paths under BANCO_DATA_DIR (primary and queue only); schema_format sql for the primary database (schema.rb loses triggers) and ruby for queue. json_schemer is in the default group because production validates E-SCHEMA. Active Storage and Action Cable are deferred (E-09).
+- **Why:** Single node, single process; fewer moving parts and files to back up.
+- **Cost:** None known.
+- **Status:** implemented in M1
+- **Back-port:** Design 05 stack list.
+
+## D-018 · 2026-10-03 · Go CLI: standard library, module at the repository root
+
+- **Design ref:** E-05; design page 05 'Lo stack' (cobra), page 04 'La CLI'
+- **Design said:** A cobra-based CLI with an idempotency key.
+- **We do:** Standard library only, table-driven dispatch, first positional lifted before flag parsing. go.mod (module banco) sits at the repository root and contract/ is a small Go package that go:embeds commands.json, because go:embed cannot reach outside a package directory; the CLI lives in cli/ and is built with go build -o bin/banco ./cli. X-Banco-Contract carries the sha256 of the contract file, not only its version, so any drift is caught. Errors are {code, field, message, next} on stderr; exits 0, 2, 3, 4, 5, 6. The token comes from BANCO_TOKEN or a pass-cli read with a 5 second timeout.
+- **Why:** Zero dependencies and exact drift detection.
+- **Cost:** go test is run from the repository root or cli/; both find the module.
+- **Status:** implemented in M1 (commands: version, schema)
+- **Back-port:** Design 04 and 05.
+
+## D-019 · 2026-10-03 · names in English
+
+- **Design ref:** E-07 (see operator Q9)
+- **Design said:** Italian paths such as /oggi and /docente.
+- **We do:** Routes, keys, identifiers and comments are English; Italian texts live in config/locales/it.yml under English keys; keys that hold Italian text end in _it.
+- **Why:** Firm rule 6.
+- **Cost:** None.
+- **Status:** implemented in M1
+- **Back-port:** Design 05 'Il layout del codice'.
+
+## D-020 · 2026-10-03 · CI runs the tests natively
+
+- **Design ref:** E-02
+- **Design said:** CI builds the same Dockerfile with a test target that adds the headless shell.
+- **We do:** CI uses ruby/setup-ruby with the version from .ruby-version, actions/setup-go and actions/setup-node, and the runner's Chrome for system tests (BROWSER_PATH). The Dockerfile is built by a separate job to prove it still builds. There is no Docker test target yet.
+- **Why:** Faster feedback and a cached bundle; the production image stays free of test tooling.
+- **Cost:** The test environment and the image can drift; the image build job limits that.
+- **Status:** open
+- **Back-port:** E-02.
+
+## D-021 · 2026-10-03 · deferred question: which Visual Basic
+
+- **Design ref:** brief 'Domande aperte'
+- **Design said:** Ask the operator which Visual Basic the school course uses.
+- **We do:** Deferred to phase 1b: it is second-year content and no entry-diagnosis skill depends on it.
+- **Why:** The question does not block phase 1a.
+- **Cost:** None in 1a.
+- **Status:** deferred
+- **Back-port:** Brief open questions.
+
+## D-022 · 2026-10-03 · public repo hygiene: no programme file in the repository
+
+- **Design ref:** brief 'I programmi e la Costituzione in produzione' (prima in db/syllabus/); B-08 programme sources
+- **Design said:** The prima programme lives in db/syllabus/ and the production seeds import it; the seconda stays in prep/.
+- **We do:** The repository became public after the brief was written, so neither programme is committed. Both are imported from files outside the repo: locally from prep/, in production by the operator with `docker compose exec -T banco bin/rails banco:syllabus:import SOURCE=... FILE=- < file`, then the same with banco:syllabus:verify. Tests use small synthetic programmes under test/fixtures/syllabus/. The test that checks the real programmes skips with a message when the files are absent (CI). bin/hygiene refuses tracked programme files and forbidden terms.
+- **Why:** The programmes describe one student and the school; the repository is public.
+- **Cost:** The production seeds do not create the programme sources; the operator imports them once. The prima sha256 is verified by the import itself.
+- **Status:** implemented in M2
+- **Back-port:** Brief 'infrastruttura'; B-08.
+
+## D-023 · 2026-10-03 · M2 ledger shape: every table append-only, item_served as a detail table
+
+- **Design ref:** B-08, A-01, X-01, B-07, D-08, E-09; review finding on schema_migrations
+- **Design said:** item_served is an event kind of diagnosis_events; triggers on every table.
+- **We do:** Triggers (BEFORE UPDATE and BEFORE DELETE, RAISE(ABORT,'append-only')) on every table of the primary database except schema_migrations, ar_internal_metadata and sqlite_sequence; the list is read from sqlite_master in the test. Things that change are modelled as new rows: item_validations (a revision never changes), api_token_revocations, attempt_gradings (seq). item_served is a table linked one-to-one to its diagnosis_events row (kind item_served), holding skill, shown order and id map, so the key-bearing id map never sits in a free-form payload; attempts.served_event_id points to the event and is unique. attempts.context also allows 'warmup' (review finding on the warm-up) and then has no served event. Tables added beyond the brief's M2 list: students (S and preview, seeded), items, item_validations, reference_texts. Not yet created: skills, comments, reviews, findings, submissions, grades, verdict_proposals, student_flags (later milestones). Seeds insert missing rows and never update.
+- **Why:** The log cannot change; state that changes needs rows of its own.
+- **Cost:** Deferred tables arrive with later migrations. Reading 'current status' is always a query over the latest row.
+- **Status:** implemented in M2
+- **Back-port:** B-08 and E-09 in the design.
+
+## D-024 · 2026-10-03 · programme import: origin tagging, sub-line addresses, Constitution source
+
+- **Design ref:** B-07 citations, FACTS (transcriber lines, sub-line address); brief 'La Costituzione'
+- **Design said:** origin pdf|transcript; sub-line address such as 412:A3; the Constitution text from an official source such as the Senate.
+- **We do:** A line is a newline-terminated physical line; a file without a final newline is refused. Origin is decided by generic rules: blank lines, a preamble (when the file opens with a '# ' title, everything up to the first '---'), '## ' headings, a single italic line, '**Pagina N**' markers and '> [Figura:' placeholders are transcript (never cited); the rest is pdf; 'operator' is reserved for lines added by hand. syllabus_lines.marker keeps a leading star marker (★, ☆, ★☆). parts_json holds sub-line addresses A1, A2... for the cells of a table row and for lines with several '•' items. Importing identical text again is a no-op; a different text under an existing key is refused. The Constitution (arts. 1-12) comes from governo.it (Presidenza del Consiglio), because senato.it answers automated requests with a bot challenge; the URL, fetch date and sha256 are in db/syllabus/costituzione-artt-1-12.source.yml and checked by the seed.
+- **Why:** Rules that do not depend on one file keep the importer testable on synthetic fixtures.
+- **Cost:** Inline markers inside a line (a ☆ mid-line) are not addressable yet; the graph milestone can extend parts_json.
+- **Status:** implemented in M2
+- **Back-port:** B-07 and the brief's M2 verify (prima is verified from prep/, not db/syllabus/).
+
+## D-025 · 2026-10-03 · M3 frozen formats: schema members, entry counts, fixtures shipped in the image
+
+- **Design ref:** A-03, A-05, A-06 (E-BLUEPRINT-ENTRIES), B-07, C-01, E-01 (json_schemer), brief 'La validazione meccanica'
+- **Design said:** banco.skill_graph/1, item/1, blueprint/1, review/1, solve/1 with schema_version; a blueprint has 4-8 entries (brief proposal: 4-10); json_schemer is a production gem; a production-env boot test validates one good and one bad fixture.
+- **We do:** Schemas in config/banco/schemas/<name>.json (JSON Schema 2020-12, additionalProperties false at every object level), loaded by Banco::Schemas (lib/banco/schemas.rb) with json_schemer, which is in the default Gemfile group. Every document carries `schema: "banco.<name>/1"` and `schema_version: 1`; a change after authoring starts means /2 plus a draft migration. Blueprint entries are 4-10 (the brief's proposal, because the inventory has up to 10 core skills in mathematics and Italian). The blueprint schema has no simulate traces: they are computed and stored by the server, not authored. Item kinds are diagnosis_item, short_answer, testlet (no warmup, no hints); a testlet has exactly 5 sub_items; `blank` in tests is the constant "invalid". Skill refs name a syllabus source by key (pattern) so the schema does not know the programmes. Fixtures (synthetic, generic) live in test/fixtures/content/<name>/{good,bad}/; `Banco::Schemas.validate_fixture_pair` checks the first good and the first bad file of every schema, and .dockerignore re-includes test/fixtures/content so the same check runs in the production image.
+- **Why:** The formats freeze before the content agents write; one source of fixtures serves the tests and the production boot check.
+- **Cost:** A few KB of test fixtures in the image. Rules that need the programme or the database (E-SOURCE, E-SCOPE, E-NEEDED-BY, E-POOL-REDO) are not in the schema; they are validation codes of M5 and later.
+- **Status:** implemented in M3
+- **Back-port:** A-03, A-06 (4-10), B-07 and the brief's M3 row.
+
+## D-026 · 2026-10-03 · M3 briefs: names, front matter and the brief endpoint
+
+- **Design ref:** C-03, brief 'Regole per chi scrive', E-05
+- **Design said:** briefs/diagnosis-item.md, skill-graph.md, review.md, blind-solve.md, grading.md, served by `banco brief show KIND`.
+- **We do:** Six briefs at version 1 in briefs/: diagnosis-item, skill-graph, blueprint, review, solve, grade (blueprint is added because the entry test has its own format; blind-solve and grading are named solve and grade, after their formats and commands). Each file starts with front matter (name, version, formats); Brief (app/models/brief.rb) serves {name, version, sha256, body} at GET /api/v1/briefs/:name (token required, API listener only), and the CLI command is `banco brief show NAME [--json]` (JSON is the only output; the flag is accepted). The sha256 is of the whole file and is what a revision records as brief_sha256. Briefs are written in English (agent-facing instructions) with the Italian text rules inside them. The 14 writing rules of the brief are in diagnosis-item.md; the public-repository rules are in every brief.
+- **Why:** Agents read one file per task; names that match commands are easier to find.
+- **Cost:** The brief's file names differ from the design's.
+- **Status:** implemented in M3
+- **Back-port:** C-03 file names.
+
+## D-027 · 2026-10-03 · M3 rules note: gate on learn chains, guest skills, skill keys, Q11 constants
+
+- **Design ref:** Brief 'Che cosa decide chi costruisce' (three proposals), B-04, B-05, Q11, X-03, X-04
+- **Design said:** Reconcile three points in the rules note: a gate on chains that are not in the prior-year programme, guest starting skills, and the skill key format. B-05 sets SITTINGS_PER_SUBJECT = 1 until Q11 is answered.
+- **We do:** (1) The gate is adopted as proposed: a starting skill whose same-subject prerequisite is already to_recover with kind learn is not served and ends not_assessed(prerequisite_to_recover), a new reason in B-04 (REASONS). (2) Guest starting skills are adopted as proposed: an entry test may list a skill of an approved graph of another subject (guest_of_subject); the result goes to the owner subject and is reused as in B-03. (3) Skill keys are `<subject>.<kebab-slug>` with a table of the inventory prefixes (Rules::V1::INVENTORY_PREFIXES). (4) Q11 is answered, so SITTINGS_PER_SUBJECT = 2 and AUTO_SECOND_SITTING = true; the time constants, the three Q10 cases, the daily caps and the calculator per subject are Rules::V1 constants, with the prose in docs/rules/diagnosis-1.md. (5) The error-code registry config/banco/error_codes.yml has validation codes, API codes, verdicts and the codes the grader emits, and a test checks that the orthography allowlist is a subset of the grader's.
+- **Why:** The gate and the guest skills are what the skill inventory needs; fixed keys let the schema check them.
+- **Cost:** The engine (M8) implements the gate and the guest rule.
+- **Status:** implemented in M3 (constants and prose); engine behaviour in M8
+- **Back-port:** B-03, B-04 (new reason), B-05 (Q11).
+
+## D-028 · 2026-10-03 · M3 agent tokens: api_tokens reshaped to D-05
+
+- **Design ref:** D-05, E-09
+- **Design said:** api_tokens(id, role agent_claude|agent_omp|ci, label, secret_sha256); format bnc_<8-char id>_<43-char base64url>; issuance by a rake task that prints the token once.
+- **We do:** The M2 table had token_digest and other roles, before the token format was fixed. A migration (20261003100004) recreates api_tokens and api_token_revocations (it refuses to run if they hold rows) with public_id (8 characters, unique), secret_sha256 (64 hex), role agent_claude|agent_omp|ci, label, and the append-only triggers. ApiToken.issue! returns the token string once; `bin/rails banco:token:issue ROLE=... [LABEL=...]` prints it on stdout and stores only the hash; `banco:token:revoke ID=<public id>` adds a revocation row. Banco::TokenAuth reads the registry through ApiToken.lookup (revoked tokens are unknown) and keeps the replaceable seam for tests.
+- **Why:** The lookup by public id plus a hash comparison is what D-05 says; the table had no column for the id.
+- **Cost:** One more migration; the M2 shape is superseded (the table was empty everywhere).
+- **Status:** implemented in M3
+- **Back-port:** D-05.
+
+
+
+## D-029 · 2026-10-03 · M4 expression worker: promoted checker, vendored engine, protocol and limits
+
+- **Design ref:** A-01, X-01, brief 'I correttori', 'La resa nell'app' (libraries in public/vendor)
+- **Design said:** A persistent Node worker running our checker with Compute Engine 0.146.0 copied into the repo; JSON lines with request id, a mutex, a 2 s timeout, restart on exit; libraries copied under public/vendor/<name>@<version>/ with SHA256SUMS checked in CI.
+- **We do:** The spike checker is app/javascript/grader/checker.mjs with CHECKER_VERSION 1.0.0 (one change: a result carries `normalized`, the LaTeX that was graded). The worker is app/javascript/grader/worker.mjs: JSON lines, a `ready` line first, then one reply per request id (ops check, compile, ping), compiled items cached by key. Compute Engine 0.146.0 is vendored as the three esm files it needs (compute-engine.js and two chunks) in app/javascript/grader/vendor/compute-engine/ with LICENSE and SHA256SUMS; a Node test checks the version and the sums. This is the server's copy; the browser copy of the same version under public/vendor/ comes with the item renderer (M10). Grading::Expression keeps one Grading::Expression::Worker per Process.pid, started on first use (never in an initializer), with a mutex and a 2 s timeout per request; a timeout, crash or closed pipe kills the process, raises Grading::Expression::Unavailable and the next request starts a fresh one. Starting is separate: up to 20 s for the `ready` line, because loading the engine takes about a second and the host can be loaded. In a forked child the parent's entries are dropped (pipes closed, process untouched). Node runs with --max-old-space-size=256 (BANCO_NODE overrides the binary). app/javascript is on Propshaft's load path through importmap-rails, which would digest 3.8 MB of server-only files into public/assets and serve them, so config/initializers/propshaft_grader.rb filters app/javascript/grader out of the load path. The image gets the commit sha through `ARG GIT_SHA` (BANCO_GIT_SHA), since it has no .git directory; CI passes github.sha.
+- **Why:** Same design, with the failure modes made explicit (a loaded host must not make a cold start look like a hung grader).
+- **Cost:** 3.8 MB of vendored, minified JS in the repository; a small Propshaft patch.
+- **Status:** implemented in M4
+- **Back-port:** A-01 (startup timeout, asset-path exclusion), brief 'La resa nell'app' (server copy of the engine).
+
+## D-030 · 2026-10-03 · M4 how an answer reaches the grader: raw encodings, "Non lo so", id map
+
+- **Design ref:** X-01, E-03, B-04
+- **Design said:** The browser posts {served_event_id, client_attempt_id, raw, source}; "Non lo so" is a recorded outcome D; options, ordering rows and matching columns are shuffled and re-keyed by the server.
+- **We do:** attempts.raw is the typed text for number, normalized_text, expression and choice (the shown option id), and JSON text for fraction ({"n","d"} and an optional "w" for the whole part of a mixed number), ordering (an array of shown ids) and matching ({left id: right id}). "Non lo so" and "Non l'ho ancora studiato" send the raw text `{"dont_know":true}` (Grading::DONT_KNOW_RAW) whatever the component, and grade as verdict dont_know. attempts.source keeps meaning the input channel (mathlive or text for expressions). Grading.grade takes an optional id_map {shown id => canonical id}, applied before comparison, so the serve layer's shuffle is undone in one place; ids not in the item's display are invalid (unparseable).
+- **Why:** The schema has no column for the "dont know" intent and attempts.source is already the channel the expression checker needs.
+- **Cost:** The M10 UI and the M8 serve layer must produce these encodings.
+- **Status:** implemented in M4
+- **Back-port:** X-01 (raw formats), E-03.
+
+## D-031 · 2026-10-03 · M4 what a grading row carries: inverted pairs, give-up marker, retry schedule
+
+- **Design ref:** A-01, X-03
+- **Design said:** Ordering stores inverted_pairs; GradePendingJob retries at 30 s, 2 min and 10 min; after the last failure the attempt goes to the teacher.
+- **We do:** attempt_gradings has no column for inverted pairs, so ordering and matching put them in `normalized` as JSON ({"order":[...],"inverted_pairs":n}; {"pairs":{...},"correct_pairs":k}); number and fraction store the exact value ("7/2"), text the normalized string, expressions the normalized LaTeX. invalid answers are not attempts: Grading::Recorder.append refuses them (the caller answers with Result#message_it). The retry schedule counts from the failure: the sync grade that failed schedules GradePendingJob 30 s later (Recorder.schedule_retry); a second failure waits 2 minutes, a third 10 minutes, and the job runs at most three times. When the last run fails the job appends a retry row with verdict undetermined and error code grader_unavailable, so the attempt shows as verdict_pending (evidence :pending) and a later job can still settle it; a retry that succeeds appends the real verdict. Nothing is ever updated; the latest row is the derived outcome.
+- **Why:** The ledger is append-only and the brief wants the give-up visible to the teacher; the marker row is the only place to say it.
+- **Cost:** The derivation (M8) must treat a latest row with grader_unavailable as verdict_pending.
+- **Status:** implemented in M4
+- **Back-port:** A-01 (normalized carries the inverted pairs; give-up row).
+
+## D-032 · 2026-10-03 · M4 closed graders: text policies, form violation names, number input
+
+- **Design ref:** A-01, E-03, X-03, X-04, operator Q10
+- **Design said:** normalized_text with NFC, trim, whitespace collapse, apostrophe and quote unification, case per item, trailing punctuation stripped, accent policy strict|flag and spelling policy exact|near; a Spanish accent slip is ORTHOGRAPHY_SLIP when the unaccented form is not a paradigm form; numbers exact from the Italian comma; fractions with declared forms.
+- **We do:** (1) Accents are never folded into "correct": an accent or apostrophe slip is verdict typical_error with code es_accents (subject spanish), it_accents or it_apostrophe_accent, so «está» against «esta» is never correct under either policy. The credit of X-03 is decided by Grading::Evidence: it applies only when the item says accent_policy flag (it does not measure accents) and the codes are in ORTHOGRAPHY_ALLOWLIST; strict makes the slip W. If the unaccented form is itself a paradigm form the answer is a different word: wrong. Only the grave and the acute are folded: ñ and ü are letters. A word-final apostrophe after a vowel is read as an accent only when the answer is not otherwise exact (un po' stays). (2) Case is folded; banco.item/1 has no field to declare case sensitivity, so Spec#case_sensitive is false for every stored item and is the seam for a later schema version. (3) English contractions: curly apostrophes are unified; "do not" against "don't" goes through accept[], as E-03 says. Spelling is exact unless the item declares near; near_miss needs 5+ characters and one Damerau (adjacent transposition) edit from an accepted answer, after the declared errors are checked. (4) The binary profile (width, leading_zeros) is graded in normalized_text: digits 0 and 1 only; with required zeros a short answer with the right value is wrong_form (leading_zeros). (5) Number: the answer must be one decimal (comma; U+2212 and other dash variants as minus; NBSP, narrow NBSP and thin space trimmed); digits separated by a space are invalid (ambiguous_mixed_number) because the schema cannot declare a thousands separator; a slash is invalid (a non-decimal key needs a fraction item); the key may be a JSON number, a decimal string or "7/2"; an optional unit suffix is stripped. (6) Fraction violations carry the registry names lowest_terms (not reduced), improper (an improper fraction where mixed is declared) and mixed (the opposite); expression violations are the checker's own names (radicand_not_reduced, not_lowest_terms, ...). (7) Expression methods: exact and exact-sampled count as exact; anything that touched floating point (nested radicals, pi, large exponents) is method float and its evidence is pending whatever the verdict.
+- **Why:** Each rule closes a path by which a certain-looking answer could be credited without the item having measured it.
+- **Cost:** Expression form-violation names are not all in the registry's grader_codes (the list belongs to the checker); the registry gained grader_unavailable and leading_zeros.
+- **Status:** implemented in M4
+- **Back-port:** A-01, E-03, X-03, X-04.
+## D-033 · 2026-10-03 · M8 engine shape: Plan, Fold, Engine, Derivation and the event vocabulary
+
+- **Design ref:** B-08, B-10
+- **Design said:** A pure core, `Diagnosis::Rules::V1`, SkillOutcome, Frontier, TimeAccount, `Engine.next_action(snapshot, log, clock)`, `Derivation.states(student, as_of:)`.
+- **We do:** `lib/diagnosis/` holds `Plan` (blueprint, graph and pool as plain data), `SkillOutcome` (the per-skill rule), `Fold` and `State` (the log folded to the frontier, outcomes, serves and sittings; the frontier is a plain list inside `State`, not a class of its own), `Candidates` (which instance next), `TimeAccount` (counted seconds), `Engine.next_action(plan, events, clock)` (an `Action`: serve, abandon_item, wait, start_sitting, end_sitting, close_run, none), `Derivation.result(plan, events, voided:)` (states, reasons, time account, end reason) and `DailyPlan`. `Derivation.states(student, as_of:)` becomes `RunAdapter#result`, because a plan belongs to one run; the cross-run part (reuse, seen instances, voids) is `PlanLoader`. The event vocabulary and the decision payloads are in `docs/rules/diagnosis-1.md` section 13. Outcomes are folded in log order; a teacher `resolve_attempt` on an answer that already counted is applied in place at the original position, and outcomes after a resolution are ignored. The next instance is chosen by sorting the candidates on `sha256(seed_salt|skill|fingerprint)`, with no random state, so replay is exact.
+- **Why:** One fold lets the app, `simulate` and the property tests share the code that decides. Taking the facts from the plan rather than from a student keeps the core free of Rails.
+- **Cost:** `Derivation.states(student, as_of:)` has no `as_of`: replay at a past time is a prefix of the event list.
+- **Status:** implemented in M8
+- **Back-port:** B-08, B-10.
+
+## D-034 · 2026-10-03 · M8 pool: descent targets draw on the subject's passed items
+
+- **Design ref:** B-03, B-07, C-01
+- **Design said:** The blueprint pins `entries[]` (4 to 10) with the items of each; descent reaches prerequisites that are not entries.
+- **We do:** The pinned items serve their entries. A skill reached by descent that is not an entry is served from the latest revision of any item of the subject whose latest validation `passed` and whose `skill` is that skill (`PlanLoader`). A skill with no such item ends `not_assessed(no_unseen_items)`. In `simulate` from a bare file, every skill of the graph without items gets one synthetic item of three instances.
+- **Why:** The blueprint format has no place for items of skills that are not starting skills, and the descent needs them. The teacher approves the pinned items; the others are validated items of the same subject.
+- **Cost:** Items outside the pinned set reach the student without being on the approval screen. The blueprint format (`banco.blueprint/1`) may want a `descent_items` member in version 2; the brief for the content agent says nothing yet.
+- **Status:** resolved: descent items pinned (D-038 supersedes the pool rule; the engine now serves only pinned items)
+- **Back-port:** B-07.
+
+## D-035 · 2026-10-03 · M8 readings of the rules where the register is silent
+
+- **Design ref:** B-02, B-03, B-04, B-05, B-12, B-13
+- **Design said:** The rules of `docs/rules/diagnosis-1.md` sections 3 to 6 and 7.
+- **We do:** (1) Descent never goes into a skill with scope `in_progress`, whatever the kind of the skill it starts from. (2) "Below a demonstrated skill" is the transitive closure of `prerequisites` and `composite_of`; a suspect is exempt. (3) The gate on learn chains looks at the direct prerequisites of the same subject, and a prerequisite that is itself gated counts; it applies to starting skills only. (4) A skill unresolved at the per-skill cap ends `pending` with answers outstanding, otherwise `not_assessed(item_cap)` (cap) or `not_assessed(no_unseen_items)`; `item_cap` as a skill reason therefore also means the per-skill cap, not only the 30-item sitting cap. (5) A run closed by `teacher_close` leaves the unserved skills `not_assessed(not_started)` and the partly served ones `time_budget`. (6) The 30-item cap ends a sitting like the time budget: the next sitting if one is allowed, otherwise the run closes with `item_cap`. (7) `extend_diagnosis_run` after a close on `time_budget` or `item_cap` reopens the run. (8) The short answer is not a member of the frontier: it is served at frontier empty, at budget minus the reserve, or as the first item of a later sitting; the skill it measures is judged only by it. (9) A testlet counts one outcome per (serve, skill). (10) The sitting budget comes from the blueprint (`budget.sitting_minutes`, `sittings`), which the schema bounds to 10..60 minutes and 1..2 sittings, defaulting to `Rules::V1`; `AUTO_SECOND_SITTING` false limits it to one plus the teacher's extensions.
+- **Why:** Each is the smallest reading that keeps the property tests (termination within 5 x reachable + 1, never below a demonstrated skill, nothing served after the budget) true.
+- **Cost:** A teacher who disagrees changes one reading and bumps `rules_version`.
+- **Status:** implemented in M8
+- **Back-port:** B-03, B-04, B-05.
+
+## D-036 · 2026-10-03 · M8 simulate: bundle format, flat bare blueprint, --subject, scripts
+
+- **Design ref:** B-10, M8 verify
+- **Design said:** `banco diagnosis simulate --subject S | --blueprint FILE`, scripts all-correct, all-wrong, FILE; the verify names `test/fixtures/blueprints/three-skill.json`.
+- **We do:** `POST /api/v1/diagnosis/simulate` (any agent token; a pure dry run). The file given to `--blueprint` is a `banco.blueprint/1` document (a flat subject: only the entries are asked) or a bundle `{blueprint, graph?, pool?, external?, seen?, seed_salt?}`; `--subject` takes the latest stored blueprint revision. `--script` is `all-correct`, `all-wrong`, `mixed` (the second item of each skill wrong) or a file `{default, seconds, confirm_short, rules[]}`. The answer has `end_reason`, `states`, `sittings`, `observations`, `suspects`, `checks` and the `trace` (the events). Simulate does not check the entry count of the blueprint (4 to 10 belongs to `E-BLUEPRINT-ENTRIES` at submission), so the three-skill fixture can have three. New codes `E-SIMULATE-INPUT` (422) and `E-BLUEPRINT-UNKNOWN` (404); a graph cycle is `E-GRAPH-CYCLE` (422).
+- **Why:** The CLI sends the file inline, so the API needs nothing on the server's disk. A bundle is the only way to simulate a draft whose graph and pool are not stored yet.
+- **Cost:** The contract has one more command; the Go client gained a request body.
+- **Status:** implemented in M8
+- **Back-port:** B-10.
+
+## D-037 · 2026-10-03 · M8 adapter approximations to revisit when the item and grader code lands
+
+- **Design ref:** X-03, X-04, B-08
+- **Design said:** The grader and the item materialiser define the shapes of display, gradings and form declarations.
+- **We do:** Written before M4 and M5 finish, so `EventLoader` and `PlanLoader` assume: the item body names `skill`, `component`, `kind`, `expected_seconds`, `form_skill`, `form`, `accent_policy` as in `banco.item/1`; an ordering or matching instance exposes `elements` or `left` in its display for the low-guess size (otherwise such an instance is not low-guess); an orthography slip is credited when the code is in the allowlist and `accent_policy` is not `strict`, but the observation on the orthography skill is only logged when the event carries `orthography_skill`, which no loader sets yet; a declared wrong form is credited without checking that `form_skill` is inside the prerequisite closure (the closure only gates the suspect); an attempt with no grading is `ungraded` with `retry_state` running unless an `app_events` row `grade_retries_exhausted` names it; a testlet attempt maps to one answer on the testlet's first skill.
+- **Why:** The pure engine is fully specified and tested; these are the seams to the rows that other milestones own.
+- **Cost:** Four small places to fix when M4 and M5 fix their shapes; the engine does not change.
+- **Status:** open
+- **Back-port:** none.
+
+## D-038 · 2026-10-03 · M5 descent pool pinned: banco.blueprint/1 gains a required descent
+
+- **Design ref:** Firm rule 2 (the teacher approves everything the student sees), B-03, B-07, D-034
+- **Design said:** The blueprint pins the items of its starting skills; descent reaches prerequisites that are not entries (D-034 let them draw on any validated item of the subject, and asked the operator whether descent items should be pinned too).
+- **We do:** Pinned. `banco.blueprint/1` has a required `descent[]`: for every skill the descent can reach from the starting skills (`Diagnosis::Plan#descent_targets`: direct prerequisites, composite parts and the implicates of typical errors, transitively, in the same subject, never an `in_progress` skill itself) the blueprint gives `{skill, items[]}` or `{skill, not_assessed_reason_it}` (exactly one of the two). A reachable skill in neither is refused with the new code `E-BLUEPRINT-UNPINNED-DESCENT` at submission; a skill in `descent[]` that is not reachable is accepted (the teacher may want it). `PlanLoader` serves only the items of `entries[]` and `descent[]`; a reachable skill without a pinned item ends `not_assessed(no_unseen_items)`. In `simulate` a bare file with a `descent` member serves only what it pins; a bare file without one keeps the synthetic items of D-036. The schema was amended in place, not bumped to /2: no content exists yet (M11 starts after M6 and M9), the fixtures were updated, and the brief (`briefs/blueprint.md`, still version 1 for the same reason) says what to write. The same choice is recorded for `case_sensitive` (D-041).
+- **Why:** Firm rule 2. The teacher approves the blueprint's screen; anything the student can be asked has to be on it. An unpinned but validated item would have reached the student without that approval.
+- **Cost:** The blueprint is longer by one entry per reachable skill; an agent that forgets one gets a code that names the skills.
+- **Status:** implemented in M5
+- **Back-port:** B-07 (approval units), A-03 (blueprint format), D-034 (resolved).
+
+## D-039 · 2026-10-03 · M5 a run waits while an answer is pending or ungraded
+
+- **Design ref:** B-03, B-04, X-03, D-031
+- **Design said:** The run closes `frontier_empty` when nothing more can be served; skills with answers outstanding end `pending`.
+- **We do:** `Engine.next_action` answers `wait` with reason `pending_answers` instead of `close_run frontier_empty` while an answer of the run is pending or ungraded and its skill is not resolved (including a short answer awaiting `confirm_grade`). `Derivation.result` reports `waiting_on: "pending_answers"`. The run closes after the resolution (a retry grading, `resolve_attempt` or `confirm_grade`), or when the teacher closes it (`close_diagnosis_run`). `Simulator.run` stops at such a wait and reports it; with `resolve_pending: "wrong"|"correct"` it plays the teacher resolving them (the property tests use it).
+- **Why:** A run closed with an answer in flight froze the skill as `pending` although a retry a minute later could settle it, and a run closed before the short answer was confirmed looked finished.
+- **Cost:** A subject can stay open until the evening confirmation; the report must say "in attesa" for a waiting run (M9/M14).
+- **Status:** implemented in M5
+- **Back-port:** B-03, B-04.
+
+## D-040 · 2026-10-03 · M5 ORTHOGRAPHY_SLIP: the rules note follows the code (accent_policy flag)
+
+- **Design ref:** X-03, operator Q10 (c), D-032
+- **Design said:** ORTHOGRAPHY_SLIP applies to a code in the allowlist, an unaccented form that is not a paradigm form, and an item that does not measure spelling; the rules note repeated it.
+- **We do:** The code is kept and the note changed. "The item does not measure accents" is the item's `accent_policy: flag` (D-032); `strict` means it measures them and the slip is W. The paradigm-form condition is decided by the grader, which already says `wrong` (not a slip) when the unaccented form is itself a paradigm form, so `Grading::Evidence` has no second check. `spelling_policy` is a different axis (near misses of whole words) and plays no part.
+- **Why:** This is the reading consistent with the operator's Q10 default (credit when the item does not measure spelling) and it keeps one place, the item's declaration, that says whether an item measures accents.
+- **Cost:** An item author must set `accent_policy: flag` explicitly on items that are not about accents; the item brief says so.
+- **Status:** implemented in M5
+- **Back-port:** X-03 wording.
+
+## D-041 · 2026-10-03 · M5 banco.item/1 gains optional case_sensitive
+
+- **Design ref:** D-032 (2), E-03
+- **Design said:** The schema had no field for case sensitivity; `Spec#case_sensitive` was a seam, false for every stored item.
+- **We do:** `banco.item/1` (and its sub-items) gain an optional boolean `case_sensitive`, default false, amended in place for the reason given in D-038. `Grading::Spec.from_instance` already reads the body, so the field reaches `Grading::Closed::Text`, which keeps case when it is true (a text answer and every accepted, declared and paradigm form compare with case).
+- **Why:** Some answers are case-bearing (chemical symbols, the Spanish and English proper nouns an item is about).
+- **Cost:** None for existing items.
+- **Status:** implemented in M5
+- **Back-port:** A-03 field list.
+
+## D-042 · 2026-10-03 · M5 validation pipeline: job, harness, Chrome, retries, stored columns
+
+- **Design ref:** A-02, A-06, A-07, E-05, brief 'La validazione meccanica'
+- **Design said:** `ValidateItemRevisionJob` on the one-thread `chrome` queue runs a Ruby phase and a Chrome phase; `--dry-run` validates synchronously and stores nothing; Ferrum attaches to the sidecar by IP; the reaper inside the lock disposes all contexts; the harness page is served on port 3200 with a CSP; thresholds in `config/banco/validation_rules.yml`, whose version is stored; item_validations has `status`, `codes`, versions.
+- **We do:** As designed, with these shapes. (1) Migration `20261003200001`: `item_revisions.files_json` (generator.mjs, verify.mjs, assets, so the harness can serve a stored revision and a later revision can carry files forward) and, on `item_validations`, `findings_json`, `rules_version`, `grader_version`, `harness_version`, `chrome_version`, `instances_sha256`, `attempt`. (2) The reaper disposes only orphan contexts (the ones this process does not own), because the lock is held and a context of ours may be open; the run's own contexts are disposed in `ensure`. In test, development and CI `ChromeRunner` launches a local Chrome (`BROWSER_PATH`, Ferrum `ignore_default_browser_options`, curated flags, `--host-resolver-rules` that resolves only the loopback) and keeps it for the process; `BANCO_CHROME_HOST` selects the sidecar (resolved with `Resolv.getaddress` before `Ferrum::Browser.new(url:)`). (3) The harness listener (`HarnessController`, an `ActionController::API`: no session, no cookie) serves `/h/<run-token>/{harness.html,runner.mjs,generator.mjs,verify.mjs}` and `/lib/{rng,fmt}.mjs`; the run token is an HMAC (key `banco/harness`) of `rev:<id>` or `stage:<id>`, 10 minutes; a dry run stages its files in the memory of the Puma process that handles the request (`Validation::Harness::Staging`), a job reads the stored revision. The page's CSP is `default-src 'none'; script-src 'self'; connect-src 'none'; img-src 'none'; base-uri 'none'; form-action 'none'`. `harness_version` is the sha256 of the libraries and the runner. (4) Chrome trouble is never a verdict: each failed attempt appends an `error` row and the job retries (3 attempts, 30 s and 60 s apart); after the last one the revision stays `error` (`settled` true), except a timeout inside the page, which fails it with `E-GEN-TIMEOUT` (a generator that never returns is the generator's fault). A dry run answers 409 `E-CHROME-BUSY` when the lock is taken and 503 `E-CHROME-UNAVAILABLE` (new API code) when Chrome or the grader worker does not answer. (5) Only the generator runs on all 200 seeds in two contexts; the rejection checks of verify (error values, +1 and sign-flip mutants) run on the first 24 materialized instances, the acceptance check on every clean seed. (6) Tests start real listeners in the test process (`test/support/validation_servers.rb`, the listener tag through the test seam) so that Chrome and the compiled CLI have a server to call.
+- **Why:** Same design; each point is a detail the register left open. The local Chrome keeps CI and development free of the sidecar; orphan-only reaping is safe even if a health check ever shares the process.
+- **Cost:** `lib/harness/` is served from disk by Ruby (a few KB). A dry run of a generated item takes seconds and holds the Chrome lock; parallel test processes that share the lock wait or retry on 409.
+- **Status:** implemented in M5
+- **Back-port:** A-02 (reaper wording), A-06 (retry and E-CHROME-UNAVAILABLE), E-01 (files_json).
+
+## D-043 · 2026-10-03 · M5 readings of the A-06 codes where the register is silent
+
+- **Design ref:** A-06, A-03, A-04, C-01, X-01
+- **Design said:** A list of codes with some thresholds; the checks for "errors that collide" and "an expected answer that violates its own form" are named without a code; E-PROVA-A-PARAMS, E-ACCENT-POLICY and E-GEN-THROW have one-line descriptions.
+- **We do:** (1) An error value equal to the key, or two error values that are the same answer, or an error value the grader does not return with its code: `E-ROUNDTRIP` (rule key, collision, error_value). A key that cannot be one for its component (a number that is not a finite decimal, a choice id that is not an option, an ordering that is not a permutation) is `E-GEN-SCHEMA` rule `answer_shape`, for listed instances too. (2) `E-DISPLAY-KEY`: any member of a display named answer, key, correct, solution, verdict, expected, errors, rubric, explanation (and similar); it is found before the schema, so it is not also an extra member. (3) The size rules of choice (3 to 5), ordering (3 to 7) and matching (at least 4 pairs, right column n+1) are raised from the instance as `E-CHOICE-OPTIONS` and `E-MATCHING-SIZE`; the schema's `minItems` and `maxItems` on those arrays are left to them. The blueprint's entry count (4 to 10) is `E-BLUEPRINT-ENTRIES` for the same reason. (4) Generated items: a seed is clean when generate did not throw, the output is at most 16 KB, fits the instance shape and has no instance error; `E-GEN-THROW` is raised when more than 20% of the seeds throw (fewer are tolerated problem seeds); `E-GEN-POOL` when fewer than 24 seeds are clean, more than 20% are problem seeds, or fewer than 20 of the 24 displays differ. (5) `E-PROVA-A-PARAMS`: an item whose sources include `prova_a_structure` and that has listed instances (fixed numbers) instead of a generator; there is no private list of the old numbers in the repository. (6) `E-ACCENT-POLICY`: `accent_policy` or `paradigm_forms` on an item that is not `normalized_text`, or `accent_policy: flag` with a paradigm form that differs from an accepted answer only by accents. (7) `E-SOURCE` on items: a `prima_line` or `seconda_line` source has `ref` `source-key:line` and a `fragment` that is an exact substring of a line that is not a transcriber line. (8) `E-QUOTE-REF`: `prompt.quote` and display quotes name an imported reference text and are an exact substring of it (whitespace folded). (9) `E-STEP-INCONSISTENT`: for number and fraction, the numbers in `solution.final` do not include the key; for choice, `final` names another option and not the key. (10) The readability lint reads only strings under keys ending in `_it`; texts in the language being taught are not linted. (11) Testlets support listed sub-item instances only (a generator in a sub-item is `E-GEN-SCHEMA`); their instances combine the k-th instance of each sub-item. A short answer stores one instance (its prompt, with the rubric as the answer). (12) Graph checks: `E-SOURCE` for a citation that is not an exact substring or cites a transcriber line, `E-SCOPE`, `E-NEEDED-BY` (a `needed_by` ref to a `seconda` source, or a transitive prerequisite of one), `E-GRAPH-EDGE-UNAPPROVED` (a cross-subject edge needs the skill in a graph with an `approve_skill_graph` decision), `E-GRAPH-CYCLE` first. (13) `skill-graph coverage` uses the line ranges of C-01 (config, line numbers only): uncovered are non-blank pdf-origin lines in the range that no ref cites and no exclusion explains. (14) E-POOL-REDO counts instances of the items pinned under a starting skill; `choice_only_reason_it` waives the hard-to-guess count, `redo_reserve: false` the whole check.
+- **Why:** Each is the smallest mechanical reading of the register that a fixture can produce and a test can pin.
+- **Cost:** Some readings are stricter than a human (a final that names another option's text); a false positive is a finding the agent can read and fix, never a silent pass.
+- **Status:** implemented in M5
+- **Back-port:** A-06 text.
+
+## D-044 · 2026-10-03 · M5 the content agent's API and CLI: submit semantics, folders, status stages
+
+- **Design ref:** E-05, A-04, B-07, C-04, brief 'I dati e la CLI'
+- **Design said:** `work open ITEM [--role]`, `work submit DIR [--dry-run]`, `work status REV [--wait]`, `skill-graph`, `blueprint`, `status --json` with a stage per subject; sessions and `item new` are listed too; no command takes a decision.
+- **We do:** (1) The first `work submit` of an item key creates the item (there is no `item new` in M5); a later submit needs `base` equal to the latest revision (409 `E-STALE-BASE` otherwise); identical files are a replay (`replayed: true`, no new revision, no job). Files left out are carried forward from the base. (2) `work open` writes a folder with `.banco/work.json` (item, base, role) so that `work submit DIR` needs no flags; a verifier's folder has `instances.json` and `tests.json`, no `generator.mjs`, and `work submit` from it sends `verify.mjs` only. The role is a query parameter: the server never sends `generator.mjs` to `role=verifier`. (3) Sessions arrive with M6: `author_session_id` and `file_sessions_json` are empty in M5, so `E-VERIFY-AUTHOR` and `E-SESSION-NOT-INDEPENDENT` are not raised yet; the verifier order still works because verify.mjs is carried by a separate revision. (4) A failing dry run is 422 with the first code at the top and `codes`, `findings` (code, severity, field, message, detail) and `dry_run: true`; the CLI prints it on stderr and exits 3. `work status REV --wait` polls until the validation is `settled` (passed, failed, or an error after the last attempt) and exits 0, 3 or 6. (5) The contract gains `flags` per command (documentation; the CLI parses its own flags) and `contract/examples/<command>.<variant>.json`, written by the integration tests with `UPDATE_CONTRACT=1`, compared otherwise; the Go test reads them with unknown fields refused and checks method, path and the error codes against the command. (6) `banco status` stages: `drafting` (no graph or entry test, or a pinned item failed), `validating` (an item's latest revision has no verdict or ended in error), `in_review` (graph and entry test submitted, every pinned item passed), `approved` (a teacher decision row exists for a graph and an entry test). `awaiting_teacher` is reachable only when the review and blind-solve machinery of M6 says it is done (`SubjectStage.review_done?` is false until then), so until M6 the agent never reads it. (7) A blueprint may be submitted against a graph the teacher has not approved yet (so it can be simulated); `briefs/blueprint.md` says the graph should be approved first. (8) D-037: the displays M5 materializes use `elements` for orderings and `left` for matchings, as the loaders assumed; the orthography observation skill is still not set by any loader.
+- **Why:** The smallest cycle that lets an agent write, check and resubmit without a second command or a hidden state.
+- **Cost:** The agent cannot see `awaiting_teacher` before M6; a blueprint on an unapproved graph can be wasted work.
+- **Status:** implemented in M5
+- **Back-port:** E-05 (flags, examples, status stages), A-04 (item creation by first submit).
+## D-045 · 2026-10-03 · M10 serve-time re-keying: ids, seeds, redraws and replay
+
+- **Design ref:** X-01, E-03
+- **Design said:** Choice options, ordering elements and both matching columns are shuffled with the run seed and get fresh ids in shown order (o1..oN, r1..rN, l1..lN); an ordering equal to the key or its reverse is redrawn; the shown order and the id map are logged in item_served.
+- **We do:** `Diagnosis::Rekey` (lib/diagnosis/rekey.rb, pure). The shuffle is seeded from sha256 of `seed_salt|serve seq|instance id`, so the same serve always gives the same result and a replay of the log can recompute it. Fresh ids are o1..oN (options), e1..eN (ordering elements), l1..lN and r1..rN (matching). An ordering is redrawn when it equals the key, the reverse of the key or its own stored listing; a matching is redrawn when the left column keeps its stored order, the right column keeps its stored order, or the rows line up with the pairs of the key (up to 200 redraws; lists of fewer than three cannot avoid every pattern and keep the last draw). item_served.id_map_json is {shown id => stored id} and shown_order_json is {column => stored ids in shown order}; a testlet nests both by sub item id. A page asked for again (reload, resume) rebuilds the display from the logged shown order (`Rekey.replay`), never from a new draw. The browser never receives the map or the order (diagnosis_payload_test scans 50 seeds for key and outcome fields).
+- **Why:** The brief only says "shuffled"; a seed that includes the serve's own seq keeps two serves of one instance apart, and stored order makes a reload exact.
+- **Cost:** Matching and ordering pools with fewer than three elements are not fully protected (the schema asks for at least three and four).
+- **Status:** implemented in M10
+- **Back-port:** X-01 (the redraw rules for matching, id prefixes, the replay).
+
+## D-046 · 2026-10-03 · M10 which blueprint a run is pinned to, who can start, what "released" means
+
+- **Design ref:** B-07, B-12, D-002, D-012
+- **Design said:** A run is pinned to the approved blueprint revision; release_diagnosis is a teacher decision (M9); at most 2 subjects and 75 counted minutes a day, in dependency order.
+- **We do:** M9 is not built, so `Diagnosis::Conductor.latest_blueprint` takes the latest blueprint revision of the subject (the one place to change when approvals land). "Released" is the existence of a decision row of kind release_diagnosis (`Diagnosis::Release.open?`); until then the student sees "La diagnosi non è ancora aperta." and the warm-up only, and every sitting endpoint answers 403. The subject list is `Diagnosis::Availability`: DailyPlan decides dependency waits and the daily caps; the labels are Da fare, Prima fai X, Domani, In pausa (a sitting is open), Resta una parte da fare (the first sitting closed with the frontier open), Fatto, Fatto · in correzione (closed with a pending skill), Da ripetere (the teacher voided the run). A sitting that closed today is not startable today. Starting a subject is a POST that finds or creates the run (`Conductor.run_for`: the latest run, or the next sequence after a voided one); the step endpoint of a run that cannot start today answers {type: "wait"} (a screen, not an error). The teacher's preview (/teacher/preview, route default preview: true read from path_parameters only) always starts a fresh run of a preview student, with attempts in context teacher_preview.
+- **Why:** The parts that M9 owns are single seams; nothing is guessed about approval.
+- **Cost:** Until M9, an unapproved blueprint can be played by S once the release row exists; the release row is only written by M9.
+- **Status:** implemented in M10
+- **Back-port:** B-07 (selection seam), B-11 (label wording per state).
+
+## D-047 · 2026-10-03 · M10 testlet instances: stored shape, one attempt, aggregated verdict
+
+- **Design ref:** A-03, B-02, D-037
+- **Design said:** A testlet is served as one unit, each sub item an attempt on its own skill, one counted outcome per skill per testlet. attempts.served_event_id is unique, so a serve has one attempt.
+- **We do:** (1) A testlet instance is stored as display {"sub_items":[{"id","display"}]}, answer {sub id => key}, errors {sub id => [{code, value}]} (M5 must write this shape, or tell us the one it writes). (2) The browser posts one raw answer: JSON text of {sub id => the sub item's raw answer in the encodings of D-030}; a sub item given up carries the "Non lo so" text. (3) `Grading::Testlet` grades each sub item with the grader of its component and settles the unit only when that is certain: all correct is correct, all given up is dont_know, all wrong or given up is wrong, any mixture is undetermined (it goes to the teacher and counts neither way); an invalid sub answer makes the whole answer invalid. The attempt maps to one answer on the testlet's first skill (D-037). (4) `PlanLoader` listed the sub items' skills without removing duplicates, so a testlet whose five sub items measure one skill counted five serves against the per-skill cap of 5 and the skill ended not_assessed(item_cap) after one testlet; the list is now unique.
+- **Why:** The unique index forces one attempt per serve; certain-or-pending is the rule the engine already uses for anything it cannot settle.
+- **Cost:** A testlet answered four right out of five goes to the teacher as undetermined instead of counting as a partial credit. A later schema version may give each sub item its own attempt.
+- **Status:** implemented in M10; **question for the operator**: should a mostly right testlet count as correct?
+- **Back-port:** A-03 (stored shape), B-02 (testlet aggregation), D-037 (testlet adapter item closed).
+
+## D-048 · 2026-10-03 · M10 the outbox in localStorage, resend, and what "Accedi di nuovo" does
+
+- **Design ref:** E-10, B-05
+- **Design said:** The answer is written to localStorage as banco.outbox.<client_attempt_id>; only 200 {recorded|invalid} clears it; a redirect, 401, 403, 5xx or no network keeps it and shows [Rientra]. The M10 task text said "memory + sessionStorage".
+- **We do:** localStorage, as E-10 says (sessionStorage would lose an answer when the tab or browser is closed during a login), mirrored in memory. The button is [Accedi di nuovo] (B-11 wording) and does a full reload: the edge proxy sends the browser through the login and back, and the page's first act is to flush the queue in order. While blocked the page also retries every 20 seconds. A blocked answer hides the work area and shows "La tua risposta è salvata su questo computer. Accedi di nuovo e continua." A reply is accepted only when it is a 200 with a JSON content type and a status of recorded or invalid (a 200 login page is not a reply). The server answers a repeated client_attempt_id, or a second answer to a serve that already has one, as recorded without writing again. The answer's time is the server's time when it arrives, so a long login gap in the middle of an item is not subtracted from its counted time beyond the per-item cap of 600 seconds.
+- **Why:** The loss of an answer is the failure the design fears most.
+- **Cost:** The counted time of an item answered after a login gap can be over-counted up to the cap.
+- **Status:** implemented in M10
+- **Back-port:** E-10 (button wording, retry timer, what counts as a reply).
+
+## D-049 · 2026-10-03 · M10 delivery of the student's pages: own importmap, CSP, figures by digest
+
+- **Design ref:** X-02, E-04
+- **Design said:** One app page with Turbo disabled; CSP with a per-request nonce; MathLive 0.111.0, KaTeX 0.19.0 and Compute Engine 0.146.0 from public/vendor/<name>@<version>/ with SHA256SUMS; agent SVG only as an img from /assets/items/<sha256>.svg with nosniff and a sandbox policy.
+- **We do:** (1) The student's pages use their own importmap (config/importmap.student.rb, rendered with `javascript_importmap_tags "diagnosis", importmap: student_importmap`), so Turbo and application.js are never loaded; their Stimulus controllers live in app/javascript/student_controllers and the item templates in app/javascript/items. (2) The CSP is the one of X-02 with `SecureRandom.base64(16)` nonces on script-src; csp_header_test asserts it exactly. (3) public/vendor has mathlive@0.111.0 (the minified module and its fonts, no sounds), katex@0.19.0 (katex.mjs, katex.min.css and only the woff2 fonts, which is the format every browser the app allows picks first) and compute-engine@0.146.0 (the server's three files); vendor_test checks the SHA256SUMS, the versions and that no pin or script names another origin. MathLive reaches for a Compute Engine on esm.run when none is set: expression.js loads ours and sets it, and the CSP would refuse the remote one anyway. The MathLive options that need a mounted field (inlineShortcuts rad, smartSuperscript, no virtual keyboard) are set after the field is in the document (`handle.mounted`). (4) /assets/items/<sha256>.svg is ItemAssetsController (Propshaft's development server answers 404 for anything under /assets/, so a small prepend hands that path on); files are read from storage/item_assets/<sha256>.svg (config.x.item_assets_dir overrides) and a figure reaches the browser only when the instance display's figure carries a valid sha256: M5 stores the figure's digest in the display's figure.sha256 and the file under its digest (or tells us the shape it uses). (5) The font is Atkinson Hyperlegible when installed, then Verdana and the system sans-serif: the font file is not vendored in this milestone; the themes are cream (default), dark (the system's preference) and light (data-theme="light"), with no switch on screen.
+- **Why:** An importmap is global to a page, so a separate map is the only way to keep Turbo out; the fetch check needs no CDN reachable.
+- **Cost:** 3.7 MB of Compute Engine is a second copy of the server's files (git stores it once); the figure and font seams are decided here, not by M5.
+- **Status:** implemented in M10
+- **Back-port:** X-02 (own importmap, mounted configuration), A-03 (figure digest).
+
+## D-050 · 2026-10-03 · M10 the warm-up: where it lives, how it is graded, when the editor is given up
+
+- **Design ref:** B-11, E-04
+- **Design said:** App code with tasks in config/banco/warmup.yml, graded server-side with an immediate "riprova", recorded in app_events (warmup_answer, warmup_completed), a text field with echo after two failed rounds of an editor task. SYNTH B-11 also says "store warm-up attempts with context warmup".
+- **We do:** attempts.item_instance_id is not null and a warm-up task has no instance, so nothing is written to attempts: only app_events (warmup_answer {task, ok}, warmup_completed, warmup_editor_fallback). The closed tasks are graded by the closed graders through a Spec built from the task; the editor tasks are graded by comparing the LaTeX the editor produced with the list the task accepts (without spaces, \left and \right), because the point is typing the right keys, not the checker. A task that is not the editor's repeats until it is right. An editor task still wrong at the third try is skipped ("Passiamo avanti.") and warmup_editor_fallback is written; from then on the student's expression items carry input: "text" (a text box with a KaTeX echo, source text). A round ends with warmup_completed, after which a new round may start (the page offers no repeat once the diagnosis is open). The warm-up is outside the sitting budget and writes no run events. The system test types every editor task with real key events and checks the LaTeX produced.
+- **Why:** The ledger's attempt row cannot hold a task with no item; the app_events vocabulary was already in the brief.
+- **Cost:** The warm-up answers are not in the attempts table, so a later report reads app_events for them.
+- **Status:** implemented in M10
+- **Back-port:** B-11 (storage: app_events only; "after two rounds" read as three tries).
+
+## D-051 · 2026-10-03 · M10 end-of-subject screen, solutions, and the flag
+
+- **Design ref:** B-11, B-06, X-01
+- **Design said:** Groups Sai già fare / Da riprendere / Da imparare / In correzione / Non te l'abbiamo chiesto (count only); solutions per skill with wrong and "Non lo so" first, each with "Penso che la mia risposta fosse giusta" (a student_flags row); only when the subject is final.
+- **We do:** `Diagnosis::Summary` from `Derivation.result`: Sai già fare = demonstrated (with a reason in words), Da imparare = kind learn and to_recover or not_assessed(prerequisite_to_recover), Da riprendere = the other to_recover, with the message_it of the first error code seen (from the items' error catalogues; "Lo riprendiamo insieme." when there is none), In correzione = pending, Non te l'abbiamo chiesto = the count of the rest. Solutions are listed per attempt (the item's prompt, the student's answer in words through the logged id map, the steps and final of solution_json, the wrong and given-up ones first) and exist only when the run is closed; asking for the results of an open run goes back to the sitting. There is no student_flags table: the flag is an app_events row answer_flagged {attempt_id}, one per attempt. No score, percentage or alarm colour appears.
+- **Why:** Same content with the tables that exist.
+- **Cost:** The teacher's side (M9) reads the flags from app_events.
+- **Status:** implemented in M10
+- **Back-port:** B-11 (the flag's storage).
+
+## D-052 · 2026-10-03 · M10 the verify commands as Rails 8.1 runs them
+
+- **Design ref:** brief row M10
+- **Design said:** `bin/rails test:system TEST=test/system/item_render_test.rb`.
+- **We do:** Rails 8.1 refuses the TEST= form ("Could not load test file"); the path goes as an argument: `bin/rails test:system test/system/item_render_test.rb`. The system tests wait up to 10 seconds for elements (Capybara.default_max_wait_time) because the host is often loaded. Each system test file starts the app on the web listener's port, so they run one after the other, as the task runner does.
+- **Why:** The command in the brief cannot run as written.
+- **Cost:** None.
+- **Status:** implemented in M10
+- **Back-port:** brief row M10 (the command form).
+
+## D-053 · 2026-10-03 · Integration: a run held open for pending answers in the student's pages
+
+- **Design ref:** D-039 (M5: the engine never closes a run frontier_empty while an answer is pending or ungraded), D-051 (M10: solutions only when the subject is final)
+- **Design said:** M10 was written against an engine that closed the run when the frontier was empty; M5 changed the engine to answer `wait(:pending_answers)` instead.
+- **We do:** `Diagnosis::Conductor#step!` turns that wait into a `:final` step (the end screen, which lists the pending items as "in correzione"); `Conductor#holding?` says a run is open with nothing left to ask. The sitting page and the results page treat a holding run like a closed one for navigation (no redirect loop); solutions still wait for the real close. In the subject list a holding run is "Fatto · in correzione" and counts as a closed first sitting for dependency gating. The end-to-end system test now expects no solutions and no `run_closed` while the short answer is pending.
+- **Why:** The student has nothing more to answer, and the teacher's grading of the short answer is the only thing left; showing solutions earlier would break D-051.
+- **Cost:** Solutions of a subject with a short answer appear only after the teacher has graded it; KaTeX in solutions is no longer covered by the end-to-end test (the presenter tests cover it).
+- **Status:** implemented in the merge
+- **Back-port:** none.
+
+## D-054 · 2026-10-03 · M6 sessions: integer ids, X-Banco-Session, roles and where the rules sit
+
+- **Design ref:** A-04, E-05, E-09
+- **Design said:** `agent_sessions(id ULID, role, agent, model, created_at)`; `banco session new` prints the id; the CLI sends X-Banco-Session on every write; `fixture.json` may declare file_sessions in tests.
+- **We do:** (1) The id stays the integer primary key the earlier migrations created (`author_session_id` and `file_sessions` already hold integers); a migration adds `agent` and `model`. (2) The CLI reads the id from `BANCO_SESSION` and sends it on every request; `banco session new ... --id` prints the bare id, without `--id` the whole JSON. (3) The server requires a session on `work submit`, `review`, `solve` and the grader commands: `E-SESSION` (none or unknown) and `E-SESSION-ROLE` (wrong role), both 422, new API codes. `work open` needs one for the verifier's view and takes the role from it; an author may still open without one. Graph and blueprint submits do not need a session. (4) `E-VERIFY-AUTHOR` and `E-SESSION-NOT-INDEPENDENT` refuse the submission (422, nothing stored, also in a dry run), so they are raised before validation. A verifier may send `verify.mjs` only. (5) `item_revisions.file_sessions` is the base's map with the submitting session on every file the submission adds or changes; `author_session_id` is the author session of the last change to item.json. (6) The test-only `fixture.json` hook is not built: tests use real sessions. (7) The existing M5 tests now submit with sessions: the author's dry run of a generated item has no verify.mjs, so a full pass is the verifier's dry run on the author's revision.
+- **Why:** The smallest change that keeps the ledger shape of M2 and makes the rules mechanical. A role fixed per session means the role needs no header of its own.
+- **Cost:** Every M5 caller must now send a session; a dry run of a brand-new item with its verify is no longer possible, which is the point.
+- **Status:** implemented in M6
+- **Back-port:** A-04 (integer ids, BANCO_SESSION, E-SESSION, E-SESSION-ROLE).
+
+## D-055 · 2026-10-03 · M6 providers.yml: families by pattern, per-role rules
+
+- **Design ref:** A-08, operator Q8 (D-008)
+- **Design said:** an allowlist per role; reviewer and solver on another family than the author; the grader on anthropic only; the model is declared.
+- **We do:** `config/banco/providers.yml` lists families with name patterns (case-insensitive, `*`) and, per role, `different_from: author` and `known_family: true` (reviewer, solver) or `allow_families: [anthropic]` (grader). A model that matches no pattern is family `unknown`: refused for reviewer and solver (add it to the file), allowed for author and verifier. The family of the author is read from every session that wrote item.json, generator.mjs or an asset of the item. The check runs when a session is created (roles whose rule needs no item) and at every use (`E-PROVIDER-NOT-ALLOWED`). `banco submissions --pending` is a grader command too, because it hands out the student's text.
+- **Why:** The student's answers must not reach another provider (Q8); a different family is the point of an independent review.
+- **Cost:** The declaration is not proof. A new model name needs one line in the file and a D-entry.
+- **Status:** implemented in M6
+- **Back-port:** A-08.
+
+## D-056 · 2026-10-03 · M6 expert review and blind solve: what is checked, what is stored
+
+- **Design ref:** A-05, C-01 (banco.review/1, banco.solve/1)
+- **Design said:** 11-point checklist; quotes exact substrings; a bare "tutto verificato" rejected; the server grades the blind solve and each disagreement is a blocker; a second round uses a session that did not see the first.
+- **We do:** (1) Routes `GET|POST /api/v1/revisions/:revision/review` and `/solve` (the revision id is the item revision). Only the latest revision, and one whose validation passed, can be reviewed or solved (`E-STALE-BASE`, `E-ITEM-NOT-PASSED`). (2) The item text a quote may come from is item.json (raw and every string in it), the instances shown (8 for a generator item, all for a static one) and the programme lines the skill cites; with `instance` the pool is the item without its `instances` member plus that instance. Never generator.mjs, verify.mjs or other findings. (3) `E-REVIEW-EMPTY` when evidence has fewer than 4 words, is a stock phrase, repeats across points, or a point is `fail` and there is no finding. (4) The blind solve is graded by `Grading.grade` on the stored instance with canonical ids (no re-keying). `correct` is agreement; any other verdict (wrong, typical error, near miss, undetermined) is a blocker; `dont_know` is a major finding; an unreadable answer (use_comma, empty) is refused with 422 `E-FILES` and no finding; a short answer is recorded as not graded. One answer for each shown instance. (5) Tables `item_reviews`, `blind_solves`, `review_findings`, all append-only; findings written by the server for a mismatch have Italian `problem_it` and `fix_it`. (6) A session that already reviewed or solved any revision of the item cannot do it again or open it: a second round is a new session. (7) `--dry-run` checks and stores nothing.
+- **Why:** Presence of a review is mechanical; judgement stays with the teacher.
+- **Cost:** A review of a failed revision is not possible; a solver stumped on a hard but fair item produces a major finding the teacher must dismiss.
+- **Status:** implemented in M6
+- **Back-port:** A-05 (routes, E-REVIEW-EMPTY rules, dont_know).
+
+## D-057 · 2026-10-03 · M6 the gate approvable? and awaiting_teacher
+
+- **Design ref:** A-05, B-07, firm rule 2
+- **Design said:** the approve control needs validation passed, a review and a blind solve on the exact revision, and every blocker or major disposed by the teacher (fix_requested, or dismissed with a reason); no agent verdict, no waiver.
+- **We do:** `Review::Gate.check(revision)` gives `approvable`, the reasons and the open findings. A `fix_requested` disposition keeps the gate shut (the revision is to be replaced, and the new one needs its own review). Dispositions are decision rows of kind `dispose_finding` with payload `{finding_id, disposition: fix_requested|dismissed, reason_it}`; the latest decision for a finding counts. Nothing on the API listener writes them: M9b adds the pages. `SubjectStage` says `awaiting_teacher` when every pinned revision (entries and descent) has a review and a blind solve; what they found is the teacher's.
+- **Why:** A fix request that left the revision approvable would let the teacher approve what they asked to change.
+- **Cost:** The M9b UI must offer a new revision after a fix request.
+- **Status:** implemented in M6 (UI in M9b)
+- **Back-port:** A-05 (fix_requested keeps the gate shut).
+
+## D-058 · 2026-10-03 · M6 grade proposals: codes, normalization, pending lists
+
+- **Design ref:** B-06, A-08, operator G
+- **Design said:** `grade propose` with points[{point_id, score, quote|null, rationale_it}]; quote_not_in_submission and grader_is_author; `banco pending`, `attempt show`, `submission show`, `verdict propose`.
+- **We do:** (1) The API answers `E-QUOTE-NOT-FOUND` and `E-GRADER-IS-AUTHOR` (the build task's names, in the E- convention), with `reason` set to the brief's `quote_not_in_submission` and `grader_is_author`; both names stay in the registry. New API code `E-PROPOSAL-EXISTS` (409): an attempt with a proposal the teacher has neither confirmed nor rejected gets no second one. Registry version 2. (2) Entries may use the first draft's `point` and `rationale` for `point_id` and `rationale_it`. (3) Normalization of quote and student text: NFC, curly quotes and apostrophes straightened, whitespace collapsed, trim, no case or accent folding. (4) `banco submissions --pending --json` lists attempts of context diagnosis whose latest grading is `short_answer` and not settled (`short_answers`, with rubric and the student's text) and those whose evidence is `pending` (`verdicts`); the answer carries a notice that the student's text is data. Both commands need a grader session on Claude. (5) A proposal is a row in `grade_proposals` (append-only) and `counts: false`; the teacher's decisions are `confirm_grade` and `reject_grade` with `{grade_proposal_id}` (a rejection lets the attempt be proposed again) and `set_grade` with `{attempt_id}` (a grade written by the teacher); M9a/b write them. (6) `verdict propose` is not built: the brief now says the verdicts list is for the agent's report to the teacher until the teacher's pages say how a verdict is proposed. `banco pending`, `attempt show` and `submission show` are replaced by the one listing.
+- **Why:** One listing and one proposal are enough for the evening loop; a command whose decision half does not exist yet would only be a stub.
+- **Cost:** The agent cannot propose a verdict for an uncertain answer in M6.
+- **Status:** implemented in M6 (confirmation in M9a/b)
+- **Back-port:** B-06 (codes, E-PROPOSAL-EXISTS, normalization), E-05 (command list).
+
+## D-059 · 2026-10-03 · M9a DecisionRecorder, its guards and the decision routes
+
+- **Design ref:** D-08, B-08, firm rule 2
+- **Design said:** `DecisionRecorder.call(request:)` raises unless the flag, the trusted proxy, the teacher group and user, a valid CSRF and no student cookie hold; it stores request id, Remote-User, remote address.
+- **We do:** (1) `DecisionRecorder.call(request:, kind:, params:)` is the only writer; a test greps the application code for any other `Decision` insert. It checks `BANCO_DECISIONS_ENABLED=1`, the web listener, the edge peer, a Remote-User on `BANCO_TEACHER_USERS` with `banco-teacher`, no `banco_device` cookie and a CSRF mark on the request. (2) `Teacher::DecisionsController` verifies the token itself (`any_authenticity_token_valid?`, so it holds even where the environment disables forgery protection), then asks the recorder; a refusal is 403. The routes are `POST /teacher/...` inside the web constraint: on the API and harness listeners they fall to the catch-all 404 (`NotFoundController` now skips forgery protection, or a POST there would be a 422 in production). A missing target is 404, a decision not possible now is 422 with its reasons, a repeated request id is 409. Success is 200 JSON or a 303 to `/teacher`. (3) New columns on `decisions`: `groups`, `user_agent`, `request_path` (migration 20261004100001), next to the existing teacher login, request id and remote address. (4) The student's pages (`ActingStudent`, not the preview) set the signed cookie `banco_device=student`; any value of that cookie refuses decisions. `GET /teacher/items/:id` is the preview of an item and writes `teacher_viewed_item` only when the cookie is absent. (5) The API token has no decision scope: a test walks every `/api/` route and refuses any that maps to a decision or to the teacher's controllers. (6) Kinds: approve_skill_graph, approve_blueprint, dispose_finding, confirm_grade, reject_grade, resolve_attempt, void_diagnosis_run, void_revision_attempts, extend_diagnosis_run, close_diagnosis_run, release_diagnosis, record_consent, kind_override. Resolve, void, extend, close, confirm and reject take student and subject from the attempt or the run, because the engine reads decisions by student and subject. A reason (`reason_it`, at least 3 characters) is required wherever the teacher acts on something. A decision can name only the latest graph or blueprint revision.
+- **Why:** The rule needs several independent locks; the token check inside the controller is the one that does not depend on the environment.
+- **Cost:** The pages of M9b still have to be built on these routes. The proxy-side checks (Authelia, the cookie-only endpoint) belong to M7a.
+- **Status:** implemented in M9a
+- **Back-port:** D-08 (groups, user agent and path columns; 404 on the other listeners with forgery protection on).
+
+## D-060 · 2026-10-03 · M9a approval gates and what a run pins
+
+- **Design ref:** B-07, M6 `approvable?`, M10's D-046 note
+- **Design said:** the blueprint is approvable when its pinned items are approvable and were opened in the preview, the test was played once as the preview student and its graph is approved; runs pin the approved revision; a newer draft never un-approves.
+- **We do:** (1) `Approval::BlueprintGate.check` lists what is missing: the graph revision of the blueprint is the approved one; every pinned item revision (entries and descent) passes `Review::Gate`; an app_event `teacher_viewed_item {item_revision_id}` exists for each; the preview student has a closed run pinned to this very revision (context teacher_preview). `approve_blueprint` is refused with the reasons otherwise. (2) A subject is approved when an approved graph and an approved blueprint exist (the latest decision of each kind); a newer draft changes `pending_revision` only. (3) `Conductor.create_run` pins `approved_blueprint` for the student (nil without it: no run starts) and the latest draft for the preview student; this replaces the "latest" pinning of D-046. The student's list (`Availability`) reads the approved blueprint. (4) `PlanLoader` serves only pinned item revisions whose latest validation passed. (5) `banco status --json` adds `warmup_completed`, `consent_recorded` and `diagnosis.released` at top level; the per-subject fields (`graph_approved`, `blueprint_approved`, `stage`, `pending_revision`) were already there; `stage` stays `approved` while a newer draft waits. (6) Every sitting records `condition: unsupervised` (operator Q4); no decision records it.
+- **Why:** Approval must be a checklist the software can show, not a memory of the teacher.
+- **Cost:** "Played the whole test" is a closed preview run; nothing checks which answers the teacher gave. A teacher who approves must replay after any new draft.
+- **Status:** implemented in M9a
+- **Back-port:** B-07 (the gate and the pinning), C-04.
+
+## D-061 · 2026-10-03 · M9a release, consent, kind_override and confirm with edits
+
+- **Design ref:** D-002 (operator Q1), B-11, X-03, C-04
+- **Design said:** `release_diagnosis` needs the consent and the warm-up; all subjects start together; the teacher can edit a proposed grade; kind_override changes a skill's kind.
+- **We do:** (1) `release_diagnosis` is possible only when `record_consent` exists, the student's warm-up is completed and every subject row has an approved graph and an approved blueprint (all together, no waves); it can be recorded once. `record_consent {acknowledged}` can be recorded once. (2) `confirm_grade {grade_proposal_id}` copies `attempt_id` and `passed` (the proposal's `meets_threshold`) for the engine. With `scores {point_id: n}` the decision is an edit: it carries `edited: true`, the scores, the total and the new `passed`, and a reason; the decision row is the new grade and the proposal stays unchanged. No attempt_gradings row is written, so the engine sees one confirmation. `reject_grade` lets the attempt be proposed again. (3) `kind_override {skill, kind: recover|learn, reason_it}` is a decision on the subject; `PlanLoader` puts the latest one per skill on top of the blueprint's own `kind_overrides`.
+- **Why:** One place (the decision row) holds what the teacher decided and why; the engine reads it as it already does.
+- **Cost:** Changing a kind after a run has started changes that run's plan. Done before the release this is harmless; later it needs a void.
+- **Status:** implemented in M9a
+- **Back-port:** X-03 (edits are in the decision), C-04.
+
+## D-062 · 2026-10-03 · M9a bin/reconcile-decisions reads the ledger only
+
+- **Design ref:** D-08
+- **Design said:** the nightly reconciliation matches each decision to a Traefik access-log line and writes reconcile.jsonl; `--json` prints `{orphans, unverifiable, items}`.
+- **We do:** `bin/reconcile-decisions --since 1d|36h|90m [--json]` (`DecisionReconciliation`) reports as orphans: a decision without provenance (no login, request id, remote address or `banco-teacher` group, an unknown kind, a payload that is not an object); an attempt grading with source `teacher` that no decision names; a student run that started before `release_diagnosis` or is pinned to a revision without an earlier `approve_blueprint`. It exits 1 on any orphan. The proxy-log matching, `reconcile.jsonl` and ntfy are not built: the JSON says `"proxy_log": "not_checked"` and `unverifiable: 0`.
+- **Why:** The ledger half needs nothing from the host; the log half needs the infrastructure of M7a.
+- **Cost:** Until then a decision written by someone with database access and good-looking provenance is not caught.
+- **Status:** implemented in M9a (log matching with M7)
+- **Back-port:** D-08.
+
+## D-063 · 2026-10-03 · M9b the teacher's screens, Rimanda and the measured minutes
+
+- **Design ref:** C-04, B-07, A-05, operator Q2 (no daily budget)
+- **Design said:** /teacher shows the subjects, the graph for approval, the entry test one screen per skill with "Rimanda" going back to the agent as a comment, the evening corrections, and measures the teacher's minutes per unit.
+- **We do:** (1) Read-only pages on the web listener, teacher only: `/teacher` (subjects with stage, counts, what waits, minutes), `/teacher/subjects/:key/graph` (scope labels, edges, cited lines with the imported text, flags from `config/banco/review_flags.yml` for the Q3 lines 91-100 and the Spanish second-year report, a diff against the approved revision), `/teacher/subjects/:key/test` (the gate with its reasons in Italian, the two simulate traces all-correct and all-wrong, "Prova tutto il test come S") and `/teacher/subjects/:key/test/skills/:skill` (every pinned item side by side: four samples with key, typical-error ids and values, steps, error catalogue, sources, the review, the blind solve, the findings with their dispositions, "Prova come S" for one item at `/teacher/items/:id/play`, drawn by the student's own renderer and never saved), `/teacher/corrections`, `/teacher/subjects/:key/report`. Opening a skill screen writes the `teacher_viewed_item` events the gate asks for (not from the student's computer). (2) "Rimanda" is a decision kind, `send_back_item {item_revision_id, reason_code, comment_it}`, taken like every other decision (DecisionRecorder). The agent reads the comments as `teacher_comments` in `banco work open` and `banco work status`; `banco status` counts `items.sent_back`. A sent-back revision fails `Review::Gate` ("a new revision is needed"), so the blueprint pinning it cannot be approved. A fix request on a finding says that a new revision is expected until one exists. (3) Minutes: `/teacher/activity` takes a beat from the page while it is visible and used, and writes one app_event `teacher_active {unit}` at most every 55 seconds; one event is one minute. `banco status` reports `teacher_minutes {total, by_unit, by_subject}`. Units: `<subject>:graph|test|report`, `evening`, `home`. (4) The consent and "Apri la diagnosi" screens are not built here (the routes exist since M9a).
+- **Why:** The teacher approves a subject in two decisions with everything in front of them; the agent must hear what was wrong without a decision route of its own; the opening date is worked out from the measured pace.
+- **Cost:** The page shows the agent's raw LaTeX in the side-by-side samples; "Prova" is where the markup is drawn. Beats are only as good as the browser: a teacher reading without moving the pointer for a minute loses that minute.
+- **Status:** implemented in M9b
+- **Back-port:** C-04, B-09, Q2.
+
+## D-064 · 2026-10-03 · M9b the report (B-09): shape, no student text in the API
+
+- **Design ref:** B-09, operator Q4, Q8
+- **Design said:** `banco diagnosis report [--subject KEY] --json`, format `banco.diagnosis_report/1`, a golden test in Go; per subject the entry test used, the state, the form of the graph, sittings with counted minutes, per skill state, reason, scope, kind, evidence, programme lines; observed errors; signals `rapid_share`, `dont_know_share`, `sitting_condition`; `next_steps` at the start of 1b.
+- **We do:** `Diagnosis::Report` builds it; `GET /api/v1/diagnosis/report?subject=` and the page `/teacher/subjects/:key/report` use the same hash. (1) The API leaves out the student's own words: the agent that reads it may be on another provider than the grader (operator Q8), so errors carry `example_attempts` (ids) and the page adds `examples` (the answers in words). (2) Subject status: `not_started`, `in_progress`, `paused`, `continue_next_day`, `completed` (closed, or held only for pending answers, as the student's list does), `to_redo` (the teacher voided the run). (3) `graph_form` is `fixed_form` when no skill has a prerequisite or a composition, otherwise `adaptive`. (4) `rapid_share` counts answers whose counted time is under 0.2 of the expected seconds (flag over 20 per cent); `dont_know_share` flags over 50 per cent; `sitting_condition` is always `unsupervised`. (5) `groups` splits the own skills into demonstrated, to_recover, to_learn (kind learn, as the end screen does), pending and not_assessed. (6) The Rails examples are the contract (`contract/examples/diagnosis-report.completed.json`); the Go test decodes that very file with unknown fields refused, so a new or renamed member fails the build until the CLI's shape is updated on purpose. `next_steps` is not written (1b).
+- **Why:** One hash for the agent and the teacher, with the privacy line of Q8 drawn in the code and not in a promise.
+- **Cost:** The agent cannot quote a student's answer from the report; it asks the teacher.
+- **Status:** implemented in M9b
+- **Back-port:** B-09.
+
+## D-065 · 2026-10-03 · M9b banco health and bin/preflight
+
+- **Design ref:** E-02 (health), the infrastructure section (preflight)
+- **Design said:** `banco health --json` with `.db`, `.grader`, `.chrome`, `.chrome_egress`; `bin/preflight` measures only what S feels (p95 of `/up`, `/up/deep`, PSI, MemAvailable, an unhealthy container).
+- **We do:** `Health.check` (also `GET /api/v1/health`, `banco health [--no-chrome]`, and `bin/preflight [--no-chrome]`, which exits 1 when `ok` is false): the database is written to inside a rolled-back transaction, Solid Queue has a heartbeat (production only; `not_applicable` elsewhere), the grader worker answers a ping, Chrome answers behind the shared lock (`busy` is not a failure), `chrome_egress` is `blocked` when the sidecar is configured and an address outside the network cannot be loaded (`not_configured` without it), disk free over 1 GiB, the newest file of `BANCO_BACKUP_DIR` younger than 36 hours when the variable is set, and the decisions flag and the release state are reported without gating.
+- **Why:** The health the agent and the operator can ask for today, from inside the application.
+- **Cost:** The latency percentiles, PSI and memory gates, the container health and the 5-minute timer with ntfy belong to the host (M7) and are not here; `bin/preflight` says nothing about them.
+- **Status:** implemented in M9b, host measures with M7
+- **Back-port:** E-02.
+
+## D-066 · 2026-10-03 · M9b Atkinson Hyperlegible and the student's theme and size
+
+- **Design ref:** B-11, E-10
+- **Design said:** Atkinson Hyperlegible at 20 px (18 at least), line height 1.5 at least, left aligned, no italics, cream, light and dark themes of contrast 7:1, a preference for theme and text size.
+- **We do:** The font is vendored (`public/vendor/atkinson-hyperlegible@5.3.0`, woff2 normal 400 and 700, latin and latin-ext, with the SIL Open Font License and checksums) and is the first family of every page, the student's and the teacher's. The student's choice is kept on the server as app_events `student_preference {theme, size}` (the latest counts): theme `cream` (default) or `dark`, size `normal` (20 px), `large` (24) or `larger` (28); the layout puts them on `<html>`, and the item renderer, all in rem, follows. The dark theme is no longer chosen by the system; it is the student's choice.
+- **Why:** The choice follows the student to any computer, and a preference is not a ledger of anything else.
+- **Cost:** A student who liked the dark system theme has to say so once. The light theme stays in the stylesheet but has no button.
+- **Status:** implemented in M9b
+- **Back-port:** B-11, E-10.
+
+## D-067 · 2026-10-03 · M9b structure.sql check and the Chrome lock test
+
+- **Design ref:** E-01 (schema in CI), M5 and M10 integrator notes
+- **Design said:** `db/structure.sql` is the schema and CI keeps it honest; the integrator saw a discrepancy of 212 lines between the file and the migrations.
+- **We do:** `bin/check-structure` drops, creates and migrates a throwaway test database, dumps it and diffs the dump with the committed `db/structure.sql` (it puts the committed file back whatever happens); it is a CI step before the tests. The investigation: on one machine the 212 lines do not reproduce (a fresh dump equals the committed file at HEAD, and after `db:schema:load`). The first CI run of this check failed all the same, and its diff showed why: Rails dumps with the machine's `sqlite3` command line, whose `.schema` spells every table `CREATE TABLE IF NOT EXISTS` on the CI runner's version and plain `CREATE TABLE` on the newer one used to commit the file. That is a difference of spelling in every statement (a few hundred lines) and no difference of schema, and it is the most likely source of the integrator's discrepancy (not proven: that tree is gone). The check therefore compares the two dumps with that spelling removed. The check makes a regression of this kind fail in CI. `test/validation/chrome_runner_test.rb`: the two lock tests use a lock file of their own (`BANCO_CHROME_LOCK`); the shared `tmp/chrome.lock` is also taken by the Chrome tests of the other parallel workers, and a try-lock that must succeed was Busy when one of them held it for minutes under load. The tests that use Chrome keep the shared lock on purpose.
+- **Why:** A schema that CI does not rebuild drifts at every merge of parallel migrations; a test that depends on who else holds a lock is a timing accident.
+- **Cost:** About 30 seconds in CI.
+- **Status:** implemented in M9b
+- **Back-port:** E-01.
+
+## D-068 · 2026-10-03 · M9b how the teacher's forms decide and word refusals
+
+- **Design ref:** D-08, B-06
+- **Design said:** Decisions are POSTs under /teacher; the reasons of a refusal are plain text for the page to word.
+- **We do:** The forms post to the same routes as before and carry `back` (a path under /teacher only). For a browser (not JSON) the controller redirects back with a flash: what was recorded, or why not, in Italian (`Teacher::Wording` knows the gate and refusal sentences and shows an unknown one as it is). The buttons stay disabled, with the reason beside them, while the gates are open, while decisions are off (`BANCO_DECISIONS_ENABLED`) and on the student's computer. The one-click buttons of the evening screen ("Giusta", "Sbagliata", "Come Non lo so") send the reason written in the field, which starts as "Deciso dal docente alla schermata serale."; "Conferma" of an untouched proposal needs none. The command `bin/rails test:system TEST=file` of the brief does not accept a file in this Rails; use `bin/rails test test/system/<file>`.
+- **Why:** Efficient approval with every decision still carrying its reason.
+- **Cost:** A pre-filled reason can be left unchanged; the ledger then says so honestly.
+- **Status:** implemented in M9b
+- **Back-port:** C-04.
+
+## D-069 · 2026-10-03 · review fixes: privacy of the list, image and log; engine and grading corrections
+
+- **Design ref:** D-015, D-022, D-029, D-030, D-032, D-040, B-02, B-05, X-03
+- **Design said:** D-015: the forbidden-term list lives in bin/hygiene. B-05: counted time. B-02: item 1 of a skill is hard to guess. D-029 point 7: a float-method grading is pending whatever its verdict. D-040: an accent slip earns credit only when the item says accent_policy flag.
+- **We do:** (1) The term list is private data and no longer in git, not even split into fragments: bin/hygiene reads it from the CI secret `HYGIENE_TERMS` and from the untracked file `prep/hygiene-terms` (one term per line), and says so when it has neither; this replaces the "list lives in that script" of D-015. The history before this commit still holds the old script; rewriting it is the operator's decision. (2) `.dockerignore` excludes `/prep` and `/.claude` (briefs/ is served at runtime and stays). (3) The request log filters the answer and free-text parameters (`raw`, `reason_it`, `comment_it`, the agent bodies) at any depth. (4) Time: a pause or hidden interval still open when a sitting starts or an item is served ends there (a closed tab never sent "visible"), so it cannot swallow the counted time of later items. (5) An abandoned short answer is served again (it has one instance); a testlet that does not fit no longer keeps the short answer from being served. (6) A pinned descent skill needs at least one hard-to-guess instance (E-POOL-REDO, rule descent_low_guess), as an entry does. (7) Grading: trailing punctuation is stripped in one linear pass (a 20 KB answer took 16 s); a decimal exponent above 400 is invalid (number_too_large) instead of a 30 s BigInt power; a retried answer that turns out invalid settles as an undetermined row with error code invalid_answer for the teacher, instead of staying ungraded for ever; the engine reads float-method rows as pending and the accent-slip rule from Grading::Evidence's definition (policy flag, every code in the allowlist); a fraction with a negative denominator or a negative numerator beside a whole part is invalid (negative_denominator, signed_fraction_part) and a mixed number whose fractional part is not proper is wrong_form (improper).
+- **Why:** The findings of the review: a public file that named the student, an image carrying private material, answers in logs, and several places where two readers of the ledger or the clock disagreed.
+- **Cost:** CI needs the HYGIENE_TERMS secret to run the term check; a descent skill of only guessable items must get a harder item; 1e500 is refused as a number.
+- **Status:** implemented
+- **Back-port:** B-02, B-05, X-03.

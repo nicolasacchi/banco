@@ -1,0 +1,30 @@
+# Model providers per role (A-08, operator Q8). The session declares its model; the
+# family comes from the first pattern that matches (case-insensitive, * is a
+# wildcard). A model that matches nothing is family "unknown" and is allowed only
+# where the role has no family rule. The declaration guards against mistakes, not
+# against intent: nobody can prove a model.
+#
+# A change here is a change of rule: add a D-NNN entry in docs/decisions.md.
+version: 1
+
+families:
+  anthropic: [ "claude*", "anthropic/*", "opus*", "sonnet*", "haiku*" ]
+  openai: [ "gpt*", "o1*", "o3*", "o4*", "openai/*", "codex*" ]
+  google: [ "gemini*", "gemma*", "google/*" ]
+  xai: [ "grok*", "xai/*" ]
+  moonshot: [ "kimi*", "moonshot*" ]
+  zhipu: [ "glm*", "zhipu*", "z-ai/*" ]
+  deepseek: [ "deepseek*" ]
+  qwen: [ "qwen*", "alibaba/*" ]
+  mistral: [ "mistral*", "mixtral*", "codestral*" ]
+  meta: [ "llama*", "meta/*" ]
+
+roles:
+  author: {}
+  verifier: {}
+  # Reviewer and blind solver: a known family, different from the family of every
+  # session that authored the item. They receive item text only.
+  reviewer: { different_from: author, known_family: true }
+  solver: { different_from: author, known_family: true }
+  # The grader reads the student's answers, a minor's data: only these families.
+  grader: { allow_families: [ anthropic ] }

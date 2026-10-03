@@ -1,0 +1,367 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "banco.review/1",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "banco.review/1"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "checklist": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "const": 1
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 800
+            }
+          },
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "const": 2
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 800
+            }
+          },
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "const": 3
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 800
+            }
+          },
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "const": 4
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 800
+            }
+          },
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "const": 5
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 800
+            }
+          },
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "const": 6
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 800
+            }
+          },
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "const": 7
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 800
+            }
+          },
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "const": 8
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 800
+            }
+          },
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "const": 9
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 800
+            }
+          },
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "const": 10
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 800
+            }
+          },
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "const": 11
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 800
+            }
+          },
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "items": false,
+      "minItems": 11
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "severity": {
+            "enum": [
+              "blocker",
+              "major",
+              "minor"
+            ]
+          },
+          "instance": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "field": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "quote": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "problem_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 600
+          },
+          "fix_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 600
+          }
+        },
+        "required": [
+          "severity",
+          "field",
+          "quote",
+          "problem_it",
+          "fix_it"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "revision",
+    "checklist",
+    "findings"
+  ],
+  "additionalProperties": false
+}

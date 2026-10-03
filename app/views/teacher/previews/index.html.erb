@@ -1,0 +1,13 @@
+<% content_for :title, t("teacher.preview.title") %>
+<main class="page">
+  <h1><%= t("teacher.preview.title") %></h1>
+  <p><%= t("teacher.preview.intro") %></p>
+  <ul class="subjects">
+    <% @subjects.each do |subject| %>
+      <li class="subject" data-subject="<%= subject.key %>">
+        <span class="subject-name"><%= subject.name_it %></span>
+        <%= button_to t("teacher.preview.start", subject: subject.name_it), "/teacher/preview/subjects/#{subject.key}", class: "button", form: { class: "inline" } %>
+      </li>
+    <% end %>
+  </ul>
+</main>

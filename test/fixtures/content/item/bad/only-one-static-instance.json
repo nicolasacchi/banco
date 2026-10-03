@@ -1,0 +1,75 @@
+{
+  "schema": "banco.item/1",
+  "schema_version": 1,
+  "kind": "diagnosis_item",
+  "subject": "geography",
+  "skill": "geography.economic-sectors",
+  "component": "choice",
+  "prompt": {
+    "stem_it": "Quale attivita appartiene al settore secondario?"
+  },
+  "choice_only_reason_it": "Il concetto si riconosce ma non si scrive in poche parole.",
+  "error_catalogue": [
+    {
+      "code": "confuses_sectors",
+      "description_it": "Confonde i settori.",
+      "message_it": "Il settore secondario trasforma le materie prime. Questa attivita le produce soltanto.",
+      "implicates": []
+    }
+  ],
+  "instances": [
+    {
+      "display": {
+        "options": [
+          {
+            "id": "o1",
+            "text": "Produrre automobili"
+          },
+          {
+            "id": "o2",
+            "text": "Coltivare grano"
+          },
+          {
+            "id": "o3",
+            "text": "Insegnare"
+          },
+          {
+            "id": "o4",
+            "text": "Trasportare merci"
+          }
+        ]
+      },
+      "answer": "o1",
+      "errors": [
+        {
+          "code": "confuses_sectors",
+          "value": "o2"
+        }
+      ],
+      "solution": {
+        "steps": [
+          {
+            "text_it": "Produrre automobili trasforma materie prime."
+          }
+        ],
+        "final": "Produrre automobili"
+      }
+    }
+  ],
+  "tests": {
+    "must_accept": [
+      "o1"
+    ],
+    "must_reject": [
+      "o2"
+    ],
+    "blank": "invalid"
+  },
+  "sources": [
+    {
+      "kind": "prima_line",
+      "ref": "prima-example:9",
+      "fragment": "settori economici"
+    }
+  ]
+}

@@ -1,0 +1,214 @@
+{
+  "contract_version": 1,
+  "exit_codes": {
+    "0": "ok",
+    "2": "usage",
+    "3": "validation",
+    "4": "authentication or permission",
+    "5": "conflict",
+    "6": "server or network"
+  },
+  "commands": [
+    {
+      "name": "version",
+      "local": true,
+      "method": null,
+      "path": null,
+      "args": [],
+      "error_codes": []
+    },
+    {
+      "name": "schema",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/schema",
+      "args": [],
+      "error_codes": ["E-AUTH"]
+    },
+    {
+      "name": "brief show",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/briefs/:name",
+      "args": ["name"],
+      "error_codes": ["E-AUTH", "E-BRIEF-UNKNOWN"]
+    },
+    {
+      "name": "diagnosis simulate",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/diagnosis/simulate",
+      "args": [],
+      "flags": ["--blueprint", "--subject", "--script"],
+      "error_codes": ["E-AUTH", "E-SIMULATE-INPUT", "E-GRAPH-CYCLE", "E-BLUEPRINT-UNKNOWN"]
+    },
+    {
+      "name": "diagnosis report",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/diagnosis/report",
+      "args": [],
+      "flags": ["--subject"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "health",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/health",
+      "args": [],
+      "flags": ["--no-chrome"],
+      "error_codes": ["E-AUTH"]
+    },
+    {
+      "name": "status",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/status",
+      "args": [],
+      "error_codes": ["E-AUTH"]
+    },
+    {
+      "name": "syllabus lines",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/syllabus/:source/lines",
+      "args": [],
+      "flags": ["--source", "--from", "--to"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-FILES"]
+    },
+    {
+      "name": "work open",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/work/items/:item",
+      "args": ["item"],
+      "flags": ["--role", "--dir"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-FILES", "E-SESSION", "E-SESSION-ROLE", "E-SESSION-NOT-INDEPENDENT"]
+    },
+    {
+      "name": "work submit",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/work/submit",
+      "args": ["dir"],
+      "flags": ["--item", "--base", "--dry-run"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-TOO-LARGE", "E-STALE-BASE", "E-NOT-FOUND", "E-CHROME-BUSY", "E-CHROME-UNAVAILABLE", "E-SOURCE", "E-SCHEMA", "E-SKILL-UNKNOWN", "E-ASSET", "E-COMPOSITE", "E-CODE-GLOBAL", "E-GEN-NONDETERMINISTIC", "E-GEN-THROW", "E-GEN-TIMEOUT", "E-GEN-SCHEMA", "E-GEN-POOL", "E-COMPONENT-NUMERIC", "E-EXPONENT-MULTIDIGIT", "E-ROUNDTRIP", "E-ERROR-NEVER-GENERATED", "E-ACCEPTS-RANDOM", "E-STEP-INCONSISTENT", "E-VERIFY-MISSING", "E-VERIFY-AUTHOR", "E-VERIFY-REJECTS", "E-VERIFY-VACUOUS", "E-SESSION", "E-SESSION-ROLE", "E-SESSION-NOT-INDEPENDENT", "E-DISPLAY-KEY", "E-SOLUTION-IN-DISPLAY", "E-CHOICE-OPTIONS", "E-DISTRACTOR-UNCODED", "E-OPTION-DUPLICATE", "E-MATCHING-SIZE", "E-ACCENT-POLICY", "E-PROVA-A-PARAMS", "E-READ", "E-PHRASE", "E-MESSAGE", "E-QUOTE-REF"]
+    },
+    {
+      "name": "work status",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/work/revisions/:revision",
+      "args": ["revision"],
+      "flags": ["--wait"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "skill-graph open",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/subjects/:subject/skill-graph",
+      "args": [],
+      "flags": ["--subject"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "skill-graph submit",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/subjects/:subject/skill-graph",
+      "args": ["file"],
+      "flags": ["--subject", "--dry-run"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-SCHEMA", "E-GRAPH-CYCLE", "E-SOURCE", "E-SCOPE", "E-NEEDED-BY", "E-GRAPH-EDGE-UNAPPROVED", "E-SKILL-UNKNOWN"]
+    },
+    {
+      "name": "skill-graph coverage",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/subjects/:subject/skill-graph/coverage",
+      "args": [],
+      "flags": ["--subject"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "blueprint open",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/subjects/:subject/blueprint",
+      "args": [],
+      "flags": ["--subject"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "blueprint submit",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/subjects/:subject/blueprint",
+      "args": ["file"],
+      "flags": ["--subject", "--dry-run"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-SCHEMA", "E-BLUEPRINT-ENTRIES", "E-POOL-REDO", "E-ITEM-NOT-PASSED", "E-BLUEPRINT-UNPINNED-DESCENT", "E-SKILL-UNKNOWN"]
+    },
+    {
+      "name": "session new",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/sessions",
+      "args": [],
+      "flags": ["--role", "--agent", "--model", "--id"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-PROVIDER-NOT-ALLOWED"]
+    },
+    {
+      "name": "review open",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/revisions/:revision/review",
+      "args": ["revision"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT"]
+    },
+    {
+      "name": "review submit",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/revisions/:revision/review",
+      "args": ["revision"],
+      "flags": ["--file", "--dry-run"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-STALE-BASE", "E-SCHEMA", "E-REVIEW-EMPTY", "E-QUOTE-NOT-FOUND", "E-ITEM-NOT-PASSED", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT"]
+    },
+    {
+      "name": "solve open",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/revisions/:revision/solve",
+      "args": ["revision"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT"]
+    },
+    {
+      "name": "solve submit",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/revisions/:revision/solve",
+      "args": ["revision"],
+      "flags": ["--file", "--dry-run"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-STALE-BASE", "E-SCHEMA", "E-ITEM-NOT-PASSED", "E-CHROME-UNAVAILABLE", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT"]
+    },
+    {
+      "name": "submissions",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/submissions/pending",
+      "args": [],
+      "flags": ["--pending"],
+      "error_codes": ["E-AUTH", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED"]
+    },
+    {
+      "name": "grade propose",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/attempts/:attempt/grade-proposals",
+      "args": ["attempt"],
+      "flags": ["--file", "--dry-run"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-GRADE-POINT", "E-GRADE-QUOTE", "E-QUOTE-NOT-FOUND", "E-GRADER-IS-AUTHOR", "E-PROPOSAL-EXISTS", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED"]
+    }
+  ]
+}

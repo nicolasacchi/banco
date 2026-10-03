@@ -1,0 +1,523 @@
+{
+  "schema": "banco.item/1",
+  "schema_version": 1,
+  "kind": "testlet",
+  "subject": "italian",
+  "skill": "italian.expository-reading",
+  "passage_it": "Questo e un brano di prova scritto per i test. Ha frasi brevi. Parla di un argomento semplice.",
+  "expected_seconds": 420,
+  "sub_items": [
+    {
+      "id": "q1",
+      "skill": "italian.expository-reading",
+      "component": "choice",
+      "prompt": {
+        "stem_it": "Domanda 1 sul brano."
+      },
+      "error_catalogue": [
+        {
+          "code": "misreads_detail",
+          "description_it": "Legge male un dettaglio.",
+          "message_it": "Il dettaglio e nel secondo capoverso.",
+          "implicates": []
+        }
+      ],
+      "instances": [
+        {
+          "display": {
+            "options": [
+              {
+                "id": "o1",
+                "text": "Opzione uno"
+              },
+              {
+                "id": "o2",
+                "text": "Opzione due"
+              },
+              {
+                "id": "o3",
+                "text": "Opzione tre"
+              },
+              {
+                "id": "o4",
+                "text": "Opzione quattro"
+              }
+            ]
+          },
+          "answer": "o1",
+          "errors": [
+            {
+              "code": "misreads_detail",
+              "value": "o2"
+            }
+          ],
+          "solution": {
+            "steps": [
+              {
+                "text_it": "Si legge il secondo capoverso."
+              }
+            ],
+            "final": "Opzione uno"
+          }
+        },
+        {
+          "display": {
+            "options": [
+              {
+                "id": "o1",
+                "text": "Altra uno"
+              },
+              {
+                "id": "o2",
+                "text": "Altra due"
+              },
+              {
+                "id": "o3",
+                "text": "Altra tre"
+              },
+              {
+                "id": "o4",
+                "text": "Altra quattro"
+              }
+            ]
+          },
+          "answer": "o2",
+          "errors": [
+            {
+              "code": "misreads_detail",
+              "value": "o1"
+            }
+          ],
+          "solution": {
+            "steps": [
+              {
+                "text_it": "Si legge il terzo capoverso."
+              }
+            ],
+            "final": "Altra due"
+          }
+        }
+      ],
+      "tests": {
+        "must_accept": [
+          "o1"
+        ],
+        "must_reject": [
+          "o3"
+        ],
+        "blank": "invalid"
+      }
+    },
+    {
+      "id": "q2",
+      "skill": "italian.expository-reading",
+      "component": "choice",
+      "prompt": {
+        "stem_it": "Domanda 2 sul brano."
+      },
+      "error_catalogue": [
+        {
+          "code": "misreads_detail",
+          "description_it": "Legge male un dettaglio.",
+          "message_it": "Il dettaglio e nel secondo capoverso.",
+          "implicates": []
+        }
+      ],
+      "instances": [
+        {
+          "display": {
+            "options": [
+              {
+                "id": "o1",
+                "text": "Opzione uno"
+              },
+              {
+                "id": "o2",
+                "text": "Opzione due"
+              },
+              {
+                "id": "o3",
+                "text": "Opzione tre"
+              },
+              {
+                "id": "o4",
+                "text": "Opzione quattro"
+              }
+            ]
+          },
+          "answer": "o1",
+          "errors": [
+            {
+              "code": "misreads_detail",
+              "value": "o2"
+            }
+          ],
+          "solution": {
+            "steps": [
+              {
+                "text_it": "Si legge il secondo capoverso."
+              }
+            ],
+            "final": "Opzione uno"
+          }
+        },
+        {
+          "display": {
+            "options": [
+              {
+                "id": "o1",
+                "text": "Altra uno"
+              },
+              {
+                "id": "o2",
+                "text": "Altra due"
+              },
+              {
+                "id": "o3",
+                "text": "Altra tre"
+              },
+              {
+                "id": "o4",
+                "text": "Altra quattro"
+              }
+            ]
+          },
+          "answer": "o2",
+          "errors": [
+            {
+              "code": "misreads_detail",
+              "value": "o1"
+            }
+          ],
+          "solution": {
+            "steps": [
+              {
+                "text_it": "Si legge il terzo capoverso."
+              }
+            ],
+            "final": "Altra due"
+          }
+        }
+      ],
+      "tests": {
+        "must_accept": [
+          "o1"
+        ],
+        "must_reject": [
+          "o3"
+        ],
+        "blank": "invalid"
+      }
+    },
+    {
+      "id": "q3",
+      "skill": "italian.expository-reading",
+      "component": "choice",
+      "prompt": {
+        "stem_it": "Domanda 3 sul brano."
+      },
+      "error_catalogue": [
+        {
+          "code": "misreads_detail",
+          "description_it": "Legge male un dettaglio.",
+          "message_it": "Il dettaglio e nel secondo capoverso.",
+          "implicates": []
+        }
+      ],
+      "instances": [
+        {
+          "display": {
+            "options": [
+              {
+                "id": "o1",
+                "text": "Opzione uno"
+              },
+              {
+                "id": "o2",
+                "text": "Opzione due"
+              },
+              {
+                "id": "o3",
+                "text": "Opzione tre"
+              },
+              {
+                "id": "o4",
+                "text": "Opzione quattro"
+              }
+            ]
+          },
+          "answer": "o1",
+          "errors": [
+            {
+              "code": "misreads_detail",
+              "value": "o2"
+            }
+          ],
+          "solution": {
+            "steps": [
+              {
+                "text_it": "Si legge il secondo capoverso."
+              }
+            ],
+            "final": "Opzione uno"
+          }
+        },
+        {
+          "display": {
+            "options": [
+              {
+                "id": "o1",
+                "text": "Altra uno"
+              },
+              {
+                "id": "o2",
+                "text": "Altra due"
+              },
+              {
+                "id": "o3",
+                "text": "Altra tre"
+              },
+              {
+                "id": "o4",
+                "text": "Altra quattro"
+              }
+            ]
+          },
+          "answer": "o2",
+          "errors": [
+            {
+              "code": "misreads_detail",
+              "value": "o1"
+            }
+          ],
+          "solution": {
+            "steps": [
+              {
+                "text_it": "Si legge il terzo capoverso."
+              }
+            ],
+            "final": "Altra due"
+          }
+        }
+      ],
+      "tests": {
+        "must_accept": [
+          "o1"
+        ],
+        "must_reject": [
+          "o3"
+        ],
+        "blank": "invalid"
+      }
+    },
+    {
+      "id": "q4",
+      "skill": "italian.expository-reading",
+      "component": "choice",
+      "prompt": {
+        "stem_it": "Domanda 4 sul brano."
+      },
+      "error_catalogue": [
+        {
+          "code": "misreads_detail",
+          "description_it": "Legge male un dettaglio.",
+          "message_it": "Il dettaglio e nel secondo capoverso.",
+          "implicates": []
+        }
+      ],
+      "instances": [
+        {
+          "display": {
+            "options": [
+              {
+                "id": "o1",
+                "text": "Opzione uno"
+              },
+              {
+                "id": "o2",
+                "text": "Opzione due"
+              },
+              {
+                "id": "o3",
+                "text": "Opzione tre"
+              },
+              {
+                "id": "o4",
+                "text": "Opzione quattro"
+              }
+            ]
+          },
+          "answer": "o1",
+          "errors": [
+            {
+              "code": "misreads_detail",
+              "value": "o2"
+            }
+          ],
+          "solution": {
+            "steps": [
+              {
+                "text_it": "Si legge il secondo capoverso."
+              }
+            ],
+            "final": "Opzione uno"
+          }
+        },
+        {
+          "display": {
+            "options": [
+              {
+                "id": "o1",
+                "text": "Altra uno"
+              },
+              {
+                "id": "o2",
+                "text": "Altra due"
+              },
+              {
+                "id": "o3",
+                "text": "Altra tre"
+              },
+              {
+                "id": "o4",
+                "text": "Altra quattro"
+              }
+            ]
+          },
+          "answer": "o2",
+          "errors": [
+            {
+              "code": "misreads_detail",
+              "value": "o1"
+            }
+          ],
+          "solution": {
+            "steps": [
+              {
+                "text_it": "Si legge il terzo capoverso."
+              }
+            ],
+            "final": "Altra due"
+          }
+        }
+      ],
+      "tests": {
+        "must_accept": [
+          "o1"
+        ],
+        "must_reject": [
+          "o3"
+        ],
+        "blank": "invalid"
+      }
+    },
+    {
+      "id": "q5",
+      "skill": "italian.expository-reading",
+      "component": "choice",
+      "prompt": {
+        "stem_it": "Domanda 5 sul brano."
+      },
+      "error_catalogue": [
+        {
+          "code": "misreads_detail",
+          "description_it": "Legge male un dettaglio.",
+          "message_it": "Il dettaglio e nel secondo capoverso.",
+          "implicates": []
+        }
+      ],
+      "instances": [
+        {
+          "display": {
+            "options": [
+              {
+                "id": "o1",
+                "text": "Opzione uno"
+              },
+              {
+                "id": "o2",
+                "text": "Opzione due"
+              },
+              {
+                "id": "o3",
+                "text": "Opzione tre"
+              },
+              {
+                "id": "o4",
+                "text": "Opzione quattro"
+              }
+            ]
+          },
+          "answer": "o1",
+          "errors": [
+            {
+              "code": "misreads_detail",
+              "value": "o2"
+            }
+          ],
+          "solution": {
+            "steps": [
+              {
+                "text_it": "Si legge il secondo capoverso."
+              }
+            ],
+            "final": "Opzione uno"
+          }
+        },
+        {
+          "display": {
+            "options": [
+              {
+                "id": "o1",
+                "text": "Altra uno"
+              },
+              {
+                "id": "o2",
+                "text": "Altra due"
+              },
+              {
+                "id": "o3",
+                "text": "Altra tre"
+              },
+              {
+                "id": "o4",
+                "text": "Altra quattro"
+              }
+            ]
+          },
+          "answer": "o2",
+          "errors": [
+            {
+              "code": "misreads_detail",
+              "value": "o1"
+            }
+          ],
+          "solution": {
+            "steps": [
+              {
+                "text_it": "Si legge il terzo capoverso."
+              }
+            ],
+            "final": "Altra due"
+          }
+        }
+      ],
+      "tests": {
+        "must_accept": [
+          "o1"
+        ],
+        "must_reject": [
+          "o3"
+        ],
+        "blank": "invalid"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "kind": "inferred",
+      "ref": "brano originale",
+      "fragment": "brano di prova"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+<% content_for :title, t("teacher.item.title") %>
+<main class="page">
+  <h1><%= t("teacher.item.title") %></h1>
+  <p><%= t("teacher.item.skill") %> <strong><%= @body["skill"] || @revision.item.key %></strong></p>
+  <p><%= t("teacher.item.status") %> <strong><%= @revision.status %></strong></p>
+  <ol>
+    <% @samples.each do |display| %>
+      <li><%= display["stem_it"] || display["passage_it"] %></li>
+    <% end %>
+  </ol>
+  <p><a class="button" href="/teacher"><%= t("teacher.back") %></a></p>
+</main>

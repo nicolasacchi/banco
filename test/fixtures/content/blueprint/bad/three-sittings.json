@@ -1,0 +1,53 @@
+{
+  "schema": "banco.blueprint/1",
+  "schema_version": 1,
+  "subject": "math",
+  "graph_revision_id": "rev_graph_1",
+  "entries": [
+    {
+      "skill": "math.integer-operations",
+      "items": [
+        "rev_a1",
+        "rev_a2"
+      ]
+    },
+    {
+      "skill": "math.linear-equation-integer",
+      "items": [
+        "rev_b1",
+        "rev_b2"
+      ],
+      "redo_reserve": false
+    },
+    {
+      "skill": "math.fractions-operations",
+      "items": [
+        "rev_c1",
+        "rev_c2"
+      ]
+    },
+    {
+      "skill": "math.factoring",
+      "items": [
+        "rev_d1"
+      ],
+      "choice_only_reason_it": "Il primo item e una scelta perche il concetto e nuovo."
+    }
+  ],
+  "descent": [],
+  "budget": {
+    "sitting_minutes": 30,
+    "sittings": 3
+  },
+  "depends_on_subjects": [],
+  "calculator": "no",
+  "intro_note_it": "Il test dura circa mezz'ora. Non puoi usare la calcolatrice.",
+  "not_measured_it": "Non misura la scrittura di dimostrazioni.",
+  "kind_overrides": [
+    {
+      "skill": "math.factoring",
+      "kind": "learn",
+      "reason_it": "Argomento nuovo per lo studente."
+    }
+  ]
+}

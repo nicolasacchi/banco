@@ -1,0 +1,18 @@
+{
+  "schema": "banco.item/1",
+  "schema_version": 1,
+  "kind": "short_answer",
+  "subject": "history",
+  "skill": "history.cause-effect",
+  "component": "short_answer",
+  "prompt": {
+    "stem_it": "In due o tre frasi, spiega una causa e una conseguenza di un evento studiato."
+  },
+  "sources": [
+    {
+      "kind": "textbook",
+      "ref": "capitolo di esempio",
+      "fragment": "cause e conseguenze"
+    }
+  ]
+}

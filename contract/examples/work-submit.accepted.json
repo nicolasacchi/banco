@@ -1,0 +1,25 @@
+{
+  "command": "work submit",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/work/submit",
+    "body": {
+      "item": "eq-1",
+      "base": null,
+      "files": {
+        "item.json": "{\"schema\":\"banco.item/1\",\"schema_version\":1,\"kind\":\"diagnosis_item\",\"subject\":\"math\",\"skill\":\"math.linear-equation-integer\",\"component\":\"number\",\"prompt\":{\"stem_it\":\"Risolvi l'equazione e scrivi il valore di $x$.\"},\"expected_seconds\":60,\"error_catalogue\":[{\"code\":\"sign_error\",\"description_it\":\"Sposta il termine senza cambiargli il segno.\",\"message_it\":\"Quando un termine passa dall'altra parte cambia segno. Rifai il passaggio.\",\"implicates\":[\"math.integer-operations\"]}],\"sources\":[{\"kind\":\"inferred\",\"ref\":\"prova\",\"fragment\":\"equazioni di primo grado\"}],\"instances\":[{\"display\":{\"stem_it\":\"Risolvi $x+2=9$.\"},\"answer\":\"7\",\"errors\":[{\"code\":\"sign_error\",\"value\":\"11\"}],\"solution\":{\"steps\":[{\"text_it\":\"Togli 2 da entrambi i lati.\"}],\"final\":\"x = 7\"}},{\"display\":{\"stem_it\":\"Risolvi $x+4=13$.\"},\"answer\":\"9\",\"errors\":[{\"code\":\"sign_error\",\"value\":\"17\"}],\"solution\":{\"steps\":[{\"text_it\":\"Togli 4 da entrambi i lati.\"}],\"final\":\"x = 9\"}},{\"display\":{\"stem_it\":\"Risolvi $x+5=21$.\"},\"answer\":\"16\",\"errors\":[{\"code\":\"sign_error\",\"value\":\"26\"}],\"solution\":{\"steps\":[{\"text_it\":\"Togli 5 da entrambi i lati.\"}],\"final\":\"x = 16\"}}],\"tests\":{\"must_accept\":[\"7\"],\"must_reject\":[\"11\"],\"blank\":\"invalid\"}}"
+      }
+    }
+  },
+  "response": {
+    "status": 202,
+    "body": {
+      "item": "eq-1",
+      "revision_id": 1,
+      "seq": 1,
+      "status": "validating",
+      "replayed": false,
+      "next": "banco work status 1 --wait"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+# Is this installation fit to serve the student right now? Database writable, queue
+# alive, grader worker answering, Chrome reachable (and, with the sidecar, closed to
+# the outside), disk space, backup freshness when BANCO_BACKUP_DIR is set, and the
+# state of the decisions flag. Prints one JSON document (--json is the default and
+# the only format) and exits 0 when "ok" is true, 1 when not.
+#
+#   bin/preflight --json | jq -e '.ok'
+#   bin/preflight --no-chrome        # the cheap parts only
+require_relative "../config/environment"
+
+chrome = !ARGV.include?("--no-chrome")
+report = Health.check(chrome: chrome)
+puts JSON.pretty_generate(report)
+exit(report[:ok] ? 0 : 1)

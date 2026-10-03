@@ -1,0 +1,121 @@
+<% content_for :title, t("teacher.skill.title", skill: @row.label_it) %>
+<main class="page wide">
+  <p><a href="<%= teacher_test_path(key: @subject.key) %>"><%= t("teacher.skill.back", subject: @subject.name_it) %></a></p>
+  <h1><%= @row.label_it %> <span class="key">(<%= @row.skill %>)</span></h1>
+  <p class="skill-nav">
+    <% if @previous %><a class="button secondary small" href="<%= skill_screen_path(@subject, @previous.skill) %>"><%= t("teacher.skill.previous") %></a><% end %>
+    <% if @next %><a class="button secondary small" href="<%= skill_screen_path(@subject, @next.skill) %>"><%= t("teacher.skill.next") %></a><% end %>
+  </p>
+  <% if @row.not_assessed_reason_it %>
+    <p class="notice"><%= t("teacher.skill.not_assessed") %> <%= @row.not_assessed_reason_it %></p>
+  <% end %>
+  <% blocker = decision_blocker %>
+  <div class="cards">
+    <% @cards.each do |card| %>
+      <article class="card item-card" data-revision="<%= card.revision.id %>" data-item="<%= card.item.key %>">
+        <h2><%= card.item.key %> <span class="key"><%= t("teacher.skill.revision", seq: card.revision.seq) %></span></h2>
+        <p>
+          <%= t("teacher.skill.kind") %> <strong><%= card.body["component"] || card.body["kind"] %></strong> ·
+          <%= t("teacher.skill.seconds", count: card.body["expected_seconds"].to_i) %> ·
+          <%= t("teacher.skill.mechanical") %> <strong><%= t("teacher.skill.validation.#{card.revision.status}") %></strong>
+        </p>
+        <p class="gate" data-approvable="<%= card.gate.approvable %>">
+          <% if card.gate.approvable %><strong><%= t("teacher.skill.ready") %></strong>
+          <% else %><strong><%= t("teacher.skill.not_ready") %></strong> <%= gate_sentences(card.gate.reasons).join(" ") %><% end %>
+          <% if card.superseded %> <%= t("teacher.skill.superseded") %><% end %>
+        </p>
+        <p><a class="button secondary small" href="<%= teacher_item_play_path(revision_id: card.revision.id) %>" data-play="<%= card.revision.id %>"><%= t("teacher.skill.play") %></a></p>
+
+        <h3><%= t("teacher.skill.samples") %></h3>
+        <% card.samples.each do |sample| %>
+          <section class="sample" data-instance="<%= sample.id %>">
+            <p><strong><%= t("teacher.skill.instance", n: sample.number) %></strong> <%= sample.stem %></p>
+            <% sample.choices.each do |name, list| %>
+              <ul class="plain choices" data-choices="<%= name %>"><% list.each do |c| %><li><%= c %></li><% end %></ul>
+            <% end %>
+            <p class="key-line"><strong><%= t("teacher.skill.key") %></strong> <span data-key><%= sample.key %></span></p>
+            <% if sample.errors.any? %>
+              <ul class="plain errors">
+                <% sample.errors.each do |e| %><li><strong><%= e[:code] %></strong> → <%= e[:value] %></li><% end %>
+              </ul>
+            <% end %>
+            <% if sample.steps.any? %>
+              <ol class="steps"><% sample.steps.each do |s| %><li><%= s %></li><% end %></ol>
+              <% if sample.final %><p><%= t("teacher.skill.final") %> <%= sample.final %></p><% end %>
+            <% end %>
+          </section>
+        <% end %>
+
+        <% if card.catalogue.any? %>
+          <h3><%= t("teacher.skill.catalogue") %></h3>
+          <ul class="plain catalogue">
+            <% card.catalogue.each do |e| %>
+              <li data-code="<%= e['code'] %>"><strong><%= e["code"] %></strong>: <%= e["description_it"] %><br>
+                <%= t("teacher.skill.message") %> <q><%= e["message_it"] %></q>
+                <% if e["implicates"].to_a.any? %><br><%= t("teacher.graph.implicates") %> <%= e["implicates"].join(", ") %><% end %></li>
+            <% end %>
+          </ul>
+        <% end %>
+
+        <% if card.sources.any? %>
+          <h3><%= t("teacher.skill.sources") %></h3>
+          <ul class="plain sources"><% card.sources.each do |s| %><li><%= s["kind"] %>: <%= s["ref"] %><% if s["fragment"] %> <q><%= s["fragment"] %></q><% end %></li><% end %></ul>
+        <% end %>
+
+        <h3><%= t("teacher.skill.review") %></h3>
+        <% if card.review %>
+          <% failed = card.review.select { |c| c["result"] == "fail" } %>
+          <p data-review="<%= failed.empty? ? 'clean' : 'fail' %>"><%= t("teacher.skill.review_summary", pass: card.review.count { |c| c["result"] != "fail" }, fail: failed.size) %></p>
+          <% failed.each do |c| %><p class="notice"><strong><%= Review::Checklist::POINTS[c["id"] - 1] %></strong>: <%= c["evidence"] %></p><% end %>
+        <% else %>
+          <p><%= t("teacher.skill.no_review") %></p>
+        <% end %>
+        <% if card.blind %>
+          <% mismatches = card.blind.reject { |r| %w[correct short_answer].include?(r["verdict"]) } %>
+          <p data-blind="<%= mismatches.empty? ? 'ok' : 'mismatch' %>"><%= t("teacher.skill.blind_summary", ok: card.blind.size - mismatches.size, total: card.blind.size) %>
+            <% if mismatches.any? %> <%= t("teacher.skill.blind_differs") %> <%= mismatches.map { |r| "#{r['instance']} (#{r['verdict']})" }.join(", ") %>.<% end %></p>
+        <% else %>
+          <p><%= t("teacher.skill.no_blind") %></p>
+        <% end %>
+
+        <% if card.findings.any? %>
+          <h3><%= t("teacher.skill.findings") %></h3>
+          <% card.findings.each do |entry| %>
+            <% f = entry.finding %>
+            <div class="finding" data-finding="<%= f.id %>" data-severity="<%= f.severity %>" data-disposition="<%= entry.disposition %>">
+              <p><strong><%= t("teacher.skill.severity.#{f.severity}") %></strong> · <%= t("teacher.skill.source.#{f.source}") %><% if f.instance %> · <%= t("teacher.skill.instance", n: f.instance) %><% end %><br>
+                <q><%= f.quote %></q><br><%= f.problem_it %><br><%= t("teacher.skill.fix") %> <%= f.fix_it %></p>
+              <% if entry.disposition %>
+                <p class="decided"><strong><%= t("teacher.skill.disposition.#{entry.disposition}") %></strong>
+                  <% if entry.new_revision_expected %> <%= t("teacher.skill.new_revision_expected") %><% end %></p>
+              <% else %>
+                <%= decision_form("/teacher/findings/#{f.id}/disposition") do %>
+                  <label class="hint" for="reason-<%= f.id %>"><%= t("teacher.skill.reason_label") %></label>
+                  <input id="reason-<%= f.id %>" class="answer-input wide" type="text" name="reason_it" maxlength="300" required>
+                  <p>
+                    <button type="submit" name="disposition" value="dismissed" class="button secondary small" <%= "disabled" if blocker %>><%= t("teacher.skill.dismiss") %></button>
+                    <button type="submit" name="disposition" value="fix_requested" class="button small" <%= "disabled" if blocker %>><%= t("teacher.skill.request_fix") %></button>
+                  </p>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+
+        <h3><%= t("teacher.skill.send_back") %></h3>
+        <% card.send_backs.each do |sb| %>
+          <p class="decided" data-sent-back="true"><strong><%= t("teacher.skill.sent_back") %></strong> <%= t("teacher.skill.reason.#{sb['reason_code']}") %>: <%= sb["comment_it"] %></p>
+        <% end %>
+        <%= decision_form("/teacher/item-revisions/#{card.revision.id}/send-back") do %>
+          <label class="hint" for="code-<%= card.revision.id %>"><%= t("teacher.skill.reason_code") %></label>
+          <select id="code-<%= card.revision.id %>" name="reason_code" class="answer-input wide">
+            <% Teacher::SendBacks::CODES.each do |code| %><option value="<%= code %>"><%= t("teacher.skill.reason.#{code}") %></option><% end %>
+          </select>
+          <label class="hint" for="comment-<%= card.revision.id %>"><%= t("teacher.skill.comment") %></label>
+          <input id="comment-<%= card.revision.id %>" class="answer-input wide" type="text" name="comment_it" maxlength="500" required>
+          <p><button type="submit" class="button secondary small" <%= "disabled" if blocker %>><%= t("teacher.skill.send_back_button") %></button></p>
+        <% end %>
+      </article>
+    <% end %>
+  </div>
+</main>

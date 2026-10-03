@@ -1,0 +1,39 @@
+{
+  "command": "grade propose",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/attempts/1/grade-proposals",
+    "body": {
+      "grade": {
+        "points": [
+          {
+            "point_id": "cause",
+            "score": 2,
+            "quote": "causa fu la crisi",
+            "rationale_it": "Nomina la causa."
+          },
+          {
+            "point_id": "effect",
+            "score": 1,
+            "quote": "il re perse l'appoggio dei nobili",
+            "rationale_it": "Nomina la conseguenza."
+          }
+        ],
+        "missing_it": "Nulla."
+      }
+    }
+  },
+  "response": {
+    "status": 201,
+    "body": {
+      "proposal_id": 1,
+      "attempt_id": 1,
+      "total": 3,
+      "max_total": 3,
+      "threshold": 0.6,
+      "meets_threshold": true,
+      "counts": false,
+      "next": "stop here: the grade counts only after the teacher confirms it in the browser"
+    }
+  }
+}

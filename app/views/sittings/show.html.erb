@@ -1,0 +1,62 @@
+<% content_for :title, t("sitting.title", subject: @subject.name_it) %>
+<main class="page" data-controller="sitting"
+      data-sitting-step-url-value="<%= base_path %>/runs/<%= @run.id %>/step"
+      data-sitting-events-url-value="<%= base_path %>/runs/<%= @run.id %>/events"
+      data-sitting-answer-url-value="<%= base_path %>/answers"
+      data-sitting-list-url-value="<%= preview? ? '/teacher/preview' : '/diagnosis' %>"
+      data-sitting-subject-value="<%= @subject.name_it %>"
+      data-sitting-resuming-value="<%= @resuming %>"
+      data-sitting-texts-value="<%= student_texts.to_json %>"
+      data-sitting-keepalive-seconds-value="<%= Diagnosis::Rules::V1::KEEPALIVE_SECONDS %>">
+  <% if preview? %>
+    <p class="banner"><%= t("teacher.preview.banner") %></p>
+  <% end %>
+
+  <section data-sitting-target="intro">
+    <h1><%= @second_part ? t("sitting.title_second", subject: @subject.name_it) : t("sitting.title", subject: @subject.name_it) %></h1>
+    <ul class="plain">
+      <li><%= t("sitting.intro.not_a_grade") %></li>
+      <li><%= t("sitting.intro.duration", minutes: @minutes) %></li>
+      <li><%= t("sitting.intro.no_help") %></li>
+      <li><%= t("sitting.intro.dont_know") %></li>
+      <li><%= @calculator ? t("sitting.intro.calculator_yes") : t("sitting.intro.calculator_no") %></li>
+      <li><%= t("sitting.intro.nothing_else") %></li>
+    </ul>
+    <p><button type="button" class="button" data-action="sitting#begin"><%= @resuming ? t("diagnosis.actions.resume") : t("diagnosis.actions.start") %></button></p>
+  </section>
+
+  <section data-sitting-target="stage" hidden>
+    <header class="bar">
+      <h1 data-sitting-target="heading"></h1>
+      <button type="button" class="button secondary" data-sitting-target="pauseButton" data-action="sitting#pause"><%= t("sitting.pause") %></button>
+    </header>
+    <div data-sitting-target="paused" hidden>
+      <p><%= t("sitting.paused_text") %></p>
+      <p><button type="button" class="button" data-action="sitting#resume"><%= t("sitting.resume") %></button></p>
+    </div>
+    <div data-sitting-target="work">
+      <div data-sitting-target="itemBox" class="item"></div>
+      <div class="actions">
+        <button type="button" class="button" data-sitting-target="sendButton" data-action="sitting#send"><%= t("sitting.send") %></button>
+        <button type="button" class="button secondary apart" data-sitting-target="unknownButton" data-action="sitting#dontKnow"><%= t("sitting.dont_know") %></button>
+      </div>
+    </div>
+    <p role="status" aria-live="polite" class="status" data-sitting-target="status"></p>
+    <div data-sitting-target="blocked" class="notice" hidden>
+      <p><%= t("sitting.blocked") %></p>
+      <p><button type="button" class="button" data-action="sitting#signIn"><%= t("sitting.sign_in_again") %></button></p>
+    </div>
+  </section>
+
+  <section data-sitting-target="over" hidden>
+    <h1><%= t("sitting.more_to_do") %></h1>
+    <p><%= t("sitting.more_to_do_text", subject: @subject.name_it) %></p>
+    <p><a class="button" href="<%= preview? ? '/teacher/preview' : '/diagnosis' %>"><%= t("sitting.back_to_list") %></a></p>
+  </section>
+
+  <section data-sitting-target="wait" hidden>
+    <h1><%= t("sitting.sitting_over") %></h1>
+    <p><%= t("sitting.wait_tomorrow") %></p>
+    <p><a class="button" href="<%= preview? ? '/teacher/preview' : '/diagnosis' %>"><%= t("sitting.back_to_list") %></a></p>
+  </section>
+</main>

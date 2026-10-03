@@ -1,0 +1,34 @@
+{
+  "schema": "banco.item/1",
+  "schema_version": 1,
+  "kind": "short_answer",
+  "subject": "history",
+  "skill": "history.cause-effect",
+  "component": "short_answer",
+  "prompt": {
+    "stem_it": "In due o tre frasi, spiega una causa e una conseguenza di un evento studiato."
+  },
+  "rubric": {
+    "points": [
+      {
+        "id": "cause",
+        "weight": 2,
+        "expected_it": "Indica una causa."
+      },
+      {
+        "id": "effect",
+        "weight": 1,
+        "expected_it": "Indica una conseguenza."
+      }
+    ],
+    "threshold": 0.6,
+    "model_answer_it": "Una risposta completa nomina la causa e la conseguenza."
+  },
+  "sources": [
+    {
+      "kind": "textbook",
+      "ref": "capitolo di esempio",
+      "fragment": "cause e conseguenze"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+# Reports the orphans of the decision ledger: state changes without a decision row
+# and decisions without provenance. Exits 1 when there is any.
+#
+#   bin/reconcile-decisions --since 1d --json
+require "optparse"
+ENV["RAILS_ENV"] ||= "development"
+require_relative "../config/environment"
+
+since = "1d"
+json = false
+OptionParser.new do |o|
+  o.banner = "usage: bin/reconcile-decisions [--since 1d|36h|90m] [--json]"
+  o.on("--since N") { |v| since = v }
+  o.on("--json") { json = true }
+end.parse!
+
+begin
+  result = DecisionReconciliation.call(since: DecisionReconciliation.parse_since(since))
+rescue ArgumentError => e
+  warn e.message
+  exit 2
+end
+
+if json
+  puts JSON.pretty_generate(result.to_h)
+else
+  puts "orphans: #{result.orphans} since #{result.since.iso8601}"
+  result.items.each { |i| puts "  #{i.to_json}" }
+end
+exit(result.orphans.zero? ? 0 : 1)

@@ -1,0 +1,33 @@
+{
+  "blueprint": {
+    "schema": "banco.blueprint/1",
+    "schema_version": 1,
+    "subject": "math",
+    "graph_revision_id": "rev_graph_three",
+    "entries": [
+      { "skill": "math.linear-equation-integer", "items": ["rev_eq1", "rev_eq2"] },
+      { "skill": "math.fractions-operations", "items": ["rev_fr1", "rev_fr2"] },
+      { "skill": "math.integer-operations", "items": ["rev_in1", "rev_in2"] }
+    ],
+    "descent": [],
+    "budget": { "sitting_minutes": 30, "sittings": 2 },
+    "depends_on_subjects": [],
+    "calculator": "no",
+    "intro_note_it": "Prova sintetica.",
+    "not_measured_it": "Non misura la geometria."
+  },
+  "graph": {
+    "schema": "banco.skill_graph/1",
+    "schema_version": 1,
+    "subject": "math",
+    "skills": [
+      { "key": "math.integer-operations", "label_it": "Operazioni con i numeri interi", "layer": "core", "scope": "middle_school",
+        "scope_reason_it": "Argomento delle medie.", "prerequisites": [], "refs": [], "errors": [] },
+      { "key": "math.fractions-operations", "label_it": "Operazioni con le frazioni", "layer": "core", "scope": "studied",
+        "prerequisites": ["math.integer-operations"], "refs": [],
+        "errors": [ { "code": "sign_error", "description_it": "Errore di segno.", "implicates": ["math.integer-operations"] } ] },
+      { "key": "math.linear-equation-integer", "label_it": "Equazioni lineari intere", "layer": "core", "scope": "studied",
+        "prerequisites": ["math.fractions-operations"], "refs": [], "errors": [] }
+    ]
+  }
+}

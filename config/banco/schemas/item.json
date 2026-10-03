@@ -1,0 +1,914 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "banco.item/1",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "banco.item/1"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "kind": {
+      "enum": [
+        "diagnosis_item",
+        "short_answer",
+        "testlet"
+      ]
+    },
+    "subject": {
+      "enum": [
+        "math",
+        "italian",
+        "english",
+        "spanish",
+        "history",
+        "geography",
+        "law_economics",
+        "business",
+        "computer_science",
+        "biology",
+        "chemistry"
+      ]
+    },
+    "skill": {
+      "type": "string",
+      "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "component": {
+      "enum": [
+        "number",
+        "fraction",
+        "expression",
+        "choice",
+        "ordering",
+        "matching",
+        "normalized_text",
+        "short_answer"
+      ]
+    },
+    "profile": {
+      "$ref": "#/$defs/profile"
+    },
+    "prompt": {
+      "$ref": "#/$defs/prompt"
+    },
+    "expected_seconds": {
+      "type": "integer",
+      "minimum": 5,
+      "maximum": 1200
+    },
+    "error_catalogue": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/catalogue_entry"
+      }
+    },
+    "form": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9]*(_[a-z0-9]+)*$"
+      },
+      "uniqueItems": true
+    },
+    "form_skill": {
+      "type": "string",
+      "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "accent_policy": {
+      "enum": [
+        "strict",
+        "flag"
+      ]
+    },
+    "spelling_policy": {
+      "enum": [
+        "exact",
+        "near"
+      ]
+    },
+    "paradigm_forms": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      }
+    },
+    "accept": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    },
+    "unit": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20
+    },
+    "allow_dot": {
+      "type": "boolean"
+    },
+    "choice_only_reason_it": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "instances": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/instance"
+      },
+      "minItems": 2
+    },
+    "generator": {
+      "const": "generator.mjs"
+    },
+    "tests": {
+      "$ref": "#/$defs/tests"
+    },
+    "solution": {
+      "$ref": "#/$defs/solution"
+    },
+    "passage_it": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2400
+    },
+    "sub_items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/sub_item"
+      },
+      "minItems": 5,
+      "maxItems": 5
+    },
+    "rubric": {
+      "$ref": "#/$defs/rubric"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/source"
+      },
+      "minItems": 1
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset"
+      }
+    },
+    "case_sensitive": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "kind",
+    "subject",
+    "skill",
+    "sources"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "diagnosis_item"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "required": [
+          "component",
+          "prompt",
+          "error_catalogue",
+          "tests"
+        ],
+        "properties": {
+          "component": {
+            "enum": [
+              "number",
+              "fraction",
+              "expression",
+              "choice",
+              "ordering",
+              "matching",
+              "normalized_text"
+            ]
+          }
+        },
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "passage_it"
+              ]
+            },
+            {
+              "required": [
+                "sub_items"
+              ]
+            },
+            {
+              "required": [
+                "rubric"
+              ]
+            }
+          ]
+        },
+        "oneOf": [
+          {
+            "required": [
+              "instances"
+            ]
+          },
+          {
+            "required": [
+              "generator"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "short_answer"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "required": [
+          "component",
+          "prompt",
+          "rubric"
+        ],
+        "properties": {
+          "component": {
+            "const": "short_answer"
+          }
+        },
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "generator"
+              ]
+            },
+            {
+              "required": [
+                "instances"
+              ]
+            },
+            {
+              "required": [
+                "sub_items"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "testlet"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "required": [
+          "passage_it",
+          "sub_items",
+          "expected_seconds"
+        ],
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "component"
+              ]
+            },
+            {
+              "required": [
+                "generator"
+              ]
+            },
+            {
+              "required": [
+                "instances"
+              ]
+            },
+            {
+              "required": [
+                "rubric"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "step": {
+      "type": "object",
+      "properties": {
+        "text_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600
+        },
+        "math": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "eq": {
+          "type": "string",
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "text_it"
+      ],
+      "additionalProperties": false
+    },
+    "solution": {
+      "type": "object",
+      "properties": {
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/step"
+          },
+          "minItems": 1
+        },
+        "final": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "steps",
+        "final"
+      ],
+      "additionalProperties": false
+    },
+    "id_text": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]{0,7}$"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id",
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "table": {
+      "type": "object",
+      "properties": {
+        "caption_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "header": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "minItems": 1,
+          "maxItems": 8
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "minItems": 1,
+            "maxItems": 8
+          },
+          "minItems": 1,
+          "maxItems": 20
+        }
+      },
+      "required": [
+        "header",
+        "rows"
+      ],
+      "additionalProperties": false
+    },
+    "figure": {
+      "type": "object",
+      "properties": {
+        "asset": {
+          "type": "string",
+          "pattern": "^assets/[A-Za-z0-9._-]+$"
+        },
+        "alt_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "asset",
+        "alt_it"
+      ],
+      "additionalProperties": false
+    },
+    "quote": {
+      "type": "object",
+      "properties": {
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1200
+        }
+      },
+      "required": [
+        "ref",
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "display": {
+      "type": "object",
+      "properties": {
+        "stem_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 800
+        },
+        "table": {
+          "$ref": "#/$defs/table"
+        },
+        "quote": {
+          "$ref": "#/$defs/quote"
+        },
+        "figure": {
+          "$ref": "#/$defs/figure"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id_text"
+          },
+          "minItems": 3,
+          "maxItems": 5
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id_text"
+          },
+          "minItems": 3,
+          "maxItems": 7
+        },
+        "left": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id_text"
+          },
+          "minItems": 4,
+          "maxItems": 10
+        },
+        "right": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id_text"
+          },
+          "minItems": 5,
+          "maxItems": 11
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "prompt": {
+      "type": "object",
+      "properties": {
+        "stem_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 800
+        },
+        "table": {
+          "$ref": "#/$defs/table"
+        },
+        "quote": {
+          "$ref": "#/$defs/quote"
+        },
+        "figure": {
+          "$ref": "#/$defs/figure"
+        }
+      },
+      "required": [
+        "stem_it"
+      ],
+      "additionalProperties": false
+    },
+    "any_answer": {
+      "not": {
+        "type": "null"
+      }
+    },
+    "error_value": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(_[a-z0-9]+)*$"
+        },
+        "value": {
+          "$ref": "#/$defs/any_answer"
+        }
+      },
+      "required": [
+        "code",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "instance": {
+      "type": "object",
+      "properties": {
+        "display": {
+          "$ref": "#/$defs/display"
+        },
+        "answer": {
+          "$ref": "#/$defs/any_answer"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error_value"
+          }
+        },
+        "solution": {
+          "$ref": "#/$defs/solution"
+        }
+      },
+      "required": [
+        "display",
+        "answer",
+        "solution"
+      ],
+      "additionalProperties": false
+    },
+    "catalogue_entry": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(_[a-z0-9]+)*$"
+        },
+        "description_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "message_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "implicates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "code",
+        "description_it",
+        "message_it",
+        "implicates"
+      ],
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "prima_line",
+            "seconda_line",
+            "prova_a_structure",
+            "textbook",
+            "inferred"
+          ]
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "fragment": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "kind",
+        "ref"
+      ],
+      "additionalProperties": false
+    },
+    "asset": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "pattern": "^assets/[A-Za-z0-9._-]+$"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "file",
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "tests": {
+      "type": "object",
+      "properties": {
+        "must_accept": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/any_answer"
+          }
+        },
+        "must_reject": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/any_answer"
+          }
+        },
+        "blank": {
+          "const": "invalid"
+        }
+      },
+      "required": [
+        "must_accept",
+        "must_reject",
+        "blank"
+      ],
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "enum": [
+            "binary"
+          ]
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "leading_zeros": {
+          "enum": [
+            "required",
+            "optional"
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "rubric": {
+      "type": "object",
+      "properties": {
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9]*(_[a-z0-9]+)*$"
+              },
+              "weight": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 3
+              },
+              "expected_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 400
+              }
+            },
+            "required": [
+              "id",
+              "weight",
+              "expected_it"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 2
+        },
+        "threshold": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "model_answer_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1500
+        }
+      },
+      "required": [
+        "points",
+        "model_answer_it"
+      ],
+      "additionalProperties": false
+    },
+    "sub_item": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,15}$"
+        },
+        "skill": {
+          "type": "string",
+          "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "component": {
+          "enum": [
+            "number",
+            "fraction",
+            "expression",
+            "choice",
+            "ordering",
+            "matching",
+            "normalized_text"
+          ]
+        },
+        "profile": {
+          "$ref": "#/$defs/profile"
+        },
+        "prompt": {
+          "$ref": "#/$defs/prompt"
+        },
+        "expected_seconds": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 1200
+        },
+        "error_catalogue": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/catalogue_entry"
+          }
+        },
+        "form": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(_[a-z0-9]+)*$"
+          },
+          "uniqueItems": true
+        },
+        "form_skill": {
+          "type": "string",
+          "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "accent_policy": {
+          "enum": [
+            "strict",
+            "flag"
+          ]
+        },
+        "spelling_policy": {
+          "enum": [
+            "exact",
+            "near"
+          ]
+        },
+        "paradigm_forms": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "accept": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "allow_dot": {
+          "type": "boolean"
+        },
+        "choice_only_reason_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "instances": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/instance"
+          },
+          "minItems": 2
+        },
+        "generator": {
+          "const": "generator.mjs"
+        },
+        "tests": {
+          "$ref": "#/$defs/tests"
+        },
+        "solution": {
+          "$ref": "#/$defs/solution"
+        },
+        "case_sensitive": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "skill",
+        "component",
+        "prompt",
+        "error_catalogue",
+        "tests"
+      ],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": [
+            "instances"
+          ]
+        },
+        {
+          "required": [
+            "generator"
+          ]
+        }
+      ]
+    }
+  }
+}

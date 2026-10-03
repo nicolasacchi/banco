@@ -1,0 +1,62 @@
+{
+  "command": "solve submit",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/revisions/1/solve",
+    "body": {
+      "solve": {
+        "schema": "banco.solve/1",
+        "schema_version": 1,
+        "revision": "1",
+        "answers": [
+          {
+            "instance": 1,
+            "answer": "7"
+          },
+          {
+            "instance": 2,
+            "answer": "17"
+          },
+          {
+            "instance": 3,
+            "answer": "21"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 201,
+    "body": {
+      "solve_id": 1,
+      "revision_id": 1,
+      "instances": 3,
+      "mismatches": 2,
+      "findings": [
+        {
+          "id": 1,
+          "source": "blind_solve",
+          "severity": "blocker",
+          "code": "E-BLIND-SOLVE-MISMATCH",
+          "instance": 2,
+          "field": "instances/2",
+          "quote": "Risolvi $x+4=13$.",
+          "problem_it": "Il risolutore alla cieca ha dato all'istanza 2 una risposta diversa dalla chiave.",
+          "fix_it": "Controlla la chiave e la consegna dell'istanza 2. C'è una seconda risposta valida, o la chiave è sbagliata?"
+        },
+        {
+          "id": 2,
+          "source": "blind_solve",
+          "severity": "blocker",
+          "code": "E-BLIND-SOLVE-MISMATCH",
+          "instance": 3,
+          "field": "instances/3",
+          "quote": "Risolvi $x+5=21$.",
+          "problem_it": "Il risolutore alla cieca ha dato all'istanza 3 una risposta diversa dalla chiave.",
+          "fix_it": "Controlla la chiave e la consegna dell'istanza 3. C'è una seconda risposta valida, o la chiave è sbagliata?"
+        }
+      ],
+      "next": "stop here: the teacher disposes of the findings in the browser (banco status)"
+    }
+  }
+}

@@ -1,0 +1,186 @@
+{
+  "command": "skill-graph submit",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/subjects/math/skill-graph",
+    "dry_run": true,
+    "body": {
+      "graph": {
+        "schema": "banco.skill_graph/1",
+        "schema_version": 1,
+        "subject": "math",
+        "skills": [
+          {
+            "key": "math.integer-operations",
+            "label_it": "Operazioni con i numeri interi",
+            "layer": "core",
+            "scope": "studied",
+            "prerequisites": [
+              "math.percentages"
+            ],
+            "refs": [
+              {
+                "source": "prima-test",
+                "line": 1,
+                "fragment": "numeri relativi",
+                "role": "taught_in"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "key": "math.fractions-operations",
+            "label_it": "Operazioni con le frazioni",
+            "layer": "core",
+            "scope": "studied",
+            "prerequisites": [
+              "math.integer-operations"
+            ],
+            "refs": [
+              {
+                "source": "prima-test",
+                "line": 1,
+                "fragment": "numeri relativi",
+                "role": "taught_in"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "key": "math.linear-equation-integer",
+            "label_it": "Equazioni lineari intere",
+            "layer": "core",
+            "scope": "studied",
+            "prerequisites": [
+              "math.integer-operations"
+            ],
+            "refs": [
+              {
+                "source": "prima-test",
+                "line": 1,
+                "fragment": "numeri relativi",
+                "role": "taught_in"
+              },
+              {
+                "source": "seconda-test",
+                "line": 1,
+                "fragment": "equazioni di primo grado",
+                "role": "needed_by"
+              }
+            ],
+            "errors": [
+              {
+                "code": "sign_error",
+                "description_it": "Sposta il termine senza cambiargli il segno.",
+                "implicates": [
+                  "math.integer-operations"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "math.percentages",
+            "label_it": "Percentuali",
+            "layer": "core",
+            "scope": "studied",
+            "prerequisites": [
+              "math.fractions-operations"
+            ],
+            "refs": [
+              {
+                "source": "prima-test",
+                "line": 1,
+                "fragment": "numeri relativi",
+                "role": "taught_in"
+              },
+              {
+                "source": "seconda-test",
+                "line": 1,
+                "fragment": "equazioni di primo grado",
+                "role": "needed_by"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "key": "math.factoring",
+            "label_it": "Scomposizione in fattori",
+            "layer": "core",
+            "scope": "not_in_prima",
+            "prerequisites": [
+              "math.integer-operations"
+            ],
+            "refs": [
+              {
+                "source": "seconda-test",
+                "line": 1,
+                "fragment": "equazioni di primo grado",
+                "role": "needed_by"
+              }
+            ],
+            "errors": [],
+            "scope_reason_it": "Argomento non presente nel programma dell'anno precedente."
+          },
+          {
+            "key": "math.decimal-operations",
+            "label_it": "Operazioni con i decimali",
+            "layer": "core",
+            "scope": "studied",
+            "prerequisites": [
+              "math.integer-operations"
+            ],
+            "refs": [
+              {
+                "source": "prima-test",
+                "line": 1,
+                "fragment": "numeri relativi",
+                "role": "taught_in"
+              },
+              {
+                "source": "seconda-test",
+                "line": 1,
+                "fragment": "equazioni di primo grado",
+                "role": "needed_by"
+              }
+            ],
+            "errors": []
+          }
+        ],
+        "excluded": [
+          {
+            "line": 2,
+            "reason_it": "Riga di servizio."
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 422,
+    "body": {
+      "code": "E-GRAPH-CYCLE",
+      "field": "/skills",
+      "message": "prerequisite cycle: math.integer-operations -> math.percentages -> math.fractions-operations -> math.integer-operations",
+      "next": "fix the graph and run banco skill-graph submit --subject math FILE --dry-run again",
+      "dry_run": true,
+      "codes": [
+        "E-GRAPH-CYCLE"
+      ],
+      "findings": [
+        {
+          "code": "E-GRAPH-CYCLE",
+          "severity": "error",
+          "field": "/skills",
+          "message": "prerequisite cycle: math.integer-operations -> math.percentages -> math.fractions-operations -> math.integer-operations",
+          "detail": {
+            "path": [
+              "math.integer-operations",
+              "math.percentages",
+              "math.fractions-operations"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

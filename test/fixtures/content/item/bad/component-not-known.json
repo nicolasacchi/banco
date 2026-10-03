@@ -1,0 +1,42 @@
+{
+  "schema": "banco.item/1",
+  "schema_version": 1,
+  "kind": "diagnosis_item",
+  "subject": "math",
+  "skill": "math.linear-equation-integer",
+  "component": "drag_drop",
+  "prompt": {
+    "stem_it": "Risolvi l'equazione e scrivi il valore di $x$."
+  },
+  "expected_seconds": 90,
+  "error_catalogue": [
+    {
+      "code": "moves_term_without_sign_change",
+      "description_it": "Sposta il termine senza cambiare segno.",
+      "message_it": "Passando un termine all'altro membro il segno cambia. Qui il termine va sottratto.",
+      "implicates": [
+        "math.integer-operations"
+      ]
+    }
+  ],
+  "generator": "generator.mjs",
+  "tests": {
+    "must_accept": [
+      "5",
+      "5,0"
+    ],
+    "must_reject": [
+      "5.",
+      "-5",
+      ""
+    ],
+    "blank": "invalid"
+  },
+  "sources": [
+    {
+      "kind": "prima_line",
+      "ref": "prima-example:5",
+      "fragment": "equazioni di primo grado"
+    }
+  ]
+}

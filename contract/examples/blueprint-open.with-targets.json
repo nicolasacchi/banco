@@ -1,0 +1,190 @@
+{
+  "command": "blueprint open",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/subjects/math/blueprint"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "subject": "math",
+      "name_it": "Matematica",
+      "revision": {
+        "revision_id": 1,
+        "seq": 1,
+        "graph_revision_id": 1,
+        "blueprint": {
+          "schema": "banco.blueprint/1",
+          "schema_version": 1,
+          "subject": "math",
+          "graph_revision_id": "1",
+          "entries": [
+            {
+              "skill": "math.linear-equation-integer",
+              "items": [
+                "1",
+                "2"
+              ]
+            },
+            {
+              "skill": "math.percentages",
+              "items": [
+                "3",
+                "4"
+              ]
+            },
+            {
+              "skill": "math.factoring",
+              "items": [
+                "5",
+                "6"
+              ]
+            },
+            {
+              "skill": "math.decimal-operations",
+              "items": [
+                "7",
+                "8"
+              ]
+            }
+          ],
+          "descent": [
+            {
+              "skill": "math.integer-operations",
+              "items": [
+                "9",
+                "10"
+              ]
+            },
+            {
+              "skill": "math.fractions-operations",
+              "not_assessed_reason_it": "Argomento dei prerequisiti, non misurabile con item propri."
+            }
+          ],
+          "budget": {
+            "sitting_minutes": 30,
+            "sittings": 2
+          },
+          "depends_on_subjects": [],
+          "calculator": "no",
+          "intro_note_it": "Il test dura circa mezz'ora.",
+          "not_measured_it": "Non misura la geometria."
+        }
+      },
+      "graph_revision_id": 1,
+      "approved_graph_revision_id": null,
+      "descent_targets": [
+        "math.fractions-operations",
+        "math.integer-operations"
+      ],
+      "items": [
+        {
+          "item": "decimal-operations-a",
+          "revision_id": 2,
+          "status": "passed",
+          "skills": [
+            "math.decimal-operations"
+          ],
+          "component": "number",
+          "instances": 4
+        },
+        {
+          "item": "decimal-operations-b",
+          "revision_id": 3,
+          "status": "passed",
+          "skills": [
+            "math.decimal-operations"
+          ],
+          "component": "number",
+          "instances": 4
+        },
+        {
+          "item": "factoring-a",
+          "revision_id": 4,
+          "status": "passed",
+          "skills": [
+            "math.factoring"
+          ],
+          "component": "number",
+          "instances": 4
+        },
+        {
+          "item": "factoring-b",
+          "revision_id": 5,
+          "status": "passed",
+          "skills": [
+            "math.factoring"
+          ],
+          "component": "number",
+          "instances": 4
+        },
+        {
+          "item": "intops-a",
+          "revision_id": 6,
+          "status": "passed",
+          "skills": [
+            "math.integer-operations"
+          ],
+          "component": "number",
+          "instances": 4
+        },
+        {
+          "item": "intops-b",
+          "revision_id": 7,
+          "status": "passed",
+          "skills": [
+            "math.integer-operations"
+          ],
+          "component": "number",
+          "instances": 4
+        },
+        {
+          "item": "linear-equation-integer-a",
+          "revision_id": 1,
+          "status": "passed",
+          "skills": [
+            "math.linear-equation-integer"
+          ],
+          "component": "number",
+          "instances": 4
+        },
+        {
+          "item": "linear-equation-integer-b",
+          "revision_id": 8,
+          "status": "passed",
+          "skills": [
+            "math.linear-equation-integer"
+          ],
+          "component": "number",
+          "instances": 4
+        },
+        {
+          "item": "percentages-a",
+          "revision_id": 9,
+          "status": "passed",
+          "skills": [
+            "math.percentages"
+          ],
+          "component": "number",
+          "instances": 4
+        },
+        {
+          "item": "percentages-b",
+          "revision_id": 10,
+          "status": "passed",
+          "skills": [
+            "math.percentages"
+          ],
+          "component": "number",
+          "instances": 4
+        }
+      ],
+      "brief": {
+        "name": "blueprint",
+        "version": 1,
+        "sha256": "<sha256>"
+      },
+      "next": "write a banco.blueprint/1 document and run banco blueprint submit --subject math FILE --dry-run"
+    }
+  }
+}

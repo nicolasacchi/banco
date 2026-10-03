@@ -1,0 +1,90 @@
+<% content_for :title, t("summary.title", subject: @subject.name_it) %>
+<% groups = @summary.groups %>
+<main class="page" data-controller="markup results" data-results-flag-url-value="<%= base_path %>/runs/<%= @run.id %>/flags">
+  <h1><%= t("summary.title", subject: @subject.name_it) %></h1>
+  <p><%= t("summary.worked", count: @summary.minutes) %></p>
+  <ul class="plain">
+    <li><%= t("summary.line_known", count: groups[:known].size) %></li>
+    <li><%= t("summary.line_recover", n: groups[:recover].size) %></li>
+    <li><%= t("summary.line_learn", n: groups[:learn].size) %></li>
+  </ul>
+  <p>
+    <a class="button" href="#soluzioni"><%= t("summary.see") %></a>
+    <a class="button secondary" href="<%= preview? ? '/teacher/preview' : '/diagnosis' %>"><%= t("summary.later") %></a>
+  </p>
+
+  <section id="sai-gia-fare" data-group="known">
+    <h2><%= t("summary.known") %></h2>
+    <ul>
+      <% groups[:known].each do |s| %>
+        <li><strong><%= s.label %></strong><% if s.text %> <span><%= s.text %></span><% end %></li>
+      <% end %>
+    </ul>
+  </section>
+
+  <section id="da-riprendere" data-group="recover">
+    <h2><%= t("summary.recover") %></h2>
+    <ul>
+      <% groups[:recover].each do |s| %>
+        <li><strong><%= s.label %></strong> <span><%= s.text %></span></li>
+      <% end %>
+    </ul>
+  </section>
+
+  <section id="da-imparare" data-group="learn">
+    <h2><%= t("summary.learn") %></h2>
+    <% if groups[:learn].any? %>
+      <p><%= t("summary.learn_note") %></p>
+      <ul>
+        <% groups[:learn].each do |s| %>
+          <li><strong><%= s.label %></strong></li>
+        <% end %>
+      </ul>
+    <% end %>
+  </section>
+
+  <% if groups[:checking].any? %>
+    <section id="in-correzione" data-group="checking">
+      <h2><%= t("summary.checking") %></h2>
+      <p><%= t("summary.checking_note") %></p>
+      <ul>
+        <% groups[:checking].each do |s| %>
+          <li><strong><%= s.label %></strong></li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+
+  <section id="non-chiesto" data-group="not_asked">
+    <h2><%= t("summary.not_asked") %></h2>
+    <p><%= t("summary.not_asked_count", n: groups[:not_asked]) %></p>
+  </section>
+
+  <section id="soluzioni">
+    <h2><%= t("summary.solutions") %></h2>
+    <p><%= t("summary.solutions_first") %></p>
+    <% @summary.solutions.each do |s| %>
+      <article class="solution" data-attempt="<%= s.attempt_id %>">
+        <p data-markup="inline"><%= s.prompt %></p>
+        <div><%= t("summary.your_answer") %>: <span data-markup="inline"><%= s.given %></span></div>
+        <% if s.steps.any? %>
+          <h3><%= t("summary.solution") %></h3>
+          <ol>
+            <% s.steps.each do |step| %>
+              <li><span data-markup="inline"><%= step["text_it"] %></span> <% if step["math"] %><span data-markup="inline"><%= step["math"] %></span><% end %></li>
+            <% end %>
+          </ol>
+        <% end %>
+        <% if s.final %>
+          <p><%= t("summary.final") %>: <strong data-markup="inline"><%= s.final %></strong></p>
+        <% end %>
+        <p>
+          <button type="button" class="button secondary" data-action="results#flag" data-attempt-id="<%= s.attempt_id %>"><%= t("summary.flag") %></button>
+          <span class="flagged" hidden><%= t("summary.flagged") %></span>
+        </p>
+      </article>
+    <% end %>
+  </section>
+
+  <p class="closing"><%= t("summary.not_a_grade") %></p>
+</main>

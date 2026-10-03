@@ -1,0 +1,36 @@
+{
+  "command": "skill-graph open",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/subjects/math/skill-graph"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "subject": "math",
+      "name_it": "Matematica",
+      "revision": null,
+      "approved_revision_id": null,
+      "sources": [
+        {
+          "key": "prima-test",
+          "lines": 3
+        },
+        {
+          "key": "seconda-test",
+          "lines": 1
+        }
+      ],
+      "range": [
+        62,
+        81
+      ],
+      "brief": {
+        "name": "skill-graph",
+        "version": 1,
+        "sha256": "<sha256>"
+      },
+      "next": "write a banco.skill_graph/1 document (see banco brief show skill-graph)"
+    }
+  }
+}

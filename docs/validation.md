@@ -1,0 +1,126 @@
+# Mechanical validation (M5)
+
+What happens between `banco work submit` and the teacher's screen. The codes are in
+`config/banco/error_codes.yml`, the numbers in `config/banco/validation_rules.yml`
+(its version is stored with every validation), the decisions in `docs/decisions.md`
+(D-042 to D-044). Everything here is generic: no student, no programme text.
+
+## The cycle of the content agent
+
+```
+banco status                          where each subject stands
+banco skill-graph open|submit|coverage --subject KEY
+banco blueprint open|submit --subject KEY
+banco work open ITEM [--role author|verifier]     writes a folder (item.json, generator.mjs, verify.mjs, assets/)
+banco work submit DIR [--dry-run]     new revision; --dry-run validates now and stores nothing
+banco work status REV [--wait]        exit 0 passed, 3 failed (codes on stderr), 6 error or timeout
+```
+
+Order for a generated item: the author submits `item.json` and `generator.mjs`; the
+validation fails with `E-VERIFY-MISSING` but the 24 instances are stored; a verifier
+opens the item with `--role verifier` (item, tests, 8 instances with their expected
+answers, never `generator.mjs`) and submits `verify.mjs` on the same base; the
+validation then passes. No command approves anything: the agent stops at
+`awaiting_teacher` (firm rule 2).
+
+A submission is **refused with nothing stored** only when it is not a revision: 422
+`E-FILES` (unreadable or missing files), 413 `E-TOO-LARGE`, 404 `E-NOT-FOUND`, 409
+`E-STALE-BASE`. Anything else is stored as a revision with a validation row:
+`passed`, `failed` (never approved) or `error` (Chrome or the grader did not answer:
+retried, never a pass). A graph or a blueprint is validated in the request and
+refused with 422 and every code when it has an error (they have no validation table).
+Files left out of a submission are carried forward from the base revision.
+
+## The phases of an item revision
+
+1. **Schema** (`E-SCHEMA`): `banco.item/1`. A failure stops the run.
+2. **Ruby phase** (`ItemChecks`): skills against the graph (`E-SKILL-UNKNOWN`,
+   `E-COMPOSITE`), sources (`E-SOURCE`), assets (`E-ASSET`), `E-ACCENT-POLICY`,
+   `E-PROVA-A-PARAMS`, `E-QUOTE-REF`, the readability of every `*_it` text
+   (`E-READ` with a rule, `E-PHRASE`, `E-MESSAGE`, the `W-` warnings), and the scan of
+   `generator.mjs` and `verify.mjs` (`E-CODE-GLOBAL`: banned globals, network and
+   navigation primitives, imports other than the two libraries, external resources).
+   A code-scan error means Chrome is not started.
+3. **Instances**: listed ones (static items, testlets, the short answer's prompt), or
+   generated: seeds 1..200 run in the harness in two fresh Chrome contexts
+   (`E-GEN-THROW`, `E-GEN-TIMEOUT`, `E-GEN-SCHEMA`, `E-GEN-NONDETERMINISTIC`,
+   `E-GEN-POOL`). The first 24 clean seeds are materialized as `item_instances`
+   (append-only, once per revision), even when verify is missing.
+4. **Instance checks** on each instance: the key must not reach what the student reads
+   (`E-DISPLAY-KEY`, `E-SOLUTION-IN-DISPLAY`, `W-ANSWER-IN-STEM`), the size rules of
+   choice, ordering and matching, coded distractors, component fit, the solution
+   against the key (`E-STEP-INCONSISTENT`).
+5. **Round trip** (`Roundtrip`): the grader accepts the key, gives each error value its
+   own code, treats two error values as different answers, and accepts none of 200
+   random well-formed answers (`E-ROUNDTRIP`, `E-ERROR-NEVER-GENERATED`,
+   `E-ACCEPTS-RANDOM`).
+6. **Verify**: `verify` accepts every clean seed and rejects the catalogue error values
+   and the +1 and sign-flip mutants (`E-VERIFY-MISSING`, `E-VERIFY-REJECTS`,
+   `E-VERIFY-VACUOUS`).
+
+`E-VERIFY-AUTHOR` and `E-SESSION-NOT-INDEPENDENT` are the submit-time rules of the next
+section; they refuse a submission and store nothing.
+
+## Sessions, independence, review and blind solve (M6)
+
+Every write of the content cycle carries `X-Banco-Session`: the CLI sends the id in
+`BANCO_SESSION`, which `banco session new --role R --agent A --model M --id` prints. A
+session has one role (author, verifier, reviewer, solver, grader) and declares its model;
+`config/banco/providers.yml` maps models to families. The rules guard against mistakes,
+not against intent: the model is declared, not proven.
+
+- `work submit`: only a verifier session adds or changes `verify.mjs`
+  (`E-VERIFY-AUTHOR`, also in a dry run); a verifier sends nothing else; an author's
+  resubmission carries `verify.mjs` forward unchanged. `item_revisions.file_sessions`
+  records who wrote each file as it stands.
+- `work open --role verifier` (the session's role decides) never returns `generator.mjs`.
+- The sessions that authored `item.json` or `generator.mjs`, the verifier, the reviewer
+  and the solver of one item are disjoint (`E-SESSION-NOT-INDEPENDENT`), and a second
+  round of review or solve uses a session that did not see the first.
+- Reviewer and blind solver: a known model family different from the author's;
+  grader: Claude only (`E-PROVIDER-NOT-ALLOWED`). Reviewer and solver receive item
+  text only; the grader reads the student's answers.
+- `banco review open|submit REV`: `banco.review/1` with the 11-point checklist. Refused:
+  evidence that says nothing, repeated or under 4 words (`E-REVIEW-EMPTY`), a fail
+  without a finding, a quote that is not an exact substring of the item text or of the
+  instance it names (`E-QUOTE-NOT-FOUND`). The item text is item.json, the instances
+  shown (8 of a generator item) and the programme lines the skill cites.
+- `banco solve open|submit REV`: display-only instances; the server grades with the
+  student's graders. A disagreement is a blocker finding `E-BLIND-SOLVE-MISMATCH`; a
+  `dont_know` is a major one; a short answer is recorded and not graded.
+- Findings are append-only. Their dispositions are decisions of the teacher
+  (`dispose_finding`, M9b). `Review::Gate.approvable?(revision)`: validation passed, a
+  review and a blind solve on the exact revision, every blocker and major finding
+  disposed, none of them as `fix_requested`.
+- Short answers: `banco submissions --pending --json` (grader session) and
+  `banco grade propose ATTEMPT --file grade.json`: rubric points exactly once, integer
+  scores, quotes that are exact substrings of the student's text after normalization
+  (`E-QUOTE-NOT-FOUND`), no grader that authored the item (`E-GRADER-IS-AUTHOR`).
+  A proposal counts only after a `confirm_grade` decision (M9a/b).
+
+## Chrome and the harness
+
+Agent code runs only in Chrome (firm rule 3). In production Chrome is the
+`banco-chrome` sidecar: `BANCO_CHROME_HOST` is resolved to an IP before Ferrum
+connects, one browser context per run is disposed in `ensure`, and a reaper disposes
+the contexts that no live run owns. Test, development and CI launch a local Chrome
+(`BROWSER_PATH`) with Ferrum's `ignore_default_browser_options` and curated flags
+(never `--disable-web-security`). Every use goes through `ChromeRunner`'s shared
+`flock` (`tmp/chrome.lock`); a dry run takes it with a try-lock and answers 409
+`E-CHROME-BUSY` when it is taken.
+
+Chrome loads `/h/<run-token>/harness.html` from the harness listener (port 3200,
+internal): a cookie-less page with a CSP that allows no connection, no image and no
+frame, holding no token and no secret. `Math.random`, `Date`, `performance.now` and
+`crypto` throw inside it. The run token is an HMAC bound to a stored revision or to
+the staged files of a dry run, valid for 10 minutes. `BANCO_HARNESS_URL` says where
+Chrome reaches the listener (`http://banco-harness:3200` in production).
+
+## Tests
+
+`bin/rails test test/validation/` (every `E-` and `W-` code has a fixture in
+`code_fixtures_test.rb`; the good fixture passes with 24 instances),
+`bin/rails test test/validation/cli_fixtures_test.rb` (the compiled CLI against the
+API listener), `node --test 'lib/harness/test/*.test.mjs'`. Chrome tests skip when
+`BROWSER_PATH` is not set. `contract/examples/` is written by the integration tests
+with `UPDATE_CONTRACT=1`; CI runs them and fails on a dirty diff.

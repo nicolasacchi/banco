@@ -1,0 +1,36 @@
+{
+  "command": "grade propose",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/attempts/1/grade-proposals",
+    "body": {
+      "grade": {
+        "points": [
+          {
+            "point_id": "cause",
+            "score": 2,
+            "quote": "il re fu deposto",
+            "rationale_it": "Nomina la causa."
+          },
+          {
+            "point_id": "effect",
+            "score": 1,
+            "quote": "il re perse l'appoggio dei nobili",
+            "rationale_it": "Nomina la conseguenza."
+          }
+        ],
+        "missing_it": "Nulla."
+      }
+    }
+  },
+  "response": {
+    "status": 422,
+    "body": {
+      "code": "E-QUOTE-NOT-FOUND",
+      "field": "points/0/quote",
+      "message": "the quote for cause is not an exact substring of the student's text after normalization",
+      "next": "fix grade.json (banco brief show grade) and run banco grade propose 1 --file grade.json",
+      "reason": "quote_not_in_submission"
+    }
+  }
+}

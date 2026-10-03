@@ -1,0 +1,92 @@
+{
+  "schema": "banco.skill_graph/1",
+  "schema_version": 1,
+  "subject": "physics",
+  "skills": [
+    {
+      "key": "math.integer-operations",
+      "label_it": "Operazioni con i numeri interi",
+      "layer": "core",
+      "scope": "studied",
+      "prerequisites": [],
+      "refs": [
+        {
+          "source": "prima-example",
+          "line": 3,
+          "fragment": "operazioni con i numeri relativi",
+          "role": "taught_in"
+        },
+        {
+          "source": "seconda-example",
+          "line": 12,
+          "fragment": "equazioni di primo grado",
+          "role": "needed_by"
+        }
+      ],
+      "errors": [
+        {
+          "code": "sign_rule_ignored",
+          "description_it": "Applica male la regola dei segni.",
+          "implicates": []
+        }
+      ]
+    },
+    {
+      "key": "math.linear-equation-integer",
+      "label_it": "Equazioni lineari a coefficienti interi",
+      "layer": "core",
+      "scope": "integration_studied",
+      "prerequisites": [
+        "math.integer-operations"
+      ],
+      "refs": [
+        {
+          "source": "prima-example",
+          "line": 5,
+          "fragment": "equazioni di primo grado",
+          "role": "taught_in"
+        },
+        {
+          "source": "seconda-example",
+          "line": 12,
+          "fragment": "equazioni di primo grado",
+          "role": "needed_by"
+        }
+      ],
+      "errors": [
+        {
+          "code": "moves_term_without_sign_change",
+          "description_it": "Sposta un termine senza cambiargli il segno.",
+          "implicates": [
+            "math.integer-operations"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "math.factoring",
+      "label_it": "Scomposizione in fattori",
+      "layer": "sec",
+      "scope": "not_in_prima",
+      "scope_reason_it": "Argomento non presente nel programma dell'anno precedente.",
+      "prerequisites": [
+        "math.integer-operations"
+      ],
+      "refs": [
+        {
+          "source": "seconda-example",
+          "line": 20,
+          "fragment": "scomposizione",
+          "role": "needed_by"
+        }
+      ],
+      "errors": []
+    }
+  ],
+  "excluded": [
+    {
+      "line": 7,
+      "reason_it": "Argomento di un'altra materia."
+    }
+  ]
+}

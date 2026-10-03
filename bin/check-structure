@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# db/structure.sql must equal what the migrations produce on a fresh database:
+# drop, create, migrate and dump in a throwaway test database, then diff.
+# Parallel branches that add migrations make the committed file drift; this
+# check (also in CI) catches it. Fix: bin/rails db:migrate on a fresh database
+# and commit the new db/structure.sql.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel 2>/dev/null || dirname "$0"/..)"
+scratch="$(mktemp -d)"
+cp db/structure.sql "$scratch/committed.sql"
+# The tasks write db/structure.sql: it is put back whatever happens.
+trap 'cp "$scratch/committed.sql" db/structure.sql; rm -rf "$scratch" storage/test_structure_check.sqlite3*' EXIT
+export RAILS_ENV=test TEST_ENV_NUMBER=_structure_check
+bin/rails db:drop db:create db:migrate db:schema:dump >"$scratch/log" 2>&1 || { cat "$scratch/log" >&2; exit 2; }
+# The sqlite3 command line that Rails dumps with differs between machines in how it spells
+# CREATE ("IF NOT EXISTS" on the CI runner's version, plain on newer ones): the schema is the
+# same, so that spelling is not compared.
+normalize() { sed -E 's/^(CREATE (TABLE|INDEX|UNIQUE INDEX|TRIGGER|VIEW)) IF NOT EXISTS /\1 /' "$1"; }
+normalize "$scratch/committed.sql" >"$scratch/committed.norm"
+normalize db/structure.sql >"$scratch/fresh.norm"
+if ! diff -u "$scratch/committed.norm" "$scratch/fresh.norm" >"$scratch/diff"; then
+  echo "check-structure: db/structure.sql differs from a fresh dump of the migrations ($(wc -l <"$scratch/diff") diff lines)" >&2
+  head -120 "$scratch/diff" | cut -c1-240 >&2
+  exit 1
+fi
+echo "check-structure: db/structure.sql matches the migrations"

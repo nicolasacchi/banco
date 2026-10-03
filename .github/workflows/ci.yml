@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  workflow_dispatch: # run by hand on a work branch before it has a pull request
+  pull_request:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Public-repository hygiene (prep/ untracked, no forbidden terms, no programme files)
+        env:
+          HYGIENE_TERMS: ${{ secrets.HYGIENE_TERMS }} # the private term list; never in git
+        run: bin/hygiene
+
+  rails:
+    runs-on: ubuntu-latest
+    env:
+      RAILS_ENV: test
+      BANCO_CHROME_NO_SANDBOX: "1"
+      PROP_RUNS: "300"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true # Ruby version comes from .ruby-version
+      - uses: actions/setup-node@v6 # the expression grader worker (Grading::Expression)
+        with:
+          node-version: "26"
+      - uses: actions/setup-go@v6 # test/validation/cli_fixtures_test.rb builds the CLI
+        with:
+          go-version: "1.27.x"
+      - name: The runner's Chrome, for the validation tests (generators run only in Chrome)
+        run: |
+          BROWSER_PATH="$(command -v google-chrome || command -v chromium || true)"
+          echo "BROWSER_PATH=$BROWSER_PATH" >> "$GITHUB_ENV"
+          echo "BROWSER_PATH=$BROWSER_PATH"
+      - name: Schema dump is non-empty and carries the append-only triggers
+        run: |
+          test -s db/structure.sql || { echo "db/structure.sql is empty" >&2; exit 1; }
+          grep -q 'CREATE TRIGGER' db/structure.sql || { echo "db/structure.sql has no CREATE TRIGGER" >&2; exit 1; }
+      - name: db/structure.sql equals a fresh dump of the migrations
+        run: bin/check-structure
+      - name: Unit and integration tests
+        run: bin/rails test
+      - name: Contract examples are up to date (the integration tests write them)
+        run: |
+          UPDATE_CONTRACT=1 bin/rails test test/integration/work_api_test.rb test/integration/graph_blueprint_api_test.rb test/integration/grade_proposals_test.rb test/integration/diagnosis_report_test.rb test/integration/health_test.rb test/integration/independence_test.rb
+          test -z "$(git status --porcelain contract)" || { git status --porcelain contract; git diff contract; echo "contract/examples is out of date" >&2; exit 1; }
+      - name: System tests (runner's Chrome)
+        run: bin/rails test:system
+      - name: Production database prepare creates only the two databases
+        run: |
+          D="$(mktemp -d)"
+          RAILS_ENV=production BANCO_DATA_DIR="$D" SECRET_KEY_BASE_DUMMY=1 bin/rails db:prepare
+          test "$(ls "$D" | sort | tr '\n' ' ')" = "production.sqlite3 production_queue.sqlite3 "
+
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.x"
+      - run: gofmt -l cli contract | tee /dev/stderr | (! read)
+      - run: go vet ./cli/... ./contract/...
+      - run: (cd cli && go test ./...)
+
+  node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "26"
+      - run: node --version
+      - name: Grader tests (corpus of 3,524 pairs, shared vectors, vendored engine checksums)
+        run: node --test 'app/javascript/grader/test/**/*.test.mjs'
+      - name: Harness libraries (rng and fmt for generators)
+        run: node --test 'lib/harness/test/*.test.mjs'
+      - name: Student pages (markup parser, local outbox)
+        run: node --test 'test/javascript/**/*.test.mjs'
+
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - run: bin/brakeman --no-pager --quiet --exit-on-warn --exit-on-error
+      - run: bin/bundler-audit
+      - run: bin/importmap audit
+      - run: bin/rubocop -f github
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build the production image
+        run: docker build --build-arg GIT_SHA="$GITHUB_SHA" -t banco:ci .

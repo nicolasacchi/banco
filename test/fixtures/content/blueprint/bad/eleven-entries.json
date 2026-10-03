@@ -1,0 +1,90 @@
+{
+  "schema": "banco.blueprint/1",
+  "schema_version": 1,
+  "subject": "math",
+  "graph_revision_id": "rev_graph_1",
+  "entries": [
+    {
+      "skill": "math.integer-operations",
+      "items": [
+        "r0"
+      ]
+    },
+    {
+      "skill": "math.integer-operations",
+      "items": [
+        "r1"
+      ]
+    },
+    {
+      "skill": "math.integer-operations",
+      "items": [
+        "r2"
+      ]
+    },
+    {
+      "skill": "math.integer-operations",
+      "items": [
+        "r3"
+      ]
+    },
+    {
+      "skill": "math.integer-operations",
+      "items": [
+        "r4"
+      ]
+    },
+    {
+      "skill": "math.integer-operations",
+      "items": [
+        "r5"
+      ]
+    },
+    {
+      "skill": "math.integer-operations",
+      "items": [
+        "r6"
+      ]
+    },
+    {
+      "skill": "math.integer-operations",
+      "items": [
+        "r7"
+      ]
+    },
+    {
+      "skill": "math.integer-operations",
+      "items": [
+        "r8"
+      ]
+    },
+    {
+      "skill": "math.integer-operations",
+      "items": [
+        "r9"
+      ]
+    },
+    {
+      "skill": "math.integer-operations",
+      "items": [
+        "r10"
+      ]
+    }
+  ],
+  "descent": [],
+  "budget": {
+    "sitting_minutes": 30,
+    "sittings": 2
+  },
+  "depends_on_subjects": [],
+  "calculator": "no",
+  "intro_note_it": "Il test dura circa mezz'ora. Non puoi usare la calcolatrice.",
+  "not_measured_it": "Non misura la scrittura di dimostrazioni.",
+  "kind_overrides": [
+    {
+      "skill": "math.factoring",
+      "kind": "learn",
+      "reason_it": "Argomento nuovo per lo studente."
+    }
+  ]
+}

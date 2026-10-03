@@ -1,0 +1,78 @@
+<% content_for :title, t("teacher.corrections.title") %>
+<main class="page wide">
+  <p><a href="/teacher"><%= t("teacher.back") %></a></p>
+  <h1><%= t("teacher.corrections.title") %></h1>
+  <% corrections = @corrections %>
+  <% blocker = decision_blocker %>
+  <p id="corrections-summary"><%= t("teacher.corrections.summary", short: corrections.short_answers.size, verdicts: corrections.verdicts.size) %></p>
+
+  <h2><%= t("teacher.corrections.short_title") %></h2>
+  <% if corrections.short_answers.empty? %><p><%= t("teacher.corrections.none_short") %></p><% end %>
+  <% corrections.short_answers.each do |entry| %>
+    <article class="correction short" data-attempt="<%= entry.attempt.id %>" data-status="<%= entry.status %>">
+      <h3><%= entry.subject.name_it %> · <%= entry.item_key %></h3>
+      <p class="prompt"><%= entry.prompt %></p>
+      <h4><%= t("teacher.corrections.student_text") %></h4>
+      <p class="student-text" data-student-text><% entry.segments.each do |text, marked| %><% if marked %><mark><%= text %></mark><% else %><%= text %><% end %><% end %></p>
+      <h4><%= t("teacher.corrections.rubric") %></h4>
+      <ul class="plain rubric">
+        <% entry.rubric["points"].each do |point| %>
+          <% given = entry.points.find { |p| p["point_id"] == point["id"] } %>
+          <li data-point="<%= point['id'] %>"><strong><%= point["id"] %></strong> (<%= t("teacher.corrections.weight", count: point["weight"]) %>): <%= point["expected_it"] %>
+            <% if given %><br><%= t("teacher.corrections.proposed_score") %> <strong><%= given["score"] %></strong>. <%= given["rationale_it"] %><% end %></li>
+        <% end %>
+      </ul>
+      <% if entry.proposal %>
+        <p data-proposal="<%= entry.proposal.id %>"><%= t("teacher.corrections.proposal_total", total: entry.proposal.total, max: entry.proposal.max_total,
+                                                           result: t("teacher.corrections.#{entry.proposal.meets_threshold ? 'meets' : 'below'}")) %>
+          <% if entry.proposal.missing_it.present? %><br><%= t("teacher.corrections.missing") %> <%= entry.proposal.missing_it %><% end %></p>
+        <p class="model"><%= t("teacher.corrections.model_answer") %> <%= entry.model_answer_it %></p>
+        <%= decision_form("/teacher/grade-proposals/#{entry.proposal.id}/confirm") do %>
+          <p><button type="submit" class="button" <%= "disabled" if blocker %>><%= t("teacher.corrections.confirm") %></button></p>
+        <% end %>
+        <details>
+          <summary><%= t("teacher.corrections.edit") %></summary>
+          <%= decision_form("/teacher/grade-proposals/#{entry.proposal.id}/confirm") do %>
+            <% entry.rubric["points"].each do |point| %>
+              <% given = entry.points.find { |p| p["point_id"] == point["id"] } %>
+              <label class="hint" for="score-<%= entry.attempt.id %>-<%= point['id'] %>"><%= point["id"] %> (0 – <%= point["weight"] %>)</label>
+              <input id="score-<%= entry.attempt.id %>-<%= point['id'] %>" class="answer-input small" type="number" min="0" max="<%= point['weight'] %>" name="scores[<%= point['id'] %>]" value="<%= given&.dig('score') %>" required>
+            <% end %>
+            <label class="hint" for="edit-reason-<%= entry.attempt.id %>"><%= t("teacher.corrections.edit_reason") %></label>
+            <input id="edit-reason-<%= entry.attempt.id %>" class="answer-input wide" type="text" name="reason_it" required>
+            <p><button type="submit" class="button secondary" <%= "disabled" if blocker %>><%= t("teacher.corrections.save_edit") %></button></p>
+          <% end %>
+        </details>
+        <%= decision_form("/teacher/grade-proposals/#{entry.proposal.id}/reject") do %>
+          <label class="hint" for="reject-reason-<%= entry.attempt.id %>"><%= t("teacher.corrections.reject_reason") %></label>
+          <input id="reject-reason-<%= entry.attempt.id %>" class="answer-input wide" type="text" name="reason_it" required>
+          <p><button type="submit" class="button secondary" <%= "disabled" if blocker %>><%= t("teacher.corrections.reject") %></button></p>
+        <% end %>
+      <% else %>
+        <p class="notice"><%= t("teacher.corrections.waiting_proposal") %></p>
+      <% end %>
+    </article>
+  <% end %>
+
+  <h2><%= t("teacher.corrections.verdicts_title") %></h2>
+  <% if corrections.verdicts.empty? %><p><%= t("teacher.corrections.none_verdicts") %></p><% end %>
+  <% corrections.verdicts.each do |entry| %>
+    <article class="correction verdict" data-attempt="<%= entry.attempt.id %>" data-verdict="<%= entry.verdict %>">
+      <h3><%= entry.subject.name_it %> · <%= entry.item_key %></h3>
+      <p class="prompt"><%= entry.prompt %></p>
+      <p><strong><%= t("teacher.corrections.given") %></strong> <span data-given><%= entry.given %></span></p>
+      <p><strong><%= t("teacher.corrections.key") %></strong> <%= entry.key %></p>
+      <p><%= t("teacher.corrections.grader_said") %> <strong><%= t("teacher.corrections.verdict.#{entry.verdict}", default: entry.verdict) %></strong>
+        <% if entry.near_miss %> (<%= t("teacher.corrections.near_miss_hint") %>)<% end %></p>
+      <%= decision_form("/teacher/attempts/#{entry.attempt.id}/resolve") do %>
+        <label class="hint" for="verdict-reason-<%= entry.attempt.id %>"><%= t("teacher.corrections.resolve_reason") %></label>
+        <input id="verdict-reason-<%= entry.attempt.id %>" class="answer-input wide" type="text" name="reason_it" value="<%= t('teacher.corrections.default_reason') %>" required>
+        <p>
+          <button type="submit" name="verdict" value="correct" class="button" <%= "disabled" if blocker %>><%= t("teacher.corrections.right") %></button>
+          <button type="submit" name="verdict" value="wrong" class="button secondary" <%= "disabled" if blocker %>><%= t("teacher.corrections.wrong") %></button>
+          <button type="submit" name="verdict" value="dont_know" class="button secondary" <%= "disabled" if blocker %>><%= t("teacher.corrections.dont_know") %></button>
+        </p>
+      <% end %>
+    </article>
+  <% end %>
+</main>

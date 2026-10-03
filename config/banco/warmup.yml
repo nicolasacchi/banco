@@ -1,0 +1,100 @@
+# The warm-up, "prova dei comandi" (B-11): app code, not course content. One task
+# per component, then Pausa, "Non lo so", the decimal comma, accents and the
+# editor. It measures nothing, never counts in the time and has no fail state.
+# Graded on the server (Diagnosis::Warmup); the answers below never reach the
+# browser. Texts are for the student: short sentences.
+#
+# editor tasks are typed in MathLive; `accept` lists the LaTeX that the editor
+# emits for the keys the task names (compared without spaces, \left and \right).
+# No task needs a two-digit exponent: the editor cannot type one (E-04).
+version: 1
+tasks:
+  - id: choice
+    component: choice
+    prompt_it: "Scegli una risposta. Quanto fa 2 + 2?"
+    display:
+      options:
+        - { id: o1, text: "3" }
+        - { id: o2, text: "4" }
+        - { id: o3, text: "5" }
+        - { id: o4, text: "6" }
+    answer: o2
+  - id: number
+    component: number
+    prompt_it: "Scrivi il numero zero virgola settantacinque. I decimali si scrivono con la virgola."
+    answer: "0,75"
+  - id: fraction
+    component: fraction
+    prompt_it: "Scrivi la frazione tre quarti nelle due caselle."
+    answer: { n: 3, d: 4 }
+  - id: ordering
+    component: ordering
+    prompt_it: "Metti i numeri in ordine, dal più piccolo al più grande. Usa Su e Giù, oppure Alt con le frecce."
+    display:
+      elements:
+        - { id: e1, text: "12" }
+        - { id: e2, text: "3" }
+        - { id: e3, text: "7" }
+    answer: [e2, e3, e1]
+  - id: matching
+    component: matching
+    prompt_it: "Abbina ogni numero alla sua parola."
+    display:
+      left:
+        - { id: l1, text: "1" }
+        - { id: l2, text: "2" }
+        - { id: l3, text: "3" }
+        - { id: l4, text: "4" }
+      right:
+        - { id: r1, text: "quattro" }
+        - { id: r2, text: "due" }
+        - { id: r3, text: "cinque" }
+        - { id: r4, text: "uno" }
+        - { id: r5, text: "tre" }
+    answer: { l1: r4, l2: r2, l3: r5, l4: r1 }
+  - id: accents
+    component: normalized_text
+    accents: it
+    prompt_it: "Scrivi la parola più. Per la lettera con l'accento usa i pulsanti sotto la casella."
+    answer: "più"
+  - id: dont_know
+    component: dont_know
+    prompt_it: "Se non sai una risposta, premi Non lo so. Provalo adesso."
+  - id: pause
+    component: pause
+    prompt_it: "Premi Pausa. Poi premi Riprendi."
+  - id: ed_fraction
+    component: expression
+    editor: true
+    prompt_it: "Scrivi tre quarti con la barra. Premi 3, poi la barra /, poi 4. Poi premi la freccia destra."
+    accept: ['\frac34', '\frac{3}{4}']
+  - id: ed_power
+    component: expression
+    editor: true
+    prompt_it: "Scrivi x al quadrato più 3x. Premi x, poi ^, poi 2, poi la freccia destra, poi +3x."
+    accept: ['x^2+3x']
+  - id: ed_product
+    component: expression
+    editor: true
+    prompt_it: "Scrivi 3a al quadrato per b. Premi 3, a, ^, 2, la freccia destra, poi b."
+    accept: ['3a^2b']
+  - id: ed_square
+    component: expression
+    editor: true
+    prompt_it: "Scrivi a più b tra parentesi, al quadrato. Premi (, a, +, b, ), poi ^ e 2."
+    accept: ['(a+b)^2']
+  - id: ed_root
+    component: expression
+    editor: true
+    prompt_it: "Scrivi la radice quadrata di 8. Scrivi rad e poi 8."
+    accept: ['\sqrt8', '\sqrt{8}']
+  - id: ed_decimal
+    component: expression
+    editor: true
+    prompt_it: "Scrivi zero virgola settantacinque. Usa la virgola."
+    accept: ['0{,}75']
+  - id: ed_division
+    component: expression
+    editor: true
+    prompt_it: "Scrivi dodici diviso quattro con i due punti. Premi 12, poi :, poi 4."
+    accept: ['12:4', '12\colon4', '12\div4']

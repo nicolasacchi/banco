@@ -1,0 +1,34 @@
+{
+  "command": "health",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/health",
+    "query": "chrome=0"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "ok": true,
+      "problems": [],
+      "db": "ok",
+      "queue": "not_applicable",
+      "grader": "ok",
+      "chrome": "skipped",
+      "chrome_egress": "skipped",
+      "disk": {
+        "status": "ok",
+        "free_mb": 50000,
+        "min_mb": 1024
+      },
+      "backup": "not_configured",
+      "decisions": {
+        "enabled": false
+      },
+      "diagnosis": {
+        "released": false
+      },
+      "contract": "<sha256>",
+      "checked_at": "<time>"
+    }
+  }
+}

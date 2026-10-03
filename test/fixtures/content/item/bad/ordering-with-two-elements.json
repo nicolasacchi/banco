@@ -1,0 +1,111 @@
+{
+  "schema": "banco.item/1",
+  "schema_version": 1,
+  "kind": "diagnosis_item",
+  "subject": "history",
+  "skill": "history.timeline",
+  "component": "ordering",
+  "prompt": {
+    "stem_it": "Metti gli eventi in ordine dal piu antico al piu recente."
+  },
+  "error_catalogue": [
+    {
+      "code": "bc_dates_reversed",
+      "description_it": "Legge le date avanti Cristo al contrario.",
+      "message_it": "Per le date avanti Cristo il numero piu grande e il piu antico.",
+      "implicates": []
+    }
+  ],
+  "instances": [
+    {
+      "display": {
+        "elements": [
+          {
+            "id": "e1",
+            "text": "Evento A (300 a.C.)"
+          },
+          {
+            "id": "e2",
+            "text": "Evento B (100 a.C.)"
+          }
+        ]
+      },
+      "answer": [
+        "e1",
+        "e2",
+        "e3",
+        "e4"
+      ],
+      "solution": {
+        "steps": [
+          {
+            "text_it": "Prima le date avanti Cristo, dalla piu grande."
+          }
+        ],
+        "final": "A, B, C, D"
+      }
+    },
+    {
+      "display": {
+        "elements": [
+          {
+            "id": "e1",
+            "text": "Evento E (500 a.C.)"
+          },
+          {
+            "id": "e2",
+            "text": "Evento F (400 a.C.)"
+          },
+          {
+            "id": "e3",
+            "text": "Evento G (10 a.C.)"
+          },
+          {
+            "id": "e4",
+            "text": "Evento H (10 d.C.)"
+          }
+        ]
+      },
+      "answer": [
+        "e1",
+        "e2",
+        "e3",
+        "e4"
+      ],
+      "solution": {
+        "steps": [
+          {
+            "text_it": "Prima le date avanti Cristo, dalla piu grande."
+          }
+        ],
+        "final": "E, F, G, H"
+      }
+    }
+  ],
+  "tests": {
+    "must_accept": [
+      [
+        "e1",
+        "e2",
+        "e3",
+        "e4"
+      ]
+    ],
+    "must_reject": [
+      [
+        "e4",
+        "e3",
+        "e2",
+        "e1"
+      ]
+    ],
+    "blank": "invalid"
+  },
+  "sources": [
+    {
+      "kind": "prima_line",
+      "ref": "prima-example:33",
+      "fragment": "cronologia"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "command": "skill-graph coverage",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/subjects/math/skill-graph/coverage"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "subject": "math",
+      "graph_revision_id": 1,
+      "source": "prima-test",
+      "range": [
+        1,
+        3
+      ],
+      "lines": 2,
+      "cited": 1,
+      "excluded": 0,
+      "uncovered": [
+        {
+          "line": 3,
+          "text": "una riga non citata"
+        }
+      ],
+      "skills": {
+        "total": 6,
+        "with_items": 0,
+        "without_items": [
+          "math.integer-operations",
+          "math.fractions-operations",
+          "math.linear-equation-integer",
+          "math.percentages",
+          "math.factoring",
+          "math.decimal-operations"
+        ]
+      }
+    }
+  }
+}

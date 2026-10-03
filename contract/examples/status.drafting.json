@@ -1,0 +1,68 @@
+{
+  "command": "status",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/status"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "subjects": [
+        {
+          "key": "math",
+          "name_it": "Matematica",
+          "stage": "drafting",
+          "graph": null,
+          "blueprint": null,
+          "graph_approved": false,
+          "blueprint_approved": false,
+          "pending_revision": false,
+          "items": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "validating": 0,
+            "error": 0,
+            "sent_back": 0
+          }
+        },
+        {
+          "key": "italian",
+          "name_it": "Italiano",
+          "stage": "drafting",
+          "graph": null,
+          "blueprint": null,
+          "graph_approved": false,
+          "blueprint_approved": false,
+          "pending_revision": false,
+          "items": {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "validating": 0,
+            "error": 0,
+            "sent_back": 0
+          }
+        }
+      ],
+      "stages": [
+        "drafting",
+        "validating",
+        "in_review",
+        "awaiting_teacher",
+        "approved"
+      ],
+      "warmup_completed": false,
+      "consent_recorded": false,
+      "diagnosis": {
+        "released": false
+      },
+      "teacher_minutes": {
+        "total": 0,
+        "by_unit": {},
+        "by_subject": {}
+      },
+      "contract": "<sha256>"
+    }
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "command": "review submit",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/revisions/1/review",
+    "body": {
+      "review": {
+        "schema": "banco.review/1",
+        "schema_version": 1,
+        "revision": "1",
+        "checklist": [
+          {
+            "id": 1,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 1: nessun difetto trovato qui."
+          },
+          {
+            "id": 2,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 2: nessun difetto trovato qui."
+          },
+          {
+            "id": 3,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 3: nessun difetto trovato qui."
+          },
+          {
+            "id": 4,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 4: nessun difetto trovato qui."
+          },
+          {
+            "id": 5,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 5: nessun difetto trovato qui."
+          },
+          {
+            "id": 6,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 6: nessun difetto trovato qui."
+          },
+          {
+            "id": 7,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 7: nessun difetto trovato qui."
+          },
+          {
+            "id": 8,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 8: nessun difetto trovato qui."
+          },
+          {
+            "id": 9,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 9: nessun difetto trovato qui."
+          },
+          {
+            "id": 10,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 10: nessun difetto trovato qui."
+          },
+          {
+            "id": 11,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 11: nessun difetto trovato qui."
+          }
+        ],
+        "findings": [
+          {
+            "severity": "blocker",
+            "field": "instances/0/display/stem_it",
+            "quote": "Una frase che non c'è",
+            "problem_it": "La consegna ammette due risposte.",
+            "fix_it": "Aggiungi un dato che escluda la seconda."
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 422,
+    "body": {
+      "code": "E-QUOTE-NOT-FOUND",
+      "field": "/findings/0/quote",
+      "message": "the quote is not an exact substring of the item text: copy it from banco review open",
+      "next": "fix review.json and run banco review submit 1 --file review.json again",
+      "dry_run": false,
+      "codes": [
+        "E-QUOTE-NOT-FOUND"
+      ],
+      "findings": [
+        {
+          "code": "E-QUOTE-NOT-FOUND",
+          "severity": "error",
+          "field": "/findings/0/quote",
+          "message": "the quote is not an exact substring of the item text: copy it from banco review open",
+          "detail": {
+            "rule": "quote-0",
+            "index": 0
+          }
+        }
+      ]
+    }
+  }
+}

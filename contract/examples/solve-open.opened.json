@@ -1,0 +1,44 @@
+{
+  "command": "solve open",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/revisions/1/solve"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "revision_id": 1,
+      "item": "eq-1",
+      "subject": "math",
+      "seq": 1,
+      "component": "number",
+      "sub_items": null,
+      "instances": [
+        {
+          "instance": 1,
+          "display": {
+            "stem_it": "Risolvi $x+2=9$."
+          }
+        },
+        {
+          "instance": 2,
+          "display": {
+            "stem_it": "Risolvi $x+4=13$."
+          }
+        },
+        {
+          "instance": 3,
+          "display": {
+            "stem_it": "Risolvi $x+5=21$."
+          }
+        }
+      ],
+      "brief": {
+        "name": "solve",
+        "version": 1,
+        "sha256": "<sha256>"
+      },
+      "next": "write banco.solve/1 (banco brief show solve) and run banco solve submit 1 --file answers.json"
+    }
+  }
+}

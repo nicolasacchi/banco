@@ -1,0 +1,120 @@
+# Thresholds of mechanical validation (A-06). The version is stored with every
+# validation (item_validations.rules_version); a change to a number bumps it.
+# Codes and what they mean: config/banco/error_codes.yml. Generic and synthetic:
+# nothing here is about a person.
+version: 1
+
+generator:
+  seeds: 200                  # seeds 1..200 are run, in two fresh contexts
+  pool: 24                    # clean seeds materialized as item_instances
+  min_distinct_displays: 20   # among the pool (E-GEN-POOL)
+  max_problem_ratio: 0.2      # throwing seeds over seeds (E-GEN-POOL, E-GEN-THROW)
+  generate_timeout_ms: 2000   # one generate call (E-GEN-TIMEOUT)
+  output_max_bytes: 16384     # canonical JSON of one output (E-GEN-SCHEMA)
+  batch: 50                   # seeds per evaluate_async
+  batch_timeout_seconds: 15   # a harness timeout is status error, retried
+  attempts: 3                 # runs of the job before a timeout counts as E-GEN-TIMEOUT
+  verify_instances: 24        # instances the rejection checks (errors, mutants) run on
+
+roundtrip:
+  random_answers: 200         # E-ACCEPTS-RANDOM: random well-formed answers, none accepted
+  random_components: [number, fraction, expression]
+
+files:
+  max_file_bytes: 65536       # item.json and each .mjs (E-TOO-LARGE)
+  max_total_bytes: 2097152    # a whole submission (E-TOO-LARGE)
+  max_asset_bytes: 204800     # one asset (E-ASSET)
+
+pool:
+  min_instances_per_skill: 6  # distinct fingerprints across at least 2 items (E-POOL-REDO)
+  min_items_per_skill: 2
+  min_low_guess_instances: 3
+  longest_correct_ratio: 0.6  # W-LONGEST-CORRECT: share of instances where the key is the longest
+  longest_correct_min_instances: 4
+
+readability:
+  max_sentence_words: 25      # E-READ sentence_length
+  max_stem_words: 60          # E-READ stem_length (the instruction)
+  max_bold_spans: 3           # E-READ bold_spans
+  max_bold_span_words: 4      # E-READ bold_span_length
+  max_message_sentences: 2    # E-MESSAGE
+  min_gulpease: 50            # W-GULPEASE (texts of at least min_gulpease_words words)
+  min_gulpease_words: 25
+  passage_min_gulpease: 40    # W-PASSAGE-READABILITY
+  # ALL-CAPS words of 3 or more letters are errors except these acronyms.
+  caps_allowlist: [IVA, PIL, DNA, RNA, ATP, USA, UE, ONU, NATO, SPQR, HTML, CSS, CPU, RAM, ROM, URL, PDF, IBAN, SMS, OK, EUR, MCD, MCM, ISBN, MM, CM, KG, ATM]
+  banned_phrases:             # E-PHRASE: exam-gaming, self-certification, personalisation
+    - la risposta che cercano
+    - cosa scrivere
+    - se il prof
+    - a lezione
+    - è verificato
+    - e verificato
+    - tutto verificato
+    - come sai bene
+    - come ti ho detto
+    - il tuo nome
+    - la tua scuola
+  absolute_words: [sempre, mai, solo, soltanto, ovunque, nessuno, tutti]   # W-ABSOLUTE
+  negative_stem: ["\\bnon\\b", "\\btranne\\b", "\\beccetto\\b", "\\bnessun[oa]?\\b"]  # W-NEGATIVE-STEM
+  self_cert: ["\\bho verificato\\b", "\\bgarantit[oa]\\b", "\\bcertificat[oa]\\b", "\\bsicuramente corrett[oa]\\b"]  # W-SELF-CERT
+  calculator_subjects: [business, chemistry]   # W-CALCULATOR when the stem lacks the sentence
+  calculator_sentence: calcolatrice
+
+# Names the generator and verify sources must not use (E-CODE-GLOBAL). Comments and
+# string literals are ignored; the identifiers are matched as whole words.
+code:
+  allowed_imports: ["/lib/rng.mjs", "/lib/fmt.mjs"]
+  banned_identifiers:
+    - performance
+    - crypto
+    - Intl
+    - eval
+    - Function
+    - fetch
+    - XMLHttpRequest
+    - WebSocket
+    - EventSource
+    - importScripts
+    - Worker
+    - SharedWorker
+    - WebAssembly
+    - navigator
+    - location
+    - document
+    - window
+    - globalThis
+    - localStorage
+    - sessionStorage
+    - indexedDB
+    - sendBeacon
+    - postMessage
+    - Date
+  banned_members:             # as a property name: x.toLocaleString()
+    - toLocaleString
+    - toLocaleDateString
+    - toLocaleTimeString
+  banned_member_calls:        # Object.member
+    - [Math, random]
+  banned_string_patterns:     # inside string literals: an external resource
+    - "https?://"
+    - "(^|[^:])//[a-z0-9.-]+\\.[a-z]{2,}"
+    - "^data:"
+    - "^blob:"
+
+# The lines of the previous-year programme each subject owns (C-01), for the
+# coverage check of `banco skill-graph coverage`. Line numbers only.
+coverage:
+  prima_source: prima-2025-26
+  ranges:
+    italian: [7, 31]
+    history: [33, 47]
+    geography: [49, 60]
+    math: [62, 81]
+    biology: [83, 94]
+    chemistry: [95, 100]
+    english: [103, 119]
+    law_economics: [121, 140]
+    business: [142, 151]
+    computer_science: [153, 161]
+    spanish: [163, 186]

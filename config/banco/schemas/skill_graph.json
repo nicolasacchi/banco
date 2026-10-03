@@ -1,0 +1,211 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "banco.skill_graph/1",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "banco.skill_graph/1"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "subject": {
+      "enum": [
+        "math",
+        "italian",
+        "english",
+        "spanish",
+        "history",
+        "geography",
+        "law_economics",
+        "business",
+        "computer_science",
+        "biology",
+        "chemistry"
+      ]
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "label_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "layer": {
+            "enum": [
+              "core",
+              "sec",
+              "opt"
+            ]
+          },
+          "scope": {
+            "enum": [
+              "studied",
+              "integration_studied",
+              "in_progress",
+              "middle_school",
+              "not_in_prima"
+            ]
+          },
+          "scope_reason_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "prerequisites": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+            },
+            "uniqueItems": true
+          },
+          "composite_of": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+            },
+            "minItems": 2,
+            "uniqueItems": true
+          },
+          "refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9-]*$"
+                },
+                "line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "fragment": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                },
+                "role": {
+                  "enum": [
+                    "taught_in",
+                    "needed_by"
+                  ]
+                }
+              },
+              "required": [
+                "source",
+                "line",
+                "fragment",
+                "role"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9]*(_[a-z0-9]+)*$"
+                },
+                "description_it": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "implicates": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+                  },
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "code",
+                "description_it",
+                "implicates"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "key",
+          "label_it",
+          "layer",
+          "scope",
+          "prerequisites",
+          "refs",
+          "errors"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "scope": {
+                  "enum": [
+                    "middle_school",
+                    "not_in_prima"
+                  ]
+                }
+              },
+              "required": [
+                "scope"
+              ]
+            },
+            "then": {
+              "required": [
+                "scope_reason_it"
+              ]
+            }
+          }
+        ]
+      },
+      "minItems": 1
+    },
+    "excluded": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reason_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "line",
+          "reason_it"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "subject",
+    "skills",
+    "excluded"
+  ],
+  "additionalProperties": false
+}

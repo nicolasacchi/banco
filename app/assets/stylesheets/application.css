@@ -1,0 +1,213 @@
+/*
+ * The student's pages (B-11, E-10). High readability for every reader: a sans-serif face at 20 px (never under 18), line height 1.6,
+ * text aligned left, lines of at most 70 characters, no italics, no capitals for
+ * emphasis, bold only on keywords, no alarm colours. Themes of contrast at
+ * least 7:1: cream (the default), light and dark, by the student's choice; three text sizes.
+ */
+/* Atkinson Hyperlegible, SIL Open Font License 1.1 (public/vendor/atkinson-hyperlegible@5.3.0/LICENSE). */
+@font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("/vendor/atkinson-hyperlegible@5.3.0/fonts/atkinson-hyperlegible-latin-400-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("/vendor/atkinson-hyperlegible@5.3.0/fonts/atkinson-hyperlegible-latin-ext-400-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 700; font-display: swap;
+  src: url("/vendor/atkinson-hyperlegible@5.3.0/fonts/atkinson-hyperlegible-latin-700-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 700; font-display: swap;
+  src: url("/vendor/atkinson-hyperlegible@5.3.0/fonts/atkinson-hyperlegible-latin-ext-700-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+
+:root {
+  --bg: #fbf3df;
+  --text: #1c1a14;
+  --muted: #4a4536;
+  --line: #8a826a;
+  --primary: #1d3b5c;
+  --primary-text: #ffffff;
+  --surface: #fffaf0;
+  --focus: #0b3d91;
+  color-scheme: light;
+}
+
+/* The student's own choice, kept on the server: cream (the default) or dark. */
+:root[data-theme="dark"] {
+  --bg: #1b1a17; --text: #f3ecdc; --muted: #d3cbb6; --line: #8c846e; --primary: #f0dfae; --primary-text: #1b1a17;
+  --surface: #25231f; --focus: #9cc3ff; color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #ffffff; --text: #111111; --muted: #3a3a3a; --line: #767676; --primary: #14304d; --primary-text: #ffffff;
+  --surface: #f5f5f5; --focus: #0b3d91; color-scheme: light;
+}
+
+html { font-size: 20px; }
+html[data-size="large"] { font-size: 24px; }
+html[data-size="larger"] { font-size: 28px; }
+
+body.student {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Atkinson Hyperlegible", Verdana, "Segoe UI", system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  text-align: left;
+  font-style: normal;
+  text-transform: none;
+}
+
+.student em, .student i, .student cite { font-style: normal; }
+.student strong, .student b { font-weight: 700; }
+
+.page {
+  max-width: 70ch;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+
+h1 { font-size: 1.5rem; line-height: 1.3; margin: 0 0 1rem; }
+h2 { font-size: 1.25rem; line-height: 1.3; margin: 2rem 0 0.5rem; }
+h3 { font-size: 1rem; margin: 1rem 0 0.25rem; }
+p, ul, ol { margin: 0 0 1rem; }
+ul.plain { padding-left: 1.25rem; }
+ul.plain li { margin-bottom: 0.75rem; }
+
+a { color: var(--text); text-underline-offset: 0.2em; }
+
+.banner, .notice {
+  border: 2px solid var(--line);
+  background: var(--surface);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Buttons and fields ------------------------------------------------------ */
+.button {
+  display: inline-block;
+  font: inherit;
+  font-weight: 700;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.25rem;
+  border: 2px solid var(--primary);
+  background: var(--primary);
+  color: var(--primary-text);
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 0.25rem;
+}
+.button.secondary { background: transparent; color: var(--text); border-color: var(--line); font-weight: 400; }
+.button.small { min-height: 2.25rem; padding: 0.25rem 0.75rem; }
+.button:disabled { opacity: 0.55; cursor: default; }
+.apart { margin-left: 2.5rem; }
+form.inline { display: inline; }
+
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.answer-input, select.answer-input, textarea.answer-input {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 0.25rem;
+  padding: 0.4rem 0.6rem;
+  min-height: 2.75rem;
+  box-sizing: border-box;
+}
+.answer-input.small { width: 6rem; text-align: center; }
+.answer-input.wide { width: 100%; }
+.hint { color: var(--muted); display: block; margin-bottom: 0.25rem; }
+.field { display: flex; align-items: flex-end; gap: 0.5rem; }
+.unit { padding-bottom: 0.5rem; }
+
+/* The subject list ---------------------------------------------------------- */
+ul.subjects { list-style: none; padding: 0; }
+li.subject {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem;
+  padding: 0.75rem 0; border-bottom: 1px solid var(--line);
+}
+li.subject.suggested { border-left: 6px solid var(--primary); padding-left: 0.75rem; }
+.subject-name { font-weight: 700; flex: 1 1 12rem; }
+.subject-state { flex: 1 1 14rem; }
+
+/* The sitting ---------------------------------------------------------------- */
+.bar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+.bar h1 { margin: 0; }
+.actions { margin: 1.5rem 0 0.5rem; }
+.status { min-height: 1.6em; color: var(--muted); }
+.prompt p { margin-bottom: 0.75rem; }
+.instance-stem { font-size: 1.15rem; margin-bottom: 1rem; }
+.quote { border-left: 4px solid var(--line); margin: 0 0 1rem; padding: 0 0 0 1rem; }
+.table-wrap { overflow-x: auto; margin-bottom: 1rem; }
+table.data { border-collapse: collapse; }
+table.data th, table.data td { border: 1px solid var(--line); padding: 0.25rem 0.75rem; text-align: left; }
+img.figure { max-width: 100%; height: auto; background: #fff; }
+
+fieldset.options { border: 0; padding: 0; margin: 0; }
+.option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.5rem 0.25rem; cursor: pointer; }
+.option input { width: 1.4rem; height: 1.4rem; margin-top: 0.25rem; flex: none; }
+.option-key { color: var(--muted); min-width: 1rem; }
+.fraction { display: inline-flex; flex-direction: column; align-items: center; }
+.fraction .frac-line { width: 100%; border-top: 3px solid var(--text); margin: 0.25rem 0; display: block; }
+.whole { margin-right: 0.5rem; }
+
+ol.ordering { list-style: decimal; padding-left: 1.75rem; }
+.order-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.35rem 0; }
+.order-row .row-text { flex: 1; }
+.match-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin-bottom: 0.75rem; }
+.match-left { flex: 1 1 10rem; }
+.accent-keys { margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+math-field.math-input {
+  display: block;
+  font-size: 1.5rem;
+  background: var(--surface);
+  color: var(--text);
+  border: 2px solid var(--line);
+  border-radius: 0.25rem;
+  padding: 0.35rem 0.6rem;
+  min-height: 2.75rem;
+  box-sizing: border-box;
+}
+.echo { margin-top: 0.75rem; min-height: 2rem; }
+
+.sub-item { border-top: 1px solid var(--line); padding: 1rem 0; }
+.sub-item.given-up .answer { opacity: 0.5; }
+.passage { background: var(--surface); padding: 0.5rem 1rem; margin-bottom: 1rem; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* The end of a subject ------------------------------------------------------- */
+.solution { border-top: 1px solid var(--line); padding-top: 0.75rem; margin-top: 1rem; }
+.closing { margin-top: 2rem; font-weight: 700; }
+
+/* The teacher's pages ---------------------------------------------------------- */
+.page.wide { max-width: 96rem; }
+.teacher-nav { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; padding: 0.75rem 1rem; border-bottom: 2px solid var(--line); background: var(--surface); }
+.teacher-nav a { font-weight: 700; }
+.flash { margin: 0.75rem 1rem; }
+.teacher .links, .teacher .skill-nav { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.teacher-subjects li.subject { display: block; }
+.subject-head { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; }
+.counts { margin: 0.25rem 0; }
+.key { font-weight: 400; color: var(--muted); }
+.approve { border: 2px solid var(--line); background: var(--surface); padding: 0.75rem 1rem; margin: 1rem 0; }
+.approve form.decide, .approve form.inline { display: inline-block; margin-right: 0.75rem; }
+.hint.reasons, ul.reasons { margin-top: 0.5rem; }
+article.skill, article.correction { border-top: 2px solid var(--line); padding-top: 0.5rem; margin-top: 1rem; }
+mark { background: var(--primary); color: var(--primary-text); padding: 0 0.15em; text-decoration: underline; font-weight: 400; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr)); gap: 1.5rem; align-items: start; }
+.card { border: 2px solid var(--line); background: var(--surface); padding: 0.75rem 1rem; min-width: 0; overflow-wrap: anywhere; }
+.card h2 { margin-top: 0; }
+.sample { border-top: 1px solid var(--line); padding-top: 0.5rem; margin-top: 0.5rem; }
+.finding { border-left: 6px solid var(--line); padding-left: 0.75rem; margin-bottom: 1rem; }
+.finding[data-severity="blocker"] { border-left-color: var(--primary); }
+.decided { color: var(--muted); }
+form.decide label.hint { margin-top: 0.5rem; }
+form.decide .answer-input.small { width: 5rem; }
+details { margin: 0.5rem 0; }
+summary { cursor: pointer; font-weight: 700; }
+q.example { display: block; margin-bottom: 0.25rem; }

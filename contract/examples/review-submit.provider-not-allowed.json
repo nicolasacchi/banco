@@ -1,0 +1,81 @@
+{
+  "command": "review submit",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/revisions/1/review",
+    "body": {
+      "review": {
+        "schema": "banco.review/1",
+        "schema_version": 1,
+        "revision": "1",
+        "checklist": [
+          {
+            "id": 1,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 1: nessun difetto trovato qui."
+          },
+          {
+            "id": 2,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 2: nessun difetto trovato qui."
+          },
+          {
+            "id": 3,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 3: nessun difetto trovato qui."
+          },
+          {
+            "id": 4,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 4: nessun difetto trovato qui."
+          },
+          {
+            "id": 5,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 5: nessun difetto trovato qui."
+          },
+          {
+            "id": 6,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 6: nessun difetto trovato qui."
+          },
+          {
+            "id": 7,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 7: nessun difetto trovato qui."
+          },
+          {
+            "id": 8,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 8: nessun difetto trovato qui."
+          },
+          {
+            "id": 9,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 9: nessun difetto trovato qui."
+          },
+          {
+            "id": 10,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 10: nessun difetto trovato qui."
+          },
+          {
+            "id": 11,
+            "result": "pass",
+            "evidence": "Controllato sull'istanza numero 11: nessun difetto trovato qui."
+          }
+        ],
+        "findings": []
+      }
+    }
+  },
+  "response": {
+    "status": 422,
+    "body": {
+      "code": "E-PROVIDER-NOT-ALLOWED",
+      "field": "X-Banco-Session",
+      "message": "a reviewer must be of another model family than the author: both are anthropic",
+      "next": "banco session new --role reviewer --agent NAME --model MODEL (see config/banco/providers.yml)"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+#!/bin/bash -e
+
+# Always prepare the databases first (primary + queue under BANCO_DATA_DIR),
+# whatever the command is (E-02): the template runs db:prepare only for
+# "./bin/rails server", which is not how this image starts.
+if [ "${1:-}" = "bundle" ] || [ "${1:-}" = "./bin/rails" ] || [ "${1:-}" = "bin/rails" ]; then
+  bin/rails db:prepare
+fi
+
+exec "${@}"

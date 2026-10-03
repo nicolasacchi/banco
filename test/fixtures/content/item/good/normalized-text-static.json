@@ -1,0 +1,83 @@
+{
+  "schema": "banco.item/1",
+  "schema_version": 1,
+  "kind": "diagnosis_item",
+  "subject": "spanish",
+  "skill": "spanish.present-regular",
+  "component": "normalized_text",
+  "prompt": {
+    "stem_it": "Scrivi la forma corretta del verbo tra parentesi: Yo (hablar) ____ espanol."
+  },
+  "accent_policy": "strict",
+  "spelling_policy": "exact",
+  "paradigm_forms": [
+    "hablo",
+    "hablas"
+  ],
+  "error_catalogue": [
+    {
+      "code": "wrong_person_ending",
+      "description_it": "Usa la desinenza di un'altra persona.",
+      "message_it": "Con yo la desinenza e -o. Qui serve la forma hablo.",
+      "implicates": []
+    }
+  ],
+  "instances": [
+    {
+      "display": {
+        "stem_it": "Yo (hablar) ____ espanol."
+      },
+      "answer": "hablo",
+      "errors": [
+        {
+          "code": "wrong_person_ending",
+          "value": "hablas"
+        }
+      ],
+      "solution": {
+        "steps": [
+          {
+            "text_it": "Con yo si usa -o."
+          }
+        ],
+        "final": "hablo"
+      }
+    },
+    {
+      "display": {
+        "stem_it": "Yo (comer) ____ pan."
+      },
+      "answer": "como",
+      "errors": [
+        {
+          "code": "wrong_person_ending",
+          "value": "comes"
+        }
+      ],
+      "solution": {
+        "steps": [
+          {
+            "text_it": "Con yo si usa -o."
+          }
+        ],
+        "final": "como"
+      }
+    }
+  ],
+  "tests": {
+    "must_accept": [
+      "hablo"
+    ],
+    "must_reject": [
+      "hablas"
+    ],
+    "blank": "invalid"
+  },
+  "sources": [
+    {
+      "kind": "seconda_line",
+      "ref": "seconda-example:200",
+      "fragment": "presente"
+    }
+  ]
+}

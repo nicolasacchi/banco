@@ -1,0 +1,31 @@
+# Material about the student and the household never enters git (public repo).
+/prep/
+
+# Bundler, Node, build output
+/.bundle/
+/vendor/bundle/
+/node_modules/
+/cli/bin/
+/bin/banco
+
+# Rails runtime
+/log/*
+!/log/.keep
+/tmp/*
+!/tmp/.keep
+/storage/*
+!/storage/.keep
+*.sqlite3
+*.sqlite3-*
+/public/assets
+/app/assets/builds/*
+!/app/assets/builds/.keep
+
+# Secrets and local environment
+.env*
+/config/*.key
+/config/credentials/*.key
+
+# Tool state
+/.playwright-mcp/
+/.claude/

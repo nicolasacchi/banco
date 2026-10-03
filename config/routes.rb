@@ -1,0 +1,120 @@
+Rails.application.routes.draw do
+  web = Banco::ListenerConstraint.new(:web)
+  api = Banco::ListenerConstraint.new(:api)
+
+  # Web listener: the student and the teacher, behind Traefik and Authelia.
+  constraints(web) do
+    get "up" => "rails/health#show", as: :rails_health_check
+    get "teacher" => "teacher#show"
+
+    # One test, played by the student (/diagnosis) or by the teacher as the
+    # student (/teacher/preview, route default preview: true, never a parameter).
+    concern :sitting do
+      post "subjects/:key" => "sittings#create", as: :subject_start, constraints: { key: /[a-z_]+/ }
+      get "runs/:run_id" => "sittings#show", as: :run
+      post "runs/:run_id/step" => "sittings#step", as: :run_step
+      post "runs/:run_id/events" => "sittings#events", as: :run_events
+      get "runs/:run_id/results" => "sittings#results", as: :run_results
+      post "runs/:run_id/flags" => "sittings#flag", as: :run_flags
+      post "answers" => "answers#create", as: :answers
+    end
+
+    get "diagnosis" => "diagnosis#show"
+    scope "diagnosis" do
+      post "preferences" => "preferences#update", as: :preferences
+      get "warmup" => "warmup#show", as: :warmup
+      get "warmup/tasks" => "warmup#tasks", as: :warmup_tasks
+      post "warmup/answers" => "warmup#answer", as: :warmup_answers
+      post "warmup/complete" => "warmup#complete", as: :warmup_complete
+      concerns :sitting
+    end
+    # The teacher's decisions (D-08): the only writes of DecisionRecorder. POST only,
+    # ids in the path, everything else in the body.
+    get "teacher/items/:revision_id" => "teacher/items#show", constraints: { revision_id: /\d+/ }, format: false
+    scope "teacher", controller: "teacher/decisions", format: false do
+      id = /\d+/
+      post "skill-graph-revisions/:revision_id/approve", action: :approve_skill_graph, constraints: { revision_id: id }
+      post "blueprint-revisions/:revision_id/approve", action: :approve_blueprint, constraints: { revision_id: id }
+      post "findings/:finding_id/disposition", action: :dispose_finding, constraints: { finding_id: id }
+      post "grade-proposals/:grade_proposal_id/confirm", action: :confirm_grade, constraints: { grade_proposal_id: id }
+      post "grade-proposals/:grade_proposal_id/reject", action: :reject_grade, constraints: { grade_proposal_id: id }
+      post "attempts/:attempt_id/resolve", action: :resolve_attempt, constraints: { attempt_id: id }
+      post "runs/:run_id/void", action: :void_run, constraints: { run_id: id }
+      post "runs/:run_id/extend", action: :extend_run, constraints: { run_id: id }
+      post "runs/:run_id/close", action: :close_run, constraints: { run_id: id }
+      post "item-revisions/:item_revision_id/send-back", action: :send_back_item, constraints: { item_revision_id: id }
+      post "item-revisions/:item_revision_id/void-attempts", action: :void_revision_attempts, constraints: { item_revision_id: id }
+      post "subjects/:subject/kind-override", action: :kind_override, constraints: { subject: /[a-z_]+/ }
+      post "release", action: :release
+      post "consent", action: :consent
+    end
+
+    # The teacher's pages (read-only) and the heartbeat of their minutes.
+    scope "teacher", module: "teacher", format: false do
+      key = { key: /[a-z_]+/ }
+      get "subjects/:key/graph" => "graphs#show", constraints: key, as: :teacher_graph
+      get "subjects/:key/test" => "tests#show", constraints: key, as: :teacher_test
+      get "subjects/:key/test/skills/:skill" => "tests#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9.\-]*/), as: :teacher_test_skill
+      get "subjects/:key/report" => "reports#show", constraints: key, as: :teacher_report
+      get "corrections" => "corrections#show", as: :teacher_corrections
+      get "items/:revision_id/play" => "item_plays#show", constraints: { revision_id: /\d+/ }, as: :teacher_item_play
+      get "items/:revision_id/play/data" => "item_plays#data", constraints: { revision_id: /\d+/ }, as: :teacher_item_play_data
+      post "activity" => "activity#create"
+    end
+
+    scope "teacher/preview", as: :preview, defaults: { preview: true } do
+      get "/" => "teacher/previews#index", as: :index
+      concerns :sitting
+    end
+
+    # Figures drawn by agents: images only, named by their digest.
+    get "assets/items/:sha256.svg" => "item_assets#show", constraints: { sha256: /[0-9a-f]{64}/ }, format: false
+  end
+
+  # API listener: agent token only.
+  constraints(api) do
+    get "api/v1/schema" => "api/v1/schema#show"
+    post "api/v1/diagnosis/simulate" => "api/v1/diagnosis#simulate", format: false
+    get "api/v1/briefs/:name" => "api/v1/briefs#show", constraints: { name: /[a-z][a-z-]*/ }, format: false
+    get "api/v1/diagnosis/report" => "api/v1/reports#show", format: false
+    get "api/v1/health" => "api/v1/health#show", format: false
+    get "api/v1/status" => "api/v1/status#show", format: false
+    get "api/v1/syllabus/:source/lines" => "api/v1/syllabus#lines", constraints: { source: /[a-z0-9][a-z0-9-]*/ }, format: false
+
+    # The content agent's cycle on an item (A-04, A-06, E-05).
+    get "api/v1/work/items/:item" => "api/v1/work#open", constraints: { item: /[a-z0-9][a-z0-9_-]*/ }, format: false
+    post "api/v1/work/submit" => "api/v1/work#submit", format: false
+    get "api/v1/work/revisions/:revision" => "api/v1/work#status", constraints: { revision: /\d+/ }, format: false
+
+    # Independence and the evening loop (A-04, A-05, B-06): sessions, the expert review and
+    # the blind solve of a revision, grade proposals. No route decides anything.
+    post "api/v1/sessions" => "api/v1/sessions#create", format: false
+    revision = { revision: /\d+/ }
+    get "api/v1/revisions/:revision/review" => "api/v1/reviews#open", constraints: revision, format: false
+    post "api/v1/revisions/:revision/review" => "api/v1/reviews#submit", constraints: revision, format: false
+    get "api/v1/revisions/:revision/solve" => "api/v1/solves#open", constraints: revision, format: false
+    post "api/v1/revisions/:revision/solve" => "api/v1/solves#submit", constraints: revision, format: false
+    get "api/v1/submissions/pending" => "api/v1/grades#pending", format: false
+    post "api/v1/attempts/:attempt/grade-proposals" => "api/v1/grades#propose", constraints: { attempt: /\d+/ }, format: false
+
+    # The graph and the entry test of a subject.
+    subject = { subject: /[a-z_]+/ }
+    get "api/v1/subjects/:subject/skill-graph" => "api/v1/skill_graphs#open", constraints: subject, format: false
+    post "api/v1/subjects/:subject/skill-graph" => "api/v1/skill_graphs#submit", constraints: subject, format: false
+    get "api/v1/subjects/:subject/skill-graph/coverage" => "api/v1/skill_graphs#coverage", constraints: subject, format: false
+    get "api/v1/subjects/:subject/blueprint" => "api/v1/blueprints#open", constraints: subject, format: false
+    post "api/v1/subjects/:subject/blueprint" => "api/v1/blueprints#submit", constraints: subject, format: false
+  end
+
+  # Harness listener: the page and the files Chrome loads to run an agent's
+  # generator or verify (A-02). Internal; never published.
+  harness = Banco::ListenerConstraint.new(:harness)
+  constraints(harness) do
+    get "h/:token/:file" => "harness#show", constraints: { token: /[A-Za-z0-9_.-]+/, file: /harness\.html|runner\.mjs|generator\.mjs|verify\.mjs/ }, format: false
+    get "lib/:file" => "harness#lib", constraints: { file: /rng\.mjs|fmt\.mjs/ }, format: false
+  end
+
+  # Everything else, including any route on the wrong listener: 404.
+  match "*path", to: "not_found#show", via: :all
+  root "not_found#show"
+end

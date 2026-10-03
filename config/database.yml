@@ -1,0 +1,28 @@
+# SQLite. In production the files live under BANCO_DATA_DIR (a bind mount owned
+# by the container user): primary (the ledger) and queue (Solid Queue). There is
+# no cache or cable database.
+default: &default
+  adapter: sqlite3
+  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  timeout: 5000
+
+development:
+  <<: *default
+  database: storage/development.sqlite3
+  schema_format: sql
+
+test:
+  <<: *default
+  database: storage/test<%= ENV["TEST_ENV_NUMBER"] %>.sqlite3
+  schema_format: sql
+
+production:
+  primary:
+    <<: *default
+    database: <%= ENV.fetch("BANCO_DATA_DIR", "/data/db") %>/production.sqlite3
+    schema_format: sql
+  queue:
+    <<: *default
+    database: <%= ENV.fetch("BANCO_DATA_DIR", "/data/db") %>/production_queue.sqlite3
+    migrations_paths: db/queue_migrate
+    schema_format: ruby

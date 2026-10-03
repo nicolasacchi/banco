@@ -1,0 +1,63 @@
+{
+  "schema": "banco.review/1",
+  "schema_version": 1,
+  "revision": "rev_b1",
+  "checklist": [
+    {
+      "id": 1,
+      "result": "pass",
+      "evidence": "Controllato sulle istanze 1-8: nessun problema trovato."
+    },
+    {
+      "id": 2,
+      "result": "pass",
+      "evidence": "Controllato sulle istanze 1-8: nessun problema trovato."
+    },
+    {
+      "id": 3,
+      "result": "pass",
+      "evidence": "Controllato sulle istanze 1-8: nessun problema trovato."
+    },
+    {
+      "id": 4,
+      "result": "pass",
+      "evidence": "Messaggio verificato sui casi con coefficiente negativo."
+    },
+    {
+      "id": 5,
+      "result": "pass",
+      "evidence": "Controllato sulle istanze 1-8: nessun problema trovato."
+    },
+    {
+      "id": 6,
+      "result": "pass",
+      "evidence": "Controllato sulle istanze 1-8: nessun problema trovato."
+    },
+    {
+      "id": 7,
+      "result": "pass",
+      "evidence": "Controllato sulle istanze 1-8: nessun problema trovato."
+    },
+    {
+      "id": 8,
+      "result": "pass",
+      "evidence": "Controllato sulle istanze 1-8: nessun problema trovato."
+    },
+    {
+      "id": 9,
+      "result": "pass",
+      "evidence": "Controllato sulle istanze 1-8: nessun problema trovato."
+    },
+    {
+      "id": 10,
+      "result": "pass",
+      "evidence": "Controllato sulle istanze 1-8: nessun problema trovato."
+    },
+    {
+      "id": 11,
+      "result": "pass",
+      "evidence": "Controllato sulle istanze 1-8: nessun problema trovato."
+    }
+  ],
+  "findings": []
+}

@@ -1,0 +1,36 @@
+{
+  "command": "grade propose",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/attempts/1/grade-proposals",
+    "body": {
+      "grade": {
+        "points": [
+          {
+            "point_id": "cause",
+            "score": 2,
+            "quote": "causa fu la crisi",
+            "rationale_it": "Nomina la causa."
+          },
+          {
+            "point_id": "effect",
+            "score": 1,
+            "quote": "il re perse l'appoggio dei nobili",
+            "rationale_it": "Nomina la conseguenza."
+          }
+        ],
+        "missing_it": "Nulla."
+      }
+    }
+  },
+  "response": {
+    "status": 422,
+    "body": {
+      "code": "E-GRADER-IS-AUTHOR",
+      "field": "X-Banco-Session",
+      "message": "session 2 wrote this item and cannot grade it",
+      "next": "banco session new --role grader --agent NAME --model MODEL",
+      "reason": "grader_is_author"
+    }
+  }
+}

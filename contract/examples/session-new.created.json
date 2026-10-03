@@ -1,0 +1,23 @@
+{
+  "command": "session new",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/sessions",
+    "body": {
+      "role": "reviewer",
+      "agent": "omp",
+      "model": "gpt-5.2"
+    }
+  },
+  "response": {
+    "status": 201,
+    "body": {
+      "id": 1,
+      "role": "reviewer",
+      "agent": "omp",
+      "model": "gpt-5.2",
+      "family": "openai",
+      "next": "export BANCO_SESSION=5"
+    }
+  }
+}

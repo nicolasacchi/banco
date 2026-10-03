@@ -1,0 +1,26 @@
+<% content_for :title, t("warmup.title") %>
+<main class="page" data-controller="warmup"
+      data-warmup-tasks-url-value="/diagnosis/warmup/tasks"
+      data-warmup-answer-url-value="/diagnosis/warmup/answers"
+      data-warmup-complete-url-value="/diagnosis/warmup/complete"
+      data-warmup-list-url-value="/diagnosis"
+      data-warmup-texts-value="<%= student_texts.to_json %>">
+  <h1><%= t("warmup.title") %></h1>
+  <p><%= t("warmup.intro") %></p>
+  <section data-warmup-target="stage" hidden>
+    <h2 data-warmup-target="step"></h2>
+    <div data-warmup-target="itemBox"></div>
+    <div class="actions">
+      <button type="button" class="button" data-warmup-target="sendButton" data-action="warmup#send"><%= t("warmup.send") %></button>
+      <button type="button" class="button secondary" data-warmup-target="unknownButton" data-action="warmup#dontKnow"><%= t("warmup.dont_know") %></button>
+      <button type="button" class="button secondary" data-warmup-target="pauseButton" data-action="warmup#pause" hidden><%= t("sitting.pause") %></button>
+      <button type="button" class="button secondary" data-warmup-target="resumeButton" data-action="warmup#resume" hidden><%= t("sitting.resume") %></button>
+    </div>
+    <p role="status" aria-live="polite" data-warmup-target="status"></p>
+  </section>
+  <section data-warmup-target="done" hidden>
+    <h2><%= t("warmup.done_title") %></h2>
+    <p data-warmup-target="doneText"><%= t("warmup.done_text") %></p>
+    <p><a class="button" href="/diagnosis"><%= t("sitting.back_to_list") %></a></p>
+  </section>
+</main>

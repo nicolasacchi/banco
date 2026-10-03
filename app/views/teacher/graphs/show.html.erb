@@ -1,0 +1,100 @@
+<% content_for :title, t("teacher.graph.title", subject: @subject.name_it) %>
+<main class="page wide">
+  <p><a href="/teacher"><%= t("teacher.back") %></a></p>
+  <h1><%= t("teacher.graph.title", subject: @subject.name_it) %></h1>
+  <% if !@review.present? %>
+    <p class="notice"><%= t("teacher.graph.none") %></p>
+  <% else %>
+    <% review = @review %>
+    <p id="graph-summary">
+      <%= t("teacher.graph.summary", count: review.skills.size, seq: review.revision.seq, share: review.inferred_share) %>
+      <%= review.approved_latest? ? t("teacher.graph.is_approved") : (review.first_revision? ? t("teacher.graph.first_revision") : t("teacher.graph.newer_than_approved")) %>
+    </p>
+
+    <% if review.previous %>
+      <section id="graph-diff">
+        <h2><%= t("teacher.graph.diff_title", seq: review.approved.seq) %></h2>
+        <% if review.changed? %>
+          <ul class="plain">
+            <% review.skills.reject { |s| s.change == :same }.each do |s| %>
+              <li data-change="<%= s.change %>"><strong><%= t("teacher.graph.change.#{s.change}") %></strong> <%= s.label_it %> (<%= s.key %>)
+                <% if s.changes.any? %> · <%= s.changes.map { |c| t("teacher.graph.field.#{c}") }.join(", ") %><% end %></li>
+            <% end %>
+            <% review.removed.each do |s| %>
+              <li data-change="removed"><strong><%= t("teacher.graph.change.removed") %></strong> <%= s["label_it"] %> (<%= s["key"] %>)</li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p><%= t("teacher.graph.no_changes") %></p>
+        <% end %>
+      </section>
+    <% end %>
+
+    <section id="graph-approve" class="approve">
+      <% blocker = decision_blocker %>
+      <% allowed = !review.approved_latest? && blocker.nil? %>
+      <%= decision_form("/teacher/skill-graph-revisions/#{review.revision.id}/approve") do %>
+        <button type="submit" class="button" <%= "disabled" unless allowed %> aria-describedby="graph-approve-why">
+          <%= t("teacher.graph.approve") %>
+        </button>
+      <% end %>
+      <p id="graph-approve-why" class="hint">
+        <% if review.approved_latest? %><%= t("teacher.graph.already") %>
+        <% elsif blocker %><%= t("teacher.cannot_decide.#{blocker}") %>
+        <% else %><%= t("teacher.graph.approve_hint") %><% end %>
+      </p>
+    </section>
+
+    <h2><%= t("teacher.graph.skills") %></h2>
+    <% review.skills.each do |skill| %>
+      <article class="skill" id="skill-<%= skill.key.parameterize %>" data-skill="<%= skill.key %>" data-scope="<%= skill.scope %>">
+        <h3><%= skill.label_it %> <span class="key">(<%= skill.key %>)</span></h3>
+        <p><strong><%= scope_text(skill.scope) %></strong> · <%= t("teacher.graph.layer.#{skill.layer}") %>
+          <% if skill.scope_reason_it %><br><%= skill.scope_reason_it %><% end %></p>
+        <% skill.flags.each do |flag| %>
+          <p class="notice" data-flag="<%= flag %>"><%= t("teacher.graph.flags.#{flag}") %></p>
+        <% end %>
+        <% if skill.prerequisites.any? || skill.composite_of.any? %>
+          <p class="edges">
+            <% if skill.prerequisites.any? %><%= t("teacher.graph.requires") %> <%= skill.prerequisites.join(", ") %>.<% end %>
+            <% if skill.composite_of.any? %><%= t("teacher.graph.composed_of") %> <%= skill.composite_of.join(", ") %>.<% end %>
+          </p>
+        <% else %>
+          <p class="edges"><%= t("teacher.graph.no_prerequisites") %></p>
+        <% end %>
+        <% if skill.refs.any? %>
+          <ul class="plain refs">
+            <% skill.refs.each do |ref| %>
+              <li data-ref="<%= ref.source %>:<%= ref.line %>"><strong><%= t("teacher.graph.role.#{ref.role}") %></strong>
+                <%= ref.source %>, <%= t("teacher.graph.line") %> <%= ref.line %>:
+                <% if ref.text %><q><%= ref.text %></q><% else %><%= t("teacher.graph.line_missing") %><% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="notice" data-inferred="true"><%= t("teacher.graph.inferred") %></p>
+        <% end %>
+        <% if skill.errors.any? %>
+          <details>
+            <summary><%= t("teacher.graph.errors", count: skill.errors.size) %></summary>
+            <ul class="plain">
+              <% skill.errors.each do |error| %>
+                <li><strong><%= error["code"] %></strong>: <%= error["description_it"] %>
+                  <% if error["implicates"].any? %> (<%= t("teacher.graph.implicates") %> <%= error["implicates"].join(", ") %>)<% end %></li>
+              <% end %>
+            </ul>
+          </details>
+        <% end %>
+      </article>
+    <% end %>
+
+    <% if review.excluded.any? %>
+      <h2><%= t("teacher.graph.excluded_title") %></h2>
+      <ul class="plain" id="graph-excluded">
+        <% review.excluded.each do |e| %>
+          <li><%= t("teacher.graph.line") %> <%= e[:line] %><% if e[:text] %>: <q><%= e[:text] %></q><% end %>. <%= e[:reason_it] %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+</main>

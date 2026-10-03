@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "banco.solve/1",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "banco.solve/1"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "answers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "instance": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "answer": {
+            "$ref": "#/$defs/any_answer"
+          },
+          "dont_know": {
+            "const": true
+          }
+        },
+        "required": [
+          "instance"
+        ],
+        "additionalProperties": false,
+        "oneOf": [
+          {
+            "required": [
+              "answer"
+            ]
+          },
+          {
+            "required": [
+              "dont_know"
+            ]
+          }
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "schema",
+    "schema_version",
+    "revision",
+    "answers"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "any_answer": {
+      "not": {
+        "type": "null"
+      }
+    }
+  }
+}

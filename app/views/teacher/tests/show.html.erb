@@ -1,0 +1,78 @@
+<% content_for :title, t("teacher.test.title", subject: @subject.name_it) %>
+<main class="page wide">
+  <p><a href="/teacher"><%= t("teacher.back") %></a></p>
+  <h1><%= t("teacher.test.title", subject: @subject.name_it) %></h1>
+  <% if !@review.present? %>
+    <p class="notice"><%= t("teacher.test.none") %></p>
+  <% else %>
+    <% review = @review %>
+    <% gate = review.gate %>
+    <p id="test-summary">
+      <%= t("teacher.test.summary", seq: review.blueprint.seq, skills: review.skill_rows.size, items: review.pinned_count) %>
+      <%= review.approved_latest? ? t("teacher.test.is_approved") : t("teacher.test.not_approved") %>
+    </p>
+
+    <section id="test-approve" class="approve" data-approvable="<%= gate.approvable %>">
+      <% blocker = decision_blocker %>
+      <% allowed = gate.approvable && !review.approved_latest? && blocker.nil? %>
+      <%= decision_form("/teacher/blueprint-revisions/#{review.blueprint.id}/approve") do %>
+        <button type="submit" class="button" <%= "disabled" unless allowed %> aria-describedby="test-approve-why"><%= t("teacher.test.approve") %></button>
+      <% end %>
+      <%= button_to t("teacher.test.play_all"), "/teacher/preview/subjects/#{@subject.key}", class: "button secondary", form: { class: "inline" } %>
+      <div id="test-approve-why" class="hint">
+        <% if review.approved_latest? %>
+          <p><%= t("teacher.test.already") %></p>
+        <% elsif !gate.approvable %>
+          <p><%= t("teacher.test.cannot_yet") %></p>
+          <ul class="plain reasons">
+            <% gate_sentences(gate.reasons, review.names).each do |sentence| %><li><%= sentence %></li><% end %>
+          </ul>
+        <% elsif blocker %>
+          <p><%= t("teacher.cannot_decide.#{blocker}") %></p>
+        <% else %>
+          <p><%= t("teacher.test.approve_hint") %></p>
+        <% end %>
+      </div>
+    </section>
+
+    <h2><%= t("teacher.test.skills") %></h2>
+    <ul class="subjects skill-list">
+      <% review.skill_rows.each do |row| %>
+        <li class="subject" data-skill="<%= row.skill %>">
+          <a class="subject-name" href="<%= skill_screen_path(@subject, row.skill) %>"><%= row.label_it %></a>
+          <span class="subject-state">
+            <%= t("teacher.test.role.#{row.role}") %> ·
+            <% if row.item_ids.any? %>
+              <%= t("teacher.test.items", count: row.item_ids.size) %>
+              <% if row.open_findings.positive? %> · <strong><%= t("teacher.test.open_findings", count: row.open_findings) %></strong><% end %>
+              <% unless row.worked %> · <%= t("teacher.test.not_reviewed") %><% end %>
+            <% else %>
+              <%= row.not_assessed_reason_it %>
+            <% end %>
+          </span>
+        </li>
+      <% end %>
+    </ul>
+
+    <h2><%= t("teacher.test.traces") %></h2>
+    <p><%= t("teacher.test.traces_hint") %></p>
+    <table class="data" id="test-traces">
+      <thead><tr><th><%= t("teacher.test.trace.script") %></th><th><%= t("teacher.test.trace.end") %></th><th><%= t("teacher.test.trace.served") %></th><th><%= t("teacher.test.trace.minutes") %></th><th><%= t("teacher.test.trace.states") %></th></tr></thead>
+      <tbody>
+        <% review.traces.each do |trace| %>
+          <tr data-script="<%= trace[:script] %>">
+            <td><%= t("teacher.test.script.#{trace[:script].tr('-', '_')}") %></td>
+            <% if trace[:error] %>
+              <td colspan="4"><%= trace[:error] %></td>
+            <% else %>
+              <td><%= trace[:end_reason] || t("teacher.test.trace.open") %></td>
+              <td><%= trace[:served] %></td>
+              <td><%= trace[:minutes] %></td>
+              <td><%= trace[:states].map { |state, n| "#{t("teacher.test.state.#{state}", default: state)} #{n}" }.join(", ") %></td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</main>

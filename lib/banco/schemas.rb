@@ -1,0 +1,76 @@
+# frozen_string_literal: true
+
+require "json"
+require "json_schemer"
+
+module Banco
+  # The frozen content formats (A-03, A-05, B-07, C-01): banco.skill_graph/1,
+  # banco.item/1, banco.blueprint/1, banco.review/1, banco.solve/1. JSON Schemas
+  # in config/banco/schemas/, validated with json_schemer in production too: the
+  # E-SCHEMA check of every submission depends on it.
+  #
+  # A change to a schema after authoring has started means a new version
+  # (banco.item/2) and a small migration for drafts; schema_version is in every
+  # document.
+  module Schemas
+    NAMES = %w[skill_graph item blueprint review solve].freeze
+    SCHEMA_DIR = ->(root) { File.join(root, "config", "banco", "schemas") }
+    FIXTURE_DIR = ->(root) { File.join(root, "test", "fixtures", "content") }
+
+    Error = Struct.new(:code, :field, :message, keyword_init: true) do
+      def to_h = { code: code, field: field, message: message }
+    end
+
+    class << self
+      def root = defined?(Rails) ? Rails.root.to_s : File.expand_path("../..", __dir__)
+
+      def schema(name)
+        name = name.to_s
+        raise ArgumentError, "unknown schema #{name}" unless NAMES.include?(name)
+
+        @schemers ||= {}
+        @schemers[name] ||= JSONSchemer.schema(JSON.parse(File.read(File.join(SCHEMA_DIR.call(root), "#{name}.json"))))
+      end
+
+      # Format string of a schema name: "item" -> "banco.item/1".
+      def format_of(name) = "banco.#{name}/1"
+
+      def name_for(format)
+        NAMES.find { |n| format_of(n) == format }
+      end
+
+      # [] when the document is valid, otherwise E-SCHEMA errors with a JSON pointer.
+      def validate(name, data)
+        schema(name).validate(data).map do |e|
+          Error.new(code: "E-SCHEMA", field: e["data_pointer"].to_s, message: e["error"].to_s)
+        end
+      end
+
+      def valid?(name, data) = validate(name, data).empty?
+
+      # Same, picking the schema from the document's own "schema" member.
+      def validate_document(data)
+        name = data.is_a?(Hash) ? name_for(data["schema"]) : nil
+        return [ Error.new(code: "E-SCHEMA", field: "/schema", message: "unknown or missing schema member") ] unless name
+
+        validate(name, data)
+      end
+
+      def fixture_files(name, kind, dir: FIXTURE_DIR.call(root))
+        Dir.glob(File.join(dir, name.to_s, kind.to_s, "*.json")).sort
+      end
+
+      # Production boot check: for every schema, the first good fixture is valid
+      # and the first bad fixture is not. False when a schema has no pair.
+      def validate_fixture_pair(dir: FIXTURE_DIR.call(root), names: NAMES)
+        names.all? do |name|
+          good = fixture_files(name, :good, dir: dir).first
+          bad = fixture_files(name, :bad, dir: dir).first
+          good && bad &&
+            valid?(name, JSON.parse(File.read(good))) &&
+            !valid?(name, JSON.parse(File.read(bad)))
+        end
+      end
+    end
+  end
+end

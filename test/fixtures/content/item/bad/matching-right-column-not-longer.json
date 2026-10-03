@@ -1,0 +1,159 @@
+{
+  "schema": "banco.item/1",
+  "schema_version": 1,
+  "kind": "diagnosis_item",
+  "subject": "geography",
+  "skill": "geography.states-capitals",
+  "component": "matching",
+  "prompt": {
+    "stem_it": "Abbina ogni Stato alla sua capitale."
+  },
+  "error_catalogue": [
+    {
+      "code": "confuses_capitals",
+      "description_it": "Scambia due capitali.",
+      "message_it": "La capitale va abbinata allo Stato in cui si trova.",
+      "implicates": []
+    }
+  ],
+  "instances": [
+    {
+      "display": {
+        "left": [
+          {
+            "id": "l1",
+            "text": "Stato A"
+          },
+          {
+            "id": "l2",
+            "text": "Stato B"
+          },
+          {
+            "id": "l3",
+            "text": "Stato C"
+          },
+          {
+            "id": "l4",
+            "text": "Stato D"
+          }
+        ],
+        "right": [
+          {
+            "id": "r1",
+            "text": "Capitale A"
+          },
+          {
+            "id": "r2",
+            "text": "Capitale B"
+          },
+          {
+            "id": "r3",
+            "text": "Capitale C"
+          },
+          {
+            "id": "r4",
+            "text": "Capitale D"
+          }
+        ]
+      },
+      "answer": {
+        "l1": "r1",
+        "l2": "r2",
+        "l3": "r3",
+        "l4": "r4"
+      },
+      "solution": {
+        "steps": [
+          {
+            "text_it": "Ogni capitale sta nel suo Stato."
+          }
+        ],
+        "final": "A-A, B-B, C-C, D-D"
+      }
+    },
+    {
+      "display": {
+        "left": [
+          {
+            "id": "l1",
+            "text": "Stato E"
+          },
+          {
+            "id": "l2",
+            "text": "Stato F"
+          },
+          {
+            "id": "l3",
+            "text": "Stato G"
+          },
+          {
+            "id": "l4",
+            "text": "Stato H"
+          }
+        ],
+        "right": [
+          {
+            "id": "r1",
+            "text": "Capitale E"
+          },
+          {
+            "id": "r2",
+            "text": "Capitale F"
+          },
+          {
+            "id": "r3",
+            "text": "Capitale G"
+          },
+          {
+            "id": "r4",
+            "text": "Capitale H"
+          },
+          {
+            "id": "r5",
+            "text": "Capitale X"
+          }
+        ]
+      },
+      "answer": {
+        "l1": "r1",
+        "l2": "r2",
+        "l3": "r3",
+        "l4": "r4"
+      },
+      "solution": {
+        "steps": [
+          {
+            "text_it": "Ogni capitale sta nel suo Stato."
+          }
+        ],
+        "final": "E-E, F-F, G-G, H-H"
+      }
+    }
+  ],
+  "tests": {
+    "must_accept": [
+      {
+        "l1": "r1",
+        "l2": "r2",
+        "l3": "r3",
+        "l4": "r4"
+      }
+    ],
+    "must_reject": [
+      {
+        "l1": "r2",
+        "l2": "r1",
+        "l3": "r3",
+        "l4": "r4"
+      }
+    ],
+    "blank": "invalid"
+  },
+  "sources": [
+    {
+      "kind": "prima_line",
+      "ref": "prima-example:50",
+      "fragment": "Stati"
+    }
+  ]
+}

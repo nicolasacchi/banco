@@ -1,0 +1,25 @@
+{
+  "schema": "banco.skill_graph/1",
+  "schema_version": 1,
+  "subject": "history",
+  "skills": [
+    {
+      "key": "history.timeline-bc-ad",
+      "label_it": "Cronologia avanti e dopo Cristo",
+      "layer": "core",
+      "scope": "middle_school",
+      "scope_reason_it": "Appresa alla scuola media.",
+      "prerequisites": [],
+      "refs": [
+        {
+          "source": "seconda-example",
+          "line": 30,
+          "fragment": "cronologia",
+          "role": "needed_by"
+        }
+      ],
+      "errors": []
+    }
+  ],
+  "excluded": []
+}

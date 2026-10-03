@@ -1,0 +1,250 @@
+{
+  "command": "review open",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/revisions/1/review"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "revision_id": 1,
+      "item": "eq-1",
+      "subject": "math",
+      "seq": 1,
+      "status": "passed",
+      "item_json": {
+        "schema": "banco.item/1",
+        "schema_version": 1,
+        "kind": "diagnosis_item",
+        "subject": "math",
+        "skill": "math.linear-equation-integer",
+        "component": "number",
+        "prompt": {
+          "stem_it": "Risolvi l'equazione e scrivi il valore di $x$."
+        },
+        "expected_seconds": 60,
+        "error_catalogue": [
+          {
+            "code": "sign_error",
+            "description_it": "Sposta il termine senza cambiargli il segno.",
+            "message_it": "Quando un termine passa dall'altra parte cambia segno. Rifai il passaggio.",
+            "implicates": [
+              "math.integer-operations"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "inferred",
+            "ref": "prova",
+            "fragment": "equazioni di primo grado"
+          }
+        ],
+        "instances": [
+          {
+            "display": {
+              "stem_it": "Risolvi $x+2=9$."
+            },
+            "answer": "7",
+            "errors": [
+              {
+                "code": "sign_error",
+                "value": "11"
+              }
+            ],
+            "solution": {
+              "steps": [
+                {
+                  "text_it": "Togli 2 da entrambi i lati."
+                }
+              ],
+              "final": "x = 7"
+            }
+          },
+          {
+            "display": {
+              "stem_it": "Risolvi $x+4=13$."
+            },
+            "answer": "9",
+            "errors": [
+              {
+                "code": "sign_error",
+                "value": "17"
+              }
+            ],
+            "solution": {
+              "steps": [
+                {
+                  "text_it": "Togli 4 da entrambi i lati."
+                }
+              ],
+              "final": "x = 9"
+            }
+          },
+          {
+            "display": {
+              "stem_it": "Risolvi $x+5=21$."
+            },
+            "answer": "16",
+            "errors": [
+              {
+                "code": "sign_error",
+                "value": "26"
+              }
+            ],
+            "solution": {
+              "steps": [
+                {
+                  "text_it": "Togli 5 da entrambi i lati."
+                }
+              ],
+              "final": "x = 16"
+            }
+          }
+        ],
+        "tests": {
+          "must_accept": [
+            "7"
+          ],
+          "must_reject": [
+            "11"
+          ],
+          "blank": "invalid"
+        }
+      },
+      "instances": [
+        {
+          "instance": 1,
+          "display": {
+            "stem_it": "Risolvi $x+2=9$."
+          },
+          "answer": "7",
+          "errors": [
+            {
+              "code": "sign_error",
+              "value": "11"
+            }
+          ],
+          "solution": {
+            "steps": [
+              {
+                "text_it": "Togli 2 da entrambi i lati."
+              }
+            ],
+            "final": "x = 7"
+          }
+        },
+        {
+          "instance": 2,
+          "display": {
+            "stem_it": "Risolvi $x+4=13$."
+          },
+          "answer": "9",
+          "errors": [
+            {
+              "code": "sign_error",
+              "value": "17"
+            }
+          ],
+          "solution": {
+            "steps": [
+              {
+                "text_it": "Togli 4 da entrambi i lati."
+              }
+            ],
+            "final": "x = 9"
+          }
+        },
+        {
+          "instance": 3,
+          "display": {
+            "stem_it": "Risolvi $x+5=21$."
+          },
+          "answer": "16",
+          "errors": [
+            {
+              "code": "sign_error",
+              "value": "26"
+            }
+          ],
+          "solution": {
+            "steps": [
+              {
+                "text_it": "Togli 5 da entrambi i lati."
+              }
+            ],
+            "final": "x = 16"
+          }
+        }
+      ],
+      "programme_lines": [
+        {
+          "source": "prima-test",
+          "line": 1,
+          "role": "taught_in",
+          "skill": "math.linear-equation-integer",
+          "text": "operazioni con i numeri relativi"
+        },
+        {
+          "source": "seconda-test",
+          "line": 1,
+          "role": "needed_by",
+          "skill": "math.linear-equation-integer",
+          "text": "equazioni di primo grado"
+        }
+      ],
+      "checklist": [
+        {
+          "id": 1,
+          "point": "a wrong or ambiguous key"
+        },
+        {
+          "id": 2,
+          "point": "a second defensible answer"
+        },
+        {
+          "id": 3,
+          "point": "a distractor that is not a real misconception"
+        },
+        {
+          "id": 4,
+          "point": "a rule that is too general (an absolute word without a counterexample)"
+        },
+        {
+          "id": 5,
+          "point": "content of the following year in a base item"
+        },
+        {
+          "id": 6,
+          "point": "a scope that does not match the programme markers"
+        },
+        {
+          "id": 7,
+          "point": "unclear Italian or a double negation"
+        },
+        {
+          "id": 8,
+          "point": "exam-gaming wording or self-certification"
+        },
+        {
+          "id": 9,
+          "point": "a fact without a source"
+        },
+        {
+          "id": 10,
+          "point": "a stem that gives the answer away"
+        },
+        {
+          "id": 11,
+          "point": "an item that measures reading load or the interface instead of the skill"
+        }
+      ],
+      "brief": {
+        "name": "review",
+        "version": 1,
+        "sha256": "<sha256>"
+      },
+      "next": "write banco.review/1 (banco brief show review) and run banco review submit 1 --file review.json"
+    }
+  }
+}

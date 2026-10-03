@@ -1,0 +1,136 @@
+# The one registry of codes (X-03, A-06, E-05). Validation and API codes are
+# E-/W- names; codes the grader emits are snake_case. A name that differs between
+# the grader and the rules would silently switch a mask off, so Rules::V1 and the
+# grader read their names from here (test/lib/error_codes_test.rb).
+#
+# version: bumped when a code is added, removed or changes meaning.
+# severity: error blocks approval (E-) or is refused; warning is shown to the
+#   reviewer and the teacher (W-).
+# stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
+#   blueprint, review, grading, api).
+version: 2
+
+validation:
+  # Skill graph (synchronous).
+  E-SCHEMA: { stage: schema, severity: error, description: "The file does not match its JSON Schema (banco.skill_graph/1, banco.item/1, banco.blueprint/1, banco.review/1, banco.solve/1)." }
+  E-GRAPH-CYCLE: { stage: ruby, severity: error, description: "The prerequisite edges form a cycle." }
+  E-SOURCE: { stage: ruby, severity: error, description: "A citation is not an exact substring of a pdf-origin line, cites a transcript line, or names a missing line." }
+  E-SCOPE: { stage: ruby, severity: error, description: "Scope does not match the citations: middle_school and not_in_prima skills have no prima refs and carry a reason; studied, integration_studied and in_progress have at least one." }
+  E-NEEDED-BY: { stage: ruby, severity: error, description: "A skill has no seconda needed_by ref and is not a transitive prerequisite of a skill that has one." }
+  E-GRAPH-EDGE-UNAPPROVED: { stage: ruby, severity: error, description: "A cross-subject prerequisite points at a skill that is not in an approved graph." }
+  # Item structure.
+  E-SKILL-UNKNOWN: { stage: ruby, severity: error, description: "The item names a skill that is not in the subject's graph." }
+  E-ASSET: { stage: ruby, severity: error, description: "An asset has no source, an SVG carries script, on* handlers, foreignObject or an external href, or a file is over 200 KB." }
+  E-COMPOSITE: { stage: ruby, severity: error, description: "A multi-step item implicates two or more distinct prerequisites but its skill is not a composite listing them." }
+  # Generator.
+  E-CODE-GLOBAL: { stage: ruby, severity: error, description: "The generator or verify uses a banned global or import (Math.random, Date, performance, crypto, Intl, toLocaleString, eval, Function, fetch, XMLHttpRequest, WebSocket, import(, importScripts, or an import other than /lib/rng.mjs and /lib/fmt.mjs)." }
+  E-GEN-NONDETERMINISTIC: { stage: chrome, severity: error, description: "Two fresh contexts gave a different canonical output for the same seed." }
+  E-GEN-THROW: { stage: chrome, severity: error, description: "generate(seed, rng) threw." }
+  E-GEN-TIMEOUT: { stage: chrome, severity: error, description: "One generate call took more than 2 s." }
+  E-GEN-SCHEMA: { stage: chrome, severity: error, description: "The output is over 16 KB or has the wrong shape." }
+  E-GEN-POOL: { stage: chrome, severity: error, description: "Fewer than 24 clean seeds of 1..200, more than 20% problem seeds, or fewer than 20 distinct displays among 24." }
+  # Component fit.
+  E-COMPONENT-NUMERIC: { stage: ruby, severity: error, description: "An expression item whose expected value is rational with no letters must use number or fraction." }
+  E-EXPONENT-MULTIDIGIT: { stage: ruby, severity: error, description: "An expression item has an exponent of 10 or more in an expected or catalogue value." }
+  # Grading round trip.
+  E-ROUNDTRIP: { stage: roundtrip, severity: error, description: "An error value does not come back from the grader with its code." }
+  E-ERROR-NEVER-GENERATED: { stage: roundtrip, severity: error, description: "A catalogue error is never produced by any clean seed." }
+  E-ACCEPTS-RANDOM: { stage: roundtrip, severity: error, description: "The grader accepted one of 200 random well-formed answers." }
+  E-STEP-INCONSISTENT: { stage: roundtrip, severity: error, description: "The solution steps contradict the answer." }
+  # Verify.
+  E-VERIFY-MISSING: { stage: verify, severity: error, description: "There is no verify.mjs yet; instances are materialized anyway." }
+  E-VERIFY-AUTHOR: { stage: verify, severity: error, description: "verify.mjs was added or changed by a session that is not a verifier." }
+  E-VERIFY-REJECTS: { stage: verify, severity: error, description: "verify rejects a clean seed." }
+  E-VERIFY-VACUOUS: { stage: verify, severity: error, description: "verify accepts a catalogue error value or a +1 or sign-flip mutant." }
+  E-SESSION-NOT-INDEPENDENT: { stage: verify, severity: error, description: "The author, verifier, reviewer and solver sessions of an item are not disjoint." }
+  # Leak.
+  E-DISPLAY-KEY: { stage: ruby, severity: error, description: "The display carries a key, a verdict or a field that reveals the answer." }
+  E-SOLUTION-IN-DISPLAY: { stage: ruby, severity: error, description: "The normalized expected answer (3+ characters) appears in a non-stem display string or SVG text, or the key option's text appears outside the options array." }
+  W-ANSWER-IN-STEM: { stage: ruby, severity: warning, description: "The expected answer appears in the stem." }
+  # Choice, ordering, matching.
+  E-CHOICE-OPTIONS: { stage: ruby, severity: error, description: "A choice item has fewer than 3 or more than 5 options (never 2), or an ordering item has fewer than 3 or more than 7 elements." }
+  E-DISTRACTOR-UNCODED: { stage: ruby, severity: error, description: "A distractor carries no error code from the catalogue." }
+  E-OPTION-DUPLICATE: { stage: ruby, severity: error, description: "Two options have the same normalized text." }
+  W-LONGEST-CORRECT: { stage: ruby, severity: warning, description: "The correct option is the longest in too many instances." }
+  E-MATCHING-SIZE: { stage: ruby, severity: error, description: "A matching item has fewer than 4 pairs or a right column that is not n+1." }
+  # Text.
+  E-ACCENT-POLICY: { stage: ruby, severity: error, description: "accent_policy and the paradigm forms contradict each other." }
+  E-PROVA-A-PARAMS: { stage: ruby, severity: error, description: "An item built on last year's exam structure reuses its numbers instead of new ones." }
+  # Readability (Italian instructional text only).
+  E-READ: { stage: ruby, severity: error, description: "A readability rule failed; the rule name is in the detail (see read_rules).", read_rules: [markup, emoji, all_caps, sentence_length, stem_length, bold_spans, bold_span_length] }
+  E-PHRASE: { stage: ruby, severity: error, description: "A banned phrase is present (exam-gaming, self-certification, personalisation)." }
+  E-MESSAGE: { stage: ruby, severity: error, description: "A message_it is longer than two sentences." }
+  E-QUOTE-REF: { stage: ruby, severity: error, description: "A quote reference does not resolve to an imported reference text, or the quote is not an exact substring of it." }
+  W-GULPEASE: { stage: ruby, severity: warning, description: "Gulpease readability index below the threshold." }
+  W-PASSAGE-READABILITY: { stage: ruby, severity: warning, description: "A reading passage is harder than the threshold." }
+  W-ABSOLUTE: { stage: ruby, severity: warning, description: "An absolute word (always, never, only) that needs a counterexample check." }
+  W-NEGATIVE-STEM: { stage: ruby, severity: warning, description: "The stem is phrased as a negation." }
+  W-DECIMAL-POINT: { stage: ruby, severity: warning, description: "A decimal point where the Italian comma is expected." }
+  W-SELF-CERT: { stage: ruby, severity: warning, description: "Self-certifying wording." }
+  W-CALCULATOR: { stage: ruby, severity: warning, description: "A numeric item in a subject that allows the calculator lacks the sentence that says so." }
+  # Blueprint (synchronous).
+  E-POOL-REDO: { stage: blueprint, severity: error, description: "A skill has fewer than 6 distinct-fingerprint instances across 2 items with 3 low-guess, and does not declare redo_reserve false; or a pinned descent skill has no low-guess instance." }
+  E-BLUEPRINT-ENTRIES: { stage: blueprint, severity: error, description: "The blueprint has fewer than 4 or more than 10 entries." }
+  E-BLUEPRINT-UNPINNED-DESCENT: { stage: blueprint, severity: error, description: "A skill the descent can reach from the starting skills has neither pinned items nor a not_assessed reason in descent[] (D-038)." }
+  E-ITEM-NOT-PASSED: { stage: blueprint, severity: error, description: "A pinned item revision has no passed validation." }
+  # Review and blind solve.
+  E-QUOTE-NOT-FOUND: { stage: review, severity: error, description: "A review finding quotes text that is not an exact substring of the item." }
+  E-REVIEW-EMPTY: { stage: review, severity: error, description: "A review without evidence (a bare 'all verified')." }
+  E-BLIND-SOLVE-MISMATCH: { stage: review, severity: error, description: "The blind solver's answer disagrees with the key; stored as a blocker finding." }
+  E-PROVIDER-NOT-ALLOWED: { stage: review, severity: error, description: "The session's provider is outside the allowlist for this role." }
+  # Grading proposals (the evening loop).
+  E-GRADE-POINT: { stage: grading, severity: error, description: "A grade proposal has an unknown or missing rubric point, or a score that is not an integer between 0 and the weight." }
+  E-GRADE-QUOTE: { stage: grading, severity: error, description: "A score above 0 has no quote, or the quote is shorter than 3 or longer than 300 characters." }
+  E-GRADER-IS-AUTHOR: { stage: grading, severity: error, description: "The grading session is among the item's authoring sessions (also reported as reason grader_is_author)." }
+  quote_not_in_submission: { stage: grading, severity: error, description: "The brief's name for E-QUOTE-NOT-FOUND on a grade proposal (the API sends E-QUOTE-NOT-FOUND with this as reason)." }
+  grader_is_author: { stage: grading, severity: error, description: "The grading session is among the item's authoring sessions." }
+
+# Refusals that store nothing (only for non-revisions), and the API's own codes.
+api:
+  E-AUTH: { http: 401, description: "Token missing, invalid or revoked." }
+  E-STALE-BASE: { http: 409, description: "The submission is not based on the latest revision." }
+  E-CHROME-BUSY: { http: 409, description: "Chrome is busy; retry in 30 s." }
+  E-CHROME-UNAVAILABLE: { http: 503, description: "Chrome or the grader worker did not answer (a dry run); retry in 30 s." }
+  E-FILES: { http: 422, description: "Unparseable or missing files." }
+  E-TOO-LARGE: { http: 413, description: "A file is over 64 KB or the total over 2 MB." }
+  E-NOT-FOUND: { http: 404, description: "Unknown item, subject, brief, revision or graph revision." }
+  E-BRIEF-UNKNOWN: { http: 404, description: "No brief with that name." }
+  E-SIMULATE-INPUT: { http: 422, description: "The simulation input is not a usable blueprint, bundle or script." }
+  E-BLUEPRINT-UNKNOWN: { http: 404, description: "The subject has no blueprint revision." }
+  E-SESSION: { http: 422, description: "A command that needs a session sent no X-Banco-Session, or the session does not exist (banco session new)." }
+  E-SESSION-ROLE: { http: 422, description: "The session has another role than the command needs." }
+  E-PROPOSAL-EXISTS: { http: 409, description: "The attempt already has a grade proposal the teacher has neither confirmed nor rejected." }
+
+# What the grader says about one answer (attempt_gradings.verdict).
+verdicts:
+  correct: { evidence: C }
+  typical_error: { evidence: W, note: "carries the catalogue code" }
+  wrong: { evidence: W, note: "certain but unclassified" }
+  dont_know: { evidence: D }
+  wrong_form: { evidence: conditional, note: "W when the form is the item's skill; WRONG_FORM_DECLARED when declared; pending otherwise" }
+  near_miss: { evidence: conditional, note: "NEAR_MISS" }
+  undetermined: { evidence: pending }
+  invalid: { evidence: none, note: "not an attempt; Italian message; app_event invalid_input" }
+
+# Codes the grader emits besides catalogue codes (snake_case). The orthography
+# allowlist of Rules::V1 is a subset of these.
+grader_codes:
+  es_accents: { description: "Spanish accent missing or misplaced; value otherwise right." }
+  it_accents: { description: "Italian accent missing or wrong; value otherwise right." }
+  it_apostrophe_accent: { description: "Apostrophe typed instead of an accent (perche' for perché)." }
+  radical_simplified: { description: "The radical is not in simplest form (wrong_form)." }
+  lowest_terms: { description: "The fraction is not in lowest terms (wrong_form)." }
+  improper: { description: "An improper fraction where a mixed number is declared (wrong_form)." }
+  mixed: { description: "A mixed number where an improper fraction is declared (wrong_form)." }
+  use_comma: { description: "invalid: a dot where the decimal comma is required." }
+  empty: { description: "invalid: blank answer or empty box." }
+  unparseable: { description: "invalid: the answer cannot be read." }
+  ambiguous_exponent: { description: "invalid: an exponent that cannot be read with certainty." }
+  ambiguous_mixed_number: { description: "invalid: a mixed number or digits separated by a space." }
+  zero_denominator: { description: "invalid: denominator 0." }
+  number_too_large: { description: "invalid: a number written with an exponent beyond 400." }
+  invalid_answer: { description: "undetermined row: a retried answer that the checker found invalid; the teacher reads it (D-069)." }
+  negative_denominator: { description: "invalid: a negative denominator (the sign goes in front of the numerator)." }
+  signed_fraction_part: { description: "invalid: a mixed number whose fractional part is negative (the sign belongs to the whole part)." }
+  leading_zeros: { description: "A binary answer with the right value but without the required leading zeros (wrong_form)." }
+  grader_unavailable: { description: "The expression worker did not answer after the last retry; the attempt is verdict_pending for the teacher." }
