@@ -602,6 +602,25 @@
             "minLength": 1,
             "maxLength": 200
           }
+        },
+        "tests": {
+          "description": "Optional checks of this instance alone (D-085): answers it must accept and must reject, run after the item's tests (which stay on the first instance).",
+          "type": "object",
+          "properties": {
+            "must_accept": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/any_answer"
+              }
+            },
+            "must_reject": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/any_answer"
+              }
+            }
+          },
+          "additionalProperties": false
         }
       },
       "required": [

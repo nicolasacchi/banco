@@ -189,6 +189,11 @@ class CodeFixturesTest < ActiveSupport::TestCase
       context = Validation::Context.new(subject: "math", source_line: ->(s, n) { (l = F::LINES.dig(s, n)) && s == "prima-test" ? l.merge(block_marker: "★") : l })
       Validation::Rules.with(coverage: { prima_source: "prima-test" }) { Validation::GraphChecks.call(doc, subject: "math", context: context).map(&:code).uniq }
     },
+    "W-GRAPH-READABILITY" => lambda {
+      doc = JSON.parse(JSON.generate(F::GRAPH))
+      doc["skills"][0]["errors"] = [ { "code" => "long_one", "description_it" => ("parola " * 30).strip + ".", "implicates" => [] } ]
+      Validation::GraphChecks.call(doc, subject: "math", context: F.context).map(&:code).uniq
+    },
     "W-CALCULATOR" => lambda {
       business = item("subject" => "business", "skill" => "business.invoice")
       static_codes(business, context: F.context(subject: "business", extra_skills: { "business.invoice" => { "key" => "business.invoice" } }))

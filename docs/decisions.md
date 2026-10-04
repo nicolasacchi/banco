@@ -91,6 +91,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-082 | 2026-10-05 | step consistency reads LaTeX decimal commas; teacher skill page renders solution markup | implemented |
 | D-083 | 2026-10-05 | W-ANSWER-IN-STEM ignores a key inside a «quoted» sentence; brief on accent_policy and per-instance accept | implemented |
 | D-084 | 2026-10-05 | W-NEGATIVE-STEM ignores «quoted» and $math$ spans; CLI reports a missing contract header as E-NETWORK | decided |
+| D-085 | 2026-10-05 | per-instance `tests`; W-GRAPH-READABILITY | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -929,5 +930,15 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** (1) the negation patterns run on the stem with `«...»` and `$...$` spans removed, so a logic item that asks about «non (...)» is not warned; a negation in the instruction still is. (2) A response without an X-Banco-Contract header is E-NETWORK (next: retry in 60 s, then `banco health`); E-CONTRACT only when a non-empty digest differs. `banco.*/1` formats unchanged.
 - **Why:** content agents reported a false warning on every logic-connective item and a misleading rebuild hint while the server restarted.
 - **Cost:** a negation hidden inside quotes is not warned about.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-085 · 2026-10-05 · per-instance `tests`; W-GRAPH-READABILITY
+
+- **Design ref:** A-06
+- **Design said:** item `tests` (must_accept, must_reject, blank) run on the first instance only; the readability lint reads item texts only.
+- **We do:** (1) a `banco.item/1` instance may carry an optional `tests` object with `must_accept` and `must_reject` (answers, no `blank`); they are graded on that instance, with its own `accept` (D-081), after the item's tests, and are not stored. Findings point at `/instances/N/tests/...`. Per-instance `accept` itself already existed (D-081). (2) New warning `W-GRAPH-READABILITY`: every `*_it` text of a skill graph (error descriptions, names) goes through the item readability lint; an E-READ there is a warning, so the graph still passes but the author sees that the same text copied into an item error catalogue would be refused. Registry version 5. `banco.*/1` stays backward compatible: both additions are optional.
+- **Why:** content agents reported that an alternative on a later instance could not be tested, and a graph sentence of 26 words passing the graph but failing in an item.
+- **Cost:** a few more warnings on graphs; no migration.
 - **Status:** implemented
 - **Back-port:** A-06.

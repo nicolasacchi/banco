@@ -125,4 +125,4 @@ API listener), `node --test 'lib/harness/test/*.test.mjs'`. Chrome tests skip wh
 `BROWSER_PATH` is not set. `contract/examples/` is written by the integration tests
 with `UPDATE_CONTRACT=1`; CI runs them and fails on a dirty diff.
 
-Generator `tests` (D-078, D-080): `must_reject` and `blank` run on the first stored instance; keep `must_accept` empty when the key changes with the seed. E-ACCEPTS-RANDOM ignores a random expression that equals the key in value.
+Generator `tests` (D-078, D-080): `must_reject` and `blank` run on the first stored instance; keep `must_accept` empty when the key changes with the seed. E-ACCEPTS-RANDOM ignores a random expression that equals the key in value. A listed instance may carry its own `tests` (`must_accept`, `must_reject`, D-085) for its own `accept`; skill-graph `*_it` texts get `W-GRAPH-READABILITY` when an item would fail E-READ.

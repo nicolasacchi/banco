@@ -24,7 +24,20 @@ module Validation
       scope(skills, findings)
       scope_markers(skills, context, findings)
       needed_by(skills, index, findings)
+      readability(skills, findings)
       findings
+    end
+
+    # D-085: the *_it texts of the skills are linted like an item's; an E-READ there is
+    # only a warning (the graph is the teacher's reading text, the item copy is the block).
+    def readability(skills, findings)
+      lint = Findings.new
+      Readability.lint_document(skills, "/skills", lint)
+      lint.each do |f|
+        next unless f.code == "E-READ"
+
+        findings.add("W-GRAPH-READABILITY", f.field, f.message, rule: f.detail[:rule])
+      end
     end
 
     def own_subject(graph, subject, findings)
