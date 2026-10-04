@@ -173,6 +173,28 @@ module Validation
       findings.add("E-PROVA-A-PARAMS", "/instances", "an item built on last year's exam structure takes new numbers: write a generator, not listed instances")
     end
 
+    # The item's `exclude_params`: values of last year's exam that no instance may show or
+    # have as the key or an error value. An entry is matched in the display, the answer and
+    # the error values with whitespace, `$`, `\\left`/`\\right` and braces-free spacing
+    # removed; an entry that starts or ends with a digit does not match inside a longer number.
+    def excluded_params(item, inst, label, findings, seed: nil)
+      list = Array(item["exclude_params"])
+      return if list.empty?
+
+      text = squash_params(JSON.generate([ inst["display"], inst["answer"], inst["errors"] ]))
+      list.each do |entry|
+        needle = squash_params(entry)
+        next if needle.empty?
+
+        re = Regexp.new((needle.match?(/\A\d/) ? '(?<![\d.,])' : "") + Regexp.escape(needle) + (needle.match?(/\d\z/) ? '(?![\d])' : ""))
+        next unless text.match?(re)
+
+        findings.add("E-PROVA-A-PARAMS", label, "an instance shows #{entry.inspect}, which the item excludes (a number of last year's exam)", rule: "excluded", seed: seed)
+      end
+    end
+
+    def squash_params(text) = text.to_s.gsub(/\\left|\\right|\\[,;:! ]|[\s$]/, "")
+
     # ---- E-QUOTE-REF ------------------------------------------------------------------------------
 
     def quote_ref(quote, field, context, findings, seed: nil)

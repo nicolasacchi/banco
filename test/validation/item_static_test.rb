@@ -114,6 +114,13 @@ class ItemStaticTest < ActiveSupport::TestCase
     assert_includes codes(run_item(item)), "E-PROVA-A-PARAMS"
   end
 
+  test "E-PROVA-A-PARAMS: exclude_params keeps the exam's numbers out of the instances, whole numbers only" do
+    hit = run_item(F.static_item("exclude_params" => [ "13" ]))
+    assert_includes codes(hit), "E-PROVA-A-PARAMS"
+    assert_not_includes codes(run_item(F.static_item("exclude_params" => [ "1" ]))), "E-PROVA-A-PARAMS" # 13 and 21 are other numbers
+    assert_not_includes codes(run_item(F.static_item("exclude_params" => [ "99" ]))), "E-PROVA-A-PARAMS"
+  end
+
   test "E-QUOTE-REF: a reference that does not exist or a quotation that is not in it" do
     quote = ->(ref, text) { F.static_item("prompt" => { "stem_it" => "Leggi.", "quote" => { "ref" => ref, "text" => text } }) }
     assert_includes codes(run_item(quote.call("no-ref", "ogni cosa"))), "E-QUOTE-REF"

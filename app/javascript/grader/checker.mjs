@@ -676,6 +676,17 @@ const FORMS = {
     if (af.length < ef.length) v.add('not_fully_factored');
     return [...v];
   },
+  // `r = expression` or `expression` for the unknown `r`: the letter is isolated; the other side
+  // may be any expression (compare solution, whose other side must be a number).
+  isolate(ans, ctx) {
+    const n = strip(ans);
+    if (n.t === 'eq') {
+      const l = strip(n.lhs), r = strip(n.rhs);
+      const symSide = l.t === 'sym' ? l : r.t === 'sym' ? r : null;
+      if (!symSide || (ctx.unknown && symSide.name !== ctx.unknown)) return ['not_a_solution_statement'];
+    }
+    return [];
+  },
   solution(ans, ctx) {
     const n = strip(ans);
     if (n.t === 'eq' || n.t === 'rel') {
@@ -744,12 +755,13 @@ export function createChecker({ ComputeEngine }) {
     if (exp.ok && !form.includes('solution') && hasRel(exp.ast)) return { problems: ['expected_unparseable:unsupported_operator'], check: () => ({ verdict: 'invalid', code: 'item_broken' }) };
     if (!exp.ok) return { problems: [`expected_unparseable:${exp.code}`], check: () => ({ verdict: 'invalid', code: 'item_broken' }) };
     const isSol = form.includes('solution');
-    const expVal = isSol ? solutionValue(exp.ast, unknown) : exp.ast;
+    const strips = isSol || form.includes('isolate');
+    const expVal = strips ? solutionValue(exp.ast, unknown) : exp.ast;
     const errs = [];
     for (const e of errors) {
       const p = parse(e.latex, source);
       if (!p.ok) { problems.push(`error_unparseable:${e.code}`); continue; }
-      errs.push({ code: e.code, ast: isSol ? solutionValue(p.ast, unknown) : p.ast });
+      errs.push({ code: e.code, ast: strips ? solutionValue(p.ast, unknown) : p.ast });
     }
     // generator constraints: the correct answer never matches an error; errors never collide
     for (const e of errs) if (solEq(expVal, e.ast, opts).equal !== false) problems.push(`error_equals_expected:${e.code}`);
@@ -767,7 +779,7 @@ export function createChecker({ ComputeEngine }) {
       const p = parse(answer, aopts.source || source);
       if (!p.ok) return { verdict: 'invalid', code: p.code, detail: p.detail };
       if (!isSol && hasRel(p.ast)) return { verdict: 'invalid', code: 'unsupported_operator', detail: 'relation' };
-      const ansVal = isSol ? solutionValue(p.ast, unknown) : p.ast;
+      const ansVal = strips ? solutionValue(p.ast, unknown) : p.ast;
       const r = solEq(ansVal, expVal, opts);
       if (r.equal === null) return { verdict: 'undetermined', reason: r.reason, method: r.method };
       if (r.equal) {

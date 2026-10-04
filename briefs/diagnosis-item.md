@@ -109,12 +109,15 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
     it: write it in your report to the teacher and leave the skill out until the
     answer.
 12. **The previous year's exam (Prova A) is one instance, not the target.** Use only
-    its structure, with new numbers (`exclude_params`); the declared error
+    its structure, with new numbers (the item's optional `exclude_params`: the exam's values, each written
+    as it would appear; an instance that shows one fails `E-PROVA-A-PARAMS`); the declared error
     answers differ from each other and from the key; lcm items use numbers that
     are not coprime. Never copy its numbers, its wording or its answers.
 13. **Calculating subjects.** Numeric items are generators. A numeric answer
     without letters uses `number` or `fraction`; `expression` is only for answers
-    with letters or irrational values, with one-digit exponents. Business amounts
+    with letters or irrational values, with one-digit exponents. To isolate a letter
+    (`r = ...`) give the answer `{latex, unknown}` with `form: ["isolate"]`: the student may
+    type `r = I/(Ct)` or just `I/(Ct)`. Business amounts
     use `number` with unit euro and 2 decimals; computer science states the
     KB convention in the stem. Where the calculator is allowed (business,
     chemistry) every numeric stem says so; elsewhere numbers are chosen for hand

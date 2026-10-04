@@ -117,7 +117,10 @@ module Validation
     def static(unit, item)
       list = Array(unit.instances)
       checker = InstanceChecks.new(unit, context: @context, files: @files)
-      list.each_with_index { |inst, i| @findings.merge!(checker.call(inst, label: "#{unit.path}/instances/#{i}")) }
+      list.each_with_index do |inst, i|
+        @findings.merge!(checker.call(inst, label: "#{unit.path}/instances/#{i}"))
+        ItemChecks.excluded_params(unit.body, inst, "#{unit.path}/instances/#{i}", @findings)
+      end
       longest_correct(unit, list, checker)
       never_generated(unit, list)
       Roundtrip.new(unit, subject: item["subject"], findings: @findings).call(list, label: "#{unit.path}/instances", tests: unit.body["tests"])
@@ -165,6 +168,7 @@ module Validation
           inst = row.output
           local = checker.call(inst, label: "generated", seed: row.seed, generated: true)
           merge_seed_findings(local)
+          ItemChecks.excluded_params(unit.body, inst, "generated", @findings, seed: row.seed)
           if local.errors.empty?
             clean << { seed: row.seed, "display" => inst["display"], "answer" => inst["answer"], "errors" => inst["errors"], "solution" => inst["solution"] }
           else

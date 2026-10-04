@@ -124,6 +124,13 @@
       },
       "minItems": 2
     },
+    "exclude_params": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 60 },
+      "minItems": 1,
+      "maxItems": 30,
+      "uniqueItems": true
+    },
     "generator": {
       "const": "generator.mjs"
     },

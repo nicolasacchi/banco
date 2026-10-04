@@ -30,6 +30,14 @@ class ItemGeneratedTest < ActiveSupport::TestCase
     assert result.chrome_version.present?
   end
 
+  test "exclude_params: a generated instance that shows an excluded value fails E-PROVA-A-PARAMS" do
+    item = F.generated_item.merge("exclude_params" => [ "7" ])
+    result = run_files(F.generated_files(item))
+    assert_includes codes(result), "E-PROVA-A-PARAMS"
+    ok = run_files(F.generated_files(F.generated_item.merge("exclude_params" => [ "9999" ])))
+    assert_not_includes codes(ok), "E-PROVA-A-PARAMS"
+  end
+
   test "E-VERIFY-MISSING: instances are materialized anyway" do
     result = run_files(F.generated_files(verify: nil))
     assert_equal [ "E-VERIFY-MISSING" ], codes(result)

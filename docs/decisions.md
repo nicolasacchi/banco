@@ -86,6 +86,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-076 | 2026-10-04 | a form that is the item's own skill carries its first violation as the error code | implemented |
 | D-077 | 2026-10-04 | solution items accept an inequality (x < a) as the answer and as typical errors | implemented |
 | D-078 | 2026-10-04 | generator items run tests; leak scan folds exponent braces and product dots | implemented |
+| D-079 | 2026-10-04 | `isolate` form (letter = expression) and `exclude_params` on banco.item/1 | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -864,5 +865,15 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** (1) a generator item's `tests` run against the first stored instance, as for a static item (before they were ignored). `must_reject` and `blank` are instance-independent in practice; a `must_accept` value must be right for every instance, so a generator item normally leaves it empty. (2) `Answers.squash` also drops `\cdot`, `\times` and `*`, and rewrites `^{d}` and `^(d)` to `^d` for a one-token exponent, so `4x^{2}y` in a stem or a cell matches the key `4x^2y` (E-SOLUTION-IN-DISPLAY, W-ANSWER-IN-STEM). The dotted abbreviations m.c.m., M.C.D., C.E. were already protected in the sentence split (19643d3). `banco.*/1` formats unchanged.
 - **Why:** content agents reported the tests being silently ignored for generators and a leak slipping past a brace-style difference.
 - **Cost:** a generator item with an instance-dependent `must_accept` now fails E-ROUNDTRIP; remove it.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-079 · 2026-10-04 · `isolate` form for literal keys; `exclude_params` on items
+
+- **Design ref:** A-06, brief rule 12
+- **Design said:** `solution` strips `x =` but needs a number on the other side; the brief named `exclude_params` without a field for it.
+- **We do:** (1) form `isolate` (expression items with an `unknown`): the answer `r = I/(Ct)` and `I/(Ct)` both grade as the key `I/(C t)` (the `unknown =` is stripped from the answer, the key and the error values; any expression may stand on the other side; an equation for another letter is `wrong_form` `not_a_solution_statement`). Without the form nothing changes. (2) `banco.item/1` gets an optional top-level `exclude_params` (1 to 30 strings): values of the exam that no instance may show. Each entry is searched in the display, the answer and the error values (whitespace, `$`, `\left`/`\right` removed; an entry that starts or ends with a digit does not match inside a longer number, so `7` does not hit `17`); a hit is `E-PROVA-A-PARAMS` rule `excluded` on every listed or generated instance. The field is optional, so existing items stay valid; a generator may still exclude values itself.
+- **Why:** content agents reported that a letter-key answer could not be graded in the `r = ...` form, and that the brief named a field nothing implemented.
+- **Cost:** a substring-style match: an excluded fraction written another way (`\frac{28}{5}` vs `28/5`) is not caught; list each written form.
 - **Status:** implemented
 - **Back-port:** A-06.
