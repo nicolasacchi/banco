@@ -32,10 +32,10 @@ module Validation
     # The keys of a unit body the grader reads (Grading::Spec).
     SPEC_KEYS = %w[component skill form form_skill accent_policy spelling_policy paradigm_forms accept unit allow_dot profile case_sensitive].freeze
 
-    def spec_for(unit, subject, instance)
+    def spec_for(unit, subject, instance, overrides = {})
       Grading::Spec.from_hash(unit.body.slice(*SPEC_KEYS).merge(
         "subject" => subject, "answer" => instance["answer"], "errors" => Array(instance["errors"]), "display" => instance["display"]
-      ))
+      ).merge(overrides))
     end
   end
 end

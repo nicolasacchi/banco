@@ -571,6 +571,52 @@ function isPrimitiveIntegerPoly(f) {
   return g === 1n || g === 0n;
 }
 
+// ---- polynomial helpers for the `reduced` form (exact, over Q; coefficients low to high)
+function polyTrim(p) { while (p.length && qzero(p[p.length - 1])) p.pop(); return p; }
+function polyInterp(xs, ys) {
+  const out = [];
+  for (let i = 0; i < xs.length; i++) {
+    let term = [ys[i]];
+    for (let j = 0; j < xs.length; j++) {
+      if (j === i) continue;
+      const inv = qinv(Q(xs[i] - xs[j]));
+      const next = new Array(term.length + 1).fill(null).map(() => Q(0n));
+      term.forEach((c, k) => { next[k + 1] = qadd(next[k + 1], qmul(c, inv)); next[k] = qadd(next[k], qmul(c, qmul(inv, Q(-xs[j])))); });
+      term = next;
+    }
+    term.forEach((c, k) => { out[k] = qadd(out[k] || Q(0n), c); });
+  }
+  return polyTrim(out);
+}
+function polyRem(a, b) {
+  a = a.slice();
+  while (a.length >= b.length && a.length) {
+    const f = qmul(a[a.length - 1], qinv(b[b.length - 1])), sh = a.length - b.length;
+    for (let i = 0; i < b.length; i++) a[sh + i] = qadd(a[sh + i], qneg(qmul(f, b[i])));
+    polyTrim(a);
+  }
+  return a;
+}
+function polyGcdDegree(a, b) {
+  a = polyTrim(a.slice()); b = polyTrim(b.slice());
+  if (!a.length || !b.length) return Math.max(a.length, b.length) - 1;
+  while (b.length) { const r = polyRem(a, b); a = b; b = r; }
+  return a.length - 1;
+}
+// the polynomial a node stands for in its single letter, or null (not a polynomial of degree <= 9)
+function asPoly(n, name) {
+  const xs = [], ys = [];
+  try {
+    for (let k = -5n; k <= 6n; k++) {
+      const v = evalExact(n, new Map([[name, Q(k)]]));
+      if (!sIsRational(v)) return null;
+      xs.push(k); ys.push(sRational(v));
+    }
+  } catch { return null; }
+  const p = polyInterp(xs, ys);
+  return p.length - 1 <= 9 ? p : null;
+}
+
 const opDiv = (ans, ctx) => ctx.flags.has('division_operator') && numberForm(ans) && numberForm(ans).kind === 'frac';
 const FORMS = {
   number(ans, ctx) { return numberForm(ans) && !opDiv(ans, ctx) ? [] : ['not_a_number']; },
@@ -593,6 +639,21 @@ const FORMS = {
         for (const t of terms(x.num)) { const c = termIntCoeff(t.node); if (c === null) { g = 1n; break; } g = bgcd(g, c); }
         if (g !== 1n) v.add('not_lowest_terms');
       }
+    });
+    return [...v];
+  },
+  // an algebraic fraction whose numerator and denominator (polynomials in one letter) still share a factor
+  reduced(ans) {
+    const v = new Set();
+    walk(ans, (x) => {
+      if (x.t !== 'div' || x.colon) return;
+      const nv = freeVars(x.num), dv = freeVars(x.den);
+      if (!nv.size || !dv.size) return;
+      const all = new Set([...nv, ...dv]);
+      if (all.size !== 1) return;
+      const name = [...all][0];
+      const a = asPoly(x.num, name), b = asPoly(x.den, name);
+      if (a && b && polyGcdDegree(a, b) > 0) v.add('common_factor_not_cancelled');
     });
     return [...v];
   },

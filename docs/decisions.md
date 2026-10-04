@@ -877,3 +877,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** a substring-style match: an excluded fraction written another way (`\frac{28}{5}` vs `28/5`) is not caught; list each written form.
 - **Status:** implemented
 - **Back-port:** A-06.
+
+## D-080 · 2026-10-04 · `reduced` form for algebraic fractions; E-ACCEPTS-RANDOM ignores value-equal candidates
+
+- **Design ref:** A-06
+- **Design said:** `lowest_terms` checks numeric fractions and integer content; E-ACCEPTS-RANDOM flags any random answer the grader marks correct.
+- **We do:** (1) expression form `reduced`: for every fraction whose numerator and denominator are polynomials (degree 9 or less) in one and the same letter, both are interpolated exactly over Q from sampled values and their GCD is computed; a GCD of degree 1 or more is `wrong_form` with `common_factor_not_cancelled` (so `(x^2-16)/(x^2-4x)` against the key `(x+4)/x` is W). Several letters, non-polynomials and numeric fractions are not judged by it. (2) E-ACCEPTS-RANDOM skips a random expression candidate that equals the key in value (graded against the key with no form and no declared errors): `1x+4` and `1(x+4)` for the key `x+4` are the key, not a grader fault. (3) Generator `tests` already run on the first stored instance since D-078 (the report predates that reading of `item_runner`); nothing else changes, `tests` stays required with empty arrays allowed. `banco.*/1` formats unchanged; the new form and code are additive.
+- **Why:** content agents reported that retyping the unsimplified fraction was credited, and a sound item failing E-ACCEPTS-RANDOM by chance.
+- **Cost:** `reduced` does not look inside several-letter fractions; a fraction with a numeric common factor is still for `lowest_terms`.
+- **Status:** implemented
+- **Back-port:** A-06.

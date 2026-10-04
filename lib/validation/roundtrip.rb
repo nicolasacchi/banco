@@ -81,11 +81,19 @@ module Validation
         candidate = random_candidate(rng)
         next if candidate.nil? || candidate[:value] == key || candidate[:value].to_s == key_raw.to_s
 
-        if grade(inst, candidate[:raw]).verdict == "correct"
+        if grade(inst, candidate[:raw]).verdict == "correct" && !equal_in_value?(inst, candidate[:raw])
           @findings.add("E-ACCEPTS-RANDOM", "#{label}/0/answer", "the grader accepted a random answer (#{candidate[:raw].inspect})", rule: "random")
           return
         end
       end
+    end
+
+    # 1x+4 and 1(x+4) are the answer x+4 written another way, not a wrong answer the grader let through:
+    # grade against the key with no form and no declared errors, which compares values only (D-080).
+    def equal_in_value?(inst, raw)
+      return false unless @unit.component == "expression"
+
+      Grading::Expression.grade(Units.spec_for(@unit, @subject, inst, "form" => [], "errors" => []), raw).verdict == "correct"
     end
 
     def key_value(answer)

@@ -120,6 +120,7 @@ grader_codes:
   it_accents: { description: "Italian accent missing or wrong; value otherwise right." }
   it_apostrophe_accent: { description: "Apostrophe typed instead of an accent (perche' for perché)." }
   radical_simplified: { description: "The radical is not in simplest form (wrong_form)." }
+  common_factor_not_cancelled: { description: "An algebraic fraction whose numerator and denominator still share a factor (wrong_form of the reduced form)." }
   lowest_terms: { description: "The fraction is not in lowest terms (wrong_form)." }
   improper: { description: "An improper fraction where a mixed number is declared (wrong_form)." }
   mixed: { description: "A mixed number where an improper fraction is declared (wrong_form)." }

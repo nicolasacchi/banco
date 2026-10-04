@@ -259,6 +259,9 @@
     {"id": "ineq-leq-expected", "component": "expression", "raw": "x\\le -3", "item": {"answer": {"latex": "x\\leq -3", "unknown": "x"}, "form": ["solution"]}, "expect": {"verdict": "correct"}},
     {"id": "ineq-bound-not-reduced", "component": "expression", "raw": "x<-\\frac{6}{2}", "item": {"answer": {"latex": "x<-3", "unknown": "x"}, "form": ["solution", "lowest_terms"], "errors": [{"code": "direction_not_flipped", "value": {"latex": "x>-3", "unknown": "x"}}, {"code": "sign_error", "value": {"latex": "x<3", "unknown": "x"}}]}, "expect": {"verdict": "wrong_form", "form_violations": ["not_lowest_terms"]}},
     {"id": "ineq-chained-is-invalid", "component": "expression", "raw": "-5<x<-3", "item": {"answer": {"latex": "x<-3", "unknown": "x"}, "form": ["solution"], "errors": [{"code": "direction_not_flipped", "value": {"latex": "x>-3", "unknown": "x"}}, {"code": "sign_error", "value": {"latex": "x<3", "unknown": "x"}}]}, "expect": {"verdict": "invalid", "invalid_code": "unparseable"}},
-    {"id": "ineq-on-plain-item-is-invalid", "component": "expression", "raw": "x<3", "item": {"answer": {"latex": "3", "unknown": null}, "form": []}, "expect": {"verdict": "invalid", "invalid_code": "unparseable"}}
+    {"id": "ineq-on-plain-item-is-invalid", "component": "expression", "raw": "x<3", "item": {"answer": {"latex": "3", "unknown": null}, "form": []}, "expect": {"verdict": "invalid", "invalid_code": "unparseable"}},
+    {"id": "reduced-fraction-retyped", "component": "expression", "raw": "\\frac{x^2-16}{x^2-4x}", "item": {"answer": "\\frac{x+4}{x}", "form": ["reduced"]}, "expect": {"verdict": "wrong_form", "form_violations": ["common_factor_not_cancelled"]}},
+    {"id": "reduced-fraction-half-cancelled", "component": "expression", "raw": "\\frac{(x-4)(x+4)}{x(x-4)}", "item": {"answer": "\\frac{x+4}{x}", "form": ["reduced"]}, "expect": {"verdict": "wrong_form", "form_violations": ["common_factor_not_cancelled"]}},
+    {"id": "reduced-fraction-key", "component": "expression", "raw": "\\frac{x+4}{x}", "item": {"answer": "\\frac{x+4}{x}", "form": ["reduced"]}, "expect": {"verdict": "correct"}}
   ]
 }

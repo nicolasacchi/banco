@@ -117,7 +117,10 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
     without letters uses `number` or `fraction`; `expression` is only for answers
     with letters or irrational values, with one-digit exponents. To isolate a letter
     (`r = ...`) give the answer `{latex, unknown}` with `form: ["isolate"]`: the student may
-    type `r = I/(Ct)` or just `I/(Ct)`. Business amounts
+    type `r = I/(Ct)` or just `I/(Ct)`. To ask for an algebraic fraction in lowest terms (the student
+    cancels a common polynomial factor) give `form: ["reduced"]`: a fraction whose numerator and
+    denominator, polynomials in one letter, still share a factor is `wrong_form`
+    (`common_factor_not_cancelled`); `lowest_terms` only checks integer content. Business amounts
     use `number` with unit euro and 2 decimals; computer science states the
     KB convention in the stem. Where the calculator is allowed (business,
     chemistry) every numeric stem says so; elsewhere numbers are chosen for hand

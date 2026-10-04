@@ -124,3 +124,5 @@ Chrome reaches the listener (`http://banco-harness:3200` in production).
 API listener), `node --test 'lib/harness/test/*.test.mjs'`. Chrome tests skip when
 `BROWSER_PATH` is not set. `contract/examples/` is written by the integration tests
 with `UPDATE_CONTRACT=1`; CI runs them and fails on a dirty diff.
+
+Generator `tests` (D-078, D-080): `must_reject` and `blank` run on the first stored instance; keep `must_accept` empty when the key changes with the seed. E-ACCEPTS-RANDOM ignores a random expression that equals the key in value.
