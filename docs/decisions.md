@@ -90,6 +90,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-081 | 2026-10-04 | per-instance `accept`; item prompt in the leak scan; W-FORM-SKILL-CLOSURE; E-MATCHING-RIGHT-MARKUP | implemented |
 | D-082 | 2026-10-05 | step consistency reads LaTeX decimal commas; teacher skill page renders solution markup | implemented |
 | D-083 | 2026-10-05 | W-ANSWER-IN-STEM ignores a key inside a «quoted» sentence; brief on accent_policy and per-instance accept | implemented |
+| D-084 | 2026-10-05 | W-NEGATIVE-STEM ignores «quoted» and $math$ spans; CLI reports a missing contract header as E-NETWORK | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -918,5 +919,15 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** (1) on a `normalized_text` item the check removes `«...»` spans from the stem (display and prompt) before looking for the key, so "write the subject of «Marco mangia»" with the key `Marco` is the material, not a leak; a key outside the quotes still warns. Other components unchanged (the quote-free text is only used for the warning; E-SOLUTION-IN-DISPLAY is untouched). (2) The brief now says `accent_policy` belongs to `normalized_text` items only (the validator keeps refusing it elsewhere with E-ACCENT-POLICY), explains the quote convention, and points at the per-instance `accept` of D-081, which already covers "i dolci" / "dolci" on one instance and "la musica" / "musica" on another. `banco.*/1` formats unchanged.
 - **Why:** content agents reported warning noise on every analyse-the-sentence item, a brief that contradicted the validator, and (already fixed in D-081, staging had it) the missing per-instance accept.
 - **Cost:** a key hidden in a quote is not warned about; the reviewer reads the stem anyway.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-084 · 2026-10-05 · W-NEGATIVE-STEM ignores «quoted» and $math$ spans; CLI reports a missing contract header as E-NETWORK
+
+- **Design ref:** A-06, CLI contract check
+- **Design said:** W-NEGATIVE-STEM fires on any negation word in a stem; the CLI answered E-CONTRACT (rebuild the CLI) whenever X-Banco-Contract differed, including when absent.
+- **We do:** (1) the negation patterns run on the stem with `«...»` and `$...$` spans removed, so a logic item that asks about «non (...)» is not warned; a negation in the instruction still is. (2) A response without an X-Banco-Contract header is E-NETWORK (next: retry in 60 s, then `banco health`); E-CONTRACT only when a non-empty digest differs. `banco.*/1` formats unchanged.
+- **Why:** content agents reported a false warning on every logic-connective item and a misleading rebuild hint while the server restarted.
+- **Cost:** a negation hidden inside quotes is not warned about.
 - **Status:** implemented
 - **Back-port:** A-06.

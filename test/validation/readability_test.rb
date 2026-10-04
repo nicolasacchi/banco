@@ -79,6 +79,8 @@ class ReadabilityTest < ActiveSupport::TestCase
   test "warnings: absolute word, negative stem, decimal point, self-certification, Gulpease" do
     assert_includes lint("Il risultato è sempre positivo.").map(&:code), "W-ABSOLUTE"
     assert_includes lint("Quale frase non è corretta?", role: :stem).map(&:code), "W-NEGATIVE-STEM"
+    assert_not_includes lint("Quando è vera «non ($x$ è pari e $y$ è dispari)»?", role: :stem).map(&:code), "W-NEGATIVE-STEM"
+    assert_includes lint("Quale frase non è corretta? «Sì»", role: :stem).map(&:code), "W-NEGATIVE-STEM"
     assert_not_includes lint("Quale frase non è corretta?", role: :text).map(&:code), "W-NEGATIVE-STEM"
     assert_includes lint("Il prezzo è 3.5 euro.").map(&:code), "W-DECIMAL-POINT"
     assert_empty lint("Il prezzo è 1.000 euro.").select { |f| f.code == "W-DECIMAL-POINT" }

@@ -162,7 +162,7 @@ func TestNonJSONErrorBody(t *testing.T) {
 }
 
 func TestContractMismatchExitsSixWithBuildHint(t *testing.T) {
-	for _, header := range []string{"", "deadbeef"} {
+	for _, header := range []string{"deadbeef"} {
 		srv := fakeServer(200, "{}", header)
 		r := runCLI(t, srv.URL, envToken("bnc_x"), "schema")
 		srv.Close()
@@ -173,6 +173,19 @@ func TestContractMismatchExitsSixWithBuildHint(t *testing.T) {
 		if e.Next != "go build -o bin/banco ./cli" {
 			t.Errorf("next = %q", e.Next)
 		}
+	}
+}
+
+func TestMissingContractHeaderIsNetworkNotContract(t *testing.T) {
+	srv := fakeServer(200, "{}", "")
+	defer srv.Close()
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "schema")
+	if r.exit != ExitServer {
+		t.Fatalf("exit %d", r.exit)
+	}
+	e := assertErrJSON(t, r.stderr, "E-NETWORK")
+	if e.Next == "go build -o bin/banco ./cli" {
+		t.Errorf("next must not suggest a rebuild: %q", e.Next)
 	}
 }
 

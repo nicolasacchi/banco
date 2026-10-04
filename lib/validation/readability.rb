@@ -131,7 +131,9 @@ module Validation
       if (w = Rules.list(:readability, :absolute_words).find { |a| lower.match?(/\b#{Regexp.escape(a)}\b/) })
         findings.add("W-ABSOLUTE", field, "an absolute word (#{w}) needs a counterexample check", word: w)
       end
-      if role == :stem && Rules.list(:readability, :negative_stem).any? { |re| lower.match?(Regexp.new(re)) }
+      # A negation inside «…» or $…$ is the content being asked about, not the instruction.
+      instruction = lower.gsub(/«[^»]*»/, " ").gsub(/\$[^$]*\$/, " ")
+      if role == :stem && Rules.list(:readability, :negative_stem).any? { |re| instruction.match?(Regexp.new(re)) }
         findings.add("W-NEGATIVE-STEM", field, "the instruction is phrased as a negation")
       end
       if body.match?(/\d\.\d{1,2}(?!\d)/)
