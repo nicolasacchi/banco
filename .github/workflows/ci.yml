@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   hygiene:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       - name: Public-repository hygiene (prep/ untracked, no forbidden terms, no programme files)
@@ -20,7 +20,7 @@ jobs:
         run: bin/hygiene
 
   rails:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       RAILS_ENV: test
       BANCO_CHROME_NO_SANDBOX: "1"
@@ -62,7 +62,7 @@ jobs:
           test "$(ls "$D" | sort | tr '\n' ' ')" = "production.sqlite3 production_queue.sqlite3 "
 
   go:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
@@ -73,7 +73,7 @@ jobs:
       - run: (cd cli && go test ./...)
 
   node:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -88,7 +88,7 @@ jobs:
         run: node --test 'test/javascript/**/*.test.mjs'
 
   scan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       - uses: ruby/setup-ruby@v1
@@ -100,7 +100,7 @@ jobs:
       - run: bin/rubocop -f github
 
   docker:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       - name: Build the production image

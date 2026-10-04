@@ -10,7 +10,11 @@ module Api
         return refuse("E-FILES", "agent", "give --agent (the program, for example omp or claude-code)", "banco session new --role #{role} --agent NAME --model MODEL", 422) if agent.empty? || agent.size > 64
         return refuse("E-FILES", "model", "give --model (the model the session runs on)", "banco session new --role #{role} --agent #{agent} --model MODEL", 422) if model.empty? || model.size > 96
 
-        session = AgentSession.new(label: agent, role: role, agent: agent, model: model)
+        unless ApiToken.session_roles(@token.role).include?(role)
+          return refuse("E-SESSION-ROLE", "role", "a #{@token.role} token cannot open a #{role} session", "use a token whose role allows #{role}", 422)
+        end
+
+        session = AgentSession.new(label: agent, role: role, agent: agent, model: model, token_id: @token.id)
         reason = Providers.refusal(session)
         return refuse("E-PROVIDER-NOT-ALLOWED", "model", reason, "see config/banco/providers.yml", 422) if reason
 

@@ -77,7 +77,7 @@ not against intent: the model is declared, not proven.
 - The sessions that authored `item.json` or `generator.mjs`, the verifier, the reviewer
   and the solver of one item are disjoint (`E-SESSION-NOT-INDEPENDENT`), and a second
   round of review or solve uses a session that did not see the first.
-- Reviewer and blind solver: a known model family different from the author's;
+- Reviewer and blind solver: a model different from the model of every author session (the family may be the same, D-070);
   grader: Claude only (`E-PROVIDER-NOT-ALLOWED`). Reviewer and solver receive item
   text only; the grader reads the student's answers.
 - `banco review open|submit REV`: `banco.review/1` with the 11-point checklist. Refused:

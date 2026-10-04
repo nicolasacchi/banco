@@ -60,12 +60,8 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
 
-  # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
-  #
-  # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  # DNS rebinding protection (D-072): banco.scc.im, the internal container names and
+  # loopback for the API listener; the health check path is exempt.
+  config.hosts = Banco::Hosts.allowed
+  config.host_authorization = { exclude: ->(request) { Banco::Hosts.exclude(request) } }
 end

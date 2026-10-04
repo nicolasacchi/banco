@@ -65,7 +65,8 @@ module Api
       # The role of the session in X-Banco-Session when it is a work role, else nil.
       def current_session_role
         raw = request.headers["X-Banco-Session"].to_s
-        role = raw.match?(AgentSession::ID) ? AgentSession.find_by(id: raw)&.role : nil
+        found = raw.match?(AgentSession::ID) ? AgentSession.find_by(id: raw) : nil
+        role = found.role if found && (found.token_id.nil? || found.token_id == @token.id)
         role if %w[author verifier].include?(role)
       end
 

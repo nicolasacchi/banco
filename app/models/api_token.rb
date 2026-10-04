@@ -5,6 +5,12 @@ require "securerandom"
 # sha256 of the secret is stored, so a token can be shown once, at issuance.
 class ApiToken < ApplicationRecord
   ROLES = %w[agent_claude agent_omp ci].freeze
+  # The session roles each token role may open and use (D-071). ci: none.
+  SESSION_ROLES = {
+    "agent_claude" => %w[author verifier reviewer solver grader],
+    "agent_omp" => %w[author verifier reviewer solver],
+    "ci" => []
+  }.freeze
   ALPHABET = [ *"a".."z", *"A".."Z", *"0".."9" ].freeze
 
   has_one :revocation, class_name: "ApiTokenRevocation"
@@ -18,6 +24,8 @@ class ApiToken < ApplicationRecord
     create!(public_id: public_id, secret_sha256: Digest::SHA256.hexdigest(secret), role: role, label: label)
     "bnc_#{public_id}_#{secret}"
   end
+
+  def self.session_roles(token_role) = SESSION_ROLES.fetch(token_role.to_s, [])
 
   # Row for Banco::TokenAuth: { secret_sha256:, role: } or nil (unknown or revoked).
   def self.lookup(public_id)

@@ -35,6 +35,14 @@ module Api
         refuse("E-SESSION", "X-Banco-Session", raw.empty? ? "this command needs a session: set BANCO_SESSION" : "no session #{raw.first(20).inspect}", next_step, 422)
         return nil
       end
+      if session.token_id && session.token_id != @token.id
+        refuse("E-SESSION", "X-Banco-Session", "session #{session.id} belongs to another token", next_step, 422)
+        return nil
+      end
+      unless ApiToken.session_roles(@token.role).include?(session.role)
+        refuse("E-SESSION-ROLE", "X-Banco-Session", "a #{@token.role} token cannot act in a #{session.role} session", next_step, 422)
+        return nil
+      end
       unless roles.include?(session.role)
         refuse("E-SESSION-ROLE", "X-Banco-Session", "this command is for a #{roles.join(' or ')} session; session #{session.id} is a #{session.role} session", next_step, 422)
         return nil

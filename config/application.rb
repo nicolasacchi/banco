@@ -27,6 +27,7 @@ require_relative "../lib/banco/edge_proxy"
 require_relative "../lib/banco/token_auth"
 require_relative "../lib/banco/append_only"
 require_relative "../lib/banco/schemas"
+require_relative "../lib/banco/hosts"
 
 module Banco
   class Application < Rails::Application

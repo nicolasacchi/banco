@@ -21,6 +21,9 @@ module Providers
     "unknown"
   end
 
+  # The model compared across sessions: case and a leading "provider/" ignored.
+  def model_key(model) = model.to_s.strip.downcase.split("/").last.to_s
+
   def rule(role) = config.fetch("roles").fetch(role.to_s, {}) || {}
 
   def families = config.fetch("families").keys
@@ -35,10 +38,11 @@ module Providers
     end
     return "the model #{session.model.inspect} is in no known family: add it to config/banco/providers.yml or use another model" if rule["known_family"] && family == "unknown"
 
-    if rule["different_from"] && item
-      authors = ItemSessions.new(item).sessions(rule["different_from"])
-      same = authors.find { |a| a.family == family }
-      return "a #{session.role} must be of another model family than the author: both are #{family}" if same
+    if rule["different_model_from"] && item
+      authors = ItemSessions.new(item).sessions(rule["different_model_from"])
+      mine = model_key(session.model)
+      same = authors.find { |a| model_key(a.model) == mine }
+      return "a #{session.role} must run on a different model than every author of the item: both are #{session.model.inspect}" if same
     end
     nil
   end

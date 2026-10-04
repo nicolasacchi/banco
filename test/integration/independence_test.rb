@@ -95,24 +95,73 @@ class IndependenceTest < ActionDispatch::IntegrationTest
     assert_equal "E-PROVIDER-NOT-ALLOWED", json["code"]
   end
 
-  test "a reviewer of the author's family is E-PROVIDER-NOT-ALLOWED; an unknown family too; another family is fine" do
+  test "a reviewer on the author's model is E-PROVIDER-NOT-ALLOWED; a Sonnet on an Opus item is fine (Q8-bis)" do
     revision = passed_revision
-    same_family = session!(:reviewer, "claude-sonnet-5-5")
-    review(revision, review_doc(revision), as: same_family)
+    same_model = session!(:reviewer, "claude-opus-5-5")
+    review(revision, review_doc(revision), as: same_model)
     assert_response :unprocessable_entity
     assert_equal "E-PROVIDER-NOT-ALLOWED", json["code"]
-    assert_match(/another model family/, json["message"])
+    assert_match(/different model/, json["message"])
     record_example "review submit", "provider-not-allowed"
-    api("/api/v1/revisions/#{revision.id}/review", as: same_family)
+    api("/api/v1/revisions/#{revision.id}/review", as: same_model)
     assert_equal "E-PROVIDER-NOT-ALLOWED", json["code"]
-
-    unknown = session!(:reviewer, "mystery-model-1")
-    review(revision, review_doc(revision), as: unknown)
+    # Case and a provider prefix do not make it another model.
+    prefixed = session!(:reviewer, "Anthropic/Claude-Opus-5-5")
+    review(revision, review_doc(revision), as: prefixed)
     assert_equal "E-PROVIDER-NOT-ALLOWED", json["code"]
     assert_equal 0, ItemReview.count
 
-    review(revision, review_doc(revision))
+    sonnet = session!(:reviewer, "claude-sonnet-5-5-review")
+    review(revision, review_doc(revision), as: sonnet)
     assert_response :created, json.inspect
+    assert_equal 1, ItemReview.count
+  end
+
+  test "a session is bound to the token that created it; another token's session is refused (D-071)" do
+    api("/api/v1/sessions", method: :post, body: { role: "reviewer", agent: "omp", model: "claude-sonnet-5-5" })
+    assert_response :created
+    mine = AgentSession.find(json["id"])
+    assert_equal @token.split("_")[1], mine.token_id
+    other = ApiToken.issue!(role: "agent_claude", label: "other")
+    revision = passed_revision
+    get_review = ->(token) { on(:api, "/api/v1/revisions/#{revision.id}/review", headers: { "Authorization" => "Bearer #{token}", "X-Banco-Session" => mine.id.to_s }) }
+    get_review.call(@token)
+    assert_response :ok, json.inspect
+    get_review.call(other)
+    assert_response :unprocessable_entity
+    assert_equal "E-SESSION", json["code"]
+    assert_match(/another token/, json["message"])
+  end
+
+  test "token roles map to session roles: agent_claude all, agent_omp no grader, ci none" do
+    open = lambda do |token, role|
+      on(:api, "/api/v1/sessions", method: :post, headers: { "Authorization" => "Bearer #{token}" },
+         params: { role: role, agent: "x", model: "claude-sonnet-5-5" }, as: :json)
+    end
+    claude = ApiToken.issue!(role: "agent_claude", label: "c")
+    omp = ApiToken.issue!(role: "agent_omp", label: "o")
+    ci = ApiToken.issue!(role: "ci", label: "ci")
+    %w[author verifier reviewer solver grader].each do |role|
+      open.call(claude, role)
+      assert_response :created, "agent_claude #{role}: #{json.inspect}"
+    end
+    %w[author verifier reviewer solver].each do |role|
+      open.call(omp, role)
+      assert_response :created, "agent_omp #{role}: #{json.inspect}"
+    end
+    open.call(omp, "grader")
+    assert_response :unprocessable_entity
+    assert_equal "E-SESSION-ROLE", json["code"]
+    %w[author verifier reviewer solver grader].each do |role|
+      open.call(ci, role)
+      assert_response :unprocessable_entity, "ci #{role}"
+      assert_equal "E-SESSION-ROLE", json["code"]
+    end
+    # Use is checked too: a grader session row made for an omp token is refused at use.
+    omp_id = omp.split("_")[1]
+    stray = AgentSession.create!(label: "t", role: "grader", agent: "x", model: "claude-sonnet-5-5", token_id: omp_id)
+    on(:api, "/api/v1/submissions/pending", headers: { "Authorization" => "Bearer #{omp}", "X-Banco-Session" => stray.id.to_s })
+    assert_equal "E-SESSION-ROLE", json["code"]
   end
 
   test "a command that needs a session says so: E-SESSION without one, E-SESSION-ROLE with the wrong role" do
@@ -411,8 +460,8 @@ class IndependenceTest < ActionDispatch::IntegrationTest
     api(path, method: :post, as: @solver, body: doc.([ { instance: 1, answer: "7" }, { instance: 2, answer: "9" }, { instance: 3, answer: "16" } ]))
     assert_equal "E-SESSION-NOT-INDEPENDENT", json["code"]
 
-    same_family = session!(:solver, "claude-haiku-5")
-    api(path, method: :post, as: same_family, body: doc.([ { instance: 1, answer: "7" }, { instance: 2, answer: "9" }, { instance: 3, answer: "16" } ]))
+    same_model = session!(:solver, "claude-opus-5-5")
+    api(path, method: :post, as: same_model, body: doc.([ { instance: 1, answer: "7" }, { instance: 2, answer: "9" }, { instance: 3, answer: "16" } ]))
     assert_equal "E-PROVIDER-NOT-ALLOWED", json["code"]
     api("/api/v1/revisions/#{revision.id}/solve", as: @reviewer)
     assert_equal "E-SESSION-ROLE", json["code"]

@@ -92,7 +92,7 @@ CREATE TRIGGER blueprint_revisions_no_update BEFORE UPDATE ON blueprint_revision
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER blueprint_revisions_no_delete BEFORE DELETE ON blueprint_revisions
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
-CREATE TABLE "agent_sessions" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "label" varchar NOT NULL, "role" varchar NOT NULL, "created_at" datetime(6) NOT NULL, "agent" varchar /*application='Banco'*/, "model" varchar /*application='Banco'*/, CONSTRAINT agent_sessions_role CHECK (role IN ('author','verifier','reviewer','solver','grader','operator')));
+CREATE TABLE "agent_sessions" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "label" varchar NOT NULL, "role" varchar NOT NULL, "created_at" datetime(6) NOT NULL, "agent" varchar /*application='Banco'*/, "model" varchar /*application='Banco'*/, "token_id" varchar, CONSTRAINT agent_sessions_role CHECK (role IN ('author','verifier','reviewer','solver','grader','operator')));
 CREATE TRIGGER agent_sessions_no_update BEFORE UPDATE ON agent_sessions
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER agent_sessions_no_delete BEFORE DELETE ON agent_sessions
@@ -267,6 +267,7 @@ BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER grade_proposals_no_delete BEFORE DELETE ON grade_proposals
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261004200001'),
 ('20261004100001'),
 ('20261003300001'),
 ('20261003200001'),

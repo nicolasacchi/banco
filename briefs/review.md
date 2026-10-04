@@ -12,7 +12,7 @@ independent from the author, the verifier and the blind solver of the item.
 
 Start with `banco status` and this brief. Open your session first:
 `export BANCO_SESSION=$(banco session new --role reviewer --agent omp --model MODEL --id)`.
-The model is declared and must be of another family than the author's
+The model is declared and must be a different model than every author of the item (a Sonnet may review an Opus item; the family may be the same)
 (`config/banco/providers.yml`): otherwise `E-PROVIDER-NOT-ALLOWED`. Another session of
 the same item (author, verifier, solver) or one that already reviewed it is refused
 (`E-SESSION-NOT-INDEPENDENT`). `banco review open REV` gives you the

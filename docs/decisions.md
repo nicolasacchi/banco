@@ -77,6 +77,10 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-067 | 2026-10-03 | M9b structure.sql check and the Chrome lock test | implemented in M9b |
 | D-068 | 2026-10-03 | M9b how the teacher's forms decide and word refusals | implemented in M9b |
 | D-069 | 2026-10-03 | review fixes: privacy of the list, image and log; engine and grading corrections | implemented |
+| D-070 | 2026-10-04 | operator Q8-bis · reviewer and blind solver need another model, not another family | implemented |
+| D-071 | 2026-10-04 | agent sessions are bound to their token; token roles limit session roles | implemented |
+| D-072 | 2026-10-04 | production host authorization | implemented |
+| D-073 | 2026-10-04 | audit lows: seq in the transaction, thousands, Unicode variants, punctuation keys, counted abandon, mixed at the cap | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -767,3 +771,43 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** CI needs the HYGIENE_TERMS secret to run the term check; a descent skill of only guessable items must get a harder item; 1e500 is refused as a number.
 - **Status:** implemented
 - **Back-port:** B-02, B-05, X-03.
+
+## D-070 · 2026-10-04 · operator Q8-bis · reviewer and blind solver need another model, not another family
+
+- **Design ref:** A-08, D-008 (operator Q8)
+- **Design said:** The reviewer and the blind solver are of a known model family different from the family of every author session of the item (omp, another family).
+- **We do:** The operator decided on 2026-10-04 that Sonnet reviews and blind-solves and Opus writes. `config/banco/providers.yml` gives `reviewer` and `solver` the rule `different_model_from: author` in place of `different_from: author` plus `known_family: true`: the model of the session must differ from the model of every author session of the item (compared case-insensitively, a leading `provider/` ignored); the family may be the same and may be unknown. A different session was already required (`E-SESSION-NOT-INDEPENDENT`, ItemSessions). A same-model session is `E-PROVIDER-NOT-ALLOWED` at use. The grader stays `allow_families: [anthropic]`. The briefs `review.md` and `solve.md` and `docs/validation.md` say so. This supersedes D-008 for these two roles.
+- **Why:** The operator's choice of cost and quality; the guard keeps against the same model grading its own work, without proving anything (the model is declared).
+- **Cost:** A Sonnet and an Opus share a family and may share blind spots; the teacher disposes of every finding in any case.
+- **Status:** implemented
+- **Back-port:** A-08.
+
+## D-071 · 2026-10-04 · agent sessions are bound to their token; token roles limit session roles
+
+- **Design ref:** A-04, D-05
+- **Design said:** A session is an id the CLI sends in `X-Banco-Session`; the token only authenticates.
+- **We do:** `agent_sessions.token_id` (migration 20261004200001) holds the public id of the token that created the session. `require_session` refuses a session of another token (422 `E-SESSION`); a session row without a token (made before this column, or by tests) is not bound. Token roles map to the session roles they may open and use (`ApiToken::SESSION_ROLES`): `agent_claude` author, verifier, reviewer, solver, grader; `agent_omp` the same without grader; `ci` none. `POST /api/v1/sessions` and `require_session` answer 422 `E-SESSION-ROLE` otherwise (the code gains `session new` in the contract). The format of `banco.*/1` documents does not change; the table keeps its append-only triggers (a nullable column was added).
+- **Why:** A token that leaked or a second agent could otherwise act in another agent's session (a reviewer session reused as a grader, for instance).
+- **Cost:** An agent must open its session with the token it uses.
+- **Status:** implemented
+- **Back-port:** A-04.
+
+## D-072 · 2026-10-04 · production host authorization
+
+- **Design ref:** D-016, E-01
+- **Design said:** Three listeners; edge trust by address.
+- **We do:** `config.hosts` in production is `Banco::Hosts.allowed` (`lib/banco/hosts.rb`): `banco.scc.im`, `banco`, `banco-harness`, `127.0.0.1`, `localhost` (ports are ignored by Rails) plus the comma-separated `BANCO_EXTRA_HOSTS`. `/up` is excluded so the container health check (`Host: localhost:3000`) works. Any other `Host` is 403.
+- **Why:** DNS rebinding protection; Rails left it commented out.
+- **Cost:** A new internal name needs `BANCO_EXTRA_HOSTS`.
+- **Status:** implemented
+- **Back-port:** E-01.
+
+## D-073 · 2026-10-04 · audit lows
+
+- **Design ref:** A-01, A-06, B-02, B-05, X-03
+- **Design said:** See each rule.
+- **We do:** (1) The latest revision is read inside the transaction in `Validation::Submission#store!` and in the graph and blueprint submits: a concurrent identical submit is a replay, a different one `E-STALE-BASE` (409), never a unique-index 500. (2) The expression grader refuses an Italian thousands separator ("1.000", "1.500.000": a group of three digits after a dot, not after a leading 0) as invalid `thousands_separator`, not 1.0. (3) The number and fraction parsers read every Unicode space as a space and every minus and plus look-alike as the plain sign; ZWSP, ZWNJ, ZWJ, word joiner, BOM and soft hyphen are removed; any other character (fullwidth digits, superscripts) stays and the answer is invalid. The text normaliser removes the same invisible characters (it used to turn ZWSP into a space). (4) A `normalized_text` key, error value or accepted text that normalizes to nothing (only punctuation) is refused: `E-GEN-SCHEMA` for an instance key, `E-SCHEMA` for `accept`. (5) An open item is abandoned after `ABANDON_GAP_SECONDS` of counted time (wall time minus pause and hidden, uncapped), not wall clock. (6) A skill with one C and one W that reaches `MAX_SERVED_PER_SKILL` with nothing pending ends `to_recover(mixed)`, not `not_assessed(item_cap)`.
+- **Why:** The low findings of the audit.
+- **Cost:** "1.000" and "2.500" are refused as answers; a student must type 1000 or 1,5.
+- **Status:** implemented
+- **Back-port:** A-01, B-02, B-05.

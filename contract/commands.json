@@ -156,7 +156,7 @@
       "path": "/api/v1/sessions",
       "args": [],
       "flags": ["--role", "--agent", "--model", "--id"],
-      "error_codes": ["E-AUTH", "E-FILES", "E-PROVIDER-NOT-ALLOWED"]
+      "error_codes": ["E-AUTH", "E-FILES", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-ROLE"]
     },
     {
       "name": "review open",

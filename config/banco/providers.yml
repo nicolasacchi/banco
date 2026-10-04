@@ -1,4 +1,4 @@
-# Model providers per role (A-08, operator Q8). The session declares its model; the
+# Model providers per role (A-08, operator Q8 and Q8-bis). The session declares its model; the
 # family comes from the first pattern that matches (case-insensitive, * is a
 # wildcard). A model that matches nothing is family "unknown" and is allowed only
 # where the role has no family rule. The declaration guards against mistakes, not
@@ -22,9 +22,11 @@ families:
 roles:
   author: {}
   verifier: {}
-  # Reviewer and blind solver: a known family, different from the family of every
-  # session that authored the item. They receive item text only.
-  reviewer: { different_from: author, known_family: true }
-  solver: { different_from: author, known_family: true }
+  # Reviewer and blind solver (operator Q8-bis, D-070): a different MODEL from the
+  # model of every session that authored the item (the family may be the same: a
+  # Sonnet reviews what an Opus wrote). A different session is enforced by
+  # ItemSessions (E-SESSION-NOT-INDEPENDENT). They receive item text only.
+  reviewer: { different_model_from: author }
+  solver: { different_model_from: author }
   # The grader reads the student's answers, a minor's data: only these families.
   grader: { allow_families: [ anthropic ] }

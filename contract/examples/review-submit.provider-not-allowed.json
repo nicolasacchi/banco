@@ -74,7 +74,7 @@
     "body": {
       "code": "E-PROVIDER-NOT-ALLOWED",
       "field": "X-Banco-Session",
-      "message": "a reviewer must be of another model family than the author: both are anthropic",
+      "message": "a reviewer must run on a different model than every author of the item: both are \"claude-opus-5-5\"",
       "next": "banco session new --role reviewer --agent NAME --model MODEL (see config/banco/providers.yml)"
     }
   }
