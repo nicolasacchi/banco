@@ -18,3 +18,15 @@ test('a reasonable exponent still reads as a number', () => {
   const r = checker.compile({ expected: '0.0000001', form: [], errors: [] }).check('1e-7', { source: 'text' });
   assert.equal(r.verdict, 'correct');
 });
+
+test('Italian thousands separator: 1.000 and 1.500.000 are invalid, 0.125 and 1,000 are not', () => {
+  const one = checker.compile({ expected: '1', form: [], errors: [] });
+  for (const raw of ['1.000', '2.500', '1.500.000', '12.345']) {
+    const r = one.check(raw, { source: 'text' });
+    assert.equal(r.verdict, 'invalid', raw);
+  }
+  assert.equal(one.check('1.000', { source: 'text' }).verdict, 'invalid');
+  const eighth = checker.compile({ expected: '1/8', form: [], errors: [] });
+  assert.equal(eighth.check('0.125', { source: 'text' }).verdict, 'correct');
+  assert.equal(eighth.check('0,125', { source: 'text' }).verdict, 'correct');
+});

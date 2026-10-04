@@ -107,6 +107,13 @@ module Diagnosis
       TimeAccount.counted_seconds(serve.at, stop, @pauses + @hiddens, testlet: serve.instance.testlet?)
     end
 
+    # Seconds an item has been open and counted so far, as of +now+: wall time minus
+    # the pause and hidden intervals, not capped (the engine abandons an item after
+    # ABANDON_GAP_SECONDS of counted time, not of wall clock).
+    def open_counted_seconds(serve, now)
+      (now - serve.at) - TimeAccount.overlap_seconds(@pauses + @hiddens, serve.at, now)
+    end
+
     def counted_seconds_total = @sittings.sum { |s| sitting_counted_seconds(s) }
   end
 end

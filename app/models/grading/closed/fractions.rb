@@ -48,7 +48,7 @@ module Grading
       def integer(text)
         return text if text.is_a?(Integer)
 
-        s = text.to_s.gsub(MINUSES, "-").gsub(/\A#{SPACES}+|#{SPACES}+\z/, "")
+        s = Numbers.clean(text)
         raise Numbers::Invalid, "empty" if s.empty?
         raise Numbers::Invalid, "ambiguous_mixed_number" if s.match?(/\d#{SPACES}+\d/)
         raise Numbers::Invalid, "unparseable" unless s.match?(/\A[+-]?\d+\z/)

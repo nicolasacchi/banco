@@ -49,10 +49,21 @@ module Validation
       when "choice" then [ value.to_s, nil ]
       when "ordering" then value.is_a?(Array) ? [ value.map(&:to_s), nil ] : [ nil, "an ordering answer is a list of element ids" ]
       when "matching" then matching_raw(value)
-      when "normalized_text" then value.is_a?(String) && !value.strip.empty? ? [ value, nil ] : [ nil, "a text answer is a non-empty string" ]
+      when "normalized_text" then text_raw(value)
       else [ nil, "no raw form for #{component}" ]
       end
     end
+
+    # A text key must survive the grader's normaliser: one that is only punctuation or
+    # invisible characters normalizes to nothing, and no student answer could match it.
+    def text_raw(value)
+      return [ nil, "a text answer is a non-empty string" ] unless value.is_a?(String) && !value.strip.empty?
+      return [ nil, "a text answer that is only punctuation normalizes to nothing: no answer could match it" ] if punctuation_only?(value)
+
+      [ value, nil ]
+    end
+
+    def punctuation_only?(text) = Grading::Closed::Text.normalize(text.to_s, case_sensitive: true).empty?
 
     def fraction_raw(value, form)
       parts =

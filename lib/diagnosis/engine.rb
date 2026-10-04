@@ -6,7 +6,7 @@ module Diagnosis
   # appends the event that goes with the answer.
   #
   #   :serve          serve +instance+ (a Plan::Instance) for +skill+
-  #   :abandon_item   the open item has been open for ABANDON_GAP: log item_abandoned
+  #   :abandon_item   the open item has been open (counted time: pause and hidden excluded) for ABANDON_GAP: log item_abandoned
   #   :wait           nothing to do now (reason :open_item, or :pending_answers when
   #                   the frontier is empty but an answer is still pending or ungraded)
   #   :start_sitting  a sitting may start on +not_before+ (a date)
@@ -43,7 +43,7 @@ module Diagnosis
       return action(:none, reason: state.end_reason) if state.closed
 
       if (open = state.open_serve)
-        return action(:abandon_item, serve: open.seq) if clock.now - open.at >= Rules::V1::ABANDON_GAP_SECONDS
+        return action(:abandon_item, serve: open.seq) if state.open_counted_seconds(open, clock.now) >= Rules::V1::ABANDON_GAP_SECONDS
 
         return action(:wait, reason: :open_item, serve: open.seq)
       end

@@ -257,6 +257,20 @@ class DiagnosisEngineTest < ActiveSupport::TestCase
     assert_equal B, d.next_skill # mixed is to_recover: the descent follows
   end
 
+  test "one C and one W that reaches the serve cap ends to_recover(mixed), not not_assessed(item_cap) (D-073)" do
+    pool = { "ty" => { "component" => "number", "instances" => 8 } }
+    plan = build_plan(skills: { A => {} }, items: { A => %w[ty] }, pool: pool)
+    d = DiagnosisHelper::Driver.new(plan)
+    d.start
+    run_to(d, "correct", "wrong")
+    refute_equal "to_recover", d.state(A).first, "a third low-guess item is still available"
+    3.times do # the third, fourth and fifth serves are left open and abandoned: the cap of 5 is reached
+      s = d.serve!
+      d.push("item_abandoned", serve: s[:seq])
+    end
+    assert_equal %w[to_recover mixed], d.state(A)
+  end
+
   test "mixed then a wrong third is to_recover(mixed)" do
     d = DiagnosisHelper::Driver.new(chain_plan)
     d.start

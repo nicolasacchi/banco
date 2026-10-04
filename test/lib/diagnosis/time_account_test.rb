@@ -135,6 +135,27 @@ class DiagnosisTimeAccountTest < ActiveSupport::TestCase
     assert_equal s[:seq], d.action.serve
   end
 
+  test "abandon counts awake time: a hidden or paused hour is not counted toward the gap (D-073)" do
+    d = DiagnosisHelper::Driver.new(flat_plan)
+    d.start
+    s = d.serve!
+    d.clock.advance(60)
+    d.push("hidden")
+    d.clock.advance(2 * 3600) # far beyond the gap on the wall clock
+    assert_equal :wait, d.action.type, "an open hidden interval does not run the abandon clock"
+    d.push("visible")
+    d.clock.advance(60)
+    d.push("paused")
+    d.clock.advance(3600)
+    d.push("resumed")
+    assert_equal :wait, d.action.type
+    d.clock.advance(Diagnosis::Rules::V1::ABANDON_GAP_SECONDS - 120 - 1)
+    assert_equal :wait, d.action.type
+    d.clock.advance(1)
+    assert_equal :abandon_item, d.action.type
+    assert_equal s[:seq], d.action.serve
+  end
+
   test "abandon_after_1800s_serves_fresh_instance of the same skill, counted time capped" do
     d = DiagnosisHelper::Driver.new(flat_plan)
     d.start

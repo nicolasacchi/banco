@@ -2,6 +2,7 @@ module Grading
   module Closed
     # The normalized_text component. The pipeline (A-01): NFC, trim, whitespace
     # collapse, apostrophe and quote unification, trailing punctuation stripped,
+    # invisible characters (ZWSP, ZWNJ, ZWJ, word joiner, BOM, soft hyphen) removed,
     # case folded unless the item is case sensitive. Accents are NOT folded in the
     # comparison: an accent slip is its own finding, never "correct".
     #
@@ -15,6 +16,8 @@ module Grading
     module Text
       APOSTROPHES = /[\u2018\u2019\u201B\u02BC`\u00B4\u2032]/
       QUOTES = /[\u201C\u201D\u201E\u00AB\u00BB\u2033]/
+      # Never typed on purpose: zero-width space, non-joiner and joiner, word joiner, BOM, soft hyphen.
+      INVISIBLE = /[\u00AD\u200B-\u200D\u2060\uFEFF]/
       # Only the grave and the acute are folded: the tilde of ñ and the diaeresis
       # of ü make different letters.
       FOLDED_MARKS = /[\u0300\u0301]/
@@ -46,8 +49,8 @@ module Grading
       end
 
       def normalize(text, case_sensitive: false)
-        s = text.unicode_normalize(:nfc)
-        s = s.gsub(/[[:space:]\u200B]+/, " ").strip
+        s = text.unicode_normalize(:nfc).gsub(INVISIBLE, "")
+        s = s.gsub(/[[:space:]]+/, " ").strip
         s = s.gsub(APOSTROPHES, "'").gsub(QUOTES, '"')
         s = s.sub(LEADING_PUNCTUATION, "")
         s = strip_trailing_punctuation(s)

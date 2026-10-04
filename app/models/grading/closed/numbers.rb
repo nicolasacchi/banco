@@ -13,8 +13,15 @@ module Grading
         end
       end
 
-      SPACES = /[\u00A0\u202F\u2009\s]/
-      MINUSES = /[\u2212\u2010-\u2015]/
+      # Every Unicode space (NBSP, thin, narrow, ideographic ...) is a space; invisible
+      # format characters (ZWSP, ZWNJ, ZWJ, word joiner, BOM, soft hyphen) are removed;
+      # every minus and plus look-alike (U+2212, U+2010-2015, small and full width,
+      # superscript and subscript) is "-" or "+". Anything else that is not a digit,
+      # sign, comma or dot stays and the answer is unparseable (invalid), never guessed.
+      SPACES = /[[:space:]]/
+      INVISIBLE = /[\u00AD\u200B-\u200D\u2060\uFEFF]/
+      MINUSES = /[\u2212\u2010-\u2015\uFE63\uFF0D\u207B\u208B]/
+      PLUSES = /[\uFE62\uFF0B\u207A\u208A]/
       DECIMAL = /\A([+-])?(\d*)(?:([.,])(\d+))?\z/
 
       module_function
@@ -38,7 +45,7 @@ module Grading
       # Italian text -> Rational. Raises Invalid(code): empty, use_comma,
       # ambiguous_mixed_number, unparseable.
       def parse(text, allow_dot: false, unit: nil)
-        s = text.to_s.gsub(MINUSES, "-").gsub(/\A#{SPACES}+|#{SPACES}+\z/, "")
+        s = clean(text)
         s = s.delete_suffix(unit).gsub(/#{SPACES}+\z/, "") if unit.present? && s.end_with?(unit)
         raise Invalid, "empty" if s.empty?
         raise Invalid, "ambiguous_mixed_number" if s.match?(/\d#{SPACES}+[\d,.]/)
@@ -51,6 +58,11 @@ module Grading
         sign = m[1] == "-" ? -1 : 1
         integer = m[2].empty? ? "0" : m[2]
         sign * Rational("#{integer}#{".#{m[4]}" if m[4]}")
+      end
+
+      # Unicode look-alikes made plain, invisible characters dropped, edges trimmed.
+      def clean(text)
+        text.to_s.unicode_normalize(:nfc).gsub(INVISIBLE, "").gsub(MINUSES, "-").gsub(PLUSES, "+").gsub(/\A#{SPACES}+|#{SPACES}+\z/, "")
       end
 
       # A key value: JSON number, "7/2", "3,5", "3.5", or {"n","d"}.

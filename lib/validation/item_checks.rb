@@ -143,6 +143,11 @@ module Validation
           findings.add("E-ACCENT-POLICY", "#{path}/accent_policy", "accent_policy and paradigm_forms belong to normalized_text items")
           next
         end
+        if body["component"] == "normalized_text"
+          Array(body["accept"]).each_with_index do |text, i|
+            findings.add("E-SCHEMA", "#{path}/accept/#{i}", "an accepted text that is only punctuation normalizes to nothing: no answer could match it") if Answers.punctuation_only?(text)
+          end
+        end
         next unless policy == "flag" && forms.any?
 
         keys = Array(body["instances"]).map { |i| i["answer"].to_s } + Array(body["accept"])

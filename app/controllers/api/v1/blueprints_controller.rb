@@ -52,12 +52,17 @@ module Api
 
       def store(doc, graph, warnings)
         text = JSON.generate(doc)
-        latest = BlueprintRevision.where(subject: @subject).order(:seq).last
-        if latest && latest.body_json == text
-          return render json: { revision_id: latest.id, seq: latest.seq, replayed: true, warnings: warnings }
+        # Read inside the transaction (D-073): a concurrent identical submit replays.
+        latest = nil
+        revision = BlueprintRevision.transaction do
+          latest = BlueprintRevision.where(subject: @subject).order(:seq).last
+          next if latest && latest.body_json == text
+
+          BlueprintRevision.create!(subject: @subject, skill_graph_revision: graph, seq: (latest&.seq || 0) + 1, body_json: text,
+                                    brief_sha256: Brief.find("blueprint")&.sha256)
         end
-        revision = BlueprintRevision.create!(subject: @subject, skill_graph_revision: graph, seq: (latest&.seq || 0) + 1, body_json: text,
-                                              brief_sha256: Brief.find("blueprint")&.sha256)
+        return render json: { revision_id: latest.id, seq: latest.seq, replayed: true, warnings: warnings } unless revision
+
         render json: { revision_id: revision.id, seq: revision.seq, replayed: false, warnings: warnings,
                        next: "banco status (stage: #{SubjectStage.for(@subject)[:stage]})" }, status: :created
       end

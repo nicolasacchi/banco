@@ -69,17 +69,26 @@ module Validation
 
     # Appends the item (first submission) and a revision. Returns [revision, replayed].
     def store!(brief_sha256: nil)
-      latest = @item&.latest_revision
-      return [ latest, true ] if latest && latest.files == @files
-
+      replayed = nil
       revision = ItemRevision.transaction do
-        @item ||= Item.create!(subject: @subject, key: key, kind: parsed_item["kind"].to_s)
-        rest = @files.except("item.json")
-        ItemRevision.create!(item: @item, seq: (latest&.seq || 0) + 1, base_revision_id: latest&.id, body_json: @files.fetch("item.json"),
-                             files_json: rest.empty? ? nil : JSON.generate(rest), file_sessions_json: JSON.generate(file_sessions(latest)),
-                             author_session_id: author_session_id(latest), brief_sha256: brief_sha256)
+        # The latest revision is read inside the transaction (it takes SQLite's write
+        # lock first): a concurrent identical submit is a replay, a different one is a
+        # stale base, never a unique-index error (D-073).
+        @item ||= Item.find_by(key: key)
+        latest = @item && ItemRevision.where(item_id: @item.id).order(:seq).last
+        if latest && latest.files == @files
+          replayed = latest
+        elsif latest&.id != @base&.id
+          refuse("E-STALE-BASE", "base", "the base is revision #{@base&.id.inspect}; the latest of #{key} is #{latest&.id.inspect}", "banco work open #{key}", 409)
+        else
+          @item ||= Item.create!(subject: @subject, key: key, kind: parsed_item["kind"].to_s)
+          rest = @files.except("item.json")
+          ItemRevision.create!(item: @item, seq: (latest&.seq || 0) + 1, base_revision_id: latest&.id, body_json: @files.fetch("item.json"),
+                               files_json: rest.empty? ? nil : JSON.generate(rest), file_sessions_json: JSON.generate(file_sessions(latest)),
+                               author_session_id: author_session_id(latest), brief_sha256: brief_sha256)
+        end
       end
-      [ revision, false ]
+      replayed ? [ replayed, true ] : [ revision, false ]
     end
 
     def parsed_item = @parsed_item ||= JSON.parse(@files.fetch("item.json"))

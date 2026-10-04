@@ -157,7 +157,7 @@ interroga oltre il primo anello mancante.
   paused - hidden, ITEM_CAP_SECONDS)`, with `ITEM_CAP_SECONDS` = 600 (a testlet caps
   at `TESTLET_CAP_SECONDS` = 1200). Pause and visibility events are posted only on
   change; a request every 10 minutes while the page is visible keeps the session
-  alive. An item left open for `ABANDON_GAP_SECONDS` (1800) is logged
+  alive. An item left open for `ABANDON_GAP_SECONDS` (1800) of counted time (wall time minus pause and hidden, uncapped) is logged
   `item_abandoned` and a fresh instance of the same skill is served.
 - **Sitting budget** (`SITTING_BUDGET_MINUTES`): **30 minutes for mathematics, 25
   for every other subject**. `OPEN_RESERVE_MINUTES` is 7.
@@ -330,7 +330,8 @@ How the fold reads the rules above:
 - **Per-skill cap**: after `MAX_SERVED_PER_SKILL` serves, or with no unseen
   instance, a skill that is unresolved ends `pending` if answers are outstanding,
   `not_assessed(item_cap)` or `not_assessed(no_unseen_items)` otherwise. A mixed
-  pair with no unseen low-guess instance left ends `to_recover(mixed)`.
+  pair (one C, one W) with no unseen low-guess instance left, or at the serve cap
+  with nothing pending, ends `to_recover(mixed)`, never `not_assessed(item_cap)`.
 - **Next item**: the head of the frontier, the instance chosen by a hash of the
   run's `seed_salt`, the skill and the instance fingerprint (no random state), so a
   run replays exactly. A testlet is chosen only when its `expected_seconds` fit in

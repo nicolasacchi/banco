@@ -247,6 +247,9 @@ export function normalizeInput(input, source = 'mathlive') {
   // MathLive (smartSuperscript, the default) leaves the superscript after one digit: typing 2^10 emits `2^10`,
   // rendered 2¹0 and read by TeX/CE as 2^1·0. Do not guess: ask the student to fix the exponent.
   if (source === 'mathlive' && /\^\s*\d\d/.test(s)) throw new InputError('ambiguous_exponent');
+  // Italian thousands separator: "1.000" is 1000 here and 1.0 to a parser that reads the dot as a decimal point.
+  // Do not guess: a group of three digits after a dot (not after a leading 0) is refused.
+  if (/(?<![\d.])[1-9]\d{0,2}(?:\.\d{3})+(?!\d)/.test(s.replace(/\\[a-zA-Z]+/g, ' x '))) throw new InputError('thousands_separator');
   // plain text: x^12 -> x^{12}, x^-1 -> x^{-1} (student intent, not TeX rules)
   s = s.replace(/\^\s*(-?\d+)/g, '^{$1}');
   // decimal comma between digits: 2,5 -> 2{,}5 (MathLive emits {,} itself when decimalSeparator=',')

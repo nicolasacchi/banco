@@ -321,9 +321,20 @@ module Diagnosis
       @state.outcomes.each do |key, outcome|
         next if outcome.resolved? || outcome.outcomes.size != 2
         next unless @state.outstanding[key].empty?
-        next unless Candidates.for(@state, key, :third).empty?
+        # No third item can be served: none unseen, or the serve cap is reached (a
+        # skill with one C and one W is to_recover(mixed), not not_assessed(item_cap)),
+        # unless an answer of it may still settle (pending or ungraded).
+        capped = @state.served_count[key] >= Rules::V1::MAX_SERVED_PER_SKILL && !pending_answer?(key)
+        next unless capped || Candidates.for(@state, key, :third).empty?
 
         on_resolved(key) if outcome.resolve_mixed!
+      end
+    end
+
+    def pending_answer?(key)
+      @state.serves.any? do |serve|
+        a = serve.answers[key]
+        a && !a.counted && %i[pending ungraded].include?(a.evidence)
       end
     end
   end

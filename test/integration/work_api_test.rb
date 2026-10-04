@@ -82,6 +82,30 @@ class WorkApiTest < ActionDispatch::IntegrationTest
     assert json["findings"].any? { |f| f["code"] == "E-PHRASE" && f["field"].present? }
   end
 
+  test "two identical first submits that both prepared before either stored: the second replays, no unique-index 500 (D-073)" do
+    files = F.files_for(F.static_item)
+    prepare = -> { Validation::Submission.new(key: "eq-1", base: nil, files: files, session: session_of(:author)).prepare! }
+    first = prepare.call
+    second = prepare.call # prepared against the same (empty) state, before the first stores
+    revision, replayed = first.store!
+    assert_equal false, replayed
+    again, replayed = second.store!
+    assert_equal true, replayed
+    assert_equal revision.id, again.id
+    assert_equal 1, ItemRevision.count
+  end
+
+  test "a concurrent different submit that lost the race is E-STALE-BASE, not a 500" do
+    first = Validation::Submission.new(key: "eq-1", base: nil, files: F.files_for(F.static_item), session: session_of(:author)).prepare!
+    changed = JSON.parse(F.files_for(F.static_item).fetch("item.json")).merge("title_it" => "Altro")
+    second = Validation::Submission.new(key: "eq-1", base: nil, files: F.files_for(F.static_item).merge("item.json" => JSON.generate(changed)), session: session_of(:author)).prepare!
+    first.store!
+    error = assert_raises(Validation::Submission::Refused) { second.store! }
+    assert_equal "E-STALE-BASE", error.code
+    assert_equal 409, error.http
+    assert_equal 1, ItemRevision.count
+  end
+
   test "the same files again are a replay: no new revision, no new job" do
     submit("eq-1", F.files_for(F.static_item))
     id = json["revision_id"]

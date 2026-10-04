@@ -34,11 +34,16 @@ module Api
         return render json: { dry_run: true, status: "passed", codes: [], warnings: warnings } if dry_run?
 
         text = JSON.generate(graph)
-        latest = SkillGraphRevision.where(subject: @subject).order(:seq).last
-        if latest && latest.body_json == text
-          return render json: { revision_id: latest.id, seq: latest.seq, replayed: true, warnings: warnings }
+        # Read inside the transaction (D-073): a concurrent identical submit replays.
+        latest = nil
+        revision = SkillGraphRevision.transaction do
+          latest = SkillGraphRevision.where(subject: @subject).order(:seq).last
+          next if latest && latest.body_json == text
+
+          SkillGraphRevision.create!(subject: @subject, seq: (latest&.seq || 0) + 1, body_json: text, brief_sha256: Brief.find("skill-graph")&.sha256)
         end
-        revision = SkillGraphRevision.create!(subject: @subject, seq: (latest&.seq || 0) + 1, body_json: text, brief_sha256: Brief.find("skill-graph")&.sha256)
+        return render json: { revision_id: latest.id, seq: latest.seq, replayed: true, warnings: warnings } unless revision
+
         render json: { revision_id: revision.id, seq: revision.seq, replayed: false, warnings: warnings,
                        next: "banco skill-graph coverage --subject #{@subject.key}" }, status: :created
       end
