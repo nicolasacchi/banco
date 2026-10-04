@@ -130,6 +130,7 @@ it:
         other: "%{count} errori tipici"
       implicates: "mette in dubbio"
       excluded_title: "Righe escluse"
+      excluded_part: "solo questa parte della riga"
       flags:
         q3_lines_91_100: "Righe 91-100 del programma di prima: i fatti sono ancora da controllare (domanda Q3)."
         q3_spanish_seconda_report: "La relazione di seconda conta come programma di spagnolo: da controllare (domanda Q3)."

@@ -22,6 +22,7 @@ module Validation
       references(skills, index, subject, context, findings)
       citations(graph, context, findings)
       scope(skills, findings)
+      scope_markers(skills, context, findings)
       needed_by(skills, index, findings)
       findings
     end
@@ -101,7 +102,12 @@ module Validation
       end
       Array(graph["excluded"]).each_with_index do |ex, i|
         source = Rules.get(:coverage, :prima_source)
-        findings.add("E-SOURCE", "/excluded/#{i}/line", "line #{ex['line']} of #{source} does not exist", rule: "missing_line") if context.source_line(source, ex["line"]).nil?
+        line = context.source_line(source, ex["line"])
+        if line.nil?
+          findings.add("E-SOURCE", "/excluded/#{i}/line", "line #{ex['line']} of #{source} does not exist", rule: "missing_line")
+        elsif ex["fragment"] && !line[:text].include?(ex["fragment"])
+          findings.add("E-SOURCE", "/excluded/#{i}/fragment", "the fragment is not an exact substring of line #{ex['line']} of #{source}", rule: "fragment")
+        end
       end
     end
 
@@ -118,6 +124,26 @@ module Validation
         elsif prima.empty?
           findings.add("E-SCOPE", "/skills/#{i}/scope", "#{s['key']} is #{s['scope']} but cites no line of the previous year's programme", skill: s["key"])
         end
+      end
+    end
+
+    # The programme's own markers decide the scope (brief rule 3): a star line is
+    # integration_studied, an empty star or both in_progress, an unmarked line
+    # studied. The marker is the line's own or the one it inherits from the header of
+    # its block. A warning, not an error: a skill may rightly span lines of two kinds.
+    def scope_markers(skills, context, findings)
+      skills.each_with_index do |s, i|
+        next unless %w[studied integration_studied in_progress].include?(s["scope"])
+
+        lines = Array(s["refs"]).select { |r| prima_ref?(r) }.filter_map { |r| context.source_line(r["source"], r["line"]) }
+        next if lines.empty?
+
+        markers = lines.map { |l| l[:marker] || l[:block_marker] }
+        expected = markers.flat_map { |m| Syllabus::BlockMarker.scopes_for(m) }.uniq
+        next if expected.include?(s["scope"])
+
+        seen = markers.map { |m| m || "no marker" }.uniq.join(", ")
+        findings.add("W-SCOPE-MARKER", "/skills/#{i}/scope", "#{s['key']} is #{s['scope']} but the lines it cites carry #{seen} (expected #{expected.join(' or ')})", skill: s["key"], expected: expected)
       end
     end
 

@@ -92,7 +92,7 @@
       <h2><%= t("teacher.graph.excluded_title") %></h2>
       <ul class="plain" id="graph-excluded">
         <% review.excluded.each do |e| %>
-          <li><%= t("teacher.graph.line") %> <%= e[:line] %><% if e[:text] %>: <q><%= e[:text] %></q><% end %>. <%= e[:reason_it] %></li>
+          <li><%= t("teacher.graph.line") %> <%= e[:line] %><% if e[:fragment] %>: <q><%= e[:fragment] %></q> (<%= t("teacher.graph.excluded_part") %>)<% elsif e[:text] %>: <q><%= e[:text] %></q><% end %>. <%= e[:reason_it] %></li>
         <% end %>
       </ul>
     <% end %>

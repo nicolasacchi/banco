@@ -182,6 +182,11 @@ class CodeFixturesTest < ActiveSupport::TestCase
     "W-NEGATIVE-STEM" => -> { static_codes(item("prompt" => { "stem_it" => "Quale frase non e corretta?" })) },
     "W-DECIMAL-POINT" => -> { static_codes(item("prompt" => { "stem_it" => "Il prezzo e 3.5 euro." })) },
     "W-SELF-CERT" => -> { static_codes(item("prompt" => { "stem_it" => "Ho verificato il calcolo." })) },
+    "W-SCOPE-MARKER" => lambda {
+      doc = JSON.parse(JSON.generate(F::GRAPH))
+      context = Validation::Context.new(subject: "math", source_line: ->(s, n) { (l = F::LINES.dig(s, n)) && s == "prima-test" ? l.merge(block_marker: "★") : l })
+      Validation::Rules.with(coverage: { prima_source: "prima-test" }) { Validation::GraphChecks.call(doc, subject: "math", context: context).map(&:code).uniq }
+    },
     "W-CALCULATOR" => lambda {
       business = item("subject" => "business", "skill" => "business.invoice")
       static_codes(business, context: F.context(subject: "business", extra_skills: { "business.invoice" => { "key" => "business.invoice" } }))

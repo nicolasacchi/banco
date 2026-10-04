@@ -37,7 +37,7 @@ module Teacher
     end
 
     def excluded
-      @excluded ||= Array(body["excluded"]).map { |e| { line: e["line"], reason_it: e["reason_it"], text: line_text(prima_source, e["line"]) } }
+      @excluded ||= Array(body["excluded"]).map { |e| { line: e["line"], fragment: e["fragment"], reason_it: e["reason_it"], text: line_text(prima_source, e["line"]) } }
     end
 
     def inferred_share

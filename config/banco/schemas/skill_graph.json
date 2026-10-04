@@ -186,6 +186,10 @@
             "type": "integer",
             "minimum": 1
           },
+          "fragment": {
+            "type": "string",
+            "minLength": 1
+          },
           "reason_it": {
             "type": "string",
             "minLength": 1,

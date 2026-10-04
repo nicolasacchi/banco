@@ -188,6 +188,60 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  # A starred header at line 4 with its body at 5, an unstarred header at 6.
+  def add_marked_lines
+    SyllabusLine.create!(syllabus_source: @source, number: 4, text: "★ Un blocco in più:", origin: "pdf", marker: "★")
+    SyllabusLine.create!(syllabus_source: @source, number: 5, text: "Il corpo del blocco, con più parole. Altro testo qui.", origin: "pdf")
+    SyllabusLine.create!(syllabus_source: @source, number: 6, text: "Un altro titolo", origin: "pdf")
+  end
+
+  test "syllabus lines: a line under a starred header shows the block marker and its header" do
+    add_marked_lines
+    api("/api/v1/syllabus/prima-test/lines?from=5&to=6")
+    assert_equal "★", json["rows"][0]["block_marker"]
+    assert_equal 4, json["rows"][0]["block_marker_line"]
+    assert_nil json["rows"][1]["block_marker"]
+    api("/api/v1/syllabus/prima-test/lines?from=4&to=4")
+    assert_equal "★", json["rows"][0]["marker"]
+    assert_nil json["rows"][0]["block_marker"]
+  end
+
+  test "W-SCOPE-MARKER: studied cites a starred block; the matching scope is quiet" do
+    add_marked_lines
+    set = ->(scope) { graph { |d| skill(d, "math.percentages").tap { |s| s["scope"] = scope; s["refs"][0].merge!("line" => 5, "fragment" => "corpo del blocco") } } }
+    submit_graph(set.("studied"), dry: true)
+    assert_response :ok
+    warning = json["warnings"].find { |w| w["code"] == "W-SCOPE-MARKER" }
+    assert warning, json.inspect
+    assert_match(%r{\A/skills/\d+/scope\z}, warning["field"])
+    assert_equal [ "integration_studied" ], warning["detail"]["expected"]
+    submit_graph(set.("integration_studied"), dry: true)
+    assert_empty json["warnings"].select { |w| w["code"] == "W-SCOPE-MARKER" }
+  end
+
+  test "excluded fragment: must be a substring of the line" do
+    submit_graph(graph { |d| d["excluded"] << { "line" => 3, "fragment" => "non è lì", "reason_it" => "Prova." } })
+    assert(json["findings"].any? { |f| f["code"] == "E-SOURCE" && f["detail"]["rule"] == "fragment" && f["field"] == "/excluded/#{graph['excluded'].size}/fragment" }, json.inspect)
+  end
+
+  test "coverage: a partly used line is listed with its cited and excluded fragments" do
+    SyllabusLine.create!(syllabus_source: @source, number: 4, text: "numeri relativi e anche organizzazioni collettive", origin: "pdf")
+    doc = graph { |d| d["excluded"] << { "line" => 3, "reason_it" => "Altra materia." }; skill(d, "math.percentages")["refs"] << { "source" => "prima-test", "line" => 4, "fragment" => "numeri relativi", "role" => "taught_in" } }
+    submit_graph(doc)
+    programme { api("/api/v1/subjects/math/skill-graph/coverage") } # range 1..3 only
+    assert_equal [ 1 ], json["partial"].map { |p| p["line"] } # cited by a short fragment
+    Validation::Rules.with(coverage: { prima_source: "prima-test", ranges: { math: [ 1, 4 ] } }) { api("/api/v1/subjects/math/skill-graph/coverage") }
+    part = json["partial"].find { |p| p["line"] == 4 }
+    assert_equal [ "numeri relativi" ], part["cited"]
+    assert_equal [ "e anche organizzazioni collettive" ], part["unaccounted"]
+    assert_equal [], json["uncovered"]
+
+    doc["excluded"] << { "line" => 4, "fragment" => "e anche organizzazioni collettive", "reason_it" => "Organizzazioni collettive: nessuna abilità." }
+    submit_graph(doc)
+    Validation::Rules.with(coverage: { prima_source: "prima-test", ranges: { math: [ 1, 4 ] } }) { api("/api/v1/subjects/math/skill-graph/coverage") }
+    assert_equal [ 1 ], json["partial"].map { |p| p["line"] }
+  end
+
   # ---- the blueprint -------------------------------------------------------------------------
 
   def make_graph_row

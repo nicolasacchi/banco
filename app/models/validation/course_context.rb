@@ -43,8 +43,14 @@ module Validation
       @line_cache[[ source, number ]] ||= begin
         src = SyllabusSource.find_by(key: source)
         line = src && SyllabusLine.find_by(syllabus_source: src, number: number)
-        line ? { text: line.text, origin: line.origin } : false
+        line ? { text: line.text, origin: line.origin, marker: line.marker, block_marker: block_markers(src)[number]&.fetch(:marker) } : false
       end || nil
+    end
+
+    # Inherited star markers of a source, computed once per validation.
+    def block_markers(src)
+      @block_markers ||= {}
+      @block_markers[src.id] ||= Syllabus::BlockMarker.call(SyllabusLine.where(syllabus_source: src).order(:number).to_a)
     end
   end
 end

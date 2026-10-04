@@ -38,8 +38,11 @@ Never ask for a decision: you stop at `awaiting_teacher`.
   names the prerequisites an error points at: the engine descends there.
 - `composite_of`: a multi-step skill whose typical errors implicate 2 or more
   distinct prerequisites lists them.
-- `excluded[]`: `{line, reason_it}` for every non-empty line of the subject's
-  prior-year range that no skill cites.
+- `excluded[]`: `{line, reason_it, fragment?}` for every non-empty line of the
+  subject's prior-year range that no skill cites. For a line that is only partly
+  measured, cite what a skill measures and add an entry with the `fragment` (an
+  exact substring of the line) that no skill measures; `coverage` lists the rest in
+  `partial[]` with the cited and excluded fragments of each line.
 
 ## Rules (version 1)
 
@@ -49,7 +52,9 @@ Never ask for a decision: you stop at `awaiting_teacher`.
 2. `banco skill-graph coverage --subject KEY --json` must show `uncovered` empty:
    every non-empty line of the range is cited or excluded with a reason the teacher
    can read.
-3. Scope follows the programme markers and nothing else: do not upgrade an
+3. Scope follows the programme markers (the line's own, or `block_marker` on the
+   lines under a marked header; `W-SCOPE-MARKER` warns when they disagree) and
+   nothing else: do not upgrade an
    in-progress block to studied because it would be convenient.
 4. Soft sizes: about 20 skills for mathematics, 7 to 12 for the other subjects;
    a sitting decides 6 to 10 skills, so mark which are `core`.

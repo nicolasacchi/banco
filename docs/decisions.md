@@ -82,6 +82,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-072 | 2026-10-04 | production host authorization | implemented |
 | D-073 | 2026-10-04 | audit lows: seq in the transaction, thousands, Unicode variants, punctuation keys, counted abandon, mixed at the cap | implemented |
 | D-074 | 2026-10-04 | reference texts: agents list and read, the operator imports | implemented |
+| D-075 | 2026-10-04 | partial exclusions, per-line coverage detail, inherited block markers, W-SCOPE-MARKER | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -822,3 +823,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** A new excerpt needs one operator command.
 - **Status:** implemented
 - **Back-port:** A-06.
+
+## D-075 · 2026-10-04 · partial exclusions, per-line coverage detail, inherited block markers, W-SCOPE-MARKER
+
+- **Design ref:** C-01, A-06
+- **Design said:** `excluded[]` is `{line, reason_it}` (whole lines); coverage counts a line as covered once any skill cites it; E-SCOPE only checks that previous-year refs are present; the star marker is stored on the header line only.
+- **We do:** (1) `excluded[]` takes an optional `fragment` (an exact substring of the line, else E-SOURCE `fragment`): the exclusion covers that part only. Existing graphs are valid unchanged (`banco.skill_graph/1` stays). (2) `coverage` adds `partial[]`: for each cited or fragment-excluded line whose text is not wholly inside cited or excluded fragments, `{line, text, cited[], excluded[], unaccounted[]}`. It is informational for a cited line (`uncovered` keeps its meaning); a line that is only fragment-excluded and still has unaccounted text is listed in `uncovered`. The other keys are unchanged. (3) `syllabus lines` adds `block_marker` and `block_marker_line` to a line under a marked header (a marked line ending in ':' or short without closing punctuation; the block runs to the next marked line, header-looking line, blank or transcriber line). It is a heuristic that can end a block early, never extend it past a header. Nothing is stored; the rows are unchanged. (4) New warning `W-SCOPE-MARKER` (registry version 3): a skill's scope is not among those the markers of its cited prima lines imply (star: integration_studied; empty star or both: in_progress; none: studied), using the line's own or inherited marker. A warning, because a skill may span lines of two kinds. The teacher's graph page shows a fragment exclusion with its fragment.
+- **Why:** The teacher's coverage view hid parts of a line that no skill measures, and an agent reading one line could not see the star of its block.
+- **Cost:** A short bullet under a starred header can look like a header and end the block early (no warning is raised there).
+- **Status:** implemented
+- **Back-port:** C-01, A-06.
