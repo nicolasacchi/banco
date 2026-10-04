@@ -85,6 +85,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-075 | 2026-10-04 | partial exclusions, per-line coverage detail, inherited block markers, W-SCOPE-MARKER | implemented |
 | D-076 | 2026-10-04 | a form that is the item's own skill carries its first violation as the error code | implemented |
 | D-077 | 2026-10-04 | solution items accept an inequality (x < a) as the answer and as typical errors | implemented |
+| D-078 | 2026-10-04 | generator items run tests; leak scan folds exponent braces and product dots | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -855,3 +856,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** compound solutions (intervals, unions, systems of inequalities) are still out; use a choice item.
 - **Status:** implemented
 - **Back-port:** A-01.
+
+## D-078 · 2026-10-04 · generator items run `tests`; the leak scan folds exponent braces and product dots
+
+- **Design ref:** A-06
+- **Design said:** `tests.must_accept`, `must_reject` and `blank` are exercised by the round trip; the leak scan compares keys with whitespace and `\left`/`\right` removed.
+- **We do:** (1) a generator item's `tests` run against the first stored instance, as for a static item (before they were ignored). `must_reject` and `blank` are instance-independent in practice; a `must_accept` value must be right for every instance, so a generator item normally leaves it empty. (2) `Answers.squash` also drops `\cdot`, `\times` and `*`, and rewrites `^{d}` and `^(d)` to `^d` for a one-token exponent, so `4x^{2}y` in a stem or a cell matches the key `4x^2y` (E-SOLUTION-IN-DISPLAY, W-ANSWER-IN-STEM). The dotted abbreviations m.c.m., M.C.D., C.E. were already protected in the sentence split (19643d3). `banco.*/1` formats unchanged.
+- **Why:** content agents reported the tests being silently ignored for generators and a leak slipping past a brace-style difference.
+- **Cost:** a generator item with an instance-dependent `must_accept` now fails E-ROUNDTRIP; remove it.
+- **Status:** implemented
+- **Back-port:** A-06.

@@ -178,7 +178,7 @@ module Validation
 
         longest_correct(unit, stored.map { |c| c.transform_keys(&:to_s) }, checker)
         never_generated(unit, clean.map { |c| c.transform_keys(&:to_s) })
-        Roundtrip.new(unit, subject: item["subject"], findings: @findings).call(stored.map { |c| c.transform_keys(&:to_s) }, label: "generated")
+        Roundtrip.new(unit, subject: item["subject"], findings: @findings).call(stored.map { |c| c.transform_keys(&:to_s) }, label: "generated", tests: unit.body["tests"])
         verify_generated(unit, item, phase, gen, clean, stored)
         stored.map { |c| { seed: c[:seed], display: c["display"], answer: c["answer"], errors: c["errors"], solution: c["solution"] } }
       end

@@ -103,6 +103,17 @@ class ItemGeneratedTest < ActiveSupport::TestCase
     assert(result.findings.any? { |f| f.code == "E-GEN-POOL" && f.detail[:distinct] })
   end
 
+  test "tests.must_reject and blank are run on a generated item (E-ROUNDTRIP)" do
+    item = F.generated_item
+    item["tests"] = { "must_accept" => [], "must_reject" => [ "1" ], "blank" => "invalid" }
+    files = F.generated_files(item)
+    # "1" is the key only when a seed gives c - a = 1; the generator draws c - a from 2..61, so it is a clean reject
+    assert_not_includes codes(run_files(files)), "E-ROUNDTRIP"
+    item["tests"]["must_accept"] = [ "-999" ]
+    result = run_files(F.generated_files(item))
+    assert(result.findings.any? { |f| f.code == "E-ROUNDTRIP" && f.field.end_with?("tests/must_accept") }, result.findings.map(&:to_h).inspect)
+  end
+
   test "E-DISPLAY-KEY: a generated display that carries a key" do
     source = F::GENERATOR.sub("display: { stem_it:", "display: { solution: 'x', stem_it:")
     assert_includes codes(run_files(gen(source))), "E-DISPLAY-KEY"

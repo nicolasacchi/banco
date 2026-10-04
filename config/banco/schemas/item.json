@@ -678,6 +678,7 @@
     },
     "tests": {
       "type": "object",
+      "description": "Checked against the first instance (static) or the first stored instance (generator). A generator item should leave must_accept empty: a value must be right for every instance.",
       "properties": {
         "must_accept": {
           "type": "array",

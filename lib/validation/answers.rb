@@ -120,7 +120,12 @@ module Validation
 
     # ---- leak scan ----------------------------------------------------------
 
-    def squash(text) = text.to_s.unicode_normalize(:nfkc).downcase.gsub(/[[:space:]]+/, "").gsub(/\\(left|right)/, "")
+    # Whitespace, \left/\right, a product dot and the braces of a one-token exponent
+    # are not part of what a reader sees as the same expression: x^{2}y, x^2y, 4\cdot x^2y.
+    def squash(text)
+      text.to_s.unicode_normalize(:nfkc).downcase.gsub(/[[:space:]]+/, "").gsub(/\\(left|right)/, "")
+          .gsub(/\\(?:cdot|times)|\*/, "").gsub(/\^\{([[:alnum:]]+)\}/, '^\1').gsub(/\^\(([[:alnum:]]+)\)/, '^\1')
+    end
     def plain(text) = text.to_s.unicode_normalize(:nfkc).downcase.gsub(/[[:space:]]+/, " ").strip
 
     # Does +needle+ occur in +haystack+ as a whole token (not inside a longer word

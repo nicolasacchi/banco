@@ -83,6 +83,13 @@ class SupportModulesTest < ActiveSupport::TestCase
     assert Validation::Answers.contains?("x  +  3 = 9", "x+3")
   end
 
+  test "the leak scan ignores braces of a one-token exponent and a product dot" do
+    assert Validation::Answers.contains?("Riduci $4x^{2}y$ e basta.", "4x^2y")
+    assert Validation::Answers.contains?("Riduci $4x^2y$", "4x^{2}y")
+    assert Validation::Answers.contains?("Riduci $4 \\cdot x^{2}y$", "4x^2y")
+    assert_not Validation::Answers.contains?("Riduci $4x^{2}y$", "4x^3y")
+  end
+
   test "canonical JSON sorts keys, so the fingerprint ignores order" do
     a = { "b" => 1, "a" => [ { "z" => 1, "y" => 2 } ] }
     b = { "a" => [ { "y" => 2, "z" => 1 } ], "b" => 1 }
