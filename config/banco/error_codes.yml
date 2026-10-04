@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 3
+version: 4
 
 validation:
   # Skill graph (synchronous).
@@ -68,6 +68,8 @@ validation:
   W-NEGATIVE-STEM: { stage: ruby, severity: warning, description: "The stem is phrased as a negation." }
   W-DECIMAL-POINT: { stage: ruby, severity: warning, description: "A decimal point where the Italian comma is expected." }
   W-SELF-CERT: { stage: ruby, severity: warning, description: "Self-certifying wording." }
+  E-MATCHING-RIGHT-MARKUP: { stage: ruby, severity: error, description: "A right-column text of a matching holds LaTeX or markup ($, backslash, **): it is drawn as a native option, which renders plain text only." }
+  W-FORM-SKILL-CLOSURE: { stage: ruby, severity: warning, description: "An item's form_skill is not in the prerequisite closure of its skill: a wrong form gets credit but no tail suspect." }
   W-CALCULATOR: { stage: ruby, severity: warning, description: "A numeric item in a subject that allows the calculator lacks the sentence that says so." }
   # Blueprint (synchronous).
   E-POOL-REDO: { stage: blueprint, severity: error, description: "A skill has fewer than 6 distinct-fingerprint instances across 2 items with 3 low-guess, and does not declare redo_reserve false; or a pinned descent skill has no low-guess instance." }

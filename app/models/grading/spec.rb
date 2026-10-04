@@ -29,7 +29,9 @@ module Grading
       body = JSON.parse(instance.item_revision.body_json)
       return testlet_from_instance(instance, body) if body["kind"] == "testlet"
 
+      own_accept = instance.accept_json.present? ? JSON.parse(instance.accept_json) : []
       from_hash(body.merge(
+        "accept" => Array(body["accept"]) + own_accept,
         "component" => (body["kind"] == "short_answer" ? "short_answer" : body["component"]),
         "answer" => JSON.parse(instance.answer_json),
         "errors" => instance.errors_json.present? ? JSON.parse(instance.errors_json) : [],

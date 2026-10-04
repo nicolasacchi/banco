@@ -36,6 +36,7 @@ module Validation
       problems = Answers.shape_problems(@unit.component, answer, display)
       problems.each { |p| f.add("E-GEN-SCHEMA", "#{label}/answer", p, rule: "answer_shape", seed: seed) }
       errors(inst, label, seed, f)
+      accept_rules(inst, label, seed, f)
       choice_rules(display, answer, inst, label, seed, f) if @unit.component == "choice" && problems.empty?
       leaks(display, answer, inst, label, seed, f) if problems.empty?
       component_fit(answer, inst, label, seed, f)
@@ -71,6 +72,12 @@ module Validation
         r = Array(display["right"]).size
         f.add("E-MATCHING-SIZE", "#{label}/display/left", "a matching has at least #{MIN_PAIRS} pairs, not #{l}", count: l, seed: seed) if l < MIN_PAIRS
         f.add("E-MATCHING-SIZE", "#{label}/display/right", "the right column has n+1 entries (#{l + 1}), not #{r}", count: r, seed: seed) if r != l + 1
+        # The right column is drawn as <option> elements: no markup renders there (D-081).
+        Array(display["right"]).each_with_index do |e, i|
+          next unless e.is_a?(Hash) && e["text"].to_s.match?(/[$\\]|\*\*/)
+
+          f.add("E-MATCHING-RIGHT-MARKUP", "#{label}/display/right/#{i}/text", "the right column is plain text (no $, no backslash, no **): write x \u2264 -2, not LaTeX", seed: seed)
+        end
       end
     end
 
@@ -82,6 +89,21 @@ module Validation
         next if known.include?(e["code"])
 
         f.add("E-GEN-SCHEMA", "#{label}/errors/#{i}", "the error code #{e['code'].inspect} is not in the item's error_catalogue", rule: "code_not_in_catalogue", seed: seed)
+      end
+    end
+
+    # An instance's own accept list (D-081) belongs to normalized_text, like the item's.
+    def accept_rules(inst, label, seed, f)
+      return if inst["accept"].nil?
+
+      if @unit.component != "normalized_text"
+        f.add("E-GEN-SCHEMA", "#{label}/accept", "accept on an instance belongs to normalized_text items", rule: "accept_component", seed: seed)
+        return
+      end
+      Array(inst["accept"]).each_with_index do |text, i|
+        next unless Answers.punctuation_only?(text)
+
+        f.add("E-SCHEMA", "#{label}/accept/#{i}", "an accepted text that is only punctuation normalizes to nothing: no answer could match it", seed: seed)
       end
     end
 
@@ -122,20 +144,22 @@ module Validation
 
     def leaks(display, answer, inst, label, seed, f)
       component = @unit.component
+      prompt = @unit.body["prompt"].is_a?(Hash) ? @unit.body["prompt"].slice("stem_it", "table", "quote", "figure") : {}
       if component == "choice"
         key = Array(display["options"]).find { |o| o["id"] == answer.to_s }
         needles = key ? [ key["text"] ] : []
         scope = readable_strings(display, include_stem: true, include_options: false)
+        # The item's own prompt is read with every instance (D-081).
+        scope += prefixed(readable_strings(prompt, include_stem: true, include_options: false), "prompt")
       else
-        needles = Answers.key_texts(component, answer, accept: @unit.accept)
+        needles = Answers.key_texts(component, answer, accept: @unit.accept + Array(inst["accept"]))
         needles += ordering_texts(display, answer) + matching_texts(display, answer)
         scope = readable_strings(display, include_stem: false, include_options: false)
-        stem = display["stem_it"].to_s
-        needles.each do |n|
-          next unless Answers.contains?(stem, n)
+        scope += prefixed(readable_strings(prompt, include_stem: false, include_options: false), "prompt")
+        [ [ display["stem_it"], "#{label}/display/stem_it" ], [ prompt["stem_it"], "#{label}/prompt/stem_it" ] ].each do |stem, field|
+          next unless needles.any? { |n| Answers.contains?(stem.to_s, n) }
 
-          f.add("W-ANSWER-IN-STEM", "#{label}/display/stem_it", "the expected answer appears in the instruction", seed: seed)
-          break
+          f.add("W-ANSWER-IN-STEM", field, "the expected answer appears in the instruction", seed: seed)
         end
       end
       final = inst.dig("solution", "final").to_s
@@ -144,10 +168,13 @@ module Validation
         hit = scope.find { |_path, text| Answers.contains?(text, n) }
         next unless hit
 
-        f.add("E-SOLUTION-IN-DISPLAY", "#{label}/display#{hit[0]}", "the key or the solution appears where the student reads (#{n.to_s[0, 30].inspect})", seed: seed)
+        where = hit[0].start_with?("prompt:") ? "#{label}/prompt#{hit[0].delete_prefix('prompt:')}" : "#{label}/display#{hit[0]}"
+        f.add("E-SOLUTION-IN-DISPLAY", where, "the key or the solution appears where the student reads (#{n.to_s[0, 30].inspect})", seed: seed)
         break
       end
     end
+
+    def prefixed(strings, tag) = strings.map { |path, text| [ "#{tag}:#{path}", text ] }
 
     # "A, B, C" in key order, with the usual separators.
     def ordering_texts(display, answer)

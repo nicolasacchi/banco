@@ -113,6 +113,12 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
     as it would appear; an instance that shows one fails `E-PROVA-A-PARAMS`); the declared error
     answers differ from each other and from the key; lcm items use numbers that
     are not coprime. Never copy its numbers, its wording or its answers.
+    Per-instance spellings (normalized_text): an instance may carry `accept`, other
+    spellings of its own key (`"accept": ["x = 0"]` on the instance whose key is `0`); the
+    item's `accept` applies to every instance. A generator item's `tests` run on its first
+    stored instance. The right column of a `matching` is plain text (no `$`, no backslash:
+    `E-MATCHING-RIGHT-MARKUP`). A `form_skill` should be a prerequisite of the item's skill
+    (`W-FORM-SKILL-CLOSURE` otherwise: credit, but no tail suspect).
 13. **Calculating subjects.** Numeric items are generators. A numeric answer
     without letters uses `number` or `fraction`; `expression` is only for answers
     with letters or irrational values, with one-digit exponents. To isolate a letter

@@ -12,6 +12,7 @@ module Validation
     def call(item, files:, context:, findings:)
       skills(item, context, findings)
       composite(item, context, findings)
+      form_skill_closure(item, context, findings)
       sources(item, context, findings)
       assets(item, files, findings)
       accent_policy(item, findings)
@@ -53,6 +54,35 @@ module Validation
           Array(e["implicates"]).each { |k| yield "/sub_items/#{i}/error_catalogue/#{j}/implicates", k, false }
         end
       end
+    end
+
+    # ---- W-FORM-SKILL-CLOSURE ----------------------------------------------------------
+
+    # A wrong form that another skill owns gives credit and a tail suspect only when that
+    # skill is inside the prerequisite closure of the item's skill (docs/rules/diagnosis-1.md).
+    def form_skill_closure(item, context, findings)
+      return unless context.graph_present?
+
+      bodies = item["kind"] == "testlet" ? Array(item["sub_items"]).each_with_index.map { |b, i| [ b, "/sub_items/#{i}" ] } : [ [ item, "" ] ]
+      bodies.each do |body, path|
+        owner = body["form_skill"]
+        next if owner.nil? || owner == body["skill"] || context.skill(owner).nil? || context.skill(body["skill"]).nil?
+        next if skill_closure(context, body["skill"]).include?(owner)
+
+        findings.add("W-FORM-SKILL-CLOSURE", "#{path}/form_skill",
+                     "#{owner} is not a prerequisite, direct or transitive, of #{body['skill']}: a wrong form gets credit but no tail suspect; add the edge to the graph or drop form_skill",
+                     form_skill: owner)
+      end
+    end
+
+    def skill_closure(context, key)
+      seen = Set.new
+      stack = [ key ]
+      until stack.empty?
+        skill = context.skill(stack.pop) or next
+        (Array(skill["prerequisites"]) + Array(skill["composite_of"])).each { |k| stack << k if seen.add?(k) }
+      end
+      seen
     end
 
     # ---- E-COMPOSITE -----------------------------------------------------------------

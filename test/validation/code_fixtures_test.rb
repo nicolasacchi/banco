@@ -81,9 +81,9 @@ class CodeFixturesTest < ActiveSupport::TestCase
     item("instances" => [ inst, F.number_instance(4, 13) ], "tests" => { "must_accept" => [], "must_reject" => [], "blank" => "invalid" })
   end
 
-  def matching_item(left, right)
+  def matching_item(left, right, right_text: nil)
     answer = left.first(right.size - 1).to_h { |i| [ "l#{i}", "r#{i}" ] }
-    inst = { "display" => { "stem_it" => "Abbina.", "left" => left.map { |i| { "id" => "l#{i}", "text" => "sinistra #{i}" } }, "right" => right.map { |i| { "id" => "r#{i}", "text" => "destra #{i}" } } },
+    inst = { "display" => { "stem_it" => "Abbina.", "left" => left.map { |i| { "id" => "l#{i}", "text" => "sinistra #{i}" } }, "right" => right.map { |i| { "id" => "r#{i}", "text" => (right_text && i == right.first ? right_text : "destra #{i}") } } },
              "answer" => answer, "errors" => [ { "code" => "swap", "value" => answer.to_a.reverse.to_h } ],
              "solution" => { "steps" => [ { "text_it" => "Abbina." } ], "final" => "fatto" } }
     item("component" => "matching", "instances" => [ inst, inst.merge("display" => inst["display"].merge("stem_it" => "Abbina ancora.")) ],
@@ -128,6 +128,8 @@ class CodeFixturesTest < ActiveSupport::TestCase
     },
     "E-OPTION-DUPLICATE" => -> { static_codes(F.choice_item("instances" => [ F.choice_instance("sette", %w[sette nove undici]), F.choice_instance("otto", %w[quattro sei dieci]) ])) },
     "E-MATCHING-SIZE" => -> { static_codes(matching_item([ 1, 2, 3 ], [ 1, 2, 3, 4 ])) },
+    "E-MATCHING-RIGHT-MARKUP" => -> { static_codes(matching_item([ 1, 2, 3, 4 ], [ 1, 2, 3, 4, 5 ], right_text: "$x \\leq 2$")) },
+    "W-FORM-SKILL-CLOSURE" => -> { static_codes(item("form_skill" => "math.fractions-operations", "form" => [ "reduced" ])) },
     "E-ACCENT-POLICY" => -> { static_codes(item("accent_policy" => "strict")) },
     "E-PROVA-A-PARAMS" => -> { static_codes(item("sources" => [ { "kind" => "prova_a_structure", "ref" => "struttura", "fragment" => "esercizio" } ])) },
     "E-READ" => -> { static_codes(item("prompt" => { "stem_it" => long_sentence })) },

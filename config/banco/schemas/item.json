@@ -592,6 +592,16 @@
         },
         "solution": {
           "$ref": "#/$defs/solution"
+        },
+        "accept": {
+          "description": "normalized_text only: other spellings of this instance's key, added to the item's accept list for this instance alone (D-081).",
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
         }
       },
       "required": [

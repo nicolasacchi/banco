@@ -91,6 +91,7 @@ module Api
         instances = revision.instances.order(:id).limit(INSTANCES_FOR_VERIFIER).map do |i|
           { seed: i.seed, display: JSON.parse(i.display_json), answer: JSON.parse(i.answer_json),
             errors: i.errors_json && JSON.parse(i.errors_json), solution: i.solution_json && JSON.parse(i.solution_json) }
+            .tap { |row| row[:accept] = JSON.parse(i.accept_json) if i.accept_json.present? }
         end
         item = JSON.parse(revision.body_json)
         { files: files, instances: instances, tests: item["tests"],

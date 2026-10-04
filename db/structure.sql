@@ -36,7 +36,7 @@ FOREIGN KEY ("item_revision_id")
 );
 CREATE INDEX "index_item_validations_on_item_revision_id" ON "item_validations" ("item_revision_id") /*application='Banco'*/;
 CREATE UNIQUE INDEX "index_item_validations_on_item_revision_id_and_seq" ON "item_validations" ("item_revision_id", "seq") /*application='Banco'*/;
-CREATE TABLE "item_instances" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "item_revision_id" integer NOT NULL, "seed" integer, "display_json" text NOT NULL, "answer_json" text NOT NULL, "errors_json" text, "solution_json" text, "fingerprint" varchar(64) NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_07564fabf6"
+CREATE TABLE "item_instances" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "item_revision_id" integer NOT NULL, "seed" integer, "display_json" text NOT NULL, "answer_json" text NOT NULL, "errors_json" text, "solution_json" text, "fingerprint" varchar(64) NOT NULL, "created_at" datetime(6) NOT NULL, "accept_json" text, CONSTRAINT "fk_rails_07564fabf6"
 FOREIGN KEY ("item_revision_id")
   REFERENCES "item_revisions" ("id")
 );
@@ -267,6 +267,7 @@ BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER grade_proposals_no_delete BEFORE DELETE ON grade_proposals
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261004300001'),
 ('20261004200001'),
 ('20261004100001'),
 ('20261003300001'),

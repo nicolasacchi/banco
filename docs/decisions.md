@@ -87,6 +87,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-077 | 2026-10-04 | solution items accept an inequality (x < a) as the answer and as typical errors | implemented |
 | D-078 | 2026-10-04 | generator items run tests; leak scan folds exponent braces and product dots | implemented |
 | D-079 | 2026-10-04 | `isolate` form (letter = expression) and `exclude_params` on banco.item/1 | implemented |
+| D-081 | 2026-10-04 | per-instance `accept`; item prompt in the leak scan; W-FORM-SKILL-CLOSURE; E-MATCHING-RIGHT-MARKUP | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -887,3 +888,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** `reduced` does not look inside several-letter fractions; a fraction with a numeric common factor is still for `lowest_terms`.
 - **Status:** implemented
 - **Back-port:** A-06.
+
+## D-081 · 2026-10-04 · per-instance `accept`; the item prompt in the leak scan; `W-FORM-SKILL-CLOSURE`; `E-MATCHING-RIGHT-MARKUP`
+
+- **Design ref:** A-06, A-01
+- **Design said:** `accept` belongs to the item; the leak scan reads the instance display; `form_skill` only has to exist in the graph; the right column of a matching is free text.
+- **We do:** (1) `banco.item/1` instances (listed or generated) may carry an optional `accept` (up to 10 strings, normalized_text only, else `E-GEN-SCHEMA`): other spellings of that instance's key, added to the item's `accept` for that instance alone (Spec, round trip, tests, leak scan). It is stored in a new nullable column `item_instances.accept_json` (migration; rows before it have none) and shown to the verifier and the reviewer. The instance hash and fingerprint are unchanged when there is no `accept`. (2) The leak scan also reads the item `prompt` (stem, table, quote, figure text): a key in a non-stem prompt string, or a choice key in the prompt stem, is `E-SOLUTION-IN-DISPLAY`; the expected answer in the prompt stem of a non-choice item is `W-ANSWER-IN-STEM` (field `/prompt/stem_it`). An item whose prompt names the answer format on purpose gets the warning, which is meant. (3) New warning `W-FORM-SKILL-CLOSURE`: a `form_skill` that is not a prerequisite (or composite part), direct or transitive, of the item's skill. The grader still credits the declared form, but the fold drops the tail suspect, as docs/rules/diagnosis-1.md section 2 says; the fix is a graph edge or no `form_skill`. (4) New error `E-MATCHING-RIGHT-MARKUP`: `$`, a backslash or `**` in a right-column text, because it is drawn as a native option that shows plain text. Use Unicode (`x ≤ -2`). Registry version 4. Tests on generator items and `exclude_params` were already done (D-078, D-079); a generator item's tests refer to its first stored (first clean seed) instance. `banco.*/1` stays backward compatible: every addition is optional.
+- **Why:** content agents reported that a generator item could not accept another spelling on one instance only, that the prompt was not scanned, that a `form_skill` outside the closure silently lost its suspect, and that LaTeX in a matching right column shows raw.
+- **Cost:** a migration; a few more findings on existing items (reviewed as warnings, except the markup error).
+- **Status:** implemented
+- **Back-port:** A-06, A-01.

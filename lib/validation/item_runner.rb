@@ -45,7 +45,7 @@ module Validation
       @details[:rules_version] = Rules.version
       stored = instances.map { |i| i.merge(fingerprint: Canonical.fingerprint(i[:display])) }
       Result.new(status: @findings.any_error? ? "failed" : "passed", findings: @findings, instances: stored,
-                 instances_sha256: stored.empty? ? nil : Digest::SHA256.hexdigest(Canonical.dump(stored.map { |i| i.slice(:display, :answer, :errors, :solution) })),
+                 instances_sha256: stored.empty? ? nil : Digest::SHA256.hexdigest(Canonical.dump(stored.map { |i| i.slice(:display, :answer, :errors, :solution, :accept) })),
                  details: @details, chrome_version: @chrome_version)
     end
 
@@ -124,7 +124,15 @@ module Validation
       longest_correct(unit, list, checker)
       never_generated(unit, list)
       Roundtrip.new(unit, subject: item["subject"], findings: @findings).call(list, label: "#{unit.path}/instances", tests: unit.body["tests"])
-      list.map { |i| { seed: nil, display: i["display"], answer: i["answer"], errors: i["errors"], solution: i["solution"] } }
+      list.map { |i| stored_row(nil, i) }
+    end
+
+    # The row kept for an instance; accept (D-081) only when the instance has one, so the
+    # hash of instances written before it does not change.
+    def stored_row(seed, inst)
+      row = { seed: seed, display: inst["display"], answer: inst["answer"], errors: inst["errors"], solution: inst["solution"] }
+      row[:accept] = inst["accept"] if inst["accept"]
+      row
     end
 
     def verify_static(unit, item, list)
@@ -170,7 +178,7 @@ module Validation
           merge_seed_findings(local)
           ItemChecks.excluded_params(unit.body, inst, "generated", @findings, seed: row.seed)
           if local.errors.empty?
-            clean << { seed: row.seed, "display" => inst["display"], "answer" => inst["answer"], "errors" => inst["errors"], "solution" => inst["solution"] }
+            clean << { seed: row.seed, "display" => inst["display"], "answer" => inst["answer"], "errors" => inst["errors"], "solution" => inst["solution"], "accept" => inst["accept"] }
           else
             problems += 1
           end
@@ -184,7 +192,7 @@ module Validation
         never_generated(unit, clean.map { |c| c.transform_keys(&:to_s) })
         Roundtrip.new(unit, subject: item["subject"], findings: @findings).call(stored.map { |c| c.transform_keys(&:to_s) }, label: "generated", tests: unit.body["tests"])
         verify_generated(unit, item, phase, gen, clean, stored)
-        stored.map { |c| { seed: c[:seed], display: c["display"], answer: c["answer"], errors: c["errors"], solution: c["solution"] } }
+        stored.map { |c| stored_row(c[:seed], c) }
       end
     end
 
@@ -248,7 +256,7 @@ module Validation
     end
 
     def instance_for_verify(c)
-      { "display" => c["display"], "answer" => c["answer"], "errors" => c["errors"], "solution" => c["solution"], "seed" => c[:seed] }
+      { "display" => c["display"], "answer" => c["answer"], "errors" => c["errors"], "solution" => c["solution"], "seed" => c[:seed] }.tap { |h| h["accept"] = c["accept"] if c["accept"] }
     end
 
     def interpret_verify(_unit, _item, rows, verdict, accept_prefix:)
