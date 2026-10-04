@@ -51,8 +51,15 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
   before you edit; a sent-back revision is never approved, so answer with a new
   revision that fixes what the comment says. `banco status` counts them in
   `items.sent_back`.
-- An item that does not measure accents says `accent_policy: "flag"` (a slip in an
-  accent is then credited with a note); one that does says `strict`.
+- A `normalized_text` item that does not measure accents says `accent_policy: "flag"`
+  (a slip in an accent is then credited with a note); one that does says `strict`.
+  Choice, ordering, matching and the other components carry no `accent_policy`
+  (they are graded by id; the validator refuses it with E-ACCENT-POLICY).
+- When the answer is a word of a sentence the student must analyse, put the sentence
+  in the stem between `«` and `»`: a key found only inside the quotes is the material
+  and gets no W-ANSWER-IN-STEM. A key outside the quotes still does.
+- `accept` may also sit on one instance (D-081): other spellings of that instance's
+  key only, so another instance's key is never accepted.
 
 ## The writing rules (version 1)
 

@@ -55,6 +55,17 @@ class D081Test < ActiveSupport::TestCase
     assert_includes codes(run_item(item)), "E-SOLUTION-IN-DISPLAY"
   end
 
+  test "a normalized_text key inside a quoted sentence in the stem is the material, not a W-ANSWER-IN-STEM" do
+    quoted = [ text_instance("impossibile", "indeterminata", "Scrivi la parola: «Questo sistema e impossibile.»"),
+               text_instance("indeterminata", "impossibile", "Scrivi la parola: «La forma e indeterminata.»") ]
+    item = text_item(quoted, "tests" => { "must_accept" => [], "must_reject" => [ "mai" ], "blank" => "invalid" })
+    refute_includes codes(run_item(item)), "W-ANSWER-IN-STEM"
+
+    outside = [ text_instance("impossibile", "indeterminata", "Scrivi impossibile: «Questo sistema e impossibile.»"),
+                text_instance("indeterminata", "impossibile", "Scrivi la parola: «La forma e indeterminata.»") ]
+    assert_includes codes(run_item(text_item(outside, "tests" => { "must_accept" => [], "must_reject" => [ "mai" ], "blank" => "invalid" }))), "W-ANSWER-IN-STEM"
+  end
+
   test "the answer in the item prompt stem is W-ANSWER-IN-STEM; in its table, E-SOLUTION-IN-DISPLAY" do
     item = text_item([ text_instance("impossibile", "indeterminata", "Risolvi la prima."), text_instance("indeterminata", "impossibile", "Risolvi la seconda.") ],
                      "prompt" => { "stem_it" => "Scrivi impossibile o indeterminata, come risposta." },

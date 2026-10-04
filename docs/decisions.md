@@ -89,6 +89,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-079 | 2026-10-04 | `isolate` form (letter = expression) and `exclude_params` on banco.item/1 | implemented |
 | D-081 | 2026-10-04 | per-instance `accept`; item prompt in the leak scan; W-FORM-SKILL-CLOSURE; E-MATCHING-RIGHT-MARKUP | implemented |
 | D-082 | 2026-10-05 | step consistency reads LaTeX decimal commas; teacher skill page renders solution markup | implemented |
+| D-083 | 2026-10-05 | W-ANSWER-IN-STEM ignores a key inside a «quoted» sentence; brief on accent_policy and per-instance accept | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -907,5 +908,15 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** before scanning, the check drops `$` and turns `{,}` into `,` (and reads `\dfrac` like `\frac`), so a final `$0{,}4$` is the number 0,4, not 0 and 4. The teacher's skill page draws each solution step and the final with `data-markup="inline"`, as the student's results page does, so `$...$` is not shown raw. Authors may write a final either way.
 - **Why:** a content agent had to write a plain-text final for decimal answers to pass validation.
 - **Cost:** none; no format change.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-083 · 2026-10-05 · W-ANSWER-IN-STEM ignores a key inside a «quoted» sentence of a normalized_text stem; brief on accent_policy and per-instance accept
+
+- **Design ref:** A-06
+- **Design said:** W-ANSWER-IN-STEM fires when the expected answer appears anywhere in the stem; the brief said every item that does not measure accents sets `accent_policy: "flag"`.
+- **We do:** (1) on a `normalized_text` item the check removes `«...»` spans from the stem (display and prompt) before looking for the key, so "write the subject of «Marco mangia»" with the key `Marco` is the material, not a leak; a key outside the quotes still warns. Other components unchanged (the quote-free text is only used for the warning; E-SOLUTION-IN-DISPLAY is untouched). (2) The brief now says `accent_policy` belongs to `normalized_text` items only (the validator keeps refusing it elsewhere with E-ACCENT-POLICY), explains the quote convention, and points at the per-instance `accept` of D-081, which already covers "i dolci" / "dolci" on one instance and "la musica" / "musica" on another. `banco.*/1` formats unchanged.
+- **Why:** content agents reported warning noise on every analyse-the-sentence item, a brief that contradicted the validator, and (already fixed in D-081, staging had it) the missing per-instance accept.
+- **Cost:** a key hidden in a quote is not warned about; the reviewer reads the stem anyway.
 - **Status:** implemented
 - **Back-port:** A-06.
