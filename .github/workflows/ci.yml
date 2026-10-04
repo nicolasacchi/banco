@@ -13,7 +13,7 @@ jobs:
   hygiene:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Public-repository hygiene (prep/ untracked, no forbidden terms, no programme files)
         env:
           HYGIENE_TERMS: ${{ secrets.HYGIENE_TERMS }} # the private term list; never in git
@@ -26,7 +26,7 @@ jobs:
       BANCO_CHROME_NO_SANDBOX: "1"
       PROP_RUNS: "300"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true # Ruby version comes from .ruby-version
@@ -64,7 +64,7 @@ jobs:
   go:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-go@v6
         with:
           go-version: "1.27.x"
@@ -75,7 +75,7 @@ jobs:
   node:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
         with:
           node-version: "26"
@@ -90,7 +90,7 @@ jobs:
   scan:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
@@ -102,6 +102,6 @@ jobs:
   docker:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Build the production image
         run: docker build --build-arg GIT_SHA="$GITHUB_SHA" -t banco:ci .
