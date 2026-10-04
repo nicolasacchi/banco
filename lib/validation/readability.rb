@@ -14,7 +14,7 @@ module Validation
     BOLD = /\*\*(.+?)\*\*/m
     WORD = /[\p{L}\p{N}][\p{L}\p{N}'’_-]*/
     EMOJI = /[\u{1F000}-\u{1FAFF}\u{2190}-\u{21FF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{20E3}]/
-    ABBREVIATIONS = /\b(?:ecc|es|sig|sigg|dott|prof|art|artt|pag|pagg|cfr|vs|n|nn|p\.es)\./i
+    ABBREVIATIONS = /(?:\b(?:m\.c\.m|m\.c\.d|c\.e)\.|\b(?:ecc|es|sig|sigg|dott|prof|art|artt|pag|pagg|cfr|vs|n|nn|p\.es)\.)/i
     ROMAN = /\A[IVXLCDM]+\z/
 
     module_function

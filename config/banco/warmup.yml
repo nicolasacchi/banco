@@ -23,10 +23,18 @@ tasks:
     component: number
     prompt_it: "Scrivi il numero zero virgola settantacinque. I decimali si scrivono con la virgola."
     answer: "0,75"
+  - id: number_negative
+    component: number
+    prompt_it: "Scrivi meno cinque. Il segno meno va davanti al numero."
+    answer: "-5"
   - id: fraction
     component: fraction
     prompt_it: "Scrivi la frazione tre quarti nelle due caselle."
     answer: { n: 3, d: 4 }
+  - id: fraction_negative
+    component: fraction
+    prompt_it: "Scrivi meno tre quarti nelle due caselle. Il segno meno va nel numeratore."
+    answer: { n: -3, d: 4 }
   - id: ordering
     component: ordering
     prompt_it: "Metti i numeri in ordine, dal più piccolo al più grande. Usa Su e Giù, oppure Alt con le frecce."

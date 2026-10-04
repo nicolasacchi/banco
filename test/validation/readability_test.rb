@@ -30,6 +30,13 @@ class ReadabilityTest < ActiveSupport::TestCase
     assert_empty rules("Usa i numeri primi, ad es. 2 e 3, ecc. e poi scegli.")
   end
 
+  test "the dotted school abbreviations m.c.m., M.C.D. and C.E. do not split a message" do
+    msg = "Per il m.c.m. ogni fattore primo va preso con l'esponente più alto. L'esponente più basso si usa per il M.C.D. dei numeri."
+    assert_not_includes lint(msg, role: :message).map(&:code), "E-MESSAGE"
+    assert_not_includes lint("Controlla la C.E. della frazione. Poi semplifica.", role: :message).map(&:code), "E-MESSAGE"
+    assert_includes lint("Il m.c.m. è uno. Il M.C.D. è due. Il resto è tre.", role: :message).map(&:code), "E-MESSAGE"
+  end
+
   test "ALL-CAPS words of 3 or more letters are errors except acronyms and Roman numerals" do
     assert_equal %w[all_caps], rules("Leggi con ATTENZIONE la consegna.")
     assert_empty rules("Calcola l'IVA nel secolo XVIII.")
