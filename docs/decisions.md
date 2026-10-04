@@ -88,6 +88,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-078 | 2026-10-04 | generator items run tests; leak scan folds exponent braces and product dots | implemented |
 | D-079 | 2026-10-04 | `isolate` form (letter = expression) and `exclude_params` on banco.item/1 | implemented |
 | D-081 | 2026-10-04 | per-instance `accept`; item prompt in the leak scan; W-FORM-SKILL-CLOSURE; E-MATCHING-RIGHT-MARKUP | implemented |
+| D-082 | 2026-10-05 | step consistency reads LaTeX decimal commas; teacher skill page renders solution markup | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -898,3 +899,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** a migration; a few more findings on existing items (reviewed as warnings, except the markup error).
 - **Status:** implemented
 - **Back-port:** A-06, A-01.
+
+## D-082 · 2026-10-05 · step consistency reads LaTeX decimal commas; the teacher's skill page renders solution markup
+
+- **Design ref:** A-06, B-09
+- **Design said:** `E-STEP-INCONSISTENT` compares the numbers in `solution.final` with the key of a number or fraction item.
+- **We do:** before scanning, the check drops `$` and turns `{,}` into `,` (and reads `\dfrac` like `\frac`), so a final `$0{,}4$` is the number 0,4, not 0 and 4. The teacher's skill page draws each solution step and the final with `data-markup="inline"`, as the student's results page does, so `$...$` is not shown raw. Authors may write a final either way.
+- **Why:** a content agent had to write a plain-text final for decimal answers to pass validation.
+- **Cost:** none; no format change.
+- **Status:** implemented
+- **Back-port:** A-06.

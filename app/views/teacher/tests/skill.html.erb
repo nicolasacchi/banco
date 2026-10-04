@@ -40,8 +40,8 @@
               </ul>
             <% end %>
             <% if sample.steps.any? %>
-              <ol class="steps"><% sample.steps.each do |s| %><li><%= s %></li><% end %></ol>
-              <% if sample.final %><p><%= t("teacher.skill.final") %> <%= sample.final %></p><% end %>
+              <ol class="steps"><% sample.steps.each do |s| %><li data-markup="inline"><%= s %></li><% end %></ol>
+              <% if sample.final %><p><%= t("teacher.skill.final") %> <span data-markup="inline"><%= sample.final %></span></p><% end %>
             <% end %>
           </section>
         <% end %>

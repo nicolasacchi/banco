@@ -233,7 +233,7 @@ module Validation
       case @unit.component
       when "number", "fraction"
         expected = Answers.rational(inst["answer"].is_a?(Hash) ? { "n" => inst["answer"]["n"], "d" => inst["answer"]["d"] } : inst["answer"])
-        values = final.gsub(/\\frac\{(\d+)\}\{(\d+)\}/, '\1/\2').scan(NUMBER).filter_map { |t| Answers.rational(t.tr("−", "-").delete(" ")) }
+        values = final.delete("$").gsub("{,}", ",").gsub(/\\d?frac\{(\d+)\}\{(\d+)\}/, '\1/\2').scan(NUMBER).filter_map { |t| Answers.rational(t.tr("−", "-").delete(" ")) }
         inconsistent = expected && values.any? && values.none? { |v| v == expected }
       when "choice"
         options = Array(inst.dig("display", "options"))

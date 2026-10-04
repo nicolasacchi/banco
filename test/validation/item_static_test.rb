@@ -241,6 +241,15 @@ class ItemStaticTest < ActiveSupport::TestCase
     assert_includes codes(run_item(F.static_item("instances" => [ inst, F.number_instance(4, 13) ]))), "E-STEP-INCONSISTENT"
   end
 
+  test "E-STEP-INCONSISTENT reads a LaTeX decimal comma as one number" do
+    inst = F.number_instance(2, 9)
+    inst["answer"] = "0,4"
+    inst["solution"]["final"] = "$0{,}4$"
+    assert_not_includes codes(run_item(F.static_item("instances" => [ inst, F.number_instance(4, 13) ]))), "E-STEP-INCONSISTENT"
+    inst["solution"]["final"] = "$0{,}5$"
+    assert_includes codes(run_item(F.static_item("instances" => [ inst, F.number_instance(4, 13) ]))), "E-STEP-INCONSISTENT"
+  end
+
   test "readability: E-READ rules, E-PHRASE, E-MESSAGE and the warnings come from the item's Italian text" do
     long = "Risolvi l'equazione " + ([ "molto" ] * 30).join(" ") + "."
     assert(run_item(F.static_item("prompt" => { "stem_it" => long })).findings.any? { |f| f.code == "E-READ" && f.detail[:rule] == "sentence_length" })
