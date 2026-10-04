@@ -78,6 +78,24 @@
       "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-FILES"]
     },
     {
+      "name": "reference list",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/references",
+      "args": [],
+      "flags": [],
+      "error_codes": ["E-AUTH"]
+    },
+    {
+      "name": "reference show",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/references/:key",
+      "args": [],
+      "flags": ["--key"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
       "name": "work open",
       "local": false,
       "method": "GET",

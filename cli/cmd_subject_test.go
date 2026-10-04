@@ -106,3 +106,21 @@ func TestSyllabusLinesBuildsTheRangeQuery(t *testing.T) {
 		}
 	}
 }
+
+func TestReferenceCommandsBuildTheRequest(t *testing.T) {
+	srv, seen := sequenceServer(t, [2]string{"200", `{"rows":[]}`}, [2]string{"200", `{}`})
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "reference", "list"); r.exit != ExitOK {
+		t.Fatalf("list: exit %d: %s", r.exit, r.stderr)
+	}
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "reference", "show", "--key", "brano-prova"); r.exit != ExitOK {
+		t.Fatalf("show: exit %d: %s", r.exit, r.stderr)
+	}
+	if (*seen)[0].path != "/api/v1/references" || (*seen)[1].path != "/api/v1/references/brano-prova" {
+		t.Errorf("requests = %+v", *seen)
+	}
+	for _, args := range [][]string{{"reference", "show"}, {"reference", "show", "--key", "Bad Key"}, {"reference", "list", "x"}} {
+		if got := runCLI(t, srv.URL, envToken("bnc_x"), args...); got.exit != ExitUsage {
+			t.Errorf("%v: exit %d", args, got.exit)
+		}
+	}
+}

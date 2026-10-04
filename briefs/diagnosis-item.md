@@ -82,6 +82,13 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
    words, at most 3 spans of at most 4 words; no ALL-CAPS words, no italics, no
    emoji; mathematics between `$...$`; decimal comma. One idea per sentence, no
    double negations.
+   A passage to read (a narrative excerpt, a law) goes in `prompt.quote`
+   `{ref, text}`, not in the stem: `banco reference list` shows the imported
+   reference texts and `banco reference show --key KEY` their body; `text` must be
+   an exact substring of it (E-QUOTE-REF). If no suitable text is imported, do not
+   paste an excerpt into the stem or the options: write the item without it and
+   report the missing text; the operator imports public-domain excerpts with their
+   source (D-074).
 7. **Phrases never used.** No exam-gaming ("la risposta che cercano", "cosa
    scrivere", "se il prof", "a lezione") and no self-certification
    ("è verificato"). No personalisation and no data about the student.

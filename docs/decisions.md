@@ -81,6 +81,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-071 | 2026-10-04 | agent sessions are bound to their token; token roles limit session roles | implemented |
 | D-072 | 2026-10-04 | production host authorization | implemented |
 | D-073 | 2026-10-04 | audit lows: seq in the transaction, thousands, Unicode variants, punctuation keys, counted abandon, mixed at the cap | implemented |
+| D-074 | 2026-10-04 | reference texts: agents list and read, the operator imports | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -811,3 +812,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** "1.000" and "2.500" are refused as answers; a student must type 1000 or 1,5.
 - **Status:** implemented
 - **Back-port:** A-01, B-02, B-05.
+
+## D-074 · 2026-10-04 · reference texts: agents list and read, the operator imports
+
+- **Design ref:** A-06, E-QUOTE-REF
+- **Design said:** An item quotes an imported reference text through `prompt.quote {ref, text}`; only the Costituzione is seeded.
+- **We do:** `banco reference list` and `banco reference show --key KEY` (GET `/api/v1/references[/:key]`, read only) tell an agent which texts exist and give their body, so a quotation is copied as an exact substring. Importing stays with the operator: `bin/rails banco:reference:import KEY= TITLE= SOURCE_URL= FILE=path|-` (source required, sha256 recorded; an existing key with other text is refused). No API route writes a reference text, and the stem limits (60 words, 25-word sentences) are unchanged. The brief `diagnosis-item` says where a passage goes and what to do when none is imported.
+- **Why:** An agent that cannot cite a source would put excerpts in the stem or in unlinted option texts. An agent-writable import would let an agent invent a "source" its own quotation then matches.
+- **Cost:** A new excerpt needs one operator command.
+- **Status:** implemented
+- **Back-port:** A-06.
