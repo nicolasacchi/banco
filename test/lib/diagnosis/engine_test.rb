@@ -441,6 +441,21 @@ class DiagnosisEngineTest < ActiveSupport::TestCase
     assert_nil u.state(A)[0]
   end
 
+  test "wrong_form on the skill itself with a declared code stays in the node; an undeclared code descends" do
+    declared = build_plan(skills: { A => { prereqs: [ B ], errors: { "not_fully_factored" => [] } }, B => {} })
+    d = DiagnosisHelper::Driver.new(declared)
+    d.start
+    2.times { d.play("wrong_form", form: "skill", error_code: "not_fully_factored") }
+    assert_equal %w[to_recover two_wrong], d.state(A)
+    assert_nil d.state(B)[0]
+
+    undeclared = build_plan(skills: { A => { prereqs: [ B ] }, B => {} })
+    u = DiagnosisHelper::Driver.new(undeclared)
+    u.start
+    2.times { u.play("wrong_form", form: "skill", error_code: "lowest_terms") }
+    assert_equal B, u.next_skill
+  end
+
   test "orthography_masks_form: an accent slip is credit with an observation and no descent" do
     plan = build_plan(skills: { A => { prereqs: [ B ], errors: { "es_accents" => [ B ] } }, B => {} })
     d = DiagnosisHelper::Driver.new(plan)

@@ -90,6 +90,13 @@ module Diagnosis
         elsif body["form"].present? then "skill" # the form is the skill itself
         end
         fields[:form_skill] = form_skill if form_skill
+        # A form that is the item's own skill carries its first violation as the code, so a
+        # graph error with that code (implicates []) keeps the descent in the node; an
+        # undeclared code still counts as unclassified (D-076).
+        if fields[:form] == "skill" && code.nil?
+          violations = grading.form_violations_json ? JSON.parse(grading.form_violations_json) : []
+          fields[:error_code] = violations.first
+        end
       end
       fields.compact
     end

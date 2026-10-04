@@ -116,6 +116,10 @@ non indovinabile; l'item 1 non si indovina; un brano conta una prova per abilit√
   the `implicates` of its typical errors, plus all direct prerequisites if any
   outcome was W unclassified or D. Targets go to the head of the frontier
   (depth-first).
+- A `wrong_form` whose form is the item's own skill carries its first form
+  violation as the error code (D-076). A graph error with that code and
+  `implicates: []` keeps the descent in the node; an undeclared code is
+  unclassified like any other, so the descent adds the direct prerequisites.
 - Never below a demonstrated skill. A prerequisite implicated on a demonstrated
   skill goes to the tail as a suspect.
 - A skill's state comes only from its own items.

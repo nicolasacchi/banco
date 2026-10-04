@@ -83,6 +83,8 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-073 | 2026-10-04 | audit lows: seq in the transaction, thousands, Unicode variants, punctuation keys, counted abandon, mixed at the cap | implemented |
 | D-074 | 2026-10-04 | reference texts: agents list and read, the operator imports | implemented |
 | D-075 | 2026-10-04 | partial exclusions, per-line coverage detail, inherited block markers, W-SCOPE-MARKER | implemented |
+| D-076 | 2026-10-04 | a form that is the item's own skill carries its first violation as the error code | implemented |
+| D-077 | 2026-10-04 | solution items accept an inequality (x < a) as the answer and as typical errors | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -833,3 +835,23 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** A short bullet under a starred header can look like a header and end the block early (no warning is raised there).
 - **Status:** implemented
 - **Back-port:** C-01, A-06.
+
+## D-076 · 2026-10-04 · a form that is the item's own skill carries its first violation as the error code
+
+- **Design ref:** B-03, X-03
+- **Design said:** a `wrong_form` whose form is the skill itself is a W; descent goes to the implicated prerequisites of the typical errors, plus all direct parents if some W had no catalogue code.
+- **We do:** `Diagnosis::EventLoader` gives that W (form `skill`, no typical-error code) the first entry of `form_violations` as its `error_code` (`not_fully_factored`, `not_lowest_terms`, ...). A graph error with that code and `implicates: []` keeps the descent in the node; a code the graph does not declare is still unclassified and descends to the parents. A typical-error code the grader returned is never replaced. Stored rows and the frozen formats are unchanged.
+- **Why:** an answer such as `2x(x^2 - 9)`, right in value and incomplete in form, sent the student into prerequisites that were not the cause, and a graph could not declare an in-node form error.
+- **Cost:** a graph that never declared the code behaves as before (parents).
+- **Status:** implemented
+- **Back-port:** B-03.
+
+## D-077 · 2026-10-04 · solution items accept an inequality as the answer
+
+- **Design ref:** A-01
+- **Design said:** the `solution` form accepts `x = value` (or the bare value).
+- **We do:** the checker parses `<`, `<=`, `>`, `>=` (`\le`, `\leq`, `\lt`, `\gt`, `\ge`, `\geq`, `<=`, the Unicode signs). On an item whose `form` has `solution`, a relation with the unknown alone on one side is canonical (`-3 > x` is `x < -3`); it equals another relation only with the same direction (strict versus non-strict counts) and an equal bound. Answer and error values may be relations, so `x > -3` can be a typical error `direction_not_flipped`. A relation never equals an equation or a bare number. The other `solution` and number-form constraints apply to the bound (`lowest_terms`, no operation left). Chains (`-5 < x < -3`) and a relation on an item without the `solution` form are `invalid` (`unsupported_operator`), as before. Vectors `ineq-*` in `test/fixtures/grading/vectors.json`. `banco.*/1` formats unchanged.
+- **Why:** the natural hard-to-guess item for a first-degree inequality is to type the solution set.
+- **Cost:** compound solutions (intervals, unions, systems of inequalities) are still out; use a choice item.
+- **Status:** implemented
+- **Back-port:** A-01.
