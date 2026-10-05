@@ -16,10 +16,12 @@ module Diagnosis
       # instance of it is (two serves would be correlated evidence, D-099).
       passages = state.serves.map { |s| s.instance.item if s.instance.testlet? }.compact
       held = testlet_pending?(state, skill)
-      unseen = plan.instances_for(skill).reject do |i|
+      fresh = plan.instances_for(skill).reject do |i|
         state.served_fingerprints.include?(i.fingerprint) || plan.seen.include?(i.fingerprint) ||
-          (i.testlet? && (held || i.expected_seconds > max_seconds || passages.include?(i.item)))
+          (i.testlet? && (held || passages.include?(i.item)))
       end
+      unseen = fresh.reject { |i| i.testlet? && i.expected_seconds > max_seconds }
+      too_long = fresh.size != unseen.size
       case need
       when :first
         low = unseen.select { |i| i.low_guess_for(skill) }
@@ -27,6 +29,11 @@ module Diagnosis
       when :second
         used = state.serves.select { |s| s.instance.skills.include?(skill) }.map { |s| s.instance.item }
         other = unseen.reject { |i| used.include?(i.item) }
+        # The other item is a testlet that does not fit now: nothing, so the engine
+        # reports :no_fit and the passage opens the next sitting, instead of a
+        # repeat of the item already used (D-131).
+        return [] if other.empty? && too_long && fresh.any? { |i| i.testlet? && !used.include?(i.item) }
+
         other.empty? ? unseen : other
       when :third
         unseen.select { |i| i.low_guess_for(skill) }

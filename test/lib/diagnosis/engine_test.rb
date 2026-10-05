@@ -557,6 +557,21 @@ class DiagnosisEngineTest < ActiveSupport::TestCase
     assert_equal "time_budget", t.action.reason
   end
 
+  test "a testlet that does not fit ends the sitting instead of repeating the item already used (no_fit)" do
+    entries = [ Diagnosis::Plan::Entry.new(skill: A, guest_of: nil, choice_only: false) ]
+    base = Diagnosis::Plan.new(subject: "math", entries: entries, skills: { A => Diagnosis::Plan.flat_skill(A, {}) }, pool: {},
+                               sitting_seconds: 1500, sittings: 2)
+    plan = with_instances(base, [ instance("x#1", skills: [ A ], component: "number", seconds: 60, item: "x"), instance("x#2", skills: [ A ], component: "number", seconds: 60, item: "x"),
+                                  instance("x#3", skills: [ A ], component: "number", seconds: 60, item: "x"),
+                                  instance("tl#1", skills: [ A ], kind: "testlet", component: "choice", low_guess: false, seconds: 600) ])
+    d = DiagnosisHelper::Driver.new(plan)
+    d.start
+    d.play("correct", seconds: 600) # 1500 - 600 - 420 = 480 s left: the 600 s testlet does not fit
+    a = d.action
+    assert_equal :end_sitting, a.type
+    assert_equal "time_budget", a.reason
+  end
+
   test "a testlet that fits is served as one unit" do
     testlet = instance("tl#1", skills: [ A ], kind: "testlet", seconds: 120)
     plan = with_instances(Diagnosis::Plan.new(subject: "math", entries: [ Diagnosis::Plan::Entry.new(skill: A, guest_of: nil, choice_only: false) ],

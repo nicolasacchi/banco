@@ -135,6 +135,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-128 | 2026-10-05 | W-TESTLET-LEAK: a sub-item key in the passage or in another sub-item | implemented |
 | D-129 | 2026-10-06 | guest skills from a draft graph (W-GUEST-UNAPPROVED); `items list` carries what a blueprint pins | implemented |
 | D-130 | 2026-10-06 | a pending testlet answer holds its skill: no further testlet until it is settled | implemented |
+| D-131 | 2026-10-06 | a testlet that does not fit the sitting is deferred to the next one, not replaced by a repeat of the item already used | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1440,3 +1441,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** a run waits on the teacher while a testlet answer is pending and nothing else is servable.
 - **Status:** implemented
 - **Back-port:** B-02.
+
+## D-131 · 2026-10-06 · a testlet that does not fit is deferred, not replaced by a repeat
+
+- **Design ref:** B-02, B-05, D-099
+- **Design said:** `Candidates.for(:second)` takes another item, else any unseen instance.
+- **We do:** when the only other item of a skill is a testlet whose expected seconds exceed the time left, `Candidates.for(:second, max_seconds:)` returns nothing, so `Engine.choose` reports `:no_fit`, the sitting ends (`time_budget`) and the passage opens the next sitting. A repeat of the item already used is no longer served in its place. A pool with no testlet keeps the old fallback.
+- **Also (content agent, spanish, step blueprint):** a testlet's low-guess and choice flags come from its sub items per skill (D-096), and the testlet is attributed to its first skill only (D-098); `Plan.from_bundle` pools built by hand must give `low_guess`/`choice` per testlet themselves. The bare-blueprint dry run loads the graph and the pinned items (D-099); `intro_note_it`, `not_measured_it` and the calculator line are shown (D-101). Staging at 61250b7 already ran all of these.
+- **Why:** reading passage never served for a slow student (4 of 20 runs).
+- **Cost:** one more sitting for a slow student whose only other item is a long testlet.
+- **Status:** implemented
