@@ -117,7 +117,8 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-108 | 2026-10-05 | content-agent reports (english): tests run on the first clean seed, per-instance accept exists, it_accents is the code for any non-Spanish accent slip; documented, no code change | implemented |
 | D-109 | 2026-10-05 | under accent_policy flag a declared error typed without its accent still hits it (spanish report); tests of generator items already run (D-078) | implemented |
 | D-112 | 2026-10-05 | testlet units carry the typical error codes of their sub items; the Italian lint skips passage_it and model_answer_it in english and spanish (rules v5) | implemented |
-| D-113 | 2026-10-05 | binary answers written in groups of bits ("1110 1100") are read as one string |
+| D-113 | 2026-10-05 | binary answers written in groups of bits ("1110 1100") are read as one string | implemented |
+| D-114 | 2026-10-05 | binary profile: a declared error value written exactly (padding_missing) is a typical error, not wrong_form; plain normalized_text bit/letter codes typed with spaces are `invalid` (`spaces_in_code`); CS acronyms in caps_allowlist (rules v6); generator tests already run | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1249,3 +1250,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** none; a space between bits was never a valid answer.
 - **Status:** implemented
 - **Back-port:** B-02.
+
+## D-114 · 2026-10-05 · binary declared errors at the wrong width; spaced codes in normalized_text; CS acronyms
+
+- **Design ref:** B-02, A-06
+- **Design said:** the binary profile consulted declared errors (D-095) only when the value differed from the key; an answer with the right value but the wrong width was always `wrong_form`. `normalized_text` kept internal spaces, so "001 110" or "G H C C" was `wrong` against a key without spaces. The caps allowlist lacked computer science acronyms.
+- **We do:** (1) in `Text.binary`, before `wrong_form`, a declared error value equal to the typed string (exact) is a `typical_error` with its code (padding_missing: "111" for the key 00000111). The zeros_padded_right case already worked (D-095). (2) in plain `normalized_text`, an answer that is not accepted but equals an accepted key once its whitespace is removed, when the key is a single token of bits or letters, is `invalid` with the new code `spaces_in_code` ("Scrivi la risposta di seguito, senza spazi."): not an attempt, the student retypes. Items may now use the binary profile (which also joins grouped bits, D-113). (3) ASCII, RGB, USB, SSD, HDD, LAN, WAN, BIOS, CSV join `caps_allowlist`; `validation_rules.yml` version 6. (4) Report that validation never runs a generator item's `tests`: not a defect, done since D-078 (tests run against the first clean seed's instance; keep `must_accept` empty or instance-independent).
+- **Why:** content agent (computer_science, coding, bits and the machine).
+- **Cost:** a plain-text key of one token typed with spaces is never graded wrong, only asked again. `banco.*/1` unchanged.
+- **Status:** implemented
+- **Back-port:** B-02, A-06.

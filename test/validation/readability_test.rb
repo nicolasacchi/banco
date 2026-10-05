@@ -69,6 +69,10 @@ class ReadabilityTest < ActiveSupport::TestCase
     assert_equal [], rules("La fattura accompagna il DDT della merce.")
   end
 
+  test "computer science acronyms are allowed (D-114)" do
+    assert_equal [], rules("Ogni carattere ASCII occupa 1 byte; un colore RGB usa tre byte, come un file CSV.")
+  end
+
   test "spreadsheet function names are not all-caps words (D-095)" do
     assert_equal [], rules("Usa SOMMA(A1:A3) e CONTA.SE per contare.")
     assert_equal %w[all_caps], rules("Questo è ASSOLUTAMENTE vero.")

@@ -36,6 +36,7 @@ module Grading
 
         accepted = ([ spec.answer ] + spec.accept).map { |t| normalize(t.to_s, case_sensitive: spec.case_sensitive) }
         return Closed.result("correct", normalized: answer) if accepted.include?(answer)
+        return Closed.invalid("spaces_in_code") if spaced_code?(answer, accepted)
 
         declared = Closed.error_hit(spec, answer) { |v, a| normalize(v.to_s, case_sensitive: spec.case_sensitive) == a }
         return Closed.result("typical_error", error_codes: declared, normalized: answer) if declared.any?
@@ -50,6 +51,15 @@ module Grading
         return Closed.result("near_miss", normalized: answer) if near_miss?(spec, answer, accepted)
 
         Closed.result("wrong", normalized: answer)
+      end
+
+      # A code made only of bits or of letters (001110, GHCC) typed in groups: the content is
+      # right, the form is not an attempt, so the student retypes (D-114).
+      def spaced_code?(answer, accepted)
+        return false unless answer.match?(/[[:space:]]/)
+
+        joined = answer.gsub(/[[:space:]]+/, "")
+        accepted.any? { |c| c == joined && c.length > 1 && c.match?(/\A(?:[01]+|\p{L}+)\z/) }
       end
 
       def normalize(text, case_sensitive: false)
@@ -148,6 +158,10 @@ module Grading
 
         width = spec.profile["width"]
         if spec.profile["leading_zeros"] == "required" && width && s.length != width
+          # A declared error value written exactly so (padding_missing) is a typical error, not a form slip.
+          declared = Closed.error_hit(spec, s) { |v, a| v.to_s == a }
+          return Closed.result("typical_error", error_codes: declared, normalized: s) if declared.any?
+
           return Closed.result("wrong_form", form_violations: [ "leading_zeros" ], normalized: s)
         end
 

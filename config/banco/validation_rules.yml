@@ -3,9 +3,10 @@
 # v2: fingerprints ignore the stored order and ids of options, elements, columns (D-089).
 # v4: DDT (documento di trasporto, in the programme) joins caps_allowlist (D-104).
 # v5: target_language_subjects and keys skip the Italian lint (D-112).
+# v6: ASCII, RGB, USB, SSD, HDD, LAN, WAN, BIOS, CSV join caps_allowlist (D-114).
 # Codes and what they mean: config/banco/error_codes.yml. Generic and synthetic:
 # nothing here is about a person.
-version: 5
+version: 6
 
 generator:
   seeds: 200                  # seeds 1..200 are run, in two fresh contexts
@@ -45,7 +46,7 @@ readability:
   min_gulpease_words: 25
   passage_min_gulpease: 40    # W-PASSAGE-READABILITY
   # ALL-CAPS words of 3 or more letters are errors except these acronyms.
-  caps_allowlist: [IVA, PIL, DNA, RNA, ATP, USA, UE, ONU, NATO, SPQR, HTML, CSS, CPU, RAM, ROM, URL, PDF, IBAN, SMS, OK, EUR, MCD, MCM, ISBN, MM, CM, KG, ATM, DDT]
+  caps_allowlist: [IVA, PIL, DNA, RNA, ATP, USA, UE, ONU, NATO, SPQR, HTML, CSS, CPU, RAM, ROM, URL, PDF, IBAN, SMS, OK, EUR, MCD, MCM, ISBN, MM, CM, KG, ATM, DDT, ASCII, RGB, USB, SSD, HDD, LAN, WAN, BIOS, CSV]
   banned_phrases:             # E-PHRASE: exam-gaming, self-certification, personalisation
     - la risposta che cercano
     - cosa scrivere

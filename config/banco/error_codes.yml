@@ -135,6 +135,7 @@ grader_codes:
   thousands_separator: { description: "invalid: a number written with the Italian thousands dot (5.300,00); the student is told to write it without." }
   empty: { description: "invalid: blank answer or empty box." }
   unparseable: { description: "invalid: the answer cannot be read." }
+  spaces_in_code: { description: "invalid: a bit string or letter code typed with spaces between its characters (D-114)." }
   ambiguous_exponent: { description: "invalid: an exponent that cannot be read with certainty." }
   ambiguous_mixed_number: { description: "invalid: a mixed number or digits separated by a space." }
   zero_denominator: { description: "invalid: denominator 0." }
