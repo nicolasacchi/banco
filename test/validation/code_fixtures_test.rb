@@ -181,6 +181,12 @@ class CodeFixturesTest < ActiveSupport::TestCase
       static_codes({ "schema" => "banco.item/1", "schema_version" => 1, "kind" => "testlet", "subject" => "math", "skill" => F::SKILL, "passage_it" => passage,
                      "expected_seconds" => 300, "sub_items" => subs, "sources" => item["sources"] })
     },
+    "E-TESTLET-SKILLS" => lambda {
+      subs = (1..5).map { |i| item.slice("skill", "component", "prompt", "error_catalogue", "instances", "tests").merge("id" => "q#{i}") }
+      subs[1] = subs[1].merge("skill" => F::PREREQ)
+      static_codes({ "schema" => "banco.item/1", "schema_version" => 1, "kind" => "testlet", "subject" => "math", "skill" => F::SKILL, "passage_it" => "Un testo breve e chiaro.",
+                     "expected_seconds" => 300, "sub_items" => subs, "sources" => item["sources"] })
+    },
     "W-ABSOLUTE" => -> { static_codes(item("prompt" => { "stem_it" => "Il risultato e sempre positivo." })) },
     "W-NEGATIVE-STEM" => -> { static_codes(item("prompt" => { "stem_it" => "Quale frase non e corretta?" })) },
     "W-DECIMAL-POINT" => -> { static_codes(item("prompt" => { "stem_it" => "Il prezzo e 3.5 euro." })) },

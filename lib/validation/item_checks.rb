@@ -13,6 +13,7 @@ module Validation
       skills(item, context, findings)
       graph_errors(item, context, findings)
       composite(item, context, findings)
+      testlet_skills(item, findings)
       form_skill_closure(item, context, findings)
       sources(item, context, findings)
       assets(item, files, findings)
@@ -132,6 +133,23 @@ module Validation
 
         findings.add("E-COMPOSITE", item["kind"] == "testlet" ? "/sub_items/#{i}/skill" : "/skill",
                      "the errors implicate #{implicated.join(', ')} but #{body['skill']} is not a composite of #{missing.join(', ')}", missing: missing)
+      end
+    end
+
+    # ---- E-TESTLET-SKILLS (D-098) ---------------------------------------------------------
+
+    # A testlet has one attempt, attributed to its first sub item's skill (D-047), so
+    # every sub item must be on that skill until sub items have attempts of their own.
+    def testlet_skills(item, findings)
+      return unless item["kind"] == "testlet"
+
+      subs = Array(item["sub_items"])
+      first = subs.first&.dig("skill")
+      subs.each_with_index do |sub, i|
+        next if sub["skill"] == first
+
+        findings.add("E-TESTLET-SKILLS", "/sub_items/#{i}/skill",
+                     "sub item #{i + 1} is on #{sub['skill']} but the testlet counts for #{first} only: put every sub item on one skill", skill: first)
       end
     end
 

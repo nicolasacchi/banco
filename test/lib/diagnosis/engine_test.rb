@@ -485,6 +485,16 @@ class DiagnosisEngineTest < ActiveSupport::TestCase
     assert_equal [ "W" ], b[:evidence]
   end
 
+  test "a testlet sibling skill is not charged a serve it never answers (D-098)" do
+    tl = instance("tl#1", skills: [ A ], kind: "testlet", seconds: 120)
+    plan = with_instances(build_plan(skills: { A => {}, B => {} }, items: { A => %w[x1] }, pool: { "x1" => { "instances" => 1 } }), [ tl ])
+    d = DiagnosisHelper::Driver.new(plan)
+    d.start
+    s = d.push("item_served", instance: "tl#1", skill: A)
+    d.answer(s, "correct", skill: A)
+    assert_equal 0, d.result[:skills].find { |r| r[:skill] == B }&.fetch(:served, 0).to_i
+  end
+
   test "a testlet decides low_guess and choice per skill from its sub items (D-096)" do
     flags = { A => { low_guess: false, choice: true } }
     tl = Diagnosis::Plan::Instance.new(id: "tl#1", item: "tl", skills: [ A ], component: "number", low_guess: true, choice: false,

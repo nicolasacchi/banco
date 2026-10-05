@@ -23,6 +23,7 @@ validation:
   E-SKILL-UNKNOWN: { stage: ruby, severity: error, description: "The item names a skill that is not in the subject's graph." }
   E-ASSET: { stage: ruby, severity: error, description: "An asset has no source, an SVG carries script, on* handlers, foreignObject or an external href, or a file is over 200 KB." }
   E-COMPOSITE: { stage: ruby, severity: error, description: "A multi-step item implicates two or more distinct prerequisites but its skill is not a composite listing them." }
+  E-TESTLET-SKILLS: { stage: ruby, severity: error, description: "The sub items of a testlet are not all on one skill: the testlet has one attempt, counted for its first skill only." }
   # Generator.
   E-CODE-GLOBAL: { stage: ruby, severity: error, description: "The generator or verify uses a banned global or import (Math.random, Date, performance, crypto, Intl, toLocaleString, eval, Function, fetch, XMLHttpRequest, WebSocket, import(, importScripts, or an import other than /lib/rng.mjs and /lib/fmt.mjs)." }
   E-GEN-NONDETERMINISTIC: { stage: chrome, severity: error, description: "Two fresh contexts gave a different canonical output for the same seed." }

@@ -75,7 +75,9 @@ module Diagnosis
       body = JSON.parse(revision.body_json)
       kind = body["kind"] || "diagnosis_item"
       component = body["component"] || "number"
-      skills = kind == "testlet" ? Array(body["sub_items"]).map { |s| s["skill"] }.uniq : [ body["skill"] ]
+      # A testlet's one attempt is attributed to its first skill (D-047), so only that
+      # skill is charged the serve (D-098); E-TESTLET-SKILLS keeps all sub items on it.
+      skills = kind == "testlet" ? [ Array(body["sub_items"]).first&.dig("skill") ] : [ body["skill"] ]
       revision.instances.order(:id).map do |inst|
         display = JSON.parse(inst.display_json)
         flags = kind == "testlet" ? Rules::V1.testlet_flags(body, display) : nil

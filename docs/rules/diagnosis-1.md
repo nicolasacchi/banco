@@ -92,7 +92,8 @@ The rule is applied to each skill on that skill's items only.
   to `MAX_SERVED_PER_SKILL` (5) served per skill. At the cap with answers
   outstanding the state is `pending`.
 - **Testlets** (a reading passage with 5 closed sub-items) are served as one unit.
-  Each sub-item is an attempt on its own skill. At most one outcome per skill per
+  All sub-items are on one skill (`E-TESTLET-SKILLS`): the testlet has one attempt,
+  counted for that skill, and is charged as a serve to that skill only (D-098). At most one outcome per skill per
   testlet counts toward a pair (`TESTLET_OUTCOMES_PER_SKILL = 1`); the second must
   come from another item, because two answers on one passage are correlated
   evidence. The time budget is checked before serving a testlet, using its

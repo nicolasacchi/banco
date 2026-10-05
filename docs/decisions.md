@@ -104,6 +104,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-095 | 2026-10-05 | binary profile reports declared errors; arrows and spreadsheet function names pass the readability lint | implemented |
 | D-096 | 2026-10-05 | testlet low-guess and choice per skill; accent-slip observation skill; graph `notes_it` | implemented |
 | D-097 | 2026-10-05 | a dry run waits up to 25 s for Chrome before E-CHROME-BUSY | implemented |
+| D-098 | 2026-10-05 | a testlet is charged as a serve to its first skill only; its sub items must share one skill (E-TESTLET-SKILLS) | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1074,3 +1075,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** a dry run holds an API Puma thread for up to 25 s while waiting (5 threads by default). A long validation still gives 409; the agent retries as before.
 - **Status:** implemented
 - **Back-port:** A-06.
+
+## D-098 · 2026-10-05 · a testlet is charged as a serve to its first skill only; its sub items must share one skill (E-TESTLET-SKILLS)
+
+- **Design ref:** B-02, D-037, D-047
+- **Design said:** each sub item is an attempt on its own skill. D-047 built one attempt per serve, attributed to the testlet's first skill.
+- **We do:** (1) `PlanLoader` and `Validation::ItemInfo` give a testlet instance one skill, its first sub item's. A serve is now charged, and left outstanding, for that skill only; before, every sibling skill got a serve with no answer, so a C,W pair ended not_assessed(item_cap) instead of to_recover(mixed) (§13), siblings burnt their cap and a sibling off the descent ended not_needed. (2) New item check `E-TESTLET-SKILLS` (error): every sub item of a testlet is on the same skill. (3) The brief and rules §10 say so. The engine itself still accepts multi-skill instances (tested directly); per-sub-item attempts would lift the check.
+- **Why:** content agent (english, step graph); suggested fix (a). Revisions already stored with mixed skills stay valid for reading, but fail E-TESTLET-SKILLS when re-validated: the content agent puts the sub items on one skill and resubmits.
+- **Cost:** a passage can measure one skill only (the English plan already does).
+- **Status:** implemented
+- **Back-port:** B-02, D-047.

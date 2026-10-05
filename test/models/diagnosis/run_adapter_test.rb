@@ -297,4 +297,15 @@ class DiagnosisRunAdapterTest < ActiveSupport::TestCase
     assert inst.choice
     assert inst.choice_for("math.a")
   end
+
+  test "a testlet instance is charged to its first skill only (D-098)" do
+    subs = [ { id: "a", skill: "math.a", component: "choice" }, { id: "b", skill: "math.b", component: "choice" } ]
+    item = Item.create!(subject: @math, key: "tl2", kind: "testlet")
+    body = { schema: "banco.item/1", kind: "testlet", subject: "math", sub_items: subs, expected_seconds: 300 }
+    rev = ItemRevision.create!(item: item, seq: 1, body_json: body.to_json, author_session: @session, file_sessions_json: "{}", brief_sha256: "0" * 64)
+    ItemValidation.create!(item_revision: rev, seq: 1, status: "passed")
+    ItemInstance.create!(item_revision: rev, seed: 1, display_json: { sub_items: [] }.to_json, answer_json: "{}", fingerprint: "tl2-1")
+    assert_equal [ "math.a" ], Diagnosis::PlanLoader.allocate.send(:revision_instances, rev).first.skills
+    assert_equal [ "math.a" ], Validation::ItemInfo.for(rev).skills
+  end
 end

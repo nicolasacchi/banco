@@ -9,7 +9,7 @@ module Validation
       body = JSON.parse(revision.body_json)
       kind = body["kind"] || "diagnosis_item"
       component = body["component"] || "number"
-      skills = kind == "testlet" ? Array(body["sub_items"]).map { |s| s["skill"] } : [ body["skill"] ]
+      skills = kind == "testlet" ? [ Array(body["sub_items"]).first&.dig("skill") ] : [ body["skill"] ]
       BlueprintChecks::ItemInfo.new(
         id: revision.id, skills: skills, passed: revision.status == "passed",
         instances: revision.instances.order(:id).map do |inst|

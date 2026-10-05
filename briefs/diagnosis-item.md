@@ -32,7 +32,8 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
   `reason_it` (at most 200 characters) is shown in `E-VERIFY-REJECTS`. Same banned
   globals as generators; no import of the generator.
 - `kind`: `diagnosis_item`, `short_answer` or `testlet` (a reading passage of
-  150-300 words with exactly 5 closed sub-items, each on its own skill).
+  150-300 words with exactly 5 closed sub-items, all on the same skill: the testlet has one attempt,
+  counted for that skill only, `E-TESTLET-SKILLS` otherwise).
 - One difficulty level. No hints field: during the diagnosis there is no help.
 - Component per item: `number`, `fraction`, `expression`, `choice`, `ordering`,
   `matching`, `normalized_text`, `short_answer`.

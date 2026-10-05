@@ -35,7 +35,7 @@ Files left out of a submission are carried forward from the base revision.
 
 1. **Schema** (`E-SCHEMA`): `banco.item/1`. A failure stops the run.
 2. **Ruby phase** (`ItemChecks`): skills against the graph (`E-SKILL-UNKNOWN`,
-   `E-COMPOSITE`), sources (`E-SOURCE`), assets (`E-ASSET`), `E-ACCENT-POLICY`,
+   `E-COMPOSITE`, `E-TESTLET-SKILLS`), sources (`E-SOURCE`), assets (`E-ASSET`), `E-ACCENT-POLICY`,
    `E-PROVA-A-PARAMS`, `E-QUOTE-REF`, the readability of every `*_it` text
    (`E-READ` with a rule, `E-PHRASE`, `E-MESSAGE`, the `W-` warnings), and the scan of
    `generator.mjs` and `verify.mjs` (`E-CODE-GLOBAL`: banned globals, network and
