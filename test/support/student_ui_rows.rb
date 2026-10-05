@@ -30,7 +30,7 @@ module StudentUiRows
       body_json: { schema: "banco.blueprint/1", schema_version: 1, subject: key, graph_revision_id: graph.id.to_s,
                    entries: components.map { |c| { skill: skill_key(key, c), items: [ revisions[c].id, extra[c]&.id ].compact.map(&:to_s) } },
                    budget: { sitting_minutes: sitting_minutes, sittings: 2 }, depends_on_subjects: depends_on, calculator: "no",
-                   intro_note_it: "x", not_measured_it: "y" }.to_json
+                   intro_note_it: "Nota di prova per chi comincia.", not_measured_it: "Non misura la scrittura a mano." }.to_json
     )
     approve_ui_subject!(subject, graph, blueprint) if approve
     { subject: subject, student: student, preview: preview, blueprint: blueprint, revisions: revisions }

@@ -177,10 +177,35 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     assert_equal [ [ "ciao", false ] ], Teacher::Corrections.segments("ciao", [])
   end
 
+  test "the test overview shows what the author declared: not measured, intro note, calculator, budget, overrides" do
+    page "/teacher/subjects/math/test"
+    assert_select "#test-not-measured", "Non misura la scrittura a mano."
+    assert_select "#test-intro-note", "Nota di prova per chi comincia."
+    assert_select "#test-settings", /non ammessa/
+    assert_select "#test-overrides", /nessuna/
+  end
+
+  test "redo_reserve false, choice_only_reason_it and kind overrides reach the teacher" do
+    body = JSON.parse(@blueprint.body_json)
+    body["entries"][0].merge!("redo_reserve" => false, "choice_only_reason_it" => "Il testo libero non si corregge da solo.")
+    body["kind_overrides"] = [ { "skill" => body["entries"][0]["skill"], "kind" => "recover", "reason_it" => "Ripasso, non nuovo." } ]
+    BlueprintRevision.create!(subject: @subject, skill_graph_revision: @graph, author_session: @blueprint.author_session,
+                              seq: @blueprint.seq + 1, body_json: body.to_json)
+    page "/teacher/subjects/math/test"
+    assert_select "[data-redo-reserve=false]", /Nessuna riserva/
+    assert_select ".skill-list", /Il testo libero non si corregge da solo/
+    assert_select "#test-overrides", /Ripasso, non nuovo/
+    page "/teacher/subjects/math/test/skills/#{body['entries'][0]['skill']}"
+    assert_select "[data-redo-reserve=false]"
+    assert_select "#choice-only-reason", /Il testo libero/
+  end
+
   test "the report page carries the sitting condition, the versions and the signals" do
     page "/teacher/subjects/math/report"
     assert_select "#report-condition strong", /senza sorveglianza/
     assert_select "#report-state", /Test d'ingresso usato/
+    assert_select "#report-not-measured", /Non misura la scrittura a mano/
+    assert_select "#report-test-settings", /non ammessa/
   end
 
   test "the heartbeat records one minute at most per minute and never from the student's computer" do

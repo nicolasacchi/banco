@@ -24,7 +24,14 @@
             "seq": 1,
             "approved": true,
             "approved_revision_id": 1,
-            "pending_revision": false
+            "pending_revision": false,
+            "not_measured_it": "Non misura la scrittura a mano.",
+            "calculator": "no",
+            "budget": {
+              "sitting_minutes": 30,
+              "sittings": 2
+            },
+            "depends_on_subjects": []
           },
           "run": {
             "id": 1,

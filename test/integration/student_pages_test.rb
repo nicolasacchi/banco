@@ -109,6 +109,16 @@ class StudentPagesTest < ActionDispatch::IntegrationTest
     assert_equal 0, run.events.count
   end
 
+  test "the sitting start screen shows the blueprint's intro note and its calculator line" do
+    rows = build_ui_subject
+    release_diagnosis!
+    as_teacher("/teacher/preview/subjects/math", method: :post)
+    as_teacher(URI(response.location).path)
+    assert_response :success
+    assert_select "#intro-note", "Nota di prova per chi comincia."
+    assert_select "section[data-sitting-target=intro] li", /calcolatrice/i
+  end
+
   test "the student cannot reach the teacher's preview and the teacher cannot answer as the student" do
     build_ui_subject
     release_diagnosis!

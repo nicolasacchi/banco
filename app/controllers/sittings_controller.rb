@@ -30,7 +30,9 @@ class SittingsController < ApplicationController
 
     @subject = @run.subject
     @minutes = Diagnosis::Rules::V1.sitting_budget_minutes(@subject.key)
-    @calculator = Diagnosis::Rules::V1.calculator(@subject.key) == :yes
+    declared = JSON.parse(@run.blueprint_revision.body_json)
+    @calculator = (declared["calculator"] || Diagnosis::Rules::V1.calculator(@subject.key).to_s) == "yes"
+    @intro_note = declared["intro_note_it"].to_s.strip.presence
     @second_part = @run.events.exists?(kind: "sitting_closed")
     @resuming = @conductor.resuming?
   end

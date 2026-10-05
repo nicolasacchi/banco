@@ -107,6 +107,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-098 | 2026-10-05 | a testlet is charged as a serve to its first skill only; its sub items must share one skill (E-TESTLET-SKILLS) | implemented |
 | D-099 | 2026-10-05 | one instance of a testlet item per run; a bare blueprint dry run loads the pinned graph and items | implemented |
 | D-100 | 2026-10-05 | E-VERIFY-REJECTS names every rejected seed with its reason; the dry run reports the verify phase | implemented |
+| D-101 | 2026-10-05 | the blueprint's intro_note_it, not_measured_it, calculator and per-skill flags are shown | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1107,3 +1108,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** a larger finding detail (one seed list and a reason map).
 - **Status:** implemented
 - **Back-port:** B-02.
+
+## D-101 · 2026-10-05 · the blueprint's own texts and flags are shown: intro note to the student, the rest to the teacher
+
+- **Design ref:** B-02, C-04, rule 5 of the brief
+- **Design said:** `intro_note_it` is what the student reads before starting; `not_measured_it` says what the test cannot tell; the teacher sees `redo_reserve: false` and reads `choice_only_reason_it`. Nothing rendered them; the sitting start screen took its calculator line from `Rules::V1.calculator`.
+- **We do:** (1) The sitting start screen shows the run's pinned blueprint `intro_note_it` and takes its calculator line from the blueprint's `calculator` (the rule table is the fallback for old documents). The engine and the budget still read the rule table. (2) `/teacher/subjects/:key/test` gains a block with `not_measured_it`, `intro_note_it`, calculator, budget, `depends_on_subjects` and `kind_overrides` with reasons, and marks a skill with `redo_reserve: false` or a `choice_only_reason_it` (list and skill screen). (3) The report's `entry_test` gains `not_measured_it`, `calculator`, `budget`, `depends_on_subjects`, `kind_overrides` (additive, `banco.*/1` untouched), shown on the report page.
+- **Also:** the first report (a bare-blueprint dry run ignoring graph and pool) was already fixed by D-099; staging ran that code.
+- **Why:** content agent (math, step blueprint).
+- **Cost:** none beyond the views.
+- **Status:** implemented
+- **Back-port:** B-02, C-04.

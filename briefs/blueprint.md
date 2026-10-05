@@ -36,7 +36,7 @@ decision: you stop at `awaiting_teacher`.
 - `depends_on_subjects[]`: subjects that must have a closed first sitting.
 - `calculator`: `no` by default; `yes` in business and chemistry, and the item
   stems say so.
-- `intro_note_it`: what the student reads before starting.
+- `intro_note_it`: what the student reads before starting (shown on the start screen).
 - `not_measured_it`: what this test does not measure (for example oral
   exposition, listening and speaking, extended writing). Required.
 - `kind_overrides[]`: `{skill, kind, reason_it}` to change `recover` or `learn`.

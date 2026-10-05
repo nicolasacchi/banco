@@ -35,6 +35,23 @@
       </div>
     </section>
 
+    <% settings = review.settings %>
+    <section id="test-settings">
+      <h2><%= t("teacher.test.settings.title") %></h2>
+      <dl>
+        <dt><%= t("teacher.test.settings.not_measured") %></dt><dd id="test-not-measured"><%= settings[:not_measured_it] %></dd>
+        <dt><%= t("teacher.test.settings.intro_note") %></dt><dd id="test-intro-note"><%= settings[:intro_note_it] %></dd>
+        <dt><%= t("teacher.test.settings.calculator") %></dt><dd><%= t("teacher.test.settings.calculator_#{settings[:calculator]}", default: settings[:calculator].to_s) %></dd>
+        <dt><%= t("teacher.test.settings.budget") %></dt><dd><%= t("teacher.test.settings.budget_value", minutes: settings[:budget]&.dig("sitting_minutes"), sittings: settings[:budget]&.dig("sittings")) %></dd>
+        <dt><%= t("teacher.test.settings.depends") %></dt><dd><%= settings[:depends_on_subjects].presence&.join(", ") || t("teacher.test.settings.none") %></dd>
+        <dt><%= t("teacher.test.settings.overrides") %></dt>
+        <dd id="test-overrides">
+          <% if settings[:kind_overrides].empty? %><%= t("teacher.test.settings.none") %>
+          <% else %><ul class="plain"><% settings[:kind_overrides].each do |o| %><li><code><%= o["skill"] %></code> → <%= o["kind"] %>: <%= o["reason_it"] %></li><% end %></ul><% end %>
+        </dd>
+      </dl>
+    </section>
+
     <h2><%= t("teacher.test.skills") %></h2>
     <ul class="subjects skill-list">
       <% review.skill_rows.each do |row| %>
@@ -49,6 +66,8 @@
             <% else %>
               <%= row.not_assessed_reason_it %>
             <% end %>
+            <% if row.redo_reserve == false %> · <strong data-redo-reserve="false"><%= t("teacher.test.no_redo_reserve") %></strong><% end %>
+            <% if row.choice_only_reason_it.present? %> · <%= t("teacher.test.choice_only") %> <%= row.choice_only_reason_it %><% end %>
           </span>
         </li>
       <% end %>
