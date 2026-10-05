@@ -1163,3 +1163,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** a phrase glued to other letters is no longer found (no such case in the list).
 - **Status:** implemented
 - **Back-port:** A-06.
+
+## D-106 · 2026-10-05 · `calculation: false` exempts counting items from W-CALCULATOR
+
+- **Design ref:** operator "calculator", A-06, banco.item/1 (additive)
+- **Design said:** in a subject that allows the calculator, every number, fraction or expression item must say so (W-CALCULATOR).
+- **We do:** an optional boolean `calculation` on an item (and on testlet sub items). `false` means the item has no arithmetic (counting members of a class, reading a value off a table) and W-CALCULATOR is not raised. Absent or `true`: unchanged. Existing items are unchanged. The other two reports of that run were already handled: the `tests` of a generator item run against the first stored instance (D-078, `E-ROUNDTRIP` on `tests/must_accept|must_reject`), and an item error code that is not among its skill's graph errors is `W-ERROR-NOT-IN-GRAPH` (D-087); to use a new code such as `compound_as_mixture`, add it to the graph skill's `errors` (with implicates) first.
+- **Why:** content agent (chemistry, B3).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** A-06, banco.item/1.

@@ -258,7 +258,7 @@ itself.
 
 `CALCULATOR`: **no** in mathematics, **yes** in business and chemistry, said in the
 items ("Puoi usare la calcolatrice"); `W-CALCULATOR` flags a numeric item that
-lacks the sentence. In the other subjects the numbers are chosen for hand
+lacks the sentence unless the item says `calculation: false` (D-106). In the other subjects the numbers are chosen for hand
 calculation. The entry test carries a `calculator` field and the start screen shows
 one line about it. Changeable at approval.
 

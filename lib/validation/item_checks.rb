@@ -298,6 +298,7 @@ module Validation
       bodies = item["kind"] == "testlet" ? Array(item["sub_items"]).each_with_index.map { |b, i| [ b, "/sub_items/#{i}" ] } : [ [ item, "" ] ]
       bodies.each do |body, path|
         next unless %w[number fraction expression].include?(body["component"])
+        next if body["calculation"] == false # D-106: a counting or reading item has no arithmetic to allow
 
         stem = body.dig("prompt", "stem_it").to_s
         next if stem.downcase.include?(Rules.get(:readability, :calculator_sentence))

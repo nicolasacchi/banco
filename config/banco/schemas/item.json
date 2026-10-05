@@ -76,6 +76,9 @@
       "type": "string",
       "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
     },
+    "calculation": {
+      "type": "boolean"
+    },
     "accent_policy": {
       "enum": [
         "strict",
@@ -867,6 +870,9 @@
         "form_skill": {
           "type": "string",
           "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "calculation": {
+          "type": "boolean"
         },
         "accent_policy": {
           "enum": [

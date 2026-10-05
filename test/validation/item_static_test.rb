@@ -290,6 +290,12 @@ class ItemStaticTest < ActiveSupport::TestCase
     assert_not_includes codes(run_item(ok, context: ctx)), "W-CALCULATOR"
   end
 
+  test "W-CALCULATOR: calculation false exempts a counting item (D-106)" do
+    ctx = F.context(subject: "business", extra_skills: { "business.invoice" => { "key" => "business.invoice" } })
+    item = F.static_item("subject" => "business", "skill" => "business.invoice", "calculation" => false)
+    assert_not_includes codes(run_item(item, context: ctx)), "W-CALCULATOR"
+  end
+
   test "E-CODE-GLOBAL: a file named generator.mjs is scanned even next to a static item" do
     files = F.files_for(F.static_item, "generator.mjs" => "export function generate() { return Math.random(); }")
     assert_includes codes(run_item(F.static_item, files: files)), "E-CODE-GLOBAL"
