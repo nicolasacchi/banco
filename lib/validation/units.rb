@@ -35,6 +35,7 @@ module Validation
     def spec_for(unit, subject, instance, overrides = {})
       base = unit.body.slice(*SPEC_KEYS)
       base["accept"] = Array(base["accept"]) + Array(instance["accept"]) if instance["accept"]
+      base["unit"] = instance.dig("display", "unit") if instance.dig("display", "unit")
       Grading::Spec.from_hash(base.merge(
         "subject" => subject, "answer" => instance["answer"], "errors" => Array(instance["errors"]), "display" => instance["display"]
       ).merge(overrides))

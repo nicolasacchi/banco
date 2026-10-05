@@ -70,7 +70,7 @@ module Diagnosis
       out[:figure] = figure(display["figure"] || prompt["figure"])
       %w[options elements left right].each { |k| out[k.to_sym] = display[k] if display[k] }
       out[:reuse_right] = true if display["reuse_right"] == true
-      out[:unit] = body["unit"] if body["unit"]
+      out[:unit] = display["unit"] || body["unit"] if display["unit"] || body["unit"]
       out[:scientific] = true if component == "number" && Array(body["form"]).include?("scientific")
       out[:mixed] = true if component == "fraction" && Array(body["form"]).include?("mixed")
       out[:accents] = ACCENT_SETS[@subject.key] if component == "normalized_text"

@@ -50,6 +50,15 @@ class D081Test < ActiveSupport::TestCase
     assert_equal [ "a", "x zero" ], Grading::Spec.from_instance(row).accept
   end
 
+  test "an instance display unit overrides the item unit in the spec (D-103)" do
+    revision = Struct.new(:body_json).new(JSON.generate("kind" => "diagnosis_item", "component" => "number", "skill" => F::SKILL, "unit" => "g"))
+    row = Struct.new(:item_revision, :answer_json, :errors_json, :display_json, :accept_json).new(revision, "75", nil, '{"unit":"mg"}', nil)
+    spec = Grading::Spec.from_instance(row)
+    assert_equal "mg", spec.unit
+    assert_equal "correct", Grading::Closed::Numbers.grade(spec, "75 mg").verdict
+    assert_equal "g", Grading::Spec.from_instance(Struct.new(:item_revision, :answer_json, :errors_json, :display_json, :accept_json).new(revision, "75", nil, "{}", nil)).unit
+  end
+
   test "the item prompt is read with every instance: a choice key in it is E-SOLUTION-IN-DISPLAY" do
     item = F.choice_item("prompt" => { "stem_it" => "Quale valore e la soluzione? Forse sette." })
     assert_includes codes(run_item(item)), "E-SOLUTION-IN-DISPLAY"

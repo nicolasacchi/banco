@@ -19,7 +19,8 @@ class UnicodeVariantsTest < ActiveSupport::TestCase
   test "every space variant around a number is trimmed, and between digits it is still ambiguous" do
     [ "\u00A0", "\u2000", "\u2003", "\u2009", "\u200A", "\u202F", "\u205F", "\u3000", "\u1680" ].each do |space|
       assert_equal "correct", number("#{space}-3#{space}").verdict
-      assert_equal "ambiguous_mixed_number", number("1#{space}000", answer: 1000).invalid_code
+      assert_equal "thousands_separator", number("1#{space}000", answer: 1000).invalid_code
+      assert_equal "ambiguous_mixed_number", number("1#{space}00", answer: 100).invalid_code
     end
   end
 

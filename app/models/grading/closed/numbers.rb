@@ -24,6 +24,8 @@ module Grading
       PLUSES = /[\uFE62\uFF0B\u207A\u208A]/
       # Italian thousands grouping: 5.300 or 5.300,50 (a dot every three digits).
       THOUSANDS = /\A[+-]?[1-9]\d{0,2}(?:\.\d{3})+(?:,\d+)?\z/
+      # The same with spaces (8 800, 1 600 000): groups of exactly three digits (D-103).
+      THOUSANDS_SPACED = /\A[+-]?[1-9]\d{0,2}(?:#{SPACES}\d{3})+(?:,\d+)?\z/
       DECIMAL = /\A([+-])?(\d*)(?:([.,])(\d+))?\z/
       # a·10^n, a x 10^n, a×10^n, a*10^n, with ^{n} or a superscript exponent (form "scientific", D-093).
       SCIENTIFIC = /\A(.+?)#{SPACES}*[·⋅×x*]#{SPACES}*10#{SPACES}*\^#{SPACES}*\{?#{SPACES}*([+-]?)#{SPACES}*(\d+)#{SPACES}*\}?\z/i
@@ -87,9 +89,10 @@ module Grading
       def parse(text, allow_dot: false, unit: nil)
         s = strip_unit(clean(text), unit)
         raise Invalid, "empty" if s.empty?
+        t = s.sub(/\A([+-])#{SPACES}+/, '\1')
+        raise Invalid, "thousands_separator" if t.match?(THOUSANDS_SPACED)
         raise Invalid, "ambiguous_mixed_number" if s.match?(/\d#{SPACES}+[\d,.]/)
 
-        t = s.sub(/\A([+-])#{SPACES}+/, '\1')
         raise Invalid, "thousands_separator" if !allow_dot && t.match?(THOUSANDS)
 
         m = DECIMAL.match(t)

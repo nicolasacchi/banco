@@ -109,6 +109,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-100 | 2026-10-05 | E-VERIFY-REJECTS names every rejected seed with its reason; the dry run reports the verify phase | implemented |
 | D-101 | 2026-10-05 | the blueprint's intro_note_it, not_measured_it, calculator and per-skill flags are shown | implemented |
 | D-102 | 2026-10-05 | amounts with the Italian thousands dot | implemented |
+| D-103 | 2026-10-05 | thousands with spaces are `thousands_separator`; an instance `display.unit` overrides the item unit | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1130,3 +1131,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** a leak of a key written right after "<digit>." is no longer found.
 - **Status:** implemented
 - **Back-port:** E-03.
+
+## D-103 · 2026-10-05 · number: spaced thousands, and a unit that changes per instance
+
+- **Design ref:** E-03, D-073, D-102, banco.item/1 (additive)
+- **Design said:** digits separated by a space are `ambiguous_mixed_number`; the unit is declared on the item only.
+- **We do:** (1) `Numbers.parse` raises `thousands_separator` for groups of exactly three digits separated by a space ("8 800", "1 600 000"; not after a leading 0); "1 2" stays `ambiguous_mixed_number`. The message is now "Scrivi il numero senza punti né spazi tra le cifre, per esempio 5300,00." With `allow_dot` the dot case stays a decimal (the item opted in; do not set it on items whose key is 1000 or more). (2) `display.unit` (optional, string, 20 chars) in an instance overrides the item `unit`: the presenter shows it as the suffix, `Grading::Spec.from_instance` and `Validation::Units.spec_for` strip it (also in testlet sub items). Existing items and instances are unchanged. (3) The `tests` of a generator item already run on the first stored instance (D-078, D-102 (4)); no change.
+- **Why:** content agent (chemistry, B1 measures).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** E-03, banco.item/1.
