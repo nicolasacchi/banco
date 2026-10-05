@@ -18,7 +18,7 @@ banco work status REV [--wait]        exit 0 passed, 3 failed (codes on stderr),
 
 Order for a generated item: the author submits `item.json` and `generator.mjs`; the
 validation fails with `E-VERIFY-MISSING` but the 24 instances are stored; a verifier
-opens the item with `--role verifier` (item, tests, 8 instances with their expected
+opens the item with `--role verifier` (item, tests, every stored instance with their expected
 answers, never `generator.mjs`) and submits `verify.mjs` on the same base; the
 validation then passes. No command approves anything: the agent stops at
 `awaiting_teacher` (firm rule 2).

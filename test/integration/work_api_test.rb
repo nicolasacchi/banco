@@ -269,7 +269,7 @@ class WorkApiTest < ActionDispatch::IntegrationTest
     assert json["chrome_version"].present?
 
     api("/api/v1/work/items/gen-1?role=verifier", headers: { "X-Banco-Session" => session_of(:verifier).id.to_s })
-    assert_equal 8, json["instances"].size
+    assert_equal 24, json["instances"].size
     assert_not_includes json["files"].keys, "generator.mjs"
 
     submit("gen-1", { "verify.mjs" => F::VERIFY }, base: first)

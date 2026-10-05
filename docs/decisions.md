@@ -123,6 +123,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-116 | 2026-10-05 | binary profile: a declared error value that is not a bit string (1121) is a `typical_error`, not `invalid`; undeclared non-bit answers stay `invalid` | implemented |
 | D-117 | 2026-10-05 | W-SCOPE-MARKER reads the stars inside the cited fragment first (a line with several ☆ fragments has no line marker); matching as a 3-category classification already exists (D-092) | implemented |
 | D-118 | 2026-10-05 | a table cell (header or row) may be the empty string, for spreadsheet grids; arrows already pass the lint in every `_it` field (D-095) | implemented |
+| D-119 | 2026-10-05 | `work open --role verifier` returns every stored instance (the whole pool of 24), not the first 8 | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1303,3 +1304,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** a table with an entirely empty row or header is now schema-valid; the reviewer sees it.
 - **Status:** implemented
 - **Back-port:** A-01.
+
+## D-119 · 2026-10-05 · the verifier sees the whole pool
+
+- **Design ref:** A-04, A-06 (`work open --role verifier`)
+- **Design said:** the verifier gets item.json, the tests and 8 instances with their expected answers.
+- **We do:** the verifier gets every stored instance (the 24 clean seeds validation runs `verify.mjs` on), still with answers and never `generator.mjs`. `instances.json` grows from 8 to 24 rows. `E-VERIFY-REJECTS` already lists every rejected seed, the reasons grouped per wording and the first rejected instance (display, answer), so a seed outside the old 8 is no longer a blind spot.
+- **Why:** content agent (business, verify:B4): a categorical verify (matching, choice) must classify texts it had never seen and needed several submit rounds.
+- **Cost:** a larger answer (about three times); the verifier sees nothing it could not derive from the 8 plus the validation findings.
+- **Status:** implemented
+- **Back-port:** A-04.

@@ -3,14 +3,13 @@ module Api
     # The content agent's cycle on one item (A-04, A-06, E-05): open the item, write
     # files, submit them, read the validation. No endpoint approves anything.
     class WorkController < Api::BaseController
-      INSTANCES_FOR_VERIFIER = 8
 
       # The answers carry teacher_comments: what the teacher sent back on any revision of
       # the item ("Rimanda": reason code and comment), oldest first.
       #
       # GET /api/v1/work/items/:item?role=author|verifier
       # The author gets every file. The verifier gets item.json, verify.mjs (if
-      # any), the tests and 8 instances with their expected answers: never generator.mjs.
+      # any), the tests and every stored instance (the whole pool) with their expected answers: never generator.mjs.
       # The role is the session's (A-04): a verifier session gets the verifier's view
       # whatever the query says, and a session that already authored the item cannot
       # open it as its verifier.
@@ -88,7 +87,7 @@ module Api
 
       def verifier_view(revision)
         files = revision.files.except("generator.mjs")
-        instances = revision.instances.order(:id).limit(INSTANCES_FOR_VERIFIER).map do |i|
+        instances = revision.instances.order(:id).map do |i|
           { seed: i.seed, display: JSON.parse(i.display_json), answer: JSON.parse(i.answer_json),
             errors: i.errors_json && JSON.parse(i.errors_json), solution: i.solution_json && JSON.parse(i.solution_json) }
             .tap { |row| row[:accept] = JSON.parse(i.accept_json) if i.accept_json.present? }
