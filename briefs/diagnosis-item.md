@@ -57,7 +57,7 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
   status REV --wait`. The first submit fails with `E-VERIFY-MISSING` but stores the
   instances: a verifier then runs `banco work open ITEM --role verifier` (item,
   tests and every stored instance with its answer, never the generator) and submits
-  `verify.mjs`. The graph first: `banco skill-graph open|submit --subject KEY`.
+  `verify.mjs`. Always start from `work open`: it records the base revision in `.banco/work.json`; a hand-made folder for an existing item has no base and fails with `E-STALE-BASE` (the fix is to open it, or pass `--item KEY --base REV`). The graph first: `banco skill-graph open|submit --subject KEY`.
 - The teacher can send an item back ("Rimanda"). `banco work open ITEM` and `banco
   work status REV` then carry `teacher_comments`: for each one the revision, a
   `reason_code` (`wrong_key`, `ambiguous_text`, `wrong_error_code`, `off_programme`,
