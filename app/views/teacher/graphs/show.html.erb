@@ -80,7 +80,8 @@
           <ul class="plain refs">
             <% skill.refs.each do |ref| %>
               <li data-ref="<%= ref.source %>:<%= ref.line %>"><strong><%= t("teacher.graph.role.#{ref.role}") %></strong>
-                <%= ref.source %>, <%= t("teacher.graph.line") %> <%= ref.line %>:
+                <%= ref.source %>, <%= t("teacher.graph.line") %> <%= ref.line %><% if ref.section %> (<%= t("teacher.graph.section") %> <%= ref.section %>)<% end %>:
+                <% if ref.other_subject %><span class="notice" data-other-subject="true"><%= t("teacher.graph.other_subject") %></span><% end %>
                 <% if ref.text %><q><%= ref.text %></q><% else %><%= t("teacher.graph.line_missing") %><% end %>
               </li>
             <% end %>

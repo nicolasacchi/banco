@@ -224,6 +224,39 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
     assert_nil json["rows"][0]["block_marker"]
   end
 
+  def add_sections
+    { 10 => "## Italiano", 11 => "- il testo narrativo", 12 => "## Storia", 13 => "- la Rivoluzione francese", 14 => "### Dettaglio" }.each do |n, text|
+      SyllabusLine.create!(syllabus_source: @source, number: n, text: text, origin: "pdf")
+    end
+  end
+
+  test "syllabus lines: a line carries the section (## heading) it sits under" do
+    add_sections
+    api("/api/v1/syllabus/prima-test/lines?from=10&to=14")
+    assert_equal [ "Italiano", "Italiano", "Storia", "Storia", "Storia" ], json["rows"].map { |r| r["section"] }
+  end
+
+  test "W-REF-OTHER-SUBJECT: a ref under another section than most of the citations is warned, the majority is quiet" do
+    add_sections
+    set = lambda do |doc, key, line, fragment|
+      skill(doc, key)["refs"][0].merge!("line" => line, "fragment" => fragment)
+    end
+    doc = graph do |d|
+      set.(d, "math.percentages", 11, "il testo")
+      set.(d, "math.decimal-operations", 11, "narrativo")
+      set.(d, "math.linear-equation-integer", 13, "Rivoluzione")
+    end
+    submit_graph(doc, dry: true)
+    warnings = json["warnings"].select { |w| w["code"] == "W-REF-OTHER-SUBJECT" }
+    assert_equal 1, warnings.size, json.inspect
+    assert_equal "Storia", warnings.first["detail"]["section"]
+    assert_equal 13, warnings.first["detail"]["line"]
+    assert_equal "/skills/#{doc['skills'].index { |s| s['key'] == 'math.linear-equation-integer' }}/refs/0", warnings.first["field"]
+    set.(doc, "math.linear-equation-integer", 11, "testo")
+    submit_graph(doc, dry: true)
+    assert_empty json["warnings"].select { |w| w["code"] == "W-REF-OTHER-SUBJECT" }
+  end
+
   test "W-SCOPE-MARKER: studied cites a starred block; the matching scope is quiet" do
     add_marked_lines
     set = ->(scope) { graph { |d| skill(d, "math.percentages").tap { |s| s["scope"] = scope; s["refs"][0].merge!("line" => 5, "fragment" => "corpo del blocco") } } }

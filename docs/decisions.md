@@ -129,6 +129,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-122 | 2026-10-05 | `banco work submit --dry-run` repeats itself on E-CHROME-BUSY (6 times, 10 s apart) | implemented |
 | D-123 | 2026-10-05 | `work status` says `retrying` while an error row awaits its retry | implemented |
 | D-124 | 2026-10-05 | `E-VERIFY-REJECTS` shows up to 8 rejected instances | implemented |
+| D-125 | 2026-10-05 | a ref's programme section is shown and checked (`W-REF-OTHER-SUBJECT`); items the blueprint does not pin are a derived reserve | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1371,3 +1372,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** a larger finding detail.
 - **Status:** implemented
 - **Back-port:** A-06.
+
+## D-125 · 2026-10-05 · the section of a cited line; unpinned items are a reserve
+
+- **Design ref:** C-01, C-04, D-075
+- **Design said:** a graph ref is `{source, line, fragment, role}` and the teacher's graph page shows the line text. The teacher's home counts undecided blocker and major findings on the latest revision of every item.
+- **We do:** (1) `Syllabus::Sections`: a line's section is the nearest preceding `## ` heading of its programme. `banco syllabus lines` rows gain `section`. The teacher's graph page shows `sezione <heading>` beside each cited line and marks "Riga di un'altra materia." when it is not the section most of the graph's citations of that source sit in. (2) New warning `W-REF-OTHER-SUBJECT` (registry version 9): the same test at submit, with the line and the section in the detail; quiet on a tie or when no line has a section. A needed_by ref to another subject's line stays valid (`banco.skill_graph/1` is unchanged, no `note_it` on refs): say it in `scope_reason_it`, as the content agent already did. (3) Reserve: an item whose item id is not pinned by the subject's latest blueprint is a reserve. It is derived (`Item.reserve`), nothing is stored and no withdraw command exists; `banco status` items gain `reserve` (count) and the teacher's home no longer counts its findings as waiting. Pin it in a later blueprint and it counts again. A withdrawal row was not added: the ledger is append-only and the blueprint already is the statement of what is in the test.
+- **Not a defect:** `W-NEGATIVE-STEM` already skips text inside `«...»` and `$...$` (D-084, 2026-10-05 01:00); the stored finding on revision 464 dates from 2026-10-04 18:32, before that fix. A new submission of the item runs the current rule. Curly quotes “...” are now skipped too, with a test of the reported stem.
+- **Why:** content agent (italian, step fix).
+- **Cost:** one more key in the status answer (additive); a few queries on the graph page.
+- **Status:** implemented
+- **Back-port:** C-01, C-04.

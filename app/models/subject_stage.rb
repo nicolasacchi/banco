@@ -34,7 +34,7 @@ class SubjectStage
         graph_approved: !approved_g.nil?,
         blueprint_approved: !approved_b.nil?,
         pending_revision: pending?(graph, approved_g) || pending?(blueprint, approved_b),
-        items: items.values.tally.then { |t| { total: items.size, passed: t["passed"].to_i, failed: t["failed"].to_i, validating: t["validating"].to_i, error: t["error"].to_i, sent_back: sent_back(subject) } }
+        items: items.values.tally.then { |t| { total: items.size, passed: t["passed"].to_i, failed: t["failed"].to_i, validating: t["validating"].to_i, error: t["error"].to_i, sent_back: sent_back(subject), reserve: Item.reserve(subject).count } }
       }
     end
 

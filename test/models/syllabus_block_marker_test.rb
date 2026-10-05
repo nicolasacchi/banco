@@ -36,3 +36,12 @@ class SyllabusBlockMarkerTest < ActiveSupport::TestCase
     assert_equal %w[studied], Syllabus::BlockMarker.scopes_for(nil)
   end
 end
+
+class SyllabusSectionsTest < ActiveSupport::TestCase
+  Row = Struct.new(:number, :text)
+
+  test "each line gets the nearest preceding ## heading; ### and # do not open a section" do
+    rows = [ "# Programma", "intro", "## Italiano", "- grammatica", "### Strategie", "- esercizi", "## Storia", "- Roma" ].each_with_index.map { |t, i| Row.new(i + 1, t) }
+    assert_equal({ 3 => "Italiano", 4 => "Italiano", 5 => "Italiano", 6 => "Italiano", 7 => "Storia", 8 => "Storia" }, Syllabus::Sections.call(rows))
+  end
+end

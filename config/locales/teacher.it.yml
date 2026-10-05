@@ -127,6 +127,8 @@ it:
         taught_in: "Insegnata in"
         needed_by: "Serve a"
       line: "riga"
+      section: "sezione"
+      other_subject: "Riga di un'altra materia."
       line_missing: "la riga non è nel programma importato."
       inferred: "Nessuna riga di programma la insegna: l'abilità è dedotta."
       errors:

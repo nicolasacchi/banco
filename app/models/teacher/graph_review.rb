@@ -6,7 +6,7 @@ module Teacher
   class GraphReview
     SCOPE_MARK = { "studied" => "★", "integration_studied" => "★", "in_progress" => "☆", "middle_school" => "", "not_in_prima" => "" }.freeze
     Skill = Data.define(:key, :label_it, :layer, :scope, :scope_reason_it, :prerequisites, :composite_of, :deferred, :errors, :refs, :inferred, :flags, :change, :changes)
-    Ref = Data.define(:source, :line, :role, :fragment, :text)
+    Ref = Data.define(:source, :line, :role, :fragment, :text, :section, :other_subject)
 
     attr_reader :subject, :revision, :approved
 
@@ -23,7 +23,7 @@ module Teacher
 
     def skills
       @skills ||= body["skills"].map do |s|
-        refs = Array(s["refs"]).map { |r| Ref.new(r["source"], r["line"], r["role"], r["fragment"], line_text(r["source"], r["line"])) }
+        refs = Array(s["refs"]).map { |r| Ref.new(r["source"], r["line"], r["role"], r["fragment"], line_text(r["source"], r["line"]), section_of(r["source"], r["line"]), other_subject?(r["source"], r["line"])) }
         change, changes = changes_of(s)
         Skill.new(s["key"], s["label_it"], s["layer"], s["scope"], s["scope_reason_it"], Array(s["prerequisites"]), Array(s["composite_of"]),
                   deferred_of(s),
@@ -64,6 +64,31 @@ module Teacher
     private
 
     def prima_source = @prima_source ||= Validation::Rules.get(:coverage, :prima_source)
+
+    # The "## " heading of a cited line, and whether it is not the section most of the
+    # graph's citations of that source sit in (another subject's line; no majority: no).
+    def section_of(source, number)
+      @sections ||= {}
+      @sections[source] ||= begin
+        src = SyllabusSource.find_by(key: source)
+        src ? Syllabus::Sections.call(SyllabusLine.where(syllabus_source: src).order(:number).to_a) : {}
+      end
+      @sections[source][number]
+    end
+
+    def own_section(source)
+      @own_sections ||= {}
+      @own_sections.fetch(source) do
+        counts = body["skills"].flat_map { |s| Array(s["refs"]) }.select { |r| r["source"] == source }
+                               .filter_map { |r| section_of(source, r["line"]) }.tally.sort_by { |_, n| -n }
+        @own_sections[source] = counts.size >= 2 && counts[0][1] == counts[1][1] ? nil : counts.dig(0, 0)
+      end
+    end
+
+    def other_subject?(source, number)
+      own = own_section(source)
+      !own.nil? && (section = section_of(source, number)) && section != own ? true : false
+    end
 
     def line_text(source, number)
       @texts ||= SyllabusLine.joins(:syllabus_source).pluck("syllabus_sources.key", :number, :text).to_h { |k, n, t| [ [ k, n ], t.to_s.strip ] }

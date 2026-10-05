@@ -23,7 +23,8 @@
             "failed": 0,
             "validating": 0,
             "error": 0,
-            "sent_back": 0
+            "sent_back": 0,
+            "reserve": 0
           }
         },
         {
@@ -41,7 +42,8 @@
             "failed": 0,
             "validating": 0,
             "error": 0,
-            "sent_back": 0
+            "sent_back": 0,
+            "reserve": 0
           }
         }
       ],

@@ -10,24 +10,27 @@ module Validation
   #   approved_skill:  ->(key) { skill hash from an APPROVED graph of another
   #                      subject | nil } (cross-subject edges and guest skills)
   #   source_line:     ->(source_key, number) { {text:, origin:} | nil }
+  #   source_section:  ->(source_key, number) { the "## " heading the line sits under | nil }
   #   reference_body:  ->(key) { text of an imported reference text | nil }
   class Context
     attr_reader :subject
 
     def initialize(subject:, skill: ->(_k) { nil }, graph_present: true, source_line: ->(_s, _n) { nil }, reference_body: ->(_k) { nil },
-                   approved_skill: ->(_k) { nil })
+                   approved_skill: ->(_k) { nil }, source_section: ->(_s, _n) { nil })
       @subject = subject
       @skill = skill
       @approved_skill = approved_skill
       @graph_present = graph_present
       @source_line = source_line
       @reference_body = reference_body
+      @source_section = source_section
     end
 
     def skill(key) = @skill.call(key)
     def approved_skill(key) = @approved_skill.call(key)
     def graph_present? = @graph_present
     def source_line(source, number) = @source_line.call(source, number)
+    def source_section(source, number) = @source_section.call(source, number)
     def reference_body(key) = @reference_body.call(key)
   end
 end

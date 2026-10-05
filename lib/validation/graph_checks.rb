@@ -24,6 +24,7 @@ module Validation
       citations(graph, context, findings)
       scope(skills, findings)
       scope_markers(skills, context, findings)
+      other_subject_refs(skills, context, findings)
       needed_by(skills, index, findings)
       readability(skills, findings)
       findings
@@ -180,6 +181,32 @@ module Validation
 
         seen = markers.map { |m| m || "no marker" }.uniq.join(", ")
         findings.add("W-SCOPE-MARKER", "/skills/#{i}/scope", "#{s['key']} is #{s['scope']} but the lines it cites carry #{seen} (expected #{expected.join(' or ')})", skill: s["key"], expected: expected)
+      end
+    end
+
+    # A programme has one "## <subject>" section per subject. A ref into a section other
+    # than the one most of the graph's refs of that source cite is probably another
+    # subject's line (a next-year line of English, History...): a warning, so that the
+    # author labels it (scope_reason_it) and the reviewer does not read it as ours.
+    # No majority (a tie) or no section: quiet.
+    def other_subject_refs(skills, context, findings)
+      cited = []
+      skills.each_with_index do |s, i|
+        Array(s["refs"]).each_with_index do |ref, j|
+          section = context.source_section(ref["source"], ref["line"])
+          cited << [ "/skills/#{i}/refs/#{j}", ref, section ] if section
+        end
+      end
+      cited.group_by { |_, ref, _| ref["source"] }.each_value do |group|
+        counts = group.map(&:last).tally.sort_by { |_, n| -n }
+        next if counts.size < 2 || counts[0][1] == counts[1][1]
+
+        own = counts[0][0]
+        group.each do |field, ref, section|
+          next if section == own
+
+          findings.add("W-REF-OTHER-SUBJECT", field, "line #{ref['line']} of #{ref['source']} is under \"#{section}\", not \"#{own}\" like most of the lines cited: say in scope_reason_it that it belongs to another subject", line: ref["line"], section: section)
+        end
       end
     end
 

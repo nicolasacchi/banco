@@ -115,6 +115,8 @@ class ReadabilityTest < ActiveSupport::TestCase
     assert_includes lint("Solo il tutore firma. Lei fa da sola.").map(&:code), "W-ABSOLUTE"
     assert_includes lint("Quale frase non è corretta?", role: :stem).map(&:code), "W-NEGATIVE-STEM"
     assert_not_includes lint("Quando è vera «non ($x$ è pari e $y$ è dispari)»?", role: :stem).map(&:code), "W-NEGATIVE-STEM"
+    assert_not_includes lint("Nella frase «Io rimasi fuori, perciò non vidi niente», quale parola può prendere il posto di «perciò»?", role: :stem).map(&:code), "W-NEGATIVE-STEM"
+    assert_not_includes lint("Nella frase “Io non vidi niente”, quale parola va al posto di “non”?", role: :stem).map(&:code), "W-NEGATIVE-STEM"
     assert_includes lint("Quale frase non è corretta? «Sì»", role: :stem).map(&:code), "W-NEGATIVE-STEM"
     assert_not_includes lint("Quale frase non è corretta?", role: :text).map(&:code), "W-NEGATIVE-STEM"
     assert_includes lint("Il prezzo è 3.5 euro.").map(&:code), "W-DECIMAL-POINT"

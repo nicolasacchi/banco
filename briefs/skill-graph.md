@@ -61,7 +61,8 @@ Never ask for a decision: you stop at `awaiting_teacher`.
    can read.
 3. Scope follows the programme markers (a star inside the cited fragment, the line's own, or `block_marker` on the
    lines under a marked header; `W-SCOPE-MARKER` warns when they disagree) and
-   nothing else: do not upgrade an
+   nothing else (`banco syllabus lines` shows each line's `## ` `section`; a ref to another subject's line gets
+   `W-REF-OTHER-SUBJECT`: say so in `scope_reason_it`): do not upgrade an
    in-progress block to studied because it would be convenient.
 4. Soft sizes: about 20 skills for mathematics, 7 to 12 for the other subjects;
    a sitting decides 6 to 10 skills, so mark which are `core`.

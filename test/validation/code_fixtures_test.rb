@@ -199,6 +199,16 @@ class CodeFixturesTest < ActiveSupport::TestCase
       context = Validation::Context.new(subject: "math", source_line: ->(s, n) { (l = F::LINES.dig(s, n)) && s == "prima-test" ? l.merge(block_marker: "★") : l })
       Validation::Rules.with(coverage: { prima_source: "prima-test" }) { Validation::GraphChecks.call(doc, subject: "math", context: context).map(&:code).uniq }
     },
+    "W-REF-OTHER-SUBJECT" => lambda {
+      doc = JSON.parse(JSON.generate(F::GRAPH))
+      lines = { 1 => "Italiano", 2 => "Italiano", 3 => "Storia" }
+      %w[math.integer-operations math.fractions-operations math.linear-equation-integer].each_with_index do |key, i|
+        doc["skills"].find { |s| s["key"] == key }["refs"][0].merge!("line" => i + 1, "fragment" => F::LINES.dig("seconda-test", 1)[:text])
+      end
+      context = Validation::Context.new(subject: "math", source_line: ->(_s, _n) { { text: F::LINES.dig("seconda-test", 1)[:text], origin: "pdf" } },
+                                        source_section: ->(_s, n) { lines[n] })
+      Validation::GraphChecks.call(doc, subject: "math", context: context).map(&:code).uniq
+    },
     "W-GRAPH-READABILITY" => lambda {
       doc = JSON.parse(JSON.generate(F::GRAPH))
       doc["skills"][0]["errors"] = [ { "code" => "long_one", "description_it" => ("parola " * 30).strip + ".", "implicates" => [] } ]

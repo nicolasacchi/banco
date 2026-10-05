@@ -76,6 +76,23 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     assert_select "#graph-approve button[disabled]", 0 if ENV["BANCO_DECISIONS_ENABLED"] == "1"
   end
 
+  test "the graph screen shows the programme section of each cited line and marks another subject's line" do
+    { 200 => "## Italiano", 201 => "La frase.", 202 => "Il testo.", 203 => "## Storia", 204 => "La Rivoluzione." }.each do |n, text|
+      SyllabusLine.create!(syllabus_source: @prima, number: n, text: text, origin: "pdf")
+    end
+    graph = SkillGraphRevision.where(subject: @subject).order(:seq).last
+    body = JSON.parse(graph.body_json)
+    ref = ->(line, fragment) { { "source" => "prima-2025-26", "line" => line, "role" => "needed_by", "fragment" => fragment } }
+    body["skills"][0]["refs"] = [ ref.(201, "frase"), ref.(202, "testo") ]
+    body["skills"][1]["refs"] = [ ref.(204, "Rivoluzione") ]
+    SkillGraphRevision.create!(subject: @subject, seq: graph.seq + 1, body_json: body.to_json, author_session: graph.author_session)
+    page "/teacher/subjects/math/graph"
+    assert_select "li[data-ref='prima-2025-26:201']", /sezione Italiano/
+    assert_select "li[data-ref='prima-2025-26:201'] [data-other-subject]", 0
+    assert_select "li[data-ref='prima-2025-26:204']", /sezione Storia/
+    assert_select "li[data-ref='prima-2025-26:204'] [data-other-subject]", /altra materia/
+  end
+
   test "the test overview keeps approve disabled with the reasons until the gates pass, then enables it" do
     page "/teacher/subjects/math/test"
     assert_select "#test-approve[data-approvable=false] button[disabled]"
@@ -183,6 +200,16 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     assert_select "#test-intro-note", "Nota di prova per chi comincia."
     assert_select "#test-settings", /non ammessa/
     assert_select "#test-overrides", /nessuna/
+  end
+
+  test "an item the latest blueprint does not pin is a reserve: counted apart and not asked about" do
+    pinned = ItemRevision.where(id: @blueprint.pinned_item_revision_ids).pluck(:item_id)
+    before = Item.reserve(@subject).count
+    extra = Item.create!(subject: @subject, key: "math-spare", kind: @short.item.kind)
+    assert_equal before + 1, Item.reserve(@subject).count
+    assert_includes Item.reserve(@subject).pluck(:id), extra.id
+    assert_empty Item.reserve(@subject).pluck(:id) & pinned
+    assert_equal before + 1, SubjectStage.for(@subject)[:items][:reserve]
   end
 
   test "redo_reserve false, choice_only_reason_it and kind overrides reach the teacher" do

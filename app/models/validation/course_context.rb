@@ -21,6 +21,7 @@ module Validation
         skill: ->(key) { skills[key] || approved_skill(key) },
         approved_skill: ->(key) { approved_skill(key) },
         source_line: ->(source, number) { source_line(source, number) },
+        source_section: ->(source, number) { source_section(source, number) },
         reference_body: ->(key) { ReferenceText.find_by(key: key)&.body }
       )
     end
@@ -45,6 +46,15 @@ module Validation
         line = src && SyllabusLine.find_by(syllabus_source: src, number: number)
         line ? { text: line.text, origin: line.origin, marker: line.marker, block_marker: block_markers(src)[number]&.fetch(:marker) } : false
       end || nil
+    end
+
+    def source_section(source, number)
+      @sections ||= {}
+      @sections[source] ||= begin
+        src = SyllabusSource.find_by(key: source)
+        src ? Syllabus::Sections.call(SyllabusLine.where(syllabus_source: src).order(:number).to_a) : {}
+      end
+      @sections[source][number]
     end
 
     # Inherited star markers of a source, computed once per validation.
