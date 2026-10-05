@@ -114,6 +114,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-105 | 2026-10-05 | E-PHRASE matches banned phrases on word boundaries | implemented |
 | D-106 | 2026-10-05 | `calculation: false` exempts counting items from W-CALCULATOR | implemented |
 | D-107 | 2026-10-05 | the number unit suffix matches after NFKC (`cm3` = `cm³`); content-agent reports on generator tests and per-instance unit were already done | implemented |
+| D-108 | 2026-10-05 | content-agent reports (english): tests run on the first clean seed, per-instance accept exists, it_accents is the code for any non-Spanish accent slip; documented, no code change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1182,6 +1183,16 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the item's unit is removed from a number answer only when the answer ends with exactly that string.
 - **We do:** if the exact suffix is absent, the tail of the answer (at most unit length + 2 characters) is compared with the unit after NFKC, so `2,5 g/cm3` is read for the unit `g/cm³` and the reverse; the digits before the tail are never folded. Other spellings (`gr`) stay unparseable. A content agent report also asked for generator `tests` to be run and for a unit per instance: both were already done (D-078 and D-092; D-103 `display.unit`), so no change. For the content agent: a generator's `must_accept` must hold for every instance, normally leave it empty; for mass in some instances and volume in others, put `display.unit` on each instance. `banco.*/1` unchanged.
 - **Why:** content agent (chemistry, B2 density): a student who types a plain 3 should not get an invalid.
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-108 · 2026-10-05 · three english reports answered by documentation
+
+- **Design ref:** D-078, D-081, D-085, `Grading::Closed::Text`
+- **Design said:** nothing explicit about which seed the item tests run on, and `it_accents` read as Italian only.
+- **We do:** (1) item `tests` run on the first clean seed (seed 1 unless it throws or is rejected): said in the brief and docs/validation.md. (2) An instance may carry its own `accept` (D-081, normalized_text), merged with the item's list by `Grading::Spec.from_instance`: so `didn't go` / `did not go` per seed is already possible; the brief now says so for contractions. (3) `it_accents` stays the code of an accent slip for every subject except Spanish (renaming would break the error-code registry and the rules table); the registry description says so. No code change, `banco.*/1` unchanged. For the content agent: write `must_accept` from seed 1, put per-seed spellings in the instance `accept`, so a typed "write the negative" item is buildable.
+- **Why:** content agent (english, B2 past forms).
 - **Cost:** none.
 - **Status:** implemented
 - **Back-port:** A-06.

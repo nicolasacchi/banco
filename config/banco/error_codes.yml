@@ -123,7 +123,7 @@ verdicts:
 # allowlist of Rules::V1 is a subset of these.
 grader_codes:
   es_accents: { description: "Spanish accent missing or misplaced; value otherwise right." }
-  it_accents: { description: "Italian accent missing or wrong; value otherwise right." }
+  it_accents: { description: "Accent missing or wrong; value otherwise right. Any subject except Spanish uses this one code (English included); the name is historical (D-108)." }
   it_apostrophe_accent: { description: "Apostrophe typed instead of an accent (perche' for perché)." }
   radical_simplified: { description: "The radical is not in simplest form (wrong_form)." }
   common_factor_not_cancelled: { description: "An algebraic fraction whose numerator and denominator still share a factor (wrong_form of the reduced form)." }

@@ -143,9 +143,9 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
     answers differ from each other and from the key; lcm items use numbers that
     are not coprime. Never copy its numbers, its wording or its answers.
     Per-instance spellings (normalized_text): an instance may carry `accept`, other
-    spellings of its own key (`"accept": ["x = 0"]` on the instance whose key is `0`); the
+    spellings of its own key (`"accept": ["x = 0"]` on the instance whose key is `0`; for English, a key `did not go` with `"accept": ["didn't go"]`); the
     item's `accept` applies to every instance. The item's `tests` (`must_accept`, `must_reject`) run on the first
-    stored instance only (seed 1 for a generator), so write them for that instance's
+    stored instance only (the first clean seed: seed 1 unless seed 1 throws or is rejected, in which case the next one), so write them for that instance's
     key; an instance's own `tests` run on that instance (use them for any other seed). A `matching` that classifies cases (4 or more rows and 3 or more categories, or 6 or more rows and 2 categories; always fewer categories than rows) sets `display.reuse_right: true` on every instance: the key may repeat a category; the right column is then the categories alone (no spare). The right column of a `matching` is plain text (no `$`, no backslash:
     `E-MATCHING-RIGHT-MARKUP`). A `form_skill` should be a prerequisite of the item's skill
     (`W-FORM-SKILL-CLOSURE` otherwise: credit, but no tail suspect).
