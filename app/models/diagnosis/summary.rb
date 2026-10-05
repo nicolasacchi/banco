@@ -68,9 +68,28 @@ module Diagnosis
       code = row[:error_codes].first
       return I18n.t("summary.no_message") unless code
 
-      catalogue_messages[code] || I18n.t("summary.no_message")
+      message_of_erring_item(row[:skill], code) || catalogue_messages[code] || I18n.t("summary.no_message")
     end
 
+    # The message of the item where the student made the error (D-089): the first served
+    # item, on the skill if possible, one of whose gradings carries the code. Two items
+    # of a subject may share a code with different messages.
+    def message_of_erring_item(skill, code)
+      erring = served.select { |event, _serve| codes_of(event).include?(code) }
+      erring = erring.sort_by { |_e, s| JSON.parse(s.item_instance.item_revision.body_json)["skill"] == skill ? 0 : 1 }
+      erring.each do |_e, serve|
+        message = catalogue(serve.item_instance.item_revision).to_h[code]
+        return message if message.present?
+      end
+      nil
+    end
+
+    def codes_of(event)
+      attempt = Attempt.includes(:gradings).find_by(served_event_id: event.id)
+      attempt ? attempt.gradings.flat_map { |g| g.error_codes_json ? JSON.parse(g.error_codes_json) : [] } : []
+    end
+
+    # Fallback only: every served item's catalogue, the last one wins.
     def catalogue_messages
       @catalogue_messages ||= served.flat_map { |_e, s| catalogue(s.item_instance.item_revision) }.to_h
     end

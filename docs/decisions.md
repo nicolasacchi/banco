@@ -95,6 +95,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-086 | 2026-10-05 | matching: each answer once (hint and greyed-out entries) | implemented |
 | D-087 | 2026-10-05 | W-ERROR-NOT-IN-GRAPH; an ordering is never shown as a declared error permutation | implemented |
 | D-088 | 2026-10-05 | passage_it on short_answer is shown everywhere; allowed on diagnosis_item | implemented |
+| D-089 | 2026-10-05 | fingerprints ignore stored order and ids of shuffled columns (validation rules v2); end-of-subject message from the item that erred | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -975,3 +976,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** none; no migration.
 - **Status:** implemented
 - **Back-port:** A-06, X-02.
+
+## D-089 · 2026-10-05 · fingerprints independent of stored order; end-of-subject message from the item that erred
+
+- **Design ref:** A-06, X-01, B-11
+- **Design said:** `Validation::Canonical.fingerprint` hashed the display with arrays in stored order, while `Rekey` reshuffles choice options, ordering elements and matching columns at serve time; so E-GEN-POOL, E-POOL-REDO and the redo's "never repeat" could be satisfied by reordering one question. `Summary` merged every served item's error catalogue by code, so the last served item's `message_it` won.
+- **We do:** (1) the fingerprint takes `options`, `elements`, `left`, `right` (any depth, so testlets too) without their `id` and sorted by canonical text; `validation_rules.yml` version 2 (stored with each validation). Instances already stored keep their old fingerprint (the ledger is append-only); items re-validated get the new one, so a pool is judged on the new rule only after revalidation. (2) `Diagnosis::Summary` takes the message from the first served item (on the skill, if any) one of whose gradings carries the code; the merged catalogue is only a fallback. `banco.*/1` unchanged.
+- **Why:** content agents read the code and reported both.
+- **Cost:** a pool that relied on reordering now fails E-GEN-POOL / E-POOL-REDO when revalidated; mixed old and new fingerprints can coexist for one item until then.
+- **Status:** implemented
+- **Back-port:** A-06, B-11.

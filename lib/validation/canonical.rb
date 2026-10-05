@@ -16,8 +16,28 @@ module Validation
       end
     end
 
-    # sha256 of the canonical display: what "the same question" means.
-    def fingerprint(display) = Digest::SHA256.hexdigest(dump(display))
+    # The columns the server reshuffles at serve time (Diagnosis::Rekey).
+    SHUFFLED = %w[options elements left right].freeze
+
+    # sha256 of the canonical display: what "the same question" means. The shuffled
+    # columns are taken without their ids and in a fixed order, so the stored order
+    # and the ids authors chose do not make two displays "different" (D-089).
+    def fingerprint(display) = Digest::SHA256.hexdigest(dump(unshuffled(display)))
+
+    def unshuffled(node)
+      case node
+      when Hash
+        node.to_h do |k, v|
+          if SHUFFLED.include?(k.to_s) && v.is_a?(Array) && v.all?(Hash)
+            [ k, v.map { |e| unshuffled(e.reject { |ek, _| ek.to_s == "id" }) }.sort_by { |e| dump(e) } ]
+          else
+            [ k, unshuffled(v) ]
+          end
+        end
+      when Array then node.map { |v| unshuffled(v) }
+      else node
+      end
+    end
 
     # Every String value (not key) of a nested structure, with its path.
     def strings(node, path = "", out = [])
