@@ -65,6 +65,13 @@ class ReadabilityTest < ActiveSupport::TestCase
     assert_equal %w[emoji], rules("Fatto \u2B50")
   end
 
+  test "the whole arrows block is allowed except the emoji-capable return arrows (D-127)" do
+    assert_equal [], rules("erba \u2192 cavallette \u2192 rane")
+    assert_equal [], rules("A \u21D2 B, C \u21D4 D, 2H + O \u21CC H")
+    assert_equal [], rules("x \u21A6 y")
+    assert_equal %w[emoji], rules("Indietro \u21A9")
+  end
+
   test "DDT is an allowed acronym (D-104)" do
     assert_equal [], rules("La fattura accompagna il DDT della merce.")
   end

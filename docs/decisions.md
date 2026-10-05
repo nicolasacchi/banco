@@ -131,6 +131,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-124 | 2026-10-05 | `E-VERIFY-REJECTS` shows up to 8 rejected instances | implemented |
 | D-125 | 2026-10-05 | a ref's programme section is shown and checked (`W-REF-OTHER-SUBJECT`); items the blueprint does not pin are a derived reserve | implemented |
 | D-126 | 2026-10-05 | the short answer is indicative by definition | decided |
+| D-127 | 2026-10-05 | the whole arrows block is allowed in `*_it` text | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1395,3 +1396,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** none; `banco.*/1` unchanged.
 - **Status:** implemented
 - **Back-port:** B-06 (wording of rule 3).
+
+## D-127 · 2026-10-05 · the whole arrows block is allowed in `*_it` text
+
+- **Design ref:** A-06, item brief rule 6 (E-READ `emoji`); D-095
+- **Design said:** D-095 allowed U+2190-U+219F; the rest of the arrows block (U+21A0-U+21FF) was rejected as pictographic.
+- **We do:** the emoji pattern now rejects only U+21A9 and U+21AA (the return arrows that have an emoji presentation); every other arrow (food chains, `\u21D2`, `\u21D4`, the chemical equilibrium arrow `\u21CC`, `\u21A6`) is plain text. Graph and item texts use the same `Readability.lint_document`, so a graph description can be copied into an item unchanged. `banco.*/1` unchanged.
+- **Also checked, not a defect:** the thousands-separator report (`2.000`, `2 000`) is already `invalid thousands_separator` since D-102/D-103 with the message "Scrivi il numero senza punti né spazi tra le cifre"; staging at 42dc627 returns it.
+- **Why:** content agent (biology, step items:bio-b1-ecology-species).
+- **Cost:** none.
+- **Status:** implemented
