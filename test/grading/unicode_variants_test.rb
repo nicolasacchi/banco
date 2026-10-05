@@ -43,4 +43,14 @@ class UnicodeVariantsTest < ActiveSupport::TestCase
     spec = Grading::Spec.new(component: "fraction", answer: { "n" => -1, "d" => 2 }, form: [])
     assert_equal "correct", Grading::Closed::Fractions.grade(spec, { "n" => "\u2212\u200B1", "d" => "\u00A02" }).verdict
   end
+
+  test "the item's unit is dropped also when typed with a look-alike (cm3 for cm\u00B3, D-107)" do
+    spec = Grading::Spec.new(component: "number", answer: "5/2", unit: "g/cm\u00B3")
+    [ "2,5 g/cm\u00B3", "2,5 g/cm3", "2,5g/cm3", "2,5\u00A0g/cm3", "2,5" ].each do |text|
+      assert_equal "correct", Grading::Closed::Numbers.grade(spec, text).verdict, text
+    end
+    assert_equal "unparseable", Grading::Closed::Numbers.grade(spec, "2,5 gr").invalid_code
+    plain = Grading::Spec.new(component: "number", answer: "5/2", unit: "g/cm3")
+    assert_equal "correct", Grading::Closed::Numbers.grade(plain, "2,5 g/cm\u00B3").verdict
+  end
 end

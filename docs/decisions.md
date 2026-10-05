@@ -112,6 +112,8 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-103 | 2026-10-05 | thousands with spaces are `thousands_separator`; an instance `display.unit` overrides the item unit | implemented |
 | D-104 | 2026-10-05 | DDT in caps_allowlist (rules v4); `--help` anywhere in the CLI line | implemented |
 | D-105 | 2026-10-05 | E-PHRASE matches banned phrases on word boundaries | implemented |
+| D-106 | 2026-10-05 | `calculation: false` exempts counting items from W-CALCULATOR | implemented |
+| D-107 | 2026-10-05 | the number unit suffix matches after NFKC (`cm3` = `cm³`); content-agent reports on generator tests and per-instance unit were already done | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1173,3 +1175,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** none.
 - **Status:** implemented
 - **Back-port:** A-06, banco.item/1.
+
+## D-107 · 2026-10-05 · the number unit suffix is matched after NFKC
+
+- **Design ref:** E-03, `Grading::Closed::Numbers`, D-078, D-103
+- **Design said:** the item's unit is removed from a number answer only when the answer ends with exactly that string.
+- **We do:** if the exact suffix is absent, the tail of the answer (at most unit length + 2 characters) is compared with the unit after NFKC, so `2,5 g/cm3` is read for the unit `g/cm³` and the reverse; the digits before the tail are never folded. Other spellings (`gr`) stay unparseable. A content agent report also asked for generator `tests` to be run and for a unit per instance: both were already done (D-078 and D-092; D-103 `display.unit`), so no change. For the content agent: a generator's `must_accept` must hold for every instance, normally leave it empty; for mass in some instances and volume in others, put `display.unit` on each instance. `banco.*/1` unchanged.
+- **Why:** content agent (chemistry, B2 density): a student who types a plain 3 should not get an invalid.
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** A-06.

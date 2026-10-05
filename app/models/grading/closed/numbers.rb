@@ -80,8 +80,20 @@ module Grading
         mantissa.zero? || (mantissa.abs >= 1 && mantissa.abs < 10)
       end
 
+      # The item's unit at the end of the answer is dropped. The match is exact first, then
+      # compatibility-folded on the tail only (NFKC: "cm3" and "cm\u00B3" are the same unit, D-107);
+      # the digits before the tail are never folded, so a superscript exponent stays itself.
       def strip_unit(s, unit)
-        unit.present? && s.end_with?(unit) ? s.delete_suffix(unit).gsub(/#{SPACES}+\z/, "") : s
+        return s unless unit.present?
+        return s.delete_suffix(unit).gsub(/#{SPACES}+\z/, "") if s.end_with?(unit)
+
+        folded = unit.unicode_normalize(:nfkc)
+        (1..[ s.length, unit.length + 2 ].min).each do |k|
+          next unless s[-k..].unicode_normalize(:nfkc) == folded
+
+          return s[0...-k].gsub(/#{SPACES}+\z/, "")
+        end
+        s
       end
 
       # Italian text -> Rational. Raises Invalid(code): empty, use_comma, thousands_separator,
