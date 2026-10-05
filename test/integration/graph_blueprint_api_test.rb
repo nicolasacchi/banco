@@ -293,6 +293,27 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
 
   def submit_blueprint(doc, dry: false) = api("/api/v1/subjects/math/blueprint", method: :post, body: { blueprint: doc }, dry: dry)
 
+  test "simulate of a bare blueprint uses the pinned graph and items (D-099)" do
+    make_graph_row
+    api("/api/v1/diagnosis/simulate", method: :post, body: { bundle: blueprint, script: "all-wrong" })
+    assert_response :ok, json.inspect
+    assert_equal [], json["warnings"]
+    served = json["trace"].select { |e| e["kind"] == "item_served" }
+    assert served.any? { |e| e["skill"] == "math.integer-operations" }, "the descent pool is reached"
+    assert served.none? { |e| e["instance"].to_s.include?("sim_") }
+
+    doc = blueprint
+    doc["graph_revision_id"] = "999999"
+    api("/api/v1/diagnosis/simulate", method: :post, body: { bundle: doc, script: "all-wrong" })
+    assert_response :ok
+    assert_equal "E-SIMULATE-INPUT", json["warnings"].first["code"]
+
+    doc = blueprint
+    doc["entries"][0]["items"] << "424242"
+    api("/api/v1/diagnosis/simulate", method: :post, body: { bundle: doc, script: "all-wrong" })
+    assert_match "424242", json["warnings"].first["message"]
+  end
+
   test "a good blueprint is stored; replay; --dry-run stores nothing" do
     make_graph_row
     submit_blueprint(blueprint, dry: true)

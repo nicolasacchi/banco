@@ -96,7 +96,7 @@ The rule is applied to each skill on that skill's items only.
   counted for that skill, and is charged as a serve to that skill only (D-098). At most one outcome per skill per
   testlet counts toward a pair (`TESTLET_OUTCOMES_PER_SKILL = 1`); the second must
   come from another item, because two answers on one passage are correlated
-  evidence. The time budget is checked before serving a testlet, using its
+  evidence. A run serves at most one instance of a testlet item (D-099). The time budget is checked before serving a testlet, using its
   `expected_seconds`.
 - Choice options are shuffled by seed with key-position balance across the
   session; the shown order is logged; ids are compared, never positions.

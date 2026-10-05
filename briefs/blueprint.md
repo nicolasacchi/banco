@@ -53,7 +53,10 @@ decision: you stop at `awaiting_teacher`.
 4. Order starting skills from the simplest dependency: a failure descends to
    prerequisites, so start where a descent is cheap. Run `banco diagnosis simulate`
    with the `all-correct` and `all-wrong` scripts and read the traces; the teacher
-   sees them too.
+   sees them too. With `--blueprint FILE` the dry run uses the graph revision named in the
+   file and the pinned items that are stored and passed (the answer lists in `warnings`
+   any it had to invent); after a submit, `--subject KEY` does the same from the stored
+   blueprint. A testlet is served at most once per run.
 5. Say plainly in `not_measured_it` what the test cannot tell. Do not claim more.
 6. Introduction and notes follow the readability rules of the item brief: sentences
    of at most 25 words, no capitals, no emoji.

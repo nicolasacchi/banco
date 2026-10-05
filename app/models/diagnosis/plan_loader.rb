@@ -16,6 +16,22 @@ module Diagnosis
       new(revision, student: nil, seed_salt: seed_salt, run: nil).plan
     end
 
+    # The plan of a bare banco.blueprint/1 document, for `banco diagnosis simulate
+    # --blueprint FILE`: the graph is the pinned graph revision, and each pinned
+    # item is its stored passed revision with its real instances. A pinned id with
+    # no passed revision (or none stored) gets synthetic instances, and its id goes
+    # in the second element: the dry run is then not faithful for it. Returns nil
+    # when the graph revision does not exist (a flat dry run, as before).
+    def self.for_document(blueprint, seed_salt: "sim")
+      graph_rev = SkillGraphRevision.find_by(id: blueprint["graph_revision_id"])
+      return nil unless graph_rev
+
+      loader = new(nil, student: nil, seed_salt: seed_salt, run: nil)
+      loader.instance_variable_set(:@document, blueprint)
+      loader.instance_variable_set(:@graph_revision, graph_rev)
+      loader.plan_with_synthetic
+    end
+
     def initialize(revision, student:, seed_salt:, run:, reuse: true)
       @reuse = reuse
       @revision = revision
@@ -25,19 +41,40 @@ module Diagnosis
     end
 
     def plan
-      blueprint = with_kind_overrides(JSON.parse(@revision.body_json))
-      graph = JSON.parse(@revision.skill_graph_revision.body_json)
+      plan_with_synthetic.first
+    end
+
+    # [plan, ids of pinned items that were replaced by synthetic instances]
+    def plan_with_synthetic
+      blueprint = with_kind_overrides(@document || JSON.parse(@revision.body_json))
+      graph = JSON.parse((@graph_revision || @revision.skill_graph_revision).body_json)
       graph = merge_foreign_skills(blueprint, graph)
-      Plan.build(blueprint: blueprint, graph: graph, instances: instances(blueprint),
-                 external: @reuse ? external_states : {}, seen: @reuse ? seen_fingerprints : [], seed_salt: @seed_salt)
+      built = instances(blueprint)
+      built, missing = add_synthetic(blueprint, built) if @document
+      [ Plan.build(blueprint: blueprint, graph: graph, instances: built,
+                   external: @reuse ? external_states : {}, seen: @reuse ? seen_fingerprints : [], seed_salt: @seed_salt),
+        missing || [] ]
     end
 
     private
 
+    def subject = @subject ||= @revision ? @revision.subject : Subject.find_by(key: @document.fetch("subject"))
+
+    # Dry run of a document: pinned ids that did not load get synthetic instances.
+    def add_synthetic(blueprint, built)
+      have = built.map { |i| i.item.to_s }.uniq
+      skill_of = {}
+      blueprint["entries"].each { |e| e["items"].each { |i| skill_of[i.to_s] ||= e["skill"] } }
+      Array(blueprint["descent"]).each { |d| Array(d["items"]).each { |i| skill_of[i.to_s] ||= d["skill"] } }
+      missing = skill_of.keys - have
+      extra = missing.flat_map { |id| Plan.instances_of(id, nil, [ skill_of[id] ], default_component: "number") }
+      [ built + extra, missing ]
+    end
+
     # The teacher's kind_override decisions (the latest per skill) go on top of the
     # blueprint's own kind_overrides.
     def with_kind_overrides(blueprint)
-      latest = Decision.where(kind: "kind_override", subject_id: @revision.subject_id).order(:id).each_with_object({}) do |d, map|
+      latest = Decision.where(kind: "kind_override", subject_id: subject&.id).order(:id).each_with_object({}) do |d, map|
         payload = JSON.parse(d.payload_json)
         map[payload["skill"]] = { "skill" => payload["skill"], "kind" => payload["kind"], "reason_it" => payload["reason_it"] }
       end
@@ -50,7 +87,7 @@ module Diagnosis
     # Skills of other subjects that the blueprint or the graph points at (guest
     # entries, cross-subject prerequisites) come from the latest graph of each.
     def merge_foreign_skills(blueprint, graph)
-      mine = @revision.subject.key
+      mine = @revision ? @revision.subject.key : @document["subject"]
       wanted = (blueprint["entries"].map { |e| e["skill"] } + graph["skills"].flat_map { |s| s["prerequisites"] || [] })
                .map { |k| k.split(".").first }.uniq - [ mine ]
       extra = wanted.flat_map do |key|

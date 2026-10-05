@@ -11,13 +11,14 @@ module Api
         body = parse_body
         return unless body
 
+        @warnings = []
         plan = plan_from(body)
         return unless plan
 
         student = Diagnosis::ScriptedStudent.new(body.fetch("script", "all-wrong"))
         out = Diagnosis::Simulator.run(plan, student)
         result = out[:result].except(:skills).merge(states: out[:result][:skills])
-        render json: result.merge(dry_run: true, script: student.name, trace: out[:trace])
+        render json: result.merge(dry_run: true, script: student.name, warnings: @warnings, trace: out[:trace])
       rescue Diagnosis::ScriptedStudent::UnknownScript => e
         refuse("E-SIMULATE-INPUT", "script", e.message, "banco diagnosis simulate --script all-correct|all-wrong|mixed|FILE")
       rescue Diagnosis::Plan::CycleError => e
@@ -52,8 +53,31 @@ module Api
           end
           Diagnosis::PlanLoader.for_blueprint_revision(revision)
         else
-          Diagnosis::Plan.from_bundle(body["bundle"])
+          bundle = body["bundle"]
+          plan = Diagnosis::Plan.from_bundle(bundle) # validates the document
+          bare = bundle.is_a?(Hash) && !bundle.key?("blueprint") && !bundle.key?("graph") && !bundle.key?("pool")
+          bare ? faithful_plan(bundle) || flat_warning(plan) : plan
         end
+      end
+
+      # A bare blueprint: its pinned graph revision and items, when stored (D-099).
+      def faithful_plan(blueprint)
+        plan, missing = Diagnosis::PlanLoader.for_document(blueprint)
+        return nil unless plan
+
+        if missing.any?
+          @warnings << { code: "E-SIMULATE-INPUT", field: "blueprint.items",
+                         message: "no passed stored revision for item(s) #{missing.first(10).join(', ')}: synthetic instances stand in for them",
+                         next: "submit and validate those items, then simulate again" }
+        end
+        plan
+      end
+
+      def flat_warning(plan)
+        @warnings << { code: "E-SIMULATE-INPUT", field: "blueprint.graph_revision_id",
+                       message: "the graph revision is not stored: the dry run is flat (every skill studied, no descent, synthetic items)",
+                       next: "submit the graph, or simulate with --subject after submitting the blueprint" }
+        plan
       end
 
       def refuse(code, field, message, next_step)

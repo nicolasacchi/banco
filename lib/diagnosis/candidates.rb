@@ -12,9 +12,12 @@ module Diagnosis
     # seconds do not fit in max_seconds (B-05).
     def for(state, skill, need, max_seconds: Float::INFINITY)
       plan = state.plan
+      # One passage per run: once an instance of a testlet is served, no other
+      # instance of it is (two serves would be correlated evidence, D-099).
+      passages = state.serves.map { |s| s.instance.item if s.instance.testlet? }.compact
       unseen = plan.instances_for(skill).reject do |i|
         state.served_fingerprints.include?(i.fingerprint) || plan.seen.include?(i.fingerprint) ||
-          (i.testlet? && i.expected_seconds > max_seconds)
+          (i.testlet? && (i.expected_seconds > max_seconds || passages.include?(i.item)))
       end
       case need
       when :first

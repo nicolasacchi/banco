@@ -485,6 +485,20 @@ class DiagnosisEngineTest < ActiveSupport::TestCase
     assert_equal [ "W" ], b[:evidence]
   end
 
+  test "one passage is served once per run (D-099)" do
+    tls = [ instance("tl#1", skills: [ A ], kind: "testlet", seconds: 120, item: "tl"), instance("tl#2", skills: [ A ], kind: "testlet", seconds: 120, item: "tl") ]
+    base = build_plan(skills: { A => {} }, items: { A => %w[x1] }, pool: { "x1" => { "instances" => 1 } })
+    8.times do |salt|
+      p2 = Diagnosis::Plan.new(subject: base.subject, entries: base.entries, skills: base.skills, pool: tls.to_h { |i| [ i.id, i ] },
+                               sitting_seconds: base.sitting_seconds, sittings: base.sittings, seed_salt: "s#{salt}")
+      d = DiagnosisHelper::Driver.new(p2)
+      d.start
+      6.times { d.play("wrong", skill: A) if d.action.type == :serve }
+      served = d.events.select { |e| e[:kind] == "item_served" }.map { |e| e[:instance] }
+      assert_equal 1, served.size, "salt #{salt}: #{served.inspect}"
+    end
+  end
+
   test "a testlet sibling skill is not charged a serve it never answers (D-098)" do
     tl = instance("tl#1", skills: [ A ], kind: "testlet", seconds: 120)
     plan = with_instances(build_plan(skills: { A => {}, B => {} }, items: { A => %w[x1] }, pool: { "x1" => { "instances" => 1 } }), [ tl ])
