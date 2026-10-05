@@ -134,6 +134,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-127 | 2026-10-05 | the whole arrows block is allowed in `*_it` text | implemented |
 | D-128 | 2026-10-05 | W-TESTLET-LEAK: a sub-item key in the passage or in another sub-item | implemented |
 | D-129 | 2026-10-06 | guest skills from a draft graph (W-GUEST-UNAPPROVED); `items list` carries what a blueprint pins | implemented |
+| D-130 | 2026-10-06 | a pending testlet answer holds its skill: no further testlet until it is settled | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1428,3 +1429,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Why:** content agent (business, step blueprint).
 - **Cost:** a blueprint with a draft guest can be submitted but not approved; the teacher's checklist says why.
 - **Status:** implemented
+
+## D-130 · 2026-10-06 · a pending testlet answer holds its skill
+
+- **Design ref:** B-02, D-047, D-096, D-099
+- **Design said:** a pending answer makes the engine serve another instance of the skill, up to the serve cap.
+- **We do:** while a testlet answer of a skill is pending or ungraded (a mostly right testlet is undetermined, D-047), `Candidates.for` offers no further testlet of that skill and the engine does not stall the skill: it waits (`waiting_on: pending_answers`) for the teacher's resolve_attempt, and other skills go on. D-047's question (does a mostly right testlet count as correct) stays open for the operator.
+- **Also (content agent, english, step blueprint):** the bare-blueprint dry run ignoring the graph and the pool and the second testlet from the same passage were already fixed by D-099. A testlet's low-guess and choice flags come from its sub items' components (D-096), not from a default: a testlet with an ordering sub item is low-guess and not choice, so `two_of_two` (not `_choice`) is correct for it; a skill measured only by testlets with a non-choice sub item cannot be choice-only. Content: mark every sub item `choice` if the testlet should count as choice evidence.
+- **Why:** 15 minutes of reading passages for one undetermined answer.
+- **Cost:** a run waits on the teacher while a testlet answer is pending and nothing else is servable.
+- **Status:** implemented
+- **Back-port:** B-02.

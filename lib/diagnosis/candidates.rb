@@ -15,9 +15,10 @@ module Diagnosis
       # One passage per run: once an instance of a testlet is served, no other
       # instance of it is (two serves would be correlated evidence, D-099).
       passages = state.serves.map { |s| s.instance.item if s.instance.testlet? }.compact
+      held = testlet_pending?(state, skill)
       unseen = plan.instances_for(skill).reject do |i|
         state.served_fingerprints.include?(i.fingerprint) || plan.seen.include?(i.fingerprint) ||
-          (i.testlet? && (i.expected_seconds > max_seconds || passages.include?(i.item)))
+          (i.testlet? && (held || i.expected_seconds > max_seconds || passages.include?(i.item)))
       end
       case need
       when :first
@@ -31,6 +32,16 @@ module Diagnosis
         unseen.select { |i| i.low_guess_for(skill) }
       else
         raise ArgumentError, "unknown need #{need.inspect}"
+      end
+    end
+
+    # A testlet answer of this skill is pending or ungraded (a mostly right one is
+    # undetermined, D-047): no further testlet of the skill is served until the
+    # teacher or a retry settles it, so a 5-minute passage is not repeated up to
+    # the serve cap (D-130).
+    def testlet_pending?(state, skill)
+      state.serves.any? do |s|
+        s.instance.testlet? && (a = s.answers[skill]) && !a.counted && %i[pending ungraded].include?(a.evidence)
       end
     end
   end

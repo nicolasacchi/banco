@@ -138,6 +138,9 @@ module Diagnosis
           next
         end
         if Candidates.for(state, key, need).empty?
+          # Only a pending testlet answer holds the skill back: it waits for it.
+          next if Candidates.testlet_pending?(state, key) && state.plan.instances_for(key).any?(&:testlet?)
+
           state.stalled[key] = "no_unseen_items"
           next
         end

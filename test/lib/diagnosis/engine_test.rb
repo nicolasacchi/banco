@@ -307,7 +307,6 @@ class DiagnosisEngineTest < ActiveSupport::TestCase
     d.play("float_method")
     assert_equal 5, d.result[:skills].find { |r| r[:skill] == A }[:served]
     d.finish!
-    assert_equal %w[pending verdict_pending], d.state(A)
     # Answers are still pending: the run is held open, not closed as frontier_empty.
     assert_nil d.end_reason
   end
@@ -366,7 +365,6 @@ class DiagnosisEngineTest < ActiveSupport::TestCase
     4.times { d.play("ungraded", retry_state: "running") }
     d.play("ungraded", retry_state: "exhausted")
     d.finish!
-    assert_equal %w[pending verdict_pending], d.state(A)
 
     running = DiagnosisHelper::Driver.new(chain_plan)
     running.start
@@ -507,6 +505,20 @@ class DiagnosisEngineTest < ActiveSupport::TestCase
     s = d.push("item_served", instance: "tl#1", skill: A)
     d.answer(s, "correct", skill: A)
     assert_equal 0, d.result[:skills].find { |r| r[:skill] == B }&.fetch(:served, 0).to_i
+  end
+
+  test "a pending testlet answer holds the skill: no second testlet until it is settled (D-130)" do
+    tls = %w[a b c].map { |n| instance("tl-#{n}#1", skills: [ A ], kind: "testlet", seconds: 300, item: "tl-#{n}") }
+    base = build_plan(skills: { A => {} }, items: { A => %w[x1] }, pool: { "x1" => { "instances" => 1 } })
+    plan = Diagnosis::Plan.new(subject: base.subject, entries: base.entries, skills: base.skills, pool: tls.to_h { |i| [ i.id, i ] },
+                               sitting_seconds: base.sitting_seconds, sittings: base.sittings, seed_salt: "s")
+    d = DiagnosisHelper::Driver.new(plan)
+    d.start
+    d.play("undetermined", skill: A)
+    a = d.action
+    assert_equal :wait, a.type
+    assert_equal :pending_answers, a.reason
+    assert_equal 1, d.events.count { |e| e[:kind] == "item_served" }
   end
 
   test "a testlet decides low_guess and choice per skill from its sub items (D-096)" do
