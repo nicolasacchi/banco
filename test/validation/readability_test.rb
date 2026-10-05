@@ -30,6 +30,14 @@ class ReadabilityTest < ActiveSupport::TestCase
     assert_empty rules("Usa i numeri primi, ad es. 2 e 3, ecc. e poi scegli.")
   end
 
+  test "the era abbreviations a.C., d.C. and sec. do not split a sentence" do
+    msg = "Hai preso le centinaia senza aggiungere 1. Il 350 a.C. e il 350 d.C. sono nel IV secolo."
+    assert_not_includes lint(msg, role: :message).map(&:code), "E-MESSAGE"
+    assert_not_includes lint("Il sec. IV d.C. fu lungo. Il 44 a.C. è prima.", role: :message).map(&:code), "E-MESSAGE"
+    # a capital after the era abbreviation, or the end of the text, still ends the sentence
+    assert_includes lint("Accadde nel 44 a.C. Poi nel 10 d.C. Poi altro.", role: :message).map(&:code), "E-MESSAGE"
+  end
+
   test "the dotted school abbreviations m.c.m., M.C.D. and C.E. do not split a message" do
     msg = "Per il m.c.m. ogni fattore primo va preso con l'esponente più alto. L'esponente più basso si usa per il M.C.D. dei numeri."
     assert_not_includes lint(msg, role: :message).map(&:code), "E-MESSAGE"

@@ -15,6 +15,9 @@ module Validation
     WORD = /[\p{L}\p{N}][\p{L}\p{N}'’_-]*/
     EMOJI = /[\u{1F000}-\u{1FAFF}\u{21A9}\u{21AA}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{20E3}]/
     ABBREVIATIONS = /(?:\b(?:m\.c\.m|m\.c\.d|c\.e)\.|(?<![-\p{L}])\b(?:ecc|es|sig|sigg|dott|prof|art|artt|pag|pagg|cfr|vs|n|nn|p\.es)\.)/i
+    # Era abbreviations: a.C. and d.C. end a sentence only when a capital letter follows.
+    ERAS = /(?<![\p{L}])[ad]\.\s?C\.(?!\s+\p{Lu}|\s*\z|\s*\n)/
+    SECOLO = /(?<![\p{L}])sec\.(?=\s)/i
     ROMAN = /\A[IVXLCDM]+\z/
 
     module_function
@@ -155,6 +158,7 @@ module Validation
     # Sentences, with the usual abbreviations protected from the split.
     def sentences_of(text)
       protected = text.gsub(ABBREVIATIONS) { |m| m.tr(".", "\u0001") }
+      protected = protected.gsub(ERAS) { |m| m.tr(".", "\u0001") }.gsub(SECOLO) { |m| m.tr(".", "\u0001") }
       protected.split(/(?<=[.!?…])\s+|\n+/).map { |s| s.tr("\u0001", ".").strip }.reject { |s| s.scan(WORD).empty? }
     end
 
