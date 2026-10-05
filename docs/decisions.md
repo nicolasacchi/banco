@@ -132,6 +132,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-125 | 2026-10-05 | a ref's programme section is shown and checked (`W-REF-OTHER-SUBJECT`); items the blueprint does not pin are a derived reserve | implemented |
 | D-126 | 2026-10-05 | the short answer is indicative by definition | decided |
 | D-127 | 2026-10-05 | the whole arrows block is allowed in `*_it` text | implemented |
+| D-128 | 2026-10-05 | W-TESTLET-LEAK: a sub-item key in the passage or in another sub-item | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1406,3 +1407,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Why:** content agent (biology, step items:bio-b1-ecology-species).
 - **Cost:** none.
 - **Status:** implemented
+
+## D-128 · 2026-10-05 · W-TESTLET-LEAK: a sub-item key in the passage or in another sub-item
+
+- **Design ref:** A-06, D-094
+- **Design said:** each sub-item's instances are checked alone; only a long choice key stated in the passage is an error (D-094).
+- **We do:** after the composite instances are built, `ItemRunner#testlet_leaks` flags (warning `W-TESTLET-LEAK`) a sub-item key (choice option text, or `Answers.key_texts` for written answers, 20+ plain characters) that appears in the passage (written keys only: choice keys stay `E-SOLUTION-IN-DISPLAY`) or in any string of another sub-item's display of the same composite instance. The field points at the place that shows the key.
+- **Also checked, not a defect:** `banco work submit --help` already prints the command's contract entry (flags, errors) since D-111; the content agent had an older CLI binary. Rebuild or use the staging `bin/banco`.
+- **Why:** content agent (biology, step items:bio-b6-testlet-short-answer).
+- **Cost:** one pass per composite instance; a warning, no format change (`banco.*/1` unchanged).
+- **Status:** implemented
+- **Back-port:** A-06.

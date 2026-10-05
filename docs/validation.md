@@ -47,7 +47,7 @@ Files left out of a submission are carried forward from the base revision.
    `E-GEN-POOL`). The first 24 clean seeds are materialized as `item_instances`
    (append-only, once per revision), even when verify is missing.
 4. **Instance checks** on each instance: the key must not reach what the student reads
-   (`E-DISPLAY-KEY`, `E-SOLUTION-IN-DISPLAY`, `W-ANSWER-IN-STEM`), the size rules of
+   (`E-DISPLAY-KEY`, `E-SOLUTION-IN-DISPLAY`, `W-ANSWER-IN-STEM`; in a testlet also `W-TESTLET-LEAK`), the size rules of
    choice, ordering and matching, coded distractors, component fit, the solution
    against the key (`E-STEP-INCONSISTENT`).
 5. **Round trip** (`Roundtrip`): the grader accepts the key, gives each error value its

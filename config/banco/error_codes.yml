@@ -50,6 +50,7 @@ validation:
   E-DISPLAY-KEY: { stage: ruby, severity: error, description: "The display carries a key, a verdict or a field that reveals the answer." }
   E-SOLUTION-IN-DISPLAY: { stage: ruby, severity: error, description: "The normalized expected answer (3+ characters) appears in a non-stem display string or SVG text, or the key option's text appears outside the options array." }
   W-ANSWER-IN-STEM: { stage: ruby, severity: warning, description: "The expected answer appears in the stem." }
+  W-TESTLET-LEAK: { stage: ruby, severity: warning, description: "A testlet sub-item's key appears in the passage (written keys) or in another sub-item's display." }
   # Choice, ordering, matching.
   E-CHOICE-OPTIONS: { stage: ruby, severity: error, description: "A choice item has fewer than 3 or more than 5 options (never 2), or an ordering item has fewer than 3 or more than 7 elements." }
   E-DISTRACTOR-UNCODED: { stage: ruby, severity: error, description: "A distractor carries no error code from the catalogue." }

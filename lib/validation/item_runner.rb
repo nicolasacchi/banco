@@ -102,6 +102,7 @@ module Validation
       count = lists.map(&:size).min
       (0...count).map do |k|
         subs = units.each_with_index.map { |u, i| [ u, lists[i][k] ] }
+        testlet_leaks(item, subs, k)
         {
           seed: nil,
           display: { "passage_it" => item["passage_it"], "sub_items" => subs.map { |u, inst| { "id" => u.body["id"], "skill" => u.skill, "component" => u.component, "display" => inst[:display] } } },
@@ -109,6 +110,40 @@ module Validation
           errors: subs.to_h { |u, inst| [ u.body["id"], inst[:errors] ] },
           solution: subs.to_h { |u, inst| [ u.body["id"], inst[:solution] ] }
         }
+      end
+    end
+
+    # W-TESTLET-LEAK (D-128): the student reads the passage and every sub-item together, so a
+    # sub-item's key must not be stated in the passage (written keys; a long choice key is already
+    # E-SOLUTION-IN-DISPLAY, D-094) nor in another sub-item's stem, options or table.
+    def testlet_leaks(item, subs, k)
+      subs.each_with_index do |(unit, inst), i|
+        needles = testlet_needles(unit, inst)
+        next if needles.empty?
+
+        if unit.component != "choice" && (n = needles.find { |t| Answers.contains?(item["passage_it"].to_s, t) })
+          @findings.add("W-TESTLET-LEAK", "#{unit.path}/instances/#{k}/passage_it", "the key of this sub-item appears in the passage (#{n.to_s[0, 30].inspect})", rule: "passage")
+        end
+        subs.each_with_index do |(other, oinst), j|
+          next if i == j || !oinst[:display].is_a?(Hash)
+
+          hit = Canonical.strings(oinst[:display]).find { |_path, text| needles.any? { |n| Answers.contains?(text, n) } }
+          next unless hit
+
+          @findings.add("W-TESTLET-LEAK", "#{other.path}/instances/#{k}/display#{hit[0]}", "the key of sub-item #{unit.body['id']} appears in sub-item #{other.body['id']} (#{hit[1].to_s[0, 30].inspect})", rule: "sub_item")
+        end
+      end
+    end
+
+    def testlet_needles(unit, inst)
+      answer = inst[:answer]
+      return [] if answer.nil?
+
+      if unit.component == "choice"
+        key = Array(inst[:display]&.dig("options")).find { |o| o["id"] == answer.to_s }
+        key ? [ key["text"].to_s ] : []
+      else
+        Answers.key_texts(unit.component, answer, accept: unit.accept + Array(inst[:accept]))
       end
     end
 

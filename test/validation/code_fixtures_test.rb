@@ -220,6 +220,19 @@ class CodeFixturesTest < ActiveSupport::TestCase
       context = Validation::Context.new(subject: "math", source_line: ->(src, n) { F::LINES.dig(src, n) }, approved_skill: ->(k) { k == "italian.reading" ? { "key" => k } : nil })
       Validation::GraphChecks.call(doc, subject: "math", context: context).map(&:code).uniq
     },
+    "W-TESTLET-LEAK" => lambda {
+      long = "il contratto e annullabile per incapacita"
+      subs = (1..5).map do |n|
+        key = n == 1 ? long : "chiave numero #{n} del tutto diversa"
+        ds = n == 2 ? [ long, "nove", "undici" ] : %w[tredici nove undici]
+        F.choice_item.slice("skill", "component", "prompt", "error_catalogue", "tests", "choice_only_reason_it").merge(
+          "id" => "q#{n}", "instances" => Array.new(3) { F.choice_instance(key, ds) }
+        )
+      end
+      static_codes({ "schema" => "banco.item/1", "schema_version" => 1, "kind" => "testlet", "subject" => "math", "skill" => F::SKILL,
+                     "passage_it" => "Un breve testo di prova.", "expected_seconds" => 300, "sub_items" => subs,
+                     "sources" => [ { "kind" => "inferred", "ref" => "prova", "fragment" => "x" } ] })
+    },
     "W-CALCULATOR" => lambda {
       business = item("subject" => "business", "skill" => "business.invoice")
       static_codes(business, context: F.context(subject: "business", extra_skills: { "business.invoice" => { "key" => "business.invoice" } }))

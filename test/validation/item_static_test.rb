@@ -335,4 +335,27 @@ class ItemStaticTest < ActiveSupport::TestCase
     short = run_item(build.call("Marco vende la casa a Luigi.", "Marco"))
     assert_not_includes codes(short), "E-SOLUTION-IN-DISPLAY"
   end
+
+  test "D-128: W-TESTLET-LEAK flags a key in another sub-item and a written key in the passage" do
+    long = "il contratto e annullabile per incapacita"
+    build = lambda do |passage, q2_distractors|
+      subs = (1..5).map do |n|
+        key = n == 1 ? long : "chiave numero #{n} del tutto diversa"
+        ds = n == 2 ? q2_distractors : %w[tredici nove undici]
+        F.choice_item.slice("skill", "component", "prompt", "error_catalogue", "tests", "choice_only_reason_it").merge(
+          "id" => "q#{n}", "instances" => [ F.choice_instance(key, ds), F.choice_instance(key, ds), F.choice_instance(key, ds) ]
+        )
+      end
+      { "schema" => "banco.item/1", "schema_version" => 1, "kind" => "testlet", "subject" => "math", "skill" => F::SKILL,
+        "passage_it" => passage, "expected_seconds" => 300, "sub_items" => subs,
+        "sources" => [ { "kind" => "inferred", "ref" => "prova", "fragment" => "x" } ] }
+    end
+    leaky = run_item(build.call("Un breve testo di prova.", [ long, "nove", "undici" ]))
+    hit = leaky.findings.find { |f| f.code == "W-TESTLET-LEAK" }
+    assert hit, codes(leaky).inspect
+    assert_match %r{\A/sub_items/1/instances/0/display/options}, hit.field
+    assert_not_includes codes(leaky), "E-SOLUTION-IN-DISPLAY"
+    clean = run_item(build.call("Un breve testo di prova.", %w[tredici nove undici]))
+    assert_not_includes codes(clean), "W-TESTLET-LEAK"
+  end
 end
