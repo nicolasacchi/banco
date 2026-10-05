@@ -4,7 +4,7 @@ require "test_helper"
 # canonical form.
 class SupportModulesTest < ActiveSupport::TestCase
   test "the thresholds are the ones of the brief, and the file has a version" do
-    assert_equal 2, Validation::Rules.version
+    assert_equal 3, Validation::Rules.version
     assert_equal 24, Validation::Rules.get(:generator, :pool)
     assert_equal 200, Validation::Rules.get(:generator, :seeds)
     assert_equal 20, Validation::Rules.get(:generator, :min_distinct_displays)

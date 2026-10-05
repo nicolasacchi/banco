@@ -119,7 +119,14 @@ module Grading
         return Closed.invalid("unparseable") unless s.match?(/\A[01]+\z/)
 
         key = spec.answer.to_s
-        return Closed.result("wrong", normalized: s) unless s.sub(/\A0+(?=.)/, "") == key.sub(/\A0+(?=.)/, "")
+        stripped = s.sub(/\A0+(?=.)/, "")
+        unless stripped == key.sub(/\A0+(?=.)/, "")
+          # A declared error value is compared without leading zeros too (D-095).
+          declared = Closed.error_hit(spec, stripped) { |v, a| v.to_s.sub(/\A0+(?=.)/, "") == a }
+          return Closed.result("typical_error", error_codes: declared, normalized: stripped) if declared.any?
+
+          return Closed.result("wrong", normalized: s)
+        end
 
         width = spec.profile["width"]
         if spec.profile["leading_zeros"] == "required" && width && s.length != width

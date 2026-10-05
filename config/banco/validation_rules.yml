@@ -3,7 +3,7 @@
 # v2: fingerprints ignore the stored order and ids of options, elements, columns (D-089).
 # Codes and what they mean: config/banco/error_codes.yml. Generic and synthetic:
 # nothing here is about a person.
-version: 2
+version: 3
 
 generator:
   seeds: 200                  # seeds 1..200 are run, in two fresh contexts

@@ -59,6 +59,18 @@ class ReadabilityTest < ActiveSupport::TestCase
     assert_equal %w[emoji], rules("Fatto ✅")
   end
 
+  test "arrows are not emoji, real pictographs still are (D-095)" do
+    assert_equal [], rules("Dopo l'istruzione x \u2190 x + 1, quanto vale x?")
+    assert_equal [], rules("Va da A \u2192 B.")
+    assert_equal %w[emoji], rules("Fatto \u2B50")
+  end
+
+  test "spreadsheet function names are not all-caps words (D-095)" do
+    assert_equal [], rules("Usa SOMMA(A1:A3) e CONTA.SE per contare.")
+    assert_equal %w[all_caps], rules("Questo è ASSOLUTAMENTE vero.")
+    assert_equal %w[all_caps], rules("Basta. ECCO. Poi vai.")
+  end
+
   test "bold spans: at most 3 spans of at most 4 words" do
     assert_equal %w[bold_spans], rules("**a** e **b** e **c** e **d**.")
     assert_equal %w[bold_span_length], rules("Una **frase con cinque parole qui** sola.")

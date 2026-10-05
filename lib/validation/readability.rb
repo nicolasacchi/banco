@@ -13,7 +13,7 @@ module Validation
     MATH = /\$\$.+?\$\$|\$[^$\n]+\$/m
     BOLD = /\*\*(.+?)\*\*/m
     WORD = /[\p{L}\p{N}][\p{L}\p{N}'’_-]*/
-    EMOJI = /[\u{1F000}-\u{1FAFF}\u{2190}-\u{21FF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{20E3}]/
+    EMOJI = /[\u{1F000}-\u{1FAFF}\u{21A0}-\u{21FF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{20E3}]/
     ABBREVIATIONS = /(?:\b(?:m\.c\.m|m\.c\.d|c\.e)\.|\b(?:ecc|es|sig|sigg|dott|prof|art|artt|pag|pagg|cfr|vs|n|nn|p\.es)\.)/i
     ROMAN = /\A[IVXLCDM]+\z/
 
@@ -92,7 +92,8 @@ module Validation
 
     def caps(plain, field, findings)
       allowed = Rules.list(:readability, :caps_allowlist)
-      word = plain.scan(/\p{L}+/).find do |w|
+      # A spreadsheet function name (SOMMA(, CONTA.SE) is a name, not shouting (D-095).
+      word = plain.scan(/\p{L}+(?![(\p{L}]|\.\p{L})/).find do |w|
         w.length >= 3 && w == w.upcase && w != w.downcase && !allowed.include?(w) && !w.match?(ROMAN)
       end
       findings.add("E-READ", field, "an ALL-CAPS word (#{word})", rule: "all_caps", word: word) if word

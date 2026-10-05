@@ -101,6 +101,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-092 | 2026-10-05 | matching as a classification (`display.reuse_right`); generator `tests` confirmed already run | implemented |
 | D-093 | 2026-10-05 | graph findings per skill; 2-category classification; number `accept` and form `scientific` | implemented |
 | D-094 | 2026-10-05 | testlet passage in the leak scan; `da solo` is not an absolute word | implemented |
+| D-095 | 2026-10-05 | binary profile reports declared errors; arrows and spreadsheet function names pass the readability lint | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1041,3 +1042,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** a paraphrase of the key in the passage is still the author's and the reviewer's job; non-choice sub-items are not scanned against the passage.
 - **Status:** implemented
 - **Back-port:** A-06.
+
+## D-095 · 2026-10-05 · binary profile reports declared errors; arrows and spreadsheet function names pass the readability lint
+
+- **Design ref:** A-01, A-06
+- **Design said:** (1) `normalized_text` with profile `binary` returned `wrong` for any answer that differs from the key without leading zeros, never consulting the declared errors. (2) The emoji pattern covered U+2190-U+21FF, so the assignment arrow and every arrow failed `E-READ`. (3) Spreadsheet function names (SOMMA, CONTA.SE) failed `E-READ` as ALL-CAPS words. (4) A report said a second refused cross-subject target on one field is not named: already fixed by D-093 (one finding per target, verified on staging), nothing to change.
+- **We do:** (1) in the binary profile a declared error value is matched with leading zeros removed on both sides: `typical_error` with its code, `normalized` is the stripped form (so the roundtrip collision check sees 0101 and 101 as one answer). (2) The emoji pattern now starts at U+21A0: the arrows U+2190-U+219F stay allowed, the rest of the block and the pictographic ranges are still rejected. (3) An all-caps token directly followed by `(`, or by `.` and a letter (CONTA.SE), is a name, not shouting. `validation_rules.yml` version 3. `banco.*/1` unchanged.
+- **Why:** content agent (computer_science, step graph).
+- **Cost:** a real ALL-CAPS word glued to a bracket ("ECCO(") escapes the check.
+- **Status:** implemented
+- **Back-port:** A-01, A-06.
