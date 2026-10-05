@@ -3,7 +3,6 @@ module Api
     # The content agent's cycle on one item (A-04, A-06, E-05): open the item, write
     # files, submit them, read the validation. No endpoint approves anything.
     class WorkController < Api::BaseController
-
       # The answers carry teacher_comments: what the teacher sent back on any revision of
       # the item ("Rimanda": reason code and comment), oldest first.
       #
