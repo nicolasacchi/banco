@@ -49,7 +49,9 @@ decision: you stop at `awaiting_teacher`.
 2. The first item of a skill is hard to guess (written answer, ordering of 4 or
    more, matching of 4 or more pairs) unless `choice_only_reason_it` says why not.
 3. Discursive subjects have closed items, one reading testlet of 150 to 300 words
-   (5 closed sub-items) and exactly one short answer, marked as indicative.
+   (5 closed sub-items) and exactly one short answer. The short answer is indicative by definition: it
+   has no mark to set. It is graded by its rubric and counts only after the teacher
+   confirms the grade. Do not cite an invented source for it.
 4. Order starting skills from the simplest dependency: a failure descends to
    prerequisites, so start where a descent is cheap. Run `banco diagnosis simulate`
    with the `all-correct` and `all-wrong` scripts and read the traces; the teacher

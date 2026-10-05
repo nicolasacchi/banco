@@ -130,6 +130,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-123 | 2026-10-05 | `work status` says `retrying` while an error row awaits its retry | implemented |
 | D-124 | 2026-10-05 | `E-VERIFY-REJECTS` shows up to 8 rejected instances | implemented |
 | D-125 | 2026-10-05 | a ref's programme section is shown and checked (`W-REF-OTHER-SUBJECT`); items the blueprint does not pin are a derived reserve | implemented |
+| D-126 | 2026-10-05 | the short answer is indicative by definition | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1383,3 +1384,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** one more key in the status answer (additive); a few queries on the graph page.
 - **Status:** implemented
 - **Back-port:** C-01, C-04.
+
+## D-126 · 2026-10-05 · the short answer is indicative by definition
+
+- **Design ref:** B-06, blueprint brief rule 3
+- **Design said:** a discursive subject has exactly one short answer, "marked as indicative".
+- **We do:** nothing in the formats. No `indicative` field is added to `banco.item/1` or `banco.blueprint/1`: a short answer is already indicative in every way that matters (its state is `pending(grade_unconfirmed)` until the teacher confirms, it is one piece of evidence, the proposal of the agent never counts by itself, and the teacher's pages show it as "Risposta breve: vale la rubrica"). The brief now says so instead of asking for a mark.
+- **Not a defect:** a flag would be redundant (every `short_answer` would carry it) and the engine would have nothing to branch on. The content agent should not cite a source such as "Prova indicativa" for it; if one was added to the skill graph only for this, remove it in the next graph revision.
+- **Why:** content agent (geography, step items:B5).
+- **Cost:** none; `banco.*/1` unchanged.
+- **Status:** implemented
+- **Back-port:** B-06 (wording of rule 3).
