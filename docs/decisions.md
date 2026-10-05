@@ -986,3 +986,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** a pool that relied on reordering now fails E-GEN-POOL / E-POOL-REDO when revalidated; mixed old and new fingerprints can coexist for one item until then.
 - **Status:** implemented
 - **Back-port:** A-06, B-11.
+
+## D-090 · 2026-10-05 · source kind `legal_text`; brief says which instance `tests` run on
+
+- **Design ref:** A-06, X-02
+- **Design said:** `banco.item/1` `source.kind` offered `prima_line`, `seconda_line`, `prova_a_structure`, `textbook`, `inferred`; a law (the Costituzione) could only be cited as `textbook`, which a reviewer may read as the student's own book. The brief did not say that the item's `tests` run on the first instance only (D-085 already added per-instance `tests`).
+- **We do:** (1) `source.kind` gains `legal_text` (`ref` the act and article, optional `fragment`); no check changes, so it is only a label for reviewers. Backward compatible (enum widened). (2) Brief rules 10 and 12 state both points. Quoting a reference text still needs an imported text (`E-QUOTE-REF`); there is no import command and none is added.
+- **Why:** content agents (law_economics, B3).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** A-06, X-02.

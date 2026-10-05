@@ -117,7 +117,10 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
    textbook's own terms are known.
 10. **Facts with sources.** History, law, biology and geography facts carry a
     source. No borderline or disputed cases (for example mining among the
-    economic sectors, or "Australia as a continent").
+    economic sectors, or "Australia as a continent"). A law or a reference text
+    (the Costituzione, a statute) is cited with source kind `legal_text`: `ref` is
+    the act and article (`Costituzione art. 3`), `fragment` an optional exact
+    phrase. `textbook` is only the student's own textbook.
 11. **Transcription doubts go to the teacher.** If a programme line is unclear,
     cut off or looks like a transcription error, do not guess and do not build on
     it: write it in your report to the teacher and leave the skill out until the
@@ -129,8 +132,9 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
     are not coprime. Never copy its numbers, its wording or its answers.
     Per-instance spellings (normalized_text): an instance may carry `accept`, other
     spellings of its own key (`"accept": ["x = 0"]` on the instance whose key is `0`); the
-    item's `accept` applies to every instance. A generator item's `tests` run on its first
-    stored instance. The right column of a `matching` is plain text (no `$`, no backslash:
+    item's `accept` applies to every instance. The item's `tests` (`must_accept`, `must_reject`) run on the first
+    stored instance only (seed 1 for a generator), so write them for that instance's
+    key; an instance's own `tests` run on that instance (use them for any other seed). The right column of a `matching` is plain text (no `$`, no backslash:
     `E-MATCHING-RIGHT-MARKUP`). A `form_skill` should be a prerequisite of the item's skill
     (`W-FORM-SKILL-CLOSURE` otherwise: credit, but no tail suspect).
 13. **Calculating subjects.** Numeric items are generators. A numeric answer

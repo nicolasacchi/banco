@@ -116,6 +116,11 @@ class ItemStaticTest < ActiveSupport::TestCase
     assert_includes codes(run_item(F.static_item("accent_policy" => "strict"))), "E-ACCENT-POLICY" # not a text item
   end
 
+  test "a legal_text source is accepted by the schema (D-090)" do
+    item = F.static_item("sources" => [ { "kind" => "legal_text", "ref" => "Costituzione art. 3", "fragment" => "pari dignità sociale" } ])
+    assert_not_includes codes(run_item(item)), "E-SCHEMA"
+  end
+
   test "E-PROVA-A-PARAMS: listed instances on an exam structure" do
     item = F.static_item("sources" => [ { "kind" => "prova_a_structure", "ref" => "struttura", "fragment" => "esercizio 1" } ])
     assert_includes codes(run_item(item)), "E-PROVA-A-PARAMS"
