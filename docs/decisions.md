@@ -115,6 +115,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-106 | 2026-10-05 | `calculation: false` exempts counting items from W-CALCULATOR | implemented |
 | D-107 | 2026-10-05 | the number unit suffix matches after NFKC (`cm3` = `cm³`); content-agent reports on generator tests and per-instance unit were already done | implemented |
 | D-108 | 2026-10-05 | content-agent reports (english): tests run on the first clean seed, per-instance accept exists, it_accents is the code for any non-Spanish accent slip; documented, no code change | implemented |
+| D-109 | 2026-10-05 | under accent_policy flag a declared error typed without its accent still hits it (spanish report); tests of generator items already run (D-078) | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1193,6 +1194,16 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** nothing explicit about which seed the item tests run on, and `it_accents` read as Italian only.
 - **We do:** (1) item `tests` run on the first clean seed (seed 1 unless it throws or is rejected): said in the brief and docs/validation.md. (2) An instance may carry its own `accept` (D-081, normalized_text), merged with the item's list by `Grading::Spec.from_instance`: so `didn't go` / `did not go` per seed is already possible; the brief now says so for contractions. (3) `it_accents` stays the code of an accent slip for every subject except Spanish (renaming would break the error-code registry and the rules table); the registry description says so. No code change, `banco.*/1` unchanged. For the content agent: write `must_accept` from seed 1, put per-seed spellings in the instance `accept`, so a typed "write the negative" item is buildable.
 - **Why:** content agent (english, B2 past forms).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-109 · 2026-10-05 · under accent_policy flag a declared error typed without its accent still hits it
+
+- **Design ref:** E-03, `Grading::Closed::Text`, D-078
+- **Design said:** declared error values are matched exactly (after normalization, accents kept); only the key had the accent-slip path.
+- **We do:** when `accent_policy` is `flag` and nothing matched yet (not the key, not a declared error exactly, not an accent slip of the key), the answer and each declared error value are compared with grave and acute folded; a hit is the same `typical_error` with that code (`abris` for the declared `abrís` is `es_imp_indicative`). Not applied when the bare form is a paradigm form (a word of its own) or under `strict`. Shared vectors added. The other report (tests of a generator item never run) was already handled: they run on the first clean seed (D-078, D-108), so no change; the content agent should write them from seed 1. `banco.*/1` unchanged.
+- **Why:** content agent (spanish, B2 imperative): no need for a second unaccented value per error.
 - **Cost:** none.
 - **Status:** implemented
 - **Back-port:** A-06.

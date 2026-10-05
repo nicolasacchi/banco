@@ -43,6 +43,10 @@ module Grading
         if (slip = accent_slip(spec, answer, accepted))
           return Closed.result("typical_error", error_codes: [ slip ], normalized: answer)
         end
+
+        if (folded = folded_declared(spec, answer, accepted)).any?
+          return Closed.result("typical_error", error_codes: folded, normalized: answer)
+        end
         return Closed.result("near_miss", normalized: answer) if near_miss?(spec, answer, accepted)
 
         Closed.result("wrong", normalized: answer)
@@ -80,6 +84,19 @@ module Grading
         elsif spec.subject == "spanish" then "es_accents"
         else "it_accents"
         end
+      end
+
+      # Under accent_policy flag a declared error typed without its accent still hits it
+      # (abris for the declared abrís), unless the bare form is a word of its own (paradigm
+      # form) or the answer is the key without its accent (accent_slip took that already).
+      def folded_declared(spec, answer, accepted)
+        return [] unless spec.accent_policy == "flag"
+        return [] if paradigm?(spec, answer)
+
+        unaccented = fold_accents(answer)
+        return [] if accepted.any? { |c| fold_accents(c) == unaccented }
+
+        Closed.error_hit(spec, unaccented) { |v, a| fold_accents(normalize(v.to_s, case_sensitive: spec.case_sensitive)) == a }
       end
 
       def paradigm?(spec, answer)
