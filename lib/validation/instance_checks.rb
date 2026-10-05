@@ -253,6 +253,7 @@ module Validation
 
     # ---- the solution agrees with the key ---------------------------------------
 
+    THOUSANDS = /(?<![\d.,])[1-9]\d{0,2}(?:\.\d{3})+(?!\d)/
     NUMBER = %r{[-−]?\d+(?:\s*/\s*\d+|[.,]\d+)?}
 
     def steps(inst, label, seed, f)
@@ -260,7 +261,10 @@ module Validation
       case @unit.component
       when "number", "fraction"
         expected = Answers.rational(inst["answer"].is_a?(Hash) ? { "n" => inst["answer"]["n"], "d" => inst["answer"]["d"] } : inst["answer"])
-        values = final.delete("$").gsub("{,}", ",").gsub(/\\d?frac\{(\d+)\}\{(\d+)\}/, '\1/\2').scan(NUMBER).filter_map { |t| Answers.rational(t.tr("−", "-").delete(" ")) }
+        text = final.delete("$").gsub("{,}", ",").gsub(/\\d?frac\{(\d+)\}\{(\d+)\}/, '\1/\2')
+        # "5.300,00 €": read the dot as the thousands separator as well as a decimal point.
+        grouped = text.gsub(THOUSANDS) { |g| g.delete(".") }
+        values = [ text, grouped ].uniq.flat_map { |t| t.scan(NUMBER) }.filter_map { |t| Answers.rational(t.tr("−", "-").delete(" ")) }
         inconsistent = expected && values.any? && values.none? { |v| v == expected }
       when "choice"
         options = Array(inst.dig("display", "options"))

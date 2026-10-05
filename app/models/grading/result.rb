@@ -7,6 +7,7 @@ module Grading
       "empty" => "Scrivi una risposta prima di continuare.",
       "unparseable" => "Non riesco a leggere la risposta. Controllala e riprova.",
       "use_comma" => "Per i decimali usa la virgola, per esempio 3,5.",
+      "thousands_separator" => "Scrivi il numero senza il punto delle migliaia, per esempio 5300,00.",
       "ambiguous_exponent" => "Non si capisce l'esponente. Scrivi ^ e poi le cifre dell'esponente.",
       "ambiguous_mixed_number" => "Non si capisce il numero. Scrivi un numero misto come frazione, oppure con le caselle separate.",
       "zero_denominator" => "Il denominatore non può essere zero.",

@@ -108,6 +108,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-099 | 2026-10-05 | one instance of a testlet item per run; a bare blueprint dry run loads the pinned graph and items | implemented |
 | D-100 | 2026-10-05 | E-VERIFY-REJECTS names every rejected seed with its reason; the dry run reports the verify phase | implemented |
 | D-101 | 2026-10-05 | the blueprint's intro_note_it, not_measured_it, calculator and per-skill flags are shown | implemented |
+| D-102 | 2026-10-05 | amounts with the Italian thousands dot | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1119,3 +1120,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** none beyond the views.
 - **Status:** implemented
 - **Back-port:** B-02, C-04.
+
+## D-102 · 2026-10-05 · amounts with the Italian thousands dot: a dedicated invalid code, no false positives in validation
+
+- **Design ref:** E-03, A-06
+- **Design said:** the number grader reads one separator; a dot is `use_comma` ("Per i decimali usa la virgola"). The validation scans read a dot as a decimal point.
+- **We do:** (1) `Grading::Closed::Numbers` raises invalid `thousands_separator` for `5.300`, `5.300,00`, `5.300,00 €` (unless the item sets `allow_dot`), with the message "Scrivi il numero senza il punto delle migliaia, per esempio 5300,00." The answer is not read as grouped: the student is told how to write it, nothing is stored. (2) `E-STEP-INCONSISTENT` reads `solution.final` both ways (dot as decimal and as thousands grouping), so a final "5.300,00 €" matches the key 5300. (3) `Answers.token_match?` no longer counts a needle that follows `<digit>.` as a whole token ("150,00 €" inside "9.150,00 €" is not a leak). (4) The item `tests` of a generator item already run on the first stored instance (D-078); no change, the brief says so.
+- **Why:** content agent (business, B2). New grader code is additive; stored data is unchanged.
+- **Cost:** a leak of a key written right after "<digit>." is no longer found.
+- **Status:** implemented
+- **Back-port:** E-03.

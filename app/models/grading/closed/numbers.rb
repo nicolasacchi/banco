@@ -22,6 +22,8 @@ module Grading
       INVISIBLE = /[\u00AD\u200B-\u200D\u2060\uFEFF]/
       MINUSES = /[\u2212\u2010-\u2015\uFE63\uFF0D\u207B\u208B]/
       PLUSES = /[\uFE62\uFF0B\u207A\u208A]/
+      # Italian thousands grouping: 5.300 or 5.300,50 (a dot every three digits).
+      THOUSANDS = /\A[+-]?[1-9]\d{0,2}(?:\.\d{3})+(?:,\d+)?\z/
       DECIMAL = /\A([+-])?(\d*)(?:([.,])(\d+))?\z/
       # a·10^n, a x 10^n, a×10^n, a*10^n, with ^{n} or a superscript exponent (form "scientific", D-093).
       SCIENTIFIC = /\A(.+?)#{SPACES}*[·⋅×x*]#{SPACES}*10#{SPACES}*\^#{SPACES}*\{?#{SPACES}*([+-]?)#{SPACES}*(\d+)#{SPACES}*\}?\z/i
@@ -80,14 +82,17 @@ module Grading
         unit.present? && s.end_with?(unit) ? s.delete_suffix(unit).gsub(/#{SPACES}+\z/, "") : s
       end
 
-      # Italian text -> Rational. Raises Invalid(code): empty, use_comma,
+      # Italian text -> Rational. Raises Invalid(code): empty, use_comma, thousands_separator,
       # ambiguous_mixed_number, unparseable.
       def parse(text, allow_dot: false, unit: nil)
         s = strip_unit(clean(text), unit)
         raise Invalid, "empty" if s.empty?
         raise Invalid, "ambiguous_mixed_number" if s.match?(/\d#{SPACES}+[\d,.]/)
 
-        m = DECIMAL.match(s.sub(/\A([+-])#{SPACES}+/, '\1'))
+        t = s.sub(/\A([+-])#{SPACES}+/, '\1')
+        raise Invalid, "thousands_separator" if !allow_dot && t.match?(THOUSANDS)
+
+        m = DECIMAL.match(t)
         raise Invalid, "unparseable" if m.nil? || (m[2].empty? && m[4].nil?)
         raise Invalid, "unparseable" if m[2].empty? && m[3].nil?
         raise Invalid, "use_comma" if m[3] == "." && !allow_dot

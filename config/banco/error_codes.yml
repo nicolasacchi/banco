@@ -132,6 +132,7 @@ grader_codes:
   mixed: { description: "A mixed number where an improper fraction is declared (wrong_form)." }
   scientific_notation: { description: "A number with the right value that is not written as a·10^n with 1 <= a < 10 where the item declares form scientific (wrong_form)." }
   use_comma: { description: "invalid: a dot where the decimal comma is required." }
+  thousands_separator: { description: "invalid: a number written with the Italian thousands dot (5.300,00); the student is told to write it without." }
   empty: { description: "invalid: blank answer or empty box." }
   unparseable: { description: "invalid: the answer cannot be read." }
   ambiguous_exponent: { description: "invalid: an exponent that cannot be read with certainty." }

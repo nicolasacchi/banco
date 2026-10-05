@@ -77,6 +77,8 @@ class SupportModulesTest < ActiveSupport::TestCase
     assert Validation::Answers.contains?("il valore e 125 euro", "125")
     assert_not Validation::Answers.contains?("il valore e 1125 euro", "125")
     assert_not Validation::Answers.contains?("il valore e 12,5 euro", "2,5")
+    assert_not Validation::Answers.contains?("totale 9.150,00 €", "150,00 €")
+    assert Validation::Answers.contains?("totale 150,00 €", "150,00 €")
     assert Validation::Answers.contains?("vale 3,5 metri", "3,5")
     assert_not Validation::Answers.contains?("la parola capitale", "capi")
     assert_not Validation::Answers.contains?("ab", "ab"), "under 3 characters is never a leak"

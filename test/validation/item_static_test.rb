@@ -253,6 +253,15 @@ class ItemStaticTest < ActiveSupport::TestCase
     assert_includes codes(run_item(F.static_item("instances" => [ inst, F.number_instance(4, 13) ]))), "E-STEP-INCONSISTENT"
   end
 
+  test "E-STEP-INCONSISTENT reads the Italian thousands dot as grouping" do
+    inst = F.number_instance(2, 9)
+    inst["answer"] = 5300
+    inst["solution"]["final"] = "5.300,00 €"
+    assert_not_includes codes(run_item(F.static_item("instances" => [ inst, F.number_instance(4, 13) ]))), "E-STEP-INCONSISTENT"
+    inst["solution"]["final"] = "5.400,00 €"
+    assert_includes codes(run_item(F.static_item("instances" => [ inst, F.number_instance(4, 13) ]))), "E-STEP-INCONSISTENT"
+  end
+
   test "E-STEP-INCONSISTENT reads a LaTeX decimal comma as one number" do
     inst = F.number_instance(2, 9)
     inst["answer"] = "0,4"

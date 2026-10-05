@@ -154,7 +154,7 @@ module Validation
     end
 
     def token_match?(haystack, needle)
-      haystack.match?(/(?<![[:alnum:]])(?<![,.]\d)#{Regexp.escape(needle)}(?![[:alnum:]])(?![,.]\d)/)
+      haystack.match?(/(?<![[:alnum:]])(?<![,.]\d)(?<!\d\.)#{Regexp.escape(needle)}(?![[:alnum:]])(?![,.]\d)/)
     end
 
     # The key texts of a (non-choice) instance, long enough to be a leak.
