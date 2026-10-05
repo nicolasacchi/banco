@@ -120,6 +120,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-113 | 2026-10-05 | binary answers written in groups of bits ("1110 1100") are read as one string | implemented |
 | D-114 | 2026-10-05 | binary profile: a declared error value written exactly (padding_missing) is a typical error, not wrong_form; plain normalized_text bit/letter codes typed with spaces are `invalid` (`spaces_in_code`); CS acronyms in caps_allowlist (rules v6); generator tests already run | implemented |
 | D-115 | 2026-10-05 | `work open` warns inside a git work tree; cloze pages repeating a form use D-092 `reuse_right` | implemented |
+| D-116 | 2026-10-05 | binary profile: a declared error value that is not a bit string (1121) is a `typical_error`, not `invalid`; undeclared non-bit answers stay `invalid` | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1271,3 +1272,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** none.
 - **Status:** implemented
 - **Back-port:** none.
+
+## D-116 · 2026-10-05 · binary profile: declared error values that are not bit strings
+
+- **Design ref:** B-02, D-095, D-114
+- **Design said:** `Text.binary` rejected any answer with a digit other than 0 and 1 as `invalid` (unparseable), so a declared error such as 1121 (digit 2 written) gave the student a free retry.
+- **We do:** before the unparseable verdict, an all-digit answer (whitespace removed) is compared with the declared error values; a hit is a `typical_error` with its code. Declared 0/1 values were already classified since D-095 and D-114. Undeclared non-bit answers stay `invalid`.
+- **Why:** content agent (computer_science, items:B2).
+- **Cost:** none; `banco.*/1` unchanged.
+- **Status:** implemented
+- **Back-port:** B-02.

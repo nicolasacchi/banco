@@ -144,7 +144,15 @@ module Grading
         return Closed.invalid("empty") if s.empty?
         # Bits written in groups ("1110 1100") are one string of bits (D-113).
         s = s.gsub(/(?<=[01])[[:space:]]+(?=[01])/, "")
-        return Closed.invalid("unparseable") unless s.match?(/\A[01]+\z/)
+        unless s.match?(/\A[01]+\z/)
+          # A declared error value that is not a bit string (1121, the digit 2 written) is still a
+          # typical error, not an unreadable answer (D-116).
+          compact = s.gsub(/[[:space:]]+/, "")
+          declared = compact.match?(/\A[0-9]+\z/) ? Closed.error_hit(spec, compact) { |v, a| v.to_s.gsub(/[[:space:]]+/, "") == a } : []
+          return Closed.result("typical_error", error_codes: declared, normalized: compact) if declared.any?
+
+          return Closed.invalid("unparseable")
+        end
 
         key = spec.answer.to_s
         stripped = s.sub(/\A0+(?=.)/, "")
