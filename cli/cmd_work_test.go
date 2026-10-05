@@ -263,13 +263,16 @@ func TestWorkSubmitConflictsAndUsage(t *testing.T) {
 	if r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "submit", dir); r.exit != ExitConflict {
 		t.Errorf("exit %d", r.exit)
 	}
-	busy, _ := sequenceServer(t, [2]string{"409", `{"code":"E-CHROME-BUSY","field":"chrome","message":"Chrome is busy","next":"retry in 30 s"}`})
+	busy, busySeen := sequenceServer(t, [2]string{"409", `{"code":"E-CHROME-BUSY","field":"chrome","message":"Chrome is busy","next":"retry in 30 s"}`})
 	r := runCLI(t, busy.URL, envToken("bnc_x"), "work", "submit", dir, "--dry-run")
 	if r.exit != ExitConflict {
 		t.Errorf("busy: exit %d", r.exit)
 	}
 	if e := assertErrJSON(t, r.stderr, "E-CHROME-BUSY"); e.Next != "retry in 30 s" {
 		t.Errorf("next = %q", e.Next)
+	}
+	if len(*busySeen) != 7 {
+		t.Errorf("a busy dry run is tried 1+6 times, saw %d", len(*busySeen))
 	}
 	empty := t.TempDir()
 	for _, args := range [][]string{{"work", "submit"}, {"work", "submit", "/no/such/dir"}, {"work", "submit", empty}} {
@@ -378,5 +381,18 @@ func TestNoCommandApproves(t *testing.T) {
 				t.Errorf("%q: no command takes a decision", c.name)
 			}
 		}
+	}
+}
+
+func TestWorkSubmitDryRunRetriesBusyThenPasses(t *testing.T) {
+	srv, seen := sequenceServer(t,
+		[2]string{"409", `{"code":"E-CHROME-BUSY","field":"chrome","message":"Chrome is busy","next":"retry in 30 s"}`},
+		[2]string{"409", `{"code":"E-CHROME-BUSY","field":"chrome","message":"Chrome is busy","next":"retry in 30 s"}`},
+		[2]string{"200", `{"dry_run":true,"status":"passed","codes":[]}`})
+	dir := t.TempDir()
+	write(t, dir, "item.json", "{}")
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "submit", dir, "--dry-run")
+	if r.exit != 0 || len(*seen) != 3 {
+		t.Errorf("exit %d after %d tries; stderr %s", r.exit, len(*seen), r.stderr)
 	}
 }

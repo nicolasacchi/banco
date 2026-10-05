@@ -126,6 +126,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-119 | 2026-10-05 | `work open --role verifier` returns every stored instance (the whole pool of 24), not the first 8 | implemented |
 | D-120 | 2026-10-05 | `banco items list`: the revisions of a subject's items with status and a current marker | implemented |
 | D-121 | 2026-10-05 | W-SHORT-SKILL-CLOSED: closed items pinned beside a short answer are never served and leave the redo pool count; the teacher's traces confirm pending and short answers | implemented |
+| D-122 | 2026-10-05 | `banco work submit --dry-run` repeats itself on E-CHROME-BUSY (6 times, 10 s apart) | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1337,3 +1338,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** none.
 - **Status:** implemented
 - **Back-port:** B-02.
+
+## D-122 · 2026-10-05 · the CLI queues a busy dry run
+
+- **Design ref:** A-06 (dry run), D-097
+- **Design said:** a dry run waits up to 25 s for Chrome, then answers 409 `E-CHROME-BUSY` with `retry in 30 s`; the agent retries by hand.
+- **We do:** the CLI repeats a `--dry-run` that gets `E-CHROME-BUSY`: `BANCO_BUSY_RETRIES` times (default 6), `BANCO_BUSY_WAIT_MS` apart (default 10000), then reports the error as before. Nothing changes on the server or in the contract; non-dry submits and other errors are never repeated.
+- **Why:** content agent (spanish, verify:B3): parallel verifiers got E-CHROME-BUSY and wrote their own retry loops.
+- **Cost:** a dry run can take up to about 25 s x 7 plus 60 s under heavy contention (the HTTP timeout is per attempt, 300 s).
+- **Status:** implemented
+- **Back-port:** A-06.

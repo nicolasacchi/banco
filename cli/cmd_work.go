@@ -269,7 +269,7 @@ func runWorkSubmit(e *env, args []string) error {
 	if *dry {
 		headers["X-Banco-Dry-Run"] = "1"
 	}
-	out, err := e.client().doWith("work submit", "POST", "/api/v1/work/submit", raw, headers)
+	out, err := submitWithBusyRetry(e, raw, headers, *dry)
 	if err != nil {
 		return err
 	}
@@ -356,5 +356,26 @@ func runWorkStatus(e *env, args []string) error {
 			return newErr(ExitServer, "E-TIMEOUT", "revision", "the validation did not finish within "+strconv.Itoa(*timeout)+" s", next)
 		}
 		time.Sleep(interval)
+	}
+}
+
+// submitWithBusyRetry posts the submission. A dry run that meets E-CHROME-BUSY (the
+// server already waited for Chrome) is repeated: BANCO_BUSY_RETRIES times (default 6),
+// BANCO_BUSY_WAIT_MS apart (default 10000), so parallel verifiers queue instead of failing.
+func submitWithBusyRetry(e *env, raw []byte, headers map[string]string, dry bool) ([]byte, error) {
+	retries, wait := 6, 10*time.Second
+	if n, err := strconv.Atoi(e.getenv("BANCO_BUSY_RETRIES")); err == nil && n >= 0 {
+		retries = n
+	}
+	if ms, err := strconv.Atoi(e.getenv("BANCO_BUSY_WAIT_MS")); err == nil && ms >= 0 {
+		wait = time.Duration(ms) * time.Millisecond
+	}
+	for attempt := 0; ; attempt++ {
+		out, err := e.client().doWith("work submit", "POST", "/api/v1/work/submit", raw, headers)
+		ce, ok := err.(*CLIError)
+		if err == nil || !dry || !ok || ce.Code != "E-CHROME-BUSY" || attempt >= retries {
+			return out, err
+		}
+		time.Sleep(wait)
 	}
 }

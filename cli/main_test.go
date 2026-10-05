@@ -55,7 +55,12 @@ type result struct {
 func runCLI(t *testing.T, baseURL string, tokens tokenSource, args ...string) result {
 	t.Helper()
 	var out, errb bytes.Buffer
-	e := &env{stdout: &out, stderr: &errb, getenv: func(string) string { return "" }}
+	e := &env{stdout: &out, stderr: &errb, getenv: func(k string) string {
+		if k == "BANCO_BUSY_WAIT_MS" {
+			return "1"
+		}
+		return ""
+	}}
 	e.client = func() *client {
 		return &client{baseURL: baseURL, http: &http.Client{Timeout: 5 * time.Second}, tokens: tokens}
 	}
