@@ -99,6 +99,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-090 | 2026-10-05 | source kind legal_text; brief says which instance tests run on | implemented |
 | D-091 | 2026-10-05 | deferred_prerequisites and deferred_implicates: cross-subject edges that wait for approval; banco --help | implemented |
 | D-092 | 2026-10-05 | matching as a classification (`display.reuse_right`); generator `tests` confirmed already run | implemented |
+| D-093 | 2026-10-05 | graph findings per skill; 2-category classification; number `accept` and form `scientific` | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1019,3 +1020,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** with 4 rows and 3 categories a blind guess is right once in 81 times (3^4), against 1 in 120 for a 4-pair matching: still hard to guess; use 5 or more rows when possible.
 - **Status:** implemented
 - **Back-port:** A-06, X-01.
+
+## D-093 · 2026-10-05 · graph findings per skill; two-category classification; number `accept` and form `scientific`
+
+- **Design ref:** A-06, X-01, E-03
+- **Design said:** (1) a finding is keyed by code, field and rule, so two refused targets in one field (`E-GRAPH-EDGE-UNAPPROVED`, `E-SKILL-UNKNOWN`) merged into one finding that named only the first. (2) D-092 classification needs 3 or more categories. (3) a `number` item has one exact key and reads only a plain decimal; `accept` belonged to `normalized_text`.
+- **We do:** (1) the finding key includes `detail.skill`: one finding per refused skill (repeats of the same skill and field still count). (2) A classification may have 2 categories when it has 6 or more rows (2^6 = 64 blind guesses, close to D-092's 81); with 3 or more categories the rule is unchanged (4 or more rows). (3) A `number` item may list `accept`: extra exact values (finite decimals, "273,15") graded `correct` like the key; each is checked as a number (`E-SCHEMA` otherwise) and enters the leak scan. A `number` item may declare `form: ["scientific"]`: the answer is read as `a·10^n` (also `a x 10^n`, `a×10^n`, `a*10^n`, `10^{n}`, superscript exponent; exponent beyond 400 is `number_too_large`); the right value is `correct` when 1 <= |a| < 10, else `wrong_form` with violation `scientific_notation` (a plain number is correct only when it is already in that range; use `form_skill` as for other forms). The student's box then shows its own hint and a text keyboard. Without the form, `5,2·10^-4` stays unparseable. Registry gains `scientific_notation`. Backward compatible: only optional members and new accepted values.
+- **Why:** content agent (chemistry, step graph).
+- **Cost:** a 2-category classification is guessable more often than one with 3 or more; prefer 3 or more categories or 7+ rows. `accept` values are not tried against the error catalogue.
+- **Status:** implemented
+- **Back-port:** A-06, X-01, E-03.

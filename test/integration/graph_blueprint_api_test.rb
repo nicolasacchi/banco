@@ -153,6 +153,12 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
     assert_response :created, json.inspect
   end
 
+  test "D-093: two refused cross-subject targets in one field are two findings" do
+    submit_graph(graph { |d| skill(d, "math.percentages")["prerequisites"] += [ "italian.reading", "italian.writing" ] })
+    names = json["findings"].select { |f| f["code"] == "E-GRAPH-EDGE-UNAPPROVED" }.map { |f| f["detail"]["skill"] }
+    assert_equal %w[italian.reading italian.writing], names.sort
+  end
+
   test "D-091: a deferred edge to a subject without an approved graph is accepted; one to our own subject is E-SCHEMA" do
     deferred = graph { |d| skill(d, "math.percentages")["deferred_prerequisites"] = [ { "skill" => "italian.reading", "reason_it" => "Serve la lettura." } ] }
     submit_graph(deferred)

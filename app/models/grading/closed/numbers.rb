@@ -23,17 +23,26 @@ module Grading
       MINUSES = /[\u2212\u2010-\u2015\uFE63\uFF0D\u207B\u208B]/
       PLUSES = /[\uFE62\uFF0B\u207A\u208A]/
       DECIMAL = /\A([+-])?(\d*)(?:([.,])(\d+))?\z/
+      # a·10^n, a x 10^n, a×10^n, a*10^n, with ^{n} or a superscript exponent (form "scientific", D-093).
+      SCIENTIFIC = /\A(.+?)#{SPACES}*[·⋅×x*]#{SPACES}*10#{SPACES}*\^#{SPACES}*\{?#{SPACES}*([+-]?)#{SPACES}*(\d+)#{SPACES}*\}?\z/i
+      SUPERSCRIPTS = "⁰¹²³⁴⁵⁶⁷⁸⁹"
+      MAX_EXPONENT = 400
 
       module_function
 
       def grade(spec, value)
         return Closed.invalid("unparseable") unless value.is_a?(String)
 
-        answer = parse(value, allow_dot: spec.allow_dot, unit: spec.unit)
+        scientific = spec.form.include?("scientific")
+        answer, written_scientific = scientific ? parse_scientific(value, allow_dot: spec.allow_dot, unit: spec.unit) : [ parse(value, allow_dot: spec.allow_dot, unit: spec.unit), false ]
         expected = expected_value(spec.answer)
         normalized = format(answer)
-        if answer == expected
-          Closed.result("correct", normalized: normalized)
+        if answer == expected || accepted?(spec.accept, answer)
+          if scientific && !scientific_shape?(answer, written_scientific)
+            Closed.result("wrong_form", form_violations: [ "scientific_notation" ], normalized: normalized)
+          else
+            Closed.result("correct", normalized: normalized)
+          end
         else
           codes = Closed.error_hit(spec, answer) { |v, a| (expected_value(v) == a rescue false) }
           Closed.verdict_for_errors(codes, normalized: normalized)
@@ -42,11 +51,39 @@ module Grading
         Closed.invalid(e.code)
       end
 
+      # Extra exact values the item accepts as right (a convention the teacher left open).
+      def accepted?(accept, answer)
+        Array(accept).any? { |v| expected_value(v) == answer rescue false }
+      end
+
+      # [Rational, written_as_a·10^n]. Without the notation the text is read as a plain number.
+      def parse_scientific(text, allow_dot:, unit:)
+        s = strip_unit(clean(text), unit).sub(/10([-+]?[#{SUPERSCRIPTS}]+)\z/) { "10^#{Regexp.last_match(1).tr(SUPERSCRIPTS, '0123456789')}" }
+        m = SCIENTIFIC.match(s)
+        return [ parse(s, allow_dot: allow_dot), false ] unless m
+
+        exponent = m[3].to_i
+        raise Invalid, "number_too_large" if exponent > MAX_EXPONENT
+
+        mantissa = parse(m[1], allow_dot: allow_dot)
+        exponent = -exponent if m[2] == "-"
+        [ mantissa * Rational(10)**exponent, mantissa ]
+      end
+
+      # The declared form: 1 <= |a| < 10 for a·10^n; a plain number only when it is already in that range.
+      def scientific_shape?(value, mantissa)
+        mantissa = value if mantissa == false
+        mantissa.zero? || (mantissa.abs >= 1 && mantissa.abs < 10)
+      end
+
+      def strip_unit(s, unit)
+        unit.present? && s.end_with?(unit) ? s.delete_suffix(unit).gsub(/#{SPACES}+\z/, "") : s
+      end
+
       # Italian text -> Rational. Raises Invalid(code): empty, use_comma,
       # ambiguous_mixed_number, unparseable.
       def parse(text, allow_dot: false, unit: nil)
-        s = clean(text)
-        s = s.delete_suffix(unit).gsub(/#{SPACES}+\z/, "") if unit.present? && s.end_with?(unit)
+        s = strip_unit(clean(text), unit)
         raise Invalid, "empty" if s.empty?
         raise Invalid, "ambiguous_mixed_number" if s.match?(/\d#{SPACES}+[\d,.]/)
 

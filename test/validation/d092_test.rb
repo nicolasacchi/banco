@@ -37,7 +37,13 @@ class D092Test < ActiveSupport::TestCase
   test "a classification needs 4 rows, 3 categories and fewer categories than rows" do
     assert_includes codes(run_item(classification(left: 3))), "E-MATCHING-SIZE"
     assert_includes codes(run_item(classification(left: 5, categories: 2))), "E-MATCHING-SIZE"
+    assert_includes codes(run_item(classification(left: 5, categories: 1))), "E-MATCHING-SIZE"
     assert_includes codes(run_item(classification(left: 4, categories: 4))), "E-MATCHING-SIZE"
+  end
+
+  test "D-093: two categories are allowed from 6 rows" do
+    result = run_item(classification(left: 6, categories: 2))
+    assert_equal "passed", result.status, result.findings.map(&:to_h).inspect
   end
 
   test "a classification whose key uses one category only fails" do
@@ -64,5 +70,24 @@ class D092Test < ActiveSupport::TestCase
     inst = item["instances"].first
     r = Diagnosis::Rekey.call(display: inst["display"], answer: inst["answer"], errors: inst["errors"], component: "matching", seed: 7)
     assert_equal true, r.display["reuse_right"]
+  end
+end
+
+# D-093: a number item with accept and the scientific form passes validation.
+class D093ValidationTest < ActiveSupport::TestCase
+  F = ValidationFixtures
+
+  def run_item(item) = Validation::ItemRunner.new(files: F.files_for(item), context: F.context).call
+
+  test "a number item with accept passes; a non-number accept value fails" do
+    ok = run_item(F.static_item("accept" => [ "8" ], "tests" => { "must_accept" => [ "7", "8" ], "must_reject" => [ "11" ], "blank" => "invalid" }))
+    assert_equal "passed", ok.status, ok.findings.map(&:to_h).inspect
+    bad = run_item(F.static_item("accept" => [ "abc" ]))
+    assert_includes bad.findings.map(&:code), "E-SCHEMA"
+  end
+
+  test "form scientific round-trips the key as a·10^n" do
+    result = run_item(F.static_item("form" => [ "scientific" ], "tests" => { "must_accept" => [ "7" ], "must_reject" => [ "11" ], "blank" => "invalid" }))
+    assert_equal "passed", result.status, result.findings.map(&:to_h).inspect
   end
 end

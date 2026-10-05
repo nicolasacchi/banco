@@ -68,6 +68,7 @@ it:
     error_generic: "Qualcosa non ha funzionato. Riprova tra poco."
     answer_label: "La tua risposta"
   items:
+    number_scientific_label: "Scrivi il numero in notazione scientifica, per esempio 3,2 x 10^5 (x per moltiplicare, ^ per l'esponente). Per i decimali usa la virgola."
     number_label: "Scrivi il numero. Per i decimali usa la virgola."
     fraction_numerator: "Numeratore"
     fraction_denominator: "Denominatore"

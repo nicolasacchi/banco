@@ -134,7 +134,7 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
     spellings of its own key (`"accept": ["x = 0"]` on the instance whose key is `0`); the
     item's `accept` applies to every instance. The item's `tests` (`must_accept`, `must_reject`) run on the first
     stored instance only (seed 1 for a generator), so write them for that instance's
-    key; an instance's own `tests` run on that instance (use them for any other seed). A `matching` that classifies cases (4 or more rows, 3 or more categories, fewer categories than rows) sets `display.reuse_right: true` on every instance: the key may repeat a category; the right column is then the categories alone (no spare). The right column of a `matching` is plain text (no `$`, no backslash:
+    key; an instance's own `tests` run on that instance (use them for any other seed). A `matching` that classifies cases (4 or more rows and 3 or more categories, or 6 or more rows and 2 categories; always fewer categories than rows) sets `display.reuse_right: true` on every instance: the key may repeat a category; the right column is then the categories alone (no spare). The right column of a `matching` is plain text (no `$`, no backslash:
     `E-MATCHING-RIGHT-MARKUP`). A `form_skill` should be a prerequisite of the item's skill
     (`W-FORM-SKILL-CLOSURE` otherwise: credit, but no tail suspect).
 13. **Calculating subjects.** Numeric items are generators. A numeric answer
@@ -147,7 +147,7 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
     (`common_factor_not_cancelled`); `lowest_terms` only checks integer content. Business amounts
     use `number` with unit euro and 2 decimals; computer science states the
     KB convention in the stem. Where the calculator is allowed (business,
-    chemistry) every numeric stem says so; elsewhere numbers are chosen for hand
+    chemistry) every numeric stem says so; a `number` item may list other right values in `accept` (`["273,15"]`, for a convention the teacher leaves open) and may declare `form: ["scientific"]` to ask for `a·10^n` with 1 <= a < 10 (the same value in another shape is `wrong_form`, violation `scientific_notation`); elsewhere numbers are chosen for hand
     calculation.
 14. **Scope.** No content of the in-progress (star-empty) lines and no content of
     the following year inside items of skills the student has already studied.

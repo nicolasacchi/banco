@@ -202,6 +202,11 @@ module Validation
           findings.add("E-ACCENT-POLICY", "#{path}/accent_policy", "accent_policy and paradigm_forms belong to normalized_text items")
           next
         end
+        if body["component"] == "number"
+          Array(body["accept"]).each_with_index do |v, i|
+            findings.add("E-SCHEMA", "#{path}/accept/#{i}", "an accepted value of a number item is a finite decimal such as \"273,15\"", rule: "accept_number") unless (r = Answers.rational(v)) && Answers.decimal_string(r)
+          end
+        end
         if body["component"] == "normalized_text"
           Array(body["accept"]).each_with_index do |text, i|
             findings.add("E-SCHEMA", "#{path}/accept/#{i}", "an accepted text that is only punctuation normalizes to nothing: no answer could match it") if Answers.punctuation_only?(text)

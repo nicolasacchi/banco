@@ -71,6 +71,7 @@ module Diagnosis
       %w[options elements left right].each { |k| out[k.to_sym] = display[k] if display[k] }
       out[:reuse_right] = true if display["reuse_right"] == true
       out[:unit] = body["unit"] if body["unit"]
+      out[:scientific] = true if component == "number" && Array(body["form"]).include?("scientific")
       out[:mixed] = true if component == "fraction" && Array(body["form"]).include?("mixed")
       out[:accents] = ACCENT_SETS[@subject.key] if component == "normalized_text"
       out[:input] = @expression_input if component == "expression"

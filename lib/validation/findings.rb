@@ -37,7 +37,7 @@ module Validation
     def add(code, field, message, **detail)
       raise ArgumentError, "unknown validation code #{code}" unless Codes.known?(code)
 
-      key = [ code, field, detail[:rule] ]
+      key = [ code, field, detail[:rule], detail[:skill] ]
       if (existing = @items[key])
         existing.detail[:count] = existing.detail.fetch(:count, 1) + 1
         existing.detail[:seeds] = ((existing.detail[:seeds] || []) + Array(detail[:seed])).first(5) if detail[:seed]
@@ -51,7 +51,7 @@ module Validation
     end
 
     def merge!(other)
-      other.each { |f| @items[[ f.code, f.field, f.detail[:rule] ]] ||= f }
+      other.each { |f| @items[[ f.code, f.field, f.detail[:rule], f.detail[:skill] ]] ||= f }
       self
     end
 

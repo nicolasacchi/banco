@@ -34,6 +34,18 @@ module Validation
       rational.negative? ? "-#{body}" : body
     end
 
+    # "5,2·10^-4" for a finite decimal (1 <= |a| < 10); "0" for zero; nil otherwise.
+    def scientific_string(rational)
+      return "0" if rational.zero?
+
+      exponent = 0
+      m = rational.abs
+      (m /= 10; exponent += 1) while m >= 10
+      (m *= 10; exponent -= 1) while m < 1
+      mant = decimal_string(rational.negative? ? -m : m)
+      mant && "#{mant}\u00B710^#{exponent}"
+    end
+
     # [raw, problem]: the input a student would give for +value+, or a problem
     # description when the value cannot be one for this component.
     def raw_for(component, value, form: [])
@@ -42,7 +54,7 @@ module Validation
         r = rational(value)
         return [ nil, "the value is not a number" ] unless r
 
-        text = decimal_string(r)
+        text = form.include?("scientific") ? scientific_string(r) : decimal_string(r)
         text ? [ text, nil ] : [ nil, "the value is not a finite decimal: use the fraction component" ]
       when "fraction" then fraction_raw(value, form)
       when "expression" then [ value.is_a?(Hash) ? value["latex"].to_s : value.to_s, nil ]
@@ -151,7 +163,7 @@ module Validation
         case component
         when "number"
           r = rational(answer)
-          [ r && decimal_string(r) ]
+          [ r && decimal_string(r), r && scientific_string(r) ] + accept.map { |a| (x = rational(a)) && decimal_string(x) }
         when "fraction"
           r = rational(answer.is_a?(Hash) ? { "n" => answer["n"], "d" => answer["d"] } : answer)
           r ? [ "#{r.numerator}/#{r.denominator}", "#{r.numerator} / #{r.denominator}", "\\frac{#{r.numerator}}{#{r.denominator}}" ] : []

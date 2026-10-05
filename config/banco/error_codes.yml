@@ -129,6 +129,7 @@ grader_codes:
   lowest_terms: { description: "The fraction is not in lowest terms (wrong_form)." }
   improper: { description: "An improper fraction where a mixed number is declared (wrong_form)." }
   mixed: { description: "A mixed number where an improper fraction is declared (wrong_form)." }
+  scientific_notation: { description: "A number with the right value that is not written as a·10^n with 1 <= a < 10 where the item declares form scientific (wrong_form)." }
   use_comma: { description: "invalid: a dot where the decimal comma is required." }
   empty: { description: "invalid: blank answer or empty box." }
   unparseable: { description: "invalid: the answer cannot be read." }
