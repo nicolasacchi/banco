@@ -153,6 +153,8 @@ func runHelp(e *env, args []string) int {
 		})
 		return ExitOK
 	}
+	// "banco work --help": only the commands of that group.
+	group := strings.Join(words, " ")
 	type row struct {
 		Name  string   `json:"name"`
 		Args  []string `json:"args"`
@@ -160,7 +162,12 @@ func runHelp(e *env, args []string) int {
 	}
 	rows := []row{}
 	for _, cc := range c.Commands {
-		rows = append(rows, row{cc.Name, cc.Args, cc.Flags})
+		if group == "" || strings.HasPrefix(cc.Name, group+" ") {
+			rows = append(rows, row{cc.Name, cc.Args, cc.Flags})
+		}
+	}
+	if group != "" && len(rows) == 0 {
+		return reportError(e.stderr, newErr(ExitUsage, "E-USAGE", "command", "unknown command: "+group, "banco --help"))
 	}
 	json.NewEncoder(e.stdout).Encode(map[string]any{
 		"usage":    "banco <command> [args] [flags]; `banco schema` shows the full contract from the server",
