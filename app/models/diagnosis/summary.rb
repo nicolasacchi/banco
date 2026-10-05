@@ -101,7 +101,7 @@ module Diagnosis
 
     def prompt_text(body, instance)
       display = JSON.parse(instance.display_json)
-      body["kind"] == "testlet" ? body["passage_it"].to_s : [ body.dig("prompt", "stem_it"), display["stem_it"] ].compact.join(" ")
+      body["kind"] == "testlet" ? body["passage_it"].to_s : [ body["passage_it"], body.dig("prompt", "stem_it"), display["stem_it"] ].compact.join(" ")
     end
   end
 end

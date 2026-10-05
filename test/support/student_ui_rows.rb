@@ -66,6 +66,7 @@ module StudentUiRows
       body[:expected_seconds] = 300
       body[:sub_items] = (1..5).map { |n| sub_body(skill, n) }
     when "short_answer"
+      body[:passage_it] = "Un breve testo da riassumere."
       body[:rubric] = { points: [ { id: "a", weight: 1, expected_it: "Dice una cosa." }, { id: "b", weight: 1, expected_it: "Ne dice un'altra." } ],
                         threshold: 0.6, model_answer_it: "Una risposta." }
     end

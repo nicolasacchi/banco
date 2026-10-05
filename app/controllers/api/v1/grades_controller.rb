@@ -78,6 +78,10 @@ module Api
         GradeProposal.where(attempt_id: attempt.id).where.not(id: rejected).exists?
       end
 
+      def with_passage(display, body)
+        body["passage_it"].present? ? { "passage_it" => body["passage_it"] }.merge(display) : display
+      end
+
       def short_answers(attempts)
         attempts.filter_map do |attempt|
           revision = attempt.item_instance.item_revision
@@ -85,7 +89,7 @@ module Api
           next unless short_answer?(attempt, body) && !open_proposal?(attempt)
 
           { attempt_id: attempt.id, item: revision.item.key, subject: revision.item.subject.key, skill: body["skill"],
-            prompt: JSON.parse(attempt.item_instance.display_json), rubric: body["rubric"], student_text: attempt.raw }
+            prompt: with_passage(JSON.parse(attempt.item_instance.display_json), body), rubric: body["rubric"], student_text: attempt.raw }
         end
       end
 

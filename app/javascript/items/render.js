@@ -24,7 +24,7 @@ export async function renderPart(part, ctx) {
   const template = TEMPLATES[part.component]
   if (!template) throw new Error(`no template for component ${part.component}`)
   const result = await template(part, ctx)
-  result.promptElement = renderPrompt(part)
+  result.promptElement = renderPrompt(part, ctx)
   return result
 }
 

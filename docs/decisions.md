@@ -94,6 +94,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-085 | 2026-10-05 | per-instance `tests`; W-GRAPH-READABILITY | implemented |
 | D-086 | 2026-10-05 | matching: each answer once (hint and greyed-out entries) | implemented |
 | D-087 | 2026-10-05 | W-ERROR-NOT-IN-GRAPH; an ordering is never shown as a declared error permutation | implemented |
+| D-088 | 2026-10-05 | passage_it on short_answer is shown everywhere; allowed on diagnosis_item | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -964,3 +965,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** one more warning on items with free-form codes.
 - **Status:** implemented
 - **Back-port:** A-06, X-01.
+
+## D-088 · 2026-10-05 · `passage_it` on a short answer is shown to everyone; allowed on a diagnosis item
+
+- **Design ref:** A-06, X-02
+- **Design said:** only a testlet's `passage_it` reached the student, the grader, the solver and the teacher; the schema accepted it on a `short_answer` but dropped it silently, and forbade it on a `diagnosis_item`, whose only room for a reading text was the instance stem (60 words).
+- **We do:** (1) `passage_it` is read from the revision body for every kind: the student's page (`ItemPresenter`, `items/prompt.js`, with the testlet's "Brano" title), the grader payload, the blind-solver and reviewer instances (`Review::ItemText`), `Teacher::Corrections`, `Teacher::InstanceView` and `Diagnosis::Summary`. Reading from the body means revisions already stored work without re-materialising. (2) `banco.item/1` allows an optional `passage_it` (at most 2400 characters, readability lint as a passage) on a `diagnosis_item`. It is not counted in the 60-word stem cap. Backward compatible: optional.
+- **Why:** content agents (italian) found a summary item whose source text nobody saw, and could not write expository-reading items with a text longer than about 50 words.
+- **Cost:** none; no migration.
+- **Status:** implemented
+- **Back-port:** A-06, X-02.

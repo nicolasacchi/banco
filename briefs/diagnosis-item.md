@@ -92,7 +92,11 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
    words, at most 3 spans of at most 4 words; no ALL-CAPS words, no italics, no
    emoji; mathematics between `$...$`; decimal comma. One idea per sentence, no
    double negations.
-   A passage to read (a narrative excerpt, a law) goes in `prompt.quote`
+   A short text of your own to read before the question (an informative text, the
+   text to summarise) goes in the item's `passage_it` (kinds `diagnosis_item` and
+   `short_answer`; up to 2400 characters, linted as a passage, shown to the student,
+   the grader, the solver and the teacher above the question). It is not part of the
+   stem, so the 60-word cap does not count it. A quoted excerpt of an imported text goes in `prompt.quote`
    `{ref, text}`, not in the stem: `banco reference list` shows the imported
    reference texts and `banco reference show --key KEY` their body; `text` must be
    an exact substring of it (E-QUOTE-REF). If no suitable text is imported, do not

@@ -218,11 +218,6 @@
           "anyOf": [
             {
               "required": [
-                "passage_it"
-              ]
-            },
-            {
-              "required": [
                 "sub_items"
               ]
             },

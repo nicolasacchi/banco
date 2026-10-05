@@ -59,7 +59,10 @@ class ItemRenderTest < ApplicationSystemTestCase
       seen << component
       check_matching_exclusion if component == "matching"
       number = give_up + 1
-      break if component == "short_answer"
+      if component == "short_answer"
+        assert_selector ".item-body .passage", text: "Un breve testo da riassumere."
+        break
+      end
     end
     assert_equal %w[number fraction choice ordering matching normalized_text expression testlet short_answer], seen
     outside = requested_urls.reject { |u| u.start_with?(origin) || u.start_with?("data:") || u.start_with?("about:") }

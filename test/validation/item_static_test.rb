@@ -32,6 +32,13 @@ class ItemStaticTest < ActiveSupport::TestCase
     assert_equal "Spiega con parole tue come si risolve un'equazione.", result.instances.first[:display]["stem_it"]
   end
 
+  test "a diagnosis item and a short answer may carry a passage_it" do
+    result = run_item(F.choice_item.merge("passage_it" => "Il settore secondario trasforma le materie prime in prodotti finiti."))
+    assert_equal "passed", result.status, result.findings.map(&:to_h).inspect
+    result = run_item(F.short_answer_item.merge("passage_it" => "Un breve testo di prova."))
+    assert_equal "passed", result.status, result.findings.map(&:to_h).inspect
+  end
+
   test "E-SCHEMA: a missing member stops the run" do
     result = run_item(F.static_item.except("sources"))
     assert_equal "failed", result.status

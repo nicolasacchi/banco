@@ -62,6 +62,7 @@ module Diagnosis
       prompt = body["prompt"] || {}
       out = {
         component: component,
+        passage_it: body["passage_it"],
         stem_it: prompt["stem_it"],
         instance_stem_it: display["stem_it"]
       }

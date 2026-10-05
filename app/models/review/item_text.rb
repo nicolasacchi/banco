@@ -30,7 +30,7 @@ module Review
     # {instance, display, answer, errors, solution} for the reviewer.
     def review_instances
       instances.each_with_index.map do |row, i|
-        { instance: i + 1, display: JSON.parse(row.display_json), answer: JSON.parse(row.answer_json),
+        { instance: i + 1, display: with_passage(JSON.parse(row.display_json)), answer: JSON.parse(row.answer_json),
           errors: row.errors_json.present? ? JSON.parse(row.errors_json) : nil,
           solution: row.solution_json.present? ? JSON.parse(row.solution_json) : nil,
           accept: row.accept_json.present? ? JSON.parse(row.accept_json) : nil }.compact
@@ -39,7 +39,13 @@ module Review
 
     # {instance, display} for the blind solver: nothing that holds the key.
     def solver_instances
-      instances.each_with_index.map { |row, i| { instance: i + 1, display: JSON.parse(row.display_json) } }
+      instances.each_with_index.map { |row, i| { instance: i + 1, display: with_passage(JSON.parse(row.display_json)) } }
+    end
+
+    # The item's own passage (short answer, diagnosis item) belongs to what the
+    # student reads; the stored display of older revisions does not hold it.
+    def with_passage(display)
+      body["passage_it"].present? && body["kind"] != "testlet" ? { "passage_it" => body["passage_it"] }.merge(display) : display
     end
 
     # Lines of the programme cited by the item's skill in its subject's graph.
