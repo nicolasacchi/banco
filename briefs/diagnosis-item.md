@@ -27,7 +27,10 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
 - Component per item: `number`, `fraction`, `expression`, `choice`, `ordering`,
   `matching`, `normalized_text`, `short_answer`.
 - `error_catalogue[]`: `{code, description_it, message_it, implicates[]}`. Codes
-  are snake_case and come from the registry or are new and descriptive.
+  are snake_case and come from the registry or are new and descriptive. The engine reads the
+  errors of a skill from the graph alone: a new code must first be in the `errors` of that skill
+  in the graph (with the same `implicates`), else `W-ERROR-NOT-IN-GRAPH` and the code is treated
+  as unclassified (descent into every parent).
 - Generators export `generate(seed, rng)` and return
   `{display, answer, errors: [{code, value}], solution: {steps, final}}`. They
   import only `/lib/rng.mjs` and `/lib/fmt.mjs`. No `Math.random`, `Date`,

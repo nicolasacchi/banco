@@ -11,6 +11,7 @@ module Validation
 
     def call(item, files:, context:, findings:)
       skills(item, context, findings)
+      graph_errors(item, context, findings)
       composite(item, context, findings)
       form_skill_closure(item, context, findings)
       sources(item, context, findings)
@@ -52,6 +53,34 @@ module Validation
         yield "/sub_items/#{i}/form_skill", sub["form_skill"], false if sub["form_skill"]
         Array(sub["error_catalogue"]).each_with_index do |e, j|
           Array(e["implicates"]).each { |k| yield "/sub_items/#{i}/error_catalogue/#{j}/implicates", k, false }
+        end
+      end
+    end
+
+    # ---- W-ERROR-NOT-IN-GRAPH ------------------------------------------------------------
+
+    # The engine reads the errors of a skill from the graph alone (Plan.build_skills):
+    # a code the graph does not list is unclassified (the fold descends into every parent),
+    # and implicates that differ from the graph's are ignored.
+    def graph_errors(item, context, findings)
+      return unless context.graph_present?
+
+      bodies = item["kind"] == "testlet" ? Array(item["sub_items"]).each_with_index.map { |b, i| [ b, "/sub_items/#{i}" ] } : [ [ item, "" ] ]
+      bodies.each do |body, path|
+        skill = context.skill(body["skill"]) or next
+        known = Array(skill["errors"]).to_h { |er| [ er["code"], Array(er["implicates"]).sort ] }
+        Array(body["error_catalogue"]).each_with_index do |entry, i|
+          code = entry["code"]
+          field = "#{path}/error_catalogue/#{i}"
+          if !known.key?(code)
+            findings.add("W-ERROR-NOT-IN-GRAPH", field,
+                         "#{code} is not an error of #{body['skill']} in the graph: the engine treats it as unclassified and descends into every parent; add it to the graph first, or use a graph code",
+                         code: code)
+          elsif known[code] != Array(entry["implicates"]).sort
+            findings.add("W-ERROR-NOT-IN-GRAPH", "#{field}/implicates",
+                         "the graph says #{code} implicates #{known[code].inspect}, the item says #{Array(entry['implicates']).sort.inspect}: the engine reads the graph, the item's list is ignored",
+                         code: code)
+          end
         end
       end
     end

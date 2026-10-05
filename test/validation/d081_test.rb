@@ -101,4 +101,12 @@ class D081Test < ActiveSupport::TestCase
     assert_includes codes(run_item(build.call("$x \\leq 2$"))), "E-MATCHING-RIGHT-MARKUP"
     assert_not_includes codes(run_item(build.call("x ≤ −2"))), "E-MATCHING-RIGHT-MARKUP"
   end
+
+  test "W-ERROR-NOT-IN-GRAPH: a code the graph lacks, implicates that differ, a graph code is clean" do
+    entry = F.static_item["error_catalogue"].first
+    codes_for = ->(e) { codes(run_item(F.static_item("error_catalogue" => [ e ]))) }
+    assert_includes codes_for.call(entry.merge("code" => "brand_new")), "W-ERROR-NOT-IN-GRAPH"
+    assert_includes codes_for.call(entry.merge("implicates" => [])), "W-ERROR-NOT-IN-GRAPH"
+    refute_includes codes_for.call(entry), "W-ERROR-NOT-IN-GRAPH"
+  end
 end

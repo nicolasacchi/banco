@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 5
+version: 6
 
 validation:
   # Skill graph (synchronous).
@@ -70,6 +70,7 @@ validation:
   W-SELF-CERT: { stage: ruby, severity: warning, description: "Self-certifying wording." }
   E-MATCHING-RIGHT-MARKUP: { stage: ruby, severity: error, description: "A right-column text of a matching holds LaTeX or markup ($, backslash, **): it is drawn as a native option, which renders plain text only." }
   W-GRAPH-READABILITY: { stage: ruby, severity: warning, description: "A *_it text of a skill graph (an error description, a skill name) breaks the readability rule an item text would fail (E-READ): the same text copied into an item error catalogue is refused." }
+  W-ERROR-NOT-IN-GRAPH: { stage: ruby, severity: warning, description: "An item's error code is not an error of its skill in the graph, or its implicates differ from the graph's: the engine reads the graph alone." }
   W-FORM-SKILL-CLOSURE: { stage: ruby, severity: warning, description: "An item's form_skill is not in the prerequisite closure of its skill: a wrong form gets credit but no tail suspect." }
   W-CALCULATOR: { stage: ruby, severity: warning, description: "A numeric item in a subject that allows the calculator lacks the sentence that says so." }
   # Blueprint (synchronous).

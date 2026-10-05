@@ -93,6 +93,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-084 | 2026-10-05 | W-NEGATIVE-STEM ignores «quoted» and $math$ spans; CLI reports a missing contract header as E-NETWORK | decided |
 | D-085 | 2026-10-05 | per-instance `tests`; W-GRAPH-READABILITY | implemented |
 | D-086 | 2026-10-05 | matching: each answer once (hint and greyed-out entries) | implemented |
+| D-087 | 2026-10-05 | W-ERROR-NOT-IN-GRAPH; an ordering is never shown as a declared error permutation | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -953,3 +954,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** to swap two answers the student first clears one select.
 - **Status:** implemented
 - **Back-port:** A-06.
+
+## D-087 · 2026-10-05 · W-ERROR-NOT-IN-GRAPH; an ordering is never shown as a declared error permutation
+
+- **Design ref:** A-06, X-01
+- **Design said:** validation checked only the skill keys an item implicates; the engine reads a skill's errors from the graph alone, so an item code the graph lacked was unclassified (descent into every parent) and item implicates that differed from the graph's were ignored, both silently. Serve-time re-keying redrew an ordering only when it equalled the key, its reverse or its stored listing; the widget starts non-empty, so an untouched answer equal to a declared error permutation was graded as that error.
+- **We do:** (1) new warning `W-ERROR-NOT-IN-GRAPH` (registry version 6): an `error_catalogue` code (also of testlet sub items) that is not in `errors[]` of the item's skill in the graph, or whose `implicates` differ from the graph's. A warning, not an error, so items already approved stay valid; the brief says a new code must first be added to the graph. (2) `Rekey` takes the instance's declared errors and redraws an ordering that equals a declared error permutation (testlets per sub item). Matching is unchanged (its selects start empty). `banco.*/1` unchanged.
+- **Why:** content agents reported both gaps (italian, B4).
+- **Cost:** one more warning on items with free-form codes.
+- **Status:** implemented
+- **Back-port:** A-06, X-01.

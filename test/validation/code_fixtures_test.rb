@@ -129,6 +129,7 @@ class CodeFixturesTest < ActiveSupport::TestCase
     "E-OPTION-DUPLICATE" => -> { static_codes(F.choice_item("instances" => [ F.choice_instance("sette", %w[sette nove undici]), F.choice_instance("otto", %w[quattro sei dieci]) ])) },
     "E-MATCHING-SIZE" => -> { static_codes(matching_item([ 1, 2, 3 ], [ 1, 2, 3, 4 ])) },
     "E-MATCHING-RIGHT-MARKUP" => -> { static_codes(matching_item([ 1, 2, 3, 4 ], [ 1, 2, 3, 4, 5 ], right_text: "$x \\leq 2$")) },
+    "W-ERROR-NOT-IN-GRAPH" => -> { static_codes(item("error_catalogue" => [ item["error_catalogue"].first.merge("code" => "brand_new_code") ])) },
     "W-FORM-SKILL-CLOSURE" => -> { static_codes(item("form_skill" => "math.fractions-operations", "form" => [ "reduced" ])) },
     "E-ACCENT-POLICY" => -> { static_codes(item("accent_policy" => "strict")) },
     "E-PROVA-A-PARAMS" => -> { static_codes(item("sources" => [ { "kind" => "prova_a_structure", "ref" => "struttura", "fragment" => "esercizio" } ])) },
