@@ -271,7 +271,19 @@ module Validation
       reasons = rejected.group_by { |id, _| (verdict["#{accept_prefix}#{id}"] || {}).values_at("reason", "reason_it").compact.first.to_s }
                         .to_h { |reason, list| [ reason, list.map(&:first) ] }
       @findings.add("E-VERIFY-REJECTS", "/verify.mjs", "verify rejects #{rejected.size} clean #{rejected.size == 1 ? 'instance' : 'instances'}#{": #{first['reason']}" if first && first['reason']}",
-                    seed: rejected.first[0], count: rejected.size, ids => rejected.map(&:first), reasons: reasons)
+                    seed: rejected.first[0], count: rejected.size, ids => rejected.map(&:first), reasons: reasons,
+                    first_rejected: first_rejected_instance(rejected.first[1]))
+    end
+
+    # The first rejected instance as the verifier saw it (display and answer, clipped), so
+    # a seed number outside the listed samples can be debugged without guessing.
+    def first_rejected_instance(inst)
+      return nil unless inst.respond_to?(:[]) && !inst.is_a?(String)
+
+      { "display" => inst["display"], "answer" => inst["answer"] }.compact.transform_values do |v|
+        json = v.is_a?(String) ? v : JSON.generate(v)
+        json.length > 400 ? "#{json[0, 400]}..." : v
+      end
     end
 
     # Error values and the +1 and sign-flip mutants must all be rejected.

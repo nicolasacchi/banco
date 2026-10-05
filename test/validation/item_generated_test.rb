@@ -54,6 +54,8 @@ class ItemGeneratedTest < ActiveSupport::TestCase
     assert_equal detail[:rejected_seeds].sort, detail[:reasons].values.flatten.sort
     assert_equal [ "Non so." ], detail[:reasons].keys
     assert_equal detail[:count], result.details.dig(:verify, :rejected)
+    assert detail[:first_rejected].key?("display"), "the first rejected instance is shown"
+    assert detail[:first_rejected].key?("answer")
   end
 
   test "E-VERIFY-REJECTS: a formula that is wrong in verify" do
