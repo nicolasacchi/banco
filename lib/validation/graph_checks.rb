@@ -20,6 +20,7 @@ module Validation
       cycles(skills, index, findings)
       keys(skills, index, subject, findings)
       references(skills, index, subject, context, findings)
+      deferred(skills, index, subject, context, findings)
       citations(graph, context, findings)
       scope(skills, findings)
       scope_markers(skills, context, findings)
@@ -74,6 +75,26 @@ module Validation
             elsif context.approved_skill(target).nil?
               findings.add("E-GRAPH-EDGE-UNAPPROVED", field, "#{target} is not in an approved graph of its subject", skill: target)
             end
+          end
+        end
+      end
+    end
+
+    # D-091: a declared edge into another subject that waits for that subject's graph.
+    # It must name a skill of another subject (an edge inside this graph is a plain
+    # prerequisite); when the target is already approved, it should be a plain one.
+    def deferred(skills, index, subject, context, findings)
+      skills.each_with_index do |s, i|
+        refs = Array(s["deferred_prerequisites"]).each_with_index.map { |d, j| [ "deferred_prerequisites/#{j}/skill", d["skill"] ] }
+        Array(s["errors"]).each_with_index do |e, j|
+          Array(e["deferred_implicates"]).each_with_index { |d, k| refs << [ "errors/#{j}/deferred_implicates/#{k}/skill", d["skill"] ] }
+        end
+        refs.each do |where, target|
+          field = "/skills/#{i}/#{where}"
+          if target.start_with?("#{subject}.") || index.key?(target)
+            findings.add("E-SCHEMA", field, "#{target} is a skill of this graph: use prerequisites or implicates", rule: "deferred_own_subject", skill: target)
+          elsif context.approved_skill(target)
+            findings.add("W-GRAPH-DEFERRED-APPROVED", field, "#{target} is in an approved graph now: put it in prerequisites or implicates", skill: target)
           end
         end
       end

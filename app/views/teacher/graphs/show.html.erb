@@ -62,6 +62,13 @@
         <% else %>
           <p class="edges"><%= t("teacher.graph.no_prerequisites") %></p>
         <% end %>
+        <% if skill.deferred.any? %>
+          <ul class="plain deferred">
+            <% skill.deferred.each do |d| %>
+              <li data-deferred="<%= d[:skill] %>"><strong><%= t("teacher.graph.deferred.#{d[:where]}") %></strong> <%= d[:skill] %><% if d[:error] %> (<%= d[:error] %>)<% end %>: <%= d[:reason_it] %></li>
+            <% end %>
+          </ul>
+        <% end %>
         <% if skill.refs.any? %>
           <ul class="plain refs">
             <% skill.refs.each do |ref| %>

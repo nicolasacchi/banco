@@ -153,6 +153,18 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
     assert_response :created, json.inspect
   end
 
+  test "D-091: a deferred edge to a subject without an approved graph is accepted; one to our own subject is E-SCHEMA" do
+    deferred = graph { |d| skill(d, "math.percentages")["deferred_prerequisites"] = [ { "skill" => "italian.reading", "reason_it" => "Serve la lettura." } ] }
+    submit_graph(deferred)
+    assert_response :created, json.inspect
+    own = graph { |d| skill(d, "math.percentages")["deferred_prerequisites"] = [ { "skill" => "math.number", "reason_it" => "Serve." } ] }
+    submit_graph(own)
+    assert_includes json["codes"], "E-SCHEMA"
+    nested = graph { |d| skill(d, "math.percentages")["errors"] = [ { "code" => "x_one", "description_it" => "Sbaglia.", "implicates" => [], "deferred_implicates" => [ { "skill" => "italian.reading", "reason_it" => "Lettura." } ] } ] }
+    submit_graph(nested)
+    assert_response :created, json.inspect
+  end
+
   test "open: the latest revision, the sources and the range; unknown subject is 404" do
     api("/api/v1/subjects/math/skill-graph")
     assert_nil json["revision"]

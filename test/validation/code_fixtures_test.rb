@@ -195,6 +195,12 @@ class CodeFixturesTest < ActiveSupport::TestCase
       doc["skills"][0]["errors"] = [ { "code" => "long_one", "description_it" => ("parola " * 30).strip + ".", "implicates" => [] } ]
       Validation::GraphChecks.call(doc, subject: "math", context: F.context).map(&:code).uniq
     },
+    "W-GRAPH-DEFERRED-APPROVED" => lambda {
+      doc = JSON.parse(JSON.generate(F::GRAPH))
+      doc["skills"][0]["deferred_prerequisites"] = [ { "skill" => "italian.reading", "reason_it" => "Serve la lettura." } ]
+      context = Validation::Context.new(subject: "math", source_line: ->(src, n) { F::LINES.dig(src, n) }, approved_skill: ->(k) { k == "italian.reading" ? { "key" => k } : nil })
+      Validation::GraphChecks.call(doc, subject: "math", context: context).map(&:code).uniq
+    },
     "W-CALCULATOR" => lambda {
       business = item("subject" => "business", "skill" => "business.invoice")
       static_codes(business, context: F.context(subject: "business", extra_skills: { "business.invoice" => { "key" => "business.invoice" } }))

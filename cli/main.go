@@ -3,10 +3,13 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"io"
 	"os"
 	"strings"
+
+	"banco/contract"
 )
 
 // version is the CLI build version; the contract version is read from the
@@ -70,6 +73,9 @@ func runWith(args []string, e *env) int {
 	if len(args) == 0 {
 		return reportError(e.stderr, newErr(ExitUsage, "E-USAGE", "command", "no command given", "banco schema"))
 	}
+	if args[0] == "--help" || args[0] == "-h" || args[0] == "help" {
+		return runHelp(e)
+	}
 	// A command name may have several words ("brief show"); the longest match wins.
 	var match *command
 	for i := range commands {
@@ -106,4 +112,27 @@ func parseFlags(fs *flag.FlagSet, args []string) ([]string, error) {
 		rest = rest[1:]
 	}
 	return positional, nil
+}
+
+// runHelp lists the command names from the embedded contract. Local: no
+// network, no token. It is not a contract command (the contract stays frozen).
+func runHelp(e *env) int {
+	c, err := contract.Parse()
+	if err != nil {
+		return reportError(e.stderr, newErr(ExitServer, "E-CONTRACT", "", err.Error(), "go build -o bin/banco ./cli"))
+	}
+	type row struct {
+		Name  string   `json:"name"`
+		Args  []string `json:"args"`
+		Flags []string `json:"flags,omitempty"`
+	}
+	rows := []row{}
+	for _, cc := range c.Commands {
+		rows = append(rows, row{cc.Name, cc.Args, cc.Flags})
+	}
+	json.NewEncoder(e.stdout).Encode(map[string]any{
+		"usage":    "banco <command> [args] [flags]; `banco schema` shows the full contract from the server",
+		"commands": rows,
+	})
+	return ExitOK
 }

@@ -33,7 +33,10 @@ Never ask for a decision: you stop at `awaiting_teacher`.
   `needed_by` (line of the current-year programme that needs the skill). The
   fragment is an exact substring of the line. Transcriber lines are never cited.
 - `prerequisites[]`: skill keys, possibly in another subject only if that skill is
-  already in an approved graph.
+  already in an approved graph. An edge you need into a subject whose graph is not
+  approved yet goes in `deferred_prerequisites[]` `{skill, reason_it}` (for an error:
+  `deferred_implicates[]`); the teacher sees it, the engine ignores it, and a later
+  revision moves it to `prerequisites` once that graph is approved.
 - `errors[]`: typical errors `{code, description_it, implicates[]}`. `implicates`
   names the prerequisites an error points at: the engine descends there.
 - `composite_of`: a multi-step skill whose typical errors implicate 2 or more

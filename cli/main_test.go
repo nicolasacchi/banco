@@ -330,3 +330,15 @@ func TestBriefShowRejectsPathLikeNamesWithoutARequest(t *testing.T) {
 		t.Errorf("called=%v exit=%d", called, r.exit)
 	}
 }
+
+func TestHelpListsContractCommands(t *testing.T) {
+	for _, a := range []string{"--help", "-h", "help"} {
+		var out, errb bytes.Buffer
+		if code := run([]string{a}, &out, &errb, func(string) string { return "" }); code != 0 {
+			t.Fatalf("%s: exit %d: %s", a, code, errb.String())
+		}
+		if !strings.Contains(out.String(), `"skill-graph submit"`) || !strings.Contains(out.String(), `"brief show"`) {
+			t.Errorf("%s: missing commands: %s", a, out.String())
+		}
+	}
+}

@@ -100,6 +100,7 @@ it:
         scope_reason_it: "motivo dello scope"
         prerequisites: "prerequisiti"
         composite_of: "parti"
+        deferred: "legami in attesa"
         refs: "righe citate"
         errors: "errori"
       approve: "Approva il grafo"
@@ -119,6 +120,9 @@ it:
       requires: "Richiede:"
       composed_of: "È fatta di:"
       no_prerequisites: "Nessun prerequisito."
+      deferred:
+        prerequisite: "In attesa del grafo dell'altra materia, prerequisito:"
+        implicate: "In attesa del grafo dell'altra materia, errore che implica:"
       role:
         taught_in: "Insegnata in"
         needed_by: "Serve a"

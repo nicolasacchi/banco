@@ -96,6 +96,8 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-087 | 2026-10-05 | W-ERROR-NOT-IN-GRAPH; an ordering is never shown as a declared error permutation | implemented |
 | D-088 | 2026-10-05 | passage_it on short_answer is shown everywhere; allowed on diagnosis_item | implemented |
 | D-089 | 2026-10-05 | fingerprints ignore stored order and ids of shuffled columns (validation rules v2); end-of-subject message from the item that erred | implemented |
+| D-090 | 2026-10-05 | source kind legal_text; brief says which instance tests run on | implemented |
+| D-091 | 2026-10-05 | deferred_prerequisites and deferred_implicates: cross-subject edges that wait for approval; banco --help | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -996,3 +998,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** none.
 - **Status:** implemented
 - **Back-port:** A-06, X-02.
+
+## D-091 · 2026-10-05 · deferred cross-subject edges in the skill graph; `banco --help`
+
+- **Design ref:** A-06, C-04
+- **Design said:** a cross-subject prerequisite or implicate is accepted only when the target is in an approved graph (`E-GRAPH-EDGE-UNAPPROVED`). Content agents draft every subject before the teacher approves any graph, so the edges one subject owes another (percentages, fractions, obbligazione) had no place in the graph and lived only in agent reports. The CLI answered `--help` with `E-USAGE`.
+- **We do:** (1) `banco.skill_graph/1` gains two optional members: `deferred_prerequisites[]` on a skill and `deferred_implicates[]` on an error, each `{skill, reason_it}` (a skill of another subject, at most 20). They are not checked against any approved graph, are not part of the engine, the closure or the cycle check, and are shown on the teacher's graph screen ("in attesa del grafo dell'altra materia") and in its diff. A target inside the graph's own subject or graph is `E-SCHEMA` (rule `deferred_own_subject`); a target already in an approved graph is the warning `W-GRAPH-DEFERRED-APPROVED` (use a plain edge). Nothing activates a deferred edge by itself: after the other graph is approved, the next revision moves it to `prerequisites` / `implicates` (the edge is checked then). Registry version 7. Backward compatible: both members optional. (2) `banco --help`, `-h` and `help` print the command names, args and flags from the embedded contract (local, no network, not a contract command).
+- **Why:** content agents (business, step graph).
+- **Cost:** a deferred edge does not steer the engine until it is moved; the move is a content revision.
+- **Status:** implemented
+- **Back-port:** A-06, C-04.

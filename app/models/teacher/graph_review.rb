@@ -5,7 +5,7 @@ module Teacher
   # against the revision approved before. Read-only.
   class GraphReview
     SCOPE_MARK = { "studied" => "★", "integration_studied" => "★", "in_progress" => "☆", "middle_school" => "", "not_in_prima" => "" }.freeze
-    Skill = Data.define(:key, :label_it, :layer, :scope, :scope_reason_it, :prerequisites, :composite_of, :errors, :refs, :inferred, :flags, :change, :changes)
+    Skill = Data.define(:key, :label_it, :layer, :scope, :scope_reason_it, :prerequisites, :composite_of, :deferred, :errors, :refs, :inferred, :flags, :change, :changes)
     Ref = Data.define(:source, :line, :role, :fragment, :text)
 
     attr_reader :subject, :revision, :approved
@@ -26,6 +26,7 @@ module Teacher
         refs = Array(s["refs"]).map { |r| Ref.new(r["source"], r["line"], r["role"], r["fragment"], line_text(r["source"], r["line"])) }
         change, changes = changes_of(s)
         Skill.new(s["key"], s["label_it"], s["layer"], s["scope"], s["scope_reason_it"], Array(s["prerequisites"]), Array(s["composite_of"]),
+                  deferred_of(s),
                   Array(s["errors"]), refs, refs.none? { |r| r.role == "taught_in" }, flags_of(s, refs), change, changes)
       end
     end
@@ -74,10 +75,20 @@ module Teacher
 
       diff = %w[label_it layer scope scope_reason_it].reject { |f| old[f] == skill[f] }
       diff << "prerequisites" if Array(old["prerequisites"]).sort != Array(skill["prerequisites"]).sort
+      diff << "deferred" if deferred_of(old).map { |d| d.slice(:skill, :where) } .sort_by(&:to_s) != deferred_of(skill).map { |d| d.slice(:skill, :where) }.sort_by(&:to_s)
       diff << "composite_of" if Array(old["composite_of"]).sort != Array(skill["composite_of"]).sort
       diff << "refs" if refs_set(old) != refs_set(skill)
       diff << "errors" if Array(old["errors"]).map { |e| e["code"] }.sort != Array(skill["errors"]).map { |e| e["code"] }.sort
       [ diff.empty? ? :same : :changed, diff ]
+    end
+
+    # D-091: declared cross-subject edges whose graph is not approved yet: [{skill:, reason_it:, where:}].
+    def deferred_of(skill)
+      own = Array(skill["deferred_prerequisites"]).map { |d| { skill: d["skill"], reason_it: d["reason_it"], where: :prerequisite } }
+      implied = Array(skill["errors"]).flat_map do |e|
+        Array(e["deferred_implicates"]).map { |d| { skill: d["skill"], reason_it: d["reason_it"], where: :implicate, error: e["code"] } }
+      end
+      own + implied
     end
 
     def refs_set(skill) = Array(skill["refs"]).map { |r| [ r["source"], r["line"], r["role"] ] }.sort

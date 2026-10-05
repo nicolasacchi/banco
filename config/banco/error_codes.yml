@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 6
+version: 7
 
 validation:
   # Skill graph (synchronous).
@@ -69,6 +69,7 @@ validation:
   W-DECIMAL-POINT: { stage: ruby, severity: warning, description: "A decimal point where the Italian comma is expected." }
   W-SELF-CERT: { stage: ruby, severity: warning, description: "Self-certifying wording." }
   E-MATCHING-RIGHT-MARKUP: { stage: ruby, severity: error, description: "A right-column text of a matching holds LaTeX or markup ($, backslash, **): it is drawn as a native option, which renders plain text only." }
+  W-GRAPH-DEFERRED-APPROVED: { stage: ruby, severity: warning, description: "A deferred_prerequisites or deferred_implicates entry names a skill that is already in an approved graph: it can be a plain prerequisite or implicate now." }
   W-GRAPH-READABILITY: { stage: ruby, severity: warning, description: "A *_it text of a skill graph (an error description, a skill name) breaks the readability rule an item text would fail (E-READ): the same text copied into an item error catalogue is refused." }
   W-ERROR-NOT-IN-GRAPH: { stage: ruby, severity: warning, description: "An item's error code is not an error of its skill in the graph, or its implicates differ from the graph's: the engine reads the graph alone." }
   W-FORM-SKILL-CLOSURE: { stage: ruby, severity: warning, description: "An item's form_skill is not in the prerequisite closure of its skill: a wrong form gets credit but no tail suspect." }
