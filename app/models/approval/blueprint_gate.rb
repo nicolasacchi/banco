@@ -24,6 +24,7 @@ module Approval
       reasons = []
       approved_graph = SubjectStage.approved_graph(revision.subject)
       reasons << "the graph revision #{revision.skill_graph_revision_id} of this test is not approved" unless approved_graph&.id == revision.skill_graph_revision_id
+      unapproved_guests(revision).each { |skill| reasons << "the guest skill #{skill} is not in an approved graph of its subject" }
       ids = revision.pinned_item_revision_ids
       reasons << "the test pins no item" if ids.empty?
       revisions = ItemRevision.where(id: ids).index_by(&:id)
@@ -40,6 +41,16 @@ module Approval
       end
       reasons << "the test was not played to the end as the preview student" unless previewed?(revision)
       Result.new(approvable: reasons.empty?, reasons: reasons)
+    end
+
+    def unapproved_guests(revision)
+      Array(JSON.parse(revision.body_json)["entries"]).filter_map do |e|
+        next unless e["guest_of_subject"]
+
+        owner = Subject.find_by(key: e["skill"].to_s.split(".").first)
+        graph = owner && SubjectStage.approved_graph(owner)
+        e["skill"] unless graph && JSON.parse(graph.body_json)["skills"].any? { |s| s["key"] == e["skill"] }
+      end
     end
 
     def viewed_ids

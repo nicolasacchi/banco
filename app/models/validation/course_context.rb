@@ -20,6 +20,7 @@ module Validation
         graph_present: !graph.nil?,
         skill: ->(key) { skills[key] || approved_skill(key) },
         approved_skill: ->(key) { approved_skill(key) },
+        draft_skill: ->(key) { draft_skill(key) },
         source_line: ->(source, number) { source_line(source, number) },
         source_section: ->(source, number) { source_section(source, number) },
         reference_body: ->(key) { ReferenceText.find_by(key: key)&.body }
@@ -37,6 +38,17 @@ module Validation
 
       subject = Subject.find_by(key: owner) or return nil
       revision = SubjectStage.approved_graph(subject) or return nil
+      JSON.parse(revision.body_json)["skills"].find { |s| s["key"] == key }
+    end
+
+    # A skill of the latest graph of its own subject, approved or not (a guest
+    # entry in a draft; the approval gate still wants the approved graph).
+    def draft_skill(key)
+      owner = key.to_s.split(".").first
+      return nil if owner == @subject.key
+
+      subject = Subject.find_by(key: owner) or return nil
+      revision = SkillGraphRevision.where(subject: subject).order(:seq).last or return nil
       JSON.parse(revision.body_json)["skills"].find { |s| s["key"] == key }
     end
 

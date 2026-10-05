@@ -55,7 +55,7 @@ class CodeFixturesTest < ActiveSupport::TestCase
                                               instances: (1..4).map { |i| { fingerprint: "#{id}-#{i}", low_guess: true } })
   end
 
-  def blueprint_codes(items: nil, &edit)
+  def blueprint_codes(items: nil, context: F.context, &edit)
     lookup = items || ->(id) { BP_ITEMS.key?(id) ? bp_info(id) : nil }
     doc = {
       "schema" => "banco.blueprint/1", "schema_version" => 1, "subject" => "math", "graph_revision_id" => "1",
@@ -66,7 +66,7 @@ class CodeFixturesTest < ActiveSupport::TestCase
       "intro_note_it" => "Il test dura mezz'ora.", "not_measured_it" => "Non misura la geometria."
     }
     edit&.call(doc)
-    Validation::BlueprintChecks.call(doc, graph: F::GRAPH, subject: "math", context: F.context, items: lookup).map(&:code).uniq
+    Validation::BlueprintChecks.call(doc, graph: F::GRAPH, subject: "math", context: context, items: lookup).map(&:code).uniq
   end
 
   def choice_with(**) = F.choice_item(**)
@@ -174,6 +174,10 @@ class CodeFixturesTest < ActiveSupport::TestCase
     # Warnings.
     "W-SHORT-SKILL-CLOSED" => lambda {
       blueprint_codes(items: ->(id) { BP_ITEMS.key?(id) ? bp_info(id).tap { |i| i.kind = "short_answer" if id == "r0a" } : nil })
+    },
+    "W-GUEST-UNAPPROVED" => lambda {
+      draft = Validation::Context.new(subject: "math", draft_skill: ->(k) { k == "italian.reading" ? { "key" => k } : nil })
+      blueprint_codes(context: draft) { |d| d["entries"][0].merge!("skill" => "italian.reading", "guest_of_subject" => "italian") }
     },
     "W-ANSWER-IN-STEM" => -> { static_codes(item("instances" => [ F.number_instance(25, 150, stem: "Risolvi $x+25=150$ sapendo che il risultato e 125."), F.number_instance(4, 13) ], "tests" => { "must_accept" => [], "must_reject" => [], "blank" => "invalid" })) },
     "W-LONGEST-CORRECT" => -> { static_codes(F.choice_item("instances" => (1..4).map { |i| F.choice_instance("una risposta molto lunga numero #{i}", %w[uno due tre]) })) },

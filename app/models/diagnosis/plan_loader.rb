@@ -32,6 +32,11 @@ module Diagnosis
       loader.plan_with_synthetic
     end
 
+    # The engine's instances of one stored item revision (for `banco items list`).
+    def self.instances_of_revision(revision)
+      new(nil, student: nil, seed_salt: "sim", run: nil).send(:revision_instances, revision)
+    end
+
     def initialize(revision, student:, seed_salt:, run:, reuse: true)
       @reuse = reuse
       @revision = revision

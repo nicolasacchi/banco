@@ -34,13 +34,28 @@ module Validation
         field = "/entries/#{i}"
         guest = entry["guest_of_subject"]
         if guest
-          findings.add("E-SKILL-UNKNOWN", "#{field}/skill", "#{entry['skill']} is not in an approved graph of #{guest}") if context.approved_skill(entry["skill"]).nil? || !entry["skill"].start_with?("#{guest}.")
+          guest_entry(entry, field, guest, context, findings)
         elsif !known.include?(entry["skill"])
           findings.add("E-SKILL-UNKNOWN", "#{field}/skill", "#{entry['skill']} is not in the graph this blueprint is built on")
         end
         infos = pinned(entry["items"], entry["skill"], "#{field}/items", items, findings)
         infos = closed_beside_short(entry, infos, field, findings)
         pool_for_redo(entry, infos, field, findings)
+      end
+    end
+
+    # A guest skill must sit in an approved graph of its subject. While that graph is
+    # still a draft the entry is accepted with W-GUEST-UNAPPROVED, so that authors can
+    # simulate; Approval::BlueprintGate refuses the approval until it is approved (D-129).
+    def guest_entry(entry, field, guest, context, findings)
+      skill = entry["skill"]
+      return findings.add("E-SKILL-UNKNOWN", "#{field}/skill", "#{skill} is not in an approved graph of #{guest}") unless skill.start_with?("#{guest}.")
+      return if context.approved_skill(skill)
+
+      if context.draft_skill(skill)
+        findings.add("W-GUEST-UNAPPROVED", "#{field}/skill", "#{skill} is in a graph of #{guest} that is not approved yet: the teacher cannot approve this test until it is", skill: skill)
+      else
+        findings.add("E-SKILL-UNKNOWN", "#{field}/skill", "#{skill} is not in an approved graph of #{guest}")
       end
     end
 

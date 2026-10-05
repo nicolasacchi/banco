@@ -133,6 +133,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-126 | 2026-10-05 | the short answer is indicative by definition | decided |
 | D-127 | 2026-10-05 | the whole arrows block is allowed in `*_it` text | implemented |
 | D-128 | 2026-10-05 | W-TESTLET-LEAK: a sub-item key in the passage or in another sub-item | implemented |
+| D-129 | 2026-10-06 | guest skills from a draft graph (W-GUEST-UNAPPROVED); `items list` carries what a blueprint pins | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1418,3 +1419,12 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** one pass per composite instance; a warning, no format change (`banco.*/1` unchanged).
 - **Status:** implemented
 - **Back-port:** A-06.
+
+## D-129 · 2026-10-06 · guest skills from a draft graph; `items list` carries what a blueprint pins
+
+- **Design ref:** B-07, D-120, D-099
+- **Design said:** a guest starting skill must be in an approved graph of its subject (E-SKILL-UNKNOWN otherwise), even in a draft or a dry run.
+- **We do:** (1) `BlueprintChecks` accepts a guest skill found in the owner's latest graph when that graph is not approved yet, with the warning `W-GUEST-UNAPPROVED` (new `Validation::Context#draft_skill`); a skill in no graph is still `E-SKILL-UNKNOWN`. `Approval::BlueprintGate` refuses the approval ("the guest skill X is not in an approved graph of its subject") until the owner's graph is approved, so the requirement is enforced where it counts. (2) `banco items list` rows of current revisions gain `skill`, `component`, `expected_seconds`, `instances`, `low_guess_instances` (additive; the content agent did not know the command existed and used `work open` per item). (3) Not a defect: `banco diagnosis simulate --blueprint FILE` of a bare blueprint already loads the pinned graph and items since D-099 (staging at c337f42 gives the real trace; a flat run only happens when the graph revision is not stored, and then carries a warning). `banco.*/1` unchanged.
+- **Why:** content agent (business, step blueprint).
+- **Cost:** a blueprint with a draft guest can be submitted but not approved; the teacher's checklist says why.
+- **Status:** implemented

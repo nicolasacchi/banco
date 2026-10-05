@@ -44,4 +44,17 @@ class ItemsApiTest < ActionDispatch::IntegrationTest
     on(:api, "/api/v1/items")
     assert_response :unauthorized
   end
+
+  test "a current revision carries what a blueprint pins: skill, component, instances, low-guess instances" do
+    body = { "kind" => "diagnosis_item", "skill" => "math.a", "component" => "number", "expected_seconds" => 90 }
+    r = ItemRevision.create!(item: @a, seq: 3, body_json: body.to_json)
+    ItemValidation.create!(item_revision: r, seq: 1, status: "passed")
+    2.times { |i| ItemInstance.create!(item_revision: r, display_json: "{}", answer_json: "{}", fingerprint: "f#{i}") }
+    api("/api/v1/items?subject=math&current=1")
+    row = response.parsed_body["rows"].first
+    assert_equal [ r.id, "math.a", "number", 90, 2 ], row.values_at("revision_id", "skill", "component", "expected_seconds", "instances")
+    assert_kind_of Integer, row["low_guess_instances"]
+    api("/api/v1/items?subject=math")
+    assert_not response.parsed_body["rows"].first.key?("skill"), "older revisions stay light"
+  end
 end

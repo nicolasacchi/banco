@@ -22,7 +22,9 @@ decision: you stop at `awaiting_teacher`.
 - `entries[]`: the starting skills in the order they are tried, 4 to 10 of them.
   Each has `items[]` (item revision ids) and optionally `redo_reserve: false` or
   `choice_only_reason_it`. A starting skill may belong to another subject's
-  approved graph (`guest_of_subject`); its result goes to the owner subject.
+  approved graph (`guest_of_subject`); its result goes to the owner subject. While that
+  graph is still a draft the entry is accepted with `W-GUEST-UNAPPROVED` so you can simulate;
+  the teacher cannot approve the test until the graph is approved.
 - `descent[]`: the descent pool, required (it may be empty when no skill lies
   below the starting skills). When a starting skill goes wrong the test goes down
   to its prerequisites and to the skills its typical errors point at, so for every
