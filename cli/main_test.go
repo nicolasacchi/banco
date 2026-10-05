@@ -332,13 +332,25 @@ func TestBriefShowRejectsPathLikeNamesWithoutARequest(t *testing.T) {
 }
 
 func TestHelpListsContractCommands(t *testing.T) {
-	for _, a := range [][]string{{"--help"}, {"-h"}, {"help"}, {"work", "--help"}, {"work", "status", "-h"}} {
+	for _, a := range [][]string{{"--help"}, {"-h"}, {"help"}, {"work", "--help"}} {
 		var out, errb bytes.Buffer
 		if code := run(a, &out, &errb, func(string) string { return "" }); code != 0 {
 			t.Fatalf("%s: exit %d: %s", a, code, errb.String())
 		}
 		if !strings.Contains(out.String(), `"skill-graph submit"`) || !strings.Contains(out.String(), `"brief show"`) {
 			t.Errorf("%s: missing commands: %s", a, out.String())
+		}
+	}
+}
+
+func TestHelpForOneCommand(t *testing.T) {
+	var out, errb bytes.Buffer
+	if code := run([]string{"session", "new", "--help"}, &out, &errb, func(string) string { return "" }); code != 0 {
+		t.Fatalf("exit %d: %s", code, errb.String())
+	}
+	for _, want := range []string{`"command":"session new"`, `"--role"`, `"error_codes"`} {
+		if !strings.Contains(out.String(), want) {
+			t.Errorf("missing %s: %s", want, out.String())
 		}
 	}
 }

@@ -1217,3 +1217,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** none.
 - **Status:** implemented
 - **Back-port:** A-06.
+
+## D-111 · 2026-10-05 · `banco COMMAND --help` prints that command's contract entry
+
+- **Design ref:** D-091 (`banco --help`), `contract/commands.json`
+- **Design said:** `--help` anywhere prints the list of all commands with args and flags.
+- **We do:** when the words before `--help` name a command (`banco session new --help`), the output is that command's entry: args, flags, error codes, and the exit codes. Otherwise the full list as before. Not changed: generator items already run `tests` on the stored instances since D-078 (`tests` run against the first stored instance, so on a shuffled choice generator a fixed id may not mean the same option: write tests that hold for every instance, or the seed-1 values and expect to adjust them). A content agent whose CLI says `unknown command: --help` has an old binary: rebuild or take the staging one. `banco.*/1` unchanged.
+- **Why:** content agent (spanish, present tense).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** none.

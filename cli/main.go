@@ -74,11 +74,11 @@ func runWith(args []string, e *env) int {
 		return reportError(e.stderr, newErr(ExitUsage, "E-USAGE", "command", "no command given", "banco schema"))
 	}
 	if args[0] == "help" {
-		return runHelp(e)
+		return runHelp(e, nil)
 	}
 	for _, a := range args {
 		if a == "--help" || a == "-h" {
-			return runHelp(e)
+			return runHelp(e, args)
 		}
 	}
 	// A command name may have several words ("brief show"); the longest match wins.
@@ -121,10 +121,36 @@ func parseFlags(fs *flag.FlagSet, args []string) ([]string, error) {
 
 // runHelp lists the command names from the embedded contract. Local: no
 // network, no token. It is not a contract command (the contract stays frozen).
-func runHelp(e *env) int {
+func runHelp(e *env, args []string) int {
 	c, err := contract.Parse()
 	if err != nil {
 		return reportError(e.stderr, newErr(ExitServer, "E-CONTRACT", "", err.Error(), "go build -o bin/banco ./cli"))
+	}
+	// "banco work submit --help": the full contract entry of the longest matching command.
+	var words []string
+	for _, a := range args {
+		if !strings.HasPrefix(a, "-") {
+			words = append(words, a)
+		}
+	}
+	var best *contract.Command
+	for i := range c.Commands {
+		n := strings.Fields(c.Commands[i].Name)
+		if len(words) >= len(n) && strings.Join(words[:len(n)], " ") == c.Commands[i].Name &&
+			(best == nil || len(n) > len(strings.Fields(best.Name))) {
+			best = &c.Commands[i]
+		}
+	}
+	if best != nil {
+		json.NewEncoder(e.stdout).Encode(map[string]any{
+			"usage":       "banco " + best.Name + " [args] [flags]",
+			"command":     best.Name,
+			"args":        best.Args,
+			"flags":       best.Flags,
+			"error_codes": best.ErrorCodes,
+			"exit_codes":  c.ExitCodes,
+		})
+		return ExitOK
 	}
 	type row struct {
 		Name  string   `json:"name"`
