@@ -111,7 +111,7 @@ module Validation
     def phrases(text, field, findings)
       lower = text.downcase
       Rules.list(:readability, :banned_phrases).each do |phrase|
-        findings.add("E-PHRASE", field, "banned phrase: #{phrase}", rule: phrase) if lower.include?(phrase)
+        findings.add("E-PHRASE", field, "banned phrase: #{phrase}", rule: phrase) if lower.match?(/(?<![[:alnum:]])#{Regexp.escape(phrase)}(?![[:alnum:]])/)
       end
     end
 

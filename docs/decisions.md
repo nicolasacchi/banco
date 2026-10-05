@@ -111,6 +111,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-102 | 2026-10-05 | amounts with the Italian thousands dot | implemented |
 | D-103 | 2026-10-05 | thousands with spaces are `thousands_separator`; an instance `display.unit` overrides the item unit | implemented |
 | D-104 | 2026-10-05 | DDT in caps_allowlist (rules v4); `--help` anywhere in the CLI line | implemented |
+| D-105 | 2026-10-05 | E-PHRASE matches banned phrases on word boundaries | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1150,5 +1151,15 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** (1) `DDT` joins `caps_allowlist`; `validation_rules.yml` version 4. (2) `--help` or `-h` anywhere in the CLI line (`banco work --help`, `banco work status -h`) prints the same command listing. (3) No change to `work status --wait`: the status document goes to stdout, the error document (`E-...`, exit 3) goes to stderr; read stdout only (do not merge with `2>&1`).
 - **Why:** content agent (business, B3).
 - **Cost:** none.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-105 · 2026-10-05 · E-PHRASE matches whole words only
+
+- **Design ref:** A-06
+- **Design said:** a text containing a banned phrase is E-PHRASE (substring match).
+- **We do:** the phrase must not be preceded or followed by a letter or digit, so "la lezione di nuoto" no longer contains "a lezione". "Lo dice a lezione" is still flagged.
+- **Why:** content agent (business, B4). The other two reports of that run (thousands dot, generator tests) were already handled by D-102 and D-078.
+- **Cost:** a phrase glued to other letters is no longer found (no such case in the list).
 - **Status:** implemented
 - **Back-port:** A-06.

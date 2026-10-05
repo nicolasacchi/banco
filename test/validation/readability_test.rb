@@ -87,6 +87,12 @@ class ReadabilityTest < ActiveSupport::TestCase
     assert_equal [ "E-PHRASE" ], lint("Il risultato è verificato.").map(&:code)
   end
 
+  test "banned phrases match whole words only (D-105)" do
+    assert_empty lint("La lezione di nuoto è un servizio.").map(&:code)
+    assert_empty lint("Una lezione costa 20 euro.").map(&:code)
+    assert_equal [ "E-PHRASE" ], lint("Lo dice a lezione.").map(&:code)
+  end
+
   test "a message of more than two sentences is E-MESSAGE" do
     assert_includes lint("Primo passo. Secondo passo. Terzo passo.", role: :message).map(&:code), "E-MESSAGE"
     assert_not_includes lint("Primo passo. Secondo passo.", role: :message).map(&:code), "E-MESSAGE"
