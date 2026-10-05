@@ -65,6 +65,10 @@ class ReadabilityTest < ActiveSupport::TestCase
     assert_equal %w[emoji], rules("Fatto \u2B50")
   end
 
+  test "DDT is an allowed acronym (D-104)" do
+    assert_equal [], rules("La fattura accompagna il DDT della merce.")
+  end
+
   test "spreadsheet function names are not all-caps words (D-095)" do
     assert_equal [], rules("Usa SOMMA(A1:A3) e CONTA.SE per contare.")
     assert_equal %w[all_caps], rules("Questo è ASSOLUTAMENTE vero.")

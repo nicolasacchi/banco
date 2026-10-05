@@ -73,8 +73,13 @@ func runWith(args []string, e *env) int {
 	if len(args) == 0 {
 		return reportError(e.stderr, newErr(ExitUsage, "E-USAGE", "command", "no command given", "banco schema"))
 	}
-	if args[0] == "--help" || args[0] == "-h" || args[0] == "help" {
+	if args[0] == "help" {
 		return runHelp(e)
+	}
+	for _, a := range args {
+		if a == "--help" || a == "-h" {
+			return runHelp(e)
+		}
 	}
 	// A command name may have several words ("brief show"); the longest match wins.
 	var match *command

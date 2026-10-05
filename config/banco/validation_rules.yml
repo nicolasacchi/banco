@@ -1,9 +1,10 @@
 # Thresholds of mechanical validation (A-06). The version is stored with every
 # validation (item_validations.rules_version); a change to a number bumps it.
 # v2: fingerprints ignore the stored order and ids of options, elements, columns (D-089).
+# v4: DDT (documento di trasporto, in the programme) joins caps_allowlist (D-104).
 # Codes and what they mean: config/banco/error_codes.yml. Generic and synthetic:
 # nothing here is about a person.
-version: 3
+version: 4
 
 generator:
   seeds: 200                  # seeds 1..200 are run, in two fresh contexts
@@ -43,7 +44,7 @@ readability:
   min_gulpease_words: 25
   passage_min_gulpease: 40    # W-PASSAGE-READABILITY
   # ALL-CAPS words of 3 or more letters are errors except these acronyms.
-  caps_allowlist: [IVA, PIL, DNA, RNA, ATP, USA, UE, ONU, NATO, SPQR, HTML, CSS, CPU, RAM, ROM, URL, PDF, IBAN, SMS, OK, EUR, MCD, MCM, ISBN, MM, CM, KG, ATM]
+  caps_allowlist: [IVA, PIL, DNA, RNA, ATP, USA, UE, ONU, NATO, SPQR, HTML, CSS, CPU, RAM, ROM, URL, PDF, IBAN, SMS, OK, EUR, MCD, MCM, ISBN, MM, CM, KG, ATM, DDT]
   banned_phrases:             # E-PHRASE: exam-gaming, self-certification, personalisation
     - la risposta che cercano
     - cosa scrivere

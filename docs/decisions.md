@@ -110,6 +110,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-101 | 2026-10-05 | the blueprint's intro_note_it, not_measured_it, calculator and per-skill flags are shown | implemented |
 | D-102 | 2026-10-05 | amounts with the Italian thousands dot | implemented |
 | D-103 | 2026-10-05 | thousands with spaces are `thousands_separator`; an instance `display.unit` overrides the item unit | implemented |
+| D-104 | 2026-10-05 | DDT in caps_allowlist (rules v4); `--help` anywhere in the CLI line | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1141,3 +1142,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** none.
 - **Status:** implemented
 - **Back-port:** E-03, banco.item/1.
+
+## D-104 · 2026-10-05 · DDT is an allowed acronym; --help works after any command word
+
+- **Design ref:** A-06, D-091
+- **Design said:** `readability.caps_allowlist` lists a fixed set of acronyms; `banco --help` lists the commands.
+- **We do:** (1) `DDT` joins `caps_allowlist`; `validation_rules.yml` version 4. (2) `--help` or `-h` anywhere in the CLI line (`banco work --help`, `banco work status -h`) prints the same command listing. (3) No change to `work status --wait`: the status document goes to stdout, the error document (`E-...`, exit 3) goes to stderr; read stdout only (do not merge with `2>&1`).
+- **Why:** content agent (business, B3).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** A-06.
