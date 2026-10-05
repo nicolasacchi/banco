@@ -20,7 +20,7 @@ module Validation
       accent_policy(item, findings)
       prova_a(item, findings)
       quote_ref(item.dig("prompt", "quote"), "/prompt/quote", context, findings) if item.dig("prompt", "quote").is_a?(Hash)
-      Readability.lint_document(item, "", findings)
+      Readability.lint_document(item, "", findings, skip: target_language_keys(item))
       calculator(item, findings)
       code_scan(files, findings)
     end
@@ -291,6 +291,12 @@ module Validation
     def squish(text) = text.to_s.gsub(/\s+/, " ").strip
 
     # ---- W-CALCULATOR -------------------------------------------------------------------------------
+
+    # In a foreign-language subject the passage and the model answer are English or
+    # Spanish text that sits under *_it keys; the Italian lint means nothing there (D-112).
+    def target_language_keys(item)
+      Rules.list(:readability, :target_language_subjects).include?(item["subject"]) ? Rules.list(:readability, :target_language_keys) : []
+    end
 
     def calculator(item, findings)
       return unless Rules.list(:readability, :calculator_subjects).include?(item["subject"])

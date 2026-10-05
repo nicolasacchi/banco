@@ -27,7 +27,12 @@ module Grading
       return invalid if invalid
 
       verdicts = results.map(&:verdict)
-      Result.new(verdict: unit_verdict(verdicts), grader: GRADER, grading_method: "exact",
+      unit = unit_verdict(verdicts)
+      # A unit that is wrong because of typical errors carries their codes (D-112), so the
+      # engine can follow their implicates; a mixture stays undetermined with no codes.
+      codes = unit == "wrong" ? results.flat_map(&:error_codes).uniq : []
+      Result.new(verdict: codes.any? ? "typical_error" : unit, grader: GRADER, grading_method: "exact",
+                 error_codes: codes,
                  normalized: { "sub_verdicts" => spec.sub_specs.keys.zip(verdicts).to_h }.to_json)
     end
 

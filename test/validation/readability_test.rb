@@ -129,4 +129,14 @@ class ReadabilityTest < ActiveSupport::TestCase
     Validation::Readability.lint_document(doc, "", findings)
     assert_equal [ [ "E-MESSAGE", "/error_catalogue/0/message_it" ], [ "E-READ", "/prompt/stem_it" ] ].sort, findings.map { |f| [ f.code, f.field ] }.sort
   end
+
+  test "lint_document skips the keys it is told to (target-language text, D-112)" do
+    doc = { "passage_it" => "The BBC says that " + ([ "very" ] * 30).join(" ") + ".", "stem_it" => "Leggi il testo." }
+    findings = Validation::Findings.new
+    Validation::Readability.lint_document(doc, "", findings, skip: %w[passage_it])
+    assert_empty findings.to_a
+    linted = Validation::Findings.new
+    Validation::Readability.lint_document(doc, "", linted)
+    assert_includes linted.map(&:code), "E-READ"
+  end
 end

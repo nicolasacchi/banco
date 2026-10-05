@@ -101,7 +101,7 @@
       "validation": {
         "codes": [],
         "findings": [],
-        "rules_version": "4",
+        "rules_version": "5",
         "harness_version": "<sha256>",
         "chrome_version": null,
         "attempt": 1,

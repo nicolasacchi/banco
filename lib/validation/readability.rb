@@ -44,19 +44,22 @@ module Validation
     end
 
     # Walks a parsed JSON value and lints every *_it string by its key.
-    def lint_document(node, path, findings)
+    # skip: keys whose text is in the language being taught (D-112): not linted.
+    def lint_document(node, path, findings, skip: [])
       case node
       when Hash
         node.each do |key, value|
           field = "#{path}/#{key}"
-          if value.is_a?(String) && key.to_s.end_with?("_it")
+          if skip.include?(key.to_s) && value.is_a?(String)
+            next
+          elsif value.is_a?(String) && key.to_s.end_with?("_it")
             lint(value, field: field, role: role_for(key.to_s), findings: findings)
           elsif key.to_s != "quote"
-            lint_document(value, field, findings)
+            lint_document(value, field, findings, skip: skip)
           end
         end
       when Array
-        node.each_with_index { |v, i| lint_document(v, "#{path}/#{i}", findings) }
+        node.each_with_index { |v, i| lint_document(v, "#{path}/#{i}", findings, skip: skip) }
       end
     end
 
