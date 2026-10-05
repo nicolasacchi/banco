@@ -56,6 +56,9 @@ class ItemGeneratedTest < ActiveSupport::TestCase
     assert_equal detail[:count], result.details.dig(:verify, :rejected)
     assert detail[:first_rejected].key?("display"), "the first rejected instance is shown"
     assert detail[:first_rejected].key?("answer")
+    samples = detail[:rejected_samples]
+    assert_equal [ detail[:count], 8 ].min, samples.size
+    assert samples.all? { |x| x.key?("display") && x["reason"] == "Non so." && x.key?("in_stored_pool") }
   end
 
   test "E-VERIFY-REJECTS: a formula that is wrong in verify" do

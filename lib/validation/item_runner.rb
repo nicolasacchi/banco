@@ -251,7 +251,7 @@ module Validation
       end
       jobs = clean.map { |c| { id: "a#{c[:seed]}", instance: instance_for_verify(c) } }
       verdict = phase.verify(jobs)
-      interpret_verify(unit, item, clean.map { |c| [ c[:seed], c ] }, verdict, accept_prefix: "a")
+      interpret_verify(unit, item, clean.map { |c| [ c[:seed], c ] }, verdict, accept_prefix: "a", stored_ids: stored.map { |c| c[:seed] })
       reject_jobs(unit, stored, phase)
     end
 
@@ -261,7 +261,7 @@ module Validation
 
     # Every rejected seed (or listed-instance index) is named, with the reason per seed
     # grouped by wording: a verifier sees the whole pool's trouble in one run.
-    def interpret_verify(_unit, _item, rows, verdict, accept_prefix:, ids: :rejected_seeds)
+    def interpret_verify(_unit, _item, rows, verdict, accept_prefix:, ids: :rejected_seeds, stored_ids: nil)
       @details[:verify] = { checked: rows.size }
       rejected = rows.select { |id, _| !verdict.dig("#{accept_prefix}#{id}", "ok") }
       @details[:verify][:rejected] = rejected.size
@@ -272,7 +272,21 @@ module Validation
                         .to_h { |reason, list| [ reason, list.map(&:first) ] }
       @findings.add("E-VERIFY-REJECTS", "/verify.mjs", "verify rejects #{rejected.size} clean #{rejected.size == 1 ? 'instance' : 'instances'}#{": #{first['reason']}" if first && first['reason']}",
                     seed: rejected.first[0], count: rejected.size, ids => rejected.map(&:first), reasons: reasons,
-                    first_rejected: first_rejected_instance(rejected.first[1]))
+                    first_rejected: first_rejected_instance(rejected.first[1]),
+                    rejected_samples: rejected_samples(rejected, verdict, accept_prefix, stored_ids))
+    end
+
+    # Up to VERIFY_SAMPLES rejected instances with their reason, display and answer, and whether
+    # the verifier was given that seed (work open lists only the stored pool; verify runs on
+    # every clean seed), so one run shows several unseen cases, not one.
+    VERIFY_SAMPLES = 8
+
+    def rejected_samples(rejected, verdict, prefix, stored_ids)
+      rejected.first(VERIFY_SAMPLES).map do |id, inst|
+        v = verdict["#{prefix}#{id}"] || {}
+        { "id" => id, "reason" => v.values_at("reason", "reason_it").compact.first, "in_stored_pool" => stored_ids ? stored_ids.include?(id) : nil }
+          .merge(first_rejected_instance(inst) || {}).compact
+      end
     end
 
     # The first rejected instance as the verifier saw it (display and answer, clipped), so

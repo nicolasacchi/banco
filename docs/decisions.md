@@ -128,6 +128,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-121 | 2026-10-05 | W-SHORT-SKILL-CLOSED: closed items pinned beside a short answer are never served and leave the redo pool count; the teacher's traces confirm pending and short answers | implemented |
 | D-122 | 2026-10-05 | `banco work submit --dry-run` repeats itself on E-CHROME-BUSY (6 times, 10 s apart) | implemented |
 | D-123 | 2026-10-05 | `work status` says `retrying` while an error row awaits its retry | implemented |
+| D-124 | 2026-10-05 | `E-VERIFY-REJECTS` shows up to 8 rejected instances | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1357,5 +1358,16 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** the status answer gains `retrying` (true when the status is `error` and not settled). Nothing else changes: the field is additive, the frozen format stays valid. Content agents read a Chrome timeout (`ChromeRunner::Timeout`) as `error` between attempts and resubmitted; use `banco work status REV --wait` and resubmit only when it settles in `error`.
 - **Why:** content agent (english, verify:B1): revision ended in `error` with a Chrome timeout, a resubmission passed. The retry already existed; the answer did not say so.
 - **Cost:** none.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-124 · 2026-10-05 · `E-VERIFY-REJECTS` shows several rejected instances
+
+- **Design ref:** A-06 (verify), D-097
+- **Design said:** verify runs on every clean seed of the 200; `E-VERIFY-REJECTS` lists all rejected seeds, the reasons and the first rejected instance.
+- **We do:** the detail gains `rejected_samples`: up to 8 rejected instances, each `{id, reason, display, answer, in_stored_pool}` (clipped like `first_rejected`). `in_stored_pool` is false for a seed that `work open --role verifier` did not list. Additive; no frozen format changes. `work open --role verifier` already returns every stored instance (24, tested in `work_api_test`); a verifier that saw 8 was reading a truncated `instances.json`. Verify checks the 200-seed clean pool, so a vocabulary rule written from the 24 can still reject an unseen seed: write rules by pattern, not by word list, and read `rejected_samples` instead of resubmitting one seed at a time.
+- **Also, not defects:** `E-CHROME-BUSY` on a dry run is already queued by the CLI (D-122). `W-ANSWER-IN-STEM` on a typed item whose bracketed base word equals the key is a warning, not an error; it does not block, and the author decides.
+- **Why:** content agent (spanish, verify:B4): about 10 dry runs, each showing one new word.
+- **Cost:** a larger finding detail.
 - **Status:** implemented
 - **Back-port:** A-06.
