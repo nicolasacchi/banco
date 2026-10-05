@@ -10,6 +10,7 @@ module Validation
     CHOICE_RANGE = (3..5)
     ORDERING_RANGE = (3..7)
     MIN_PAIRS = 4
+    MIN_CATEGORIES = 3
 
     # label: where the instance is, in finding fields ("generated" or
     # "/instances/2"); seed is set for generated ones; files: the revision's files,
@@ -71,7 +72,14 @@ module Validation
         l = Array(display["left"]).size
         r = Array(display["right"]).size
         f.add("E-MATCHING-SIZE", "#{label}/display/left", "a matching has at least #{MIN_PAIRS} pairs, not #{l}", count: l, seed: seed) if l < MIN_PAIRS
-        f.add("E-MATCHING-SIZE", "#{label}/display/right", "the right column has n+1 entries (#{l + 1}), not #{r}", count: r, seed: seed) if r != l + 1
+        if display["reuse_right"] == true
+          # A classification (D-092): rows share categories, so the right column is shorter than the left.
+          unless r >= MIN_CATEGORIES && r < l
+            f.add("E-MATCHING-SIZE", "#{label}/display/right", "a classification has at least #{MIN_CATEGORIES} categories and fewer categories than rows (#{l}), not #{r}", count: r, seed: seed)
+          end
+        elsif r != l + 1
+          f.add("E-MATCHING-SIZE", "#{label}/display/right", "the right column has n+1 entries (#{l + 1}), not #{r}", count: r, seed: seed)
+        end
         # The right column is drawn as <option> elements: no markup renders there (D-081).
         Array(display["right"]).each_with_index do |e, i|
           next unless e.is_a?(Hash) && e["text"].to_s.match?(/[$\\]|\*\*/)

@@ -107,8 +107,12 @@ module Validation
         left = Array(display["left"]).map { |o| o["id"] }
         right = Array(display["right"]).map { |o| o["id"] }
         pairs = matching_raw(answer).first
-        if pairs.nil? || pairs.keys.sort != left.sort || !(pairs.values - right).empty? || pairs.values.uniq.size != pairs.size
-          [ "the key must pair every left id with its own right id" ]
+        if pairs.nil? || pairs.keys.sort != left.sort || !(pairs.values - right).empty?
+          [ "the key must pair every left id with a right id" ]
+        elsif display["reuse_right"] == true
+          pairs.values.uniq.size >= 2 ? [] : [ "a classification key uses at least 2 different categories" ]
+        elsif pairs.values.uniq.size != pairs.size
+          [ "the key must pair every left id with its own right id (set display.reuse_right for a classification)" ]
         else
           []
         end

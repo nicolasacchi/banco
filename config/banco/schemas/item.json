@@ -520,6 +520,9 @@
           },
           "minItems": 5,
           "maxItems": 11
+        },
+        "reuse_right": {
+          "type": "boolean"
         }
       },
       "required": [],

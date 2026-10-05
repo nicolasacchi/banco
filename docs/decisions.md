@@ -98,6 +98,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-089 | 2026-10-05 | fingerprints ignore stored order and ids of shuffled columns (validation rules v2); end-of-subject message from the item that erred | implemented |
 | D-090 | 2026-10-05 | source kind legal_text; brief says which instance tests run on | implemented |
 | D-091 | 2026-10-05 | deferred_prerequisites and deferred_implicates: cross-subject edges that wait for approval; banco --help | implemented |
+| D-092 | 2026-10-05 | matching as a classification (`display.reuse_right`); generator `tests` confirmed already run | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1008,3 +1009,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** a deferred edge does not steer the engine until it is moved; the move is a content revision.
 - **Status:** implemented
 - **Back-port:** A-06, C-04.
+
+## D-092 · 2026-10-05 · matching as a classification (`display.reuse_right`)
+
+- **Design ref:** A-06, X-01
+- **Design said:** a `matching` pairs each left id with its own right id; the right column has n+1 entries (`E-MATCHING-SIZE`) and the key may not repeat a right id. Sorting 4 or more cases into 3 categories (law, history, geography, biology) could not be written; a content agent invented a fourth "category" to make the shape fit.
+- **We do:** `banco.item/1` `display` gains the optional boolean `reuse_right`. When true the matching is a classification: the key may repeat right ids (it must use at least 2 different ones and only ids of the right column), the left column has at least 4 rows (as before), the right column has at least 3 categories and fewer entries than rows (`E-MATCHING-SIZE` otherwise), the right column is still plain text. Grading is unchanged (exact map; `correct_pairs` counts rows); `Rekey` shuffles both columns as before and keeps the flag; the student's page shows another hint and does not grey out an answer already used. Without the flag every rule is as before. Backward compatible (optional member). Generator `tests` already run on the first stored instance since D-078 (the report predates that), so that second report needs no change.
+- **Why:** content agent (law_economics, B4).
+- **Cost:** with 4 rows and 3 categories a blind guess is right once in 81 times (3^4), against 1 in 120 for a 4-pair matching: still hard to guess; use 5 or more rows when possible.
+- **Status:** implemented
+- **Back-port:** A-06, X-01.
