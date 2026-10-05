@@ -18,14 +18,14 @@ module Diagnosis
       end
       case need
       when :first
-        low = unseen.select(&:low_guess)
+        low = unseen.select { |i| i.low_guess_for(skill) }
         plan.entry(skill)&.choice_only || low.empty? ? unseen : low
       when :second
         used = state.serves.select { |s| s.instance.skills.include?(skill) }.map { |s| s.instance.item }
         other = unseen.reject { |i| used.include?(i.item) }
         other.empty? ? unseen : other
       when :third
-        unseen.select(&:low_guess)
+        unseen.select { |i| i.low_guess_for(skill) }
       else
         raise ArgumentError, "unknown need #{need.inspect}"
       end

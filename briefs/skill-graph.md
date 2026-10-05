@@ -47,6 +47,10 @@ Never ask for a decision: you stop at `awaiting_teacher`.
   exact substring of the line) that no skill measures; `coverage` lists the rest in
   `partial[]` with the cited and excluded fragments of each line.
 
+- `notes_it[]` (optional, at most 10 strings of 400 characters): what the teacher
+  should know before approving, for example that a second-year report counts as the
+  programme for this subject. The teacher sees them above the skills.
+
 ## Rules (version 1)
 
 1. Every skill cites a prior-year line, or is `middle_school` or `not_in_prima`,

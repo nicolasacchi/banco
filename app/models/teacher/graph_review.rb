@@ -37,6 +37,9 @@ module Teacher
       (previous["skills"].map { |s| s["key"] } - body["skills"].map { |s| s["key"] }).map { |k| previous["skills"].find { |s| s["key"] == k } }
     end
 
+    # The author's notes for the teacher (programme flags, D-096), shown above the skills.
+    def notes = Array(body["notes_it"])
+
     def excluded
       @excluded ||= Array(body["excluded"]).map { |e| { line: e["line"], fragment: e["fragment"], reason_it: e["reason_it"], text: line_text(prima_source, e["line"]) } }
     end

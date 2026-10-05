@@ -14,7 +14,14 @@ module Diagnosis
 
     # One servable instance. skills has one entry, except a testlet (one per
     # sub-item). fingerprint is what "seen" is compared on.
-    Instance = Data.define(:id, :item, :skills, :component, :low_guess, :choice, :expected_seconds, :fingerprint, :kind) do
+    # flags: for a testlet {skill => {low_guess:, choice:}} from its sub items (D-096); nil otherwise.
+    Instance = Data.define(:id, :item, :skills, :component, :low_guess, :choice, :expected_seconds, :fingerprint, :kind, :flags) do
+      def initialize(flags: nil, **rest) = super(flags: flags, **rest)
+
+      # Whether the instance is hard to guess / a choice for this skill: a testlet
+      # decides per skill, any other instance for all of its skills.
+      def low_guess_for(skill) = flags&.dig(skill, :low_guess).then { |v| v.nil? ? low_guess : v }
+      def choice_for(skill) = flags&.dig(skill, :choice).then { |v| v.nil? ? choice : v }
       def skill = skills.first
       def testlet? = kind == "testlet"
       def short_answer? = kind == "short_answer"

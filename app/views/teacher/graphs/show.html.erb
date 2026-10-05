@@ -45,6 +45,13 @@
       </p>
     </section>
 
+    <% if review.notes.any? %>
+      <h2><%= t("teacher.graph.notes_title") %></h2>
+      <ul class="plain" id="graph-notes">
+        <% review.notes.each do |note| %><li><%= note %></li><% end %>
+      </ul>
+    <% end %>
+
     <h2><%= t("teacher.graph.skills") %></h2>
     <% review.skills.each do |skill| %>
       <article class="skill" id="skill-<%= skill.key.parameterize %>" data-skill="<%= skill.key %>" data-scope="<%= skill.scope %>">

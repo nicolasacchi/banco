@@ -81,6 +81,8 @@ module Diagnosis
       # flag (a missing policy is strict) and every code is an accent or apostrophe code.
       if grading.verdict == "typical_error" && body["accent_policy"] == "flag" && codes.any? && (codes - Rules::V1::ORTHOGRAPHY_ALLOWLIST).empty?
         fields[:orthography_slip] = true
+        # The slip is an observation on the orthography skill the code belongs to (D-096).
+        fields[:orthography_skill] = codes.filter_map { |c| Rules::V1::ORTHOGRAPHY_SKILLS[c] }.first
       end
       # A result that touched floating point is uncertain whatever it says (D-029).
       fields[:method] = "float" if grading.method == "float"

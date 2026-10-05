@@ -36,6 +36,12 @@ module Diagnosis
       OPTIONS_FOR_CASES = %i[credit pending].freeze
 
       ORTHOGRAPHY_ALLOWLIST = %w[es_accents it_accents it_apostrophe_accent].freeze
+      # The skill a slip with each code is an observation about (D-096).
+      ORTHOGRAPHY_SKILLS = {
+        "es_accents" => "spanish.accents",
+        "it_accents" => "italian.spelling",
+        "it_apostrophe_accent" => "italian.spelling"
+      }.freeze
 
       # Near-miss detection: answers of at least NEAR_MISS_MIN_LENGTH characters at
       # one Damerau edit from an accepted answer, on items with spelling_policy near.
@@ -153,6 +159,23 @@ module Diagnosis
           when "ordering" then size.to_i >= LOW_GUESS_MIN_ORDERING
           when "matching" then size.to_i >= LOW_GUESS_MIN_MATCHING_PAIRS
           else false
+          end
+        end
+
+        # Per skill of a testlet, from the sub items' own components (D-096):
+        # {skill => {low_guess:, choice:}}. A skill is low-guess when any of its sub items
+        # is (all of them must be right, so one hard item makes the credit hard to guess)
+        # and choice only when all of them are choice. body: the item body, display: the
+        # instance display {"sub_items" => [{"id", "display"}]}.
+        def testlet_flags(body, display)
+          shown = Array(display && display["sub_items"])
+          Array(body["sub_items"]).group_by { |s| s["skill"] }.transform_values do |subs|
+            rows = subs.map do |sub|
+              d = shown.find { |x| x["id"] == sub["id"] }&.dig("display") || {}
+              size = case sub["component"] when "ordering" then Array(d["elements"]).size when "matching" then Array(d["left"]).size end
+              [ low_guess?(sub["component"].to_s, size: size), sub["component"] == "choice" ]
+            end
+            { low_guess: rows.any?(&:first), choice: rows.all?(&:last) }
           end
         end
       end

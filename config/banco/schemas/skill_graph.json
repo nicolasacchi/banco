@@ -225,6 +225,15 @@
       },
       "minItems": 1
     },
+    "notes_it": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 400
+      },
+      "maxItems": 10
+    },
     "excluded": {
       "type": "array",
       "items": {

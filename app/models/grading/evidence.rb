@@ -54,7 +54,14 @@ module Grading
       k = key(verdict: verdict, spec: spec, error_codes: error_codes, method: method, prerequisites: prerequisites)
       return [] unless V1::EVIDENCE.fetch(k) == :C && V1::OBSERVATIONS.key?(k)
 
-      [ { kind: V1::OBSERVATIONS.fetch(k), skill: (k == "wrong_form_declared" ? spec.form_skill : nil) } ]
+      [ { kind: V1::OBSERVATIONS.fetch(k), skill: observation_skill(k, spec, error_codes) } ]
+    end
+
+    def observation_skill(key, spec, error_codes)
+      case key
+      when "wrong_form_declared" then spec.form_skill
+      when "orthography_slip" then error_codes.filter_map { |c| V1::ORTHOGRAPHY_SKILLS[c] }.first
+      end
     end
 
     # The evidence of a stored grading row (nil grading: nothing graded yet).

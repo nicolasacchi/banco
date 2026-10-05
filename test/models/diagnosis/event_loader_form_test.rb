@@ -25,4 +25,15 @@ class Diagnosis::EventLoaderFormTest < ActiveSupport::TestCase
     g = G.new(verdict: "wrong_form", error_codes_json: '["e1"]', form_violations_json: '["lowest_terms"]')
     assert_equal "e1", fields(g, { "form" => [ "x" ] })[:error_code]
   end
+
+  test "an accent slip on a flag item names the orthography skill (D-096)" do
+    g = G.new(verdict: "typical_error", error_codes_json: '["es_accents"]', form_violations_json: nil)
+    f = fields(g, { "accent_policy" => "flag" })
+    assert f[:orthography_slip]
+    assert_equal "spanish.accents", f[:orthography_skill]
+    g = G.new(verdict: "typical_error", error_codes_json: '["it_apostrophe_accent"]', form_violations_json: nil)
+    assert_equal "italian.spelling", fields(g, { "accent_policy" => "flag" })[:orthography_skill]
+    strict = fields(G.new(verdict: "typical_error", error_codes_json: '["es_accents"]', form_violations_json: nil), {})
+    assert_nil strict[:orthography_skill]
+  end
 end

@@ -71,13 +71,19 @@ module Validation
       problems = []
       problems << "#{infos.size} item(s), at least #{Rules.get(:pool, :min_items_per_skill)} are needed" if infos.size < Rules.get(:pool, :min_items_per_skill)
       problems << "#{instances.size} distinct instance(s), at least #{Rules.get(:pool, :min_instances_per_skill)} are needed" if instances.size < Rules.get(:pool, :min_instances_per_skill)
-      low = instances.count { |i| i[:low_guess] }
+      low = instances.count { |i| low_for?(i, entry["skill"]) }
       if entry["choice_only_reason_it"].to_s.empty? && low < Rules.get(:pool, :min_low_guess_instances)
         problems << "#{low} hard-to-guess instance(s), at least #{Rules.get(:pool, :min_low_guess_instances)} are needed"
       end
       return if problems.empty?
 
       findings.add("E-POOL-REDO", field, "#{entry['skill']}: #{problems.join('; ')}; or declare redo_reserve: false", skill: entry["skill"])
+    end
+
+    # A testlet instance is hard to guess per skill (low_guess_by_skill, D-096).
+    def low_for?(instance, skill)
+      by = instance[:low_guess_by_skill]
+      by && by.key?(skill) ? by[skill] : instance[:low_guess]
     end
 
     # ---- the descent pool (D-038) -------------------------------------------------------
@@ -103,7 +109,7 @@ module Validation
     # choice_only_reason: the pinned items of a descent skill must hold at least one
     # hard-to-guess instance, or two lucky answers would read as demonstrated.
     def descent_low_guess(descent, infos, field, findings)
-      return if infos.empty? || infos.flat_map(&:instances).any? { |i| i[:low_guess] }
+      return if infos.empty? || infos.flat_map(&:instances).any? { |i| low_for?(i, descent["skill"]) }
 
       findings.add("E-POOL-REDO", "#{field}/items", "#{descent['skill']}: no hard-to-guess instance among the pinned items; the first item of a skill must be hard to guess",
                    skill: descent["skill"], rule: "descent_low_guess")

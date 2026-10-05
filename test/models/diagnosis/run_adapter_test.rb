@@ -281,4 +281,20 @@ class DiagnosisRunAdapterTest < ActiveSupport::TestCase
   test "an accent slip with another error code beside it is not credited" do
     assert_equal [ "W" ], evidence_of_first(graded_run(extra: { accent_policy: "flag" }, verdict: "typical_error", codes: [ "it_accents", "own_slip" ]))
   end
+
+  test "a testlet of choice sub items is not low-guess and counts as choice (D-096)" do
+    subs = %w[a b c d e].map { |id| { id: id, skill: "math.a", component: "choice" } }
+    item = Item.create!(subject: @math, key: "tl", kind: "testlet")
+    body = { schema: "banco.item/1", kind: "testlet", subject: "math", sub_items: subs, expected_seconds: 300 }
+    rev = ItemRevision.create!(item: item, seq: 1, body_json: body.to_json, author_session: @session, file_sessions_json: "{}", brief_sha256: "0" * 64)
+    ItemValidation.create!(item_revision: rev, seq: 1, status: "passed")
+    ItemInstance.create!(item_revision: rev, seed: 1, display_json: { sub_items: [] }.to_json, answer_json: "{}", fingerprint: "tl-1")
+
+    info = Validation::ItemInfo.for(rev)
+    assert info.instances.none? { |i| i[:low_guess] }
+    inst = Diagnosis::PlanLoader.allocate.send(:revision_instances, rev).first
+    assert_not inst.low_guess
+    assert inst.choice
+    assert inst.choice_for("math.a")
+  end
 end

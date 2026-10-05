@@ -78,9 +78,15 @@ module Diagnosis
       skills = kind == "testlet" ? Array(body["sub_items"]).map { |s| s["skill"] }.uniq : [ body["skill"] ]
       revision.instances.order(:id).map do |inst|
         display = JSON.parse(inst.display_json)
-        Plan::Instance.new(id: inst.id, item: revision.id, skills: skills, component: component,
-                           low_guess: Rules::V1.low_guess?(component, size: display_size(display, component)),
-                           choice: component == "choice", expected_seconds: body["expected_seconds"] || 60,
+        flags = kind == "testlet" ? Rules::V1.testlet_flags(body, display) : nil
+        low, choice = if flags
+          [ flags.values.any? { |f| f[:low_guess] }, flags.values.all? { |f| f[:choice] } ]
+        else
+          [ Rules::V1.low_guess?(component, size: display_size(display, component)), component == "choice" ]
+        end
+        Plan::Instance.new(flags: flags, id: inst.id, item: revision.id, skills: skills, component: component,
+                           low_guess: low,
+                           choice: choice, expected_seconds: body["expected_seconds"] || 60,
                            fingerprint: inst.fingerprint, kind: kind)
       end
     end

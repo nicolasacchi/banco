@@ -102,6 +102,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-093 | 2026-10-05 | graph findings per skill; 2-category classification; number `accept` and form `scientific` | implemented |
 | D-094 | 2026-10-05 | testlet passage in the leak scan; `da solo` is not an absolute word | implemented |
 | D-095 | 2026-10-05 | binary profile reports declared errors; arrows and spreadsheet function names pass the readability lint | implemented |
+| D-096 | 2026-10-05 | testlet low-guess and choice per skill; accent-slip observation skill; graph `notes_it` | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1052,3 +1053,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** a real ALL-CAPS word glued to a bracket ("ECCO(") escapes the check.
 - **Status:** implemented
 - **Back-port:** A-01, A-06.
+
+## D-096 · 2026-10-05 · testlet low-guess and choice per skill; accent-slip observation skill; graph `notes_it`
+
+- **Design ref:** B-02, B-04, A-06
+- **Design said:** (1) a testlet body has no top-level `component`, so the engine loader and the blueprint checks fell back to `number`: every testlet instance was low-guess and not a choice, even with five choice sub items. (2) `ORTHOGRAPHY_SLIP` gives C plus an observation on the orthography skill, but nothing ever named that skill, so the observation was lost. (3) `banco.skill_graph/1` had no place for a note to the teacher (the operator's programme flag, Q3). (4) A report asked for a multi-blank cloze (por/para): not a defect, see below.
+- **We do:** (1) `Rules::V1.testlet_flags` reads the sub items' own components: per skill, low-guess when any sub item of that skill is hard to guess (all must be right), choice when all of them are choice. `Plan::Instance` gains the optional `flags` ({skill => {low_guess, choice}}); `low_guess_for(skill)` and `choice_for(skill)` fall back to the instance flags for every other kind; `Fold` and `Candidates` use them. `ItemInfo` gives `low_guess_by_skill` for testlet instances and the blueprint checks (`E-POOL-REDO`, `descent_low_guess`) read it for the skill they check. (2) `Rules::V1::ORTHOGRAPHY_SKILLS` maps `es_accents` to `spanish.accents` and `it_accents`, `it_apostrophe_accent` to `italian.spelling`; `EventLoader` sets `orthography_skill` on the slip, `Grading::Evidence.observations` names it. The credit rule is unchanged. (3) `banco.skill_graph/1` gains the optional `notes_it` (up to 10 strings of 400 characters), shown on the teacher's graph screen above the skills. (4) No change: a cloze with 2 options per blank is a classification (`reuse_right`, D-092/D-093): list the blanks as `left` rows and the options (por, para) as `right`, with 6 or more rows for 2 options (guess 1 in 64), or 4 or more rows with 3 options.
+- **Why:** content agent (spanish, step graph).
+- **Cost:** a testlet with one hard sub item for a skill is low-guess for that skill even if its other sub items are choice. Observations are noted only; they do not change the state of the orthography skill.
+- **Status:** implemented
+- **Back-port:** B-02, B-04, A-06.

@@ -485,6 +485,23 @@ class DiagnosisEngineTest < ActiveSupport::TestCase
     assert_equal [ "W" ], b[:evidence]
   end
 
+  test "a testlet decides low_guess and choice per skill from its sub items (D-096)" do
+    flags = { A => { low_guess: false, choice: true } }
+    tl = Diagnosis::Plan::Instance.new(id: "tl#1", item: "tl", skills: [ A ], component: "number", low_guess: true, choice: false,
+                                       expected_seconds: 120, fingerprint: "tlfp", kind: "testlet", flags: flags)
+    assert_not tl.low_guess_for(A)
+    assert tl.choice_for(A)
+    base = build_plan(skills: { A => {} }, items: { A => %w[x1] }, pool: { "x1" => { "instances" => 2, "component" => "choice" } })
+    plan = with_instances(base, [ tl ])
+    d = DiagnosisHelper::Driver.new(plan)
+    d.start
+    s1 = d.push("item_served", instance: "tl#1", skill: A)
+    d.answer(s1, "correct", skill: A)
+    s2 = d.push("item_served", instance: "x1#1", skill: A)
+    d.answer(s2, "correct", skill: A)
+    assert_equal %w[demonstrated two_of_two_choice], d.state(A)
+  end
+
   test "testlet_not_started_when_budget_insufficient" do
     testlet = instance("tl#1", skills: [ A ], kind: "testlet", seconds: 700)
     base = build_plan(skills: { A => {} }, items: { A => %w[x1] }, pool: { "x1" => { "instances" => 2, "component" => "choice" } },

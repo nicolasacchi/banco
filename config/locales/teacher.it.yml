@@ -133,6 +133,7 @@ it:
         one: "Un errore tipico"
         other: "%{count} errori tipici"
       implicates: "mette in dubbio"
+      notes_title: "Note dell'autore"
       excluded_title: "Righe escluse"
       excluded_part: "solo questa parte della riga"
       flags:
