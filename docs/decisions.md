@@ -92,6 +92,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-083 | 2026-10-05 | W-ANSWER-IN-STEM ignores a key inside a «quoted» sentence; brief on accent_policy and per-instance accept | implemented |
 | D-084 | 2026-10-05 | W-NEGATIVE-STEM ignores «quoted» and $math$ spans; CLI reports a missing contract header as E-NETWORK | decided |
 | D-085 | 2026-10-05 | per-instance `tests`; W-GRAPH-READABILITY | implemented |
+| D-086 | 2026-10-05 | matching: each answer once (hint and greyed-out entries) | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -940,5 +941,15 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** (1) a `banco.item/1` instance may carry an optional `tests` object with `must_accept` and `must_reject` (answers, no `blank`); they are graded on that instance, with its own `accept` (D-081), after the item's tests, and are not stored. Findings point at `/instances/N/tests/...`. Per-instance `accept` itself already existed (D-081). (2) New warning `W-GRAPH-READABILITY`: every `*_it` text of a skill graph (error descriptions, names) goes through the item readability lint; an E-READ there is a warning, so the graph still passes but the author sees that the same text copied into an item error catalogue would be refused. Registry version 5. `banco.*/1` stays backward compatible: both additions are optional.
 - **Why:** content agents reported that an alternative on a later instance could not be tested, and a graph sentence of 26 words passing the graph but failing in an item.
 - **Cost:** a few more warnings on graphs; no migration.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-086 · 2026-10-05 · matching: each answer once (hint and greyed-out entries)
+
+- **Design ref:** A-06
+- **Design said:** the matching hint read "Abbina ogni voce a una risposta."; nothing stopped the student picking one right-column entry for two rows.
+- **We do:** the hint now says each answer is used once and one is left over (the right column is always longer than the left, enforced by validation); the browser greys out entries already chosen in other selects. Grading is unchanged (the key is injective, a duplicate pick is simply wrong). No format change.
+- **Why:** a content agent had to repeat the rule in every matching stem.
+- **Cost:** to swap two answers the student first clears one select.
 - **Status:** implemented
 - **Back-port:** A-06.

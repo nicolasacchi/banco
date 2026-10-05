@@ -57,12 +57,25 @@ class ItemRenderTest < ApplicationSystemTestCase
       assert_selector "[data-sitting-target=itemBox] .item-body .answer"
       component = detect_component
       seen << component
+      check_matching_exclusion if component == "matching"
       number = give_up + 1
       break if component == "short_answer"
     end
     assert_equal %w[number fraction choice ordering matching normalized_text expression testlet short_answer], seen
     outside = requested_urls.reject { |u| u.start_with?(origin) || u.start_with?("data:") || u.start_with?("about:") }
     assert_empty outside, "requests outside the app origin"
+  end
+
+  # D-086: an entry chosen in one select is disabled in the others, and free again once cleared.
+  def check_matching_exclusion
+    selects = page.all(".match-row select")
+    assert_operator selects.size, :>=, 2
+    value = selects[0].all("option").map { |o| o[:value] }.find { |v| v != "" }
+    selects[0].find("option[value='#{value}']").select_option
+    assert selects[1].find("option[value='#{value}']", visible: :all).disabled?
+    refute selects[0].find("option[value='#{value}']").disabled?
+    selects[0].find("option[value='']").select_option
+    refute selects[1].find("option[value='#{value}']").disabled?
   end
 
   # Names the template on screen by what it draws.

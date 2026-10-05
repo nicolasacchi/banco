@@ -76,7 +76,7 @@ it:
     ordering_label: "Metti in ordine. Usa Su e Giù, oppure Alt con le frecce."
     ordering_up: "Su"
     ordering_down: "Giù"
-    matching_label: "Abbina ogni voce a una risposta."
+    matching_label: "Abbina ogni voce a una risposta. Usa ogni risposta una volta sola: una avanza."
     matching_blank: "Scegli"
     text_label: "Scrivi la risposta"
     long_text_label: "Scrivi la risposta con parole tue"

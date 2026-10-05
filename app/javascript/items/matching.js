@@ -13,6 +13,14 @@ export function render(part, ctx) {
     const label = renderInline(left.text, el("label", { for: id, class: "match-left" }))
     return { select, row: el("div", { class: "match-row" }, label, select) }
   })
+  // Each answer is used at most once: an entry picked in one select is greyed out in the others.
+  const sync = () => {
+    const taken = new Set(rows.map(({ select }) => select.value).filter((v) => v !== ""))
+    rows.forEach(({ select }) => {
+      for (const option of select.options) option.disabled = option.value !== "" && taken.has(option.value) && option.value !== select.value
+    })
+  }
+  rows.forEach(({ select }) => select.addEventListener("change", sync))
   const wrapper = el("div", { class: "answer" }, el("p", { class: "hint", text: ctx.t.matching_label }), rows.map((r) => r.row))
   return handle(wrapper, {
     raw: () => JSON.stringify(Object.fromEntries(rows.map(({ select }) => [select.getAttribute("data-left"), select.value]))),
