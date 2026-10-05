@@ -295,11 +295,13 @@ class WorkApiTest < ActionDispatch::IntegrationTest
     holder = Thread.new { Validation::ChromeRunner.with_lock { held << true; release.pop } }
     held.pop
     begin
+      ENV["BANCO_DRY_RUN_CHROME_WAIT"] = "0.5"
       submit("gen-1", { "verify.mjs" => F::VERIFY }, base: base, dry: true)
       assert_response :conflict
       assert_equal "E-CHROME-BUSY", json["code"]
       assert_equal "retry in 30 s", json["next"]
     ensure
+      ENV.delete("BANCO_DRY_RUN_CHROME_WAIT")
       release << true
       holder.join
     end

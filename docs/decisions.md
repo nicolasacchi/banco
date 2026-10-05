@@ -103,6 +103,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-094 | 2026-10-05 | testlet passage in the leak scan; `da solo` is not an absolute word | implemented |
 | D-095 | 2026-10-05 | binary profile reports declared errors; arrows and spreadsheet function names pass the readability lint | implemented |
 | D-096 | 2026-10-05 | testlet low-guess and choice per skill; accent-slip observation skill; graph `notes_it` | implemented |
+| D-097 | 2026-10-05 | a dry run waits up to 25 s for Chrome before E-CHROME-BUSY | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1063,3 +1064,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** a testlet with one hard sub item for a skill is low-guess for that skill even if its other sub items are choice. Observations are noted only; they do not change the state of the orthography skill.
 - **Status:** implemented
 - **Back-port:** B-02, B-04, A-06.
+
+## D-097 · 2026-10-05 · a dry run waits up to 25 s for Chrome before E-CHROME-BUSY
+
+- **Design ref:** A-06
+- **Design said:** a dry run takes the shared Chrome lock with a try-lock and answers 409 `E-CHROME-BUSY` at once when it is taken.
+- **We do:** the dry run waits for the lock for `BANCO_DRY_RUN_CHROME_WAIT` seconds (default 25) and only then answers 409 `E-CHROME-BUSY` (same body, `retry in 30 s`). No queue, no new format. The job path is unchanged (it already waits).
+- **Why:** content agent (law_economics, verify:B2): while other items validate, dry runs and submits answered 409 and worked on retry after 30 s. Most validations are shorter than the wait.
+- **Cost:** a dry run holds an API Puma thread for up to 25 s while waiting (5 threads by default). A long validation still gives 409; the agent retries as before.
+- **Status:** implemented
+- **Back-port:** A-06.

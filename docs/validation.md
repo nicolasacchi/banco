@@ -106,8 +106,8 @@ connects, one browser context per run is disposed in `ensure`, and a reaper disp
 the contexts that no live run owns. Test, development and CI launch a local Chrome
 (`BROWSER_PATH`) with Ferrum's `ignore_default_browser_options` and curated flags
 (never `--disable-web-security`). Every use goes through `ChromeRunner`'s shared
-`flock` (`tmp/chrome.lock`); a dry run takes it with a try-lock and answers 409
-`E-CHROME-BUSY` when it is taken.
+`flock` (`tmp/chrome.lock`); a dry run waits for it up to 25 s
+(`BANCO_DRY_RUN_CHROME_WAIT`) and answers 409 `E-CHROME-BUSY` when it is still taken.
 
 Chrome loads `/h/<run-token>/harness.html` from the harness listener (port 3200,
 internal): a cookie-less page with a CSP that allows no connection, no image and no
