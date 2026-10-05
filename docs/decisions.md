@@ -122,6 +122,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-115 | 2026-10-05 | `work open` warns inside a git work tree; cloze pages repeating a form use D-092 `reuse_right` | implemented |
 | D-116 | 2026-10-05 | binary profile: a declared error value that is not a bit string (1121) is a `typical_error`, not `invalid`; undeclared non-bit answers stay `invalid` | implemented |
 | D-117 | 2026-10-05 | W-SCOPE-MARKER reads the stars inside the cited fragment first (a line with several ☆ fragments has no line marker); matching as a 3-category classification already exists (D-092) | implemented |
+| D-118 | 2026-10-05 | a table cell (header or row) may be the empty string, for spreadsheet grids; arrows already pass the lint in every `_it` field (D-095) | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1292,3 +1293,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Why:** content agent (geography, step graph). Their second report (a matching with 3 categories) needs no change: `display.reuse_right` (D-092) is exactly a classification with at least 3 right entries and fewer than rows; the schema minItems 5 is not applied to it (`InstanceChecks` decides the sizes).
 - **Cost:** none.
 - **Status:** implemented
+
+## D-118 · 2026-10-05 · empty table cells
+
+- **Design ref:** A-01 (`banco.item/1`, `$defs/table`)
+- **Design said:** header and row cells have `minLength` 1, so a spreadsheet grid needed a single space for each empty cell, a convention nobody had written down.
+- **We do:** header and row cells may be `""` (`minLength` 0; `maxLength` 80, the row and header sizes are unchanged). The renderer already draws `""` as an empty `td`/`th`; the leak scan reads each cell as text, so an empty cell never matches and the others are scanned as before. Use `""`, not `" "`. A frozen format relaxed, so every existing item stays valid. The second report (an arrow in `description_it` fails `E-READ`) is not a defect: since D-095 the pattern starts at U+21A0 and the arrows U+2190-U+219F, including the assignment arrow, pass in every `_it` field, error descriptions included (test added). A content agent that saw it was on a staging older than D-095, or wrote a different arrow (for example U+21D2 or U+27F5), which are still refused: use `$\leftarrow$`.
+- **Why:** content agent (computer_science, items:B4).
+- **Cost:** a table with an entirely empty row or header is now schema-valid; the reviewer sees it.
+- **Status:** implemented
+- **Back-port:** A-01.

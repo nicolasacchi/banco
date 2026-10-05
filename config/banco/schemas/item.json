@@ -408,7 +408,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "minLength": 1,
+            "minLength": 0,
             "maxLength": 80
           },
           "minItems": 1,
@@ -420,7 +420,7 @@
             "type": "array",
             "items": {
               "type": "string",
-              "minLength": 1,
+              "minLength": 0,
               "maxLength": 80
             },
             "minItems": 1,
