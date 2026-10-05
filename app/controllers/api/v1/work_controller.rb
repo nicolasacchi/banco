@@ -53,8 +53,10 @@ module Api
         revision = ItemRevision.find_by(id: params[:revision])
         return refuse("E-NOT-FOUND", "revision", "no revision #{params[:revision].to_s.first(20).inspect}", "banco work open ITEM", 404) unless revision
 
+        settled = settled?(revision) ? true : false
+        # An unsettled `error` is one failed attempt (Chrome busy or slow); the job tries again by itself.
         render json: { revision_id: revision.id, item: revision.item.key, seq: revision.seq, status: revision.status,
-                       settled: settled?(revision) ? true : false, instances: revision.instances.count,
+                       settled: settled, retrying: revision.status == "error" && !settled, instances: revision.instances.count,
                        teacher_comments: Teacher::SendBacks.for_item(revision.item) }.merge(validation_row(revision) || {})
       end
 

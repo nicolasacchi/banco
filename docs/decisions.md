@@ -127,6 +127,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-120 | 2026-10-05 | `banco items list`: the revisions of a subject's items with status and a current marker | implemented |
 | D-121 | 2026-10-05 | W-SHORT-SKILL-CLOSED: closed items pinned beside a short answer are never served and leave the redo pool count; the teacher's traces confirm pending and short answers | implemented |
 | D-122 | 2026-10-05 | `banco work submit --dry-run` repeats itself on E-CHROME-BUSY (6 times, 10 s apart) | implemented |
+| D-123 | 2026-10-05 | `work status` says `retrying` while an error row awaits its retry | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1346,5 +1347,15 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** the CLI repeats a `--dry-run` that gets `E-CHROME-BUSY`: `BANCO_BUSY_RETRIES` times (default 6), `BANCO_BUSY_WAIT_MS` apart (default 10000), then reports the error as before. Nothing changes on the server or in the contract; non-dry submits and other errors are never repeated.
 - **Why:** content agent (spanish, verify:B3): parallel verifiers got E-CHROME-BUSY and wrote their own retry loops.
 - **Cost:** a dry run can take up to about 25 s x 7 plus 60 s under heavy contention (the HTTP timeout is per attempt, 300 s).
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-123 · 2026-10-05 · `work status` says when an error is a retry in progress
+
+- **Design ref:** A-06 (errors are never verdicts), D-122
+- **Design said:** an `error` validation row is one failed attempt; the job retries (3 attempts), and `settled` is true only after the last one.
+- **We do:** the status answer gains `retrying` (true when the status is `error` and not settled). Nothing else changes: the field is additive, the frozen format stays valid. Content agents read a Chrome timeout (`ChromeRunner::Timeout`) as `error` between attempts and resubmitted; use `banco work status REV --wait` and resubmit only when it settles in `error`.
+- **Why:** content agent (english, verify:B1): revision ended in `error` with a Chrome timeout, a resubmission passed. The retry already existed; the answer did not say so.
+- **Cost:** none.
 - **Status:** implemented
 - **Back-port:** A-06.

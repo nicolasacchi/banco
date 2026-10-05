@@ -249,9 +249,11 @@ class WorkApiTest < ActionDispatch::IntegrationTest
     api("/api/v1/work/revisions/#{revision.id}")
     assert_equal "error", json["status"]
     assert_equal false, json["settled"]
+    assert_equal true, json["retrying"]
     Validation::RevisionValidation.new(revision, attempt: ValidateItemRevisionJob::ATTEMPTS).record_error(Validation::ChromeRunner::Unavailable.new("no chrome"))
     api("/api/v1/work/revisions/#{revision.id}")
     assert_equal true, json["settled"]
+    assert_equal false, json["retrying"]
     assert_equal "error", json["status"]
   end
 
