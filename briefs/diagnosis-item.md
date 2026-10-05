@@ -21,6 +21,16 @@ a decision: you stop at `awaiting_teacher`.
 A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
 `verify.mjs` is written only by a verifier session, who never sees the generator.
 
+- `verify.mjs` contract: an ES module with a named export `verify(instance)` (sync or
+  async) returning `{ok: boolean, reason_it?: string}`; `ok` must be exactly `true` to
+  accept. `instance` is `{display, answer, errors, solution, seed}` (plus `accept` when
+  the item has one), the same shape the generator returns. The verifier solves the
+  `display` independently and compares with `instance.answer`: it must return `ok: true`
+  for every clean instance and `ok: false` for the same instance with `answer` replaced
+  by a catalogue error value, a +1 mutant or a sign-flip mutant. For `choice` the
+  `answer` is an option id, never the option text. A throw counts as a rejection;
+  `reason_it` (at most 200 characters) is shown in `E-VERIFY-REJECTS`. Same banned
+  globals as generators; no import of the generator.
 - `kind`: `diagnosis_item`, `short_answer` or `testlet` (a reading passage of
   150-300 words with exactly 5 closed sub-items, each on its own skill).
 - One difficulty level. No hints field: during the diagnosis there is no help.
