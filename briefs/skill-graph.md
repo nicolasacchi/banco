@@ -59,7 +59,7 @@ Never ask for a decision: you stop at `awaiting_teacher`.
 2. `banco skill-graph coverage --subject KEY --json` must show `uncovered` empty:
    every non-empty line of the range is cited or excluded with a reason the teacher
    can read.
-3. Scope follows the programme markers (the line's own, or `block_marker` on the
+3. Scope follows the programme markers (a star inside the cited fragment, the line's own, or `block_marker` on the
    lines under a marked header; `W-SCOPE-MARKER` warns when they disagree) and
    nothing else: do not upgrade an
    in-progress block to studied because it would be convenient.

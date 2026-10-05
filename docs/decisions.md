@@ -121,6 +121,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-114 | 2026-10-05 | binary profile: a declared error value written exactly (padding_missing) is a typical error, not wrong_form; plain normalized_text bit/letter codes typed with spaces are `invalid` (`spaces_in_code`); CS acronyms in caps_allowlist (rules v6); generator tests already run | implemented |
 | D-115 | 2026-10-05 | `work open` warns inside a git work tree; cloze pages repeating a form use D-092 `reuse_right` | implemented |
 | D-116 | 2026-10-05 | binary profile: a declared error value that is not a bit string (1121) is a `typical_error`, not `invalid`; undeclared non-bit answers stay `invalid` | implemented |
+| D-117 | 2026-10-05 | W-SCOPE-MARKER reads the stars inside the cited fragment first (a line with several ☆ fragments has no line marker); matching as a 3-category classification already exists (D-092) | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1282,3 +1283,12 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** none; `banco.*/1` unchanged.
 - **Status:** implemented
 - **Back-port:** B-02.
+
+## D-117 · 2026-10-05 · W-SCOPE-MARKER reads the stars inside the cited fragment
+
+- **Design ref:** D-075, brief rule 3
+- **Design said:** `W-SCOPE-MARKER` compared a skill's scope with the marker of the cited line (its own or inherited from the block header). A line that holds several star fragments without starting with a star has no marker, so a studied skill could cite a `☆` fragment of it without a warning.
+- **We do:** the marker of a cited prima ref is the star inside its `fragment` first (`★`, `☆`, both = in progress), then the line's own, then the inherited one. A studied skill citing a `☆` fragment, or an in_progress / integration_studied skill citing only unstarred or other-starred fragments, gets the same warning. No new code, `banco.*/1` unchanged, still a warning.
+- **Why:** content agent (geography, step graph). Their second report (a matching with 3 categories) needs no change: `display.reuse_right` (D-092) is exactly a classification with at least 3 right entries and fewer than rows; the schema minItems 5 is not applied to it (`InstanceChecks` decides the sizes).
+- **Cost:** none.
+- **Status:** implemented

@@ -237,6 +237,23 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
     assert_empty json["warnings"].select { |w| w["code"] == "W-SCOPE-MARKER" }
   end
 
+  test "W-SCOPE-MARKER: a star inside the cited fragment decides, though the line has no marker" do
+    SyllabusLine.create!(syllabus_source: @source, number: 7, text: "Il clima ☆ Il cambiamento climatico e ★ le carte tematiche", origin: "pdf")
+    set = lambda do |scope, fragment|
+      graph { |d| skill(d, "math.percentages").tap { |s| s["scope"] = scope; s["refs"][0].merge!("line" => 7, "fragment" => fragment) } }
+    end
+    submit_graph(set.("studied", "☆ Il cambiamento climatico"), dry: true)
+    warning = json["warnings"].find { |w| w["code"] == "W-SCOPE-MARKER" }
+    assert warning, json.inspect
+    assert_equal [ "in_progress" ], warning["detail"]["expected"]
+    submit_graph(set.("in_progress", "☆ Il cambiamento climatico"), dry: true)
+    assert_empty json["warnings"].select { |w| w["code"] == "W-SCOPE-MARKER" }
+    submit_graph(set.("integration_studied", "★ le carte tematiche"), dry: true)
+    assert_empty json["warnings"].select { |w| w["code"] == "W-SCOPE-MARKER" }
+    submit_graph(set.("studied", "Il clima"), dry: true)
+    assert_empty json["warnings"].select { |w| w["code"] == "W-SCOPE-MARKER" }
+  end
+
   test "excluded fragment: must be a substring of the line" do
     submit_graph(graph { |d| d["excluded"] << { "line" => 3, "fragment" => "non è lì", "reason_it" => "Prova." } })
     assert(json["findings"].any? { |f| f["code"] == "E-SOURCE" && f["detail"]["rule"] == "fragment" && f["field"] == "/excluded/#{graph['excluded'].size}/fragment" }, json.inspect)

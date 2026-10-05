@@ -169,16 +169,30 @@ module Validation
       skills.each_with_index do |s, i|
         next unless %w[studied integration_studied in_progress].include?(s["scope"])
 
-        lines = Array(s["refs"]).select { |r| prima_ref?(r) }.filter_map { |r| context.source_line(r["source"], r["line"]) }
-        next if lines.empty?
+        markers = Array(s["refs"]).select { |r| prima_ref?(r) }.filter_map do |r|
+          line = context.source_line(r["source"], r["line"])
+          line && (fragment_marker(r["fragment"]) || line[:marker] || line[:block_marker])
+        end
+        next if markers.empty?
 
-        markers = lines.map { |l| l[:marker] || l[:block_marker] }
         expected = markers.flat_map { |m| Syllabus::BlockMarker.scopes_for(m) }.uniq
         next if expected.include?(s["scope"])
 
         seen = markers.map { |m| m || "no marker" }.uniq.join(", ")
         findings.add("W-SCOPE-MARKER", "/skills/#{i}/scope", "#{s['key']} is #{s['scope']} but the lines it cites carry #{seen} (expected #{expected.join(' or ')})", skill: s["key"], expected: expected)
       end
+    end
+
+    # A star inside the cited fragment itself decides first (a line can hold several
+    # starred fragments without starting with a star); else the line's marker applies.
+    def fragment_marker(fragment)
+      full = fragment.to_s.include?("\u2605")
+      half = fragment.to_s.include?("\u2606")
+      return "\u2605\u2606" if full && half
+      return "\u2605" if full
+      return "\u2606" if half
+
+      nil
     end
 
     # A skill needs a next-year line that requires it, directly or through a skill
