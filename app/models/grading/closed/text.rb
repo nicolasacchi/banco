@@ -132,7 +132,8 @@ module Grading
       def binary(spec, value)
         s = value.gsub(/\A[[:space:]]+|[[:space:]]+\z/, "")
         return Closed.invalid("empty") if s.empty?
-        return Closed.invalid("ambiguous_mixed_number") if s.match?(/[01][[:space:]]+[01]/)
+        # Bits written in groups ("1110 1100") are one string of bits (D-113).
+        s = s.gsub(/(?<=[01])[[:space:]]+(?=[01])/, "")
         return Closed.invalid("unparseable") unless s.match?(/\A[01]+\z/)
 
         key = spec.answer.to_s

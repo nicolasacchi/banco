@@ -117,6 +117,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-108 | 2026-10-05 | content-agent reports (english): tests run on the first clean seed, per-instance accept exists, it_accents is the code for any non-Spanish accent slip; documented, no code change | implemented |
 | D-109 | 2026-10-05 | under accent_policy flag a declared error typed without its accent still hits it (spanish report); tests of generator items already run (D-078) | implemented |
 | D-112 | 2026-10-05 | testlet units carry the typical error codes of their sub items; the Italian lint skips passage_it and model_answer_it in english and spanish (rules v5) | implemented |
+| D-113 | 2026-10-05 | binary answers written in groups of bits ("1110 1100") are read as one string |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1236,5 +1237,15 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** (1) `Grading::Testlet` returns `typical_error` with the union of the sub items' `error_codes` when the unit is wrong; a mixture stays `undetermined` with no codes, all correct and all dont_know are unchanged. Evidence is W either way; the first code is the engine's error code, so descent follows its implicates when the graph lists that code on the testlet's skill. (2) `validation_rules.yml` v5: `target_language_subjects` (english, spanish) and `target_language_keys` (passage_it, model_answer_it); in those subjects `Readability.lint_document` skips those keys (no Gulpease, sentence length, ALL-CAPS). Other `_it` keys are still linted. (3) Already done, nothing to change: banned phrases on word boundaries (D-105), per-skill low-guess of a testlet (D-096), one skill per testlet and the brief (D-098), and `work status --wait` writes the status to stdout and the error object to stderr only (do not merge the streams).
 - **Why:** content agent (english, reading and pronoun descent).
 - **Cost:** a code not in the skill's graph errors counts as unclassified, as before. An English passage gets no readability check; the reviewer reads it.
+- **Status:** implemented
+- **Back-port:** B-02.
+
+## D-113 · 2026-10-05 · binary answers written in groups of bits are read as one string
+
+- **Design ref:** B-02, D-095
+- **Design said:** the binary profile refused spaces between bits as `ambiguous_mixed_number`, a message about mixed numbers and fractions.
+- **We do:** `Text.binary` drops whitespace between two bits before grading ("1110 1100" is 11101100); the width check and the leading-zero rule apply to the joined string, and `normalized` is the joined string. Other text stays `unparseable`. The reports on declared error values in the binary profile (D-095) and on the Italian thousands dot (`thousands_separator`, D-102/D-103) were already fixed on main; no change.
+- **Why:** content agent (computer_science, base conversions).
+- **Cost:** none; a space between bits was never a valid answer.
 - **Status:** implemented
 - **Back-port:** B-02.
