@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 7
+version: 8
 
 validation:
   # Skill graph (synchronous).
@@ -76,6 +76,7 @@ validation:
   W-FORM-SKILL-CLOSURE: { stage: ruby, severity: warning, description: "An item's form_skill is not in the prerequisite closure of its skill: a wrong form gets credit but no tail suspect." }
   W-CALCULATOR: { stage: ruby, severity: warning, description: "A numeric item in a subject that allows the calculator lacks the sentence that says so." }
   # Blueprint (synchronous).
+  W-SHORT-SKILL-CLOSED: { stage: blueprint, severity: warning, description: "Closed items are pinned on the skill of a pinned short answer: the engine serves only the short answer there, so they are never seen and do not count for the redo pool." }
   E-POOL-REDO: { stage: blueprint, severity: error, description: "A skill has fewer than 6 distinct-fingerprint instances across 2 items with 3 low-guess, and does not declare redo_reserve false; or a pinned descent skill has no low-guess instance." }
   E-BLUEPRINT-ENTRIES: { stage: blueprint, severity: error, description: "The blueprint has fewer than 4 or more than 10 entries." }
   E-BLUEPRINT-UNPINNED-DESCENT: { stage: blueprint, severity: error, description: "A skill the descent can reach from the starting skills has neither pinned items nor a not_assessed reason in descent[] (D-038)." }

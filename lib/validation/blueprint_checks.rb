@@ -8,7 +8,7 @@ module Validation
   #
   # items: ->(revision_id string) { ItemInfo | nil }
   module BlueprintChecks
-    ItemInfo = Struct.new(:id, :skills, :passed, :instances, keyword_init: true)
+    ItemInfo = Struct.new(:id, :skills, :passed, :instances, :kind, keyword_init: true)
     # instances: [{fingerprint:, low_guess:}]
 
     module_function
@@ -39,6 +39,7 @@ module Validation
           findings.add("E-SKILL-UNKNOWN", "#{field}/skill", "#{entry['skill']} is not in the graph this blueprint is built on")
         end
         infos = pinned(entry["items"], entry["skill"], "#{field}/items", items, findings)
+        infos = closed_beside_short(entry, infos, field, findings)
         pool_for_redo(entry, infos, field, findings)
       end
     end
@@ -59,6 +60,21 @@ module Validation
         end
         info
       end
+    end
+
+    # The engine serves only the short answer on its skill (Engine#servable?), so
+    # closed items pinned beside it are never seen: W-SHORT-SKILL-CLOSED, and they do
+    # not count for the redo pool. Returns the infos that can be served.
+    def closed_beside_short(entry, infos, field, findings)
+      return infos unless infos.any? { |i| i.kind == "short_answer" }
+
+      closed = infos.reject { |i| i.kind == "short_answer" }
+      unless closed.empty?
+        findings.add("W-SHORT-SKILL-CLOSED", "#{field}/items",
+                     "#{entry['skill']} holds the short answer: item(s) #{closed.map(&:id).join(', ')} are never served; give the short answer its own skill",
+                     skill: entry["skill"], rule: "short_skill_closed")
+      end
+      infos - closed
     end
 
     # At least 6 distinct instances over 2 items, 3 of them hard to guess, or the

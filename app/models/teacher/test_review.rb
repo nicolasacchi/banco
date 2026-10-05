@@ -67,7 +67,9 @@ module Teacher
     def traces
       @traces ||= TRACE_SCRIPTS.map do |name|
         plan = Diagnosis::PlanLoader.for_blueprint_revision(blueprint)
-        out = Diagnosis::Simulator.run(plan, Diagnosis::ScriptedStudent.new(name))
+        # The teacher confirms the short answer and any pending one as the script's student
+        # would be graded, so a discursive subject's trace reaches its close (D-121).
+        out = Diagnosis::Simulator.run(plan, Diagnosis::ScriptedStudent.new(name), resolve_pending: name == "all-correct" ? "correct" : "wrong")
         result = out[:result]
         { script: name, end_reason: result[:end_reason], served: result[:served], minutes: (result[:counted_seconds] / 60.0).round,
           sittings: result[:sittings].size, states: result[:skills].map { |r| r[:state] }.tally }

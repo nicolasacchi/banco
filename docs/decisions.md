@@ -125,6 +125,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-118 | 2026-10-05 | a table cell (header or row) may be the empty string, for spreadsheet grids; arrows already pass the lint in every `_it` field (D-095) | implemented |
 | D-119 | 2026-10-05 | `work open --role verifier` returns every stored instance (the whole pool of 24), not the first 8 | implemented |
 | D-120 | 2026-10-05 | `banco items list`: the revisions of a subject's items with status and a current marker | implemented |
+| D-121 | 2026-10-05 | W-SHORT-SKILL-CLOSED: closed items pinned beside a short answer are never served and leave the redo pool count; the teacher's traces confirm pending and short answers | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1325,3 +1326,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** one more read-only route.
 - **Status:** implemented
 - **Back-port:** A-04.
+
+## D-121 · 2026-10-05 · closed items beside the short answer; the teacher's traces reach the close
+
+- **Design ref:** B-02, B-07, C-04
+- **Design said:** `BlueprintChecks` counts every pinned instance of a skill for the redo pool; the teacher's traces run the named scripts as they are.
+- **We do:** (1) New warning `W-SHORT-SKILL-CLOSED` (registry version 8): closed items pinned on the skill of a pinned short answer are never served (`Engine#servable?`), so they are named in the warning and left out of the E-POOL-REDO count (a skill with a short answer needs `redo_reserve: false`). `ItemInfo` gains an optional `kind`. Authors give the short answer its own skill. (2) `Teacher::TestReview#traces` runs with `resolve_pending`, so a discursive subject's traces end at the close, not `waiting_on pending_answers`.
+- **Also, already done before this report:** the testlet charged to several skills (D-098), the testlet's per-skill low-guess and choice flags (D-096, `testlet_flags`), the bare-blueprint dry run (D-099), `intro_note_it`, `not_measured_it` and the calculator line (D-101), `work open` inside a git tree (D-115). Staging that ran older code showed them.
+- **Why:** content agent (law_economics, step blueprint).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** B-02.

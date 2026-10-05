@@ -172,6 +172,9 @@ class CodeFixturesTest < ActiveSupport::TestCase
     "E-ITEM-NOT-PASSED" => -> { blueprint_codes(items: ->(id) { BP_ITEMS.key?(id) ? bp_info(id, passed: id != "r1a") : nil }) },
     "E-BLUEPRINT-UNPINNED-DESCENT" => -> { blueprint_codes { |d| d["descent"].pop } },
     # Warnings.
+    "W-SHORT-SKILL-CLOSED" => lambda {
+      blueprint_codes(items: ->(id) { BP_ITEMS.key?(id) ? bp_info(id).tap { |i| i.kind = "short_answer" if id == "r0a" } : nil })
+    },
     "W-ANSWER-IN-STEM" => -> { static_codes(item("instances" => [ F.number_instance(25, 150, stem: "Risolvi $x+25=150$ sapendo che il risultato e 125."), F.number_instance(4, 13) ], "tests" => { "must_accept" => [], "must_reject" => [], "blank" => "invalid" })) },
     "W-LONGEST-CORRECT" => -> { static_codes(F.choice_item("instances" => (1..4).map { |i| F.choice_instance("una risposta molto lunga numero #{i}", %w[uno due tre]) })) },
     "W-GULPEASE" => -> { static_codes(item("prompt" => { "stem_it" => ([ "Paradigmaticamente incontrovertibilmente costituzionalizzabile" ] * 9).join(" ") + "." })) },
