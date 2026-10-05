@@ -69,6 +69,15 @@
       "error_codes": ["E-AUTH"]
     },
     {
+      "name": "items list",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/items",
+      "args": [],
+      "flags": ["--subject", "--current"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
       "name": "syllabus lines",
       "local": false,
       "method": "GET",

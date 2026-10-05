@@ -124,6 +124,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-117 | 2026-10-05 | W-SCOPE-MARKER reads the stars inside the cited fragment first (a line with several ☆ fragments has no line marker); matching as a 3-category classification already exists (D-092) | implemented |
 | D-118 | 2026-10-05 | a table cell (header or row) may be the empty string, for spreadsheet grids; arrows already pass the lint in every `_it` field (D-095) | implemented |
 | D-119 | 2026-10-05 | `work open --role verifier` returns every stored instance (the whole pool of 24), not the first 8 | implemented |
+| D-120 | 2026-10-05 | `banco items list`: the revisions of a subject's items with status and a current marker | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1312,5 +1313,15 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** the verifier gets every stored instance (the 24 clean seeds validation runs `verify.mjs` on), still with answers and never `generator.mjs`. `instances.json` grows from 8 to 24 rows. `E-VERIFY-REJECTS` already lists every rejected seed, the reasons grouped per wording and the first rejected instance (display, answer), so a seed outside the old 8 is no longer a blind spot.
 - **Why:** content agent (business, verify:B4): a categorical verify (matching, choice) must classify texts it had never seen and needed several submit rounds.
 - **Cost:** a larger answer (about three times); the verifier sees nothing it could not derive from the 8 plus the validation findings.
+- **Status:** implemented
+- **Back-port:** A-04.
+
+## D-120 · 2026-10-05 · `banco items list`
+
+- **Design ref:** A-04, A-07 (`banco status`, `review open`)
+- **Design said:** `banco status` counts the items of a subject; the revision id to review is learned elsewhere.
+- **We do:** `banco items list [--subject KEY] [--current]` (GET `/api/v1/items`, read only) lists every revision of the items with `{item, subject, kind, revision_id, seq, status, current, reviews, blind_solves}`; `current` is true for the latest revision of its item, `status` is its latest validation (`validating` when none). `--current` keeps only the latest revision of each item. A new route and command; no frozen format changes. The same report raised two more points that are not defects: (1) algebraic fractions in lowest terms are asked with `form: ["reduced"]` (D-080; the brief says so), which gives `wrong_form` / `common_factor_not_cancelled` for the unchanged fraction; (2) per-instance `accept` on a `normalized_text` instance exists since D-081 (`"accept": ["x = 0"]` on the instance whose key is `0`).
+- **Why:** content agent (math, review:1): finding the 39 current revisions took 170 `review open` probes.
+- **Cost:** one more read-only route.
 - **Status:** implemented
 - **Back-port:** A-04.

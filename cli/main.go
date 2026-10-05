@@ -43,6 +43,7 @@ var commands = []command{
 	{name: "health", run: runHealth},
 	{name: "status", run: runStatus},
 	{name: "syllabus lines", run: runSyllabusLines},
+	{name: "items list", run: runItemsList},
 	{name: "reference list", run: runReferenceList},
 	{name: "reference show", run: runReferenceShow},
 	{name: "work open", run: runWorkOpen},

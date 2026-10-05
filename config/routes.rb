@@ -79,6 +79,7 @@ Rails.application.routes.draw do
     get "api/v1/diagnosis/report" => "api/v1/reports#show", format: false
     get "api/v1/health" => "api/v1/health#show", format: false
     get "api/v1/status" => "api/v1/status#show", format: false
+    get "api/v1/items" => "api/v1/items#index", format: false
     get "api/v1/references" => "api/v1/references#index", format: false
     get "api/v1/references/:key" => "api/v1/references#show", constraints: { key: /[a-z0-9][a-z0-9-]*/ }, format: false
     get "api/v1/syllabus/:source/lines" => "api/v1/syllabus#lines", constraints: { source: /[a-z0-9][a-z0-9-]*/ }, format: false

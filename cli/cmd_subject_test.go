@@ -124,3 +124,21 @@ func TestReferenceCommandsBuildTheRequest(t *testing.T) {
 		}
 	}
 }
+
+func TestItemsListBuildsTheRequest(t *testing.T) {
+	srv, seen := sequenceServer(t, [2]string{"200", `{"rows":[]}`}, [2]string{"200", `{"rows":[]}`})
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "items", "list", "--subject", "math", "--current"); r.exit != ExitOK {
+		t.Fatalf("list: exit %d: %s", r.exit, r.stderr)
+	}
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "items", "list"); r.exit != ExitOK {
+		t.Fatalf("list all: exit %d: %s", r.exit, r.stderr)
+	}
+	if (*seen)[0].path != "/api/v1/items" || (*seen)[0].query != "current=1&subject=math" || (*seen)[1].query != "" {
+		t.Errorf("requests = %+v", *seen)
+	}
+	for _, args := range [][]string{{"items", "list", "--subject", "Bad Key"}, {"items", "list", "x"}} {
+		if got := runCLI(t, srv.URL, envToken("bnc_x"), args...); got.exit != ExitUsage {
+			t.Errorf("%v: exit %d", args, got.exit)
+		}
+	}
+}
