@@ -305,6 +305,18 @@ func TestWorkStatusWaitFailedExitsThree(t *testing.T) {
 	}
 }
 
+func TestWorkStatusWaitVerifyMissingOnlyPointsAtTheVerifier(t *testing.T) {
+	srv, _ := sequenceServer(t, [2]string{"200", `{"revision_id":8,"status":"failed","settled":true,"codes":["E-VERIFY-MISSING"]}`})
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "status", "8", "--wait")
+	if r.exit != ExitValidation {
+		t.Fatalf("exit %d", r.exit)
+	}
+	e := assertErrJSON(t, r.stderr, "E-VERIFY-MISSING")
+	if !strings.Contains(e.Next, "--role verifier") || strings.Contains(e.Next, "fix the files") {
+		t.Errorf("next = %q", e.Next)
+	}
+}
+
 func TestWorkStatusErrorAndTimeoutExitSix(t *testing.T) {
 	srv, _ := sequenceServer(t, [2]string{"200", `{"revision_id":8,"status":"error","settled":true}`})
 	r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "status", "8", "--wait")

@@ -1207,3 +1207,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** none.
 - **Status:** implemented
 - **Back-port:** A-06.
+
+## D-110 · 2026-10-05 · four english reports: two lint false positives, one CLI hint, two answered by documentation
+
+- **Design ref:** A-06 readability lint, `Validation::InstanceChecks` leak scan, `banco work status --wait`, D-081, D-084, D-108
+- **Design said:** `es.` is an abbreviation wherever it stands; a normalized_text key anywhere outside «…» in the stem is W-ANSWER-IN-STEM; a failed `--wait` always says "fix the files".
+- **We do:** (1) the abbreviation list no longer matches when a hyphen or a letter comes before it: `-es.` ends the sentence, `es.` (esempio) still does not. (2) For normalized_text, a bracketed cue right after the gap (`___ (swim)`) is skipped by the stem leak check, like «…». (3) When `E-VERIFY-MISSING` is the only code, `next` says the files are clean and a verifier runs `banco work open ITEM --role verifier` (same exit 3, same code). (4) Not changed: an instance may already carry its own `accept` (D-081, D-108; an accepted text equal to an error value of that instance comes back correct and fails E-ROUNDTRIP error_value), and W-NEGATIVE-STEM already ignores «…» and `$…$` (D-084): a negative sentence to translate goes inside «…». `banco.*/1` unchanged.
+- **Why:** content agent (english, B1 present and future forms).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** A-06.

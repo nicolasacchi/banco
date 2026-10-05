@@ -75,6 +75,15 @@ class D081Test < ActiveSupport::TestCase
     assert_includes codes(run_item(text_item(outside, "tests" => { "must_accept" => [], "must_reject" => [ "mai" ], "blank" => "invalid" }))), "W-ANSWER-IN-STEM"
   end
 
+  test "the bracketed cue right after a gap is not a W-ANSWER-IN-STEM (D-110)" do
+    cue = [ text_instance("swim", "swims", "My cousins ___ (swim) every summer."),
+            text_instance("swims", "swim", "My cousin ___ (swim) every summer.") ]
+    refute_includes codes(run_item(text_item(cue, "tests" => { "must_accept" => [], "must_reject" => [ "mai" ], "blank" => "invalid" }))), "W-ANSWER-IN-STEM"
+    outside = [ text_instance("swim", "swims", "Write swim: My cousins ___ (swim) every summer."),
+                text_instance("swims", "swim", "My cousin ___ (swim) every summer.") ]
+    assert_includes codes(run_item(text_item(outside, "tests" => { "must_accept" => [], "must_reject" => [ "mai" ], "blank" => "invalid" }))), "W-ANSWER-IN-STEM"
+  end
+
   test "the answer in the item prompt stem is W-ANSWER-IN-STEM; in its table, E-SOLUTION-IN-DISPLAY" do
     item = text_item([ text_instance("impossibile", "indeterminata", "Risolvi la prima."), text_instance("indeterminata", "impossibile", "Risolvi la seconda.") ],
                      "prompt" => { "stem_it" => "Scrivi impossibile o indeterminata, come risposta." },

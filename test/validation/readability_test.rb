@@ -93,6 +93,13 @@ class ReadabilityTest < ActiveSupport::TestCase
     assert_equal [ "E-PHRASE" ], lint("Lo dice a lezione.").map(&:code)
   end
 
+  test "the suffix -es. ends a sentence; es. (esempio) still does not (D-110)" do
+    text = "Dopo s, sh, ch, x, z e in go e do si aggiunge -es. Dopo consonante + y la y diventa -ies, dopo vocale + y si aggiunge -s; have diventa has."
+    assert_not_includes lint(text, role: :message).map(&:code), "E-READ"
+    long = "Ecco una frase di esempio con " + ([ "parola" ] * 14).join(" ") + ", es. questa e il resto della frase che continua ancora un poco."
+    assert_includes lint(long, role: :text).map(&:code), "E-READ"
+  end
+
   test "a message of more than two sentences is E-MESSAGE" do
     assert_includes lint("Primo passo. Secondo passo. Terzo passo.", role: :message).map(&:code), "E-MESSAGE"
     assert_not_includes lint("Primo passo. Secondo passo.", role: :message).map(&:code), "E-MESSAGE"

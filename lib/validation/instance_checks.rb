@@ -171,7 +171,8 @@ module Validation
         scope = readable_strings(display, include_stem: false, include_options: false)
         scope += prefixed(readable_strings(prompt, include_stem: false, include_options: false), "prompt")
         [ [ display["stem_it"], "#{label}/display/stem_it" ], [ prompt["stem_it"], "#{label}/prompt/stem_it" ] ].each do |stem, field|
-          text = component == "normalized_text" ? stem.to_s.gsub(/«[^»]*»/, " ") : stem.to_s
+          # A cloze's bracketed cue right after the gap, "___ (swim)", is the material, not a leak (D-110).
+          text = component == "normalized_text" ? stem.to_s.gsub(/«[^»]*»/, " ").gsub(/_{2,}\s*\([^)]*\)/, " ___ ") : stem.to_s
           next unless needles.any? { |n| Answers.contains?(text, n) }
 
           f.add("W-ANSWER-IN-STEM", field, "the expected answer appears in the instruction", seed: seed)
