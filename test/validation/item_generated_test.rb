@@ -49,6 +49,11 @@ class ItemGeneratedTest < ActiveSupport::TestCase
     result = run_files(F.generated_files(verify: "export function verify(instance) { return { ok: false, reason_it: 'Non so.' }; }"))
     assert_equal [ "E-VERIFY-REJECTS" ], codes(result)
     assert_equal 24, result.instances.size
+    detail = result.findings.find { |f| f.code == "E-VERIFY-REJECTS" }.detail
+    assert_equal detail[:count], detail[:rejected_seeds].size
+    assert_equal detail[:rejected_seeds].sort, detail[:reasons].values.flatten.sort
+    assert_equal [ "Non so." ], detail[:reasons].keys
+    assert_equal detail[:count], result.details.dig(:verify, :rejected)
   end
 
   test "E-VERIFY-REJECTS: a formula that is wrong in verify" do

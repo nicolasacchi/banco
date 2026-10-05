@@ -56,7 +56,9 @@ Files left out of a submission are carried forward from the base revision.
    `E-ACCEPTS-RANDOM`).
 6. **Verify**: `verify` accepts every clean seed and rejects the catalogue error values
    and the +1 and sign-flip mutants (`E-VERIFY-MISSING`, `E-VERIFY-REJECTS`,
-   `E-VERIFY-VACUOUS`).
+   `E-VERIFY-VACUOUS`). Verify runs on every clean seed of the 200, not only the 24 stored; the
+   `E-VERIFY-REJECTS` detail lists all rejected seeds and the reasons, and `details.verify`
+   reports `checked` and `rejected` (dry run included).
 
 `E-VERIFY-AUTHOR` and `E-SESSION-NOT-INDEPENDENT` are the submit-time rules of the next
 section; they refuse a submission and store nothing.

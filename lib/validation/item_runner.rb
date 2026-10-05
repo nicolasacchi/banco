@@ -145,7 +145,7 @@ module Validation
         else
           jobs = list.each_with_index.map { |inst, i| { id: "a#{i}", instance: inst[:display] && { "display" => inst[:display], "answer" => inst[:answer], "errors" => inst[:errors], "solution" => inst[:solution] } } }
           verdict = phase.verify(jobs)
-          interpret_verify(unit, item, list.each_with_index.map { |inst, i| [ i, inst ] }, verdict, accept_prefix: "a")
+          interpret_verify(unit, item, list.each_with_index.map { |inst, i| [ i, inst ] }, verdict, accept_prefix: "a", ids: :rejected_indexes)
         end
       end
     end
@@ -259,13 +259,19 @@ module Validation
       { "display" => c["display"], "answer" => c["answer"], "errors" => c["errors"], "solution" => c["solution"], "seed" => c[:seed] }.tap { |h| h["accept"] = c["accept"] if c["accept"] }
     end
 
-    def interpret_verify(_unit, _item, rows, verdict, accept_prefix:)
+    # Every rejected seed (or listed-instance index) is named, with the reason per seed
+    # grouped by wording: a verifier sees the whole pool's trouble in one run.
+    def interpret_verify(_unit, _item, rows, verdict, accept_prefix:, ids: :rejected_seeds)
+      @details[:verify] = { checked: rows.size }
       rejected = rows.select { |id, _| !verdict.dig("#{accept_prefix}#{id}", "ok") }
+      @details[:verify][:rejected] = rejected.size
       return if rejected.empty?
 
       first = verdict["#{accept_prefix}#{rejected.first[0]}"]
+      reasons = rejected.group_by { |id, _| (verdict["#{accept_prefix}#{id}"] || {}).values_at("reason", "reason_it").compact.first.to_s }
+                        .to_h { |reason, list| [ reason, list.map(&:first) ] }
       @findings.add("E-VERIFY-REJECTS", "/verify.mjs", "verify rejects #{rejected.size} clean #{rejected.size == 1 ? 'instance' : 'instances'}#{": #{first['reason']}" if first && first['reason']}",
-                    seed: rejected.first[0], count: rejected.size)
+                    seed: rejected.first[0], count: rejected.size, ids => rejected.map(&:first), reasons: reasons)
     end
 
     # Error values and the +1 and sign-flip mutants must all be rejected.

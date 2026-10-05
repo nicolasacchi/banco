@@ -106,6 +106,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-097 | 2026-10-05 | a dry run waits up to 25 s for Chrome before E-CHROME-BUSY | implemented |
 | D-098 | 2026-10-05 | a testlet is charged as a serve to its first skill only; its sub items must share one skill (E-TESTLET-SKILLS) | implemented |
 | D-099 | 2026-10-05 | one instance of a testlet item per run; a bare blueprint dry run loads the pinned graph and items | implemented |
+| D-100 | 2026-10-05 | E-VERIFY-REJECTS names every rejected seed with its reason; the dry run reports the verify phase | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1094,5 +1095,15 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** (1) `Candidates.for` leaves out every instance of a testlet item once one is served in the run, so one passage is never served twice and the rule is met by construction (a testlet has one skill since D-098). (2) `simulate` with a bare `banco.blueprint/1` loads the graph revision named by `graph_revision_id` (with foreign skills) and the passed stored revisions of the pinned items with their real instances, via `PlanLoader.for_document`. A pinned id with no passed revision gets synthetic instances; a graph revision that is not stored gives the old flat dry run; both add a `warnings` entry (E-SIMULATE-INPUT). A bundle with `graph` or `pool` is unchanged.
 - **Why:** content agent (italian, step blueprint). The multi-skill testlet part of that report is D-098: sub items on several skills now fail E-TESTLET-SKILLS. The 'number' default for a testlet's component only applies when per-skill flags are absent; D-096 flags come from the sub items' own components.
 - **Cost:** a dry run reads the database when the file names a stored graph.
+- **Status:** implemented
+- **Back-port:** B-02.
+
+## D-100 · 2026-10-05 · E-VERIFY-REJECTS names every rejected seed with its reason; the dry run reports the verify phase
+
+- **Design ref:** A-06, D-081
+- **Design said:** E-VERIFY-REJECTS carries a count and the first seed.
+- **We do:** the finding's detail adds `rejected_seeds` (`rejected_indexes` for listed instances), all of them, and `reasons` (reason text to the seeds it applies to). The result `details` (and so the dry-run answer) gains `verify: {checked, rejected}`. `seeds` and `count` are unchanged (additive; `banco.*/1` formats are not touched). The dry run was already the same `ItemRunner` as the job: verify runs over every clean seed of the 200, not only the 24 stored; this is now visible in `details.verify.checked`.
+- **Why:** content agent (law_economics, verify B1). A verifier who sees 8 instances needed many submit cycles to find the failing seeds of the pool; the dry run was reported to pass where the real submit failed, which came from a verify.mjs edited between the two runs (not reproducible: a rejecting verify.mjs fails the dry run on staging with the same code).
+- **Cost:** a larger finding detail (one seed list and a reason map).
 - **Status:** implemented
 - **Back-port:** B-02.
