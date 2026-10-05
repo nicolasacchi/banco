@@ -231,6 +231,7 @@ module Diagnosis
         kind = spec["kind"] || (component == "short_answer" ? "short_answer" : "diagnosis_item")
         n = spec["instances"] || (kind == "short_answer" ? 1 : DEFAULT_INSTANCES_PER_ITEM)
         sk = spec["skills"] || skills
+        sk = sk.first(1) if kind == "testlet" # one attempt, counted for the first skill only (D-098)
         low = spec.fetch("low_guess") { Rules::V1.low_guess?(component, size: spec["size"]) }
         Array.new(n) do |i|
           Instance.new(id: "#{item}##{i + 1}", item: item, skills: sk, component: component, low_guess: low,
