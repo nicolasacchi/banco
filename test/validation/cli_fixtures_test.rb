@@ -170,7 +170,7 @@ class CliFixturesTest < ActiveSupport::TestCase
     assert_equal "verifier", opened["role"]
     assert_not File.exist?(File.join(vdir, "generator.mjs")), "the verifier never receives generator.mjs"
     instances = JSON.parse(File.read(File.join(vdir, "instances.json")))
-    assert_equal 8, instances.size
+    assert_equal 24, instances.size
     assert instances.first.key?("answer")
     File.write(File.join(vdir, "verify.mjs"), F::VERIFY)
     code, out, _err, _o, e = banco("work", "submit", vdir, as: :verifier)
