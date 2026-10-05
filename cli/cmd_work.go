@@ -134,7 +134,27 @@ func runWorkOpen(e *env, args []string) error {
 		"status": answer.Status, "files": names, "validation": answer.Validation,
 		"next": "edit the files, then banco work submit " + target + " --dry-run",
 	}
+	if root := gitRootAbove(target); root != "" {
+		out["warning"] = "the folder " + target + " is inside the git work tree " + root + ": nothing of the work may be committed there; use --dir OUTSIDE/ITEM (for example under $TMPDIR) and delete this folder"
+	}
 	return json.NewEncoder(e.stdout).Encode(out)
+}
+
+// gitRootAbove returns the nearest enclosing directory that holds a .git
+// entry, or "" when the folder is not inside a git work tree.
+func gitRootAbove(dir string) string {
+	abs, err := filepath.Abs(dir)
+	if err != nil {
+		return ""
+	}
+	for d := abs; ; d = filepath.Dir(d) {
+		if _, err := os.Stat(filepath.Join(d, ".git")); err == nil {
+			return d
+		}
+		if filepath.Dir(d) == d {
+			return ""
+		}
+	}
 }
 
 // checkEmptyOrWork refuses to open into a folder that holds something else.

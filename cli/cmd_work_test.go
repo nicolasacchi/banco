@@ -104,6 +104,20 @@ func TestWorkOpenWritesTheFolderAndRemembersTheBase(t *testing.T) {
 	}
 }
 
+func TestWorkOpenWarnsInsideAGitWorkTree(t *testing.T) {
+	srv, _ := sequenceServer(t, [2]string{"200", `{"revision_id":1,"files":{"item.json":"{}"}}`})
+	repo := t.TempDir()
+	write(t, repo, ".git/HEAD", "ref: refs/heads/main")
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1", "--dir", filepath.Join(repo, "eq-1"))
+	if r.exit != ExitOK || !strings.Contains(r.stdout, `"warning"`) {
+		t.Fatalf("exit %d, want a warning: %s", r.exit, r.stdout)
+	}
+	out := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1", "--dir", filepath.Join(t.TempDir(), "x"))
+	if strings.Contains(out.stdout, `"warning"`) {
+		t.Errorf("no warning expected outside a repo: %s", out.stdout)
+	}
+}
+
 func TestWorkOpenAsVerifierWritesInstancesAndTestsButNoGenerator(t *testing.T) {
 	srv, seen := sequenceServer(t, [2]string{"200", `{"item":"eq-1","revision_id":7,"seq":1,"status":"failed","files":{"item.json":"{}"},"instances":[{"answer":"7"}],"tests":{"blank":"invalid"}}`})
 	dir := filepath.Join(t.TempDir(), "v")

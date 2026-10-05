@@ -119,6 +119,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-112 | 2026-10-05 | testlet units carry the typical error codes of their sub items; the Italian lint skips passage_it and model_answer_it in english and spanish (rules v5) | implemented |
 | D-113 | 2026-10-05 | binary answers written in groups of bits ("1110 1100") are read as one string | implemented |
 | D-114 | 2026-10-05 | binary profile: a declared error value written exactly (padding_missing) is a typical error, not wrong_form; plain normalized_text bit/letter codes typed with spaces are `invalid` (`spaces_in_code`); CS acronyms in caps_allowlist (rules v6); generator tests already run | implemented |
+| D-115 | 2026-10-05 | `work open` warns inside a git work tree; cloze pages repeating a form use D-092 `reuse_right` | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1260,3 +1261,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** a plain-text key of one token typed with spaces is never graded wrong, only asked again. `banco.*/1` unchanged.
 - **Status:** implemented
 - **Back-port:** B-02, A-06.
+
+## D-115 · 2026-10-05 · `work open` warns inside a git work tree; cloze pages that repeat a form use `reuse_right`
+
+- **Design ref:** D-092, D-111
+- **Design said:** nothing about where `work open` writes; a key may repeat a right id only for a classification.
+- **We do:** (1) `banco work open` adds a `warning` to its JSON when the folder it wrote is inside a git work tree (`--dir` has existed since M5; the default stays `./ITEM`). (2) Reported "a matching key cannot repeat a form" is answered by D-092: `display.reuse_right: true` allows a key that repeats a right id (4 or more rows and 3 or more forms, or 6 and 2; fewer forms than rows); a cloze page is that shape, no new flag. (3) `banco --help` already works since D-111; staging had it. `banco.*/1` unchanged.
+- **Why:** content agent (spanish, B3).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** none.

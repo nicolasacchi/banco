@@ -52,7 +52,7 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
   least 2 items, 3 of them hard to guess, unless the skill declares
   `redo_reserve: false`.
 - Run `banco work submit DIR --dry-run` until it exits 0, then submit.
-- The cycle: `banco work open ITEM` (or a new folder named after the item key),
+- The cycle: `banco work open ITEM` (or a new folder named after the item key; open it outside the repo with `--dir $TMPDIR/ITEM`: the CLI warns when the folder is inside a git work tree),
   edit, `banco work submit DIR --dry-run`, `banco work submit DIR`, `banco work
   status REV --wait`. The first submit fails with `E-VERIFY-MISSING` but stores the
   instances: a verifier then runs `banco work open ITEM --role verifier` (item,
@@ -147,7 +147,7 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
     spellings of its own key (`"accept": ["x = 0"]` on the instance whose key is `0`; for English, a key `did not go` with `"accept": ["didn't go"]`); the
     item's `accept` applies to every instance. The item's `tests` (`must_accept`, `must_reject`) run on the first
     stored instance only (the first clean seed: seed 1 unless seed 1 throws or is rejected, in which case the next one), so write them for that instance's
-    key; an instance's own `tests` run on that instance (use them for any other seed). A `matching` that classifies cases (4 or more rows and 3 or more categories, or 6 or more rows and 2 categories; always fewer categories than rows) sets `display.reuse_right: true` on every instance: the key may repeat a category; the right column is then the categories alone (no spare). The right column of a `matching` is plain text (no `$`, no backslash:
+    key; an instance's own `tests` run on that instance (use them for any other seed). A `matching` that classifies cases (4 or more rows and 3 or more categories, or 6 or more rows and 2 categories; always fewer categories than rows) sets `display.reuse_right: true` on every instance: the key may repeat a category; the right column is then the categories alone (no spare). A dropdown cloze page (one form per sentence, a form may be needed twice) is the same shape: set `reuse_right: true`, list each form once in the right column, with fewer forms than sentences. The right column of a `matching` is plain text (no `$`, no backslash:
     `E-MATCHING-RIGHT-MARKUP`). A `form_skill` should be a prerequisite of the item's skill
     (`W-FORM-SKILL-CLOSURE` otherwise: credit, but no tail suspect).
 13. **Calculating subjects.** Numeric items are generators. A numeric answer
