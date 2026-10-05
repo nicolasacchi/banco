@@ -17,7 +17,11 @@ module Validation
     # label: where the instance is, in finding fields ("generated" or
     # "/instances/2"); seed is set for generated ones; files: the revision's files,
     # for the asset and SVG text checks.
-    def initialize(unit, context:, files: {})
+    # A key option this long (plain characters) must not appear in the passage of a testlet (D-094).
+    PASSAGE_LEAK_MIN_CHARS = 20
+
+    def initialize(unit, context:, files: {}, passage: nil)
+      @passage = passage
       @unit = unit
       @context = context
       @files = files
@@ -173,6 +177,7 @@ module Validation
           f.add("W-ANSWER-IN-STEM", field, "the expected answer appears in the instruction", seed: seed)
         end
       end
+      passage_leak(needles, label, seed, f) if component == "choice"
       final = inst.dig("solution", "final").to_s
       needles += [ final ] if Answers.plain(final).length >= Answers::MIN_LEAK_CHARS && component != "choice"
       needles.each do |n|
@@ -183,6 +188,17 @@ module Validation
         f.add("E-SOLUTION-IN-DISPLAY", where, "the key or the solution appears where the student reads (#{n.to_s[0, 30].inspect})", seed: seed)
         break
       end
+    end
+
+    # A long key option stated word for word in the testlet passage (D-094). Short keys (a name
+    # in the story) are too common in a passage to be an error.
+    def passage_leak(needles, label, seed, f)
+      return if @passage.to_s.empty?
+
+      needle = needles.find { |n| Answers.plain(n).length >= PASSAGE_LEAK_MIN_CHARS && Answers.contains?(@passage, n) }
+      return unless needle
+
+      f.add("E-SOLUTION-IN-DISPLAY", "#{label}/passage_it", "the key option appears word for word in the passage (#{needle.to_s[0, 30].inspect})", seed: seed)
     end
 
     def prefixed(strings, tag) = strings.map { |path, text| [ "#{tag}:#{path}", text ] }

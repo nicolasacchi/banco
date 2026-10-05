@@ -127,7 +127,7 @@ module Validation
           findings.add("W-GULPEASE", field, "Gulpease index #{index.round} (below #{Rules.get(:readability, :min_gulpease)})", index: index.round)
         end
       end
-      lower = body.downcase
+      lower = body.downcase.gsub(/\bda (?:solo|sola|soli|sole)\b/, " ")   # "by oneself", not "only" (D-094)
       if (w = Rules.list(:readability, :absolute_words).find { |a| lower.match?(/\b#{Regexp.escape(a)}\b/) })
         findings.add("W-ABSOLUTE", field, "an absolute word (#{w}) needs a counterexample check", word: w)
       end

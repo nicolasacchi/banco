@@ -94,7 +94,7 @@ module Validation
           @findings.add("E-GEN-SCHEMA", "#{unit.path}/generator", "generators in testlet sub-items are not supported yet: list instances", rule: "testlet_generator")
           []
         else
-          static(unit, item)
+          static(unit, item, passage: item["passage_it"])
         end
       end
       return [] if lists.any?(&:empty?)
@@ -114,9 +114,9 @@ module Validation
 
     # ---- static items ------------------------------------------------------------------
 
-    def static(unit, item)
+    def static(unit, item, passage: nil)
       list = Array(unit.instances)
-      checker = InstanceChecks.new(unit, context: @context, files: @files)
+      checker = InstanceChecks.new(unit, context: @context, files: @files, passage: passage)
       list.each_with_index do |inst, i|
         @findings.merge!(checker.call(inst, label: "#{unit.path}/instances/#{i}"))
         ItemChecks.excluded_params(unit.body, inst, "#{unit.path}/instances/#{i}", @findings)

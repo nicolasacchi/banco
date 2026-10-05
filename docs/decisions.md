@@ -100,6 +100,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-091 | 2026-10-05 | deferred_prerequisites and deferred_implicates: cross-subject edges that wait for approval; banco --help | implemented |
 | D-092 | 2026-10-05 | matching as a classification (`display.reuse_right`); generator `tests` confirmed already run | implemented |
 | D-093 | 2026-10-05 | graph findings per skill; 2-category classification; number `accept` and form `scientific` | implemented |
+| D-094 | 2026-10-05 | testlet passage in the leak scan; `da solo` is not an absolute word | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1030,3 +1031,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** a 2-category classification is guessable more often than one with 3 or more; prefer 3 or more categories or 7+ rows. `accept` values are not tried against the error catalogue.
 - **Status:** implemented
 - **Back-port:** A-06, X-01, E-03.
+
+## D-094 · 2026-10-05 · testlet passage in the leak scan; "da solo" is not an absolute word
+
+- **Design ref:** A-06
+- **Design said:** (1) the leak scan of a testlet sub-item read only the sub-item's own display and prompt, never the testlet `passage_it`. (2) `solo` in the absolute-word list matched "da solo" (by oneself). (3) A third report said generator `tests` are never run: already done since D-078 (they run on the first stored instance), nothing to change; the staging build the agent used may have predated it.
+- **We do:** (1) for a `choice` sub-item, a key option of 20 or more plain characters found word for word in `passage_it` is `E-SOLUTION-IN-DISPLAY` (field `/sub_items/N/instances/K/passage_it`). Shorter keys (a name in the story) are not checked: they are too common in a passage. (2) `da solo`, `da sola`, `da soli`, `da sole` are removed before `W-ABSOLUTE`; a bare `solo` still warns. The brief says so. `banco.*/1` unchanged.
+- **Why:** content agent (law_economics, B5).
+- **Cost:** a paraphrase of the key in the passage is still the author's and the reviewer's job; non-choice sub-items are not scanned against the passage.
+- **Status:** implemented
+- **Back-port:** A-06.

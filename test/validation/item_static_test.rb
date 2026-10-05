@@ -300,4 +300,24 @@ class ItemStaticTest < ActiveSupport::TestCase
     assert_equal 3, result.instances.size
     assert_equal %w[q1 q2 q3 q4 q5], result.instances.first[:answer].keys
   end
+
+  test "D-094: a long key option stated in a testlet passage is E-SOLUTION-IN-DISPLAY; a short one is not" do
+    build = lambda do |passage, key|
+      subs = (1..5).map do |n|
+        F.choice_item.slice("skill", "component", "prompt", "error_catalogue", "tests", "choice_only_reason_it").merge(
+          "id" => "q#{n}",
+          "instances" => [ F.choice_instance(key, %w[tredici nove undici]), F.choice_instance(key, %w[quattro sei dieci]), F.choice_instance(key, %w[uno due tre]) ]
+        )
+      end
+      { "schema" => "banco.item/1", "schema_version" => 1, "kind" => "testlet", "subject" => "math", "skill" => F::SKILL,
+        "passage_it" => passage, "expected_seconds" => 300, "sub_items" => subs,
+        "sources" => [ { "kind" => "inferred", "ref" => "prova", "fragment" => "x" } ] }
+    end
+    long = "il contratto e annullabile per incapacita"
+    leaky = run_item(build.call("Nel testo si legge che #{long} del venditore.", long))
+    assert_includes codes(leaky), "E-SOLUTION-IN-DISPLAY"
+    assert_equal "/sub_items/0/instances/0/passage_it", leaky.findings.find { |f| f.code == "E-SOLUTION-IN-DISPLAY" }.field
+    short = run_item(build.call("Marco vende la casa a Luigi.", "Marco"))
+    assert_not_includes codes(short), "E-SOLUTION-IN-DISPLAY"
+  end
 end

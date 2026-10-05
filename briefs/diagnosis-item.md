@@ -86,7 +86,8 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
    another instance.
 5. **No help, no solution in the text.** The solution lives in `solution`. The
    text of the correct option appears nowhere outside the options (stem, table,
-   figure alt, SVG text).
+   figure alt, SVG text; in a testlet, also the passage: a key option of 20 or
+   more characters found word for word in `passage_it` is `E-SOLUTION-IN-DISPLAY`).
 6. **Readability** (plain language for readers who need it). Italian sentences of
    at most 25 words; the instruction (stem) at most 60 words; bold only on key
    words, at most 3 spans of at most 4 words; no ALL-CAPS words, no italics, no
