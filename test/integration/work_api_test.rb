@@ -14,6 +14,7 @@ class WorkApiTest < ActionDispatch::IntegrationTest
   setup do
     @token = ApiToken.issue!(role: "agent_claude", label: "work test")
     build_course
+    Validation::DryRun.clear_cache
   end
 
   def auth = { "Authorization" => "Bearer #{@token}" }
@@ -60,6 +61,8 @@ class WorkApiTest < ActionDispatch::IntegrationTest
     api("/api/v1/work/revisions/#{revision_id}")
     assert_equal "validating", json["status"]
     assert_equal false, json["settled"]
+    assert_equal Validation::Rules.version, json["current_rules_version"]
+    assert_equal 0, json["queue_ahead"]
 
     perform_enqueued_jobs
     api("/api/v1/work/revisions/#{revision_id}")
@@ -189,6 +192,37 @@ class WorkApiTest < ActionDispatch::IntegrationTest
     assert_equal before, counts.call
   end
 
+  test "status counts the older revisions still waiting for a verdict" do
+    submit("eq-1", F.files_for(F.static_item))
+    first = json["revision_id"]
+    submit("eq-2", F.files_for(F.static_item))
+    second = json["revision_id"]
+    api("/api/v1/work/revisions/#{second}")
+    assert_equal 1, json["queue_ahead"]
+    ItemValidation.create!(item_revision_id: first, seq: 1, status: "passed", codes_json: "[]", rules_version: "6")
+    api("/api/v1/work/revisions/#{second}")
+    assert_equal 0, json["queue_ahead"]
+  end
+
+  test "an identical dry run is answered from memory, a changed file is run again" do
+    Validation::DryRun.clear_cache
+    files = F.files_for(F.static_item)
+    submit("eq-1", files, dry: true)
+    assert_response :ok
+    runs = 0
+    original = Validation::ItemRunner.instance_method(:call)
+    Validation::ItemRunner.define_method(:call) { |*a| runs += 1; original.bind(self).call(*a) }
+    begin
+      submit("eq-1", files, dry: true)
+      assert_response :ok
+      assert_equal 0, runs
+      submit("eq-1", F.files_for(F.static_item("prompt" => { "stem_it" => "Scrivi la risposta che cercano." })), dry: true)
+      assert_equal 1, runs
+    ensure
+      Validation::ItemRunner.define_method(:call, original)
+    end
+  end
+
   test "--dry-run on a failing item answers 422 with the first code, every code and the findings" do
     before = ItemRevision.count
     submit("eq-1", F.files_for(F.static_item("prompt" => { "stem_it" => "Scrivi la risposta che cercano." })), dry: true)
@@ -301,7 +335,7 @@ class WorkApiTest < ActionDispatch::IntegrationTest
     assert_response :ok, json.inspect
     assert_equal 24, json["instances"]
     assert_equal 1, ItemRevision.count
-
+    Validation::DryRun.clear_cache  # a repeat would be answered from memory, Chrome never asked
     held = Queue.new
     release = Queue.new
     holder = Thread.new { Validation::ChromeRunner.with_lock { held << true; release.pop } }

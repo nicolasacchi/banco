@@ -164,6 +164,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-157 | 2026-10-06 | `items list` and `work status` show `awaiting_verifier` like `banco status` | implemented |
 | D-158 | 2026-10-06 | `review open` reads without a session | implemented |
 | D-159 | 2026-10-06 | `blueprint open` returns the submittable document | implemented |
+| D-160 | 2026-10-06 | `work status` shows the queue and the current rules version; `--wait` waits 900 s; identical dry runs are cached | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1733,4 +1734,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** the open page has a new top-level `document`: the latest stored blueprint alone (null when none), accepted as is by `blueprint submit`. The `next` hint and the blueprint brief say so. `banco.*/1` unchanged (a key added to the open page only).
 - **Why:** content agent (business, step sreview1). Missing convenience, not a defect of validation.
 - **Cost:** the page repeats the document (also under `revision.blueprint`).
+- **Status:** implemented
+
+## D-160 · 2026-10-06 · `work status` shows the queue and the rules version; `--wait` waits longer; identical dry runs are cached
+
+- **Design ref:** A-06, D-154
+- **Design said:** `work status` gave the verdict only; `--wait` stopped after 300 s; every dry run of a generator ran its 200 seeds again.
+- **We do:** (1) `GET /api/v1/work/revisions/:revision` adds `queue_ahead` (older revisions with no final verdict: the Chrome lane runs one validation at a time, so this is how many run first; 0 once settled) and `current_rules_version` (the server's, to compare with the row's `rules_version`). The CLI `--wait` default is 900 s, and its `E-TIMEOUT` says how many are queued ahead and that `--timeout SECONDS` raises the wait. (2) `Validation::DryRun` keeps the result of an identical dry run (subject, files, flag, rules version, graph, references, syllabus, decisions) for 10 minutes, 64 entries per process; an error is never kept. (3) Staging showing items as passed under older rules was a stale staging (rules_version 1 against 6): `refresh.sh` brings it to origin/main; an author compares `rules_version` in the status with `current_rules_version`. `banco.*/1` unchanged (keys added).
+- **Why:** content agent (law_economics, step promote1). Missing feature (queue visibility), stale staging, slow repeated dry runs.
+- **Cost:** a dry run after a change to something outside the key (a code edit) can be served from memory for up to 10 minutes; a restart clears it.
 - **Status:** implemented

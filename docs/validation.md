@@ -13,7 +13,7 @@ banco skill-graph open|submit|coverage --subject KEY
 banco blueprint open|submit --subject KEY
 banco work open ITEM [--role author|verifier]     writes a folder (item.json, generator.mjs, verify.mjs, assets/)
 banco work submit DIR [--dry-run]     new revision; --dry-run validates now and stores nothing
-banco work status REV [--wait]        exit 0 passed, 3 failed (codes on stderr), 6 error or timeout
+banco work status REV [--wait] [--timeout S]   exit 0 passed, 3 failed (codes on stderr), 6 error or timeout (default 900 s); the status has queue_ahead and current_rules_version
 ```
 
 Order for a generated item: the author submits `item.json` and `generator.mjs`; the

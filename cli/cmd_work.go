@@ -324,7 +324,7 @@ func runWorkStatus(e *env, args []string) error {
 	fs := flag.NewFlagSet("work status", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	wait := fs.Bool("wait", false, "wait for the final verdict")
-	timeout := fs.Int("timeout", 300, "seconds to wait with --wait")
+	timeout := fs.Int("timeout", 900, "seconds to wait with --wait (the Chrome lane runs one validation at a time)")
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
 	if err != nil {
@@ -350,6 +350,7 @@ func runWorkStatus(e *env, args []string) error {
 		var st struct {
 			Status   string            `json:"status"`
 			Settled  bool              `json:"settled"`
+			Ahead    int               `json:"queue_ahead"`
 			Codes    []string          `json:"codes"`
 			Findings []json.RawMessage `json:"findings"`
 		}
@@ -384,7 +385,11 @@ func runWorkStatus(e *env, args []string) error {
 			}
 		}
 		if time.Now().After(deadline) {
-			return newErr(ExitServer, "E-TIMEOUT", "revision", "the validation did not finish within "+strconv.Itoa(*timeout)+" s", next)
+			msg := "the validation did not finish within " + strconv.Itoa(*timeout) + " s"
+			if st.Ahead > 0 {
+				msg += "; " + strconv.Itoa(st.Ahead) + " older revisions are still queued ahead of it (one validation runs at a time)"
+			}
+			return newErr(ExitServer, "E-TIMEOUT", "revision", msg, next+" [--timeout SECONDS]")
 		}
 		time.Sleep(interval)
 	}

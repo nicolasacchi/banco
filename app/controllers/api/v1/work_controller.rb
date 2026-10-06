@@ -57,6 +57,7 @@ module Api
         # An unsettled `error` is one failed attempt (Chrome busy or slow); the job tries again by itself.
         render json: { revision_id: revision.id, item: revision.item.key, seq: revision.seq, status: revision.latest_validation&.display_status || "validating",
                        settled: settled, retrying: revision.status == "error" && !settled, instances: revision.instances.count,
+                       current_rules_version: Validation::Rules.version, queue_ahead: settled ? 0 : queue_ahead(revision),
                        teacher_comments: Teacher::SendBacks.for_item(revision.item) }.merge(validation_row(revision) || {})
       end
 
@@ -103,6 +104,15 @@ module Api
         findings = v.findings_json ? JSON.parse(v.findings_json) : []
         { codes: JSON.parse(v.codes_json || "[]"), findings: findings, rules_version: v.rules_version, harness_version: v.harness_version,
           chrome_version: v.chrome_version, attempt: v.attempt, validated_at: v.created_at }
+      end
+
+      # Older revisions still waiting for a verdict: the Chrome lane has one thread and takes them in
+      # order, so this is how many validations run before this one (D-160).
+      def queue_ahead(revision)
+        ItemRevision.where("item_revisions.id < ?", revision.id).where(<<~SQL.squish, ValidateItemRevisionJob::ATTEMPTS).count
+          NOT EXISTS (SELECT 1 FROM item_validations v WHERE v.item_revision_id = item_revisions.id
+                      AND (v.status IN ('passed', 'failed') OR v.attempt >= ?))
+        SQL
       end
 
       # passed and failed are final; an error is final only after the last retry.

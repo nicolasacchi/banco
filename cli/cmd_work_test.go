@@ -342,12 +342,15 @@ func TestWorkStatusErrorAndTimeoutExitSix(t *testing.T) {
 	}
 	assertErrJSON(t, r.stderr, "E-VALIDATION-ERROR")
 
-	slow, _ := sequenceServer(t, [2]string{"200", `{"revision_id":8,"status":"validating","settled":false}`})
+	slow, _ := sequenceServer(t, [2]string{"200", `{"revision_id":8,"status":"validating","settled":false,"queue_ahead":5}`})
 	r = runCLI(t, slow.URL, envToken("bnc_x"), "work", "status", "8", "--wait", "--timeout", "0")
 	if r.exit != ExitServer {
 		t.Fatalf("timeout exit %d", r.exit)
 	}
 	assertErrJSON(t, r.stderr, "E-TIMEOUT")
+	if !strings.Contains(r.stderr, "5 older revisions are still queued") {
+		t.Fatalf("the timeout does not say how many are queued: %s", r.stderr)
+	}
 }
 
 func TestWorkStatusWithoutWaitJustReads(t *testing.T) {

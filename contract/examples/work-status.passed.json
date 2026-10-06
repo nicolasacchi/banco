@@ -14,6 +14,8 @@
       "settled": true,
       "retrying": false,
       "instances": 3,
+      "current_rules_version": 6,
+      "queue_ahead": 0,
       "teacher_comments": [],
       "codes": [],
       "findings": [],
