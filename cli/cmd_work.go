@@ -63,7 +63,7 @@ func runWorkOpen(e *env, args []string) error {
 	fs := flag.NewFlagSet("work open", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	role := fs.String("role", "author", "author or verifier")
-	dir := fs.String("dir", "", "folder to write (default ./ITEM)")
+	dir := fs.String("dir", "", "folder to write (default $TMPDIR/banco-work/ITEM, outside the repo)")
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
 	if err != nil {
@@ -79,7 +79,7 @@ func runWorkOpen(e *env, args []string) error {
 	item := pos[0]
 	target := *dir
 	if target == "" {
-		target = item
+		target = filepath.Join(os.TempDir(), "banco-work", item)
 	}
 	if err := checkEmptyOrWork(target); err != nil {
 		return err

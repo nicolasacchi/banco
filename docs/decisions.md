@@ -142,6 +142,8 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-135 | 2026-10-06 | `round_to` on a number error; item implicates into another subject's draft graph; ready marker on deferred edges | implemented |
 | D-136 | 2026-10-06 | a pinned item revision that a newer passed revision replaced is `W-STALE-PIN` | implemented |
 | D-137 | 2026-10-06 | `skill-graph coverage` lists the error codes of passed items that the graph lacks | implemented |
+| D-138 | 2026-10-06 | the blueprint's item order decides which item is served first; a star block survives short bullets | implemented |
+| D-139 | 2026-10-06 | W-SCOPE-MARKER reads a star just before the cited fragment; `banco work open` defaults to `$TMPDIR/banco-work/ITEM` | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1521,4 +1523,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** (1) `Plan::Entry` carries `items` (the blueprint's `entries[].items`); `Candidates.for` returns the eligible instances ordered by the position of their item in that list (unlisted items last, seeded order breaking ties), for every need. Listing the first item first now serves it first. No schema change. (2) `Syllabus::BlockMarker`: inside an open star block only the next marked line, a blank, a transcriber line or a line ending with ":" ends it; a short bullet no longer does, so it inherits the star. A short header-looking line outside a block still opens nothing. Not done: a per-item "coverage unverified" flag. The order answers the concern (a failed later item next to a passed first one is read by the teacher as to verify); a flag would be a new decision input.
 - **Why:** content agent (spanish, step fix): 656 served before 403; W-SCOPE-MARKER on lines 177-181.
 - **Cost:** a block that really ends at a short header without a colon now runs on until a blank or a marked line; the heuristic can over-report a star. The agent re-imports with the source's blank lines or cites the header line.
+- **Status:** implemented
+
+## D-139 · 2026-10-06 · W-SCOPE-MARKER reads a star just before the cited fragment; `banco work open` defaults outside the repo
+
+- **Design ref:** A-06, brief rule 3
+- **Design said:** the programme's markers decide the scope; a star inside the cited fragment decides first (D-117); `work open` writes `./ITEM` unless `--dir` (D-091).
+- **We do:** (1) A fragment cited without its star takes the star that stands before it in the same sentence of the line (`... ☆ Un mondo inquinato.` cited as `Un mondo inquinato`), then the line marker, then the block marker. (2) `banco work open ITEM` without `--dir` writes `$TMPDIR/banco-work/ITEM` (os.TempDir) instead of the current directory; the in-git-tree warning stays for an explicit `--dir`. (3) Reported "PlanLoader treats a testlet as a low-guess number item" is not reproducible on main: since D-096 the loader gives a testlet per-skill flags from its sub items (choice sub items: not low-guess, choice) and since D-099/D-131 one passage is served once per run; a loader test now pins it. The report came from a staging build or blueprint older than that. `banco.*/1` unchanged.
+- **Why:** content agent (geography, step fix).
+- **Cost:** a sentence boundary is `. ; ! ?` followed by a space; a star after an abbreviation's dot is read as in the next sentence.
 - **Status:** implemented

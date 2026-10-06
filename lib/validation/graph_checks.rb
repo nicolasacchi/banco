@@ -172,7 +172,7 @@ module Validation
 
         markers = Array(s["refs"]).select { |r| prima_ref?(r) }.filter_map do |r|
           line = context.source_line(r["source"], r["line"])
-          line && (fragment_marker(r["fragment"]) || line[:marker] || line[:block_marker])
+          line && (fragment_marker(r["fragment"], line[:text]) || line[:marker] || line[:block_marker])
         end
         next if markers.empty?
 
@@ -212,14 +212,24 @@ module Validation
 
     # A star inside the cited fragment itself decides first (a line can hold several
     # starred fragments without starting with a star); else the line's marker applies.
-    def fragment_marker(fragment)
+    # A fragment cited without its star takes the star that stands just before it in
+    # the same sentence ("... ☆ Un mondo inquinato." cited as "Un mondo inquinato").
+    def fragment_marker(fragment, text = nil)
       full = fragment.to_s.include?("\u2605")
       half = fragment.to_s.include?("\u2606")
       return "\u2605\u2606" if full && half
       return "\u2605" if full
       return "\u2606" if half
 
-      nil
+      preceding_marker(fragment.to_s, text.to_s)
+    end
+
+    def preceding_marker(fragment, text)
+      at = fragment.empty? ? nil : text.index(fragment)
+      return nil unless at
+
+      sentence = text[0...at].split(/[.;!?]\s/, -1).last.to_s
+      sentence[/[\u2605\u2606](?=[^\u2605\u2606]*\z)/]
     end
 
     # A skill needs a next-year line that requires it, directly or through a skill

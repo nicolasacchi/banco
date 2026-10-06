@@ -411,3 +411,22 @@ func TestWorkOpenReopenRemovesFilesTheRevisionDoesNotHave(t *testing.T) {
 		t.Error("a stale verify.mjs survived the reopen")
 	}
 }
+
+func TestWorkOpenDefaultsToTmpdirNotTheCurrentDirectory(t *testing.T) {
+	srv, _ := sequenceServer(t, [2]string{"200", `{"item":"eq-1","revision_id":7,"seq":2,"status":"failed","files":{"item.json":"{}"},"validation":{}}`})
+	tmp := t.TempDir()
+	t.Setenv("TMPDIR", tmp)
+	cwd := t.TempDir()
+	t.Chdir(cwd)
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1", "--json")
+	if r.exit != ExitOK {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	want := filepath.Join(tmp, "banco-work", "eq-1")
+	if read(t, want, "item.json") != "{}" {
+		t.Errorf("folder %s not written", want)
+	}
+	if exists(cwd, "eq-1") {
+		t.Error("the current directory got a folder")
+	}
+}
