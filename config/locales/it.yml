@@ -78,7 +78,7 @@ it:
     ordering_up: "Su"
     ordering_down: "Giù"
     matching_label: "Abbina ogni voce a una risposta. Usa ogni risposta una volta sola: una avanza."
-    matching_reuse_label: "Scegli per ogni voce la categoria giusta. Una categoria può servire per più voci."
+    matching_reuse_label: "Scegli per ogni voce la risposta giusta. Una risposta può servire per più voci."
     matching_blank: "Scegli"
     text_label: "Scrivi la risposta"
     long_text_label: "Scrivi la risposta con parole tue"

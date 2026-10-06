@@ -160,6 +160,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-154 | 2026-10-06 | an identical resubmission of a revision that passed under older rules is validated again under the current rules | implemented |
 | D-155 | 2026-10-06 | a dotted abbreviation (a.C., d.C., m.c.m.) counts as one word in the readability rules | implemented |
 | D-151 | 2026-10-06 | skill-graph coverage follows the engine for testlets (first skill) and lists stored multi-skill testlets | implemented |
+| D-156 | 2026-10-06 | the reuse_right widget label says answer, not category | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1693,4 +1694,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** `Readability.count_words` collapses a dotted abbreviation (`DOTTED`) into one word before counting, for sentence length, instruction length and bold-span length. The splitter is unchanged (D: a.C. followed by a capital still ends a sentence). Only looser, so `rules_version` stays 6 and no pin is flagged `older_rules`.
 - **Why:** content agent (history, step promote). Defect in the counter.
 - **Cost:** none known; a sentence of 26 real words is still refused.
+- **Status:** implemented
+
+## D-156 · 2026-10-06 · the reuse_right widget label says answer, not category
+
+- **Design ref:** D-092 (reuse_right), item brief (dropdown cloze pages)
+- **Design said:** a matching part with `reuse_right` shows "Scegli per ogni voce la categoria giusta. Una categoria può servire per più voci." That fits a classification but not a cloze page of verb forms or articles.
+- **We do:** the label is "Scegli per ogni voce la risposta giusta. Una risposta può servire per più voci." (`matching_reuse_label`). Text only; `banco.*/1` unchanged.
+- **Why:** content agent (spanish, step sfix1). Defect in wording. The same report's first issue (an unchanged resubmission cannot clear W-RULES-OUTDATED) is D-154, already implemented.
+- **Cost:** none.
 - **Status:** implemented
