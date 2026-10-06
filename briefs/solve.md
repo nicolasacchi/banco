@@ -19,6 +19,14 @@ options, elements). `banco solve submit REV --file answers.json` sends the answe
 If your shell does not keep variables between calls, write the session id to a file in your work folder and export it again before each `banco` call (`E-SESSION` otherwise).
 Never ask for a decision.
 
+A session has only one submit for an item: a stored answer cannot be retracted or corrected,
+and a second submit is refused (`E-SESSION-NOT-INDEPENDENT`). Before the real submit, check the
+file with `banco solve submit REV --file answers.json --dry-run`: it stores nothing and refuses
+a wrong shape, a missing or doubled instance and an answer the grader cannot read (a number with
+a dot, an empty string), so fix those first. It also prints a mismatch count; do not change an
+answer because of that count, since the solve is blind and a disagreement is for the teacher to
+judge. Read each answer once more against the display before you submit.
+
 ## Format
 
 `answers[]`: one entry per instance, `{instance, answer}` or `{instance, dont_know:

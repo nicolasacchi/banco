@@ -177,6 +177,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-170 | 2026-10-06 | E-SCHEMA says in plain words what a wrong constant or non-string root member must be | implemented |
 | D-171 | 2026-10-06 | W-MESSAGE-GIVES-KEY: an error message that states an instance's key | implemented |
 | D-172 | 2026-10-06 | `blueprint open` shows `awaiting_verifier` in items[] like `banco status` | implemented |
+| D-173 | 2026-10-06 | the solve brief says one submit per session and what `--dry-run` is for; no retraction | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1863,4 +1864,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** the `status` of an `items[]` row of `blueprint open` is `ItemValidation#display_status`, the same rule as the other views (`awaiting_verifier`; otherwise the stored status, `validating` when none). Additive; `banco.*/1` unchanged.
 - **Why:** content agent (history, step author). Defect: one more view disagreed.
 - **Cost:** a script that compared this status to `failed` must also accept `awaiting_verifier`.
+- **Status:** implemented
+
+## D-173 · 2026-10-06 · the solve brief says one submit per session and what `--dry-run` is for; no retraction
+
+- **Design ref:** A-05, D-018 (second round is a new session)
+- **Design said:** the blind solve is stored once, append-only; a second round uses a session that did not see the first; the teacher disposes of findings.
+- **We do:** behaviour unchanged. `banco solve submit --dry-run` already exists, checks shape and unreadable answers and stores nothing; `briefs/solve.md` now says to run it before the real submit, that a session has one submit, and not to change an answer because of the dry run's mismatch count. No solver-side retraction and no per-instance mismatch in the dry run.
+- **Why:** content agent (computer_science, step solve1:2) mistyped one answer and could not resubmit (`E-SESSION-NOT-INDEPENDENT`), leaving a false blocker. Classified as missing guidance. A retraction would let a solver edit the ledger and a per-instance dry-run mismatch would make the solve an oracle for the key, defeating blindness; the ledger is append-only. The orchestrator may run a fresh solver session for a clean round; the teacher dismisses the stale finding otherwise. `banco.*/1` unchanged.
+- **Cost:** none.
 - **Status:** implemented

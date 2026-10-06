@@ -50,6 +50,12 @@ class BriefTest < ActiveSupport::TestCase
     assert_match(/never produces a mismatch.*sample answer/m, body)
   end
 
+  test "the solve brief says one submit per session and what --dry-run is for" do
+    body = Brief.find("solve").body
+    assert_match(/only one submit.*solve submit REV --file answers.json --dry-run/m, body)
+    assert_match(/mismatch count; do not change an\s+answer/, body)
+  end
+
   test "briefs mention only formats that exist" do
     NAMES.each do |name|
       Brief.find(name).body.scan(%r{banco\.(\w+)/1}).flatten.each do |format|
