@@ -172,6 +172,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-165 | 2026-10-06 | E-REVIEW-EMPTY names the rule each weak point failed | implemented |
 | D-166 | 2026-10-06 | the solve brief states the testlet and short_answer answer shapes | implemented |
 | D-167 | 2026-10-06 | the review brief tells reviewers to allocate a unique scratch directory | implemented |
+| D-168 | 2026-10-06 | the solve brief says a short_answer takes a sample answer, not `dont_know` | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1812,5 +1813,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the review brief suggested a scratch directory named after subject and round (`$TMPDIR/rv-SUBJECT-1`).
 - **We do:** the brief says to create it with `mktemp -d "$TMPDIR/rv-SUBJECT-XXXXXX"` and never to `mkdir -p` a fixed name. A test checks the sentence.
 - **Why:** content agent (business, step review1:3): a reviewer's `mkdir -p $TMPDIR/rev1` silently reused another session's folder. Missing guidance in the brief, not a defect in the software (the CLI and API never create or read that folder; the fixed name came from the agent or orchestrator). The reviewer kept independence by not reading the files. `banco.*/1` unchanged.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-168 · 2026-10-06 · the solve brief says a short_answer takes a sample answer, not `dont_know`
+
+- **Design ref:** C-03, A-05
+- **Design said:** a `short_answer` is not graded by the server, so a string answer is recorded and never a mismatch; `dont_know` on any instance is a major finding.
+- **We do:** unchanged behaviour (a test now covers both paths: a sample string gives no finding, `dont_know` gives one major). `briefs/solve.md` says to write a short sample answer for an open writing task and not to send `dont_know`, which means the task could not be done from its text.
+- **Why:** content agent (english, step solve1:3) sent `dont_know` for a free-writing item because the brief offered only "answer or dont_know" and got a major E-BLIND-SOLVE-MISMATCH. Classified as missing guidance, not a defect: the server already exempted free answers. Exempting `dont_know` as well would hide a task nobody could understand. Its second issue (testlet shape) was already fixed by D-166. `banco.*/1` unchanged.
 - **Cost:** none.
 - **Status:** implemented

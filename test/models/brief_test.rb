@@ -47,6 +47,7 @@ class BriefTest < ActiveSupport::TestCase
     body = Brief.find("solve").body
     assert_match(/testlet.*object from each sub item id/m, body)
     assert_match(/short_answer.*plain string/m, body)
+    assert_match(/never produces a mismatch.*sample answer/m, body)
   end
 
   test "briefs mention only formats that exist" do

@@ -497,4 +497,24 @@ class IndependenceTest < ActionDispatch::IntegrationTest
     assert_response :created, json.inspect
     assert_equal 1, json["mismatches"]
   end
+
+  test "solve submit: a short_answer sample is recorded without a finding; dont_know on it is a major finding" do
+    body = JSON.parse(File.read(Rails.root.join("test/fixtures/content/item/good/short-answer.json")))
+    subject = Subject.find_or_create_by!(key: body["subject"]) { |s| s.name_it = "x"; s.position = 5 }
+    item = Item.create!(subject: subject, key: "short-1", kind: body["kind"])
+    rev = ItemRevision.create!(item: item, seq: 1, body_json: body.to_json, file_sessions_json: JSON.generate("item.json" => @author.id), author_session: @author)
+    ItemValidation.create!(item_revision: rev, seq: 1, status: "passed", codes_json: "[]")
+    ItemInstance.create!(item_revision: rev, seed: 1, display_json: { stem_it: body["prompt"]["stem_it"] }.to_json, answer_json: "{}",
+                         errors_json: "[]", fingerprint: SecureRandom.hex(32))
+    path = "/api/v1/revisions/#{rev.id}/solve"
+    doc = ->(answers) { { solve: { schema: "banco.solve/1", schema_version: 1, revision: rev.id.to_s, answers: answers } } }
+    api(path, method: :post, as: @solver, body: doc.([ { instance: 1, answer: "A short sample answer." } ]))
+    assert_response :created, json.inspect
+    assert_equal 0, json["mismatches"]
+    assert_equal [ "short_answer" ], JSON.parse(BlindSolve.last.results_json).map { |r| r["verdict"] }
+    other = session!(:solver, "gemini-4")
+    api(path, method: :post, as: other, body: doc.([ { instance: 1, dont_know: true } ]))
+    assert_response :created, json.inspect
+    assert_equal [ "major" ], ReviewFinding.where(source: "blind_solve", item_revision: rev).map(&:severity)
+  end
 end

@@ -28,7 +28,9 @@ string for `normalized_text`, a LaTeX string for `expression`. For a `testlet` t
 answer is an object from each sub item id to that sub item's own answer, in the shape
 of the sub item's component (`{"s1": "b", "s2": {"n": 3, "d": 4}}`); to give up one
 sub item write `{"dont_know": true}` as its value. For a `short_answer` the answer is
-a plain string: the server records it for the teacher and does not grade it.
+a plain string: the server records it for the teacher and does not grade it, so
+an open writing task never produces a mismatch. Write a short sample answer; do not send
+`dont_know` for it (that is a major finding: the task could not be done from its text).
 
 The file needs four keys at the root, all required: `schema`, `schema_version`
 (the number 1), `revision` (the revision id you passed to `banco solve open`, as a
