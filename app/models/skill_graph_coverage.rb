@@ -40,7 +40,8 @@ class SkillGraphCoverage
       uncovered: uncovered.map { |l| { line: l.number, text: l.text } },
       partial: partial.values,
       skills: skills_with_items(body),
-      item_errors_not_in_graph: item_errors_not_in_graph(body)
+      item_errors_not_in_graph: item_errors_not_in_graph(body),
+      testlets_multi_skill: testlets_multi_skill
     }
   end
 
@@ -110,8 +111,8 @@ class SkillGraphCoverage
       next unless rev&.status == "passed"
 
       doc = JSON.parse(rev.body_json)
-      doc["kind"] == "testlet" ? Array(doc["sub_items"]).map { |s| s["skill"] } : doc["skill"]
-    end.flatten.to_set
+      doc["kind"] == "testlet" ? Array(doc["sub_items"]).first&.dig("skill") : doc["skill"] # a testlet counts for its first skill (D-098)
+    end.compact.to_set
     keys = body["skills"].map { |s| s["key"] }
     { total: keys.size, with_items: keys.count { |k| measured.include?(k) }, without_items: keys.reject { |k| measured.include?(k) } }
   end
@@ -128,11 +129,33 @@ class SkillGraphCoverage
       next [] unless rev&.status == "passed"
 
       doc = JSON.parse(rev.body_json)
-      bodies = doc["kind"] == "testlet" ? Array(doc["sub_items"]) : [ doc ]
+      # A testlet is charged to its first sub item's skill only (D-098), so all its
+      # codes are checked there (D-151).
+      testlet = doc["kind"] == "testlet"
+      bodies = testlet ? Array(doc["sub_items"]) : [ doc ]
+      skill = testlet ? bodies.first&.dig("skill") : doc["skill"]
       bodies.flat_map do |b|
-        codes = Array(b["error_catalogue"]).map { |e| e["code"] }.uniq.reject { |c| known[b["skill"]]&.include?(c) }
-        codes.map { |c| { item: item.key, item_revision_id: rev.id, skill: b["skill"], code: c } }
-      end
+        codes = Array(b["error_catalogue"]).map { |e| e["code"] }.uniq.reject { |c| known[skill]&.include?(c) }
+        codes.map { |c| { item: item.key, item_revision_id: rev.id, skill: skill, code: c } }
+      end.uniq
+    end
+  end
+
+  # Stored testlets (passed before E-TESTLET-SKILLS, D-098) whose sub items are on
+  # several skills: the engine charges the first only, and a text-only resubmission
+  # would fail E-TESTLET-SKILLS (D-151).
+  def testlets_multi_skill
+    Item.where(subject: @subject).order(:key).filter_map do |item|
+      rev = item.latest_revision
+      next unless rev&.status == "passed"
+
+      doc = JSON.parse(rev.body_json)
+      next unless doc["kind"] == "testlet"
+
+      skills = Array(doc["sub_items"]).map { |s| s["skill"] }.uniq
+      next if skills.size < 2
+
+      { item: item.key, item_revision_id: rev.id, skills: skills, charged_to: skills.first }
     end
   end
 end

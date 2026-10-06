@@ -201,6 +201,24 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
     assert_equal [ { "item" => "probe", "item_revision_id" => rev.id, "skill" => skill_key, "code" => "invented_code" } ], json["item_errors_not_in_graph"]
   end
 
+  test "coverage: a stored multi-skill testlet is checked on its first sub item's skill and listed in testlets_multi_skill (D-151)" do
+    submit_graph(graph)
+    with_errors = graph["skills"].find { |s| s["errors"].any? }
+    first_skill = with_errors["key"]
+    other_skill = (graph["skills"].map { |s| s["key"] } - [ first_skill ]).first
+    declared = with_errors["errors"].first["code"]
+    item = Item.create!(subject: @subject, key: "passage", kind: "testlet")
+    body = { schema: "banco.item/1", kind: "testlet", subject: "math",
+             sub_items: [ { skill: first_skill, error_catalogue: [ { code: declared } ] },
+                          { skill: other_skill, error_catalogue: [ { code: declared }, { code: "only_here" } ] } ] }
+    rev = ItemRevision.create!(item: item, seq: 1, body_json: JSON.generate(body), file_sessions_json: "{}")
+    ItemValidation.create!(item_revision: rev, seq: 1, status: "passed", codes_json: "[]")
+    programme { api("/api/v1/subjects/math/skill-graph/coverage") }
+    assert_response :ok
+    assert_equal [ { "item" => "passage", "item_revision_id" => rev.id, "skill" => first_skill, "code" => "only_here" } ], json["item_errors_not_in_graph"]
+    assert_equal [ { "item" => "passage", "item_revision_id" => rev.id, "skills" => [ first_skill, other_skill ], "charged_to" => first_skill } ], json["testlets_multi_skill"]
+  end
+
   test "coverage: lines of the range that no skill cites and no exclusion explains" do
     submit_graph(graph)
     programme { api("/api/v1/subjects/math/skill-graph/coverage") }

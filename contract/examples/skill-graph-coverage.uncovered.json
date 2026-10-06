@@ -48,7 +48,8 @@
           "math.decimal-operations"
         ]
       },
-      "item_errors_not_in_graph": []
+      "item_errors_not_in_graph": [],
+      "testlets_multi_skill": []
     }
   }
 }
