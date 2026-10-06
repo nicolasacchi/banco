@@ -19,6 +19,8 @@ module Validation
     # Era abbreviations: a.C. and d.C. end a sentence only when a capital letter follows.
     ERAS = /(?<![\p{L}])[ad]\.\s?C\.(?!\s+\p{Lu}|\s*\z|\s*\n)/
     SECOLO = /(?<![\p{L}])sec\.(?=\s)/i
+    # A dotted abbreviation (a.C., d.C., m.c.m.) is one word, not one per letter (D-155).
+    DOTTED = /(?<![\p{L}\p{N}])\p{L}(?:\.\p{L})+\.?/
     ROMAN = /\A[IVXLCDM]+\z/
 
     module_function
@@ -34,9 +36,9 @@ module Validation
       bold(text.gsub(MATH, " m "), field, findings)
       phrases(text, field, findings)
       sentences = sentences_of(strip_markup(plain))
-      words = sentences.sum { |s| s.scan(WORD).size }
+      words = sentences.sum { |s| count_words(s) }
       max = Rules.get(:readability, :max_sentence_words)
-      long = sentences.map { |s| s.scan(WORD).size }.max.to_i
+      long = sentences.map { |s| count_words(s) }.max.to_i
       findings.add("E-READ", field, "a sentence has #{long} words (at most #{max})", rule: "sentence_length", words: long) if long > max
       if role == :stem && words > Rules.get(:readability, :max_stem_words)
         findings.add("E-READ", field, "the instruction has #{words} words (at most #{Rules.get(:readability, :max_stem_words)})", rule: "stem_length", words: words)
@@ -110,7 +112,7 @@ module Validation
       spans = plain.scan(BOLD).flatten
       max = Rules.get(:readability, :max_bold_spans)
       findings.add("E-READ", field, "#{spans.size} bold spans (at most #{max})", rule: "bold_spans", count: spans.size) if spans.size > max
-      longest = spans.map { |s| s.scan(WORD).size }.max.to_i
+      longest = spans.map { |s| count_words(s) }.max.to_i
       max_words = Rules.get(:readability, :max_bold_span_words)
       findings.add("E-READ", field, "a bold span has #{longest} words (at most #{max_words})", rule: "bold_span_length", words: longest) if longest > max_words
     end
@@ -153,6 +155,8 @@ module Validation
     end
 
     # ---- helpers ---------------------------------------------------------------
+
+    def count_words(text) = text.gsub(DOTTED, "x").scan(WORD).size
 
     def strip_markup(text) = text.gsub(BOLD, '\1').gsub(/^\s*\d+\.\s+/, "")
 

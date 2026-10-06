@@ -158,6 +158,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-152 | 2026-10-06 | graph and blueprint submits record the author session and refuse an invalid session header; --agent accepts parentheses | implemented |
 | D-153 | 2026-10-06 | with a sidecar Chrome the harness URL defaults to banco-harness, and banco health probes Chrome-to-harness | implemented |
 | D-154 | 2026-10-06 | an identical resubmission of a revision that passed under older rules is validated again under the current rules | implemented |
+| D-155 | 2026-10-06 | a dotted abbreviation (a.C., d.C., m.c.m.) counts as one word in the readability rules | implemented |
 | D-151 | 2026-10-06 | skill-graph coverage follows the engine for testlets (first skill) and lists stored multi-skill testlets | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
@@ -1683,4 +1684,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** a replay whose latest validation passed under another `rules_version` enqueues `ValidateItemRevisionJob`, which appends a new `item_validations` row (append-only). The job treats a passed verdict as final only when it was reached under the current rules (or has no stored version); a failed verdict stays final. The submit answer is unchanged (`replayed: true`); `banco work status REV --wait` shows the new row. `banco.*/1` unchanged, no new command.
 - **Why:** content agent (chemistry, step sfix1). Defect (missing way to clear a warning).
 - **Cost:** a revision that no longer passes becomes `failed` after the replay (as the dry run said); the author then fixes it by a new revision.
+- **Status:** implemented
+
+## D-155 · 2026-10-06 · a dotted abbreviation (a.C., d.C., m.c.m.) counts as one word in the readability rules
+
+- **Design ref:** A-06, item brief rule 6 (sentences of at most 25 words)
+- **Design said:** words are runs of letters and digits, so `a.C.` counted as two words (`a`, `C`) and `m.c.m.` as three. A history sentence with several `a.C.` tokens that a person counts as 27 words was reported as 30 (`E-READ sentence_length`). Production rules_version 6 and staging run the same counter; staging passed that item only because its revision was validated before the era-abbreviation split fix.
+- **We do:** `Readability.count_words` collapses a dotted abbreviation (`DOTTED`) into one word before counting, for sentence length, instruction length and bold-span length. The splitter is unchanged (D: a.C. followed by a capital still ends a sentence). Only looser, so `rules_version` stays 6 and no pin is flagged `older_rules`.
+- **Why:** content agent (history, step promote). Defect in the counter.
+- **Cost:** none known; a sentence of 26 real words is still refused.
 - **Status:** implemented

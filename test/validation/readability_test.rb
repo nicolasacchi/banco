@@ -26,6 +26,14 @@ class ReadabilityTest < ActiveSupport::TestCase
     assert_not_includes rules(stem, role: :text), "stem_length"
   end
 
+  test "a dotted abbreviation such as a.C. counts as one word (D-155)" do
+    era = "Il 509 a.C. segna la fine della monarchia, il 27 a.C. la nascita dell'impero e il 476 d.C. la caduta dell'impero romano d'Occidente."
+    assert_equal 23, era.gsub(Validation::Readability::DOTTED, "x").scan(Validation::Readability::WORD).size
+    filler = ([ "parola" ] * 12).join(" ")
+    assert_empty rules("#{filler} nel 509 a.C. e nel 27 a.C. e nel 44 a.C. poi.")  # 12 + 12 = 24 words, 30 counted per letter
+    assert_equal %w[sentence_length], rules(([ "parola" ] * 26).join(" ") + " a.C.")
+  end
+
   test "abbreviations do not split sentences" do
     assert_empty rules("Usa i numeri primi, ad es. 2 e 3, ecc. e poi scegli.")
   end
