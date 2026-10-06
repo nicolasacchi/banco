@@ -186,6 +186,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-179 | 2026-10-06 | solver display of an ordering item: the prompt (direction) is already shown (D-169) | implemented |
 | D-180 | 2026-10-06 | solve brief root fields of answers.json (biology report): already documented (D-166, D-176); no change | implemented |
 | D-181 | 2026-10-07 | work status and work open (author) carry review_findings: the reviewers' and blind solvers' findings | implemented |
+| D-182 | 2026-10-07 | solve brief root fields of answers.json (biology, solve1:3): already documented (D-166, D-176, D-180); no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1953,4 +1954,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** `banco work status REV` and `banco work open ITEM` (author view, not the verifier's) gain `review_findings`: every finding stored on the revision (reviews and blind solves, oldest first) with `id`, `source`, `severity`, `code`, `instance`, `field`, `quote`, `problem_it`, `fix_it`, `disposition` (when the teacher has decided) and `review_id` or `blind_solve_id`. New key only, `banco.*/1` unchanged. Dispositions stay teacher-only; no new command. `briefs/diagnosis-item.md` says where to read them.
 - **Why:** content agent (chemistry, step pfix1): an author could not read the exact quote and fix of a finding and relied on a summary and a stray scratch file. Missing feature.
 - **Cost:** a few rows per request.
+- **Status:** implemented
+
+## D-182 · 2026-10-07 · solve brief root fields of answers.json: already documented (D-166, D-176, D-180)
+
+- **Design ref:** A-05, D-166
+- **Design said:** the solve brief states the four required root keys and shows a minimal valid file.
+- **We do:** no code change. `briefs/solve.md` Format lists `schema`, `schema_version` (the number 1), `revision` (a string) and `answers`, with a minimal example including all four; `--dry-run` and the E-SCHEMA wording report every missing key in one pass. `banco.*/1` unchanged.
+- **Why:** content agent (biology, step solve1:3), same report as D-176 and D-180: it read an older copy of the brief. Not a defect. The solver should run `banco brief show solve` at the start of the session.
+- **Cost:** none.
 - **Status:** implemented
