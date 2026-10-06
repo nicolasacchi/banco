@@ -10,8 +10,14 @@ module Api
 
       # GET /api/v1/revisions/:revision/review
       def open
-        session = require_session("reviewer", item: @item, next_step: next_session) or return
-        return unless independent_role?(session, @item, "reviewer")
+        # Reading needs no session (D-158): the session matters when a review is stored. A header
+        # that is sent is still checked, so an error message in the variable is not taken for none.
+        if request.headers["X-Banco-Session"].to_s.strip.empty?
+          return refuse("E-AUTH", "authorization", "this token cannot review", "banco schema", 403) unless ApiToken.session_roles(@token.role).include?("reviewer")
+        else
+          session = require_session("reviewer", item: @item, next_step: next_session) or return
+          return unless independent_role?(session, @item, "reviewer")
+        end
 
         render json: { revision_id: @revision.id, item: @item.key, subject: @item.subject.key, seq: @revision.seq, status: @revision.status,
                        item_json: JSON.parse(@revision.body_json), instances: @text.review_instances, programme_lines: @text.programme_lines,

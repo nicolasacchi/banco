@@ -162,6 +162,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-151 | 2026-10-06 | skill-graph coverage follows the engine for testlets (first skill) and lists stored multi-skill testlets | implemented |
 | D-156 | 2026-10-06 | the reuse_right widget label says answer, not category | implemented |
 | D-157 | 2026-10-06 | `items list` and `work status` show `awaiting_verifier` like `banco status` | implemented |
+| D-158 | 2026-10-06 | `review open` reads without a session | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1713,4 +1714,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** the `status` of an `items list` row and of `work status` is `awaiting_verifier` under the same rule (`ItemValidation#display_status`, shared with `banco status`). The stored status stays `failed`; `settled` and `codes` are unchanged; `work status --wait` treats it as the failed exit it was. `E-VERIFY-REJECTS` stays `failed`: it is the author's or verifier's own broken verify.mjs. Additive; `banco.*/1` unchanged.
 - **Why:** content agent (chemistry, step sverify1). Defect: two views of one state disagreed.
 - **Cost:** a script that compared the status to `failed` for these items must also accept `awaiting_verifier`.
+- **Status:** implemented
+
+## D-158 · 2026-10-06 · `review open` reads without a session
+
+- **Design ref:** A-04, A-05 (sessions and independence), D-152 (reads and some submits take no session)
+- **Design said:** every review command needed a reviewer session, so `banco review open REV` refused with `E-SESSION` even for someone who only wanted to read the item.
+- **We do:** `review open` with no `X-Banco-Session` returns the same page when the token may hold a reviewer session (`E-AUTH` 403 otherwise). A header that is sent is checked as before (role, provider, independence, `E-SESSION` for a stray message). `review submit` and both `solve` commands still need a session: the session is what the independence rule records, and the blind solver must be a declared role. Opening records nothing, so reading does not make a session "have seen" the item. `banco.*/1` unchanged.
+- **Why:** content agent (spanish, step sreview1). Defect: a read refused for lack of a record that reading never writes.
+- **Cost:** a session-less read does not check the provider rule; that is checked at submit.
 - **Status:** implemented

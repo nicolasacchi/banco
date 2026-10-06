@@ -19,7 +19,7 @@ the same item (author, verifier, solver) or one that already reviewed it is refu
 item with its status and how many reviews it has (drop `--current` for superseded revisions too).
 Keep your review files in a scratch directory of your own, named after your subject and round
 (for example `$TMPDIR/rv-SUBJECT-1`): a shared name such as `rv` is cleaned by parallel sessions.
-`banco review open REV` gives you the
+`banco review open REV` (readable even before you open a session; submit needs one) gives you the
 item, the instances with expected answers, the messages, the solution and the
 programme lines cited. `banco review submit REV --file review.json` sends the
 result. Never ask for a decision; the teacher disposes of every finding.

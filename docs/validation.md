@@ -82,7 +82,7 @@ not against intent: the model is declared, not proven.
 - Reviewer and blind solver: a model different from the model of every author session (the family may be the same, D-070);
   grader: Claude only (`E-PROVIDER-NOT-ALLOWED`). Reviewer and solver receive item
   text only; the grader reads the student's answers.
-- `banco review open|submit REV`: `banco.review/1` with the 11-point checklist. Refused:
+- `banco review open|submit REV`: `review open` also reads without a session (D-158); `banco.review/1` with the 11-point checklist. Refused:
   evidence that says nothing, repeated or under 4 words (`E-REVIEW-EMPTY`), a fail
   without a finding, a quote that is not an exact substring of the item text or of the
   instance it names (`E-QUOTE-NOT-FOUND`). The item text is item.json, the instances

@@ -166,7 +166,7 @@ class IndependenceTest < ActionDispatch::IntegrationTest
 
   test "a command that needs a session says so: E-SESSION without one, E-SESSION-ROLE with the wrong role" do
     revision = passed_revision
-    api("/api/v1/revisions/#{revision.id}/review")
+    api("/api/v1/revisions/#{revision.id}/review", method: :post, body: { review: {} })
     assert_equal "E-SESSION", json["code"]
     api("/api/v1/revisions/#{revision.id}/review", as: @solver)
     assert_equal "E-SESSION-ROLE", json["code"]
@@ -174,6 +174,17 @@ class IndependenceTest < ActionDispatch::IntegrationTest
     assert_equal "E-SESSION", json["code"]
     api("/api/v1/work/submit", method: :post, body: { item: "x", base: nil, files: { "item.json" => "{}" } }, as: @reviewer)
     assert_equal "E-SESSION-ROLE", json["code"]
+  end
+
+  test "review open reads without a session (D-158); a bad header is still refused, submit still needs a session" do
+    revision = passed_revision
+    api("/api/v1/revisions/#{revision.id}/review")
+    assert_response :ok, json.inspect
+    assert_equal revision.id, json["revision_id"]
+    api("/api/v1/revisions/#{revision.id}/review", headers: { "X-Banco-Session" => "Errore: boh" })
+    assert_equal "E-SESSION", json["code"]
+    api("/api/v1/revisions/#{revision.id}/solve")
+    assert_equal "E-SESSION", json["code"]
   end
 
   # ---- verify: who may write it, what the verifier sees ----------------------------------------
