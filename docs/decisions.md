@@ -157,6 +157,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-150 | 2026-10-06 | a carried-forward verify.mjs that accepts wrong answers is E-VERIFY-STALE (awaiting_verifier), not E-VERIFY-VACUOUS | implemented |
 | D-152 | 2026-10-06 | graph and blueprint submits record the author session and refuse an invalid session header; --agent accepts parentheses | implemented |
 | D-153 | 2026-10-06 | with a sidecar Chrome the harness URL defaults to banco-harness, and banco health probes Chrome-to-harness | implemented |
+| D-154 | 2026-10-06 | an identical resubmission of a revision that passed under older rules is validated again under the current rules | implemented |
 | D-151 | 2026-10-06 | skill-graph coverage follows the engine for testlets (first skill) and lists stored multi-skill testlets | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
@@ -1673,4 +1674,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** `Validation::Harness.base_url` is `BANCO_HARNESS_URL` if set, else `http://banco-harness:<HARNESS_PORT>` when `BANCO_CHROME_HOST` is set, else loopback. `Health` gains `harness`: with a sidecar, Chrome loads `<base>/up` and any HTTP status is `ok`, otherwise `unreachable` (turns `ok` false). `banco.*/1` unchanged.
 - **Why:** content agent (math, step promote), production: nothing on host port 3200 (by design) and every generator dry run failed. Defect (deployment default).
 - **Cost:** one more short Chrome page load in `health`.
+- **Status:** implemented
+
+## D-154 · 2026-10-06 · an identical resubmission of a revision that passed under older rules is validated again under the current rules
+
+- **Design ref:** A-06, D-073 (replay), D-149 (W-RULES-OUTDATED)
+- **Design said:** D-149 tells the author to dry-run pins that passed under older rules and resubmit those that fail. An identical submit is a replay and enqueues no job, so a revision that still passes could never get a validation under the current rules: the warning and `older_rules_pins` stayed.
+- **We do:** a replay whose latest validation passed under another `rules_version` enqueues `ValidateItemRevisionJob`, which appends a new `item_validations` row (append-only). The job treats a passed verdict as final only when it was reached under the current rules (or has no stored version); a failed verdict stays final. The submit answer is unchanged (`replayed: true`); `banco work status REV --wait` shows the new row. `banco.*/1` unchanged, no new command.
+- **Why:** content agent (chemistry, step sfix1). Defect (missing way to clear a warning).
+- **Cost:** a revision that no longer passes becomes `failed` after the replay (as the dry run said); the author then fixes it by a new revision.
 - **Status:** implemented

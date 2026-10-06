@@ -41,7 +41,7 @@ module Api
         return dry_run(submission) if dry_run?
 
         revision, replayed = submission.store!(brief_sha256: Brief.find("diagnosis-item")&.sha256)
-        ValidateItemRevisionJob.perform_later(revision.id) unless replayed
+        ValidateItemRevisionJob.perform_later(revision.id) if !replayed || Validation::ItemInfo.outdated_rules_version(revision)
         render json: { item: revision.item.key, revision_id: revision.id, seq: revision.seq, status: revision.status, replayed: replayed,
                        next: "banco work status #{revision.id} --wait" }, status: replayed ? :ok : :accepted
       rescue Validation::Submission::Refused => e

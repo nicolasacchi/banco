@@ -25,7 +25,7 @@ class ValidateItemRevisionJob < ApplicationJob
   def perform(revision_id)
     revision = ItemRevision.find_by(id: revision_id)
     return unless revision
-    return if revision.validations.where(status: %w[passed failed]).exists?
+    return if settled_under_current_rules?(revision)
 
     validation = Validation::RevisionValidation.new(revision, attempt: executions)
     begin
@@ -34,5 +34,14 @@ class ValidateItemRevisionJob < ApplicationJob
       validation.record_error(e) if executions < ATTEMPTS
       raise
     end
+  end
+
+  private
+
+  # A passed or failed verdict is final, unless it was reached under older rules and the
+  # revision passed then: an identical resubmission asks for a new verdict (D-154).
+  def settled_under_current_rules?(revision)
+    current = Validation::Rules.version.to_s
+    revision.validations.where(status: %w[passed failed]).any? { |v| v.status == "failed" || v.rules_version.blank? || v.rules_version.to_s == current }
   end
 end

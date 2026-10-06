@@ -118,6 +118,16 @@ class WorkApiTest < ActionDispatch::IntegrationTest
     assert_equal 1, ItemRevision.count
   end
 
+  test "a replay of a revision that passed under older rules enqueues a new validation (D-154)" do
+    submit("eq-1", F.files_for(F.static_item))
+    id = json["revision_id"]
+    ItemValidation.create!(item_revision_id: id, seq: 1, status: "passed", codes_json: "[]", rules_version: "0")
+    assert_enqueued_with(job: ValidateItemRevisionJob, args: [ id ]) do
+      submit("eq-1", F.files_for(F.static_item), base: id)
+    end
+    assert_equal true, json["replayed"]
+  end
+
   test "a new revision needs the latest base: 409 E-STALE-BASE otherwise" do
     submit("eq-1", F.files_for(F.static_item))
     first = json["revision_id"]

@@ -88,6 +88,16 @@ class ValidateItemRevisionJobTest < ActiveJob::TestCase
     assert_equal "passed", @revision.reload.status
   end
 
+  test "a pass under older rules is validated again under the current rules, appended (D-154)" do
+    ItemValidation.create!(item_revision: @revision, seq: 1, status: "passed", codes_json: "[]", rules_version: "0")
+    ValidateItemRevisionJob.perform_now(@revision.id)
+    assert_equal %w[passed passed], statuses
+    assert_equal Validation::Rules.version.to_s, @revision.reload.latest_validation.rules_version
+    assert_nil Validation::ItemInfo.outdated_rules_version(@revision)
+    ValidateItemRevisionJob.perform_now(@revision.id)
+    assert_equal %w[passed passed], statuses
+  end
+
   test "the job runs on the chrome queue" do
     assert_equal "chrome", ValidateItemRevisionJob.new.queue_name
     queues = YAML.load_file(Rails.root.join("config/queue.yml"), aliases: true)["default"]["workers"]
