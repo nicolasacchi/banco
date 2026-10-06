@@ -20,6 +20,7 @@ class HealthTest < ActionDispatch::IntegrationTest
     assert_equal "skipped", body["chrome"]
     assert_equal "not_applicable", body["queue"]
     assert_equal "not_configured", body["backup"]
+    assert_equal({ "waiting" => 0 }, body["validation_queue"])
     assert_equal({ "enabled" => false }, body["decisions"].slice("enabled"))
     assert_equal before, AppEvent.count
   end

@@ -27,6 +27,7 @@ module Health
       }
       problems = parts.filter_map { |name, value| name if failing?(name, value) }
       { ok: problems.empty?, problems: problems.map(&:to_s) }.merge(parts).merge(
+        validation_queue: validation_queue,
         decisions: { enabled: ENV["BANCO_DECISIONS_ENABLED"] == "1" },
         diagnosis: { released: Diagnosis::Release.open? },
         contract: Contract.digest, checked_at: Time.current.utc.iso8601
@@ -62,6 +63,14 @@ module Health
       fresh.positive? ? "ok" : "error: no Solid Queue process has a heartbeat in the last #{QUEUE_HEARTBEAT_SECONDS} s"
     rescue StandardError => e
       "error: #{e.class}: #{e.message.to_s.first(120)}"
+    end
+
+    # Why chrome, chrome_egress and harness say "busy": validations waiting for the one
+    # Chrome lane. Informational, never gates (D-162).
+    def validation_queue
+      { waiting: ItemRevision.unsettled.count }
+    rescue StandardError => e
+      { error: "#{e.class}: #{e.message.to_s.first(120)}" }
     end
 
     def grader

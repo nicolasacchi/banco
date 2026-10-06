@@ -166,6 +166,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-159 | 2026-10-06 | `blueprint open` returns the submittable document | implemented |
 | D-160 | 2026-10-06 | `work status` shows the queue and the current rules version; `--wait` waits 900 s; identical dry runs are cached | implemented |
 | D-161 | 2026-10-06 | an author dry run whose only findings are E-VERIFY-MISSING or E-VERIFY-STALE answers 200 `awaiting_verifier` | implemented |
+| D-162 | 2026-10-06 | `banco health` shows `validation_queue.waiting` | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1753,4 +1754,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** when every code of a dry run is `E-VERIFY-MISSING` or `E-VERIFY-STALE` the answer is 200 `{dry_run: true, status: "awaiting_verifier", codes: [...], instances: N, next}`; the CLI exits 0. Any other code keeps 422. Nothing is stored. The dry run still runs the 200 seeds in Chrome (verify is the last phase, nothing to skip); an identical repeat is cached (D-160). The second issue (no queue visibility) was already D-160: `work status` has `queue_ahead`; the validation lane is one at a time, so a long wait is the queue, and `--wait` waits 900 s.
 - **Why:** content agent (spanish, step promote1). Missing feature. `banco.*/1` unchanged (a new status value on a dry run answer).
 - **Cost:** a script that treated any non-"passed" 200 as failure sees a new value.
+- **Status:** implemented
+
+## D-162 · 2026-10-06 · `banco health` shows the validation queue depth
+
+- **Design ref:** D-101, D-160
+- **Design said:** health reported chrome, chrome_egress and harness as `busy` with no hint why.
+- **We do:** `Health.check` adds `validation_queue: {waiting: N}`, the revisions still waiting for a verdict (`ItemRevision.unsettled`, shared with `work status` `queue_ahead`). `busy` stays a non-failure; the key is informational and never gates. A `busy` chrome with `waiting > 0` is the single Chrome lane working through that queue.
+- **Why:** content agent (chemistry, step promote1). Missing feature. `banco.*/1` unchanged (one added key). The same report's first issue (dry run of a generator item without verify.mjs gives E-VERIFY-MISSING) is the pre-D-161 behaviour: from D-161 on it is 200 `awaiting_verifier`, exit 0.
+- **Cost:** none.
 - **Status:** implemented

@@ -17,6 +17,15 @@ class ItemRevision < ApplicationRecord
   # {file name => agent session id}: who wrote each file as it stands (A-04).
   def file_sessions = file_sessions_json.present? ? JSON.parse(file_sessions_json) : {}
 
+  # Revisions still waiting for a verdict: neither passed nor failed, and any error still
+  # has retries left. The Chrome lane takes them in order (D-160, D-162).
+  scope :unsettled, -> {
+    where(<<~SQL.squish, ValidateItemRevisionJob::ATTEMPTS)
+      NOT EXISTS (SELECT 1 FROM item_validations v WHERE v.item_revision_id = item_revisions.id
+                  AND (v.status IN ('passed', 'failed') OR v.attempt >= ?))
+    SQL
+  }
+
   def latest_validation = validations.max_by(&:seq)
 
   # passed, failed, error, or validating while no verdict row exists.

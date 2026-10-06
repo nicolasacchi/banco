@@ -117,10 +117,7 @@ module Api
       # Older revisions still waiting for a verdict: the Chrome lane has one thread and takes them in
       # order, so this is how many validations run before this one (D-160).
       def queue_ahead(revision)
-        ItemRevision.where("item_revisions.id < ?", revision.id).where(<<~SQL.squish, ValidateItemRevisionJob::ATTEMPTS).count
-          NOT EXISTS (SELECT 1 FROM item_validations v WHERE v.item_revision_id = item_revisions.id
-                      AND (v.status IN ('passed', 'failed') OR v.attempt >= ?))
-        SQL
+        ItemRevision.unsettled.where("item_revisions.id < ?", revision.id).count
       end
 
       # passed and failed are final; an error is final only after the last retry.
