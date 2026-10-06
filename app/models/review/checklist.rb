@@ -26,8 +26,14 @@ module Review
 
     # The ids of checklist points whose evidence is empty talk, and whether the
     # eleven pieces of evidence are not all different.
+    # Why one piece of evidence is refused: :too_short, :stock_phrase or nil.
+    def weak_reason(evidence)
+      return :stock_phrase if evidence.to_s.match?(STOCK)
+      :too_short if evidence.to_s.split.size < MIN_WORDS
+    end
+
     def empty_evidence(checklist)
-      weak = checklist.select { |c| c["evidence"].to_s.split.size < MIN_WORDS || c["evidence"].to_s.match?(STOCK) }.map { |c| c["id"] }
+      weak = checklist.select { |c| weak_reason(c["evidence"]) }.map { |c| c["id"] }
       texts = checklist.map { |c| c["evidence"].to_s.strip.downcase }
       repeated = texts.tally.select { |_, n| n > 1 }.keys
       [ weak, repeated ]

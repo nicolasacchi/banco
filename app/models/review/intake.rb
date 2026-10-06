@@ -12,7 +12,12 @@ module Review
 
       weak, repeated = Checklist.empty_evidence(doc["checklist"])
       if weak.any?
-        findings.add("E-REVIEW-EMPTY", "/checklist", "points #{weak.join(', ')} have no real evidence: say what you checked, on which instance (at least #{Checklist::MIN_WORDS} words, no stock phrase)", points: weak)
+        why = doc["checklist"].select { |c| weak.include?(c["id"]) }.map do |c|
+          words = c["evidence"].to_s.split.size
+          reason = Checklist.weak_reason(c["evidence"])
+          "point #{c['id']}: " + (reason == :too_short ? "#{words} word#{'s' unless words == 1}, at least #{Checklist::MIN_WORDS} needed" : "a stock phrase such as \"all verified\" or \"no problem\"")
+        end
+        findings.add("E-REVIEW-EMPTY", "/checklist", "points #{weak.join(', ')} have no real evidence (#{why.join('; ')}): say what you checked, on which instance, in at least #{Checklist::MIN_WORDS} words and not a stock phrase", points: weak, reasons: doc["checklist"].select { |c| weak.include?(c["id"]) }.to_h { |c| [ c["id"].to_s, Checklist.weak_reason(c["evidence"]).to_s ] })
       end
       if repeated.any?
         findings.add("E-REVIEW-EMPTY", "/checklist", "the same evidence is used for more than one point: each point needs its own", rule: "repeated")

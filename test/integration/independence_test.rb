@@ -310,9 +310,11 @@ class IndependenceTest < ActionDispatch::IntegrationTest
     review(revision, review_doc(revision, checklist: stock))
     assert_response :unprocessable_entity
     assert_equal "E-REVIEW-EMPTY", json["code"]
+    assert_includes json["message"].to_s + json.to_s, "stock phrase"
     short = checklist.each_with_index.map { |c, i| i == 3 ? c.merge("evidence" => "tutto ok davvero") : c }
     review(revision, review_doc(revision, checklist: short))
     assert_equal "E-REVIEW-EMPTY", json["code"]
+    assert_includes json.to_s, "3 words, at least 4 needed"
     same = checklist.map { |c| c.merge("evidence" => "Ho controllato la chiave su tutte le istanze.") }
     review(revision, review_doc(revision, checklist: same))
     assert_equal "E-REVIEW-EMPTY", json["code"]

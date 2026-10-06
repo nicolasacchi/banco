@@ -169,6 +169,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-162 | 2026-10-06 | `banco health` shows `validation_queue.waiting` | implemented |
 | D-163 | 2026-10-06 | the solve brief carries a complete `banco.solve/1` example | implemented |
 | D-164 | 2026-10-06 | brief session examples use the placeholder AGENT | implemented |
+| D-165 | 2026-10-06 | E-REVIEW-EMPTY names the rule each weak point failed | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1782,5 +1783,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the solve, review and grade briefs showed `banco session new ... --agent omp` (or `claude-code`), which reads as an instruction for one particular agent.
 - **We do:** the three briefs use `--agent AGENT`; the solve brief says AGENT is the name of the agent you are. A test refuses a concrete agent in any brief.
 - **Why:** content agent (business, step solve1:3). Defect in the brief (documentation); the schema issue in the same report was already fixed by D-163. Briefs are read from git at runtime; no schema change.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-165 · 2026-10-06 · E-REVIEW-EMPTY names the rule each weak point failed
+
+- **Design ref:** A-05
+- **Design said:** evidence that says nothing is refused with E-REVIEW-EMPTY.
+- **We do:** the message lists, per point, the rule it failed (word count with the actual count and the minimum of 4, or a stock phrase); the detail also carries `reasons` (`too_short` or `stock_phrase`) beside `points`.
+- **Why:** content agent (business, step review1:2). Missing precision in a message, not a rule change. The checks are unchanged; `points` is unchanged, `reasons` is added (backward compatible).
 - **Cost:** none.
 - **Status:** implemented
