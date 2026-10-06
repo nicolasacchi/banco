@@ -66,6 +66,7 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     assert_select "article.skill[data-scope=middle_school]", /Appresa alla scuola media/
     assert_select "article.skill[data-scope=not_in_prima] .edges", /Richiede: #{Regexp.escape(body['skills'][0]['key'])}/
     assert_select "li[data-deferred='italian.reading']", /in attesa.*prerequisito.*Serve per leggere i problemi/i
+    assert_select "[data-deferred-ready]", 0
     assert_select "li[data-ref='prima-2025-26:1'] q", "Equazioni di primo grado."
     assert_select "article.skill [data-flag=q3_lines_91_100]"
     assert_select "article.skill[data-skill='#{body['skills'][3]['key']}'] [data-inferred]"

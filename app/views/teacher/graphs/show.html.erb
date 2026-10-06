@@ -72,7 +72,7 @@
         <% if skill.deferred.any? %>
           <ul class="plain deferred">
             <% skill.deferred.each do |d| %>
-              <li data-deferred="<%= d[:skill] %>"><strong><%= t("teacher.graph.deferred.#{d[:where]}") %></strong> <%= d[:skill] %><% if d[:error] %> (<%= d[:error] %>)<% end %>: <%= d[:reason_it] %></li>
+              <li data-deferred="<%= d[:skill] %>"><strong><%= t("teacher.graph.deferred.#{d[:where]}") %></strong> <%= d[:skill] %><% if d[:error] %> (<%= d[:error] %>)<% end %>: <%= d[:reason_it] %><% if d[:ready] %> <em class="deferred-ready" data-deferred-ready="<%= d[:skill] %>"><%= t("teacher.graph.deferred.ready") %></em><% end %></li>
             <% end %>
           </ul>
         <% end %>

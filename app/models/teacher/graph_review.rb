@@ -116,7 +116,18 @@ module Teacher
       implied = Array(skill["errors"]).flat_map do |e|
         Array(e["deferred_implicates"]).map { |d| { skill: d["skill"], reason_it: d["reason_it"], where: :implicate, error: e["code"] } }
       end
-      own + implied
+      (own + implied).map { |d| d.merge(ready: target_approved?(d[:skill])) }
+    end
+
+    # D-135: the other subject's graph has been approved since: the edge is still only a
+    # note and needs a new revision of this graph to take effect.
+    def target_approved?(key)
+      @approved_targets ||= {}
+      @approved_targets.fetch(key) do
+        owner = Subject.find_by(key: key.to_s.split(".").first)
+        graph = owner && SubjectStage.approved_graph(owner)
+        @approved_targets[key] = !graph.nil? && JSON.parse(graph.body_json)["skills"].any? { |s| s["key"] == key }
+      end
     end
 
     def refs_set(skill) = Array(skill["refs"]).map { |r| [ r["source"], r["line"], r["role"] ] }.sort

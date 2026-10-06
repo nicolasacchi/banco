@@ -34,7 +34,10 @@ module Validation
       end
       each_skill_ref(item) do |path, key, own|
         skill = context.skill(key)
-        if skill.nil?
+        if skill.nil? && path.end_with?("/implicates") && context.draft_skill(key)
+          # D-135: the other subject's graph is a draft; the engine ignores the item's implicates anyway.
+          findings.add("W-IMPLICATE-PENDING", path, "#{key} is in a graph of its subject that is not approved yet: declare the edge as deferred_implicates in this subject's graph and move it once that graph is approved", skill: key)
+        elsif skill.nil?
           findings.add("E-SKILL-UNKNOWN", path, "#{key} is not in the graph of #{item['subject']}")
         elsif own && key.split(".").first != item["subject"]
           findings.add("E-SKILL-UNKNOWN", path, "#{key} belongs to another subject than #{item['subject']}")

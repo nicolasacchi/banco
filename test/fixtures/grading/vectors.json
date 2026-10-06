@@ -49,6 +49,17 @@
 
     {"id": "number-decimal-comma-equals-fraction-key", "component": "number", "raw": "3,5",
      "item": {"answer": "7/2"}, "expect": {"verdict": "correct", "normalized": "7/2"}},
+    {"id": "number-error-round-to-matches-rounded-value", "component": "number", "raw": "9,8067",
+     "item": {"answer": 1, "errors": [{"code": "weight_not_mass", "value": "9,81", "round_to": 2}]}, "expect": {"verdict": "typical_error", "error_codes": ["weight_not_mass"]}},
+    {"id": "number-error-round-to-declared-value-itself", "component": "number", "raw": "9,81",
+     "item": {"answer": 1, "errors": [{"code": "weight_not_mass", "value": "9,81", "round_to": 2}]}, "expect": {"verdict": "typical_error", "error_codes": ["weight_not_mass"]}},
+    {"id": "number-error-round-to-other-rounding-is-wrong", "component": "number", "raw": "9,8",
+     "item": {"answer": 1, "errors": [{"code": "weight_not_mass", "value": "9,81", "round_to": 2}]}, "expect": {"verdict": "wrong"}},
+    {"id": "number-error-without-round-to-is-exact", "component": "number", "raw": "9,8067",
+     "item": {"answer": 1, "errors": [{"code": "weight_not_mass", "value": "9,81"}]}, "expect": {"verdict": "wrong"}},
+    {"id": "number-error-round-to-never-touches-the-key", "component": "number", "raw": "9,81",
+     "item": {"answer": "9,81", "errors": [{"code": "weight_not_mass", "value": "9,8", "round_to": 1}]}, "expect": {"verdict": "correct"}},
+
     {"id": "number-dot-is-invalid", "component": "number", "raw": "3.5",
      "item": {"answer": "7/2"}, "expect": {"verdict": "invalid", "invalid_code": "use_comma"}},
     {"id": "number-thousands-dot-is-invalid", "component": "number", "raw": "5.300,00",

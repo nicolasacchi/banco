@@ -100,10 +100,28 @@ module Validation
     def errors(inst, label, seed, f)
       known = @unit.catalogue_codes
       Array(inst["errors"]).each_with_index do |e, i|
+        round_to_rules(e, inst, "#{label}/errors/#{i}", seed, f) if e.key?("round_to")
         next if known.include?(e["code"])
 
         f.add("E-GEN-SCHEMA", "#{label}/errors/#{i}", "the error code #{e['code'].inspect} is not in the item's error_catalogue", rule: "code_not_in_catalogue", seed: seed)
       end
+    end
+
+    # round_to (D-135) belongs to number items and must not swallow the key: a rounded
+    # correct answer would be graded as the error.
+    def round_to_rules(error, inst, field, seed, f)
+      if @unit.component != "number"
+        f.add("E-GEN-SCHEMA", "#{field}/round_to", "round_to on an error belongs to number items", rule: "round_to_component", seed: seed)
+        return
+      end
+      n = error["round_to"]
+      key = Grading::Closed::Numbers.expected_value(inst["answer"])
+      declared = Grading::Closed::Numbers.expected_value(error["value"])
+      if key.round(n, half: :up) == declared.round(n, half: :up)
+        f.add("E-GEN-SCHEMA", "#{field}/round_to", "the key rounds to the same value at #{n} decimals: the error would match a correct rounded answer", rule: "round_to_key", seed: seed)
+      end
+    rescue ArgumentError, TypeError, ZeroDivisionError
+      nil
     end
 
     # An instance's own accept list (D-081) belongs to normalized_text, like the item's.

@@ -123,6 +123,7 @@ it:
       deferred:
         prerequisite: "In attesa del grafo dell'altra materia, prerequisito:"
         implicate: "In attesa del grafo dell'altra materia, errore che implica:"
+        ready: "Il grafo dell'altra materia è approvato: il legame non è ancora attivo, serve una nuova revisione di questo grafo."
       role:
         taught_in: "Insegnata in"
         needed_by: "Serve a"

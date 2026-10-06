@@ -573,6 +573,12 @@
         },
         "value": {
           "$ref": "#/$defs/any_answer"
+        },
+        "round_to": {
+          "description": "number only (D-135): the error matches any answer that rounds, half up, to the declared value at this many decimals. Never applies to the key.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6
         }
       },
       "required": [

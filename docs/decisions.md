@@ -139,6 +139,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-132 | 2026-10-06 | reviewers: `items list` already lists revision ids; own scratch directory per subject and round | implemented |
 | D-133 | 2026-10-06 | `review open` lists every stored instance of a generator item | implemented |
 | D-134 | 2026-10-06 | `items list --subject` accepts keys with an underscore (computer_science) | implemented |
+| D-135 | 2026-10-06 | `round_to` on a number error; item implicates into another subject's draft graph; ready marker on deferred edges | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1481,3 +1482,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Why:** content agent (computer_science, step review:1).
 - **Cost:** none.
 - **Status:** implemented
+
+## D-135 · 2026-10-06 · `round_to` on a number error; item implicates into another subject's draft graph; ready marker on deferred edges
+
+- **Design ref:** A-06, D-091, D-129
+- **Design said:** a number error matches only the exact declared value; an item implicate must name a skill of the item's graph or of an approved graph; the teacher's graph screen lists deferred edges.
+- **We do:** (1) `error_catalogue` instance errors (`errors[]` of an instance, `error_value` in `banco.item/1`) gain the optional `round_to` (integer 0..6, number component only): the error matches any answer that rounds half up, at that many decimals, to the declared value. It never applies to the key (the key is graded first); a `round_to` whose window contains the key is `E-GEN-SCHEMA` (`round_to_key`), on another component `round_to_component`. Backward compatible: optional member. (2) An item implicate into a skill that is only in another subject's latest, unapproved graph is the warning `W-IMPLICATE-PENDING` (registry version 10) instead of `E-SKILL-UNKNOWN`; the engine reads implicates from the graph and ignores the item's list, so the item cannot activate anything. (3) The teacher's graph screen marks a deferred edge whose target graph is approved now ("serve una nuova revisione"). Not changed, not defects: the graph keeps refusing a plain edge into an unapproved graph (`E-GRAPH-EDGE-UNAPPROVED`, rule 12); the way to declare it is `deferred_prerequisites` / `deferred_implicates` (D-091), and `W-ERROR-NOT-IN-GRAPH` already reports item error codes missing from the graph (and implicates that differ).
+- **Why:** content agent (chemistry, step fix): calculator-rounded typical errors; cross-subject edges before the other graph is approved.
+- **Cost:** a rounded error still needs the student to type at least the declared number of decimals; fewer decimals is a plain wrong.
+- **Status:** implemented
+- **Back-port:** A-06.

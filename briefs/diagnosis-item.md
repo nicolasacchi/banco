@@ -42,6 +42,12 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
   errors of a skill from the graph alone: a new code must first be in the `errors` of that skill
   in the graph (with the same `implicates`), else `W-ERROR-NOT-IN-GRAPH` and the code is treated
   as unclassified (descent into every parent).
+- A `number` error whose value is a non-terminating decimal (a calculator result such as 9,8067 or
+  3,3333) is declared with `round_to`: `{code, value: "9,81", round_to: 2}` matches every answer
+  that rounds half up to 9,81 at 2 decimals. It never matches the key (`E-GEN-SCHEMA` if it would).
+  Implicates into another subject whose graph is not approved yet: leave them out of the item and
+  declare them as `deferred_implicates` in your graph (an item implicate there is only
+  `W-IMPLICATE-PENDING`, and the engine ignores it anyway).
 - Generators export `generate(seed, rng)` and return
   `{display, answer, errors: [{code, value}], solution: {steps, final}}`. They
   import only `/lib/rng.mjs` and `/lib/fmt.mjs`. No `Math.random`, `Date`,

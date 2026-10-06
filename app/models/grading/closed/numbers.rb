@@ -48,11 +48,25 @@ module Grading
             Closed.result("correct", normalized: normalized)
           end
         else
-          codes = Closed.error_hit(spec, answer) { |v, a| (expected_value(v) == a rescue false) }
+          codes = error_codes(spec, answer)
           Closed.verdict_for_errors(codes, normalized: normalized)
         end
       rescue Invalid => e
         Closed.invalid(e.code)
+      end
+
+      # Declared errors that match: exact, or (round_to: n, D-135) any answer that rounds half up
+      # to the declared value at n decimals. The key is graded before this, so it always wins.
+      def error_codes(spec, answer)
+        Array(spec.errors).select { |e| error_match?(e, answer) }.map { |e| e["code"] }.uniq
+      end
+
+      def error_match?(error, answer)
+        declared = expected_value(error["value"])
+        n = error["round_to"]
+        n.nil? ? declared == answer : declared.round(n, half: :up) == answer.round(n, half: :up)
+      rescue ArgumentError, TypeError, ZeroDivisionError
+        false
       end
 
       # Extra exact values the item accepts as right (a convention the teacher left open).

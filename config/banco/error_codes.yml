@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 9
+version: 10
 
 validation:
   # Skill graph (synchronous).
@@ -77,6 +77,7 @@ validation:
   W-ERROR-NOT-IN-GRAPH: { stage: ruby, severity: warning, description: "An item's error code is not an error of its skill in the graph, or its implicates differ from the graph's: the engine reads the graph alone." }
   W-FORM-SKILL-CLOSURE: { stage: ruby, severity: warning, description: "An item's form_skill is not in the prerequisite closure of its skill: a wrong form gets credit but no tail suspect." }
   W-CALCULATOR: { stage: ruby, severity: warning, description: "A numeric item in a subject that allows the calculator lacks the sentence that says so." }
+  W-IMPLICATE-PENDING: { stage: ruby, severity: warning, description: "An error_catalogue implicate names a skill of another subject whose graph is not approved yet. The engine reads implicates from the graph, so the item's list is ignored anyway; declare the edge as deferred_implicates in the graph and move it after the other graph is approved (D-135)." }
   # Blueprint (synchronous).
   W-SHORT-SKILL-CLOSED: { stage: blueprint, severity: warning, description: "Closed items are pinned on the skill of a pinned short answer: the engine serves only the short answer there, so they are never seen and do not count for the redo pool." }
   W-GUEST-UNAPPROVED: { stage: blueprint, severity: warning, description: "A guest starting skill sits in a graph of its own subject that is not approved yet. The draft and the dry run accept it; the teacher cannot approve the blueprint until that graph is approved (D-129)." }

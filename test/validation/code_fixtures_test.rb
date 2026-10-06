@@ -179,6 +179,12 @@ class CodeFixturesTest < ActiveSupport::TestCase
       draft = Validation::Context.new(subject: "math", draft_skill: ->(k) { k == "italian.reading" ? { "key" => k } : nil })
       blueprint_codes(context: draft) { |d| d["entries"][0].merge!("skill" => "italian.reading", "guest_of_subject" => "italian") }
     },
+    "W-IMPLICATE-PENDING" => lambda {
+      base = F.context
+      draft = Validation::Context.new(subject: "math", skill: base.method(:skill).to_proc, graph_present: true, source_line: ->(s, n) { base.source_line(s, n) },
+                                      draft_skill: ->(k) { k == "chemistry.draft-skill" ? { "key" => k } : nil })
+      static_codes(item("error_catalogue" => [ item["error_catalogue"][0].merge("implicates" => [ "chemistry.draft-skill" ]) ]), context: draft)
+    },
     "W-ANSWER-IN-STEM" => -> { static_codes(item("instances" => [ F.number_instance(25, 150, stem: "Risolvi $x+25=150$ sapendo che il risultato e 125."), F.number_instance(4, 13) ], "tests" => { "must_accept" => [], "must_reject" => [], "blank" => "invalid" })) },
     "W-LONGEST-CORRECT" => -> { static_codes(F.choice_item("instances" => (1..4).map { |i| F.choice_instance("una risposta molto lunga numero #{i}", %w[uno due tre]) })) },
     "W-GULPEASE" => -> { static_codes(item("prompt" => { "stem_it" => ([ "Paradigmaticamente incontrovertibilmente costituzionalizzabile" ] * 9).join(" ") + "." })) },
