@@ -34,6 +34,9 @@ class ReadabilityTest < ActiveSupport::TestCase
     msg = "Hai preso le centinaia senza aggiungere 1. Il 350 a.C. e il 350 d.C. sono nel IV secolo."
     assert_not_includes lint(msg, role: :message).map(&:code), "E-MESSAGE"
     assert_not_includes lint("Il sec. IV d.C. fu lungo. Il 44 a.C. è prima.", role: :message).map(&:code), "E-MESSAGE"
+    # the content agent's report: a lowercase word after a.C. keeps the sentence whole
+    assert_not_includes lint("Hai messo prima il fatto con la data a.C. più piccola. Avanti Cristo, più grande è il numero, più antico è il fatto.", role: :message).map(&:code), "E-MESSAGE"
+    assert_empty lint("Nel 509 a.C. finisce la monarchia e nasce la Repubblica romana.", role: :text).select { |f| f.code == "E-READ" }
     # a capital after the era abbreviation, or the end of the text, still ends the sentence
     assert_includes lint("Accadde nel 44 a.C. Poi nel 10 d.C. Poi altro.", role: :message).map(&:code), "E-MESSAGE"
   end
