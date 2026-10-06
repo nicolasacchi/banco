@@ -24,7 +24,11 @@ Never ask for a decision.
 true}`. The answer has the shape the component asks for: a string with the decimal
 comma for `number`, `{n, d}` for `fraction`, the option id for `choice`, the
 element ids in order for `ordering`, a map left id to right id for `matching`, a
-string for `normalized_text`, a LaTeX string for `expression`.
+string for `normalized_text`, a LaTeX string for `expression`. For a `testlet` the
+answer is an object from each sub item id to that sub item's own answer, in the shape
+of the sub item's component (`{"s1": "b", "s2": {"n": 3, "d": 4}}`); to give up one
+sub item write `{"dont_know": true}` as its value. For a `short_answer` the answer is
+a plain string: the server records it for the teacher and does not grade it.
 
 The file needs four keys at the root, all required: `schema`, `schema_version`
 (the number 1), `revision` (the revision id you passed to `banco solve open`, as a

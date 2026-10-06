@@ -170,6 +170,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-163 | 2026-10-06 | the solve brief carries a complete `banco.solve/1` example | implemented |
 | D-164 | 2026-10-06 | brief session examples use the placeholder AGENT | implemented |
 | D-165 | 2026-10-06 | E-REVIEW-EMPTY names the rule each weak point failed | implemented |
+| D-166 | 2026-10-06 | the solve brief states the testlet and short_answer answer shapes | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1792,5 +1793,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** evidence that says nothing is refused with E-REVIEW-EMPTY.
 - **We do:** the message lists, per point, the rule it failed (word count with the actual count and the minimum of 4, or a stock phrase); the detail also carries `reasons` (`too_short` or `stock_phrase`) beside `points`.
 - **Why:** content agent (business, step review1:2). Missing precision in a message, not a rule change. The checks are unchanged; `points` is unchanged, `reasons` is added (backward compatible).
+- **Cost:** none.
+- **Status:** implemented
+
+## D-166 · 2026-10-06 · the solve brief states the testlet and short_answer answer shapes
+
+- **Design ref:** C-03, A-05
+- **Design said:** the solve brief listed answer shapes for the closed components, `normalized_text` and `expression` only.
+- **We do:** `briefs/solve.md` adds the `testlet` answer (object from sub item id to that sub item's own answer, `{"dont_know": true}` to give up one) and the `short_answer` answer (plain string, recorded, not graded). A test checks both sentences.
+- **Why:** content agent (spanish, step solve1:0). Defect in the brief (documentation); the envelope fields (`schema`, `schema_version`, `revision`) were already documented by D-163. The guessed shapes were correct. `banco.*/1` unchanged.
 - **Cost:** none.
 - **Status:** implemented

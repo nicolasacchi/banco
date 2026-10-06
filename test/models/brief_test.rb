@@ -43,6 +43,12 @@ class BriefTest < ActiveSupport::TestCase
     assert_empty Banco::Schemas.validate("solve", doc)
   end
 
+  test "the solve brief states the testlet and short_answer answer shapes" do
+    body = Brief.find("solve").body
+    assert_match(/testlet.*object from each sub item id/m, body)
+    assert_match(/short_answer.*plain string/m, body)
+  end
+
   test "briefs mention only formats that exist" do
     NAMES.each do |name|
       Brief.find(name).body.scan(%r{banco\.(\w+)/1}).flatten.each do |format|
