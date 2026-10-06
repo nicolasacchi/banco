@@ -155,6 +155,8 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-148 | 2026-10-06 | the programme's star markers (U+2605, U+2606) are not emoji for the readability rule | implemented |
 | D-149 | 2026-10-06 | W-RULES-OUTDATED names pinned revisions that passed under older rules (blueprint dry run, status) | implemented |
 | D-150 | 2026-10-06 | a carried-forward verify.mjs that accepts wrong answers is E-VERIFY-STALE (awaiting_verifier), not E-VERIFY-VACUOUS | implemented |
+| D-152 | 2026-10-06 | graph and blueprint submits record the author session and refuse an invalid session header; --agent accepts parentheses | implemented |
+| D-151 | 2026-10-06 | skill-graph coverage follows the engine for testlets (first skill) and lists stored multi-skill testlets | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1643,4 +1645,22 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** when the revision's verify.mjs is identical to its base's, the acceptance of wrong answers is also `E-VERIFY-STALE` (same message and detail; registry version 16), so `banco status` counts the item as `awaiting_verifier`. A verify.mjs the author wrote or changed keeps `E-VERIFY-VACUOUS`.
 - **Why:** content agent (business, step fix2): the author changed the options, the old verify.mjs accepted the new distractor, and the item showed as failed.
 - **Cost:** a carried-forward verify.mjs that was always vacuous also reads as stale; the verifier reads the findings either way.
+- **Status:** implemented
+
+## D-151 · 2026-10-06 · skill-graph coverage follows the engine for testlets and lists stored multi-skill testlets
+
+- **Design ref:** D-098, D-137, D-144
+- **Design said:** coverage lists `item_errors_not_in_graph` per sub item's skill; a testlet is charged to its first sub item's skill only (D-098).
+- **We do:** (1) `banco skill-graph coverage`: a testlet's codes are checked against the first sub item's skill (where the engine reads them), and the skill counts as measured for that skill only. (2) New key `testlets_multi_skill`: passed stored testlets with sub items on several skills (`item`, `item_revision_id`, `skills`, `charged_to`); each would fail E-TESTLET-SKILLS on resubmission, so the agent re-validates them with one skill. Additive; `banco.*/1` unchanged. (3) Descent item order (agent issue 1) was already fixed by D-142 (`Plan#item_order`); no change.
+- **Why:** content agent (spanish, step fix2): coverage asked for codes on skills where they have no engine effect and did not say the revision is stale.
+- **Cost:** a graph that listed codes only for a non-first sub item skill now shows them under the first skill.
+- **Status:** implemented
+
+## D-152 · 2026-10-06 · graph and blueprint submits record the author session and refuse an invalid session header; `--agent` accepts parentheses
+
+- **Design ref:** A-04, D-A04 (graph and blueprint submits need no session)
+- **Design said:** graph and blueprint submits take no session, so their authorship was never recorded and any `X-Banco-Session` was ignored. The CLI accepted `--agent` only from `[A-Za-z0-9._/@ :+-]`, and answered "give --agent NAME and --model MODEL" for a bad name.
+- **We do:** (1) a session stays optional on `skill-graph submit` and `blueprint submit`; when `X-Banco-Session` is sent it must be an author session of the token (`E-SESSION`, `E-SESSION-ROLE`, 422, nothing stored), and a valid one is stored as `author_session_id`. A real (not dry) submit only. (2) `banco session new --agent` also takes `(` and `)`, and a name outside the set is answered with a message that lists the allowed characters. `banco.*/1` unchanged.
+- **Why:** content agent (italian, step promote): `--agent 'claude-code (promoted from staging)'` was refused with a misleading message; and a graph was submitted with `BANCO_SESSION` holding that error text, which was ignored and stored as revision 1 without authorship. Defects.
+- **Cost:** production graph revision 1 of italian stays without an author session (append-only; an identical resubmission is a replay). Not corrected; the item revisions carry session 17. A graph or blueprint submit without any header still records no author.
 - **Status:** implemented

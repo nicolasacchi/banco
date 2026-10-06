@@ -42,6 +42,21 @@ func TestSessionNewPostsAndPrintsTheId(t *testing.T) {
 	}
 }
 
+func TestSessionNewAcceptsParenthesesAndNamesBadCharacters(t *testing.T) {
+	srv, seen := sequenceServer(t, [2]string{"201", `{"id":7}`})
+	r := runWithSession(t, srv.URL, "", "session", "new", "--role", "author", "--agent", "claude-code (promoted from staging)", "--model", "m", "--id")
+	if r.exit != ExitOK || strings.TrimSpace(r.stdout) != "7" {
+		t.Fatalf("exit %d stdout %q stderr %q", r.exit, r.stdout, r.stderr)
+	}
+	if (*seen)[0].body["agent"] != "claude-code (promoted from staging)" {
+		t.Fatalf("request %+v", (*seen)[0])
+	}
+	r = runWithSession(t, srv.URL, "", "session", "new", "--role", "author", "--agent", "bad$name", "--model", "m")
+	if r.exit != ExitUsage || !strings.Contains(r.stderr, "letters, digits") {
+		t.Fatalf("exit %d stderr %q", r.exit, r.stderr)
+	}
+}
+
 func TestSessionNewUsageErrors(t *testing.T) {
 	srv, seen := sequenceServer(t, [2]string{"201", `{}`})
 	for _, args := range [][]string{

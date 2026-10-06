@@ -17,7 +17,7 @@ import (
 // X-Banco-Session on every request.
 
 var sessionRoles = map[string]bool{"author": true, "verifier": true, "reviewer": true, "solver": true, "grader": true}
-var agentRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._/@ :+-]{0,95}$`)
+var agentRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._/@ :+()-]{0,95}$`)
 
 // runSessionNew opens a session (POST /api/v1/sessions) and prints it. With --id it
 // prints the bare id, for: export BANCO_SESSION=$(banco session new ... --id).
@@ -40,8 +40,11 @@ func runSessionNew(e *env, args []string) error {
 	if !sessionRoles[*role] {
 		return newErr(ExitUsage, "E-USAGE", "role", "--role is author, verifier, reviewer, solver or grader", next)
 	}
-	if !agentRe.MatchString(*agent) || *model == "" {
+	if *agent == "" || *model == "" {
 		return newErr(ExitUsage, "E-USAGE", "agent", "give --agent NAME and --model MODEL", next)
+	}
+	if !agentRe.MatchString(*agent) {
+		return newErr(ExitUsage, "E-USAGE", "agent", "--agent is 1 to 96 characters: letters, digits, space and . _ / @ : + ( ) -, starting with a letter or digit", next)
 	}
 	payload, _ := json.Marshal(map[string]string{"role": *role, "agent": *agent, "model": *model})
 	out, err := e.client().doBody("session new", "POST", "/api/v1/sessions", payload)

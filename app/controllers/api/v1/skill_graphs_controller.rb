@@ -33,6 +33,9 @@ module Api
         warnings = findings.warnings.map(&:to_h)
         return render json: { dry_run: true, status: "passed", codes: [], warnings: warnings } if dry_run?
 
+        ok, author = optional_author_session
+        return unless ok
+
         text = JSON.generate(graph)
         # Read inside the transaction (D-073): a concurrent identical submit replays.
         latest = nil
@@ -40,7 +43,7 @@ module Api
           latest = SkillGraphRevision.where(subject: @subject).order(:seq).last
           next if latest && latest.body_json == text
 
-          SkillGraphRevision.create!(subject: @subject, seq: (latest&.seq || 0) + 1, body_json: text, brief_sha256: Brief.find("skill-graph")&.sha256)
+          SkillGraphRevision.create!(subject: @subject, seq: (latest&.seq || 0) + 1, body_json: text, author_session: author, brief_sha256: Brief.find("skill-graph")&.sha256)
         end
         return render json: { revision_id: latest.id, seq: latest.seq, replayed: true, warnings: warnings } unless revision
 

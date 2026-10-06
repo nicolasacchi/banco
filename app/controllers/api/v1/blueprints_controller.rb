@@ -45,12 +45,15 @@ module Api
         warnings = findings.warnings.map(&:to_h)
         return render json: { dry_run: true, status: "passed", codes: [], warnings: warnings } if dry_run?
 
-        store(doc, graph, warnings)
+        ok, author = optional_author_session
+        return unless ok
+
+        store(doc, graph, warnings, author)
       end
 
       private
 
-      def store(doc, graph, warnings)
+      def store(doc, graph, warnings, author)
         text = JSON.generate(doc)
         # Read inside the transaction (D-073): a concurrent identical submit replays.
         latest = nil
@@ -58,7 +61,7 @@ module Api
           latest = BlueprintRevision.where(subject: @subject).order(:seq).last
           next if latest && latest.body_json == text
 
-          BlueprintRevision.create!(subject: @subject, skill_graph_revision: graph, seq: (latest&.seq || 0) + 1, body_json: text,
+          BlueprintRevision.create!(subject: @subject, skill_graph_revision: graph, seq: (latest&.seq || 0) + 1, body_json: text, author_session: author,
                                     brief_sha256: Brief.find("blueprint")&.sha256)
         end
         return render json: { revision_id: latest.id, seq: latest.seq, replayed: true, warnings: warnings } unless revision

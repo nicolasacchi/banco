@@ -147,7 +147,7 @@
       "path": "/api/v1/subjects/:subject/skill-graph",
       "args": ["file"],
       "flags": ["--subject", "--dry-run"],
-      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-SCHEMA", "E-GRAPH-CYCLE", "E-SOURCE", "E-SCOPE", "E-NEEDED-BY", "E-GRAPH-EDGE-UNAPPROVED", "E-SKILL-UNKNOWN"]
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-SCHEMA", "E-GRAPH-CYCLE", "E-SOURCE", "E-SCOPE", "E-NEEDED-BY", "E-GRAPH-EDGE-UNAPPROVED", "E-SKILL-UNKNOWN", "E-SESSION", "E-SESSION-ROLE"]
     },
     {
       "name": "skill-graph coverage",
@@ -174,7 +174,7 @@
       "path": "/api/v1/subjects/:subject/blueprint",
       "args": ["file"],
       "flags": ["--subject", "--dry-run"],
-      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-SCHEMA", "E-BLUEPRINT-ENTRIES", "E-POOL-REDO", "E-ITEM-NOT-PASSED", "E-BLUEPRINT-UNPINNED-DESCENT", "E-SKILL-UNKNOWN"]
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-SCHEMA", "E-BLUEPRINT-ENTRIES", "E-POOL-REDO", "E-ITEM-NOT-PASSED", "E-BLUEPRINT-UNPINNED-DESCENT", "E-SKILL-UNKNOWN", "E-SESSION", "E-SESSION-ROLE"]
     },
     {
       "name": "session new",

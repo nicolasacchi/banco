@@ -55,6 +55,17 @@ module Api
       session
     end
 
+    # For the endpoints that do not need a session (graph and blueprint submits, D-152):
+    # no X-Banco-Session is fine (returns [true, nil]); a header that is not a session of
+    # this token in an author role is refused, so a shell variable that holds an error
+    # message is never taken for "no session". Returns [ok, session].
+    def optional_author_session
+      return [ true, nil ] if request.headers["X-Banco-Session"].to_s.strip.empty?
+
+      session = require_session("author")
+      [ !session.nil?, session ]
+    end
+
     def parse_json_body
       body = JSON.parse(request.raw_post)
       return body if body.is_a?(Hash)
