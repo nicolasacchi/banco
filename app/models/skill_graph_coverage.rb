@@ -39,7 +39,8 @@ class SkillGraphCoverage
       lines: lines.size, cited: lines.count { |l| cited.include?(l.number) }, excluded: lines.count { |l| (excluded.include?(l.number) || (fragment_exclusions[l.number] && !partial.key?(l.number))) && !cited.include?(l.number) },
       uncovered: uncovered.map { |l| { line: l.number, text: l.text } },
       partial: partial.values,
-      skills: skills_with_items(body)
+      skills: skills_with_items(body),
+      item_errors_not_in_graph: item_errors_not_in_graph(body)
     }
   end
 
@@ -113,5 +114,25 @@ class SkillGraphCoverage
     end.flatten.to_set
     keys = body["skills"].map { |s| s["key"] }
     { total: keys.size, with_items: keys.count { |k| measured.include?(k) }, without_items: keys.reject { |k| measured.include?(k) } }
+  end
+
+  # Error codes that the latest passed revisions of the subject's items declare and the
+  # latest graph does not list for the skill (W-ERROR-NOT-IN-GRAPH, D-137). The engine
+  # reads errors from the graph alone, so such a wrong answer is unclassified and the
+  # descent adds every direct prerequisite. Item validation only warns when a graph
+  # existed at that time, so this list is the check after the fact.
+  def item_errors_not_in_graph(body)
+    known = body["skills"].to_h { |s| [ s["key"], Array(s["errors"]).map { |e| e["code"] }.to_set ] }
+    Item.where(subject: @subject).order(:key).flat_map do |item|
+      rev = item.latest_revision
+      next [] unless rev&.status == "passed"
+
+      doc = JSON.parse(rev.body_json)
+      bodies = doc["kind"] == "testlet" ? Array(doc["sub_items"]) : [ doc ]
+      bodies.flat_map do |b|
+        codes = Array(b["error_catalogue"]).map { |e| e["code"] }.uniq.reject { |c| known[b["skill"]]&.include?(c) }
+        codes.map { |c| { item: item.key, item_revision_id: rev.id, skill: b["skill"], code: c } }
+      end
+    end
   end
 end

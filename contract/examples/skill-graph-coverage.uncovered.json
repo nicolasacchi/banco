@@ -47,7 +47,8 @@
           "math.factoring",
           "math.decimal-operations"
         ]
-      }
+      },
+      "item_errors_not_in_graph": []
     }
   }
 }

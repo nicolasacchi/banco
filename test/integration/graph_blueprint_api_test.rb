@@ -186,6 +186,21 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
     assert_equal "E-NOT-FOUND", json["code"]
   end
 
+  test "coverage: item_errors_not_in_graph lists codes of passed items that the graph lacks (D-137)" do
+    submit_graph(graph)
+    with_errors = graph["skills"].find { |s| s["errors"].any? }
+    skill_key = with_errors["key"]
+    declared = with_errors["errors"].first["code"]
+    item = Item.create!(subject: @subject, key: "probe", kind: "diagnosis_item")
+    body = { schema: "banco.item/1", kind: "diagnosis_item", subject: "math", skill: skill_key,
+             error_catalogue: [ { code: declared }, { code: "invented_code" } ] }
+    rev = ItemRevision.create!(item: item, seq: 1, body_json: JSON.generate(body), file_sessions_json: "{}")
+    ItemValidation.create!(item_revision: rev, seq: 1, status: "passed", codes_json: "[]")
+    programme { api("/api/v1/subjects/math/skill-graph/coverage") }
+    assert_response :ok
+    assert_equal [ { "item" => "probe", "item_revision_id" => rev.id, "skill" => skill_key, "code" => "invented_code" } ], json["item_errors_not_in_graph"]
+  end
+
   test "coverage: lines of the range that no skill cites and no exclusion explains" do
     submit_graph(graph)
     programme { api("/api/v1/subjects/math/skill-graph/coverage") }

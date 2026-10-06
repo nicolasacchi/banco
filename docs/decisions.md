@@ -141,6 +141,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-134 | 2026-10-06 | `items list --subject` accepts keys with an underscore (computer_science) | implemented |
 | D-135 | 2026-10-06 | `round_to` on a number error; item implicates into another subject's draft graph; ready marker on deferred edges | implemented |
 | D-136 | 2026-10-06 | a pinned item revision that a newer passed revision replaced is `W-STALE-PIN` | implemented |
+| D-137 | 2026-10-06 | `skill-graph coverage` lists the error codes of passed items that the graph lacks | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1502,4 +1503,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Also:** the report that `review open` shows 8 of 24 instances is answered by D-133 (all stored instances, no flag); the content agent ran a binary or staging from before D-133.
 - **Why:** content agent (math, step review:2).
 - **Cost:** one extra query per pinned item at submit.
+- **Status:** implemented
+
+## D-137 · 2026-10-06 · `skill-graph coverage` lists the error codes of passed items that the graph lacks
+
+- **Design ref:** A-06, C-01
+- **Design said:** `W-ERROR-NOT-IN-GRAPH` (D-087) warns at item validation when an item's error code is not an error of its skill in the graph.
+- **We do:** `banco skill-graph coverage --subject KEY` gains the additive member `item_errors_not_in_graph`: `[{item, item_revision_id, skill, code}]` for the latest passed revision of each item (testlet sub-items included) against the latest graph. Not a defect in the warning, which already exists: it only fires when a graph exists at the item's validation (or revalidation), so items validated before the graph, or against an older graph revision, passed without it. Warnings never block. The content agent adds the codes to the graph (with their implicates) and resubmits it, or revises the items to graph codes, then re-reads the coverage.
+- **Why:** content agent (law_economics, step review:2): 27 codes missing, noticed by hand.
+- **Cost:** one pass over the subject's latest revisions per coverage call.
 - **Status:** implemented
