@@ -11,7 +11,7 @@ module Validation
       component = body["component"] || "number"
       skills = kind == "testlet" ? [ Array(body["sub_items"]).first&.dig("skill") ] : [ body["skill"] ]
       BlueprintChecks::ItemInfo.new(
-        id: revision.id, skills: skills, testlet_skills: (Array(body["sub_items"]).filter_map { |s| s["skill"] }.uniq if kind == "testlet"), kind: kind, passed: revision.status == "passed", latest_passed_id: latest_passed_id(revision),
+        id: revision.id, skills: skills, testlet_skills: (Array(body["sub_items"]).filter_map { |s| s["skill"] }.uniq if kind == "testlet"), kind: kind, passed: revision.status == "passed", latest_passed_id: latest_passed_id(revision), rules_version: outdated_rules_version(revision),
         instances: revision.instances.order(:id).map do |inst|
           display = JSON.parse(inst.display_json)
           if kind == "testlet"
@@ -23,6 +23,12 @@ module Validation
           end
         end
       )
+    end
+
+    # The rules version a passed revision was validated under, when it is not the current one (D-149); a validation without a stored version is not compared.
+    def outdated_rules_version(revision)
+      v = revision.validations.max_by(&:seq)
+      v.rules_version.to_s if v && v.status == "passed" && v.rules_version.present? && v.rules_version.to_s != Validation::Rules.version.to_s
     end
 
     # The newest passed revision of the same item (by seq), nil when none passed.

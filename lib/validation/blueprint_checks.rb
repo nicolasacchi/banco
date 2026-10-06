@@ -8,10 +8,11 @@ module Validation
   #
   # items: ->(revision_id string) { ItemInfo | nil }
   module BlueprintChecks
-    ItemInfo = Struct.new(:id, :skills, :passed, :instances, :kind, :latest_passed_id, :testlet_skills, keyword_init: true)
+    ItemInfo = Struct.new(:id, :skills, :passed, :instances, :kind, :latest_passed_id, :testlet_skills, :rules_version, keyword_init: true)
     # instances: [{fingerprint:, low_guess:}]; latest_passed_id: the newest passed revision of the
     # same item (nil when unknown), for W-STALE-PIN; testlet_skills: every skill of a testlet's
-    # sub items (nil otherwise), for W-TESTLET-MULTI-SKILL
+    # sub items (nil otherwise), for W-TESTLET-MULTI-SKILL; rules_version: the rules version of the
+    # latest passed validation when it is not the current one (nil otherwise), for W-RULES-OUTDATED
 
     module_function
 
@@ -78,6 +79,11 @@ module Validation
         if info.passed && info.latest_passed_id && info.latest_passed_id.to_s != id.to_s
           findings.add("W-STALE-PIN", "#{field}/#{i}", "item revision #{id} is no longer the latest passed revision of its item: #{info.latest_passed_id} replaced it; pin #{info.latest_passed_id}",
                        rule: "stale_pin", revision: id, latest: info.latest_passed_id)
+        end
+        if info.passed && info.rules_version
+          findings.add("W-RULES-OUTDATED", "#{field}/#{i}",
+                       "item revision #{id} passed under rules version #{info.rules_version}, not the current one: an unchanged resubmission may fail now; dry-run it (banco work submit DIR --dry-run) and resubmit it if it fails",
+                       rule: "rules_outdated", revision: id, rules_version: info.rules_version)
         end
         if Array(info.testlet_skills).uniq.size > 1
           findings.add("W-TESTLET-MULTI-SKILL", "#{field}/#{i}",

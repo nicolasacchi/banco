@@ -58,6 +58,15 @@ module Approval
       end
     end
 
+    # [{revision:, rules_version:}] for each pinned revision whose latest validation passed under
+    # another rules version than the current one (D-149). Informative: not a reason to refuse.
+    def older_rules_pins(revision)
+      ItemRevision.where(id: revision.pinned_item_revision_ids).includes(:validations).filter_map do |r|
+        v = Validation::ItemInfo.outdated_rules_version(r)
+        { revision: r.id, rules_version: v } if v
+      end
+    end
+
     # [{revision:, skills:}] for each pinned testlet whose sub items span several skills: stored
     # before E-TESTLET-SKILLS (D-098) and still "passed", it would charge all answers to its first skill.
     def multi_skill_testlets(revision)

@@ -40,4 +40,14 @@ class StalePinTest < ActionDispatch::IntegrationTest
       assert_equal [ { revision: rev.id, skills: %w[a.x a.y] } ], Approval::BlueprintGate.multi_skill_testlets(@blueprint)
     end
   end
+
+  test "a pinned revision that passed under older rules is listed in status and warned (D-149)" do
+    assert_empty Approval::BlueprintGate.older_rules_pins(@blueprint)
+    rev = ItemRevision.find(@blueprint.pinned_item_revision_ids.first)
+    ItemValidation.create!(item_revision: rev, seq: rev.validations.maximum(:seq).to_i + 1, status: "passed", codes_json: "[]", rules_version: "0")
+    assert_equal [ { revision: rev.id, rules_version: "0" } ], Approval::BlueprintGate.older_rules_pins(@blueprint)
+    assert_equal "0", Validation::ItemInfo.for(rev.reload).rules_version
+    assert_equal [ { revision: rev.id, rules_version: "0" } ], SubjectStage.for(@subject)[:blueprint][:older_rules_pins]
+    refute(Approval::BlueprintGate.check(@blueprint).reasons.any? { |r| r.include?("W-RULES-OUTDATED") })
+  end
 end

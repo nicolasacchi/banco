@@ -52,6 +52,7 @@ class SubjectStage
       if latest.is_a?(BlueprintRevision)
         row[:stale_pins] = Approval::BlueprintGate.stale_pins(latest)
         row[:multi_skill_testlets] = Approval::BlueprintGate.multi_skill_testlets(latest)
+        row[:older_rules_pins] = Approval::BlueprintGate.older_rules_pins(latest)
       end
       row
     end

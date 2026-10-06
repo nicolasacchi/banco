@@ -153,6 +153,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-146 | 2026-10-06 | `diagnosis simulate` warns W-STALE-PIN for each stale pin it serves | implemented |
 | D-147 | 2026-10-06 | `banco status` counts passed items validated under older rules (`older_rules`) | implemented |
 | D-148 | 2026-10-06 | the programme's star markers (U+2605, U+2606) are not emoji for the readability rule | implemented |
+| D-149 | 2026-10-06 | W-RULES-OUTDATED names pinned revisions that passed under older rules (blueprint dry run, status) | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1623,4 +1624,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** U+2605 (star) and U+2606 (empty star) are removed from the emoji class. Every other pictograph is flagged as before. Schema unchanged.
 - **Why:** content agent (spanish, step review): the brief tells the agent to cite the programme's markers in `scope_reason_it`, and quoting one raised W-GRAPH-READABILITY (emoji). Defect (the rule contradicted the brief). The other reported issue, W-SCOPE-MARKER ignoring unmarked lines, was already fixed by D-142 and does not reproduce on the current server (the stored spanish graph, revision 38, gives no warning): the agent had run an older build.
 - **Cost:** a star in an item text for the student is no longer flagged; the mark is a plain text glyph, not an emoji presentation.
+- **Status:** implemented
+
+## D-149 · 2026-10-06 · W-RULES-OUTDATED names the pinned revisions that passed under older rules
+
+- **Design ref:** A-06, D-136, D-147
+- **Design said:** D-147 counts, per subject, the items whose latest revision passed under another rules version; it does not say which, and the blueprint checks say nothing.
+- **We do:** (1) blueprint submit and dry run warn `W-RULES-OUTDATED` (registry version 15) for each pinned revision whose latest validation passed under a `rules_version` other than the current one, naming that version. (2) `banco status` blueprint row gains the additive `older_rules_pins` (`[{revision, rules_version}]`). A validation without a stored version is not compared. The stored validation is not re-run or rewritten (append-only; re-running every pin per dry run would need Chrome), and approval is not refused (every rules bump would block every test); `banco.*/1` unchanged.
+- **Why:** content agent (chemistry, step fix2): che-density-compute 641, -find-mass 642, -find-volume 643 (E-ROUNDTRIP) and che-state-change-names 652 (E-GEN-POOL) are passed under rules 1 but fail rules 6 on an unchanged resubmission. Missing feature (D-147 gave only a count).
+- **Cost:** the warning does not say which codes the revision would get now; the author dry-runs the listed revisions and resubmits those that fail. The teacher's checklist still shows the old pass.
 - **Status:** implemented
