@@ -16,7 +16,7 @@ validation:
   E-GRAPH-CYCLE: { stage: ruby, severity: error, description: "The prerequisite edges form a cycle." }
   E-SOURCE: { stage: ruby, severity: error, description: "A citation is not an exact substring of a pdf-origin line, cites a transcript line, or names a missing line." }
   E-SCOPE: { stage: ruby, severity: error, description: "Scope does not match the citations: middle_school and not_in_prima skills have no prima refs and carry a reason; studied, integration_studied and in_progress have at least one." }
-  W-REF-OTHER-SUBJECT: { stage: ruby, severity: warning, description: "A skill cites a programme line under a different \"## \" section than most of the graph's citations of that source: probably another subject's line; say so in scope_reason_it." }
+  W-REF-OTHER-SUBJECT: { stage: ruby, severity: warning, description: "A skill cites a programme line under a different \"## \" section than most of the graph's citations of that source: probably another subject's line; say so in the skill's scope_reason_it, naming the line number (then the warning is quiet)." }
   W-SCOPE-MARKER: { stage: ruby, severity: warning, description: "A skill's scope disagrees with the star markers of the previous-year lines it cites (the star inside the cited fragment, else the marker of the line or of the header of its block)." }
   E-NEEDED-BY: { stage: ruby, severity: error, description: "A skill has no seconda needed_by ref and is not a transitive prerequisite of a skill that has one." }
   E-GRAPH-EDGE-UNAPPROVED: { stage: ruby, severity: error, description: "A cross-subject prerequisite points at a skill that is not in an approved graph." }

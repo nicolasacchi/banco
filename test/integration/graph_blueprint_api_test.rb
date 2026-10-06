@@ -267,6 +267,13 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
     assert_equal "Storia", warnings.first["detail"]["section"]
     assert_equal 13, warnings.first["detail"]["line"]
     assert_equal "/skills/#{doc['skills'].index { |s| s['key'] == 'math.linear-equation-integer' }}/refs/0", warnings.first["field"]
+    skill(doc, "math.linear-equation-integer")["scope_reason_it"] = "La riga 130 e di un'altra materia."
+    submit_graph(doc, dry: true)
+    assert_equal 1, json["warnings"].count { |w| w["code"] == "W-REF-OTHER-SUBJECT" }, "a reason naming another line does not clear it"
+    skill(doc, "math.linear-equation-integer")["scope_reason_it"] = "La riga 13 e di Storia, altra materia."
+    submit_graph(doc, dry: true)
+    assert_empty json["warnings"].select { |w| w["code"] == "W-REF-OTHER-SUBJECT" }, "a reason naming the line clears it"
+    skill(doc, "math.linear-equation-integer").delete("scope_reason_it")
     set.(doc, "math.linear-equation-integer", 11, "testo")
     submit_graph(doc, dry: true)
     assert_empty json["warnings"].select { |w| w["code"] == "W-REF-OTHER-SUBJECT" }

@@ -191,7 +191,7 @@ module Validation
     # A programme has one "## <subject>" section per subject. A ref into a section other
     # than the one most of the graph's refs of that source cite is probably another
     # subject's line (a next-year line of English, History...): a warning, so that the
-    # author labels it (scope_reason_it) and the reviewer does not read it as ours.
+    # author labels it (scope_reason_it naming the line number: then quiet) and the reviewer does not read it as ours.
     # No majority (a tie) or no section: quiet.
     def other_subject_refs(skills, context, findings)
       cited = []
@@ -209,7 +209,10 @@ module Validation
         group.each do |field, ref, section|
           next if section == own
 
-          findings.add("W-REF-OTHER-SUBJECT", field, "line #{ref['line']} of #{ref['source']} is under \"#{section}\", not \"#{own}\" like most of the lines cited: say in scope_reason_it that it belongs to another subject", line: ref["line"], section: section)
+          reason = skills[field[%r{\A/skills/(\d+)/}, 1].to_i]["scope_reason_it"].to_s
+          next if reason.match?(/(?<!\d)#{ref['line']}(?!\d)/) # the author already named the line
+
+          findings.add("W-REF-OTHER-SUBJECT", field, "line #{ref['line']} of #{ref['source']} is under \"#{section}\", not \"#{own}\" like most of the lines cited: say in scope_reason_it, naming line #{ref['line']}, that it belongs to another subject", line: ref["line"], section: section)
         end
       end
     end

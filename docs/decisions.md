@@ -147,6 +147,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-140 | 2026-10-06 | `banco work open --role verifier` gets its own default folder and refuses the other role's folder | implemented |
 | D-141 | 2026-10-06 | `E-VERIFY-STALE`: a carried-forward verify.mjs that rejects a changed item is the verifier's to refresh; `banco status` has `awaiting_verifier` | implemented |
 | D-142 | 2026-10-06 | a star block ends at a short heading after a finished sentence; W-SCOPE-MARKER counts unmarked lines; descent item order is kept | implemented |
+| D-143 | 2026-10-06 | W-REF-OTHER-SUBJECT is quiet when the skill's scope_reason_it names the line number | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1563,4 +1564,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** (1) `Syllabus::BlockMarker`: a short unpunctuated line right after a block line that ends with `. ; ! ?` closes the block (it is a heading: "Economia" after the Constitution text). Bullets after the header or after unpunctuated bullets still inherit. (2) W-SCOPE-MARKER: a cited line without a marker counts as "no marker" (scope studied), so a skill spanning unmarked and star lines expects `studied` or `integration_studied`; only lines the source lacks are skipped; a skill citing only unmarked lines stays quiet as before. (3) `Plan#descent_items` (skill to the blueprint's `descent[].items`) and `Plan#item_order`; `Candidates.for` ranks by the entry's items then the descent items. No schema change; `banco.*/1` unchanged.
 - **Why:** content agent (business, step fix): false W-SCOPE-MARKER on lines 136-137 and on a skill spanning lines 147 and 149; 314 served before 313.
 - **Cost:** a bullet list whose item follows a sentence-ending bullet and is itself a short unpunctuated line now leaves the block; the agent cites the header line or the source gets a blank line. Existing stored syllabus lines are derived on read, so no re-import is needed.
+- **Status:** implemented
+
+## D-143 · 2026-10-06 · W-REF-OTHER-SUBJECT is quiet when the skill's scope_reason_it names the line
+
+- **Design ref:** D-125
+- **Design said:** a ref under another programme section than most citations is warned; the author labels it in `scope_reason_it`.
+- **We do:** the check reads the skill's `scope_reason_it`; when it contains the ref's line number as a whole number, no warning. The message now says to name the line. Schema unchanged.
+- **Why:** content agent (law_economics, step fix): the warning kept firing after the label was written, because the check never read it. Defect.
+- **Cost:** a reason that merely mentions the number clears it; the teacher still reads the reason on the graph page. A range written as "687-701" names only its ends.
 - **Status:** implemented
