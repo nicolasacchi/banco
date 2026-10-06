@@ -264,6 +264,12 @@ class CodeFixturesTest < ActiveSupport::TestCase
                      "passage_it" => "Un breve testo di prova.", "expected_seconds" => 300, "sub_items" => subs,
                      "sources" => [ { "kind" => "inferred", "ref" => "prova", "fragment" => "x" } ] })
     },
+    "W-MESSAGE-GIVES-KEY" => lambda {
+      leaky = F.choice_item
+      leaky["instances"][0] = F.choice_instance("sette unita di massa", %w[tredici nove undici])
+      leaky["error_catalogue"][0]["message_it"] = "Quindi la risposta e sette unita di massa."
+      static_codes(leaky)
+    },
     "W-CALCULATOR" => lambda {
       business = item("subject" => "business", "skill" => "business.invoice")
       static_codes(business, context: F.context(subject: "business", extra_skills: { "business.invoice" => { "key" => "business.invoice" } }))

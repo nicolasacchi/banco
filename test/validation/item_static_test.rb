@@ -378,4 +378,14 @@ class ItemStaticTest < ActiveSupport::TestCase
     clean = run_item(build.call("Un breve testo di prova.", %w[tredici nove undici]))
     assert_not_includes codes(clean), "W-TESTLET-LEAK"
   end
+
+  test "D-171: W-MESSAGE-GIVES-KEY flags a catalogue message that states an instance key" do
+    leaky = F.choice_item
+    leaky["instances"][0] = F.choice_instance("sette unita di massa", %w[tredici nove undici])
+    leaky["error_catalogue"][0]["message_it"] = "Quindi la risposta e sette unita di massa."
+    hit = run_item(leaky).findings.find { |f| f.code == "W-MESSAGE-GIVES-KEY" }
+    assert hit
+    assert_match %r{/error_catalogue/0/message_it\z}, hit.field
+    assert_not_includes codes(run_item(F.choice_item)), "W-MESSAGE-GIVES-KEY"
+  end
 end

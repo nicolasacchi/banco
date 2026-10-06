@@ -175,6 +175,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-168 | 2026-10-06 | the solve brief says a short_answer takes a sample answer, not `dont_know` | implemented |
 | D-169 | 2026-10-06 | the solver and reviewer see the item prompt (an ordering's direction) | implemented |
 | D-170 | 2026-10-06 | E-SCHEMA says in plain words what a wrong constant or non-string root member must be | implemented |
+| D-171 | 2026-10-06 | W-MESSAGE-GIVES-KEY: an error message that states an instance's key | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1843,4 +1844,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** `Validation::SchemaCheck` words a `const` error as `/schema_version must be exactly 1, not "1"` and a `string` type error as `/revision must be a string (in quotes), not 379`. Errors were already reported in one pass (the missing members in one line); only the wording changes. `briefs/solve.md` already shows the full root (D-166). `banco.*/1` unchanged.
 - **Why:** content agent (chemistry, step solve1:3) met three submits with cryptic messages ("is not: 1", "is not a string"). Classified as unclear wording, not a defect in the schema; the brief issue was already fixed.
 - **Cost:** none.
+- **Status:** implemented
+
+## D-171 · 2026-10-06 · W-MESSAGE-GIVES-KEY: an error message that states an instance's key
+
+- **Design ref:** A-06
+- **Design said:** the brief's writing rule 4 forbids a message that gives the key; nothing checked it.
+- **We do:** for static instances, `ItemRunner#message_gives_key` warns (`W-MESSAGE-GIVES-KEY`, field `.../error_catalogue/N/message_it`) when a catalogue `message_it` contains the key of any instance of the same unit (choice option text, or `Answers.key_texts`), 6 or more plain characters, whole-token match. Messages are item-level and shown after a wrong answer on any instance, so every instance key counts. Warning only; generated items are not checked (their keys vary by seed). `banco.*/1` unchanged.
+- **Why:** content agent (chemistry, review1:0): revisions 116 and 122 passed with messages that wrote other instances' keys. Classified as a missing check (validator gap), not a defect in a past check.
+- **Cost:** none; short keys (a number, one word) are deliberately not flagged.
 - **Status:** implemented

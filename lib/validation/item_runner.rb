@@ -160,8 +160,27 @@ module Validation
       end
       longest_correct(unit, list, checker)
       never_generated(unit, list)
+      message_gives_key(unit, list)
       Roundtrip.new(unit, subject: item["subject"], findings: @findings).call(list, label: "#{unit.path}/instances", tests: unit.body["tests"])
       list.map { |i| stored_row(nil, i) }
+    end
+
+    # W-MESSAGE-GIVES-KEY (D-171): an error message is shown after a wrong answer on any instance
+    # of the item, so it must not state the key of one (brief, writing rule 4). Keys shorter than
+    # MESSAGE_KEY_MIN_CHARS (a bare number, a one-word name) are too common in prose to flag.
+    MESSAGE_KEY_MIN_CHARS = 6
+
+    def message_gives_key(unit, list)
+      needles = list.flat_map { |inst| testlet_needles(unit, { display: inst["display"], answer: inst["answer"], accept: inst["accept"] }) }
+      needles = needles.uniq.select { |n| Answers.plain(n).length >= MESSAGE_KEY_MIN_CHARS }
+      return if needles.empty?
+
+      Array(unit.body["error_catalogue"]).each_with_index do |entry, i|
+        n = needles.find { |t| Answers.contains?(entry["message_it"].to_s, t) }
+        next unless n
+
+        @findings.add("W-MESSAGE-GIVES-KEY", "#{unit.path}/error_catalogue/#{i}/message_it", "the message states the key of an instance (#{n.to_s[0, 30].inspect}); a message points at the step, never at an answer", code: entry["code"])
+      end
     end
 
     # The row kept for an instance; accept (D-081) only when the instance has one, so the
