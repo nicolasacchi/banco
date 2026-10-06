@@ -76,4 +76,10 @@ class BriefTest < ActiveSupport::TestCase
       assert_no_match(/--agent omp\b/, body, n)
     end
   end
+
+  test "the review brief allocates a unique scratch directory" do
+    body = Brief.find("review").body
+    assert_includes body, 'mktemp -d "$TMPDIR/rv-SUBJECT-XXXXXX"'
+    assert_no_match(/for example `\$TMPDIR\/rv-SUBJECT-1`/, body)
+  end
 end

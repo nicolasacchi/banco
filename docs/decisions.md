@@ -171,6 +171,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-164 | 2026-10-06 | brief session examples use the placeholder AGENT | implemented |
 | D-165 | 2026-10-06 | E-REVIEW-EMPTY names the rule each weak point failed | implemented |
 | D-166 | 2026-10-06 | the solve brief states the testlet and short_answer answer shapes | implemented |
+| D-167 | 2026-10-06 | the review brief tells reviewers to allocate a unique scratch directory | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1802,5 +1803,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the solve brief listed answer shapes for the closed components, `normalized_text` and `expression` only.
 - **We do:** `briefs/solve.md` adds the `testlet` answer (object from sub item id to that sub item's own answer, `{"dont_know": true}` to give up one) and the `short_answer` answer (plain string, recorded, not graded). A test checks both sentences.
 - **Why:** content agent (spanish, step solve1:0). Defect in the brief (documentation); the envelope fields (`schema`, `schema_version`, `revision`) were already documented by D-163. The guessed shapes were correct. `banco.*/1` unchanged.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-167 · 2026-10-06 · the review brief tells reviewers to allocate a unique scratch directory
+
+- **Design ref:** C-03
+- **Design said:** the review brief suggested a scratch directory named after subject and round (`$TMPDIR/rv-SUBJECT-1`).
+- **We do:** the brief says to create it with `mktemp -d "$TMPDIR/rv-SUBJECT-XXXXXX"` and never to `mkdir -p` a fixed name. A test checks the sentence.
+- **Why:** content agent (business, step review1:3): a reviewer's `mkdir -p $TMPDIR/rev1` silently reused another session's folder. Missing guidance in the brief, not a defect in the software (the CLI and API never create or read that folder; the fixed name came from the agent or orchestrator). The reviewer kept independence by not reading the files. `banco.*/1` unchanged.
 - **Cost:** none.
 - **Status:** implemented
