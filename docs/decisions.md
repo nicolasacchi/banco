@@ -191,6 +191,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-184 | 2026-10-07 | solve/review display: item prompt already shown (D-169); a testlet's sub items now carry their prompt; blueprint open status already D-172 | implemented |
 | D-185 | 2026-10-07 | solve open without stem_it (law_economics): prompt stem shown since D-169; answers.json root already documented (D-180, D-182); no change | implemented |
 | D-186 | 2026-10-07 | resets on first submits were a production restart (deploy); ordering direction and brief envelope already shipped (D-169, D-180); no change | implemented |
+| D-187 | 2026-10-07 | testlet answer shape in the solve brief already shipped (D-166); no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2002,5 +2003,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the solver sees the item prompt, an ordering's direction included (D-169); the solve brief states the four root keys with a full example (D-180).
 - **We do:** no code change. Connection resets on the first submits: the production container had been restarted by a deployment minutes before (the API listener is down for a short while on a restart); the documented wait and retry is the right answer, and nothing is lost because a rejected connection records nothing. `briefs/solve.md` Format shows a full file with `schema`, `schema_version`, `revision`, `answers`. `solve open` adds `prompt.stem_it` to the display (an ordering's direction lives in it, D-169); an ordering whose prompt carries no direction is a content mistake and the author sends a new revision. `banco.*/1` unchanged.
 - **Why:** content agent (law_economics, step solve1:3). Not defects.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-187 · 2026-10-07 · testlet answer shape in the solve brief: already shipped (D-166), no change
+
+- **Design ref:** A-05, D-166
+- **Design said:** the solve brief states the testlet and short_answer answer shapes (D-166).
+- **We do:** no code change. `briefs/solve.md` Format says a testlet answer is an object from each sub item id to that sub item's own answer, in the shape of the sub item's component (`{"s1": "b", "s2": {"n": 3, "d": 4}}`), and `{"dont_know": true}` as a value gives up one sub item. The map the agent used is that shape. `banco.*/1` unchanged.
+- **Why:** content agent (law_economics, step solve1:4). The agent read a build or brief copy older than D-166; not a defect.
 - **Cost:** none.
 - **Status:** implemented
