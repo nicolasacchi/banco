@@ -101,6 +101,9 @@ func runWorkOpen(e *env, args []string) error {
 	if err := json.Unmarshal(body, &answer); err != nil {
 		return newErr(ExitServer, "E-HTTP", "", "the server's answer is not JSON: "+err.Error(), "banco health")
 	}
+	// A reopened folder must not keep files the opened revision does not have
+	// (a verify.mjs left by an earlier attempt would be submitted as if new).
+	removeStale(target, answer.Files)
 	names := make([]string, 0, len(answer.Files))
 	for name, text := range answer.Files {
 		if !validFileName(name) {
@@ -138,6 +141,24 @@ func runWorkOpen(e *env, args []string) error {
 		out["warning"] = "the folder " + target + " is inside the git work tree " + root + ": nothing of the work may be committed there; use --dir OUTSIDE/ITEM (for example under $TMPDIR) and delete this folder"
 	}
 	return json.NewEncoder(e.stdout).Encode(out)
+}
+
+// removeStale deletes the files banco manages in a folder that is being
+// reopened and that the opened revision does not carry (runs before writing).
+func removeStale(dir string, files map[string]string) {
+	managed := []string{"item.json", "generator.mjs", "verify.mjs", "instances.json", "tests.json"}
+	if entries, err := os.ReadDir(filepath.Join(dir, "assets")); err == nil {
+		for _, ent := range entries {
+			if !ent.IsDir() {
+				managed = append(managed, "assets/"+ent.Name())
+			}
+		}
+	}
+	for _, name := range managed {
+		if _, ok := files[name]; !ok {
+			os.Remove(filepath.Join(dir, filepath.FromSlash(name)))
+		}
+	}
 }
 
 // gitRootAbove returns the nearest enclosing directory that holds a .git

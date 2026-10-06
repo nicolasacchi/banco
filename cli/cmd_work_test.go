@@ -396,3 +396,18 @@ func TestWorkSubmitDryRunRetriesBusyThenPasses(t *testing.T) {
 		t.Errorf("exit %d after %d tries; stderr %s", r.exit, len(*seen), r.stderr)
 	}
 }
+
+func TestWorkOpenReopenRemovesFilesTheRevisionDoesNotHave(t *testing.T) {
+	srv, _ := sequenceServer(t, [2]string{"200", `{"revision_id":1,"files":{"item.json":"{}"}}`}, [2]string{"200", `{"revision_id":1,"files":{"item.json":"{}"}}`})
+	dir := filepath.Join(t.TempDir(), "d")
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1", "--dir", dir); r.exit != ExitOK {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	write(t, dir, "verify.mjs", "stale")
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1", "--role", "verifier", "--dir", dir); r.exit != ExitOK {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	if exists(dir, "verify.mjs") {
+		t.Error("a stale verify.mjs survived the reopen")
+	}
+}
