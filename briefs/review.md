@@ -22,7 +22,8 @@ Keep your review files in a scratch directory that only you own: create it with
 `rv-SUBJECT-1`: parallel sessions share `$TMPDIR`, a fixed name silently reuses (or cleans) another session's files.
 `banco review open REV` (readable even before you open a session; submit needs one) gives you the
 item, the instances with expected answers, the messages, the solution and the
-programme lines cited. `banco review submit REV --file review.json` sends the
+programme lines cited (by the skill, by the item's own sources, or both: see `cited_by`; check a
+line the item cites that the skill does not). `banco review submit REV --file review.json` sends the
 result. Never ask for a decision; the teacher disposes of every finding.
 
 ## The checklist (all 11 points, in this order)

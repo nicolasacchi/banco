@@ -61,17 +61,22 @@ module Review
       extra.merge(display)
     end
 
-    # Lines of the programme cited by the item's skill in its subject's graph.
+    # Lines of the programme the reviewer should check the item against: those the
+    # item's skill cites in its subject's graph plus those the item's own sources cite
+    # (ref "SOURCE-KEY:LINE", D-178). cited_by says which side named the line:
+    # "both", "skill" (graph only) or "item" (the item's sources only; role is nil).
     def programme_lines
-      graph = SkillGraphRevision.where(subject: revision.item.subject).order(:seq).last or return []
-      skills = body["kind"] == "testlet" ? Array(body["sub_items"]).map { |s| s["skill"] } : [ body["skill"] ]
-      refs = JSON.parse(graph.body_json)["skills"].select { |s| skills.include?(s["key"]) }.flat_map { |s| s["refs"].to_a.map { |r| r.merge("skill" => s["key"]) } }
-      refs.uniq { |r| [ r["source"], r["line"] ] }.filter_map do |ref|
-        source = SyllabusSource.find_by(key: ref["source"]) or next
-        line = SyllabusLine.find_by(syllabus_source: source, number: ref["line"]) or next
+      own = own_source_refs
+      graph_refs = skill_refs
+      keys = (graph_refs.map { |r| [ r["source"], r["line"].to_i ] } + own).uniq
+      keys.filter_map do |source_key, number|
+        source = SyllabusSource.find_by(key: source_key) or next
+        line = SyllabusLine.find_by(syllabus_source: source, number: number) or next
         next unless line.citable?
 
-        { source: ref["source"], line: ref["line"], role: ref["role"], skill: ref["skill"], text: line.text.chomp }
+        ref = graph_refs.find { |r| r["source"] == source_key && r["line"].to_i == number }
+        cited_by = ref && own.include?([ source_key, number ]) ? "both" : (ref ? "skill" : "item")
+        { source: source_key, line: number, role: ref && ref["role"], skill: ref && ref["skill"], cited_by: cited_by, text: line.text.chomp }
       end
     end
 
@@ -100,6 +105,20 @@ module Review
     end
 
     private
+
+    def skill_refs
+      graph = SkillGraphRevision.where(subject: revision.item.subject).order(:seq).last or return []
+      skills = body["kind"] == "testlet" ? Array(body["sub_items"]).map { |s| s["skill"] } : [ body["skill"] ]
+      JSON.parse(graph.body_json)["skills"].select { |s| skills.include?(s["key"]) }
+          .flat_map { |s| s["refs"].to_a.map { |r| r.merge("skill" => s["key"]) } }
+          .uniq { |r| [ r["source"], r["line"] ] }
+    end
+
+    # [source key, line number] pairs found in the item's (and its sub-items') sources.
+    def own_source_refs
+      sources = Array(body["sources"]) + Array(body["sub_items"]).flat_map { |s| Array(s["sources"]) }
+      sources.flat_map { |s| s["ref"].to_s.scan(/([A-Za-z0-9][A-Za-z0-9_-]*):(\d+)/).map { |k, n| [ k, n.to_i ] } }.uniq
+    end
 
     def leaves(node)
       case node

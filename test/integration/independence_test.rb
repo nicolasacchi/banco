@@ -263,6 +263,21 @@ class IndependenceTest < ActionDispatch::IntegrationTest
 
   # ---- the expert review ---------------------------------------------------------------------
 
+  test "review open: programme lines come from the skill and from the item's own sources (D-178)" do
+    revision = passed_revision
+    body = JSON.parse(revision.body_json)
+    body["sources"] = [ { "kind" => "seconda_line", "ref" => "seconda-test:1", "fragment" => "equazioni" },
+                        { "kind" => "prima_line", "ref" => "prima-test:3", "fragment" => "x" } ]
+    SyllabusLine.create!(syllabus_source: SyllabusSource.find_by(key: "prima-test"), number: 3, text: "una riga citata dall'item", origin: "pdf")
+    other = revision.dup.tap { |r| r.body_json = JSON.generate(body) }
+    lines = Review::ItemText.new(other).programme_lines
+    by = lines.to_h { |l| [ "#{l[:source]}:#{l[:line]}", l ] }
+    assert_equal "both", by["seconda-test:1"][:cited_by]
+    assert_equal "item", by["prima-test:3"][:cited_by]
+    assert_nil by["prima-test:3"][:role]
+    assert_equal "skill", by["prima-test:1"][:cited_by]
+  end
+
   test "review open: item text, instances with answers, the 11 points; never generator.mjs" do
     revision = passed_revision
     api("/api/v1/revisions/#{revision.id}/review", as: @reviewer)

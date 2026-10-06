@@ -182,6 +182,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-175 | 2026-10-06 | solver sees no question on an instance: D-169 already shows the prompt; otherwise a content mistake | implemented |
 | D-176 | 2026-10-06 | solve brief root fields: already in the brief since D-166; no change | implemented |
 | D-177 | 2026-10-06 | reviewer scratch collision: already in the review brief since D-167; no change | implemented |
+| D-178 | 2026-10-06 | review open: programme_lines also list the lines the item's own sources cite, with cited_by | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1912,5 +1913,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** `briefs/review.md` tells reviewers to allocate a private scratch directory with `mktemp -d "$TMPDIR/rv-SUBJECT-XXXXXX"` and never to `mkdir -p` a fixed name such as `rev1`.
 - **We do:** no code change. The reviewer used the fixed name `rev1` (and a fixed `sess.txt` inside it), which parallel sessions share; another session overwrote the session id file. Keeping the session id in a variable (`export BANCO_SESSION=$(banco session new ... --id)`) or inside the private directory avoids it. Sessions are server-side, so the stray extra reviewer session is harmless. `banco.*/1` unchanged.
 - **Why:** content agent (computer_science, step review1:2). The fix on the workflow side is the same as D-167: a unique directory per reviewer. Not a banco defect.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-178 · 2026-10-06 · review open: programme lines from the skill and from the item's own sources
+
+- **Design ref:** A-05
+- **Design said:** `programme_lines` in `banco review open` were the lines the item's skill cites in the graph.
+- **We do:** the list is the union of the skill's graph refs and the lines named by the item's own `sources[].ref` (form `SOURCE-KEY:LINE`, also in sub-items). Each entry gains `cited_by`: `both`, `skill` (graph only) or `item` (item sources only, `role` and `skill` null). Existing keys are unchanged, so `banco.*/1` stays compatible. Quotes from item-only lines are accepted too.
+- **Why:** content agent (math, step review1:1): the item cited seconda:884 while the list showed 859; another item cited prima:69, which was missing. Missing feature: the reviewer must see the lines the item claims to rest on. A line found on one side only is now visible as such. Also reported: the shared scratch folder `rev1` was overwritten by a parallel session: already D-167 and D-177, no change.
 - **Cost:** none.
 - **Status:** implemented

@@ -186,6 +186,7 @@
           "line": 1,
           "role": "taught_in",
           "skill": "math.linear-equation-integer",
+          "cited_by": "skill",
           "text": "operazioni con i numeri relativi"
         },
         {
@@ -193,6 +194,7 @@
           "line": 1,
           "role": "needed_by",
           "skill": "math.linear-equation-integer",
+          "cited_by": "skill",
           "text": "equazioni di primo grado"
         }
       ],
