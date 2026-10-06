@@ -77,7 +77,7 @@ module Api
           next unless rev
 
           doc = JSON.parse(rev.body_json)
-          { item: item.key, revision_id: rev.id, status: rev.status,
+          { item: item.key, revision_id: rev.id, status: rev.latest_validation&.display_status || "validating",
             skills: doc["kind"] == "testlet" ? Array(doc["sub_items"]).map { |s| s["skill"] } : [ doc["skill"] ],
             component: doc["component"], instances: rev.instances.count }
         end

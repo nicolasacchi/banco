@@ -176,6 +176,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-169 | 2026-10-06 | the solver and reviewer see the item prompt (an ordering's direction) | implemented |
 | D-170 | 2026-10-06 | E-SCHEMA says in plain words what a wrong constant or non-string root member must be | implemented |
 | D-171 | 2026-10-06 | W-MESSAGE-GIVES-KEY: an error message that states an instance's key | implemented |
+| D-172 | 2026-10-06 | `blueprint open` shows `awaiting_verifier` in items[] like `banco status` | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1853,4 +1854,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** for static instances, `ItemRunner#message_gives_key` warns (`W-MESSAGE-GIVES-KEY`, field `.../error_catalogue/N/message_it`) when a catalogue `message_it` contains the key of any instance of the same unit (choice option text, or `Answers.key_texts`), 6 or more plain characters, whole-token match. Messages are item-level and shown after a wrong answer on any instance, so every instance key counts. Warning only; generated items are not checked (their keys vary by seed). `banco.*/1` unchanged.
 - **Why:** content agent (chemistry, review1:0): revisions 116 and 122 passed with messages that wrote other instances' keys. Classified as a missing check (validator gap), not a defect in a past check.
 - **Cost:** none; short keys (a number, one word) are deliberately not flagged.
+- **Status:** implemented
+
+## D-172 · 2026-10-06 · `blueprint open` shows `awaiting_verifier` in items[]
+
+- **Design ref:** D-141, D-157
+- **Design said:** D-157 aligned `items list` and `work status` with `banco status`, but `blueprint open` listed each item's raw stored status, so a revision whose only finding is `E-VERIFY-MISSING` or `E-VERIFY-STALE` showed as `failed`.
+- **We do:** the `status` of an `items[]` row of `blueprint open` is `ItemValidation#display_status`, the same rule as the other views (`awaiting_verifier`; otherwise the stored status, `validating` when none). Additive; `banco.*/1` unchanged.
+- **Why:** content agent (history, step author). Defect: one more view disagreed.
+- **Cost:** a script that compared this status to `failed` must also accept `awaiting_verifier`.
 - **Status:** implemented

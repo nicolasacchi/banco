@@ -462,6 +462,16 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
     assert_response :ok, json.inspect
   end
 
+  test "D-172: blueprint open shows an item that waits for its verifier as awaiting_verifier" do
+    make_graph_row
+    submit_blueprint(blueprint)
+    rev = @revs["math.percentages"].first
+    ItemValidation.create!(item_revision: rev, seq: 9, status: "failed", codes_json: "[\"E-VERIFY-MISSING\"]")
+    api("/api/v1/subjects/math/blueprint")
+    row = json["items"].find { |i| i["revision_id"] == rev.id }
+    assert_equal "awaiting_verifier", row["status"]
+  end
+
   test "E-BLUEPRINT-ENTRIES: fewer than 4 or more than 10 starting skills" do
     make_graph_row
     submit_blueprint(blueprint(entries: %w[math.linear-equation-integer math.percentages math.factoring]))
