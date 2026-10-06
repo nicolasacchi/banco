@@ -190,6 +190,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-183 | 2026-10-07 | solve brief on short_answer and author view of review findings: already shipped (D-168, D-181); no change | implemented |
 | D-184 | 2026-10-07 | solve/review display: item prompt already shown (D-169); a testlet's sub items now carry their prompt; blueprint open status already D-172 | implemented |
 | D-185 | 2026-10-07 | solve open without stem_it (law_economics): prompt stem shown since D-169; answers.json root already documented (D-180, D-182); no change | implemented |
+| D-186 | 2026-10-07 | resets on first submits were a production restart (deploy); ordering direction and brief envelope already shipped (D-169, D-180); no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1992,5 +1993,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the solver sees the item prompt as the student does; the solve brief states the four required root keys.
 - **We do:** no code change. A plain item keeps its stem in `prompt.stem_it` (required by `item.json` for every item), and `solve open` adds it to the display as `stem_it` (or `prompt_stem_it` beside an instance stem) since D-169; `test/models/review/item_text_test.rb` covers it. Revisions whose instances carry their own `stem_it` already showed one; a prompt-only item such as revision 31 showed none on a deployment older than D-169. `briefs/solve.md` Format lists `schema`, `schema_version`, `revision`, `answers` with a minimal example. `banco.*/1` unchanged.
 - **Why:** content agent (law_economics, step solve1:0). Neither report is a defect on the current deployment. The solver should run `banco brief show solve` and re-open the revision after the deployment. If a revision still shows no stem on the current build, its prompt is the content mistake and the author sends a new revision.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-186 · 2026-10-07 · first submits reset during a restart; ordering direction and solve brief envelope: no change (D-169, D-180, D-182)
+
+- **Design ref:** A-05, D-169, D-180, D-182
+- **Design said:** the solver sees the item prompt, an ordering's direction included (D-169); the solve brief states the four root keys with a full example (D-180).
+- **We do:** no code change. Connection resets on the first submits: the production container had been restarted by a deployment minutes before (the API listener is down for a short while on a restart); the documented wait and retry is the right answer, and nothing is lost because a rejected connection records nothing. `briefs/solve.md` Format shows a full file with `schema`, `schema_version`, `revision`, `answers`. `solve open` adds `prompt.stem_it` to the display (an ordering's direction lives in it, D-169); an ordering whose prompt carries no direction is a content mistake and the author sends a new revision. `banco.*/1` unchanged.
+- **Why:** content agent (law_economics, step solve1:3). Not defects.
 - **Cost:** none.
 - **Status:** implemented
