@@ -28,4 +28,22 @@ class Review::ItemTextTest < ActiveSupport::TestCase
     assert_equal [ "it's" ], all.last[:accept]
     assert_not all.first.key?(:accept)
   end
+
+  test "the solver and the reviewer see the item's own prompt, as the student does (D-169)" do
+    body = item_body("short-answer").merge("prompt" => { "stem_it" => "Ordina in senso crescente.", "quote" => "Q" })
+    instance = create_instance(body, { "display" => { "elements" => [ { "id" => "e1", "text" => "1" } ] }, "answer" => [ "e1" ] })
+    text = Review::ItemText.new(instance.item_revision)
+    shown = text.solver_instances.first[:display]
+    assert_equal "Ordina in senso crescente.", shown["stem_it"]
+    assert_equal "Q", shown["quote"]
+    assert_equal shown, text.review_instances.first[:display]
+  end
+
+  test "an instance stem stays, and the prompt stem is added beside it (D-169)" do
+    body = item_body("short-answer").merge("prompt" => { "stem_it" => "Ordina." })
+    instance = create_instance(body, { "display" => { "stem_it" => "Calcola 2+2" }, "answer" => "4" })
+    shown = Review::ItemText.new(instance.item_revision).solver_instances.first[:display]
+    assert_equal "Calcola 2+2", shown["stem_it"]
+    assert_equal "Ordina.", shown["prompt_stem_it"]
+  end
 end

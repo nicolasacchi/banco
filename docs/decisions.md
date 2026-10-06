@@ -173,6 +173,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-166 | 2026-10-06 | the solve brief states the testlet and short_answer answer shapes | implemented |
 | D-167 | 2026-10-06 | the review brief tells reviewers to allocate a unique scratch directory | implemented |
 | D-168 | 2026-10-06 | the solve brief says a short_answer takes a sample answer, not `dont_know` | implemented |
+| D-169 | 2026-10-06 | the solver and reviewer see the item prompt (an ordering's direction) | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1822,5 +1823,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** a `short_answer` is not graded by the server, so a string answer is recorded and never a mismatch; `dont_know` on any instance is a major finding.
 - **We do:** unchanged behaviour (a test now covers both paths: a sample string gives no finding, `dont_know` gives one major). `briefs/solve.md` says to write a short sample answer for an open writing task and not to send `dont_know`, which means the task could not be done from its text.
 - **Why:** content agent (english, step solve1:3) sent `dont_know` for a free-writing item because the brief offered only "answer or dont_know" and got a major E-BLIND-SOLVE-MISMATCH. Classified as missing guidance, not a defect: the server already exempted free answers. Exempting `dont_know` as well would hide a task nobody could understand. Its second issue (testlet shape) was already fixed by D-166. `banco.*/1` unchanged.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-169 · 2026-10-06 · the solver and reviewer see the item prompt (an ordering's direction)
+
+- **Design ref:** A-05, C-03
+- **Design said:** the blind solver sees the item exactly as the student does.
+- **We do:** `Review::ItemText#with_passage` now adds the item's `prompt` (`stem_it`, `table`, `quote`, `figure`) to the display of `banco solve open` and `banco review open`, beside the passage, for every non-testlet item. An instance's own `stem_it` stays; then the prompt stem is shown as `prompt_stem_it`. The stored display and `banco.*/1` are unchanged. `briefs/solve.md` says to keep the `BANCO_SESSION` id in a file when the shell does not persist.
+- **Why:** content agent (chemistry, step solve1:2). An ordering's stored display holds only `elements`; the direction ("in senso crescente") lives in the prompt, which the student sees and the solver did not. Defect. Its first issue (root fields of answers.json) was already documented by D-166 in the brief; the agent read an older copy.
 - **Cost:** none.
 - **Status:** implemented

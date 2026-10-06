@@ -429,7 +429,7 @@ class IndependenceTest < ActionDispatch::IntegrationTest
     record_example "solve open", "opened"
     assert_equal "number", json["component"]
     assert_equal 3, json["instances"].size
-    assert_equal({ "stem_it" => "Risolvi $x+2=9$." }, json["instances"].first["display"])
+    assert_equal({ "stem_it" => "Risolvi $x+2=9$.", "prompt_stem_it" => "Risolvi l'equazione e scrivi il valore di $x$." }, json["instances"].first["display"])
     body = response.body
     assert_not_includes body, "sign_error"
     assert_not_includes body, '"answer"'

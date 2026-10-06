@@ -116,6 +116,7 @@
         {
           "instance": 1,
           "display": {
+            "prompt_stem_it": "Risolvi l'equazione e scrivi il valore di $x$.",
             "stem_it": "Risolvi $x+2=9$."
           },
           "answer": "7",
@@ -137,6 +138,7 @@
         {
           "instance": 2,
           "display": {
+            "prompt_stem_it": "Risolvi l'equazione e scrivi il valore di $x$.",
             "stem_it": "Risolvi $x+4=13$."
           },
           "answer": "9",
@@ -158,6 +160,7 @@
         {
           "instance": 3,
           "display": {
+            "prompt_stem_it": "Risolvi l'equazione e scrivi il valore di $x$.",
             "stem_it": "Risolvi $x+5=21$."
           },
           "answer": "16",

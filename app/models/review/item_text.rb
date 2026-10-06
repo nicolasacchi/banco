@@ -45,10 +45,20 @@ module Review
       instances.each_with_index.map { |row, i| { instance: i + 1, display: with_passage(JSON.parse(row.display_json)) } }
     end
 
-    # The item's own passage (short answer, diagnosis item) belongs to what the
-    # student reads; the stored display of older revisions does not hold it.
+    # What the student reads beyond the stored display: the item's own passage and
+    # its prompt (stem, table, quote, figure; an ordering's direction lives there).
+    # The stored display of older revisions does not hold them. An instance's own
+    # stem stays under stem_it; the prompt's stem then goes under prompt_stem_it (D-169).
     def with_passage(display)
-      body["passage_it"].present? && body["kind"] != "testlet" ? { "passage_it" => body["passage_it"] }.merge(display) : display
+      return display if body["kind"] == "testlet"
+
+      extra = {}
+      extra["passage_it"] = body["passage_it"] if body["passage_it"].present?
+      prompt = body["prompt"].is_a?(Hash) ? body["prompt"] : {}
+      stem = prompt["stem_it"]
+      extra[display.key?("stem_it") ? "prompt_stem_it" : "stem_it"] = stem if stem.present?
+      %w[table quote figure].each { |k| extra[k] = prompt[k] if prompt[k].present? && !display.key?(k) }
+      extra.merge(display)
     end
 
     # Lines of the programme cited by the item's skill in its subject's graph.

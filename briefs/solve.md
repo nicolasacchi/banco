@@ -16,6 +16,7 @@ Start with `banco status` and this brief. Open your session first:
 the model must be a different model than every author of the item (the family may be the same) (`E-PROVIDER-NOT-ALLOWED`) and the
 session new to the item (`E-SESSION-NOT-INDEPENDENT`). `banco solve open REV` gives you the instances in display form (stems, tables,
 options, elements). `banco solve submit REV --file answers.json` sends the answers.
+If your shell does not keep variables between calls, write the session id to a file in your work folder and export it again before each `banco` call (`E-SESSION` otherwise).
 Never ask for a decision.
 
 ## Format
