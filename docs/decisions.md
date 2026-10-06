@@ -188,6 +188,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-181 | 2026-10-07 | work status and work open (author) carry review_findings: the reviewers' and blind solvers' findings | implemented |
 | D-182 | 2026-10-07 | solve brief root fields of answers.json (biology, solve1:3): already documented (D-166, D-176, D-180); no change | implemented |
 | D-183 | 2026-10-07 | solve brief on short_answer and author view of review findings: already shipped (D-168, D-181); no change | implemented |
+| D-184 | 2026-10-07 | solve/review display: item prompt already shown (D-169); a testlet's sub items now carry their prompt; blueprint open status already D-172 | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1972,5 +1973,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the solve brief tells the solver a `short_answer` takes a sample answer and never `dont_know`; the author reads the review and blind-solve findings of the revision through `work status` and `work open`.
 - **We do:** no code change. `briefs/solve.md` (D-168) says a `short_answer` answer is a plain string, recorded and not graded, and that `dont_know` for it is a major finding; `solve open` already reports `component: short_answer`. `work status REV` and `work open ITEM` (D-181) carry `review_findings` for author sessions. Both reports predate the deployment of those entries or came from an older copy of the brief and the CLI. `banco.*/1` unchanged.
 - **Why:** content agent (english, step pfix1). Not defects.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-184 · 2026-10-07 · the solver sees the prompt of every part, testlet sub items included
+
+- **Design ref:** A-05, D-169, D-172, D-175
+- **Design said:** the solver and reviewer see the item prompt as the student does (D-169); `blueprint open` shows `awaiting_verifier` like `banco status` (D-172).
+- **We do:** `solve open` and `review open` already add `prompt.stem_it` (as `stem_it`, or `prompt_stem_it` beside an instance stem), `table`, `quote`, `figure` and `passage_it` for a plain item (D-169). The gap that remained is the testlet: its sub items' prompts were not added. `Review::ItemText#with_passage` now adds the passage once and, per sub item, the same parts. `blueprint open` items[] has used `display_status` since D-172. `banco.*/1` unchanged (new keys in a display only).
+- **Why:** content agent (spanish, step pfix1) read the code and output of an older deployment: a blind solve (367 / solve 43) made before D-169 saw only `**problema**`. Its E-BLIND-SOLVE-MISMATCH findings are stale: the teacher disposes of them, or a new solve is run on the current deployment. The status report (revision 554) is D-172, already shipped.
 - **Cost:** none.
 - **Status:** implemented

@@ -46,4 +46,18 @@ class Review::ItemTextTest < ActiveSupport::TestCase
     assert_equal "Calcola 2+2", shown["stem_it"]
     assert_equal "Ordina.", shown["prompt_stem_it"]
   end
+
+  test "a testlet shows its passage and each sub item's prompt beside its display (D-184)" do
+    body = item_body("short-answer").merge("kind" => "testlet", "passage_it" => "Testo.",
+      "sub_items" => [ { "id" => "a", "prompt" => { "stem_it" => "Domanda A", "quote" => "Q" } }, { "id" => "b" } ])
+    instance = create_instance(body, { "display" => { "sub_items" => [
+      { "id" => "a", "display" => { "stem_it" => "**x**" } }, { "id" => "b", "display" => { "stem_it" => "Y" } } ] }, "answer" => {} })
+    shown = Review::ItemText.new(instance.item_revision).solver_instances.first[:display]
+    assert_equal "Testo.", shown["passage_it"]
+    a = shown["sub_items"].first["display"]
+    assert_equal "**x**", a["stem_it"]
+    assert_equal "Domanda A", a["prompt_stem_it"]
+    assert_equal "Q", a["quote"]
+    assert_equal({ "stem_it" => "Y" }, shown["sub_items"].last["display"])
+  end
 end

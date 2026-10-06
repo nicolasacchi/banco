@@ -50,11 +50,25 @@ module Review
     # The stored display of older revisions does not hold them. An instance's own
     # stem stays under stem_it; the prompt's stem then goes under prompt_stem_it (D-169).
     def with_passage(display)
-      return display if body["kind"] == "testlet"
+      return with_testlet_parts(display) if body["kind"] == "testlet"
 
+      with_prompt(display, body)
+    end
+
+    # A testlet's passage once at the top, and each sub item's own prompt beside its display (D-184).
+    def with_testlet_parts(display)
+      subs = Array(display["sub_items"]).map do |shown|
+        sub = Array(body["sub_items"]).find { |s| s["id"] == shown["id"] }
+        sub && shown["display"].is_a?(Hash) ? shown.merge("display" => with_prompt(shown["display"], sub, passage: false)) : shown
+      end
+      extra = body["passage_it"].present? && !display.key?("passage_it") ? { "passage_it" => body["passage_it"] } : {}
+      extra.merge(display).merge("sub_items" => subs)
+    end
+
+    def with_prompt(display, source, passage: true)
       extra = {}
-      extra["passage_it"] = body["passage_it"] if body["passage_it"].present?
-      prompt = body["prompt"].is_a?(Hash) ? body["prompt"] : {}
+      extra["passage_it"] = source["passage_it"] if passage && source["passage_it"].present?
+      prompt = source["prompt"].is_a?(Hash) ? source["prompt"] : {}
       stem = prompt["stem_it"]
       extra[display.key?("stem_it") ? "prompt_stem_it" : "stem_it"] = stem if stem.present?
       %w[table quote figure].each { |k| extra[k] = prompt[k] if prompt[k].present? && !display.key?(k) }
