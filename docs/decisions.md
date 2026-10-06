@@ -184,6 +184,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-177 | 2026-10-06 | reviewer scratch collision: already in the review brief since D-167; no change | implemented |
 | D-178 | 2026-10-06 | review open: programme_lines also list the lines the item's own sources cite, with cited_by | implemented |
 | D-179 | 2026-10-06 | solver display of an ordering item: the prompt (direction) is already shown (D-169) | implemented |
+| D-180 | 2026-10-06 | solve brief root fields of answers.json (biology report): already documented (D-166, D-176); no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1932,5 +1933,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the solver sees what the student sees; an ordering's direction lives in the item prompt, not in the instance display.
 - **We do:** no code change. Since D-169 `banco solve open` adds the item prompt to every non-testlet display, ordering included (`Review::ItemText`, tested in `test/models/review/item_text_test.rb`: the prompt stem appears as `prompt_stem_it`). The student's page shows the same prompt above the elements. A display with only `elements` comes from a run before D-169 was deployed, or from an item whose prompt has no stem: a content mistake (an ordering always names its direction). `banco.*/1` unchanged.
 - **Why:** content agent (biology, step solve1:0) on revision 519. Same cause as D-175.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-180 · 2026-10-06 · solve brief root fields of answers.json, second report: already documented (D-166, D-176)
+
+- **Design ref:** A-05, D-166, D-176
+- **Design said:** the solve brief states the four required root keys and shows a minimal valid file; a test validates that example.
+- **We do:** no code change. `briefs/solve.md` Format lists `schema`, `schema_version`, `revision`, `answers` and a full minimal example. A dry run reports every missing key in one pass.
+- **Why:** content agent (biology, step solve1:1) hit E-SCHEMA on a first submit built from an older copy of the brief. Not a defect.
 - **Cost:** none.
 - **Status:** implemented
