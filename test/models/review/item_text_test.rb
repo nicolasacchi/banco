@@ -20,4 +20,12 @@ class Review::ItemTextTest < ActiveSupport::TestCase
     assert_equal 24, all.size
     assert_equal (1..24).to_a, all.map { |i| i[:instance] }
   end
+
+  test "the reviewer sees each instance's accept list when stored, and none when not" do
+    ItemInstance.create!(item_revision: @revision, seed: 999, display_json: { stem_it: "Acc" }.to_json, answer_json: "\"it is\"".to_json,
+                         errors_json: "[]", accept_json: [ "it's" ].to_json, fingerprint: SecureRandom.hex(32))
+    all = Review::ItemText.new(@revision, all: true).review_instances
+    assert_equal [ "it's" ], all.last[:accept]
+    assert_not all.first.key?(:accept)
+  end
 end
