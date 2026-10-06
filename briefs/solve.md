@@ -12,7 +12,7 @@ your answers; every disagreement with the key becomes a blocker finding for the
 teacher. You never see the key, the generator, the verify or the review.
 
 Start with `banco status` and this brief. Open your session first:
-`export BANCO_SESSION=$(banco session new --role solver --agent omp --model MODEL --id)`;
+`export BANCO_SESSION=$(banco session new --role solver --agent AGENT --model MODEL --id)` (AGENT is the name of the agent you are, MODEL the model you run);
 the model must be a different model than every author of the item (the family may be the same) (`E-PROVIDER-NOT-ALLOWED`) and the
 session new to the item (`E-SESSION-NOT-INDEPENDENT`). `banco solve open REV` gives you the instances in display form (stems, tables,
 options, elements). `banco solve submit REV --file answers.json` sends the answers.

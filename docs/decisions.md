@@ -168,6 +168,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-161 | 2026-10-06 | an author dry run whose only findings are E-VERIFY-MISSING or E-VERIFY-STALE answers 200 `awaiting_verifier` | implemented |
 | D-162 | 2026-10-06 | `banco health` shows `validation_queue.waiting` | implemented |
 | D-163 | 2026-10-06 | the solve brief carries a complete `banco.solve/1` example | implemented |
+| D-164 | 2026-10-06 | brief session examples use the placeholder AGENT | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1772,5 +1773,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the solve brief described only `answers[]`; the schema also requires `schema_version` and `revision` at the root, so a first submit of `{schema, answers}` failed with E-SCHEMA.
 - **We do:** `briefs/solve.md` states the four required root keys and shows a minimal valid file; a test validates that example against the schema.
 - **Why:** content agent (business, step solve1:0). Defect in the brief (documentation), not in the software. `banco.*/1` unchanged.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-164 · 2026-10-06 · brief session examples use the placeholder AGENT
+
+- **Design ref:** C-03
+- **Design said:** the solve, review and grade briefs showed `banco session new ... --agent omp` (or `claude-code`), which reads as an instruction for one particular agent.
+- **We do:** the three briefs use `--agent AGENT`; the solve brief says AGENT is the name of the agent you are. A test refuses a concrete agent in any brief.
+- **Why:** content agent (business, step solve1:3). Defect in the brief (documentation); the schema issue in the same report was already fixed by D-163. Briefs are read from git at runtime; no schema change.
 - **Cost:** none.
 - **Status:** implemented

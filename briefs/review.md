@@ -11,7 +11,7 @@ You review one item revision as a subject expert and write `banco.review/1`
 independent from the author, the verifier and the blind solver of the item.
 
 Start with `banco status` and this brief. Open your session first:
-`export BANCO_SESSION=$(banco session new --role reviewer --agent omp --model MODEL --id)`.
+`export BANCO_SESSION=$(banco session new --role reviewer --agent AGENT --model MODEL --id)`.
 The model is declared and must be a different model than every author of the item (a Sonnet may review an Opus item; the family may be the same)
 (`config/banco/providers.yml`): otherwise `E-PROVIDER-NOT-ALLOWED`. Another session of
 the same item (author, verifier, solver) or one that already reviewed it is refused

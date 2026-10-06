@@ -63,4 +63,11 @@ class BriefTest < ActiveSupport::TestCase
   test "the sha256 is the hash of the file" do
     assert_equal Digest::SHA256.file(Rails.root.join("briefs/review.md")).hexdigest, Brief.find("review").sha256
   end
+
+  test "session examples in briefs name no concrete agent" do
+    Brief.names.each do |n|
+      body = Brief.find(n).body
+      assert_no_match(/--agent omp\b/, body, n)
+    end
+  end
 end
