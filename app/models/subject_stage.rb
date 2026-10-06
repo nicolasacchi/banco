@@ -34,7 +34,7 @@ class SubjectStage
         graph_approved: !approved_g.nil?,
         blueprint_approved: !approved_b.nil?,
         pending_revision: pending?(graph, approved_g) || pending?(blueprint, approved_b),
-        items: items.values.tally.then { |t| { total: items.size, passed: t["passed"].to_i, failed: t["failed"].to_i, validating: t["validating"].to_i, error: t["error"].to_i, sent_back: sent_back(subject), reserve: Item.reserve(subject).count } }
+        items: items.values.tally.then { |t| { total: items.size, passed: t["passed"].to_i, failed: t["failed"].to_i, awaiting_verifier: t["awaiting_verifier"].to_i, validating: t["validating"].to_i, error: t["error"].to_i, sent_back: sent_back(subject), reserve: Item.reserve(subject).count } }
       }
     end
 
@@ -62,7 +62,7 @@ class SubjectStage
       latest.count { |r| back.key?(r.id) }
     end
 
-    # {item key => passed|failed|validating|error} for the latest revision of each item.
+    # {item key => passed|failed|awaiting_verifier|validating|error} for the latest revision of each item.
     def item_states(subject)
       Item.where(subject: subject).includes(:revisions).to_h do |item|
         revision = item.revisions.max_by(&:seq)
@@ -72,7 +72,14 @@ class SubjectStage
 
     def state_of(revision)
       latest = revision.validations.max_by(&:seq)
-      latest ? latest.status : "validating"
+      return "validating" unless latest
+
+      awaiting_verifier?(latest) ? "awaiting_verifier" : latest.status
+    end
+
+    # Failed only for the missing or stale verify.mjs: the item is clean, a verifier is next (D-141).
+    def awaiting_verifier?(validation)
+      validation.status == "failed" && (codes = JSON.parse(validation.codes_json || "[]")).any? && (codes - %w[E-VERIFY-MISSING E-VERIFY-STALE]).empty?
     end
 
     def stage(subject, graph, blueprint, approved_g, approved_b, items)

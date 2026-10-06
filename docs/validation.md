@@ -20,7 +20,7 @@ Order for a generated item: the author submits `item.json` and `generator.mjs`; 
 validation fails with `E-VERIFY-MISSING` but the 24 instances are stored; a verifier
 opens the item with `--role verifier` (item, tests, every stored instance with their expected
 answers, never `generator.mjs`) and submits `verify.mjs` on the same base; the
-validation then passes. No command approves anything: the agent stops at
+validation then passes. After a later author revision the base's `verify.mjs` is carried forward; when it rejects the new seeds the code is `E-VERIFY-STALE` (D-141) and `banco status` counts the item under `awaiting_verifier` (with the first-submit `E-VERIFY-MISSING`), not `failed`; a verifier refreshes it. No command approves anything: the agent stops at
 `awaiting_teacher` (firm rule 2).
 
 A submission is **refused with nothing stored** only when it is not a revision: 422

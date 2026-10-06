@@ -17,9 +17,11 @@ module Validation
 
     # files: {"item.json" => text, "generator.mjs" => text, ...}. harness_token:
     # what the harness serves the page with. chrome: options for ChromeRunner.session
-    # (try: true for a dry run, which must not wait).
-    def initialize(files:, context:, harness_token: nil, chrome: {})
+    # (try: true for a dry run, which must not wait). verify_inherited: verify.mjs is the
+    # base revision's, unchanged, while other files changed (D-141).
+    def initialize(files:, context:, harness_token: nil, chrome: {}, verify_inherited: false)
       @files = files
+      @verify_inherited = verify_inherited
       @context = context
       @token = harness_token
       @chrome = chrome
@@ -305,7 +307,10 @@ module Validation
       first = verdict["#{accept_prefix}#{rejected.first[0]}"]
       reasons = rejected.group_by { |id, _| (verdict["#{accept_prefix}#{id}"] || {}).values_at("reason", "reason_it").compact.first.to_s }
                         .to_h { |reason, list| [ reason, list.map(&:first) ] }
-      @findings.add("E-VERIFY-REJECTS", "/verify.mjs", "verify rejects #{rejected.size} clean #{rejected.size == 1 ? 'instance' : 'instances'}#{": #{first['reason']}" if first && first['reason']}",
+      # A verify.mjs carried forward from the base while the author changed other files is
+      # the verifier's to refresh: E-VERIFY-STALE, not a broken item (D-141).
+      code = @verify_inherited ? "E-VERIFY-STALE" : "E-VERIFY-REJECTS"
+      @findings.add(code, "/verify.mjs", "verify rejects #{rejected.size} clean #{rejected.size == 1 ? 'instance' : 'instances'}#{": #{first['reason']}" if first && first['reason']}",
                     seed: rejected.first[0], count: rejected.size, ids => rejected.map(&:first), reasons: reasons,
                     first_rejected: first_rejected_instance(rejected.first[1]),
                     rejected_samples: rejected_samples(rejected, verdict, accept_prefix, stored_ids))

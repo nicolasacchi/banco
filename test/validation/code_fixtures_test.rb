@@ -27,10 +27,10 @@ class CodeFixturesTest < ActiveSupport::TestCase
     Validation::ItemRunner.new(files: files || F.files_for(doc), context: context).call.findings.map(&:code).uniq
   end
 
-  def chrome_codes(files)
+  def chrome_codes(files, **opts)
     require_chrome!
     token = stage_token(files)
-    Validation::ItemRunner.new(files: files, context: F.context, harness_token: token).call.findings.map(&:code).uniq
+    Validation::ItemRunner.new(files: files, context: F.context, harness_token: token, **opts).call.findings.map(&:code).uniq
   end
 
   def gen(source, verify: F::VERIFY) = F.generated_files(generator: source, verify: verify)
@@ -164,6 +164,9 @@ class CodeFixturesTest < ActiveSupport::TestCase
     },
     "E-VERIFY-MISSING" => -> { chrome_codes(F.generated_files(verify: nil)) },
     "E-VERIFY-REJECTS" => -> { chrome_codes(gen(F::GENERATOR, verify: "export function verify(instance) { return { ok: false }; }")) },
+    "E-VERIFY-STALE" => lambda {
+      chrome_codes(gen(F::GENERATOR, verify: "export function verify(instance) { return { ok: false }; }"), verify_inherited: true)
+    },
     "E-VERIFY-VACUOUS" => -> { chrome_codes(gen(F::GENERATOR, verify: "export function verify(instance) { return { ok: true }; }")) },
     "E-POOL-REDO" => lambda {
       blueprint_codes { |d| d["entries"][0]["items"] = [ "r0a" ] }

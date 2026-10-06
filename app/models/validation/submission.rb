@@ -67,6 +67,13 @@ module Validation
       @changed ||= @submitted.reject { |name, text| @base&.files&.dig(name) == text }.keys
     end
 
+    # verify.mjs comes from the base unchanged while another file changed: a rejection by it
+    # is the verifier's to refresh (E-VERIFY-STALE, D-141).
+    def verify_inherited?
+      !@base&.files.nil? && @base.files.key?("verify.mjs") && @files["verify.mjs"] == @base.files["verify.mjs"] &&
+        @files.except("verify.mjs") != @base.files.except("verify.mjs")
+    end
+
     # Appends the item (first submission) and a revision. Returns [revision, replayed].
     def store!(brief_sha256: nil)
       replayed = nil

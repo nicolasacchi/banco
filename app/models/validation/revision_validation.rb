@@ -15,7 +15,7 @@ module Validation
       subject = @revision.item.subject
       files = @revision.files
       result = ItemRunner.new(files: files, context: CourseContext.for(subject), harness_token: Harness.issue("rev", @revision.id),
-                              chrome: { wait: Rules.get(:generator, :batch_timeout_seconds) * 60 }).call
+                              chrome: { wait: Rules.get(:generator, :batch_timeout_seconds) * 60 }, verify_inherited: verify_inherited?(files)).call
       persist(result)
     end
 
@@ -32,6 +32,14 @@ module Validation
     end
 
     private
+
+    # verify.mjs equals the base revision's while another file changed (D-141).
+    def verify_inherited?(files)
+      base = @revision.base_revision_id && ItemRevision.find_by(id: @revision.base_revision_id)
+      return false unless base && base.files.key?("verify.mjs") && files["verify.mjs"] == base.files["verify.mjs"]
+
+      files.except("verify.mjs") != base.files.except("verify.mjs")
+    end
 
     def persist(result)
       ItemValidation.transaction do

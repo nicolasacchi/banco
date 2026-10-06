@@ -374,6 +374,9 @@ func runWorkStatus(e *env, args []string) error {
 				if len(st.Codes) == 1 && st.Codes[0] == "E-VERIFY-MISSING" {
 					ce.Next = "the files are clean: a verifier runs banco work open ITEM --role verifier and writes verify.mjs"
 				}
+				if len(st.Codes) == 1 && st.Codes[0] == "E-VERIFY-STALE" {
+					ce.Next = "the verify.mjs is the previous one: change nothing; a verifier runs banco work open ITEM --role verifier and refreshes verify.mjs"
+				}
 				ce.Codes, ce.Findings = st.Codes, st.Findings
 				return ce
 			default:

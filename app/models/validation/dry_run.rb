@@ -9,10 +9,10 @@ module Validation
   module DryRun
     module_function
 
-    def call(subject, files)
+    def call(subject, files, verify_inherited: false)
       stage = Harness::Staging.put(files)
       ItemRunner.new(files: files, context: CourseContext.for(subject), harness_token: Harness.issue("stage", stage),
-                     chrome: { wait: chrome_wait }).call
+                     chrome: { wait: chrome_wait }, verify_inherited: verify_inherited).call
     ensure
       Harness::Staging.drop(stage) if stage
     end

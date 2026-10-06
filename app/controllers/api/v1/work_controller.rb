@@ -71,7 +71,7 @@ module Api
       end
 
       def dry_run(submission)
-        result = Validation::DryRun.call(submission.subject, submission.files)
+        result = Validation::DryRun.call(submission.subject, submission.files, verify_inherited: submission.verify_inherited?)
         findings = result.findings.map(&:to_h)
         if result.passed?
           render json: { dry_run: true, status: "passed", codes: [], warnings: result.findings.warnings.map(&:to_h), instances: result.instances.size, details: result.details }

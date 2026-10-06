@@ -145,6 +145,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-138 | 2026-10-06 | the blueprint's item order decides which item is served first; a star block survives short bullets | implemented |
 | D-139 | 2026-10-06 | W-SCOPE-MARKER reads a star just before the cited fragment; `banco work open` defaults to `$TMPDIR/banco-work/ITEM` | implemented |
 | D-140 | 2026-10-06 | `banco work open --role verifier` gets its own default folder and refuses the other role's folder | implemented |
+| D-141 | 2026-10-06 | `E-VERIFY-STALE`: a carried-forward verify.mjs that rejects a changed item is the verifier's to refresh; `banco status` has `awaiting_verifier` | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1542,4 +1543,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** a verifier open without `--dir` writes `$TMPDIR/banco-work/ITEM.verifier`; opening a folder whose `.banco/work.json` records the other role is refused with `E-USAGE`. Formats unchanged.
 - **Why:** content agent (geography, step verify:refix): the verifier folder shared the author's folder, so a stale verify.mjs sat next to generator.mjs and the verifier could see the generator.
 - **Cost:** a verifier that relied on the shared default folder must read the `dir` field of the answer.
+- **Status:** implemented
+
+## D-141 · 2026-10-06 · a carried-forward verify.mjs that rejects is `E-VERIFY-STALE`; `banco status` counts `awaiting_verifier`
+
+- **Design ref:** A-06, D-091, A-04
+- **Design said:** files missing from a submission are carried forward from the base; an author may not change verify.mjs; a rejection is `E-VERIFY-REJECTS` and the revision `failed`.
+- **We do:** (1) when the revision's verify.mjs is identical to its base's while another file changed, the rejection of clean seeds is `E-VERIFY-STALE` (registry version 12; same findings and detail as `E-VERIFY-REJECTS`, also in `work submit --dry-run`); a verify.mjs that does not load stays `E-VERIFY-REJECTS`. `work status --wait` says the verifier refreshes it. (2) `banco status` items gain the additive `awaiting_verifier`: the latest validation failed with only `E-VERIFY-MISSING` and/or `E-VERIFY-STALE`; those items are no longer in `failed`. The stored status stays `failed` (never approved), the frozen formats are unchanged.
+- **Also, reported and not changed (already answered):** (a) closed items pinned on the short answer's skill are never served; that is `W-SHORT-SKILL-CLOSED` since D-121 (also leaving them out of the redo count: the dry run of the reported file gives `E-POOL-REDO` plus the warning on staging at this commit). The short answer needs a skill of its own; the blueprint brief says so. The engine is not changed. (b) `diagnosis simulate --blueprint` with a bare blueprint loads the stored graph revision and the passed pinned items since D-099; it is flat only when the graph revision is not stored, and then the answer carries `warnings[E-SIMULATE-INPUT]` (read `warnings`, or use `--subject` after the blueprint is stored). The report came from a build before D-099/D-121 or from a blueprint naming an unstored graph revision.
+- **Why:** content agent (biology, step fix).
+- **Cost:** a verify.mjs that is wrong, not stale, also reads as stale after an author change; the verifier reads the rejections either way.
 - **Status:** implemented

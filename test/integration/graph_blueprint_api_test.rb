@@ -570,4 +570,22 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
     api("/api/v1/status")
     assert_equal "drafting", json["subjects"].find { |s| s["key"] == "math" }["stage"]
   end
+
+  test "status counts an item that waits for its verifier apart from a failed one (D-141)" do
+    make_graph_row
+    submit_blueprint(blueprint)
+    api("/api/v1/status")
+    before = json["subjects"].find { |sub| sub["key"] == "math" }["items"]
+    rev = @revs["math.percentages"].first
+    ItemValidation.create!(item_revision: rev, seq: 2, status: "failed", codes_json: "[\"E-VERIFY-STALE\"]")
+    api("/api/v1/status")
+    items = json["subjects"].find { |sub| sub["key"] == "math" }["items"]
+    assert_equal 1, items["awaiting_verifier"]
+    assert_equal before["failed"], items["failed"]
+    assert_equal before["passed"] - 1, items["passed"]
+    ItemValidation.create!(item_revision: rev, seq: 3, status: "failed", codes_json: "[\"E-VERIFY-STALE\",\"E-READ\"]")
+    api("/api/v1/status")
+    items = json["subjects"].find { |sub| sub["key"] == "math" }["items"]
+    assert_equal [ 0, before["failed"] + 1 ], [ items["awaiting_verifier"], items["failed"] ]
+  end
 end
