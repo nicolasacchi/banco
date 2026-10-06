@@ -180,6 +180,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-173 | 2026-10-06 | the solve brief says one submit per session and what `--dry-run` is for; no retraction | implemented |
 | D-174 | 2026-10-06 | solver answer-format complaints: the stem names the format; `isolate` already accepts `y = expr` | implemented |
 | D-175 | 2026-10-06 | solver sees no question on an instance: D-169 already shows the prompt; otherwise a content mistake | implemented |
+| D-176 | 2026-10-06 | solve brief root fields: already in the brief since D-166; no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1892,5 +1893,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the solver sees what the student sees.
 - **We do:** no code change. Since D-169 `banco solve open` adds the item `prompt` (`stem_it`, `table`, `quote`, `figure`) to every display, shown as `prompt_stem_it` beside an instance's own `stem_it`; the student's page shows the same two texts and nothing else (no hidden question). So if a display holds only "I numeri sono 12 e 40." the item has no question: a content mistake, as in D-174. The solve brief's root-keys skeleton (`schema`, `schema_version`, `revision`) was added by D-166 and is in `briefs/solve.md` Format; the agent read a copy from before. `banco.*/1` unchanged.
 - **Why:** content agent (math, step solve1:2) on revisions 429 (math-lcm-shared-factors) and 424 (math-gcd-partial-common-factor): displays without a question. The agent probably ran before D-169 was deployed; if `solve open` still shows no `prompt_stem_it` after a deploy, the prompt is empty.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-176 · 2026-10-06 · solve brief root fields of answers.json: already documented (D-166)
+
+- **Design ref:** A-05, D-166
+- **Design said:** the solve brief states the four required root keys and shows a minimal valid file (D-166); a test validates that example.
+- **We do:** no code change. `briefs/solve.md` Format already lists `schema`, `schema_version` (the number 1), `revision` (a string) and `answers`, with a minimal example; `banco solve submit --dry-run` and the E-SCHEMA wording (D-170) report any missing key in one pass. The agent read a copy from before D-166. `banco.*/1` unchanged.
+- **Why:** content agent (math, step solve1:3): first submit with only `answers` failed with E-SCHEMA. Not a defect; the next solver run should re-read `banco brief show solve` and use the skeleton.
 - **Cost:** none.
 - **Status:** implemented
