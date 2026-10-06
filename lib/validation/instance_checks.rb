@@ -101,10 +101,24 @@ module Validation
       known = @unit.catalogue_codes
       Array(inst["errors"]).each_with_index do |e, i|
         round_to_rules(e, inst, "#{label}/errors/#{i}", seed, f) if e.key?("round_to")
+        unreachable_matching_value(e, inst, "#{label}/errors/#{i}", seed, f)
         next if known.include?(e["code"])
 
         f.add("E-GEN-SCHEMA", "#{label}/errors/#{i}", "the error code #{e['code'].inspect} is not in the item's error_catalogue", rule: "code_not_in_catalogue", seed: seed)
       end
+    end
+
+    # A matching widget lets each right entry be picked once (a classification, reuse_right,
+    # lets rows share one). An error value that uses one right id twice can never be
+    # submitted, so its code never fires (D-145).
+    def unreachable_matching_value(error, inst, field, seed, f)
+      return unless @unit.component == "matching" && error["value"].is_a?(Hash)
+      return if inst.dig("display", "reuse_right") == true
+
+      rights = error["value"].values.map(&:to_s)
+      return if rights.uniq.size == rights.size
+
+      f.add("W-ERROR-UNREACHABLE", "#{field}/value", "the error value uses one right-hand id more than once; the widget allows each once, so this value can never fire", seed: seed)
     end
 
     # round_to (D-135) belongs to number items and must not swallow the key: a rounded

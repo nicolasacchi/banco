@@ -201,6 +201,26 @@ class ItemStaticTest < ActiveSupport::TestCase
     assert_not_includes codes(run_item(same)), "E-MATCHING-SIZE"
   end
 
+  test "W-ERROR-UNREACHABLE: a matching error value that repeats a right id" do
+    item = lambda do |value, reuse|
+      display = { "stem_it" => "Abbina.", "left" => (1..4).map { |i| { "id" => "l#{i}", "text" => "sinistra #{i}" } },
+                  "right" => (1..(reuse ? 3 : 5)).map { |i| { "id" => "r#{i}", "text" => "destra #{i}" } } }
+      display["reuse_right"] = true if reuse
+      answer = { "l1" => "r1", "l2" => "r2", "l3" => "r3", "l4" => reuse ? "r1" : "r4" }
+      inst = { "display" => display, "answer" => answer, "errors" => [ { "code" => "swap", "value" => value } ],
+               "solution" => { "steps" => [ { "text_it" => "Abbina." } ], "final" => "fatto" } }
+      F.static_item("component" => "matching", "instances" => [ inst, inst.merge("display" => display.merge("stem_it" => "Abbina ancora.")) ],
+                    "error_catalogue" => [ { "code" => "swap", "description_it" => "Scambio.", "message_it" => "Controlla.", "implicates" => [] } ], "tests" => { "must_accept" => [], "must_reject" => [], "blank" => "invalid" })
+    end
+    dup = { "l1" => "r2", "l2" => "r2", "l3" => "r3", "l4" => "r4" }
+    ok = { "l1" => "r2", "l2" => "r1", "l3" => "r3", "l4" => "r4" }
+    result = run_item(item.call(dup, false))
+    assert_includes codes(result), "W-ERROR-UNREACHABLE"
+    assert_equal "passed", result.status
+    assert_not_includes codes(run_item(item.call(ok, false))), "W-ERROR-UNREACHABLE"
+    assert_not_includes codes(run_item(item.call({ "l1" => "r1", "l2" => "r1", "l3" => "r3", "l4" => "r2" }, true))), "W-ERROR-UNREACHABLE"
+  end
+
   test "E-COMPONENT-NUMERIC and E-EXPONENT-MULTIDIGIT on expression items" do
     expr = lambda do |answers, error|
       insts = answers.map do |a|

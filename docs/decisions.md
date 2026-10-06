@@ -149,6 +149,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-142 | 2026-10-06 | a star block ends at a short heading after a finished sentence; W-SCOPE-MARKER counts unmarked lines; descent item order is kept | implemented |
 | D-143 | 2026-10-06 | W-REF-OTHER-SUBJECT is quiet when the skill's scope_reason_it names the line number | implemented |
 | D-144 | 2026-10-06 | W-TESTLET-MULTI-SKILL: a pinned testlet stored with sub items on several skills is warned and refused at approval | implemented |
+| D-145 | 2026-10-06 | W-ERROR-UNREACHABLE: a matching error value that repeats a right-hand id can never fire and is warned | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1583,4 +1584,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** (1) `Validation::ItemInfo` carries `testlet_skills`; the blueprint checks add the warning `W-TESTLET-MULTI-SKILL` (registry version 13) on a pinned testlet whose stored sub items span several skills, in entries and descent, also in `blueprint submit --dry-run`. (2) `Approval::BlueprintGate` refuses the approval with a reason naming the revision and its skills (`multi_skill_testlets`). (3) `banco status` blueprint row gains the additive `multi_skill_testlets` next to `stale_pins`. The stored validation is not rewritten (the ledger is append-only); `banco.*/1` unchanged.
 - **Why:** content agent (geography, step fix): old passed testlets (biology 706, history 681, law_economics 634, italian 464/465, spanish 665) could be pinned and approved although every answer counts for the first skill only. Defect (a hole in D-098).
 - **Cost:** a warning, not an error, so a draft blueprint and the dry run still work; only the teacher's approval is blocked. The author resubmits the testlet on one skill (a new revision) and pins it.
+- **Status:** implemented
+
+## D-145 · 2026-10-06 · W-ERROR-UNREACHABLE: a matching error value that repeats a right-hand id is warned
+
+- **Design ref:** D-081, D-092, A-06
+- **Design said:** the matching widget lets each right entry be picked once (a classification with `reuse_right` lets rows share one); the validator did not check that error values are submittable.
+- **We do:** `Validation::InstanceChecks` adds the warning `W-ERROR-UNREACHABLE` (registry version 14) for an error value of a matching item whose right ids are not all distinct, unless the instance is a classification (`display.reuse_right`). One finding per such value, at `instances/N/errors/I/value`. Stored validations are not rewritten; `banco.*/1` unchanged.
+- **Why:** content agent (italian, step review): revisions 475 and 59 carry non-injective error values and are `passed`; the code can never fire. Missing check (a hole in A-06).
+- **Cost:** a warning only; the item still passes. The author rewrites the value as a one-to-one mapping and resubmits a revision.
 - **Status:** implemented

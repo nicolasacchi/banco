@@ -196,6 +196,15 @@ class CodeFixturesTest < ActiveSupport::TestCase
     },
     "W-ANSWER-IN-STEM" => -> { static_codes(item("instances" => [ F.number_instance(25, 150, stem: "Risolvi $x+25=150$ sapendo che il risultato e 125."), F.number_instance(4, 13) ], "tests" => { "must_accept" => [], "must_reject" => [], "blank" => "invalid" })) },
     "W-LONGEST-CORRECT" => -> { static_codes(F.choice_item("instances" => (1..4).map { |i| F.choice_instance("una risposta molto lunga numero #{i}", %w[uno due tre]) })) },
+    "W-ERROR-UNREACHABLE" => lambda {
+      display = { "stem_it" => "Abbina.", "left" => (1..4).map { |i| { "id" => "l#{i}", "text" => "sinistra #{i}" } },
+                  "right" => (1..5).map { |i| { "id" => "r#{i}", "text" => "destra #{i}" } } }
+      inst = { "display" => display, "answer" => { "l1" => "r1", "l2" => "r2", "l3" => "r3", "l4" => "r4" },
+               "errors" => [ { "code" => "sign_error", "value" => { "l1" => "r2", "l2" => "r2", "l3" => "r3", "l4" => "r4" } } ],
+               "solution" => { "steps" => [ { "text_it" => "Abbina." } ], "final" => "fatto" } }
+      static_codes(item("component" => "matching", "instances" => [ inst, inst.merge("display" => display.merge("stem_it" => "Abbina ancora.")) ],
+                        "tests" => { "must_accept" => [], "must_reject" => [], "blank" => "invalid" }))
+    },
     "W-GULPEASE" => -> { static_codes(item("prompt" => { "stem_it" => ([ "Paradigmaticamente incontrovertibilmente costituzionalizzabile" ] * 9).join(" ") + "." })) },
     "W-PASSAGE-READABILITY" => lambda {
       passage = ([ "Paradigmaticamente incontrovertibilmente costituzionalizzabile" ] * 9).join(" ") + "."

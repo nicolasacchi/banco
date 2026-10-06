@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 13
+version: 14
 
 validation:
   # Skill graph (synchronous).
@@ -56,6 +56,7 @@ validation:
   E-CHOICE-OPTIONS: { stage: ruby, severity: error, description: "A choice item has fewer than 3 or more than 5 options (never 2), or an ordering item has fewer than 3 or more than 7 elements." }
   E-DISTRACTOR-UNCODED: { stage: ruby, severity: error, description: "A distractor carries no error code from the catalogue." }
   E-OPTION-DUPLICATE: { stage: ruby, severity: error, description: "Two options have the same normalized text." }
+  W-ERROR-UNREACHABLE: { stage: ruby, severity: warning, description: "A matching error value uses one right-hand id more than once while the widget allows each once (no reuse_right): the value can never be submitted, so its code cannot fire (D-145)." }
   W-LONGEST-CORRECT: { stage: ruby, severity: warning, description: "The correct option is the longest in too many instances." }
   E-MATCHING-SIZE: { stage: ruby, severity: error, description: "A matching item has fewer than 4 pairs or a right column that is not n+1." }
   # Text.
