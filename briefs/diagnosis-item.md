@@ -58,7 +58,7 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
   least 2 items, 3 of them hard to guess, unless the skill declares
   `redo_reserve: false`.
 - Run `banco work submit DIR --dry-run` until it exits 0, then submit.
-- The cycle: `banco work open ITEM` (or a new folder named after the item key; `work open` writes `$TMPDIR/banco-work/ITEM` (outside the repo) unless you pass `--dir`, and reopening a folder deletes files the opened revision does not have; the CLI warns when a `--dir` is inside a git work tree),
+- The cycle: `banco work open ITEM` (or a new folder named after the item key; `work open` writes `$TMPDIR/banco-work/ITEM` (outside the repo; a verifier gets `ITEM.verifier`, never the author's folder, and `work open` refuses a folder of the other role) unless you pass `--dir`, and reopening a folder deletes files the opened revision does not have; the CLI warns when a `--dir` is inside a git work tree),
   edit, `banco work submit DIR --dry-run`, `banco work submit DIR`, `banco work
   status REV --wait`. The first submit fails with `E-VERIFY-MISSING` but stores the
   instances: a verifier then runs `banco work open ITEM --role verifier` (item,

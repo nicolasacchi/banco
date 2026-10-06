@@ -404,7 +404,7 @@ func TestWorkOpenReopenRemovesFilesTheRevisionDoesNotHave(t *testing.T) {
 		t.Fatalf("exit %d: %s", r.exit, r.stderr)
 	}
 	write(t, dir, "verify.mjs", "stale")
-	if r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1", "--role", "verifier", "--dir", dir); r.exit != ExitOK {
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1", "--dir", dir); r.exit != ExitOK {
 		t.Fatalf("exit %d: %s", r.exit, r.stderr)
 	}
 	if exists(dir, "verify.mjs") {
@@ -428,5 +428,27 @@ func TestWorkOpenDefaultsToTmpdirNotTheCurrentDirectory(t *testing.T) {
 	}
 	if exists(cwd, "eq-1") {
 		t.Error("the current directory got a folder")
+	}
+}
+
+func TestWorkOpenVerifierDefaultsToItsOwnFolderAndRefusesTheAuthors(t *testing.T) {
+	srv, _ := sequenceServer(t, [2]string{"200", `{"revision_id":7,"files":{"item.json":"{}","generator.mjs":"g"}}`}, [2]string{"200", `{"revision_id":7,"files":{"item.json":"{}"}}`}, [2]string{"200", `{"revision_id":7,"files":{"item.json":"{}"}}`})
+	tmp := t.TempDir()
+	t.Setenv("TMPDIR", tmp)
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1"); r.exit != ExitOK {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1", "--role", "verifier"); r.exit != ExitOK {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	author := filepath.Join(tmp, "banco-work", "eq-1")
+	if read(t, author, "generator.mjs") != "g" {
+		t.Error("the verifier open touched the author's folder")
+	}
+	if !exists(filepath.Join(tmp, "banco-work", "eq-1.verifier"), "item.json") {
+		t.Error("the verifier folder is missing")
+	}
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1", "--role", "verifier", "--dir", author); r.exit != ExitUsage {
+		t.Errorf("a verifier open into the author's folder exited %d", r.exit)
 	}
 }

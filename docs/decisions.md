@@ -144,6 +144,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-137 | 2026-10-06 | `skill-graph coverage` lists the error codes of passed items that the graph lacks | implemented |
 | D-138 | 2026-10-06 | the blueprint's item order decides which item is served first; a star block survives short bullets | implemented |
 | D-139 | 2026-10-06 | W-SCOPE-MARKER reads a star just before the cited fragment; `banco work open` defaults to `$TMPDIR/banco-work/ITEM` | implemented |
+| D-140 | 2026-10-06 | `banco work open --role verifier` gets its own default folder and refuses the other role's folder | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1532,4 +1533,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** (1) A fragment cited without its star takes the star that stands before it in the same sentence of the line (`... ☆ Un mondo inquinato.` cited as `Un mondo inquinato`), then the line marker, then the block marker. (2) `banco work open ITEM` without `--dir` writes `$TMPDIR/banco-work/ITEM` (os.TempDir) instead of the current directory; the in-git-tree warning stays for an explicit `--dir`. (3) Reported "PlanLoader treats a testlet as a low-guess number item" is not reproducible on main: since D-096 the loader gives a testlet per-skill flags from its sub items (choice sub items: not low-guess, choice) and since D-099/D-131 one passage is served once per run; a loader test now pins it. The report came from a staging build or blueprint older than that. `banco.*/1` unchanged.
 - **Why:** content agent (geography, step fix).
 - **Cost:** a sentence boundary is `. ; ! ?` followed by a space; a star after an abbreviation's dot is read as in the next sentence.
+- **Status:** implemented
+
+## D-140 · 2026-10-06 · `banco work open --role verifier` gets its own default folder and refuses the other role's folder
+
+- **Design ref:** A-06, D-091, D-139
+- **Design said:** `work open` writes `$TMPDIR/banco-work/ITEM` for both roles.
+- **We do:** a verifier open without `--dir` writes `$TMPDIR/banco-work/ITEM.verifier`; opening a folder whose `.banco/work.json` records the other role is refused with `E-USAGE`. Formats unchanged.
+- **Why:** content agent (geography, step verify:refix): the verifier folder shared the author's folder, so a stale verify.mjs sat next to generator.mjs and the verifier could see the generator.
+- **Cost:** a verifier that relied on the shared default folder must read the `dir` field of the answer.
 - **Status:** implemented

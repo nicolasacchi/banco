@@ -63,7 +63,7 @@ func runWorkOpen(e *env, args []string) error {
 	fs := flag.NewFlagSet("work open", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	role := fs.String("role", "author", "author or verifier")
-	dir := fs.String("dir", "", "folder to write (default $TMPDIR/banco-work/ITEM, outside the repo)")
+	dir := fs.String("dir", "", "folder to write (default $TMPDIR/banco-work/ITEM, or ITEM.verifier for a verifier; outside the repo)")
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
 	if err != nil {
@@ -79,7 +79,14 @@ func runWorkOpen(e *env, args []string) error {
 	item := pos[0]
 	target := *dir
 	if target == "" {
-		target = filepath.Join(os.TempDir(), "banco-work", item)
+		name := item
+		if *role == "verifier" {
+			name = item + ".verifier" // never the author's folder: it holds generator.mjs
+		}
+		target = filepath.Join(os.TempDir(), "banco-work", name)
+	}
+	if st, ok := readState(target); ok && st.Role != "" && st.Role != *role {
+		return newErr(ExitUsage, "E-USAGE", "dir", target+" is a "+st.Role+" work folder; a "+*role+" needs its own folder", "banco work open ITEM --role "+*role+" --dir OTHER")
 	}
 	if err := checkEmptyOrWork(target); err != nil {
 		return err
