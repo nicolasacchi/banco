@@ -360,7 +360,10 @@ module Validation
       accepted = jobs.select { |j| verdict.dig(j[:id], "ok") }
       return if accepted.empty?
 
-      @findings.add("E-VERIFY-VACUOUS", "/verify.mjs", "verify accepts #{accepted.first[:label]} (#{accepted.size} wrong #{accepted.size == 1 ? 'answer' : 'answers'} accepted)",
+      # A carried-forward verify.mjs that accepts the changed item's wrong answers is the same
+      # staleness as one that rejects its clean seeds: the verifier's to refresh (D-150).
+      code = @verify_inherited ? "E-VERIFY-STALE" : "E-VERIFY-VACUOUS"
+      @findings.add(code, "/verify.mjs", "verify accepts #{accepted.first[:label]} (#{accepted.size} wrong #{accepted.size == 1 ? 'answer' : 'answers'} accepted)",
                     seed: accepted.first[:id][/\d+/].to_i, count: accepted.size)
     end
 

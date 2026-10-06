@@ -53,6 +53,13 @@ class ItemGeneratedTest < ActiveSupport::TestCase
     assert_equal 24, result.instances.size
   end
 
+  test "E-VERIFY-STALE: a carried-forward verify.mjs that accepts wrong answers (D-150)" do
+    files = F.generated_files(verify: "export function verify(instance) { return { ok: true }; }")
+    result = Validation::ItemRunner.new(files: files, context: F.context, harness_token: stage_token(files), verify_inherited: true).call
+    assert_equal [ "E-VERIFY-STALE" ], codes(result)
+    assert_match(/accepts/, result.findings.first.message)
+  end
+
   test "E-VERIFY-REJECTS: verify turns down clean seeds" do
     result = run_files(F.generated_files(verify: "export function verify(instance) { return { ok: false, reason_it: 'Non so.' }; }"))
     assert_equal [ "E-VERIFY-REJECTS" ], codes(result)

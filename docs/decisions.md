@@ -154,6 +154,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-147 | 2026-10-06 | `banco status` counts passed items validated under older rules (`older_rules`) | implemented |
 | D-148 | 2026-10-06 | the programme's star markers (U+2605, U+2606) are not emoji for the readability rule | implemented |
 | D-149 | 2026-10-06 | W-RULES-OUTDATED names pinned revisions that passed under older rules (blueprint dry run, status) | implemented |
+| D-150 | 2026-10-06 | a carried-forward verify.mjs that accepts wrong answers is E-VERIFY-STALE (awaiting_verifier), not E-VERIFY-VACUOUS | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1633,4 +1634,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** (1) blueprint submit and dry run warn `W-RULES-OUTDATED` (registry version 15) for each pinned revision whose latest validation passed under a `rules_version` other than the current one, naming that version. (2) `banco status` blueprint row gains the additive `older_rules_pins` (`[{revision, rules_version}]`). A validation without a stored version is not compared. The stored validation is not re-run or rewritten (append-only; re-running every pin per dry run would need Chrome), and approval is not refused (every rules bump would block every test); `banco.*/1` unchanged.
 - **Why:** content agent (chemistry, step fix2): che-density-compute 641, -find-mass 642, -find-volume 643 (E-ROUNDTRIP) and che-state-change-names 652 (E-GEN-POOL) are passed under rules 1 but fail rules 6 on an unchanged resubmission. Missing feature (D-147 gave only a count).
 - **Cost:** the warning does not say which codes the revision would get now; the author dry-runs the listed revisions and resubmits those that fail. The teacher's checklist still shows the old pass.
+- **Status:** implemented
+
+## D-150 · 2026-10-06 · a carried-forward verify.mjs that accepts wrong answers is `E-VERIFY-STALE`, not `E-VERIFY-VACUOUS`
+
+- **Design ref:** A-06, D-141
+- **Design said:** D-141 made a carried-forward verify.mjs that rejects clean seeds `E-VERIFY-STALE`; one that accepts a catalogue error value or a +1 or sign-flip mutant stayed `E-VERIFY-VACUOUS`, so the item counted as `failed`.
+- **We do:** when the revision's verify.mjs is identical to its base's, the acceptance of wrong answers is also `E-VERIFY-STALE` (same message and detail; registry version 16), so `banco status` counts the item as `awaiting_verifier`. A verify.mjs the author wrote or changed keeps `E-VERIFY-VACUOUS`.
+- **Why:** content agent (business, step fix2): the author changed the options, the old verify.mjs accepted the new distractor, and the item showed as failed.
+- **Cost:** a carried-forward verify.mjs that was always vacuous also reads as stale; the verifier reads the findings either way.
 - **Status:** implemented

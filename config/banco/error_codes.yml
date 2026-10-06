@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 15
+version: 16
 
 validation:
   # Skill graph (synchronous).
@@ -43,7 +43,7 @@ validation:
   # Verify.
   E-VERIFY-MISSING: { stage: verify, severity: error, description: "There is no verify.mjs yet; instances are materialized anyway." }
   E-VERIFY-AUTHOR: { stage: verify, severity: error, description: "verify.mjs was added or changed by a session that is not a verifier." }
-  E-VERIFY-STALE: { stage: verify, severity: error, description: "The verify.mjs carried forward from the base rejects clean seeds of a changed generator or item. A verifier refreshes it; the author changes nothing (D-141). Counted as awaiting the verifier, like E-VERIFY-MISSING." }
+  E-VERIFY-STALE: { stage: verify, severity: error, description: "The verify.mjs carried forward from the base rejects clean seeds of a changed generator or item, or accepts its wrong answers (D-150). A verifier refreshes it; the author changes nothing (D-141). Counted as awaiting the verifier, like E-VERIFY-MISSING." }
   E-VERIFY-REJECTS: { stage: verify, severity: error, description: "verify rejects a clean seed." }
   E-VERIFY-VACUOUS: { stage: verify, severity: error, description: "verify accepts a catalogue error value or a +1 or sign-flip mutant." }
   E-SESSION-NOT-INDEPENDENT: { stage: verify, severity: error, description: "The author, verifier, reviewer and solver sessions of an item are not disjoint." }
