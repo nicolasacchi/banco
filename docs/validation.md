@@ -86,7 +86,7 @@ not against intent: the model is declared, not proven.
   evidence that says nothing, repeated or under 4 words (`E-REVIEW-EMPTY`), a fail
   without a finding, a quote that is not an exact substring of the item text or of the
   instance it names (`E-QUOTE-NOT-FOUND`). The item text is item.json, the instances
-  shown (8 of a generator item) and the programme lines the skill cites.
+  shown (every stored instance for the reviewer, D-133; the blind solver gets 8 of a generator item) and the programme lines the skill cites.
 - `banco solve open|submit REV`: display-only instances; the server grades with the
   student's graders. A disagreement is a blocker finding `E-BLIND-SOLVE-MISMATCH`; a
   `dont_know` is a major one; a short answer is recorded and not graded.

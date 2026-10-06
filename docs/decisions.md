@@ -137,6 +137,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-130 | 2026-10-06 | a pending testlet answer holds its skill: no further testlet until it is settled | implemented |
 | D-131 | 2026-10-06 | a testlet that does not fit the sitting is deferred to the next one, not replaced by a repeat of the item already used | implemented |
 | D-132 | 2026-10-06 | reviewers: `items list` already lists revision ids; own scratch directory per subject and round | implemented |
+| D-133 | 2026-10-06 | `review open` lists every stored instance of a generator item | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1460,4 +1461,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** no code change. (1) "No command lists the revision ids of a subject" is not a defect: `banco items list --subject KEY --current` (D-129) returns item, `revision_id`, `seq`, `status`, `current`, review and blind-solve counts; the reviewer used an older CLI binary (use the staging `bin/banco`). (2) The scratch directory cleaned under the reviewer was a shared name used by parallel sessions, a content-orchestration matter; `briefs/review.md` now tells reviewers to use a directory named after subject and round. `banco.*/1` unchanged.
 - **Why:** content agent (business, step review:1).
 - **Cost:** none.
+- **Status:** implemented
+
+## D-133 · 2026-10-06 · `review open` lists every stored instance of a generator item
+
+- **Design ref:** A-05, M6 (`docs/validation.md`)
+- **Design said:** the reviewer sees 8 instances of a generator item.
+- **We do:** the review (`review open`, and the quote check of `review submit`) uses every stored instance (the pool, e.g. 24); numbering is by id, so instances 1..8 are unchanged. The blind solver (`solve open`) still gets 8. No flag, no format change; `banco.*/1` unchanged.
+- **Why:** content agent (spanish, step review:1): a reviewer could not read 16 of 24 expected answers and distractors and had to run the generator locally.
+- **Cost:** a larger review payload; reviewers may quote any stored instance.
 - **Status:** implemented

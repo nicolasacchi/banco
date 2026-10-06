@@ -1,15 +1,18 @@
 module Review
   # What a reviewer or a blind solver may see of an item revision, and the text a
   # review finding may quote (A-05): item.json, the instances shown (8 of a
-  # generator item, every instance of a static one) and the programme lines the
+  # generator item for the solver, every stored instance for the reviewer) and the programme lines the
   # item's skill cites. Never generator.mjs, verify.mjs, or another reviewer's work.
   class ItemText
     INSTANCES_OF_GENERATOR = 8
 
     attr_reader :revision
 
-    def initialize(revision)
+    # all: true lists every stored instance of a generator item (the reviewer, D-133);
+    # the blind solver keeps the first INSTANCES_OF_GENERATOR.
+    def initialize(revision, all: false)
       @revision = revision
+      @all = all
     end
 
     def body = @body ||= JSON.parse(revision.body_json)
@@ -21,7 +24,7 @@ module Review
     def instances
       @instances ||= begin
         rows = revision.instances.order(:id)
-        generated? ? rows.limit(INSTANCES_OF_GENERATOR).to_a : rows.to_a
+        generated? && !@all ? rows.limit(INSTANCES_OF_GENERATOR).to_a : rows.to_a
       end
     end
 

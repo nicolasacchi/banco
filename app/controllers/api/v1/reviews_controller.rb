@@ -63,7 +63,7 @@ module Api
         return refuse("E-NOT-FOUND", "revision", "no revision #{params[:revision].to_s.first(20).inspect}", "banco work open ITEM", 404) unless @revision
 
         @item = @revision.item
-        @text = Review::ItemText.new(@revision)
+        @text = Review::ItemText.new(@revision, all: true)
       end
     end
   end
