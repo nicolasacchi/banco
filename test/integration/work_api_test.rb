@@ -76,6 +76,21 @@ class WorkApiTest < ActionDispatch::IntegrationTest
     assert_equal 3, ItemInstance.where(item_revision_id: revision_id).count
   end
 
+  test "the author reads the findings submitted on a revision, in work status and work open (D-181)" do
+    submit("fb-1", F.files_for(F.static_item))
+    rev = ItemRevision.find(json["revision_id"])
+    review = ItemReview.create!(item_revision: rev, agent_session: AgentSession.create!(label: "r", role: "reviewer", agent: "t", model: "m"), checklist_json: "[]")
+    ReviewFinding.create!(item_revision: rev, source: "review", item_review: review, severity: "major", instance: 2, field: "prompt.stem_it",
+                          quote: "Calcola x.", problem_it: "Ambiguo.", fix_it: "Chiarisci.")
+    api("/api/v1/work/revisions/#{rev.id}")
+    f = json["review_findings"].first
+    assert_equal [ "review", "major", "Calcola x.", "Ambiguo.", "Chiarisci.", review.id ], f.values_at("source", "severity", "quote", "problem_it", "fix_it", "review_id")
+    assert_equal 1, json["review_findings"].size
+    api("/api/v1/work/items/fb-1?role=author")
+    assert_equal "Chiarisci.", json["review_findings"].first["fix_it"]
+    assert_not_includes json.keys, "disposition"
+  end
+
   test "a failed revision is stored with its codes and its instances are still materialized (static)" do
     submit("bad-1", F.files_for(F.static_item("prompt" => { "stem_it" => "Scrivi la risposta che cercano." })))
     perform_enqueued_jobs

@@ -25,6 +25,7 @@
         "generator.mjs": "export function generate() { return {}; }",
         "verify.mjs": "export function verify() { return { ok: true }; }"
       },
+      "review_findings": [],
       "validation": null,
       "teacher_comments": []
     }

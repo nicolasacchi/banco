@@ -71,6 +71,11 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
   before you edit; a sent-back revision is never approved, so answer with a new
   revision that fixes what the comment says. `banco status` counts them in
   `items.sent_back`.
+- Reviewers and blind solvers report on a revision; you read what they wrote with
+  `banco work status REV --json` (and `banco work open ITEM`): `review_findings`, each
+  with `source` (`review` or `blind_solve`), `severity`, `instance`, `field`, the exact
+  `quote`, `problem_it`, `fix_it` and the teacher's `disposition` once there is one. Fix
+  every blocker and major finding in a new revision. You cannot dispose of a finding.
 - A `normalized_text` item that does not measure accents says `accent_policy: "flag"`
   (a slip in an accent is then credited with a note); one that does says `strict`.
   Choice, ordering, matching and the other components carry no `accent_policy`

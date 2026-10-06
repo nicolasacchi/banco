@@ -29,6 +29,7 @@ module Api
         body = { item: item.key, subject: item.subject.key, kind: item.kind, role: role, revision_id: revision.id, seq: revision.seq,
                  base: revision.id, status: revision.status, brief: brief_row }
         body.merge!(role == "verifier" ? verifier_view(revision) : { files: revision.files })
+        body[:review_findings] = review_findings(revision) unless role == "verifier"
         render json: body.merge(validation: validation_row(revision), teacher_comments: Teacher::SendBacks.for_item(item))
       end
 
@@ -58,10 +59,18 @@ module Api
         render json: { revision_id: revision.id, item: revision.item.key, seq: revision.seq, status: revision.latest_validation&.display_status || "validating",
                        settled: settled, retrying: revision.status == "error" && !settled, instances: revision.instances.count,
                        current_rules_version: Validation::Rules.version, queue_ahead: settled ? 0 : queue_ahead(revision),
-                       teacher_comments: Teacher::SendBacks.for_item(revision.item) }.merge(validation_row(revision) || {})
+                       teacher_comments: Teacher::SendBacks.for_item(revision.item),
+                       review_findings: review_findings(revision) }.merge(validation_row(revision) || {})
       end
 
       private
+
+      # What the reviewers and blind solvers reported on this revision, for the author who must fix it (D-181):
+      # the exact quote, problem_it and fix_it, with the finding's source and disposition. Read-only; a
+      # disposition is the teacher's decision in the browser.
+      def review_findings(revision)
+        revision.findings.order(:id).map { |f| f.to_h.merge(review_id: f.item_review_id, blind_solve_id: f.blind_solve_id).compact }
+      end
 
       # The role of the session in X-Banco-Session when it is a work role, else nil.
       def current_session_role
