@@ -54,6 +54,8 @@ decision: you stop at `awaiting_teacher`.
    (5 closed sub-items) and exactly one short answer. The short answer is indicative by definition: it
    has no mark to set. It is graded by its rubric and counts only after the teacher
    confirms the grade. Do not cite an invented source for it.
+   Put the short answer on a skill of its own: closed items pinned on the same skill are never
+   served (`W-SHORT-SKILL-CLOSED`).
 4. Order starting skills from the simplest dependency: a failure descends to
    prerequisites, so start where a descent is cheap. Run `banco diagnosis simulate`
    with the `all-correct` and `all-wrong` scripts and read the traces; the teacher
