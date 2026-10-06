@@ -47,8 +47,10 @@ module Approval
 
     # [{pinned:, latest:}] for each pinned revision that passed but is not the newest
     # passed revision of its item (D-136).
-    def stale_pins(revision)
-      ItemRevision.where(id: revision.pinned_item_revision_ids).includes(item: { revisions: :validations }).filter_map do |r|
+    def stale_pins(revision) = stale_pins_for_ids(revision.pinned_item_revision_ids)
+
+    def stale_pins_for_ids(ids)
+      ItemRevision.where(id: ids).includes(item: { revisions: :validations }).filter_map do |r|
         next unless r.status == "passed"
 
         latest = r.item.revisions.select { |x| x.status == "passed" }.max_by(&:seq)

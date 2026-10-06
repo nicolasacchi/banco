@@ -51,6 +51,7 @@ module Api
                            next: "banco diagnosis simulate --blueprint FILE" }, status: :not_found
             return nil
           end
+          warn_stale_pins(revision.pinned_item_revision_ids)
           Diagnosis::PlanLoader.for_blueprint_revision(revision)
         else
           bundle = body["bundle"]
@@ -65,12 +66,23 @@ module Api
         plan, missing = Diagnosis::PlanLoader.for_document(blueprint)
         return nil unless plan
 
+        warn_stale_pins((Array(blueprint["entries"]) + Array(blueprint["descent"])).flat_map { |e| Array(e.is_a?(Hash) ? e["items"] : nil) }.map(&:to_i).uniq)
+
         if missing.any?
           @warnings << { code: "E-SIMULATE-INPUT", field: "blueprint.items",
                          message: "no passed stored revision for item(s) #{missing.first(10).join(', ')}: synthetic instances stand in for them",
                          next: "submit and validate those items, then simulate again" }
         end
         plan
+      end
+
+      # D-146: the engine would serve a pinned revision that a newer passed one replaced.
+      def warn_stale_pins(ids)
+        Approval::BlueprintGate.stale_pins_for_ids(ids).each do |pin|
+          @warnings << { code: "W-STALE-PIN", field: "blueprint.items",
+                         message: "item revision #{pin[:pinned]} is no longer the latest passed revision of its item: #{pin[:latest]} replaced it; the dry run serves #{pin[:pinned]}",
+                         next: "pin #{pin[:latest]} in a new blueprint revision" }
+        end
       end
 
       def flat_warning(plan)

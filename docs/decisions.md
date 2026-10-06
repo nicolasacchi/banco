@@ -150,6 +150,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-143 | 2026-10-06 | W-REF-OTHER-SUBJECT is quiet when the skill's scope_reason_it names the line number | implemented |
 | D-144 | 2026-10-06 | W-TESTLET-MULTI-SKILL: a pinned testlet stored with sub items on several skills is warned and refused at approval | implemented |
 | D-145 | 2026-10-06 | W-ERROR-UNREACHABLE: a matching error value that repeats a right-hand id can never fire and is warned | implemented |
+| D-146 | 2026-10-06 | `diagnosis simulate` warns W-STALE-PIN for each stale pin it serves | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1593,4 +1594,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** `Validation::InstanceChecks` adds the warning `W-ERROR-UNREACHABLE` (registry version 14) for an error value of a matching item whose right ids are not all distinct, unless the instance is a classification (`display.reuse_right`). One finding per such value, at `instances/N/errors/I/value`. Stored validations are not rewritten; `banco.*/1` unchanged.
 - **Why:** content agent (italian, step review): revisions 475 and 59 carry non-injective error values and are `passed`; the code can never fire. Missing check (a hole in A-06).
 - **Cost:** a warning only; the item still passes. The author rewrites the value as a one-to-one mapping and resubmits a revision.
+- **Status:** implemented
+
+## D-146 · 2026-10-06 · diagnosis simulate warns W-STALE-PIN for each stale pin it serves
+
+- **Design ref:** D-136, A-06
+- **Design said:** a pinned revision replaced by a newer passed one is W-STALE-PIN in blueprint submit and the approval gate; `banco status` lists `stale_pins`.
+- **We do:** `POST /api/v1/diagnosis/simulate` adds a `W-STALE-PIN` entry to `warnings` for each stale pin, for `--subject` and for a bare blueprint with stored items. Same shape as the other simulate warnings; the run itself is unchanged (it still serves the pinned revision). `banco.*/1` unchanged.
+- **Why:** content agent (chemistry, step review): simulate served pin 330 with `warnings: []` though 730 replaced it. Missing feature.
+- **Cost:** a warning only. The agent pins the newest revision in a new blueprint revision and simulates again.
 - **Status:** implemented

@@ -1,4 +1,5 @@
 require "test_helper"
+require "support/decision_world"
 
 # POST /api/v1/diagnosis/simulate: a dry run of the pure engine over the API.
 class DiagnosisSimulateApiTest < ActionDispatch::IntegrationTest
@@ -103,5 +104,20 @@ class DiagnosisSimulateApiTest < ActionDispatch::IntegrationTest
     simulate({ subject: "math", script: "all-wrong" })
     assert_response :not_found
     assert_equal "E-BLUEPRINT-UNKNOWN", response.parsed_body["code"]
+  end
+
+  test "a stale pin is a W-STALE-PIN warning, by subject and by bare blueprint (D-146)" do
+    extend DecisionWorld
+    build_decision_world
+    pinned = ItemRevision.find(@blueprint.pinned_item_revision_ids.first)
+    simulate({ subject: @subject.key, script: "all-correct" })
+    assert_empty response.parsed_body["warnings"].select { |w| w["code"] == "W-STALE-PIN" }
+    newer = ItemRevision.create!(item: pinned.item, seq: pinned.item.revisions.maximum(:seq) + 1, body_json: pinned.body_json)
+    ItemValidation.create!(item_revision: newer, seq: 1, status: "passed")
+    simulate({ subject: @subject.key, script: "all-correct" })
+    warning = response.parsed_body["warnings"].find { |w| w["code"] == "W-STALE-PIN" }
+    assert_includes warning["message"], "#{newer.id} replaced it"
+    simulate({ bundle: JSON.parse(@blueprint.body_json), script: "all-correct" })
+    assert(response.parsed_body["warnings"].any? { |w| w["code"] == "W-STALE-PIN" })
   end
 end
