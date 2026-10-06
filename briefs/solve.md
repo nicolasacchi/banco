@@ -26,6 +26,22 @@ comma for `number`, `{n, d}` for `fraction`, the option id for `choice`, the
 element ids in order for `ordering`, a map left id to right id for `matching`, a
 string for `normalized_text`, a LaTeX string for `expression`.
 
+The file needs four keys at the root, all required: `schema`, `schema_version`
+(the number 1), `revision` (the revision id you passed to `banco solve open`, as a
+string) and `answers`. Nothing else is allowed. A minimal file:
+
+```json
+{
+  "schema": "banco.solve/1",
+  "schema_version": 1,
+  "revision": "179",
+  "answers": [
+    {"instance": 1, "answer": "42,5"},
+    {"instance": 2, "dont_know": true}
+  ]
+}
+```
+
 ## Rules (version 1)
 
 1. Solve as a competent student of the stated level would: no tricks, no use of the

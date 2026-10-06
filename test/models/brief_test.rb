@@ -34,6 +34,15 @@ class BriefTest < ActiveSupport::TestCase
     assert_equal 14, Brief.find("diagnosis-item").body.scan(/^\d+\. \*\*/).size
   end
 
+  test "the solve brief carries a complete example that the schema accepts" do
+    body = Brief.find("solve").body
+    json = body[/```json\n(.*?)```/m, 1]
+    assert json, "the solve brief has a json example"
+    doc = JSON.parse(json)
+    %w[schema schema_version revision answers].each { |k| assert doc.key?(k), "example lacks #{k}" }
+    assert_empty Banco::Schemas.validate("solve", doc)
+  end
+
   test "briefs mention only formats that exist" do
     NAMES.each do |name|
       Brief.find(name).body.scan(%r{banco\.(\w+)/1}).flatten.each do |format|

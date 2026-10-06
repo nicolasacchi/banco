@@ -167,6 +167,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-160 | 2026-10-06 | `work status` shows the queue and the current rules version; `--wait` waits 900 s; identical dry runs are cached | implemented |
 | D-161 | 2026-10-06 | an author dry run whose only findings are E-VERIFY-MISSING or E-VERIFY-STALE answers 200 `awaiting_verifier` | implemented |
 | D-162 | 2026-10-06 | `banco health` shows `validation_queue.waiting` | implemented |
+| D-163 | 2026-10-06 | the solve brief carries a complete `banco.solve/1` example | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1762,5 +1763,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** health reported chrome, chrome_egress and harness as `busy` with no hint why.
 - **We do:** `Health.check` adds `validation_queue: {waiting: N}`, the revisions still waiting for a verdict (`ItemRevision.unsettled`, shared with `work status` `queue_ahead`). `busy` stays a non-failure; the key is informational and never gates. A `busy` chrome with `waiting > 0` is the single Chrome lane working through that queue.
 - **Why:** content agent (chemistry, step promote1). Missing feature. `banco.*/1` unchanged (one added key). The same report's first issue (dry run of a generator item without verify.mjs gives E-VERIFY-MISSING) is the pre-D-161 behaviour: from D-161 on it is 200 `awaiting_verifier`, exit 0.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-163 · 2026-10-06 · the solve brief carries a complete `banco.solve/1` example
+
+- **Design ref:** C-03, A-05
+- **Design said:** the solve brief described only `answers[]`; the schema also requires `schema_version` and `revision` at the root, so a first submit of `{schema, answers}` failed with E-SCHEMA.
+- **We do:** `briefs/solve.md` states the four required root keys and shows a minimal valid file; a test validates that example against the schema.
+- **Why:** content agent (business, step solve1:0). Defect in the brief (documentation), not in the software. `banco.*/1` unchanged.
 - **Cost:** none.
 - **Status:** implemented
