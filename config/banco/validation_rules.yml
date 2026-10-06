@@ -1,8 +1,12 @@
 # Thresholds of mechanical validation (A-06). The version is stored with every
 # validation (item_validations.rules_version); a change to a number bumps it.
+# v2: fingerprints ignore the stored order and ids of options, elements, columns (D-089).
+# v4: DDT (documento di trasporto, in the programme) joins caps_allowlist (D-104).
+# v5: target_language_subjects and keys skip the Italian lint (D-112).
+# v6: ASCII, RGB, USB, SSD, HDD, LAN, WAN, BIOS, CSV join caps_allowlist (D-114).
 # Codes and what they mean: config/banco/error_codes.yml. Generic and synthetic:
 # nothing here is about a person.
-version: 1
+version: 6
 
 generator:
   seeds: 200                  # seeds 1..200 are run, in two fresh contexts
@@ -42,7 +46,7 @@ readability:
   min_gulpease_words: 25
   passage_min_gulpease: 40    # W-PASSAGE-READABILITY
   # ALL-CAPS words of 3 or more letters are errors except these acronyms.
-  caps_allowlist: [IVA, PIL, DNA, RNA, ATP, USA, UE, ONU, NATO, SPQR, HTML, CSS, CPU, RAM, ROM, URL, PDF, IBAN, SMS, OK, EUR, MCD, MCM, ISBN, MM, CM, KG, ATM]
+  caps_allowlist: [IVA, PIL, DNA, RNA, ATP, USA, UE, ONU, NATO, SPQR, HTML, CSS, CPU, RAM, ROM, URL, PDF, IBAN, SMS, OK, EUR, MCD, MCM, ISBN, MM, CM, KG, ATM, DDT, ASCII, RGB, USB, SSD, HDD, LAN, WAN, BIOS, CSV]
   banned_phrases:             # E-PHRASE: exam-gaming, self-certification, personalisation
     - la risposta che cercano
     - cosa scrivere
@@ -60,6 +64,10 @@ readability:
   self_cert: ["\\bho verificato\\b", "\\bgarantit[oa]\\b", "\\bcertificat[oa]\\b", "\\bsicuramente corrett[oa]\\b"]  # W-SELF-CERT
   calculator_subjects: [business, chemistry]   # W-CALCULATOR when the stem lacks the sentence
   calculator_sentence: calcolatrice
+  # Subjects taught in another language: the passage and the model answer are in that
+  # language under *_it keys and are not linted as Italian (D-112).
+  target_language_subjects: [english, spanish]
+  target_language_keys: [passage_it, model_answer_it]
 
 # Names the generator and verify sources must not use (E-CODE-GLOBAL). Comments and
 # string literals are ignored; the identifiers are matched as whole words.

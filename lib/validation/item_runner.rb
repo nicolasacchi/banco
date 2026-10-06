@@ -17,9 +17,11 @@ module Validation
 
     # files: {"item.json" => text, "generator.mjs" => text, ...}. harness_token:
     # what the harness serves the page with. chrome: options for ChromeRunner.session
-    # (try: true for a dry run, which must not wait).
-    def initialize(files:, context:, harness_token: nil, chrome: {})
+    # (try: true for a dry run, which must not wait). verify_inherited: verify.mjs is the
+    # base revision's, unchanged, while other files changed (D-141).
+    def initialize(files:, context:, harness_token: nil, chrome: {}, verify_inherited: false)
       @files = files
+      @verify_inherited = verify_inherited
       @context = context
       @token = harness_token
       @chrome = chrome
@@ -45,7 +47,7 @@ module Validation
       @details[:rules_version] = Rules.version
       stored = instances.map { |i| i.merge(fingerprint: Canonical.fingerprint(i[:display])) }
       Result.new(status: @findings.any_error? ? "failed" : "passed", findings: @findings, instances: stored,
-                 instances_sha256: stored.empty? ? nil : Digest::SHA256.hexdigest(Canonical.dump(stored.map { |i| i.slice(:display, :answer, :errors, :solution) })),
+                 instances_sha256: stored.empty? ? nil : Digest::SHA256.hexdigest(Canonical.dump(stored.map { |i| i.slice(:display, :answer, :errors, :solution, :accept) })),
                  details: @details, chrome_version: @chrome_version)
     end
 
@@ -94,7 +96,7 @@ module Validation
           @findings.add("E-GEN-SCHEMA", "#{unit.path}/generator", "generators in testlet sub-items are not supported yet: list instances", rule: "testlet_generator")
           []
         else
-          static(unit, item)
+          static(unit, item, passage: item["passage_it"])
         end
       end
       return [] if lists.any?(&:empty?)
@@ -102,6 +104,7 @@ module Validation
       count = lists.map(&:size).min
       (0...count).map do |k|
         subs = units.each_with_index.map { |u, i| [ u, lists[i][k] ] }
+        testlet_leaks(item, subs, k)
         {
           seed: nil,
           display: { "passage_it" => item["passage_it"], "sub_items" => subs.map { |u, inst| { "id" => u.body["id"], "skill" => u.skill, "component" => u.component, "display" => inst[:display] } } },
@@ -112,16 +115,61 @@ module Validation
       end
     end
 
+    # W-TESTLET-LEAK (D-128): the student reads the passage and every sub-item together, so a
+    # sub-item's key must not be stated in the passage (written keys; a long choice key is already
+    # E-SOLUTION-IN-DISPLAY, D-094) nor in another sub-item's stem, options or table.
+    def testlet_leaks(item, subs, k)
+      subs.each_with_index do |(unit, inst), i|
+        needles = testlet_needles(unit, inst)
+        next if needles.empty?
+
+        if unit.component != "choice" && (n = needles.find { |t| Answers.contains?(item["passage_it"].to_s, t) })
+          @findings.add("W-TESTLET-LEAK", "#{unit.path}/instances/#{k}/passage_it", "the key of this sub-item appears in the passage (#{n.to_s[0, 30].inspect})", rule: "passage")
+        end
+        subs.each_with_index do |(other, oinst), j|
+          next if i == j || !oinst[:display].is_a?(Hash)
+
+          hit = Canonical.strings(oinst[:display]).find { |_path, text| needles.any? { |n| Answers.contains?(text, n) } }
+          next unless hit
+
+          @findings.add("W-TESTLET-LEAK", "#{other.path}/instances/#{k}/display#{hit[0]}", "the key of sub-item #{unit.body['id']} appears in sub-item #{other.body['id']} (#{hit[1].to_s[0, 30].inspect})", rule: "sub_item")
+        end
+      end
+    end
+
+    def testlet_needles(unit, inst)
+      answer = inst[:answer]
+      return [] if answer.nil?
+
+      if unit.component == "choice"
+        key = Array(inst[:display]&.dig("options")).find { |o| o["id"] == answer.to_s }
+        key ? [ key["text"].to_s ] : []
+      else
+        Answers.key_texts(unit.component, answer, accept: unit.accept + Array(inst[:accept]))
+      end
+    end
+
     # ---- static items ------------------------------------------------------------------
 
-    def static(unit, item)
+    def static(unit, item, passage: nil)
       list = Array(unit.instances)
-      checker = InstanceChecks.new(unit, context: @context, files: @files)
-      list.each_with_index { |inst, i| @findings.merge!(checker.call(inst, label: "#{unit.path}/instances/#{i}")) }
+      checker = InstanceChecks.new(unit, context: @context, files: @files, passage: passage)
+      list.each_with_index do |inst, i|
+        @findings.merge!(checker.call(inst, label: "#{unit.path}/instances/#{i}"))
+        ItemChecks.excluded_params(unit.body, inst, "#{unit.path}/instances/#{i}", @findings)
+      end
       longest_correct(unit, list, checker)
       never_generated(unit, list)
       Roundtrip.new(unit, subject: item["subject"], findings: @findings).call(list, label: "#{unit.path}/instances", tests: unit.body["tests"])
-      list.map { |i| { seed: nil, display: i["display"], answer: i["answer"], errors: i["errors"], solution: i["solution"] } }
+      list.map { |i| stored_row(nil, i) }
+    end
+
+    # The row kept for an instance; accept (D-081) only when the instance has one, so the
+    # hash of instances written before it does not change.
+    def stored_row(seed, inst)
+      row = { seed: seed, display: inst["display"], answer: inst["answer"], errors: inst["errors"], solution: inst["solution"] }
+      row[:accept] = inst["accept"] if inst["accept"]
+      row
     end
 
     def verify_static(unit, item, list)
@@ -134,7 +182,7 @@ module Validation
         else
           jobs = list.each_with_index.map { |inst, i| { id: "a#{i}", instance: inst[:display] && { "display" => inst[:display], "answer" => inst[:answer], "errors" => inst[:errors], "solution" => inst[:solution] } } }
           verdict = phase.verify(jobs)
-          interpret_verify(unit, item, list.each_with_index.map { |inst, i| [ i, inst ] }, verdict, accept_prefix: "a")
+          interpret_verify(unit, item, list.each_with_index.map { |inst, i| [ i, inst ] }, verdict, accept_prefix: "a", ids: :rejected_indexes)
         end
       end
     end
@@ -165,8 +213,9 @@ module Validation
           inst = row.output
           local = checker.call(inst, label: "generated", seed: row.seed, generated: true)
           merge_seed_findings(local)
+          ItemChecks.excluded_params(unit.body, inst, "generated", @findings, seed: row.seed)
           if local.errors.empty?
-            clean << { seed: row.seed, "display" => inst["display"], "answer" => inst["answer"], "errors" => inst["errors"], "solution" => inst["solution"] }
+            clean << { seed: row.seed, "display" => inst["display"], "answer" => inst["answer"], "errors" => inst["errors"], "solution" => inst["solution"], "accept" => inst["accept"] }
           else
             problems += 1
           end
@@ -178,9 +227,9 @@ module Validation
 
         longest_correct(unit, stored.map { |c| c.transform_keys(&:to_s) }, checker)
         never_generated(unit, clean.map { |c| c.transform_keys(&:to_s) })
-        Roundtrip.new(unit, subject: item["subject"], findings: @findings).call(stored.map { |c| c.transform_keys(&:to_s) }, label: "generated")
+        Roundtrip.new(unit, subject: item["subject"], findings: @findings).call(stored.map { |c| c.transform_keys(&:to_s) }, label: "generated", tests: unit.body["tests"])
         verify_generated(unit, item, phase, gen, clean, stored)
-        stored.map { |c| { seed: c[:seed], display: c["display"], answer: c["answer"], errors: c["errors"], solution: c["solution"] } }
+        stored.map { |c| stored_row(c[:seed], c) }
       end
     end
 
@@ -239,21 +288,56 @@ module Validation
       end
       jobs = clean.map { |c| { id: "a#{c[:seed]}", instance: instance_for_verify(c) } }
       verdict = phase.verify(jobs)
-      interpret_verify(unit, item, clean.map { |c| [ c[:seed], c ] }, verdict, accept_prefix: "a")
+      interpret_verify(unit, item, clean.map { |c| [ c[:seed], c ] }, verdict, accept_prefix: "a", stored_ids: stored.map { |c| c[:seed] })
       reject_jobs(unit, stored, phase)
     end
 
     def instance_for_verify(c)
-      { "display" => c["display"], "answer" => c["answer"], "errors" => c["errors"], "solution" => c["solution"], "seed" => c[:seed] }
+      { "display" => c["display"], "answer" => c["answer"], "errors" => c["errors"], "solution" => c["solution"], "seed" => c[:seed] }.tap { |h| h["accept"] = c["accept"] if c["accept"] }
     end
 
-    def interpret_verify(_unit, _item, rows, verdict, accept_prefix:)
+    # Every rejected seed (or listed-instance index) is named, with the reason per seed
+    # grouped by wording: a verifier sees the whole pool's trouble in one run.
+    def interpret_verify(_unit, _item, rows, verdict, accept_prefix:, ids: :rejected_seeds, stored_ids: nil)
+      @details[:verify] = { checked: rows.size }
       rejected = rows.select { |id, _| !verdict.dig("#{accept_prefix}#{id}", "ok") }
+      @details[:verify][:rejected] = rejected.size
       return if rejected.empty?
 
       first = verdict["#{accept_prefix}#{rejected.first[0]}"]
-      @findings.add("E-VERIFY-REJECTS", "/verify.mjs", "verify rejects #{rejected.size} clean #{rejected.size == 1 ? 'instance' : 'instances'}#{": #{first['reason']}" if first && first['reason']}",
-                    seed: rejected.first[0], count: rejected.size)
+      reasons = rejected.group_by { |id, _| (verdict["#{accept_prefix}#{id}"] || {}).values_at("reason", "reason_it").compact.first.to_s }
+                        .to_h { |reason, list| [ reason, list.map(&:first) ] }
+      # A verify.mjs carried forward from the base while the author changed other files is
+      # the verifier's to refresh: E-VERIFY-STALE, not a broken item (D-141).
+      code = @verify_inherited ? "E-VERIFY-STALE" : "E-VERIFY-REJECTS"
+      @findings.add(code, "/verify.mjs", "verify rejects #{rejected.size} clean #{rejected.size == 1 ? 'instance' : 'instances'}#{": #{first['reason']}" if first && first['reason']}",
+                    seed: rejected.first[0], count: rejected.size, ids => rejected.map(&:first), reasons: reasons,
+                    first_rejected: first_rejected_instance(rejected.first[1]),
+                    rejected_samples: rejected_samples(rejected, verdict, accept_prefix, stored_ids))
+    end
+
+    # Up to VERIFY_SAMPLES rejected instances with their reason, display and answer, and whether
+    # the verifier was given that seed (work open lists only the stored pool; verify runs on
+    # every clean seed), so one run shows several unseen cases, not one.
+    VERIFY_SAMPLES = 8
+
+    def rejected_samples(rejected, verdict, prefix, stored_ids)
+      rejected.first(VERIFY_SAMPLES).map do |id, inst|
+        v = verdict["#{prefix}#{id}"] || {}
+        { "id" => id, "reason" => v.values_at("reason", "reason_it").compact.first, "in_stored_pool" => stored_ids ? stored_ids.include?(id) : nil }
+          .merge(first_rejected_instance(inst) || {}).compact
+      end
+    end
+
+    # The first rejected instance as the verifier saw it (display and answer, clipped), so
+    # a seed number outside the listed samples can be debugged without guessing.
+    def first_rejected_instance(inst)
+      return nil unless inst.respond_to?(:[]) && !inst.is_a?(String)
+
+      { "display" => inst["display"], "answer" => inst["answer"] }.compact.transform_values do |v|
+        json = v.is_a?(String) ? v : JSON.generate(v)
+        json.length > 400 ? "#{json[0, 400]}..." : v
+      end
     end
 
     # Error values and the +1 and sign-flip mutants must all be rejected.

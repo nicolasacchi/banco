@@ -249,9 +249,11 @@ class WorkApiTest < ActionDispatch::IntegrationTest
     api("/api/v1/work/revisions/#{revision.id}")
     assert_equal "error", json["status"]
     assert_equal false, json["settled"]
+    assert_equal true, json["retrying"]
     Validation::RevisionValidation.new(revision, attempt: ValidateItemRevisionJob::ATTEMPTS).record_error(Validation::ChromeRunner::Unavailable.new("no chrome"))
     api("/api/v1/work/revisions/#{revision.id}")
     assert_equal true, json["settled"]
+    assert_equal false, json["retrying"]
     assert_equal "error", json["status"]
   end
 
@@ -269,7 +271,7 @@ class WorkApiTest < ActionDispatch::IntegrationTest
     assert json["chrome_version"].present?
 
     api("/api/v1/work/items/gen-1?role=verifier", headers: { "X-Banco-Session" => session_of(:verifier).id.to_s })
-    assert_equal 8, json["instances"].size
+    assert_equal 24, json["instances"].size
     assert_not_includes json["files"].keys, "generator.mjs"
 
     submit("gen-1", { "verify.mjs" => F::VERIFY }, base: first)
@@ -295,11 +297,13 @@ class WorkApiTest < ActionDispatch::IntegrationTest
     holder = Thread.new { Validation::ChromeRunner.with_lock { held << true; release.pop } }
     held.pop
     begin
+      ENV["BANCO_DRY_RUN_CHROME_WAIT"] = "0.5"
       submit("gen-1", { "verify.mjs" => F::VERIFY }, base: base, dry: true)
       assert_response :conflict
       assert_equal "E-CHROME-BUSY", json["code"]
       assert_equal "retry in 30 s", json["next"]
     ensure
+      ENV.delete("BANCO_DRY_RUN_CHROME_WAIT")
       release << true
       holder.join
     end

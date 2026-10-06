@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 2
+version: 12
 
 validation:
   # Skill graph (synchronous).
@@ -16,12 +16,15 @@ validation:
   E-GRAPH-CYCLE: { stage: ruby, severity: error, description: "The prerequisite edges form a cycle." }
   E-SOURCE: { stage: ruby, severity: error, description: "A citation is not an exact substring of a pdf-origin line, cites a transcript line, or names a missing line." }
   E-SCOPE: { stage: ruby, severity: error, description: "Scope does not match the citations: middle_school and not_in_prima skills have no prima refs and carry a reason; studied, integration_studied and in_progress have at least one." }
+  W-REF-OTHER-SUBJECT: { stage: ruby, severity: warning, description: "A skill cites a programme line under a different \"## \" section than most of the graph's citations of that source: probably another subject's line; say so in scope_reason_it." }
+  W-SCOPE-MARKER: { stage: ruby, severity: warning, description: "A skill's scope disagrees with the star markers of the previous-year lines it cites (the star inside the cited fragment, else the marker of the line or of the header of its block)." }
   E-NEEDED-BY: { stage: ruby, severity: error, description: "A skill has no seconda needed_by ref and is not a transitive prerequisite of a skill that has one." }
   E-GRAPH-EDGE-UNAPPROVED: { stage: ruby, severity: error, description: "A cross-subject prerequisite points at a skill that is not in an approved graph." }
   # Item structure.
   E-SKILL-UNKNOWN: { stage: ruby, severity: error, description: "The item names a skill that is not in the subject's graph." }
   E-ASSET: { stage: ruby, severity: error, description: "An asset has no source, an SVG carries script, on* handlers, foreignObject or an external href, or a file is over 200 KB." }
   E-COMPOSITE: { stage: ruby, severity: error, description: "A multi-step item implicates two or more distinct prerequisites but its skill is not a composite listing them." }
+  E-TESTLET-SKILLS: { stage: ruby, severity: error, description: "The sub items of a testlet are not all on one skill: the testlet has one attempt, counted for its first skill only." }
   # Generator.
   E-CODE-GLOBAL: { stage: ruby, severity: error, description: "The generator or verify uses a banned global or import (Math.random, Date, performance, crypto, Intl, toLocaleString, eval, Function, fetch, XMLHttpRequest, WebSocket, import(, importScripts, or an import other than /lib/rng.mjs and /lib/fmt.mjs)." }
   E-GEN-NONDETERMINISTIC: { stage: chrome, severity: error, description: "Two fresh contexts gave a different canonical output for the same seed." }
@@ -40,6 +43,7 @@ validation:
   # Verify.
   E-VERIFY-MISSING: { stage: verify, severity: error, description: "There is no verify.mjs yet; instances are materialized anyway." }
   E-VERIFY-AUTHOR: { stage: verify, severity: error, description: "verify.mjs was added or changed by a session that is not a verifier." }
+  E-VERIFY-STALE: { stage: verify, severity: error, description: "The verify.mjs carried forward from the base rejects clean seeds of a changed generator or item. A verifier refreshes it; the author changes nothing (D-141). Counted as awaiting the verifier, like E-VERIFY-MISSING." }
   E-VERIFY-REJECTS: { stage: verify, severity: error, description: "verify rejects a clean seed." }
   E-VERIFY-VACUOUS: { stage: verify, severity: error, description: "verify accepts a catalogue error value or a +1 or sign-flip mutant." }
   E-SESSION-NOT-INDEPENDENT: { stage: verify, severity: error, description: "The author, verifier, reviewer and solver sessions of an item are not disjoint." }
@@ -47,6 +51,7 @@ validation:
   E-DISPLAY-KEY: { stage: ruby, severity: error, description: "The display carries a key, a verdict or a field that reveals the answer." }
   E-SOLUTION-IN-DISPLAY: { stage: ruby, severity: error, description: "The normalized expected answer (3+ characters) appears in a non-stem display string or SVG text, or the key option's text appears outside the options array." }
   W-ANSWER-IN-STEM: { stage: ruby, severity: warning, description: "The expected answer appears in the stem." }
+  W-TESTLET-LEAK: { stage: ruby, severity: warning, description: "A testlet sub-item's key appears in the passage (written keys) or in another sub-item's display." }
   # Choice, ordering, matching.
   E-CHOICE-OPTIONS: { stage: ruby, severity: error, description: "A choice item has fewer than 3 or more than 5 options (never 2), or an ordering item has fewer than 3 or more than 7 elements." }
   E-DISTRACTOR-UNCODED: { stage: ruby, severity: error, description: "A distractor carries no error code from the catalogue." }
@@ -67,8 +72,17 @@ validation:
   W-NEGATIVE-STEM: { stage: ruby, severity: warning, description: "The stem is phrased as a negation." }
   W-DECIMAL-POINT: { stage: ruby, severity: warning, description: "A decimal point where the Italian comma is expected." }
   W-SELF-CERT: { stage: ruby, severity: warning, description: "Self-certifying wording." }
+  E-MATCHING-RIGHT-MARKUP: { stage: ruby, severity: error, description: "A right-column text of a matching holds LaTeX or markup ($, backslash, **): it is drawn as a native option, which renders plain text only." }
+  W-GRAPH-DEFERRED-APPROVED: { stage: ruby, severity: warning, description: "A deferred_prerequisites or deferred_implicates entry names a skill that is already in an approved graph: it can be a plain prerequisite or implicate now." }
+  W-GRAPH-READABILITY: { stage: ruby, severity: warning, description: "A *_it text of a skill graph (an error description, a skill name) breaks the readability rule an item text would fail (E-READ): the same text copied into an item error catalogue is refused." }
+  W-ERROR-NOT-IN-GRAPH: { stage: ruby, severity: warning, description: "An item's error code is not an error of its skill in the graph, or its implicates differ from the graph's: the engine reads the graph alone." }
+  W-FORM-SKILL-CLOSURE: { stage: ruby, severity: warning, description: "An item's form_skill is not in the prerequisite closure of its skill: a wrong form gets credit but no tail suspect." }
   W-CALCULATOR: { stage: ruby, severity: warning, description: "A numeric item in a subject that allows the calculator lacks the sentence that says so." }
+  W-IMPLICATE-PENDING: { stage: ruby, severity: warning, description: "An error_catalogue implicate names a skill of another subject whose graph is not approved yet. The engine reads implicates from the graph, so the item's list is ignored anyway; declare the edge as deferred_implicates in the graph and move it after the other graph is approved (D-135)." }
   # Blueprint (synchronous).
+  W-SHORT-SKILL-CLOSED: { stage: blueprint, severity: warning, description: "Closed items are pinned on the skill of a pinned short answer: the engine serves only the short answer there, so they are never seen and do not count for the redo pool." }
+  W-STALE-PIN: { stage: blueprint, severity: warning, description: "A pinned item revision still counts as passed but a newer passed revision of the same item exists. The engine would serve the old one; pin the newest (D-136). The teacher's approval checklist refuses it." }
+  W-GUEST-UNAPPROVED: { stage: blueprint, severity: warning, description: "A guest starting skill sits in a graph of its own subject that is not approved yet. The draft and the dry run accept it; the teacher cannot approve the blueprint until that graph is approved (D-129)." }
   E-POOL-REDO: { stage: blueprint, severity: error, description: "A skill has fewer than 6 distinct-fingerprint instances across 2 items with 3 low-guess, and does not declare redo_reserve false; or a pinned descent skill has no low-guess instance." }
   E-BLUEPRINT-ENTRIES: { stage: blueprint, severity: error, description: "The blueprint has fewer than 4 or more than 10 entries." }
   E-BLUEPRINT-UNPINNED-DESCENT: { stage: blueprint, severity: error, description: "A skill the descent can reach from the starting skills has neither pinned items nor a not_assessed reason in descent[] (D-038)." }
@@ -116,15 +130,19 @@ verdicts:
 # allowlist of Rules::V1 is a subset of these.
 grader_codes:
   es_accents: { description: "Spanish accent missing or misplaced; value otherwise right." }
-  it_accents: { description: "Italian accent missing or wrong; value otherwise right." }
+  it_accents: { description: "Accent missing or wrong; value otherwise right. Any subject except Spanish uses this one code (English included); the name is historical (D-108)." }
   it_apostrophe_accent: { description: "Apostrophe typed instead of an accent (perche' for perché)." }
   radical_simplified: { description: "The radical is not in simplest form (wrong_form)." }
+  common_factor_not_cancelled: { description: "An algebraic fraction whose numerator and denominator still share a factor (wrong_form of the reduced form)." }
   lowest_terms: { description: "The fraction is not in lowest terms (wrong_form)." }
   improper: { description: "An improper fraction where a mixed number is declared (wrong_form)." }
   mixed: { description: "A mixed number where an improper fraction is declared (wrong_form)." }
+  scientific_notation: { description: "A number with the right value that is not written as a·10^n with 1 <= a < 10 where the item declares form scientific (wrong_form)." }
   use_comma: { description: "invalid: a dot where the decimal comma is required." }
+  thousands_separator: { description: "invalid: a number written with the Italian thousands dot (5.300,00); the student is told to write it without." }
   empty: { description: "invalid: blank answer or empty box." }
   unparseable: { description: "invalid: the answer cannot be read." }
+  spaces_in_code: { description: "invalid: a bit string or letter code typed with spaces between its characters (D-114)." }
   ambiguous_exponent: { description: "invalid: an exponent that cannot be read with certainty." }
   ambiguous_mixed_number: { description: "invalid: a mixed number or digits separated by a space." }
   zero_denominator: { description: "invalid: denominator 0." }

@@ -15,7 +15,11 @@ Start with `banco status` and this brief. Open your session first:
 The model is declared and must be a different model than every author of the item (a Sonnet may review an Opus item; the family may be the same)
 (`config/banco/providers.yml`): otherwise `E-PROVIDER-NOT-ALLOWED`. Another session of
 the same item (author, verifier, solver) or one that already reviewed it is refused
-(`E-SESSION-NOT-INDEPENDENT`). `banco review open REV` gives you the
+(`E-SESSION-NOT-INDEPENDENT`). `banco items list --subject KEY --current` lists the revision id of every
+item with its status and how many reviews it has (drop `--current` for superseded revisions too).
+Keep your review files in a scratch directory of your own, named after your subject and round
+(for example `$TMPDIR/rv-SUBJECT-1`): a shared name such as `rv` is cleaned by parallel sessions.
+`banco review open REV` gives you the
 item, the instances with expected answers, the messages, the solution and the
 programme lines cited. `banco review submit REV --file review.json` sends the
 result. Never ask for a decision; the teacher disposes of every finding.

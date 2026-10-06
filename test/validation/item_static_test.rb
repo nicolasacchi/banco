@@ -32,6 +32,13 @@ class ItemStaticTest < ActiveSupport::TestCase
     assert_equal "Spiega con parole tue come si risolve un'equazione.", result.instances.first[:display]["stem_it"]
   end
 
+  test "a diagnosis item and a short answer may carry a passage_it" do
+    result = run_item(F.choice_item.merge("passage_it" => "Il settore secondario trasforma le materie prime in prodotti finiti."))
+    assert_equal "passed", result.status, result.findings.map(&:to_h).inspect
+    result = run_item(F.short_answer_item.merge("passage_it" => "Un breve testo di prova."))
+    assert_equal "passed", result.status, result.findings.map(&:to_h).inspect
+  end
+
   test "E-SCHEMA: a missing member stops the run" do
     result = run_item(F.static_item.except("sources"))
     assert_equal "failed", result.status
@@ -109,9 +116,21 @@ class ItemStaticTest < ActiveSupport::TestCase
     assert_includes codes(run_item(F.static_item("accent_policy" => "strict"))), "E-ACCENT-POLICY" # not a text item
   end
 
+  test "a legal_text source is accepted by the schema (D-090)" do
+    item = F.static_item("sources" => [ { "kind" => "legal_text", "ref" => "Costituzione art. 3", "fragment" => "pari dignità sociale" } ])
+    assert_not_includes codes(run_item(item)), "E-SCHEMA"
+  end
+
   test "E-PROVA-A-PARAMS: listed instances on an exam structure" do
     item = F.static_item("sources" => [ { "kind" => "prova_a_structure", "ref" => "struttura", "fragment" => "esercizio 1" } ])
     assert_includes codes(run_item(item)), "E-PROVA-A-PARAMS"
+  end
+
+  test "E-PROVA-A-PARAMS: exclude_params keeps the exam's numbers out of the instances, whole numbers only" do
+    hit = run_item(F.static_item("exclude_params" => [ "13" ]))
+    assert_includes codes(hit), "E-PROVA-A-PARAMS"
+    assert_not_includes codes(run_item(F.static_item("exclude_params" => [ "1" ]))), "E-PROVA-A-PARAMS" # 13 and 21 are other numbers
+    assert_not_includes codes(run_item(F.static_item("exclude_params" => [ "99" ]))), "E-PROVA-A-PARAMS"
   end
 
   test "E-QUOTE-REF: a reference that does not exist or a quotation that is not in it" do
@@ -234,6 +253,24 @@ class ItemStaticTest < ActiveSupport::TestCase
     assert_includes codes(run_item(F.static_item("instances" => [ inst, F.number_instance(4, 13) ]))), "E-STEP-INCONSISTENT"
   end
 
+  test "E-STEP-INCONSISTENT reads the Italian thousands dot as grouping" do
+    inst = F.number_instance(2, 9)
+    inst["answer"] = 5300
+    inst["solution"]["final"] = "5.300,00 €"
+    assert_not_includes codes(run_item(F.static_item("instances" => [ inst, F.number_instance(4, 13) ]))), "E-STEP-INCONSISTENT"
+    inst["solution"]["final"] = "5.400,00 €"
+    assert_includes codes(run_item(F.static_item("instances" => [ inst, F.number_instance(4, 13) ]))), "E-STEP-INCONSISTENT"
+  end
+
+  test "E-STEP-INCONSISTENT reads a LaTeX decimal comma as one number" do
+    inst = F.number_instance(2, 9)
+    inst["answer"] = "0,4"
+    inst["solution"]["final"] = "$0{,}4$"
+    assert_not_includes codes(run_item(F.static_item("instances" => [ inst, F.number_instance(4, 13) ]))), "E-STEP-INCONSISTENT"
+    inst["solution"]["final"] = "$0{,}5$"
+    assert_includes codes(run_item(F.static_item("instances" => [ inst, F.number_instance(4, 13) ]))), "E-STEP-INCONSISTENT"
+  end
+
   test "readability: E-READ rules, E-PHRASE, E-MESSAGE and the warnings come from the item's Italian text" do
     long = "Risolvi l'equazione " + ([ "molto" ] * 30).join(" ") + "."
     assert(run_item(F.static_item("prompt" => { "stem_it" => long })).findings.any? { |f| f.code == "E-READ" && f.detail[:rule] == "sentence_length" })
@@ -251,6 +288,12 @@ class ItemStaticTest < ActiveSupport::TestCase
     assert_includes codes(result), "W-CALCULATOR"
     ok = F.static_item("subject" => "business", "skill" => "business.invoice", "prompt" => { "stem_it" => "Puoi usare la calcolatrice. Risolvi." })
     assert_not_includes codes(run_item(ok, context: ctx)), "W-CALCULATOR"
+  end
+
+  test "W-CALCULATOR: calculation false exempts a counting item (D-106)" do
+    ctx = F.context(subject: "business", extra_skills: { "business.invoice" => { "key" => "business.invoice" } })
+    item = F.static_item("subject" => "business", "skill" => "business.invoice", "calculation" => false)
+    assert_not_includes codes(run_item(item, context: ctx)), "W-CALCULATOR"
   end
 
   test "E-CODE-GLOBAL: a file named generator.mjs is scanned even next to a static item" do
@@ -271,5 +314,48 @@ class ItemStaticTest < ActiveSupport::TestCase
     assert_equal "passed", result.status, result.findings.map(&:to_h).inspect
     assert_equal 3, result.instances.size
     assert_equal %w[q1 q2 q3 q4 q5], result.instances.first[:answer].keys
+  end
+
+  test "D-094: a long key option stated in a testlet passage is E-SOLUTION-IN-DISPLAY; a short one is not" do
+    build = lambda do |passage, key|
+      subs = (1..5).map do |n|
+        F.choice_item.slice("skill", "component", "prompt", "error_catalogue", "tests", "choice_only_reason_it").merge(
+          "id" => "q#{n}",
+          "instances" => [ F.choice_instance(key, %w[tredici nove undici]), F.choice_instance(key, %w[quattro sei dieci]), F.choice_instance(key, %w[uno due tre]) ]
+        )
+      end
+      { "schema" => "banco.item/1", "schema_version" => 1, "kind" => "testlet", "subject" => "math", "skill" => F::SKILL,
+        "passage_it" => passage, "expected_seconds" => 300, "sub_items" => subs,
+        "sources" => [ { "kind" => "inferred", "ref" => "prova", "fragment" => "x" } ] }
+    end
+    long = "il contratto e annullabile per incapacita"
+    leaky = run_item(build.call("Nel testo si legge che #{long} del venditore.", long))
+    assert_includes codes(leaky), "E-SOLUTION-IN-DISPLAY"
+    assert_equal "/sub_items/0/instances/0/passage_it", leaky.findings.find { |f| f.code == "E-SOLUTION-IN-DISPLAY" }.field
+    short = run_item(build.call("Marco vende la casa a Luigi.", "Marco"))
+    assert_not_includes codes(short), "E-SOLUTION-IN-DISPLAY"
+  end
+
+  test "D-128: W-TESTLET-LEAK flags a key in another sub-item and a written key in the passage" do
+    long = "il contratto e annullabile per incapacita"
+    build = lambda do |passage, q2_distractors|
+      subs = (1..5).map do |n|
+        key = n == 1 ? long : "chiave numero #{n} del tutto diversa"
+        ds = n == 2 ? q2_distractors : %w[tredici nove undici]
+        F.choice_item.slice("skill", "component", "prompt", "error_catalogue", "tests", "choice_only_reason_it").merge(
+          "id" => "q#{n}", "instances" => [ F.choice_instance(key, ds), F.choice_instance(key, ds), F.choice_instance(key, ds) ]
+        )
+      end
+      { "schema" => "banco.item/1", "schema_version" => 1, "kind" => "testlet", "subject" => "math", "skill" => F::SKILL,
+        "passage_it" => passage, "expected_seconds" => 300, "sub_items" => subs,
+        "sources" => [ { "kind" => "inferred", "ref" => "prova", "fragment" => "x" } ] }
+    end
+    leaky = run_item(build.call("Un breve testo di prova.", [ long, "nove", "undici" ]))
+    hit = leaky.findings.find { |f| f.code == "W-TESTLET-LEAK" }
+    assert hit, codes(leaky).inspect
+    assert_match %r{\A/sub_items/1/instances/0/display/options}, hit.field
+    assert_not_includes codes(leaky), "E-SOLUTION-IN-DISPLAY"
+    clean = run_item(build.call("Un breve testo di prova.", %w[tredici nove undici]))
+    assert_not_includes codes(clean), "W-TESTLET-LEAK"
   end
 end

@@ -55,7 +55,12 @@ type result struct {
 func runCLI(t *testing.T, baseURL string, tokens tokenSource, args ...string) result {
 	t.Helper()
 	var out, errb bytes.Buffer
-	e := &env{stdout: &out, stderr: &errb, getenv: func(string) string { return "" }}
+	e := &env{stdout: &out, stderr: &errb, getenv: func(k string) string {
+		if k == "BANCO_BUSY_WAIT_MS" {
+			return "1"
+		}
+		return ""
+	}}
 	e.client = func() *client {
 		return &client{baseURL: baseURL, http: &http.Client{Timeout: 5 * time.Second}, tokens: tokens}
 	}
@@ -162,7 +167,7 @@ func TestNonJSONErrorBody(t *testing.T) {
 }
 
 func TestContractMismatchExitsSixWithBuildHint(t *testing.T) {
-	for _, header := range []string{"", "deadbeef"} {
+	for _, header := range []string{"deadbeef"} {
 		srv := fakeServer(200, "{}", header)
 		r := runCLI(t, srv.URL, envToken("bnc_x"), "schema")
 		srv.Close()
@@ -173,6 +178,19 @@ func TestContractMismatchExitsSixWithBuildHint(t *testing.T) {
 		if e.Next != "go build -o bin/banco ./cli" {
 			t.Errorf("next = %q", e.Next)
 		}
+	}
+}
+
+func TestMissingContractHeaderIsNetworkNotContract(t *testing.T) {
+	srv := fakeServer(200, "{}", "")
+	defer srv.Close()
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "schema")
+	if r.exit != ExitServer {
+		t.Fatalf("exit %d", r.exit)
+	}
+	e := assertErrJSON(t, r.stderr, "E-NETWORK")
+	if e.Next == "go build -o bin/banco ./cli" {
+		t.Errorf("next must not suggest a rebuild: %q", e.Next)
 	}
 }
 
@@ -315,5 +333,43 @@ func TestBriefShowRejectsPathLikeNamesWithoutARequest(t *testing.T) {
 	r := runCLI(t, srv.URL, envToken("bnc_x"), "brief", "show", "../schema")
 	if called || r.exit != ExitUsage {
 		t.Errorf("called=%v exit=%d", called, r.exit)
+	}
+}
+
+func TestHelpListsContractCommands(t *testing.T) {
+	for _, a := range [][]string{{"--help"}, {"-h"}, {"help"}} {
+		var out, errb bytes.Buffer
+		if code := run(a, &out, &errb, func(string) string { return "" }); code != 0 {
+			t.Fatalf("%s: exit %d: %s", a, code, errb.String())
+		}
+		if !strings.Contains(out.String(), `"skill-graph submit"`) || !strings.Contains(out.String(), `"brief show"`) {
+			t.Errorf("%s: missing commands: %s", a, out.String())
+		}
+	}
+}
+
+func TestHelpForOneCommand(t *testing.T) {
+	var out, errb bytes.Buffer
+	if code := run([]string{"session", "new", "--help"}, &out, &errb, func(string) string { return "" }); code != 0 {
+		t.Fatalf("exit %d: %s", code, errb.String())
+	}
+	for _, want := range []string{`"command":"session new"`, `"--role"`, `"error_codes"`} {
+		if !strings.Contains(out.String(), want) {
+			t.Errorf("missing %s: %s", want, out.String())
+		}
+	}
+}
+
+func TestHelpForOneGroup(t *testing.T) {
+	var out, errb bytes.Buffer
+	if code := run([]string{"work", "--help"}, &out, &errb, func(string) string { return "" }); code != 0 {
+		t.Fatalf("exit %d: %s", code, errb.String())
+	}
+	if !strings.Contains(out.String(), `"work submit"`) || strings.Contains(out.String(), `"brief show"`) {
+		t.Errorf("group help: %s", out.String())
+	}
+	errb.Reset()
+	if code := run([]string{"nope", "--help"}, &out, &errb, func(string) string { return "" }); code != ExitUsage {
+		t.Errorf("unknown group: exit %d", code)
 	}
 }

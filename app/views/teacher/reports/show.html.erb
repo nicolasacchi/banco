@@ -13,6 +13,14 @@
       <li><%= t("teacher.report.entry_test", seq: row[:entry_test][:seq] || "-") %>
         <%= row[:entry_test][:approved] ? t("teacher.report.test_approved") : t("teacher.report.test_not_approved") %>
         <% if row[:entry_test][:pending_revision] %> <strong><%= t("teacher.report.pending_revision") %></strong><% end %></li>
+      <% entry = row[:entry_test] %>
+      <% if entry[:not_measured_it] %>
+        <li id="report-not-measured"><%= t("teacher.test.settings.not_measured") %> <%= entry[:not_measured_it] %></li>
+        <li id="report-test-settings"><%= t("teacher.test.settings.calculator") %> <%= t("teacher.test.settings.calculator_#{entry[:calculator]}", default: entry[:calculator].to_s) %> ·
+          <%= t("teacher.test.settings.budget") %> <%= t("teacher.test.settings.budget_value", minutes: entry[:budget]&.dig("sitting_minutes"), sittings: entry[:budget]&.dig("sittings")) %> ·
+          <%= t("teacher.test.settings.depends") %> <%= Array(entry[:depends_on_subjects]).presence&.join(", ") || t("teacher.test.settings.none") %>
+          <% Array(entry[:kind_overrides]).each do |o| %><br><code><%= o["skill"] %></code> → <%= o["kind"] %>: <%= o["reason_it"] %><% end %></li>
+      <% end %>
       <li id="report-condition"><%= t("teacher.report.condition") %> <strong><%= t("teacher.report.unsupervised") %></strong></li>
       <% if row[:run] %>
         <li id="report-versions"><%= t("teacher.report.versions", rules: row[:run][:rules_version], engine: row[:run][:engine_version], graders: row[:run][:grader_versions].map { |g| "#{g[:grader]} #{g[:grader_version]}" }.join(", ").presence || "-") %></li>

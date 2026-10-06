@@ -8,7 +8,7 @@ module Teacher
     TRACE_SCRIPTS = %w[all-correct all-wrong].freeze
     CHECKLIST_PASS = %w[pass na].freeze
 
-    SkillRow = Data.define(:skill, :label_it, :role, :item_ids, :not_assessed_reason_it, :redo_reserve, :worked, :open_findings)
+    SkillRow = Data.define(:skill, :label_it, :role, :item_ids, :not_assessed_reason_it, :redo_reserve, :choice_only_reason_it, :worked, :open_findings)
     Card = Data.define(:revision, :item, :body, :samples, :catalogue, :sources, :gate, :review, :blind, :findings, :send_backs, :superseded)
     Finding = Data.define(:finding, :disposition, :new_revision_expected)
 
@@ -40,9 +40,15 @@ module Teacher
         rows = Array(body["entries"]).map { |e| [ e, :entry ] } + Array(body["descent"]).map { |d| [ d, :descent ] }
         rows.map do |e, role|
           ids = Array(e["items"]).map(&:to_i)
-          SkillRow.new(e["skill"], labels[e["skill"]] || e["skill"], role, ids, e["not_assessed_reason_it"], e["redo_reserve"], ids.all? { |id| worked?(id) }, open_findings(ids))
+          SkillRow.new(e["skill"], labels[e["skill"]] || e["skill"], role, ids, e["not_assessed_reason_it"], e["redo_reserve"], e["choice_only_reason_it"], ids.all? { |id| worked?(id) }, open_findings(ids))
         end
       end
+    end
+
+    # What the author declared about the whole test, for the teacher to read (D-101).
+    def settings
+      { not_measured_it: body["not_measured_it"], intro_note_it: body["intro_note_it"], calculator: body["calculator"],
+        budget: body["budget"], depends_on_subjects: Array(body["depends_on_subjects"]), kind_overrides: Array(body["kind_overrides"]) }
     end
 
     def skill_row(skill) = skill_rows.find { |r| r.skill == skill }
@@ -61,7 +67,9 @@ module Teacher
     def traces
       @traces ||= TRACE_SCRIPTS.map do |name|
         plan = Diagnosis::PlanLoader.for_blueprint_revision(blueprint)
-        out = Diagnosis::Simulator.run(plan, Diagnosis::ScriptedStudent.new(name))
+        # The teacher confirms the short answer and any pending one as the script's student
+        # would be graded, so a discursive subject's trace reaches its close (D-121).
+        out = Diagnosis::Simulator.run(plan, Diagnosis::ScriptedStudent.new(name), resolve_pending: name == "all-correct" ? "correct" : "wrong")
         result = out[:result]
         { script: name, end_reason: result[:end_reason], served: result[:served], minutes: (result[:counted_seconds] / 60.0).round,
           sittings: result[:sittings].size, states: result[:skills].map { |r| r[:state] }.tally }

@@ -10,8 +10,9 @@ module Diagnosis
   # stored instance is never changed. What the browser sees carries no trace of
   # the stored order, so the position of an element says nothing about the key.
   #
-  # An ordering that would be shown equal to the key, to its reverse or to its own
-  # stored listing is drawn again; so is a matching whose left or right column
+  # An ordering that would be shown equal to the key, to its reverse, to its own
+  # stored listing or to a declared error permutation (an untouched answer would be
+  # graded as that error) is drawn again; so is a matching whose left or right column
   # keeps its stored order, or whose rows line up with the pairs of the key.
   #
   # The result carries the shown display, the id map {shown id => stored id} (the
@@ -26,11 +27,12 @@ module Diagnosis
     module_function
 
     # display: the stored display (string keys); component: the item's component;
-    # answer: the stored key; seed: any string (run salt, serve, instance).
-    def call(display:, component:, answer:, seed:)
+    # answer: the stored key; seed: any string (run salt, serve, instance); errors: the
+    # instance's declared errors [{"code", "value"}] (a testlet sub item: "errors").
+    def call(display:, component:, answer:, seed:, errors: [])
       case component.to_s
       when "choice" then choice(display, seed)
-      when "ordering" then ordering(display, answer, seed)
+      when "ordering" then ordering(display, answer, seed, errors)
       when "matching" then matching(display, answer, seed)
       else Result.new(display: display, id_map: {}, shown_order: {})
       end
@@ -43,7 +45,8 @@ module Diagnosis
       map = {}
       order = {}
       sub_items.each do |sub|
-        r = call(display: sub["display"], component: sub["component"], answer: sub["answer"], seed: "#{seed}|#{sub['id']}")
+        r = call(display: sub["display"], component: sub["component"], answer: sub["answer"], seed: "#{seed}|#{sub['id']}",
+                 errors: sub["errors"] || [])
         shown << { "id" => sub["id"], "display" => r.display }
         map[sub["id"]] = r.id_map
         order[sub["id"]] = r.shown_order
@@ -71,11 +74,12 @@ module Diagnosis
       build(display, "options" => [ "o", ids.shuffle(random: rng(seed)) ])
     end
 
-    def ordering(display, answer, seed)
+    def ordering(display, answer, seed, errors = [])
       stored = Array(display["elements"]).map { |e| e["id"] }
       key = Array(answer).map(&:to_s)
+      declared = Array(errors).filter_map { |e| e["value"].is_a?(Array) ? e["value"].map(&:to_s) : nil }
       shown = draw(stored, rng(seed)) do |candidate|
-        candidate == key || candidate == key.reverse || candidate == stored
+        candidate == key || candidate == key.reverse || candidate == stored || declared.include?(candidate)
       end
       build(display, "elements" => [ "e", shown ])
     end

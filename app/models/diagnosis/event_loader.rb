@@ -81,6 +81,8 @@ module Diagnosis
       # flag (a missing policy is strict) and every code is an accent or apostrophe code.
       if grading.verdict == "typical_error" && body["accent_policy"] == "flag" && codes.any? && (codes - Rules::V1::ORTHOGRAPHY_ALLOWLIST).empty?
         fields[:orthography_slip] = true
+        # The slip is an observation on the orthography skill the code belongs to (D-096).
+        fields[:orthography_skill] = codes.filter_map { |c| Rules::V1::ORTHOGRAPHY_SKILLS[c] }.first
       end
       # A result that touched floating point is uncertain whatever it says (D-029).
       fields[:method] = "float" if grading.method == "float"
@@ -90,6 +92,13 @@ module Diagnosis
         elsif body["form"].present? then "skill" # the form is the skill itself
         end
         fields[:form_skill] = form_skill if form_skill
+        # A form that is the item's own skill carries its first violation as the code, so a
+        # graph error with that code (implicates []) keeps the descent in the node; an
+        # undeclared code still counts as unclassified (D-076).
+        if fields[:form] == "skill" && code.nil?
+          violations = grading.form_violations_json ? JSON.parse(grading.form_violations_json) : []
+          fields[:error_code] = violations.first
+        end
       end
       fields.compact
     end

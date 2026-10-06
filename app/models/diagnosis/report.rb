@@ -92,7 +92,15 @@ module Diagnosis
       return { blueprint_revision_id: nil, seq: nil, approved: false, pending_revision: !latest.nil? } unless used
 
       { blueprint_revision_id: used.id, seq: used.seq, approved: !approved.nil?, approved_revision_id: approved&.id,
-        pending_revision: !latest.nil? && !approved.nil? && latest.id != approved.id }.compact
+        pending_revision: !latest.nil? && !approved.nil? && latest.id != approved.id }.merge(test_settings(used)).compact
+    end
+
+    # What the author declared about the test itself (D-101): what it does not measure,
+    # calculator, budget, other subjects it needs, and the kind overrides with reasons.
+    def test_settings(revision)
+      body = JSON.parse(revision.body_json)
+      { not_measured_it: body["not_measured_it"], calculator: body["calculator"], budget: body["budget"],
+        depends_on_subjects: body["depends_on_subjects"], kind_overrides: body["kind_overrides"] }
     end
 
     def run_info

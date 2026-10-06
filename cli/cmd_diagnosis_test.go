@@ -156,11 +156,23 @@ type reportDoc struct {
 		Status    string `json:"status"`
 		GraphForm string `json:"graph_form"`
 		EntryTest struct {
-			BlueprintRevisionID *int `json:"blueprint_revision_id"`
-			Seq                 *int `json:"seq"`
-			Approved            bool `json:"approved"`
-			ApprovedRevisionID  *int `json:"approved_revision_id"`
-			PendingRevision     bool `json:"pending_revision"`
+			BlueprintRevisionID *int   `json:"blueprint_revision_id"`
+			Seq                 *int   `json:"seq"`
+			Approved            bool   `json:"approved"`
+			ApprovedRevisionID  *int   `json:"approved_revision_id"`
+			PendingRevision     bool   `json:"pending_revision"`
+			NotMeasuredIt       string `json:"not_measured_it"`
+			Calculator          string `json:"calculator"`
+			Budget              struct {
+				SittingMinutes int `json:"sitting_minutes"`
+				Sittings       int `json:"sittings"`
+			} `json:"budget"`
+			DependsOnSubjects []string `json:"depends_on_subjects"`
+			KindOverrides     []struct {
+				Skill    string `json:"skill"`
+				Kind     string `json:"kind"`
+				ReasonIt string `json:"reason_it"`
+			} `json:"kind_overrides"`
 		} `json:"entry_test"`
 		Run *struct {
 			ID             int     `json:"id"`

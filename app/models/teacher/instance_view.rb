@@ -13,7 +13,7 @@ module Teacher
       display = JSON.parse(instance.display_json)
       answer = JSON.parse(instance.answer_json)
       kind = body["kind"]
-      @stem = [ body.dig("prompt", "stem_it"), display["stem_it"], display["passage_it"] ].compact.uniq.join(" ")
+      @stem = [ body["passage_it"], body.dig("prompt", "stem_it"), display["stem_it"], display["passage_it"] ].compact.uniq.join(" ")
       @stem = body["passage_it"].to_s if kind == "testlet"
       @choices = choices_of(display)
       @key = key_in_words(kind, body["component"], display, answer)

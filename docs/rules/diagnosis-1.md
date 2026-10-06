@@ -92,10 +92,11 @@ The rule is applied to each skill on that skill's items only.
   to `MAX_SERVED_PER_SKILL` (5) served per skill. At the cap with answers
   outstanding the state is `pending`.
 - **Testlets** (a reading passage with 5 closed sub-items) are served as one unit.
-  Each sub-item is an attempt on its own skill. At most one outcome per skill per
+  All sub-items are on one skill (`E-TESTLET-SKILLS`): the testlet has one attempt,
+  counted for that skill, and is charged as a serve to that skill only (D-098). At most one outcome per skill per
   testlet counts toward a pair (`TESTLET_OUTCOMES_PER_SKILL = 1`); the second must
   come from another item, because two answers on one passage are correlated
-  evidence. The time budget is checked before serving a testlet, using its
+  evidence. A run serves at most one instance of a testlet item (D-099). The time budget is checked before serving a testlet, using its
   `expected_seconds`.
 - Choice options are shuffled by seed with key-position balance across the
   session; the shown order is logged; ids are compared, never positions.
@@ -116,6 +117,10 @@ non indovinabile; l'item 1 non si indovina; un brano conta una prova per abilit√
   the `implicates` of its typical errors, plus all direct prerequisites if any
   outcome was W unclassified or D. Targets go to the head of the frontier
   (depth-first).
+- A `wrong_form` whose form is the item's own skill carries its first form
+  violation as the error code (D-076). A graph error with that code and
+  `implicates: []` keeps the descent in the node; an undeclared code is
+  unclassified like any other, so the descent adds the direct prerequisites.
 - Never below a demonstrated skill. A prerequisite implicated on a demonstrated
   skill goes to the tail as a suspect.
 - A skill's state comes only from its own items.
@@ -253,7 +258,7 @@ itself.
 
 `CALCULATOR`: **no** in mathematics, **yes** in business and chemistry, said in the
 items ("Puoi usare la calcolatrice"); `W-CALCULATOR` flags a numeric item that
-lacks the sentence. In the other subjects the numbers are chosen for hand
+lacks the sentence unless the item says `calculation: false` (D-106). In the other subjects the numbers are chosen for hand
 calculation. The entry test carries a `calculator` field and the start screen shows
 one line about it. Changeable at approval.
 

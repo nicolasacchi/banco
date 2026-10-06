@@ -17,6 +17,17 @@ class DiagnosisSimulatorTest < ActiveSupport::TestCase
     Diagnosis::Simulator.run(fixture_plan, Diagnosis::ScriptedStudent.new(script))
   end
 
+  test "a simulated testlet declared on several skills is charged to the first only (D-098)" do
+    doc = JSON.parse(File.read(FIXTURE))
+    skills = doc["graph"]["skills"].map { |k| k["key"] }
+    bp = doc["blueprint"]
+    first, other = skills.first(2)
+    plan = Diagnosis::Plan.build(blueprint: bp, graph: doc["graph"],
+                                 pool: { "tl-x" => { "kind" => "testlet", "skills" => [ first, other ], "instances" => 1 } })
+    tl = plan.pool.values.find { |i| i.item == "tl-x" }
+    assert_equal [ first ], tl.skills
+  end
+
   test "all-wrong ends with frontier_empty and every skill to_recover" do
     out = run_script("all-wrong")
     assert_equal "frontier_empty", out[:result][:end_reason]

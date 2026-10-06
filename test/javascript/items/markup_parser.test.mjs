@@ -64,3 +64,8 @@ test("bold and formulas nest only one way: bold may hold a formula", () => {
   assert.equal(node.t, "bold")
   assert.deepEqual(node.children, [{ t: "text", v: "vale " }, { t: "math", v: "x" }])
 })
+
+test("escaped dollars in spreadsheet references show as plain text", () => {
+  assert.deepEqual(inline("=A2*\\$B\\$1"), [{ t: "text", v: "=A2*$B$1" }])
+  assert.deepEqual(inline("=SUM(\\$A\\$1:\\$A\\$5)"), [{ t: "text", v: "=SUM($A$1:$A$5)" }])
+})

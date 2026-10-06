@@ -231,8 +231,8 @@ module Diagnosis
 
       note_observations(skill, source, evidence)
       code = evidence == :W && source[:verdict].to_s == "typical_error" ? source[:error_code]&.to_s : nil
-      resolved = outcome.record(SkillOutcome::Outcome.new(evidence: evidence, low_guess: serve.instance.low_guess,
-                                                          choice: serve.instance.choice, code: code, serve: serve.seq))
+      resolved = outcome.record(SkillOutcome::Outcome.new(evidence: evidence, low_guess: serve.instance.low_guess_for(skill),
+                                                          choice: serve.instance.choice_for(skill), code: code, serve: serve.seq))
       on_resolved(skill) if resolved
     end
 

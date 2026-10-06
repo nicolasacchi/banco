@@ -69,6 +69,15 @@
       "error_codes": ["E-AUTH"]
     },
     {
+      "name": "items list",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/items",
+      "args": [],
+      "flags": ["--subject", "--current"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
       "name": "syllabus lines",
       "local": false,
       "method": "GET",
@@ -76,6 +85,24 @@
       "args": [],
       "flags": ["--source", "--from", "--to"],
       "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-FILES"]
+    },
+    {
+      "name": "reference list",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/references",
+      "args": [],
+      "flags": [],
+      "error_codes": ["E-AUTH"]
+    },
+    {
+      "name": "reference show",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/references/:key",
+      "args": [],
+      "flags": ["--key"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
     },
     {
       "name": "work open",
@@ -93,7 +120,7 @@
       "path": "/api/v1/work/submit",
       "args": ["dir"],
       "flags": ["--item", "--base", "--dry-run"],
-      "error_codes": ["E-AUTH", "E-FILES", "E-TOO-LARGE", "E-STALE-BASE", "E-NOT-FOUND", "E-CHROME-BUSY", "E-CHROME-UNAVAILABLE", "E-SOURCE", "E-SCHEMA", "E-SKILL-UNKNOWN", "E-ASSET", "E-COMPOSITE", "E-CODE-GLOBAL", "E-GEN-NONDETERMINISTIC", "E-GEN-THROW", "E-GEN-TIMEOUT", "E-GEN-SCHEMA", "E-GEN-POOL", "E-COMPONENT-NUMERIC", "E-EXPONENT-MULTIDIGIT", "E-ROUNDTRIP", "E-ERROR-NEVER-GENERATED", "E-ACCEPTS-RANDOM", "E-STEP-INCONSISTENT", "E-VERIFY-MISSING", "E-VERIFY-AUTHOR", "E-VERIFY-REJECTS", "E-VERIFY-VACUOUS", "E-SESSION", "E-SESSION-ROLE", "E-SESSION-NOT-INDEPENDENT", "E-DISPLAY-KEY", "E-SOLUTION-IN-DISPLAY", "E-CHOICE-OPTIONS", "E-DISTRACTOR-UNCODED", "E-OPTION-DUPLICATE", "E-MATCHING-SIZE", "E-ACCENT-POLICY", "E-PROVA-A-PARAMS", "E-READ", "E-PHRASE", "E-MESSAGE", "E-QUOTE-REF"]
+      "error_codes": ["E-AUTH", "E-FILES", "E-TOO-LARGE", "E-STALE-BASE", "E-NOT-FOUND", "E-CHROME-BUSY", "E-CHROME-UNAVAILABLE", "E-SOURCE", "E-SCHEMA", "E-SKILL-UNKNOWN", "E-ASSET", "E-COMPOSITE", "E-TESTLET-SKILLS", "E-CODE-GLOBAL", "E-GEN-NONDETERMINISTIC", "E-GEN-THROW", "E-GEN-TIMEOUT", "E-GEN-SCHEMA", "E-GEN-POOL", "E-COMPONENT-NUMERIC", "E-EXPONENT-MULTIDIGIT", "E-ROUNDTRIP", "E-ERROR-NEVER-GENERATED", "E-ACCEPTS-RANDOM", "E-STEP-INCONSISTENT", "E-VERIFY-MISSING", "E-VERIFY-STALE", "E-VERIFY-AUTHOR", "E-VERIFY-REJECTS", "E-VERIFY-VACUOUS", "E-SESSION", "E-SESSION-ROLE", "E-SESSION-NOT-INDEPENDENT", "E-DISPLAY-KEY", "E-SOLUTION-IN-DISPLAY", "E-CHOICE-OPTIONS", "E-DISTRACTOR-UNCODED", "E-OPTION-DUPLICATE", "E-MATCHING-SIZE", "E-ACCENT-POLICY", "E-PROVA-A-PARAMS", "E-READ", "E-PHRASE", "E-MESSAGE", "E-QUOTE-REF"]
     },
     {
       "name": "work status",

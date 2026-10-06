@@ -3,10 +3,13 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"io"
 	"os"
 	"strings"
+
+	"banco/contract"
 )
 
 // version is the CLI build version; the contract version is read from the
@@ -40,6 +43,9 @@ var commands = []command{
 	{name: "health", run: runHealth},
 	{name: "status", run: runStatus},
 	{name: "syllabus lines", run: runSyllabusLines},
+	{name: "items list", run: runItemsList},
+	{name: "reference list", run: runReferenceList},
+	{name: "reference show", run: runReferenceShow},
 	{name: "work open", run: runWorkOpen},
 	{name: "work submit", run: runWorkSubmit},
 	{name: "work status", run: runWorkStatus},
@@ -67,6 +73,14 @@ func run(args []string, stdout, stderr io.Writer, getenv func(string) string) in
 func runWith(args []string, e *env) int {
 	if len(args) == 0 {
 		return reportError(e.stderr, newErr(ExitUsage, "E-USAGE", "command", "no command given", "banco schema"))
+	}
+	if args[0] == "help" {
+		return runHelp(e, nil)
+	}
+	for _, a := range args {
+		if a == "--help" || a == "-h" {
+			return runHelp(e, args)
+		}
 	}
 	// A command name may have several words ("brief show"); the longest match wins.
 	var match *command
@@ -104,4 +118,60 @@ func parseFlags(fs *flag.FlagSet, args []string) ([]string, error) {
 		rest = rest[1:]
 	}
 	return positional, nil
+}
+
+// runHelp lists the command names from the embedded contract. Local: no
+// network, no token. It is not a contract command (the contract stays frozen).
+func runHelp(e *env, args []string) int {
+	c, err := contract.Parse()
+	if err != nil {
+		return reportError(e.stderr, newErr(ExitServer, "E-CONTRACT", "", err.Error(), "go build -o bin/banco ./cli"))
+	}
+	// "banco work submit --help": the full contract entry of the longest matching command.
+	var words []string
+	for _, a := range args {
+		if !strings.HasPrefix(a, "-") {
+			words = append(words, a)
+		}
+	}
+	var best *contract.Command
+	for i := range c.Commands {
+		n := strings.Fields(c.Commands[i].Name)
+		if len(words) >= len(n) && strings.Join(words[:len(n)], " ") == c.Commands[i].Name &&
+			(best == nil || len(n) > len(strings.Fields(best.Name))) {
+			best = &c.Commands[i]
+		}
+	}
+	if best != nil {
+		json.NewEncoder(e.stdout).Encode(map[string]any{
+			"usage":       "banco " + best.Name + " [args] [flags]",
+			"command":     best.Name,
+			"args":        best.Args,
+			"flags":       best.Flags,
+			"error_codes": best.ErrorCodes,
+			"exit_codes":  c.ExitCodes,
+		})
+		return ExitOK
+	}
+	// "banco work --help": only the commands of that group.
+	group := strings.Join(words, " ")
+	type row struct {
+		Name  string   `json:"name"`
+		Args  []string `json:"args"`
+		Flags []string `json:"flags,omitempty"`
+	}
+	rows := []row{}
+	for _, cc := range c.Commands {
+		if group == "" || strings.HasPrefix(cc.Name, group+" ") {
+			rows = append(rows, row{cc.Name, cc.Args, cc.Flags})
+		}
+	}
+	if group != "" && len(rows) == 0 {
+		return reportError(e.stderr, newErr(ExitUsage, "E-USAGE", "command", "unknown command: "+group, "banco --help"))
+	}
+	json.NewEncoder(e.stdout).Encode(map[string]any{
+		"usage":    "banco <command> [args] [flags]; `banco schema` shows the full contract from the server",
+		"commands": rows,
+	})
+	return ExitOK
 }

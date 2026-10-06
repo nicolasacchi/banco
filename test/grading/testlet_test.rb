@@ -49,4 +49,21 @@ class TestletGradingTest < ActiveSupport::TestCase
     shown = @key.transform_values { |id| map.values.first.key(id) }
     assert_equal "correct", verdict(shown.to_json, id_map: map).verdict
   end
+
+  test "an all-wrong unit carries the typical error codes of its sub items (D-112)" do
+    spec = Struct.new(:sub_specs).new({ "a" => :a, "b" => :b, "c" => :c })
+    outcomes = { a: Grading::Result.new(verdict: "typical_error", grader: "closed", error_codes: [ "en_wrong_referent" ]),
+                 b: Grading::Result.new(verdict: "wrong", grader: "closed"),
+                 c: Grading::Result.new(verdict: "typical_error", grader: "closed", error_codes: [ "en_wrong_referent", "en_x" ]) }
+    stub = ->(sub, *_a, **_k) { outcomes.fetch(sub) }
+    Grading.stub(:grade_spec, stub) do
+      result = Grading::Testlet.grade(spec, { "a" => "1", "b" => "1", "c" => "1" })
+      assert_equal "typical_error", result.verdict
+      assert_equal %w[en_wrong_referent en_x], result.error_codes
+      outcomes[:b] = Grading::Result.new(verdict: "correct", grader: "closed")
+      mixed = Grading::Testlet.grade(spec, { "a" => "1", "b" => "1", "c" => "1" })
+      assert_equal "undetermined", mixed.verdict
+      assert_empty mixed.error_codes
+    end
+  end
 end

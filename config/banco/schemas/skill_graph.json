@@ -67,6 +67,30 @@
             },
             "uniqueItems": true
           },
+          "deferred_prerequisites": {
+            "type": "array",
+            "description": "D-091: a prerequisite in another subject whose graph is not approved yet; shown to the teacher, not part of the engine until a later revision moves it to prerequisites.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "skill": {
+                  "type": "string",
+                  "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+                },
+                "reason_it": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                }
+              },
+              "required": [
+                "skill",
+                "reason_it"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 20
+          },
           "composite_of": {
             "type": "array",
             "items": {
@@ -131,6 +155,30 @@
                     "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
                   },
                   "uniqueItems": true
+                },
+                "deferred_implicates": {
+                  "type": "array",
+                  "description": "D-091: an implicated skill of another subject that is not in an approved graph yet.",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "skill": {
+                        "type": "string",
+                        "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+                      },
+                      "reason_it": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 300
+                      }
+                    },
+                    "required": [
+                      "skill",
+                      "reason_it"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "maxItems": 20
                 }
               },
               "required": [
@@ -177,6 +225,15 @@
       },
       "minItems": 1
     },
+    "notes_it": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 400
+      },
+      "maxItems": 10
+    },
     "excluded": {
       "type": "array",
       "items": {
@@ -185,6 +242,10 @@
           "line": {
             "type": "integer",
             "minimum": 1
+          },
+          "fragment": {
+            "type": "string",
+            "minLength": 1
           },
           "reason_it": {
             "type": "string",

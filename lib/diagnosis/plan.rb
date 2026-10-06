@@ -14,13 +14,26 @@ module Diagnosis
 
     # One servable instance. skills has one entry, except a testlet (one per
     # sub-item). fingerprint is what "seen" is compared on.
-    Instance = Data.define(:id, :item, :skills, :component, :low_guess, :choice, :expected_seconds, :fingerprint, :kind) do
+    # flags: for a testlet {skill => {low_guess:, choice:}} from its sub items (D-096); nil otherwise.
+    Instance = Data.define(:id, :item, :skills, :component, :low_guess, :choice, :expected_seconds, :fingerprint, :kind, :flags) do
+      def initialize(flags: nil, **rest) = super(flags: flags, **rest)
+
+      # Whether the instance is hard to guess / a choice for this skill: a testlet
+      # decides per skill, any other instance for all of its skills.
+      def low_guess_for(skill) = flags&.dig(skill, :low_guess).then { |v| v.nil? ? low_guess : v }
+      def choice_for(skill) = flags&.dig(skill, :choice).then { |v| v.nil? ? choice : v }
       def skill = skills.first
       def testlet? = kind == "testlet"
       def short_answer? = kind == "short_answer"
     end
 
-    Entry = Data.define(:skill, :guest_of, :choice_only)
+    # items: the blueprint's item ids for the skill, in the order the author wants
+    # them served (D-138); [] when the plan does not know them.
+    Entry = Data.define(:skill, :guest_of, :choice_only, :items) do
+      def initialize(skill:, guest_of:, choice_only:, items: [])
+        super(skill: skill, guest_of: guest_of, choice_only: choice_only, items: items.map(&:to_s).freeze)
+      end
+    end
 
     SkillDef = Data.define(:key, :subject, :scope, :kind, :prerequisites, :composite_of, :errors) do
       # Everything this skill rests on: prerequisites and the parts of a composite.
@@ -157,7 +170,8 @@ module Diagnosis
         overrides = (blueprint["kind_overrides"] || []).to_h { |o| [ o["skill"], o["kind"] ] }
         skills = build_skills(graph, overrides)
         entries = blueprint.fetch("entries").map do |e|
-          Entry.new(skill: e["skill"], guest_of: e["guest_of_subject"], choice_only: e["choice_only_reason_it"].to_s != "")
+          Entry.new(skill: e["skill"], guest_of: e["guest_of_subject"], choice_only: e["choice_only_reason_it"].to_s != "",
+                    items: Array(e["items"]))
         end
         entries.each { |e| skills[e.skill] ||= flat_skill(e.skill, overrides) }
         budget = blueprint["budget"] || {}
@@ -224,6 +238,7 @@ module Diagnosis
         kind = spec["kind"] || (component == "short_answer" ? "short_answer" : "diagnosis_item")
         n = spec["instances"] || (kind == "short_answer" ? 1 : DEFAULT_INSTANCES_PER_ITEM)
         sk = spec["skills"] || skills
+        sk = sk.first(1) if kind == "testlet" # one attempt, counted for the first skill only (D-098)
         low = spec.fetch("low_guess") { Rules::V1.low_guess?(component, size: spec["size"]) }
         Array.new(n) do |i|
           Instance.new(id: "#{item}##{i + 1}", item: item, skills: sk, component: component, low_guess: low,

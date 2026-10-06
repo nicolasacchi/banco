@@ -10,11 +10,18 @@ module Validation
     CHOICE_RANGE = (3..5)
     ORDERING_RANGE = (3..7)
     MIN_PAIRS = 4
+    MIN_CATEGORIES = 3
+    # Two categories (physical or chemical, systematic or random) are allowed from 6 rows: 2^6 = 64 blind guesses (D-093).
+    MIN_ROWS_TWO_CATEGORIES = 6
 
     # label: where the instance is, in finding fields ("generated" or
     # "/instances/2"); seed is set for generated ones; files: the revision's files,
     # for the asset and SVG text checks.
-    def initialize(unit, context:, files: {})
+    # A key option this long (plain characters) must not appear in the passage of a testlet (D-094).
+    PASSAGE_LEAK_MIN_CHARS = 20
+
+    def initialize(unit, context:, files: {}, passage: nil)
+      @passage = passage
       @unit = unit
       @context = context
       @files = files
@@ -36,6 +43,7 @@ module Validation
       problems = Answers.shape_problems(@unit.component, answer, display)
       problems.each { |p| f.add("E-GEN-SCHEMA", "#{label}/answer", p, rule: "answer_shape", seed: seed) }
       errors(inst, label, seed, f)
+      accept_rules(inst, label, seed, f)
       choice_rules(display, answer, inst, label, seed, f) if @unit.component == "choice" && problems.empty?
       leaks(display, answer, inst, label, seed, f) if problems.empty?
       component_fit(answer, inst, label, seed, f)
@@ -70,7 +78,20 @@ module Validation
         l = Array(display["left"]).size
         r = Array(display["right"]).size
         f.add("E-MATCHING-SIZE", "#{label}/display/left", "a matching has at least #{MIN_PAIRS} pairs, not #{l}", count: l, seed: seed) if l < MIN_PAIRS
-        f.add("E-MATCHING-SIZE", "#{label}/display/right", "the right column has n+1 entries (#{l + 1}), not #{r}", count: r, seed: seed) if r != l + 1
+        if display["reuse_right"] == true
+          # A classification (D-092): rows share categories, so the right column is shorter than the left.
+          unless (r >= MIN_CATEGORIES || (r == 2 && l >= MIN_ROWS_TWO_CATEGORIES)) && r < l
+            f.add("E-MATCHING-SIZE", "#{label}/display/right", "a classification has 3 or more categories (2 from #{MIN_ROWS_TWO_CATEGORIES} rows) and fewer categories than rows (#{l}), not #{r}", count: r, seed: seed)
+          end
+        elsif r != l + 1
+          f.add("E-MATCHING-SIZE", "#{label}/display/right", "the right column has n+1 entries (#{l + 1}), not #{r}", count: r, seed: seed)
+        end
+        # The right column is drawn as <option> elements: no markup renders there (D-081).
+        Array(display["right"]).each_with_index do |e, i|
+          next unless e.is_a?(Hash) && e["text"].to_s.match?(/[$\\]|\*\*/)
+
+          f.add("E-MATCHING-RIGHT-MARKUP", "#{label}/display/right/#{i}/text", "the right column is plain text (no $, no backslash, no **): write x \u2264 -2, not LaTeX", seed: seed)
+        end
       end
     end
 
@@ -79,9 +100,42 @@ module Validation
     def errors(inst, label, seed, f)
       known = @unit.catalogue_codes
       Array(inst["errors"]).each_with_index do |e, i|
+        round_to_rules(e, inst, "#{label}/errors/#{i}", seed, f) if e.key?("round_to")
         next if known.include?(e["code"])
 
         f.add("E-GEN-SCHEMA", "#{label}/errors/#{i}", "the error code #{e['code'].inspect} is not in the item's error_catalogue", rule: "code_not_in_catalogue", seed: seed)
+      end
+    end
+
+    # round_to (D-135) belongs to number items and must not swallow the key: a rounded
+    # correct answer would be graded as the error.
+    def round_to_rules(error, inst, field, seed, f)
+      if @unit.component != "number"
+        f.add("E-GEN-SCHEMA", "#{field}/round_to", "round_to on an error belongs to number items", rule: "round_to_component", seed: seed)
+        return
+      end
+      n = error["round_to"]
+      key = Grading::Closed::Numbers.expected_value(inst["answer"])
+      declared = Grading::Closed::Numbers.expected_value(error["value"])
+      if key.round(n, half: :up) == declared.round(n, half: :up)
+        f.add("E-GEN-SCHEMA", "#{field}/round_to", "the key rounds to the same value at #{n} decimals: the error would match a correct rounded answer", rule: "round_to_key", seed: seed)
+      end
+    rescue ArgumentError, TypeError, ZeroDivisionError
+      nil
+    end
+
+    # An instance's own accept list (D-081) belongs to normalized_text, like the item's.
+    def accept_rules(inst, label, seed, f)
+      return if inst["accept"].nil?
+
+      if @unit.component != "normalized_text"
+        f.add("E-GEN-SCHEMA", "#{label}/accept", "accept on an instance belongs to normalized_text items", rule: "accept_component", seed: seed)
+        return
+      end
+      Array(inst["accept"]).each_with_index do |text, i|
+        next unless Answers.punctuation_only?(text)
+
+        f.add("E-SCHEMA", "#{label}/accept/#{i}", "an accepted text that is only punctuation normalizes to nothing: no answer could match it", seed: seed)
       end
     end
 
@@ -122,32 +176,51 @@ module Validation
 
     def leaks(display, answer, inst, label, seed, f)
       component = @unit.component
+      prompt = @unit.body["prompt"].is_a?(Hash) ? @unit.body["prompt"].slice("stem_it", "table", "quote", "figure") : {}
       if component == "choice"
         key = Array(display["options"]).find { |o| o["id"] == answer.to_s }
         needles = key ? [ key["text"] ] : []
         scope = readable_strings(display, include_stem: true, include_options: false)
+        # The item's own prompt is read with every instance (D-081).
+        scope += prefixed(readable_strings(prompt, include_stem: true, include_options: false), "prompt")
       else
-        needles = Answers.key_texts(component, answer, accept: @unit.accept)
+        needles = Answers.key_texts(component, answer, accept: @unit.accept + Array(inst["accept"]))
         needles += ordering_texts(display, answer) + matching_texts(display, answer)
         scope = readable_strings(display, include_stem: false, include_options: false)
-        stem = display["stem_it"].to_s
-        needles.each do |n|
-          next unless Answers.contains?(stem, n)
+        scope += prefixed(readable_strings(prompt, include_stem: false, include_options: false), "prompt")
+        [ [ display["stem_it"], "#{label}/display/stem_it" ], [ prompt["stem_it"], "#{label}/prompt/stem_it" ] ].each do |stem, field|
+          # A cloze's bracketed cue right after the gap, "___ (swim)", is the material, not a leak (D-110).
+          text = component == "normalized_text" ? stem.to_s.gsub(/«[^»]*»/, " ").gsub(/_{2,}\s*\([^)]*\)/, " ___ ") : stem.to_s
+          next unless needles.any? { |n| Answers.contains?(text, n) }
 
-          f.add("W-ANSWER-IN-STEM", "#{label}/display/stem_it", "the expected answer appears in the instruction", seed: seed)
-          break
+          f.add("W-ANSWER-IN-STEM", field, "the expected answer appears in the instruction", seed: seed)
         end
       end
+      passage_leak(needles, label, seed, f) if component == "choice"
       final = inst.dig("solution", "final").to_s
       needles += [ final ] if Answers.plain(final).length >= Answers::MIN_LEAK_CHARS && component != "choice"
       needles.each do |n|
         hit = scope.find { |_path, text| Answers.contains?(text, n) }
         next unless hit
 
-        f.add("E-SOLUTION-IN-DISPLAY", "#{label}/display#{hit[0]}", "the key or the solution appears where the student reads (#{n.to_s[0, 30].inspect})", seed: seed)
+        where = hit[0].start_with?("prompt:") ? "#{label}/prompt#{hit[0].delete_prefix('prompt:')}" : "#{label}/display#{hit[0]}"
+        f.add("E-SOLUTION-IN-DISPLAY", where, "the key or the solution appears where the student reads (#{n.to_s[0, 30].inspect})", seed: seed)
         break
       end
     end
+
+    # A long key option stated word for word in the testlet passage (D-094). Short keys (a name
+    # in the story) are too common in a passage to be an error.
+    def passage_leak(needles, label, seed, f)
+      return if @passage.to_s.empty?
+
+      needle = needles.find { |n| Answers.plain(n).length >= PASSAGE_LEAK_MIN_CHARS && Answers.contains?(@passage, n) }
+      return unless needle
+
+      f.add("E-SOLUTION-IN-DISPLAY", "#{label}/passage_it", "the key option appears word for word in the passage (#{needle.to_s[0, 30].inspect})", seed: seed)
+    end
+
+    def prefixed(strings, tag) = strings.map { |path, text| [ "#{tag}:#{path}", text ] }
 
     # "A, B, C" in key order, with the usual separators.
     def ordering_texts(display, answer)
@@ -199,6 +272,7 @@ module Validation
 
     # ---- the solution agrees with the key ---------------------------------------
 
+    THOUSANDS = /(?<![\d.,])[1-9]\d{0,2}(?:\.\d{3})+(?!\d)/
     NUMBER = %r{[-−]?\d+(?:\s*/\s*\d+|[.,]\d+)?}
 
     def steps(inst, label, seed, f)
@@ -206,7 +280,10 @@ module Validation
       case @unit.component
       when "number", "fraction"
         expected = Answers.rational(inst["answer"].is_a?(Hash) ? { "n" => inst["answer"]["n"], "d" => inst["answer"]["d"] } : inst["answer"])
-        values = final.gsub(/\\frac\{(\d+)\}\{(\d+)\}/, '\1/\2').scan(NUMBER).filter_map { |t| Answers.rational(t.tr("−", "-").delete(" ")) }
+        text = final.delete("$").gsub("{,}", ",").gsub(/\\d?frac\{(\d+)\}\{(\d+)\}/, '\1/\2')
+        # "5.300,00 €": read the dot as the thousands separator as well as a decimal point.
+        grouped = text.gsub(THOUSANDS) { |g| g.delete(".") }
+        values = [ text, grouped ].uniq.flat_map { |t| t.scan(NUMBER) }.filter_map { |t| Answers.rational(t.tr("−", "-").delete(" ")) }
         inconsistent = expected && values.any? && values.none? { |v| v == expected }
       when "choice"
         options = Array(inst.dig("display", "options"))

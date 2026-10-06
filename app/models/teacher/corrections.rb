@@ -77,7 +77,7 @@ module Teacher
 
     def prompt_of(body, instance)
       display = JSON.parse(instance.display_json)
-      [ body.dig("prompt", "stem_it"), display["stem_it"], (body["passage_it"] if body["kind"] == "testlet") ].compact.join(" ")
+      [ body.dig("prompt", "stem_it"), display["stem_it"], body["passage_it"] ].compact.join(" ")
     end
 
     def short_answer(attempt)

@@ -23,6 +23,19 @@
           "text": "una riga non citata"
         }
       ],
+      "partial": [
+        {
+          "line": 1,
+          "text": "operazioni con i numeri relativi",
+          "cited": [
+            "numeri relativi"
+          ],
+          "excluded": [],
+          "unaccounted": [
+            "operazioni con i"
+          ]
+        }
+      ],
       "skills": {
         "total": 6,
         "with_items": 0,
@@ -34,7 +47,8 @@
           "math.factoring",
           "math.decimal-operations"
         ]
-      }
+      },
+      "item_errors_not_in_graph": []
     }
   }
 }

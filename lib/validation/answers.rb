@@ -34,6 +34,18 @@ module Validation
       rational.negative? ? "-#{body}" : body
     end
 
+    # "5,2·10^-4" for a finite decimal (1 <= |a| < 10); "0" for zero; nil otherwise.
+    def scientific_string(rational)
+      return "0" if rational.zero?
+
+      exponent = 0
+      m = rational.abs
+      (m /= 10; exponent += 1) while m >= 10
+      (m *= 10; exponent -= 1) while m < 1
+      mant = decimal_string(rational.negative? ? -m : m)
+      mant && "#{mant}\u00B710^#{exponent}"
+    end
+
     # [raw, problem]: the input a student would give for +value+, or a problem
     # description when the value cannot be one for this component.
     def raw_for(component, value, form: [])
@@ -42,7 +54,7 @@ module Validation
         r = rational(value)
         return [ nil, "the value is not a number" ] unless r
 
-        text = decimal_string(r)
+        text = form.include?("scientific") ? scientific_string(r) : decimal_string(r)
         text ? [ text, nil ] : [ nil, "the value is not a finite decimal: use the fraction component" ]
       when "fraction" then fraction_raw(value, form)
       when "expression" then [ value.is_a?(Hash) ? value["latex"].to_s : value.to_s, nil ]
@@ -107,8 +119,12 @@ module Validation
         left = Array(display["left"]).map { |o| o["id"] }
         right = Array(display["right"]).map { |o| o["id"] }
         pairs = matching_raw(answer).first
-        if pairs.nil? || pairs.keys.sort != left.sort || !(pairs.values - right).empty? || pairs.values.uniq.size != pairs.size
-          [ "the key must pair every left id with its own right id" ]
+        if pairs.nil? || pairs.keys.sort != left.sort || !(pairs.values - right).empty?
+          [ "the key must pair every left id with a right id" ]
+        elsif display["reuse_right"] == true
+          pairs.values.uniq.size >= 2 ? [] : [ "a classification key uses at least 2 different categories" ]
+        elsif pairs.values.uniq.size != pairs.size
+          [ "the key must pair every left id with its own right id (set display.reuse_right for a classification)" ]
         else
           []
         end
@@ -120,7 +136,12 @@ module Validation
 
     # ---- leak scan ----------------------------------------------------------
 
-    def squash(text) = text.to_s.unicode_normalize(:nfkc).downcase.gsub(/[[:space:]]+/, "").gsub(/\\(left|right)/, "")
+    # Whitespace, \left/\right, a product dot and the braces of a one-token exponent
+    # are not part of what a reader sees as the same expression: x^{2}y, x^2y, 4\cdot x^2y.
+    def squash(text)
+      text.to_s.unicode_normalize(:nfkc).downcase.gsub(/[[:space:]]+/, "").gsub(/\\(left|right)/, "")
+          .gsub(/\\(?:cdot|times)|\*/, "").gsub(/\^\{([[:alnum:]]+)\}/, '^\1').gsub(/\^\(([[:alnum:]]+)\)/, '^\1')
+    end
     def plain(text) = text.to_s.unicode_normalize(:nfkc).downcase.gsub(/[[:space:]]+/, " ").strip
 
     # Does +needle+ occur in +haystack+ as a whole token (not inside a longer word
@@ -133,7 +154,7 @@ module Validation
     end
 
     def token_match?(haystack, needle)
-      haystack.match?(/(?<![[:alnum:]])(?<![,.]\d)#{Regexp.escape(needle)}(?![[:alnum:]])(?![,.]\d)/)
+      haystack.match?(/(?<![[:alnum:]])(?<![,.]\d)(?<!\d\.)#{Regexp.escape(needle)}(?![[:alnum:]])(?![,.]\d)/)
     end
 
     # The key texts of a (non-choice) instance, long enough to be a leak.
@@ -142,7 +163,7 @@ module Validation
         case component
         when "number"
           r = rational(answer)
-          [ r && decimal_string(r) ]
+          [ r && decimal_string(r), r && scientific_string(r) ] + accept.map { |a| (x = rational(a)) && decimal_string(x) }
         when "fraction"
           r = rational(answer.is_a?(Hash) ? { "n" => answer["n"], "d" => answer["d"] } : answer)
           r ? [ "#{r.numerator}/#{r.denominator}", "#{r.numerator} / #{r.denominator}", "\\frac{#{r.numerator}}{#{r.denominator}}" ] : []

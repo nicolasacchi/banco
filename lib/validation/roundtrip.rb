@@ -25,6 +25,7 @@ module Validation
       end
       random_answers(instances.first, label) if instances.any? && Rules.list(:roundtrip, :random_components).include?(@unit.component)
       check_tests(instances.first, tests, label) if tests && instances.any?
+      instances.each_with_index { |inst, i| check_instance_tests(inst, "#{label}/#{i}") if inst["tests"] }
     rescue Grading::Expression::Unavailable => e
       raise Unavailable, e.message
     end
@@ -81,11 +82,19 @@ module Validation
         candidate = random_candidate(rng)
         next if candidate.nil? || candidate[:value] == key || candidate[:value].to_s == key_raw.to_s
 
-        if grade(inst, candidate[:raw]).verdict == "correct"
+        if grade(inst, candidate[:raw]).verdict == "correct" && !equal_in_value?(inst, candidate[:raw])
           @findings.add("E-ACCEPTS-RANDOM", "#{label}/0/answer", "the grader accepted a random answer (#{candidate[:raw].inspect})", rule: "random")
           return
         end
       end
+    end
+
+    # 1x+4 and 1(x+4) are the answer x+4 written another way, not a wrong answer the grader let through:
+    # grade against the key with no form and no declared errors, which compares values only (D-080).
+    def equal_in_value?(inst, raw)
+      return false unless @unit.component == "expression"
+
+      Grading::Expression.grade(Units.spec_for(@unit, @subject, inst, "form" => [], "errors" => []), raw).verdict == "correct"
     end
 
     def key_value(answer)
@@ -114,7 +123,18 @@ module Validation
 
     # ---- tests of the item --------------------------------------------------------------
 
+    # D-085: the instance's own must_accept and must_reject (the item's tests only see the first).
+    def check_instance_tests(inst, label)
+      check_lists(inst, inst["tests"], label)
+    end
+
     def check_tests(inst, tests, label)
+      check_lists(inst, tests, label)
+      verdict = grade(inst, blank_raw).verdict
+      @findings.add("E-ROUNDTRIP", "#{label}/tests/blank", "a blank answer comes back #{verdict}, not invalid", rule: "blank") unless verdict == "invalid"
+    end
+
+    def check_lists(inst, tests, label)
       Array(tests["must_accept"]).each do |raw|
         verdict = grade(inst, raw).verdict
         @findings.add("E-ROUNDTRIP", "#{label}/tests/must_accept", "must_accept #{raw.inspect} comes back #{verdict}", rule: "must_accept") unless verdict == "correct"
@@ -123,8 +143,6 @@ module Validation
         verdict = grade(inst, raw).verdict
         @findings.add("E-ROUNDTRIP", "#{label}/tests/must_reject", "must_reject #{raw.inspect} is accepted", rule: "must_reject") if verdict == "correct"
       end
-      verdict = grade(inst, blank_raw).verdict
-      @findings.add("E-ROUNDTRIP", "#{label}/tests/blank", "a blank answer comes back #{verdict}, not invalid", rule: "blank") unless verdict == "invalid"
     end
 
     def blank_raw

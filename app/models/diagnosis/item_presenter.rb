@@ -62,13 +62,16 @@ module Diagnosis
       prompt = body["prompt"] || {}
       out = {
         component: component,
+        passage_it: body["passage_it"],
         stem_it: prompt["stem_it"],
         instance_stem_it: display["stem_it"]
       }
       %w[table quote].each { |k| out[k.to_sym] = display[k] || prompt[k] }
       out[:figure] = figure(display["figure"] || prompt["figure"])
       %w[options elements left right].each { |k| out[k.to_sym] = display[k] if display[k] }
-      out[:unit] = body["unit"] if body["unit"]
+      out[:reuse_right] = true if display["reuse_right"] == true
+      out[:unit] = display["unit"] || body["unit"] if display["unit"] || body["unit"]
+      out[:scientific] = true if component == "number" && Array(body["form"]).include?("scientific")
       out[:mixed] = true if component == "fraction" && Array(body["form"]).include?("mixed")
       out[:accents] = ACCENT_SETS[@subject.key] if component == "normalized_text"
       out[:input] = @expression_input if component == "expression"

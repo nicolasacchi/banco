@@ -14,6 +14,7 @@
 
   <section data-sitting-target="intro">
     <h1><%= @second_part ? t("sitting.title_second", subject: @subject.name_it) : t("sitting.title", subject: @subject.name_it) %></h1>
+    <% if @intro_note %><p id="intro-note"><%= @intro_note %></p><% end %>
     <ul class="plain">
       <li><%= t("sitting.intro.not_a_grade") %></li>
       <li><%= t("sitting.intro.duration", minutes: @minutes) %></li>

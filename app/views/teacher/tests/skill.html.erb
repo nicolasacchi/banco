@@ -9,6 +9,12 @@
   <% if @row.not_assessed_reason_it %>
     <p class="notice"><%= t("teacher.skill.not_assessed") %> <%= @row.not_assessed_reason_it %></p>
   <% end %>
+  <% if @row.redo_reserve == false %>
+    <p class="notice" data-redo-reserve="false"><%= t("teacher.skill.no_redo_reserve") %></p>
+  <% end %>
+  <% if @row.choice_only_reason_it.present? %>
+    <p class="notice" id="choice-only-reason"><%= t("teacher.skill.choice_only") %> <%= @row.choice_only_reason_it %></p>
+  <% end %>
   <% blocker = decision_blocker %>
   <div class="cards">
     <% @cards.each do |card| %>
@@ -40,8 +46,8 @@
               </ul>
             <% end %>
             <% if sample.steps.any? %>
-              <ol class="steps"><% sample.steps.each do |s| %><li><%= s %></li><% end %></ol>
-              <% if sample.final %><p><%= t("teacher.skill.final") %> <%= sample.final %></p><% end %>
+              <ol class="steps"><% sample.steps.each do |s| %><li data-markup="inline"><%= s %></li><% end %></ol>
+              <% if sample.final %><p><%= t("teacher.skill.final") %> <span data-markup="inline"><%= sample.final %></span></p><% end %>
             <% end %>
           </section>
         <% end %>

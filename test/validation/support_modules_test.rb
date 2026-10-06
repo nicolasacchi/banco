@@ -4,7 +4,7 @@ require "test_helper"
 # canonical form.
 class SupportModulesTest < ActiveSupport::TestCase
   test "the thresholds are the ones of the brief, and the file has a version" do
-    assert_equal 1, Validation::Rules.version
+    assert_equal 6, Validation::Rules.version
     assert_equal 24, Validation::Rules.get(:generator, :pool)
     assert_equal 200, Validation::Rules.get(:generator, :seeds)
     assert_equal 20, Validation::Rules.get(:generator, :min_distinct_displays)
@@ -77,10 +77,19 @@ class SupportModulesTest < ActiveSupport::TestCase
     assert Validation::Answers.contains?("il valore e 125 euro", "125")
     assert_not Validation::Answers.contains?("il valore e 1125 euro", "125")
     assert_not Validation::Answers.contains?("il valore e 12,5 euro", "2,5")
+    assert_not Validation::Answers.contains?("totale 9.150,00 €", "150,00 €")
+    assert Validation::Answers.contains?("totale 150,00 €", "150,00 €")
     assert Validation::Answers.contains?("vale 3,5 metri", "3,5")
     assert_not Validation::Answers.contains?("la parola capitale", "capi")
     assert_not Validation::Answers.contains?("ab", "ab"), "under 3 characters is never a leak"
     assert Validation::Answers.contains?("x  +  3 = 9", "x+3")
+  end
+
+  test "the leak scan ignores braces of a one-token exponent and a product dot" do
+    assert Validation::Answers.contains?("Riduci $4x^{2}y$ e basta.", "4x^2y")
+    assert Validation::Answers.contains?("Riduci $4x^2y$", "4x^{2}y")
+    assert Validation::Answers.contains?("Riduci $4 \\cdot x^{2}y$", "4x^2y")
+    assert_not Validation::Answers.contains?("Riduci $4x^{2}y$", "4x^3y")
   end
 
   test "canonical JSON sorts keys, so the fingerprint ignores order" do
@@ -89,5 +98,19 @@ class SupportModulesTest < ActiveSupport::TestCase
     assert_equal Validation::Canonical.dump(a), Validation::Canonical.dump(b)
     assert_equal Validation::Canonical.fingerprint(a), Validation::Canonical.fingerprint(b)
     assert_not_equal Validation::Canonical.fingerprint(a), Validation::Canonical.fingerprint(a.merge("b" => 2))
+  end
+
+  test "a fingerprint ignores the stored order and ids of shuffled columns" do
+    opts = ->(order, ids) { order.each_with_index.map { |t, i| { "id" => ids[i], "text_it" => t } } }
+    f = ->(d) { Validation::Canonical.fingerprint(d) }
+    a = { "stem_it" => "Q", "options" => opts.([ "uno", "due", "tre" ], %w[a b c]) }
+    b = { "stem_it" => "Q", "options" => opts.([ "tre", "uno", "due" ], %w[x y z]) }
+    assert_equal f.(a), f.(b)
+    assert_not_equal f.(a), f.(a.merge("options" => opts.([ "uno", "due", "quattro" ], %w[a b c])))
+    assert_not_equal f.(a), f.(a.merge("stem_it" => "R"))
+    m = ->(l, r) { { "left" => l.map { |t| { "id" => t, "text_it" => t } }, "right" => r.map { |t| { "id" => t, "text_it" => t } } } }
+    assert_equal f.(m.(%w[1 2], %w[x y z])), f.(m.(%w[2 1], %w[z x y]))
+    sub = ->(o) { { "sub_items" => [ { "id" => "s1", "display" => { "elements" => o } } ] } }
+    assert_equal f.(sub.([ { "id" => "e1", "t" => "a" }, { "id" => "e2", "t" => "b" } ])), f.(sub.([ { "id" => "e1", "t" => "b" }, { "id" => "e2", "t" => "a" } ]))
   end
 end

@@ -20,7 +20,9 @@ module Validation
         graph_present: !graph.nil?,
         skill: ->(key) { skills[key] || approved_skill(key) },
         approved_skill: ->(key) { approved_skill(key) },
+        draft_skill: ->(key) { draft_skill(key) },
         source_line: ->(source, number) { source_line(source, number) },
+        source_section: ->(source, number) { source_section(source, number) },
         reference_body: ->(key) { ReferenceText.find_by(key: key)&.body }
       )
     end
@@ -39,12 +41,38 @@ module Validation
       JSON.parse(revision.body_json)["skills"].find { |s| s["key"] == key }
     end
 
+    # A skill of the latest graph of its own subject, approved or not (a guest
+    # entry in a draft; the approval gate still wants the approved graph).
+    def draft_skill(key)
+      owner = key.to_s.split(".").first
+      return nil if owner == @subject.key
+
+      subject = Subject.find_by(key: owner) or return nil
+      revision = SkillGraphRevision.where(subject: subject).order(:seq).last or return nil
+      JSON.parse(revision.body_json)["skills"].find { |s| s["key"] == key }
+    end
+
     def source_line(source, number)
       @line_cache[[ source, number ]] ||= begin
         src = SyllabusSource.find_by(key: source)
         line = src && SyllabusLine.find_by(syllabus_source: src, number: number)
-        line ? { text: line.text, origin: line.origin } : false
+        line ? { text: line.text, origin: line.origin, marker: line.marker, block_marker: block_markers(src)[number]&.fetch(:marker) } : false
       end || nil
+    end
+
+    def source_section(source, number)
+      @sections ||= {}
+      @sections[source] ||= begin
+        src = SyllabusSource.find_by(key: source)
+        src ? Syllabus::Sections.call(SyllabusLine.where(syllabus_source: src).order(:number).to_a) : {}
+      end
+      @sections[source][number]
+    end
+
+    # Inherited star markers of a source, computed once per validation.
+    def block_markers(src)
+      @block_markers ||= {}
+      @block_markers[src.id] ||= Syllabus::BlockMarker.call(SyllabusLine.where(syllabus_source: src).order(:number).to_a)
     end
   end
 end

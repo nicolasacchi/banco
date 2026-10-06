@@ -57,7 +57,7 @@ class GradingEvidenceTest < ActiveSupport::TestCase
     declared = spec(skill: "math.a", form_skill: "math.b")
     assert_equal [ { kind: :tail_suspect_on_form_skill, skill: "math.b" } ], Grading::Evidence.observations(verdict: "wrong_form", spec: declared)
     flag = spec(accent_policy: "flag")
-    assert_equal [ { kind: :observation_on_orthography_skill, skill: nil } ],
+    assert_equal [ { kind: :observation_on_orthography_skill, skill: "spanish.accents" } ],
                  Grading::Evidence.observations(verdict: "typical_error", spec: flag, error_codes: [ "es_accents" ])
     assert_empty Grading::Evidence.observations(verdict: "correct", spec: flag)
     assert_empty Grading::Evidence.observations(verdict: "wrong", spec: flag)

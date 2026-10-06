@@ -104,6 +104,20 @@ func TestWorkOpenWritesTheFolderAndRemembersTheBase(t *testing.T) {
 	}
 }
 
+func TestWorkOpenWarnsInsideAGitWorkTree(t *testing.T) {
+	srv, _ := sequenceServer(t, [2]string{"200", `{"revision_id":1,"files":{"item.json":"{}"}}`})
+	repo := t.TempDir()
+	write(t, repo, ".git/HEAD", "ref: refs/heads/main")
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1", "--dir", filepath.Join(repo, "eq-1"))
+	if r.exit != ExitOK || !strings.Contains(r.stdout, `"warning"`) {
+		t.Fatalf("exit %d, want a warning: %s", r.exit, r.stdout)
+	}
+	out := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1", "--dir", filepath.Join(t.TempDir(), "x"))
+	if strings.Contains(out.stdout, `"warning"`) {
+		t.Errorf("no warning expected outside a repo: %s", out.stdout)
+	}
+}
+
 func TestWorkOpenAsVerifierWritesInstancesAndTestsButNoGenerator(t *testing.T) {
 	srv, seen := sequenceServer(t, [2]string{"200", `{"item":"eq-1","revision_id":7,"seq":1,"status":"failed","files":{"item.json":"{}"},"instances":[{"answer":"7"}],"tests":{"blank":"invalid"}}`})
 	dir := filepath.Join(t.TempDir(), "v")
@@ -249,13 +263,16 @@ func TestWorkSubmitConflictsAndUsage(t *testing.T) {
 	if r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "submit", dir); r.exit != ExitConflict {
 		t.Errorf("exit %d", r.exit)
 	}
-	busy, _ := sequenceServer(t, [2]string{"409", `{"code":"E-CHROME-BUSY","field":"chrome","message":"Chrome is busy","next":"retry in 30 s"}`})
+	busy, busySeen := sequenceServer(t, [2]string{"409", `{"code":"E-CHROME-BUSY","field":"chrome","message":"Chrome is busy","next":"retry in 30 s"}`})
 	r := runCLI(t, busy.URL, envToken("bnc_x"), "work", "submit", dir, "--dry-run")
 	if r.exit != ExitConflict {
 		t.Errorf("busy: exit %d", r.exit)
 	}
 	if e := assertErrJSON(t, r.stderr, "E-CHROME-BUSY"); e.Next != "retry in 30 s" {
 		t.Errorf("next = %q", e.Next)
+	}
+	if len(*busySeen) != 7 {
+		t.Errorf("a busy dry run is tried 1+6 times, saw %d", len(*busySeen))
 	}
 	empty := t.TempDir()
 	for _, args := range [][]string{{"work", "submit"}, {"work", "submit", "/no/such/dir"}, {"work", "submit", empty}} {
@@ -302,6 +319,18 @@ func TestWorkStatusWaitFailedExitsThree(t *testing.T) {
 	}
 	if !strings.Contains(r.stdout, `"failed"`) {
 		t.Errorf("the status is still printed: %q", r.stdout)
+	}
+}
+
+func TestWorkStatusWaitVerifyMissingOnlyPointsAtTheVerifier(t *testing.T) {
+	srv, _ := sequenceServer(t, [2]string{"200", `{"revision_id":8,"status":"failed","settled":true,"codes":["E-VERIFY-MISSING"]}`})
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "status", "8", "--wait")
+	if r.exit != ExitValidation {
+		t.Fatalf("exit %d", r.exit)
+	}
+	e := assertErrJSON(t, r.stderr, "E-VERIFY-MISSING")
+	if !strings.Contains(e.Next, "--role verifier") || strings.Contains(e.Next, "fix the files") {
+		t.Errorf("next = %q", e.Next)
 	}
 }
 
@@ -352,5 +381,74 @@ func TestNoCommandApproves(t *testing.T) {
 				t.Errorf("%q: no command takes a decision", c.name)
 			}
 		}
+	}
+}
+
+func TestWorkSubmitDryRunRetriesBusyThenPasses(t *testing.T) {
+	srv, seen := sequenceServer(t,
+		[2]string{"409", `{"code":"E-CHROME-BUSY","field":"chrome","message":"Chrome is busy","next":"retry in 30 s"}`},
+		[2]string{"409", `{"code":"E-CHROME-BUSY","field":"chrome","message":"Chrome is busy","next":"retry in 30 s"}`},
+		[2]string{"200", `{"dry_run":true,"status":"passed","codes":[]}`})
+	dir := t.TempDir()
+	write(t, dir, "item.json", "{}")
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "submit", dir, "--dry-run")
+	if r.exit != 0 || len(*seen) != 3 {
+		t.Errorf("exit %d after %d tries; stderr %s", r.exit, len(*seen), r.stderr)
+	}
+}
+
+func TestWorkOpenReopenRemovesFilesTheRevisionDoesNotHave(t *testing.T) {
+	srv, _ := sequenceServer(t, [2]string{"200", `{"revision_id":1,"files":{"item.json":"{}"}}`}, [2]string{"200", `{"revision_id":1,"files":{"item.json":"{}"}}`})
+	dir := filepath.Join(t.TempDir(), "d")
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1", "--dir", dir); r.exit != ExitOK {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	write(t, dir, "verify.mjs", "stale")
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1", "--dir", dir); r.exit != ExitOK {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	if exists(dir, "verify.mjs") {
+		t.Error("a stale verify.mjs survived the reopen")
+	}
+}
+
+func TestWorkOpenDefaultsToTmpdirNotTheCurrentDirectory(t *testing.T) {
+	srv, _ := sequenceServer(t, [2]string{"200", `{"item":"eq-1","revision_id":7,"seq":2,"status":"failed","files":{"item.json":"{}"},"validation":{}}`})
+	tmp := t.TempDir()
+	t.Setenv("TMPDIR", tmp)
+	cwd := t.TempDir()
+	t.Chdir(cwd)
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1", "--json")
+	if r.exit != ExitOK {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	want := filepath.Join(tmp, "banco-work", "eq-1")
+	if read(t, want, "item.json") != "{}" {
+		t.Errorf("folder %s not written", want)
+	}
+	if exists(cwd, "eq-1") {
+		t.Error("the current directory got a folder")
+	}
+}
+
+func TestWorkOpenVerifierDefaultsToItsOwnFolderAndRefusesTheAuthors(t *testing.T) {
+	srv, _ := sequenceServer(t, [2]string{"200", `{"revision_id":7,"files":{"item.json":"{}","generator.mjs":"g"}}`}, [2]string{"200", `{"revision_id":7,"files":{"item.json":"{}"}}`}, [2]string{"200", `{"revision_id":7,"files":{"item.json":"{}"}}`})
+	tmp := t.TempDir()
+	t.Setenv("TMPDIR", tmp)
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1"); r.exit != ExitOK {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1", "--role", "verifier"); r.exit != ExitOK {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	author := filepath.Join(tmp, "banco-work", "eq-1")
+	if read(t, author, "generator.mjs") != "g" {
+		t.Error("the verifier open touched the author's folder")
+	}
+	if !exists(filepath.Join(tmp, "banco-work", "eq-1.verifier"), "item.json") {
+		t.Error("the verifier folder is missing")
+	}
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1", "--role", "verifier", "--dir", author); r.exit != ExitUsage {
+		t.Errorf("a verifier open into the author's folder exited %d", r.exit)
 	}
 }

@@ -70,7 +70,12 @@ func (c *client) doWith(command, method, path string, payload []byte, headers ma
 		return nil, newErr(ExitServer, "E-NETWORK", "", err.Error(), "")
 	}
 
-	if got := resp.Header.Get("X-Banco-Contract"); got != contract.Digest() {
+	got := resp.Header.Get("X-Banco-Contract")
+	if got == "" {
+		// No contract header: not a banco server answering (restarting, proxy error page).
+		return nil, newErr(ExitServer, "E-NETWORK", "", fmt.Sprintf("the server did not answer as banco (HTTP %d, no contract header); it may be restarting", resp.StatusCode), "retry in 60 s, then banco health")
+	}
+	if got != contract.Digest() {
 		return nil, newErr(ExitServer, "E-CONTRACT", "X-Banco-Contract",
 			fmt.Sprintf("server contract %q differs from this CLI's %q", got, contract.Digest()),
 			"go build -o bin/banco ./cli")

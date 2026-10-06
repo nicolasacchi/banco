@@ -62,16 +62,18 @@ module Diagnosis
     def self.rekey(instance, body, seed)
       display = JSON.parse(instance.display_json)
       answer = JSON.parse(instance.answer_json)
+      errors = instance.errors_json.present? ? JSON.parse(instance.errors_json) : []
       if body["kind"] == "testlet"
         subs = Array(body["sub_items"]).map do |sub|
           shown = Array(display["sub_items"]).find { |s| s["id"] == sub["id"] }
           { "id" => sub["id"], "component" => sub["component"], "display" => shown&.fetch("display", {}) || {},
-            "answer" => answer.is_a?(Hash) ? answer[sub["id"]] : nil }
+            "answer" => answer.is_a?(Hash) ? answer[sub["id"]] : nil,
+            "errors" => errors.is_a?(Hash) ? Array(errors[sub["id"]]) : [] }
         end
         Rekey.testlet(subs, seed: seed)
       else
         component = body["kind"] == "short_answer" ? "short_answer" : body["component"]
-        Rekey.call(display: display, component: component, answer: answer, seed: seed)
+        Rekey.call(display: display, component: component, answer: answer, seed: seed, errors: Array(errors))
       end
     end
 

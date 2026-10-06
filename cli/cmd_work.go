@@ -63,7 +63,7 @@ func runWorkOpen(e *env, args []string) error {
 	fs := flag.NewFlagSet("work open", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	role := fs.String("role", "author", "author or verifier")
-	dir := fs.String("dir", "", "folder to write (default ./ITEM)")
+	dir := fs.String("dir", "", "folder to write (default $TMPDIR/banco-work/ITEM, or ITEM.verifier for a verifier; outside the repo)")
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
 	if err != nil {
@@ -79,7 +79,14 @@ func runWorkOpen(e *env, args []string) error {
 	item := pos[0]
 	target := *dir
 	if target == "" {
-		target = item
+		name := item
+		if *role == "verifier" {
+			name = item + ".verifier" // never the author's folder: it holds generator.mjs
+		}
+		target = filepath.Join(os.TempDir(), "banco-work", name)
+	}
+	if st, ok := readState(target); ok && st.Role != "" && st.Role != *role {
+		return newErr(ExitUsage, "E-USAGE", "dir", target+" is a "+st.Role+" work folder; a "+*role+" needs its own folder", "banco work open ITEM --role "+*role+" --dir OTHER")
 	}
 	if err := checkEmptyOrWork(target); err != nil {
 		return err
@@ -101,6 +108,9 @@ func runWorkOpen(e *env, args []string) error {
 	if err := json.Unmarshal(body, &answer); err != nil {
 		return newErr(ExitServer, "E-HTTP", "", "the server's answer is not JSON: "+err.Error(), "banco health")
 	}
+	// A reopened folder must not keep files the opened revision does not have
+	// (a verify.mjs left by an earlier attempt would be submitted as if new).
+	removeStale(target, answer.Files)
 	names := make([]string, 0, len(answer.Files))
 	for name, text := range answer.Files {
 		if !validFileName(name) {
@@ -134,7 +144,45 @@ func runWorkOpen(e *env, args []string) error {
 		"status": answer.Status, "files": names, "validation": answer.Validation,
 		"next": "edit the files, then banco work submit " + target + " --dry-run",
 	}
+	if root := gitRootAbove(target); root != "" {
+		out["warning"] = "the folder " + target + " is inside the git work tree " + root + ": nothing of the work may be committed there; use --dir OUTSIDE/ITEM (for example under $TMPDIR) and delete this folder"
+	}
 	return json.NewEncoder(e.stdout).Encode(out)
+}
+
+// removeStale deletes the files banco manages in a folder that is being
+// reopened and that the opened revision does not carry (runs before writing).
+func removeStale(dir string, files map[string]string) {
+	managed := []string{"item.json", "generator.mjs", "verify.mjs", "instances.json", "tests.json"}
+	if entries, err := os.ReadDir(filepath.Join(dir, "assets")); err == nil {
+		for _, ent := range entries {
+			if !ent.IsDir() {
+				managed = append(managed, "assets/"+ent.Name())
+			}
+		}
+	}
+	for _, name := range managed {
+		if _, ok := files[name]; !ok {
+			os.Remove(filepath.Join(dir, filepath.FromSlash(name)))
+		}
+	}
+}
+
+// gitRootAbove returns the nearest enclosing directory that holds a .git
+// entry, or "" when the folder is not inside a git work tree.
+func gitRootAbove(dir string) string {
+	abs, err := filepath.Abs(dir)
+	if err != nil {
+		return ""
+	}
+	for d := abs; ; d = filepath.Dir(d) {
+		if _, err := os.Stat(filepath.Join(d, ".git")); err == nil {
+			return d
+		}
+		if filepath.Dir(d) == d {
+			return ""
+		}
+	}
 }
 
 // checkEmptyOrWork refuses to open into a folder that holds something else.
@@ -249,7 +297,7 @@ func runWorkSubmit(e *env, args []string) error {
 	if *dry {
 		headers["X-Banco-Dry-Run"] = "1"
 	}
-	out, err := e.client().doWith("work submit", "POST", "/api/v1/work/submit", raw, headers)
+	out, err := submitWithBusyRetry(e, raw, headers, *dry)
 	if err != nil {
 		return err
 	}
@@ -323,6 +371,12 @@ func runWorkStatus(e *env, args []string) error {
 				if len(st.Codes) > 0 {
 					ce.Code = st.Codes[0]
 				}
+				if len(st.Codes) == 1 && st.Codes[0] == "E-VERIFY-MISSING" {
+					ce.Next = "the files are clean: a verifier runs banco work open ITEM --role verifier and writes verify.mjs"
+				}
+				if len(st.Codes) == 1 && st.Codes[0] == "E-VERIFY-STALE" {
+					ce.Next = "the verify.mjs is the previous one: change nothing; a verifier runs banco work open ITEM --role verifier and refreshes verify.mjs"
+				}
 				ce.Codes, ce.Findings = st.Codes, st.Findings
 				return ce
 			default:
@@ -333,5 +387,26 @@ func runWorkStatus(e *env, args []string) error {
 			return newErr(ExitServer, "E-TIMEOUT", "revision", "the validation did not finish within "+strconv.Itoa(*timeout)+" s", next)
 		}
 		time.Sleep(interval)
+	}
+}
+
+// submitWithBusyRetry posts the submission. A dry run that meets E-CHROME-BUSY (the
+// server already waited for Chrome) is repeated: BANCO_BUSY_RETRIES times (default 6),
+// BANCO_BUSY_WAIT_MS apart (default 10000), so parallel verifiers queue instead of failing.
+func submitWithBusyRetry(e *env, raw []byte, headers map[string]string, dry bool) ([]byte, error) {
+	retries, wait := 6, 10*time.Second
+	if n, err := strconv.Atoi(e.getenv("BANCO_BUSY_RETRIES")); err == nil && n >= 0 {
+		retries = n
+	}
+	if ms, err := strconv.Atoi(e.getenv("BANCO_BUSY_WAIT_MS")); err == nil && ms >= 0 {
+		wait = time.Duration(ms) * time.Millisecond
+	}
+	for attempt := 0; ; attempt++ {
+		out, err := e.client().doWith("work submit", "POST", "/api/v1/work/submit", raw, headers)
+		ce, ok := err.(*CLIError)
+		if err == nil || !dry || !ok || ce.Code != "E-CHROME-BUSY" || attempt >= retries {
+			return out, err
+		}
+		time.Sleep(wait)
 	}
 }

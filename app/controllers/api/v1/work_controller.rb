@@ -3,14 +3,12 @@ module Api
     # The content agent's cycle on one item (A-04, A-06, E-05): open the item, write
     # files, submit them, read the validation. No endpoint approves anything.
     class WorkController < Api::BaseController
-      INSTANCES_FOR_VERIFIER = 8
-
       # The answers carry teacher_comments: what the teacher sent back on any revision of
       # the item ("Rimanda": reason code and comment), oldest first.
       #
       # GET /api/v1/work/items/:item?role=author|verifier
       # The author gets every file. The verifier gets item.json, verify.mjs (if
-      # any), the tests and 8 instances with their expected answers: never generator.mjs.
+      # any), the tests and every stored instance (the whole pool) with their expected answers: never generator.mjs.
       # The role is the session's (A-04): a verifier session gets the verifier's view
       # whatever the query says, and a session that already authored the item cannot
       # open it as its verifier.
@@ -55,8 +53,10 @@ module Api
         revision = ItemRevision.find_by(id: params[:revision])
         return refuse("E-NOT-FOUND", "revision", "no revision #{params[:revision].to_s.first(20).inspect}", "banco work open ITEM", 404) unless revision
 
+        settled = settled?(revision) ? true : false
+        # An unsettled `error` is one failed attempt (Chrome busy or slow); the job tries again by itself.
         render json: { revision_id: revision.id, item: revision.item.key, seq: revision.seq, status: revision.status,
-                       settled: settled?(revision) ? true : false, instances: revision.instances.count,
+                       settled: settled, retrying: revision.status == "error" && !settled, instances: revision.instances.count,
                        teacher_comments: Teacher::SendBacks.for_item(revision.item) }.merge(validation_row(revision) || {})
       end
 
@@ -71,7 +71,7 @@ module Api
       end
 
       def dry_run(submission)
-        result = Validation::DryRun.call(submission.subject, submission.files)
+        result = Validation::DryRun.call(submission.subject, submission.files, verify_inherited: submission.verify_inherited?)
         findings = result.findings.map(&:to_h)
         if result.passed?
           render json: { dry_run: true, status: "passed", codes: [], warnings: result.findings.warnings.map(&:to_h), instances: result.instances.size, details: result.details }
@@ -88,9 +88,10 @@ module Api
 
       def verifier_view(revision)
         files = revision.files.except("generator.mjs")
-        instances = revision.instances.order(:id).limit(INSTANCES_FOR_VERIFIER).map do |i|
+        instances = revision.instances.order(:id).map do |i|
           { seed: i.seed, display: JSON.parse(i.display_json), answer: JSON.parse(i.answer_json),
             errors: i.errors_json && JSON.parse(i.errors_json), solution: i.solution_json && JSON.parse(i.solution_json) }
+            .tap { |row| row[:accept] = JSON.parse(i.accept_json) if i.accept_json.present? }
         end
         item = JSON.parse(revision.body_json)
         { files: files, instances: instances, tests: item["tests"],

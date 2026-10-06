@@ -9,13 +9,25 @@ module Validation
       body = JSON.parse(revision.body_json)
       kind = body["kind"] || "diagnosis_item"
       component = body["component"] || "number"
-      skills = kind == "testlet" ? Array(body["sub_items"]).map { |s| s["skill"] } : [ body["skill"] ]
+      skills = kind == "testlet" ? [ Array(body["sub_items"]).first&.dig("skill") ] : [ body["skill"] ]
       BlueprintChecks::ItemInfo.new(
-        id: revision.id, skills: skills, passed: revision.status == "passed",
+        id: revision.id, skills: skills, kind: kind, passed: revision.status == "passed", latest_passed_id: latest_passed_id(revision),
         instances: revision.instances.order(:id).map do |inst|
-          { fingerprint: inst.fingerprint, low_guess: Diagnosis::Rules::V1.low_guess?(component, size: size_of(JSON.parse(inst.display_json), component)) }
+          display = JSON.parse(inst.display_json)
+          if kind == "testlet"
+            # Per skill, from the sub items' own components (D-096).
+            flags = Diagnosis::Rules::V1.testlet_flags(body, display)
+            { fingerprint: inst.fingerprint, low_guess: flags.values.any? { |f| f[:low_guess] }, low_guess_by_skill: flags.transform_values { |f| f[:low_guess] } }
+          else
+            { fingerprint: inst.fingerprint, low_guess: Diagnosis::Rules::V1.low_guess?(component, size: size_of(display, component)) }
+          end
         end
       )
+    end
+
+    # The newest passed revision of the same item (by seq), nil when none passed.
+    def latest_passed_id(revision)
+      revision.item.revisions.includes(:validations).select { |r| r.status == "passed" }.max_by(&:seq)&.id
     end
 
     # The lookup BlueprintChecks wants: id string => info or nil.

@@ -106,3 +106,52 @@ func TestSyllabusLinesBuildsTheRangeQuery(t *testing.T) {
 		}
 	}
 }
+
+func TestReferenceCommandsBuildTheRequest(t *testing.T) {
+	srv, seen := sequenceServer(t, [2]string{"200", `{"rows":[]}`}, [2]string{"200", `{}`})
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "reference", "list"); r.exit != ExitOK {
+		t.Fatalf("list: exit %d: %s", r.exit, r.stderr)
+	}
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "reference", "show", "--key", "brano-prova"); r.exit != ExitOK {
+		t.Fatalf("show: exit %d: %s", r.exit, r.stderr)
+	}
+	if (*seen)[0].path != "/api/v1/references" || (*seen)[1].path != "/api/v1/references/brano-prova" {
+		t.Errorf("requests = %+v", *seen)
+	}
+	for _, args := range [][]string{{"reference", "show"}, {"reference", "show", "--key", "Bad Key"}, {"reference", "list", "x"}} {
+		if got := runCLI(t, srv.URL, envToken("bnc_x"), args...); got.exit != ExitUsage {
+			t.Errorf("%v: exit %d", args, got.exit)
+		}
+	}
+}
+
+func TestItemsListBuildsTheRequest(t *testing.T) {
+	srv, seen := sequenceServer(t, [2]string{"200", `{"rows":[]}`}, [2]string{"200", `{"rows":[]}`})
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "items", "list", "--subject", "math", "--current"); r.exit != ExitOK {
+		t.Fatalf("list: exit %d: %s", r.exit, r.stderr)
+	}
+	if r := runCLI(t, srv.URL, envToken("bnc_x"), "items", "list"); r.exit != ExitOK {
+		t.Fatalf("list all: exit %d: %s", r.exit, r.stderr)
+	}
+	if (*seen)[0].path != "/api/v1/items" || (*seen)[0].query != "current=1&subject=math" || (*seen)[1].query != "" {
+		t.Errorf("requests = %+v", *seen)
+	}
+	for _, args := range [][]string{{"items", "list", "--subject", "Bad Key"}, {"items", "list", "x"}} {
+		if got := runCLI(t, srv.URL, envToken("bnc_x"), args...); got.exit != ExitUsage {
+			t.Errorf("%v: exit %d", args, got.exit)
+		}
+	}
+}
+
+func TestItemsListAcceptsSubjectKeysWithUnderscore(t *testing.T) {
+	for _, key := range []string{"computer_science", "law_economics", "math"} {
+		srv, seen := sequenceServer(t, [2]string{"200", `{"items":[]}`})
+		r := runCLI(t, srv.URL, envToken("bnc_x"), "items", "list", "--subject", key, "--current")
+		if r.exit != ExitOK {
+			t.Fatalf("%s: exit %d: %s", key, r.exit, r.stderr)
+		}
+		if got := (*seen)[0]; got.path != "/api/v1/items" {
+			t.Errorf("%s: request %+v", key, got)
+		}
+	}
+}

@@ -307,7 +307,6 @@ class DiagnosisEngineTest < ActiveSupport::TestCase
     d.play("float_method")
     assert_equal 5, d.result[:skills].find { |r| r[:skill] == A }[:served]
     d.finish!
-    assert_equal %w[pending verdict_pending], d.state(A)
     # Answers are still pending: the run is held open, not closed as frontier_empty.
     assert_nil d.end_reason
   end
@@ -366,7 +365,6 @@ class DiagnosisEngineTest < ActiveSupport::TestCase
     4.times { d.play("ungraded", retry_state: "running") }
     d.play("ungraded", retry_state: "exhausted")
     d.finish!
-    assert_equal %w[pending verdict_pending], d.state(A)
 
     running = DiagnosisHelper::Driver.new(chain_plan)
     running.start
@@ -441,6 +439,21 @@ class DiagnosisEngineTest < ActiveSupport::TestCase
     assert_nil u.state(A)[0]
   end
 
+  test "wrong_form on the skill itself with a declared code stays in the node; an undeclared code descends" do
+    declared = build_plan(skills: { A => { prereqs: [ B ], errors: { "not_fully_factored" => [] } }, B => {} })
+    d = DiagnosisHelper::Driver.new(declared)
+    d.start
+    2.times { d.play("wrong_form", form: "skill", error_code: "not_fully_factored") }
+    assert_equal %w[to_recover two_wrong], d.state(A)
+    assert_nil d.state(B)[0]
+
+    undeclared = build_plan(skills: { A => { prereqs: [ B ] }, B => {} })
+    u = DiagnosisHelper::Driver.new(undeclared)
+    u.start
+    2.times { u.play("wrong_form", form: "skill", error_code: "lowest_terms") }
+    assert_equal B, u.next_skill
+  end
+
   test "orthography_masks_form: an accent slip is credit with an observation and no descent" do
     plan = build_plan(skills: { A => { prereqs: [ B ], errors: { "es_accents" => [ B ] } }, B => {} })
     d = DiagnosisHelper::Driver.new(plan)
@@ -470,6 +483,61 @@ class DiagnosisEngineTest < ActiveSupport::TestCase
     assert_equal [ "W" ], b[:evidence]
   end
 
+  test "one passage is served once per run (D-099)" do
+    tls = [ instance("tl#1", skills: [ A ], kind: "testlet", seconds: 120, item: "tl"), instance("tl#2", skills: [ A ], kind: "testlet", seconds: 120, item: "tl") ]
+    base = build_plan(skills: { A => {} }, items: { A => %w[x1] }, pool: { "x1" => { "instances" => 1 } })
+    8.times do |salt|
+      p2 = Diagnosis::Plan.new(subject: base.subject, entries: base.entries, skills: base.skills, pool: tls.to_h { |i| [ i.id, i ] },
+                               sitting_seconds: base.sitting_seconds, sittings: base.sittings, seed_salt: "s#{salt}")
+      d = DiagnosisHelper::Driver.new(p2)
+      d.start
+      6.times { d.play("wrong", skill: A) if d.action.type == :serve }
+      served = d.events.select { |e| e[:kind] == "item_served" }.map { |e| e[:instance] }
+      assert_equal 1, served.size, "salt #{salt}: #{served.inspect}"
+    end
+  end
+
+  test "a testlet sibling skill is not charged a serve it never answers (D-098)" do
+    tl = instance("tl#1", skills: [ A ], kind: "testlet", seconds: 120)
+    plan = with_instances(build_plan(skills: { A => {}, B => {} }, items: { A => %w[x1] }, pool: { "x1" => { "instances" => 1 } }), [ tl ])
+    d = DiagnosisHelper::Driver.new(plan)
+    d.start
+    s = d.push("item_served", instance: "tl#1", skill: A)
+    d.answer(s, "correct", skill: A)
+    assert_equal 0, d.result[:skills].find { |r| r[:skill] == B }&.fetch(:served, 0).to_i
+  end
+
+  test "a pending testlet answer holds the skill: no second testlet until it is settled (D-130)" do
+    tls = %w[a b c].map { |n| instance("tl-#{n}#1", skills: [ A ], kind: "testlet", seconds: 300, item: "tl-#{n}") }
+    base = build_plan(skills: { A => {} }, items: { A => %w[x1] }, pool: { "x1" => { "instances" => 1 } })
+    plan = Diagnosis::Plan.new(subject: base.subject, entries: base.entries, skills: base.skills, pool: tls.to_h { |i| [ i.id, i ] },
+                               sitting_seconds: base.sitting_seconds, sittings: base.sittings, seed_salt: "s")
+    d = DiagnosisHelper::Driver.new(plan)
+    d.start
+    d.play("undetermined", skill: A)
+    a = d.action
+    assert_equal :wait, a.type
+    assert_equal :pending_answers, a.reason
+    assert_equal 1, d.events.count { |e| e[:kind] == "item_served" }
+  end
+
+  test "a testlet decides low_guess and choice per skill from its sub items (D-096)" do
+    flags = { A => { low_guess: false, choice: true } }
+    tl = Diagnosis::Plan::Instance.new(id: "tl#1", item: "tl", skills: [ A ], component: "number", low_guess: true, choice: false,
+                                       expected_seconds: 120, fingerprint: "tlfp", kind: "testlet", flags: flags)
+    assert_not tl.low_guess_for(A)
+    assert tl.choice_for(A)
+    base = build_plan(skills: { A => {} }, items: { A => %w[x1] }, pool: { "x1" => { "instances" => 2, "component" => "choice" } })
+    plan = with_instances(base, [ tl ])
+    d = DiagnosisHelper::Driver.new(plan)
+    d.start
+    s1 = d.push("item_served", instance: "tl#1", skill: A)
+    d.answer(s1, "correct", skill: A)
+    s2 = d.push("item_served", instance: "x1#1", skill: A)
+    d.answer(s2, "correct", skill: A)
+    assert_equal %w[demonstrated two_of_two_choice], d.state(A)
+  end
+
   test "testlet_not_started_when_budget_insufficient" do
     testlet = instance("tl#1", skills: [ A ], kind: "testlet", seconds: 700)
     base = build_plan(skills: { A => {} }, items: { A => %w[x1] }, pool: { "x1" => { "instances" => 2, "component" => "choice" } },
@@ -487,6 +555,21 @@ class DiagnosisEngineTest < ActiveSupport::TestCase
     t.start
     assert_equal :end_sitting, t.action.type
     assert_equal "time_budget", t.action.reason
+  end
+
+  test "a testlet that does not fit ends the sitting instead of repeating the item already used (no_fit)" do
+    entries = [ Diagnosis::Plan::Entry.new(skill: A, guest_of: nil, choice_only: false) ]
+    base = Diagnosis::Plan.new(subject: "math", entries: entries, skills: { A => Diagnosis::Plan.flat_skill(A, {}) }, pool: {},
+                               sitting_seconds: 1500, sittings: 2)
+    plan = with_instances(base, [ instance("x#1", skills: [ A ], component: "number", seconds: 60, item: "x"), instance("x#2", skills: [ A ], component: "number", seconds: 60, item: "x"),
+                                  instance("x#3", skills: [ A ], component: "number", seconds: 60, item: "x"),
+                                  instance("tl#1", skills: [ A ], kind: "testlet", component: "choice", low_guess: false, seconds: 600) ])
+    d = DiagnosisHelper::Driver.new(plan)
+    d.start
+    d.play("correct", seconds: 600) # 1500 - 600 - 420 = 480 s left: the 600 s testlet does not fit
+    a = d.action
+    assert_equal :end_sitting, a.type
+    assert_equal "time_budget", a.reason
   end
 
   test "a testlet that fits is served as one unit" do

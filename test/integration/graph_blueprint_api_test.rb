@@ -153,6 +153,24 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
     assert_response :created, json.inspect
   end
 
+  test "D-093: two refused cross-subject targets in one field are two findings" do
+    submit_graph(graph { |d| skill(d, "math.percentages")["prerequisites"] += [ "italian.reading", "italian.writing" ] })
+    names = json["findings"].select { |f| f["code"] == "E-GRAPH-EDGE-UNAPPROVED" }.map { |f| f["detail"]["skill"] }
+    assert_equal %w[italian.reading italian.writing], names.sort
+  end
+
+  test "D-091: a deferred edge to a subject without an approved graph is accepted; one to our own subject is E-SCHEMA" do
+    deferred = graph { |d| skill(d, "math.percentages")["deferred_prerequisites"] = [ { "skill" => "italian.reading", "reason_it" => "Serve la lettura." } ] }
+    submit_graph(deferred)
+    assert_response :created, json.inspect
+    own = graph { |d| skill(d, "math.percentages")["deferred_prerequisites"] = [ { "skill" => "math.number", "reason_it" => "Serve." } ] }
+    submit_graph(own)
+    assert_includes json["codes"], "E-SCHEMA"
+    nested = graph { |d| skill(d, "math.percentages")["errors"] = [ { "code" => "x_one", "description_it" => "Sbaglia.", "implicates" => [], "deferred_implicates" => [ { "skill" => "italian.reading", "reason_it" => "Lettura." } ] } ] }
+    submit_graph(nested)
+    assert_response :created, json.inspect
+  end
+
   test "open: the latest revision, the sources and the range; unknown subject is 404" do
     api("/api/v1/subjects/math/skill-graph")
     assert_nil json["revision"]
@@ -166,6 +184,21 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
     api("/api/v1/subjects/nothing/skill-graph")
     assert_response :not_found
     assert_equal "E-NOT-FOUND", json["code"]
+  end
+
+  test "coverage: item_errors_not_in_graph lists codes of passed items that the graph lacks (D-137)" do
+    submit_graph(graph)
+    with_errors = graph["skills"].find { |s| s["errors"].any? }
+    skill_key = with_errors["key"]
+    declared = with_errors["errors"].first["code"]
+    item = Item.create!(subject: @subject, key: "probe", kind: "diagnosis_item")
+    body = { schema: "banco.item/1", kind: "diagnosis_item", subject: "math", skill: skill_key,
+             error_catalogue: [ { code: declared }, { code: "invented_code" } ] }
+    rev = ItemRevision.create!(item: item, seq: 1, body_json: JSON.generate(body), file_sessions_json: "{}")
+    ItemValidation.create!(item_revision: rev, seq: 1, status: "passed", codes_json: "[]")
+    programme { api("/api/v1/subjects/math/skill-graph/coverage") }
+    assert_response :ok
+    assert_equal [ { "item" => "probe", "item_revision_id" => rev.id, "skill" => skill_key, "code" => "invented_code" } ], json["item_errors_not_in_graph"]
   end
 
   test "coverage: lines of the range that no skill cites and no exclusion explains" do
@@ -186,6 +219,123 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
 
     api("/api/v1/subjects/italian/skill-graph/coverage")
     assert_response :not_found
+  end
+
+  # A starred header at line 4 with its body at 5, an unstarred header at 6.
+  def add_marked_lines
+    SyllabusLine.create!(syllabus_source: @source, number: 4, text: "★ Un blocco in più:", origin: "pdf", marker: "★")
+    SyllabusLine.create!(syllabus_source: @source, number: 5, text: "Il corpo del blocco, con più parole. Altro testo qui.", origin: "pdf")
+    SyllabusLine.create!(syllabus_source: @source, number: 6, text: "Un altro titolo:", origin: "pdf")
+  end
+
+  test "syllabus lines: a line under a starred header shows the block marker and its header" do
+    add_marked_lines
+    api("/api/v1/syllabus/prima-test/lines?from=5&to=6")
+    assert_equal "★", json["rows"][0]["block_marker"]
+    assert_equal 4, json["rows"][0]["block_marker_line"]
+    assert_nil json["rows"][1]["block_marker"]
+    api("/api/v1/syllabus/prima-test/lines?from=4&to=4")
+    assert_equal "★", json["rows"][0]["marker"]
+    assert_nil json["rows"][0]["block_marker"]
+  end
+
+  def add_sections
+    { 10 => "## Italiano", 11 => "- il testo narrativo", 12 => "## Storia", 13 => "- la Rivoluzione francese", 14 => "### Dettaglio" }.each do |n, text|
+      SyllabusLine.create!(syllabus_source: @source, number: n, text: text, origin: "pdf")
+    end
+  end
+
+  test "syllabus lines: a line carries the section (## heading) it sits under" do
+    add_sections
+    api("/api/v1/syllabus/prima-test/lines?from=10&to=14")
+    assert_equal [ "Italiano", "Italiano", "Storia", "Storia", "Storia" ], json["rows"].map { |r| r["section"] }
+  end
+
+  test "W-REF-OTHER-SUBJECT: a ref under another section than most of the citations is warned, the majority is quiet" do
+    add_sections
+    set = lambda do |doc, key, line, fragment|
+      skill(doc, key)["refs"][0].merge!("line" => line, "fragment" => fragment)
+    end
+    doc = graph do |d|
+      set.(d, "math.percentages", 11, "il testo")
+      set.(d, "math.decimal-operations", 11, "narrativo")
+      set.(d, "math.linear-equation-integer", 13, "Rivoluzione")
+    end
+    submit_graph(doc, dry: true)
+    warnings = json["warnings"].select { |w| w["code"] == "W-REF-OTHER-SUBJECT" }
+    assert_equal 1, warnings.size, json.inspect
+    assert_equal "Storia", warnings.first["detail"]["section"]
+    assert_equal 13, warnings.first["detail"]["line"]
+    assert_equal "/skills/#{doc['skills'].index { |s| s['key'] == 'math.linear-equation-integer' }}/refs/0", warnings.first["field"]
+    set.(doc, "math.linear-equation-integer", 11, "testo")
+    submit_graph(doc, dry: true)
+    assert_empty json["warnings"].select { |w| w["code"] == "W-REF-OTHER-SUBJECT" }
+  end
+
+  test "W-SCOPE-MARKER: studied cites a starred block; the matching scope is quiet" do
+    add_marked_lines
+    set = ->(scope) { graph { |d| skill(d, "math.percentages").tap { |s| s["scope"] = scope; s["refs"][0].merge!("line" => 5, "fragment" => "corpo del blocco") } } }
+    submit_graph(set.("studied"), dry: true)
+    assert_response :ok
+    warning = json["warnings"].find { |w| w["code"] == "W-SCOPE-MARKER" }
+    assert warning, json.inspect
+    assert_match(%r{\A/skills/\d+/scope\z}, warning["field"])
+    assert_equal [ "integration_studied" ], warning["detail"]["expected"]
+    submit_graph(set.("integration_studied"), dry: true)
+    assert_empty json["warnings"].select { |w| w["code"] == "W-SCOPE-MARKER" }
+  end
+
+  test "W-SCOPE-MARKER: a star inside the cited fragment decides, though the line has no marker" do
+    SyllabusLine.create!(syllabus_source: @source, number: 7, text: "Il clima ☆ Il cambiamento climatico e ★ le carte tematiche", origin: "pdf")
+    set = lambda do |scope, fragment|
+      graph { |d| skill(d, "math.percentages").tap { |s| s["scope"] = scope; s["refs"][0].merge!("line" => 7, "fragment" => fragment) } }
+    end
+    submit_graph(set.("studied", "☆ Il cambiamento climatico"), dry: true)
+    warning = json["warnings"].find { |w| w["code"] == "W-SCOPE-MARKER" }
+    assert warning, json.inspect
+    assert_equal [ "in_progress" ], warning["detail"]["expected"]
+    submit_graph(set.("in_progress", "☆ Il cambiamento climatico"), dry: true)
+    assert_empty json["warnings"].select { |w| w["code"] == "W-SCOPE-MARKER" }
+    submit_graph(set.("integration_studied", "★ le carte tematiche"), dry: true)
+    assert_empty json["warnings"].select { |w| w["code"] == "W-SCOPE-MARKER" }
+    submit_graph(set.("studied", "Il clima"), dry: true)
+    assert_empty json["warnings"].select { |w| w["code"] == "W-SCOPE-MARKER" }
+  end
+
+  test "W-SCOPE-MARKER: a star just before the cited fragment (not inside it) decides" do
+    SyllabusLine.create!(syllabus_source: @source, number: 8, text: "Il geosistema. I climi. ☆ Un mondo inquinato. Le risorse naturali. ☆ Risorse scarse", origin: "pdf")
+    set = lambda do |scope, fragment|
+      graph { |d| skill(d, "math.percentages").tap { |s| s["scope"] = scope; s["refs"][0].merge!("line" => 8, "fragment" => fragment) } }
+    end
+    submit_graph(set.("in_progress", "Un mondo inquinato"), dry: true)
+    assert_empty json["warnings"].select { |w| w["code"] == "W-SCOPE-MARKER" }
+    submit_graph(set.("studied", "Un mondo inquinato"), dry: true)
+    assert json["warnings"].find { |w| w["code"] == "W-SCOPE-MARKER" }, json.inspect
+    submit_graph(set.("studied", "Le risorse naturali"), dry: true)
+    assert_empty json["warnings"].select { |w| w["code"] == "W-SCOPE-MARKER" }
+  end
+
+  test "excluded fragment: must be a substring of the line" do
+    submit_graph(graph { |d| d["excluded"] << { "line" => 3, "fragment" => "non è lì", "reason_it" => "Prova." } })
+    assert(json["findings"].any? { |f| f["code"] == "E-SOURCE" && f["detail"]["rule"] == "fragment" && f["field"] == "/excluded/#{graph['excluded'].size}/fragment" }, json.inspect)
+  end
+
+  test "coverage: a partly used line is listed with its cited and excluded fragments" do
+    SyllabusLine.create!(syllabus_source: @source, number: 4, text: "numeri relativi e anche organizzazioni collettive", origin: "pdf")
+    doc = graph { |d| d["excluded"] << { "line" => 3, "reason_it" => "Altra materia." }; skill(d, "math.percentages")["refs"] << { "source" => "prima-test", "line" => 4, "fragment" => "numeri relativi", "role" => "taught_in" } }
+    submit_graph(doc)
+    programme { api("/api/v1/subjects/math/skill-graph/coverage") } # range 1..3 only
+    assert_equal [ 1 ], json["partial"].map { |p| p["line"] } # cited by a short fragment
+    Validation::Rules.with(coverage: { prima_source: "prima-test", ranges: { math: [ 1, 4 ] } }) { api("/api/v1/subjects/math/skill-graph/coverage") }
+    part = json["partial"].find { |p| p["line"] == 4 }
+    assert_equal [ "numeri relativi" ], part["cited"]
+    assert_equal [ "e anche organizzazioni collettive" ], part["unaccounted"]
+    assert_equal [], json["uncovered"]
+
+    doc["excluded"] << { "line" => 4, "fragment" => "e anche organizzazioni collettive", "reason_it" => "Organizzazioni collettive: nessuna abilità." }
+    submit_graph(doc)
+    Validation::Rules.with(coverage: { prima_source: "prima-test", ranges: { math: [ 1, 4 ] } }) { api("/api/v1/subjects/math/skill-graph/coverage") }
+    assert_equal [ 1 ], json["partial"].map { |p| p["line"] }
   end
 
   # ---- the blueprint -------------------------------------------------------------------------
@@ -220,6 +370,27 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
   end
 
   def submit_blueprint(doc, dry: false) = api("/api/v1/subjects/math/blueprint", method: :post, body: { blueprint: doc }, dry: dry)
+
+  test "simulate of a bare blueprint uses the pinned graph and items (D-099)" do
+    make_graph_row
+    api("/api/v1/diagnosis/simulate", method: :post, body: { bundle: blueprint, script: "all-wrong" })
+    assert_response :ok, json.inspect
+    assert_equal [], json["warnings"]
+    served = json["trace"].select { |e| e["kind"] == "item_served" }
+    assert served.any? { |e| e["skill"] == "math.integer-operations" }, "the descent pool is reached"
+    assert served.none? { |e| e["instance"].to_s.include?("sim_") }
+
+    doc = blueprint
+    doc["graph_revision_id"] = "999999"
+    api("/api/v1/diagnosis/simulate", method: :post, body: { bundle: doc, script: "all-wrong" })
+    assert_response :ok
+    assert_equal "E-SIMULATE-INPUT", json["warnings"].first["code"]
+
+    doc = blueprint
+    doc["entries"][0]["items"] << "424242"
+    api("/api/v1/diagnosis/simulate", method: :post, body: { bundle: doc, script: "all-wrong" })
+    assert_match "424242", json["warnings"].first["message"]
+  end
 
   test "a good blueprint is stored; replay; --dry-run stores nothing" do
     make_graph_row
@@ -398,5 +569,23 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
     ItemValidation.create!(item_revision: @revs["math.percentages"].first, seq: 2, status: "failed", codes_json: "[\"E-READ\"]")
     api("/api/v1/status")
     assert_equal "drafting", json["subjects"].find { |s| s["key"] == "math" }["stage"]
+  end
+
+  test "status counts an item that waits for its verifier apart from a failed one (D-141)" do
+    make_graph_row
+    submit_blueprint(blueprint)
+    api("/api/v1/status")
+    before = json["subjects"].find { |sub| sub["key"] == "math" }["items"]
+    rev = @revs["math.percentages"].first
+    ItemValidation.create!(item_revision: rev, seq: 2, status: "failed", codes_json: "[\"E-VERIFY-STALE\"]")
+    api("/api/v1/status")
+    items = json["subjects"].find { |sub| sub["key"] == "math" }["items"]
+    assert_equal 1, items["awaiting_verifier"]
+    assert_equal before["failed"], items["failed"]
+    assert_equal before["passed"] - 1, items["passed"]
+    ItemValidation.create!(item_revision: rev, seq: 3, status: "failed", codes_json: "[\"E-VERIFY-STALE\",\"E-READ\"]")
+    api("/api/v1/status")
+    items = json["subjects"].find { |sub| sub["key"] == "math" }["items"]
+    assert_equal [ 0, before["failed"] + 1 ], [ items["awaiting_verifier"], items["failed"] ]
   end
 end

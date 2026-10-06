@@ -33,6 +33,22 @@ class DiagnosisItemPresenterTest < ActiveSupport::TestCase
     assert_equal %i[component instance_stem_it kind stem_it unit], item.keys.sort
   end
 
+  test "an instance display unit wins over the item unit (D-103)" do
+    presenter = Diagnosis::ItemPresenter.allocate
+    out = presenter.send(:part, { "unit" => "g" }, "number", { "unit" => "mg" })
+    assert_equal "mg", out[:unit]
+    assert_equal "g", presenter.send(:part, { "unit" => "g" }, "number", {})[:unit]
+  end
+
+  test "a short answer is served with its passage and without its model answer" do
+    rows = build_ui_subject(key: "italian", name: "Italiano", position: 7, components: %w[short_answer])
+    conductor = Diagnosis::Conductor.new(Diagnosis::Conductor.run_for(rows[:student], rows[:subject]))
+    step = conductor.step!
+    item = conductor.presentation(step.event, student: rows[:student])[:item]
+    assert_equal "Un breve testo da riassumere.", item[:passage_it]
+    refute_match(/Una risposta\./, item.to_json)
+  end
+
   test "the accent buttons depend on the subject, and the expression input on the warm-up" do
     assert_nil served_payload("normalized-text")[:item][:accents]
     assert_equal "mathlive", served_payload("expression")[:item][:input]

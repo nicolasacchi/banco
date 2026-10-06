@@ -56,6 +56,7 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
                              "refs" => [ { "source" => "prima-2025-26", "line" => 91, "role" => "taught_in", "fragment" => "cellule" } ])
     body["skills"][2].merge!("scope" => "middle_school", "scope_reason_it" => "Appresa alla scuola media.")
     body["excluded"] = [ { "line" => 2, "reason_it" => "Non serve." } ]
+    body["skills"][0]["deferred_prerequisites"] = [ { "skill" => "italian.reading", "reason_it" => "Serve per leggere i problemi." } ]
     revision = SkillGraphRevision.create!(subject: @subject, seq: 2, body_json: body.to_json, author_session: graph.author_session)
     approve_graph_row!(@subject, graph)
 
@@ -64,6 +65,8 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     assert_select "article.skill[data-scope=not_in_prima] strong", /Non in prima/
     assert_select "article.skill[data-scope=middle_school]", /Appresa alla scuola media/
     assert_select "article.skill[data-scope=not_in_prima] .edges", /Richiede: #{Regexp.escape(body['skills'][0]['key'])}/
+    assert_select "li[data-deferred='italian.reading']", /in attesa.*prerequisito.*Serve per leggere i problemi/i
+    assert_select "[data-deferred-ready]", 0
     assert_select "li[data-ref='prima-2025-26:1'] q", "Equazioni di primo grado."
     assert_select "article.skill [data-flag=q3_lines_91_100]"
     assert_select "article.skill[data-skill='#{body['skills'][3]['key']}'] [data-inferred]"
@@ -72,6 +75,23 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     assert_select "#graph-diff", /Cambiata/
     assert_select "form[action='/teacher/skill-graph-revisions/#{revision.id}/approve']"
     assert_select "#graph-approve button[disabled]", 0 if ENV["BANCO_DECISIONS_ENABLED"] == "1"
+  end
+
+  test "the graph screen shows the programme section of each cited line and marks another subject's line" do
+    { 200 => "## Italiano", 201 => "La frase.", 202 => "Il testo.", 203 => "## Storia", 204 => "La Rivoluzione." }.each do |n, text|
+      SyllabusLine.create!(syllabus_source: @prima, number: n, text: text, origin: "pdf")
+    end
+    graph = SkillGraphRevision.where(subject: @subject).order(:seq).last
+    body = JSON.parse(graph.body_json)
+    ref = ->(line, fragment) { { "source" => "prima-2025-26", "line" => line, "role" => "needed_by", "fragment" => fragment } }
+    body["skills"][0]["refs"] = [ ref.(201, "frase"), ref.(202, "testo") ]
+    body["skills"][1]["refs"] = [ ref.(204, "Rivoluzione") ]
+    SkillGraphRevision.create!(subject: @subject, seq: graph.seq + 1, body_json: body.to_json, author_session: graph.author_session)
+    page "/teacher/subjects/math/graph"
+    assert_select "li[data-ref='prima-2025-26:201']", /sezione Italiano/
+    assert_select "li[data-ref='prima-2025-26:201'] [data-other-subject]", 0
+    assert_select "li[data-ref='prima-2025-26:204']", /sezione Storia/
+    assert_select "li[data-ref='prima-2025-26:204'] [data-other-subject]", /altra materia/
   end
 
   test "the test overview keeps approve disabled with the reasons until the gates pass, then enables it" do
@@ -175,10 +195,45 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     assert_equal [ [ "ciao", false ] ], Teacher::Corrections.segments("ciao", [])
   end
 
+  test "the test overview shows what the author declared: not measured, intro note, calculator, budget, overrides" do
+    page "/teacher/subjects/math/test"
+    assert_select "#test-not-measured", "Non misura la scrittura a mano."
+    assert_select "#test-intro-note", "Nota di prova per chi comincia."
+    assert_select "#test-settings", /non ammessa/
+    assert_select "#test-overrides", /nessuna/
+  end
+
+  test "an item the latest blueprint does not pin is a reserve: counted apart and not asked about" do
+    pinned = ItemRevision.where(id: @blueprint.pinned_item_revision_ids).pluck(:item_id)
+    before = Item.reserve(@subject).count
+    extra = Item.create!(subject: @subject, key: "math-spare", kind: @short.item.kind)
+    assert_equal before + 1, Item.reserve(@subject).count
+    assert_includes Item.reserve(@subject).pluck(:id), extra.id
+    assert_empty Item.reserve(@subject).pluck(:id) & pinned
+    assert_equal before + 1, SubjectStage.for(@subject)[:items][:reserve]
+  end
+
+  test "redo_reserve false, choice_only_reason_it and kind overrides reach the teacher" do
+    body = JSON.parse(@blueprint.body_json)
+    body["entries"][0].merge!("redo_reserve" => false, "choice_only_reason_it" => "Il testo libero non si corregge da solo.")
+    body["kind_overrides"] = [ { "skill" => body["entries"][0]["skill"], "kind" => "recover", "reason_it" => "Ripasso, non nuovo." } ]
+    BlueprintRevision.create!(subject: @subject, skill_graph_revision: @graph, author_session: @blueprint.author_session,
+                              seq: @blueprint.seq + 1, body_json: body.to_json)
+    page "/teacher/subjects/math/test"
+    assert_select "[data-redo-reserve=false]", /Nessuna riserva/
+    assert_select ".skill-list", /Il testo libero non si corregge da solo/
+    assert_select "#test-overrides", /Ripasso, non nuovo/
+    page "/teacher/subjects/math/test/skills/#{body['entries'][0]['skill']}"
+    assert_select "[data-redo-reserve=false]"
+    assert_select "#choice-only-reason", /Il testo libero/
+  end
+
   test "the report page carries the sitting condition, the versions and the signals" do
     page "/teacher/subjects/math/report"
     assert_select "#report-condition strong", /senza sorveglianza/
     assert_select "#report-state", /Test d'ingresso usato/
+    assert_select "#report-not-measured", /Non misura la scrittura a mano/
+    assert_select "#report-test-settings", /non ammessa/
   end
 
   test "the heartbeat records one minute at most per minute and never from the student's computer" do

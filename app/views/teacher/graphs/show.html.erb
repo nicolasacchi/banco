@@ -45,6 +45,13 @@
       </p>
     </section>
 
+    <% if review.notes.any? %>
+      <h2><%= t("teacher.graph.notes_title") %></h2>
+      <ul class="plain" id="graph-notes">
+        <% review.notes.each do |note| %><li><%= note %></li><% end %>
+      </ul>
+    <% end %>
+
     <h2><%= t("teacher.graph.skills") %></h2>
     <% review.skills.each do |skill| %>
       <article class="skill" id="skill-<%= skill.key.parameterize %>" data-skill="<%= skill.key %>" data-scope="<%= skill.scope %>">
@@ -62,11 +69,19 @@
         <% else %>
           <p class="edges"><%= t("teacher.graph.no_prerequisites") %></p>
         <% end %>
+        <% if skill.deferred.any? %>
+          <ul class="plain deferred">
+            <% skill.deferred.each do |d| %>
+              <li data-deferred="<%= d[:skill] %>"><strong><%= t("teacher.graph.deferred.#{d[:where]}") %></strong> <%= d[:skill] %><% if d[:error] %> (<%= d[:error] %>)<% end %>: <%= d[:reason_it] %><% if d[:ready] %> <em class="deferred-ready" data-deferred-ready="<%= d[:skill] %>"><%= t("teacher.graph.deferred.ready") %></em><% end %></li>
+            <% end %>
+          </ul>
+        <% end %>
         <% if skill.refs.any? %>
           <ul class="plain refs">
             <% skill.refs.each do |ref| %>
               <li data-ref="<%= ref.source %>:<%= ref.line %>"><strong><%= t("teacher.graph.role.#{ref.role}") %></strong>
-                <%= ref.source %>, <%= t("teacher.graph.line") %> <%= ref.line %>:
+                <%= ref.source %>, <%= t("teacher.graph.line") %> <%= ref.line %><% if ref.section %> (<%= t("teacher.graph.section") %> <%= ref.section %>)<% end %>:
+                <% if ref.other_subject %><span class="notice" data-other-subject="true"><%= t("teacher.graph.other_subject") %></span><% end %>
                 <% if ref.text %><q><%= ref.text %></q><% else %><%= t("teacher.graph.line_missing") %><% end %>
               </li>
             <% end %>
@@ -92,7 +107,7 @@
       <h2><%= t("teacher.graph.excluded_title") %></h2>
       <ul class="plain" id="graph-excluded">
         <% review.excluded.each do |e| %>
-          <li><%= t("teacher.graph.line") %> <%= e[:line] %><% if e[:text] %>: <q><%= e[:text] %></q><% end %>. <%= e[:reason_it] %></li>
+          <li><%= t("teacher.graph.line") %> <%= e[:line] %><% if e[:fragment] %>: <q><%= e[:fragment] %></q> (<%= t("teacher.graph.excluded_part") %>)<% elsif e[:text] %>: <q><%= e[:text] %></q><% end %>. <%= e[:reason_it] %></li>
         <% end %>
       </ul>
     <% end %>

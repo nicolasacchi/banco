@@ -104,4 +104,15 @@ class RulesV1Test < ActiveSupport::TestCase
       assert V1.const_defined?(const), "Rules::V1::#{const} should exist"
     end
   end
+
+  test "testlet_flags decides per skill from the sub items" do
+    body = { "sub_items" => [ { "id" => "a", "skill" => "x.a", "component" => "choice" }, { "id" => "b", "skill" => "x.a", "component" => "choice" },
+                              { "id" => "c", "skill" => "x.b", "component" => "number" }, { "id" => "d", "skill" => "x.b", "component" => "choice" },
+                              { "id" => "e", "skill" => "x.c", "component" => "ordering" } ] }
+    display = { "sub_items" => [ { "id" => "e", "display" => { "elements" => [ 1, 2, 3, 4 ] } } ] }
+    f = V1.testlet_flags(body, display)
+    assert_equal({ low_guess: false, choice: true }, f["x.a"])
+    assert_equal({ low_guess: true, choice: false }, f["x.b"])
+    assert_equal({ low_guess: true, choice: false }, f["x.c"])
+  end
 end

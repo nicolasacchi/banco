@@ -43,6 +43,24 @@ class RekeyTest < ActiveSupport::TestCase
     end
   end
 
+  test "an ordering is never shown as a declared error permutation" do
+    declared = [ %w[e2 e1 e3 e4 e5], %w[e1 e2 e4 e3 e5], %w[e3 e1 e2 e4 e5] ]
+    errors = declared.each_with_index.map { |v, i| { "code" => "err_#{i}", "value" => v } }
+    300.times do |n|
+      shown = Diagnosis::Rekey.call(display: ORDERING, component: "ordering", answer: KEY, seed: "seed-#{n}", errors: errors).shown_order["elements"]
+      refute_includes declared, shown
+    end
+  end
+
+  test "a testlet sub item ordering avoids its declared error permutations" do
+    errors = [ { "code" => "c", "value" => %w[e2 e1 e3 e4 e5] } ]
+    200.times do |n|
+      sub = { "id" => "q1", "component" => "ordering", "display" => ORDERING, "answer" => KEY, "errors" => errors }
+      shown = Diagnosis::Rekey.testlet([ sub ], seed: "t-#{n}").shown_order["q1"]["elements"]
+      refute_equal %w[e2 e1 e3 e4 e5], shown
+    end
+  end
+
   test "matching columns are both shuffled, and the rows never line up with the pairs" do
     200.times do |n|
       r = rekey(MATCHING, "matching", PAIRS, "seed-#{n}")

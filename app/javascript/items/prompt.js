@@ -4,8 +4,14 @@
 import { el } from "items/dom"
 import { renderInline, renderMarkup } from "items/markup"
 
-export function renderPrompt(part) {
+export function renderPrompt(part, ctx) {
   const box = el("div", { class: "prompt" })
+  if (part.passage_it) {
+    const passage = el("div", { class: "passage" })
+    passage.appendChild(renderMarkup(part.passage_it))
+    box.appendChild(el("h2", { class: "passage-title", text: ctx.t.passage }))
+    box.appendChild(passage)
+  }
   if (part.stem_it) box.appendChild(renderMarkup(part.stem_it))
   if (part.instance_stem_it) {
     const stem = el("div", { class: "instance-stem" })

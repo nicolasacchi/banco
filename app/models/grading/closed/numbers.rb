@@ -22,35 +22,106 @@ module Grading
       INVISIBLE = /[\u00AD\u200B-\u200D\u2060\uFEFF]/
       MINUSES = /[\u2212\u2010-\u2015\uFE63\uFF0D\u207B\u208B]/
       PLUSES = /[\uFE62\uFF0B\u207A\u208A]/
+      # Italian thousands grouping: 5.300 or 5.300,50 (a dot every three digits).
+      THOUSANDS = /\A[+-]?[1-9]\d{0,2}(?:\.\d{3})+(?:,\d+)?\z/
+      # The same with spaces (8 800, 1 600 000): groups of exactly three digits (D-103).
+      THOUSANDS_SPACED = /\A[+-]?[1-9]\d{0,2}(?:#{SPACES}\d{3})+(?:,\d+)?\z/
       DECIMAL = /\A([+-])?(\d*)(?:([.,])(\d+))?\z/
+      # a·10^n, a x 10^n, a×10^n, a*10^n, with ^{n} or a superscript exponent (form "scientific", D-093).
+      SCIENTIFIC = /\A(.+?)#{SPACES}*[·⋅×x*]#{SPACES}*10#{SPACES}*\^#{SPACES}*\{?#{SPACES}*([+-]?)#{SPACES}*(\d+)#{SPACES}*\}?\z/i
+      SUPERSCRIPTS = "⁰¹²³⁴⁵⁶⁷⁸⁹"
+      MAX_EXPONENT = 400
 
       module_function
 
       def grade(spec, value)
         return Closed.invalid("unparseable") unless value.is_a?(String)
 
-        answer = parse(value, allow_dot: spec.allow_dot, unit: spec.unit)
+        scientific = spec.form.include?("scientific")
+        answer, written_scientific = scientific ? parse_scientific(value, allow_dot: spec.allow_dot, unit: spec.unit) : [ parse(value, allow_dot: spec.allow_dot, unit: spec.unit), false ]
         expected = expected_value(spec.answer)
         normalized = format(answer)
-        if answer == expected
-          Closed.result("correct", normalized: normalized)
+        if answer == expected || accepted?(spec.accept, answer)
+          if scientific && !scientific_shape?(answer, written_scientific)
+            Closed.result("wrong_form", form_violations: [ "scientific_notation" ], normalized: normalized)
+          else
+            Closed.result("correct", normalized: normalized)
+          end
         else
-          codes = Closed.error_hit(spec, answer) { |v, a| (expected_value(v) == a rescue false) }
+          codes = error_codes(spec, answer)
           Closed.verdict_for_errors(codes, normalized: normalized)
         end
       rescue Invalid => e
         Closed.invalid(e.code)
       end
 
-      # Italian text -> Rational. Raises Invalid(code): empty, use_comma,
+      # Declared errors that match: exact, or (round_to: n, D-135) any answer that rounds half up
+      # to the declared value at n decimals. The key is graded before this, so it always wins.
+      def error_codes(spec, answer)
+        Array(spec.errors).select { |e| error_match?(e, answer) }.map { |e| e["code"] }.uniq
+      end
+
+      def error_match?(error, answer)
+        declared = expected_value(error["value"])
+        n = error["round_to"]
+        n.nil? ? declared == answer : declared.round(n, half: :up) == answer.round(n, half: :up)
+      rescue ArgumentError, TypeError, ZeroDivisionError
+        false
+      end
+
+      # Extra exact values the item accepts as right (a convention the teacher left open).
+      def accepted?(accept, answer)
+        Array(accept).any? { |v| expected_value(v) == answer rescue false }
+      end
+
+      # [Rational, written_as_a·10^n]. Without the notation the text is read as a plain number.
+      def parse_scientific(text, allow_dot:, unit:)
+        s = strip_unit(clean(text), unit).sub(/10([-+]?[#{SUPERSCRIPTS}]+)\z/) { "10^#{Regexp.last_match(1).tr(SUPERSCRIPTS, '0123456789')}" }
+        m = SCIENTIFIC.match(s)
+        return [ parse(s, allow_dot: allow_dot), false ] unless m
+
+        exponent = m[3].to_i
+        raise Invalid, "number_too_large" if exponent > MAX_EXPONENT
+
+        mantissa = parse(m[1], allow_dot: allow_dot)
+        exponent = -exponent if m[2] == "-"
+        [ mantissa * Rational(10)**exponent, mantissa ]
+      end
+
+      # The declared form: 1 <= |a| < 10 for a·10^n; a plain number only when it is already in that range.
+      def scientific_shape?(value, mantissa)
+        mantissa = value if mantissa == false
+        mantissa.zero? || (mantissa.abs >= 1 && mantissa.abs < 10)
+      end
+
+      # The item's unit at the end of the answer is dropped. The match is exact first, then
+      # compatibility-folded on the tail only (NFKC: "cm3" and "cm\u00B3" are the same unit, D-107);
+      # the digits before the tail are never folded, so a superscript exponent stays itself.
+      def strip_unit(s, unit)
+        return s unless unit.present?
+        return s.delete_suffix(unit).gsub(/#{SPACES}+\z/, "") if s.end_with?(unit)
+
+        folded = unit.unicode_normalize(:nfkc)
+        (1..[ s.length, unit.length + 2 ].min).each do |k|
+          next unless s[-k..].unicode_normalize(:nfkc) == folded
+
+          return s[0...-k].gsub(/#{SPACES}+\z/, "")
+        end
+        s
+      end
+
+      # Italian text -> Rational. Raises Invalid(code): empty, use_comma, thousands_separator,
       # ambiguous_mixed_number, unparseable.
       def parse(text, allow_dot: false, unit: nil)
-        s = clean(text)
-        s = s.delete_suffix(unit).gsub(/#{SPACES}+\z/, "") if unit.present? && s.end_with?(unit)
+        s = strip_unit(clean(text), unit)
         raise Invalid, "empty" if s.empty?
+        t = s.sub(/\A([+-])#{SPACES}+/, '\1')
+        raise Invalid, "thousands_separator" if t.match?(THOUSANDS_SPACED)
         raise Invalid, "ambiguous_mixed_number" if s.match?(/\d#{SPACES}+[\d,.]/)
 
-        m = DECIMAL.match(s.sub(/\A([+-])#{SPACES}+/, '\1'))
+        raise Invalid, "thousands_separator" if !allow_dot && t.match?(THOUSANDS)
+
+        m = DECIMAL.match(t)
         raise Invalid, "unparseable" if m.nil? || (m[2].empty? && m[4].nil?)
         raise Invalid, "unparseable" if m[2].empty? && m[3].nil?
         raise Invalid, "use_comma" if m[3] == "." && !allow_dot

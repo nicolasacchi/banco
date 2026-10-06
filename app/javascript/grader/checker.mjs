@@ -330,10 +330,16 @@ function fromJson(j) {
       throw new InputError('list_not_expected');
     }
     case 'Equal': { const [x, y] = A(); return { t: 'eq', lhs: x, rhs: y }; }
+    case 'Less': case 'LessEqual': case 'Greater': case 'GreaterEqual': {
+      if (a.length !== 2) throw new InputError('unsupported_operator', 'chained_relation');
+      const [x, y] = A();
+      return { t: 'rel', op: REL_OPS[op], lhs: x, rhs: y };
+    }
     case 'Error': throw new InputError('syntax', JSON.stringify(a).slice(0, 80));
     default: throw new InputError('unsupported_operator', op);
   }
 }
+const REL_OPS = { Less: '<', LessEqual: '<=', Greater: '>', GreaterEqual: '>=' };
 function isIntLit(n) { return n.t === 'num' && n.kind === 'int'; }
 function isIntFrac(n) { return n.t === 'div' && !n.colon && isIntLit(n.num) && isIntLit(n.den); }
 
@@ -343,7 +349,7 @@ function children(n) {
     case 'add': case 'mul': return n.args;
     case 'div': return [n.num, n.den];
     case 'pow': return [n.base, n.exp];
-    case 'eq': return [n.lhs, n.rhs];
+    case 'eq': case 'rel': return [n.lhs, n.rhs];
     case 'num': case 'sym': case 'pi': return [];
     default: return [n.arg];
   }
@@ -565,6 +571,52 @@ function isPrimitiveIntegerPoly(f) {
   return g === 1n || g === 0n;
 }
 
+// ---- polynomial helpers for the `reduced` form (exact, over Q; coefficients low to high)
+function polyTrim(p) { while (p.length && qzero(p[p.length - 1])) p.pop(); return p; }
+function polyInterp(xs, ys) {
+  const out = [];
+  for (let i = 0; i < xs.length; i++) {
+    let term = [ys[i]];
+    for (let j = 0; j < xs.length; j++) {
+      if (j === i) continue;
+      const inv = qinv(Q(xs[i] - xs[j]));
+      const next = new Array(term.length + 1).fill(null).map(() => Q(0n));
+      term.forEach((c, k) => { next[k + 1] = qadd(next[k + 1], qmul(c, inv)); next[k] = qadd(next[k], qmul(c, qmul(inv, Q(-xs[j])))); });
+      term = next;
+    }
+    term.forEach((c, k) => { out[k] = qadd(out[k] || Q(0n), c); });
+  }
+  return polyTrim(out);
+}
+function polyRem(a, b) {
+  a = a.slice();
+  while (a.length >= b.length && a.length) {
+    const f = qmul(a[a.length - 1], qinv(b[b.length - 1])), sh = a.length - b.length;
+    for (let i = 0; i < b.length; i++) a[sh + i] = qadd(a[sh + i], qneg(qmul(f, b[i])));
+    polyTrim(a);
+  }
+  return a;
+}
+function polyGcdDegree(a, b) {
+  a = polyTrim(a.slice()); b = polyTrim(b.slice());
+  if (!a.length || !b.length) return Math.max(a.length, b.length) - 1;
+  while (b.length) { const r = polyRem(a, b); a = b; b = r; }
+  return a.length - 1;
+}
+// the polynomial a node stands for in its single letter, or null (not a polynomial of degree <= 9)
+function asPoly(n, name) {
+  const xs = [], ys = [];
+  try {
+    for (let k = -5n; k <= 6n; k++) {
+      const v = evalExact(n, new Map([[name, Q(k)]]));
+      if (!sIsRational(v)) return null;
+      xs.push(k); ys.push(sRational(v));
+    }
+  } catch { return null; }
+  const p = polyInterp(xs, ys);
+  return p.length - 1 <= 9 ? p : null;
+}
+
 const opDiv = (ans, ctx) => ctx.flags.has('division_operator') && numberForm(ans) && numberForm(ans).kind === 'frac';
 const FORMS = {
   number(ans, ctx) { return numberForm(ans) && !opDiv(ans, ctx) ? [] : ['not_a_number']; },
@@ -587,6 +639,21 @@ const FORMS = {
         for (const t of terms(x.num)) { const c = termIntCoeff(t.node); if (c === null) { g = 1n; break; } g = bgcd(g, c); }
         if (g !== 1n) v.add('not_lowest_terms');
       }
+    });
+    return [...v];
+  },
+  // an algebraic fraction whose numerator and denominator (polynomials in one letter) still share a factor
+  reduced(ans) {
+    const v = new Set();
+    walk(ans, (x) => {
+      if (x.t !== 'div' || x.colon) return;
+      const nv = freeVars(x.num), dv = freeVars(x.den);
+      if (!nv.size || !dv.size) return;
+      const all = new Set([...nv, ...dv]);
+      if (all.size !== 1) return;
+      const name = [...all][0];
+      const a = asPoly(x.num, name), b = asPoly(x.den, name);
+      if (a && b && polyGcdDegree(a, b) > 0) v.add('common_factor_not_cancelled');
     });
     return [...v];
   },
@@ -670,9 +737,20 @@ const FORMS = {
     if (af.length < ef.length) v.add('not_fully_factored');
     return [...v];
   },
-  solution(ans, ctx) {
+  // `r = expression` or `expression` for the unknown `r`: the letter is isolated; the other side
+  // may be any expression (compare solution, whose other side must be a number).
+  isolate(ans, ctx) {
     const n = strip(ans);
     if (n.t === 'eq') {
+      const l = strip(n.lhs), r = strip(n.rhs);
+      const symSide = l.t === 'sym' ? l : r.t === 'sym' ? r : null;
+      if (!symSide || (ctx.unknown && symSide.name !== ctx.unknown)) return ['not_a_solution_statement'];
+    }
+    return [];
+  },
+  solution(ans, ctx) {
+    const n = strip(ans);
+    if (n.t === 'eq' || n.t === 'rel') {
       const l = strip(n.lhs), r = strip(n.rhs);
       const symSide = l.t === 'sym' ? l : r.t === 'sym' ? r : null;
       const numSide = l.t === 'sym' ? r : l;
@@ -683,15 +761,33 @@ const FORMS = {
   },
 };
 
-// `x = value` -> value, for solution items
+// `x = value` -> value, for solution items. A relation (x < a, a >= x) becomes a canonical
+// { t: 'rel', op, arg } with the unknown on the left (a > x is x < a); a relation without the
+// unknown alone on one side gets op '?' and never equals anything.
 function solutionValue(n, unknown) {
   const s = strip(n);
+  if (s.t === 'rel') {
+    const l = strip(s.lhs), r = strip(s.rhs);
+    if (l.t === 'sym' && (!unknown || l.name === unknown)) return { t: 'rel', op: s.op, arg: s.rhs };
+    if (r.t === 'sym' && (!unknown || r.name === unknown)) return { t: 'rel', op: FLIP[s.op], arg: s.lhs };
+    return { t: 'rel', op: '?', arg: s };
+  }
   if (s.t !== 'eq') return n;
   const l = strip(s.lhs), r = strip(s.rhs);
   if (l.t === 'sym' && (!unknown || l.name === unknown)) return s.rhs;
   if (r.t === 'sym' && (!unknown || r.name === unknown)) return s.lhs;
   return n;
 }
+const FLIP = { '<': '>', '<=': '>=', '>': '<', '>=': '<=' };
+// Value equality of two solution values; a relation equals only a relation with the same
+// direction and an equal bound.
+function solEq(a, b, opts) {
+  const ra = a.t === 'rel', rb = b.t === 'rel';
+  if (!ra && !rb) return valueEquivalent(a, b, opts);
+  if (ra !== rb || a.op === '?' || a.op !== b.op) return { equal: false, method: 'exact' };
+  return valueEquivalent(a.arg, b.arg, opts);
+}
+function hasRel(n) { let f = false; walk(n, (y) => { if (y.t === 'rel') f = true; }); return f; }
 
 // ---------------------------------------------------------------- public factory
 export function createChecker({ ComputeEngine }) {
@@ -717,19 +813,21 @@ export function createChecker({ ComputeEngine }) {
     const opts = { domain, seed, mode };
     const problems = [];
     const exp = parse(expected, source);
+    if (exp.ok && !form.includes('solution') && hasRel(exp.ast)) return { problems: ['expected_unparseable:unsupported_operator'], check: () => ({ verdict: 'invalid', code: 'item_broken' }) };
     if (!exp.ok) return { problems: [`expected_unparseable:${exp.code}`], check: () => ({ verdict: 'invalid', code: 'item_broken' }) };
     const isSol = form.includes('solution');
-    const expVal = isSol ? solutionValue(exp.ast, unknown) : exp.ast;
+    const strips = isSol || form.includes('isolate');
+    const expVal = strips ? solutionValue(exp.ast, unknown) : exp.ast;
     const errs = [];
     for (const e of errors) {
       const p = parse(e.latex, source);
       if (!p.ok) { problems.push(`error_unparseable:${e.code}`); continue; }
-      errs.push({ code: e.code, ast: isSol ? solutionValue(p.ast, unknown) : p.ast });
+      errs.push({ code: e.code, ast: strips ? solutionValue(p.ast, unknown) : p.ast });
     }
     // generator constraints: the correct answer never matches an error; errors never collide
-    for (const e of errs) if (valueEquivalent(expVal, e.ast, opts).equal !== false) problems.push(`error_equals_expected:${e.code}`);
+    for (const e of errs) if (solEq(expVal, e.ast, opts).equal !== false) problems.push(`error_equals_expected:${e.code}`);
     for (let i = 0; i < errs.length; i++) for (let j = i + 1; j < errs.length; j++) {
-      if (valueEquivalent(errs[i].ast, errs[j].ast, opts).equal !== false) problems.push(`errors_collide:${errs[i].code}=${errs[j].code}`);
+      if (solEq(errs[i].ast, errs[j].ast, opts).equal !== false) problems.push(`errors_collide:${errs[i].code}=${errs[j].code}`);
     }
     // the expected answer must satisfy its own form constraints
     for (const f of form) {
@@ -741,15 +839,16 @@ export function createChecker({ ComputeEngine }) {
     function checkRaw(answer, aopts = {}) {
       const p = parse(answer, aopts.source || source);
       if (!p.ok) return { verdict: 'invalid', code: p.code, detail: p.detail };
-      const ansVal = isSol ? solutionValue(p.ast, unknown) : p.ast;
-      const r = valueEquivalent(ansVal, expVal, opts);
+      if (!isSol && hasRel(p.ast)) return { verdict: 'invalid', code: 'unsupported_operator', detail: 'relation' };
+      const ansVal = strips ? solutionValue(p.ast, unknown) : p.ast;
+      const r = solEq(ansVal, expVal, opts);
       if (r.equal === null) return { verdict: 'undetermined', reason: r.reason, method: r.method };
       if (r.equal) {
         const fv = [];
         for (const f of form) fv.push(...FORMS[f](p.ast, { flags: p.flags, expected: exp.ast, unknown, opts }));
         return fv.length ? { verdict: 'wrong_form', form_violations: [...new Set(fv)], method: r.method } : { verdict: 'correct', method: r.method };
       }
-      const hits = errs.filter((e) => valueEquivalent(ansVal, e.ast, opts).equal === true).map((e) => e.code);
+      const hits = errs.filter((e) => solEq(ansVal, e.ast, opts).equal === true).map((e) => e.code);
       if (hits.length) return { verdict: 'typical_error', error_codes: hits, method: r.method };
       return { verdict: 'wrong', method: r.method };
     }

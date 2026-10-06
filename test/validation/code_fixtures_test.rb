@@ -27,10 +27,10 @@ class CodeFixturesTest < ActiveSupport::TestCase
     Validation::ItemRunner.new(files: files || F.files_for(doc), context: context).call.findings.map(&:code).uniq
   end
 
-  def chrome_codes(files)
+  def chrome_codes(files, **opts)
     require_chrome!
     token = stage_token(files)
-    Validation::ItemRunner.new(files: files, context: F.context, harness_token: token).call.findings.map(&:code).uniq
+    Validation::ItemRunner.new(files: files, context: F.context, harness_token: token, **opts).call.findings.map(&:code).uniq
   end
 
   def gen(source, verify: F::VERIFY) = F.generated_files(generator: source, verify: verify)
@@ -55,7 +55,7 @@ class CodeFixturesTest < ActiveSupport::TestCase
                                               instances: (1..4).map { |i| { fingerprint: "#{id}-#{i}", low_guess: true } })
   end
 
-  def blueprint_codes(items: nil, &edit)
+  def blueprint_codes(items: nil, context: F.context, &edit)
     lookup = items || ->(id) { BP_ITEMS.key?(id) ? bp_info(id) : nil }
     doc = {
       "schema" => "banco.blueprint/1", "schema_version" => 1, "subject" => "math", "graph_revision_id" => "1",
@@ -66,7 +66,7 @@ class CodeFixturesTest < ActiveSupport::TestCase
       "intro_note_it" => "Il test dura mezz'ora.", "not_measured_it" => "Non misura la geometria."
     }
     edit&.call(doc)
-    Validation::BlueprintChecks.call(doc, graph: F::GRAPH, subject: "math", context: F.context, items: lookup).map(&:code).uniq
+    Validation::BlueprintChecks.call(doc, graph: F::GRAPH, subject: "math", context: context, items: lookup).map(&:code).uniq
   end
 
   def choice_with(**) = F.choice_item(**)
@@ -81,9 +81,9 @@ class CodeFixturesTest < ActiveSupport::TestCase
     item("instances" => [ inst, F.number_instance(4, 13) ], "tests" => { "must_accept" => [], "must_reject" => [], "blank" => "invalid" })
   end
 
-  def matching_item(left, right)
+  def matching_item(left, right, right_text: nil)
     answer = left.first(right.size - 1).to_h { |i| [ "l#{i}", "r#{i}" ] }
-    inst = { "display" => { "stem_it" => "Abbina.", "left" => left.map { |i| { "id" => "l#{i}", "text" => "sinistra #{i}" } }, "right" => right.map { |i| { "id" => "r#{i}", "text" => "destra #{i}" } } },
+    inst = { "display" => { "stem_it" => "Abbina.", "left" => left.map { |i| { "id" => "l#{i}", "text" => "sinistra #{i}" } }, "right" => right.map { |i| { "id" => "r#{i}", "text" => (right_text && i == right.first ? right_text : "destra #{i}") } } },
              "answer" => answer, "errors" => [ { "code" => "swap", "value" => answer.to_a.reverse.to_h } ],
              "solution" => { "steps" => [ { "text_it" => "Abbina." } ], "final" => "fatto" } }
     item("component" => "matching", "instances" => [ inst, inst.merge("display" => inst["display"].merge("stem_it" => "Abbina ancora.")) ],
@@ -128,6 +128,9 @@ class CodeFixturesTest < ActiveSupport::TestCase
     },
     "E-OPTION-DUPLICATE" => -> { static_codes(F.choice_item("instances" => [ F.choice_instance("sette", %w[sette nove undici]), F.choice_instance("otto", %w[quattro sei dieci]) ])) },
     "E-MATCHING-SIZE" => -> { static_codes(matching_item([ 1, 2, 3 ], [ 1, 2, 3, 4 ])) },
+    "E-MATCHING-RIGHT-MARKUP" => -> { static_codes(matching_item([ 1, 2, 3, 4 ], [ 1, 2, 3, 4, 5 ], right_text: "$x \\leq 2$")) },
+    "W-ERROR-NOT-IN-GRAPH" => -> { static_codes(item("error_catalogue" => [ item["error_catalogue"].first.merge("code" => "brand_new_code") ])) },
+    "W-FORM-SKILL-CLOSURE" => -> { static_codes(item("form_skill" => "math.fractions-operations", "form" => [ "reduced" ])) },
     "E-ACCENT-POLICY" => -> { static_codes(item("accent_policy" => "strict")) },
     "E-PROVA-A-PARAMS" => -> { static_codes(item("sources" => [ { "kind" => "prova_a_structure", "ref" => "struttura", "fragment" => "esercizio" } ])) },
     "E-READ" => -> { static_codes(item("prompt" => { "stem_it" => long_sentence })) },
@@ -161,6 +164,9 @@ class CodeFixturesTest < ActiveSupport::TestCase
     },
     "E-VERIFY-MISSING" => -> { chrome_codes(F.generated_files(verify: nil)) },
     "E-VERIFY-REJECTS" => -> { chrome_codes(gen(F::GENERATOR, verify: "export function verify(instance) { return { ok: false }; }")) },
+    "E-VERIFY-STALE" => lambda {
+      chrome_codes(gen(F::GENERATOR, verify: "export function verify(instance) { return { ok: false }; }"), verify_inherited: true)
+    },
     "E-VERIFY-VACUOUS" => -> { chrome_codes(gen(F::GENERATOR, verify: "export function verify(instance) { return { ok: true }; }")) },
     "E-POOL-REDO" => lambda {
       blueprint_codes { |d| d["entries"][0]["items"] = [ "r0a" ] }
@@ -169,6 +175,22 @@ class CodeFixturesTest < ActiveSupport::TestCase
     "E-ITEM-NOT-PASSED" => -> { blueprint_codes(items: ->(id) { BP_ITEMS.key?(id) ? bp_info(id, passed: id != "r1a") : nil }) },
     "E-BLUEPRINT-UNPINNED-DESCENT" => -> { blueprint_codes { |d| d["descent"].pop } },
     # Warnings.
+    "W-SHORT-SKILL-CLOSED" => lambda {
+      blueprint_codes(items: ->(id) { BP_ITEMS.key?(id) ? bp_info(id).tap { |i| i.kind = "short_answer" if id == "r0a" } : nil })
+    },
+    "W-STALE-PIN" => lambda {
+      blueprint_codes(items: ->(id) { BP_ITEMS.key?(id) ? bp_info(id).tap { |i| i.latest_passed_id = "r0z" if id == "r0a" } : nil })
+    },
+    "W-GUEST-UNAPPROVED" => lambda {
+      draft = Validation::Context.new(subject: "math", draft_skill: ->(k) { k == "italian.reading" ? { "key" => k } : nil })
+      blueprint_codes(context: draft) { |d| d["entries"][0].merge!("skill" => "italian.reading", "guest_of_subject" => "italian") }
+    },
+    "W-IMPLICATE-PENDING" => lambda {
+      base = F.context
+      draft = Validation::Context.new(subject: "math", skill: base.method(:skill).to_proc, graph_present: true, source_line: ->(s, n) { base.source_line(s, n) },
+                                      draft_skill: ->(k) { k == "chemistry.draft-skill" ? { "key" => k } : nil })
+      static_codes(item("error_catalogue" => [ item["error_catalogue"][0].merge("implicates" => [ "chemistry.draft-skill" ]) ]), context: draft)
+    },
     "W-ANSWER-IN-STEM" => -> { static_codes(item("instances" => [ F.number_instance(25, 150, stem: "Risolvi $x+25=150$ sapendo che il risultato e 125."), F.number_instance(4, 13) ], "tests" => { "must_accept" => [], "must_reject" => [], "blank" => "invalid" })) },
     "W-LONGEST-CORRECT" => -> { static_codes(F.choice_item("instances" => (1..4).map { |i| F.choice_instance("una risposta molto lunga numero #{i}", %w[uno due tre]) })) },
     "W-GULPEASE" => -> { static_codes(item("prompt" => { "stem_it" => ([ "Paradigmaticamente incontrovertibilmente costituzionalizzabile" ] * 9).join(" ") + "." })) },
@@ -178,10 +200,55 @@ class CodeFixturesTest < ActiveSupport::TestCase
       static_codes({ "schema" => "banco.item/1", "schema_version" => 1, "kind" => "testlet", "subject" => "math", "skill" => F::SKILL, "passage_it" => passage,
                      "expected_seconds" => 300, "sub_items" => subs, "sources" => item["sources"] })
     },
+    "E-TESTLET-SKILLS" => lambda {
+      subs = (1..5).map { |i| item.slice("skill", "component", "prompt", "error_catalogue", "instances", "tests").merge("id" => "q#{i}") }
+      subs[1] = subs[1].merge("skill" => F::PREREQ)
+      static_codes({ "schema" => "banco.item/1", "schema_version" => 1, "kind" => "testlet", "subject" => "math", "skill" => F::SKILL, "passage_it" => "Un testo breve e chiaro.",
+                     "expected_seconds" => 300, "sub_items" => subs, "sources" => item["sources"] })
+    },
     "W-ABSOLUTE" => -> { static_codes(item("prompt" => { "stem_it" => "Il risultato e sempre positivo." })) },
     "W-NEGATIVE-STEM" => -> { static_codes(item("prompt" => { "stem_it" => "Quale frase non e corretta?" })) },
     "W-DECIMAL-POINT" => -> { static_codes(item("prompt" => { "stem_it" => "Il prezzo e 3.5 euro." })) },
     "W-SELF-CERT" => -> { static_codes(item("prompt" => { "stem_it" => "Ho verificato il calcolo." })) },
+    "W-SCOPE-MARKER" => lambda {
+      doc = JSON.parse(JSON.generate(F::GRAPH))
+      context = Validation::Context.new(subject: "math", source_line: ->(s, n) { (l = F::LINES.dig(s, n)) && s == "prima-test" ? l.merge(block_marker: "★") : l })
+      Validation::Rules.with(coverage: { prima_source: "prima-test" }) { Validation::GraphChecks.call(doc, subject: "math", context: context).map(&:code).uniq }
+    },
+    "W-REF-OTHER-SUBJECT" => lambda {
+      doc = JSON.parse(JSON.generate(F::GRAPH))
+      lines = { 1 => "Italiano", 2 => "Italiano", 3 => "Storia" }
+      %w[math.integer-operations math.fractions-operations math.linear-equation-integer].each_with_index do |key, i|
+        doc["skills"].find { |s| s["key"] == key }["refs"][0].merge!("line" => i + 1, "fragment" => F::LINES.dig("seconda-test", 1)[:text])
+      end
+      context = Validation::Context.new(subject: "math", source_line: ->(_s, _n) { { text: F::LINES.dig("seconda-test", 1)[:text], origin: "pdf" } },
+                                        source_section: ->(_s, n) { lines[n] })
+      Validation::GraphChecks.call(doc, subject: "math", context: context).map(&:code).uniq
+    },
+    "W-GRAPH-READABILITY" => lambda {
+      doc = JSON.parse(JSON.generate(F::GRAPH))
+      doc["skills"][0]["errors"] = [ { "code" => "long_one", "description_it" => ("parola " * 30).strip + ".", "implicates" => [] } ]
+      Validation::GraphChecks.call(doc, subject: "math", context: F.context).map(&:code).uniq
+    },
+    "W-GRAPH-DEFERRED-APPROVED" => lambda {
+      doc = JSON.parse(JSON.generate(F::GRAPH))
+      doc["skills"][0]["deferred_prerequisites"] = [ { "skill" => "italian.reading", "reason_it" => "Serve la lettura." } ]
+      context = Validation::Context.new(subject: "math", source_line: ->(src, n) { F::LINES.dig(src, n) }, approved_skill: ->(k) { k == "italian.reading" ? { "key" => k } : nil })
+      Validation::GraphChecks.call(doc, subject: "math", context: context).map(&:code).uniq
+    },
+    "W-TESTLET-LEAK" => lambda {
+      long = "il contratto e annullabile per incapacita"
+      subs = (1..5).map do |n|
+        key = n == 1 ? long : "chiave numero #{n} del tutto diversa"
+        ds = n == 2 ? [ long, "nove", "undici" ] : %w[tredici nove undici]
+        F.choice_item.slice("skill", "component", "prompt", "error_catalogue", "tests", "choice_only_reason_it").merge(
+          "id" => "q#{n}", "instances" => Array.new(3) { F.choice_instance(key, ds) }
+        )
+      end
+      static_codes({ "schema" => "banco.item/1", "schema_version" => 1, "kind" => "testlet", "subject" => "math", "skill" => F::SKILL,
+                     "passage_it" => "Un breve testo di prova.", "expected_seconds" => 300, "sub_items" => subs,
+                     "sources" => [ { "kind" => "inferred", "ref" => "prova", "fragment" => "x" } ] })
+    },
     "W-CALCULATOR" => lambda {
       business = item("subject" => "business", "skill" => "business.invoice")
       static_codes(business, context: F.context(subject: "business", extra_skills: { "business.invoice" => { "key" => "business.invoice" } }))

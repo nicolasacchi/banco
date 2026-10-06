@@ -22,7 +22,9 @@ decision: you stop at `awaiting_teacher`.
 - `entries[]`: the starting skills in the order they are tried, 4 to 10 of them.
   Each has `items[]` (item revision ids) and optionally `redo_reserve: false` or
   `choice_only_reason_it`. A starting skill may belong to another subject's
-  approved graph (`guest_of_subject`); its result goes to the owner subject.
+  approved graph (`guest_of_subject`); its result goes to the owner subject. While that
+  graph is still a draft the entry is accepted with `W-GUEST-UNAPPROVED` so you can simulate;
+  the teacher cannot approve the test until the graph is approved.
 - `descent[]`: the descent pool, required (it may be empty when no skill lies
   below the starting skills). When a starting skill goes wrong the test goes down
   to its prerequisites and to the skills its typical errors point at, so for every
@@ -36,7 +38,7 @@ decision: you stop at `awaiting_teacher`.
 - `depends_on_subjects[]`: subjects that must have a closed first sitting.
 - `calculator`: `no` by default; `yes` in business and chemistry, and the item
   stems say so.
-- `intro_note_it`: what the student reads before starting.
+- `intro_note_it`: what the student reads before starting (shown on the start screen).
 - `not_measured_it`: what this test does not measure (for example oral
   exposition, listening and speaking, extended writing). Required.
 - `kind_overrides[]`: `{skill, kind, reason_it}` to change `recover` or `learn`.
@@ -49,11 +51,20 @@ decision: you stop at `awaiting_teacher`.
 2. The first item of a skill is hard to guess (written answer, ordering of 4 or
    more, matching of 4 or more pairs) unless `choice_only_reason_it` says why not.
 3. Discursive subjects have closed items, one reading testlet of 150 to 300 words
-   (5 closed sub-items) and exactly one short answer, marked as indicative.
+   (5 closed sub-items) and exactly one short answer. The short answer is indicative by definition: it
+   has no mark to set. It is graded by its rubric and counts only after the teacher
+   confirms the grade. Do not cite an invented source for it.
+   Put the short answer on a skill of its own: closed items pinned on the same skill are never
+   served (`W-SHORT-SKILL-CLOSED`).
+   Pin the newest passed revision of each item: a replaced revision still counts as passed but is
+   `W-STALE-PIN`, and the teacher cannot approve it. `banco status` lists `stale_pins`.
 4. Order starting skills from the simplest dependency: a failure descends to
    prerequisites, so start where a descent is cheap. Run `banco diagnosis simulate`
    with the `all-correct` and `all-wrong` scripts and read the traces; the teacher
-   sees them too.
+   sees them too. With `--blueprint FILE` the dry run uses the graph revision named in the
+   file and the pinned items that are stored and passed (the answer lists in `warnings`
+   any it had to invent); after a submit, `--subject KEY` does the same from the stored
+   blueprint. A testlet is served at most once per run.
 5. Say plainly in `not_measured_it` what the test cannot tell. Do not claim more.
 6. Introduction and notes follow the readability rules of the item brief: sentences
    of at most 25 words, no capitals, no emoji.

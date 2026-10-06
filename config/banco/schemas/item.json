@@ -76,6 +76,9 @@
       "type": "string",
       "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
     },
+    "calculation": {
+      "type": "boolean"
+    },
     "accent_policy": {
       "enum": [
         "strict",
@@ -123,6 +126,13 @@
         "$ref": "#/$defs/instance"
       },
       "minItems": 2
+    },
+    "exclude_params": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 60 },
+      "minItems": 1,
+      "maxItems": 30,
+      "uniqueItems": true
     },
     "generator": {
       "const": "generator.mjs"
@@ -209,11 +219,6 @@
         },
         "not": {
           "anyOf": [
-            {
-              "required": [
-                "passage_it"
-              ]
-            },
             {
               "required": [
                 "sub_items"
@@ -403,7 +408,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "minLength": 1,
+            "minLength": 0,
             "maxLength": 80
           },
           "minItems": 1,
@@ -415,7 +420,7 @@
             "type": "array",
             "items": {
               "type": "string",
-              "minLength": 1,
+              "minLength": 0,
               "maxLength": 80
             },
             "minItems": 1,
@@ -518,6 +523,14 @@
           },
           "minItems": 5,
           "maxItems": 11
+        },
+        "reuse_right": {
+          "type": "boolean"
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20
         }
       },
       "required": [],
@@ -560,6 +573,12 @@
         },
         "value": {
           "$ref": "#/$defs/any_answer"
+        },
+        "round_to": {
+          "description": "number only (D-135): the error matches any answer that rounds, half up, to the declared value at this many decimals. Never applies to the key.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6
         }
       },
       "required": [
@@ -585,6 +604,35 @@
         },
         "solution": {
           "$ref": "#/$defs/solution"
+        },
+        "accept": {
+          "description": "normalized_text only: other spellings of this instance's key, added to the item's accept list for this instance alone (D-081).",
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "tests": {
+          "description": "Optional checks of this instance alone (D-085): answers it must accept and must reject, run after the item's tests (which stay on the first instance).",
+          "type": "object",
+          "properties": {
+            "must_accept": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/any_answer"
+              }
+            },
+            "must_reject": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/any_answer"
+              }
+            }
+          },
+          "additionalProperties": false
         }
       },
       "required": [
@@ -637,6 +685,7 @@
             "seconda_line",
             "prova_a_structure",
             "textbook",
+            "legal_text",
             "inferred"
           ]
         },
@@ -678,6 +727,7 @@
     },
     "tests": {
       "type": "object",
+      "description": "Checked against the first instance (static) or the first stored instance (generator). A generator item should leave must_accept empty: a value must be right for every instance.",
       "properties": {
         "must_accept": {
           "type": "array",
@@ -826,6 +876,9 @@
         "form_skill": {
           "type": "string",
           "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "calculation": {
+          "type": "boolean"
         },
         "accent_policy": {
           "enum": [

@@ -30,9 +30,25 @@ class ItemGeneratedTest < ActiveSupport::TestCase
     assert result.chrome_version.present?
   end
 
+  test "exclude_params: a generated instance that shows an excluded value fails E-PROVA-A-PARAMS" do
+    item = F.generated_item.merge("exclude_params" => [ "7" ])
+    result = run_files(F.generated_files(item))
+    assert_includes codes(result), "E-PROVA-A-PARAMS"
+    ok = run_files(F.generated_files(F.generated_item.merge("exclude_params" => [ "9999" ])))
+    assert_not_includes codes(ok), "E-PROVA-A-PARAMS"
+  end
+
   test "E-VERIFY-MISSING: instances are materialized anyway" do
     result = run_files(F.generated_files(verify: nil))
     assert_equal [ "E-VERIFY-MISSING" ], codes(result)
+    assert_equal "failed", result.status
+    assert_equal 24, result.instances.size
+  end
+
+  test "E-VERIFY-STALE: a carried-forward verify.mjs that rejects (D-141)" do
+    files = F.generated_files(verify: "export function verify(instance) { return { ok: false, reason_it: 'Vecchio.' }; }")
+    result = Validation::ItemRunner.new(files: files, context: F.context, harness_token: stage_token(files), verify_inherited: true).call
+    assert_equal [ "E-VERIFY-STALE" ], codes(result)
     assert_equal "failed", result.status
     assert_equal 24, result.instances.size
   end
@@ -41,6 +57,16 @@ class ItemGeneratedTest < ActiveSupport::TestCase
     result = run_files(F.generated_files(verify: "export function verify(instance) { return { ok: false, reason_it: 'Non so.' }; }"))
     assert_equal [ "E-VERIFY-REJECTS" ], codes(result)
     assert_equal 24, result.instances.size
+    detail = result.findings.find { |f| f.code == "E-VERIFY-REJECTS" }.detail
+    assert_equal detail[:count], detail[:rejected_seeds].size
+    assert_equal detail[:rejected_seeds].sort, detail[:reasons].values.flatten.sort
+    assert_equal [ "Non so." ], detail[:reasons].keys
+    assert_equal detail[:count], result.details.dig(:verify, :rejected)
+    assert detail[:first_rejected].key?("display"), "the first rejected instance is shown"
+    assert detail[:first_rejected].key?("answer")
+    samples = detail[:rejected_samples]
+    assert_equal [ detail[:count], 8 ].min, samples.size
+    assert samples.all? { |x| x.key?("display") && x["reason"] == "Non so." && x.key?("in_stored_pool") }
   end
 
   test "E-VERIFY-REJECTS: a formula that is wrong in verify" do
@@ -101,6 +127,17 @@ class ItemGeneratedTest < ActiveSupport::TestCase
     few = F::GENERATOR.sub("const a = rng.int(2, 40);", "const a = 2 + (seed % 3);").sub("const c = a + rng.int(2, 60);", "const c = a + 7;")
     result = run_files(gen(few))
     assert(result.findings.any? { |f| f.code == "E-GEN-POOL" && f.detail[:distinct] })
+  end
+
+  test "tests.must_reject and blank are run on a generated item (E-ROUNDTRIP)" do
+    item = F.generated_item
+    item["tests"] = { "must_accept" => [], "must_reject" => [ "1" ], "blank" => "invalid" }
+    files = F.generated_files(item)
+    # "1" is the key only when a seed gives c - a = 1; the generator draws c - a from 2..61, so it is a clean reject
+    assert_not_includes codes(run_files(files)), "E-ROUNDTRIP"
+    item["tests"]["must_accept"] = [ "-999" ]
+    result = run_files(F.generated_files(item))
+    assert(result.findings.any? { |f| f.code == "E-ROUNDTRIP" && f.field.end_with?("tests/must_accept") }, result.findings.map(&:to_h).inspect)
   end
 
   test "E-DISPLAY-KEY: a generated display that carries a key" do

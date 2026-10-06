@@ -81,6 +81,71 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-071 | 2026-10-04 | agent sessions are bound to their token; token roles limit session roles | implemented |
 | D-072 | 2026-10-04 | production host authorization | implemented |
 | D-073 | 2026-10-04 | audit lows: seq in the transaction, thousands, Unicode variants, punctuation keys, counted abandon, mixed at the cap | implemented |
+| D-074 | 2026-10-04 | reference texts: agents list and read, the operator imports | implemented |
+| D-075 | 2026-10-04 | partial exclusions, per-line coverage detail, inherited block markers, W-SCOPE-MARKER | implemented |
+| D-076 | 2026-10-04 | a form that is the item's own skill carries its first violation as the error code | implemented |
+| D-077 | 2026-10-04 | solution items accept an inequality (x < a) as the answer and as typical errors | implemented |
+| D-078 | 2026-10-04 | generator items run tests; leak scan folds exponent braces and product dots | implemented |
+| D-079 | 2026-10-04 | `isolate` form (letter = expression) and `exclude_params` on banco.item/1 | implemented |
+| D-081 | 2026-10-04 | per-instance `accept`; item prompt in the leak scan; W-FORM-SKILL-CLOSURE; E-MATCHING-RIGHT-MARKUP | implemented |
+| D-082 | 2026-10-05 | step consistency reads LaTeX decimal commas; teacher skill page renders solution markup | implemented |
+| D-083 | 2026-10-05 | W-ANSWER-IN-STEM ignores a key inside a «quoted» sentence; brief on accent_policy and per-instance accept | implemented |
+| D-084 | 2026-10-05 | W-NEGATIVE-STEM ignores «quoted» and $math$ spans; CLI reports a missing contract header as E-NETWORK | decided |
+| D-085 | 2026-10-05 | per-instance `tests`; W-GRAPH-READABILITY | implemented |
+| D-086 | 2026-10-05 | matching: each answer once (hint and greyed-out entries) | implemented |
+| D-087 | 2026-10-05 | W-ERROR-NOT-IN-GRAPH; an ordering is never shown as a declared error permutation | implemented |
+| D-088 | 2026-10-05 | passage_it on short_answer is shown everywhere; allowed on diagnosis_item | implemented |
+| D-089 | 2026-10-05 | fingerprints ignore stored order and ids of shuffled columns (validation rules v2); end-of-subject message from the item that erred | implemented |
+| D-090 | 2026-10-05 | source kind legal_text; brief says which instance tests run on | implemented |
+| D-091 | 2026-10-05 | deferred_prerequisites and deferred_implicates: cross-subject edges that wait for approval; banco --help | implemented |
+| D-092 | 2026-10-05 | matching as a classification (`display.reuse_right`); generator `tests` confirmed already run | implemented |
+| D-093 | 2026-10-05 | graph findings per skill; 2-category classification; number `accept` and form `scientific` | implemented |
+| D-094 | 2026-10-05 | testlet passage in the leak scan; `da solo` is not an absolute word | implemented |
+| D-095 | 2026-10-05 | binary profile reports declared errors; arrows and spreadsheet function names pass the readability lint | implemented |
+| D-096 | 2026-10-05 | testlet low-guess and choice per skill; accent-slip observation skill; graph `notes_it` | implemented |
+| D-097 | 2026-10-05 | a dry run waits up to 25 s for Chrome before E-CHROME-BUSY | implemented |
+| D-098 | 2026-10-05 | a testlet is charged as a serve to its first skill only; its sub items must share one skill (E-TESTLET-SKILLS) | implemented |
+| D-099 | 2026-10-05 | one instance of a testlet item per run; a bare blueprint dry run loads the pinned graph and items | implemented |
+| D-100 | 2026-10-05 | E-VERIFY-REJECTS names every rejected seed with its reason; the dry run reports the verify phase | implemented |
+| D-101 | 2026-10-05 | the blueprint's intro_note_it, not_measured_it, calculator and per-skill flags are shown | implemented |
+| D-102 | 2026-10-05 | amounts with the Italian thousands dot | implemented |
+| D-103 | 2026-10-05 | thousands with spaces are `thousands_separator`; an instance `display.unit` overrides the item unit | implemented |
+| D-104 | 2026-10-05 | DDT in caps_allowlist (rules v4); `--help` anywhere in the CLI line | implemented |
+| D-105 | 2026-10-05 | E-PHRASE matches banned phrases on word boundaries | implemented |
+| D-106 | 2026-10-05 | `calculation: false` exempts counting items from W-CALCULATOR | implemented |
+| D-107 | 2026-10-05 | the number unit suffix matches after NFKC (`cm3` = `cm³`); content-agent reports on generator tests and per-instance unit were already done | implemented |
+| D-108 | 2026-10-05 | content-agent reports (english): tests run on the first clean seed, per-instance accept exists, it_accents is the code for any non-Spanish accent slip; documented, no code change | implemented |
+| D-109 | 2026-10-05 | under accent_policy flag a declared error typed without its accent still hits it (spanish report); tests of generator items already run (D-078) | implemented |
+| D-112 | 2026-10-05 | testlet units carry the typical error codes of their sub items; the Italian lint skips passage_it and model_answer_it in english and spanish (rules v5) | implemented |
+| D-113 | 2026-10-05 | binary answers written in groups of bits ("1110 1100") are read as one string | implemented |
+| D-114 | 2026-10-05 | binary profile: a declared error value written exactly (padding_missing) is a typical error, not wrong_form; plain normalized_text bit/letter codes typed with spaces are `invalid` (`spaces_in_code`); CS acronyms in caps_allowlist (rules v6); generator tests already run | implemented |
+| D-115 | 2026-10-05 | `work open` warns inside a git work tree; cloze pages repeating a form use D-092 `reuse_right` | implemented |
+| D-116 | 2026-10-05 | binary profile: a declared error value that is not a bit string (1121) is a `typical_error`, not `invalid`; undeclared non-bit answers stay `invalid` | implemented |
+| D-117 | 2026-10-05 | W-SCOPE-MARKER reads the stars inside the cited fragment first (a line with several ☆ fragments has no line marker); matching as a 3-category classification already exists (D-092) | implemented |
+| D-118 | 2026-10-05 | a table cell (header or row) may be the empty string, for spreadsheet grids; arrows already pass the lint in every `_it` field (D-095) | implemented |
+| D-119 | 2026-10-05 | `work open --role verifier` returns every stored instance (the whole pool of 24), not the first 8 | implemented |
+| D-120 | 2026-10-05 | `banco items list`: the revisions of a subject's items with status and a current marker | implemented |
+| D-121 | 2026-10-05 | W-SHORT-SKILL-CLOSED: closed items pinned beside a short answer are never served and leave the redo pool count; the teacher's traces confirm pending and short answers | implemented |
+| D-122 | 2026-10-05 | `banco work submit --dry-run` repeats itself on E-CHROME-BUSY (6 times, 10 s apart) | implemented |
+| D-123 | 2026-10-05 | `work status` says `retrying` while an error row awaits its retry | implemented |
+| D-124 | 2026-10-05 | `E-VERIFY-REJECTS` shows up to 8 rejected instances | implemented |
+| D-125 | 2026-10-05 | a ref's programme section is shown and checked (`W-REF-OTHER-SUBJECT`); items the blueprint does not pin are a derived reserve | implemented |
+| D-126 | 2026-10-05 | the short answer is indicative by definition | decided |
+| D-127 | 2026-10-05 | the whole arrows block is allowed in `*_it` text | implemented |
+| D-128 | 2026-10-05 | W-TESTLET-LEAK: a sub-item key in the passage or in another sub-item | implemented |
+| D-129 | 2026-10-06 | guest skills from a draft graph (W-GUEST-UNAPPROVED); `items list` carries what a blueprint pins | implemented |
+| D-130 | 2026-10-06 | a pending testlet answer holds its skill: no further testlet until it is settled | implemented |
+| D-131 | 2026-10-06 | a testlet that does not fit the sitting is deferred to the next one, not replaced by a repeat of the item already used | implemented |
+| D-132 | 2026-10-06 | reviewers: `items list` already lists revision ids; own scratch directory per subject and round | implemented |
+| D-133 | 2026-10-06 | `review open` lists every stored instance of a generator item | implemented |
+| D-134 | 2026-10-06 | `items list --subject` accepts keys with an underscore (computer_science) | implemented |
+| D-135 | 2026-10-06 | `round_to` on a number error; item implicates into another subject's draft graph; ready marker on deferred edges | implemented |
+| D-136 | 2026-10-06 | a pinned item revision that a newer passed revision replaced is `W-STALE-PIN` | implemented |
+| D-137 | 2026-10-06 | `skill-graph coverage` lists the error codes of passed items that the graph lacks | implemented |
+| D-138 | 2026-10-06 | the blueprint's item order decides which item is served first; a star block survives short bullets | implemented |
+| D-139 | 2026-10-06 | W-SCOPE-MARKER reads a star just before the cited fragment; `banco work open` defaults to `$TMPDIR/banco-work/ITEM` | implemented |
+| D-140 | 2026-10-06 | `banco work open --role verifier` gets its own default folder and refuses the other role's folder | implemented |
+| D-141 | 2026-10-06 | `E-VERIFY-STALE`: a carried-forward verify.mjs that rejects a changed item is the verifier's to refresh; `banco status` has `awaiting_verifier` | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -811,3 +876,681 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** "1.000" and "2.500" are refused as answers; a student must type 1000 or 1,5.
 - **Status:** implemented
 - **Back-port:** A-01, B-02, B-05.
+
+## D-074 · 2026-10-04 · reference texts: agents list and read, the operator imports
+
+- **Design ref:** A-06, E-QUOTE-REF
+- **Design said:** An item quotes an imported reference text through `prompt.quote {ref, text}`; only the Costituzione is seeded.
+- **We do:** `banco reference list` and `banco reference show --key KEY` (GET `/api/v1/references[/:key]`, read only) tell an agent which texts exist and give their body, so a quotation is copied as an exact substring. Importing stays with the operator: `bin/rails banco:reference:import KEY= TITLE= SOURCE_URL= FILE=path|-` (source required, sha256 recorded; an existing key with other text is refused). No API route writes a reference text, and the stem limits (60 words, 25-word sentences) are unchanged. The brief `diagnosis-item` says where a passage goes and what to do when none is imported.
+- **Why:** An agent that cannot cite a source would put excerpts in the stem or in unlinted option texts. An agent-writable import would let an agent invent a "source" its own quotation then matches.
+- **Cost:** A new excerpt needs one operator command.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-075 · 2026-10-04 · partial exclusions, per-line coverage detail, inherited block markers, W-SCOPE-MARKER
+
+- **Design ref:** C-01, A-06
+- **Design said:** `excluded[]` is `{line, reason_it}` (whole lines); coverage counts a line as covered once any skill cites it; E-SCOPE only checks that previous-year refs are present; the star marker is stored on the header line only.
+- **We do:** (1) `excluded[]` takes an optional `fragment` (an exact substring of the line, else E-SOURCE `fragment`): the exclusion covers that part only. Existing graphs are valid unchanged (`banco.skill_graph/1` stays). (2) `coverage` adds `partial[]`: for each cited or fragment-excluded line whose text is not wholly inside cited or excluded fragments, `{line, text, cited[], excluded[], unaccounted[]}`. It is informational for a cited line (`uncovered` keeps its meaning); a line that is only fragment-excluded and still has unaccounted text is listed in `uncovered`. The other keys are unchanged. (3) `syllabus lines` adds `block_marker` and `block_marker_line` to a line under a marked header (a marked line ending in ':' or short without closing punctuation; the block runs to the next marked line, header-looking line, blank or transcriber line). It is a heuristic that can end a block early, never extend it past a header. Nothing is stored; the rows are unchanged. (4) New warning `W-SCOPE-MARKER` (registry version 3): a skill's scope is not among those the markers of its cited prima lines imply (star: integration_studied; empty star or both: in_progress; none: studied), using the line's own or inherited marker. A warning, because a skill may span lines of two kinds. The teacher's graph page shows a fragment exclusion with its fragment.
+- **Why:** The teacher's coverage view hid parts of a line that no skill measures, and an agent reading one line could not see the star of its block.
+- **Cost:** A short bullet under a starred header can look like a header and end the block early (no warning is raised there).
+- **Status:** implemented
+- **Back-port:** C-01, A-06.
+
+## D-076 · 2026-10-04 · a form that is the item's own skill carries its first violation as the error code
+
+- **Design ref:** B-03, X-03
+- **Design said:** a `wrong_form` whose form is the skill itself is a W; descent goes to the implicated prerequisites of the typical errors, plus all direct parents if some W had no catalogue code.
+- **We do:** `Diagnosis::EventLoader` gives that W (form `skill`, no typical-error code) the first entry of `form_violations` as its `error_code` (`not_fully_factored`, `not_lowest_terms`, ...). A graph error with that code and `implicates: []` keeps the descent in the node; a code the graph does not declare is still unclassified and descends to the parents. A typical-error code the grader returned is never replaced. Stored rows and the frozen formats are unchanged.
+- **Why:** an answer such as `2x(x^2 - 9)`, right in value and incomplete in form, sent the student into prerequisites that were not the cause, and a graph could not declare an in-node form error.
+- **Cost:** a graph that never declared the code behaves as before (parents).
+- **Status:** implemented
+- **Back-port:** B-03.
+
+## D-077 · 2026-10-04 · solution items accept an inequality as the answer
+
+- **Design ref:** A-01
+- **Design said:** the `solution` form accepts `x = value` (or the bare value).
+- **We do:** the checker parses `<`, `<=`, `>`, `>=` (`\le`, `\leq`, `\lt`, `\gt`, `\ge`, `\geq`, `<=`, the Unicode signs). On an item whose `form` has `solution`, a relation with the unknown alone on one side is canonical (`-3 > x` is `x < -3`); it equals another relation only with the same direction (strict versus non-strict counts) and an equal bound. Answer and error values may be relations, so `x > -3` can be a typical error `direction_not_flipped`. A relation never equals an equation or a bare number. The other `solution` and number-form constraints apply to the bound (`lowest_terms`, no operation left). Chains (`-5 < x < -3`) and a relation on an item without the `solution` form are `invalid` (`unsupported_operator`), as before. Vectors `ineq-*` in `test/fixtures/grading/vectors.json`. `banco.*/1` formats unchanged.
+- **Why:** the natural hard-to-guess item for a first-degree inequality is to type the solution set.
+- **Cost:** compound solutions (intervals, unions, systems of inequalities) are still out; use a choice item.
+- **Status:** implemented
+- **Back-port:** A-01.
+
+## D-078 · 2026-10-04 · generator items run `tests`; the leak scan folds exponent braces and product dots
+
+- **Design ref:** A-06
+- **Design said:** `tests.must_accept`, `must_reject` and `blank` are exercised by the round trip; the leak scan compares keys with whitespace and `\left`/`\right` removed.
+- **We do:** (1) a generator item's `tests` run against the first stored instance, as for a static item (before they were ignored). `must_reject` and `blank` are instance-independent in practice; a `must_accept` value must be right for every instance, so a generator item normally leaves it empty. (2) `Answers.squash` also drops `\cdot`, `\times` and `*`, and rewrites `^{d}` and `^(d)` to `^d` for a one-token exponent, so `4x^{2}y` in a stem or a cell matches the key `4x^2y` (E-SOLUTION-IN-DISPLAY, W-ANSWER-IN-STEM). The dotted abbreviations m.c.m., M.C.D., C.E. were already protected in the sentence split (19643d3). `banco.*/1` formats unchanged.
+- **Why:** content agents reported the tests being silently ignored for generators and a leak slipping past a brace-style difference.
+- **Cost:** a generator item with an instance-dependent `must_accept` now fails E-ROUNDTRIP; remove it.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-079 · 2026-10-04 · `isolate` form for literal keys; `exclude_params` on items
+
+- **Design ref:** A-06, brief rule 12
+- **Design said:** `solution` strips `x =` but needs a number on the other side; the brief named `exclude_params` without a field for it.
+- **We do:** (1) form `isolate` (expression items with an `unknown`): the answer `r = I/(Ct)` and `I/(Ct)` both grade as the key `I/(C t)` (the `unknown =` is stripped from the answer, the key and the error values; any expression may stand on the other side; an equation for another letter is `wrong_form` `not_a_solution_statement`). Without the form nothing changes. (2) `banco.item/1` gets an optional top-level `exclude_params` (1 to 30 strings): values of the exam that no instance may show. Each entry is searched in the display, the answer and the error values (whitespace, `$`, `\left`/`\right` removed; an entry that starts or ends with a digit does not match inside a longer number, so `7` does not hit `17`); a hit is `E-PROVA-A-PARAMS` rule `excluded` on every listed or generated instance. The field is optional, so existing items stay valid; a generator may still exclude values itself.
+- **Why:** content agents reported that a letter-key answer could not be graded in the `r = ...` form, and that the brief named a field nothing implemented.
+- **Cost:** a substring-style match: an excluded fraction written another way (`\frac{28}{5}` vs `28/5`) is not caught; list each written form.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-080 · 2026-10-04 · `reduced` form for algebraic fractions; E-ACCEPTS-RANDOM ignores value-equal candidates
+
+- **Design ref:** A-06
+- **Design said:** `lowest_terms` checks numeric fractions and integer content; E-ACCEPTS-RANDOM flags any random answer the grader marks correct.
+- **We do:** (1) expression form `reduced`: for every fraction whose numerator and denominator are polynomials (degree 9 or less) in one and the same letter, both are interpolated exactly over Q from sampled values and their GCD is computed; a GCD of degree 1 or more is `wrong_form` with `common_factor_not_cancelled` (so `(x^2-16)/(x^2-4x)` against the key `(x+4)/x` is W). Several letters, non-polynomials and numeric fractions are not judged by it. (2) E-ACCEPTS-RANDOM skips a random expression candidate that equals the key in value (graded against the key with no form and no declared errors): `1x+4` and `1(x+4)` for the key `x+4` are the key, not a grader fault. (3) Generator `tests` already run on the first stored instance since D-078 (the report predates that reading of `item_runner`); nothing else changes, `tests` stays required with empty arrays allowed. `banco.*/1` formats unchanged; the new form and code are additive.
+- **Why:** content agents reported that retyping the unsimplified fraction was credited, and a sound item failing E-ACCEPTS-RANDOM by chance.
+- **Cost:** `reduced` does not look inside several-letter fractions; a fraction with a numeric common factor is still for `lowest_terms`.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-081 · 2026-10-04 · per-instance `accept`; the item prompt in the leak scan; `W-FORM-SKILL-CLOSURE`; `E-MATCHING-RIGHT-MARKUP`
+
+- **Design ref:** A-06, A-01
+- **Design said:** `accept` belongs to the item; the leak scan reads the instance display; `form_skill` only has to exist in the graph; the right column of a matching is free text.
+- **We do:** (1) `banco.item/1` instances (listed or generated) may carry an optional `accept` (up to 10 strings, normalized_text only, else `E-GEN-SCHEMA`): other spellings of that instance's key, added to the item's `accept` for that instance alone (Spec, round trip, tests, leak scan). It is stored in a new nullable column `item_instances.accept_json` (migration; rows before it have none) and shown to the verifier and the reviewer. The instance hash and fingerprint are unchanged when there is no `accept`. (2) The leak scan also reads the item `prompt` (stem, table, quote, figure text): a key in a non-stem prompt string, or a choice key in the prompt stem, is `E-SOLUTION-IN-DISPLAY`; the expected answer in the prompt stem of a non-choice item is `W-ANSWER-IN-STEM` (field `/prompt/stem_it`). An item whose prompt names the answer format on purpose gets the warning, which is meant. (3) New warning `W-FORM-SKILL-CLOSURE`: a `form_skill` that is not a prerequisite (or composite part), direct or transitive, of the item's skill. The grader still credits the declared form, but the fold drops the tail suspect, as docs/rules/diagnosis-1.md section 2 says; the fix is a graph edge or no `form_skill`. (4) New error `E-MATCHING-RIGHT-MARKUP`: `$`, a backslash or `**` in a right-column text, because it is drawn as a native option that shows plain text. Use Unicode (`x ≤ -2`). Registry version 4. Tests on generator items and `exclude_params` were already done (D-078, D-079); a generator item's tests refer to its first stored (first clean seed) instance. `banco.*/1` stays backward compatible: every addition is optional.
+- **Why:** content agents reported that a generator item could not accept another spelling on one instance only, that the prompt was not scanned, that a `form_skill` outside the closure silently lost its suspect, and that LaTeX in a matching right column shows raw.
+- **Cost:** a migration; a few more findings on existing items (reviewed as warnings, except the markup error).
+- **Status:** implemented
+- **Back-port:** A-06, A-01.
+
+## D-082 · 2026-10-05 · step consistency reads LaTeX decimal commas; the teacher's skill page renders solution markup
+
+- **Design ref:** A-06, B-09
+- **Design said:** `E-STEP-INCONSISTENT` compares the numbers in `solution.final` with the key of a number or fraction item.
+- **We do:** before scanning, the check drops `$` and turns `{,}` into `,` (and reads `\dfrac` like `\frac`), so a final `$0{,}4$` is the number 0,4, not 0 and 4. The teacher's skill page draws each solution step and the final with `data-markup="inline"`, as the student's results page does, so `$...$` is not shown raw. Authors may write a final either way.
+- **Why:** a content agent had to write a plain-text final for decimal answers to pass validation.
+- **Cost:** none; no format change.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-083 · 2026-10-05 · W-ANSWER-IN-STEM ignores a key inside a «quoted» sentence of a normalized_text stem; brief on accent_policy and per-instance accept
+
+- **Design ref:** A-06
+- **Design said:** W-ANSWER-IN-STEM fires when the expected answer appears anywhere in the stem; the brief said every item that does not measure accents sets `accent_policy: "flag"`.
+- **We do:** (1) on a `normalized_text` item the check removes `«...»` spans from the stem (display and prompt) before looking for the key, so "write the subject of «Marco mangia»" with the key `Marco` is the material, not a leak; a key outside the quotes still warns. Other components unchanged (the quote-free text is only used for the warning; E-SOLUTION-IN-DISPLAY is untouched). (2) The brief now says `accent_policy` belongs to `normalized_text` items only (the validator keeps refusing it elsewhere with E-ACCENT-POLICY), explains the quote convention, and points at the per-instance `accept` of D-081, which already covers "i dolci" / "dolci" on one instance and "la musica" / "musica" on another. `banco.*/1` formats unchanged.
+- **Why:** content agents reported warning noise on every analyse-the-sentence item, a brief that contradicted the validator, and (already fixed in D-081, staging had it) the missing per-instance accept.
+- **Cost:** a key hidden in a quote is not warned about; the reviewer reads the stem anyway.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-084 · 2026-10-05 · W-NEGATIVE-STEM ignores «quoted» and $math$ spans; CLI reports a missing contract header as E-NETWORK
+
+- **Design ref:** A-06, CLI contract check
+- **Design said:** W-NEGATIVE-STEM fires on any negation word in a stem; the CLI answered E-CONTRACT (rebuild the CLI) whenever X-Banco-Contract differed, including when absent.
+- **We do:** (1) the negation patterns run on the stem with `«...»` and `$...$` spans removed, so a logic item that asks about «non (...)» is not warned; a negation in the instruction still is. (2) A response without an X-Banco-Contract header is E-NETWORK (next: retry in 60 s, then `banco health`); E-CONTRACT only when a non-empty digest differs. `banco.*/1` formats unchanged.
+- **Why:** content agents reported a false warning on every logic-connective item and a misleading rebuild hint while the server restarted.
+- **Cost:** a negation hidden inside quotes is not warned about.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-085 · 2026-10-05 · per-instance `tests`; W-GRAPH-READABILITY
+
+- **Design ref:** A-06
+- **Design said:** item `tests` (must_accept, must_reject, blank) run on the first instance only; the readability lint reads item texts only.
+- **We do:** (1) a `banco.item/1` instance may carry an optional `tests` object with `must_accept` and `must_reject` (answers, no `blank`); they are graded on that instance, with its own `accept` (D-081), after the item's tests, and are not stored. Findings point at `/instances/N/tests/...`. Per-instance `accept` itself already existed (D-081). (2) New warning `W-GRAPH-READABILITY`: every `*_it` text of a skill graph (error descriptions, names) goes through the item readability lint; an E-READ there is a warning, so the graph still passes but the author sees that the same text copied into an item error catalogue would be refused. Registry version 5. `banco.*/1` stays backward compatible: both additions are optional.
+- **Why:** content agents reported that an alternative on a later instance could not be tested, and a graph sentence of 26 words passing the graph but failing in an item.
+- **Cost:** a few more warnings on graphs; no migration.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-086 · 2026-10-05 · matching: each answer once (hint and greyed-out entries)
+
+- **Design ref:** A-06
+- **Design said:** the matching hint read "Abbina ogni voce a una risposta."; nothing stopped the student picking one right-column entry for two rows.
+- **We do:** the hint now says each answer is used once and one is left over (the right column is always longer than the left, enforced by validation); the browser greys out entries already chosen in other selects. Grading is unchanged (the key is injective, a duplicate pick is simply wrong). No format change.
+- **Why:** a content agent had to repeat the rule in every matching stem.
+- **Cost:** to swap two answers the student first clears one select.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-087 · 2026-10-05 · W-ERROR-NOT-IN-GRAPH; an ordering is never shown as a declared error permutation
+
+- **Design ref:** A-06, X-01
+- **Design said:** validation checked only the skill keys an item implicates; the engine reads a skill's errors from the graph alone, so an item code the graph lacked was unclassified (descent into every parent) and item implicates that differed from the graph's were ignored, both silently. Serve-time re-keying redrew an ordering only when it equalled the key, its reverse or its stored listing; the widget starts non-empty, so an untouched answer equal to a declared error permutation was graded as that error.
+- **We do:** (1) new warning `W-ERROR-NOT-IN-GRAPH` (registry version 6): an `error_catalogue` code (also of testlet sub items) that is not in `errors[]` of the item's skill in the graph, or whose `implicates` differ from the graph's. A warning, not an error, so items already approved stay valid; the brief says a new code must first be added to the graph. (2) `Rekey` takes the instance's declared errors and redraws an ordering that equals a declared error permutation (testlets per sub item). Matching is unchanged (its selects start empty). `banco.*/1` unchanged.
+- **Why:** content agents reported both gaps (italian, B4).
+- **Cost:** one more warning on items with free-form codes.
+- **Status:** implemented
+- **Back-port:** A-06, X-01.
+
+## D-088 · 2026-10-05 · `passage_it` on a short answer is shown to everyone; allowed on a diagnosis item
+
+- **Design ref:** A-06, X-02
+- **Design said:** only a testlet's `passage_it` reached the student, the grader, the solver and the teacher; the schema accepted it on a `short_answer` but dropped it silently, and forbade it on a `diagnosis_item`, whose only room for a reading text was the instance stem (60 words).
+- **We do:** (1) `passage_it` is read from the revision body for every kind: the student's page (`ItemPresenter`, `items/prompt.js`, with the testlet's "Brano" title), the grader payload, the blind-solver and reviewer instances (`Review::ItemText`), `Teacher::Corrections`, `Teacher::InstanceView` and `Diagnosis::Summary`. Reading from the body means revisions already stored work without re-materialising. (2) `banco.item/1` allows an optional `passage_it` (at most 2400 characters, readability lint as a passage) on a `diagnosis_item`. It is not counted in the 60-word stem cap. Backward compatible: optional.
+- **Why:** content agents (italian) found a summary item whose source text nobody saw, and could not write expository-reading items with a text longer than about 50 words.
+- **Cost:** none; no migration.
+- **Status:** implemented
+- **Back-port:** A-06, X-02.
+
+## D-089 · 2026-10-05 · fingerprints independent of stored order; end-of-subject message from the item that erred
+
+- **Design ref:** A-06, X-01, B-11
+- **Design said:** `Validation::Canonical.fingerprint` hashed the display with arrays in stored order, while `Rekey` reshuffles choice options, ordering elements and matching columns at serve time; so E-GEN-POOL, E-POOL-REDO and the redo's "never repeat" could be satisfied by reordering one question. `Summary` merged every served item's error catalogue by code, so the last served item's `message_it` won.
+- **We do:** (1) the fingerprint takes `options`, `elements`, `left`, `right` (any depth, so testlets too) without their `id` and sorted by canonical text; `validation_rules.yml` version 2 (stored with each validation). Instances already stored keep their old fingerprint (the ledger is append-only); items re-validated get the new one, so a pool is judged on the new rule only after revalidation. (2) `Diagnosis::Summary` takes the message from the first served item (on the skill, if any) one of whose gradings carries the code; the merged catalogue is only a fallback. `banco.*/1` unchanged.
+- **Why:** content agents read the code and reported both.
+- **Cost:** a pool that relied on reordering now fails E-GEN-POOL / E-POOL-REDO when revalidated; mixed old and new fingerprints can coexist for one item until then.
+- **Status:** implemented
+- **Back-port:** A-06, B-11.
+
+## D-090 · 2026-10-05 · source kind `legal_text`; brief says which instance `tests` run on
+
+- **Design ref:** A-06, X-02
+- **Design said:** `banco.item/1` `source.kind` offered `prima_line`, `seconda_line`, `prova_a_structure`, `textbook`, `inferred`; a law (the Costituzione) could only be cited as `textbook`, which a reviewer may read as the student's own book. The brief did not say that the item's `tests` run on the first instance only (D-085 already added per-instance `tests`).
+- **We do:** (1) `source.kind` gains `legal_text` (`ref` the act and article, optional `fragment`); no check changes, so it is only a label for reviewers. Backward compatible (enum widened). (2) Brief rules 10 and 12 state both points. Quoting a reference text still needs an imported text (`E-QUOTE-REF`); there is no import command and none is added.
+- **Why:** content agents (law_economics, B3).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** A-06, X-02.
+
+## D-091 · 2026-10-05 · deferred cross-subject edges in the skill graph; `banco --help`
+
+- **Design ref:** A-06, C-04
+- **Design said:** a cross-subject prerequisite or implicate is accepted only when the target is in an approved graph (`E-GRAPH-EDGE-UNAPPROVED`). Content agents draft every subject before the teacher approves any graph, so the edges one subject owes another (percentages, fractions, obbligazione) had no place in the graph and lived only in agent reports. The CLI answered `--help` with `E-USAGE`.
+- **We do:** (1) `banco.skill_graph/1` gains two optional members: `deferred_prerequisites[]` on a skill and `deferred_implicates[]` on an error, each `{skill, reason_it}` (a skill of another subject, at most 20). They are not checked against any approved graph, are not part of the engine, the closure or the cycle check, and are shown on the teacher's graph screen ("in attesa del grafo dell'altra materia") and in its diff. A target inside the graph's own subject or graph is `E-SCHEMA` (rule `deferred_own_subject`); a target already in an approved graph is the warning `W-GRAPH-DEFERRED-APPROVED` (use a plain edge). Nothing activates a deferred edge by itself: after the other graph is approved, the next revision moves it to `prerequisites` / `implicates` (the edge is checked then). Registry version 7. Backward compatible: both members optional. (2) `banco --help`, `-h` and `help` print the command names, args and flags from the embedded contract (local, no network, not a contract command).
+- **Why:** content agents (business, step graph).
+- **Cost:** a deferred edge does not steer the engine until it is moved; the move is a content revision.
+- **Status:** implemented
+- **Back-port:** A-06, C-04.
+
+## D-092 · 2026-10-05 · matching as a classification (`display.reuse_right`)
+
+- **Design ref:** A-06, X-01
+- **Design said:** a `matching` pairs each left id with its own right id; the right column has n+1 entries (`E-MATCHING-SIZE`) and the key may not repeat a right id. Sorting 4 or more cases into 3 categories (law, history, geography, biology) could not be written; a content agent invented a fourth "category" to make the shape fit.
+- **We do:** `banco.item/1` `display` gains the optional boolean `reuse_right`. When true the matching is a classification: the key may repeat right ids (it must use at least 2 different ones and only ids of the right column), the left column has at least 4 rows (as before), the right column has at least 3 categories and fewer entries than rows (`E-MATCHING-SIZE` otherwise), the right column is still plain text. Grading is unchanged (exact map; `correct_pairs` counts rows); `Rekey` shuffles both columns as before and keeps the flag; the student's page shows another hint and does not grey out an answer already used. Without the flag every rule is as before. Backward compatible (optional member). Generator `tests` already run on the first stored instance since D-078 (the report predates that), so that second report needs no change.
+- **Why:** content agent (law_economics, B4).
+- **Cost:** with 4 rows and 3 categories a blind guess is right once in 81 times (3^4), against 1 in 120 for a 4-pair matching: still hard to guess; use 5 or more rows when possible.
+- **Status:** implemented
+- **Back-port:** A-06, X-01.
+
+## D-093 · 2026-10-05 · graph findings per skill; two-category classification; number `accept` and form `scientific`
+
+- **Design ref:** A-06, X-01, E-03
+- **Design said:** (1) a finding is keyed by code, field and rule, so two refused targets in one field (`E-GRAPH-EDGE-UNAPPROVED`, `E-SKILL-UNKNOWN`) merged into one finding that named only the first. (2) D-092 classification needs 3 or more categories. (3) a `number` item has one exact key and reads only a plain decimal; `accept` belonged to `normalized_text`.
+- **We do:** (1) the finding key includes `detail.skill`: one finding per refused skill (repeats of the same skill and field still count). (2) A classification may have 2 categories when it has 6 or more rows (2^6 = 64 blind guesses, close to D-092's 81); with 3 or more categories the rule is unchanged (4 or more rows). (3) A `number` item may list `accept`: extra exact values (finite decimals, "273,15") graded `correct` like the key; each is checked as a number (`E-SCHEMA` otherwise) and enters the leak scan. A `number` item may declare `form: ["scientific"]`: the answer is read as `a·10^n` (also `a x 10^n`, `a×10^n`, `a*10^n`, `10^{n}`, superscript exponent; exponent beyond 400 is `number_too_large`); the right value is `correct` when 1 <= |a| < 10, else `wrong_form` with violation `scientific_notation` (a plain number is correct only when it is already in that range; use `form_skill` as for other forms). The student's box then shows its own hint and a text keyboard. Without the form, `5,2·10^-4` stays unparseable. Registry gains `scientific_notation`. Backward compatible: only optional members and new accepted values.
+- **Why:** content agent (chemistry, step graph).
+- **Cost:** a 2-category classification is guessable more often than one with 3 or more; prefer 3 or more categories or 7+ rows. `accept` values are not tried against the error catalogue.
+- **Status:** implemented
+- **Back-port:** A-06, X-01, E-03.
+
+## D-094 · 2026-10-05 · testlet passage in the leak scan; "da solo" is not an absolute word
+
+- **Design ref:** A-06
+- **Design said:** (1) the leak scan of a testlet sub-item read only the sub-item's own display and prompt, never the testlet `passage_it`. (2) `solo` in the absolute-word list matched "da solo" (by oneself). (3) A third report said generator `tests` are never run: already done since D-078 (they run on the first stored instance), nothing to change; the staging build the agent used may have predated it.
+- **We do:** (1) for a `choice` sub-item, a key option of 20 or more plain characters found word for word in `passage_it` is `E-SOLUTION-IN-DISPLAY` (field `/sub_items/N/instances/K/passage_it`). Shorter keys (a name in the story) are not checked: they are too common in a passage. (2) `da solo`, `da sola`, `da soli`, `da sole` are removed before `W-ABSOLUTE`; a bare `solo` still warns. The brief says so. `banco.*/1` unchanged.
+- **Why:** content agent (law_economics, B5).
+- **Cost:** a paraphrase of the key in the passage is still the author's and the reviewer's job; non-choice sub-items are not scanned against the passage.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-095 · 2026-10-05 · binary profile reports declared errors; arrows and spreadsheet function names pass the readability lint
+
+- **Design ref:** A-01, A-06
+- **Design said:** (1) `normalized_text` with profile `binary` returned `wrong` for any answer that differs from the key without leading zeros, never consulting the declared errors. (2) The emoji pattern covered U+2190-U+21FF, so the assignment arrow and every arrow failed `E-READ`. (3) Spreadsheet function names (SOMMA, CONTA.SE) failed `E-READ` as ALL-CAPS words. (4) A report said a second refused cross-subject target on one field is not named: already fixed by D-093 (one finding per target, verified on staging), nothing to change.
+- **We do:** (1) in the binary profile a declared error value is matched with leading zeros removed on both sides: `typical_error` with its code, `normalized` is the stripped form (so the roundtrip collision check sees 0101 and 101 as one answer). (2) The emoji pattern now starts at U+21A0: the arrows U+2190-U+219F stay allowed, the rest of the block and the pictographic ranges are still rejected. (3) An all-caps token directly followed by `(`, or by `.` and a letter (CONTA.SE), is a name, not shouting. `validation_rules.yml` version 3. `banco.*/1` unchanged.
+- **Why:** content agent (computer_science, step graph).
+- **Cost:** a real ALL-CAPS word glued to a bracket ("ECCO(") escapes the check.
+- **Status:** implemented
+- **Back-port:** A-01, A-06.
+
+## D-096 · 2026-10-05 · testlet low-guess and choice per skill; accent-slip observation skill; graph `notes_it`
+
+- **Design ref:** B-02, B-04, A-06
+- **Design said:** (1) a testlet body has no top-level `component`, so the engine loader and the blueprint checks fell back to `number`: every testlet instance was low-guess and not a choice, even with five choice sub items. (2) `ORTHOGRAPHY_SLIP` gives C plus an observation on the orthography skill, but nothing ever named that skill, so the observation was lost. (3) `banco.skill_graph/1` had no place for a note to the teacher (the operator's programme flag, Q3). (4) A report asked for a multi-blank cloze (por/para): not a defect, see below.
+- **We do:** (1) `Rules::V1.testlet_flags` reads the sub items' own components: per skill, low-guess when any sub item of that skill is hard to guess (all must be right), choice when all of them are choice. `Plan::Instance` gains the optional `flags` ({skill => {low_guess, choice}}); `low_guess_for(skill)` and `choice_for(skill)` fall back to the instance flags for every other kind; `Fold` and `Candidates` use them. `ItemInfo` gives `low_guess_by_skill` for testlet instances and the blueprint checks (`E-POOL-REDO`, `descent_low_guess`) read it for the skill they check. (2) `Rules::V1::ORTHOGRAPHY_SKILLS` maps `es_accents` to `spanish.accents` and `it_accents`, `it_apostrophe_accent` to `italian.spelling`; `EventLoader` sets `orthography_skill` on the slip, `Grading::Evidence.observations` names it. The credit rule is unchanged. (3) `banco.skill_graph/1` gains the optional `notes_it` (up to 10 strings of 400 characters), shown on the teacher's graph screen above the skills. (4) No change: a cloze with 2 options per blank is a classification (`reuse_right`, D-092/D-093): list the blanks as `left` rows and the options (por, para) as `right`, with 6 or more rows for 2 options (guess 1 in 64), or 4 or more rows with 3 options.
+- **Why:** content agent (spanish, step graph).
+- **Cost:** a testlet with one hard sub item for a skill is low-guess for that skill even if its other sub items are choice. Observations are noted only; they do not change the state of the orthography skill.
+- **Status:** implemented
+- **Back-port:** B-02, B-04, A-06.
+
+## D-097 · 2026-10-05 · a dry run waits up to 25 s for Chrome before E-CHROME-BUSY
+
+- **Design ref:** A-06
+- **Design said:** a dry run takes the shared Chrome lock with a try-lock and answers 409 `E-CHROME-BUSY` at once when it is taken.
+- **We do:** the dry run waits for the lock for `BANCO_DRY_RUN_CHROME_WAIT` seconds (default 25) and only then answers 409 `E-CHROME-BUSY` (same body, `retry in 30 s`). No queue, no new format. The job path is unchanged (it already waits).
+- **Why:** content agent (law_economics, verify:B2): while other items validate, dry runs and submits answered 409 and worked on retry after 30 s. Most validations are shorter than the wait.
+- **Cost:** a dry run holds an API Puma thread for up to 25 s while waiting (5 threads by default). A long validation still gives 409; the agent retries as before.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-098 · 2026-10-05 · a testlet is charged as a serve to its first skill only; its sub items must share one skill (E-TESTLET-SKILLS)
+
+- **Design ref:** B-02, D-037, D-047
+- **Design said:** each sub item is an attempt on its own skill. D-047 built one attempt per serve, attributed to the testlet's first skill.
+- **We do:** (1) `PlanLoader` and `Validation::ItemInfo` give a testlet instance one skill, its first sub item's. A serve is now charged, and left outstanding, for that skill only; before, every sibling skill got a serve with no answer, so a C,W pair ended not_assessed(item_cap) instead of to_recover(mixed) (§13), siblings burnt their cap and a sibling off the descent ended not_needed. (2) New item check `E-TESTLET-SKILLS` (error): every sub item of a testlet is on the same skill. (3) The simulator (`Plan.build_pool`) does the same for a testlet declared on several skills in the dry-run spec. (4) The brief and rules say so. The engine itself still accepts multi-skill instances (tested directly); per-sub-item attempts would lift the check.
+- **Why:** content agent (english, step graph); suggested fix (a). Revisions already stored with mixed skills stay valid for reading, but fail E-TESTLET-SKILLS when re-validated: the content agent puts the sub items on one skill and resubmits.
+- **Cost:** a passage can measure one skill only (the English plan already does).
+- **Status:** implemented
+- **Back-port:** B-02, D-047.
+
+## D-099 · 2026-10-05 · one instance of a testlet item per run; a bare-blueprint dry run loads the pinned graph and items
+
+- **Design ref:** B-02, D-047, D-098
+- **Design said:** a testlet counts one outcome per skill (`TESTLET_OUTCOMES_PER_SKILL`), which nothing enforced; `simulate --blueprint FILE` simulates the file alone.
+- **We do:** (1) `Candidates.for` leaves out every instance of a testlet item once one is served in the run, so one passage is never served twice and the rule is met by construction (a testlet has one skill since D-098). (2) `simulate` with a bare `banco.blueprint/1` loads the graph revision named by `graph_revision_id` (with foreign skills) and the passed stored revisions of the pinned items with their real instances, via `PlanLoader.for_document`. A pinned id with no passed revision gets synthetic instances; a graph revision that is not stored gives the old flat dry run; both add a `warnings` entry (E-SIMULATE-INPUT). A bundle with `graph` or `pool` is unchanged.
+- **Why:** content agent (italian, step blueprint). The multi-skill testlet part of that report is D-098: sub items on several skills now fail E-TESTLET-SKILLS. The 'number' default for a testlet's component only applies when per-skill flags are absent; D-096 flags come from the sub items' own components.
+- **Cost:** a dry run reads the database when the file names a stored graph.
+- **Status:** implemented
+- **Back-port:** B-02.
+
+## D-100 · 2026-10-05 · E-VERIFY-REJECTS names every rejected seed with its reason; the dry run reports the verify phase
+
+- **Design ref:** A-06, D-081
+- **Design said:** E-VERIFY-REJECTS carries a count and the first seed.
+- **We do:** the finding's detail adds `rejected_seeds` (`rejected_indexes` for listed instances), all of them, and `reasons` (reason text to the seeds it applies to). The result `details` (and so the dry-run answer) gains `verify: {checked, rejected}`. `seeds` and `count` are unchanged (additive; `banco.*/1` formats are not touched). The dry run was already the same `ItemRunner` as the job: verify runs over every clean seed of the 200, not only the 24 stored; this is now visible in `details.verify.checked`.
+- **Why:** content agent (law_economics, verify B1). A verifier who sees 8 instances needed many submit cycles to find the failing seeds of the pool; the dry run was reported to pass where the real submit failed, which came from a verify.mjs edited between the two runs (not reproducible: a rejecting verify.mjs fails the dry run on staging with the same code).
+- **Cost:** a larger finding detail (one seed list and a reason map).
+- **Status:** implemented
+- **Back-port:** B-02.
+
+## D-101 · 2026-10-05 · the blueprint's own texts and flags are shown: intro note to the student, the rest to the teacher
+
+- **Design ref:** B-02, C-04, rule 5 of the brief
+- **Design said:** `intro_note_it` is what the student reads before starting; `not_measured_it` says what the test cannot tell; the teacher sees `redo_reserve: false` and reads `choice_only_reason_it`. Nothing rendered them; the sitting start screen took its calculator line from `Rules::V1.calculator`.
+- **We do:** (1) The sitting start screen shows the run's pinned blueprint `intro_note_it` and takes its calculator line from the blueprint's `calculator` (the rule table is the fallback for old documents). The engine and the budget still read the rule table. (2) `/teacher/subjects/:key/test` gains a block with `not_measured_it`, `intro_note_it`, calculator, budget, `depends_on_subjects` and `kind_overrides` with reasons, and marks a skill with `redo_reserve: false` or a `choice_only_reason_it` (list and skill screen). (3) The report's `entry_test` gains `not_measured_it`, `calculator`, `budget`, `depends_on_subjects`, `kind_overrides` (additive, `banco.*/1` untouched), shown on the report page.
+- **Also:** the first report (a bare-blueprint dry run ignoring graph and pool) was already fixed by D-099; staging ran that code.
+- **Why:** content agent (math, step blueprint).
+- **Cost:** none beyond the views.
+- **Status:** implemented
+- **Back-port:** B-02, C-04.
+
+## D-102 · 2026-10-05 · amounts with the Italian thousands dot: a dedicated invalid code, no false positives in validation
+
+- **Design ref:** E-03, A-06
+- **Design said:** the number grader reads one separator; a dot is `use_comma` ("Per i decimali usa la virgola"). The validation scans read a dot as a decimal point.
+- **We do:** (1) `Grading::Closed::Numbers` raises invalid `thousands_separator` for `5.300`, `5.300,00`, `5.300,00 €` (unless the item sets `allow_dot`), with the message "Scrivi il numero senza il punto delle migliaia, per esempio 5300,00." The answer is not read as grouped: the student is told how to write it, nothing is stored. (2) `E-STEP-INCONSISTENT` reads `solution.final` both ways (dot as decimal and as thousands grouping), so a final "5.300,00 €" matches the key 5300. (3) `Answers.token_match?` no longer counts a needle that follows `<digit>.` as a whole token ("150,00 €" inside "9.150,00 €" is not a leak). (4) The item `tests` of a generator item already run on the first stored instance (D-078); no change, the brief says so.
+- **Why:** content agent (business, B2). New grader code is additive; stored data is unchanged.
+- **Cost:** a leak of a key written right after "<digit>." is no longer found.
+- **Status:** implemented
+- **Back-port:** E-03.
+
+## D-103 · 2026-10-05 · number: spaced thousands, and a unit that changes per instance
+
+- **Design ref:** E-03, D-073, D-102, banco.item/1 (additive)
+- **Design said:** digits separated by a space are `ambiguous_mixed_number`; the unit is declared on the item only.
+- **We do:** (1) `Numbers.parse` raises `thousands_separator` for groups of exactly three digits separated by a space ("8 800", "1 600 000"; not after a leading 0); "1 2" stays `ambiguous_mixed_number`. The message is now "Scrivi il numero senza punti né spazi tra le cifre, per esempio 5300,00." With `allow_dot` the dot case stays a decimal (the item opted in; do not set it on items whose key is 1000 or more). (2) `display.unit` (optional, string, 20 chars) in an instance overrides the item `unit`: the presenter shows it as the suffix, `Grading::Spec.from_instance` and `Validation::Units.spec_for` strip it (also in testlet sub items). Existing items and instances are unchanged. (3) The `tests` of a generator item already run on the first stored instance (D-078, D-102 (4)); no change.
+- **Why:** content agent (chemistry, B1 measures).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** E-03, banco.item/1.
+
+## D-104 · 2026-10-05 · DDT is an allowed acronym; --help works after any command word
+
+- **Design ref:** A-06, D-091
+- **Design said:** `readability.caps_allowlist` lists a fixed set of acronyms; `banco --help` lists the commands.
+- **We do:** (1) `DDT` joins `caps_allowlist`; `validation_rules.yml` version 4. (2) `--help` or `-h` anywhere in the CLI line (`banco work --help`, `banco work status -h`) prints the same command listing. (3) No change to `work status --wait`: the status document goes to stdout, the error document (`E-...`, exit 3) goes to stderr; read stdout only (do not merge with `2>&1`).
+- **Why:** content agent (business, B3).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-105 · 2026-10-05 · E-PHRASE matches whole words only
+
+- **Design ref:** A-06
+- **Design said:** a text containing a banned phrase is E-PHRASE (substring match).
+- **We do:** the phrase must not be preceded or followed by a letter or digit, so "la lezione di nuoto" no longer contains "a lezione". "Lo dice a lezione" is still flagged.
+- **Why:** content agent (business, B4). The other two reports of that run (thousands dot, generator tests) were already handled by D-102 and D-078.
+- **Cost:** a phrase glued to other letters is no longer found (no such case in the list).
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-106 · 2026-10-05 · `calculation: false` exempts counting items from W-CALCULATOR
+
+- **Design ref:** operator "calculator", A-06, banco.item/1 (additive)
+- **Design said:** in a subject that allows the calculator, every number, fraction or expression item must say so (W-CALCULATOR).
+- **We do:** an optional boolean `calculation` on an item (and on testlet sub items). `false` means the item has no arithmetic (counting members of a class, reading a value off a table) and W-CALCULATOR is not raised. Absent or `true`: unchanged. Existing items are unchanged. The other two reports of that run were already handled: the `tests` of a generator item run against the first stored instance (D-078, `E-ROUNDTRIP` on `tests/must_accept|must_reject`), and an item error code that is not among its skill's graph errors is `W-ERROR-NOT-IN-GRAPH` (D-087); to use a new code such as `compound_as_mixture`, add it to the graph skill's `errors` (with implicates) first.
+- **Why:** content agent (chemistry, B3).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** A-06, banco.item/1.
+
+## D-107 · 2026-10-05 · the number unit suffix is matched after NFKC
+
+- **Design ref:** E-03, `Grading::Closed::Numbers`, D-078, D-103
+- **Design said:** the item's unit is removed from a number answer only when the answer ends with exactly that string.
+- **We do:** if the exact suffix is absent, the tail of the answer (at most unit length + 2 characters) is compared with the unit after NFKC, so `2,5 g/cm3` is read for the unit `g/cm³` and the reverse; the digits before the tail are never folded. Other spellings (`gr`) stay unparseable. A content agent report also asked for generator `tests` to be run and for a unit per instance: both were already done (D-078 and D-092; D-103 `display.unit`), so no change. For the content agent: a generator's `must_accept` must hold for every instance, normally leave it empty; for mass in some instances and volume in others, put `display.unit` on each instance. `banco.*/1` unchanged.
+- **Why:** content agent (chemistry, B2 density): a student who types a plain 3 should not get an invalid.
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-108 · 2026-10-05 · three english reports answered by documentation
+
+- **Design ref:** D-078, D-081, D-085, `Grading::Closed::Text`
+- **Design said:** nothing explicit about which seed the item tests run on, and `it_accents` read as Italian only.
+- **We do:** (1) item `tests` run on the first clean seed (seed 1 unless it throws or is rejected): said in the brief and docs/validation.md. (2) An instance may carry its own `accept` (D-081, normalized_text), merged with the item's list by `Grading::Spec.from_instance`: so `didn't go` / `did not go` per seed is already possible; the brief now says so for contractions. (3) `it_accents` stays the code of an accent slip for every subject except Spanish (renaming would break the error-code registry and the rules table); the registry description says so. No code change, `banco.*/1` unchanged. For the content agent: write `must_accept` from seed 1, put per-seed spellings in the instance `accept`, so a typed "write the negative" item is buildable.
+- **Why:** content agent (english, B2 past forms).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-109 · 2026-10-05 · under accent_policy flag a declared error typed without its accent still hits it
+
+- **Design ref:** E-03, `Grading::Closed::Text`, D-078
+- **Design said:** declared error values are matched exactly (after normalization, accents kept); only the key had the accent-slip path.
+- **We do:** when `accent_policy` is `flag` and nothing matched yet (not the key, not a declared error exactly, not an accent slip of the key), the answer and each declared error value are compared with grave and acute folded; a hit is the same `typical_error` with that code (`abris` for the declared `abrís` is `es_imp_indicative`). Not applied when the bare form is a paradigm form (a word of its own) or under `strict`. Shared vectors added. The other report (tests of a generator item never run) was already handled: they run on the first clean seed (D-078, D-108), so no change; the content agent should write them from seed 1. `banco.*/1` unchanged.
+- **Why:** content agent (spanish, B2 imperative): no need for a second unaccented value per error.
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-110 · 2026-10-05 · four english reports: two lint false positives, one CLI hint, two answered by documentation
+
+- **Design ref:** A-06 readability lint, `Validation::InstanceChecks` leak scan, `banco work status --wait`, D-081, D-084, D-108
+- **Design said:** `es.` is an abbreviation wherever it stands; a normalized_text key anywhere outside «…» in the stem is W-ANSWER-IN-STEM; a failed `--wait` always says "fix the files".
+- **We do:** (1) the abbreviation list no longer matches when a hyphen or a letter comes before it: `-es.` ends the sentence, `es.` (esempio) still does not. (2) For normalized_text, a bracketed cue right after the gap (`___ (swim)`) is skipped by the stem leak check, like «…». (3) When `E-VERIFY-MISSING` is the only code, `next` says the files are clean and a verifier runs `banco work open ITEM --role verifier` (same exit 3, same code). (4) Not changed: an instance may already carry its own `accept` (D-081, D-108; an accepted text equal to an error value of that instance comes back correct and fails E-ROUNDTRIP error_value), and W-NEGATIVE-STEM already ignores «…» and `$…$` (D-084): a negative sentence to translate goes inside «…». `banco.*/1` unchanged.
+- **Why:** content agent (english, B1 present and future forms).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-111 · 2026-10-05 · `banco COMMAND --help` prints that command's contract entry
+
+- **Design ref:** D-091 (`banco --help`), `contract/commands.json`
+- **Design said:** `--help` anywhere prints the list of all commands with args and flags.
+- **We do:** when the words before `--help` name a command (`banco session new --help`), the output is that command's entry: args, flags, error codes, and the exit codes. Otherwise the full list as before. Not changed: generator items already run `tests` on the stored instances since D-078 (`tests` run against the first stored instance, so on a shuffled choice generator a fixed id may not mean the same option: write tests that hold for every instance, or the seed-1 values and expect to adjust them). A content agent whose CLI says `unknown command: --help` has an old binary: rebuild or take the staging one. `banco.*/1` unchanged.
+- **Why:** content agent (spanish, present tense).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** none.
+
+## D-112 · 2026-10-05 · testlet error codes reach the engine; target-language text is not linted as Italian
+
+- **Design ref:** B-02, D-047, D-098, A-06
+- **Design said:** (1) a testlet's unit result had a verdict only, so the catalogue codes of its sub items (en_wrong_referent) never reached the engine. (2) every `*_it` string is linted as Italian, including an English passage and model answer that can only sit under `passage_it` and `model_answer_it`.
+- **We do:** (1) `Grading::Testlet` returns `typical_error` with the union of the sub items' `error_codes` when the unit is wrong; a mixture stays `undetermined` with no codes, all correct and all dont_know are unchanged. Evidence is W either way; the first code is the engine's error code, so descent follows its implicates when the graph lists that code on the testlet's skill. (2) `validation_rules.yml` v5: `target_language_subjects` (english, spanish) and `target_language_keys` (passage_it, model_answer_it); in those subjects `Readability.lint_document` skips those keys (no Gulpease, sentence length, ALL-CAPS). Other `_it` keys are still linted. (3) Already done, nothing to change: banned phrases on word boundaries (D-105), per-skill low-guess of a testlet (D-096), one skill per testlet and the brief (D-098), and `work status --wait` writes the status to stdout and the error object to stderr only (do not merge the streams).
+- **Why:** content agent (english, reading and pronoun descent).
+- **Cost:** a code not in the skill's graph errors counts as unclassified, as before. An English passage gets no readability check; the reviewer reads it.
+- **Status:** implemented
+- **Back-port:** B-02.
+
+## D-113 · 2026-10-05 · binary answers written in groups of bits are read as one string
+
+- **Design ref:** B-02, D-095
+- **Design said:** the binary profile refused spaces between bits as `ambiguous_mixed_number`, a message about mixed numbers and fractions.
+- **We do:** `Text.binary` drops whitespace between two bits before grading ("1110 1100" is 11101100); the width check and the leading-zero rule apply to the joined string, and `normalized` is the joined string. Other text stays `unparseable`. The reports on declared error values in the binary profile (D-095) and on the Italian thousands dot (`thousands_separator`, D-102/D-103) were already fixed on main; no change.
+- **Why:** content agent (computer_science, base conversions).
+- **Cost:** none; a space between bits was never a valid answer.
+- **Status:** implemented
+- **Back-port:** B-02.
+
+## D-114 · 2026-10-05 · binary declared errors at the wrong width; spaced codes in normalized_text; CS acronyms
+
+- **Design ref:** B-02, A-06
+- **Design said:** the binary profile consulted declared errors (D-095) only when the value differed from the key; an answer with the right value but the wrong width was always `wrong_form`. `normalized_text` kept internal spaces, so "001 110" or "G H C C" was `wrong` against a key without spaces. The caps allowlist lacked computer science acronyms.
+- **We do:** (1) in `Text.binary`, before `wrong_form`, a declared error value equal to the typed string (exact) is a `typical_error` with its code (padding_missing: "111" for the key 00000111). The zeros_padded_right case already worked (D-095). (2) in plain `normalized_text`, an answer that is not accepted but equals an accepted key once its whitespace is removed, when the key is a single token of bits or letters, is `invalid` with the new code `spaces_in_code` ("Scrivi la risposta di seguito, senza spazi."): not an attempt, the student retypes. Items may now use the binary profile (which also joins grouped bits, D-113). (3) ASCII, RGB, USB, SSD, HDD, LAN, WAN, BIOS, CSV join `caps_allowlist`; `validation_rules.yml` version 6. (4) Report that validation never runs a generator item's `tests`: not a defect, done since D-078 (tests run against the first clean seed's instance; keep `must_accept` empty or instance-independent).
+- **Why:** content agent (computer_science, coding, bits and the machine).
+- **Cost:** a plain-text key of one token typed with spaces is never graded wrong, only asked again. `banco.*/1` unchanged.
+- **Status:** implemented
+- **Back-port:** B-02, A-06.
+
+## D-115 · 2026-10-05 · `work open` warns inside a git work tree; cloze pages that repeat a form use `reuse_right`
+
+- **Design ref:** D-092, D-111
+- **Design said:** nothing about where `work open` writes; a key may repeat a right id only for a classification.
+- **We do:** (1) `banco work open` adds a `warning` to its JSON when the folder it wrote is inside a git work tree (`--dir` has existed since M5; the default stays `./ITEM`). (2) Reported "a matching key cannot repeat a form" is answered by D-092: `display.reuse_right: true` allows a key that repeats a right id (4 or more rows and 3 or more forms, or 6 and 2; fewer forms than rows); a cloze page is that shape, no new flag. (3) `banco --help` already works since D-111; staging had it. `banco.*/1` unchanged.
+- **Why:** content agent (spanish, B3).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** none.
+
+## D-116 · 2026-10-05 · binary profile: declared error values that are not bit strings
+
+- **Design ref:** B-02, D-095, D-114
+- **Design said:** `Text.binary` rejected any answer with a digit other than 0 and 1 as `invalid` (unparseable), so a declared error such as 1121 (digit 2 written) gave the student a free retry.
+- **We do:** before the unparseable verdict, an all-digit answer (whitespace removed) is compared with the declared error values; a hit is a `typical_error` with its code. Declared 0/1 values were already classified since D-095 and D-114. Undeclared non-bit answers stay `invalid`.
+- **Why:** content agent (computer_science, items:B2).
+- **Cost:** none; `banco.*/1` unchanged.
+- **Status:** implemented
+- **Back-port:** B-02.
+
+## D-117 · 2026-10-05 · W-SCOPE-MARKER reads the stars inside the cited fragment
+
+- **Design ref:** D-075, brief rule 3
+- **Design said:** `W-SCOPE-MARKER` compared a skill's scope with the marker of the cited line (its own or inherited from the block header). A line that holds several star fragments without starting with a star has no marker, so a studied skill could cite a `☆` fragment of it without a warning.
+- **We do:** the marker of a cited prima ref is the star inside its `fragment` first (`★`, `☆`, both = in progress), then the line's own, then the inherited one. A studied skill citing a `☆` fragment, or an in_progress / integration_studied skill citing only unstarred or other-starred fragments, gets the same warning. No new code, `banco.*/1` unchanged, still a warning.
+- **Why:** content agent (geography, step graph). Their second report (a matching with 3 categories) needs no change: `display.reuse_right` (D-092) is exactly a classification with at least 3 right entries and fewer than rows; the schema minItems 5 is not applied to it (`InstanceChecks` decides the sizes).
+- **Cost:** none.
+- **Status:** implemented
+
+## D-118 · 2026-10-05 · empty table cells
+
+- **Design ref:** A-01 (`banco.item/1`, `$defs/table`)
+- **Design said:** header and row cells have `minLength` 1, so a spreadsheet grid needed a single space for each empty cell, a convention nobody had written down.
+- **We do:** header and row cells may be `""` (`minLength` 0; `maxLength` 80, the row and header sizes are unchanged). The renderer already draws `""` as an empty `td`/`th`; the leak scan reads each cell as text, so an empty cell never matches and the others are scanned as before. Use `""`, not `" "`. A frozen format relaxed, so every existing item stays valid. The second report (an arrow in `description_it` fails `E-READ`) is not a defect: since D-095 the pattern starts at U+21A0 and the arrows U+2190-U+219F, including the assignment arrow, pass in every `_it` field, error descriptions included (test added). A content agent that saw it was on a staging older than D-095, or wrote a different arrow (for example U+21D2 or U+27F5), which are still refused: use `$\leftarrow$`.
+- **Why:** content agent (computer_science, items:B4).
+- **Cost:** a table with an entirely empty row or header is now schema-valid; the reviewer sees it.
+- **Status:** implemented
+- **Back-port:** A-01.
+
+## D-119 · 2026-10-05 · the verifier sees the whole pool
+
+- **Design ref:** A-04, A-06 (`work open --role verifier`)
+- **Design said:** the verifier gets item.json, the tests and 8 instances with their expected answers.
+- **We do:** the verifier gets every stored instance (the 24 clean seeds validation runs `verify.mjs` on), still with answers and never `generator.mjs`. `instances.json` grows from 8 to 24 rows. `E-VERIFY-REJECTS` already lists every rejected seed, the reasons grouped per wording and the first rejected instance (display, answer), so a seed outside the old 8 is no longer a blind spot.
+- **Why:** content agent (business, verify:B4): a categorical verify (matching, choice) must classify texts it had never seen and needed several submit rounds.
+- **Cost:** a larger answer (about three times); the verifier sees nothing it could not derive from the 8 plus the validation findings.
+- **Status:** implemented
+- **Back-port:** A-04.
+
+## D-120 · 2026-10-05 · `banco items list`
+
+- **Design ref:** A-04, A-07 (`banco status`, `review open`)
+- **Design said:** `banco status` counts the items of a subject; the revision id to review is learned elsewhere.
+- **We do:** `banco items list [--subject KEY] [--current]` (GET `/api/v1/items`, read only) lists every revision of the items with `{item, subject, kind, revision_id, seq, status, current, reviews, blind_solves}`; `current` is true for the latest revision of its item, `status` is its latest validation (`validating` when none). `--current` keeps only the latest revision of each item. A new route and command; no frozen format changes. The same report raised two more points that are not defects: (1) algebraic fractions in lowest terms are asked with `form: ["reduced"]` (D-080; the brief says so), which gives `wrong_form` / `common_factor_not_cancelled` for the unchanged fraction; (2) per-instance `accept` on a `normalized_text` instance exists since D-081 (`"accept": ["x = 0"]` on the instance whose key is `0`).
+- **Why:** content agent (math, review:1): finding the 39 current revisions took 170 `review open` probes.
+- **Cost:** one more read-only route.
+- **Status:** implemented
+- **Back-port:** A-04.
+
+## D-121 · 2026-10-05 · closed items beside the short answer; the teacher's traces reach the close
+
+- **Design ref:** B-02, B-07, C-04
+- **Design said:** `BlueprintChecks` counts every pinned instance of a skill for the redo pool; the teacher's traces run the named scripts as they are.
+- **We do:** (1) New warning `W-SHORT-SKILL-CLOSED` (registry version 8): closed items pinned on the skill of a pinned short answer are never served (`Engine#servable?`), so they are named in the warning and left out of the E-POOL-REDO count (a skill with a short answer needs `redo_reserve: false`). `ItemInfo` gains an optional `kind`. Authors give the short answer its own skill. (2) `Teacher::TestReview#traces` runs with `resolve_pending`, so a discursive subject's traces end at the close, not `waiting_on pending_answers`.
+- **Also, already done before this report:** the testlet charged to several skills (D-098), the testlet's per-skill low-guess and choice flags (D-096, `testlet_flags`), the bare-blueprint dry run (D-099), `intro_note_it`, `not_measured_it` and the calculator line (D-101), `work open` inside a git tree (D-115). Staging that ran older code showed them.
+- **Why:** content agent (law_economics, step blueprint).
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** B-02.
+
+## D-122 · 2026-10-05 · the CLI queues a busy dry run
+
+- **Design ref:** A-06 (dry run), D-097
+- **Design said:** a dry run waits up to 25 s for Chrome, then answers 409 `E-CHROME-BUSY` with `retry in 30 s`; the agent retries by hand.
+- **We do:** the CLI repeats a `--dry-run` that gets `E-CHROME-BUSY`: `BANCO_BUSY_RETRIES` times (default 6), `BANCO_BUSY_WAIT_MS` apart (default 10000), then reports the error as before. Nothing changes on the server or in the contract; non-dry submits and other errors are never repeated.
+- **Why:** content agent (spanish, verify:B3): parallel verifiers got E-CHROME-BUSY and wrote their own retry loops.
+- **Cost:** a dry run can take up to about 25 s x 7 plus 60 s under heavy contention (the HTTP timeout is per attempt, 300 s).
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-123 · 2026-10-05 · `work status` says when an error is a retry in progress
+
+- **Design ref:** A-06 (errors are never verdicts), D-122
+- **Design said:** an `error` validation row is one failed attempt; the job retries (3 attempts), and `settled` is true only after the last one.
+- **We do:** the status answer gains `retrying` (true when the status is `error` and not settled). Nothing else changes: the field is additive, the frozen format stays valid. Content agents read a Chrome timeout (`ChromeRunner::Timeout`) as `error` between attempts and resubmitted; use `banco work status REV --wait` and resubmit only when it settles in `error`.
+- **Why:** content agent (english, verify:B1): revision ended in `error` with a Chrome timeout, a resubmission passed. The retry already existed; the answer did not say so.
+- **Cost:** none.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-124 · 2026-10-05 · `E-VERIFY-REJECTS` shows several rejected instances
+
+- **Design ref:** A-06 (verify), D-097
+- **Design said:** verify runs on every clean seed of the 200; `E-VERIFY-REJECTS` lists all rejected seeds, the reasons and the first rejected instance.
+- **We do:** the detail gains `rejected_samples`: up to 8 rejected instances, each `{id, reason, display, answer, in_stored_pool}` (clipped like `first_rejected`). `in_stored_pool` is false for a seed that `work open --role verifier` did not list. Additive; no frozen format changes. `work open --role verifier` already returns every stored instance (24, tested in `work_api_test`); a verifier that saw 8 was reading a truncated `instances.json`. Verify checks the 200-seed clean pool, so a vocabulary rule written from the 24 can still reject an unseen seed: write rules by pattern, not by word list, and read `rejected_samples` instead of resubmitting one seed at a time.
+- **Also, not defects:** `E-CHROME-BUSY` on a dry run is already queued by the CLI (D-122). `W-ANSWER-IN-STEM` on a typed item whose bracketed base word equals the key is a warning, not an error; it does not block, and the author decides.
+- **Why:** content agent (spanish, verify:B4): about 10 dry runs, each showing one new word.
+- **Cost:** a larger finding detail.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-125 · 2026-10-05 · the section of a cited line; unpinned items are a reserve
+
+- **Design ref:** C-01, C-04, D-075
+- **Design said:** a graph ref is `{source, line, fragment, role}` and the teacher's graph page shows the line text. The teacher's home counts undecided blocker and major findings on the latest revision of every item.
+- **We do:** (1) `Syllabus::Sections`: a line's section is the nearest preceding `## ` heading of its programme. `banco syllabus lines` rows gain `section`. The teacher's graph page shows `sezione <heading>` beside each cited line and marks "Riga di un'altra materia." when it is not the section most of the graph's citations of that source sit in. (2) New warning `W-REF-OTHER-SUBJECT` (registry version 9): the same test at submit, with the line and the section in the detail; quiet on a tie or when no line has a section. A needed_by ref to another subject's line stays valid (`banco.skill_graph/1` is unchanged, no `note_it` on refs): say it in `scope_reason_it`, as the content agent already did. (3) Reserve: an item whose item id is not pinned by the subject's latest blueprint is a reserve. It is derived (`Item.reserve`), nothing is stored and no withdraw command exists; `banco status` items gain `reserve` (count) and the teacher's home no longer counts its findings as waiting. Pin it in a later blueprint and it counts again. A withdrawal row was not added: the ledger is append-only and the blueprint already is the statement of what is in the test.
+- **Not a defect:** `W-NEGATIVE-STEM` already skips text inside `«...»` and `$...$` (D-084, 2026-10-05 01:00); the stored finding on revision 464 dates from 2026-10-04 18:32, before that fix. A new submission of the item runs the current rule. Curly quotes “...” are now skipped too, with a test of the reported stem.
+- **Why:** content agent (italian, step fix).
+- **Cost:** one more key in the status answer (additive); a few queries on the graph page.
+- **Status:** implemented
+- **Back-port:** C-01, C-04.
+
+## D-126 · 2026-10-05 · the short answer is indicative by definition
+
+- **Design ref:** B-06, blueprint brief rule 3
+- **Design said:** a discursive subject has exactly one short answer, "marked as indicative".
+- **We do:** nothing in the formats. No `indicative` field is added to `banco.item/1` or `banco.blueprint/1`: a short answer is already indicative in every way that matters (its state is `pending(grade_unconfirmed)` until the teacher confirms, it is one piece of evidence, the proposal of the agent never counts by itself, and the teacher's pages show it as "Risposta breve: vale la rubrica"). The brief now says so instead of asking for a mark.
+- **Not a defect:** a flag would be redundant (every `short_answer` would carry it) and the engine would have nothing to branch on. The content agent should not cite a source such as "Prova indicativa" for it; if one was added to the skill graph only for this, remove it in the next graph revision.
+- **Why:** content agent (geography, step items:B5).
+- **Cost:** none; `banco.*/1` unchanged.
+- **Status:** implemented
+- **Back-port:** B-06 (wording of rule 3).
+
+## D-127 · 2026-10-05 · the whole arrows block is allowed in `*_it` text
+
+- **Design ref:** A-06, item brief rule 6 (E-READ `emoji`); D-095
+- **Design said:** D-095 allowed U+2190-U+219F; the rest of the arrows block (U+21A0-U+21FF) was rejected as pictographic.
+- **We do:** the emoji pattern now rejects only U+21A9 and U+21AA (the return arrows that have an emoji presentation); every other arrow (food chains, `\u21D2`, `\u21D4`, the chemical equilibrium arrow `\u21CC`, `\u21A6`) is plain text. Graph and item texts use the same `Readability.lint_document`, so a graph description can be copied into an item unchanged. `banco.*/1` unchanged.
+- **Also checked, not a defect:** the thousands-separator report (`2.000`, `2 000`) is already `invalid thousands_separator` since D-102/D-103 with the message "Scrivi il numero senza punti né spazi tra le cifre"; staging at 42dc627 returns it.
+- **Why:** content agent (biology, step items:bio-b1-ecology-species).
+- **Cost:** none.
+- **Status:** implemented
+
+## D-128 · 2026-10-05 · W-TESTLET-LEAK: a sub-item key in the passage or in another sub-item
+
+- **Design ref:** A-06, D-094
+- **Design said:** each sub-item's instances are checked alone; only a long choice key stated in the passage is an error (D-094).
+- **We do:** after the composite instances are built, `ItemRunner#testlet_leaks` flags (warning `W-TESTLET-LEAK`) a sub-item key (choice option text, or `Answers.key_texts` for written answers, 20+ plain characters) that appears in the passage (written keys only: choice keys stay `E-SOLUTION-IN-DISPLAY`) or in any string of another sub-item's display of the same composite instance. The field points at the place that shows the key.
+- **Also checked, not a defect:** `banco work submit --help` already prints the command's contract entry (flags, errors) since D-111; the content agent had an older CLI binary. Rebuild or use the staging `bin/banco`.
+- **Why:** content agent (biology, step items:bio-b6-testlet-short-answer).
+- **Cost:** one pass per composite instance; a warning, no format change (`banco.*/1` unchanged).
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-129 · 2026-10-06 · guest skills from a draft graph; `items list` carries what a blueprint pins
+
+- **Design ref:** B-07, D-120, D-099
+- **Design said:** a guest starting skill must be in an approved graph of its subject (E-SKILL-UNKNOWN otherwise), even in a draft or a dry run.
+- **We do:** (1) `BlueprintChecks` accepts a guest skill found in the owner's latest graph when that graph is not approved yet, with the warning `W-GUEST-UNAPPROVED` (new `Validation::Context#draft_skill`); a skill in no graph is still `E-SKILL-UNKNOWN`. `Approval::BlueprintGate` refuses the approval ("the guest skill X is not in an approved graph of its subject") until the owner's graph is approved, so the requirement is enforced where it counts. (2) `banco items list` rows of current revisions gain `skill`, `component`, `expected_seconds`, `instances`, `low_guess_instances` (additive; the content agent did not know the command existed and used `work open` per item). (3) Not a defect: `banco diagnosis simulate --blueprint FILE` of a bare blueprint already loads the pinned graph and items since D-099 (staging at c337f42 gives the real trace; a flat run only happens when the graph revision is not stored, and then carries a warning). `banco.*/1` unchanged.
+- **Why:** content agent (business, step blueprint).
+- **Cost:** a blueprint with a draft guest can be submitted but not approved; the teacher's checklist says why.
+- **Status:** implemented
+
+## D-130 · 2026-10-06 · a pending testlet answer holds its skill
+
+- **Design ref:** B-02, D-047, D-096, D-099
+- **Design said:** a pending answer makes the engine serve another instance of the skill, up to the serve cap.
+- **We do:** while a testlet answer of a skill is pending or ungraded (a mostly right testlet is undetermined, D-047), `Candidates.for` offers no further testlet of that skill and the engine does not stall the skill: it waits (`waiting_on: pending_answers`) for the teacher's resolve_attempt, and other skills go on. D-047's question (does a mostly right testlet count as correct) stays open for the operator.
+- **Also (content agent, english, step blueprint):** the bare-blueprint dry run ignoring the graph and the pool and the second testlet from the same passage were already fixed by D-099. A testlet's low-guess and choice flags come from its sub items' components (D-096), not from a default: a testlet with an ordering sub item is low-guess and not choice, so `two_of_two` (not `_choice`) is correct for it; a skill measured only by testlets with a non-choice sub item cannot be choice-only. Content: mark every sub item `choice` if the testlet should count as choice evidence.
+- **Why:** 15 minutes of reading passages for one undetermined answer.
+- **Cost:** a run waits on the teacher while a testlet answer is pending and nothing else is servable.
+- **Status:** implemented
+- **Back-port:** B-02.
+
+## D-131 · 2026-10-06 · a testlet that does not fit is deferred, not replaced by a repeat
+
+- **Design ref:** B-02, B-05, D-099
+- **Design said:** `Candidates.for(:second)` takes another item, else any unseen instance.
+- **We do:** when the only other item of a skill is a testlet whose expected seconds exceed the time left, `Candidates.for(:second, max_seconds:)` returns nothing, so `Engine.choose` reports `:no_fit`, the sitting ends (`time_budget`) and the passage opens the next sitting. A repeat of the item already used is no longer served in its place. A pool with no testlet keeps the old fallback.
+- **Also (content agent, spanish, step blueprint):** a testlet's low-guess and choice flags come from its sub items per skill (D-096), and the testlet is attributed to its first skill only (D-098); `Plan.from_bundle` pools built by hand must give `low_guess`/`choice` per testlet themselves. The bare-blueprint dry run loads the graph and the pinned items (D-099); `intro_note_it`, `not_measured_it` and the calculator line are shown (D-101). Staging at 61250b7 already ran all of these.
+- **Why:** reading passage never served for a slow student (4 of 20 runs).
+- **Cost:** one more sitting for a slow student whose only other item is a long testlet.
+- **Status:** implemented
+
+## D-132 · 2026-10-06 · reviewers: list command exists; own scratch directory
+
+- **Design ref:** M6, D-129
+- **Design said:** the review brief tells the reviewer how to find revision ids.
+- **We do:** no code change. (1) "No command lists the revision ids of a subject" is not a defect: `banco items list --subject KEY --current` (D-129) returns item, `revision_id`, `seq`, `status`, `current`, review and blind-solve counts; the reviewer used an older CLI binary (use the staging `bin/banco`). (2) The scratch directory cleaned under the reviewer was a shared name used by parallel sessions, a content-orchestration matter; `briefs/review.md` now tells reviewers to use a directory named after subject and round. `banco.*/1` unchanged.
+- **Why:** content agent (business, step review:1).
+- **Cost:** none.
+- **Status:** implemented
+
+## D-133 · 2026-10-06 · `review open` lists every stored instance of a generator item
+
+- **Design ref:** A-05, M6 (`docs/validation.md`)
+- **Design said:** the reviewer sees 8 instances of a generator item.
+- **We do:** the review (`review open`, and the quote check of `review submit`) uses every stored instance (the pool, e.g. 24); numbering is by id, so instances 1..8 are unchanged. The blind solver (`solve open`) still gets 8. No flag, no format change; `banco.*/1` unchanged.
+- **Why:** content agent (spanish, step review:1): a reviewer could not read 16 of 24 expected answers and distractors and had to run the generator locally.
+- **Cost:** a larger review payload; reviewers may quote any stored instance.
+- **Status:** implemented
+
+## D-134 · 2026-10-06 · `items list --subject` accepts keys with an underscore
+
+- **Design ref:** M6, D-129
+- **Design said:** `banco items list --subject KEY` lists the revisions of a subject.
+- **We do:** the CLI checked the key with the source-name pattern (no underscore), so `computer_science` and `law_economics` were refused with E-USAGE (the "unknown command" the content agent saw was an older binary; the underscore refusal is what remains). It now uses the subject-key pattern of the other commands. `banco.*/1` and the API unchanged.
+- **Why:** content agent (computer_science, step review:1).
+- **Cost:** none.
+- **Status:** implemented
+
+## D-135 · 2026-10-06 · `round_to` on a number error; item implicates into another subject's draft graph; ready marker on deferred edges
+
+- **Design ref:** A-06, D-091, D-129
+- **Design said:** a number error matches only the exact declared value; an item implicate must name a skill of the item's graph or of an approved graph; the teacher's graph screen lists deferred edges.
+- **We do:** (1) `error_catalogue` instance errors (`errors[]` of an instance, `error_value` in `banco.item/1`) gain the optional `round_to` (integer 0..6, number component only): the error matches any answer that rounds half up, at that many decimals, to the declared value. It never applies to the key (the key is graded first); a `round_to` whose window contains the key is `E-GEN-SCHEMA` (`round_to_key`), on another component `round_to_component`. Backward compatible: optional member. (2) An item implicate into a skill that is only in another subject's latest, unapproved graph is the warning `W-IMPLICATE-PENDING` (registry version 10) instead of `E-SKILL-UNKNOWN`; the engine reads implicates from the graph and ignores the item's list, so the item cannot activate anything. (3) The teacher's graph screen marks a deferred edge whose target graph is approved now ("serve una nuova revisione"). Not changed, not defects: the graph keeps refusing a plain edge into an unapproved graph (`E-GRAPH-EDGE-UNAPPROVED`, rule 12); the way to declare it is `deferred_prerequisites` / `deferred_implicates` (D-091), and `W-ERROR-NOT-IN-GRAPH` already reports item error codes missing from the graph (and implicates that differ).
+- **Why:** content agent (chemistry, step fix): calculator-rounded typical errors; cross-subject edges before the other graph is approved.
+- **Cost:** a rounded error still needs the student to type at least the declared number of decimals; fewer decimals is a plain wrong.
+- **Status:** implemented
+- **Back-port:** A-06.
+
+## D-136 · 2026-10-06 · a pinned item revision that a newer passed revision replaced is `W-STALE-PIN`
+
+- **Design ref:** B-07, A-06, C-04
+- **Design said:** a blueprint pins item revisions that passed validation.
+- **We do:** (1) blueprint submit and dry run warn `W-STALE-PIN` (registry version 11) for a pinned revision that passed but is not the newest passed revision of its item. (2) `banco status` carries `stale_pins` (`[{pinned, latest}]`) in the subject's `blueprint` row; additive member. (3) `Approval::BlueprintGate` lists each stale pin as a reason, so the teacher cannot approve a test that pins a replaced revision. Not a defect: the engine serves exactly the pinned ids (rule 5, immutable revisions); the content agent re-pins and resubmits. A warning, not an error, so a draft can still be simulated.
+- **Also:** the report that `review open` shows 8 of 24 instances is answered by D-133 (all stored instances, no flag); the content agent ran a binary or staging from before D-133.
+- **Why:** content agent (math, step review:2).
+- **Cost:** one extra query per pinned item at submit.
+- **Status:** implemented
+
+## D-137 · 2026-10-06 · `skill-graph coverage` lists the error codes of passed items that the graph lacks
+
+- **Design ref:** A-06, C-01
+- **Design said:** `W-ERROR-NOT-IN-GRAPH` (D-087) warns at item validation when an item's error code is not an error of its skill in the graph.
+- **We do:** `banco skill-graph coverage --subject KEY` gains the additive member `item_errors_not_in_graph`: `[{item, item_revision_id, skill, code}]` for the latest passed revision of each item (testlet sub-items included) against the latest graph. Not a defect in the warning, which already exists: it only fires when a graph exists at the item's validation (or revalidation), so items validated before the graph, or against an older graph revision, passed without it. Warnings never block. The content agent adds the codes to the graph (with their implicates) and resubmits it, or revises the items to graph codes, then re-reads the coverage.
+- **Why:** content agent (law_economics, step review:2): 27 codes missing, noticed by hand.
+- **Cost:** one pass over the subject's latest revisions per coverage call.
+- **Status:** implemented
+
+## D-138 · 2026-10-06 · the blueprint's item order decides which item is served first; a star block survives short bullets
+
+- **Design ref:** B-02, A-06
+- **Design said:** the engine picks the next item among the unseen eligible instances in the plan's seeded order; a marked header opens a block that ends at the next header-looking line (short, no closing punctuation).
+- **We do:** (1) `Plan::Entry` carries `items` (the blueprint's `entries[].items`); `Candidates.for` returns the eligible instances ordered by the position of their item in that list (unlisted items last, seeded order breaking ties), for every need. Listing the first item first now serves it first. No schema change. (2) `Syllabus::BlockMarker`: inside an open star block only the next marked line, a blank, a transcriber line or a line ending with ":" ends it; a short bullet no longer does, so it inherits the star. A short header-looking line outside a block still opens nothing. Not done: a per-item "coverage unverified" flag. The order answers the concern (a failed later item next to a passed first one is read by the teacher as to verify); a flag would be a new decision input.
+- **Why:** content agent (spanish, step fix): 656 served before 403; W-SCOPE-MARKER on lines 177-181.
+- **Cost:** a block that really ends at a short header without a colon now runs on until a blank or a marked line; the heuristic can over-report a star. The agent re-imports with the source's blank lines or cites the header line.
+- **Status:** implemented
+
+## D-139 · 2026-10-06 · W-SCOPE-MARKER reads a star just before the cited fragment; `banco work open` defaults outside the repo
+
+- **Design ref:** A-06, brief rule 3
+- **Design said:** the programme's markers decide the scope; a star inside the cited fragment decides first (D-117); `work open` writes `./ITEM` unless `--dir` (D-091).
+- **We do:** (1) A fragment cited without its star takes the star that stands before it in the same sentence of the line (`... ☆ Un mondo inquinato.` cited as `Un mondo inquinato`), then the line marker, then the block marker. (2) `banco work open ITEM` without `--dir` writes `$TMPDIR/banco-work/ITEM` (os.TempDir) instead of the current directory; the in-git-tree warning stays for an explicit `--dir`. (3) Reported "PlanLoader treats a testlet as a low-guess number item" is not reproducible on main: since D-096 the loader gives a testlet per-skill flags from its sub items (choice sub items: not low-guess, choice) and since D-099/D-131 one passage is served once per run; a loader test now pins it. The report came from a staging build or blueprint older than that. `banco.*/1` unchanged.
+- **Why:** content agent (geography, step fix).
+- **Cost:** a sentence boundary is `. ; ! ?` followed by a space; a star after an abbreviation's dot is read as in the next sentence.
+- **Status:** implemented
+
+## D-140 · 2026-10-06 · `banco work open --role verifier` gets its own default folder and refuses the other role's folder
+
+- **Design ref:** A-06, D-091, D-139
+- **Design said:** `work open` writes `$TMPDIR/banco-work/ITEM` for both roles.
+- **We do:** a verifier open without `--dir` writes `$TMPDIR/banco-work/ITEM.verifier`; opening a folder whose `.banco/work.json` records the other role is refused with `E-USAGE`. Formats unchanged.
+- **Why:** content agent (geography, step verify:refix): the verifier folder shared the author's folder, so a stale verify.mjs sat next to generator.mjs and the verifier could see the generator.
+- **Cost:** a verifier that relied on the shared default folder must read the `dir` field of the answer.
+- **Status:** implemented
+
+## D-141 · 2026-10-06 · a carried-forward verify.mjs that rejects is `E-VERIFY-STALE`; `banco status` counts `awaiting_verifier`
+
+- **Design ref:** A-06, D-091, A-04
+- **Design said:** files missing from a submission are carried forward from the base; an author may not change verify.mjs; a rejection is `E-VERIFY-REJECTS` and the revision `failed`.
+- **We do:** (1) when the revision's verify.mjs is identical to its base's while another file changed, the rejection of clean seeds is `E-VERIFY-STALE` (registry version 12; same findings and detail as `E-VERIFY-REJECTS`, also in `work submit --dry-run`); a verify.mjs that does not load stays `E-VERIFY-REJECTS`. `work status --wait` says the verifier refreshes it. (2) `banco status` items gain the additive `awaiting_verifier`: the latest validation failed with only `E-VERIFY-MISSING` and/or `E-VERIFY-STALE`; those items are no longer in `failed`. The stored status stays `failed` (never approved), the frozen formats are unchanged.
+- **Also, reported and not changed (already answered):** (a) closed items pinned on the short answer's skill are never served; that is `W-SHORT-SKILL-CLOSED` since D-121 (also leaving them out of the redo count: the dry run of the reported file gives `E-POOL-REDO` plus the warning on staging at this commit). The short answer needs a skill of its own; the blueprint brief says so. The engine is not changed. (b) `diagnosis simulate --blueprint` with a bare blueprint loads the stored graph revision and the passed pinned items since D-099; it is flat only when the graph revision is not stored, and then the answer carries `warnings[E-SIMULATE-INPUT]` (read `warnings`, or use `--subject` after the blueprint is stored). The report came from a build before D-099/D-121 or from a blueprint naming an unstored graph revision.
+- **Why:** content agent (biology, step fix).
+- **Cost:** a verify.mjs that is wrong, not stale, also reads as stale after an author change; the verifier reads the rejections either way.
+- **Status:** implemented

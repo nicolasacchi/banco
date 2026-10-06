@@ -15,7 +15,7 @@ module Validation
       subject = @revision.item.subject
       files = @revision.files
       result = ItemRunner.new(files: files, context: CourseContext.for(subject), harness_token: Harness.issue("rev", @revision.id),
-                              chrome: { wait: Rules.get(:generator, :batch_timeout_seconds) * 60 }).call
+                              chrome: { wait: Rules.get(:generator, :batch_timeout_seconds) * 60 }, verify_inherited: verify_inherited?(files)).call
       persist(result)
     end
 
@@ -33,6 +33,14 @@ module Validation
 
     private
 
+    # verify.mjs equals the base revision's while another file changed (D-141).
+    def verify_inherited?(files)
+      base = @revision.base_revision_id && ItemRevision.find_by(id: @revision.base_revision_id)
+      return false unless base && base.files.key?("verify.mjs") && files["verify.mjs"] == base.files["verify.mjs"]
+
+      files.except("verify.mjs") != base.files.except("verify.mjs")
+    end
+
     def persist(result)
       ItemValidation.transaction do
         insert_instances(result.instances) if result.instances.any? && !@revision.instances.exists?
@@ -45,7 +53,7 @@ module Validation
       ItemInstance.insert_all!(instances.map do |i|
         { item_revision_id: @revision.id, seed: i[:seed], display_json: JSON.generate(i[:display]), answer_json: JSON.generate(i[:answer]),
           errors_json: i[:errors].nil? ? nil : JSON.generate(i[:errors]), solution_json: i[:solution].nil? ? nil : JSON.generate(i[:solution]),
-          fingerprint: i[:fingerprint], created_at: now }
+          accept_json: i[:accept].present? ? JSON.generate(i[:accept]) : nil, fingerprint: i[:fingerprint], created_at: now }
       end)
     end
 

@@ -36,6 +36,7 @@ module Grading
 
         accepted = ([ spec.answer ] + spec.accept).map { |t| normalize(t.to_s, case_sensitive: spec.case_sensitive) }
         return Closed.result("correct", normalized: answer) if accepted.include?(answer)
+        return Closed.invalid("spaces_in_code") if spaced_code?(answer, accepted)
 
         declared = Closed.error_hit(spec, answer) { |v, a| normalize(v.to_s, case_sensitive: spec.case_sensitive) == a }
         return Closed.result("typical_error", error_codes: declared, normalized: answer) if declared.any?
@@ -43,9 +44,22 @@ module Grading
         if (slip = accent_slip(spec, answer, accepted))
           return Closed.result("typical_error", error_codes: [ slip ], normalized: answer)
         end
+
+        if (folded = folded_declared(spec, answer, accepted)).any?
+          return Closed.result("typical_error", error_codes: folded, normalized: answer)
+        end
         return Closed.result("near_miss", normalized: answer) if near_miss?(spec, answer, accepted)
 
         Closed.result("wrong", normalized: answer)
+      end
+
+      # A code made only of bits or of letters (001110, GHCC) typed in groups: the content is
+      # right, the form is not an attempt, so the student retypes (D-114).
+      def spaced_code?(answer, accepted)
+        return false unless answer.match?(/[[:space:]]/)
+
+        joined = answer.gsub(/[[:space:]]+/, "")
+        accepted.any? { |c| c == joined && c.length > 1 && c.match?(/\A(?:[01]+|\p{L}+)\z/) }
       end
 
       def normalize(text, case_sensitive: false)
@@ -82,6 +96,19 @@ module Grading
         end
       end
 
+      # Under accent_policy flag a declared error typed without its accent still hits it
+      # (abris for the declared abrís), unless the bare form is a word of its own (paradigm
+      # form) or the answer is the key without its accent (accent_slip took that already).
+      def folded_declared(spec, answer, accepted)
+        return [] unless spec.accent_policy == "flag"
+        return [] if paradigm?(spec, answer)
+
+        unaccented = fold_accents(answer)
+        return [] if accepted.any? { |c| fold_accents(c) == unaccented }
+
+        Closed.error_hit(spec, unaccented) { |v, a| fold_accents(normalize(v.to_s, case_sensitive: spec.case_sensitive)) == a }
+      end
+
       def paradigm?(spec, answer)
         unaccented = fold_accents(answer)
         spec.paradigm_forms.any? { |f| normalize(f, case_sensitive: spec.case_sensitive) == unaccented }
@@ -115,14 +142,34 @@ module Grading
       def binary(spec, value)
         s = value.gsub(/\A[[:space:]]+|[[:space:]]+\z/, "")
         return Closed.invalid("empty") if s.empty?
-        return Closed.invalid("ambiguous_mixed_number") if s.match?(/[01][[:space:]]+[01]/)
-        return Closed.invalid("unparseable") unless s.match?(/\A[01]+\z/)
+        # Bits written in groups ("1110 1100") are one string of bits (D-113).
+        s = s.gsub(/(?<=[01])[[:space:]]+(?=[01])/, "")
+        unless s.match?(/\A[01]+\z/)
+          # A declared error value that is not a bit string (1121, the digit 2 written) is still a
+          # typical error, not an unreadable answer (D-116).
+          compact = s.gsub(/[[:space:]]+/, "")
+          declared = compact.match?(/\A[0-9]+\z/) ? Closed.error_hit(spec, compact) { |v, a| v.to_s.gsub(/[[:space:]]+/, "") == a } : []
+          return Closed.result("typical_error", error_codes: declared, normalized: compact) if declared.any?
+
+          return Closed.invalid("unparseable")
+        end
 
         key = spec.answer.to_s
-        return Closed.result("wrong", normalized: s) unless s.sub(/\A0+(?=.)/, "") == key.sub(/\A0+(?=.)/, "")
+        stripped = s.sub(/\A0+(?=.)/, "")
+        unless stripped == key.sub(/\A0+(?=.)/, "")
+          # A declared error value is compared without leading zeros too (D-095).
+          declared = Closed.error_hit(spec, stripped) { |v, a| v.to_s.sub(/\A0+(?=.)/, "") == a }
+          return Closed.result("typical_error", error_codes: declared, normalized: stripped) if declared.any?
+
+          return Closed.result("wrong", normalized: s)
+        end
 
         width = spec.profile["width"]
         if spec.profile["leading_zeros"] == "required" && width && s.length != width
+          # A declared error value written exactly so (padding_missing) is a typical error, not a form slip.
+          declared = Closed.error_hit(spec, s) { |v, a| v.to_s == a }
+          return Closed.result("typical_error", error_codes: declared, normalized: s) if declared.any?
+
           return Closed.result("wrong_form", form_violations: [ "leading_zeros" ], normalized: s)
         end
 
