@@ -156,6 +156,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-149 | 2026-10-06 | W-RULES-OUTDATED names pinned revisions that passed under older rules (blueprint dry run, status) | implemented |
 | D-150 | 2026-10-06 | a carried-forward verify.mjs that accepts wrong answers is E-VERIFY-STALE (awaiting_verifier), not E-VERIFY-VACUOUS | implemented |
 | D-152 | 2026-10-06 | graph and blueprint submits record the author session and refuse an invalid session header; --agent accepts parentheses | implemented |
+| D-153 | 2026-10-06 | with a sidecar Chrome the harness URL defaults to banco-harness, and banco health probes Chrome-to-harness | implemented |
 | D-151 | 2026-10-06 | skill-graph coverage follows the engine for testlets (first skill) and lists stored multi-skill testlets | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
@@ -1663,4 +1664,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** (1) a session stays optional on `skill-graph submit` and `blueprint submit`; when `X-Banco-Session` is sent it must be an author session of the token (`E-SESSION`, `E-SESSION-ROLE`, 422, nothing stored), and a valid one is stored as `author_session_id`. A real (not dry) submit only. (2) `banco session new --agent` also takes `(` and `)`, and a name outside the set is answered with a message that lists the allowed characters. `banco.*/1` unchanged.
 - **Why:** content agent (italian, step promote): `--agent 'claude-code (promoted from staging)'` was refused with a misleading message; and a graph was submitted with `BANCO_SESSION` holding that error text, which was ignored and stored as revision 1 without authorship. Defects.
 - **Cost:** production graph revision 1 of italian stays without an author session (append-only; an identical resubmission is a replay). Not corrected; the item revisions carry session 17. A graph or blueprint submit without any header still records no author.
+- **Status:** implemented
+
+## D-153 · 2026-10-06 · with a sidecar Chrome the harness URL defaults to `banco-harness`, and `banco health` probes Chrome-to-harness
+
+- **Design ref:** A-06, D-04 (harness listener, internal only)
+- **Design said:** Chrome reaches the harness at `BANCO_HARNESS_URL` (`http://banco-harness:3200` in production), else loopback. The production compose never set the variable, so Chrome (a separate container) was told `http://127.0.0.1:3200`, its own loopback: every generator validation failed with `E-CHROME-UNAVAILABLE` while `health` said `chrome: ok` (it only asked Chrome for its version). The 3200 listener is correctly not published on the host.
+- **We do:** `Validation::Harness.base_url` is `BANCO_HARNESS_URL` if set, else `http://banco-harness:<HARNESS_PORT>` when `BANCO_CHROME_HOST` is set, else loopback. `Health` gains `harness`: with a sidecar, Chrome loads `<base>/up` and any HTTP status is `ok`, otherwise `unreachable` (turns `ok` false). `banco.*/1` unchanged.
+- **Why:** content agent (math, step promote), production: nothing on host port 3200 (by design) and every generator dry run failed. Defect (deployment default).
+- **Cost:** one more short Chrome page load in `health`.
 - **Status:** implemented

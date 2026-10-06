@@ -38,10 +38,13 @@ module Validation
 
     def content_type(name) = name.end_with?(".html") ? "text/html; charset=utf-8" : "text/javascript; charset=utf-8"
 
-    # Where Chrome reaches the harness listener: BANCO_HARNESS_URL in production
-    # (http://banco-harness:3200 on the internal network), the local port otherwise.
+    # Where Chrome reaches the harness listener: BANCO_HARNESS_URL when set; with a
+    # sidecar Chrome (BANCO_CHROME_HOST) the internal alias banco-harness, because
+    # 127.0.0.1 there is the Chrome container itself (D-153); the local port otherwise.
     def base_url
-      ENV["BANCO_HARNESS_URL"].presence || "http://127.0.0.1:#{Banco::Listeners.ports.fetch(:harness)}"
+      port = Banco::Listeners.ports.fetch(:harness)
+      ENV["BANCO_HARNESS_URL"].presence ||
+        (ENV["BANCO_CHROME_HOST"].present? ? "http://banco-harness:#{port}" : "http://127.0.0.1:#{port}")
     end
 
     def page_url(token, generator: true, verify: false)

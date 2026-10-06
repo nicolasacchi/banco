@@ -63,4 +63,22 @@ class HealthTest < ActionDispatch::IntegrationTest
       assert_match(/\Aerror:/, report[:grader])
     end
   end
+
+  test "harness probe is not configured without a sidecar and fails when Chrome cannot reach it" do
+    assert_equal "not_configured", Health.send(:harness, 1)
+    assert_equal "skipped", Health.check(chrome: false)[:harness]
+    assert Health.send(:failing?, :harness, "unreachable: Ferrum::StatusError: x")
+  end
+
+  test "with a sidecar Chrome the harness URL is the internal alias, not loopback" do
+    with_env("BANCO_CHROME_HOST" => "banco-chrome", "BANCO_HARNESS_URL" => nil) do
+      assert_equal "http://banco-harness:#{Banco::Listeners.ports.fetch(:harness)}", Validation::Harness.base_url
+    end
+    with_env("BANCO_CHROME_HOST" => nil, "BANCO_HARNESS_URL" => nil) do
+      assert_match(%r{\Ahttp://127\.0\.0\.1:\d+\z}, Validation::Harness.base_url)
+    end
+    with_env("BANCO_CHROME_HOST" => "banco-chrome", "BANCO_HARNESS_URL" => "http://x:1") do
+      assert_equal "http://x:1", Validation::Harness.base_url
+    end
+  end
 end

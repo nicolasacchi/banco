@@ -15,6 +15,7 @@
       "grader": "ok",
       "chrome": "skipped",
       "chrome_egress": "skipped",
+      "harness": "skipped",
       "disk": {
         "status": "ok",
         "free_mb": 50000,

@@ -22,6 +22,7 @@ module Health
         db: db, queue: queue, grader: grader,
         chrome: chrome ? browser(chrome_wait) : "skipped",
         chrome_egress: chrome ? egress(chrome_wait) : "skipped",
+        harness: chrome ? harness(chrome_wait) : "skipped",
         disk: disk, backup: backup
       }
       problems = parts.filter_map { |name, value| name if failing?(name, value) }
@@ -95,6 +96,28 @@ module Health
             false
           end
           reached ? "open" : "blocked"
+        end
+      end
+    rescue Validation::ChromeRunner::Busy
+      "busy"
+    rescue StandardError => e
+      "error: #{e.class}: #{e.message.to_s.first(120)}"
+    end
+
+    # Chrome must reach the harness listener, or every generator validation fails
+    # with E-CHROME-UNAVAILABLE while chrome says ok (D-153). Any HTTP status counts.
+    def harness(wait)
+      return "not_configured" if ENV["BANCO_CHROME_HOST"].blank?
+
+      Validation::ChromeRunner.session(wait: wait) do |session|
+        session.context do |ctx|
+          page = ctx.create_page
+          begin
+            page.go_to("#{Validation::Harness.base_url}/up")
+            page.network.status.to_i.between?(100, 599) ? "ok" : "unreachable"
+          rescue Ferrum::Error => e
+            "unreachable: #{e.class}: #{e.message.to_s.first(100)}"
+          end
         end
       end
     rescue Validation::ChromeRunner::Busy
