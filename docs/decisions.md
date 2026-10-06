@@ -179,6 +179,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-172 | 2026-10-06 | `blueprint open` shows `awaiting_verifier` in items[] like `banco status` | implemented |
 | D-173 | 2026-10-06 | the solve brief says one submit per session and what `--dry-run` is for; no retraction | implemented |
 | D-174 | 2026-10-06 | solver answer-format complaints: the stem names the format; `isolate` already accepts `y = expr` | implemented |
+| D-175 | 2026-10-06 | solver sees no question on an instance: D-169 already shows the prompt; otherwise a content mistake | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1882,5 +1883,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the solver sees what the student sees; D-079 gave expression items the `isolate` form (`y = expr` and `expr` both graded); D-169 added the item prompt to `banco solve open`.
 - **We do:** no code change. The student's page has no placeholder or format hint, so the solver display cannot have one either; the format must be in the stem, which the solver now sees in full (D-169). `briefs/diagnosis-item.md` rule 13 now says: without `form: ["isolate"]` an answer `y = ...` is not the key of an expression item, so the stem says what to write; a `normalized_text` item always has a question naming what to write. The grader needs no change: `isolate` already accepts `y = expr`. The other two points of the report (root fields of answers.json, `BANCO_SESSION` per call) are D-166 and D-169/the brief, already done. `banco.*/1` unchanged.
 - **Why:** content agent (math, step solve1:1). The 10 mismatches on revisions 388 and 428 are content mistakes (stem without a question; an expression item that wants a letter but lacks `isolate`), not defects of the software. The author should add the question to 388's stem and `isolate` to 428, as new revisions.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-175 · 2026-10-06 · an instance display with no question: the prompt is already shown (D-169); if none, the stem lacks it
+
+- **Design ref:** A-05, D-169, D-174
+- **Design said:** the solver sees what the student sees.
+- **We do:** no code change. Since D-169 `banco solve open` adds the item `prompt` (`stem_it`, `table`, `quote`, `figure`) to every display, shown as `prompt_stem_it` beside an instance's own `stem_it`; the student's page shows the same two texts and nothing else (no hidden question). So if a display holds only "I numeri sono 12 e 40." the item has no question: a content mistake, as in D-174. The solve brief's root-keys skeleton (`schema`, `schema_version`, `revision`) was added by D-166 and is in `briefs/solve.md` Format; the agent read a copy from before. `banco.*/1` unchanged.
+- **Why:** content agent (math, step solve1:2) on revisions 429 (math-lcm-shared-factors) and 424 (math-gcd-partial-common-factor): displays without a question. The agent probably ran before D-169 was deployed; if `solve open` still shows no `prompt_stem_it` after a deploy, the prompt is empty.
 - **Cost:** none.
 - **Status:** implemented
