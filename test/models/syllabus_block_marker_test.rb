@@ -13,10 +13,25 @@ class SyllabusBlockMarkerTest < ActiveSupport::TestCase
     result = Syllabus::BlockMarker.call(rows(
       [ "★ La Costituzione e i principi:", "★" ],
       [ "Origini storiche. Struttura. Analisi dei primi 12 articoli." ],
-      [ "Economia" ],
+      [ "Economia:" ],
       [ "Nozione di economia. Bisogni economici." ]
     ))
     assert_equal({ 2 => { marker: "★", from: 1 } }, result)
+  end
+
+  test "short bullets inside a starred block keep the star; a colon line, a marked line or a blank ends it" do
+    result = Syllabus::BlockMarker.call(rows(
+      [ "★ Grammatica avanzata", "★" ],
+      [ "Preposiciones a y en" ],
+      [ "Tener que y hay que" ],
+      [ "Altro titolo:" ],
+      [ "Dentro il nuovo titolo." ],
+      [ "☆ Altro blocco", "☆" ],
+      [ "Voce breve" ],
+      [ "", nil, "transcript" ],
+      [ "Fuori" ]
+    ))
+    assert_equal({ 2 => { marker: "★", from: 1 }, 3 => { marker: "★", from: 1 }, 7 => { marker: "☆", from: 6 } }, result)
   end
 
   test "a marked content line opens no block; a blank line closes one" do

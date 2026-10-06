@@ -22,10 +22,14 @@ module Diagnosis
       end
       unseen = fresh.reject { |i| i.testlet? && i.expected_seconds > max_seconds }
       too_long = fresh.size != unseen.size
+      order = plan.entry(skill)&.items || []
+      # The author's item order (D-138): listed items first, in the listed order;
+      # the seeded order breaks ties (sort_by is made stable by the index).
+      rank = ->(list) { list.each_with_index.sort_by { |i, n| [ order.index(i.item.to_s) || order.size, n ] }.map(&:first) }
       case need
       when :first
         low = unseen.select { |i| i.low_guess_for(skill) }
-        plan.entry(skill)&.choice_only || low.empty? ? unseen : low
+        rank.call(plan.entry(skill)&.choice_only || low.empty? ? unseen : low)
       when :second
         used = state.serves.select { |s| s.instance.skills.include?(skill) }.map { |s| s.instance.item }
         other = unseen.reject { |i| used.include?(i.item) }
@@ -34,9 +38,9 @@ module Diagnosis
         # repeat of the item already used (D-131).
         return [] if other.empty? && too_long && fresh.any? { |i| i.testlet? && !used.include?(i.item) }
 
-        other.empty? ? unseen : other
+        rank.call(other.empty? ? unseen : other)
       when :third
-        unseen.select { |i| i.low_guess_for(skill) }
+        rank.call(unseen.select { |i| i.low_guess_for(skill) })
       else
         raise ArgumentError, "unknown need #{need.inspect}"
       end

@@ -225,7 +225,7 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
   def add_marked_lines
     SyllabusLine.create!(syllabus_source: @source, number: 4, text: "★ Un blocco in più:", origin: "pdf", marker: "★")
     SyllabusLine.create!(syllabus_source: @source, number: 5, text: "Il corpo del blocco, con più parole. Altro testo qui.", origin: "pdf")
-    SyllabusLine.create!(syllabus_source: @source, number: 6, text: "Un altro titolo", origin: "pdf")
+    SyllabusLine.create!(syllabus_source: @source, number: 6, text: "Un altro titolo:", origin: "pdf")
   end
 
   test "syllabus lines: a line under a starred header shows the block marker and its header" do

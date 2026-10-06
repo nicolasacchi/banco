@@ -1513,3 +1513,12 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Why:** content agent (law_economics, step review:2): 27 codes missing, noticed by hand.
 - **Cost:** one pass over the subject's latest revisions per coverage call.
 - **Status:** implemented
+
+## D-138 · 2026-10-06 · the blueprint's item order decides which item is served first; a star block survives short bullets
+
+- **Design ref:** B-02, A-06
+- **Design said:** the engine picks the next item among the unseen eligible instances in the plan's seeded order; a marked header opens a block that ends at the next header-looking line (short, no closing punctuation).
+- **We do:** (1) `Plan::Entry` carries `items` (the blueprint's `entries[].items`); `Candidates.for` returns the eligible instances ordered by the position of their item in that list (unlisted items last, seeded order breaking ties), for every need. Listing the first item first now serves it first. No schema change. (2) `Syllabus::BlockMarker`: inside an open star block only the next marked line, a blank, a transcriber line or a line ending with ":" ends it; a short bullet no longer does, so it inherits the star. A short header-looking line outside a block still opens nothing. Not done: a per-item "coverage unverified" flag. The order answers the concern (a failed later item next to a passed first one is read by the teacher as to verify); a flag would be a new decision input.
+- **Why:** content agent (spanish, step fix): 656 served before 403; W-SCOPE-MARKER on lines 177-181.
+- **Cost:** a block that really ends at a short header without a colon now runs on until a blank or a marked line; the heuristic can over-report a star. The agent re-imports with the source's blank lines or cites the header line.
+- **Status:** implemented

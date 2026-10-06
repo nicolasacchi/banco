@@ -5,11 +5,11 @@ module Syllabus
   # validator that checks a citation) still sees it.
   #
   # A marked line that looks like a header (ends with ":" or is short and has no
-  # closing punctuation) opens a block. The block runs over the following content
-  # lines until the next marked line, the next header-looking line, a blank or a
-  # transcriber line. A marked line that is plain content opens nothing. The rule is
-  # a heuristic on purpose: it can end a block early (a short bullet looks like a
-  # header), never extend it past a header, so it under-reports rather than invents.
+  # closing punctuation) opens a block. The block runs over the following lines until
+  # the next marked line, a blank, a transcriber line or a line ending with ":"
+  # (D-138: a short bullet inside the block no longer closes it). A line outside any
+  # block that looks like a header opens nothing. A marked line that is plain content
+  # opens nothing.
   module BlockMarker
     SHORT = 50
     MARKER = /\A(?:★☆|☆★|★|☆)\s*/
@@ -27,6 +27,9 @@ module Syllabus
           open = nil
         elsif row.marker
           open = header?(row.text) ? { marker: row.marker, from: row.number } : nil
+        elsif open && !row.text.to_s.strip.end_with?(":")
+          # Inside a block a short line is a bullet, not a header (D-138).
+          out[row.number] = open
         elsif header?(row.text)
           open = nil
         elsif open
