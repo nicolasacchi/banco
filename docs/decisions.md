@@ -136,6 +136,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-129 | 2026-10-06 | guest skills from a draft graph (W-GUEST-UNAPPROVED); `items list` carries what a blueprint pins | implemented |
 | D-130 | 2026-10-06 | a pending testlet answer holds its skill: no further testlet until it is settled | implemented |
 | D-131 | 2026-10-06 | a testlet that does not fit the sitting is deferred to the next one, not replaced by a repeat of the item already used | implemented |
+| D-132 | 2026-10-06 | reviewers: `items list` already lists revision ids; own scratch directory per subject and round | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1450,4 +1451,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Also (content agent, spanish, step blueprint):** a testlet's low-guess and choice flags come from its sub items per skill (D-096), and the testlet is attributed to its first skill only (D-098); `Plan.from_bundle` pools built by hand must give `low_guess`/`choice` per testlet themselves. The bare-blueprint dry run loads the graph and the pinned items (D-099); `intro_note_it`, `not_measured_it` and the calculator line are shown (D-101). Staging at 61250b7 already ran all of these.
 - **Why:** reading passage never served for a slow student (4 of 20 runs).
 - **Cost:** one more sitting for a slow student whose only other item is a long testlet.
+- **Status:** implemented
+
+## D-132 · 2026-10-06 · reviewers: list command exists; own scratch directory
+
+- **Design ref:** M6, D-129
+- **Design said:** the review brief tells the reviewer how to find revision ids.
+- **We do:** no code change. (1) "No command lists the revision ids of a subject" is not a defect: `banco items list --subject KEY --current` (D-129) returns item, `revision_id`, `seq`, `status`, `current`, review and blind-solve counts; the reviewer used an older CLI binary (use the staging `bin/banco`). (2) The scratch directory cleaned under the reviewer was a shared name used by parallel sessions, a content-orchestration matter; `briefs/review.md` now tells reviewers to use a directory named after subject and round. `banco.*/1` unchanged.
+- **Why:** content agent (business, step review:1).
+- **Cost:** none.
 - **Status:** implemented

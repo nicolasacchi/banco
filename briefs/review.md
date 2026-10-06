@@ -17,6 +17,8 @@ The model is declared and must be a different model than every author of the ite
 the same item (author, verifier, solver) or one that already reviewed it is refused
 (`E-SESSION-NOT-INDEPENDENT`). `banco items list --subject KEY --current` lists the revision id of every
 item with its status and how many reviews it has (drop `--current` for superseded revisions too).
+Keep your review files in a scratch directory of your own, named after your subject and round
+(for example `$TMPDIR/rv-SUBJECT-1`): a shared name such as `rv` is cleaned by parallel sessions.
 `banco review open REV` gives you the
 item, the instances with expected answers, the messages, the solution and the
 programme lines cited. `banco review submit REV --file review.json` sends the
