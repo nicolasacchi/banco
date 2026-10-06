@@ -165,6 +165,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-158 | 2026-10-06 | `review open` reads without a session | implemented |
 | D-159 | 2026-10-06 | `blueprint open` returns the submittable document | implemented |
 | D-160 | 2026-10-06 | `work status` shows the queue and the current rules version; `--wait` waits 900 s; identical dry runs are cached | implemented |
+| D-161 | 2026-10-06 | an author dry run whose only findings are E-VERIFY-MISSING or E-VERIFY-STALE answers 200 `awaiting_verifier` | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1743,4 +1744,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** (1) `GET /api/v1/work/revisions/:revision` adds `queue_ahead` (older revisions with no final verdict: the Chrome lane runs one validation at a time, so this is how many run first; 0 once settled) and `current_rules_version` (the server's, to compare with the row's `rules_version`). The CLI `--wait` default is 900 s, and its `E-TIMEOUT` says how many are queued ahead and that `--timeout SECONDS` raises the wait. (2) `Validation::DryRun` keeps the result of an identical dry run (subject, files, flag, rules version, graph, references, syllabus, decisions) for 10 minutes, 64 entries per process; an error is never kept. (3) Staging showing items as passed under older rules was a stale staging (rules_version 1 against 6): `refresh.sh` brings it to origin/main; an author compares `rules_version` in the status with `current_rules_version`. `banco.*/1` unchanged (keys added).
 - **Why:** content agent (law_economics, step promote1). Missing feature (queue visibility), stale staging, slow repeated dry runs.
 - **Cost:** a dry run after a change to something outside the key (a code edit) can be served from memory for up to 10 minutes; a restart clears it.
+- **Status:** implemented
+
+## D-161 · 2026-10-06 · an author dry run that only waits for the verifier exits 0
+
+- **Design ref:** A-06, D-141, D-157, D-160
+- **Design said:** `work submit --dry-run` of a new generator item always ended 422 `E-VERIFY-MISSING`, since verify.mjs is written by the verifier; the author had no passing dry run.
+- **We do:** when every code of a dry run is `E-VERIFY-MISSING` or `E-VERIFY-STALE` the answer is 200 `{dry_run: true, status: "awaiting_verifier", codes: [...], instances: N, next}`; the CLI exits 0. Any other code keeps 422. Nothing is stored. The dry run still runs the 200 seeds in Chrome (verify is the last phase, nothing to skip); an identical repeat is cached (D-160). The second issue (no queue visibility) was already D-160: `work status` has `queue_ahead`; the validation lane is one at a time, so a long wait is the queue, and `--wait` waits 900 s.
+- **Why:** content agent (spanish, step promote1). Missing feature. `banco.*/1` unchanged (a new status value on a dry run answer).
+- **Cost:** a script that treated any non-"passed" 200 as failure sees a new value.
 - **Status:** implemented

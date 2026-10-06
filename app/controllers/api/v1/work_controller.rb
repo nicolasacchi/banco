@@ -76,6 +76,10 @@ module Api
         findings = result.findings.map(&:to_h)
         if result.passed?
           render json: { dry_run: true, status: "passed", codes: [], warnings: result.findings.warnings.map(&:to_h), instances: result.instances.size, details: result.details }
+        elsif waiting_for_verifier?(result)
+          # Nothing the author can fix: a verifier writes verify.mjs next (D-161).
+          render json: { dry_run: true, status: "awaiting_verifier", codes: result.codes, warnings: result.findings.warnings.map(&:to_h),
+                         next: "submit for real: a verifier then runs banco work open ITEM --role verifier", instances: result.instances.size, details: result.details }
         else
           first = result.findings.errors.first
           refuse(first.code, first.field, first.message, "fix the files and run banco work submit DIR --dry-run again", 422,
@@ -85,6 +89,10 @@ module Api
         refuse("E-CHROME-BUSY", "chrome", "Chrome is busy", "retry in 30 s", 409)
       rescue Validation::ChromeRunner::Unavailable, Validation::ChromeRunner::Timeout, Validation::Roundtrip::Unavailable => e
         refuse("E-CHROME-UNAVAILABLE", "chrome", "Chrome or the grader did not answer: #{e.message.first(120)}", "retry in 30 s; banco health", 503)
+      end
+
+      def waiting_for_verifier?(result)
+        result.codes.any? && (result.codes - ItemValidation::WAITING_FOR_VERIFIER).empty?
       end
 
       def verifier_view(revision)

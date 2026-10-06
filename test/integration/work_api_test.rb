@@ -352,4 +352,16 @@ class WorkApiTest < ActionDispatch::IntegrationTest
       holder.join
     end
   end
+
+  test "a dry run of a new generator item without verify.mjs is awaiting_verifier, not a failure" do
+    require_chrome!
+    Validation::DryRun.clear_cache
+    submit_when_chrome_is_free("gen-2", F.files_for(F.generated_item, "generator.mjs" => F::GENERATOR))
+    assert_response :ok, json.inspect
+    assert_equal true, json["dry_run"]
+    assert_equal "awaiting_verifier", json["status"]
+    assert_equal [ "E-VERIFY-MISSING" ], json["codes"]
+    assert_equal 24, json["instances"]
+    assert_equal 0, ItemRevision.count
+  end
 end

@@ -153,9 +153,11 @@ class CliFixturesTest < ActiveSupport::TestCase
 
   test "the good fixture: dry run passes with 24 instances; the author's run is E-VERIFY-MISSING; the verifier completes it" do
     dir = item_dir("good", F.generated_files(verify: nil))
-    code, _out, err, _o, e = banco("work", "submit", dir, "--dry-run")
-    assert_equal 3, code, e # E-VERIFY-MISSING is an error, with the instances
-    assert_equal "E-VERIFY-MISSING", err["code"]
+    code, out, _err, _o, e = banco("work", "submit", dir, "--dry-run")
+    assert_equal 0, code, e # only waiting for the verifier: exit 0 (D-161)
+    assert_equal "awaiting_verifier", out["status"]
+    assert_equal [ "E-VERIFY-MISSING" ], out["codes"]
+    assert_equal 24, out["instances"]
     code, out, _err, _o, e = banco("work", "submit", dir)
     assert_equal 0, code, e
     first = out["revision_id"]
