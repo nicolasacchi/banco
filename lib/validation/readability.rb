@@ -13,7 +13,8 @@ module Validation
     MATH = /\$\$.+?\$\$|\$[^$\n]+\$/m
     BOLD = /\*\*(.+?)\*\*/m
     WORD = /[\p{L}\p{N}][\p{L}\p{N}'’_-]*/
-    EMOJI = /[\u{1F000}-\u{1FAFF}\u{21A9}\u{21AA}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{20E3}]/
+    # U+2605 and U+2606 are the programme's own markers (star, empty star), not emoji (D-148).
+    EMOJI = /[\u{1F000}-\u{1FAFF}\u{21A9}\u{21AA}\u{2600}-\u{2604}\u{2607}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{20E3}]/
     ABBREVIATIONS = /(?:\b(?:m\.c\.m|m\.c\.d|c\.e)\.|(?<![-\p{L}])\b(?:ecc|es|sig|sigg|dott|prof|art|artt|pag|pagg|cfr|vs|n|nn|p\.es)\.)/i
     # Era abbreviations: a.C. and d.C. end a sentence only when a capital letter follows.
     ERAS = /(?<![\p{L}])[ad]\.\s?C\.(?!\s+\p{Lu}|\s*\z|\s*\n)/

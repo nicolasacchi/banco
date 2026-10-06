@@ -83,6 +83,12 @@ class ReadabilityTest < ActiveSupport::TestCase
     assert_equal %w[emoji], rules("Indietro \u21A9")
   end
 
+  test "the programme's star markers are not emoji, other pictographs still are (D-148)" do
+    assert_equal [], rules("La riga \u2605 del programma e la riga \u2606.")
+    assert_equal %w[emoji], rules("Fatto \u2603")
+    assert_equal %w[emoji], rules("Bravo \u2705")
+  end
+
   test "DDT is an allowed acronym (D-104)" do
     assert_equal [], rules("La fattura accompagna il DDT della merce.")
   end

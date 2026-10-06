@@ -152,6 +152,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-145 | 2026-10-06 | W-ERROR-UNREACHABLE: a matching error value that repeats a right-hand id can never fire and is warned | implemented |
 | D-146 | 2026-10-06 | `diagnosis simulate` warns W-STALE-PIN for each stale pin it serves | implemented |
 | D-147 | 2026-10-06 | `banco status` counts passed items validated under older rules (`older_rules`) | implemented |
+| D-148 | 2026-10-06 | the programme's star markers (U+2605, U+2606) are not emoji for the readability rule | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1613,4 +1614,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** `banco status` items gain the additive `older_rules`: items whose latest revision passed under a `rules_version` other than the current one. The stored status is not changed and nothing is re-run. Also reported and not changed: the order of descent items is already kept since D-142 (the english all-wrong simulation on this commit serves 737 before 741 for object-pronouns-possessive); the report came from a build before D-142.
 - **Why:** content agent (english, step fix2): revisions 268 and 269 passed under old rules but fail E-SOLUTION-IN-DISPLAY on a dry run. Missing feature.
 - **Cost:** a count, not a list; every rules bump makes it non-zero for old items. The author dry-runs (`banco work submit DIR --dry-run`) the pinned items of older rules and resubmits those that fail.
+- **Status:** implemented
+
+## D-148 · 2026-10-06 · the programme's star markers are not emoji for the readability rule
+
+- **Design ref:** D-095, D-127, D-085
+- **Design said:** E-READ `emoji` flags the pictograph blocks; in a skill's `*_it` text it is the warning W-GRAPH-READABILITY.
+- **We do:** U+2605 (star) and U+2606 (empty star) are removed from the emoji class. Every other pictograph is flagged as before. Schema unchanged.
+- **Why:** content agent (spanish, step review): the brief tells the agent to cite the programme's markers in `scope_reason_it`, and quoting one raised W-GRAPH-READABILITY (emoji). Defect (the rule contradicted the brief). The other reported issue, W-SCOPE-MARKER ignoring unmarked lines, was already fixed by D-142 and does not reproduce on the current server (the stored spanish graph, revision 38, gives no warning): the agent had run an older build.
+- **Cost:** a star in an item text for the student is no longer flagged; the mark is a plain text glyph, not an emoji presentation.
 - **Status:** implemented
