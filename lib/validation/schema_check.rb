@@ -28,11 +28,25 @@ module Validation
           findings.add("E-BLUEPRINT-ENTRIES", "#{prefix}#{pointer}", "a blueprint has 4 to 10 starting skills", count: data["entries"]&.size)
           ok = false
         else
-          findings.add("E-SCHEMA", "#{prefix}#{pointer}", e["error"].to_s, rule: type) if (added += 1) <= MAX_REPORTED
+          findings.add("E-SCHEMA", "#{prefix}#{pointer}", message(e), rule: type) if (added += 1) <= MAX_REPORTED
           ok = false
         end
       end
       ok
+    end
+
+    # The library's wording, with a plainer one where it is cryptic: a constant
+    # says what it must be, a string says it wants a string ("revision": "379").
+    def message(error)
+      pointer = error["data_pointer"].to_s
+      case error["type"]
+      when "const"
+        "#{pointer} must be exactly #{error.dig('schema', 'const').to_json}, not #{error['data'].to_json}"
+      when "string"
+        "#{pointer} must be a string (in quotes), not #{error['data'].to_json}"
+      else
+        error["error"].to_s
+      end
     end
 
     # Errors of a generated instance against the instance definition of banco.item/1

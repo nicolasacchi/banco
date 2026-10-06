@@ -174,6 +174,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-167 | 2026-10-06 | the review brief tells reviewers to allocate a unique scratch directory | implemented |
 | D-168 | 2026-10-06 | the solve brief says a short_answer takes a sample answer, not `dont_know` | implemented |
 | D-169 | 2026-10-06 | the solver and reviewer see the item prompt (an ordering's direction) | implemented |
+| D-170 | 2026-10-06 | E-SCHEMA says in plain words what a wrong constant or non-string root member must be | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1832,5 +1833,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the blind solver sees the item exactly as the student does.
 - **We do:** `Review::ItemText#with_passage` now adds the item's `prompt` (`stem_it`, `table`, `quote`, `figure`) to the display of `banco solve open` and `banco review open`, beside the passage, for every non-testlet item. An instance's own `stem_it` stays; then the prompt stem is shown as `prompt_stem_it`. The stored display and `banco.*/1` are unchanged. `briefs/solve.md` says to keep the `BANCO_SESSION` id in a file when the shell does not persist.
 - **Why:** content agent (chemistry, step solve1:2). An ordering's stored display holds only `elements`; the direction ("in senso crescente") lives in the prompt, which the student sees and the solver did not. Defect. Its first issue (root fields of answers.json) was already documented by D-166 in the brief; the agent read an older copy.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-170 · 2026-10-06 · E-SCHEMA says in plain words what a wrong constant or non-string member must be
+
+- **Design ref:** A-06
+- **Design said:** schema errors name the pointer and the library's message.
+- **We do:** `Validation::SchemaCheck` words a `const` error as `/schema_version must be exactly 1, not "1"` and a `string` type error as `/revision must be a string (in quotes), not 379`. Errors were already reported in one pass (the missing members in one line); only the wording changes. `briefs/solve.md` already shows the full root (D-166). `banco.*/1` unchanged.
+- **Why:** content agent (chemistry, step solve1:3) met three submits with cryptic messages ("is not: 1", "is not a string"). Classified as unclear wording, not a defect in the schema; the brief issue was already fixed.
 - **Cost:** none.
 - **Status:** implemented
