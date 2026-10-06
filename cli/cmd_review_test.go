@@ -155,3 +155,25 @@ func TestServerRefusalsKeepTheirCodes(t *testing.T) {
 	}
 	assertErrJSON(t, r.stderr, "E-QUOTE-NOT-FOUND")
 }
+
+// The CLI accepts --json (the default) on the open commands, so the contract lists it.
+func TestOpenCommandsDeclareJSONFlag(t *testing.T) {
+	c, err := contract.Parse()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"review open", "solve open"} {
+		found := false
+		for _, cc := range c.Commands {
+			if cc.Name != name {
+				continue
+			}
+			for _, f := range cc.Flags {
+				found = found || f == "--json"
+			}
+		}
+		if !found {
+			t.Errorf("%s: contract flags lack --json", name)
+		}
+	}
+}

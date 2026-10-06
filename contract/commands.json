@@ -191,6 +191,7 @@
       "method": "GET",
       "path": "/api/v1/revisions/:revision/review",
       "args": ["revision"],
+      "flags": ["--json"],
       "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT"]
     },
     {
@@ -208,6 +209,7 @@
       "method": "GET",
       "path": "/api/v1/revisions/:revision/solve",
       "args": ["revision"],
+      "flags": ["--json"],
       "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT"]
     },
     {
