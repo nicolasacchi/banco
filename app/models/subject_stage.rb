@@ -48,7 +48,9 @@ class SubjectStage
     def revision_row(latest, approved)
       return nil unless latest
 
-      { revision_id: latest.id, seq: latest.seq, approved_revision_id: approved&.id }
+      row = { revision_id: latest.id, seq: latest.seq, approved_revision_id: approved&.id }
+      row[:stale_pins] = Approval::BlueprintGate.stale_pins(latest) if latest.is_a?(BlueprintRevision)
+      row
     end
 
     def pending?(latest, approved) = !latest.nil? && !approved.nil? && latest.id != approved.id

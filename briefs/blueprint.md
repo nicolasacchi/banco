@@ -56,6 +56,8 @@ decision: you stop at `awaiting_teacher`.
    confirms the grade. Do not cite an invented source for it.
    Put the short answer on a skill of its own: closed items pinned on the same skill are never
    served (`W-SHORT-SKILL-CLOSED`).
+   Pin the newest passed revision of each item: a replaced revision still counts as passed but is
+   `W-STALE-PIN`, and the teacher cannot approve it. `banco status` lists `stale_pins`.
 4. Order starting skills from the simplest dependency: a failure descends to
    prerequisites, so start where a descent is cheap. Run `banco diagnosis simulate`
    with the `all-correct` and `all-wrong` scripts and read the traces; the teacher

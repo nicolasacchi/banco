@@ -140,6 +140,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-133 | 2026-10-06 | `review open` lists every stored instance of a generator item | implemented |
 | D-134 | 2026-10-06 | `items list --subject` accepts keys with an underscore (computer_science) | implemented |
 | D-135 | 2026-10-06 | `round_to` on a number error; item implicates into another subject's draft graph; ready marker on deferred edges | implemented |
+| D-136 | 2026-10-06 | a pinned item revision that a newer passed revision replaced is `W-STALE-PIN` | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1492,3 +1493,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** a rounded error still needs the student to type at least the declared number of decimals; fewer decimals is a plain wrong.
 - **Status:** implemented
 - **Back-port:** A-06.
+
+## D-136 · 2026-10-06 · a pinned item revision that a newer passed revision replaced is `W-STALE-PIN`
+
+- **Design ref:** B-07, A-06, C-04
+- **Design said:** a blueprint pins item revisions that passed validation.
+- **We do:** (1) blueprint submit and dry run warn `W-STALE-PIN` (registry version 11) for a pinned revision that passed but is not the newest passed revision of its item. (2) `banco status` carries `stale_pins` (`[{pinned, latest}]`) in the subject's `blueprint` row; additive member. (3) `Approval::BlueprintGate` lists each stale pin as a reason, so the teacher cannot approve a test that pins a replaced revision. Not a defect: the engine serves exactly the pinned ids (rule 5, immutable revisions); the content agent re-pins and resubmits. A warning, not an error, so a draft can still be simulated.
+- **Also:** the report that `review open` shows 8 of 24 instances is answered by D-133 (all stored instances, no flag); the content agent ran a binary or staging from before D-133.
+- **Why:** content agent (math, step review:2).
+- **Cost:** one extra query per pinned item at submit.
+- **Status:** implemented

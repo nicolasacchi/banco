@@ -8,8 +8,9 @@ module Validation
   #
   # items: ->(revision_id string) { ItemInfo | nil }
   module BlueprintChecks
-    ItemInfo = Struct.new(:id, :skills, :passed, :instances, :kind, keyword_init: true)
-    # instances: [{fingerprint:, low_guess:}]
+    ItemInfo = Struct.new(:id, :skills, :passed, :instances, :kind, :latest_passed_id, keyword_init: true)
+    # instances: [{fingerprint:, low_guess:}]; latest_passed_id: the newest passed revision of the
+    # same item (nil when unknown), for W-STALE-PIN
 
     module_function
 
@@ -72,6 +73,10 @@ module Validation
         findings.add("E-ITEM-NOT-PASSED", "#{field}/#{i}", "item revision #{id} has no passed validation", rule: "not_passed", revision: id) unless info.passed
         unless info.skills.include?(skill)
           findings.add("E-SKILL-UNKNOWN", "#{field}/#{i}", "item revision #{id} measures #{info.skills.join(', ')}, not #{skill}", rule: "item_skill", revision: id)
+        end
+        if info.passed && info.latest_passed_id && info.latest_passed_id.to_s != id.to_s
+          findings.add("W-STALE-PIN", "#{field}/#{i}", "item revision #{id} is no longer the latest passed revision of its item: #{info.latest_passed_id} replaced it; pin #{info.latest_passed_id}",
+                       rule: "stale_pin", revision: id, latest: info.latest_passed_id)
         end
         info
       end

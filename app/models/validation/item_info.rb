@@ -11,7 +11,7 @@ module Validation
       component = body["component"] || "number"
       skills = kind == "testlet" ? [ Array(body["sub_items"]).first&.dig("skill") ] : [ body["skill"] ]
       BlueprintChecks::ItemInfo.new(
-        id: revision.id, skills: skills, kind: kind, passed: revision.status == "passed",
+        id: revision.id, skills: skills, kind: kind, passed: revision.status == "passed", latest_passed_id: latest_passed_id(revision),
         instances: revision.instances.order(:id).map do |inst|
           display = JSON.parse(inst.display_json)
           if kind == "testlet"
@@ -23,6 +23,11 @@ module Validation
           end
         end
       )
+    end
+
+    # The newest passed revision of the same item (by seq), nil when none passed.
+    def latest_passed_id(revision)
+      revision.item.revisions.includes(:validations).select { |r| r.status == "passed" }.max_by(&:seq)&.id
     end
 
     # The lookup BlueprintChecks wants: id string => info or nil.

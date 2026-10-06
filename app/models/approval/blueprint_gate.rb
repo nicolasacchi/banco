@@ -39,8 +39,20 @@ module Approval
         reasons << "item revision #{id} is not approvable: #{gate.reasons.join('; ')}" unless gate.approvable
         reasons << "item revision #{id} was not opened in the preview" unless viewed.include?(id)
       end
+      stale_pins(revision).each { |pin| reasons << "item revision #{pin[:pinned]} is no longer the latest passed revision of its item: #{pin[:latest]} replaced it (W-STALE-PIN)" }
       reasons << "the test was not played to the end as the preview student" unless previewed?(revision)
       Result.new(approvable: reasons.empty?, reasons: reasons)
+    end
+
+    # [{pinned:, latest:}] for each pinned revision that passed but is not the newest
+    # passed revision of its item (D-136).
+    def stale_pins(revision)
+      ItemRevision.where(id: revision.pinned_item_revision_ids).includes(item: { revisions: :validations }).filter_map do |r|
+        next unless r.status == "passed"
+
+        latest = r.item.revisions.select { |x| x.status == "passed" }.max_by(&:seq)
+        { pinned: r.id, latest: latest.id } if latest && latest.id != r.id
+      end
     end
 
     def unapproved_guests(revision)
