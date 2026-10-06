@@ -33,7 +33,7 @@ jobs:
       - uses: actions/setup-node@v7 # the expression grader worker (Grading::Expression)
         with:
           node-version: "26"
-      - uses: actions/setup-go@v6 # test/validation/cli_fixtures_test.rb builds the CLI
+      - uses: actions/setup-go@v7 # test/validation/cli_fixtures_test.rb builds the CLI
         with:
           go-version: "1.27.x"
       - name: The runner's Chrome, for the validation tests (generators run only in Chrome)
@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version: "1.27.x"
       - run: gofmt -l cli contract | tee /dev/stderr | (! read)
