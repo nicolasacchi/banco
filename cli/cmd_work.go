@@ -366,7 +366,7 @@ func runWorkStatus(e *env, args []string) error {
 			switch st.Status {
 			case "passed":
 				return nil
-			case "failed":
+			case "failed", "awaiting_verifier":
 				ce := newErr(ExitValidation, "E-VALIDATION-FAILED", "revision", "validation failed: "+strings.Join(st.Codes, ", "), "fix the files and banco work submit DIR --dry-run")
 				if len(st.Codes) > 0 {
 					ce.Code = st.Codes[0]

@@ -22,7 +22,7 @@ module Api
             next if only_current && !current
 
             { item: item.key, subject: item.subject.key, kind: item.kind, revision_id: rev.id, seq: rev.seq,
-              status: rev.validations.max_by(&:seq)&.status || "validating", current: current,
+              status: rev.validations.max_by(&:seq)&.display_status || "validating", current: current,
               reviews: rev.reviews.size, blind_solves: rev.blind_solves.size }.merge(current ? blueprint_facts(rev) : {})
           end
         end

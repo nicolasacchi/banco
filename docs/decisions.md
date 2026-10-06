@@ -161,6 +161,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-155 | 2026-10-06 | a dotted abbreviation (a.C., d.C., m.c.m.) counts as one word in the readability rules | implemented |
 | D-151 | 2026-10-06 | skill-graph coverage follows the engine for testlets (first skill) and lists stored multi-skill testlets | implemented |
 | D-156 | 2026-10-06 | the reuse_right widget label says answer, not category | implemented |
+| D-157 | 2026-10-06 | `items list` and `work status` show `awaiting_verifier` like `banco status` | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1703,4 +1704,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** the label is "Scegli per ogni voce la risposta giusta. Una risposta può servire per più voci." (`matching_reuse_label`). Text only; `banco.*/1` unchanged.
 - **Why:** content agent (spanish, step sfix1). Defect in wording. The same report's first issue (an unchanged resubmission cannot clear W-RULES-OUTDATED) is D-154, already implemented.
 - **Cost:** none.
+- **Status:** implemented
+
+## D-157 · 2026-10-06 · `items list` and `work status` show `awaiting_verifier`
+
+- **Design ref:** D-141 (`awaiting_verifier` in `banco status`)
+- **Design said:** only `banco status` counted a revision whose latest validation failed with only `E-VERIFY-MISSING` and/or `E-VERIFY-STALE` as `awaiting_verifier`; `items list` and `work status` showed the stored `failed`, so a verifier looking for it in `items list` never found it.
+- **We do:** the `status` of an `items list` row and of `work status` is `awaiting_verifier` under the same rule (`ItemValidation#display_status`, shared with `banco status`). The stored status stays `failed`; `settled` and `codes` are unchanged; `work status --wait` treats it as the failed exit it was. `E-VERIFY-REJECTS` stays `failed`: it is the author's or verifier's own broken verify.mjs. Additive; `banco.*/1` unchanged.
+- **Why:** content agent (chemistry, step sverify1). Defect: two views of one state disagreed.
+- **Cost:** a script that compared the status to `failed` for these items must also accept `awaiting_verifier`.
 - **Status:** implemented

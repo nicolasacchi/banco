@@ -88,12 +88,7 @@ class SubjectStage
       latest = revision.validations.max_by(&:seq)
       return "validating" unless latest
 
-      awaiting_verifier?(latest) ? "awaiting_verifier" : latest.status
-    end
-
-    # Failed only for the missing or stale verify.mjs: the item is clean, a verifier is next (D-141).
-    def awaiting_verifier?(validation)
-      validation.status == "failed" && (codes = JSON.parse(validation.codes_json || "[]")).any? && (codes - %w[E-VERIFY-MISSING E-VERIFY-STALE]).empty?
+      latest.display_status
     end
 
     def stage(subject, graph, blueprint, approved_g, approved_b, items)

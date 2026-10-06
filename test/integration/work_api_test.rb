@@ -275,7 +275,7 @@ class WorkApiTest < ActionDispatch::IntegrationTest
     first = json["revision_id"]
     perform_enqueued_jobs
     api("/api/v1/work/revisions/#{first}")
-    assert_equal "failed", json["status"]
+    assert_equal "awaiting_verifier", json["status"]
     assert_equal [ "E-VERIFY-MISSING" ], json["codes"]
     assert_equal 24, json["instances"]
     assert json["chrome_version"].present?

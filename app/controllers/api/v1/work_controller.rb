@@ -55,7 +55,7 @@ module Api
 
         settled = settled?(revision) ? true : false
         # An unsettled `error` is one failed attempt (Chrome busy or slow); the job tries again by itself.
-        render json: { revision_id: revision.id, item: revision.item.key, seq: revision.seq, status: revision.status,
+        render json: { revision_id: revision.id, item: revision.item.key, seq: revision.seq, status: revision.latest_validation&.display_status || "validating",
                        settled: settled, retrying: revision.status == "error" && !settled, instances: revision.instances.count,
                        teacher_comments: Teacher::SendBacks.for_item(revision.item) }.merge(validation_row(revision) || {})
       end

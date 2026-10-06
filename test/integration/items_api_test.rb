@@ -37,6 +37,20 @@ class ItemsApiTest < ActionDispatch::IntegrationTest
     assert_equal [ @a2.id, @b1.id ].sort, response.parsed_body["rows"].map { |r| r["revision_id"] }.sort
   end
 
+  test "a clean item that waits for its verifier shows awaiting_verifier in items list and work status (D-157)" do
+    r = ItemRevision.create!(item: @b, seq: 2, body_json: "{}")
+    ItemValidation.create!(item_revision: r, seq: 1, status: "failed", codes_json: "[\"E-VERIFY-STALE\"]")
+    api("/api/v1/items?subject=italian&current=1")
+    assert_equal [ "awaiting_verifier" ], response.parsed_body["rows"].map { |x| x["status"] }
+    api("/api/v1/work/revisions/#{r.id}")
+    assert_equal [ "awaiting_verifier", true, [ "E-VERIFY-STALE" ] ], response.parsed_body.values_at("status", "settled", "codes")
+    ItemValidation.create!(item_revision: r, seq: 2, status: "failed", codes_json: "[\"E-VERIFY-STALE\",\"E-READ\"]")
+    api("/api/v1/items?subject=italian&current=1")
+    assert_equal [ "failed" ], response.parsed_body["rows"].map { |x| x["status"] }
+    api("/api/v1/work/revisions/#{r.id}")
+    assert_equal "failed", response.parsed_body["status"]
+  end
+
   test "an unknown subject is 404 E-NOT-FOUND and a token is required" do
     api("/api/v1/items?subject=nope")
     assert_response :not_found
