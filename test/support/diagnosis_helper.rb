@@ -36,7 +36,7 @@ module DiagnosisHelper
     pool = plan.pool.values + extra
     Diagnosis::Plan.new(subject: plan.subject, entries: plan.entries, skills: plan.skills, pool: pool.to_h { |i| [ i.id, i ] },
                         sitting_seconds: plan.sitting_seconds, sittings: plan.sittings, seed_salt: plan.seed_salt,
-                        external: plan.external, seen: plan.seen)
+                        external: plan.external, seen: plan.seen, descent_items: plan.descent_items)
   end
 
   def instance(id, skills:, kind: "diagnosis_item", component: "number", low_guess: nil, choice: nil, seconds: 60, item: nil)

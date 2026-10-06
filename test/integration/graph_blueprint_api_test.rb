@@ -285,6 +285,23 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
     assert_empty json["warnings"].select { |w| w["code"] == "W-SCOPE-MARKER" }
   end
 
+  test "W-SCOPE-MARKER: a skill spanning an unmarked line and a starred block is quiet for either scope (D-142)" do
+    add_marked_lines
+    set = lambda do |scope|
+      graph do |d|
+        skill(d, "math.percentages").tap do |s|
+          s["scope"] = scope
+          s["refs"][0].merge!("line" => 5, "fragment" => "corpo del blocco")
+          s["refs"] << s["refs"][0].merge("line" => 6, "fragment" => "Un altro titolo")
+        end
+      end
+    end
+    %w[studied integration_studied].each do |scope|
+      submit_graph(set.(scope), dry: true)
+      assert_empty json["warnings"].select { |w| w["code"] == "W-SCOPE-MARKER" }, scope
+    end
+  end
+
   test "W-SCOPE-MARKER: a star inside the cited fragment decides, though the line has no marker" do
     SyllabusLine.create!(syllabus_source: @source, number: 7, text: "Il clima ☆ Il cambiamento climatico e ★ le carte tematiche", origin: "pdf")
     set = lambda do |scope, fragment|

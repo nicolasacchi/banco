@@ -40,11 +40,11 @@ module Diagnosis
       def parents = (prerequisites + composite_of).uniq
     end
 
-    attr_reader :subject, :entries, :skills, :pool, :sitting_seconds, :sittings, :seed_salt, :external, :seen
+    attr_reader :subject, :entries, :skills, :pool, :sitting_seconds, :sittings, :seed_salt, :external, :seen, :descent_items
 
     # external: {skill_key => {"state"=>, "reason"=>}} of skills resolved in other
     # non-voided runs. seen: fingerprints the student saw in any run.
-    def initialize(subject:, entries:, skills:, pool:, sitting_seconds:, sittings:, seed_salt: "", external: {}, seen: [])
+    def initialize(subject:, entries:, skills:, pool:, sitting_seconds:, sittings:, seed_salt: "", external: {}, seen: [], descent_items: {})
       @subject = subject
       @entries = entries.freeze
       @skills = skills.freeze
@@ -54,6 +54,7 @@ module Diagnosis
       @seed_salt = seed_salt.to_s
       @external = external.freeze
       @seen = seen.to_set.freeze
+      @descent_items = descent_items.transform_values { |v| v.map(&:to_s).freeze }.freeze
       @closures = {}
       @by_skill = {}
       raise Invalid, "no entries" if @entries.empty?
@@ -63,6 +64,10 @@ module Diagnosis
 
     def skill(key) = @skills[key]
     def entry(key) = @entries.find { |e| e.skill == key }
+
+    # The author's item order for a skill (D-138, D-142): the entry's items, then the
+    # blueprint's descent items for it; [] when the plan does not know them.
+    def item_order(key) = (entry(key)&.items || []) + (@descent_items[key] || [])
     def short_instance = @short_instance ||= @pool.values.find(&:short_answer?)
     def short_skill = short_instance&.skill
 
@@ -176,10 +181,13 @@ module Diagnosis
         entries.each { |e| skills[e.skill] ||= flat_skill(e.skill, overrides) }
         budget = blueprint["budget"] || {}
         built = instances || build_pool(blueprint, skills, pool || {})
+        descent_items = Array(blueprint["descent"]).each_with_object({}) do |d, h|
+          (h[d["skill"]] ||= []).concat(Array(d["items"]).map(&:to_s))
+        end
         new(subject: subject, entries: entries, skills: skills, pool: built.to_h { |i| [ i.id, i ] },
             sitting_seconds: (budget["sitting_minutes"] || Rules::V1.sitting_budget_minutes(subject)) * 60,
             sittings: budget["sittings"] || Rules::V1::SITTINGS_PER_SUBJECT,
-            seed_salt: seed_salt, external: external, seen: seen)
+            seed_salt: seed_salt, external: external, seen: seen, descent_items: descent_items)
       end
 
       def flat_skill(key, overrides, scope: "studied")

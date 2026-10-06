@@ -34,6 +34,16 @@ class SyllabusBlockMarkerTest < ActiveSupport::TestCase
     assert_equal({ 2 => { marker: "★", from: 1 }, 3 => { marker: "★", from: 1 }, 7 => { marker: "☆", from: 6 } }, result)
   end
 
+  test "a short heading after a finished sentence closes the block (D-142)" do
+    result = Syllabus::BlockMarker.call(rows(
+      [ "★ Costituzione", "★" ],
+      [ "Principi fondamentali e diritti." ],
+      [ "Economia" ],
+      [ "Nozione di economia" ]
+    ))
+    assert_equal({ 2 => { marker: "★", from: 1 } }, result)
+  end
+
   test "a marked content line opens no block; a blank line closes one" do
     result = Syllabus::BlockMarker.call(rows(
       [ "★ Consumo, risparmio e investimenti: il consumo e la propensione al consumo; il risparmio.", "★" ],

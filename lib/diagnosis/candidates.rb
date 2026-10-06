@@ -22,7 +22,7 @@ module Diagnosis
       end
       unseen = fresh.reject { |i| i.testlet? && i.expected_seconds > max_seconds }
       too_long = fresh.size != unseen.size
-      order = plan.entry(skill)&.items || []
+      order = plan.item_order(skill)
       # The author's item order (D-138): listed items first, in the listed order;
       # the seeded order breaks ties (sort_by is made stable by the index).
       rank = ->(list) { list.each_with_index.sort_by { |i, n| [ order.index(i.item.to_s) || order.size, n ] }.map(&:first) }

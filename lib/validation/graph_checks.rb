@@ -170,11 +170,15 @@ module Validation
       skills.each_with_index do |s, i|
         next unless %w[studied integration_studied in_progress].include?(s["scope"])
 
+        # A cited line without a marker stays in the list as nil (studied); only a
+        # line the source does not have is skipped.
         markers = Array(s["refs"]).select { |r| prima_ref?(r) }.filter_map do |r|
           line = context.source_line(r["source"], r["line"])
-          line && (fragment_marker(r["fragment"], line[:text]) || line[:marker] || line[:block_marker])
-        end
-        next if markers.empty?
+          next unless line
+
+          [ fragment_marker(r["fragment"], line[:text]) || line[:marker] || line[:block_marker] ]
+        end.flatten(1)
+        next if markers.compact.empty?
 
         expected = markers.flat_map { |m| Syllabus::BlockMarker.scopes_for(m) }.uniq
         next if expected.include?(s["scope"])

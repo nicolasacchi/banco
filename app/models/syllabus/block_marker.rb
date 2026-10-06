@@ -7,7 +7,8 @@ module Syllabus
   # A marked line that looks like a header (ends with ":" or is short and has no
   # closing punctuation) opens a block. The block runs over the following lines until
   # the next marked line, a blank, a transcriber line or a line ending with ":"
-  # (D-138: a short bullet inside the block no longer closes it). A line outside any
+  # (D-138: a short bullet inside the block no longer closes it, unless the line
+  # before it ended a sentence: then it is a new heading, D-142). A line outside any
   # block that looks like a header opens nothing. A marked line that is plain content
   # opens nothing.
   module BlockMarker
@@ -22,18 +23,27 @@ module Syllabus
     def call(rows)
       out = {}
       open = nil
+      closed_prose = false # the last line of the open block ended a sentence (D-142)
       rows.each do |row|
-        if row.origin == "transcript" || row.text.to_s.strip.empty?
+        text = row.text.to_s.strip
+        if row.origin == "transcript" || text.empty?
           open = nil
         elsif row.marker
           open = header?(row.text) ? { marker: row.marker, from: row.number } : nil
-        elsif open && !row.text.to_s.strip.end_with?(":")
+          closed_prose = false
+        elsif open && closed_prose && header?(row.text)
+          # A short unpunctuated line after a finished sentence is a new heading (D-142).
+          open = nil
+          closed_prose = false
+        elsif open && !text.end_with?(":")
+          closed_prose = text.match?(/[.;!?]\z/)
           # Inside a block a short line is a bullet, not a header (D-138).
           out[row.number] = open
         elsif header?(row.text)
           open = nil
         elsif open
           out[row.number] = open
+          closed_prose = false
         end
       end
       out

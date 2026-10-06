@@ -146,6 +146,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-139 | 2026-10-06 | W-SCOPE-MARKER reads a star just before the cited fragment; `banco work open` defaults to `$TMPDIR/banco-work/ITEM` | implemented |
 | D-140 | 2026-10-06 | `banco work open --role verifier` gets its own default folder and refuses the other role's folder | implemented |
 | D-141 | 2026-10-06 | `E-VERIFY-STALE`: a carried-forward verify.mjs that rejects a changed item is the verifier's to refresh; `banco status` has `awaiting_verifier` | implemented |
+| D-142 | 2026-10-06 | a star block ends at a short heading after a finished sentence; W-SCOPE-MARKER counts unmarked lines; descent item order is kept | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1553,4 +1554,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Also, reported and not changed (already answered):** (a) closed items pinned on the short answer's skill are never served; that is `W-SHORT-SKILL-CLOSED` since D-121 (also leaving them out of the redo count: the dry run of the reported file gives `E-POOL-REDO` plus the warning on staging at this commit). The short answer needs a skill of its own; the blueprint brief says so. The engine is not changed. (b) `diagnosis simulate --blueprint` with a bare blueprint loads the stored graph revision and the passed pinned items since D-099; it is flat only when the graph revision is not stored, and then the answer carries `warnings[E-SIMULATE-INPUT]` (read `warnings`, or use `--subject` after the blueprint is stored). The report came from a build before D-099/D-121 or from a blueprint naming an unstored graph revision.
 - **Why:** content agent (biology, step fix).
 - **Cost:** a verify.mjs that is wrong, not stale, also reads as stale after an author change; the verifier reads the rejections either way.
+- **Status:** implemented
+
+## D-142 · 2026-10-06 · a star block ends at a short heading after a finished sentence; W-SCOPE-MARKER counts unmarked lines; descent item order is kept
+
+- **Design ref:** B-02, A-06, D-138
+- **Design said:** inside a star block a short line is a bullet (D-138); W-SCOPE-MARKER compares the scope with the markers of the cited lines; the blueprint's item order decides the served order (D-138, entries only).
+- **We do:** (1) `Syllabus::BlockMarker`: a short unpunctuated line right after a block line that ends with `. ; ! ?` closes the block (it is a heading: "Economia" after the Constitution text). Bullets after the header or after unpunctuated bullets still inherit. (2) W-SCOPE-MARKER: a cited line without a marker counts as "no marker" (scope studied), so a skill spanning unmarked and star lines expects `studied` or `integration_studied`; only lines the source lacks are skipped; a skill citing only unmarked lines stays quiet as before. (3) `Plan#descent_items` (skill to the blueprint's `descent[].items`) and `Plan#item_order`; `Candidates.for` ranks by the entry's items then the descent items. No schema change; `banco.*/1` unchanged.
+- **Why:** content agent (business, step fix): false W-SCOPE-MARKER on lines 136-137 and on a skill spanning lines 147 and 149; 314 served before 313.
+- **Cost:** a bullet list whose item follows a sentence-ending bullet and is itself a short unpunctuated line now leaves the block; the agent cites the header line or the source gets a blank line. Existing stored syllabus lines are derived on read, so no re-import is needed.
 - **Status:** implemented
