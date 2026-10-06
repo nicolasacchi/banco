@@ -183,6 +183,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-176 | 2026-10-06 | solve brief root fields: already in the brief since D-166; no change | implemented |
 | D-177 | 2026-10-06 | reviewer scratch collision: already in the review brief since D-167; no change | implemented |
 | D-178 | 2026-10-06 | review open: programme_lines also list the lines the item's own sources cite, with cited_by | implemented |
+| D-179 | 2026-10-06 | solver display of an ordering item: the prompt (direction) is already shown (D-169) | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1922,5 +1923,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** `programme_lines` in `banco review open` were the lines the item's skill cites in the graph.
 - **We do:** the list is the union of the skill's graph refs and the lines named by the item's own `sources[].ref` (form `SOURCE-KEY:LINE`, also in sub-items). Each entry gains `cited_by`: `both`, `skill` (graph only) or `item` (item sources only, `role` and `skill` null). Existing keys are unchanged, so `banco.*/1` stays compatible. Quotes from item-only lines are accepted too.
 - **Why:** content agent (math, step review1:1): the item cited seconda:884 while the list showed 859; another item cited prima:69, which was missing. Missing feature: the reviewer must see the lines the item claims to rest on. A line found on one side only is now visible as such. Also reported: the shared scratch folder `rev1` was overwritten by a parallel session: already D-167 and D-177, no change.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-179 · 2026-10-06 · solver display of an ordering item: the prompt (direction) is already shown (D-169)
+
+- **Design ref:** A-05, D-169, D-175
+- **Design said:** the solver sees what the student sees; an ordering's direction lives in the item prompt, not in the instance display.
+- **We do:** no code change. Since D-169 `banco solve open` adds the item prompt to every non-testlet display, ordering included (`Review::ItemText`, tested in `test/models/review/item_text_test.rb`: the prompt stem appears as `prompt_stem_it`). The student's page shows the same prompt above the elements. A display with only `elements` comes from a run before D-169 was deployed, or from an item whose prompt has no stem: a content mistake (an ordering always names its direction). `banco.*/1` unchanged.
+- **Why:** content agent (biology, step solve1:0) on revision 519. Same cause as D-175.
 - **Cost:** none.
 - **Status:** implemented
