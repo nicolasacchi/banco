@@ -189,6 +189,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-182 | 2026-10-07 | solve brief root fields of answers.json (biology, solve1:3): already documented (D-166, D-176, D-180); no change | implemented |
 | D-183 | 2026-10-07 | solve brief on short_answer and author view of review findings: already shipped (D-168, D-181); no change | implemented |
 | D-184 | 2026-10-07 | solve/review display: item prompt already shown (D-169); a testlet's sub items now carry their prompt; blueprint open status already D-172 | implemented |
+| D-185 | 2026-10-07 | solve open without stem_it (law_economics): prompt stem shown since D-169; answers.json root already documented (D-180, D-182); no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1982,5 +1983,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the solver and reviewer see the item prompt as the student does (D-169); `blueprint open` shows `awaiting_verifier` like `banco status` (D-172).
 - **We do:** `solve open` and `review open` already add `prompt.stem_it` (as `stem_it`, or `prompt_stem_it` beside an instance stem), `table`, `quote`, `figure` and `passage_it` for a plain item (D-169). The gap that remained is the testlet: its sub items' prompts were not added. `Review::ItemText#with_passage` now adds the passage once and, per sub item, the same parts. `blueprint open` items[] has used `display_status` since D-172. `banco.*/1` unchanged (new keys in a display only).
 - **Why:** content agent (spanish, step pfix1) read the code and output of an older deployment: a blind solve (367 / solve 43) made before D-169 saw only `**problema**`. Its E-BLIND-SOLVE-MISMATCH findings are stale: the teacher disposes of them, or a new solve is run on the current deployment. The status report (revision 554) is D-172, already shipped.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-185 · 2026-10-07 · solve open shows the prompt stem; answers.json root documented: no change (D-169, D-180, D-182)
+
+- **Design ref:** A-05, D-169, D-180, D-182
+- **Design said:** the solver sees the item prompt as the student does; the solve brief states the four required root keys.
+- **We do:** no code change. A plain item keeps its stem in `prompt.stem_it` (required by `item.json` for every item), and `solve open` adds it to the display as `stem_it` (or `prompt_stem_it` beside an instance stem) since D-169; `test/models/review/item_text_test.rb` covers it. Revisions whose instances carry their own `stem_it` already showed one; a prompt-only item such as revision 31 showed none on a deployment older than D-169. `briefs/solve.md` Format lists `schema`, `schema_version`, `revision`, `answers` with a minimal example. `banco.*/1` unchanged.
+- **Why:** content agent (law_economics, step solve1:0). Neither report is a defect on the current deployment. The solver should run `banco brief show solve` and re-open the revision after the deployment. If a revision still shows no stem on the current build, its prompt is the content mistake and the author sends a new revision.
 - **Cost:** none.
 - **Status:** implemented
