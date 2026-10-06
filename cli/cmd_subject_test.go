@@ -142,3 +142,16 @@ func TestItemsListBuildsTheRequest(t *testing.T) {
 		}
 	}
 }
+
+func TestItemsListAcceptsSubjectKeysWithUnderscore(t *testing.T) {
+	for _, key := range []string{"computer_science", "law_economics", "math"} {
+		srv, seen := sequenceServer(t, [2]string{"200", `{"items":[]}`})
+		r := runCLI(t, srv.URL, envToken("bnc_x"), "items", "list", "--subject", key, "--current")
+		if r.exit != ExitOK {
+			t.Fatalf("%s: exit %d: %s", key, r.exit, r.stderr)
+		}
+		if got := (*seen)[0]; got.path != "/api/v1/items" {
+			t.Errorf("%s: request %+v", key, got)
+		}
+	}
+}

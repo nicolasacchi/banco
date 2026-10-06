@@ -138,6 +138,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-131 | 2026-10-06 | a testlet that does not fit the sitting is deferred to the next one, not replaced by a repeat of the item already used | implemented |
 | D-132 | 2026-10-06 | reviewers: `items list` already lists revision ids; own scratch directory per subject and round | implemented |
 | D-133 | 2026-10-06 | `review open` lists every stored instance of a generator item | implemented |
+| D-134 | 2026-10-06 | `items list --subject` accepts keys with an underscore (computer_science) | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1470,4 +1471,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** the review (`review open`, and the quote check of `review submit`) uses every stored instance (the pool, e.g. 24); numbering is by id, so instances 1..8 are unchanged. The blind solver (`solve open`) still gets 8. No flag, no format change; `banco.*/1` unchanged.
 - **Why:** content agent (spanish, step review:1): a reviewer could not read 16 of 24 expected answers and distractors and had to run the generator locally.
 - **Cost:** a larger review payload; reviewers may quote any stored instance.
+- **Status:** implemented
+
+## D-134 · 2026-10-06 · `items list --subject` accepts keys with an underscore
+
+- **Design ref:** M6, D-129
+- **Design said:** `banco items list --subject KEY` lists the revisions of a subject.
+- **We do:** the CLI checked the key with the source-name pattern (no underscore), so `computer_science` and `law_economics` were refused with E-USAGE (the "unknown command" the content agent saw was an older binary; the underscore refusal is what remains). It now uses the subject-key pattern of the other commands. `banco.*/1` and the API unchanged.
+- **Why:** content agent (computer_science, step review:1).
+- **Cost:** none.
 - **Status:** implemented

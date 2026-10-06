@@ -21,7 +21,7 @@ func runItemsList(e *env, args []string) error {
 		return err
 	}
 	const next = "banco items list --subject math --current"
-	if *subject != "" && !sourceRe.MatchString(*subject) {
+	if *subject != "" && !subjectKeyRe.MatchString(*subject) {
 		return newErr(ExitUsage, "E-USAGE", "subject", "--subject is a subject key (see banco status)", next)
 	}
 	if len(pos) != 0 {
