@@ -612,4 +612,17 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
     items = json["subjects"].find { |sub| sub["key"] == "math" }["items"]
     assert_equal [ 0, before["failed"] + 1 ], [ items["awaiting_verifier"], items["failed"] ]
   end
+
+  test "status counts passed items validated under older rules (D-147)" do
+    make_graph_row
+    submit_blueprint(blueprint)
+    rev = @revs["math.percentages"].first
+    ItemValidation.create!(item_revision: rev, seq: 2, status: "passed", codes_json: "[]", rules_version: "0")
+    api("/api/v1/status")
+    old = json["subjects"].find { |sub| sub["key"] == "math" }["items"]["older_rules"]
+    assert_operator old, :>=, 1
+    ItemValidation.create!(item_revision: rev, seq: 3, status: "passed", codes_json: "[]", rules_version: Validation::Rules.version.to_s)
+    api("/api/v1/status")
+    assert_equal old - 1, json["subjects"].find { |sub| sub["key"] == "math" }["items"]["older_rules"]
+  end
 end

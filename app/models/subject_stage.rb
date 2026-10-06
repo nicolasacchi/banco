@@ -34,7 +34,7 @@ class SubjectStage
         graph_approved: !approved_g.nil?,
         blueprint_approved: !approved_b.nil?,
         pending_revision: pending?(graph, approved_g) || pending?(blueprint, approved_b),
-        items: items.values.tally.then { |t| { total: items.size, passed: t["passed"].to_i, failed: t["failed"].to_i, awaiting_verifier: t["awaiting_verifier"].to_i, validating: t["validating"].to_i, error: t["error"].to_i, sent_back: sent_back(subject), reserve: Item.reserve(subject).count } }
+        items: items.values.tally.then { |t| { total: items.size, passed: t["passed"].to_i, failed: t["failed"].to_i, awaiting_verifier: t["awaiting_verifier"].to_i, validating: t["validating"].to_i, error: t["error"].to_i, older_rules: older_rules(subject), sent_back: sent_back(subject), reserve: Item.reserve(subject).count } }
       }
     end
 
@@ -63,6 +63,16 @@ class SubjectStage
       latest = Item.where(subject: subject).includes(:revisions).filter_map { |i| i.revisions.max_by(&:seq) }
       back = Teacher::SendBacks.by_revision(latest.map(&:id))
       latest.count { |r| back.key?(r.id) }
+    end
+
+    # Items whose latest revision passed under an older rules version than the current
+    # one (D-147): the rules may have tightened since, so a dry run is worth it.
+    def older_rules(subject)
+      current = Validation::Rules.version.to_s
+      Item.where(subject: subject).includes(revisions: :validations).count do |item|
+        v = item.revisions.max_by(&:seq)&.validations&.max_by(&:seq)
+        v && v.status == "passed" && v.rules_version.to_s != current
+      end
     end
 
     # {item key => passed|failed|awaiting_verifier|validating|error} for the latest revision of each item.

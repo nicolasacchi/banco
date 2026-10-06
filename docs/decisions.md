@@ -151,6 +151,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-144 | 2026-10-06 | W-TESTLET-MULTI-SKILL: a pinned testlet stored with sub items on several skills is warned and refused at approval | implemented |
 | D-145 | 2026-10-06 | W-ERROR-UNREACHABLE: a matching error value that repeats a right-hand id can never fire and is warned | implemented |
 | D-146 | 2026-10-06 | `diagnosis simulate` warns W-STALE-PIN for each stale pin it serves | implemented |
+| D-147 | 2026-10-06 | `banco status` counts passed items validated under older rules (`older_rules`) | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1603,4 +1604,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** `POST /api/v1/diagnosis/simulate` adds a `W-STALE-PIN` entry to `warnings` for each stale pin, for `--subject` and for a bare blueprint with stored items. Same shape as the other simulate warnings; the run itself is unchanged (it still serves the pinned revision). `banco.*/1` unchanged.
 - **Why:** content agent (chemistry, step review): simulate served pin 330 with `warnings: []` though 730 replaced it. Missing feature.
 - **Cost:** a warning only. The agent pins the newest revision in a new blueprint revision and simulates again.
+- **Status:** implemented
+
+## D-147 · 2026-10-06 · `banco status` counts passed items validated under older rules
+
+- **Design ref:** A-06, D-141
+- **Design said:** a passed revision stays passed; the validation row stores the rules version it ran under, but nothing compares it with the current one.
+- **We do:** `banco status` items gain the additive `older_rules`: items whose latest revision passed under a `rules_version` other than the current one. The stored status is not changed and nothing is re-run. Also reported and not changed: the order of descent items is already kept since D-142 (the english all-wrong simulation on this commit serves 737 before 741 for object-pronouns-possessive); the report came from a build before D-142.
+- **Why:** content agent (english, step fix2): revisions 268 and 269 passed under old rules but fail E-SOLUTION-IN-DISPLAY on a dry run. Missing feature.
+- **Cost:** a count, not a list; every rules bump makes it non-zero for old items. The author dry-runs (`banco work submit DIR --dry-run`) the pinned items of older rules and resubmits those that fail.
 - **Status:** implemented
