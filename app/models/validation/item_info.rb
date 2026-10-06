@@ -11,7 +11,7 @@ module Validation
       component = body["component"] || "number"
       skills = kind == "testlet" ? [ Array(body["sub_items"]).first&.dig("skill") ] : [ body["skill"] ]
       BlueprintChecks::ItemInfo.new(
-        id: revision.id, skills: skills, kind: kind, passed: revision.status == "passed", latest_passed_id: latest_passed_id(revision),
+        id: revision.id, skills: skills, testlet_skills: (Array(body["sub_items"]).filter_map { |s| s["skill"] }.uniq if kind == "testlet"), kind: kind, passed: revision.status == "passed", latest_passed_id: latest_passed_id(revision),
         instances: revision.instances.order(:id).map do |inst|
           display = JSON.parse(inst.display_json)
           if kind == "testlet"

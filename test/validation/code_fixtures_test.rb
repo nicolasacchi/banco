@@ -181,6 +181,9 @@ class CodeFixturesTest < ActiveSupport::TestCase
     "W-STALE-PIN" => lambda {
       blueprint_codes(items: ->(id) { BP_ITEMS.key?(id) ? bp_info(id).tap { |i| i.latest_passed_id = "r0z" if id == "r0a" } : nil })
     },
+    "W-TESTLET-MULTI-SKILL" => lambda {
+      blueprint_codes(items: ->(id) { BP_ITEMS.key?(id) ? bp_info(id).tap { |i| i.testlet_skills = [ BP_ITEMS[id], "math.other" ] if id == "r0a" } : nil })
+    },
     "W-GUEST-UNAPPROVED" => lambda {
       draft = Validation::Context.new(subject: "math", draft_skill: ->(k) { k == "italian.reading" ? { "key" => k } : nil })
       blueprint_codes(context: draft) { |d| d["entries"][0].merge!("skill" => "italian.reading", "guest_of_subject" => "italian") }

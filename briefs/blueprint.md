@@ -58,6 +58,9 @@ decision: you stop at `awaiting_teacher`.
    served (`W-SHORT-SKILL-CLOSED`).
    Pin the newest passed revision of each item: a replaced revision still counts as passed but is
    `W-STALE-PIN`, and the teacher cannot approve it. `banco status` lists `stale_pins`.
+   A pinned testlet whose sub items are on several skills (stored before `E-TESTLET-SKILLS`) is
+   `W-TESTLET-MULTI-SKILL` and cannot be approved; `banco status` lists `multi_skill_testlets`.
+   Resubmit it with one skill and pin the new revision.
 4. Order starting skills from the simplest dependency: a failure descends to
    prerequisites, so start where a descent is cheap. Run `banco diagnosis simulate`
    with the `all-correct` and `all-wrong` scripts and read the traces; the teacher

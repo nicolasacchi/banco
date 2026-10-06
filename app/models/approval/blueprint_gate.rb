@@ -40,6 +40,7 @@ module Approval
         reasons << "item revision #{id} was not opened in the preview" unless viewed.include?(id)
       end
       stale_pins(revision).each { |pin| reasons << "item revision #{pin[:pinned]} is no longer the latest passed revision of its item: #{pin[:latest]} replaced it (W-STALE-PIN)" }
+      multi_skill_testlets(revision).each { |m| reasons << "item revision #{m[:revision]} is a testlet whose sub items are on #{m[:skills].join(', ')}: its answers count for #{m[:skills].first} only (W-TESTLET-MULTI-SKILL)" }
       reasons << "the test was not played to the end as the preview student" unless previewed?(revision)
       Result.new(approvable: reasons.empty?, reasons: reasons)
     end
@@ -52,6 +53,18 @@ module Approval
 
         latest = r.item.revisions.select { |x| x.status == "passed" }.max_by(&:seq)
         { pinned: r.id, latest: latest.id } if latest && latest.id != r.id
+      end
+    end
+
+    # [{revision:, skills:}] for each pinned testlet whose sub items span several skills: stored
+    # before E-TESTLET-SKILLS (D-098) and still "passed", it would charge all answers to its first skill.
+    def multi_skill_testlets(revision)
+      ItemRevision.where(id: revision.pinned_item_revision_ids).filter_map do |r|
+        body = JSON.parse(r.body_json)
+        next unless body["kind"] == "testlet"
+
+        skills = Array(body["sub_items"]).filter_map { |s| s["skill"] }.uniq
+        { revision: r.id, skills: skills } if skills.size > 1
       end
     end
 

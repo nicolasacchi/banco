@@ -8,9 +8,10 @@ module Validation
   #
   # items: ->(revision_id string) { ItemInfo | nil }
   module BlueprintChecks
-    ItemInfo = Struct.new(:id, :skills, :passed, :instances, :kind, :latest_passed_id, keyword_init: true)
+    ItemInfo = Struct.new(:id, :skills, :passed, :instances, :kind, :latest_passed_id, :testlet_skills, keyword_init: true)
     # instances: [{fingerprint:, low_guess:}]; latest_passed_id: the newest passed revision of the
-    # same item (nil when unknown), for W-STALE-PIN
+    # same item (nil when unknown), for W-STALE-PIN; testlet_skills: every skill of a testlet's
+    # sub items (nil otherwise), for W-TESTLET-MULTI-SKILL
 
     module_function
 
@@ -77,6 +78,11 @@ module Validation
         if info.passed && info.latest_passed_id && info.latest_passed_id.to_s != id.to_s
           findings.add("W-STALE-PIN", "#{field}/#{i}", "item revision #{id} is no longer the latest passed revision of its item: #{info.latest_passed_id} replaced it; pin #{info.latest_passed_id}",
                        rule: "stale_pin", revision: id, latest: info.latest_passed_id)
+        end
+        if Array(info.testlet_skills).uniq.size > 1
+          findings.add("W-TESTLET-MULTI-SKILL", "#{field}/#{i}",
+                       "item revision #{id} is a testlet whose sub items are on #{info.testlet_skills.uniq.join(', ')}: the engine counts every answer for #{info.skills.first} only; put them on one skill (E-TESTLET-SKILLS)",
+                       rule: "testlet_multi_skill", revision: id)
         end
         info
       end

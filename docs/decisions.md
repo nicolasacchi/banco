@@ -148,6 +148,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-141 | 2026-10-06 | `E-VERIFY-STALE`: a carried-forward verify.mjs that rejects a changed item is the verifier's to refresh; `banco status` has `awaiting_verifier` | implemented |
 | D-142 | 2026-10-06 | a star block ends at a short heading after a finished sentence; W-SCOPE-MARKER counts unmarked lines; descent item order is kept | implemented |
 | D-143 | 2026-10-06 | W-REF-OTHER-SUBJECT is quiet when the skill's scope_reason_it names the line number | implemented |
+| D-144 | 2026-10-06 | W-TESTLET-MULTI-SKILL: a pinned testlet stored with sub items on several skills is warned and refused at approval | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1573,4 +1574,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** the check reads the skill's `scope_reason_it`; when it contains the ref's line number as a whole number, no warning. The message now says to name the line. Schema unchanged.
 - **Why:** content agent (law_economics, step fix): the warning kept firing after the label was written, because the check never read it. Defect.
 - **Cost:** a reason that merely mentions the number clears it; the teacher still reads the reason on the graph page. A range written as "687-701" names only its ends.
+- **Status:** implemented
+
+## D-144 · 2026-10-06 · W-TESTLET-MULTI-SKILL: a pinned testlet with sub items on several skills is warned and cannot be approved
+
+- **Design ref:** D-098, D-136, A-06
+- **Design said:** E-TESTLET-SKILLS (D-098) fails a testlet with sub items on several skills when it is validated; revisions validated before stay `passed` (immutable).
+- **We do:** (1) `Validation::ItemInfo` carries `testlet_skills`; the blueprint checks add the warning `W-TESTLET-MULTI-SKILL` (registry version 13) on a pinned testlet whose stored sub items span several skills, in entries and descent, also in `blueprint submit --dry-run`. (2) `Approval::BlueprintGate` refuses the approval with a reason naming the revision and its skills (`multi_skill_testlets`). (3) `banco status` blueprint row gains the additive `multi_skill_testlets` next to `stale_pins`. The stored validation is not rewritten (the ledger is append-only); `banco.*/1` unchanged.
+- **Why:** content agent (geography, step fix): old passed testlets (biology 706, history 681, law_economics 634, italian 464/465, spanish 665) could be pinned and approved although every answer counts for the first skill only. Defect (a hole in D-098).
+- **Cost:** a warning, not an error, so a draft blueprint and the dry run still work; only the teacher's approval is blocked. The author resubmits the testlet on one skill (a new revision) and pins it.
 - **Status:** implemented

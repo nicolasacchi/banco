@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 12
+version: 13
 
 validation:
   # Skill graph (synchronous).
@@ -82,6 +82,7 @@ validation:
   # Blueprint (synchronous).
   W-SHORT-SKILL-CLOSED: { stage: blueprint, severity: warning, description: "Closed items are pinned on the skill of a pinned short answer: the engine serves only the short answer there, so they are never seen and do not count for the redo pool." }
   W-STALE-PIN: { stage: blueprint, severity: warning, description: "A pinned item revision still counts as passed but a newer passed revision of the same item exists. The engine would serve the old one; pin the newest (D-136). The teacher's approval checklist refuses it." }
+  W-TESTLET-MULTI-SKILL: { stage: blueprint, severity: warning, description: "A pinned testlet revision has sub items on several skills (stored and passed before E-TESTLET-SKILLS, D-098). The engine counts all its answers for the first sub item's skill only; the teacher's approval checklist refuses it. Resubmit the testlet with one skill (D-144)." }
   W-GUEST-UNAPPROVED: { stage: blueprint, severity: warning, description: "A guest starting skill sits in a graph of its own subject that is not approved yet. The draft and the dry run accept it; the teacher cannot approve the blueprint until that graph is approved (D-129)." }
   E-POOL-REDO: { stage: blueprint, severity: error, description: "A skill has fewer than 6 distinct-fingerprint instances across 2 items with 3 low-guess, and does not declare redo_reserve false; or a pinned descent skill has no low-guess instance." }
   E-BLUEPRINT-ENTRIES: { stage: blueprint, severity: error, description: "The blueprint has fewer than 4 or more than 10 entries." }

@@ -30,4 +30,14 @@ class StalePinTest < ActionDispatch::IntegrationTest
     pinned, newer = replace_pinned!
     assert_equal newer.id, Validation::ItemInfo.for(pinned).latest_passed_id
   end
+
+  test "a pinned testlet with sub items on several skills is listed and refuses approval (D-144)" do
+    assert_empty Approval::BlueprintGate.multi_skill_testlets(@blueprint)
+    rev = ItemRevision.find(@blueprint.pinned_item_revision_ids.first)
+    body = JSON.parse(rev.body_json).merge("kind" => "testlet", "sub_items" => [ { "skill" => "a.x" }, { "skill" => "a.y" } ])
+    rev.define_singleton_method(:body_json) { JSON.generate(body) }
+    ItemRevision.stub(:where, ->(*) { [ rev ] }) do
+      assert_equal [ { revision: rev.id, skills: %w[a.x a.y] } ], Approval::BlueprintGate.multi_skill_testlets(@blueprint)
+    end
+  end
 end

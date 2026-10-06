@@ -49,7 +49,10 @@ class SubjectStage
       return nil unless latest
 
       row = { revision_id: latest.id, seq: latest.seq, approved_revision_id: approved&.id }
-      row[:stale_pins] = Approval::BlueprintGate.stale_pins(latest) if latest.is_a?(BlueprintRevision)
+      if latest.is_a?(BlueprintRevision)
+        row[:stale_pins] = Approval::BlueprintGate.stale_pins(latest)
+        row[:multi_skill_testlets] = Approval::BlueprintGate.multi_skill_testlets(latest)
+      end
       row
     end
 
