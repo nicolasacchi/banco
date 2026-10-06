@@ -181,6 +181,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-174 | 2026-10-06 | solver answer-format complaints: the stem names the format; `isolate` already accepts `y = expr` | implemented |
 | D-175 | 2026-10-06 | solver sees no question on an instance: D-169 already shows the prompt; otherwise a content mistake | implemented |
 | D-176 | 2026-10-06 | solve brief root fields: already in the brief since D-166; no change | implemented |
+| D-177 | 2026-10-06 | reviewer scratch collision: already in the review brief since D-167; no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1902,5 +1903,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the solve brief states the four required root keys and shows a minimal valid file (D-166); a test validates that example.
 - **We do:** no code change. `briefs/solve.md` Format already lists `schema`, `schema_version` (the number 1), `revision` (a string) and `answers`, with a minimal example; `banco solve submit --dry-run` and the E-SCHEMA wording (D-170) report any missing key in one pass. The agent read a copy from before D-166. `banco.*/1` unchanged.
 - **Why:** content agent (math, step solve1:3): first submit with only `answers` failed with E-SCHEMA. Not a defect; the next solver run should re-read `banco brief show solve` and use the skeleton.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-177 · 2026-10-06 · reviewer scratch directory collision: already in the review brief (D-167)
+
+- **Design ref:** A-05, D-167
+- **Design said:** `briefs/review.md` tells reviewers to allocate a private scratch directory with `mktemp -d "$TMPDIR/rv-SUBJECT-XXXXXX"` and never to `mkdir -p` a fixed name such as `rev1`.
+- **We do:** no code change. The reviewer used the fixed name `rev1` (and a fixed `sess.txt` inside it), which parallel sessions share; another session overwrote the session id file. Keeping the session id in a variable (`export BANCO_SESSION=$(banco session new ... --id)`) or inside the private directory avoids it. Sessions are server-side, so the stray extra reviewer session is harmless. `banco.*/1` unchanged.
+- **Why:** content agent (computer_science, step review1:2). The fix on the workflow side is the same as D-167: a unique directory per reviewer. Not a banco defect.
 - **Cost:** none.
 - **Status:** implemented
