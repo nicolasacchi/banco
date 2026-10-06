@@ -178,6 +178,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-171 | 2026-10-06 | W-MESSAGE-GIVES-KEY: an error message that states an instance's key | implemented |
 | D-172 | 2026-10-06 | `blueprint open` shows `awaiting_verifier` in items[] like `banco status` | implemented |
 | D-173 | 2026-10-06 | the solve brief says one submit per session and what `--dry-run` is for; no retraction | implemented |
+| D-174 | 2026-10-06 | solver answer-format complaints: the stem names the format; `isolate` already accepts `y = expr` | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1872,5 +1873,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the blind solve is stored once, append-only; a second round uses a session that did not see the first; the teacher disposes of findings.
 - **We do:** behaviour unchanged. `banco solve submit --dry-run` already exists, checks shape and unreadable answers and stores nothing; `briefs/solve.md` now says to run it before the real submit, that a session has one submit, and not to change an answer because of the dry run's mismatch count. No solver-side retraction and no per-instance mismatch in the dry run.
 - **Why:** content agent (computer_science, step solve1:2) mistyped one answer and could not resubmit (`E-SESSION-NOT-INDEPENDENT`), leaving a false blocker. Classified as missing guidance. A retraction would let a solver edit the ledger and a per-instance dry-run mismatch would make the solve an oracle for the key, defeating blindness; the ledger is append-only. The orchestrator may run a fresh solver session for a clean round; the teacher dismisses the stale finding otherwise. `banco.*/1` unchanged.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-174 · 2026-10-06 · answer-format complaints from the blind solver: the stem names the format
+
+- **Design ref:** A-05, D-079, D-169
+- **Design said:** the solver sees what the student sees; D-079 gave expression items the `isolate` form (`y = expr` and `expr` both graded); D-169 added the item prompt to `banco solve open`.
+- **We do:** no code change. The student's page has no placeholder or format hint, so the solver display cannot have one either; the format must be in the stem, which the solver now sees in full (D-169). `briefs/diagnosis-item.md` rule 13 now says: without `form: ["isolate"]` an answer `y = ...` is not the key of an expression item, so the stem says what to write; a `normalized_text` item always has a question naming what to write. The grader needs no change: `isolate` already accepts `y = expr`. The other two points of the report (root fields of answers.json, `BANCO_SESSION` per call) are D-166 and D-169/the brief, already done. `banco.*/1` unchanged.
+- **Why:** content agent (math, step solve1:1). The 10 mismatches on revisions 388 and 428 are content mistakes (stem without a question; an expression item that wants a letter but lacks `isolate`), not defects of the software. The author should add the question to 388's stem and `isolate` to 428, as new revisions.
 - **Cost:** none.
 - **Status:** implemented

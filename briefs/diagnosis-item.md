@@ -160,7 +160,8 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
     without letters uses `number` or `fraction`; `expression` is only for answers
     with letters or irrational values, with one-digit exponents. To isolate a letter
     (`r = ...`) give the answer `{latex, unknown}` with `form: ["isolate"]`: the student may
-    type `r = I/(Ct)` or just `I/(Ct)`. To ask for an algebraic fraction in lowest terms (the student
+    type `r = I/(Ct)` or just `I/(Ct)`. Without `isolate`, `y = ...` is not the key
+    of an expression item, so say in the stem what to write (the student and the blind solver see only the stem, table and options: there is no placeholder). A `normalized_text` item always has a question in its prompt or stem that names what to write (a word, a term, a name). To ask for an algebraic fraction in lowest terms (the student
     cancels a common polynomial factor) give `form: ["reduced"]`: a fraction whose numerator and
     denominator, polynomials in one letter, still share a factor is `wrong_form`
     (`common_factor_not_cancelled`); `lowest_terms` only checks integer content. Business amounts
