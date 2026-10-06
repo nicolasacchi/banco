@@ -163,6 +163,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-156 | 2026-10-06 | the reuse_right widget label says answer, not category | implemented |
 | D-157 | 2026-10-06 | `items list` and `work status` show `awaiting_verifier` like `banco status` | implemented |
 | D-158 | 2026-10-06 | `review open` reads without a session | implemented |
+| D-159 | 2026-10-06 | `blueprint open` returns the submittable document | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1723,4 +1724,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** `review open` with no `X-Banco-Session` returns the same page when the token may hold a reviewer session (`E-AUTH` 403 otherwise). A header that is sent is checked as before (role, provider, independence, `E-SESSION` for a stray message). `review submit` and both `solve` commands still need a session: the session is what the independence rule records, and the blind solver must be a declared role. Opening records nothing, so reading does not make a session "have seen" the item. `banco.*/1` unchanged.
 - **Why:** content agent (spanish, step sreview1). Defect: a read refused for lack of a record that reading never writes.
 - **Cost:** a session-less read does not check the provider rule; that is checked at submit.
+- **Status:** implemented
+
+## D-159 · 2026-10-06 · `blueprint open` returns the submittable document
+
+- **Design ref:** B-07, D-038
+- **Design said:** `blueprint open` returned a wrapper (subject, name, revision, brief, items, descent targets); the blueprint was inside `revision.blueprint`, and submitting the whole output failed with `E-SCHEMA` on the wrapper keys.
+- **We do:** the open page has a new top-level `document`: the latest stored blueprint alone (null when none), accepted as is by `blueprint submit`. The `next` hint and the blueprint brief say so. `banco.*/1` unchanged (a key added to the open page only).
+- **Why:** content agent (business, step sreview1). Missing convenience, not a defect of validation.
+- **Cost:** the page repeats the document (also under `revision.blueprint`).
 - **Status:** implemented

@@ -19,9 +19,10 @@ module Api
           subject: @subject.key, name_it: @subject.name_it,
           revision: latest && { revision_id: latest.id, seq: latest.seq, graph_revision_id: latest.skill_graph_revision_id, blueprint: document },
           graph_revision_id: graph&.id, approved_graph_revision_id: SubjectStage.approved_graph(@subject)&.id,
+          document: document,
           descent_targets: document && graph ? Validation::BlueprintChecks.descent_targets(document, JSON.parse(graph.body_json)) : nil,
           items: pinnable_items, brief: brief_row("blueprint"),
-          next: graph ? "write a banco.blueprint/1 document and run banco blueprint submit --subject #{@subject.key} FILE --dry-run" : "submit the skill graph first: banco skill-graph submit --subject #{@subject.key} FILE"
+          next: graph ? "write a banco.blueprint/1 document (start from `document`, the latest one alone) and run banco blueprint submit --subject #{@subject.key} FILE --dry-run" : "submit the skill graph first: banco skill-graph submit --subject #{@subject.key} FILE"
         }
       end
 

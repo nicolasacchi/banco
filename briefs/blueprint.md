@@ -16,6 +16,10 @@ Start with `banco status` and this brief. Work only through `banco`
 (`banco blueprint open|submit --subject KEY`, `banco diagnosis simulate`). Never ask for a
 decision: you stop at `awaiting_teacher`.
 
+`banco blueprint open --json` returns a wrapper; its `document` key (also
+`revision.blueprint`) is the blueprint alone: edit that part and submit it, not the
+whole output.
+
 ## Shape
 
 - `graph_revision_id`: the approved graph revision this test is built on.

@@ -451,6 +451,17 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
     assert_equal 1, BlueprintRevision.count
   end
 
+  test "D-159: blueprint open carries the stored blueprint alone as document, ready to edit and resubmit" do
+    make_graph_row
+    submit_blueprint(blueprint)
+    api("/api/v1/subjects/math/blueprint")
+    assert_response :ok
+    assert_equal json["revision"]["blueprint"], json["document"]
+    doc = json["document"]
+    submit_blueprint(doc, dry: true)
+    assert_response :ok, json.inspect
+  end
+
   test "E-BLUEPRINT-ENTRIES: fewer than 4 or more than 10 starting skills" do
     make_graph_row
     submit_blueprint(blueprint(entries: %w[math.linear-equation-integer math.percentages math.factoring]))
