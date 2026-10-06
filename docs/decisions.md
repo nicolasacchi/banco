@@ -187,6 +187,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-180 | 2026-10-06 | solve brief root fields of answers.json (biology report): already documented (D-166, D-176); no change | implemented |
 | D-181 | 2026-10-07 | work status and work open (author) carry review_findings: the reviewers' and blind solvers' findings | implemented |
 | D-182 | 2026-10-07 | solve brief root fields of answers.json (biology, solve1:3): already documented (D-166, D-176, D-180); no change | implemented |
+| D-183 | 2026-10-07 | solve brief on short_answer and author view of review findings: already shipped (D-168, D-181); no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -1962,5 +1963,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the solve brief states the four required root keys and shows a minimal valid file.
 - **We do:** no code change. `briefs/solve.md` Format lists `schema`, `schema_version` (the number 1), `revision` (a string) and `answers`, with a minimal example including all four; `--dry-run` and the E-SCHEMA wording report every missing key in one pass. `banco.*/1` unchanged.
 - **Why:** content agent (biology, step solve1:3), same report as D-176 and D-180: it read an older copy of the brief. Not a defect. The solver should run `banco brief show solve` at the start of the session.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-183 · 2026-10-07 · short_answer in the solve brief and the author's review findings: already shipped (D-168, D-181)
+
+- **Design ref:** A-05, D-168, D-181
+- **Design said:** the solve brief tells the solver a `short_answer` takes a sample answer and never `dont_know`; the author reads the review and blind-solve findings of the revision through `work status` and `work open`.
+- **We do:** no code change. `briefs/solve.md` (D-168) says a `short_answer` answer is a plain string, recorded and not graded, and that `dont_know` for it is a major finding; `solve open` already reports `component: short_answer`. `work status REV` and `work open ITEM` (D-181) carry `review_findings` for author sessions. Both reports predate the deployment of those entries or came from an older copy of the brief and the CLI. `banco.*/1` unchanged.
+- **Why:** content agent (english, step pfix1). Not defects.
 - **Cost:** none.
 - **Status:** implemented
