@@ -86,7 +86,8 @@
               </li>
             <% end %>
           </ul>
-        <% else %>
+        <% end %>
+        <% if skill.inferred %>
           <p class="notice" data-inferred="true"><%= t("teacher.graph.inferred") %></p>
         <% end %>
         <% if skill.errors.any? %>

@@ -86,8 +86,8 @@ it:
       title: "Grafo delle abilità · %{subject}"
       none: "L'agente non ha ancora scritto il grafo di questa materia."
       summary:
-        one: "Un'abilità, revisione %{seq}. Abilità senza riga di programma: %{share} per cento."
-        other: "%{count} abilità, revisione %{seq}. Abilità senza riga di programma: %{share} per cento."
+        one: "Un'abilità, revisione %{seq}. Abilità che nessuna riga di programma dice dove sono state insegnate: %{share} su 100 (scuola media, argomenti non fatti in prima o righe non trovate). Controllale con più attenzione: sotto ciascuna c'è un riquadro che lo dice."
+        other: "%{count} abilità, revisione %{seq}. Abilità che nessuna riga di programma dice dove sono state insegnate: %{share} su 100 (scuola media, argomenti non fatti in prima o righe non trovate). Controllale con più attenzione: sotto ciascuna c'è un riquadro che lo dice."
       is_approved: "Questa revisione è approvata."
       first_revision: "È la prima revisione: non c'è niente da confrontare."
       newer_than_approved: "È più nuova di quella approvata."
@@ -135,7 +135,7 @@ it:
       section: "sezione"
       other_subject: "Riga di un'altra materia."
       line_missing: "la riga non è nel programma importato."
-      inferred: "Nessuna riga di programma la insegna: l'abilità è dedotta."
+      inferred: "Nessuna riga di programma dice dove è stata insegnata: l'abilità è dedotta dall'agente (scuola media, argomento non fatto in prima o riga non trovata)."
       errors:
         one: "Un errore tipico"
         other: "%{count} errori tipici"
