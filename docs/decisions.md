@@ -197,6 +197,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-190 | 2026-10-07 | solver prompt.stem_it already shipped (D-169, D-184); transient connection reset on the API was a restart; no change | implemented |
 | D-191 | 2026-10-07 | solve brief root fields (italian, solve1:1): already documented with a minimal example (D-166, D-176); no change | implemented |
 | D-192 | 2026-10-07 | review brief states the evidence minimum (4 words, no stock phrase); seconda:224 on italian.complements is a content mistake, not a defect | implemented |
+| D-193 | 2026-10-07 | solve brief root fields (chemistry, solve2:0): same as D-191, already documented; no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2063,5 +2064,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** `briefs/review.md` rule 2 now says what the server already enforced (`Review::Checklist`): evidence of at least 4 words (`MIN_WORDS`), not a stock phrase, distinct per point; refusal `E-REVIEW-EMPTY` with `detail.points`. Test: `test/models/brief_test.rb`. The brief hash changes, so reviewers must re-read it.
 - **Content mistake, no code change:** `italian.complements` citing `seconda-2025-26:224` (a Spanish line) is a wrong mapping written by the graph author; the server stores whatever lines the graph cites and cannot judge the language of a programme line. The fix is a new graph revision without that ref. The typo on line 420 ("Rifleterre") is a transcription doubt for the teacher, raised as a note, not decided by an agent.
 - **Why:** content agent (italian, step review1:0).
+- **Cost:** none.
+- **Status:** implemented
+
+## D-193 · 2026-10-07 · solve brief root fields (chemistry): repeat of D-191; no change
+
+- **Design ref:** A-06, D-166, D-176, D-191
+- **Design said:** the solve brief tells the solver the shape of `answers.json`.
+- **We do:** nothing new. `briefs/solve.md` (section Format) already lists `schema`, `schema_version`, `revision`, `answers` with a minimal example (see D-191).
+- **Why:** content agent (chemistry, step solve2:0) hit E-SCHEMA once and fixed it from the error text. Not a defect; read `banco brief show solve` on the current deployment before the first submit.
 - **Cost:** none.
 - **Status:** implemented
