@@ -234,7 +234,20 @@ q.example { display: block; margin-bottom: 0.25rem; }
 .all-questions .q-render [disabled], .all-questions .q-render math-field[disabled] { opacity: 1; color: inherit; cursor: default; }
 .all-questions .q-answers { background: var(--surface); }
 @media print {
-  .no-print, .teacher-nav, .flash { display: none !important; }
+  .no-print, .teacher-nav, .flash, .ref-info, .ref-card { display: none !important; }
   .all-questions .q-item, .all-questions .q-instance { break-inside: avoid; page-break-inside: avoid; }
   .all-questions.page.wide { max-width: none; }
 }
+
+/* References: the name, the key and the card of a skill or an item (D-218) ------------- */
+.ref { display: inline; }
+.ref-name { font-weight: 700; }
+.ref-info { font: inherit; font-size: 0.85em; font-weight: 700; min-width: 1.6rem; min-height: 1.6rem; padding: 0 0.4rem; border: 2px solid var(--line); border-radius: 50%; background: var(--surface); color: inherit; cursor: pointer; vertical-align: baseline; }
+.ref-info:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+.ref-card { width: min(34rem, 92vw); max-height: 80vh; overflow: auto; padding: 0.75rem 1rem; border: 2px solid var(--line); background: var(--surface); color: inherit; }
+.ref-card::backdrop { background: rgba(0, 0, 0, 0.3); }
+.ref-card-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.ref-facts dt { font-weight: 700; margin-top: 0.5rem; }
+.ref-facts dd { margin: 0; overflow-wrap: anywhere; }
+.ref-links { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; }
+.ref-page .ref-facts { max-width: 48rem; }

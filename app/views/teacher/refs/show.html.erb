@@ -1,0 +1,7 @@
+<% content_for :title, t("teacher.refs.title", name: @card.name) %>
+<main class="page ref-page">
+  <p class="no-print"><a href="/teacher"><%= t("teacher.back") %></a></p>
+  <h1><%= ref_for(@card.key, popover: false) %></h1>
+  <p class="hint"><%= t("teacher.refs.kind_of.#{@card.kind}") %></p>
+  <%= render "teacher/refs/card", card: @card, permalink: false %>
+</main>

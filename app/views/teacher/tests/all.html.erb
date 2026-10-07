@@ -39,16 +39,16 @@
 
   <% @all.groups.each do |group| %>
     <section class="skill-group" id="skill-<%= group.row.skill.tr('.', '-') %>" data-skill="<%= group.row.skill %>">
-      <h2><%= group.row.label_it %> <span class="key">(<%= group.row.skill %>)</span></h2>
+      <h2><%= ref_for(group.row.skill) %></h2>
       <p class="badges">
         <% if group.scope %><span class="badge" data-scope="<%= group.scope %>"><%= scope_text(group.scope) %></span><% end %>
         <span class="badge" data-role="<%= group.row.role %>"><%= t("teacher.test.role.#{group.row.role}") %></span>
         <a class="no-print" href="<%= skill_screen_path(@subject, group.row.skill) %>"><%= t("teacher.skill.title", skill: group.row.label_it) %></a>
       </p>
       <% group.items.each do |item| %>
-        <article class="q-item card" data-revision="<%= item.revision.id %>" data-item="<%= item.item.key %>" data-component="<%= item.component %>">
-          <h3><%= item.item.key %> <span class="key"><%= t("teacher.skill.revision", seq: item.revision.seq) %></span>
-            <span class="badge" data-component-badge><%= item.component %></span></h3>
+        <article class="q-item card" id="item-<%= item.revision.id %>" data-revision="<%= item.revision.id %>" data-item="<%= item.item.key %>" data-component="<%= item.component %>">
+          <h3><%= ref_for(item.item) %> <span class="key"><%= t("teacher.skill.revision", seq: item.revision.seq) %></span>
+            <span class="badge" data-component-badge title="<%= item.component %>"><%= component_name(item.component) %></span></h3>
           <% first, *others = item.instances %>
           <%= render "teacher/tests/all_instance", item: item, inst: first if first %>
           <% if others.any? %>

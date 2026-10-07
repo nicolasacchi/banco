@@ -1,7 +1,7 @@
 <% content_for :title, t("teacher.skill.title", skill: @row.label_it) %>
 <main class="page wide">
   <p><a href="<%= teacher_test_path(key: @subject.key) %>"><%= t("teacher.skill.back", subject: @subject.name_it) %></a></p>
-  <h1><%= @row.label_it %> <span class="key">(<%= @row.skill %>)</span></h1>
+  <h1><%= ref_for(@row.skill) %></h1>
   <p class="skill-nav">
     <a class="button secondary small" id="skill-all-link" href="<%= teacher_test_all_path(key: @subject.key) %>#skill-<%= @row.skill.tr('.', '-') %>"><%= t("teacher.test.all_link") %></a>
     <% if @previous %><a class="button secondary small" href="<%= skill_screen_path(@subject, @previous.skill) %>"><%= t("teacher.skill.previous") %></a><% end %>
@@ -20,9 +20,9 @@
   <div class="cards">
     <% @cards.each do |card| %>
       <article class="card item-card" data-revision="<%= card.revision.id %>" data-item="<%= card.item.key %>">
-        <h2><%= card.item.key %> <span class="key"><%= t("teacher.skill.revision", seq: card.revision.seq) %></span></h2>
+        <h2><%= ref_for(card.item) %> <span class="key"><%= t("teacher.skill.revision", seq: card.revision.seq) %></span></h2>
         <p>
-          <%= t("teacher.skill.kind") %> <strong><%= card.body["component"] || card.body["kind"] %></strong> ·
+          <%= t("teacher.skill.kind") %> <strong><%= component_name(card.body["component"] || card.body["kind"]) %></strong> ·
           <%= t("teacher.skill.seconds", count: card.body["expected_seconds"].to_i) %> ·
           <%= t("teacher.skill.mechanical") %> <strong><%= t("teacher.skill.validation.#{card.revision.status}") %></strong>
         </p>
@@ -59,7 +59,7 @@
             <% card.catalogue.each do |e| %>
               <li data-code="<%= e['code'] %>"><strong><%= e["code"] %></strong>: <%= e["description_it"] %><br>
                 <%= t("teacher.skill.message") %> <q><%= e["message_it"] %></q>
-                <% if e["implicates"].to_a.any? %><br><%= t("teacher.graph.implicates") %> <%= e["implicates"].join(", ") %><% end %></li>
+                <% if e["implicates"].to_a.any? %><br><%= t("teacher.graph.implicates") %> <%= safe_join(e["implicates"].map { |k| ref_for(k) }, ", ") %><% end %></li>
             <% end %>
           </ul>
         <% end %>

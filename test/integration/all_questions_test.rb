@@ -40,7 +40,7 @@ class AllQuestionsTest < ActionDispatch::IntegrationTest
     assert_select "section.skill-group h2", /Abilità number/
     assert_select "section.skill-group .badge[data-scope=studied]"
     assert_select "section.skill-group .badge[data-role=entry]", /Abilità di partenza/
-    assert_select "[data-component-badge]", text: "short_answer"
+    assert_select "[data-component-badge]", text: "risposta aperta"
     assert_select "#all-summary", /Revisione #{@blueprint.seq} del test/
     assert_select "#all-summary", /non è ancora approvata/
     ItemRevision.where(id: ids).each do |rev|

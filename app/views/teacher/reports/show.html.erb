@@ -20,7 +20,7 @@
         <li id="report-test-settings"><%= t("teacher.test.settings.calculator") %> <%= t("teacher.test.settings.calculator_#{entry[:calculator]}", default: entry[:calculator].to_s) %> ·
           <%= t("teacher.test.settings.budget") %> <%= t("teacher.test.settings.budget_value", minutes: entry[:budget]&.dig("sitting_minutes"), sittings: entry[:budget]&.dig("sittings")) %> ·
           <%= t("teacher.test.settings.depends") %> <%= Array(entry[:depends_on_subjects]).presence&.join(", ") || t("teacher.test.settings.none") %>
-          <% Array(entry[:kind_overrides]).each do |o| %><br><code><%= o["skill"] %></code> → <%= o["kind"] %>: <%= o["reason_it"] %><% end %></li>
+          <% Array(entry[:kind_overrides]).each do |o| %><br><%= ref_for(o["skill"]) %> → <%= t("teacher.refs.kind.#{o["kind"]}", default: o["kind"]) %>: <%= o["reason_it"] %><% end %></li>
       <% end %>
       <li id="report-condition"><%= t("teacher.report.condition") %> <strong><%= t("teacher.report.unsupervised") %></strong></li>
       <% if row[:run] %>
@@ -59,7 +59,7 @@
         <% if list.any? %>
           <ul class="plain">
             <% list.each do |s| %>
-              <li data-skill="<%= s[:skill] %>"><strong><%= s[:label_it] %></strong>
+              <li id="report-skill-<%= s[:skill].parameterize %>" data-skill="<%= s[:skill] %>"><strong><%= ref_for(s[:skill]) %></strong>
                 <% if s[:reason] %> · <%= t("teacher.report.reason.#{s[:reason]}", default: s[:reason]) %><% end %>
                 <% if s[:scope] %> · <%= scope_text(s[:scope]) %><% end %>
                 <% sh = s[:formula_sheet] %>
@@ -88,7 +88,7 @@
           <thead><tr><th><%= t("teacher.report.error_code") %></th><th><%= t("teacher.report.error_skill") %></th><th><%= t("teacher.report.error_count") %></th><th><%= t("teacher.report.error_examples") %></th></tr></thead>
           <tbody>
             <% row[:errors_observed].each do |e| %>
-              <tr data-code="<%= e[:code] %>"><td><strong><%= e[:code] %></strong></td><td><%= e[:skill] %></td><td><%= e[:count] %></td>
+              <tr data-code="<%= e[:code] %>"><td><strong><%= e[:code] %></strong></td><td><%= ref_for(e[:skill]) %></td><td><%= e[:count] %></td>
                 <td><% Array(e[:examples]).each do |text| %><q class="example"><%= text %></q> <% end %></td></tr>
             <% end %>
           </tbody>
@@ -124,7 +124,7 @@
         <h3><%= t("teacher.report.void_attempts_title") %></h3>
         <% @revisions.each do |revision| %>
           <%= decision_form("/teacher/item-revisions/#{revision.id}/void-attempts", id: "void-attempts-#{revision.id}") do %>
-            <label class="hint" for="reason-void-<%= revision.id %>"><%= revision.item.key %> · <%= t("teacher.skill.revision", seq: revision.seq) %></label>
+            <label class="hint" for="reason-void-<%= revision.id %>"><%= ref_for(revision, popover: false) %> · <%= t("teacher.skill.revision", seq: revision.seq) %></label>
             <input id="reason-void-<%= revision.id %>" class="answer-input wide" type="text" name="reason_it" placeholder="<%= t('teacher.report.reason_placeholder') %>" required>
             <p><button type="submit" class="button secondary small" <%= "disabled" if blocker %>><%= t("teacher.report.control_button.void_attempts") %></button></p>
           <% end %>

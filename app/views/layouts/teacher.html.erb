@@ -26,5 +26,6 @@
     <% if alert %><p class="notice flash alert" role="alert"><%= alert %></p><% end %>
     <% if !reader_only? && decision_blocker %><p class="notice"><%= t("teacher.cannot_decide.#{decision_blocker}") %></p><% end %>
     <%= yield %>
+    <%= yield :ref_popovers %>
   </body>
 </html>

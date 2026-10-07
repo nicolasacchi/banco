@@ -25,7 +25,8 @@ class GuestReadOnlyTest < ActionDispatch::IntegrationTest
       spec = route.path.spec.to_s.sub("(.:format)", "")
       next unless spec == "/teacher" || spec.start_with?("/teacher/")
 
-      path = spec.gsub(/:(\w+)/) { @values.fetch(Regexp.last_match(1).to_sym) { flunk "no sample value for :#{Regexp.last_match(1)} in #{spec}" }.to_s }
+      values = spec.start_with?("/teacher/refs/") ? @values.merge(key: "math.number") : @values
+      path = spec.gsub(/:(\w+)/) { values.fetch(Regexp.last_match(1).to_sym) { flunk "no sample value for :#{Regexp.last_match(1)} in #{spec}" }.to_s }
       [ route.verb, path ]
     end
   end
@@ -77,7 +78,8 @@ class GuestReadOnlyTest < ActionDispatch::IntegrationTest
 
   test "no form and no action button is drawn for a guest, and the page says read only" do
     [ "/teacher", "/teacher/subjects/math/graph", "/teacher/subjects/math/test", "/teacher/subjects/math/test/all", "/teacher/subjects/math/test/skills/math.number",
-      "/teacher/subjects/math/report", "/teacher/corrections", "/teacher/items/#{@short.id}", "/teacher/items/#{@short.id}/play" ].each do |path|
+      "/teacher/subjects/math/report", "/teacher/corrections", "/teacher/items/#{@short.id}", "/teacher/items/#{@short.id}/play",
+      "/teacher/refs/math.number", "/teacher/refs/#{@short.item.key}" ].each do |path|
       on(:web, path, headers: GUEST, remote_addr: EDGE)
       assert_response :success, path
       assert_select "form", 0, path

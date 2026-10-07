@@ -11,7 +11,7 @@
   <% if corrections.short_answers.empty? %><p><%= t("teacher.corrections.none_short") %></p><% end %>
   <% corrections.short_answers.each do |entry| %>
     <article class="correction short" data-attempt="<%= entry.attempt.id %>" data-status="<%= entry.status %>">
-      <h3><%= entry.subject.name_it %> · <%= entry.item_key %></h3>
+      <h3><%= entry.subject.name_it %> · <%= ref_for(entry.item_key) %></h3>
       <p class="prompt"><%= entry.prompt %></p>
       <h4><%= t("teacher.corrections.student_text") %></h4>
       <p class="student-text" data-student-text><% entry.segments.each do |text, marked| %><% if marked %><mark><%= text %></mark><% else %><%= text %><% end %><% end %></p>
@@ -59,7 +59,7 @@
   <% if corrections.verdicts.empty? %><p><%= t("teacher.corrections.none_verdicts") %></p><% end %>
   <% corrections.verdicts.each do |entry| %>
     <article class="correction verdict" data-attempt="<%= entry.attempt.id %>" data-verdict="<%= entry.verdict %>">
-      <h3><%= entry.subject.name_it %> · <%= entry.item_key %></h3>
+      <h3><%= entry.subject.name_it %> · <%= ref_for(entry.item_key) %></h3>
       <p class="prompt"><%= entry.prompt %></p>
       <p><strong><%= t("teacher.corrections.given") %></strong> <span data-given><%= entry.given %></span></p>
       <p><strong><%= t("teacher.corrections.key") %></strong> <%= entry.key %></p>
