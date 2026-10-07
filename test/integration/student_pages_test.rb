@@ -153,6 +153,48 @@ class StudentPagesTest < ActionDispatch::IntegrationTest
     assert_equal 0, DiagnosisRun.where(student: rows[:student]).count
   end
 
+  test "Chiudi l'anteprima closes the preview run at once, appends one event, and goes back to the test page" do
+    rows = build_ui_subject
+    release_diagnosis!
+    student_run = Diagnosis::Conductor.run_for(rows[:student], rows[:subject])
+    as_teacher("/teacher/preview/subjects/math", method: :post)
+    run_path = URI(response.location).path
+    run = DiagnosisRun.find(run_path[/\d+\z/])
+    as_teacher(run_path)
+    assert_select "form[action='#{run_path}/close'] button", "Chiudi l'anteprima"
+    refute Diagnosis::Conductor.new(run).closed?
+
+    assert_difference -> { run.events.count }, 1 do
+      as_teacher("#{run_path}/close", method: :post)
+    end
+    assert_redirected_to "/teacher/subjects/math/test"
+    assert Diagnosis::Conductor.new(run).closed?
+    assert_equal({ "reason" => "teacher_close" }, JSON.parse(run.events.where(kind: "run_closed").last.payload_json))
+    assert_no_difference -> { run.events.count } do
+      as_teacher("#{run_path}/close", method: :post)
+    end
+    assert_equal 0, student_run.events.where(kind: "run_closed").count
+    refute Diagnosis::Conductor.new(student_run).closed?
+  end
+
+  test "the preview close is the teacher's and the preview's only" do
+    rows = build_ui_subject
+    release_diagnosis!
+    student_run = Diagnosis::Conductor.run_for(rows[:student], rows[:subject])
+    preview_run = Diagnosis::Conductor.fresh_run(rows[:preview], rows[:subject])
+    as_student("/teacher/preview/runs/#{preview_run.id}/close", method: :post)
+    assert_response :forbidden
+    as_student("/diagnosis/runs/#{student_run.id}/close", method: :post)
+    assert_response :not_found
+    # The teacher cannot close the student's run through the preview route either: not her run.
+    as_teacher("/teacher/preview/runs/#{student_run.id}/close", method: :post)
+    assert_response :not_found
+    on(:api, "/teacher/preview/runs/#{preview_run.id}/close", method: :post)
+    assert_response :not_found
+    refute Diagnosis::Conductor.new(student_run).closed?
+    refute Diagnosis::Conductor.new(preview_run).closed?
+  end
+
   test "a student cannot read, step or answer into another student's run" do
     rows = build_ui_subject
     release_diagnosis!

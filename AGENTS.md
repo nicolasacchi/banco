@@ -98,6 +98,9 @@ only), `HARNESS_PORT` 3200 (internal). Never `PORT`.
   post the M9a decisions and come back with a flash (`send_back_item` is "Rimanda"). `Diagnosis::Report` is the
   B-09 report (`banco diagnosis report`), `Health` is `banco health` and `bin/preflight`,
   `Diagnosis::Preferences` is the student's theme and size; the font is vendored. Texts: `config/locales/teacher.it.yml`.
+- All the questions of a test (D-215): `/teacher/subjects/:key/test/all` (`Teacher::AllQuestions`, `all_questions_controller.js`) shows every
+  pinned item with every instance read-only; the decision `confirm_test_reviewed` stands in `Approval::BlueprintGate` for playing the whole
+  test; "Chiudi l'anteprima" (`SittingsController#close`, preview only) ends a preview run with `teacher_close`, which does not count as played.
 - `docs/decisions.md`: every deviation and operator answer (`## D-NNN`, index at the
   top). Change the design only by adding an entry.
 - `prep/`: private working material, git-ignored, never committed.

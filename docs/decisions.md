@@ -218,6 +218,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-212 | 2026-10-07 | author reads review findings: already shipped (D-181, D-203) as `review_findings`; the key is not `findings` and not `teacher_comments`; no change (math, pfix2) | implemented |
 | D-213 | 2026-10-07 | solve brief root fields (law_economics, solve3:0): repeat of D-195; the brief has the four keys and a complete example; no change | implemented |
 | D-214 | 2026-10-07 | operator decision: the calculator is allowed in mathematics too; W-CALCULATOR not extended to mathematics | implemented |
+| D-215 | 2026-10-07 | operator request: all the questions of a test on one page; approve by confirming they were seen; close the preview | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2282,3 +2283,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Why:** operator decision 2026-10-07: "per matematica facciamo usare la calcolatrice".
 - **Cost:** none; blueprints already approved that declare `calculator: "no"` keep their declaration.
 - **Status:** implemented
+
+## D-215 · 2026-10-07 · operator request: all the questions of a test on one page; approve by confirming they were seen; close the preview
+
+- **Design ref:** B-07, C-04, D-08, M9a/M9b
+- **Design said:** B-07 asked the teacher to play the whole test once as S before approving; a run closed in the context `teacher_preview` pinned to the revision was the proof.
+- **We do:** (1) `GET /teacher/subjects/:key/test/all` (`Teacher::TestsController#all`, `Teacher::AllQuestions`): every pinned item of the latest revision, entries then descent, grouped by skill, with all stored instances drawn read-only by the student's own templates (inputs disabled, nothing posted); the first instance open, the others under "Altre N varianti". Keys, typical errors, solutions and rubrics are in hidden blocks that "Mostra risposte" opens in the browser. Opening the page records `teacher_viewed_item` for every pinned revision. Linked from the test page and each skill page. (2) New decision `confirm_test_reviewed` ("Ho visto tutte le domande di questa prova"), written only by `DecisionRecorder` with the usual guards, for the latest revision, and only when every pinned item was opened. (3) `Approval::BlueprintGate`: "played" is met EITHER by a closed `teacher_preview` run of this revision OR by `confirm_test_reviewed` for this exact revision; the viewed-items condition still applies. (4) "Chiudi l'anteprima" (`POST /teacher/preview/runs/:run_id/close`, preview only) appends `run_closed` with reason `teacher_close` to the preview run, never to a student's run; the gate does not count a preview closed that way as played.
+- **Why:** operator request 2026-10-07: "vedere tutte le domande insieme per la singola prova; ok se non riesco a rispondere?"
+- **Cost:** the teacher can approve without answering every item; the ledger says which way (the decision row, or the played run). The page carries all the answers, but it exists only for the teacher (web listener, trusted teacher).
+- **Status:** implemented
+- **Back-port:** B-07: "played the whole test once as S" becomes "played it, or reviewed all the questions and confirmed".

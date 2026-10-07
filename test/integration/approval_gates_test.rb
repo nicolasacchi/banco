@@ -56,6 +56,69 @@ class ApprovalGatesTest < ActionDispatch::IntegrationTest
     assert_predicate SubjectStage.approved_blueprint(@subject), :present?
   end
 
+  test "confirming that every question was seen stands for playing the test, for this revision only, and the viewed items still count" do
+    approve_graph_row!
+    ids = @blueprint.pinned_item_revision_ids
+    ids.each { |id| ItemReview.create!(item_revision_id: id, agent_session: @session, checklist_json: "[]") && BlindSolve.create!(item_revision_id: id, agent_session: @session, answers_json: "[]", results_json: "[]") }
+
+    # Not before: nothing played, nothing confirmed.
+    approve_blueprint
+    assert_response :unprocessable_entity
+    assert_includes json["reasons"], Approval::BlueprintGate::NOT_PLAYED
+
+    # A confirmation needs the questions to have been opened.
+    decide("/teacher/blueprint-revisions/#{@blueprint.id}/confirm-reviewed")
+    assert_response :unprocessable_entity
+    assert_match(/was not opened/, json["reasons"].join)
+    assert_equal 0, Decision.where(kind: "confirm_test_reviewed").count
+
+    on(:web, "/teacher/subjects/math/test/all", headers: TEACHER, remote_addr: EDGE)
+    assert_response :success
+    decide("/teacher/blueprint-revisions/#{@blueprint.id}/confirm-reviewed")
+    assert_response :success
+    decision = Decision.find_by!(kind: "confirm_test_reviewed")
+    assert_equal({ "revision_id" => @blueprint.id, "seq" => @blueprint.seq }, JSON.parse(decision.payload_json))
+    assert_equal "nik", decision.teacher_login
+    assert_equal @subject, decision.subject
+
+    approve_blueprint
+    assert_response :success
+    assert_predicate SubjectStage.approved_blueprint(@subject), :present?
+  end
+
+  test "a confirmation for another revision does not count, and the viewed items are still needed" do
+    approve_graph_row!
+    newer = new_draft
+    confirm = ->(revision) do
+      Decision.create!(kind: "confirm_test_reviewed", subject: @subject, payload_json: { revision_id: revision.id, seq: revision.seq }.to_json,
+                       request_id: SecureRandom.uuid, teacher_login: "nik", groups: "banco-teacher", remote_addr: EDGE)
+    end
+    confirm.call(@blueprint)
+    assert Approval::BlueprintGate.reviewed?(@blueprint)
+    refute Approval::BlueprintGate.reviewed?(newer)
+    assert_includes Approval::BlueprintGate.check(newer).reasons, Approval::BlueprintGate::NOT_PLAYED
+
+    # Confirmed, but no pinned item was ever opened: the played-or-confirmed condition is met, the viewed one is not.
+    confirm.call(newer)
+    reasons = Approval::BlueprintGate.check(newer).reasons
+    refute_includes reasons, Approval::BlueprintGate::NOT_PLAYED
+    assert reasons.any? { |r| r.include?("was not opened in the preview") }
+  end
+
+  test "a preview closed by the teacher's button was not played to the end" do
+    approve_graph_row!
+    make_blueprint_approvable!
+    approve_blueprint
+    assert_response :success
+
+    other = new_draft
+    preview = Student.find_by!(key: "preview")
+    run = DiagnosisRun.create!(student: preview, subject: @subject, blueprint_revision: other, sequence: 99, seed_salt: "x", rules_version: "v1", engine_version: "e1")
+    Diagnosis::Conductor.new(run).close_preview!
+    assert Diagnosis::Conductor.new(run).closed?
+    assert_includes Approval::BlueprintGate.check(other).reasons, Approval::BlueprintGate::NOT_PLAYED
+  end
+
   test "an open blocker or major finding, or a fix request, keeps the entry test shut" do
     approve_graph_row!
     make_blueprint_approvable!
