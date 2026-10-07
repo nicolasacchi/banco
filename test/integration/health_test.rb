@@ -33,6 +33,17 @@ class HealthTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "a bad pair in BANCO_STUDENT_USERS is a problem that names its position and never its value" do
+    with_env("BANCO_STUDENT_USERS" => nil) { assert_equal "not_configured", Health.check(chrome: false)[:student_users] }
+    with_env("BANCO_STUDENT_USERS" => "kid-a=student,secretish,trial-x=preview") do
+      report = Health.check(chrome: false)
+      assert_includes report[:problems], "student_users"
+      assert_match(/position 2, 3/, report[:student_users])
+      assert_no_match(/secretish|kid-a/, report[:student_users])
+    end
+    with_env("BANCO_STUDENT_USERS" => "kid-a=student") { assert_equal "ok", Health.check(chrome: false)[:student_users] }
+  end
+
   test "the backup directory counts only when configured, and a stale copy fails it" do
     Dir.mktmpdir do |dir|
       with_env("BANCO_BACKUP_DIR" => dir) do

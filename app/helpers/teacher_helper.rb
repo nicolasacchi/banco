@@ -41,5 +41,16 @@ module TeacherHelper
 
   def minutes_text(n) = n.to_i.zero? ? t("teacher.minutes.none") : t("teacher.minutes.some", count: n)
 
-  def gate_sentences(reasons, names = {}) = reasons.map { |r| Teacher::Wording.italian(r, names) }
+  REF_TOKEN = /\u27E6ref:(\d+)\u27E7/
+
+  # The gate's sentences in Italian, safe HTML: where a sentence names an item revision it carries the
+  # D-218 reference (name, key, popover) instead of the bare key. A revision that does not exist keeps
+  # the plain words of Wording.
+  def gate_sentences(reasons)
+    marked = Hash.new { |_, id| ItemRevision.exists?(id) ? "\u27E6ref:#{id}\u27E7" : nil }
+    reasons.map do |reason|
+      text = ERB::Util.html_escape(Teacher::Wording.italian(reason, marked)).to_str
+      text.gsub(REF_TOKEN) { ref_for(ItemRevision.find(Regexp.last_match(1).to_i)) }.html_safe
+    end
+  end
 end

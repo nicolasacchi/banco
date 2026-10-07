@@ -30,11 +30,6 @@ module Teacher
       @labels ||= JSON.parse(graph.body_json)["skills"].to_h { |s| [ s["key"], s["label_it"] ] }
     end
 
-    # revision id => item key, for the gate's sentences.
-    def names
-      @names ||= ItemRevision.where(id: blueprint.pinned_item_revision_ids).includes(:item).to_h { |r| [ r.id, r.item.key ] }
-    end
-
     def skill_rows
       @skill_rows ||= begin
         rows = Array(body["entries"]).map { |e| [ e, :entry ] } + Array(body["descent"]).map { |d| [ d, :descent ] }

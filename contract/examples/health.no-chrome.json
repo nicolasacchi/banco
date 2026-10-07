@@ -22,6 +22,7 @@
         "min_mb": 1024
       },
       "backup": "not_configured",
+      "student_users": "not_configured",
       "validation_queue": {
         "waiting": 0
       },

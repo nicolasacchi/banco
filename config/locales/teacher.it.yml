@@ -389,7 +389,7 @@ it:
       banner: "Prova del docente. Nessuna risposta viene salvata."
       instance: "Istanza %{n} di %{count}."
       sent: "Ricevuto. In questa prova la risposta non si salva."
-      back: "Indietro"
+      back: "Torna alla competenza"
     corrections:
       title: "Correzioni"
       summary: "Risposte brevi da guardare: %{short}. Verdetti incerti: %{verdicts}."

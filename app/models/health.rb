@@ -23,7 +23,7 @@ module Health
         chrome: chrome ? browser(chrome_wait) : "skipped",
         chrome_egress: chrome ? egress(chrome_wait) : "skipped",
         harness: chrome ? harness(chrome_wait) : "skipped",
-        disk: disk, backup: backup
+        disk: disk, backup: backup, student_users: student_users
       }
       problems = parts.filter_map { |name, value| name if failing?(name, value) }
       { ok: problems.empty?, problems: problems.map(&:to_s) }.merge(parts).merge(
@@ -133,6 +133,17 @@ module Health
       "busy"
     rescue StandardError => e
       "error: #{e.class}: #{e.message.to_s.first(120)}"
+    end
+
+    # BANCO_STUDENT_USERS must be well formed once it is set (D-219): a bad pair is a problem, and the
+    # map still counts as configured, so unmapped logins get the 403 page. Positions only.
+    def student_users
+      return "not_configured" unless Banco::EdgeProxy.student_map_configured?
+
+      bad = Banco::EdgeProxy.student_map_problems
+      return "error: BANCO_STUDENT_USERS has no valid pair, so every student login is refused" if Banco::EdgeProxy.student_map.empty? && bad.empty?
+
+      bad.empty? ? "ok" : "error: BANCO_STUDENT_USERS has a bad pair at position #{bad.join(', ')} (login=key, key [a-z0-9-]+, not preview or all)"
     end
 
     def disk

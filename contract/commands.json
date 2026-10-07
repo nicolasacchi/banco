@@ -227,8 +227,8 @@
       "method": "GET",
       "path": "/api/v1/submissions/pending",
       "args": [],
-      "flags": ["--pending"],
-      "error_codes": ["E-AUTH", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED"]
+      "flags": ["--pending", "--student"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED"]
     },
     {
       "name": "grade propose",

@@ -70,6 +70,40 @@ class GradeProposalsTest < ActionDispatch::IntegrationTest
     assert_equal "E-SESSION-ROLE", json["code"]
   end
 
+  test "submissions --pending defaults to the official student; --student picks a trial student or all, each row says whose" do
+    trial = Student.create!(key: "prova-1", kind: "student")
+    mine = Attempt.create!(student: trial, context: "diagnosis", client_attempt_id: "c-#{SecureRandom.hex(4)}", item_instance: @instance, raw: "Una prova.", source: "text", answered_at: Time.current)
+    AttemptGrading.create!(attempt: mine, seq: 1, verdict: "short_answer", grader: "closed", grader_version: "t", source: "sync")
+
+    api("/api/v1/submissions/pending")
+    assert_equal "student", json["student"]
+    row = json["short_answers"].sole
+    assert_equal [ @attempt.id, "student", false ], row.values_at("attempt_id", "student", "trial")
+
+    api("/api/v1/submissions/pending?student=prova-1")
+    row = json["short_answers"].sole
+    assert_equal [ mine.id, "prova-1", true ], row.values_at("attempt_id", "student", "trial")
+
+    api("/api/v1/submissions/pending?student=all")
+    assert_equal [ @attempt.id, mine.id ], json["short_answers"].map { |r| r["attempt_id"] }
+    assert_equal [ false, true ], json["short_answers"].map { |r| r["trial"] }
+
+    api("/api/v1/submissions/pending?student=nobody")
+    assert_response :not_found
+    assert_equal "E-NOT-FOUND", json["code"]
+  end
+
+  test "submissions --pending lists uncertain verdicts with whose they are, and only the chosen student's" do
+    numeric = create_instance(item_body("number-generator"), item_body("number-generator")["instances"]&.first || { "display" => { "stem_it" => "x" }, "answer" => "1" })
+    trial = Student.create!(key: "prova-2", kind: "student")
+    theirs = Attempt.create!(student: trial, context: "diagnosis", client_attempt_id: "c-#{SecureRandom.hex(4)}", item_instance: numeric, raw: "3,5", source: "text", answered_at: Time.current)
+    AttemptGrading.create!(attempt: theirs, seq: 1, verdict: "near_miss", grader: "closed", grader_version: "t", source: "sync")
+    api("/api/v1/submissions/pending")
+    assert_empty json["verdicts"]
+    api("/api/v1/submissions/pending?student=prova-2")
+    assert_equal [ [ theirs.id, "prova-2", true ] ], json["verdicts"].map { |v| v.values_at("attempt_id", "student", "trial") }
+  end
+
   test "submissions --pending also lists uncertain verdicts, and not those the engine settled" do
     numeric = create_instance(item_body("number-generator"), item_body("number-generator")["instances"]&.first || { "display" => { "stem_it" => "x" }, "answer" => "1" })
     undetermined = diagnosis_attempt(numeric, "3,5")

@@ -14,5 +14,5 @@
     <button type="button" class="button" data-action="item-play#send" data-item-play-target="send"><%= t("sitting.send") %></button>
   </div>
   <p role="status" aria-live="polite" class="status" data-item-play-target="status"></p>
-  <p><a class="button secondary" href="javascript:history.back()"><%= t("teacher.play.back") %></a></p>
+  <p><a class="button secondary" href="<%= @back_path %>"><%= t("teacher.play.back") %></a></p>
 </main>

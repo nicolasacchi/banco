@@ -128,6 +128,31 @@ func TestReviewSolveGradeCommandsSendTheSessionAndTheirBody(t *testing.T) {
 	}
 }
 
+func TestSubmissionsStudentFlag(t *testing.T) {
+	for args, want := range map[string]string{"": "", "prova-1": "student=prova-1", "all": "student=all"} {
+		var gotQuery string
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			gotQuery = r.URL.RawQuery
+			w.Header().Set("X-Banco-Contract", contract.Digest())
+			_, _ = w.Write([]byte(`{"ok":true}`))
+		}))
+		cmd := []string{"submissions", "--pending", "--json"}
+		if args != "" {
+			cmd = append(cmd, "--student", args)
+		}
+		r := runWithSession(t, srv.URL, "31", cmd...)
+		srv.Close()
+		if r.exit != ExitOK || gotQuery != want {
+			t.Errorf("--student %q: exit %d query %q, want %q (%s)", args, r.exit, gotQuery, want, r.stderr)
+		}
+	}
+	srv, seen := sequenceServer(t, [2]string{"200", `{}`})
+	r := runWithSession(t, srv.URL, "31", "submissions", "--pending", "--student", "Bad Key")
+	if r.exit != ExitUsage || len(*seen) != 0 {
+		t.Errorf("a bad student key: exit %d, requests %d", r.exit, len(*seen))
+	}
+}
+
 func TestRevisionCommandsUsageErrors(t *testing.T) {
 	srv, seen := sequenceServer(t, [2]string{"200", `{}`})
 	file := writeTemp(t, "doc.json", `{}`)

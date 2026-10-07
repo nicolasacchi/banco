@@ -26,7 +26,7 @@
         <% elsif !gate.approvable %>
           <p><%= t("teacher.test.cannot_yet") %></p>
           <ul class="plain reasons">
-            <% gate_sentences(gate.reasons, review.names).each do |sentence| %><li><%= sentence %></li><% end %>
+            <% gate_sentences(gate.reasons).each do |sentence| %><li><%= sentence %></li><% end %>
           </ul>
         <% elsif blocker %>
           <p><%= t("teacher.cannot_decide.#{blocker}") %></p>

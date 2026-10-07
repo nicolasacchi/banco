@@ -93,6 +93,26 @@ class MultiUserIdentityTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "a configured map with a bad pair fails closed: the map stays configured and unmapped logins are refused" do
+    [ "kid-a=preview", "kid-a=Bad_Key", "kid-a", ",", "=student" ].each do |value|
+      with_env("BANCO_STUDENT_USERS" => value) do
+        assert Banco::EdgeProxy.student_map_configured?, value
+        assert_equal 403, get_as(OFFICIAL, "/diagnosis"), value
+        assert_select "#not-configured"
+      end
+    end
+    assert_equal 0, Student.count
+    with_env("BANCO_STUDENT_USERS" => "kid-a=student,oops,trial-x=prova-1") do
+      assert_equal 200, get_as(OFFICIAL, "/diagnosis")
+      assert_equal 403, get_as(UNMAPPED, "/diagnosis")
+      assert_equal [ 2 ], Banco::EdgeProxy.student_map_problems
+    end
+    with_env("BANCO_STUDENT_USERS" => "  ") do
+      assert_not Banco::EdgeProxy.student_map_configured?
+      assert_equal 200, get_as(UNMAPPED, "/diagnosis")
+    end
+  end
+
   test "a peer that is not the edge is nobody, whatever the headers say" do
     [ TEACHER, GUEST, OFFICIAL, TRIAL ].each do |headers|
       %w[/teacher /diagnosis].each do |path|

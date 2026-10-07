@@ -8,6 +8,12 @@ module Teacher
       @count = @revision.instances.count
       @n = [ [ params[:n].to_i, 1 ].max, [ @count, 1 ].max ].min
       @unit = "#{@revision.item.subject.key}:test"
+      skill = JSON.parse(@revision.body_json)["skill"].to_s
+      @back_path = if skill.match?(/\A[a-z0-9][a-z0-9.\-]*\z/)
+        teacher_test_skill_path(key: @revision.item.subject.key, skill: skill)
+      else
+        teacher_test_path(key: @revision.item.subject.key)
+      end
     end
 
     # The presentation of the n-th instance as the browser is told it (ItemPresenter), not shuffled.

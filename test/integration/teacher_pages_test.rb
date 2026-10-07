@@ -35,6 +35,14 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "the play page goes back by a real link to the skill screen, never javascript:" do
+    page "/teacher/items/#{@short.id}/play"
+    assert_response :success
+    assert_no_match(/javascript:/, response.body)
+    skill = JSON.parse(@short.body_json)["skill"]
+    assert_select "a.button.secondary[href='/teacher/subjects/math/test/skills/#{skill}']", text: "Torna alla competenza"
+  end
+
   test "home lists the subject with its stage, what waits and the measured minutes" do
     Teacher::Minutes.record("math:graph", now: 5.minutes.ago)
     page "/teacher"
@@ -92,6 +100,14 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     assert_select "li[data-ref='prima-2025-26:201'] [data-other-subject]", 0
     assert_select "li[data-ref='prima-2025-26:204']", /sezione Storia/
     assert_select "li[data-ref='prima-2025-26:204'] [data-other-subject]", /altra materia/
+  end
+
+  test "gate sentences name an item as a reference with its name, key and popover, never a bare key" do
+    page "/teacher/subjects/math/test"
+    assert_select "#test-approve .reasons li .ref[data-ref=item] .ref-name"
+    assert_select "#test-approve .reasons li .ref[data-ref=item] button[popovertarget]"
+    assert_select "#test-approve .reasons li", { text: /revisione \d+/, count: 0 }
+    assert_select "div.ref-card[popover]"
   end
 
   test "the test overview keeps approve disabled with the reasons until the gates pass, then enables it" do

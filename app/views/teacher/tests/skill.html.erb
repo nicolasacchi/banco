@@ -28,7 +28,7 @@
         </p>
         <p class="gate" data-approvable="<%= card.gate.approvable %>">
           <% if card.gate.approvable %><strong><%= t("teacher.skill.ready") %></strong>
-          <% else %><strong><%= t("teacher.skill.not_ready") %></strong> <%= gate_sentences(card.gate.reasons).join(" ") %><% end %>
+          <% else %><strong><%= t("teacher.skill.not_ready") %></strong> <%= safe_join(gate_sentences(card.gate.reasons), " ") %><% end %>
           <% if card.superseded %> <%= t("teacher.skill.superseded") %><% end %>
         </p>
         <p><a class="button secondary small" href="<%= teacher_item_play_path(revision_id: card.revision.id) %>" data-play="<%= card.revision.id %>"><%= t("teacher.skill.play") %></a></p>

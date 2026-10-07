@@ -34,9 +34,9 @@ module EdgeTrust
     def student_group? = groups.include?(STUDENT_GROUP) && !teacher? && !guest?
 
     # A student the operator has configured. With BANCO_STUDENT_USERS unset, any student login is the
-    # official student (staging and old setups); with it set, only the listed logins are students.
+    # official student (staging and old setups); with it set (even if a pair is bad) only the listed logins are students.
     def student?
-      student_group? && (Banco::EdgeProxy.student_map.empty? || Banco::EdgeProxy.student_map.key?(login))
+      student_group? && (!Banco::EdgeProxy.student_map_configured? || Banco::EdgeProxy.student_map.key?(login))
     end
 
     # In the student group, but the map is set and does not list the login.
@@ -46,7 +46,7 @@ module EdgeTrust
       return nil unless student?
 
       map = Banco::EdgeProxy.student_map
-      map.empty? ? Student::OFFICIAL_KEY : map.fetch(login)
+      Banco::EdgeProxy.student_map_configured? ? map.fetch(login) : Student::OFFICIAL_KEY
     end
 
     def trial_student? = student? && student_key != Student::OFFICIAL_KEY
