@@ -192,6 +192,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-185 | 2026-10-07 | solve open without stem_it (law_economics): prompt stem shown since D-169; answers.json root already documented (D-180, D-182); no change | implemented |
 | D-186 | 2026-10-07 | resets on first submits were a production restart (deploy); ordering direction and brief envelope already shipped (D-169, D-180); no change | implemented |
 | D-187 | 2026-10-07 | testlet answer shape in the solve brief already shipped (D-166); no change | implemented |
+| D-188 | 2026-10-07 | unique scratch folder (D-167), transient E-NETWORK and unreachable matching errors (D-145, D-147) already covered; no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2013,4 +2014,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** no code change. `briefs/solve.md` Format says a testlet answer is an object from each sub item id to that sub item's own answer, in the shape of the sub item's component (`{"s1": "b", "s2": {"n": 3, "d": 4}}`), and `{"dont_know": true}` as a value gives up one sub item. The map the agent used is that shape. `banco.*/1` unchanged.
 - **Why:** content agent (law_economics, step solve1:4). The agent read a build or brief copy older than D-166; not a defect.
 - **Cost:** none.
+- **Status:** implemented
+
+## D-188 · 2026-10-07 · scratch folder, transient refusal, unreachable matching errors: already covered (D-167, D-145, D-147), no change
+
+- **Design ref:** D-145, D-147, D-167
+- **Design said:** the review brief tells reviewers to create their scratch directory with `mktemp -d "$TMPDIR/rv-SUBJECT-XXXXXX"` (D-167); `W-ERROR-UNREACHABLE` (D-145, since 2026-10-06) warns on a matching error value that repeats a right-hand id; `banco status` counts passed items validated under older rules (D-147).
+- **We do:** no code change. (1) The suggested `mktemp -d` is already in `briefs/review.md`; a fixed name like `rev1` is the agent's choice, not a defect. (2) One `E-NETWORK` connection refused on the API listener while the app restarts for a deploy is the documented wait and retry; not a defect. (3) Revisions 229, 231, 232, 234 and 235 were validated before D-145 and stay `passed` (the ledger is append-only, stored validations are not rewritten); the review dry run checks the review, not the item, so it cannot show the item warning. The warning stays a warning: making it an error would fail items the teacher may still accept and would not fix old revisions. `banco.*/1` unchanged.
+- **Why:** content agent (law_economics, step review1:2). Not defects; (3) is a content mistake on old revisions.
+- **Cost:** none. The author dry-runs the pinned matching items (`banco work submit DIR --dry-run`), rewrites value maps as one-to-one mappings (or sets `display.reuse_right` for a classification), and resubmits new revisions; the reviewer reports unreachable values as a finding.
 - **Status:** implemented
