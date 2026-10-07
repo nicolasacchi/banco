@@ -61,6 +61,7 @@ Rails.application.routes.draw do
       get "subjects/:key/test/skills/:skill" => "tests#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9.\-]*/), as: :teacher_test_skill
       get "subjects/:key/report" => "reports#show", constraints: key, as: :teacher_report
       get "corrections" => "corrections#show", as: :teacher_corrections
+      get "refs/:key" => "refs#show", constraints: { key: /[a-z0-9][a-z0-9._-]*/ }, as: :teacher_ref
       get "items/:revision_id/play" => "item_plays#show", constraints: { revision_id: /\d+/ }, as: :teacher_item_play
       get "items/:revision_id/play/data" => "item_plays#data", constraints: { revision_id: /\d+/ }, as: :teacher_item_play_data
       post "activity" => "activity#create"

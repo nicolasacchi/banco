@@ -48,7 +48,7 @@
         <dt><%= t("teacher.test.settings.overrides") %></dt>
         <dd id="test-overrides">
           <% if settings[:kind_overrides].empty? %><%= t("teacher.test.settings.none") %>
-          <% else %><ul class="plain"><% settings[:kind_overrides].each do |o| %><li><code><%= o["skill"] %></code> → <%= o["kind"] %>: <%= o["reason_it"] %></li><% end %></ul><% end %>
+          <% else %><ul class="plain"><% settings[:kind_overrides].each do |o| %><li><%= ref_for(o["skill"]) %> → <%= t("teacher.refs.kind.#{o["kind"]}", default: o["kind"]) %>: <%= o["reason_it"] %></li><% end %></ul><% end %>
         </dd>
       </dl>
     </section>
@@ -77,7 +77,7 @@
     <ul class="subjects skill-list">
       <% review.skill_rows.each do |row| %>
         <li class="subject" data-skill="<%= row.skill %>">
-          <a class="subject-name" href="<%= skill_screen_path(@subject, row.skill) %>"><%= row.label_it %></a>
+          <span class="subject-name"><%= ref_for(row.skill, href: skill_screen_path(@subject, row.skill)) %></span>
           <span class="subject-state">
             <%= t("teacher.test.role.#{row.role}") %> ·
             <% if row.item_ids.any? %>

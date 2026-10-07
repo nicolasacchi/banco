@@ -4,7 +4,7 @@
       data-item-play-texts-value="<%= student_texts.to_json %>"
       data-item-play-sent-text-value="<%= t('teacher.play.sent') %>">
   <p class="banner"><%= t("teacher.play.banner") %></p>
-  <h1><%= @revision.item.key %> <span class="key"><%= t("teacher.skill.revision", seq: @revision.seq) %></span></h1>
+  <h1><%= ref_for(@revision) %> <span class="key"><%= t("teacher.skill.revision", seq: @revision.seq) %></span></h1>
   <p><%= t("teacher.play.instance", n: @n, count: @count) %>
     <% if @n > 1 %><a href="<%= teacher_item_play_path(revision_id: @revision.id, n: @n - 1) %>"><%= t("teacher.skill.previous") %></a><% end %>
     <% if @n < @count %><a href="<%= teacher_item_play_path(revision_id: @revision.id, n: @n + 1) %>"><%= t("teacher.skill.next") %></a><% end %>

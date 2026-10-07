@@ -1,0 +1,54 @@
+<%# The card of a reference: in a popover (permalink: true) or whole on its own page. No ids: it is rendered once and reused. %>
+<% subject = card.subject %>
+<% if card.kind == :skill %>
+  <dl class="ref-facts" data-ref-card="skill">
+    <dt><%= t("teacher.refs.f.subject") %></dt><dd><%= subject.name_it %></dd>
+    <dt><%= t("teacher.refs.f.scope") %></dt><dd><%= scope_text(card.scope) %> · <%= t("teacher.graph.layer.#{card.layer}") %><% if card.note_it %><br><%= card.note_it %><% end %></dd>
+    <% if card.test_kind %>
+      <dt><%= t("teacher.refs.f.kind") %></dt><dd><%= t("teacher.refs.kind.#{card.test_kind}") %>: <%= card.test_kind_reason_it %></dd>
+    <% end %>
+    <dt><%= t("teacher.refs.f.lines") %></dt>
+    <dd>
+      <% if card.inferred %><%= t("teacher.graph.inferred") %>
+      <% else %>
+        <ul class="plain"><% card.lines.each do |l| %><li><%= l.source %>, <%= t("teacher.graph.line") %> <%= l.line %>: <% if l.text %><q><%= l.text %></q><% else %><%= t("teacher.graph.line_missing") %><% end %></li><% end %></ul>
+      <% end %>
+    </dd>
+    <dt><%= t("teacher.refs.f.prerequisites") %></dt>
+    <dd><% if card.prerequisites.any? %><%= safe_join(card.prerequisites.map { |n| ref_link(n.key, n.label) }, ", ") %><% else %><%= t("teacher.refs.none") %><% end %></dd>
+    <dt><%= t("teacher.refs.f.needed_by") %></dt>
+    <dd><% if card.needed_by.any? %><%= safe_join(card.needed_by.map { |n| ref_link(n.key, n.label) }, ", ") %><% else %><%= t("teacher.refs.none") %><% end %></dd>
+    <dt><%= t("teacher.refs.f.pinned") %></dt>
+    <dd><%= card.in_test ? t("teacher.refs.pinned", count: card.pinned) : t("teacher.refs.not_in_test") %></dd>
+  </dl>
+  <p class="ref-links">
+    <% if permalink %><a href="<%= teacher_ref_path(key: card.key) %>"><%= t("teacher.refs.open_card") %></a><% end %>
+    <a href="<%= teacher_graph_path(key: subject.key) %>#skill-<%= card.key.parameterize %>"><%= t("teacher.refs.l.graph") %></a>
+    <% if card.in_test %><a href="<%= skill_screen_path(subject, card.key) %>"><%= t("teacher.refs.l.skill_screen") %></a><% end %>
+    <% if card.has_block %><a href="<%= teacher_test_all_path(key: subject.key) %>#skill-<%= card.key.tr('.', '-') %>"><%= t("teacher.refs.l.all_block") %></a><% end %>
+    <% if card.has_report %><a href="<%= teacher_report_path(key: subject.key) %>#report-skill-<%= card.key.parameterize %>"><%= t("teacher.refs.l.report") %></a><% end %>
+  </p>
+<% else %>
+  <dl class="ref-facts" data-ref-card="item">
+    <dt><%= t("teacher.refs.f.subject") %></dt><dd><%= subject.name_it %></dd>
+    <dt><%= t("teacher.refs.f.skill") %></dt><dd><%= card.skill_name == card.skill ? card.skill : ref_for(card.skill) %></dd>
+    <dt><%= t("teacher.refs.f.component") %></dt><dd><%= component_name(card.component) %></dd>
+    <dt><%= t("teacher.refs.f.revision") %></dt>
+    <dd><%= t("teacher.skill.revision", seq: card.seq) %> · <%= card.pinned ? t("teacher.refs.item_pinned") : t("teacher.refs.item_not_pinned") %></dd>
+    <dt><%= t("teacher.refs.f.instances") %></dt><dd><%= card.instances %></dd>
+    <dt><%= t("teacher.refs.f.validation") %></dt><dd><%= t("teacher.skill.validation.#{card.status}") %></dd>
+    <dt><%= t("teacher.refs.f.findings") %></dt>
+    <dd><%= t("teacher.refs.findings", count: card.findings) %><% if card.open_findings.positive? %> · <%= t("teacher.refs.open_findings", count: card.open_findings) %><% end %>
+      <% unless card.review_fails.nil? %><br><%= t("teacher.refs.review_fails", count: card.review_fails) %><% end %></dd>
+    <dt><%= t("teacher.refs.f.blind") %></dt>
+    <dd><%= card.blind ? t("teacher.skill.blind_summary", ok: card.blind[:ok], total: card.blind[:total]) : t("teacher.skill.no_blind") %></dd>
+  </dl>
+  <p class="ref-links">
+    <% if permalink %><a href="<%= teacher_ref_path(key: card.key) %>"><%= t("teacher.refs.open_card") %></a><% end %>
+    <a href="/teacher/items/<%= card.revision.id %>"><%= t("teacher.refs.l.item_page") %></a>
+    <a href="<%= teacher_item_play_path(revision_id: card.revision.id) %>"><%= t("teacher.refs.l.play") %></a>
+    <% if card.pinned %><a href="<%= teacher_test_all_path(key: subject.key) %>#item-<%= card.revision.id %>"><%= t("teacher.refs.l.all_block") %></a><% end %>
+    <% if card.skill_in_test %><a href="<%= skill_screen_path(subject, card.skill) %>"><%= t("teacher.refs.l.skill_screen") %></a><% end %>
+    <% if card.corrections.positive? %><a href="/teacher/corrections"><%= t("teacher.refs.l.corrections", count: card.corrections) %></a><% end %>
+  </p>
+<% end %>
