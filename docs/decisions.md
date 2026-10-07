@@ -201,6 +201,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-194 | 2026-10-07 | W-ERROR-UNREACHABLE also reads pair-list error values; the warning is in `work submit` output, not the review dry-run | implemented |
 | D-195 | 2026-10-07 | solve brief root fields (subject history, solve1:0): third repeat of D-191; no change | implemented |
 | D-196 | 2026-10-07 | solve brief root fields and testlet shape (history, solve1:1): fourth repeat of D-191; no change | implemented |
+| D-198 | 2026-10-07 | review brief: evidence on absence points needs the fields read (example added) | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2113,4 +2114,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** `Validation::Readability` also skips `solo/sola` right after `un/uno/una` ("un solo ambiente") and `solo/soltanto` after `non` in the same clause, up to 3 words between ("non danno solo energia", "non solo"). Still a warning; `banco.*/1` unchanged. "Solo il tutore firma" and "un atto solo se" still warn. Test: `test/validation/readability_test.rb`.
 - **Why:** content agent (biology, step pfix1) got false positives and reworded. Defect (false positive). Authors need not reword.
 - **Cost:** a rare true "not ... only" absolute claim is no longer warned.
+- **Status:** implemented
+
+## D-198 · 2026-10-07 · review brief: evidence on absence points needs the fields read
+
+- **Design ref:** A-05, E-REVIEW-EMPTY
+- **Design said:** every checklist point needs evidence of at least 4 words that is not a stock phrase.
+- **We do:** no code change. `briefs/review.md` rule 2 now says the same holds for absence points (3, 8, 10) and gives an example ("No test-taking advice." has 3 words and is refused; "Read stem, options and feedback of instances 1 and 2: no test-taking advice." is accepted). `test/models/brief_test.rb` asserts it.
+- **Why:** content agent (italian, step review1:3) wrote "No test-taking advice." on point 8 and got E-REVIEW-EMPTY. The check is as documented (the error already reports "3 words, at least 4 needed"); content mistake, brief clarified. The agent resubmitted and was accepted.
+- **Cost:** none.
 - **Status:** implemented

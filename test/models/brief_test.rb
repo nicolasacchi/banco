@@ -91,6 +91,12 @@ class BriefTest < ActiveSupport::TestCase
     assert_match(/E-REVIEW-EMPTY/, body)
   end
 
+  test "the review brief gives an example for absence points" do
+    body = Brief.find("review").body.squish
+    assert_match(/points about an absence/, body)
+    assert_match(/name the fields you read/, body)
+  end
+
   test "the review brief allocates a unique scratch directory" do
     body = Brief.find("review").body
     assert_includes body, 'mktemp -d "$TMPDIR/rv-SUBJECT-XXXXXX"'

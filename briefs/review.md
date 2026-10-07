@@ -57,7 +57,9 @@ the item (otherwise the server refuses it with `E-QUOTE-NOT-FOUND`); say where (
 2. A bare "all verified" is refused. Every `pass` says what you did. The evidence of each point
    has at least 4 words and is not a stock phrase (`all verified`, `no problem`, `ok`, `checked`,
    `nessun problema`, `n/a`): "Nessun gaming." is refused, "No gaming wording in stem or options of
-   instances 1 and 2." is accepted. Each point needs its own evidence (the same text on two points is
+   instances 1 and 2." is accepted. This holds for points about an absence too (3, 8, 10): a `pass` on
+   "No test-taking advice." has 3 words and is refused; name the fields you read, as in "Read stem,
+   options and feedback of instances 1 and 2: no test-taking advice." Each point needs its own evidence (the same text on two points is
    refused). The refusal is `E-REVIEW-EMPTY` and `detail.points` lists the points.
 3. Check the instances, not only the template: look for collisions between an
    error value and the key, and for display strings that reveal the answer.
