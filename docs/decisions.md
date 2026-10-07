@@ -199,6 +199,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-192 | 2026-10-07 | review brief states the evidence minimum (4 words, no stock phrase); seconda:224 on italian.complements is a content mistake, not a defect | implemented |
 | D-193 | 2026-10-07 | solve brief root fields (chemistry, solve2:0): same as D-191, already documented; no change | implemented |
 | D-194 | 2026-10-07 | W-ERROR-UNREACHABLE also reads pair-list error values; the warning is in `work submit` output, not the review dry-run | implemented |
+| D-195 | 2026-10-07 | solve brief root fields (subject history, solve1:0): third repeat of D-191; no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2084,4 +2085,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** the check already existed (D-145, a warning, the item still passes) but read only the object form `{"l1":"r2"}`; it now reads the pair-list form `[["l1","r2"]]` too (`Answers.matching_raw`). Still a warning, not an error: `banco.*/1` unchanged. It shows in `banco work submit DIR --dry-run` (`warnings`) and in the stored validation findings, not in `banco review submit --dry-run` (that dry run checks review.json only, `codes:[]` is about the review).
 - **Why:** content agent (italian, step review1:1) saw rev 16 pass with values such as `{b:r2,c:r2}`; `codes:[]` came from the review dry run. Partly a defect (pair-list form skipped), partly where the warning appears.
 - **Cost:** none. Kept a warning so existing passed items are not invalidated; the author fixes it with a one-to-one value or `reuse_right`.
+- **Status:** implemented
+
+## D-195 · 2026-10-07 · solve brief root fields (history): repeat of D-191 and D-193; no change
+
+- **Design ref:** A-06, D-166, D-176, D-191, D-193
+- **Design said:** the solve brief tells the solver the shape of `answers.json`.
+- **We do:** nothing new. `briefs/solve.md` (section Format) lists `schema`, `schema_version`, `revision`, `answers` with a complete minimal example; `test/models/brief_test.rb` asserts the example carries all four keys.
+- **Why:** content agent (history, step solve1:0) needed three attempts, which means it submitted before reading the current brief. Classified as a content mistake (not a defect, not a missing feature).
+- **Cost:** none.
 - **Status:** implemented
