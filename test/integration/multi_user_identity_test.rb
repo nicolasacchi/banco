@@ -64,6 +64,16 @@ class MultiUserIdentityTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
+  test "an unmapped student writes nothing: every student write is refused and no row appears" do
+    before = [ Student.count, Attempt.count, DiagnosisRun.count, DiagnosisEvent.count, AppEvent.count ]
+    %w[/diagnosis/preferences /diagnosis/warmup/answers /diagnosis/warmup/complete].each do |path|
+      on(:web, path, method: :post, headers: UNMAPPED.merge("Content-Type" => "application/json", "Accept" => "application/json"),
+                     params: {}.to_json, remote_addr: EDGE)
+      assert_response :forbidden, "POST #{path}"
+    end
+    assert_equal before, [ Student.count, Attempt.count, DiagnosisRun.count, DiagnosisEvent.count, AppEvent.count ]
+  end
+
   test "each mapped login acts as its own student row" do
     get_as(OFFICIAL, "/diagnosis")
     get_as(TRIAL, "/diagnosis")
