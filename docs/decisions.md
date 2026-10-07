@@ -202,6 +202,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-195 | 2026-10-07 | solve brief root fields (subject history, solve1:0): third repeat of D-191; no change | implemented |
 | D-196 | 2026-10-07 | solve brief root fields and testlet shape (history, solve1:1): fourth repeat of D-191; no change | implemented |
 | D-198 | 2026-10-07 | review brief: evidence on absence points needs the fields read (example added) | implemented |
+| D-199 | 2026-10-07 | solve brief root fields (history, solve1:2): fifth repeat of D-191; no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2122,5 +2123,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** every checklist point needs evidence of at least 4 words that is not a stock phrase.
 - **We do:** no code change. `briefs/review.md` rule 2 now says the same holds for absence points (3, 8, 10) and gives an example ("No test-taking advice." has 3 words and is refused; "Read stem, options and feedback of instances 1 and 2: no test-taking advice." is accepted). `test/models/brief_test.rb` asserts it.
 - **Why:** content agent (italian, step review1:3) wrote "No test-taking advice." on point 8 and got E-REVIEW-EMPTY. The check is as documented (the error already reports "3 words, at least 4 needed"); content mistake, brief clarified. The agent resubmitted and was accepted.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-199 · 2026-10-07 · solve brief root fields (history, solve1:2): repeat of D-191; no change
+
+- **Design ref:** A-06, D-166, D-176, D-191, D-193, D-195, D-196
+- **Design said:** the solve brief tells the solver the shape of `answers.json`.
+- **We do:** nothing new. `briefs/solve.md` (section Format) already lists `schema`, `schema_version`, `revision`, `answers` with a complete minimal example; `test/models/brief_test.rb` asserts it. Reproduced: the E-SCHEMA text names the missing properties, as designed.
+- **Why:** content agent (history, step solve1:2) reported the same E-SCHEMA as solve1:0 and solve1:1; it submitted before reading the current brief. Content mistake, not a defect or missing feature.
 - **Cost:** none.
 - **Status:** implemented
