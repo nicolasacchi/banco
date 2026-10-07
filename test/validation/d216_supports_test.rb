@@ -34,6 +34,16 @@ class D216SupportsTest < ActiveSupport::TestCase
     assert_equal "/answer_format_it", finding(result, "E-SUPPORT-LEAK").field
   end
 
+  test "a short key or error value is refused as a whole token, not inside a longer number" do
+    item = big_item("tests" => { "must_accept" => [ "125" ], "must_reject" => [ "135" ], "blank" => "invalid" })
+    item["instances"] = [ F.number_instance(5, 7), F.number_instance(4, 9), F.number_instance(7, 20) ]
+    item["answer_format_it"] = "Scrivi un numero, per esempio 2."
+    short = run_item(item)
+    assert_includes codes(short), "E-SUPPORT-LEAK"
+    item["answer_format_it"] = "Scrivi un numero, per esempio 123."
+    assert_not_includes codes(run_item(item)), "E-SUPPORT-LEAK"
+  end
+
   test "the check is per instance: the item text is refused for the instance whose key it states" do
     item = big_item("answer_format_it" => "Scrivi un numero, per esempio 209.")
     result = run_item(item)

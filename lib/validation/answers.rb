@@ -146,11 +146,11 @@ module Validation
 
     # Does +needle+ occur in +haystack+ as a whole token (not inside a longer word
     # or number)? Also tried with the spaces removed, for mathematics.
-    def contains?(haystack, needle)
+    def contains?(haystack, needle, min: MIN_LEAK_CHARS)
       n = plain(needle)
-      return false if n.length < MIN_LEAK_CHARS
+      return false if n.length < min
 
-      token_match?(plain(haystack), n) || (squash(needle).length >= MIN_LEAK_CHARS && token_match?(squash(haystack), squash(needle)))
+      token_match?(plain(haystack), n) || (squash(needle).length >= min && token_match?(squash(haystack), squash(needle)))
     end
 
     def token_match?(haystack, needle)
@@ -158,7 +158,7 @@ module Validation
     end
 
     # The key texts of a (non-choice) instance, long enough to be a leak.
-    def key_texts(component, answer, accept: [])
+    def key_texts(component, answer, accept: [], min: MIN_LEAK_CHARS)
       texts =
         case component
         when "number"
@@ -171,7 +171,7 @@ module Validation
         when "normalized_text" then [ answer ] + accept
         else []
         end
-      texts.compact.map(&:to_s).select { |t| plain(t).length >= MIN_LEAK_CHARS }
+      texts.compact.map(&:to_s).select { |t| plain(t).length >= min }
     end
 
     # Names that reveal an answer, anywhere in a display: [[path, name]].

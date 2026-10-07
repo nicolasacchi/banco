@@ -250,12 +250,16 @@ module Validation
 
       needles = support_needles(display, answer, inst)
       texts.each do |field, text|
-        needle = needles.find { |n| Answers.contains?(text, n) }
+        needle = needles.find { |n| Answers.contains?(text, n, min: support_min) }
         next unless needle
 
         f.add("E-SUPPORT-LEAK", field, "the answer format or the steps state the key or a declared error value (#{needle.to_s[0, 30].inspect})", seed: seed)
       end
     end
+
+    # A short numeric key or error value (12, 5) is exactly what a format example states, so
+    # numbers have no length floor here (whole-token match: 12 is not found in 123).
+    def support_min = %w[number fraction].include?(@unit.component) ? 1 : Answers::MIN_LEAK_CHARS
 
     def support_texts(hash, base)
       out = []
@@ -273,7 +277,7 @@ module Validation
           option ? [ option["text"].to_s ] : []
         else
           accept = key ? @unit.accept + Array(inst["accept"]) : []
-          Answers.key_texts(@unit.component, value, accept: accept) + ordering_texts(display, value) + matching_texts(display, value)
+          Answers.key_texts(@unit.component, value, accept: accept, min: support_min) + ordering_texts(display, value) + matching_texts(display, value)
         end
       end.uniq
     rescue ArgumentError, TypeError
