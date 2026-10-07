@@ -195,6 +195,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-188 | 2026-10-07 | unique scratch folder (D-167), transient E-NETWORK and unreachable matching errors (D-145, D-147) already covered; no change | implemented |
 | D-189 | 2026-10-07 | `solo` as "single" after a noun (un giorno solo) is not an absolute word; the author already reads review findings (D-181) | implemented |
 | D-190 | 2026-10-07 | solver prompt.stem_it already shipped (D-169, D-184); transient connection reset on the API was a restart; no change | implemented |
+| D-191 | 2026-10-07 | solve brief root fields (italian, solve1:1): already documented with a minimal example (D-166, D-176); no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2042,5 +2043,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the blind solver sees the item as the student does.
 - **We do:** nothing new. `Review::ItemText#solver_instances` goes through `with_passage`, which adds `prompt.stem_it` (as `stem_it`, or `prompt_stem_it` beside an instance stem), `table`, `quote`, `figure` and `passage_it` (D-169; testlet sub items D-184). Tests: `test/models/review/item_text_test.rb`. The reported connection reset (`E-NETWORK`, 2026-10-06T15:41Z) matches the restart of puma at a deploy; health was ok afterwards.
 - **Why:** content agent (math, step pfix1) read the output of a deployment older than D-169: solves 176 and 180 pre-date it. Not a defect now. The E-BLIND-SOLVE-MISMATCH findings on 388 and 428 are stale; run a new blind solve on the current deployment.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-191 · 2026-10-07 · solve brief root fields: already documented with a minimal example; no change
+
+- **Design ref:** A-06, D-166, D-176, D-180
+- **Design said:** the solve brief tells the solver the shape of `answers.json`.
+- **We do:** nothing new. `briefs/solve.md` (section Format) lists the four required root keys `schema`, `schema_version`, `revision`, `answers` and a minimal JSON example; the schema is `config/banco/schemas/solve.json`. The first-submit E-SCHEMA came from a build older than D-166 (or from a brief read before it).
+- **Why:** content agent (italian, step solve1:1). Not a defect now; run `banco brief show solve` on the current deployment.
 - **Cost:** none.
 - **Status:** implemented
