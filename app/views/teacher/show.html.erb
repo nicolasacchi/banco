@@ -1,12 +1,13 @@
 <% content_for :title, t("teacher.home.title") %>
 <main class="page wide">
   <h1><%= t("teacher.home.title") %></h1>
+  <%= render "teacher/student_picker" %>
 
   <section aria-labelledby="waiting-title">
     <h2 id="waiting-title"><%= t("teacher.home.waiting") %></h2>
     <ul class="plain" id="waiting-summary">
       <li><%= t("teacher.home.subjects_waiting", count: @home.waiting_total) %></li>
-      <li><a href="/teacher/corrections"><%= t("teacher.home.corrections", count: @home.corrections) %></a></li>
+      <li><a href="<%= with_student("/teacher/corrections") %>"><%= t("teacher.home.corrections", count: @home.corrections) %></a></li>
       <li><%= t("teacher.home.minutes_total", count: @home.minutes[:total]) %></li>
       <li><%= @home.released? ? t("teacher.home.released") : t("teacher.home.not_released") %>
           <%= t("teacher.home.consent_#{@home.consent_recorded? ? 'yes' : 'no'}") %></li>
@@ -38,10 +39,10 @@
         <p class="links">
           <% if row.has_graph %><a class="button secondary small" href="<%= teacher_graph_path(key: row.subject.key) %>"><%= t("teacher.home.open_graph") %></a><% end %>
           <% if row.has_blueprint %><a class="button secondary small" href="<%= teacher_test_path(key: row.subject.key) %>"><%= t("teacher.home.open_test") %></a><% end %>
-          <a class="button secondary small" href="<%= teacher_report_path(key: row.subject.key) %>"><%= t("teacher.home.open_report") %></a>
+          <a class="button secondary small" href="<%= with_student(teacher_report_path(key: row.subject.key)) %>"><%= t("teacher.home.open_report") %></a>
         </p>
       </li>
     <% end %>
   </ul>
-  <p><a class="button" href="/teacher/preview"><%= t("teacher.preview.title") %></a></p>
+  <% unless reader_only? %><p><a class="button" href="/teacher/preview"><%= t("teacher.preview.title") %></a></p><% end %>
 </main>

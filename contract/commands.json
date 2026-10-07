@@ -48,7 +48,7 @@
       "method": "GET",
       "path": "/api/v1/diagnosis/report",
       "args": [],
-      "flags": ["--subject"],
+      "flags": ["--subject", "--student"],
       "error_codes": ["E-AUTH", "E-NOT-FOUND"]
     },
     {

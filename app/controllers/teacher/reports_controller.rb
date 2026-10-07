@@ -5,7 +5,7 @@ module Teacher
     def show
       subject! or return
       @unit = "#{@subject.key}:report"
-      @report = Diagnosis::Report.call(subject: @subject, with_answers: true)
+      @report = Diagnosis::Report.call(subject: @subject, with_answers: true, student: viewed_student)
       @row = @report[:subjects].first
       @revisions = revisions_of_run
     end

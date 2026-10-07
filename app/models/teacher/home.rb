@@ -2,13 +2,17 @@ module Teacher
   # The teacher's first page (C-04): each subject with its stage, its counts, what waits
   # for the teacher and the minutes spent so far. Read-only.
   class Home
+    def initialize(student: Student.official)
+      @student = student
+    end
+
     Row = Data.define(:subject, :stage, :items, :waiting, :minutes, :has_graph, :has_blueprint)
 
     def rows
       @rows ||= Subject.order(:position).map { |s| row(s) }
     end
 
-    def corrections = @corrections ||= Corrections.call.count
+    def corrections = @corrections ||= Corrections.call(student: @student).count
 
     def minutes = @minutes ||= Minutes.summary
 

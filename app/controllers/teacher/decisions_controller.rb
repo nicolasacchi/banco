@@ -11,6 +11,7 @@ module Teacher
   class DecisionsController < ApplicationController
     skip_forgery_protection
 
+    before_action :require_teacher!
     before_action :check_csrf
     before_action :allow_decisions!
 

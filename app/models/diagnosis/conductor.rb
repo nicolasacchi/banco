@@ -35,12 +35,27 @@ module Diagnosis
     end
 
     def self.create_run(student, subject, sequence:)
-      blueprint = student.kind == "preview" ? latest_blueprint(subject) : approved_blueprint(subject)
+      blueprint = blueprint_for(student, subject)
       return nil unless blueprint
 
       DiagnosisRun.create!(student: student, subject: subject, blueprint_revision: blueprint, sequence: sequence,
                            seed_salt: SecureRandom.hex(8), rules_version: Rules::V1::RULES_VERSION,
                            engine_version: Engine::VERSION)
+    end
+
+    # The blueprint a run of this student is pinned to: the teacher's preview plays the newest draft; a
+    # trial student the approved one, else the newest that passed validation, so the whole flow can be
+    # tried before approval (D-217); the official student only the approved one.
+    def self.blueprint_for(student, subject)
+      return latest_blueprint(subject) if student.kind == "preview"
+      return approved_blueprint(subject) || latest_validated_blueprint(subject) if student.trial?
+
+      approved_blueprint(subject)
+    end
+
+    # The newest blueprint revision whose pinned items all passed validation (nil when there is none).
+    def self.latest_validated_blueprint(subject)
+      BlueprintRevision.where(subject: subject).order(seq: :desc).find(&:pinned_validated?)
     end
 
     # The newest draft of a subject's entry test: what the teacher's preview plays

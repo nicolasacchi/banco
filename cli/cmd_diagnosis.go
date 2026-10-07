@@ -84,14 +84,18 @@ func readJSONFile(path, field string) (any, error) {
 
 var subjectKeyRe = regexp.MustCompile(`^[a-z_]+$`)
 
+var studentKeyRe = regexp.MustCompile(`^[a-z0-9-]+$`)
+
 // runDiagnosisReport prints the report of the diagnosis, per subject (B-09,
 // GET /api/v1/diagnosis/report): the state of each subject, its sittings, the
 // state of each skill, the typical errors seen and the signals. Read-only; the
-// student's own words are not in it. --json is accepted and changes nothing.
+// student's own words are not in it. --student KEY reports a trial student (default: the official
+// student). --json is accepted and changes nothing.
 func runDiagnosisReport(e *env, args []string) error {
 	fs := flag.NewFlagSet("diagnosis report", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	subject := fs.String("subject", "", "one subject key (default: all)")
+	student := fs.String("student", "", "a trial student's key (default: the official student)")
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
 	if err != nil {
@@ -102,11 +106,21 @@ func runDiagnosisReport(e *env, args []string) error {
 		return newErr(ExitUsage, "E-USAGE", "args", "diagnosis report takes no positional argument", next)
 	}
 	path := "/api/v1/diagnosis/report"
+	query := url.Values{}
 	if *subject != "" {
 		if !subjectKeyRe.MatchString(*subject) {
 			return newErr(ExitUsage, "E-USAGE", "subject", "--subject is a subject key such as math", next)
 		}
-		path += "?subject=" + url.QueryEscape(*subject)
+		query.Set("subject", *subject)
+	}
+	if *student != "" {
+		if !studentKeyRe.MatchString(*student) {
+			return newErr(ExitUsage, "E-USAGE", "student", "--student is a student key such as trial-1", next)
+		}
+		query.Set("student", *student)
+	}
+	if len(query) > 0 {
+		path += "?" + query.Encode()
 	}
 	body, err := e.client().do("diagnosis report", "GET", path)
 	if err != nil {

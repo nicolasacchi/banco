@@ -59,7 +59,7 @@ class DecisionReconciliation
 
   def run_orphans
     release = Decision.where(kind: "release_diagnosis").minimum(:created_at)
-    DiagnosisRun.joins(:student).where(students: { kind: "student" }).where("diagnosis_runs.created_at >= ?", @since).order(:id).filter_map do |run|
+    DiagnosisRun.joins(:student).where(students: { kind: "student", key: Student::OFFICIAL_KEY }).where("diagnosis_runs.created_at >= ?", @since).order(:id).filter_map do |run|
       if release.nil? || run.created_at < release
         { type: "state_change_without_decision", table: "diagnosis_runs", id: run.id, reason: "started before release_diagnosis" }
       elsif !approved_before?(run)

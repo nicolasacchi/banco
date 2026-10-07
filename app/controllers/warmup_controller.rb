@@ -24,6 +24,6 @@ class WarmupController < ApplicationController
   private
 
   def before_release_only
-    redirect_to "/diagnosis" if Diagnosis::Release.open?
+    redirect_to "/diagnosis" if !trial_account? && Diagnosis::Release.open?
   end
 end

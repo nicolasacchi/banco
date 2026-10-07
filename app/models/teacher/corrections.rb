@@ -11,7 +11,12 @@ module Teacher
     ShortAnswer = Data.define(:attempt, :item_key, :subject, :prompt, :segments, :rubric, :proposal, :points, :model_answer_it, :status)
     Verdict = Data.define(:attempt, :item_key, :subject, :skill, :prompt, :given, :key, :verdict, :error_codes, :near_miss)
 
-    def self.call = new
+    def self.call(student: Student.official) = new(student)
+
+    # The student whose answers wait (the official one by default; D-217).
+    def initialize(student = Student.official)
+      @student = student
+    end
 
     def short_answers
       @short_answers ||= attempts.filter_map { |a| short_answer(a) }
@@ -50,7 +55,7 @@ module Teacher
     private
 
     def attempts
-      @attempts ||= Attempt.where(context: "diagnosis").includes(:gradings, item_instance: { item_revision: { item: :subject } }).order(:id)
+      @attempts ||= Attempt.where(context: "diagnosis", student_id: @student&.id).includes(:gradings, item_instance: { item_revision: { item: :subject } }).order(:id)
                            .reject { |a| settled?(a) || voided?(a) }
     end
 

@@ -18,7 +18,7 @@
       <%= decision_form("/teacher/blueprint-revisions/#{review.blueprint.id}/approve") do %>
         <button type="submit" class="button" <%= "disabled" unless allowed %> aria-describedby="test-approve-why"><%= t("teacher.test.approve") %></button>
       <% end %>
-      <%= button_to t("teacher.test.play_all"), "/teacher/preview/subjects/#{@subject.key}", class: "button secondary", form: { class: "inline" } %>
+      <% unless reader_only? %><%= button_to t("teacher.test.play_all"), "/teacher/preview/subjects/#{@subject.key}", class: "button secondary", form: { class: "inline" } %><% end %>
       <a class="button secondary" id="test-all-link" href="<%= teacher_test_all_path(key: @subject.key) %>"><%= t("teacher.test.all_link") %></a>
       <div id="test-approve-why" class="hint">
         <% if review.approved_latest? %>

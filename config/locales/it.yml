@@ -1,4 +1,8 @@
 it:
+  student:
+    not_configured: "Account non configurato: chiedi all'insegnante."
+    trial_notice: "Account di prova: i risultati non contano."
+    logout: "Esci"
   diagnosis:
     title: "Diagnosi"
     placeholder: "La diagnosi d'ingresso sarà qui."

@@ -2,10 +2,11 @@
 # pages are in app/controllers/teacher/.
 class TeacherController < ApplicationController
   layout "teacher"
-  before_action :require_teacher!
+  include ViewedStudent
+  before_action :require_reader!
 
   def show
     @unit = "home"
-    @home = Teacher::Home.new
+    @home = Teacher::Home.new(student: viewed_student)
   end
 end

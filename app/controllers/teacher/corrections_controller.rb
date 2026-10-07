@@ -3,7 +3,7 @@ module Teacher
   class CorrectionsController < Teacher::BaseController
     def show
       @unit = "evening"
-      @corrections = Teacher::Corrections.call
+      @corrections = Teacher::Corrections.call(student: viewed_student)
     end
   end
 end

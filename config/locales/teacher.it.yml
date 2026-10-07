@@ -1,6 +1,16 @@
 it:
   teacher:
     title: "Area del docente"
+    access:
+      line: "Accesso: %{login} · %{role}"
+      teacher: "insegnante"
+      guest: "ospite"
+    read_only: "Sei in sola lettura"
+    logout: "Esci"
+    student_picker:
+      label: "Studente"
+      official: "Ufficiale"
+      trial: "Prova: %{name}"
     nav:
       label: "Menu del docente"
       home: "Materie"
@@ -8,6 +18,7 @@ it:
     cannot_decide:
       disabled: "Le decisioni non sono ancora accese su questo sistema. Puoi leggere tutto, ma i pulsanti restano spenti."
       student_device: "Questo è il computer di S. Qui puoi solo leggere."
+      read_only: "Sei in sola lettura."
     decided:
       default: "Decisione registrata."
       approve_skill_graph: "Grafo approvato."

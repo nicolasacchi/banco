@@ -315,6 +315,29 @@ func TestDiagnosisReportSubjectIsChecked(t *testing.T) {
 	}
 }
 
+func TestDiagnosisReportStudentKey(t *testing.T) {
+	var rawQuery string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rawQuery = r.URL.RawQuery
+		w.Header().Set("X-Banco-Contract", contract.Digest())
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	t.Cleanup(srv.Close)
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "diagnosis", "report", "--subject", "math", "--student", "trial-1")
+	if r.exit != ExitOK || rawQuery != "student=trial-1&subject=math" {
+		t.Errorf("exit %d, query %q, stderr %q", r.exit, rawQuery, r.stderr)
+	}
+	r = runCLI(t, srv.URL, envToken("bnc_x"), "diagnosis", "report", "--student", "trial-1")
+	if r.exit != ExitOK || rawQuery != "student=trial-1" {
+		t.Errorf("exit %d, query %q", r.exit, rawQuery)
+	}
+	rawQuery = ""
+	r = runCLI(t, srv.URL, envToken("bnc_x"), "diagnosis", "report", "--student", "Trial 1!")
+	if r.exit != ExitUsage || rawQuery != "" {
+		t.Errorf("exit %d, query %q", r.exit, rawQuery)
+	}
+}
+
 func TestHealthPrintsTheReportAndSkipsChromeOnRequest(t *testing.T) {
 	srv, got := captureServer(t, 200, `{"ok":true,"db":"ok"}`)
 	r := runCLI(t, srv.URL, envToken("bnc_x"), "health", "--no-chrome", "--json")
