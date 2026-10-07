@@ -204,6 +204,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-198 | 2026-10-07 | review brief: evidence on absence points needs the fields read (example added) | implemented |
 | D-199 | 2026-10-07 | solve brief root fields (history, solve1:2): fifth repeat of D-191; no change | implemented |
 | D-200 | 2026-10-07 | blind solve on a short_answer and solve brief root fields (history, solve1:3): already shipped (D-168, D-183, D-191); no change | implemented |
+| D-201 | 2026-10-07 | solve brief root fields and testlet answer shape (english, solve2:0): sixth repeat of D-191; already documented; no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2142,5 +2143,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** a `short_answer` is solved with a plain string that the server records and does not grade; the brief states the root keys.
 - **We do:** nothing new. `Api::V1::SolvesController#finding_for` returns no finding for a `short_answer` answer (verdict `short_answer`); only `dont_know` raises the major E-BLIND-SOLVE-MISMATCH, which is what the agent triggered by sending `dont_know`. `briefs/solve.md` (Format) names the short_answer shape, forbids `dont_know` for it, and lists the four root keys with a full example.
 - **Why:** content agent (history, step solve1:3) sent `dont_know` for rev 72 and submitted before reading the current brief. Content mistake, not a defect. Finding 489 is the teacher's to dispose of (a solver error, not an item flaw).
+- **Cost:** none.
+- **Status:** implemented
+
+## D-201 · 2026-10-07 · solve brief root fields and testlet shape (english, solve2:0): repeat of D-191; no change
+
+- **Design ref:** A-06, D-166, D-176, D-191, D-196, D-199
+- **Design said:** the solve brief tells the solver the shape of `answers.json`.
+- **We do:** nothing new. `briefs/solve.md` (section Format) already lists the four root keys `schema`, `schema_version`, `revision`, `answers` with a complete minimal example, and gives the testlet answer shape (an object from sub item id to that sub item's answer, `{"s1": "b", "s2": {"n": 3, "d": 4}}`); `test/models/brief_test.rb` asserts it. E-SCHEMA names the missing properties, as designed.
+- **Why:** content agent (english, step solve2:0) submitted before reading the current brief. Content mistake, not a defect or missing feature.
 - **Cost:** none.
 - **Status:** implemented
