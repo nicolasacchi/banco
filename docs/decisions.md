@@ -216,6 +216,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-210 | 2026-10-07 | `solve open` adds `file_root`: the root keys of answers.json, `revision` a string (english, solve3:0; tenth repeat of D-191) | implemented |
 | D-211 | 2026-10-07 | `review open` may be read with the item's own author session; the solve brief lists short_answer in its Format (history, pfix1; repeat of D-168, D-183) | implemented |
 | D-212 | 2026-10-07 | author reads review findings: already shipped (D-181, D-203) as `review_findings`; the key is not `findings` and not `teacher_comments`; no change (math, pfix2) | implemented |
+| D-213 | 2026-10-07 | solve brief root fields (law_economics, solve3:0): repeat of D-195; the brief has the four keys and a complete example; no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2260,5 +2261,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** `banco work status REV --json` and `banco work open ITEM` carry the stored findings of the reviewers and blind solvers for the author.
 - **We do:** nothing new. The findings are under `review_findings` (id, source, severity, code, instance, field, quote, problem_it, fix_it, disposition, review_id or blind_solve_id), a separate key from `findings` (validation findings) and `teacher_comments`. `work status` passes the server answer through; `work open` prints the key since D-203. The answer lists them for the revision asked, so a superseded revision's findings come from `work status OLD_REV`. A reviewer or solver finding is a row on its source; a blind-solve mismatch is a finding with `blind_solve_id` (`source` says which). The checklist point is the finding's `code`. An older CLI or server (before D-181/D-203) lacks the key: refresh with the deployed `banco`.
 - **Why:** content agent (math, step pfix2) read `findings: []` and `teacher_comments: []` and did not see `review_findings`, or ran a build before D-181. Classified: already shipped, not a defect.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-213 · 2026-10-07 · solve brief root fields (law_economics, solve3:0): repeat of D-195; no change
+
+- **Design ref:** A-06, D-163, D-191, D-195
+- **Design said:** the solve brief tells the solver the shape of `answers.json`.
+- **We do:** nothing new. `briefs/solve.md` (section Format) says the file needs `schema`, `schema_version` (the number 1), `revision` (a string) and `answers`, with a complete `banco.solve/1` example since D-163; `test/models/brief_test.rb` asserts it. `banco solve submit REV --file F --dry-run` reports E-SCHEMA before anything is stored.
+- **Why:** content agent (law_economics, step solve3:0) saw E-SCHEMA for missing root fields and a numeric revision: it wrote the file from the old list or from memory, not from the current brief. Classified as a content mistake, not a defect and not a missing feature (a `solve template` command would repeat the example in the brief).
 - **Cost:** none.
 - **Status:** implemented
