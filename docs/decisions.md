@@ -200,6 +200,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-193 | 2026-10-07 | solve brief root fields (chemistry, solve2:0): same as D-191, already documented; no change | implemented |
 | D-194 | 2026-10-07 | W-ERROR-UNREACHABLE also reads pair-list error values; the warning is in `work submit` output, not the review dry-run | implemented |
 | D-195 | 2026-10-07 | solve brief root fields (subject history, solve1:0): third repeat of D-191; no change | implemented |
+| D-196 | 2026-10-07 | solve brief root fields and testlet shape (history, solve1:1): fourth repeat of D-191; no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2093,5 +2094,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the solve brief tells the solver the shape of `answers.json`.
 - **We do:** nothing new. `briefs/solve.md` (section Format) lists `schema`, `schema_version`, `revision`, `answers` with a complete minimal example; `test/models/brief_test.rb` asserts the example carries all four keys.
 - **Why:** content agent (history, step solve1:0) needed three attempts, which means it submitted before reading the current brief. Classified as a content mistake (not a defect, not a missing feature).
+- **Cost:** none.
+- **Status:** implemented
+
+## D-196 · 2026-10-07 · solve brief root fields and testlet shape (history, solve1:1): repeat of D-191; no change
+
+- **Design ref:** A-06, D-166, D-176, D-191, D-193, D-195
+- **Design said:** the solve brief tells the solver the shape of `answers.json`.
+- **We do:** nothing new. `briefs/solve.md` (section Format) already lists `schema`, `schema_version`, `revision`, `answers` with a minimal example, and says a testlet answer is an object from each sub item id to that sub item's own answer, with an example; `test/models/brief_test.rb` asserts both.
+- **Why:** content agent (history, step solve1:1) reported the same E-SCHEMA; it submitted before reading the current brief. Content mistake, not a defect or missing feature.
 - **Cost:** none.
 - **Status:** implemented
