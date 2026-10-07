@@ -452,6 +452,19 @@ class IndependenceTest < ActionDispatch::IntegrationTest
     assert_not_includes body, "must_accept"
   end
 
+  test "solve open of a superseded revision is E-STALE-BASE and names the latest solve (D-207)" do
+    revision = passed_revision
+    newer = ItemRevision.create!(item: revision.item, seq: revision.seq + 1, body_json: revision.body_json, file_sessions_json: "{}")
+    api("/api/v1/revisions/#{revision.id}/solve", as: @solver)
+    assert_response :conflict
+    assert_equal "E-STALE-BASE", json["code"]
+    assert_equal "banco solve open #{newer.id}", json["next"]
+    api("/api/v1/revisions/#{revision.id}/solve", method: :post, as: @solver,
+        body: { solve: { schema: "banco.solve/1", schema_version: 1, revision: revision.id.to_s, answers: [] } })
+    assert_response :conflict
+    assert_equal "banco solve open #{newer.id}", json["next"]
+  end
+
   test "solve submit: the server grades; each disagreement is a blocker E-BLIND-SOLVE-MISMATCH" do
     revision = passed_revision
     answers = [ { instance: 1, answer: "7" }, { instance: 2, answer: "17" }, { instance: 3, answer: "21" } ]

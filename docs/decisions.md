@@ -210,6 +210,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-204 | 2026-10-07 | solve brief root fields and testlet shape (geography, solve2:0): eighth repeat of D-191; already documented; no change | implemented |
 | D-205 | 2026-10-07 | solve brief root fields (math, solve2:0): ninth repeat of D-191; already documented; no change | implemented |
 | D-206 | 2026-10-07 | `items list`: an older revision that would read `awaiting_verifier` reads `superseded` | implemented |
+| D-207 | 2026-10-07 | `solve open` of a superseded revision is E-STALE-BASE; the hint names `solve open LATEST` (also `review`); root fields and ordering direction need no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2201,4 +2202,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** in `items list`, a revision that is not current and would read `awaiting_verifier` reads `superseded`. Current rows, `work status` and the stored validation are unchanged. Additive value; `banco.*/1` unchanged. A queue scan should still use `--current`.
 - **Why:** content agent (chemistry, step pverify2). Defect (misleading status), cosmetic.
 - **Cost:** a script that looked for `awaiting_verifier` on a non-current row now sees `superseded`.
+- **Status:** implemented
+
+## D-207 · 2026-10-07 · solve open of a superseded revision (biology, solve2:0)
+
+- **Design ref:** A-05 (blind solve), D-206
+- **Design said:** `solve submit` refused a revision that is not the latest (E-STALE-BASE) with the hint `banco work open KEY`; `solve open` served any revision, so a solver could work a superseded one for nothing.
+- **We do:** `solve open` refuses a non-latest revision with 409 E-STALE-BASE; the hint of `solve open`, `solve submit`, `review submit` is the step's own open command on the latest revision (`banco solve open LATEST`, `banco review open LATEST`). `review open` keeps serving old revisions (read only). `banco.*/1` unchanged.
+- **Why:** content agent (biology, solve2:0). Three issues. (1) Root fields of answers.json: already documented with a minimal example (briefs/solve.md, D-166, D-176, D-191); no change. (2) Ordering direction: the student's prompt shows the item's prompt stem (`prompt_stem_it`, D-169) beside the instance stem, and `solve open` shows the same text; if the stem of 524 does not state the direction it is a content mistake for the author or reviewer (the review checklist covers a stated direction), not a software defect. (3) Defect, fixed here.
+- **Cost:** a solver that opened an old revision for reading now gets an error.
 - **Status:** implemented

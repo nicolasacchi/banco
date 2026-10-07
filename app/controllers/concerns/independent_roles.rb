@@ -21,11 +21,16 @@ module IndependentRoles
     false
   end
 
-  def latest_and_passed?(revision, item)
-    unless revision.id == item.latest_revision.id
-      refuse("E-STALE-BASE", "revision", "revision #{revision.id} is not the latest of #{item.key} (#{item.latest_revision.id})", "banco work open #{item.key}", 409)
-      return false
-    end
+  # The step's own open command on the latest revision (D-207: a superseded revision is not worked).
+  def latest?(revision, item, step:)
+    return true if revision.id == item.latest_revision.id
+
+    refuse("E-STALE-BASE", "revision", "revision #{revision.id} is not the latest of #{item.key} (#{item.latest_revision.id})", "banco #{step} open #{item.latest_revision.id}", 409)
+    false
+  end
+
+  def latest_and_passed?(revision, item, step: "solve")
+    return false unless latest?(revision, item, step: step)
     return true if revision.status == "passed"
 
     refuse("E-ITEM-NOT-PASSED", "revision", "revision #{revision.id} has not passed validation (status #{revision.status})", "banco work status #{revision.id} --wait", 422)

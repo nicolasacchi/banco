@@ -12,7 +12,7 @@ module Api
       # GET /api/v1/revisions/:revision/solve
       def open
         session = require_session("solver", item: @item, next_step: next_session) or return
-        return unless independent_role?(session, @item, "solver")
+        return unless independent_role?(session, @item, "solver") && latest?(@revision, @item, step: "solve")
 
         render json: { revision_id: @revision.id, item: @item.key, subject: @item.subject.key, seq: @revision.seq, component: component,
                        sub_items: sub_items, instances: @text.solver_instances, brief: brief_row("solve"),

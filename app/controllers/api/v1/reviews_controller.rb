@@ -29,7 +29,7 @@ module Api
       def submit
         body = parse_json_body or return
         session = require_session("reviewer", item: @item, next_step: next_session) or return
-        return unless independent_role?(session, @item, "reviewer") && latest_and_passed?(@revision, @item)
+        return unless independent_role?(session, @item, "reviewer") && latest_and_passed?(@revision, @item, step: "review")
 
         doc = body["review"]
         return refuse("E-FILES", "review", "send the review as {review: {...}}", "banco review submit REV --file review.json", 422) unless doc.is_a?(Hash)
