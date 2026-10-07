@@ -112,10 +112,11 @@ module Validation
     # lets rows share one). An error value that uses one right id twice can never be
     # submitted, so its code never fires (D-145).
     def unreachable_matching_value(error, inst, field, seed, f)
-      return unless @unit.component == "matching" && error["value"].is_a?(Hash)
+      return unless @unit.component == "matching"
       return if inst.dig("display", "reuse_right") == true
 
-      rights = error["value"].values.map(&:to_s)
+      pairs = Answers.matching_raw(error["value"]).first or return
+      rights = pairs.values
       return if rights.uniq.size == rights.size
 
       f.add("W-ERROR-UNREACHABLE", "#{field}/value", "the error value uses one right-hand id more than once; the widget allows each once, so this value can never fire", seed: seed)

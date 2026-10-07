@@ -217,6 +217,7 @@ class ItemStaticTest < ActiveSupport::TestCase
     result = run_item(item.call(dup, false))
     assert_includes codes(result), "W-ERROR-UNREACHABLE"
     assert_equal "passed", result.status
+    assert_includes codes(run_item(item.call([ [ "l1", "r2" ], [ "l2", "r2" ] ], false))), "W-ERROR-UNREACHABLE"
     assert_not_includes codes(run_item(item.call(ok, false))), "W-ERROR-UNREACHABLE"
     assert_not_includes codes(run_item(item.call({ "l1" => "r1", "l2" => "r1", "l3" => "r3", "l4" => "r2" }, true))), "W-ERROR-UNREACHABLE"
   end
