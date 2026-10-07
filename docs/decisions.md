@@ -209,6 +209,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-203 | 2026-10-07 | `banco work open` prints review_findings and teacher_comments (the CLI dropped them); W-REF-OTHER-SUBJECT reads a range N-M in scope_reason_it | implemented |
 | D-204 | 2026-10-07 | solve brief root fields and testlet shape (geography, solve2:0): eighth repeat of D-191; already documented; no change | implemented |
 | D-205 | 2026-10-07 | solve brief root fields (math, solve2:0): ninth repeat of D-191; already documented; no change | implemented |
+| D-206 | 2026-10-07 | `items list`: an older revision that would read `awaiting_verifier` reads `superseded` | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2191,4 +2192,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** nothing new. `briefs/solve.md` (section Format) lists `schema`, `schema_version` (1), `revision` (a string) and `answers`, with a minimal example.
 - **Why:** content agent (math, step solve2:0) asked for exactly that example; it is already there. The E-SCHEMA messages it saw name the missing keys and the string type. Content mistake, not a defect.
 - **Cost:** none.
+- **Status:** implemented
+
+## D-206 · 2026-10-07 · superseded revisions listed as awaiting_verifier (chemistry, pverify2)
+
+- **Design ref:** D-157 (`items list` shows `awaiting_verifier`), D-129 (`current` marker)
+- **Design said:** `items list` shows every revision with the display status of its latest validation, so an old revision whose validation failed only with `E-VERIFY-MISSING` or `E-VERIFY-STALE` read `awaiting_verifier`, though `banco status` counts only current revisions.
+- **We do:** in `items list`, a revision that is not current and would read `awaiting_verifier` reads `superseded`. Current rows, `work status` and the stored validation are unchanged. Additive value; `banco.*/1` unchanged. A queue scan should still use `--current`.
+- **Why:** content agent (chemistry, step pverify2). Defect (misleading status), cosmetic.
+- **Cost:** a script that looked for `awaiting_verifier` on a non-current row now sees `superseded`.
 - **Status:** implemented

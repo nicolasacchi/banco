@@ -21,8 +21,11 @@ module Api
             current = rev.id == latest.id
             next if only_current && !current
 
+            status = rev.validations.max_by(&:seq)&.display_status || "validating"
+            # An older revision never waits for a verifier: only the current one is actionable (D-206).
+            status = "superseded" if !current && status == "awaiting_verifier"
             { item: item.key, subject: item.subject.key, kind: item.kind, revision_id: rev.id, seq: rev.seq,
-              status: rev.validations.max_by(&:seq)&.display_status || "validating", current: current,
+              status: status, current: current,
               reviews: rev.reviews.size, blind_solves: rev.blind_solves.size }.merge(current ? blueprint_facts(rev) : {})
           end
         end

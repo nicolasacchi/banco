@@ -51,6 +51,19 @@ class ItemsApiTest < ActionDispatch::IntegrationTest
     assert_equal "failed", response.parsed_body["status"]
   end
 
+  test "a superseded revision that was awaiting_verifier is listed as superseded (D-206)" do
+    old = ItemRevision.create!(item: @b, seq: 2, body_json: "{}")
+    ItemValidation.create!(item_revision: old, seq: 1, status: "failed", codes_json: "[\"E-VERIFY-STALE\"]")
+    new = ItemRevision.create!(item: @b, seq: 3, body_json: "{}")
+    ItemValidation.create!(item_revision: new, seq: 1, status: "failed", codes_json: "[\"E-VERIFY-STALE\"]")
+    api("/api/v1/items?subject=italian")
+    rows = response.parsed_body["rows"].select { |x| [ old.id, new.id ].include?(x["revision_id"]) }
+    assert_equal [ [ old.id, "superseded", false ], [ new.id, "awaiting_verifier", true ] ],
+                 rows.map { |x| x.values_at("revision_id", "status", "current") }
+    api("/api/v1/work/revisions/#{old.id}")
+    assert_equal "awaiting_verifier", response.parsed_body["status"]
+  end
+
   test "an unknown subject is 404 E-NOT-FOUND and a token is required" do
     api("/api/v1/items?subject=nope")
     assert_response :not_found
