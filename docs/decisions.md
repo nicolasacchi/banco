@@ -207,6 +207,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-201 | 2026-10-07 | solve brief root fields and testlet answer shape (english, solve2:0): sixth repeat of D-191; already documented; no change | implemented |
 | D-202 | 2026-10-07 | solve brief root fields (spanish, solve2:0): seventh repeat of D-191; already documented; no change | implemented |
 | D-203 | 2026-10-07 | `banco work open` prints review_findings and teacher_comments (the CLI dropped them); W-REF-OTHER-SUBJECT reads a range N-M in scope_reason_it | implemented |
+| D-204 | 2026-10-07 | solve brief root fields and testlet shape (geography, solve2:0): eighth repeat of D-191; already documented; no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2172,3 +2173,12 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** `work status` and `work open` carry `review_findings`; a reason naming the line clears W-REF-OTHER-SUBJECT.
 - **We do:** (1) `banco work status REV` already printed `review_findings` (the server answer is passed through; the agent ran it before D-181 reached production). `banco work open ITEM` did not: the CLI rebuilt its answer from a fixed list of keys and dropped `review_findings` and `teacher_comments`. It now prints both (new keys only, `banco.*/1` unchanged). (2) `scope_reason_it` naming a range `N-M` (hyphen, en or em dash) now names every line from N to M; the warning text says so. A range that stops short of the line still warns. Not changed: the reviewers' findings stay out of `review open` (a reviewer must not read earlier findings).
 - **Why:** The author fixes what the reviewer wrote, and an honest range is a label.
+
+## D-204 · 2026-10-07 · solve brief root fields and testlet shape (geography): repeat of D-191; no change
+
+- **Design ref:** A-06, D-166, D-176, D-191, D-201
+- **Design said:** the solve brief tells the solver the shape of `answers.json`.
+- **We do:** nothing new. `briefs/solve.md` (section Format) lists `schema`, `schema_version` (1), `revision` and `answers`, with a minimal example, and gives the testlet shape (`{"s1": "b", "s2": {"n": 3, "d": 4}}`, `{"dont_know": true}` per sub item).
+- **Why:** content agent (geography, step solve2:0) submitted before reading the current brief; the E-SCHEMA messages it saw are the server naming the missing keys. Content mistake, not a defect.
+- **Cost:** none.
+- **Status:** implemented
