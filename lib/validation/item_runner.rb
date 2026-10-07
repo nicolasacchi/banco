@@ -161,8 +161,37 @@ module Validation
       longest_correct(unit, list, checker)
       never_generated(unit, list)
       message_gives_key(unit, list)
+      accept_item_level(unit, list)
       Roundtrip.new(unit, subject: item["subject"], findings: @findings).call(list, label: "#{unit.path}/instances", tests: unit.body["tests"])
       list.map { |i| stored_row(nil, i) }
+    end
+
+    # W-ACCEPT-ITEM-LEVEL (D-208): the item-level accept is added to every instance, so an entry
+    # that is not within one edit of every key (case and punctuation aside) is graded correct on
+    # instances it was not meant for. A spelling of one instance's key belongs in its own accept (D-081).
+    def accept_item_level(unit, list)
+      return unless unit.component == "normalized_text"
+
+      keys = list.map { |inst| Answers.plain(inst["answer"].to_s).downcase }.uniq
+      return if keys.size < 2
+
+      Array(unit.accept).each_with_index do |entry, i|
+        text = Answers.plain(entry.to_s).downcase
+        next if keys.all? { |k| edit_distance(text, k) <= 1 }
+
+        @findings.add("W-ACCEPT-ITEM-LEVEL", "#{unit.path}/accept/#{i}",
+                      "the item-level accept #{entry.inspect} is graded correct on every instance but is not within one edit of every key (#{keys.size} different keys): if it is a spelling of one key, move it to that instance's own accept (D-081)")
+      end
+    end
+
+    def edit_distance(a, b)
+      prev = (0..b.length).to_a
+      a.each_char.with_index(1) do |ca, i|
+        cur = [ i ]
+        b.each_char.with_index(1) { |cb, j| cur << [ prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca == cb ? 0 : 1) ].min }
+        prev = cur
+      end
+      prev.last
     end
 
     # W-MESSAGE-GIVES-KEY (D-171): an error message is shown after a wrong answer on any instance

@@ -79,6 +79,7 @@ validation:
   W-GRAPH-READABILITY: { stage: ruby, severity: warning, description: "A *_it text of a skill graph (an error description, a skill name) breaks the readability rule an item text would fail (E-READ): the same text copied into an item error catalogue is refused." }
   W-ERROR-NOT-IN-GRAPH: { stage: ruby, severity: warning, description: "An item's error code is not an error of its skill in the graph, or its implicates differ from the graph's: the engine reads the graph alone." }
   W-FORM-SKILL-CLOSURE: { stage: ruby, severity: warning, description: "An item's form_skill is not in the prerequisite closure of its skill: a wrong form gets credit but no tail suspect." }
+  W-ACCEPT-ITEM-LEVEL: { stage: ruby, severity: warning, description: "A static normalized_text item with two or more different keys has an item-level accept entry that is not within one edit of every key: it is graded correct on every instance. Move a spelling of one key to that instance's own accept (D-081, D-208)." }
   W-CALCULATOR: { stage: ruby, severity: warning, description: "A numeric item in a subject that allows the calculator lacks the sentence that says so." }
   W-IMPLICATE-PENDING: { stage: ruby, severity: warning, description: "An error_catalogue implicate names a skill of another subject whose graph is not approved yet. The engine reads implicates from the graph, so the item's list is ignored anyway; declare the edge as deferred_implicates in the graph and move it after the other graph is approved (D-135)." }
   # Blueprint (synchronous).

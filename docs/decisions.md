@@ -211,6 +211,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-205 | 2026-10-07 | solve brief root fields (math, solve2:0): ninth repeat of D-191; already documented; no change | implemented |
 | D-206 | 2026-10-07 | `items list`: an older revision that would read `awaiting_verifier` reads `superseded` | implemented |
 | D-207 | 2026-10-07 | `solve open` of a superseded revision is E-STALE-BASE; the hint names `solve open LATEST` (also `review`); root fields and ordering direction need no change | implemented |
+| D-208 | 2026-10-07 | W-ACCEPT-ITEM-LEVEL: item-level accept not within one edit of every instance key | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2211,4 +2212,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** `solve open` refuses a non-latest revision with 409 E-STALE-BASE; the hint of `solve open`, `solve submit`, `review submit` is the step's own open command on the latest revision (`banco solve open LATEST`, `banco review open LATEST`). `review open` keeps serving old revisions (read only). `banco.*/1` unchanged.
 - **Why:** content agent (biology, solve2:0). Three issues. (1) Root fields of answers.json: already documented with a minimal example (briefs/solve.md, D-166, D-176, D-191); no change. (2) Ordering direction: the student's prompt shows the item's prompt stem (`prompt_stem_it`, D-169) beside the instance stem, and `solve open` shows the same text; if the stem of 524 does not state the direction it is a content mistake for the author or reviewer (the review checklist covers a stated direction), not a software defect. (3) Defect, fixed here.
 - **Cost:** a solver that opened an old revision for reading now gets an error.
+- **Status:** implemented
+
+## D-208 · 2026-10-07 · W-ACCEPT-ITEM-LEVEL (italian, pfix1)
+
+- **Design ref:** D-081 (per-instance `accept`), A-06
+- **Design said:** the item-level `accept` is added to every instance at grading time; nothing warned when an entry was meant for one instance's key.
+- **We do:** a static `normalized_text` item with two or more different keys gets the warning `W-ACCEPT-ITEM-LEVEL` for each item-level `accept` entry that is not within one edit (case and punctuation aside) of every instance key; the message points at the per-instance `accept`. Warning only, status unchanged; `banco.*/1` formats unchanged.
+- **Why:** content agent (italian, step pfix1): rev 20 had `"un po'"` at item level with keys `po'`, `ha`, ...; it was graded correct on every instance and nothing said so. Missing validation, not a grading defect.
+- **Cost:** a deliberate item-level spelling far from some key now warns.
 - **Status:** implemented

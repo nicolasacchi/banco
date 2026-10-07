@@ -131,6 +131,11 @@ class CodeFixturesTest < ActiveSupport::TestCase
     "E-MATCHING-RIGHT-MARKUP" => -> { static_codes(matching_item([ 1, 2, 3, 4 ], [ 1, 2, 3, 4, 5 ], right_text: "$x \\leq 2$")) },
     "W-ERROR-NOT-IN-GRAPH" => -> { static_codes(item("error_catalogue" => [ item["error_catalogue"].first.merge("code" => "brand_new_code") ])) },
     "W-FORM-SKILL-CLOSURE" => -> { static_codes(item("form_skill" => "math.fractions-operations", "form" => [ "reduced" ])) },
+    "W-ACCEPT-ITEM-LEVEL" => lambda {
+      inst = ->(key, wrong) { { "display" => { "stem_it" => "Scrivi #{wrong}." }, "errors" => [ { "code" => "sign_error", "value" => wrong } ], "answer" => key, "solution" => { "steps" => [ { "text_it" => "Isola l'incognita." } ], "final" => "fatto" } } }
+      static_codes(item("component" => "normalized_text", "accept" => [ "un po'" ], "instances" => [ inst.("po'", "mai"), inst.("ha", "no") ],
+                        "tests" => { "must_accept" => [ "po'" ], "must_reject" => [ "mai" ], "blank" => "invalid" }))
+    },
     "E-ACCENT-POLICY" => -> { static_codes(item("accent_policy" => "strict")) },
     "E-PROVA-A-PARAMS" => -> { static_codes(item("sources" => [ { "kind" => "prova_a_structure", "ref" => "struttura", "fragment" => "esercizio" } ])) },
     "E-READ" => -> { static_codes(item("prompt" => { "stem_it" => long_sentence })) },

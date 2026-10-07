@@ -127,4 +127,17 @@ class D081Test < ActiveSupport::TestCase
     assert_includes codes_for.call(entry.merge("implicates" => [])), "W-ERROR-NOT-IN-GRAPH"
     refute_includes codes_for.call(entry), "W-ERROR-NOT-IN-GRAPH"
   end
+
+  test "W-ACCEPT-ITEM-LEVEL: an item-level accept that fits one key only (D-208)" do
+    two = [ text_instance("po'", "indeterminata", "Scrivi la prima."), text_instance("ha", "impossibile", "Scrivi la seconda.") ]
+    bad = run_item(text_item(two, "accept" => [ "un po'" ], "tests" => { "must_accept" => [], "must_reject" => [ "mai" ], "blank" => "invalid" }))
+    assert_includes codes(bad), "W-ACCEPT-ITEM-LEVEL"
+    assert_equal "passed", bad.status, bad.findings.map(&:to_h).inspect
+
+    near = [ text_instance("colore", "indeterminata", "Scrivi la prima."), text_instance("colori", "impossibile", "Scrivi la seconda.") ]
+    assert_not_includes codes(run_item(text_item(near, "accept" => [ "color" ], "tests" => { "must_accept" => [], "must_reject" => [ "mai" ], "blank" => "invalid" }))), "W-ACCEPT-ITEM-LEVEL"
+
+    moved = [ text_instance("po'", "indeterminata", "Scrivi la prima.", accept: [ "un po'" ]), text_instance("ha", "impossibile", "Scrivi la seconda.") ]
+    assert_not_includes codes(run_item(text_item(moved, "tests" => { "must_accept" => [], "must_reject" => [ "mai" ], "blank" => "invalid" }))), "W-ACCEPT-ITEM-LEVEL"
+  end
 end
