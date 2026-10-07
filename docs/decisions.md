@@ -193,6 +193,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-186 | 2026-10-07 | resets on first submits were a production restart (deploy); ordering direction and brief envelope already shipped (D-169, D-180); no change | implemented |
 | D-187 | 2026-10-07 | testlet answer shape in the solve brief already shipped (D-166); no change | implemented |
 | D-188 | 2026-10-07 | unique scratch folder (D-167), transient E-NETWORK and unreachable matching errors (D-145, D-147) already covered; no change | implemented |
+| D-189 | 2026-10-07 | `solo` as "single" after a noun (un giorno solo) is not an absolute word; the author already reads review findings (D-181) | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2023,4 +2024,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** no code change. (1) The suggested `mktemp -d` is already in `briefs/review.md`; a fixed name like `rev1` is the agent's choice, not a defect. (2) One `E-NETWORK` connection refused on the API listener while the app restarts for a deploy is the documented wait and retry; not a defect. (3) Revisions 229, 231, 232, 234 and 235 were validated before D-145 and stay `passed` (the ledger is append-only, stored validations are not rewritten); the review dry run checks the review, not the item, so it cannot show the item warning. The warning stays a warning: making it an error would fail items the teacher may still accept and would not fix old revisions. `banco.*/1` unchanged.
 - **Why:** content agent (law_economics, step review1:2). Not defects; (3) is a content mistake on old revisions.
 - **Cost:** none. The author dry-runs the pinned matching items (`banco work submit DIR --dry-run`), rewrites value maps as one-to-one mappings (or sets `display.reuse_right` for a classification), and resubmits new revisions; the reviewer reports unreachable values as a finding.
+- **Status:** implemented
+
+## D-189 · 2026-10-07 · "un giorno solo" is not an absolute word; review findings for the author already shipped (D-181)
+
+- **Design ref:** A-06, D-094, D-181
+- **Design said:** `da solo` is removed before `W-ABSOLUTE` (D-094); the author reads the reviews' findings in `work open` and `work status` (D-181).
+- **We do:** (1) `solo/sola/soli/sole` right after a determiner and one noun, and closing the phrase (followed by punctuation, the end, `non` or `si`), is the adjective "single" and is removed before `W-ABSOLUTE`: "da un giorno solo non si conosce il clima", "una volta sola". "un atto solo se ..." still warns. (2) No code change: `banco work status REV --json` and `banco work open ITEM --json` (author view) carry `review_findings` with id, source, severity, code, instance, field, quote, problem_it, fix_it, disposition; no new command. `banco.*/1` unchanged.
+- **Why:** content agent (geography, step pfix1). (1) defect (false positive, a warning only); (2) already shipped, the agent used a build older than D-181.
+- **Cost:** a rare "il tutore solo, firma" style phrase escapes the warning.
 - **Status:** implemented

@@ -124,6 +124,9 @@ module Validation
       end
     end
 
+    # determiner, one noun, then solo/sola/soli/sole closing the phrase ("un giorno solo", "una volta sola").
+    SINGLE_ADJECTIVE = /\b((?:un|uno|una|il|lo|la|i|gli|le|ogni|questo|questa|quel|quella)(?:'|\s+)\p{L}+)\s+(?:solo|sola|soli|sole)(?=\s*(?:[,.;:!?)]|\z)|\s+(?:non|si)\b)/
+
     def warnings(text, plain, sentences, words, field, role, findings)
       body = strip_markup(plain)
       if role == :passage
@@ -138,6 +141,7 @@ module Validation
         end
       end
       lower = body.downcase.gsub(/\bda (?:solo|sola|soli|sole)\b/, " ")   # "by oneself", not "only" (D-094)
+      lower = lower.gsub(SINGLE_ADJECTIVE, '\\1 ')                                 # "un giorno solo": "single", not "only" (D-189)
       if (w = Rules.list(:readability, :absolute_words).find { |a| lower.match?(/\b#{Regexp.escape(a)}\b/) })
         findings.add("W-ABSOLUTE", field, "an absolute word (#{w}) needs a counterexample check", word: w)
       end

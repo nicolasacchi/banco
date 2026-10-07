@@ -145,6 +145,8 @@ class ReadabilityTest < ActiveSupport::TestCase
     assert_includes lint("Il risultato è sempre positivo.").map(&:code), "W-ABSOLUTE"
     assert_not_includes lint("Il minore fa da solo gli atti di ordinaria amministrazione.").map(&:code), "W-ABSOLUTE"
     assert_includes lint("Solo il tutore firma. Lei fa da sola.").map(&:code), "W-ABSOLUTE"
+    assert_not_includes lint("Da un giorno solo non si conosce il clima. Una volta sola basta.").map(&:code), "W-ABSOLUTE"
+    assert_includes lint("Firma un atto solo se è presente il tutore.").map(&:code), "W-ABSOLUTE"
     assert_includes lint("Quale frase non è corretta?", role: :stem).map(&:code), "W-NEGATIVE-STEM"
     assert_not_includes lint("Quando è vera «non ($x$ è pari e $y$ è dispari)»?", role: :stem).map(&:code), "W-NEGATIVE-STEM"
     assert_not_includes lint("Nella frase «Io rimasi fuori, perciò non vidi niente», quale parola può prendere il posto di «perciò»?", role: :stem).map(&:code), "W-NEGATIVE-STEM"
