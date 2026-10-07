@@ -16,7 +16,14 @@ module Api
 
         render json: { revision_id: @revision.id, item: @item.key, subject: @item.subject.key, seq: @revision.seq, component: component,
                        sub_items: sub_items, instances: @text.solver_instances, brief: brief_row("solve"),
+                       file_root: file_root,
                        next: "write banco.solve/1 (banco brief show solve) and run banco solve submit #{@revision.id} --file answers.json" }
+      end
+
+      # The four root keys of answers.json; the revision is a string (D-210).
+      def file_root
+        { schema: "banco.solve/1", schema_version: 1, revision: @revision.id.to_s,
+          answers: "one entry per instance: instance (its number) and answer, or dont_know true; see the brief" }
       end
 
       # POST /api/v1/revisions/:revision/solve {solve}

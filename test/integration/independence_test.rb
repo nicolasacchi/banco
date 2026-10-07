@@ -443,6 +443,7 @@ class IndependenceTest < ActionDispatch::IntegrationTest
     assert_response :ok
     record_example "solve open", "opened"
     assert_equal "number", json["component"]
+    assert_equal({ "schema" => "banco.solve/1", "schema_version" => 1, "revision" => revision.id.to_s }, json["file_root"].except("answers"))
     assert_equal 3, json["instances"].size
     assert_equal({ "stem_it" => "Risolvi $x+2=9$.", "prompt_stem_it" => "Risolvi l'equazione e scrivi il valore di $x$." }, json["instances"].first["display"])
     body = response.body

@@ -213,6 +213,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-207 | 2026-10-07 | `solve open` of a superseded revision is E-STALE-BASE; the hint names `solve open LATEST` (also `review`); root fields and ordering direction need no change | implemented |
 | D-208 | 2026-10-07 | W-ACCEPT-ITEM-LEVEL: item-level accept not within one edit of every instance key | implemented |
 | D-209 | 2026-10-07 | `review open` adds `current` and `superseded_by`; `next` says a superseded revision cannot be filed and names the latest | implemented |
+| D-210 | 2026-10-07 | `solve open` adds `file_root`: the root keys of answers.json, `revision` a string (english, solve3:0; tenth repeat of D-191) | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2230,5 +2231,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** `review open` serves any revision read-only (D-207 kept that); `review submit` refuses a non-latest one with E-STALE-BASE, so a reviewer could do a full review of revision 517 and find it unfileable.
 - **We do:** `review open` adds `current` (bool) and `superseded_by` (the latest revision id, else null); when superseded, `next` reads "superseded: a review of this revision cannot be filed; run banco review open LATEST". Additive; `banco.*/1` unchanged. Opening stays allowed. The scratch-directory issue is already covered by the review brief (`mktemp -d "$TMPDIR/rv-SUBJECT-XXXXXX"`); handing out unique names is the orchestrator's, not the software's: content mistake.
 - **Why:** content agent (biology, review2:0). The submit refusal is correct; the missing signal at open time was a defect.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-210 · 2026-10-07 · solve open shows the root of answers.json (english, solve3:0)
+
+- **Design ref:** A-06, D-166, D-176, D-191
+- **Design said:** the root fields are in `briefs/solve.md` (Format) with a minimal example; nine agents were told no change (D-191..D-205).
+- **We do:** `solve open` adds `file_root` (`schema`, `schema_version` 1, `revision` as a string, `answers` described). Additive; `banco.solve/1` unchanged. Tenth report of the same thing, and the agents evidently work from the `solve open` output, so the hint goes where they look.
+- **Why:** content agent (english, solve3:0), suggested exactly this.
 - **Cost:** none.
 - **Status:** implemented

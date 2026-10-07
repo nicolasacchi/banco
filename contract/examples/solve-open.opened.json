@@ -41,6 +41,12 @@
         "version": 1,
         "sha256": "<sha256>"
       },
+      "file_root": {
+        "schema": "banco.solve/1",
+        "schema_version": 1,
+        "revision": "1",
+        "answers": "one entry per instance: instance (its number) and answer, or dont_know true; see the brief"
+      },
       "next": "write banco.solve/1 (banco brief show solve) and run banco solve submit 1 --file answers.json"
     }
   }
