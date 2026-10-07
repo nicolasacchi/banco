@@ -205,6 +205,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-199 | 2026-10-07 | solve brief root fields (history, solve1:2): fifth repeat of D-191; no change | implemented |
 | D-200 | 2026-10-07 | blind solve on a short_answer and solve brief root fields (history, solve1:3): already shipped (D-168, D-183, D-191); no change | implemented |
 | D-201 | 2026-10-07 | solve brief root fields and testlet answer shape (english, solve2:0): sixth repeat of D-191; already documented; no change | implemented |
+| D-202 | 2026-10-07 | solve brief root fields (spanish, solve2:0): seventh repeat of D-191; already documented; no change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2152,5 +2153,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the solve brief tells the solver the shape of `answers.json`.
 - **We do:** nothing new. `briefs/solve.md` (section Format) already lists the four root keys `schema`, `schema_version`, `revision`, `answers` with a complete minimal example, and gives the testlet answer shape (an object from sub item id to that sub item's answer, `{"s1": "b", "s2": {"n": 3, "d": 4}}`); `test/models/brief_test.rb` asserts it. E-SCHEMA names the missing properties, as designed.
 - **Why:** content agent (english, step solve2:0) submitted before reading the current brief. Content mistake, not a defect or missing feature.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-202 · 2026-10-07 · solve brief root fields (spanish, solve2:0): repeat of D-191; no change
+
+- **Design ref:** A-06, D-166, D-176, D-191, D-201
+- **Design said:** the solve brief tells the solver the shape of `answers.json`.
+- **We do:** nothing new. `briefs/solve.md` (section Format) lists the root keys `schema`, `schema_version` (1), `revision` (the id passed to `banco solve open`) and `answers`, with a minimal example; `test/models/brief_test.rb` asserts it. E-SCHEMA names the missing properties, as designed.
+- **Why:** content agent (spanish, step solve2:0) submitted before reading the current brief. Content mistake, not a defect or missing feature.
 - **Cost:** none.
 - **Status:** implemented
