@@ -215,6 +215,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-209 | 2026-10-07 | `review open` adds `current` and `superseded_by`; `next` says a superseded revision cannot be filed and names the latest | implemented |
 | D-210 | 2026-10-07 | `solve open` adds `file_root`: the root keys of answers.json, `revision` a string (english, solve3:0; tenth repeat of D-191) | implemented |
 | D-211 | 2026-10-07 | `review open` may be read with the item's own author session; the solve brief lists short_answer in its Format (history, pfix1; repeat of D-168, D-183) | implemented |
+| D-212 | 2026-10-07 | author reads review findings: already shipped (D-181, D-203) as `review_findings`; the key is not `findings` and not `teacher_comments`; no change (math, pfix2) | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2250,5 +2251,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** `review open` took no session or a reviewer session; an author session was `E-SESSION-ROLE`. The solve brief's Format list named the components without `short_answer` (the sentence about it follows the list).
 - **We do:** (1) a session header that is an author session of this token that wrote a file of the item reads the page like a session-less read (nothing is recorded; solver, verifier and strangers are refused as before). (2) `briefs/solve.md` Format now lists "a plain sample string for `short_answer`" in the main sentence. Not changed: `dont_know` on a `short_answer` stays one major finding (D-168: it means the task could not be done from its text; a sample string never gives a finding). The author's review and blind-solve findings are already in `banco work open ITEM` and `banco work status REV` as `review_findings` (D-181, D-183); those answers have them only on the latest revision, and only when the CLI and server are current. `banco.*/1` unchanged.
 - **Why:** content agent (history, step pfix1). Issue 1 is guidance (repeat of D-168): classified content mistake of the solver, answer a sample string. Issue 2 is mostly D-181 (already shipped); the refusal of an author session on `review open` was a small real gap.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-212 · 2026-10-07 · author cannot read review findings through the CLI (math): already shipped; no change
+
+- **Design ref:** D-181, D-183, D-203
+- **Design said:** `banco work status REV --json` and `banco work open ITEM` carry the stored findings of the reviewers and blind solvers for the author.
+- **We do:** nothing new. The findings are under `review_findings` (id, source, severity, code, instance, field, quote, problem_it, fix_it, disposition, review_id or blind_solve_id), a separate key from `findings` (validation findings) and `teacher_comments`. `work status` passes the server answer through; `work open` prints the key since D-203. The answer lists them for the revision asked, so a superseded revision's findings come from `work status OLD_REV`. A reviewer or solver finding is a row on its source; a blind-solve mismatch is a finding with `blind_solve_id` (`source` says which). The checklist point is the finding's `code`. An older CLI or server (before D-181/D-203) lacks the key: refresh with the deployed `banco`.
+- **Why:** content agent (math, step pfix2) read `findings: []` and `teacher_comments: []` and did not see `review_findings`, or ran a build before D-181. Classified: already shipped, not a defect.
 - **Cost:** none.
 - **Status:** implemented
