@@ -187,6 +187,16 @@ class IndependenceTest < ActionDispatch::IntegrationTest
     assert_equal "E-SESSION", json["code"]
   end
 
+  test "review open reads with the author's own session (D-211); a solver or a stranger author is still refused" do
+    revision = passed_revision
+    api("/api/v1/revisions/#{revision.id}/review", as: @author)
+    assert_response :ok, json.inspect
+    assert_equal revision.id, json["revision_id"]
+    stranger = session!(:author, "claude-opus-5-5")
+    api("/api/v1/revisions/#{revision.id}/review", as: stranger)
+    assert_equal "E-SESSION-ROLE", json["code"]
+  end
+
   # ---- verify: who may write it, what the verifier sees ----------------------------------------
 
   test "verify.mjs from the author is 422 E-VERIFY-AUTHOR, in a submit and in a dry run; nothing is stored" do

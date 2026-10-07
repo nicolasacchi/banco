@@ -14,6 +14,8 @@ module Api
         # that is sent is still checked, so an error message in the variable is not taken for none.
         if request.headers["X-Banco-Session"].to_s.strip.empty?
           return refuse("E-AUTH", "authorization", "this token cannot review", "banco schema", 403) unless ApiToken.session_roles(@token.role).include?("reviewer")
+        elsif author_read?
+          # D-211: the author reads the page of a revision (the item it wrote); the findings are in `work open`.
         else
           session = require_session("reviewer", item: @item, next_step: next_session) or return
           return unless independent_role?(session, @item, "reviewer")
@@ -28,6 +30,15 @@ module Api
                        item_json: JSON.parse(@revision.body_json), instances: @text.review_instances, programme_lines: @text.programme_lines,
                        checklist: Review::Checklist.all, brief: brief_row("review"),
                        next: next_step }
+      end
+
+      # An author session of this token that wrote a file of this item reads the page (D-211); no other role does.
+      def author_read?
+        raw = request.headers["X-Banco-Session"].to_s
+        session = AgentSession.find_by(id: raw) if raw.match?(AgentSession::ID)
+        return false unless session&.role == "author" && (session.token_id.nil? || session.token_id == @token.id)
+
+        ApiToken.session_roles(@token.role).include?("author") && ItemSessions.new(@item).ids("author").include?(session.id)
       end
 
       # POST /api/v1/revisions/:revision/review {review}
