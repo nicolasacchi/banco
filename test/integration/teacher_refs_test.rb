@@ -56,6 +56,16 @@ class TeacherRefsTest < ActionDispatch::IntegrationTest
     assert_select "article#item-#{rev.id}"
   end
 
+  test "the component and the validation status are Italian words, not raw keys" do
+    rev = @world[:revisions]["number"]
+    page "/teacher/subjects/math/test/skills/math.number"
+    assert_select "article[data-item='#{rev.item.key}']", /Tipo:?\s*risposta numerica|risposta numerica/
+    assert_select "article[data-item='#{rev.item.key}'] strong", text: "number", count: 0
+    page "/teacher/items/#{rev.id}"
+    assert_response :success
+    assert_select "p strong", text: /\A(passed|failed|error|validating)\z/, count: 0
+  end
+
   test "ids are unique on every page, even when a key repeats" do
     pages.each do |path|
       page path

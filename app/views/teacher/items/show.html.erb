@@ -3,7 +3,7 @@
   <h1><%= t("teacher.item.title") %></h1>
   <h2><%= ref_for(@revision) %></h2>
   <p><%= t("teacher.item.skill") %> <strong><%= @body["skill"] ? ref_for(@body["skill"]) : @revision.item.key %></strong></p>
-  <p><%= t("teacher.item.status") %> <strong><%= @revision.status %></strong></p>
+  <p><%= t("teacher.item.status") %> <strong><%= t("teacher.skill.validation.#{@revision.status}") %></strong></p>
   <ol>
     <% @samples.each do |display| %>
       <li><%= display["stem_it"] || display["passage_it"] %></li>

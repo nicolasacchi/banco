@@ -22,7 +22,7 @@
       <article class="card item-card" data-revision="<%= card.revision.id %>" data-item="<%= card.item.key %>">
         <h2><%= ref_for(card.item) %> <span class="key"><%= t("teacher.skill.revision", seq: card.revision.seq) %></span></h2>
         <p>
-          <%= t("teacher.skill.kind") %> <strong><%= card.body["component"] || card.body["kind"] %></strong> ·
+          <%= t("teacher.skill.kind") %> <strong><%= component_name(card.body["component"] || card.body["kind"]) %></strong> ·
           <%= t("teacher.skill.seconds", count: card.body["expected_seconds"].to_i) %> ·
           <%= t("teacher.skill.mechanical") %> <strong><%= t("teacher.skill.validation.#{card.revision.status}") %></strong>
         </p>
