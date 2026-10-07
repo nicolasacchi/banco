@@ -212,6 +212,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-206 | 2026-10-07 | `items list`: an older revision that would read `awaiting_verifier` reads `superseded` | implemented |
 | D-207 | 2026-10-07 | `solve open` of a superseded revision is E-STALE-BASE; the hint names `solve open LATEST` (also `review`); root fields and ordering direction need no change | implemented |
 | D-208 | 2026-10-07 | W-ACCEPT-ITEM-LEVEL: item-level accept not within one edit of every instance key | implemented |
+| D-209 | 2026-10-07 | `review open` adds `current` and `superseded_by`; `next` says a superseded revision cannot be filed and names the latest | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2221,4 +2222,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** a static `normalized_text` item with two or more different keys gets the warning `W-ACCEPT-ITEM-LEVEL` for each item-level `accept` entry that is not within one edit (case and punctuation aside) of every instance key; the message points at the per-instance `accept`. Warning only, status unchanged; `banco.*/1` formats unchanged.
 - **Why:** content agent (italian, step pfix1): rev 20 had `"un po'"` at item level with keys `po'`, `ha`, ...; it was graded correct on every instance and nothing said so. Missing validation, not a grading defect.
 - **Cost:** a deliberate item-level spelling far from some key now warns.
+- **Status:** implemented
+
+## D-209 · 2026-10-07 · review open of a superseded revision (biology, review2:0)
+
+- **Design ref:** A-05, D-158, D-206, D-207
+- **Design said:** `review open` serves any revision read-only (D-207 kept that); `review submit` refuses a non-latest one with E-STALE-BASE, so a reviewer could do a full review of revision 517 and find it unfileable.
+- **We do:** `review open` adds `current` (bool) and `superseded_by` (the latest revision id, else null); when superseded, `next` reads "superseded: a review of this revision cannot be filed; run banco review open LATEST". Additive; `banco.*/1` unchanged. Opening stays allowed. The scratch-directory issue is already covered by the review brief (`mktemp -d "$TMPDIR/rv-SUBJECT-XXXXXX"`); handing out unique names is the orchestrator's, not the software's: content mistake.
+- **Why:** content agent (biology, review2:0). The submit refusal is correct; the missing signal at open time was a defect.
+- **Cost:** none.
 - **Status:** implemented

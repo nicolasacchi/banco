@@ -12,6 +12,8 @@
       "subject": "math",
       "seq": 1,
       "status": "passed",
+      "current": true,
+      "superseded_by": null,
       "item_json": {
         "schema": "banco.item/1",
         "schema_version": 1,

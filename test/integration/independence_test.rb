@@ -452,6 +452,20 @@ class IndependenceTest < ActionDispatch::IntegrationTest
     assert_not_includes body, "must_accept"
   end
 
+  test "review open of a superseded revision says so: current false, superseded_by, next names the latest (D-209)" do
+    revision = passed_revision
+    api("/api/v1/revisions/#{revision.id}/review", as: @reviewer)
+    assert_response :ok
+    assert_equal true, json["current"]
+    assert_nil json["superseded_by"]
+    newer = ItemRevision.create!(item: revision.item, seq: revision.seq + 1, body_json: revision.body_json, file_sessions_json: "{}")
+    api("/api/v1/revisions/#{revision.id}/review", as: @reviewer)
+    assert_response :ok
+    assert_equal false, json["current"]
+    assert_equal newer.id, json["superseded_by"]
+    assert_equal "superseded: a review of this revision cannot be filed; run banco review open #{newer.id}", json["next"]
+  end
+
   test "solve open of a superseded revision is E-STALE-BASE and names the latest solve (D-207)" do
     revision = passed_revision
     newer = ItemRevision.create!(item: revision.item, seq: revision.seq + 1, body_json: revision.body_json, file_sessions_json: "{}")
