@@ -14,7 +14,7 @@ class SittingsController < ApplicationController
     subject = Subject.find_by(key: params[:key]) or return head(:not_found)
 
     unless preview?
-      return head(:forbidden) unless Diagnosis::Release.open?
+      return head(:forbidden) unless diagnosis_open?
 
       row = Diagnosis::Availability.for(acting_student).find { |r| r.subject == subject }
       return head(:forbidden) unless row&.startable
@@ -106,7 +106,7 @@ class SittingsController < ApplicationController
   # when a sitting is about to start (the subject list says "Domani").
   def require_open_diagnosis!
     return if preview?
-    return head(:forbidden) unless Diagnosis::Release.open?
+    return head(:forbidden) unless diagnosis_open?
     return unless action_name == "step" && !@conductor.closed? && !@conductor.holding?
 
     row = Diagnosis::Availability.for(acting_student).find { |r| r.subject == @run.subject }

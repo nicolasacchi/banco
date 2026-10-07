@@ -1,7 +1,8 @@
 <% content_for :title, t("teacher.corrections.title") %>
 <main class="page wide">
-  <p><a href="/teacher"><%= t("teacher.back") %></a></p>
+  <p><a href="<%= with_student("/teacher") %>"><%= t("teacher.back") %></a></p>
   <h1><%= t("teacher.corrections.title") %></h1>
+  <%= render "teacher/student_picker" %>
   <% corrections = @corrections %>
   <% blocker = decision_blocker %>
   <p id="corrections-summary"><%= t("teacher.corrections.summary", short: corrections.short_answers.size, verdicts: corrections.verdicts.size) %></p>

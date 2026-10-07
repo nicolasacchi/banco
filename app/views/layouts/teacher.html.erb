@@ -13,15 +13,18 @@
     <%# No Turbo: forms are plain posts that redirect back. The one controller used here besides the item renderer is the heartbeat. %>
     <%= javascript_importmap_tags "diagnosis", importmap: student_importmap %>
   </head>
-  <body class="student teacher" <% if @unit %>data-controller="activity" data-activity-url-value="/teacher/activity" data-activity-unit-value="<%= @unit %>"<% end %>>
+  <body class="student teacher" <% if @unit && !reader_only? %>data-controller="activity" data-activity-url-value="/teacher/activity" data-activity-unit-value="<%= @unit %>"<% end %>>
     <nav class="teacher-nav" aria-label="<%= t('teacher.nav.label') %>">
       <a href="/teacher"><%= t("teacher.nav.home") %></a>
       <a href="/teacher/corrections"><%= t("teacher.nav.corrections") %></a>
-      <a href="/teacher/preview"><%= t("teacher.preview.title") %></a>
+      <% unless reader_only? %><a href="/teacher/preview"><%= t("teacher.preview.title") %></a><% end %>
     </nav>
+    <p class="access hint" id="access-line"><%= access_line %>
+      <% if logout_url %> · <a id="logout-link" href="<%= logout_url %>"><%= t("teacher.logout") %></a><% end %></p>
+    <% if reader_only? %><p class="notice" id="read-only-notice" role="status"><strong><%= t("teacher.read_only") %></strong></p><% end %>
     <% if notice %><p class="notice flash" role="status"><%= notice %></p><% end %>
     <% if alert %><p class="notice flash alert" role="alert"><%= alert %></p><% end %>
-    <% if decision_blocker %><p class="notice"><%= t("teacher.cannot_decide.#{decision_blocker}") %></p><% end %>
+    <% if !reader_only? && decision_blocker %><p class="notice"><%= t("teacher.cannot_decide.#{decision_blocker}") %></p><% end %>
     <%= yield %>
   </body>
 </html>

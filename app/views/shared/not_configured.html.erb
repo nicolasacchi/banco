@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="cream" data-size="normal">
+  <head>
+    <title><%= t("student.not_configured") %></title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= stylesheet_link_tag :app %>
+  </head>
+  <body class="student">
+    <main class="page">
+      <p class="notice" id="not-configured"><strong><%= t("student.not_configured") %></strong></p>
+      <% if logout_url %><p><a href="<%= logout_url %>"><%= t("student.logout") %></a></p><% end %>
+    </main>
+  </body>
+</html>

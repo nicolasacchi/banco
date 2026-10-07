@@ -2,8 +2,9 @@
 <% row = @row %>
 <% blocker = decision_blocker %>
 <main class="page wide" data-report-status="<%= row[:status] %>">
-  <p><a href="/teacher"><%= t("teacher.back") %></a></p>
+  <p><a href="<%= with_student("/teacher") %>"><%= t("teacher.back") %></a></p>
   <h1><%= t("teacher.report.title", subject: @subject.name_it) %></h1>
+  <%= render "teacher/student_picker" %>
 
   <section id="report-state">
     <h2><%= t("teacher.report.state_title") %></h2>
@@ -104,7 +105,7 @@
           <% if sig[:flags].include?("rapid_share") %> <strong><%= t("teacher.report.flagged") %></strong><% end %></li>
         <li data-signal="dont_know_share"><%= t("teacher.report.dont_know", percent: (sig[:dont_know_share].to_f * 100).round, count: sig[:dont_know_count]) %>
           <% if sig[:flags].include?("dont_know_share") %> <strong><%= t("teacher.report.flagged") %></strong><% end %></li>
-        <li><%= t("teacher.report.pending_answers", count: sig[:pending_answers]) %> <a href="/teacher/corrections"><%= t("teacher.nav.corrections") %></a></li>
+        <li><%= t("teacher.report.pending_answers", count: sig[:pending_answers]) %> <a href="<%= with_student("/teacher/corrections") %>"><%= t("teacher.nav.corrections") %></a></li>
       </ul>
       <p class="hint"><%= t("teacher.report.signals_hint") %></p>
     </section>

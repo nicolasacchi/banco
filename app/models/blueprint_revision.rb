@@ -3,6 +3,12 @@ class BlueprintRevision < ApplicationRecord
   belongs_to :skill_graph_revision
   belongs_to :author_session, class_name: "AgentSession", optional: true
 
+  # True when it pins at least one item and every pinned item's latest validation passed.
+  def pinned_validated?
+    ids = pinned_item_revision_ids
+    ids.any? && ids.all? { |id| ItemRevision.find_by(id: id)&.validations&.max_by(&:seq)&.status == "passed" }
+  end
+
   # Ids of every item revision the blueprint pins: the entries and the descent pool.
   def pinned_item_revision_ids
     body = JSON.parse(body_json)

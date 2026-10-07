@@ -10,13 +10,16 @@ module ActingStudent
   included do
     layout "student"
     before_action :require_actor!
-    before_action :mark_student_device, unless: :preview?
+    before_action :mark_student_device, unless: -> { preview? || trial_account? }
     helper_method :preview?, :base_path, :acting_student
   end
 
   def preview? = request.path_parameters[:preview] == true
 
   def base_path = preview? ? "/teacher/preview" : "/diagnosis"
+
+  # No release for a trial student: the whole flow can be tried before the teacher opens it.
+  def diagnosis_open? = trial_account? || Diagnosis::Release.open?
 
   def context_name = preview? ? "teacher_preview" : "diagnosis"
 
@@ -25,7 +28,7 @@ module ActingStudent
       if preview?
         Student.create_with(kind: "preview").find_or_create_by!(key: "preview")
       else
-        Student.create_with(kind: "student").find_or_create_by!(key: "student")
+        Student.create_with(kind: "student").find_or_create_by!(key: current_identity.student_key)
       end
   end
 
@@ -33,6 +36,7 @@ module ActingStudent
 
   # The student's computer is marked with a signed cookie, so that /teacher decisions
   # are refused from it (D-08). The student's pages are the only place that sets it.
+  # A trial student never gets it: an adult testing on a computer that is also the teacher's (D-217).
   def mark_student_device
     cookies.signed.permanent[DecisionRecorder::DEVICE_COOKIE] = { value: "student", httponly: true, same_site: :lax, secure: request.ssl? }
   end

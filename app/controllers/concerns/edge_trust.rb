@@ -13,15 +13,43 @@ module EdgeTrust
 
   TEACHER_GROUP = "banco-teacher"
   STUDENT_GROUP = "banco-student"
+  GUEST_GROUP = "banco-guest"
 
+  # Three roles (D-217): the teacher acts, the guest only reads, the student answers. A login in the
+  # teacher list with the teacher group is a teacher whatever else it carries; a guest is in the guest
+  # group, in BANCO_GUEST_USERS and not a teacher.
   Identity = Struct.new(:login, :groups, keyword_init: true) do
     def teacher?
       groups.include?(TEACHER_GROUP) && Banco::EdgeProxy.teacher_users.include?(login)
     end
 
-    def student?
-      groups.include?(STUDENT_GROUP) && !teacher?
+    def guest?
+      groups.include?(GUEST_GROUP) && Banco::EdgeProxy.guest_users.include?(login) && !teacher?
     end
+
+    # Someone who may read the teacher's pages.
+    def reader? = teacher? || guest?
+
+    # In the student group and neither teacher nor guest, whether or not the login is configured.
+    def student_group? = groups.include?(STUDENT_GROUP) && !teacher? && !guest?
+
+    # A student the operator has configured. With BANCO_STUDENT_USERS unset, any student login is the
+    # official student (staging and old setups); with it set, only the listed logins are students.
+    def student?
+      student_group? && (Banco::EdgeProxy.student_map.empty? || Banco::EdgeProxy.student_map.key?(login))
+    end
+
+    # In the student group, but the map is set and does not list the login.
+    def unconfigured_student? = student_group? && !student?
+
+    def student_key
+      return nil unless student?
+
+      map = Banco::EdgeProxy.student_map
+      map.empty? ? Student::OFFICIAL_KEY : map.fetch(login)
+    end
+
+    def trial_student? = student? && student_key != Student::OFFICIAL_KEY
   end
 
   included do

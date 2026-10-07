@@ -4,7 +4,7 @@ class DiagnosisController < ApplicationController
   include ActingStudent
 
   def show
-    @released = Diagnosis::Release.open?
+    @released = diagnosis_open?
     if @released
       @rows = Diagnosis::Availability.for(acting_student)
     else

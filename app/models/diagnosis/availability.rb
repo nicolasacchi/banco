@@ -39,11 +39,11 @@ module Diagnosis
     private
 
     def subjects
-      Subject.order(:position).select { |s| Conductor.approved_blueprint(s) }
+      Subject.order(:position).select { |s| Conductor.blueprint_for(@student, s) }
     end
 
     def fact(subject)
-      depends = JSON.parse(Conductor.approved_blueprint(subject).body_json).fetch("depends_on_subjects", [])
+      depends = JSON.parse(Conductor.blueprint_for(@student, subject).body_json).fetch("depends_on_subjects", [])
       run = DiagnosisRun.where(student: @student, subject: subject).order(:sequence).last
       return Fact.new(subject, daily(subject, depends, "not_started"), nil, false, false) unless run
       return Fact.new(subject, daily(subject, depends, "to_redo"), run, false, false) if EventLoader.voided?(run)

@@ -17,6 +17,6 @@ class AnswersController < ApplicationController
   private
 
   def require_open_diagnosis!
-    head(:forbidden) unless preview? || Diagnosis::Release.open?
+    head(:forbidden) unless preview? || diagnosis_open?
   end
 end

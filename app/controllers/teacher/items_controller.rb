@@ -4,7 +4,7 @@ module Teacher
   # (B-07). The student's computer only reads: no event is written there.
   class ItemsController < ApplicationController
     layout "teacher"
-    before_action :require_teacher!
+    before_action :require_reader!
 
     SAMPLES = 4
 
@@ -13,7 +13,7 @@ module Teacher
 
       @body = JSON.parse(@revision.body_json)
       @samples = @revision.instances.order(:id).limit(SAMPLES).map { |i| JSON.parse(i.display_json) }
-      return if request.cookies[DecisionRecorder::DEVICE_COOKIE].present?
+      return if request.cookies[DecisionRecorder::DEVICE_COOKIE].present? || !current_identity.teacher?
 
       AppEvent.create!(kind: "teacher_viewed_item", payload_json: { item_revision_id: @revision.id }.to_json)
     end
