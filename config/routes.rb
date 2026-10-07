@@ -35,6 +35,7 @@ Rails.application.routes.draw do
       id = /\d+/
       post "skill-graph-revisions/:revision_id/approve", action: :approve_skill_graph, constraints: { revision_id: id }
       post "blueprint-revisions/:revision_id/approve", action: :approve_blueprint, constraints: { revision_id: id }
+      post "blueprint-revisions/:revision_id/confirm-reviewed", action: :confirm_test_reviewed, constraints: { revision_id: id }
       post "findings/:finding_id/disposition", action: :dispose_finding, constraints: { finding_id: id }
       post "grade-proposals/:grade_proposal_id/confirm", action: :confirm_grade, constraints: { grade_proposal_id: id }
       post "grade-proposals/:grade_proposal_id/reject", action: :reject_grade, constraints: { grade_proposal_id: id }
@@ -54,6 +55,7 @@ Rails.application.routes.draw do
       key = { key: /[a-z_]+/ }
       get "subjects/:key/graph" => "graphs#show", constraints: key, as: :teacher_graph
       get "subjects/:key/test" => "tests#show", constraints: key, as: :teacher_test
+      get "subjects/:key/test/all" => "tests#all", constraints: key, as: :teacher_test_all
       get "subjects/:key/test/skills/:skill" => "tests#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9.\-]*/), as: :teacher_test_skill
       get "subjects/:key/report" => "reports#show", constraints: key, as: :teacher_report
       get "corrections" => "corrections#show", as: :teacher_corrections
@@ -64,6 +66,7 @@ Rails.application.routes.draw do
 
     scope "teacher/preview", as: :preview, defaults: { preview: true } do
       get "/" => "teacher/previews#index", as: :index
+      post "runs/:run_id/close" => "sittings#close", as: :run_close
       concerns :sitting
     end
 

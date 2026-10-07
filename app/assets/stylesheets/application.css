@@ -211,3 +211,16 @@ form.decide .answer-input.small { width: 5rem; }
 details { margin: 0.5rem 0; }
 summary { cursor: pointer; font-weight: 700; }
 q.example { display: block; margin-bottom: 0.25rem; }
+
+/* All the questions of a test, for the teacher ---------------------------------- */
+.all-questions .toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; align-items: center; margin: 1rem 0; }
+.all-questions .badge { display: inline-block; border: 2px solid var(--line); padding: 0 0.5rem; font-size: 0.9em; font-weight: 400; margin-right: 0.5rem; }
+.all-questions .q-item { margin: 1rem 0; }
+.all-questions .q-instance { border-top: 1px solid var(--line); padding-top: 0.5rem; margin-top: 0.75rem; }
+.all-questions .q-render [disabled], .all-questions .q-render math-field[disabled] { opacity: 1; color: inherit; cursor: default; }
+.all-questions .q-answers { background: var(--surface); }
+@media print {
+  .no-print, .teacher-nav, .flash { display: none !important; }
+  .all-questions .q-item, .all-questions .q-instance { break-inside: avoid; page-break-inside: avoid; }
+  .all-questions.page.wide { max-width: none; }
+}

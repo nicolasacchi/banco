@@ -199,7 +199,7 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     page "/teacher/subjects/math/test"
     assert_select "#test-not-measured", "Non misura la scrittura a mano."
     assert_select "#test-intro-note", "Nota di prova per chi comincia."
-    assert_select "#test-settings", /non ammessa/
+    assert_select "#test-settings", /ammessa/
     assert_select "#test-overrides", /nessuna/
   end
 
@@ -233,7 +233,7 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     assert_select "#report-condition strong", /senza sorveglianza/
     assert_select "#report-state", /Test d'ingresso usato/
     assert_select "#report-not-measured", /Non misura la scrittura a mano/
-    assert_select "#report-test-settings", /non ammessa/
+    assert_select "#report-test-settings", /ammessa/
   end
 
   test "the heartbeat records one minute at most per minute and never from the student's computer" do

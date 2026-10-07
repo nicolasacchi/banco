@@ -8,7 +8,7 @@ module Teacher
       [ /\Aa reason is required\z/, ->(_names, *) { "Scrivi il motivo." } ],
       [ /\Aa comment is required\z/, ->(_names, *) { "Scrivi il commento." } ],
       [ /\Athe test pins no item\z/, ->(_names, *) { "Il test non contiene nessun item." } ],
-      [ /\Athe test was not played to the end as the preview student\z/, ->(_names, *) { "Gioca il test fino in fondo con «Prova come S»." } ],
+      [ /\Athe test was not played to the end as the preview student, and not confirmed as seen in full\z/, ->(_names, *) { "Gioca il test fino in fondo con «Prova come S», oppure apri «Tutte le domande» e conferma di averle viste." } ],
       [ /\Avalidation has not passed\z/, ->(_names, *) { "Il controllo meccanico non è passato." } ],
       [ /\Ano expert review on this revision\z/, ->(_names, *) { "Manca la revisione dell'esperto." } ],
       [ /\Ano blind solve on this revision\z/, ->(_names, *) { "Manca la prova alla cieca." } ],

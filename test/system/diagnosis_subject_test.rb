@@ -106,7 +106,7 @@ class DiagnosisSubjectTest < ApplicationSystemTestCase
     assert_text "Test d'ingresso · Matematica"
     assert_text "Non è un voto: serve a capire da dove partire."
     assert_text "Dura circa 30 minuti."
-    assert_text "senza calcolatrice"
+    assert_text "puoi usare la calcolatrice"
     refute_text(/\d{1,2}:\d{2}/, wait: 0)
     click_button "Comincia"
 

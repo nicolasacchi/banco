@@ -7,14 +7,18 @@ module Approval
   #     (Review::Gate, M6),
   #   - the teacher opened each pinned item in the preview (app_event
   #     teacher_viewed_item), and
-  #   - the teacher played the whole test once as the preview student: a closed run
-  #     in the context teacher_preview pinned to this very revision.
+  #   - the teacher played the whole test once as the preview student (a run in the
+  #     context teacher_preview pinned to this very revision, closed by the engine, not by
+  #     the teacher's "Chiudi l'anteprima"), OR confirmed on the page of all questions that
+  #     she saw every question of this very revision (confirm_test_reviewed, D-215).
   #
   # Nothing here decides: it says what is still missing, in the teacher's words.
   module BlueprintGate
     Result = Struct.new(:approvable, :reasons, keyword_init: true) do
       def to_h = { approvable: approvable, reasons: reasons }
     end
+
+    NOT_PLAYED = "the test was not played to the end as the preview student, and not confirmed as seen in full".freeze
 
     module_function
 
@@ -41,7 +45,7 @@ module Approval
       end
       stale_pins(revision).each { |pin| reasons << "item revision #{pin[:pinned]} is no longer the latest passed revision of its item: #{pin[:latest]} replaced it (W-STALE-PIN)" }
       multi_skill_testlets(revision).each { |m| reasons << "item revision #{m[:revision]} is a testlet whose sub items are on #{m[:skills].join(', ')}: its answers count for #{m[:skills].first} only (W-TESTLET-MULTI-SKILL)" }
-      reasons << "the test was not played to the end as the preview student" unless previewed?(revision)
+      reasons << NOT_PLAYED unless previewed?(revision) || reviewed?(revision)
       Result.new(approvable: reasons.empty?, reasons: reasons)
     end
 
@@ -95,7 +99,19 @@ module Approval
 
     def previewed?(revision)
       student = Student.find_by(key: "preview") or return false
-      DiagnosisRun.where(student: student, blueprint_revision: revision).any? { |run| Diagnosis::Conductor.new(run).closed? }
+      DiagnosisRun.where(student: student, blueprint_revision: revision).any? { |run| played_to_the_end?(run) }
+    end
+
+    # Closed by the engine. A preview closed by the teacher's button (run_closed teacher_close) was not played.
+    def played_to_the_end?(run)
+      return false unless Diagnosis::Conductor.new(run).closed?
+
+      run.events.where(kind: "run_closed").none? { |e| JSON.parse(e.payload_json || "{}")["reason"] == Diagnosis::Conductor::TEACHER_CLOSE }
+    end
+
+    # The teacher's confirmation "I saw all the questions" for this exact revision.
+    def reviewed?(revision)
+      Decision.where(kind: "confirm_test_reviewed", subject_id: revision.subject_id).pluck(:payload_json).any? { |j| JSON.parse(j)["revision_id"] == revision.id }
     end
   end
 end

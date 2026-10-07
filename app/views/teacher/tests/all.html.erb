@@ -1,0 +1,64 @@
+<% content_for :title, t("teacher.all.title", subject: @subject.name_it) %>
+<% review = @review %>
+<main class="page wide all-questions" data-controller="all-questions" data-all-questions-texts-value="<%= student_texts.to_json %>">
+  <p class="no-print"><a href="<%= teacher_test_path(key: @subject.key) %>"><%= t("teacher.all.back") %></a></p>
+  <h1><%= t("teacher.all.title", subject: @subject.name_it) %></h1>
+  <p id="all-summary">
+    <%= t("teacher.all.summary", seq: review.blueprint.seq, items: @all.item_count, instances: @all.instance_count) %>
+    <%= review.approved_latest? ? t("teacher.test.is_approved") : t("teacher.test.not_approved") %>
+  </p>
+  <p class="hint no-print"><%= t("teacher.all.readonly") %></p>
+
+  <div class="toolbar no-print">
+    <label class="option"><input type="checkbox" id="show-answers" data-action="all-questions#toggleAnswers"> <span class="option-text"><%= t("teacher.all.show_answers") %></span></label>
+    <button type="button" class="button secondary small" data-action="all-questions#print"><%= t("teacher.all.print") %></button>
+  </div>
+
+  <% blocker = decision_blocker %>
+  <% confirmed = Approval::BlueprintGate.reviewed?(review.blueprint) %>
+  <section id="all-confirm" class="approve no-print" data-confirmed="<%= confirmed %>">
+    <h2><%= t("teacher.all.confirm.title") %></h2>
+    <%= decision_form("/teacher/blueprint-revisions/#{review.blueprint.id}/confirm-reviewed") do %>
+      <button type="submit" class="button" <%= "disabled" if blocker || confirmed %>><%= t("teacher.all.confirm.button") %></button>
+    <% end %>
+    <p class="hint">
+      <% if confirmed %><%= t("teacher.all.confirm.done") %>
+      <% elsif blocker %><%= t("teacher.cannot_decide.#{blocker}") %>
+      <% else %><%= t("teacher.all.confirm.hint") %><% end %>
+    </p>
+  </section>
+
+  <nav class="no-print" aria-label="<%= t('teacher.all.skills') %>">
+    <h2><%= t("teacher.all.skills") %></h2>
+    <ul class="plain">
+      <% @all.groups.each do |group| %>
+        <li><a href="#skill-<%= group.row.skill.tr('.', '-') %>"><%= group.row.label_it %></a></li>
+      <% end %>
+    </ul>
+  </nav>
+
+  <% @all.groups.each do |group| %>
+    <section class="skill-group" id="skill-<%= group.row.skill.tr('.', '-') %>" data-skill="<%= group.row.skill %>">
+      <h2><%= group.row.label_it %> <span class="key">(<%= group.row.skill %>)</span></h2>
+      <p class="badges">
+        <% if group.scope %><span class="badge" data-scope="<%= group.scope %>"><%= scope_text(group.scope) %></span><% end %>
+        <span class="badge" data-role="<%= group.row.role %>"><%= t("teacher.test.role.#{group.row.role}") %></span>
+        <a class="no-print" href="<%= skill_screen_path(@subject, group.row.skill) %>"><%= t("teacher.skill.title", skill: group.row.label_it) %></a>
+      </p>
+      <% group.items.each do |item| %>
+        <article class="q-item card" data-revision="<%= item.revision.id %>" data-item="<%= item.item.key %>" data-component="<%= item.component %>">
+          <h3><%= item.item.key %> <span class="key"><%= t("teacher.skill.revision", seq: item.revision.seq) %></span>
+            <span class="badge" data-component-badge><%= item.component %></span></h3>
+          <% first, *others = item.instances %>
+          <%= render "teacher/tests/all_instance", item: item, inst: first if first %>
+          <% if others.any? %>
+            <details class="q-others" data-all-questions-target="others" data-action="toggle->all-questions#opened">
+              <summary><%= t("teacher.all.others", count: others.size) %></summary>
+              <% others.each do |inst| %><%= render "teacher/tests/all_instance", item: item, inst: inst %><% end %>
+            </details>
+          <% end %>
+        </article>
+      <% end %>
+    </section>
+  <% end %>
+</main>

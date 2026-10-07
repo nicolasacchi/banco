@@ -47,7 +47,7 @@ class ApprovalGatesTest < ActionDispatch::IntegrationTest
 
     ids.each { |id| AppEvent.create!(kind: "teacher_viewed_item", payload_json: { item_revision_id: id }.to_json) }
     approve_blueprint
-    assert_equal [ "the test was not played to the end as the preview student" ], json["reasons"]
+    assert_equal [ Approval::BlueprintGate::NOT_PLAYED ], json["reasons"]
 
     play_preview!
     approve_blueprint

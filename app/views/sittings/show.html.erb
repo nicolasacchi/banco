@@ -10,6 +10,7 @@
       data-sitting-keepalive-seconds-value="<%= Diagnosis::Rules::V1::KEEPALIVE_SECONDS %>">
   <% if preview? %>
     <p class="banner"><%= t("teacher.preview.banner") %></p>
+    <%= button_to t("teacher.preview.close"), "/teacher/preview/runs/#{@run.id}/close", class: "button secondary", id: "preview-close", form: { class: "inline" } %>
   <% end %>
 
   <section data-sitting-target="intro">

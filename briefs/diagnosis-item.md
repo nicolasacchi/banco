@@ -171,8 +171,7 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
     denominator, polynomials in one letter, still share a factor is `wrong_form`
     (`common_factor_not_cancelled`); `lowest_terms` only checks integer content. Business amounts
     use `number` with unit euro and 2 decimals; computer science states the
-    KB convention in the stem. Where the calculator is allowed (business,
-    chemistry) every numeric stem says so; a `number` item may list other right values in `accept` (`["273,15"]`, for a convention the teacher leaves open) and may declare `form: ["scientific"]` to ask for `a·10^n` with 1 <= a < 10 (the same value in another shape is `wrong_form`, violation `scientific_notation`); elsewhere numbers are chosen for hand
+    KB convention in the stem. Business and chemistry stems say the calculator is allowed, in every numeric stem (mathematics allows it too, said once on the start screen, not in the stems); a `number` item may list other right values in `accept` (`["273,15"]`, for a convention the teacher leaves open) and may declare `form: ["scientific"]` to ask for `a·10^n` with 1 <= a < 10 (the same value in another shape is `wrong_form`, violation `scientific_notation`); elsewhere numbers are chosen for hand
     calculation.
 14. **Scope.** No content of the in-progress (star-empty) lines and no content of
     the following year inside items of skills the student has already studied.

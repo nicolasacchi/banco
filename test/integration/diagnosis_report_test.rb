@@ -32,7 +32,7 @@ class DiagnosisReportTest < ActionDispatch::IntegrationTest
     assert_equal({ "blueprint_revision_id" => @rows[:blueprint].id, "seq" => 1, "approved" => true, "approved_revision_id" => @rows[:blueprint].id, "pending_revision" => false },
                  row["entry_test"].slice("blueprint_revision_id", "seq", "approved", "approved_revision_id", "pending_revision"))
     assert_equal "Non misura la scrittura a mano.", row["entry_test"]["not_measured_it"]
-    assert_equal "no", row["entry_test"]["calculator"]
+    assert_equal "yes", row["entry_test"]["calculator"]
     assert_equal @run.id, row["run"]["id"]
     assert_equal "pending_answers", row["run"]["waiting_on"], "the run waits for the teacher's grade of the short answer"
     assert_equal [ "closed" ], row["run"]["grader_versions"].map { |g| g["grader"] }

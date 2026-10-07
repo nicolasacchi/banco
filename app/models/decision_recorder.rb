@@ -18,7 +18,7 @@
 # Invalid (422: the decision is not possible now, with the reasons in Italian-free
 # plain text for the page to word).
 class DecisionRecorder
-  KINDS = %w[approve_skill_graph approve_blueprint dispose_finding confirm_grade reject_grade resolve_attempt
+  KINDS = %w[approve_skill_graph approve_blueprint confirm_test_reviewed dispose_finding confirm_grade reject_grade resolve_attempt
              void_diagnosis_run void_revision_attempts extend_diagnosis_run close_diagnosis_run release_diagnosis
              record_consent kind_override send_back_item].freeze
   CSRF_KEY = "banco.csrf_valid".freeze
@@ -115,6 +115,20 @@ class DecisionRecorder
     raise Invalid, gate.reasons unless gate.approvable
 
     [ revision.subject, nil, { revision_id: revision.id, seq: revision.seq, graph_revision_id: revision.skill_graph_revision_id } ]
+  end
+
+  # "Ho visto tutte le domande di questa prova": the teacher read every question of this very
+  # revision on the page of all questions (the pinned items were opened there). It stands in the
+  # approval gate for playing the whole test as the preview student (D-215).
+  def confirm_test_reviewed
+    revision = find(BlueprintRevision, :revision_id)
+    latest = BlueprintRevision.where(subject: revision.subject).maximum(:seq)
+    raise Invalid, "revision #{revision.id} is not the latest entry test of #{revision.subject.key}: confirm the latest" unless revision.seq == latest
+
+    unseen = revision.pinned_item_revision_ids - Approval::BlueprintGate.viewed_ids.to_a
+    raise Invalid, unseen.map { |id| "item revision #{id} was not opened in the preview" } if unseen.any?
+
+    [ revision.subject, nil, { revision_id: revision.id, seq: revision.seq } ]
   end
 
   # "Rimanda": the item goes back to the content agent with a reason code and a comment.

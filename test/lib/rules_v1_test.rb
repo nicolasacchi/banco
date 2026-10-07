@@ -12,7 +12,7 @@ class RulesV1Test < ActiveSupport::TestCase
     assert V1::AUTO_SECOND_SITTING
     assert_equal 2, V1::DAILY_MAX_SUBJECTS
     assert_equal 75, V1::DAILY_MAX_MINUTES
-    assert_equal :no, V1.calculator("math")
+    assert_equal :yes, V1.calculator("math")
     assert_equal :yes, V1.calculator("business")
     assert_equal :yes, V1.calculator("chemistry")
     assert_equal :no, V1.calculator("history")

@@ -143,6 +143,18 @@ module Diagnosis
 
     def closed? = state.closed
 
+    TEACHER_CLOSE = "teacher_close".freeze
+
+    # "Chiudi l'anteprima": the teacher ends her own preview run now. An append-only event of the
+    # preview run (the engine reads it as a close by the teacher); never used for the student's runs.
+    def close_preview!
+      raise ArgumentError, "only a preview run" unless run.student.kind == "preview"
+      return false if closed?
+
+      append("run_closed", "reason" => TEACHER_CLOSE)
+      true
+    end
+
     # Open, but with nothing left to ask while an answer is pending or ungraded.
     def holding?
       return false if closed?

@@ -256,9 +256,12 @@ itself.
 
 ## 10. Calculator (operator decision)
 
-`CALCULATOR`: **no** in mathematics, **yes** in business and chemistry, said in the
+`CALCULATOR`: **yes** in mathematics, business and chemistry (mathematics since D-214,
+which supersedes the old **no**); the start screen says it once, and in business and
+chemistry it is said in the
 items ("Puoi usare la calcolatrice"); `W-CALCULATOR` flags a numeric item that
-lacks the sentence unless the item says `calculation: false` (D-106). In the other subjects the numbers are chosen for hand
+lacks the sentence unless the item says `calculation: false` (D-106). `W-CALCULATOR` stays limited to business and chemistry: mathematics is not in
+`readability.calculator_subjects` (D-214). In the other subjects the numbers are chosen for hand
 calculation. The entry test carries a `calculator` field and the start screen shows
 one line about it. Changeable at approval.
 

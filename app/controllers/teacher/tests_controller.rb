@@ -7,6 +7,18 @@ module Teacher
       @review = Teacher::TestReview.new(@subject)
     end
 
+    # Every question of the test on one page, read-only. Opening it counts as opening every
+    # pinned item (the gate's "opened" condition), because all of them are shown.
+    def all
+      subject! or return
+      @unit = "#{@subject.key}:test"
+      @review = Teacher::TestReview.new(@subject)
+      return head(:not_found) unless @review.present?
+
+      @all = Teacher::AllQuestions.new(@review)
+      record_views(@all.pinned_ids & ItemRevision.where(id: @all.pinned_ids).pluck(:id))
+    end
+
     def skill
       subject! or return
       @unit = "#{@subject.key}:test"

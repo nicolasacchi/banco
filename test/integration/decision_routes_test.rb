@@ -14,6 +14,7 @@ class DecisionRoutesTest < ActionDispatch::IntegrationTest
     {
       "approve_skill_graph" => [ "/teacher/skill-graph-revisions/#{@graph.id}/approve", {} ],
       "approve_blueprint" => [ "/teacher/blueprint-revisions/#{@blueprint.id}/approve", {} ],
+      "confirm_test_reviewed" => [ "/teacher/blueprint-revisions/#{@blueprint.id}/confirm-reviewed", {} ],
       "dispose_finding" => [ "/teacher/findings/#{@finding.id}/disposition", { disposition: "dismissed", reason_it: "Non è un errore." } ],
       "confirm_grade" => [ "/teacher/grade-proposals/#{@proposal.id}/confirm", {} ],
       "reject_grade" => [ "/teacher/grade-proposals/#{@rejected.id}/reject", { reason_it: "Troppo severa." } ],

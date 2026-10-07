@@ -47,6 +47,14 @@ class SittingsController < ApplicationController
     end
   end
 
+  # "Chiudi l'anteprima": preview only, the student's runs are never touched (404 there).
+  def close
+    return head(:not_found) unless preview?
+
+    @conductor.close_preview!
+    redirect_to "/teacher/subjects/#{@run.subject.key}/test", status: :see_other, notice: I18n.t("teacher.preview.closed")
+  end
+
   def events
     kind = params[:kind].to_s
     return head(:unprocessable_entity) unless kind == "keepalive" || Diagnosis::Conductor::PAUSE_EVENTS.include?(kind)

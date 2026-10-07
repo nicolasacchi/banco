@@ -18,7 +18,7 @@ module Teacher
                    item_revision_id acknowledged statement_it subject skill override_kind reason_code comment_it back].freeze
 
     {
-      approve_skill_graph: "approve_skill_graph", approve_blueprint: "approve_blueprint", dispose_finding: "dispose_finding",
+      approve_skill_graph: "approve_skill_graph", approve_blueprint: "approve_blueprint", confirm_test_reviewed: "confirm_test_reviewed", dispose_finding: "dispose_finding",
       confirm_grade: "confirm_grade", reject_grade: "reject_grade", resolve_attempt: "resolve_attempt",
       void_run: "void_diagnosis_run", extend_run: "extend_diagnosis_run", close_run: "close_diagnosis_run",
       void_revision_attempts: "void_revision_attempts", release: "release_diagnosis", consent: "record_consent",

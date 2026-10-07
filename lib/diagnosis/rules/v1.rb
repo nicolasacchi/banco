@@ -113,7 +113,7 @@ module Diagnosis
       DAILY_MAX_MINUTES = 75            # a safety ceiling; two first sittings use at most 55
 
       # ---- Calculator per subject (operator "calculator") ---------------------
-      CALCULATOR = Hash.new(:no).merge("business" => :yes, "chemistry" => :yes).freeze
+      CALCULATOR = Hash.new(:no).merge("math" => :yes, "business" => :yes, "chemistry" => :yes).freeze
 
       # ---- Short answer (B-06) ------------------------------------------------
       SHORT_ANSWER_DEFAULT_THRESHOLD = 0.6

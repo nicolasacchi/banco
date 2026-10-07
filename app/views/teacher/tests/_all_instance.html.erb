@@ -1,0 +1,30 @@
+<% view = inst.view %>
+<section class="q-instance" data-instance="<%= inst.id %>">
+  <h4><%= t("teacher.all.variant", n: inst.number) %></h4>
+  <div class="q-render item" data-all-questions-target="slot" data-presentation="<%= inst.presentation.to_json %>"></div>
+  <div class="q-answers sample" data-all-questions-target="answers" hidden>
+    <h5><%= t("teacher.all.answers_title") %></h5>
+    <p class="key-line"><strong><%= t("teacher.all.key") %></strong> <span data-key><%= view.key %></span></p>
+    <% if view.errors.any? %>
+      <p><strong><%= t("teacher.all.errors") %></strong></p>
+      <ul class="plain errors"><% view.errors.each do |e| %><li><strong><%= e[:code] %></strong>: <%= e[:value] %></li><% end %></ul>
+    <% end %>
+    <% if view.steps.any? %>
+      <p><strong><%= t("teacher.all.solution") %></strong></p>
+      <ol class="steps"><% view.steps.each do |s| %><li data-markup="inline"><%= s %></li><% end %></ol>
+      <% if view.final %><p><%= t("teacher.all.final") %> <span data-markup="inline"><%= view.final %></span></p><% end %>
+    <% end %>
+    <% if item.rubric.is_a?(Hash) %>
+      <p><strong><%= t("teacher.all.rubric") %></strong>
+        <% if item.rubric["threshold"] %><%= t("teacher.all.threshold", threshold: item.rubric["threshold"]) %><% end %></p>
+      <ul class="plain rubric">
+        <% Array(item.rubric["points"]).each do |pt| %>
+          <li data-point="<%= pt['id'] %>"><strong><%= pt["id"] %></strong> (<%= t("teacher.all.points", weight: pt["weight"]) %>): <%= pt["expected_it"] %></li>
+        <% end %>
+      </ul>
+      <% if item.rubric["model_answer_it"].present? %>
+        <p><strong><%= t("teacher.all.model_answer") %></strong> <span data-model-answer><%= item.rubric["model_answer_it"] %></span></p>
+      <% end %>
+    <% end %>
+  </div>
+</section>

@@ -3,6 +3,7 @@
   <p><a href="<%= teacher_test_path(key: @subject.key) %>"><%= t("teacher.skill.back", subject: @subject.name_it) %></a></p>
   <h1><%= @row.label_it %> <span class="key">(<%= @row.skill %>)</span></h1>
   <p class="skill-nav">
+    <a class="button secondary small" id="skill-all-link" href="<%= teacher_test_all_path(key: @subject.key) %>#skill-<%= @row.skill.tr('.', '-') %>"><%= t("teacher.test.all_link") %></a>
     <% if @previous %><a class="button secondary small" href="<%= skill_screen_path(@subject, @previous.skill) %>"><%= t("teacher.skill.previous") %></a><% end %>
     <% if @next %><a class="button secondary small" href="<%= skill_screen_path(@subject, @next.skill) %>"><%= t("teacher.skill.next") %></a><% end %>
   </p>

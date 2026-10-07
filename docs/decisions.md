@@ -217,6 +217,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-211 | 2026-10-07 | `review open` may be read with the item's own author session; the solve brief lists short_answer in its Format (history, pfix1; repeat of D-168, D-183) | implemented |
 | D-212 | 2026-10-07 | author reads review findings: already shipped (D-181, D-203) as `review_findings`; the key is not `findings` and not `teacher_comments`; no change (math, pfix2) | implemented |
 | D-213 | 2026-10-07 | solve brief root fields (law_economics, solve3:0): repeat of D-195; the brief has the four keys and a complete example; no change | implemented |
+| D-214 | 2026-10-07 | operator decision: the calculator is allowed in mathematics too; W-CALCULATOR not extended to mathematics | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2271,4 +2272,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **We do:** nothing new. `briefs/solve.md` (section Format) says the file needs `schema`, `schema_version` (the number 1), `revision` (a string) and `answers`, with a complete `banco.solve/1` example since D-163; `test/models/brief_test.rb` asserts it. `banco solve submit REV --file F --dry-run` reports E-SCHEMA before anything is stored.
 - **Why:** content agent (law_economics, step solve3:0) saw E-SCHEMA for missing root fields and a numeric revision: it wrote the file from the old list or from memory, not from the current brief. Classified as a content mistake, not a defect and not a missing feature (a `solve template` command would repeat the example in the brief).
 - **Cost:** none.
+- **Status:** implemented
+
+## D-214 · 2026-10-07 · operator decision: the calculator is allowed in mathematics too
+
+- **Design ref:** operator "calculator", `docs/rules/diagnosis-1.md` section 10, D-106
+- **Design said:** `Rules::V1::CALCULATOR` was no in mathematics, yes in business and chemistry; the mathematics start screen said "Fai i calcoli sul foglio, senza calcolatrice".
+- **We do:** `CALCULATOR["math"]` is `:yes` (supersedes the maths default; business and chemistry stay yes). The start screen of mathematics now shows the calculator_yes line. A blueprint's own `calculator` field still wins at approval. We do NOT add math to `readability.calculator_subjects`: W-CALCULATOR would flag every numeric maths item that lacks the sentence, and the start screen states the rule once. Items in mathematics need not say it. Rules doc section 10, the item brief and the tests that pinned the old default are updated.
+- **Why:** operator decision 2026-10-07: "per matematica facciamo usare la calcolatrice".
+- **Cost:** none; blueprints already approved that declare `calculator: "no"` keep their declaration.
 - **Status:** implemented
