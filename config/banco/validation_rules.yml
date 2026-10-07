@@ -6,6 +6,7 @@
 # v6: ASCII, RGB, USB, SSD, HDD, LAN, WAN, BIOS, CSV join caps_allowlist (D-114).
 # Codes and what they mean: config/banco/error_codes.yml. Generic and synthetic:
 # nothing here is about a person.
+# Supports (D-216) added optional checks that only fire on the new fields: no bump.
 version: 6
 
 generator:
@@ -68,6 +69,19 @@ readability:
   # language under *_it keys and are not linted as Italian (D-112).
   target_language_subjects: [english, spanish]
   target_language_keys: [passage_it, model_answer_it]
+
+# Supports (D-216). method_words: what steps_it must not teach (W-STEPS-METHOD), a word or phrase
+# matched whole, lower case; "all" applies to every subject, the others to the skill's subject.
+supports:
+  method_words:
+    all: [applica la formula, applica la regola, usa la formula, usa il metodo, con il metodo]
+    math: [m.c.m, mcm, minimo comune multiplo, m.c.d, mcd, massimo comun divisore, denominatore comune, stesso denominatore,
+           semplifica, riduci ai minimi termini, scomponi, raccogli, isola, cambia segno, cambia il segno,
+           dall'altra parte, prodotto notevole, formula inversa, sostituisci, moltiplica in croce]
+    chemistry: [bilancia, mole, formula inversa, proporzione]
+    business: [formula inversa, ammortamento a quote costanti]
+    italian: [analisi logica, soggetto e predicato]
+    computer_science: [complemento a due, divisioni successive]
 
 # Names the generator and verify sources must not use (E-CODE-GLOBAL). Comments and
 # string literals are ignored; the identifiers are matched as whole words.

@@ -1,0 +1,104 @@
+{
+  "schema": "banco.item/1",
+  "schema_version": 1,
+  "kind": "diagnosis_item",
+  "subject": "math",
+  "skill": "math.fractions-operations",
+  "component": "fraction",
+  "prompt": {
+    "stem_it": "Calcola la somma e scrivila come frazione ridotta ai minimi termini."
+  },
+  "form": [
+    "lowest_terms"
+  ],
+  "form_skill": "math.fraction-reduction",
+  "error_catalogue": [
+    {
+      "code": "adds_denominators",
+      "description_it": "Somma i denominatori.",
+      "message_it": "I denominatori non si sommano. Si usa un denominatore comune.",
+      "implicates": [
+        "math.fractions-common-denominator"
+      ]
+    }
+  ],
+  "instances": [
+    {
+      "display": {
+        "stem_it": "$\\frac{1}{2}+\\frac{1}{3}$"
+      },
+      "answer": {
+        "n": 5,
+        "d": 6
+      },
+      "errors": [
+        {
+          "code": "adds_denominators",
+          "value": {
+            "n": 2,
+            "d": 5
+          }
+        }
+      ],
+      "solution": {
+        "steps": [
+          {
+            "text_it": "Si applica il procedimento.",
+            "math": "$x=5/6$"
+          }
+        ],
+        "final": "5/6"
+      },
+      "answer_format_it": "Scrivi."
+    },
+    {
+      "display": {
+        "stem_it": "$\\frac{1}{4}+\\frac{1}{2}$"
+      },
+      "answer": {
+        "n": 3,
+        "d": 4
+      },
+      "errors": [
+        {
+          "code": "adds_denominators",
+          "value": {
+            "n": 2,
+            "d": 6
+          }
+        }
+      ],
+      "solution": {
+        "steps": [
+          {
+            "text_it": "Si applica il procedimento.",
+            "math": "$x=3/4$"
+          }
+        ],
+        "final": "3/4"
+      }
+    }
+  ],
+  "tests": {
+    "must_accept": [
+      {
+        "n": 5,
+        "d": 6
+      }
+    ],
+    "must_reject": [
+      {
+        "n": 2,
+        "d": 5
+      }
+    ],
+    "blank": "invalid"
+  },
+  "sources": [
+    {
+      "kind": "prima_line",
+      "ref": "prima-example:4",
+      "fragment": "frazioni"
+    }
+  ]
+}

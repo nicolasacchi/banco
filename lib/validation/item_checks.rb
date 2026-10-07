@@ -22,7 +22,30 @@ module Validation
       quote_ref(item.dig("prompt", "quote"), "/prompt/quote", context, findings) if item.dig("prompt", "quote").is_a?(Hash)
       Readability.lint_document(item, "", findings, skip: target_language_keys(item))
       calculator(item, findings)
+      support_method_words(item, findings)
       code_scan(files, findings)
+    end
+
+    # ---- W-STEPS-METHOD (D-216) ------------------------------------------------------
+
+    # steps_it say what to do, not how: a method word of the skill's subject (the rules file)
+    # in the item's own steps is a warning. Once per item; the instance display is checked per instance.
+    def support_method_words(item, findings)
+      Units.of(item).each { |unit| method_words(unit.body, unit.path, unit.skill, findings) }
+    end
+
+    # +hash+ holds steps_it; path is where it sits ("" for the item, "/instances/0/display"...).
+    def method_words(hash, path, skill, findings, seed: nil)
+      steps = Array(hash["steps_it"]).select { |t| t.is_a?(String) }
+      return if steps.empty?
+
+      subject = skill.to_s.split(".").first.to_s
+      words = Rules.list(:supports, :method_words, :all) + Array(Rules.get(:supports, :method_words)[subject])
+      text = steps.join(" ").downcase
+      word = words.find { |w| text.match?(/(?<![[:alnum:]])#{Regexp.escape(w.downcase)}(?![[:alnum:]])/) }
+      return unless word
+
+      findings.add("W-STEPS-METHOD", "#{path}/steps_it", "the steps name a method of the skill (#{word}): say what to do, not how", word: word, seed: seed)
     end
 
     # ---- E-SKILL-UNKNOWN ---------------------------------------------------------

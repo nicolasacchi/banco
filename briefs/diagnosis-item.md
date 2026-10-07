@@ -176,6 +176,31 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
 14. **Scope.** No content of the in-progress (star-empty) lines and no content of
     the following year inside items of skills the student has already studied.
 
+## Supports: answer format and steps
+
+The student page already explains every input (the decimal comma, the fraction boxes, the
+formula editor, choices, ordering, matching, text) in a help box that opens at any moment, and the
+start screen explains how the test works. Do not repeat that in the stem. Two optional fields add
+what only your item knows. Neither changes grading or what the item measures.
+
+- `answer_format_it` (a string, at most 300 characters): the required form of the answer, with a
+  format example, shown under the input. Use it when the form is not obvious from the stem, for example
+  `"Scrivi la frazione ridotta, per esempio 3/4."` or `"Scrivi il risultato in euro, con due decimali."`
+- `steps_it` (2 to 6 short strings): what to do, shown as a numbered list above the input. Use it
+  for a long item, so that a student with reading or attention difficulties does not lose the thread.
+  Say what to do, never how: `"Leggi la tabella."`, `"Calcola il totale."`, `"Scrivi il risultato."`
+  A step that names the method the skill is about (a rule, a formula, a procedure) is
+  `W-STEPS-METHOD`; the method is what the item measures.
+
+Where they go: on the item, or on a testlet sub item, they apply to every instance; an instance may
+carry its own in `display` (`display.answer_format_it`, `display.steps_it`, also in what a generator
+returns) when its text differs. The readability rules apply to each text, and each step is linted on its own.
+
+The leak rule is strict and checked per instance: no text of these fields may contain the key or any
+declared error value of the instance it is shown with (`E-SUPPORT-LEAK`, compared as the other leak checks
+compare). A format example must be a value that is neither a key nor a declared error of any instance:
+for a number or a fraction pick one that no instance answers, or write the form in words.
+
 ## Public repository
 
 The code and these briefs are public. Items for the course live in the database,

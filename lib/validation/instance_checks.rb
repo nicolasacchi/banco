@@ -19,6 +19,8 @@ module Validation
     # for the asset and SVG text checks.
     # A key option this long (plain characters) must not appear in the passage of a testlet (D-094).
     PASSAGE_LEAK_MIN_CHARS = 20
+    # answer_format_it and steps_it have their own check (E-SUPPORT-LEAK, D-216).
+    SUPPORT_PATH = %r{\A/(?:answer_format_it|steps_it(?:/|\z))}
 
     def initialize(unit, context:, files: {}, passage: nil)
       @passage = passage
@@ -46,6 +48,8 @@ module Validation
       accept_rules(inst, label, seed, f)
       choice_rules(display, answer, inst, label, seed, f) if @unit.component == "choice" && problems.empty?
       leaks(display, answer, inst, label, seed, f) if problems.empty?
+      support_leaks(display, answer, inst, label, seed, f) if problems.empty?
+      ItemChecks.method_words(display, "#{label}/display", @unit.skill, f, seed: seed)
       component_fit(answer, inst, label, seed, f)
       steps(inst, label, seed, f) if problems.empty?
       quote_and_figure(display, label, seed, f)
@@ -175,7 +179,7 @@ module Validation
     # choice): table cells, captions, figure text.
     def readable_strings(display, include_stem:, include_options:)
       Canonical.strings(display).reject do |path, _|
-        path == "/quote/text" || path == "/quote/ref" ||
+        path == "/quote/text" || path == "/quote/ref" || SUPPORT_PATH.match?(path) ||
           (!include_stem && path == "/stem_it") ||
           (!include_options && path.start_with?("/options/"))
       end + svg_strings(display)
@@ -233,6 +237,47 @@ module Validation
       return unless needle
 
       f.add("E-SOLUTION-IN-DISPLAY", "#{label}/passage_it", "the key option appears word for word in the passage (#{needle.to_s[0, 30].inspect})", seed: seed)
+    end
+
+    # ---- the supports: answer format and steps (D-216) -----------------------------
+
+    # The student reads answer_format_it and steps_it with every instance (the item's own, and
+    # the instance's in its display). Neither may state the key or a declared error value: a
+    # format example that is the answer, or the answer of a typical error, gives the item away.
+    def support_leaks(display, answer, inst, label, seed, f)
+      texts = support_texts(@unit.body, "#{@unit.path}") + support_texts(display, "#{label}/display")
+      return if texts.empty?
+
+      needles = support_needles(display, answer, inst)
+      texts.each do |field, text|
+        needle = needles.find { |n| Answers.contains?(text, n) }
+        next unless needle
+
+        f.add("E-SUPPORT-LEAK", field, "the answer format or the steps state the key or a declared error value (#{needle.to_s[0, 30].inspect})", seed: seed)
+      end
+    end
+
+    def support_texts(hash, base)
+      out = []
+      out << [ "#{base}/answer_format_it", hash["answer_format_it"] ] if hash["answer_format_it"].is_a?(String)
+      Array(hash["steps_it"]).each_with_index { |t, i| out << [ "#{base}/steps_it/#{i}", t ] if t.is_a?(String) }
+      out
+    end
+
+    # The key and every error value of the instance, as the leak scan reads them.
+    def support_needles(display, answer, inst)
+      values = [ [ answer, true ] ] + Array(inst["errors"]).map { |e| [ e["value"], false ] }
+      values.flat_map do |value, key|
+        if @unit.component == "choice"
+          option = Array(display["options"]).find { |o| o["id"] == value.to_s }
+          option ? [ option["text"].to_s ] : []
+        else
+          accept = key ? @unit.accept + Array(inst["accept"]) : []
+          Answers.key_texts(@unit.component, value, accept: accept) + ordering_texts(display, value) + matching_texts(display, value)
+        end
+      end.uniq
+    rescue ArgumentError, TypeError
+      []
     end
 
     def prefixed(strings, tag) = strings.map { |path, text| [ "#{tag}:#{path}", text ] }

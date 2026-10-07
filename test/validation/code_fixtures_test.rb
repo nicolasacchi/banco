@@ -275,6 +275,11 @@ class CodeFixturesTest < ActiveSupport::TestCase
       leaky["error_catalogue"][0]["message_it"] = "Quindi la risposta e sette unita di massa."
       static_codes(leaky)
     },
+    "E-SUPPORT-LEAK" => lambda {
+      static_codes(item("instances" => [ F.number_instance(25, 150), F.number_instance(4, 13) ], "steps_it" => [ "Leggi.", "Il risultato e 125." ],
+                        "tests" => { "must_accept" => [], "must_reject" => [], "blank" => "invalid" }))
+    },
+    "W-STEPS-METHOD" => -> { static_codes(item("steps_it" => [ "Leggi la consegna.", "Scomponi i termini." ])) },
     "W-CALCULATOR" => lambda {
       business = item("subject" => "business", "skill" => "business.invoice")
       static_codes(business, context: F.context(subject: "business", extra_skills: { "business.invoice" => { "key" => "business.invoice" } }))

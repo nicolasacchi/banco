@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 16
+version: 17
 
 validation:
   # Skill graph (synchronous).
@@ -50,6 +50,8 @@ validation:
   # Leak.
   E-DISPLAY-KEY: { stage: ruby, severity: error, description: "The display carries a key, a verdict or a field that reveals the answer." }
   E-SOLUTION-IN-DISPLAY: { stage: ruby, severity: error, description: "The normalized expected answer (3+ characters) appears in a non-stem display string or SVG text, or the key option's text appears outside the options array." }
+  E-SUPPORT-LEAK: { stage: ruby, severity: error, description: "An answer_format_it or a steps_it text (of the item, a sub item or an instance display) states the key or a declared error value of an instance (D-216)." }
+  W-STEPS-METHOD: { stage: ruby, severity: warning, description: "A steps_it text names a method word of the item's subject (the rules file, supports.method_words): steps say what to do, not how (D-216)." }
   W-ANSWER-IN-STEM: { stage: ruby, severity: warning, description: "The expected answer appears in the stem." }
   W-TESTLET-LEAK: { stage: ruby, severity: warning, description: "A testlet sub-item's key appears in the passage (written keys) or in another sub-item's display." }
   W-MESSAGE-GIVES-KEY: { stage: ruby, severity: warning, description: "An error_catalogue message_it states the key (6+ plain characters) of one of the item's static instances." }

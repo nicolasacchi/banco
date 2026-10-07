@@ -60,6 +60,9 @@ module Validation
             next
           elsif value.is_a?(String) && key.to_s.end_with?("_it")
             lint(value, field: field, role: role_for(key.to_s), findings: findings)
+          elsif value.is_a?(Array) && key.to_s.end_with?("_it") && value.all?(String)
+            # steps_it: a list of short texts, each linted on its own (D-216).
+            value.each_with_index { |text, i| lint(text, field: "#{field}/#{i}", role: :text, findings: findings) }
           elsif key.to_s != "quote"
             lint_document(value, field, findings, skip: skip)
           end

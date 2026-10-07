@@ -72,6 +72,8 @@ module Review
       stem = prompt["stem_it"]
       extra[display.key?("stem_it") ? "prompt_stem_it" : "stem_it"] = stem if stem.present?
       %w[table quote figure].each { |k| extra[k] = prompt[k] if prompt[k].present? && !display.key?(k) }
+      # The supports the student reads with the item (D-216): the item's own, unless the instance has its own.
+      %w[answer_format_it steps_it].each { |k| extra[k] = source[k] if source[k].present? && !display.key?(k) }
       extra.merge(display)
     end
 

@@ -53,6 +53,19 @@
     "prompt": {
       "$ref": "#/$defs/prompt"
     },
+    "answer_format_it": {
+      "description": "The required form of the answer, with a format example (D-216). An example that is the key or a declared error value of an instance is E-SUPPORT-LEAK.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "steps_it": {
+      "description": "What to do, not how: 2 to 6 short steps shown as a numbered list above the answer box (D-216). No values.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 200 },
+      "minItems": 2,
+      "maxItems": 6
+    },
     "expected_seconds": {
       "type": "integer",
       "minimum": 5,
@@ -326,6 +339,16 @@
               "required": [
                 "rubric"
               ]
+            },
+            {
+              "required": [
+                "answer_format_it"
+              ]
+            },
+            {
+              "required": [
+                "steps_it"
+              ]
             }
           ]
         }
@@ -482,6 +505,19 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 800
+        },
+        "answer_format_it": {
+          "description": "The required form of the answer, with a format example (D-216). An example that is the key or a declared error value of an instance is E-SUPPORT-LEAK.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "steps_it": {
+          "description": "What to do, not how: 2 to 6 short steps shown as a numbered list above the answer box (D-216). No values.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "minItems": 2,
+          "maxItems": 6
         },
         "table": {
           "$ref": "#/$defs/table"
@@ -853,6 +889,19 @@
         },
         "prompt": {
           "$ref": "#/$defs/prompt"
+        },
+        "answer_format_it": {
+          "description": "The required form of the answer, with a format example (D-216). An example that is the key or a declared error value of an instance is E-SUPPORT-LEAK.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "steps_it": {
+          "description": "What to do, not how: 2 to 6 short steps shown as a numbered list above the answer box (D-216). No values.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "minItems": 2,
+          "maxItems": 6
         },
         "expected_seconds": {
           "type": "integer",
