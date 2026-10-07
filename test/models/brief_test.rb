@@ -84,6 +84,13 @@ class BriefTest < ActiveSupport::TestCase
     end
   end
 
+  test "the review brief states the evidence minimum and the stock phrase check" do
+    body = Brief.find("review").body.squish
+    assert_match(/at least #{Review::Checklist::MIN_WORDS} words/, body)
+    assert_match(/stock phrase/, body)
+    assert_match(/E-REVIEW-EMPTY/, body)
+  end
+
   test "the review brief allocates a unique scratch directory" do
     body = Brief.find("review").body
     assert_includes body, 'mktemp -d "$TMPDIR/rv-SUBJECT-XXXXXX"'

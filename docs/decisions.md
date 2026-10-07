@@ -196,6 +196,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-189 | 2026-10-07 | `solo` as "single" after a noun (un giorno solo) is not an absolute word; the author already reads review findings (D-181) | implemented |
 | D-190 | 2026-10-07 | solver prompt.stem_it already shipped (D-169, D-184); transient connection reset on the API was a restart; no change | implemented |
 | D-191 | 2026-10-07 | solve brief root fields (italian, solve1:1): already documented with a minimal example (D-166, D-176); no change | implemented |
+| D-192 | 2026-10-07 | review brief states the evidence minimum (4 words, no stock phrase); seconda:224 on italian.complements is a content mistake, not a defect | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2052,5 +2053,15 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Design said:** the solve brief tells the solver the shape of `answers.json`.
 - **We do:** nothing new. `briefs/solve.md` (section Format) lists the four required root keys `schema`, `schema_version`, `revision`, `answers` and a minimal JSON example; the schema is `config/banco/schemas/solve.json`. The first-submit E-SCHEMA came from a build older than D-166 (or from a brief read before it).
 - **Why:** content agent (italian, step solve1:1). Not a defect now; run `banco brief show solve` on the current deployment.
+- **Cost:** none.
+- **Status:** implemented
+
+## D-192 · 2026-10-07 · review brief states the E-REVIEW-EMPTY evidence rule; the line 224 ref is a content mistake
+
+- **Design ref:** A-05, D-145
+- **Design said:** a bare "all verified" is refused (brief rule 2).
+- **We do:** `briefs/review.md` rule 2 now says what the server already enforced (`Review::Checklist`): evidence of at least 4 words (`MIN_WORDS`), not a stock phrase, distinct per point; refusal `E-REVIEW-EMPTY` with `detail.points`. Test: `test/models/brief_test.rb`. The brief hash changes, so reviewers must re-read it.
+- **Content mistake, no code change:** `italian.complements` citing `seconda-2025-26:224` (a Spanish line) is a wrong mapping written by the graph author; the server stores whatever lines the graph cites and cannot judge the language of a programme line. The fix is a new graph revision without that ref. The typo on line 420 ("Rifleterre") is a transcription doubt for the teacher, raised as a note, not decided by an agent.
+- **Why:** content agent (italian, step review1:0).
 - **Cost:** none.
 - **Status:** implemented

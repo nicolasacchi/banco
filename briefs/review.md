@@ -54,7 +54,11 @@ the item (otherwise the server refuses it with `E-QUOTE-NOT-FOUND`); say where (
 
 1. Try to break the item: solve it yourself by hand, defend each distractor,
    search a counterexample for every absolute word.
-2. A bare "all verified" is refused. Every `pass` says what you did.
+2. A bare "all verified" is refused. Every `pass` says what you did. The evidence of each point
+   has at least 4 words and is not a stock phrase (`all verified`, `no problem`, `ok`, `checked`,
+   `nessun problema`, `n/a`): "Nessun gaming." is refused, "No gaming wording in stem or options of
+   instances 1 and 2." is accepted. Each point needs its own evidence (the same text on two points is
+   refused). The refusal is `E-REVIEW-EMPTY` and `detail.points` lists the points.
 3. Check the instances, not only the template: look for collisions between an
    error value and the key, and for display strings that reveal the answer.
 4. Never invent a line or page number; if a cited line does not support the
