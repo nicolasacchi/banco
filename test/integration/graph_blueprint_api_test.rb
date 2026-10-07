@@ -291,6 +291,12 @@ class GraphBlueprintApiTest < ActionDispatch::IntegrationTest
     skill(doc, "math.linear-equation-integer")["scope_reason_it"] = "La riga 13 e di Storia, altra materia."
     submit_graph(doc, dry: true)
     assert_empty json["warnings"].select { |w| w["code"] == "W-REF-OTHER-SUBJECT" }, "a reason naming the line clears it"
+    skill(doc, "math.linear-equation-integer")["scope_reason_it"] = "Le righe 12-14 sono di Storia."
+    submit_graph(doc, dry: true)
+    assert_empty json["warnings"].select { |w| w["code"] == "W-REF-OTHER-SUBJECT" }, "a range N-M names every line from N to M"
+    skill(doc, "math.linear-equation-integer")["scope_reason_it"] = "Le righe 14\u201316 sono di Storia."
+    submit_graph(doc, dry: true)
+    assert_equal 1, json["warnings"].count { |w| w["code"] == "W-REF-OTHER-SUBJECT" }, "a range that stops short of the line does not clear it"
     skill(doc, "math.linear-equation-integer").delete("scope_reason_it")
     set.(doc, "math.linear-equation-integer", 11, "testo")
     submit_graph(doc, dry: true)

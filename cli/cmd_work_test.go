@@ -104,6 +104,23 @@ func TestWorkOpenWritesTheFolderAndRemembersTheBase(t *testing.T) {
 	}
 }
 
+func TestWorkOpenPrintsReviewFindingsAndTeacherComments(t *testing.T) {
+	srv, _ := sequenceServer(t, [2]string{"200", `{"item":"eq-1","revision_id":7,"seq":2,"status":"passed","files":{"item.json":"{}"},"review_findings":[{"id":445,"review_id":268,"severity":"major","quote":"q","problem_it":"p","fix_it":"f"}],"teacher_comments":[{"comment_it":"c"}]}`})
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "open", "eq-1", "--dir", filepath.Join(t.TempDir(), "w"))
+	if r.exit != ExitOK {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	var out map[string]any
+	if err := json.Unmarshal([]byte(r.stdout), &out); err != nil {
+		t.Fatal(err)
+	}
+	rf, _ := out["review_findings"].([]any)
+	tc, _ := out["teacher_comments"].([]any)
+	if len(rf) != 1 || len(tc) != 1 {
+		t.Errorf("review_findings and teacher_comments must be printed: %s", r.stdout)
+	}
+}
+
 func TestWorkOpenWarnsInsideAGitWorkTree(t *testing.T) {
 	srv, _ := sequenceServer(t, [2]string{"200", `{"revision_id":1,"files":{"item.json":"{}"}}`})
 	repo := t.TempDir()

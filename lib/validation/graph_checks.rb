@@ -210,11 +210,18 @@ module Validation
           next if section == own
 
           reason = skills[field[%r{\A/skills/(\d+)/}, 1].to_i]["scope_reason_it"].to_s
-          next if reason.match?(/(?<!\d)#{ref['line']}(?!\d)/) # the author already named the line
+          next if names_line?(reason, ref["line"].to_i) # the author already named the line
 
-          findings.add("W-REF-OTHER-SUBJECT", field, "line #{ref['line']} of #{ref['source']} is under \"#{section}\", not \"#{own}\" like most of the lines cited: say in scope_reason_it, naming line #{ref['line']}, that it belongs to another subject", line: ref["line"], section: section)
+          findings.add("W-REF-OTHER-SUBJECT", field, "line #{ref['line']} of #{ref['source']} is under \"#{section}\", not \"#{own}\" like most of the lines cited: say in scope_reason_it, naming line #{ref['line']} (or a range N-M that includes it), that it belongs to another subject", line: ref["line"], section: section)
         end
       end
+    end
+
+    # The reason names the line alone ("517") or inside a range "516-518" (hyphen, en or em dash).
+    def names_line?(reason, line)
+      return true if reason.match?(/(?<!\d)#{line}(?!\d)/)
+
+      reason.scan(/(?<!\d)(\d+)\s*[-\u2013\u2014]\s*(\d+)(?!\d)/).any? { |a, b| (a.to_i..b.to_i).cover?(line) }
     end
 
     # A star inside the cited fragment itself decides first (a line can hold several

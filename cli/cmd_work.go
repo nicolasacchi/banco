@@ -104,6 +104,8 @@ func runWorkOpen(e *env, args []string) error {
 		Instances  json.RawMessage   `json:"instances"`
 		Tests      json.RawMessage   `json:"tests"`
 		Validation json.RawMessage   `json:"validation"`
+		Findings   json.RawMessage   `json:"review_findings"`
+		Comments   json.RawMessage   `json:"teacher_comments"`
 	}
 	if err := json.Unmarshal(body, &answer); err != nil {
 		return newErr(ExitServer, "E-HTTP", "", "the server's answer is not JSON: "+err.Error(), "banco health")
@@ -143,6 +145,13 @@ func runWorkOpen(e *env, args []string) error {
 		"item": item, "role": *role, "dir": target, "revision_id": answer.RevisionID, "seq": answer.Seq,
 		"status": answer.Status, "files": names, "validation": answer.Validation,
 		"next": "edit the files, then banco work submit " + target + " --dry-run",
+	}
+	// What the reviewers, blind solvers and the teacher said about the revision (author view only).
+	if len(answer.Findings) > 0 {
+		out["review_findings"] = answer.Findings
+	}
+	if len(answer.Comments) > 0 {
+		out["teacher_comments"] = answer.Comments
 	}
 	if root := gitRootAbove(target); root != "" {
 		out["warning"] = "the folder " + target + " is inside the git work tree " + root + ": nothing of the work may be committed there; use --dir OUTSIDE/ITEM (for example under $TMPDIR) and delete this folder"

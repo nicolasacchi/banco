@@ -206,6 +206,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-200 | 2026-10-07 | blind solve on a short_answer and solve brief root fields (history, solve1:3): already shipped (D-168, D-183, D-191); no change | implemented |
 | D-201 | 2026-10-07 | solve brief root fields and testlet answer shape (english, solve2:0): sixth repeat of D-191; already documented; no change | implemented |
 | D-202 | 2026-10-07 | solve brief root fields (spanish, solve2:0): seventh repeat of D-191; already documented; no change | implemented |
+| D-203 | 2026-10-07 | `banco work open` prints review_findings and teacher_comments (the CLI dropped them); W-REF-OTHER-SUBJECT reads a range N-M in scope_reason_it | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2164,3 +2165,10 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Why:** content agent (spanish, step solve2:0) submitted before reading the current brief. Content mistake, not a defect or missing feature.
 - **Cost:** none.
 - **Status:** implemented
+
+## D-203 · 2026-10-07 · author could not read review findings through the CLI; line ranges in scope_reason_it (chemistry, pfix2)
+
+- **Design ref:** D-181 (review findings for the author), D-063..D-068 (W-REF-OTHER-SUBJECT, teacher comments)
+- **Design said:** `work status` and `work open` carry `review_findings`; a reason naming the line clears W-REF-OTHER-SUBJECT.
+- **We do:** (1) `banco work status REV` already printed `review_findings` (the server answer is passed through; the agent ran it before D-181 reached production). `banco work open ITEM` did not: the CLI rebuilt its answer from a fixed list of keys and dropped `review_findings` and `teacher_comments`. It now prints both (new keys only, `banco.*/1` unchanged). (2) `scope_reason_it` naming a range `N-M` (hyphen, en or em dash) now names every line from N to M; the warning text says so. A range that stops short of the line still warns. Not changed: the reviewers' findings stay out of `review open` (a reviewer must not read earlier findings).
+- **Why:** The author fixes what the reviewer wrote, and an honest range is a label.
