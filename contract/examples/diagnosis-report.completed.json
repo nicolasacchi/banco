@@ -89,7 +89,13 @@
               "lines": {
                 "prima": [],
                 "seconda": []
-              }
+              },
+              "formula_sheet": {
+                "attempts": 2,
+                "available": 0,
+                "opened": 0
+              },
+              "marks": []
             },
             {
               "skill": "math.choice",
@@ -108,7 +114,13 @@
               "lines": {
                 "prima": [],
                 "seconda": []
-              }
+              },
+              "formula_sheet": {
+                "attempts": 1,
+                "available": 0,
+                "opened": 0
+              },
+              "marks": []
             },
             {
               "skill": "math.short-answer",
@@ -125,7 +137,13 @@
               "lines": {
                 "prima": [],
                 "seconda": []
-              }
+              },
+              "formula_sheet": {
+                "attempts": 1,
+                "available": 0,
+                "opened": 0
+              },
+              "marks": []
             }
           ],
           "errors_observed": [
@@ -160,7 +178,14 @@
               "rapid_share"
             ]
           },
-          "checks": []
+          "checks": [],
+          "formula_sheet": {
+            "attempts": 4,
+            "available": 0,
+            "opened": 0,
+            "enabled": false,
+            "marks": []
+          }
         }
       ]
     }

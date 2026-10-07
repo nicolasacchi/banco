@@ -21,6 +21,10 @@ module Diagnosis
     EXAMPLES = 3
     SITTING_CONDITION = "unsupervised".freeze
     GROUPS = %w[demonstrated to_recover to_learn not_assessed pending].freeze
+    # The formula sheet is a declared support the exam does not have (D-216): the report keeps the
+    # difference visible. These two marks are the words the teacher reads.
+    MARK_AVAILABLE = "con formulario disponibile".freeze
+    MARK_OPENED = "con formulario consultato".freeze
 
     def self.call(subject: nil, with_answers: false)
       subjects = subject ? Array(subject) : Subject.order(:position).to_a
@@ -42,11 +46,11 @@ module Diagnosis
     def to_h
       base = { subject: @subject.key, name_it: @subject.name_it, status: status, graph_form: graph_form, entry_test: entry_test }
       return base.merge(run: nil, sittings: [], counted_minutes: 0, groups: zero_groups, skills: [], errors_observed: [], unclassified: [],
-                        pending: [], signals: signals_for(nil, [], 0), checks: []) unless @run
+                        pending: [], signals: signals_for(nil, [], 0), checks: [], formula_sheet: sheet_summary) unless @run
 
       base.merge(run: run_info, sittings: sittings, counted_minutes: (result[:counted_seconds] / 60.0).round, groups: groups,
                  skills: skills, errors_observed: errors_observed, unclassified: skills.select { |s| s[:unclassified] }.map { |s| s[:skill] },
-                 pending: pending, signals: signals, checks: result[:checks])
+                 pending: pending, signals: signals, checks: result[:checks], formula_sheet: sheet_summary)
     end
 
     private
@@ -121,7 +125,8 @@ module Diagnosis
       @skills ||= own_rows.map do |row|
         { skill: row[:skill], label_it: labels[row[:skill]] || row[:skill], state: row[:state], reason: row[:reason], group: group_of(row),
           scope: row[:scope], kind: row[:kind], guest: row[:guest], evidence: row[:evidence], served: row[:served],
-          error_codes: row[:error_codes], unclassified: row[:unclassified], lines: lines_of(row[:skill]) }.compact
+          error_codes: row[:error_codes], unclassified: row[:unclassified], lines: lines_of(row[:skill]),
+          formula_sheet: sheet_counts(row[:skill]), marks: sheet_marks(sheet_counts(row[:skill])) }.compact
       end
     end
 
@@ -168,6 +173,39 @@ module Diagnosis
     def line_texts(refs)
       SyllabusLine.joins(:syllabus_source).where(syllabus_sources: { key: refs.map { |r| r[:source] }.uniq }, number: refs.map { |r| r[:line] }.uniq)
                   .pluck("syllabus_sources.key", :number, :text).to_h { |source, number, text| [ [ source, number ], text.to_s.strip.first(240) ] }
+    end
+
+    # ---- the formula sheet (D-216)
+
+    # {skill => {attempts:, available:, opened:}} over the attempts of the run: an attempt counts as
+    # available when its item was served with the sheet, as opened when the student opened it on that item.
+    def sheet_by_skill
+      @sheet_by_skill ||= begin
+        by = Hash.new { |h, k| h[k] = { attempts: 0, available: 0, opened: 0 } }
+        if @run && @student
+          opened = FormulaSheet.opened_serves(@student)
+          served = ItemServed.where(diagnosis_event_id: attempts.map(&:served_event_id)).index_by(&:diagnosis_event_id)
+          attempts.each do |attempt|
+            row = served[attempt.served_event_id] or next
+            counts = by[row.skill_key]
+            counts[:attempts] += 1
+            next unless row.formula_sheet_available
+
+            counts[:available] += 1
+            counts[:opened] += 1 if opened.include?(attempt.served_event_id)
+          end
+        end
+        by
+      end
+    end
+
+    def sheet_counts(skill) = sheet_by_skill.fetch(skill) { { attempts: 0, available: 0, opened: 0 } }
+
+    def sheet_marks(counts) = [ (MARK_AVAILABLE if counts[:available].positive?), (MARK_OPENED if counts[:opened].positive?) ].compact
+
+    def sheet_summary
+      totals = sheet_by_skill.values.each_with_object({ attempts: 0, available: 0, opened: 0 }) { |c, sum| c.each { |k, v| sum[k] += v } }
+      totals.merge(enabled: FormulaSheet.enabled?(@subject), marks: sheet_marks(totals))
     end
 
     # ---- attempts

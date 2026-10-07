@@ -182,6 +182,12 @@
       "minLength": 1,
       "maxLength": 1200
     },
+    "formula_sheet_it": {
+      "description": "A formula sheet the student may open during the test, if the teacher switches it on (D-216). Formulas and definitions only, in the restricted markup with $latex$ (numbered lists allowed); no worked example of a method the test measures. At most 2000 characters.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
     "kind_overrides": {
       "type": "array",
       "items": {

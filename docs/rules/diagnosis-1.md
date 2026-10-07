@@ -289,6 +289,16 @@ one line about it. Changeable at approval.
   blueprint (firm rule 2). A skill declared not assessed is not asked and ends
   `not_assessed(no_unseen_items)`; the teacher reads the reason.
 
+## 14. Declared supports and the report (D-216)
+
+The engine's evidence (sections 2 to 9) does not depend on any support. Supports that remove noise
+(the instructions, "Come si risponde", `answer_format_it`, `steps_it`) change nothing and are not
+reported. A support that changes what is measured, the formula sheet, is declared and visible:
+
+- the blueprint may carry `formula_sheet_it`; the teacher switches it on per subject (`set_formula_sheet`, default off);
+- each served item records whether the sheet was available (`item_served.formula_sheet_available`) and each opening is an app event;
+- the report marks, per skill, `formula_sheet {attempts, available, opened}` and `marks` ("con formulario disponibile" when an answered attempt of the skill had the sheet, "con formulario consultato" when it was opened on one), and a subject summary. The exam has no sheet: a skill marked this way is read with that difference.
+
 ## 12. Changing these rules
 
 A rule changes only with a new `rules_version` and an entry in

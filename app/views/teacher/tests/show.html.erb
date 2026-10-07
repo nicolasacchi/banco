@@ -53,6 +53,26 @@
       </dl>
     </section>
 
+    <% sheet = review.formula_sheet %>
+    <section id="test-formula-sheet" data-enabled="<%= sheet[:enabled] %>" data-controller="markup">
+      <h2><%= t("teacher.test.sheet.title") %></h2>
+      <% if sheet[:text] || sheet[:enabled] %>
+        <p class="hint"><%= t("teacher.test.sheet.intro") %></p>
+        <p><strong><%= sheet[:enabled] ? t("teacher.test.sheet.state_on") : t("teacher.test.sheet.state_off") %></strong></p>
+        <%= decision_form("/teacher/subjects/#{@subject.key}/formula-sheet", id: "formula-sheet-form") do %>
+          <%= hidden_field_tag :enabled, !sheet[:enabled], id: "formula-sheet-enabled" %>
+          <button type="submit" class="button secondary" <%= "disabled" if decision_blocker || (!sheet[:enabled] && !sheet[:offerable]) %>>
+            <%= sheet[:enabled] ? t("teacher.test.sheet.turn_off") : t("teacher.test.sheet.turn_on") %></button>
+        <% end %>
+        <% if sheet[:text] %>
+          <p><strong><%= t("teacher.test.sheet.text") %></strong></p>
+          <div class="sheet" id="formula-sheet-text" data-markup="inline"><%= sheet[:text] %></div>
+        <% end %>
+      <% else %>
+        <p><%= t("teacher.test.sheet.none") %></p>
+      <% end %>
+    </section>
+
     <h2><%= t("teacher.test.skills") %></h2>
     <ul class="subjects skill-list">
       <% review.skill_rows.each do |row| %>

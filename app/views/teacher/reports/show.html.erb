@@ -47,6 +47,11 @@
 
     <section id="report-skills">
       <h2><%= t("teacher.report.skills") %></h2>
+      <% fs = row[:formula_sheet] %>
+      <p id="report-formula-sheet" data-available="<%= fs[:available] %>" data-opened="<%= fs[:opened] %>">
+        <% if fs[:available].positive? %><strong><%= t("teacher.report.sheet.summary", available: fs[:available], total: fs[:attempts], opened: fs[:opened]) %></strong>
+          <span class="hint"><%= t("teacher.report.sheet.hint") %></span>
+        <% else %><%= t("teacher.report.sheet.none") %><% end %></p>
       <% %w[demonstrated to_recover to_learn pending not_assessed].each do |group| %>
         <% list = row[:skills].select { |s| s[:group] == group } %>
         <h3 data-group="<%= group %>"><%= t("teacher.report.group.#{group}") %> (<%= list.size %>)</h3>
@@ -56,6 +61,11 @@
               <li data-skill="<%= s[:skill] %>"><strong><%= s[:label_it] %></strong>
                 <% if s[:reason] %> · <%= t("teacher.report.reason.#{s[:reason]}", default: s[:reason]) %><% end %>
                 <% if s[:scope] %> · <%= scope_text(s[:scope]) %><% end %>
+                <% sh = s[:formula_sheet] %>
+                <% if s[:marks].present? %>
+                  <br><strong data-marks="<%= s[:marks].size %>"><%= s[:marks].join(" · ") %></strong>
+                  <span class="hint"><%= t("teacher.report.sheet.counts", available: sh[:available], opened: sh[:opened], total: sh[:attempts]) %></span>
+                <% end %>
                 <% lines = s[:lines][:prima] + s[:lines][:seconda] %>
                 <% if lines.any? %><br><span class="hint"><%= lines.map { |l| "#{l[:source]} #{l[:line]}" }.join(", ") %></span><% end %>
               </li>

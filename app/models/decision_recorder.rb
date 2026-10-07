@@ -20,7 +20,7 @@
 class DecisionRecorder
   KINDS = %w[approve_skill_graph approve_blueprint confirm_test_reviewed dispose_finding confirm_grade reject_grade resolve_attempt
              void_diagnosis_run void_revision_attempts extend_diagnosis_run close_diagnosis_run release_diagnosis
-             record_consent kind_override send_back_item].freeze
+             record_consent kind_override send_back_item set_formula_sheet].freeze
   CSRF_KEY = "banco.csrf_valid".freeze
   DEVICE_COOKIE = "banco_device".freeze
   RESOLVE_VERDICTS = (Grading::VERDICTS - %w[invalid short_answer]).freeze
@@ -256,6 +256,22 @@ class DecisionRecorder
     raise Invalid, "kind is one of #{OVERRIDE_KINDS.join(', ')}" unless OVERRIDE_KINDS.include?(kind)
 
     [ subject, nil, { skill: skill, kind: kind, reason_it: reason! } ]
+  end
+
+  # The formula sheet of a subject's entry test, on or off (D-216). Default off. It can be switched
+  # on only when the approved entry test (else the latest draft) has a sheet. The latest decision counts;
+  # the report marks every skill outcome that used attempts with the sheet available.
+  def set_formula_sheet
+    subject = Subject.find_by(key: @params[:subject].to_s) or raise Missing, "no subject #{@params[:subject].to_s.first(30).inspect}"
+    enabled = case @params[:enabled].to_s
+    when "true", "1" then true
+    when "false", "0" then false
+    else raise Invalid, "enabled is true or false"
+    end
+    blueprint = Diagnosis::FormulaSheet.target_blueprint(subject)
+    raise Invalid, "the entry test of #{subject.key} has no formula sheet" if enabled && Diagnosis::FormulaSheet.text(blueprint).nil?
+
+    [ subject, nil, { subject: subject.key, enabled: enabled, blueprint_revision_id: blueprint&.id } ]
   end
 
   # ---- helpers

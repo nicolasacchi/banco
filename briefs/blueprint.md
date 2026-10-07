@@ -46,6 +46,13 @@ whole output.
 - `not_measured_it`: what this test does not measure (for example oral
   exposition, listening and speaking, extended writing). Required.
 - `kind_overrides[]`: `{skill, kind, reason_it}` to change `recover` or `learn`.
+- `formula_sheet_it` (optional, at most 2000 characters): a formula sheet the student may open
+  during the test. It is a declared support. The teacher switches it on or off for the subject
+  (default off) and the report marks every skill result that used answers with the sheet available
+  or opened, because the exam has no formula sheet. Write only what a student may look up: formulas
+  and definitions in the restricted markup (`$latex$`, paragraphs, a numbered list; no italics, no
+  capitals, no emoji; the readability rules apply). No worked example of a method the test measures, no
+  value taken from a pinned item, no hint about what to choose. Leave it out when the subject needs none.
 
 ## Rules (version 1)
 
@@ -81,6 +88,9 @@ whole output.
 8. Scope: do not pin items with content of in-progress or next-year lines in skills
    the student has studied.
 9. Uncertain programme facts are reported to the teacher, not decided here.
+10. A formula sheet changes what a skill measures when the skill is recalling a formula. If you write
+    a sheet, say in `not_measured_it` what it makes the test unable to tell, and do not claim that the
+    test shows recall of what the sheet supplies.
 
 ## Public repository
 

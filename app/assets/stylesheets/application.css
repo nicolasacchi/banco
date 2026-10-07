@@ -120,6 +120,20 @@ form.inline { display: inline; }
 .field { display: flex; align-items: flex-end; gap: 0.5rem; }
 .unit { padding-bottom: 0.5rem; }
 
+/* An author rule such as .button { display: inline-block } would otherwise show a hidden element. */
+[hidden] { display: none !important; }
+
+/* Supports: steps, answer format, help, formula sheet (D-216) ---------------------- */
+.steps-box { margin: 0.5rem 0 1rem; }
+.steps-title { margin-bottom: 0.25rem; }
+ol.do-steps { margin: 0; padding-left: 1.5rem; color: var(--muted); }
+ol.do-steps li { margin-bottom: 0.25rem; }
+.answer-format { color: var(--muted); margin: 0.5rem 0 0; }
+details.help { border-top: 1px solid var(--line); padding-top: 0.5rem; margin-top: 1rem; }
+.help-heading { margin-top: 0.75rem; }
+.sheet { background: var(--surface); border: 2px solid var(--line); padding: 0.5rem 1rem; margin-top: 1rem; }
+.sheet h2 { margin-top: 0.5rem; }
+
 /* The subject list ---------------------------------------------------------- */
 ul.subjects { list-style: none; padding: 0; }
 li.subject {

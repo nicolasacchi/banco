@@ -16,6 +16,7 @@ Rails.application.routes.draw do
       post "runs/:run_id/events" => "sittings#events", as: :run_events
       get "runs/:run_id/results" => "sittings#results", as: :run_results
       post "runs/:run_id/flags" => "sittings#flag", as: :run_flags
+      post "runs/:run_id/support" => "sittings#support", as: :run_support
       post "answers" => "answers#create", as: :answers
     end
 
@@ -45,6 +46,7 @@ Rails.application.routes.draw do
       post "runs/:run_id/close", action: :close_run, constraints: { run_id: id }
       post "item-revisions/:item_revision_id/send-back", action: :send_back_item, constraints: { item_revision_id: id }
       post "item-revisions/:item_revision_id/void-attempts", action: :void_revision_attempts, constraints: { item_revision_id: id }
+      post "subjects/:subject/formula-sheet", action: :set_formula_sheet, constraints: { subject: /[a-z_]+/ }
       post "subjects/:subject/kind-override", action: :kind_override, constraints: { subject: /[a-z_]+/ }
       post "release", action: :release
       post "consent", action: :consent

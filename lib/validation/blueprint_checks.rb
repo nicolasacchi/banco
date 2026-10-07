@@ -26,6 +26,7 @@ module Validation
       entries(blueprint, graph, subject, context, items, findings)
       descent(blueprint, graph, context, items, findings)
       overrides(blueprint, graph, findings)
+      Readability.lint_document({ "formula_sheet_it" => blueprint["formula_sheet_it"] }, "", findings) if blueprint["formula_sheet_it"]
       findings
     end
 

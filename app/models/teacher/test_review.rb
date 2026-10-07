@@ -51,6 +51,14 @@ module Teacher
         budget: body["budget"], depends_on_subjects: Array(body["depends_on_subjects"]), kind_overrides: Array(body["kind_overrides"]) }
     end
 
+    # The formula sheet as a declared support (D-216): its text in the latest draft, whether the
+    # approved (else latest) test can offer it, and whether the teacher switched it on for the subject.
+    def formula_sheet
+      target = Diagnosis::FormulaSheet.target_blueprint(subject)
+      { text: Diagnosis::FormulaSheet.text(blueprint), offerable: !Diagnosis::FormulaSheet.text(target).nil?,
+        enabled: Diagnosis::FormulaSheet.enabled?(subject) }
+    end
+
     def skill_row(skill) = skill_rows.find { |r| r.skill == skill }
 
     # The cards of one skill: every pinned item revision, side by side.

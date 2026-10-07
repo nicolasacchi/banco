@@ -26,7 +26,7 @@ class DiagnosisReportTest < ActionDispatch::IntegrationTest
     assert_equal "unsupervised", report["sitting_condition"]
     assert_equal "diagnosis/1", report["rules_version"]
     row = report["subjects"].sole
-    assert_equal %w[subject name_it status graph_form entry_test run sittings counted_minutes groups skills errors_observed unclassified pending signals checks].sort, row.keys.sort
+    assert_equal %w[subject name_it status graph_form entry_test run sittings counted_minutes groups skills errors_observed unclassified pending signals checks formula_sheet].sort, row.keys.sort
     assert_equal "completed", row["status"]
     assert_equal "fixed_form", row["graph_form"]
     assert_equal({ "blueprint_revision_id" => @rows[:blueprint].id, "seq" => 1, "approved" => true, "approved_revision_id" => @rows[:blueprint].id, "pending_revision" => false },

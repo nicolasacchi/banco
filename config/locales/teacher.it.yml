@@ -22,6 +22,7 @@ it:
       extend_diagnosis_run: "Seduta aggiunta."
       close_diagnosis_run: "Materia chiusa."
       void_revision_attempts: "Tentativi annullati."
+      set_formula_sheet: "Formulario aggiornato."
     stage:
       drafting: "L'agente sta scrivendo"
       validating: "Controllo meccanico in corso"
@@ -172,6 +173,15 @@ it:
         depends: "Dipende da:"
         overrides: "Tipo cambiato:"
         none: "nessuna"
+      sheet:
+        title: "Formulario"
+        intro: "Un aiuto dichiarato: S può aprirlo durante la prova. All'esame il formulario non c'è. Per questo il rapporto segna le abilità provate con il formulario."
+        state_on: "Il formulario è acceso: S lo vede in questa materia."
+        state_off: "Il formulario è spento: S non lo vede."
+        none: "Questo test non ha un formulario."
+        turn_on: "Accendi il formulario"
+        turn_off: "Spegni il formulario"
+        text: "Testo del formulario:"
       role:
         entry: "Abilità di partenza"
         descent: "Discesa"
@@ -373,6 +383,14 @@ it:
       served: "Item"
       closed_by: "Chiusa per"
       skills: "Abilità"
+      sheet:
+        title: "Formulario"
+        summary: "Con il formulario disponibile: %{available} risposte su %{total}. Con il formulario consultato: %{opened}."
+        none: "Il formulario non è stato disponibile in questa materia."
+        available: "con formulario disponibile"
+        opened: "con formulario consultato"
+        counts: "(%{available} risposte con il formulario disponibile, %{opened} con il formulario consultato, su %{total})"
+        hint: "All'esame il formulario non c'è: un'abilità segnata qui va letta con questa differenza."
       group:
         demonstrated: "Dimostrate"
         to_recover: "Da recuperare"

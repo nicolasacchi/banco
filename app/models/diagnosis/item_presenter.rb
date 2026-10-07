@@ -13,12 +13,13 @@ module Diagnosis
     ACCENT_SETS = { "spanish" => "es", "italian" => "it" }.freeze
     SHA256 = /\A[0-9a-f]{64}\z/
 
-    def initialize(served:, number:, subject:, not_studied: false, expression_input: "mathlive")
+    def initialize(served:, number:, subject:, not_studied: false, expression_input: "mathlive", formula_sheet_it: nil)
       @served = served
       @number = number
       @subject = subject
       @not_studied = not_studied
       @expression_input = expression_input
+      @formula_sheet_it = formula_sheet_it
     end
 
     def as_json(*)
@@ -31,8 +32,9 @@ module Diagnosis
         subject: @subject.name_it,
         number: @number,
         not_studied_button: @not_studied,
+        formula_sheet_it: @formula_sheet_it,
         item: item_payload(body, stored, shown_order)
-      }
+      }.compact
     end
 
     private
@@ -73,6 +75,8 @@ module Diagnosis
       out[:unit] = display["unit"] || body["unit"] if display["unit"] || body["unit"]
       out[:scientific] = true if component == "number" && Array(body["form"]).include?("scientific")
       out[:mixed] = true if component == "fraction" && Array(body["form"]).include?("mixed")
+      out[:answer_format_it] = display["answer_format_it"] || body["answer_format_it"]
+      out[:steps_it] = display["steps_it"] || body["steps_it"]
       out[:accents] = ACCENT_SETS[@subject.key] if component == "normalized_text"
       out[:input] = @expression_input if component == "expression"
       out.compact

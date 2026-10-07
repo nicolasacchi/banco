@@ -24,6 +24,7 @@ class DecisionRoutesTest < ActionDispatch::IntegrationTest
       "void_revision_attempts" => [ "/teacher/item-revisions/#{@short.id}/void-attempts", { reason_it: "Item sbagliato." } ],
       "record_consent" => [ "/teacher/consent", { acknowledged: true } ],
       "kind_override" => [ "/teacher/subjects/math/kind-override", { skill: "math.number", override_kind: "learn", reason_it: "Non l'ha studiato." } ],
+      "set_formula_sheet" => [ "/teacher/subjects/math/formula-sheet", { enabled: false } ],
       "release_diagnosis" => [ "/teacher/release", {} ],
       "void_diagnosis_run" => [ "/teacher/runs/#{@run.id}/void", { reason_it: "Interrotta." } ]
     }

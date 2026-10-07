@@ -15,14 +15,14 @@ module Teacher
     before_action :allow_decisions!
 
     PERMITTED = %i[revision_id finding_id disposition reason_it grade_proposal_id attempt_id verdict error_code run_id
-                   item_revision_id acknowledged statement_it subject skill override_kind reason_code comment_it back].freeze
+                   item_revision_id acknowledged statement_it subject skill override_kind reason_code comment_it enabled back].freeze
 
     {
       approve_skill_graph: "approve_skill_graph", approve_blueprint: "approve_blueprint", confirm_test_reviewed: "confirm_test_reviewed", dispose_finding: "dispose_finding",
       confirm_grade: "confirm_grade", reject_grade: "reject_grade", resolve_attempt: "resolve_attempt",
       void_run: "void_diagnosis_run", extend_run: "extend_diagnosis_run", close_run: "close_diagnosis_run",
       void_revision_attempts: "void_revision_attempts", release: "release_diagnosis", consent: "record_consent",
-      kind_override: "kind_override", send_back_item: "send_back_item"
+      kind_override: "kind_override", send_back_item: "send_back_item", set_formula_sheet: "set_formula_sheet"
     }.each do |action, kind|
       define_method(action) { decide(kind) }
     end

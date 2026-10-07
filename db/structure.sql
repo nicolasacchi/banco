@@ -129,7 +129,7 @@ FOREIGN KEY ("diagnosis_run_id")
 );
 CREATE INDEX "index_diagnosis_events_on_diagnosis_run_id" ON "diagnosis_events" ("diagnosis_run_id") /*application='Banco'*/;
 CREATE UNIQUE INDEX "index_diagnosis_events_on_diagnosis_run_id_and_seq" ON "diagnosis_events" ("diagnosis_run_id", "seq") /*application='Banco'*/;
-CREATE TABLE "item_served" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "diagnosis_event_id" integer NOT NULL, "item_instance_id" integer NOT NULL, "skill_key" varchar NOT NULL, "shown_order_json" text, "id_map_json" text, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_b8f6754796"
+CREATE TABLE "item_served" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "diagnosis_event_id" integer NOT NULL, "item_instance_id" integer NOT NULL, "skill_key" varchar NOT NULL, "shown_order_json" text, "id_map_json" text, "created_at" datetime(6) NOT NULL, "formula_sheet_available" boolean DEFAULT FALSE NOT NULL, CONSTRAINT "fk_rails_b8f6754796"
 FOREIGN KEY ("diagnosis_event_id")
   REFERENCES "diagnosis_events" ("id")
 , CONSTRAINT "fk_rails_af0a6a9d92"
@@ -267,6 +267,7 @@ BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER grade_proposals_no_delete BEFORE DELETE ON grade_proposals
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261007100001'),
 ('20261004300001'),
 ('20261004200001'),
 ('20261004100001'),

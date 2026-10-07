@@ -8,7 +8,7 @@ module StudentUiRows
 
   # Builds the subject, its graph, items and blueprint. Returns a Hash:
   # {subject:, student:, preview:, blueprint:, revisions: {component => revision}}.
-  def build_ui_subject(key: "math", name: "Matematica", components: COMPONENTS, depends_on: [], position: 1, sitting_minutes: 30, approve: true)
+  def build_ui_subject(key: "math", name: "Matematica", components: COMPONENTS, depends_on: [], position: 1, sitting_minutes: 30, approve: true, formula_sheet: nil)
     session = AgentSession.find_or_create_by!(label: "ui-author", role: "author")
     subject = Subject.find_or_create_by!(key: key) { |s| s.name_it = name; s.position = position }
     student = Student.find_or_create_by!(key: "student") { |s| s.kind = "student" }
@@ -24,13 +24,15 @@ module StudentUiRows
     # A testlet counts one outcome per passage, so the second outcome of its skill
     # has to come from another item (B-02): the pool has a second testlet.
     extra = components.include?("testlet") ? { "testlet" => build_ui_revision(subject, session, "testlet", skill_key(key, "testlet")) } : {}
+    declared = { schema: "banco.blueprint/1", schema_version: 1, subject: key, graph_revision_id: graph.id.to_s,
+                 entries: components.map { |c| { skill: skill_key(key, c), items: [ revisions[c].id, extra[c]&.id ].compact.map(&:to_s) } },
+                 budget: { sitting_minutes: sitting_minutes, sittings: 2 }, depends_on_subjects: depends_on, calculator: "yes",
+                 intro_note_it: "Nota di prova per chi comincia.", not_measured_it: "Non misura la scrittura a mano." }
+    declared[:formula_sheet_it] = formula_sheet if formula_sheet
     blueprint = BlueprintRevision.create!(
       subject: subject, skill_graph_revision: graph, author_session: session,
       seq: (BlueprintRevision.where(subject: subject).maximum(:seq) || 0) + 1,
-      body_json: { schema: "banco.blueprint/1", schema_version: 1, subject: key, graph_revision_id: graph.id.to_s,
-                   entries: components.map { |c| { skill: skill_key(key, c), items: [ revisions[c].id, extra[c]&.id ].compact.map(&:to_s) } },
-                   budget: { sitting_minutes: sitting_minutes, sittings: 2 }, depends_on_subjects: depends_on, calculator: "yes",
-                   intro_note_it: "Nota di prova per chi comincia.", not_measured_it: "Non misura la scrittura a mano." }.to_json
+      body_json: declared.to_json
     )
     approve_ui_subject!(subject, graph, blueprint) if approve
     { subject: subject, student: student, preview: preview, blueprint: blueprint, revisions: revisions }
@@ -60,6 +62,11 @@ module StudentUiRows
     body[:prompt] = { stem_it: ui_stem(component) } unless component == "testlet"
     body[:form] = [ "lowest_terms" ] if component == "fraction"
     body[:unit] = "cm" if component == "number"
+    # The supports of D-216: the number item has its own, the fraction items carry them per instance (below).
+    if component == "number"
+      body[:answer_format_it] = "Scrivi solo il numero, per esempio 12."
+      body[:steps_it] = [ "Leggi il conto.", "Scrivi il risultato." ]
+    end
     case component
     when "testlet"
       body[:passage_it] = "Un **brano** di prova. Dice che il numero $x$ vale 4."
@@ -111,7 +118,7 @@ module StudentUiRows
     when "number"
       { display: { stem_it: "$#{i + 2}+4$" }, answer: "#{i + 6}", errors: [ { code: "adds_wrong", value: "99" } ], solution: solution }
     when "fraction"
-      { display: { stem_it: "$\\frac{#{i + 1}}{7}+\\frac{0}{7}$" }, answer: { n: i + 1, d: 7 }, errors: [], solution: solution }
+      { display: { stem_it: "$\\frac{#{i + 1}}{7}+\\frac{0}{7}$", answer_format_it: "Scrivi la frazione nelle due caselle." }, answer: { n: i + 1, d: 7 }, errors: [], solution: solution }
     when "choice"
       options = (0..3).map { |n| { id: "o#{n + 1}", text: (n == i % 4 ? 10 + 2 * i : 11 + 2 * n + 4 * i).to_s } }
       { display: { options: options }, answer: "o#{(i % 4) + 1}",

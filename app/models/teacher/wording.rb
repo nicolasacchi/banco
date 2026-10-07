@@ -7,6 +7,8 @@ module Teacher
       [ /\Athe graph revision (\d+) of this test is not approved\z/, ->(_names, *) { "Prima approva il grafo su cui poggia questo test." } ],
       [ /\Aa reason is required\z/, ->(_names, *) { "Scrivi il motivo." } ],
       [ /\Aa comment is required\z/, ->(_names, *) { "Scrivi il commento." } ],
+      [ /\Aenabled is true or false\z/, ->(_names, *) { "Scegli se accendere o spegnere il formulario." } ],
+      [ /\Athe entry test of (\w+) has no formula sheet\z/, ->(_names, *) { "Questo test non ha un formulario da accendere." } ],
       [ /\Athe test pins no item\z/, ->(_names, *) { "Il test non contiene nessun item." } ],
       [ /\Athe test was not played to the end as the preview student, and not confirmed as seen in full\z/, ->(_names, *) { "Gioca il test fino in fondo con «Prova come S», oppure apri «Tutte le domande» e conferma di averle viste." } ],
       [ /\Avalidation has not passed\z/, ->(_names, *) { "Il controllo meccanico non è passato." } ],

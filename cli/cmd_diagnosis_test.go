@@ -144,6 +144,13 @@ func TestContractListsDiagnosisSimulate(t *testing.T) {
 // reportDoc is the typed shape of banco.diagnosis_report/1 (B-09). Decoding the
 // Rails example with DisallowUnknownFields makes a new or renamed member of the
 // report a failure here until the shape is updated on purpose: the golden test.
+// The formula sheet as a declared support (D-216): counts of answered attempts per skill and per subject.
+type formulaSheetCounts struct {
+	Attempts  int `json:"attempts"`
+	Available int `json:"available"`
+	Opened    int `json:"opened"`
+}
+
 type reportDoc struct {
 	Schema           string `json:"schema"`
 	RulesVersion     string `json:"rules_version"`
@@ -200,18 +207,20 @@ type reportDoc struct {
 		CountedMinutes int            `json:"counted_minutes"`
 		Groups         map[string]int `json:"groups"`
 		Skills         []struct {
-			Skill        string   `json:"skill"`
-			LabelIt      string   `json:"label_it"`
-			State        string   `json:"state"`
-			Reason       *string  `json:"reason"`
-			Group        string   `json:"group"`
-			Scope        string   `json:"scope"`
-			Kind         string   `json:"kind"`
-			Guest        *string  `json:"guest"`
-			Evidence     []string `json:"evidence"`
-			Served       int      `json:"served"`
-			ErrorCodes   []string `json:"error_codes"`
-			Unclassified bool     `json:"unclassified"`
+			Skill        string             `json:"skill"`
+			LabelIt      string             `json:"label_it"`
+			State        string             `json:"state"`
+			Reason       *string            `json:"reason"`
+			Group        string             `json:"group"`
+			Scope        string             `json:"scope"`
+			Kind         string             `json:"kind"`
+			Guest        *string            `json:"guest"`
+			Evidence     []string           `json:"evidence"`
+			Served       int                `json:"served"`
+			ErrorCodes   []string           `json:"error_codes"`
+			Unclassified bool               `json:"unclassified"`
+			FormulaSheet formulaSheetCounts `json:"formula_sheet"`
+			Marks        []string           `json:"marks"`
 			Lines        struct {
 				Prima   []json.RawMessage `json:"prima"`
 				Seconda []json.RawMessage `json:"seconda"`
@@ -237,7 +246,12 @@ type reportDoc struct {
 			PendingAnswers   int      `json:"pending_answers"`
 			Flags            []string `json:"flags"`
 		} `json:"signals"`
-		Checks []json.RawMessage `json:"checks"`
+		Checks       []json.RawMessage `json:"checks"`
+		FormulaSheet struct {
+			formulaSheetCounts
+			Enabled bool     `json:"enabled"`
+			Marks   []string `json:"marks"`
+		} `json:"formula_sheet"`
 	} `json:"subjects"`
 }
 

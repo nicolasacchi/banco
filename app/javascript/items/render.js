@@ -2,7 +2,8 @@
 // rendering on the app origin from the JSON the server served. renderItem() is the
 // one entry point; testlet.js calls renderPart() for its sub items.
 import { el } from "items/dom"
-import { renderPrompt } from "items/prompt"
+import { renderInline } from "items/markup"
+import { renderPrompt, renderSteps } from "items/prompt"
 import { render as number } from "items/number"
 import { render as fraction } from "items/fraction"
 import { render as expression } from "items/expression"
@@ -25,6 +26,11 @@ export async function renderPart(part, ctx) {
   if (!template) throw new Error(`no template for component ${part.component}`)
   const result = await template(part, ctx)
   result.promptElement = renderPrompt(part, ctx)
+  // What to do (steps) goes with the prompt, above the input; the form of the answer sits under the input (D-216).
+  if (Array.isArray(part.steps_it) && part.steps_it.length > 0) result.promptElement.appendChild(renderSteps(part.steps_it, ctx))
+  if (part.answer_format_it) {
+    result.element.appendChild(renderInline(part.answer_format_it, el("p", { class: "answer-format" })))
+  }
   return result
 }
 

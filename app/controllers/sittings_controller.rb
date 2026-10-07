@@ -7,7 +7,7 @@ class SittingsController < ApplicationController
 
   before_action :load_run, except: :create
   before_action :require_open_diagnosis!, except: :create
-  before_action :no_store, only: %i[step events flag]
+  before_action :no_store, only: %i[step events flag support]
 
   # Starts or resumes the student's run in a subject and goes to its page.
   def create
@@ -33,6 +33,7 @@ class SittingsController < ApplicationController
     declared = JSON.parse(@run.blueprint_revision.body_json)
     @calculator = (declared["calculator"] || Diagnosis::Rules::V1.calculator(@subject.key).to_s) == "yes"
     @intro_note = declared["intro_note_it"].to_s.strip.presence
+    @formula_sheet = Diagnosis::FormulaSheet.available_for_run?(@run)
     @second_part = @run.events.exists?(kind: "sitting_closed")
     @resuming = @conductor.resuming?
   end
@@ -61,6 +62,18 @@ class SittingsController < ApplicationController
 
     @conductor.record(kind) unless kind == "keepalive"
     render json: { ok: true }
+  end
+
+  # The interface events of the supports: "Come si risponde" opened, "Formulario" opened (D-216).
+  # App events: they change nothing of the run or of the evidence.
+  def support
+    result = Diagnosis::SupportEvents.record(run: @run, student: acting_student, kind: params[:kind].to_s,
+                                             served_event_id: params[:served_event_id], component: params[:component])
+    case result
+    when :ok then render json: { ok: true }
+    when :unavailable then head(:forbidden)
+    else head(:not_found)
+    end
   end
 
   def results

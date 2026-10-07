@@ -2,6 +2,7 @@
 <main class="page" data-controller="sitting"
       data-sitting-step-url-value="<%= base_path %>/runs/<%= @run.id %>/step"
       data-sitting-events-url-value="<%= base_path %>/runs/<%= @run.id %>/events"
+      data-sitting-support-url-value="<%= base_path %>/runs/<%= @run.id %>/support"
       data-sitting-answer-url-value="<%= base_path %>/answers"
       data-sitting-list-url-value="<%= preview? ? '/teacher/preview' : '/diagnosis' %>"
       data-sitting-subject-value="<%= @subject.name_it %>"
@@ -16,14 +17,22 @@
   <section data-sitting-target="intro">
     <h1><%= @second_part ? t("sitting.title_second", subject: @subject.name_it) : t("sitting.title", subject: @subject.name_it) %></h1>
     <% if @intro_note %><p id="intro-note"><%= @intro_note %></p><% end %>
-    <ul class="plain">
-      <li><%= t("sitting.intro.not_a_grade") %></li>
-      <li><%= t("sitting.intro.duration", minutes: @minutes) %></li>
-      <li><%= t("sitting.intro.no_help") %></li>
-      <li><%= t("sitting.intro.dont_know") %></li>
-      <li><%= @calculator ? t("sitting.intro.calculator_yes") : t("sitting.intro.calculator_no") %></li>
-      <li><%= t("sitting.intro.nothing_else") %></li>
-    </ul>
+    <section id="how-it-works" aria-labelledby="how-it-works-title">
+      <h2 id="how-it-works-title"><%= t("sitting.intro.title") %></h2>
+      <ul class="plain">
+        <li><%= t("sitting.intro.not_a_grade") %></li>
+        <li><%= t("sitting.intro.adaptive") %></li>
+        <li><%= t("sitting.intro.duration", minutes: @minutes) %></li>
+        <li><%= t("sitting.intro.pause_html") %></li>
+        <li><%= t("sitting.intro.dont_know_html") %></li>
+        <li><%= @calculator ? t("sitting.intro.calculator_yes") : t("sitting.intro.calculator_no") %></li>
+        <li><%= t("sitting.intro.send_html") %></li>
+        <li><%= t("sitting.intro.help_html") %></li>
+        <% if @formula_sheet %><li id="intro-formula-sheet"><%= t("sitting.intro.formula_sheet_html") %></li><% end %>
+        <li><%= t("sitting.intro.no_help") %></li>
+        <li><%= t("sitting.intro.nothing_else") %></li>
+      </ul>
+    </section>
     <p><button type="button" class="button" data-action="sitting#begin"><%= @resuming ? t("diagnosis.actions.resume") : t("diagnosis.actions.start") %></button></p>
   </section>
 
@@ -38,8 +47,18 @@
     </div>
     <div data-sitting-target="work">
       <div data-sitting-target="itemBox" class="item"></div>
+      <details class="help" id="answer-help" data-sitting-target="help" data-action="toggle->sitting#helpToggled">
+        <summary><%= t("sitting.help.title") %></summary>
+        <div data-sitting-target="helpBody"></div>
+      </details>
+      <section class="sheet" id="formula-sheet" data-sitting-target="sheet" aria-labelledby="formula-sheet-title" hidden>
+        <h2 id="formula-sheet-title"><%= t("sitting.sheet.title") %></h2>
+        <div data-sitting-target="sheetBody"></div>
+      </section>
       <div class="actions">
         <button type="button" class="button" data-sitting-target="sendButton" data-action="sitting#send"><%= t("sitting.send") %></button>
+        <button type="button" class="button secondary" id="sheet-button" data-sitting-target="sheetButton" data-action="sitting#toggleSheet"
+                aria-expanded="false" aria-controls="formula-sheet" hidden><%= t("sitting.sheet.button") %></button>
         <button type="button" class="button secondary apart" data-sitting-target="unknownButton" data-action="sitting#dontKnow"><%= t("sitting.dont_know") %></button>
       </div>
     </div>

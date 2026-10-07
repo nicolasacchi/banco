@@ -30,7 +30,8 @@ class DiagnosisItemPresenterTest < ActiveSupport::TestCase
     assert_equal "Calcola e scrivi il risultato.", item[:stem_it]
     assert_equal "cm", item[:unit]
     assert_match(/\A\$\d\+4\$\z/, item[:instance_stem_it])
-    assert_equal %i[component instance_stem_it kind stem_it unit], item.keys.sort
+    assert_equal %i[answer_format_it component instance_stem_it kind stem_it steps_it unit], item.keys.sort
+    assert_equal "Scrivi solo il numero, per esempio 12.", item[:answer_format_it]
   end
 
   test "an instance display unit wins over the item unit (D-103)" do

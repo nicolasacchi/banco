@@ -101,6 +101,10 @@ only), `HARNESS_PORT` 3200 (internal). Never `PORT`.
 - All the questions of a test (D-215): `/teacher/subjects/:key/test/all` (`Teacher::AllQuestions`, `all_questions_controller.js`) shows every
   pinned item with every instance read-only; the decision `confirm_test_reviewed` stands in `Approval::BlueprintGate` for playing the whole
   test; "Chiudi l'anteprima" (`SittingsController#close`, preview only) ends a preview run with `teacher_close`, which does not count as played.
+- Supports (D-216): `answer_format_it` and `steps_it` on items, sub items and `display` (`E-SUPPORT-LEAK`, `W-STEPS-METHOD`); the
+  start screen's "Come funziona" and the sitting's "Come si risponde" (`items/help_sections.js`, `Diagnosis::SupportEvents`, app events only);
+  the formula sheet: blueprint `formula_sheet_it`, decision `set_formula_sheet`, `Diagnosis::FormulaSheet`, `item_served.formula_sheet_available`,
+  the report's `formula_sheet` and `marks`. The engine never reads any of it.
 - `docs/decisions.md`: every deviation and operator answer (`## D-NNN`, index at the
   top). Change the design only by adding an entry.
 - `prep/`: private working material, git-ignored, never committed.

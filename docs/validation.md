@@ -49,7 +49,8 @@ Files left out of a submission are carried forward from the base revision.
 4. **Instance checks** on each instance: the key must not reach what the student reads
    (`E-DISPLAY-KEY`, `E-SOLUTION-IN-DISPLAY`, `W-ANSWER-IN-STEM`, `W-MESSAGE-GIVES-KEY`; in a testlet also `W-TESTLET-LEAK`), the size rules of
    choice, ordering and matching, coded distractors, component fit, the solution
-   against the key (`E-STEP-INCONSISTENT`).
+   against the key (`E-STEP-INCONSISTENT`), and the supports `answer_format_it` and `steps_it`
+   (`E-SUPPORT-LEAK` for the key or a declared error value, `W-STEPS-METHOD`; D-216).
 5. **Round trip** (`Roundtrip`): the grader accepts the key, gives each error value its
    own code, treats two error values as different answers, and accepts none of 200
    random well-formed answers (`E-ROUNDTRIP`, `E-ERROR-NEVER-GENERATED`,

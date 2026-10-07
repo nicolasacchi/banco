@@ -51,3 +51,10 @@ function figure(data) {
   if (!data.src) return el("p", { class: "figure-alt" }, data.alt_it || "")
   return el("figure", {}, el("img", { src: data.src, alt: data.alt_it || "", class: "figure" }))
 }
+
+// The steps of an item (steps_it): what to do, as a calm numbered list under a small title.
+export function renderSteps(steps, ctx) {
+  const list = el("ol", { class: "do-steps" })
+  for (const text of steps) list.appendChild(renderInline(String(text), el("li")))
+  return el("div", { class: "steps-box" }, el("p", { class: "hint steps-title", text: ctx.t.steps_title }), list)
+}

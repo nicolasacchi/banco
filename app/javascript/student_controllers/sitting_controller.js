@@ -2,6 +2,8 @@ import { Controller } from "@hotwired/stimulus"
 import { DONT_KNOW } from "items/dom"
 import { Outbox, newId } from "items/outbox"
 import { renderItem } from "items/render"
+import { renderHelp } from "items/help"
+import { renderMarkup } from "items/markup"
 
 // The one app page of a sitting (X-02, E-10): Turbo is not loaded. This controller
 // asks the server for each item as JSON (POST step), draws it with the templates in
@@ -10,8 +12,8 @@ import { renderItem } from "items/render"
 // every ten minutes while the page is visible keeps the session alive (B-05).
 export default class extends Controller {
   static targets = ["intro", "stage", "heading", "itemBox", "sendButton", "unknownButton", "pauseButton", "paused",
-                    "work", "status", "blocked", "over", "wait"]
-  static values = { stepUrl: String, eventsUrl: String, answerUrl: String, listUrl: String, subject: String,
+                    "work", "status", "blocked", "over", "wait", "help", "helpBody", "sheetButton", "sheet", "sheetBody"]
+  static values = { stepUrl: String, eventsUrl: String, supportUrl: String, answerUrl: String, listUrl: String, subject: String,
                     resuming: Boolean, keepaliveSeconds: { type: Number, default: 600 }, texts: Object }
 
   connect() {
@@ -77,9 +79,43 @@ export default class extends Controller {
     this.headingTarget.textContent = this.texts.header.replace("%{subject}", reply.subject).replace("%{number}", reply.number)
     this.itemBoxTarget.appendChild(this.handle.element)
     this.handle.mounted()
+    this.showSupports(reply)
     this.setButtons(true)
     this.handle.focus()
     return null
+  }
+
+  // ---- supports (D-216): "Come si risponde" and the declared formula sheet --------------------
+
+  // The help follows the component of the item on screen and starts closed. The sheet is only
+  // ever in the reply when the teacher switched it on and the item was served with it.
+  showSupports(reply) {
+    renderHelp(reply.item, this.texts, this.helpBodyTarget)
+    this.helpTarget.open = false
+    this.sheetBodyTarget.textContent = ""
+    this.sheetTarget.hidden = true
+    this.sheetButtonTarget.setAttribute("aria-expanded", "false")
+    if (reply.formula_sheet_it) {
+      this.sheetBodyTarget.appendChild(renderMarkup(reply.formula_sheet_it))
+      this.sheetButtonTarget.hidden = false
+    } else {
+      this.sheetButtonTarget.hidden = true
+    }
+  }
+
+  helpToggled() {
+    if (this.helpTarget.open && this.current) this.postSupport("help_opened", { component: this.current.item.component })
+  }
+
+  toggleSheet() {
+    const opening = this.sheetTarget.hidden
+    this.sheetTarget.hidden = !opening
+    this.sheetButtonTarget.setAttribute("aria-expanded", String(opening))
+    if (opening && this.current) this.postSupport("formula_sheet_opened", {})
+  }
+
+  postSupport(kind, extra) {
+    return this.postJson(this.supportUrlValue, { kind, served_event_id: this.current.served_event_id, ...extra }).catch(() => null)
   }
 
   send() {

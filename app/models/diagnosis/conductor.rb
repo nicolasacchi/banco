@@ -172,6 +172,7 @@ module Diagnosis
       ItemPresenter.new(
         served: served, number: serve_number(event), subject: run.subject,
         not_studied: not_studied?(served.skill_key),
+        formula_sheet_it: FormulaSheet.text_for_served(served, run),
         expression_input: editor_fallback?(student) ? "text" : "mathlive"
       ).as_json
     end
@@ -201,7 +202,8 @@ module Diagnosis
         event = DiagnosisEvent.create!(diagnosis_run: run, seq: seq, kind: "item_served", at: clock.now,
                                        payload_json: { "reason" => action.reason }.to_json)
         ItemServed.create!(diagnosis_event: event, item_instance: instance, skill_key: action.skill,
-                           shown_order_json: rekeyed.shown_order.to_json, id_map_json: rekeyed.id_map.to_json)
+                           shown_order_json: rekeyed.shown_order.to_json, id_map_json: rekeyed.id_map.to_json,
+                           formula_sheet_available: FormulaSheet.available_for_run?(run))
         event
       end
     end
