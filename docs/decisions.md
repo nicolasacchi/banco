@@ -2105,3 +2105,12 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Why:** content agent (history, step solve1:1) reported the same E-SCHEMA; it submitted before reading the current brief. Content mistake, not a defect or missing feature.
 - **Cost:** none.
 - **Status:** implemented
+
+## D-197 · 2026-10-07 · W-ABSOLUTE skips "un solo" and "non ... solo"
+
+- **Design ref:** A-06, D-094, D-189
+- **Design said:** an absolute word (`solo`, `soltanto`, ...) is warned (D-094); D-189 already skipped "un giorno solo" (adjective after the noun).
+- **We do:** `Validation::Readability` also skips `solo/sola` right after `un/uno/una` ("un solo ambiente") and `solo/soltanto` after `non` in the same clause, up to 3 words between ("non danno solo energia", "non solo"). Still a warning; `banco.*/1` unchanged. "Solo il tutore firma" and "un atto solo se" still warn. Test: `test/validation/readability_test.rb`.
+- **Why:** content agent (biology, step pfix1) got false positives and reworded. Defect (false positive). Authors need not reword.
+- **Cost:** a rare true "not ... only" absolute claim is no longer warned.
+- **Status:** implemented

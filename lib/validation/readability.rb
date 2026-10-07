@@ -125,6 +125,10 @@ module Validation
     end
 
     # determiner, one noun, then solo/sola/soli/sole closing the phrase ("un giorno solo", "una volta sola").
+    # "un solo ambiente", "una sola volta": "single" before the noun (D-197).
+    SINGLE_BEFORE_NOUN = /\b(un|uno|una)\s+(?:solo|sola)\b/
+    # "non danno solo energia", "non solo": "not only" is not an absolute claim (D-197); same clause, up to 3 words between.
+    NOT_ONLY = /\bnon\s+(?:\p{L}+\s+){0,3}?(?:solo|soltanto)\b/
     SINGLE_ADJECTIVE = /\b((?:un|uno|una|il|lo|la|i|gli|le|ogni|questo|questa|quel|quella)(?:'|\s+)\p{L}+)\s+(?:solo|sola|soli|sole)(?=\s*(?:[,.;:!?)]|\z)|\s+(?:non|si)\b)/
 
     def warnings(text, plain, sentences, words, field, role, findings)
@@ -142,6 +146,8 @@ module Validation
       end
       lower = body.downcase.gsub(/\bda (?:solo|sola|soli|sole)\b/, " ")   # "by oneself", not "only" (D-094)
       lower = lower.gsub(SINGLE_ADJECTIVE, '\\1 ')                                 # "un giorno solo": "single", not "only" (D-189)
+      lower = lower.gsub(SINGLE_BEFORE_NOUN, '\\1')
+      lower = lower.gsub(NOT_ONLY) { |m| m.sub(/\s*\b(?:solo|soltanto)\z/, "") }
       if (w = Rules.list(:readability, :absolute_words).find { |a| lower.match?(/\b#{Regexp.escape(a)}\b/) })
         findings.add("W-ABSOLUTE", field, "an absolute word (#{w}) needs a counterexample check", word: w)
       end
