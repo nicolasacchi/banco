@@ -1,0 +1,30 @@
+{
+  "schema": "banco.lesson/1",
+  "key": "ripasso.math.demo-equations",
+  "kind": "ripasso",
+  "subject": "math",
+  "title_it": "Equazioni di primo grado: risolvere e verificare",
+  "skills": [
+    "math.demo-equation"
+  ],
+  "uses": [
+    "math.demo-signed-numbers"
+  ],
+  "refs": [
+    {
+      "source": "seconda-2025-26",
+      "line": 12,
+      "fragment": "equazioni di primo grado numeriche",
+      "role": "needed_by"
+    },
+    {
+      "source": "prima-2025-26",
+      "line": 7,
+      "fragment": "equazioni di primo grado",
+      "role": "taught_in"
+    }
+  ],
+  "scope": "studied",
+  "minutes": 30,
+  "calculator": false
+}

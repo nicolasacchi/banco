@@ -1,0 +1,19 @@
+{
+  "schema": "banco.course/1",
+  "schema_version": 1,
+  "subject": "math",
+  "skills": [],
+  "topics": [
+    {
+      "key": "ripasso.math.demo-equations",
+      "kind": "ripasso",
+      "title_it": "Equazioni di primo grado",
+      "term": 1,
+      "minutes": 45,
+      "skills": [
+        "math.demo-equation"
+      ],
+      "after": []
+    }
+  ]
+}

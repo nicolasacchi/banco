@@ -1,0 +1,61 @@
+{
+  "schema": "banco.course/1",
+  "schema_version": 1,
+  "subject": "math",
+  "notes_it": [
+    "Un esempio inventato."
+  ],
+  "skills": [
+    {
+      "key": "math.demo-system-substitution",
+      "label_it": "Sistemi lineari: sostituzione",
+      "layer": "core",
+      "prerequisites": [
+        "math.demo-equation"
+      ],
+      "refs": [
+        {
+          "source": "seconda-2025-26",
+          "line": 30,
+          "fragment": "metodo della sostituzione",
+          "role": "taught_in"
+        }
+      ],
+      "errors": [
+        {
+          "code": "subst_no_brackets",
+          "description_it": "Sostituisce senza parentesi.",
+          "implicates": [
+            "math.demo-signed-numbers"
+          ]
+        }
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "key": "corso.math.demo",
+      "kind": "ripasso",
+      "title_it": "Equazioni di primo grado",
+      "term": 1,
+      "minutes": 45,
+      "skills": [
+        "math.demo-equation"
+      ],
+      "after": []
+    },
+    {
+      "key": "lezione.math.demo-systems",
+      "kind": "lezione",
+      "title_it": "Sistemi lineari",
+      "term": null,
+      "minutes": 60,
+      "skills": [
+        "math.demo-system-substitution"
+      ],
+      "after": [
+        "ripasso.math.demo-equations"
+      ]
+    }
+  ]
+}

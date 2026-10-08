@@ -17,7 +17,7 @@
       "status": "validating",
       "brief": {
         "name": "diagnosis-item",
-        "version": 1,
+        "version": 2,
         "sha256": "<sha256>"
       },
       "files": {

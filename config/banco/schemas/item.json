@@ -13,8 +13,17 @@
       "enum": [
         "diagnosis_item",
         "short_answer",
-        "testlet"
+        "testlet",
+        "practice_item"
       ]
+    },
+    "level": {
+      "description": "practice_item only (D-223): 1 one step or direct, 2 the typical case, 3 combined with prerequisites.",
+      "type": "integer", "minimum": 1, "maximum": 3
+    },
+    "hints_it": {
+      "description": "practice_item only: 2 to 4 hints, from the rule to the next step; none states the key. Authors write 3. An instance may carry its own.",
+      "$ref": "#/$defs/hints"
     },
     "subject": {
       "enum": [
@@ -353,9 +362,25 @@
           ]
         }
       }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "practice_item" } }, "required": ["kind"] },
+      "then": {
+        "required": ["component", "prompt", "error_catalogue", "tests", "level"],
+        "properties": {
+          "component": { "enum": ["number", "fraction", "expression", "choice", "ordering", "matching", "normalized_text"] }
+        },
+        "not": { "anyOf": [{ "required": ["sub_items"] }, { "required": ["rubric"] }] },
+        "oneOf": [{ "required": ["instances"] }, { "required": ["generator"] }]
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "enum": ["diagnosis_item", "short_answer", "testlet"] } }, "required": ["kind"] },
+      "then": { "not": { "anyOf": [{ "required": ["level"] }, { "required": ["hints_it"] }] } }
     }
   ],
   "$defs": {
+    "hints": { "type": "array", "minItems": 2, "maxItems": 4, "items": { "type": "string", "minLength": 1, "maxLength": 300 } },
     "step": {
       "type": "object",
       "properties": {
@@ -631,6 +656,9 @@
         },
         "answer": {
           "$ref": "#/$defs/any_answer"
+        },
+        "hints_it": {
+          "$ref": "#/$defs/hints"
         },
         "errors": {
           "type": "array",

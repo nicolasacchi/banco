@@ -81,10 +81,38 @@ class SchemaFixturesTest < ActiveSupport::TestCase
     assert_not Banco::Schemas.valid?("blueprint", doc)
   end
 
-  test "item/1 has no warmup kind and no hints field" do
+  test "item/1 has no warmup kind; hints_it and level are for practice items only (D-227)" do
     schema = JSON.parse(File.read(Rails.root.join("config/banco/schemas/item.json")))
-    assert_equal %w[diagnosis_item short_answer testlet], schema.dig("properties", "kind", "enum")
+    assert_equal %w[diagnosis_item short_answer testlet practice_item], schema.dig("properties", "kind", "enum")
     assert_not schema["properties"].key?("hints")
+    assert_equal %w[hints_it level], %w[hints_it level] & schema["properties"].keys
+  end
+
+  test "lesson front matter fixtures: good are valid, bad are refused under /front_matter" do
+    dir = Rails.root.join("test/fixtures/content/lesson/front_matter")
+    good = Dir[dir.join("good/*.json")]
+    bad = Dir[dir.join("bad/*.json")]
+    assert_operator good.size, :>=, 1
+    assert_operator bad.size, :>=, 5
+    good.each { |f| assert_empty Banco::Schemas.validate_front_matter(load(f)).map(&:to_h), File.basename(f) }
+    bad.each do |f|
+      errors = Banco::Schemas.validate_front_matter(load(f))
+      assert_not_empty errors, File.basename(f)
+      assert(errors.all? { |e| e.code == "E-SCHEMA" && e.field.start_with?("/front_matter") }, File.basename(f))
+    end
+  end
+
+  test "a review of a practice item may have 13 points, any other schema-valid review 11 to 13" do
+    review = load(Banco::Schemas.fixture_files("review", :good).first)
+    assert_equal 11, review["checklist"].size
+    assert Banco::Schemas.valid?("review", review)
+    assert_equal 13, load(Dir[Rails.root.join("test/fixtures/content/review/good/practice-thirteen-points.json")].first)["checklist"].size
+  end
+
+  test "the front matter of the format example in the lesson brief is valid" do
+    yaml = Brief.find("lesson").body[/```markdown\n---\n(.*?)\n---\n/m, 1]
+    assert yaml, "the lesson brief shows the front matter"
+    assert_empty Banco::Schemas.validate_front_matter(YAML.safe_load(yaml)).map(&:to_h)
   end
 
   test "every schema forbids additional properties at its root" do

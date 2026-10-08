@@ -28,6 +28,18 @@ class ErrorCodesTest < ActiveSupport::TestCase
     assert_empty listed - REGISTRY["validation"].keys
   end
 
+  test "the course codes of Phase 1b are in the registry with the stage and severity of their prefix (D-228)" do
+    codes = %w[E-LESSON-PARSE E-LESSON-SECTIONS E-LESSON-MARKUP E-LESSON-WORDS E-LESSON-BOLD E-LESSON-EXERCISES E-LESSON-FINALS
+               E-LESSON-BOOK E-LESSON-PAGE E-LESSON-SUMMARY E-LESSON-REFS W-LESSON-WHY W-LESSON-MISTAKES W-LESSON-FINAL-MISSING
+               W-LESSON-FINAL-IN-TRY E-LESSON-REVIEW-RECOMPUTED E-COURSE-SKILL-DUPLICATE E-COURSE-TOPIC W-COURSE-ORDER
+               W-COURSE-GRAPH-STALE E-TOPIC-UNKNOWN E-TOPIC-PIN E-TOPIC-SKILLS E-TOPIC-ITEM-KIND E-TOPIC-POOL
+               W-TOPIC-INSTANCE-IN-LESSON W-PRACTICE-DIAGNOSIS-OVERLAP E-HINTS E-HINT-KEY W-HINT-OPTION E-PRACTICE-POOL
+               W-PRACTICE-CODE-SPARSE E-BLUEPRINT-PRACTICE-ITEM E-REVIEW-CHECKLIST]
+    assert_equal 34, codes.size
+    assert_empty codes - REGISTRY["validation"].keys
+    assert_operator REGISTRY["version"], :>=, 18
+  end
+
   test "API codes carry an HTTP status" do
     REGISTRY["api"].each_value { |meta| assert_kind_of Integer, meta["http"] }
     assert_equal [ 401, 409, 409, 503, 422, 413, 404, 404, 422, 404, 422, 422, 409 ], REGISTRY["api"].values.map { |m| m["http"] }

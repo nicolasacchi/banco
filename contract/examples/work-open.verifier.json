@@ -18,7 +18,7 @@
       "status": "passed",
       "brief": {
         "name": "diagnosis-item",
-        "version": 1,
+        "version": 2,
         "sha256": "<sha256>"
       },
       "files": {
@@ -101,7 +101,7 @@
       "validation": {
         "codes": [],
         "findings": [],
-        "rules_version": "6",
+        "rules_version": "7",
         "harness_version": "<sha256>",
         "chrome_version": null,
         "attempt": 1,

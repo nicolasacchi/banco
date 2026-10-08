@@ -15,6 +15,7 @@ func runItemsList(e *env, args []string) error {
 	fs.SetOutput(io.Discard)
 	subject := fs.String("subject", "", "subject key, for example math")
 	current := fs.Bool("current", false, "only the current (latest) revision of each item")
+	kind := fs.String("kind", "", "practice or diagnosis (default: both)")
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
 	if err != nil {
@@ -27,12 +28,18 @@ func runItemsList(e *env, args []string) error {
 	if len(pos) != 0 {
 		return newErr(ExitUsage, "E-USAGE", "args", "items list takes no positional argument", next)
 	}
+	if *kind != "" && *kind != "practice" && *kind != "diagnosis" {
+		return newErr(ExitUsage, "E-USAGE", "kind", "--kind is practice or diagnosis", next)
+	}
 	query := url.Values{}
 	if *subject != "" {
 		query.Set("subject", *subject)
 	}
 	if *current {
 		query.Set("current", "1")
+	}
+	if *kind != "" {
+		query.Set("kind", *kind)
 	}
 	path := "/api/v1/items"
 	if len(query) > 0 {

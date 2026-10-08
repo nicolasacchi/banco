@@ -13,7 +13,16 @@ class CodeFixturesTest < ActiveSupport::TestCase
   F = ValidationFixtures
 
   OWNED_STAGES = %w[schema ruby chrome roundtrip verify blueprint].freeze
-  LATER = %w[E-VERIFY-AUTHOR E-SESSION-NOT-INDEPENDENT].freeze
+  # Phase 1b codes: registered by S0 (formats), implemented and given fixtures by S1 and S1b. Remove a code
+  # from this list when its fixture lands in CASES.
+  PHASE_1B = %w[
+    E-LESSON-PARSE E-LESSON-SECTIONS E-LESSON-MARKUP E-LESSON-WORDS E-LESSON-BOLD E-LESSON-EXERCISES E-LESSON-FINALS
+    E-LESSON-BOOK E-LESSON-PAGE E-LESSON-SUMMARY E-LESSON-REFS W-LESSON-WHY W-LESSON-MISTAKES W-LESSON-FINAL-MISSING
+    W-LESSON-FINAL-IN-TRY E-COURSE-SKILL-DUPLICATE E-COURSE-TOPIC W-COURSE-ORDER W-COURSE-GRAPH-STALE E-TOPIC-UNKNOWN
+    E-TOPIC-PIN E-TOPIC-SKILLS E-TOPIC-ITEM-KIND E-TOPIC-POOL W-TOPIC-INSTANCE-IN-LESSON W-PRACTICE-DIAGNOSIS-OVERLAP
+    E-HINTS E-HINT-KEY W-HINT-OPTION E-PRACTICE-POOL W-PRACTICE-CODE-SPARSE E-BLUEPRINT-PRACTICE-ITEM
+  ].freeze
+  LATER = (%w[E-VERIFY-AUTHOR E-SESSION-NOT-INDEPENDENT] + PHASE_1B).freeze
 
   def self.owned_codes
     Validation::Codes.all.select { |code, meta| OWNED_STAGES.include?(meta["stage"]) && !LATER.include?(code) }.keys
@@ -287,7 +296,7 @@ class CodeFixturesTest < ActiveSupport::TestCase
   }.freeze
 
   test "every code M5 owns has a fixture in the table" do
-    expected = self.class.owned_codes + Validation::Codes.all.keys.grep(/\AW-/)
+    expected = self.class.owned_codes + Validation::Codes.all.keys.grep(/\AW-/) - PHASE_1B
     assert_empty expected - CASES.keys, "codes without a fixture"
     assert_empty CASES.keys - Validation::Codes.all.keys, "fixtures for codes that are not in the registry"
   end

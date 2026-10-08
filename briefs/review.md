@@ -1,10 +1,10 @@
 ---
 name: review
-version: 1
+version: 2
 formats: banco.review/1
 ---
 
-# Brief: expert review of an item revision (version 1)
+# Brief: expert review of an item revision (version 2)
 
 You review one item revision as a subject expert and write `banco.review/1`
 (`config/banco/schemas/review.json`). You are a session of the reviewer role,
@@ -26,7 +26,7 @@ programme lines cited (by the skill, by the item's own sources, or both: see `ci
 line the item cites that the skill does not). `banco review submit REV --file review.json` sends the
 result. Never ask for a decision; the teacher disposes of every finding.
 
-## The checklist (all 11 points, in this order)
+## The checklist (11 points, 13 for a practice item, in this order)
 
 Each point gets `result` (`pass`, `fail`, `na`) and `evidence`: what you checked,
 on which instance, concretely.
@@ -42,6 +42,18 @@ on which instance, concretely.
 9. A fact without a source.
 10. A stem that gives the answer away.
 11. An item that measures reading load or the interface instead of the skill.
+
+Only for an item of kind `practice_item` (a practice item says so in its `kind`), two more points,
+and then the review has exactly 13 points; any other review has exactly 11 (`E-REVIEW-CHECKLIST`):
+
+12. Hints: 2 to 4 per instance, from the rule to the next step; none states the key; the last stops
+    before the final value. In a choice item, no hint names the key option; in an ordering or a
+    matching, no hint gives the order or a pair.
+13. Messages and solution: each typical-error message names the mistake and the rule without the key;
+    each solution step is correct, says why, and ends at the key.
+
+The blind solver of a practice item sees what the student sees before asking for help: prompt and
+display, never hints, messages or solutions.
 
 ## Findings
 

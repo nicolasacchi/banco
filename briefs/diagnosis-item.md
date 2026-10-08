@@ -1,10 +1,10 @@
 ---
 name: diagnosis-item
-version: 1
+version: 2
 formats: banco.item/1
 ---
 
-# Brief: diagnosis items (version 1)
+# Brief: diagnosis items (version 2)
 
 You write items for the entry diagnosis of one student: closed questions that
 show, skill by skill, what the student already does well, what to revisit and
@@ -31,7 +31,8 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
   `answer` is an option id, never the option text. A throw counts as a rejection;
   `reason_it` (at most 200 characters) is shown in `E-VERIFY-REJECTS`. Same banned
   globals as generators; no import of the generator.
-- `kind`: `diagnosis_item`, `short_answer` or `testlet` (a reading passage of
+- `kind`: `diagnosis_item`, `short_answer` or `testlet` (items for studying, with hints and a level, are
+  `practice_item`: see `banco brief show practice-item`; a diagnosis item carries neither `level` nor `hints_it`) (a reading passage of
   150-300 words with exactly 5 closed sub-items, all on the same skill: the testlet has one attempt,
   counted for that skill only, `E-TESTLET-SKILLS` otherwise).
 - One difficulty level. No hints field: during the diagnosis there is no help.

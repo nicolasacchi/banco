@@ -8,11 +8,11 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 17
+version: 18
 
 validation:
   # Skill graph (synchronous).
-  E-SCHEMA: { stage: schema, severity: error, description: "The file does not match its JSON Schema (banco.skill_graph/1, banco.item/1, banco.blueprint/1, banco.review/1, banco.solve/1)." }
+  E-SCHEMA: { stage: schema, severity: error, description: "The file does not match its JSON Schema (banco.skill_graph/1, banco.item/1, banco.blueprint/1, banco.review/1, banco.solve/1, banco.lesson/1, banco.course/1, banco.topic/1, banco.lesson_review/1)." }
   E-GRAPH-CYCLE: { stage: ruby, severity: error, description: "The prerequisite edges form a cycle." }
   E-SOURCE: { stage: ruby, severity: error, description: "A citation is not an exact substring of a pdf-origin line, cites a transcript line, or names a missing line." }
   E-SCOPE: { stage: ruby, severity: error, description: "Scope does not match the citations: middle_school and not_in_prima skills have no prima refs and carry a reason; studied, integration_studied and in_progress have at least one." }
@@ -99,6 +99,41 @@ validation:
   E-REVIEW-EMPTY: { stage: review, severity: error, description: "A review without evidence (a bare 'all verified')." }
   E-BLIND-SOLVE-MISMATCH: { stage: review, severity: error, description: "The blind solver's answer disagrees with the key; stored as a blocker finding." }
   E-PROVIDER-NOT-ALLOWED: { stage: review, severity: error, description: "The session's provider is outside the allowlist for this role." }
+  # Phase 1b: the course formats (A3.2 of the slice spec).
+  E-LESSON-PARSE: { stage: ruby, severity: error, description: "No front matter between two --- lines, YAML does not load, not a mapping, or kind/subject disagree with the key." }
+  E-LESSON-SECTIONS: { stage: ruby, severity: error, description: "One of the eight fixed ## headings missing, extra, renamed or out of order." }
+  E-LESSON-MARKUP: { stage: ruby, severity: error, description: "Markup outside v2, including bare math (line and construct)." }
+  E-LESSON-WORDS: { stage: ruby, severity: error, description: "More than lesson.max_words outside Prova tu and Soluzioni." }
+  E-LESSON-BOLD: { stage: ruby, severity: error, description: "Bold above lesson.max_bold_ratio." }
+  E-LESSON-EXERCISES: { stage: ruby, severity: error, description: "Prova tu count outside lesson.exercises, Soluzioni count differs, numbering not 1..N." }
+  E-LESSON-FINALS: { stage: ruby, severity: error, description: "The finals_it length differs from the exercise count." }
+  E-LESSON-BOOK: { stage: ruby, severity: error, description: "Sul libro does not start with lesson.book_line, or adds more than lesson.book_extra_words words." }
+  E-LESSON-PAGE: { stage: ruby, severity: error, description: "A page number anywhere (lesson.page_pattern)." }
+  E-LESSON-SUMMARY: { stage: ruby, severity: error, description: "In sintesi is not one unordered list of lesson.summary_points points." }
+  E-LESSON-REFS: { stage: ruby, severity: error, description: "The kind's scope and ref rules (A2.1) are not met." }
+  W-LESSON-WHY: { stage: ruby, severity: warning, description: "Perché ti serve outside lesson.why_sentences sentences." }
+  W-LESSON-MISTAKES: { stage: ruby, severity: warning, description: "Fewer than lesson.mistakes_min list items in Errori da evitare." }
+  W-LESSON-FINAL-MISSING: { stage: ruby, severity: warning, description: "A final (normalized: no spaces, no dollar signs, the minus sign as hyphen) is not a substring of its normalized solution; informational." }
+  W-LESSON-FINAL-IN-TRY: { stage: ruby, severity: warning, description: "A final (normalized) appears in its own exercise text." }
+  E-LESSON-REVIEW-RECOMPUTED: { stage: review, severity: error, description: "Math: too few recomputed entries, or an exercise with a final has none." }
+  E-COURSE-SKILL-DUPLICATE: { stage: ruby, severity: error, description: "A course skill key is in the graph it is validated against, or twice in the map." }
+  E-COURSE-TOPIC: { stage: ruby, severity: error, description: "The key, kind and subject disagree, duplicate topic, a skill in two topics or of another subject, unknown topic in after, a cycle in after." }
+  W-COURSE-ORDER: { stage: ruby, severity: warning, description: "A topic before one of its after topics, or before the topic holding a direct prerequisite of its skills." }
+  W-COURSE-GRAPH-STALE: { stage: ruby, severity: warning, description: "A newer graph revision exists than the one the map was validated against." }
+  E-TOPIC-UNKNOWN: { stage: ruby, severity: error, description: "The key is not a topic of the subject's latest course map." }
+  E-TOPIC-PIN: { stage: ruby, severity: error, description: "The lesson with the topic key or a pinned revision does not exist, or a pinned revision is not a revision of the named lesson or item." }
+  E-TOPIC-SKILLS: { stage: ruby, severity: error, description: "Practice skills differ from the map topic's skills, a skill twice, an item pinned twice, or the pinned lesson's skills differ from the topic's." }
+  E-TOPIC-ITEM-KIND: { stage: ruby, severity: error, description: "A pinned item is not a practice_item, or its skill is not the entry's skill." }
+  E-TOPIC-POOL: { stage: ruby, severity: error, description: "Per skill: no level-1 item, fewer than practice.topic_min_instances_per_skill distinct fingerprints, or fewer than practice.topic_min_low_guess_instances_per_skill low-guess ones." }
+  W-TOPIC-INSTANCE-IN-LESSON: { stage: ruby, severity: warning, description: "A pinned instance display equals (normalized) a lesson exercise or worked-example line." }
+  W-PRACTICE-DIAGNOSIS-OVERLAP: { stage: ruby, severity: warning, description: "A pinned instance has the fingerprint of a diagnosis instance of the same skill." }
+  E-HINTS: { stage: ruby, severity: error, description: "A practice instance has no effective hints, or hints on a non-practice item." }
+  E-HINT-KEY: { stage: ruby, severity: error, description: "A hint carries the instance key (A2.4 rule)." }
+  W-HINT-OPTION: { stage: ruby, severity: warning, description: "A choice hint names the key option." }
+  E-PRACTICE-POOL: { stage: ruby, severity: error, description: "A static practice item has fewer than practice.min_static_instances instances." }
+  W-PRACTICE-CODE-SPARSE: { stage: ruby, severity: warning, description: "A catalogue code is carried by fewer than practice.min_instances_per_code instances of the item." }
+  E-BLUEPRINT-PRACTICE-ITEM: { stage: blueprint, severity: error, description: "A blueprint pins a practice item." }
+  E-REVIEW-CHECKLIST: { stage: review, severity: error, description: "A review of a practice item must have exactly 13 checklist points, any other review exactly 11." }
   # Grading proposals (the evening loop).
   E-GRADE-POINT: { stage: grading, severity: error, description: "A grade proposal has an unknown or missing rubric point, or a score that is not an integer between 0 and the weight." }
   E-GRADE-QUOTE: { stage: grading, severity: error, description: "A score above 0 has no quote, or the quote is shorter than 3 or longer than 300 characters." }

@@ -4,10 +4,11 @@
 # v4: DDT (documento di trasporto, in the programme) joins caps_allowlist (D-104).
 # v5: target_language_subjects and keys skip the Italian lint (D-112).
 # v6: ASCII, RGB, USB, SSD, HDD, LAN, WAN, BIOS, CSV join caps_allowlist (D-114).
+# v7: the course formats (D-224..D-232): blocks course, lesson and practice. No existing number changes.
 # Codes and what they mean: config/banco/error_codes.yml. Generic and synthetic:
 # nothing here is about a person.
 # Supports (D-216) added optional checks that only fire on the new fields: no bump.
-version: 6
+version: 7
 
 generator:
   seeds: 200                  # seeds 1..200 are run, in two fresh contexts
@@ -140,3 +141,29 @@ coverage:
     business: [142, 151]
     computer_science: [153, 161]
     spanish: [163, 186]
+
+# Phase 1b, course content (A2.1, A3.2). Lessons, course maps and topics are synchronous (no Chrome).
+course:
+  seconda_source: seconda-2025-26   # the source a course skill and a lesson cite as taught_in / needed_by
+
+lesson:
+  max_bytes: 65536
+  max_words: 500              # all sections except Prova tu and Soluzioni (E-LESSON-WORDS)
+  max_sentence_words: 25      # E-READ sentence_length, as Validation::Readability
+  max_bold_ratio: 0.08        # bold words / all words (E-LESSON-BOLD)
+  exercises: [4, 8]           # E-LESSON-EXERCISES
+  summary_points: [3, 5]      # E-LESSON-SUMMARY
+  why_sentences: [2, 4]       # W-LESSON-WHY
+  mistakes_min: 3             # W-LESSON-MISTAKES
+  min_gulpease: 50            # W-GULPEASE on idea_it and example_it
+  book_line: "Pagine del libro: le indica il docente."
+  book_extra_words: 30        # E-LESSON-BOOK
+  page_pattern: '\b(pag\.?|pagg\.?|pagina|pagine|p\.)\s*\d'   # E-LESSON-PAGE
+  review_min_recomputed_math: 8   # E-LESSON-REVIEW-RECOMPUTED
+
+practice:                     # practice items (A2.4) and topics (A2.3)
+  hints: [2, 4]
+  min_static_instances: 10                  # E-PRACTICE-POOL
+  topic_min_instances_per_skill: 20         # E-TOPIC-POOL: distinct fingerprints
+  topic_min_low_guess_instances_per_skill: 12
+  min_instances_per_code: 3                 # W-PRACTICE-CODE-SPARSE

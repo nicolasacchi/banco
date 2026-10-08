@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "banco.topic/1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schema_version",
+    "subject",
+    "key",
+    "lesson_revision",
+    "practice"
+  ],
+  "properties": {
+    "schema": {
+      "const": "banco.topic/1"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "subject": {
+      "enum": [
+        "math",
+        "italian",
+        "english",
+        "spanish",
+        "history",
+        "geography",
+        "law_economics",
+        "business",
+        "computer_science",
+        "biology",
+        "chemistry"
+      ]
+    },
+    "key": {
+      "$ref": "#/$defs/lesson_key"
+    },
+    "lesson_revision": {
+      "$ref": "#/$defs/pin"
+    },
+    "intro_it": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "practice": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "skill",
+          "items"
+        ],
+        "properties": {
+          "skill": {
+            "$ref": "#/$defs/skill_key"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 4,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "item",
+                "revision"
+              ],
+              "properties": {
+                "item": {
+                  "$ref": "#/$defs/item_key"
+                },
+                "revision": {
+                  "$ref": "#/$defs/pin"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "skill_key": {
+      "type": "string",
+      "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "lesson_key": {
+      "type": "string",
+      "maxLength": 120,
+      "pattern": "^(ripasso|ponte|lezione)\\.(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "item_key": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$"
+    },
+    "pin": {
+      "anyOf": [
+        {
+          "const": "latest"
+        },
+        {
+          "type": "integer",
+          "minimum": 1
+        }
+      ]
+    }
+  }
+}

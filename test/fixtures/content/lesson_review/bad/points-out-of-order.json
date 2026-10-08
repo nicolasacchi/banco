@@ -1,0 +1,56 @@
+{
+  "schema": "banco.lesson_review/1",
+  "schema_version": 1,
+  "revision": "123",
+  "checklist": [
+    {
+      "id": 8,
+      "result": "pass",
+      "evidence": "Ho controllato il punto sulla lezione intera."
+    },
+    {
+      "id": 7,
+      "result": "pass",
+      "evidence": "Ho controllato il punto sulla lezione intera."
+    },
+    {
+      "id": 6,
+      "result": "pass",
+      "evidence": "Ho controllato il punto sulla lezione intera."
+    },
+    {
+      "id": 5,
+      "result": "pass",
+      "evidence": "Ho controllato il punto sulla lezione intera."
+    },
+    {
+      "id": 4,
+      "result": "pass",
+      "evidence": "Ho controllato il punto sulla lezione intera."
+    },
+    {
+      "id": 3,
+      "result": "pass",
+      "evidence": "Ho controllato il punto sulla lezione intera."
+    },
+    {
+      "id": 2,
+      "result": "pass",
+      "evidence": "Ho controllato il punto sulla lezione intera."
+    },
+    {
+      "id": 1,
+      "result": "pass",
+      "evidence": "Ho controllato il punto sulla lezione intera."
+    }
+  ],
+  "recomputed": [
+    {
+      "where": "solutions",
+      "n": 1,
+      "expression": "2*3 + 1",
+      "value": "7"
+    }
+  ],
+  "findings": []
+}

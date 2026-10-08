@@ -5,7 +5,9 @@ require "json_schemer"
 
 module Banco
   # The frozen content formats (A-03, A-05, B-07, C-01): banco.skill_graph/1,
-  # banco.item/1, banco.blueprint/1, banco.review/1, banco.solve/1. JSON Schemas
+  # banco.item/1, banco.blueprint/1, banco.review/1, banco.solve/1, and the course formats
+  # of Phase 1b (D-224..D-226): banco.lesson/1 (the parsed body; the lesson.md front matter is
+  # $defs.front_matter), banco.course/1, banco.topic/1, banco.lesson_review/1. JSON Schemas
   # in config/banco/schemas/, validated with json_schemer in production too: the
   # E-SCHEMA check of every submission depends on it.
   #
@@ -13,7 +15,7 @@ module Banco
   # (banco.item/2) and a small migration for drafts; schema_version is in every
   # document.
   module Schemas
-    NAMES = %w[skill_graph item blueprint review solve].freeze
+    NAMES = %w[skill_graph item blueprint review solve lesson course topic lesson_review].freeze
     SCHEMA_DIR = ->(root) { File.join(root, "config", "banco", "schemas") }
     FIXTURE_DIR = ->(root) { File.join(root, "test", "fixtures", "content") }
 
@@ -47,6 +49,18 @@ module Banco
       end
 
       def valid?(name, data) = validate(name, data).empty?
+
+      # The front matter of a lesson.md (a Hash from YAML.safe_load) against
+      # banco.lesson/1 $defs.front_matter; field pointers start with /front_matter.
+      def validate_front_matter(data)
+        @front_matter ||= JSONSchemer.schema(
+          JSON.parse(File.read(File.join(SCHEMA_DIR.call(root), "lesson.json"))).fetch("$defs").fetch("front_matter")
+            .merge("$defs" => JSON.parse(File.read(File.join(SCHEMA_DIR.call(root), "lesson.json"))).fetch("$defs"))
+        )
+        @front_matter.validate(data).map do |e|
+          Error.new(code: "E-SCHEMA", field: "/front_matter#{e['data_pointer']}", message: e["error"].to_s)
+        end
+      end
 
       # Same, picking the schema from the document's own "schema" member.
       def validate_document(data)

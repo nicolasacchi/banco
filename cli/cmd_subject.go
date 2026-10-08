@@ -28,6 +28,11 @@ var subjectCommands = map[string]subjectCommand{
 	"skill-graph coverage": {"skill-graph coverage", "GET", "/skill-graph/coverage", "", "banco skill-graph coverage --subject KEY"},
 	"blueprint open":       {"blueprint open", "GET", "/blueprint", "", "banco blueprint open --subject KEY"},
 	"blueprint submit":     {"blueprint submit", "POST", "/blueprint", "blueprint", "banco blueprint submit --subject KEY FILE --dry-run"},
+	// The course formats of Phase 1b (D-223..D-232); see cmd_course.go.
+	"course open":   {"course open", "GET", "/course", "", "banco course open --subject KEY"},
+	"course submit": {"course submit", "POST", "/course", "course", "banco course submit --subject KEY FILE --dry-run"},
+	"lessons list":  {"lessons list", "GET", "/lessons", "", "banco lessons list --subject KEY"},
+	"topics list":   {"topics list", "GET", "/topics", "", "banco topics list --subject KEY"},
 }
 
 func runSkillGraphOpen(e *env, a []string) error {

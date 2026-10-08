@@ -224,6 +224,16 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-218 | 2026-10-07 | operator request: every skill key and item key on the teacher's pages is a reference with a name, an info popover and a permalink | implemented |
 | D-219 | 2026-10-07 | review of D-217/D-218: the student map fails closed, the grading queue is the official student's, no dead links | implemented |
 | D-220 | 2026-10-08 | operator feedback: the finding card shows the key and the solver's answer; the author answers findings; clearer texts and a summary | implemented |
+| D-223 | 2026-10-08 | operator request 2026-10-08: a Phase 1b slice on math and italian; what is in, what is deferred | decided |
+| D-224 | 2026-10-08 | banco.lesson/1: lesson.md source, parsed body, markup v2 for lessons only, lint codes | decided |
+| D-225 | 2026-10-08 | banco.course/1: seconda skills and topics beside the graph, one key namespace, pinned graph revision | decided |
+| D-226 | 2026-10-08 | banco.topic/1, approve_topic (samples, reason on review findings), send_back_lesson, release_course carrying the map; trial students see drafts | decided |
+| D-227 | 2026-10-08 | practice items: kind, level, hints_it, hint scans; diagnosis queries filter by kind; review points 12-13 | decided |
+| D-228 | 2026-10-08 | a separate practice ledger (why not attempts), shared graders, atomic serves | decided |
+| D-229 | 2026-10-08 | rules practice/1: outcomes, serve state machine, states, seeds, serving, Prova questo, Oggi, days | decided |
+| D-230 | 2026-10-08 | one lesson review per revision; lesson blind solve and lesson findings deferred | decided |
+| D-231 | 2026-10-08 | "Non ho capito" recorded (one optional line, teacher-only text); no answer flow yet | decided |
+| D-232 | 2026-10-08 | navigation: nav on course pages, conditional "Oggi" link on /diagnosis, outbox prefixes; no root change | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2355,3 +2365,93 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Why:** the teacher cannot decide what she cannot see.
 - **Cost:** the author's note is the author's own word: the teacher still judges. A note is not checked against the item beyond readability.
 - **Status:** implemented
+
+## D-223 · 2026-10-08 · operator request: a Phase 1b slice on math and italian; what is in, what is deferred
+
+- **Design ref:** Phase 1 plan, firm rules 1 to 6
+- **Design said:** Phase 1a ended at the entry diagnosis; the course (lessons and practice) was a later phase.
+- **We do:** Build one vertical slice on math and italian: the course map per subject, lessons, practice items with immediate feedback, a topic that pins a lesson and practice items, the practice ledger, the student pages Oggi, Materie, topic, lesson and practice, and the teacher's topic review, approval and release. Deferred: free pages in a sandboxed iframe, photos and written work, voice, the "Non ho capito" answer flow, lesson blind solve and lesson findings as rows, spaced review, the indications engine, weekly quizzes, the subject map, book pages, the components pair, solution-set, interval, graph, amount and binary. The rule that a discursive topic needs an open skill waits for the evening loop. The diagnosis is not changed.
+- **Why:** Operator request 2026-10-08: start filling at least one or two subjects with content in parallel, to see how the whole works.
+- **Cost:** Ten new tables and twelve new CLI commands; content agents can write for a slice before the student pages exist.
+- **Status:** decided (formats, codes, contract and briefs land in track S0; the code in S1 to S4)
+
+## D-224 · 2026-10-08 · banco.lesson/1: lesson.md source, parsed body, markup v2 for lessons only, lint codes
+
+- **Design ref:** A-02, firm rule 5
+- **Design said:** No lesson format existed; the review notes (ripassi) were free Markdown.
+- **We do:** A lesson is a Markdown file `lesson.md`: a YAML front matter (`YAML.safe_load`, no aliases) and exactly eight `##` sections in a fixed order (Perché ti serve, L'idea in breve, Esempio svolto, Errori da evitare, Prova tu, Soluzioni, Sul libro, In sintesi). The server parses it to a JSON body. Markup v2 (a restricted subset, with math in `$...$`) is for lessons only; the item markup is unchanged. Lint codes: `E-LESSON-*` and `W-LESSON-*` with thresholds in `config/banco/validation_rules.yml` (`lesson:` block, rules version 7). Lessons are data rendered by our templates with `textContent`; no agent code reaches the student's browser. Schema `config/banco/schemas/lesson.json` validates the front matter and the parsed body.
+- **Why:** A fixed shape makes lessons checkable by machine and readable by a student who is not at ease with reading (short sentences, few bold words).
+- **Cost:** A new parser and renderer (S1b, S3). The lint thresholds will need tuning once real lessons exist.
+- **Status:** decided (formats, codes, contract and briefs land in track S0; the code in S1 to S4)
+
+## D-225 · 2026-10-08 · banco.course/1: seconda skills and topics beside the graph, one key namespace, pinned graph revision
+
+- **Design ref:** A-01, firm rule 5
+- **Design said:** The skill graph covered the diagnosis only; there was no list of what to study.
+- **We do:** One course map per subject (`banco.course/1`, immutable revisions): the new second-year skills the graph does not have, and the ordered list of topics, each with its skills and `after` topics. The skill graph (`banco.skill_graph/1`) is untouched. Course skill keys share the graph's key namespace and must not exist in the graph (`E-COURSE-SKILL-DUPLICATE`). Each revision pins the graph revision it was validated against (`W-COURSE-GRAPH-STALE` when a newer one exists). A topic's key is its lesson key. Course order is decoupled from the diagnosis waves. Citations use a new source `seconda-2025-26` beside `prima-2025-26`.
+- **Why:** The student must study second-year material that the diagnosis never tested, without changing the approved graph.
+- **Cost:** Readers of skills (references, Oggi) must look in both places: the union of graph and course map.
+- **Status:** decided (formats, codes, contract and briefs land in track S0; the code in S1 to S4)
+
+## D-226 · 2026-10-08 · banco.topic/1, approve_topic, send_back_lesson, release_course; trial students see drafts
+
+- **Design ref:** firm rule 2, D-217
+- **Design said:** Decisions: approvals of graph, test, items; no course decisions.
+- **We do:** A topic revision (`banco.topic/1`) pins one lesson revision and 2 to 4 practice item revisions per skill. Three new decision kinds, all taken by the teacher in the browser through `DecisionRecorder` (web listener only): `approve_topic` (with a confirmation that the teacher read the lesson and the sample instances, and a written reason when the lesson review has blocker or major findings), `send_back_lesson`, and `release_course` (opens or closes the course map to the official student; opening carries the map revision). Firm rule 2 holds: no `/api/v1` route creates a decision and the CLI has none. The official student sees only approved topics of an open course; trial students (D-217) see the latest drafts, labelled "Bozza: il docente non l'ha ancora approvata."
+- **Why:** The teacher decides what the student studies; the trial login is how the teacher and the agents try the pages.
+- **Cost:** An approval stays valid until a newer approval of the same topic; a send-back blocks the next approval, not the current one.
+- **Status:** decided (formats, codes, contract and briefs land in track S0; the code in S1 to S4)
+
+## D-227 · 2026-10-08 · practice items: kind, level, hints_it, hint scans; diagnosis queries filter by kind; review points 12-13
+
+- **Design ref:** A-03, A-06, D-216
+- **Design said:** `banco.item/1` described diagnosis items only.
+- **We do:** `banco.item/1` gains `kind: "practice_item"`, a `level` (1 to 3) and `hints_it` (2 to 4 hints, also per instance). A practice item goes through the whole item pipeline (generator in the server's Chrome, blind verify, leak scans, review, blind solve, findings, responses). New codes: `E-HINTS`, `E-HINT-KEY`, `W-HINT-OPTION`, `E-PRACTICE-POOL`, `W-PRACTICE-CODE-SPARSE`, `E-BLUEPRINT-PRACTICE-ITEM`. `banco.review/1` has 13 checklist points on a practice item (points 12 and 13 are new) and 11 on any other (`E-REVIEW-CHECKLIST`). Diagnosis items must not carry `level` or `hints_it`. Every diagnosis query filters by kind so a practice item never enters a blueprint or a run.
+- **Why:** Practice reuses the proven pipeline; the checks for hints are what is new.
+- **Cost:** Existing diagnosis queries are touched in S1 and guarded by a regression test.
+- **Status:** decided (formats, codes, contract and briefs land in track S0; the code in S1 to S4)
+
+## D-228 · 2026-10-08 · a separate practice ledger, shared graders, atomic serves
+
+- **Design ref:** firm rule 4, D-091
+- **Design said:** All answers went to `attempts` with `context` in diagnosis, teacher_preview, warmup.
+- **We do:** Five new append-only tables: `practice_serves`, `practice_attempts`, `practice_gradings`, `practice_events`, `student_questions`. `attempts.context` has a CHECK that SQLite can change only by rebuilding a ledger table in production, and the diagnosis derivation must stay byte-identical, so practice has its own ledger. `Grading` (pure) is shared; `Grading::Recorder.append` gains a `model:` argument. A serve is created in one `BEGIN IMMEDIATE` transaction that returns the open serve if there is one; an answer is graded first, outside any transaction, then stored in one short transaction guarded by two unique indexes. Five more tables hold course content (lessons, lesson_revisions, lesson_reviews, course_revisions, topic_revisions).
+- **Why:** No change to the diagnosis tables; no instance burnt twice by two tabs or a retry.
+- **Cost:** Two answer paths to keep consistent; the shared grader and the vectors keep them so.
+- **Status:** decided (formats, codes, contract and briefs land in track S0; the code in S1 to S4)
+
+## D-229 · 2026-10-08 · rules practice/1: outcomes, serve state machine, states, seeds, serving, Prova questo, Oggi, days
+
+- **Design ref:** D-001, firm rule 1
+- **Design said:** Only the diagnosis had rules.
+- **We do:** `docs/rules/practice-1.md` (the register) and `lib/practice/rules/v1.rb` (constants, S2). The seven skill states, demonstrated after 3 correct unaided answers on distinct instances over 2 Rome calendar days (2 of them low guess), consolidated after 14 days, to_review after a wrong unaided answer; seeds from the diagnosis; the serve state machine as a table (at most 3 tries; a typical error gives "Prova questo"; an unknown error gives the first hint and one more try); Oggi shows Riprendi and at most 3 suggestions, each with its reason.
+- **Why:** The student gets immediate, honest feedback and a visible reason for every suggestion, with no model in the loop.
+- **Cost:** Any change of a constant is a new rules version and re-derives every state.
+- **Status:** decided (formats, codes, contract and briefs land in track S0; the code in S1 to S4)
+
+## D-230 · 2026-10-08 · one lesson review per revision; lesson blind solve and lesson findings deferred
+
+- **Design ref:** D-070, A-05
+- **Design said:** Items had review, blind solve, findings and responses.
+- **We do:** A lesson revision gets one review (`banco.lesson_review/1`) by an independent session (never an author of the lesson; the model family differs from every author model, D-070). Findings stay inline in the review. The reviewer recomputes the exercises (`recomputed`; `E-LESSON-REVIEW-RECOMPUTED` for math). A new revision needs its own review. A blocker or major finding makes the teacher write a reason when approving the topic. A lesson blind solve, a findings table and author responses to lesson findings are deferred.
+- **Why:** A lesson has no instances to solve blind; the practice items show the full loop.
+- **Cost:** The teacher cannot dispose of a lesson finding one by one.
+- **Status:** decided (formats, codes, contract and briefs land in track S0; the code in S1 to S4)
+
+## D-231 · 2026-10-08 · "Non ho capito" is recorded: one optional line, read by the teacher only; no answer flow yet
+
+- **Design ref:** firm rule 1
+- **Design said:** No way to ask.
+- **We do:** A button "Non ho capito" on lessons and practice stores a question (`student_questions`: where, an optional line of at most 300 characters). Only the teacher reads it, on the practice progress page, and answers in person. No agent drafts an answer and nothing is delivered to the student automatically.
+- **Why:** Firm rule 1: no model answers the student. The teacher learns where the student is stuck.
+- **Cost:** The student gets no reply on screen.
+- **Status:** decided (formats, codes, contract and briefs land in track S0; the code in S1 to S4)
+
+## D-232 · 2026-10-08 · navigation: nav on course pages, conditional "Oggi" link on /diagnosis, outbox prefixes; no root change
+
+- **Design ref:** D-217
+- **Design said:** `/diagnosis` was the only student page.
+- **We do:** The course pages carry a navigation (Oggi, Materie, Diagnosi). `/diagnosis` links to Oggi only when the student has a visible course. The browser outbox keys get a prefix for practice answers. The root `/` is not changed.
+- **Why:** Keep the diagnosis flow as it is and add the course beside it.
+- **Cost:** No redirect from `/`; the student starts from a bookmark.
+- **Status:** decided (formats, codes, contract and briefs land in track S0; the code in S1 to S4)

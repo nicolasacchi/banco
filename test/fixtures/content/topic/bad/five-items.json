@@ -1,0 +1,35 @@
+{
+  "schema": "banco.topic/1",
+  "schema_version": 1,
+  "subject": "math",
+  "key": "ripasso.math.demo-equations",
+  "lesson_revision": "latest",
+  "intro_it": "Prima impara a risolvere, poi a verificare.",
+  "practice": [
+    {
+      "skill": "math.demo-equation",
+      "items": [
+        {
+          "item": "math-p-demo-0",
+          "revision": "latest"
+        },
+        {
+          "item": "math-p-demo-1",
+          "revision": "latest"
+        },
+        {
+          "item": "math-p-demo-2",
+          "revision": "latest"
+        },
+        {
+          "item": "math-p-demo-3",
+          "revision": "latest"
+        },
+        {
+          "item": "math-p-demo-4",
+          "revision": "latest"
+        }
+      ]
+    }
+  ]
+}

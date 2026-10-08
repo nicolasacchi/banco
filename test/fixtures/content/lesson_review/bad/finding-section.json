@@ -1,0 +1,78 @@
+{
+  "schema": "banco.lesson_review/1",
+  "schema_version": 1,
+  "revision": "123",
+  "checklist": [
+    {
+      "id": 1,
+      "result": "pass",
+      "evidence": "Ho controllato il punto sulla lezione intera."
+    },
+    {
+      "id": 2,
+      "result": "fail",
+      "evidence": "Ho controllato il punto sulla lezione intera."
+    },
+    {
+      "id": 3,
+      "result": "pass",
+      "evidence": "Ho controllato il punto sulla lezione intera."
+    },
+    {
+      "id": 4,
+      "result": "pass",
+      "evidence": "Ho controllato il punto sulla lezione intera."
+    },
+    {
+      "id": 5,
+      "result": "pass",
+      "evidence": "Ho controllato il punto sulla lezione intera."
+    },
+    {
+      "id": 6,
+      "result": "pass",
+      "evidence": "Ho controllato il punto sulla lezione intera."
+    },
+    {
+      "id": 7,
+      "result": "pass",
+      "evidence": "Ho controllato il punto sulla lezione intera."
+    },
+    {
+      "id": 8,
+      "result": "pass",
+      "evidence": "Ho controllato il punto sulla lezione intera."
+    }
+  ],
+  "recomputed": [
+    {
+      "where": "solutions",
+      "n": 1,
+      "expression": "2*3 + 1",
+      "value": "7"
+    },
+    {
+      "where": "example",
+      "n": null,
+      "expression": "3x - 7 = 2",
+      "value": "3"
+    }
+  ],
+  "findings": [
+    {
+      "severity": "major",
+      "section": "intro",
+      "exercise": 3,
+      "quote": "x = 3",
+      "problem_it": "La soluzione manca di un passaggio.",
+      "fix_it": "Aggiungi il passaggio."
+    },
+    {
+      "severity": "minor",
+      "section": "frontmatter",
+      "quote": "minutes: 30",
+      "problem_it": "Il tempo è stimato in eccesso.",
+      "fix_it": "Metti 25."
+    }
+  ]
+}

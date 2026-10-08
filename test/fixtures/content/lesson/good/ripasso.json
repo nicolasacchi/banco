@@ -1,0 +1,66 @@
+{
+  "schema": "banco.lesson/1",
+  "schema_version": 1,
+  "key": "ripasso.math.demo-equations",
+  "kind": "ripasso",
+  "subject": "math",
+  "title_it": "Equazioni di primo grado: risolvere e verificare",
+  "skills": [
+    "math.demo-equation"
+  ],
+  "uses": [
+    "math.demo-signed-numbers"
+  ],
+  "refs": [
+    {
+      "source": "seconda-2025-26",
+      "line": 12,
+      "fragment": "equazioni di primo grado numeriche",
+      "role": "needed_by"
+    },
+    {
+      "source": "prima-2025-26",
+      "line": 7,
+      "fragment": "equazioni di primo grado",
+      "role": "taught_in"
+    }
+  ],
+  "scope": "studied",
+  "minutes": 30,
+  "calculator": false,
+  "sections": {
+    "why_it": "Le equazioni servono in quasi ogni problema. Se le sai risolvere, i sistemi diventano facili.",
+    "idea_it": "Una equazione è come una bilancia in equilibrio. Quello che fai a un lato, lo fai anche all'altro.",
+    "example_it": "Risolviamo $3x - 7 = 2$.\n\n1. Porta $-7$ a destra: diventa $+7$.\n2. Dividi per $3$.",
+    "mistakes_it": "- Spostare un termine senza cambiargli il segno.\n- Dividere solo un lato.\n- Dimenticare la verifica.",
+    "book_it": "Pagine del libro: le indica il docente.",
+    "summary_it": "- Un termine che cambia lato cambia segno.\n- Si divide tutto per il coefficiente.\n- Si controlla sempre il risultato."
+  },
+  "try_intro_it": null,
+  "exercises": [
+    {
+      "n": 1,
+      "text_it": "Risolvi e verifica: $2x + 1 = 7$.",
+      "solution_it": "$2x = 6$, quindi $x = 3$.",
+      "final_it": "x = 3"
+    },
+    {
+      "n": 2,
+      "text_it": "Risolvi: $5x = 0$.",
+      "solution_it": "Dividi per $5$: $x = 0$.",
+      "final_it": "x = 0"
+    },
+    {
+      "n": 3,
+      "text_it": "Spiega a parole che cosa è una soluzione.",
+      "solution_it": "È il valore che rende vera l'uguaglianza.",
+      "final_it": null
+    },
+    {
+      "n": 4,
+      "text_it": "Risolvi: $x - 4 = -1$.",
+      "solution_it": "Porta $-4$ a destra: $x = 3$.",
+      "final_it": "x = 3"
+    }
+  ]
+}

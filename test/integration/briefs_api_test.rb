@@ -10,7 +10,7 @@ class BriefsApiTest < ActionDispatch::IntegrationTest
     assert_response :success
     body = response.parsed_body
     assert_equal "diagnosis-item", body["name"]
-    assert_equal 1, body["version"]
+    assert_equal 2, body["version"]
     assert_match(/\A\h{64}\z/, body["sha256"])
     assert_includes body["body"], "# Brief: diagnosis items"
     assert_equal Digest::SHA256.file(Rails.root.join("briefs/diagnosis-item.md")).hexdigest, body["sha256"]

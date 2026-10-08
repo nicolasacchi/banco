@@ -2,13 +2,14 @@ require "test_helper"
 
 # C-03: the authoring briefs are versioned files in git.
 class BriefTest < ActiveSupport::TestCase
-  NAMES = %w[blueprint diagnosis-item grade review skill-graph solve].freeze
+  NAMES = %w[blueprint course diagnosis-item grade lesson lesson-review practice-item review skill-graph solve topic].freeze
+  VERSION_2 = %w[diagnosis-item review].freeze # D-227: practice items, review points 12-13
 
-  test "the six briefs exist at version 1 with a body" do
+  test "the eleven briefs exist (version 1, or 2 for the two Phase 1b deltas) with a body" do
     assert_equal NAMES, Brief.names
     NAMES.each do |name|
       brief = Brief.find(name)
-      assert_equal 1, brief.version, name
+      assert_equal VERSION_2.include?(name) ? 2 : 1, brief.version, name
       assert_equal name, brief.name
       assert_operator brief.body.size, :>, 800, name
     end
@@ -101,5 +102,38 @@ class BriefTest < ActiveSupport::TestCase
     body = Brief.find("review").body
     assert_includes body, 'mktemp -d "$TMPDIR/rv-SUBJECT-XXXXXX"'
     assert_no_match(/for example `\$TMPDIR\/rv-SUBJECT-1`/, body)
+  end
+
+  def json_example(name)
+    json = Brief.find(name).body[/```json\n(.*?)```/m, 1]
+    assert json, "the #{name} brief has a json example"
+    JSON.parse(json)
+  end
+
+  test "the course, topic and lesson-review briefs carry examples their schemas accept" do
+    assert_empty Banco::Schemas.validate("course", json_example("course"))
+    assert_empty Banco::Schemas.validate("topic", json_example("topic"))
+    review = json_example("lesson-review")
+    review["checklist"] = (1..8).map { |i| { "id" => i, "result" => "pass", "evidence" => "Ho letto l'intera lezione con attenzione." } }
+    assert_empty Banco::Schemas.validate("lesson_review", review)
+  end
+
+  test "the lesson brief names the eight sections, the book line and the limits of the rules file" do
+    body = Brief.find("lesson").body
+    [ "## Perché ti serve", "## L'idea in breve", "## Esempio svolto", "## Errori da evitare", "## Prova tu",
+      "## Soluzioni", "## Sul libro", "## In sintesi" ].each { |h| assert_includes body, h }
+    assert_includes body, Validation::Rules.get(:lesson, :book_line)
+    squished = body.squish
+    assert_includes squished, "At most #{Validation::Rules.get(:lesson, :max_words)} words"
+    assert_includes squished, "at most #{(Validation::Rules.get(:lesson, :max_bold_ratio) * 100).to_i}% of the words"
+  end
+
+  test "the practice-item brief states the pool and hint rules of the rules file" do
+    body = Brief.find("practice-item").body.squish
+    assert_includes body, "at least #{Validation::Rules.get(:practice, :min_static_instances)} instances"
+    assert_includes body, "fewer than #{Validation::Rules.get(:practice, :min_instances_per_code)} instances"
+    assert_match(/write 3/i, body)
+    assert_includes Brief.find("review").body, "12. Hints"
+    assert_includes Brief.find("review").body, "13. Messages and solution"
   end
 end
