@@ -20,7 +20,7 @@
 class DecisionRecorder
   KINDS = %w[approve_skill_graph approve_blueprint confirm_test_reviewed dispose_finding confirm_grade reject_grade resolve_attempt
              void_diagnosis_run void_revision_attempts extend_diagnosis_run close_diagnosis_run release_diagnosis
-             record_consent kind_override send_back_item set_formula_sheet].freeze
+             record_consent kind_override send_back_item set_formula_sheet approve_topic send_back_lesson release_course].freeze
   CSRF_KEY = "banco.csrf_valid".freeze
   DEVICE_COOKIE = "banco_device".freeze
   RESOLVE_VERDICTS = (Grading::VERDICTS - %w[invalid short_answer]).freeze
@@ -273,6 +273,62 @@ class DecisionRecorder
 
     [ subject, nil, { subject: subject.key, enabled: enabled, blueprint_revision_id: blueprint&.id } ]
   end
+
+  # The teacher approves a topic revision (A6.1): the lesson and the pinned items as she read them, with
+  # the samples of every item. The gate says what is still missing; a review with blocker or major findings
+  # needs her reason. An approval stays valid until a newer one (A6.3).
+  def approve_topic
+    revision = find(TopicRevision, :revision_id)
+    lesson = revision.lesson
+    latest = TopicRevision.where(lesson: lesson).maximum(:seq)
+    raise Invalid, "topic revision #{revision.id} is not the latest of #{lesson.key}: approve the latest" unless revision.seq == latest
+
+    gate = Approval::TopicGate.check(revision, confirm_seen: truthy?(@params[:confirm_seen]),
+                                               lesson_findings_reason_it: @params[:lesson_findings_reason_it])
+    raise Invalid, gate.reasons unless gate.approvable
+
+    payload = { topic_revision_id: revision.id, topic: lesson.key, seq: revision.seq, course_revision_id: revision.course_revision_id,
+                lesson_revision_id: revision.lesson_revision_id, item_revision_ids: Approval::TopicGate.item_revision_ids(revision) }
+    payload[:lesson_findings_reason_it] = @params[:lesson_findings_reason_it].to_s.strip if Approval::TopicGate.findings_need_reason?(revision)
+    [ lesson.subject, nil, payload ]
+  end
+
+  # "Rimanda" for a lesson: back to the content agent with a code and a comment; it blocks the next approval.
+  def send_back_lesson
+    revision = find(LessonRevision, :lesson_revision_id)
+    code = @params[:reason_code].to_s
+    raise Invalid, "reason_code is one of #{Teacher::SendBacks::CODES.join(', ')}" unless Teacher::SendBacks::CODES.include?(code)
+
+    comment = @params[:comment_it].to_s.strip
+    raise Invalid, "a comment is required" if comment.length < 3
+
+    [ revision.lesson.subject, nil, { lesson_revision_id: revision.id, lesson: revision.lesson.key, seq: revision.seq, reason_code: code, comment_it: comment.first(1000) } ]
+  end
+
+  # Opens or closes the course to the official student (A6.1, A6.2). Opening carries the map of the latest
+  # course revision, which must stand on the approved graph and hold at least one approved topic.
+  def release_course
+    subject = Subject.find_by(key: @params[:subject].to_s) or raise Missing, "no subject #{@params[:subject].to_s.first(30).inspect}"
+    open = case @params[:open].to_s
+    when "1", "true" then true
+    when "0", "false" then false
+    else raise Invalid, "open is 1 or 0"
+    end
+    current = Course::State.released_revision_id(subject)
+    if open
+      course = Course::State.latest(subject)
+      reasons = Course::Decisions.release_reasons(subject, course)
+      raise Invalid, reasons if reasons.any?
+
+      [ subject, Student.official, { subject: subject.key, open: true, course_revision_id: course.id } ]
+    else
+      raise Invalid, "the course of #{subject.key} is not open" unless current
+
+      [ subject, Student.official, { subject: subject.key, open: false } ]
+    end
+  end
+
+  def truthy?(value) = ActiveModel::Type::Boolean.new.cast(value) == true
 
   # ---- helpers
 

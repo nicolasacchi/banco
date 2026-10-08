@@ -21,5 +21,28 @@ module Course
       end
       nil
     end
+
+    # Whether some topic of the course map has an approval whose skills match the map's (A6.1).
+    def approved_topic_in?(course)
+      keys = course.body["topics"].to_h { |t| [ t["key"], t["skills"].sort ] }
+      Decision.where(kind: "approve_topic", subject_id: course.subject_id).pluck(:payload_json).any? do |json|
+        payload = JSON.parse(json)
+        wanted = keys[payload["topic"]] or next false
+        revision = TopicRevision.find_by(id: payload["topic_revision_id"])
+        revision && Catalog.skills_of(revision) == wanted
+      end
+    end
+
+    # Why the latest course map cannot be opened to the official student yet (A6.1), as plain reasons.
+    def release_reasons(subject, course)
+      return [ "there is no course map for #{subject.key}" ] unless course
+
+      reasons = []
+      approved = SubjectStage.approved_graph(subject)
+      reasons << "the course map was not validated against the approved graph of #{subject.key}" unless approved && approved.id == course.skill_graph_revision_id
+      reasons << "no topic of the course map is approved" unless approved_topic_in?(course)
+      reasons << "the course is already open with this map" if State.released_revision_id(subject) == course.id
+      reasons
+    end
   end
 end

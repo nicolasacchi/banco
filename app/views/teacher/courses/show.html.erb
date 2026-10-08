@@ -1,0 +1,93 @@
+<% content_for :title, t("teacher.course.title", subject: @subject.name_it) %>
+<main class="page wide">
+  <p><a href="/teacher"><%= t("teacher.back") %></a></p>
+  <h1><%= t("teacher.course.title", subject: @subject.name_it) %></h1>
+  <% review = @review %>
+  <% if !review.present? %>
+    <p class="notice"><%= t("teacher.course.none") %></p>
+  <% else %>
+    <% counts = review.counts %>
+    <p id="course-summary" data-open="<%= review.open? %>">
+      <%= t("teacher.course.summary", seq: review.latest.seq, topics: counts[:in_map], approved: counts[:approved]) %>
+      <strong><%= review.open? ? t("teacher.course.open") : t("teacher.course.closed") %></strong>
+    </p>
+    <p><a class="button secondary small" id="course-practice-link" href="<%= with_student(teacher_practice_path(key: @subject.key)) %>"><%= t("teacher.course.practice_link") %></a></p>
+
+    <% review.warnings.each do |w| %>
+      <p class="notice" data-warning="<%= w["code"] %>"><strong><%= w["code"] %></strong> <%= t("teacher.course.warning.#{w["code"]}", default: w["message"]) %></p>
+    <% end %>
+    <% review.notes.each do |note| %><p class="hint" data-course-note><%= note %></p><% end %>
+
+    <section id="course-release" data-open="<%= review.open? %>" data-releasable="<%= review.releasable? %>">
+      <h2><%= t("teacher.course.release.title") %></h2>
+      <% blocker = decision_blocker %>
+      <% if review.open? %>
+        <p><%= review.released_latest? ? t("teacher.course.release.is_open") : t("teacher.course.release.open_older") %></p>
+        <%= decision_form("/teacher/subjects/#{@subject.key}/course-release", id: "course-close-form") do %>
+          <%= hidden_field_tag :open, "0", id: "course-close-open" %>
+          <button type="submit" class="button secondary" <%= "disabled" if blocker %>><%= t("teacher.course.release.close") %></button>
+        <% end %>
+      <% end %>
+      <% unless review.released_latest? %>
+        <%= decision_form("/teacher/subjects/#{@subject.key}/course-release", id: "course-open-form") do %>
+          <%= hidden_field_tag :open, "1", id: "course-open-open" %>
+          <button type="submit" class="button" <%= "disabled" if blocker || !review.releasable? %> aria-describedby="course-release-why"><%= review.open? ? t("teacher.course.release.reopen") : t("teacher.course.release.open") %></button>
+        <% end %>
+        <div id="course-release-why" class="hint">
+          <% if review.releasable? %>
+            <p><%= t("teacher.course.release.hint") %></p>
+          <% else %>
+            <p><%= t("teacher.course.release.cannot_yet") %></p>
+            <ul class="plain reasons"><% review.release_reasons.each do |reason| %><li><%= Teacher::Wording.italian(reason) %></li><% end %></ul>
+          <% end %>
+        </div>
+      <% end %>
+    </section>
+
+    <section id="course-topics">
+      <h2><%= t("teacher.course.topics") %></h2>
+      <p class="hint"><%= t("teacher.course.topics_intro") %></p>
+      <ol class="topic-list">
+        <% review.topics.each do |row| %>
+          <% entry = row.entry %>
+          <li class="topic" data-topic="<%= entry["key"] %>" data-stage="<%= row.stage %>">
+            <p>
+              <% if row.latest %><a href="<%= teacher_topic_path(key: @subject.key, topic: entry["key"]) %>"><strong><%= entry["title_it"] %></strong></a>
+              <% else %><strong><%= entry["title_it"] %></strong><% end %>
+              <span class="key">(<%= entry["key"] %>)</span> ·
+              <strong data-stage-label><%= t("teacher.course.stage.#{row.stage}") %></strong>
+            </p>
+            <p class="hint">
+              <%= t("teacher.course.kind.#{entry['kind']}") %> · <%= t("teacher.course.minutes", count: entry["minutes"]) %>
+              <% if entry["term"] %> · <%= t("teacher.course.term", n: entry["term"]) %><% end %>
+              · <%= safe_join(entry["skills"].map { |k| ref_for(k) }, ", ") %>
+              <% if entry["after"].any? %><br><%= t("teacher.course.after") %> <%= entry["after"].join(", ") %><% end %>
+            </p>
+          </li>
+        <% end %>
+      </ol>
+    </section>
+
+    <% if review.skills.any? %>
+      <section id="course-skills">
+        <h2><%= t("teacher.course.skills") %></h2>
+        <p class="hint"><%= t("teacher.course.skills_intro") %></p>
+        <% review.skills.each do |skill| %>
+          <article class="card" data-skill="<%= skill.key %>">
+            <h3><%= skill.label_it %> <span class="key">(<%= skill.key %>)</span></h3>
+            <ul class="plain refs">
+              <% skill.refs.each do |r| %>
+                <li><%= t("teacher.course.ref", line: r.line, role: t("teacher.course.role.#{r.role}")) %>
+                  <q><%= r.fragment %></q><% if r.text %><br><span class="hint"><%= t("teacher.course.programme_line") %></span> <%= r.text %><% end %></li>
+              <% end %>
+            </ul>
+            <% if skill.errors.any? %>
+              <p><strong><%= t("teacher.course.errors") %></strong></p>
+              <ul class="plain"><% skill.errors.each do |e| %><li><strong><%= e["code"] %></strong>: <%= e["description_it"] %></li><% end %></ul>
+            <% end %>
+          </article>
+        <% end %>
+      </section>
+    <% end %>
+  <% end %>
+</main>

@@ -30,6 +30,9 @@ module TeacherHelper
   # The query of the chosen student, for links that keep it.
   def with_student(path) = student_param.empty? ? path : "#{path}?#{student_param.to_query}"
 
+  # A moment in the teacher's days and hours: 08/10/2026 14:05, Rome time.
+  def teacher_time(time) = time.in_time_zone("Europe/Rome").strftime("%d/%m/%Y %H:%M")
+
   def stage_label(stage) = t("teacher.stage.#{stage}")
 
   def scope_text(scope)

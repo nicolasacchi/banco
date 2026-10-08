@@ -1,0 +1,139 @@
+<% review = @review %>
+<% content_for :title, t("teacher.topic.title", title: review.entry ? review.entry["title_it"] : review.key) %>
+<main class="page wide" data-controller="markup lesson-preview">
+  <p><a href="<%= teacher_course_path(key: @subject.key) %>"><%= t("teacher.topic.back", subject: @subject.name_it) %></a></p>
+  <h1><%= review.entry ? review.entry["title_it"] : review.key %> <span class="key">(<%= review.key %>)</span></h1>
+  <% if review.latest.nil? %>
+    <p class="notice" id="topic-missing"><%= t("teacher.topic.missing") %></p>
+  <% else %>
+    <% latest = review.latest %>
+    <% lesson_body = review.lesson_body %>
+    <% blocker = decision_blocker %>
+    <p id="topic-summary" data-approved="<%= review.approved_latest? %>">
+      <%= t("teacher.topic.summary", seq: latest.seq, lesson_seq: review.lesson_revision.seq) %>
+      <strong><%= review.approved_latest? ? t("teacher.topic.is_approved") : (review.approved ? t("teacher.topic.approved_older", seq: review.approved.seq) : t("teacher.topic.not_approved")) %></strong>
+    </p>
+    <% if review.intro_it %><p class="hint"><%= review.intro_it %></p><% end %>
+
+    <section id="topic-approve" class="approve" data-approvable="<%= review.gate.approvable %>">
+      <h2><%= t("teacher.topic.approve_title") %></h2>
+      <% allowed = review.approvable? && blocker.nil? %>
+      <%= decision_form("/teacher/topic-revisions/#{latest.id}/approve", id: "topic-approve-form") do %>
+        <p><label><%= check_box_tag :confirm_seen, "1", false, id: "topic-confirm-seen", required: true, disabled: !allowed %> <%= t("teacher.topic.confirm_seen") %></label></p>
+        <% if review.needs_reason? %>
+          <label class="hint" for="topic-findings-reason"><%= t("teacher.topic.findings_reason_label") %></label>
+          <input id="topic-findings-reason" class="answer-input wide" type="text" name="lesson_findings_reason_it" minlength="3" maxlength="1000" placeholder="<%= t('teacher.topic.findings_reason_placeholder') %>" <%= "disabled" unless allowed %>>
+        <% end %>
+        <button type="submit" class="button" <%= "disabled" unless allowed %> aria-describedby="topic-approve-why"><%= t("teacher.topic.approve") %></button>
+      <% end %>
+      <div id="topic-approve-why" class="hint">
+        <% if review.approved_latest? %>
+          <p><%= t("teacher.topic.already") %></p>
+        <% elsif !review.gate.approvable %>
+          <p><%= t("teacher.topic.cannot_yet") %></p>
+          <ul class="plain reasons"><% gate_sentences(review.gate.reasons).each do |sentence| %><li><%= sentence %></li><% end %></ul>
+        <% elsif blocker %>
+          <p><%= t("teacher.cannot_decide.#{blocker}") %></p>
+        <% else %>
+          <p><%= t("teacher.topic.approve_hint") %></p>
+        <% end %>
+      </div>
+    </section>
+
+    <section id="topic-lesson">
+      <h2><%= t("teacher.topic.lesson") %></h2>
+      <p class="hint">
+        <%= t("teacher.topic.lesson_facts", kind: t("teacher.course.kind.#{lesson_body['kind']}"), minutes: lesson_body["minutes"], programme: t("teacher.topic.scope.#{lesson_body['scope']}", default: lesson_body["scope"]),
+                                            calculator: t("teacher.topic.calculator_#{lesson_body['calculator']}")) %>
+      </p>
+      <% if lesson_body["uses"].any? %>
+        <p class="hint"><%= t("teacher.topic.uses") %> <%= safe_join(lesson_body["uses"].map { |k| ref_for(k) }, ", ") %></p>
+      <% end %>
+      <ul class="plain refs">
+        <% lesson_body["refs"].each do |r| %><li><%= t("teacher.course.ref", line: r["line"], role: t("teacher.course.role.#{r['role']}")) %> <q><%= r["fragment"] %></q></li><% end %>
+      </ul>
+      <% sections = lesson_body["sections"] %>
+      <div class="lesson" id="lesson-text">
+        <% %w[why idea example mistakes].each do |name| %>
+          <h3><%= t("teacher.topic.section.#{name}") %></h3>
+          <div class="lesson-text" data-section="<%= name %>" data-lesson-markup><%= sections["#{name}_it"] %></div>
+        <% end %>
+        <h3><%= t("teacher.topic.section.try") %></h3>
+        <% if lesson_body["try_intro_it"] %><div class="lesson-text" data-lesson-markup><%= lesson_body["try_intro_it"] %></div><% end %>
+        <ol class="exercises">
+          <% lesson_body["exercises"].each do |ex| %>
+            <li data-exercise="<%= ex['n'] %>">
+              <div class="lesson-text" data-lesson-markup><%= ex["text_it"] %></div>
+              <p class="hint"><strong><%= t("teacher.topic.section.solutions") %></strong></p>
+              <div class="lesson-text" data-solution data-lesson-markup><%= ex["solution_it"] %></div>
+              <p class="hint"><%= t("teacher.topic.final") %> <% if ex["final_it"] %><span data-final data-markup="inline"><%= ex["final_it"] %></span><% else %><%= t("teacher.topic.final_open") %><% end %></p>
+            </li>
+          <% end %>
+        </ol>
+        <% %w[book summary].each do |name| %>
+          <h3><%= t("teacher.topic.section.#{name}") %></h3>
+          <div class="lesson-text" data-section="<%= name %>" data-lesson-markup><%= sections["#{name}_it"] %></div>
+        <% end %>
+      </div>
+    </section>
+
+    <section id="topic-review">
+      <h2><%= t("teacher.topic.review.title") %></h2>
+      <% if review.reviews.empty? %>
+        <p class="notice"><%= t("teacher.topic.review.none") %></p>
+      <% end %>
+      <% review.reviews.each do |row| %>
+        <article class="card" data-lesson-review="<%= row.review.id %>">
+          <p><%= t("teacher.topic.review.summary", model: row.model, pass: row.results["pass"].to_i, fail: row.results["fail"].to_i, na: row.results["na"].to_i) %></p>
+          <% row.checklist.select { |c| c["result"] == "fail" }.each do |c| %>
+            <p class="notice"><strong><%= t("teacher.topic.review.point", n: c["id"]) %></strong> <%= c["evidence"] %></p>
+          <% end %>
+          <% if row.recomputed.any? %>
+            <p><strong><%= t("teacher.topic.review.recomputed", count: row.recomputed.size) %></strong></p>
+            <ul class="plain recomputed"><% row.recomputed.each do |r| %><li><%= t("teacher.topic.review.where.#{r['where']}", default: r["where"]) %><% if r["n"] %> <%= r["n"] %><% end %>: <span data-markup="inline"><%= r["expression"] %></span> = <span data-markup="inline"><%= r["value"] %></span></li><% end %></ul>
+          <% end %>
+          <% if row.findings.any? %>
+            <p><strong><%= t("teacher.topic.review.findings", count: row.findings.size) %></strong></p>
+            <% row.findings.each do |f| %>
+              <div class="finding" data-severity="<%= f['severity'] %>">
+                <p><strong><%= t("teacher.skill.severity.#{f['severity']}") %></strong> · <%= t("teacher.topic.section.#{f['section']}", default: f["section"]) %><% if f["exercise"] %> · <%= t("teacher.topic.review.exercise", n: f["exercise"]) %><% end %><br>
+                  <q><%= f["quote"] %></q><br><%= f["problem_it"] %><br><%= t("teacher.skill.fix") %> <%= f["fix_it"] %></p>
+              </div>
+            <% end %>
+          <% end %>
+        </article>
+      <% end %>
+      <% if review.send_backs.any? %>
+        <h3><%= t("teacher.topic.sent_back_title") %></h3>
+        <% review.send_backs.each do |sb| %>
+          <p class="decided" data-sent-back="lesson"><strong><%= t("teacher.skill.sent_back") %></strong> <%= t("teacher.skill.reason.#{sb[:reason_code]}") %>: <%= sb[:comment_it] %></p>
+        <% end %>
+      <% end %>
+      <h3><%= t("teacher.topic.send_back_title") %></h3>
+      <%= decision_form("/teacher/lesson-revisions/#{review.lesson_revision.id}/send-back", id: "lesson-send-back-form") do %>
+        <label class="hint" for="lesson-reason-code"><%= t("teacher.skill.reason_code") %></label>
+        <select id="lesson-reason-code" name="reason_code" class="answer-input wide">
+          <% Teacher::SendBacks::CODES.each do |code| %><option value="<%= code %>"><%= t("teacher.skill.reason.#{code}") %></option><% end %>
+        </select>
+        <label class="hint" for="lesson-comment"><%= t("teacher.skill.comment") %></label>
+        <input id="lesson-comment" class="answer-input wide" type="text" name="comment_it" maxlength="500" required>
+        <p><button type="submit" class="button secondary small" <%= "disabled" if blocker %>><%= t("teacher.topic.send_back_button") %></button></p>
+      <% end %>
+    </section>
+
+    <section id="topic-practice">
+      <h2><%= t("teacher.topic.practice") %></h2>
+      <p class="hint"><%= t("teacher.topic.practice_intro", count: Teacher::ItemCard::SAMPLES) %></p>
+      <% review.skill_blocks.each do |block| %>
+        <section class="skill-block" data-skill="<%= block.skill %>" id="skill-<%= block.skill.tr('.', '-') %>">
+          <h3><%= ref_for(block.skill) %></h3>
+          <div class="cards">
+            <% block.cards.each do |card| %>
+              <%= render "teacher/items/card", card: card, blocker: blocker %>
+            <% end %>
+          </div>
+        </section>
+      <% end %>
+    </section>
+  <% end %>
+</main>

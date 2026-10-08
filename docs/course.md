@@ -46,3 +46,14 @@ a new revision needs its own review.
 | `approved_newer_pending` | an older revision is approved, the latest is not |
 
 `banco status` carries the same counts in each subject's `course` block, with `line_it` for people.
+
+## The teacher's side (S4, D-236)
+
+The agent stops at `awaiting_teacher`. The teacher reads and decides in the browser:
+
+- `/teacher/subjects/:key/course`: the map, the topics in order with their stage, the new skills with the programme text, the release.
+- `/teacher/subjects/:key/topics/:topic`: the lesson, its review, four sample instances of each pinned item (hints, messages for the typical errors, solution), the finding cards, "Rimanda la lezione" and "Approva l'argomento".
+- `/teacher/subjects/:key/practice?student=KEY` and `/practice/skills/:skill`: the student's states, counts, typical errors, questions, and every try of a skill.
+
+Decisions (POST, web listener, teacher only): `approve_topic` (`confirm_seen=1`, and `lesson_findings_reason_it` when the lesson review has a blocker or major finding), `send_back_lesson` (`reason_code`, `comment_it`), `release_course` (`open=1|0`). The gate is `Approval::TopicGate`; its reasons are worded in Italian by `Teacher::Wording`.
+

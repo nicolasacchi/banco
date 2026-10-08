@@ -6,7 +6,9 @@ module Teacher
       @student = student
     end
 
-    Row = Data.define(:subject, :stage, :items, :waiting, :minutes, :has_graph, :has_blueprint)
+    Row = Data.define(:subject, :stage, :items, :waiting, :minutes, :has_graph, :has_blueprint, :course)
+    # The course line of a subject (A10): topics approved against the topics of the map, and whether it is open.
+    CourseLine = Data.define(:approved, :total, :open)
 
     def rows
       @rows ||= Subject.order(:position).map { |s| row(s) }
@@ -37,7 +39,13 @@ module Teacher
       sent = info[:items][:sent_back]
       waiting << [ :sent_back, sent ] if sent.positive?
       waiting << [ :test_to_approve, nil ] if blueprint && info[:blueprint][:approved_revision_id] != blueprint.id && Approval::BlueprintGate.approvable?(blueprint)
-      Row.new(subject, info[:stage], info[:items], waiting, minutes[:by_subject][subject.key].to_i, !graph.nil?, !blueprint.nil?)
+      Row.new(subject, info[:stage], info[:items], waiting, minutes[:by_subject][subject.key].to_i, !graph.nil?, !blueprint.nil?, course_line(subject))
+    end
+
+    def course_line(subject)
+      rows = Course::TopicStage.rows(subject) or return nil
+      approved = rows.values.count { |r| %w[approved approved_newer_pending].include?(r.stage) }
+      CourseLine.new(approved, rows.size, !Course::State.released_revision_id(subject).nil?)
     end
 
     # Blocker and major findings the teacher has not decided. With a blueprint: the same list as

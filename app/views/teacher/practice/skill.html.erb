@@ -1,0 +1,26 @@
+<% content_for :title, t("teacher.practice.skill_title", skill: @row.label_it) %>
+<main class="page wide">
+  <p><a href="<%= with_student(teacher_practice_path(key: @subject.key)) %>"><%= t("teacher.practice.skill_back", subject: @subject.name_it) %></a></p>
+  <h1><%= @row.label_it %> <span class="key">(<%= @skill %>)</span></h1>
+  <%= render "teacher/student_picker" %>
+  <p><strong><%= t("states.#{@row.state}") %></strong> · <%= @row.why_it %></p>
+  <% if @trail.empty? %>
+    <p class="hint" id="trail-empty"><%= t("teacher.practice.trail_empty") %></p>
+  <% else %>
+    <ol class="trail">
+      <% @trail.each do |step| %>
+        <li class="trail-step" data-outcome="<%= step.outcome %>" data-to-correct="<%= step.to_correct %>">
+          <p><strong><%= teacher_time(step.at) %></strong> · <%= t("teacher.practice.reason.#{step.reason}") %></p>
+          <p><%= step.stem %></p>
+          <p><%= t("teacher.practice.answer") %> <code data-raw><%= step.raw %></code></p>
+          <p><strong data-outcome-label><%= t("teacher.practice.outcome.#{step.outcome}") %></strong>
+            <% if step.codes.any? %> · <%= t("teacher.practice.code") %> <%= step.codes.join(", ") %><% end %>
+            · <%= step.aided ? t("teacher.practice.aided") : t("teacher.practice.unaided") %>
+            · <%= t("teacher.practice.hints", count: step.hints) %>
+            <% if step.solution_shown %> · <%= t("teacher.practice.solution_shown", reason: step.solution_shown) %><% end %></p>
+          <% if step.to_correct %><p class="notice"><%= t("teacher.practice.to_correct") %></p><% end %>
+        </li>
+      <% end %>
+    </ol>
+  <% end %>
+</main>
