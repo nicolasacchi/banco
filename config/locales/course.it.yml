@@ -1,0 +1,78 @@
+# Texts of the course and practice pages (Phase 1b, A9.4). The meaning is fixed by the spec; the
+# wording may be polished. Short sentences, no italics, no capitals for emphasis, no emoji.
+it:
+  course:
+    nav:
+      today: "Oggi"
+      subjects: "Materie"
+      diagnosis: "Diagnosi"
+  today:
+    resume: "Riprendi: %{topic}"
+    suggestions: "Che cosa fare adesso"
+    reason:
+      to_recover: "Nella diagnosi è risultata da riprendere: %{skill}."
+      to_learn: "Nella diagnosi è risultata da imparare: %{skill}."
+      to_review: "La sapevi, ora vacilla: %{skill}."
+      course_next: "È il prossimo argomento del corso."
+    closed: "Il corso non è ancora aperto. Intanto studia sul libro secondo l'orario."
+  states:
+    not_seen: "Non ancora vista"
+    to_recover: "Da riprendere"
+    to_learn: "Da imparare"
+    in_study: "In studio"
+    demonstrated: "Dimostrata"
+    consolidated: "Consolidata"
+    to_review: "Da ripassare"
+  why:
+    not_seen: "Non l'hai ancora provata."
+    seed_demonstrated: "Dimostrata nella diagnosi del %{date}."
+    seed_implied: "Non serviva verificarla: hai dimostrato un'abilità che la usa."
+    seed_to_recover: "Nella diagnosi: da riprendere."
+    seed_to_learn: "Nella diagnosi: da imparare."
+    in_study: "Corrette senza aiuto: %{n} su 3, in %{d} giorni su 2."
+    demonstrated: "Dimostrata il %{date}: corrette senza aiuto in %{days} giorni diversi."
+    consolidated: "Consolidata il %{date}: l'hai rifatta giusta dopo più di due settimane."
+    to_review: "Un errore senza aiuto il %{date}: servono 2 corrette per tornare %{previous}."
+  subject:
+    no_topic: "Da riprendere, ancora senza argomento: %{skills}."
+  topic:
+    kind:
+      ripasso: "Ripasso di prima"
+      ponte: "Base che serve"
+      lezione: "Programma di seconda"
+    status:
+      todo: "Da fare"
+      in_progress: "In corso"
+      done: "Fatto"
+    before: "Prima conviene fare: %{topic}"
+    programme: "Dal programma, riga %{line}: «%{fragment}»"
+  lesson:
+    try: "Fai l'esercizio sul foglio, poi controlla."
+    show_solution: "Mostra la soluzione"
+  practice:
+    paper: "Il procedimento sul foglio, qui solo il risultato."
+    submit: "Controlla"
+    hint: "Mostra un aiuto (%{n} di %{total})"
+    solution: "Mostrami la soluzione"
+    correct: "Corretto."
+    correct_aided: "Corretto, con un aiuto."
+    accents_note: "Attento agli accenti."
+    unrecognised: "Questa risposta non corrisponde a un errore che conosco. Ecco un aiuto: riprova."
+    form: "La forma della risposta non è quella richiesta: rileggi la consegna e riprova."
+    second_wrong: "Non è ancora giusta. Guarda la soluzione, poi prova un esercizio simile."
+    near_miss: "Controlla come l'hai scritta: forse c'è un errore di battitura."
+    undetermined: "Non riesco a correggere questa risposta da solo: la vedrà il docente."
+    try_this: "Prova questo"
+    try_this_reason: "Un esercizio simile, per lo stesso errore."
+    after_solution: "Prova un esercizio simile"
+    next: "Un altro esercizio"
+    back: "Torna all'argomento"
+    not_counted: "Questo esercizio non conta per dimostrare l'abilità."
+    reseen: "Questo esercizio l'hai già visto: non conta per dimostrare l'abilità."
+    closed: "Questo esercizio è chiuso: scegline un altro."
+  question:
+    button: "Non ho capito"
+    label: "Che cosa non ti è chiaro? (facoltativo, una riga)"
+    sent: "Fatto: il docente lo vedrà."
+  draft:
+    notice: "Bozza: il docente non l'ha ancora approvata."
