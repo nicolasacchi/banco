@@ -2,8 +2,8 @@
 
 Regole dell'esercizio guidato, versione 1.
 
-This note is the prose of the rules the practice engine applies. The numbers will live in
-`lib/practice/rules/v1.rb` (`Practice::Rules::V1`, written in track S2); a test will fail when the two drift
+This note is the prose of the rules the practice engine applies. The numbers live in
+`lib/practice/rules/v1.rb` (`Practice::Rules::V1`); a test (`test/lib/practice/rules_test.rb`) fails when the two drift
 apart. Every serve records `rules_version`. A change to a constant bumps the version, and all skill states are
 re-derived from the stored rows (nothing is rewritten). The note is generic: one student, a teacher who is also
 the operator, eleven subjects. Facts about a real student never go in this repository.

@@ -66,6 +66,11 @@ only), `HARNESS_PORT` 3200 (internal). Never `PORT`.
 - `lib/diagnosis/`: the pure engine (no database): `Plan`, `Fold`, `Engine`,
   `Derivation`, `Simulator`; `app/models/diagnosis/`: the loaders that read rows
   for it. `banco diagnosis simulate` is a dry run of the same engine.
+- The practice engine (Phase 1b S2, D-235, rules `practice/1` in `docs/rules/practice-1.md` and `lib/practice/rules/v1.rb`):
+  `lib/practice/` (`Outcome`, `ServeState` with its transition table, `Fold` for the skill states, `Selector`, `Today`,
+  `GraphOrder`), `app/models/practice/` (`Loader`, `Seeder`, `AnswerRecorder`, `Actions`, `Messages`, `Payload`, `Instances`) and
+  `Course::Catalog` (what each student sees). Own ledger tables `practice_*`; `Grading` is shared. Tests: `test/lib/practice`,
+  `test/models/practice` (`PROP_RUNS=300` for the properties).
 - `lib/validation/`, `app/models/validation/`: mechanical validation (A-06) of items,
   graphs and blueprints; thresholds in `config/banco/validation_rules.yml`; agent
   code runs only in Chrome (`ChromeRunner`, the harness in `lib/harness/` served on

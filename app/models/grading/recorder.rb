@@ -13,12 +13,16 @@ module Grading
 
     # Appends one attempt_gradings row for +attempt+. invalid results are not
     # attempts and are refused.
-    def append(attempt, result, source: "sync")
+    #
+    # model: the grading table. AttemptGrading (the diagnosis, the default) or PracticeGrading (the
+    # practice ledger, A7); the attempt is a PracticeAttempt for the latter.
+    def append(attempt, result, source: "sync", model: AttemptGrading)
       raise ArgumentError, "an invalid answer is not an attempt, nothing to record" if result.invalid?
 
-      AttemptGrading.transaction do
-        seq = AttemptGrading.where(attempt_id: attempt.id).maximum(:seq).to_i + 1
-        AttemptGrading.create!(result.to_attributes.merge(attempt: attempt, seq: seq, source: source))
+      owner = model == PracticeGrading ? :practice_attempt : :attempt
+      model.transaction do
+        seq = model.where("#{owner}_id": attempt.id).maximum(:seq).to_i + 1
+        model.create!(result.to_attributes.merge(owner => attempt, seq: seq, source: source))
       end
     end
 

@@ -3,7 +3,7 @@
 What the content agent does between a programme and a topic the teacher approves. Formats are in
 `config/banco/schemas/` (`course`, `lesson`, `lesson_review`, `topic`), the numbers in
 `config/banco/validation_rules.yml` (`course`, `lesson`, `practice`), the codes in
-`config/banco/error_codes.yml`, the decisions in `docs/decisions.md` (D-223 to D-234). Everything here
+`config/banco/error_codes.yml`, the decisions in `docs/decisions.md` (D-223 to D-235). Everything here
 is generic: no student, no programme text.
 
 ## The cycle
