@@ -171,7 +171,7 @@ class PracticeSelectorTest < ActiveSupport::TestCase
     answer!(first, wrong_raw)
     answer!(first, wrong_raw) # closed, solution sent
     choice = serve!(follow: { serve_id: first.serve.id, kind: "after_solution" })
-    assert_equal ["next", first.serve.id, @revisions.second.id ], [ choice.reason, choice.parent_serve_id, choice.instance.item_revision_id ]
+    assert_equal [ "next", first.serve.id, @revisions.second.id ], [ choice.reason, choice.parent_serve_id, choice.instance.item_revision_id ]
   end
 
   test "bad follows: an open serve, a serve that does not allow it, another student's, another skill, an unknown kind or serve" do

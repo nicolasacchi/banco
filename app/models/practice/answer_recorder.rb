@@ -59,7 +59,11 @@ module Practice
       attempts = 0
       begin
         attempts += 1
-        attempt = write(serve, client_id, raw, source, result, key) or return closed
+        attempt = write(serve, client_id, raw, source, result, key)
+        # no longer open: a twin of this very answer may have closed it a moment ago
+        attempt ||= PracticeAttempt.find_by(client_attempt_id: client_id, student_id: @student.id, practice_serve_id: serve.id)
+        return closed unless attempt
+
         stored(serve, attempt)
       rescue ActiveRecord::RecordNotUnique
         # the same answer arrived twice at once, or another try took the number: look again
