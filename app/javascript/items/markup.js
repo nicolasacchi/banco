@@ -29,11 +29,29 @@ function inlineNodes(nodes, parent) {
   }
 }
 
-// Blocks (paragraphs, numbered lists) as a fragment.
-export function renderMarkup(text) {
+// Blocks (paragraphs, numbered lists) as a fragment. options.lists "v2" (lessons only) also
+// renders "- " lists and one nested level.
+export function renderMarkup(text, options = {}) {
   const fragment = document.createDocumentFragment()
-  for (const block of parse(text)) {
-    if (block.type === "ol") {
+  for (const block of parse(text, options)) {
+    if (options.lists === "v2" && block.type !== "p") {
+      const list = document.createElement(block.type)
+      for (const item of block.items) {
+        const li = document.createElement("li")
+        inlineNodes(item.children, li)
+        if (item.sub.length > 0) {
+          const nested = document.createElement("ul")
+          for (const sub of item.sub) {
+            const subItem = document.createElement("li")
+            inlineNodes(sub, subItem)
+            nested.appendChild(subItem)
+          }
+          li.appendChild(nested)
+        }
+        list.appendChild(li)
+      }
+      fragment.appendChild(list)
+    } else if (block.type === "ol") {
       const ol = document.createElement("ol")
       for (const item of block.items) {
         const li = document.createElement("li")

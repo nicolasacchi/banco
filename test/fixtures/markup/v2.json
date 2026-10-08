@@ -1,0 +1,511 @@
+[
+  {
+    "input": "Una frase semplice.",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Una frase semplice."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "Prima riga\ncontinua qui.\n\nSeconda parte.",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Prima riga continua qui."
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Seconda parte."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "Un **termine** e una formula $x^2 + 1$ nel testo.",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Un "
+          },
+          {
+            "t": "bold",
+            "children": [
+              {
+                "t": "text",
+                "v": "termine"
+              }
+            ]
+          },
+          {
+            "t": "text",
+            "v": " e una formula "
+          },
+          {
+            "t": "math",
+            "v": "x^2 + 1"
+          },
+          {
+            "t": "text",
+            "v": " nel testo."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "Costa 5\\$ in tutto.",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Costa 5$ in tutto."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "La formula $a\\$b$ ha un dollaro.",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "La formula "
+          },
+          {
+            "t": "math",
+            "v": "a$b"
+          },
+          {
+            "t": "text",
+            "v": " ha un dollaro."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "1. Porta $-7$ a destra.\n2. Dividi per $3$.",
+    "blocks": [
+      {
+        "type": "ol",
+        "items": [
+          {
+            "children": [
+              {
+                "t": "text",
+                "v": "Porta "
+              },
+              {
+                "t": "math",
+                "v": "-7"
+              },
+              {
+                "t": "text",
+                "v": " a destra."
+              }
+            ],
+            "sub": []
+          },
+          {
+            "children": [
+              {
+                "t": "text",
+                "v": "Dividi per "
+              },
+              {
+                "t": "math",
+                "v": "3"
+              },
+              {
+                "t": "text",
+                "v": "."
+              }
+            ],
+            "sub": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "- Primo punto.\n- Secondo punto con **parola**.",
+    "blocks": [
+      {
+        "type": "ul",
+        "items": [
+          {
+            "children": [
+              {
+                "t": "text",
+                "v": "Primo punto."
+              }
+            ],
+            "sub": []
+          },
+          {
+            "children": [
+              {
+                "t": "text",
+                "v": "Secondo punto con "
+              },
+              {
+                "t": "bold",
+                "children": [
+                  {
+                    "t": "text",
+                    "v": "parola"
+                  }
+                ]
+              },
+              {
+                "t": "text",
+                "v": "."
+              }
+            ],
+            "sub": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "- Regola\n  - caso a\n  - caso b\n- Altra regola",
+    "blocks": [
+      {
+        "type": "ul",
+        "items": [
+          {
+            "children": [
+              {
+                "t": "text",
+                "v": "Regola"
+              }
+            ],
+            "sub": [
+              [
+                {
+                  "t": "text",
+                  "v": "caso a"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "caso b"
+                }
+              ]
+            ]
+          },
+          {
+            "children": [
+              {
+                "t": "text",
+                "v": "Altra regola"
+              }
+            ],
+            "sub": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "1. Passo uno\n    - dettaglio con $x_1$\n2. Passo due",
+    "blocks": [
+      {
+        "type": "ol",
+        "items": [
+          {
+            "children": [
+              {
+                "t": "text",
+                "v": "Passo uno"
+              }
+            ],
+            "sub": [
+              [
+                {
+                  "t": "text",
+                  "v": "dettaglio con "
+                },
+                {
+                  "t": "math",
+                  "v": "x_1"
+                }
+              ]
+            ]
+          },
+          {
+            "children": [
+              {
+                "t": "text",
+                "v": "Passo due"
+              }
+            ],
+            "sub": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "- Un punto che\n  continua sulla riga dopo.\n- Fine.",
+    "blocks": [
+      {
+        "type": "ul",
+        "items": [
+          {
+            "children": [
+              {
+                "t": "text",
+                "v": "Un punto che continua sulla riga dopo."
+              }
+            ],
+            "sub": []
+          },
+          {
+            "children": [
+              {
+                "t": "text",
+                "v": "Fine."
+              }
+            ],
+            "sub": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "Introduzione.\n\n1. Uno.\n2. Due.\n\nConclusione.",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Introduzione."
+          }
+        ]
+      },
+      {
+        "type": "ol",
+        "items": [
+          {
+            "children": [
+              {
+                "t": "text",
+                "v": "Uno."
+              }
+            ],
+            "sub": []
+          },
+          {
+            "children": [
+              {
+                "t": "text",
+                "v": "Due."
+              }
+            ],
+            "sub": []
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Conclusione."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "✓ Giusto: $x = 3$\n\n✗ Sbagliato: $x = -3$",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "✓ Giusto: "
+          },
+          {
+            "t": "math",
+            "v": "x = 3"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "✗ Sbagliato: "
+          },
+          {
+            "t": "math",
+            "v": "x = -3"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "**Attenzione a $x^2$** nel calcolo.",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "bold",
+            "children": [
+              {
+                "t": "text",
+                "v": "Attenzione a "
+              },
+              {
+                "t": "math",
+                "v": "x^2"
+              }
+            ]
+          },
+          {
+            "t": "text",
+            "v": " nel calcolo."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "",
+    "blocks": []
+  },
+  {
+    "input": "### Titolo",
+    "error": "a heading inside a section",
+    "line": 1
+  },
+  {
+    "input": "| a | b |",
+    "error": "a table (|)",
+    "line": 1
+  },
+  {
+    "input": "Vai su <b>ora</b>.",
+    "error": "an HTML tag",
+    "line": 1
+  },
+  {
+    "input": "Vedi [qui](http://x.it).",
+    "error": "a link",
+    "line": 1
+  },
+  {
+    "input": "Ecco ![img](a.png).",
+    "error": "an image",
+    "line": 1
+  },
+  {
+    "input": "Una parola *corsiva* qui.",
+    "error": "italics (*)",
+    "line": 1
+  },
+  {
+    "input": "Una parola _corsiva_ qui.",
+    "error": "an underscore outside $...$ (italics or bare math)",
+    "line": 1
+  },
+  {
+    "input": "Un `codice` qui.",
+    "error": "backticks",
+    "line": 1
+  },
+  {
+    "input": "> citazione",
+    "error": "a quote (>)",
+    "line": 1
+  },
+  {
+    "input": "---",
+    "error": "a rule (---)",
+    "line": 1
+  },
+  {
+    "input": "Testo\n\n- a\n    - b\n      - c",
+    "error": "more than one nested level",
+    "line": 5
+  },
+  {
+    "input": "Un $conto non chiuso.",
+    "error": "an unclosed $",
+    "line": 1
+  },
+  {
+    "input": "Un **grassetto non chiuso.",
+    "error": "an unclosed **",
+    "line": 1
+  },
+  {
+    "input": "Il valore x^2 è grande.",
+    "error": "a caret outside $...$ (bare math)",
+    "line": 1
+  },
+  {
+    "input": "Il valore x_1 è piccolo.",
+    "error": "an underscore outside $...$ (italics or bare math)",
+    "line": 1
+  },
+  {
+    "input": "Il simbolo \\frac fuori.",
+    "error": "a backslash outside $...$ (math goes between dollar signs)",
+    "line": 1
+  },
+  {
+    "input": "Testo\n- punto dentro il paragrafo",
+    "error": "a list marker inside a paragraph (leave a blank line before the list)",
+    "line": 2
+  },
+  {
+    "input": "1. Uno\n- due",
+    "error": "an ordered and an unordered list in one block (leave a blank line between them)",
+    "line": 2
+  },
+  {
+    "input": "- a\nTesto sciolto",
+    "error": "text inside a list (leave a blank line before it, or indent it by 2 spaces)",
+    "line": 2
+  },
+  {
+    "input": "  - figlio senza padre",
+    "error": "a nested item with no item above",
+    "line": 1
+  }
+]

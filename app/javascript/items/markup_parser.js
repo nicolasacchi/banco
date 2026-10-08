@@ -11,7 +11,8 @@
 
 const LIST_LINE = /^\s*\d+[.)]\s+(.*)$/
 
-export function parse(text) {
+export function parse(text, options = {}) {
+  if (options.lists === "v2") return parseV2(text)
   const source = String(text ?? "").replace(/\r\n?/g, "\n").trim()
   if (source === "") return []
   return source.split(/\n\s*\n/).map((block) => {
@@ -21,6 +22,48 @@ export function parse(text) {
     }
     return { type: "p", children: inline(lines.map((line) => line.trim()).join(" ")) }
   })
+}
+
+// Markup v2, for lessons only: also "- " lists and one nested level ("  - ", 2 to 4 spaces).
+// Blocks: {type: "p", children} or {type: "ol" | "ul", items: [{children, sub: [[node]]}]}.
+// The server refuses what is not valid (Lessons::Markup); this reader is lenient.
+const ORDERED_V2 = /^\d+\.\s+(.*)$/
+const BULLET_V2 = /^-\s+(.*)$/
+const SUB_V2 = /^ {2,4}-\s+(.*)$/
+
+function parseV2(text) {
+  const lines = String(text ?? "").replace(/\r\n?/g, "\n").split("\n")
+  const blocks = []
+  let current = []
+  const close = () => {
+    if (current.length > 0) blocks.push(blockV2(current))
+    current = []
+  }
+  for (const line of lines) {
+    if (line.trim() === "") close()
+    else current.push(line)
+  }
+  close()
+  return blocks
+}
+
+function blockV2(lines) {
+  const first = lines[0]
+  const type = ORDERED_V2.test(first) ? "ol" : BULLET_V2.test(first) ? "ul" : "p"
+  if (type === "p") return { type, children: inline(lines.map((line) => line.trim()).join(" ")) }
+  const marker = type === "ol" ? ORDERED_V2 : BULLET_V2
+  const items = []
+  for (const line of lines) {
+    let m
+    if ((m = line.match(marker))) items.push({ text: m[1].trim(), subs: [] })
+    else if ((m = line.match(SUB_V2)) && items.length > 0) items[items.length - 1].subs.push(m[1].trim())
+    else if (items.length > 0) {
+      const last = items[items.length - 1]
+      if (last.subs.length > 0) last.subs[last.subs.length - 1] += ` ${line.trim()}`
+      else last.text += ` ${line.trim()}`
+    }
+  }
+  return { type, items: items.map((i) => ({ children: inline(i.text), sub: i.subs.map((s) => inline(s)) })) }
 }
 
 // Inline nodes: {t: "text", v}, {t: "bold", children}, {t: "math", v}.
