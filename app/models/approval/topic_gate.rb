@@ -76,7 +76,7 @@ module Approval
     end
 
     def viewed?(revision)
-      AppEvent.where(kind: VIEW_KIND).pluck(:payload_json).any? { |j| JSON.parse(j || "{}")["topic_revision_id"] == revision.id }
+      AppEvent.where(kind: VIEW_KIND).where("json_extract(payload_json, '$.topic_revision_id') = ?", revision.id).exists?
     end
   end
 end
