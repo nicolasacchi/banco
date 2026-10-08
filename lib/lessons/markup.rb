@@ -71,6 +71,13 @@ module Lessons
 
     def build(rows)
       rows.each { |line, n| line_level(line, n) }
+      block = classify(rows)
+      texts = block.type == :p ? [ [ block.text, block.line ] ] : block.items.flat_map { |i| ([ i[:text] ] + i[:subs]).map { |t| [ t, i[:line] ] } }
+      texts.each { |text, line| inline(text, line) } # strict: refuses what the browser would show as it is
+      block
+    end
+
+    def classify(rows)
       first, number = rows.first
       source = rows.map(&:first).join("\n")
       if first.match?(ORDERED) || first.match?(ORDERED_EMPTY)

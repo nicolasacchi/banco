@@ -3,12 +3,14 @@ module Validation
   # latest graph, the skills of the approved graphs of other subjects, programme
   # lines and reference texts. Nothing is written.
   class CourseContext
-    def self.for(subject)
-      new(subject).context
+    # course: false leaves the subject's course map out of skill (the map is validated against the graph alone).
+    def self.for(subject, course: true)
+      new(subject, course: course).context
     end
 
-    def initialize(subject)
+    def initialize(subject, course: true)
       @subject = subject
+      @course = course
       @line_cache = {}
     end
 
@@ -18,7 +20,8 @@ module Validation
       Validation::Context.new(
         subject: @subject.key,
         graph_present: !graph.nil?,
-        skill: ->(key) { skills[key] || approved_skill(key) },
+        skill: ->(key) { skills[key] || (@course && course_skills[key]) || approved_skill(key) },
+        graph_skill: ->(key) { skills[key] || approved_skill(key) },
         approved_skill: ->(key) { approved_skill(key) },
         draft_skill: ->(key) { draft_skill(key) },
         source_line: ->(source, number) { source_line(source, number) },
@@ -30,6 +33,14 @@ module Validation
     private
 
     def latest_graph = SkillGraphRevision.where(subject: @subject).order(:seq).last
+
+    # The seconda skills of the subject's latest course map (Phase 1b): same shape as graph skills.
+    def course_skills
+      @course_skills ||= begin
+        revision = CourseRevision.where(subject: @subject).order(:seq).last
+        revision ? JSON.parse(revision.body_json)["skills"].index_by { |s| s["key"] } : {}
+      end
+    end
 
     # A skill of the approved graph of its own subject, when that is not ours.
     def approved_skill(key)

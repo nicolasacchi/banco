@@ -124,15 +124,7 @@ module Validation
     def citations(graph, context, findings)
       graph["skills"].each_with_index do |s, i|
         Array(s["refs"]).each_with_index do |ref, j|
-          field = "/skills/#{i}/refs/#{j}"
-          line = context.source_line(ref["source"], ref["line"])
-          if line.nil?
-            findings.add("E-SOURCE", field, "line #{ref['line']} of #{ref['source']} does not exist", rule: "missing_line")
-          elsif line[:origin] == "transcript"
-            findings.add("E-SOURCE", field, "line #{ref['line']} of #{ref['source']} is a transcriber line and cannot be cited", rule: "transcript")
-          elsif !line[:text].include?(ref["fragment"])
-            findings.add("E-SOURCE", "#{field}/fragment", "the fragment is not an exact substring of line #{ref['line']} of #{ref['source']}", rule: "fragment")
-          end
+          citation(ref, "/skills/#{i}/refs/#{j}", context, findings)
         end
       end
       Array(graph["excluded"]).each_with_index do |ex, i|
@@ -143,6 +135,19 @@ module Validation
         elsif ex["fragment"] && !line[:text].include?(ex["fragment"])
           findings.add("E-SOURCE", "/excluded/#{i}/fragment", "the fragment is not an exact substring of line #{ex['line']} of #{source}", rule: "fragment")
         end
+      end
+    end
+
+    # One citation: the line exists, is the source's own content and holds the fragment (also used by
+    # the course map and the lessons, whose refs have the same shape).
+    def citation(ref, field, context, findings)
+      line = context.source_line(ref["source"], ref["line"])
+      if line.nil?
+        findings.add("E-SOURCE", field, "line #{ref['line']} of #{ref['source']} does not exist", rule: "missing_line")
+      elsif line[:origin] == "transcript"
+        findings.add("E-SOURCE", field, "line #{ref['line']} of #{ref['source']} is a transcriber line and cannot be cited", rule: "transcript")
+      elsif !line[:text].include?(ref["fragment"])
+        findings.add("E-SOURCE", "#{field}/fragment", "the fragment is not an exact substring of line #{ref['line']} of #{ref['source']}", rule: "fragment")
       end
     end
 

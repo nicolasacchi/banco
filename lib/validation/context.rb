@@ -4,8 +4,11 @@ module Validation
   # What validation needs to know about the course, as callables, so that the
   # checks themselves read no database:
   #
-  #   skill:           ->(key) { skill hash of the subject's graph (or of an approved
-  #                      graph of another subject) | nil }
+  #   skill:           ->(key) { skill hash of the subject's graph, of its latest course
+  #                      map (Phase 1b: seconda skills), or of an approved graph of another
+  #                      subject | nil }
+  #   graph_skill:     ->(key) { skill hash of the subject's own graph alone | nil } (the
+  #                      course map checks against the graph, not against itself)
   #   graph_present:   does the item's subject have a skill graph at all
   #   approved_skill:  ->(key) { skill hash from an APPROVED graph of another
   #                      subject | nil } (cross-subject edges and guest skills)
@@ -18,9 +21,10 @@ module Validation
     attr_reader :subject
 
     def initialize(subject:, skill: ->(_k) { nil }, graph_present: true, source_line: ->(_s, _n) { nil }, reference_body: ->(_k) { nil },
-                   approved_skill: ->(_k) { nil }, draft_skill: ->(_k) { nil }, source_section: ->(_s, _n) { nil })
+                   approved_skill: ->(_k) { nil }, draft_skill: ->(_k) { nil }, source_section: ->(_s, _n) { nil }, graph_skill: nil)
       @subject = subject
       @skill = skill
+      @graph_skill = graph_skill || skill
       @approved_skill = approved_skill
       @draft_skill = draft_skill
       @graph_present = graph_present
@@ -30,6 +34,7 @@ module Validation
     end
 
     def skill(key) = @skill.call(key)
+    def graph_skill(key) = @graph_skill.call(key)
     def approved_skill(key) = @approved_skill.call(key)
     def draft_skill(key) = @draft_skill.call(key)
     def graph_present? = @graph_present
