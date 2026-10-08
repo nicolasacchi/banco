@@ -19,7 +19,8 @@ module Api
         end
 
         items = subject ? Item.where(subject: subject) : Item.all
-        items = items.public_send(kind) unless kind.empty?
+        items = items.practice if kind == "practice"
+        items = items.diagnosis if kind == "diagnosis"
         items = items.includes(:subject, revisions: %i[validations reviews blind_solves]).order(:id)
         only_current = params[:current].to_s.in?(%w[1 true])
         rows = items.flat_map do |item|
