@@ -261,12 +261,19 @@ class FindingsApiTest < ActionDispatch::IntegrationTest
     two = arbiter_session(ArbiterRows::SECOND_MODEL)
     assess(@blind_finding, judgement("finding_right"), as: one)
     row = ->(as) { api("/api/v1/subjects/math/findings", as: as); json["rows"].find { |r| r["finding_id"] == @blind_finding.id } }
-    assert_equal "waiting", row.call(one)["opinion"]["state"]
-    assert_nil row.call(two)["opinion"], "the second opinion is written blind"
-    assert_nil row.call(arbiter_session(ArbiterRows::SECOND_MODEL))["opinion"]
+    assert_equal "waiting", row.call(one)["opinion"]["state"], "an arbiter that assessed it reads what there is"
+    hidden = row.call(two)["opinion"]
+    assert_equal [ true, 1 ], hidden.values_at("hidden", "count"), "the second opinion is written blind"
+    assert_nil hidden["first"]
+    assert_equal true, row.call(arbiter_session(ArbiterRows::SECOND_MODEL))["opinion"]["hidden"]
     assert_equal "waiting", row.call(@author)["opinion"]["state"], "the author reads what there is"
-    api("/api/v1/subjects/math/findings")
-    assert_equal "waiting", json["rows"].find { |r| r["finding_id"] == @blind_finding.id }["opinion"]["state"]
+    assert_equal "waiting", row.call(@reviewer)["opinion"]["state"]
+    assert_equal [ true, 1 ], row.call(nil)["opinion"].values_at("hidden", "count"), "no session: a count only"
+    assert_nil row.call(nil)["opinion"]["first"]
+    ApiToken.issue!(role: "agent_claude", label: "other")
+    foreign = AgentSession.create!(label: "t", role: "author", agent: "test", model: "claude-test", token_id: ApiToken.where(label: "other").sole.id)
+    assert_equal true, row.call(foreign)["opinion"]["hidden"], "a session of another token does not count"
+    assert_nil row.call(foreign)["opinion"]["first"]
     assess(@blind_finding, judgement("finding_right"), as: two)
     assert_response :created
     seen = row.call(two)["opinion"]

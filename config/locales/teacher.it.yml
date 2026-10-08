@@ -25,6 +25,7 @@ it:
       unknown: "Rilievo %{id}: non trovato, saltato."
       skipped_subject: "Rilievo %{id}: non è un rilievo grave di questa materia, saltato."
       skipped_decided: "Rilievo %{id}: l'hai già deciso, saltato."
+      skipped_stale: "Rilievo %{id}: riguarda una revisione che non è più in uso, saltato."
       skipped_changed: "Rilievo %{id}: il parere non è più chiaro o è cambiato, saltato."
       skipped_invalid: "Rilievo %{id}: non si può decidere ora, saltato."
     decided:
@@ -409,6 +410,7 @@ it:
         author_right: "Hanno ragione l'autore e la domanda: va bene così."
         finding_right: "Ha ragione il rilievo: la domanda va sistemata."
       follow: "Segui il parere"
+      blocked_slot: "Manca un parere e non può arrivare: lo darebbe lo stesso modello di chi ha segnalato il rilievo."
       follow_reason: "Seguo il parere del terzo revisore."
       minor_summary:
         one: "Rilievi lievi (1): non serve decidere"

@@ -20,13 +20,25 @@ module Teacher
     # follow_opinions reads params[:pairs] itself.
 
     {
-      approve_skill_graph: "approve_skill_graph", approve_blueprint: "approve_blueprint", confirm_test_reviewed: "confirm_test_reviewed", dispose_finding: "dispose_finding",
+      approve_skill_graph: "approve_skill_graph", approve_blueprint: "approve_blueprint", confirm_test_reviewed: "confirm_test_reviewed",
       confirm_grade: "confirm_grade", reject_grade: "reject_grade", resolve_attempt: "resolve_attempt",
       void_run: "void_diagnosis_run", extend_run: "extend_diagnosis_run", close_run: "close_diagnosis_run",
       void_revision_attempts: "void_revision_attempts", release: "release_diagnosis", consent: "record_consent",
       kind_override: "kind_override", send_back_item: "send_back_item", set_formula_sheet: "set_formula_sheet"
     }.each do |action, kind|
       define_method(action) { decide(kind) }
+    end
+
+    # One finding: the form of "Segui il parere" also posts follow_verdict, the verdict the teacher saw; it is
+    # re-checked here like in the bulk route (decided meanwhile, opinion changed, revision no longer in use).
+    def dispose_finding
+      verdict = params[:follow_verdict].to_s
+      if verdict.present?
+        finding = ReviewFinding.find_by(id: Integer(params[:finding_id].to_s, exception: false))
+        why = follow_blocker(finding, verdict) if finding
+        return refuse_with("opinion not followed", :unprocessable_entity, [ I18n.t("teacher.follow.skipped_#{why}", id: finding.id) ]) if why
+      end
+      decide("dispose_finding")
     end
 
     # "Segui il parere su questi M" (D-222): one dispose_finding decision per listed finding, each
@@ -57,16 +69,32 @@ module Teacher
 
       skipped = ->(why) { { done: false, text: I18n.t("teacher.follow.skipped_#{why}", id: finding.id) } }
       return skipped.call(:subject) unless finding.item_revision.item.subject_id == subject.id && finding.severity != "minor"
-      return skipped.call(:decided) if finding.disposed?
+      why = follow_blocker(finding, verdict)
+      return skipped.call(why) if why
 
       opinion = finding.opinion
-      return skipped.call(:changed) unless opinion.clear? && opinion.verdict == verdict
-
       DecisionRecorder.call(request: request, kind: "dispose_finding", request_id: "#{request.request_id.presence || SecureRandom.uuid}/#{index}",
                             params: { finding_id: finding.id, disposition: opinion.disposition, reason_it: I18n.t("teacher.skill.follow_reason") })
       { done: true, text: I18n.t("teacher.follow.done", id: finding.id) }
     rescue DecisionRecorder::Missing, DecisionRecorder::Invalid, ActiveRecord::RecordNotUnique
       { done: false, text: I18n.t("teacher.follow.skipped_invalid", id: id.to_s.first(20)) }
+    end
+
+    # nil when a clear opinion with this verdict may be followed now, else :decided, :stale or :changed.
+    def follow_blocker(finding, verdict)
+      return :decided if finding.disposed?
+      return :stale unless live_revision?(finding.item_revision)
+
+      opinion = finding.opinion
+      opinion.clear? && opinion.verdict == verdict ? nil : :changed
+    end
+
+    # The revision is the current one of its item or pinned by the latest blueprint of the subject.
+    def live_revision?(revision)
+      item = revision.item
+      return true if revision.seq == item.revisions.maximum(:seq)
+
+      BlueprintRevision.where(subject_id: item.subject_id).order(:seq).last&.pinned_item_revision_ids.to_a.include?(revision.id)
     end
 
     def check_csrf

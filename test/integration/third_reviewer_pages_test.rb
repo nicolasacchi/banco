@@ -80,6 +80,55 @@ class ThirdReviewerPagesTest < ActionDispatch::IntegrationTest
     assert_equal 1, decisions.count
   end
 
+  test "the single follow form carries the verdict and refuses when the opinion changed, was decided, or the revision is not in use" do
+    f = finding!
+    assess_both!(f, "author_right")
+    page SKILL_PAGE
+    assert_select "#finding-#{f.id} input[name=follow_verdict][value=author_right]"
+    assess!(f, "finding_right", session: arbiter_session(ArbiterRows::SECOND_MODEL))
+    decide("/teacher/findings/#{f.id}/disposition", { disposition: "dismissed", follow_verdict: "author_right", reason_it: "Seguo il parere del terzo revisore." })
+    assert_response :unprocessable_entity
+    assert_match(/non è più chiaro/, json.to_s)
+    assert_equal 0, decisions.count
+
+    g = finding!(problem: "Due.")
+    assess_both!(g, "author_right")
+    decide("/teacher/findings/#{g.id}/disposition", { disposition: "dismissed", follow_verdict: "author_right", reason_it: "Seguo il parere del terzo revisore." })
+    assert_response :success
+    assert_equal 1, decisions.count
+    decide("/teacher/findings/#{g.id}/disposition", { disposition: "dismissed", follow_verdict: "author_right", reason_it: "Ancora." })
+    assert_response :unprocessable_entity
+    assert_equal 1, decisions.count
+  end
+
+  test "a finding on a superseded, unpinned revision is neither followed one by one nor in bulk" do
+    item = Item.create!(subject: @subject, key: "unpinned-1", kind: "diagnosis_item")
+    old = ItemRevision.create!(item: item, seq: 1, body_json: @revision.body_json, file_sessions_json: "{}")
+    ItemRevision.create!(item: item, seq: 2, body_json: @revision.body_json, file_sessions_json: "{}")
+    assert_not_includes BlueprintRevision.where(subject: @subject).order(:seq).last.pinned_item_revision_ids, old.id
+    f = ReviewFinding.create!(item_revision: old, source: "review", severity: "major", field: "stem", quote: "x", problem_it: "Ambiguo.", fix_it: "Chiarisci.")
+    assess_both!(f, "author_right")
+    decide("/teacher/findings/#{f.id}/disposition", { disposition: "dismissed", follow_verdict: "author_right", reason_it: "Seguo il parere." })
+    assert_response :unprocessable_entity
+    assert_match(/non è più in uso/, json.to_s)
+    decide("/teacher/subjects/math/follow-opinions", { pairs: [ "#{f.id}:author_right" ] })
+    assert_equal [ 0, 1 ], json.values_at("decided", "skipped")
+    assert_match(/non è più in uso/, json["lines"].join(" "))
+    assert_equal 0, decisions.count
+  end
+
+  test "the card says why an opinion cannot come when the raiser used that model" do
+    review = ItemReview.create!(item_revision: @revision, agent_session: arbiter_session(ArbiterRows::SECOND_MODEL, role: "reviewer"), checklist_json: "[]")
+    f = ReviewFinding.create!(item_revision: @revision, source: "review", item_review: review, severity: "major", field: "stem", quote: "x", problem_it: "Ambiguo.", fix_it: "Chiarisci.")
+    assess!(f, "author_right", session: arbiter_session(ArbiterRows::FIRST_MODEL))
+    page SKILL_PAGE
+    assert_select "#finding-#{f.id} [data-opinion-blocked]", /non può arrivare.*stesso modello/
+    other = finding!(problem: "Altro.")
+    assess!(other, "author_right", session: arbiter_session(ArbiterRows::FIRST_MODEL))
+    page SKILL_PAGE
+    assert_select "#finding-#{other.id} [data-opinion-blocked]", 0
+  end
+
   test "the overview counts the open findings and those with a clear opinion, and one button follows them all" do
     a = finding!
     b = finding!(problem: "Due.")

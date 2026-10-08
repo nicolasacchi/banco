@@ -28,6 +28,9 @@ module Providers
 
   def families = config.fetch("families").keys
 
+  # The normalized model that gives the :first or :second opinion.
+  def slot_model(slot) = model_key(rule("arbiter")["#{slot}_opinion_model"])
+
   # :first or :second for an arbiter model (the opinion it gives), nil for any other model.
   def opinion_slot(model)
     rule = rule("arbiter")

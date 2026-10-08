@@ -32,6 +32,9 @@
       <% end %>
     </div>
   <% end %>
+  <% if !entry.disposition && f.opinion_slot_blocked?(op) %>
+    <p class="hint" data-opinion-blocked><%= t("teacher.skill.blocked_slot") %></p>
+  <% end %>
   <% if entry.closure %>
     <p class="closure" data-closure="<%= entry.closure %>"><strong><%= t("teacher.skill.opinion.#{entry.closure}") %></strong></p>
   <% end %>
@@ -42,6 +45,7 @@
     <% if op.clear? && f.severity != "minor" %>
       <%= decision_form("/teacher/findings/#{f.id}/disposition") do %>
         <%= hidden_field_tag :disposition, op.disposition, id: "follow-disposition-#{f.id}" %>
+        <%= hidden_field_tag :follow_verdict, op.verdict, id: "follow-verdict-#{f.id}" %>
         <label class="hint" for="follow-reason-<%= f.id %>"><%= t("teacher.skill.reason_label") %></label>
         <input id="follow-reason-<%= f.id %>" class="answer-input wide" type="text" name="reason_it" maxlength="300" required value="<%= t('teacher.skill.follow_reason') %>">
         <p><button type="submit" class="button small" data-follow="<%= op.verdict %>" <%= "disabled" if blocker %>><%= t("teacher.skill.follow") %></button></p>

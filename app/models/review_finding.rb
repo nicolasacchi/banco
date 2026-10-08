@@ -28,6 +28,16 @@ class ReviewFinding < ApplicationRecord
 
   def opinion = FindingOpinion.new(assessments.to_a)
 
+  # True when an opinion slot is still empty and its model is the one that raised this finding: the arbiter
+  # on that model is refused (E-PROVIDER-NOT-ALLOWED), so the slot stays empty (D-222).
+  def opinion_slot_blocked?(op = opinion)
+    raiser = AgentSession.find_by(id: raised_by_session_id)
+    return false unless raiser
+
+    missing = { first: op.first, second: op.second }.select { |_, a| a.nil? }.keys
+    missing.any? { |slot| Providers.slot_model(slot) == Providers.model_key(raiser.model) }
+  end
+
   # The agent session that raised the finding: the reviewer or the blind solver.
   def raised_by_session_id = item_review&.agent_session_id || blind_solve&.agent_session_id
 

@@ -17,8 +17,8 @@ module Api
 
       # GET /api/v1/subjects/:subject/findings[?open=1][&all=1]
       # Blocker and major findings of the subject (all=1: minor ones too, for the third reviewer), newest revision last, with the teacher's
-      # disposition, the latest response of the author and the third reviewer's opinion (the first and the second assessment). An arbiter
-      # session sees the assessments of a finding only after it has assessed it itself. open=1: no disposition yet, no response yet,
+      # disposition, the latest response of the author and the third reviewer's opinion (the first and the second assessment). The assessments are shown only to a valid
+      # session that is not an arbiter still to assess that finding (else a count only). open=1: no disposition yet, no response yet,
       # and on the current or a pinned revision (not a superseded one).
       def index
         subject = Subject.find_by(key: params[:subject].to_s)
@@ -172,11 +172,13 @@ module Api
       end
 
       # The opinion on a finding as the viewer may read it (D-222). The second opinion is written
-      # independently: an arbiter session that has not assessed this finding itself sees none. Anyone else
-      # (the author, a reader without a session) sees what there is.
+      # independently, so the assessments go only to a valid session of this token that is not an
+      # arbiter still to assess this finding: the author, a reviewer or operator session, or an arbiter that
+      # has assessed it itself. Without a valid session, or for an arbiter that has not assessed it, only
+      # the count of the opinions given is shown.
       def visible_opinion(opinion, viewer)
         return nil unless opinion.any?
-        return nil if viewer&.role == "arbiter" && opinion.given.none? { |a| a.agent_session_id == viewer.id }
+        return { hidden: true, count: opinion.given.size } if viewer.nil? || (viewer.role == "arbiter" && opinion.given.none? { |a| a.agent_session_id == viewer.id })
 
         { state: opinion.state, verdict: opinion.verdict, first: opinion.first&.to_h, second: opinion.second&.to_h }.compact
       end

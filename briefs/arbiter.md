@@ -22,8 +22,12 @@ Any other model is refused (`E-PROVIDER-NOT-ALLOWED`), and so is the model of th
 raised the finding. Your session must not hold another role on the item: not author, verifier,
 reviewer or solver (`E-SESSION-NOT-INDEPENDENT`). Judge many findings of one item in one session if you like.
 
+If the session that raised a finding ran on the same model as one of the two opinions, that opinion
+cannot be filled: you are refused on that finding (`E-PROVIDER-NOT-ALLOWED`) and no other model may stand in. The finding
+stays "In attesa del secondo parere" and the card tells the teacher why; the teacher decides alone.
+
 Write each opinion alone. While you have not assessed a finding yourself, `banco findings list`
-shows you no assessment of it, so the second opinion is never an echo of the first. Do not ask
+shows you no assessment of it, only how many there are (the same without a session), so the second opinion is never an echo of the first. Do not ask
 another arbiter what it wrote. When both opinions agree, the teacher can follow them in one click;
 when they differ or one is missing, the teacher reads both notes and decides.
 
