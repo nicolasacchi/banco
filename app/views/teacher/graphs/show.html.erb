@@ -52,7 +52,9 @@
       </ul>
     <% end %>
 
-    <h2><%= t("teacher.graph.skills") %></h2>
+    <%= render "teacher/graphs/map", review: review, ctx: @map_ctx, rows: nil %>
+
+    <h2 id="graph-list"><%= t("teacher.graph.skills") %></h2>
     <% review.skills.each do |skill| %>
       <article class="skill" id="skill-<%= skill.key.parameterize %>" data-skill="<%= skill.key %>" data-scope="<%= skill.scope %>">
         <h3><%= ref_for(skill.key) %></h3>

@@ -224,6 +224,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-218 | 2026-10-07 | operator request: every skill key and item key on the teacher's pages is a reference with a name, an info popover and a permalink | implemented |
 | D-219 | 2026-10-07 | review of D-217/D-218: the student map fails closed, the grading queue is the official student's, no dead links | implemented |
 | D-220 | 2026-10-08 | operator feedback: the finding card shows the key and the solver's answer; the author answers findings; clearer texts and a summary | implemented |
+| D-221 | 2026-10-08 | operator request: a map of the skill graph on the graph page and the report | implemented |
 | D-222 | 2026-10-08 | the third reviewer (arbiter): two opinions on findings; minor findings may be closed by it; firm rule 2 amended | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
@@ -2356,6 +2357,16 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Why:** the teacher cannot decide what she cannot see.
 - **Cost:** the author's note is the author's own word: the teacher still judges. A note is not checked against the item beyond readability.
 - **Status:** implemented
+
+## D-221 · 2026-10-08 · operator request: a map of the skill graph on the graph page and the report
+
+- **Design ref:** C-04, B-09, X-02
+- **Design said:** the graph page was a long list of cards, one per skill; the report listed skill states in groups.
+- **We do:** `Teacher::GraphMap` (pure Ruby, no dependency, cached by graph revision and input digest) lays the skills out in columns and draws them as an inline SVG above the list, which stays as "Elenco completo" (no-JS, print and accessibility fallback). Columns are the longest path from the roots, because the schema's `layer` is a category (core, sec, opt) and not a depth; so every prerequisite edge goes left to right. Long edges pass through invisible waypoints that take part in the ordering (four barycenter sweeps, ties by key). A cycle, a self loop or an unknown prerequisite is a visible warning and a dashed edge, never a crash. Deferred cross-subject prerequisites are stubs in the lane "Da altre materie". Encoding is never colour alone: fill is the scope (report: the skill's state, with a glyph), dashed border is "no programme line", a badge counts the questions the test pins, "inizio" marks the test's entry skills, a dot marks new or changed skills. One Stimulus controller (`graph_map_controller.js`, on the student importmap like the other teacher controllers) selects a node by click or Enter (its prerequisites and dependents are marked, the rest dimmed, a panel shows everything about it), clears on Esc, filters (name, scope or state, no programme line, in the test) and zooms. Zoom scales the drawn size of the SVG (the viewBox stays the whole map) so the box around it scrolls natively on small screens. The second year's programme lines (role `needed_by`) are a right-most column, off until "Mostra cosa serve in seconda". The report shows the same map of the graph the run used, coloured by the selected student's states (`Diagnosis::Report` groups, with "Non serve" apart), only when the student has a run. Print scales the map to the page and hides the panel and controls. Nothing is written; guests see it read-only.
+- **Why:** the operator found the list hard to read as a whole; the map shows the shape of the graph and, on a click, everything about one skill.
+- **Cost:** about 330 lines of Ruby, one controller, one partial pair; the layout is computed on a cache miss only.
+- **Status:** implemented
+- **Back-port:** none.
 
 ## D-222 · 2026-10-08 · the third reviewer (arbiter): two opinions on findings; minor findings may be closed by it; firm rule 2 amended
 

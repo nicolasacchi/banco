@@ -251,3 +251,100 @@ q.example { display: block; margin-bottom: 0.25rem; }
 .ref-facts dd { margin: 0; overflow-wrap: anywhere; }
 .ref-links { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; }
 .ref-page .ref-facts { max-width: 48rem; }
+
+/* The map of a skill graph (D-221). Fill says the scope or the state; shape says the rest; nothing is colour alone. */
+.graph-map {
+  --gm-studied: #cfe2f3; --gm-integration_studied: #c4e8da; --gm-in_progress: #f6e7a8; --gm-middle_school: #e2e0d8; --gm-not_in_prima: #f4d2bd;
+  --gm-demonstrated: #c4e8da; --gm-to_recover: #f4d2bd; --gm-to_learn: #e6d3ee; --gm-pending: #f6e7a8; --gm-not_assessed: #e2e0d8; --gm-not_needed: #f3f1ea;
+  --gm-stub: #f3f1ea; --gm-seconda: #fffaf0; --gm-none: #ffffff; --gm-ink: #1c1a14; --gm-edge: #5d5640; --gm-up: #0b5cad; --gm-down: #8a5200;
+}
+:root[data-theme="dark"] .graph-map {
+  --gm-studied: #23405c; --gm-integration_studied: #1f4a3d; --gm-in_progress: #5a4d17; --gm-middle_school: #3a3832; --gm-not_in_prima: #5a3520;
+  --gm-demonstrated: #1f4a3d; --gm-to_recover: #5a3520; --gm-to_learn: #46304f; --gm-pending: #5a4d17; --gm-not_assessed: #3a3832; --gm-not_needed: #2c2a26;
+  --gm-stub: #2c2a26; --gm-seconda: #25231f; --gm-none: #1b1a17; --gm-ink: #f3ecdc; --gm-edge: #b9b095; --gm-up: #9cc3ff; --gm-down: #ffb774;
+}
+.gm-legend { font-size: 0.85em; }
+.gm-legend-list { display: flex; flex-wrap: wrap; gap: 0.2rem 1.25rem; padding: 0; margin: 0.25rem 0 0.75rem; }
+.gm-legend-list li { display: inline-flex; align-items: center; gap: 0.4rem; }
+.gm-legend-title { margin-bottom: 0.25rem; }
+.gm-swatch { display: inline-block; width: 1.6rem; height: 1.1rem; border: 2px solid var(--gm-ink); border-radius: 4px; }
+.gm-swatch-dashed { border-style: dashed; }
+.gm-sample-badge { display: inline-block; min-width: 1.4rem; text-align: center; border-radius: 50%; background: var(--gm-ink); color: var(--bg); font-weight: 700; font-size: 0.85em; }
+.gm-sample-tab { display: inline-block; padding: 0 0.35rem; border-radius: 4px; background: var(--gm-ink); color: var(--bg); font-size: 0.85em; }
+.gm-sample-dot { display: inline-block; width: 0.9rem; height: 0.9rem; border-radius: 50%; background: var(--gm-up); border: 2px solid var(--gm-ink); }
+.gm-sample-line { width: 2.5rem; height: 0.6rem; }
+.gm-sample-line .gm-edge { fill: none; stroke: var(--gm-edge); stroke-width: 2; }
+.gm-sample-line .gm-edge-composite { stroke-dasharray: 6 4; }
+.gm-fill-studied { background: var(--gm-studied); fill: var(--gm-studied); }
+.gm-fill-integration_studied { background: var(--gm-integration_studied); fill: var(--gm-integration_studied); }
+.gm-fill-in_progress { background: var(--gm-in_progress); fill: var(--gm-in_progress); }
+.gm-fill-middle_school { background: var(--gm-middle_school); fill: var(--gm-middle_school); }
+.gm-fill-not_in_prima { background: var(--gm-not_in_prima); fill: var(--gm-not_in_prima); }
+.gm-fill-demonstrated { background: var(--gm-demonstrated); fill: var(--gm-demonstrated); }
+.gm-fill-to_recover { background: var(--gm-to_recover); fill: var(--gm-to_recover); }
+.gm-fill-to_learn { background: var(--gm-to_learn); fill: var(--gm-to_learn); }
+.gm-fill-pending { background: var(--gm-pending); fill: var(--gm-pending); }
+.gm-fill-not_assessed { background: var(--gm-not_assessed); fill: var(--gm-not_assessed); }
+.gm-fill-not_needed { background: var(--gm-not_needed); fill: var(--gm-not_needed); }
+.gm-fill-stub { fill: var(--gm-stub); }
+.gm-fill-seconda { fill: var(--gm-seconda); }
+.gm-fill-none { background: var(--gm-none); fill: var(--gm-none); }
+.gm-controls { font-size: 0.9em; border-top: 1px solid var(--line); padding-top: 0.5rem; }
+.gm-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 1.25rem; margin: 0.4rem 0; border: 0; padding: 0; }
+.gm-row legend { font-weight: 700; padding: 0; margin-right: 0.75rem; float: left; }
+.gm-check { display: inline-flex; align-items: center; gap: 0.35rem; }
+.graph-map:not(.gm-ready) .gm-needs-js { display: none; }
+.gm-layout { display: flex; gap: 1rem; align-items: flex-start; }
+.gm-scroll { flex: 1 1 0; min-width: 0; overflow-x: auto; border: 2px solid var(--line); background: var(--surface); }
+.gm-svg { display: block; max-width: none; touch-action: pan-x pan-y; cursor: default; }
+.gm-panel { flex: 0 0 21rem; max-width: 30%; font-size: 0.9em; max-height: 80vh; overflow: auto; border: 2px solid var(--line); background: var(--surface); padding: 0.5rem 1rem; }
+.gm-panel h3 { margin-top: 0.25rem; }
+.gm-link { font: inherit; background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; text-align: left; }
+.gm-link:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.gm-chips li { list-style: none; }
+.gm-chips { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; padding: 0; }
+.gm-svg text { font-family: "Atkinson Hyperlegible", sans-serif; fill: var(--gm-ink); }
+.gm-group { font-weight: 700; }
+.gm-box { stroke: var(--gm-ink); stroke-width: 1.5; }
+.gm-inferred { stroke-dasharray: 6 4; stroke-width: 2; }
+.gm-stub .gm-box, .gm-sec .gm-box { stroke-dasharray: 2 3; }
+.gm-node { cursor: pointer; }
+.gm-node:focus { outline: none; }
+.gm-node:focus-visible .gm-box { stroke: var(--focus); stroke-width: 4; }
+.gm-badge { fill: var(--gm-ink); }
+.gm-svg .gm-badge-text { fill: var(--bg); font-weight: 700; }
+.gm-tab { fill: var(--gm-ink); }
+.gm-svg .gm-tab-text { fill: var(--bg); }
+.gm-dot { fill: var(--gm-up); stroke: var(--gm-ink); stroke-width: 2; }
+.gm-edge { fill: none; stroke: var(--gm-edge); stroke-width: 1.6; marker-end: url(#gm-arrow); }
+.gm-edge-composite { stroke-dasharray: 7 5; }
+.gm-edge-warning { stroke-dasharray: 2 4; stroke-width: 2.4; }
+.gm-edge-stub { stroke-dasharray: 2 4; }
+.gm-edge-seconda { stroke-width: 1; opacity: 0.7; }
+.gm-arrow { fill: var(--gm-edge); }
+.gm-arrow-hot { fill: var(--gm-ink); }
+.gm-seconda-part { display: none; }
+.graph-map.gm-show-seconda .gm-seconda-part { display: inline; }
+.graph-map.gm-show-seconda g.gm-edges .gm-seconda-part, .graph-map.gm-show-seconda a.gm-seconda-part { display: inline; }
+.gm-hidden, .graph-map.gm-show-seconda .gm-hidden { display: none; }
+.gm-has-selection .gm-node { opacity: 0.22; }
+.gm-has-selection .gm-svg .gm-edge { opacity: 0.1; }
+.gm-has-selection .gm-node.gm-sel, .gm-has-selection .gm-node.gm-up, .gm-has-selection .gm-node.gm-down { opacity: 1; }
+.gm-has-selection .gm-svg .gm-edge.gm-hot { opacity: 1; stroke: var(--gm-ink); stroke-width: 2.6; marker-end: url(#gm-arrow-hot); }
+.gm-node.gm-sel .gm-box { stroke-width: 4.5; }
+.gm-node.gm-up .gm-box { stroke: var(--gm-up); stroke-width: 3.5; }
+.gm-node.gm-down .gm-box { stroke: var(--gm-down); stroke-width: 3.5; }
+@media (max-width: 60rem) {
+  .gm-layout { flex-direction: column; }
+  .gm-scroll { flex: none; width: 100%; box-sizing: border-box; }
+  .gm-panel { flex: 1 1 auto; max-width: none; width: 100%; max-height: none; box-sizing: border-box; }
+}
+@media print {
+  .graph-map { break-inside: avoid; }
+  .gm-layout { display: block; }
+  .gm-scroll { overflow: visible; border: 0; }
+  .gm-svg { width: 100%; height: auto; }
+  .gm-panel, .gm-controls { display: none !important; }
+  .gm-has-selection .gm-node, .gm-has-selection .gm-svg .gm-edge { opacity: 1; }
+}
+.gm-note { font-weight: 700; }

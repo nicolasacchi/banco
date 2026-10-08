@@ -1,0 +1,156 @@
+<%# The map of the skill graph (D-221). locals: review, ctx, rows (the report's rows by skill key, or nil on the graph page). %>
+<% map = ctx.map %>
+<% report = !rows.nil? %>
+<% skills = review.skills.index_by(&:key) %>
+<% card_prefix = report ? "report-skill-" : "skill-" %>
+<% states = report ? GraphMapHelper::REPORT_STATES : %w[studied integration_studied in_progress middle_school not_in_prima] %>
+<section id="graph-map" class="graph-map" data-controller="graph-map" data-action="keydown->graph-map#key"
+         data-graph-map-main-width-value="<%= map.main_width.round %>" data-graph-map-full-width-value="<%= map.width.round %>"
+         data-graph-map-main-height-value="<%= map.main_height.round %>" data-graph-map-full-height-value="<%= map.height.round %>" data-graph-map-shown-one-value="<%= t('teacher.graph.map.shown_one') %>"
+         data-graph-map-shown-other-value="<%= t('teacher.graph.map.shown_other') %>" data-graph-map-shown-none-value="<%= t('teacher.graph.map.shown_none') %>">
+  <h2><%= t(report ? "teacher.graph.map.report_title" : "teacher.graph.map.title") %></h2>
+  <p class="hint"><%= t(report ? "teacher.graph.map.report_intro" : "teacher.graph.map.intro") %></p>
+
+  <% map.warnings.each do |w| %>
+    <p class="notice" role="status" data-map-warning="<%= w[:kind] %>"><%= t("teacher.graph.map.warning.#{w[:kind]}", from: skills[w[:keys][0]]&.label_it || w[:keys][0], to: skills[w[:keys][1]]&.label_it || w[:keys][1]) %></p>
+  <% end %>
+
+  <div class="gm-legend" id="graph-map-legend">
+    <h3 class="gm-legend-title"><%= t("teacher.graph.map.legend") %></h3>
+    <ul class="plain gm-legend-list">
+      <% states.each do |state| %>
+        <li><span class="gm-swatch gm-fill-<%= state %>" aria-hidden="true"></span>
+          <% if report %><%= GraphMapHelper::STATE_GLYPH[state] %> <%= t("teacher.graph.map.state.#{state}") %>
+          <% else %><%= scope_text(state) %><% end %></li>
+      <% end %>
+      <% if report %>
+        <li><span class="gm-swatch gm-fill-none" aria-hidden="true"></span> ★ ☆ <%= t("teacher.graph.map.report_scope_marks") %></li>
+      <% end %>
+      <li><span class="gm-swatch gm-fill-none gm-swatch-dashed" aria-hidden="true"></span> <%= t("teacher.graph.map.legend_inferred") %></li>
+      <li><span class="gm-sample-badge" aria-hidden="true">3</span> <%= t("teacher.graph.map.legend_pinned") %></li>
+      <li><span class="gm-sample-tab" aria-hidden="true"><%= t("teacher.graph.map.entry") %></span> <%= t("teacher.graph.map.legend_entry") %></li>
+      <% unless report %><li><span class="gm-sample-dot" aria-hidden="true"></span> <%= t("teacher.graph.map.legend_change") %></li><% end %>
+      <li><svg class="gm-sample-line" viewBox="0 0 40 8" aria-hidden="true"><path d="M0 4 H40" class="gm-edge"/></svg> <%= t("teacher.graph.map.legend_edge") %></li>
+      <li><svg class="gm-sample-line" viewBox="0 0 40 8" aria-hidden="true"><path d="M0 4 H40" class="gm-edge gm-edge-composite"/></svg> <%= t("teacher.graph.map.legend_composite") %></li>
+    </ul>
+  </div>
+
+  <div class="gm-controls gm-needs-js no-print">
+    <p class="gm-row">
+      <label for="gm-search"><%= t("teacher.graph.map.search") %></label>
+      <input id="gm-search" type="search" class="answer-input" autocomplete="off" data-graph-map-target="search" data-action="input->graph-map#filter">
+    </p>
+    <fieldset class="gm-row">
+      <legend><%= t("teacher.graph.map.show") %></legend>
+      <% states.each do |state| %>
+        <label class="gm-check"><input type="checkbox" checked data-graph-map-target="facet" data-value="<%= state %>" data-action="change->graph-map#filter">
+          <%= report ? t("teacher.graph.map.state.#{state}") : t("teacher.graph.scope.#{state}") %></label>
+      <% end %>
+    </fieldset>
+    <p class="gm-row">
+      <label class="gm-check"><input type="checkbox" data-graph-map-target="onlyInferred" data-action="change->graph-map#filter"> <%= t("teacher.graph.map.only_inferred") %></label>
+      <label class="gm-check"><input type="checkbox" data-graph-map-target="onlyPinned" data-action="change->graph-map#filter"> <%= t("teacher.graph.map.only_pinned") %></label>
+      <% if ctx.seconda_lines.any? %>
+        <label class="gm-check"><input type="checkbox" id="gm-seconda" data-graph-map-target="seconda" data-action="change->graph-map#toggleSeconda"> <%= t("teacher.graph.map.seconda") %></label>
+      <% end %>
+    </p>
+    <p class="gm-row gm-zoom">
+      <button type="button" class="button secondary small" data-action="graph-map#zoomIn" aria-label="<%= t('teacher.graph.map.zoom_in_label') %>">+</button>
+      <button type="button" class="button secondary small" data-action="graph-map#zoomOut" aria-label="<%= t('teacher.graph.map.zoom_out_label') %>">−</button>
+      <button type="button" class="button secondary small" data-action="graph-map#overview"><%= t("teacher.graph.map.fit") %></button>
+      <button type="button" class="button secondary small" data-action="graph-map#clear"><%= t("teacher.graph.map.clear") %></button>
+      <span class="hint" data-graph-map-target="count" role="status"></span>
+    </p>
+  </div>
+
+  <div class="gm-layout">
+    <div class="gm-scroll">
+      <svg class="gm-svg" data-graph-map-target="svg" viewBox="0 0 <%= map.main_width.round %> <%= map.main_height.round %>" width="<%= (map.main_width * 0.9).round %>" height="<%= (map.main_height * 0.9).round %>" role="group" aria-label="<%= t('teacher.graph.map.aria') %>" preserveAspectRatio="xMinYMin meet">
+        <defs>
+          <marker id="gm-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="gm-arrow"/></marker>
+          <marker id="gm-arrow-hot" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="gm-arrow gm-arrow-hot"/></marker>
+        </defs>
+        <% map.groups.each do |g| %>
+          <text font-size="14" class="gm-group<%= ' gm-seconda-part' unless g.label == 'lane' %>" x="<%= g.x %>" y="<%= g.y + 14 %>"><%= g.label == "lane" ? t("teacher.graph.map.lane") : (g.label == "none" ? t("teacher.graph.map.seconda_group") : g.label) %></text>
+        <% end %>
+        <g class="gm-edges">
+          <% map.edges.each do |e| %>
+            <path class="gm-edge gm-edge-<%= e.kind %><%= ' gm-seconda-part' if e.kind == :seconda %>" data-from="<%= e.from %>" data-to="<%= e.to %>" d="<%= e.d %>"/>
+          <% end %>
+        </g>
+        <g class="gm-nodes">
+          <% map.nodes.each do |n| %>
+            <% if n.kind == :skill %>
+              <% s = skills[n.key] %>
+              <% row = rows && rows[n.key] %>
+              <% state = report ? gm_state(row) : nil %>
+              <% facet = report ? state : s.scope %>
+              <a class="gm-node gm-skill" id="<%= gm_dom_id(n.key) %>" href="#<%= card_prefix %><%= n.key.parameterize %>" role="link" tabindex="0"
+                 data-key="<%= n.key %>" data-scope="<%= s.scope %>" data-facet="<%= facet %>" data-inferred="<%= s.inferred %>" data-pinned="<%= ctx.pinned_count(n.key) %>"
+                 data-search="<%= "#{s.label_it} #{n.key}".downcase %>" data-change="<%= s.change %>">
+                <title><%= gm_node_title(s, ctx, state: state) %></title>
+                <rect class="gm-box gm-fill-<%= facet %><%= ' gm-inferred' if s.inferred %>" x="<%= n.x %>" y="<%= n.y %>" width="<%= n.w %>" height="<%= n.h %>" rx="8"/>
+                <text class="gm-label" font-size="14" aria-hidden="true"><%= safe_join(gm_text_lines(n)) %></text>
+                <text class="gm-mark" font-size="13" aria-hidden="true" x="<%= n.x + n.w - 8 %>" y="<%= n.y + n.h - 7 %>" text-anchor="end"><%= [ (GraphMapHelper::STATE_GLYPH[state] if report), Teacher::GraphReview::SCOPE_MARK[s.scope].presence ].compact.join(" ") %></text>
+                <% if ctx.pinned_count(n.key).positive? %>
+                  <circle class="gm-badge" cx="<%= n.x + n.w - 2 %>" cy="<%= n.y + 2 %>" r="11"/>
+                  <text class="gm-badge-text" font-size="12.5" aria-hidden="true" x="<%= n.x + n.w - 2 %>" y="<%= n.y + 7 %>" text-anchor="middle"><%= ctx.pinned_count(n.key) %></text>
+                <% end %>
+                <% if ctx.entry?(n.key) %>
+                  <rect class="gm-tab" x="<%= n.x + 14 %>" y="<%= n.y - 10 %>" width="46" height="17" rx="4"/>
+                  <text class="gm-tab-text" font-size="11.5" aria-hidden="true" x="<%= n.x + 37 %>" y="<%= n.y + 3 %>" text-anchor="middle"><%= t("teacher.graph.map.entry") %></text>
+                <% end %>
+                <% if !report && s.change != :same %>
+                  <circle class="gm-dot" cx="<%= n.x + 2 %>" cy="<%= n.y + 2 %>" r="7"/>
+                <% end %>
+              </a>
+            <% elsif n.kind == :stub %>
+              <a class="gm-node gm-stub" id="<%= gm_dom_id(n.key) %>" href="<%= teacher_ref_path(key: n.key) %>" role="link" tabindex="0" data-key="<%= n.key %>" data-facet="stub" data-search="<%= "#{n.lines.join(' ')} #{n.key}".downcase %>">
+                <title><%= t("teacher.graph.map.stub_title", name: n.lines.join(" "), key: n.key) %></title>
+                <rect class="gm-box gm-fill-stub" x="<%= n.x %>" y="<%= n.y %>" width="<%= n.w %>" height="<%= n.h %>" rx="8"/>
+                <text class="gm-label" font-size="14" aria-hidden="true"><%= safe_join(gm_text_lines(n)) %></text>
+              </a>
+            <% else %>
+              <a class="gm-node gm-sec gm-seconda-part" id="<%= gm_dom_id(n.key) %>" href="#graph-map" role="link" tabindex="0" data-key="<%= n.key %>" data-facet="seconda" data-search="<%= n.lines.join(' ').downcase %>">
+                <title><%= n.lines.join(" ") %></title>
+                <rect class="gm-box gm-fill-seconda" x="<%= n.x %>" y="<%= n.y %>" width="<%= n.w %>" height="<%= n.h %>" rx="4"/>
+                <text class="gm-label" font-size="14" aria-hidden="true"><%= safe_join(gm_text_lines(n)) %></text>
+              </a>
+            <% end %>
+          <% end %>
+        </g>
+      </svg>
+    </div>
+    <aside class="gm-panel gm-needs-js no-print" data-graph-map-target="panel" tabindex="-1" aria-live="polite" aria-label="<%= t('teacher.graph.map.panel') %>">
+      <p class="hint" data-graph-map-target="empty"><%= t("teacher.graph.map.panel_empty") %></p>
+      <div data-graph-map-target="detail"></div>
+    </aside>
+  </div>
+
+  <div hidden>
+    <% review.skills.each do |skill| %>
+      <template data-graph-map-target="template" data-key="<%= skill.key %>"><%= render "teacher/graphs/map_panel", skill: skill, review: review, ctx: ctx, row: rows && rows[skill.key], report: report %></template>
+    <% end %>
+    <% map.nodes.select { |n| n.kind == :stub }.each do |n| %>
+      <template data-graph-map-target="template" data-key="<%= n.key %>">
+        <h3><%= n.lines.join(" ") %> <span class="key">(<%= n.key %>)</span></h3>
+        <p><%= t("teacher.graph.map.stub_text") %></p>
+        <ul class="plain">
+          <% review.skills.each do |s| %><% s.deferred.select { |d| d[:skill] == n.key }.each do |d| %>
+            <li><button type="button" class="gm-link" data-action="graph-map#pick" data-key="<%= s.key %>"><%= s.label_it %></button>: <%= d[:reason_it] %></li>
+          <% end %><% end %>
+        </ul>
+        <p class="ref-links"><a href="<%= teacher_ref_path(key: n.key) %>"><%= t("teacher.graph.map.open_ref") %></a></p>
+      </template>
+    <% end %>
+    <% ctx.seconda_lines.each do |l| %>
+      <template data-graph-map-target="template" data-key="<%= l[:id] %>">
+        <h3><%= l[:source] %>, <%= t("teacher.graph.line") %> <%= l[:line] %></h3>
+        <% if l[:section].present? %><p class="hint"><%= t("teacher.graph.section") %> <%= l[:section] %></p><% end %>
+        <p><% if l[:text].present? %><q><%= l[:text] %></q><% else %><%= t("teacher.graph.line_missing") %><% end %></p>
+        <p><%= t("teacher.graph.map.needed_by_these") %></p>
+        <ul class="plain"><% l[:skills].each do |k| %><li><button type="button" class="gm-link" data-action="graph-map#pick" data-key="<%= k %>"><%= skills[k]&.label_it || k %></button></li><% end %></ul>
+      </template>
+    <% end %>
+  </div>
+</section>

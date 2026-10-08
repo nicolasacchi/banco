@@ -5,6 +5,7 @@ module Teacher
       subject! or return
       @unit = "#{@subject.key}:graph"
       @review = Teacher::GraphReview.new(@subject)
+      @map_ctx = Teacher::GraphMapContext.new(@review) if @review.present?
     end
   end
 end

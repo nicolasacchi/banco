@@ -46,6 +46,8 @@
       </table>
     </section>
 
+    <% if @map_ctx %><%= render "teacher/graphs/map", review: @map_ctx.review, ctx: @map_ctx, rows: @map_rows %><% end %>
+
     <section id="report-skills">
       <h2><%= t("teacher.report.skills") %></h2>
       <% fs = row[:formula_sheet] %>
