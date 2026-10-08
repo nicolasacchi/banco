@@ -1,0 +1,40 @@
+{
+  "command": "lesson status",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/lesson-revisions/1"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "revision_id": 1,
+      "lesson": "ripasso.math.demo-equations",
+      "seq": 1,
+      "superseded": false,
+      "rules_version": "7",
+      "older_rules": false,
+      "warnings": [
+        {
+          "code": "W-ABSOLUTE",
+          "severity": "warning",
+          "field": "/sections/mistakes_it/0/1",
+          "message": "an absolute word (solo) needs a counterexample check",
+          "detail": {
+            "word": "solo"
+          }
+        },
+        {
+          "code": "W-ABSOLUTE",
+          "severity": "warning",
+          "field": "/sections/summary_it/0/2",
+          "message": "an absolute word (sempre) needs a counterexample check",
+          "detail": {
+            "word": "sempre"
+          }
+        }
+      ],
+      "reviews": [],
+      "sent_back": false
+    }
+  }
+}

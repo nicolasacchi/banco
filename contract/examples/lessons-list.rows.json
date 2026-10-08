@@ -1,0 +1,29 @@
+{
+  "command": "lessons list",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/subjects/math/lessons"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "subject": "math",
+      "rows": [
+        {
+          "lesson": "ripasso.math.demo-equations",
+          "kind": "ripasso",
+          "latest_revision_id": 1,
+          "seq": 1,
+          "rules_version": "7",
+          "older_rules": false,
+          "reviews": 0,
+          "review_blockers": 0,
+          "review_majors": 0,
+          "sent_back": false,
+          "in_course_map": true,
+          "pinned_by_topic_revision_ids": []
+        }
+      ]
+    }
+  }
+}

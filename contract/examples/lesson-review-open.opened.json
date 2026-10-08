@@ -1,0 +1,154 @@
+{
+  "command": "lesson-review open",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/lesson-revisions/1/review"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "revision_id": 1,
+      "lesson": "ripasso.math.demo-equations",
+      "seq": 1,
+      "superseded": false,
+      "lesson_md": "---\nschema: banco.lesson/1\nkey: ripasso.math.demo-equations\nkind: ripasso\nsubject: math\ntitle_it: 'Equazioni di primo grado: risolvere e verificare'\nskills:\n- math.linear-equation-integer\nuses:\n- math.integer-operations\nrefs:\n- source: seconda-2025-26\n  line: 2\n  fragment: equazioni di primo grado numeriche\n  role: needed_by\n- source: prima-2025-26\n  line: 1\n  fragment: equazioni di primo grado\n  role: taught_in\nscope: studied\nminutes: 30\ncalculator: false\nfinals_it:\n- x = 3\n- x = 2\n-\n- x = 3\n---\n\n## Perché ti serve\nLe equazioni servono in quasi ogni problema. Se le sai risolvere, i sistemi diventano facili.\n\n## L'idea in breve\nUna equazione è come una bilancia in equilibrio. Quello che fai a un lato, lo fai anche all'altro.\n\n## Esempio svolto\nRisolviamo $3x - 7 = 2$.\n\n1. Porta $-7$ a destra: diventa $+7$.\n2. Dividi per $3$.\n\n## Errori da evitare\n- Spostare un termine senza cambiargli il segno.\n- Dividere solo un lato.\n- Dimenticare la verifica.\n\n## Prova tu\n1. Risolvi e verifica: $2x + 1 = 7$.\n2. Risolvi: $5x = 10$.\n3. Spiega a parole che cosa è una soluzione.\n4. Risolvi: $x - 4 = -1$.\n\n## Soluzioni\n1. $2x = 6$, quindi $x = 3$.\n2. Dividi per $5$: $x = 2$.\n3. È il valore che rende vera l'uguaglianza.\n4. Porta $-4$ a destra: $x = 3$.\n\n## Sul libro\nPagine del libro: le indica il docente.\n\n## In sintesi\n- Un termine che cambia lato cambia segno.\n- Si divide tutto per il coefficiente.\n- Si controlla sempre il risultato.\n",
+      "body": {
+        "schema": "banco.lesson/1",
+        "schema_version": 1,
+        "key": "ripasso.math.demo-equations",
+        "kind": "ripasso",
+        "subject": "math",
+        "title_it": "Equazioni di primo grado: risolvere e verificare",
+        "skills": [
+          "math.linear-equation-integer"
+        ],
+        "uses": [
+          "math.integer-operations"
+        ],
+        "refs": [
+          {
+            "source": "seconda-2025-26",
+            "line": 2,
+            "fragment": "equazioni di primo grado numeriche",
+            "role": "needed_by"
+          },
+          {
+            "source": "prima-2025-26",
+            "line": 1,
+            "fragment": "equazioni di primo grado",
+            "role": "taught_in"
+          }
+        ],
+        "scope": "studied",
+        "minutes": 30,
+        "calculator": false,
+        "sections": {
+          "why_it": "Le equazioni servono in quasi ogni problema. Se le sai risolvere, i sistemi diventano facili.",
+          "idea_it": "Una equazione è come una bilancia in equilibrio. Quello che fai a un lato, lo fai anche all'altro.",
+          "example_it": "Risolviamo $3x - 7 = 2$.\n\n1. Porta $-7$ a destra: diventa $+7$.\n2. Dividi per $3$.",
+          "mistakes_it": "- Spostare un termine senza cambiargli il segno.\n- Dividere solo un lato.\n- Dimenticare la verifica.",
+          "book_it": "Pagine del libro: le indica il docente.",
+          "summary_it": "- Un termine che cambia lato cambia segno.\n- Si divide tutto per il coefficiente.\n- Si controlla sempre il risultato."
+        },
+        "try_intro_it": null,
+        "exercises": [
+          {
+            "n": 1,
+            "text_it": "Risolvi e verifica: $2x + 1 = 7$.",
+            "solution_it": "$2x = 6$, quindi $x = 3$.",
+            "final_it": "x = 3"
+          },
+          {
+            "n": 2,
+            "text_it": "Risolvi: $5x = 10$.",
+            "solution_it": "Dividi per $5$: $x = 2$.",
+            "final_it": "x = 2"
+          },
+          {
+            "n": 3,
+            "text_it": "Spiega a parole che cosa è una soluzione.",
+            "solution_it": "È il valore che rende vera l'uguaglianza.",
+            "final_it": null
+          },
+          {
+            "n": 4,
+            "text_it": "Risolvi: $x - 4 = -1$.",
+            "solution_it": "Porta $-4$ a destra: $x = 3$.",
+            "final_it": "x = 3"
+          }
+        ]
+      },
+      "programme_lines": [
+        {
+          "source": "seconda-2025-26",
+          "line": 2,
+          "text": "equazioni di primo grado numeriche intere"
+        },
+        {
+          "source": "prima-2025-26",
+          "line": 1,
+          "text": "equazioni di primo grado"
+        }
+      ],
+      "skills": [
+        {
+          "key": "math.linear-equation-integer",
+          "label_it": "Equazioni lineari intere",
+          "source": "graph",
+          "errors": [
+            {
+              "code": "sign_error",
+              "description_it": "Sposta il termine senza cambiargli il segno."
+            }
+          ]
+        }
+      ],
+      "uses": [
+        {
+          "key": "math.integer-operations",
+          "label_it": "Operazioni con i numeri interi"
+        }
+      ],
+      "checklist": [
+        {
+          "id": 1,
+          "text": "numbers: every number of examples, exercises and solutions recomputed in exact arithmetic"
+        },
+        {
+          "id": 2,
+          "text": "solutions: each correct and complete, and its final equals finals_it"
+        },
+        {
+          "id": 3,
+          "text": "rules stated precisely, with their common exceptions; no absolute word without a counterexample check"
+        },
+        {
+          "id": 4,
+          "text": "Errori da evitare are real misconceptions and match the typical errors of the skills"
+        },
+        {
+          "id": 5,
+          "text": "worked examples: every step has its reason; no step S cannot follow"
+        },
+        {
+          "id": 6,
+          "text": "scope: the content matches the cited lines, nothing of a later year, the kind fits the skills' scope"
+        },
+        {
+          "id": 7,
+          "text": "readability and tone: short sentences, one idea per paragraph, no double negation, tu, kind and neutral; no exam-gaming wording, no self-certification, no page or chapter numbers"
+        },
+        {
+          "id": 8,
+          "text": "Prova tu: easy to hard, at least one exercise aimed at a typical error, none gives its answer away"
+        }
+      ],
+      "brief": {
+        "name": "lesson-review",
+        "version": 1,
+        "sha256": "<sha256>"
+      },
+      "next": "write banco.lesson_review/1 (banco brief show lesson-review) and run banco lesson-review submit 1 --file review.json"
+    }
+  }
+}

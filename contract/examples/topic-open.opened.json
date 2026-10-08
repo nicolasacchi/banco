@@ -1,0 +1,54 @@
+{
+  "command": "topic open",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/topics/ripasso.math.demo-equations"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "topic": "ripasso.math.demo-equations",
+      "subject": "math",
+      "latest": {
+        "revision_id": 1,
+        "seq": 1,
+        "topic": {
+          "schema": "banco.topic/1",
+          "schema_version": 1,
+          "subject": "math",
+          "key": "ripasso.math.demo-equations",
+          "lesson_revision": 1,
+          "practice": [
+            {
+              "skill": "math.linear-equation-integer",
+              "items": [
+                {
+                  "item": "math-p-demo-1",
+                  "revision": 1
+                },
+                {
+                  "item": "math-p-demo-2",
+                  "revision": 2
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "approved_revision_id": null,
+      "stage": "awaiting_teacher",
+      "stale_pins": [],
+      "lesson": {
+        "pinned": 1,
+        "latest": 1
+      },
+      "gate_reasons": [],
+      "brief": {
+        "name": "topic",
+        "version": 1,
+        "sha256": "<sha256>"
+      },
+      "next": "edit the topic and run banco topic submit FILE --dry-run"
+    }
+  }
+}

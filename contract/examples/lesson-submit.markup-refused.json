@@ -1,0 +1,58 @@
+{
+  "command": "lesson submit",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/lessons/submit",
+    "body": {
+      "lesson": "ripasso.math.demo-equations",
+      "base": null,
+      "files": {
+        "lesson.md": "---\nschema: banco.lesson/1\nkey: ripasso.math.demo-equations\nkind: ripasso\nsubject: math\ntitle_it: 'Equazioni di primo grado: risolvere e verificare'\nskills:\n- math.linear-equation-integer\nuses:\n- math.integer-operations\nrefs:\n- source: seconda-2025-26\n  line: 2\n  fragment: equazioni di primo grado numeriche\n  role: needed_by\n- source: prima-2025-26\n  line: 1\n  fragment: equazioni di primo grado\n  role: taught_in\nscope: studied\nminutes: 30\ncalculator: false\nfinals_it:\n- x = 3\n- x = 2\n-\n- x = 3\n---\n\n## Perché ti serve\nLe equazioni servono in quasi ogni problema. Se le sai risolvere, i sistemi diventano facili.\n\n## L'idea in breve\nIl valore x^2 è grande.\n\n## Esempio svolto\nRisolviamo $3x - 7 = 2$.\n\n1. Porta $-7$ a destra: diventa $+7$.\n2. Dividi per $3$.\n\n## Errori da evitare\n- Spostare un termine senza cambiargli il segno.\n- Dividere solo un lato.\n- Dimenticare la verifica.\n\n## Prova tu\n1. Risolvi e verifica: $2x + 1 = 7$.\n2. Risolvi: $5x = 10$.\n3. Spiega a parole che cosa è una soluzione.\n4. Risolvi: $x - 4 = -1$.\n\n## Soluzioni\n1. $2x = 6$, quindi $x = 3$.\n2. Dividi per $5$: $x = 2$.\n3. È il valore che rende vera l'uguaglianza.\n4. Porta $-4$ a destra: $x = 3$.\n\n## Sul libro\nPagine del libro: le indica il docente.\n\n## In sintesi\n- Un termine che cambia lato cambia segno.\n- Si divide tutto per il coefficiente.\n- Si controlla sempre il risultato.\n"
+      }
+    }
+  },
+  "response": {
+    "status": 422,
+    "body": {
+      "code": "E-LESSON-MARKUP",
+      "field": "/sections/idea_it",
+      "message": "line 34: a caret outside $...$ (bare math)",
+      "next": "fix lesson.md and run banco lesson submit DIR --dry-run again",
+      "dry_run": false,
+      "codes": [
+        "E-LESSON-MARKUP"
+      ],
+      "findings": [
+        {
+          "code": "E-LESSON-MARKUP",
+          "severity": "error",
+          "field": "/sections/idea_it",
+          "message": "line 34: a caret outside $...$ (bare math)",
+          "detail": {
+            "rule": "line-34",
+            "line": 34,
+            "construct": "a caret outside $...$ (bare math)"
+          }
+        },
+        {
+          "code": "W-ABSOLUTE",
+          "severity": "warning",
+          "field": "/sections/mistakes_it/0/1",
+          "message": "an absolute word (solo) needs a counterexample check",
+          "detail": {
+            "word": "solo"
+          }
+        },
+        {
+          "code": "W-ABSOLUTE",
+          "severity": "warning",
+          "field": "/sections/summary_it/0/2",
+          "message": "an absolute word (sempre) needs a counterexample check",
+          "detail": {
+            "word": "sempre"
+          }
+        }
+      ]
+    }
+  }
+}

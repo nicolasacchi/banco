@@ -1,0 +1,63 @@
+{
+  "command": "topic submit",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/topics/ripasso.math.demo-equations",
+    "dry_run": true,
+    "body": {
+      "topic": {
+        "schema": "banco.topic/1",
+        "schema_version": 1,
+        "subject": "math",
+        "key": "ripasso.math.demo-equations",
+        "lesson_revision": "latest",
+        "practice": [
+          {
+            "skill": "math.linear-equation-integer",
+            "items": [
+              {
+                "item": "math-p-demo-1",
+                "revision": "latest"
+              },
+              {
+                "item": "math-p-demo-2",
+                "revision": "latest"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "dry_run": true,
+      "status": "passed",
+      "codes": [],
+      "warnings": [],
+      "stored": {
+        "schema": "banco.topic/1",
+        "schema_version": 1,
+        "subject": "math",
+        "key": "ripasso.math.demo-equations",
+        "lesson_revision": 1,
+        "practice": [
+          {
+            "skill": "math.linear-equation-integer",
+            "items": [
+              {
+                "item": "math-p-demo-1",
+                "revision": 1
+              },
+              {
+                "item": "math-p-demo-2",
+                "revision": 2
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

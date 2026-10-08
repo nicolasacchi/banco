@@ -4,6 +4,9 @@
 class ItemSessions
   AUTHORED = %w[item.json generator.mjs].freeze
 
+  # The session book of an item or of a lesson (Phase 1b).
+  def self.for(thing) = thing.is_a?(Lesson) ? LessonSessions.new(thing) : new(thing)
+
   def initialize(item)
     @item = item
   end

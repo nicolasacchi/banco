@@ -1,0 +1,117 @@
+{
+  "command": "lesson-review submit",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/lesson-revisions/1/review",
+    "body": {
+      "review": {
+        "schema": "banco.lesson_review/1",
+        "schema_version": 1,
+        "revision": "1",
+        "checklist": [
+          {
+            "id": 1,
+            "result": "pass",
+            "evidence": "Ricontrollato l'esercizio numero 1 con il calcolo esatto, nessun difetto."
+          },
+          {
+            "id": 2,
+            "result": "pass",
+            "evidence": "Ricontrollato l'esercizio numero 2 con il calcolo esatto, nessun difetto."
+          },
+          {
+            "id": 3,
+            "result": "pass",
+            "evidence": "Ricontrollato l'esercizio numero 3 con il calcolo esatto, nessun difetto."
+          },
+          {
+            "id": 4,
+            "result": "pass",
+            "evidence": "Ricontrollato l'esercizio numero 4 con il calcolo esatto, nessun difetto."
+          },
+          {
+            "id": 5,
+            "result": "pass",
+            "evidence": "Ricontrollato l'esercizio numero 5 con il calcolo esatto, nessun difetto."
+          },
+          {
+            "id": 6,
+            "result": "pass",
+            "evidence": "Ricontrollato l'esercizio numero 6 con il calcolo esatto, nessun difetto."
+          },
+          {
+            "id": 7,
+            "result": "pass",
+            "evidence": "Ricontrollato l'esercizio numero 7 con il calcolo esatto, nessun difetto."
+          },
+          {
+            "id": 8,
+            "result": "pass",
+            "evidence": "Ricontrollato l'esercizio numero 8 con il calcolo esatto, nessun difetto."
+          }
+        ],
+        "recomputed": [
+          {
+            "where": "solutions",
+            "n": 2,
+            "expression": "1 + 1",
+            "value": "2"
+          },
+          {
+            "where": "solutions",
+            "n": 3,
+            "expression": "2 + 2",
+            "value": "4"
+          },
+          {
+            "where": "solutions",
+            "n": 4,
+            "expression": "3 + 3",
+            "value": "6"
+          },
+          {
+            "where": "solutions",
+            "n": 1,
+            "expression": "4 + 4",
+            "value": "8"
+          },
+          {
+            "where": "solutions",
+            "n": 2,
+            "expression": "5 + 5",
+            "value": "10"
+          },
+          {
+            "where": "solutions",
+            "n": 3,
+            "expression": "6 + 6",
+            "value": "12"
+          },
+          {
+            "where": "solutions",
+            "n": 4,
+            "expression": "7 + 7",
+            "value": "14"
+          },
+          {
+            "where": "solutions",
+            "n": 1,
+            "expression": "8 + 8",
+            "value": "16"
+          }
+        ],
+        "findings": []
+      }
+    }
+  },
+  "response": {
+    "status": 201,
+    "body": {
+      "review_id": 1,
+      "revision_id": 1,
+      "findings": [],
+      "counts": {},
+      "next": "stop here: the teacher reads the review and approves the topic in the browser (banco status)"
+    }
+  }
+}

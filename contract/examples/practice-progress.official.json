@@ -1,0 +1,71 @@
+{
+  "command": "practice progress",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/subjects/math/practice/progress"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "subject": "math",
+      "student": "student",
+      "trial": false,
+      "rules_version": "practice/1 (provisional: states other than not_seen and in_study come with the S2 fold)",
+      "topics": [
+        {
+          "topic": "ripasso.math.demo-equations",
+          "status": "in_progress",
+          "visible": false
+        },
+        {
+          "topic": "lezione.math.demo-systems",
+          "status": "todo",
+          "visible": false
+        }
+      ],
+      "skills": [
+        {
+          "skill": "math.linear-equation-integer",
+          "label_it": "Equazioni lineari intere",
+          "state": "in_study",
+          "since": "<time>",
+          "demonstrated_at": null,
+          "consolidated_at": null,
+          "seed": null,
+          "counts": {
+            "serves": 1,
+            "tries": 1,
+            "correct_unaided": 0,
+            "correct_aided": 0,
+            "wrong": 1,
+            "hints": 0,
+            "solutions_requested": 0
+          },
+          "typical": {
+            "sign_error": 1
+          }
+        },
+        {
+          "skill": "math.linear-system-substitution",
+          "label_it": "Sistemi lineari: sostituzione",
+          "state": "not_seen",
+          "since": null,
+          "demonstrated_at": null,
+          "consolidated_at": null,
+          "seed": null,
+          "counts": {
+            "serves": 0,
+            "tries": 0,
+            "correct_unaided": 0,
+            "correct_aided": 0,
+            "wrong": 0,
+            "hints": 0,
+            "solutions_requested": 0
+          },
+          "typical": {}
+        }
+      ],
+      "to_recover_without_topic": []
+    }
+  }
+}

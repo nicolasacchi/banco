@@ -1,0 +1,43 @@
+{
+  "command": "topics list",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/subjects/math/topics"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "subject": "math",
+      "course_revision_id": 1,
+      "rows": [
+        {
+          "topic": "ripasso.math.demo-equations",
+          "kind": "ripasso",
+          "position": 1,
+          "title_it": "Equazioni di primo grado",
+          "latest_revision_id": 1,
+          "seq": 1,
+          "stage": "in_review",
+          "approved_revision_id": null,
+          "stale_pins": [],
+          "gate_reasons": [
+            "the lesson revision has no review by an independent session",
+            "2 pinned item revision(s) lack an expert review or a blind solve"
+          ]
+        },
+        {
+          "topic": "lezione.math.demo-systems",
+          "kind": "lezione",
+          "position": 2,
+          "title_it": "Sistemi lineari",
+          "latest_revision_id": null,
+          "seq": null,
+          "stage": "missing",
+          "approved_revision_id": null,
+          "stale_pins": [],
+          "gate_reasons": []
+        }
+      ]
+    }
+  }
+}

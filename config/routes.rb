@@ -117,6 +117,21 @@ Rails.application.routes.draw do
     get "api/v1/subjects/:subject/skill-graph/coverage" => "api/v1/skill_graphs#coverage", constraints: subject, format: false
     get "api/v1/subjects/:subject/blueprint" => "api/v1/blueprints#open", constraints: subject, format: false
     post "api/v1/subjects/:subject/blueprint" => "api/v1/blueprints#submit", constraints: subject, format: false
+
+    # The course of Phase 1b (D-223..D-232): the map, the lessons, their reviews, the topics. No route decides.
+    get "api/v1/subjects/:subject/course" => "api/v1/courses#open", constraints: subject, format: false
+    post "api/v1/subjects/:subject/course" => "api/v1/courses#submit", constraints: subject, format: false
+    get "api/v1/subjects/:subject/lessons" => "api/v1/lessons#index", constraints: subject, format: false
+    get "api/v1/subjects/:subject/topics" => "api/v1/topics#index", constraints: subject, format: false
+    get "api/v1/subjects/:subject/practice/progress" => "api/v1/practice_progress#show", constraints: subject, format: false
+    lesson = { lesson: /(ripasso|ponte|lezione)\.[a-z_]+\.[a-z0-9-]+/ }
+    post "api/v1/lessons/submit" => "api/v1/lessons#submit", format: false
+    get "api/v1/lessons/:lesson" => "api/v1/lessons#open", constraints: lesson, format: false
+    get "api/v1/lesson-revisions/:revision" => "api/v1/lessons#status", constraints: revision, format: false
+    get "api/v1/lesson-revisions/:revision/review" => "api/v1/lesson_reviews#open", constraints: revision, format: false
+    post "api/v1/lesson-revisions/:revision/review" => "api/v1/lesson_reviews#submit", constraints: revision, format: false
+    get "api/v1/topics/:topic" => "api/v1/topics#open", constraints: { topic: lesson[:lesson] }, format: false
+    post "api/v1/topics/:topic" => "api/v1/topics#submit", constraints: { topic: lesson[:lesson] }, format: false
   end
 
   # Harness listener: the page and the files Chrome loads to run an agent's

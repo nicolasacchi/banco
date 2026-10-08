@@ -5,7 +5,7 @@ module Api
     # is no command to go further (firm rule 2).
     class StatusController < Api::BaseController
       def show
-        subjects = Subject.order(:position).map { |s| SubjectStage.for(s) }
+        subjects = Subject.order(:position).map { |s| SubjectStage.for(s).merge(course: Course::Status.for(s)) }
         student = Student.find_by(key: "student")
         render json: { subjects: subjects, stages: SubjectStage::STAGES,
                        warmup_completed: student ? Diagnosis::Warmup.complete?(student) : false,

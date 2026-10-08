@@ -7,7 +7,7 @@ module IndependentRoles
   # True when +session+ may act as +role+ (reviewer or solver) on +item+; otherwise
   # answers 422 E-SESSION-NOT-INDEPENDENT and returns false.
   def independent_role?(session, item, role)
-    sessions = ItemSessions.new(item)
+    sessions = ItemSessions.for(item)
     held = sessions.conflicts(session.id, role)
     if held.any?
       refuse("E-SESSION-NOT-INDEPENDENT", "X-Banco-Session", "session #{session.id} already acted as #{held.join(' and ')} on #{item.key}: the #{role} must be another session",

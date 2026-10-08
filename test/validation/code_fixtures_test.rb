@@ -2,6 +2,8 @@ require "test_helper"
 require_relative "../support/validation_servers"
 require_relative "../support/chrome_helper"
 require_relative "../support/validation_fixtures"
+require_relative "lesson_checks_test"
+require_relative "course_codes_test"
 
 # Every E- code of the registry that M5 owns has a fixture that produces it (A-06),
 # and so does every W- code. The good fixture passes with 24 instances. The codes of
@@ -13,8 +15,8 @@ class CodeFixturesTest < ActiveSupport::TestCase
   F = ValidationFixtures
 
   OWNED_STAGES = %w[schema ruby chrome roundtrip verify blueprint].freeze
-  # Phase 1b codes: registered by S0 (formats), implemented and given fixtures by S1 and S1b. Remove a code
-  # from this list when its fixture lands in CASES.
+  # Phase 1b codes: registered by S0 (formats); S1b gave each a bad fixture in lesson_checks_test.rb or
+  # course_codes_test.rb (checked by the test below). They are not item codes, so CASES here does not list them.
   PHASE_1B = %w[
     E-LESSON-PARSE E-LESSON-SECTIONS E-LESSON-MARKUP E-LESSON-WORDS E-LESSON-BOLD E-LESSON-EXERCISES E-LESSON-FINALS
     E-LESSON-BOOK E-LESSON-PAGE E-LESSON-SUMMARY E-LESSON-REFS W-LESSON-WHY W-LESSON-MISTAKES W-LESSON-FINAL-MISSING
@@ -23,7 +25,12 @@ class CodeFixturesTest < ActiveSupport::TestCase
   ].freeze
   LATER = (%w[E-VERIFY-AUTHOR E-SESSION-NOT-INDEPENDENT] + PHASE_1B).freeze
 
+  test "every Phase 1b code of this list has a bad fixture in the lesson or the course tests" do
+    assert_empty PHASE_1B - LessonChecksTest::CASES.keys - CourseCodesTest::CASES.keys
+  end
+
   def self.owned_codes
+    Validation::Findings # Validation::Codes lives in findings.rb: load it first
     Validation::Codes.all.select { |code, meta| OWNED_STAGES.include?(meta["stage"]) && !LATER.include?(code) }.keys
   end
 

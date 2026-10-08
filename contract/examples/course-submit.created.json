@@ -1,0 +1,81 @@
+{
+  "command": "course submit",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/subjects/math/course",
+    "body": {
+      "course": {
+        "schema": "banco.course/1",
+        "schema_version": 1,
+        "subject": "math",
+        "notes_it": [
+          "Un esempio inventato."
+        ],
+        "skills": [
+          {
+            "key": "math.linear-system-substitution",
+            "label_it": "Sistemi lineari: sostituzione",
+            "layer": "core",
+            "prerequisites": [
+              "math.linear-equation-integer"
+            ],
+            "refs": [
+              {
+                "source": "seconda-2025-26",
+                "line": 1,
+                "fragment": "metodo di sostituzione",
+                "role": "taught_in"
+              }
+            ],
+            "errors": [
+              {
+                "code": "subst_no_brackets",
+                "description_it": "Sostituisce senza parentesi.",
+                "implicates": [
+                  "math.integer-operations"
+                ]
+              }
+            ]
+          }
+        ],
+        "topics": [
+          {
+            "key": "ripasso.math.demo-equations",
+            "kind": "ripasso",
+            "title_it": "Equazioni di primo grado",
+            "term": 1,
+            "minutes": 45,
+            "skills": [
+              "math.linear-equation-integer"
+            ],
+            "after": []
+          },
+          {
+            "key": "lezione.math.demo-systems",
+            "kind": "lezione",
+            "title_it": "Sistemi lineari",
+            "term": 2,
+            "minutes": 45,
+            "skills": [
+              "math.linear-system-substitution"
+            ],
+            "after": [
+              "ripasso.math.demo-equations"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 201,
+    "body": {
+      "revision_id": 1,
+      "seq": 1,
+      "replayed": false,
+      "skill_graph_revision_id": 1,
+      "warnings": [],
+      "next": "banco lessons list --subject math"
+    }
+  }
+}

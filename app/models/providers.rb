@@ -39,7 +39,7 @@ module Providers
     return "the model #{session.model.inspect} is in no known family: add it to config/banco/providers.yml or use another model" if rule["known_family"] && family == "unknown"
 
     if rule["different_model_from"] && item
-      authors = ItemSessions.new(item).sessions(rule["different_model_from"])
+      authors = ItemSessions.for(item).sessions(rule["different_model_from"])
       mine = model_key(session.model)
       same = authors.find { |a| model_key(a.model) == mine }
       return "a #{session.role} must run on a different model than every author of the item: both are #{session.model.inspect}" if same
