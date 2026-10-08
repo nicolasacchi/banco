@@ -7,7 +7,7 @@ import { Controller } from "@hotwired/stimulus"
 // Selecting a node marks it (gm-sel), the chain of what it needs (gm-up) and everything that builds on it
 // (gm-down); the rest is dimmed by the wrapper's gm-has-selection class.
 export default class extends Controller {
-  static targets = ["svg", "panel", "empty", "detail", "search", "facet", "onlyInferred", "onlyPinned", "seconda", "count", "template", "legendBox"]
+  static targets = ["svg", "panel", "empty", "detail", "search", "facet", "onlyInferred", "onlyPinned", "seconda", "count", "template", "legendBox", "scrollHint"]
   static values = { mainWidth: Number, fullWidth: Number, mainHeight: Number, fullHeight: Number, shownOne: String, shownOther: String, shownNone: String }
 
   connect() {
@@ -25,8 +25,9 @@ export default class extends Controller {
     this.selected = null
     this.scale = READABLE
     if (this.hasLegendBoxTarget && window.matchMedia("(max-width: 60rem)").matches) this.legendBoxTarget.open = false
-    this.fit()
+    // Ready first: it shows the panel and the controls, which decide how wide the map's box is.
     this.element.classList.add("gm-ready")
+    this.fit()
     this.beforePrint = () => this.element.classList.remove("gm-has-selection")
     window.addEventListener("beforeprint", this.beforePrint)
     this.svgTarget.addEventListener("click", (event) => this.click(event))
@@ -170,11 +171,21 @@ export default class extends Controller {
     return this.svgTarget.parentElement
   }
 
-  // Readable first: the whole map when it fits at natural size, else natural size and a scroll.
+  // On a desktop the whole map fits the width whenever its text stays at MIN_TEXT px or more; else (and on a phone)
+  // natural size and a scroll, which on a phone starts at the test's first entry skill.
   fit() {
     const whole = this.box.clientWidth / this.width
-    this.draw(whole >= READABLE ? whole : READABLE)
-    this.box.scrollLeft = 0
+    const phone = window.matchMedia("(max-width: 60rem)").matches
+    if (!phone && whole * LABEL_PX >= MIN_TEXT) this.draw(whole)
+    else this.draw(whole >= READABLE ? whole : READABLE)
+    this.box.scrollLeft = phone ? this.entryLeft() : 0
+  }
+
+  // Scroll position that shows the first entry skill (the left-most one marked "inizio") at the left edge.
+  entryLeft() {
+    const tabs = Array.from(this.svgTarget.querySelectorAll(".gm-tab")).map((tab) => Number(tab.getAttribute("x")) - 14)
+    if (!tabs.length) return 0
+    return Math.max(0, Math.min(...tabs) * this.scale - 16)
   }
 
   overview() {
@@ -200,6 +211,7 @@ export default class extends Controller {
     svg.setAttribute("viewBox", `0 0 ${this.width} ${this.tall}`)
     svg.setAttribute("width", Math.round(this.width * scale))
     svg.setAttribute("height", Math.round(this.tall * scale))
+    if (this.hasScrollHintTarget) this.scrollHintTarget.hidden = this.box.scrollWidth <= this.box.clientWidth + 1
   }
 
   // Keep the selected node in view.
@@ -226,6 +238,8 @@ export default class extends Controller {
 }
 
 const READABLE = 1
+const LABEL_PX = 14
+const MIN_TEXT = 10
 
 function push(map, key, value) {
   if (!map.has(key)) map.set(key, [])

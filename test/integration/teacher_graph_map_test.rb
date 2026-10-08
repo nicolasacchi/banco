@@ -96,12 +96,42 @@ class TeacherGraphMapPageTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "p.notice[data-map-warning=cycle]", /giro chiuso/
     assert_select "path.gm-edge-warning", count: 1
+    assert_select "p.notice[data-map-warning=cycle]", text: "Il grafo ha un giro chiuso tra B e A. La freccia è tratteggiata e passa sotto: va corretto."
+  end
+
+  test "a self loop and an unknown prerequisite are visible warnings with their own text" do
+    SkillGraphRevision.create!(subject: @subject, seq: 9, author_session: AgentSession.find_by!(label: "ui-author"), body_json: {
+      schema: "banco.skill_graph/1", subject: "math", skills: [
+        { key: "math.a", label_it: "A", layer: "core", scope: "studied", prerequisites: [ "math.a", "math.ghost" ], refs: [], errors: [] }
+      ]
+    }.to_json)
+    page "/teacher/subjects/math/graph"
+    assert_response :success
+    assert_select "p.notice[data-map-warning=self_loop]", text: "L'abilità A richiede se stessa. Va corretto."
+    assert_select "p.notice[data-map-warning=unknown_prerequisite]", text: "L'abilità A richiede math.ghost, che non è nel grafo. Va corretto."
   end
 
   test "the map has no form of its own" do
     page "/teacher/subjects/math/graph"
     assert_response :success
     assert_select "#graph-map form", count: 0
+  end
+
+  test "a guest sees the whole map read-only: no form anywhere on the page, the panel templates carry no form either" do
+    saved = ENV.to_h.slice("BANCO_EDGE_PROXY", "BANCO_TEACHER_USERS", "BANCO_GUEST_USERS")
+    ENV["BANCO_EDGE_PROXY"] = "#{EDGE}/32"
+    ENV["BANCO_TEACHER_USERS"] = "nik"
+    ENV["BANCO_GUEST_USERS"] = "guest-a@example.test"
+    guest = { "Remote-User" => "guest-a@example.test", "Remote-Groups" => "banco-guest" }
+    page "/teacher/subjects/math/graph", headers: guest
+    assert_response :success
+    assert_select "svg a.gm-node.gm-skill", count: GraphMapRows::SKILLS.size
+    assert_select "#graph-map-legend"
+    assert_select "form", count: 0
+    assert_select "template[data-key='math.fractions']", count: 1
+    assert_empty css_select("template").select { |t| t.inner_html.include?("<form") }
+  ensure
+    %w[BANCO_EDGE_PROXY BANCO_TEACHER_USERS BANCO_GUEST_USERS].each { |k| saved.key?(k) ? ENV[k] = saved[k] : ENV.delete(k) }
   end
 
   test "a subject without a graph has no map" do

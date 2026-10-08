@@ -75,10 +75,10 @@ module GraphMapRows
   WIDE_TOPICS = %w[Lettura Ortografia Lessico Sintassi Testo Grammatica Verbo Nome Aggettivo Pronome Frase Periodo].freeze
 
   # A second shape for the screenshots: 36 skills in six levels, every skill needing two of the level before and now and then one two levels back.
-  def build_wide_graph!(world, subject: world[:subject])
+  def build_wide_graph!(world, subject: world[:subject], levels: 6)
     session = AgentSession.find_or_create_by!(label: "ui-author", role: "author")
     scopes = %w[studied studied integration_studied in_progress middle_school not_in_prima]
-    skills = (0...36).map do |i|
+    skills = (0...(levels * 6)).map do |i|
       level, j = i.divmod(6)
       prerequisites = level.zero? ? [] : [ (level - 1) * 6 + j, (level - 1) * 6 + (j + 1) % 6 ]
       prerequisites << (level - 2) * 6 + (j + 3) % 6 if level >= 2 && (i % 7).zero?

@@ -12,7 +12,9 @@ module Teacher
   # column the order comes from a fixed number of barycenter sweeps; ties break by key.
   # A cycle or an unknown prerequisite is never a crash: the edge is left out of the ranking,
   # drawn as a dashed warning line and reported in `warnings`.
-  # Deferred cross-subject prerequisites are small stub nodes in the left-most lane. The second
+  # Deferred cross-subject prerequisites are small stub nodes, each in the column just left of the
+  # first skill that depends on it, so its edges stay short. A column is added in front of the roots
+  # only when a stub feeds a root. The second
   # year's programme lines (role needed_by) form an extra right-most column that the page shows
   # on request.
   class GraphMap
@@ -166,10 +168,11 @@ module Teacher
         @rank[k] ||= preds[k].empty? ? 0 : preds[k].map { |p| ranker.call(p) }.max + 1
       end
       @keys.each { |k| ranker.call(k) }
-      @offset = @lane ? 1 : 0
+      first_rank = @stub_keys.to_h { |k| [ k, @edges.select { |e| e[0] == "stub:#{k}" }.map { |e| @rank[e[1]] }.min ] }
+      @offset = first_rank.values.any?(&:zero?) ? 1 : 0
       @col = @keys.to_h { |k| [ k, @rank[k] + @offset ] }
-      @col_count = (@col.values.max || -1) + 1
-      @col_count = [ @col_count, 1 ].max if @lane
+      @stub_col = first_rank.transform_values { |r| r + @offset - 1 }
+      @col_count = [ (@col.values.max || -1) + 1, (@stub_col.values.max || -1) + 1 ].max
     end
 
     # ---- items (boxes and invisible waypoints) per column
@@ -182,7 +185,7 @@ module Teacher
       end
       @stub_keys.each do |k|
         lines = self.class.wrap(@stubs.to_h[k] || k, width: 17, max: 2)
-        @items["stub:#{k}"] = Item.new("stub:#{k}", :stub, 0, PAD_Y * 2 + LINE_H * lines.size, STUB_W, nil, nil, lines)
+        @items["stub:#{k}"] = Item.new("stub:#{k}", :stub, @stub_col[k], PAD_Y * 2 + LINE_H * lines.size, STUB_W, nil, nil, lines)
       end
       @chains = [] # [from, to, kind, [item ids from source to target]]
       @links = []  # [left id, right id] between adjacent columns
@@ -240,7 +243,8 @@ module Teacher
     # ---- coordinates
 
     def assign_coordinates
-      widths = Array.new(@col_count) { |c| c.zero? && @lane ? STUB_W : NODE_W }
+      widths = columns_of_items.map { |col| col.reject { |i| i.kind == :waypoint }.map(&:w).max || NODE_W }
+      @items.each_value { |i| i.w = widths[i.col] if i.kind == :waypoint }
       xs = []
       cursor = MARGIN
       widths.each { |w| xs << cursor; cursor += w + COL_GAP }
@@ -305,9 +309,6 @@ module Teacher
         nodes += sec_nodes
         edges += sec_edges
         @height = [ @height, sec_nodes.map { |n| n.y + n.h }.max.to_f + MARGIN ].max.round(1)
-      end
-      if @lane
-        groups << Group.new("lane", @xs[0], TOP - 14)
       end
       { nodes: nodes, edges: edges, groups: groups, width: width, main_width: @main_width, height: @height, main_height: main_height }
     end

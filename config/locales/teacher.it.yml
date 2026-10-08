@@ -235,7 +235,7 @@ it:
         shown_one: "Una abilità mostrata."
         shown_other: "{n} abilità mostrate."
         shown_none: "Nessuna abilità corrisponde."
-        lane: "Da altre materie"
+        legend_stub: "Riquadro piccolo a puntini: «Da altre materie», un'abilità che si impara in un'altra materia"
         seconda_group: "Programma di seconda"
         panel: "Dettagli dell'abilità"
         panel_empty: "Scegli un'abilità sulla mappa. Con Esc togli la selezione."

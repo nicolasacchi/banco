@@ -90,14 +90,27 @@ class TeacherGraphMapTest < ActiveSupport::TestCase
     assert_equal 1, map.edges.size
   end
 
-  test "deferred prerequisites are stubs in a lane on the left" do
+  test "a stub sits in the column just left of its first dependent" do
     map = build(stub_labels: { "science.data" => "Dati e grafici" })
     stub = map.nodes.find { |n| n.kind == :stub }
+    dependent = map.node("math.probability")
     assert_equal "science.data", stub.key
-    assert_equal map.nodes.map(&:x).min, stub.x
+    assert_equal dependent.col - 1, stub.col
+    assert_operator stub.x + stub.w, :<, dependent.x
+    assert_operator dependent.x - (stub.x + stub.w), :<=, Teacher::GraphMap::COL_GAP + Teacher::GraphMap::NODE_W - stub.w
+    assert_operator stub.x, :>, map.nodes.map(&:x).min
     assert map.lane
     assert map.edges.any? { |e| e.kind == :stub && e.from == "science.data" && e.to == "math.probability" }
-    assert map.groups.any? { |g| g.label == "lane" }
+  end
+
+  test "a stub that feeds a root adds one column in front, and a stub keeps its column with several dependents" do
+    map = build([ skill("a", deferred: [ { skill: "x.s", where: :prerequisite } ]), skill("b", [ "a" ]), skill("c", [ "b" ], deferred: [ { skill: "x.s", where: :prerequisite } ]) ])
+    stub = map.nodes.find { |n| n.kind == :stub }
+    assert_equal 0, stub.col
+    assert_equal 1, map.node("a").col
+    assert_equal 2, map.edges.count { |e| e.kind == :stub }
+    boxes = map.nodes
+    boxes.combination(2).each { |p, q| assert(p.x + p.w <= q.x || q.x + q.w <= p.x || p.y + p.h <= q.y || q.y + q.h <= p.y, "#{p.key} overlaps #{q.key}") }
   end
 
   test "without stubs there is no lane, and the second year adds a right-most column" do

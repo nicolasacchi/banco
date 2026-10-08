@@ -149,12 +149,70 @@ class GraphMapSystemTest < ApplicationSystemTestCase
     assert_equal 0, page.evaluate_script("document.querySelector('.gm-scroll').scrollLeft")
   end
 
+  test "Tab walks through the nodes in order and Enter selects the focused one" do
+    visit "/teacher/subjects/math/graph"
+    assert_selector "#graph-map.gm-ready"
+    order = page.evaluate_script("Array.from(document.querySelectorAll('a.gm-node')).map(n => n.dataset.key)")
+    page.execute_script("document.querySelectorAll('a.gm-node')[0].focus()")
+    assert_equal order[0], page.evaluate_script("document.activeElement.dataset.key")
+    order.first(4).drop(1).each do |expected|
+      press :tab
+      assert_equal expected, page.evaluate_script("document.activeElement.dataset.key")
+    end
+    press :enter
+    assert_selector "a.gm-node.gm-sel[data-key='#{order[3]}']"
+    assert_selector ".gm-panel h3"
+    press :escape
+    assert_no_selector "a.gm-node.gm-sel"
+  end
+
+  FIT_JS = "(() => { const b = document.querySelector('.gm-scroll'); const s = document.querySelector('.gm-svg'); " \
+           "return [s.getBoundingClientRect().width, b.clientWidth, b.scrollLeft, document.querySelector('.gm-scroll-hint').hidden] })()".freeze
+
+  test "on a desktop a map whose text stays readable opens fitted to the width, without the scroll hint" do
+    build_wide_graph!(@world, levels: 5)
+    page.driver.resize(1366, 900)
+    visit "/teacher/subjects/math/graph"
+    assert_selector "#graph-map.gm-ready"
+    width, box, left, hint_hidden = page.evaluate_script(FIT_JS)
+    assert_operator width, :<=, box + 1
+    assert_operator width / box, :>, 0.9
+    assert_equal 0, left
+    assert_equal true, hint_hidden
+    page.driver.resize(1280, 900)
+  end
+
+  test "on a desktop a map too wide to read fitted keeps natural size and the scroll hint; the inferred note is plain text" do
+    page.driver.resize(1366, 900)
+    visit "/teacher/subjects/math/graph"
+    assert_selector "#graph-map.gm-ready"
+    width, box, left, hint_hidden = page.evaluate_script(FIT_JS)
+    assert_operator width, :>, box
+    assert_equal 0, left
+    assert_equal false, hint_hidden
+    node("math.decimals").click
+    assert_selector ".gm-panel h3", text: "Numeri decimali e percentuali"
+    assert_equal "400", page.evaluate_script("getComputedStyle(document.querySelector('.gm-panel .gm-note')).fontWeight")
+    page.driver.resize(1280, 900)
+  end
+
+  test "on a phone the map scrolls and starts at the first entry skill, with the hint shown" do
+    page.driver.resize(390, 844)
+    visit "/teacher/subjects/math/graph"
+    assert_selector "#graph-map.gm-ready"
+    data = page.evaluate_script("(() => { const b = document.querySelector('.gm-scroll'); const s = document.querySelector('.gm-svg'); const tabs = Array.from(document.querySelectorAll('.gm-tab')).map(t => Number(t.getAttribute('x')) - 14); return [s.getBoundingClientRect().width, b.clientWidth, b.scrollLeft, Math.max(0, Math.min(...tabs) - 16), document.querySelector('.gm-scroll-hint').hidden] })()")
+    assert_operator data[0], :>, data[1]
+    assert_in_delta data[3], data[2], 1
+    assert_equal false, data[4]
+    page.driver.resize(1280, 900)
+  end
+
   test "screenshots of two graphs at two sizes" do
     dir = ENV["GRAPH_MAP_SHOTS"].to_s
     skip "GRAPH_MAP_SHOTS is not set" if dir.empty?
     FileUtils.mkdir_p(dir)
     { "school" => nil, "wide" => :wide }.each do |name, shape|
-      build_wide_graph!(@world) if shape == :wide
+      build_wide_graph!(@world, levels: 5) if shape == :wide
       [ [ 1366, 900 ], [ 390, 844 ] ].each do |w, h|
         page.driver.resize(w, h)
         visit "/teacher/subjects/math/graph"

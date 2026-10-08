@@ -65,6 +65,7 @@ export default class extends Controller {
   }
 
   async showItem(reply) {
+    this.element.dataset.ready = "false"
     this.hideBlocked()
     this.workTarget.hidden = false
     this.current = reply
@@ -230,7 +231,9 @@ export default class extends Controller {
 
   // ---- helpers ------------------------------------------------------------------
 
+  // data-ready is the one honest "an item is on screen and can be answered" signal (the system tests wait on it).
   setButtons(enabled) {
+    this.element.dataset.ready = String(enabled && !!this.handle)
     this.sendButtonTarget.disabled = !enabled
     this.unknownButtonTarget.disabled = !enabled
   }

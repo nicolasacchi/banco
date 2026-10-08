@@ -90,7 +90,7 @@ class TeacherApprovalTest < ApplicationSystemTestCase
     assert_text "Anteprima del docente"
     click_button "Comincia"
     answered = 0
-    while answered < 12 && page.has_button?("Non lo so", wait: 6)
+    while answered < 12 && page.has_css?("[data-controller~=sitting][data-ready=true]", wait: 6)
       click_button "Non lo so"
       answered += 1
       wait_until { Attempt.where(context: "teacher_preview").count == answered }

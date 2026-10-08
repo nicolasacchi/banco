@@ -271,6 +271,7 @@ q.example { display: block; margin-bottom: 0.25rem; }
 .gm-scroll-hint { margin: 0.25rem 0; }
 .gm-swatch { display: inline-block; width: 1.6rem; height: 1.1rem; border: 2px solid var(--gm-ink); border-radius: 4px; }
 .gm-swatch-dashed { border-style: dashed; }
+.gm-swatch-dotted { border-style: dotted; }
 .gm-sample-badge { display: inline-block; min-width: 1.4rem; text-align: center; border-radius: 50%; background: var(--gm-ink); color: var(--bg); font-weight: 700; font-size: 0.85em; }
 .gm-sample-tab { display: inline-block; padding: 0 0.35rem; border-radius: 4px; background: var(--gm-ink); color: var(--bg); font-size: 0.85em; }
 .gm-sample-dot { display: inline-block; width: 0.9rem; height: 0.9rem; border-radius: 50%; background: var(--gm-up); border: 2px solid var(--gm-ink); }
@@ -299,7 +300,7 @@ q.example { display: block; margin-bottom: 0.25rem; }
 .gm-layout { display: flex; gap: 1rem; align-items: flex-start; }
 .gm-scroll { flex: 1 1 0; min-width: 0; overflow-x: auto; border: 2px solid var(--line); background: var(--surface); }
 .gm-svg { display: block; max-width: none; touch-action: pan-x pan-y; cursor: default; }
-.gm-panel { flex: 0 0 21rem; max-width: 30%; font-size: 0.9em; max-height: 80vh; overflow: auto; border: 2px solid var(--line); background: var(--surface); padding: 0.5rem 1rem; }
+.gm-panel { flex: 0 0 20rem; max-width: 30%; font-size: 0.9em; max-height: 80vh; overflow: auto; border: 2px solid var(--line); background: var(--surface); padding: 0.5rem 1rem; }
 .gm-panel h3 { margin-top: 0.25rem; }
 .gm-link { font: inherit; background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; text-align: left; }
 .gm-link:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
@@ -349,4 +350,4 @@ q.example { display: block; margin-bottom: 0.25rem; }
   .gm-panel, .gm-controls, .gm-scroll-hint { display: none !important; }
   .gm-has-selection .gm-node, .gm-has-selection .gm-svg .gm-edge { opacity: 1; }
 }
-.gm-note { font-weight: 700; }
+.gm-note { font-weight: 400; }

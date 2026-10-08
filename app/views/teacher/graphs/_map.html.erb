@@ -27,6 +27,7 @@
         <li><span class="gm-swatch gm-fill-none" aria-hidden="true"></span> ★ ☆ <%= t("teacher.graph.map.report_scope_marks") %></li>
       <% end %>
       <li><span class="gm-swatch gm-fill-none gm-swatch-dashed" aria-hidden="true"></span> <%= t("teacher.graph.map.legend_inferred") %></li>
+      <% if map.lane %><li><span class="gm-swatch gm-fill-stub gm-swatch-dotted" aria-hidden="true"></span> <%= t("teacher.graph.map.legend_stub") %></li><% end %>
       <li><span class="gm-sample-badge" aria-hidden="true">3</span> <%= t("teacher.graph.map.legend_pinned") %></li>
       <li><span class="gm-sample-tab" aria-hidden="true"><%= t("teacher.graph.map.entry") %></span> <%= t("teacher.graph.map.legend_entry") %></li>
       <% unless report %><li><span class="gm-sample-dot" aria-hidden="true"></span> <%= t("teacher.graph.map.legend_change") %></li><% end %>
@@ -65,7 +66,7 @@
     </p>
   </div>
 
-  <p class="hint gm-needs-js gm-scroll-hint no-print"><%= t("teacher.graph.map.scroll_hint") %></p>
+  <p class="hint gm-needs-js gm-scroll-hint no-print" data-graph-map-target="scrollHint"><%= t("teacher.graph.map.scroll_hint") %></p>
   <div class="gm-layout">
     <div class="gm-scroll">
       <svg class="gm-svg" data-graph-map-target="svg" viewBox="0 0 <%= map.main_width.round %> <%= map.main_height.round %>" width="<%= map.main_width.round %>" height="<%= map.main_height.round %>" role="group" aria-label="<%= t('teacher.graph.map.aria') %>" preserveAspectRatio="xMinYMin meet">
@@ -74,7 +75,7 @@
           <marker id="gm-arrow-hot" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="gm-arrow gm-arrow-hot"/></marker>
         </defs>
         <% map.groups.each do |g| %>
-          <text font-size="14" class="gm-group<%= ' gm-seconda-part' unless g.label == 'lane' %>" x="<%= g.x %>" y="<%= g.y + 14 %>"><%= g.label == "lane" ? t("teacher.graph.map.lane") : (g.label == "none" ? t("teacher.graph.map.seconda_group") : g.label) %></text>
+          <text font-size="14" class="gm-group gm-seconda-part" x="<%= g.x %>" y="<%= g.y + 14 %>"><%= (g.label == "none" ? t("teacher.graph.map.seconda_group") : g.label) %></text>
         <% end %>
         <g class="gm-edges">
           <% map.edges.each do |e| %>
