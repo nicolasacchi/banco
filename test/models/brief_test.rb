@@ -2,10 +2,10 @@ require "test_helper"
 
 # C-03: the authoring briefs are versioned files in git.
 class BriefTest < ActiveSupport::TestCase
-  NAMES = %w[blueprint course diagnosis-item grade lesson lesson-review practice-item review skill-graph solve topic].freeze
+  NAMES = %w[arbiter blueprint course diagnosis-item grade lesson lesson-review practice-item review skill-graph solve topic].freeze
   VERSION_2 = %w[diagnosis-item review].freeze # D-227: practice items, review points 12-13
 
-  test "the eleven briefs exist (version 1, or 2 for the two Phase 1b deltas) with a body" do
+  test "the twelve briefs exist (version 1, or 2 for the two Phase 1b deltas) with a body" do
     assert_equal NAMES, Brief.names
     NAMES.each do |name|
       brief = Brief.find(name)

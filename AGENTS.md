@@ -9,7 +9,9 @@ Phase 1a: the entry diagnosis.
 
 1. The student talks only to the software: no chat and no model in the student's path.
 2. Decisions are taken by the teacher in the browser (web listener only). No
-   `/api/v1` route creates a decision; the CLI has no decision command.
+   `/api/v1` route creates a decision; the CLI has no decision command. Exception:
+   minor review findings, which the third reviewer may close when its two opinions
+   agree (a derived state, never a decision row): D-222.
 3. Agent-written code runs only in browsers (the server's Chrome at validation).
    Rails and the grader worker never execute it.
 4. The ledger is append-only: triggers block UPDATE and DELETE on every primary
@@ -122,6 +124,8 @@ only), `HARNESS_PORT` 3200 (internal). Never `PORT`.
   `Validation::LessonChecks|CourseChecks|TopicChecks`, `Review::LessonIntake`, `LessonSessions`, `Course::State|TopicStage|Status|Decisions`,
   the API controllers `Courses|Lessons|LessonReviews|Topics|PracticeProgress`; `banco course|lessons|lesson|lesson-review|topics|topic|practice`.
 - Teacher decisions and pages of the course (S4, D-236): `approve_topic`, `send_back_lesson`, `release_course` (the third is the only way the course opens to the official student), `Approval::TopicGate` (`.mechanical` for the page), `Course::Decisions.release_reasons`; pages `Teacher::CourseReview|TopicReview|PracticeProgress` with `Teacher::ItemCard` (shared with the entry test) and `teacher/items/_card.html.erb`; test world `test/support/topic_world.rb`. Texts: `config/locales/teacher_course.it.yml`.
+- The skill map (D-221): `Teacher::GraphMap` (layout), `GraphMapContext` (pins, entry, seconda lines), `teacher/graphs/_map*.erb`, `graph_map_controller.js`; on the graph page and the report.
+- Third reviewer (D-222): role `arbiter` (`FindingAssessment`, `FindingOpinion`, `Teacher::FindingField`, `banco findings assess`, `briefs/arbiter.md`); first opinion claude-opus-5-5, second claude-haiku-4-5-20251001 (`config/banco/providers.yml`); blocker and major findings stay a teacher click ("Segui il parere", `follow_opinions`), minor ones are closed or marked to fix as derived state; no effect on `Review::Gate` or `Approval::BlueprintGate`.
 - `docs/decisions.md`: every deviation and operator answer (`## D-NNN`, index at the
   top). Change the design only by adding an entry.
 - `prep/`: private working material, git-ignored, never committed.

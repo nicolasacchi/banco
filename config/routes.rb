@@ -66,6 +66,7 @@ Rails.application.routes.draw do
       post "runs/:run_id/close", action: :close_run, constraints: { run_id: id }
       post "item-revisions/:item_revision_id/send-back", action: :send_back_item, constraints: { item_revision_id: id }
       post "item-revisions/:item_revision_id/void-attempts", action: :void_revision_attempts, constraints: { item_revision_id: id }
+      post "subjects/:subject/follow-opinions", action: :follow_opinions, constraints: { subject: /[a-z_]+/ }
       post "subjects/:subject/formula-sheet", action: :set_formula_sheet, constraints: { subject: /[a-z_]+/ }
       post "subjects/:subject/kind-override", action: :kind_override, constraints: { subject: /[a-z_]+/ }
       post "topic-revisions/:revision_id/approve", action: :approve_topic, constraints: { revision_id: id }
@@ -135,6 +136,8 @@ Rails.application.routes.draw do
 
     # The author answers the findings (D-220); the teacher alone decides about them.
     post "api/v1/findings/:finding/responses" => "api/v1/findings#respond", constraints: { finding: /\d+/ }, format: false
+    # The third reviewer reads a finding and says who is right (D-222); this too decides nothing.
+    post "api/v1/findings/:finding/assessments" => "api/v1/findings#assess", constraints: { finding: /\d+/ }, format: false
 
     # The graph and the entry test of a subject.
     subject = { subject: /[a-z_]+/ }

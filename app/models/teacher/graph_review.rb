@@ -10,9 +10,10 @@ module Teacher
 
     attr_reader :subject, :revision, :approved
 
-    def initialize(subject)
+    # revision: another revision of the graph (the report shows the one a run used); the latest by default.
+    def initialize(subject, revision: nil)
       @subject = subject
-      @revision = SkillGraphRevision.where(subject: subject).order(:seq).last
+      @revision = revision || SkillGraphRevision.where(subject: subject).order(:seq).last
       @approved = SubjectStage.approved_graph(subject)
     end
 

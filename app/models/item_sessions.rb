@@ -1,5 +1,5 @@
 # Who touched an item, by role (A-04). Reads the file_sessions of every revision,
-# the reviews and the blind solves. The rule is that the sessions of the four roles
+# the reviews, the blind solves and the assessments of findings. The rule is that the sessions of the five roles
 # are disjoint on one item (E-SESSION-NOT-INDEPENDENT); it guards against mistakes.
 class ItemSessions
   AUTHORED = %w[item.json generator.mjs].freeze
@@ -11,7 +11,7 @@ class ItemSessions
     @item = item
   end
 
-  # AgentSession rows that hold +role+ on the item: author, verifier, reviewer, solver.
+  # AgentSession rows that hold +role+ on the item: author, verifier, reviewer, solver, arbiter.
   def sessions(role)
     AgentSession.where(id: ids(role.to_s)).order(:id).to_a
   end
@@ -22,13 +22,14 @@ class ItemSessions
     when "verifier" then from_files { |name| name == "verify.mjs" }
     when "reviewer" then ItemReview.where(item_revision_id: revision_ids).distinct.pluck(:agent_session_id)
     when "solver" then BlindSolve.where(item_revision_id: revision_ids).distinct.pluck(:agent_session_id)
+    when "arbiter" then FindingAssessment.joins(:review_finding).where(review_findings: { item_revision_id: revision_ids }).distinct.pluck(:agent_session_id)
     else []
     end
   end
 
   # The roles other than +role+ that the session already holds on the item.
   def conflicts(session_id, role)
-    (%w[author verifier reviewer solver] - [ role.to_s ]).select { |r| ids(r).include?(session_id) }
+    (%w[author verifier reviewer solver arbiter] - [ role.to_s ]).select { |r| ids(r).include?(session_id) }
   end
 
   private

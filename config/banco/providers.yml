@@ -28,5 +28,14 @@ roles:
   # ItemSessions (E-SESSION-NOT-INDEPENDENT). They receive item text only.
   reviewer: { different_model_from: author }
   solver: { different_model_from: author }
+  # The arbiter, the third reviewer of the findings (D-222). It gives a first opinion
+  # (first_opinion_model) and a second one (second_opinion_model), and only these two models are
+  # allowed. It runs on a model other than the session that raised the finding. No rule about the
+  # author's model. Holding no other role on the item is enforced by ItemSessions.
+  arbiter:
+    allow_models: [ claude-opus-5-5, claude-haiku-4-5-20251001 ]
+    first_opinion_model: claude-opus-5-5
+    second_opinion_model: claude-haiku-4-5-20251001
+    different_model_from_raiser: true
   # The grader reads the student's answers, a minor's data: only these families.
   grader: { allow_families: [ anthropic ] }

@@ -6,10 +6,27 @@
     <p class="notice"><%= t("teacher.graph.none") %></p>
   <% else %>
     <% review = @review %>
+    <%= render "teacher/graphs/map", review: review, ctx: @map_ctx, rows: nil %>
+
     <p id="graph-summary">
       <%= t("teacher.graph.summary", count: review.skills.size, seq: review.revision.seq, share: review.inferred_share) %>
       <%= review.approved_latest? ? t("teacher.graph.is_approved") : (review.first_revision? ? t("teacher.graph.first_revision") : t("teacher.graph.newer_than_approved")) %>
     </p>
+
+    <section id="graph-approve" class="approve">
+      <% blocker = decision_blocker %>
+      <% allowed = !review.approved_latest? && blocker.nil? %>
+      <%= decision_form("/teacher/skill-graph-revisions/#{review.revision.id}/approve") do %>
+        <button type="submit" class="button" <%= "disabled" unless allowed %> aria-describedby="graph-approve-why">
+          <%= t("teacher.graph.approve") %>
+        </button>
+      <% end %>
+      <p id="graph-approve-why" class="hint">
+        <% if review.approved_latest? %><%= t("teacher.graph.already") %>
+        <% elsif blocker %><%= t("teacher.cannot_decide.#{blocker}") %>
+        <% else %><%= t("teacher.graph.approve_hint") %><% end %>
+      </p>
+    </section>
 
     <% if review.previous %>
       <section id="graph-diff">
@@ -30,21 +47,6 @@
       </section>
     <% end %>
 
-    <section id="graph-approve" class="approve">
-      <% blocker = decision_blocker %>
-      <% allowed = !review.approved_latest? && blocker.nil? %>
-      <%= decision_form("/teacher/skill-graph-revisions/#{review.revision.id}/approve") do %>
-        <button type="submit" class="button" <%= "disabled" unless allowed %> aria-describedby="graph-approve-why">
-          <%= t("teacher.graph.approve") %>
-        </button>
-      <% end %>
-      <p id="graph-approve-why" class="hint">
-        <% if review.approved_latest? %><%= t("teacher.graph.already") %>
-        <% elsif blocker %><%= t("teacher.cannot_decide.#{blocker}") %>
-        <% else %><%= t("teacher.graph.approve_hint") %><% end %>
-      </p>
-    </section>
-
     <% if review.notes.any? %>
       <h2><%= t("teacher.graph.notes_title") %></h2>
       <ul class="plain" id="graph-notes">
@@ -52,7 +54,7 @@
       </ul>
     <% end %>
 
-    <h2><%= t("teacher.graph.skills") %></h2>
+    <h2 id="graph-list"><%= t("teacher.graph.skills") %></h2>
     <% review.skills.each do |skill| %>
       <article class="skill" id="skill-<%= skill.key.parameterize %>" data-skill="<%= skill.key %>" data-scope="<%= skill.scope %>">
         <h3><%= ref_for(skill.key) %></h3>

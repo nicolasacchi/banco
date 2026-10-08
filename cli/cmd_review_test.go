@@ -95,6 +95,8 @@ func TestReviewSolveGradeCommandsSendTheSessionAndTheirBody(t *testing.T) {
 		{[]string{"submissions", "--pending", "--json"}, "GET", "/api/v1/submissions/pending", "", ""},
 		{[]string{"findings", "respond", "9", "--file", "FILE"}, "POST", "/api/v1/findings/9/responses", "response", ""},
 		{[]string{"findings", "respond", "9", "--file", "FILE", "--dry-run"}, "POST", "/api/v1/findings/9/responses", "response", "1"},
+		{[]string{"findings", "assess", "9", "--file", "FILE"}, "POST", "/api/v1/findings/9/assessments", "assessment", ""},
+		{[]string{"findings", "assess", "9", "--file", "FILE", "--dry-run"}, "POST", "/api/v1/findings/9/assessments", "assessment", "1"},
 		{[]string{"findings", "list", "--subject", "italian"}, "GET", "/api/v1/subjects/italian/findings", "", ""},
 	}
 	for _, c := range cases {
@@ -233,7 +235,7 @@ func TestFindingsListOpenFlagAndUsage(t *testing.T) {
 	if r.exit != ExitOK || gotPath != "/api/v1/subjects/italian/findings" || gotQuery != "open=1" {
 		t.Fatalf("exit %d path %q query %q: %s", r.exit, gotPath, gotQuery, r.stderr)
 	}
-	for _, args := range [][]string{{"findings", "list"}, {"findings", "list", "--subject", "Bad Key"}, {"findings", "respond", "x", "--file", "f"}, {"findings", "respond", "3"}} {
+	for _, args := range [][]string{{"findings", "list"}, {"findings", "list", "--subject", "Bad Key"}, {"findings", "respond", "x", "--file", "f"}, {"findings", "respond", "3"}, {"findings", "assess", "x", "--file", "f"}, {"findings", "assess", "3"}} {
 		if r := runWithSession(t, srv.URL, "31", args...); r.exit != ExitUsage {
 			t.Errorf("%v: exit %d, want usage", args, r.exit)
 		}

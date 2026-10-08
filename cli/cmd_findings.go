@@ -18,6 +18,7 @@ func runFindingsList(e *env, args []string) error {
 	fs := flag.NewFlagSet("findings list", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	subject := fs.String("subject", "", "subject key, for example italian")
+	all := fs.Bool("all", false, "minor findings too (the third reviewer reads them)")
 	open := fs.Bool("open", false, "only findings without a decision and without an answer")
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
@@ -32,8 +33,15 @@ func runFindingsList(e *env, args []string) error {
 		return newErr(ExitUsage, "E-USAGE", "args", "findings list takes no positional argument", next)
 	}
 	path := "/api/v1/subjects/" + url.PathEscape(*subject) + "/findings"
+	q := url.Values{}
 	if *open {
-		path += "?" + url.Values{"open": {"1"}}.Encode()
+		q.Set("open", "1")
+	}
+	if *all {
+		q.Set("all", "1")
+	}
+	if len(q) > 0 {
+		path += "?" + q.Encode()
 	}
 	return send(e, "findings list", "GET", path, nil, false)
 }
@@ -60,4 +68,29 @@ func runFindingsRespond(e *env, args []string) error {
 		return err
 	}
 	return send(e, "findings respond", "POST", "/api/v1/findings/"+url.PathEscape(pos[0])+"/responses", payload, *dry)
+}
+
+// runFindingsAssess sends the third reviewer's opinion on a finding
+// (POST /api/v1/findings/:finding/assessments). The file is
+// {"verdict": "author_right" | "finding_right" | "unclear", "note_it": "..."}.
+// It disposes of nothing: only the teacher decides (firm rule 2).
+func runFindingsAssess(e *env, args []string) error {
+	fs := flag.NewFlagSet("findings assess", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	file := fs.String("file", "", "assessment.json")
+	dry := fs.Bool("dry-run", false, "check and store nothing")
+	fs.Bool("json", false, "JSON output (the default)")
+	pos, err := parseFlags(fs, args)
+	if err != nil {
+		return err
+	}
+	const next = "banco findings assess FINDING --file assessment.json"
+	if len(pos) != 1 || !idRe.MatchString(pos[0]) {
+		return newErr(ExitUsage, "E-USAGE", "finding", "findings assess takes one finding id (a number)", next)
+	}
+	payload, err := fileBody(*file, "assessment", next)
+	if err != nil {
+		return err
+	}
+	return send(e, "findings assess", "POST", "/api/v1/findings/"+url.PathEscape(pos[0])+"/assessments", payload, *dry)
 }

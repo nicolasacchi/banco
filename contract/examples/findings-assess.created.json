@@ -1,0 +1,25 @@
+{
+  "command": "findings assess",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/findings/2/assessments",
+    "body": {
+      "assessment": {
+        "verdict": "author_right",
+        "note_it": "Ho confrontato la chiave con il calcolo a mano."
+      }
+    }
+  },
+  "response": {
+    "status": 201,
+    "body": {
+      "id": 1,
+      "finding_id": 2,
+      "opinion": "first",
+      "verdict": "author_right",
+      "model": "claude-opus-5-5",
+      "note_it": "Ho confrontato la chiave con il calcolo a mano.",
+      "next": "stop here: the teacher decides, in the browser; the second opinion is another model's job"
+    }
+  }
+}

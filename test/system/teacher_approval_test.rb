@@ -63,7 +63,7 @@ class TeacherApprovalTest < ApplicationSystemTestCase
     assert_selector "[data-finding='#{@finding.id}']"
     within("[data-finding='#{@finding.id}']") do
       fill_in "reason_it", with: "Il testo dice già l'unità."
-      click_button "La domanda è giusta: scarta il rilievo"
+      click_button "Va bene così: scarta il rilievo"
     end
     assert_selector ".flash", text: "Decisione sul rilievo registrata."
     assert_selector "[data-finding='#{@finding.id}'][data-disposition=dismissed]"
@@ -90,7 +90,7 @@ class TeacherApprovalTest < ApplicationSystemTestCase
     assert_text "Anteprima del docente"
     click_button "Comincia"
     answered = 0
-    while answered < 12 && page.has_button?("Non lo so", wait: 6)
+    while answered < 12 && page.has_css?("[data-controller~=sitting][data-ready=true]", wait: 6)
       click_button "Non lo so"
       answered += 1
       wait_until { Attempt.where(context: "teacher_preview").count == answered }

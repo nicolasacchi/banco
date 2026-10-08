@@ -28,7 +28,7 @@ module Api
     # The session of X-Banco-Session (A-04), checked against the roles the endpoint
     # takes. Answers and returns nil when there is none, it is unknown or it has
     # another role. With item: also the provider rules of the role (A-08).
-    def require_session(*roles, item: nil, next_step: "banco session new --role ROLE --agent NAME --model MODEL")
+    def require_session(*roles, item: nil, finding: nil, next_step: "banco session new --role ROLE --agent NAME --model MODEL")
       raw = request.headers["X-Banco-Session"].to_s
       session = AgentSession.find_by(id: raw) if raw.match?(AgentSession::ID)
       unless session
@@ -47,7 +47,7 @@ module Api
         refuse("E-SESSION-ROLE", "X-Banco-Session", "this command is for a #{roles.join(' or ')} session; session #{session.id} is a #{session.role} session", next_step, 422)
         return nil
       end
-      reason = Providers.refusal(session, item: item)
+      reason = Providers.refusal(session, item: item, finding: finding)
       if reason
         refuse("E-PROVIDER-NOT-ALLOWED", "X-Banco-Session", reason, "banco session new --role #{session.role} --agent NAME --model MODEL (see config/banco/providers.yml)", 422)
         return nil

@@ -74,8 +74,13 @@
     </section>
 
     <% open_list = review.open_finding_list %>
-    <section id="open-findings" data-open-findings="<%= open_list.size %>">
-      <h2><%= t("teacher.test.to_decide", count: open_list.size) %></h2>
+    <% clear = review.clear_open_list %>
+    <section id="open-findings" data-open-findings="<%= open_list.size %>" data-clear-findings="<%= clear.size %>">
+      <% if open_list.any? %>
+        <h2><%= t("teacher.test.to_decide_with", open: open_list.size, count: clear.size) %></h2>
+      <% else %>
+        <h2><%= t("teacher.test.to_decide", count: 0) %></h2>
+      <% end %>
       <% if open_list.any? %>
         <ul class="plain">
           <% open_list.each do |entry| %>
@@ -85,6 +90,23 @@
             </li>
           <% end %>
         </ul>
+      <% end %>
+      <% if clear.any? %>
+        <h3><%= t("teacher.test.clear_list_title", count: clear.size) %></h3>
+        <p class="hint"><%= t("teacher.test.clear_list_intro") %></p>
+        <ul class="plain" id="clear-list">
+          <% clear.each do |entry| %>
+            <% f = entry.finding %>
+            <li data-clear-finding="<%= f.id %>">
+              <a href="<%= skill_screen_path(@subject, entry.skill) %>#finding-<%= f.id %>"><%= entry.item_key %><% if f.instance %> · <%= t("teacher.skill.instance", n: f.instance) %><% end %></a>:
+              <%= f.problem_it.to_s.truncate(110) %> <strong><%= t("teacher.skill.verdict.#{entry.opinion.verdict}") %>.</strong>
+            </li>
+          <% end %>
+        </ul>
+        <%= decision_form("/teacher/subjects/#{@subject.key}/follow-opinions", id: "follow-opinions-form") do %>
+          <% clear.each do |entry| %><%= hidden_field_tag "pairs[]", "#{entry.finding.id}:#{entry.opinion.verdict}", id: nil %><% end %>
+          <button type="submit" class="button" <%= "disabled" if decision_blocker %>><%= t("teacher.test.follow_all", count: clear.size) %></button>
+        <% end %>
       <% end %>
     </section>
 

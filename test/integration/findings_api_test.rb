@@ -1,10 +1,12 @@
 require "test_helper"
 require_relative "../support/validation_fixtures"
 require_relative "../support/course_rows"
+require_relative "../support/arbiter_rows"
 
 # D-220: the author answers blocker and major findings; the teacher alone decides.
 class FindingsApiTest < ActionDispatch::IntegrationTest
   include CourseRows
+  include ArbiterRows
 
   setup do
     @token = ApiToken.issue!(role: "agent_claude", label: "findings test")
@@ -161,6 +163,130 @@ class FindingsApiTest < ActionDispatch::IntegrationTest
 
   test "the route exists on the API listener only" do
     on(:web, "/api/v1/findings/#{@blind_finding.id}/responses", method: :post, remote_addr: ListenerHelpers::EDGE_IP)
+    assert_response :not_found
+  end
+
+  # D-222: the third reviewer.
+  def assess(finding, doc, as:, headers: {})
+    api("/api/v1/findings/#{finding.id}/assessments", method: :post, body: { assessment: doc }, as: as, headers: headers)
+  end
+
+  def judgement(verdict = "author_right") = { verdict: verdict, note_it: "Ho confrontato la chiave con il calcolo a mano." }
+
+  test "an arbiter assesses a finding; the opinion is stored and decides nothing" do
+    first = arbiter_session
+    assess(@blind_finding, judgement, as: first)
+    assert_response :created, json.inspect
+    record_example "findings assess", "created"
+    row = FindingAssessment.sole
+    assert_equal [ @blind_finding.id, first.id, "author_right" ], [ row.review_finding_id, row.agent_session_id, row.verdict ]
+    assert_equal "first", json["opinion"].to_s
+    assert_equal 0, Decision.count
+    assert_nil @blind_finding.reload.disposition
+    assess(@minor, judgement("finding_right"), as: first)
+    assert_response :created
+  end
+
+  test "an arbiter on another model than the two allowed, or an author, is refused" do
+    assess(@blind_finding, judgement, as: arbiter_session("claude-sonnet-4-5"))
+    assert_response :unprocessable_entity
+    assert_equal "E-PROVIDER-NOT-ALLOWED", json["code"]
+    assess(@blind_finding, judgement, as: @author)
+    assert_response :unprocessable_entity
+    assert_equal "E-SESSION-ROLE", json["code"]
+    assess(@blind_finding, judgement, as: nil)
+    assert_response :unprocessable_entity
+    assert_equal "E-SESSION", json["code"]
+    assert_equal 0, FindingAssessment.count
+  end
+
+  test "an arbiter never runs on the model of the session that raised the finding; the author's model does not matter" do
+    raiser = arbiter_session(ArbiterRows::FIRST_MODEL, role: "reviewer")
+    review = ItemReview.create!(item_revision: @rev1, agent_session: raiser, checklist_json: "[]")
+    raised = ReviewFinding.create!(item_revision: @rev1, source: "review", item_review: review, severity: "major", field: "stem", quote: "x", problem_it: "Altro.", fix_it: "Ok.")
+    assess(raised, judgement, as: arbiter_session(ArbiterRows::FIRST_MODEL))
+    assert_response :unprocessable_entity
+    assert_equal "E-PROVIDER-NOT-ALLOWED", json["code"]
+    assert_match(/raised the finding/, json["message"])
+    assess(raised, judgement, as: arbiter_session(ArbiterRows::SECOND_MODEL))
+    assert_response :created, json.inspect
+    # An author of the item on the very model of the arbiter: no rule about it.
+    author_model = arbiter_session(ArbiterRows::SECOND_MODEL, role: "author")
+    ItemRevision.create!(item: @item, seq: @item.revisions.maximum(:seq) + 1, body_json: @rev1.body_json, file_sessions_json: "{}", author_session_id: author_model.id)
+    assess(@blind_finding, judgement, as: arbiter_session(ArbiterRows::SECOND_MODEL))
+    assert_response :created, json.inspect
+  end
+
+  test "an arbiter session that holds another role on the item is refused, many findings in one session are fine" do
+    both = arbiter_session
+    ItemReview.create!(item_revision: @rev1, agent_session: both, checklist_json: "[]")
+    assess(@blind_finding, judgement, as: both)
+    assert_response :unprocessable_entity
+    assert_equal "E-SESSION-NOT-INDEPENDENT", json["code"]
+    fine = arbiter_session
+    assess(@blind_finding, judgement, as: fine)
+    assess(@review_finding, judgement, as: fine)
+    assert_response :created
+    # And once it has assessed, the same session cannot take a role it now excludes.
+    assert_includes ItemSessions.new(@item).conflicts(fine.id, "reviewer"), "arbiter"
+  end
+
+  test "the verdict, the note and the members are checked; a dry run stores nothing" do
+    me = arbiter_session
+    assess(@blind_finding, { verdict: "maybe", note_it: "Va bene." }, as: me)
+    assert_response :unprocessable_entity
+    assert_equal "assessment/verdict", json["field"]
+    assess(@blind_finding, { verdict: "unclear", note_it: "" }, as: me)
+    assert_response :unprocessable_entity
+    assess(@blind_finding, { verdict: "unclear", note_it: "Parola. " * 80 }, as: me)
+    assert_response :unprocessable_entity
+    assert_equal "assessment/note_it", json["field"]
+    assess(@blind_finding, { verdict: "unclear", note_it: "La chiave è **giusta** perché " + ("parola " * 60) + "." }, as: me)
+    assert_response :unprocessable_entity
+    assert_equal "E-READ", json["code"]
+    assess(@blind_finding, judgement.merge(disposition: "dismissed"), as: me)
+    assert_response :unprocessable_entity
+    api("/api/v1/findings/#{@blind_finding.id}/assessments", method: :post, body: { nope: 1 }, as: me)
+    assert_response :unprocessable_entity
+    assess(ReviewFinding.new(id: 99_999), judgement, as: me)
+    assert_response :not_found
+    assess(@blind_finding, judgement, as: me, headers: { "X-Banco-Dry-Run" => "1" })
+    assert_response :success
+    assert_equal true, json["dry_run"]
+    assert_equal 0, FindingAssessment.count
+  end
+
+  test "an arbiter sees the other opinions of a finding only after assessing it; the list has minor findings with all=1" do
+    one = arbiter_session(ArbiterRows::FIRST_MODEL)
+    two = arbiter_session(ArbiterRows::SECOND_MODEL)
+    assess(@blind_finding, judgement("finding_right"), as: one)
+    row = ->(as) { api("/api/v1/subjects/math/findings", as: as); json["rows"].find { |r| r["finding_id"] == @blind_finding.id } }
+    assert_equal "waiting", row.call(one)["opinion"]["state"], "an arbiter that assessed it reads what there is"
+    hidden = row.call(two)["opinion"]
+    assert_equal [ true, 1 ], hidden.values_at("hidden", "count"), "the second opinion is written blind"
+    assert_nil hidden["first"]
+    assert_equal true, row.call(arbiter_session(ArbiterRows::SECOND_MODEL))["opinion"]["hidden"]
+    assert_equal "waiting", row.call(@author)["opinion"]["state"], "the author reads what there is"
+    assert_equal "waiting", row.call(@reviewer)["opinion"]["state"]
+    assert_equal [ true, 1 ], row.call(nil)["opinion"].values_at("hidden", "count"), "no session: a count only"
+    assert_nil row.call(nil)["opinion"]["first"]
+    ApiToken.issue!(role: "agent_claude", label: "other")
+    foreign = AgentSession.create!(label: "t", role: "author", agent: "test", model: "claude-test", token_id: ApiToken.where(label: "other").sole.id)
+    assert_equal true, row.call(foreign)["opinion"]["hidden"], "a session of another token does not count"
+    assert_nil row.call(foreign)["opinion"]["first"]
+    assess(@blind_finding, judgement("finding_right"), as: two)
+    assert_response :created
+    seen = row.call(two)["opinion"]
+    assert_equal [ "clear", "finding_right" ], seen.values_at("state", "verdict")
+    assert_equal [ ArbiterRows::FIRST_MODEL, ArbiterRows::SECOND_MODEL ], [ seen["first"]["model"], seen["second"]["model"] ]
+    api("/api/v1/subjects/math/findings", as: one)
+    assert_equal [ @review_finding.id, @blind_finding.id ], json["rows"].map { |r| r["finding_id"] }
+    api("/api/v1/subjects/math/findings?all=1", as: one)
+    assert_equal [ @review_finding.id, @blind_finding.id, @minor.id ], json["rows"].map { |r| r["finding_id"] }
+  end
+
+  test "the assessment route exists on the API listener only" do
+    on(:web, "/api/v1/findings/#{@blind_finding.id}/assessments", method: :post, remote_addr: ListenerHelpers::EDGE_IP)
     assert_response :not_found
   end
 end

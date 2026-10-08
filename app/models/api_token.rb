@@ -7,7 +7,7 @@ class ApiToken < ApplicationRecord
   ROLES = %w[agent_claude agent_omp ci].freeze
   # The session roles each token role may open and use (D-071). ci: none.
   SESSION_ROLES = {
-    "agent_claude" => %w[author verifier reviewer solver grader],
+    "agent_claude" => %w[author verifier reviewer solver grader arbiter],
     "agent_omp" => %w[author verifier reviewer solver],
     "ci" => []
   }.freeze

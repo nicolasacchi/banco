@@ -29,7 +29,11 @@ module Practice
       serve = PracticeServe.find_by(id: serve_id, student_id: @student.id) or return not_found
       existing = PracticeAttempt.find_by(client_attempt_id: client_id)
       return existing.practice_serve_id == serve.id && existing.student_id == @student.id ? stored(serve, existing) : not_found if existing
-      return closed unless Loader.status_of(serve, now: @clock.now).state == :open
+      unless Loader.status_of(serve, now: @clock.now).state == :open
+        # a twin of this very answer may have been stored and closed the serve since the lookup above
+        twin = PracticeAttempt.find_by(client_attempt_id: client_id, student_id: @student.id, practice_serve_id: serve.id)
+        return twin ? stored(serve, twin) : closed
+      end
 
       source = SOURCES.include?(source.to_s) ? source.to_s : "text"
       instance = serve.item_instance

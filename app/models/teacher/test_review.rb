@@ -12,7 +12,7 @@ module Teacher
     Finding = ItemCard::Finding
     Evidence = ItemCard::Evidence
     # A blocker or major finding nobody has decided yet, on a pinned revision, with where to find it.
-    OpenFinding = Data.define(:finding, :skill, :label_it, :item_key)
+    OpenFinding = Data.define(:finding, :skill, :label_it, :item_key, :opinion)
 
     attr_reader :subject, :blueprint, :approved
 
@@ -92,12 +92,17 @@ module Teacher
         by_revision = skill_rows.each_with_object({}) { |row, h| row.item_ids.each { |id| (h[id] ||= []) << row } }
         found = ReviewFinding.must_be_disposed.where(item_revision_id: by_revision.keys).includes(item_revision: :item).order(:id)
                              .reject { |f| dispositions.key?(f.id) }
+        opinions = FindingAssessment.opinions_for(found.map(&:id))
         skill_rows.flat_map do |row|
           found.select { |f| row.item_ids.include?(f.item_revision_id) }
-               .map { |f| OpenFinding.new(f, row.skill, row.label_it, f.item_revision.item.key) }
+               .map { |f| OpenFinding.new(f, row.skill, row.label_it, f.item_revision.item.key, opinions[f.id]) }
         end
       end
     end
+
+    # The open findings whose two opinions agree on a side (author_right or finding_right): the
+    # teacher may follow them in one click. Waiting, split and unclear opinions stay out (D-222).
+    def clear_open_list = open_finding_list.select { |o| o.opinion.clear? }
 
     private
 

@@ -1,0 +1,84 @@
+<%# Everything about one skill, for the map's panel (D-221). Plain links and buttons: no popovers inside a template. %>
+<% key = skill.key %>
+<% by_key = review.skills.index_by(&:key) %>
+<% needed = review.skills.select { |s| s.prerequisites.include?(key) || s.composite_of.include?(key) } %>
+<% taught = skill.refs.select { |r| r.role == "taught_in" } %>
+<% seconda = ctx.seconda_for(key) %>
+<h3><%= skill.label_it %> <span class="key">(<%= key %>)</span></h3>
+<% if report %>
+  <% if row %>
+    <div class="gm-evidence" data-evidence="<%= row[:group] %>">
+      <p><strong><%= t("teacher.graph.map.state.#{gm_state(row)}") %></strong>
+        <% if row[:reason] %> · <%= t("teacher.report.reason.#{row[:reason]}", default: row[:reason]) %><% end %></p>
+      <ul class="plain">
+        <li><%= t("teacher.graph.map.evidence_served", count: row[:served].to_i) %></li>
+        <% if row[:evidence].present? %><li><%= t("teacher.graph.map.evidence_outcomes") %> <%= row[:evidence].map { |e| GraphMapHelper::EVIDENCE_WORD.fetch(e, e) }.join(", ") %></li><% end %>
+        <% if row[:error_codes].present? %><li><%= t("teacher.graph.map.evidence_errors") %> <%= row[:error_codes].join(", ") %></li><% end %>
+        <% if row[:unclassified] %><li><%= t("teacher.graph.map.evidence_unclassified") %></li><% end %>
+        <% Array(row[:marks]).each do |mark| %><li><%= mark %></li><% end %>
+      </ul>
+    </div>
+  <% else %>
+    <p class="hint"><%= t("teacher.graph.map.no_evidence") %></p>
+  <% end %>
+<% end %>
+<dl class="ref-facts">
+  <dt><%= t("teacher.refs.f.scope") %></dt>
+  <dd><%= scope_text(skill.scope) %><% if skill.scope_reason_it.present? %><br><%= skill.scope_reason_it %><% end %></dd>
+  <dt><%= t("teacher.graph.field.layer").capitalize %></dt><dd><%= t("teacher.graph.layer.#{skill.layer}") %></dd>
+  <% if !report && skill.change != :same %>
+    <dt><%= t("teacher.graph.map.change") %></dt>
+    <dd><%= t("teacher.graph.map.change_short.#{skill.change}") %><% if skill.changes.any? %> · <%= skill.changes.map { |c| t("teacher.graph.field.#{c}") }.join(", ") %><% end %></dd>
+  <% end %>
+  <% if skill.flags.any? %>
+    <dt><%= t("teacher.graph.map.flags") %></dt>
+    <dd><% skill.flags.each do |flag| %><%= t("teacher.graph.flags.#{flag}") %> <% end %></dd>
+  <% end %>
+  <dt><%= t("teacher.refs.f.prerequisites") %></dt>
+  <dd>
+    <% if skill.prerequisites.any? || skill.composite_of.any? %>
+      <ul class="plain gm-chips">
+        <% skill.prerequisites.each do |k| %><li><button type="button" class="gm-link" data-action="graph-map#pick" data-key="<%= k %>"><%= by_key[k]&.label_it || k %></button></li><% end %>
+        <% skill.composite_of.each do |k| %><li><button type="button" class="gm-link" data-action="graph-map#pick" data-key="<%= k %>"><%= by_key[k]&.label_it || k %></button> <span class="hint"><%= t("teacher.graph.map.part") %></span></li><% end %>
+      </ul>
+    <% else %><%= t("teacher.refs.none") %><% end %>
+    <% skill.deferred.select { |d| d[:where] == :prerequisite }.each do |d| %>
+      <br><%= t("teacher.graph.deferred.prerequisite") %> <button type="button" class="gm-link" data-action="graph-map#pick" data-key="<%= d[:skill] %>"><%= ctx.refs.skill_label(d[:skill]) %></button>: <%= d[:reason_it] %>
+    <% end %>
+  </dd>
+  <dt><%= t("teacher.refs.f.needed_by") %></dt>
+  <dd>
+    <% if needed.any? %>
+      <ul class="plain gm-chips"><% needed.each do |s| %><li><button type="button" class="gm-link" data-action="graph-map#pick" data-key="<%= s.key %>"><%= s.label_it %></button></li><% end %></ul>
+    <% else %><%= t("teacher.refs.none") %><% end %>
+  </dd>
+  <dt><%= t("teacher.graph.map.taught") %></dt>
+  <dd>
+    <% if taught.any? %>
+      <ul class="plain"><% taught.each do |r| %><li><%= r.source %>, <%= t("teacher.graph.line") %> <%= r.line %>: <% if r.text %><q><%= r.text %></q><% else %><%= t("teacher.graph.line_missing") %><% end %>
+        <% if r.other_subject %><span class="gm-note"><%= t("teacher.graph.other_subject") %></span><% end %></li><% end %></ul>
+    <% else %><span class="gm-note"><%= t("teacher.graph.inferred") %></span><% end %>
+  </dd>
+  <dt><%= t("teacher.graph.map.needed_in_seconda") %></dt>
+  <dd>
+    <% if seconda.any? %>
+      <ul class="plain"><% seconda.each do |r| %><li><%= r.source %>, <%= t("teacher.graph.line") %> <%= r.line %>: <% if r.text %><q><%= r.text %></q><% else %><%= t("teacher.graph.line_missing") %><% end %></li><% end %></ul>
+    <% else %><%= t("teacher.refs.none") %><% end %>
+  </dd>
+  <% if skill.errors.any? %>
+    <dt><%= t("teacher.graph.errors", count: skill.errors.size) %></dt>
+    <dd><ul class="plain"><% skill.errors.each do |error| %><li><strong><%= error["code"] %></strong>: <%= error["description_it"] %></li><% end %></ul></dd>
+  <% end %>
+  <dt><%= t("teacher.refs.f.pinned") %></dt>
+  <dd>
+    <% if ctx.items(key).any? %>
+      <ul class="plain"><% ctx.items(key).each do |item| %><li><%= link_to "#{component_name(item.component)} (#{item.key})", teacher_ref_path(key: item.key), class: "ref-link" %></li><% end %></ul>
+    <% else %><%= ctx.in_test?(key) ? t("teacher.refs.pinned", count: 0) : t("teacher.refs.not_in_test") %><% end %>
+  </dd>
+</dl>
+<p class="ref-links">
+  <% if ctx.in_test?(key) %><a href="<%= skill_screen_path(ctx.subject, key) %>"><%= t("teacher.refs.l.skill_screen") %></a>
+    <a href="<%= teacher_test_all_path(key: ctx.subject.key) %>#skill-<%= key.tr('.', '-') %>"><%= t("teacher.refs.l.all_block") %></a><% end %>
+  <a href="<%= teacher_ref_path(key: key) %>"><%= t("teacher.refs.open_card") %></a>
+  <a href="#<%= report ? 'report-skill-' : 'skill-' %><%= key.parameterize %>"><%= t("teacher.graph.map.card_in_list") %></a>
+</p>

@@ -6,7 +6,9 @@ module Teacher
     SAMPLES = 4
 
     Card = Data.define(:revision, :item, :body, :samples, :catalogue, :sources, :gate, :review, :blind, :findings, :send_backs, :superseded)
-    Finding = Data.define(:finding, :disposition, :new_revision_expected, :evidence, :response)
+    # opinion: the third reviewer's FindingOpinion (D-222). closure: for a minor finding without a decision,
+    # what the third reviewer's agreeing opinions make of it, :closed or :to_fix, else nil (a derived state, no decision row).
+    Finding = Data.define(:finding, :disposition, :new_revision_expected, :evidence, :response, :opinion, :closure)
     # What the teacher needs to judge a blind-solve finding (D-220): the key of the instance as the
     # student would type it, the other answers accepted, and what the solver wrote.
     Evidence = Data.define(:key, :accepted, :solver_answer, :dont_know)
@@ -24,9 +26,11 @@ module Teacher
       later = rev.item.revisions.map(&:seq).max.to_i > rev.seq
       sorted = rev.findings.sort_by(&:id)
       responses = FindingResponse.latest_for(sorted.map(&:id))
+      opinions = FindingAssessment.opinions_for(sorted.map(&:id))
       findings = sorted.map do |f|
         disposition = dispositions[f.id]
-        Finding.new(f, disposition, disposition == "fix_requested" && !later, evidence_of(f, rev, item_body), responses[f.id])
+        closure = f.severity == "minor" && disposition.nil? ? opinions[f.id].minor_outcome : nil
+        Finding.new(f, disposition, disposition == "fix_requested" && !later, evidence_of(f, rev, item_body), responses[f.id], opinions[f.id], closure)
       end
       Card.new(rev, rev.item, item_body, samples, catalogue_of(item_body), Array(item_body["sources"]), Review::Gate.check(rev),
                review && JSON.parse(review.checklist_json), blind && JSON.parse(blind.results_json), findings, back[rev.id] || [], later)

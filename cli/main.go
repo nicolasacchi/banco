@@ -73,6 +73,7 @@ var commands = []command{
 	{name: "topic open", run: runTopicOpen},
 	{name: "topic submit", run: runTopicSubmit},
 	{name: "practice progress", run: runPracticeProgress},
+	{name: "findings assess", run: runFindingsAssess},
 	{name: "submissions", run: runSubmissions},
 	{name: "grade propose", run: runGradePropose},
 }
