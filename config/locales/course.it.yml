@@ -58,6 +58,7 @@ it:
     correct_aided: "Corretto, con un aiuto."
     accents_note: "Attento agli accenti."
     unrecognised: "Questa risposta non corrisponde a un errore che conosco. Ecco un aiuto: riprova."
+    unrecognised_no_hint: "Questa risposta non corrisponde a un errore che conosco. Riprova."
     form: "La forma della risposta non è quella richiesta: rileggi la consegna e riprova."
     second_wrong: "Non è ancora giusta. Guarda la soluzione, poi prova un esercizio simile."
     near_miss: "Controlla come l'hai scritta: forse c'è un errore di battitura."

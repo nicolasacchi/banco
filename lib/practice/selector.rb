@@ -91,6 +91,8 @@ module Practice
     def validate_follow(input, follow)
       return nil unless follow
 
+      follow = follow.to_h.symbolize_keys
+
       kind = follow[:kind].to_s
       raise BadFollow, "kind" unless %w[prova_questo after_solution].include?(kind)
 

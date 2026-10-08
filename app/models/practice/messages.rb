@@ -37,12 +37,13 @@ module Practice
     # The sentence of an answer's outcome. typical: the catalogue message of the first error code
     # (nil when the item has none). closing: the serve ends with this answer after a wrong try, so a
     # non-typical failure says "second_wrong" (rows 6 and 8 of the state machine).
-    def feedback(outcome, typical: nil, violations: [], closing: false)
+    def feedback(outcome, typical: nil, violations: [], closing: false, hint: true)
+    unrecognised = I18n.t(hint ? "practice.unrecognised" : "practice.unrecognised_no_hint")
       case outcome.to_sym
       when :correct then I18n.t("practice.correct")
       when :correct_aided then I18n.t("practice.correct_aided")
-      when :typical_error then typical.presence || I18n.t("practice.unrecognised")
-      when :unrecognised then closing ? I18n.t("practice.second_wrong") : I18n.t("practice.unrecognised")
+      when :typical_error then typical.presence || unrecognised
+      when :unrecognised then closing ? I18n.t("practice.second_wrong") : unrecognised
       when :form then closing ? I18n.t("practice.second_wrong") : form(violations)
       when :near_miss then closing ? I18n.t("practice.second_wrong") : I18n.t("practice.near_miss")
       when :undetermined then I18n.t("practice.undetermined")

@@ -125,7 +125,7 @@ module Practice
       Result.new(200, body)
     end
 
-    def graded_body(instance, grade, attempt, before, after, _made)
+    def graded_body(instance, grade, attempt, before, after, made)
       outcome = grade.outcome
       closing = case outcome
       when :unrecognised, :form then before.w >= 1
@@ -134,7 +134,8 @@ module Practice
       end
       code = grade.codes.first
       { status: "graded", outcome: outcome.to_s, try_number: attempt.try_number,
-        message_it: Messages.feedback(outcome, typical: code && Instances.message_for(instance, code), violations: grade.violations, closing: closing),
+        message_it: Messages.feedback(outcome, typical: code && Instances.message_for(instance, code), violations: grade.violations, closing: closing,
+                                    hint: made.any? { |e| e.kind == "hint_shown" && e.auto }),
         note_it: %i[correct correct_aided].include?(outcome) ? Messages.note(grade.key, violations: grade.violations) : nil,
         error_code: outcome == :typical_error ? code : nil }
     end

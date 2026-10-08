@@ -25,6 +25,8 @@ class PracticeMessagesTest < ActiveSupport::TestCase
     end
     assert_equal "Hai sbagliato un segno.", Practice::Messages.feedback(:typical_error, typical: "Hai sbagliato un segno.", closing: true)
     assert_equal I18n.t("practice.unrecognised"), Practice::Messages.feedback(:typical_error)
+    assert_equal I18n.t("practice.unrecognised_no_hint"), Practice::Messages.feedback(:unrecognised, hint: false)
+    refute_includes I18n.t("practice.unrecognised_no_hint"), "aiuto"
   end
 
   test "notes: accents and a declared form" do

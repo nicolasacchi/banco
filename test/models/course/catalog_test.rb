@@ -60,11 +60,17 @@ class CourseCatalogTest < ActiveSupport::TestCase
     assert_equal [ @topic, true ], [ view.topics.sole.topic_revision, view.topics.sole.approved ]
   end
 
+  test "a course never released is not listed for an official student" do
+    approve!
+    assert_empty catalog(@official)
+  end
+
   test "closing the course hides it again; the latest release decides" do
     approve!
     release!
     release!(open: false)
-    assert_empty catalog(@official)
+    view = catalog(@official).sole
+    assert_equal [ false, [], nil ], [ view.released, view.topics, view.course_revision ]
     release!
     assert_equal 1, catalog(@official).size
   end
