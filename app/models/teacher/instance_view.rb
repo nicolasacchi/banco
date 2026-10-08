@@ -4,7 +4,7 @@ module Teacher
   # and the solution steps. Texts are the agent's own, shown escaped; the markup of the
   # student's page is not drawn here ("Prova" plays the item as S).
   class InstanceView
-    attr_reader :number, :id, :stem, :choices, :key, :errors, :steps, :final
+    attr_reader :number, :id, :stem, :choices, :key, :errors, :steps, :final, :hints
 
     # number: 1-based position among the shown samples.
     def initialize(instance, body, number)
@@ -17,7 +17,8 @@ module Teacher
       @stem = body["passage_it"].to_s if kind == "testlet"
       @choices = choices_of(display)
       @key = key_in_words(kind, body["component"], display, answer)
-      @errors = errors_of(instance)
+      @errors = errors_of(instance, body)
+      @hints = hints_of(instance, body)
       solution = instance.solution_json.present? ? JSON.parse(instance.solution_json) : {}
       @steps = Array(solution["steps"]).map { |s| s["text_it"] }
       @final = solution["final"]
@@ -52,11 +53,26 @@ module Teacher
       end
     end
 
-    def errors_of(instance)
+    # The errors an instance declares, each with the item's message for the code (what the student reads
+    # when the answer hits it); message is nil when the catalogue has no text for the code.
+    def errors_of(instance, body)
       raw = instance.errors_json.present? ? JSON.parse(instance.errors_json) : []
-      return raw.map { |e| { code: e["code"], value: e["value"].to_s } } if raw.is_a?(Array)
+      messages = catalogue(body).to_h { |e| [ e["code"], e["message_it"] ] }
+      return raw.map { |e| { code: e["code"], value: e["value"].to_s, message: messages[e["code"]] } } if raw.is_a?(Array)
 
-      raw.flat_map { |sub, list| Array(list).map { |e| { code: e["code"], value: "#{sub}: #{e['value']}" } } }
+      raw.flat_map { |sub, list| Array(list).map { |e| { code: e["code"], value: "#{sub}: #{e['value']}", message: messages[e["code"]] } } }
+    end
+
+    def catalogue(body)
+      return Array(body["error_catalogue"]) unless body["kind"] == "testlet"
+
+      Array(body["sub_items"]).flat_map { |s| Array(s["error_catalogue"]) }
+    end
+
+    # The effective hints of a practice instance: its own, else the item's (A2.4). Empty for a diagnosis item.
+    def hints_of(instance, body)
+      own = instance.hints_json.present? ? JSON.parse(instance.hints_json) : nil
+      Array(own.presence || body["hints_it"])
     end
   end
 end

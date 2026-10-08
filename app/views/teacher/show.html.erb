@@ -36,6 +36,9 @@
             <% end %>
           </ul>
         <% end %>
+        <% if row.course %>
+          <p class="course-line" data-course-line><a href="<%= teacher_course_path(key: row.subject.key) %>"><%= t("teacher.home.course_line", approved: row.course.approved, total: row.course.total) %> · <%= row.course.open ? t("teacher.home.course_open") : t("teacher.home.course_closed") %></a></p>
+        <% end %>
         <p class="links">
           <% if row.has_graph %><a class="button secondary small" href="<%= teacher_graph_path(key: row.subject.key) %>"><%= t("teacher.home.open_graph") %></a><% end %>
           <% if row.has_blueprint %><a class="button secondary small" href="<%= teacher_test_path(key: row.subject.key) %>"><%= t("teacher.home.open_test") %></a><% end %>

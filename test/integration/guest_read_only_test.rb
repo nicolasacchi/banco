@@ -1,21 +1,25 @@
 require "test_helper"
 require_relative "../support/multi_user"
 require_relative "../support/decision_world"
+require_relative "../support/topic_world"
 
 # D-217: the guest reads every teacher page and writes nothing. The routes come from the routes
 # table, so a route added later is covered without touching this file.
 class GuestReadOnlyTest < ActionDispatch::IntegrationTest
   include MultiUser
   include DecisionWorld
+  include TopicWorld
 
   setup do
     ENV["BANCO_TEACHER_USERS"] = "nik,teacher-a@example.test"
     build_decision_world
     approve_graph_row!
     make_blueprint_approvable!
+    build_topic_world
     @values = {
       key: "math", subject: "math", skill: "math.number", revision_id: @short.id, finding_id: 1, grade_proposal_id: @proposal.id,
-      attempt_id: @attempt.id, run_id: @run.id, item_revision_id: @short.id, sha256: "0" * 64
+      attempt_id: @attempt.id, run_id: @run.id, item_revision_id: @short.id, sha256: "0" * 64,
+      lesson_revision_id: @lesson_revision.id, topic: TopicWorld::TOPIC_KEY
     }
   end
 
@@ -38,7 +42,7 @@ class GuestReadOnlyTest < ActionDispatch::IntegrationTest
   test "the routes table has the teacher's routes in it" do
     verbs = teacher_routes.map(&:first).tally
     assert_operator verbs["GET"], :>=, 9
-    assert_operator verbs["POST"], :>=, 20
+    assert_operator verbs["POST"], :>=, 23
   end
 
   test "a guest reads every teacher page and is refused on every write, with nothing written" do
@@ -92,7 +96,8 @@ class GuestReadOnlyTest < ActionDispatch::IntegrationTest
   test "no form and no action button is drawn for a guest, and the page says read only" do
     [ "/teacher", "/teacher/subjects/math/graph", "/teacher/subjects/math/test", "/teacher/subjects/math/test/all", "/teacher/subjects/math/test/skills/math.number",
       "/teacher/subjects/math/report", "/teacher/corrections", "/teacher/items/#{@short.id}", "/teacher/items/#{@short.id}/play",
-      "/teacher/refs/math.number", "/teacher/refs/#{@short.item.key}" ].each do |path|
+      "/teacher/refs/math.number", "/teacher/refs/#{@short.item.key}", "/teacher/subjects/math/course", "/teacher/subjects/math/topics/#{TopicWorld::TOPIC_KEY}",
+      "/teacher/subjects/math/practice", "/teacher/subjects/math/practice/skills/math.number" ].each do |path|
       on(:web, path, headers: GUEST, remote_addr: EDGE)
       assert_response :success, path
       assert_select "form", 0, path

@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  # A topic key is its lesson's key (A1): kind, subject, slug.
+  topic_key = /(ripasso|ponte|lezione)\.[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*/
   web = Banco::ListenerConstraint.new(:web)
   api = Banco::ListenerConstraint.new(:api)
 
@@ -66,6 +68,9 @@ Rails.application.routes.draw do
       post "item-revisions/:item_revision_id/void-attempts", action: :void_revision_attempts, constraints: { item_revision_id: id }
       post "subjects/:subject/formula-sheet", action: :set_formula_sheet, constraints: { subject: /[a-z_]+/ }
       post "subjects/:subject/kind-override", action: :kind_override, constraints: { subject: /[a-z_]+/ }
+      post "topic-revisions/:revision_id/approve", action: :approve_topic, constraints: { revision_id: id }
+      post "lesson-revisions/:lesson_revision_id/send-back", action: :send_back_lesson, constraints: { lesson_revision_id: id }
+      post "subjects/:subject/course-release", action: :release_course, constraints: { subject: /[a-z_]+/ }
       post "release", action: :release
       post "consent", action: :consent
     end
@@ -78,6 +83,10 @@ Rails.application.routes.draw do
       get "subjects/:key/test/all" => "tests#all", constraints: key, as: :teacher_test_all
       get "subjects/:key/test/skills/:skill" => "tests#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9.\-]*/), as: :teacher_test_skill
       get "subjects/:key/report" => "reports#show", constraints: key, as: :teacher_report
+      get "subjects/:key/course" => "courses#show", constraints: key, as: :teacher_course
+      get "subjects/:key/topics/:topic" => "topics#show", constraints: key.merge(topic: topic_key), as: :teacher_topic
+      get "subjects/:key/practice" => "practice#show", constraints: key, as: :teacher_practice
+      get "subjects/:key/practice/skills/:skill" => "practice#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9.\-]*/), as: :teacher_practice_skill
       get "corrections" => "corrections#show", as: :teacher_corrections
       get "refs/:key" => "refs#show", constraints: { key: /[a-z0-9][a-z0-9._-]*/ }, as: :teacher_ref
       get "items/:revision_id/play" => "item_plays#show", constraints: { revision_id: /\d+/ }, as: :teacher_item_play

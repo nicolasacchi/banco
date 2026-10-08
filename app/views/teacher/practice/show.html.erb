@@ -1,0 +1,68 @@
+<% content_for :title, t("teacher.practice.title", subject: @subject.name_it) %>
+<main class="page wide">
+  <p><a href="<%= with_student(teacher_course_path(key: @subject.key)) %>"><%= t("teacher.practice.back", subject: @subject.name_it) %></a></p>
+  <h1><%= t("teacher.practice.title", subject: @subject.name_it) %></h1>
+  <%= render "teacher/student_picker" %>
+  <% progress = @progress %>
+  <% if !progress.present? %>
+    <p class="notice" id="practice-no-student"><%= t("teacher.practice.no_student") %></p>
+  <% else %>
+    <p class="hint"><%= t("teacher.practice.intro", student: student_label(progress.student)) %></p>
+    <% if progress.rows.empty? %>
+      <p class="notice"><%= t("teacher.practice.no_course") %></p>
+    <% end %>
+    <% progress.topics.each do |topic| %>
+      <section class="topic-progress" data-topic="<%= topic.topic %>" data-status="<%= topic.status %>">
+        <h2><a href="<%= teacher_topic_path(key: @subject.key, topic: topic.topic) %>"><%= topic.topic %></a>
+          <span class="hint">· <%= t("topic.status.#{topic.status}") %> · <%= t("teacher.course.stage.#{topic.stage}") %></span></h2>
+        <% topic.skills.each do |row| %>
+          <article class="card skill-progress" data-skill="<%= row.skill %>" data-state="<%= row.state %>">
+            <h3><a href="<%= with_student(teacher_practice_skill_path(key: @subject.key, skill: row.skill)) %>"><%= row.label_it %></a> <span class="key">(<%= row.skill %>)</span></h3>
+            <p><strong data-state-label><%= t("states.#{row.state}") %></strong> · <%= row.why_it %></p>
+            <p class="hint">
+              <%= t("teacher.practice.counts", tries: row.counts[:tries], serves: row.counts[:serves], unaided: row.counts[:correct_unaided], aided: row.counts[:correct_aided], wrong: row.counts[:wrong]) %>
+              · <%= t("teacher.practice.unrecognised", count: row.counts[:unrecognised]) %>
+              · <%= t("teacher.practice.hints", count: row.counts[:hints]) %>
+              · <%= t("teacher.practice.solutions", count: row.counts[:solutions_requested]) %>
+              · <%= minutes_text(row.minutes) %>
+              · <%= row.last_at ? t("teacher.practice.last", at: teacher_time(row.last_at)) : t("teacher.practice.never") %>
+            </p>
+            <% if row.seed %><p class="hint"><%= t("teacher.practice.seed", state: t("states.#{row.seed.state}")) %></p><% end %>
+            <% if row.typical.any? %>
+              <ul class="plain typical">
+                <% row.typical.each do |e| %><li data-code="<%= e.code %>"><strong><%= e.code %></strong> (<%= e.count %>)<% if e.description_it %>: <%= e.description_it %><% end %></li><% end %>
+              </ul>
+            <% end %>
+          </article>
+        <% end %>
+      </section>
+    <% end %>
+
+    <% if progress.without_topic.any? %>
+      <section id="practice-without-topic">
+        <h2><%= t("teacher.practice.without_topic") %></h2>
+        <ul class="plain"><% progress.without_topic.each do |key, label, state| %><li data-skill="<%= key %>"><%= label %> <span class="key">(<%= key %>)</span> · <%= t("states.#{state}") %></li><% end %></ul>
+      </section>
+    <% end %>
+
+    <section id="practice-questions">
+      <h2><%= t("teacher.practice.questions") %></h2>
+      <% if progress.questions.empty? %>
+        <p class="hint"><%= t("teacher.practice.no_questions") %></p>
+      <% else %>
+        <ul class="plain questions">
+          <% progress.questions.each do |q| %>
+            <li data-question>
+              <%= teacher_time(q.at) %> · <%= q.topic %>
+              <% if q.section %> · <%= t("teacher.topic.section.#{q.section}", default: q.section) %><% end %>
+              <% if q.exercise %> · <%= t("teacher.topic.review.exercise", n: q.exercise) %><% end %>
+              <% if q.text_it.present? %>
+                <br><% if reader_only? %><span class="hint" data-hidden-text><%= t("teacher.practice.text_teacher_only") %></span><% else %><q data-question-text><%= q.text_it %></q><% end %>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </section>
+  <% end %>
+</main>
