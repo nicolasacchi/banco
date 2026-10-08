@@ -10,7 +10,7 @@
       "subject": "math",
       "student": "student",
       "trial": false,
-      "rules_version": "practice/1 (provisional: states other than not_seen and in_study come with the S2 fold)",
+      "rules_version": "practice/1",
       "topics": [
         {
           "topic": "ripasso.math.demo-equations",
@@ -38,12 +38,15 @@
             "correct_unaided": 0,
             "correct_aided": 0,
             "wrong": 1,
+            "unrecognised": 1,
+            "near_miss": 0,
+            "undetermined": 0,
             "hints": 0,
-            "solutions_requested": 0
+            "solutions_requested": 0,
+            "abandoned": 0,
+            "seconds": 0
           },
-          "typical": {
-            "sign_error": 1
-          }
+          "typical": {}
         },
         {
           "skill": "math.linear-system-substitution",
@@ -59,8 +62,13 @@
             "correct_unaided": 0,
             "correct_aided": 0,
             "wrong": 0,
+            "unrecognised": 0,
+            "near_miss": 0,
+            "undetermined": 0,
             "hints": 0,
-            "solutions_requested": 0
+            "solutions_requested": 0,
+            "abandoned": 0,
+            "seconds": 0
           },
           "typical": {}
         }

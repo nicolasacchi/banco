@@ -490,7 +490,8 @@ class CourseApiTest < ActionDispatch::IntegrationTest
     record_example "practice progress", "official"
     row = json["skills"].find { |s| s["skill"] == SKILL }
     assert_equal "in_study", row["state"]
-    assert_equal({ "sign_error" => 1 }, row["typical"])
+    assert_equal({}, row["typical"])
+    assert_equal 1, row["counts"]["unrecognised"]
     assert_equal 1, row["counts"]["wrong"]
     assert_not_includes response.body, "SECRET-ANSWER"
     assert_equal false, json["trial"]
@@ -500,6 +501,28 @@ class CourseApiTest < ActionDispatch::IntegrationTest
     api("/api/v1/subjects/math/practice/progress?student=trial-1")
     assert_response :ok
     assert_equal true, json["trial"]
+  end
+
+  test "practice progress is the practice/1 fold: a demonstrated skill reads the same as in the student's state" do
+    world
+    submit_topic(topic_doc({ SKILL => [ [ "math-p-demo-1", nil ], [ "math-p-demo-2", nil ] ] }))
+    student = practice_student("student")
+    topic = TopicRevision.last
+    instances = @item_a.instances.order(:id).limit(3).to_a
+    assert_equal 3, instances.map(&:fingerprint).uniq.size
+    [ [ instances[0], 3.days.ago ], [ instances[1], 2.days.ago ], [ instances[2], 1.hour.ago ] ].each do |instance, at|
+      serve = make_serve(student, topic, instance, skill_key: SKILL, at: at)
+      make_try(serve, verdict: "correct", at: at + 1.minute)
+    end
+    api("/api/v1/subjects/math/practice/progress")
+    assert_response :ok
+    assert_equal "practice/1", json["rules_version"]
+    row = json["skills"].find { |s| s["skill"] == SKILL }
+    expected = Teacher::PracticeProgress.new(Subject.find_by!(key: "math"), student).states[SKILL]
+    assert_equal "demonstrated", expected.state
+    assert_equal expected.state, row["state"]
+    assert_not_nil row["demonstrated_at"]
+    assert_equal 3, row["counts"]["correct_unaided"]
   end
 
   test "no route of the course writes a decision" do

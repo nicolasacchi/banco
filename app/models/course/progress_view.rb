@@ -1,10 +1,9 @@
 module Course
   # The JSON of `banco practice progress` (A4): per skill of the subject's topics, the derived state, its counts and
-  # the typical errors, for one student. No student text (D-064). The state is the fold of practice/1 (track S2:
-  # Practice::Fold); until it is integrated this view derives the two states it can tell without the rules
-  # (not_seen, in_study) from the ledger and says so in `rules_version`.
+  # the typical errors, for one student. No student text (D-064). The state is the fold of practice/1 (Practice::Fold
+  # over Practice::Loader, as the student's pages and the teacher's page).
   module ProgressView
-    RULES = "practice/1 (provisional: states other than not_seen and in_study come with the S2 fold)".freeze
+    RULES = Practice::Rules::V1::RULES_VERSION
 
     module_function
 
@@ -16,11 +15,15 @@ module Course
       keys = rows.values.flat_map { |r| r.topic["skills"] }.uniq
       context = Validation::CourseContext.for(subject)
       serves = PracticeServe.where(student: student, skill_key: keys).to_a.group_by(&:skill_key)
+      input = Practice::Loader.for(student, subject: subject)
+      states = Practice::Fold.call(seeds: input.seeds, tries: input.tries, serves: input.serves, skills: keys)
+      tries = input.tries.group_by(&:skill)
       {
         subject: subject.key, student: student.key, trial: student.trial?, rules_version: RULES,
         topics: rows.map { |key, row| { topic: key, status: topic_status(row, student, serves), visible: !!visible.call(row) } },
-        skills: keys.map { |key| skill_row(key, context, serves[key].to_a) },
-        to_recover_without_topic: []
+        skills: keys.map { |key| skill_row(key, context, states[key], tries.fetch(key, [])) },
+        to_recover_without_topic: input.seeds.values.select { |x| %w[to_recover to_learn].include?(x.state.to_s) && !keys.include?(x.skill) }
+                                       .map { |x| { skill: x.skill, label_it: context.skill(x.skill)&.fetch("label_it", nil), state: x.state.to_s } }
       }
     end
 
@@ -30,19 +33,16 @@ module Course
       skills.any? { |s| serves[s].present? } || lesson_opened ? "in_progress" : "todo"
     end
 
-    def skill_row(key, context, serves)
-      attempts = PracticeAttempt.where(practice_serve_id: serves.map(&:id)).includes(:gradings).to_a
-      graded = attempts.map { |a| [ a, a.latest_grading ] }
-      typical = graded.flat_map { |_, g| g ? JSON.parse(g.error_codes_json) : [] }.tally
-      events = PracticeEvent.where(practice_serve_id: serves.map(&:id)).group(:kind).count
+    def skill_row(key, context, state, tries)
       {
-        skill: key, label_it: context.skill(key)&.fetch("label_it", nil), state: attempts.empty? ? "not_seen" : "in_study",
-        since: attempts.map(&:answered_at).min&.utc&.iso8601, demonstrated_at: nil, consolidated_at: nil, seed: nil,
-        counts: { serves: serves.size, tries: attempts.size,
-                  correct_unaided: graded.count { |a, g| g&.verdict == "correct" && !a.aided }, correct_aided: graded.count { |a, g| g&.verdict == "correct" && a.aided },
-                  wrong: graded.count { |_, g| g&.verdict == "wrong" }, hints: events["hint_shown"].to_i, solutions_requested: events["solution_shown"].to_i },
-        typical: typical
+        skill: key, label_it: context.skill(key)&.fetch("label_it", nil), state: state.state,
+        since: iso(state.since || tries.map(&:at).min), demonstrated_at: iso(state.demonstrated_at), consolidated_at: iso(state.consolidated_at),
+        seed: state.seed && { state: state.seed.state.to_s, at: iso(state.seed.at), implied: !!state.seed.implied },
+        counts: state.counts.except(:typical, :seconds).merge(seconds: state.counts[:seconds].to_i),
+        typical: state.counts[:typical]
       }
     end
+
+    def iso(time) = time&.utc&.iso8601
   end
 end
