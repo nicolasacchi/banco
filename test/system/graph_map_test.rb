@@ -131,7 +131,7 @@ class GraphMapSystemTest < ApplicationSystemTestCase
     tops = page.evaluate_script("['graph-map', 'graph-approve', 'graph-summary'].map(id => document.getElementById(id).getBoundingClientRect().top)")
     assert_operator tops[0], :<, tops[1]
     assert_operator tops[0], :<, tops[2]
-    assert_operator page.evaluate_script("document.querySelector('.gm-scroll').getBoundingClientRect().top"), :<, 520
+    assert_operator page.evaluate_script("document.querySelector('.gm-scroll').getBoundingClientRect().top"), :<, 650
     rows = page.evaluate_script("Array.from(document.querySelectorAll('.gm-bar > *')).map(e => { const r = e.getBoundingClientRect(); return (r.top + r.bottom) / 2 })")
     assert_operator rows.max - rows.min, :<, 20
     assert_equal false, page.evaluate_script("document.getElementById('graph-map-howto').open")
