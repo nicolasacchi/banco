@@ -50,11 +50,10 @@ module Api
         result = Validation::TopicChecks.call(doc, subject: subject)
         return if refuse_findings(result.findings, "fix the topic and run banco topic submit FILE --dry-run again", dry_run: dry_run?)
 
+        author = require_session("author") or return
+
         warnings = result.findings.warnings.map(&:to_h)
         return render json: { dry_run: true, status: "passed", codes: [], warnings: warnings, stored: result.stored } if dry_run?
-
-        ok, author = optional_author_session
-        return unless ok
 
         store(subject, result, warnings, author)
       end
@@ -66,12 +65,16 @@ module Api
         text = JSON.generate(result.stored)
         lesson = result.lesson_revision.lesson
         latest = nil
-        revision = TopicRevision.transaction do
+        revision = begin
+          TopicRevision.transaction do
           latest = lesson.topic_revisions.max_by(&:seq)
           next if latest && latest.body_json == text && latest.course_revision_id == course.id
 
           TopicRevision.create!(lesson: lesson, seq: (latest&.seq || 0) + 1, course_revision: course, lesson_revision: result.lesson_revision,
                                 body_json: text, author_session: author, brief_sha256: Brief.find("topic")&.sha256)
+          end
+        rescue ActiveRecord::RecordNotUnique
+          return refuse("E-STALE-BASE", "topic", "another revision of this topic was stored at the same time", "banco topics list --subject #{subject.key}", 409)
         end
         return render json: { revision_id: latest.id, seq: latest.seq, replayed: true, stored: result.stored, warnings: warnings } unless revision
 

@@ -70,15 +70,14 @@ module Api
         end
         return if refuse_findings(outcome.findings, "fix lesson.md and run banco lesson submit DIR --dry-run again", dry_run: dry_run?)
 
+        author = require_session("author") or return
+
         lesson = Lesson.find_by(key: key)
         latest = lesson&.latest_revision
         return unless base_ok?(body["base"], lesson, latest, key)
 
         warnings = outcome.findings.warnings.map(&:to_h)
         return render json: { dry_run: true, status: "passed", codes: [], warnings: warnings } if dry_run?
-
-        ok, author = optional_author_session
-        return unless ok
 
         store(key, subject, source, outcome.body, warnings, author, body["base"])
       end
@@ -102,7 +101,8 @@ module Api
         sha = Digest::SHA256.hexdigest(source)
         rules = Validation::Rules.version.to_s
         replay = nil
-        revision = LessonRevision.transaction do
+        revision = begin
+          LessonRevision.transaction do
           lesson = Lesson.find_or_create_by!(key: key) { |l| l.subject = subject; l.kind = body["kind"] }
           latest = lesson.latest_revision
           if latest && latest.source_sha256 == sha && latest.rules_version == rules
@@ -112,6 +112,9 @@ module Api
           LessonRevision.create!(lesson: lesson, seq: (latest&.seq || 0) + 1, base_revision_id: latest&.id, source_md: source, source_sha256: sha,
                                  body_json: JSON.generate(body), rules_version: rules, warnings_json: JSON.generate(warnings),
                                  author_session: author, brief_sha256: Brief.find("lesson")&.sha256)
+          end
+        rescue ActiveRecord::RecordNotUnique
+          return refuse("E-STALE-BASE", "base", "another revision of #{key} was stored at the same time", "banco lesson open #{key}", 409)
         end
         return render json: { lesson: key, revision_id: replay.id, seq: replay.seq, replayed: true, warnings: replay.warnings } unless revision
 

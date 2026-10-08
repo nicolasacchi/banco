@@ -88,7 +88,7 @@ class CourseApiTest < ActionDispatch::IntegrationTest
       "practice" => items_by_skill.map { |skill, items| { "skill" => skill, "items" => items.map { |i, r| { "item" => i, "revision" => r || "latest" } } } } }
   end
 
-  def submit_topic(doc, dry: false) = api("/api/v1/topics/#{doc['key']}", method: :post, body: { topic: doc }, as: @author, dry: dry)
+  def submit_topic(doc, as: @author, dry: false) = api("/api/v1/topics/#{doc['key']}", method: :post, body: { topic: doc }, as: as, dry: dry)
 
   # A ripasso lesson, a course map, and two practice items (24 instances) on SKILL; returns the lesson revision.
   def world
@@ -291,6 +291,22 @@ class CourseApiTest < ActionDispatch::IntegrationTest
     api("/api/v1/lessons/ripasso.math.demo-equations")
     assert_equal 1, json["reviews"].size
     assert_equal({ "pass" => 8, "fail" => 0, "na" => 0 }, json["reviews"].first["results"])
+  end
+
+  test "lesson and topic submit need an author session, also in a dry run" do
+    world
+    doc = topic_doc({ SKILL => [ [ "math-p-demo-1", nil ], [ "math-p-demo-2", nil ] ] })
+    [ ->(**o) { submit_lesson(ripasso_md, **o) }, ->(**o) { submit_topic(doc, **o) } ].each do |submit|
+      [ true, false ].each do |dry|
+        submit.call(as: nil, dry: dry)
+        assert_response :unprocessable_entity
+        assert_equal "E-SESSION", json["code"]
+        submit.call(as: @reviewer, dry: dry)
+        assert_equal "E-SESSION-ROLE", json["code"]
+      end
+    end
+    assert_equal 1, LessonRevision.count
+    assert_equal 0, TopicRevision.count
   end
 
   test "a reviewer on the author's model is refused, and so is a session that wrote the lesson" do
