@@ -221,6 +221,8 @@ it:
         legend_edge: "Freccia: serve prima, poi viene quella a destra"
         legend_composite: "Freccia tratteggiata: l'abilità è fatta di quelle a sinistra"
         entry: "inizio"
+        filters: "Filtri"
+        scroll_hint: "La mappa è larga: scorri a destra per vedere le abilità che si costruiscono sulle prime. Con Adatta la vedi tutta."
         search: "Cerca per nome"
         show: "Mostra"
         only_inferred: "Solo quelle senza riga di programma"

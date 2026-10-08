@@ -7,7 +7,7 @@ import { Controller } from "@hotwired/stimulus"
 // Selecting a node marks it (gm-sel), the chain of what it needs (gm-up) and everything that builds on it
 // (gm-down); the rest is dimmed by the wrapper's gm-has-selection class.
 export default class extends Controller {
-  static targets = ["svg", "panel", "empty", "detail", "search", "facet", "onlyInferred", "onlyPinned", "seconda", "count", "template"]
+  static targets = ["svg", "panel", "empty", "detail", "search", "facet", "onlyInferred", "onlyPinned", "seconda", "count", "template", "legendBox"]
   static values = { mainWidth: Number, fullWidth: Number, mainHeight: Number, fullHeight: Number, shownOne: String, shownOther: String, shownNone: String }
 
   connect() {
@@ -24,6 +24,7 @@ export default class extends Controller {
     this.templates = new Map(this.templateTargets.map((t) => [t.dataset.key, t]))
     this.selected = null
     this.scale = READABLE
+    if (this.hasLegendBoxTarget && window.matchMedia("(max-width: 60rem)").matches) this.legendBoxTarget.open = false
     this.fit()
     this.element.classList.add("gm-ready")
     this.beforePrint = () => this.element.classList.remove("gm-has-selection")
@@ -71,6 +72,8 @@ export default class extends Controller {
     this.element.classList.add("gm-has-selection")
     this.showPanel(key)
     this.reveal(key)
+    // On a narrow screen the panel is under the map: bring it into view.
+    if (window.matchMedia("(max-width: 60rem)").matches) this.panelTarget.scrollIntoView({ block: "nearest" })
   }
 
   // An edge belongs to the chain when both ends are on the up side (with the node) or both on the down side.
@@ -167,7 +170,7 @@ export default class extends Controller {
     return this.svgTarget.parentElement
   }
 
-  // Readable first: the whole map when it fits at 90% of its natural size, else 90% and a scroll.
+  // Readable first: the whole map when it fits at natural size, else natural size and a scroll.
   fit() {
     const whole = this.box.clientWidth / this.width
     this.draw(whole >= READABLE ? whole : READABLE)
@@ -209,9 +212,9 @@ export default class extends Controller {
   }
 
   dragStart(event) {
+    this.dragged = false
     if (event.target.closest(".gm-node") || event.button > 0) return
     this.drag = { x: event.clientX, left: this.box.scrollLeft }
-    this.dragged = false
   }
 
   dragMove(event) {
@@ -222,7 +225,7 @@ export default class extends Controller {
   }
 }
 
-const READABLE = 0.9
+const READABLE = 1
 
 function push(map, key, value) {
   if (!map.has(key)) map.set(key, [])

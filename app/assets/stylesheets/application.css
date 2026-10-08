@@ -266,7 +266,9 @@ q.example { display: block; margin-bottom: 0.25rem; }
 .gm-legend { font-size: 0.85em; }
 .gm-legend-list { display: flex; flex-wrap: wrap; gap: 0.2rem 1.25rem; padding: 0; margin: 0.25rem 0 0.75rem; }
 .gm-legend-list li { display: inline-flex; align-items: center; gap: 0.4rem; }
-.gm-legend-title { margin-bottom: 0.25rem; }
+.gm-legend-title { cursor: pointer; font-weight: 700; }
+.gm-filters > summary { cursor: pointer; font-weight: 700; margin: 0.4rem 0; }
+.gm-scroll-hint { margin: 0.25rem 0; }
 .gm-swatch { display: inline-block; width: 1.6rem; height: 1.1rem; border: 2px solid var(--gm-ink); border-radius: 4px; }
 .gm-swatch-dashed { border-style: dashed; }
 .gm-sample-badge { display: inline-block; min-width: 1.4rem; text-align: center; border-radius: 50%; background: var(--gm-ink); color: var(--bg); font-weight: 700; font-size: 0.85em; }
@@ -327,7 +329,7 @@ q.example { display: block; margin-bottom: 0.25rem; }
 .graph-map.gm-show-seconda .gm-seconda-part { display: inline; }
 .graph-map.gm-show-seconda g.gm-edges .gm-seconda-part, .graph-map.gm-show-seconda a.gm-seconda-part { display: inline; }
 .gm-hidden, .graph-map.gm-show-seconda .gm-hidden { display: none; }
-.gm-has-selection .gm-node { opacity: 0.22; }
+.gm-has-selection .gm-node { opacity: 0.38; }
 .gm-has-selection .gm-svg .gm-edge { opacity: 0.1; }
 .gm-has-selection .gm-node.gm-sel, .gm-has-selection .gm-node.gm-up, .gm-has-selection .gm-node.gm-down { opacity: 1; }
 .gm-has-selection .gm-svg .gm-edge.gm-hot { opacity: 1; stroke: var(--gm-ink); stroke-width: 2.6; marker-end: url(#gm-arrow-hot); }
@@ -336,7 +338,7 @@ q.example { display: block; margin-bottom: 0.25rem; }
 .gm-node.gm-down .gm-box { stroke: var(--gm-down); stroke-width: 3.5; }
 @media (max-width: 60rem) {
   .gm-layout { flex-direction: column; }
-  .gm-scroll { flex: none; width: 100%; box-sizing: border-box; }
+  .gm-scroll { flex: none; width: 100%; box-sizing: border-box; max-height: 75vh; overflow: auto; }
   .gm-panel { flex: 1 1 auto; max-width: none; width: 100%; max-height: none; box-sizing: border-box; }
 }
 @media print {
@@ -344,7 +346,7 @@ q.example { display: block; margin-bottom: 0.25rem; }
   .gm-layout { display: block; }
   .gm-scroll { overflow: visible; border: 0; }
   .gm-svg { width: 100%; height: auto; }
-  .gm-panel, .gm-controls { display: none !important; }
+  .gm-panel, .gm-controls, .gm-scroll-hint { display: none !important; }
   .gm-has-selection .gm-node, .gm-has-selection .gm-svg .gm-edge { opacity: 1; }
 }
 .gm-note { font-weight: 700; }

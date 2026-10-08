@@ -15,8 +15,8 @@
     <p class="notice" role="status" data-map-warning="<%= w[:kind] %>"><%= t("teacher.graph.map.warning.#{w[:kind]}", from: skills[w[:keys][0]]&.label_it || w[:keys][0], to: skills[w[:keys][1]]&.label_it || w[:keys][1]) %></p>
   <% end %>
 
-  <div class="gm-legend" id="graph-map-legend">
-    <h3 class="gm-legend-title"><%= t("teacher.graph.map.legend") %></h3>
+  <details class="gm-legend" id="graph-map-legend" open data-graph-map-target="legendBox">
+    <summary class="gm-legend-title"><%= t("teacher.graph.map.legend") %></summary>
     <ul class="plain gm-legend-list">
       <% states.each do |state| %>
         <li><span class="gm-swatch gm-fill-<%= state %>" aria-hidden="true"></span>
@@ -33,13 +33,14 @@
       <li><svg class="gm-sample-line" viewBox="0 0 40 8" aria-hidden="true"><path d="M0 4 H40" class="gm-edge"/></svg> <%= t("teacher.graph.map.legend_edge") %></li>
       <li><svg class="gm-sample-line" viewBox="0 0 40 8" aria-hidden="true"><path d="M0 4 H40" class="gm-edge gm-edge-composite"/></svg> <%= t("teacher.graph.map.legend_composite") %></li>
     </ul>
-  </div>
+  </details>
 
   <div class="gm-controls gm-needs-js no-print">
     <p class="gm-row">
       <label for="gm-search"><%= t("teacher.graph.map.search") %></label>
       <input id="gm-search" type="search" class="answer-input" autocomplete="off" data-graph-map-target="search" data-action="input->graph-map#filter">
     </p>
+    <details class="gm-filters"><summary><%= t("teacher.graph.map.filters") %></summary>
     <fieldset class="gm-row">
       <legend><%= t("teacher.graph.map.show") %></legend>
       <% states.each do |state| %>
@@ -54,6 +55,7 @@
         <label class="gm-check"><input type="checkbox" id="gm-seconda" data-graph-map-target="seconda" data-action="change->graph-map#toggleSeconda"> <%= t("teacher.graph.map.seconda") %></label>
       <% end %>
     </p>
+    </details>
     <p class="gm-row gm-zoom">
       <button type="button" class="button secondary small" data-action="graph-map#zoomIn" aria-label="<%= t('teacher.graph.map.zoom_in_label') %>">+</button>
       <button type="button" class="button secondary small" data-action="graph-map#zoomOut" aria-label="<%= t('teacher.graph.map.zoom_out_label') %>">−</button>
@@ -63,9 +65,10 @@
     </p>
   </div>
 
+  <p class="hint gm-needs-js gm-scroll-hint no-print"><%= t("teacher.graph.map.scroll_hint") %></p>
   <div class="gm-layout">
     <div class="gm-scroll">
-      <svg class="gm-svg" data-graph-map-target="svg" viewBox="0 0 <%= map.main_width.round %> <%= map.main_height.round %>" width="<%= (map.main_width * 0.9).round %>" height="<%= (map.main_height * 0.9).round %>" role="group" aria-label="<%= t('teacher.graph.map.aria') %>" preserveAspectRatio="xMinYMin meet">
+      <svg class="gm-svg" data-graph-map-target="svg" viewBox="0 0 <%= map.main_width.round %> <%= map.main_height.round %>" width="<%= map.main_width.round %>" height="<%= map.main_height.round %>" role="group" aria-label="<%= t('teacher.graph.map.aria') %>" preserveAspectRatio="xMinYMin meet">
         <defs>
           <marker id="gm-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="gm-arrow"/></marker>
           <marker id="gm-arrow-hot" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="gm-arrow gm-arrow-hot"/></marker>

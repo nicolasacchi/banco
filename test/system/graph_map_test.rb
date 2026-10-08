@@ -2,6 +2,7 @@ require "application_system_test_case"
 require_relative "../support/decision_world"
 require_relative "../support/graph_map_rows"
 require_relative "../support/student_session"
+require_relative "../support/finished_run"
 
 # The map of the skill graph in Chrome (D-221): select by click and by Enter, the panel, the
 # highlight, Esc, the filters, the second year's column, zoom. With GRAPH_MAP_SHOTS=<dir> it also
@@ -10,6 +11,7 @@ class GraphMapSystemTest < ApplicationSystemTestCase
   include DecisionWorld
   include GraphMapRows
   include StudentSession
+  include FinishedRun
 
   setup do
     @world = build_ui_subject(components: %w[number choice], approve: false)
@@ -30,6 +32,8 @@ class GraphMapSystemTest < ApplicationSystemTestCase
     page.driver.resize(width, 900)
   end
 
+  def open_filters = find("summary", text: "Filtri").click
+
   def press(key) = page.driver.browser.keyboard.type(key)
 
   test "a click selects a node: the chain is marked, the rest dimmed, the panel says everything" do
@@ -46,7 +50,7 @@ class GraphMapSystemTest < ApplicationSystemTestCase
     assert_no_selector "a.gm-node.gm-up[data-key='math.angles']"
     assert_no_selector "a.gm-node.gm-down[data-key='math.angles']"
     assert_selector "path.gm-edge.gm-hot", minimum: 4
-    assert_equal "0.22", page.evaluate_script("getComputedStyle(document.querySelector(\"a.gm-node[data-key='math.angles']\")).opacity")
+    assert_equal "0.38", page.evaluate_script("getComputedStyle(document.querySelector(\"a.gm-node[data-key='math.angles']\")).opacity")
     within ".gm-panel" do
       assert_selector "h3", text: "Polinomi: somma, differenza e prodotto"
       assert_text "Riga di prova numero 5 del programma di prima"
@@ -77,6 +81,7 @@ class GraphMapSystemTest < ApplicationSystemTestCase
     width = -> { page.evaluate_script("document.querySelector('.gm-svg').getBoundingClientRect().width") }
     narrow = width.call
     assert_no_selector "a.gm-sec", visible: :visible
+    open_filters
     check "Mostra cosa serve in seconda"
     assert_selector "a.gm-sec", minimum: 10
     assert_operator width.call, :>, narrow + 100
@@ -91,6 +96,7 @@ class GraphMapSystemTest < ApplicationSystemTestCase
     visit "/teacher/subjects/math/graph"
     total = GraphMapRows::SKILLS.size
     assert_selector "a.gm-skill:not(.gm-hidden)", count: total
+    open_filters
     fill_in "Cerca per nome", with: "frazioni"
     assert_selector "a.gm-skill:not(.gm-hidden)", minimum: 1, maximum: 5
     assert_selector "a.gm-node.gm-hidden[data-key='math.angles']", visible: :all
@@ -106,6 +112,27 @@ class GraphMapSystemTest < ApplicationSystemTestCase
     uncheck "Non in prima"
     assert_selector "a.gm-skill.gm-hidden[data-scope=not_in_prima]", minimum: 1, visible: :all
     assert_no_selector "a.gm-skill:not(.gm-hidden)[data-scope=not_in_prima]"
+  end
+
+  test "a tap after a drag on the background still selects a node" do
+    visit "/teacher/subjects/math/graph"
+    assert_selector "#graph-map.gm-ready"
+    page.execute_script("document.querySelector('.gm-svg').dispatchEvent(new PointerEvent('pointerdown', {clientX: 200, button: 0, bubbles: true}));" \
+                        "document.querySelector('.gm-svg').dispatchEvent(new PointerEvent('pointermove', {clientX: 230, bubbles: true}));" \
+                        "document.querySelector('.gm-svg').dispatchEvent(new PointerEvent('pointerup', {bubbles: true}))")
+    node("math.fractions").click
+    assert_selector "a.gm-node.gm-sel[data-key='math.fractions']"
+  end
+
+  test "the report map shows the evidence of a skill on click" do
+    world = build_ui_subject(key: "lang", name: "Lingua", components: %w[number choice short_answer], position: 2)
+    release_diagnosis!
+    play_run(world[:student], world[:subject])
+    visit "/teacher/subjects/lang/report"
+    assert_selector "#graph-map.gm-ready"
+    node("lang.number").click
+    assert_selector "a.gm-node.gm-sel[data-key='lang.number']"
+    assert_selector ".gm-panel .gm-evidence", text: /domande fatte|domanda fatta/
   end
 
   test "zoom scales the map, fit shows it whole" do
@@ -134,6 +161,7 @@ class GraphMapSystemTest < ApplicationSystemTestCase
         assert_selector "#graph-map.gm-ready"
         shoot(File.join(dir, "#{name}-#{w}x#{h}.png"), w)
         node(name == "wide" ? "math.w14" : "math.polynomials").trigger("click")
+        open_filters
         check "Mostra cosa serve in seconda" if name == "school" && w > 1000
         shoot(File.join(dir, "#{name}-#{w}x#{h}-selected.png"), w)
       end
