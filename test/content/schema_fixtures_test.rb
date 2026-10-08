@@ -85,7 +85,7 @@ class SchemaFixturesTest < ActiveSupport::TestCase
     schema = JSON.parse(File.read(Rails.root.join("config/banco/schemas/item.json")))
     assert_equal %w[diagnosis_item short_answer testlet practice_item], schema.dig("properties", "kind", "enum")
     assert_not schema["properties"].key?("hints")
-    assert_equal %w[hints_it level], %w[hints_it level] & schema["properties"].keys
+    assert_empty %w[hints_it level] - schema["properties"].keys
   end
 
   test "lesson front matter fixtures: good are valid, bad are refused under /front_matter" do
