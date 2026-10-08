@@ -4,19 +4,31 @@
 <% skills = review.skills.index_by(&:key) %>
 <% card_prefix = report ? "report-skill-" : "skill-" %>
 <% states = report ? GraphMapHelper::REPORT_STATES : %w[studied integration_studied in_progress middle_school not_in_prima] %>
-<section id="graph-map" class="graph-map" data-controller="graph-map" data-action="keydown->graph-map#key"
+<section id="graph-map" class="graph-map" data-controller="graph-map" data-action="keydown->graph-map#key" data-graph-map-fit-text-value="8"
          data-graph-map-main-width-value="<%= map.main_width.round %>" data-graph-map-full-width-value="<%= map.width.round %>"
          data-graph-map-main-height-value="<%= map.main_height.round %>" data-graph-map-full-height-value="<%= map.height.round %>" data-graph-map-shown-one-value="<%= t('teacher.graph.map.shown_one') %>"
          data-graph-map-shown-other-value="<%= t('teacher.graph.map.shown_other') %>" data-graph-map-shown-none-value="<%= t('teacher.graph.map.shown_none') %>">
-  <h2><%= t(report ? "teacher.graph.map.report_title" : "teacher.graph.map.title") %></h2>
-  <p class="hint"><%= t(report ? "teacher.graph.map.report_intro" : "teacher.graph.map.intro") %></p>
+  <h2 class="gm-title"><%= t(report ? "teacher.graph.map.report_title" : "teacher.graph.map.title") %> <span class="gm-pick-hint"><%= t("teacher.graph.map.pick_hint") %></span></h2>
 
   <% map.warnings.each do |w| %>
     <p class="notice" role="status" data-map-warning="<%= w[:kind] %>"><%= t("teacher.graph.map.warning.#{w[:kind]}", from: skills[w[:keys][0]]&.label_it || w[:keys][0], to: skills[w[:keys][1]]&.label_it || w[:keys][1]) %></p>
   <% end %>
 
-  <details class="gm-legend" id="graph-map-legend" open data-graph-map-target="legendBox">
-    <summary class="gm-legend-title"><%= t("teacher.graph.map.legend") %></summary>
+  <div class="gm-legend" id="graph-map-legend">
+    <ul class="plain gm-strip" aria-label="<%= t('teacher.graph.map.legend_strip') %>">
+      <% states.each do |state| %>
+        <li><span class="gm-swatch gm-fill-<%= state %>" aria-hidden="true"></span><%= report ? "#{GraphMapHelper::STATE_GLYPH[state]} #{t("teacher.graph.map.state.#{state}")}" : scope_text(state) %></li>
+      <% end %>
+      <li><span class="gm-swatch gm-fill-none gm-swatch-dashed" aria-hidden="true"></span><%= t("teacher.graph.map.short_inferred") %></li>
+      <% if map.lane %><li><span class="gm-swatch gm-fill-stub gm-swatch-dotted" aria-hidden="true"></span><%= t("teacher.graph.map.short_stub") %></li><% end %>
+      <li><span class="gm-sample-badge" aria-hidden="true">3</span><%= t("teacher.graph.map.short_pinned") %></li>
+      <li><span class="gm-sample-tab" aria-hidden="true"><%= t("teacher.graph.map.entry") %></span><%= t("teacher.graph.map.short_entry") %></li>
+      <% unless report %><li><span class="gm-sample-dot" aria-hidden="true"></span><%= t("teacher.graph.map.short_change") %></li><% end %>
+      <li><svg class="gm-sample-line" viewBox="0 0 40 8" aria-hidden="true"><path d="M0 4 H40" class="gm-edge"/></svg><%= t("teacher.graph.map.short_edge") %></li>
+    </ul>
+    <details class="gm-howto" id="graph-map-howto">
+      <summary class="gm-legend-title"><%= t("teacher.graph.map.legend") %></summary>
+      <p class="hint"><%= t(report ? "teacher.graph.map.report_intro" : "teacher.graph.map.intro") %></p>
     <ul class="plain gm-legend-list">
       <% states.each do |state| %>
         <li><span class="gm-swatch gm-fill-<%= state %>" aria-hidden="true"></span>
@@ -34,36 +46,38 @@
       <li><svg class="gm-sample-line" viewBox="0 0 40 8" aria-hidden="true"><path d="M0 4 H40" class="gm-edge"/></svg> <%= t("teacher.graph.map.legend_edge") %></li>
       <li><svg class="gm-sample-line" viewBox="0 0 40 8" aria-hidden="true"><path d="M0 4 H40" class="gm-edge gm-edge-composite"/></svg> <%= t("teacher.graph.map.legend_composite") %></li>
     </ul>
-  </details>
+    </details>
+  </div>
 
   <div class="gm-controls gm-needs-js no-print">
-    <p class="gm-row">
+    <div class="gm-bar">
       <label for="gm-search"><%= t("teacher.graph.map.search") %></label>
-      <input id="gm-search" type="search" class="answer-input" autocomplete="off" data-graph-map-target="search" data-action="input->graph-map#filter">
-    </p>
-    <details class="gm-filters"><summary><%= t("teacher.graph.map.filters") %></summary>
-    <fieldset class="gm-row">
-      <legend><%= t("teacher.graph.map.show") %></legend>
-      <% states.each do |state| %>
-        <label class="gm-check"><input type="checkbox" checked data-graph-map-target="facet" data-value="<%= state %>" data-action="change->graph-map#filter">
-          <%= report ? t("teacher.graph.map.state.#{state}") : t("teacher.graph.scope.#{state}") %></label>
-      <% end %>
-    </fieldset>
-    <p class="gm-row">
-      <label class="gm-check"><input type="checkbox" data-graph-map-target="onlyInferred" data-action="change->graph-map#filter"> <%= t("teacher.graph.map.only_inferred") %></label>
-      <label class="gm-check"><input type="checkbox" data-graph-map-target="onlyPinned" data-action="change->graph-map#filter"> <%= t("teacher.graph.map.only_pinned") %></label>
-      <% if ctx.seconda_lines.any? %>
-        <label class="gm-check"><input type="checkbox" id="gm-seconda" data-graph-map-target="seconda" data-action="change->graph-map#toggleSeconda"> <%= t("teacher.graph.map.seconda") %></label>
-      <% end %>
-    </p>
-    </details>
-    <p class="gm-row gm-zoom">
-      <button type="button" class="button secondary small" data-action="graph-map#zoomIn" aria-label="<%= t('teacher.graph.map.zoom_in_label') %>">+</button>
-      <button type="button" class="button secondary small" data-action="graph-map#zoomOut" aria-label="<%= t('teacher.graph.map.zoom_out_label') %>">−</button>
-      <button type="button" class="button secondary small" data-action="graph-map#overview"><%= t("teacher.graph.map.fit") %></button>
-      <button type="button" class="button secondary small" data-action="graph-map#clear"><%= t("teacher.graph.map.clear") %></button>
-      <span class="hint" data-graph-map-target="count" role="status"></span>
-    </p>
+      <input id="gm-search" type="search" class="answer-input gm-search" aria-label="<%= t("teacher.graph.map.search") %>" placeholder="<%= t("teacher.graph.map.search") %>" autocomplete="off" data-graph-map-target="search" data-action="input->graph-map#filter">
+      <details class="gm-filters"><summary><%= t("teacher.graph.map.filters") %></summary>
+        <div class="gm-filters-body">
+          <fieldset class="gm-row">
+            <legend><%= t("teacher.graph.map.show") %></legend>
+            <% states.each do |state| %>
+              <label class="gm-check"><input type="checkbox" checked data-graph-map-target="facet" data-value="<%= state %>" data-action="change->graph-map#filter">
+                <%= report ? t("teacher.graph.map.state.#{state}") : t("teacher.graph.scope.#{state}") %></label>
+            <% end %>
+          </fieldset>
+          <p class="gm-row">
+            <label class="gm-check"><input type="checkbox" data-graph-map-target="onlyInferred" data-action="change->graph-map#filter"> <%= t("teacher.graph.map.only_inferred") %></label>
+            <label class="gm-check"><input type="checkbox" data-graph-map-target="onlyPinned" data-action="change->graph-map#filter"> <%= t("teacher.graph.map.only_pinned") %></label>
+            <% if ctx.seconda_lines.any? %>
+              <label class="gm-check"><input type="checkbox" id="gm-seconda" data-graph-map-target="seconda" data-action="change->graph-map#toggleSeconda"> <%= t("teacher.graph.map.seconda") %></label>
+            <% end %>
+          </p>
+        </div>
+      </details>
+      <span class="gm-zoom">
+        <button type="button" class="button secondary small" data-action="graph-map#zoomIn" aria-label="<%= t('teacher.graph.map.zoom_in_label') %>">+</button>
+        <button type="button" class="button secondary small" data-action="graph-map#zoomOut" aria-label="<%= t('teacher.graph.map.zoom_out_label') %>">−</button>
+        <button type="button" class="button secondary small gm-fit" data-graph-map-target="fitButton" data-action="graph-map#toggleFit" data-fit-label="<%= t('teacher.graph.map.fit') %>" data-enlarge-label="<%= t('teacher.graph.map.enlarge') %>"><%= t("teacher.graph.map.fit") %></button>
+      </span>
+      <span class="hint gm-count" data-graph-map-target="count" role="status"></span>
+    </div>
   </div>
 
   <p class="hint gm-needs-js gm-scroll-hint no-print" data-graph-map-target="scrollHint"><%= t("teacher.graph.map.scroll_hint") %></p>
@@ -125,9 +139,9 @@
         </g>
       </svg>
     </div>
-    <aside class="gm-panel gm-needs-js no-print" data-graph-map-target="panel" tabindex="-1" aria-live="polite" aria-label="<%= t('teacher.graph.map.panel') %>">
-      <p class="hint" data-graph-map-target="empty"><%= t("teacher.graph.map.panel_empty") %></p>
-      <div data-graph-map-target="detail"></div>
+    <aside class="gm-panel gm-needs-js no-print" data-graph-map-target="panel" tabindex="-1" hidden role="region" aria-label="<%= t('teacher.graph.map.panel') %>">
+      <button type="button" class="button secondary small gm-close" data-action="graph-map#close"><%= t("teacher.graph.map.close") %></button>
+      <div data-graph-map-target="detail" aria-live="polite"></div>
     </aside>
   </div>
 

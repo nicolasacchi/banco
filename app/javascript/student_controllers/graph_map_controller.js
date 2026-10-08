@@ -7,8 +7,8 @@ import { Controller } from "@hotwired/stimulus"
 // Selecting a node marks it (gm-sel), the chain of what it needs (gm-up) and everything that builds on it
 // (gm-down); the rest is dimmed by the wrapper's gm-has-selection class.
 export default class extends Controller {
-  static targets = ["svg", "panel", "empty", "detail", "search", "facet", "onlyInferred", "onlyPinned", "seconda", "count", "template", "legendBox", "scrollHint"]
-  static values = { mainWidth: Number, fullWidth: Number, mainHeight: Number, fullHeight: Number, shownOne: String, shownOther: String, shownNone: String }
+  static targets = ["svg", "panel", "detail", "search", "facet", "onlyInferred", "onlyPinned", "seconda", "count", "template", "scrollHint", "fitButton"]
+  static values = { fitText: { type: Number, default: 8 }, mainWidth: Number, fullWidth: Number, mainHeight: Number, fullHeight: Number, shownOne: String, shownOther: String, shownNone: String }
 
   connect() {
     this.nodes = new Map()
@@ -24,7 +24,6 @@ export default class extends Controller {
     this.templates = new Map(this.templateTargets.map((t) => [t.dataset.key, t]))
     this.selected = null
     this.scale = READABLE
-    if (this.hasLegendBoxTarget && window.matchMedia("(max-width: 60rem)").matches) this.legendBoxTarget.open = false
     // Ready first: it shows the panel and the controls, which decide how wide the map's box is.
     this.element.classList.add("gm-ready")
     this.fit()
@@ -73,9 +72,13 @@ export default class extends Controller {
     this.element.classList.add("gm-has-selection")
     this.showPanel(key)
     this.reveal(key)
-    // On a narrow screen the panel is under the map: bring it into view.
-    if (window.matchMedia("(max-width: 60rem)").matches) this.panelTarget.scrollIntoView({ block: "nearest" })
+    // The panel takes focus (without scrolling the page). On a phone it is under the map: the page goes to it.
+    this.panelTarget.focus({ preventScroll: true })
+    if (this.phone()) this.panelTarget.scrollIntoView({ block: "start" })
+    this.syncFit()
   }
+
+  phone() { return window.matchMedia("(max-width: 60rem)").matches }
 
   // An edge belongs to the chain when both ends are on the up side (with the node) or both on the down side.
   sameSide(edge, key, up, down) {
@@ -99,23 +102,30 @@ export default class extends Controller {
     this.element.querySelectorAll(".gm-sel, .gm-up, .gm-down, .gm-hot").forEach((el) => el.classList.remove("gm-sel", "gm-up", "gm-down", "gm-hot"))
   }
 
-  clear() {
+  // Closes the panel. When the focus was inside it, or the caller asks, it goes back to the node.
+  clear(refocus = false) {
+    const node = this.selected ? this.nodes.get(this.selected) : null
+    const inside = this.panelTarget.contains(document.activeElement)
     this.clearMarks()
     this.selected = null
     this.element.classList.remove("gm-has-selection")
     this.detailTarget.replaceChildren()
-    this.emptyTarget.hidden = false
+    this.panelTarget.hidden = true
+    if (node && (refocus === true || inside)) node.focus({ preventScroll: true })
+    this.syncFit()
   }
 
+  close() { this.clear(true) }
+
   key(event) {
-    if (event.key === "Escape") { this.clear() }
+    if (event.key === "Escape" && this.selected) { event.preventDefault(); this.clear(true) }
   }
 
   showPanel(key) {
     const template = this.templates.get(key)
     this.detailTarget.replaceChildren()
     if (template) this.detailTarget.append(template.content.cloneNode(true))
-    this.emptyTarget.hidden = !!template
+    this.panelTarget.hidden = false
   }
 
   // ---- filters
@@ -171,12 +181,20 @@ export default class extends Controller {
     return this.svgTarget.parentElement
   }
 
-  // On a desktop the whole map fits the width whenever its text stays at MIN_TEXT px or more; else (and on a phone)
-  // natural size and a scroll, which on a phone starts at the test's first entry skill.
+  // The part of the box the open panel does not cover (the panel is an overlay; the box keeps room to scroll past it).
+  get avail() {
+    const pad = parseFloat(getComputedStyle(this.box).paddingRight) || 0
+    return this.box.clientWidth - pad
+  }
+
+  get fitScale() { return Math.min(this.box.clientWidth / this.width, 1) }
+
+  // The whole map fits the width whenever its text stays at fitText px or more (on a phone it does not: natural size and a
+  // scroll, starting at the test's first entry skill).
   fit() {
     const whole = this.box.clientWidth / this.width
-    const phone = window.matchMedia("(max-width: 60rem)").matches
-    if (!phone && whole * LABEL_PX >= MIN_TEXT) this.draw(whole)
+    const phone = this.phone()
+    if (!phone && whole * LABEL_PX >= this.fitTextValue) this.draw(whole)
     else this.draw(whole >= READABLE ? whole : READABLE)
     this.box.scrollLeft = phone ? this.entryLeft() : 0
   }
@@ -188,19 +206,37 @@ export default class extends Controller {
     return Math.max(0, Math.min(...tabs) * this.scale - 16)
   }
 
+  fitted() { return this.scale <= this.fitScale + 0.02 }
+
+  // One button, two states: "Adatta" when the map is bigger than the box, "Ingrandisci" (to natural size) when it is fitted.
+  toggleFit() {
+    if (this.fitted()) this.zoomTo(READABLE)
+    else this.overview()
+  }
+
+  syncFit() {
+    if (!this.hasFitButtonTarget) return
+    const fitted = this.fitted()
+    const button = this.fitButtonTarget
+    button.textContent = fitted ? button.dataset.enlargeLabel : button.dataset.fitLabel
+    button.dataset.state = fitted ? "fitted" : "zoomed"
+  }
+
   overview() {
-    this.draw(Math.min(this.box.clientWidth / this.width, 1))
+    this.draw(this.fitScale)
     this.box.scrollLeft = 0
   }
 
   zoomIn() { this.zoomBy(1.25) }
   zoomOut() { this.zoomBy(0.8) }
 
-  zoomBy(factor) {
+  zoomBy(factor) { this.zoomTo(this.scale * factor) }
+
+  zoomTo(scale) {
     const box = this.box
     const before = this.scale
     const centre = (box.scrollLeft + box.clientWidth / 2) / before
-    const next = Math.min(Math.max(before * factor, 0.2), 2.5)
+    const next = Math.min(Math.max(scale, 0.2), 2.5)
     this.draw(next)
     box.scrollLeft = centre * next - box.clientWidth / 2
   }
@@ -211,16 +247,21 @@ export default class extends Controller {
     svg.setAttribute("viewBox", `0 0 ${this.width} ${this.tall}`)
     svg.setAttribute("width", Math.round(this.width * scale))
     svg.setAttribute("height", Math.round(this.tall * scale))
-    if (this.hasScrollHintTarget) this.scrollHintTarget.hidden = this.box.scrollWidth <= this.box.clientWidth + 1
+    if (this.hasScrollHintTarget) this.scrollHintTarget.hidden = svg.getBoundingClientRect().width <= this.box.clientWidth + 1
+    this.syncFit()
   }
 
-  // Keep the selected node in view.
+  // Keep the selected node in view, in the part of the box the open panel does not cover. Only the box scrolls, never the page.
   reveal(key) {
     const box = this.box
     const rect = this.nodes.get(key).querySelector("rect")
     const x = Number(rect.getAttribute("x")) * this.scale
     const w = Number(rect.getAttribute("width")) * this.scale
-    if (x < box.scrollLeft || x + w > box.scrollLeft + box.clientWidth) box.scrollLeft = x + w / 2 - box.clientWidth / 2
+    const y = Number(rect.getAttribute("y")) * this.scale
+    const h = Number(rect.getAttribute("height")) * this.scale
+    const room = this.avail
+    if (x < box.scrollLeft || x + w > box.scrollLeft + room) box.scrollLeft = x + w / 2 - room / 2
+    if (y < box.scrollTop || y + h > box.scrollTop + box.clientHeight) box.scrollTop = y + h / 2 - box.clientHeight / 2
   }
 
   dragStart(event) {
@@ -239,7 +280,6 @@ export default class extends Controller {
 
 const READABLE = 1
 const LABEL_PX = 14
-const MIN_TEXT = 10
 
 function push(map, key, value) {
   if (!map.has(key)) map.set(key, [])
