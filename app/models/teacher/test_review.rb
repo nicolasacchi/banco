@@ -10,7 +10,12 @@ module Teacher
 
     SkillRow = Data.define(:skill, :label_it, :role, :item_ids, :not_assessed_reason_it, :redo_reserve, :choice_only_reason_it, :worked, :open_findings)
     Card = Data.define(:revision, :item, :body, :samples, :catalogue, :sources, :gate, :review, :blind, :findings, :send_backs, :superseded)
-    Finding = Data.define(:finding, :disposition, :new_revision_expected)
+    Finding = Data.define(:finding, :disposition, :new_revision_expected, :evidence, :response)
+    # What the teacher needs to judge a blind-solve finding (D-220): the key of the instance as the
+    # student would type it, the other answers accepted, and what the solver wrote.
+    Evidence = Data.define(:key, :accepted, :solver_answer, :dont_know)
+    # A blocker or major finding nobody has decided yet, on a pinned revision, with where to find it.
+    OpenFinding = Data.define(:finding, :skill, :label_it, :item_key)
 
     attr_reader :subject, :blueprint, :approved
 
@@ -59,7 +64,7 @@ module Teacher
     # The cards of one skill: every pinned item revision, side by side.
     def cards(skill)
       row = skill_row(skill) or return []
-      revisions = ItemRevision.where(id: row.item_ids).includes(:item, :instances, :findings, :reviews, :blind_solves, :validations).index_by(&:id)
+      revisions = ItemRevision.where(id: row.item_ids).includes(:item, :instances, { findings: :blind_solve }, :reviews, :blind_solves, :validations).index_by(&:id)
       dispositions = ReviewFinding.dispositions
       back = SendBacks.by_revision(row.item_ids)
       row.item_ids.filter_map { |id| revisions[id] }.map { |rev| card(rev, dispositions, back) }
@@ -83,6 +88,18 @@ module Teacher
 
     def pinned_count = blueprint.pinned_item_revision_ids.size
 
+    # Blocker and major findings without a decision on the pinned revisions, by skill row (D-220).
+    def open_finding_list
+      @open_finding_list ||= begin
+        dispositions = ReviewFinding.dispositions
+        skill_rows.flat_map do |row|
+          ReviewFinding.must_be_disposed.where(item_revision_id: row.item_ids).includes(item_revision: :item).order(:id)
+                       .reject { |f| dispositions.key?(f.id) }
+                       .map { |f| OpenFinding.new(f, row.skill, row.label_it, f.item_revision.item.key) }
+        end
+      end
+    end
+
     private
 
     def worked?(id)
@@ -101,12 +118,31 @@ module Teacher
       review = rev.reviews.max_by(&:id)
       blind = rev.blind_solves.max_by(&:id)
       later = rev.item.revisions.map(&:seq).max.to_i > rev.seq
-      findings = rev.findings.sort_by(&:id).map do |f|
+      sorted = rev.findings.sort_by(&:id)
+      responses = FindingResponse.latest_for(sorted.map(&:id))
+      findings = sorted.map do |f|
         disposition = dispositions[f.id]
-        Finding.new(f, disposition, disposition == "fix_requested" && !later)
+        Finding.new(f, disposition, disposition == "fix_requested" && !later, evidence_of(f, rev, item_body), responses[f.id])
       end
       Card.new(rev, rev.item, item_body, samples, catalogue_of(item_body), Array(item_body["sources"]), Review::Gate.check(rev),
                review && JSON.parse(review.checklist_json), blind && JSON.parse(blind.results_json), findings, back[rev.id] || [], later)
+    end
+
+    # Only a blind-solve finding about an instance has evidence; a review finding quotes the item itself.
+    def evidence_of(finding, rev, item_body)
+      return nil unless finding.source == "blind_solve" && finding.instance
+
+      row = rev.instances.sort_by(&:id)[finding.instance - 1] or return nil
+      view = InstanceView.new(row, item_body, finding.instance)
+      accepted = Array(item_body["accept"]) + (row.accept_json.present? ? Array(JSON.parse(row.accept_json)) : [])
+      answers = finding.blind_solve ? JSON.parse(finding.blind_solve.answers_json) : []
+      given = Array(answers).find { |a| a.is_a?(Hash) && a["instance"] == finding.instance }
+      Evidence.new(view.key, accepted.map(&:to_s).uniq, given && raw_answer(given["answer"]), given.nil? || given["dont_know"] == true)
+    end
+
+    # The solver's answer as it was written: text as is, anything structured as JSON.
+    def raw_answer(value)
+      value.is_a?(String) ? value : JSON.generate(value)
     end
 
     def catalogue_of(body)

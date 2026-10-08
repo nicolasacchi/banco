@@ -75,7 +75,16 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
   `banco work status REV --json` (and `banco work open ITEM`): `review_findings`, each
   with `source` (`review` or `blind_solve`), `severity`, `instance`, `field`, the exact
   `quote`, `problem_it`, `fix_it` and the teacher's `disposition` once there is one. Fix
-  every blocker and major finding in a new revision. You cannot dispose of a finding.
+  every blocker and major finding in a new revision, or answer it (below). You cannot dispose of a finding.
+- Answer every blocker and major finding after a review or a blind-solve round (D-220). List them with
+  `banco findings list --subject KEY --open`, then for each one write `response.json` and run
+  `banco findings respond FINDING --file response.json` (use `--dry-run` first). Two answers only.
+  `{"stance": "item_right", "note_it": "..."}`: the item is right, and the note is a short proof the
+  teacher can check (the key, the rule, the source; for a second answer, why it is wrong).
+  `{"stance": "fixed", "revision_id": N, "note_it": "..."}`: a later revision of the same item fixes it,
+  and the note says what changed. The note is Italian, at most 700 characters, short sentences, and
+  follows the readability rules. Use a new author session that did not raise the finding. Your answer
+  never closes the finding: the teacher reads it and decides in the browser.
 - A `normalized_text` item that does not measure accents says `accent_policy: "flag"`
   (a slip in an accent is then credited with a note); one that does says `strict`.
   Choice, ordering, matching and the other components carry no `accent_policy`

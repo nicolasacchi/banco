@@ -33,7 +33,7 @@ class TeacherApprovalTest < ApplicationSystemTestCase
   test "from draft to approved through the screens" do
     visit "/teacher"
     assert_selector "li.subject[data-subject=math] [data-waiting=graph_to_approve]"
-    assert_selector "li.subject[data-subject=math] [data-waiting=findings]", text: "Un rilievo grave"
+    assert_selector "li.subject[data-subject=math] [data-waiting=findings]", text: "Rilievi da decidere: 1"
 
     # The graph first.
     click_link "Grafo"
@@ -63,7 +63,7 @@ class TeacherApprovalTest < ApplicationSystemTestCase
     assert_selector "[data-finding='#{@finding.id}']"
     within("[data-finding='#{@finding.id}']") do
       fill_in "reason_it", with: "Il testo dice già l'unità."
-      click_button "Scarta il rilievo"
+      click_button "La domanda è giusta: scarta il rilievo"
     end
     assert_selector ".flash", text: "Decisione sul rilievo registrata."
     assert_selector "[data-finding='#{@finding.id}'][data-disposition=dismissed]"

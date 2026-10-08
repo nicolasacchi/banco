@@ -1,0 +1,39 @@
+{
+  "command": "findings list",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/subjects/math/findings"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "subject": "math",
+      "rows": [
+        {
+          "finding_id": 1,
+          "item": "fa-1",
+          "revision_id": 1,
+          "seq": 1,
+          "current": true,
+          "severity": "major",
+          "source": "review",
+          "problem_it": "Ambiguo.",
+          "fix_it": "Chiarisci."
+        },
+        {
+          "finding_id": 2,
+          "item": "fa-1",
+          "revision_id": 1,
+          "seq": 1,
+          "current": true,
+          "severity": "blocker",
+          "source": "blind_solve",
+          "instance": 2,
+          "problem_it": "Diversa.",
+          "fix_it": "Controlla."
+        }
+      ],
+      "next": "answer each open row: banco findings respond FINDING_ID --file response.json (banco brief show diagnosis-item)"
+    }
+  }
+}

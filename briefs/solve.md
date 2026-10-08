@@ -70,6 +70,7 @@ string) and `answers`. Nothing else is allowed. A minimal file:
 5. You are a different model family from the author and a different session from
    the author, the verifier and the reviewer. Work only from the display text.
 6. Never invent a source or a citation for an answer.
+7. Every answer that differs from the key becomes a blocker finding. The teacher sees the key and your raw answer side by side, and the author answers the finding (`banco findings respond`). Write your answer exactly as a student would type it.
 
 ## Public repository
 

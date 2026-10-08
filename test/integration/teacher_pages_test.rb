@@ -158,6 +158,92 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     assert_select "[data-finding='#{finding.id}'][data-disposition=fix_requested] .decided", /nuova/
   end
 
+  # A blind-solve finding about the last instance of the text item, with its solver answer.
+  def blind_finding(answer: "ce ne", dont_know: false, accept: [ "c'è n'è" ])
+    revision = @world[:revisions]["normalized_text"]
+    row = ItemInstance.create!(item_revision: revision, seed: 99, display_json: { stem_it: "Cerchi una farmacia? In questa via **c'è ne** una." }.to_json,
+                               answer_json: "ce n'è".to_json, accept_json: accept.to_json, fingerprint: Digest::SHA256.hexdigest("blind-#{SecureRandom.hex(3)}"))
+    number = revision.instances.order(:id).pluck(:id).index(row.id) + 1
+    entry = dont_know ? { instance: number, dont_know: true } : { instance: number, answer: answer }
+    solve = BlindSolve.create!(item_revision: revision, agent_session: @session, answers_json: [ entry ].to_json, results_json: "[]")
+    finding = ReviewFinding.create!(item_revision: revision, source: "blind_solve", blind_solve: solve, severity: "blocker", code: "E-BLIND-SOLVE-MISMATCH", instance: number,
+                                    field: "instances/#{number}", quote: "Cerchi una farmacia? In questa via **c'è ne** una.",
+                                    problem_it: "Il risolutore alla cieca ha dato una risposta diversa dalla chiave.", fix_it: "Controlla la chiave.")
+    [ finding, revision ]
+  end
+
+  test "a blind-solve finding shows the key, the accepted spellings and what the solver wrote, escaped" do
+    finding, = blind_finding(answer: "<b>ce ne</b>")
+    page "/teacher/subjects/math/test/skills/math.normalized-text"
+    assert_response :success
+    assert_select "#finding-#{finding.id} [data-evidence] [data-evidence-key]", "ce n'è"
+    assert_select "#finding-#{finding.id} [data-evidence]", /Chiave:/
+    assert_select "#finding-#{finding.id} [data-evidence]", /Accettate anche:\s*c'è n'è/
+    assert_select "#finding-#{finding.id} [data-evidence]", /Il risolutore ha scritto:/
+    assert_select "#finding-#{finding.id} [data-evidence-solver]", "<b>ce ne</b>"
+    assert_select "#finding-#{finding.id} [data-evidence-solver] b", false
+  end
+
+  test "a solver who did not know is said so, and a review finding has no evidence block" do
+    finding, revision = blind_finding(dont_know: true, accept: [])
+    review = ItemReview.create!(item_revision: revision, agent_session: @session, checklist_json: "[]")
+    other = ReviewFinding.create!(item_revision: revision, source: "review", item_review: review, severity: "major", field: "stem", quote: "x", problem_it: "Ambiguo.", fix_it: "Chiarisci.")
+    page "/teacher/subjects/math/test/skills/math.normalized-text"
+    assert_select "#finding-#{finding.id} [data-evidence-solver]", /non sapeva rispondere/
+    assert_select "#finding-#{finding.id} [data-evidence]", text: /Accettate anche/, count: 0
+    assert_select "#finding-#{other.id} [data-evidence]", 0
+    assert_select "#finding-#{other.id} q", "x"
+  end
+
+  test "the card shows the latest response of the author and never a decision of its own" do
+    finding, revision = blind_finding
+    author = AgentSession.create!(label: "a", role: "author", agent: "omp", model: "claude-opus-5-5")
+    FindingResponse.create!(review_finding: finding, agent_session: author, stance: "item_right", note_it: "La chiave è giusta: si scrive ce n'è.")
+    page "/teacher/subjects/math/test/skills/math.normalized-text"
+    assert_select "#finding-#{finding.id} [data-response=item_right]", /Risposta dell'agente autore:/
+    assert_select "#finding-#{finding.id} [data-response=item_right]", /Secondo l'autore la domanda è giusta\./
+    assert_select "#finding-#{finding.id} [data-response=item_right]", /si scrive ce n'è/
+    assert_select "#finding-#{finding.id}[data-disposition='']"
+    assert_select "#finding-#{finding.id} form button[value=dismissed]"
+    newer = ItemRevision.create!(item: revision.item, seq: revision.seq + 1, body_json: revision.body_json, file_sessions_json: "{}")
+    FindingResponse.create!(review_finding: finding, agent_session: author, stance: "fixed", item_revision: newer, note_it: "Ho cambiato la consegna.")
+    page "/teacher/subjects/math/test/skills/math.normalized-text"
+    assert_select "#finding-#{finding.id} [data-response=fixed]", /L'autore l'ha corretta nella revisione #{newer.seq}\./
+    assert_select "#finding-#{finding.id} [data-response=item_right]", 0
+    assert_equal 0, Decision.where(kind: "dispose_finding").count
+  end
+
+  test "the finding texts explain the choice" do
+    finding, = blind_finding
+    page "/teacher/subjects/math/test/skills/math.normalized-text"
+    assert_select "[data-findings-intro]", /possibile problema.*Decidi tu.*bloccanti e gravi.*prima dell'approvazione.*lievi sono facoltativi/m
+    assert_select "#finding-#{finding.id} button[value=dismissed]", "La domanda è giusta: scarta il rilievo"
+    assert_select "#finding-#{finding.id} button[value=fix_requested]", "La domanda va cambiata: chiedi la correzione"
+    assert_select "#finding-#{finding.id} label", "Motivo, in una riga (lo legge l'agente)"
+    assert_select "#finding-#{finding.id} input[name=reason_it][placeholder]"
+  end
+
+  test "the overview and the home count the findings to decide and link to them" do
+    page "/teacher/subjects/math/test"
+    assert_select "#open-findings h2", "Rilievi da decidere: nessuno."
+    finding, = blind_finding
+    skill = JSON.parse(@world[:revisions]["normalized_text"].body_json)["skill"]
+    page "/teacher/subjects/math/test"
+    assert_select "#open-findings h2", "Rilievi da decidere: 1."
+    assert_select "#open-findings a[href='/teacher/subjects/math/test/skills/#{skill}#finding-#{finding.id}']", /Bloccante/
+    Decision.create!(kind: "dispose_finding", subject: @subject, payload_json: { finding_id: finding.id, disposition: "dismissed", reason_it: "Sì." }.to_json,
+                     request_id: SecureRandom.uuid, teacher_login: "nik", groups: "banco-teacher", remote_addr: EDGE)
+    page "/teacher/subjects/math/test"
+    assert_select "#open-findings h2", "Rilievi da decidere: nessuno."
+    assert_select "#open-findings li", 0
+  end
+
+  test "the teacher's home row says Rilievi da decidere with a link to the overview" do
+    blind_finding
+    page "/teacher"
+    assert_select "li.subject[data-subject=math] [data-waiting=findings] a[href='/teacher/subjects/math/test#open-findings']", "Rilievi da decidere: 1."
+  end
+
   test "Rimanda records a decision the agent reads in work open, and the revision is no longer approvable" do
     number = @world[:revisions]["number"]
     token = ApiToken.issue!(role: "agent_claude", label: "t")

@@ -58,6 +58,19 @@ class GuestReadOnlyTest < ActionDispatch::IntegrationTest
     assert_equal before, counts
   end
 
+  test "a guest reads a blind-solve finding with its key and the solver answer, and sees no form (D-220)" do
+    revision = @world[:revisions]["number"]
+    solve = BlindSolve.create!(item_revision: revision, agent_session: @session, answers_json: [ { instance: 1, answer: "7" } ].to_json, results_json: "[]")
+    finding = ReviewFinding.create!(item_revision: revision, source: "blind_solve", blind_solve: solve, severity: "blocker", instance: 1, field: "instances/1",
+                                    quote: "q", problem_it: "Diversa dalla chiave.", fix_it: "Controlla.")
+    on(:web, "/teacher/subjects/math/test/skills/math.number", headers: GUEST, remote_addr: EDGE)
+    assert_response :success
+    assert_select "#finding-#{finding.id} [data-evidence-solver]", "7"
+    assert_select "#finding-#{finding.id} [data-evidence-key]"
+    assert_select "#finding-#{finding.id} form", 0
+    assert_select "#finding-#{finding.id} button", 0
+  end
+
   test "the teacher is not refused on the same routes" do
     teacher_routes.select { |verb, path| verb == "GET" && !path.include?("/preview/runs/") }.each do |_, path|
       on(:web, path, headers: TEACHER, remote_addr: EDGE)

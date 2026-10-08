@@ -266,7 +266,25 @@ CREATE TRIGGER grade_proposals_no_update BEFORE UPDATE ON grade_proposals
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER grade_proposals_no_delete BEFORE DELETE ON grade_proposals
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "finding_responses" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "review_finding_id" integer NOT NULL, "agent_session_id" integer NOT NULL, "stance" varchar NOT NULL, "item_revision_id" integer, "note_it" text NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_bc5c7f703f"
+FOREIGN KEY ("review_finding_id")
+  REFERENCES "review_findings" ("id")
+, CONSTRAINT "fk_rails_0d5b50aaf3"
+FOREIGN KEY ("agent_session_id")
+  REFERENCES "agent_sessions" ("id")
+, CONSTRAINT "fk_rails_a6ac31c714"
+FOREIGN KEY ("item_revision_id")
+  REFERENCES "item_revisions" ("id")
+, CONSTRAINT finding_responses_stance CHECK (stance IN ('item_right','fixed')), CONSTRAINT finding_responses_revision CHECK ((stance = 'fixed') = (item_revision_id IS NOT NULL)), CONSTRAINT finding_responses_note_length CHECK (length(note_it) BETWEEN 1 AND 700));
+CREATE INDEX "index_finding_responses_on_review_finding_id" ON "finding_responses" ("review_finding_id");
+CREATE INDEX "index_finding_responses_on_agent_session_id" ON "finding_responses" ("agent_session_id");
+CREATE INDEX "index_finding_responses_on_item_revision_id" ON "finding_responses" ("item_revision_id");
+CREATE TRIGGER finding_responses_no_update BEFORE UPDATE ON finding_responses
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER finding_responses_no_delete BEFORE DELETE ON finding_responses
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261008100001'),
 ('20261007100001'),
 ('20261004300001'),
 ('20261004200001'),

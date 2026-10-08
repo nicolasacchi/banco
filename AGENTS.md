@@ -107,6 +107,7 @@ only), `HARNESS_PORT` 3200 (internal). Never `PORT`.
   the report's `formula_sheet` and `marks`. The engine never reads any of it.
 - Roles (D-217): `EdgeTrust` says teacher, guest (reads every teacher page, writes nothing, no preview), student; `BANCO_STUDENT_USERS` maps logins to student keys (`student` is official, any other key a trial student: no release, approved or latest validated blueprint, no device cookie, never counted); `?student=KEY` on the teacher's report, corrections and home; `BANCO_GUEST_USERS`, `BANCO_LOGOUT_URL`.
 - References (D-218): a skill key or item key on a teacher page goes through `RefsHelper#ref_for` (Italian name, key, popover card from `Teacher::Refs`); `GET /teacher/refs/:key` is its permalink. Never print a bare key there.
+- Finding responses (D-220): the author answers blocker and major findings (`FindingResponse`, `Api::V1::FindingsController`, `banco findings list|respond`); the skill screen shows the key, the solver's answer and the latest response; a response never disposes of a finding.
 - `docs/decisions.md`: every deviation and operator answer (`## D-NNN`, index at the
   top). Change the design only by adding an entry.
 - `prep/`: private working material, git-ignored, never committed.

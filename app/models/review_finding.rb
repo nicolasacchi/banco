@@ -8,6 +8,7 @@ class ReviewFinding < ApplicationRecord
   belongs_to :item_revision
   belongs_to :item_review, optional: true
   belongs_to :blind_solve, optional: true
+  has_many :responses, class_name: "FindingResponse"
 
   scope :must_be_disposed, -> { where(severity: %w[blocker major]) }
 
@@ -21,6 +22,11 @@ class ReviewFinding < ApplicationRecord
   def disposition = self.class.dispositions[id]
 
   def disposed? = !disposition.nil?
+
+  def latest_response = responses.max_by(&:id)
+
+  # The agent session that raised the finding: the reviewer or the blind solver.
+  def raised_by_session_id = item_review&.agent_session_id || blind_solve&.agent_session_id
 
   def to_h
     { id: id, source: source, severity: severity, code: code, instance: instance, field: field, quote: quote,

@@ -1,0 +1,24 @@
+{
+  "command": "findings respond",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/findings/2/responses",
+    "body": {
+      "response": {
+        "stance": "item_right",
+        "note_it": "Si scrive ce n'è: la regola dice così."
+      }
+    }
+  },
+  "response": {
+    "status": 201,
+    "body": {
+      "id": 1,
+      "finding_id": 2,
+      "stance": "item_right",
+      "note_it": "Si scrive ce n'è: la regola dice così.",
+      "disposition": null,
+      "next": "stop here: only the teacher decides about the finding, in the browser (banco status)"
+    }
+  }
+}

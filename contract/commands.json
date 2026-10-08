@@ -222,6 +222,24 @@
       "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-STALE-BASE", "E-SCHEMA", "E-ITEM-NOT-PASSED", "E-CHROME-UNAVAILABLE", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT"]
     },
     {
+      "name": "findings list",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/subjects/:subject/findings",
+      "args": [],
+      "flags": ["--subject", "--open"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "findings respond",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/findings/:finding/responses",
+      "args": ["finding"],
+      "flags": ["--file", "--dry-run"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-READ", "E-PHRASE", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT"]
+    },
+    {
       "name": "submissions",
       "local": false,
       "method": "GET",

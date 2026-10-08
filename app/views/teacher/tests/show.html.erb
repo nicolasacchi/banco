@@ -73,6 +73,21 @@
       <% end %>
     </section>
 
+    <% open_list = review.open_finding_list %>
+    <section id="open-findings" data-open-findings="<%= open_list.size %>">
+      <h2><%= t("teacher.test.to_decide", count: open_list.size) %></h2>
+      <% if open_list.any? %>
+        <ul class="plain">
+          <% open_list.each do |entry| %>
+            <% f = entry.finding %>
+            <li data-open-finding="<%= f.id %>">
+              <a href="<%= skill_screen_path(@subject, entry.skill) %>#finding-<%= f.id %>"><%= t("teacher.skill.severity.#{f.severity}") %> · <%= entry.label_it %> · <%= entry.item_key %><% if f.instance %> · <%= t("teacher.skill.instance", n: f.instance) %><% end %></a>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </section>
+
     <h2><%= t("teacher.test.skills") %></h2>
     <ul class="subjects skill-list">
       <% review.skill_rows.each do |row| %>

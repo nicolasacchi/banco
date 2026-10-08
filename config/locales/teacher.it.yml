@@ -75,8 +75,8 @@ it:
       wait:
         graph_to_approve: "Il grafo aspetta la tua approvazione."
         findings:
-          one: "Un rilievo grave da decidere."
-          other: "%{count} rilievi gravi da decidere."
+          one: "Rilievi da decidere: 1."
+          other: "Rilievi da decidere: %{count}."
         sent_back:
           one: "Un item rimandato aspetta una revisione nuova."
           other: "%{count} item rimandati aspettano una revisione nuova."
@@ -271,6 +271,10 @@ it:
       open_findings:
         one: "1 rilievo da decidere"
         other: "%{count} rilievi da decidere"
+      to_decide:
+        zero: "Rilievi da decidere: nessuno."
+        one: "Rilievi da decidere: 1."
+        other: "Rilievi da decidere: %{count}."
       not_reviewed: "revisione o prova alla cieca mancanti"
       key_rubric: "Risposta breve: vale la rubrica."
       traces: "Che cosa fa il test"
@@ -339,9 +343,17 @@ it:
         fix_requested: "Hai chiesto una correzione."
         dismissed: "Hai scartato il rilievo."
       new_revision_expected: "Aspetta una revisione nuova dell'agente."
-      reason_label: "Motivo, in una riga"
-      dismiss: "Scarta il rilievo"
-      request_fix: "Chiedi la correzione"
+      findings_intro: "Un rilievo è un possibile problema trovato da chi ha controllato la domanda o dal risolutore alla cieca. Decidi tu chi ha ragione. I rilievi bloccanti e gravi vanno decisi prima dell'approvazione. I lievi sono facoltativi."
+      accepted_too: "Accettate anche:"
+      solver_wrote: "Il risolutore ha scritto:"
+      solver_dont_know: "non sapeva rispondere"
+      response: "Risposta dell'agente autore:"
+      response_item_right: "Secondo l'autore la domanda è giusta."
+      response_fixed: "L'autore l'ha corretta nella revisione %{seq}."
+      reason_label: "Motivo, in una riga (lo legge l'agente)"
+      reason_placeholder: "Per esempio: la chiave è giusta, la seconda risposta è un errore."
+      dismiss: "La domanda è giusta: scarta il rilievo"
+      request_fix: "La domanda va cambiata: chiedi la correzione"
       send_back: "Rimanda all'agente"
       sent_back: "Rimandato:"
       reason_code: "Perché"

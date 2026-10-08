@@ -69,7 +69,9 @@ module Api
       # the exact quote, problem_it and fix_it, with the finding's source and disposition. Read-only; a
       # disposition is the teacher's decision in the browser.
       def review_findings(revision)
-        revision.findings.order(:id).map { |f| f.to_h.merge(review_id: f.item_review_id, blind_solve_id: f.blind_solve_id).compact }
+        rows = revision.findings.order(:id).to_a
+        responses = FindingResponse.latest_for(rows.map(&:id))
+        rows.map { |f| f.to_h.merge(review_id: f.item_review_id, blind_solve_id: f.blind_solve_id, response: responses[f.id]&.to_h).compact }
       end
 
       # The role of the session in X-Banco-Session when it is a work role, else nil.

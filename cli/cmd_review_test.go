@@ -93,6 +93,9 @@ func TestReviewSolveGradeCommandsSendTheSessionAndTheirBody(t *testing.T) {
 		{[]string{"grade", "propose", "5", "--file", "FILE"}, "POST", "/api/v1/attempts/5/grade-proposals", "grade", ""},
 		{[]string{"grade", "propose", "5", "--file", "FILE", "--dry-run"}, "POST", "/api/v1/attempts/5/grade-proposals", "grade", "1"},
 		{[]string{"submissions", "--pending", "--json"}, "GET", "/api/v1/submissions/pending", "", ""},
+		{[]string{"findings", "respond", "9", "--file", "FILE"}, "POST", "/api/v1/findings/9/responses", "response", ""},
+		{[]string{"findings", "respond", "9", "--file", "FILE", "--dry-run"}, "POST", "/api/v1/findings/9/responses", "response", "1"},
+		{[]string{"findings", "list", "--subject", "italian"}, "GET", "/api/v1/subjects/italian/findings", "", ""},
 	}
 	for _, c := range cases {
 		var gotSession, gotDry, gotMethod, gotPath string
@@ -214,6 +217,25 @@ func TestOpenCommandsDeclareJSONFlag(t *testing.T) {
 		}
 		if !found {
 			t.Errorf("%s: contract flags lack --json", name)
+		}
+	}
+}
+
+func TestFindingsListOpenFlagAndUsage(t *testing.T) {
+	var gotQuery, gotPath string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotQuery, gotPath = r.URL.RawQuery, r.URL.Path
+		w.Header().Set("X-Banco-Contract", contract.Digest())
+		_, _ = w.Write([]byte(`{"rows":[]}`))
+	}))
+	defer srv.Close()
+	r := runWithSession(t, srv.URL, "31", "findings", "list", "--subject", "italian", "--open")
+	if r.exit != ExitOK || gotPath != "/api/v1/subjects/italian/findings" || gotQuery != "open=1" {
+		t.Fatalf("exit %d path %q query %q: %s", r.exit, gotPath, gotQuery, r.stderr)
+	}
+	for _, args := range [][]string{{"findings", "list"}, {"findings", "list", "--subject", "Bad Key"}, {"findings", "respond", "x", "--file", "f"}, {"findings", "respond", "3"}} {
+		if r := runWithSession(t, srv.URL, "31", args...); r.exit != ExitUsage {
+			t.Errorf("%v: exit %d, want usage", args, r.exit)
 		}
 	}
 }

@@ -32,7 +32,7 @@
         <% if row.waiting.any? %>
           <ul class="plain waiting" aria-label="<%= t('teacher.home.waiting') %>">
             <% row.waiting.each do |code, count| %>
-              <li data-waiting="<%= code %>"><strong><%= t("teacher.home.wait.#{code}", count: count.to_i) %></strong></li>
+              <li data-waiting="<%= code %>"><strong><% if code == :findings && row.has_blueprint %><a href="<%= teacher_test_path(key: row.subject.key) %>#open-findings"><%= t("teacher.home.wait.#{code}", count: count.to_i) %></a><% else %><%= t("teacher.home.wait.#{code}", count: count.to_i) %><% end %></strong></li>
             <% end %>
           </ul>
         <% end %>

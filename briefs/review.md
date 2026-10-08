@@ -50,6 +50,8 @@ on which instance, concretely.
 before the item is used. `minor`: polish. The `quote` is an **exact substring** of
 the item (otherwise the server refuses it with `E-QUOTE-NOT-FOUND`); say where (`field`, `instance`).
 
+The author answers every blocker and major finding (`banco findings respond`): the item is right, with a short proof, or a new revision fixes it. The teacher reads both sides and decides. Write each `problem_it` so that the teacher can follow it without the item open: say what is wrong and why.
+
 ## Rules (version 1)
 
 1. Try to break the item: solve it yourself by hand, defend each distractor,

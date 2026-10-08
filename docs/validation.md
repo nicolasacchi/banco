@@ -129,3 +129,7 @@ API listener), `node --test 'lib/harness/test/*.test.mjs'`. Chrome tests skip wh
 with `UPDATE_CONTRACT=1`; CI runs them and fails on a dirty diff.
 
 Generator `tests` (D-078, D-080): `must_accept`, `must_reject` and `blank` run on the first stored instance, which is the first clean seed (seed 1 unless seed 1 throws or is rejected; `banco work submit --dry-run` lists the instances); keep `must_accept` empty when the key changes with the seed. E-ACCEPTS-RANDOM ignores a random expression that equals the key in value. A listed instance may carry its own `tests` (`must_accept`, `must_reject`, D-085) for its own `accept`; an instance may also carry `accept` (D-081, normalized_text) for variants that depend on the seed, e.g. `didn't go` / `did not go`; skill-graph `*_it` texts get `W-GRAPH-READABILITY` when an item would fail E-READ.
+
+## The author answers the findings (D-220)
+
+After a review or a blind-solve round the author answers every blocker and major finding with `banco findings respond ID --file response.json`: `item_right` with a short proof, or `fixed` with the later revision that fixes it. `banco findings list --subject S --open` lists what is left. The teacher reads the key, the solver's raw answer and the author's note on the skill screen, then decides. A response never disposes of a finding.

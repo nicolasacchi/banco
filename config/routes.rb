@@ -106,8 +106,12 @@ Rails.application.routes.draw do
     get "api/v1/submissions/pending" => "api/v1/grades#pending", format: false
     post "api/v1/attempts/:attempt/grade-proposals" => "api/v1/grades#propose", constraints: { attempt: /\d+/ }, format: false
 
+    # The author answers the findings (D-220); the teacher alone decides about them.
+    post "api/v1/findings/:finding/responses" => "api/v1/findings#respond", constraints: { finding: /\d+/ }, format: false
+
     # The graph and the entry test of a subject.
     subject = { subject: /[a-z_]+/ }
+    get "api/v1/subjects/:subject/findings" => "api/v1/findings#index", constraints: subject, format: false
     get "api/v1/subjects/:subject/skill-graph" => "api/v1/skill_graphs#open", constraints: subject, format: false
     post "api/v1/subjects/:subject/skill-graph" => "api/v1/skill_graphs#submit", constraints: subject, format: false
     get "api/v1/subjects/:subject/skill-graph/coverage" => "api/v1/skill_graphs#coverage", constraints: subject, format: false
