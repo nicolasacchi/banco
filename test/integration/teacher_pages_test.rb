@@ -180,8 +180,10 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     assert_select "#finding-#{finding.id} [data-evidence]", /Chiave:/
     assert_select "#finding-#{finding.id} [data-evidence]", /Accettate anche:\s*c'è n'è/
     assert_select "#finding-#{finding.id} [data-evidence]", /Il risolutore ha scritto:/
-    assert_select "#finding-#{finding.id} [data-evidence-solver]", "<b>ce ne</b>"
+    assert_select "#finding-#{finding.id} code[data-evidence-solver]", "<b>ce ne</b>"
     assert_select "#finding-#{finding.id} [data-evidence-solver] b", false
+    assert_select "#finding-#{finding.id} [data-evidence-solver][data-markup]", false
+    assert_select "#finding-#{finding.id} [data-evidence-key][data-markup=inline]", 1
   end
 
   test "a solver who did not know is said so, and a review finding has no evidence block" do
@@ -242,6 +244,16 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     blind_finding
     page "/teacher"
     assert_select "li.subject[data-subject=math] [data-waiting=findings] a[href='/teacher/subjects/math/test#open-findings']", "Rilievi da decidere: 1."
+  end
+
+  test "the home row counts the same pinned revisions as the overview, even when a later revision exists" do
+    finding, revision = blind_finding
+    ItemRevision.create!(item: revision.item, seq: revision.seq + 1, body_json: revision.body_json, file_sessions_json: "{}")
+    page "/teacher/subjects/math/test"
+    assert_select "#open-findings h2", "Rilievi da decidere: 1."
+    page "/teacher"
+    assert_select "li.subject[data-subject=math] [data-waiting=findings] a[href='/teacher/subjects/math/test#open-findings']", "Rilievi da decidere: 1."
+    assert_equal 1, Teacher::TestReview.new(@subject).open_finding_list.count { |e| e.finding.id == finding.id }
   end
 
   test "Rimanda records a decision the agent reads in work open, and the revision is no longer approvable" do

@@ -61,6 +61,14 @@ class FindingsApiTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "open=1 leaves out findings on superseded revisions; the full list keeps them as current: false" do
+    later_revision
+    api("/api/v1/subjects/math/findings")
+    assert_equal [ false, false ], json["rows"].map { |r| r["current"] }
+    api("/api/v1/subjects/math/findings?open=1")
+    assert_empty json["rows"]
+  end
+
   test "an author answers item_right; the answer is stored and disposes of nothing" do
     respond(@blind_finding, { stance: "item_right", note_it: "Si scrive ce n'è: la regola dice così." })
     assert_response :created, json.inspect

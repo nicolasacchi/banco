@@ -32,7 +32,7 @@ module Teacher
       blueprint = BlueprintRevision.where(subject: subject).order(:seq).last
       waiting = []
       waiting << [ :graph_to_approve, nil ] if graph && info[:graph][:approved_revision_id] != graph.id
-      findings = undisposed(subject)
+      findings = undisposed(subject, blueprint)
       waiting << [ :findings, findings ] if findings.positive?
       sent = info[:items][:sent_back]
       waiting << [ :sent_back, sent ] if sent.positive?
@@ -40,10 +40,12 @@ module Teacher
       Row.new(subject, info[:stage], info[:items], waiting, minutes[:by_subject][subject.key].to_i, !graph.nil?, !blueprint.nil?)
     end
 
-    # Blocker and major findings, on the latest revision of each item of the test, that the
-    # teacher has not decided. A reserve item (not pinned by the latest blueprint, D-125)
-    # is not asked about.
-    def undisposed(subject)
+    # Blocker and major findings the teacher has not decided. With a blueprint: the same list as
+    # the test overview (the pinned revisions). Without one: the latest revision of each item
+    # that is not a reserve item (D-125), shown without a link.
+    def undisposed(subject, blueprint)
+      return TestReview.new(subject).open_finding_list.size if blueprint
+
       latest = Item.where(subject: subject).where.not(id: Item.reserve(subject).select(:id)).includes(:revisions).filter_map { |i| i.revisions.max_by(&:seq)&.id }
       dispositions = ReviewFinding.dispositions
       ReviewFinding.must_be_disposed.where(item_revision_id: latest).count { |f| !dispositions.key?(f.id) }

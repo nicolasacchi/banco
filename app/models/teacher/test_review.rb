@@ -92,10 +92,12 @@ module Teacher
     def open_finding_list
       @open_finding_list ||= begin
         dispositions = ReviewFinding.dispositions
+        by_revision = skill_rows.each_with_object({}) { |row, h| row.item_ids.each { |id| (h[id] ||= []) << row } }
+        found = ReviewFinding.must_be_disposed.where(item_revision_id: by_revision.keys).includes(item_revision: :item).order(:id)
+                             .reject { |f| dispositions.key?(f.id) }
         skill_rows.flat_map do |row|
-          ReviewFinding.must_be_disposed.where(item_revision_id: row.item_ids).includes(item_revision: :item).order(:id)
-                       .reject { |f| dispositions.key?(f.id) }
-                       .map { |f| OpenFinding.new(f, row.skill, row.label_it, f.item_revision.item.key) }
+          found.select { |f| row.item_ids.include?(f.item_revision_id) }
+               .map { |f| OpenFinding.new(f, row.skill, row.label_it, f.item_revision.item.key) }
         end
       end
     end

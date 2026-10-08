@@ -100,7 +100,7 @@
                   <% if ev.accepted.any? %><br><%= t("teacher.skill.accepted_too") %> <%= safe_join(ev.accepted.map { |a| content_tag(:span, a, "data-markup": "inline") }, ", ") %><% end %>
                   <br><strong><%= t("teacher.skill.solver_wrote") %></strong>
                   <% if ev.dont_know %><span data-evidence-solver><%= t("teacher.skill.solver_dont_know") %></span>
-                  <% else %><span data-evidence-solver data-markup="inline"><%= ev.solver_answer %></span><% end %>
+                  <% else %><code data-evidence-solver><%= ev.solver_answer %></code><% end %>
                 </p>
               <% end %>
               <% if entry.response %>

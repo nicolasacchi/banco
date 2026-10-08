@@ -77,7 +77,8 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
   `quote`, `problem_it`, `fix_it` and the teacher's `disposition` once there is one. Fix
   every blocker and major finding in a new revision, or answer it (below). You cannot dispose of a finding.
 - Answer every blocker and major finding after a review or a blind-solve round (D-220). List them with
-  `banco findings list --subject KEY --open`, then for each one write `response.json` and run
+  `banco findings list --subject KEY --open` (only findings on the current or a pinned revision;
+  without `--open` you also get older revisions, marked `current: false`), then for each one write `response.json` and run
   `banco findings respond FINDING --file response.json` (use `--dry-run` first). Two answers only.
   `{"stance": "item_right", "note_it": "..."}`: the item is right, and the note is a short proof the
   teacher can check (the key, the rule, the source; for a second answer, why it is wrong).

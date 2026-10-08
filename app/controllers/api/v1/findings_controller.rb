@@ -11,7 +11,8 @@ module Api
 
       # GET /api/v1/subjects/:subject/findings[?open=1]
       # Blocker and major findings of the subject, newest revision last, with the teacher's
-      # disposition and the latest response. open=1: no disposition yet and no response yet.
+      # disposition and the latest response. open=1: no disposition yet, no response yet,
+      # and on the current or a pinned revision (not a superseded one).
       def index
         subject = Subject.find_by(key: params[:subject].to_s)
         return refuse("E-NOT-FOUND", "subject", "no subject #{params[:subject].to_s.first(40).inspect}", "banco status", 404) unless subject
@@ -21,13 +22,14 @@ module Api
         dispositions = ReviewFinding.dispositions
         responses = FindingResponse.latest_for(findings.map(&:id))
         latest = Item.where(subject: subject).includes(:revisions).to_h { |i| [ i.id, i.revisions.map(&:seq).max ] }
+        pinned = BlueprintRevision.where(subject: subject).order(:seq).last&.pinned_item_revision_ids.to_a
         rows = findings.map do |f|
           rev = f.item_revision
           { finding_id: f.id, item: rev.item.key, revision_id: rev.id, seq: rev.seq, current: rev.seq == latest[rev.item_id],
             severity: f.severity, source: f.source, instance: f.instance, problem_it: f.problem_it, fix_it: f.fix_it,
             disposition: dispositions[f.id], response: responses[f.id]&.to_h }.compact
         end
-        rows = rows.select { |r| r[:disposition].nil? && r[:response].nil? } if params[:open].to_s.in?(%w[1 true])
+        rows = rows.select { |r| r[:disposition].nil? && r[:response].nil? && (r[:current] || pinned.include?(r[:revision_id])) } if params[:open].to_s.in?(%w[1 true])
         render json: { subject: subject.key, rows: rows,
                        next: "answer each open row: banco findings respond FINDING_ID --file response.json (banco brief show diagnosis-item)" }
       end
