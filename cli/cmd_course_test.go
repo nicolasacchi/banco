@@ -178,10 +178,82 @@ func TestCourseCommandsRefuseBadArguments(t *testing.T) {
 	}
 }
 
-func TestLessonFolderCommandsWaitForTheServerSide(t *testing.T) {
+func TestLessonOpenWritesTheFolderAndSubmitReadsItBack(t *testing.T) {
+	var got struct{ method, path, dry, body string }
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("X-Banco-Contract", contract.Digest())
+		w.Header().Set("Content-Type", "application/json")
+		if req.Method == "GET" {
+			_, _ = w.Write([]byte(`{"lesson":"ripasso.math.demo-equations","kind":"ripasso","subject":"math","latest":{"revision_id":41,"seq":2},"files":{"lesson.md":"---\nkey: ripasso.math.demo-equations\n---\n\n## Perché ti serve\nTesto.\n"},"reviews":[],"teacher_comments":[]}`))
+			return
+		}
+		buf := make([]byte, 1<<16)
+		n, _ := req.Body.Read(buf)
+		got.method, got.path, got.dry, got.body = req.Method, req.URL.Path, req.Header.Get("X-Banco-Dry-Run"), string(buf[:n])
+		w.WriteHeader(201)
+		_, _ = w.Write([]byte(`{"lesson":"ripasso.math.demo-equations","revision_id":42,"seq":3,"replayed":false,"warnings":[]}`))
+	}))
+	t.Cleanup(srv.Close)
+	dir := filepath.Join(t.TempDir(), "lesson")
+	res := runCLI(t, srv.URL, envToken("tok"), "lesson", "open", "ripasso.math.demo-equations", "--dir", dir)
+	if res.exit != 0 {
+		t.Fatalf("lesson open: exit %d, stderr %s", res.exit, res.stderr)
+	}
+	md, err := os.ReadFile(filepath.Join(dir, "lesson.md"))
+	if err != nil || !strings.Contains(string(md), "## Perché ti serve") {
+		t.Fatalf("lesson.md not written: %v %q", err, md)
+	}
+	if base, _ := os.ReadFile(filepath.Join(dir, ".base")); strings.TrimSpace(string(base)) != "41" {
+		t.Errorf(".base = %q, want 41", base)
+	}
+	if !strings.Contains(res.stdout, `"dir":"`+dir+`"`) {
+		t.Errorf("stdout lacks the dir: %s", res.stdout)
+	}
+	res = runCLI(t, srv.URL, envToken("tok"), "lesson", "submit", dir, "--dry-run")
+	if res.exit != 0 || got.method != "POST" || got.path != "/api/v1/lessons/submit" || got.dry != "1" {
+		t.Fatalf("dry run: exit %d, sent %+v, stderr %s", res.exit, got, res.stderr)
+	}
+	for _, want := range []string{`"lesson":"ripasso.math.demo-equations"`, `"base":41`, `"lesson.md":`} {
+		if !strings.Contains(got.body, want) {
+			t.Errorf("body lacks %s: %s", want, got.body)
+		}
+	}
+	if base, _ := os.ReadFile(filepath.Join(dir, ".base")); strings.TrimSpace(string(base)) != "41" {
+		t.Errorf("a dry run moved .base to %q", base)
+	}
+	res = runCLI(t, srv.URL, envToken("tok"), "lesson", "submit", dir)
+	if res.exit != 0 {
+		t.Fatalf("submit: exit %d, stderr %s", res.exit, res.stderr)
+	}
+	if base, _ := os.ReadFile(filepath.Join(dir, ".base")); strings.TrimSpace(string(base)) != "42" {
+		t.Errorf(".base = %q after the submit, want 42", base)
+	}
+	res = runCLI(t, srv.URL, envToken("tok"), "lesson", "submit", dir, "--base", "7")
+	if !strings.Contains(got.body, `"base":7`) {
+		t.Errorf("--base ignored: %s", got.body)
+	}
+}
+
+func TestLessonOpenRefusesAFolderThatHoldsOtherFiles(t *testing.T) {
 	srv, r := recordingServer(t)
-	res := runCLI(t, srv.URL, envToken("tok"), "lesson", "open", "ripasso.math.demo-equations")
-	if res.exit != ExitServer || !strings.Contains(res.stderr, "E-NOT-AVAILABLE") || r.method != "" {
-		t.Errorf("lesson open: exit %d, stderr %s", res.exit, res.stderr)
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "notes.txt"), []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	res := runCLI(t, srv.URL, envToken("tok"), "lesson", "open", "ripasso.math.demo-equations", "--dir", dir)
+	if res.exit != ExitUsage || r.method != "" {
+		t.Errorf("exit %d, reached the server %q", res.exit, r.method)
+	}
+}
+
+func TestLessonSubmitNeedsAKeyInTheFrontMatter(t *testing.T) {
+	srv, r := recordingServer(t)
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "lesson.md"), []byte("---\ntitle_it: x\n---\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	res := runCLI(t, srv.URL, envToken("tok"), "lesson", "submit", dir)
+	if res.exit != ExitValidation || r.method != "" {
+		t.Errorf("exit %d, reached the server %q, stderr %s", res.exit, r.method, res.stderr)
 	}
 }

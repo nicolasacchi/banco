@@ -6,14 +6,15 @@ import (
 	"io"
 	"net/url"
 	"os"
+	"path/filepath"
 	"regexp"
+	"strconv"
+	"strings"
 )
 
 // The course formats of Phase 1b (D-223..D-232): course maps, lessons, lesson reviews, topics and
 // the practice progress. None of these commands decides anything: the teacher approves topics and
-// opens the course in the browser (firm rule 2). The contract lists all twelve. The two commands
-// that work on a lesson folder (lesson open, lesson submit) land with the server side in S1b and
-// answer E-NOT-AVAILABLE until then.
+// opens the course in the browser (firm rule 2). The contract lists all twelve.
 
 var lessonKeyRe = regexp.MustCompile(`^(ripasso|ponte|lezione)\.[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*$`)
 
@@ -30,12 +31,17 @@ func runTopicsList(e *env, a []string) error {
 	return runSubject(e, subjectCommands["topics list"], a)
 }
 
-// runLessonOpen and runLessonSubmit check their arguments and stop: the folder handling
-// (lesson.md and .base) is S1b.
+// A lesson folder holds lesson.md and .base (the revision it is based on). `lesson open` writes both;
+// `lesson submit` reads them and, after a stored revision, writes the new .base.
+const lessonFile = "lesson.md"
+const baseFile = ".base"
+
+var frontKeyRe = regexp.MustCompile(`(?m)^key:\s*["']?([^"'\s]+)["']?\s*$`)
+
 func runLessonOpen(e *env, args []string) error {
 	fs := flag.NewFlagSet("lesson open", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
-	fs.String("dir", "", "folder for lesson.md (default $TMPDIR/banco-work/lesson-KEY)")
+	dir := fs.String("dir", "", "folder for lesson.md (default $TMPDIR/banco-work/lesson-KEY)")
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
 	if err != nil {
@@ -45,27 +51,120 @@ func runLessonOpen(e *env, args []string) error {
 	if len(pos) != 1 || !lessonKeyRe.MatchString(pos[0]) {
 		return newErr(ExitUsage, "E-USAGE", "lesson", "lesson open takes one lesson key such as ripasso.math.linear-equations-integer", next)
 	}
-	return notAvailable("lesson open")
+	key := pos[0]
+	target := *dir
+	if target == "" {
+		target = filepath.Join(os.TempDir(), "banco-work", "lesson-"+key)
+	}
+	if entries, err := os.ReadDir(target); err == nil {
+		for _, ent := range entries {
+			if ent.Name() != lessonFile && ent.Name() != baseFile {
+				return newErr(ExitUsage, "E-USAGE", "dir", target+" holds "+ent.Name()+" and is not a lesson folder", "banco lesson open "+key+" --dir OTHER")
+			}
+		}
+	}
+	body, err := e.client().do("lesson open", "GET", "/api/v1/lessons/"+url.PathEscape(key))
+	if err != nil {
+		return err
+	}
+	var answer struct {
+		Lesson   string            `json:"lesson"`
+		Kind     string            `json:"kind"`
+		Subject  string            `json:"subject"`
+		Files    map[string]string `json:"files"`
+		Latest   json.RawMessage   `json:"latest"`
+		Reviews  json.RawMessage   `json:"reviews"`
+		Comments json.RawMessage   `json:"teacher_comments"`
+		Next     string            `json:"next"`
+	}
+	if err := json.Unmarshal(body, &answer); err != nil {
+		return newErr(ExitServer, "E-HTTP", "", "the server's answer is not JSON: "+err.Error(), "banco health")
+	}
+	text, ok := answer.Files[lessonFile]
+	if !ok {
+		return newErr(ExitServer, "E-HTTP", "files", "the server sent no lesson.md", "banco health")
+	}
+	var latest struct {
+		RevisionID int `json:"revision_id"`
+	}
+	_ = json.Unmarshal(answer.Latest, &latest)
+	if err := writeFile(filepath.Join(target, lessonFile), []byte(text)); err != nil {
+		return err
+	}
+	if err := writeFile(filepath.Join(target, baseFile), []byte(strconv.Itoa(latest.RevisionID)+"\n")); err != nil {
+		return err
+	}
+	out := map[string]any{
+		"lesson": answer.Lesson, "kind": answer.Kind, "subject": answer.Subject, "dir": target, "latest": answer.Latest,
+		"reviews": answer.Reviews, "teacher_comments": answer.Comments,
+		"next": "edit " + filepath.Join(target, lessonFile) + ", then banco lesson submit " + target + " --dry-run",
+	}
+	if root := gitRootAbove(target); root != "" {
+		out["warning"] = "the folder " + target + " is inside the git work tree " + root + ": nothing of the work may be committed there; use --dir OUTSIDE/lesson and delete this folder"
+	}
+	return json.NewEncoder(e.stdout).Encode(out)
 }
 
 func runLessonSubmit(e *env, args []string) error {
 	fs := flag.NewFlagSet("lesson submit", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
-	fs.String("base", "", "the revision the folder is based on (default: DIR/.base)")
-	fs.Bool("dry-run", false, "validate and store nothing")
+	baseFlag := fs.String("base", "", "the revision the folder is based on (default: DIR/.base)")
+	dry := fs.Bool("dry-run", false, "validate and store nothing")
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
 	if err != nil {
 		return err
 	}
+	const next = "banco lesson submit DIR --dry-run"
 	if len(pos) != 1 {
-		return newErr(ExitUsage, "E-USAGE", "dir", "lesson submit takes one folder with lesson.md", "banco lesson submit DIR --dry-run")
+		return newErr(ExitUsage, "E-USAGE", "dir", "lesson submit takes exactly one folder with lesson.md", next)
 	}
-	return notAvailable("lesson submit")
-}
-
-func notAvailable(name string) error {
-	return newErr(ExitServer, "E-NOT-AVAILABLE", "", name+" is not available in this build yet", "banco status")
+	dir := pos[0]
+	raw, err := os.ReadFile(filepath.Join(dir, lessonFile))
+	if err != nil {
+		return newErr(ExitUsage, "E-USAGE", "dir", "cannot read "+filepath.Join(dir, lessonFile)+": "+err.Error(), next)
+	}
+	front := string(raw)
+	if i := strings.Index(front[min(4, len(front)):], "\n---"); strings.HasPrefix(front, "---") && i >= 0 {
+		front = front[:i+4]
+	}
+	m := frontKeyRe.FindStringSubmatch(front)
+	if m == nil || !lessonKeyRe.MatchString(m[1]) {
+		return newErr(ExitValidation, "E-LESSON-PARSE", "key", "lesson.md has no valid key: in its front matter (a lesson key such as ripasso.math.linear-equations-integer)", next)
+	}
+	var base any
+	baseText := strings.TrimSpace(*baseFlag)
+	if baseText == "" {
+		if saved, err := os.ReadFile(filepath.Join(dir, baseFile)); err == nil {
+			baseText = strings.TrimSpace(string(saved))
+		}
+	}
+	if baseText != "" {
+		n, err := strconv.Atoi(baseText)
+		if err != nil {
+			return newErr(ExitUsage, "E-USAGE", "base", "the base is a revision id (a number)", next)
+		}
+		base = n
+	}
+	payload, _ := json.Marshal(map[string]any{"lesson": m[1], "base": base, "files": map[string]string{lessonFile: string(raw)}})
+	headers := map[string]string{}
+	if *dry {
+		headers["X-Banco-Dry-Run"] = "1"
+	}
+	out, err := e.client().doWith("lesson submit", "POST", "/api/v1/lessons/submit", payload, headers)
+	if err != nil {
+		return err
+	}
+	if !*dry {
+		var answer struct {
+			RevisionID int `json:"revision_id"`
+		}
+		if json.Unmarshal(out, &answer) == nil && answer.RevisionID != 0 {
+			_ = os.WriteFile(filepath.Join(dir, baseFile), []byte(strconv.Itoa(answer.RevisionID)+"\n"), 0o644)
+		}
+	}
+	_, err = e.stdout.Write(append(out, '\n'))
+	return err
 }
 
 func runLessonStatus(e *env, args []string) error {

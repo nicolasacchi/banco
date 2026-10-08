@@ -12,7 +12,7 @@ module Api
       # GET /api/v1/subjects/:subject/practice/progress?student=KEY
       def show
         key = params[:student].to_s
-        student = key.empty? ? Student.official : Student.real.find { |s| s.key == key }
+        student = key.empty? ? (Student.official || Student.new(key: Student::OFFICIAL_KEY, kind: "student")) : Student.real.find { |s| s.key == key }
         return refuse("E-NOT-FOUND", "student", key.empty? ? "there is no official student yet" : "no trial student #{key.first(40).inspect}", "banco practice progress --subject #{@subject.key}", 404) unless student
 
         render json: Course::ProgressView.call(@subject, student)

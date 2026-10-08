@@ -27,6 +27,35 @@
             "older_rules": 0,
             "sent_back": 0,
             "reserve": 0
+          },
+          "course": {
+            "revision": null,
+            "released": false,
+            "released_revision_id": null,
+            "topics": {
+              "in_map": 0,
+              "missing": 0,
+              "in_review": 0,
+              "awaiting_teacher": 0,
+              "approved": 0,
+              "approved_newer_pending": 0
+            },
+            "lessons": {
+              "total": 0,
+              "unreviewed": 0,
+              "sent_back": 0
+            },
+            "practice_items": {
+              "total": 0,
+              "passed": 0,
+              "failed": 0,
+              "awaiting_verifier": 0,
+              "validating": 0,
+              "error": 0,
+              "older_rules": 0,
+              "sent_back": 0
+            },
+            "line_it": "corso: nessuna mappa"
           }
         },
         {
@@ -48,6 +77,35 @@
             "older_rules": 0,
             "sent_back": 0,
             "reserve": 0
+          },
+          "course": {
+            "revision": null,
+            "released": false,
+            "released_revision_id": null,
+            "topics": {
+              "in_map": 0,
+              "missing": 0,
+              "in_review": 0,
+              "awaiting_teacher": 0,
+              "approved": 0,
+              "approved_newer_pending": 0
+            },
+            "lessons": {
+              "total": 0,
+              "unreviewed": 0,
+              "sent_back": 0
+            },
+            "practice_items": {
+              "total": 0,
+              "passed": 0,
+              "failed": 0,
+              "awaiting_verifier": 0,
+              "validating": 0,
+              "error": 0,
+              "older_rules": 0,
+              "sent_back": 0
+            },
+            "line_it": "corso: nessuna mappa"
           }
         }
       ],

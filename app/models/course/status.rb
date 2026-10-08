@@ -14,7 +14,21 @@ module Course
         topics: topic_counts(rows),
         lessons: lessons(subject),
         practice_items: practice_items(subject)
-      }
+      }.tap { |h| h[:line_it] = line_it(h) }
+    end
+
+    # The line `banco status` shows for the subject (A4): "corso: 1 approvato, 2 dal docente, 8 da scrivere (11 nella mappa) · chiuso allo studente".
+    def line_it(course)
+      return "corso: nessuna mappa" unless course[:revision]
+
+      t = course[:topics]
+      parts = []
+      parts << "#{t[:approved]} #{t[:approved] == 1 ? 'approvato' : 'approvati'}" if t[:approved].positive?
+      parts << "#{t[:approved_newer_pending]} con una versione nuova" if t[:approved_newer_pending].positive?
+      parts << "#{t[:awaiting_teacher]} dal docente" if t[:awaiting_teacher].positive?
+      parts << "#{t[:in_review]} in revisione" if t[:in_review].positive?
+      parts << "#{t[:missing]} da scrivere" if t[:missing].positive?
+      "corso: #{parts.join(', ')} (#{t[:in_map]} nella mappa) · #{course[:released] ? 'aperto' : 'chiuso'} allo studente"
     end
 
     def topic_counts(rows)

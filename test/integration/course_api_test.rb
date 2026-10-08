@@ -103,6 +103,11 @@ class CourseApiTest < ActionDispatch::IntegrationTest
 
   # ---- the course map ---------------------------------------------------------------------------
 
+  test "status without a map says so" do
+    api("/api/v1/status")
+    assert_equal "corso: nessuna mappa", json["subjects"].first.dig("course", "line_it")
+  end
+
   test "course open without a map, submit, replay, and a dry run that stores nothing" do
     api("/api/v1/subjects/math/course")
     assert_response :ok
@@ -458,6 +463,7 @@ class CourseApiTest < ActionDispatch::IntegrationTest
     assert_equal 2, course["practice_items"]["total"]
     assert_equal 2, course["practice_items"]["passed"]
     assert_equal false, course["released"]
+    assert_equal "corso: 1 in revisione, 1 da scrivere (2 nella mappa) · chiuso allo studente", course["line_it"]
     student = practice_student("student")
     topic = TopicRevision.last
     instance = @item_a.instances.first
