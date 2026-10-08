@@ -127,3 +127,47 @@ test("without any storage the memory copy still works", async () => {
   assert.equal(box.size, 1)
   assert.equal((await box.flush()).blocked, false)
 })
+
+// ---- the practice outbox: its own prefix, its own fields and statuses ---------------------------
+
+import { PRACTICE_PREFIX } from "../../../app/javascript/items/outbox.js"
+
+function practiceBox(fetchImpl, storage = new MemoryStorage()) {
+  return new Outbox({ url: "/practice/answers", csrf: () => "token", storage, fetchImpl, prefix: PRACTICE_PREFIX,
+                      fields: ["serve_id", "client_attempt_id", "raw", "source"], statuses: ["graded", "invalid", "closed"],
+                      httpStatuses: [200, 409] })
+}
+
+test("a practice entry lives under banco.poutbox. and posts the serve id", async () => {
+  const storage = new MemoryStorage()
+  const calls = []
+  const box = practiceBox(async (url, options) => { calls.push(options); return reply({ json: { status: "graded" } }) }, storage)
+  box.add({ client_attempt_id: "p1", serve_id: 7, raw: "3", source: "text", served_event_id: 99 })
+  assert.ok(storage.key(0).startsWith("banco.poutbox."))
+  await box.flush()
+  assert.deepEqual(JSON.parse(calls[0].body), { serve_id: 7, client_attempt_id: "p1", raw: "3", source: "text" })
+  assert.equal(storage.length, 0)
+})
+
+test("a diagnosis outbox never restores or resends a practice entry, and the reverse", async () => {
+  const storage = new MemoryStorage()
+  storage.setItem("banco.poutbox.p1", JSON.stringify({ client_attempt_id: "p1", serve_id: 7, raw: "3", source: "text", queued_at: 1 }))
+  storage.setItem("banco.outbox.d1", JSON.stringify({ client_attempt_id: "d1", served_event_id: 3, raw: "4", source: "text", queued_at: 2 }))
+  const diagnosis = outbox(async () => reply({ json: { status: "recorded" } }), storage)
+  assert.deepEqual(diagnosis.pending().map((e) => e.client_attempt_id), ["d1"])
+  const practice = practiceBox(async () => reply({ json: { status: "graded" } }), storage)
+  assert.deepEqual(practice.pending().map((e) => e.client_attempt_id), ["p1"])
+})
+
+test("a 409 closed serve is an answer, a 503 retry keeps the entry queued", async () => {
+  const closed = practiceBox(async () => reply({ status: 409, json: { status: "closed", message_it: "x" } }))
+  closed.add({ client_attempt_id: "p1", serve_id: 7, raw: "3", source: "text" })
+  const done = await closed.flush()
+  assert.equal(done.blocked, false)
+  assert.equal(done.results.p1.status, "closed")
+  const retry = practiceBox(async () => reply({ status: 503, json: { status: "retry" } }))
+  retry.add({ client_attempt_id: "p2", serve_id: 7, raw: "3", source: "text" })
+  const blocked = await retry.flush()
+  assert.equal(blocked.blocked, true)
+  assert.equal(retry.size, 1)
+})

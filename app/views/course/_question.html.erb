@@ -1,0 +1,18 @@
+<% field = "q-#{SecureRandom.hex(4)}" %>
+<%# "Non ho capito": a button that opens one optional line. Locals: topic (key), lesson_revision_id, section, exercise. %>
+<div class="question" data-controller="question"
+     data-question-url-value="/questions"
+     data-question-topic-value="<%= topic %>"
+     <% if local_assigns[:lesson_revision_id] %>data-question-lesson-revision-id-value="<%= lesson_revision_id %>"<% end %>
+     <% if local_assigns[:section] %>data-question-section-value="<%= section %>"<% end %>
+     <% if local_assigns[:exercise] %>data-question-exercise-value="<%= exercise %>"<% end %>
+     data-question-labels-value="<%= question_labels.to_json %>">
+  <button type="button" class="button secondary small" data-question-target="opener" data-action="question#toggle" aria-expanded="false"><%= t("question.button") %></button>
+  <form data-question-target="form" data-action="submit->question#send keydown->question#key" hidden>
+    <label class="hint" for="<%= field %>"><%= t("question.label") %></label>
+    <input type="text" id="<%= field %>" class="answer-input wide" maxlength="300" autocomplete="off" data-question-target="text">
+    <p><button type="submit" class="button small"><%= t("question.send") %></button>
+      <button type="button" class="button secondary small" data-action="question#toggle"><%= t("question.close") %></button></p>
+  </form>
+  <p role="status" aria-live="polite" class="status" data-question-target="status"></p>
+</div>

@@ -25,4 +25,16 @@ module ApplicationHelper
       warmup_skip: warmup[:skip], warmup_fallback_note: warmup[:fallback_note]
     )
   end
+
+  # The texts of the practice page's script (config/locales/course.it.yml), one flat object.
+  def practice_labels
+    t = I18n.t("practice")
+    t.slice(:loading, :saving, :empty, :blocked, :error, :hint, :hint_n, :solution, :solution_title, :final, :skill_now, :try_this,
+            :try_this_reason, :after_solution, :next, :back, :closed, :not_counted, :reseen, :submit)
+  end
+
+  # The texts of the "Non ho capito" control's script.
+  def question_labels = I18n.t("question").slice(:sent, :error, :send, :close)
+
+  def lesson_labels = I18n.t("lesson").slice(:error, :loading_solution, :solution_title, :show_solution)
 end

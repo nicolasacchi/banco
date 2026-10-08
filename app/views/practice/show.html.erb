@@ -1,0 +1,35 @@
+<% content_for :title, @skill_label %>
+<main class="page course practice" data-controller="practice"
+      data-practice-topic-value="<%= @topic.key %>"
+      data-practice-skill-value="<%= @skill %>"
+      data-practice-serve-url-value="/practice/serves"
+      data-practice-answer-url-value="/practice/answers"
+      data-practice-back-url-value="/topics/<%= @topic.key %>"
+      data-practice-texts-value="<%= student_texts.to_json %>"
+      data-practice-labels-value="<%= practice_labels.to_json %>">
+  <%= render "course/nav" %>
+  <p><a href="/topics/<%= @topic.key %>"><%= t("practice.back") %></a></p>
+  <h1 id="skill-name"><%= @skill_label %></h1>
+  <% if draft? %><p class="notice" id="draft-notice" role="status"><%= t("draft.notice") %></p><% end %>
+  <p class="topic-meta" id="skill-state" data-practice-target="skillState"><%= Practice::Messages.state_it(@state.state) %>. <%= Practice::Messages.why_it(@state.why) %></p>
+  <p class="hint"><%= t("practice.paper") %></p>
+  <p id="serve-reason" class="notice" data-practice-target="reason" hidden></p>
+
+  <section data-practice-target="work" aria-label="<%= t("practice.exercise") %>" hidden>
+    <div class="item" data-practice-target="itemBox"></div>
+    <div id="hints" data-practice-target="hints" hidden>
+      <h2><%= t("practice.hints_title") %></h2>
+      <ol data-practice-target="hintList"></ol>
+    </div>
+    <div class="actions" data-practice-target="controls">
+      <button type="button" class="button" id="check" data-practice-target="check" data-action="practice#check"><%= t("practice.submit") %></button>
+      <button type="button" class="button secondary" id="hint-button" data-practice-target="hintButton" data-action="practice#hint" hidden></button>
+      <button type="button" class="button secondary" id="solution-button" data-practice-target="solutionButton" data-action="practice#solution"><%= t("practice.solution") %></button>
+    </div>
+  </section>
+
+  <div id="feedback" class="feedback" role="status" aria-live="polite" tabindex="-1" data-practice-target="feedback"></div>
+  <div id="solution" class="solution" data-practice-target="solutionBox" hidden></div>
+  <div class="actions" id="next-actions" data-practice-target="nextActions" hidden></div>
+  <%= render "course/question", topic: @topic.key, lesson_revision_id: @topic.lesson_revision.id, section: "practice" %>
+</main>

@@ -29,6 +29,24 @@ Rails.application.routes.draw do
       post "warmup/complete" => "warmup#complete", as: :warmup_complete
       concerns :sitting
     end
+    # The course of Phase 1b (A9): Oggi, the subjects, a topic, its lesson and its practice. Students only, official
+    # and trial; the teacher and guests get 403. The official student sees nothing until release_course.
+    scope format: false do
+      topic = { topic: /(ripasso|ponte|lezione)\.[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*/ }
+      get "today" => "course#today"
+      get "subjects" => "course#subjects"
+      get "subjects/:key" => "course#subject", constraints: { key: /[a-z_]+/ }
+      get "topics/:topic" => "topics#show", constraints: topic
+      get "topics/:topic/lesson" => "lessons#show", constraints: topic
+      post "topics/:topic/lesson/exercises/:n/solution" => "lessons#solution", constraints: topic.merge(n: /\d+/)
+      get "topics/:topic/practice/:skill" => "practice#show", constraints: topic.merge(skill: /[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*/)
+      post "practice/serves" => "practice#serve"
+      post "practice/answers" => "practice#answer"
+      post "practice/serves/:serve_id/hint" => "practice#hint", constraints: { serve_id: /\d+/ }
+      post "practice/serves/:serve_id/solution" => "practice#solution", constraints: { serve_id: /\d+/ }
+      post "questions" => "questions#create"
+    end
+
     # The teacher's decisions (D-08): the only writes of DecisionRecorder. POST only,
     # ids in the path, everything else in the body.
     get "teacher/items/:revision_id" => "teacher/items#show", constraints: { revision_id: /\d+/ }, format: false

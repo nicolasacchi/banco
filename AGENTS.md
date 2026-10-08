@@ -113,6 +113,11 @@ only), `HARNESS_PORT` 3200 (internal). Never `PORT`.
 - Roles (D-217): `EdgeTrust` says teacher, guest (reads every teacher page, writes nothing, no preview), student; `BANCO_STUDENT_USERS` maps logins to student keys (`student` is official, any other key a trial student: no release, approved or latest validated blueprint, no device cookie, never counted); `?student=KEY` on the teacher's report, corrections and home; `BANCO_GUEST_USERS`, `BANCO_LOGOUT_URL`.
 - References (D-218): a skill key or item key on a teacher page goes through `RefsHelper#ref_for` (Italian name, key, popover card from `Teacher::Refs`); `GET /teacher/refs/:key` is its permalink. Never print a bare key there.
 - Finding responses (D-220): the author answers blocker and major findings (`FindingResponse`, `Api::V1::FindingsController`, `banco findings list|respond`); the skill screen shows the key, the solver's answer and the latest response; a response never disposes of a finding.
+- The student's course pages (Phase 1b S3, D-236): `CourseController` (Oggi, Materie, Materia), `TopicsController`, `LessonsController`,
+  `PracticeController`, `QuestionsController` with the concern `StudentCourse`; read model `Course::StudentView`; `Items::Part` (shared with
+  `Diagnosis::ItemPresenter`); `student_controllers/{practice,lesson,question}_controller.js`; the practice outbox prefix `banco.poutbox.`.
+  Views `app/views/{course,topics,lessons,practice}`; texts `config/locales/course.it.yml`. Tests: `test/integration/course_pages_test.rb`,
+  `test/system/course_pages_test.rb`, `test/support/student_course_world.rb`.
 - The course (Phase 1b, `docs/course.md`): `Lessons::Parser` and `Lessons::Markup` (lesson.md and markup v2, `lib/lessons/`),
   `Validation::LessonChecks|CourseChecks|TopicChecks`, `Review::LessonIntake`, `LessonSessions`, `Course::State|TopicStage|Status|Decisions`,
   the API controllers `Courses|Lessons|LessonReviews|Topics|PracticeProgress`; `banco course|lessons|lesson|lesson-review|topics|topic|practice`.

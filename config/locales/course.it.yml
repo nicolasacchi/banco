@@ -3,10 +3,15 @@
 it:
   course:
     nav:
+      label: "Le tue pagine"
       today: "Oggi"
       subjects: "Materie"
       diagnosis: "Diagnosi"
   today:
+    title: "Oggi"
+    nothing: "Per ora non c'è altro da fare qui."
+    diagnosis_left: "Hai ancora delle materie da fare nella diagnosi."
+    diagnosis_link: "Vai alla diagnosi"
     resume: "Riprendi: %{topic}"
     suggestions: "Che cosa fare adesso"
     reason:
@@ -33,7 +38,12 @@ it:
     demonstrated: "Dimostrata il %{date}: corrette senza aiuto in %{days} giorni diversi."
     consolidated: "Consolidata il %{date}: l'hai rifatta giusta dopo più di due settimane."
     to_review: "Un errore senza aiuto il %{date}: servono 2 corrette per tornare %{previous}."
+  subjects:
+    title: "Materie"
+    counts: "%{demonstrated} abilità dimostrate, %{in_study} in studio, %{to_recover} da riprendere, %{not_seen} non ancora viste."
+    all: "Tutte le materie"
   subject:
+    topics: "Gli argomenti"
     no_topic: "Da riprendere, ancora senza argomento: %{skills}."
   topic:
     kind:
@@ -46,7 +56,28 @@ it:
       done: "Fatto"
     before: "Prima conviene fare: %{topic}"
     programme: "Dal programma, riga %{line}: «%{fragment}»"
+    tag_recover: "Da riprendere"
+    minutes: "%{n} minuti"
+    lesson: "Leggi la lezione"
+    lesson_read: "Lezione letta"
+    skills: "Che cosa eserciti"
+    practise: "Esercitati"
+    to_subject: "Torna alla materia"
+    draft: "Bozza"
   lesson:
+    sections:
+      why_it: "Perché ti serve"
+      idea_it: "L'idea in breve"
+      example_it: "Esempio svolto"
+      mistakes_it: "Errori da evitare"
+      try: "Prova tu"
+      book_it: "Sul libro"
+      summary_it: "In sintesi"
+    exercise: "Esercizio %{n}"
+    solution_title: "Soluzione"
+    loading_solution: "Un momento."
+    error: "Non riesco a mostrare la soluzione. Riprova."
+    back: "Torna all'argomento"
     try: "Fai l'esercizio sul foglio, poi controlla."
     show_solution: "Mostra la soluzione"
   practice:
@@ -71,9 +102,24 @@ it:
     not_counted: "Questo esercizio non conta per dimostrare l'abilità."
     reseen: "Questo esercizio l'hai già visto: non conta per dimostrare l'abilità."
     closed: "Questo esercizio è chiuso: scegline un altro."
+    loading: "Un momento."
+    saving: "Controllo la risposta."
+    empty: "Scrivi prima una risposta."
+    blocked: "Non riesco a salvare ora. Riprovo da solo, non perdi la risposta."
+    error: "Qualcosa non ha funzionato. Ricarica la pagina."
+    skill_now: "Ora questa abilità è: %{state}."
+    hints_title: "Aiuti"
+    hint_n: "Aiuto %{n}"
+    solution_title: "Soluzione"
+    final: "Risultato"
+    skill: "Abilità"
+    exercise: "Esercizio"
   question:
     button: "Non ho capito"
     label: "Che cosa non ti è chiaro? (facoltativo, una riga)"
     sent: "Fatto: il docente lo vedrà."
+    send: "Invia"
+    close: "Chiudi"
+    error: "Non sono riuscito a inviarlo. Riprova."
   draft:
     notice: "Bozza: il docente non l'ha ancora approvata."

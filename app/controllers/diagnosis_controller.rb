@@ -5,6 +5,8 @@ class DiagnosisController < ApplicationController
 
   def show
     @released = diagnosis_open?
+    # The link to Oggi only when this student has a visible topic: until the release the page is unchanged (A9.1).
+    @course_link = Course::Catalog.for(acting_student).any? { |sv| sv.topics.any? }
     if @released
       @rows = Diagnosis::Availability.for(acting_student)
     else

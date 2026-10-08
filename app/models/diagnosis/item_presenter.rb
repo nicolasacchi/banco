@@ -10,9 +10,6 @@ module Diagnosis
   # Agent text travels as plain strings; the browser renders it escaped, with the
   # restricted markup of app/javascript/items/markup.js.
   class ItemPresenter
-    ACCENT_SETS = { "spanish" => "es", "italian" => "it" }.freeze
-    SHA256 = /\A[0-9a-f]{64}\z/
-
     def initialize(served:, number:, subject:, not_studied: false, expression_input: "mathlive", formula_sheet_it: nil)
       @served = served
       @number = number
@@ -58,39 +55,10 @@ module Diagnosis
       { kind: "testlet", component: "testlet", passage_it: body["passage_it"], sub_items: subs }
     end
 
-    # One answerable part: its prompt, the parts of its shown display and the
-    # settings of its input. +body+ is the revision or one sub item.
-    def part(body, component, display)
-      prompt = body["prompt"] || {}
-      out = {
-        component: component,
-        passage_it: body["passage_it"],
-        stem_it: prompt["stem_it"],
-        instance_stem_it: display["stem_it"]
-      }
-      %w[table quote].each { |k| out[k.to_sym] = display[k] || prompt[k] }
-      out[:figure] = figure(display["figure"] || prompt["figure"])
-      %w[options elements left right].each { |k| out[k.to_sym] = display[k] if display[k] }
-      out[:reuse_right] = true if display["reuse_right"] == true
-      out[:unit] = display["unit"] || body["unit"] if display["unit"] || body["unit"]
-      out[:scientific] = true if component == "number" && Array(body["form"]).include?("scientific")
-      out[:mixed] = true if component == "fraction" && Array(body["form"]).include?("mixed")
-      out[:answer_format_it] = display["answer_format_it"] || body["answer_format_it"]
-      out[:steps_it] = display["steps_it"] || body["steps_it"]
-      out[:accents] = ACCENT_SETS[@subject.key] if component == "normalized_text"
-      out[:input] = @expression_input if component == "expression"
-      out.compact
-    end
+    def part(body, component, display) = parts.call(body, component, display)
 
-    # Only a figure that the validation stored by digest can be shown, and only as
-    # an image from /assets/items/<sha256>.svg.
-    def figure(figure)
-      return nil unless figure.is_a?(Hash)
+    def figure(figure) = parts.figure(figure)
 
-      sha = figure["sha256"].to_s
-      out = { alt_it: figure["alt_it"] }
-      out[:src] = "/assets/items/#{sha}.svg" if SHA256.match?(sha)
-      out
-    end
+    def parts = @parts ||= Items::Part.new(subject: @subject, expression_input: @expression_input)
   end
 end

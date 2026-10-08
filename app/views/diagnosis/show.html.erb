@@ -1,6 +1,7 @@
 <% content_for :title, t("diagnosis.title") %>
 <main class="page">
   <h1><%= t("diagnosis.title") %></h1>
+  <% if @course_link %><p><a id="course-link" class="button secondary" href="/today"><%= t("course.nav.today") %></a></p><% end %>
   <% if @released %>
     <p><%= t("diagnosis.order_line") %></p>
     <ul class="subjects">

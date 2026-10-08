@@ -1,0 +1,35 @@
+<% content_for :title, t("today.title") %>
+<main class="page course">
+  <%= render "course/nav", current: :today %>
+  <h1><%= t("today.title") %></h1>
+  <% if @closed %>
+    <p class="notice" id="course-closed"><%= t("today.closed") %></p>
+  <% else %>
+    <% if @resume %>
+      <p><a class="button" id="resume" href="/topics/<%= @resume[1].key %>"><%= t("today.resume", topic: @resume[1].title_it) %></a></p>
+    <% end %>
+    <h2><%= t("today.suggestions") %></h2>
+    <% if @suggestions.empty? %>
+      <p><%= t("today.nothing") %></p>
+    <% else %>
+      <ul class="topics" id="suggestions">
+        <% @suggestions.each do |row| %>
+          <% topic = row[:topic]; s = row[:suggestion] %>
+          <li class="topic" data-topic="<%= topic.key %>" data-reason="<%= s.reason %>">
+            <a class="topic-title" href="/topics/<%= topic.key %>"><%= topic.title_it %></a>
+            <span class="topic-meta"><%= row[:subject_view].subject.name_it %> · <%= t("topic.kind.#{topic.kind}") %> · <%= t("topic.minutes", n: topic.minutes) %></span>
+            <% if s.skill %>
+              <span class="topic-why"><%= t("today.reason.#{s.reason}", skill: course_view.label(s.skill)) %></span>
+            <% else %>
+              <span class="topic-why"><%= t("today.reason.#{s.reason}") %></span>
+            <% end %>
+            <% unless topic.approved %><span class="topic-why"><%= t("draft.notice") %></span><% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+    <% if @diagnosis_left %>
+      <p id="diagnosis-left"><%= t("today.diagnosis_left") %> <a href="/diagnosis"><%= t("today.diagnosis_link") %></a></p>
+    <% end %>
+  <% end %>
+</main>

@@ -8,15 +8,26 @@
 // network at all leaves the entry queued and reports "blocked". The server's
 // unique index on client_attempt_id makes every resend safe.
 
-const PREFIX = "banco.outbox."
+// The prefix tells whose entries these are: the diagnosis keeps banco.outbox., the practice pages
+// banco.poutbox. (option prefix), so an entry of one can never be resent to the endpoint of the other.
+// A page may also name the fields it posts (fields), the JSON statuses that end an entry (statuses) and
+// the HTTP statuses whose JSON body is an answer, not a failure (httpStatuses, e.g. 409 for a closed serve).
+export const DIAGNOSIS_PREFIX = "banco.outbox."
+export const PRACTICE_PREFIX = "banco.poutbox."
+const DEFAULT_FIELDS = ["served_event_id", "client_attempt_id", "raw", "source"]
 
 export class Outbox {
-  constructor({ url, csrf, storage = null, fetchImpl = (...args) => window.fetch(...args) }) {
+  constructor({ url, csrf, storage = null, fetchImpl = (...args) => window.fetch(...args), prefix = DIAGNOSIS_PREFIX,
+                fields = DEFAULT_FIELDS, statuses = ["recorded", "invalid"], httpStatuses = [200] }) {
     this.url = url
+    this.prefix = prefix
+    this.fields = fields
+    this.statuses = statuses
+    this.httpStatuses = httpStatuses
     this.csrf = csrf
     this.fetchImpl = fetchImpl
     this.memory = new Map()
-    this.storage = storage || safeStorage()
+    this.storage = storage || safeStorage(prefix)
     this.flushing = null
     this.restore()
   }
@@ -25,7 +36,7 @@ export class Outbox {
     if (!this.storage) return
     for (let i = 0; i < this.storage.length; i++) {
       const key = this.storage.key(i)
-      if (!key || !key.startsWith(PREFIX)) continue
+      if (!key || !key.startsWith(this.prefix)) continue
       try {
         const entry = JSON.parse(this.storage.getItem(key))
         if (entry && entry.client_attempt_id) this.memory.set(entry.client_attempt_id, entry)
@@ -39,7 +50,7 @@ export class Outbox {
     const stored = { ...entry, queued_at: Date.now() }
     this.memory.set(stored.client_attempt_id, stored)
     try {
-      this.storage?.setItem(PREFIX + stored.client_attempt_id, JSON.stringify(stored))
+      this.storage?.setItem(this.prefix + stored.client_attempt_id, JSON.stringify(stored))
     } catch (_error) {
       // storage full or refused: the memory copy still serves this page
     }
@@ -49,7 +60,7 @@ export class Outbox {
   remove(id) {
     this.memory.delete(id)
     try {
-      this.storage?.removeItem(PREFIX + id)
+      this.storage?.removeItem(this.prefix + id)
     } catch (_error) {
       // nothing to do
     }
@@ -89,18 +100,13 @@ export class Outbox {
         redirect: "manual",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json", Accept: "application/json", "X-CSRF-Token": this.csrf() },
-        body: JSON.stringify({
-          served_event_id: entry.served_event_id,
-          client_attempt_id: entry.client_attempt_id,
-          raw: entry.raw,
-          source: entry.source
-        })
+        body: JSON.stringify(Object.fromEntries(this.fields.map((field) => [field, entry[field]])))
       })
     } catch (_error) {
       return { blocked: true, reason: "network" }
     }
     if (response.type === "opaqueredirect" || response.redirected) return { blocked: true, reason: "redirect" }
-    if (response.status !== 200) return { blocked: true, reason: `status ${response.status}` }
+    if (!this.httpStatuses.includes(response.status)) return { blocked: true, reason: `status ${response.status}` }
     if (!(response.headers.get("content-type") || "").includes("json")) return { blocked: true, reason: "not json" }
     let body
     try {
@@ -108,15 +114,15 @@ export class Outbox {
     } catch (_error) {
       return { blocked: true, reason: "not json" }
     }
-    if (body?.status !== "recorded" && body?.status !== "invalid") return { blocked: true, reason: "unexpected reply" }
+    if (!this.statuses.includes(body?.status)) return { blocked: true, reason: "unexpected reply" }
     return { blocked: false, body }
   }
 }
 
-function safeStorage() {
+function safeStorage(prefix = DIAGNOSIS_PREFIX) {
   try {
     const storage = window.localStorage
-    storage.getItem(PREFIX) // throws when storage is denied
+    storage.getItem(prefix) // throws when storage is denied
     return storage
   } catch (_error) {
     return null

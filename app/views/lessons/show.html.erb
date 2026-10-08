@@ -1,0 +1,45 @@
+<% content_for :title, @body["title_it"] %>
+<% sections = @body["sections"] %>
+<main class="page course lesson" data-controller="lesson"
+      data-lesson-solution-base-value="/topics/<%= @topic.key %>/lesson/exercises"
+      data-lesson-labels-value="<%= lesson_labels.to_json %>">
+  <%= render "course/nav" %>
+  <p><a href="/topics/<%= @topic.key %>"><%= t("lesson.back") %></a></p>
+  <h1><%= @body["title_it"] %></h1>
+  <p class="topic-meta"><%= t("topic.minutes", n: @body["minutes"]) %></p>
+  <% if draft? %><p class="notice" id="draft-notice" role="status"><%= t("draft.notice") %></p><% end %>
+
+  <% LessonsController::SECTIONS.each do |key| %>
+    <section id="section-<%= key.delete_suffix("_it") %>" aria-labelledby="h-<%= key %>">
+      <h2 id="h-<%= key %>"><%= t("lesson.sections.#{key}") %></h2>
+      <div class="markup" data-lesson-markup><%= sections[key] %></div>
+      <%= render "course/question", topic: @topic.key, lesson_revision_id: @revision.id, section: key.delete_suffix("_it") %>
+    </section>
+  <% end %>
+
+  <section id="section-try" aria-labelledby="h-try">
+    <h2 id="h-try"><%= t("lesson.sections.try") %></h2>
+    <% if @body["try_intro_it"] %><div class="markup" data-lesson-markup><%= @body["try_intro_it"] %></div><% end %>
+    <p class="hint"><%= t("lesson.try") %></p>
+    <ol class="exercises">
+      <% @body["exercises"].each do |ex| %>
+        <li class="exercise" data-exercise="<%= ex["n"] %>" id="exercise-<%= ex["n"] %>">
+          <div class="markup" data-lesson-markup><%= ex["text_it"] %></div>
+          <button type="button" class="button secondary small" data-action="lesson#solution" data-lesson-n-param="<%= ex["n"] %>" aria-expanded="false"
+                  aria-controls="solution-<%= ex["n"] %>"><%= t("lesson.show_solution") %></button>
+          <div class="exercise-solution" id="solution-<%= ex["n"] %>" aria-live="polite" data-lesson-target="solution" data-n="<%= ex["n"] %>"></div>
+          <%= render "course/question", topic: @topic.key, lesson_revision_id: @revision.id, section: "try", exercise: ex["n"] %>
+        </li>
+      <% end %>
+    </ol>
+  </section>
+
+  <% LessonsController::AFTER_TRY.each do |key| %>
+    <section id="section-<%= key.delete_suffix("_it") %>" aria-labelledby="h-<%= key %>">
+      <h2 id="h-<%= key %>"><%= t("lesson.sections.#{key}") %></h2>
+      <div class="markup" data-lesson-markup><%= sections[key] %></div>
+      <%= render "course/question", topic: @topic.key, lesson_revision_id: @revision.id, section: key.delete_suffix("_it") %>
+    </section>
+  <% end %>
+  <p><a class="button" href="/topics/<%= @topic.key %>"><%= t("lesson.back") %></a></p>
+</main>

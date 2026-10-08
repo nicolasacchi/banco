@@ -251,3 +251,32 @@ q.example { display: block; margin-bottom: 0.25rem; }
 .ref-facts dd { margin: 0; overflow-wrap: anywhere; }
 .ref-links { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; }
 .ref-page .ref-facts { max-width: 48rem; }
+
+/* The course pages: Oggi, subjects, topic, lesson, practice (Phase 1b) --------------------------------- */
+.course-nav { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; padding: 0 0 0.75rem; margin-bottom: 1rem; border-bottom: 2px solid var(--line); }
+.course-nav a { font-weight: 400; padding: 0.25rem 0; }
+.course-nav a[aria-current="page"] { font-weight: 700; }
+ul.topics, ol.topics, ul.skills { list-style: none; padding: 0; margin: 0 0 1rem; }
+li.topic, li.skill { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.75rem 0; border-bottom: 1px solid var(--line); }
+li.skill .button { align-self: flex-start; margin-top: 0.5rem; }
+.topic-title, .skill-name { font-weight: 700; }
+.topic-meta, .topic-why { color: var(--muted); font-size: 0.9rem; }
+.markup p, .markup ul, .markup ol { margin-bottom: 0.75rem; }
+.markup ul ul { margin-bottom: 0; }
+.markup { overflow-wrap: anywhere; }
+.markup .katex-display, .markup .math { max-width: 100%; overflow-x: auto; }
+ol.exercises { padding-left: 1.5rem; }
+li.exercise { margin-bottom: 1.5rem; }
+.exercise-solution { background: var(--surface); padding: 0.25rem 0.75rem; margin: 0.5rem 0; }
+.exercise-solution:empty { display: none; }
+.question { margin: 0.75rem 0; }
+.feedback { min-height: 1.6em; margin: 1rem 0; font-weight: 700; }
+.feedback:focus { outline: none; }
+.practice #hints ol { padding-left: 1.5rem; }
+.practice .actions .button { margin: 0 0.5rem 0.5rem 0; }
+.practice .solution { background: var(--surface); border: 2px solid var(--line); padding: 0.25rem 1rem; }
+@media (max-width: 30rem) {
+  .course.page { padding: 1rem 0.75rem 3rem; }
+  .course .button { width: 100%; text-align: center; box-sizing: border-box; margin-bottom: 0.5rem; }
+  .course .button.small { width: auto; }
+}

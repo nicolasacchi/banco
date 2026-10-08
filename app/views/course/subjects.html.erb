@@ -1,0 +1,18 @@
+<% content_for :title, t("subjects.title") %>
+<main class="page course">
+  <%= render "course/nav", current: :subjects %>
+  <h1><%= t("subjects.title") %></h1>
+  <% if @closed %>
+    <p class="notice" id="course-closed"><%= t("today.closed") %></p>
+  <% else %>
+    <ul class="subjects">
+      <% @subjects.each do |sv| %>
+        <% c = course_view.counts(sv) %>
+        <li class="subject" data-subject="<%= sv.subject.key %>">
+          <a class="subject-name" href="/subjects/<%= sv.subject.key %>"><%= sv.subject.name_it %></a>
+          <span class="subject-state"><%= t("subjects.counts", **c) %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</main>
