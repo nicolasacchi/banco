@@ -15,7 +15,7 @@ module Validation
 
     def of(item)
       case item["kind"]
-      when "diagnosis_item"
+      when "diagnosis_item", "practice_item"
         [ unit("", item, item) ]
       when "testlet"
         Array(item["sub_items"]).each_with_index.map { |sub, i| unit("/sub_items/#{i}", sub, sub) }

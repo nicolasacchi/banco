@@ -20,7 +20,6 @@ class CodeFixturesTest < ActiveSupport::TestCase
     E-LESSON-BOOK E-LESSON-PAGE E-LESSON-SUMMARY E-LESSON-REFS W-LESSON-WHY W-LESSON-MISTAKES W-LESSON-FINAL-MISSING
     W-LESSON-FINAL-IN-TRY E-COURSE-SKILL-DUPLICATE E-COURSE-TOPIC W-COURSE-ORDER W-COURSE-GRAPH-STALE E-TOPIC-UNKNOWN
     E-TOPIC-PIN E-TOPIC-SKILLS E-TOPIC-ITEM-KIND E-TOPIC-POOL W-TOPIC-INSTANCE-IN-LESSON W-PRACTICE-DIAGNOSIS-OVERLAP
-    E-HINTS E-HINT-KEY W-HINT-OPTION E-PRACTICE-POOL W-PRACTICE-CODE-SPARSE E-BLUEPRINT-PRACTICE-ITEM
   ].freeze
   LATER = (%w[E-VERIFY-AUTHOR E-SESSION-NOT-INDEPENDENT] + PHASE_1B).freeze
 
@@ -289,6 +288,23 @@ class CodeFixturesTest < ActiveSupport::TestCase
                         "tests" => { "must_accept" => [], "must_reject" => [], "blank" => "invalid" }))
     },
     "W-STEPS-METHOD" => -> { static_codes(item("steps_it" => [ "Leggi la consegna.", "Scomponi i termini." ])) },
+    "E-HINTS" => -> { static_codes(F.practice_item.tap { |i| i.delete("hints_it") }) },
+    "E-HINT-KEY" => lambda {
+      # the key of the first instance is 11 and its display shows 2 and 13
+      static_codes(F.practice_item({ "hints_it" => [ "Guarda il termine noto.", "Il risultato e 11." ] }))
+    },
+    "W-HINT-OPTION" => -> { static_codes(F.choice_item.merge("kind" => "practice_item", "level" => 1, "hints_it" => [ "Pensa alla regola.", "La risposta giusta e sette." ])) },
+    "E-PRACTICE-POOL" => -> { static_codes(F.practice_item({}, count: 9)) },
+    "W-PRACTICE-CODE-SPARSE" => lambda {
+      item = F.practice_item
+      item["error_catalogue"] << { "code" => "rare", "description_it" => "Raro.", "message_it" => "Controlla.", "implicates" => [] }
+      item["instances"][0]["errors"] << { "code" => "rare", "value" => "99" }
+      static_codes(item)
+    },
+    "E-BLUEPRINT-PRACTICE-ITEM" => lambda {
+      practice = ->(id) { Validation::BlueprintChecks::ItemInfo.new(id: id, skills: [ BP_ITEMS.fetch(id) ], passed: true, kind: "practice_item", instances: (1..4).map { |i| { fingerprint: "#{id}-#{i}", low_guess: true } }) }
+      blueprint_codes(items: ->(id) { BP_ITEMS.key?(id) ? (id == "r1a" ? practice.call(id) : bp_info(id)) : nil })
+    },
     "W-CALCULATOR" => lambda {
       business = item("subject" => "business", "skill" => "business.invoice")
       static_codes(business, context: F.context(subject: "business", extra_skills: { "business.invoice" => { "key" => "business.invoice" } }))

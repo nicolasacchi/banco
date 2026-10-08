@@ -27,7 +27,7 @@ module Api
 
         revision = item.latest_revision
         body = { item: item.key, subject: item.subject.key, kind: item.kind, role: role, revision_id: revision.id, seq: revision.seq,
-                 base: revision.id, status: revision.status, brief: brief_row }
+                 base: revision.id, status: revision.status, brief: brief_row(item.practice? ? "practice-item" : "diagnosis-item") }
         body.merge!(role == "verifier" ? verifier_view(revision) : { files: revision.files })
         body[:review_findings] = review_findings(revision) unless role == "verifier"
         render json: body.merge(validation: validation_row(revision), teacher_comments: Teacher::SendBacks.for_item(item))
@@ -41,7 +41,7 @@ module Api
         submission = Validation::Submission.new(key: body["item"], base: body["base"], files: body["files"], session: session).prepare!
         return dry_run(submission) if dry_run?
 
-        revision, replayed = submission.store!(brief_sha256: Brief.find("diagnosis-item")&.sha256)
+        revision, replayed = submission.store!(brief_sha256: Brief.find(submission.brief_name)&.sha256)
         ValidateItemRevisionJob.perform_later(revision.id) if !replayed || Validation::ItemInfo.outdated_rules_version(revision)
         render json: { item: revision.item.key, revision_id: revision.id, seq: revision.seq, status: revision.status, replayed: replayed,
                        next: "banco work status #{revision.id} --wait" }, status: replayed ? :ok : :accepted
@@ -137,8 +137,8 @@ module Api
         v && (%w[passed failed].include?(v.status) || v.attempt.to_i >= ValidateItemRevisionJob::ATTEMPTS)
       end
 
-      def brief_row
-        brief = Brief.find("diagnosis-item") or return nil
+      def brief_row(name = "diagnosis-item")
+        brief = Brief.find(name) or return nil
         { name: brief.name, version: brief.version, sha256: brief.sha256 }
       end
     end

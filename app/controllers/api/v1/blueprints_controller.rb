@@ -72,7 +72,7 @@ module Api
       end
 
       def pinnable_items
-        Item.where(subject: @subject).order(:key).filter_map do |item|
+        Item.diagnosis.where(subject: @subject).order(:key).filter_map do |item|
           rev = item.latest_revision
           next unless rev
 

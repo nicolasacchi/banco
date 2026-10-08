@@ -10,6 +10,13 @@ module Review
       findings = Validation::Findings.new
       return findings unless Validation::SchemaCheck.call("review", doc, findings)
 
+      expected = Checklist.expected_count(practice: text.practice?)
+      if doc["checklist"].size != expected
+        findings.add("E-REVIEW-CHECKLIST", "/checklist", "a review of #{text.practice? ? 'a practice item' : 'this item'} has exactly #{expected} checklist points, not #{doc['checklist'].size}",
+                     expected: expected, got: doc["checklist"].size)
+        return findings
+      end
+
       weak, repeated = Checklist.empty_evidence(doc["checklist"])
       if weak.any?
         why = doc["checklist"].select { |c| weak.include?(c["id"]) }.map do |c|

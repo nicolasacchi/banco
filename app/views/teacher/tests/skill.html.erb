@@ -73,7 +73,7 @@
         <% if card.review %>
           <% failed = card.review.select { |c| c["result"] == "fail" } %>
           <p data-review="<%= failed.empty? ? 'clean' : 'fail' %>"><%= t("teacher.skill.review_summary", pass: card.review.count { |c| c["result"] != "fail" }, fail: failed.size) %></p>
-          <% failed.each do |c| %><p class="notice"><strong><%= Review::Checklist::POINTS[c["id"] - 1] %></strong>: <%= c["evidence"] %></p><% end %>
+          <% failed.each do |c| %><p class="notice"><strong><%= Review::Checklist::ALL_POINTS[c["id"] - 1] %></strong>: <%= c["evidence"] %></p><% end %>
         <% else %>
           <p><%= t("teacher.skill.no_review") %></p>
         <% end %>

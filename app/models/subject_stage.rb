@@ -61,7 +61,7 @@ class SubjectStage
 
     # Items whose latest revision the teacher sent back and nobody has replaced yet.
     def sent_back(subject)
-      latest = Item.where(subject: subject).includes(:revisions).filter_map { |i| i.revisions.max_by(&:seq) }
+      latest = Item.diagnosis.where(subject: subject).includes(:revisions).filter_map { |i| i.revisions.max_by(&:seq) }
       back = Teacher::SendBacks.by_revision(latest.map(&:id))
       latest.count { |r| back.key?(r.id) }
     end
@@ -70,7 +70,7 @@ class SubjectStage
     # one (D-147): the rules may have tightened since, so a dry run is worth it.
     def older_rules(subject)
       current = Validation::Rules.version.to_s
-      Item.where(subject: subject).includes(revisions: :validations).count do |item|
+      Item.diagnosis.where(subject: subject).includes(revisions: :validations).count do |item|
         v = item.revisions.max_by(&:seq)&.validations&.max_by(&:seq)
         v && v.status == "passed" && v.rules_version.to_s != current
       end
@@ -78,7 +78,7 @@ class SubjectStage
 
     # {item key => passed|failed|awaiting_verifier|validating|error} for the latest revision of each item.
     def item_states(subject)
-      Item.where(subject: subject).includes(:revisions).to_h do |item|
+      Item.diagnosis.where(subject: subject).includes(:revisions).to_h do |item|
         revision = item.revisions.max_by(&:seq)
         [ item.key, revision ? state_of(revision) : "validating" ]
       end

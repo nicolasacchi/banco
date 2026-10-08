@@ -73,6 +73,10 @@ module Validation
           findings.add("E-ITEM-NOT-PASSED", "#{field}/#{i}", "item revision #{id} does not exist", rule: "unknown", revision: id)
           next
         end
+        if info.kind == "practice_item"
+          findings.add("E-BLUEPRINT-PRACTICE-ITEM", "#{field}/#{i}", "item revision #{id} is a practice item: a blueprint pins diagnosis items only", revision: id)
+          next
+        end
         findings.add("E-ITEM-NOT-PASSED", "#{field}/#{i}", "item revision #{id} has no passed validation", rule: "not_passed", revision: id) unless info.passed
         unless info.skills.include?(skill)
           findings.add("E-SKILL-UNKNOWN", "#{field}/#{i}", "item revision #{id} measures #{info.skills.join(', ')}, not #{skill}", rule: "item_skill", revision: id)

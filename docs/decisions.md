@@ -234,6 +234,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-230 | 2026-10-08 | one lesson review per revision; lesson blind solve and lesson findings deferred | decided |
 | D-231 | 2026-10-08 | "Non ho capito" recorded (one optional line, teacher-only text); no answer flow yet | decided |
 | D-232 | 2026-10-08 | navigation: nav on course pages, conditional "Oggi" link on /diagnosis, outbox prefixes; no root change | decided |
+| D-233 | 2026-10-09 | S1 build: where hints live, kinds of `items list --kind`, an item keeps its kind, 13-point review check, hint scan details | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2455,3 +2456,12 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Why:** Keep the diagnosis flow as it is and add the course beside it.
 - **Cost:** No redirect from `/`; the student starts from a bookmark.
 - **Status:** decided (formats, codes, contract and briefs land in track S0; the code in S1 to S4)
+
+## D-233 · 2026-10-09 · S1 build: where hints live, `items list --kind`, an item keeps its kind, the review count, hint scan details
+
+- **Design ref:** D-227, D-228
+- **Design said:** Practice items carry effective hints (an instance's own `hints_it`, else the item's); the ten new tables are the only new shape (A7); `solve open` strips hints.
+- **We do:** (1) The effective hints of an instance are stored in one new nullable column `item_instances.hints_json`, apart from `display_json`: no display ever holds a hint, so the student's page and the blind solver (who read the display only) cannot receive one by mistake, and the Selector reads them without parsing the item. The reviewer sees them (`hints_it` on each instance of `review open`) for checklist point 12. The column follows the precedent of `accept_json` (D-081); the table keeps its triggers. (2) `GET /api/v1/items?kind=practice|diagnosis` (the CLI's values); any other value is 404 `E-NOT-FOUND`. Every row already carries `kind`. `GET /findings` rows carry `item_kind`. (3) An item keeps its kind: a later revision that crosses between `practice_item` and a diagnosis kind is refused with `E-FILES`; the brief of a revision is `practice-item` for a practice item and `diagnosis-item` for any other. (4) `E-REVIEW-CHECKLIST` is checked before any other review check: 13 points for a practice item, 11 for any other, the count taken from the item's kind. `review open` lists the 13 or the 11 points. (5) `E-HINT-KEY` looks for the instance's key texts (the same texts the leak scan uses, numbers matched as whole tokens, no length floor for number and fraction) in each hint and skips a text that the instance's display or prompt already shows. An item-level hint is read against every instance, so an item-level hint that names a number is flagged on the instance whose key it is: numbers belong in instance hints. (6) `E-PRACTICE-POOL` applies to static items only; `W-PRACTICE-CODE-SPARSE` to static and generated ones (counted on the stored pool). (7) `Item.diagnosis` filters the stage, item counts, `Item.reserve`, the graph coverage, the teacher's home and the blueprint candidates; `Item.practice` has no reader yet (S2).
+- **Why:** Keep the diagnosis byte-identical while the practice items use the whole item pipeline; keep hints out of every path that shows a display.
+- **Cost:** One added column on `item_instances` (rows made before it have none). Item-level hints with numbers need care on a pool of many instances.
+- **Status:** decided (built in track S1)

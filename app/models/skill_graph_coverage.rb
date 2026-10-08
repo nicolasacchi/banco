@@ -106,7 +106,7 @@ class SkillGraphCoverage
 
   # Skills with and without an item whose latest revision passed validation.
   def skills_with_items(body)
-    measured = Item.where(subject: @subject).filter_map do |item|
+    measured = Item.diagnosis.where(subject: @subject).filter_map do |item|
       rev = item.latest_revision
       next unless rev&.status == "passed"
 
@@ -124,7 +124,7 @@ class SkillGraphCoverage
   # existed at that time, so this list is the check after the fact.
   def item_errors_not_in_graph(body)
     known = body["skills"].to_h { |s| [ s["key"], Array(s["errors"]).map { |e| e["code"] }.to_set ] }
-    Item.where(subject: @subject).order(:key).flat_map do |item|
+    Item.diagnosis.where(subject: @subject).order(:key).flat_map do |item|
       rev = item.latest_revision
       next [] unless rev&.status == "passed"
 
@@ -145,7 +145,7 @@ class SkillGraphCoverage
   # several skills: the engine charges the first only, and a text-only resubmission
   # would fail E-TESTLET-SKILLS (D-151).
   def testlets_multi_skill
-    Item.where(subject: @subject).order(:key).filter_map do |item|
+    Item.diagnosis.where(subject: @subject).order(:key).filter_map do |item|
       rev = item.latest_revision
       next unless rev&.status == "passed"
 

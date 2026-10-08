@@ -54,6 +54,32 @@ module LedgerRows
     rows["grade_proposals"] = GradeProposal.create!(attempt: attempt, agent_session: session, points_json: "[]", total: 1, max_total: 2,
                                                     threshold: 0.6, meets_threshold: false)
     rows["app_events"] = AppEvent.create!(kind: "warmup_completed", student: rows["students"])
+    build_course_ledger_rows(rows, now, session, graph, instance)
     rows
+  end
+
+  # Phase 1b: the five course tables and the five practice tables (one row each).
+  def build_course_ledger_rows(rows, now, session, graph, instance)
+    lesson = Lesson.create!(subject: rows["subjects"], key: "ripasso.math.demo", kind: "ripasso")
+    rows["lessons"] = lesson
+    lesson_revision = LessonRevision.create!(lesson: lesson, seq: 1, source_md: "x", source_sha256: "a" * 64, body_json: JSON_BODY,
+                                             rules_version: "7", warnings_json: "[]", author_session: session)
+    rows["lesson_revisions"] = lesson_revision
+    rows["lesson_reviews"] = LessonReview.create!(lesson_revision: lesson_revision, agent_session: session, checklist_json: "[]",
+                                                  recomputed_json: "[]", findings_json: "[]")
+    course = CourseRevision.create!(subject: rows["subjects"], seq: 1, skill_graph_revision: graph, body_json: JSON_BODY, warnings_json: "[]")
+    rows["course_revisions"] = course
+    topic = TopicRevision.create!(lesson: lesson, seq: 1, course_revision: course, lesson_revision: lesson_revision, body_json: JSON_BODY)
+    rows["topic_revisions"] = topic
+    serve = PracticeServe.create!(student: rows["students"], topic_revision: topic, skill_key: "math.sk", item_instance: instance, reason: "next",
+                                  seed: 1, rules_version: "practice/1")
+    rows["practice_serves"] = serve
+    attempt = PracticeAttempt.create!(student: rows["students"], practice_serve: serve, try_number: 1, client_attempt_id: "p-1", raw: "42",
+                                      source: "text", hints_before: 0, aided: false, answered_at: now)
+    rows["practice_attempts"] = attempt
+    rows["practice_gradings"] = PracticeGrading.create!(practice_attempt: attempt, seq: 1, verdict: "correct", method: "exact",
+                                                        grader: "closed", grader_version: "abc", source: "sync")
+    rows["practice_events"] = PracticeEvent.create!(student: rows["students"], kind: "hint_shown", practice_serve: serve, payload_json: '{"n":1,"auto":false}', at: now)
+    rows["student_questions"] = StudentQuestion.create!(student: rows["students"], client_question_id: "q-1", text_it: "Non ho capito.")
   end
 end

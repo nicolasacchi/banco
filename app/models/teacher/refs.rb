@@ -13,7 +13,7 @@ module Teacher
     SkillCard = Data.define(:kind, :key, :name, :subject, :label_it, :layer, :scope, :note_it, :test_kind, :test_kind_reason_it, :lines, :inferred,
                             :needed_by, :prerequisites, :pinned, :in_test, :has_block, :has_report)
     ItemCard = Data.define(:kind, :key, :name, :subject, :revision, :skill, :skill_name, :component, :seq, :pinned, :instances, :status, :findings,
-                           :open_findings, :blind, :review_fails, :corrections, :skill_in_test)
+                           :open_findings, :blind, :review_fails, :corrections, :skill_in_test, :item_kind)
 
     # The record or the key as a card, nil when nothing has that key.
     def resolve(target)
@@ -118,7 +118,7 @@ module Teacher
       revision = ItemRevision.where(item: record).order(:seq).last or return nil
       body = JSON.parse(revision.body_json)
       skill_key = body["skill"].to_s
-      component = body["kind"] == "diagnosis_item" ? body["component"] : body["kind"]
+      component = %w[diagnosis_item practice_item].include?(body["kind"]) ? body["component"] : body["kind"]
       subject = record.subject
       title = body["title_it"].presence
       skill_name = skill_label(skill_key)
@@ -131,7 +131,7 @@ module Teacher
       ItemCard.new(:item, record.key, name, subject, revision, skill_key, skill_name, component, revision.seq, pinned_ids.include?(revision.id),
                    revision.instances.count, revision.status, findings.size, open, blind && blind_outcome(blind),
                    review && JSON.parse(review.checklist_json).count { |c| c["result"] == "fail" }, corrections_count(record.key),
-                   !skill_key.empty? && !test_entry(subject, skill_key).nil?)
+                   !skill_key.empty? && !test_entry(subject, skill_key).nil?, record.kind)
     end
 
     def dispositions = @dispositions ||= ReviewFinding.dispositions

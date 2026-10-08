@@ -46,7 +46,7 @@ module Teacher
     def undisposed(subject, blueprint)
       return TestReview.new(subject).open_finding_list.size if blueprint
 
-      latest = Item.where(subject: subject).where.not(id: Item.reserve(subject).select(:id)).includes(:revisions).filter_map { |i| i.revisions.max_by(&:seq)&.id }
+      latest = Item.diagnosis.where(subject: subject).where.not(id: Item.reserve(subject).select(:id)).includes(:revisions).filter_map { |i| i.revisions.max_by(&:seq)&.id }
       dispositions = ReviewFinding.dispositions
       ReviewFinding.must_be_disposed.where(item_revision_id: latest).count { |f| !dispositions.key?(f.id) }
     end

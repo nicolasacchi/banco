@@ -25,7 +25,7 @@ module Api
         pinned = BlueprintRevision.where(subject: subject).order(:seq).last&.pinned_item_revision_ids.to_a
         rows = findings.map do |f|
           rev = f.item_revision
-          { finding_id: f.id, item: rev.item.key, revision_id: rev.id, seq: rev.seq, current: rev.seq == latest[rev.item_id],
+          { finding_id: f.id, item: rev.item.key, item_kind: rev.item.kind, revision_id: rev.id, seq: rev.seq, current: rev.seq == latest[rev.item_id],
             severity: f.severity, source: f.source, instance: f.instance, problem_it: f.problem_it, fix_it: f.fix_it,
             disposition: dispositions[f.id], response: responses[f.id]&.to_h }.compact
         end

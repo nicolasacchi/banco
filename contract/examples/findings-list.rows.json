@@ -12,6 +12,7 @@
         {
           "finding_id": 1,
           "item": "fa-1",
+          "item_kind": "diagnosis_item",
           "revision_id": 1,
           "seq": 1,
           "current": true,
@@ -23,6 +24,7 @@
         {
           "finding_id": 2,
           "item": "fa-1",
+          "item_kind": "diagnosis_item",
           "revision_id": 1,
           "seq": 1,
           "current": true,

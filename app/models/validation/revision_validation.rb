@@ -53,7 +53,8 @@ module Validation
       ItemInstance.insert_all!(instances.map do |i|
         { item_revision_id: @revision.id, seed: i[:seed], display_json: JSON.generate(i[:display]), answer_json: JSON.generate(i[:answer]),
           errors_json: i[:errors].nil? ? nil : JSON.generate(i[:errors]), solution_json: i[:solution].nil? ? nil : JSON.generate(i[:solution]),
-          accept_json: i[:accept].present? ? JSON.generate(i[:accept]) : nil, fingerprint: i[:fingerprint], created_at: now }
+          accept_json: i[:accept].present? ? JSON.generate(i[:accept]) : nil,
+          hints_json: i[:hints].present? ? JSON.generate(i[:hints]) : nil, fingerprint: i[:fingerprint], created_at: now }
       end)
     end
 

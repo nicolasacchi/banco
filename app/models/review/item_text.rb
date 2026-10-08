@@ -17,6 +17,8 @@ module Review
 
     def body = @body ||= JSON.parse(revision.body_json)
 
+    def practice? = body["kind"] == "practice_item"
+
     def generated? = body["generator"].present?
 
     # Instance rows in the order the reviewer sees them; position + 1 is the number
@@ -36,7 +38,8 @@ module Review
         { instance: i + 1, display: with_passage(JSON.parse(row.display_json)), answer: JSON.parse(row.answer_json),
           errors: row.errors_json.present? ? JSON.parse(row.errors_json) : nil,
           solution: row.solution_json.present? ? JSON.parse(row.solution_json) : nil,
-          accept: row.accept_json.present? ? JSON.parse(row.accept_json) : nil }.compact
+          accept: row.accept_json.present? ? JSON.parse(row.accept_json) : nil,
+          hints_it: row.hints_json.present? ? JSON.parse(row.hints_json) : nil }.compact
       end
     end
 
@@ -104,7 +107,7 @@ module Review
       # another instance written in item.json.
       pool = instance ? leaves(body.except("instances")) : [ revision.body_json ] + leaves(body)
       rows.each do |row|
-        %w[display_json answer_json errors_json solution_json accept_json].each do |col|
+        %w[display_json answer_json errors_json solution_json accept_json hints_json].each do |col|
           next if row[col].blank?
 
           pool.concat(leaves(JSON.parse(row[col])))

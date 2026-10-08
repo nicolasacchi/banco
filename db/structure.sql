@@ -36,7 +36,7 @@ FOREIGN KEY ("item_revision_id")
 );
 CREATE INDEX "index_item_validations_on_item_revision_id" ON "item_validations" ("item_revision_id") /*application='Banco'*/;
 CREATE UNIQUE INDEX "index_item_validations_on_item_revision_id_and_seq" ON "item_validations" ("item_revision_id", "seq") /*application='Banco'*/;
-CREATE TABLE "item_instances" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "item_revision_id" integer NOT NULL, "seed" integer, "display_json" text NOT NULL, "answer_json" text NOT NULL, "errors_json" text, "solution_json" text, "fingerprint" varchar(64) NOT NULL, "created_at" datetime(6) NOT NULL, "accept_json" text, CONSTRAINT "fk_rails_07564fabf6"
+CREATE TABLE "item_instances" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "item_revision_id" integer NOT NULL, "seed" integer, "display_json" text NOT NULL, "answer_json" text NOT NULL, "errors_json" text, "solution_json" text, "fingerprint" varchar(64) NOT NULL, "created_at" datetime(6) NOT NULL, "accept_json" text, "hints_json" text, CONSTRAINT "fk_rails_07564fabf6"
 FOREIGN KEY ("item_revision_id")
   REFERENCES "item_revisions" ("id")
 );
@@ -283,7 +283,183 @@ CREATE TRIGGER finding_responses_no_update BEFORE UPDATE ON finding_responses
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER finding_responses_no_delete BEFORE DELETE ON finding_responses
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "lessons" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "subject_id" integer NOT NULL, "key" varchar NOT NULL, "kind" varchar NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_ffc4753ede"
+FOREIGN KEY ("subject_id")
+  REFERENCES "subjects" ("id")
+, CONSTRAINT lessons_kind CHECK (kind IN ('ripasso','ponte','lezione')));
+CREATE INDEX "index_lessons_on_subject_id" ON "lessons" ("subject_id") /*application='Banco'*/;
+CREATE UNIQUE INDEX "index_lessons_on_key" ON "lessons" ("key") /*application='Banco'*/;
+CREATE TABLE "lesson_revisions" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "lesson_id" integer NOT NULL, "seq" integer NOT NULL, "base_revision_id" integer, "source_md" text NOT NULL, "source_sha256" varchar NOT NULL, "body_json" text NOT NULL, "rules_version" varchar NOT NULL, "warnings_json" text NOT NULL, "author_session_id" integer, "brief_sha256" varchar, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_9a9f6c634e"
+FOREIGN KEY ("lesson_id")
+  REFERENCES "lessons" ("id")
+, CONSTRAINT "fk_rails_b599e27bb7"
+FOREIGN KEY ("base_revision_id")
+  REFERENCES "lesson_revisions" ("id")
+, CONSTRAINT "fk_rails_b862f0f468"
+FOREIGN KEY ("author_session_id")
+  REFERENCES "agent_sessions" ("id")
+, CONSTRAINT lesson_revisions_sha256_length CHECK (length(source_sha256) = 64));
+CREATE INDEX "index_lesson_revisions_on_lesson_id" ON "lesson_revisions" ("lesson_id") /*application='Banco'*/;
+CREATE INDEX "index_lesson_revisions_on_base_revision_id" ON "lesson_revisions" ("base_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_lesson_revisions_on_author_session_id" ON "lesson_revisions" ("author_session_id") /*application='Banco'*/;
+CREATE UNIQUE INDEX "index_lesson_revisions_on_lesson_id_and_seq" ON "lesson_revisions" ("lesson_id", "seq") /*application='Banco'*/;
+CREATE TABLE "lesson_reviews" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "lesson_revision_id" integer NOT NULL, "agent_session_id" integer NOT NULL, "checklist_json" text NOT NULL, "recomputed_json" text NOT NULL, "findings_json" text NOT NULL, "brief_sha256" varchar, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_1575fe637b"
+FOREIGN KEY ("lesson_revision_id")
+  REFERENCES "lesson_revisions" ("id")
+, CONSTRAINT "fk_rails_d43de99a9c"
+FOREIGN KEY ("agent_session_id")
+  REFERENCES "agent_sessions" ("id")
+);
+CREATE INDEX "index_lesson_reviews_on_lesson_revision_id" ON "lesson_reviews" ("lesson_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_lesson_reviews_on_agent_session_id" ON "lesson_reviews" ("agent_session_id") /*application='Banco'*/;
+CREATE UNIQUE INDEX "idx_on_lesson_revision_id_agent_session_id_68261c0155" ON "lesson_reviews" ("lesson_revision_id", "agent_session_id") /*application='Banco'*/;
+CREATE TABLE "course_revisions" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "subject_id" integer NOT NULL, "seq" integer NOT NULL, "skill_graph_revision_id" integer NOT NULL, "body_json" text NOT NULL, "warnings_json" text NOT NULL, "author_session_id" integer, "brief_sha256" varchar, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_008dfdd7b2"
+FOREIGN KEY ("subject_id")
+  REFERENCES "subjects" ("id")
+, CONSTRAINT "fk_rails_1ba6b5f8f1"
+FOREIGN KEY ("skill_graph_revision_id")
+  REFERENCES "skill_graph_revisions" ("id")
+, CONSTRAINT "fk_rails_760e846456"
+FOREIGN KEY ("author_session_id")
+  REFERENCES "agent_sessions" ("id")
+);
+CREATE INDEX "index_course_revisions_on_subject_id" ON "course_revisions" ("subject_id") /*application='Banco'*/;
+CREATE INDEX "index_course_revisions_on_skill_graph_revision_id" ON "course_revisions" ("skill_graph_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_course_revisions_on_author_session_id" ON "course_revisions" ("author_session_id") /*application='Banco'*/;
+CREATE UNIQUE INDEX "index_course_revisions_on_subject_id_and_seq" ON "course_revisions" ("subject_id", "seq") /*application='Banco'*/;
+CREATE TABLE "topic_revisions" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "lesson_id" integer NOT NULL, "seq" integer NOT NULL, "course_revision_id" integer NOT NULL, "lesson_revision_id" integer NOT NULL, "body_json" text NOT NULL, "author_session_id" integer, "brief_sha256" varchar, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_9db86ce251"
+FOREIGN KEY ("lesson_id")
+  REFERENCES "lessons" ("id")
+, CONSTRAINT "fk_rails_30c3910a96"
+FOREIGN KEY ("course_revision_id")
+  REFERENCES "course_revisions" ("id")
+, CONSTRAINT "fk_rails_7f6b8598ef"
+FOREIGN KEY ("lesson_revision_id")
+  REFERENCES "lesson_revisions" ("id")
+, CONSTRAINT "fk_rails_11ac084bde"
+FOREIGN KEY ("author_session_id")
+  REFERENCES "agent_sessions" ("id")
+);
+CREATE INDEX "index_topic_revisions_on_lesson_id" ON "topic_revisions" ("lesson_id") /*application='Banco'*/;
+CREATE INDEX "index_topic_revisions_on_course_revision_id" ON "topic_revisions" ("course_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_topic_revisions_on_lesson_revision_id" ON "topic_revisions" ("lesson_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_topic_revisions_on_author_session_id" ON "topic_revisions" ("author_session_id") /*application='Banco'*/;
+CREATE UNIQUE INDEX "index_topic_revisions_on_lesson_id_and_seq" ON "topic_revisions" ("lesson_id", "seq") /*application='Banco'*/;
+CREATE TRIGGER lessons_no_update BEFORE UPDATE ON lessons
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER lessons_no_delete BEFORE DELETE ON lessons
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER lesson_revisions_no_update BEFORE UPDATE ON lesson_revisions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER lesson_revisions_no_delete BEFORE DELETE ON lesson_revisions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER lesson_reviews_no_update BEFORE UPDATE ON lesson_reviews
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER lesson_reviews_no_delete BEFORE DELETE ON lesson_reviews
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER course_revisions_no_update BEFORE UPDATE ON course_revisions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER course_revisions_no_delete BEFORE DELETE ON course_revisions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER topic_revisions_no_update BEFORE UPDATE ON topic_revisions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER topic_revisions_no_delete BEFORE DELETE ON topic_revisions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "practice_serves" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "student_id" integer NOT NULL, "topic_revision_id" integer NOT NULL, "skill_key" varchar NOT NULL, "item_instance_id" integer NOT NULL, "reason" varchar NOT NULL, "parent_serve_id" integer, "error_code" varchar, "seed" integer NOT NULL, "shown_order_json" text, "id_map_json" text, "rules_version" varchar NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_ad377e6fef"
+FOREIGN KEY ("student_id")
+  REFERENCES "students" ("id")
+, CONSTRAINT "fk_rails_aeaabb8641"
+FOREIGN KEY ("topic_revision_id")
+  REFERENCES "topic_revisions" ("id")
+, CONSTRAINT "fk_rails_9d69e95aba"
+FOREIGN KEY ("item_instance_id")
+  REFERENCES "item_instances" ("id")
+, CONSTRAINT "fk_rails_169e4c5f79"
+FOREIGN KEY ("parent_serve_id")
+  REFERENCES "practice_serves" ("id")
+, CONSTRAINT practice_serves_reason CHECK (reason IN ('next','prova_questo','after_solution','reseen')), CONSTRAINT practice_serves_error_code CHECK ((reason = 'prova_questo') = (error_code IS NOT NULL)), CONSTRAINT practice_serves_parent CHECK (reason NOT IN ('prova_questo','after_solution') OR parent_serve_id IS NOT NULL));
+CREATE INDEX "index_practice_serves_on_student_id" ON "practice_serves" ("student_id") /*application='Banco'*/;
+CREATE INDEX "index_practice_serves_on_topic_revision_id" ON "practice_serves" ("topic_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_practice_serves_on_item_instance_id" ON "practice_serves" ("item_instance_id") /*application='Banco'*/;
+CREATE INDEX "index_practice_serves_on_parent_serve_id" ON "practice_serves" ("parent_serve_id") /*application='Banco'*/;
+CREATE INDEX "index_practice_serves_on_student_id_and_skill_key_and_id" ON "practice_serves" ("student_id", "skill_key", "id") /*application='Banco'*/;
+CREATE INDEX "index_practice_serves_on_student_id_and_item_instance_id" ON "practice_serves" ("student_id", "item_instance_id") /*application='Banco'*/;
+CREATE TABLE "practice_attempts" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "student_id" integer NOT NULL, "practice_serve_id" integer NOT NULL, "try_number" integer NOT NULL, "client_attempt_id" varchar NOT NULL, "raw" text NOT NULL, "source" varchar NOT NULL, "hints_before" integer NOT NULL, "aided" boolean NOT NULL, "answered_at" datetime(6) NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_cebb17abab"
+FOREIGN KEY ("student_id")
+  REFERENCES "students" ("id")
+, CONSTRAINT "fk_rails_543744633b"
+FOREIGN KEY ("practice_serve_id")
+  REFERENCES "practice_serves" ("id")
+, CONSTRAINT practice_attempts_try_number CHECK (try_number BETWEEN 1 AND 3), CONSTRAINT practice_attempts_source CHECK (source IN ('text','mathlive','button')), CONSTRAINT practice_attempts_hints_before CHECK (hints_before >= 0));
+CREATE INDEX "index_practice_attempts_on_student_id" ON "practice_attempts" ("student_id") /*application='Banco'*/;
+CREATE INDEX "index_practice_attempts_on_practice_serve_id" ON "practice_attempts" ("practice_serve_id") /*application='Banco'*/;
+CREATE UNIQUE INDEX "index_practice_attempts_on_practice_serve_id_and_try_number" ON "practice_attempts" ("practice_serve_id", "try_number") /*application='Banco'*/;
+CREATE UNIQUE INDEX "index_practice_attempts_on_client_attempt_id" ON "practice_attempts" ("client_attempt_id") /*application='Banco'*/;
+CREATE TABLE "practice_gradings" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "practice_attempt_id" integer NOT NULL, "seq" integer NOT NULL, "verdict" varchar NOT NULL, "error_codes_json" text, "form_violations_json" text, "normalized" text, "method" varchar, "grader" varchar NOT NULL, "grader_version" varchar NOT NULL, "ce_version" varchar, "source" varchar NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_78df2809fa"
+FOREIGN KEY ("practice_attempt_id")
+  REFERENCES "practice_attempts" ("id")
+, CONSTRAINT practice_gradings_source CHECK (source IN ('sync','retry')), CONSTRAINT practice_gradings_method CHECK (method IS NULL OR method IN ('exact','float')));
+CREATE INDEX "index_practice_gradings_on_practice_attempt_id" ON "practice_gradings" ("practice_attempt_id") /*application='Banco'*/;
+CREATE UNIQUE INDEX "index_practice_gradings_on_practice_attempt_id_and_seq" ON "practice_gradings" ("practice_attempt_id", "seq") /*application='Banco'*/;
+CREATE TABLE "practice_events" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "student_id" integer NOT NULL, "kind" varchar NOT NULL, "practice_serve_id" integer, "topic_revision_id" integer, "lesson_revision_id" integer, "payload_json" text NOT NULL, "at" datetime(6) NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_98d31be146"
+FOREIGN KEY ("student_id")
+  REFERENCES "students" ("id")
+, CONSTRAINT "fk_rails_c0429231ab"
+FOREIGN KEY ("practice_serve_id")
+  REFERENCES "practice_serves" ("id")
+, CONSTRAINT "fk_rails_e02e028a87"
+FOREIGN KEY ("topic_revision_id")
+  REFERENCES "topic_revisions" ("id")
+, CONSTRAINT "fk_rails_1ad12539cc"
+FOREIGN KEY ("lesson_revision_id")
+  REFERENCES "lesson_revisions" ("id")
+, CONSTRAINT practice_events_kind CHECK (kind IN ('lesson_opened','lesson_solution_shown','hint_shown','solution_shown')), CONSTRAINT practice_events_serve CHECK (kind NOT IN ('hint_shown','solution_shown') OR practice_serve_id IS NOT NULL), CONSTRAINT practice_events_lesson CHECK (kind NOT IN ('lesson_opened','lesson_solution_shown') OR (lesson_revision_id IS NOT NULL AND topic_revision_id IS NOT NULL)));
+CREATE INDEX "index_practice_events_on_student_id" ON "practice_events" ("student_id") /*application='Banco'*/;
+CREATE INDEX "index_practice_events_on_practice_serve_id" ON "practice_events" ("practice_serve_id") /*application='Banco'*/;
+CREATE INDEX "index_practice_events_on_topic_revision_id" ON "practice_events" ("topic_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_practice_events_on_lesson_revision_id" ON "practice_events" ("lesson_revision_id") /*application='Banco'*/;
+CREATE TABLE "student_questions" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "student_id" integer NOT NULL, "client_question_id" varchar NOT NULL, "topic_revision_id" integer, "lesson_revision_id" integer, "practice_serve_id" integer, "section" varchar, "exercise" integer, "text_it" text, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_731cd3820e"
+FOREIGN KEY ("student_id")
+  REFERENCES "students" ("id")
+, CONSTRAINT "fk_rails_de96d5a88b"
+FOREIGN KEY ("topic_revision_id")
+  REFERENCES "topic_revisions" ("id")
+, CONSTRAINT "fk_rails_97c2fca46e"
+FOREIGN KEY ("lesson_revision_id")
+  REFERENCES "lesson_revisions" ("id")
+, CONSTRAINT "fk_rails_687ca3736c"
+FOREIGN KEY ("practice_serve_id")
+  REFERENCES "practice_serves" ("id")
+, CONSTRAINT student_questions_section CHECK (section IS NULL OR section IN ('why','idea','example','mistakes','try','solutions','book','summary','practice')), CONSTRAINT student_questions_text_length CHECK (text_it IS NULL OR length(text_it) BETWEEN 1 AND 300));
+CREATE INDEX "index_student_questions_on_student_id" ON "student_questions" ("student_id") /*application='Banco'*/;
+CREATE INDEX "index_student_questions_on_topic_revision_id" ON "student_questions" ("topic_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_student_questions_on_lesson_revision_id" ON "student_questions" ("lesson_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_student_questions_on_practice_serve_id" ON "student_questions" ("practice_serve_id") /*application='Banco'*/;
+CREATE UNIQUE INDEX "index_student_questions_on_client_question_id" ON "student_questions" ("client_question_id") /*application='Banco'*/;
+CREATE TRIGGER practice_serves_no_update BEFORE UPDATE ON practice_serves
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER practice_serves_no_delete BEFORE DELETE ON practice_serves
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER practice_attempts_no_update BEFORE UPDATE ON practice_attempts
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER practice_attempts_no_delete BEFORE DELETE ON practice_attempts
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER practice_gradings_no_update BEFORE UPDATE ON practice_gradings
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER practice_gradings_no_delete BEFORE DELETE ON practice_gradings
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER practice_events_no_update BEFORE UPDATE ON practice_events
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER practice_events_no_delete BEFORE DELETE ON practice_events
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER student_questions_no_update BEFORE UPDATE ON student_questions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER student_questions_no_delete BEFORE DELETE ON student_questions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261009100003'),
+('20261009100002'),
+('20261009100001'),
 ('20261008100001'),
 ('20261007100001'),
 ('20261004300001'),

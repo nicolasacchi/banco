@@ -1,6 +1,6 @@
 module Api
   module V1
-    # GET /api/v1/items?subject=KEY[&current=1]: every revision of the items of a subject
+    # GET /api/v1/items?subject=KEY[&current=1][&kind=practice|diagnosis]: every revision of the items of a subject
     # with the status of its latest validation, whether it is the current (latest)
     # revision of its item, and how many reviews and blind solves it has. Read only:
     # it tells a reviewer which revision ids to open (`banco review open ID`) and an
@@ -13,7 +13,14 @@ module Api
           return refuse("E-NOT-FOUND", "subject", "no subject #{params[:subject].to_s.first(40).inspect}", "banco status", 404) unless subject
         end
 
-        items = (subject ? Item.where(subject: subject) : Item.all).includes(:subject, revisions: %i[validations reviews blind_solves]).order(:id)
+        kind = params[:kind].to_s
+        unless kind.in?(%w[practice diagnosis]) || kind.empty?
+          return refuse("E-NOT-FOUND", "kind", "kind is practice or diagnosis, not #{kind.first(40).inspect}", "banco items list --kind practice", 404)
+        end
+
+        items = subject ? Item.where(subject: subject) : Item.all
+        items = items.public_send(kind) unless kind.empty?
+        items = items.includes(:subject, revisions: %i[validations reviews blind_solves]).order(:id)
         only_current = params[:current].to_s.in?(%w[1 true])
         rows = items.flat_map do |item|
           latest = item.revisions.max_by(&:seq)

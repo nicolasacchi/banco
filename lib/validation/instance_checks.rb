@@ -52,9 +52,10 @@ module Validation
       ItemChecks.method_words(display, "#{label}/display", @unit.skill, f, seed: seed)
       component_fit(answer, inst, label, seed, f)
       steps(inst, label, seed, f) if problems.empty?
+      hint_rules(display, answer, inst, label, seed, f) if problems.empty?
       quote_and_figure(display, label, seed, f)
       if generated
-        Readability.lint_document({ "display" => display, "solution" => inst["solution"] }, label, f)
+        Readability.lint_document({ "display" => display, "solution" => inst["solution"], "hints_it" => inst["hints_it"] }.compact, label, f)
       end
       f
     end
@@ -358,6 +359,50 @@ module Validation
       return unless inconsistent
 
       f.add("E-STEP-INCONSISTENT", "#{label}/solution/final", "the solution ends on something other than the key", seed: seed)
+    end
+
+    # ---- hints of a practice instance (A2.4) ---------------------------------------
+
+    # Effective hints: the instance's own, else the item's. E-HINTS when a practice instance has
+    # none, or when hints sit on an instance of another kind. E-HINT-KEY (number, fraction,
+    # expression, normalized_text): a hint holds a key text that the display does not already
+    # show, so numbers taken from the display are allowed. W-HINT-OPTION (choice): a hint names
+    # the key option. Ordering and matching have no scan (reviewer point 12).
+    def hint_rules(display, answer, inst, label, seed, f)
+      if @unit.body["kind"] != "practice_item"
+        f.add("E-HINTS", "#{label}/hints_it", "hints belong to practice items only", seed: seed) unless inst["hints_it"].nil?
+        return
+      end
+      hints = Array(inst["hints_it"] || @unit.body["hints_it"]).select { |h| h.is_a?(String) }
+      return f.add("E-HINTS", "#{label}/hints_it", "a practice instance has hints: its own hints_it or the item's", seed: seed) if hints.empty?
+
+      case @unit.component
+      when "choice" then option_hints(display, answer, hints, label, seed, f)
+      when "number", "fraction", "expression", "normalized_text" then key_hints(display, answer, inst, hints, label, seed, f)
+      end
+    end
+
+    def key_hints(display, answer, inst, hints, label, seed, f)
+      shown = Canonical.strings(display).map(&:last).join(" ") + " " + @unit.body["prompt"].to_h.slice("stem_it", "table", "quote").to_json
+      needles = Answers.key_texts(@unit.component, answer, accept: @unit.accept + Array(inst["accept"]), min: support_min)
+                       .reject { |n| Answers.contains?(shown, n, min: support_min) }
+      hints.each_with_index do |hint, i|
+        needle = needles.find { |n| Answers.contains?(hint, n, min: support_min) }
+        next unless needle
+
+        f.add("E-HINT-KEY", "#{label}/hints_it/#{i}", "the hint states the key (#{needle.to_s[0, 30].inspect}): a hint points at the next step, never at the answer", seed: seed)
+      end
+    rescue ArgumentError, TypeError
+      nil
+    end
+
+    def option_hints(display, answer, hints, label, seed, f)
+      key = Array(display["options"]).find { |o| o["id"] == answer.to_s } or return
+      hints.each_with_index do |hint, i|
+        next unless Answers.contains?(hint, key["text"].to_s)
+
+        f.add("W-HINT-OPTION", "#{label}/hints_it/#{i}", "the hint names the correct option (#{key['text'].to_s[0, 30].inspect}); the reviewer judges", seed: seed)
+      end
     end
 
     # ---- quotes and figures ---------------------------------------------------------

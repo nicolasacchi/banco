@@ -57,10 +57,16 @@ module Validation
       if @item && @item.subject.key != parsed_item["subject"]
         refuse("E-FILES", "item.json", "the item #{key} belongs to #{@item.subject.key}; item.json says #{parsed_item['subject']}", "banco work open #{key}", 422)
       end
+      if @item && @item.practice? != (parsed_item["kind"] == "practice_item")
+        refuse("E-FILES", "item.json", "the item #{key} is a #{@item.practice? ? 'practice' : 'diagnosis'} item and its kind does not change; item.json says #{parsed_item['kind'].inspect}", "banco work open #{key}", 422)
+      end
       check_generator_files
       check_sessions
       self
     end
+
+    # The brief this item is written under: practice items have their own.
+    def brief_name = parsed_item["kind"] == "practice_item" ? "practice-item" : "diagnosis-item"
 
     # The files this submission adds or changes against its base.
     def changed

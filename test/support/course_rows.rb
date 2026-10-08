@@ -1,3 +1,5 @@
+require_relative "validation_fixtures"
+
 # Rows of a tiny synthetic course for API tests: a subject, a graph revision, a
 # programme source with lines and a reference text.
 module CourseRows
@@ -39,5 +41,62 @@ module CourseRows
                            fingerprint: Digest::SHA256.hexdigest("#{key}-#{i}"))
     end
     revision
+  end
+
+  # ---- Phase 1b: the course (invented look-alikes only; nothing of a real programme) ----
+
+  COURSE_LINES = [
+    "equazioni di primo grado numeriche intere",
+    "sistemi lineari: metodo di sostituzione"
+  ].freeze
+
+  # An invented seconda programme source with citable lines, and a course map revision
+  # on the subject's latest graph. skills: [{key:, label_it:, ...}] (course skills, not in the graph).
+  def build_course_map(subject: @subject, skills: nil, topics: nil)
+    source = SyllabusSource.find_by(key: "seconda-test") || SyllabusSource.create!(key: "seconda-test", line_count: COURSE_LINES.size, sha256: "1" * 64)
+    COURSE_LINES.each_with_index { |text, i| SyllabusLine.find_or_create_by!(syllabus_source: source, number: i + 1) { |l| l.text = text; l.origin = "pdf" } }
+    graph = SkillGraphRevision.where(subject: subject).order(:seq).last
+    skills ||= [ { key: "#{subject.key}.linear-system-substitution", label_it: "Sistemi lineari: sostituzione", layer: "core",
+                   prerequisites: [], refs: [ { source: "seconda-test", line: 2, fragment: "metodo di sostituzione", role: "taught_in" } ], errors: [] } ]
+    topics ||= [ { key: "lezione.#{subject.key}.linear-systems", kind: "lezione", title_it: "Sistemi lineari", skills: skills.map { |k| k[:key] }, minutes: 30, term: 1, after: [] } ]
+    body = { schema: "banco.course/1", schema_version: 1, subject: subject.key, skills: skills, topics: topics }
+    CourseRevision.create!(subject: subject, seq: (CourseRevision.where(subject: subject).maximum(:seq) || 0) + 1,
+                           skill_graph_revision: graph, body_json: JSON.generate(body), warnings_json: "[]")
+  end
+
+  # A lesson (the topic's identity) with one revision.
+  def make_lesson(key = "ripasso.math.demo", skills: [ "math.skill-a" ], title_it: "Lezione di prova")
+    kind, subject_key, = key.split(".", 3)
+    lesson = Lesson.find_by(key: key) || Lesson.create!(subject: Subject.find_by!(key: subject_key), key: key, kind: kind)
+    seq = (lesson.revisions.maximum(:seq) || 0) + 1
+    md = "---\nkey: #{key}\n---\n\n## Perche ti serve\nUna lezione di prova.\n"
+    LessonRevision.create!(lesson: lesson, seq: seq, source_md: md, source_sha256: Digest::SHA256.hexdigest(md),
+                           body_json: JSON.generate(key: key, kind: kind, title_it: title_it, skills: skills), rules_version: Validation::Rules.version.to_s,
+                           warnings_json: "[]")
+  end
+
+  # A practice item revision with n instances, each with effective hints stored apart from the display.
+  def make_practice_item(key, skill, instances: 12, component: "number", status: "passed", level: 1, subject: nil, hints: [ "Che cosa guardi prima?", "Quale regola usi?", "Fai il primo passaggio." ])
+    subject ||= @subject
+    item = Item.create!(subject: subject, key: key, kind: "practice_item")
+    body = { schema: "banco.item/1", schema_version: 1, kind: "practice_item", subject: subject.key, skill: skill, component: component,
+             level: level, expected_seconds: 60, hints_it: hints }
+    revision = ItemRevision.create!(item: item, seq: 1, body_json: JSON.generate(body), file_sessions_json: "{}")
+    ItemValidation.create!(item_revision: revision, seq: 1, status: status, codes_json: "[]") if status
+    instances.times do |i|
+      ItemInstance.create!(item_revision: revision, seed: i + 1, display_json: JSON.generate(stem_it: "#{key} #{i}"), answer_json: JSON.generate((i + 2).to_s),
+                           errors_json: JSON.generate([ { code: "slip", value: (i + 3).to_s } ]), hints_json: JSON.generate(hints),
+                           solution_json: JSON.generate(steps: [ { text_it: "Passo.", math: "$x$" } ], final: "$x$"),
+                           fingerprint: Digest::SHA256.hexdigest("#{key}-#{i}"))
+    end
+    revision
+  end
+
+  # A topic revision for a lesson, pinning the given practice item revisions per skill.
+  def make_topic(lesson_revision, items_by_skill, course: nil)
+    course ||= CourseRevision.where(subject: lesson_revision.lesson.subject).order(:seq).last || build_course_map(subject: lesson_revision.lesson.subject)
+    practice = items_by_skill.map { |skill, revs| { skill: skill, items: Array(revs).map { |r| { item: r.item.key, revision: r.id } } } }
+    TopicRevision.create!(lesson: lesson_revision.lesson, seq: (lesson_revision.lesson.topic_revisions.maximum(:seq) || 0) + 1, course_revision: course,
+                          lesson_revision: lesson_revision, body_json: JSON.generate(schema: "banco.topic/1", key: lesson_revision.lesson.key, practice: practice))
   end
 end

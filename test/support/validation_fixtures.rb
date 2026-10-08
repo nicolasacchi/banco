@@ -150,6 +150,15 @@ module ValidationFixtures
     deep_merge(base, overrides)
   end
 
+  HINTS = [ "Quale numero togli da entrambi i membri?", "Togli il termine noto dai due lati.", "Ora la $x$ resta da sola." ].freeze
+
+  # A good static practice item (Phase 1b): the number item with 12 instances, a level and 3 hints.
+  def practice_item(overrides = {}, count: 12)
+    instances = (1..count).map { |n| number_instance(n + 1, 2 * n + 11) } # key n + 10, a different display each
+    deep_merge(static_item("kind" => "practice_item", "level" => 1, "hints_it" => HINTS, "instances" => instances,
+                           "tests" => { "must_accept" => [ "11" ], "must_reject" => [ "999" ], "blank" => "invalid" }), overrides)
+  end
+
   def short_answer_item(overrides = {})
     deep_merge({
       "schema" => "banco.item/1", "schema_version" => 1, "kind" => "short_answer", "subject" => "math", "skill" => SKILL,

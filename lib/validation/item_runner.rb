@@ -47,7 +47,7 @@ module Validation
       @details[:rules_version] = Rules.version
       stored = instances.map { |i| i.merge(fingerprint: Canonical.fingerprint(i[:display])) }
       Result.new(status: @findings.any_error? ? "failed" : "passed", findings: @findings, instances: stored,
-                 instances_sha256: stored.empty? ? nil : Digest::SHA256.hexdigest(Canonical.dump(stored.map { |i| i.slice(:display, :answer, :errors, :solution, :accept) })),
+                 instances_sha256: stored.empty? ? nil : Digest::SHA256.hexdigest(Canonical.dump(stored.map { |i| i.slice(:display, :answer, :errors, :solution, :accept, :hints) })),
                  details: @details, chrome_version: @chrome_version)
     end
 
@@ -86,7 +86,28 @@ module Validation
 
     def single(item)
       unit = Units.of(item).first
-      unit.generator ? generated(unit, item) : static(unit, item).tap { |list| verify_static(unit, item, list) }
+      list = unit.generator ? generated(unit, item) : static(unit, item).tap { |rows| verify_static(unit, item, rows) }
+      practice_pool(unit, list) if item["kind"] == "practice_item"
+      list
+    end
+
+    # E-PRACTICE-POOL: a static practice item lists enough instances (a generator keeps generator.pool).
+    # W-PRACTICE-CODE-SPARSE: a catalogue code carried by too few instances of the item (a typical
+    # error that few instances can show is a message that rarely fires and cannot be "tried again").
+    def practice_pool(unit, list)
+      min = Rules.get(:practice, :min_static_instances)
+      if !unit.generator && list.size < min
+        @findings.add("E-PRACTICE-POOL", "#{unit.path}/instances", "a static practice item has at least #{min} instances, not #{list.size}", count: list.size)
+      end
+      return if list.empty?
+
+      need = Rules.get(:practice, :min_instances_per_code)
+      unit.catalogue_codes.each do |code|
+        n = list.count { |i| Array(i[:errors]).any? { |e| e.is_a?(Hash) && e["code"] == code } }
+        next if n >= need
+
+        @findings.add("W-PRACTICE-CODE-SPARSE", "#{unit.path}/error_catalogue", "the code #{code} is carried by #{n} of #{list.size} instances (at least #{need}): a typical error that few instances can show rarely gets its message", code: code, count: n)
+      end
     end
 
     def testlet(item)
@@ -163,7 +184,7 @@ module Validation
       message_gives_key(unit, list)
       accept_item_level(unit, list)
       Roundtrip.new(unit, subject: item["subject"], findings: @findings).call(list, label: "#{unit.path}/instances", tests: unit.body["tests"])
-      list.map { |i| stored_row(nil, i) }
+      list.map { |i| stored_row(nil, i, unit) }
     end
 
     # W-ACCEPT-ITEM-LEVEL (D-208): the item-level accept is added to every instance, so an entry
@@ -214,9 +235,12 @@ module Validation
 
     # The row kept for an instance; accept (D-081) only when the instance has one, so the
     # hash of instances written before it does not change.
-    def stored_row(seed, inst)
+    def stored_row(seed, inst, unit)
       row = { seed: seed, display: inst["display"], answer: inst["answer"], errors: inst["errors"], solution: inst["solution"] }
       row[:accept] = inst["accept"] if inst["accept"]
+      # A practice instance keeps its effective hints (its own, else the item's), apart from the display (A2.4).
+      hints = unit.body["kind"] == "practice_item" ? (inst["hints_it"] || unit.body["hints_it"]) : nil
+      row[:hints] = hints if hints
       row
     end
 
@@ -263,7 +287,7 @@ module Validation
           merge_seed_findings(local)
           ItemChecks.excluded_params(unit.body, inst, "generated", @findings, seed: row.seed)
           if local.errors.empty?
-            clean << { seed: row.seed, "display" => inst["display"], "answer" => inst["answer"], "errors" => inst["errors"], "solution" => inst["solution"], "accept" => inst["accept"] }
+            clean << { seed: row.seed, "display" => inst["display"], "answer" => inst["answer"], "errors" => inst["errors"], "solution" => inst["solution"], "accept" => inst["accept"], "hints_it" => inst["hints_it"] }
           else
             problems += 1
           end
@@ -277,7 +301,7 @@ module Validation
         never_generated(unit, clean.map { |c| c.transform_keys(&:to_s) })
         Roundtrip.new(unit, subject: item["subject"], findings: @findings).call(stored.map { |c| c.transform_keys(&:to_s) }, label: "generated", tests: unit.body["tests"])
         verify_generated(unit, item, phase, gen, clean, stored)
-        stored.map { |c| stored_row(c[:seed], c) }
+        stored.map { |c| stored_row(c[:seed], c, unit) }
       end
     end
 
