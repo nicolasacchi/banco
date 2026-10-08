@@ -59,6 +59,10 @@ end
 # The host is often heavily loaded: pages that fetch their items need patience.
 Capybara.default_max_wait_time = 10
 
+# The system tests share one Capybara server on WEB_PORT, so they never run in parallel processes (they would all
+# bind the same port). Rails parallelizes a run of more than 50 tests; the system suite has outgrown that.
+ActiveSupport::TestCase.parallelize(workers: :number_of_processors, threshold: Float::INFINITY)
+
 class ApplicationSystemTestCase < ActiveSupport::TestCase
   include Capybara::DSL
   include Capybara::Minitest::Assertions
