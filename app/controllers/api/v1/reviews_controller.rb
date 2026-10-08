@@ -16,6 +16,8 @@ module Api
           return refuse("E-AUTH", "authorization", "this token cannot review", "banco schema", 403) unless ApiToken.session_roles(@token.role).include?("reviewer")
         elsif author_read?
           # D-211: the author reads the page of a revision (the item it wrote); the findings are in `work open`.
+        elsif arbiter_read?
+          # D-222: the third reviewer reads the item with its instances to judge a finding; it writes no review.
         else
           session = require_session("reviewer", item: @item, next_step: next_session) or return
           return unless independent_role?(session, @item, "reviewer")
@@ -39,6 +41,16 @@ module Api
         return false unless session&.role == "author" && (session.token_id.nil? || session.token_id == @token.id)
 
         ApiToken.session_roles(@token.role).include?("author") && ItemSessions.new(@item).ids("author").include?(session.id)
+      end
+
+      # An arbiter session of this token reads the page to judge a finding (D-222). It may not have worked on the item
+      # as anything else: that is checked when it assesses.
+      def arbiter_read?
+        raw = request.headers["X-Banco-Session"].to_s
+        session = AgentSession.find_by(id: raw) if raw.match?(AgentSession::ID)
+        return false unless session&.role == "arbiter" && (session.token_id.nil? || session.token_id == @token.id)
+
+        ApiToken.session_roles(@token.role).include?("arbiter")
       end
 
       # POST /api/v1/revisions/:revision/review {review}

@@ -92,11 +92,6 @@ CREATE TRIGGER blueprint_revisions_no_update BEFORE UPDATE ON blueprint_revision
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER blueprint_revisions_no_delete BEFORE DELETE ON blueprint_revisions
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
-CREATE TABLE "agent_sessions" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "label" varchar NOT NULL, "role" varchar NOT NULL, "created_at" datetime(6) NOT NULL, "agent" varchar /*application='Banco'*/, "model" varchar /*application='Banco'*/, "token_id" varchar, CONSTRAINT agent_sessions_role CHECK (role IN ('author','verifier','reviewer','solver','grader','operator')));
-CREATE TRIGGER agent_sessions_no_update BEFORE UPDATE ON agent_sessions
-BEGIN SELECT RAISE(ABORT, 'append-only'); END;
-CREATE TRIGGER agent_sessions_no_delete BEFORE DELETE ON agent_sessions
-BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TABLE "students" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "key" varchar NOT NULL, "kind" varchar NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT students_kind CHECK (kind IN ('student','preview')));
 CREATE UNIQUE INDEX "index_students_on_key" ON "students" ("key") /*application='Banco'*/;
 CREATE TABLE "decisions" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "kind" varchar NOT NULL, "subject_id" integer, "student_id" integer, "payload_json" text NOT NULL, "request_id" varchar NOT NULL, "teacher_login" varchar NOT NULL, "remote_addr" varchar NOT NULL, "created_at" datetime(6) NOT NULL, "groups" varchar DEFAULT '' NOT NULL /*application='Banco'*/, "user_agent" varchar DEFAULT '' NOT NULL /*application='Banco'*/, "request_path" varchar DEFAULT '' NOT NULL /*application='Banco'*/, CONSTRAINT "fk_rails_7a1a6ec8a0"
@@ -283,7 +278,27 @@ CREATE TRIGGER finding_responses_no_update BEFORE UPDATE ON finding_responses
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER finding_responses_no_delete BEFORE DELETE ON finding_responses
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "agent_sessions" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "label" varchar NOT NULL, "role" varchar NOT NULL, "created_at" datetime(6) NOT NULL, "agent" varchar, "model" varchar, "token_id" varchar, CONSTRAINT agent_sessions_role CHECK (role IN ('author','verifier','reviewer','solver','grader','operator','arbiter')));
+CREATE TRIGGER agent_sessions_no_update BEFORE UPDATE ON agent_sessions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER agent_sessions_no_delete BEFORE DELETE ON agent_sessions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "finding_assessments" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "review_finding_id" integer NOT NULL, "agent_session_id" integer NOT NULL, "verdict" varchar NOT NULL, "note_it" text NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_633fb8fe9e"
+FOREIGN KEY ("review_finding_id")
+  REFERENCES "review_findings" ("id")
+, CONSTRAINT "fk_rails_9b8659b2e6"
+FOREIGN KEY ("agent_session_id")
+  REFERENCES "agent_sessions" ("id")
+, CONSTRAINT finding_assessments_verdict CHECK (verdict IN ('author_right','finding_right','unclear')), CONSTRAINT finding_assessments_note_length CHECK (length(note_it) BETWEEN 1 AND 500));
+CREATE INDEX "index_finding_assessments_on_review_finding_id" ON "finding_assessments" ("review_finding_id");
+CREATE INDEX "index_finding_assessments_on_agent_session_id" ON "finding_assessments" ("agent_session_id");
+CREATE TRIGGER finding_assessments_no_update BEFORE UPDATE ON finding_assessments
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER finding_assessments_no_delete BEFORE DELETE ON finding_assessments
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261008200002'),
+('20261008200001'),
 ('20261008100001'),
 ('20261007100001'),
 ('20261004300001'),

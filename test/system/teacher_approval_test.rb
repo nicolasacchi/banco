@@ -63,7 +63,7 @@ class TeacherApprovalTest < ApplicationSystemTestCase
     assert_selector "[data-finding='#{@finding.id}']"
     within("[data-finding='#{@finding.id}']") do
       fill_in "reason_it", with: "Il testo dice già l'unità."
-      click_button "La domanda è giusta: scarta il rilievo"
+      click_button "Va bene così: scarta il rilievo"
     end
     assert_selector ".flash", text: "Decisione sul rilievo registrata."
     assert_selector "[data-finding='#{@finding.id}'][data-disposition=dismissed]"

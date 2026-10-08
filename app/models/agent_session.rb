@@ -1,10 +1,10 @@
 # One working session of an agent (A-04): declared role, agent and model. Created by
 # `banco session new`; the CLI sends its id in X-Banco-Session on every write. The
-# server uses it to keep the author, the verifier, the reviewer and the blind solver
-# of an item apart (ItemSessions) and the grader off the author's items. Rows are
+# server uses it to keep the author, the verifier, the reviewer, the blind solver and the
+# arbiter (the third reviewer, D-222) of an item apart (ItemSessions) and the grader off the author's items. Rows are
 # never changed.
 class AgentSession < ApplicationRecord
-  ROLES = %w[author verifier reviewer solver grader].freeze
+  ROLES = %w[author verifier reviewer solver grader arbiter].freeze
   # The ids of file_sessions and the header are plain integers.
   ID = /\A[1-9]\d{0,17}\z/
 

@@ -133,3 +133,10 @@ Generator `tests` (D-078, D-080): `must_accept`, `must_reject` and `blank` run o
 ## The author answers the findings (D-220)
 
 After a review or a blind-solve round the author answers every blocker and major finding with `banco findings respond ID --file response.json`: `item_right` with a short proof, or `fixed` with the later revision that fixes it. `banco findings list --subject S --open` lists what is left. The teacher reads the key, the solver's raw answer and the author's note on the skill screen, then decides. A response never disposes of a finding.
+
+## The third reviewer (D-222)
+
+An `arbiter` session reads a finding with the item, its instances and the author's response, and records who is right with `banco findings assess ID --file assessment.json`: `author_right`, `finding_right` or `unclear`, plus a plain Italian note. Two models give an opinion: claude-opus-5-5 the first, claude-haiku-4-5-20251001 the second. The arbiter holds no other role on the item (`E-SESSION-NOT-INDEPENDENT`) and runs on another model than the session that raised the finding (`E-PROVIDER-NOT-ALLOWED`); nothing is said about the author's model. `banco findings list` hides the assessments of a finding from an arbiter that has not assessed it yet.
+
+The effective opinion is the latest assessment of each model (`FindingOpinion`): equal and both present is clear, different is discordant, one only is waiting. For blocker and major findings the teacher follows a clear opinion with one click, one finding or all of them; each is a normal `dispose_finding` decision. A minor finding with a clear opinion is closed (`author_right`) or marked to fix (`finding_right`) as a derived state, never as a decision row; a teacher decision wins. Assessments are not read by `Review::Gate` or `Approval::BlueprintGate`.
+

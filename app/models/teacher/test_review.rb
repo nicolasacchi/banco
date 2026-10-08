@@ -10,12 +10,14 @@ module Teacher
 
     SkillRow = Data.define(:skill, :label_it, :role, :item_ids, :not_assessed_reason_it, :redo_reserve, :choice_only_reason_it, :worked, :open_findings)
     Card = Data.define(:revision, :item, :body, :samples, :catalogue, :sources, :gate, :review, :blind, :findings, :send_backs, :superseded)
-    Finding = Data.define(:finding, :disposition, :new_revision_expected, :evidence, :response)
+    # opinion: the third reviewer's FindingOpinion (D-222). closure: for a minor finding without a decision,
+    # what the third reviewer's agreeing opinions make of it, :closed or :to_fix, else nil (a derived state, no decision row).
+    Finding = Data.define(:finding, :disposition, :new_revision_expected, :evidence, :response, :opinion, :closure)
     # What the teacher needs to judge a blind-solve finding (D-220): the key of the instance as the
     # student would type it, the other answers accepted, and what the solver wrote.
     Evidence = Data.define(:key, :accepted, :solver_answer, :dont_know)
     # A blocker or major finding nobody has decided yet, on a pinned revision, with where to find it.
-    OpenFinding = Data.define(:finding, :skill, :label_it, :item_key)
+    OpenFinding = Data.define(:finding, :skill, :label_it, :item_key, :opinion)
 
     attr_reader :subject, :blueprint, :approved
 
@@ -95,12 +97,17 @@ module Teacher
         by_revision = skill_rows.each_with_object({}) { |row, h| row.item_ids.each { |id| (h[id] ||= []) << row } }
         found = ReviewFinding.must_be_disposed.where(item_revision_id: by_revision.keys).includes(item_revision: :item).order(:id)
                              .reject { |f| dispositions.key?(f.id) }
+        opinions = FindingAssessment.opinions_for(found.map(&:id))
         skill_rows.flat_map do |row|
           found.select { |f| row.item_ids.include?(f.item_revision_id) }
-               .map { |f| OpenFinding.new(f, row.skill, row.label_it, f.item_revision.item.key) }
+               .map { |f| OpenFinding.new(f, row.skill, row.label_it, f.item_revision.item.key, opinions[f.id]) }
         end
       end
     end
+
+    # The open findings whose two opinions agree on a side (author_right or finding_right): the
+    # teacher may follow them in one click. Waiting, split and unclear opinions stay out (D-222).
+    def clear_open_list = open_finding_list.select { |o| o.opinion.clear? }
 
     private
 
@@ -122,9 +129,11 @@ module Teacher
       later = rev.item.revisions.map(&:seq).max.to_i > rev.seq
       sorted = rev.findings.sort_by(&:id)
       responses = FindingResponse.latest_for(sorted.map(&:id))
+      opinions = FindingAssessment.opinions_for(sorted.map(&:id))
       findings = sorted.map do |f|
         disposition = dispositions[f.id]
-        Finding.new(f, disposition, disposition == "fix_requested" && !later, evidence_of(f, rev, item_body), responses[f.id])
+        closure = f.severity == "minor" && disposition.nil? ? opinions[f.id].minor_outcome : nil
+        Finding.new(f, disposition, disposition == "fix_requested" && !later, evidence_of(f, rev, item_body), responses[f.id], opinions[f.id], closure)
       end
       Card.new(rev, rev.item, item_body, samples, catalogue_of(item_body), Array(item_body["sources"]), Review::Gate.check(rev),
                review && JSON.parse(review.checklist_json), blind && JSON.parse(blind.results_json), findings, back[rev.id] || [], later)

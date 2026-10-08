@@ -17,6 +17,7 @@ module Teacher
 
     PERMITTED = %i[revision_id finding_id disposition reason_it grade_proposal_id attempt_id verdict error_code run_id
                    item_revision_id acknowledged statement_it subject skill override_kind reason_code comment_it enabled back].freeze
+    # follow_opinions reads params[:pairs] itself.
 
     {
       approve_skill_graph: "approve_skill_graph", approve_blueprint: "approve_blueprint", confirm_test_reviewed: "confirm_test_reviewed", dispose_finding: "dispose_finding",
@@ -28,7 +29,45 @@ module Teacher
       define_method(action) { decide(kind) }
     end
 
+    # "Segui il parere su questi M" (D-222): one dispose_finding decision per listed finding, each
+    # through DecisionRecorder with every guard, in the teacher's own request. A pair "finding:verdict"
+    # is the line the teacher saw. A finding decided meanwhile, one whose two opinions are no longer
+    # clear or no longer say that, a minor one, and one of another subject are skipped and reported.
+    def follow_opinions
+      subject = Subject.find_by(key: params[:subject].to_s) or return render(plain: "Not Found", status: :not_found)
+      pairs = Array(params[:pairs]).map(&:to_s).first(200)
+      lines = pairs.each_with_index.map { |pair, i| follow_one(subject, pair, i) }
+      done = lines.count { |l| l[:done] }
+      text = "#{I18n.t('teacher.follow.summary', done: done, skipped: lines.size - done)} #{lines.map { |l| l[:text] }.join(' ')}"
+      if json_caller?
+        render json: { ok: true, decided: done, skipped: lines.size - done, lines: lines.map { |l| l[:text] } }
+      else
+        redirect_to back_path, status: :see_other, notice: text.first(1500)
+      end
+    rescue DecisionRecorder::Refused
+      render plain: "Forbidden", status: :forbidden
+    end
+
     private
+
+    def follow_one(subject, pair, index)
+      id, verdict = pair.split(":", 2)
+      finding = ReviewFinding.find_by(id: Integer(id, exception: false)) if id.to_s.match?(/\A[1-9]\d{0,17}\z/)
+      return { done: false, text: I18n.t("teacher.follow.unknown", id: id.to_s.first(20)) } unless finding
+
+      skipped = ->(why) { { done: false, text: I18n.t("teacher.follow.skipped_#{why}", id: finding.id) } }
+      return skipped.call(:subject) unless finding.item_revision.item.subject_id == subject.id && finding.severity != "minor"
+      return skipped.call(:decided) if finding.disposed?
+
+      opinion = finding.opinion
+      return skipped.call(:changed) unless opinion.clear? && opinion.verdict == verdict
+
+      DecisionRecorder.call(request: request, kind: "dispose_finding", request_id: "#{request.request_id.presence || SecureRandom.uuid}/#{index}",
+                            params: { finding_id: finding.id, disposition: opinion.disposition, reason_it: I18n.t("teacher.skill.follow_reason") })
+      { done: true, text: I18n.t("teacher.follow.done", id: finding.id) }
+    rescue DecisionRecorder::Missing, DecisionRecorder::Invalid, ActiveRecord::RecordNotUnique
+      { done: false, text: I18n.t("teacher.follow.skipped_invalid", id: id.to_s.first(20)) }
+    end
 
     def check_csrf
       request.env[DecisionRecorder::CSRF_KEY] = any_authenticity_token_valid?

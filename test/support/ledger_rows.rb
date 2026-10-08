@@ -35,6 +35,7 @@ module LedgerRows
     rows["review_findings"] = ReviewFinding.create!(item_revision: revision, source: "review", item_review: review, severity: "minor", field: "f",
                                                    quote: "q", problem_it: "p", fix_it: "f")
     rows["finding_responses"] = FindingResponse.create!(review_finding: rows["review_findings"], agent_session: session, stance: "item_right", note_it: "La domanda è giusta.")
+    rows["finding_assessments"] = FindingAssessment.create!(review_finding: rows["review_findings"], agent_session: session, verdict: "unclear", note_it: "Non so dire.")
     blueprint = BlueprintRevision.create!(subject: rows["subjects"], skill_graph_revision: graph, seq: 1, body_json: JSON_BODY)
     rows["blueprint_revisions"] = blueprint
     rows["decisions"] = Decision.create!(kind: "approve_skill_graph", subject: rows["subjects"], payload_json: JSON_BODY,

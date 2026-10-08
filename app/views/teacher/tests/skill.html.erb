@@ -88,42 +88,13 @@
         <% if card.findings.any? %>
           <h3><%= t("teacher.skill.findings") %></h3>
           <p class="hint" data-findings-intro><%= t("teacher.skill.findings_intro") %></p>
-          <% card.findings.each do |entry| %>
-            <% f = entry.finding %>
-            <div class="finding" id="finding-<%= f.id %>" data-finding="<%= f.id %>" data-severity="<%= f.severity %>" data-disposition="<%= entry.disposition %>">
-              <p><strong><%= t("teacher.skill.severity.#{f.severity}") %></strong> · <%= t("teacher.skill.source.#{f.source}") %><% if f.instance %> · <%= t("teacher.skill.instance", n: f.instance) %><% end %><br>
-                <% if entry.evidence %><span class="quote" data-markup="inline"><%= f.quote %></span><% else %><q><%= f.quote %></q><% end %><br><%= f.problem_it %><br><%= t("teacher.skill.fix") %> <%= f.fix_it %></p>
-              <% if entry.evidence %>
-                <% ev = entry.evidence %>
-                <p class="evidence" data-evidence>
-                  <strong><%= t("teacher.skill.key") %></strong> <span data-evidence-key data-markup="inline"><%= ev.key %></span>
-                  <% if ev.accepted.any? %><br><%= t("teacher.skill.accepted_too") %> <%= safe_join(ev.accepted.map { |a| content_tag(:span, a, "data-markup": "inline") }, ", ") %><% end %>
-                  <br><strong><%= t("teacher.skill.solver_wrote") %></strong>
-                  <% if ev.dont_know %><span data-evidence-solver><%= t("teacher.skill.solver_dont_know") %></span>
-                  <% else %><code data-evidence-solver><%= ev.solver_answer %></code><% end %>
-                </p>
-              <% end %>
-              <% if entry.response %>
-                <% r = entry.response %>
-                <p class="author-response" data-response="<%= r.stance %>">
-                  <strong><%= t("teacher.skill.response") %></strong>
-                  <%= r.stance == "fixed" ? t("teacher.skill.response_fixed", seq: r.item_revision.seq) : t("teacher.skill.response_item_right") %><br>
-                  <%= r.note_it %></p>
-              <% end %>
-              <% if entry.disposition %>
-                <p class="decided"><strong><%= t("teacher.skill.disposition.#{entry.disposition}") %></strong>
-                  <% if entry.new_revision_expected %> <%= t("teacher.skill.new_revision_expected") %><% end %></p>
-              <% else %>
-                <%= decision_form("/teacher/findings/#{f.id}/disposition") do %>
-                  <label class="hint" for="reason-<%= f.id %>"><%= t("teacher.skill.reason_label") %></label>
-                  <input id="reason-<%= f.id %>" class="answer-input wide" type="text" name="reason_it" maxlength="300" required placeholder="<%= t('teacher.skill.reason_placeholder') %>">
-                  <p>
-                    <button type="submit" name="disposition" value="dismissed" class="button secondary small" <%= "disabled" if blocker %>><%= t("teacher.skill.dismiss") %></button>
-                    <button type="submit" name="disposition" value="fix_requested" class="button small" <%= "disabled" if blocker %>><%= t("teacher.skill.request_fix") %></button>
-                  </p>
-                <% end %>
-              <% end %>
-            </div>
+          <% majors, minors = card.findings.partition { |e| e.finding.severity != "minor" } %>
+          <% majors.each do |entry| %><%= render "teacher/tests/finding", entry: entry, blocker: blocker %><% end %>
+          <% if minors.any? %>
+            <details class="minor-findings" id="minor-<%= card.revision.id %>" data-minor-findings="<%= minors.size %>">
+              <summary><%= t("teacher.skill.minor_summary", count: minors.size) %></summary>
+              <% minors.each do |entry| %><%= render "teacher/tests/finding", entry: entry, blocker: blocker %><% end %>
+            </details>
           <% end %>
         <% end %>
 

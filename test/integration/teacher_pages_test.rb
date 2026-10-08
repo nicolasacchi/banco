@@ -218,9 +218,9 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
   test "the finding texts explain the choice" do
     finding, = blind_finding
     page "/teacher/subjects/math/test/skills/math.normalized-text"
-    assert_select "[data-findings-intro]", /possibile problema.*Decidi tu.*bloccanti e gravi.*prima dell'approvazione.*lievi sono facoltativi/m
-    assert_select "#finding-#{finding.id} button[value=dismissed]", "La domanda è giusta: scarta il rilievo"
-    assert_select "#finding-#{finding.id} button[value=fix_requested]", "La domanda va cambiata: chiedi la correzione"
+    assert_select "[data-findings-intro]", /possibile problema.*Decidi tu.*bloccanti e gravi.*prima dell'approvazione.*lievi non serve deciderli/m
+    assert_select "#finding-#{finding.id} button[value=dismissed]", "Va bene così: scarta il rilievo"
+    assert_select "#finding-#{finding.id} button[value=fix_requested]", "Va sistemato: chiedi la correzione"
     assert_select "#finding-#{finding.id} label", "Motivo, in una riga (lo legge l'agente)"
     assert_select "#finding-#{finding.id} input[name=reason_it][placeholder]"
   end
@@ -231,7 +231,7 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     finding, = blind_finding
     skill = JSON.parse(@world[:revisions]["normalized_text"].body_json)["skill"]
     page "/teacher/subjects/math/test"
-    assert_select "#open-findings h2", "Rilievi da decidere: 1."
+    assert_select "#open-findings h2", "Rilievi da decidere: 1, di cui nessuno con un parere chiaro."
     assert_select "#open-findings a[href='/teacher/subjects/math/test/skills/#{skill}#finding-#{finding.id}']", /Bloccante/
     Decision.create!(kind: "dispose_finding", subject: @subject, payload_json: { finding_id: finding.id, disposition: "dismissed", reason_it: "Sì." }.to_json,
                      request_id: SecureRandom.uuid, teacher_login: "nik", groups: "banco-teacher", remote_addr: EDGE)
@@ -250,7 +250,7 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     finding, revision = blind_finding
     ItemRevision.create!(item: revision.item, seq: revision.seq + 1, body_json: revision.body_json, file_sessions_json: "{}")
     page "/teacher/subjects/math/test"
-    assert_select "#open-findings h2", "Rilievi da decidere: 1."
+    assert_select "#open-findings h2", "Rilievi da decidere: 1, di cui nessuno con un parere chiaro."
     page "/teacher"
     assert_select "li.subject[data-subject=math] [data-waiting=findings] a[href='/teacher/subjects/math/test#open-findings']", "Rilievi da decidere: 1."
     assert_equal 1, Teacher::TestReview.new(@subject).open_finding_list.count { |e| e.finding.id == finding.id }

@@ -16,7 +16,7 @@ import (
 // work is read from BANCO_SESSION (banco session new prints it) and sent as
 // X-Banco-Session on every request.
 
-var sessionRoles = map[string]bool{"author": true, "verifier": true, "reviewer": true, "solver": true, "grader": true}
+var sessionRoles = map[string]bool{"author": true, "verifier": true, "reviewer": true, "solver": true, "grader": true, "arbiter": true}
 var agentRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._/@ :+()-]{0,95}$`)
 
 // runSessionNew opens a session (POST /api/v1/sessions) and prints it. With --id it
@@ -24,7 +24,7 @@ var agentRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._/@ :+()-]{0,95}$`)
 func runSessionNew(e *env, args []string) error {
 	fs := flag.NewFlagSet("session new", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
-	role := fs.String("role", "", "author, verifier, reviewer, solver or grader")
+	role := fs.String("role", "", "author, verifier, reviewer, solver, grader or arbiter")
 	agent := fs.String("agent", "", "the program that runs the session, for example omp")
 	model := fs.String("model", "", "the model the session runs on")
 	idOnly := fs.Bool("id", false, "print the session id only")
@@ -38,7 +38,7 @@ func runSessionNew(e *env, args []string) error {
 		return newErr(ExitUsage, "E-USAGE", "args", "session new takes no argument", next)
 	}
 	if !sessionRoles[*role] {
-		return newErr(ExitUsage, "E-USAGE", "role", "--role is author, verifier, reviewer, solver or grader", next)
+		return newErr(ExitUsage, "E-USAGE", "role", "--role is author, verifier, reviewer, solver, grader or arbiter", next)
 	}
 	if *agent == "" || *model == "" {
 		return newErr(ExitUsage, "E-USAGE", "agent", "give --agent NAME and --model MODEL", next)

@@ -9,7 +9,9 @@ Phase 1a: the entry diagnosis.
 
 1. The student talks only to the software: no chat and no model in the student's path.
 2. Decisions are taken by the teacher in the browser (web listener only). No
-   `/api/v1` route creates a decision; the CLI has no decision command.
+   `/api/v1` route creates a decision; the CLI has no decision command. Exception:
+   minor review findings, which the third reviewer may close when its two opinions
+   agree (a derived state, never a decision row): D-222.
 3. Agent-written code runs only in browsers (the server's Chrome at validation).
    Rails and the grader worker never execute it.
 4. The ledger is append-only: triggers block UPDATE and DELETE on every primary
@@ -108,6 +110,7 @@ only), `HARNESS_PORT` 3200 (internal). Never `PORT`.
 - Roles (D-217): `EdgeTrust` says teacher, guest (reads every teacher page, writes nothing, no preview), student; `BANCO_STUDENT_USERS` maps logins to student keys (`student` is official, any other key a trial student: no release, approved or latest validated blueprint, no device cookie, never counted); `?student=KEY` on the teacher's report, corrections and home; `BANCO_GUEST_USERS`, `BANCO_LOGOUT_URL`.
 - References (D-218): a skill key or item key on a teacher page goes through `RefsHelper#ref_for` (Italian name, key, popover card from `Teacher::Refs`); `GET /teacher/refs/:key` is its permalink. Never print a bare key there.
 - Finding responses (D-220): the author answers blocker and major findings (`FindingResponse`, `Api::V1::FindingsController`, `banco findings list|respond`); the skill screen shows the key, the solver's answer and the latest response; a response never disposes of a finding.
+- Third reviewer (D-222): role `arbiter` (`FindingAssessment`, `FindingOpinion`, `Teacher::FindingField`, `banco findings assess`, `briefs/arbiter.md`); first opinion claude-opus-5-5, second claude-haiku-4-5-20251001 (`config/banco/providers.yml`); blocker and major findings stay a teacher click ("Segui il parere", `follow_opinions`), minor ones are closed or marked to fix as derived state; no effect on `Review::Gate` or `Approval::BlueprintGate`.
 - `docs/decisions.md`: every deviation and operator answer (`## D-NNN`, index at the
   top). Change the design only by adding an entry.
 - `prep/`: private working material, git-ignored, never committed.

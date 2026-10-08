@@ -227,7 +227,7 @@
       "method": "GET",
       "path": "/api/v1/subjects/:subject/findings",
       "args": [],
-      "flags": ["--subject", "--open"],
+      "flags": ["--subject", "--open", "--all"],
       "error_codes": ["E-AUTH", "E-NOT-FOUND"]
     },
     {
@@ -235,6 +235,15 @@
       "local": false,
       "method": "POST",
       "path": "/api/v1/findings/:finding/responses",
+      "args": ["finding"],
+      "flags": ["--file", "--dry-run"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-READ", "E-PHRASE", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT"]
+    },
+    {
+      "name": "findings assess",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/findings/:finding/assessments",
       "args": ["finding"],
       "flags": ["--file", "--dry-run"],
       "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-READ", "E-PHRASE", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT"]

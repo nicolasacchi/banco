@@ -61,6 +61,7 @@ var commands = []command{
 	{name: "solve submit", run: runSolveSubmit},
 	{name: "findings list", run: runFindingsList},
 	{name: "findings respond", run: runFindingsRespond},
+	{name: "findings assess", run: runFindingsAssess},
 	{name: "submissions", run: runSubmissions},
 	{name: "grade propose", run: runGradePropose},
 }

@@ -1,0 +1,59 @@
+<% f = entry.finding %>
+<div class="finding" id="finding-<%= f.id %>" data-finding="<%= f.id %>" data-severity="<%= f.severity %>" data-disposition="<%= entry.disposition %>">
+  <p><strong><%= t("teacher.skill.severity.#{f.severity}") %></strong> · <%= t("teacher.skill.source.#{f.source}") %><% if f.instance %> · <%= t("teacher.skill.instance", n: f.instance) %><% end %><br>
+    <% if entry.evidence %><span class="quote" data-markup="inline"><%= f.quote %></span><% else %><q><%= f.quote %></q><% end %><br><%= f.problem_it %><br><%= t("teacher.skill.fix") %> <%= f.fix_it %></p>
+  <p class="field-line" data-field="<%= Teacher::FindingField.key_for(f.field) %>"><strong><%= t("teacher.skill.field_label") %></strong> <%= Teacher::FindingField.phrase(f.field) %></p>
+  <% if entry.evidence %>
+    <% ev = entry.evidence %>
+    <p class="evidence" data-evidence>
+      <strong><%= t("teacher.skill.key") %></strong> <span data-evidence-key data-markup="inline"><%= ev.key %></span>
+      <% if ev.accepted.any? %><br><%= t("teacher.skill.accepted_too") %> <%= safe_join(ev.accepted.map { |a| content_tag(:span, a, "data-markup": "inline") }, ", ") %><% end %>
+      <br><strong><%= t("teacher.skill.solver_wrote") %></strong>
+      <% if ev.dont_know %><span data-evidence-solver><%= t("teacher.skill.solver_dont_know") %></span>
+      <% else %><code data-evidence-solver><%= ev.solver_answer %></code><% end %>
+    </p>
+  <% end %>
+  <% if entry.response %>
+    <% r = entry.response %>
+    <p class="author-response" data-response="<%= r.stance %>">
+      <strong><%= t("teacher.skill.response") %></strong>
+      <%= r.stance == "fixed" ? t("teacher.skill.response_fixed", seq: r.item_revision.seq) : t("teacher.skill.response_item_right") %><br>
+      <%= r.note_it %></p>
+  <% end %>
+  <% op = entry.opinion %>
+  <% if op.any? %>
+    <div class="opinions" data-opinion-state="<%= op.state %>"<% if op.verdict %> data-opinion-verdict="<%= op.verdict %>"<% end %>>
+      <p><strong><%= t("teacher.skill.opinion.#{op.state == :waiting && op.first.nil? ? :waiting_first : op.state}") %>.</strong><% if op.clear? %> <%= t("teacher.skill.verdict_clear.#{op.verdict}") %><% end %></p>
+      <% { first: op.first, second: op.second }.each do |slot, a| %>
+        <% next unless a %>
+        <p class="assessment" data-opinion="<%= slot %>" data-assessment="<%= a.verdict %>">
+          <strong><%= t("teacher.skill.opinion.#{slot}") %></strong> <%= t("teacher.skill.verdict.#{a.verdict}") %>.<br>
+          <%= a.note_it %></p>
+      <% end %>
+    </div>
+  <% end %>
+  <% if entry.closure %>
+    <p class="closure" data-closure="<%= entry.closure %>"><strong><%= t("teacher.skill.opinion.#{entry.closure}") %></strong></p>
+  <% end %>
+  <% if entry.disposition %>
+    <p class="decided"><strong><%= t("teacher.skill.disposition.#{entry.disposition}") %></strong>
+      <% if entry.new_revision_expected %> <%= t("teacher.skill.new_revision_expected") %><% end %></p>
+  <% else %>
+    <% if op.clear? && f.severity != "minor" %>
+      <%= decision_form("/teacher/findings/#{f.id}/disposition") do %>
+        <%= hidden_field_tag :disposition, op.disposition, id: "follow-disposition-#{f.id}" %>
+        <label class="hint" for="follow-reason-<%= f.id %>"><%= t("teacher.skill.reason_label") %></label>
+        <input id="follow-reason-<%= f.id %>" class="answer-input wide" type="text" name="reason_it" maxlength="300" required value="<%= t('teacher.skill.follow_reason') %>">
+        <p><button type="submit" class="button small" data-follow="<%= op.verdict %>" <%= "disabled" if blocker %>><%= t("teacher.skill.follow") %></button></p>
+      <% end %>
+    <% end %>
+    <%= decision_form("/teacher/findings/#{f.id}/disposition") do %>
+      <label class="hint" for="reason-<%= f.id %>"><%= t("teacher.skill.reason_label") %></label>
+      <input id="reason-<%= f.id %>" class="answer-input wide" type="text" name="reason_it" maxlength="300" required placeholder="<%= t('teacher.skill.reason_placeholder') %>">
+      <p>
+        <button type="submit" name="disposition" value="dismissed" class="button secondary small" <%= "disabled" if blocker %>><%= t("teacher.skill.dismiss") %></button>
+        <button type="submit" name="disposition" value="fix_requested" class="button small" <%= "disabled" if blocker %>><%= t("teacher.skill.request_fix") %></button>
+      </p>
+    <% end %>
+  <% end %>
+</div>

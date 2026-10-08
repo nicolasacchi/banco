@@ -49,8 +49,10 @@ class DecisionRecorder
   Context = Struct.new(:login, :groups, keyword_init: true)
 
   class << self
-    def call(request:, kind:, params: {})
-      new(request, kind.to_s, params.to_h.with_indifferent_access).call
+    # request_id: a decision of its own inside a request that records several (the id of the request
+    # is unique per decision row); the default is the request's id.
+    def call(request:, kind:, params: {}, request_id: nil)
+      new(request, kind.to_s, params.to_h.with_indifferent_access, request_id).call
     end
 
     # nil when the request may decide, otherwise the reason (a symbol).
@@ -71,10 +73,11 @@ class DecisionRecorder
     def groups_of(request) = request.get_header("HTTP_REMOTE_GROUPS").to_s.split(",").map(&:strip).reject(&:empty?)
   end
 
-  def initialize(request, kind, params)
+  def initialize(request, kind, params, request_id = nil)
     @request = request
     @kind = kind
     @params = params
+    @request_id = request_id
   end
 
   def call
@@ -86,7 +89,7 @@ class DecisionRecorder
       subject, student, payload = send(@kind)
       Decision.create!(
         kind: @kind, subject: subject, student: student, payload_json: JSON.generate(payload),
-        request_id: @request.request_id.presence || SecureRandom.uuid,
+        request_id: @request_id.presence || @request.request_id.presence || SecureRandom.uuid,
         teacher_login: @request.get_header("HTTP_REMOTE_USER").to_s.strip,
         groups: self.class.groups_of(@request).join(","), remote_addr: @request.remote_addr,
         user_agent: @request.user_agent.to_s.first(300), request_path: @request.path.to_s.first(300)
