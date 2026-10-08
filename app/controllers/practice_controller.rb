@@ -70,7 +70,7 @@ class PracticeController < ApplicationController
   # teacher withdraws the release).
   def own_visible_serve?(id)
     serve = PracticeServe.find_by(id: id.to_s.to_i, student_id: acting_student.id) or return false
-    subject_visible?(serve.skill_key.split(".").first)
+    course_view.subjects.any? { |sv| sv.topics.any? { |t| t.topic_revision.id == serve.topic_revision_id } }
   end
 
   # A9.3: the open serve as the browser sees it.

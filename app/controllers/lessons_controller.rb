@@ -7,15 +7,24 @@ class LessonsController < ApplicationController
   before_action :no_store, only: :solution
 
   SECTIONS = %w[why_it idea_it example_it mistakes_it].freeze
+  OPENED_THROTTLE = 5.minutes
   AFTER_TRY = %w[book_it summary_it].freeze
 
   def show
     revision = @topic.lesson_revision
     @body = revision.body
     @revision = revision
+    record_opened(revision)
+  end
+
+  def record_opened(revision)
+    last = PracticeEvent.where(student: acting_student, kind: "lesson_opened", topic_revision: @topic.topic_revision).order(:id).last
+    return if last && last.at > OPENED_THROTTLE.ago
+
     PracticeEvent.create!(student: acting_student, kind: "lesson_opened", topic_revision: @topic.topic_revision, lesson_revision: revision,
                           payload_json: "{}", at: Time.current, created_at: Time.current)
   end
+  private :record_opened
 
   # POST /topics/:topic/lesson/exercises/:n/solution -> {n, solution_it}
   def solution

@@ -169,6 +169,17 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     assert_equal 1, PracticeEvent.where(kind: "lesson_opened", student: @official).count
   end
 
+  test "a reload of the lesson within minutes writes no second lesson_opened; later it does" do
+    build_student_world
+    page(OFFICIAL, "/topics/#{TOPIC}/lesson")
+    page(OFFICIAL, "/topics/#{TOPIC}/lesson")
+    assert_equal 1, PracticeEvent.where(kind: "lesson_opened", student: @official).count
+    travel 6.minutes do
+      page(OFFICIAL, "/topics/#{TOPIC}/lesson")
+    end
+    assert_equal 2, PracticeEvent.where(kind: "lesson_opened", student: @official).count
+  end
+
   test "the lesson solution comes on request, is recorded, and an unknown exercise is a 404" do
     build_student_world
     body = post_json(OFFICIAL, "/topics/#{TOPIC}/lesson/exercises/1/solution")
