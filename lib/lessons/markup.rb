@@ -281,15 +281,11 @@ module Lessons
       end
     end
 
-    # The colour roles a text uses, in [[role:...]] spans and \\role{name}{...} macros: [[name, line]].
-    def roles_used(text, line_offset: 1)
-      names = []
+    # Every inline node of a lesson/2 text with the line of its paragraph or item: yields (node, line).
+    def each_node(text, line_offset: 1, &block)
       walk = lambda do |nodes, line|
         nodes.each do |n|
-          case n["t"]
-          when "role" then names << [ n["role"], line ]
-          when "math" then n["v"].scan(/\\role\{([^{}]*)\}/) { |(name)| names << [ name, line ] }
-          end
+          yield n, line
           walk.call(n["children"], line) if n["children"]
         end
       end
@@ -298,7 +294,25 @@ module Lessons
         else b.items.each { |it| ([ it[:text] ] + it[:subs]).each { |t| walk.call(inline(t, it[:line], roles: true), it[:line]) } }
         end
       end
+    end
+
+    # The colour roles a text uses, in [[role:...]] spans and \\role{name}{...} macros: [[name, line]].
+    def roles_used(text, line_offset: 1)
+      names = []
+      each_node(text, line_offset: line_offset) do |n, line|
+        case n["t"]
+        when "role" then names << [ n["role"], line ]
+        when "math" then n["v"].scan(/\\role\{([^{}]*)\}/) { |(name)| names << [ name, line ] }
+        end
+      end
       names
+    end
+
+    # The links a text holds: [[kind, target, line]].
+    def links_used(text, line_offset: 1)
+      links = []
+      each_node(text, line_offset: line_offset) { |n, line| links << [ n["kind"], n["target"], line ] if n["t"] == "link" }
+      links
     end
 
     # Index of the next unescaped "$" at or after +from+, or nil.

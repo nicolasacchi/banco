@@ -13,6 +13,19 @@ module Lesson2Fixtures
 
   def read(name) = DIR.join(name).read
 
+  # The invented course of context.json as a Validation::Context (R1): the skills with their error codes, the
+  # programme lines, the topics of the course map.
+  def context(subject = "math")
+    c = CONTEXT.fetch(subject)
+    lines = c["source_lines"].to_h { |l| [ [ l["source"], l["line"] ], l["text"] ] }
+    skills = c["skills"].to_h { |k| [ k, { "key" => k, "errors" => c["error_codes"].map { |code| { "code" => code } } } ] }
+    Validation::Context.new(subject: subject, skill: ->(k) { skills[k] },
+                            source_line: ->(s, n) { (t = lines[[ s, n ]]) && { text: t, origin: "pdf" } },
+                            topic: ->(k) { c["topics"].include?(k) })
+  end
+
+  def check(text, subject = "math") = Validation::LessonChecks.call(text, subject: subject, context: context(subject))
+
   def front_matter(text) = YAML.safe_load(text[/\A---\n(.*?)\n---\n/m, 1])
 
   # A fence-aware read of the cards of +text+: [{ level:, role:, title:, tag_tokens:, line: }] and the part headings.

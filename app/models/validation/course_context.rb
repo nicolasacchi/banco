@@ -26,11 +26,17 @@ module Validation
         draft_skill: ->(key) { draft_skill(key) },
         source_line: ->(source, number) { source_line(source, number) },
         source_section: ->(source, number) { source_section(source, number) },
-        reference_body: ->(key) { ReferenceText.find_by(key: key)&.body }
+        reference_body: ->(key) { ReferenceText.find_by(key: key)&.body },
+        topic: ->(key) { course_topics.include?(key) }
       )
     end
 
     private
+
+    # The topic keys of the subject's latest course map (lesson/2 links, A5).
+    def course_topics
+      @course_topics ||= Array(Course::State.latest(@subject)&.body&.fetch("topics", nil)).map { |t| t["key"] }
+    end
 
     def latest_graph = SkillGraphRevision.where(subject: @subject).order(:seq).last
 

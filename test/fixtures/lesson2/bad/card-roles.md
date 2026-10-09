@@ -112,6 +112,14 @@ cases:
     icon: user
     text_it: "Di solito il soggetto sta prima del predicato."
     example_it: "Il cane corre."
+    diagram:
+      type: sentence
+      alt_it: "La frase Il cane corre con il soggetto Il cane e il predicato corre colorati."
+      text_it: "Il cane corre"
+      layout: line
+      parts:
+        - {id: s, text_it: "Il cane", role: subject, label_it: "soggetto"}
+        - {id: p, text_it: "corre", role: predicate, label_it: "predicato"}
   - title_it: "Dopo il verbo"
     icon: repeat
     text_it: "A volte il soggetto viene dopo."

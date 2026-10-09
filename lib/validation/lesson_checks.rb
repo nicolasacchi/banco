@@ -16,7 +16,14 @@ module Validation
 
     # +md+: the text of lesson.md; +subject+: the subject key of the submit.
     def call(md, subject:, context:)
+      source = Lessons::Parser.normalize(md)
+      return Lesson2Checks.call(source, subject: subject, context: context) if Lessons::Parser2.schema2?(source)
+
       findings = Findings.new
+      if rule(:accept_schema1) == false
+        findings.add("E-LESSON-SCHEMA", "/front_matter/schema", "lessons are written as banco.lesson/2 now: open the lesson with banco lesson open KEY --schema 2 and rewrite it in cards (banco brief show lesson)", rule: "schema1")
+        return Outcome.new(findings: findings, parsed: nil)
+      end
       parsed = Lessons::Parser.call(md, findings)
       return Outcome.new(findings: findings, parsed: nil) unless parsed
 

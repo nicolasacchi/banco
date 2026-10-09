@@ -69,6 +69,15 @@ marks:
   - {at: '3', kind: dot}
 :::
 
+::: diagram number_line
+alt_it: "Retta numerica da zero a dieci con un punto sul numero 9, per contare i passi."
+min: '0'
+max: '10'
+step: '1'
+marks:
+  - {at: '9', kind: dot}
+:::
+
 ## Togli lo stesso peso dai due piatti {idea icon=scale}
 
 ::: callout rule "Primo principio"

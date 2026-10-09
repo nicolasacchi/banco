@@ -17,11 +17,13 @@ module Validation
   #   source_line:     ->(source_key, number) { {text:, origin:} | nil }
   #   source_section:  ->(source_key, number) { the "## " heading the line sits under | nil }
   #   reference_body:  ->(key) { text of an imported reference text | nil }
+  #   topic:           ->(key) { true when the key is a topic of the subject's latest course map } (links of lesson/2)
   class Context
     attr_reader :subject
 
     def initialize(subject:, skill: ->(_k) { nil }, graph_present: true, source_line: ->(_s, _n) { nil }, reference_body: ->(_k) { nil },
-                   approved_skill: ->(_k) { nil }, draft_skill: ->(_k) { nil }, source_section: ->(_s, _n) { nil }, graph_skill: nil)
+                   approved_skill: ->(_k) { nil }, draft_skill: ->(_k) { nil }, source_section: ->(_s, _n) { nil }, graph_skill: nil,
+                   topic: ->(_k) { false })
       @subject = subject
       @skill = skill
       @graph_skill = graph_skill || skill
@@ -31,6 +33,7 @@ module Validation
       @source_line = source_line
       @reference_body = reference_body
       @source_section = source_section
+      @topic = topic
     end
 
     def skill(key) = @skill.call(key)
@@ -41,5 +44,6 @@ module Validation
     def source_line(source, number) = @source_line.call(source, number)
     def source_section(source, number) = @source_section.call(source, number)
     def reference_body(key) = @reference_body.call(key)
+    def topic?(key) = @topic.call(key) ? true : false
   end
 end
