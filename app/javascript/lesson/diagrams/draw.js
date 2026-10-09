@@ -5,7 +5,7 @@
 // size and again on resize. If layout() answers { error } the figure shows alt_it and the description.
 import * as N from "lesson/num"
 import { button, clear, el, icon, svg, uid } from "lesson/dom"
-import { describe, layout, moduleFor, stateCount } from "lesson/diagrams/index"
+import { describe, layout, moduleFor, stateCount } from "lesson/diagrams/registry"
 import { tryReadout } from "lesson/diagrams/balance"
 import { renderInlineRich, renderRich } from "lesson/text"
 
@@ -208,7 +208,7 @@ export function mountDiagram(data, ctx, options = {}) {
     if (total <= 1) return
     counter.textContent = ctx.t.step_of.replace("%{n}", state.i + 1).replace("%{total}", total)
     prev.disabled = state.i === 0
-    const nextLabel = data.states[Math.min(state.i + 1, total - 1)]?.next_label_it
+    const nextLabel = data.states[state.i]?.next_label_it
     next.firstChild.textContent = state.i === total - 1 ? ctx.t.restart_steps : nextLabel ?? ctx.t.next_step
     next.dataset.last = String(state.i === total - 1)
   }

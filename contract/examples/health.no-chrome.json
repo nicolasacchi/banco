@@ -29,6 +29,9 @@
       "decisions": {
         "enabled": false
       },
+      "lesson2": {
+        "enabled": true
+      },
       "diagnosis": {
         "released": false
       },

@@ -2,7 +2,7 @@
 // rational coefficients), points and segments. A point that names lines in `on_lines` lies exactly on each
 // of them (checked with exact rationals). Tick labels thin out; point and line labels go next to their mark.
 import * as N from "lesson/num"
-import { effectiveState, finish, label, listIt, placeNear, plain, shape, stateCount } from "lesson/diagrams/common"
+import { effectiveState, finish, label, listIt, labelNear, plain, shape, stateCount } from "lesson/diagrams/common"
 import { run } from "lesson/diagrams/run"
 
 export const states = stateCount
@@ -172,12 +172,12 @@ function build(data, ctx) {
   // labels next to their marks (inside the plot, not over another label)
   for (const p of eff.points ?? []) {
     if (!p.label_it) continue
-    const placed = placeNear(ctx, p.label_it, X(num(p.x)), Y(num(p.y)), 10, box, { cls: `dg-note role-${p.role ?? "muted"}`, role: p.role })
+    const placed = labelNear(ctx, p.label_it, X(num(p.x)), Y(num(p.y)), 10, box, { cls: `dg-note role-${p.role ?? "muted"}`, role: p.role })
     if (!placed) return { error: { path: "/points", message: "no room for the label of a point", code: "E-DIAGRAM-LAYOUT" } }
   }
   for (const e of ends) {
     if (!e.l.label_it) continue
-    const placed = placeNear(ctx, e.l.label_it, e.at[0], e.at[1], 6, box, { cls: `dg-note role-${e.role}`, role: e.role })
+    const placed = labelNear(ctx, e.l.label_it, e.at[0], e.at[1], 6, box, { cls: `dg-note role-${e.role}`, role: e.role })
     if (!placed) return { error: { path: "/lines", message: "no room for the label of a line", code: "E-DIAGRAM-LAYOUT" } }
   }
   return finish(ctx, top + ph + bottom, { states: stateCount(data), state: ctx.state })

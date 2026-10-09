@@ -10,5 +10,6 @@ CI.run do
   step "Security: Importmap vulnerability audit", "bin/importmap audit"
   step "Security: Brakeman code analysis", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
   step "Tests: Rails", "bin/rails test"
+  step "Tests: Node (lesson/2 renderer)", "node --test 'app/javascript/lesson/test/*.test.mjs'"
   step "Tests: Go CLI", "cd cli && go test ./..."
 end

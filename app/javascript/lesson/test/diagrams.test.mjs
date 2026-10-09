@@ -7,7 +7,7 @@ import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
 
-const { layout, describe, stateCount, TYPES } = await import("lesson/diagrams/index")
+const { layout, describe, stateCount, TYPES } = await import("lesson/diagrams/registry")
 const katex = (await import("katex")).default
 
 // The formula check that the browser leaves to Ruby: KaTeX must parse the joined parts.

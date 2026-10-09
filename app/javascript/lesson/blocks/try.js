@@ -42,7 +42,7 @@ export function render(block, ctx, loc) {
     li.appendChild(el("h3", { class: "exercise-head" }, icon("notebook-pen", "ex-ic"), el("span", { text: `${ctx.t.exercise} ${ex.n}` }), el("span", { class: "exercise-sub", text: ` · ${ctx.t.on_notebook}` })))
     li.appendChild(el("div", { class: "exercise-text" }, renderRich(ex.text_it, ctx)))
     if (ex.diagram) li.appendChild(el("div", { class: "block-diagram" }, figureFor(ex.diagram, ctx).node))
-    const checks = ex.checks ?? (ex.check ? [ex.check] : [])
+    const checks = ctx.safe ? [] : ex.checks ?? (ex.check ? [ex.check] : [])
     checks.forEach((spec, k) => {
       const part = checks.length > 1 ? k + 1 : undefined
       const wrap = el("div", { class: "exercise-check" })

@@ -60,6 +60,7 @@ export function render(block, ctx, loc) {
     steps.slice(index).forEach((s, k) => {
       const li = stepNode(s, index + k)
       li.hidden = false
+      if (k === 0) li.appendChild(el("p", { class: "verdict verdict-right" }, icon("circle-check", "verdict-ic"), el("strong", { text: ctx.t.right })))
       rows.push(li)
       list.appendChild(li)
     })

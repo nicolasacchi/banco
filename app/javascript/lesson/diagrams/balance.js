@@ -48,7 +48,7 @@ export function semantic(data) {
     if (data.try.to < data.try.from) return { path: "/try", message: "from is above to" }
     if (data.try.to - data.try.from + 1 > 12) return { path: "/try", message: "a try has at most 12 values" }
     if (v && !(N.compare(v, N.int(data.try.from)) >= 0 && N.compare(v, N.int(data.try.to)) <= 0)) return { path: "/try", message: "the range must contain the solution" }
-    if (!v) return { path: "/try", message: "a try needs x_value" }
+    if (!v && !served) return { path: "/try", message: "a try needs x_value" }
   }
   return null
 }

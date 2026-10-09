@@ -216,45 +216,16 @@
       ],
       "states": [
        {
-        "text_it": "Marco legge un libro",
-        "op_it": "Passo 1: il verbo",
-        "parts": [
-         {
-          "id": "s",
-          "text_it": "Marco",
-          "role": "muted"
-         },
-         {
-          "id": "p",
-          "text_it": "legge",
-          "role": "predicate"
-         },
-         {
-          "id": "o",
-          "text_it": "un libro",
-          "role": "muted"
-         }
-        ],
+        "op_it": "Passo 1: trova il verbo",
         "next_label_it": "Trova il soggetto"
        },
        {
-        "text_it": "Marco legge un libro",
-        "op_it": "Passo 2: il soggetto",
-        "parts": [
+        "op_it": "Passo 2: il soggetto concorda con il verbo",
+        "links": [
          {
-          "id": "s",
-          "text_it": "Marco",
-          "role": "subject"
-         },
-         {
-          "id": "p",
-          "text_it": "legge",
-          "role": "predicate"
-         },
-         {
-          "id": "o",
-          "text_it": "un libro",
-          "role": "muted"
+          "from": "s",
+          "to": "p",
+          "label_it": "accordo"
          }
         ]
        }

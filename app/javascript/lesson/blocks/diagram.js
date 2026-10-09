@@ -1,7 +1,7 @@
 // diagram and schema blocks: a figure drawn by lesson/diagrams. Under safe mode the alt text and the
 // description replace the drawing.
 import { el } from "lesson/dom"
-import { describe } from "lesson/diagrams/index"
+import { describe } from "lesson/diagrams/registry"
 import { mountDiagram } from "lesson/diagrams/draw"
 import { renderInlineRich } from "lesson/text"
 

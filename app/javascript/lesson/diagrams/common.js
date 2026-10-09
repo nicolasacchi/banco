@@ -200,7 +200,7 @@ export function stackLabels(ctx, specs, y0, dir = 1) {
 
 // Tries the 8 places around a point, nearest first; returns the first label that does not overlap one
 // already placed and stays inside the box [bx0, bx1] x [by0, by1]; null when none does.
-export function placeNear(ctx, text, px, py, gap, box, opts = {}) {
+export function labelNear(ctx, text, px, py, gap, box, opts = {}) {
   const m = ctx.measure(text, ctx.fontPx, opts.maxW)
   const w = Math.ceil(m.w)
   const h = Math.ceil(m.h)
