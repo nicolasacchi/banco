@@ -5,7 +5,7 @@ require "digest"
 # GET /api/v1/briefs/:name. Every revision records the brief_sha256 it was built under.
 class Brief
   DIR = Rails.root.join("briefs")
-  NAME = /\A[a-z][a-z-]*\z/
+  NAME = /\A[a-z][a-z0-9-]*\z/
   FRONT_MATTER = /\A---\n(.*?)\n---\n/m
 
   attr_reader :name, :version, :sha256, :body

@@ -113,7 +113,7 @@ Rails.application.routes.draw do
   constraints(api) do
     get "api/v1/schema" => "api/v1/schema#show"
     post "api/v1/diagnosis/simulate" => "api/v1/diagnosis#simulate", format: false
-    get "api/v1/briefs/:name" => "api/v1/briefs#show", constraints: { name: /[a-z][a-z-]*/ }, format: false
+    get "api/v1/briefs/:name" => "api/v1/briefs#show", constraints: { name: /[a-z][a-z0-9-]*/ }, format: false
     get "api/v1/diagnosis/report" => "api/v1/reports#show", format: false
     get "api/v1/health" => "api/v1/health#show", format: false
     get "api/v1/status" => "api/v1/status#show", format: false

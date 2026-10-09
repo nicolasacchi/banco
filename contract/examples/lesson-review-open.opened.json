@@ -145,7 +145,7 @@
       ],
       "brief": {
         "name": "lesson-review",
-        "version": 1,
+        "version": 2,
         "sha256": "<sha256>"
       },
       "next": "write banco.lesson_review/1 (banco brief show lesson-review) and run banco lesson-review submit 1 --file review.json"
