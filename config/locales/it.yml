@@ -3,8 +3,19 @@ it:
     not_configured: "Account non configurato: chiedi all'insegnante."
     trial_notice: "Account di prova: i risultati non contano."
     logout: "Esci"
+    menu:
+      label: "Menu"
+      today: "Oggi"
+      subjects: "Materie"
+      diagnosis: "Test d'ingresso"
+      settings: "Impostazioni"
+      pause_to_today: "Pausa: torna a Oggi"
+  settings:
+    title: "Impostazioni"
+    intro: "Scegli i colori e la grandezza del testo. Valgono su tutte le pagine."
+    saved: "Fatto. Ho salvato la scelta."
   diagnosis:
-    title: "Diagnosi"
+    title: "Test d'ingresso"
     placeholder: "La diagnosi d'ingresso sarà qui."
     order_line: "Fai le materie nell'ordine indicato."
     not_open: "La diagnosi non è ancora aperta."
@@ -56,6 +67,10 @@ it:
       nothing_else: "Niente libro, niente appunti, niente telefono."
     header: "%{subject} · Domanda %{number}"
     pause: "Pausa"
+    leave:
+      unsent: "Hai scritto una risposta, ma non l'hai ancora inviata. Se esci, si perde."
+      stay: "Resta qui"
+      go: "Esci senza inviare"
     resume: "Riprendi"
     paused_text: "Sei in pausa. Il tempo non conta."
     send: "Invia"

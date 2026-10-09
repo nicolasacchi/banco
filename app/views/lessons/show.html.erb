@@ -3,7 +3,6 @@
 <main class="page course lesson" data-controller="lesson"
       data-lesson-solution-base-value="/topics/<%= @topic.key %>/lesson/exercises"
       data-lesson-labels-value="<%= lesson_labels.to_json %>">
-  <%= render "course/nav" %>
   <p><a href="/topics/<%= @topic.key %>"><%= t("lesson.back") %></a></p>
   <h1><%= @body["title_it"] %></h1>
   <p class="topic-meta"><%= t("topic.minutes", n: @body["minutes"]) %></p>

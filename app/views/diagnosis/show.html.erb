@@ -1,7 +1,6 @@
 <% content_for :title, t("diagnosis.title") %>
 <main class="page">
   <h1><%= t("diagnosis.title") %></h1>
-  <% if @course_link %><p><a id="course-link" class="button secondary" href="/today"><%= t("course.nav.today") %></a></p><% end %>
   <% if @released %>
     <p><%= t("diagnosis.order_line") %></p>
     <ul class="subjects">
@@ -28,22 +27,5 @@
       <p><%= t("diagnosis.not_open_warmup") %></p>
     <% end %>
     <p><a class="button" href="/diagnosis/warmup"><%= t("diagnosis.warmup_link") %></a></p>
-  <% end %>
-  <% prefs = ui_preferences %>
-  <h2><%= t("diagnosis.preferences.title") %></h2>
-  <%= form_with url: "/diagnosis/preferences", method: :post, class: "preferences" do %>
-    <fieldset class="options">
-      <legend><%= t("diagnosis.preferences.theme") %></legend>
-      <% Diagnosis::Preferences::THEMES.each do |theme| %>
-        <label class="option"><%= radio_button_tag "theme", theme, prefs[:theme] == theme %> <span><%= t("diagnosis.preferences.themes.#{theme}") %></span></label>
-      <% end %>
-    </fieldset>
-    <fieldset class="options">
-      <legend><%= t("diagnosis.preferences.size") %></legend>
-      <% Diagnosis::Preferences::SIZES.each do |size| %>
-        <label class="option"><%= radio_button_tag "size", size, prefs[:size] == size %> <span><%= t("diagnosis.preferences.sizes.#{size}") %></span></label>
-      <% end %>
-    </fieldset>
-    <p><button type="submit" class="button secondary"><%= t("diagnosis.preferences.save") %></button></p>
   <% end %>
 </main>

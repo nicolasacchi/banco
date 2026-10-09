@@ -32,7 +32,7 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     build_student_world(release: false)
     page(OFFICIAL, "/today")
     assert_response :success
-    assert_select "#course-closed", /Il corso non è ancora aperto/
+    assert_select "#course-part", 0
     assert_select "#suggestions", 0
     page(OFFICIAL, "/subjects")
     assert_select "#course-closed"
@@ -51,7 +51,7 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     page(OFFICIAL, "/topics/#{TOPIC}")
     assert_response :not_found
     page(OFFICIAL, "/today")
-    assert_select "#course-closed"
+    assert_select "#course-part", 0
   end
 
   test "after the release and the approval the official student sees the course, and a withdrawal closes it again" do
@@ -61,7 +61,7 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     assert_select "#course-closed", 0
     release_course!(@course, open: false)
     page(OFFICIAL, "/today")
-    assert_select "#course-closed"
+    assert_select "#course-part", 0
     page(OFFICIAL, "/topics/#{TOPIC}")
     assert_response :not_found
   end
@@ -120,7 +120,7 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     assert_select "#resume", 0
     assert_select "li.topic[data-reason=course_next] .topic-why", "È il prossimo argomento del corso."
     assert_select "li.topic .topic-meta", /Ripasso di prima · 30 minuti/
-    assert_select ".course-nav a", 3
+    assert_select "nav.student-menu a", 4
     page(OFFICIAL, "/topics/#{TOPIC}/lesson")
     page(OFFICIAL, "/today")
     assert_select "#resume", "Riprendi: #{TOPIC_TITLE}"
@@ -193,15 +193,6 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     assert_equal [ @official.id, @lesson_revision.id, @topic_revision.id ], [ event.student_id, event.lesson_revision_id, event.topic_revision_id ]
     post_json(OFFICIAL, "/topics/#{TOPIC}/lesson/exercises/9/solution")
     assert_response :not_found
-  end
-
-  test "the diagnosis page links to Oggi only when there is a visible topic" do
-    build_student_world(release: false)
-    page(OFFICIAL, "/diagnosis")
-    assert_select "#course-link", 0
-    release_course!(@course)
-    page(OFFICIAL, "/diagnosis")
-    assert_select "#course-link[href='/today']"
   end
 
   test "the practice page shell: skill, state, the live region and the question control" do

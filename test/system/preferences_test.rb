@@ -19,17 +19,19 @@ class PreferencesSystemTest < ApplicationSystemTestCase
   def style(selector, property) = page.evaluate_script("getComputedStyle(document.querySelector(#{selector.to_json})).#{property}")
 
   test "dark theme and the largest size apply to the list and to the item, and the font is the vendored one" do
-    visit "/diagnosis"
+    visit "/settings"
     assert_equal "20px", style("html", "fontSize")
     cream = style("body", "backgroundColor")
     choose "Scuro"
     choose "Molto grande"
     click_button "Salva"
+    assert_selector "#settings-saved"
     assert_selector "html[data-theme=dark][data-size=larger]"
     assert_equal "28px", style("html", "fontSize")
     assert_not_equal cream, style("body", "backgroundColor")
 
     # The item is drawn in the same size and colours.
+    visit "/diagnosis"
     click_button "Comincia"
     click_button "Comincia"
     assert_selector "[data-sitting-target=itemBox] .item-body .answer"

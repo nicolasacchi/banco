@@ -203,7 +203,7 @@ class CourseSystemTest < ApplicationSystemTestCase
     build_student_world(release: false)
     sign_in_official
     visit "/today"
-    assert_selector "#course-closed", text: "Il corso non è ancora aperto."
+    assert_no_selector "#course-part"
     assert_no_selector "#suggestions"
     visit "/topics/#{TOPIC}"
     assert_no_text TOPIC_TITLE
@@ -212,7 +212,7 @@ class CourseSystemTest < ApplicationSystemTestCase
     assert_selector "#suggestions li.topic", count: 1
     assert_no_selector "#draft-notice"
     visit "/diagnosis"
-    assert_selector "#course-link", text: "Oggi"
+    assert_selector "#menu-subjects", text: "Materie"
   end
 
   test "the lesson at 390 px" do

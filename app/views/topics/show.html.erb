@@ -1,6 +1,5 @@
 <% content_for :title, @topic.title_it %>
 <main class="page course">
-  <%= render "course/nav" %>
   <p><a href="/subjects/<%= @subject_view.subject.key %>"><%= t("topic.to_subject") %></a></p>
   <h1><%= @topic.title_it %></h1>
   <p class="topic-meta"><%= t("topic.kind.#{@topic.kind}") %> · <%= t("topic.minutes", n: @topic.minutes) %></p>

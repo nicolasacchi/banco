@@ -37,4 +37,41 @@ module ApplicationHelper
   def question_labels = I18n.t("question").slice(:sent, :error, :send, :close)
 
   def lesson_labels = I18n.t("lesson").slice(:error, :loading_solution, :solution_title, :show_solution)
+
+  # The student's menu (D-240). :none in the teacher's preview, :sitting (one item) while a diagnosis sitting is on
+  # the page, :full everywhere else.
+  def student_menu_mode
+    return :none if preview?
+
+    controller_name == "sittings" && action_name == "show" ? :sitting : :full
+  end
+
+  # [[key, label, href], ...] of the full menu: Materie only when the course is visible to this student, Test
+  # d'ingresso when the diagnosis is open (a trial student: always) or the warm-up still waits, Esci when the
+  # operator has set a logout address.
+  def student_menu_items
+    items = [ [ :today, t("student.menu.today"), "/today" ] ]
+    items << [ :subjects, t("student.menu.subjects"), "/subjects" ] if student_course_visible?
+    items << [ :diagnosis, t("student.menu.diagnosis"), "/diagnosis" ] if student_diagnosis_listed?
+    items << [ :settings, t("student.menu.settings"), "/settings" ]
+    items << [ :logout, t("student.logout"), logout_url ] if logout_url
+    items
+  end
+
+  # The menu entry of the page being shown, to mark with aria-current.
+  def student_menu_current
+    case request.path
+    when "/today" then :today
+    when %r{\A/(subjects|topics)(/|\z)} then :subjects
+    when %r{\A/diagnosis(/|\z)} then :diagnosis
+    when "/settings" then :settings
+    end
+  end
+
+  def student_course_visible?
+    view = respond_to?(:course_view) ? course_view : Course::StudentView.new(acting_student)
+    view.subjects.any?
+  end
+
+  def student_diagnosis_listed? = diagnosis_open? || !Diagnosis::Warmup.complete?(acting_student)
 end

@@ -7,6 +7,8 @@ Rails.application.routes.draw do
   # Web listener: the student and the teacher, behind Traefik and Authelia.
   constraints(web) do
     get "up" => "rails/health#show", as: :rails_health_check
+    # The front door (D-240): a student goes to Oggi, the teacher and a guest to /teacher, anyone else gets the 404.
+    get "/" => "home#show", format: false
     get "teacher" => "teacher#show"
 
     # One test, played by the student (/diagnosis) or by the teacher as the
@@ -31,6 +33,7 @@ Rails.application.routes.draw do
       post "warmup/complete" => "warmup#complete", as: :warmup_complete
       concerns :sitting
     end
+    get "settings" => "settings#show", format: false
     # The course of Phase 1b (A9): Oggi, the subjects, a topic, its lesson and its practice. Students only, official
     # and trial; the teacher and guests get 403. The official student sees nothing until release_course.
     scope format: false do

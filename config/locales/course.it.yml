@@ -1,17 +1,14 @@
 # Texts of the course and practice pages (Phase 1b, A9.4). The meaning is fixed by the spec; the
 # wording may be polished. Short sentences, no italics, no capitals for emphasis, no emoji.
 it:
-  course:
-    nav:
-      label: "Le tue pagine"
-      today: "Oggi"
-      subjects: "Materie"
-      diagnosis: "Diagnosi"
   today:
     title: "Oggi"
     nothing: "Per ora non c'è altro da fare qui."
-    diagnosis_left: "Hai ancora delle materie da fare nella diagnosi."
-    diagnosis_link: "Vai alla diagnosi"
+    entry:
+      title: "Test d'ingresso"
+      not_open: "Il test non è ancora aperto. Il docente ti dice quando."
+      warmup: "Prima prova i comandi. Ci vogliono pochi minuti."
+      all_done: "Hai fatto tutte le materie. Bravo."
     resume: "Riprendi: %{topic}"
     suggestions: "Che cosa fare adesso"
     reason:
@@ -19,7 +16,7 @@ it:
       to_learn: "Nella diagnosi è risultata da imparare: %{skill}."
       to_review: "La sapevi, ora vacilla: %{skill}."
       course_next: "È il prossimo argomento del corso."
-    closed: "Il corso non è ancora aperto. Intanto studia sul libro secondo l'orario."
+    closed: "Per ora qui non c'è niente da fare. Intanto studia sul libro secondo l'orario."
   states:
     not_seen: "Non ancora vista"
     to_recover: "Da riprendere"

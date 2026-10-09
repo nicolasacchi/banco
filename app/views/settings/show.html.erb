@@ -1,0 +1,21 @@
+<% content_for :title, t("settings.title") %>
+<main class="page">
+  <h1><%= t("settings.title") %></h1>
+  <% if flash[:notice] %><p class="notice" id="settings-saved" role="status"><%= flash[:notice] %></p><% end %>
+  <p><%= t("settings.intro") %></p>
+  <%= form_with url: "/diagnosis/preferences", method: :post, class: "preferences", id: "preferences" do %>
+    <fieldset class="options">
+      <legend><%= t("diagnosis.preferences.theme") %></legend>
+      <% Diagnosis::Preferences::THEMES.each do |theme| %>
+        <label class="option"><%= radio_button_tag "theme", theme, @preferences[:theme] == theme %> <span><%= t("diagnosis.preferences.themes.#{theme}") %></span></label>
+      <% end %>
+    </fieldset>
+    <fieldset class="options">
+      <legend><%= t("diagnosis.preferences.size") %></legend>
+      <% Diagnosis::Preferences::SIZES.each do |size| %>
+        <label class="option"><%= radio_button_tag "size", size, @preferences[:size] == size %> <span><%= t("diagnosis.preferences.sizes.#{size}") %></span></label>
+      <% end %>
+    </fieldset>
+    <p><button type="submit" class="button"><%= t("diagnosis.preferences.save") %></button></p>
+  <% end %>
+</main>

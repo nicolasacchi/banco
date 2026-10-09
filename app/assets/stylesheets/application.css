@@ -252,10 +252,17 @@ q.example { display: block; margin-bottom: 0.25rem; }
 .ref-links { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; }
 .ref-page .ref-facts { max-width: 48rem; }
 
+/* The student's menu on every page (D-240): visible labels, large targets, wraps on a phone, the current page marked twice. */
+.student-menu { background: var(--surface); border-bottom: 2px solid var(--line); }
+.student-menu ul { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; max-width: 70ch; margin: 0 auto; padding: 0.5rem 1rem; box-sizing: content-box; }
+.student-menu a { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0.25rem 1rem; box-sizing: border-box;
+  border: 2px solid var(--line); border-radius: 0.25rem; color: var(--text); text-decoration: none; }
+.student-menu a:hover { border-color: var(--text); }
+.student-menu a[aria-current="page"] { background: var(--primary); border-color: var(--primary); color: var(--primary-text); font-weight: 700; text-decoration: underline; text-underline-offset: 0.25em; }
+@media (max-width: 30rem) { .student-menu ul { padding: 0.5rem 0.75rem; gap: 0.4rem; } .student-menu a { padding: 0.25rem 0.75rem; } }
+ul.subjects .button { margin-top: 0.25rem; }
+#entry-test { margin-bottom: 1rem; }
 /* The course pages: Oggi, subjects, topic, lesson, practice (Phase 1b) --------------------------------- */
-.course-nav { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; padding: 0 0 0.75rem; margin-bottom: 1rem; border-bottom: 2px solid var(--line); }
-.course-nav a { font-weight: 400; padding: 0.25rem 0; }
-.course-nav a[aria-current="page"] { font-weight: 700; }
 ul.topics, ol.topics, ul.skills { list-style: none; padding: 0; margin: 0 0 1rem; }
 li.topic, li.skill { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.75rem 0; border-bottom: 1px solid var(--line); }
 li.skill .button { align-self: flex-start; margin-top: 0.5rem; }

@@ -1,6 +1,5 @@
 <% content_for :title, t("subjects.title") %>
 <main class="page course">
-  <%= render "course/nav", current: :subjects %>
   <h1><%= t("subjects.title") %></h1>
   <% if @closed %>
     <p class="notice" id="course-closed"><%= t("today.closed") %></p>

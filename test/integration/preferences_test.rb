@@ -31,10 +31,10 @@ class PreferencesTest < ActionDispatch::IntegrationTest
 
   test "a choice is stored on the server and shows on the next page, on any computer" do
     as_student "/diagnosis/preferences", method: :post, params: { theme: "dark", size: "larger" }
-    assert_redirected_to "/diagnosis"
+    assert_redirected_to "/settings"
     event = AppEvent.where(kind: "student_preference").sole
     assert_equal @rows[:student].id, event.student_id
-    as_student "/diagnosis"
+    as_student "/settings"
     assert_select "html[data-theme=dark][data-size=larger]"
     assert_select "input[name=theme][value=dark][checked]"
     assert_select "input[name=size][value=larger][checked]"

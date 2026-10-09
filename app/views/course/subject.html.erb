@@ -1,6 +1,5 @@
 <% content_for :title, @subject_view.subject.name_it %>
 <main class="page course">
-  <%= render "course/nav", current: :subjects %>
   <h1><%= @subject_view.subject.name_it %></h1>
   <p class="counts"><%= t("subjects.counts", **course_view.counts(@subject_view)) %></p>
   <% if @without_topic.any? %>

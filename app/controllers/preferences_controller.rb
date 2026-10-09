@@ -5,6 +5,6 @@ class PreferencesController < ApplicationController
 
   def update
     Diagnosis::Preferences.record(acting_student, theme: params[:theme], size: params[:size])
-    redirect_to "/diagnosis", status: :see_other
+    redirect_to "/settings", status: :see_other, notice: I18n.t("settings.saved")
   end
 end

@@ -11,7 +11,7 @@ module ActingStudent
     layout "student"
     before_action :require_actor!
     before_action :mark_student_device, unless: -> { preview? || trial_account? }
-    helper_method :preview?, :base_path, :acting_student
+    helper_method :preview?, :base_path, :acting_student, :diagnosis_open?
   end
 
   def preview? = request.path_parameters[:preview] == true

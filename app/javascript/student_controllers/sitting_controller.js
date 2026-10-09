@@ -12,7 +12,7 @@ import { renderMarkup } from "items/markup"
 // every ten minutes while the page is visible keeps the session alive (B-05).
 export default class extends Controller {
   static targets = ["intro", "stage", "heading", "itemBox", "sendButton", "unknownButton", "pauseButton", "paused",
-                    "work", "status", "blocked", "over", "wait", "help", "helpBody", "sheetButton", "sheet", "sheetBody"]
+                    "work", "status", "blocked", "over", "wait", "help", "helpBody", "sheetButton", "sheet", "sheetBody", "leaveBox"]
   static values = { stepUrl: String, eventsUrl: String, supportUrl: String, answerUrl: String, listUrl: String, subject: String,
                     resuming: Boolean, keepaliveSeconds: { type: Number, default: 600 }, texts: Object }
 
@@ -24,6 +24,9 @@ export default class extends Controller {
     this.paused = false
     this.onVisibility = () => this.visibilityChanged()
     document.addEventListener("visibilitychange", this.onVisibility)
+    // The menu of a sitting has one link, "Pausa: torna a Oggi" (D-240). It sits in the layout, outside this element.
+    this.onLeaveClick = (event) => this.leaveClicked(event)
+    document.addEventListener("click", this.onLeaveClick)
     this.keepalive = setInterval(() => this.ping(), this.keepaliveSecondsValue * 1000)
     // An answer left in the outbox by an earlier page goes out first, on its own.
     if (this.outbox.size > 0) this.outbox.flush()
@@ -31,6 +34,7 @@ export default class extends Controller {
 
   disconnect() {
     document.removeEventListener("visibilitychange", this.onVisibility)
+    document.removeEventListener("click", this.onLeaveClick)
     clearInterval(this.keepalive)
     clearInterval(this.retryTimer)
   }
@@ -214,6 +218,35 @@ export default class extends Controller {
     this.workTarget.hidden = false
     this.postEvent("resumed")
     this.handle?.focus()
+  }
+
+  // "Pausa: torna a Oggi": the sitting is paused as the Pausa button does, then the browser goes to Oggi. Answers already
+  // sent are kept; an answer typed and not sent asks one line first, in the page.
+  leaveClicked(event) {
+    const link = event.target.closest?.("a[data-sitting-leave]")
+    if (!link) return
+    event.preventDefault()
+    this.leaveHref = link.href
+    if (this.hasUnsent() && this.hasLeaveBoxTarget) {
+      this.leaveBoxTarget.hidden = false
+      this.leaveBoxTarget.querySelector("#leave-stay").focus()
+      return
+    }
+    this.leaveNow()
+  }
+
+  hasUnsent() {
+    return this.active && !!this.handle && !this.handle.isEmpty() && !this.sendButtonTarget.disabled
+  }
+
+  stay() {
+    this.leaveBoxTarget.hidden = true
+    this.handle?.focus()
+  }
+
+  async leaveNow() {
+    if (this.active && !this.paused) await Promise.race([this.postEvent("paused"), new Promise((resolve) => setTimeout(resolve, 1500))])
+    window.location.assign(this.leaveHref || "/today")
   }
 
   visibilityChanged() {

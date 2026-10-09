@@ -1,0 +1,17 @@
+<% mode = student_menu_mode %>
+<% if mode == :sitting %>
+  <nav class="student-menu" id="student-menu" aria-label="<%= t("student.menu.label") %>">
+    <ul>
+      <li><a id="sitting-leave" href="/today" data-sitting-leave><%= t("student.menu.pause_to_today") %></a></li>
+    </ul>
+  </nav>
+<% elsif mode == :full %>
+  <% current = student_menu_current %>
+  <nav class="student-menu" id="student-menu" aria-label="<%= t("student.menu.label") %>">
+    <ul>
+      <% student_menu_items.each do |key, label, href| %>
+        <li><a href="<%= href %>" id="<%= key == :logout ? 'logout-link' : "menu-#{key}" %>"<%= ' aria-current="page"'.html_safe if key == current %>><%= label %></a></li>
+      <% end %>
+    </ul>
+  </nav>
+<% end %>

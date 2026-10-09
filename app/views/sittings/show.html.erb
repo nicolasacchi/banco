@@ -14,6 +14,16 @@
     <%= button_to t("teacher.preview.close"), "/teacher/preview/runs/#{@run.id}/close", class: "button secondary", id: "preview-close", form: { class: "inline" } %>
   <% end %>
 
+  <% unless preview? %>
+    <div class="notice" id="leave-confirm" role="alert" data-sitting-target="leaveBox" hidden>
+      <p><%= t("sitting.leave.unsent") %></p>
+      <p>
+        <button type="button" class="button" id="leave-stay" data-action="sitting#stay"><%= t("sitting.leave.stay") %></button>
+        <button type="button" class="button secondary" id="leave-go" data-action="sitting#leaveNow"><%= t("sitting.leave.go") %></button>
+      </p>
+    </div>
+  <% end %>
+
   <section data-sitting-target="intro">
     <h1><%= @second_part ? t("sitting.title_second", subject: @subject.name_it) : t("sitting.title", subject: @subject.name_it) %></h1>
     <% if @intro_note %><p id="intro-note"><%= @intro_note %></p><% end %>
