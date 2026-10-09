@@ -1,0 +1,13 @@
+<% content_for :title, t("teacher.findings.title") %>
+<main class="page wide" id="findings-page">
+  <h1><%= t("teacher.findings.title") %></h1>
+  <% if @todos.empty? %>
+    <p id="findings-empty"><%= t("teacher.findings.empty") %></p>
+  <% else %>
+    <ul class="plain todo-list" id="findings-list">
+      <% @todos.each do |todo| %>
+        <li data-todo="findings"><%= render "teacher/dashboard/todo", todo: todo %></li>
+      <% end %>
+    </ul>
+  <% end %>
+</main>

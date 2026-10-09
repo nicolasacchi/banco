@@ -28,7 +28,19 @@ module TeacherHelper
   end
 
   # The query of the chosen student, for links that keep it.
-  def with_student(path) = student_param.empty? ? path : "#{path}?#{student_param.to_query}"
+  def with_student(path)
+    query = respond_to?(:student_param) ? student_param : {} # a few teacher pages have no student of their own
+    query.empty? ? path : "#{path}?#{query.to_query}"
+  end
+
+  def with_student_for(student, path) = student.official? ? path : "#{path}?#{{ student: student.key }.to_query}"
+
+  # A link from the dashboard to a detail page: it opens in a new tab (the toggle on the page can switch that
+  # off); an anchor in the same page does not, and neither does a page that sets @same_tab (the findings list).
+  def dash_link(text, href, **options)
+    options = options.merge(target: "_blank", rel: "noopener", data: { newtab: true }) unless @same_tab || href.to_s.start_with?("#")
+    link_to(text, href, **options)
+  end
 
   # A moment in the teacher's days and hours: 08/10/2026 14:05, Rome time.
   def teacher_time(time) = time.in_time_zone("Europe/Rome").strftime("%d/%m/%Y %H:%M")

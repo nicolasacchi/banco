@@ -451,3 +451,46 @@ ul.checks li { padding: 0.25rem 0; }
   .review-progress .progress-line progress { width: 100%; }
   .review-steps { gap: 0.25rem 1rem; }
 }
+/* The teacher's dashboard (D-240) --------------------------------------------- */
+.dash-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin: 0.5rem 0 1rem; }
+.dash-tools .hint { margin: 0; }
+.dash-toggle { display: inline-flex; align-items: center; gap: 0.4rem; }
+.todo-list { padding-left: 1.5rem; }
+.todo-list li { margin-bottom: 0.4rem; }
+.dash-row { flex-direction: column; align-items: stretch; }
+.dash-cells { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 0.5rem 1.5rem; }
+.dash-cell h3 { font-size: 1rem; margin: 0 0 0.25rem; }
+.dash-cell p, .dash-cell ul { margin: 0 0 0.25rem; }
+.dash-students li { margin-bottom: 0.25rem; }
+.just-updated { outline: 2px solid var(--primary); outline-offset: 2px; }
+.updated-badge { display: inline-block; margin-right: 0.5rem; padding: 0 0.5rem; border: 2px solid var(--primary); font-weight: 700; }
+
+/* The teacher's menu, breadcrumb and subject switcher (D-241) ------------------------ */
+.teacher-nav { padding: 0.25rem 1rem; }
+.menu-list { display: flex; flex-wrap: wrap; align-items: center; gap: 0 1rem; list-style: none; margin: 0; padding: 0; }
+.menu-list > li { margin: 0; }
+.menu-list a, .menu-button { font: inherit; font-weight: 700; padding: 0 0.25rem; min-height: 2.75rem; display: inline-flex; align-items: center; box-sizing: border-box; }
+.menu-button { background: none; border: 0; color: var(--primary); cursor: pointer; text-decoration: underline; }
+.menu-button::after { content: " \25BE"; }
+.menu-list [aria-current] { border-bottom: 3px solid var(--primary); }
+.menu-subjects { position: relative; }
+.menu-panel { background: var(--surface); border: 2px solid var(--line); padding: 0.5rem 1rem; margin-top: 0.25rem; }
+.menu-panel[hidden] { display: none; }
+.menu-panel ul { list-style: none; padding: 0; margin: 0; }
+.menu-panel li { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0 1rem; }
+.menu-panel li strong { flex: 0 0 100%; }
+.menu-panel li a { min-height: 2.25rem; }
+@media (min-width: 48rem) {
+  .menu-panel { position: absolute; z-index: 10; min-width: 36rem; }
+  .menu-panel li strong { flex-basis: 8rem; }
+}
+.access { padding: 0 1rem; }
+.crumbs-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.25rem 1rem; padding: 0.5rem 1rem 0; }
+.crumbs ol { display: flex; flex-wrap: wrap; gap: 0 0.5rem; margin: 0; padding: 0; list-style: none; }
+.crumbs li { margin: 0; }
+.crumbs li + li::before { content: "\203A"; margin-right: 0.5rem; }
+.crumbs [aria-current] { font-weight: 700; }
+.subject-switch summary { cursor: pointer; font-weight: 700; padding: 0.4rem 0; }
+.subject-switch ul { display: flex; flex-wrap: wrap; gap: 0 1rem; margin: 0; padding: 0; list-style: none; }
+.subject-switch li { margin: 0; }
+@media print { .crumbs-bar { display: none !important; } }

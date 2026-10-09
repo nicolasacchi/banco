@@ -1,0 +1,11 @@
+<% name = todo.subject&.name_it %>
+<% text = case todo.kind
+          when :findings then t("teacher.dashboard.todo.findings", count: todo.count)
+          when :release
+            todo.reason.empty? ? t("teacher.dashboard.todo.release_ready") : t("teacher.dashboard.todo.release", missing: todo.reason.map { |m| t("teacher.dashboard.missing.#{m}") }.to_sentence(two_words_connector: " e ", last_word_connector: " e "))
+          when :test_blocked then t("teacher.dashboard.todo.test_blocked", reason: todo.reason)
+          when :topics, :corrections then t("teacher.dashboard.todo.#{todo.kind}", count: todo.count)
+          else t("teacher.dashboard.todo.#{todo.kind}")
+          end %>
+<% if name %><strong class="todo-subject"><%= name %></strong>: <% end %><%= todo.href ? dash_link(text, todo.href) : text %>
+<% if todo.extra %> <%= t("teacher.dashboard.clear_of", count: todo.extra) %><% if todo.extra_href %> <%= dash_link t("teacher.dashboard.follow"), todo.extra_href %><% end %><% end %>

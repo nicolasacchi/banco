@@ -1,0 +1,30 @@
+<% subject = page_subject %>
+<% if subject %>
+  <div class="crumbs-bar no-print">
+    <nav class="crumbs" id="breadcrumb" aria-label="<%= t('teacher.menu.crumbs') %>">
+      <ol class="plain">
+        <li><a href="<%= with_student('/teacher') %>"><%= t("teacher.menu.home") %></a></li>
+        <% trail = crumb_trail(subject) %>
+        <% if trail.any? %>
+          <li><span class="crumb-subject"><%= subject.name_it %></span></li>
+          <% trail.each_with_index do |(label, path), i| %>
+            <% if i == trail.size - 1 %><li><span aria-current="page"><%= label %></span></li>
+            <% else %><li><%= link_to label, path %></li><% end %>
+          <% end %>
+        <% else %>
+          <li><span aria-current="page"><%= subject.name_it %></span></li>
+        <% end %>
+      </ol>
+    </nav>
+    <% if switch_path(subject) %>
+      <details class="subject-switch" id="subject-switch">
+        <summary><%= t("teacher.menu.switch") %></summary>
+        <ul class="plain">
+          <% menu_subjects.each do |other| %>
+            <li><% if other == subject %><span aria-current="page"><%= other.name_it %></span><% else %><a href="<%= switch_path(other) %>"><%= other.name_it %></a><% end %></li>
+          <% end %>
+        </ul>
+      </details>
+    <% end %>
+  </div>
+<% end %>

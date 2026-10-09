@@ -1,4 +1,4 @@
-# The teacher's first page: the subjects, what waits, the minutes spent (C-04). The other
+# The teacher's first page, the dashboard (C-04, D-240): what to do now, one row per subject. The other
 # pages are in app/controllers/teacher/.
 class TeacherController < ApplicationController
   layout "teacher"
@@ -7,6 +7,7 @@ class TeacherController < ApplicationController
 
   def show
     @unit = "home"
-    @home = Teacher::Home.new(student: viewed_student)
+    @digest = Teacher::DashboardDigest.current # before the page is read: a change in between shows at the next poll
+    @dashboard = Teacher::Dashboard.new(student: viewed_student)
   end
 end

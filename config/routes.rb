@@ -92,6 +92,10 @@ Rails.application.routes.draw do
       get "subjects/:key/practice" => "practice#show", constraints: key, as: :teacher_practice
       get "subjects/:key/practice/skills/:skill" => "practice#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9.\-]*/), as: :teacher_practice_skill
       get "corrections" => "corrections#show", as: :teacher_corrections
+      get "findings" => "findings#show", as: :teacher_findings
+      get "students" => "students#show", as: :teacher_students
+      get "dashboard/state" => "dashboard#state", as: :teacher_dashboard_state
+      get "dashboard/fragment" => "dashboard#fragment", as: :teacher_dashboard_fragment
       get "refs/:key" => "refs#show", constraints: { key: /[a-z0-9][a-z0-9._-]*/ }, as: :teacher_ref
       get "items/:revision_id/play" => "item_plays#show", constraints: { revision_id: /\d+/ }, as: :teacher_item_play
       get "items/:revision_id/play/data" => "item_plays#data", constraints: { revision_id: /\d+/ }, as: :teacher_item_play_data

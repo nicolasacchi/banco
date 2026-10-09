@@ -36,7 +36,8 @@ class TeacherApprovalTest < ApplicationSystemTestCase
     assert_selector "li.subject[data-subject=math] [data-waiting=findings]", text: "Rilievi da decidere: 1"
 
     # The graph first.
-    click_link "Grafo"
+    uncheck "dashboard-newtab" # the dashboard opens detail pages in new tabs; this walk stays in one
+    within("li.subject[data-subject=math]") { click_link "Grafo", match: :first }
     assert_selector "h1", text: "Grafo delle abilità · Matematica"
     assert_selector "article.skill", count: 2
     assert_selector "#graph-approve button:not([disabled])"

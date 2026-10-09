@@ -23,6 +23,7 @@ class TeacherTopicTest < ApplicationSystemTestCase
   test "read the topic, confirm, approve, then open the course" do
     visit "/teacher"
     assert_selector "[data-course-line]", text: "Corso: 0 approvati su 1 nella mappa · chiuso allo studente"
+    uncheck "dashboard-newtab"
     click_link "Corso: 0 approvati su 1 nella mappa · chiuso allo studente"
     assert_selector "li.topic[data-stage=awaiting_teacher]"
     click_link "Ripasso di prova"

@@ -245,6 +245,8 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-239 | 2026-10-09 | operator decision: Opus decides minor findings (the first opinion alone); the second opinion stays visible; D-222 amended | implemented |
 | D-240 | 2026-10-09 | operator request: the bare address lands the student on Oggi; Oggi is the student's home with the entry test; one menu on every student page | implemented |
 | D-241 | 2026-10-09 | operator request: the teacher's course page is the path of the subject and the topic page a guided review in four steps; seen records are app events | implemented |
+| D-242 | 2026-10-09 | the teacher's home is a dashboard (Cruscotto): "Da fare adesso", one row per subject, new-tab links, auto-update from a ledger digest | implemented |
+| D-243 | 2026-10-09 | the teacher's persistent menu, breadcrumb and subject switcher; pages Rilievi and Studenti | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2561,3 +2563,20 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** one app event per exercise seen; the page does the same work as before plus the stored presentations of the four samples of each exercise.
 - **Status:** implemented
 - **Amendment (review fixes, same day):** the lesson body is one partial (`lessons/_body`) drawn by the student's page and by the topic page; each exercise card opens one sample and folds the other three; the progress bar has "Vai ad Approva"; the course page names the student by the login mapped in `BANCO_STUDENT_USERS` ("allo studente" when the map is unset), never a configured name; counts use I18n plurals; "Guarda" became "Vedi" with a state hint.
+## D-242 · 2026-10-09 · operator request: the teacher's home is a dashboard that follows the ledger
+
+- **Design ref:** C-04 (the teacher's first page), D-217 (roles and student list), D-215, D-223+
+- **Design said:** the home lists the subjects with what waits in each; every detail page is reached and left by clicking back and forth.
+- **We do:** Operator, 2026-10-09: "Ci sono troppi click avanti e indietro: una pagina principale, pagine in nuovi tab, autoaggiornamento." (1) `/teacher` is "Cruscotto": "Da fare adesso" (`Teacher::Dashboard#todos`, most blocking first: findings with "di cui M con un parere chiaro" and a link to "Segui il parere", graphs, tests ready, tests blocked with one reason, course topics, corrections, release) over one row per subject (graph, test, course, students with the D-217 list). It reads `Teacher::Home` and the existing read models; no rule is duplicated. (2) Links from the dashboard to a detail page open in a new tab (`target=_blank rel=noopener`); "Apri in nuove schede" switches it off and is remembered in localStorage. (3) `GET /teacher/dashboard/state` returns `{digest, at}`, the digest computed from the ledger watermarks (`Teacher::DashboardDigest`, count and max id of the tables, the heartbeat of the minutes excluded); `GET /teacher/dashboard/fragment` returns the body. Teacher and guest only, `no-store`. (4) One Stimulus controller polls every 20 s while the tab is visible (60 s after 10 unchanged polls, at once on visibilitychange and on a `BroadcastChannel("banco")` message), replaces the body keeping scroll and focus, marks changed rows "aggiornato ora" for 10 s, announces the change in an aria-live region and has an "Aggiorna" button. A teacher page that comes back with a success flash posts the BroadcastChannel message. (5) Guests see the same page without forms. Student pages are untouched.
+- **Why:** the teacher works across 11 subjects and kept going back to the home to see what changed.
+- **Cost:** one cheap digest query per open dashboard every 20 s; a fragment render when something changed.
+- **Status:** implemented
+
+## D-243 · 2026-10-09 · operator request: a persistent menu for the teacher
+
+- **Design ref:** D-242, D-217
+- **Design said:** a small nav with the home and the corrections.
+- **We do:** Operator, 2026-10-09: "stessa cosa per il teacher aggiungiamo un menu". Every teacher page (the layout `teacher`) has a menu: Cruscotto, Materie (a panel of the subjects with Grafo, Test, Tutte le domande, Corso, Resoconto; opens with Enter or Space, closes with Esc, a click or a tab outside, no hover), Rilievi (`/teacher/findings`: the dashboard's findings lines, same tab), Correzioni, Studenti (`/teacher/students`: report and practice links per student and subject), Prova come S (teacher only), Esci (`BANCO_LOGOUT_URL`). The current section has `aria-current`. Pages of a subject have a breadcrumb ("Cruscotto › Italiano › Test › skill") and a "Cambia materia" switcher to the same page of another subject (a skill, topic or question page goes to its parent page). Menu links open in the same tab; the new-tab rule is only for links inside the dashboard. The preview pages keep the student layout. `TeacherMenuHelper`, `menu_controller.js`.
+- **Why:** the teacher moved between pages by going back to the home.
+- **Cost:** none beyond the extra pages.
+- **Status:** implemented

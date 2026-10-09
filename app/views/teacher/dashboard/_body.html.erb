@@ -1,0 +1,95 @@
+<% home = dashboard.home %>
+<section aria-labelledby="todo-title" id="todo">
+  <h2 id="todo-title"><%= t("teacher.dashboard.todo_title") %></h2>
+  <% if dashboard.todos.empty? %>
+    <p id="todo-empty" data-row-key="todo-empty"><%= t("teacher.dashboard.todo_empty") %></p>
+  <% else %>
+    <ol class="plain todo-list" id="todo-list">
+      <% dashboard.todos.each do |todo| %>
+        <li data-todo="<%= todo.kind %>" data-row-key="todo-<%= todo.kind %>-<%= todo.subject&.key %>" data-row-name="<%= todo.subject&.name_it %>">
+          <%= render "teacher/dashboard/todo", todo: todo %>
+        </li>
+      <% end %>
+    </ol>
+  <% end %>
+</section>
+
+<h2><%= t("teacher.home.subjects") %></h2>
+<ul class="subjects teacher-subjects dash-subjects">
+  <% home.rows.each do |row| %>
+    <li class="subject dash-row" data-subject="<%= row.subject.key %>" data-stage="<%= row.stage %>" data-row-key="subject-<%= row.subject.key %>" data-row-name="<%= row.subject.name_it %>">
+      <div class="subject-head">
+        <span class="subject-name"><%= row.subject.name_it %></span>
+        <span class="subject-state"><strong><%= stage_label(row.stage) %></strong></span>
+      </div>
+      <div class="dash-cells">
+        <div class="dash-cell" data-cell="graph">
+          <h3><%= t("teacher.dashboard.graph") %></h3>
+          <% if !row.has_graph %>
+            <p><%= t("teacher.dashboard.not_written") %></p>
+          <% else %>
+            <p><%= dash_link t(row.waiting.to_h.key?(:graph_to_approve) ? "teacher.dashboard.to_approve" : "teacher.dashboard.approved"), teacher_graph_path(key: row.subject.key) %></p>
+          <% end %>
+        </div>
+        <div class="dash-cell" data-cell="test">
+          <h3><%= t("teacher.dashboard.test") %></h3>
+          <% if !row.has_blueprint %>
+            <p><%= t("teacher.dashboard.not_written") %></p>
+          <% else %>
+            <p><%= dash_link t("teacher.home.open_test"), teacher_test_path(key: row.subject.key) %></p>
+          <% end %>
+          <% if row.waiting.any? %>
+            <ul class="plain waiting" aria-label="<%= t('teacher.home.waiting') %>">
+              <% row.waiting.each do |code, count| %>
+                <li data-waiting="<%= code %>"><strong><% if code == :findings && row.has_blueprint %><%= dash_link t("teacher.home.wait.#{code}", count: count.to_i), "#{teacher_test_path(key: row.subject.key)}#open-findings" %><% else %><%= t("teacher.home.wait.#{code}", count: count.to_i) %><% end %></strong><% if code == :findings && row.clear.positive? %> <%= dash_link t("teacher.dashboard.clear_of", count: row.clear), "#{teacher_test_path(key: row.subject.key)}#follow-opinions-form" %><% end %></li>
+              <% end %>
+            </ul>
+          <% end %>
+          <% if row.blocked %><p class="hint" data-blocked><%= row.blocked %></p><% end %>
+        </div>
+        <div class="dash-cell" data-cell="course">
+          <h3><%= t("teacher.dashboard.course") %></h3>
+          <% if row.course %>
+            <p class="course-line" data-course-line><%= dash_link "#{t('teacher.home.course_line', approved: row.course.approved, total: row.course.total)} · #{row.course.open ? t('teacher.home.course_open') : t('teacher.home.course_closed')}", teacher_course_path(key: row.subject.key) %></p>
+            <p class="hint"><%= t("teacher.dashboard.topics_line", awaiting: row.course.awaiting, approved: row.course.approved, missing: row.course.missing) %>
+              <% if row.course.in_review.positive? %><%= t("teacher.dashboard.lessons_in_review", count: row.course.in_review) %><% end %></p>
+          <% else %>
+            <p><%= t("teacher.dashboard.no_course") %></p>
+          <% end %>
+        </div>
+        <div class="dash-cell" data-cell="students">
+          <h3><%= t("teacher.dashboard.students") %></h3>
+          <ul class="plain dash-students">
+            <% dashboard.students.each do |student| %>
+              <% cell = dashboard.cell(student, row.subject) %>
+              <li data-student-cell="<%= student.key %>">
+                <%= dash_link student_label(student), with_student_for(student, teacher_report_path(key: row.subject.key)) %>:
+                <% if student.official? %><%= cell.diagnosis || t("teacher.dashboard.no_diagnosis") %>.<% end %>
+                <%= cell.last_at ? t("teacher.dashboard.last_activity", at: teacher_time(cell.last_at)) : t("teacher.dashboard.no_activity") %>
+                <% if cell.practised.positive? %><%= t("teacher.dashboard.practised", count: cell.practised) %><% end %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+      <p class="links">
+        <% if row.has_graph %><%= dash_link t("teacher.home.open_graph"), teacher_graph_path(key: row.subject.key), class: "button secondary small" %><% end %>
+        <% if row.has_blueprint %><%= dash_link t("teacher.home.open_test"), teacher_test_path(key: row.subject.key), class: "button secondary small" %><% end %>
+        <%= dash_link t("teacher.home.open_report"), with_student(teacher_report_path(key: row.subject.key)), class: "button secondary small" %>
+      </p>
+    </li>
+  <% end %>
+</ul>
+
+<section aria-labelledby="state-title" id="state">
+  <h2 id="state-title"><%= t("teacher.dashboard.state_title") %></h2>
+  <ul class="plain" id="waiting-summary">
+    <li><%= t("teacher.home.subjects_waiting", count: home.waiting_total) %></li>
+    <li><%= dash_link t("teacher.home.corrections", count: home.corrections), with_student("/teacher/corrections") %></li>
+    <li><%= t("teacher.home.minutes_total", count: home.minutes[:total]) %></li>
+    <li id="release-state"><%= home.released? ? t("teacher.home.released") : t("teacher.home.not_released") %>
+      <%= t("teacher.home.consent_#{home.consent_recorded? ? 'yes' : 'no'}") %>
+      <%= t("teacher.dashboard.warmup_#{dashboard.release.warmup ? 'yes' : 'no'}") %>
+      <%= t("teacher.dashboard.approvals", done: dashboard.release.approved, total: dashboard.release.total) %></li>
+  </ul>
+</section>
