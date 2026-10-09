@@ -124,7 +124,7 @@
 .legend-question { color: var(--muted); }
 .marker { width: 1.1em; height: 1.1em; vertical-align: -0.2em; margin-right: 0.3em; }
 /* formulas in the body font (A6): upright, at the body size */
-.l2 .katex { font-size: 1.1em; }
+.l2 .katex { font-size: 1.1em; font-family: inherit; font-weight: inherit; }
 .l2 .katex .mathnormal, .l2 .katex .mathit, .l2 .katex .mord:not(.mathbf), .l2 .katex .mbin, .l2 .katex .mrel, .l2 .katex .mopen, .l2 .katex .mclose, .l2 .katex .mpunct, .l2 .katex .minner { font-family: inherit; font-style: normal; }
 .l2 .katex .mathbf { font-weight: 700; }
 .l2 .katex-display { margin: 0.4em 0; }
@@ -386,3 +386,13 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 .l2-box-tools { display: flex; flex-wrap: wrap; gap: 0.6em 1.2em; align-items: center; margin: 0.6em 0; }
 .l2-box-tools fieldset { border: 0; padding: 0; margin: 0; display: flex; gap: 0.6em; align-items: center; }
 .l2-box-tools legend { float: left; margin-right: 0.5em; font-weight: 700; }
+
+/* phones: a quieter top bar and a bottom bar that keeps its height */
+@media (max-width: 600px) {
+  .l2-top .button { font-size: 0.8em; padding: 0.25em 0.6em; min-height: 2.2em; }
+  .l2-counter { flex-basis: 100%; }
+  .l2-bar { padding: 0.4em 0.6em; }
+  .l2-bar .button { font-size: 0.85em; }
+  .l2-bar .l2-next { max-width: 66%; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+  .l2-bar-count { display: none; }
+}
