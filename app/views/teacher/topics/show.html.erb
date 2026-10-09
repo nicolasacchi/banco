@@ -58,7 +58,11 @@
             <div class="student-view" id="lesson-text">
               <h3 class="lesson-title"><%= lesson_body["title_it"] %></h3>
               <p class="topic-meta"><%= t("topic.minutes", n: lesson_body["minutes"]) %></p>
-              <%= render "lessons/body", body: lesson_body, topic: review.key %>
+              <% if lesson_body["schema"] == "banco.lesson/2" %>
+                <%= render "teacher/topics/lesson2_box", revision: review.lesson_revision, topic: review.key %>
+              <% else %>
+                <%= render "lessons/body", body: lesson_body, topic: review.key %>
+              <% end %>
             </div>
           </div>
 

@@ -150,11 +150,11 @@ function build(data, ctx) {
     const panY = beamEnd + hang
     shape(ctx, "line", { x1: cx, y1: beamEnd, x2: cx - panW / 2, y2: panY, cls: "dg-string" })
     shape(ctx, "line", { x1: cx, y1: beamEnd, x2: cx + panW / 2, y2: panY, cls: "dg-string" })
-    shape(ctx, "line", { x1: cx - panW / 2, y1: panY, x2: cx + panW / 2, y2: panY, cls: `dg-pan tn-${side}` })
+    shape(ctx, "line", { x1: cx - panW / 2, y1: panY, x2: cx + panW / 2, y2: panY, cls: `dg-pan st-${side}` })
     const pl = place(p, eff.groups)
     const drawItem = (kind, x, y) => {
       if (kind === "box") {
-        shape(ctx, "marker", { shape: "box", x, y, w: s, h: s, cls: "mk-unknown" })
+        shape(ctx, "marker", { shape: "box", x, y, w: s, h: s, cls: "mk-unknown dg-hollow" })
         label(ctx, boxText, x + s / 2, y + s / 2, { valign: "middle", cls: "role-unknown dg-boxlabel" })
       } else shape(ctx, "marker", { shape: "weight", x, y, w: s, h: s, cls: "mk-known" })
     }
@@ -181,11 +181,7 @@ function build(data, ctx) {
   drawPan(cxL, yL, plate(eff.left), "left")
   drawPan(cxR, yR, plate(eff.right), "right")
 
-  let height = baseY + 10
-  if (eff.op_it) {
-    const l = label(ctx, eff.op_it, W / 2, height, { maxW: W - 2 * m, cls: "dg-op" })
-    height += l.h + 4
-  }
+  const height = baseY + 10
   return finish(ctx, height, { states: n, state: ctx.state, tilt, solutionTilt: tilt })
 }
 

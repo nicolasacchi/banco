@@ -13,6 +13,7 @@
     <%= stylesheet_link_tag :app %>
     <link rel="stylesheet" href="/vendor/katex@0.19.0/katex.min.css">
     <%# One page, no Turbo: the diagnosis entry point loads Stimulus and our item templates only. %>
+    <%= yield :head %>
     <%= javascript_importmap_tags "diagnosis", importmap: student_importmap %>
   </head>
   <body class="student">

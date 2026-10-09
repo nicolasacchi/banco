@@ -11,6 +11,7 @@
     <%= stylesheet_link_tag :app %>
     <link rel="stylesheet" href="/vendor/katex@0.19.0/katex.min.css">
     <%# No Turbo: forms are plain posts that redirect back. The one controller used here besides the item renderer is the heartbeat. %>
+    <%= yield :head %>
     <%= javascript_importmap_tags "diagnosis", importmap: student_importmap %>
   </head>
   <body class="student teacher" <% if @unit && !reader_only? %>data-controller="activity" data-activity-url-value="/teacher/activity" data-activity-unit-value="<%= @unit %>"<% end %>>

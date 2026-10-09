@@ -185,8 +185,8 @@
 .tn-right { background: var(--r-right-tint); }
 
 /* The subject's header band (the card's `tone` takes a role's tint instead). */
-.lesson[data-subject="math"] { --band: var(--accent-math); }
-.lesson[data-subject="italian"] { --band: var(--accent-italian); }
+.l2[data-subject="math"] { --band: var(--accent-math); }
+.l2[data-subject="italian"] { --band: var(--accent-italian); }
 .card-tone-highlight { --band: var(--r-highlight-tint); }
 .card-tone-left { --band: var(--r-left-tint); }
 .card-tone-right { --band: var(--r-right-tint); }

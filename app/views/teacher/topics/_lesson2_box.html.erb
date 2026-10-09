@@ -1,0 +1,38 @@
+<%# "Come lo vede lo studente" (A14): the student's renderer in a box whose width, theme and text size the teacher
+    picks, live (cards, navigation, step reveal, checks graded by a teacher-only endpoint that records nothing,
+    seed "preview"). "Modalità docente" opens every "more", shows answers and solutions from full.json.
+    Locals: revision (the lesson revision), topic (key). %>
+<% content_for :head do %>
+  <%= stylesheet_link_tag "lesson_roles" %>
+  <%= stylesheet_link_tag "lesson" %>
+<% end %>
+<% body = Lessons::StudentBody.for(revision, seed: "preview") %>
+<div class="l2-box-wrap" data-controller="lesson2-preview"
+     data-lesson2-preview-revision-id-value="<%= revision.id %>"
+     data-lesson2-preview-topic-value="<%= topic %>"
+     data-lesson2-preview-labels-value="<%= lesson2_texts.to_json %>"
+     data-lesson2-preview-items-value="<%= lesson2_item_texts.to_json %>">
+  <div class="l2-box-tools">
+    <fieldset><legend><%= t("lesson2.box.width") %></legend>
+      <% [ 390, 768, 1280 ].each do |w| %>
+        <label><input type="radio" name="box-width-<%= revision.id %>" value="<%= w %>" <%= "checked" if w == 1280 %> data-action="lesson2-preview#width"> <%= w %></label>
+      <% end %>
+    </fieldset>
+    <fieldset><legend><%= t("lesson2.settings_labels.theme") %></legend>
+      <% t("lesson2.themes").each do |key, label| %>
+        <label><input type="radio" name="box-theme-<%= revision.id %>" value="<%= key %>" <%= "checked" if key == :cream %> data-action="lesson2-preview#theme"> <%= label %></label>
+      <% end %>
+    </fieldset>
+    <fieldset><legend><%= t("lesson2.settings_labels.size") %></legend>
+      <% t("lesson2.sizes").each do |key, label| %>
+        <label><input type="radio" name="box-size-<%= revision.id %>" value="<%= key %>" <%= "checked" if key == :normal %> data-action="lesson2-preview#size"> <%= label %></label>
+      <% end %>
+    </fieldset>
+    <label><input type="checkbox" data-action="lesson2-preview#teacher" data-lesson2-preview-target="teacherToggle"> <%= t("lesson2.box.teacher_mode") %></label>
+  </div>
+  <p class="hint" role="status" data-lesson2-preview-target="status"></p>
+  <div class="l2-box" data-theme="cream" data-size="normal" data-lesson2-preview-target="box">
+    <div class="l2" data-lesson2-preview-target="root"></div>
+  </div>
+  <script type="application/json" data-lesson2-preview-target="body"><%= json_escape(body.to_json).html_safe %></script>
+</div>

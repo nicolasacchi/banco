@@ -58,7 +58,7 @@ roles.each do |name, role|
   out << ".tn-#{name} { background: var(--r-#{name}-tint); }\n" if role["tint"]
 end
 out << "\n/* The subject's header band (the card's `tone` takes a role's tint instead). */\n"
-accents.each_key { |subject| out << ".lesson[data-subject=\"#{subject}\"] { --band: var(--accent-#{subject}); }\n" }
+accents.each_key { |subject| out << ".l2[data-subject=\"#{subject}\"] { --band: var(--accent-#{subject}); }\n" }
 roles.each { |name, role| out << ".card-tone-#{name} { --band: var(--r-#{name}-tint); }\n" if role["tint"] }
 
 # The same roles for the browser's code: names, labels, carriers, icons, shapes, questions and step tags (no colours).
