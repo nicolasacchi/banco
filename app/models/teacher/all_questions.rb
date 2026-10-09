@@ -40,32 +40,10 @@ module Teacher
     def entry(rev)
       body = JSON.parse(rev.body_json)
       instances = rev.instances.sort_by(&:id).each_with_index.map do |inst, i|
-        Inst.new(inst.id, i + 1, presentation(inst, rev), InstanceView.new(inst, body, i + 1))
+        Inst.new(inst.id, i + 1, StoredPresentation.call(inst, rev), InstanceView.new(inst, body, i + 1))
       end
       component = body["kind"] == "testlet" ? "testlet" : (body["kind"] == "short_answer" ? "short_answer" : body["component"])
       Entry.new(rev, rev.item, body, component, instances, body["rubric"])
-    end
-
-    # What the browser is told, with the stored order of the choices (no shuffle).
-    def presentation(instance, rev)
-      served = ItemServed.new(item_instance: instance, skill_key: "", shown_order_json: stored_order(instance, rev).to_json)
-      Diagnosis::ItemPresenter.new(served: served, number: 1, subject: rev.item.subject).as_json[:item]
-    end
-
-    COLUMNS = %w[options elements left right].freeze
-
-    def stored_order(instance, rev)
-      body = JSON.parse(rev.body_json)
-      display = JSON.parse(instance.display_json)
-      if body["kind"] == "testlet"
-        Array(display["sub_items"]).to_h { |s| [ s["id"], order_of(s["display"] || {}) ] }
-      else
-        order_of(display)
-      end
-    end
-
-    def order_of(display)
-      COLUMNS.filter_map { |k| [ k, display[k].map { |e| e["id"] } ] if display[k].is_a?(Array) }.to_h
     end
   end
 end

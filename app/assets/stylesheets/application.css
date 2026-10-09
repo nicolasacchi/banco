@@ -406,3 +406,45 @@ li.exercise { margin-bottom: 1.5rem; }
   .gm-has-selection .gm-node, .gm-has-selection .gm-svg .gm-edge { opacity: 1; }
 }
 .gm-note { font-weight: 400; }
+
+/* The course path and the guided review of a topic (D-240). State is always words and a mark, never colour alone. */
+ol.path { list-style: none; padding: 0; margin: 0 0 1rem; counter-reset: none; }
+li.path-step { display: grid; grid-template-columns: 3rem 1fr; gap: 0 1rem; align-items: start; position: relative; padding: 1rem 0; border-bottom: 1px solid var(--line); }
+.step-number, .step-no { display: inline-flex; align-items: center; justify-content: center; min-width: 2.25rem; height: 2.25rem; border: 3px solid var(--text); border-radius: 50%; font-weight: 700; box-sizing: border-box; }
+.step-body h3 { margin: 0 0 0.25rem; }
+.step-body p { margin: 0.25rem 0; }
+.badge { display: inline-block; border: 2px solid var(--line); padding: 0 0.5rem; font-size: 0.85em; font-weight: 700; margin-left: 0.5rem; vertical-align: middle; background: var(--surface); }
+li.path-step[data-badge="ready"] .badge, li.path-step[data-badge="newer"] .badge { border-color: var(--text); background: var(--primary); color: var(--primary-text); }
+li.path-step[data-badge="ready"] { background: var(--surface); }
+.step-counts { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; padding: 0; margin: 0.25rem 0; }
+.step-missing { font-weight: 700; }
+.path-filter a { font-weight: 700; }
+ul.checks { padding: 0; list-style: none; }
+ul.checks li { padding: 0.25rem 0; }
+.tick { display: inline-block; min-width: 1.5rem; font-weight: 700; }
+.review-progress { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 2px solid var(--line); padding: 0.5rem 0; margin-bottom: 1rem; }
+.review-progress .progress-line { margin: 0 0 0.25rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.review-progress progress { width: 12rem; height: 1rem; }
+.review-steps { display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; list-style: none; padding: 0; margin: 0; }
+.review-steps a { font-weight: 700; }
+.review-steps a[data-done="true"]::after { content: " \2713"; }
+.review-step { border-top: 3px solid var(--line); padding-top: 0.5rem; margin-top: 1.5rem; scroll-margin-top: 6rem; }
+.review-step h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.step-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+.lesson-review { border: 2px solid var(--line); background: var(--surface); padding: 0.5rem 1rem; position: sticky; top: 7rem; }
+.lesson.as-student .student-view { border: 2px solid var(--line); padding: 0.5rem 1rem; max-width: 46rem; }
+.lesson.as-student .exercise-solution { display: block; }
+.exercise-cards { grid-template-columns: repeat(auto-fit, minmax(min(40rem, 100%), 1fr)); }
+.samples-render { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr)); gap: 0 1rem; }
+.exercise-card[data-seen="true"] { border-color: var(--text); }
+.sample-render { border-top: 1px solid var(--line); padding-top: 0.5rem; margin-top: 0.5rem; }
+.sample-render h4 { margin: 0 0 0.25rem; }
+.exercise-card .card-actions .button { margin: 0 0.5rem 0.5rem 0; }
+.next-topic { margin: 1rem 0; }
+@media (max-width: 48rem) {
+  .step-grid { grid-template-columns: minmax(0, 1fr); }
+  .lesson-review { position: static; }
+  li.path-step { grid-template-columns: 2.5rem 1fr; gap: 0 0.5rem; }
+  .review-progress .progress-line progress { width: 100%; }
+  .review-steps { gap: 0.25rem 1rem; }
+}

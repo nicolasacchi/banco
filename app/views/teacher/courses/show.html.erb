@@ -7,10 +7,13 @@
     <p class="notice"><%= t("teacher.course.none") %></p>
   <% else %>
     <% counts = review.counts %>
-    <p id="course-summary" data-open="<%= review.open? %>">
-      <%= t("teacher.course.summary", seq: review.latest.seq, topics: counts[:in_map], approved: counts[:approved]) %>
-      <strong><%= review.open? ? t("teacher.course.open") : t("teacher.course.closed") %></strong>
+    <p id="course-summary" data-open="<%= review.open? %>" data-ready="<%= review.ready_count %>">
+      <%= t("teacher.path.summary.ready", count: review.ready_count) %> ·
+      <%= t("teacher.path.summary.approved", count: counts[:approved]) %> ·
+      <%= t("teacher.path.summary.missing", count: counts[:missing]) %> ·
+      <strong><%= review.open? ? t("teacher.path.summary.open") : t("teacher.path.summary.closed") %></strong>
     </p>
+    <p class="hint"><%= t("teacher.course.summary", seq: review.latest.seq, topics: counts[:in_map], approved: counts[:approved]) %></p>
     <p><a class="button secondary small" id="course-practice-link" href="<%= with_student(teacher_practice_path(key: @subject.key)) %>"><%= t("teacher.course.practice_link") %></a></p>
 
     <% review.warnings.each do |w| %>
@@ -18,8 +21,61 @@
     <% end %>
     <% review.notes.each do |note| %><p class="hint" data-course-note><%= note %></p><% end %>
 
+    <section id="course-topics">
+      <h2><%= t("teacher.path.title") %></h2>
+      <p class="hint"><%= t("teacher.path.intro") %></p>
+      <p class="path-filter">
+        <% if @only_ready %><a id="path-filter" data-active="true" href="<%= teacher_course_path(key: @subject.key) %>"><%= t("teacher.path.filter_off") %></a>
+        <% else %><a id="path-filter" data-active="false" href="<%= teacher_course_path(key: @subject.key, only: "ready") %>"><%= t("teacher.path.filter_ready") %></a><% end %>
+      </p>
+      <% shown = review.steps.select { |st| !@only_ready || st.ready? } %>
+      <% if shown.empty? %><p class="notice" id="path-empty"><%= t("teacher.path.none_ready") %></p><% end %>
+      <ol class="path">
+        <% shown.each do |step| %>
+          <% entry = step.entry %>
+          <li class="topic path-step" data-topic="<%= entry["key"] %>" data-stage="<%= step.row.stage %>" data-badge="<%= step.badge %>">
+            <span class="step-number" aria-hidden="true"><%= step.number %></span>
+            <div class="step-body">
+              <h3>
+                <% if step.lesson? %><a href="<%= teacher_topic_path(key: @subject.key, topic: entry["key"]) %>"><%= entry["title_it"] %></a><% else %><%= entry["title_it"] %><% end %>
+                <span class="badge" data-stage-label data-badge-name="<%= step.badge %>"><%= t("teacher.path.badge.#{step.badge}") %></span>
+              </h3>
+              <p class="hint step-kind"><%= t("teacher.path.kind.#{entry['kind']}") %> · <%= t("teacher.course.minutes", count: entry["minutes"]) %>
+                <% if entry["term"] %> · <%= t("teacher.course.term", n: entry["term"]) %><% end %></p>
+              <p class="step-skills"><%= t("teacher.path.skills") %> <%= safe_join(entry["skills"].map { |k| ref_for(k) }, ", ") %></p>
+              <% if step.missing_it %><p class="step-missing" data-missing><%= step.missing_it %></p><% end %>
+              <% if step.lesson? %>
+                <ul class="plain step-counts" data-counts>
+                  <li data-count="lesson"><%= t("teacher.path.lesson_yes") %></li>
+                  <li data-count="exercises"><%= t("teacher.path.exercises", count: step.exercises) %></li>
+                  <li data-count="findings" data-open="<%= step.open_findings %>"><%= t("teacher.path.findings", count: step.open_findings) %></li>
+                </ul>
+              <% else %>
+                <p class="hint" data-count="lesson"><%= t("teacher.path.lesson_no") %></p>
+              <% end %>
+              <% step.progress.each do |pr| %>
+                <p class="hint step-progress" data-progress="<%= pr.student.key %>"><%= t("teacher.path.progress", who: student_label(pr.student), tries: pr.tries, done: pr.done, total: pr.total) %></p>
+              <% end %>
+              <% if step.ready? %>
+                <p><a class="button" data-review-button href="<%= teacher_topic_path(key: @subject.key, topic: entry["key"]) %>"><%= t("teacher.path.review") %></a></p>
+              <% elsif step.lesson? %>
+                <p><a class="button secondary small" href="<%= teacher_topic_path(key: @subject.key, topic: entry["key"]) %>"><%= t("teacher.path.look") %></a></p>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+      </ol>
+    </section>
+
     <section id="course-release" data-open="<%= review.open? %>" data-releasable="<%= review.releasable? %>">
-      <h2><%= t("teacher.course.release.title") %></h2>
+      <h2><%= t("teacher.path.release.title") %></h2>
+      <p><%= t("teacher.path.release.needs") %></p>
+      <ul class="plain checks" data-release-checks>
+        <% review.release_checks.each do |name, done| %>
+          <li data-check="<%= name %>" data-done="<%= done %>"><span class="tick" aria-hidden="true"><%= done ? "\u2713" : "\u25CB" %></span> <%= t("teacher.path.release.check.#{name}") %> <strong><%= done ? t("teacher.path.done") : t("teacher.path.todo") %></strong></li>
+        <% end %>
+      </ul>
+      <p class="hint" id="trial-note"><%= t("teacher.path.release.trial") %></p>
       <% blocker = decision_blocker %>
       <% if review.open? %>
         <p><%= review.released_latest? ? t("teacher.course.release.is_open") : t("teacher.course.release.open_older") %></p>
@@ -44,29 +100,6 @@
       <% end %>
     </section>
 
-    <section id="course-topics">
-      <h2><%= t("teacher.course.topics") %></h2>
-      <p class="hint"><%= t("teacher.course.topics_intro") %></p>
-      <ol class="topic-list">
-        <% review.topics.each do |row| %>
-          <% entry = row.entry %>
-          <li class="topic" data-topic="<%= entry["key"] %>" data-stage="<%= row.stage %>">
-            <p>
-              <% if row.latest %><a href="<%= teacher_topic_path(key: @subject.key, topic: entry["key"]) %>"><strong><%= entry["title_it"] %></strong></a>
-              <% else %><strong><%= entry["title_it"] %></strong><% end %>
-              <span class="key">(<%= entry["key"] %>)</span> ·
-              <strong data-stage-label><%= t("teacher.course.stage.#{row.stage}") %></strong>
-            </p>
-            <p class="hint">
-              <%= t("teacher.course.kind.#{entry['kind']}") %> · <%= t("teacher.course.minutes", count: entry["minutes"]) %>
-              <% if entry["term"] %> · <%= t("teacher.course.term", n: entry["term"]) %><% end %>
-              · <%= safe_join(entry["skills"].map { |k| ref_for(k) }, ", ") %>
-              <% if entry["after"].any? %><br><%= t("teacher.course.after") %> <%= entry["after"].join(", ") %><% end %>
-            </p>
-          </li>
-        <% end %>
-      </ol>
-    </section>
 
     <% if review.skills.any? %>
       <section id="course-skills">

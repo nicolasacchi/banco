@@ -33,7 +33,8 @@ class TeacherCoursePagesTest < ActionDispatch::IntegrationTest
   test "the course page lists the topics in order with their stage, the new skills with the programme line, and the release" do
     on(:web, "/teacher/subjects/math/course", headers: TEACHER, remote_addr: EDGE)
     assert_response :success
-    assert_select "#course-summary", /Mappa 1: 1 argomenti, 0 approvati/
+    assert_select "#course-summary", /1 argomento pronto per te · 0 approvati/
+    assert_select "p.hint", /Mappa 1: 1 argomenti, 0 approvati/
     assert_select "li.topic[data-topic='#{TopicWorld::TOPIC_KEY}'][data-stage=awaiting_teacher]" do
       assert_select "a[href='/teacher/subjects/math/topics/#{TopicWorld::TOPIC_KEY}']"
     end
@@ -75,7 +76,7 @@ class TeacherCoursePagesTest < ActionDispatch::IntegrationTest
     on(:web, "/teacher/subjects/math/topics/#{TopicWorld::TOPIC_KEY}", headers: TEACHER, remote_addr: EDGE)
     assert_response :success
     assert_select "#topic-review [data-lesson-review]", 2
-    assert_select "#topic-review .finding[data-severity=major]", /Manca un passaggio/
+    assert_select "#step-findings [data-lesson-finding][data-severity=major]", /Manca un passaggio/
     assert_select "#topic-review", /Calcoli rifatti dal revisore: 1/
     assert_select "#topic-approve-form input[name=lesson_findings_reason_it]"
     assert_select "#lesson-send-back-form select[name=reason_code]"

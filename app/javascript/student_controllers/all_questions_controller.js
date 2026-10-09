@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { renderItem } from "items/render"
+import { drawFrozen } from "items/frozen_slot"
 
 // "Tutte le domande" (teacher): every stored instance of every pinned item, drawn by the
 // student's own templates from the presentation the page carries, then switched off. Nothing
@@ -43,25 +43,7 @@ export default class extends Controller {
   async drawVisible() {
     for (const slot of this.slotTargets) {
       if (slot.dataset.drawn || slot.closest("details:not([open])")) continue
-      slot.dataset.drawn = "true"
-      try {
-        const handle = await renderItem(JSON.parse(slot.dataset.presentation), { t: this.textsValue })
-        slot.appendChild(handle.element)
-        handle.mounted()
-        this.freeze(slot)
-      } catch (error) {
-        slot.textContent = this.textsValue.error_generic || String(error)
-      }
+      await drawFrozen(slot, this.textsValue)
     }
-  }
-
-  // Read-only: no field takes input, no button does anything.
-  freeze(slot) {
-    slot.querySelectorAll("input, textarea, select, button").forEach((node) => { node.disabled = true })
-    slot.querySelectorAll("math-field").forEach((field) => {
-      field.setAttribute("read-only", "")
-      field.setAttribute("disabled", "")
-    })
-    slot.setAttribute("aria-disabled", "true")
   }
 }

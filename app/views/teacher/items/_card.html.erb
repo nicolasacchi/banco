@@ -81,17 +81,5 @@
       <% end %>
     <% end %>
 
-    <h3><%= t("teacher.skill.send_back") %></h3>
-    <% card.send_backs.each do |sb| %>
-      <p class="decided" data-sent-back="true"><strong><%= t("teacher.skill.sent_back") %></strong> <%= t("teacher.skill.reason.#{sb['reason_code']}") %>: <%= sb["comment_it"] %></p>
-    <% end %>
-    <%= decision_form("/teacher/item-revisions/#{card.revision.id}/send-back") do %>
-      <label class="hint" for="code-<%= card.revision.id %>"><%= t("teacher.skill.reason_code") %></label>
-      <select id="code-<%= card.revision.id %>" name="reason_code" class="answer-input wide">
-        <% Teacher::SendBacks::CODES.each do |code| %><option value="<%= code %>"><%= t("teacher.skill.reason.#{code}") %></option><% end %>
-      </select>
-      <label class="hint" for="comment-<%= card.revision.id %>"><%= t("teacher.skill.comment") %></label>
-      <input id="comment-<%= card.revision.id %>" class="answer-input wide" type="text" name="comment_it" maxlength="500" required>
-      <p><button type="submit" class="button secondary small" <%= "disabled" if blocker %>><%= t("teacher.skill.send_back_button") %></button></p>
-    <% end %>
+    <%= render "teacher/items/send_back", card: card, blocker: blocker %>
   </article>

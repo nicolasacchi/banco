@@ -31,11 +31,13 @@ class TeacherTopicTest < ApplicationSystemTestCase
     assert_selector "#lesson-text strong", text: "bilancia"
     assert_selector "#lesson-text [data-section=mistakes] ul li", text: "Dimenticare il segno."
     assert_no_text "**bilancia**"
-    assert_selector "section.sample", count: 8
+    assert_selector ".exercise-card", count: 2
 
-    assert_selector "#topic-approve[data-approvable=true]"
-    click_button "Approva l'argomento"
-    assert_equal 0, Decision.where(kind: "approve_topic").count, "the browser asks for the confirmation first"
+    assert_selector "#step-approve[data-approvable=true]"
+    assert_selector "#topic-approve-button[disabled]"
+    click_button "Ho letto la lezione"
+    all("[data-seen-button]").each(&:click)
+    assert_selector "#topic-approve-button:not([disabled])"
     check "topic-confirm-seen"
     click_button "Approva l'argomento"
     assert_selector ".flash", text: "Argomento approvato."

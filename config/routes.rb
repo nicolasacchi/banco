@@ -96,6 +96,7 @@ Rails.application.routes.draw do
       get "items/:revision_id/play" => "item_plays#show", constraints: { revision_id: /\d+/ }, as: :teacher_item_play
       get "items/:revision_id/play/data" => "item_plays#data", constraints: { revision_id: /\d+/ }, as: :teacher_item_play_data
       post "activity" => "activity#create"
+      post "topic-revisions/:revision_id/seen" => "seen#create", constraints: { revision_id: /\d+/ }, as: :teacher_topic_seen
     end
 
     scope "teacher/preview", as: :preview, defaults: { preview: true } do

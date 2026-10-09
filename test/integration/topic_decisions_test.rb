@@ -56,13 +56,13 @@ class TopicDecisionsTest < ActionDispatch::IntegrationTest
     end
     assert_select "#topic-lesson [data-lesson-markup]", minimum: 6
     assert_select "[data-solution]", 2
-    assert_select "section.sample", 8
-    assert_select "section.sample ol[data-hints] li", 24
-    assert_select "section.sample ul.errors li", /Hai sbagliato un segno/
-    assert_select "section.sample ol.steps li"
+    assert_select ".exercise-card [data-presentation]", 8
+    assert_select ".exercise-card details[data-more=hints] ol[data-hints] li", 24
+    assert_select ".exercise-card details[data-more=errors]", /Hai sbagliato un segno/
+    assert_select ".exercise-card details[data-more=solution] ol.steps li"
     assert_select "#topic-lesson [data-final]", "x = 3"
     assert_select "form.decide[action='/teacher/topic-revisions/#{@topic.id}/approve']"
-    assert_select "#topic-approve[data-approvable=true]"
+    assert_select "#step-approve[data-approvable=true]"
   end
 
   test "approving a topic end to end: read the page, confirm, approve; the official student sees it once the course is released" do

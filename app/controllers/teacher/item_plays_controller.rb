@@ -9,7 +9,10 @@ module Teacher
       @n = [ [ params[:n].to_i, 1 ].max, [ @count, 1 ].max ].min
       @unit = "#{@revision.item.subject.key}:test"
       skill = JSON.parse(@revision.body_json)["skill"].to_s
-      @back_path = if skill.match?(/\A[a-z0-9][a-z0-9.\-]*\z/)
+      topic = params[:topic].to_s
+      @back_path = if topic.match?(/\A(ripasso|ponte|lezione)\.[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*\z/) && Lesson.exists?(key: topic)
+        teacher_topic_path(key: @revision.item.subject.key, topic: topic)
+      elsif skill.match?(/\A[a-z0-9][a-z0-9.\-]*\z/)
         teacher_test_skill_path(key: @revision.item.subject.key, skill: skill)
       else
         teacher_test_path(key: @revision.item.subject.key)
