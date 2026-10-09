@@ -39,8 +39,9 @@ module Lessons
       end
 
       def number(check, ctx)
-        unless Num.valid?(check["answer"])
-          ctx.add("E-LESSON-CHECK", "answer", "the answer #{check['answer'].inspect} is not a number the practice rules read (an integer, a decimal with comma 2,5, or a fraction 5/2)")
+        plain = check["component"] == "number"
+        unless Num.valid?(check["answer"]) && (!plain || check["answer"].match?(/\A-?\d+(,\d+)?\z/))
+          ctx.add("E-LESSON-CHECK", "answer", "the answer #{check['answer'].inspect} is not a number the practice rules read (an integer or a decimal with comma 2,5#{'; a fraction 5/2 is for the fraction component' if plain})")
           return
         end
         check["errors"].to_a.each_with_index do |e, i|
