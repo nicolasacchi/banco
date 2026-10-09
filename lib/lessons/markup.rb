@@ -13,6 +13,11 @@ module Lessons
   #   {"type"=>"p",  "children"=>[node]}
   #   {"type"=>"ol"|"ul", "items"=>[{"children"=>[node], "sub"=>[[node]]}]}
   # Nodes: {"t"=>"text","v"=>s} | {"t"=>"bold","children"=>[node]} | {"t"=>"math","v"=>latex}
+  #
+  # With roles: true (banco.lesson/2, A5) two constructs more: a colour role span [[role:text]]
+  # ({"t"=>"role","role"=>name,"children"=>[node]}) and a link [text](scheda:SLUG) or
+  # [text](argomento:KEY) ({"t"=>"link","kind"=>,"target"=>,"children"=>[node]}); and a formula may
+  # hold \role{name}{tex} (KaTeX's macro) but none of the commands in FORBIDDEN_TEX.
   module Markup
     class Refused < StandardError
       attr_reader :line, :construct
@@ -23,6 +28,12 @@ module Lessons
         super("line #{line}: #{construct}")
       end
     end
+
+    ROLE_NAME = /\A[a-z]+(-[a-z]+)*\z/
+    LINK_TARGET = /\A[a-z0-9.-]+\z/
+    LINK_KINDS = %w[scheda argomento].freeze
+    # Commands that would let an agent reach KaTeX's trust functions or redefine the macro (A5).
+    FORBIDDEN_TEX = /\\(htmlClass|htmlId|htmlStyle|htmlData|href|url|includegraphics|def|gdef|edef|xdef|newcommand|renewcommand|providecommand|let|futurelet|global|class|cssId|raw|include|input)(?![A-Za-z])/
 
     ORDERED = /\A(\d+)\.\s+(.*)\z/
     ORDERED_EMPTY = /\A\d+\.\s*\z/
@@ -39,41 +50,41 @@ module Lessons
     module_function
 
     # The canonical blocks of +text+. line_offset: the line number of the text's first line in the file.
-    def parse(text, line_offset: 1)
-      raw_blocks(text, line_offset: line_offset).map { |b| block_json(b, line_offset) }
+    def parse(text, line_offset: 1, roles: false)
+      raw_blocks(text, line_offset: line_offset, roles: roles).map { |b| block_json(b, roles) }
     end
 
-    def block_json(block, _offset)
+    def block_json(block, roles = false)
       if block.type == :p
-        { "type" => "p", "children" => inline(block.text, block.line) }
+        { "type" => "p", "children" => inline(block.text, block.line, roles: roles) }
       else
-        items = block.items.map { |i| { "children" => inline(i[:text], i[:line]), "sub" => i[:subs].map { |s| inline(s, i[:line]) } } }
+        items = block.items.map { |i| { "children" => inline(i[:text], i[:line], roles: roles), "sub" => i[:subs].map { |s| inline(s, i[:line], roles: roles) } } }
         { "type" => block.type.to_s, "items" => items }
       end
     end
 
     # The blocks of +text+ before they become nodes; every construct outside v2 raises Refused.
-    def raw_blocks(text, line_offset: 1)
+    def raw_blocks(text, line_offset: 1, roles: false)
       lines = text.to_s.gsub(/\r\n?/, "\n").split("\n", -1)
       blocks = []
       current = []
       lines.each_with_index do |line, i|
         if line.strip.empty?
-          blocks << build(current) unless current.empty?
+          blocks << build(current, roles) unless current.empty?
           current = []
         else
           current << [ line, i + line_offset ]
         end
       end
-      blocks << build(current) unless current.empty?
+      blocks << build(current, roles) unless current.empty?
       blocks
     end
 
-    def build(rows)
+    def build(rows, roles = false)
       rows.each { |line, n| line_level(line, n) }
       block = classify(rows)
       texts = block.type == :p ? [ [ block.text, block.line ] ] : block.items.flat_map { |i| ([ i[:text] ] + i[:subs]).map { |t| [ t, i[:line] ] } }
-      texts.each { |text, line| inline(text, line) } # strict: refuses what the browser would show as it is
+      texts.each { |text, line| inline(text, line, roles: roles) } # strict: refuses what the browser would show as it is
       block
     end
 
@@ -135,7 +146,7 @@ module Lessons
     end
 
     # Inline nodes of one paragraph or item. Strict: every construct outside $...$ and **...** is refused.
-    def inline(text, line)
+    def inline(text, line, roles: false)
       nodes = []
       buffer = +""
       flush = lambda do
@@ -157,15 +168,25 @@ module Lessons
           raise Refused.new(line, "an empty $$") if stop == i + 1
 
           flush.call
-          nodes << { "t" => "math", "v" => text[(i + 1)...stop].gsub("\\$", "$") }
+          tex = text[(i + 1)...stop].gsub("\\$", "$")
+          check_tex(tex, line) if roles
+          nodes << { "t" => "math", "v" => tex }
           i = stop + 1
         elsif ch == "*" && nxt == "*"
           stop = text.index("**", i + 2)
           raise Refused.new(line, "an unclosed **") if stop.nil? || stop == i + 2
 
           flush.call
-          nodes << { "t" => "bold", "children" => inline(text[(i + 2)...stop], line) }
+          nodes << { "t" => "bold", "children" => inline(text[(i + 2)...stop], line, roles: roles) }
           i = stop + 2
+        elsif roles && ch == "[" && nxt == "["
+          flush.call
+          node, i = role_span(text, i, line)
+          nodes << node
+        elsif roles && ch == "[" && (link = text[i..].match(/\A\[([^\[\]]*)\]\(([^()]*)\)/))
+          flush.call
+          nodes << link_node(link[1], link[2], line)
+          i += link[0].size
         else
           refuse_char(text, i, line)
           buffer << ch
@@ -188,6 +209,96 @@ module Lessons
       when "!" then raise Refused.new(line, "an image") if text[i + 1] == "["
       when "]" then raise Refused.new(line, "a link") if text[i + 1] == "("
       end
+    end
+
+    # [[role:text]] at +start+: the node and the index after the closing ]].
+    def role_span(text, start, line)
+      stop = role_close(text, start + 2)
+      raise Refused.new(line, "an unclosed [[ colour role span") if stop.nil?
+
+      inner = text[(start + 2)...stop]
+      name, body = inner.split(":", 2)
+      raise Refused.new(line, "a [[ that is not a colour role span ([[role:text]])") if body.nil?
+      raise Refused.new(line, "a colour role name that is not lowercase letters and hyphens") unless name.match?(ROLE_NAME)
+      raise Refused.new(line, "a colour role span inside a colour role span") if outside_math(body).include?("[[")
+      raise Refused.new(line, "a colour role span without text") if body.strip.empty?
+
+      [ { "t" => "role", "role" => name, "children" => inline(body, line, roles: true) }, stop + 2 ]
+    end
+
+    # Index of the "]]" that closes a role span: a "]]" inside $...$ is LaTeX.
+    def role_close(text, from)
+      i = from
+      while i < text.length
+        if text[i] == "\\" then i += 2
+        elsif text[i] == "$"
+          stop = closing(text, i + 1)
+          return nil if stop.nil?
+
+          i = stop + 1
+        elsif text[i] == "]" && text[i + 1] == "]" then return i
+        else i += 1
+        end
+      end
+      nil
+    end
+
+    # +text+ without its $...$ spans (a [[ inside a formula is LaTeX).
+    def outside_math(text)
+      out = +""
+      i = 0
+      while i < text.length
+        if text[i] == "$" && (stop = closing(text, i + 1))
+          i = stop + 1
+        else
+          out << text[i]
+          i += 1
+        end
+      end
+      out
+    end
+
+    def link_node(label, target, line)
+      kind, id = target.split(":", 2)
+      raise Refused.new(line, "a link other than scheda: or argomento:") unless LINK_KINDS.include?(kind) && !id.nil?
+      raise Refused.new(line, "a link without a target") if id.empty?
+      raise Refused.new(line, "a link target that is not lowercase letters, digits, dots and hyphens") unless id.match?(LINK_TARGET)
+      raise Refused.new(line, "a link without text") if label.strip.empty?
+
+      { "t" => "link", "kind" => kind, "target" => id, "children" => inline(label, line, roles: true) }
+    end
+
+    # A formula of a lesson/2 text: no command that reaches KaTeX's trust functions or redefines a macro, and
+    # \role{name}{tex} with a name made of lowercase letters and hyphens.
+    def check_tex(tex, line)
+      if (m = tex.match(FORBIDDEN_TEX))
+        raise Refused.new(line, "a command that is not allowed in a formula (\\#{m[1]})")
+      end
+      tex.scan(/\\role(?![A-Za-z])(.{0,80})/m).each do |(rest)|
+        group = rest.match(/\A\{([^{}]*)\}\{/)
+        raise Refused.new(line, "\\role takes a role name and a formula") unless group
+        raise Refused.new(line, "a colour role name that is not lowercase letters and hyphens") unless group[1].match?(ROLE_NAME)
+      end
+    end
+
+    # The colour roles a text uses, in [[role:...]] spans and \\role{name}{...} macros: [[name, line]].
+    def roles_used(text, line_offset: 1)
+      names = []
+      walk = lambda do |nodes, line|
+        nodes.each do |n|
+          case n["t"]
+          when "role" then names << [ n["role"], line ]
+          when "math" then n["v"].scan(/\\role\{([^{}]*)\}/) { |(name)| names << [ name, line ] }
+          end
+          walk.call(n["children"], line) if n["children"]
+        end
+      end
+      raw_blocks(text, line_offset: line_offset, roles: true).each do |b|
+        if b.type == :p then walk.call(inline(b.text, b.line, roles: true), b.line)
+        else b.items.each { |it| ([ it[:text] ] + it[:subs]).each { |t| walk.call(inline(t, it[:line], roles: true), it[:line]) } }
+        end
+      end
+      names
     end
 
     # Index of the next unescaped "$" at or after +from+, or nil.
