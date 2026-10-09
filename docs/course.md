@@ -57,3 +57,14 @@ The agent stops at `awaiting_teacher`. The teacher reads and decides in the brow
 
 Decisions (POST, web listener, teacher only): `approve_topic` (`confirm_seen=1`, and `lesson_findings_reason_it` when the lesson review has a blocker or major finding), `send_back_lesson` (`reason_code`, `comment_it`), `release_course` (`open=1|0`). The gate is `Approval::TopicGate`; its reasons are worded in Italian by `Teacher::Wording`.
 
+
+## Lesson format 2 (rich lessons, D-244..D-251)
+
+A lesson revision is `banco.lesson/1` (eight sections, D-224) or `banco.lesson/2` (the `schema:` line of `lesson.md` says which; `banco brief show lesson`
+is the format of 2, `lesson-v1` of 1). In 2 the lesson is parts and cards (`## Titolo {idea|example|mistakes|try|summary [extra] [icon=] [id=] [tone=]}`)
+of typed blocks (`::: diagram balance`, `::: check choice`, `::: example`, ...); a visual on every idea card, 2 to 8 checks answered in the page, a summary
+with a schema; colours are roles of the subject's palette and icons are ours (`config/banco/lesson_palette.yml`, `icons.yml`). The numbers are the
+`lesson2:` block of `config/banco/validation_rules.yml` (rules version 8). `banco lesson open KEY --schema 2` writes a converted draft of a lesson/1
+revision. The review of a lesson/2 has 11 points and findings by card (`brief lesson-review`). Worked examples: `test/fixtures/lesson2/demo.md` and
+`demo-italian.md`. What the page and the checks do is built in tracks R1 to R4 of the rich-lessons plan; until then only the formats, the codes and the
+fixtures exist (D-245).

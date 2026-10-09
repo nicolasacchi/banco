@@ -42,6 +42,7 @@ node --test 'test/javascript/**/*.test.mjs'              # student pages: markup
 bin/hygiene                                   # public-repo checks (also in CI)
 # the forbidden terms are private: HYGIENE_TERMS (CI secret) or untracked prep/hygiene-terms, one per line
 bin/check-structure                           # db/structure.sql equals a fresh dump of the migrations (also in CI)
+bin/build-icons --check                       # the committed Lucide sprite equals the build from config/banco/icons.yml
 bin/preflight --json | jq .ok                 # health of this installation (also: banco health --json)
 bin/rubocop && bin/brakeman --no-pager        # style and security
 bundle exec puma -C config/puma.rb            # three listeners
@@ -125,6 +126,12 @@ only), `HARNESS_PORT` 3200 (internal). Never `PORT`.
   the API controllers `Courses|Lessons|LessonReviews|Topics|PracticeProgress`; `banco course|lessons|lesson|lesson-review|topics|topic|practice`.
 - Teacher decisions and pages of the course (S4, D-236): `approve_topic`, `send_back_lesson`, `release_course` (the third is the only way the course opens to the official student), `Approval::TopicGate` (`.mechanical` for the page), `Course::Decisions.release_reasons`; pages `Teacher::CourseReview|TopicReview|PracticeProgress` with `Teacher::ItemCard` (shared with the entry test) and `teacher/items/_card.html.erb`; test world `test/support/topic_world.rb`. Texts: `config/locales/teacher_course.it.yml`.
 - The skill map (D-221): `Teacher::GraphMap` (layout), `GraphMapContext` (pins, entry, seconda lines), `teacher/graphs/_map*.erb`, `graph_map_controller.js`; on the graph page and the report.
+- Rich lessons (D-244..D-251; formats in R0, parser, renderer, events and render check in R1 to R4): `banco.lesson/2` (cards of typed
+  blocks; `config/banco/schemas/lesson.json`, `$defs.body2`) and the diagram DSL `banco.diagram/1` (`diagram.json`, nine types of release 1),
+  `config/banco/lesson_palette.yml` (colour roles, carriers, step verbs) and `icons.yml` (Lucide 1.54.0 subset in `public/vendor/lucide@1.54.0/`,
+  `bin/build-icons --check`), the `lesson2:` block of `validation_rules.yml` (rules version 8, `lesson.accept_schema1`), briefs `lesson` (v2),
+  `lesson-v1`, `lesson-review` (v2). Fixtures: `test/fixtures/lesson2` (demos, `bad/` with `manifest.json`, `numbers.json`, `whitelist.json`,
+  `context.json`), `test/fixtures/diagrams/vectors.json`, the role and link cases in `test/fixtures/markup/v2.json` (`"options"`).
 - Third reviewer (D-222): role `arbiter` (`FindingAssessment`, `FindingOpinion`, `Teacher::FindingField`, `banco findings assess`, `briefs/arbiter.md`); first opinion claude-opus-5-5, second claude-haiku-4-5-20251001 (`config/banco/providers.yml`); blocker and major findings stay a teacher click ("Segui il parere", `follow_opinions`), minor ones are closed or marked to fix as derived state by the first opinion alone (D-239); no effect on `Review::Gate` or `Approval::BlueprintGate`.
 - The student's front door and menu (D-240): `GET /` (`HomeController`) sends a student to `/today`, the teacher and a guest to `/teacher`; `/today` is the student's home (entry test block, then the course); `shared/_student_menu` (helpers `student_menu_*`) is on every student page, one item "Pausa: torna a Oggi" in a sitting and none in the teacher's preview; `/settings` holds the theme and size.
 - The course path and the guided review (D-241): the course page is the subject's path (`Teacher::CourseReview#steps`, badges, `?only=ready`), the topic page has four steps (lesson as S sees it, exercises drawn by `items/frozen_slot.js`, findings through `teacher/tests/_finding`, approval); `Teacher::TopicSeen` and `POST /teacher/topic-revisions/:id/seen` keep app events `teacher_read_lesson` and `teacher_saw_exercise`, never decisions; the gate is unchanged. Tests: `test/support/course_path_world.rb`.
