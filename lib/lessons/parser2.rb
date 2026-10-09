@@ -244,7 +244,7 @@ module Lessons
       def heading(text, n)
         flush
         @prev = :heading
-        m = text.match(HEADING)
+        m = text.size <= 400 ? text.match(HEADING) : nil
         unless m
           error("E-LESSON-CARD", n, "a ## heading is a card and ends with {ROLE ...} (role: idea, example, mistakes, try, summary), here #{text.inspect}", "heading")
           @card = { bad: true, blocks: [], line: n }
