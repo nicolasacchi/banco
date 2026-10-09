@@ -1,0 +1,53 @@
+{
+  "type": "sentence",
+  "alt_it": "La frase Marco legge un libro con il soggetto, il predicato e il complemento oggetto colorati.",
+  "text_it": "Marco legge un libro",
+  "layout": "line",
+  "parts": [
+    {
+      "id": "s",
+      "text_it": "Marco",
+      "role": "subject",
+      "question_it": "Chi legge?"
+    },
+    {
+      "id": "p",
+      "text_it": "legge",
+      "role": "predicate",
+      "question_it": "Che cosa fa?"
+    },
+    {
+      "id": "o",
+      "text_it": "un libro",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+    }
+  ],
+  "states": [
+    {
+      "op_it": "Frase attiva"
+    },
+    {
+      "text_it": "Un libro è letto da Marco",
+      "op_it": "Gira la frase",
+      "next_label_it": "Gira la frase",
+      "parts": [
+        {
+          "id": "o",
+          "text_it": "Un libro",
+          "role": "object"
+        },
+        {
+          "id": "p",
+          "text_it": "è letto",
+          "role": "predicate"
+        },
+        {
+          "id": "s",
+          "text_it": "da Marco",
+          "role": "subject"
+        }
+      ]
+    }
+  ]
+}

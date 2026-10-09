@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 18
+version: 19
 
 validation:
   # Skill graph (synchronous).
@@ -116,6 +116,34 @@ validation:
   W-LESSON-FINAL-MISSING: { stage: ruby, severity: warning, description: "A final (normalized: no spaces, no dollar signs, the minus sign as hyphen) is not a substring of its normalized solution; informational." }
   W-LESSON-FINAL-IN-TRY: { stage: ruby, severity: warning, description: "A final (normalized) appears in its own exercise text." }
   E-LESSON-REVIEW-RECOMPUTED: { stage: review, severity: error, description: "Math: too few recomputed entries, or an exercise with a final has none." }
+  # banco.lesson/2 (D-245..D-250): cards of typed blocks, the diagram DSL, the render check.
+  E-LESSON-CARD: { stage: ruby, severity: error, description: "A card heading without a valid {tag} or with a repeated or unknown token, a duplicate card id, text before the first card or part, or a part with fewer than lesson2.part_min_cards cards." }
+  E-LESSON-CARDS: { stage: ruby, severity: error, description: "Core cards outside lesson2.core_cards, a role missing or repeated, or the order of roles broken (idea before example, then mistakes, try, summary; extra cards after the summary)." }
+  E-CARD-WORDS: { stage: ruby, severity: error, description: "A core card holds more prose than lesson2.max_card_words, or a callout more than lesson2.callout_words." }
+  E-CARD-BLOCKS: { stage: ruby, severity: error, description: "A card has fewer or more blocks than lesson2.blocks_per_card." }
+  E-CARD-NO-VISUAL: { stage: ruby, severity: error, description: "An idea card has no diagram, schema, procedure, image, page or cases block holding a diagram (a formula or a callout is not a visual)." }
+  E-CARD-ROLES: { stage: ruby, severity: error, description: "A card's running text uses more than lesson2.icon_roles_per_card colour roles whose carrier is an icon." }
+  E-LESSON-BLOCK: { stage: ruby, severity: error, description: "A directive or block that is unknown, not available in this release, not closed, nested where only more may nest, with a YAML error, with a body that fails its schema, or with a double-quoted YAML string holding a backslash." }
+  E-LESSON-EXTRA-WORDS: { stage: ruby, severity: error, description: "Depth (more blocks and extra cards) above lesson2.extra_words, or one more block above lesson2.more_words." }
+  E-LESSON-MAP: { stage: ruby, severity: error, description: "The summary card has no schema, or a schema has the wrong number of nodes or a shape that does not hold (a cycle, no root, too many children)." }
+  E-LESSON-CHECK: { stage: ruby, severity: error, description: "A check whose answer is not among its options, whose number or fraction does not parse under the practice rules, or whose error answer equals the answer." }
+  E-LESSON-CHECKS: { stage: ruby, severity: error, description: "The number of checks (step blanks included) outside lesson2.checks_core, more than lesson2.checks_extra_max in extra cards, more than lesson2.blanks_max blanks, or more than the limits of the try card." }
+  E-LESSON-VISUALS: { stage: ruby, severity: error, description: "More diagrams, schemas and procedures than lesson2.visuals_core_max (extras: lesson2.visuals_extra_max), or a diagram with more than lesson2.states_max states." }
+  E-LESSON-PARTS: { stage: ruby, severity: error, description: "Parts that are neither none nor lesson2.parts, the first card not after the first part heading, or a part with too few cards." }
+  E-LESSON-DIAGRAM: { stage: ruby, severity: error, description: "A diagram or schema whose data is not valid: a semantic check of its type failed (the detail names the path), a label longer than lesson2.label_words, or a key that belongs to the top level inside a state." }
+  E-LESSON-ALT: { stage: ruby, severity: error, description: "A diagram or schema alt_it outside lesson2.alt_words." }
+  E-LESSON-ROLE: { stage: ruby, severity: error, description: "A colour role that is not in the subject's palette (config/banco/lesson_palette.yml), in a span, a formula, a diagram, a legend or a tone." }
+  E-LESSON-ICON: { stage: ruby, severity: error, description: "An icon name that is not in config/banco/icons.yml for the subject (the ui icons are ours)." }
+  E-LESSON-LINK: { stage: ruby, severity: error, description: "A link to a card id or a topic key that does not exist." }
+  E-LESSON-SIZE: { stage: ruby, severity: error, description: "The source is larger than lesson2.max_bytes or the assets than lesson2.max_assets_bytes." }
+  E-LESSON-SCHEMA: { stage: ruby, severity: error, description: "A banco.lesson/1 file submitted after lesson.accept_schema1 was set to false (D-251): write banco.lesson/2." }
+  E-LESSON-RENDER: { stage: chrome, severity: error, description: "The render check in the server's Chrome failed: an exception, a formula KaTeX refused, an unreadable card (a layout that cannot fit at the student's text size) or a timeout." }
+  E-LESSON-OVERFLOW: { stage: chrome, severity: error, description: "A card is wider than its viewport (horizontal overflow) at one of the render check's viewports." }
+  E-DIAGRAM-LAYOUT: { stage: chrome, severity: error, description: "A diagram's layout returned an error or two label boxes overlap: shorten the labels or reduce the marks." }
+  E-DIAGRAM-SMALL-TEXT: { stage: chrome, severity: error, description: "A text or a diagram label is drawn under the student's base text size." }
+  W-LESSON-CHECKS-SPARSE: { stage: ruby, severity: warning, description: "Three idea or example cards in a row with no check or step blank." }
+  W-CHECK-ANSWER-IN-PROMPT: { stage: ruby, severity: warning, description: "A check's answer text appears in its own prompt." }
+  W-MISTAKE-CODE: { stage: ruby, severity: warning, description: "A mistake or check error code that is not in the skills' error catalogue." }
   E-COURSE-SKILL-DUPLICATE: { stage: ruby, severity: error, description: "A course skill key is in the graph it is validated against, or twice in the map." }
   E-COURSE-TOPIC: { stage: ruby, severity: error, description: "The key, kind and subject disagree, duplicate topic, a skill in two topics or of another subject, unknown topic in after, a cycle in after." }
   W-COURSE-ORDER: { stage: ruby, severity: warning, description: "A topic before one of its after topics, or before the topic holding a direct prerequisite of its skills." }
@@ -133,7 +161,7 @@ validation:
   E-PRACTICE-POOL: { stage: ruby, severity: error, description: "A static practice item has fewer than practice.min_static_instances instances." }
   W-PRACTICE-CODE-SPARSE: { stage: ruby, severity: warning, description: "A catalogue code is carried by fewer than practice.min_instances_per_code instances of the item." }
   E-BLUEPRINT-PRACTICE-ITEM: { stage: blueprint, severity: error, description: "A blueprint pins a practice item." }
-  E-REVIEW-CHECKLIST: { stage: review, severity: error, description: "A review of a practice item must have exactly 13 checklist points, any other review exactly 11." }
+  E-REVIEW-CHECKLIST: { stage: review, severity: error, description: "A review of a practice item must have exactly 13 checklist points, a review of a lesson/1 revision exactly 8, a review of a lesson/2 revision exactly 11, any other review exactly 11." }
   # Grading proposals (the evening loop).
   E-GRADE-POINT: { stage: grading, severity: error, description: "A grade proposal has an unknown or missing rubric point, or a score that is not an integer between 0 and the weight." }
   E-GRADE-QUOTE: { stage: grading, severity: error, description: "A score above 0 has no quote, or the quote is shorter than 3 or longer than 300 characters." }

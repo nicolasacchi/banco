@@ -42,10 +42,14 @@ func runLessonOpen(e *env, args []string) error {
 	fs := flag.NewFlagSet("lesson open", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	dir := fs.String("dir", "", "folder for lesson.md (default $TMPDIR/banco-work/lesson-KEY)")
+	schema := fs.String("schema", "", "2: write the banco.lesson/2 draft (the converted draft of the latest lesson/1 revision, D-245); default: the latest revision as it is")
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
 	if err != nil {
 		return err
+	}
+	if *schema != "" && *schema != "2" {
+		return newErr(ExitUsage, "E-USAGE", "schema", "--schema takes 2 (banco.lesson/2); without it you get the latest revision as it is", "banco lesson open ripasso.math.linear-equations-integer --schema 2")
 	}
 	const next = "banco lesson open ripasso.math.linear-equations-integer"
 	if len(pos) != 1 || !lessonKeyRe.MatchString(pos[0]) {
@@ -63,7 +67,11 @@ func runLessonOpen(e *env, args []string) error {
 			}
 		}
 	}
-	body, err := e.client().do("lesson open", "GET", "/api/v1/lessons/"+url.PathEscape(key))
+	path := "/api/v1/lessons/" + url.PathEscape(key)
+	if *schema != "" {
+		path += "?schema=" + url.QueryEscape(*schema)
+	}
+	body, err := e.client().do("lesson open", "GET", path)
 	if err != nil {
 		return err
 	}

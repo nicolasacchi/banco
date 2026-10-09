@@ -8,7 +8,8 @@
 # Codes and what they mean: config/banco/error_codes.yml. Generic and synthetic:
 # nothing here is about a person.
 # Supports (D-216) added optional checks that only fire on the new fields: no bump.
-version: 7
+# v8: banco.lesson/2 (D-245): block lesson2 and lesson.accept_schema1. No existing number changes.
+version: 8
 
 generator:
   seeds: 200                  # seeds 1..200 are run, in two fresh contexts
@@ -160,6 +161,62 @@ lesson:
   book_extra_words: 30        # E-LESSON-BOOK
   page_pattern: '\b(pag\.?|pagg\.?|pagina|pagine|p\.)\s*\d'   # E-LESSON-PAGE
   review_min_recomputed_math: 8   # E-LESSON-REVIEW-RECOMPUTED
+  accept_schema1: true        # a lesson/1 submit is accepted; set to false in its own commit (D-251): then E-LESSON-SCHEMA
+
+# banco.lesson/2 (D-245..D-247): cards of typed blocks. The numbers of A3 of the spec; a change bumps the version.
+lesson2:
+  max_bytes: 98304            # E-LESSON-SIZE: lesson.md
+  max_assets_bytes: 1572864   # E-LESSON-SIZE: all assets of a lesson (release 1.1)
+  max_words: 500              # E-LESSON-WORDS: core prose (text, callout, summary, mistake, example why_it, card titles)
+  max_card_words: 90          # E-CARD-WORDS: prose of one core card
+  callout_words: 40           # E-CARD-WORDS
+  blocks_per_card: [1, 6]     # E-CARD-BLOCKS
+  core_cards: [6, 14]         # E-LESSON-CARDS
+  extra_cards_max: 4          # E-LESSON-CARDS: extra cards (roles idea or example only)
+  parts: [2, 6]               # E-LESSON-PARTS: none, or this many
+  part_min_cards: 2           # E-LESSON-PARTS
+  extra_words: 1000           # E-LESSON-EXTRA-WORDS: more blocks and extra cards together
+  more_words: 150             # E-LESSON-EXTRA-WORDS: one more block
+  example_steps: [2, 8]       # E-LESSON-BLOCK
+  example_step_words: 30      # E-LESSON-BLOCK: do_it plus why_it of one step
+  procedure_steps: [2, 6]     # E-LESSON-BLOCK
+  cases: [2, 4]               # E-LESSON-BLOCK
+  legend_roles: [2, 8]        # E-LESSON-BLOCK
+  mistakes: [3, 8]            # W-LESSON-MISTAKES below the first number; E-LESSON-BLOCK above the second
+  checks_core: [2, 8]         # E-LESSON-CHECKS: checks outside the try card, step blanks included
+  checks_extra_max: 2         # E-LESSON-CHECKS: more in extra cards
+  blanks_max: 3               # E-LESSON-CHECKS
+  checks_gap: 3               # W-LESSON-CHECKS-SPARSE: this many idea or example cards in a row without one
+  try_exercises: [4, 8]       # E-LESSON-EXERCISES
+  try_checks_per_exercise: 3  # E-LESSON-CHECKS: parts a, b, c
+  try_checks_max: 12          # E-LESSON-CHECKS
+  visuals_core_max: 12        # E-LESSON-VISUALS: diagrams + schemas + procedures (each diagram of a cases counts)
+  visuals_extra_max: 4        # E-LESSON-VISUALS
+  states_max: 6               # E-LESSON-VISUALS: states of one diagram
+  icon_roles_per_card: 3      # E-CARD-ROLES: roles with carrier icon in a card's running text
+  summary_points: [3, 5]      # E-LESSON-SUMMARY
+  summary_point_words: 20     # E-LESSON-SUMMARY
+  schema_nodes: [3, 12]       # E-LESSON-MAP
+  table_columns_max: 4        # E-LESSON-BLOCK (the spec's A3 says 5 for a schema table and A4 4 for the block: one rule, 4)
+  table_rows_max: 10          # E-LESSON-BLOCK
+  alt_words: [5, 50]          # E-LESSON-ALT
+  label_words_max: 6          # E-LESSON-DIAGRAM
+  node_words_max: 6           # E-LESSON-DIAGRAM: concept map node text
+  edge_words_max: 3           # E-LESSON-DIAGRAM: concept map edge label
+  goals_words_max: 12         # E-LESSON-BLOCK: one goal in the front matter
+  book_extra_words: 30        # E-LESSON-BOOK
+  why_sentences: [2, 4]       # W-LESSON-WHY
+  max_sentence_words: 25      # E-READ sentence_length, per paragraph and list item
+  max_bold_ratio: 0.08        # E-LESSON-BOLD: whole body
+  max_bold_span_words: 4      # E-READ bold_span_length
+  min_gulpease: 50            # W-GULPEASE: the whole core prose
+  review_points: 11           # E-REVIEW-CHECKLIST (lesson/1 keeps 8)
+  render:                     # E-LESSON-RENDER, run by R4 (the server's Chrome); an extra card only at the first core viewport
+    budget_seconds: 90        # one revision
+    card_viewport_seconds: 5
+    core_viewports: [[390, 844, cream], [1280, 800, cream], [1280, 800, dark]]
+    extra_viewports: [[390, 844, cream]]
+    min_text_px: 18           # E-DIAGRAM-SMALL-TEXT: never under this, whatever the preference
 
 practice:                     # practice items (A2.4) and topics (A2.3)
   hints: [2, 4]

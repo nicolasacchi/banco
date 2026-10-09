@@ -1,0 +1,61 @@
+{
+  "type": "flow",
+  "alt_it": "Da ax uguale b: se a è diverso da zero l'equazione è determinata, altrimenti dipende da b.",
+  "nodes": [
+    {
+      "id": "s",
+      "kind": "step",
+      "text_it": "Arrivi a $ax = b$"
+    },
+    {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "$a \\neq 0$?"
+    },
+    {
+      "id": "det",
+      "kind": "end",
+      "text_it": "Determinata",
+      "role": "correct"
+    },
+    {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "$b \\neq 0$?"
+    },
+    {
+      "id": "imp",
+      "kind": "end",
+      "text_it": "Impossibile"
+    },
+    {
+      "id": "ind",
+      "kind": "end",
+      "text_it": "Indeterminata"
+    }
+  ],
+  "edges": [
+    [
+      "s",
+      "q1"
+    ],
+    [
+      "q1"
+    ],
+    [
+      "q1",
+      "q2",
+      "no"
+    ],
+    [
+      "q2",
+      "imp",
+      "sì"
+    ],
+    [
+      "q2",
+      "ind",
+      "no"
+    ]
+  ]
+}

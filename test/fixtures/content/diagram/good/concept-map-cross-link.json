@@ -1,0 +1,48 @@
+{
+  "type": "concept_map",
+  "alt_it": "Mappa dei complementi: dal predicato partono il complemento oggetto e i complementi indiretti.",
+  "root": "r",
+  "nodes": [
+    {
+      "id": "r",
+      "text_it": "Il predicato"
+    },
+    {
+      "id": "o",
+      "text_it": "Complemento oggetto",
+      "role": "object",
+      "icon": "box"
+    },
+    {
+      "id": "i",
+      "text_it": "Complementi indiretti"
+    },
+    {
+      "id": "t",
+      "text_it": "Tempo",
+      "role": "time"
+    }
+  ],
+  "edges": [
+    {
+      "from": "r",
+      "to": "o",
+      "label_it": "senza preposizione"
+    },
+    {
+      "from": "r",
+      "to": "i",
+      "label_it": "con preposizione"
+    },
+    {
+      "from": "i",
+      "to": "t"
+    }
+  ],
+  "links": [
+    {
+      "from": "o",
+      "to": "t"
+    }
+  ]
+}

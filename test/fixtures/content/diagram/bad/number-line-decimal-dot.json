@@ -1,0 +1,13 @@
+{
+  "type": "number_line",
+  "alt_it": "Retta numerica da meno cinque a cinque con un punto sul meno due.",
+  "min": "-5",
+  "max": "5",
+  "step": "1",
+  "labels": "all",
+  "marks": [
+    {
+      "at": "1.5"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Builds public/vendor/lucide@VERSION/banco-sprite.svg from config/banco/icons.yml and the vendored
+# Lucide files under public/vendor/lucide@VERSION/icons/ (D-246). Offline and deterministic: the sprite
+# has one <symbol id="OUR-NAME"> per icon, in the order of the file.
+#   bin/build-icons           write the sprite and refresh SHA256SUMS
+#   bin/build-icons --check   exit 1 when the committed sprite or SHA256SUMS differ from the build (CI)
+require "yaml"
+require "digest"
+
+root = File.expand_path("..", __dir__)
+config = YAML.safe_load_file(File.join(root, "config/banco/icons.yml"))
+version = config.fetch("lucide")
+dir = File.join(root, "public/vendor/lucide@#{version}")
+sprite_path = File.join(dir, "banco-sprite.svg")
+
+names = {} # our name => lucide name, in file order
+config["structural"].each { |ours, lucide| names[ours] = lucide }
+config["ui"].each { |ours, lucide| names[ours] = lucide }
+config["subjects"].each_value { |list| list.each { |ours, lucide| names[ours] ||= lucide } }
+
+symbols = names.map do |ours, lucide|
+  file = File.join(dir, "icons", "#{lucide}.svg")
+  abort "build-icons: #{lucide}.svg is not vendored (needed by #{ours})" unless File.file?(file)
+  inner = File.read(file)[%r{<svg\b[^>]*>(.*)</svg>}m, 1].to_s.strip.gsub(/\s*\n\s*/, "")
+  %(<symbol id="#{ours}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">#{inner}</symbol>)
+end
+sprite = %(<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute">\n#{symbols.join("\n")}\n</svg>\n)
+
+def sums(dir, sprite)
+  files = Dir.glob("**/*", base: dir).select { |f| File.file?(File.join(dir, f)) } - [ "SHA256SUMS" ]
+  files.sort.map do |f|
+    sha = f == "banco-sprite.svg" ? Digest::SHA256.hexdigest(sprite) : Digest::SHA256.file(File.join(dir, f)).hexdigest
+    "#{sha}  ./#{f}\n"
+  end.join
+end
+
+if ARGV.include?("--check")
+  ok = File.exist?(sprite_path) && File.read(sprite_path) == sprite
+  ok &&= File.exist?(File.join(dir, "SHA256SUMS")) && File.read(File.join(dir, "SHA256SUMS")) == sums(dir, sprite)
+  abort "build-icons: the committed sprite or SHA256SUMS differ from the build (run bin/build-icons)" unless ok
+  puts "build-icons: banco-sprite.svg matches icons.yml (#{names.size} icons)"
+else
+  File.write(sprite_path, sprite)
+  File.write(File.join(dir, "SHA256SUMS"), sums(dir, sprite))
+  puts "build-icons: wrote #{names.size} icons, #{sprite.bytesize} bytes"
+end

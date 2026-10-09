@@ -1,0 +1,424 @@
+{
+ "version": 1,
+ "description": "The StudentBody whitelist (D-248, A2): for each block type and each check component, the fields copied to the student's page ('serve') and the declared fields that are not ('drop'). Everything not named is dropped, so a field added to a schema later cannot leak: test/content/lesson2_fixtures_test.rb fails until a new field is listed here in one of the two columns. 'line' (the source line, for findings) is never served. Nested objects are listed under 'nested' with the same two columns. 'rekey' names the lists whose ids are re-keyed by Diagnosis::Rekey; 'computed' what the server adds.",
+ "blocks": {
+  "text": {
+   "def": "b_text",
+   "serve": [
+    "n",
+    "type",
+    "text_it"
+   ],
+   "drop": [
+    "line"
+   ]
+  },
+  "callout": {
+   "def": "b_callout",
+   "serve": [
+    "n",
+    "type",
+    "kind",
+    "title_it",
+    "text_it"
+   ],
+   "drop": [
+    "line"
+   ]
+  },
+  "math": {
+   "def": "b_math",
+   "serve": [
+    "n",
+    "type",
+    "tex",
+    "lines"
+   ],
+   "drop": [
+    "line"
+   ],
+   "nested": {
+    "lines": {
+     "serve": [
+      "tex",
+      "note_it"
+     ],
+     "drop": []
+    }
+   }
+  },
+  "procedure": {
+   "def": "b_procedure",
+   "serve": [
+    "n",
+    "type",
+    "title_it",
+    "steps"
+   ],
+   "drop": [
+    "line"
+   ],
+   "nested": {
+    "steps": {
+     "serve": [
+      "tag",
+      "text_it",
+      "example_tex"
+     ],
+     "drop": []
+    }
+   }
+  },
+  "cases": {
+   "def": "b_cases",
+   "serve": [
+    "n",
+    "type",
+    "title_it",
+    "cases"
+   ],
+   "drop": [
+    "line"
+   ],
+   "nested": {
+    "cases": {
+     "serve": [
+      "title_it",
+      "icon",
+      "tone",
+      "condition_it",
+      "text_it",
+      "example_it",
+      "diagram"
+     ],
+     "drop": []
+    }
+   }
+  },
+  "legend": {
+   "def": "b_legend",
+   "serve": [
+    "n",
+    "type",
+    "roles"
+   ],
+   "drop": [
+    "line"
+   ],
+   "nested": {
+    "roles": {
+     "serve": [
+      "role",
+      "note_it",
+      "question_it"
+     ],
+     "drop": []
+    }
+   }
+  },
+  "mistake": {
+   "def": "b_mistake",
+   "serve": [
+    "n",
+    "type",
+    "group_it",
+    "wrong_it",
+    "right_it",
+    "why_it"
+   ],
+   "drop": [
+    "code",
+    "line"
+   ]
+  },
+  "summary": {
+   "def": "b_summary",
+   "serve": [
+    "n",
+    "type",
+    "points_it"
+   ],
+   "drop": [
+    "line"
+   ]
+  },
+  "table": {
+   "def": "b_table",
+   "serve": [
+    "n",
+    "type",
+    "caption_it",
+    "header",
+    "rows"
+   ],
+   "drop": [
+    "line"
+   ]
+  },
+  "more": {
+   "def": "b_more",
+   "serve": [
+    "n",
+    "type",
+    "title_it",
+    "blocks"
+   ],
+   "drop": [
+    "line"
+   ],
+   "nested": {
+    "blocks": {
+     "serve": "the blocks of the more, each by its own row"
+    }
+   }
+  },
+  "schema": {
+   "def": "b_schema",
+   "serve": [
+    "n",
+    "type",
+    "schema"
+   ],
+   "drop": [
+    "line"
+   ]
+  },
+  "diagram": {
+   "def": "b_diagram",
+   "serve": [
+    "n",
+    "type",
+    "diagram"
+   ],
+   "drop": [
+    "line"
+   ]
+  },
+  "example": {
+   "def": "b_example",
+   "serve": [
+    "n",
+    "type",
+    "problem_it",
+    "steps",
+    "diagram"
+   ],
+   "drop": [
+    "result_it",
+    "line"
+   ],
+   "cut": "steps up to and excluding the first step with a blank; for that step its why_it and the blank, served like a check; nothing after it. An example without a blank is served whole, result_it included. The check endpoint returns the blank step's do_it and the remaining steps after a right answer or the second try (A9).",
+   "nested": {
+    "steps": {
+     "serve": [
+      "tag",
+      "do_it",
+      "why_it",
+      "blank"
+     ],
+     "drop": [],
+     "note": "do_it of the blank step and every later step are dropped"
+    }
+   },
+   "serve_when_no_blank": [
+    "n",
+    "type",
+    "problem_it",
+    "steps",
+    "result_it",
+    "diagram"
+   ]
+  },
+  "try": {
+   "def": "b_try",
+   "serve": [
+    "n",
+    "type",
+    "intro_it",
+    "exercises"
+   ],
+   "drop": [
+    "line"
+   ],
+   "nested": {
+    "exercises": {
+     "def": "exercise",
+     "serve": [
+      "n",
+      "text_it",
+      "diagram",
+      "check",
+      "checks"
+     ],
+     "drop": [
+      "final_it",
+      "solution_it",
+      "solution_steps"
+     ]
+    }
+   }
+  }
+ },
+ "checks": {
+  "choice": {
+   "def": "check_choice",
+   "serve": [
+    "component",
+    "prompt_it",
+    "answer_format_it",
+    "options"
+   ],
+   "drop": [
+    "errors",
+    "explain_it",
+    "answer"
+   ],
+   "rekey": [
+    "options"
+   ]
+  },
+  "number": {
+   "def": "check_number",
+   "serve": [
+    "component",
+    "prompt_it",
+    "answer_format_it",
+    "input_before",
+    "input_after",
+    "unit"
+   ],
+   "drop": [
+    "errors",
+    "explain_it",
+    "answer"
+   ]
+  },
+  "fraction": {
+   "def": "check_fraction",
+   "serve": [
+    "component",
+    "prompt_it",
+    "answer_format_it",
+    "input_before",
+    "input_after",
+    "mixed"
+   ],
+   "drop": [
+    "errors",
+    "explain_it",
+    "answer"
+   ]
+  },
+  "normalized_text": {
+   "def": "check_normalized_text",
+   "serve": [
+    "component",
+    "prompt_it",
+    "answer_format_it",
+    "input_before",
+    "input_after"
+   ],
+   "drop": [
+    "errors",
+    "explain_it",
+    "answer",
+    "accept"
+   ],
+   "computed": [
+    "accents (from the subject, as Items::Part)"
+   ]
+  },
+  "matching": {
+   "def": "check_matching",
+   "serve": [
+    "component",
+    "prompt_it",
+    "answer_format_it",
+    "left",
+    "right",
+    "reuse_right"
+   ],
+   "drop": [
+    "errors",
+    "explain_it",
+    "answer"
+   ],
+   "rekey": [
+    "left",
+    "right"
+   ]
+  },
+  "span_select": {
+   "def": "check_span_select",
+   "serve": [
+    "component",
+    "prompt_it",
+    "answer_format_it",
+    "text_it",
+    "spans"
+   ],
+   "drop": [
+    "errors",
+    "explain_it",
+    "answer"
+   ],
+   "computed": [
+    "spans re-keyed s1..sN in text order"
+   ]
+  },
+  "_blank": {
+   "def": "blank",
+   "note": "a step blank is served as the check of its component (choice, number, fraction, normalized_text) with the same columns"
+  }
+ },
+ "never_served": [
+  "answer",
+  "accept",
+  "errors",
+  "explain_it",
+  "result_it (of an example with a blank)",
+  "final_it",
+  "solution_it",
+  "solution_steps",
+  "the do_it of a blank step and of the steps after it",
+  "a diagram's solution fields (see diagram.solution_fields)"
+ ],
+ "diagram": {
+  "served": "every declared property of the type except the solution fields; states already merged (the state rule of A7)",
+  "solution_fields": {
+   "balance": [
+    "x_value"
+   ]
+  },
+  "computed": {
+   "balance": "tilt per state (-1, 0, 1) from the effective plates and x_value; x_value itself only when show_value is true",
+   "balance.try": "from and to only"
+  }
+ },
+ "front_matter": {
+  "serve": [
+   "title_it",
+   "goals_it",
+   "why_it",
+   "hero",
+   "minutes",
+   "book_it",
+   "key",
+   "kind",
+   "subject",
+   "scope",
+   "calculator",
+   "parts"
+  ],
+  "drop": [
+   "skills",
+   "uses",
+   "refs",
+   "schema",
+   "schema_version",
+   "pages",
+   "words (the cover shows its own counts)"
+  ],
+  "note": "skills, uses and refs are for the teacher; the cover is drawn from the served fields and the card titles"
+ }
+}

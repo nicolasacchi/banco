@@ -1,0 +1,114 @@
+{
+  "schema": "banco.lesson/2",
+  "schema_version": 2,
+  "key": "ripasso.math.demo-equations",
+  "kind": "ripasso",
+  "subject": "math",
+  "title_it": "Equazioni di primo grado: risolvere e verificare",
+  "goals_it": [
+    "**Risolvere**: trovare il numero nascosto nella x",
+    "**Capire** se l'equazione è determinata, impossibile o indeterminata"
+  ],
+  "why_it": "Molti argomenti di quest'anno finiscono con un'equazione come $ax = b$. Se la sai risolvere, il resto è più semplice.",
+  "skills": [
+    "math.demo-equation"
+  ],
+  "uses": [
+    "math.demo-signed-numbers"
+  ],
+  "refs": [
+    {
+      "source": "seconda-2025-26",
+      "line": 12,
+      "fragment": "equazioni di primo grado numeriche",
+      "role": "needed_by"
+    },
+    {
+      "source": "prima-2025-26",
+      "line": 7,
+      "fragment": "equazioni di primo grado",
+      "role": "taught_in"
+    }
+  ],
+  "scope": "studied",
+  "minutes": 30,
+  "calculator": false,
+  "cards": [
+    {
+      "n": 1,
+      "id": "c1",
+      "role": "idea",
+      "level": "core",
+      "title_it": "Un'equazione è una bilancia",
+      "icon": "scale",
+      "blocks": [
+        {
+          "type": "text",
+          "text_it": "I due membri sono i due piatti. Una **soluzione** è il numero che, al posto di $\\role{unknown}{x}$, tiene i piatti in equilibrio.",
+          "n": 1
+        },
+        {
+          "type": "diagram",
+          "diagram": {
+            "type": "balance",
+            "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1. Puoi provare un numero nella scatola.",
+            "left": {
+              "x": 2,
+              "units": 3
+            },
+            "right": {
+              "units": 7
+            },
+            "x_value": "2",
+            "try": {
+              "from": 0,
+              "to": 5
+            }
+          },
+          "n": 2
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "id": "c2",
+      "role": "mistakes",
+      "level": "core",
+      "title_it": "Errori da evitare",
+      "icon": "triangle-alert",
+      "blocks": [
+        {
+          "type": "mistake",
+          "group_it": "Segni",
+          "wrong_it": "$2x - 3 = 7 \\to 2x = 7 - 3$",
+          "right_it": "$2x = 7 + 3$",
+          "why_it": "Spostando, $-3$ diventa $+3$.",
+          "code": "math_sign_move",
+          "n": 1
+        },
+        {
+          "type": "mistake",
+          "group_it": "Dividere",
+          "wrong_it": "$2x = 8 \\to x = 8 - 2$",
+          "right_it": "$x = 8 : 2$",
+          "why_it": "Si divide per il coefficiente.",
+          "code": "math_divide_missing",
+          "n": 2
+        },
+        {
+          "type": "mistake",
+          "group_it": "Lo zero",
+          "wrong_it": "$0x = 0 \\to x = 0$",
+          "right_it": "Ogni numero va bene.",
+          "why_it": "Il prodotto è 0 qualunque sia $x$.",
+          "n": 3
+        }
+      ]
+    }
+  ],
+  "words": {
+    "core": 300,
+    "extra": 40
+  },
+  "pages": []
+}

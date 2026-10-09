@@ -1,207 +1,57 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "banco.lesson/1",
-  "description": "The parsed body of a lesson (what lesson_revisions.body_json stores). The author writes lesson.md; its front matter is $defs.front_matter (violations are E-SCHEMA with path /front_matter/...).",
+  "title": "banco.lesson/1 and banco.lesson/2",
+  "description": "The parsed body of a lesson (what lesson_revisions.body_json stores), by its schema member: $defs.body1 (sections, unchanged) or $defs.body2 (cards of blocks, D-245). The lesson.md front matter is $defs.front_matter (lesson/1) or $defs.front_matter2 (violations are E-SCHEMA with path /front_matter/...).",
   "type": "object",
-  "additionalProperties": false,
   "required": [
-    "schema",
-    "schema_version",
-    "key",
-    "kind",
-    "subject",
-    "title_it",
-    "skills",
-    "uses",
-    "refs",
-    "scope",
-    "minutes",
-    "calculator",
-    "sections",
-    "try_intro_it",
-    "exercises"
+    "schema"
   ],
   "properties": {
     "schema": {
-      "const": "banco.lesson/1"
+      "enum": [
+        "banco.lesson/1",
+        "banco.lesson/2"
+      ]
     },
     "schema_version": {
-      "const": 1
-    },
-    "key": {
-      "$ref": "#/$defs/lesson_key"
-    },
-    "kind": {
       "enum": [
-        "ripasso",
-        "ponte",
-        "lezione"
+        1,
+        2
       ]
-    },
-    "subject": {
-      "enum": [
-        "math",
-        "italian",
-        "english",
-        "spanish",
-        "history",
-        "geography",
-        "law_economics",
-        "business",
-        "computer_science",
-        "biology",
-        "chemistry"
-      ]
-    },
-    "title_it": {
-      "type": "string",
-      "minLength": 3,
-      "maxLength": 120
-    },
-    "skills": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/skill_key"
-      },
-      "minItems": 1,
-      "maxItems": 4,
-      "uniqueItems": true
-    },
-    "uses": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/skill_key"
-      },
-      "maxItems": 6,
-      "uniqueItems": true
-    },
-    "refs": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/ref"
-      },
-      "minItems": 1,
-      "maxItems": 12
-    },
-    "scope": {
-      "enum": [
-        "studied",
-        "integration_studied",
-        "in_progress",
-        "middle_school",
-        "not_in_prima",
-        "seconda"
-      ]
-    },
-    "minutes": {
-      "type": "integer",
-      "minimum": 10,
-      "maximum": 60
-    },
-    "calculator": {
-      "type": "boolean"
-    },
-    "sections": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "why_it",
-        "idea_it",
-        "example_it",
-        "mistakes_it",
-        "book_it",
-        "summary_it"
-      ],
-      "properties": {
-        "why_it": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 6000
-        },
-        "idea_it": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 6000
-        },
-        "example_it": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 6000
-        },
-        "mistakes_it": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 6000
-        },
-        "book_it": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 6000
-        },
-        "summary_it": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 6000
-        }
-      }
-    },
-    "try_intro_it": {
-      "anyOf": [
-        {
-          "type": "null"
-        },
-        {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 600
-        }
-      ]
-    },
-    "exercises": {
-      "type": "array",
-      "minItems": 1,
-      "maxItems": 12,
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "n",
-          "text_it",
-          "solution_it",
-          "final_it"
-        ],
-        "properties": {
-          "n": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 12
-          },
-          "text_it": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 800
-          },
-          "solution_it": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 2500
-          },
-          "final_it": {
-            "anyOf": [
-              {
-                "type": "null"
-              },
-              {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 120
-              }
-            ]
-          }
-        }
-      }
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schema": {
+            "const": "banco.lesson/1"
+          }
+        },
+        "required": [
+          "schema"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/body1"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "schema": {
+            "const": "banco.lesson/2"
+          }
+        },
+        "required": [
+          "schema"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/body2"
+      }
+    }
+  ],
   "$defs": {
     "skill_key": {
       "type": "string",
@@ -354,6 +204,2303 @@
           }
         }
       }
+    },
+    "slug": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[a-z0-9-]{1,32}$"
+    },
+    "icon_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+      "description": "One of our icon names (config/banco/icons.yml; E-LESSON-ICON in Ruby)."
+    },
+    "role_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[a-z]+(-[a-z]+)*$",
+      "description": "A colour role of the subject's palette (E-LESSON-ROLE in Ruby)."
+    },
+    "tag_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 24,
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "A step tag of the subject (config/banco/lesson_palette.yml step_tags; E-LESSON-BLOCK in Ruby)."
+    },
+    "line": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The line of lesson.md where the block or card starts (for findings)."
+    },
+    "catalogue_code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48,
+      "pattern": "^[a-z][a-z0-9]*(_[a-z0-9]+)*$"
+    },
+    "opt_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8,
+      "pattern": "^[a-z][a-z0-9]{0,7}$"
+    },
+    "id_text": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "text_it"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/opt_id"
+        },
+        "text_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      }
+    },
+    "any_answer": {
+      "not": {
+        "type": "null"
+      }
+    },
+    "front_matter2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "key",
+        "kind",
+        "subject",
+        "title_it",
+        "goals_it",
+        "skills",
+        "refs",
+        "scope",
+        "minutes",
+        "calculator",
+        "why_it"
+      ],
+      "properties": {
+        "schema": {
+          "const": "banco.lesson/2"
+        },
+        "key": {
+          "$ref": "#/$defs/lesson_key"
+        },
+        "kind": {
+          "enum": [
+            "ripasso",
+            "ponte",
+            "lezione"
+          ]
+        },
+        "subject": {
+          "enum": [
+            "math",
+            "italian",
+            "english",
+            "spanish",
+            "history",
+            "geography",
+            "law_economics",
+            "business",
+            "computer_science",
+            "biology",
+            "chemistry"
+          ]
+        },
+        "title_it": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 120
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/skill_key"
+          },
+          "minItems": 1,
+          "maxItems": 4,
+          "uniqueItems": true
+        },
+        "uses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/skill_key"
+          },
+          "maxItems": 6,
+          "uniqueItems": true
+        },
+        "refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          },
+          "minItems": 1,
+          "maxItems": 12
+        },
+        "scope": {
+          "enum": [
+            "studied",
+            "integration_studied",
+            "in_progress",
+            "middle_school",
+            "not_in_prima",
+            "seconda"
+          ]
+        },
+        "minutes": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 60
+        },
+        "calculator": {
+          "type": "boolean"
+        },
+        "goals_it": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "minItems": 1,
+          "maxItems": 3,
+          "description": "1 to 3 lines of at most 12 words, each starting with a verb in bold (checked in Ruby)."
+        },
+        "why_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1200,
+          "description": "2 to 4 sentences (W-LESSON-WHY)."
+        },
+        "book_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "description": "At most 30 words; the fixed line is printed by our template."
+        },
+        "hero": {
+          "$ref": "urn:banco:schema:diagram",
+          "description": "Optional: one diagram of the lesson's subject, drawn large on the cover (A1)."
+        }
+      },
+      "description": "The front matter of a lesson.md with schema banco.lesson/2 (violations are E-SCHEMA with path /front_matter/...)."
+    },
+    "check_errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "answer",
+          "message_it"
+        ],
+        "properties": {
+          "answer": {
+            "$ref": "#/$defs/any_answer"
+          },
+          "code": {
+            "$ref": "#/$defs/catalogue_code"
+          },
+          "message_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        }
+      },
+      "minItems": 0,
+      "maxItems": 8,
+      "description": "Wrong answers that teach: one message per typical error (A9). Never served to the browser."
+    },
+    "check_explain": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "Shown after a right answer or after the second wrong one. Never served up front."
+    },
+    "prompt": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400
+    },
+    "input_before": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "description": "Text or a formula before the answer box: '$x =$'."
+    },
+    "input_after": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "answer_format": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "check_choice": {
+      "type": "object",
+      "required": [
+        "component",
+        "prompt_it",
+        "options",
+        "answer"
+      ],
+      "properties": {
+        "component": {
+          "const": "choice"
+        },
+        "prompt_it": {
+          "$ref": "#/$defs/prompt"
+        },
+        "errors": {
+          "$ref": "#/$defs/check_errors"
+        },
+        "explain_it": {
+          "$ref": "#/$defs/check_explain"
+        },
+        "answer_format_it": {
+          "$ref": "#/$defs/answer_format"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id_text"
+          },
+          "minItems": 2,
+          "maxItems": 6
+        },
+        "answer": {
+          "$ref": "#/$defs/opt_id"
+        }
+      },
+      "description": "check component choice"
+    },
+    "check_number": {
+      "type": "object",
+      "required": [
+        "component",
+        "prompt_it",
+        "answer"
+      ],
+      "properties": {
+        "component": {
+          "const": "number"
+        },
+        "prompt_it": {
+          "$ref": "#/$defs/prompt"
+        },
+        "errors": {
+          "$ref": "#/$defs/check_errors"
+        },
+        "explain_it": {
+          "$ref": "#/$defs/check_explain"
+        },
+        "answer_format_it": {
+          "$ref": "#/$defs/answer_format"
+        },
+        "input_before": {
+          "$ref": "#/$defs/input_before"
+        },
+        "input_after": {
+          "$ref": "#/$defs/input_after"
+        },
+        "answer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20
+        }
+      },
+      "description": "check component number"
+    },
+    "check_fraction": {
+      "type": "object",
+      "required": [
+        "component",
+        "prompt_it",
+        "answer"
+      ],
+      "properties": {
+        "component": {
+          "const": "fraction"
+        },
+        "prompt_it": {
+          "$ref": "#/$defs/prompt"
+        },
+        "errors": {
+          "$ref": "#/$defs/check_errors"
+        },
+        "explain_it": {
+          "$ref": "#/$defs/check_explain"
+        },
+        "answer_format_it": {
+          "$ref": "#/$defs/answer_format"
+        },
+        "input_before": {
+          "$ref": "#/$defs/input_before"
+        },
+        "input_after": {
+          "$ref": "#/$defs/input_after"
+        },
+        "answer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "mixed": {
+          "type": "boolean"
+        }
+      },
+      "description": "check component fraction"
+    },
+    "check_normalized_text": {
+      "type": "object",
+      "required": [
+        "component",
+        "prompt_it",
+        "answer"
+      ],
+      "properties": {
+        "component": {
+          "const": "normalized_text"
+        },
+        "prompt_it": {
+          "$ref": "#/$defs/prompt"
+        },
+        "errors": {
+          "$ref": "#/$defs/check_errors"
+        },
+        "explain_it": {
+          "$ref": "#/$defs/check_explain"
+        },
+        "answer_format_it": {
+          "$ref": "#/$defs/answer_format"
+        },
+        "input_before": {
+          "$ref": "#/$defs/input_before"
+        },
+        "input_after": {
+          "$ref": "#/$defs/input_after"
+        },
+        "answer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "accept": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "minItems": 0,
+          "maxItems": 10
+        }
+      },
+      "description": "check component normalized_text"
+    },
+    "check_matching": {
+      "type": "object",
+      "required": [
+        "component",
+        "prompt_it",
+        "left",
+        "right",
+        "answer"
+      ],
+      "properties": {
+        "component": {
+          "const": "matching"
+        },
+        "prompt_it": {
+          "$ref": "#/$defs/prompt"
+        },
+        "errors": {
+          "$ref": "#/$defs/check_errors"
+        },
+        "explain_it": {
+          "$ref": "#/$defs/check_explain"
+        },
+        "answer_format_it": {
+          "$ref": "#/$defs/answer_format"
+        },
+        "left": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id_text"
+          },
+          "minItems": 2,
+          "maxItems": 8
+        },
+        "right": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id_text"
+          },
+          "minItems": 2,
+          "maxItems": 8
+        },
+        "answer": {
+          "type": "object",
+          "minProperties": 2,
+          "maxProperties": 8,
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9]{0,7}$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/opt_id"
+          },
+          "description": "left id -> right id"
+        },
+        "reuse_right": {
+          "type": "boolean",
+          "description": "A classification: each category may be used by several items; drawn as rows of chips."
+        }
+      },
+      "description": "check component matching"
+    },
+    "check_span_select": {
+      "type": "object",
+      "required": [
+        "component",
+        "prompt_it",
+        "text_it",
+        "spans",
+        "answer"
+      ],
+      "properties": {
+        "component": {
+          "const": "span_select"
+        },
+        "prompt_it": {
+          "$ref": "#/$defs/prompt"
+        },
+        "errors": {
+          "$ref": "#/$defs/check_errors"
+        },
+        "explain_it": {
+          "$ref": "#/$defs/check_explain"
+        },
+        "answer_format_it": {
+          "$ref": "#/$defs/answer_format"
+        },
+        "text_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "spans": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "text_it"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8,
+                "pattern": "^s[0-9]{1,2}$"
+              },
+              "text_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 12
+        },
+        "answer": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 8,
+            "pattern": "^s[0-9]{1,2}$"
+          },
+          "minItems": 1,
+          "maxItems": 12,
+          "uniqueItems": true,
+          "description": "A set of span ids; graded as a set."
+        }
+      },
+      "description": "check component span_select"
+    },
+    "check_spec": {
+      "type": "object",
+      "required": [
+        "component"
+      ],
+      "properties": {
+        "component": {
+          "enum": [
+            "choice",
+            "number",
+            "fraction",
+            "normalized_text",
+            "matching",
+            "span_select"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "component": {
+                "const": "choice"
+              }
+            },
+            "required": [
+              "component"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/check_choice"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "component": {
+                "const": "number"
+              }
+            },
+            "required": [
+              "component"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/check_number"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "component": {
+                "const": "fraction"
+              }
+            },
+            "required": [
+              "component"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/check_fraction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "component": {
+                "const": "normalized_text"
+              }
+            },
+            "required": [
+              "component"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/check_normalized_text"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "component": {
+                "const": "matching"
+              }
+            },
+            "required": [
+              "component"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/check_matching"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "component": {
+                "const": "span_select"
+              }
+            },
+            "required": [
+              "component"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/check_span_select"
+          }
+        }
+      ]
+    },
+    "check_closed": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/check_spec"
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "blank": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/check_spec"
+        },
+        {
+          "properties": {
+            "component": {
+              "enum": [
+                "choice",
+                "number",
+                "fraction",
+                "normalized_text"
+              ]
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false,
+      "description": "A faded step: a check that gates the steps after it (A2, A9)."
+    },
+    "b_text": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "text_it"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "text"
+        },
+        "text_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "description": "Paragraphs and lists, markup v2."
+        }
+      }
+    },
+    "b_callout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "kind",
+        "text_it"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "callout"
+        },
+        "kind": {
+          "enum": [
+            "tip",
+            "warning",
+            "remember",
+            "rule"
+          ]
+        },
+        "title_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "text_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400
+        }
+      }
+    },
+    "b_math": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "math"
+        },
+        "tex": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "tex"
+            ],
+            "properties": {
+              "tex": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "note_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 4
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "tex"
+          ],
+          "not": {
+            "required": [
+              "lines"
+            ]
+          }
+        },
+        {
+          "required": [
+            "lines"
+          ],
+          "not": {
+            "required": [
+              "tex"
+            ]
+          }
+        }
+      ]
+    },
+    "b_procedure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "steps"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "procedure"
+        },
+        "title_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "tag",
+              "text_it"
+            ],
+            "properties": {
+              "tag": {
+                "$ref": "#/$defs/tag_name"
+              },
+              "text_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "example_tex": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6
+        }
+      }
+    },
+    "any_diagram_ref": {
+      "$ref": "urn:banco:schema:diagram#/$defs/any_diagram"
+    },
+    "b_cases": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "cases"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "cases"
+        },
+        "title_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "title_it",
+              "text_it"
+            ],
+            "properties": {
+              "title_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "icon": {
+                "$ref": "#/$defs/icon_name"
+              },
+              "tone": {
+                "$ref": "#/$defs/role_name"
+              },
+              "condition_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "text_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 400
+              },
+              "example_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "diagram": {
+                "$ref": "#/$defs/any_diagram_ref"
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 4
+        }
+      }
+    },
+    "b_legend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "roles"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "legend"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "role"
+            ],
+            "properties": {
+              "role": {
+                "$ref": "#/$defs/role_name"
+              },
+              "note_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "question_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 8
+        }
+      }
+    },
+    "b_example": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "problem_it",
+        "steps"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "example"
+        },
+        "problem_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "do_it",
+              "why_it"
+            ],
+            "properties": {
+              "tag": {
+                "$ref": "#/$defs/tag_name"
+              },
+              "do_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "why_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "blank": {
+                "$ref": "#/$defs/blank"
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 8
+        },
+        "result_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600
+        },
+        "diagram": {
+          "$ref": "#/$defs/any_diagram_ref"
+        }
+      }
+    },
+    "b_mistake": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "wrong_it",
+        "right_it",
+        "why_it"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "mistake"
+        },
+        "group_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "wrong_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "right_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "why_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "code": {
+          "$ref": "#/$defs/catalogue_code"
+        }
+      }
+    },
+    "b_check": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/check_spec"
+        },
+        {
+          "properties": {
+            "n": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 8
+            },
+            "line": {
+              "$ref": "#/$defs/line"
+            },
+            "type": {
+              "const": "check"
+            }
+          },
+          "required": [
+            "n",
+            "type"
+          ]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "b_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "points_it"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "summary"
+        },
+        "points_it": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "minItems": 3,
+          "maxItems": 5
+        }
+      }
+    },
+    "b_schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "schema"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "schema"
+        },
+        "schema": {
+          "$ref": "urn:banco:schema:diagram#/$defs/any_schema"
+        }
+      }
+    },
+    "b_diagram": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "diagram"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "diagram"
+        },
+        "diagram": {
+          "$ref": "#/$defs/any_diagram_ref"
+        }
+      }
+    },
+    "b_table": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "header",
+        "rows"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "table"
+        },
+        "caption_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "header": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "minItems": 1,
+          "maxItems": 4
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "minItems": 1,
+            "maxItems": 4
+          },
+          "minItems": 1,
+          "maxItems": 10
+        }
+      }
+    },
+    "b_more": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "title_it",
+        "blocks"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "more"
+        },
+        "title_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/more_block"
+          },
+          "minItems": 1,
+          "maxItems": 6
+        }
+      }
+    },
+    "exercise": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "required": [
+        "n",
+        "text_it"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "text_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600
+        },
+        "diagram": {
+          "$ref": "#/$defs/any_diagram_ref"
+        },
+        "check": {
+          "$ref": "#/$defs/check_closed"
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/check_closed"
+          },
+          "minItems": 1,
+          "maxItems": 3
+        },
+        "final_it": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          ]
+        },
+        "solution_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2500
+        },
+        "solution_steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "do_it",
+              "why_it"
+            ],
+            "properties": {
+              "tag": {
+                "$ref": "#/$defs/tag_name"
+              },
+              "do_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "why_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 8
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "solution_it"
+          ],
+          "not": {
+            "required": [
+              "solution_steps"
+            ]
+          }
+        },
+        {
+          "required": [
+            "solution_steps"
+          ],
+          "not": {
+            "required": [
+              "solution_it"
+            ]
+          }
+        }
+      ],
+      "not": {
+        "required": [
+          "check",
+          "checks"
+        ]
+      }
+    },
+    "b_try": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "exercises"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "try"
+        },
+        "intro_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "exercises": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/exercise"
+          },
+          "minItems": 1,
+          "maxItems": 12
+        }
+      }
+    },
+    "block": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "text",
+            "callout",
+            "math",
+            "procedure",
+            "cases",
+            "legend",
+            "example",
+            "mistake",
+            "check",
+            "more",
+            "summary",
+            "schema",
+            "diagram",
+            "table",
+            "try"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "text"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_text"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "callout"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_callout"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "math"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_math"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "procedure"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_procedure"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "cases"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_cases"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "legend"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_legend"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "example"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_example"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "mistake"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_mistake"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "check"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_check"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "more"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_more"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "summary"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_summary"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "schema"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_schema"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "diagram"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_diagram"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "table"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_table"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "try"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_try"
+          }
+        }
+      ]
+    },
+    "more_block": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "text",
+            "callout",
+            "math",
+            "diagram",
+            "schema",
+            "table",
+            "procedure"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "text"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_text"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "callout"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_callout"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "math"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_math"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "procedure"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_procedure"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "schema"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_schema"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "diagram"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_diagram"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "table"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_table"
+          }
+        }
+      ]
+    },
+    "card": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "id",
+        "role",
+        "level",
+        "title_it",
+        "icon",
+        "blocks"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        "id": {
+          "$ref": "#/$defs/slug"
+        },
+        "role": {
+          "enum": [
+            "idea",
+            "example",
+            "mistakes",
+            "try",
+            "summary"
+          ]
+        },
+        "level": {
+          "enum": [
+            "core",
+            "extra"
+          ]
+        },
+        "title_it": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 100
+        },
+        "icon": {
+          "$ref": "#/$defs/icon_name"
+        },
+        "tone": {
+          "$ref": "#/$defs/role_name"
+        },
+        "part": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6,
+          "description": "The n of the part this card belongs to (none for extra cards)."
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/block"
+          },
+          "minItems": 1,
+          "maxItems": 6
+        }
+      }
+    },
+    "body1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "schema_version",
+        "key",
+        "kind",
+        "subject",
+        "title_it",
+        "skills",
+        "uses",
+        "refs",
+        "scope",
+        "minutes",
+        "calculator",
+        "sections",
+        "try_intro_it",
+        "exercises"
+      ],
+      "properties": {
+        "schema": {
+          "const": "banco.lesson/1"
+        },
+        "schema_version": {
+          "const": 1
+        },
+        "key": {
+          "$ref": "#/$defs/lesson_key"
+        },
+        "kind": {
+          "enum": [
+            "ripasso",
+            "ponte",
+            "lezione"
+          ]
+        },
+        "subject": {
+          "enum": [
+            "math",
+            "italian",
+            "english",
+            "spanish",
+            "history",
+            "geography",
+            "law_economics",
+            "business",
+            "computer_science",
+            "biology",
+            "chemistry"
+          ]
+        },
+        "title_it": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 120
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/skill_key"
+          },
+          "minItems": 1,
+          "maxItems": 4,
+          "uniqueItems": true
+        },
+        "uses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/skill_key"
+          },
+          "maxItems": 6,
+          "uniqueItems": true
+        },
+        "refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          },
+          "minItems": 1,
+          "maxItems": 12
+        },
+        "scope": {
+          "enum": [
+            "studied",
+            "integration_studied",
+            "in_progress",
+            "middle_school",
+            "not_in_prima",
+            "seconda"
+          ]
+        },
+        "minutes": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 60
+        },
+        "calculator": {
+          "type": "boolean"
+        },
+        "sections": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "why_it",
+            "idea_it",
+            "example_it",
+            "mistakes_it",
+            "book_it",
+            "summary_it"
+          ],
+          "properties": {
+            "why_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 6000
+            },
+            "idea_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 6000
+            },
+            "example_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 6000
+            },
+            "mistakes_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 6000
+            },
+            "book_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 6000
+            },
+            "summary_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 6000
+            }
+          }
+        },
+        "try_intro_it": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 600
+            }
+          ]
+        },
+        "exercises": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "n",
+              "text_it",
+              "solution_it",
+              "final_it"
+            ],
+            "properties": {
+              "n": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 12
+              },
+              "text_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 800
+              },
+              "solution_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2500
+              },
+              "final_it": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "description": "The parsed body of a banco.lesson/1 lesson (unchanged)."
+    },
+    "body2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "schema_version",
+        "key",
+        "kind",
+        "subject",
+        "title_it",
+        "goals_it",
+        "why_it",
+        "skills",
+        "uses",
+        "refs",
+        "scope",
+        "minutes",
+        "calculator",
+        "cards",
+        "words"
+      ],
+      "properties": {
+        "schema": {
+          "const": "banco.lesson/2"
+        },
+        "key": {
+          "$ref": "#/$defs/lesson_key"
+        },
+        "kind": {
+          "enum": [
+            "ripasso",
+            "ponte",
+            "lezione"
+          ]
+        },
+        "subject": {
+          "enum": [
+            "math",
+            "italian",
+            "english",
+            "spanish",
+            "history",
+            "geography",
+            "law_economics",
+            "business",
+            "computer_science",
+            "biology",
+            "chemistry"
+          ]
+        },
+        "title_it": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 120
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/skill_key"
+          },
+          "minItems": 1,
+          "maxItems": 4,
+          "uniqueItems": true
+        },
+        "uses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/skill_key"
+          },
+          "maxItems": 6,
+          "uniqueItems": true
+        },
+        "refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          },
+          "minItems": 1,
+          "maxItems": 12
+        },
+        "scope": {
+          "enum": [
+            "studied",
+            "integration_studied",
+            "in_progress",
+            "middle_school",
+            "not_in_prima",
+            "seconda"
+          ]
+        },
+        "minutes": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 60
+        },
+        "calculator": {
+          "type": "boolean"
+        },
+        "goals_it": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "minItems": 1,
+          "maxItems": 3,
+          "description": "1 to 3 lines of at most 12 words, each starting with a verb in bold (checked in Ruby)."
+        },
+        "why_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1200,
+          "description": "2 to 4 sentences (W-LESSON-WHY)."
+        },
+        "book_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "description": "At most 30 words; the fixed line is printed by our template."
+        },
+        "hero": {
+          "$ref": "urn:banco:schema:diagram",
+          "description": "Optional: one diagram of the lesson's subject, drawn large on the cover (A1)."
+        },
+        "schema_version": {
+          "const": 2
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "n",
+              "title_it"
+            ],
+            "properties": {
+              "n": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 6
+              },
+              "title_it": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6
+        },
+        "cards": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/card"
+          },
+          "minItems": 1,
+          "maxItems": 18
+        },
+        "words": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "core",
+            "extra"
+          ],
+          "properties": {
+            "core": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "extra": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "pages": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "minItems": 0,
+          "maxItems": 0,
+          "description": "Reserved for free pages (release 2): empty in release 1."
+        }
+      },
+      "description": "The parsed body of a banco.lesson/2 lesson (what lesson_revisions.body_json stores): cards of typed blocks. Text fields hold the source markup, parsed again where drawn."
     }
-  }
+  },
+  "unevaluatedProperties": false
 }

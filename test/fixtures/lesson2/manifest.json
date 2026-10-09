@@ -1,0 +1,671 @@
+{
+ "description": "Fixtures of the lesson/2 parser and checks (D-245, R0; run by R1). base.md and demo.md are valid; every bad file is base.md (or the base named) with one change and must give its code, with the 1-based line of the construct when 'line' is set (R1 may adjust a line number to its own convention, never a code; null = the whole lesson or no single line). 'file': null with pad_front_matter_bytes: build base.md with that many bytes of '# x' comment lines in the front matter. Context: context.json.",
+ "good_demos": [
+  {
+   "file": "demo.md",
+   "note": "the brief's worked example: 10 core cards, 2 extra, parts, hero, every release 1 block"
+  },
+  {
+   "file": "demo-italian.md",
+   "note": "italian: sentence diagrams, span_select, matching with reuse_right, colour roles with icon carriers"
+  },
+  {
+   "file": "base.md",
+   "note": "the smallest valid lesson: 7 core cards, no parts"
+  }
+ ],
+ "good": [
+  {
+   "file": "good/heading-inside-yaml.md",
+   "base": "base.md",
+   "cards": 7,
+   "parts": 0,
+   "note": "a ## and a # line inside a YAML block scalar of a try block are text of the solution, never a card or a part"
+  },
+  {
+   "file": "good/heading-braces-in-math.md",
+   "base": "base.md",
+   "cards": 7,
+   "parts": 0,
+   "note": "braces inside $...$ in a title are part of the title: the tag is the last brace group"
+  },
+  {
+   "file": "good/two-parts.md",
+   "base": "base.md",
+   "cards": 7,
+   "parts": 2,
+   "note": "parts of 3 and 4 cards"
+  },
+  {
+   "file": "good/with-extra-card.md",
+   "base": "base.md",
+   "cards": 8,
+   "parts": 0,
+   "extra": 1,
+   "note": "an extra card after the summary, outside the parts"
+  }
+ ],
+ "bad": [
+  {
+   "file": "bad/card-brace-in-title.md",
+   "base": "base.md",
+   "code": "E-LESSON-CARD",
+   "line": 45,
+   "construct": "heading",
+   "note": "a { or } in a title outside $...$ (the tag is the only brace group of a heading)"
+  },
+  {
+   "file": "bad/card-no-tag.md",
+   "base": "base.md",
+   "code": "E-LESSON-CARD",
+   "line": 76,
+   "construct": "heading",
+   "note": "a ## line at depth 0 without a tag"
+  },
+  {
+   "file": "bad/card-role-twice.md",
+   "base": "base.md",
+   "code": "E-LESSON-CARD",
+   "line": 59,
+   "construct": "heading tag",
+   "note": "a role token repeated"
+  },
+  {
+   "file": "bad/card-extra-twice.md",
+   "base": "base.md",
+   "code": "E-LESSON-CARD",
+   "line": 59,
+   "construct": "heading tag",
+   "note": "a token at most once"
+  },
+  {
+   "file": "bad/card-unknown-role.md",
+   "base": "base.md",
+   "code": "E-LESSON-CARD",
+   "line": 59,
+   "construct": "heading tag",
+   "note": "ROLE is one of idea example mistakes try summary"
+  },
+  {
+   "file": "bad/card-id-twice.md",
+   "base": "base.md",
+   "code": "E-LESSON-CARD",
+   "line": 59,
+   "construct": "heading tag",
+   "note": "duplicate card id, reported at the second card"
+  },
+  {
+   "file": "bad/card-id-not-a-slug.md",
+   "base": "base.md",
+   "code": "E-LESSON-CARD",
+   "line": 21,
+   "construct": "heading tag",
+   "note": "id is [a-z0-9-]{1,32}"
+  },
+  {
+   "file": "bad/card-text-before-first.md",
+   "base": "base.md",
+   "code": "E-LESSON-CARD",
+   "line": 21,
+   "construct": "body",
+   "note": "anything before the first card or part"
+  },
+  {
+   "file": "bad/parts-only-one.md",
+   "base": "base.md",
+   "code": "E-LESSON-PARTS",
+   "line": 21,
+   "construct": "part heading",
+   "note": "none, or 2 to 6 parts"
+  },
+  {
+   "file": "bad/parts-with-a-single-card.md",
+   "base": "base.md",
+   "code": "E-LESSON-PARTS",
+   "line": 80,
+   "construct": "part heading",
+   "note": "a part with one card"
+  },
+  {
+   "file": "bad/block-unclosed.md",
+   "base": "base.md",
+   "code": "E-LESSON-BLOCK",
+   "line": 25,
+   "construct": "directive",
+   "note": "an unclosed fence, reported at its opening line"
+  },
+  {
+   "file": "bad/block-more-in-more.md",
+   "base": "base.md",
+   "code": "E-LESSON-BLOCK",
+   "line": 46,
+   "construct": "directive",
+   "note": "only more nests, once"
+  },
+  {
+   "file": "bad/block-close-mismatch.md",
+   "base": "base.md",
+   "code": "E-LESSON-BLOCK",
+   "line": 45,
+   "construct": "directive",
+   "note": "a ::: does not close a ::::"
+  },
+  {
+   "file": "bad/block-unknown-type.md",
+   "base": "base.md",
+   "code": "E-LESSON-BLOCK",
+   "line": 45,
+   "construct": "directive",
+   "note": "unknown type"
+  },
+  {
+   "file": "bad/block-later-release.md",
+   "base": "base.md",
+   "code": "E-LESSON-BLOCK",
+   "line": 45,
+   "construct": "directive",
+   "note": "reveal is release 1.1: not available yet"
+  },
+  {
+   "file": "bad/block-image-later-release.md",
+   "base": "base.md",
+   "code": "E-LESSON-BLOCK",
+   "line": 45,
+   "construct": "directive",
+   "note": "image is release 1.1: not available yet"
+  },
+  {
+   "file": "bad/block-yaml-error.md",
+   "base": "base.md",
+   "code": "E-LESSON-BLOCK",
+   "line": 25,
+   "construct": "directive",
+   "note": "a YAML error, reported with the lesson line of the block"
+  },
+  {
+   "file": "bad/block-double-quoted-backslash.md",
+   "base": "base.md",
+   "code": "E-LESSON-BLOCK",
+   "line": 42,
+   "construct": "directive",
+   "note": "a double-quoted scalar with a backslash silently turns \\c into a character: use single quotes or a block scalar"
+  },
+  {
+   "file": "bad/block-code-fence.md",
+   "base": "base.md",
+   "code": "E-LESSON-BLOCK",
+   "line": 45,
+   "construct": "line",
+   "note": "a line starting with three backticks"
+  },
+  {
+   "file": "bad/block-schema-fails.md",
+   "base": "base.md",
+   "code": "E-LESSON-BLOCK",
+   "line": 25,
+   "construct": "directive",
+   "note": "a body that fails the block's schema (13 boxes)"
+  },
+  {
+   "file": "bad/block-no-blank-line.md",
+   "base": "base.md",
+   "code": "E-LESSON-BLOCK",
+   "line": 32,
+   "construct": "directive",
+   "note": "a blank line is required around every fence"
+  },
+  {
+   "file": "bad/block-check-in-more.md",
+   "base": "base.md",
+   "code": "E-LESSON-BLOCK",
+   "line": 47,
+   "construct": "directive",
+   "note": "a check never goes inside a more"
+  },
+  {
+   "file": "bad/cards-too-few.md",
+   "base": "base.md",
+   "code": "E-LESSON-CARDS",
+   "line": null,
+   "construct": "cards",
+   "note": "5 core cards: 6 to 14"
+  },
+  {
+   "file": "bad/cards-two-summaries.md",
+   "base": "base.md",
+   "code": "E-LESSON-CARDS",
+   "line": 190,
+   "construct": "cards",
+   "note": "exactly one summary, the last core card"
+  },
+  {
+   "file": "bad/cards-try-before-mistakes.md",
+   "base": "base.md",
+   "code": "E-LESSON-CARDS",
+   "line": 99,
+   "construct": "cards",
+   "note": "order: mistakes, try, summary"
+  },
+  {
+   "file": "bad/cards-extra-mistakes.md",
+   "base": "base.md",
+   "code": "E-LESSON-CARDS",
+   "line": 99,
+   "construct": "cards",
+   "note": "extra cards are idea or example only"
+  },
+  {
+   "file": "bad/cards-example-before-idea.md",
+   "base": "base.md",
+   "code": "E-LESSON-CARDS",
+   "line": 21,
+   "construct": "cards",
+   "note": "the first idea comes before the first example"
+  },
+  {
+   "file": "bad/card-words.md",
+   "base": "base.md",
+   "code": "E-CARD-WORDS",
+   "line": 59,
+   "construct": "card",
+   "note": "a core card holds at most 90 words of prose"
+  },
+  {
+   "file": "bad/card-callout-words.md",
+   "base": "base.md",
+   "code": "E-CARD-WORDS",
+   "line": 48,
+   "construct": "callout",
+   "note": "a callout has at most 40 words"
+  },
+  {
+   "file": "bad/card-seven-blocks.md",
+   "base": "base.md",
+   "code": "E-CARD-BLOCKS",
+   "line": 45,
+   "construct": "card",
+   "note": "1 to 6 blocks (2 + 5 = 7)"
+  },
+  {
+   "file": "bad/card-no-visual.md",
+   "base": "base.md",
+   "code": "E-CARD-NO-VISUAL",
+   "line": 45,
+   "construct": "card",
+   "note": "an idea card with no diagram, schema, procedure, image, page or cases-with-diagram"
+  },
+  {
+   "file": "bad/card-roles.md",
+   "base": "demo-italian.md",
+   "code": "E-CARD-ROLES",
+   "line": 34,
+   "construct": "card",
+   "note": "more than 3 icon roles in the running text of a card"
+  },
+  {
+   "file": "bad/more-words.md",
+   "base": "base.md",
+   "code": "E-LESSON-EXTRA-WORDS",
+   "line": 59,
+   "construct": "more",
+   "note": "one more block has at most 150 words"
+  },
+  {
+   "file": "bad/summary-without-schema.md",
+   "base": "base.md",
+   "code": "E-LESSON-MAP",
+   "line": 165,
+   "construct": "card",
+   "note": "the summary card needs one schema"
+  },
+  {
+   "file": "bad/check-answer-not-an-option.md",
+   "base": "base.md",
+   "code": "E-LESSON-CHECK",
+   "line": 39,
+   "construct": "check",
+   "note": "the answer is among the options"
+  },
+  {
+   "file": "bad/check-error-equals-answer.md",
+   "base": "base.md",
+   "code": "E-LESSON-CHECK",
+   "line": 41,
+   "construct": "check",
+   "note": "no error answer equals the answer"
+  },
+  {
+   "file": "bad/check-number-decimal-dot.md",
+   "base": "base.md",
+   "code": "E-LESSON-CHECK",
+   "line": 70,
+   "construct": "check",
+   "note": "a number answer parses under the practice rules (decimal comma)"
+  },
+  {
+   "file": "bad/checks-too-few.md",
+   "base": "base.md",
+   "code": "E-LESSON-CHECKS",
+   "line": null,
+   "construct": "lesson",
+   "note": "2 to 8 checks outside the try card, blanks included (here 1)"
+  },
+  {
+   "file": "bad/checks-too-many.md",
+   "base": "base.md",
+   "code": "E-LESSON-CHECKS",
+   "line": null,
+   "construct": "lesson",
+   "note": "more than 8 checks outside the try card (2 + 7 + 1 blank = 10)"
+  },
+  {
+   "file": "bad/checks-sparse.md",
+   "base": "base.md",
+   "code": "W-LESSON-CHECKS-SPARSE",
+   "line": null,
+   "construct": "lesson",
+   "note": "three idea/example cards in a row without a check or a blank (cards 1, 2, 3)"
+  },
+  {
+   "file": "bad/visuals-thirteen.md",
+   "base": "base.md",
+   "code": "E-LESSON-VISUALS",
+   "line": null,
+   "construct": "lesson",
+   "note": "more than 12 diagrams, schemas and procedures in core (5 + 8 = 13)"
+  },
+  {
+   "file": "bad/diagram-balance-not-level.md",
+   "base": "base.md",
+   "code": "E-LESSON-DIAGRAM",
+   "line": 56,
+   "construct": "diagram",
+   "note": "every state of a balance is level at x_value (path /states/1)"
+  },
+  {
+   "file": "bad/diagram-alt-too-short.md",
+   "base": "base.md",
+   "code": "E-LESSON-ALT",
+   "line": 52,
+   "construct": "diagram",
+   "note": "alt_it: 5 to 50 words"
+  },
+  {
+   "file": "bad/role-math-formula-unknown-name.md",
+   "base": "base.md",
+   "code": "E-LESSON-ROLE",
+   "line": 23,
+   "construct": "formula",
+   "note": "subject is a role of italian, not of math"
+  },
+  {
+   "file": "bad/role-formula-capital.md",
+   "base": "base.md",
+   "code": "E-LESSON-MARKUP",
+   "line": 23,
+   "construct": "formula",
+   "note": "a role name is [a-z]+(-[a-z]+)*"
+  },
+  {
+   "file": "bad/role-span-of-another-subject.md",
+   "base": "base.md",
+   "code": "E-LESSON-ROLE",
+   "line": 23,
+   "construct": "span",
+   "note": "subject is not a role of the math palette"
+  },
+  {
+   "file": "bad/icon-unknown.md",
+   "base": "base.md",
+   "code": "E-LESSON-ICON",
+   "line": 59,
+   "construct": "heading tag",
+   "note": "an icon that is not in icons.yml"
+  },
+  {
+   "file": "bad/icon-of-another-subject.md",
+   "base": "base.md",
+   "code": "E-LESSON-ICON",
+   "line": 59,
+   "construct": "heading tag",
+   "note": "zap is in the italian list, not math's"
+  },
+  {
+   "file": "bad/link-missing-card.md",
+   "base": "base.md",
+   "code": "E-LESSON-LINK",
+   "line": 23,
+   "construct": "link",
+   "note": "a link to a card id that does not exist"
+  },
+  {
+   "file": "bad/link-topic-unknown.md",
+   "base": "base.md",
+   "code": "E-LESSON-LINK",
+   "line": 23,
+   "construct": "link",
+   "note": "a link to a topic that is not in the course map"
+  },
+  {
+   "file": "bad/markup-link-http.md",
+   "base": "base.md",
+   "code": "E-LESSON-MARKUP",
+   "line": 23,
+   "construct": "link",
+   "note": "only scheda: and argomento: links"
+  },
+  {
+   "file": "bad/markup-html-class.md",
+   "base": "base.md",
+   "code": "E-LESSON-MARKUP",
+   "line": 23,
+   "construct": "formula",
+   "note": "\\htmlClass and friends typed in any formula (A5)"
+  },
+  {
+   "file": "bad/markup-def.md",
+   "base": "base.md",
+   "code": "E-LESSON-MARKUP",
+   "line": 23,
+   "construct": "formula",
+   "note": "\\def, \\gdef, \\newcommand typed in a formula"
+  },
+  {
+   "file": "bad/markup-href.md",
+   "base": "base.md",
+   "code": "E-LESSON-MARKUP",
+   "line": 23,
+   "construct": "formula",
+   "note": "\\href, \\url, \\includegraphics typed in a formula"
+  },
+  {
+   "file": "bad/markup-bare-math.md",
+   "base": "base.md",
+   "code": "E-LESSON-MARKUP",
+   "line": 23,
+   "construct": "text",
+   "note": "bare math outside $...$"
+  },
+  {
+   "file": "bad/front-kind-disagrees-with-key.md",
+   "base": "base.md",
+   "code": "E-LESSON-PARSE",
+   "line": 4,
+   "construct": "front matter",
+   "note": "kind disagrees with the key"
+  },
+  {
+   "file": "bad/front-no-goals.md",
+   "base": "base.md",
+   "code": "E-SCHEMA",
+   "line": null,
+   "construct": "front matter",
+   "note": "goals_it is required (the path is /front_matter)"
+  },
+  {
+   "file": "bad/front-finals-it-is-gone.md",
+   "base": "base.md",
+   "code": "E-SCHEMA",
+   "line": 18,
+   "construct": "front matter",
+   "note": "finals_it moved into the try block"
+  },
+  {
+   "file": "bad/front-skill-unknown.md",
+   "base": "base.md",
+   "code": "E-SKILL-UNKNOWN",
+   "line": 10,
+   "construct": "front matter",
+   "note": ""
+  },
+  {
+   "file": "bad/front-refs-missing-taught-in.md",
+   "base": "base.md",
+   "code": "E-LESSON-REFS",
+   "line": 12,
+   "construct": "front matter",
+   "note": "a ripasso needs a needed_by and a taught_in ref"
+  },
+  {
+   "file": "bad/front-book-too-long.md",
+   "base": "base.md",
+   "code": "E-LESSON-BOOK",
+   "line": 18,
+   "construct": "front matter",
+   "note": "book_it has at most 30 words"
+  },
+  {
+   "file": "bad/front-why-one-sentence.md",
+   "base": "base.md",
+   "code": "W-LESSON-WHY",
+   "line": 18,
+   "construct": "front matter",
+   "note": "2 to 4 sentences"
+  },
+  {
+   "file": "bad/size-over-the-limit.md",
+   "base": "base.md",
+   "code": "E-LESSON-SIZE",
+   "line": null,
+   "construct": "lesson",
+   "note": "lesson.md over 96 KB",
+   "file_none": true,
+   "pad_front_matter_bytes": 100000
+  },
+  {
+   "file": "bad/summary-point-too-long.md",
+   "base": "base.md",
+   "code": "E-LESSON-SUMMARY",
+   "line": 168,
+   "construct": "summary",
+   "note": "a summary point has at most 20 words"
+  },
+  {
+   "file": "bad/summary-six-points.md",
+   "base": "base.md",
+   "code": "E-LESSON-SUMMARY",
+   "line": 173,
+   "construct": "summary",
+   "note": "3 to 5 points"
+  },
+  {
+   "file": "bad/try-three-exercises.md",
+   "base": "base.md",
+   "code": "E-LESSON-EXERCISES",
+   "line": null,
+   "construct": "try",
+   "note": "4 to 8 exercises (here 3)"
+  },
+  {
+   "file": "bad/read-long-sentence.md",
+   "base": "base.md",
+   "code": "E-READ",
+   "line": 23,
+   "construct": "text",
+   "note": "a sentence of more than 25 words"
+  },
+  {
+   "file": "bad/bold-too-much.md",
+   "base": "base.md",
+   "code": "E-LESSON-BOLD",
+   "line": 23,
+   "construct": "text",
+   "note": "bold span of more than 4 words and a ratio above 8%"
+  },
+  {
+   "file": "bad/phrase-banned.md",
+   "base": "base.md",
+   "code": "E-PHRASE",
+   "line": 23,
+   "construct": "text",
+   "note": "an exam-gaming phrase"
+  },
+  {
+   "file": "bad/page-number.md",
+   "base": "base.md",
+   "code": "E-LESSON-PAGE",
+   "line": 23,
+   "construct": "text",
+   "note": "a page number anywhere"
+  },
+  {
+   "file": "bad/diagram-balance-try-misses-solution.md",
+   "base": "base.md",
+   "code": "E-LESSON-DIAGRAM",
+   "line": 30,
+   "construct": "diagram",
+   "note": "the range of try must contain the solution"
+  },
+  {
+   "file": "bad/mistake-unknown-code.md",
+   "base": "base.md",
+   "code": "W-MISTAKE-CODE",
+   "line": 114,
+   "construct": "mistake",
+   "note": "a code that is not in the skills' error catalogue"
+  },
+  {
+   "file": "bad/check-answer-in-prompt.md",
+   "base": "base.md",
+   "code": "W-CHECK-ANSWER-IN-PROMPT",
+   "line": 68,
+   "construct": "check",
+   "note": "the answer text appears in its own prompt"
+  },
+  {
+   "file": "bad/try-exercise-without-check-or-final.md",
+   "base": "base.md",
+   "code": "W-LESSON-FINAL-MISSING",
+   "line": 155,
+   "construct": "try",
+   "note": "an exercise with neither a check nor a final_it"
+  },
+  {
+   "file": "bad/mistakes-two.md",
+   "base": "base.md",
+   "code": "W-LESSON-MISTAKES",
+   "line": 99,
+   "construct": "mistakes",
+   "note": "fewer than 3 mistake blocks"
+  },
+  {
+   "file": "bad/final-in-try.md",
+   "base": "base.md",
+   "code": "W-LESSON-FINAL-IN-TRY",
+   "line": 155,
+   "construct": "try",
+   "note": "the final appears in its own exercise text"
+  },
+  {
+   "file": "bad/lesson1-after-the-switch.md",
+   "base": "(a valid banco.lesson/1 file)",
+   "code": "E-LESSON-SCHEMA",
+   "line": null,
+   "construct": "front matter",
+   "note": "submitted with lesson.accept_schema1: false (validation_rules.yml); with the flag true it is accepted as lesson/1",
+   "rules": {
+    "lesson.accept_schema1": false
+   }
+  }
+ ]
+}

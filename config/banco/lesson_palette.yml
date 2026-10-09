@@ -1,0 +1,96 @@
+# Colour roles, carriers and step tags of lessons, declared once (D-246). A change is a D entry and a new
+# `version`. bin/build-palette (R2) generates app/assets/stylesheets/lesson_roles.css from this file; the unit
+# test test/lib/lesson_palette_test.rb checks the rules below (contrast, colour-blind distance, unique icons).
+# Generic: nothing here is about a person.
+#
+# A role has a `carrier`, how it is told apart without colour (A6):
+#   glyph     the text already says it (the letter x, a digit): colour is only reinforcement
+#   position  the place says it (either side of =): a background tint of the whole span
+#   icon      nothing in the text says it: colour plus the role's icon before the span (and a legend)
+#   tint      a passing mark: the highlighter background
+#   band      the header band of a card (the subject's accent), ink text on the tint
+# Colours, each for the two themes the student can choose ("cream" is also what print uses):
+#   fg    the colour of text (7:1 on --bg and --surface)
+#   mark  the colour of shapes, markers and strokes in diagrams (3:1 on --bg and --surface)
+#   tint  a background; the ink (--text) on it keeps 7:1
+# `shape` is the marker drawn with the role in diagrams (box, weight, circle, square, triangle, diamond, ring,
+# star): unique within a subject, so a diagram is readable without colour.
+# No underline style is used for roles, and right and wrong use no green and no red.
+version: 1
+
+rules:
+  max_roles_per_subject: 8        # beyond `common` and `accent`
+  text_contrast: 7.0              # fg against --bg and --surface, cream and dark
+  graphic_contrast: 3.0           # mark against --bg and --surface
+  ink_on_tint_contrast: 7.0       # --text on every tint
+  # CIEDE2000 between the marks of two roles of a subject under simulated protanopia, deuteranopia and
+  # tritanopia (Machado 2009, severity 1). Two roles that rely on colour alone (glyph, position) need
+  # `colour`; a pair with an icon role needs `icon` (the icon, the label and the shape tell them apart
+  # too). 12 for eight icon roles is not reachable with recognisable hues at 3:1 (measured best 6.6, D-246).
+  cvd_min_delta_e: {colour: 12, icon: 6}
+
+common:                           # every subject
+  highlight: {label_it: "cambia", carrier: tint, tint: {cream: "#fff1a8", dark: "#5a4a05"}}
+  correct: {label_it: "giusto", carrier: icon, icon: circle-check, fg: {cream: "#1c1a14", dark: "#f3ecdc"}, mark: {cream: "#1c1a14", dark: "#f3ecdc"}}
+  wrong: {label_it: "non ancora", carrier: icon, icon: lightbulb, fg: {cream: "#1c1a14", dark: "#f3ecdc"}, mark: {cream: "#1c1a14", dark: "#f3ecdc"}}
+  muted: {label_it: "secondario", carrier: glyph, fg: {cream: "#4a4536", dark: "#d3cbb6"}, mark: {cream: "#4a4536", dark: "#d3cbb6"}}
+
+# The unknown, the numbers and the two members of an equation (the equazioni prototype: x violet, numbers ochre in
+# the prototype and a darker rust here, the members azure and peach as backgrounds).
+math:
+  accent: {label_it: "colore della materia", carrier: band, tint: {cream: "#b8daf5", dark: "#17374f"}}
+  roles:
+    unknown: {label_it: "incognita", carrier: glyph, shape: box,
+      fg: {cream: "#592d86", dark: "#c2a3e0"}, mark: {cream: "#592d86", dark: "#8c53c5"}}
+    known: {label_it: "numero", carrier: glyph, shape: weight,
+      fg: {cream: "#802000", dark: "#f6978e"}, mark: {cream: "#802000", dark: "#f2675a"}}
+    left: {label_it: "primo membro", carrier: position, shape: square,
+      fg: {cream: "#115050", dark: "#2ac5c5"}, mark: {cream: "#115050", dark: "#1b7e7e"},
+      tint: {cream: "#bcdbf1", dark: "#17384f"}}
+    right: {label_it: "secondo membro", carrier: position, shape: circle,
+      fg: {cream: "#a10d14", dark: "#f69397"}, mark: {cream: "#ee2b34", dark: "#de121b"},
+      tint: {cream: "#f9cfb4", dark: "#4f2d17"}}
+    coefficient: {label_it: "coefficiente", carrier: icon, icon: x, shape: diamond,
+      fg: {cream: "#813174", dark: "#cda2cd"}, mark: {cream: "#bd51ab", dark: "#b677b6"}}
+# Okabe-Ito-like hues, one icon per role (the soggetto-predicato prototype: predicate lightning, subject person, complements tile).
+italian:
+  accent: {label_it: "colore della materia", carrier: band, tint: {cream: "#f9d1b4", dark: "#4f2f17"}}
+  roles:
+    predicate: {label_it: "predicato", carrier: icon, icon: zap, shape: star, question_it: "Qual è il verbo?",
+      fg: {cream: "#9b212b", dark: "#f39a6d"}, mark: {cream: "#d53946", dark: "#d05011"}}
+    subject: {label_it: "soggetto", carrier: icon, icon: user, shape: circle, question_it: "Chi? Che cosa?",
+      fg: {cream: "#10575b", dark: "#24c4cb"}, mark: {cream: "#157075", dark: "#21b3ba"}}
+    complement: {label_it: "complemento", carrier: icon, icon: puzzle, shape: square, question_it: "Che cosa, dove, a chi...?",
+      fg: {cream: "#175a30", dark: "#16ca8e"}, mark: {cream: "#228748", dark: "#0f8a61"}}
+    object: {label_it: "complemento oggetto", carrier: icon, icon: box, shape: triangle, question_it: "Chi? Che cosa?",
+      fg: {cream: "#66296b", dark: "#de9bc8"}, mark: {cream: "#66296b", dark: "#c34b9b"}}
+    time: {label_it: "tempo", carrier: icon, icon: clock, shape: ring, question_it: "Quando?",
+      fg: {cream: "#753315", dark: "#e89f7d"}, mark: {cream: "#753315", dark: "#e79c79"}}
+    cause: {label_it: "causa", carrier: icon, icon: milestone, shape: diamond, question_it: "Perché?",
+      fg: {cream: "#3e3a98", dark: "#adaadf"}, mark: {cream: "#3e3a98", dark: "#827ece"}}
+    purpose: {label_it: "fine", carrier: icon, icon: target, shape: box, question_it: "Per quale scopo?",
+      fg: {cream: "#58511e", dark: "#bfb13f"}, mark: {cream: "#776d28", dark: "#ac9f39"}}
+    agent: {label_it: "agente", carrier: icon, icon: user-round, shape: weight, question_it: "Da chi?",
+      fg: {cream: "#514349", dark: "#bbabb1"}, mark: {cream: "#514349", dark: "#8f7680"}}
+
+# The verbs of procedures, example steps and solution steps (the `tag` of a step): our word and our icon.
+# The icon is one of the subject's list in config/banco/icons.yml.
+step_tags:
+  math:
+    develop: {label_it: "Sviluppa", icon: brackets}
+    move: {label_it: "Sposta", icon: arrow-left-right}
+    add: {label_it: "Somma", icon: sigma}
+    subtract: {label_it: "Sottrai", icon: minus}
+    multiply: {label_it: "Moltiplica", icon: multiply}
+    divide: {label_it: "Dividi", icon: divide}
+    verify: {label_it: "Verifica", icon: check-check}
+    cancel: {label_it: "Elimina", icon: eraser}
+    substitute: {label_it: "Sostituisci", icon: replace}
+    simplify: {label_it: "Semplifica", icon: minimize-2}
+  italian:
+    predicate: {label_it: "Trova il predicato", icon: zap}
+    ask: {label_it: "Chiedi chi? che cosa?", icon: circle-help}
+    agree: {label_it: "Controlla l'accordo", icon: link}
+    mark: {label_it: "Segna le parti", icon: highlighter}
+    turn: {label_it: "Gira la frase", icon: repeat}
+    decide: {label_it: "Decidi", icon: git-branch}

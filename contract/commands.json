@@ -272,7 +272,7 @@
       "method": "GET",
       "path": "/api/v1/lessons/:lesson",
       "args": ["lesson"],
-      "flags": ["--dir"],
+      "flags": ["--dir", "--schema"],
       "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-FILES"]
     },
     {
@@ -282,7 +282,7 @@
       "path": "/api/v1/lessons/submit",
       "args": ["dir"],
       "flags": ["--base", "--dry-run"],
-      "error_codes": ["E-AUTH", "E-FILES", "E-TOO-LARGE", "E-NOT-FOUND", "E-STALE-BASE", "E-SCHEMA", "E-SOURCE", "E-SKILL-UNKNOWN", "E-LESSON-PARSE", "E-LESSON-SECTIONS", "E-LESSON-MARKUP", "E-LESSON-WORDS", "E-LESSON-BOLD", "E-LESSON-EXERCISES", "E-LESSON-FINALS", "E-LESSON-BOOK", "E-LESSON-PAGE", "E-LESSON-SUMMARY", "E-LESSON-REFS", "E-READ", "E-PHRASE", "E-SESSION", "E-SESSION-ROLE"]
+      "error_codes": ["E-AUTH", "E-FILES", "E-TOO-LARGE", "E-NOT-FOUND", "E-STALE-BASE", "E-SCHEMA", "E-SOURCE", "E-SKILL-UNKNOWN", "E-LESSON-PARSE", "E-LESSON-SECTIONS", "E-LESSON-MARKUP", "E-LESSON-WORDS", "E-LESSON-BOLD", "E-LESSON-EXERCISES", "E-LESSON-FINALS", "E-LESSON-BOOK", "E-LESSON-PAGE", "E-LESSON-SUMMARY", "E-LESSON-REFS", "E-LESSON-CARD", "E-LESSON-CARDS", "E-CARD-WORDS", "E-CARD-BLOCKS", "E-CARD-NO-VISUAL", "E-CARD-ROLES", "E-LESSON-BLOCK", "E-LESSON-EXTRA-WORDS", "E-LESSON-MAP", "E-LESSON-CHECK", "E-LESSON-CHECKS", "E-LESSON-VISUALS", "E-LESSON-PARTS", "E-LESSON-DIAGRAM", "E-LESSON-ALT", "E-LESSON-ROLE", "E-LESSON-ICON", "E-LESSON-LINK", "E-LESSON-SIZE", "E-LESSON-SCHEMA", "E-READ", "E-PHRASE", "E-SESSION", "E-SESSION-ROLE"]
     },
     {
       "name": "lesson status",
@@ -308,7 +308,7 @@
       "path": "/api/v1/lesson-revisions/:revision/review",
       "args": ["revision"],
       "flags": ["--file", "--dry-run"],
-      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-SCHEMA", "E-REVIEW-EMPTY", "E-QUOTE-NOT-FOUND", "E-LESSON-REVIEW-RECOMPUTED", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT"]
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-SCHEMA", "E-REVIEW-EMPTY", "E-REVIEW-CHECKLIST", "E-QUOTE-NOT-FOUND", "E-LESSON-REVIEW-RECOMPUTED", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT"]
     },
     {
       "name": "topics list",

@@ -5,7 +5,7 @@ require "test_helper"
 # ones the design names, and no page points at a CDN.
 class VendorTest < ActiveSupport::TestCase
   VENDOR = Rails.root.join("public/vendor")
-  PINNED = { "mathlive@0.111.0" => "MathLive 0.111.0", "katex@0.19.0" => nil, "compute-engine@0.146.0" => nil, "atkinson-hyperlegible@5.3.0" => nil }.freeze
+  PINNED = { "mathlive@0.111.0" => "MathLive 0.111.0", "katex@0.19.0" => nil, "compute-engine@0.146.0" => nil, "atkinson-hyperlegible@5.3.0" => nil, "lucide@1.54.0" => nil }.freeze
 
   test "the libraries are there at their pinned versions" do
     assert_equal PINNED.keys.sort, VENDOR.children.map { |c| c.basename.to_s }.sort

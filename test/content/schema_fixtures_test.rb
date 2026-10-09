@@ -29,7 +29,10 @@ class SchemaFixturesTest < ActiveSupport::TestCase
     test "#{name}: every bad fixture differs from the good ones by being invalid, not by the schema member" do
       Banco::Schemas.fixture_files(name, :bad).each do |path|
         doc = load(path)
-        assert_equal Banco::Schemas.format_of(name), doc["schema"], "#{File.basename(path)} keeps its schema member" if doc.key?("schema")
+        formats = name == "lesson" ? Banco::Schemas::LESSON_FORMATS : [ Banco::Schemas.format_of(name) ]
+        # a diagram is not a document: it has a type and no schema member (D-247)
+        assert_includes formats, doc["schema"], "#{File.basename(path)} keeps its schema member" if doc.key?("schema")
+        assert_nil doc["schema"], "#{File.basename(path)} is a diagram: no schema member" if name == "diagram"
       end
     end
   end
@@ -118,8 +121,16 @@ class SchemaFixturesTest < ActiveSupport::TestCase
   test "every schema forbids additional properties at its root" do
     Banco::Schemas::NAMES.each do |name|
       schema = JSON.parse(File.read(Rails.root.join("config/banco/schemas/#{name}.json")))
-      assert_equal false, schema["additionalProperties"], name
-      assert_equal "banco.#{name}/1", schema["title"]
+      if name == "diagram" # dispatched on "type" (D-247): each type is closed
+        types = schema.fetch("$defs").values.select { |d| d.is_a?(Hash) && d.key?("x-banco-kind") }
+        assert_equal 9, types.size
+        assert(types.all? { |d| d["additionalProperties"] == false }, "every diagram type is closed")
+        assert_equal "banco.diagram/1", schema["title"]
+        next
+      end
+      # lesson.json holds lesson/1 and lesson/2 (D-245): its root is closed by unevaluatedProperties, its title names both.
+      assert_equal false, schema.fetch("additionalProperties") { schema["unevaluatedProperties"] }, name
+      assert_equal(name == "lesson" ? "banco.lesson/1 and banco.lesson/2" : "banco.#{name}/1", schema["title"])
     end
   end
 

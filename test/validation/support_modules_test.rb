@@ -4,7 +4,7 @@ require "test_helper"
 # canonical form.
 class SupportModulesTest < ActiveSupport::TestCase
   test "the thresholds are the ones of the brief, and the file has a version" do
-    assert_equal 7, Validation::Rules.version
+    assert_equal 8, Validation::Rules.version
     assert_equal "seconda-2025-26", Validation::Rules.get(:course, :seconda_source)
     assert_equal [ 4, 8 ], Validation::Rules.list(:lesson, :exercises)
     assert_equal 500, Validation::Rules.get(:lesson, :max_words)

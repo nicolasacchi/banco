@@ -1,0 +1,28 @@
+{
+  "type": "table",
+  "alt_it": "Tabella dei tre casi di un'equazione di primo grado con la forma e il numero di soluzioni.",
+  "header": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "e"
+  ],
+  "rows": [
+    [
+      "Determinata",
+      "$ax = b$, $a \\neq 0$",
+      "una"
+    ],
+    [
+      "Impossibile",
+      "$0x = b$, $b \\neq 0$",
+      "nessuna"
+    ],
+    [
+      "Indeterminata",
+      "$0x = 0$",
+      "infinite"
+    ]
+  ]
+}

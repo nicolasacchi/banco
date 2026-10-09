@@ -1,0 +1,4081 @@
+{
+ "version": 1,
+ "description": "Diagram vectors (D-247): the cases both implementations run. Each has the data, the subject whose palette its roles come from, the verdict of config/banco/schemas/diagram.json ('schema': valid|invalid) and, for data the schema accepts, the semantic verdict of Lessons::Diagrams (R1): 'ok', or the code and the JSON pointer 'path' (relative to the diagram, one finding at least). Ruby refuses every vector that is invalid in either column; app/javascript/lesson/diagrams layout() must return { error } for the same vectors (it never throws) and a Scene for the others (R2). 'note' says what the case proves.",
+ "vectors": [
+  {
+   "name": "balance-level",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "2"
+   }
+  },
+  {
+   "name": "balance-try-contains-solution",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "2",
+    "try": {
+     "from": 0,
+     "to": 5
+    }
+   }
+  },
+  {
+   "name": "balance-try-misses-solution",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/try",
+   "note": "the range must contain the solution",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "2",
+    "try": {
+     "from": 3,
+     "to": 5
+    }
+   }
+  },
+  {
+   "name": "balance-try-too-wide",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/try",
+   "note": "at most 12 values",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "2",
+    "try": {
+     "from": 0,
+     "to": 20
+    }
+   }
+  },
+  {
+   "name": "balance-states-equivalent-inherit-x-value",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "note": "the states inherit x_value from the top level",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "2",
+    "states": [
+     {
+      "left": {
+       "x": 2,
+       "units": 3
+      },
+      "right": {
+       "units": 7
+      },
+      "op_it": "Partenza"
+     },
+     {
+      "left": {
+       "x": 2
+      },
+      "right": {
+       "units": 4
+      },
+      "op_it": "Togli 3 pesi da ogni piatto"
+     }
+    ]
+   }
+  },
+  {
+   "name": "balance-states-not-level",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/states/1",
+   "note": "every effective state is level at x_value: the drawing cannot lie",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "2",
+    "states": [
+     {
+      "left": {
+       "x": 2,
+       "units": 3
+      },
+      "right": {
+       "units": 7
+      },
+      "op_it": "Partenza"
+     },
+     {
+      "left": {
+       "x": 2
+      },
+      "right": {
+       "units": 5
+      },
+      "op_it": "Togli 3 pesi da ogni piatto"
+     }
+    ]
+   }
+  },
+  {
+   "name": "balance-groups-divisible",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "note": "a state may carry only op_it and groups; left and right are inherited",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 6
+    },
+    "right": {
+     "units": 18
+    },
+    "x_value": "3",
+    "states": [
+     {
+      "op_it": "Partenza"
+     },
+     {
+      "groups": 6,
+      "op_it": "Dividi i due piatti in 6 gruppi uguali"
+     }
+    ]
+   }
+  },
+  {
+   "name": "balance-groups-not-divisible",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/states/1/groups",
+   "note": "18 weights do not divide into 4 equal groups",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 6
+    },
+    "right": {
+     "units": 18
+    },
+    "x_value": "3",
+    "states": [
+     {
+      "op_it": "Partenza"
+     },
+     {
+      "groups": 4,
+      "op_it": "Dividi i due piatti in 6 gruppi uguali"
+     }
+    ]
+   }
+  },
+  {
+   "name": "balance-negative-solution",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/x_value",
+   "note": "a balance cannot draw a negative solution",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "-2"
+   }
+  },
+  {
+   "name": "balance-zero-solution",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/x_value",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "0"
+   }
+  },
+  {
+   "name": "balance-not-level",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/x_value",
+   "note": "without states the balance may be tilted, but a declared x_value must still be the solution: 2*3+3 is not 7",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "3"
+   }
+  },
+  {
+   "name": "balance-x-value-missing",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/x_value",
+   "note": "the boxes differ, so there is a unique solution and x_value is required",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    }
+   }
+  },
+  {
+   "name": "balance-impossible-no-x-value",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "note": "same number of boxes: no unique solution, x_value omitted, always tilted",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia sempre inclinata: a sinistra due scatole e tre pesi, a destra due scatole e dieci pesi.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "x": 2,
+     "units": 10
+    }
+   }
+  },
+  {
+   "name": "balance-same-boxes-with-x-value",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/x_value",
+   "note": "x_value is omitted exactly when both plates hold the same number of boxes",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia sempre inclinata: a sinistra due scatole e tre pesi, a destra due scatole e dieci pesi.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "x": 2,
+     "units": 10
+    },
+    "x_value": "2"
+   }
+  },
+  {
+   "name": "balance-identity-level",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia sempre in equilibrio: due scatole e tre pesi da una parte e dall'altra.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "x": 2,
+     "units": 3
+    }
+   }
+  },
+  {
+   "name": "balance-too-many-boxes",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "x at most 12",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia con troppe scatole da disegnare sul piatto sinistro.",
+    "left": {
+     "x": 13
+    },
+    "right": {
+     "units": 3
+    },
+    "x_value": "1"
+   }
+  },
+  {
+   "name": "balance-too-many-units",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "units at most 24",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia con troppi pesi da disegnare sul piatto destro.",
+    "left": {
+     "x": 1
+    },
+    "right": {
+     "units": 25
+    },
+    "x_value": "25"
+   }
+  },
+  {
+   "name": "balance-negative-units",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "no negative terms on a balance",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": -3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "2"
+   }
+  },
+  {
+   "name": "balance-declared-tilt",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "tilt is never declared",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "2",
+    "tilt": 1
+   }
+  },
+  {
+   "name": "balance-state-carries-alt-it",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "alt_it, caption_it, size and x_value are top level only",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "2",
+    "states": [
+     {
+      "left": {
+       "x": 2
+      },
+      "alt_it": "Altro testo alternativo per questo stato della bilancia."
+     },
+     {
+      "left": {
+       "x": 2
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "balance-state-carries-x-value",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "x_value is a solution field: top level only",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "2",
+    "states": [
+     {
+      "left": {
+       "x": 2
+      },
+      "right": {
+       "units": 4
+      }
+     },
+     {
+      "x_value": "2"
+     }
+    ]
+   }
+  },
+  {
+   "name": "balance-one-state",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "states: 2 to 6",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "2",
+    "states": [
+     {
+      "left": {
+       "x": 2,
+       "units": 3
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "balance-empty-alt",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "balance",
+    "alt_it": "",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "2"
+   }
+  },
+  {
+   "name": "balance-alt-too-short",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-ALT",
+   "path": "/alt_it",
+   "note": "alt_it: 5 to 50 words",
+   "data": {
+    "type": "balance",
+    "alt_it": "Una bilancia.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "2"
+   }
+  },
+  {
+   "name": "balance-alt-too-long",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-ALT",
+   "path": "/alt_it",
+   "data": {
+    "type": "balance",
+    "alt_it": "parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "2"
+   }
+  },
+  {
+   "name": "number-line-dot",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta numerica da meno cinque a cinque con un punto sul meno due.",
+    "min": "-5",
+    "max": "5",
+    "step": "1",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "-2",
+      "label_it": "-2",
+      "kind": "dot",
+      "role": "known"
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-jump",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta numerica da meno cinque a cinque con un punto sul meno due.",
+    "min": "-5",
+    "max": "5",
+    "step": "1",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "-2",
+      "label_it": "-2",
+      "kind": "dot",
+      "role": "known"
+     }
+    ],
+    "jumps": [
+     {
+      "from": "-2",
+      "by": "5",
+      "label_it": "+5",
+      "role": "known"
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-interval-infinite",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta numerica da meno cinque a cinque con un punto sul meno due.",
+    "min": "-5",
+    "max": "5",
+    "step": "1",
+    "labels": "all",
+    "marks": [],
+    "intervals": [
+     {
+      "from": "-inf",
+      "to": "3",
+      "from_closed": false,
+      "to_closed": true,
+      "role": "unknown",
+      "label_it": "x minore o uguale a 3"
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-decimal-and-fraction",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta numerica da meno cinque a cinque con un punto sul meno due.",
+    "min": "-5",
+    "max": "5",
+    "step": "1",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "1,5",
+      "kind": "open"
+     },
+     {
+      "at": "-5/2",
+      "kind": "cross"
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-decimal-dot",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "decimals use the comma",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta numerica da meno cinque a cinque con un punto sul meno due.",
+    "min": "-5",
+    "max": "5",
+    "step": "1",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "1.5"
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-min-above-max",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/min",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta numerica da meno cinque a cinque con un punto sul meno due.",
+    "min": "5",
+    "max": "-5",
+    "step": "1",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "-2",
+      "label_it": "-2",
+      "kind": "dot",
+      "role": "known"
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-step-zero",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/step",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta numerica da meno cinque a cinque con un punto sul meno due.",
+    "min": "-5",
+    "max": "5",
+    "step": "0",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "-2",
+      "label_it": "-2",
+      "kind": "dot",
+      "role": "known"
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-too-many-steps",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/step",
+   "note": "(max - min)/step an integer, at most 30",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta numerica da meno cinque a cinque con un punto sul meno due.",
+    "min": "-100",
+    "max": "100",
+    "step": "1",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "-2",
+      "label_it": "-2",
+      "kind": "dot",
+      "role": "known"
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-step-not-integer-count",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/step",
+   "note": "10 is not a multiple of 3",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta numerica da meno cinque a cinque con un punto sul meno due.",
+    "min": "-5",
+    "max": "5",
+    "step": "3",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "-2",
+      "label_it": "-2",
+      "kind": "dot",
+      "role": "known"
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-mark-outside",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/marks/0/at",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta numerica da meno cinque a cinque con un punto sul meno due.",
+    "min": "-5",
+    "max": "5",
+    "step": "1",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "7"
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-landing-outside",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/jumps/0",
+   "note": "the landing 7 is outside [min, max]",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta numerica da meno cinque a cinque con un punto sul meno due.",
+    "min": "-5",
+    "max": "5",
+    "step": "1",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "-2",
+      "label_it": "-2",
+      "kind": "dot",
+      "role": "known"
+     }
+    ],
+    "jumps": [
+     {
+      "from": "3",
+      "by": "4"
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-inf-in-mark",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "inf only in intervals",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta numerica da meno cinque a cinque con un punto sul meno due.",
+    "min": "-5",
+    "max": "5",
+    "step": "1",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "+inf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-interval-reversed",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/intervals/0",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta numerica da meno cinque a cinque con un punto sul meno due.",
+    "min": "-5",
+    "max": "5",
+    "step": "1",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "-2",
+      "label_it": "-2",
+      "kind": "dot",
+      "role": "known"
+     }
+    ],
+    "intervals": [
+     {
+      "from": "2",
+      "to": "-1",
+      "from_closed": true,
+      "to_closed": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-states",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta numerica da meno cinque a cinque con un punto sul meno due.",
+    "min": "-5",
+    "max": "5",
+    "step": "1",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "-2",
+      "label_it": "-2",
+      "kind": "dot",
+      "role": "known"
+     }
+    ],
+    "states": [
+     {
+      "marks": [
+       {
+        "at": "-2"
+       }
+      ]
+     },
+     {
+      "marks": [
+       {
+        "at": "-2"
+       }
+      ],
+      "jumps": [
+       {
+        "from": "-2",
+        "by": "2"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "equation-parts",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "equation_parts",
+    "alt_it": "L'equazione 2x più 3 uguale 7 divisa nei suoi pezzi: primo membro, segno uguale e secondo membro.",
+    "parts": [
+     {
+      "tex": "2",
+      "role": "known",
+      "label_it": "coefficiente"
+     },
+     {
+      "tex": "x",
+      "role": "unknown",
+      "label_it": "incognita"
+     },
+     {
+      "tex": "+3",
+      "role": "known"
+     },
+     {
+      "tex": "=",
+      "role": "muted"
+     },
+     {
+      "tex": "7",
+      "role": "known"
+     }
+    ],
+    "brackets": [
+     {
+      "from": 0,
+      "to": 2,
+      "label_it": "primo membro",
+      "role": "left"
+     },
+     {
+      "from": 4,
+      "to": 4,
+      "label_it": "secondo membro",
+      "role": "right"
+     }
+    ]
+   }
+  },
+  {
+   "name": "equation-parts-bracket-outside",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "part index at most 8",
+   "data": {
+    "type": "equation_parts",
+    "alt_it": "L'equazione 2x più 3 uguale 7 divisa nei suoi pezzi: primo membro, segno uguale e secondo membro.",
+    "parts": [
+     {
+      "tex": "2",
+      "role": "known",
+      "label_it": "coefficiente"
+     },
+     {
+      "tex": "x",
+      "role": "unknown",
+      "label_it": "incognita"
+     },
+     {
+      "tex": "+3",
+      "role": "known"
+     },
+     {
+      "tex": "=",
+      "role": "muted"
+     },
+     {
+      "tex": "7",
+      "role": "known"
+     }
+    ],
+    "brackets": [
+     {
+      "from": 0,
+      "to": 9,
+      "label_it": "primo membro",
+      "role": "left"
+     },
+     {
+      "from": 4,
+      "to": 4,
+      "label_it": "secondo membro",
+      "role": "right"
+     }
+    ]
+   }
+  },
+  {
+   "name": "equation-parts-bracket-beyond-parts",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/brackets/0/to",
+   "note": "brackets cover whole parts that exist",
+   "data": {
+    "type": "equation_parts",
+    "alt_it": "L'equazione 2x più 3 uguale 7 divisa nei suoi pezzi: primo membro, segno uguale e secondo membro.",
+    "parts": [
+     {
+      "tex": "2",
+      "role": "known",
+      "label_it": "coefficiente"
+     },
+     {
+      "tex": "x",
+      "role": "unknown",
+      "label_it": "incognita"
+     },
+     {
+      "tex": "+3",
+      "role": "known"
+     },
+     {
+      "tex": "=",
+      "role": "muted"
+     },
+     {
+      "tex": "7",
+      "role": "known"
+     }
+    ],
+    "brackets": [
+     {
+      "from": 0,
+      "to": 7,
+      "label_it": "primo membro",
+      "role": "left"
+     },
+     {
+      "from": 4,
+      "to": 4,
+      "label_it": "secondo membro",
+      "role": "right"
+     }
+    ]
+   }
+  },
+  {
+   "name": "equation-parts-bracket-reversed",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/brackets/0",
+   "data": {
+    "type": "equation_parts",
+    "alt_it": "L'equazione 2x più 3 uguale 7 divisa nei suoi pezzi: primo membro, segno uguale e secondo membro.",
+    "parts": [
+     {
+      "tex": "2",
+      "role": "known",
+      "label_it": "coefficiente"
+     },
+     {
+      "tex": "x",
+      "role": "unknown",
+      "label_it": "incognita"
+     },
+     {
+      "tex": "+3",
+      "role": "known"
+     },
+     {
+      "tex": "=",
+      "role": "muted"
+     },
+     {
+      "tex": "7",
+      "role": "known"
+     }
+    ],
+    "brackets": [
+     {
+      "from": 3,
+      "to": 1,
+      "label_it": "primo membro",
+      "role": "left"
+     },
+     {
+      "from": 4,
+      "to": 4,
+      "label_it": "secondo membro",
+      "role": "right"
+     }
+    ]
+   }
+  },
+  {
+   "name": "equation-parts-bad-tex",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/parts",
+   "note": "the parts joined are not a valid formula of the markup grammar",
+   "data": {
+    "type": "equation_parts",
+    "alt_it": "L'equazione 2x più 3 uguale 7 divisa nei suoi pezzi: primo membro, segno uguale e secondo membro.",
+    "parts": [
+     {
+      "tex": "2",
+      "role": "known",
+      "label_it": "coefficiente"
+     },
+     {
+      "tex": "\\frac{",
+      "role": "unknown",
+      "label_it": "incognita"
+     },
+     {
+      "tex": "+3",
+      "role": "known"
+     },
+     {
+      "tex": "=",
+      "role": "muted"
+     },
+     {
+      "tex": "7",
+      "role": "known"
+     }
+    ],
+    "brackets": [
+     {
+      "from": 0,
+      "to": 2,
+      "label_it": "primo membro",
+      "role": "left"
+     },
+     {
+      "from": 4,
+      "to": 4,
+      "label_it": "secondo membro",
+      "role": "right"
+     }
+    ]
+   }
+  },
+  {
+   "name": "equation-parts-html-class",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/parts/1/tex",
+   "note": "\\htmlClass and friends are refused in any formula (A5)",
+   "data": {
+    "type": "equation_parts",
+    "alt_it": "L'equazione 2x più 3 uguale 7 divisa nei suoi pezzi: primo membro, segno uguale e secondo membro.",
+    "parts": [
+     {
+      "tex": "2",
+      "role": "known",
+      "label_it": "coefficiente"
+     },
+     {
+      "tex": "\\htmlClass{x}{y}",
+      "role": "unknown",
+      "label_it": "incognita"
+     },
+     {
+      "tex": "+3",
+      "role": "known"
+     },
+     {
+      "tex": "=",
+      "role": "muted"
+     },
+     {
+      "tex": "7",
+      "role": "known"
+     }
+    ],
+    "brackets": [
+     {
+      "from": 0,
+      "to": 2,
+      "label_it": "primo membro",
+      "role": "left"
+     },
+     {
+      "from": 4,
+      "to": 4,
+      "label_it": "secondo membro",
+      "role": "right"
+     }
+    ]
+   }
+  },
+  {
+   "name": "equation-parts-five-brackets",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "at most 4 brackets",
+   "data": {
+    "type": "equation_parts",
+    "alt_it": "L'equazione 2x più 3 uguale 7 divisa nei suoi pezzi: primo membro, segno uguale e secondo membro.",
+    "parts": [
+     {
+      "tex": "2",
+      "role": "known",
+      "label_it": "coefficiente"
+     },
+     {
+      "tex": "x",
+      "role": "unknown",
+      "label_it": "incognita"
+     },
+     {
+      "tex": "+3",
+      "role": "known"
+     },
+     {
+      "tex": "=",
+      "role": "muted"
+     },
+     {
+      "tex": "7",
+      "role": "known"
+     }
+    ],
+    "brackets": [
+     {
+      "from": 0,
+      "to": 2,
+      "label_it": "primo membro",
+      "role": "left"
+     },
+     {
+      "from": 4,
+      "to": 4,
+      "label_it": "secondo membro",
+      "role": "right"
+     },
+     {
+      "from": 0,
+      "to": 2,
+      "label_it": "primo membro",
+      "role": "left"
+     },
+     {
+      "from": 4,
+      "to": 4,
+      "label_it": "secondo membro",
+      "role": "right"
+     },
+     {
+      "from": 0,
+      "to": 2,
+      "label_it": "primo membro",
+      "role": "left"
+     },
+     {
+      "from": 4,
+      "to": 4,
+      "label_it": "secondo membro",
+      "role": "right"
+     }
+    ]
+   }
+  },
+  {
+   "name": "equation-parts-role-capital",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "equation_parts",
+    "alt_it": "L'equazione 2x più 3 uguale 7 divisa nei suoi pezzi: primo membro, segno uguale e secondo membro.",
+    "parts": [
+     {
+      "tex": "2",
+      "role": "Unknown",
+      "label_it": "coefficiente"
+     },
+     {
+      "tex": "x",
+      "role": "unknown",
+      "label_it": "incognita"
+     },
+     {
+      "tex": "+3",
+      "role": "known"
+     },
+     {
+      "tex": "=",
+      "role": "muted"
+     },
+     {
+      "tex": "7",
+      "role": "known"
+     }
+    ],
+    "brackets": [
+     {
+      "from": 0,
+      "to": 2,
+      "label_it": "primo membro",
+      "role": "left"
+     },
+     {
+      "from": 4,
+      "to": 4,
+      "label_it": "secondo membro",
+      "role": "right"
+     }
+    ]
+   }
+  },
+  {
+   "name": "equation-parts-role-of-another-subject",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-ROLE",
+   "path": "/parts/0/role",
+   "note": "subject is a role of italian",
+   "data": {
+    "type": "equation_parts",
+    "alt_it": "L'equazione 2x più 3 uguale 7 divisa nei suoi pezzi: primo membro, segno uguale e secondo membro.",
+    "parts": [
+     {
+      "tex": "2",
+      "role": "subject",
+      "label_it": "coefficiente"
+     },
+     {
+      "tex": "x",
+      "role": "unknown",
+      "label_it": "incognita"
+     },
+     {
+      "tex": "+3",
+      "role": "known"
+     },
+     {
+      "tex": "=",
+      "role": "muted"
+     },
+     {
+      "tex": "7",
+      "role": "known"
+     }
+    ],
+    "brackets": [
+     {
+      "from": 0,
+      "to": 2,
+      "label_it": "primo membro",
+      "role": "left"
+     },
+     {
+      "from": 4,
+      "to": 4,
+      "label_it": "secondo membro",
+      "role": "right"
+     }
+    ]
+   }
+  },
+  {
+   "name": "area-model",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "area_model",
+    "alt_it": "Il prodotto di x più 2 per x più 3 diviso in quattro rettangoli.",
+    "rows": [
+     "$x$",
+     "$2$"
+    ],
+    "cols": [
+     "$x$",
+     "$3$"
+    ],
+    "cells": [
+     [
+      "$x^2$",
+      "$3x$"
+     ],
+     [
+      "$2x$",
+      "$6$"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "area-model-five-rows",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "at most 4 x 4",
+   "data": {
+    "type": "area_model",
+    "alt_it": "Il prodotto di x più 2 per x più 3 diviso in quattro rettangoli.",
+    "rows": [
+     "a",
+     "b",
+     "c",
+     "d",
+     "e"
+    ],
+    "cols": [
+     "$x$",
+     "$3$"
+    ],
+    "cells": [
+     [
+      "$x^2$",
+      "$3x$"
+     ],
+     [
+      "$2x$",
+      "$6$"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "area-model-cells-shape",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/cells",
+   "note": "cells are rows x cols",
+   "data": {
+    "type": "area_model",
+    "alt_it": "Il prodotto di x più 2 per x più 3 diviso in quattro rettangoli.",
+    "rows": [
+     "$x$",
+     "$2$"
+    ],
+    "cols": [
+     "$x$",
+     "$3$"
+    ],
+    "cells": [
+     [
+      "$x^2$",
+      "$3x$"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "area-model-long-label",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/rows/0",
+   "note": "a label has at most 6 words",
+   "data": {
+    "type": "area_model",
+    "alt_it": "Il prodotto di x più 2 per x più 3 diviso in quattro rettangoli.",
+    "rows": [
+     "uno due tre quattro cinque sei sette",
+     "$2$"
+    ],
+    "cols": [
+     "$x$",
+     "$3$"
+    ],
+    "cells": [
+     [
+      "$x^2$",
+      "$3x$"
+     ],
+     [
+      "$2x$",
+      "$6$"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "area-model-states-fill-in",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "area_model",
+    "alt_it": "Il prodotto di x più 2 per x più 3 diviso in quattro rettangoli.",
+    "rows": [
+     "$x$",
+     "$2$"
+    ],
+    "cols": [
+     "$x$",
+     "$3$"
+    ],
+    "cells": [
+     [
+      "$x^2$",
+      "$3x$"
+     ],
+     [
+      "$2x$",
+      "$6$"
+     ]
+    ],
+    "states": [
+     {
+      "cells": [
+       [
+        "",
+        "$3x$"
+       ],
+       [
+        "$2x$",
+        ""
+       ]
+      ]
+     },
+     {
+      "cells": [
+       [
+        "$x^2$",
+        "$3x$"
+       ],
+       [
+        "$2x$",
+        "$6$"
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "cartesian-two-lines-intersection",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "cartesian",
+    "alt_it": "Piano cartesiano con due rette che si incontrano nel punto di coordinate 2 e 5.",
+    "x": [
+     "-1",
+     "6"
+    ],
+    "y": [
+     "-1",
+     "8"
+    ],
+    "grid": true,
+    "lines": [
+     {
+      "id": "r1",
+      "eq": "y = 2x + 1",
+      "label_it": "y = 2x + 1",
+      "role": "left"
+     },
+     {
+      "id": "r2",
+      "eq": "x + y = 7",
+      "role": "right"
+     }
+    ],
+    "points": [
+     {
+      "x": "2",
+      "y": "5",
+      "label_it": "(2, 5)",
+      "role": "unknown",
+      "on_lines": [
+       "r1",
+       "r2"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "cartesian-vertical-and-fractional-slope",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "cartesian",
+    "alt_it": "Piano cartesiano con due rette che si incontrano nel punto di coordinate 2 e 5.",
+    "x": [
+     "-1",
+     "6"
+    ],
+    "y": [
+     "-1",
+     "8"
+    ],
+    "grid": true,
+    "lines": [
+     {
+      "id": "r1",
+      "eq": "x = 3"
+     },
+     {
+      "id": "r2",
+      "eq": "1/2x - 1,5"
+     }
+    ],
+    "points": []
+   }
+  },
+  {
+   "name": "cartesian-point-not-on-line",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/points/0/on_lines",
+   "note": "a point with on lies exactly on each named line",
+   "data": {
+    "type": "cartesian",
+    "alt_it": "Piano cartesiano con due rette che si incontrano nel punto di coordinate 2 e 5.",
+    "x": [
+     "-1",
+     "6"
+    ],
+    "y": [
+     "-1",
+     "8"
+    ],
+    "grid": true,
+    "lines": [
+     {
+      "id": "r1",
+      "eq": "y = 2x + 1",
+      "label_it": "y = 2x + 1",
+      "role": "left"
+     },
+     {
+      "id": "r2",
+      "eq": "x + y = 7",
+      "role": "right"
+     }
+    ],
+    "points": [
+     {
+      "x": "2",
+      "y": "4",
+      "label_it": "(2, 5)",
+      "role": "unknown",
+      "on_lines": [
+       "r1",
+       "r2"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "cartesian-unknown-line-id",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/points/0/on_lines",
+   "data": {
+    "type": "cartesian",
+    "alt_it": "Piano cartesiano con due rette che si incontrano nel punto di coordinate 2 e 5.",
+    "x": [
+     "-1",
+     "6"
+    ],
+    "y": [
+     "-1",
+     "8"
+    ],
+    "grid": true,
+    "lines": [
+     {
+      "id": "r1",
+      "eq": "y = 2x + 1",
+      "label_it": "y = 2x + 1",
+      "role": "left"
+     },
+     {
+      "id": "r2",
+      "eq": "x + y = 7",
+      "role": "right"
+     }
+    ],
+    "points": [
+     {
+      "x": "2",
+      "y": "5",
+      "label_it": "(2, 5)",
+      "role": "unknown",
+      "on_lines": [
+       "r9"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "cartesian-point-outside-window",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/points/0",
+   "data": {
+    "type": "cartesian",
+    "alt_it": "Piano cartesiano con due rette che si incontrano nel punto di coordinate 2 e 5.",
+    "x": [
+     "-1",
+     "6"
+    ],
+    "y": [
+     "-1",
+     "8"
+    ],
+    "grid": true,
+    "lines": [
+     {
+      "id": "r1",
+      "eq": "y = 2x + 1",
+      "label_it": "y = 2x + 1",
+      "role": "left"
+     },
+     {
+      "id": "r2",
+      "eq": "x + y = 7",
+      "role": "right"
+     }
+    ],
+    "points": [
+     {
+      "x": "9",
+      "y": "19",
+      "label_it": "(2, 5)",
+      "role": "unknown",
+      "on_lines": [
+       "r1"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "cartesian-eq-not-a-line",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/lines/0/eq",
+   "note": "eq is y = mx + q, x = k or ax + by = c",
+   "data": {
+    "type": "cartesian",
+    "alt_it": "Piano cartesiano con due rette che si incontrano nel punto di coordinate 2 e 5.",
+    "x": [
+     "-1",
+     "6"
+    ],
+    "y": [
+     "-1",
+     "8"
+    ],
+    "grid": true,
+    "lines": [
+     {
+      "id": "r1",
+      "eq": "y = x^2",
+      "label_it": "y = 2x + 1",
+      "role": "left"
+     },
+     {
+      "id": "r2",
+      "eq": "x + y = 7",
+      "role": "right"
+     }
+    ],
+    "points": [
+     {
+      "x": "2",
+      "y": "5",
+      "label_it": "(2, 5)",
+      "role": "unknown",
+      "on_lines": [
+       "r1",
+       "r2"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "cartesian-window-reversed",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/x",
+   "data": {
+    "type": "cartesian",
+    "alt_it": "Piano cartesiano con due rette che si incontrano nel punto di coordinate 2 e 5.",
+    "x": [
+     "6",
+     "-1"
+    ],
+    "y": [
+     "-1",
+     "8"
+    ],
+    "grid": true,
+    "lines": [
+     {
+      "id": "r1",
+      "eq": "y = 2x + 1",
+      "label_it": "y = 2x + 1",
+      "role": "left"
+     },
+     {
+      "id": "r2",
+      "eq": "x + y = 7",
+      "role": "right"
+     }
+    ],
+    "points": [
+     {
+      "x": "2",
+      "y": "5",
+      "label_it": "(2, 5)",
+      "role": "unknown",
+      "on_lines": [
+       "r1",
+       "r2"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "cartesian-duplicate-line-id",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/lines/1/id",
+   "data": {
+    "type": "cartesian",
+    "alt_it": "Piano cartesiano con due rette che si incontrano nel punto di coordinate 2 e 5.",
+    "x": [
+     "-1",
+     "6"
+    ],
+    "y": [
+     "-1",
+     "8"
+    ],
+    "grid": true,
+    "lines": [
+     {
+      "id": "r1",
+      "eq": "y = 2x + 1"
+     },
+     {
+      "id": "r1",
+      "eq": "y = 3"
+     }
+    ],
+    "points": []
+   }
+  },
+  {
+   "name": "cartesian-nine-points",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "at most 8 points",
+   "data": {
+    "type": "cartesian",
+    "alt_it": "Piano cartesiano con due rette che si incontrano nel punto di coordinate 2 e 5.",
+    "x": [
+     "-1",
+     "6"
+    ],
+    "y": [
+     "-1",
+     "8"
+    ],
+    "grid": true,
+    "lines": [
+     {
+      "id": "r1",
+      "eq": "y = 2x + 1",
+      "label_it": "y = 2x + 1",
+      "role": "left"
+     },
+     {
+      "id": "r2",
+      "eq": "x + y = 7",
+      "role": "right"
+     }
+    ],
+    "points": [
+     {
+      "x": "1",
+      "y": "1"
+     },
+     {
+      "x": "1",
+      "y": "1"
+     },
+     {
+      "x": "1",
+      "y": "1"
+     },
+     {
+      "x": "1",
+      "y": "1"
+     },
+     {
+      "x": "1",
+      "y": "1"
+     },
+     {
+      "x": "1",
+      "y": "1"
+     },
+     {
+      "x": "1",
+      "y": "1"
+     },
+     {
+      "x": "1",
+      "y": "1"
+     },
+     {
+      "x": "1",
+      "y": "1"
+     }
+    ]
+   }
+  },
+  {
+   "name": "cartesian-window-one-number",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "cartesian",
+    "alt_it": "Piano cartesiano con due rette che si incontrano nel punto di coordinate 2 e 5.",
+    "x": [
+     "0"
+    ],
+    "y": [
+     "-1",
+     "8"
+    ],
+    "grid": true,
+    "lines": [
+     {
+      "id": "r1",
+      "eq": "y = 2x + 1",
+      "label_it": "y = 2x + 1",
+      "role": "left"
+     },
+     {
+      "id": "r2",
+      "eq": "x + y = 7",
+      "role": "right"
+     }
+    ],
+    "points": [
+     {
+      "x": "2",
+      "y": "5",
+      "label_it": "(2, 5)",
+      "role": "unknown",
+      "on_lines": [
+       "r1",
+       "r2"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "cartesian-states-add-the-second-line",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "cartesian",
+    "alt_it": "Piano cartesiano con due rette che si incontrano nel punto di coordinate 2 e 5.",
+    "x": [
+     "-1",
+     "6"
+    ],
+    "y": [
+     "-1",
+     "8"
+    ],
+    "grid": true,
+    "lines": [
+     {
+      "id": "r1",
+      "eq": "y = 2x + 1",
+      "label_it": "y = 2x + 1",
+      "role": "left"
+     },
+     {
+      "id": "r2",
+      "eq": "x + y = 7",
+      "role": "right"
+     }
+    ],
+    "points": [
+     {
+      "x": "2",
+      "y": "5",
+      "label_it": "(2, 5)",
+      "role": "unknown",
+      "on_lines": [
+       "r1",
+       "r2"
+      ]
+     }
+    ],
+    "states": [
+     {
+      "lines": [
+       {
+        "id": "r1",
+        "eq": "y = 2x + 1"
+       }
+      ],
+      "points": []
+     },
+     {
+      "lines": [
+       {
+        "id": "r1",
+        "eq": "y = 2x + 1",
+        "label_it": "y = 2x + 1",
+        "role": "left"
+       },
+       {
+        "id": "r2",
+        "eq": "x + y = 7",
+        "role": "right"
+       }
+      ],
+      "points": [
+       {
+        "x": "2",
+        "y": "5",
+        "label_it": "(2, 5)",
+        "role": "unknown",
+        "on_lines": [
+         "r1",
+         "r2"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "sentence-line",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase Marco legge un libro con il soggetto, il predicato e il complemento oggetto colorati.",
+    "text_it": "Marco legge un libro",
+    "layout": "line",
+    "parts": [
+     {
+      "id": "s",
+      "text_it": "Marco",
+      "role": "subject",
+      "question_it": "Chi legge?"
+     },
+     {
+      "id": "p",
+      "text_it": "legge",
+      "role": "predicate",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "o",
+      "text_it": "un libro",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sentence-centre",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase Marco legge un libro con il soggetto, il predicato e il complemento oggetto colorati.",
+    "text_it": "Marco legge un libro",
+    "layout": "centre",
+    "parts": [
+     {
+      "id": "s",
+      "text_it": "Marco",
+      "role": "subject",
+      "question_it": "Chi legge?"
+     },
+     {
+      "id": "p",
+      "text_it": "legge",
+      "role": "predicate",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "o",
+      "text_it": "un libro",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sentence-implied-subject-first",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "ok",
+   "note": "an implied part is drawn dashed in brackets where it would stand; it is not a substring of text_it",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase Marco legge un libro con il soggetto, il predicato e il complemento oggetto colorati.",
+    "text_it": "Mangiamo la pizza",
+    "layout": "line",
+    "parts": [
+     {
+      "id": "n",
+      "text_it": "(noi)",
+      "role": "subject",
+      "implied": true
+     },
+     {
+      "id": "p",
+      "text_it": "Mangiamo",
+      "role": "predicate"
+     },
+     {
+      "id": "o",
+      "text_it": "la pizza",
+      "role": "object"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sentence-part-not-a-substring",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/parts/1/text_it",
+   "note": "parts are exact substrings of text_it",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase Marco legge un libro con il soggetto, il predicato e il complemento oggetto colorati.",
+    "text_it": "Marco legge un libro",
+    "layout": "line",
+    "parts": [
+     {
+      "id": "s",
+      "text_it": "Marco",
+      "role": "subject",
+      "question_it": "Chi legge?"
+     },
+     {
+      "id": "p",
+      "text_it": "legga",
+      "role": "predicate",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "o",
+      "text_it": "un libro",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sentence-parts-out-of-order",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/parts",
+   "note": "in the order of the sentence",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase Marco legge un libro con il soggetto, il predicato e il complemento oggetto colorati.",
+    "text_it": "Marco legge un libro",
+    "layout": "line",
+    "parts": [
+     {
+      "id": "p",
+      "text_it": "legge",
+      "role": "predicate",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "s",
+      "text_it": "Marco",
+      "role": "subject",
+      "question_it": "Chi legge?"
+     },
+     {
+      "id": "o",
+      "text_it": "un libro",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sentence-parts-overlap",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/parts/2",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase Marco legge un libro con il soggetto, il predicato e il complemento oggetto colorati.",
+    "text_it": "Marco legge un libro",
+    "layout": "line",
+    "parts": [
+     {
+      "id": "s",
+      "text_it": "Marco",
+      "role": "subject",
+      "question_it": "Chi legge?"
+     },
+     {
+      "id": "p",
+      "text_it": "legge",
+      "role": "predicate",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "o",
+      "text_it": "legge un libro",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sentence-duplicate-id",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/parts/2/id",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase Marco legge un libro con il soggetto, il predicato e il complemento oggetto colorati.",
+    "text_it": "Marco legge un libro",
+    "layout": "line",
+    "parts": [
+     {
+      "id": "s",
+      "text_it": "Marco",
+      "role": "subject",
+      "question_it": "Chi legge?"
+     },
+     {
+      "id": "p",
+      "text_it": "legge",
+      "role": "predicate",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "s",
+      "text_it": "un libro",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sentence-role-of-math",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "E-LESSON-ROLE",
+   "path": "/parts/0/role",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase Marco legge un libro con il soggetto, il predicato e il complemento oggetto colorati.",
+    "text_it": "Marco legge un libro",
+    "layout": "line",
+    "parts": [
+     {
+      "id": "s",
+      "text_it": "Marco",
+      "role": "unknown",
+      "question_it": "Chi legge?"
+     },
+     {
+      "id": "p",
+      "text_it": "legge",
+      "role": "predicate",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "o",
+      "text_it": "un libro",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sentence-link-unknown-id",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/links/0/to",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase Marco legge un libro con il soggetto, il predicato e il complemento oggetto colorati.",
+    "text_it": "Marco legge un libro",
+    "layout": "line",
+    "parts": [
+     {
+      "id": "s",
+      "text_it": "Marco",
+      "role": "subject",
+      "question_it": "Chi legge?"
+     },
+     {
+      "id": "p",
+      "text_it": "legge",
+      "role": "predicate",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "o",
+      "text_it": "un libro",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+     }
+    ],
+    "links": [
+     {
+      "from": "s",
+      "to": "zz"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sentence-eleven-parts",
+   "subject": "italian",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "at most 10 parts",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase Marco legge un libro con il soggetto, il predicato e il complemento oggetto colorati.",
+    "text_it": "Marco legge un libro",
+    "layout": "line",
+    "parts": [
+     {
+      "id": "s",
+      "text_it": "Marco",
+      "role": "subject",
+      "question_it": "Chi legge?"
+     },
+     {
+      "id": "p",
+      "text_it": "legge",
+      "role": "predicate",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "o",
+      "text_it": "un libro",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+     },
+     {
+      "id": "x0",
+      "text_it": "a",
+      "role": "complement"
+     },
+     {
+      "id": "x1",
+      "text_it": "a",
+      "role": "complement"
+     },
+     {
+      "id": "x2",
+      "text_it": "a",
+      "role": "complement"
+     },
+     {
+      "id": "x3",
+      "text_it": "a",
+      "role": "complement"
+     },
+     {
+      "id": "x4",
+      "text_it": "a",
+      "role": "complement"
+     },
+     {
+      "id": "x5",
+      "text_it": "a",
+      "role": "complement"
+     },
+     {
+      "id": "x6",
+      "text_it": "a",
+      "role": "complement"
+     },
+     {
+      "id": "x7",
+      "text_it": "a",
+      "role": "complement"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sentence-states-active-to-passive",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "ok",
+   "note": "parts with the same id move and keep their role",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase Marco legge un libro con il soggetto, il predicato e il complemento oggetto colorati.",
+    "text_it": "Marco legge un libro",
+    "layout": "line",
+    "parts": [
+     {
+      "id": "s",
+      "text_it": "Marco",
+      "role": "subject",
+      "question_it": "Chi legge?"
+     },
+     {
+      "id": "p",
+      "text_it": "legge",
+      "role": "predicate",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "o",
+      "text_it": "un libro",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Frase attiva"
+     },
+     {
+      "text_it": "Un libro è letto da Marco",
+      "op_it": "Gira la frase",
+      "next_label_it": "Gira la frase",
+      "parts": [
+       {
+        "id": "o",
+        "text_it": "Un libro",
+        "role": "object"
+       },
+       {
+        "id": "p",
+        "text_it": "è letto",
+        "role": "predicate"
+       },
+       {
+        "id": "s",
+        "text_it": "da Marco",
+        "role": "subject"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "sentence-state-changes-role",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/states/1/parts/2/role",
+   "note": "across states a part with the same id keeps its role",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase Marco legge un libro con il soggetto, il predicato e il complemento oggetto colorati.",
+    "text_it": "Marco legge un libro",
+    "layout": "line",
+    "parts": [
+     {
+      "id": "s",
+      "text_it": "Marco",
+      "role": "subject",
+      "question_it": "Chi legge?"
+     },
+     {
+      "id": "p",
+      "text_it": "legge",
+      "role": "predicate",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "o",
+      "text_it": "un libro",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Frase attiva"
+     },
+     {
+      "text_it": "Un libro è letto da Marco",
+      "op_it": "Gira la frase",
+      "next_label_it": "Gira la frase",
+      "parts": [
+       {
+        "id": "o",
+        "text_it": "Un libro",
+        "role": "object"
+       },
+       {
+        "id": "p",
+        "text_it": "è letto",
+        "role": "predicate"
+       },
+       {
+        "id": "s",
+        "text_it": "da Marco",
+        "role": "agent"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "sentence-state-carries-layout",
+   "subject": "italian",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "layout is top level only",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase Marco legge un libro con il soggetto, il predicato e il complemento oggetto colorati.",
+    "text_it": "Marco legge un libro",
+    "layout": "line",
+    "parts": [
+     {
+      "id": "s",
+      "text_it": "Marco",
+      "role": "subject",
+      "question_it": "Chi legge?"
+     },
+     {
+      "id": "p",
+      "text_it": "legge",
+      "role": "predicate",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "o",
+      "text_it": "un libro",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Frase attiva"
+     },
+     {
+      "text_it": "Un libro è letto da Marco",
+      "op_it": "Gira la frase",
+      "next_label_it": "Gira la frase",
+      "parts": [
+       {
+        "id": "o",
+        "text_it": "Un libro",
+        "role": "object"
+       },
+       {
+        "id": "p",
+        "text_it": "è letto",
+        "role": "predicate"
+       },
+       {
+        "id": "s",
+        "text_it": "da Marco",
+        "role": "subject"
+       }
+      ],
+      "layout": "centre"
+     }
+    ]
+   }
+  },
+  {
+   "name": "balance-plates-only-in-states",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "note": "left and right at the top level, or in every state",
+   "data": {
+    "type": "balance",
+    "alt_it": "Dalla bilancia 2x + 3 = 7 si tolgono tre pesi da ogni piatto: resta 2x = 4.",
+    "x_value": "2",
+    "states": [
+     {
+      "left": {
+       "x": 2,
+       "units": 3
+      },
+      "right": {
+       "units": 7
+      },
+      "op_it": "Partenza"
+     },
+     {
+      "left": {
+       "x": 2
+      },
+      "right": {
+       "units": 4
+      },
+      "op_it": "Togli 3 pesi"
+     }
+    ]
+   }
+  },
+  {
+   "name": "balance-plates-in-some-states-only",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "not in every state and not at the top level",
+   "data": {
+    "type": "balance",
+    "alt_it": "Dalla bilancia 2x + 3 = 7 si tolgono tre pesi da ogni piatto: resta 2x = 4.",
+    "x_value": "2",
+    "states": [
+     {
+      "left": {
+       "x": 2,
+       "units": 3
+      },
+      "right": {
+       "units": 7
+      },
+      "op_it": "Partenza"
+     },
+     {
+      "left": {
+       "x": 2
+      },
+      "op_it": "Togli 3 pesi"
+     }
+    ]
+   }
+  },
+  {
+   "name": "balance-no-plates",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "balance",
+    "alt_it": "Una bilancia senza piatti disegnati, cosa che non si può fare con questi dati.",
+    "x_value": "2"
+   }
+  },
+  {
+   "name": "sentence-text-and-parts-only-in-states",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase Marco legge un libro con il soggetto, il predicato e il complemento oggetto colorati.",
+    "layout": "line",
+    "states": [
+     {
+      "text_it": "Marco legge un libro",
+      "parts": [
+       {
+        "id": "s",
+        "text_it": "Marco",
+        "role": "subject",
+        "question_it": "Chi legge?"
+       },
+       {
+        "id": "p",
+        "text_it": "legge",
+        "role": "predicate",
+        "question_it": "Che cosa fa?"
+       },
+       {
+        "id": "o",
+        "text_it": "un libro",
+        "role": "object",
+        "question_it": "Che cosa legge?"
+       }
+      ]
+     },
+     {
+      "text_it": "Un libro è letto da Marco",
+      "op_it": "Gira la frase",
+      "parts": [
+       {
+        "id": "o",
+        "text_it": "Un libro",
+        "role": "object"
+       },
+       {
+        "id": "p",
+        "text_it": "è letto",
+        "role": "predicate"
+       },
+       {
+        "id": "s",
+        "text_it": "da Marco",
+        "role": "subject"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "concept-map",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "concept_map",
+    "alt_it": "Mappa dei complementi: dal predicato partono il complemento oggetto e i complementi indiretti.",
+    "root": "r",
+    "nodes": [
+     {
+      "id": "r",
+      "text_it": "Il predicato"
+     },
+     {
+      "id": "o",
+      "text_it": "Complemento oggetto",
+      "role": "object",
+      "icon": "box"
+     },
+     {
+      "id": "i",
+      "text_it": "Complementi indiretti"
+     },
+     {
+      "id": "t",
+      "text_it": "Tempo",
+      "role": "time"
+     }
+    ],
+    "edges": [
+     {
+      "from": "r",
+      "to": "o",
+      "label_it": "senza preposizione"
+     },
+     {
+      "from": "r",
+      "to": "i",
+      "label_it": "con preposizione"
+     },
+     {
+      "from": "i",
+      "to": "t"
+     }
+    ]
+   }
+  },
+  {
+   "name": "concept-map-cycle",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/edges/3",
+   "note": "the edges form a tree",
+   "data": {
+    "type": "concept_map",
+    "alt_it": "Mappa dei complementi: dal predicato partono il complemento oggetto e i complementi indiretti.",
+    "root": "r",
+    "nodes": [
+     {
+      "id": "r",
+      "text_it": "Il predicato"
+     },
+     {
+      "id": "o",
+      "text_it": "Complemento oggetto",
+      "role": "object",
+      "icon": "box"
+     },
+     {
+      "id": "i",
+      "text_it": "Complementi indiretti"
+     },
+     {
+      "id": "t",
+      "text_it": "Tempo",
+      "role": "time"
+     }
+    ],
+    "edges": [
+     {
+      "from": "r",
+      "to": "o",
+      "label_it": "senza preposizione"
+     },
+     {
+      "from": "r",
+      "to": "i",
+      "label_it": "con preposizione"
+     },
+     {
+      "from": "i",
+      "to": "t"
+     },
+     {
+      "from": "t",
+      "to": "r"
+     }
+    ]
+   }
+  },
+  {
+   "name": "concept-map-unknown-root",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/root",
+   "data": {
+    "type": "concept_map",
+    "alt_it": "Mappa dei complementi: dal predicato partono il complemento oggetto e i complementi indiretti.",
+    "root": "q",
+    "nodes": [
+     {
+      "id": "r",
+      "text_it": "Il predicato"
+     },
+     {
+      "id": "o",
+      "text_it": "Complemento oggetto",
+      "role": "object",
+      "icon": "box"
+     },
+     {
+      "id": "i",
+      "text_it": "Complementi indiretti"
+     },
+     {
+      "id": "t",
+      "text_it": "Tempo",
+      "role": "time"
+     }
+    ],
+    "edges": [
+     {
+      "from": "r",
+      "to": "o",
+      "label_it": "senza preposizione"
+     },
+     {
+      "from": "r",
+      "to": "i",
+      "label_it": "con preposizione"
+     },
+     {
+      "from": "i",
+      "to": "t"
+     }
+    ]
+   }
+  },
+  {
+   "name": "concept-map-long-node",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/nodes/1/text_it",
+   "note": "a node has at most 6 words",
+   "data": {
+    "type": "concept_map",
+    "alt_it": "Mappa dei complementi: dal predicato partono il complemento oggetto e i complementi indiretti.",
+    "root": "r",
+    "nodes": [
+     {
+      "id": "r",
+      "text_it": "Il predicato"
+     },
+     {
+      "id": "o",
+      "text_it": "uno due tre quattro cinque sei sette",
+      "role": "object",
+      "icon": "box"
+     },
+     {
+      "id": "i",
+      "text_it": "Complementi indiretti"
+     },
+     {
+      "id": "t",
+      "text_it": "Tempo",
+      "role": "time"
+     }
+    ],
+    "edges": [
+     {
+      "from": "r",
+      "to": "o",
+      "label_it": "senza preposizione"
+     },
+     {
+      "from": "r",
+      "to": "i",
+      "label_it": "con preposizione"
+     },
+     {
+      "from": "i",
+      "to": "t"
+     }
+    ]
+   }
+  },
+  {
+   "name": "concept-map-long-edge-label",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/edges/0/label_it",
+   "note": "an edge label has at most 3 words",
+   "data": {
+    "type": "concept_map",
+    "alt_it": "Mappa dei complementi: dal predicato partono il complemento oggetto e i complementi indiretti.",
+    "root": "r",
+    "nodes": [
+     {
+      "id": "r",
+      "text_it": "Il predicato"
+     },
+     {
+      "id": "o",
+      "text_it": "Complemento oggetto",
+      "role": "object",
+      "icon": "box"
+     },
+     {
+      "id": "i",
+      "text_it": "Complementi indiretti"
+     },
+     {
+      "id": "t",
+      "text_it": "Tempo",
+      "role": "time"
+     }
+    ],
+    "edges": [
+     {
+      "from": "r",
+      "to": "o",
+      "label_it": "uno due tre quattro"
+     },
+     {
+      "from": "r",
+      "to": "i",
+      "label_it": "con preposizione"
+     },
+     {
+      "from": "i",
+      "to": "t"
+     }
+    ]
+   }
+  },
+  {
+   "name": "concept-map-cross-link",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "concept_map",
+    "alt_it": "Mappa dei complementi: dal predicato partono il complemento oggetto e i complementi indiretti.",
+    "root": "r",
+    "nodes": [
+     {
+      "id": "r",
+      "text_it": "Il predicato"
+     },
+     {
+      "id": "o",
+      "text_it": "Complemento oggetto",
+      "role": "object",
+      "icon": "box"
+     },
+     {
+      "id": "i",
+      "text_it": "Complementi indiretti"
+     },
+     {
+      "id": "t",
+      "text_it": "Tempo",
+      "role": "time"
+     }
+    ],
+    "edges": [
+     {
+      "from": "r",
+      "to": "o",
+      "label_it": "senza preposizione"
+     },
+     {
+      "from": "r",
+      "to": "i",
+      "label_it": "con preposizione"
+     },
+     {
+      "from": "i",
+      "to": "t"
+     }
+    ],
+    "links": [
+     {
+      "from": "o",
+      "to": "t"
+     }
+    ]
+   }
+  },
+  {
+   "name": "concept-map-four-links",
+   "subject": "italian",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "at most 3 cross links",
+   "data": {
+    "type": "concept_map",
+    "alt_it": "Mappa dei complementi: dal predicato partono il complemento oggetto e i complementi indiretti.",
+    "root": "r",
+    "nodes": [
+     {
+      "id": "r",
+      "text_it": "Il predicato"
+     },
+     {
+      "id": "o",
+      "text_it": "Complemento oggetto",
+      "role": "object",
+      "icon": "box"
+     },
+     {
+      "id": "i",
+      "text_it": "Complementi indiretti"
+     },
+     {
+      "id": "t",
+      "text_it": "Tempo",
+      "role": "time"
+     }
+    ],
+    "edges": [
+     {
+      "from": "r",
+      "to": "o",
+      "label_it": "senza preposizione"
+     },
+     {
+      "from": "r",
+      "to": "i",
+      "label_it": "con preposizione"
+     },
+     {
+      "from": "i",
+      "to": "t"
+     }
+    ],
+    "links": [
+     {
+      "from": "o",
+      "to": "t"
+     },
+     {
+      "from": "o",
+      "to": "t"
+     },
+     {
+      "from": "o",
+      "to": "t"
+     },
+     {
+      "from": "o",
+      "to": "t"
+     }
+    ]
+   }
+  },
+  {
+   "name": "concept-map-five-children",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/edges",
+   "note": "at most 4 children per node",
+   "data": {
+    "type": "concept_map",
+    "alt_it": "Mappa dei complementi: dal predicato partono il complemento oggetto e i complementi indiretti.",
+    "root": "r",
+    "nodes": [
+     {
+      "id": "r",
+      "text_it": "Il predicato"
+     },
+     {
+      "id": "o",
+      "text_it": "Complemento oggetto",
+      "role": "object",
+      "icon": "box"
+     },
+     {
+      "id": "i",
+      "text_it": "Complementi indiretti"
+     },
+     {
+      "id": "t",
+      "text_it": "Tempo",
+      "role": "time"
+     },
+     {
+      "id": "n0",
+      "text_it": "Foglia 0"
+     },
+     {
+      "id": "n1",
+      "text_it": "Foglia 1"
+     },
+     {
+      "id": "n2",
+      "text_it": "Foglia 2"
+     },
+     {
+      "id": "n3",
+      "text_it": "Foglia 3"
+     }
+    ],
+    "edges": [
+     {
+      "from": "r",
+      "to": "o",
+      "label_it": "senza preposizione"
+     },
+     {
+      "from": "r",
+      "to": "i",
+      "label_it": "con preposizione"
+     },
+     {
+      "from": "i",
+      "to": "t"
+     },
+     {
+      "from": "r",
+      "to": "n0"
+     },
+     {
+      "from": "r",
+      "to": "n1"
+     },
+     {
+      "from": "r",
+      "to": "n2"
+     },
+     {
+      "from": "r",
+      "to": "n3"
+     }
+    ]
+   }
+  },
+  {
+   "name": "concept-map-icon-not-in-the-list",
+   "subject": "italian",
+   "schema": "valid",
+   "semantic": "E-LESSON-ICON",
+   "path": "/nodes/0/icon",
+   "data": {
+    "type": "concept_map",
+    "alt_it": "Mappa dei complementi: dal predicato partono il complemento oggetto e i complementi indiretti.",
+    "root": "r",
+    "nodes": [
+     {
+      "id": "r",
+      "text_it": "Il predicato",
+      "icon": "rocket"
+     },
+     {
+      "id": "o",
+      "text_it": "Complemento oggetto",
+      "role": "object",
+      "icon": "box"
+     },
+     {
+      "id": "i",
+      "text_it": "Complementi indiretti"
+     },
+     {
+      "id": "t",
+      "text_it": "Tempo",
+      "role": "time"
+     }
+    ],
+    "edges": [
+     {
+      "from": "r",
+      "to": "o",
+      "label_it": "senza preposizione"
+     },
+     {
+      "from": "r",
+      "to": "i",
+      "label_it": "con preposizione"
+     },
+     {
+      "from": "i",
+      "to": "t"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-decisions",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "flow",
+    "alt_it": "Da ax uguale b: se a è diverso da zero l'equazione è determinata, altrimenti dipende da b.",
+    "nodes": [
+     {
+      "id": "s",
+      "kind": "step",
+      "text_it": "Arrivi a $ax = b$"
+     },
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "$a \\neq 0$?"
+     },
+     {
+      "id": "det",
+      "kind": "end",
+      "text_it": "Determinata",
+      "role": "correct"
+     },
+     {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "$b \\neq 0$?"
+     },
+     {
+      "id": "imp",
+      "kind": "end",
+      "text_it": "Impossibile"
+     },
+     {
+      "id": "ind",
+      "kind": "end",
+      "text_it": "Indeterminata"
+     }
+    ],
+    "edges": [
+     [
+      "s",
+      "q1"
+     ],
+     [
+      "q1",
+      "det",
+      "sì"
+     ],
+     [
+      "q1",
+      "q2",
+      "no"
+     ],
+     [
+      "q2",
+      "imp",
+      "sì"
+     ],
+     [
+      "q2",
+      "ind",
+      "no"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "flow-cycle",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/edges/5",
+   "note": "no cycles",
+   "data": {
+    "type": "flow",
+    "alt_it": "Da ax uguale b: se a è diverso da zero l'equazione è determinata, altrimenti dipende da b.",
+    "nodes": [
+     {
+      "id": "s",
+      "kind": "step",
+      "text_it": "Arrivi a $ax = b$"
+     },
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "$a \\neq 0$?"
+     },
+     {
+      "id": "det",
+      "kind": "end",
+      "text_it": "Determinata",
+      "role": "correct"
+     },
+     {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "$b \\neq 0$?"
+     },
+     {
+      "id": "imp",
+      "kind": "end",
+      "text_it": "Impossibile"
+     },
+     {
+      "id": "ind",
+      "kind": "end",
+      "text_it": "Indeterminata"
+     }
+    ],
+    "edges": [
+     [
+      "s",
+      "q1"
+     ],
+     [
+      "q1",
+      "det",
+      "sì"
+     ],
+     [
+      "q1",
+      "q2",
+      "no"
+     ],
+     [
+      "q2",
+      "imp",
+      "sì"
+     ],
+     [
+      "q2",
+      "ind",
+      "no"
+     ],
+     [
+      "det",
+      "s"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "flow-decision-one-branch",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/nodes/3",
+   "note": "a decision has 2 or 3 branches",
+   "data": {
+    "type": "flow",
+    "alt_it": "Da ax uguale b: se a è diverso da zero l'equazione è determinata, altrimenti dipende da b.",
+    "nodes": [
+     {
+      "id": "s",
+      "kind": "step",
+      "text_it": "Arrivi a $ax = b$"
+     },
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "$a \\neq 0$?"
+     },
+     {
+      "id": "det",
+      "kind": "end",
+      "text_it": "Determinata",
+      "role": "correct"
+     },
+     {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "$b \\neq 0$?"
+     },
+     {
+      "id": "imp",
+      "kind": "end",
+      "text_it": "Impossibile"
+     },
+     {
+      "id": "ind",
+      "kind": "end",
+      "text_it": "Indeterminata"
+     }
+    ],
+    "edges": [
+     [
+      "s",
+      "q1"
+     ],
+     [
+      "q1",
+      "det",
+      "sì"
+     ],
+     [
+      "q1",
+      "q2",
+      "no"
+     ],
+     [
+      "q2",
+      "imp",
+      "sì"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "flow-unknown-node",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/edges/1",
+   "data": {
+    "type": "flow",
+    "alt_it": "Da ax uguale b: se a è diverso da zero l'equazione è determinata, altrimenti dipende da b.",
+    "nodes": [
+     {
+      "id": "s",
+      "kind": "step",
+      "text_it": "Arrivi a $ax = b$"
+     },
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "$a \\neq 0$?"
+     },
+     {
+      "id": "det",
+      "kind": "end",
+      "text_it": "Determinata",
+      "role": "correct"
+     },
+     {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "$b \\neq 0$?"
+     },
+     {
+      "id": "imp",
+      "kind": "end",
+      "text_it": "Impossibile"
+     },
+     {
+      "id": "ind",
+      "kind": "end",
+      "text_it": "Indeterminata"
+     }
+    ],
+    "edges": [
+     [
+      "s",
+      "q1"
+     ],
+     [
+      "q1",
+      "nowhere",
+      "sì"
+     ],
+     [
+      "q1",
+      "q2",
+      "no"
+     ],
+     [
+      "q2",
+      "imp",
+      "sì"
+     ],
+     [
+      "q2",
+      "ind",
+      "no"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "flow-bad-kind",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "flow",
+    "alt_it": "Da ax uguale b: se a è diverso da zero l'equazione è determinata, altrimenti dipende da b.",
+    "nodes": [
+     {
+      "id": "s",
+      "kind": "step",
+      "text_it": "Arrivi a $ax = b$"
+     },
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "$a \\neq 0$?"
+     },
+     {
+      "id": "det",
+      "kind": "start",
+      "text_it": "Determinata",
+      "role": "correct"
+     },
+     {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "$b \\neq 0$?"
+     },
+     {
+      "id": "imp",
+      "kind": "end",
+      "text_it": "Impossibile"
+     },
+     {
+      "id": "ind",
+      "kind": "end",
+      "text_it": "Indeterminata"
+     }
+    ],
+    "edges": [
+     [
+      "s",
+      "q1"
+     ],
+     [
+      "q1",
+      "det",
+      "sì"
+     ],
+     [
+      "q1",
+      "q2",
+      "no"
+     ],
+     [
+      "q2",
+      "imp",
+      "sì"
+     ],
+     [
+      "q2",
+      "ind",
+      "no"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "flow-edge-one-element",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "flow",
+    "alt_it": "Da ax uguale b: se a è diverso da zero l'equazione è determinata, altrimenti dipende da b.",
+    "nodes": [
+     {
+      "id": "s",
+      "kind": "step",
+      "text_it": "Arrivi a $ax = b$"
+     },
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "$a \\neq 0$?"
+     },
+     {
+      "id": "det",
+      "kind": "end",
+      "text_it": "Determinata",
+      "role": "correct"
+     },
+     {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "$b \\neq 0$?"
+     },
+     {
+      "id": "imp",
+      "kind": "end",
+      "text_it": "Impossibile"
+     },
+     {
+      "id": "ind",
+      "kind": "end",
+      "text_it": "Indeterminata"
+     }
+    ],
+    "edges": [
+     [
+      "s",
+      "q1"
+     ],
+     [
+      "q1"
+     ],
+     [
+      "q1",
+      "q2",
+      "no"
+     ],
+     [
+      "q2",
+      "imp",
+      "sì"
+     ],
+     [
+      "q2",
+      "ind",
+      "no"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "flow-thirteen-nodes",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "3 to 12 nodes",
+   "data": {
+    "type": "flow",
+    "alt_it": "Da ax uguale b: se a è diverso da zero l'equazione è determinata, altrimenti dipende da b.",
+    "nodes": [
+     {
+      "id": "s",
+      "kind": "step",
+      "text_it": "Arrivi a $ax = b$"
+     },
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "$a \\neq 0$?"
+     },
+     {
+      "id": "det",
+      "kind": "end",
+      "text_it": "Determinata",
+      "role": "correct"
+     },
+     {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "$b \\neq 0$?"
+     },
+     {
+      "id": "imp",
+      "kind": "end",
+      "text_it": "Impossibile"
+     },
+     {
+      "id": "ind",
+      "kind": "end",
+      "text_it": "Indeterminata"
+     },
+     {
+      "id": "z0",
+      "kind": "step",
+      "text_it": "Altro"
+     },
+     {
+      "id": "z1",
+      "kind": "step",
+      "text_it": "Altro"
+     },
+     {
+      "id": "z2",
+      "kind": "step",
+      "text_it": "Altro"
+     },
+     {
+      "id": "z3",
+      "kind": "step",
+      "text_it": "Altro"
+     },
+     {
+      "id": "z4",
+      "kind": "step",
+      "text_it": "Altro"
+     },
+     {
+      "id": "z5",
+      "kind": "step",
+      "text_it": "Altro"
+     },
+     {
+      "id": "z6",
+      "kind": "step",
+      "text_it": "Altro"
+     }
+    ],
+    "edges": [
+     [
+      "s",
+      "q1"
+     ],
+     [
+      "q1",
+      "det",
+      "sì"
+     ],
+     [
+      "q1",
+      "q2",
+      "no"
+     ],
+     [
+      "q2",
+      "imp",
+      "sì"
+     ],
+     [
+      "q2",
+      "ind",
+      "no"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "table",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "table",
+    "alt_it": "Tabella dei tre casi di un'equazione di primo grado con la forma e il numero di soluzioni.",
+    "header": [
+     "Caso",
+     "Forma",
+     "Soluzioni"
+    ],
+    "rows": [
+     [
+      "Determinata",
+      "$ax = b$, $a \\neq 0$",
+      "una"
+     ],
+     [
+      "Impossibile",
+      "$0x = b$, $b \\neq 0$",
+      "nessuna"
+     ],
+     [
+      "Indeterminata",
+      "$0x = 0$",
+      "infinite"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "table-five-columns",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "at most 4 columns",
+   "data": {
+    "type": "table",
+    "alt_it": "Tabella dei tre casi di un'equazione di primo grado con la forma e il numero di soluzioni.",
+    "header": [
+     "a",
+     "b",
+     "c",
+     "d",
+     "e"
+    ],
+    "rows": [
+     [
+      "Determinata",
+      "$ax = b$, $a \\neq 0$",
+      "una"
+     ],
+     [
+      "Impossibile",
+      "$0x = b$, $b \\neq 0$",
+      "nessuna"
+     ],
+     [
+      "Indeterminata",
+      "$0x = 0$",
+      "infinite"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "table-ragged-row",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-BLOCK",
+   "path": "/rows/1",
+   "note": "every row has as many cells as the header",
+   "data": {
+    "type": "table",
+    "alt_it": "Tabella dei tre casi di un'equazione di primo grado con la forma e il numero di soluzioni.",
+    "header": [
+     "Caso",
+     "Forma",
+     "Soluzioni"
+    ],
+    "rows": [
+     [
+      "Determinata",
+      "$ax = b$, $a \\neq 0$",
+      "una"
+     ],
+     [
+      "Impossibile",
+      "nessuna"
+     ],
+     [
+      "Indeterminata",
+      "$0x = 0$",
+      "infinite"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "table-twelve-rows",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "at most 10 rows",
+   "data": {
+    "type": "table",
+    "alt_it": "Tabella dei tre casi di un'equazione di primo grado con la forma e il numero di soluzioni.",
+    "header": [
+     "Caso",
+     "Forma",
+     "Soluzioni"
+    ],
+    "rows": [
+     [
+      "Determinata",
+      "$ax = b$, $a \\neq 0$",
+      "una"
+     ],
+     [
+      "Impossibile",
+      "$0x = b$, $b \\neq 0$",
+      "nessuna"
+     ],
+     [
+      "Indeterminata",
+      "$0x = 0$",
+      "infinite"
+     ],
+     [
+      "Determinata",
+      "$ax = b$, $a \\neq 0$",
+      "una"
+     ],
+     [
+      "Impossibile",
+      "$0x = b$, $b \\neq 0$",
+      "nessuna"
+     ],
+     [
+      "Indeterminata",
+      "$0x = 0$",
+      "infinite"
+     ],
+     [
+      "Determinata",
+      "$ax = b$, $a \\neq 0$",
+      "una"
+     ],
+     [
+      "Impossibile",
+      "$0x = b$, $b \\neq 0$",
+      "nessuna"
+     ],
+     [
+      "Indeterminata",
+      "$0x = 0$",
+      "infinite"
+     ],
+     [
+      "Determinata",
+      "$ax = b$, $a \\neq 0$",
+      "una"
+     ],
+     [
+      "Impossibile",
+      "$0x = b$, $b \\neq 0$",
+      "nessuna"
+     ],
+     [
+      "Indeterminata",
+      "$0x = 0$",
+      "infinite"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "unknown-type",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "venn is a later type: not in release 1",
+   "data": {
+    "type": "venn",
+    "alt_it": "Una figura che mostra l'idea della scheda con le sue parti.",
+    "sets": []
+   }
+  },
+  {
+   "name": "tilted-extra-key",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "2",
+    "colour": "red"
+   }
+  },
+  {
+   "name": "no-type",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "alt_it": "Una figura che mostra l'idea della scheda con le sue parti."
+   }
+  },
+  {
+   "name": "size-l-and-caption",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "2",
+    "size": "l",
+    "caption_it": "La bilancia in equilibrio."
+   }
+  },
+  {
+   "name": "size-xl",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+    "left": {
+     "x": 2,
+     "units": 3
+    },
+    "right": {
+     "units": 7
+    },
+    "x_value": "2",
+    "size": "xl"
+   }
+  }
+ ]
+}

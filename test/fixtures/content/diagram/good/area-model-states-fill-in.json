@@ -1,0 +1,48 @@
+{
+  "type": "area_model",
+  "alt_it": "Il prodotto di x più 2 per x più 3 diviso in quattro rettangoli.",
+  "rows": [
+    "$x$",
+    "$2$"
+  ],
+  "cols": [
+    "$x$",
+    "$3$"
+  ],
+  "cells": [
+    [
+      "$x^2$",
+      "$3x$"
+    ],
+    [
+      "$2x$",
+      "$6$"
+    ]
+  ],
+  "states": [
+    {
+      "cells": [
+        [
+          "",
+          "$3x$"
+        ],
+        [
+          "$2x$",
+          ""
+        ]
+      ]
+    },
+    {
+      "cells": [
+        [
+          "$x^2$",
+          "$3x$"
+        ],
+        [
+          "$2x$",
+          "$6$"
+        ]
+      ]
+    }
+  ]
+}

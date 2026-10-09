@@ -507,5 +507,536 @@
     "input": "  - figlio senza padre",
     "error": "a nested item with no item above",
     "line": 1
+  },
+  {
+    "input": "[[subject:Il treno]] [[predicate:è arrivato]].",
+    "options": {
+      "roles": true
+    },
+    "note": "role spans in text: [[role:text]]",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "role",
+            "role": "subject",
+            "children": [
+              {
+                "t": "text",
+                "v": "Il treno"
+              }
+            ]
+          },
+          {
+            "t": "text",
+            "v": " "
+          },
+          {
+            "t": "role",
+            "role": "predicate",
+            "children": [
+              {
+                "t": "text",
+                "v": "è arrivato"
+              }
+            ]
+          },
+          {
+            "t": "text",
+            "v": "."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "Il numero $\\role{unknown}{x}$ è nascosto.",
+    "options": {
+      "roles": true
+    },
+    "note": "\\role{name}{tex} inside a formula stays a math node: the macro is KaTeX's",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Il numero "
+          },
+          {
+            "t": "math",
+            "v": "\\role{unknown}{x}"
+          },
+          {
+            "t": "text",
+            "v": " è nascosto."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "[[unknown:$x$]] e [[known:$3$]]",
+    "options": {
+      "roles": true
+    },
+    "note": "a role span may hold a formula",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "role",
+            "role": "unknown",
+            "children": [
+              {
+                "t": "math",
+                "v": "x"
+              }
+            ]
+          },
+          {
+            "t": "text",
+            "v": " e "
+          },
+          {
+            "t": "role",
+            "role": "known",
+            "children": [
+              {
+                "t": "math",
+                "v": "3"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "[[subject:Il treno]][[predicate: parte]]",
+    "options": {
+      "roles": true
+    },
+    "note": "two spans side by side; the text after the colon is kept as is",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "role",
+            "role": "subject",
+            "children": [
+              {
+                "t": "text",
+                "v": "Il treno"
+              }
+            ]
+          },
+          {
+            "t": "role",
+            "role": "predicate",
+            "children": [
+              {
+                "t": "text",
+                "v": " parte"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "Vedi la [bilancia](scheda:bilancia) prima.",
+    "options": {
+      "roles": true
+    },
+    "note": "a link to a card of the same lesson",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Vedi la "
+          },
+          {
+            "t": "link",
+            "kind": "scheda",
+            "target": "bilancia",
+            "children": [
+              {
+                "t": "text",
+                "v": "bilancia"
+              }
+            ]
+          },
+          {
+            "t": "text",
+            "v": " prima."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "Ripassa [i numeri relativi](argomento:ripasso.math.signed-numbers).",
+    "options": {
+      "roles": true
+    },
+    "note": "a link to a topic of the subject's course map",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Ripassa "
+          },
+          {
+            "t": "link",
+            "kind": "argomento",
+            "target": "ripasso.math.signed-numbers",
+            "children": [
+              {
+                "t": "text",
+                "v": "i numeri relativi"
+              }
+            ]
+          },
+          {
+            "t": "text",
+            "v": "."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "- [[subject:Marco]] legge\n- [[predicate:legge]] ancora",
+    "options": {
+      "roles": true
+    },
+    "note": "roles inside list items",
+    "blocks": [
+      {
+        "type": "ul",
+        "items": [
+          {
+            "children": [
+              {
+                "t": "role",
+                "role": "subject",
+                "children": [
+                  {
+                    "t": "text",
+                    "v": "Marco"
+                  }
+                ]
+              },
+              {
+                "t": "text",
+                "v": " legge"
+              }
+            ],
+            "sub": []
+          },
+          {
+            "children": [
+              {
+                "t": "role",
+                "role": "predicate",
+                "children": [
+                  {
+                    "t": "text",
+                    "v": "legge"
+                  }
+                ]
+              },
+              {
+                "t": "text",
+                "v": " ancora"
+              }
+            ],
+            "sub": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "Scrivi $a[[0]]$ nel testo.",
+    "options": {
+      "roles": true
+    },
+    "note": "inside $...$ a [[ is just LaTeX",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Scrivi "
+          },
+          {
+            "t": "math",
+            "v": "a[[0]]"
+          },
+          {
+            "t": "text",
+            "v": " nel testo."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "**Importante**: [[subject:il soggetto]]",
+    "options": {
+      "roles": true
+    },
+    "note": "bold and a role span together",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "bold",
+            "children": [
+              {
+                "t": "text",
+                "v": "Importante"
+              }
+            ]
+          },
+          {
+            "t": "text",
+            "v": ": "
+          },
+          {
+            "t": "role",
+            "role": "subject",
+            "children": [
+              {
+                "t": "text",
+                "v": "il soggetto"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "$\\htmlClass{x}{y}$ qui",
+    "options": {
+      "roles": true
+    },
+    "note": "\\htmlClass is the macro's, never typed by an agent (A5)",
+    "error": "a command that is not allowed in a formula (\\htmlClass)",
+    "line": 1,
+    "js_refuses": true
+  },
+  {
+    "input": "$\\htmlId{a}{b}$",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a command that is not allowed in a formula (\\htmlId)",
+    "line": 1,
+    "js_refuses": true
+  },
+  {
+    "input": "$\\htmlStyle{color:red}{x}$",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a command that is not allowed in a formula (\\htmlStyle)",
+    "line": 1,
+    "js_refuses": true
+  },
+  {
+    "input": "$\\htmlData{a=b}{x}$",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a command that is not allowed in a formula (\\htmlData)",
+    "line": 1,
+    "js_refuses": true
+  },
+  {
+    "input": "$\\href{http://x.it}{x}$",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a command that is not allowed in a formula (\\href)",
+    "line": 1,
+    "js_refuses": true
+  },
+  {
+    "input": "$\\url{http://x.it}$",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a command that is not allowed in a formula (\\url)",
+    "line": 1,
+    "js_refuses": true
+  },
+  {
+    "input": "$\\includegraphics{a.png}$",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a command that is not allowed in a formula (\\includegraphics)",
+    "line": 1,
+    "js_refuses": true
+  },
+  {
+    "input": "$\\def\\a{1} \\a$",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a command that is not allowed in a formula (\\def)",
+    "line": 1,
+    "js_refuses": true
+  },
+  {
+    "input": "$\\gdef\\a{1}$",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a command that is not allowed in a formula (\\gdef)",
+    "line": 1,
+    "js_refuses": true
+  },
+  {
+    "input": "$\\newcommand{\\a}{1}$",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a command that is not allowed in a formula (\\newcommand)",
+    "line": 1,
+    "js_refuses": true
+  },
+  {
+    "input": "$\\role{Unknown}{x}$",
+    "options": {
+      "roles": true
+    },
+    "note": "a role name is [a-z]+(-[a-z]+)*",
+    "error": "a colour role name that is not lowercase letters and hyphens",
+    "line": 1,
+    "js_refuses": true
+  },
+  {
+    "input": "$\\role{unknown}$",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "\\role takes a role name and a formula",
+    "line": 1,
+    "js_refuses": true
+  },
+  {
+    "input": "[[Subject:Il treno]]",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a colour role name that is not lowercase letters and hyphens",
+    "line": 1
+  },
+  {
+    "input": "[[subject:]]",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a colour role span without text",
+    "line": 1
+  },
+  {
+    "input": "[[subject:Il treno",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "an unclosed [[ colour role span",
+    "line": 1
+  },
+  {
+    "input": "[[subject:uno [[predicate:due]] tre]]",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a colour role span inside a colour role span",
+    "line": 1
+  },
+  {
+    "input": "Scrivi [[x]] qui.",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a [[ that is not a colour role span ([[role:text]])",
+    "line": 1
+  },
+  {
+    "input": "Vedi [qui](http://x.it).",
+    "options": {
+      "roles": true
+    },
+    "note": "with the lessons option only scheda: and argomento: links are links (without it any link is refused)",
+    "error": "a link other than scheda: or argomento:",
+    "line": 1
+  },
+  {
+    "input": "Scrivi a [me](mailto:a@b.it).",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a link other than scheda: or argomento:",
+    "line": 1
+  },
+  {
+    "input": "Vedi [qui](scheda:).",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a link without a target",
+    "line": 1
+  },
+  {
+    "input": "Vedi [qui](scheda:La_Bilancia).",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a link target that is not lowercase letters, digits, dots and hyphens",
+    "line": 1
+  },
+  {
+    "input": "Vedi [qui](argomento:ripasso math).",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a link target that is not lowercase letters, digits, dots and hyphens",
+    "line": 1
   }
 ]

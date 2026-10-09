@@ -1,0 +1,93 @@
+{
+  "schema": "banco.lesson_review/1",
+  "schema_version": 1,
+  "revision": "123",
+  "checklist": [
+    {
+      "id": 1,
+      "result": "pass",
+      "evidence": "Ho guardato la scheda a 390 pixel e riletto il punto."
+    },
+    {
+      "id": 2,
+      "result": "pass",
+      "evidence": "Ho guardato la scheda a 390 pixel e riletto il punto."
+    },
+    {
+      "id": 3,
+      "result": "pass",
+      "evidence": "Ho guardato la scheda a 390 pixel e riletto il punto."
+    },
+    {
+      "id": 4,
+      "result": "pass",
+      "evidence": "Ho guardato la scheda a 390 pixel e riletto il punto."
+    },
+    {
+      "id": 5,
+      "result": "pass",
+      "evidence": "Ho guardato la scheda a 390 pixel e riletto il punto."
+    },
+    {
+      "id": 6,
+      "result": "pass",
+      "evidence": "Ho guardato la scheda a 390 pixel e riletto il punto."
+    },
+    {
+      "id": 7,
+      "result": "pass",
+      "evidence": "Ho guardato la scheda a 390 pixel e riletto il punto."
+    },
+    {
+      "id": 8,
+      "result": "pass",
+      "evidence": "Ho guardato la scheda a 390 pixel e riletto il punto."
+    },
+    {
+      "id": 9,
+      "result": "fail",
+      "evidence": "Ho guardato la scheda a 390 pixel e riletto il punto."
+    },
+    {
+      "id": 10,
+      "result": "pass",
+      "evidence": "Ho guardato la scheda a 390 pixel e riletto il punto."
+    },
+    {
+      "id": 11,
+      "result": "pass",
+      "evidence": "Ho guardato la scheda a 390 pixel e riletto il punto."
+    }
+  ],
+  "recomputed": [
+    {
+      "where": "solutions",
+      "n": 1,
+      "expression": "2*3 + 1",
+      "value": "7"
+    },
+    {
+      "where": "example",
+      "n": null,
+      "expression": "3x - 7 = 2",
+      "value": "3"
+    }
+  ],
+  "findings": [
+    {
+      "severity": "major",
+      "card": 3,
+      "block": 9,
+      "quote": "Bilancia: a sinistra due scatole",
+      "problem_it": "Il disegno mostra tre pesi, il testo ne dice due.",
+      "fix_it": "Allinea il disegno al testo."
+    },
+    {
+      "severity": "minor",
+      "card": 0,
+      "quote": "Molti argomenti di quest'anno",
+      "problem_it": "La frase è lunga per la copertina.",
+      "fix_it": "Dividila in due."
+    }
+  ]
+}

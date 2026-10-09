@@ -257,3 +257,28 @@ func TestLessonSubmitNeedsAKeyInTheFrontMatter(t *testing.T) {
 		t.Errorf("exit %d, reached the server %q, stderr %s", res.exit, r.method, res.stderr)
 	}
 }
+
+func TestLessonOpenSchemaFlagIsSentAndChecked(t *testing.T) {
+	var query string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("X-Banco-Contract", contract.Digest())
+		w.Header().Set("Content-Type", "application/json")
+		query = req.URL.RawQuery
+		_, _ = w.Write([]byte(`{"lesson":"ripasso.math.demo-equations","kind":"ripasso","subject":"math","latest":{"revision_id":41},"files":{"lesson.md":"---\nschema: banco.lesson/2\nkey: ripasso.math.demo-equations\n---\n"},"reviews":[],"teacher_comments":[]}`))
+	}))
+	t.Cleanup(srv.Close)
+	dir := filepath.Join(t.TempDir(), "lesson")
+	res := runCLI(t, srv.URL, envToken("tok"), "lesson", "open", "ripasso.math.demo-equations", "--dir", dir, "--schema", "2")
+	if res.exit != 0 || query != "schema=2" {
+		t.Fatalf("--schema 2: exit %d, query %q, stderr %s", res.exit, query, res.stderr)
+	}
+	query = ""
+	res = runCLI(t, srv.URL, envToken("tok"), "lesson", "open", "ripasso.math.demo-equations", "--dir", dir)
+	if res.exit != 0 || query != "" {
+		t.Fatalf("no flag: exit %d, query %q", res.exit, query)
+	}
+	res = runCLI(t, srv.URL, envToken("tok"), "lesson", "open", "ripasso.math.demo-equations", "--dir", dir, "--schema", "3")
+	if res.exit != ExitUsage || !strings.Contains(res.stderr, "E-USAGE") {
+		t.Fatalf("--schema 3: exit %d, stderr %s", res.exit, res.stderr)
+	}
+}

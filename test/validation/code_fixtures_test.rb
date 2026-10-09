@@ -1,4 +1,5 @@
 require "test_helper"
+require_relative "../support/lesson2_fixtures"
 require_relative "../support/validation_servers"
 require_relative "../support/chrome_helper"
 require_relative "../support/validation_fixtures"
@@ -23,7 +24,10 @@ class CodeFixturesTest < ActiveSupport::TestCase
     W-LESSON-FINAL-IN-TRY E-COURSE-SKILL-DUPLICATE E-COURSE-TOPIC W-COURSE-ORDER W-COURSE-GRAPH-STALE E-TOPIC-UNKNOWN
     E-TOPIC-PIN E-TOPIC-SKILLS E-TOPIC-ITEM-KIND E-TOPIC-POOL W-TOPIC-INSTANCE-IN-LESSON W-PRACTICE-DIAGNOSIS-OVERLAP
   ].freeze
-  LATER = (%w[E-VERIFY-AUTHOR E-SESSION-NOT-INDEPENDENT] + PHASE_1B).freeze
+  # The banco.lesson/2 codes (D-245): their bad fixtures are test/fixtures/lesson2/bad (one code each, manifest.json),
+  # run by the lesson/2 checks (R1) and the render check (R4). Until then they are registered and have a fixture file.
+  LESSON2 = (Lesson2Fixtures::MANIFEST["bad"].map { |b| b["code"] } + %w[E-LESSON-RENDER E-LESSON-OVERFLOW E-DIAGRAM-LAYOUT E-DIAGRAM-SMALL-TEXT]).uniq.freeze
+  LATER = (%w[E-VERIFY-AUTHOR E-SESSION-NOT-INDEPENDENT] + PHASE_1B + LESSON2).freeze
 
   test "every Phase 1b code of this list has a bad fixture in the lesson or the course tests" do
     assert_empty PHASE_1B - LessonChecksTest::CASES.keys - CourseCodesTest::CASES.keys
@@ -319,7 +323,7 @@ class CodeFixturesTest < ActiveSupport::TestCase
   }.freeze
 
   test "every code M5 owns has a fixture in the table" do
-    expected = self.class.owned_codes + Validation::Codes.all.keys.grep(/\AW-/) - PHASE_1B
+    expected = self.class.owned_codes + Validation::Codes.all.keys.grep(/\AW-/) - PHASE_1B - LESSON2
     assert_empty expected - CASES.keys, "codes without a fixture"
     assert_empty CASES.keys - Validation::Codes.all.keys, "fixtures for codes that are not in the registry"
   end

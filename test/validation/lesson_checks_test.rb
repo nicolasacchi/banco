@@ -66,7 +66,8 @@ class LessonChecksTest < ActiveSupport::TestCase
   end
 
   test "every lesson code of the registry has a case here or in the review tests" do
-    lesson_codes = Validation::Codes.all.keys.grep(/\A[EW]-LESSON-/) - %w[E-LESSON-REVIEW-RECOMPUTED]
+    # the lesson/2 codes have their fixtures in test/fixtures/lesson2/bad until R1 runs them here (CodeFixturesTest::LESSON2)
+    lesson_codes = Validation::Codes.all.keys.grep(/\A[EW]-LESSON-/) - %w[E-LESSON-REVIEW-RECOMPUTED] - CodeFixturesTest::LESSON2
     assert_empty lesson_codes - CASES.keys
   end
 

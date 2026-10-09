@@ -1,0 +1,93 @@
+# The icons of lessons (D-246), declared once. Our name -> the Lucide file (lucide-static 1.54.0, ISC; the
+# files we use are copied under public/vendor/lucide@1.54.0/icons/ with SHA256SUMS, and bin/build-icons
+# makes banco-sprite.svg from this file). An agent names our icons only (E-LESSON-ICON): `structural`
+# plus the list of the lesson's subject. `ui` is for our own templates (navigation, feedback, callouts);
+# an agent cannot name it. A subject list has at most 30 icons. A new icon is a change of this file and
+# a D entry. Generic: nothing here is about a person.
+version: 1
+lucide: "1.54.0"
+
+# Role defaults of cards and general content icons. Fixed, global, usable by agents.
+structural:
+  lightbulb: lightbulb            # default of an idea card
+  pencil-ruler: pencil-ruler      # example
+  triangle-alert: triangle-alert  # mistakes
+  notebook-pen: notebook-pen      # try
+  list-checks: list-checks        # summary
+  telescope: telescope            # an extra (depth) card
+  compass: compass                # the way in, the cover
+  book-open: book-open
+  info: info
+  circle-help: circle-help        # a question
+  sparkles: sparkles
+  map: map
+
+# Our templates only (callout kinds, feedback, navigation, controls).
+ui:
+  tip: sparkles                   # callout tip
+  warning: triangle-alert         # callout warning
+  remember: bookmark              # callout remember
+  rule: book-open-check           # callout rule
+  circle-check: circle-check      # "Sì." and the role `correct`
+  wrong-hint: lightbulb           # "Non ancora." and the role `wrong`
+  check: check                    # summary points, a right answer
+  close: x                        # a dialog, the wrong side of a mistake
+  prev: chevron-left
+  next: chevron-right
+  expand: chevron-down
+  menu: menu                      # the lesson map
+  print: printer
+  restart: rotate-ccw
+  text-settings: type             # "Testo e colori"
+  description: file-text          # "Descrizione" of a diagram
+  show: eye
+  pin: pin
+
+# Content icons by subject (at most 30 each). Subjects not listed here use `structural` only.
+subjects:
+  math:
+    scale: scale                  # the balance
+    weight: weight
+    brackets: brackets            # step tag develop
+    arrow-left-right: arrow-left-right   # move
+    sigma: sigma                  # add
+    divide: divide
+    check-check: check-check      # verify
+    eraser: eraser                # cancel
+    x: x                          # the coefficient role
+    multiply: x                   # step tag multiply
+    minus: minus                  # step tag subtract
+    equal: equal
+    plus: plus
+    replace: replace              # step tag substitute
+    minimize-2: minimize-2        # step tag simplify
+    ruler: ruler
+    chart-line: chart-line        # a line in the plane
+    square-function: square-function
+    superscript: superscript
+    variable: variable
+    calculator: calculator
+    layout-grid: layout-grid      # area model
+    move-horizontal: move-horizontal   # number line
+    infinity: infinity
+    triangle: triangle
+    percent: percent
+    pi: pi
+  italian:
+    zap: zap                      # the predicate
+    user: user                    # the subject
+    puzzle: puzzle                # complements
+    box: box                      # the direct object
+    clock: clock                  # time
+    milestone: milestone          # cause
+    target: target                # purpose
+    user-round: user-round        # agent
+    map-pin: map-pin              # place
+    link: link                    # step tag agree
+    highlighter: highlighter      # step tag mark
+    repeat: repeat                # step tag turn
+    git-branch: git-branch        # step tag decide
+    quote: quote
+    pen-line: pen-line
+    undo-2: undo-2
+    message-circle-question: message-circle-question

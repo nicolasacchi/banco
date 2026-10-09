@@ -1,0 +1,330 @@
+{
+ "version": 1,
+ "description": "Exact numbers of banco.diagram/1 (D-247, A7): an integer, a decimal with comma, a fraction a/b with b > 0, and -inf / +inf in number_line intervals only. Lessons::Num (Ruby, Rational) and app/javascript/lesson/num.js (BigInt) both read this file: parse each input to its canonical reduced 'n/d' (or '+inf' / '-inf'), or refuse it; compare gives -1, 0 or 1. The schema pattern of $defs.num / $defs.num_or_inf accepts exactly the non-refused inputs of the same file (test/content/lesson2_fixtures_test.rb). A float is never used for a check, toNumber is for pixel positions only.",
+ "parse": [
+  {
+   "input": "0",
+   "canonical": "0/1"
+  },
+  {
+   "input": "7",
+   "canonical": "7/1"
+  },
+  {
+   "input": "-3",
+   "canonical": "-3/1"
+  },
+  {
+   "input": "-0",
+   "canonical": "0/1"
+  },
+  {
+   "input": "100",
+   "canonical": "100/1"
+  },
+  {
+   "input": "2,5",
+   "canonical": "5/2"
+  },
+  {
+   "input": "-2,5",
+   "canonical": "-5/2"
+  },
+  {
+   "input": "0,5",
+   "canonical": "1/2"
+  },
+  {
+   "input": "0,50",
+   "canonical": "1/2"
+  },
+  {
+   "input": "0,125",
+   "canonical": "1/8"
+  },
+  {
+   "input": "-0,2",
+   "canonical": "-1/5"
+  },
+  {
+   "input": "5/2",
+   "canonical": "5/2"
+  },
+  {
+   "input": "-5/2",
+   "canonical": "-5/2"
+  },
+  {
+   "input": "4/2",
+   "canonical": "2/1"
+  },
+  {
+   "input": "6/9",
+   "canonical": "2/3"
+  },
+  {
+   "input": "-6/9",
+   "canonical": "-2/3"
+  },
+  {
+   "input": "0/5",
+   "canonical": "0/1"
+  },
+  {
+   "input": "1/1",
+   "canonical": "1/1"
+  },
+  {
+   "input": "123456789012345678901234567890",
+   "canonical": "123456789012345678901234567890/1"
+  },
+  {
+   "input": "-123456789012345678901234567890/3",
+   "canonical": "-41152263004115226300411522630/1"
+  },
+  {
+   "input": "0,000000000000000000001",
+   "canonical": "1/1000000000000000000000"
+  },
+  {
+   "input": "+inf",
+   "canonical": "+inf",
+   "allow_inf": true
+  },
+  {
+   "input": "-inf",
+   "canonical": "-inf",
+   "allow_inf": true
+  },
+  {
+   "input": "+inf",
+   "refused": true,
+   "reason": "infinity only in number_line intervals"
+  },
+  {
+   "input": "-inf",
+   "refused": true,
+   "reason": "infinity only in number_line intervals"
+  },
+  {
+   "input": "",
+   "refused": true,
+   "reason": "empty"
+  },
+  {
+   "input": " 3",
+   "refused": true,
+   "reason": "space"
+  },
+  {
+   "input": "3 ",
+   "refused": true,
+   "reason": "space"
+  },
+  {
+   "input": "2.5",
+   "refused": true,
+   "reason": "a dot: decimals use the comma"
+  },
+  {
+   "input": "+3",
+   "refused": true,
+   "reason": "a plus sign"
+  },
+  {
+   "input": "01",
+   "refused": true,
+   "reason": "leading zero"
+  },
+  {
+   "input": "00",
+   "refused": true,
+   "reason": "leading zero"
+  },
+  {
+   "input": "-01",
+   "refused": true,
+   "reason": "leading zero"
+  },
+  {
+   "input": "1/0",
+   "refused": true,
+   "reason": "zero denominator"
+  },
+  {
+   "input": "1/-2",
+   "refused": true,
+   "reason": "negative denominator (the sign goes on the numerator)"
+  },
+  {
+   "input": "-1/-2",
+   "refused": true,
+   "reason": "negative denominator"
+  },
+  {
+   "input": "1 / 2",
+   "refused": true,
+   "reason": "spaces in a fraction"
+  },
+  {
+   "input": "1,",
+   "refused": true,
+   "reason": "comma without digits"
+  },
+  {
+   "input": ",5",
+   "refused": true,
+   "reason": "comma without integer part"
+  },
+  {
+   "input": "1,5/2",
+   "refused": true,
+   "reason": "decimal inside a fraction"
+  },
+  {
+   "input": "1/2/3",
+   "refused": true,
+   "reason": "two slashes"
+  },
+  {
+   "input": "abc",
+   "refused": true,
+   "reason": "not a number"
+  },
+  {
+   "input": "1e3",
+   "refused": true,
+   "reason": "exponent"
+  },
+  {
+   "input": "٣",
+   "refused": true,
+   "reason": "non-ASCII digit"
+  },
+  {
+   "input": "−3",
+   "refused": true,
+   "reason": "unicode minus"
+  },
+  {
+   "input": "1_000",
+   "refused": true,
+   "reason": "separator"
+  },
+  {
+   "input": "--3",
+   "refused": true,
+   "reason": "two signs"
+  },
+  {
+   "input": "3-",
+   "refused": true,
+   "reason": "trailing sign"
+  },
+  {
+   "input": "Infinity",
+   "refused": true,
+   "reason": "not -inf or +inf"
+  },
+  {
+   "input": "inf",
+   "refused": true,
+   "reason": "needs a sign"
+  },
+  {
+   "input": "NaN",
+   "refused": true,
+   "reason": "not a number"
+  },
+  {
+   "input": "5/",
+   "refused": true,
+   "reason": "no denominator"
+  },
+  {
+   "input": "/5",
+   "refused": true,
+   "reason": "no numerator"
+  },
+  {
+   "input": "1.5",
+   "refused": true,
+   "reason": "a dot: decimals use the comma",
+   "allow_inf": true
+  },
+  {
+   "input": "inf",
+   "refused": true,
+   "reason": "needs a sign",
+   "allow_inf": true
+  }
+ ],
+ "compare": [
+  {
+   "a": "1/2",
+   "b": "2/4",
+   "cmp": 0,
+   "allow_inf": false
+  },
+  {
+   "a": "1/3",
+   "b": "1/2",
+   "cmp": -1,
+   "allow_inf": false
+  },
+  {
+   "a": "-1/3",
+   "b": "-1/2",
+   "cmp": 1,
+   "allow_inf": false
+  },
+  {
+   "a": "2,5",
+   "b": "5/2",
+   "cmp": 0,
+   "allow_inf": false
+  },
+  {
+   "a": "-3",
+   "b": "-2,5",
+   "cmp": -1,
+   "allow_inf": false
+  },
+  {
+   "a": "0",
+   "b": "-0",
+   "cmp": 0,
+   "allow_inf": false
+  },
+  {
+   "a": "123456789012345678901234567890",
+   "b": "123456789012345678901234567891",
+   "cmp": -1,
+   "allow_inf": false
+  },
+  {
+   "a": "1/3",
+   "b": "0,333333333333333333333",
+   "cmp": 1,
+   "allow_inf": false
+  },
+  {
+   "a": "-inf",
+   "b": "-123456789012345678901234567890",
+   "cmp": -1,
+   "allow_inf": true
+  },
+  {
+   "a": "+inf",
+   "b": "123456789012345678901234567890",
+   "cmp": 1,
+   "allow_inf": true
+  },
+  {
+   "a": "-inf",
+   "b": "+inf",
+   "cmp": -1,
+   "allow_inf": true
+  }
+ ]
+}

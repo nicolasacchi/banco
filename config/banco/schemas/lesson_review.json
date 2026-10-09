@@ -234,10 +234,89 @@
               "maxLength": 1200
             }
           }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "properties": {
+            "id": {
+              "const": 9
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 1200
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "properties": {
+            "id": {
+              "const": 10
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 1200
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "properties": {
+            "id": {
+              "const": 11
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 1200
+            }
+          }
         }
       ],
       "items": false,
-      "minItems": 8
+      "minItems": 8,
+      "maxItems": 11
     },
     "recomputed": {
       "type": "array",
@@ -258,7 +337,8 @@
               "try",
               "solutions",
               "idea",
-              "mistakes"
+              "mistakes",
+              "check"
             ]
           },
           "n": {
@@ -294,7 +374,6 @@
         "additionalProperties": false,
         "required": [
           "severity",
-          "section",
           "quote",
           "problem_it",
           "fix_it"
@@ -318,7 +397,8 @@
               "book",
               "summary",
               "frontmatter"
-            ]
+            ],
+            "description": "lesson/1 only."
           },
           "exercise": {
             "anyOf": [
@@ -346,9 +426,53 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 600
+          },
+          "card": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 30,
+            "description": "lesson/2 only: the n of the card; 0 is the cover (front matter)."
+          },
+          "block": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8,
+            "description": "lesson/2 only: the n of the block in the card."
           }
-        }
+        },
+        "oneOf": [
+          {
+            "required": [
+              "section"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "card"
+                  ]
+                },
+                {
+                  "required": [
+                    "block"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "required": [
+              "card"
+            ],
+            "not": {
+              "required": [
+                "section"
+              ]
+            }
+          }
+        ]
       }
     }
-  }
+  },
+  "description": "A review of a lesson revision. A lesson/1 revision has exactly 8 checklist points and findings by section; a lesson/2 revision has 11 points and findings by card (card 0 is the cover). The count that fits the revision is E-REVIEW-CHECKLIST, checked in Ruby (Review::LessonChecklist); the schema allows 8 to 11."
 }

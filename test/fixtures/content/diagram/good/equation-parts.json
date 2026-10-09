@@ -1,0 +1,42 @@
+{
+  "type": "equation_parts",
+  "alt_it": "L'equazione 2x più 3 uguale 7 divisa nei suoi pezzi: primo membro, segno uguale e secondo membro.",
+  "parts": [
+    {
+      "tex": "2",
+      "role": "known",
+      "label_it": "coefficiente"
+    },
+    {
+      "tex": "x",
+      "role": "unknown",
+      "label_it": "incognita"
+    },
+    {
+      "tex": "+3",
+      "role": "known"
+    },
+    {
+      "tex": "=",
+      "role": "muted"
+    },
+    {
+      "tex": "7",
+      "role": "known"
+    }
+  ],
+  "brackets": [
+    {
+      "from": 0,
+      "to": 2,
+      "label_it": "primo membro",
+      "role": "left"
+    },
+    {
+      "from": 4,
+      "to": 4,
+      "label_it": "secondo membro",
+      "role": "right"
+    }
+  ]
+}

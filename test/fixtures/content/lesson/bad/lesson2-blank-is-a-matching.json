@@ -1,0 +1,714 @@
+{
+  "schema": "banco.lesson/2",
+  "schema_version": 2,
+  "key": "ripasso.math.demo-equations",
+  "kind": "ripasso",
+  "subject": "math",
+  "title_it": "Equazioni di primo grado: risolvere e verificare",
+  "goals_it": [
+    "**Risolvere**: trovare il numero nascosto nella x",
+    "**Capire** se l'equazione è determinata, impossibile o indeterminata"
+  ],
+  "why_it": "Molti argomenti di quest'anno finiscono con un'equazione come $ax = b$. Se la sai risolvere, il resto è più semplice.",
+  "skills": [
+    "math.demo-equation"
+  ],
+  "uses": [
+    "math.demo-signed-numbers"
+  ],
+  "refs": [
+    {
+      "source": "seconda-2025-26",
+      "line": 12,
+      "fragment": "equazioni di primo grado numeriche",
+      "role": "needed_by"
+    },
+    {
+      "source": "prima-2025-26",
+      "line": 7,
+      "fragment": "equazioni di primo grado",
+      "role": "taught_in"
+    }
+  ],
+  "scope": "studied",
+  "minutes": 30,
+  "calculator": false,
+  "book_it": "Cerca «equazioni di primo grado» e «principi di equivalenza».",
+  "hero": {
+    "type": "balance",
+    "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1. Puoi provare un numero nella scatola.",
+    "left": {
+      "x": 2,
+      "units": 3
+    },
+    "right": {
+      "units": 7
+    },
+    "x_value": "2",
+    "try": {
+      "from": 0,
+      "to": 5
+    }
+  },
+  "parts": [
+    {
+      "n": 1,
+      "title_it": "Le regole"
+    },
+    {
+      "n": 2,
+      "title_it": "Il metodo"
+    },
+    {
+      "n": 3,
+      "title_it": "Alla prova"
+    },
+    {
+      "n": 4,
+      "title_it": "Alla fine"
+    }
+  ],
+  "cards": [
+    {
+      "n": 1,
+      "id": "c1",
+      "role": "idea",
+      "level": "core",
+      "title_it": "Un'equazione è una bilancia",
+      "icon": "scale",
+      "blocks": [
+        {
+          "type": "text",
+          "text_it": "I due membri sono i due piatti. Una **soluzione** è il numero che, al posto di $\\role{unknown}{x}$, tiene i piatti in equilibrio.",
+          "n": 1
+        },
+        {
+          "type": "diagram",
+          "diagram": {
+            "type": "balance",
+            "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1. Puoi provare un numero nella scatola.",
+            "left": {
+              "x": 2,
+              "units": 3
+            },
+            "right": {
+              "units": 7
+            },
+            "x_value": "2",
+            "try": {
+              "from": 0,
+              "to": 5
+            }
+          },
+          "n": 2
+        },
+        {
+          "type": "check",
+          "component": "choice",
+          "prompt_it": "Quale numero tiene in equilibrio la bilancia $2x + 3 = 7$?",
+          "options": [
+            {
+              "id": "a",
+              "text_it": "$x = 5$"
+            },
+            {
+              "id": "b",
+              "text_it": "$x = 2$"
+            },
+            {
+              "id": "c",
+              "text_it": "$x = 4$"
+            }
+          ],
+          "answer": "b",
+          "errors": [
+            {
+              "answer": "a",
+              "code": "math_eval_wrong",
+              "message_it": "Con $x = 5$ il primo membro vale 13, non 7."
+            },
+            {
+              "answer": "c",
+              "code": "math_divide_missing",
+              "message_it": "Hai fatto $7 - 3 = 4$, ma non hai diviso per 2."
+            }
+          ],
+          "explain_it": "Con $x = 2$: $2 \\cdot 2 + 3 = 7$. I piatti sono uguali.",
+          "n": 3
+        }
+      ],
+      "part": 1
+    },
+    {
+      "n": 2,
+      "id": "c2",
+      "role": "idea",
+      "level": "core",
+      "title_it": "Togli lo stesso peso dai due piatti",
+      "icon": "scale",
+      "blocks": [
+        {
+          "type": "callout",
+          "kind": "rule",
+          "title_it": "Primo principio",
+          "text_it": "Puoi aggiungere o togliere lo stesso termine ai due membri.",
+          "n": 1
+        },
+        {
+          "type": "diagram",
+          "diagram": {
+            "type": "balance",
+            "alt_it": "Dalla bilancia 2x + 3 = 7 si tolgono tre pesi da ogni piatto: resta 2x = 4.",
+            "x_value": "2",
+            "left": {
+              "x": 2,
+              "units": 3
+            },
+            "right": {
+              "units": 7
+            },
+            "states": [
+              {
+                "left": {
+                  "x": 2,
+                  "units": 3
+                },
+                "right": {
+                  "units": 7
+                },
+                "op_it": "Partenza"
+              },
+              {
+                "left": {
+                  "x": 2
+                },
+                "right": {
+                  "units": 4
+                },
+                "op_it": "Togli 3 pesi da ogni piatto"
+              }
+            ]
+          },
+          "n": 2
+        },
+        {
+          "type": "math",
+          "lines": [
+            {
+              "tex": "2x + 3 = 7",
+              "note_it": "togli 3 da ogni parte"
+            },
+            {
+              "tex": "2x + 3 \\role{highlight}{- 3} = 7 \\role{highlight}{- 3}"
+            },
+            {
+              "tex": "2x = 4"
+            }
+          ],
+          "n": 3
+        }
+      ],
+      "part": 1
+    },
+    {
+      "n": 3,
+      "id": "c3",
+      "role": "idea",
+      "level": "core",
+      "title_it": "Le parti di un'equazione",
+      "icon": "brackets",
+      "blocks": [
+        {
+          "type": "diagram",
+          "diagram": {
+            "type": "equation_parts",
+            "alt_it": "L'equazione 2x più 3 uguale 7 divisa nei suoi pezzi: primo membro, segno uguale e secondo membro.",
+            "parts": [
+              {
+                "tex": "2",
+                "role": "known",
+                "label_it": "coefficiente"
+              },
+              {
+                "tex": "x",
+                "role": "unknown",
+                "label_it": "incognita"
+              },
+              {
+                "tex": "+3",
+                "role": "known"
+              },
+              {
+                "tex": "=",
+                "role": "muted"
+              },
+              {
+                "tex": "7",
+                "role": "known"
+              }
+            ],
+            "brackets": [
+              {
+                "from": 0,
+                "to": 2,
+                "label_it": "primo membro",
+                "role": "left"
+              },
+              {
+                "from": 4,
+                "to": 4,
+                "label_it": "secondo membro",
+                "role": "right"
+              }
+            ]
+          },
+          "n": 1
+        },
+        {
+          "type": "legend",
+          "roles": [
+            {
+              "role": "unknown",
+              "note_it": "il numero da trovare"
+            },
+            {
+              "role": "known",
+              "note_it": "i numeri che conosci"
+            },
+            {
+              "role": "left",
+              "question_it": "Che cosa c'è prima dell'uguale?"
+            },
+            {
+              "role": "right"
+            }
+          ],
+          "n": 2
+        }
+      ],
+      "part": 1
+    },
+    {
+      "n": 4,
+      "id": "c4",
+      "role": "idea",
+      "level": "core",
+      "title_it": "Segui sempre gli stessi quattro passi",
+      "icon": "list-checks",
+      "blocks": [
+        {
+          "type": "procedure",
+          "title_it": "La procedura in 4 passi",
+          "steps": [
+            {
+              "tag": "develop",
+              "text_it": "Sviluppa le parentesi.",
+              "example_tex": "3(x-1) = 3x - 3"
+            },
+            {
+              "tag": "move",
+              "text_it": "Sposta i termini cambiando segno."
+            },
+            {
+              "tag": "add",
+              "text_it": "Somma i termini simili."
+            },
+            {
+              "tag": "divide",
+              "text_it": "Dividi per il coefficiente di $x$."
+            }
+          ],
+          "n": 1
+        }
+      ],
+      "part": 2
+    },
+    {
+      "n": 5,
+      "id": "c5",
+      "role": "idea",
+      "level": "core",
+      "title_it": "Tre casi possibili",
+      "icon": "scale",
+      "blocks": [
+        {
+          "type": "cases",
+          "title_it": "Che cosa può succedere",
+          "cases": [
+            {
+              "title_it": "Determinata",
+              "condition_it": "$a \\neq 0$",
+              "text_it": "Una sola soluzione.",
+              "example_it": "$2x = 4$",
+              "diagram": {
+                "type": "balance",
+                "alt_it": "Bilancia con due scatole a sinistra e quattro pesi a destra, in equilibrio con x uguale a 2.",
+                "left": {
+                  "x": 2
+                },
+                "right": {
+                  "units": 4
+                },
+                "x_value": "2"
+              }
+            },
+            {
+              "title_it": "Impossibile",
+              "condition_it": "$a = 0$, $b \\neq 0$",
+              "text_it": "Nessun numero va bene.",
+              "example_it": "$0x = 7$"
+            },
+            {
+              "title_it": "Indeterminata",
+              "condition_it": "$a = 0$, $b = 0$",
+              "text_it": "Va bene ogni numero.",
+              "example_it": "$0x = 0$"
+            }
+          ],
+          "n": 1
+        },
+        {
+          "type": "check",
+          "component": "matching",
+          "prompt_it": "Per ogni equazione scegli il caso.",
+          "left": [
+            {
+              "id": "a",
+              "text_it": "$2x = 4$"
+            },
+            {
+              "id": "b",
+              "text_it": "$0x = 7$"
+            },
+            {
+              "id": "c",
+              "text_it": "$0x = 0$"
+            }
+          ],
+          "right": [
+            {
+              "id": "d",
+              "text_it": "Determinata"
+            },
+            {
+              "id": "i",
+              "text_it": "Impossibile"
+            },
+            {
+              "id": "n",
+              "text_it": "Indeterminata"
+            }
+          ],
+          "answer": {
+            "a": "d",
+            "b": "i",
+            "c": "n"
+          },
+          "explain_it": "Guarda il coefficiente di $x$ e il termine noto.",
+          "n": 2
+        }
+      ],
+      "part": 2
+    },
+    {
+      "n": 6,
+      "id": "c6",
+      "role": "example",
+      "level": "core",
+      "title_it": "Quando nessun numero va bene",
+      "icon": "pencil-ruler",
+      "blocks": [
+        {
+          "type": "example",
+          "problem_it": "Risolvi $3(x - 1) - x = 2x + 4$.",
+          "steps": [
+            {
+              "tag": "develop",
+              "do_it": "$3x - 3 - x = 2x + 4$",
+              "why_it": "Il 3 moltiplica ogni termine della parentesi.",
+              "blank": {
+                "component": "matching",
+                "prompt_it": "x",
+                "left": [],
+                "right": [],
+                "answer": {}
+              }
+            },
+            {
+              "tag": "move",
+              "do_it": "$3x - x - 2x = 4 + 3$",
+              "why_it": "Sposti i termini cambiando segno."
+            },
+            {
+              "tag": "add",
+              "do_it": "$0 \\cdot x = 7$",
+              "why_it": "$3 - 1 - 2 = 0$.",
+              "blank": {
+                "component": "number",
+                "prompt_it": "Quanto vale il coefficiente di $x$?",
+                "input_before": "$\\role{unknown}{x}$ ha coefficiente",
+                "answer": "0"
+              }
+            }
+          ],
+          "result_it": "Impossibile: nessun numero per 0 dà 7.",
+          "n": 1
+        }
+      ],
+      "part": 3
+    },
+    {
+      "n": 7,
+      "id": "c7",
+      "role": "mistakes",
+      "level": "core",
+      "title_it": "Errori da evitare",
+      "icon": "triangle-alert",
+      "blocks": [
+        {
+          "type": "mistake",
+          "group_it": "Segni",
+          "wrong_it": "$2x - 3 = 7 \\to 2x = 7 - 3$",
+          "right_it": "$2x = 7 + 3$",
+          "why_it": "Spostando, $-3$ diventa $+3$.",
+          "code": "math_sign_move",
+          "n": 1
+        },
+        {
+          "type": "mistake",
+          "group_it": "Dividere",
+          "wrong_it": "$2x = 8 \\to x = 8 - 2$",
+          "right_it": "$x = 8 : 2$",
+          "why_it": "Si divide per il coefficiente.",
+          "code": "math_divide_missing",
+          "n": 2
+        },
+        {
+          "type": "mistake",
+          "group_it": "Lo zero",
+          "wrong_it": "$0x = 0 \\to x = 0$",
+          "right_it": "Ogni numero va bene.",
+          "why_it": "Il prodotto è 0 qualunque sia $x$.",
+          "n": 3
+        }
+      ],
+      "part": 3
+    },
+    {
+      "n": 8,
+      "id": "c8",
+      "role": "try",
+      "level": "core",
+      "title_it": "Prova tu",
+      "icon": "notebook-pen",
+      "blocks": [
+        {
+          "type": "try",
+          "intro_it": "Fai i conti sul quaderno, poi scrivi qui il risultato.",
+          "exercises": [
+            {
+              "n": 1,
+              "text_it": "Risolvi e verifica: $3x - 7 = 2$.",
+              "check": {
+                "component": "fraction",
+                "input_before": "$x =$",
+                "prompt_it": "Quanto vale $x$?",
+                "answer": "3",
+                "errors": [
+                  {
+                    "answer": "-5/3",
+                    "code": "math_sign_move",
+                    "message_it": "Guarda il segno di $-7$ quando cambia membro."
+                  }
+                ]
+              },
+              "solution_steps": [
+                {
+                  "tag": "move",
+                  "do_it": "$3x = 2 + 7 = 9$",
+                  "why_it": "Sposta $-7$ cambiando segno."
+                },
+                {
+                  "tag": "divide",
+                  "do_it": "$x = 9 / 3 = 3$",
+                  "why_it": "Dividi per 3."
+                }
+              ]
+            },
+            {
+              "n": 2,
+              "text_it": "Risolvi $4x = 10$ e scrivi la frazione.",
+              "checks": [
+                {
+                  "component": "fraction",
+                  "prompt_it": "Quanto vale $x$?",
+                  "answer": "5/2"
+                }
+              ],
+              "solution_it": "$x = \\frac{10}{4} = \\frac{5}{2}$"
+            },
+            {
+              "n": 3,
+              "text_it": "Risolvi $2(x + 1) = 2x + 5$.",
+              "final_it": "impossibile",
+              "solution_it": "Sviluppi: $2x + 2 = 2x + 5$, cioè $0x = 3$. Impossibile."
+            },
+            {
+              "n": 4,
+              "text_it": "Di che caso è $5x = 0$? Scrivi la parola.",
+              "check": {
+                "component": "normalized_text",
+                "prompt_it": "Che caso è?",
+                "answer": "determinata",
+                "accept": [
+                  "Determinata"
+                ]
+              },
+              "solution_it": "$x = 0$: una sola soluzione, quindi determinata."
+            }
+          ],
+          "n": 1
+        }
+      ],
+      "part": 4
+    },
+    {
+      "n": 9,
+      "id": "c9",
+      "role": "summary",
+      "level": "core",
+      "title_it": "In sintesi",
+      "icon": "list-checks",
+      "blocks": [
+        {
+          "type": "summary",
+          "points_it": [
+            "Sviluppa, sposta cambiando segno, somma, dividi per il coefficiente.",
+            "$0 \\cdot x = b$ con $b \\neq 0$: impossibile. $0 \\cdot x = 0$: indeterminata.",
+            "Verifica sempre nell'equazione di partenza."
+          ],
+          "n": 1
+        },
+        {
+          "type": "schema",
+          "schema": {
+            "type": "flow",
+            "alt_it": "Da ax uguale b: se a è diverso da zero l'equazione è determinata, altrimenti dipende da b.",
+            "nodes": [
+              {
+                "id": "s",
+                "kind": "step",
+                "text_it": "Arrivi a $ax = b$"
+              },
+              {
+                "id": "q1",
+                "kind": "decision",
+                "text_it": "$a \\neq 0$?"
+              },
+              {
+                "id": "det",
+                "kind": "end",
+                "text_it": "Determinata",
+                "role": "correct"
+              },
+              {
+                "id": "q2",
+                "kind": "decision",
+                "text_it": "$b \\neq 0$?"
+              },
+              {
+                "id": "imp",
+                "kind": "end",
+                "text_it": "Impossibile"
+              },
+              {
+                "id": "ind",
+                "kind": "end",
+                "text_it": "Indeterminata"
+              }
+            ],
+            "edges": [
+              [
+                "s",
+                "q1"
+              ],
+              [
+                "q1",
+                "det",
+                "sì"
+              ],
+              [
+                "q1",
+                "q2",
+                "no"
+              ],
+              [
+                "q2",
+                "imp",
+                "sì"
+              ],
+              [
+                "q2",
+                "ind",
+                "no"
+              ]
+            ]
+          },
+          "n": 2
+        }
+      ],
+      "part": 4
+    },
+    {
+      "n": 10,
+      "id": "c10",
+      "role": "idea",
+      "level": "extra",
+      "title_it": "Perché la bilancia funziona",
+      "icon": "telescope",
+      "blocks": [
+        {
+          "type": "more",
+          "title_it": "Una dimostrazione breve",
+          "blocks": [
+            {
+              "type": "text",
+              "text_it": "Se due numeri sono uguali, restano uguali quando aggiungi lo stesso numero a tutti e due.",
+              "n": 1
+            },
+            {
+              "type": "math",
+              "tex": "a = b \\Rightarrow a + c = b + c",
+              "n": 2
+            },
+            {
+              "type": "table",
+              "caption_it": "Le tre forme",
+              "header": [
+                "Caso",
+                "Forma"
+              ],
+              "rows": [
+                [
+                  "Determinata",
+                  "$ax = b$"
+                ],
+                [
+                  "Impossibile",
+                  "$0x = b$"
+                ]
+              ],
+              "n": 3
+            }
+          ],
+          "n": 1
+        }
+      ]
+    }
+  ],
+  "words": {
+    "core": 300,
+    "extra": 40
+  },
+  "pages": []
+}

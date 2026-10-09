@@ -1,0 +1,66 @@
+{
+  "type": "sentence",
+  "alt_it": "La frase Marco legge un libro con il soggetto, il predicato e il complemento oggetto colorati.",
+  "text_it": "Marco legge un libro",
+  "layout": "line",
+  "parts": [
+    {
+      "id": "s",
+      "text_it": "Marco",
+      "role": "subject",
+      "question_it": "Chi legge?"
+    },
+    {
+      "id": "p",
+      "text_it": "legge",
+      "role": "predicate",
+      "question_it": "Che cosa fa?"
+    },
+    {
+      "id": "o",
+      "text_it": "un libro",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+    },
+    {
+      "id": "x0",
+      "text_it": "a",
+      "role": "complement"
+    },
+    {
+      "id": "x1",
+      "text_it": "a",
+      "role": "complement"
+    },
+    {
+      "id": "x2",
+      "text_it": "a",
+      "role": "complement"
+    },
+    {
+      "id": "x3",
+      "text_it": "a",
+      "role": "complement"
+    },
+    {
+      "id": "x4",
+      "text_it": "a",
+      "role": "complement"
+    },
+    {
+      "id": "x5",
+      "text_it": "a",
+      "role": "complement"
+    },
+    {
+      "id": "x6",
+      "text_it": "a",
+      "role": "complement"
+    },
+    {
+      "id": "x7",
+      "text_it": "a",
+      "role": "complement"
+    }
+  ]
+}

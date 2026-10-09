@@ -5,13 +5,14 @@ require "test_helper"
 class LessonsMarkupTest < ActiveSupport::TestCase
   CASES = JSON.parse(File.read(Rails.root.join("test/fixtures/markup/v2.json")))
 
-  CASES.select { |c| c.key?("blocks") }.each_with_index do |c, i|
+  # Cases with "options" (roles: true, the lesson/2 additions of A5) are run by the lesson/2 parser (R1) and the browser parser (R2).
+  CASES.select { |c| c.key?("blocks") && !c.key?("options") }.each_with_index do |c, i|
     test "valid input #{i} gives the shared blocks" do
       assert_equal c["blocks"], Lessons::Markup.parse(c["input"])
     end
   end
 
-  CASES.select { |c| c.key?("error") }.each_with_index do |c, i|
+  CASES.select { |c| c.key?("error") && !c.key?("options") }.each_with_index do |c, i|
     test "refused input #{i}: #{c['error']}" do
       error = assert_raises(Lessons::Markup::Refused) { Lessons::Markup.parse(c["input"]) }
       assert_equal c["error"], error.construct

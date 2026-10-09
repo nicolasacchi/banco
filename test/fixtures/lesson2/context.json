@@ -1,0 +1,65 @@
+{
+ "description": "The invented course the lesson2 fixtures are checked against (no real programme or student): skills, programme lines, error catalogue codes, topics and icons of both demos. R1 builds a Validation::Context from it.",
+ "math": {
+  "subject": "math",
+  "skills": [
+   "math.demo-equation",
+   "math.demo-signed-numbers"
+  ],
+  "error_codes": [
+   "math_eval_wrong",
+   "math_divide_missing",
+   "math_sign_move",
+   "math_sign_bracket",
+   "math_zero_case"
+  ],
+  "source_lines": [
+   {
+    "source": "seconda-2025-26",
+    "line": 12,
+    "text": "equazioni di primo grado numeriche intere"
+   },
+   {
+    "source": "prima-2025-26",
+    "line": 7,
+    "text": "le equazioni di primo grado"
+   }
+  ],
+  "topics": [
+   "ripasso.math.demo-equations",
+   "ripasso.math.signed-numbers"
+  ],
+  "lesson_files": [
+   "demo.md",
+   "base.md"
+  ]
+ },
+ "italian": {
+  "subject": "italian",
+  "skills": [
+   "italian.demo-sentence-parts"
+  ],
+  "error_codes": [
+   "it_subject_for_predicate",
+   "it_object_for_subject"
+  ],
+  "source_lines": [
+   {
+    "source": "seconda-2025-26",
+    "line": 31,
+    "text": "analisi logica della frase semplice"
+   },
+   {
+    "source": "prima-2025-26",
+    "line": 21,
+    "text": "soggetto e predicato"
+   }
+  ],
+  "topics": [
+   "ripasso.italian.demo-sentence"
+  ],
+  "lesson_files": [
+   "demo-italian.md"
+  ]
+ }
+}

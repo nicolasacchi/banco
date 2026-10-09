@@ -1,0 +1,13 @@
+{
+  "type": "balance",
+  "alt_it": "Bilancia: a sinistra due scatole x e tre pesi da 1, a destra sette pesi da 1.",
+  "left": {
+    "x": 2,
+    "units": 3
+  },
+  "right": {
+    "units": 7
+  },
+  "x_value": "2",
+  "tilt": 1
+}

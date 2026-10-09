@@ -1,0 +1,38 @@
+{
+  "type": "cartesian",
+  "alt_it": "Piano cartesiano con due rette che si incontrano nel punto di coordinate 2 e 5.",
+  "x": [
+    "-1",
+    "6"
+  ],
+  "y": [
+    "-1",
+    "8"
+  ],
+  "grid": true,
+  "lines": [
+    {
+      "id": "r1",
+      "eq": "y = 2x + 1",
+      "label_it": "y = 2x + 1",
+      "role": "left"
+    },
+    {
+      "id": "r2",
+      "eq": "x + y = 7",
+      "role": "right"
+    }
+  ],
+  "points": [
+    {
+      "x": "2",
+      "y": "5",
+      "label_it": "(2, 5)",
+      "role": "unknown",
+      "on_lines": [
+        "r1",
+        "r2"
+      ]
+    }
+  ]
+}
