@@ -6,14 +6,13 @@ import { Controller } from "@hotwired/stimulus"
 // (BroadcastChannel "banco"), and when the digest changed it fetches the body and swaps it in,
 // keeping the scroll position and the focus. Rows whose text changed say "aggiornato ora" for 10 s.
 const SLOW_SECONDS = 60
-const SLOW_AFTER = 10
 const MARK_SECONDS = 10
 const STORAGE_KEY = "banco.dashboard.newtab"
 
 export default class extends Controller {
   static targets = ["body", "stamp", "live", "newtab"]
   static values = {
-    stateUrl: String, fragmentUrl: String, digest: String, interval: { type: Number, default: 20 },
+    stateUrl: String, fragmentUrl: String, digest: String, interval: { type: Number, default: 20 }, slowAfter: { type: Number, default: 10 },
     stampText: String, updatedText: String, announceText: String, announceOtherText: String, failedText: String
   }
 
@@ -66,7 +65,7 @@ export default class extends Controller {
   schedule() {
     clearTimeout(this.timer)
     if (document.visibilityState !== "visible") return
-    const seconds = this.unchanged >= SLOW_AFTER ? Math.max(SLOW_SECONDS, this.intervalValue) : this.intervalValue
+    const seconds = this.unchanged >= this.slowAfterValue ? Math.max(SLOW_SECONDS, this.intervalValue) : this.intervalValue
     this.timer = setTimeout(() => this.poll(false, false), seconds * 1000)
   }
 

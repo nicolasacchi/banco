@@ -5,6 +5,7 @@
       data-dashboard-fragment-url-value="<%= teacher_dashboard_fragment_path(student_param) %>"
       data-dashboard-digest-value="<%= @digest %>"
       data-dashboard-interval-value="<%= Teacher::Dashboard.poll_seconds %>"
+      data-dashboard-slow-after-value="<%= Teacher::Dashboard.slow_after %>"
       data-dashboard-stamp-text-value="<%= t('teacher.dashboard.stamp', time: '{time}') %>"
       data-dashboard-updated-text-value="<%= t('teacher.dashboard.updated_now') %>"
       data-dashboard-announce-text-value="<%= t('teacher.dashboard.announce', names: '{names}') %>"

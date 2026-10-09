@@ -21,6 +21,12 @@ class TeacherDashboardSystemTest < ApplicationSystemTestCase
 
   teardown do
     Capybara.default_max_wait_time = @saved_wait
+    ENV.delete("BANCO_DASHBOARD_SLOW_AFTER")
+    begin
+      page.execute_script("localStorage.removeItem('banco.dashboard.newtab')")
+    rescue StandardError
+      nil # no page was open
+    end
     @saved_poll ? ENV["BANCO_DASHBOARD_POLL"] = @saved_poll : ENV.delete("BANCO_DASHBOARD_POLL")
     sign_out_env
   end
@@ -38,6 +44,7 @@ class TeacherDashboardSystemTest < ApplicationSystemTestCase
 
   test "a change made on the server shows after a short poll, keeps the scroll and says aggiornato ora" do
     ENV["BANCO_DASHBOARD_POLL"] = "1"
+    ENV["BANCO_DASHBOARD_SLOW_AFTER"] = "100000" # a slow browser must not reach the 60 s back-off before the change
     visit "/teacher"
     assert_selector "#dashboard[data-dashboard-ready=true]"
     assert_equal "visible", page.evaluate_script("document.visibilityState"), "the poll timer only runs in a visible tab"

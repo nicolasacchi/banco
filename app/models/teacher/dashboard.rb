@@ -13,6 +13,8 @@ module Teacher
 
     # Seconds between two polls of the open page; the test sets it short.
     def self.poll_seconds = ENV.fetch("BANCO_DASHBOARD_POLL", "20").to_i.clamp(1, 600)
+    # Polls that find nothing before the page backs off to 60 s (a test raises it so a slow browser never gets there).
+    def self.slow_after = ENV.fetch("BANCO_DASHBOARD_SLOW_AFTER", "10").to_i.clamp(1, 100_000)
 
     attr_reader :home, :student
 
