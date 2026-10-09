@@ -17,6 +17,9 @@ class TeacherDashboardSystemTest < ApplicationSystemTestCase
     @subject = @world[:subject]
     @session = AgentSession.create!(label: "rev", role: "reviewer", agent: "omp", model: "gpt-5.2")
     sign_in_as :teacher
+    # localStorage outlives a test in the shared Cuprite browser: start every test with the toggle unset.
+    visit "/teacher"
+    page.execute_script("localStorage.removeItem('banco.dashboard.newtab')")
   end
 
   teardown do
@@ -79,7 +82,7 @@ class TeacherDashboardSystemTest < ApplicationSystemTestCase
   end
 
   test "the manual button refreshes, the toggle switches the new tabs off and is remembered" do
-    visit "/teacher"
+    visit "/teacher" # reload after the setup cleared the key, so the page reads a clean toggle
     assert_selector "#dashboard[data-dashboard-ready=true]"
     assert_equal "on", page.evaluate_script("localStorage.getItem('banco.dashboard.newtab') || 'on'"), "a leftover toggle from another test"
     assert_selector "#dashboard-body a[target=_blank]"
