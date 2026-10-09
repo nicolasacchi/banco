@@ -64,7 +64,7 @@
               <% cell = dashboard.cell(student, row.subject) %>
               <li data-student-cell="<%= student.key %>">
                 <%= dash_link student_label(student), with_student_for(student, teacher_report_path(key: row.subject.key)) %>:
-                <% if student.official? %><%= cell.diagnosis || t("teacher.dashboard.no_diagnosis") %>.<% end %>
+                <% if student.official? %><%= cell.diagnosis ? "#{cell.diagnosis}." : t("teacher.dashboard.no_diagnosis") %><% end %>
                 <%= cell.last_at ? t("teacher.dashboard.last_activity", at: teacher_time(cell.last_at)) : t("teacher.dashboard.no_activity") %>
                 <% if cell.practised.positive? %><%= t("teacher.dashboard.practised", count: cell.practised) %><% end %>
               </li>
