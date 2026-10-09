@@ -200,7 +200,7 @@ class ThirdReviewerPagesTest < ActionDispatch::IntegrationTest
     open_minor = finding!(severity: "minor", problem: "Lieve tre.")
     assess_both!(closed, "author_right")
     assess_both!(to_fix, "finding_right")
-    assess!(open_minor, "author_right", session: arbiter_session(ArbiterRows::FIRST_MODEL))
+    assess!(open_minor, "unclear", session: arbiter_session(ArbiterRows::FIRST_MODEL))
     before = Decision.count
     page SKILL_PAGE
     assert_select "details.minor-findings[data-minor-findings='3'] summary", "Rilievi lievi (3): non serve decidere"
@@ -214,6 +214,48 @@ class ThirdReviewerPagesTest < ActionDispatch::IntegrationTest
     assert_select "#open-findings h2", "Rilievi da decidere: nessuno."
     assert_equal before, Decision.count
     assert_empty Teacher::TestReview.new(@subject).open_finding_list
+  end
+
+  test "Opus alone decides a minor finding; Haiku's disagreement is a line on the card" do
+    closed = finding!(severity: "minor", problem: "Lieve uno.")
+    to_fix = finding!(severity: "minor", problem: "Lieve due.")
+    unclear = finding!(severity: "minor", problem: "Lieve tre.")
+    missing = finding!(severity: "minor", problem: "Lieve quattro.")
+    assess_both!(closed, "author_right", "finding_right")
+    assess_both!(to_fix, "finding_right", "author_right")
+    assess_both!(unclear, "unclear", "finding_right")
+    assess!(missing, "finding_right", session: arbiter_session(ArbiterRows::SECOND_MODEL))
+    before = Decision.count
+    page SKILL_PAGE
+    assert_select "#finding-#{closed.id} .closure[data-closure=closed]", "Chiuso dal terzo revisore"
+    assert_select "#finding-#{closed.id} [data-second-disagrees]", /Il secondo parere non è d'accordo/
+    assert_select "#finding-#{closed.id} [data-opinion=second]"
+    assert_select "#finding-#{to_fix.id} .closure[data-closure=to_fix]", "Da sistemare: lo dice il terzo revisore"
+    assert_select "#finding-#{to_fix.id} [data-second-disagrees]"
+    assert_select "#finding-#{unclear.id} .closure", 0
+    assert_select "#finding-#{unclear.id} form button[value=dismissed]"
+    assert_select "#finding-#{missing.id} .closure", 0
+    assert_select "#finding-#{missing.id} form button[value=dismissed]"
+    assert_select "details.minor-findings", text: /In attesa del secondo parere/, count: 0
+    assert_equal before, Decision.count
+  end
+
+  test "a minor finding whose first slot is blocked stays open with the reason" do
+    review = ItemReview.create!(item_revision: @revision, agent_session: arbiter_session(ArbiterRows::FIRST_MODEL, role: "reviewer"), checklist_json: "[]")
+    f = ReviewFinding.create!(item_revision: @revision, source: "review", item_review: review, severity: "minor", field: "stem", quote: "x", problem_it: "Lieve.", fix_it: "Cambia.")
+    assess!(f, "finding_right", session: arbiter_session(ArbiterRows::SECOND_MODEL))
+    page SKILL_PAGE
+    assert_select "#finding-#{f.id} [data-opinion-blocked]"
+    assert_select "#finding-#{f.id} .closure", 0
+  end
+
+  test "a minor finding raised by Haiku is not blocked once Opus has spoken" do
+    review = ItemReview.create!(item_revision: @revision, agent_session: arbiter_session(ArbiterRows::SECOND_MODEL, role: "reviewer"), checklist_json: "[]")
+    f = ReviewFinding.create!(item_revision: @revision, source: "review", item_review: review, severity: "minor", field: "stem", quote: "x", problem_it: "Lieve.", fix_it: "Cambia.")
+    assess!(f, "author_right", session: arbiter_session(ArbiterRows::FIRST_MODEL))
+    page SKILL_PAGE
+    assert_select "#finding-#{f.id} [data-opinion-blocked]", 0
+    assert_select "#finding-#{f.id} .closure[data-closure=closed]"
   end
 
   test "a teacher decision on a minor finding wins over the opinions" do

@@ -25,13 +25,25 @@ class FindingOpinionTest < ActiveSupport::TestCase
     assert_equal :waiting, opinion.state
     assert_nil opinion.verdict
     assert_nil opinion.disposition
-    assert_nil opinion.minor_outcome
+    assert_equal :closed, opinion.minor_outcome, "a minor finding needs the first opinion alone"
   end
 
-  test "the second opinion alone is waiting too" do
+  test "the second opinion alone is waiting, and decides no minor finding" do
     assess!(@finding, "finding_right", session: arbiter_session(SECOND_MODEL))
     assert_equal :waiting, opinion.state
     assert_nil opinion.first
+    assert_nil opinion.minor_outcome
+  end
+
+  test "minor outcome follows the first opinion whatever the second says" do
+    assess_both!(@finding, "author_right", "finding_right")
+    assert_equal [ :split, :closed, true ], [ opinion.state, opinion.minor_outcome, opinion.second_disagrees? ]
+    other = ReviewFinding.create!(item_revision: @finding.item_revision, source: "review", severity: "minor", field: "f", quote: "z", problem_it: "p", fix_it: "f")
+    assess_both!(other, "finding_right", "author_right")
+    assert_equal :to_fix, FindingAssessment.opinions_for([ other.id ])[other.id].minor_outcome
+    third = ReviewFinding.create!(item_revision: @finding.item_revision, source: "review", severity: "minor", field: "f", quote: "y", problem_it: "p", fix_it: "f")
+    assess_both!(third, "unclear", "finding_right")
+    assert_nil FindingAssessment.opinions_for([ third.id ])[third.id].minor_outcome
   end
 
   test "both agree on a side: clear, with the disposition and the minor outcome" do
@@ -51,7 +63,8 @@ class FindingOpinionTest < ActiveSupport::TestCase
       op = FindingAssessment.opinions_for([ finding.id ])[finding.id]
       assert_equal :split, op.state, [ a, b ].inspect
       assert_nil op.disposition
-      assert_nil op.minor_outcome
+      expected = { "author_right" => :closed, "finding_right" => :to_fix }[a]
+      expected.nil? ? assert_nil(op.minor_outcome) : assert_equal(expected, op.minor_outcome)
     end
   end
 

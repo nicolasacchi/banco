@@ -34,7 +34,9 @@ class ReviewFinding < ApplicationRecord
     raiser = AgentSession.find_by(id: raised_by_session_id)
     return false unless raiser
 
-    missing = { first: op.first, second: op.second }.select { |_, a| a.nil? }.keys
+    # A minor finding needs only the first opinion (D-239); the others need both.
+    slots = severity == "minor" ? { first: op.first } : { first: op.first, second: op.second }
+    missing = slots.select { |_, a| a.nil? }.keys
     missing.any? { |slot| Providers.slot_model(slot) == Providers.model_key(raiser.model) }
   end
 

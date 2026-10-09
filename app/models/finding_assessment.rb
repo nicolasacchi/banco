@@ -3,8 +3,8 @@
 # opinions count, the first (claude-opus-5-5) and the second (claude-haiku-4-5-20251001), see
 # config/banco/providers.yml; the latest assessment of each model is its effective one. For a
 # blocker or major finding an opinion never disposes of anything: the teacher decides
-# (dispose_finding), possibly by following a clear opinion. A minor finding with a clear opinion
-# is closed or marked to fix as a derived state (FindingOpinion), still without a decision row.
+# (dispose_finding), possibly by following a clear opinion. A minor finding is closed or
+# marked to fix by the first opinion alone (D-239, FindingOpinion), still without a decision row.
 class FindingAssessment < ApplicationRecord
   VERDICTS = %w[author_right finding_right unclear].freeze
   MAX_NOTE = 500

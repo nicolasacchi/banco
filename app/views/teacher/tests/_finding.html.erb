@@ -23,7 +23,11 @@
   <% op = entry.opinion %>
   <% if op.any? %>
     <div class="opinions" data-opinion-state="<%= op.state %>"<% if op.verdict %> data-opinion-verdict="<%= op.verdict %>"<% end %>>
+      <% if f.severity == "minor" %>
+        <% if op.second_disagrees? %><p class="hint" data-second-disagrees><%= t("teacher.skill.second_disagrees", verdict: t("teacher.skill.verdict.#{op.second.verdict}")) %></p><% end %>
+      <% else %>
       <p><strong><%= t("teacher.skill.opinion.#{op.state == :waiting && op.first.nil? ? :waiting_first : op.state}") %>.</strong><% if op.clear? %> <%= t("teacher.skill.verdict_clear.#{op.verdict}") %><% end %></p>
+      <% end %>
       <% { first: op.first, second: op.second }.each do |slot, a| %>
         <% next unless a %>
         <p class="assessment" data-opinion="<%= slot %>" data-assessment="<%= a.verdict %>">

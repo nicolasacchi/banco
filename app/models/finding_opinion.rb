@@ -9,9 +9,10 @@
 #   split     both are there and differ ("Pareri discordanti")
 #
 # Nothing here decides anything. A blocker or major finding with a clear opinion can be followed
-# by the teacher with one click. A minor finding with a clear opinion is closed (author_right) or
-# marked to fix (finding_right) as a derived state, never as a row in decisions; a teacher's
-# decision on the finding always wins (Teacher::TestReview).
+# by the teacher with one click. A minor finding is closed (first opinion author_right) or marked
+# to fix (first opinion finding_right) as a derived state, never as a row in decisions (D-239: the
+# first opinion alone decides, the second is shown as a second opinion); a teacher's decision on
+# the finding always wins (Teacher::TestReview).
 class FindingOpinion
   attr_reader :first, :second
 
@@ -39,11 +40,15 @@ class FindingOpinion
   # The disposition that following a clear opinion records, or nil.
   def disposition = FindingAssessment::FOLLOW[verdict]
 
-  # What a minor finding comes to without the teacher: :closed (the author is right), :to_fix (the
-  # finding is right) or nil (the teacher still has it).
+  # What a minor finding comes to without the teacher (D-239): the first opinion alone decides.
+  # :closed (the author is right), :to_fix (the finding is right) or nil (unclear or no first
+  # opinion: the teacher still has it). The second opinion never changes it.
   def minor_outcome
-    { "author_right" => :closed, "finding_right" => :to_fix }[verdict]
+    { "author_right" => :closed, "finding_right" => :to_fix }[first&.verdict]
   end
+
+  # True when both opinions are there and the second does not say what the first says.
+  def second_disagrees? = !first.nil? && !second.nil? && first.verdict != second.verdict
 
   # The opinions in reading order, each with its slot.
   def given = [ first, second ].compact

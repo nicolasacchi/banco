@@ -480,6 +480,7 @@ it:
         unclear: "Nessuno dei due pareri è sicuro"
         closed: "Chiuso dal terzo revisore"
         to_fix: "Da sistemare: lo dice il terzo revisore"
+      second_disagrees: "Il secondo parere non è d'accordo: dice «%{verdict}»."
       verdict:
         author_right: "ha ragione l'autore"
         finding_right: "ha ragione il rilievo"

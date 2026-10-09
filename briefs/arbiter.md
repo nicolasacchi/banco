@@ -24,7 +24,7 @@ reviewer or solver (`E-SESSION-NOT-INDEPENDENT`). Judge many findings of one ite
 
 If the session that raised a finding ran on the same model as one of the two opinions, that opinion
 cannot be filled: you are refused on that finding (`E-PROVIDER-NOT-ALLOWED`) and no other model may stand in. The finding
-stays "In attesa del secondo parere" and the card tells the teacher why; the teacher decides alone.
+stays open (a blocker or major one "In attesa del secondo parere") and the card tells the teacher why; the teacher decides alone.
 
 Write each opinion alone. While you have not assessed a finding yourself, `banco findings list`
 shows you no assessment of it, only how many there are (the same without a session), so the second opinion is never an echo of the first. Do not ask
@@ -52,9 +52,11 @@ when they differ or one is missing, the teacher reads both notes and decides.
   honest answer and leaves the choice to the teacher.
 - A finding about a field the student never sees (sources, metadata, the generator) may be right
   and still not matter for the student. Say plainly whether it matters.
-- A finding of severity `minor` can be closed without a click when your two opinions agree on
-  `author_right`; if they agree on `finding_right` it is marked to fix and the author changes it at
-  the next revision. Be as careful as for a major one.
+- A finding of severity `minor` is decided by the first opinion (claude-opus-5-5) alone (D-239):
+  `author_right` closes it without a click, `finding_right` marks it to fix and the author changes
+  it at the next revision, `unclear` leaves it to the teacher. The second opinion stays on the card
+  as a second opinion, with a line when it disagrees. Blocker and major findings still need both
+  opinions to agree. Be as careful as for a major one.
 
 ## The file
 

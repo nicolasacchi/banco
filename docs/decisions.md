@@ -225,7 +225,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-219 | 2026-10-07 | review of D-217/D-218: the student map fails closed, the grading queue is the official student's, no dead links | implemented |
 | D-220 | 2026-10-08 | operator feedback: the finding card shows the key and the solver's answer; the author answers findings; clearer texts and a summary | implemented |
 | D-221 | 2026-10-08 | operator request: a map of the skill graph on the graph page and the report | implemented |
-| D-222 | 2026-10-08 | the third reviewer (arbiter): two opinions on findings; minor findings may be closed by it; firm rule 2 amended | implemented |
+| D-222 | 2026-10-08 | the third reviewer (arbiter): two opinions on findings; minor findings may be closed by it; firm rule 2 amended (minor rule changed by D-239) | implemented |
 | D-223 | 2026-10-08 | operator request 2026-10-08: a Phase 1b slice on math and italian; what is in, what is deferred | decided |
 | D-224 | 2026-10-08 | banco.lesson/1: lesson.md source, parsed body, markup v2 for lessons only, lint codes | decided |
 | D-225 | 2026-10-08 | banco.course/1: seconda skills and topics beside the graph, one key namespace, pinned graph revision | decided |
@@ -242,6 +242,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-236 | 2026-10-08 | S3 build: the student's course pages (Oggi, Materie, topic, lesson, practice), Items::Part, the outbox prefix, and where the spec was closed | decided |
 | D-237 | 2026-10-09 | S4 build: approve_topic, send_back_lesson, release_course, Approval::TopicGate, the teacher's course, topic and practice pages | decided |
 | D-238 | 2026-10-09 | integration: `banco practice progress` runs the practice/1 fold (states, timestamps, seed, skills without a topic) | decided |
+| D-239 | 2026-10-09 | operator decision: Opus decides minor findings (the first opinion alone); the second opinion stays visible; D-222 amended | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2530,3 +2531,12 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 
 - **Why:** the review of the integration branch found that the API's `practice progress` still ran the provisional view of D-234 (8) and D-236 (D-237 notes): only `not_seen` and `in_study`, no `demonstrated_at`, `consolidated_at`, seed or skills to recover, and a free-text `rules_version`. The student's pages and the teacher's page already used `Practice::Fold`, so the CLI and the web could disagree.
 - **We do:** `Course::ProgressView` builds the states with `Practice::Loader` and `Practice::Fold`, the same input as `Teacher::PracticeProgress`. `rules_version` is exactly `practice/1`. Each skill carries its real `state`, `since`, `demonstrated_at`, `consolidated_at`, `seed` (`state`, `at`, `implied`) and the fold's counts (including `unrecognised`, `near_miss`, `undetermined`, `abandoned`, `seconds`); `typical` is the fold's tally of typical errors of the item's catalogue. `to_recover_without_topic` lists the diagnosis seeds to recover or learn that no topic of the map practices. The topic status and visibility are unchanged. A test checks that the API state equals the teacher page's fold state for a demonstrated skill.
+
+## D-239 · 2026-10-09 · operator decision: Opus decides minor findings (the first opinion alone); the second opinion stays visible; D-222 amended
+
+- **Design ref:** firm rule 2, D-222
+- **Design said:** D-222 (5): a minor finding is closed or marked to fix only when the two opinions agree; otherwise it stays open for the teacher.
+- **We do:** Operator, 2026-10-09, after the first arbiter wave: "Opus decides minors". On 470 minor findings Haiku chose `finding_right` 351 times against Opus 80, so 342 minor findings stayed "Pareri discordanti". (1) For a minor finding the effective opinion is the latest first-opinion (claude-opus-5-5) assessment alone: `author_right` shows "Chiuso dal terzo revisore", `finding_right` shows "Da sistemare: lo dice il terzo revisore", `unclear` or no first opinion leaves it open. The second opinion (Haiku) stays on the card, labelled "Secondo parere", with a line "Il secondo parere non è d'accordo: …" when it differs. A teacher decision still always wins. (2) Blocker and major are unchanged: clear only when both opinions agree; "Segui il parere" and the bulk button as before. (3) "In attesa del secondo parere" no longer applies to minor findings; when the first slot is blocked (the raiser used Opus) a minor finding stays open with the existing one-line reason. (4) Still a derived state: no row in `decisions`, no `/api/v1` route writes a decision. Code: `FindingOpinion#minor_outcome`, `second_disagrees?`, `ReviewFinding#opinion_slot_blocked?`, the `_finding` partial. AGENTS.md firm rule 2, `briefs/arbiter.md` and `docs/validation.md` follow.
+- **Why:** the two models disagree systematically on minor findings (Haiku nearly always finds the finding right), so requiring agreement left most of them to the teacher, who cannot read every nit; the stronger model decides them.
+- **Cost:** a minor finding closed by Opus alone may be wrong (Haiku disagreed in some cases and says so on the card); the teacher can still decide it and her decision wins.
+- **Status:** implemented
