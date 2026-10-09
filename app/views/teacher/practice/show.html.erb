@@ -7,7 +7,7 @@
   <% if !progress.present? %>
     <p class="notice" id="practice-no-student"><%= t("teacher.practice.no_student") %></p>
   <% else %>
-    <p class="hint"><%= t("teacher.practice.intro", student: student_label(progress.student)) %></p>
+    <p class="hint"><%= t("teacher.practice.intro", student: student_name(progress.student)) %></p>
     <% if progress.rows.empty? %>
       <p class="notice"><%= t("teacher.practice.no_course") %></p>
     <% end %>
@@ -20,7 +20,7 @@
             <h3><a href="<%= with_student(teacher_practice_skill_path(key: @subject.key, skill: row.skill)) %>"><%= row.label_it %></a> <span class="key">(<%= row.skill %>)</span></h3>
             <p><strong data-state-label><%= t("states.#{row.state}") %></strong> · <%= row.why_it %></p>
             <p class="hint">
-              <%= t("teacher.practice.counts", tries: row.counts[:tries], serves: row.counts[:serves], unaided: row.counts[:correct_unaided], aided: row.counts[:correct_aided], wrong: row.counts[:wrong]) %>
+              <%= t("teacher.practice.counts", tries: t("teacher.practice.tries", count: row.counts[:tries]), serves: t("teacher.practice.serves", count: row.counts[:serves]), unaided: t("teacher.practice.unaided", count: row.counts[:correct_unaided]), aided: t("teacher.practice.aided", count: row.counts[:correct_aided]), wrong: t("teacher.practice.wrong", count: row.counts[:wrong])) %>
               · <%= t("teacher.practice.unrecognised", count: row.counts[:unrecognised]) %>
               · <%= t("teacher.practice.hints", count: row.counts[:hints]) %>
               · <%= t("teacher.practice.solutions", count: row.counts[:solutions_requested]) %>

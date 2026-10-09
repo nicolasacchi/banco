@@ -2560,3 +2560,4 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Why:** the old topic page was about 9400 px long and showed the approval at the top before anything was read; the course page gave a stage word without saying what was missing, what to do or how the student was doing.
 - **Cost:** one app event per exercise seen; the page does the same work as before plus the stored presentations of the four samples of each exercise.
 - **Status:** implemented
+- **Amendment (review fixes, same day):** the lesson body is one partial (`lessons/_body`) drawn by the student's page and by the topic page; each exercise card opens one sample and folds the other three; the progress bar has "Vai ad Approva"; the course page names the student by the login mapped in `BANCO_STUDENT_USERS` ("allo studente" when the map is unset), never a configured name; counts use I18n plurals; "Guarda" became "Vedi" with a state hint.

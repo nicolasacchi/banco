@@ -35,7 +35,10 @@ class TeacherCoursePathSystemTest < ApplicationSystemTestCase
     assert_no_text "**bilancia**"
     assert_selector "#lesson-text .katex", minimum: 1
     # the samples are drawn by the student's templates and switched off
-    assert_selector ".exercise-card .q-render input[disabled]", minimum: 4, wait: 20
+    assert_selector ".exercise-card .q-render input[disabled]", count: 3, wait: 20
+    # the other three samples of an exercise are folded and drawn when they are opened
+    first(".exercise-card details.other-samples summary").click
+    assert_selector ".exercise-card details.other-samples[open] .q-render input[disabled]", count: 3, wait: 20
     assert_selector "#topic-approve-button[disabled]"
 
     click_button "Ho letto la lezione"
@@ -59,6 +62,15 @@ class TeacherCoursePathSystemTest < ApplicationSystemTestCase
     assert_selector "#next-topic a", text: "Ancora numeri"
     assert_equal [], page.evaluate_script("window.__csp")
     assert_equal 1, Decision.where(kind: "approve_topic").where("payload_json LIKE ?", "%#{CoursePathWorld::READY}%").count
+  end
+
+  test "the link in the progress bar jumps to the approval step" do
+    visit "/teacher/subjects/math/topics/#{CoursePathWorld::READY}"
+    assert_selector "#step-lesson"
+    click_link "Vai ad Approva"
+    sleep 0.3
+    top = page.evaluate_script("document.getElementById('step-approve').getBoundingClientRect().top")
+    assert_operator top, :<, 400
   end
 
   test "the progress bar stays visible on a phone and the steps stack" do

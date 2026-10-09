@@ -11,6 +11,10 @@ it:
       label: "Studente"
       official: "Ufficiale"
       trial: "Prova: %{name}"
+      the_student: "lo studente"
+      to_the_student: "allo studente"
+      to_login: "a %{name}"
+      to_login_a: "ad %{name}"
     nav:
       label: "Menu del docente"
       home: "Materie"

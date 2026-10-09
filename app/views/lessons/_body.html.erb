@@ -1,0 +1,45 @@
+<%# The body of a lesson, the same markup for the student's page and the teacher's review (D-240).
+    Locals: body (the lesson revision body), topic (key), revision_id (the student's page: the questions and the
+    solution buttons are drawn; nil on the teacher's page: the solutions and the final answers are written out). %>
+<% sections = body["sections"] %>
+<% student = local_assigns[:revision_id].present? %>
+<% LessonsController::SECTIONS.each do |key| %>
+  <% name = key.delete_suffix("_it") %>
+  <section id="section-<%= name %>" data-section="<%= name %>" aria-labelledby="h-<%= key %>">
+    <h2 id="h-<%= key %>"><%= t("lesson.sections.#{key}") %></h2>
+    <div class="markup" data-lesson-markup><%= sections[key] %></div>
+    <% if student %><%= render "course/question", topic: topic, lesson_revision_id: revision_id, section: name %><% end %>
+  </section>
+<% end %>
+
+<section id="section-try" data-section="try" aria-labelledby="h-try">
+  <h2 id="h-try"><%= t("lesson.sections.try") %></h2>
+  <% if body["try_intro_it"] %><div class="markup" data-lesson-markup><%= body["try_intro_it"] %></div><% end %>
+  <p class="hint"><%= t("lesson.try") %></p>
+  <ol class="exercises">
+    <% body["exercises"].each do |ex| %>
+      <li class="exercise" data-exercise="<%= ex["n"] %>" id="exercise-<%= ex["n"] %>">
+        <div class="markup" data-lesson-markup><%= ex["text_it"] %></div>
+        <% if student %>
+          <button type="button" class="button secondary small" data-action="lesson#solution" data-lesson-n-param="<%= ex["n"] %>" aria-expanded="false"
+                  aria-controls="solution-<%= ex["n"] %>"><%= t("lesson.show_solution") %></button>
+          <div class="exercise-solution" id="solution-<%= ex["n"] %>" aria-live="polite" data-lesson-target="solution" data-n="<%= ex["n"] %>"></div>
+          <%= render "course/question", topic: topic, lesson_revision_id: revision_id, section: "try", exercise: ex["n"] %>
+        <% else %>
+          <p class="hint"><strong><%= t("teacher.topic.section.solutions") %></strong></p>
+          <div class="exercise-solution markup" id="solution-<%= ex["n"] %>" data-solution data-lesson-markup><%= ex["solution_it"] %></div>
+          <p class="hint"><%= t("teacher.topic.final") %> <% if ex["final_it"] %><span data-final data-markup="inline"><%= ex["final_it"] %></span><% else %><%= t("teacher.topic.final_open") %><% end %></p>
+        <% end %>
+      </li>
+    <% end %>
+  </ol>
+</section>
+
+<% LessonsController::AFTER_TRY.each do |key| %>
+  <% name = key.delete_suffix("_it") %>
+  <section id="section-<%= name %>" data-section="<%= name %>" aria-labelledby="h-<%= key %>">
+    <h2 id="h-<%= key %>"><%= t("lesson.sections.#{key}") %></h2>
+    <div class="markup" data-lesson-markup><%= sections[key] %></div>
+    <% if student %><%= render "course/question", topic: topic, lesson_revision_id: revision_id, section: name %><% end %>
+  </section>
+<% end %>

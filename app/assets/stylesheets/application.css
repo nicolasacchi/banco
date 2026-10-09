@@ -434,6 +434,9 @@ ul.checks li { padding: 0.25rem 0; }
 .lesson-review { border: 2px solid var(--line); background: var(--surface); padding: 0.5rem 1rem; position: sticky; top: 7rem; }
 .lesson.as-student .student-view { border: 2px solid var(--line); padding: 0.5rem 1rem; max-width: 46rem; }
 .lesson.as-student .exercise-solution { display: block; }
+.lesson.as-student .student-view h2 { font-size: 1.25rem; }
+.review-progress #go-approve { margin-left: auto; }
+.other-samples { margin: 0.5rem 0; }
 .exercise-cards { grid-template-columns: repeat(auto-fit, minmax(min(40rem, 100%), 1fr)); }
 .samples-render { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr)); gap: 0 1rem; }
 .exercise-card[data-seen="true"] { border-color: var(--text); }

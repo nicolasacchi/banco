@@ -11,10 +11,11 @@
       <%= t("teacher.path.summary.ready", count: review.ready_count) %> ·
       <%= t("teacher.path.summary.approved", count: counts[:approved]) %> ·
       <%= t("teacher.path.summary.missing", count: counts[:missing]) %> ·
-      <strong><%= review.open? ? t("teacher.path.summary.open") : t("teacher.path.summary.closed") %></strong>
+      <strong><%= review.open? ? t("teacher.path.summary.open", to: student_dative(Student.official)) : t("teacher.path.summary.closed", to: student_dative(Student.official)) %></strong>
     </p>
-    <p class="hint"><%= t("teacher.course.summary", seq: review.latest.seq, topics: counts[:in_map], approved: counts[:approved]) %></p>
-    <p><a class="button secondary small" id="course-practice-link" href="<%= with_student(teacher_practice_path(key: @subject.key)) %>"><%= t("teacher.course.practice_link") %></a></p>
+    <p class="hint"><%= t("teacher.course.summary", seq: review.latest.seq, topics: t("teacher.course.topics_count", count: counts[:in_map]), approved: t("teacher.course.approved_count", count: counts[:approved])) %></p>
+    <p><a class="button secondary small" id="course-practice-link" href="<%= with_student(teacher_practice_path(key: @subject.key)) %>"><%= t("teacher.course.practice_link") %></a>
+      <span class="hint" id="course-practice-note"><%= t("teacher.course.practice_note") %></span></p>
 
     <% review.warnings.each do |w| %>
       <p class="notice" data-warning="<%= w["code"] %>"><strong><%= w["code"] %></strong> <%= t("teacher.course.warning.#{w["code"]}", default: w["message"]) %></p>
@@ -54,12 +55,13 @@
                 <p class="hint" data-count="lesson"><%= t("teacher.path.lesson_no") %></p>
               <% end %>
               <% step.progress.each do |pr| %>
-                <p class="hint step-progress" data-progress="<%= pr.student.key %>"><%= t("teacher.path.progress", who: student_label(pr.student), tries: pr.tries, done: pr.done, total: pr.total) %></p>
+                <p class="hint step-progress" data-progress="<%= pr.student.key %>"><%= t("teacher.path.progress", who: student_label(pr.student), tries: t("teacher.path.tries", count: pr.tries), skills: t("teacher.path.skills_shown", count: pr.done, total: pr.total)) %></p>
               <% end %>
               <% if step.ready? %>
                 <p><a class="button" data-review-button href="<%= teacher_topic_path(key: @subject.key, topic: entry["key"]) %>"><%= t("teacher.path.review") %></a></p>
               <% elsif step.lesson? %>
-                <p><a class="button secondary small" href="<%= teacher_topic_path(key: @subject.key, topic: entry["key"]) %>"><%= t("teacher.path.look") %></a></p>
+                <p><a class="button secondary small" data-look-button href="<%= teacher_topic_path(key: @subject.key, topic: entry["key"]) %>"><%= t("teacher.path.look") %></a>
+                  <span class="hint" data-look-hint><%= t("teacher.path.look_hint.#{step.badge}") %></span></p>
               <% end %>
             </div>
           </li>

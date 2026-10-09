@@ -62,8 +62,68 @@ class TeacherCoursePathTest < ActionDispatch::IntegrationTest
 
   test "the summary line counts ready, approved and missing topics and says whether the course is closed" do
     course_page
-    assert_select "#course-summary[data-open=false][data-ready='1']", "1 argomento pronto per te · 1 approvato · 1 da scrivere · corso chiuso allo studente"
+    assert_select "#course-summary[data-open=false][data-ready='1']", "1 argomento pronto per te · 1 approvato · 1 da scrivere · corso chiuso a kid-a"
     assert_no_match(/andrea/i, response.body)
+  end
+
+  test "without a student map the course says it is closed to the student, never to a name" do
+    ENV.delete("BANCO_STUDENT_USERS")
+    course_page
+    assert_select "#course-summary", /corso chiuso allo studente/
+  end
+
+  test "an official login starting with a takes ad" do
+    ENV["BANCO_STUDENT_USERS"] = "anna-x=student,trial-x=prova-1"
+    course_page
+    assert_select "#course-summary", /corso chiuso ad anna-x/
+  end
+
+  test "the course summary pluralises topics and approved" do
+    course_page
+    assert_select "p.hint", /Mappa \d+: 4 argomenti, 1 approvato\./
+  end
+
+  test "the practice link is explained and a topic that is not ready has Vedi with a state hint" do
+    course_page
+    assert_select "#course-practice-note", /risposte, aiuti e abilità/
+    assert_select "a[data-look-button]", "Vedi"
+    assert_no_match(/Guarda/, response.body)
+    assert_select "li[data-topic='#{CoursePathWorld::WORKING}'] [data-look-hint]", "Gli agenti ci stanno lavorando."
+    assert_select "li[data-topic='#{CoursePathWorld::DONE}'] [data-look-hint]", "Già approvato."
+  end
+
+  test "the topic page and the student's lesson page render the same lesson body" do
+    approve_path_topic!(@ready, CoursePathWorld::READY)
+    open_course!
+    topic_page
+    assert_response :success
+    teacher_body = body_outline(css_select("#lesson-text"))
+    on(:web, "/topics/#{CoursePathWorld::READY}/lesson", headers: OFFICIAL, remote_addr: EDGE)
+    assert_response :success
+    student_body = body_outline(css_select("main.lesson"))
+    assert_operator teacher_body[:headings].size, :>=, 7
+    assert_equal student_body, teacher_body
+  end
+
+  def body_outline(roots)
+    root = roots.first
+    {
+      headings: root.css("h2").map { |h| [ h["id"], h.text.strip ] },
+      sections: root.css("section[id^=section-]").map { |n| [ n["id"], n["data-section"], n["aria-labelledby"] ] },
+      markup: root.css(".markup[data-lesson-markup]:not(.exercise-solution)").size,
+      exercises: root.css("ol.exercises li.exercise").map { |li| [ li["id"], li["data-exercise"] ] }
+    }
+  end
+
+  test "the topic page shows one sample open per exercise, the other three folded, and a link to the approval step" do
+    topic_page
+    assert_select "#review-progress a#go-approve[href='#step-approve']", "Vai ad Approva"
+    card = ".exercise-card[data-exercise-card='#{@ready_items.first.id}']"
+    assert_select "#{card} > .samples-render .sample-render", 1
+    assert_select "#{card} details.other-samples[data-more=samples] > summary", "Altri 3 esempi"
+    assert_select "#{card} details.other-samples:not([open]) .sample-render", 3
+    assert_select "#{card} details[data-more=hints]:not([open])"
+    assert_select "#{card} details[data-more=solution]:not([open])"
   end
 
   test "the filter keeps the topics that wait for the teacher" do
@@ -83,12 +143,12 @@ class TeacherCoursePathTest < ActionDispatch::IntegrationTest
   test "progress: the trial students while the course is closed, the official student once it is released" do
     practice_on_ready!
     course_page
-    assert_select "li[data-topic='#{CoursePathWorld::READY}'] [data-progress=prova-1]", /Prova: trial-x: 1 risposte, 0 abilità su 1 dimostrate/
+    assert_select "li[data-topic='#{CoursePathWorld::READY}'] [data-progress=prova-1]", "Prova: trial-x: 1 risposta, nessuna abilità su 1 dimostrata."
     assert_select "[data-progress=student]", 0
     open_course!
     course_page
-    assert_select "#course-summary[data-open=true]", /corso aperto allo studente/
-    assert_select "li[data-topic='#{CoursePathWorld::READY}'] [data-progress=student]", /Ufficiale: 2 risposte/
+    assert_select "#course-summary[data-open=true]", /corso aperto a kid-a/
+    assert_select "li[data-topic='#{CoursePathWorld::READY}'] [data-progress=student]", /Ufficiale: 2 risposte, nessuna abilità su 1 dimostrata\./
     assert_select "[data-progress=prova-1]", 0
     assert_select "li[data-topic='#{CoursePathWorld::DONE}'] [data-badge-name=open]", "Aperto allo studente"
   end
@@ -121,7 +181,7 @@ class TeacherCoursePathTest < ActionDispatch::IntegrationTest
   test "step one draws the lesson with the student's markup and the review beside it" do
     topic_page
     assert_select "#step-lesson .step-grid #lesson-text .markup[data-lesson-markup]", minimum: 6
-    assert_select "#lesson-text #section-idea h4", "L'idea in breve"
+    assert_select "#lesson-text #section-idea h2", "L'idea in breve"
     assert_select "#lesson-text ol.exercises li.exercise .exercise-solution[data-solution]", 2
     assert_select "#step-lesson aside.lesson-review ul[data-checklist] li", 8
     assert_select "#step-lesson aside.lesson-review", /Calcoli rifatti dal revisore: 1/
@@ -139,6 +199,7 @@ class TeacherCoursePathTest < ActionDispatch::IntegrationTest
     end
     card = ".exercise-card[data-exercise-card='#{@ready_items.first.id}']"
     assert_select "#{card} [data-presentation]", 4
+    assert_select "#{card} .sample-render", 4
     assert_select "#{card} [data-purpose]", /Allena .*Errori tipici previsti: 1/
     assert_select "#{card} .badge[data-seen-label]", "Da vedere"
     assert_select "#{card} details[data-more=hints] ol[data-hints] li", 12

@@ -16,10 +16,18 @@ it:
     course:
       title: "Corso di %{subject}"
       none: "L'agente non ha ancora mandato la mappa del corso."
-      summary: "Mappa %{seq}: %{topics} argomenti, %{approved} approvati."
+      summary: "Mappa %{seq}: %{topics}, %{approved}."
+      topics_count:
+        one: "1 argomento"
+        other: "%{count} argomenti"
+      approved_count:
+        zero: "nessuno approvato"
+        one: "1 approvato"
+        other: "%{count} approvati"
       open: "Il corso è aperto allo studente."
       closed: "Il corso è chiuso allo studente."
       practice_link: "Esercizi dello studente"
+      practice_note: "Che cosa ha fatto lo studente: risposte, aiuti e abilità dimostrate, argomento per argomento. Qui non decidi nulla."
       warning:
         W-COURSE-GRAPH-STALE: "Il grafo delle abilità è stato aggiornato dopo questa mappa. Chiedi all'agente di rimandare la mappa."
       release:
@@ -123,7 +131,22 @@ it:
       no_student: "Non c'è ancora uno studente ufficiale."
       intro: "Studente: %{student}."
       no_course: "Il corso non ha ancora argomenti."
-      counts: "%{tries} risposte in %{serves} esercizi: %{unaided} giuste da sola, %{aided} con aiuto, %{wrong} sbagliate"
+      counts: "%{tries} in %{serves}: %{unaided}, %{aided}, %{wrong}"
+      tries:
+        one: "1 risposta"
+        other: "%{count} risposte"
+      serves:
+        one: "1 esercizio"
+        other: "%{count} esercizi"
+      unaided:
+        one: "1 giusta da sola"
+        other: "%{count} giuste da sola"
+      aided:
+        one: "1 giusta con aiuto"
+        other: "%{count} giuste con aiuto"
+      wrong:
+        one: "1 sbagliata"
+        other: "%{count} sbagliate"
       unrecognised:
         one: "1 risposta non riconosciuta"
         other: "%{count} risposte non riconosciute"

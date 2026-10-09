@@ -6,7 +6,7 @@ module ViewedStudent
 
   included do
     before_action :require_known_student_param
-    helper_method :viewed_student, :student_choices, :student_label, :student_param
+    helper_method :viewed_student, :student_choices, :student_label, :student_name, :student_dative, :student_param
   end
 
   # The student whose data the page shows; nil before the official student's first login.
@@ -32,6 +32,23 @@ module ViewedStudent
     return I18n.t("teacher.student_picker.official") if student.official?
 
     I18n.t("teacher.student_picker.trial", name: Banco::EdgeProxy.student_map.key(student.key) || student.key)
+  end
+
+  # How the page names a student (D-217 map): the login mapped to the key in BANCO_STUDENT_USERS, the
+  # operator's own word for the person. With no map: "lo studente" for the official student, the key for a trial one.
+  def student_name(student)
+    key = student&.key || Student::OFFICIAL_KEY
+    login = Banco::EdgeProxy.student_map.key(key)
+    return login if login
+    key == Student::OFFICIAL_KEY ? I18n.t("teacher.student_picker.the_student") : key
+  end
+
+  # "a <name>" ("ad" before a name that starts with a), or "allo studente" when the map names nobody.
+  def student_dative(student)
+    login = Banco::EdgeProxy.student_map.key(student&.key || Student::OFFICIAL_KEY)
+    return I18n.t("teacher.student_picker.to_the_student") unless login
+
+    I18n.t(login.match?(/\Aa/i) ? "teacher.student_picker.to_login_a" : "teacher.student_picker.to_login", name: login)
   end
 
   private

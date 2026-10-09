@@ -31,7 +31,8 @@
       <nav class="review-progress" id="review-progress" aria-label="<%= t('teacher.review.progress_label') %>">
         <p class="progress-line"><strong><%= t("teacher.review.progress") %></strong>
           <span data-topic-review-target="count"><%= done.values.count(true) %></span> <%= t("teacher.review.of_four") %>
-          <progress max="4" value="<%= done.values.count(true) %>" data-topic-review-target="bar" aria-label="<%= t('teacher.review.progress_label') %>"></progress></p>
+          <progress max="4" value="<%= done.values.count(true) %>" data-topic-review-target="bar" aria-label="<%= t('teacher.review.progress_label') %>"></progress>
+          <a class="button small" id="go-approve" href="#step-approve"><%= t("teacher.review.go_approve") %></a></p>
         <ol class="review-steps">
           <% %w[lesson exercises findings approve].each_with_index do |name, i| %>
             <li><a href="#step-<%= name %>" data-nav-step="<%= name %>" data-done="<%= done[name.to_sym] %>"><span class="step-no"><%= i + 1 %></span> <%= t("teacher.review.step.#{name}") %></a></li>
@@ -54,36 +55,10 @@
             <ul class="plain refs">
               <% lesson_body["refs"].each do |r| %><li><%= t("teacher.course.ref", line: r["line"], role: t("teacher.course.role.#{r['role']}")) %> <q><%= r["fragment"] %></q></li><% end %>
             </ul>
-            <% sections = lesson_body["sections"] %>
             <div class="student-view" id="lesson-text">
               <h3 class="lesson-title"><%= lesson_body["title_it"] %></h3>
               <p class="topic-meta"><%= t("topic.minutes", n: lesson_body["minutes"]) %></p>
-              <% LessonsController::SECTIONS.each do |key| %>
-                <section id="section-<%= key.delete_suffix('_it') %>" data-section="<%= key.delete_suffix('_it') %>">
-                  <h4><%= t("lesson.sections.#{key}") %></h4>
-                  <div class="markup" data-lesson-markup><%= sections[key] %></div>
-                </section>
-              <% end %>
-              <section id="section-try" data-section="try">
-                <h4><%= t("lesson.sections.try") %></h4>
-                <% if lesson_body["try_intro_it"] %><div class="markup" data-lesson-markup><%= lesson_body["try_intro_it"] %></div><% end %>
-                <ol class="exercises">
-                  <% lesson_body["exercises"].each do |ex| %>
-                    <li class="exercise" data-exercise="<%= ex['n'] %>" id="exercise-<%= ex['n'] %>">
-                      <div class="markup" data-lesson-markup><%= ex["text_it"] %></div>
-                      <p class="hint"><strong><%= t("teacher.topic.section.solutions") %></strong></p>
-                      <div class="exercise-solution markup" data-solution data-lesson-markup><%= ex["solution_it"] %></div>
-                      <p class="hint"><%= t("teacher.topic.final") %> <% if ex["final_it"] %><span data-final data-markup="inline"><%= ex["final_it"] %></span><% else %><%= t("teacher.topic.final_open") %><% end %></p>
-                    </li>
-                  <% end %>
-                </ol>
-              </section>
-              <% LessonsController::AFTER_TRY.each do |key| %>
-                <section id="section-<%= key.delete_suffix('_it') %>" data-section="<%= key.delete_suffix('_it') %>">
-                  <h4><%= t("lesson.sections.#{key}") %></h4>
-                  <div class="markup" data-lesson-markup><%= sections[key] %></div>
-                </section>
-              <% end %>
+              <%= render "lessons/body", body: lesson_body, topic: review.key %>
             </div>
           </div>
 
@@ -117,7 +92,7 @@
 
       <section id="step-exercises" class="review-step" data-step="exercises" data-topic-review-target="step" data-done="<%= done[:exercises] %>">
         <h2><span class="step-no">2</span> <%= t("teacher.review.step.exercises") %> <span class="badge" data-step-state><%= done[:exercises] ? t("teacher.review.done") : t("teacher.review.todo") %></span></h2>
-        <p class="hint"><%= t("teacher.review.exercises_intro", count: Teacher::ItemCard::SAMPLES) %>
+        <p class="hint"><%= t("teacher.review.exercises_intro", count: Teacher::ItemCard::SAMPLES - 1, others: Teacher::ItemCard::SAMPLES - 1) %>
           <%= t("teacher.review.seen_count") %> <strong data-topic-review-target="seenBar"><%= review.exercises.count(&:seen) %>/<%= review.exercises.size %></strong></p>
         <div id="topic-practice" class="cards exercise-cards">
           <% review.exercises.each_with_index do |ex, i| %>
@@ -129,14 +104,18 @@
               <p class="gate" data-approvable="<%= card.gate.approvable %>">
                 <% if card.gate.approvable %><strong><%= t("teacher.skill.ready") %></strong>
                 <% else %><strong><%= t("teacher.skill.not_ready") %></strong> <%= safe_join(gate_sentences(card.gate.reasons), " ") %><% end %></p>
+              <% first, *others = ex.samples %>
               <div class="samples-render">
-                <% ex.samples.each do |sample| %>
-                  <section class="sample-render" data-instance="<%= sample.view.id %>">
-                    <h4><%= t("teacher.skill.instance", n: sample.view.number) %></h4>
-                    <div class="q-render item" data-topic-review-target="slot" data-presentation="<%= sample.presentation.to_json %>"></div>
-                  </section>
-                <% end %>
+                <%= render "teacher/topics/sample", sample: first %>
               </div>
+              <% if others.any? %>
+                <details class="more other-samples" data-more="samples" data-action="toggle->topic-review#opened">
+                  <summary><%= t("teacher.review.other_samples", count: others.size) %></summary>
+                  <div class="samples-render">
+                    <% others.each do |sample| %><%= render "teacher/topics/sample", sample: sample %><% end %>
+                  </div>
+                </details>
+              <% end %>
               <details class="more" data-more="hints">
                 <summary><%= t("teacher.review.hints") %></summary>
                 <% ex.samples.each do |sample| %>

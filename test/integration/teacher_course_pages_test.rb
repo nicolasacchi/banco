@@ -34,7 +34,7 @@ class TeacherCoursePagesTest < ActionDispatch::IntegrationTest
     on(:web, "/teacher/subjects/math/course", headers: TEACHER, remote_addr: EDGE)
     assert_response :success
     assert_select "#course-summary", /1 argomento pronto per te · 0 approvati/
-    assert_select "p.hint", /Mappa 1: 1 argomenti, 0 approvati/
+    assert_select "p.hint", /Mappa 1: 1 argomento, nessuno approvato/
     assert_select "li.topic[data-topic='#{TopicWorld::TOPIC_KEY}'][data-stage=awaiting_teacher]" do
       assert_select "a[href='/teacher/subjects/math/topics/#{TopicWorld::TOPIC_KEY}']"
     end
@@ -101,7 +101,7 @@ class TeacherCoursePagesTest < ActionDispatch::IntegrationTest
 
     on(:web, "/teacher/subjects/math/practice?student=prova-1", headers: TEACHER, remote_addr: EDGE)
     assert_response :success
-    assert_select "article.skill-progress p", /1 risposte in 1 esercizi/
+    assert_select "article.skill-progress p", /1 risposta in 1 esercizio/
     assert_select "[data-question]", 0
 
     on(:web, "/teacher/subjects/math/practice?student=nobody", headers: TEACHER, remote_addr: EDGE)

@@ -16,8 +16,8 @@ it:
         missing:
           one: "1 da scrivere"
           other: "%{count} da scrivere"
-        open: "corso aperto allo studente"
-        closed: "corso chiuso allo studente"
+        open: "corso aperto %{to}"
+        closed: "corso chiuso %{to}"
       badge:
         missing: "Da scrivere"
         working: "Gli agenti ci lavorano"
@@ -40,9 +40,24 @@ it:
         zero: "Nessun rilievo da decidere"
         one: "1 rilievo da decidere"
         other: "%{count} rilievi da decidere"
-      progress: "%{who}: %{tries} risposte, %{done} abilità su %{total} dimostrate."
+      progress: "%{who}: %{tries}, %{skills}."
+      tries:
+        zero: "nessuna risposta"
+        one: "1 risposta"
+        other: "%{count} risposte"
+      skills_shown:
+        zero: "nessuna abilità su %{total} dimostrata"
+        one: "1 abilità su %{total} dimostrata"
+        other: "%{count} abilità su %{total} dimostrate"
       review: "Rivedi e approva"
-      look: "Guarda"
+      look: "Vedi"
+      look_hint:
+        missing: "Non c'è ancora nulla da rivedere."
+        working: "Gli agenti ci stanno lavorando."
+        approved: "Già approvato."
+        open: "Già approvato e aperto allo studente."
+        newer: "C'è una versione nuova da rivedere più avanti."
+        ready: "Pronto per te."
       done: "fatto"
       todo: "da fare"
       release:
@@ -69,7 +84,13 @@ it:
         approve: "Approva"
       lesson_intro: "Leggi la lezione come la vede lo studente. A fianco c'è la revisione dell'agente."
       read_lesson: "Ho letto la lezione"
-      exercises_intro: "Ogni esercizio mostra %{count} istanze come le vede lo studente."
+      exercises_intro:
+        one: "Ogni esercizio mostra un esempio come lo vede lo studente."
+        other: "Ogni esercizio mostra un esempio aperto come lo vede lo studente; gli altri %{others} sono sotto «Altri %{others} esempi»."
+      other_samples:
+        one: "Un altro esempio"
+        other: "Altri %{count} esempi"
+      go_approve: "Vai ad Approva"
       seen_count: "Esercizi visti:"
       exercise_title: "Esercizio %{n}"
       level: "livello %{n}"
