@@ -266,7 +266,7 @@ module Lessons
         out = {}
         bad = lambda do |why|
           error("E-LESSON-CARD", n, "the tag {#{text}}: #{why}", "tag")
-          return nil
+          nil
         end
         role = tokens.shift
         return bad.call("it starts with a role: #{ROLES.join(', ')}") unless ROLES.include?(role)

@@ -43,10 +43,11 @@ module Api
             end
           end
         end
-        render json: { lesson: lesson.key, kind: lesson.kind, subject: lesson.subject.key, latest: Course::LessonView.latest_row(latest),
-                       files: { "lesson.md" => file }, reviews: Course::LessonView.reviews(latest),
-                       teacher_comments: Course::LessonView.comments(lesson), converted_from_schema1: converted,
-                       next: converted ? "the draft keeps the old text in cards and adds nothing: write goals_it, a visual for every idea card, the checks and a schema in the summary (banco brief show lesson), then banco lesson submit DIR --dry-run" : "edit lesson.md, then banco lesson submit DIR --dry-run" }
+        answer = { lesson: lesson.key, kind: lesson.kind, subject: lesson.subject.key, latest: Course::LessonView.latest_row(latest),
+                   files: { "lesson.md" => file }, reviews: Course::LessonView.reviews(latest),
+                   teacher_comments: Course::LessonView.comments(lesson) }
+        answer[:converted_from_schema1] = converted if params[:schema].present?
+        render json: answer.merge(next: converted ? "the draft keeps the old text in cards and adds nothing: write goals_it, a visual for every idea card, the checks and a schema in the summary (banco brief show lesson), then banco lesson submit DIR --dry-run" : "edit lesson.md, then banco lesson submit DIR --dry-run")
       end
 
       # GET /api/v1/lesson-revisions/:revision

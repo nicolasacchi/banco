@@ -29,6 +29,8 @@ module Lessons
     # Returns Parsed, or nil when there is no front matter to speak of (the finding says why).
     def call(md, findings)
       source = normalize(md)
+      return Parser2.call(source, findings) if Parser2.schema2?(source) # banco.lesson/2: cards, see Lessons::Parser2
+
       unless source.valid_encoding?
         findings.add("E-LESSON-PARSE", "/", "lesson.md is not valid UTF-8", rule: "encoding")
         return nil

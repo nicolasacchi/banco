@@ -66,5 +66,7 @@ of typed blocks (`::: diagram balance`, `::: check choice`, `::: example`, ...);
 with a schema; colours are roles of the subject's palette and icons are ours (`config/banco/lesson_palette.yml`, `icons.yml`). The numbers are the
 `lesson2:` block of `config/banco/validation_rules.yml` (rules version 8). `banco lesson open KEY --schema 2` writes a converted draft of a lesson/1
 revision. The review of a lesson/2 has 11 points and findings by card (`brief lesson-review`). Worked examples: `test/fixtures/lesson2/demo.md` and
-`demo-italian.md`. What the page and the checks do is built in tracks R1 to R4 of the rich-lessons plan; until then only the formats, the codes and the
-fixtures exist (D-245).
+`demo-italian.md`. What the page and the checks do is built in tracks R1 to R4 of the rich-lessons plan. R1 (D-252) is the Ruby side: `lesson submit` parses and checks a lesson/2
+(`Validation::Lesson2Checks`, one finding per fault with its line), `lesson open KEY --schema 2` answers the draft converted from a lesson/1
+(`Lessons::Convert1to2`: the old text in cards, no goals, no visual, no check, no schema: those are the author's to-do list), and the page is told only
+what `Lessons::StudentBody` serves; an inline check is graded by `Lessons::Checks.grade` (the shared graders) and never counts for a skill state.

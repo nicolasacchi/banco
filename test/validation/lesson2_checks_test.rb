@@ -69,4 +69,46 @@ class Lesson2ChecksTest < ActiveSupport::TestCase
       assert_nil o.body
     end
   end
+
+  # A fault is a finding, never an exception: whatever an agent sends, the answer is a list of findings.
+  RUNS = Integer(ENV.fetch("PROP_RUNS", 50))
+  JUNK = [ ":::", "::::", "::: check", "::: diagram balance", "## x {idea}", "## x", "# part", "```", "- punto", "  - sotto", "1. uno", "[[a:b]]", "[x](scheda:y)", "$", "**", "answer: [", "---", "\\", "\t", "" ].freeze
+
+  test "mutated lessons never raise: a fault is a finding (#{RUNS} runs)" do
+    sources = %w[base.md demo.md demo-italian.md].map { |f| [ f, F.read(f).lines ] }
+    RUNS.times do |run|
+      rng = Random.new(run)
+      file, lines = sources.sample(random: rng)
+      lines = lines.dup
+      rng.rand(1..3).times do
+        i = rng.rand([ lines.size, 1 ].max)
+        case rng.rand(5)
+        when 0 then lines.delete_at(i)
+        when 1 then lines.insert(i, "#{JUNK.sample(random: rng)}\n")
+        when 2 then lines[i] = "#{JUNK.sample(random: rng)}\n"
+        when 3 then lines = lines.first(i)
+        else j = rng.rand([ lines.size, 1 ].max); lines[i], lines[j] = lines[j], lines[i] if lines[i] && lines[j]
+        end
+      end
+      begin
+        outcome = F.check(lines.join, subject_of(file))
+        outcome.findings.each(&:to_h)
+      rescue StandardError => e
+        flunk "run #{run} (#{file}): #{e.class}: #{e.message.first(120)} at #{e.backtrace.first(3).join(' / ')}"
+      end
+    end
+    assert_operator RUNS, :>, 0
+  end
+
+  test "a bad fixture gives its code and nothing unrelated (the companions are known)" do
+    companions = { "bad/cards-two-summaries.md" => %w[E-LESSON-MAP], "bad/card-callout-words.md" => %w[E-READ], "bad/checks-too-few.md" => %w[W-LESSON-CHECKS-SPARSE],
+                   "bad/visuals-thirteen.md" => %w[E-CARD-BLOCKS], "bad/front-kind-disagrees-with-key.md" => %w[E-LESSON-REFS], "bad/front-book-too-long.md" => %w[E-READ],
+                   "bad/bold-too-much.md" => %w[E-READ] }
+    F::MANIFEST["bad"].each do |bad|
+      next if bad["file"].nil? || bad["code"] == "E-LESSON-SCHEMA" || bad["pad_front_matter_bytes"]
+
+      codes = F.check(F.read(bad["file"]), subject_of(bad["base"])).findings.map(&:code).uniq - %w[W-ABSOLUTE]
+      assert_empty codes - [ bad["code"] ] - companions.fetch(bad["file"], []), bad["file"]
+    end
+  end
 end

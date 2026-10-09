@@ -169,7 +169,7 @@ module Lessons
     end
 
     def seed_for_step(seed, step) = "#{seed}|step#{step}"
-    def seed_for_exercise(seed, exercise, part = nil) = ["#{seed}|ex#{exercise}", part].compact.join("|")
+    def seed_for_exercise(seed, exercise, part = nil) = [ "#{seed}|ex#{exercise}", part ].compact.join("|")
 
     def try(b, subject, seed)
       out = b.slice("n", "type", "intro_it")
