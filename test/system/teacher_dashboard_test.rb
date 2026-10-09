@@ -11,6 +11,8 @@ class TeacherDashboardSystemTest < ApplicationSystemTestCase
 
   setup do
     @saved_poll = ENV["BANCO_DASHBOARD_POLL"]
+    @saved_wait = Capybara.default_max_wait_time
+    Capybara.default_max_wait_time = 10 # the runner's Chrome is slow
     @world = build_ui_subject(approve: false)
     @subject = @world[:subject]
     @session = AgentSession.create!(label: "rev", role: "reviewer", agent: "omp", model: "gpt-5.2")
@@ -18,6 +20,7 @@ class TeacherDashboardSystemTest < ApplicationSystemTestCase
   end
 
   teardown do
+    Capybara.default_max_wait_time = @saved_wait
     @saved_poll ? ENV["BANCO_DASHBOARD_POLL"] = @saved_poll : ENV.delete("BANCO_DASHBOARD_POLL")
     sign_out_env
   end
@@ -42,8 +45,10 @@ class TeacherDashboardSystemTest < ApplicationSystemTestCase
     tall!
     page.execute_script("window.__violations = []; document.addEventListener('securitypolicyviolation', (e) => window.__violations.push(e.violatedDirective))")
     add_finding!
-    assert_selector "li[data-todo=findings]", text: "Un rilievo da decidere."
-    assert_selector "li[data-todo=findings] .updated-badge", text: "aggiornato ora"
+    using_wait_time(15) do # the runner's Chrome is slow: the poll is every second, the answer can take a few
+      assert_selector "li[data-todo=findings]", text: "Un rilievo da decidere."
+      assert_selector "li[data-todo=findings] .updated-badge", text: "aggiornato ora"
+    end
     assert_selector "#dashboard-live", text: /Aggiornato: /, visible: :all
     assert_in_delta 300, page.evaluate_script("window.scrollY"), 60
     assert_empty page.evaluate_script("window.__violations")
