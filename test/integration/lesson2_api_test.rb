@@ -116,4 +116,57 @@ class Lesson2ApiTest < ActionDispatch::IntegrationTest
     assert_response :ok, json.inspect
     assert_equal KEY, json["rows"].first["lesson"]
   end
+
+  # ---- the review of a lesson/2 revision (A13) -------------------------------------------------
+
+  def stored_revision
+    submit(md2)
+    assert_response :created, json.inspect
+    LessonRevision.find(json["revision_id"])
+  end
+
+  def review2(revision, points: 11, findings: [], recomputed: nil)
+    recomputed ||= (1..8).map { |i| { "where" => "try", "n" => (i % 4) + 1, "expression" => "#{i} + #{i}", "value" => (i * 2).to_s } }
+    { "schema" => "banco.lesson_review/1", "schema_version" => 1, "revision" => revision.id.to_s, "recomputed" => recomputed, "findings" => findings,
+      "checklist" => (1..points).map { |i| { "id" => i, "result" => "pass", "evidence" => "Riletto il punto numero #{i} con i conti esatti, nessun difetto." } } }
+  end
+
+  def file_review(doc, dry: true)
+    reviewer = AgentSession.create!(label: "r", role: "reviewer", agent: "test", model: "gpt-5.2")
+    api("/api/v1/lesson-revisions/#{doc['revision']}/review", method: :post, body: { review: doc }, as: reviewer, dry: dry)
+  end
+
+  test "the review of a lesson/2 revision opens with eleven points and wants eleven" do
+    revision = stored_revision
+    reviewer = AgentSession.create!(label: "r", role: "reviewer", agent: "test", model: "gpt-5.2")
+    api("/api/v1/lesson-revisions/#{revision.id}/review", as: reviewer)
+    assert_response :ok, json.inspect
+    assert_equal 11, json["checklist"].size
+    file_review(review2(revision))
+    assert_response :ok, json.inspect
+    file_review(review2(revision, points: 8))
+    assert_response :unprocessable_entity
+    assert_equal "E-REVIEW-CHECKLIST", json["code"]
+  end
+
+  test "a lesson/2 finding names a card and a block that exist, with a quote of lesson.md" do
+    revision = stored_revision
+    quote = "I due membri sono i due piatti."
+    good = { "severity" => "minor", "card" => 1, "block" => 1, "quote" => quote, "problem_it" => "Troppo breve per capire.", "fix_it" => "Aggiungi un esempio." }
+    file_review(review2(revision, findings: [ good ]))
+    assert_response :ok, json.inspect
+    file_review(review2(revision, findings: [ good.merge("card" => 99) ]))
+    assert_equal "E-SCHEMA", json["code"]
+    file_review(review2(revision, findings: [ good.merge("block" => 9) ]))
+    assert_equal "E-SCHEMA", json["code"]
+    file_review(review2(revision, findings: [ good.merge("quote" => "non c'è") ]))
+    assert_equal "E-QUOTE-NOT-FOUND", json["code"]
+  end
+
+  test "a math lesson/2 review needs a recomputed entry for every try exercise with a check or a final" do
+    revision = stored_revision
+    only_two = (1..8).map { |i| { "where" => "check", "n" => 1, "expression" => "#{i} + 1", "value" => (i + 1).to_s } }
+    file_review(review2(revision, recomputed: only_two))
+    assert_equal "E-LESSON-REVIEW-RECOMPUTED", json["code"]
+  end
 end

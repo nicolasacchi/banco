@@ -22,7 +22,7 @@ module Api
         render json: { revision_id: @revision.id, lesson: @lesson.key, seq: @revision.seq, superseded: !current, lesson_md: @revision.source_md,
                        body: @revision.body, programme_lines: programme_lines, skills: skills(@revision.body["skills"]),
                        uses: skills(@revision.body["uses"]).map { |s| s.slice(:key, :label_it) },
-                       checklist: Review::LessonChecklist.all, brief: brief_row("lesson-review"),
+                       checklist: Review::LessonChecklist.for(@revision), brief: brief_row("lesson-review"),
                        next: current ? "write banco.lesson_review/1 (banco brief show lesson-review) and run banco lesson-review submit #{@revision.id} --file review.json" :
                                        "superseded: a review of this revision cannot be filed; run banco lesson-review open #{latest.id}" }
       end
