@@ -31,6 +31,9 @@ module Teacher
     # How many subjects wait for the teacher in some way.
     def waiting_total = rows.count { |r| r.waiting.any? }
 
+    # One Teacher::TestReview per subject for the whole page: the findings list and the clear-opinion list share it.
+    def review_for(subject) = (@reviews ||= {})[subject.id] ||= TestReview.new(subject)
+
     private
 
     # waiting: [[code, count-or-nil], ...] in the order the teacher should take them.
@@ -40,7 +43,7 @@ module Teacher
       blueprint = BlueprintRevision.where(subject: subject).order(:seq).last
       waiting = []
       waiting << [ :graph_to_approve, nil ] if graph && info[:graph][:approved_revision_id] != graph.id
-      review = blueprint && TestReview.new(subject)
+      review = blueprint && review_for(subject)
       findings = review ? review.open_finding_list.size : undisposed_without_blueprint(subject)
       waiting << [ :findings, findings ] if findings.positive?
       sent = info[:items][:sent_back]

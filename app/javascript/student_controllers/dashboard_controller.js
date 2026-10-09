@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 
-// The teacher's dashboard (D-240) keeps itself up to date. It polls a small digest of the ledger
+// The teacher's dashboard (D-242) keeps itself up to date. It polls a small digest of the ledger
 // (every `interval` seconds while the tab is visible; every 60 after 10 polls that found nothing),
 // polls at once when the tab becomes visible again or another tab says something was decided
 // (BroadcastChannel "banco"), and when the digest changed it fetches the body and swaps it in,

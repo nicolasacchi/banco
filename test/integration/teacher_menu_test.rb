@@ -2,7 +2,7 @@ require "test_helper"
 require_relative "../support/multi_user"
 require_relative "../support/decision_world"
 
-# D-241: the persistent teacher menu, the breadcrumb and the subject switcher.
+# D-243: the persistent teacher menu, the breadcrumb and the subject switcher.
 class TeacherMenuTest < ActionDispatch::IntegrationTest
   include MultiUser
   include DecisionWorld

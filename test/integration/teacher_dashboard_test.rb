@@ -4,7 +4,7 @@ require_relative "../support/decision_world"
 require_relative "../support/topic_world"
 require_relative "../support/arbiter_rows"
 
-# D-240: the teacher's home is a dashboard. "Da fare adesso", one row per subject, links that open in a new tab,
+# D-242: the teacher's home is a dashboard. "Da fare adesso", one row per subject, links that open in a new tab,
 # a cheap digest of the ledger and the two small endpoints the open page polls.
 class TeacherDashboardTest < ActionDispatch::IntegrationTest
   include MultiUser
@@ -168,6 +168,29 @@ class TeacherDashboardTest < ActionDispatch::IntegrationTest
     assert_select "li.subject[data-subject=#{@subject.key}] [data-cell=course]", /Da approvare: \d+\. Approvati: 0\. Da scrivere: \d+\./
     assert_select "li.subject[data-subject=#{@subject.key}] [data-student-cell=student]", /Ultima attività:/
     assert_select "li.subject[data-subject=#{@subject.key}] [data-student-cell=student] a[target=_blank]"
+  end
+
+  test "the dashboard leads to the course path: the topics line and the cell open the ready topics, the graph line links to the graph page" do
+    build_topic_world
+    record_viewed!
+    page("/teacher")
+    ready = "/teacher/subjects/#{@subject.key}/course?only=ready"
+    assert_select "li[data-todo=topics] a[href=?]", ready
+    assert_select "li.subject[data-subject=#{@subject.key}] [data-cell=course] a[href=?]", ready, "Rivedi e approva"
+    assert_select "li.subject[data-subject=#{@subject.key}] [data-cell=test] li[data-waiting=graph_to_approve] a[href=?]", "/teacher/subjects/#{@subject.key}/graph"
+  end
+
+  test "Home builds one Teacher::TestReview per subject for the whole page" do
+    make_blueprint_approvable!
+    built = 0
+    original = Teacher::TestReview.method(:new)
+    Teacher::TestReview.define_singleton_method(:new) { |*a, **k, &b| built += 1; original.call(*a, **k, &b) }
+    begin
+      Teacher::Home.new.rows
+    ensure
+      Teacher::TestReview.singleton_class.remove_method(:new)
+    end
+    assert_equal Subject.joins(:blueprint_revisions).distinct.count, built
   end
 
   test "trial students have a cell with their last activity and the skills they practised" do

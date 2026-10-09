@@ -6,6 +6,7 @@ it:
     nothing: "Per ora non c'è altro da fare qui."
     entry:
       title: "Test d'ingresso"
+      title_warmup: "Riscaldamento"
       not_open: "Il test non è ancora aperto. Il docente ti dice quando."
       warmup: "Prima prova i comandi. Ci vogliono pochi minuti."
       all_done: "Hai fatto tutte le materie. Bravo."

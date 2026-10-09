@@ -2,7 +2,7 @@ require "application_system_test_case"
 require_relative "../support/decision_world"
 require_relative "../support/student_session"
 
-# D-240: the open dashboard follows the ledger. A change made server-side shows after a short poll; a change
+# D-242: the open dashboard follows the ledger. A change made server-side shows after a short poll; a change
 # announced from another window by BroadcastChannel shows at once; the scroll stays, the changed row says
 # "aggiornato ora" for a while, and the page stays clean under the CSP.
 class TeacherDashboardSystemTest < ApplicationSystemTestCase

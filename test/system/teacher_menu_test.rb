@@ -2,7 +2,7 @@ require "application_system_test_case"
 require_relative "../support/decision_world"
 require_relative "../support/student_session"
 
-# D-241: the Materie panel opens with Enter, closes with Esc and gives the focus back; no hover; CSP clean.
+# D-243: the Materie panel opens with Enter, closes with Esc and gives the focus back; no hover; CSP clean.
 class TeacherMenuSystemTest < ApplicationSystemTestCase
   include DecisionWorld
   include StudentSession

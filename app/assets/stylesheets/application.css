@@ -451,7 +451,7 @@ ul.checks li { padding: 0.25rem 0; }
   .review-progress .progress-line progress { width: 100%; }
   .review-steps { gap: 0.25rem 1rem; }
 }
-/* The teacher's dashboard (D-240) --------------------------------------------- */
+/* The teacher's dashboard (D-242) --------------------------------------------- */
 .dash-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin: 0.5rem 0 1rem; }
 .dash-tools .hint { margin: 0; }
 .dash-toggle { display: inline-flex; align-items: center; gap: 0.4rem; }
@@ -465,7 +465,7 @@ ul.checks li { padding: 0.25rem 0; }
 .just-updated { outline: 2px solid var(--primary); outline-offset: 2px; }
 .updated-badge { display: inline-block; margin-right: 0.5rem; padding: 0 0.5rem; border: 2px solid var(--primary); font-weight: 700; }
 
-/* The teacher's menu, breadcrumb and subject switcher (D-241) ------------------------ */
+/* The teacher's menu, breadcrumb and subject switcher (D-243) ------------------------ */
 .teacher-nav { padding: 0.25rem 1rem; }
 .menu-list { display: flex; flex-wrap: wrap; align-items: center; gap: 0 1rem; list-style: none; margin: 0; padding: 0; }
 .menu-list > li { margin: 0; }

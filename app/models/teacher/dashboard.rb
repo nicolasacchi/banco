@@ -1,5 +1,5 @@
 module Teacher
-  # The teacher's first page as a dashboard (D-240): "Da fare adesso", the teacher's pending actions across all
+  # The teacher's first page as a dashboard (D-242): "Da fare adesso", the teacher's pending actions across all
   # subjects with the most blocking first, and one row per subject. It reads Teacher::Home (the same numbers as
   # the pages behind it) and adds nothing of its own to the business rules. Read-only.
   class Dashboard
@@ -66,7 +66,7 @@ module Teacher
     def tests_blocked = rows.select(&:blocked).map { |r| Todo.new(:test_blocked, r.subject, nil, href(:teacher_test_path, r), nil, nil, r.blocked) }
 
     def topics
-      rows.select { |r| r.course&.awaiting.to_i.positive? }.map { |r| Todo.new(:topics, r.subject, r.course.awaiting, href(:teacher_course_path, r), nil, nil, nil) }
+      rows.select { |r| r.course&.awaiting.to_i.positive? }.map { |r| Todo.new(:topics, r.subject, r.course.awaiting, href(:teacher_course_path, r, "?only=ready"), nil, nil, nil) }
     end
 
     def corrections

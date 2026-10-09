@@ -1,4 +1,4 @@
-# The teacher's persistent menu, the breadcrumb and the subject switcher (D-241). Pure navigation: no decisions here.
+# The teacher's persistent menu, the breadcrumb and the subject switcher (D-243). Pure navigation: no decisions here.
 module TeacherMenuHelper
   SUBJECT_CONTROLLERS = %w[graphs tests courses topics reports item_plays items].freeze
 

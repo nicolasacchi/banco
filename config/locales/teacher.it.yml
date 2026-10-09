@@ -114,6 +114,7 @@ it:
       to_approve: "Da approvare"
       approved: "Approvato"
       no_course: "Nessuna mappa del corso."
+      review_and_approve: "Rivedi e approva"
       topics_line: "Da approvare: %{awaiting}. Approvati: %{approved}. Da scrivere: %{missing}."
       lessons_in_review:
         one: "Una lezione in revisione."

@@ -1,4 +1,4 @@
-# The teacher's first page, the dashboard (C-04, D-240): what to do now, one row per subject. The other
+# The teacher's first page, the dashboard (C-04, D-242): what to do now, one row per subject. The other
 # pages are in app/controllers/teacher/.
 class TeacherController < ApplicationController
   layout "teacher"

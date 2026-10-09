@@ -11,8 +11,7 @@ import { renderMarkup } from "items/markup"
 // timer, bar or total. Pause and visibility are posted when they change; one request
 // every ten minutes while the page is visible keeps the session alive (B-05).
 export default class extends Controller {
-  static targets = ["intro", "stage", "heading", "itemBox", "sendButton", "unknownButton", "pauseButton", "paused",
-                    "work", "status", "blocked", "over", "wait", "help", "helpBody", "sheetButton", "sheet", "sheetBody", "leaveBox"]
+  static targets = ["intro", "stage", "heading", "itemBox", "sendButton", "unknownButton", "work", "status", "blocked", "over", "wait", "help", "helpBody", "sheetButton", "sheet", "sheetBody", "leaveBox"]
   static values = { stepUrl: String, eventsUrl: String, supportUrl: String, answerUrl: String, listUrl: String, subject: String,
                     resuming: Boolean, keepaliveSeconds: { type: Number, default: 600 }, texts: Object }
 
@@ -21,7 +20,6 @@ export default class extends Controller {
     this.outbox = new Outbox({ url: this.answerUrlValue, csrf: () => this.csrf() })
     this.current = null
     this.active = false
-    this.paused = false
     this.onVisibility = () => this.visibilityChanged()
     document.addEventListener("visibilitychange", this.onVisibility)
     // The menu of a sitting has one link, "Pausa: torna a Oggi" (D-240). It sits in the layout, outside this element.
@@ -203,24 +201,7 @@ export default class extends Controller {
 
   // ---- pause, visibility, keep-alive ---------------------------------------------
 
-  pause() {
-    this.paused = true
-    this.workTarget.hidden = true
-    this.pausedTarget.hidden = false
-    this.pauseButtonTarget.hidden = true
-    this.postEvent("paused")
-  }
-
-  resume() {
-    this.paused = false
-    this.pausedTarget.hidden = true
-    this.pauseButtonTarget.hidden = false
-    this.workTarget.hidden = false
-    this.postEvent("resumed")
-    this.handle?.focus()
-  }
-
-  // "Pausa: torna a Oggi": the sitting is paused as the Pausa button does, then the browser goes to Oggi. Answers already
+  // "Pausa: torna a Oggi": the pause is recorded, then the browser goes to Oggi. Answers already
   // sent are kept; an answer typed and not sent asks one line first, in the page.
   leaveClicked(event) {
     const link = event.target.closest?.("a[data-sitting-leave]")
@@ -245,7 +226,7 @@ export default class extends Controller {
   }
 
   async leaveNow() {
-    if (this.active && !this.paused) await Promise.race([this.postEvent("paused"), new Promise((resolve) => setTimeout(resolve, 1500))])
+    if (this.active) await Promise.race([this.postEvent("paused"), new Promise((resolve) => setTimeout(resolve, 1500))])
     window.location.assign(this.leaveHref || "/today")
   }
 

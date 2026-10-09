@@ -41,7 +41,7 @@
           <% if row.waiting.any? %>
             <ul class="plain waiting" aria-label="<%= t('teacher.home.waiting') %>">
               <% row.waiting.each do |code, count| %>
-                <li data-waiting="<%= code %>"><strong><% if code == :findings && row.has_blueprint %><%= dash_link t("teacher.home.wait.#{code}", count: count.to_i), "#{teacher_test_path(key: row.subject.key)}#open-findings" %><% else %><%= t("teacher.home.wait.#{code}", count: count.to_i) %><% end %></strong><% if code == :findings && row.clear.positive? %> <%= dash_link t("teacher.dashboard.clear_of", count: row.clear), "#{teacher_test_path(key: row.subject.key)}#follow-opinions-form" %><% end %></li>
+                <li data-waiting="<%= code %>"><strong><% if code == :graph_to_approve %><%= dash_link t("teacher.home.wait.#{code}", count: 0), teacher_graph_path(key: row.subject.key) %><% elsif code == :findings && row.has_blueprint %><%= dash_link t("teacher.home.wait.#{code}", count: count.to_i), "#{teacher_test_path(key: row.subject.key)}#open-findings" %><% else %><%= t("teacher.home.wait.#{code}", count: count.to_i) %><% end %></strong><% if code == :findings && row.clear.positive? %> <%= dash_link t("teacher.dashboard.clear_of", count: row.clear), "#{teacher_test_path(key: row.subject.key)}#follow-opinions-form" %><% end %></li>
               <% end %>
             </ul>
           <% end %>
@@ -52,6 +52,7 @@
           <% if row.course %>
             <p class="course-line" data-course-line><%= dash_link "#{t('teacher.home.course_line', approved: row.course.approved, total: row.course.total)} · #{row.course.open ? t('teacher.home.course_open') : t('teacher.home.course_closed')}", teacher_course_path(key: row.subject.key) %></p>
             <p class="hint"><%= t("teacher.dashboard.topics_line", awaiting: row.course.awaiting, approved: row.course.approved, missing: row.course.missing) %>
+              <% if row.course.awaiting.positive? %><%= dash_link t("teacher.dashboard.review_and_approve"), teacher_course_path(key: row.subject.key, only: "ready") %><% end %>
               <% if row.course.in_review.positive? %><%= t("teacher.dashboard.lessons_in_review", count: row.course.in_review) %><% end %></p>
           <% else %>
             <p><%= t("teacher.dashboard.no_course") %></p>
