@@ -29,10 +29,24 @@ module Api
         latest = lesson&.latest_revision
         return refuse("E-NOT-FOUND", "lesson", "no lesson #{params[:lesson].to_s.first(80)}: a first submit creates it (banco brief show lesson)", "banco lesson submit DIR", 404) unless latest
 
+        file = latest.source_md
+        converted = false
+        if params[:schema].present?
+          return refuse("E-FILES", "schema", "schema takes 2 (banco.lesson/2)", "banco lesson open #{lesson.key} --schema 2", 422) unless params[:schema].to_s == "2"
+
+          unless Lessons::Parser2.schema2?(file)
+            begin
+              file = Lessons::Convert1to2.call(file)
+              converted = true
+            rescue Lessons::Convert1to2::Refused => e
+              return refuse("E-FILES", "lesson", "the latest revision cannot be converted: #{e.message.first(200)}", "banco lesson open #{lesson.key}", 422)
+            end
+          end
+        end
         render json: { lesson: lesson.key, kind: lesson.kind, subject: lesson.subject.key, latest: Course::LessonView.latest_row(latest),
-                       files: { "lesson.md" => latest.source_md }, reviews: Course::LessonView.reviews(latest),
-                       teacher_comments: Course::LessonView.comments(lesson),
-                       next: "edit lesson.md, then banco lesson submit DIR --dry-run" }
+                       files: { "lesson.md" => file }, reviews: Course::LessonView.reviews(latest),
+                       teacher_comments: Course::LessonView.comments(lesson), converted_from_schema1: converted,
+                       next: converted ? "the draft keeps the old text in cards and adds nothing: write goals_it, a visual for every idea card, the checks and a schema in the summary (banco brief show lesson), then banco lesson submit DIR --dry-run" : "edit lesson.md, then banco lesson submit DIR --dry-run" }
       end
 
       # GET /api/v1/lesson-revisions/:revision
@@ -57,8 +71,10 @@ module Api
         unless files.is_a?(Hash) && files.keys == [ "lesson.md" ] && files["lesson.md"].is_a?(String)
           return refuse("E-FILES", "files", "send exactly {\"lesson.md\": \"...\"}", "banco lesson submit DIR", 422)
         end
-        if files["lesson.md"].bytesize > Validation::Rules.get(:lesson, :max_bytes)
-          return refuse("E-TOO-LARGE", "files/lesson.md", "lesson.md is over #{Validation::Rules.get(:lesson, :max_bytes)} bytes", "shorten the lesson", 413)
+        # lesson/2 reports an over-long file as E-LESSON-SIZE (96 KB) with the other findings; only an absurd one is refused outright
+        limit = files["lesson.md"][0, 16_384].match?(/^schema:\s*["']?banco\.lesson\/2["']?\s*$/) ? Validation::Rules.get(:lesson2, :max_bytes) * 4 : Validation::Rules.get(:lesson, :max_bytes)
+        if files["lesson.md"].bytesize > limit
+          return refuse("E-TOO-LARGE", "files/lesson.md", "lesson.md is over #{limit} bytes", "shorten the lesson", 413)
         end
         subject = Subject.find_by(key: key.split(".", 3)[1])
         return refuse("E-NOT-FOUND", "lesson", "no subject #{key.split('.', 3)[1].inspect}", "banco status", 404) unless subject
