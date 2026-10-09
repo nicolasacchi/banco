@@ -122,7 +122,7 @@ Limits (`config/banco/validation_rules.yml`, block `lesson2`):
   (`W-LESSON-CHECKS-SPARSE`). On the `try` card at most 3 checks per exercise and 12 in all.
 - At most 12 diagrams, schemas and procedures in core (a `cases` counts each diagram in it), 4 in extras, at most
   6 states in one diagram (`E-LESSON-VISUALS`).
-- Sentences of at most 25 words, bold spans of at most 4 words, bold at most 8% of the words, no banned
+- Sentences of at most 25 words, bold spans of at most 4 words, bold at most 8% of the words of the running text (the `text` and `callout` blocks), no banned
   phrase, no page number (`E-READ`, `E-LESSON-BOLD`, `E-PHRASE`, `E-LESSON-PAGE`), Gulpease at least 50
   (`W-GULPEASE`). Address the student as "tu", kindly and neutrally, never "bravo/brava". No italics, no
   ALL-CAPS words (acronyms excepted), no emoji. Decimal comma. The same notation everywhere.
@@ -187,7 +187,7 @@ fields are those of a practice item of the same component, plus:
 - `prompt_it`; `errors: [{answer, code?, message_it}]`: each wrong option should be a typical error of the skills'
   catalogue, with a message that helps; `explain_it`: shown after a right answer or after the second wrong one,
   it teaches (it is not "giusto").
-- `number` and `fraction`: the answer is exact, decimal comma; `input_before` and `input_after` put the box
+- `number` and `fraction`: the answer is exact, decimal comma (`number`: an integer or `2,5`; a fraction such as `5/2` is a `fraction` answer, the student cannot type it in a `number` box); `input_before` and `input_after` put the box
   inside its formula (`$x =$` then the box). `matching`: with `reuse_right: true` it is a classification (a row per
   item, the categories as chips). `span_select`: the sentence split into `spans: [{id: s1, text_it}]`, the answer
   is a list of span ids.
@@ -213,7 +213,7 @@ number line intervals.
 
 | Type | For | Fields |
 |---|---|---|
-| `balance` | the principles of equivalence, **only for equations with natural terms and a positive solution** | `left`, `right`: `{x: boxes (at most 12), units: weights (at most 24)}`; `x_value` (positive; omitted exactly when both plates hold the same number of boxes); `try: {from, to}` (the student puts a number in the box; the range holds the solution); `states` with `op_it` and `groups: n` (both plates divisible by n). With `states`, every state must be level at `x_value`: the drawing cannot lie |
+| `balance` | the principles of equivalence, **only for equations with natural terms and a positive solution** | `left`, `right`: `{x: boxes (at most 12), units: weights (at most 24)}`; `x_value` (positive; omitted exactly when both plates hold the same number of boxes); `try: {from, to}` (the student puts a number in the box; the range holds the solution); `states` with `op_it` and `groups: n` (both plates divisible by n). The plates are level at `x_value` (with `states`, every state): the drawing cannot lie, so a balance is tilted only when both plates hold the same number of boxes (then there is no `x_value`) |
 | `number_line` | signs, inequalities, intervals | `min`, `max`, `step` ((max - min)/step an integer, at most 30), `labels: all\|ends\|marks`, `marks: [{at, label_it?, kind: dot\|open\|closed\|cross, role?}]`, `intervals`, `jumps: [{from, by, label_it?, role?}]` |
 | `equation_parts` | the anatomy of an equation | `parts: [{tex, role, label_it?}]` in order (the members and the `=`), `brackets: [{from, to, label_it, role?}]` over whole parts (at most 4) |
 | `area_model` | products, the box method | `rows`, `cols` (at most 4), `cells` |
