@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { drawFrozen } from "items/frozen_slot"
 
-// The teacher's guided review of a topic (D-240): four steps with a progress bar. The sample instances are drawn
+// The teacher's guided review of a topic (D-241): four steps with a progress bar. The sample instances are drawn
 // by the student's own templates and switched off. "Ho letto la lezione" and "visto" post a record of what was read
 // (an app event, never a decision); a guest has no buttons and posts nothing. When the lesson is read and every
 // exercise is seen, the approval button opens if the server said the gate holds.

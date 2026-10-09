@@ -3,7 +3,7 @@ require_relative "../support/decision_world"
 require_relative "../support/multi_user"
 require_relative "../support/course_path_world"
 
-# D-240: the course page is the path of the subject, the topic page a guided review in four steps. Presentation and
+# D-241: the course page is the path of the subject, the topic page a guided review in four steps. Presentation and
 # the "seen" records only: the decisions and the gate are the ones of D-237.
 class TeacherCoursePathTest < ActionDispatch::IntegrationTest
   include DecisionWorld

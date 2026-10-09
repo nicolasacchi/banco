@@ -2,7 +2,7 @@ require "application_system_test_case"
 require_relative "../support/student_session"
 require_relative "../support/course_path_world"
 
-# D-240 in Chrome: from the path to the approval through the four steps, with the student's own templates drawing the
+# D-241 in Chrome: from the path to the approval through the four steps, with the student's own templates drawing the
 # samples, and no policy violation.
 class TeacherCoursePathSystemTest < ApplicationSystemTestCase
   include DecisionWorld

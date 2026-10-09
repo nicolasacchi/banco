@@ -78,7 +78,7 @@ module Teacher
       end
     end
 
-    # ---- the guided review (D-240)
+    # ---- the guided review (D-241)
 
     def lesson_read? = TopicSeen.lesson_read?(latest)
     def seen_ids = @seen_ids ||= TopicSeen.seen_item_ids(latest)

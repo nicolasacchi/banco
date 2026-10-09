@@ -407,7 +407,7 @@ li.exercise { margin-bottom: 1.5rem; }
 }
 .gm-note { font-weight: 400; }
 
-/* The course path and the guided review of a topic (D-240). State is always words and a mark, never colour alone. */
+/* The course path and the guided review of a topic (D-241). State is always words and a mark, never colour alone. */
 ol.path { list-style: none; padding: 0; margin: 0 0 1rem; counter-reset: none; }
 li.path-step { display: grid; grid-template-columns: 3rem 1fr; gap: 0 1rem; align-items: start; position: relative; padding: 1rem 0; border-bottom: 1px solid var(--line); }
 .step-number, .step-no { display: inline-flex; align-items: center; justify-content: center; min-width: 2.25rem; height: 2.25rem; border: 3px solid var(--text); border-radius: 50%; font-weight: 700; box-sizing: border-box; }

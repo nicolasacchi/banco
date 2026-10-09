@@ -1,5 +1,5 @@
 module Teacher
-  # What the teacher has read on a topic page (D-240): "Ho letto la lezione" (part=lesson) and an exercise seen
+  # What the teacher has read on a topic page (D-241): "Ho letto la lezione" (part=lesson) and an exercise seen
   # (part=exercise, item_revision_id). An app event like the views the gates read, never a decision; a guest, the
   # student's computer and a topic revision that is not the latest write nothing.
   class SeenController < Teacher::BaseController

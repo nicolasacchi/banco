@@ -51,8 +51,8 @@ a new revision needs its own review.
 
 The agent stops at `awaiting_teacher`. The teacher reads and decides in the browser:
 
-- `/teacher/subjects/:key/course`: the path of the subject (D-240): the topics in order as numbered steps with one badge, what is missing, counts and progress, the primary button "Rivedi e approva", the filter `?only=ready`, the release, the new skills with the programme text.
-- `/teacher/subjects/:key/topics/:topic`: a guided review in four steps with a progress bar (D-240): the lesson as the student sees it with its review, one card per exercise (four instances drawn by the student's templates, hints, messages, solution, review), the findings with the third reviewer's opinions, and the approval with its checklist, "Rimanda all'autore" and the next topic.
+- `/teacher/subjects/:key/course`: the path of the subject (D-241): the topics in order as numbered steps with one badge, what is missing, counts and progress, the primary button "Rivedi e approva", the filter `?only=ready`, the release, the new skills with the programme text.
+- `/teacher/subjects/:key/topics/:topic`: a guided review in four steps with a progress bar (D-241): the lesson as the student sees it with its review, one card per exercise (four instances drawn by the student's templates, hints, messages, solution, review), the findings with the third reviewer's opinions, and the approval with its checklist, "Rimanda all'autore" and the next topic.
 - `/teacher/subjects/:key/practice?student=KEY` and `/practice/skills/:skill`: the student's states, counts, typical errors, questions, and every try of a skill.
 
 Decisions (POST, web listener, teacher only): `approve_topic` (`confirm_seen=1`, and `lesson_findings_reason_it` when the lesson review has a blocker or major finding), `send_back_lesson` (`reason_code`, `comment_it`), `release_course` (`open=1|0`). The gate is `Approval::TopicGate`; its reasons are worded in Italian by `Teacher::Wording`.

@@ -52,7 +52,7 @@ module Teacher
       end
     end
 
-    # The path: the topics in map order as numbered steps (D-240).
+    # The path: the topics in map order as numbered steps (D-241).
     def steps
       @steps ||= begin
         ids = topics.filter_map { |r| r.latest && Approval::TopicGate.item_revision_ids(r.latest) }.flatten

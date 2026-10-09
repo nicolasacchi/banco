@@ -1,5 +1,5 @@
 module Teacher
-  # What the teacher has looked at on a topic page (D-240), kept as app events like the views the gates read
+  # What the teacher has looked at on a topic page (D-241), kept as app events like the views the gates read
   # (teacher_viewed_topic, teacher_viewed_item). Never a decision, and nothing the approval gate asks for:
   # the guided review reads them to mark its steps done.
   module TopicSeen
