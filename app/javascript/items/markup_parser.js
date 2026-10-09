@@ -77,7 +77,7 @@ const ROLE_NAME = /^[a-z]+(-[a-z]+)*$/
 const ROLE_SPAN = /^\[\[([a-z]+(?:-[a-z]+)*):/
 const LINK = /^\[([^\]\[]+)\]\((scheda|argomento):([a-z0-9.-]*)\)/
 
-function checkTex(tex) {
+export function checkTex(tex) {
   const hit = tex.match(FORBIDDEN_TEX)
   if (hit) throw new Refused(`a command that is not allowed in a formula (\\${hit[1]})`)
   let from = 0

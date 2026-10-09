@@ -158,6 +158,27 @@
 .mk-purpose { fill: var(--r-purpose-mark); stroke: var(--r-purpose-mark); color: var(--r-purpose-fg); }
 .mk-agent { fill: var(--r-agent-mark); stroke: var(--r-agent-mark); color: var(--r-agent-fg); }
 
+/* Fills of shapes: tint areas and the strokes of outlines. */
+.fl-highlight { fill: var(--r-highlight-tint); }
+.st-correct { stroke: var(--r-correct-mark); fill: none; }
+.st-wrong { stroke: var(--r-wrong-mark); fill: none; }
+.st-muted { stroke: var(--r-muted-mark); fill: none; }
+.st-unknown { stroke: var(--r-unknown-mark); fill: none; }
+.st-known { stroke: var(--r-known-mark); fill: none; }
+.fl-left { fill: var(--r-left-tint); }
+.st-left { stroke: var(--r-left-mark); fill: none; }
+.fl-right { fill: var(--r-right-tint); }
+.st-right { stroke: var(--r-right-mark); fill: none; }
+.st-coefficient { stroke: var(--r-coefficient-mark); fill: none; }
+.st-predicate { stroke: var(--r-predicate-mark); fill: none; }
+.st-subject { stroke: var(--r-subject-mark); fill: none; }
+.st-complement { stroke: var(--r-complement-mark); fill: none; }
+.st-object { stroke: var(--r-object-mark); fill: none; }
+.st-time { stroke: var(--r-time-mark); fill: none; }
+.st-cause { stroke: var(--r-cause-mark); fill: none; }
+.st-purpose { stroke: var(--r-purpose-mark); fill: none; }
+.st-agent { stroke: var(--r-agent-mark); fill: none; }
+
 /* Tints for areas (the two members of an equation, a card's tone). */
 .tn-highlight { background: var(--r-highlight-tint); }
 .tn-left { background: var(--r-left-tint); }
