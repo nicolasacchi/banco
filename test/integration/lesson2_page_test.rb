@@ -27,6 +27,18 @@ class Lesson2PageTest < ActionDispatch::IntegrationTest
     assert_equal "Comincia", labels["start"]
   end
 
+  test "the page asks Lessons::Progress for the card to resume and the cards seen, when it exists" do
+    build_lesson2_world(approve: false, release: false)
+    page(TRIAL, "/topics/#{TOPIC}/lesson")
+    assert_select "#lesson-root[data-lesson2-resume-value='0'][data-lesson2-seen-value='[]']"
+    stub = Module.new { def self.for(_student, _revision) = { card: 6, seen: [ 1, 2, 6 ] } }
+    Lessons.const_set(:Progress, stub)
+    page(TRIAL, "/topics/#{TOPIC}/lesson")
+    assert_select "#lesson-root[data-lesson2-resume-value='6'][data-lesson2-seen-value='[1,2,6]']"
+  ensure
+    Lessons.send(:remove_const, :Progress) if Lessons.const_defined?(:Progress, false)
+  end
+
   test "BANCO_LESSON2_ENABLED=0 draws the page in safe mode (the long column)" do
     build_lesson2_world(approve: false, release: false)
     ENV["BANCO_LESSON2_ENABLED"] = "0"

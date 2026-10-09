@@ -112,6 +112,18 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
     assert_selector ".l2-counter", text: "Scheda 2 di 11"
   end
 
+  test "the cover offers to resume from the server's last card" do
+    stub = Module.new { def self.for(_student, _revision) = { card: 6, seen: [ 1, 2, 6 ] } }
+    Lessons.const_set(:Progress, stub)
+    open_lesson
+    assert_selector ".l2-start", text: "Riprendi dalla scheda 6"
+    assert_selector ".map-item.seen", minimum: 3
+    find(".l2-start").click
+    assert_selector ".l2-counter", text: "Scheda 6 di 11"
+  ensure
+    Lessons.send(:remove_const, :Progress) if Lessons.const_defined?(:Progress, false)
+  end
+
   test "the fragment and a reload keep the place, an extra card has its own fragment, an unknown one opens the cover" do
     open_lesson(fragment: "#scheda-12")
     assert_selector ".l2-counter", text: "Approfondimento 1 di 2"
@@ -269,6 +281,18 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
     go 3
     assert_equal [], page.evaluate_script("window.__csp")
     assert_selector ".badge svg use[href*='lucide@1.54.0/banco-sprite.svg#']", minimum: 1
+  end
+
+  test "forced colours and the reduced-motion media query: roles stay told apart by icon, shape and label" do
+    open_lesson(name: "sentences", fragment: "#scheda-2")
+    page.driver.browser.page.command("Emulation.setEmulatedMedia", features: [ { name: "forced-colors", value: "active" }, { name: "prefers-reduced-motion", value: "reduce" } ])
+    assert page.evaluate_script("matchMedia('(prefers-reduced-motion: reduce)').matches")
+    assert page.evaluate_script("matchMedia('(forced-colors: active)').matches")
+    # each role of the legend has its icon or its shape and its printed label, whatever the colours
+    assert_selector ".legend-sample", count: 3
+    assert_equal 3, page.evaluate_script("[...document.querySelectorAll('.legend-sample')].filter(s => s.querySelector('svg') && s.textContent.trim().length > 3).length")
+    shot "forced-colors"
+    page.driver.browser.page.command("Emulation.setEmulatedMedia", features: [ { name: "forced-colors", value: "none" }, { name: "prefers-reduced-motion", value: "no-preference" } ])
   end
 
   test "dark and larger text: the cards still lay out without a label under the base size" do

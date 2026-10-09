@@ -337,6 +337,8 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 /* reduced motion */
 .l2[data-motion="reduced"] *, .l2[data-motion="reduced"] *::before, .l2[data-motion="reduced"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 
+@media (prefers-reduced-motion: reduce) { .l2 *, .l2 *::before, .l2 *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
 /* forced colours: colours and tints drop out; icons, shapes, labels and the legend stay */
 @media (forced-colors: active) {
   .l2-card, .l2-cover, .callout, .case, .example, .check, .mistake, .exercise { border: 2px solid CanvasText; }
@@ -370,7 +372,7 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 }
 
 /* the teacher's page (the box): the same renderer in a container whose width and theme the teacher picks */
-.l2-box { border: 2px solid var(--text); border-radius: 1em; padding: 0.6em; margin: 0.6em 0; background: var(--bg); color: var(--text); overflow: auto; resize: horizontal; }
+.l2-box { box-sizing: border-box; max-width: 100%; border: 2px solid var(--text); border-radius: 1em; padding: 0.6em; margin: 0.6em 0; background: var(--bg); color: var(--text); overflow: auto; resize: horizontal; }
 .l2-box .l2-bar { position: static; margin-top: 0.6em; border: 1px solid var(--rule); border-radius: 0.8em; }
 .l2-box .l2-top { position: static; margin: 0 0 0.6em; }
 .l2-box .l2-sidemap { display: none; }
