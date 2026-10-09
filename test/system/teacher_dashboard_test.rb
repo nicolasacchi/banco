@@ -39,7 +39,8 @@ class TeacherDashboardSystemTest < ApplicationSystemTestCase
   test "a change made on the server shows after a short poll, keeps the scroll and says aggiornato ora" do
     ENV["BANCO_DASHBOARD_POLL"] = "1"
     visit "/teacher"
-    assert_selector "#dashboard[data-controller=dashboard]"
+    assert_selector "#dashboard[data-dashboard-ready=true]"
+    assert_equal "visible", page.evaluate_script("document.visibilityState"), "the poll timer only runs in a visible tab"
     assert_text(/Aggiornato alle \d\d:\d\d/)
     assert_no_selector "li[data-todo=findings]"
     tall!
@@ -72,6 +73,8 @@ class TeacherDashboardSystemTest < ApplicationSystemTestCase
 
   test "the manual button refreshes, the toggle switches the new tabs off and is remembered" do
     visit "/teacher"
+    assert_selector "#dashboard[data-dashboard-ready=true]"
+    assert_equal "on", page.evaluate_script("localStorage.getItem('banco.dashboard.newtab') || 'on'"), "a leftover toggle from another test"
     assert_selector "#dashboard-body a[target=_blank]"
     uncheck "dashboard-newtab"
     assert_no_selector "#dashboard-body a[target=_blank]"

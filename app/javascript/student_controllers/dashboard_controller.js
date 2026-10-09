@@ -31,6 +31,7 @@ export default class extends Controller {
     }
     this.stamp()
     this.schedule()
+    this.element.dataset.dashboardReady = "true"
   }
 
   disconnect() {
