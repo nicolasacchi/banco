@@ -2,6 +2,7 @@ require "test_helper"
 require_relative "../support/validation_fixtures"
 require_relative "../support/course_rows"
 require_relative "../support/lesson_md"
+require_relative "../support/lesson2_fixtures"
 
 # Every code of the course map and the topic has a bad fixture here, and so has the lesson (lesson_checks_test).
 # Together they cover the Phase 1b codes of the registry (A3.2).
@@ -91,6 +92,45 @@ class CourseCodesTest < ActiveSupport::TestCase
     test "#{code} has a bad fixture" do
       assert_includes run.call(self), code
     end
+  end
+
+  # banco.lesson/2: the example, the prompts of the checks and the equation a balance draws are lines S may meet again.
+  def lesson2_revision(md = Lesson2Fixtures.read("base.md").sub("skills: [math.demo-equation]", "skills: [#{SKILL}]"))
+    body = Lessons::Parser2.call(md, Validation::Findings.new).body
+    lesson = Lesson.find_or_create_by!(key: body["key"]) { |l| l.subject = @subject; l.kind = body["kind"] }
+    LessonRevision.create!(lesson: lesson, seq: (lesson.revisions.maximum(:seq) || 0) + 1, source_md: md, source_sha256: Digest::SHA256.hexdigest(md),
+                           body_json: JSON.generate(body), rules_version: Validation::Rules.version.to_s, warnings_json: "[]")
+  end
+
+  test "W-TOPIC-INSTANCE-IN-LESSON reads a lesson/2: a check prompt, an example problem and a drawn balance" do
+    assert_equal "banco.lesson/2", lesson2_revision.body["schema"]
+    {
+      "a check prompt" => "Da $2x = 6$ dividi per 2. Quanto vale $x$?",
+      "an example problem" => "Risolvi $3x - 1 = 2x + 4$.",
+      "an equation drawn on a balance" => "Risolvi $2x + 3 = 7$."
+    }.each do |what, stem|
+      key = "math-p-#{what.parameterize}"
+      practice_with(key, [ stem ] + (1..11).map { |i| "$#{i + 40}x = 3$" })
+      assert_includes topic_codes(topic([ "math-p-a", key ])), "W-TOPIC-INSTANCE-IN-LESSON", what
+    end
+  end
+
+  test "a lesson/2 that shares nothing with the pinned instances raises no leak warning" do
+    lesson2_revision
+    assert_not_includes topic_codes(topic([ "math-p-a", "math-p-b" ])), "W-TOPIC-INSTANCE-IN-LESSON"
+  end
+
+  test "a bare prompt like 'Quanto vale $x$?' is not a line a practice item could copy" do
+    lines = Validation::TopicChecks.lesson_lines(lesson2_revision.body)
+    assert_not_includes lines, "Quanto vale $x$?"
+    assert_includes lines, "Risolvi $3x - 1 = 2x + 4$."
+  end
+
+  test "the lines of a balance are its equations, one per state" do
+    d = { "type" => "balance", "x_value" => "2", "left" => { "x" => 2, "units" => 3 }, "right" => { "units" => 7 },
+          "states" => [ { "op_it" => "a" }, { "left" => { "x" => 2 }, "right" => { "units" => 4 }, "op_it" => "b" } ] }
+    assert_equal [ "$2x + 3 = 7$", "$2x = 4$" ], Validation::TopicChecks.drawn_equations(d)
+    assert_equal [ "$x = 0$" ], Validation::TopicChecks.drawn_equations({ "type" => "balance", "left" => { "x" => 1 }, "right" => {} })
   end
 
   # A practice item with the given stems (and fingerprints, the rest derived).

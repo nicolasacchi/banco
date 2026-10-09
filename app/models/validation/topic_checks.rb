@@ -153,8 +153,62 @@ module Validation
     end
 
     def lesson_lines(body)
+      return lesson2_lines(body) if body["schema"] == "banco.lesson/2"
+
       from_blocks = Lessons::Markup.raw_blocks(body["sections"]["example_it"]).flat_map { |b| b.type == :p ? [ b.text ] : b.items.flat_map { |i| [ i[:text] ] + i[:subs] } }
       body["exercises"].map { |e| e["text_it"] } + from_blocks
+    end
+
+    # The lines of a banco.lesson/2 that S could meet again as a practice instance (A12): the problem and the steps of a
+    # worked example, the prompt of a check, the text of a try exercise, and the equation a balance draws.
+    def lesson2_lines(body)
+      lines = []
+      cards = body["cards"].to_a
+      cards.each do |card|
+        Lessons::Blocks.each_block(card) do |b, _|
+          case b["type"]
+          when "example"
+            lines << b["problem_it"]
+            lines.concat(b["steps"].to_a.map { |s| s["do_it"] })
+            lines.concat(b["steps"].to_a.filter_map { |s| s.dig("blank", "prompt_it") })
+          when "check" then lines << b["prompt_it"]
+          when "try"
+            b["exercises"].to_a.each do |e|
+              lines << e["text_it"]
+              lines.concat((e["checks"] || [ e["check"] ].compact).map { |c| c["prompt_it"] })
+            end
+          end
+          Lessons::Blocks.diagrams(b).each { |d| lines.concat(drawn_equations(d)) }
+        end
+      end
+      lines.concat(drawn_equations(body["hero"])) if body["hero"]
+      lines.compact.reject { |l| l.to_s.strip.empty? || bare?(l) }
+    end
+
+    # "Quanto vale $x$?": only a letter or a digit in math says nothing a practice item could be copying.
+    def bare?(line)
+      found = formulas(line)
+      found.any? && found.all? { |f| f.size <= 2 }
+    end
+
+    # "$2x + 3 = 7$" for every state of a balance: an equation of the lesson that a practice item may repeat.
+    def drawn_equations(diagram)
+      return [] unless diagram.is_a?(Hash) && diagram["type"] == "balance"
+
+      Lessons::Diagrams.merge_states(diagram).then { |d| d["states"] ? d["states"] : [ d ] }.filter_map do |eff|
+        next unless eff["left"] && eff["right"]
+
+        "$#{plate_text(eff['left'])} = #{plate_text(eff['right'])}$"
+      end.uniq
+    end
+
+    def plate_text(plate)
+      boxes = plate["x"].to_i
+      units = plate["units"].to_i
+      terms = []
+      terms << (boxes == 1 ? "x" : "#{boxes}x") if boxes.positive?
+      terms << units.to_s if units.positive? || boxes.zero?
+      terms.join(" + ")
     end
 
     def same_line?(stem, line)
