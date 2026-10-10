@@ -3,6 +3,9 @@ module Validation
   # (D-249). Outside any transaction while Chrome works; one insert after. Infrastructure trouble is raised, and the
   # job records it as an `error` row (never a pass) and retries.
   class LessonRenderCheck
+    # The wait for the shared Chrome lock never depends on the revision budget (a budget of 0 in a test must not mean "no wait").
+    LOCK_WAIT_SECONDS = 300
+
     def initialize(revision, attempt: 1)
       @revision = revision
       @attempt = attempt
@@ -10,7 +13,7 @@ module Validation
 
     def call
       token = Harness.issue("lrev", @revision.id)
-      result = ChromeRunner.session(wait: Rules.get(:lesson2, :render, :budget_seconds) * 10) do |session|
+      result = ChromeRunner.session(wait: [ Rules.get(:lesson2, :render, :budget_seconds) * 10, LOCK_WAIT_SECONDS ].max) do |session|
         LessonRenderRunner.new(session, body: @revision.body, token: token).call
       end
       append(status: result.status, chrome_version: result.chrome_version, shots: result.shots,
