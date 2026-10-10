@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+# Deletes the screenshot files of lesson renders nobody needs any more (D-249, A12): the revision is not pinned by a
+# topic revision, is not the latest of its lesson, and the render is older than 30 days. The lesson_renders rows stay
+# (the ledger); a missing file shows as "immagine rimossa". Weekly, from the RUNBOOK.
+#   bin/purge-lesson-shots [--days N] [--dry-run]
+require "optparse"
+days = 30
+dry = false
+OptionParser.new do |o|
+  o.banner = "usage: bin/purge-lesson-shots [--days N] [--dry-run]"
+  o.on("--days N", Integer, "age in days (default 30)") { |n| days = n }
+  o.on("--dry-run", "say what would go, delete nothing") { dry = true }
+end.parse!
+require_relative "../config/environment"
+result = LessonShots.purge(days: days, dry_run: dry)
+puts JSON.generate(deleted: result[:deleted].size, kept_names: result[:kept], bytes: result[:bytes], dry_run: dry)

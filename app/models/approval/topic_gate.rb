@@ -5,6 +5,7 @@ module Approval
   #   2. nothing pinned is stale: the lesson revision is the newest of its lesson and each item
   #      revision is the newest passed revision of its item,
   #   3. the lesson revision has a review by an independent session and the teacher did not send it back,
+  #   3b. a lesson/2 revision has a render check without errors (D-249: its cards were drawn in Chrome and read),
   #   4. every pinned item revision passes Review::Gate,
   #   5. the teacher opened the topic review page of this very revision (app_event teacher_viewed_topic),
   #   6. the teacher confirmed reading the lesson and the sample instances (confirm_seen), and
@@ -54,6 +55,8 @@ module Approval
       lesson_revision = revision.lesson_revision
       reasons << "the lesson revision has no review by an independent session" unless lesson_revision.reviews.exists?
       reasons << "the teacher sent the lesson revision back" if Course::Decisions.lesson_sent_back?(lesson_revision)
+      render_reason = LessonRenders.gate_reason(lesson_revision)
+      reasons << render_reason if render_reason
       ItemRevision.where(id: item_revision_ids(revision)).order(:id).each do |item_revision|
         gate = Review::Gate.check(item_revision)
         reasons << "item revision #{item_revision.id} is not approvable: #{gate.reasons.join('; ')}" unless gate.approvable

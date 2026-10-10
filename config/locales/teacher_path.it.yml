@@ -113,6 +113,7 @@ it:
         lesson: "La lezione ha la revisione di un altro agente e non è rimandata."
         exercises: "Ogni esercizio ha controllo, revisione e prova alla cieca."
         viewed: "Hai aperto questa pagina."
+        render: "Il controllo grafico della lezione non ha errori."
       need:
         lesson: "Premi «Ho letto la lezione» al passo 1."
         exercises: "Guarda tutti gli esercizi al passo 2."

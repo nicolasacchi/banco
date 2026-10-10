@@ -51,7 +51,8 @@ class GuestReadOnlyTest < ActionDispatch::IntegrationTest
     teacher_routes.each do |verb, path|
       if verb == "GET"
         on(:web, path, headers: GUEST, remote_addr: EDGE)
-        expected = path.start_with?("/teacher/preview") ? :forbidden : :success
+        # a stored image needs a stored render: the sample value of a sha256 names none
+        expected = path.start_with?("/teacher/preview") ? :forbidden : path.include?("/shots/") ? :not_found : :success
         assert_response expected, "GET #{path}"
       else
         on(:web, path, method: verb.downcase.to_sym, headers: GUEST.merge("X-CSRF-Token" => token, "Content-Type" => "application/json", "Accept" => "application/json"),
@@ -76,7 +77,7 @@ class GuestReadOnlyTest < ActionDispatch::IntegrationTest
   end
 
   test "the teacher is not refused on the same routes" do
-    teacher_routes.select { |verb, path| verb == "GET" && !path.include?("/preview/runs/") }.each do |_, path|
+    teacher_routes.select { |verb, path| verb == "GET" && !path.include?("/preview/runs/") && !path.include?("/shots/") }.each do |_, path|
       on(:web, path, headers: TEACHER, remote_addr: EDGE)
       assert_response :success, "GET #{path}"
     end

@@ -59,6 +59,7 @@ module Api
         render json: { revision_id: revision.id, lesson: revision.lesson.key, seq: revision.seq, superseded: latest.id != revision.id,
                        rules_version: revision.rules_version, older_rules: Course::LessonView.older_rules?(revision), warnings: revision.warnings,
                        reviews: Course::LessonView.reviews(revision), sent_back: Course::Decisions.lesson_sent_back?(revision) }
+                     .merge(revision.lesson2? ? { render: LessonRenders.summary(revision) } : {})
       end
 
       # POST /api/v1/lessons/submit {lesson, base, files: {"lesson.md"}}
@@ -135,8 +136,10 @@ module Api
         end
         return render json: { lesson: key, revision_id: replay.id, seq: replay.seq, replayed: true, warnings: replay.warnings } unless revision
 
+        # A lesson/2 is drawn in the server's Chrome (D-249, A12.2): the result is in `banco lesson status`, the shots in `banco lesson shots`.
+        RenderLessonRevisionJob.perform_later(revision.id) if revision.lesson2?
         render json: { lesson: key, revision_id: revision.id, seq: revision.seq, replayed: false, warnings: warnings,
-                       next: "stop here until another session reviews it: banco lesson-review open #{revision.id}" }, status: :created
+                       next: revision.lesson2? ? "the render check runs now (banco lesson status #{revision.id}, banco lesson shots #{revision.id} --dir D); stop here until another session reviews it: banco lesson-review open #{revision.id}" : "stop here until another session reviews it: banco lesson-review open #{revision.id}" }, status: :created
       end
     end
   end

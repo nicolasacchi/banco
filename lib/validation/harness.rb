@@ -24,6 +24,13 @@ module Validation
     LIBS = %w[rng.mjs fmt.mjs].freeze
     TTL = 600
 
+    # The render host of a lesson/2 revision (D-249, R4): the student's CSS, the student importmap and the body, no
+    # connection of any kind. Scripts: our own files (self) and the inline importmap and entry, by hash (set per page).
+    LESSON_CSP = "default-src 'none'; script-src 'self' %<hashes>s; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; " \
+                 "connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    LESSON_HOST = File.expand_path("../../app/views/harness/lesson_render.html.erb", __dir__)
+    LESSON_SCRIPT = File.expand_path("../../app/javascript/lesson/render_host.js", __dir__)
+
     # No connection of any kind, no image, no frame, only the page's own scripts.
     CSP = "default-src 'none'; script-src 'self'; connect-src 'none'; img-src 'none'; base-uri 'none'; form-action 'none'"
 
@@ -45,6 +52,15 @@ module Validation
       port = Banco::Listeners.ports.fetch(:harness)
       ENV["BANCO_HARNESS_URL"].presence ||
         (ENV["BANCO_CHROME_HOST"].present? ? "http://banco-harness:#{port}" : "http://127.0.0.1:#{port}")
+    end
+
+    # sha256 of what makes a lesson render differ: the host template and script, and the numbers of the check (A-07).
+    def lesson_version
+      Digest::SHA256.hexdigest([ File.read(LESSON_HOST), File.read(LESSON_SCRIPT), JSON.generate(Rules.get(:lesson2, :render)) ].join("\n"))
+    end
+
+    def lesson_page_url(token, theme: "cream")
+      "#{base_url}/h/#{token}/lesson-render.html?theme=#{theme}"
     end
 
     def page_url(token, generator: true, verify: false)
@@ -72,7 +88,7 @@ module Validation
       return nil unless ActiveSupport::SecurityUtils.secure_compare(sign(message), signature)
 
       kind, id, expires = message.split(":", 3)
-      return nil unless %w[rev stage].include?(kind) && expires.to_i >= now
+      return nil unless %w[rev stage lrev].include?(kind) && expires.to_i >= now
 
       [ kind, id ]
     rescue ArgumentError
@@ -86,6 +102,8 @@ module Validation
     # The text of generator.mjs or verify.mjs behind a token, or nil.
     def source(payload, name)
       kind, id = payload
+      return nil unless %w[rev stage].include?(kind) # a lesson render token (lrev) names a lesson revision, not an item's files
+
       files = kind == "stage" ? Staging.fetch(id) : stored_files(id)
       files && files[name]
     end

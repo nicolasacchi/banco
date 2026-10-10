@@ -2,7 +2,7 @@
 // or all cards in one long column; print; settings; resume; the events that say a card was seen.
 // renderLesson(root, body, config) returns { goTo, current, renderAll, setView, setReduceMotion, destroy }.
 //   body    the projection the page receives (Lessons::StudentBody): no answer in it
-//   config  { mode: "student" | "preview", teacher, safe, topic, revisionId, urls, resume, view, reduceMotion,
+//   config  { mode: "student" | "preview" | "render", expand, teacher, safe, topic, revisionId, urls, resume, view, reduceMotion,
 //             labels (t), items (the item templates' texts), seen, unavailableTopics, full, savePreferences }
 import { newId } from "items/outbox"
 import { button, clear, el, icon } from "lesson/dom"
@@ -36,14 +36,16 @@ export function renderLesson(root, body, config) {
   const motionQuery = typeof matchMedia === "function" ? matchMedia("(prefers-reduced-motion: reduce)") : null
   const printQuery = typeof matchMedia === "function" ? matchMedia("print") : null
   const trackers = new Set()
+  const expand = !!config.expand
   let mounts = []
 
   const ctx = {
     subject: body.subject, t, items: config.items ?? {}, topic: config.topic, revisionId: config.revisionId,
     safe: !!config.safe, preview: config.mode === "preview", get teacher() { return state.teacher },
-    get openMore() { return state.teacher || ctx.safe },
-    get openAll() { return state.teacher || ctx.safe },
-    get showAll() { return ctx.safe },
+    // config.expand (the render check, R4): every "more" open, every mistake turned, every step shown, as in safe mode
+    get openMore() { return state.teacher || ctx.safe || expand },
+    get openAll() { return state.teacher || ctx.safe || expand },
+    get showAll() { return ctx.safe || expand },
     unavailableTopics: config.unavailableTopics ?? [],
     cardNumber: (slug) => idToN.get(slug),
     fontPx: () => parseFloat(getComputedStyle(root).fontSize) || 20,
@@ -484,6 +486,8 @@ export function renderLesson(root, body, config) {
   return {
     goTo, renderAll, setView, setReduceMotion,
     current: () => state.n,
+    // the drawn figures (api.element, api.total, api.setState(i)): the render check steps through their states
+    figures: () => [...trackers],
     view: () => state.view,
     setTeacher(on) {
       state.teacher = !!on

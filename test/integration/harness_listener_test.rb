@@ -46,6 +46,51 @@ class HarnessListenerTest < ActionDispatch::IntegrationTest
     assert_equal "export const a = 1;", response.body
   end
 
+  test "the lesson render host: only for a lesson/2 revision's token, with a CSP that allows no connection, no cookie, the student's body" do
+    revision = begin
+      subject = Subject.create!(key: "math", name_it: "Matematica", position: 1)
+      lesson = Lesson.create!(subject: subject, key: "ripasso.math.host", kind: "ripasso")
+      body = JSON.parse(File.read(Rails.root.join("test/fixtures/lesson2/served/equations.json"))).merge("key" => "ripasso.math.host")
+      LessonRevision.create!(lesson: lesson, seq: 1, source_md: "x", source_sha256: "a" * 64, body_json: JSON.generate(body), rules_version: "8", warnings_json: "[]")
+    end
+    token = Validation::Harness.issue("lrev", revision.id)
+    on(:harness, "/h/#{token}/lesson-render.html?theme=dark")
+    assert_response :success
+    assert_nil response.headers["Set-Cookie"]
+    assert_equal "no-store", response.headers["Cache-Control"]
+    csp = response.headers["Content-Security-Policy"]
+    assert_includes csp, "connect-src 'none'"
+    assert_includes csp, "default-src 'none'"
+    assert_match(/script-src 'self' 'sha256-/, csp)
+    assert_no_match(/unsafe-inline.*script|script-src[^;]*unsafe-inline/, csp)
+    assert_select "html[data-theme=dark]"
+    assert_select "script[type=importmap]"
+    assert_select "script#lesson-body[type='application/json']"
+    assert_no_match(/csrf|authenticity|token/i, response.body.sub(/<!--.*?-->/m, ""))
+    # the page carries the student's projection of the body: nothing from the stored answers
+    assert_no_match(/"answer"|solution_it|final_it/, css_select("script#lesson-body").first.text)
+    # every inline script the page runs is covered by a hash of the CSP
+    css_select("script:not([src]):not([type='application/json'])").each do |node|
+      assert_includes csp, "'sha256-#{Base64.strict_encode64(Digest::SHA256.digest(node.children.map(&:to_s).join))}'"
+    end
+    # a token has one use: a lesson token opens no item file, an item token opens no lesson host
+    on(:harness, "/h/#{token}/generator.mjs")
+    assert_response :not_found
+    item_token = Validation::Harness.issue("rev", 1)
+    on(:harness, "/h/#{item_token}/lesson-render.html")
+    assert_response :not_found
+    on(:harness, "/h/#{Validation::Harness.issue('stage', Validation::Harness::Staging.put({}))}/lesson-render.html")
+    assert_response :not_found
+    on(:harness, "/h/#{Validation::Harness.issue('lrev', 0)}/lesson-render.html")
+    assert_response :not_found
+    on(:harness, "/h/not-a-token/lesson-render.html")
+    assert_response :not_found
+    on(:web, "/h/#{token}/lesson-render.html")
+    assert_response :not_found
+    on(:api, "/h/#{token}/lesson-render.html")
+    assert_response :not_found
+  end
+
   test "the libraries are public, and only the two libraries" do
     on(:harness, "/lib/rng.mjs")
     assert_response :success

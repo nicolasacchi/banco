@@ -7,6 +7,7 @@ require_relative "../support/lesson2_fixtures"
 # banco.lesson/2 over the agent API (rich lessons R1): submit dispatches on the schema, open --schema 2 converts,
 # the switch lesson.accept_schema1. Invented content only.
 class Lesson2ApiTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
   include CourseRows
   SKILL = "math.linear-equation-integer".freeze
   KEY = "ripasso.math.demo-equations".freeze
@@ -56,6 +57,18 @@ class Lesson2ApiTest < ActionDispatch::IntegrationTest
     submit(md2, base: revision.id)
     assert_response :ok
     assert_equal true, json["replayed"]
+  end
+
+  test "a stored lesson/2 revision is queued for the render check (not a dry run, not a replay), and says so" do
+    assert_no_enqueued_jobs { submit(md2, dry: true) }
+    assert_enqueued_jobs 1, only: RenderLessonRevisionJob do
+      submit(md2)
+    end
+    assert_response :created
+    assert_match(/render check runs now/, json["next"])
+    revision = LessonRevision.find(json["revision_id"])
+    assert_enqueued_with(job: RenderLessonRevisionJob, args: [ revision.id ])
+    assert_no_enqueued_jobs(only: RenderLessonRevisionJob) { clear_enqueued_jobs; submit(md2, base: revision.id) }
   end
 
   test "a lesson/2 fault answers with its code and the line" do

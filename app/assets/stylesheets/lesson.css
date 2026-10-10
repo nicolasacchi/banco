@@ -125,7 +125,8 @@
 .marker { width: 1.1em; height: 1.1em; vertical-align: -0.2em; margin-right: 0.3em; }
 /* formulas in the body font (A6): upright, at the body size */
 .l2 .katex { font-size: 1.1em; font-family: inherit; font-weight: inherit; }
-.l2 .katex .mathnormal, .l2 .katex .mathit, .l2 .katex .mord:not(.mathbf), .l2 .katex .mbin, .l2 .katex .mrel, .l2 .katex .mopen, .l2 .katex .mclose, .l2 .katex .mpunct, .l2 .katex .minner { font-family: inherit; font-style: normal; }
+.l2 .katex .mathnormal, .l2 .katex .mathit, .l2 .katex .mord:not(.mathbf), .l2 .katex .mbin, .l2 .katex .mrel, .l2 .katex .mopen, .l2 .katex .mclose, .l2 .katex .mpunct, .l2 .katex .minner { font-family: "Atkinson Hyperlegible", KaTeX_Main, Verdana, sans-serif; font-style: normal; }
+/* Atkinson has no U+2260 and a few other operators: KaTeX_Main draws them instead of a tofu box. */
 .l2 .katex .mathbf { font-weight: 700; }
 .l2 .katex-display { margin: 0.4em 0; }
 
@@ -211,7 +212,7 @@
 
 /* try */
 .try-intro { margin-bottom: 0.6em; }
-.try-nav { display: flex; align-items: center; justify-content: space-between; gap: 0.5em; margin: 0.5em 0; }
+.try-nav { display: flex; align-items: center; justify-content: space-between; gap: 0.5em; flex-wrap: wrap; margin: 0.5em 0; }
 .try-counter { margin: 0; font-weight: 700; }
 .exercises { list-style: none; padding: 0; margin: 0; }
 .exercise { border: 1px solid var(--rule); border-radius: 1em; padding: 0.4em 1em 1em; margin: 0 0 0.8em; background: var(--surface); }

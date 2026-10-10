@@ -293,6 +293,15 @@
       "error_codes": ["E-AUTH", "E-NOT-FOUND"]
     },
     {
+      "name": "lesson shots",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/lesson-revisions/:revision/shots",
+      "args": ["revision"],
+      "flags": ["--dir"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
       "name": "lesson-review open",
       "local": false,
       "method": "GET",

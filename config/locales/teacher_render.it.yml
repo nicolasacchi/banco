@@ -1,0 +1,32 @@
+# Texts of the render check of a lesson/2 (R4, D-249): the one line on the teacher's topic page and the page of the pictures.
+# Short sentences, bold only on keywords, no italics, no emoji.
+it:
+  teacher:
+    render:
+      label: "Controllo grafico"
+      ok: "nessun errore (%{count} immagini)"
+      pending: "non ancora fatto. Parte da solo dopo l'invio della lezione."
+      error: "non è riuscito (il browser del server non risponde). Riprova tra poco."
+      failed:
+        one: "1 errore."
+        other: "%{count} errori."
+      card_link: "Scheda %{n}: %{title}"
+      cover: "Copertina"
+      whole: "Tutta la lezione"
+      page: "Vedi le immagini"
+      codes:
+        E-LESSON-RENDER: "la scheda non si disegna"
+        E-LESSON-OVERFLOW: "qualcosa esce dalla pagina"
+        E-DIAGRAM-LAYOUT: "le scritte del disegno non stanno"
+        E-DIAGRAM-SMALL-TEXT: "scritte troppo piccole"
+      shots:
+        title: "Immagini della lezione, revisione %{seq}"
+        intro: "Ogni scheda come la vede lo studente, a tre misure. Le immagini senza risposte: sono quelle del controllo grafico."
+        none: "Non ci sono ancora immagini per questa revisione."
+        removed: "immagine rimossa"
+        viewport: "%{width} px, %{theme}"
+        theme_cream: "chiaro"
+        theme_dark: "scuro"
+        alt: "Scheda %{n}, %{viewport}"
+        back: "Torna all'argomento"
+        extra: "approfondimento"

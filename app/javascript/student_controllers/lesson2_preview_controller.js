@@ -29,6 +29,14 @@ export default class extends Controller {
     this.rootTarget.dataset.ready = "1"
   }
 
+  // A link of the render line (D-249): open the box on that card.
+  goto(event) {
+    event.preventDefault()
+    const n = Number(event.currentTarget.dataset.card)
+    this.api?.goTo(Number.isInteger(n) ? n : 0, { focus: true })
+    this.boxTarget.scrollIntoView?.({ block: "start" })
+  }
+
   width(event) {
     this.boxTarget.style.width = `${event.target.value}px`
     this.api?.relayout()

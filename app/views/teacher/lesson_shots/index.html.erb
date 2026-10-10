@@ -1,0 +1,29 @@
+<% content_for :title, t("teacher.render.shots.title", seq: @revision.seq) %>
+<main class="page wide" id="lesson-shots">
+  <h1><%= t("teacher.render.shots.title", seq: @revision.seq) %></h1>
+  <p class="hint"><%= t("teacher.render.shots.intro") %></p>
+  <% if @shots.empty? %>
+    <p><%= t("teacher.render.shots.none") %></p>
+  <% else %>
+    <% @shots.group_by { |s| s["card"] }.each do |n, shots| %>
+      <section class="shots-card" id="card-<%= n %>">
+        <h2><%= t("teacher.render.card_link", n: n, title: @titles[n]) %></h2>
+        <div class="shots-row" style="display: flex; flex-wrap: wrap; gap: 1em; align-items: flex-start">
+          <% shots.each do |s| %>
+            <% width, theme = s["viewport"].match(/\A(\d+)x\d+-(\w+)\z/).captures %>
+            <% label = t("teacher.render.shots.viewport", width: width, theme: t("teacher.render.shots.theme_#{theme}")) %>
+            <figure style="margin: 0; max-width: <%= width.to_i > 600 ? "48%" : "30%" %>">
+              <% if LessonShots.exist?(s["sha256"]) %>
+                <a href="<%= teacher_lesson_shot_path(lesson_revision_id: @revision.id, sha256: s["sha256"]) %>"><img src="<%= teacher_lesson_shot_path(lesson_revision_id: @revision.id, sha256: s["sha256"]) %>" alt="<%= t("teacher.render.shots.alt", n: n, viewport: label) %>" loading="lazy" style="max-width: 100%; height: auto; border: 1px solid #888"></a>
+              <% else %>
+                <p class="hint"><%= t("teacher.render.shots.removed") %></p>
+              <% end %>
+              <figcaption><%= label %></figcaption>
+            </figure>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  <% end %>
+  <p><a class="button secondary" href="<%= teacher_topic_path(key: @subject.key, topic: @revision.lesson.key) %>"><%= t("teacher.render.shots.back") %></a></p>
+</main>

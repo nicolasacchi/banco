@@ -10,7 +10,7 @@ module Teacher
     Sample = Data.define(:view, :presentation)
     Check = Data.define(:name, :done, :reasons)
     CHECK_GROUPS = { map: /not in the latest course map/, versions: /pinned lesson revision|no longer the newest passed/,
-                     lesson: /no review by an independent|sent the lesson revision back/, exercises: /is not approvable/, viewed: /was not opened/ }.freeze
+                     lesson: /no review by an independent|sent the lesson revision back/, exercises: /is not approvable/, viewed: /was not opened/, render: /render check/ }.freeze
     ReviewRow = Data.define(:review, :model, :results, :checklist, :recomputed, :findings)
 
     attr_reader :subject, :lesson, :key
@@ -35,6 +35,9 @@ module Teacher
 
     # Whether the teacher can approve now, ignoring the two form inputs (confirmation and reason).
     def approvable? = gate.approvable && !approved_latest?
+
+    # The one line of the render check of a lesson/2 revision (D-249), or nil for lesson/1.
+    def render_line = lesson_revision&.lesson2? ? LessonRenders.teacher_line(lesson_revision) : nil
 
     def send_backs = @send_backs ||= Course::LessonView.comments(lesson)
     def lesson_sent_back? = Course::Decisions.lesson_sent_back?(lesson_revision)
@@ -115,7 +118,7 @@ module Teacher
 
     # The gate's reasons grouped into the lines of the checklist of the last step.
     def checks
-      @checks ||= CHECK_GROUPS.map do |name, pattern|
+      @checks ||= CHECK_GROUPS.reject { |name, _| name == :render && !lesson_revision&.lesson2? }.map do |name, pattern|
         reasons = gate.reasons.select { |r| pattern.match?(r) }
         Check.new(name, reasons.empty?, reasons)
       end

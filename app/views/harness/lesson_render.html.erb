@@ -1,0 +1,23 @@
+<%# The render host of a lesson/2 revision (R4, A12): what Chrome loads to draw every card. Same CSS, same importmap,
+    same modules as the student's page; the body is the student's projection (no answer in it). Nothing here
+    connects anywhere (the CSP of Validation::Harness::LESSON_CSP). lesson/render_host.js exposes window.bancoLessonRender. %>
+<!DOCTYPE html>
+<html lang="it" data-theme="<%= @theme %>" data-size="normal">
+  <head>
+    <title>render</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= stylesheet_link_tag :app %>
+    <link rel="stylesheet" href="/vendor/katex@0.19.0/katex.min.css">
+    <%= stylesheet_link_tag "lesson_roles" %>
+    <%= stylesheet_link_tag "lesson" %>
+    <%= javascript_importmap_tags "lesson/render_host", importmap: student_importmap %>
+  </head>
+  <body class="student">
+    <main class="lesson2-page" id="lesson-page">
+      <div id="lesson-root" class="l2"></div>
+    </main>
+    <script type="application/json" id="lesson-body"><%= json_escape(@body.to_json).html_safe %></script>
+    <script type="application/json" id="lesson-config"><%= json_escape(@config.to_json).html_safe %></script>
+  </body>
+</html>
