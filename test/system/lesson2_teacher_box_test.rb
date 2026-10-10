@@ -34,6 +34,7 @@ class Lesson2TeacherBoxTest < ApplicationSystemTestCase
   teardown { sign_out_env }
 
   test "the box shows the student's cover, navigates, and switches width, theme and size" do
+    page.driver.resize(1280, 900) # the window another test left narrow would clamp the 390 box
     visit "/teacher/subjects/math/topics/#{TopicWorld::TOPIC_KEY}"
     assert_selector ".l2-box [data-ready='1']", wait: 20
     assert_selector ".l2-box .l2-cover h1", text: "Equazioni di primo grado intere"
