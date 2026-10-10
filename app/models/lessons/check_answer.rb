@@ -31,14 +31,16 @@ module Lessons
       located = locate(locator) or return Reply.new(404, { status: "not_found" })
       return Reply.new(422, { status: "invalid" }) if client_event_id.present? && !client_event_id.to_s.match?(LessonEvent::ID_FORMAT)
 
+      key = key_of(locator)
+      stored = existing(client_event_id)
+      return Reply.new(422, { status: "invalid" }) if stored && !same_check?(stored, locator)
+
+      # A replay answers for the stored row: the response the ledger holds is graded, never the resent one.
+      response = stored.payload.fetch("response") if stored
       check = located.check
       id_map = Checks.id_map(check, located.seed)
       graded = Checks.grade(check, response, id_map, subject: @body["subject"])
       return Reply.new(200, { verdict: "invalid", message_it: graded.message_it }) if graded.invalid?
-
-      key = key_of(locator)
-      stored = existing(client_event_id)
-      return Reply.new(422, { status: "invalid" }) if stored && !same_check?(stored, locator)
 
       try = stored ? stored.payload.fetch("try") : next_try(locator, key)
       record(locator, key, check, response, graded, try, client_event_id) if stored.nil? && @student

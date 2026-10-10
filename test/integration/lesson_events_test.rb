@@ -168,6 +168,18 @@ class LessonEventsTest < ActionDispatch::IntegrationTest
     assert_equal({ "status" => "not_found" }, other_block)
   end
 
+  test "a replay with another response answers for the stored one" do
+    card, block, check = choice
+    right = shown_id(@official, card, block, check["answer"])
+    wrong = shown_id(@official, card, block, "a")
+    id = cid
+    a = post_json(OFFICIAL, check_url(card, block), { response: wrong, client_event_id: id })
+    b = post_json(OFFICIAL, check_url(card, block), { response: right, client_event_id: id })
+    assert_equal a, b
+    assert_equal "wrong", b["verdict"]
+    assert_equal 1, LessonEvent.where(kind: "check_answered").count
+  end
+
   test "an answer that cannot be read is not a try and is not stored; a number and a matching are graded by their graders" do
     ncard, nblock, number = find_block { |_, b| b["type"] == "check" && b["component"] == "number" }
     reply = post_json(OFFICIAL, check_url(ncard, nblock), { response: "boh", try: 1, client_event_id: cid })
