@@ -4,7 +4,9 @@ class LessonsController < ApplicationController
   include StudentCourse
 
   before_action :load_topic
-  before_action :no_store, only: :solution
+  # The page of a lesson/2 depends on the student (the shuffle, preferences, progress) and on BANCO_LESSON2_ENABLED:
+  # it is never kept by the browser.
+  before_action :no_store, only: %i[show solution]
 
   SECTIONS = %w[why_it idea_it example_it mistakes_it].freeze
   OPENED_THROTTLE = 5.minutes
