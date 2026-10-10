@@ -34,7 +34,7 @@ module ApplicationHelper
   end
 
   # The texts of the "Non ho capito" control's script.
-  def question_labels = I18n.t("question").slice(:sent, :error, :send, :close)
+  def question_labels = I18n.t("question").slice(:button, :label, :sent, :error, :send, :close)
 
   def lesson_labels = I18n.t("lesson").slice(:error, :loading_solution, :solution_title, :show_solution)
 

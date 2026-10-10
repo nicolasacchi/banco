@@ -388,12 +388,32 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 .l2-box-tools fieldset { border: 0; padding: 0; margin: 0; display: flex; gap: 0.6em; align-items: center; }
 .l2-box-tools legend { float: left; margin-right: 0.5em; font-weight: 700; }
 
-/* phones: a quieter top bar and a bottom bar that keeps its height */
+/* weight for a reader with reading difficulties: prompts, step labels and the check button at a readable scale */
+.dg-counter { font-size: 1.1em; }
+.dg-op, .dg-question { font-size: 1.15em; }
+.dg-controls .button, .check .button { min-height: 2.9em; font-size: 1.05em; }
+.check .button.small { padding: 0.4em 1.2em; }
+.check-prompt { font-size: 1.1em; font-weight: 700; }
+.dg-desc { font-size: 0.8em; }
+.dg-desc[open] p { max-height: 8em; overflow: auto; }
+.question .status:empty { display: none; min-height: 0; }
+
+/* phones: the card starts in the first screen. In a lesson the student menu and the notices fold away (the page's
+   own bar has the way back and the map), the bar is one row, and the bottom bar may grow so no label is clipped. */
 @media (max-width: 600px) {
-  .l2-top .button { font-size: 0.8em; padding: 0.25em 0.6em; min-height: 2.2em; }
-  .l2-counter { flex-basis: 100%; }
+  body.student:has(.lesson2-page) #student-menu,
+  body.student:has(.lesson2-page) #trial-notice,
+  body.student:has(.lesson2-page) #draft-notice { display: none; }
+  .lesson2-page { padding-bottom: 8rem; padding-top: 0.25rem; }
+  .l2-back { margin: 0 0 0.2rem; font-size: 0.85em; }
+  .l2-top { margin-bottom: 0.5rem; padding-top: 0.2em; }
+  .l2-top-in { flex-wrap: nowrap; gap: 0.3em; }
+  .l2-top .button { font-size: 0.8em; padding: 0.25em 0.6em; min-height: 2.4em; white-space: nowrap; }
+  .l2-top .l2-printbtn { display: none; }
+  .l2-counter { flex: 1 1 auto; min-width: 0; font-size: 0.85em; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .l2-bar { padding: 0.4em 0.6em; }
   .l2-bar .button { font-size: 0.85em; }
-  .l2-bar .l2-next { max-width: 66%; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+  .l2-bar .l2-next { max-width: 66%; }
   .l2-bar-count { display: none; }
+  .l2-card, .l2-cover { scroll-margin-top: 4em; }
 }

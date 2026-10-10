@@ -27,6 +27,22 @@ class Lesson2PageTest < ActionDispatch::IntegrationTest
     assert_equal "Comincia", labels["start"]
   end
 
+  test "the question control gets its button and label text, so it is never an empty box" do
+    build_lesson2_world(approve: false, release: false)
+    page(TRIAL, "/topics/#{TOPIC}/lesson")
+    q = JSON.parse(css_select("#lesson-root").first["data-lesson2-question-labels-value"])
+    assert_equal "Non ho capito", q["button"]
+    assert q["label"].present?
+  end
+
+  test "on phones the lesson folds away the menu and notices and the bottom bar may grow" do
+    css = Rails.root.join("app/assets/stylesheets/lesson.css").read
+    phones = css[/@media \(max-width: 600px\) \{.*\z/m]
+    assert_match(/#student-menu/, phones)
+    assert_match(/#draft-notice/, phones)
+    assert_no_match(/line-clamp/, phones)
+  end
+
   test "the page gives the card to resume and the cards seen from the lesson events (R3)" do
     build_lesson2_world(approve: false, release: false)
     page(TRIAL, "/topics/#{TOPIC}/lesson")
