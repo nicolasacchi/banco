@@ -4,18 +4,45 @@ class LessonsController < ApplicationController
   include StudentCourse
 
   before_action :load_topic
-  before_action :no_store, only: :solution
+  # The page of a lesson/2 depends on the student (the shuffle, preferences, progress) and on BANCO_LESSON2_ENABLED:
+  # it is never kept by the browser.
+  before_action :no_store, only: %i[show solution]
 
   SECTIONS = %w[why_it idea_it example_it mistakes_it].freeze
   OPENED_THROTTLE = 5.minutes
   AFTER_TRY = %w[book_it summary_it].freeze
+
+  helper LessonPagesHelper
 
   def show
     revision = @topic.lesson_revision
     @body = revision.body
     @revision = revision
     record_opened(revision)
+    return unless @body["schema"] == "banco.lesson/2"
+
+    # A lesson of version 2 (R2): the page gets the student's projection, never the stored body (A2).
+    @student_body = student_body(revision)
+    @resume = resume_from(revision)
+    @safe = !Banco::Lesson2.enabled?
+    @preferences = Diagnosis::Preferences.lesson(acting_student)
+    render :show2
   end
+
+  # What the student's page may know of this revision: Lessons::StudentBody (a whitelist per block, the options
+  # shuffled with the student's seed). It has no fallback on purpose: a stored body is never sent as it is.
+  def student_body(revision)
+    Lessons::StudentBody.for(revision, seed: preview? ? "preview" : acting_student.key)
+  end
+  private :student_body
+
+  # { card: the last card seen of this revision or nil, seen: [n, ...] } from the lesson events (R3).
+  def resume_from(revision)
+    return { card: nil, seen: [] } unless defined?(::Lessons::Progress)
+
+    ::Lessons::Progress.for(acting_student, revision)
+  end
+  private :resume_from
 
   def record_opened(revision)
     last = PracticeEvent.where(student: acting_student, kind: "lesson_opened", topic_revision: @topic.topic_revision).order(:id).last

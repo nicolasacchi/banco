@@ -1,0 +1,28 @@
+<%# A lesson of version 2 (R2): the cover, the cards, the lesson map. The body below is the student's projection
+    (Lessons::StudentBody): no answer is in it. lesson2_controller.js draws everything from it (lesson/render.js). %>
+<% content_for :title, @student_body["title_it"] %>
+<% content_for :head do %>
+  <%= stylesheet_link_tag "lesson_roles" %>
+  <%= stylesheet_link_tag "lesson" %>
+<% end %>
+<main class="lesson2-page" id="lesson-page">
+  <p class="l2-back"><a href="/topics/<%= @topic.key %>"><%= t("lesson2.back_to_topic") %></a></p>
+  <% if draft? %><p class="notice" id="draft-notice" role="status"><%= t("draft.notice") %></p><% end %>
+  <div id="lesson-root" class="l2"
+       data-controller="lesson2"
+       data-lesson2-topic-value="<%= @topic.key %>"
+       data-lesson2-revision-id-value="<%= @revision.id %>"
+       data-lesson2-urls-value="<%= lesson2_urls(@topic.key).to_json %>"
+       data-lesson2-resume-value="<%= @resume[:card].to_i %>"
+       data-lesson2-seen-value="<%= Array(@resume[:seen]).to_json %>"
+       data-lesson2-view-value="<%= @safe ? 'scroll' : @preferences[:lesson_view] %>"
+       data-lesson2-reduce-motion-value="<%= @preferences[:reduce_motion] %>"
+       data-lesson2-safe-value="<%= @safe %>"
+       data-lesson2-labels-value="<%= lesson2_texts.to_json %>"
+       data-lesson2-items-value="<%= lesson2_item_texts.to_json %>"
+       data-lesson2-question-labels-value="<%= question_labels.to_json %>"
+       data-lesson2-unavailable-value="[]">
+    <noscript><p class="notice"><%= t("lesson2.no_script") %></p></noscript>
+  </div>
+  <script type="application/json" id="lesson-body"><%= json_escape(@student_body.to_json).html_safe %></script>
+</main>

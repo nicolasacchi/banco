@@ -1,0 +1,863 @@
+{
+ "schema": "banco.lesson/2",
+ "schema_version": 2,
+ "key": "ripasso.math.demo",
+ "kind": "ripasso",
+ "subject": "math",
+ "title_it": "Equazioni di primo grado intere",
+ "goals_it": [
+  "**Risolvere** un'equazione di primo grado intera",
+  "**Capire** se ha una, nessuna o infinite soluzioni",
+  "**Verificare** il risultato"
+ ],
+ "why_it": "Molti argomenti finiscono con un'equazione come $ax = b$. Se la sai risolvere, il resto diventa più semplice.",
+ "book_it": "Cerca «equazioni di primo grado» e «principi di equivalenza».",
+ "skills": [
+  "math.demo-equation"
+ ],
+ "uses": [],
+ "refs": [],
+ "scope": "studied",
+ "minutes": 30,
+ "calculator": false,
+ "hero": {
+  "type": "balance",
+  "alt_it": "Bilancia in equilibrio: a sinistra due scatole x e un peso da 1, a destra sette pesi da 1.",
+  "left": {
+   "x": 2,
+   "units": 1
+  },
+  "right": {
+   "units": 7
+  },
+  "tilt": 0
+ },
+ "parts": [
+  {
+   "n": 1,
+   "title_it": "Per cominciare"
+  },
+  {
+   "n": 2,
+   "title_it": "Le due regole"
+  },
+  {
+   "n": 3,
+   "title_it": "Il metodo"
+  },
+  {
+   "n": 4,
+   "title_it": "Alla fine"
+  }
+ ],
+ "cards": [
+  {
+   "n": 1,
+   "id": "pezzi",
+   "role": "idea",
+   "level": "core",
+   "part": 1,
+   "title_it": "I pezzi di un'equazione",
+   "icon": "lightbulb",
+   "blocks": [
+    {
+     "type": "text",
+     "text_it": "Un'equazione ha due **membri**, uno a sinistra e uno a destra del segno $=$. In mezzo c'è l'uguale.",
+     "n": 1
+    },
+    {
+     "type": "diagram",
+     "diagram": {
+      "type": "equation_parts",
+      "alt_it": "L'equazione 2x più 3 uguale 7 divisa in pezzi: il primo membro 2x più 3 e il secondo membro 7.",
+      "parts": [
+       {
+        "tex": "2",
+        "role": "known",
+        "label_it": "numero"
+       },
+       {
+        "tex": "x",
+        "role": "unknown",
+        "label_it": "incognita"
+       },
+       {
+        "tex": "+3",
+        "role": "known"
+       },
+       {
+        "tex": "=",
+        "role": "muted"
+       },
+       {
+        "tex": "7",
+        "role": "known"
+       }
+      ],
+      "brackets": [
+       {
+        "from": 0,
+        "to": 2,
+        "label_it": "primo membro",
+        "role": "left"
+       },
+       {
+        "from": 4,
+        "to": 4,
+        "label_it": "secondo membro",
+        "role": "right"
+       }
+      ]
+     },
+     "n": 2
+    },
+    {
+     "type": "legend",
+     "roles": [
+      {
+       "role": "unknown",
+       "question_it": "Il numero nascosto"
+      },
+      {
+       "role": "known"
+      },
+      {
+       "role": "left"
+      },
+      {
+       "role": "right"
+      },
+      {
+       "role": "highlight",
+       "note_it": "ciò che cambia in questo passo"
+      }
+     ],
+     "n": 3
+    },
+    {
+     "type": "more",
+     "title_it": "Che cosa vuol dire intera",
+     "blocks": [
+      {
+       "type": "text",
+       "text_it": "**Intera** vuol dire che la $x$ non sta sotto una frazione. In questa lezione i numeri sono interi."
+      }
+     ],
+     "n": 4
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "id": "soluzione",
+   "role": "idea",
+   "level": "core",
+   "part": 1,
+   "title_it": "Che cos'è la soluzione",
+   "icon": "scale",
+   "blocks": [
+    {
+     "type": "text",
+     "text_it": "La **soluzione** è il numero che, al posto di $\\role{unknown}{x}$, tiene i due piatti in equilibrio.",
+     "n": 1
+    },
+    {
+     "type": "diagram",
+     "diagram": {
+      "type": "balance",
+      "alt_it": "Bilancia con due scatole x e un peso a sinistra, sette pesi a destra. Puoi provare un numero da 0 a 5.",
+      "left": {
+       "x": 2,
+       "units": 1
+      },
+      "right": {
+       "units": 7
+      },
+      "try": {
+       "from": 0,
+       "to": 5
+      },
+      "tilt": 1
+     },
+     "n": 2
+    },
+    {
+     "type": "check",
+     "component": "choice",
+     "prompt_it": "Quale numero tiene in equilibrio la bilancia $2x + 1 = 7$?",
+     "options": [
+      {
+       "id": "o1",
+       "text_it": "$x = 3$"
+      },
+      {
+       "id": "o2",
+       "text_it": "$x = 4$"
+      },
+      {
+       "id": "o3",
+       "text_it": "$x = 6$"
+      }
+     ],
+     "n": 3
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "id": "stesso-peso",
+   "role": "idea",
+   "level": "core",
+   "part": 2,
+   "title_it": "Togli lo stesso peso dai due piatti",
+   "icon": "scale",
+   "blocks": [
+    {
+     "type": "callout",
+     "kind": "rule",
+     "title_it": "Primo principio",
+     "text_it": "Puoi **togliere** lo stesso numero da tutti e due i piatti.",
+     "n": 1
+    },
+    {
+     "type": "diagram",
+     "diagram": {
+      "type": "balance",
+      "alt_it": "Dalla bilancia 2x più 3 uguale 7 si tolgono tre pesi da ogni piatto: resta 2x uguale 4.",
+      "left": {
+       "x": 2,
+       "units": 3
+      },
+      "right": {
+       "units": 7
+      },
+      "tilt": 0,
+      "states": [
+       {
+        "left": {
+         "x": 2,
+         "units": 3
+        },
+        "right": {
+         "units": 7
+        },
+        "op_it": "Si parte da $2x + 3 = 7$",
+        "tilt": 0
+       },
+       {
+        "left": {
+         "x": 2
+        },
+        "right": {
+         "units": 4
+        },
+        "op_it": "Togli 3 pesi da ogni piatto: $2x = 4$",
+        "tilt": 0
+       }
+      ]
+     },
+     "n": 2
+    },
+    {
+     "type": "math",
+     "lines": [
+      {
+       "tex": "2x - 3 = 7",
+       "note_it": "il $-3$ cambia membro e cambia segno"
+      },
+      {
+       "tex": "2x = 7 + 3"
+      }
+     ],
+     "n": 3
+    },
+    {
+     "type": "check",
+     "component": "number",
+     "prompt_it": "Togli 3 da tutti e due i membri di $2x + 3 = 7$. Quanto vale il secondo membro?",
+     "input_before": "$7 - 3 =$",
+     "n": 4
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "id": "dividere",
+   "role": "idea",
+   "level": "core",
+   "part": 2,
+   "title_it": "Il numero davanti alla x si toglie dividendo",
+   "icon": "divide",
+   "blocks": [
+    {
+     "type": "diagram",
+     "diagram": {
+      "type": "balance",
+      "alt_it": "Sei scatole x pesano come diciotto pesi: divisi in sei gruppi uguali, ogni scatola pesa tre.",
+      "left": {
+       "x": 6
+      },
+      "right": {
+       "units": 18
+      },
+      "tilt": 0,
+      "states": [
+       {
+        "left": {
+         "x": 6
+        },
+        "right": {
+         "units": 18
+        },
+        "op_it": "$6x = 18$",
+        "tilt": 0
+       },
+       {
+        "left": {
+         "x": 6
+        },
+        "right": {
+         "units": 18
+        },
+        "groups": 6,
+        "op_it": "Dividi tutto in 6 gruppi uguali",
+        "tilt": 0
+       },
+       {
+        "left": {
+         "x": 1
+        },
+        "right": {
+         "units": 3
+        },
+        "op_it": "Un gruppo: $x = 3$",
+        "tilt": 0
+       }
+      ]
+     },
+     "n": 1
+    },
+    {
+     "type": "callout",
+     "kind": "rule",
+     "text_it": "Dividi **tutti e due** i membri per lo stesso numero, diverso da 0.",
+     "n": 2
+    },
+    {
+     "type": "check",
+     "component": "fraction",
+     "prompt_it": "Risolvi $4x = 12$. Scrivi il risultato come frazione.",
+     "input_before": "$x =$",
+     "n": 3
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "id": "metodo",
+   "role": "idea",
+   "level": "core",
+   "part": 3,
+   "title_it": "La procedura in 4 passi",
+   "icon": "list-checks",
+   "blocks": [
+    {
+     "type": "procedure",
+     "title_it": "Come si risolve",
+     "steps": [
+      {
+       "tag": "develop",
+       "text_it": "Togli le parentesi.",
+       "example_tex": "3(x-1) = 3x - 3"
+      },
+      {
+       "tag": "move",
+       "text_it": "Porta le $x$ a sinistra e i numeri a destra.",
+       "example_tex": "3x - x = 4 + 3"
+      },
+      {
+       "tag": "add",
+       "text_it": "Metti insieme i termini uguali.",
+       "example_tex": "2x = 7"
+      },
+      {
+       "tag": "divide",
+       "text_it": "Dividi per il numero davanti alla $x$.",
+       "example_tex": "x = 7/2"
+      }
+     ],
+     "n": 1
+    },
+    {
+     "type": "callout",
+     "kind": "warning",
+     "text_it": "Un segno meno davanti a una parentesi cambia **tutti** i segni dentro.",
+     "n": 2
+    }
+   ]
+  },
+  {
+   "n": 6,
+   "id": "esempio",
+   "role": "example",
+   "level": "core",
+   "part": 3,
+   "title_it": "Esempio, passo per passo",
+   "icon": "pencil-ruler",
+   "blocks": [
+    {
+     "type": "example",
+     "problem_it": "Risolvi $3(x - 1) - x = 2x + 4$.",
+     "steps": [
+      {
+       "tag": "develop",
+       "do_it": "$3x - 3 - x = 2x + 4$",
+       "why_it": "Il 3 moltiplica ogni termine della parentesi."
+      },
+      {
+       "tag": "move",
+       "do_it": "$3x - x - 2x = 4 + 3$",
+       "why_it": "Sposti i termini e cambi il segno."
+      },
+      {
+       "tag": "add",
+       "why_it": "Ora metti insieme i termini uguali: $3 - 1 - 2$.",
+       "blank": {
+        "component": "number",
+        "prompt_it": "Quanto vale il numero davanti alla $x$?",
+        "input_before": "$0 \\cdot x = 7$, il coefficiente è"
+       }
+      }
+     ],
+     "n": 1
+    }
+   ]
+  },
+  {
+   "n": 7,
+   "id": "tre-casi",
+   "role": "idea",
+   "level": "core",
+   "part": 3,
+   "title_it": "Tre casi: quante soluzioni?",
+   "icon": "scale",
+   "blocks": [
+    {
+     "type": "cases",
+     "cases": [
+      {
+       "title_it": "Una soluzione",
+       "condition_it": "$a \\neq 0$",
+       "text_it": "Dividi e trovi un numero.",
+       "example_it": "$2x = 6$ dà $x = 3$.",
+       "diagram": {
+        "type": "balance",
+        "alt_it": "Due scatole x pesano come sei pesi: la bilancia è in equilibrio con x uguale 3.",
+        "left": {
+         "x": 2
+        },
+        "right": {
+         "units": 6
+        },
+        "tilt": 0
+       }
+      },
+      {
+       "title_it": "Nessuna soluzione",
+       "condition_it": "$0 \\cdot x = 7$",
+       "text_it": "Nessun numero per 0 dà 7.",
+       "example_it": "La bilancia resta sempre inclinata.",
+       "diagram": {
+        "type": "balance",
+        "alt_it": "Nessuna scatola a sinistra, sette pesi a destra: la bilancia è sempre inclinata a destra.",
+        "left": {},
+        "right": {
+         "units": 7
+        },
+        "tilt": -1
+       }
+      },
+      {
+       "title_it": "Infinite soluzioni",
+       "condition_it": "$0 \\cdot x = 0$",
+       "text_it": "Ogni numero va bene.",
+       "example_it": "La bilancia è sempre in equilibrio.",
+       "diagram": {
+        "type": "balance",
+        "alt_it": "Uguale sulla sinistra e sulla destra: la bilancia è sempre in equilibrio qualunque numero metti.",
+        "left": {
+         "x": 1,
+         "units": 2
+        },
+        "right": {
+         "x": 1,
+         "units": 2
+        },
+        "tilt": 0
+       }
+      }
+     ],
+     "n": 1
+    },
+    {
+     "type": "callout",
+     "kind": "warning",
+     "text_it": "Con $a = 0$ non si divide.",
+     "n": 2
+    }
+   ]
+  },
+  {
+   "n": 8,
+   "id": "riconosci",
+   "role": "idea",
+   "level": "core",
+   "part": 3,
+   "title_it": "Riconosci il caso",
+   "icon": "variable",
+   "blocks": [
+    {
+     "type": "check",
+     "component": "matching",
+     "reuse_right": true,
+     "prompt_it": "Scegli il caso giusto per ogni equazione.",
+     "left": [
+      {
+       "id": "a",
+       "text_it": "$5x = 0$"
+      },
+      {
+       "id": "b",
+       "text_it": "$0 \\cdot x = 0$"
+      },
+      {
+       "id": "c",
+       "text_it": "$0 \\cdot x = 7$"
+      }
+     ],
+     "right": [
+      {
+       "id": "r1",
+       "text_it": "Determinata"
+      },
+      {
+       "id": "r2",
+       "text_it": "Impossibile"
+      },
+      {
+       "id": "r3",
+       "text_it": "Indeterminata"
+      }
+     ],
+     "n": 1
+    },
+    {
+     "type": "diagram",
+     "diagram": {
+      "type": "number_line",
+      "alt_it": "Retta dei numeri da meno cinque a cinque, con un salto da meno due a tre.",
+      "min": "-5",
+      "max": "5",
+      "step": "1",
+      "labels": "all",
+      "marks": [
+       {
+        "at": "-2",
+        "kind": "dot",
+        "role": "known",
+        "label_it": "parti da -2"
+       },
+       {
+        "at": "3",
+        "kind": "closed",
+        "role": "unknown",
+        "label_it": "arrivi a 3"
+       }
+      ],
+      "jumps": [
+       {
+        "from": "-2",
+        "by": "5",
+        "label_it": "+5",
+        "role": "known"
+       }
+      ]
+     },
+     "n": 2
+    }
+   ]
+  },
+  {
+   "n": 9,
+   "id": "errori",
+   "role": "mistakes",
+   "level": "core",
+   "part": 4,
+   "title_it": "Errori da evitare",
+   "icon": "triangle-alert",
+   "blocks": [
+    {
+     "type": "mistake",
+     "group_it": "Segni",
+     "wrong_it": "$2x - 3 = 7 \\to 2x = 7 - 3$",
+     "right_it": "$2x = 7 + 3$",
+     "why_it": "Spostando, $-3$ diventa $+3$.",
+     "n": 1
+    },
+    {
+     "type": "mistake",
+     "group_it": "Segni",
+     "wrong_it": "$-(x - 2) = -x - 2$",
+     "right_it": "$-(x - 2) = -x + 2$",
+     "why_it": "Il meno cambia tutti i segni nella parentesi.",
+     "n": 2
+    },
+    {
+     "type": "mistake",
+     "group_it": "Dividere",
+     "wrong_it": "$3x = 6 \\to x = 6 - 3$",
+     "right_it": "$x = 6 : 3 = 2$",
+     "why_it": "Il 3 moltiplica la $x$: si toglie dividendo.",
+     "n": 3
+    },
+    {
+     "type": "mistake",
+     "group_it": "Lo zero",
+     "wrong_it": "$0 \\cdot x = 7 \\to x = 7 : 0$",
+     "right_it": "Nessuna soluzione",
+     "why_it": "Non si divide per 0.",
+     "n": 4
+    }
+   ]
+  },
+  {
+   "n": 10,
+   "id": "prova",
+   "role": "try",
+   "level": "core",
+   "part": 4,
+   "title_it": "Prova tu",
+   "icon": "notebook-pen",
+   "blocks": [
+    {
+     "type": "try",
+     "intro_it": "Fai i conti sul quaderno, poi scrivi qui il risultato.",
+     "exercises": [
+      {
+       "n": 1,
+       "text_it": "Risolvi e verifica: $3x - 7 = 2$.",
+       "check": {
+        "component": "number",
+        "prompt_it": "Quanto vale $x$?",
+        "input_before": "$x =$"
+       }
+      },
+      {
+       "n": 2,
+       "text_it": "Risolvi: $5x = 3$.",
+       "check": {
+        "component": "fraction",
+        "prompt_it": "Scrivi $x$ come frazione.",
+        "input_before": "$x =$"
+       }
+      },
+      {
+       "n": 3,
+       "text_it": "Risolvi: $2(x + 1) = x + 6$.",
+       "check": {
+        "component": "number",
+        "prompt_it": "Quanto vale $x$?",
+        "input_before": "$x =$"
+       }
+      }
+     ],
+     "n": 1
+    }
+   ]
+  },
+  {
+   "n": 11,
+   "id": "sintesi",
+   "role": "summary",
+   "level": "core",
+   "part": 4,
+   "title_it": "Riassunto e schema",
+   "icon": "list-checks",
+   "blocks": [
+    {
+     "type": "summary",
+     "points_it": [
+      "Sviluppa, sposta cambiando segno, somma, dividi.",
+      "$0 \\cdot x = b$ con $b \\neq 0$: impossibile.",
+      "$0 \\cdot x = 0$: indeterminata.",
+      "Controlla sempre nell'equazione di partenza."
+     ],
+     "n": 1
+    },
+    {
+     "type": "schema",
+     "schema": {
+      "type": "flow",
+      "alt_it": "Da ax uguale b: se a è diverso da 0 è determinata; se a è 0 e b è diverso da 0 è impossibile; altrimenti è indeterminata.",
+      "nodes": [
+       {
+        "id": "s",
+        "kind": "step",
+        "text_it": "Arrivi a $ax = b$"
+       },
+       {
+        "id": "q1",
+        "kind": "decision",
+        "text_it": "$a \\neq 0$?"
+       },
+       {
+        "id": "det",
+        "kind": "end",
+        "text_it": "Determinata: $x = \\frac{b}{a}$",
+        "role": "correct"
+       },
+       {
+        "id": "q2",
+        "kind": "decision",
+        "text_it": "$b \\neq 0$?"
+       },
+       {
+        "id": "imp",
+        "kind": "end",
+        "text_it": "Impossibile"
+       },
+       {
+        "id": "ind",
+        "kind": "end",
+        "text_it": "Indeterminata"
+       }
+      ],
+      "edges": [
+       [
+        "s",
+        "q1"
+       ],
+       [
+        "q1",
+        "det",
+        "sì"
+       ],
+       [
+        "q1",
+        "q2",
+        "no"
+       ],
+       [
+        "q2",
+        "imp",
+        "sì"
+       ],
+       [
+        "q2",
+        "ind",
+        "no"
+       ]
+      ]
+     },
+     "n": 2
+    }
+   ]
+  },
+  {
+   "n": 12,
+   "id": "perche",
+   "role": "idea",
+   "level": "extra",
+   "title_it": "Perché la bilancia funziona",
+   "icon": "telescope",
+   "blocks": [
+    {
+     "type": "text",
+     "text_it": "Se togli lo stesso peso da tutti e due i piatti, la bilancia **non si muove**.",
+     "n": 1
+    },
+    {
+     "type": "diagram",
+     "diagram": {
+      "type": "area_model",
+      "alt_it": "Una griglia due per due che mostra il prodotto di x più 2 per x più 3.",
+      "rows": [
+       "$x$",
+       "$2$"
+      ],
+      "cols": [
+       "$x$",
+       "$3$"
+      ],
+      "cells": [
+       [
+        "$x^2$",
+        "$3x$"
+       ],
+       [
+        "$2x$",
+        "$6$"
+       ]
+      ]
+     },
+     "n": 2
+    }
+   ]
+  },
+  {
+   "n": 13,
+   "id": "grafico",
+   "role": "idea",
+   "level": "extra",
+   "title_it": "Che cosa vuol dire graficamente",
+   "icon": "chart-line",
+   "blocks": [
+    {
+     "type": "text",
+     "text_it": "La soluzione di $2x - 4 = 0$ è il punto dove la retta $y = 2x - 4$ incontra l'asse delle $x$.",
+     "n": 1
+    },
+    {
+     "type": "diagram",
+     "diagram": {
+      "type": "cartesian",
+      "alt_it": "Piano cartesiano con la retta y uguale 2x meno 4 che incontra l'asse delle x nel punto 2.",
+      "x": [
+       "-1",
+       "6"
+      ],
+      "y": [
+       "-5",
+       "6"
+      ],
+      "grid": true,
+      "lines": [
+       {
+        "id": "r",
+        "eq": "y = 2x - 4",
+        "label_it": "y = 2x - 4",
+        "role": "left"
+       }
+      ],
+      "points": [
+       {
+        "x": "2",
+        "y": "0",
+        "label_it": "(2, 0)",
+        "role": "unknown",
+        "on_lines": [
+         "r"
+        ]
+       }
+      ]
+     },
+     "n": 2
+    }
+   ]
+  }
+ ],
+ "words": {
+  "core": 400,
+  "extra": 60
+ }
+}

@@ -9,3 +9,6 @@ pin_all_from "app/javascript/student_controllers", under: "student_controllers"
 pin_all_from "app/javascript/items", under: "items"
 pin "mathlive", to: "/vendor/mathlive@0.111.0/mathlive.min.mjs", preload: false
 pin "katex", to: "/vendor/katex@0.19.0/katex.mjs", preload: false
+# Lessons of version 2 (R2): the renderer, its blocks and diagrams. Loaded by lesson2_controller.js on demand
+# (a dynamic import), so no other page of the student pays for them.
+pin_all_from "app/javascript/lesson", under: "lesson", preload: false

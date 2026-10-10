@@ -29,6 +29,7 @@ module Health
       { ok: problems.empty?, problems: problems.map(&:to_s) }.merge(parts).merge(
         validation_queue: validation_queue,
         decisions: { enabled: ENV["BANCO_DECISIONS_ENABLED"] == "1" },
+        lesson2: { enabled: Banco::Lesson2.enabled? },
         diagnosis: { released: Diagnosis::Release.open? },
         contract: Contract.digest, checked_at: Time.current.utc.iso8601
       )

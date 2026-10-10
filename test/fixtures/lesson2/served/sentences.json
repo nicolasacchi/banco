@@ -1,0 +1,413 @@
+{
+ "schema": "banco.lesson/2",
+ "schema_version": 2,
+ "key": "ripasso.italian.demo",
+ "kind": "ripasso",
+ "subject": "italian",
+ "title_it": "Soggetto e predicato",
+ "goals_it": [
+  "**Trovare** il verbo di una frase",
+  "**Riconoscere** il soggetto"
+ ],
+ "why_it": "Per capire una frase serve sapere chi fa che cosa.",
+ "skills": [
+  "italian.demo-sentence"
+ ],
+ "uses": [],
+ "refs": [],
+ "scope": "studied",
+ "minutes": 20,
+ "calculator": false,
+ "hero": {
+  "type": "sentence",
+  "layout": "centre",
+  "alt_it": "La frase Marco legge un libro: il verbo legge al centro, il soggetto Marco a sinistra, l'oggetto un libro a destra.",
+  "text_it": "Marco legge un libro",
+  "parts": [
+   {
+    "id": "s",
+    "text_it": "Marco",
+    "role": "subject",
+    "question_it": "Chi legge?"
+   },
+   {
+    "id": "p",
+    "text_it": "legge",
+    "role": "predicate",
+    "question_it": "Che cosa fa?"
+   },
+   {
+    "id": "o",
+    "text_it": "un libro",
+    "role": "object",
+    "question_it": "Che cosa legge?"
+   }
+  ]
+ },
+ "parts": [
+  {
+   "n": 1,
+   "title_it": "Soggetto e predicato"
+  },
+  {
+   "n": 2,
+   "title_it": "La forma del verbo"
+  },
+  {
+   "n": 3,
+   "title_it": "Alla fine"
+  }
+ ],
+ "cards": [
+  {
+   "n": 1,
+   "id": "centro",
+   "role": "idea",
+   "level": "core",
+   "part": 1,
+   "title_it": "Ogni frase ha un centro",
+   "icon": "zap",
+   "blocks": [
+    {
+     "type": "text",
+     "text_it": "Il **predicato** è il centro della frase. Tocca una parte per sapere che cosa fa.",
+     "n": 1
+    },
+    {
+     "type": "diagram",
+     "diagram": {
+      "type": "sentence",
+      "layout": "centre",
+      "alt_it": "La frase Marco legge un libro: il verbo legge al centro, il soggetto Marco a sinistra, l'oggetto un libro a destra.",
+      "text_it": "Marco legge un libro",
+      "parts": [
+       {
+        "id": "s",
+        "text_it": "Marco",
+        "role": "subject",
+        "question_it": "Chi legge?"
+       },
+       {
+        "id": "p",
+        "text_it": "legge",
+        "role": "predicate",
+        "question_it": "Che cosa fa?"
+       },
+       {
+        "id": "o",
+        "text_it": "un libro",
+        "role": "object",
+        "question_it": "Che cosa legge?"
+       }
+      ]
+     },
+     "n": 2
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "id": "colori",
+   "role": "idea",
+   "level": "core",
+   "part": 1,
+   "title_it": "Colori e simboli",
+   "icon": "puzzle",
+   "blocks": [
+    {
+     "type": "legend",
+     "roles": [
+      {
+       "role": "predicate"
+      },
+      {
+       "role": "subject"
+      },
+      {
+       "role": "object"
+      }
+     ],
+     "n": 1
+    },
+    {
+     "type": "diagram",
+     "diagram": {
+      "type": "sentence",
+      "layout": "line",
+      "alt_it": "La frase Mangiamo la pizza con il soggetto noi sottinteso, il predicato Mangiamo e il complemento oggetto la pizza.",
+      "text_it": "Mangiamo la pizza",
+      "parts": [
+       {
+        "id": "n",
+        "text_it": "(noi)",
+        "role": "subject",
+        "implied": true,
+        "label_it": "soggetto sottinteso"
+       },
+       {
+        "id": "p",
+        "text_it": "Mangiamo",
+        "role": "predicate"
+       },
+       {
+        "id": "o",
+        "text_it": "la pizza",
+        "role": "object"
+       }
+      ]
+     },
+     "n": 2
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "id": "metodo",
+   "role": "idea",
+   "level": "core",
+   "part": 1,
+   "title_it": "Il metodo in tre passi",
+   "icon": "list-checks",
+   "blocks": [
+    {
+     "type": "procedure",
+     "steps": [
+      {
+       "tag": "predicate",
+       "text_it": "Trova il verbo."
+      },
+      {
+       "tag": "ask",
+       "text_it": "Chiedi: chi fa l'azione?"
+      },
+      {
+       "tag": "agree",
+       "text_it": "Controlla che il verbo si accordi."
+      }
+     ],
+     "n": 1
+    },
+    {
+     "type": "diagram",
+     "diagram": {
+      "type": "sentence",
+      "layout": "line",
+      "alt_it": "La frase Marco legge un libro analizzata in due passi: prima si trova il predicato, poi il soggetto.",
+      "text_it": "Marco legge un libro",
+      "parts": [
+       {
+        "id": "s",
+        "text_it": "Marco",
+        "role": "subject",
+        "question_it": "Chi legge?"
+       },
+       {
+        "id": "p",
+        "text_it": "legge",
+        "role": "predicate",
+        "question_it": "Che cosa fa?"
+       },
+       {
+        "id": "o",
+        "text_it": "un libro",
+        "role": "object",
+        "question_it": "Che cosa legge?"
+       }
+      ],
+      "states": [
+       {
+        "op_it": "Passo 1: trova il verbo",
+        "next_label_it": "Trova il soggetto"
+       },
+       {
+        "op_it": "Passo 2: il soggetto concorda con il verbo",
+        "links": [
+         {
+          "from": "s",
+          "to": "p",
+          "label_it": "accordo"
+         }
+        ]
+       }
+      ]
+     },
+     "n": 2
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "id": "attiva-passiva",
+   "role": "idea",
+   "level": "core",
+   "part": 2,
+   "title_it": "Dall'attiva alla passiva",
+   "icon": "repeat",
+   "blocks": [
+    {
+     "type": "diagram",
+     "diagram": {
+      "type": "sentence",
+      "layout": "line",
+      "alt_it": "La frase attiva Marco legge un libro diventa passiva: Un libro è letto da Marco. Le parti con lo stesso nome si spostano.",
+      "text_it": "Marco legge un libro",
+      "parts": [
+       {
+        "id": "s",
+        "text_it": "Marco",
+        "role": "subject"
+       },
+       {
+        "id": "p",
+        "text_it": "legge",
+        "role": "predicate"
+       },
+       {
+        "id": "o",
+        "text_it": "un libro",
+        "role": "object"
+       }
+      ],
+      "states": [
+       {
+        "text_it": "Marco legge un libro",
+        "op_it": "Frase attiva",
+        "next_label_it": "Gira la frase",
+        "parts": [
+         {
+          "id": "s",
+          "text_it": "Marco",
+          "role": "subject"
+         },
+         {
+          "id": "p",
+          "text_it": "legge",
+          "role": "predicate"
+         },
+         {
+          "id": "o",
+          "text_it": "un libro",
+          "role": "object"
+         }
+        ]
+       },
+       {
+        "text_it": "Un libro è letto da Marco",
+        "op_it": "Frase passiva",
+        "parts": [
+         {
+          "id": "o",
+          "text_it": "Un libro",
+          "role": "object"
+         },
+         {
+          "id": "p",
+          "text_it": "è letto",
+          "role": "predicate"
+         },
+         {
+          "id": "s",
+          "text_it": "da Marco",
+          "role": "subject"
+         }
+        ]
+       }
+      ]
+     },
+     "n": 1
+    },
+    {
+     "type": "check",
+     "component": "span_select",
+     "prompt_it": "Tocca il soggetto.",
+     "text_it": "Il treno è arrivato in ritardo",
+     "spans": [
+      {
+       "id": "s1",
+       "text_it": "Il treno"
+      },
+      {
+       "id": "s2",
+       "text_it": "è arrivato"
+      },
+      {
+       "id": "s3",
+       "text_it": "in ritardo"
+      }
+     ],
+     "n": 2
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "id": "riassunto",
+   "role": "summary",
+   "level": "core",
+   "part": 3,
+   "title_it": "Riassunto e schema",
+   "icon": "list-checks",
+   "blocks": [
+    {
+     "type": "summary",
+     "points_it": [
+      "Il **predicato** è il centro della frase.",
+      "Il soggetto fa l'azione.",
+      "Il complemento oggetto risponde a: che cosa?"
+     ],
+     "n": 1
+    },
+    {
+     "type": "schema",
+     "schema": {
+      "type": "concept_map",
+      "alt_it": "Mappa: il predicato è collegato al complemento oggetto, senza preposizione, e ai complementi indiretti, con preposizione, tra cui il tempo.",
+      "root": "r",
+      "nodes": [
+       {
+        "id": "r",
+        "text_it": "Il predicato"
+       },
+       {
+        "id": "o",
+        "text_it": "Complemento oggetto",
+        "role": "object",
+        "icon": "box"
+       },
+       {
+        "id": "i",
+        "text_it": "Complementi indiretti"
+       },
+       {
+        "id": "t",
+        "text_it": "Tempo",
+        "role": "time"
+       }
+      ],
+      "edges": [
+       {
+        "from": "r",
+        "to": "o",
+        "label_it": "senza preposizione"
+       },
+       {
+        "from": "r",
+        "to": "i",
+        "label_it": "con preposizione"
+       },
+       {
+        "from": "i",
+        "to": "t"
+       }
+      ]
+     },
+     "n": 2
+    }
+   ]
+  }
+ ],
+ "words": {
+  "core": 250,
+  "extra": 0
+ }
+}

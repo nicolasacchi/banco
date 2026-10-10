@@ -86,6 +86,8 @@ jobs:
         run: node --test 'lib/harness/test/*.test.mjs'
       - name: Student pages (markup parser, local outbox)
         run: node --test 'test/javascript/**/*.test.mjs'
+      - name: Lesson/2 renderer (exact numbers, shared diagram vectors both ways, served lessons)
+        run: node --test 'app/javascript/lesson/test/*.test.mjs'
 
   scan:
     runs-on: ubuntu-24.04
