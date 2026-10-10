@@ -40,6 +40,15 @@ export const iconOf = (card) => card.icon || DEFAULT_ICON[card.role] || "lightbu
 
 const VISUAL = new Set(["diagram", "schema"])
 
+// The picture comes first and is the card's main thing: a callout written before it moves to just after it.
+export function visualFirst(blocks) {
+  const first = blocks.findIndex((b) => VISUAL.has(b.type))
+  if (first <= 0) return blocks
+  const lead = blocks.slice(0, first)
+  if (!lead.every((b) => b.type === "callout")) return blocks
+  return [blocks[first], ...lead, ...blocks.slice(first + 1)]
+}
+
 export function renderCard(card, ctx, position) {
   const article = el("article", {
     class: `l2-card card-${card.role} card-${card.level}${card.tone ? ` card-tone-${card.tone}` : ""}`,
@@ -49,34 +58,31 @@ export function renderCard(card, ctx, position) {
   article.appendChild(el("header", { class: "card-head" },
     el("span", { class: "badge", "aria-hidden": "true" }, icon(iconOf(card), "badge-ic")),
     el("div", { class: "card-titles" }, position.kicker ? el("p", { class: "kicker", text: position.kicker }) : null, heading)))
-  // a legend chip only on the first card where a role appears (the lesson map has them all)
+  // a legend chip only on the first card where a role appears (the lesson map has them all); it sits below the card, not above the picture
   const roles = position.newRoles ?? rolesUsed(card)
   const hasLegend = card.blocks.some((b) => b.type === "legend")
-  if (roles.length > 0 && !hasLegend) {
-    const line = el("p", { class: "card-legend", "aria-label": ctx.t.legend_label }, el("span", { class: "legend-intro", text: `${ctx.t.legend_label}: ` }))
-    roles.forEach((r) => line.appendChild(sample(r, ctx)))
-    article.appendChild(line)
-  }
   const body = el("div", { class: "card-body" })
   const types = card.blocks.map((b) => b.type)
   if (types.length === 2 && types.includes("text") && types.some((t) => VISUAL.has(t))) body.classList.add("is-split")
   const renderBlock = (block) => renderOne(block, card, ctx, renderBlock)
-  let lastGroup = null
   let grid = null
-  for (const block of card.blocks) {
+  for (const block of visualFirst(card.blocks)) {
     if (block.type === "mistake") {
       if (!grid) {
         body.appendChild(el("p", { class: "mistakes-intro", text: ctx.t.mistakes_intro }))
         grid = el("div", { class: "mistakes-grid" })
         body.appendChild(grid)
       }
-      if (block.group_it && block.group_it !== lastGroup) grid.appendChild(el("h3", { class: "mistake-group" }, icon("triangle-alert", "mistake-group-ic"), document.createTextNode(block.group_it)))
-      lastGroup = block.group_it ?? lastGroup
-      grid.appendChild(renderBlock(block))
+      grid.appendChild(mistake(block, ctx, { group: block.group_it }))
       continue
     }
     grid = null
     body.appendChild(renderBlock(block))
+  }
+  if (roles.length > 0 && !hasLegend) {
+    const line = el("p", { class: "card-legend", "aria-label": ctx.t.legend_label }, el("span", { class: "legend-intro", text: `${ctx.t.legend_label}: ` }))
+    roles.forEach((r) => line.appendChild(sample(r, ctx)))
+    body.appendChild(line)
   }
   article.appendChild(body)
   if (card.n !== undefined && card.role !== "try") {

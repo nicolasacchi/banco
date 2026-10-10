@@ -629,3 +629,58 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
   .l2 .block-diagram { padding: 0.2em; }
   .dg-eq { font-size: 1.3em; min-width: 100%; order: 3; }
 }
+
+/* ---- round 2 of the pilot look (D-258) ---- */
+/* the top bar never overflows: the counter gives way, the buttons keep their size; a long name has a short form on a phone */
+.l2-counter { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.l2-chip, .l2-tools, .l2-ibtn, .l2-brand { flex: none; }
+.l2-counter .cn-s { display: none; }
+@media (max-width: 600px) { .l2-counter .cn-l { display: none; } .l2-counter .cn-s { display: inline; } }
+@media (max-width: 420px) { .l2-next-pre { display: none; } }
+
+/* callouts: a tint, one or two lines, after the picture */
+.callout { padding: 0.5em 0.9em; gap: 0.7em; align-items: center; }
+.l2 .callout-ic { width: 1.8em; height: 1.8em; margin-top: 0; }
+.callout-head { font-size: 0.75em; line-height: 1.2; }
+.callout-body p { margin: 0.05em 0 0; }
+.callout-rule { background: color-mix(in srgb, var(--r-left-mark) 13%, var(--surface)); border-left-color: var(--r-left-mark); }
+.callout-rule .callout-ic { color: var(--r-left-mark); }
+[data-theme="dark"] .callout-rule .callout-ic { color: var(--text); }
+.callout-tip { background: color-mix(in srgb, var(--r-highlight-tint) 55%, var(--surface)); border-left-color: var(--brass-dark); }
+.callout-tip .callout-ic { color: var(--brass-dark); }
+
+/* the legend chip sits under the card's content, small */
+.card-body > .card-legend { margin: 0.9em 0 0; font-size: 0.78em; }
+
+/* the steps of a balance are small and quiet: the bottom bar is the one big "Avanti" */
+.dg-controls .dg-prev, .dg-controls .dg-next { min-height: 2.4em; padding: 0.2em 0.9em; font-size: 0.95em; border-radius: 0.8em; }
+.dg-controls .dg-counter { font-size: 0.85em; color: var(--muted); font-weight: 700; }
+
+/* the problem of a worked example is the picture: the equation as two big tiles */
+.problem-big { display: flex; flex-direction: column; align-items: center; gap: 0; width: 100%; }
+.problem-lead { margin: 0; font-weight: 800; font-size: 1.1em; }
+.l2 .problem-eq { font-size: clamp(1.15em, 5.6cqw, 2.4em); line-height: 1.7; text-align: center; max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+.example-problem { padding: 0.8em 0.6em; }
+
+/* mistakes: compact flip cards, the group is the tag of the card, the hint an icon */
+.mistakes-grid { gap: 0.6em; }
+.mistake-toggle { position: relative; gap: 0.15em; padding: 0.5em 0.8em 0.55em; }
+.mistake-tag { font-size: 0.82em; }
+.mistake-group { font-weight: 800; color: var(--muted); }
+.mistake-text { margin: 0.1em 0; font-size: 1em; }
+.mistake-hint { position: absolute; top: 0.5em; right: 0.7em; }
+.mistake-hint .ic { width: 1.25em; height: 1.25em; }
+.mistake-back { padding: 0.4em 0.8em 0.6em; margin-top: 0; }
+
+/* "Non ho capito": a quiet text button at the foot of the card */
+.card-foot { margin-top: 0.8em; text-align: right; }
+.card-foot .question > .button { border-color: transparent; background: none; font-size: 0.85em; min-height: 0; padding: 0.2em 0.5em; text-decoration: underline; text-underline-offset: 0.2em; color: var(--muted); }
+
+/* the summary: the key word of each tile is bold and in the primary colour */
+.summary-points strong { font-weight: 800; color: var(--primary); }
+[data-theme="dark"] .summary-points strong { color: var(--text); }
+@media (max-width: 600px) {
+  .dg-controls .dg-prev, .dg-controls .dg-next { flex: 1 1 0; padding: 0.2em 0.3em; font-size: 0.9em; white-space: nowrap; }
+  .dg-controls .dg-counter { display: none; }
+  .l2-top-in { gap: 0.4em; }
+}

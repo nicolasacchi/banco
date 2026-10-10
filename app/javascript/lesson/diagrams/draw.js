@@ -274,7 +274,7 @@ export function mountDiagram(data, ctx, options = {}) {
       state.i = Math.max(0, state.i - 1)
       draw()
     })
-    next = button("", { class: "button small dg-next" }, () => {
+    next = button("", { class: "button secondary small dg-next" }, () => {
       state.i = state.i === total - 1 ? 0 : state.i + 1
       draw()
     })

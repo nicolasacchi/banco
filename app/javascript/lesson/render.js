@@ -77,8 +77,8 @@ export function renderLesson(root, body, config) {
   // ---- positions and texts ----
   const partTitle = (card) => (card.part ? body.parts?.find((p) => p.n === card.part)?.title_it : null)
   const positionOf = (card) => {
-    if (card.level === "core") return { text: t.card_of.replace("%{n}", core.indexOf(card) + 1).replace("%{total}", core.length), core: true }
-    return { text: t.extra_of.replace("%{n}", extra.indexOf(card) + 1).replace("%{total}", extra.length), core: false }
+    if (card.level === "core") return { text: t.card_of.replace("%{n}", core.indexOf(card) + 1).replace("%{total}", core.length), short: t.card_short.replace("%{n}", core.indexOf(card) + 1).replace("%{total}", core.length), core: true }
+    return { text: t.extra_of.replace("%{n}", extra.indexOf(card) + 1).replace("%{total}", extra.length), short: t.extra_short.replace("%{n}", extra.indexOf(card) + 1).replace("%{total}", extra.length), core: false }
   }
   // The top bar already says "Scheda N di M": the kicker above the title keeps the part and the kind of card.
   const kickerOf = (card) => {
@@ -333,8 +333,11 @@ export function renderLesson(root, body, config) {
   function refreshChrome() {
     const n = state.n
     const card = byN.get(n)
-    counter.textContent = n === 0 ? t.cover : positionOf(card).text
-    barNav.querySelector(".l2-bar-count").textContent = counter.textContent
+    const position = n === 0 ? { text: t.cover } : positionOf(card)
+    // on a phone the short form of a long name ("Approf. 1 di 2") keeps every button of the bar inside the screen
+    if (position.short) counter.replaceChildren(el("span", { class: "cn-l", text: position.text }), el("span", { class: "cn-s", "aria-hidden": "true", text: position.short }))
+    else counter.textContent = position.text
+    barNav.querySelector(".l2-bar-count").textContent = position.text
     // the thin positional bar: one segment per core card, the current one marked (no percentage, no time)
     clear(barSegments)
     core.forEach((c) => barSegments.appendChild(el("span", { class: c.n === n ? "now" : seen.has(c.n) ? "seen" : "" })))
@@ -343,8 +346,12 @@ export function renderLesson(root, body, config) {
     const nextN = sequence[index + 1]
     nextBtn.hidden = nextN === undefined
     if (nextN !== undefined) {
-      const label = n === 0 ? t.start : t.next.replace("%{title}", shortOf(byN.get(nextN)))
-      nextBtn.firstChild.replaceChildren(document.createTextNode(`${label} `), icon("next"))
+      if (n === 0) nextBtn.firstChild.replaceChildren(document.createTextNode(`${t.start} `), icon("next"))
+      else {
+        // "Avanti: Esempio A": the word Avanti drops away on a phone so that the name fits on one line
+        const [pre, post] = t.next.split("%{title}")
+        nextBtn.firstChild.replaceChildren(el("span", { class: "l2-next-label" }, el("span", { class: "l2-next-pre", text: pre.trimEnd() }), document.createTextNode(` ${shortOf(byN.get(nextN))}${post}`)), icon("next"))
+      }
     }
     root.dataset.card = String(n)
     refreshMap()

@@ -165,7 +165,7 @@ Release 1 blocks (the fields are in the schema; `banco lesson submit --dry-run` 
 | `mistake` | a card to turn: wrong, then right | `group_it?`, `wrong_it`, `right_it`, `why_it`, `code?` (a code of the skill's error catalogue, `W-MISTAKE-CODE`) |
 | `check COMPONENT` | a question answered on the page | see Checks |
 | `more "Titolo"` | collapsed "Vuoi saperne di più?" | nested blocks, 150 words |
-| `summary` | the summary | one list of 3 to 5 points, 20 words each (`E-LESSON-SUMMARY`) |
+| `summary` | the summary | one list of 3 to 5 points, 20 words each (`E-LESSON-SUMMARY`); put the key word of each point in bold (`**Verifica**`) |
 | `schema concept_map\|flow\|table` | the schema a student could copy by hand | see Diagrams |
 | `diagram TYPE` | a drawing | see Diagrams |
 | `table` | a table, at most 4 columns and 10 rows | `caption_it?`, `header`, `rows` |

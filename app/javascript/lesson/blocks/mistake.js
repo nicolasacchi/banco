@@ -4,17 +4,20 @@
 import { el, icon, uid } from "lesson/dom"
 import { renderInlineRich, renderRich } from "lesson/text"
 
-export function render(block, ctx) {
+export function render(block, ctx, options = {}) {
   const id = uid("mistake")
   const card = el("article", { class: "block mistake", "data-open": "false" })
   const front = el("div", { class: "mistake-front" },
-    el("p", { class: "mistake-tag mistake-wrong" }, icon("close", "mistake-ic"), el("strong", { text: ctx.t.wrong_side })),
+    // the cross says "wrong"; the visible word is the group of the mistake (Segni, Dividere, ...), "Sbagliato" is for the screen reader
+    el("p", { class: "mistake-tag mistake-wrong" }, icon("close", "mistake-ic"),
+      el("strong", { class: options.group ? "mistake-group" : "sr-only", text: options.group ?? ctx.t.wrong_side }),
+      options.group ? el("span", { class: "sr-only", text: ` (${ctx.t.wrong_side})` }) : null),
     renderInlineRich(block.wrong_it, el("p", { class: "mistake-text" }), ctx, { display: true, tiles: true }))
   const back = el("div", { class: "mistake-back", id },
     el("p", { class: "mistake-tag mistake-right" }, icon("check", "mistake-ic"), el("strong", { text: ctx.t.right_side })),
     renderInlineRich(block.right_it, el("p", { class: "mistake-text" }), ctx, { display: true, tiles: true }),
     el("div", { class: "mistake-why" }, renderRich(block.why_it, ctx)))
-  const hint = el("span", { class: "mistake-hint" }, icon("show", "mistake-hand"), document.createTextNode(ctx.t.mistake_turn))
+  const hint = el("span", { class: "mistake-hint", title: ctx.t.mistake_turn }, icon("show", "mistake-hand"), el("span", { class: "sr-only", text: ctx.t.mistake_turn }))
   const toggle = el("button", { type: "button", class: "mistake-toggle", "aria-expanded": "false", "aria-controls": id }, front, hint)
   const set = (open) => {
     toggle.setAttribute("aria-expanded", String(open))

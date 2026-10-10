@@ -32,11 +32,22 @@ export const states = stateCount
 function build(data, ctx) {
   const eff = effectiveState(data, ctx.state)
   const W = ctx.width
-  const f = ctx.fontPx
-  const chipH = Math.round(f * 1.9)
-  const gap = Math.round(f * 0.35)
-  const widths = data.parts.map((p) => Math.max(Math.round(f * 1.6), Math.ceil(ctx.measure(p.tex.includes("$") ? p.tex : `$${p.tex}$`, f).w) + 2 * ctx.pad))
-  const total = widths.reduce((a, b) => a + b, 0) + gap * (widths.length - 1)
+  // the equation is the picture: big chips (the prototype's sizes), smaller only when the figure is too narrow for them
+  let f = ctx.fontPx
+  let chipH
+  let gap
+  let widths
+  let total = Infinity
+  let big = f
+  for (const scale of [1.9, 1.6, 1.3, 1.0]) {
+    big = Math.round(ctx.fontPx * scale)
+    chipH = Math.round(big * 1.8)
+    gap = Math.round(big * 0.3)
+    widths = data.parts.map((p) => Math.max(Math.round(big * 1.5), Math.ceil(ctx.measure(p.tex.includes("$") ? p.tex : `$${p.tex}$`, big).w) + 2 * ctx.pad))
+    total = widths.reduce((a, b) => a + b, 0) + gap * (widths.length - 1)
+    if (total <= W - 8) break
+  }
+  f = ctx.fontPx
   if (total > W - 8) return { error: { path: "/parts", message: "the formula is wider than the figure", code: "E-DIAGRAM-LAYOUT" } }
   const x0 = Math.round((W - total) / 2)
   const xs = []
@@ -57,7 +68,7 @@ function build(data, ctx) {
   const chipTop = topH
   data.parts.forEach((p, i) => {
     shape(ctx, "rect", { x: xs[i], y: chipTop, w: widths[i], h: chipH, r: 10, cls: `dg-chip tn-${p.role} fl-${p.role}` })
-    label(ctx, p.tex.includes("$") ? p.tex : `$${p.tex}$`, xs[i] + widths[i] / 2, chipTop + chipH / 2, { valign: "middle", cls: `role-${p.role} dg-chiptext`, role: p.role })
+    label(ctx, p.tex.includes("$") ? p.tex : `$${p.tex}$`, xs[i] + widths[i] / 2, chipTop + chipH / 2, { valign: "middle", cls: `role-${p.role} dg-chiptext`, role: p.role, px: big })
   })
   if (withLabel.length) {
     stackLabels(ctx, withLabel.map(({ p, i }) => ({ text: p.label_it, cx: xs[i] + widths[i] / 2, cls: `dg-note role-${p.role}`, connectFrom: chipTop - 2, role: p.role })), chipTop - 6, -1)

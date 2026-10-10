@@ -104,7 +104,7 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
     click_button "Mappa"
     assert_selector "dialog[open] .map-item", minimum: 11
     first("dialog[open] .map-item", text: "La procedura").click
-    assert_selector ".l2-counter", text: "Scheda 5 di 11"
+    assert_selector ".l2-counter", text: "5 di 11" # the short form on a phone
     assert_no_selector "dialog[open]"
     shot "card-5-390"
     # the thin positional bar: one segment per core card, the current one marked, no percentage
@@ -268,6 +268,52 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
     shot "balance-try"
   end
 
+  # every card of the invented lesson, with the cover (0): 11 core and 2 extra cards
+  ALL_CARDS = (0..13).to_a.freeze
+
+  test "on a phone every button of the top bar and of the bottom bar stays inside the screen, on every card" do
+    open_lesson(size: [ 390, 844 ])
+    ALL_CARDS.each do |n|
+      go(n)
+      assert_selector "#lesson-root[data-card='#{n}']"
+      boxes = page.evaluate_script("[...document.querySelectorAll('.l2-top button, .l2-top .l2-chip, .l2-bar button')].filter((b) => b.offsetParent !== null).map((b) => { const r = b.getBoundingClientRect(); return [b.className, Math.round(r.left), Math.round(r.right)] })")
+      assert_operator boxes.size, :>=, 4
+      boxes.each { |name, left, right| assert_operator left, :>=, 0, "card #{n}: #{name} starts at #{left}"; assert_operator right, :<=, 390, "card #{n}: #{name} ends at #{right}" }
+      assert_equal 0, page.evaluate_script("document.documentElement.scrollWidth - window.innerWidth"), "card #{n} scrolls sideways"
+    end
+  end
+
+  [ [ 1366, 900 ], [ 390, 844 ] ].each do |width, height|
+    test "the first figure of every card is whole in the first screen at #{width}x#{height}" do
+      open_lesson(size: [ width, height ])
+      ALL_CARDS.each do |n|
+        go(n)
+        assert_selector "#lesson-root[data-card='#{n}']"
+        sleep 0.3
+        top = page.evaluate_script("(() => { const c = document.querySelector('#lesson-root article'); return c ? Math.round(c.getBoundingClientRect().top) : null })()")
+        assert_operator top, :<=, 140, "card #{n} starts at #{top} px" if width > 600
+        figure = page.evaluate_script("(() => { const f = document.querySelector('#lesson-root article .dg-stage'); if (!f || f.closest('.cases, .example, details')) return null; const q = document.querySelector('#lesson-root article .block-check, #lesson-root article .summary-points'); if (q && (q.compareDocumentPosition(f) & 4)) return null; const r = f.getBoundingClientRect(); return [Math.round(r.top), Math.round(r.bottom)] })()")
+        next unless figure
+
+        bar = page.evaluate_script("document.querySelector('.l2-bar').getBoundingClientRect().top")
+        assert_operator figure[1], :<=, bar, "card #{n}: the figure ends at #{figure[1]} px, the bottom bar starts at #{bar}"
+      end
+    end
+  end
+
+  test "the steps of a balance are named Passo avanti and Passo indietro, not Avanti" do
+    open_lesson(fragment: "#scheda-3")
+    assert_selector ".dg-next", text: "Passo avanti"
+    assert_selector ".dg-prev", text: "Passo indietro"
+    assert_no_selector ".dg-controls button", exact_text: "Avanti"
+  end
+
+  test "a callout written before the picture comes after it" do
+    open_lesson(fragment: "#scheda-3")
+    order = page.evaluate_script("[...document.querySelectorAll('#scheda-3 .card-body > *')].map((n) => n.className.split(' ').find((c) => ['block-diagram', 'callout'].includes(c)) || '').filter(Boolean)")
+    assert_equal %w[block-diagram callout], order.first(2)
+  end
+
   test "states: Avanti shows the next state, and with reduced motion they swap" do
     open_lesson(fragment: "#scheda-3")
     assert_selector ".dg-pill", text: "Bilancia 1 di 2"
@@ -283,7 +329,7 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
   test "mistake cards turn with Enter and are all open in print" do
     open_lesson(fragment: "#scheda-9")
     assert_selector ".mistake", count: 4
-    assert_selector ".mistake-group", count: 3
+    assert_selector ".mistake-group", count: 4 # the group is the tag of each card, not a heading row
     assert_no_selector ".mistake-back", visible: :visible
     page.execute_script("document.querySelector('.mistake-toggle').focus()")
     page.driver.browser.keyboard.type(:Enter)

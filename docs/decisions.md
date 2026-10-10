@@ -261,6 +261,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-255 | 2026-10-10 | render check of a lesson/2 revision (R4): the render host, the runner, lesson_renders, shots and their purge, the gate reason, the teacher line; what the build closed or corrected (the printed-summary check, the checks of the host, the number of D-249) | decided |
 | D-256 | 2026-10-10 | rich lessons, the look of the pilot (E7): one slim bar, the balance in 2D, equations as member tiles, digits without a slash, the not-equal sign, no red or green in the equations' roles | decided |
 | D-257 | 2026-10-10 | rich lessons, round 2 of the pilot look: short names of cards, the lab beside the picture, cases as compact rows with one stepper, a centred schema, a bold not-equal sign | decided |
+| D-258 | 2026-10-10 | rich lessons, round 3 of the pilot look: the bar never overflows on a phone, the picture first, big equation tiles, quiet balance steps, compact mistakes | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2742,5 +2743,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Why:** the lead's second comparison with the prototype: the three-cases card filled the screen, the lab was below the fold, titles wrapped to three lines in the map, the schema was a left-aligned stack, the not-equal sign was thin.
 - **Cost:** one optional card field (schema, parser, projection); a keyword list in `summary.js` that only knows Italian words of the pilot's kind (the fallback is neutral); the font files changed (checksums).
 - **Not done:** the 3D cover (1.1); a semantic icon per summary point chosen by the author.
+- **Status:** decided
+- **Back-port:** none.
+
+## D-258 · 2026-10-10 · rich lessons, round 3 of the pilot look: the bar never overflows on a phone, the picture first, big equation tiles, quiet balance steps, compact mistakes
+
+- **We do:** (1) The top bar keeps its buttons inside the screen: the counter shrinks and has a short form on a phone ("5 di 14", "Approf. 1 di 2"), the buttons and the chip do not shrink; the bottom bar drops the word "Avanti:" below 420 px. (2) A callout written before the first picture of a card is drawn after it (`visualFirst`), tinted blue (rule) or brass (tip) and compact; the legend chip sits at the end of the first card where a role appears, not under the title. (3) The steps of a balance are "Passo indietro" and "Passo avanti", small and outlined, so the one big "Avanti" is the bottom bar's; a crowded balance shrinks its items down to 0.55 so that the stage has little dead height. (4) The problem of a worked example ("Risolvi $...$.") is drawn as the big pair of member tiles with the lead word above; the parts of `equation_parts` are drawn at up to 1.9 times the body size. (5) Mistakes: the group is the tag of each card (no heading row, so no empty slots), the "Sbagliato" word and the hint are for the screen reader, the hint is an eye icon; "Non ho capito" is a quiet text button at the foot. (6) The "more" panel reads "Per saperne di più: Title". (7) In the summary the key word of a point is bold (`**..**` in the source) and in the primary colour.
+- **Why:** the lead's review of the pilot against the prototype: the bar overflowed at 390 px on the appendix cards, the rule callout pushed the balance below the fold, two "Avanti" buttons competed, equations were small, mistakes left empty slots.
+- **Cost:** `lesson.it.yml` has `card_short`, `extra_short`; the group headings of mistakes are no longer elements of their own (the test counts the tags).
+- **Not done:** a slider for the three cases; key and no-entry icons (a new icon is a D entry and a vendored Lucide file); the 3D cover (1.1).
 - **Status:** decided
 - **Back-port:** none.

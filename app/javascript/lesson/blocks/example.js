@@ -7,11 +7,26 @@ import { button, el, icon } from "lesson/dom"
 import { renderCheck } from "lesson/blocks/check"
 import { figureFor } from "lesson/blocks/diagram"
 import { tagInfo } from "lesson/blocks/procedure"
-import { renderInlineRich, renderRich } from "lesson/text"
+import { renderInlineRich, renderMath, renderRich } from "lesson/text"
+
+// "Risolvi $(x - 1)^2 = x^2 + 5$." -> the lead word and the formula, so that the formula can be the big picture of the card.
+export function splitProblem(text) {
+  const m = String(text ?? "").trim().match(/^([^$\n]*?)\s*\$([^$]+)\$\s*[.!?:]?\s*$/)
+  return m && m[2].includes("=") ? { lead: m[1], tex: m[2] } : null
+}
+
+function problemNode(text, ctx) {
+  const split = splitProblem(text)
+  if (!split) return renderRich(text, ctx, { tiles: true })
+  const box = el("div", { class: "problem-big" })
+  if (split.lead) box.appendChild(el("p", { class: "problem-lead", text: split.lead }))
+  box.appendChild(renderMath(split.tex, el("div", { class: "problem-eq" }), ctx, true))
+  return box
+}
 
 export function render(block, ctx, loc) {
   const root = el("section", { class: "block example" })
-  root.appendChild(el("div", { class: "example-problem" }, el("p", { class: "example-label" }, el("strong", { text: ctx.t.problem })), renderRich(block.problem_it, ctx, { tiles: true })))
+  root.appendChild(el("div", { class: "example-problem" }, el("p", { class: "example-label" }, el("strong", { text: ctx.t.problem })), problemNode(block.problem_it, ctx)))
   const list = el("ol", { class: "example-steps", "aria-live": "polite" })
   const steps = block.steps.map((s) => ({ ...s }))
   let figure = null
