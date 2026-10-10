@@ -1,6 +1,7 @@
 require "test_helper"
 require_relative "../support/multi_user"
 require_relative "../support/student_course_world"
+require_relative "../support/lesson2_fixtures"
 
 # The student's course pages (A9): who sees what, the pages, and what the browser is told. The official
 # student sees nothing until release_course; a trial student sees drafts; readers get 403.
@@ -192,6 +193,26 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     assert_equal({ "n" => 1 }, JSON.parse(event.payload_json))
     assert_equal [ @official.id, @lesson_revision.id, @topic_revision.id ], [ event.student_id, event.lesson_revision_id, event.topic_revision_id ]
     post_json(OFFICIAL, "/topics/#{TOPIC}/lesson/exercises/9/solution")
+    assert_response :not_found
+  end
+
+  test "the solution of a banco.lesson/2 exercise: its text, or its tagged steps, and never the final" do
+    base = Lesson2Fixtures.check(Lesson2Fixtures.read("base.md")).body.merge("key" => TOPIC, "skills" => [ SKILL ])
+    try = base["cards"].flat_map { |c| c["blocks"] }.find { |b| b["type"] == "try" }
+    try["exercises"][0].merge!("final_it" => SECRET_FINAL, "solution_it" => SECRET_SOLUTION).delete("solution_steps")
+    try["exercises"][1].delete("solution_it")
+    try["exercises"][1]["solution_steps"] = [ { "tag" => "move", "do_it" => "$3x = 9$", "why_it" => "Sposta." }, { "tag" => "divide", "do_it" => "$x = 3$", "why_it" => "Dividi." } ]
+    define_singleton_method(:lesson_body) { base }
+    build_student_world
+    out = post_json(OFFICIAL, "/topics/#{TOPIC}/lesson/exercises/1/solution")
+    assert_response :success
+    assert_equal [ "n", "solution_it" ], out.keys
+    assert_not_includes out.to_json, SECRET_FINAL
+    stepped = try["exercises"].find { |e| e["solution_steps"] }
+    out = post_json(OFFICIAL, "/topics/#{TOPIC}/lesson/exercises/#{stepped['n']}/solution")
+    assert_equal [ "n", "steps" ], out.keys
+    assert_equal %w[tag do_it why_it], out["steps"].first.keys
+    post_json(OFFICIAL, "/topics/#{TOPIC}/lesson/exercises/99/solution")
     assert_response :not_found
   end
 

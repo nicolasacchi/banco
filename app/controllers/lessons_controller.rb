@@ -26,15 +26,18 @@ class LessonsController < ApplicationController
   end
   private :record_opened
 
-  # POST /topics/:topic/lesson/exercises/:n/solution -> {n, solution_it}
+  # POST /topics/:topic/lesson/exercises/:n/solution -> {n, solution_it} (banco.lesson/2: or {n, steps})
   def solution
     revision = @topic.lesson_revision
-    exercise = Array(revision.body["exercises"]).find { |e| e["n"] == params[:n].to_i }
+    exercise = revision.exercise(params[:n].to_i)
     return render(json: { status: "not_found" }, status: :not_found) unless exercise
 
     now = Time.current
     PracticeEvent.create!(student: acting_student, kind: "lesson_solution_shown", topic_revision: @topic.topic_revision, lesson_revision: revision,
                           payload_json: { n: exercise["n"] }.to_json, at: now, created_at: now)
-    render json: { n: exercise["n"], solution_it: exercise["solution_it"] }
+    # banco.lesson/2 may give the solution as tagged steps (solution_steps) instead of one text (A10); the final is never sent apart.
+    answer = { n: exercise["n"], solution_it: exercise["solution_it"] }
+    answer = { n: exercise["n"], steps: exercise["solution_steps"].map { |s| s.slice("tag", "do_it", "why_it") } } if exercise["solution_steps"]
+    render json: answer
   end
 end
