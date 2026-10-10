@@ -43,6 +43,7 @@ func TestContractListsTheCourseCommands(t *testing.T) {
 		"lesson open":          {"GET", "/api/v1/lessons/:lesson"},
 		"lesson submit":        {"POST", "/api/v1/lessons/submit"},
 		"lesson status":        {"GET", "/api/v1/lesson-revisions/:revision"},
+		"lesson shots":         {"GET", "/api/v1/lesson-revisions/:revision/shots"},
 		"lesson-review open":   {"GET", "/api/v1/lesson-revisions/:revision/review"},
 		"lesson-review submit": {"POST", "/api/v1/lesson-revisions/:revision/review"},
 		"topics list":          {"GET", "/api/v1/subjects/:subject/topics"},
@@ -280,5 +281,41 @@ func TestLessonOpenSchemaFlagIsSentAndChecked(t *testing.T) {
 	res = runCLI(t, srv.URL, envToken("tok"), "lesson", "open", "ripasso.math.demo-equations", "--dir", dir, "--schema", "3")
 	if res.exit != ExitUsage || !strings.Contains(res.stderr, "E-USAGE") {
 		t.Fatalf("--schema 3: exit %d, stderr %s", res.exit, res.stderr)
+	}
+}
+
+func TestLessonShotsDownloadsEveryImage(t *testing.T) {
+	sha := strings.Repeat("a", 64)
+	gone := strings.Repeat("b", 64)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("X-Banco-Contract", contract.Digest())
+		switch req.URL.Path {
+		case "/api/v1/lesson-revisions/12/shots":
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"revision_id":12,"status":"passed","errors":[],"shots":[` +
+				`{"card":1,"viewport":"390x844-cream","sha256":"` + sha + `","available":true,"path":"/api/v1/lesson-revisions/12/shots/` + sha + `"},` +
+				`{"card":2,"viewport":"1280x800-dark","sha256":"` + gone + `","available":false,"path":"/api/v1/lesson-revisions/12/shots/` + gone + `"}]}`))
+		case "/api/v1/lesson-revisions/12/shots/" + sha:
+			w.Header().Set("Content-Type", "image/webp")
+			_, _ = w.Write([]byte("RIFFxxxxWEBP"))
+		default:
+			w.WriteHeader(404)
+		}
+	}))
+	t.Cleanup(srv.Close)
+	dir := filepath.Join(t.TempDir(), "shots")
+	res := runCLI(t, srv.URL, envToken("tok"), "lesson", "shots", "12", "--dir", dir)
+	if res.exit != 0 {
+		t.Fatalf("lesson shots: exit %d, stderr %s", res.exit, res.stderr)
+	}
+	data, err := os.ReadFile(filepath.Join(dir, "card-01_390x844-cream.webp"))
+	if err != nil || string(data) != "RIFFxxxxWEBP" {
+		t.Fatalf("image not written: %v %q", err, data)
+	}
+	if !strings.Contains(res.stdout, `"removed_by_purge":1`) || !strings.Contains(res.stdout, `"status":"passed"`) {
+		t.Errorf("answer: %s", res.stdout)
+	}
+	if bad := runCLI(t, srv.URL, envToken("tok"), "lesson", "shots", "abc"); bad.exit == 0 {
+		t.Error("a revision that is not a number must be refused")
 	}
 }

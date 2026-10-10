@@ -12,6 +12,35 @@
      data-lesson2-preview-topic-value="<%= topic %>"
      data-lesson2-preview-labels-value="<%= lesson2_texts.to_json %>"
      data-lesson2-preview-items-value="<%= lesson2_item_texts.to_json %>">
+  <% line = LessonRenders.teacher_line(revision) %>
+  <div class="render-line" id="render-line" data-render-state="<%= line[:state] %>" role="status">
+    <strong><%= t("teacher.render.label") %>:</strong>
+    <% if line[:state] == "passed" %>
+      <%= t("teacher.render.ok", count: line[:count]) %>
+      <a href="<%= teacher_lesson_shots_path(lesson_revision_id: revision.id) %>"><%= t("teacher.render.page") %></a>
+    <% elsif line[:state] == "failed" %>
+      <%= t("teacher.render.failed", count: line[:cards].sum { |c| c[:errors].size }) %>
+      <ul class="plain render-errors">
+        <% line[:cards].each do |entry| %>
+          <li>
+            <% if entry[:n] && entry[:n] > 0 %>
+              <a href="#card-<%= entry[:n] %>" data-action="lesson2-preview#goto" data-card="<%= entry[:n] %>"><%= t("teacher.render.card_link", n: entry[:n], title: entry[:title_it]) %></a>
+            <% elsif entry[:n] == 0 %>
+              <a href="#card-0" data-action="lesson2-preview#goto" data-card="0"><%= t("teacher.render.cover") %></a>
+            <% else %>
+              <%= t("teacher.render.whole") %>
+            <% end %>
+            <%= safe_join(entry[:errors].map { |e| t("teacher.render.codes.#{e['code']}", default: e["code"]) }.uniq, ", ") %>
+          </li>
+        <% end %>
+      </ul>
+      <a href="<%= teacher_lesson_shots_path(lesson_revision_id: revision.id) %>"><%= t("teacher.render.page") %></a>
+    <% elsif line[:state] == "error" %>
+      <%= t("teacher.render.error") %>
+    <% else %>
+      <%= t("teacher.render.pending") %>
+    <% end %>
+  </div>
   <div class="l2-box-tools">
     <fieldset><legend><%= t("lesson2.box.width") %></legend>
       <% [ 390, 768, 1280 ].each do |w| %>

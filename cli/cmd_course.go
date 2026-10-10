@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io"
 	"net/url"
 	"os"
@@ -178,6 +179,72 @@ func runLessonSubmit(e *env, args []string) error {
 func runLessonStatus(e *env, args []string) error {
 	return runKeyed(e, keyedCommand{"lesson status", "/api/v1/lesson-revisions/", "", "", idRe, "revision", "a revision id (a number)", "banco lesson status REV"}, args)
 }
+
+// lesson shots REV --dir D: the screenshots of the render check (D-249, A12.2), one WebP per card and viewport, so that
+// a multimodal reviewer looks at every card. Files are named card-NN_WIDTHxHEIGHT-theme.webp (the cover is not shot).
+func runLessonShots(e *env, args []string) error {
+	fs := flag.NewFlagSet("lesson shots", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	dir := fs.String("dir", "", "folder for the images (default $TMPDIR/banco-work/lesson-shots-REV)")
+	fs.Bool("json", false, "JSON output (the default)")
+	pos, err := parseFlags(fs, args)
+	if err != nil {
+		return err
+	}
+	const next = "banco lesson shots 12 --dir /tmp/shots"
+	if len(pos) != 1 || !idRe.MatchString(pos[0]) {
+		return newErr(ExitUsage, "E-USAGE", "revision", "lesson shots takes one argument: a revision id (a number)", next)
+	}
+	rev := pos[0]
+	target := *dir
+	if target == "" {
+		target = filepath.Join(os.TempDir(), "banco-work", "lesson-shots-"+rev)
+	}
+	body, err := e.client().do("lesson shots", "GET", "/api/v1/lesson-revisions/"+rev+"/shots")
+	if err != nil {
+		return err
+	}
+	var list struct {
+		Status string          `json:"status"`
+		Errors json.RawMessage `json:"errors"`
+		Shots  []struct {
+			Card      int    `json:"card"`
+			Viewport  string `json:"viewport"`
+			Sha256    string `json:"sha256"`
+			Available bool   `json:"available"`
+			Path      string `json:"path"`
+		} `json:"shots"`
+	}
+	if err := json.Unmarshal(body, &list); err != nil {
+		return newErr(ExitServer, "E-HTTP", "", "the server's answer is not JSON: "+err.Error(), "banco health")
+	}
+	files := []map[string]any{}
+	missing := 0
+	for _, s := range list.Shots {
+		if !s.Available {
+			missing++
+			continue
+		}
+		data, err := e.client().do("lesson shots", "GET", s.Path)
+		if err != nil {
+			return err
+		}
+		name := fmt.Sprintf("card-%02d_%s.webp", s.Card, s.Viewport)
+		if err := writeFile(filepath.Join(target, name), data); err != nil {
+			return err
+		}
+		files = append(files, map[string]any{"card": s.Card, "viewport": s.Viewport, "file": filepath.Join(target, name)})
+	}
+	out := map[string]any{
+		"revision": rev, "dir": target, "status": list.Status, "errors": list.Errors, "files": files, "removed_by_purge": missing,
+		"next": "look at every file, card by card (390 px is the phone), and write the review: banco lesson-review open " + rev,
+	}
+	if root := gitRootAbove(target); root != "" {
+		out["warning"] = "the folder " + target + " is inside the git work tree " + root + ": nothing of the work may be committed there; use --dir OUTSIDE/shots and delete it after"
+	}
+	return json.NewEncoder(e.stdout).Encode(out)
+}
+
 func runLessonReviewOpen(e *env, args []string) error {
 	return runKeyed(e, keyedCommand{"lesson-review open", "/api/v1/lesson-revisions/", "/review", "", idRe, "revision", "a revision id (a number)", "banco lesson-review open REV"}, args)
 }

@@ -1,0 +1,41 @@
+{
+  "command": "lesson shots",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/lesson-revisions/1/shots"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "revision_id": 1,
+      "lesson": "ripasso.math.demo",
+      "render_id": 1,
+      "status": "passed",
+      "errors": [],
+      "shots": [
+        {
+          "card": 1,
+          "level": "core",
+          "viewport": "390x844-cream",
+          "sha256": "<sha256>",
+          "bytes": 32,
+          "width": 390,
+          "height": 900,
+          "available": true,
+          "path": "/api/v1/lesson-revisions/1/shots/d28f8c0fe93e434072f90731979198341e28257bffc9bc69aacfcac66a63cf23"
+        },
+        {
+          "card": 2,
+          "level": "core",
+          "viewport": "1280x800-cream",
+          "sha256": "<sha256>",
+          "bytes": 33,
+          "width": 1280,
+          "height": 900,
+          "available": true,
+          "path": "/api/v1/lesson-revisions/1/shots/07b7794f76a6891b74f420b5f58485d2d2d659af4f95d5e9724f608d658cb0b1"
+        }
+      ]
+    }
+  }
+}

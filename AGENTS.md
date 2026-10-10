@@ -126,6 +126,10 @@ only), `HARNESS_PORT` 3200 (internal). Never `PORT`.
   `Validation::LessonChecks|CourseChecks|TopicChecks`, `Review::LessonIntake`, `LessonSessions`, `Course::State|TopicStage|Status|Decisions`,
   the API controllers `Courses|Lessons|LessonReviews|Topics|PracticeProgress`; `banco course|lessons|lesson|lesson-review|topics|topic|practice`.
 - Teacher decisions and pages of the course (S4, D-236): `approve_topic`, `send_back_lesson`, `release_course` (the third is the only way the course opens to the official student), `Approval::TopicGate` (`.mechanical` for the page), `Course::Decisions.release_reasons`; pages `Teacher::CourseReview|TopicReview|PracticeProgress` with `Teacher::ItemCard` (shared with the entry test) and `teacher/items/_card.html.erb`; test world `test/support/topic_world.rb`. Texts: `config/locales/teacher_course.it.yml`.
+- The render check of a lesson/2 (R4, D-249, D-255, `docs/validation.md`): `RenderLessonRevisionJob`, `Validation::LessonRenderCheck` and
+  `LessonRenderRunner` (Chrome, `lib/validation/`), the render host `HarnessController#lesson` with `app/views/harness/lesson_render.html.erb` and
+  `app/javascript/lesson/render_host.js`, `LessonRender` (table `lesson_renders`), `LessonShots` (`storage/lesson_shots/`, `bin/purge-lesson-shots`),
+  `LessonRenders` (status, gate reason, the teacher's line), `Api::V1::LessonShotsController` (`banco lesson shots`), `Teacher::LessonShotsController`.
 - The skill map (D-221): `Teacher::GraphMap` (layout), `GraphMapContext` (pins, entry, seconda lines), `teacher/graphs/_map*.erb`, `graph_map_controller.js`; on the graph page and the report.
 - Rich lessons (D-244..D-251; formats in R0, parser, renderer, events and render check in R1 to R4): `banco.lesson/2` (cards of typed
   blocks; `config/banco/schemas/lesson.json`, `$defs.body2`) and the diagram DSL `banco.diagram/1` (`diagram.json`, nine types of release 1),

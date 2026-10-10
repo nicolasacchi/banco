@@ -119,6 +119,29 @@ frame, holding no token and no secret. `Math.random`, `Date`, `performance.now` 
 the staged files of a dry run, valid for 10 minutes. `BANCO_HARNESS_URL` says where
 Chrome reaches the listener (`http://banco-harness:3200` in production).
 
+## The render check of a lesson/2 revision (D-249, D-255)
+
+A stored banco.lesson/2 revision is drawn in the server's Chrome by `RenderLessonRevisionJob` (queue `chrome`, priority 10:
+item validation goes first). The harness listener serves `/h/<lrev-token>/lesson-render.html` (the student's CSS, importmap and
+modules, the student's projection of the body, a CSP with no connection); `lesson/render_host.js` draws every card with every
+"more", step and state shown and reports. `Validation::LessonRenderRunner` visits the viewports of `lesson2.render`
+(390 x 844 and 1280 x 800 cream, 1280 dark for core cards; extra cards at 390 cream), and appends one `lesson_renders` row:
+`passed`, `failed` (errors below) or `error` (Chrome did not answer; never a pass).
+
+| code | what |
+|---|---|
+| `E-LESSON-RENDER` | an exception, a formula KaTeX refuses, a card that does not draw, a time budget (90 s per revision, 5 s per card and viewport), "Stampa riassunto e schema" over one A4 page |
+| `E-LESSON-OVERFLOW` | the page wider than the window, or something wider inside than its box |
+| `E-DIAGRAM-LAYOUT` | a layout that answered an error, two labels overlapping, a label outside its figure |
+| `E-DIAGRAM-SMALL-TEXT` | a diagram label under `min_text_px` (a guard: the layout never draws one) |
+
+Screenshots are WebP, quality 80, stored by content in `storage/lesson_shots/<sha256>.webp`. `banco lesson status REV` shows the
+result, `banco lesson shots REV --dir D` downloads the images, `/teacher/lesson-revisions/ID/shots` shows them to the teacher.
+`bin/purge-lesson-shots` (weekly) deletes the files of renders older than 30 days whose revision is neither pinned by a topic
+revision nor the latest of its lesson; the rows stay. `Approval::TopicGate` gains the reason "the lesson revision has no render
+without errors" for lesson/2. A revision stored before the job existed: `bin/rails runner 'RenderLessonRevisionJob.perform_later(ID)'`.
+Tests: `test/validation/lesson_render_runner_test.rb` (Chrome), `test/integration/lesson_render_test.rb`.
+
 ## Tests
 
 `bin/rails test test/validation/` (every `E-` and `W-` code has a fixture in
