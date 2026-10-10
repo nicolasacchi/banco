@@ -67,7 +67,10 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
     sign_in_as :student
     page.driver.headers = TRIAL_HEADERS
     page.driver.resize(*size)
-    visit "/topics/#{TOPIC}/lesson#{fragment}"
+    visit "about:blank"
+    # a query that changes every time: a visit that differs from the page left by the last test only in its
+    # fragment is no navigation at all (the runner's Chrome keeps the old page and its state)
+    visit "/topics/#{TOPIC}/lesson?n=#{SecureRandom.hex(3)}#{fragment}"
     assert_selector "#lesson-root[data-ready='1']", wait: 20
     # the page only calls fetch when the student acts, so the stand-in can go in after the page has loaded
     page.execute_script("window.__right = #{right.to_json};")
@@ -142,7 +145,7 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
   test "the fragment and a reload keep the place, an extra card has its own fragment, an unknown one opens the cover" do
     open_lesson(fragment: "#scheda-12")
     assert_selector ".l2-counter", text: "Approfondimento 1 di 2"
-    visit "/topics/#{TOPIC}/lesson#scheda-99"
+    visit "/topics/#{TOPIC}/lesson?n=#{SecureRandom.hex(3)}#scheda-99"
     assert_selector ".l2-cover", wait: 10
   end
 
