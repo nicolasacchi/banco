@@ -116,7 +116,7 @@ function animate(oldBoxes, root, reduced) {
 export function mountDiagram(data, ctx, options = {}) {
   const type = data?.type
   const id = uid("dg")
-  const figure = el("figure", { class: `dg dg-${type} dg-size-${data?.size ?? "m"}${options.hero ? " dg-hero" : ""}`, "data-type": type })
+  const figure = el("figure", { class: `dg dg-${type} dg-size-${data?.size ?? "m"}${options.hero ? " dg-hero" : ""}${options.compact ? " dg-compact" : ""}`, "data-type": type })
   const stage = el("div", { class: "dg-stage" })
   const labelsLayer = el("div", { class: "dg-labels" })
   const stageSvg = svg("svg", { class: "dg-svg", role: "img", "aria-labelledby": `${id}-alt`, focusable: "false" })
@@ -134,7 +134,9 @@ export function mountDiagram(data, ctx, options = {}) {
   const eqLine = el("div", { class: "dg-eq", "aria-hidden": "true" })
   const chip = el("span", { class: "dg-status", role: "status" })
   if (top) top.append(pill, eqLine, chip)
-  figure.append(alt, ...(top ? [top] : []), stage, op, question, controls, ...(caption ? [caption] : []), desc)
+  // op, question and controls sit in one side box: below the drawing, or beside it on a wide balance (CSS)
+  const side = el("div", { class: "dg-side" }, op, question, controls)
+  figure.append(alt, ...(top ? [top] : []), stage, side, ...(caption ? [caption] : []), desc)
 
   const mod = moduleFor(type)
   const total = mod ? stateCount(data) : 1
@@ -323,6 +325,12 @@ export function mountDiagram(data, ctx, options = {}) {
     relayout: draw,
     setState: (i) => {
       state.i = Math.max(0, Math.min(total - 1, i))
+      draw()
+    },
+    // the number in the boxes of a balance, set from outside (the shared stepper of the cases)
+    setTry: (v) => {
+      if (type !== "balance") return
+      state.tryValue = v
       draw()
     },
     destroy: () => {

@@ -1,7 +1,7 @@
 // flow (A8): a decision flow as an indented tree, top to bottom: steps in a chain, a decision's branches
 // indented under it with their label ("sì", "no") on the connector, ends as pills. A node already drawn
 // that a branch rejoins is shown as a small "vai a" box. Readable at any width.
-import { finish, label, listIt, plain, roleInfo, shape } from "lesson/diagrams/common"
+import { finish, hasOverlap, label, listIt, plain, roleInfo, shape } from "lesson/diagrams/common"
 import palette from "lesson/palette"
 import { run } from "lesson/diagrams/run"
 
@@ -44,7 +44,94 @@ export function semantic(data) {
   return null
 }
 
+// A tree that fits the width is drawn centred, top to bottom, with arrows: the first step as a dark box, a decision's
+// branches side by side under a bus line. Anything else (a node joined twice, a narrow screen) takes the indented layout.
+function buildTree(data, ctx) {
+  const W = ctx.width
+  const f = ctx.fontPx
+  const m = 8
+  const out = new Map(data.nodes.map((n) => [n.id, []]))
+  const indeg = new Map(data.nodes.map((n) => [n.id, 0]))
+  for (const [from, to, text] of data.edges) {
+    out.get(from).push({ to, text })
+    indeg.set(to, indeg.get(to) + 1)
+  }
+  if ([...indeg.values()].some((k) => k > 1)) return null
+  const byId = new Map(data.nodes.map((n) => [n.id, n]))
+  const maxBox = Math.min(W - 2 * m, Math.round(f * 11))
+  const iconSize = Math.round(f * 1.1)
+  const boxOf = (n) => {
+    const info = n.role ? roleInfo(palette, ctx.subject, n.role) : null
+    const icon = info?.icon
+    const iconW = icon ? iconSize + 6 : 0
+    const mt = ctx.measure(n.text_it, f, maxBox - iconW - 2 * ctx.pad - 8)
+    const w = Math.min(maxBox, Math.ceil(mt.w) + iconW + 2 * ctx.pad + 8)
+    const h = mt.h + 2 * ctx.pad + (/\\frac|\\dfrac/.test(n.text_it) ? Math.round(f * 0.5) : 0)
+    return { w, h, icon, iconW, mt }
+  }
+  const gapX = 14
+  const sub = (id) => {
+    const kids = out.get(id).map((k) => ({ ...k, s: sub(k.to) }))
+    const own = boxOf(byId.get(id))
+    const kw = kids.length ? kids.reduce((a, k) => a + k.s.width, 0) + gapX * (kids.length - 1) : 0
+    return { id, kids, own, kw, width: Math.max(own.w, kw) }
+  }
+  const root = sub(data.nodes[0].id)
+  if (root.width > W - 2 * m) return null
+  const arrow = (x, y) => shape(ctx, "polygon", { points: [[x - 6, y - 9], [x + 6, y - 9], [x, y]], cls: "dg-arrowhead" })
+  let bottomMost = 0
+  const place = (t, x0, y, isRoot, isDecisionKid) => {
+    const n = byId.get(t.id)
+    const cx = x0 + t.width / 2
+    const left = Math.round(cx - t.own.w / 2)
+    const kind = isRoot && n.kind === "step" ? "start" : n.kind
+    shape(ctx, "rect", { x: left, y, w: t.own.w, h: t.own.h, r: n.kind === "end" ? Math.min(t.own.h / 2, 24) : n.kind === "decision" ? 6 : 12, cls: `dg-node dg-${kind} st-${n.role ?? "muted"}` })
+    const tcls = `dg-nodetext${kind === "start" ? " dg-starttext" : ""}${n.role ? ` role-${n.role}` : ""}`
+    if (t.own.icon) {
+      shape(ctx, "icon", { name: t.own.icon, x: left + ctx.pad + 2, y: y + (t.own.h - iconSize) / 2, size: iconSize, cls: `role-${n.role}` })
+      label(ctx, n.text_it, left + ctx.pad + 4 + t.own.iconW, y + ctx.pad, { anchor: "start", maxW: t.own.mt.h > ctx.lineH ? t.own.mt.w : undefined, cls: tcls, role: n.role })
+    } else label(ctx, n.text_it, cx, y + ctx.pad, { anchor: "middle", maxW: t.own.mt.h > ctx.lineH ? t.own.mt.w : undefined, cls: tcls, role: n.role })
+    const bottom = y + t.own.h
+    bottomMost = Math.max(bottomMost, bottom)
+    if (t.kids.length === 0) return
+    const decision = n.kind === "decision"
+    const gap = decision ? Math.round(f * 2.7) : Math.round(f * 1.5)
+    const ky = bottom + gap
+    let gx = x0 + (t.width - t.kw) / 2
+    const centres = []
+    for (const k of t.kids) {
+      place(k.s, gx, ky, false, decision)
+      centres.push(gx + k.s.width / 2)
+      gx += k.s.width + gapX
+    }
+    if (!decision) {
+      shape(ctx, "line", { x1: cx, y1: bottom, x2: centres[0], y2: ky - 8, cls: "dg-edge" })
+      arrow(centres[0], ky)
+      return
+    }
+    const bus = bottom + Math.round(f * 0.7)
+    shape(ctx, "line", { x1: cx, y1: bottom, x2: cx, y2: bus, cls: "dg-edge" })
+    shape(ctx, "line", { x1: Math.min(...centres, cx), y1: bus, x2: Math.max(...centres, cx), y2: bus, cls: "dg-edge" })
+    t.kids.forEach((k, i) => {
+      shape(ctx, "line", { x1: centres[i], y1: bus, x2: centres[i], y2: ky - 8, cls: "dg-edge" })
+      arrow(centres[i], ky)
+      if (k.text) label(ctx, k.text, centres[i] + 9, bus + 4, { anchor: "start", cls: "dg-note dg-edgelabel" })
+    })
+  }
+  place(root, m + (W - 2 * m - root.width) / 2, 6, true, false)
+  if (hasOverlap(ctx)) {
+    ctx.shapes.length = 0
+    ctx.labels.length = 0
+    return null
+  }
+  return finish(ctx, bottomMost + 6, { states: 1, state: 0 })
+}
+
 function build(data, ctx) {
+  return buildTree(data, ctx) ?? buildIndented(data, ctx)
+}
+
+function buildIndented(data, ctx) {
   const W = ctx.width
   const f = ctx.fontPx
   const m = 8

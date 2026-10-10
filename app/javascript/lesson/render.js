@@ -80,13 +80,16 @@ export function renderLesson(root, body, config) {
     if (card.level === "core") return { text: t.card_of.replace("%{n}", core.indexOf(card) + 1).replace("%{total}", core.length), core: true }
     return { text: t.extra_of.replace("%{n}", extra.indexOf(card) + 1).replace("%{total}", extra.length), core: false }
   }
+  // The top bar already says "Scheda N di M": the kicker above the title keeps the part and the kind of card.
   const kickerOf = (card) => {
-    const pos = positionOf(card).text
-    const bits = [pos]
-    if (card.level === "core" && partTitle(card)) bits.push(partTitle(card))
-    if (t.role_word[card.role] && card.level === "core") bits.push(t.role_word[card.role])
+    if (card.level !== "core") return positionOf(card).text
+    const bits = []
+    if (partTitle(card)) bits.push(partTitle(card))
+    if (t.role_word[card.role]) bits.push(t.role_word[card.role])
     return bits.join(" · ")
   }
+  // A short name for the map and the Avanti button: the author's short_it, else the title up to its colon.
+  const shortOf = (card) => card.short_it || String(card.title_it).split(/:\s/)[0]
   const sequence = [0, ...order.map((c) => c.n)]
   // the roles each card introduces: the legend chip is on that card only; the map lists all of them
   const introduced = new Map()
@@ -176,9 +179,9 @@ export function renderLesson(root, body, config) {
       el("p", { class: "kicker", text: t.cover_kicker.replace("%{kind}", t.kind[body.kind] ?? body.kind).replace("%{subject}", t.subject[body.subject] ?? body.subject).replace("%{minutes}", body.minutes).replace("%{cards}", core.length) }),
       el("h1", { id: "scheda-0-title", tabindex: "-1", text: body.title_it }),
       lead,
+      el("p", { class: "cover-start" }, start),
       hero ? el("div", { class: "cover-hero block-diagram" }, hero.node) : null,
       el("h2", { class: "cover-h", text: t.goals }), goals,
-      el("p", { class: "cover-start" }, start),
       why,
       el("details", { class: "cover-all" }, el("summary", { text: t.cards }), list))
     if (body.book_it) article.appendChild(el("div", { class: "cover-book" }, el("p", {}, el("strong", { text: `${t.on_book}: ` }), document.createTextNode(body.book_it.replace(/^["“]|["”]$/g, ""))), el("p", { class: "hint", text: t.book_note })))
@@ -190,7 +193,7 @@ export function renderLesson(root, body, config) {
     const wrap = el("div", { class: "cover-parts" })
     const makeList = (list) => {
       const ol = el("ol", { class: "cover-cards" })
-      for (const c of list) ol.appendChild(el("li", {}, button(el("span", { class: "map-line" }, icon(iconOf(c), "map-ic"), el("span", { text: c.title_it })), { class: "map-item" }, () => goTo(c.n, { focus: true }))))
+      for (const c of list) ol.appendChild(el("li", {}, button(el("span", { class: "map-line" }, icon(iconOf(c), "map-ic"), el("span", { text: shortOf(c) })), { class: "map-item" }, () => goTo(c.n, { focus: true }))))
       return ol
     }
     if (body.parts?.length) {
@@ -222,7 +225,7 @@ export function renderLesson(root, body, config) {
     const wrap = el("nav", { class: "map", "aria-label": t.map })
     wrap.appendChild(el("h2", { class: "map-title", text: t.map }))
     const item = (c, label) => {
-      const b = button(el("span", { class: "map-line" }, el("span", { class: "mn", "aria-hidden": "true", text: label }), icon(iconOf(c), "map-ic"), el("span", { class: "map-text", text: c.title_it }), icon("check", "mv")), { class: `map-item${seen.has(c.n) ? " seen" : ""}`, "data-n": c.n }, () => {
+      const b = button(el("span", { class: "map-line" }, el("span", { class: "mn", "aria-hidden": "true", text: label }), icon(iconOf(c), "map-ic"), el("span", { class: "map-text", text: shortOf(c) }), icon("check", "mv")), { class: `map-item${seen.has(c.n) ? " seen" : ""}`, "data-n": c.n }, () => {
         goTo(c.n, { focus: true })
         close?.()
       })
@@ -340,7 +343,7 @@ export function renderLesson(root, body, config) {
     const nextN = sequence[index + 1]
     nextBtn.hidden = nextN === undefined
     if (nextN !== undefined) {
-      const label = n === 0 ? t.start : t.next.replace("%{title}", byN.get(nextN).title_it)
+      const label = n === 0 ? t.start : t.next.replace("%{title}", shortOf(byN.get(nextN)))
       nextBtn.firstChild.replaceChildren(document.createTextNode(`${label} `), icon("next"))
     }
     root.dataset.card = String(n)

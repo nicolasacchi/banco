@@ -26,3 +26,13 @@ test("without exactly one equals sign only the colours are added", () => {
   assert.equal(displayTex("a \\neq 0"), "a \\neq \\role{known}{0}")
   assert.doesNotMatch(displayTex("x = 1 = y"), /role\{left\}/)
 })
+
+test("the not-equal sign is the character, drawn by our symbols font, never KaTeX's thin composed glyph", async () => {
+  const { default: katex } = await import("katex")
+  const { KATEX } = await import("lesson/text")
+  for (const tex of ["a \\neq 0", "a \\ne 0"]) {
+    const html = katex.renderToString(tex, KATEX)
+    assert.match(html, /<span class="mord">≠<\/span>/)
+    assert.doesNotMatch(html, /rlap/)
+  }
+})

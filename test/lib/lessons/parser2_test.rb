@@ -40,6 +40,15 @@ class LessonsParser2Test < ActiveSupport::TestCase
     assert_nil second["part"]
   end
 
+  test "a card may have a short name in quotes, for the map and the Avanti button" do
+    parsed, findings = parse("## Tre casi: una soluzione, nessuna o tutte {idea short=\"Tre casi\" icon=scale}\n\nx\n\n## B {idea}\n\nx\n")
+    assert_empty findings.errors.map(&:to_h)
+    first, second = parsed.body["cards"]
+    assert_equal [ "Tre casi", "scale", "Tre casi: una soluzione, nessuna o tutte" ], first.values_at("short_it", "icon", "title_it")
+    assert_not second.key?("short_it")
+    assert_equal "Tre casi", Lessons::StudentBody.project(parsed.body, revision_id: 1, seed: "s")["cards"][0]["short_it"]
+  end
+
   test "a heading inside a block's YAML is text of that block, not a card or a part" do
     parsed, findings = parse("## A {idea}\n\n::: mistake\nwrong_it: x\nright_it: y\nwhy_it: |-\n  uno\n  ## Non una scheda\n  # Nemmeno una parte\ngroup_it: g\n:::\n")
     assert_empty findings.errors.map(&:to_h)
@@ -84,6 +93,10 @@ class LessonsParser2Test < ActiveSupport::TestCase
       "## A {idea extra extra}\n\nx\n" => "tag",
       "## A {idea icon=Scale}\n\nx\n" => "tag",
       "## A {idea colour=red}\n\nx\n" => "tag",
+      "## A {idea short=\"x\"}\n\nx\n" => "tag: a short name has 2 characters at least",
+      "## A {idea short=\"Uno\" short=\"Due\"}\n\nx\n" => "tag: short once",
+      "## A {idea short=\"con $x$\"}\n\nx\n" => "tag: no formulas in a short name",
+      "## A {idea short=Uno}\n\nx\n" => "tag: a short name is quoted",
       "## A {idea id=a}\n\nx\n\n## B {idea id=a}\n\nx\n" => "id"
     }.each do |source, what|
       _, findings = parse(source)

@@ -260,6 +260,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-254 | 2026-10-10 | lesson events, check endpoint, questions by card, the teacher's full body (R3) and what the build closed or corrected | decided |
 | D-255 | 2026-10-10 | render check of a lesson/2 revision (R4): the render host, the runner, lesson_renders, shots and their purge, the gate reason, the teacher line; what the build closed or corrected (the printed-summary check, the checks of the host, the number of D-249) | decided |
 | D-256 | 2026-10-10 | rich lessons, the look of the pilot (E7): one slim bar, the balance in 2D, equations as member tiles, digits without a slash, the not-equal sign, no red or green in the equations' roles | decided |
+| D-257 | 2026-10-10 | rich lessons, round 2 of the pilot look: short names of cards, the lab beside the picture, cases as compact rows with one stepper, a centred schema, a bold not-equal sign | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2732,5 +2733,14 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Why:** the lead compared the first pilot render with the prototype the operator liked: 400 px of chrome above the card, a red pan, a slashed zero for x, flat formulas and a legend on every card.
 - **Cost:** one more vendored directory (two 2 KB fonts); the colours of two roles changed (a lesson stored before reads them from the palette, not from its data); the figure's SVG text is not an HTML label, so overlap detection does not read it.
 - **Not done:** the 3D cover is release 1.1; the prototype's lab with move buttons is a different component (the try and the states of the balance are its place for now).
+- **Status:** decided
+- **Back-port:** none.
+
+## D-257 · 2026-10-10 · rich lessons, round 2 of the pilot look: short names of cards, the lab beside the picture, cases as compact rows with one stepper, a centred schema, a bold not-equal sign
+
+- **We do:** (1) A card heading may carry `short="Name"` (2 to 28 characters, quoted, no braces or `$`): body field `short_it`, served to the browser, used by the map and the Avanti button; without it the title up to its colon. The long title stays in the card heading only; the kicker above it no longer repeats "Scheda N di M" (the top bar says it). (2) A balance with controls (states or a try) is a two-column lab on a wide container: picture on the left, stepper, member tiles and verdict on the right; items shrink when a pan is crowded. (3) `cases` are compact rows (name, condition, text, a small balance); when several cases draw balances and one has a `try`, one stepper on top sets x in all of them (`api.setTry`). (4) Mistakes are a uniform two-column grid with a one-line intro and an icon on each group heading. (5) The summary points get an icon each (a keyword picks it, otherwise the next of a short list). (6) A flow that is a tree and fits the width is drawn centred with arrows and a dark first box; otherwise the indented layout. (7) `\neq` and `\ne` render as the character U+2260 from "Banco Symbols", rebuilt with two bars and a slash at the stroke of Atkinson (regular and bold); KaTeX's composed glyph is gone. (8) The cover has the Comincia button under the lead; the balance has soft shadows.
+- **Why:** the lead's second comparison with the prototype: the three-cases card filled the screen, the lab was below the fold, titles wrapped to three lines in the map, the schema was a left-aligned stack, the not-equal sign was thin.
+- **Cost:** one optional card field (schema, parser, projection); a keyword list in `summary.js` that only knows Italian words of the pilot's kind (the fallback is neutral); the font files changed (checksums).
+- **Not done:** the 3D cover (1.1); a semantic icon per summary point chosen by the author.
 - **Status:** decided
 - **Back-port:** none.

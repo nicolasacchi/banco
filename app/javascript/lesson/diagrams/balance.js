@@ -177,13 +177,19 @@ function build(data, ctx) {
   const eff = effectiveState(data, ctx.state)
   const W = ctx.width
   const f = ctx.fontPx
-  const S = { ...sizes(W), W }
   const n = stateCount(data)
-  // the tallest stack over every state, so that the figure does not jump between states
-  let maxH = S.Hb
-  for (let i = 0; i < n; i++) {
-    const e = effectiveState(data, i)
-    for (const p of [e.left, e.right]) maxH = Math.max(maxH, packFor(p, e.groups, S).h)
+  // the tallest stack over every state, so that the figure does not jump between states; a crowded pan shrinks its items
+  // (down to 0.64) until the stack is at most about a third of the width
+  let S
+  let maxH
+  for (const scale of [1, 0.86, 0.74, 0.64]) {
+    S = { ...sizes(W, scale), W }
+    maxH = S.Hb
+    for (let i = 0; i < n; i++) {
+      const e = effectiveState(data, i)
+      for (const p of [e.left, e.right]) maxH = Math.max(maxH, packFor(p, e.groups, S).h)
+    }
+    if (maxH <= W * 0.32) break
   }
   const tilt = tiltOf(data, eff, ctx.tryValue)
   const deg = -tilt * DEG

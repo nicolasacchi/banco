@@ -8,11 +8,13 @@ import { el, icon } from "lesson/dom"
 import { colourTokens, displayPieces, displayTex } from "lesson/eq"
 
 const ROLE_CLASS = /^role-[a-z]+(-[a-z]+)*$/
-const KATEX = {
+const NOT_EQUAL = "\\html@mathml{\\mathrel{\\text{\\char\"2260}}}{\\mathrel{\\char`≠}}"
+export const KATEX = {
   throwOnError: false,
   strict: "ignore",
   output: "htmlAndMathml",
-  macros: { "\\role": "\\htmlClass{role-#1}{#2}" },
+  // \neq is the character itself, drawn by our symbols font in the weight of its line (KaTeX's composed glyph is always thin)
+  macros: { "\\role": "\\htmlClass{role-#1}{#2}", "\\neq": NOT_EQUAL, "\\ne": NOT_EQUAL },
   trust: (context) => context.command === "\\htmlClass" && ROLE_CLASS.test(context.class ?? "")
 }
 

@@ -2,7 +2,7 @@
 
 module Lessons
   # lesson.md -> the parsed body of banco.lesson/2 (A1, A2). The source is a front matter and then cards: a level-1
-  # heading starts a part, a level-2 heading `## Title {ROLE [extra] [icon=NAME] [id=SLUG] [tone=ROLE]}` a card, and
+  # heading starts a part, a level-2 heading `## Title {ROLE [extra] [icon=NAME] [id=SLUG] [tone=ROLE] [short="Name"]}` a card, and
   # inside a card plain text and fenced directives are the blocks. The splitter is fence-aware: a heading counts only
   # at depth 0, so a `## ` line in a YAML block scalar is text of its block.
   #
@@ -261,9 +261,9 @@ module Lessons
         @cards << @card
       end
 
-      # {role:, extra:, icon:, id:, tone:} or nil (after reporting).
+      # {role:, extra:, icon:, id:, tone:, short:} or nil (after reporting).
       def tag(text, n)
-        tokens = text.split
+        tokens = text.scan(/(?:[^\s"]|"[^"]*")+/)
         out = {}
         bad = lambda do |why|
           error("E-LESSON-CARD", n, "the tag {#{text}}: #{why}", "tag")
@@ -280,6 +280,11 @@ module Lessons
             return bad.call("extra is given once") if out[:extra]
 
             out[:extra] = true
+          elsif (kv = t.match(/\Ashort="([^"]+)"\z/))
+            return bad.call("short is given once") if out.key?(:short)
+            return bad.call('short="..." is 2 to 28 characters, no braces or $') unless kv[1].strip.size.between?(2, 28) && !kv[1].match?(/[{}$]/)
+
+            out[:short] = kv[1].strip
           elsif (kv = t.match(/\A(icon|id|tone)=(.+)\z/))
             key = kv[1].to_sym
             return bad.call("#{kv[1]} is given once") if out.key?(key)
@@ -289,7 +294,7 @@ module Lessons
 
             out[key] = kv[2]
           else
-            return bad.call("unknown token #{t.inspect} (extra, icon=NAME, id=SLUG, tone=ROLE)")
+            return bad.call("unknown token #{t.inspect} (extra, icon=NAME, id=SLUG, tone=ROLE, short=\"Short name\")")
           end
         end
         out
@@ -415,6 +420,7 @@ module Lessons
       h = { "n" => n, "id" => tag[:id] || "c#{n}", "role" => tag[:role], "level" => extra ? "extra" : "core", "title_it" => card[:title],
             "icon" => tag[:icon] || Icons.default_for(tag[:role], extra: extra) }
       h["tone"] = tag[:tone] if tag[:tone]
+      h["short_it"] = tag[:short] if tag[:short]
       h["part"] = card[:part] if card[:part] && !extra
       h["line"] = card[:line]
       h["blocks"] = number(card[:blocks])

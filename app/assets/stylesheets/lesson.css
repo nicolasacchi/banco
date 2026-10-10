@@ -69,6 +69,9 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) #trial-notice
 .l2-bar-count { color: var(--muted); font-weight: 700; text-align: center; flex: 1; font-size: 0.9em; }
 .l2-bar .button { max-width: 60%; text-align: left; line-height: 1.25; min-height: 2.8em; border-radius: 0.8em; }
 .l2-next { margin-left: auto; }
+.l2-next > span, .l2-prev > span { display: inline-flex; align-items: center; gap: 0.4em; }
+.l2-prev > span { white-space: nowrap; }
+.l2-next .ic { flex: none; }
 .l2[data-view="scroll"] .l2-bar { display: none; }
 .l2[data-view="scroll"] .l2-progress { display: none; }
 .l2 .button { border: 2px solid var(--primary); background: var(--primary); color: var(--primary-text); font-weight: 700; cursor: pointer; }
@@ -108,7 +111,7 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) #trial-notice
 .badge .ic { width: 1.7em; height: 1.7em; }
 .card-titles { min-width: 0; }
 .kicker { margin: 0; font-size: 0.8em; font-weight: 800; color: var(--muted); }
-.l2-card h2 { margin: 0; font-size: clamp(1.4em, 3.4vw, 1.95em); line-height: 1.12; letter-spacing: -0.01em; font-weight: 800; }
+.l2-card h2 { margin: 0; font-size: clamp(1.4em, 3.4vw, 1.8em); line-height: 1.12; letter-spacing: -0.01em; font-weight: 800; }
 .l2-card h3, .l2-cover h2, .l2-cover h3 { margin: 0.8em 0 0.3em; font-size: 1.1em; line-height: 1.3; font-weight: 800; }
 .card-legend { display: flex; flex-wrap: wrap; gap: 0.3em 0.9em; align-items: center; margin: 0 0 0.6em; padding: 0.25em 0.8em; background: var(--soft-primary); border-radius: 999px; font-size: 0.8em; width: fit-content; max-width: 100%; }
 .card-legend.map-legend { border-radius: 0.8em; font-size: 0.85em; margin-left: 0.4em; }
@@ -121,6 +124,7 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) #trial-notice
 .card-body.is-split { display: flex; flex-direction: column; }
 .card-body.is-split > .block-diagram { order: -1; }
 .l2 .block-diagram { padding: 0.5em; background-color: var(--paper); border: 1px solid var(--rule); border-radius: 1em; background-image: linear-gradient(rgba(38, 58, 92, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(38, 58, 92, 0.05) 1px, transparent 1px); background-size: 22px 22px; }
+.l2 .block-diagram { container-type: inline-size; container-name: dgb; }
 .l2 .block-diagram .dg { margin: 0; }
 .l2 .case .block-diagram, .l2 .exercise .block-diagram { background: none; border: 0; padding: 0; }
 
@@ -171,10 +175,9 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) #trial-notice
 .legend-question { color: var(--muted); }
 .marker { width: 1.1em; height: 1.1em; vertical-align: -0.2em; margin-right: 0.3em; }
 .l2 .katex { font-size: 1.1em; font-family: inherit; font-weight: inherit; }
-.l2 .katex .mathnormal, .l2 .katex .mathit, .l2 .katex .mord:not(.mathbf), .l2 .katex .mbin, .l2 .katex .mopen, .l2 .katex .mclose, .l2 .katex .mpunct, .l2 .katex .minner { font-family: "Banco Digits", "Atkinson Hyperlegible", KaTeX_Main, Verdana, sans-serif; font-style: normal; }
-.l2 .katex .mrel { font-family: "Banco Digits", "Atkinson Hyperlegible", KaTeX_Main, Verdana, sans-serif; font-style: normal; }
-/* the not-equal sign is KaTeX's own composed glyph: it keeps KaTeX's fonts (Atkinson has no U+2260) */
-.l2 .katex .mrel:has(.rlap), .l2 .katex .mrel:has(.rlap) *, .l2 .katex .rlap, .l2 .katex .rlap * { font-family: KaTeX_Main, "Banco Symbols", sans-serif; }
+.l2 .katex .mathnormal, .l2 .katex .mathit, .l2 .katex .mord:not(.mathbf), .l2 .katex .mbin, .l2 .katex .mopen, .l2 .katex .mclose, .l2 .katex .mpunct, .l2 .katex .minner { font-family: "Banco Digits", "Atkinson Hyperlegible", "Banco Symbols", KaTeX_Main, Verdana, sans-serif; font-style: normal; }
+.l2 .katex .mrel { font-family: "Banco Digits", "Atkinson Hyperlegible", "Banco Symbols", KaTeX_Main, Verdana, sans-serif; font-style: normal; }
+.l2 .katex .mord.text { font-family: "Banco Digits", "Atkinson Hyperlegible", "Banco Symbols", sans-serif; font-weight: inherit; }
 .l2 .katex .mathbf { font-weight: 700; }
 .l2 .katex-display { margin: 0.2em 0; }
 .l2 .eqd .katex-display { display: inline-block; margin: 0; }
@@ -195,32 +198,44 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) #trial-notice
 
 /* procedure */
 .block-title { margin: 0 0 0.3em; font-size: 1.1em; }
-.mnemonic { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.4em; margin: 0.3em auto 0.9em; }
-.mn-pill { padding: 0.25em 0.9em; border-radius: 999px; background: var(--primary); color: var(--primary-text); font-weight: 800; font-size: 0.95em; }
+.mnemonic { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.4em; margin: 0 auto 0.4em; }
+.mn-pill { padding: 0.1em 0.8em; border-radius: 999px; background: var(--primary); color: var(--primary-text); font-weight: 800; font-size: 0.85em; }
 .mn-arrow { color: var(--muted); display: inline-flex; }
-.l2 ol.steps { list-style: none; padding: 0; margin: 0.6em 0; display: grid; gap: 0.7em; grid-template-columns: minmax(0, 1fr); }
+.l2 ol.steps { list-style: none; padding: 0; margin: 0.5em 0; display: grid; gap: 0.5em; align-items: stretch; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 52em) { .l2 ol.steps { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
-.step { position: relative; display: block; padding: 0.9em 0.9em 0.8em 4em; background: var(--paper); border-radius: 1em; border: 1px solid var(--rule); min-height: 5em; }
-.step-no { position: absolute; left: 0.8em; top: 0.8em; width: 2.2em; height: 2.2em; border-radius: 0.7em; display: grid; place-items: center; font-weight: 800; font-size: 1.1em; background: var(--primary); color: var(--primary-text); }
+.step { position: relative; display: block; padding: 0.55em 0.9em 0.55em 3.3em; background: var(--paper); border-radius: 1em; border: 1px solid var(--rule); }
+.step-no { position: absolute; left: 0.7em; top: 0.55em; width: 2em; height: 2em; border-radius: 0.7em; display: grid; place-items: center; font-weight: 800; font-size: 1.1em; background: var(--primary); color: var(--primary-text); }
 .step-main { min-width: 0; }
 .step-tag, .mistake-tag, .example-label { display: flex; align-items: center; gap: 0.4em; margin: 0; }
 .step-tag strong { font-size: 1.1em; }
 .step-tag .ic { color: var(--primary); }
 [data-theme="dark"] .step-tag .ic { color: var(--text); }
-.step-text { margin: 0.2em 0; font-size: 0.95em; }
+.step-text { margin: 0.1em 0; font-size: 0.95em; line-height: 1.45; }
 .step-example { margin: 0.3em 0 0; color: var(--text); display: flex; flex-direction: column; align-items: flex-start; gap: 0.1em; }
 .step-example-label { font-size: 0.8em; font-weight: 800; color: var(--muted); }
-.step-example .eqd { font-size: 1.2em; }
+.step-example .eqd { font-size: 1.05em; }
 
-/* cases: an icon, a condition as an equation, the picture beside it */
-.cases-grid { display: grid; gap: 1em; grid-template-columns: minmax(0, 1fr); container-type: inline-size; container-name: cases; }
-.case { display: grid; grid-auto-rows: min-content; gap: 0.3em 1.2em; align-items: start; border: 2px solid var(--rule); border-radius: 1.1em; padding: 0.9em 1em; background: var(--surface); min-width: 0; overflow: hidden; }
-@container cases (min-width: 38em) { .case { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); } .case-head { grid-column: 1; } .case > .block-diagram { grid-column: 2; grid-row: 1 / span 4; } }
-.case-head { display: flex; align-items: center; gap: 0.6em; margin: 0; padding: 0; background: none; font-size: 1.1em; }
-.case-head .ic { width: 2.4em; height: 2.4em; padding: 0.5em; border-radius: 0.8em; background: var(--primary); color: var(--primary-text); }
-.case-condition { font-weight: 700; margin: 0.1em 0; font-size: 1.1em; }
-.case-text p { margin: 0.15em 0; font-size: 0.95em; }
-.case-example { font-size: 0.95em; }
+/* cases: compact rows (name, condition tile, one line, a small balance); one stepper on top sets x in all of them */
+.cases-try { display: flex; align-items: center; justify-content: center; gap: 0.5em 0.8em; flex-wrap: wrap; margin: 0.3em 0 0.8em; padding: 0.4em 0.9em; border-radius: 1em; background: color-mix(in srgb, var(--r-unknown-tint, #ece4fb) 75%, var(--surface)); border: 2px solid color-mix(in srgb, var(--x) 40%, var(--surface)); }
+.cases-try .dg-trylabel { flex: none; font-size: 1em; color: var(--text); margin-right: 0.3em; }
+.cases-try .dg-tryvalue { min-width: 3.4em; }
+.cases-try .button.dg-round { font-size: 1em; }
+.cases-grid { display: grid; gap: 0.8em; grid-template-columns: minmax(0, 1fr); container-type: inline-size; container-name: cases; }
+.case { display: grid; gap: 0.3em 1.2em; align-items: center; border: 2px solid var(--rule); border-radius: 1.1em; padding: 0.7em 1em; background: var(--surface); min-width: 0; overflow: hidden; }
+@container cases (min-width: 34em) { .case { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.case-info { min-width: 0; display: flex; flex-direction: column; gap: 0.15em; }
+.case-head { display: flex; align-items: center; gap: 0.6em; margin: 0; padding: 0; background: none; font-size: 1.15em; }
+.case-head .ic { width: 2.2em; height: 2.2em; padding: 0.45em; border-radius: 0.8em; background: var(--soft-primary); color: var(--primary); }
+[data-theme="dark"] .case-head .ic { color: var(--text); }
+.case-condition { font-weight: 800; margin: 0; font-size: 1.25em; }
+.case-text p { margin: 0.1em 0; font-size: 0.98em; }
+.case-example { font-size: 0.95em; color: var(--muted); }
+.case-fig.block-diagram { padding: 0.2em; background: none; border: 0; }
+.case-fig .dg-compact .dg-stage { max-width: 17em; margin: 0 auto; }
+.case-fig .dg-compact { display: flex; flex-direction: column; }
+.dg-compact .dg-pill, .dg-compact .dg-eq, .dg-compact .dg-controls, .dg-compact .dg-desc { display: none; }
+.dg-compact .dg-top { order: 5; justify-content: center; margin: 0.2em 0 0; }
+.dg-compact .dg-caption { text-align: center; font-size: 0.85em; margin: 0.1em 0 0; }
 
 /* example: the problem, then the steps one by one, the new one marked */
 .example { border: 0; padding: 0; background: none; }
@@ -247,9 +262,14 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) #trial-notice
 .step-blank .check { border: 0; padding: 0; background: none; }
 .blank-label { display: flex; align-items: center; gap: 0.4em; margin: 0 0 0.3em; }
 
-/* mistakes: cards to turn */
-.mistakes-grid { display: grid; gap: 0.8em; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19em), 1fr)); align-items: start; }
-.mistake-group { grid-column: 1 / -1; margin: 0.6em 0 0; font-size: 0.85em; color: var(--muted); font-weight: 800; }
+/* mistakes: cards to turn, a uniform grid with equal heights */
+.mistakes-intro { margin: 0 0 0.4em; font-weight: 700; max-width: 36em; }
+.mistakes-grid { display: grid; gap: 0.8em; grid-template-columns: minmax(0, 1fr); align-items: stretch; }
+@container card (min-width: 34em) { .mistakes-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.mistake { display: flex; flex-direction: column; }
+.mistake-toggle { flex: 1; }
+.mistake-group-ic { margin-right: 0.4em; color: var(--brass-dark); }
+.l2 .mistake-group { grid-column: 1 / -1; margin: 0.5em 0 0; font-size: 0.95em; color: var(--text); font-weight: 800; display: flex; align-items: center; }
 .mistake { border: 2px solid var(--rule); border-radius: 1.1em; background: var(--surface); overflow: hidden; transition: border-color 0.2s, transform 0.15s; }
 .mistake:hover { border-color: var(--primary); }
 .mistake-toggle { display: flex; flex-direction: column; align-items: stretch; gap: 0.4em; width: 100%; text-align: left; padding: 0.8em 1em; border: 0; background: none; color: var(--text); font: inherit; cursor: pointer; }
@@ -268,10 +288,15 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) #trial-notice
 .mistake-why { color: var(--text); font-size: 0.95em; }
 
 /* checks */
-.check { border: 2px solid var(--rule); border-radius: 1em; padding: 0.7em 1em 0.9em; background: var(--surface); }
+.check { border: 2px solid var(--rule); border-radius: 1em; padding: 0.7em 1em 0.9em; background: var(--surface); display: flex; flex-wrap: wrap; align-items: center; gap: 0.2em 0.9em; }
+.check > .check-prompt, .check > .hint, .check > .feedback, .check > .teacher-notes { flex: 1 0 100%; }
+.check > .check-actions { margin: 0; }
 .block-check { max-width: 42em; }
 .check-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4em 0.6em; margin: 0.4em 0; }
 .check-row .answer, .check-row .field { margin: 0; }
+.check .fraction label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.check .fraction .answer-input { width: 4.2em; min-height: 2.2em; text-align: center; }
+.check .fraction { gap: 0.15em; }
 .check .answer-input { font: inherit; min-height: 2.5em; width: 7em; padding: 0.2em 0.5em; border: 2px solid var(--text); background: var(--bg); color: var(--text); border-radius: 0.5em; }
 .check .answer-input.wide { width: 16em; max-width: 100%; }
 .check .fraction { display: inline-grid; justify-items: center; gap: 0.2em; }
@@ -340,7 +365,7 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) #trial-notice
 .summary-points li { display: grid; grid-template-columns: 2.6em 1fr; gap: 0.7em; align-items: center; padding: 0.6em 0.8em; border-radius: 1em; background: var(--paper); border: 1px solid var(--rule); max-width: none; }
 .l2 .point-ic { width: 2.6em; height: 2.6em; padding: 0.55em; border-radius: 0.8em; background: var(--primary); color: var(--primary-text); margin: 0; }
 .point-text { font-size: 0.98em; }
-.l2-end { margin-top: 1.4em; padding: 1em 1.2em; border-radius: 1em; background: var(--soft-primary); border: 2px solid var(--primary); }
+.l2-end { margin-top: 1.4em; padding: 1em 1.2em; border-radius: 1em; background: color-mix(in srgb, var(--brass) 14%, var(--surface)); border: 2px solid var(--brass-dark); }
 .l2-end h3 { margin-top: 0; }
 .end-actions { display: flex; flex-wrap: wrap; gap: 0.6em; }
 
@@ -437,7 +462,17 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
    units as brass bells with a 1. Right and wrong use no red and no green. */
 .dg-balance .dg-svg { max-width: 100%; }
 .dg-balance:not(.dg-hero) .dg-stage { max-width: 36em; margin: 0 auto; }
+.dg-side { display: contents; }
+@container dgb (min-width: 38em) {
+  .dg-balance:not(.dg-hero):not(.dg-compact):has(.dg-controls > *) { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(16em, 1fr); grid-template-areas: "top top" "stage side" "cap cap" "desc desc"; column-gap: 1.2em; align-items: center; }
+  .dg-balance:not(.dg-hero):not(.dg-compact):has(.dg-controls > *) > .dg-top { grid-area: top; }
+  .dg-balance:not(.dg-hero):not(.dg-compact):has(.dg-controls > *) > .dg-stage { grid-area: stage; max-width: none; }
+  .dg-balance:not(.dg-hero):not(.dg-compact):has(.dg-controls > *) > .dg-side { grid-area: side; display: flex; flex-direction: column; justify-content: center; gap: 0.2em; min-width: 0; }
+  .dg-balance:not(.dg-hero):not(.dg-compact):has(.dg-controls > *) > .dg-caption { grid-area: cap; }
+  .dg-balance:not(.dg-hero):not(.dg-compact):has(.dg-controls > *) > .dg-desc { grid-area: desc; }
+}
 .bl-shadow { fill: rgba(0, 0, 0, 0.1); }
+.bl-beam, .bl-stand, .bl-pan, .bl-box, .bl-bell { filter: drop-shadow(0 2px 2px rgba(40, 30, 10, 0.28)); }
 .bl-stand, .bl-beam { fill: var(--metal); }
 .bl-post { fill: var(--metal); }
 .bl-needle { fill: var(--brass); }
@@ -467,7 +502,7 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 .dg-try { display: flex; align-items: center; gap: 0.7em; flex-wrap: wrap; justify-content: center; width: 100%; }
 .dg-trylabel { flex-basis: 100%; text-align: center; font-weight: 800; color: var(--muted); font-size: 0.9em; }
 .dg-tryvalue { min-width: 4.4em; text-align: center; font-size: 1.6em; font-weight: 800; color: var(--x); }
-.dg-round, .l2 .button.dg-round { width: 2.9em; height: 2.9em; min-height: 0; padding: 0; border-radius: 50%; font-size: 1.5em; line-height: 1; }
+.dg-round, .l2 .button.dg-round { width: 2.6em; height: 2.6em; min-height: 0; padding: 0; border-radius: 50%; font-size: 1.4em; line-height: 1; }
 .dg-readout { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5em; margin: 0.2em 0; flex-basis: 100%; }
 .dg-rd { display: flex; flex-direction: column; padding: 0.4em 0.8em; border-radius: 0.8em; }
 .dg-rd small { font-size: 0.8em; font-weight: 800; color: var(--muted); }
@@ -483,9 +518,13 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 
 /* the schema (flow): ink-blue outlines, steps on the page colour, decisions tinted, ends on paper */
 .dg-flow .dg-node { stroke: var(--primary); stroke-width: 2.5; fill: var(--surface); }
-.dg-flow .dg-decision { fill: var(--soft-primary); }
+.dg-flow .dg-decision { fill: color-mix(in srgb, var(--brass) 22%, var(--surface)); }
 .dg-flow .dg-end { fill: var(--paper); stroke-width: 3; }
 .dg-flow .dg-edge { stroke: var(--primary); stroke-width: 2.5; }
+.dg-flow .dg-arrowhead { fill: var(--primary); stroke: none; }
+.dg-flow .dg-start { fill: var(--primary); }
+.l2 .dg-label.dg-starttext, .l2 .dg-starttext .role-unknown, .l2 .dg-starttext .role-known { color: var(--primary-text); font-weight: 800; }
+.dg-flow .dg-nodetext { text-align: center; }
 
 /* reduced motion */
 .l2[data-motion="reduced"] *, .l2[data-motion="reduced"] *::before, .l2[data-motion="reduced"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
@@ -579,6 +618,12 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
   .l2-bar .button { font-size: 0.9em; }
   .l2-bar .l2-next { max-width: 70%; }
   .l2-bar-count { display: none; }
+  .cases-try .dg-trylabel { flex-basis: 100%; text-align: center; margin: 0; }
+  .cases-try { padding: 0.3em 0.6em 0.5em; }
+  .cases-try .button.dg-round { font-size: 0.8em; }
+  .cases-try .dg-tryvalue { min-width: 3em; font-size: 1.4em; }
+  .cases-try { gap: 0.3em 0.5em; }
+  .cases-try .dg-trylabel { flex: 1 0 100%; }
   .l2-card, .l2-cover { scroll-margin-top: 4em; --pad: 0.9em; }
   .card-head { padding-top: 0.8em; }
   .l2 .block-diagram { padding: 0.2em; }

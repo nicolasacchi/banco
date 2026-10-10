@@ -6,7 +6,7 @@ require "test_helper"
 # that may be missing (a tofu box for S).
 class LessonCssTest < ActiveSupport::TestCase
   CSS = Rails.root.join("app/assets/stylesheets/lesson.css").read
-  STACK = /font-family:\s*"Banco Digits",\s*"Atkinson Hyperlegible",\s*KaTeX_Main/
+  STACK = /font-family:\s*"Banco Digits",\s*"Atkinson Hyperlegible",\s*(?:"Banco Symbols",\s*)?KaTeX_Main/
 
   test "relations and binary operators fall back to KaTeX_Main after the digit face" do
     rule = CSS.lines.find { |l| l.include?(".katex .mbin") && l.include?("font-family") }
@@ -16,8 +16,12 @@ class LessonCssTest < ActiveSupport::TestCase
     assert_match(STACK, mrel)
   end
 
-  test "the composed not-equal of KaTeX keeps KaTeX's own fonts" do
-    assert(CSS.lines.any? { |l| l.include?(".katex .rlap") && l.include?("font-family: KaTeX_Main") })
+  test "the not-equal sign is the character in our symbols face, not KaTeX's composed glyph" do
+    assert(CSS.lines.any? { |l| l.include?(".katex .mord.text") && l.include?('"Banco Symbols"') && l.include?("font-weight: inherit") })
+    assert_not CSS.include?(".katex .rlap")
+    text = Rails.root.join("app/javascript/lesson/text.js").read
+    assert_includes text, '\\char\\"2260'
+    assert_match(/"\\\\neq": NOT_EQUAL, "\\\\ne": NOT_EQUAL/, text)
   end
 
   test "digits are drawn without a slash: Banco Digits covers 0-9 only and comes first in the lesson's font stack" do

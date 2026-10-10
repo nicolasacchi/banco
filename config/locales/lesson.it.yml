@@ -96,6 +96,8 @@ it:
     right_side: "Giusto"
     mistake_turn: "Tocca per la versione giusta"
     mistake_hide: "Nascondi la versione giusta"
+    mistakes_intro: "Sono gli errori più comuni. Tocca una carta per vedere la versione giusta e il perché."
+    cases_try: "Prova un numero al posto di x"
     # checks
     check_button: "Controlla"
     checking: "Controllo..."

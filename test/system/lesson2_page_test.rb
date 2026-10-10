@@ -171,6 +171,55 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
     end
   end
 
+  test "the three cases share one stepper: x is set in every balance at once, the rows are compact" do
+    open_lesson(size: [ 1366, 900 ])
+    go(7)
+    assert_selector "#scheda-7 .cases-try .dg-tryvalue", text: "x = 0"
+    assert_selector "#scheda-7 .case .dg-compact", count: 3
+    assert_no_selector "#scheda-7 .case .dg-controls .dg-try", visible: :visible
+    first = page.evaluate_script("document.querySelectorAll('#scheda-7 .case .dg-status')[0].textContent.trim()")
+    assert_match(/destra/, first)
+    3.times { find("#scheda-7 .cases-try .dg-round[aria-label='Un numero in più']").click }
+    assert_selector "#scheda-7 .cases-try .dg-tryvalue", text: "x = 3"
+    states = page.evaluate_script("[...document.querySelectorAll('#scheda-7 .case .dg-status')].map((n) => n.className)")
+    assert_match(/is-level/, states[0], "2x = 6 is level at x = 3")
+    assert_match(/is-tilt/, states[1])
+    assert_match(/is-level/, states[2])
+    rows = page.evaluate_script("[...document.querySelectorAll('#scheda-7 .case')].map((n) => n.getBoundingClientRect().height)")
+    assert_operator rows.first, :<=, 330, "a case row is #{rows.first} px tall"
+  end
+
+  test "the map and the next button use the short name of a card" do
+    open_lesson(size: [ 1366, 900 ])
+    go(2)
+    assert_selector ".l2-next", text: "Avanti: Primo principio"
+    assert_selector ".l2-sidemap .map-text", text: "Primo principio"
+    assert_no_selector ".l2-sidemap .map-text", text: "Togli lo stesso peso"
+    # without a short name the title up to its colon
+    go(6)
+    assert_selector ".l2-next", text: "Avanti: Tre casi"
+  end
+
+  test "the kicker above a title does not repeat the card counter, and the flip cards come with a line and equal rows" do
+    open_lesson(size: [ 1366, 900 ])
+    go(2)
+    assert_no_selector "#scheda-2 .kicker", text: /Scheda/
+    go(9)
+    assert_selector "#scheda-9 .mistakes-intro", text: "Tocca una carta"
+    heights = page.evaluate_script("[...document.querySelectorAll('#scheda-9 .mistake')].slice(0, 2).map((n) => Math.round(n.getBoundingClientRect().height))")
+    assert_equal heights[0], heights[1], "the first row of flip cards has equal heights"
+  end
+
+  test "the symbols render: not-equal as a character in the weight of its line" do
+    open_lesson(size: [ 1366, 900 ])
+    go(7)
+    assert_selector "#scheda-7 .case-condition .katex-html .mord.text", text: "\u2260"
+    assert_equal 0, page.evaluate_script("document.querySelectorAll('#scheda-7 .rlap').length")
+    family = page.evaluate_script("getComputedStyle(document.querySelector('#scheda-7 .case-condition .mord.text')).fontFamily")
+    assert_match(/Banco Symbols/, family)
+    assert_equal "700", page.evaluate_script("getComputedStyle(document.querySelector('#scheda-7 .case-condition .mord.text')).fontWeight").sub("800", "700")
+  end
+
   test "arrow keys change the card from the page, never inside a choice or with a modifier" do
     open_lesson(fragment: "#scheda-2")
     assert_selector ".l2-counter", text: "Scheda 2 di 11"

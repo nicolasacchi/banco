@@ -48,7 +48,7 @@ export function renderCard(card, ctx, position) {
   const heading = el("h2", { id: `scheda-${card.n}-title`, tabindex: "-1", text: card.title_it })
   article.appendChild(el("header", { class: "card-head" },
     el("span", { class: "badge", "aria-hidden": "true" }, icon(iconOf(card), "badge-ic")),
-    el("div", { class: "card-titles" }, el("p", { class: "kicker", text: position.kicker }), heading)))
+    el("div", { class: "card-titles" }, position.kicker ? el("p", { class: "kicker", text: position.kicker }) : null, heading)))
   // a legend chip only on the first card where a role appears (the lesson map has them all)
   const roles = position.newRoles ?? rolesUsed(card)
   const hasLegend = card.blocks.some((b) => b.type === "legend")
@@ -66,10 +66,11 @@ export function renderCard(card, ctx, position) {
   for (const block of card.blocks) {
     if (block.type === "mistake") {
       if (!grid) {
+        body.appendChild(el("p", { class: "mistakes-intro", text: ctx.t.mistakes_intro }))
         grid = el("div", { class: "mistakes-grid" })
         body.appendChild(grid)
       }
-      if (block.group_it && block.group_it !== lastGroup) grid.appendChild(el("h3", { class: "mistake-group", text: block.group_it }))
+      if (block.group_it && block.group_it !== lastGroup) grid.appendChild(el("h3", { class: "mistake-group" }, icon("triangle-alert", "mistake-group-ic"), document.createTextNode(block.group_it)))
       lastGroup = block.group_it ?? lastGroup
       grid.appendChild(renderBlock(block))
       continue

@@ -210,6 +210,7 @@
    "level": "core",
    "part": 2,
    "title_it": "Togli lo stesso peso dai due piatti",
+   "short_it": "Primo principio",
    "icon": "scale",
    "blocks": [
     {
@@ -458,6 +459,10 @@
         },
         "right": {
          "units": 6
+        },
+        "try": {
+         "from": 0,
+         "to": 5
         },
         "tilt": 0
        }

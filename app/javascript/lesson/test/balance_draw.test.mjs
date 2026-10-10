@@ -43,3 +43,13 @@ test("the equation line of a state", () => {
   assert.equal(equationTex(data), "2x + 1 = 7")
   assert.equal(equationTex({ ...data, left: { x: 1 }, right: { units: 3 } }), "x = 3")
 })
+
+test("a crowded balance shrinks its items so the picture stays low", () => {
+  const crowded = { type: "balance", alt_it: "Sei scatole a sinistra, diciotto pesi a destra.", left: { x: 6 }, right: { units: 18 }, x_value: "3" }
+  const calm = layout(data, { width: 480, fontPx: 20, subject: "math", state: 0 })
+  const busy = layout(crowded, { width: 480, fontPx: 20, subject: "math", state: 0 })
+  assert.ok(!busy.error, busy.error?.message)
+  const box = (scene) => flat(scene.shapes).find((s) => s.cls === "bl-box").w
+  assert.ok(box(busy) < box(calm), `crowded boxes ${box(busy)} are smaller than ${box(calm)}`)
+  assert.ok(busy.height < calm.height * 1.45, `the crowded figure is ${busy.height} px, the calm one ${calm.height}`)
+})

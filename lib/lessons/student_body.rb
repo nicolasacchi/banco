@@ -50,7 +50,7 @@ module Lessons
     end
 
     def card_json(card, subject, revision_id, seed)
-      out = card.slice("n", "id", "role", "level", "title_it", "icon", "tone", "part")
+      out = card.slice("n", "id", "role", "level", "title_it", "short_it", "icon", "tone", "part")
       out["blocks"] = card["blocks"].map { |b| block(b, subject, seed_for(seed, revision_id, card["n"], b["n"])) }
       out
     end

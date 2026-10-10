@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Builds public/vendor/banco-symbols@1/banco-symbols-{400,700}.woff2: the not-equal sign (U+2260), drawn from the "="
-and a slash of the vendored KaTeX_Main (the lesson fonts have no U+2260 and a student's system may have no fallback).
+"""Builds public/vendor/banco-symbols@1/banco-symbols-{400,700}.woff2: the not-equal sign (U+2260), drawn as two bars and a
+slash with the stroke of the lesson font at that weight (the lesson fonts have no U+2260 and a student's system may have no
+fallback). The outline shell and metrics come from the vendored KaTeX_Main.
 Needs fontTools with brotli (pip install fonttools brotli). Run it only to rebuild; the output is committed."""
 import os
 from fontTools.ttLib import TTFont
@@ -18,17 +19,25 @@ for weight, name in ((400, "KaTeX_Main-Regular"), (700, "KaTeX_Main-Bold")):
     cmap = font.getBestCmap()
     equal = cmap[0x3D]
     width = font["hmtx"][equal][0]
-    rec = DecomposingRecordingPen(glyphs)
-    glyphs[equal].draw(rec)
     pen = TTGlyphPen(glyphs)
-    rec.replay(pen)
+    # strokes as heavy as Atkinson Hyperlegible's at 400 and 700 (the stem of its "l"), so the sign does not look thin in a bold line
+    thick = 78 if weight == 400 else 128
+    barw = int(width * 0.78)
+    x0 = int((width - barw) / 2)
+    for y0 in (120, 330):
+        pen.moveTo((x0, y0))
+        pen.lineTo((x0 + barw, y0))
+        pen.lineTo((x0 + barw, y0 + thick))
+        pen.lineTo((x0, y0 + thick))
+        pen.closePath()
     # the slash: a parallelogram across both bars, leaning right
-    top, bottom, half, lean = 700, -200, 40, 150
+    top, bottom, half, lean = 720, -170, int(thick * 0.62), 170
     cx = width / 2
-    pen.moveTo((cx + lean - half, top))
-    pen.lineTo((cx + lean + half, top))
+    # same winding as the bars (counter-clockwise), or the overlap would cancel into holes
+    pen.moveTo((cx - lean - half, bottom))
     pen.lineTo((cx - lean + half, bottom))
-    pen.lineTo((cx - lean - half, bottom))
+    pen.lineTo((cx + lean + half, top))
+    pen.lineTo((cx + lean - half, top))
     pen.closePath()
     glyph = pen.glyph()
     font["glyf"]["notequal"] = glyph

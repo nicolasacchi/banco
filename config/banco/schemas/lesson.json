@@ -2082,6 +2082,12 @@
           "minLength": 3,
           "maxLength": 100
         },
+        "short_it": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 28,
+          "description": "A short name of the card for the map and the Avanti button (2 to 3 words); the title when absent."
+        },
         "icon": {
           "$ref": "#/$defs/icon_name"
         },
