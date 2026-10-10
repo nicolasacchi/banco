@@ -7,7 +7,9 @@ module StudentSession
   TEACHER_HEADERS = { "Remote-User" => "nik", "Remote-Groups" => "banco-teacher" }.freeze
 
   def sign_in_as(role = :student)
-    @saved_edge_env = ENV.to_h.slice("BANCO_EDGE_PROXY", "BANCO_TEACHER_USERS")
+    # Only the first call saves: a test that signs in again (setup as the student, the test as the teacher) must not
+    # save the values the first call set, or sign_out_env restores them and they leak into the next test.
+    @saved_edge_env ||= ENV.to_h.slice("BANCO_EDGE_PROXY", "BANCO_TEACHER_USERS")
     ENV["BANCO_EDGE_PROXY"] = "127.0.0.1/32"
     ENV["BANCO_TEACHER_USERS"] = "nik"
     page.driver.headers = role == :teacher ? TEACHER_HEADERS : STUDENT_HEADERS
@@ -19,6 +21,7 @@ module StudentSession
     %w[BANCO_EDGE_PROXY BANCO_TEACHER_USERS].each do |k|
       @saved_edge_env.key?(k) ? ENV[k] = @saved_edge_env[k] : ENV.delete(k)
     end
+    @saved_edge_env = nil
   end
 
   # Requests the pages made, as URLs (not the browser's own chrome:// pages).
