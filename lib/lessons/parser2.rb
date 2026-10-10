@@ -143,6 +143,7 @@ module Lessons
         elsif text.match?(/\A:{3,4} [a-z]/)
           block_error(top[:line], "the block opened at line #{top[:line]} is never closed: a new directive starts at line #{n}")
           @stack.pop
+          @prev = :blank # the dropped block took the blank line before this one
           line(text, n)
         else
           top[:body] << text
