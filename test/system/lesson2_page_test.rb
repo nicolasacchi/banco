@@ -329,7 +329,9 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
   test "mistake cards turn with Enter and are all open in print" do
     open_lesson(fragment: "#scheda-9")
     assert_selector ".mistake", count: 4
-    assert_selector ".mistake-group", count: 4 # the group is the tag of each card, not a heading row
+    assert_selector ".mistakes-group", count: 3 # the kinds are headings over their cards: repeated tags read as a set
+    assert_selector ".mistake-hint-text", text: "Tocca per girare", count: 4 # every card says in words that it turns
+    assert_equal "Tocca una carta", first(".mistakes-intro strong").text # only that is bold
     assert_no_selector ".mistake-back", visible: :visible
     page.execute_script("document.querySelector('.mistake-toggle').focus()")
     page.driver.browser.keyboard.type(:Enter)
@@ -360,9 +362,13 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
   test "the example reveals step by step and a blank gates the rest until it is answered" do
     open_lesson(fragment: "#scheda-6", right: { "6/1" => "0" })
     assert_selector ".example-step", count: 3, visible: :all
-    assert_no_selector ".example-step", visible: :visible
+    # before the first step is asked for, only a greyed preview of it shows (no reason, aria-hidden)
+    assert_no_selector ".example-step:not(.is-ghost)", visible: :visible
+    assert_selector ".example-step.is-ghost[aria-hidden=true]", count: 1, visible: :visible
+    assert_no_selector ".example-step.is-ghost .step-why", visible: :visible
     click_button "Mostra il primo passo"
     assert_selector ".example-step", count: 1, visible: :visible
+    assert_no_selector ".example-step.is-ghost", visible: :all
     assert_selector ".reveal-count", text: "passo 1 di 3"
     click_button "Mostra tutto"
     assert_selector ".step-blank", visible: :visible
@@ -389,7 +395,12 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
     assert_selector ".solution-final", text: /3/
     click_button "Esercizio dopo"
     assert_selector ".try-counter", text: "Esercizio 2 di 3"
-    assert_selector ".exercise.is-current .fraction"
+    # an answer that may be a fraction is typed on one line with the helper keys, not in stacked boxes
+    assert_selector ".exercise.is-current .check-row.is-line input.line-input"
+    assert_no_selector ".exercise.is-current .fraction"
+    find(".exercise.is-current .helper-key[aria-label='Meno']").click
+    find(".exercise.is-current .helper-key[aria-label='Barra di frazione']").click
+    assert_equal "-/", find(".exercise.is-current input.line-input").value
   end
 
   test "matching as chips and a span selection work by keyboard" do

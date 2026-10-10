@@ -94,11 +94,17 @@ export function render(block, ctx, loc) {
     update()
   }
   function update() {
+    // before the first step is asked for, a greyed preview of it (not a step with a question): what comes next
+    const ghost = shown === 0 && steps.length > 0 && !steps[0].blank
     rows.forEach((row, i) => {
       const wasHidden = row.hidden
-      row.hidden = i >= shown
+      const isGhost = ghost && i === 0
+      row.classList.toggle("is-ghost", isGhost)
+      if (isGhost) row.setAttribute("aria-hidden", "true")
+      else row.removeAttribute("aria-hidden")
+      row.hidden = i >= shown && !isGhost
       row.classList.toggle("is-current", i === shown - 1)
-      row.classList.toggle("is-new", i === shown - 1 && wasHidden && !row.hidden)
+      row.classList.toggle("is-new", i === shown - 1 && wasHidden && !row.hidden && !isGhost)
     })
     next.firstChild.textContent = shown === 0 ? ctx.t.first_step : ctx.t.next_step_example
     count.textContent = ctx.t.steps_count.replace("%{n}", Math.min(shown, steps.length)).replace("%{total}", steps.length)

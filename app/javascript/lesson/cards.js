@@ -16,6 +16,7 @@ import { render as table } from "lesson/blocks/table"
 import { render as text } from "lesson/blocks/text"
 import { render as tryBlock } from "lesson/blocks/try"
 import { questionControl } from "lesson/question"
+import { equationTex } from "lesson/diagrams/balance"
 import { roleOf } from "lesson/text"
 
 const DEFAULT_ICON = { idea: "lightbulb", example: "pencil-ruler", mistakes: "triangle-alert", try: "notebook-pen", summary: "list-checks" }
@@ -49,6 +50,18 @@ export function visualFirst(blocks) {
   return [blocks[first], ...lead, ...blocks.slice(first + 1)]
 }
 
+// A chain of equations that starts from the equation the balance above it already shows does not say it twice: the
+// balance is its first line (the chain keeps at least two lines).
+export function dropRepeatedStart(blocks) {
+  const norm = (t) => String(t).replace(/\s+/g, "")
+  return blocks.map((b, i) => {
+    if (b.type !== "math" || !Array.isArray(b.lines) || b.lines.length < 3 || b.lines[0].note_it) return b
+    const balance = blocks.slice(0, i).reverse().find((x) => x.type === "diagram" && x.diagram?.type === "balance")
+    if (!balance || norm(equationTex(balance.diagram, 0)) !== norm(b.lines[0].tex)) return b
+    return { ...b, lines: b.lines.slice(1) }
+  })
+}
+
 export function renderCard(card, ctx, position) {
   const article = el("article", {
     class: `l2-card card-${card.role} card-${card.level}${card.tone ? ` card-tone-${card.tone}` : ""}`,
@@ -66,12 +79,20 @@ export function renderCard(card, ctx, position) {
   if (types.length === 2 && types.includes("text") && types.some((t) => VISUAL.has(t))) body.classList.add("is-split")
   const renderBlock = (block) => renderOne(block, card, ctx, renderBlock)
   let grid = null
-  for (const block of visualFirst(card.blocks)) {
+  let group
+  for (const block of dropRepeatedStart(visualFirst(card.blocks))) {
     if (block.type === "mistake") {
       if (!grid) {
-        body.appendChild(el("p", { class: "mistakes-intro", text: ctx.t.mistakes_intro }))
+        const [pre, post] = ctx.t.mistakes_intro.split("%{tap}")
+        body.appendChild(el("p", { class: "mistakes-intro" }, document.createTextNode(pre), el("strong", { text: ctx.t.mistakes_tap }), document.createTextNode(post ?? "")))
         grid = el("div", { class: "mistakes-grid" })
         body.appendChild(grid)
+        group = undefined
+      }
+      // the mistakes of one group sit under one heading: repeated kinds read as a set
+      if (block.group_it && block.group_it !== group) {
+        grid.appendChild(el("h3", { class: "mistakes-group", text: block.group_it }))
+        group = block.group_it
       }
       grid.appendChild(mistake(block, ctx, { group: block.group_it }))
       continue

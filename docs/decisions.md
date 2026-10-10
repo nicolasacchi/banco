@@ -262,6 +262,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-256 | 2026-10-10 | rich lessons, the look of the pilot (E7): one slim bar, the balance in 2D, equations as member tiles, digits without a slash, the not-equal sign, no red or green in the equations' roles | decided |
 | D-257 | 2026-10-10 | rich lessons, round 2 of the pilot look: short names of cards, the lab beside the picture, cases as compact rows with one stepper, a centred schema, a bold not-equal sign | decided |
 | D-258 | 2026-10-10 | rich lessons, round 3 of the pilot look: the bar never overflows on a phone, the picture first, big equation tiles, quiet balance steps, compact mistakes | decided |
+| D-259 | 2026-10-11 | rich lessons, round 4 of the pilot look: the exercise pager, the one-line answer, flip cards under headings, a short balance on a phone | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2752,5 +2753,13 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Why:** the lead's review of the pilot against the prototype: the bar overflowed at 390 px on the appendix cards, the rule callout pushed the balance below the fold, two "Avanti" buttons competed, equations were small, mistakes left empty slots.
 - **Cost:** `lesson.it.yml` has `card_short`, `extra_short`; the group headings of mistakes are no longer elements of their own (the test counts the tags).
 - **Not done:** a slider for the three cases; key and no-entry icons (a new icon is a D entry and a vendored Lucide file); the 3D cover (1.1).
+- **Status:** decided
+- **Back-port:** none.
+
+## D-259 · 2026-10-11 · rich lessons, round 4 of the pilot look: the exercise pager, the one-line answer, flip cards under headings, a short balance on a phone
+
+- **We do:** (1) "Prova tu": one compact pager (previous, the number chips, next, on one row; the "Esercizio N di M" line stays for the screen reader only), the exercise first with no card around it, and the answer of an exercise is a line "x = [  ] [-] [/] Controlla" with the helper keys (a number gets "-" and ","); a `fraction` check without a mixed form is typed on one line in the lesson ("3", "-5/3", "5/2") and sent to the server as `{n, d}` (an integer is over 1), so the grading and its typical errors do not change; the stacked fraction boxes stay for mixed numbers and for the practice items. The sentence "metti 1 al denominatore" is gone from the four solve exercises of the pilot lesson; the page says "Le frazioni si scrivono con la barra: 5/2." under the line. (2) "Errori da evitare": the kinds are headings over their cards, every card says "Tocca per girare", the intro is one full-width line with only "Tocca una carta" bold. (3) A balance on a phone (up to 600 px): the stepper "- x = N +" sits above the drawing in one row, the drawing is at most 9.5 em tall, both members are one row, the steps buttons sit side by side; a chain of equations that starts with the equation the balance above it already shows loses that first line (`dropRepeatedStart`). (4) A line label of a graph keeps off the drawn lines (`labelNear` with `avoid`); the labels above or below an equation never let a connector cross another label (`stackLabels`); the options of an answer are full-width buttons without the numbered badge (the keys 1 to 5 still pick); an example shows its first step greyed before it is asked for.
+- **Why:** the visual review of round 3 against the prototype.
+- **Cost:** `lesson.it.yml` has `helper_keys`, `key_minus`, `key_bar`, `key_comma`, `fraction_line_hint`, `mistakes_tap`, `mistake_flip`; `mistakes_intro` has a `%{tap}` marker. The pilot lesson data lost four `answer_format_it` lines (re-import).
 - **Status:** decided
 - **Back-port:** none.

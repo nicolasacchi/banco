@@ -60,12 +60,51 @@ function spanInput(spec, ctx) {
   })
 }
 
-function input(spec, ctx) {
+// A fraction answer typed on one line ("3", "-5/3", "5/2"), as the exercise in the page asks for it: the server still
+// reads {n, d} (an integer is n over 1), so the grading and its typical errors do not change.
+export function fractionLineValue(text) {
+  const clean = String(text).replace(/[\u2212\u2013]/g, "-").replace(/\s+/g, "")
+  const at = clean.indexOf("/")
+  return at < 0 ? { n: clean, d: "1" } : { n: clean.slice(0, at), d: clean.slice(at + 1) }
+}
+
+function fractionLineInput(spec, ctx) {
+  const id = uid("fline")
+  const field = el("input", {
+    id, type: "text", inputmode: "text", autocomplete: "off", autocapitalize: "off", spellcheck: "false",
+    class: "answer-input line-input", "aria-label": ctx.items.number_label
+  })
+  return handle(el("div", { class: "answer answer-line" }, field), {
+    raw: () => JSON.stringify(fractionLineValue(field.value)),
+    isEmpty: () => field.value.trim() === "",
+    focus: () => field.focus()
+  })
+}
+
+// The helper keys of a typed answer: they put the sign (and the bar of a fraction, the comma of a decimal) at the caret,
+// where a phone keyboard may not show them.
+function helperKeys(field, keys, ctx) {
+  const row = el("span", { class: "helper-keys", role: "group", "aria-label": ctx.t.helper_keys })
+  for (const [label, value, name] of keys) {
+    row.appendChild(button(label, { class: "helper-key", "aria-label": name }, () => {
+      const from = field.selectionStart ?? field.value.length
+      const to = field.selectionEnd ?? field.value.length
+      field.value = field.value.slice(0, from) + value + field.value.slice(to)
+      field.focus()
+      field.setSelectionRange(from + value.length, from + value.length)
+    }))
+  }
+  return row
+}
+
+const isLine = (spec) => (spec.component === "fraction" && !spec.mixed) || spec.component === "number"
+
+function input(spec, ctx, options = {}) {
   const part = { ...spec, unit: spec.unit, mixed: spec.mixed }
   switch (spec.component) {
     case "choice": return choiceT({ ...part, options: spec.options.map((o) => ({ id: o.id, text: o.text_it })) }, { t: ctx.items })
     case "number": return numberT(part, { t: ctx.items })
-    case "fraction": return fractionT(part, { t: ctx.items })
+    case "fraction": return options.inline && !spec.mixed ? fractionLineInput(spec, ctx) : fractionT(part, { t: ctx.items })
     case "normalized_text": return textT(part, { t: ctx.items })
     case "matching": return matchingInput(spec, ctx)
     case "span_select": return spanInput(spec, ctx)
@@ -77,17 +116,29 @@ function input(spec, ctx) {
 // options: { onDone(reply, tries) } called with the final reply of a right answer or the second wrong one.
 export function renderCheck(spec, ctx, loc, options = {}) {
   const form = el("form", { class: "check", novalidate: "" })
-  const prompt = el("div", { class: "check-prompt" })
+  // options.inline (the exercises): a typed answer is one line, "x = [  ] [-] [/] [Controlla]", with the helper keys;
+  // options.quietPrompt: the prompt stays for the screen reader only when the line says it ("x =")
+  const line = !!options.inline && isLine(spec)
+  const prompt = el("div", { class: `check-prompt${line && options.quietPrompt && spec.input_before ? " sr-only" : ""}` })
   prompt.appendChild(renderRich(spec.prompt_it, ctx))
-  const handleInput = input(spec, ctx)
-  const row = el("div", { class: "check-row" })
+  const handleInput = input(spec, ctx, options)
+  const row = el("div", { class: `check-row${line ? " is-line" : ""}` })
   if (spec.input_before) row.appendChild(renderInlineRich(spec.input_before, el("span", { class: "check-before" }), ctx))
   row.appendChild(handleInput.element)
+  if (line) {
+    const field = handleInput.element.querySelector("input")
+    const asFraction = spec.component === "fraction"
+    row.appendChild(helperKeys(field, asFraction ? [["\u2212", "-", ctx.t.key_minus], ["/", "/", ctx.t.key_bar]] : [["\u2212", "-", ctx.t.key_minus], [",", ",", ctx.t.key_comma]], ctx))
+  }
   if (spec.input_after) row.appendChild(renderInlineRich(spec.input_after, el("span", { class: "check-after" }), ctx))
   if (spec.answer_format_it) form.appendChild(el("p", { class: "hint", text: spec.answer_format_it }))
-  const submit = button(ctx.t.check_button, { class: "button small", type: "submit" })
+  const submit = button(ctx.t.check_button, { class: `button small${line ? " check-go" : ""}`, type: "submit" })
   const feedback = el("div", { class: "feedback", "aria-live": "polite", role: "status" })
-  form.append(prompt, row, el("p", { class: "check-actions" }, submit), feedback)
+  if (line) {
+    row.appendChild(submit)
+    form.append(prompt, row, feedback)
+    if (spec.component === "fraction" && !spec.answer_format_it) form.insertBefore(el("p", { class: "hint line-hint", text: ctx.t.fraction_line_hint }), feedback)
+  } else form.append(prompt, row, el("p", { class: "check-actions" }, submit), feedback)
 
   if (ctx.teacher) {
     const notes = checkNotes(ctx.full?.spec(loc), ctx)

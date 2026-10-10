@@ -268,8 +268,6 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) #trial-notice
 @container card (min-width: 34em) { .mistakes-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .mistake { display: flex; flex-direction: column; }
 .mistake-toggle { flex: 1; }
-.mistake-group-ic { margin-right: 0.4em; color: var(--brass-dark); }
-.l2 .mistake-group { grid-column: 1 / -1; margin: 0.5em 0 0; font-size: 0.95em; color: var(--text); font-weight: 800; display: flex; align-items: center; }
 .mistake { border: 2px solid var(--rule); border-radius: 1.1em; background: var(--surface); overflow: hidden; transition: border-color 0.2s, transform 0.15s; }
 .mistake:hover { border-color: var(--primary); }
 .mistake-toggle { display: flex; flex-direction: column; align-items: stretch; gap: 0.4em; width: 100%; text-align: left; padding: 0.8em 1em; border: 0; background: none; color: var(--text); font: inherit; cursor: pointer; }
@@ -666,7 +664,6 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 .mistakes-grid { gap: 0.6em; }
 .mistake-toggle { position: relative; gap: 0.15em; padding: 0.5em 0.8em 0.55em; }
 .mistake-tag { font-size: 0.82em; }
-.mistake-group { font-weight: 800; color: var(--muted); }
 .mistake-text { margin: 0.1em 0; font-size: 1em; }
 .mistake-hint { position: absolute; top: 0.5em; right: 0.7em; }
 .mistake-hint .ic { width: 1.25em; height: 1.25em; }
@@ -683,4 +680,108 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
   .dg-controls .dg-prev, .dg-controls .dg-next { flex: 1 1 0; padding: 0.2em 0.3em; font-size: 0.9em; white-space: nowrap; }
   .dg-controls .dg-counter { display: none; }
   .l2-top-in { gap: 0.4em; }
+}
+
+/* ---- round 4 of the pilot look (D-259) ---- */
+/* try: the exercise first under ONE compact pager (arrows and number chips on a row), no card inside the card, no
+   instruction box: the answer is a line "x = [  ] - / Controlla" */
+.try-nav { display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-start; gap: 0.4em; margin: 0.5em 0 0.7em; }
+.try-dots { display: flex; flex-wrap: nowrap; flex: 0 1 auto; min-width: 0; gap: 0.35em; margin: 0; }
+.l2 .try-dot { flex: 1 1 0; min-width: 1.9em; max-width: 2.6em; width: auto; height: 2.6em; border-radius: 0.8em; }
+.l2 .try-arrow { flex: none; display: inline-grid; place-items: center; width: 2.6em; height: 2.6em; padding: 0; border: 2px solid var(--primary); border-radius: 0.8em; background: var(--surface); color: var(--primary); cursor: pointer; }
+.l2 .try-arrow:disabled { border-color: var(--rule); color: var(--muted); opacity: 0.55; cursor: default; }
+.try-arrow-in { display: inline-grid; place-items: center; }
+.try-arrow .ic { width: 1.3em; height: 1.3em; }
+[data-theme="dark"] .l2 .try-arrow { color: var(--text); border-color: var(--text); }
+.try .exercise { border: 0; border-radius: 0; background: none; padding: 0; margin: 0; }
+.exercise-text { font-size: 1.1em; }
+.exercise-text p { margin: 0.2em 0 0.5em; }
+.exercise-check { margin: 0.5em 0; }
+.try .exercise .check { border: 0; padding: 0; background: none; display: block; }
+.try .check-row.is-line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5em 0.6em; margin: 0; padding: 0.6em 0.8em; border: 2px solid var(--rule); border-radius: 1em; background: var(--surface); }
+.check-row.is-line .check-before { font-size: 1.25em; font-weight: 800; }
+.check-row.is-line .answer-line { flex: 1 1 6em; min-width: 5em; max-width: 12em; margin: 0; }
+.check-row.is-line .line-input, .check-row.is-line .answer-input { width: 100%; min-height: 2.8em; font-size: 1.1em; text-align: left; }
+.helper-keys { display: inline-flex; gap: 0.35em; }
+.l2 .helper-key { min-width: 2.6em; height: 2.6em; padding: 0; border: 2px solid var(--rule); border-radius: 0.7em; background: var(--paper); color: var(--text); font: inherit; font-size: 1.15em; font-weight: 800; cursor: pointer; }
+.check-row.is-line .check-go { min-height: 3.2em; padding: 0.4em 1.6em; font-size: 1.15em; font-weight: 800; margin-left: auto; }
+.check .line-hint { margin: 0.4em 0 0; color: var(--muted); }
+.try .check-row.is-line .field, .try .check-row.is-line .answer { margin: 0; }
+.try .exercise .feedback:empty { display: none; }
+@media (max-width: 600px) {
+  .try-nav { gap: 0.25em; }
+  .try-dots { gap: 0.25em; flex: 1 1 auto; }
+  .try-intro { font-size: 0.92em; color: var(--muted); }
+  .l2 .helper-key { min-width: 2.2em; height: 2.4em; font-size: 1.05em; }
+  .check-row.is-line .answer-line { flex: 1 1 4em; min-width: 4em; }
+  .l2 .try-dot { min-width: 0; height: 2.4em; border-radius: 0.6em; font-size: 0.95em; }
+  .l2 .try-arrow { width: 2.2em; height: 2.4em; }
+  .check-row.is-line .check-go { flex: 1 1 100%; margin-left: 0; }
+}
+
+/* the options of an answer in a lesson: full width buttons, no numbered badges */
+.l2 .check .option-key { display: none; }
+.l2 .check .options { display: grid; gap: 0.5em; }
+.l2 .check .option { margin: 0; width: 100%; box-sizing: border-box; }
+.l2 .check .option { font-weight: 700; }
+.l2 .check .option:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* mistakes: the intro is one full-width line with only "Tocca una carta" bold; the kinds are headings over their cards,
+   and every card says in words that it turns */
+.mistakes-intro { max-width: none; font-weight: 400; margin: 0 0 0.5em; }
+.mistakes-intro strong { font-weight: 800; }
+.l2 .mistakes-group { grid-column: 1 / -1; margin: 0.6em 0 0; padding: 0; display: flex; align-items: center; gap: 0.4em; border-bottom: 2px solid var(--rule); padding-bottom: 0.2em; font-size: 1.05em; font-weight: 800; color: var(--text); }
+.l2 .mistakes-group:first-child { margin-top: 0.2em; }
+.mistake-toggle { padding-bottom: 2.2em; }
+.mistake-hint { top: auto; right: 0.8em; bottom: 0.45em; font-size: 0.85em; }
+.mistake-hint-text { color: var(--primary); }
+[data-theme="dark"] .mistake-hint-text { color: var(--text); }
+.mistake[data-open="true"] .mistake-toggle { padding-bottom: 0.55em; }
+.mistake-tag.mistake-wrong strong { color: var(--text); }
+
+/* phones: a balance and its controls fit one screen. Pills and the equation on top, then the stepper "- x = N +" in one
+   row, then the drawing (shorter), then both members in one line; the steps buttons side by side. */
+@media (max-width: 600px) {
+  .dg-balance:not(.dg-hero):not(.dg-compact) { display: flex; flex-direction: column; margin: 0.2em 0; }
+  .dg-balance:not(.dg-hero):not(.dg-compact) .dg-top { margin: 0; gap: 0.2em 0.5em; justify-content: space-between; }
+  .dg-balance .dg-eq { font-size: 1.15em; line-height: 1.45; }
+  .dg-balance:not(.dg-hero) .dg-stage { max-width: 100%; height: auto !important; }
+  .dg-balance:not(.dg-hero) .dg-svg { max-height: 9.5em; width: 100%; height: auto; }
+  .dg-balance .dg-op, .dg-balance .dg-question { margin: 0.1em 0; min-height: 0; font-size: 1em; text-align: center; }
+  .dg-balance .dg-controls { margin: 0.2em 0; gap: 0.4em; }
+  .dg-balance .dg-controls .dg-prev, .dg-balance .dg-controls .dg-next { flex: 1 1 40%; min-height: 2.3em; padding: 0.2em 0.4em; font-size: 0.9em; white-space: normal; text-align: center; }
+  /* a balance with a number to try: the stepper goes above the drawing */
+  .dg-balance:has(.dg-try) > * { order: 6; }
+  .dg-balance:has(.dg-try) > .dg-top { order: 1; }
+  .dg-balance:has(.dg-try) .dg-controls { display: contents; }
+  .dg-balance:has(.dg-try) .dg-try { order: 2; flex-wrap: nowrap; gap: 0.5em; justify-content: center; margin: 0.1em 0 0.2em; }
+  .dg-balance:has(.dg-try) .dg-stage { order: 3; }
+  .dg-balance:has(.dg-try) .dg-readout { order: 4; }
+  .dg-balance:has(.dg-try) .dg-op, .dg-balance:has(.dg-try) .dg-question { order: 5; }
+  .dg-balance .dg-trylabel { display: none; }
+  .dg-balance .dg-try .dg-round, .l2 .dg-balance .button.dg-round { width: 2.4em; height: 2.4em; font-size: 1.2em; }
+  .dg-balance .dg-tryvalue { min-width: 2.6em; font-size: 1.5em; }
+  .dg-balance .dg-readout { grid-template-columns: 1fr 1fr; gap: 0.3em; margin: 0.2em 0; }
+  .dg-balance .dg-rd { flex-direction: row; align-items: baseline; justify-content: space-between; gap: 0.4em; padding: 0.2em 0.6em; }
+  .dg-balance .dg-rd small { font-size: 0.72em; }
+  .dg-balance .dg-rd strong { font-size: 1.1em; }
+  .dg-balance .dg-verdict { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; padding: 0; border: 0; } /* the status pill on top says it already; kept for the reader of the screen */
+  .dg-balance .dg-readout .dg-rd { min-width: 0; }
+  .dg-balance .dg-caption { margin: 0.2em 0 0; font-size: 0.82em; }
+  .dg-balance .dg-desc { margin-top: 0.1em; }
+}
+
+/* examples: before the first step is asked for, the first one shows greyed (a preview, not clickable, no reason) */
+.l2 .example-step.is-ghost { opacity: 0.5; filter: grayscale(1); pointer-events: none; user-select: none; }
+.l2 .example-step.is-ghost .step-why { display: none; }
+
+/* the answer card of a check: the whole card width; the options are full-width buttons */
+.l2 .check { padding: 0.8em 0.9em 0.9em; }
+.l2 .check > .answer, .l2 .check > .check-row:not(.is-line) { flex: 1 0 100%; width: 100%; min-width: 0; box-sizing: border-box; }
+.l2 .check .check-row:not(.is-line) > .answer { width: 100%; }
+.l2 .check .options { width: 100%; margin: 0.3em 0; min-width: 0; }
+.l2 .check .options > legend { padding: 0; }
+@media (max-width: 600px) {
+  .l2 .check { padding: 0.6em 0.6em 0.8em; }
+  .l2 .check .option { padding: 0.5em 0.8em; font-size: 1.05em; }
 }

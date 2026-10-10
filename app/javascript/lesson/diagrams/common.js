@@ -173,14 +173,34 @@ export function stackLabels(ctx, specs, y0, dir = 1) {
   const rows = []
   let used = 0
   const gapX = 8
-  for (const spec of specs) {
+  // where a label goes on its own: centred over its mark; a label that would cover the connector of another one
+  // (a mark further along) slides aside, still over its own mark; `covers` when it cannot
+  const natural = (spec) => {
     const probe = ctx.measure(spec.text, ctx.fontPx, spec.maxW)
     const w = Math.min(Math.ceil(probe.w), ctx.width - 8)
     const h = Math.ceil(probe.h)
-    const x = Math.max(4, Math.min(Math.round(spec.cx - w / 2), ctx.width - w - 4))
+    let x = Math.max(4, Math.min(Math.round(spec.cx - w / 2), ctx.width - w - 4))
+    let covers = false
+    for (const other of specs) {
+      if (other === spec || other.connectFrom === undefined || spec.connectFrom === undefined) continue
+      if (other.cx < x - 3 || other.cx > x + w + 3) continue
+      const left = Math.round(other.cx) - 4 - w
+      const right = Math.round(other.cx) + 4
+      if (left >= 4 && left <= spec.cx && spec.cx <= left + w) x = left
+      else if (right + w <= ctx.width - 4 && right <= spec.cx && spec.cx <= right + w) x = right
+      else covers = true
+    }
+    return { spec, x, w, h, covers }
+  }
+  // the labels that cannot avoid covering another's connector go last: they stack above it and their own connector is free
+  const placed = specs.map(natural)
+  for (const { spec, x, w, h } of [...placed.filter((p) => !p.covers), ...placed.filter((p) => p.covers)]) {
     let r = 0
     for (; r < rows.length; r++) {
-      if (rows[r].every((b) => x >= b.x + b.w + gapX || x + w + gapX <= b.x)) break
+      // free in the row, and the connector to the mark (it runs through the rows nearer to the mark) crosses no label
+      const free = rows[r].every((b) => x >= b.x + b.w + gapX || x + w + gapX <= b.x)
+      const clear = spec.connectFrom === undefined || rows.slice(0, r).every((row) => row.every((b) => spec.cx < b.x - 3 || spec.cx > b.x + b.w + 3))
+      if (free && clear) break
     }
     if (r === rows.length) rows.push([])
     rows[r].push({ x, w })
@@ -198,23 +218,52 @@ export function stackLabels(ctx, specs, y0, dir = 1) {
   return used
 }
 
+// Does the segment s touch the rectangle r (a little padded)? Liang-Barsky clipping.
+export function crosses(s, r, pad = 2) {
+  const [x0, y0, x1, y1] = [r.x - pad, r.y - pad, r.x + r.w + pad, r.y + r.h + pad]
+  const dx = s.x2 - s.x1
+  const dy = s.y2 - s.y1
+  let lo = 0
+  let hi = 1
+  for (const [p, q] of [[-dx, s.x1 - x0], [dx, x1 - s.x1], [-dy, s.y1 - y0], [dy, y1 - s.y1]]) {
+    if (p === 0) {
+      if (q < 0) return false
+    } else {
+      const t = q / p
+      if (p < 0) lo = Math.max(lo, t)
+      else hi = Math.min(hi, t)
+    }
+  }
+  return lo <= hi
+}
+
 // Tries the 8 places around a point, nearest first; returns the first label that does not overlap one
 // already placed and stays inside the box [bx0, bx1] x [by0, by1]; null when none does.
 export function labelNear(ctx, text, px, py, gap, box, opts = {}) {
   const m = ctx.measure(text, ctx.fontPx, opts.maxW)
   const w = Math.ceil(m.w)
   const h = Math.ceil(m.h)
+  // opts.avoid: drawn segments ({x1, y1, x2, y2}) the label must not sit on; with none free the nearest spot is used
+  const avoid = opts.avoid ?? []
   const spots = [
     [px + gap, py - h - gap / 2], [px + gap, py + gap / 2], [px - w - gap, py - h - gap / 2], [px - w - gap, py + gap / 2],
     [px - w / 2, py - h - gap], [px - w / 2, py + gap], [px + gap, py - h / 2], [px - w - gap, py - h / 2]
   ]
-  for (const [x0, y0] of spots) {
-    const x = Math.round(x0)
-    const y = Math.round(y0)
-    if (x < box.x0 || x + w > box.x1 || y < box.y0 || y + h > box.y1) continue
-    const probe = { x, y, w, h }
-    if (ctx.labels.some((l) => overlaps(l, probe))) continue
-    return label(ctx, text, x, y, { anchor: "start", cls: opts.cls ?? "", maxW: opts.maxW, role: opts.role })
+  // a wider search for the strict pass: further along the vertical, nearest to the mark first
+  const wide = []
+  for (const dx of [px + gap, px - w / 2, ...Array.from({ length: 14 }, (_, m) => px - w - gap - m * 8), ...Array.from({ length: 6 }, (_, m) => px + gap + m * 8)]) for (let k = -8; k <= 8; k++) wide.push([dx, py + (k * h) / 2 - h / 2])
+  const dist = ([x, y]) => Math.hypot(x + w / 2 - px, y + h / 2 - py)
+  wide.sort((a, b) => dist(a) - dist(b))
+  for (const strict of avoid.length ? [true, false] : [false]) {
+    for (const [x0, y0] of strict ? [...spots, ...wide] : spots) {
+      const x = Math.round(x0)
+      const y = Math.round(y0)
+      if (x < box.x0 || x + w > box.x1 || y < box.y0 || y + h > box.y1) continue
+      const probe = { x, y, w, h }
+      if (ctx.labels.some((l) => overlaps(l, probe))) continue
+      if (strict && avoid.some((s) => crosses(s, probe))) continue
+      return label(ctx, text, x, y, { anchor: "start", cls: opts.cls ?? "", maxW: opts.maxW, role: opts.role })
+    }
   }
   return null
 }

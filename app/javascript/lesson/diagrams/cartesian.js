@@ -125,8 +125,16 @@ function build(data, ctx) {
     const l = label(ctx, N.format(N.parse(String(Math.round(v)))), left - 6, Y(v), { anchor: "end", valign: "middle", cls: "dg-tick-label" })
     l.y = Math.min(l.y, top + ph + 2 - l.h)
   }
-  if (xlo <= 0 && xhi >= 0) shape(ctx, "line", { x1: X(0), y1: top, x2: X(0), y2: top + ph, cls: "dg-axis" })
-  if (ylo <= 0 && yhi >= 0) shape(ctx, "line", { x1: left, y1: Y(0), x2: left + pw, y2: Y(0), cls: "dg-axis" })
+  // what a label must not sit on: the axes, the lines and the segments
+  const drawn = []
+  if (xlo <= 0 && xhi >= 0) {
+    shape(ctx, "line", { x1: X(0), y1: top, x2: X(0), y2: top + ph, cls: "dg-axis" })
+    drawn.push({ x1: X(0), y1: top, x2: X(0), y2: top + ph })
+  }
+  if (ylo <= 0 && yhi >= 0) {
+    shape(ctx, "line", { x1: left, y1: Y(0), x2: left + pw, y2: Y(0), cls: "dg-axis" })
+    drawn.push({ x1: left, y1: Y(0), x2: left + pw, y2: Y(0) })
+  }
 
   // lines clipped to the window
   const box = { x0: left + 2, y0: top + 2, x1: left + pw - 2, y1: top + ph - 2 }
@@ -161,10 +169,12 @@ function build(data, ctx) {
     }
     const role = l.role ?? "muted"
     shape(ctx, "line", { x1: X(p1[0]), y1: Y(p1[1]), x2: X(p2[0]), y2: Y(p2[1]), cls: `dg-line st-${role}` })
+    drawn.push({ x1: X(p1[0]), y1: Y(p1[1]), x2: X(p2[0]), y2: Y(p2[1]) })
     ends.push({ l, at: [X(p2[0]), Y(p2[1])], role })
   }
   for (const s of eff.segments ?? []) {
     shape(ctx, "line", { x1: X(num(s.from[0])), y1: Y(num(s.from[1])), x2: X(num(s.to[0])), y2: Y(num(s.to[1])), cls: `dg-segment st-${s.role ?? "muted"}` })
+    drawn.push({ x1: X(num(s.from[0])), y1: Y(num(s.from[1])), x2: X(num(s.to[0])), y2: Y(num(s.to[1])) })
   }
   for (const p of eff.points ?? []) {
     shape(ctx, "circle", { cx: X(num(p.x)), cy: Y(num(p.y)), r: 7, cls: `mk-${p.role ?? "muted"} dg-point` })
@@ -172,12 +182,12 @@ function build(data, ctx) {
   // labels next to their marks (inside the plot, not over another label)
   for (const p of eff.points ?? []) {
     if (!p.label_it) continue
-    const placed = labelNear(ctx, p.label_it, X(num(p.x)), Y(num(p.y)), 10, box, { cls: `dg-note role-${p.role ?? "muted"}`, role: p.role })
+    const placed = labelNear(ctx, p.label_it, X(num(p.x)), Y(num(p.y)), 10, box, { cls: `dg-note role-${p.role ?? "muted"}`, role: p.role, avoid: drawn })
     if (!placed) return { error: { path: "/points", message: "no room for the label of a point", code: "E-DIAGRAM-LAYOUT" } }
   }
   for (const e of ends) {
     if (!e.l.label_it) continue
-    const placed = labelNear(ctx, e.l.label_it, e.at[0], e.at[1], 6, box, { cls: `dg-note role-${e.role}`, role: e.role })
+    const placed = labelNear(ctx, e.l.label_it, e.at[0], e.at[1], 6, box, { cls: `dg-note role-${e.role}`, role: e.role, avoid: drawn })
     if (!placed) return { error: { path: "/lines", message: "no room for the label of a line", code: "E-DIAGRAM-LAYOUT" } }
   }
   return finish(ctx, top + ph + bottom, { states: stateCount(data), state: ctx.state })
