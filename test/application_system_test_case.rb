@@ -76,6 +76,9 @@ class ApplicationSystemTestCase < ActiveSupport::TestCase
     # tests did not always empty it: the student-device cookie that one test sets (D-08) then
     # switched off the decision buttons of the tests that came after it.
     page.driver.clear_cookies
+    # The browser is shared by every test and many resize it (phone widths): each test starts at the driver's size, so that
+    # a narrow window left by another test (and the order the seed picks) never changes the layout under test.
+    page.driver.resize(1280, 900)
   end
 
   teardown do
