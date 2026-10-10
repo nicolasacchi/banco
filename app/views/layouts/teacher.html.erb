@@ -14,14 +14,10 @@
     <%= yield :head %>
     <%= javascript_importmap_tags "diagnosis", importmap: student_importmap %>
   </head>
-  <body class="student teacher" <% if @unit && !reader_only? %>data-controller="activity" data-activity-url-value="/teacher/activity" data-activity-unit-value="<%= @unit %>"<% end %>>
-    <nav class="teacher-nav" aria-label="<%= t('teacher.nav.label') %>">
-      <a href="/teacher"><%= t("teacher.nav.home") %></a>
-      <a href="/teacher/corrections"><%= t("teacher.nav.corrections") %></a>
-      <% unless reader_only? %><a href="/teacher/preview"><%= t("teacher.preview.title") %></a><% end %>
-    </nav>
-    <p class="access hint" id="access-line"><%= access_line %>
-      <% if logout_url %> · <a id="logout-link" href="<%= logout_url %>"><%= t("teacher.logout") %></a><% end %></p>
+  <body class="student teacher" data-controller="broadcast<%= ' activity' if @unit && !reader_only? %>" data-broadcast-notify-value="<%= notice.present? %>" <% if @unit && !reader_only? %>data-activity-url-value="/teacher/activity" data-activity-unit-value="<%= @unit %>"<% end %>>
+    <%= render "teacher/menu" %>
+    <p class="access hint" id="access-line"><%= access_line %></p>
+    <%= render "teacher/crumbs" %>
     <% if reader_only? %><p class="notice" id="read-only-notice" role="status"><strong><%= t("teacher.read_only") %></strong></p><% end %>
     <% if notice %><p class="notice flash" role="status"><%= notice %></p><% end %>
     <% if alert %><p class="notice flash alert" role="alert"><%= alert %></p><% end %>

@@ -47,12 +47,12 @@ module ApplicationHelper
   end
 
   # [[key, label, href], ...] of the full menu: Materie only when the course is visible to this student, Test
-  # d'ingresso when the diagnosis is open (a trial student: always) or the warm-up still waits, Esci when the
+  # d'ingresso when the diagnosis is open (a trial student: always) or the warm-up still waits (then the item reads Riscaldamento), Esci when the
   # operator has set a logout address.
   def student_menu_items
     items = [ [ :today, t("student.menu.today"), "/today" ] ]
     items << [ :subjects, t("student.menu.subjects"), "/subjects" ] if student_course_visible?
-    items << [ :diagnosis, t("student.menu.diagnosis"), "/diagnosis" ] if student_diagnosis_listed?
+    items << [ :diagnosis, t(diagnosis_open? ? "student.menu.diagnosis" : "student.menu.warmup"), "/diagnosis" ] if student_diagnosis_listed?
     items << [ :settings, t("student.menu.settings"), "/settings" ]
     items << [ :logout, t("student.logout"), logout_url ] if logout_url
     items

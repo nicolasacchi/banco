@@ -1,0 +1,19 @@
+<% content_for :title, t("teacher.students.title") %>
+<main class="page wide" id="students-page">
+  <h1><%= t("teacher.students.title") %></h1>
+  <% if @students.empty? %>
+    <p><%= t("teacher.students.none") %></p>
+  <% end %>
+  <% @students.each do |student| %>
+    <section aria-labelledby="student-<%= student.key %>" data-student="<%= student.key %>">
+      <h2 id="student-<%= student.key %>"><%= student_label(student) %></h2>
+      <ul class="plain">
+        <% @subjects.each do |subject| %>
+          <li><strong><%= subject.name_it %></strong>
+            <a href="<%= with_student_for(student, teacher_report_path(key: subject.key)) %>"><%= t("teacher.menu.report") %></a>
+            <a href="<%= with_student_for(student, teacher_practice_path(key: subject.key)) %>"><%= t("teacher.menu.practice") %></a></li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+</main>

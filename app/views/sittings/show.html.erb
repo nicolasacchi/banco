@@ -49,12 +49,7 @@
   <section data-sitting-target="stage" hidden>
     <header class="bar">
       <h1 data-sitting-target="heading"></h1>
-      <button type="button" class="button secondary" data-sitting-target="pauseButton" data-action="sitting#pause"><%= t("sitting.pause") %></button>
     </header>
-    <div data-sitting-target="paused" hidden>
-      <p><%= t("sitting.paused_text") %></p>
-      <p><button type="button" class="button" data-action="sitting#resume"><%= t("sitting.resume") %></button></p>
-    </div>
     <div data-sitting-target="work">
       <div data-sitting-target="itemBox" class="item"></div>
       <details class="help" id="answer-help" data-sitting-target="help" data-action="toggle->sitting#helpToggled">

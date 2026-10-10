@@ -99,6 +99,10 @@ Rails.application.routes.draw do
       get "subjects/:key/practice" => "practice#show", constraints: key, as: :teacher_practice
       get "subjects/:key/practice/skills/:skill" => "practice#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9.\-]*/), as: :teacher_practice_skill
       get "corrections" => "corrections#show", as: :teacher_corrections
+      get "findings" => "findings#show", as: :teacher_findings
+      get "students" => "students#show", as: :teacher_students
+      get "dashboard/state" => "dashboard#state", as: :teacher_dashboard_state
+      get "dashboard/fragment" => "dashboard#fragment", as: :teacher_dashboard_fragment
       get "refs/:key" => "refs#show", constraints: { key: /[a-z0-9][a-z0-9._-]*/ }, as: :teacher_ref
       get "lesson-revisions/:lesson_revision_id/shots" => "lesson_shots#index", constraints: { lesson_revision_id: /\d+/ }, as: :teacher_lesson_shots
       get "lesson-revisions/:lesson_revision_id/shots/:sha256" => "lesson_shots#show", constraints: { lesson_revision_id: /\d+/, sha256: /[0-9a-f]{64}/ }, as: :teacher_lesson_shot

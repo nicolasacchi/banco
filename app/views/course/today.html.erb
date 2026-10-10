@@ -7,7 +7,7 @@
   <% if @diagnosis %>
     <% d = @diagnosis %>
     <section id="entry-test" aria-labelledby="entry-test-title" data-state="<%= d[:open] ? (d[:all_done] ? 'done' : 'open') : 'closed' %>">
-      <h2 id="entry-test-title"><%= t("today.entry.title") %></h2>
+      <h2 id="entry-test-title"><%= t(@diagnosis[:open] ? "today.entry.title" : "today.entry.title_warmup") %></h2>
       <% unless d[:open] %>
         <p><%= t("today.entry.not_open") %></p>
       <% end %>

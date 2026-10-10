@@ -49,7 +49,8 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     assert_select "#entry-subjects", 0
     assert_select "#entry-warmup"
     assert_select "#entry-test a.button[href='/diagnosis/warmup']"
-    assert_equal [ "Oggi", "Test d'ingresso", "Impostazioni" ], labels
+    assert_select "#entry-test-title", "Riscaldamento"
+    assert_equal [ "Oggi", "Riscaldamento", "Impostazioni" ], labels
     warmup_done!(student("student"))
     page(OFFICIAL, "/today")
     assert_select "#entry-test", 0
@@ -62,6 +63,7 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     release_diagnosis!
     page(OFFICIAL, "/today")
     assert_select "#entry-test[data-state=open]"
+    assert_select "#entry-test-title", "Test d'ingresso"
     assert_select "#entry-warmup", 0
     page(TRIAL, "/today")
     assert_select "#entry-warmup"
@@ -184,6 +186,9 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     assert_equal [ "Pausa: torna a Oggi" ], labels
     assert_select "nav.student-menu a#sitting-leave[href='/today']"
     assert_select "#leave-confirm[hidden]"
+    assert_select "button[data-action='sitting#pause']", 0
+    assert_select "[data-sitting-target=pauseButton]", 0
+    assert_select "button", text: "Pausa", count: 0
     play_run(official, rows[:subject])
     page(OFFICIAL, "/diagnosis/runs/#{run.id}/results")
     assert_includes labels, "Oggi"

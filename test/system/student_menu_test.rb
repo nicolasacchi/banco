@@ -90,6 +90,8 @@ class StudentMenuSystemTest < ApplicationSystemTestCase
     click_button "Comincia"
     assert_selector "[data-sitting-target=itemBox] .item-body .answer"
     assert_selector "nav.student-menu a", count: 1
+    assert_no_button "Pausa"
+    assert_selector "a, button", text: /Pausa/, count: 1
     shot "sitting-item-desktop"
     click_link "Pausa: torna a Oggi"
     assert_current_path "/today"
