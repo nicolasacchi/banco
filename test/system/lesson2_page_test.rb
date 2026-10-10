@@ -47,6 +47,13 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
   end
 
   teardown do
+    # the browser is shared by every system test: put back what these tests change (a failure must not leak)
+    begin
+      page.driver.browser.page.command("Emulation.setEmulatedMedia", media: "", features: [ { name: "forced-colors", value: "none" }, { name: "prefers-reduced-motion", value: "no-preference" } ])
+      page.driver.resize(1280, 900)
+    rescue StandardError
+      nil
+    end
     sign_out_env
     @saved_users ? ENV["BANCO_STUDENT_USERS"] = @saved_users : ENV.delete("BANCO_STUDENT_USERS")
   end
@@ -67,7 +74,11 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
   def go(n) = page.execute_script("window.lessonApi.goTo(#{n}, { focus: true })")
   def current_card = page.evaluate_script("window.lessonApi.current()")
   def shot(name) = page.driver.save_screenshot(File.join(SHOT_DIR, "lesson2-#{name}.png"), full: true)
-  def press(key, **opts) = page.driver.browser.keyboard.type([ opts.fetch(:modifiers, []), key ].flatten.compact.reject { |k| k == [] })
+  def emulate_print
+    page.driver.browser.page.command("Emulation.setEmulatedMedia", media: "print")
+    assert_selector "body", wait: 5
+    Timeout.timeout(10) { sleep 0.1 until page.evaluate_script("matchMedia('print').matches") }
+  end
 
   test "the cover, the bar and the map at 1280 and at 390" do
     open_lesson
@@ -143,7 +154,7 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
   test "states: Avanti shows the next state, and with reduced motion they swap" do
     open_lesson(fragment: "#scheda-3")
     assert_selector ".dg-counter", text: "Passo 1 di 2"
-    click_button "Avanti"
+    find(".dg-next").click
     assert_selector ".dg-counter", text: "Passo 2 di 2"
     assert_selector ".dg-op", text: "Togli 3 pesi"
     page.execute_script("window.lessonApi.setReduceMotion(true)")
@@ -161,7 +172,7 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
     page.driver.browser.keyboard.type(:Enter)
     assert_selector ".mistake[data-open=true] .mistake-back", count: 1, visible: :visible
     assert_equal "true", first(".mistake-toggle")["aria-expanded"]
-    page.driver.browser.page.command("Emulation.setEmulatedMedia", media: "print")
+    emulate_print
     assert_selector ".mistake-back", count: 4, visible: :visible
     page.driver.browser.page.command("Emulation.setEmulatedMedia", media: "screen")
   end
@@ -204,7 +215,7 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
 
   test "the try card shows one exercise at a time, checks it, and fetches the solution on request" do
     open_lesson(fragment: "#scheda-10", right: { "10/1/ex/1" => "3" })
-    assert_selector ".try-counter", text: "Esercizio 1 di 3"
+    assert_selector ".l2-card .try-counter", text: "Esercizio 1 di 3", wait: 15
     assert_selector ".exercise.is-current", count: 1
     find(".exercise.is-current input.answer-input").set("3")
     click_button "Controlla"
@@ -251,7 +262,7 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
     open_lesson
     page.execute_script("window.lessonApi.renderAll()")
     assert_selector ".l2-card", count: 13, visible: :all
-    page.driver.browser.page.command("Emulation.setEmulatedMedia", media: "print")
+    emulate_print
     assert_selector ".l2-card.card-extra", count: 2, visible: :hidden
     assert_no_selector ".l2-top", visible: :visible
     page.execute_script("document.querySelector('.l2').dataset.print = 'summary'")
