@@ -68,6 +68,8 @@ module LedgerRows
     rows["lesson_revisions"] = lesson_revision
     rows["lesson_reviews"] = LessonReview.create!(lesson_revision: lesson_revision, agent_session: session, checklist_json: "[]",
                                                   recomputed_json: "[]", findings_json: "[]")
+    rows["lesson_renders"] = LessonRender.create!(lesson_revision: lesson_revision, status: "passed", rules_version: "8", harness_version: "h" * 8, attempt: 1,
+                                                  result_json: "{}", shots_json: "[]")
     course = CourseRevision.create!(subject: rows["subjects"], seq: 1, skill_graph_revision: graph, body_json: JSON_BODY, warnings_json: "[]")
     rows["course_revisions"] = course
     topic = TopicRevision.create!(lesson: lesson, seq: 1, course_revision: course, lesson_revision: lesson_revision, body_json: JSON_BODY)

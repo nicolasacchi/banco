@@ -211,7 +211,7 @@
 
 /* try */
 .try-intro { margin-bottom: 0.6em; }
-.try-nav { display: flex; align-items: center; justify-content: space-between; gap: 0.5em; margin: 0.5em 0; }
+.try-nav { display: flex; align-items: center; justify-content: space-between; gap: 0.5em; flex-wrap: wrap; margin: 0.5em 0; }
 .try-counter { margin: 0; font-weight: 700; }
 .exercises { list-style: none; padding: 0; margin: 0; }
 .exercise { border: 1px solid var(--rule); border-radius: 1em; padding: 0.4em 1em 1em; margin: 0 0 0.8em; background: var(--surface); }

@@ -469,7 +469,18 @@ CREATE TRIGGER student_questions_no_update BEFORE UPDATE ON student_questions
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER student_questions_no_delete BEFORE DELETE ON student_questions
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "lesson_renders" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "lesson_revision_id" integer NOT NULL, "status" varchar NOT NULL, "rules_version" varchar, "harness_version" varchar NOT NULL, "chrome_version" varchar, "attempt" integer, "result_json" text NOT NULL, "shots_json" text NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_c2685b4828"
+FOREIGN KEY ("lesson_revision_id")
+  REFERENCES "lesson_revisions" ("id")
+, CONSTRAINT lesson_renders_status CHECK (status IN ('passed','failed','error')));
+CREATE INDEX "index_lesson_renders_on_lesson_revision_id" ON "lesson_renders" ("lesson_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_lesson_renders_on_lesson_revision_id_and_id" ON "lesson_renders" ("lesson_revision_id", "id") /*application='Banco'*/;
+CREATE TRIGGER lesson_renders_no_update BEFORE UPDATE ON lesson_renders
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER lesson_renders_no_delete BEFORE DELETE ON lesson_renders
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261010120001'),
 ('20261009100003'),
 ('20261009100002'),
 ('20261009100001'),

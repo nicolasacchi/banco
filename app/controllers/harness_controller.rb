@@ -21,6 +21,24 @@ class HarnessController < ActionController::API
     send_data text, type: Validation::Harness.content_type(name), disposition: "inline"
   end
 
+  # GET /h/:token/lesson-render.html: the render host of a lesson/2 revision (token kind lrev). Our template and our
+  # scripts only; the body is the student's projection of the stored one, drawn by the same modules and CSS.
+  def lesson
+    kind, id = Validation::Harness.verify(params[:token])
+    return head :not_found unless kind == "lrev"
+
+    revision = LessonRevision.find_by(id: id)
+    return head :not_found unless revision&.lesson2?
+
+    texts = Object.new.extend(LessonPagesHelper)
+    html = ApplicationController.render(template: "harness/lesson_render", layout: false,
+                                        assigns: { body: Lessons::StudentBody.for(revision, seed: "preview"), theme: params[:theme].to_s == "dark" ? "dark" : "cream",
+                                                   config: { labels: texts.lesson2_texts, items: texts.lesson2_item_texts, minPx: Validation::Rules.get(:lesson2, :render, :min_text_px) } })
+    hashes = html.scan(%r{<script(?![^>]*\bsrc=)(?![^>]*application/json)[^>]*>(.*?)</script>}m).map { |(code)| "'sha256-#{Base64.strict_encode64(Digest::SHA256.digest(code))}'" }
+    response.set_header("Content-Security-Policy", format(Validation::Harness::LESSON_CSP, hashes: hashes.join(" ")))
+    send_data html, type: "text/html; charset=utf-8", disposition: "inline"
+  end
+
   # GET /lib/:file: the two libraries a generator may import.
   def lib
     name = params[:file]
