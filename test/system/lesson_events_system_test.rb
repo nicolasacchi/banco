@@ -67,7 +67,7 @@ class LessonEventsSystemTest < ApplicationSystemTestCase
   test "a blank of an example opens the rest from the server's reply" do
     card, block, example = find_block { |_, b| b["type"] == "example" }
     open_lesson("#scheda-#{card}")
-    click_button "Mostra tutti i passi"
+    click_button "Mostra tutto"
     assert_selector ".step-blank", visible: :visible
     assert_selector ".example-note", text: "Prima rispondi"
     blank = example["steps"].find { |s| s["blank"] }["blank"]

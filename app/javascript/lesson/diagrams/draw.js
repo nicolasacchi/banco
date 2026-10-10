@@ -6,8 +6,8 @@
 import * as N from "lesson/num"
 import { button, clear, el, icon, svg, uid } from "lesson/dom"
 import { describe, layout, moduleFor, stateCount } from "lesson/diagrams/registry"
-import { tryReadout } from "lesson/diagrams/balance"
-import { renderInlineRich, renderRich } from "lesson/text"
+import { tryValues, equationTex } from "lesson/diagrams/balance"
+import { renderInlineRich, renderMath, renderRich } from "lesson/text"
 
 const MARKERS = {
   // shapes of the palette (A6), drawn in a w x h box at x, y
@@ -28,6 +28,21 @@ function shapeNode(s) {
     case "rect": return [svg("rect", { x: s.x, y: s.y, width: s.w, height: s.h, rx: s.r ?? 0, class: s.cls })]
     case "circle": return [svg("circle", { cx: s.cx, cy: s.cy, r: s.r, class: s.cls })]
     case "path": return [svg("path", { d: s.d, class: s.cls })]
+    case "ellipse": return [svg("ellipse", { cx: s.cx, cy: s.cy, rx: s.rx, ry: s.ry, class: s.cls })]
+    case "text": {
+      const t = svg("text", { x: s.x, y: s.y, "text-anchor": "middle", class: s.cls, style: `font-size:${s.px}px` })
+      t.textContent = s.text
+      return [t]
+    }
+    case "group": {
+      // a group that can move: `at` places it, `move` { tx, ty, rot, ox, oy } is what draw() animates from the last state
+      const outer = svg("g", { class: s.cls ?? "", transform: s.at ? `translate(${s.at[0]},${s.at[1]})` : undefined })
+      const inner = svg("g", { class: "dg-move" })
+      for (const child of s.children ?? []) for (const node of shapeNode(child)) inner.appendChild(node)
+      outer.appendChild(inner)
+      outer.__inner = inner
+      return [outer]
+    }
     case "polygon": return [svg("polygon", { points: s.points.map((p) => p.join(",")).join(" "), class: s.cls })]
     case "marker": return (MARKERS[s.shape] ?? MARKERS.circle)(s)
     case "icon": {
@@ -38,6 +53,8 @@ function shapeNode(s) {
     default: return []
   }
 }
+
+const moveCss = (m) => `translate(${(m.tx ?? 0).toFixed(2)}px, ${(m.ty ?? 0).toFixed(2)}px) rotate(${(m.rot ?? 0).toFixed(2)}deg)`
 
 export function makeMeasure(host, ctx) {
   const probe = el("span", { class: "dg-measure", "aria-hidden": "true" })
@@ -111,11 +128,17 @@ export function mountDiagram(data, ctx, options = {}) {
   const caption = data?.caption_it ? el("figcaption", { class: "dg-caption" }) : null
   if (caption) renderInlineRich(data.caption_it, caption, ctx)
   const desc = el("details", { class: "dg-desc" }, el("summary", {}, icon("description"), document.createTextNode(` ${ctx.t.description}`)), el("p", { text: describe(data) }))
-  figure.append(alt, stage, op, question, controls, ...(caption ? [caption] : []), desc)
+  // a balance has its equation, the state's name and a status chip above the drawing
+  const top = type === "balance" ? el("div", { class: "dg-top" }) : null
+  const pill = el("span", { class: "dg-pill" })
+  const eqLine = el("div", { class: "dg-eq", "aria-hidden": "true" })
+  const chip = el("span", { class: "dg-status", role: "status" })
+  if (top) top.append(pill, eqLine, chip)
+  figure.append(alt, ...(top ? [top] : []), stage, op, question, controls, ...(caption ? [caption] : []), desc)
 
   const mod = moduleFor(type)
   const total = mod ? stateCount(data) : 1
-  const state = { i: 0, tryValue: data?.try && data?.type === "balance" ? Number(data.try.from) : undefined, width: 0, selected: null }
+  const state = { moves: new Map(), lastWidth: 0, i: 0, tryValue: data?.try && data?.type === "balance" ? Number(data.try.from) : undefined, width: 0, selected: null }
   figure.dataset.states = String(total)
   if (total > 1 || (type === "sentence" && data.parts)) figure.dataset.nokeys = ""
   const measurer = { current: null }
@@ -161,12 +184,31 @@ export function mountDiagram(data, ctx, options = {}) {
     stageSvg.setAttribute("width", String(scene.width))
     stageSvg.setAttribute("height", String(scene.height))
     stage.style.height = `${scene.height}px`
+    const moves = new Map()
+    const animated = []
+    const sameWidth = state.lastWidth === scene.width
     scene.shapes.forEach((s) => {
       for (const node of shapeNode(s)) {
-        if (s.key) node.dataset.key = s.key
+        if (s.key && s.kind !== "group") node.dataset.key = s.key
         stageSvg.appendChild(node)
+        if (s.kind === "group" && s.move && node.__inner) {
+          const inner = node.__inner
+          if (s.move.ox !== undefined) inner.style.transformOrigin = `${s.move.ox}px ${s.move.oy}px`
+          const before = state.moves.get(s.key)
+          moves.set(s.key, s.move)
+          if (before && sameWidth && !ctx.reduced() && moveCss(before) !== moveCss(s.move)) {
+            inner.style.transform = moveCss(before)
+            animated.push([inner, s.move])
+          } else inner.style.transform = moveCss(s.move)
+        }
       }
     })
+    state.moves = moves
+    state.lastWidth = scene.width
+    if (animated.length) {
+      stageSvg.getBoundingClientRect() // the start position is laid out before the move
+      requestAnimationFrame(() => animated.forEach(([node, move]) => { node.style.transform = moveCss(move) }))
+    }
     for (const l of scene.labels) {
       const node = el("div", { class: `dg-label ${l.cls} dg-a-${l.anchor}${l.wrap ? " dg-wrap" : ""}` })
       node.style.left = `${l.x}px`
@@ -194,13 +236,26 @@ export function mountDiagram(data, ctx, options = {}) {
     op.textContent = ""
     const eff = total > 1 ? (data.states[state.i] ?? {}) : {}
     if (eff.op_it) renderInlineRich(eff.op_it, op, ctx)
-    if (type === "balance" && state.tryValue !== undefined) readout.textContent = tryReadout(data, state.tryValue, state.i)
+    if (top) {
+      eqLine.replaceChildren(renderMath(equationTex(data, state.i), el("span", { class: "dg-eqtex" }), ctx, true))
+      pill.textContent = total > 1 ? ctx.t.balance_of.replace("%{n}", state.i + 1).replace("%{total}", total) : ctx.t.balance_one
+      const tilt = scene.tilt
+      chip.className = `dg-status ${tilt === 0 ? "is-level" : "is-tilt"}`
+      chip.replaceChildren(icon(tilt === 0 ? "check" : "scale"), document.createTextNode(` ${tilt === 0 ? ctx.t.balance_even : tilt > 0 ? ctx.t.balance_left : ctx.t.balance_right}`))
+    }
+    if (type === "balance" && state.tryValue !== undefined) {
+      const v = tryValues(data, state.tryValue, state.i)
+      readout.replaceChildren(
+        el("span", { class: "dg-rd dg-rd-left" }, el("small", { text: ctx.t.first_member }), el("strong", { text: v.left })),
+        el("span", { class: "dg-rd dg-rd-right" }, el("small", { text: ctx.t.second_member }), el("strong", { text: v.right })),
+        el("span", { class: `dg-verdict${v.tilt === 0 ? " is-level" : ""}`, text: v.tilt === 0 ? ctx.t.try_level : v.tilt > 0 ? ctx.t.try_left : ctx.t.try_right }))
+    }
     animate(old, figure, ctx.reduced())
     stepper()
   }
 
   // controls: states ("Avanti") and the balance's try stepper
-  const readout = el("p", { class: "dg-readout", role: "status" })
+  const readout = el("div", { class: "dg-readout", role: "status" })
   let prev
   let next
   let counter
@@ -231,17 +286,17 @@ export function mountDiagram(data, ctx, options = {}) {
     const value = el("output", { class: "dg-tryvalue", "aria-live": "polite" })
     const set = (v) => {
       state.tryValue = Math.max(from, Math.min(to, v))
-      value.textContent = String(state.tryValue)
+      value.textContent = `x = ${state.tryValue}`
       minus.disabled = state.tryValue <= from
       plus.disabled = state.tryValue >= to
       draw()
     }
-    const minus = button("−", { class: "button secondary dg-step", "aria-label": ctx.t.try_less }, () => set(state.tryValue - 1))
-    const plus = button("+", { class: "button secondary dg-step", "aria-label": ctx.t.try_more }, () => set(state.tryValue + 1))
+    const minus = button("−", { class: "button secondary dg-step dg-round", "aria-label": ctx.t.try_less }, () => set(state.tryValue - 1))
+    const plus = button("+", { class: "button secondary dg-step dg-round", "aria-label": ctx.t.try_more }, () => set(state.tryValue + 1))
     const group = el("div", { class: "dg-try", role: "group", "aria-label": ctx.t.try_label }, el("span", { class: "dg-trylabel", text: ctx.t.try_label }), minus, value, plus)
     controls.appendChild(group)
     controls.appendChild(readout)
-    value.textContent = String(state.tryValue)
+    value.textContent = `x = ${state.tryValue}`
     minus.disabled = true
   }
 

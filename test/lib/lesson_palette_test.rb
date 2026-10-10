@@ -45,6 +45,36 @@ class LessonPaletteTest < ActiveSupport::TestCase
     end
   end
 
+  # The equations' roles are drawn in the balance (pans, boxes, bells) and in the member tiles: no red and no green anywhere
+  # in them, so that a colour never says "right" or "wrong" (the hue of a saturated colour decides).
+  def hue_and_saturation(hex)
+    r, g, b = hex.delete("#").scan(/../).map { |c| c.hex / 255.0 }
+    max = [ r, g, b ].max
+    min = [ r, g, b ].min
+    return [ 0, 0 ] if max == min
+
+    d = max - min
+    h = if max == r then ((g - b) / d) % 6 elsif max == g then ((b - r) / d) + 2 else ((r - g) / d) + 4 end
+    [ (h * 60).round, d / (1 - (2 * ((max + min) / 2) - 1).abs) ]
+  end
+
+  test "the roles of the equations use no red and no green" do
+    %w[unknown known left right].each do |name|
+      role = roles("math").fetch(name)
+      %w[fg mark tint].each do |key|
+        next unless role[key]
+
+        THEMES.each_key do |theme|
+          hue, sat = hue_and_saturation(role[key][theme])
+          next if sat < 0.35
+
+          assert(hue >= 14 && hue < 340, "math.#{name}.#{key}.#{theme} #{role[key][theme]} is red (hue #{hue})")
+          assert(hue < 75 || hue > 170, "math.#{name}.#{key}.#{theme} #{role[key][theme]} is green (hue #{hue})")
+        end
+      end
+    end
+  end
+
   test "text colours keep 7:1 on the background and the surface of the cream and dark themes (and white)" do
     SUBJECTS.each do |subject|
       all_roles(subject).each do |name, role|

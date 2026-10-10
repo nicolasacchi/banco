@@ -115,7 +115,7 @@ class LessonRenderRunnerTest < ActiveSupport::TestCase
         page.command("Emulation.setDeviceMetricsOverride", width: 1280, height: 800, deviceScaleFactor: 1, mobile: false)
         page.go_to(Validation::Harness.lesson_page_url(token))
         page.evaluate_async("window.bancoLessonRender.ready.then(arguments[0])", 30)
-        page.evaluate("document.head.appendChild(Object.assign(document.createElement('style'), { textContent: '.dg-label { font-size: 12px !important }' })) && 1")
+        page.evaluate("document.head.appendChild(Object.assign(document.createElement('style'), { textContent: '.dg-label, .dg-svg text { font-size: 12px !important }' })) && 1")
         page.evaluate_async("window.bancoLessonRender.inspect(2).then(arguments[0])", 10)
       end
     end

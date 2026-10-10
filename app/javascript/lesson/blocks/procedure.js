@@ -9,7 +9,12 @@ export const tagInfo = (subject, tag) => palette.step_tags[subject]?.[tag] ?? { 
 export function render(block, ctx) {
   const box = el("section", { class: "block procedure" })
   if (block.title_it) box.appendChild(el("h3", { class: "block-title", text: block.title_it }))
-  box.appendChild(el("p", { class: "mnemonic", text: block.steps.map((s) => tagInfo(ctx.subject, s.tag).label_it).join(" → ") }))
+  const mnemonic = el("p", { class: "mnemonic", "aria-label": block.steps.map((s) => tagInfo(ctx.subject, s.tag).label_it).join(", ") })
+  block.steps.forEach((s, i) => {
+    if (i > 0) mnemonic.appendChild(el("span", { class: "mn-arrow", "aria-hidden": "true" }, icon("next")))
+    mnemonic.appendChild(el("span", { class: "mn-pill", "aria-hidden": "true", text: tagInfo(ctx.subject, s.tag).label_it }))
+  })
+  box.appendChild(mnemonic)
   const list = el("ol", { class: "steps" })
   block.steps.forEach((step, i) => {
     const info = tagInfo(ctx.subject, step.tag)
@@ -19,7 +24,7 @@ export function render(block, ctx) {
         el("p", { class: "step-tag" }, icon(info.icon, "step-ic"), el("strong", { text: info.label_it })),
         renderInlineRich(step.text_it, el("p", { class: "step-text" }), ctx)))
     if (step.example_tex) {
-      li.querySelector(".step-main").appendChild(el("p", { class: "step-example" }, el("span", { class: "step-example-label", text: `${ctx.t.example_short} ` }), renderMath(step.example_tex, el("span", { class: "math" }), ctx)))
+      li.querySelector(".step-main").appendChild(el("p", { class: "step-example" }, el("span", { class: "step-example-label", text: ctx.t.example_short }), renderMath(step.example_tex, el("span", { class: "math" }), ctx, true)))
     }
     list.appendChild(li)
   })

@@ -49,7 +49,8 @@ export function renderCard(card, ctx, position) {
   article.appendChild(el("header", { class: "card-head" },
     el("span", { class: "badge", "aria-hidden": "true" }, icon(iconOf(card), "badge-ic")),
     el("div", { class: "card-titles" }, el("p", { class: "kicker", text: position.kicker }), heading)))
-  const roles = rolesUsed(card)
+  // a legend chip only on the first card where a role appears (the lesson map has them all)
+  const roles = position.newRoles ?? rolesUsed(card)
   const hasLegend = card.blocks.some((b) => b.type === "legend")
   if (roles.length > 0 && !hasLegend) {
     const line = el("p", { class: "card-legend", "aria-label": ctx.t.legend_label }, el("span", { class: "legend-intro", text: `${ctx.t.legend_label}: ` }))

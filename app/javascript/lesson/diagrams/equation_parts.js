@@ -35,7 +35,7 @@ function build(data, ctx) {
   const f = ctx.fontPx
   const chipH = Math.round(f * 1.9)
   const gap = Math.round(f * 0.35)
-  const widths = data.parts.map((p) => Math.max(Math.round(f * 1.6), Math.ceil(ctx.measure(p.tex, f).w) + 2 * ctx.pad))
+  const widths = data.parts.map((p) => Math.max(Math.round(f * 1.6), Math.ceil(ctx.measure(p.tex.includes("$") ? p.tex : `$${p.tex}$`, f).w) + 2 * ctx.pad))
   const total = widths.reduce((a, b) => a + b, 0) + gap * (widths.length - 1)
   if (total > W - 8) return { error: { path: "/parts", message: "the formula is wider than the figure", code: "E-DIAGRAM-LAYOUT" } }
   const x0 = Math.round((W - total) / 2)

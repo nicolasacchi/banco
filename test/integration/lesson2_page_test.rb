@@ -35,12 +35,23 @@ class Lesson2PageTest < ActionDispatch::IntegrationTest
     assert q["label"].present?
   end
 
-  test "on phones the lesson folds away the menu and notices and the bottom bar may grow" do
+  test "in a lesson the layout's menu and notices fold into the bar at every width, and on phones the bottom bar may grow" do
     css = Rails.root.join("app/assets/stylesheets/lesson.css").read
+    fold = css.lines.find { |l| l.include?("body.student:has(.l2-top)") && l.include?("#student-menu") }
+    assert fold, "a rule hides the menu and the notices when the bar is there"
+    %w[#trial-notice #draft-notice .l2-back].each { |sel| assert_includes fold, sel }
     phones = css[/@media \(max-width: 600px\) \{.*\z/m]
-    assert_match(/#student-menu/, phones)
-    assert_match(/#draft-notice/, phones)
+    assert_match(/\.l2-bar/, phones)
     assert_no_match(/line-clamp/, phones)
+  end
+
+  test "the notices and the menu stay in the page for the bar to read" do
+    build_lesson2_world(approve: false, release: false)
+    page(TRIAL, "/topics/#{TOPIC}/lesson")
+    assert_select "#trial-notice"
+    assert_select "#draft-notice"
+    assert_select "#student-menu a"
+    assert_select ".l2-back a[href='/topics/#{TOPIC}']"
   end
 
   test "the page gives the card to resume and the cards seen from the lesson events (R3)" do

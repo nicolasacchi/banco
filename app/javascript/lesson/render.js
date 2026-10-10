@@ -6,8 +6,9 @@
 //             labels (t), items (the item templates' texts), seen, unavailableTopics, full, savePreferences }
 import { newId } from "items/outbox"
 import { button, clear, el, icon } from "lesson/dom"
-import { iconOf, renderCard } from "lesson/cards"
-import { renderRich } from "lesson/text"
+import { iconOf, renderCard, rolesUsed } from "lesson/cards"
+import { sample } from "lesson/blocks/legend"
+import { renderInlineRich, renderRich } from "lesson/text"
 import { figureFor } from "lesson/blocks/diagram"
 
 const csrf = () => document.querySelector("meta[name=csrf-token]")?.content || ""
@@ -87,6 +88,14 @@ export function renderLesson(root, body, config) {
     return bits.join(" · ")
   }
   const sequence = [0, ...order.map((c) => c.n)]
+  // the roles each card introduces: the legend chip is on that card only; the map lists all of them
+  const introduced = new Map()
+  const allRoles = []
+  for (const c of order) {
+    const fresh = rolesUsed(c).filter((r) => !allRoles.includes(r))
+    fresh.forEach((r) => allRoles.push(r))
+    introduced.set(c.n, fresh)
+  }
 
   // ---- the frame ----
   root.classList.add("l2")
@@ -98,9 +107,21 @@ export function renderLesson(root, body, config) {
   const topbar = el("header", { class: "l2-top" })
   const barSegments = el("div", { class: "l2-progress", "aria-hidden": "true" })
   const counter = el("p", { class: "l2-counter" })
-  const mapButton = button(el("span", {}, icon("menu"), document.createTextNode(` ${t.map}`)), { class: "button secondary small l2-mapbtn", "aria-haspopup": "dialog" }, () => openMap())
-  const settingsButton = button(el("span", {}, icon("text-settings"), document.createTextNode(` ${t.settings}`)), { class: "button secondary small l2-settingsbtn", "aria-haspopup": "dialog" }, () => openSettings())
-  topbar.append(el("div", { class: "l2-top-in" }, mapButton, counter, settingsButton), barSegments)
+  // an icon button: the label is visible on large screens, a tooltip (title) and the accessible name everywhere
+  const ibtn = (name, label, cls, handler, extra = {}) => button(el("span", { class: "l2-ib" }, icon(name), el("span", { class: "l2-ibl", text: label })), { class: `l2-ibtn ${cls}`, title: label, "aria-label": label, ...extra }, handler)
+  const mapButton = ibtn("map", t.map, "l2-mapbtn", () => openMap(), { "aria-haspopup": "dialog" })
+  const settingsButton = ibtn("text-settings", t.settings, "l2-settingsbtn", () => openSettings(), { "aria-haspopup": "dialog" })
+  const brand = el("span", { class: "l2-brand", "aria-hidden": "true" }, icon("scale"))
+  const titles = el("div", { class: "l2-titles" },
+    el("small", { text: `${t.kind[body.kind] ?? body.kind} ${t.of_subject} ${t.subject[body.subject] ?? body.subject}` }),
+    el("strong", { text: body.title_it }))
+  const chrome = hostChrome()
+  const chip = chrome.notices.length
+    ? el("span", { class: "l2-chip", role: "note", title: chrome.notices.map((n) => n.text).join(" "), "aria-label": chrome.notices.map((n) => n.text).join(" ") }, icon("info"), el("span", { text: chrome.notices.map((n) => n.short).join(" · ") }))
+    : null
+  const menuButton = chrome.links.length ? ibtn("menu", t.menu, "l2-menubtn", () => openMenu(), { "aria-haspopup": "dialog" }) : null
+  const tools = el("div", { class: "l2-tools" }, mapButton, settingsButton)
+  topbar.append(el("div", { class: "l2-top-in" }, brand, titles, counter, chip, tools, menuButton), barSegments)
   const shell = el("div", { class: "l2-shell" })
   const side = el("aside", { class: "l2-sidemap", "aria-label": t.map })
   const stage = el("main", { class: "l2-stage", id: "lesson-stage" })
@@ -110,15 +131,16 @@ export function renderLesson(root, body, config) {
   const barNav = el("nav", { class: "l2-bar", "aria-label": t.navigation }, prevBtn, el("span", { class: "l2-bar-count" }), nextBtn)
   const viewToggle = button("", { class: "button secondary small l2-view" }, () => setView(state.view === "cards" ? "scroll" : "cards", true))
   const mapDialog = el("dialog", { class: "l2-dialog l2-mapdialog", "aria-label": t.map })
+  const menuDialog = el("dialog", { class: "l2-dialog l2-menudialog", "aria-label": t.menu })
   const settingsDialog = el("dialog", { class: "l2-dialog l2-settingsdialog", "aria-label": t.settings })
-  root.append(live, topbar, shell, barNav, mapDialog, settingsDialog)
+  root.append(live, topbar, shell, barNav, mapDialog, settingsDialog, menuDialog)
 
   // ---- cards: built once, kept ----
   const built = new Map()
   const build = (n) => {
     if (built.has(n)) return built.get(n)
     mounts = []
-    const element = n === 0 ? coverNode() : renderCard(byN.get(n), ctx, { kicker: kickerOf(byN.get(n)) })
+    const element = n === 0 ? coverNode() : renderCard(byN.get(n), ctx, { kicker: kickerOf(byN.get(n)), newRoles: introduced.get(n) ?? [] })
     if (n !== 0 && byN.get(n).role === "summary") element.appendChild(endBox())
     const entry = { element, mounts, mounted: false }
     built.set(n, entry)
@@ -139,16 +161,26 @@ export function renderLesson(root, body, config) {
     const hero = body.hero ? figureFor(body.hero, ctx, { hero: true }) : null
     const resume = config.resume && byN.has(config.resume) ? config.resume : null
     const start = button(resume ? t.resume.replace("%{n}", labelNumber(byN.get(resume))) : t.start, { class: "button l2-start" }, () => goTo(resume ?? order[0].n, { focus: true }))
-    const goals = el("ul", { class: "goals" }, ...(body.goals_it ?? []).map((g) => el("li", {}, renderRich(g, ctx))))
-    const why = el("details", { class: "why" }, el("summary", { text: `${t.more}: ${t.why_you_need}` }), el("div", { class: "why-body" }, renderRich(body.why_it, ctx)))
+    const goals = el("ul", { class: "goals" }, ...(body.goals_it ?? []).map((g) => el("li", {}, icon("check", "goal-ic"), el("span", {}, renderRich(g, ctx)))))
     const list = partsList()
+    const firstSentence = (text) => {
+      const para = String(text ?? "").split(/\n\s*\n/)[0].replace(/\s+/g, " ").trim()
+      const m = para.match(/^(.+?[.!?])(\s|$)/)
+      return m ? m[1] : para
+    }
+    const lead = body.why_it ? renderInlineRich(firstSentence(body.why_it), el("p", { class: "cover-lead" }), ctx) : null
+    const why = body.why_it && String(body.why_it).trim().length > firstSentence(body.why_it).length + 2
+      ? el("details", { class: "why" }, el("summary", { text: `${t.more}: ${t.why_you_need}` }), el("div", { class: "why-body" }, renderRich(body.why_it, ctx)))
+      : null
     const article = el("article", { class: "l2-cover", id: "scheda-0", "aria-labelledby": "scheda-0-title" },
       el("p", { class: "kicker", text: t.cover_kicker.replace("%{kind}", t.kind[body.kind] ?? body.kind).replace("%{subject}", t.subject[body.subject] ?? body.subject).replace("%{minutes}", body.minutes).replace("%{cards}", core.length) }),
       el("h1", { id: "scheda-0-title", tabindex: "-1", text: body.title_it }),
+      lead,
       hero ? el("div", { class: "cover-hero block-diagram" }, hero.node) : null,
-      el("h2", { class: "cover-h", text: t.goals }), goals, why,
-      el("h2", { class: "cover-h", text: t.cards }), list,
-      el("p", { class: "cover-start" }, start))
+      el("h2", { class: "cover-h", text: t.goals }), goals,
+      el("p", { class: "cover-start" }, start),
+      why,
+      el("details", { class: "cover-all" }, el("summary", { text: t.cards }), list))
     if (body.book_it) article.appendChild(el("div", { class: "cover-book" }, el("p", {}, el("strong", { text: `${t.on_book}: ` }), document.createTextNode(body.book_it.replace(/^["“]|["”]$/g, ""))), el("p", { class: "hint", text: t.book_note })))
     return article
   }
@@ -212,6 +244,12 @@ export function renderLesson(root, body, config) {
     if (body.parts?.length) for (const p of body.parts) group(`${t.part} ${p.n} · ${p.title_it}`, core.filter((c) => c.part === p.n))
     else group(t.cards, core)
     if (extra.length) group(t.deeper, extra)
+    if (allRoles.length > 0) {
+      wrap.appendChild(el("h3", { class: "map-group", text: t.legend_label }))
+      const line = el("p", { class: "card-legend map-legend" })
+      allRoles.forEach((r) => line.appendChild(sample(r, ctx)))
+      wrap.appendChild(line)
+    }
     return wrap
   }
   const refreshMap = () => {
@@ -223,6 +261,27 @@ export function renderLesson(root, body, config) {
     const close = () => mapDialog.close()
     mapDialog.append(mapContent(close), button(t.close, { class: "button secondary", "data-close": "" }, close))
     mapDialog.showModal?.()
+  }
+
+  // ---- the page's own menu, notices and way back (the layout's, folded into one button inside a lesson) ----
+  function hostChrome() {
+    const out = { notices: [], links: [] }
+    if (config.mode !== "student") return out
+    const trial = document.getElementById("trial-notice")?.textContent.trim()
+    const draft = document.getElementById("draft-notice")?.textContent.trim()
+    if (trial) out.notices.push({ text: trial, short: t.chip_trial })
+    if (draft) out.notices.push({ text: draft, short: t.chip_draft })
+    const back = document.querySelector(".l2-back a")
+    if (back) out.links.push({ href: back.getAttribute("href"), text: back.textContent.trim() })
+    document.querySelectorAll("#student-menu a").forEach((a) => out.links.push({ href: a.getAttribute("href"), text: a.textContent.trim(), id: a.id }))
+    return out
+  }
+  function openMenu() {
+    clear(menuDialog)
+    const list = el("ul", { class: "l2-menulist" })
+    chrome.links.forEach((l) => list.appendChild(el("li", {}, el("a", { class: "button secondary", href: l.href, text: l.text }))))
+    menuDialog.append(el("h2", { text: t.menu }), ...chrome.notices.map((n) => el("p", { class: "hint", text: n.text })), list, button(t.close, { class: "button", "data-close": "" }, () => menuDialog.close()))
+    menuDialog.showModal?.()
   }
 
   // ---- settings ----
@@ -410,8 +469,8 @@ export function renderLesson(root, body, config) {
   }
   window.addEventListener("beforeprint", onBeforePrint)
   printQuery?.addEventListener?.("change", onPrintChange)
-  const printButton = button(el("span", {}, icon("print"), document.createTextNode(` ${t.print}`)), { class: "button secondary small l2-printbtn" }, () => printAll())
-  topbar.querySelector(".l2-top-in").append(viewToggle, printButton)
+  const printButton = ibtn("print", t.print, "l2-printbtn", () => printAll())
+  tools.append(printButton)
   viewToggle.textContent = state.view === "cards" ? t.view_all : t.view_cards
 
   // ---- events: a card seen for 3 seconds ----

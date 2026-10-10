@@ -1,4 +1,4 @@
-// example: a worked example with step reveal ("Mostra il passo successivo", "Mostra tutti i passi"). Each step
+// example: a worked example with step reveal ("Mostra il passo successivo", "Mostra tutto"). Each step
 // has its tag's verb and icon, what to do, and why. A step with a blank is a check (a faded example): the
 // page has the step's reason and the question, not its result nor the steps after it; the server sends them
 // after a right answer or the second try (A2, A9). With a `diagram` whose states match the steps one to one,
@@ -11,7 +11,7 @@ import { renderInlineRich, renderRich } from "lesson/text"
 
 export function render(block, ctx, loc) {
   const root = el("section", { class: "block example" })
-  root.appendChild(el("div", { class: "example-problem" }, el("p", { class: "example-label" }, icon("pencil-ruler", "ex-ic"), el("strong", { text: ctx.t.problem })), renderRich(block.problem_it, ctx)))
+  root.appendChild(el("div", { class: "example-problem" }, el("p", { class: "example-label" }, el("strong", { text: ctx.t.problem })), renderRich(block.problem_it, ctx, { tiles: true })))
   const list = el("ol", { class: "example-steps", "aria-live": "polite" })
   const steps = block.steps.map((s) => ({ ...s }))
   let figure = null
@@ -24,17 +24,19 @@ export function render(block, ctx, loc) {
   let shown = ctx.showAll ? steps.length : 0
   let resultText = block.result_it ?? null
   const rows = []
-  const next = button(ctx.t.next_step_example, { class: "button small" }, () => reveal(shown + 1))
-  const all = button(ctx.t.all_steps, { class: "button secondary small" }, () => reveal(steps.length))
+  const next = button(ctx.t.first_step, { class: "button" }, () => reveal(shown + 1))
+  const all = button(ctx.t.all_steps, { class: "button secondary" }, () => reveal(steps.length))
+  const count = el("span", { class: "reveal-count", "aria-live": "polite" })
   const note = el("p", { class: "hint example-note", role: "status" })
-  const controls = el("p", { class: "example-controls" }, next, all)
+  const controls = el("p", { class: "example-controls" }, next, all, count)
 
   const stepNode = (step, i) => {
     const info = step.tag ? tagInfo(ctx.subject, step.tag) : null
     const li = el("li", { class: "example-step", hidden: "" })
     li.appendChild(el("p", { class: "step-tag" }, info ? icon(info.icon, "step-ic") : null, el("strong", { text: info ? info.label_it : `${ctx.t.step} ${i + 1}` })))
+    li.dataset.step = String(i + 1)
     const body = el("div", { class: "step-body" })
-    if (step.do_it) body.appendChild(el("div", { class: "step-do" }, renderRich(step.do_it, ctx)))
+    if (step.do_it) body.appendChild(el("div", { class: "step-do" }, renderRich(step.do_it, ctx, { tiles: true })))
     li.appendChild(body)
     if (step.why_it) li.appendChild(el("div", { class: "step-why" }, el("span", { class: "why-label", text: `${ctx.t.why}: ` }), renderInlineRich(step.why_it, el("span"), ctx)))
     if (step.blank) {
@@ -78,9 +80,13 @@ export function render(block, ctx, loc) {
   }
   function update() {
     rows.forEach((row, i) => {
+      const wasHidden = row.hidden
       row.hidden = i >= shown
       row.classList.toggle("is-current", i === shown - 1)
+      row.classList.toggle("is-new", i === shown - 1 && wasHidden && !row.hidden)
     })
+    next.firstChild.textContent = shown === 0 ? ctx.t.first_step : ctx.t.next_step_example
+    count.textContent = ctx.t.steps_count.replace("%{n}", Math.min(shown, steps.length)).replace("%{total}", steps.length)
     const gate = steps.findIndex((s) => s.blank && !s.do_it)
     const waiting = gate >= 0 && shown > gate
     const complete = shown >= steps.length && gate < 0
@@ -89,7 +95,7 @@ export function render(block, ctx, loc) {
     note.textContent = waiting ? ctx.t.answer_first : ""
     if (resultText && complete) {
       result.hidden = false
-      result.replaceChildren(el("p", { class: "example-label" }, icon("circle-check", "ex-ic"), el("strong", { text: ctx.t.result })), renderRich(resultText, ctx))
+      result.replaceChildren(el("p", { class: "example-label" }, icon("circle-check", "ex-ic"), el("strong", { text: ctx.t.result })), renderRich(resultText, ctx, { tiles: true }))
     } else result.hidden = true
     if (figure?.setState && shown > 0) figure.setState(Math.min(shown, figure.total ?? shown) - 1)
   }

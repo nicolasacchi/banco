@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+"""Builds public/vendor/banco-symbols@1/banco-symbols-{400,700}.woff2: the not-equal sign (U+2260), drawn from the "="
+and a slash of the vendored KaTeX_Main (the lesson fonts have no U+2260 and a student's system may have no fallback).
+Needs fontTools with brotli (pip install fonttools brotli). Run it only to rebuild; the output is committed."""
+import os
+from fontTools.ttLib import TTFont
+from fontTools.pens.recordingPen import DecomposingRecordingPen
+from fontTools.pens.ttGlyphPen import TTGlyphPen
+from fontTools.subset import Subsetter, Options
+
+root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+src = os.path.join(root, "public/vendor/katex@0.19.0/fonts")
+out = os.path.join(root, "public/vendor/banco-symbols@1")
+
+for weight, name in ((400, "KaTeX_Main-Regular"), (700, "KaTeX_Main-Bold")):
+    font = TTFont(os.path.join(src, name + ".woff2"))
+    glyphs = font.getGlyphSet()
+    cmap = font.getBestCmap()
+    equal = cmap[0x3D]
+    width = font["hmtx"][equal][0]
+    rec = DecomposingRecordingPen(glyphs)
+    glyphs[equal].draw(rec)
+    pen = TTGlyphPen(glyphs)
+    rec.replay(pen)
+    # the slash: a parallelogram across both bars, leaning right
+    top, bottom, half, lean = 700, -200, 40, 150
+    cx = width / 2
+    pen.moveTo((cx + lean - half, top))
+    pen.lineTo((cx + lean + half, top))
+    pen.lineTo((cx - lean + half, bottom))
+    pen.lineTo((cx - lean - half, bottom))
+    pen.closePath()
+    glyph = pen.glyph()
+    font["glyf"]["notequal"] = glyph
+    font.setGlyphOrder(font.getGlyphOrder() + ["notequal"]) if "notequal" not in font.getGlyphOrder() else None
+    font["hmtx"]["notequal"] = (width, 0)
+    for table in font["cmap"].tables:
+        if table.isUnicode():
+            table.cmap[0x2260] = "notequal"
+    options = Options()
+    options.layout_features = []
+    options.name_IDs = [0, 1, 2, 3, 4, 5, 6]
+    sub = Subsetter(options)
+    sub.populate(unicodes=[0x2260])
+    sub.subset(font)
+    font.flavor = "woff2"
+    font.save(os.path.join(out, f"banco-symbols-{weight}.woff2"))
+print("ok")

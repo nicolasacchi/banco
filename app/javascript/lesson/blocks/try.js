@@ -19,7 +19,7 @@ function solutionNode(reply, ctx) {
       const info = step.tag ? tagInfo(ctx.subject, step.tag) : null
       list.appendChild(el("li", { class: "example-step" },
         el("p", { class: "step-tag" }, info ? icon(info.icon, "step-ic") : null, el("strong", { text: info ? info.label_it : `${ctx.t.step} ${i + 1}` })),
-        el("div", { class: "step-do" }, renderRich(step.do_it, ctx)),
+        el("div", { class: "step-do" }, renderRich(step.do_it, ctx, { tiles: true })),
         step.why_it ? el("div", { class: "step-why" }, el("span", { class: "why-label", text: `${ctx.t.why}: ` }), renderInlineRich(step.why_it, el("span"), ctx)) : null))
     })
     box.appendChild(list)
@@ -40,7 +40,7 @@ export function render(block, ctx, loc) {
   block.exercises.forEach((ex, index) => {
     const li = el("li", { class: "exercise", id: `exercise-${loc.card}-${ex.n}`, "data-n": ex.n })
     li.appendChild(el("h3", { class: "exercise-head" }, icon("notebook-pen", "ex-ic"), el("span", { text: `${ctx.t.exercise} ${ex.n}` }), el("span", { class: "exercise-sub", text: ` · ${ctx.t.on_notebook}` })))
-    li.appendChild(el("div", { class: "exercise-text" }, renderRich(ex.text_it, ctx)))
+    li.appendChild(el("div", { class: "exercise-text" }, renderRich(ex.text_it, ctx, { tiles: true })))
     if (ex.diagram) li.appendChild(el("div", { class: "block-diagram" }, figureFor(ex.diagram, ctx).node))
     const checks = ctx.safe ? [] : ex.checks ?? (ex.check ? [ex.check] : [])
     checks.forEach((spec, k) => {
@@ -78,19 +78,26 @@ export function render(block, ctx, loc) {
     items.push(li)
     list.appendChild(li)
   })
+  const dots = el("div", { class: "try-dots", role: "group", "aria-label": ctx.t.exercises })
+  const dotButtons = block.exercises.map((ex, i) => {
+    const b = button(String(ex.n), { class: "try-dot", "aria-label": `${ctx.t.exercise} ${ex.n}` }, () => go(i))
+    dots.appendChild(b)
+    return b
+  })
   const prev = button(ctx.t.prev_exercise, { class: "button secondary small" }, () => go(current - 1))
   const next = button(ctx.t.next_exercise, { class: "button small" }, () => go(current + 1))
   nav.append(prev, counter, next)
   function go(i, focus = true) {
     current = Math.max(0, Math.min(total - 1, i))
     items.forEach((li, k) => li.classList.toggle("is-current", k === current))
+    dotButtons.forEach((b, k) => b.setAttribute("aria-current", k === current ? "true" : "false"))
     counter.textContent = ctx.t.exercise_of.replace("%{n}", current + 1).replace("%{total}", total)
     prev.disabled = current === 0
     next.disabled = current === total - 1
     if (focus) items[current].querySelector("h3")?.focus?.()
   }
   items.forEach((li) => li.querySelector("h3").setAttribute("tabindex", "-1"))
-  root.append(nav, list)
+  root.append(dots, nav, list)
   go(0, false)
   return root
 }

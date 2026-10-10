@@ -5,6 +5,7 @@ import katex from "katex"
 import palette from "lesson/palette"
 import { parse, Refused } from "items/markup_parser"
 import { el, icon } from "lesson/dom"
+import { colourTokens, displayPieces, displayTex } from "lesson/eq"
 
 const ROLE_CLASS = /^role-[a-z]+(-[a-z]+)*$/
 const KATEX = {
@@ -28,9 +29,25 @@ function decorateRoles(target, subject) {
   }
 }
 
-export function renderMath(tex, target, ctx, display = false) {
+export function renderMath(tex, target, ctx, display = false, tiles = false) {
   try {
-    katex.render(tex, target, { ...KATEX, displayMode: display })
+    // maths: the unknown and the numbers in their colours; a displayed equation also as two member tiles
+    const tiled = ctx.subject === "math" && (display || tiles)
+    if (display || tiles) target.classList.add("eqd")
+    const pieces = tiled ? displayPieces(tex) : null
+    if (pieces && pieces.length > 1) {
+      // a chain of equations: one KaTeX span per equation and per arrow, so that it can break between them on a narrow screen
+      target.classList.add("eq-chain")
+      pieces.forEach((piece, i) => {
+        if (i > 0) target.appendChild(document.createTextNode(" "))
+        const span = el("span", { class: piece.arrow ? "eq-arrow" : "eq-piece" })
+        katex.render(piece.arrow ?? piece.tex, span, { ...KATEX, displayMode: false })
+        target.appendChild(span)
+      })
+    } else {
+      const coloured = ctx.subject === "math" ? (tiled ? displayTex(tex) : colourTokens(tex)) : tex
+      katex.render(coloured, target, { ...KATEX, displayMode: display })
+    }
     decorateRoles(target, ctx.subject)
   } catch (_error) {
     target.textContent = tex
@@ -38,14 +55,18 @@ export function renderMath(tex, target, ctx, display = false) {
   return target
 }
 
-function inlineNodes(nodes, parent, ctx) {
+function inlineNodes(nodes, parent, ctx, display = false, tiles = false) {
   for (const node of nodes) {
+    if (node.t === "math" && display) {
+      parent.appendChild(renderMath(node.v, el("span", { class: "math" }), ctx, true))
+      continue
+    }
     if (node.t === "text") parent.appendChild(document.createTextNode(node.v))
     else if (node.t === "bold") {
       const strong = el("strong")
       inlineNodes(node.children, strong, ctx)
       parent.appendChild(strong)
-    } else if (node.t === "math") parent.appendChild(renderMath(node.v, el("span", { class: "math" }), ctx))
+    } else if (node.t === "math") parent.appendChild(renderMath(node.v, el("span", { class: "math" }), ctx, false, tiles && /=/.test(node.v)))
     else if (node.t === "role") {
       const info = roleOf(ctx.subject, node.role)
       const span = el("span", { class: `role role-${node.role}` })
@@ -67,22 +88,23 @@ function inlineNodes(nodes, parent, ctx) {
   }
 }
 
-function build(blocks, fragment, ctx) {
+function build(blocks, fragment, ctx, tiles = false) {
   for (const block of blocks) {
     if (block.type === "p") {
-      const p = el("p")
-      inlineNodes(block.children, p, ctx)
+      const alone = block.children.length === 1 && block.children[0].t === "math"
+      const p = el("p", alone ? { class: "eq-display" } : {})
+      inlineNodes(block.children, p, ctx, alone, tiles)
       fragment.appendChild(p)
     } else {
       const list = el(block.type)
       for (const item of block.items) {
         const li = el("li")
-        inlineNodes(item.children, li, ctx)
+        inlineNodes(item.children, li, ctx, false, tiles)
         if (item.sub.length > 0) {
           const nested = el("ul")
           for (const sub of item.sub) {
             const subItem = el("li")
-            inlineNodes(sub, subItem, ctx)
+            inlineNodes(sub, subItem, ctx, false, tiles)
             nested.appendChild(subItem)
           }
           li.appendChild(nested)
@@ -95,7 +117,7 @@ function build(blocks, fragment, ctx) {
 }
 
 // Blocks (paragraphs, lists) into a fragment. A text the reader refuses is shown as plain text.
-export function renderRich(text, ctx) {
+export function renderRich(text, ctx, options = {}) {
   const fragment = document.createDocumentFragment()
   let blocks
   try {
@@ -105,12 +127,12 @@ export function renderRich(text, ctx) {
     fragment.appendChild(el("p", { text: String(text) }))
     return fragment
   }
-  build(blocks, fragment, ctx)
+  build(blocks, fragment, ctx, !!options.tiles)
   return fragment
 }
 
 // Inline only (labels, buttons, table cells): the first paragraph's content, into `target`.
-export function renderInlineRich(text, target, ctx) {
+export function renderInlineRich(text, target, ctx, options = {}) {
   let blocks
   try {
     blocks = parse(text, { lists: "v2", roles: true })
@@ -118,8 +140,11 @@ export function renderInlineRich(text, target, ctx) {
     target.textContent = String(text)
     return target
   }
-  if (blocks.length >= 1 && blocks[0].type === "p") inlineNodes(blocks[0].children, target, ctx)
-  else build(blocks, target, ctx)
+  if (blocks.length >= 1 && blocks[0].type === "p") {
+    const kids = blocks[0].children
+    inlineNodes(kids, target, ctx, !!options.display && kids.length === 1 && kids[0].t === "math", !!options.tiles)
+  }
+  else build(blocks, target, ctx, !!options.tiles)
   return target
 }
 

@@ -16,9 +16,9 @@ export function render(block, ctx) {
     if (iconName) head.appendChild(icon(iconName, "case-ic"))
     head.appendChild(document.createTextNode(c.title_it))
     const section = el("section", { class: `case ${tone}` }, head)
-    if (c.condition_it) section.appendChild(renderInlineRich(c.condition_it, el("p", { class: "case-condition" }), ctx))
+    if (c.condition_it) section.appendChild(renderInlineRich(c.condition_it, el("p", { class: "case-condition" }), ctx, { tiles: true }))
     section.appendChild(el("div", { class: "case-text" }, renderRich(c.text_it, ctx)))
-    if (c.example_it) section.appendChild(el("div", { class: "case-example" }, renderRich(c.example_it, ctx)))
+    if (c.example_it) section.appendChild(el("div", { class: "case-example" }, renderRich(c.example_it, ctx, { tiles: true })))
     if (c.diagram) section.appendChild(embed(c.diagram, ctx))
     grid.appendChild(section)
   }

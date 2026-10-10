@@ -112,6 +112,65 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
     assert_selector ".l2-progress span.now", count: 1, visible: :all
   end
 
+  test "the chrome is one slim bar: the card starts within 140 px on a laptop and the first figure is whole in the first screen" do
+    open_lesson(size: [ 1366, 900 ])
+    assert_selector ".l2-top .l2-chip"
+    assert_no_selector "#student-menu", visible: :visible
+    assert_no_selector "#trial-notice", visible: :visible
+    assert_no_selector "#draft-notice", visible: :visible
+    assert_operator page.evaluate_script("document.querySelector('.l2-top').getBoundingClientRect().height"), :<=, 80
+    cards = page.evaluate_script("window.lessonApi.figures().length") # the figures drawn so far
+    assert_operator cards, :>=, 1
+    [ 1, 2, 3 ].each do |n|
+      go(n)
+      assert_selector "#scheda-#{n}"
+      top = page.evaluate_script("document.querySelector('#scheda-#{n}').getBoundingClientRect().top")
+      assert_operator top, :<=, 140, "card #{n} starts at #{top} px"
+      figure = page.evaluate_script("(() => { const f = document.querySelector('#scheda-#{n} .dg-stage'); if (!f) return null; const r = f.getBoundingClientRect(); return [r.top, r.bottom] })()")
+      next unless figure
+
+      bar = page.evaluate_script("document.querySelector('.l2-bar').getBoundingClientRect().top")
+      assert_operator figure[1], :<=, bar, "the first figure of card #{n} ends at #{figure[1]} px, the bottom bar starts at #{bar}"
+    end
+  end
+
+  test "the menu button holds the way back, the menu and the notices" do
+    open_lesson(size: [ 1366, 900 ])
+    click_button "Menu"
+    assert_selector "dialog[open] a", text: "Torna all'argomento"
+    assert_selector "dialog[open] a", text: "Oggi"
+    assert_selector "dialog[open] p", text: "Account di prova"
+    click_button "Chiudi"
+    assert_no_selector "dialog[open]"
+  end
+
+  test "the boxes of a balance say x, whatever number is tried, and no digit is drawn with a slash" do
+    open_lesson
+    go(2)
+    assert_selector "#scheda-2 .bl-x", minimum: 1
+    page.execute_script("document.querySelector('#scheda-2 .dg-step[aria-label]:last-of-type')?.click()")
+    texts = page.evaluate_script("[...document.querySelectorAll('#scheda-2 .bl-x')].map((t) => t.textContent)")
+    assert texts.all?("x"), texts.inspect
+    assert_equal "Banco Digits", page.evaluate_script("getComputedStyle(document.querySelector('#scheda-2 .bl-one') || document.querySelector('#scheda-2 .bl-x')).fontFamily.split(',')[0].replace(/\"/g, '')")
+  end
+
+  test "the colours of the balance are not red and not green" do
+    open_lesson
+    go(2)
+    %w[.bl-pan-left .bl-pan-right .bl-box .bl-bell].each do |sel|
+      assert_selector "#scheda-2 #{sel}", minimum: 1
+      rgb = page.evaluate_script("getComputedStyle(document.querySelector('#scheda-2 #{sel}')).fill").scan(/\d+/).first(3).map(&:to_i)
+      r, g, b = rgb.map { |c| c / 255.0 }
+      max = [ r, g, b ].max
+      d = max - [ r, g, b ].min
+      next if d < 0.15
+
+      hue = (if max == r then ((g - b) / d) % 6 elsif max == g then ((b - r) / d) + 2 else ((r - g) / d) + 4 end * 60).round
+      assert(hue >= 14 && hue < 340, "#{sel} is red: #{rgb.inspect}")
+      assert(hue < 75 || hue > 170, "#{sel} is green: #{rgb.inspect}")
+    end
+  end
+
   test "arrow keys change the card from the page, never inside a choice or with a modifier" do
     open_lesson(fragment: "#scheda-2")
     assert_selector ".l2-counter", text: "Scheda 2 di 11"
@@ -150,23 +209,26 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
 
   test "the balance: a number in the box, both members read out, the beam moves" do
     open_lesson(fragment: "#scheda-2")
-    assert_selector ".dg-balance .dg-tryvalue", text: "0"
-    assert_selector ".dg-readout", text: "a sinistra 1, a destra 7"
+    assert_selector ".dg-balance .dg-tryvalue", text: "x = 0"
+    assert_selector ".dg-rd-left", text: "1"
+    assert_selector ".dg-rd-right", text: "7"
+    assert_selector ".dg-status", text: "pende a destra"
     3.times { first(".dg-try button", text: "+").click }
-    assert_selector ".dg-readout", text: "I due piatti pesano uguale"
+    assert_selector ".dg-verdict", text: "equilibrio"
+    assert_selector ".dg-status", text: "in equilibrio"
     shot "balance-try"
   end
 
   test "states: Avanti shows the next state, and with reduced motion they swap" do
     open_lesson(fragment: "#scheda-3")
-    assert_selector ".dg-counter", text: "Passo 1 di 2"
+    assert_selector ".dg-pill", text: "Bilancia 1 di 2"
     find(".dg-next").click
-    assert_selector ".dg-counter", text: "Passo 2 di 2"
+    assert_selector ".dg-pill", text: "Bilancia 2 di 2"
     assert_selector ".dg-op", text: "Togli 3 pesi"
     page.execute_script("window.lessonApi.setReduceMotion(true)")
     assert_selector ".l2[data-motion=reduced]"
     click_button "Da capo"
-    assert_selector ".dg-counter", text: "Passo 1 di 2"
+    assert_selector ".dg-pill", text: "Bilancia 1 di 2"
   end
 
   test "mistake cards turn with Enter and are all open in print" do
@@ -204,16 +266,17 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
     open_lesson(fragment: "#scheda-6", right: { "6/1" => "0" })
     assert_selector ".example-step", count: 3, visible: :all
     assert_no_selector ".example-step", visible: :visible
-    click_button "Mostra il passo successivo"
+    click_button "Mostra il primo passo"
     assert_selector ".example-step", count: 1, visible: :visible
-    click_button "Mostra tutti i passi"
+    assert_selector ".reveal-count", text: "passo 1 di 3"
+    click_button "Mostra tutto"
     assert_selector ".step-blank", visible: :visible
     assert_selector ".example .example-note", text: "Prima rispondi"
     assert page.find_button("Mostra il passo successivo", disabled: true)
     find(".step-blank input.answer-input").set("0")
     click_button "Controlla"
     assert_selector ".verdict-right"
-    click_button "Mostra tutti i passi"
+    click_button "Mostra tutto"
     assert_text "Nessun numero per 0 dà 7."
     assert_selector ".example-result", text: "Impossibile"
     shot "example-blank"
@@ -315,8 +378,8 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
   test "dark and larger text: the cards still lay out without a label under the base size" do
     open_lesson(fragment: "#scheda-3")
     page.execute_script("document.documentElement.dataset.theme='dark'; document.documentElement.dataset.size='larger'; window.lessonApi.relayout()")
-    assert_selector ".dg-label", minimum: 1
-    small = page.evaluate_script("[...document.querySelectorAll('.dg-label')].filter(l => parseFloat(getComputedStyle(l).fontSize) < 18).length")
+    assert_selector ".dg-svg text", minimum: 1
+    small = page.evaluate_script("[...document.querySelectorAll('.dg-label, .dg-svg text')].filter(l => parseFloat(getComputedStyle(l).fontSize) < 18).length")
     assert_equal 0, small
     shot "card-3-dark-larger"
     overflow = page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth + 1")

@@ -68,15 +68,16 @@ function overflowFindings(card, out) {
   if (doc.scrollWidth > window.innerWidth + 1)
     out.push({ code: "E-LESSON-OVERFLOW", message: `the page is ${doc.scrollWidth} px wide in a ${window.innerWidth} px window`, where: "page" })
   const nodes = [card, ...card.querySelectorAll("*")]
+  const wide = []
   for (const node of nodes) {
     if (node.closest(".sr-only") || node.namespaceURI !== "http://www.w3.org/1999/xhtml") continue
     if (node.clientWidth < 3 || node.closest(".dg-labels")) continue // a label's own box is exact to within rounding: figureFindings reads the labels
-    if (node.scrollWidth > node.clientWidth + 3) {
-      const style = getComputedStyle(node)
-      if (style.display === "inline") continue
-      out.push({ code: "E-LESSON-OVERFLOW", message: `${node.tagName.toLowerCase()}${node.className && typeof node.className === "string" ? `.${node.className.trim().split(/\s+/)[0]}` : ""} is ${node.scrollWidth} px wide in a ${node.clientWidth} px box`, where: text(node) || "card" })
-      break
-    }
+    if (node.scrollWidth > node.clientWidth + 3 && getComputedStyle(node).display !== "inline") wide.push(node)
+  }
+  // the innermost one says where the width comes from: a card that clips its content is wide because of what is in it
+  const culprit = wide.find((node) => !wide.some((other) => other !== node && node.contains(other)))
+  if (culprit) {
+    out.push({ code: "E-LESSON-OVERFLOW", message: `${culprit.tagName.toLowerCase()}${culprit.className && typeof culprit.className === "string" ? `.${culprit.className.trim().split(/\s+/)[0]}` : ""} is ${culprit.scrollWidth} px wide in a ${culprit.clientWidth} px box`, where: text(culprit) || "card" })
   }
 }
 

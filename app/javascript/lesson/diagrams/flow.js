@@ -63,7 +63,8 @@ function build(data, ctx) {
     const iconW = icon ? iconSize + 6 : 0
     const mt = ctx.measure(pre, f, maxW - iconW - 2 * ctx.pad - 6)
     const w = Math.min(maxW, Math.ceil(mt.w) + iconW + 2 * ctx.pad + 6)
-    const h = mt.h + 2 * ctx.pad
+    // a fraction stands taller than its line: room under it, so that the next label does not touch it
+    const h = mt.h + 2 * ctx.pad + (/\\frac|\\dfrac/.test(pre) ? Math.round(f * 0.5) : 0)
     return { w, h, icon, iconW, pre, mt }
   }
   const paint = (n, b, x, top, ref) => {

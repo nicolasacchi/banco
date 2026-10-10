@@ -43,13 +43,13 @@ math:
     unknown: {label_it: "incognita", carrier: glyph, shape: box,
       fg: {cream: "#592d86", dark: "#c2a3e0"}, mark: {cream: "#592d86", dark: "#8c53c5"}}
     known: {label_it: "numero", carrier: glyph, shape: weight,
-      fg: {cream: "#802000", dark: "#f6978e"}, mark: {cream: "#802000", dark: "#f2675a"}}
+      fg: {cream: "#5c3a00", dark: "#f0c66d"}, mark: {cream: "#5c3a00", dark: "#f7e08a"}}
     left: {label_it: "primo membro", carrier: position, shape: square,
-      fg: {cream: "#115050", dark: "#2ac5c5"}, mark: {cream: "#115050", dark: "#1b7e7e"},
-      tint: {cream: "#bcdbf1", dark: "#17384f"}}
+      fg: {cream: "#0f5757", dark: "#2ac5c5"}, mark: {cream: "#0f5757", dark: "#1b7e7e"},
+      tint: {cream: "#d6e6f8", dark: "#1c2a3e"}}
     right: {label_it: "secondo membro", carrier: position, shape: circle,
-      fg: {cream: "#a10d14", dark: "#f69397"}, mark: {cream: "#ee2b34", dark: "#de121b"},
-      tint: {cream: "#f9cfb4", dark: "#4f2d17"}}
+      fg: {cream: "#7d3718", dark: "#f2a67f"}, mark: {cream: "#cc6a2a", dark: "#c8571f"},
+      tint: {cream: "#f9d9c3", dark: "#3a261c"}}
     coefficient: {label_it: "coefficiente", carrier: icon, icon: x, shape: diamond,
       fg: {cream: "#813174", dark: "#cda2cd"}, mark: {cream: "#bd51ab", dark: "#b677b6"}}
 # Okabe-Ito-like hues, one icon per role (the soggetto-predicato prototype: predicate lightning, subject person, complements tile).
