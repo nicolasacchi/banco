@@ -1,9 +1,11 @@
 require "test_helper"
 require_relative "../support/lesson_md"
+require_relative "code_fixtures_test"
 
 # Lessons: the good one passes and every lesson code has a bad fixture (A3.2).
 class LessonChecksTest < ActiveSupport::TestCase
   L = LessonMd
+  Validation::Findings # Zeitwerk loads lib/validation/findings.rb (which defines Validation::Codes) through this name
 
   def check(md, context: L.context)
     Validation::LessonChecks.call(md, subject: "math", context: context)

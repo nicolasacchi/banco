@@ -42,6 +42,15 @@ class TopicDecisionsTest < ActionDispatch::IntegrationTest
     refute Approval::TopicGate.check(@topic, confirm_seen: false).approvable
   end
 
+  test "a banco.lesson/2 lesson is not approvable until the lesson pages read it (R1 guard)" do
+    record_viewed!
+    assert Approval::TopicGate.mechanical(@topic).approvable
+    lesson = @topic.lesson_revision
+    lesson.define_singleton_method(:body) { super().merge("schema" => "banco.lesson/2") }
+    @topic.define_singleton_method(:lesson_revision) { lesson }
+    assert_includes Approval::TopicGate.mechanical(@topic).reasons, Approval::TopicGate::LESSON2_PAGES
+  end
+
   test "the topic page opens by the teacher is recorded, a guest's is not, and it shows samples with hints, messages and solutions" do
     assert_no_difference "AppEvent.count" do
       open_topic_page!(headers: GUEST)

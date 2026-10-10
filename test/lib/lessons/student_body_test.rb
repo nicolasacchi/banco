@@ -167,4 +167,27 @@ class LessonsStudentBodyTest < ActiveSupport::TestCase
     end
     assert_operator rights.uniq.size, :>, 1, "the right option is not always in the same place"
   end
+
+  # Every property of a diagram type is served on purpose (listed here) or marked x-banco-solution. A new property fails
+  # this test until someone decides which it is; declared properties are copied by Lessons::StudentBody.diagram.
+  SERVED_DIAGRAM_FIELDS = {
+    "equation_parts" => %w[type alt_it caption_it size parts brackets states],
+    "number_line" => %w[type alt_it caption_it size min max step labels marks intervals jumps states],
+    "balance" => %w[type alt_it caption_it size left right show_value try states],
+    "area_model" => %w[type alt_it caption_it size rows cols cells states],
+    "cartesian" => %w[type alt_it caption_it size x y grid points lines segments states],
+    "sentence" => %w[type alt_it caption_it size text_it parts links layout mode states],
+    "concept_map" => %w[type alt_it caption_it size root nodes edges links],
+    "flow" => %w[type alt_it caption_it size nodes edges],
+    "table" => %w[type alt_it caption_it size header rows]
+  }.freeze
+
+  test "every diagram property is served on purpose or marked x-banco-solution" do
+    assert_equal SERVED_DIAGRAM_FIELDS.keys.sort, Lessons::Diagrams::TYPES.keys.sort
+    Lessons::Diagrams::TYPES.each_key do |type|
+      props = Lessons::Diagrams.schema_def(type).fetch("properties").keys
+      unmarked = props - Lessons::Diagrams.solution_fields(type)
+      assert_equal SERVED_DIAGRAM_FIELDS.fetch(type).sort, unmarked.sort, "#{type}: decide whether the new field is served or a solution"
+    end
+  end
 end
