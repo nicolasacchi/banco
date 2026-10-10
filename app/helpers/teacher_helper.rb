@@ -33,6 +33,17 @@ module TeacherHelper
   # A moment in the teacher's days and hours: 08/10/2026 14:05, Rome time.
   def teacher_time(time) = time.in_time_zone("Europe/Rome").strftime("%d/%m/%Y %H:%M")
 
+  # "Lezione: 7 schede su 11 viste (approfondimenti 1 su 2), controlli giusti al primo tentativo 5 su 7, ultima apertura ..."
+  # for a topic whose lesson is a lesson/2 (A11); nil for a lesson/1, so the page shows nothing there.
+  def lesson_progress_line(student, topic_revision)
+    summary = Lessons::Progress.summary(student, topic_revision&.lesson_revision) or return nil
+    parts = [ t("teacher.practice.lesson.cards", seen: summary.core_seen, total: summary.core_total) ]
+    parts[0] += " " + t("teacher.practice.lesson.extra", seen: summary.extra_seen, total: summary.extra_total) if summary.extra_total.positive?
+    parts << t("teacher.practice.lesson.checks", right: summary.first_try_right, answered: summary.checks_answered) if summary.checks_answered.positive?
+    parts << (summary.last_at ? t("teacher.practice.lesson.last", at: teacher_time(summary.last_at)) : t("teacher.practice.lesson.never"))
+    t("teacher.practice.lesson.line", parts: parts.join(", "))
+  end
+
   def stage_label(stage) = t("teacher.stage.#{stage}")
 
   def scope_text(scope)

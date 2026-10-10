@@ -5,7 +5,7 @@ import { newId } from "items/outbox"
 // Nothing here is graded and no model answers (firm rule 1). Keyboard: Escape closes, focus returns to the button.
 export default class extends Controller {
   static targets = ["opener", "form", "text", "status"]
-  static values = { url: String, topic: String, lessonRevisionId: Number, section: String, exercise: Number, serveId: Number, labels: Object }
+  static values = { url: String, topic: String, lessonRevisionId: Number, section: String, card: Number, exercise: Number, serveId: Number, labels: Object }
 
   connect() {
     this.pendingId = null
@@ -33,6 +33,7 @@ export default class extends Controller {
                    lesson_revision_id: this.hasLessonRevisionIdValue ? this.lessonRevisionIdValue : null,
                    serve_id: this.hasServeIdValue ? this.serveIdValue : null,
                    section: this.hasSectionValue ? this.sectionValue : null,
+                   card: this.hasCardValue ? this.cardValue : null,
                    exercise: this.hasExerciseValue ? this.exerciseValue : null }
     let ok = false
     try {

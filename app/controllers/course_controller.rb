@@ -7,6 +7,8 @@ class CourseController < ApplicationController
     @today = view.today
     @course_open = view.subjects.any?
     @resume = @today[:resume] && view.find_topic(@today[:resume])
+    # A lesson/2 read up to a card: "Riprendi" opens that card (A10). The page's own events, not a skill state.
+    @resume_card = @resume && Lessons::Progress.resume_card(acting_student, @resume[1].topic_revision, @resume[1].skills)
     @suggestions = @today[:suggestions].filter_map do |s|
       found = view.find_topic(s.topic_key) or next
       { suggestion: s, subject_view: found[0], topic: found[1] }

@@ -4,8 +4,9 @@ require_relative "../support/student_session"
 
 # The page of a lesson/2 in Chrome (R2, A10): cards, the map, keys, the balance's try, mistakes, the example with
 # its blank, checks, the try pager, sentences with moving states, chips and spans, print, safe mode, and
-# screenshots (BANCO_SHOT_DIR). The server's check endpoint is R3's: the page's fetch is answered here by a
-# small stand-in installed before the page loads, so these tests check the browser's side of the contract.
+# screenshots (BANCO_SHOT_DIR). The page's fetch to the check endpoint is answered here by a small stand-in
+# installed before the page loads, so these tests check the browser's side of the contract; the real endpoints
+# (R3) are in lesson_events_system_test.rb.
 class Lesson2PageSystemTest < ApplicationSystemTestCase
   include Lesson2PageWorld
   include StudentSession
@@ -127,15 +128,17 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
   end
 
   test "the cover offers to resume from the server's last card" do
-    stub = Module.new { def self.for(_student, _revision) = { card: 6, seen: [ 1, 2, 6 ] } }
-    Lessons.const_set(:Progress, stub)
-    open_lesson
+    build_lesson2_world(name: "equations", approve: false, release: false)
+    student = Student.find_by!(key: "prova-1")
+    [ 1, 2, 6 ].each_with_index do |card, i|
+      LessonEvent.create!(student: student, topic_revision: @topic_revision, lesson_revision: @lesson_revision, kind: "card_seen", card: card,
+                          payload_json: "{}", at: Time.current + i, created_at: Time.current)
+    end
+    open_lesson(build: false)
     assert_selector ".l2-start", text: "Riprendi dalla scheda 6"
     assert_selector ".map-item.seen", minimum: 3
     find(".l2-start").click
     assert_selector ".l2-counter", text: "Scheda 6 di 11"
-  ensure
-    Lessons.send(:remove_const, :Progress) if Lessons.const_defined?(:Progress, false)
   end
 
   test "the fragment and a reload keep the place, an extra card has its own fragment, an unknown one opens the cover" do

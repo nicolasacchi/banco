@@ -44,6 +44,13 @@ Rails.application.routes.draw do
       get "topics/:topic" => "topics#show", constraints: topic
       get "topics/:topic/lesson" => "lessons#show", constraints: topic
       post "topics/:topic/lesson/exercises/:n/solution" => "lessons#solution", constraints: topic.merge(n: /\d+/)
+      # Lesson/2 (R3, A9, A11): the checks (a block, a blank of an example, an exercise's check) and the events batch.
+      n = /\d+/
+      post "topics/:topic/lesson/checks/:card/:block" => "lesson_checks#create", constraints: topic.merge(card: n, block: n)
+      post "topics/:topic/lesson/checks/:card/:block/:step" => "lesson_checks#create", constraints: topic.merge(card: n, block: n, step: n)
+      post "topics/:topic/lesson/checks/:card/:block/ex/:n" => "lesson_checks#create", constraints: topic.merge(card: n, block: n, n: n)
+      post "topics/:topic/lesson/checks/:card/:block/ex/:n/:part" => "lesson_checks#create", constraints: topic.merge(card: n, block: n, n: n, part: n)
+      post "topics/:topic/lesson/events" => "lesson_events#create", constraints: topic
       get "topics/:topic/practice/:skill" => "practice#show", constraints: topic.merge(skill: /[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*/)
       post "practice/serves" => "practice#serve"
       post "practice/answers" => "practice#answer"
@@ -96,6 +103,15 @@ Rails.application.routes.draw do
       get "items/:revision_id/play" => "item_plays#show", constraints: { revision_id: /\d+/ }, as: :teacher_item_play
       get "items/:revision_id/play/data" => "item_plays#data", constraints: { revision_id: /\d+/ }, as: :teacher_item_play_data
       post "activity" => "activity#create"
+      # The box of a lesson/2 (R3, A14): the full body, a check graded with the seed "preview", a solution. Nothing is recorded.
+      lr = { id: /\d+/ }
+      n = /\d+/
+      get "lesson-revisions/:id/full.json" => "lesson_revisions#full", constraints: lr, format: false
+      post "lesson-revisions/:id/checks/:card/:block" => "lesson_revisions#check", constraints: lr.merge(card: n, block: n)
+      post "lesson-revisions/:id/checks/:card/:block/:step" => "lesson_revisions#check", constraints: lr.merge(card: n, block: n, step: n)
+      post "lesson-revisions/:id/checks/:card/:block/ex/:n" => "lesson_revisions#check", constraints: lr.merge(card: n, block: n, n: n)
+      post "lesson-revisions/:id/checks/:card/:block/ex/:n/:part" => "lesson_revisions#check", constraints: lr.merge(card: n, block: n, n: n, part: n)
+      post "lesson-revisions/:id/exercises/:n/solution" => "lesson_revisions#solution", constraints: lr.merge(n: n)
       post "topic-revisions/:revision_id/seen" => "seen#create", constraints: { revision_id: /\d+/ }, as: :teacher_topic_seen
     end
 

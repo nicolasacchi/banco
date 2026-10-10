@@ -41,7 +41,7 @@
     <section id="course-part" aria-labelledby="course-part-title">
       <h2 id="course-part-title"><%= t("today.suggestions") %></h2>
       <% if @resume %>
-        <p><a class="button" id="resume" href="/topics/<%= @resume[1].key %>"><%= t("today.resume", topic: @resume[1].title_it) %></a></p>
+        <p><a class="button" id="resume" href="<%= @resume_card ? "/topics/#{@resume[1].key}/lesson#scheda-#{@resume_card}" : "/topics/#{@resume[1].key}" %>"><%= t("today.resume", topic: @resume[1].title_it) %></a></p>
       <% end %>
       <% if @suggestions.empty? %>
         <p><%= t("today.nothing") %></p>

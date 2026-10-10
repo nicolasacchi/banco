@@ -47,9 +47,8 @@ class Lesson2TeacherBoxTest < ApplicationSystemTestCase
     assert_selector ".l2-box[data-size=larger]"
     # nothing leaves the box: no event and no question address is in its configuration
     assert_equal 0, page.evaluate_script("document.querySelectorAll('.l2-box .question').length")
-    # the teacher mode needs R3's full.json; without it the box says so and stays as the student sees it
+    # the teacher mode reads full.json (R3); its own test with a body that has answers is in lesson_events_system_test.rb
     check "Modalità docente"
-    assert_selector "[data-lesson2-preview-target=status]", text: "Le risposte non sono disponibili ora."
-    assert_no_selector ".teacher-notes"
+    assert_no_selector "[data-lesson2-preview-target=status]", text: "Le risposte non sono disponibili ora."
   end
 end

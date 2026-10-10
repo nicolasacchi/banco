@@ -43,13 +43,26 @@ class QuestionsController < ApplicationController
     topic_revision = @topic.topic_revision
     section = params[:section].presence&.to_s
     exercise = params[:exercise].presence&.to_s
+    card = params[:card].presence&.to_s
     text = params[:text_it].to_s.strip.gsub(/\s+/, " ")
     raise Refused, 422 if section && !StudentQuestion::SECTIONS.include?(section)
     raise Refused, 422 if exercise && !exercise.match?(/\A([1-9]|1[0-2])\z/)
     raise Refused, 422 if text.length > MAX_LENGTH
+    raise Refused, 422 if card && !card.match?(/\A[1-9]\d{0,2}\z/)
 
-    { student: acting_student, client_question_id: client_id, topic_revision: topic_revision, lesson_revision: lesson_revision(topic_revision),
-      practice_serve: serve, section: section, exercise: exercise&.to_i, text_it: text.presence, created_at: Time.current }
+    revision = lesson_revision(topic_revision)
+    section = card_role(revision, card.to_i) || section if card
+    { student: acting_student, client_question_id: client_id, topic_revision: topic_revision, lesson_revision: revision,
+      practice_serve: serve, section: section, card: card&.to_i, exercise: exercise&.to_i, text_it: text.presence, created_at: Time.current }
+  end
+
+  # A question from a card of a lesson/2 (A10): the card must exist in the revision's body, and the section is the
+  # card's role (one of the allowed sections), whatever the browser said.
+  def card_role(revision, card)
+    raise Refused, 422 unless revision&.lesson2?
+
+    found = revision.body["cards"].find { |c| c["n"] == card } or raise Refused, 422
+    StudentQuestion::SECTIONS.include?(found["role"]) ? found["role"] : nil
   end
 
   # The lesson revision of the page the student read: the topic's own, or none.

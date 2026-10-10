@@ -431,7 +431,7 @@ CREATE INDEX "index_practice_events_on_student_id" ON "practice_events" ("studen
 CREATE INDEX "index_practice_events_on_practice_serve_id" ON "practice_events" ("practice_serve_id");
 CREATE INDEX "index_practice_events_on_topic_revision_id" ON "practice_events" ("topic_revision_id");
 CREATE INDEX "index_practice_events_on_lesson_revision_id" ON "practice_events" ("lesson_revision_id");
-CREATE TABLE "student_questions" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "student_id" integer NOT NULL, "client_question_id" varchar NOT NULL, "topic_revision_id" integer, "lesson_revision_id" integer, "practice_serve_id" integer, "section" varchar, "exercise" integer, "text_it" text, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_731cd3820e"
+CREATE TABLE "student_questions" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "student_id" integer NOT NULL, "client_question_id" varchar NOT NULL, "topic_revision_id" integer, "lesson_revision_id" integer, "practice_serve_id" integer, "section" varchar, "exercise" integer, "text_it" text, "created_at" datetime(6) NOT NULL, "card" integer, CONSTRAINT "fk_rails_731cd3820e"
 FOREIGN KEY ("student_id")
   REFERENCES "students" ("id")
 , CONSTRAINT "fk_rails_de96d5a88b"
@@ -469,7 +469,27 @@ CREATE TRIGGER student_questions_no_update BEFORE UPDATE ON student_questions
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER student_questions_no_delete BEFORE DELETE ON student_questions
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "lesson_events" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "student_id" integer NOT NULL, "topic_revision_id" integer NOT NULL, "lesson_revision_id" integer NOT NULL, "kind" varchar NOT NULL, "card" integer, "block" integer, "page_revision_id" integer, "payload_json" text NOT NULL, "grader_version" varchar, "client_event_id" varchar, "at" datetime(6) NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_7bc5a41581"
+FOREIGN KEY ("student_id")
+  REFERENCES "students" ("id")
+, CONSTRAINT "fk_rails_1a94fd90b6"
+FOREIGN KEY ("topic_revision_id")
+  REFERENCES "topic_revisions" ("id")
+, CONSTRAINT "fk_rails_0137648ef6"
+FOREIGN KEY ("lesson_revision_id")
+  REFERENCES "lesson_revisions" ("id")
+, CONSTRAINT lesson_events_kind CHECK (kind IN ('card_seen','check_answered','more_opened','steps_shown','lesson_printed','page_opened','page_event','page_failed')), CONSTRAINT lesson_events_card CHECK (kind NOT IN ('card_seen','check_answered') OR card IS NOT NULL), CONSTRAINT lesson_events_check CHECK (kind <> 'check_answered' OR (block IS NOT NULL AND grader_version IS NOT NULL)));
+CREATE INDEX "index_lesson_events_on_student_id" ON "lesson_events" ("student_id");
+CREATE INDEX "index_lesson_events_on_topic_revision_id" ON "lesson_events" ("topic_revision_id");
+CREATE INDEX "index_lesson_events_on_lesson_revision_id" ON "lesson_events" ("lesson_revision_id");
+CREATE INDEX "index_lesson_events_on_student_revision_kind" ON "lesson_events" ("student_id", "lesson_revision_id", "kind", "id");
+CREATE UNIQUE INDEX "index_lesson_events_on_client_event" ON "lesson_events" ("student_id", "client_event_id") WHERE client_event_id IS NOT NULL;
+CREATE TRIGGER lesson_events_no_update BEFORE UPDATE ON lesson_events
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER lesson_events_no_delete BEFORE DELETE ON lesson_events
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261010100001'),
 ('20261009100003'),
 ('20261009100002'),
 ('20261009100001'),

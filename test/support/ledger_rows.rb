@@ -81,6 +81,8 @@ module LedgerRows
     rows["practice_gradings"] = PracticeGrading.create!(practice_attempt: attempt, seq: 1, verdict: "correct", method: "exact",
                                                         grader: "closed", grader_version: "abc", source: "sync")
     rows["practice_events"] = PracticeEvent.create!(student: rows["students"], kind: "hint_shown", practice_serve: serve, payload_json: '{"n":1,"auto":false}', at: now)
+    rows["lesson_events"] = LessonEvent.create!(student: rows["students"], topic_revision: rows["topic_revisions"], lesson_revision: rows["lesson_revisions"], kind: "card_seen",
+                                                card: 1, payload_json: "{}", at: now, created_at: now)
     rows["student_questions"] = StudentQuestion.create!(student: rows["students"], client_question_id: "q-1", text_it: "Non ho capito.")
   end
 end

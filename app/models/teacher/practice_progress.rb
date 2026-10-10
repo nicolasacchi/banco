@@ -7,7 +7,7 @@ module Teacher
     TopicRow = Data.define(:topic, :stage, :status, :skills)
     SkillRow = Data.define(:skill, :label_it, :state, :why_it, :seed, :counts, :typical, :last_at, :minutes)
     Typical = Data.define(:code, :description_it, :count)
-    Question = Data.define(:at, :topic, :section, :exercise, :text_it)
+    Question = Data.define(:at, :topic, :section, :exercise, :text_it, :card, :card_label)
     Step = Data.define(:at, :stem, :raw, :outcome, :codes, :aided, :hints, :solution_shown, :reason, :to_correct)
 
     attr_reader :subject, :student
@@ -57,8 +57,19 @@ module Teacher
         lesson = q.topic_revision&.lesson || q.lesson_revision&.lesson || q.practice_serve&.topic_revision&.lesson
         next unless lesson && lesson.subject_id == subject.id
 
-        Question.new(q.created_at, lesson.key, q.section, q.exercise, q.text_it)
+        Question.new(q.created_at, lesson.key, q.section, q.exercise, q.text_it, q.card, card_label(q))
       end
+    end
+
+    # "Scheda 4 «Togli lo stesso peso»" or "Approfondimento 1 «...»" for a question asked on a card of a lesson/2 (A10),
+    # read from the revision body the student saw; nil without a card.
+    def card_label(question)
+      return nil unless question.card && question.lesson_revision&.lesson2?
+
+      cards = question.lesson_revision.body["cards"]
+      card = cards.find { |c| c["n"] == question.card } or return nil
+      same = cards.select { |c| c["level"] == card["level"] }
+      I18n.t(card["level"] == "extra" ? "teacher.practice.card_extra" : "teacher.practice.card_core", n: same.index(card) + 1, title: card["title_it"])
     end
 
     def labels
