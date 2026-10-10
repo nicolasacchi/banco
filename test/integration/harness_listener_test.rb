@@ -73,6 +73,12 @@ class HarnessListenerTest < ActionDispatch::IntegrationTest
     css_select("script:not([src]):not([type='application/json'])").each do |node|
       assert_includes csp, "'sha256-#{Base64.strict_encode64(Digest::SHA256.digest(node.children.map(&:to_s).join))}'"
     end
+    # a token has one use: a lesson token opens no item file, an item token opens no lesson host
+    on(:harness, "/h/#{token}/generator.mjs")
+    assert_response :not_found
+    item_token = Validation::Harness.issue("rev", 1)
+    on(:harness, "/h/#{item_token}/lesson-render.html")
+    assert_response :not_found
     on(:harness, "/h/#{Validation::Harness.issue('stage', Validation::Harness::Staging.put({}))}/lesson-render.html")
     assert_response :not_found
     on(:harness, "/h/#{Validation::Harness.issue('lrev', 0)}/lesson-render.html")

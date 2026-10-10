@@ -102,6 +102,8 @@ module Validation
     # The text of generator.mjs or verify.mjs behind a token, or nil.
     def source(payload, name)
       kind, id = payload
+      return nil unless %w[rev stage].include?(kind) # a lesson render token (lrev) names a lesson revision, not an item's files
+
       files = kind == "stage" ? Staging.fetch(id) : stored_files(id)
       files && files[name]
     end
