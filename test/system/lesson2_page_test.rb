@@ -47,10 +47,6 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
   end
 
   teardown do
-    unless passed?
-      info = (page.evaluate_script("JSON.stringify({view: document.querySelector('.l2') && document.querySelector('.l2').dataset.view, val: document.querySelector('#lesson-root') && document.querySelector('#lesson-root').dataset.lesson2ViewValue, safe: document.querySelector('#lesson-root') && document.querySelector('#lesson-root').dataset.lesson2SafeValue, w: innerWidth, h: innerHeight, cards: document.querySelectorAll('.l2-card').length, ua: navigator.userAgent, media: matchMedia('print').matches})") rescue "no page")
-      warn "LESSON2DIAG #{name}: #{info} env=#{ENV['BANCO_LESSON2_ENABLED'].inspect}"
-    end
     # the browser is shared by every system test: put back what these tests change (a failure must not leak)
     begin
       page.driver.browser.page.command("Emulation.setEmulatedMedia", media: "", features: [ { name: "forced-colors", value: "none" }, { name: "prefers-reduced-motion", value: "no-preference" } ])

@@ -48,13 +48,13 @@ jobs:
       - name: db/structure.sql equals a fresh dump of the migrations
         run: bin/check-structure
       - name: Unit and integration tests
-        run: echo skipped-for-debug
+        run: bin/rails test
       - name: Contract examples are up to date (the integration tests write them)
         run: |
           UPDATE_CONTRACT=1 bin/rails test test/integration/work_api_test.rb test/integration/graph_blueprint_api_test.rb test/integration/grade_proposals_test.rb test/integration/diagnosis_report_test.rb test/integration/health_test.rb test/integration/independence_test.rb
           test -z "$(git status --porcelain contract)" || { git status --porcelain contract; git diff contract; echo "contract/examples is out of date" >&2; exit 1; }
       - name: System tests (runner's Chrome)
-        run: bin/rails test test/system/lesson2_page_test.rb test/system/lesson2_teacher_box_test.rb
+        run: bin/rails test:system
       - name: Production database prepare creates only the two databases
         run: |
           D="$(mktemp -d)"
