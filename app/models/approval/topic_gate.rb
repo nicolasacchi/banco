@@ -21,7 +21,6 @@ module Approval
     REASON_RANGE = (3..1000)
     VIEW_KIND = "teacher_viewed_topic".freeze
     CONFIRM = "the teacher did not confirm reading the lesson and the sample instances".freeze
-    LESSON2_PAGES = "the lesson is banco.lesson/2 and the lesson pages cannot show it yet".freeze
     REASON_NEEDED = "a reason is required to approve despite the blocker or major findings of the lesson review".freeze
 
     module_function
@@ -55,8 +54,6 @@ module Approval
       lesson_revision = revision.lesson_revision
       reasons << "the lesson revision has no review by an independent session" unless lesson_revision.reviews.exists?
       reasons << "the teacher sent the lesson revision back" if Course::Decisions.lesson_sent_back?(lesson_revision)
-      # R1 guard: the lesson pages do not read banco.lesson/2 yet (R2 switches them to Lessons::StudentBody); remove this line then.
-      reasons << LESSON2_PAGES if lesson_revision.body["schema"] == "banco.lesson/2"
       ItemRevision.where(id: item_revision_ids(revision)).order(:id).each do |item_revision|
         gate = Review::Gate.check(item_revision)
         reasons << "item revision #{item_revision.id} is not approvable: #{gate.reasons.join('; ')}" unless gate.approvable

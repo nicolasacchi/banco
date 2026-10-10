@@ -1,16 +1,8 @@
 require_relative "student_course_world"
 
 # A lesson/2 revision for the student's page (R2). The body is the *served* form (what the browser is told),
-# written by hand from invented content in test/fixtures/lesson2/served/. Until Lessons::StudentBody (R1) is
-# loaded, a stand-in returns the stored body as it is, which is only right for these fixtures. When the real
-# projection exists, this world must store the author form of the same lessons instead (see the R2 report).
-unless defined?(Lessons::StudentBody)
-  module Lessons
-    module StudentBody
-      def self.for(revision, seed:) = revision.body
-    end
-  end
-end
+# written by hand from invented content in test/fixtures/lesson2/served/. The real projection
+# (Lessons::StudentBody) is applied to it by the page; it keeps a served body as it is.
 
 module Lesson2PageWorld
   include StudentCourseWorld

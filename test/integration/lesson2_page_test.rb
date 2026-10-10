@@ -20,7 +20,7 @@ class Lesson2PageTest < ActionDispatch::IntegrationTest
     assert_select "link[href*='lesson']", minimum: 2
     json = css_select("script#lesson-body").first.text
     body = JSON.parse(json)
-    assert_equal "banco.lesson/2", body["schema"]
+    assert_not body.key?("schema"), "the projection does not serve the schema"
     assert_equal 13, body["cards"].size
     assert_select "section#section-why", 0
     labels = JSON.parse(css_select("#lesson-root").first["data-lesson2-labels-value"])
