@@ -189,6 +189,32 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
     assert_operator rows.first, :<=, 330, "a case row is #{rows.first} px tall"
   end
 
+  # one stepper per card of cases: on a phone the balance's own stepper used to show under the shared one and the two
+  # disagreed. Shots go to BANCO_SHOT_DIR (lesson2-stepper-<width>.png).
+  [ [ 390, 844 ], [ 1366, 900 ] ].each do |width, height|
+    test "a card of balances with a shared stepper shows exactly one stepper at #{width} and every balance follows it" do
+      open_lesson(size: [ width, height ])
+      go(7)
+      assert_selector "#scheda-7 .cases-try .dg-tryvalue", text: "x = 0"
+      # no second copy of the number anywhere: the balances of the rows have no stepper and no readout of their own
+      assert_equal 0, page.evaluate_script("document.querySelectorAll('#scheda-7 .case .dg-try, #scheda-7 .case .dg-readout, #scheda-7 .case .dg-tryvalue').length")
+      visible = "[...document.querySelectorAll('#scheda-7 .dg-tryvalue')].filter((n) => n.getClientRects().length > 0)"
+      assert_equal 1, page.evaluate_script("#{visible}.length")
+      assert_equal 1, page.evaluate_script("[...document.querySelectorAll('#scheda-7 .dg-round')].filter((n) => n.getClientRects().length > 0 && n.getAttribute('aria-label') === 'Un numero in più').length")
+      shot("stepper-#{width}-x0")
+      3.times { find("#scheda-7 .cases-try .dg-round[aria-label='Un numero in più']").click }
+      assert_selector "#scheda-7 .cases-try .dg-tryvalue", text: "x = 3"
+      assert_equal 1, page.evaluate_script("#{visible}.length")
+      assert_equal "x = 3", page.evaluate_script("#{visible}[0].textContent.trim()")
+      states = page.evaluate_script("[...document.querySelectorAll('#scheda-7 .case .dg-status')].map((n) => n.className)")
+      assert_equal 3, states.size
+      assert_match(/is-level/, states[0], "2x = 6 is level at x = 3")
+      assert_match(/is-tilt/, states[1])
+      assert_match(/is-level/, states[2])
+      shot("stepper-#{width}-x3")
+    end
+  end
+
   test "the map and the next button use the short name of a card" do
     open_lesson(size: [ 1366, 900 ])
     go(2)

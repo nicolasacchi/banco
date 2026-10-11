@@ -4,11 +4,17 @@
 import { button, el, icon } from "lesson/dom"
 import { renderInlineRich, renderRich, roleOf } from "lesson/text"
 import { figureFor } from "lesson/blocks/diagram"
+import { tryModel } from "lesson/try_model"
 
 export function render(block, ctx) {
   const box = el("section", { class: `block cases cases-${block.cases.length}` })
   if (block.title_it) box.appendChild(el("h3", { class: "block-title", text: block.title_it }))
   const apis = []
+  // one stepper for the card when it has two or more balances and any of them offers a number to try (the range of the first
+  // that does); then every balance is compact (no stepper or readout of its own, on any screen) and listens to it.
+  // A lone balance keeps its own stepper.
+  const balances = block.cases.filter((c) => c.diagram?.type === "balance").length
+  const sharing = balances > 1 && block.cases.some((c) => c.diagram?.try) && !ctx.safe
   const grid = el("div", { class: "cases-grid" })
   for (const c of block.cases) {
     const tone = c.tone ? `case-tone card-tone-${c.tone}` : ""
@@ -24,36 +30,32 @@ export function render(block, ctx) {
     if (c.example_it) text.appendChild(el("div", { class: "case-example" }, renderRich(c.example_it, ctx, { tiles: true })))
     section.appendChild(text)
     if (c.diagram) {
-      const shared = c.diagram.type === "balance" && !ctx.safe
+      const shared = sharing && c.diagram.type === "balance"
       const made = figureFor(c.diagram, ctx, { compact: shared })
       if (shared && made.api) apis.push(made.api)
       section.appendChild(el("div", { class: "case-fig block-diagram" }, made.node))
     }
     grid.appendChild(section)
   }
-  const tries = block.cases.map((c) => c.diagram?.try).filter(Boolean)
-  if (apis.length > 1 && tries.length) box.appendChild(sharedStepper(tries[0], apis, ctx))
+  if (sharing && apis.length > 1) box.appendChild(sharedStepper(block.cases.find((c) => c.diagram?.try).diagram.try, apis, ctx))
   box.appendChild(grid)
   return box
 }
 
 function sharedStepper(range, apis, ctx) {
-  const from = Number(range.from)
-  const to = Number(range.to)
-  let v = from
+  const model = tryModel(range, apis.map((api) => (v) => api.setTry(v)))
   const value = el("output", { class: "dg-tryvalue", "aria-live": "polite" })
-  const minus = button("−", { class: "button secondary dg-step dg-round", "aria-label": ctx.t.try_less }, () => set(v - 1))
-  const plus = button("+", { class: "button secondary dg-step dg-round", "aria-label": ctx.t.try_more }, () => set(v + 1))
+  const minus = button("−", { class: "button secondary dg-step dg-round", "aria-label": ctx.t.try_less }, () => set(model.value - 1))
+  const plus = button("+", { class: "button secondary dg-step dg-round", "aria-label": ctx.t.try_more }, () => set(model.value + 1))
   const set = (n) => {
-    v = Math.max(from, Math.min(to, n))
-    value.textContent = `x = ${v}`
-    minus.disabled = v <= from
-    plus.disabled = v >= to
-    apis.forEach((api) => api.setTry(v))
+    model.set(n)
+    value.textContent = `x = ${model.value}`
+    minus.disabled = model.atMin()
+    plus.disabled = model.atMax()
   }
-  value.textContent = `x = ${v}`
+  value.textContent = `x = ${model.value}`
   minus.disabled = true
-  ctx.mount(() => apis.forEach((api) => api.setTry(v)))
+  ctx.mount(() => apis.forEach((api) => api.setTry(model.value)))
   return el("div", { class: "cases-try", role: "group", "aria-label": ctx.t.cases_try },
     el("span", { class: "dg-trylabel", text: ctx.t.cases_try }), minus, value, plus)
 }

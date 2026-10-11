@@ -282,7 +282,8 @@ export function mountDiagram(data, ctx, options = {}) {
     counter = el("span", { class: "dg-counter", "aria-live": "polite" })
     if (!options.linked) controls.append(prev, next, counter)
   }
-  if (type === "balance" && data.try) {
+  // a compact balance (a row of the cases) is driven by the shared stepper through setTry: no stepper, no readout of its own
+  if (type === "balance" && data.try && !options.compact) {
     const from = Number(data.try.from)
     const to = Number(data.try.to)
     const value = el("output", { class: "dg-tryvalue", "aria-live": "polite" })
