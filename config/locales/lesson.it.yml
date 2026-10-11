@@ -112,7 +112,7 @@ it:
     key_minus: "Meno"
     key_bar: "Barra di frazione"
     key_comma: "Virgola"
-    fraction_line_hint: "Le frazioni si scrivono con la barra: 5/2."
+    fraction_line_hint: "Le frazioni si scrivono con la barra: numeratore, barra, denominatore."
     check_empty: "Scrivi o scegli una risposta, poi controlla."
     check_error: "Non riesco a controllare ora. Riprova."
     try_again: "Riprova."
