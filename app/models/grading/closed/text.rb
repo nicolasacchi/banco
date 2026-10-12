@@ -36,9 +36,13 @@ module Grading
 
         accepted = ([ spec.answer ] + spec.accept).map { |t| normalize(t.to_s, case_sensitive: spec.case_sensitive) }
         return Closed.result("correct", normalized: answer) if accepted.include?(answer)
+        return Closed.result("correct", normalized: answer) if spec.contractions == "en" && accepted.any? { |t| Contractions.same?(t, answer) }
         return Closed.invalid("spaces_in_code") if spaced_code?(answer, accepted)
 
-        declared = Closed.error_hit(spec, answer) { |v, a| normalize(v.to_s, case_sensitive: spec.case_sensitive) == a }
+        declared = Closed.error_hit(spec, answer) do |v, a|
+          written = normalize(v.to_s, case_sensitive: spec.case_sensitive)
+          written == a || (spec.contractions == "en" && Contractions.same?(written, a))
+        end
         return Closed.result("typical_error", error_codes: declared, normalized: answer) if declared.any?
 
         if (slip = accent_slip(spec, answer, accepted))

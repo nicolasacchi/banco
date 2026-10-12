@@ -42,12 +42,23 @@ module Lessons
       case check["component"]
       when "choice" then Diagnosis::Rekey.call(display: { "options" => check["options"] }, component: "choice", answer: check["answer"], seed: seed)
       when "matching" then Diagnosis::Rekey.call(display: { "left" => check["left"], "right" => check["right"] }, component: "matching", answer: check["answer"], seed: seed)
+      when "tiles" then sequence_rekey(check, "tiles", seed)
+      when "ordering" then sequence_rekey(check, "items", seed)
       else Diagnosis::Rekey::Result.new(display: {}, id_map: {}, shown_order: {})
       end
     end
 
-    # {shown id => stored id} of a check for +seed+ (choice and matching: the shuffle; span_select: s1..sN in order).
+    # Tiles and ordering items are shown shuffled (ids e1..eN) by the ordering re-key: never the key, its reverse, the stored
+    # listing or a declared error as the first view.
+    def sequence_rekey(check, field, seed)
+      errors = check["errors"].to_a.map { |e| { "value" => e["answer"] } }
+      Diagnosis::Rekey.call(display: { "elements" => check[field] }, component: "ordering", answer: check["answer"], seed: seed, errors: errors)
+    end
+
+    # {shown id => stored id} of a check for +seed+ (choice, matching, tiles, ordering: the shuffle; span_select: s1..sN in order;
+    # select: t1..tN in the figure's reading order).
     def id_map(check, seed)
+      return SelectTargets.id_map(check) if check["component"] == "select"
       return check["spans"].each_with_index.to_h { |s, i| [ "s#{i + 1}", s["id"] ] } if check["component"] == "span_select"
 
       rekey(check, seed).id_map
@@ -58,6 +69,8 @@ module Lessons
 
       case check["component"]
       when "span_select" then span_select(check, response, id_map || {})
+      when "tiles", "ordering" then sequence(check, response, id_map || {})
+      when "select" then select(check, response, id_map || {})
       when "fraction" then closed(check, response, id_map, subject, form: check["mixed"] ? [ "mixed" ] : [])
       else closed(check, response, id_map, subject)
       end
@@ -75,6 +88,7 @@ module Lessons
         component: check["component"], subject: subject, answer: check["answer"],
         errors: errors.each_with_index.map { |e, i| { "code" => "e#{i}", "value" => e["answer"] } },
         accept: check["accept"], unit: check["unit"], form: form,
+        profile: check["profile"], thousands: check["thousands"], contractions: check["contractions"],
         display: { "options" => check["options"], "left" => check["left"], "right" => check["right"] }.compact
       )
       result = Grading::Closed.grade(spec, response, id_map: id_map.presence)
@@ -111,6 +125,48 @@ module Lessons
       return Graded.new(verdict: "right", code: nil, message_it: nil, error_index: nil, normalized: normalized, grader_version: grader_version) if set == check["answer"].sort
 
       index = check["errors"].to_a.index { |e| e["answer"].is_a?(Array) && e["answer"].sort == set }
+      entry = index && check["errors"][index]
+      Graded.new(verdict: "wrong", code: entry&.[]("code"), message_it: entry&.[]("message_it"), error_index: index, normalized: normalized, grader_version: grader_version)
+    end
+
+    # ---- tiles and ordering: a sequence of ids ------------------------------------------------------
+
+    # +response+: the shown ids (e1..eN) in the order the student built (tiles) or left (ordering). Right when it equals the
+    # answer or one of the declared accept sequences; a typical error when it equals an errors[] sequence.
+    def sequence(check, response, id_map)
+      return invalid("unparseable") unless response.is_a?(Array) && response.all?(String)
+      return invalid("empty") if response.empty?
+
+      stored = response.map { |id| id_map[id] }
+      return invalid("unparseable") if stored.any?(&:nil?) || stored.uniq.size != stored.size
+      return invalid("incomplete") if check["component"] == "ordering" && stored.size != check["items"].size
+
+      normalized = JSON.generate(stored)
+      right = [ check["answer"] ] + check["accept"].to_a
+      return Graded.new(verdict: "right", code: nil, message_it: nil, error_index: nil, normalized: normalized, grader_version: grader_version) if right.include?(stored)
+
+      index = check["errors"].to_a.index { |e| e["answer"] == stored }
+      entry = index && check["errors"][index]
+      Graded.new(verdict: "wrong", code: entry&.[]("code"), message_it: entry&.[]("message_it"), error_index: index, normalized: normalized, grader_version: grader_version)
+    end
+
+    # ---- select: tap targets of a drawing -----------------------------------------------------------
+
+    # +response+: the tapped tN. pick `one`: exactly one tap, right when it is any member of the answer; `many`: exactly the set.
+    def select(check, response, id_map)
+      return invalid("unparseable") unless response.is_a?(Array) && response.all?(String)
+      return invalid("empty") if response.empty?
+
+      stored = response.map { |id| id_map[id] }
+      return invalid("unparseable") if stored.any?(&:nil?) || stored.uniq.size != stored.size
+
+      set = stored.sort
+      normalized = JSON.generate(set)
+      answer = check["answer"].to_a.map(&:to_s)
+      right = check["pick"] == "one" ? (set.size == 1 && answer.include?(set.first)) : set == answer.sort
+      return Graded.new(verdict: "right", code: nil, message_it: nil, error_index: nil, normalized: normalized, grader_version: grader_version) if right
+
+      index = check["errors"].to_a.index { |e| e["answer"].is_a?(Array) && e["answer"].map(&:to_s).sort == set }
       entry = index && check["errors"][index]
       Graded.new(verdict: "wrong", code: entry&.[]("code"), message_it: entry&.[]("message_it"), error_index: index, normalized: normalized, grader_version: grader_version)
     end

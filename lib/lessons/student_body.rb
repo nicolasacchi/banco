@@ -19,9 +19,12 @@ module Lessons
       "choice" => %w[component prompt_it answer_format_it],
       "number" => %w[component prompt_it answer_format_it input_before input_after unit],
       "fraction" => %w[component prompt_it answer_format_it input_before input_after mixed],
-      "normalized_text" => %w[component prompt_it answer_format_it input_before input_after],
+      "normalized_text" => %w[component prompt_it answer_format_it input_before input_after input],
       "matching" => %w[component prompt_it answer_format_it reuse_right],
-      "span_select" => %w[component prompt_it answer_format_it text_it]
+      "span_select" => %w[component prompt_it answer_format_it text_it],
+      "select" => %w[component prompt_it answer_format_it targets pick],
+      "tiles" => %w[component prompt_it answer_format_it],
+      "ordering" => %w[component prompt_it answer_format_it]
     }.freeze
     # Simple blocks: the fields served; nested lists: {field => the fields of each element}.
     BLOCKS = {
@@ -135,11 +138,24 @@ module Lessons
         out["right"] = shown["right"]
       when "span_select"
         out["spans"] = c["spans"].each_with_index.map { |s, i| { "id" => "s#{i + 1}", "text_it" => s["text_it"] } }
+      when "tiles" then out["tiles"] = Checks.rekey(c, seed).display["elements"]
+      when "ordering" then out["items"] = Checks.rekey(c, seed).display["elements"]
+      when "select" then out["diagram"] = select_figure(c)
       when "normalized_text"
         accents = Items::Part::ACCENT_SETS[subject]
         out["accents"] = accents if accents
+        out["input_width"] = c.dig("profile", "width") if c["input"] == "bits" && c.dig("profile", "width")
       end
       out
+    end
+
+    # The figure of a select check as the student sees it: the type's own "select" projection (targets in reading order, every
+    # candidate in one neutral style, no label that names one: L3). A type that cannot give it is never served as if it could.
+    def select_figure(check)
+      mod = SelectTargets.module_of(check) or raise ArgumentError, "select check on an unknown diagram type"
+      raise NotImplementedError, "#{check.dig('diagram', 'type')} has no select projection" unless mod.is_a?(Diagrams::Contract)
+
+      mod.served(check["diagram"], mode: :select)
     end
 
     # An example: the steps up to the first blank; for that step its reason and the blank. Without a blank it is

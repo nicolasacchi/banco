@@ -222,6 +222,7 @@ module Validation
         add("E-LESSON-ROLE", "#{base}/tone", "#{card['tone']} is not a colour role of #{@subject}'s palette", line: line) if card["tone"] && !Lessons::Palette.role?(@subject, card["tone"])
         role_contract(card, base, line, extra)
         blocks.each_with_index { |b, j| block_checks(b, "#{base}/blocks/#{j}", card) }
+        Lessons::Blocks::Truth.card(card, base, @ctx)
         icon_roles(card, base, line)
       end
 
@@ -278,6 +279,10 @@ module Validation
 
       def block_diagrams(block, path)
         line = block["line"]
+        # the own figure of a select check (a check block, a step blank or an exercise check)
+        Lessons::Blocks::Truth.located_checks(block, path).each do |c, at, yaml|
+          diagram_checks(c["diagram"], "#{at}/diagram", line, "#{yaml.empty? ? '' : "/#{yaml}"}/diagram") if c["component"] == "select"
+        end
         case block["type"]
         when "diagram" then diagram_checks(block["diagram"], "#{path}/diagram", line, "")
         when "schema" then diagram_checks(block["schema"], "#{path}/schema", line, "")

@@ -69,7 +69,9 @@ module Lessons
     def single_kind(block) = reveal_with_options?(block) ? "reveal_options" : ONE_PER_CARD[block["type"]]
 
     # How many diagrams, schemas and procedures a block counts for A3's ceiling (a cases counts each diagram in it).
-    def visual_count(block)
+    def visual_count(block) = visual_count_of(block) + checks(block).count { |c| c["component"] == "select" }
+
+    def visual_count_of(block)
       case block["type"]
       when "diagram", "schema", "procedure", "source", "dialogue", "oral", "image", "page" then 1
       when "reveal" then reveal_with_options?(block) ? 1 : 0
@@ -134,6 +136,7 @@ module Lessons
       %w[prompt_it explain_it answer_format_it input_before input_after].each { |k| add.call(join.call(k), check[k]) }
       check["options"].to_a.each_with_index { |o, i| add.call(join.call("options/#{i}/text_it"), o["text_it"]) }
       %w[left right].each { |side| check[side].to_a.each_with_index { |o, i| add.call(join.call("#{side}/#{i}/text_it"), o["text_it"]) } }
+      %w[tiles items].each { |side| check[side].to_a.each_with_index { |o, i| add.call(join.call("#{side}/#{i}/text_it"), o["text_it"]) } }
       check["errors"].to_a.each_with_index { |e, i| add.call(join.call("errors/#{i}/message_it"), e["message_it"]) }
     end
   end

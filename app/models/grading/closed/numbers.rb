@@ -38,7 +38,7 @@ module Grading
         return Closed.invalid("unparseable") unless value.is_a?(String)
 
         scientific = spec.form.include?("scientific")
-        answer, written_scientific = scientific ? parse_scientific(value, allow_dot: spec.allow_dot, unit: spec.unit) : [ parse(value, allow_dot: spec.allow_dot, unit: spec.unit), false ]
+        answer, written_scientific = scientific ? parse_scientific(value, allow_dot: spec.allow_dot, unit: spec.unit, thousands: spec.thousands) : [ parse(value, allow_dot: spec.allow_dot, unit: spec.unit, thousands: spec.thousands), false ]
         expected = expected_value(spec.answer)
         normalized = format(answer)
         if answer == expected || accepted?(spec.accept, answer)
@@ -75,15 +75,15 @@ module Grading
       end
 
       # [Rational, written_as_a·10^n]. Without the notation the text is read as a plain number.
-      def parse_scientific(text, allow_dot:, unit:)
+      def parse_scientific(text, allow_dot:, unit:, thousands: false)
         s = strip_unit(clean(text), unit).sub(/10([-+]?[#{SUPERSCRIPTS}]+)\z/) { "10^#{Regexp.last_match(1).tr(SUPERSCRIPTS, '0123456789')}" }
         m = SCIENTIFIC.match(s)
-        return [ parse(s, allow_dot: allow_dot), false ] unless m
+        return [ parse(s, allow_dot: allow_dot, thousands: thousands), false ] unless m
 
         exponent = m[3].to_i
         raise Invalid, "number_too_large" if exponent > MAX_EXPONENT
 
-        mantissa = parse(m[1], allow_dot: allow_dot)
+        mantissa = parse(m[1], allow_dot: allow_dot, thousands: thousands)
         exponent = -exponent if m[2] == "-"
         [ mantissa * Rational(10)**exponent, mantissa ]
       end
@@ -111,15 +111,20 @@ module Grading
       end
 
       # Italian text -> Rational. Raises Invalid(code): empty, use_comma, thousands_separator,
-      # ambiguous_mixed_number, unparseable.
-      def parse(text, allow_dot: false, unit: nil)
+      # ambiguous_mixed_number, unparseable. +thousands+ (the `thousands: true` option of a lesson check, WAVE2 2.11): a dot that
+      # groups exactly three digits before the decimal comma is a separator, so 1.115,00 is 1115; spaces still ask for a retype.
+      def parse(text, allow_dot: false, unit: nil, thousands: false)
         s = strip_unit(clean(text), unit)
         raise Invalid, "empty" if s.empty?
         t = s.sub(/\A([+-])#{SPACES}+/, '\1')
         raise Invalid, "thousands_separator" if t.match?(THOUSANDS_SPACED)
         raise Invalid, "ambiguous_mixed_number" if s.match?(/\d#{SPACES}+[\d,.]/)
 
-        raise Invalid, "thousands_separator" if !allow_dot && t.match?(THOUSANDS)
+        if t.match?(THOUSANDS) && thousands && !allow_dot
+          t = t.delete(".")
+        elsif t.match?(THOUSANDS) && !allow_dot
+          raise Invalid, "thousands_separator"
+        end
 
         m = DECIMAL.match(t)
         raise Invalid, "unparseable" if m.nil? || (m[2].empty? && m[4].nil?)

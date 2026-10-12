@@ -6,6 +6,7 @@ module Grading
     MESSAGES_IT = {
       "empty" => "Scrivi una risposta prima di continuare.",
       "unparseable" => "Non riesco a leggere la risposta. Controllala e riprova.",
+      "incomplete" => "Metti tutti i pezzi in ordine, poi controlla.",
       "spaces_in_code" => "Scrivi la risposta di seguito, senza spazi.",
       "use_comma" => "Per i decimali usa la virgola, per esempio 3,5.",
       "thousands_separator" => "Scrivi il numero senza punti né spazi tra le cifre, per esempio 5300,00.",

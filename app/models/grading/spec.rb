@@ -5,7 +5,7 @@ module Grading
   # vectors use banco.item/1 field names).
   class Spec
     ATTRIBUTES = %i[component subject skill answer errors form form_skill accent_policy spelling_policy
-                    paradigm_forms accept unit allow_dot display profile case_sensitive].freeze
+                    paradigm_forms accept unit allow_dot display profile case_sensitive thousands contractions].freeze
 
     attr_reader(*ATTRIBUTES)
     # A testlet only: {sub item id => Spec}, in the order of the item's sub_items.
@@ -19,7 +19,7 @@ module Grading
         accent_policy: h["accent_policy"], spelling_policy: h["spelling_policy"],
         paradigm_forms: h["paradigm_forms"], accept: h["accept"], unit: h["unit"],
         allow_dot: h["allow_dot"], display: h["display"], profile: h["profile"],
-        case_sensitive: h["case_sensitive"]
+        case_sensitive: h["case_sensitive"], thousands: h["thousands"], contractions: h["contractions"]
       )
     end
 
@@ -61,7 +61,7 @@ module Grading
 
     def initialize(component:, subject: nil, skill: nil, answer: nil, errors: nil, form: nil, form_skill: nil,
                    accent_policy: nil, spelling_policy: nil, paradigm_forms: nil, accept: nil, unit: nil,
-                   allow_dot: nil, display: nil, profile: nil, case_sensitive: nil)
+                   allow_dot: nil, display: nil, profile: nil, case_sensitive: nil, thousands: nil, contractions: nil)
       @component = component.to_s
       @subject = subject || skill.to_s.split(".").first
       @skill = skill
@@ -77,6 +77,10 @@ module Grading
       @allow_dot = allow_dot == true
       @display = display || {}
       @profile = profile
+      # number: a dot that groups exactly three digits before the decimal comma is read as a thousands separator (1.115,00 = 1115).
+      @thousands = thousands == true
+      # normalized_text: "en" expands the contractions of english/contractions on both sides before the comparison.
+      @contractions = contractions.presence
       # banco.item/1 has no field to declare case sensitivity (decision D-032), so
       # this is false for every stored item; the attribute is the seam for a later
       # schema version.

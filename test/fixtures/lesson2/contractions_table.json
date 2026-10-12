@@ -1,0 +1,15 @@
+{
+  "note": "A small table for the tests of the contractions option, from standard English grammar (the vetted english/contractions table has the same shape: short, long readings, ambiguous). Not the table of the lessons.",
+  "version": 1,
+  "contractions": [
+    { "short": "I'm", "long": ["i am"] },
+    { "short": "won't", "long": ["will not"] },
+    { "short": "can't", "long": ["cannot", "can not"] },
+    { "short": "n't", "long": ["not"] },
+    { "short": "'ll", "long": ["will"] },
+    { "short": "'re", "long": ["are"] },
+    { "short": "'ve", "long": ["have"] },
+    { "short": "'s", "long": ["is", "has"], "ambiguous": true },
+    { "short": "'d", "long": ["would", "had"], "ambiguous": true }
+  ]
+}

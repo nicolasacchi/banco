@@ -65,6 +65,9 @@ module Lessons
 
     module_function
 
+    # The Ruby module of a diagram type, or nil for a name that is not one.
+    def module_for(type) = TYPES.key?(type) ? const_get(TYPES.fetch(type)) : nil
+
     def schema_def(type) = (@defs ||= JSON.parse(File.read(File.join(Banco::Schemas.root, "config/banco/schemas/diagram.json"))).fetch("$defs")).fetch(type)
 
     def state_keys(type) = schema_def(type)["x-banco-state-keys"].to_a + schema_def(type)["x-banco-state-only-keys"].to_a
@@ -96,7 +99,7 @@ module Lessons
     def check(data, subject:)
       c = Collector.new(subject)
       type = data["type"]
-      mod = TYPES.key?(type) ? const_get(TYPES.fetch(type)) : nil
+      mod = module_for(type)
       return [ Finding.new(code: "E-LESSON-DIAGRAM", path: "/type", message: "unknown diagram type #{type.inspect}", rule: "type") ] unless mod
 
       alt = data["alt_it"].to_s.split.size
