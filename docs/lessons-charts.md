@@ -1,7 +1,7 @@
-# Charts and quantities (T6, D-273)
+# Charts and quantities (T6, D-279)
 
 The chart family of lesson/2: `climograph`, `bar_model` (views `parts` and `percent`), `seats`, on one axis engine. `chart` and `scale` are W2-2.
-This page is what an author and a reviewer need; the decision entry D-273 has the reasons.
+This page is what an author and a reviewer need; the decision entry D-279 has the reasons.
 
 ## The axis engine (`app/javascript/lesson/diagrams/chart/axis.js`)
 
