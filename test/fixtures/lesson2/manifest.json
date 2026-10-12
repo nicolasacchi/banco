@@ -669,100 +669,118 @@
   }
  ],
  "pending": {
-  "description": "Bad fixtures that W2-0 only describes (WAVE2 V5: one bad fixture per new code). The track writes the file as base.md with the one change, moves the entry to `bad` with its line, and the manifest tests then run it like the others. Until then the code is in the registry (error_codes.yml version 20) and nothing produces it.",
+  "description": "Bad fixtures that W2-0 only describes (WAVE2 V5: one bad fixture per new code). The track writes the file as base.md with the one change, moves the entry to `bad` with its line; `needs` lists the registry names (kind:name, kind one of diagram, block, check, option) whose track makes the fixture writable: when every one is available the entry must have moved to `bad` (test/lib/lesson2_manifest_test.rb), and the manifest tests then run it like the others. Until then the code is in the registry (error_codes.yml version 20) and nothing produces it.",
   "entries": [
    {
     "code": "E-LESSON-DATA",
+    "needs": ["diagram:climograph"],
     "track": "T6",
     "base": "base.md",
     "change": "a climograph naming a station that geo/stations does not hold (station: atlantis), or a size of bio/sizes that does not exist"
    },
    {
     "code": "E-LESSON-VERIFY",
+    "needs": ["option:verify"],
     "track": "T1",
     "base": "base.md",
     "change": "a number check with verify: {fn: chrono.duration, args: {from: '-133', to: '-27'}} and answer '107'"
    },
    {
     "code": "E-CHECK-ANSWER-IN-ALT",
+    "needs": ["check:select"],
     "track": "T1",
     "base": "base.md",
     "change": "a select check whose figure's alt_it says 'il nucleo è il cerchio al centro' while the answer is the nucleus"
    },
    {
     "code": "W-CHECK-ANSWER-IN-DIAGRAM",
+    "needs": ["diagram:register"],
     "track": "T1",
     "base": "base.md",
     "change": "a number check asking the value that a register of the same card prints in one of its states"
    },
    {
     "code": "E-CHECK-ANSWER-BY-SIMULATION",
+    "needs": ["diagram:seats"],
     "track": "T6",
     "base": "base.md",
     "change": "a seats figure with try ranges whose readouts include the number the check on the card asks, without reachable_ok_it"
    },
    {
     "code": "E-DIAGRAM-REACHABLE-CAP",
+    "needs": ["diagram:seats"],
     "track": "T6",
     "base": "base.md",
     "change": "a figure with sliders whose ranges can show more than 500 values on a card with a check"
    },
    {
     "code": "E-SELECT-MARKED",
+    "needs": ["check:select"],
     "track": "T1",
     "base": "base.md",
     "change": "a select check whose candidates differ in style (one labelled, one patterned)"
    },
    {
     "code": "E-DIAGRAM-TARGET",
+    "needs": ["check:select"],
     "track": "T1",
     "base": "base.md",
     "change": "a select target under 24 x 24 CSS px at 390 px (render check)"
    },
    {
     "code": "W-TYPE-RESERVED",
+    "needs": [],
+    "standing": "the reserved dry run exists from W2-0: the fixture is written with the first track that ships a bad lesson file for it",
     "track": "T1",
     "base": "base.md",
     "change": "a lesson with a diagram network, run with lesson submit --dry-run --allow-reserved"
    },
    {
     "code": "W-TYPE-DRAFT",
+    "needs": [],
+    "standing": "the reserved dry run exists from W2-0: the fixture is written with the first track that ships a bad lesson file for it",
     "track": "T1",
     "base": "base.md",
     "change": "a lesson with a diagram cell, run with lesson submit --dry-run --allow-reserved"
    },
    {
     "code": "E-PROGRAM-BOUND",
+    "needs": ["diagram:program"],
     "track": "T9",
     "base": "base.md",
     "change": "a program with a loop that never ends and no endless flag (render check)"
    },
    {
     "code": "E-LESSON-APPARATUS-WORDS",
+    "needs": ["block:dialogue"],
     "track": "T2",
     "base": "base.md",
     "change": "251 words of quotations, translations and dialogue lines open by default on top of the 500 words of prose"
    },
    {
     "code": "E-CHEM-SYMBOL",
+    "needs": ["diagram:formula"],
     "track": "T2",
     "base": "base.md",
     "change": "a formula \\ce{Xx2} with a symbol that is not an element"
    },
    {
     "code": "W-ES-TILDE",
+    "needs": ["block:dialogue"],
     "track": "T3",
     "base": "base.md",
     "change": "a Spanish word written with a tilde that the stress rule does not need"
    },
    {
     "code": "E-LESSON-LANG",
+    "needs": ["block:dialogue"],
     "track": "T2",
     "base": "base.md",
     "change": "a text_es key in an english lesson, or two target languages in one figure"
    },
    {
     "code": "W-LANG-LEVEL",
+    "needs": ["block:dialogue"],
     "track": "T2",
     "base": "base.md",
     "change": "an English word outside the first 3000 words, the glossary and teaches_en"

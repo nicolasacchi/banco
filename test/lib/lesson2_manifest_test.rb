@@ -38,4 +38,25 @@ class Lesson2ManifestTest < ActiveSupport::TestCase
     end
     assert_operator YAML.safe_load_file(Rails.root.join("config/banco/error_codes.yml"))["version"], :>=, 20
   end
+
+  # The pending list must not outlive the pieces it waits for: when every registry name an entry needs is available, its bad fixture
+  # is writable and the entry has to move to `bad`.
+  test "a code stays pending only while a piece it needs is not available" do
+    pending = MANIFEST.dig("pending", "entries")
+    pending.each do |e|
+      needs = e["needs"]
+      assert_kind_of Array, needs, "#{e['code']}: needs lists the registry names of the pieces its fixture waits for"
+      if needs.empty?
+        assert e["standing"].present?, "#{e['code']}: no needs and no `standing` reason"
+        next
+      end
+      statuses = needs.map do |n|
+        kind, name = n.split(":", 2)
+        status = kind == "option" ? Lessons::Types.data.fetch("check_options")[name]&.fetch("status") : Lessons::Types.status(kind.to_sym, name)
+        assert status, "#{e['code']}: #{n} is not in lesson_types.yml"
+        status
+      end
+      assert_not statuses.all?("available"), "#{e['code']} is still pending but #{needs.join(', ')} is available: write its bad fixture and move it to `bad`"
+    end
+  end
 end
