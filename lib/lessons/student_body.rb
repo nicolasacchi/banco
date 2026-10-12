@@ -19,7 +19,7 @@ module Lessons
       "choice" => %w[component prompt_it answer_format_it],
       "number" => %w[component prompt_it answer_format_it input_before input_after unit],
       "fraction" => %w[component prompt_it answer_format_it input_before input_after mixed],
-      "normalized_text" => %w[component prompt_it answer_format_it input_before input_after],
+      "normalized_text" => %w[component prompt_it answer_format_it input_before input_after input],
       "matching" => %w[component prompt_it answer_format_it reuse_right],
       "span_select" => %w[component prompt_it answer_format_it text_it]
     }.freeze
@@ -138,6 +138,13 @@ module Lessons
       when "normalized_text"
         accents = Items::Part::ACCENT_SETS[subject]
         out["accents"] = accents if accents
+        # input: bits is the switches of a register (T9): they are served with the width of the profile; an error under test that the
+        # switches would make impossible (padding_missing: the answer is too short) keeps the typed input
+        if c["input"] == "bits"
+          if Checks.bits_switches?(c) then out["input_width"] = c.dig("profile", "width")
+          else out.delete("input")
+          end
+        end
       end
       out
     end

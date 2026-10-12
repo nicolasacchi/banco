@@ -12,6 +12,7 @@ import { render as textT } from "items/normalized_text"
 import { button, el, icon, uid } from "lesson/dom"
 import { renderInlineRich, renderRich } from "lesson/text"
 import { checkNotes } from "lesson/teacher_notes"
+import { bitsInput } from "lesson/checks/bits_input"
 
 // matching: one row per item, the categories as chips (radios styled as chips: arrows move inside a row)
 function matchingInput(spec, ctx) {
@@ -105,7 +106,7 @@ function input(spec, ctx, options = {}) {
     case "choice": return choiceT({ ...part, options: spec.options.map((o) => ({ id: o.id, text: o.text_it })) }, { t: ctx.items })
     case "number": return numberT(part, { t: ctx.items })
     case "fraction": return options.inline && !spec.mixed ? fractionLineInput(spec, ctx) : fractionT(part, { t: ctx.items })
-    case "normalized_text": return textT(part, { t: ctx.items })
+    case "normalized_text": return spec.input === "bits" && spec.input_width ? bitsInput(spec, ctx) : textT(part, { t: ctx.items })
     case "matching": return matchingInput(spec, ctx)
     case "span_select": return spanInput(spec, ctx)
     default: throw new Error(`no check component ${spec.component}`)
@@ -202,7 +203,7 @@ export function renderCheck(spec, ctx, loc, options = {}) {
 }
 
 function lock(form) {
-  for (const control of form.querySelectorAll("input, button.span-chip, textarea, select")) control.disabled = true
+  for (const control of form.querySelectorAll("input, button.span-chip, button.bit-switch, textarea, select")) control.disabled = true
   form.classList.add("is-done")
   form.querySelector("[type=submit]").disabled = true
 }

@@ -25,6 +25,12 @@ module Lessons
 
     def grader_version = Grading.git_sha
 
+    # Does an `input: bits` check show its switches (T9)? Not when an error under test is `padding_missing`: the switches always give the
+    # whole width, so only a typed answer can be too short.
+    def bits_switches?(check)
+      check["input"] == "bits" && check["errors"].to_a.none? { |e| e["code"] == "padding_missing" }
+    end
+
     # Is the response of a size the endpoint accepts at all (A9: at most 200 characters, student data)?
     def small?(response) = JSON.generate(response).size <= MAX_RESPONSE * 3 && flat_strings(response).all? { |s| s.size <= MAX_RESPONSE }
 
