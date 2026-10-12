@@ -4,8 +4,9 @@
 # runs the whole recorder inside a savepoint that is rolled back, so it shows the payload and the gate
 # result without writing; confirm: true keeps the row.
 #
-# ATTEST_IT (approve_topic only) waives the one requirement that the review page was opened, on the operator's
-# own words, which the payload records; every other requirement of the gate holds.
+# ATTEST_IT (approve_topic and approve_blueprint only) waives the requirements about having opened the review in the
+# app (the topic page; or the items in the preview and the played-or-confirmed test), on the operator's own words,
+# which the payload records; every other requirement of the gate holds.
 #
 #   DecisionConsole.call(kind: "approve_skill_graph", teacher: "nik", subject: "history", reason: "...", confirm: true)
 class DecisionConsole
@@ -13,6 +14,7 @@ class DecisionConsole
 
   APPROVALS = { "approve_skill_graph" => [ SkillGraphRevision, :approved_graph ],
                 "approve_blueprint" => [ BlueprintRevision, :approved_blueprint ] }.freeze
+  ATTESTABLE = %w[approve_topic approve_blueprint].freeze
   SUBJECT_KINDS = %w[kind_override set_formula_sheet release_course].freeze
 
   def self.call(**args) = new(**args).call
@@ -34,7 +36,7 @@ class DecisionConsole
     origin = DecisionRecorder::Console.new(login: @teacher, os_user: @os_user)
     refusal = DecisionRecorder.refusal(origin)
     raise DecisionRecorder::Refused, refusal if refusal
-    raise DecisionRecorder::Invalid, "ATTEST_IT is accepted only for approve_topic" if !@attest_it.nil? && @kind != "approve_topic"
+    raise DecisionRecorder::Invalid, "ATTEST_IT is accepted only for approve_topic and approve_blueprint" if !@attest_it.nil? && !ATTESTABLE.include?(@kind)
     raise DecisionRecorder::Invalid, "ATTEST_IT must hold the operator's own words (1..1000 characters)" if !@attest_it.nil? && !(1..1000).cover?(@attest_it.to_s.strip.length)
 
     params = build_params

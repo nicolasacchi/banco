@@ -7,8 +7,9 @@ namespace :banco do
   # TEACHER must be in BANCO_TEACHER_USERS and BANCO_DECISIONS_ENABLED=1. PARAMS is a JSON object with the
   # other parameters of the kind, as the teacher's form would send them.
   #
-  # approve_topic only: ATTEST_IT="<the operator's own words>" waives the single requirement that the topic review page
-  # was opened (every other requirement of the gate holds) and records the words in the decision.
+  # approve_topic and approve_blueprint only: ATTEST_IT="<the operator's own words>" waives the requirement that the
+  # review was opened in the app (the topic page; or the items in the preview and the test played or confirmed). Every
+  # other requirement of the gate holds, and the words are recorded in the decision.
   desc "Record a teacher decision from the console: KIND= TEACHER= [SUBJECT=] [REVISION=] [REASON=] [PARAMS=json] [ATTEST_IT=words] [CONFIRM=1]"
   task decide: :environment do
     kind = ENV["KIND"].presence or abort "KIND=#{DecisionRecorder::KINDS.join('|')} is required"

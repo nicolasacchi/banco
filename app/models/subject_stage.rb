@@ -22,6 +22,13 @@ class SubjectStage
     # True when the decision that approved this kind last was recorded from the console (D-260).
     def approved_from_console?(subject, kind) = Decision.where(subject: subject, kind: kind).order(:id).last&.console? == true
 
+    # The operator's words when the latest approve_blueprint of the subject was a console approval that waived the
+    # preview requirements (D-260), else nil.
+    def blueprint_attestation(subject)
+      payload = JSON.parse(Decision.where(subject: subject, kind: "approve_blueprint").order(:id).last&.payload_json || "{}")
+      payload["attested"] ? payload["attest_it"].presence : nil
+    end
+
     def for(subject)
       graph = SkillGraphRevision.where(subject: subject).order(:seq).last
       blueprint = BlueprintRevision.where(subject: subject).order(:seq).last

@@ -401,6 +401,7 @@ it:
       none: "L'agente non ha ancora scritto il test di questa materia."
       summary: "Revisione %{seq}: %{skills} abilità, %{items} item."
       is_approved: "Questa revisione è approvata."
+      attested: "Approvato da console, senza aprire le domande in anteprima: «%{words}»"
       not_approved: "Questa revisione non è ancora approvata."
       approve: "Approva il test"
       play_all: "Prova tutto il test come S"

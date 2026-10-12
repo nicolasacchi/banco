@@ -13,18 +13,23 @@ module Approval
   #     she saw every question of this very revision (confirm_test_reviewed, D-215).
   #
   # Nothing here decides: it says what is still missing, in the teacher's words.
+  #
+  # The console attestation (D-260) waives exactly two requirements and nothing else: that each pinned item was
+  # opened in the preview, and that the test was played to the end or confirmed as seen in full. The operator's
+  # own words are recorded in the decision instead.
   module BlueprintGate
     Result = Struct.new(:approvable, :reasons, keyword_init: true) do
       def to_h = { approvable: approvable, reasons: reasons }
     end
 
+    WAIVED = %w[items_not_opened_in_preview test_not_played_or_confirmed].freeze
     NOT_PLAYED = "the test was not played to the end as the preview student, and not confirmed as seen in full".freeze
 
     module_function
 
     def approvable?(revision) = check(revision).approvable
 
-    def check(revision)
+    def check(revision, waive_preview: false)
       reasons = []
       approved_graph = SubjectStage.approved_graph(revision.subject)
       reasons << "the graph revision #{revision.skill_graph_revision_id} of this test is not approved" unless approved_graph&.id == revision.skill_graph_revision_id
@@ -41,11 +46,11 @@ module Approval
         end
         gate = Review::Gate.check(item_revision)
         reasons << "item revision #{id} is not approvable: #{gate.reasons.join('; ')}" unless gate.approvable
-        reasons << "item revision #{id} was not opened in the preview" unless viewed.include?(id)
+        reasons << "item revision #{id} was not opened in the preview" unless waive_preview || viewed.include?(id)
       end
       stale_pins(revision).each { |pin| reasons << "item revision #{pin[:pinned]} is no longer the latest passed revision of its item: #{pin[:latest]} replaced it (W-STALE-PIN)" }
       multi_skill_testlets(revision).each { |m| reasons << "item revision #{m[:revision]} is a testlet whose sub items are on #{m[:skills].join(', ')}: its answers count for #{m[:skills].first} only (W-TESTLET-MULTI-SKILL)" }
-      reasons << NOT_PLAYED unless previewed?(revision) || reviewed?(revision)
+      reasons << NOT_PLAYED unless waive_preview || previewed?(revision) || reviewed?(revision)
       Result.new(approvable: reasons.empty?, reasons: reasons)
     end
 
