@@ -6,8 +6,11 @@ class LessonDataTest < ActiveSupport::TestCase
   TABLES = %w[bio/cell_parts bio/sizes chem/elements chem/molecules chem/substances chem/terms computer_science/program_vb english/contractions english/verbs
               geo/countries geo/names geo/stations history/places network/kinds spanish/verbs].freeze
 
+  # T6 adds the second table of the stations (a summary of an independent computation; D-271).
+  T6_EXTRA = %w[geo/stations_expected].freeze
+
   test "the 15 tables of the plan have a schema, each a valid JSON Schema that names its track and says a second table is compared" do
-    assert_equal TABLES, Lessons::VettedData.names
+    assert_equal (TABLES + T6_EXTRA).sort, Lessons::VettedData.names
     TABLES.each do |name|
       schema = Lessons::VettedData.schema(name)
       assert JSONSchemer.valid_schema?(schema), name
