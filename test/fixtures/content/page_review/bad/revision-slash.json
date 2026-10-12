@@ -1,0 +1,63 @@
+{
+  "schema": "banco.page_review/1",
+  "schema_version": 1,
+  "revision": "7/8",
+  "checklist": [
+    {
+      "id": 1,
+      "result": "pass",
+      "evidence": "Ho controllato questo punto sulla pagina."
+    },
+    {
+      "id": 2,
+      "result": "pass",
+      "evidence": "Ho controllato questo punto sulla pagina."
+    },
+    {
+      "id": 3,
+      "result": "pass",
+      "evidence": "Ho controllato questo punto sulla pagina."
+    },
+    {
+      "id": 4,
+      "result": "pass",
+      "evidence": "Ho controllato questo punto sulla pagina."
+    },
+    {
+      "id": 5,
+      "result": "pass",
+      "evidence": "Ho controllato questo punto sulla pagina."
+    },
+    {
+      "id": 6,
+      "result": "pass",
+      "evidence": "Ho controllato questo punto sulla pagina."
+    },
+    {
+      "id": 7,
+      "result": "pass",
+      "evidence": "Ho controllato questo punto sulla pagina."
+    },
+    {
+      "id": 8,
+      "result": "pass",
+      "evidence": "Ho controllato questo punto sulla pagina."
+    },
+    {
+      "id": 9,
+      "result": "pass",
+      "evidence": "Ho controllato questo punto sulla pagina."
+    },
+    {
+      "id": 10,
+      "result": "pass",
+      "evidence": "Ho controllato questo punto sulla pagina."
+    },
+    {
+      "id": 11,
+      "result": "pass",
+      "evidence": "Ho controllato questo punto sulla pagina."
+    }
+  ],
+  "findings": []
+}

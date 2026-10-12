@@ -1,0 +1,18 @@
+{
+  "schema": "banco.page/1",
+  "key": "math.pages-sample",
+  "subject": "math",
+  "title_it": "Due rette che si incontrano",
+  "why_free_it": "Serve una scena che cambia in modo continuo mentre si muove il cursore, e i componenti della lezione non la disegnano.",
+  "instructions_it": "Muovi il cursore e guarda dove le due rette si incontrano.",
+  "alt_it": "Un piano con due rette. Il cursore cambia la pendenza della prima retta e il punto in cui si incontrano si sposta.",
+  "fallback_it": "Il disegno non parte su questo dispositivo. Nella scheda trovi la figura ferma, con le due rette e il punto in cui si incontrano.",
+  "libs": [],
+  "bridge": 1,
+  "aspect": "16:9",
+  "min_height": 320,
+  "uses_seed": true,
+  "reduced_motion": "static",
+  "webgl": false,
+  "roles": ["unknown", "known"]
+}

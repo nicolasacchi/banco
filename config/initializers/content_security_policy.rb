@@ -13,6 +13,8 @@ Rails.application.configure do
     policy.font_src :self
     policy.connect_src :self
     policy.frame_src :none
+    # No app page is framed anywhere (D-261, SPEC B4): a free page that navigates its own frame to a banco URL gets a blocked frame.
+    policy.frame_ancestors :none
     policy.object_src :none
     policy.base_uri :none
     policy.form_action :self
@@ -23,3 +25,6 @@ Rails.application.configure do
   config.content_security_policy_nonce_generator = ->(_request) { SecureRandom.base64(16) }
   config.content_security_policy_nonce_directives = %w[script-src]
 end
+
+# ... and the old header for browsers that do not read frame-ancestors (Rails sends SAMEORIGIN by default).
+Rails.application.config.action_dispatch.default_headers = Rails.application.config.action_dispatch.default_headers.merge("X-Frame-Options" => "DENY")

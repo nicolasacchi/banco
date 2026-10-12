@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 20
+version: 21
 
 validation:
   # Skill graph (synchronous).
@@ -180,6 +180,31 @@ validation:
   W-PRACTICE-CODE-SPARSE: { stage: ruby, severity: warning, description: "A catalogue code is carried by fewer than practice.min_instances_per_code instances of the item." }
   E-BLUEPRINT-PRACTICE-ITEM: { stage: blueprint, severity: error, description: "A blueprint pins a practice item." }
   E-REVIEW-CHECKLIST: { stage: review, severity: error, description: "A review of a practice item must have exactly 13 checklist points, a review of a lesson/1 revision exactly 8, a review of a lesson/2 revision exactly 11, any other review exactly 11." }
+  # Free pages, release 2 (D-281, SPEC B7): the static codes are raised at submit (Validation::PageChecks), the chrome ones by the
+  # validation in the server's Chrome (Validation::PageRunner), E-LESSON-FREEPAGE by the lesson that embeds a page.
+  E-PAGE-FILES: { stage: ruby, severity: error, description: "A page bundle has a file outside the allowlist (page.json, main.mjs, at most 8 more .mjs, one style.css, assets/*.svg|png|webp|jpg), no main.mjs, a path that is not plain, or a binary that is not what its extension says." }
+  E-PAGE-SIZE: { stage: ruby, severity: error, description: "A page bundle is over a budget of the page rules: 1 MB raw or 300 KB gzip in all, 300 KB for an asset, 200 KB for a module." }
+  E-PAGE-LIBS: { stage: ruby, severity: error, description: "A page declares a library the server does not vendor, or imports one it did not declare." }
+  E-PAGE-TEXT: { stage: ruby, severity: error, description: "A text of the page manifest breaks its word count (instructions at most 40, alt 5 to 60, fallback 10 to 80) or the readability rules, or the manifest key differs from the page or the subject." }
+  E-PAGE-CSS: { stage: ruby, severity: error, description: "style.css has an @import or a url() that is not a file of the bundle." }
+  E-PAGE-API: { stage: ruby, severity: error, description: "The page code uses a global, a property, a call or a string the page rules refuse (window.parent, fetch, Date, innerHTML, an absolute URL, createElement of an iframe ...), or called a stubbed API in Chrome." }
+  E-PAGE-IMPORT: { stage: ruby, severity: error, description: "A page module imports something other than a relative file of the bundle, banco, or a declared library, or uses import()." }
+  E-PAGE-HYGIENE: { stage: ruby, severity: error, description: "A text file of a page carries one of the private hygiene terms." }
+  W-PAGE-KEY: { stage: ruby, severity: warning, description: "A string of the page equals a key text of the topic's pinned practice instances or a final of the lesson's try exercises." }
+  E-PAGE-READY: { stage: chrome, severity: error, description: "The page did not send ready within 3 seconds at 4x CPU throttling." }
+  E-PAGE-ERROR: { stage: chrome, severity: error, description: "An uncaught error, a rejected promise or a console error in the page, on some seed or in the scripted session." }
+  E-PAGE-NETWORK: { stage: chrome, severity: error, description: "A CSP violation (any network attempt shows here) or a request outside the bundle, the kit and the declared libraries." }
+  E-PAGE-NAVIGATION: { stage: chrome, severity: error, description: "The frame navigated: a second load event." }
+  E-PAGE-A11Y: { stage: chrome, severity: error, description: "axe found a serious or critical violation, the canvas has no text alternative, or a control cannot be reached with Tab, has no visible focus or no name." }
+  W-PAGE-A11Y: { stage: chrome, severity: warning, description: "axe found a moderate or minor violation." }
+  E-PAGE-MOTION: { stage: chrome, severity: error, description: "Under reduced motion two screenshots one second apart differ." }
+  E-PAGE-NO-FALLBACK: { stage: chrome, severity: error, description: "With WebGL stubbed to null the page threw or did not show its fallback text." }
+  W-PAGE-NONDETERMINISTIC: { stage: chrome, severity: warning, description: "Two loads with the same seed gave different ready screenshots." }
+  W-PAGE-LONGTASK: { stage: chrome, severity: warning, description: "A task over 200 ms after ready." }
+  W-PAGE-FPS: { stage: chrome, severity: warning, description: "Under 30 frames per second at 4x throttling while animating." }
+  W-PAGE-IDLE-LOOP: { stage: chrome, severity: warning, description: "Frames were still rendered 2 seconds after the last interaction." }
+  E-PAGE-MEMORY: { stage: chrome, severity: error, description: "The page's JavaScript heap passed 150 MB." }
+  E-LESSON-FREEPAGE: { stage: ruby, severity: error, description: "A page block pins a page revision that does not exist, has not passed validation, belongs to another subject, is a fourth page in a lesson (at most 2), or sits in a core card." }
   # Grading proposals (the evening loop).
   E-GRADE-POINT: { stage: grading, severity: error, description: "A grade proposal has an unknown or missing rubric point, or a score that is not an integer between 0 and the weight." }
   E-GRADE-QUOTE: { stage: grading, severity: error, description: "A score above 0 has no quote, or the quote is shorter than 3 or longer than 300 characters." }

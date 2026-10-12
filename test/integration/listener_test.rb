@@ -71,8 +71,8 @@ class ListenerTest < ActionDispatch::IntegrationTest
       def local_address = Addrinfo.tcp("127.0.0.1", port)
     end
     tag = Banco::ListenerTag.new(->(env) { [ 200, {}, [ env["banco.listener"].inspect ] ] })
-    with_env("WEB_PORT" => "3000", "API_PORT" => "3100", "HARNESS_PORT" => "3200") do
-      { 3000 => ":web", 3100 => ":api", 3200 => ":harness", 4000 => "nil" }.each do |port, expected|
+    with_env("WEB_PORT" => "3000", "API_PORT" => "3100", "HARNESS_PORT" => "3200", "PAGES_PORT" => "3300") do
+      { 3000 => ":web", 3100 => ":api", 3200 => ":harness", 3300 => ":pages", 4000 => "nil" }.each do |port, expected|
         env = Rack::MockRequest.env_for("http://localhost:3000/up", "puma.socket" => socket.new(port))
         assert_equal expected, tag.call(env).last.first, "local port #{port}"
       end
@@ -85,9 +85,9 @@ class ListenerTest < ActionDispatch::IntegrationTest
     assert_equal "nil", Banco::ListenerTag.new(app).call(env).last.first
   end
 
-  test "the three ports must differ" do
+  test "the ports must differ" do
     assert_raises(ArgumentError) { Banco::Listeners.assert_distinct!("WEB_PORT" => "3000", "API_PORT" => "3000") }
-    assert_equal({ web: 3000, api: 3100, harness: 3200 }, Banco::Listeners.assert_distinct!({}))
+    assert_equal({ web: 3000, api: 3100, harness: 3200, pages: 3300 }, Banco::Listeners.assert_distinct!({}))
   end
 
   test "unknown paths are 404 on every listener" do

@@ -1892,7 +1892,8 @@
             "reveal",
             "oral",
             "dialogue",
-            "image"
+            "image",
+            "page"
           ]
         }
       },
@@ -2195,6 +2196,21 @@
           },
           "then": {
             "$ref": "#/$defs/b_image"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "page"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_page"
           }
         }
       ]
@@ -3821,6 +3837,53 @@
       },
       "description": "A licensed photo (WAVE2 2.7; the operator said yes on 2026-10-12): at most 2 per lesson, 300 KB. W2-2 draft: it needs the lesson_assets migration.",
       "x-banco-draft": true
+    },
+    "b_page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "page",
+        "revision"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "page"
+        },
+        "page": {
+          "type": "string",
+          "pattern": "^[a-z_]+\\.[a-z0-9]+(-[a-z0-9]+)*$",
+          "maxLength": 80,
+          "description": "The key of a free page (SUBJECT.slug); the subject is the lesson's."
+        },
+        "revision": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "const": "latest"
+            }
+          ],
+          "description": "A page revision id. `latest` is resolved to an integer at submit and stored as that integer, like a topic pin."
+        },
+        "caption_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        }
+      },
+      "description": "A free page (release 2, D-281): a sandboxed interactive scene on its own origin, embedded in an extra card beside a still visual. Served: the poster, the caption, the page's own texts and a button; the iframe loads only on a click. Never counted for a skill state."
     }
   },
   "unevaluatedProperties": false

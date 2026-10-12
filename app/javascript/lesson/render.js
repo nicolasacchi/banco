@@ -511,6 +511,18 @@ export function renderLesson(root, body, config) {
       flushTimer = setTimeout(flush, 800)
     }, config.seenAfterMs ?? 3000)
   }
+  // A free page's events (D-281): page_opened, page_event, page_failed. Recorded for the student, never for a skill state; the teacher's
+  // preview posts nothing.
+  ctx.pageEvent = (kind, detail) => {
+    if (config.mode !== "student" || ctx.safe || !detail.card) return
+    const event = { kind, card: detail.card, block: detail.block, client_event_id: newId() }
+    if (detail.limit) event.limit = detail.limit
+    if (detail.kind) event.page_event = detail.kind
+    if (detail.data) event.data = detail.data
+    pending.push(event)
+    clearTimeout(flushTimer)
+    flushTimer = setTimeout(flush, 800)
+  }
   async function flush() {
     if (pending.length === 0 || !config.urls?.events) return
     const batch = pending.splice(0, 20)

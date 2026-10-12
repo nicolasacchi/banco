@@ -1,0 +1,26 @@
+<% content_for :title, t("teacher.pages.selftest.title") %>
+<% content_for :head do %>
+  <%= stylesheet_link_tag "lesson_roles" %>
+  <%= stylesheet_link_tag "lesson" %>
+  <%= stylesheet_link_tag "lesson/pages" %>
+<% end %>
+<main class="page wide" id="pages-selftest">
+  <h1><%= t("teacher.pages.selftest.title") %></h1>
+  <p class="hint"><%= t("teacher.pages.selftest.intro") %></p>
+  <% if @revision.nil? %>
+    <p><%= t("teacher.pages.selftest.none") %></p>
+  <% elsif @view["src"].nil? %>
+    <p><%= t("teacher.pages.selftest.off") %></p>
+  <% else %>
+    <div class="l2" data-controller="selftest" data-selftest-view-value="<%= @view.to_json %>" data-selftest-labels-value="<%= I18n.t('lesson_pages').deep_stringify_keys.to_json %>">
+      <div data-selftest-target="frame"></div>
+      <h2><%= t("teacher.pages.selftest.report") %></h2>
+      <p class="hint" data-selftest-target="status" role="status"><%= t("teacher.pages.selftest.waiting") %></p>
+      <table class="plain" data-selftest-target="table" hidden>
+        <thead><tr><th><%= t("teacher.pages.selftest.test") %></th><th><%= t("teacher.pages.selftest.expected") %></th><th><%= t("teacher.pages.selftest.result") %></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="hint" data-selftest-target="browser"></p>
+    </div>
+  <% end %>
+</main>

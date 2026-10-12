@@ -283,6 +283,23 @@
    ],
    "note": "teaching content: every part, the plain version and the original are served (L8); the original is closed by default"
   },
+  "page": {
+   "def": "b_page",
+   "serve": [
+    "n",
+    "type",
+    "page",
+    "revision",
+    "caption_it"
+   ],
+   "drop": [
+    "line"
+   ],
+   "computed": [
+    "view"
+   ],
+   "note": "free page (D-281): the server adds `view` (title, instructions, alt, fallback, poster address, transfer size, shell address) from the page revision, never the code of the page"
+  },
   "reveal": {
    "def": "b_reveal",
    "serve": [

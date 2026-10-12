@@ -1,0 +1,30 @@
+# The libraries a free page may declare in `libs` (SPEC B2, C1, D-281), vendored under vendor/pages/NAME@VERSION/ (never
+# public/: they are served only by the pages origin, found by listing). bin/vendor-pages fetches each upstream tarball with
+# `npm pack`, checks its sha256 against `tarball_sha256` here, copies `files` and writes SHA256SUMS; bin/vendor-pages --check
+# (CI, offline) verifies the committed files against SHA256SUMS. A page names a library as "three@0.186.1" or an addon as
+# "three-addons@0.186.1:controls/OrbitControls.js"; the shell's import map is built from `imports` and `addons` below.
+libs:
+  three:
+    version: "0.186.1"
+    package: three
+    tarball_sha256: 8cd068708ea44f2c73c944b1cead2ba2f0d5c15c8fc194e5700f4e4f4a033fe7
+    scope: page
+    license: MIT
+    files:
+      build/three.module.js: three.module.js
+      build/three.core.js: three.core.js
+      LICENSE: LICENSE
+      examples/jsm/controls/OrbitControls.js: addons/controls/OrbitControls.js
+    imports:
+      three: three.module.js
+    addons:
+      - controls/OrbitControls.js
+  axe-core:
+    version: "4.14.0"
+    package: axe-core
+    tarball_sha256: 2277b0a3ef47af9b52497faa3e71598e86e0a0e5e6eb295207a5657ede4709af
+    scope: harness          # served on the validation mount only, under /harness/ (B3)
+    license: MPL-2.0
+    files:
+      axe.min.js: axe.min.js
+      LICENSE: LICENSE

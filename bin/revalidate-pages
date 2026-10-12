@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+# After a new kit release (lib/pages_kit/1.1), enqueue a validation of every pinned page revision with it (SPEC B6). A page that
+# fails stays on its old kit, which is served until no pinned page uses it.
+#   bin/revalidate-pages --kit 1.1 [--all]    (default: the page revisions pinned by a topic's lesson; --all: the latest of every page)
+require "optparse"
+kit = nil
+all = false
+OptionParser.new do |o|
+  o.banner = "usage: bin/revalidate-pages --kit 1.1 [--all]"
+  o.on("--kit VERSION", "a released kit version (lib/pages_kit/VERSION)") { |v| kit = v }
+  o.on("--all", "the latest revision of every page, not only the pinned ones") { all = true }
+end.parse!
+require_relative "../config/environment"
+abort "revalidate-pages: give --kit VERSION (one of #{Pages::Kit.versions.join(', ')})" unless kit && Pages::Kit.released?(kit)
+ids = all ? Page.all.filter_map { |p| p.latest_revision&.id } : PageShots.pinned_revision_ids.to_a
+ids.sort.each { |id| ValidatePageRevisionJob.perform_later(id, kit) }
+puts JSON.generate(kit: kit, enqueued: ids.size)

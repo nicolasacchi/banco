@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+# Writes lib/pages_kit/LOCK: the sha256 of every file of every kit directory (SPEC B6). A released directory never
+# changes; a new one is a new directory (1.0 -> 1.1) and its lines are appended by this command. CI fails (the kit test)
+# when a locked file differs or disappears.
+#   bin/pages-kit-lock          write the lock (refuses when a locked line changed)
+#   bin/pages-kit-lock --check  exit 1 when the lock and the directories differ
+require_relative "../config/environment"
+problems = Pages::Kit.lock_problems
+if ARGV.include?("--check")
+  puts problems
+  exit(problems.empty? ? 0 : 1)
+end
+changed = problems.select { |p| p.start_with?("changed or gone") }
+abort "pages-kit-lock: a released file changed (#{changed.join('; ')}): make a new kit directory instead" if changed.any?
+Pages::Kit.write_lock!
+puts "pages-kit-lock: #{Pages::Kit.lock_lines.size} files locked"

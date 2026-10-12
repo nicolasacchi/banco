@@ -3,7 +3,7 @@ module LessonPagesHelper
   def lesson2?(body) = body.is_a?(Hash) && body["schema"] == "banco.lesson/2"
 
   # The families of wave 2 each have their texts in config/locales/lesson_FAMILY.it.yml; the page gets them as t.FAMILY (t.docs, t.words...).
-  LESSON_FAMILIES = %w[graph time maps chart science computing words docs].freeze
+  LESSON_FAMILIES = %w[graph time maps chart science computing words docs pages].freeze
 
   # The texts of the page, one nested object (config/locales/lesson.it.yml, then lesson_FAMILY.it.yml under the family's name).
   def lesson2_texts

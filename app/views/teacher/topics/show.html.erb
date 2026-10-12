@@ -222,6 +222,9 @@
 
         <%= decision_form("/teacher/topic-revisions/#{latest.id}/approve", id: "topic-approve-form") do %>
           <p><label><%= check_box_tag :confirm_seen, "1", false, id: "topic-confirm-seen", required: true, disabled: !ready, data: { approve_field: true } %> <%= t("teacher.topic.confirm_seen") %></label></p>
+          <% review.pages.each do |page_revision| %>
+            <p><label><%= check_box_tag "pages_confirmed[]", page_revision.id, false, id: "topic-confirm-page-#{page_revision.id}", required: true, disabled: !ready, data: { approve_field: true, confirm_page: page_revision.page.key } %> <%= t("teacher.topic.confirm_page", title: page_revision.manifest["title_it"]) %></label></p>
+          <% end %>
           <% if review.needs_reason? %>
             <label class="hint" for="topic-findings-reason"><%= t("teacher.topic.findings_reason_label") %></label>
             <input id="topic-findings-reason" class="answer-input wide" type="text" name="lesson_findings_reason_it" minlength="3" maxlength="1000" placeholder="<%= t('teacher.topic.findings_reason_placeholder') %>" <%= "disabled" unless ready %> data-approve-field>

@@ -1,0 +1,36 @@
+/* banco-page kit 1.0: the look of a free page, the same as the lesson around it (SPEC B6). Released: never edited. */
+@import url("roles.css");
+@font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/atkinson-hyperlegible-latin-400-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/atkinson-hyperlegible-latin-ext-400-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/atkinson-hyperlegible-latin-700-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/atkinson-hyperlegible-latin-ext-700-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+
+:root, [data-theme="cream"] { --bg: #fbf3df; --text: #1c1a14; --muted: #4a4536; --line: #8a826a; --primary: #1d3b5c; --primary-text: #ffffff; --surface: #fffaf0; --focus: #0b3d91; color-scheme: light; }
+[data-theme="dark"] { --bg: #1b1a17; --text: #f3ecdc; --muted: #d3cbb6; --line: #8c846e; --primary: #f0dfae; --primary-text: #1b1a17; --surface: #25231f; --focus: #9cc3ff; color-scheme: dark; }
+
+html { font-size: 20px; }
+html[data-size="large"] { font-size: 24px; }
+html[data-size="larger"] { font-size: 28px; }
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: "Atkinson Hyperlegible", Verdana, "Segoe UI", system-ui, sans-serif; line-height: 1.5; }
+#app { padding: 0.6rem; max-width: 60rem; margin: 0 auto; }
+canvas { display: block; max-width: 100%; height: auto; touch-action: none; }
+p { margin: 0.4em 0; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.banco-fallback { padding: 1rem; border: 2px solid var(--line); border-radius: 0.8rem; background: var(--surface); font-size: 1rem; }
+
+button, .btn { font: inherit; min-height: 2.6rem; min-width: 2.6rem; padding: 0.4rem 1rem; border-radius: 0.7rem; border: 2px solid var(--primary); background: var(--surface); color: var(--text); cursor: pointer; }
+button.primary, .btn.primary { background: var(--primary); color: var(--primary-text); }
+button:disabled { opacity: 0.55; cursor: default; }
+label { display: inline-block; margin-right: 0.5rem; }
+input[type="range"] { width: min(100%, 22rem); height: 2.4rem; accent-color: var(--primary); }
+.banco-row { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin: 0.5rem 0; }
+.banco-readout { font-variant-numeric: tabular-nums; color: var(--muted); }
+.banco-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+html[data-reduced-motion="true"] *, html[data-reduced-motion="true"] *::before, html[data-reduced-motion="true"] *::after { animation: none !important; transition: none !important; }

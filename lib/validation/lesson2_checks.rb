@@ -68,7 +68,7 @@ module Validation
         @cards = @body["cards"]
         @ids = @cards.to_h { |c| [ c["id"], c ] }
         @catalogue = catalogue
-        @ctx = Lessons::Blocks::Context.new(subject: subject, findings: findings, catalogue: @catalogue, resolver: method(:field_line), references: context.method(:reference_body))
+        @ctx = Lessons::Blocks::Context.new(subject: subject, findings: findings, catalogue: @catalogue, resolver: method(:field_line), references: context.method(:reference_body), pages: context.method(:page))
         @plain = [] # every markup text, for the whole-lesson budgets: [[text, line]]
       end
 
@@ -263,6 +263,7 @@ module Validation
           when "try" then Lessons::Blocks::Try.check(block, @ctx)
           when "more" then more_checks(block, path, card)
           when "source", "reveal", "oral" then Lessons::Blocks::Docs.check(block, @ctx)
+          when "page" then Lessons::Blocks::FreePage.check(block, @ctx, card: card, body: @body)
           else Lessons::Blocks::Simple.check(block, @ctx)
           end
         end
