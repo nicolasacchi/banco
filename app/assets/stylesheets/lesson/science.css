@@ -61,3 +61,34 @@
 .dg-keysample { font-weight: 800; font-size: 1.15em; text-align: left; }
 .dg-keygroup { background: var(--role-group-tint, var(--soft)); border-radius: 0.4em; padding: 0 0.3em; margin-left: -0.3em; }
 .dg-keytext { color: var(--text); }
+
+/* ---- periodic_table: cells, highlight sets (a tint, an outline style and a marker shape each), the latin ring, the list by group on a phone ---- */
+.dg-periodic_table .dg-svg { margin: 0 auto; }
+.dg-pcell { fill: var(--surface); stroke: var(--line); stroke-width: 2; }
+.dg-hl { stroke: var(--text); }
+.dg-hl-0 { fill: var(--r-common-highlight-tint, #fff1a8); stroke-width: 3; }
+.dg-hl-1 { fill: color-mix(in srgb, var(--atom-N, #2f5fb3) 22%, var(--surface)); stroke-width: 3; stroke-dasharray: 7 4; }
+.dg-hl-2 { fill: color-mix(in srgb, var(--atom-O, #b5322e) 22%, var(--surface)); stroke-width: 3; stroke-dasharray: 2 5; stroke-linecap: round; }
+.dg-hl-3 { fill: color-mix(in srgb, var(--atom-Cl, #2c7d3d) 22%, var(--surface)); stroke-width: 3; stroke-dasharray: 10 3 2 3; }
+.dg-hlout { fill: none; stroke: var(--text); stroke-width: 3; pointer-events: none; }
+.dg-hlout-1 { stroke-dasharray: 7 4; }
+.dg-hlout-2 { stroke-dasharray: 2 5; stroke-linecap: round; }
+.dg-hlout-3 { stroke-dasharray: 10 3 2 3; }
+.dg-hlmark { fill: var(--text); stroke: var(--text); }
+.dg-latinmark { fill: none; stroke: var(--text); stroke-width: 2; }
+.dg-psym { font-weight: 800; color: var(--text); text-align: center; }
+.dg-pz { color: var(--muted); font-weight: 700; text-align: center; }
+.dg-phead { color: var(--muted); font-weight: 700; }
+.dg-gword { color: var(--text); }
+.dg-mini { fill: var(--line); stroke: none; opacity: 0.55; }
+.dg-mini.dg-mini-on { fill: var(--text); opacity: 1; }
+.dg-legendtext { color: var(--text); }
+.dg-hint { color: var(--muted); font-weight: 700; }
+.dg-pcell.dg-target:hover, .dg-pcell.dg-target:focus-visible { stroke: var(--text); stroke-width: 3; }
+.dg-pcell.dg-target.is-selected { stroke: var(--text); stroke-width: 4; fill: var(--soft); }
+@media (forced-colors: active) {
+  .dg-pcell { fill: Canvas; stroke: CanvasText; }
+  .dg-hlout, .dg-hlmark, .dg-latinmark, .dg-mini-on { stroke: CanvasText; }
+  .dg-mini { fill: GrayText; }
+  .dg-hl-0, .dg-hl-1, .dg-hl-2, .dg-hl-3 { fill: Canvas; stroke: Highlight; }
+}

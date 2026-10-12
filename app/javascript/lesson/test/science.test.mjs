@@ -10,7 +10,7 @@ const vectors = (type) => JSON.parse(readFileSync(new URL(`test/fixtures/diagram
 const { validate } = await import("lesson/schema")
 const { checkModule, checkControls } = await import("lesson/diagrams/contract")
 const registry = await import("lesson/diagrams/registry")
-const TYPES = ["formula", "molecule"]
+const TYPES = ["formula", "molecule", "periodic_table"]
 const mods = {}
 for (const t of TYPES) mods[t] = await import(`lesson/diagrams/science/${t}`)
 const HOME = { formula: "chemistry", molecule: "chemistry", periodic_table: "chemistry", strand: "biology" }
@@ -26,7 +26,7 @@ test("every type is in the registry as an available module that keeps the contra
     assert.equal(registry.STATUS[type], "available")
     assert.equal(await registry.load(type), mods[type])
     assert.deepEqual(checkModule(mods[type]), [], type)
-    assert.equal(registry.HOME_PALETTE[type], HOME[type])
+    assert.equal(registry.HOME_PALETTE[type], type === "periodic_table" ? undefined : HOME[type], "a type with a home palette carries it; the table takes its lesson's")
   }
 })
 

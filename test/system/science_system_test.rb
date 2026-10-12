@@ -139,4 +139,50 @@ class ScienceSystemTest < ApplicationSystemTestCase
     assert_selector "#scheda-10 .verdict-right", wait: 5
     shot "molecule-select-390"
   end
+
+  test "periodic table: a table on a wide page, a tap opens the card of the element, the highlight has a marker and the latin ones a ring" do
+    open_card(11)
+    assert_selector "#scheda-11 .dg-pcell", count: 36
+    assert_selector "#scheda-11 .dg-hlmark", minimum: 8
+    assert_selector "#scheda-11 .dg-latinmark", minimum: 4
+    assert_selector "#scheda-11 .dg-hit", count: 36
+    find("#scheda-11 .dg-hit[aria-label^='Sodio']").click
+    assert_selector "#scheda-11 .dg-question", text: "Sodio: Numero atomico 11. Gruppo 1, periodo 3. Il simbolo Na viene dal latino natrium."
+    shot "periodic-table"
+  end
+
+  test "periodic table: below 600 px it is a list by group with the outline of the table beside each group, and the touch targets are 24 px or more" do
+    open_card(11, size: [ 390, 844 ])
+    assert_selector "#scheda-11 .dg-gword", count: 18
+    assert_selector "#scheda-11 .dg-mini-on", count: 18
+    sizes = page.evaluate_script(%q(Array.from(document.querySelectorAll('#scheda-11 .dg-hit')).map(b => [b.offsetWidth, b.offsetHeight])))
+    assert(sizes.all? { |w, h| w >= 24 && h >= 24 }, sizes.inspect)
+    find("#scheda-11 .dg-hit[aria-label^='Ferro']").click
+    assert_selector "#scheda-11 .dg-question", text: "Ferro: Numero atomico 26"
+    shot "periodic-list-390"
+  end
+
+  test "periodic table: Avanti moves the highlight from one group to the next" do
+    open_card(12)
+    assert_text "Passo 1 di 3"
+    assert_selector "#scheda-12 .dg-hlmark", count: 3 + 1 # three cells and the legend
+    click_button "Passo avanti"
+    assert_selector "#scheda-12 .dg-hlmark", count: 6 + 2
+    assert_selector "#scheda-12 .dg-op", text: "Gruppo 17"
+  end
+
+  test "periodic table: select over the cells, every cell the same, 'na' is sodium" do
+    open_card(14)
+    assert_selector "#scheda-14 .dg-target", count: 36
+    assert_no_selector "#scheda-14 .dg-hlmark"
+    find("#scheda-14 .dg-target[data-target='t1']").click
+    click_button "Controlla"
+    assert_selector "#scheda-14 .verdict-wrong", wait: 5
+    find("#scheda-14 .dg-target[data-target='t1']").click
+    t = all("#scheda-14 .dg-target").index { |n| n["aria-label"].to_s.end_with?("Elemento 11 di 36") }
+    assert_equal 10, t
+    find("#scheda-14 .dg-target[data-target='t11']").click
+    click_button "Controlla"
+    assert_selector "#scheda-14 .verdict-right", wait: 5
+  end
 end

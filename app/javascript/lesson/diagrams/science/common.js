@@ -1,9 +1,21 @@
 // What the science family shares (T7): the library rows of chem/molecules, the pieces of a formula in reading order, the rows of its count table and
 // the Italian words that describe them. Pure. The Ruby twin is Lessons::Diagrams::ScienceSupport (the pieces and the count rows run the same vectors).
+import ELEMENTS from "lesson/data/chem-elements"
 import MOLECULES from "lesson/data/chem-molecules"
 import * as Chem from "lesson/lib/chem"
 
 export const molecules = MOLECULES.molecules
+
+export const MAIN_GROUPS = [1, 2, 13, 14, 15, 16, 17, 18]
+
+// The elements a periodic table of `range` draws, in reading order (period by period, group by group): the rows of chem/elements.
+export function rangeElements(range) {
+  const rows = ELEMENTS.elements.filter((e) => (range === "periods_1_4" ? e.period <= 4 : range === "main_groups" ? e.group !== null && MAIN_GROUPS.includes(e.group) : false))
+  return rows.sort((a, b) => a.period - b.period || a.group - b.group)
+}
+
+// The groups (columns) of a range, left to right.
+export const rangeGroups = (range) => (range === "periods_1_4" ? Array.from({ length: 18 }, (_, i) => i + 1) : MAIN_GROUPS)
 
 // The row of chem/molecules for a formula key (coefficient and state already removed), or null.
 export const moleculeRow = (key) => (key ? molecules[key] ?? null : null)

@@ -31,7 +31,7 @@ class ScienceGalleryTest < ActiveSupport::TestCase
     diagrams = []
     walk = ->(n) { n.is_a?(Hash) ? ((diagrams << n) if n["type"] && n["alt_it"]; n.each_value(&walk)) : (n.each(&walk) if n.is_a?(Array)) }
     walk.call(body)
-    assert_equal %w[formula molecule], diagrams.map { |d| d["type"] }.uniq.sort
+    assert_equal %w[formula molecule periodic_table], diagrams.map { |d| d["type"] }.uniq.sort
     diagrams.each { |d| assert_empty Lessons::Diagrams.check(d, subject: "chemistry").map(&:message), d["alt_it"] }
   end
 

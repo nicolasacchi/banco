@@ -7,8 +7,9 @@
 #     group, a focus followed through the states; select targets: pieces (mode `select`). Cards 1 to 4.
 #   `molecule` (diagram): balls and sticks, copies by the coefficient, the angle and the partial charges from the library, salts and metals as a
 #     patch with one unit framed, never as molecules; select targets: items, atoms (mode `select`). Cards 6 to 10.
+#   `periodic_table` (diagram): periods 1 to 4 and the main groups, symbols with names or atomic numbers, highlight sets, the latin ring, the element
+#     card on a tap, the list by group below 600 px; select targets: cells (mode `select`). Cards 11 to 14.
 # Still to come, in this file when each is built:
-#   `periodic_table` (diagram; reserved, schema final, batch w2-1, track T7): select targets cells
 #   `strand` (diagram; reserved, schema final, batch w2-1, track T7): select targets bases, backbone, rungs
 #   `particles` (diagram; draft, schema draft, batch w2-2, track T7)
 #   `phase_changes` (diagram; draft, schema draft, batch w2-2, track T7)
@@ -154,4 +155,56 @@ answer: ['i4']
 errors:
   - {answer: ['i2'], code: count_letters, message_it: "Quella ha tre atomi: due ossigeni e un carbonio."}
 explain_it: "Conta le palline: la quarta molecola ne ha quattro."
+:::
+
+# La tavola periodica
+
+## Le prime quattro righe {idea icon=layers-3 id=quattro-righe}
+
+Tocca un elemento: si apre **la sua scheda**.
+
+::: diagram periodic_table
+alt_it: "Le prime quattro righe della tavola periodica. Sono evidenziati idrogeno, carbonio, azoto, ossigeno, sodio, cloro, calcio e ferro."
+range: periods_1_4
+show: symbol_name
+highlight:
+  - {symbols: [H, C, N, O, Na, Cl, Ca, Fe], label_it: "in questa lezione"}
+mark_latin: true
+:::
+
+## I gruppi, uno alla volta {idea icon=boxes id=gruppi}
+
+::: diagram periodic_table
+alt_it: "Le prime quattro righe della tavola periodica, un gruppo alla volta: prima i metalli alcalini, poi gli alogeni, poi i gas nobili."
+range: periods_1_4
+show: symbol
+states:
+  - {highlight: [{symbols: [Li, Na, K], label_it: "metalli alcalini"}], op_it: "Gruppo 1"}
+  - {highlight: [{symbols: [Li, Na, K], label_it: "metalli alcalini"}, {symbols: [F, Cl, Br], label_it: "alogeni"}], op_it: "Gruppo 17"}
+  - {highlight: [{symbols: [He, Ne, Ar, Kr], label_it: "gas nobili"}], op_it: "Gruppo 18"}
+:::
+
+## I gruppi principali {idea icon=case-sensitive id=principali}
+
+::: diagram periodic_table
+alt_it: "I gruppi principali della tavola periodica, con il numero atomico sopra ogni simbolo e il cerchio vuoto sugli elementi che vengono dal latino."
+range: main_groups
+show: symbol_z
+mark_latin: true
+:::
+
+## Trova il sodio {idea icon=tag id=trova-sodio}
+
+::: check select
+prompt_it: "Tocca il simbolo del sodio."
+diagram:
+  type: periodic_table
+  alt_it: "Le prime quattro righe della tavola periodica, ogni elemento con il suo simbolo. Ogni simbolo si può toccare."
+  range: periods_1_4
+targets: cells
+pick: one
+answer: ['na']
+errors:
+  - {answer: ['n'], code: n_for_na, message_it: "Quello è l'azoto, il simbolo N. Il sodio ha due lettere."}
+explain_it: "Il sodio è Na: la N maiuscola e la a minuscola."
 :::

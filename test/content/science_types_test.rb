@@ -4,7 +4,7 @@ require "test_helper"
 # same files (app/javascript/lesson/test/science.test.mjs): the semantic column (the first finding), the printed strings, the select targets and the layout.
 class ScienceTypesTest < ActiveSupport::TestCase
   DIR = Rails.root.join("test/fixtures/diagrams/types")
-  TYPES = %w[formula molecule].freeze
+  TYPES = %w[formula molecule periodic_table].freeze
   FILES = TYPES.to_h { |t| [ t, JSON.parse(DIR.join("#{t}.json").read) ] }.freeze
 
   def mod(type) = Lessons::Diagrams.const_get(Lessons::Diagrams::TYPES.fetch(type))

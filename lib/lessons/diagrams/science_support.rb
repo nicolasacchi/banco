@@ -18,6 +18,23 @@ module Lessons
       # The row of the library for a formula as an author writes it ("3 H2O", "Ca(NO3)2(aq)"), or nil.
       def row_of_formula(formula) = molecule_row(Chem.base(formula))
 
+      MAIN_GROUPS = [ 1, 2, 13, 14, 15, 16, 17, 18 ].freeze
+
+      # The elements a periodic table of +range+ draws, in reading order (period by period, group by group): the rows of chem/elements.
+      def range_elements(range)
+        rows = VettedData.table("chem/elements").fetch("elements").select do |e|
+          case range
+          when "periods_1_4" then e["period"] <= 4
+          when "main_groups" then !e["group"].nil? && MAIN_GROUPS.include?(e["group"])
+          else false
+          end
+        end
+        rows.sort_by { |e| [ e["period"], e["group"] ] }
+      end
+
+      # The groups (columns) of a range, left to right.
+      def range_groups(range) = range == "periods_1_4" ? (1..18).to_a : MAIN_GROUPS
+
       # The groups of atom indices joined by bonds, in order of their first atom: the ions of a salt, or the one piece of a molecule.
       def ion_groups(row)
         parent = (0...row["atoms"].size).to_a
