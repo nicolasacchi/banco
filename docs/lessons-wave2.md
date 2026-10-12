@@ -26,9 +26,9 @@ behind a lazy loader, `STATUS`, `HOME_PALETTE`, `FAMILY`, `HELD_BACK`), `lesson/
 ## The module contract (`app/javascript/lesson/diagrams/contract.js`)
 
 A diagram type is `app/javascript/lesson/diagrams/FAMILY/TYPE.js` with `layout(data, ctx)` and `describe(data, ctx)` (required, pure,
-never throw) and the optional `speak`, `controls`, `targets`, `printed`, `recordAtRender` (only `program`, only in the server's Chrome)
+never throw) and the optional `speechSegments` (not `speech.speak`, which plays segments), `controls`, `targets`, `printed`, `recordAtRender` (only `program`, only in the server's Chrome)
 and `layout3d` (W2-3). `ctx.mode` is `student`, `teacher`, `print`, `render` or `select`; `ctx.revealed` is what the student has opened
-so far; `describe` and `speak` never read a hidden or not-yet-revealed value (L10). A slider is always drawn with its - and + buttons.
+so far; `describe` and `speechSegments` never read a hidden or not-yet-revealed value (L10). A slider is always drawn with its - and + buttons.
 `checkModule` and `checkControls` test a module against the contract. The Scene gains `shapes[].target`, `shapes[].pattern`,
 `labels[].lang`, `labels[].tap` and `frames[]`.
 

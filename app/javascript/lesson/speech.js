@@ -32,7 +32,7 @@ export function voiceFor(lang, available, { accepted = voices.accepted, preview 
 // speechOf(cardElement) -> [{ lang, text, node }]
 //   walks the RENDERED card in reading order and reads only what is visible: not `hidden`, not `aria-hidden`, not inside a closed `details`,
 //   an unflipped flip card's back, an unopened gloss or tap-to-see cell, or a withheld follow-up; for each figure it calls
-//   speak(served, { state, revealed }) (or describe) with the figure's current state and revealed set (L10). Math is read through the speech
+//   speechSegments(served, { state, revealed }) (or describe) with the figure's current state and revealed set (L10). Math is read through the speech
 //   form of the markup grammar, chemistry as "tre molecole d'acqua: ...", bits digit by digit, code spans with symbol names.
 export const speechOf = notBuilt("speech.speechOf", "T2", "w2-1")
 
@@ -41,3 +41,13 @@ export const speak = notBuilt("speech.speak", "T2", "w2-1")
 
 // stopAll() : stops the current speaker (card change, Escape, focus leaving the card, another speaker)
 export const stopAll = notBuilt("speech.stopAll", "T2", "w2-1")
+
+// The frozen signatures, one string per function (checked by lesson/test/contract.test.mjs against the exports). The per-figure hook is
+// `speechSegments` (lesson/diagrams/contract.js), not `speak`: `speak` here plays segments.
+export const SIGNATURES = {
+  rateFor: "rateFor(lang, slower, rates)",
+  voiceFor: "voiceFor(lang, available, { accepted, preview, preference })",
+  speechOf: "speechOf(cardElement)",
+  speak: "speak(segments, { rate, onSegment, onEnd })",
+  stopAll: "stopAll()",
+}

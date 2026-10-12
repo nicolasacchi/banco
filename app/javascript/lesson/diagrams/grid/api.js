@@ -3,7 +3,9 @@
 // stacking rules on a phone, declared scroll frames (only `sheet` uses one; a map pan is never needed).
 import { notBuilt } from "lesson/lib/not_built"
 
-// grid({ rows, cols, widths, heights, headerRows, headerCols }) -> Grid : widths and heights in px
+// grid({ rows, cols, widths, heights, headerRows, headerCols, cells }) -> Grid : widths and heights in px.
+//   `hide` and `tap` are CELL ATTRIBUTES, not options of the grid: cells is a sparse list [{ row, col, hide?: true, tap?: "hear" | "reveal" | "card" }].
+//   A hidden cell is drawn empty and its value is never in the Grid (L10); a tap cell carries the id of the popover or reveal it opens.
 export const grid = notBuilt("grid/api.grid", "T9", "w2-1")
 
 // cellBox(grid, row, col) -> { x, y, w, h }
@@ -20,3 +22,16 @@ export const scrollFrame = notBuilt("grid/api.scrollFrame", "T9", "w2-1")
 
 // cellTargets(grid, set) -> [{ key, bbox, neutral_it }] : the select targets of a set of cells, in reading order
 export const cellTargets = notBuilt("grid/api.cellTargets", "T9", "w2-1")
+
+// The frozen signatures, one string per function (checked by lesson/test/contract.test.mjs against the exports).
+export const SIGNATURES = {
+  grid: "grid({ rows, cols, widths, heights, headerRows, headerCols, cells })",
+  cellBox: "cellBox(grid, row, col)",
+  outline: "outline(grid, cells, { kind })",
+  stackForPhone: "stackForPhone(grid, width)",
+  scrollFrame: "scrollFrame(grid, { fixedFirstColumn })",
+  cellTargets: "cellTargets(grid, set)",
+}
+// The attributes a cell may carry in grid({ cells }).
+export const CELL_ATTRIBUTES = ["row", "col", "hide", "tap"]
+export const TAP_KINDS = ["hear", "reveal", "card"]

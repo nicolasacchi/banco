@@ -9,7 +9,7 @@ const root = new URL("../../../../", import.meta.url)
 const json = (path) => JSON.parse(readFileSync(new URL(path, root), "utf8"))
 const registry = await import("lesson/diagrams/registry")
 const checks = await import("lesson/checks/registry")
-const { checkModule, checkControls, defaultSpeak, OPTIONAL_EXPORTS } = await import("lesson/diagrams/contract")
+const { checkModule, checkControls, defaultSegments, OPTIONAL_EXPORTS } = await import("lesson/diagrams/contract")
 const { validate } = await import("lesson/schema")
 const { NotBuilt } = await import("lesson/lib/not_built")
 
@@ -90,10 +90,10 @@ test("controls: a slider declares its range and step, every control a label, kin
 test("module checks: layout and describe are required, the optional exports must be functions", () => {
   assert.deepEqual(checkModule({ layout() {}, describe() {} }), [])
   assert.equal(checkModule({ layout() {} }).length, 1)
-  assert.deepEqual(OPTIONAL_EXPORTS, ["speak", "controls", "targets", "printed", "recordAtRender", "layout3d"])
-  assert.match(checkModule({ layout() {}, describe() {}, speak: 3 })[0], /speak/)
-  assert.deepEqual(defaultSpeak(() => "Un testo", {}, {}), [{ lang: "it", text: "Un testo" }])
-  assert.deepEqual(defaultSpeak(() => "", {}, {}), [])
+  assert.deepEqual(OPTIONAL_EXPORTS, ["speechSegments", "controls", "targets", "printed", "recordAtRender", "layout3d"])
+  assert.match(checkModule({ layout() {}, describe() {}, speechSegments: 3 })[0], /speechSegments/)
+  assert.deepEqual(defaultSegments(() => "Un testo", {}, {}), [{ lang: "it", text: "Un testo" }])
+  assert.deepEqual(defaultSegments(() => "", {}, {}), [])
 })
 
 test("program declares recordAtRender, the only type that does in wave 2, and it returns records and findings", async () => {
@@ -148,4 +148,38 @@ test("the library signatures: the JS twin of each library has the functions its 
       for (const c of spec.cases) assert.ok(Array.isArray(c.args) && "result" in c, `${name}.${fn} case`)
     }
   }
+})
+
+// One shape test per frozen interface: the signatures table lists exactly the exported functions, and each string starts with its own name.
+async function assertShape(path, extra = []) {
+  const mod = await import(path)
+  const functions = Object.keys(mod).filter((k) => typeof mod[k] === "function").sort()
+  assert.deepEqual(Object.keys(mod.SIGNATURES).sort(), functions, `${path}: SIGNATURES lists the exported functions`)
+  for (const [name, signature] of Object.entries(mod.SIGNATURES)) assert.ok(signature.startsWith(`${name}(`), `${path}.${name}: ${signature}`)
+  for (const name of extra) assert.ok(name in mod, `${path} exports ${name}`)
+  return mod
+}
+
+test("shape: the graph router", async () => {
+  const router = await assertShape("lesson/diagrams/graph/router", ["LAYOUTS"])
+  assert.deepEqual(router.LAYOUTS, ["tree", "line", "ring", "pair", "row", "triangle", "hub", "fan", "grid"])
+})
+
+test("shape: the chart axis", async () => {
+  await assertShape("lesson/diagrams/chart/axis")
+})
+
+test("shape: the grid api, with hide and tap as cell attributes", async () => {
+  const grid = await assertShape("lesson/diagrams/grid/api", ["CELL_ATTRIBUTES", "TAP_KINDS"])
+  assert.match(grid.SIGNATURES.grid, /\bcells\b/)
+  assert.deepEqual(grid.CELL_ATTRIBUTES, ["row", "col", "hide", "tap"])
+  assert.deepEqual(grid.TAP_KINDS, ["hear", "reveal", "card"])
+})
+
+test("shape: speech, and the per-figure hook has another name than speech.speak", async () => {
+  const speech = await assertShape("lesson/speech", ["GATE"])
+  const { OPTIONAL_EXPORTS } = await import("lesson/diagrams/contract")
+  assert.ok(!OPTIONAL_EXPORTS.includes("speak"))
+  assert.ok(OPTIONAL_EXPORTS.includes("speechSegments"))
+  assert.equal(typeof speech.speak, "function")
 })

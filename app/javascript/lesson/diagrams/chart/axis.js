@@ -18,3 +18,12 @@ export const legend = notBuilt("chart/axis.legend", "T6", "w2-1")
 
 // valueTable(series, categories) -> { header, rows } : the value table printed under every chart of real data (P2, `print_table`)
 export const valueTable = notBuilt("chart/axis.valueTable", "T6", "w2-1")
+
+// The frozen signatures, one string per function (checked by lesson/test/contract.test.mjs against the exports).
+export const SIGNATURES = {
+  linear: "linear({ min, max, length, fontPx, measure, fromZero })",
+  log: "log({ min, max, length, fontPx, measure })",
+  readCursor: "readCursor(axis, { min, max, stepValue })",
+  legend: "legend(series)",
+  valueTable: "valueTable(series, categories)",
+}

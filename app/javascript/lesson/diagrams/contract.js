@@ -7,8 +7,8 @@
 //                                         returns a Scene, or { error: { path, message, code } }; never throws
 //   export function describe(data, ctx)   Italian text of what is VISIBLE in ctx.state with ctx.revealed (the "Descrizione", screen
 //                                         readers, print); never a hidden or not-yet-revealed value
-//   export function speak(data, ctx)      optional: speech segments [{ lang, text }] of the same visible state (default: describe
-//                                         as one "it" segment, see defaultSpeak)
+//   export function speechSegments(data, ctx) optional: speech segments [{ lang, text }] of the same visible state (default: describe
+//                                         as one "it" segment, see defaultSegments)
 //   export function controls(data)        optional: [{ id, kind, range?, values?, label_it }]; draw.js builds native controls.
 //                                         kind: stepper | slider | toggle | chips | runner | tap. A slider ALWAYS comes with its
 //                                         - and + buttons (A2): controls() cannot declare a slider alone (checkControls)
@@ -28,10 +28,10 @@ export const MODES = ["student", "teacher", "print", "render", "select"]
 export const CONTROL_KINDS = ["stepper", "slider", "toggle", "chips", "runner", "tap"]
 export const PATTERNS = ["hatch", "dots", "cross", "grid"]
 export const LANGS = ["en", "es", "la"]
-export const OPTIONAL_EXPORTS = ["speak", "controls", "targets", "printed", "recordAtRender", "layout3d"]
+export const OPTIONAL_EXPORTS = ["speechSegments", "controls", "targets", "printed", "recordAtRender", "layout3d"]
 
 // The default speech of a figure: its description as one Italian segment.
-export function defaultSpeak(describe, data, ctx) {
+export function defaultSegments(describe, data, ctx) {
   const text = describe(data, ctx)
   return text ? [{ lang: "it", text }] : []
 }

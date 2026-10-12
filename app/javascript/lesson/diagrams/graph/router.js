@@ -20,3 +20,11 @@ export const flip = notBuilt("graph/router.flip", "T4b", "w2-1")
 
 // moveList(nodes, edges) -> [{ n, text_it }] : the phone's numbered list of moves ("1. Anna consegna la bicicletta a Paolo")
 export const moveList = notBuilt("graph/router.moveList", "T4b", "w2-1")
+
+// The frozen signatures, one string per function (checked by lesson/test/contract.test.mjs against the exports).
+export const SIGNATURES = {
+  place: "place(layout, nodes, box, options)",
+  route: "route(boxes, edges, options)",
+  flip: "flip(previous, next, ms)",
+  moveList: "moveList(nodes, edges)",
+}
