@@ -263,6 +263,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-257 | 2026-10-10 | rich lessons, round 2 of the pilot look: short names of cards, the lab beside the picture, cases as compact rows with one stepper, a centred schema, a bold not-equal sign | decided |
 | D-258 | 2026-10-10 | rich lessons, round 3 of the pilot look: the bar never overflows on a phone, the picture first, big equation tiles, quiet balance steps, compact mistakes | decided |
 | D-259 | 2026-10-11 | rich lessons, round 4 of the pilot look: the exercise pager, the one-line answer, flip cards under headings, a short balance on a phone | decided |
+| D-260 | 2026-10-12 | the operator may record a teacher decision from the host console, never over HTTP | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2762,4 +2763,15 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Why:** the visual review of round 3 against the prototype.
 - **Cost:** `lesson.it.yml` has `helper_keys`, `key_minus`, `key_bar`, `key_comma`, `fraction_line_hint`, `mistakes_tap`, `mistake_flip`; `mistakes_intro` has a `%{tap}` marker. The pilot lesson data lost four `answer_format_it` lines (re-import).
 - **Status:** decided
+- **Back-port:** none.
+
+## D-260 · 2026-10-12 · the operator may record a teacher decision from the host console, never over HTTP
+
+- **Design ref:** firm rule 2, D-08, D-059..D-062, D-074
+- **Design said:** decisions are taken by the teacher in the browser (web listener only); no `/api/v1` route creates one and the CLI has no decision command.
+- **Operator request (2026-10-12, verbatim):** "all approved proceed can you approve from here? If not implement the api then approve them".
+- **We do:** `bin/rails banco:decide KIND=... TEACHER=<login> [SUBJECT=] [REVISION=] [REASON=] [PARAMS=json] [CONFIRM=1]` records a decision through `DecisionRecorder`, still the only writer, with every business guard of the kind (gates, latest-revision checks, reasons). The web-only guards (listener, edge proxy, CSRF, student device cookie) are replaced by: TEACHER is in `BANCO_TEACHER_USERS`, `BANCO_DECISIONS_ENABLED=1`, and the code runs only in a console process (`DecisionRecorder::Console` is not a request; no route, controller or job reaches it). The task is a dry run unless `CONFIRM=1` (the recorder runs in a rolled-back savepoint and prints the payload or the refusal reasons). Approving a graph or an entry test that is already the approved one is refused. Provenance: `teacher_login` = TEACHER, `remote_addr` and `groups` = `console`, `user_agent` = `banco:decide <os user>`, `request_path` = `rake banco:decide`, a fresh uuid as request id; the payload carries `via: "console"` and, for a kind without a reason, `console_reason`. The graph and entry test pages add "(da console)" next to the approval; `bin/reconcile-decisions` accepts the console group. The agent API token gains nothing: no route, no CLI command.
+- **Why:** the lead refused an API route: the agent token is shared by the content agents, and a route that decides, even behind a flag, would let an agent decide for the teacher, which is what rule 2 prevents. A console command needs a shell on the host, which only the operator has, as with the reference import (D-074).
+- **Cost:** a decision by console is as strong as a click: the operator must name the teacher and mean it; the ledger shows `console` so it can be told apart.
+- **Status:** implemented
 - **Back-port:** none.

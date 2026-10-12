@@ -2,7 +2,7 @@
 # orphans:
 #
 #   - a decision without provenance: no teacher login, request id, remote address
-#     or banco-teacher group, a kind that DecisionRecorder does not write, or a
+#     or banco-teacher group (a console decision, D-260, has the console group instead), a kind that DecisionRecorder does not write, or a
 #     payload that is not an object;
 #   - a state change without a decision row: an attempt grading written by the
 #     teacher that no decision names, a student run pinned to a blueprint revision
@@ -40,7 +40,7 @@ class DecisionReconciliation
   def provenance_orphans
     Decision.where("created_at >= ?", @since).order(:id).filter_map do |d|
       missing = %w[teacher_login request_id remote_addr].select { |f| d[f].to_s.strip.empty? }
-      missing << "group" unless d.groups.split(",").include?(EdgeTrust::TEACHER_GROUP)
+      missing << "group" unless d.console? || d.groups.split(",").include?(EdgeTrust::TEACHER_GROUP)
       missing << "kind" unless DecisionRecorder::KINDS.include?(d.kind)
       missing << "payload" unless JSON.parse(d.payload_json).is_a?(Hash)
       { type: "decision_without_provenance", decision_id: d.id, kind: d.kind, missing: missing } if missing.any?

@@ -11,7 +11,9 @@ Phase 1a: the entry diagnosis.
 2. Decisions are taken by the teacher in the browser (web listener only). No
    `/api/v1` route creates a decision; the CLI has no decision command. Exception:
    minor review findings, which the third reviewer's first opinion may close
-   (a derived state, never a decision row): D-222, D-239.
+   (a derived state, never a decision row): D-222, D-239. Exception: the operator may
+   record a teacher decision from the host console (`bin/rails banco:decide`), never
+   over HTTP: D-260.
 3. Agent-written code runs only in browsers (the server's Chrome at validation).
    Rails and the grader worker never execute it.
 4. The ledger is append-only: triggers block UPDATE and DELETE on every primary
@@ -142,6 +144,7 @@ only), `HARNESS_PORT` 3200 (internal). Never `PORT`.
   served to the page; `Checks.grade` the server's grading of an inline check; `Convert1to2` the lesson/1 draft), `Validation::Lesson2Checks`
   (`Validation::LessonChecks.call` dispatches on `schema:`), `Review::LessonChecklist.for`. Tests: `test/lib/lessons`, `test/validation/lesson2_checks_test.rb`,
   `test/integration/lesson2_api_test.rb` (`PROP_RUNS=300` for the StudentBody sentinel property).
+- Console decisions (D-260): `bin/rails banco:decide` (`lib/tasks/decide.rake`, `DecisionConsole`, origin `DecisionRecorder::Console`) is the operator's only non-browser way to decide; dry run unless `CONFIRM=1`; the row says `console` (address and group); no route, no CLI command. Tests: `test/models/decision_console_test.rb`.
 - Third reviewer (D-222): role `arbiter` (`FindingAssessment`, `FindingOpinion`, `Teacher::FindingField`, `banco findings assess`, `briefs/arbiter.md`); first opinion claude-opus-5-5, second claude-haiku-4-5-20251001 (`config/banco/providers.yml`); blocker and major findings stay a teacher click ("Segui il parere", `follow_opinions`), minor ones are closed or marked to fix as derived state by the first opinion alone (D-239); no effect on `Review::Gate` or `Approval::BlueprintGate`.
 - The student's front door and menu (D-240): `GET /` (`HomeController`) sends a student to `/today`, the teacher and a guest to `/teacher`; `/today` is the student's home (entry test block, then the course); `shared/_student_menu` (helpers `student_menu_*`) is on every student page, one item "Pausa: torna a Oggi" in a sitting and none in the teacher's preview; `/settings` holds the theme and size.
 - The course path and the guided review (D-241): the course page is the subject's path (`Teacher::CourseReview#steps`, badges, `?only=ready`), the topic page has four steps (lesson as S sees it, exercises drawn by `items/frozen_slot.js`, findings through `teacher/tests/_finding`, approval); `Teacher::TopicSeen` and `POST /teacher/topic-revisions/:id/seen` keep app events `teacher_read_lesson` and `teacher_saw_exercise`, never decisions; the gate is unchanged. Tests: `test/support/course_path_world.rb`.

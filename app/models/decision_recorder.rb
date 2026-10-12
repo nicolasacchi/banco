@@ -48,6 +48,29 @@ class DecisionRecorder
 
   Context = Struct.new(:login, :groups, keyword_init: true)
 
+  # The origin of a decision recorded from the host console (bin/rails banco:decide, D-260), in place of
+  # a web request: no listener, no edge proxy, no CSRF, no device cookie. The operator names a teacher
+  # of BANCO_TEACHER_USERS; BANCO_DECISIONS_ENABLED must be on; every business guard of the kind runs.
+  class Console
+    ADDR = "console".freeze
+    GROUP = "console".freeze
+    PATH = "rake banco:decide".freeze
+
+    attr_reader :login, :os_user, :request_id
+
+    def initialize(login:, os_user: ENV["USER"].to_s)
+      @login = login.to_s.strip
+      @os_user = os_user.to_s.gsub(/[^A-Za-z0-9_.-]/, "").first(40)
+      @request_id = SecureRandom.uuid
+    end
+
+    def remote_addr = ADDR
+    def user_agent = "banco:decide #{os_user}".strip
+    def path = PATH
+    def groups = [ GROUP ]
+    def get_header(name) = name == "HTTP_REMOTE_USER" ? login : nil
+  end
+
   class << self
     # request_id: a decision of its own inside a request that records several (the id of the request
     # is unique per decision row); the default is the request's id.
@@ -57,6 +80,7 @@ class DecisionRecorder
 
     # nil when the request may decide, otherwise the reason (a symbol).
     def refusal(request)
+      return console_refusal(request) if request.is_a?(Console)
       return :disabled unless ENV["BANCO_DECISIONS_ENABLED"] == "1"
       return :wrong_listener unless request.env[Banco::ListenerTag::TAG_KEY] == :web
       return :untrusted_peer unless Banco::EdgeProxy.include?(request.remote_addr)
@@ -70,7 +94,14 @@ class DecisionRecorder
       nil
     end
 
-    def groups_of(request) = request.get_header("HTTP_REMOTE_GROUPS").to_s.split(",").map(&:strip).reject(&:empty?)
+    def console_refusal(origin)
+      return :disabled unless ENV["BANCO_DECISIONS_ENABLED"] == "1"
+      return :no_teacher unless !origin.login.empty? && !origin.login.include?(",") && Banco::EdgeProxy.teacher_users.include?(origin.login)
+
+      nil
+    end
+
+    def groups_of(request) = request.is_a?(Console) ? request.groups : request.get_header("HTTP_REMOTE_GROUPS").to_s.split(",").map(&:strip).reject(&:empty?)
   end
 
   def initialize(request, kind, params, request_id = nil)
@@ -87,6 +118,7 @@ class DecisionRecorder
 
     Decision.transaction do
       subject, student, payload = send(@kind)
+      payload = console_payload(payload) if @request.is_a?(Console)
       Decision.create!(
         kind: @kind, subject: subject, student: student, payload_json: JSON.generate(payload),
         request_id: @request_id.presence || @request.request_id.presence || SecureRandom.uuid,
@@ -98,6 +130,14 @@ class DecisionRecorder
   end
 
   private
+
+  # A console decision says so in its payload; a kind that takes no reason keeps the operator's words as console_reason.
+  def console_payload(payload)
+    payload = payload.merge(via: "console")
+    note = @params[:reason_it].to_s.strip
+    payload[:console_reason] = note.first(1000) if note.present? && !payload.key?(:reason_it)
+    payload
+  end
 
   # Each handler returns [subject, student, payload] or raises Invalid / Missing.
 

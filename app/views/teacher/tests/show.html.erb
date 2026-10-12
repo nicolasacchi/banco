@@ -9,7 +9,7 @@
     <% gate = review.gate %>
     <p id="test-summary">
       <%= t("teacher.test.summary", seq: review.blueprint.seq, skills: review.skill_rows.size, items: review.pinned_count) %>
-      <%= review.approved_latest? ? t("teacher.test.is_approved") : t("teacher.test.not_approved") %>
+      <%= review.approved_latest? ? t("teacher.test.is_approved") + (SubjectStage.approved_from_console?(review.blueprint.subject, "approve_blueprint") ? " #{t('teacher.from_console')}" : "") : t("teacher.test.not_approved") %>
     </p>
 
     <section id="test-approve" class="approve" data-approvable="<%= gate.approvable %>">

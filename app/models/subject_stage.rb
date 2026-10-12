@@ -19,6 +19,9 @@ class SubjectStage
 
     def approved_blueprint(subject) = approved(subject, "approve_blueprint", BlueprintRevision)
 
+    # True when the decision that approved this kind last was recorded from the console (D-260).
+    def approved_from_console?(subject, kind) = Decision.where(subject: subject, kind: kind).order(:id).last&.console? == true
+
     def for(subject)
       graph = SkillGraphRevision.where(subject: subject).order(:seq).last
       blueprint = BlueprintRevision.where(subject: subject).order(:seq).last
