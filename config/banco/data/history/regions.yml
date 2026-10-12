@@ -9,6 +9,7 @@
 #              "XXX@w,s,e,n"        the country within the box (degrees)
 #              "XXX/Name"           an admin-1 unit of XXX whose name or region is Name (ITA, GRC, TUR)
 # why: what the region means and what the modern units miss.
+version: 2
 regions:
   italia:
     name_it: Italia

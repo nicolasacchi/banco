@@ -24,6 +24,14 @@ say whether this directory equals the build.
 - The coast of `mediterraneo_antico` is today's coast (Natural Earth 1:50m land), not the ancient one: the
   deltas of the Nile, Po and Rhone and the harbours that have silted up are not drawn.
 
+## Ids
+
+Ids resolve per base. The base's `reads` says which table each collection (`areas`, `groups`, `places`,
+`lines`, `oceans`) is read from, so the same id may mean two things in two bases ("sicilia" is the
+Italian region in `italy`, read in `geo/names`, and the Roman province in `mediterraneo_antico`, read in
+`history/regions`). Within a base every id is unique. A base carries no names: the Italian name is
+fetched from the server after the answer in select mode.
+
 ## Approximate
 
 The regions of `mediterraneo_antico` are approximations: whole modern countries or provinces, or a modern
@@ -36,6 +44,7 @@ second session and by the teacher in the topic review before a lesson depends on
 One module per base (`export default {...}`; fill rule evenodd): areas with `d` (path), `anchor` and `bbox`,
 groups (continents, Italy), oceans, lakes (`water`), rivers (`lines`), cities (`places`), the graticule
 (equator, tropics at 23.4 degrees, polar circles, Greenwich) and the projection (`type`, `scale`, `tx`,
-`ty`: x = tx + scale * ex, y = ty - scale * ey; Equal Earth for the world and the continents, Lambert
-azimuthal equal-area for the poles). `test/fixtures/maps/projection_vectors.json` holds sample points for the
+`ty`: x = tx + scale * ex, y = ty - scale * ey; `type` is the authority and is one of `equal_earth` (the world
+and the continents), `lambert_azimuthal` (azimuthal equal-area, with `pole` north or south, for the poles) or
+`mercator` (the ancient Mediterranean)). `test/fixtures/maps/projection_vectors.json` holds sample points for the
 JavaScript twin of the projection. SHA256SUMS lists every file.

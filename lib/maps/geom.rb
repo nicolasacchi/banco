@@ -40,34 +40,44 @@ module Maps
       end
     end
 
-    def raw_project(type, lon, lat)
+    # The projection types a base may name (its `projection.type` is the authority; the JS twin supports the same three).
+    TYPES = %w[equal_earth lambert_azimuthal mercator].freeze
+    POLES = %w[north south].freeze
+
+    def raw_project(type, lon, lat, pole = nil)
       case type
       when "equal_earth" then equal_earth(lon, lat)
       when "mercator" then [ rad(lon), Math.log(Math.tan(Math::PI / 4 + rad(lat) / 2)) ]
-      when "azimuthal_north" then azimuthal(lon, lat, :north)
-      when "azimuthal_south" then azimuthal(lon, lat, :south)
+      when "lambert_azimuthal"
+        raise ArgumentError, "lambert_azimuthal needs a pole (north or south)" unless POLES.include?(pole.to_s)
+
+        azimuthal(lon, lat, pole.to_sym)
       else raise ArgumentError, "unknown projection #{type}"
       end
     end
 
     # A fitted projection: a type, a scale and a translation into a viewBox of the given width.
     # screen x = tx + scale * px, screen y = ty - scale * py. `rect` is the viewBox in screen units.
-    Projection = Struct.new(:type, :scale, :tx, :ty, :width, :height) do
+    Projection = Struct.new(:type, :scale, :tx, :ty, :width, :height, :pole) do
       def project(lon, lat)
-        px, py = Geom.raw_project(type, lon, lat)
+        px, py = Geom.raw_project(type, lon, lat, pole)
         [ tx + scale * px, ty - scale * py ]
       end
 
       def rect = [ 0.0, 0.0, width, height ]
 
-      def to_h = { "type" => type, "scale" => scale.round(4), "tx" => tx.round(3), "ty" => ty.round(3) }
+      def to_h
+        h = { "type" => type, "scale" => scale.round(4), "tx" => tx.round(3), "ty" => ty.round(3) }
+        h["pole"] = pole.to_s if type == "lambert_azimuthal"
+        h
+      end
     end
 
     # Fits the window [w, s, e, n] into a viewBox of `width` (the height follows). With `crop` the
     # viewBox is the largest upright rectangle inside the window's projected outline (the curved
     # meridians of Equal Earth leave the corners of the bounding box empty); without it, the
     # bounding box (the world, the poles).
-    def fit(type, window, width, crop: false)
+    def fit(type, window, width, crop: false, pole: nil)
       w, s, e, n = window
       steps = 90
       left = []
@@ -77,11 +87,11 @@ module Maps
         f = i.to_f / steps
         lon = w + (e - w) * f
         lat = s + (n - s) * f
-        l = raw_project(type, w, lat)
-        r = raw_project(type, e, lat)
+        l = raw_project(type, w, lat, pole)
+        r = raw_project(type, e, lat, pole)
         left << l
         right << r
-        all.push(raw_project(type, lon, s), raw_project(type, lon, n), l, r)
+        all.push(raw_project(type, lon, s, pole), raw_project(type, lon, n, pole), l, r)
       end
       xs = all.map(&:first)
       ys = all.map(&:last)
@@ -92,7 +102,7 @@ module Maps
         x1 = right.map(&:first).min
       end
       scale = width / (x1 - x0)
-      Projection.new(type, scale, -x0 * scale, ys.max * scale, width, (ys.max - ys.min) * scale)
+      Projection.new(type, scale, -x0 * scale, ys.max * scale, width, (ys.max - ys.min) * scale, pole)
     end
 
     # Adds points so that no edge is longer than `step` degrees.

@@ -247,11 +247,101 @@ class MapsBasesTest < ActiveSupport::TestCase
     assert_nil base("arctic")["graticule"]["equator"]
   end
 
+  test "the base's projection.type is the authority: one of the three types, a pole for the azimuthal, and the vectors cover all of them" do
+    BASES.each do |b|
+      pr = base(b)["projection"]
+      assert_includes Maps::Geom::TYPES, pr["type"], b
+      if pr["type"] == "lambert_azimuthal" then assert_includes Maps::Geom::POLES, pr["pole"], b else assert_nil pr["pole"], b end
+    end
+    assert_equal "mercator", base("mediterraneo_antico")["projection"]["type"]
+    assert_equal %w[north south], BASES.filter_map { |b| base(b)["projection"]["pole"] }.sort
+    vec = JSON.parse(Rails.root.join("test/fixtures/maps/projection_vectors.json").read)
+    fixed = vec["projections"].map { |p| [ p["projection"]["type"], p["projection"]["pole"] ] }
+    assert_equal [ [ "equal_earth", nil ], [ "lambert_azimuthal", "north" ], [ "lambert_azimuthal", "south" ], [ "mercator", nil ] ], fixed.sort_by(&:to_s)
+    assert_raises(ArgumentError) { Maps::Geom.raw_project("lambert_azimuthal", 0, 0) }
+    assert_raises(ArgumentError) { Maps::Geom.raw_project("robinson", 0, 0) }
+    vec["projections"].each do |v|
+      h = v["projection"]
+      pr = Maps::Geom::Projection.new(h["type"], h["scale"], h["tx"], h["ty"], 1000.0, 0, h["pole"])
+      v["points"].each do |lon, lat, x, y|
+        px, py = pr.project(lon, lat)
+        assert_in_delta x, px, 0.01, "#{h['type']} #{lon},#{lat}"
+        assert_in_delta y, py, 0.01, "#{h['type']} #{lon},#{lat}"
+      end
+    end
+  end
+
+  # Ids resolve PER BASE: "sicilia" is the Italian region in geo/names (the italy base) and the Roman province in
+  # history/regions (the mediterraneo_antico base). The base says which table each collection reads.
+  test "ids resolve per base: each base declares its tables, every id resolves in exactly the declared table, ids are unique in the base's resolution set" do
+    tables = { "geo/names" => NAMES, "history/places" => PLACES, "history/regions" => REGIONS }
+    BASES.each do |b|
+      d = base(b)
+      reads = d.fetch("reads")
+      assert_empty reads.values - tables.keys, "#{b}: reads an unknown table"
+      used = {}
+      reads.each do |collection, table|
+        ids = (d[collection] || []).filter_map { |e| e["id"] }
+        ids.each do |id|
+          assert tables[table].key?(id), "#{b}: #{collection} id #{id} is not in #{table}"
+          assert_nil used[id], "#{b}: id #{id} is used by #{used[id]} and by #{collection}"
+          used[id] = collection
+        end
+      end
+      # the declared tables of a base never share an id once restricted to what the base can ask them for
+      by_table = reads.values.uniq.to_h { |t| [ t, reads.select { |_, v| v == t }.keys.flat_map { |c| (d[c] || []).filter_map { |e| e["id"] } } ] }
+      by_table.values.flatten.then { |all| assert_equal all.uniq, all, "#{b}: an id is in two collections" }
+      # ... and a table that is read whole (areas, places of the ancient base) has no id twice across the history tables
+      hist = reads.values.select { |t| t.start_with?("history/") }.uniq
+      keys = hist.flat_map { |t| tables[t].keys }
+      assert_equal keys.uniq, keys, "#{b}: the history tables it reads share an id"
+    end
+    assert_equal({ "areas" => "history/regions", "places" => "history/places", "lines" => "geo/names", "oceans" => "geo/names" }, base("mediterraneo_antico")["reads"])
+    assert_equal "geo/names", base("italy")["reads"]["areas"]
+    # the known clash is real, and is the reason for the rule
+    assert_includes NAMES.keys & REGIONS.keys, "sicilia"
+    assert base("italy")["areas"].any? { |a| a["id"] == "sicilia" }
+    assert base("mediterraneo_antico")["areas"].any? { |a| a["id"] == "sicilia" }
+    assert_equal [ "sicilia" ], NAMES.keys & REGIONS.keys, "a new clash between geo/names and history/regions must be named in D-271"
+    assert_empty NAMES.keys & PLACES.keys
+    assert_empty PLACES.keys & REGIONS.keys
+  end
+
+  test "bases carry no name or label keys: names come from the server only after the answer in select mode" do
+    forbidden = /\A(name|label)/i
+    BASES.each do |b|
+      d = base(b)
+      %w[areas groups places lines water oceans].each do |collection|
+        (d[collection] || []).each do |e|
+          assert_empty e.keys.grep(forbidden), "#{b}: #{collection} #{e['id']} carries #{e.keys.grep(forbidden)}"
+        end
+      end
+      assert_empty d.keys.grep(forbidden), "#{b}: top-level #{d.keys.grep(forbidden)}"
+    end
+  end
+
+  test "history/regions: places and regions are two tables, and a date lives in the since field of the schema, version 2" do
+    schema = JSON.parse(DATA.join("history/regions.schema.json").read)
+    assert_equal 2, schema.dig("properties", "version", "const")
+    since = schema.dig("properties", "regions", "additionalProperties", "properties", "since")
+    assert_equal "integer", since["type"]
+    assert_equal [ "since_source" ], schema.dig("properties", "regions", "additionalProperties", "dependentRequired", "since")
+    assert_equal 2, YAML.safe_load_file(DATA.join("history/regions.yml"))["version"]
+    ok = { "version" => 2, "regions" => { "sicilia" => { "name_it" => "Sicilia", "units" => [ "ITA/Sicily" ], "why" => "x" * 20, "since" => -241, "since_source" => "Un atlante storico" } } }
+    assert_empty JSONSchemer.schema(schema).validate(ok).to_a
+    [ { "since" => 0 }, { "since" => -241, "since_source" => nil }, { "since" => "241" } ].each do |bad|
+      doc = ok.merge("regions" => { "sicilia" => ok["regions"]["sicilia"].except("since", "since_source").merge(bad.compact) })
+      assert_not_empty JSONSchemer.schema(schema).validate(doc).to_a, bad.inspect
+    end
+    assert_empty REGIONS.values.flat_map(&:keys) - %w[name_it units why since since_source]
+    assert_empty PLACES.values.flat_map(&:keys) - %w[name_it kind source pleiades pleiades_title lat lon], "no date key on a place: add it to the schema first"
+  end
+
   test "the projection vectors match the bases and a point is where the base says" do
     vec = JSON.parse(Rails.root.join("test/fixtures/maps/projection_vectors.json").read)
     BASES.each do |b|
       assert_equal base(b)["projection"], vec["bases"][b]["projection"], b
-      pr = Maps::Geom::Projection.new(base(b)["projection"]["type"], base(b)["projection"]["scale"], base(b)["projection"]["tx"], base(b)["projection"]["ty"], 1000.0, 0)
+      pr = Maps::Geom::Projection.new(base(b)["projection"]["type"], base(b)["projection"]["scale"], base(b)["projection"]["tx"], base(b)["projection"]["ty"], 1000.0, 0, base(b)["projection"]["pole"])
       vec["bases"][b]["points"].each do |lon, lat, x, y|
         px, py = pr.project(lon, lat)
         assert_in_delta x, px, 0.05, "#{b} #{lon},#{lat}"
@@ -261,7 +351,7 @@ class MapsBasesTest < ActiveSupport::TestCase
     # Rome on the Italy base lies where Rome's pin is on the base (cities are projected by the same function)
     rome = base("italy")["places"].find { |p| p["id"] == "rome" }
     pr = base("italy")["projection"]
-    x, y = Maps::Geom::Projection.new(pr["type"], pr["scale"], pr["tx"], pr["ty"], 1000.0, 0).project(12.48, 41.89)
+    x, y = Maps::Geom::Projection.new(pr["type"], pr["scale"], pr["tx"], pr["ty"], 1000.0, 0, pr["pole"]).project(12.48, 41.89)
     assert_in_delta rome["x"], x, 2.5
     assert_in_delta rome["y"], y, 2.5
   end
