@@ -1,0 +1,21 @@
+{
+ "version": 1,
+ "description": "Shared vectors of Sheet (Ruby and JS), skeleton of W2-0: the cases below are certain; the track T9 adds the rest (including the mutants of a wrong answer) before it builds the functions. 'args' are strings as the schema holds them; 'result' is the canonical output.",
+ "library": "sheet",
+ "batch": "w2-3",
+ "track": "T9",
+ "functions": {
+  "evaluate": {
+   "ruby": "evaluate(cells, ref)",
+   "js": "evaluate(cells, ref)",
+   "doc": "The value of a cell.",
+   "cases": []
+  },
+  "fill": {
+   "ruby": "fill(formula, rows, cols)",
+   "js": "fill(formula, rows, cols)",
+   "doc": "A formula copied by an offset, with $ parts fixed.",
+   "cases": []
+  }
+ }
+}

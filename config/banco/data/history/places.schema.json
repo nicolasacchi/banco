@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:banco:data:history-places",
+  "title": "banco data table history/places",
+  "description": "The mediterraneo_antico gazetteer: about 60 places (Pleiades) and 40 regions, each with its source (the Ancient World Mapping Center if its licence allows, else a named atlas page). Each value carries its source; a second table typed separately by another session is compared by the unit test; changed only by a D entry (WAVE2 1.9).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "places",
+    "regions"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "places": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_()-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name_it",
+          "kind",
+          "lat",
+          "lon",
+          "source"
+        ],
+        "properties": {
+          "name_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "kind": {
+            "enum": [
+              "city",
+              "river",
+              "mountain",
+              "sea",
+              "island",
+              "pass",
+              "battlefield"
+            ]
+          },
+          "lat": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
+            "description": "An exact number as a string, decimal comma (lesson/num)."
+          },
+          "lon": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
+            "description": "An exact number as a string, decimal comma (lesson/num)."
+          },
+          "pleiades": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "source": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 300,
+            "description": "Where the value comes from (a book, a standard, a dataset with its year); required on every row (WAVE2 1.9)."
+          }
+        }
+      }
+    },
+    "regions": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_()-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name_it",
+          "source"
+        ],
+        "properties": {
+          "name_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "kind": {
+            "enum": [
+              "province",
+              "region",
+              "kingdom",
+              "people"
+            ]
+          },
+          "awmc": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "atlas_page": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "source": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 300,
+            "description": "Where the value comes from (a book, a standard, a dataset with its year); required on every row (WAVE2 1.9)."
+          }
+        }
+      }
+    }
+  },
+  "x-banco-table": {
+    "name": "history/places",
+    "track": "T5",
+    "used_by": [
+      "map mediterraneo_antico"
+    ],
+    "second_table": true
+  }
+}

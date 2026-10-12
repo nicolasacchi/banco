@@ -1,0 +1,20 @@
+# The voices "Ascolta" may use (W2-D05; WAVE2 4.1): the names of device voices that the operator has heard on the student's own
+# device and accepted. A voice is used only if (1) it is local (voice.localService === true: nothing leaves the device; the network
+# voices of a browser are never used), (2) its language starts with it, en or es, and (3) its name is in this list. Until a language
+# has an accepted voice the student's pages show no speaker for it and the lessons work by reading (A8); the teacher's preview may
+# try any local voice, labelled "voce non ancora approvata". The settings dialog has "Prova le voci" for the visit of Q1.
+# Changed only by a D entry. Generic: nothing here is about a person.
+version: 1
+# The device the voices are heard on (the operator's answer of 2026-10-12, Q1): a Mac or an iPad, with Safari (the Apple voices).
+device: {os: "macOS or iPadOS", browser: "Safari"}
+accepted:
+  it: []
+  en: []
+  es: []
+# Preference among the accepted voices of a language, first match wins: en-GB then other English, es-ES then other Spanish, it-IT.
+preference:
+  en: ["en-GB", "en"]
+  es: ["es-ES", "es"]
+  it: ["it-IT", "it"]
+# Speech rates: normal 1.0, "Più lento" 0.8, English 0.75 and Spanish 0.7 when slowed.
+rates: {normal: 1.0, slower: 0.8, slower_en: 0.75, slower_es: 0.7}

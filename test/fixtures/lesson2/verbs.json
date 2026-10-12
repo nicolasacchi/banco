@@ -1,0 +1,27 @@
+{
+ "version": 1,
+ "description": "Shared vectors of Verbs (Ruby and JS), skeleton of W2-0: the cases below are certain; the track T3 adds the rest (including the mutants of a wrong answer) before it builds the functions. 'args' are strings as the schema holds them; 'result' is the canonical output.",
+ "library": "verbs",
+ "batch": "w2-1",
+ "track": "T3",
+ "functions": {
+  "lookup": {
+   "ruby": "lookup(base)",
+   "js": "lookup(base)",
+   "doc": "A verb of english/verbs: base, past and participle variants.",
+   "cases": []
+  },
+  "family_mark": {
+   "ruby": "family_mark(verb)",
+   "js": "familyMark(verb)",
+   "doc": "The mark of a verb in its family: same_forms, vowel, participle_from_base, participle_from_past.",
+   "cases": []
+  },
+  "expand_contractions": {
+   "ruby": "expand_contractions(text)",
+   "js": "expandContractions(text)",
+   "doc": "A text with its contractions expanded (english/contractions), for both sides of a typed answer.",
+   "cases": []
+  }
+ }
+}

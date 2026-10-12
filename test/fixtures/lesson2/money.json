@@ -1,0 +1,62 @@
+{
+ "version": 1,
+ "description": "Shared vectors of Money (Ruby and JS), skeleton of W2-0: the cases below are certain; the track T8 adds the rest (including the mutants of a wrong answer) before it builds the functions. 'args' are strings as the schema holds them; 'result' is the canonical output.",
+ "library": "money",
+ "batch": "w2-1",
+ "track": "T8",
+ "functions": {
+  "round_half_up": {
+   "ruby": "round_half_up(amount)",
+   "js": "roundHalfUp(amount)",
+   "doc": "An amount rounded to cents, half up.",
+   "cases": [
+    {
+     "args": [
+      "2,505"
+     ],
+     "result": "2,51"
+    },
+    {
+     "args": [
+      "2,504"
+     ],
+     "result": "2,50"
+    }
+   ]
+  },
+  "vat": {
+   "ruby": "vat(net, rate)",
+   "js": "vat(net, rate)",
+   "doc": "The VAT of an amount at a rate in percent, rounded half up.",
+   "cases": [
+    {
+     "args": [
+      "100,00",
+      "22"
+     ],
+     "result": "22,00"
+    }
+   ]
+  },
+  "row": {
+   "ruby": "row(qty, price)",
+   "js": "row(qty, price)",
+   "doc": "One invoice row: quantity times price.",
+   "cases": [
+    {
+     "args": [
+      "800",
+      "2,50"
+     ],
+     "result": "2000,00"
+    }
+   ]
+  },
+  "invoice": {
+   "ruby": "invoice(spec)",
+   "js": "invoice(spec)",
+   "doc": "All rows of an invoice from its data; ERROR_VARIANTS is the closed list of typical errors.",
+   "cases": []
+  }
+ }
+}

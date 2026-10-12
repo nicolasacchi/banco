@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:banco:data:bio-sizes",
+  "title": "banco data table bio/sizes",
+  "description": "Sizes with unit and source: cells, bacteria, viruses, organelles, a hair, the length of DNA, an atom; byte units for scale units: bytes (W2-3). Each value carries its source; a second table typed separately by another session is compared by the unit test; changed only by a D entry (WAVE2 1.9).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "sizes"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "sizes": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_()-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "label_it",
+          "size",
+          "unit",
+          "source"
+        ],
+        "properties": {
+          "label_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "size": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
+            "description": "An exact number as a string, decimal comma (lesson/num)."
+          },
+          "unit": {
+            "enum": [
+              "m",
+              "cm",
+              "mm",
+              "um",
+              "nm",
+              "pm"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 24
+          },
+          "source": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 300,
+            "description": "Where the value comes from (a book, a standard, a dataset with its year); required on every row (WAVE2 1.9)."
+          }
+        }
+      }
+    },
+    "bytes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "label_it",
+          "base10",
+          "base2"
+        ],
+        "properties": {
+          "label_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
+          },
+          "base10": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
+            "description": "An exact number as a string, decimal comma (lesson/num)."
+          },
+          "base2": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
+            "description": "An exact number as a string, decimal comma (lesson/num)."
+          }
+        }
+      },
+      "minItems": 0,
+      "maxItems": 8
+    }
+  },
+  "x-banco-table": {
+    "name": "bio/sizes",
+    "track": "T6",
+    "used_by": [
+      "scale"
+    ],
+    "second_table": true
+  }
+}

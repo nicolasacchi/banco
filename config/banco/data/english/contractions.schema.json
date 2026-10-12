@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:banco:data:english-contractions",
+  "title": "banco data table english/contractions",
+  "description": "The contraction table: 'll, won't, 'm, 're, 's, 've, 'd and n't forms; ambiguous ones are marked and not expanded. Each value carries its source; a second table typed separately by another session is compared by the unit test; changed only by a D entry (WAVE2 1.9).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "contractions"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "contractions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "short",
+          "long"
+        ],
+        "properties": {
+          "short": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12
+          },
+          "long": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 24
+            },
+            "minItems": 1,
+            "maxItems": 3
+          },
+          "ambiguous": {
+            "type": "boolean"
+          }
+        }
+      },
+      "minItems": 10,
+      "maxItems": 60
+    }
+  },
+  "x-banco-table": {
+    "name": "english/contractions",
+    "track": "T3",
+    "used_by": [
+      "contractions option"
+    ],
+    "second_table": true
+  }
+}

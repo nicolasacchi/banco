@@ -1,0 +1,78 @@
+{
+ "version": 1,
+ "description": "Shared vectors of Chem (Ruby and JS), skeleton of W2-0: the cases below are certain; the track T7 adds the rest (including the mutants of a wrong answer) before it builds the functions. 'args' are strings as the schema holds them; 'result' is the canonical output.",
+ "library": "chem",
+ "batch": "w2-1",
+ "track": "T7",
+ "functions": {
+  "parse": {
+   "ruby": "parse(formula)",
+   "js": "parse(formula)",
+   "doc": "A formula as {coefficient, groups}; nil when it does not parse.",
+   "cases": []
+  },
+  "count": {
+   "ruby": "count(formula)",
+   "js": "count(formula)",
+   "doc": "Atoms by symbol, coefficient included.",
+   "cases": [
+    {
+     "args": [
+      "3 H2O"
+     ],
+     "result": {
+      "H": 6,
+      "O": 3
+     }
+    },
+    {
+     "args": [
+      "2 Ca(NO3)2"
+     ],
+     "result": {
+      "Ca": 2,
+      "N": 4,
+      "O": 12
+     }
+    }
+   ]
+  },
+  "classify": {
+   "ruby": "classify(formula)",
+   "js": "classify(formula)",
+   "doc": "'element' or 'compound'.",
+   "cases": [
+    {
+     "args": [
+      "O2"
+     ],
+     "result": "element"
+    },
+    {
+     "args": [
+      "H2O"
+     ],
+     "result": "compound"
+    },
+    {
+     "args": [
+      "CO"
+     ],
+     "result": "compound"
+    },
+    {
+     "args": [
+      "Co"
+     ],
+     "result": "element"
+    }
+   ]
+  },
+  "same_composition": {
+   "ruby": "same_composition(a, b)",
+   "js": "sameComposition(a, b)",
+   "doc": "Whether two formulas have the same atom counts (a near miss of a typed answer).",
+   "cases": []
+  }
+ }
+}

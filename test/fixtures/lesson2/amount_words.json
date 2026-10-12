@@ -1,0 +1,46 @@
+{
+ "version": 1,
+ "description": "Shared vectors of NumWords (Ruby and JS), skeleton of W2-0: the cases below are certain; the track T8 adds the rest (including the mutants of a wrong answer) before it builds the functions. 'args' are strings as the schema holds them; 'result' is the canonical output.",
+ "library": "num_words",
+ "batch": "w2-2",
+ "track": "T8",
+ "functions": {
+  "amount": {
+   "ruby": "amount(text)",
+   "js": "amount(text)",
+   "doc": "The canonical words of an amount ('1240,50' is 'milleduecentoquaranta/50').",
+   "cases": [
+    {
+     "args": [
+      "1240,50"
+     ],
+     "result": "milleduecentoquaranta/50"
+    },
+    {
+     "args": [
+      "21,00"
+     ],
+     "result": "ventuno/00"
+    },
+    {
+     "args": [
+      "100,00"
+     ],
+     "result": "cento/00"
+    }
+   ]
+  },
+  "variants": {
+   "ruby": "variants(text)",
+   "js": "variants(text)",
+   "doc": "The forms a grader accepts for an amount.",
+   "cases": []
+  },
+  "wrong_forms": {
+   "ruby": "wrong_forms(text)",
+   "js": "wrongForms(text)",
+   "doc": "The typical wrong forms, by name.",
+   "cases": []
+  }
+ }
+}

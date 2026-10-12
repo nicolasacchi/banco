@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:banco:data:chem-molecules",
+  "title": "banco data table chem/molecules",
+  "description": "Formula to atoms (symbol, 2D and 3D coordinates), bonds as [from, to, order], kind (molecular, ionic, metal), angle and partial charges. Each value carries its source; a second table typed separately by another session is compared by the unit test; changed only by a D entry (WAVE2 1.9).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "molecules"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "molecules": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_()-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "atoms",
+          "source"
+        ],
+        "properties": {
+          "name_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "kind": {
+            "enum": [
+              "molecular",
+              "ionic",
+              "metal"
+            ]
+          },
+          "atoms": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "symbol",
+                "xy"
+              ],
+              "properties": {
+                "symbol": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 3
+                },
+                "xy": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
+                    "description": "An exact number as a string, decimal comma (lesson/num)."
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "xyz": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
+                    "description": "An exact number as a string, decimal comma (lesson/num)."
+                  },
+                  "minItems": 3,
+                  "maxItems": 3
+                }
+              }
+            },
+            "minItems": 1,
+            "maxItems": 30
+          },
+          "bonds": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 29
+              },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "minItems": 0,
+            "maxItems": 40
+          },
+          "angle": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
+            "description": "An exact number as a string, decimal comma (lesson/num)."
+          },
+          "partial_charges": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
+              "description": "An exact number as a string, decimal comma (lesson/num)."
+            },
+            "minItems": 1,
+            "maxItems": 30
+          },
+          "source": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 300,
+            "description": "Where the value comes from (a book, a standard, a dataset with its year); required on every row (WAVE2 1.9)."
+          }
+        }
+      }
+    }
+  },
+  "x-banco-table": {
+    "name": "chem/molecules",
+    "track": "T7",
+    "used_by": [
+      "molecule",
+      "formula"
+    ],
+    "second_table": true
+  }
+}

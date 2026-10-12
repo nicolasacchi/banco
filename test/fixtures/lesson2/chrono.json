@@ -1,0 +1,106 @@
+{
+ "version": 1,
+ "description": "Shared vectors of Chrono (Ruby and JS), skeleton of W2-0: the cases below are certain; the track T4a adds the rest (including the mutants of a wrong answer) before it builds the functions. 'args' are strings as the schema holds them; 'result' is the canonical output.",
+ "library": "chrono",
+ "batch": "w2-1",
+ "track": "T4a",
+ "functions": {
+  "duration": {
+   "ruby": "duration(from, to)",
+   "js": "duration(from, to)",
+   "doc": "Whole years from one year to the other, the year 0 not counted: -27 to 14 is 40.",
+   "cases": [
+    {
+     "args": [
+      "-133",
+      "-27"
+     ],
+     "result": "106"
+    },
+    {
+     "args": [
+      "-27",
+      "14"
+     ],
+     "result": "40"
+    },
+    {
+     "args": [
+      "-1",
+      "1"
+     ],
+     "result": "1"
+    }
+   ]
+  },
+  "century": {
+   "ruby": "century(year)",
+   "js": "century(year)",
+   "doc": "The Italian label of a year's century: 'II secolo a.C.'.",
+   "cases": [
+    {
+     "args": [
+      "-133"
+     ],
+     "result": "II secolo a.C."
+    },
+    {
+     "args": [
+      "-27"
+     ],
+     "result": "I secolo a.C."
+    },
+    {
+     "args": [
+      "100"
+     ],
+     "result": "I secolo d.C."
+    },
+    {
+     "args": [
+      "101"
+     ],
+     "result": "II secolo d.C."
+    }
+   ]
+  },
+  "roman": {
+   "ruby": "roman(n)",
+   "js": "roman(n)",
+   "doc": "A positive integer below 4000 as a Roman numeral.",
+   "cases": [
+    {
+     "args": [
+      "14"
+     ],
+     "result": "XIV"
+    },
+    {
+     "args": [
+      "1994"
+     ],
+     "result": "MCMXCIV"
+    }
+   ]
+  },
+  "parse_roman": {
+   "ruby": "parse_roman(text)",
+   "js": "parseRoman(text)",
+   "doc": "A Roman numeral as an integer, nil when it is not one.",
+   "cases": [
+    {
+     "args": [
+      "XIV"
+     ],
+     "result": "14"
+    }
+   ]
+  },
+  "mutants": {
+   "ruby": "mutants(from, to)",
+   "js": "mutants(from, to)",
+   "doc": "The wrong values of duration that a typical error gives (year 0 counted, eras subtracted, same era added), by name.",
+   "cases": []
+  }
+ }
+}

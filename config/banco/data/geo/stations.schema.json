@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:banco:data:geo-stations",
+  "title": "banco data table geo/stations",
+  "description": "About 25 climate stations: latitude, altitude, twelve monthly temperatures and precipitations, normals 1991-2020. Each value carries its source; a second table typed separately by another session is compared by the unit test; changed only by a D entry (WAVE2 1.9).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "stations"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "stations": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_()-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name_it",
+          "country_it",
+          "lat",
+          "alt_m",
+          "temp",
+          "precip",
+          "period",
+          "source"
+        ],
+        "properties": {
+          "name_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "country_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "lat": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
+            "description": "An exact number as a string, decimal comma (lesson/num)."
+          },
+          "lon": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
+            "description": "An exact number as a string, decimal comma (lesson/num)."
+          },
+          "alt_m": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
+            "description": "An exact number as a string, decimal comma (lesson/num)."
+          },
+          "temp": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
+              "description": "An exact number as a string, decimal comma (lesson/num)."
+            },
+            "minItems": 12,
+            "maxItems": 12
+          },
+          "precip": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
+              "description": "An exact number as a string, decimal comma (lesson/num)."
+            },
+            "minItems": 12,
+            "maxItems": 12
+          },
+          "period": {
+            "type": "string",
+            "minLength": 9,
+            "maxLength": 9,
+            "pattern": "^[0-9]{4}-[0-9]{4}$"
+          },
+          "source": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 300,
+            "description": "Where the value comes from (a book, a standard, a dataset with its year); required on every row (WAVE2 1.9)."
+          }
+        }
+      }
+    }
+  },
+  "x-banco-table": {
+    "name": "geo/stations",
+    "track": "T6",
+    "used_by": [
+      "climograph"
+    ],
+    "second_table": true
+  }
+}

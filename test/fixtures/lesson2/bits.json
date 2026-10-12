@@ -1,0 +1,89 @@
+{
+ "version": 1,
+ "description": "Shared vectors of Bits (Ruby and JS), skeleton of W2-0: the cases below are certain; the track T9 adds the rest (including the mutants of a wrong answer) before it builds the functions. 'args' are strings as the schema holds them; 'result' is the canonical output.",
+ "library": "bits",
+ "batch": "w2-1",
+ "track": "T9",
+ "functions": {
+  "read": {
+   "ruby": "read(digits, base: 2, twos: false)",
+   "js": "read(digits, base, twos)",
+   "doc": "The value of a register's digits.",
+   "cases": [
+    {
+     "args": [
+      "11111011",
+      "2",
+      "true"
+     ],
+     "result": "-5"
+    },
+    {
+     "args": [
+      "10000000",
+      "2",
+      "true"
+     ],
+     "result": "-128"
+    },
+    {
+     "args": [
+      "10000000",
+      "2",
+      "false"
+     ],
+     "result": "128"
+    }
+   ]
+  },
+  "write": {
+   "ruby": "write(value, width, base: 2, twos: false)",
+   "js": "write(value, width, base, twos)",
+   "doc": "The digits of a value at a width; nil when it does not fit.",
+   "cases": [
+    {
+     "args": [
+      "-5",
+      "8",
+      "2",
+      "true"
+     ],
+     "result": "11111011"
+    },
+    {
+     "args": [
+      "5",
+      "8",
+      "2",
+      "true"
+     ],
+     "result": "00000101"
+    }
+   ]
+  },
+  "add": {
+   "ruby": "add(a, b, width, base: 2)",
+   "js": "add(a, b, width, base)",
+   "doc": "A column addition: {digits, carries, carry_out}.",
+   "cases": []
+  },
+  "sub": {
+   "ruby": "sub(a, b, width, base: 2)",
+   "js": "sub(a, b, width, base)",
+   "doc": "A column subtraction: {digits, borrows}.",
+   "cases": []
+  },
+  "mul": {
+   "ruby": "mul(a, b, width, base: 2)",
+   "js": "mul(a, b, width, base)",
+   "doc": "A column multiplication: partial products and the result.",
+   "cases": []
+  },
+  "repeated_division": {
+   "ruby": "repeated_division(n, base)",
+   "js": "repeatedDivision(n, base)",
+   "doc": "W2-3: the quotients and remainders of dividing by the base until 0.",
+   "cases": []
+  }
+ }
+}

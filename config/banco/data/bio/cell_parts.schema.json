@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:banco:data:bio-cell_parts",
+  "title": "banco data table bio/cell_parts",
+  "description": "The parts each cell kind may have, with the Italian name, a one-line job and fixed graphics (3:1 on both themes; not palette roles). Each value carries its source; a second table typed separately by another session is compared by the unit test; changed only by a D entry (WAVE2 1.9).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "kinds",
+    "parts",
+    "source"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "kinds": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24,
+          "pattern": "^[a-z_]+$"
+        },
+        "minItems": 3,
+        "maxItems": 20
+      }
+    },
+    "parts": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_()-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name_it",
+          "job_it",
+          "fill",
+          "outline"
+        ],
+        "properties": {
+          "name_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "job_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "fill": {
+            "type": "object",
+            "required": [
+              "cream",
+              "dark"
+            ],
+            "properties": {
+              "cream": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 7
+              },
+              "dark": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 7
+              }
+            }
+          },
+          "outline": {
+            "type": "object",
+            "required": [
+              "cream",
+              "dark"
+            ],
+            "properties": {
+              "cream": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 7
+              },
+              "dark": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 7
+              }
+            }
+          }
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 300,
+      "description": "Where the value comes from (a book, a standard, a dataset with its year); required on every row (WAVE2 1.9)."
+    }
+  },
+  "x-banco-table": {
+    "name": "bio/cell_parts",
+    "track": "T7",
+    "used_by": [
+      "cell"
+    ],
+    "second_table": true
+  }
+}

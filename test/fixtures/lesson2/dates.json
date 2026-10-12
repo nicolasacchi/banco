@@ -1,0 +1,50 @@
+{
+ "version": 1,
+ "description": "Shared vectors of Dates (Ruby and JS), skeleton of W2-0: the cases below are certain; the track T8 adds the rest (including the mutants of a wrong answer) before it builds the functions. 'args' are strings as the schema holds them; 'result' is the canonical output.",
+ "library": "dates",
+ "batch": "w2-2",
+ "track": "T8",
+ "functions": {
+  "add_days": {
+   "ruby": "add_days(date, days, start: :excluded)",
+   "js": "addDays(date, days, start)",
+   "doc": "The date after +days+ days; the start day is excluded (the default) or included.",
+   "cases": [
+    {
+     "args": [
+      "2026-03-10",
+      "90",
+      "excluded"
+     ],
+     "result": "2026-06-08"
+    },
+    {
+     "args": [
+      "2026-03-10",
+      "90",
+      "included"
+     ],
+     "result": "2026-06-07"
+    }
+   ]
+  },
+  "diff": {
+   "ruby": "diff(from, to, convention: :actual)",
+   "js": "diff(from, to, convention)",
+   "doc": "Days between two dates, actual or commercial (30/360).",
+   "cases": []
+  },
+  "due": {
+   "ruby": "due(date, days_after)",
+   "js": "due(date, daysAfter)",
+   "doc": "The due date of 'a N giorni data'.",
+   "cases": []
+  },
+  "year_fraction": {
+   "ruby": "year_fraction(days, year: 360)",
+   "js": "yearFraction(days, year)",
+   "doc": "days / 360 or days / 365 as an exact fraction.",
+   "cases": []
+  }
+ }
+}

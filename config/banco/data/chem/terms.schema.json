@@ -1,0 +1,342 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:banco:data:chem-terms",
+  "title": "banco data table chem/terms",
+  "description": "The Italian names of the seven changes of state (defaults from the design; the teacher's book confirms) with their direction and energy. Each value carries its source; a second table typed separately by another session is compared by the unit test; changed only by a D entry (WAVE2 1.9).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "changes",
+    "source"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "changes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "melting",
+        "freezing",
+        "vaporization",
+        "boiling",
+        "condensation",
+        "sublimation",
+        "deposition"
+      ],
+      "properties": {
+        "melting": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name_it",
+            "from",
+            "to",
+            "energy"
+          ],
+          "properties": {
+            "name_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 30
+            },
+            "also_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            },
+            "from": {
+              "enum": [
+                "solid",
+                "liquid",
+                "gas"
+              ]
+            },
+            "to": {
+              "enum": [
+                "solid",
+                "liquid",
+                "gas"
+              ]
+            },
+            "energy": {
+              "enum": [
+                "heat_in",
+                "heat_out"
+              ]
+            }
+          }
+        },
+        "freezing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name_it",
+            "from",
+            "to",
+            "energy"
+          ],
+          "properties": {
+            "name_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 30
+            },
+            "also_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            },
+            "from": {
+              "enum": [
+                "solid",
+                "liquid",
+                "gas"
+              ]
+            },
+            "to": {
+              "enum": [
+                "solid",
+                "liquid",
+                "gas"
+              ]
+            },
+            "energy": {
+              "enum": [
+                "heat_in",
+                "heat_out"
+              ]
+            }
+          }
+        },
+        "vaporization": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name_it",
+            "from",
+            "to",
+            "energy"
+          ],
+          "properties": {
+            "name_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 30
+            },
+            "also_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            },
+            "from": {
+              "enum": [
+                "solid",
+                "liquid",
+                "gas"
+              ]
+            },
+            "to": {
+              "enum": [
+                "solid",
+                "liquid",
+                "gas"
+              ]
+            },
+            "energy": {
+              "enum": [
+                "heat_in",
+                "heat_out"
+              ]
+            }
+          }
+        },
+        "boiling": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name_it",
+            "from",
+            "to",
+            "energy"
+          ],
+          "properties": {
+            "name_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 30
+            },
+            "also_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            },
+            "from": {
+              "enum": [
+                "solid",
+                "liquid",
+                "gas"
+              ]
+            },
+            "to": {
+              "enum": [
+                "solid",
+                "liquid",
+                "gas"
+              ]
+            },
+            "energy": {
+              "enum": [
+                "heat_in",
+                "heat_out"
+              ]
+            }
+          }
+        },
+        "condensation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name_it",
+            "from",
+            "to",
+            "energy"
+          ],
+          "properties": {
+            "name_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 30
+            },
+            "also_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            },
+            "from": {
+              "enum": [
+                "solid",
+                "liquid",
+                "gas"
+              ]
+            },
+            "to": {
+              "enum": [
+                "solid",
+                "liquid",
+                "gas"
+              ]
+            },
+            "energy": {
+              "enum": [
+                "heat_in",
+                "heat_out"
+              ]
+            }
+          }
+        },
+        "sublimation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name_it",
+            "from",
+            "to",
+            "energy"
+          ],
+          "properties": {
+            "name_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 30
+            },
+            "also_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            },
+            "from": {
+              "enum": [
+                "solid",
+                "liquid",
+                "gas"
+              ]
+            },
+            "to": {
+              "enum": [
+                "solid",
+                "liquid",
+                "gas"
+              ]
+            },
+            "energy": {
+              "enum": [
+                "heat_in",
+                "heat_out"
+              ]
+            }
+          }
+        },
+        "deposition": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name_it",
+            "from",
+            "to",
+            "energy"
+          ],
+          "properties": {
+            "name_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 30
+            },
+            "also_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            },
+            "from": {
+              "enum": [
+                "solid",
+                "liquid",
+                "gas"
+              ]
+            },
+            "to": {
+              "enum": [
+                "solid",
+                "liquid",
+                "gas"
+              ]
+            },
+            "energy": {
+              "enum": [
+                "heat_in",
+                "heat_out"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 300,
+      "description": "Where the value comes from (a book, a standard, a dataset with its year); required on every row (WAVE2 1.9)."
+    }
+  },
+  "x-banco-table": {
+    "name": "chem/terms",
+    "track": "T7",
+    "used_by": [
+      "phase_changes",
+      "chart heating"
+    ],
+    "second_table": true
+  }
+}

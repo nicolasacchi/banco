@@ -1,0 +1,72 @@
+{
+ "version": 1,
+ "description": "Shared vectors of Words (Ruby and JS), skeleton of W2-0: the cases below are certain; the track T3 adds the rest (including the mutants of a wrong answer) before it builds the functions. 'args' are strings as the schema holds them; 'result' is the canonical output.",
+ "library": "words",
+ "batch": "w2-1",
+ "track": "T3",
+ "functions": {
+  "split": {
+   "ruby": "split(notation)",
+   "js": "split(notation)",
+   "doc": "A form in split notation as pieces with their marks; the marks removed give the word.",
+   "cases": []
+  },
+  "syllables_es": {
+   "ruby": "syllables_es(word)",
+   "js": "syllablesEs(word)",
+   "doc": "The syllables of a Spanish word.",
+   "cases": [
+    {
+     "args": [
+      "queremos"
+     ],
+     "result": [
+      "que",
+      "re",
+      "mos"
+     ]
+    },
+    {
+     "args": [
+      "canción"
+     ],
+     "result": [
+      "can",
+      "ción"
+     ]
+    }
+   ]
+  },
+  "stress_es": {
+   "ruby": "stress_es(word)",
+   "js": "stressEs(word)",
+   "doc": "The 1-based index of the stressed syllable.",
+   "cases": [
+    {
+     "args": [
+      "queremos"
+     ],
+     "result": 2
+    },
+    {
+     "args": [
+      "canción"
+     ],
+     "result": 2
+    }
+   ]
+  },
+  "tilde_ok": {
+   "ruby": "tilde_ok?(word)",
+   "js": "tildeOk(word)",
+   "doc": "Whether the written tilde (or its absence) follows the stress rule.",
+   "cases": []
+  },
+  "present": {
+   "ruby": "present(verb, pattern)",
+   "js": "present(verb, pattern)",
+   "doc": "W2-2: the six present forms by pattern; spanish/verbs is the truth and the engine only cross-checks regular and stem-changing rows.",
+   "cases": []
+  }
+ }
+}

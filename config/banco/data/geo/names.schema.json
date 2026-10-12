@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:banco:data:geo-names",
+  "title": "banco data table geo/names",
+  "description": "id to Italian name (the exonym rule): BRA is Brasile. Each value carries its source; a second table typed separately by another session is compared by the unit test; changed only by a D entry (WAVE2 1.9).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "names"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "names": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 60
+      }
+    },
+    "exonym_notes_it": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400
+    }
+  },
+  "x-banco-table": {
+    "name": "geo/names",
+    "track": "T5",
+    "used_by": [
+      "map",
+      "select checks"
+    ],
+    "second_table": true
+  }
+}

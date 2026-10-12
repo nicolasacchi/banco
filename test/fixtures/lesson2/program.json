@@ -1,0 +1,27 @@
+{
+ "version": 1,
+ "description": "Shared vectors of ProgramGrammar (Ruby and JS), skeleton of W2-0: the cases below are certain; the track T9 adds the rest (including the mutants of a wrong answer) before it builds the functions. 'args' are strings as the schema holds them; 'result' is the canonical output.",
+ "library": "program",
+ "batch": "w2-2",
+ "track": "T9",
+ "functions": {
+  "parse": {
+   "ruby": "parse(statements)",
+   "js": "parse(statements)",
+   "doc": "Grammar, declared names, static caps (12 statements, depth 2, 6 variables, values within +-10^6): [] or findings.",
+   "cases": []
+  },
+  "run": {
+   "ruby": null,
+   "js": "run(statements, inputs)",
+   "doc": "JS only: a bounded run (200 executed blocks, 12 trace rows): {trace, outputs, memory, turns, findings}.",
+   "cases": []
+  },
+  "listing": {
+   "ruby": null,
+   "js": "listing(statements, dialect)",
+   "doc": "JS only: the generated Visual Basic listing from the structure.",
+   "cases": []
+  }
+ }
+}

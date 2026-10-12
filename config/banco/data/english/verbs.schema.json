@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:banco:data:english-verbs",
+  "title": "banco data table english/verbs",
+  "description": "About 120 irregular verbs with their variants and sound notes. Each value carries its source; a second table typed separately by another session is compared by the unit test; changed only by a D entry (WAVE2 1.9).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "verbs"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "verbs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "base",
+          "past",
+          "participle",
+          "source"
+        ],
+        "properties": {
+          "base": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16
+          },
+          "past": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16
+            },
+            "minItems": 1,
+            "maxItems": 3
+          },
+          "participle": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16
+            },
+            "minItems": 1,
+            "maxItems": 3
+          },
+          "family": {
+            "enum": [
+              "same_forms",
+              "vowel",
+              "participle_from_base",
+              "participle_from_past",
+              "none"
+            ]
+          },
+          "sound_note_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "source": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 300,
+            "description": "Where the value comes from (a book, a standard, a dataset with its year); required on every row (WAVE2 1.9)."
+          }
+        }
+      },
+      "minItems": 100,
+      "maxItems": 140
+    }
+  },
+  "x-banco-table": {
+    "name": "english/verbs",
+    "track": "T3",
+    "used_by": [
+      "paradigm principal_parts",
+      "verbs"
+    ],
+    "second_table": true
+  }
+}

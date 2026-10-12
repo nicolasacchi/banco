@@ -1,0 +1,45 @@
+{
+ "version": 1,
+ "library": "words",
+ "track": "T3",
+ "batch": "w2-1",
+ "description": "Vectors of the split notation (| stem and ending, [..] changed letters, + attached piece) shared by paradigm and word_parts: Lessons::Words.split and lesson/lib/words.js. Skeleton of W2-0.",
+ "cases": [
+  {
+   "input": "p[ue]d|o",
+   "pieces": [
+    {
+     "text": "p",
+     "mark": "stem"
+    },
+    {
+     "text": "ue",
+     "mark": "change"
+    },
+    {
+     "text": "d",
+     "mark": "stem"
+    },
+    {
+     "text": "o",
+     "mark": "ending"
+    }
+   ],
+   "word": "puedo"
+  },
+  {
+   "input": "pod|emos",
+   "pieces": [
+    {
+     "text": "pod",
+     "mark": "stem"
+    },
+    {
+     "text": "emos",
+     "mark": "ending"
+    }
+   ],
+   "word": "podemos"
+  }
+ ]
+}

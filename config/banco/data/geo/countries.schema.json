@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:banco:data:geo-countries",
+  "title": "banco data table geo/countries",
+  "description": "Area and population with year and source, per ISO alpha-3 id. Each value carries its source; a second table typed separately by another session is compared by the unit test; changed only by a D entry (WAVE2 1.9).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "countries"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "countries": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_()-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name_it",
+          "area_km2",
+          "population"
+        ],
+        "properties": {
+          "name_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "capital_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "area_km2": {
+            "type": "object",
+            "required": [
+              "value",
+              "year",
+              "source"
+            ],
+            "properties": {
+              "value": {
+                "type": "string",
+                "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
+                "description": "An exact number as a string, decimal comma (lesson/num)."
+              },
+              "year": {
+                "type": "integer",
+                "minimum": 1900,
+                "maximum": 2100
+              },
+              "source": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 300,
+                "description": "Where the value comes from (a book, a standard, a dataset with its year); required on every row (WAVE2 1.9)."
+              }
+            }
+          },
+          "population": {
+            "type": "object",
+            "required": [
+              "value",
+              "year",
+              "source"
+            ],
+            "properties": {
+              "value": {
+                "type": "string",
+                "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
+                "description": "An exact number as a string, decimal comma (lesson/num)."
+              },
+              "year": {
+                "type": "integer",
+                "minimum": 1900,
+                "maximum": 2100
+              },
+              "source": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 300,
+                "description": "Where the value comes from (a book, a standard, a dataset with its year); required on every row (WAVE2 1.9)."
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-banco-table": {
+    "name": "geo/countries",
+    "track": "T5",
+    "used_by": [
+      "map",
+      "checks"
+    ],
+    "second_table": true
+  }
+}
