@@ -2,30 +2,64 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:banco:data:geo-names",
   "title": "banco data table geo/names",
-  "description": "id to Italian name (the exonym rule): BRA is Brasile. Each value carries its source; a second table typed separately by another session is compared by the unit test; changed only by a D entry (WAVE2 1.9).",
+  "description": "id to Italian name (the exonym rule): BRA is Brasile. T5 data shape, version 2 (D-T5).",
   "type": "object",
-  "additionalProperties": false,
   "required": [
     "version",
+    "generated_by",
     "names"
   ],
+  "additionalProperties": false,
   "properties": {
     "version": {
-      "const": 1
+      "const": 2
+    },
+    "generated_by": {
+      "type": "string"
     },
     "names": {
       "type": "object",
-      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^([A-Z]{3}|[a-z0-9]+(-[a-z0-9]+)*|[a-z]+(_[a-z]+)*)$"
+      },
       "additionalProperties": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 60
+        "type": "object",
+        "required": [
+          "kind",
+          "name_it",
+          "source"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "country",
+              "territory",
+              "continent",
+              "ocean",
+              "region",
+              "city",
+              "river"
+            ]
+          },
+          "name_it": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name_en": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name_es": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
       }
-    },
-    "exonym_notes_it": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 400
     }
   },
   "x-banco-table": {

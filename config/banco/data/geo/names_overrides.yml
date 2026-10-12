@@ -1,0 +1,38 @@
+# The Italian spelling that differs from the Natural Earth label (NAME_IT), with the reason.
+# Rule (W2-D08, plan 1.9): the Italian exonym the school books use where there is one (San Paolo,
+# Città del Capo, Rio delle Amazzoni), else the local name in the Italian spelling. Changed only by a D entry.
+# id: name_it, why
+overrides:
+  sao-paulo: { name_it: San Paolo, why: "exonym of the school books" }
+  cape-town: { name_it: Città del Capo, why: "exonym of the school books" }
+  amazon: { name_it: Rio delle Amazzoni, why: "exonym of the school books; Natural Earth has 'delle Amazzoni'" }
+  astana: { name_it: Astana, why: "Natural Earth still has the name of 2019-2022" }
+  sri-jawewardenepura-kotte: { name_it: Sri Jayawardenapura Kotte, why: "Natural Earth's spelling" }
+  JEY: { name_it: Jersey, why: "short form" }
+  MCO: { name_it: Monaco, why: "short form (the Principato)" }
+  FRO: { name_it: Isole Fær Øer, why: "the usual Italian form has 'Isole'" }
+  CYN: { name_it: Cipro del Nord, why: "Natural Earth" }
+  XKX: { name_it: Kosovo, why: "Natural Earth" }
+  rhine: { name_it: Reno, why: "Italian exonym; Natural Earth has the English name" }
+  rhein: { name_it: Reno, why: "Italian exonym" }
+  euphrates: { name_it: Eufrate, why: "Italian exonym" }
+  firat: { name_it: Eufrate, why: "the Turkish name of the same river" }
+  tigris: { name_it: Tigri, why: "Italian exonym" }
+  dicle: { name_it: Tigri, why: "the Turkish name of the same river" }
+  jordan: { name_it: Giordano, why: "Italian exonym" }
+  rhone: { name_it: Rodano, why: "Italian exonym" }
+  elbe: { name_it: Elba, why: "Italian exonym" }
+  loire: { name_it: Loira, why: "Italian exonym" }
+  seine: { name_it: Senna, why: "Italian exonym" }
+  dnieper: { name_it: Dnepr, why: "Italian exonym" }
+  st-lawrence: { name_it: San Lorenzo, why: "Italian exonym" }
+  ganges: { name_it: Gange, why: "Italian exonym" }
+  indus: { name_it: Indo, why: "Italian exonym" }
+  yenisey: { name_it: Enisej, why: "Italian transliteration" }
+  huang: { name_it: Fiume Giallo, why: "Italian exonym (Huang He)" }
+  tagus: { name_it: Tago, why: "Italian exonym" }
+  yellow: { name_it: Fiume Giallo, why: "Italian exonym (Huang He)" }
+  salween: { name_it: Salween, why: "Natural Earth has the Chinese name (Nu)" }
+  blue-nile: { name_it: Nilo Azzurro, why: "Italian exonym" }
+  white-nile: { name_it: Nilo Bianco, why: "Italian exonym" }
+  ob: { name_it: Ob, why: "without the apostrophe of the transliteration" }
