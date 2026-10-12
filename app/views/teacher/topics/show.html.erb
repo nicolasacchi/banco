@@ -17,6 +17,7 @@
       <%= t("teacher.topic.summary", seq: latest.seq, lesson_seq: review.lesson_revision.seq) %>
       <strong><%= review.approved_latest? ? t("teacher.topic.is_approved") : (review.approved ? t("teacher.topic.approved_older", seq: review.approved.seq) : t("teacher.topic.not_approved")) %></strong>
     </p>
+    <% if review.approved_latest? && (words = Course::Decisions.attestation(review.key)) %><p class="hint" id="topic-attested" data-attested><%= t("teacher.topic.attested", words: words) %></p><% end %>
     <% if review.intro_it %><p class="hint"><%= review.intro_it %></p><% end %>
 
     <div data-controller="topic-review" id="guided-review"

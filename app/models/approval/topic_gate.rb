@@ -14,6 +14,9 @@ module Approval
   #
   # Nothing here decides: it says what is still missing, in the teacher's words (Teacher::Wording).
   # Reasons 6 and 7 come from the form, so the page asks for reasons 1-5 with .mechanical.
+  #
+  # The console attestation (D-260) waives exactly requirements 5 and 6 (the page opened and the confirmation
+  # that goes with it) and nothing else; the operator's own words are recorded in the decision instead.
   module TopicGate
     Result = Struct.new(:approvable, :reasons, keyword_init: true) do
       def to_h = { approvable: approvable, reasons: reasons }
@@ -26,9 +29,11 @@ module Approval
 
     module_function
 
-    def check(revision, confirm_seen: false, lesson_findings_reason_it: nil)
-      reasons = mechanical_reasons(revision)
-      reasons << CONFIRM unless confirm_seen
+    WAIVED = "topic_review_page_not_opened".freeze
+
+    def check(revision, confirm_seen: false, lesson_findings_reason_it: nil, waive_page_opened: false)
+      reasons = mechanical_reasons(revision, waive_page_opened: waive_page_opened)
+      reasons << CONFIRM unless confirm_seen || waive_page_opened
       if findings_need_reason?(revision)
         text = lesson_findings_reason_it.to_s.strip
         reasons << REASON_NEEDED unless REASON_RANGE.cover?(text.length)
@@ -42,7 +47,7 @@ module Approval
       Result.new(approvable: reasons.empty?, reasons: reasons)
     end
 
-    def mechanical_reasons(revision)
+    def mechanical_reasons(revision, waive_page_opened: false)
       reasons = []
       subject = revision.lesson.subject
       entry = map_entry(subject, revision.lesson.key)
@@ -61,7 +66,7 @@ module Approval
         gate = Review::Gate.check(item_revision)
         reasons << "item revision #{item_revision.id} is not approvable: #{gate.reasons.join('; ')}" unless gate.approvable
       end
-      reasons << "the topic review page of revision #{revision.id} was not opened" unless viewed?(revision)
+      reasons << "the topic review page of revision #{revision.id} was not opened" unless waive_page_opened || viewed?(revision)
       reasons
     end
 

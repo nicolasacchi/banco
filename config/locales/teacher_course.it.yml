@@ -70,6 +70,7 @@ it:
       missing: "L'agente non ha ancora composto questo argomento."
       summary: "Argomento versione %{seq}, lezione versione %{lesson_seq}."
       is_approved: "Hai approvato questa versione."
+      attested: "Approvato da console, senza aprire la pagina di revisione: «%{words}»"
       approved_older: "Hai approvato la versione %{seq}. Questa è più nuova."
       not_approved: "Non ancora approvato."
       approve_title: "Approvazione"

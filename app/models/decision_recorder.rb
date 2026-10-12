@@ -7,6 +7,9 @@
 #   - a valid CSRF token (the controller verifies it and marks the request), and
 #   - no banco_device cookie (the student's computer is read-only for /teacher).
 #
+# The one other origin is DecisionRecorder::Console, the operator's host console (bin/rails banco:decide,
+# D-260), which replaces the listener, proxy, CSRF and device checks by host-shell access.
+#
 # The row keeps who, from where, with what and when: decision kind, subject and
 # student, teacher login, groups, request id, remote address, user agent, path,
 # time and the payload. Rows are never updated (ledger triggers); the latest
@@ -58,7 +61,10 @@ class DecisionRecorder
 
     attr_reader :login, :os_user, :request_id
 
-    def initialize(login:, os_user: ENV["USER"].to_s)
+    # The account the process runs as (never ENV["USER"], which is unset or spoofable).
+    def self.default_os_user = Etc.getpwuid(Process.euid)&.name.to_s
+
+    def initialize(login:, os_user: self.class.default_os_user)
       @login = login.to_s.strip
       @os_user = os_user.to_s.gsub(/[^A-Za-z0-9_.-]/, "").first(40)
       @request_id = SecureRandom.uuid
@@ -326,14 +332,30 @@ class DecisionRecorder
     latest = TopicRevision.where(lesson: lesson).maximum(:seq)
     raise Invalid, "topic revision #{revision.id} is not the latest of #{lesson.key}: approve the latest" unless revision.seq == latest
 
+    attested = attestation
     gate = Approval::TopicGate.check(revision, confirm_seen: truthy?(@params[:confirm_seen]),
-                                               lesson_findings_reason_it: @params[:lesson_findings_reason_it])
+                                               lesson_findings_reason_it: @params[:lesson_findings_reason_it],
+                                               waive_page_opened: !attested.nil?)
     raise Invalid, gate.reasons unless gate.approvable
 
     payload = { topic_revision_id: revision.id, topic: lesson.key, seq: revision.seq, course_revision_id: revision.course_revision_id,
                 lesson_revision_id: revision.lesson_revision_id, item_revision_ids: Approval::TopicGate.item_revision_ids(revision) }
     payload[:lesson_findings_reason_it] = @params[:lesson_findings_reason_it].to_s.strip if Approval::TopicGate.findings_need_reason?(revision)
+    payload.merge!(attested: true, attest_it: attested, waived: [ Approval::TopicGate::WAIVED ]) if attested
     [ lesson.subject, nil, payload ]
+  end
+
+  # The operator's own words for a console approval that waives the page-opened requirement (D-260); nil without
+  # them. Only the console origin and only approve_topic: anywhere else the parameter is a refusal, never ignored
+  # silently into a normal approval (the web form cannot send it: the controller does not permit it).
+  def attestation
+    return nil unless @params.key?(:attest_it)
+    raise Invalid, "attest_it is accepted only from the console" unless @request.is_a?(Console)
+
+    words = @params[:attest_it].to_s.strip
+    raise Invalid, "attest_it must hold the operator's own words (1..1000 characters)" unless (1..1000).cover?(words.length)
+
+    words
   end
 
   # "Rimanda" for a lesson: back to the content agent with a code and a comment; it blocks the next approval.

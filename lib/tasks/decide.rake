@@ -6,7 +6,10 @@ namespace :banco do
   #
   # TEACHER must be in BANCO_TEACHER_USERS and BANCO_DECISIONS_ENABLED=1. PARAMS is a JSON object with the
   # other parameters of the kind, as the teacher's form would send them.
-  desc "Record a teacher decision from the console: KIND= TEACHER= [SUBJECT=] [REVISION=] [REASON=] [PARAMS=json] [CONFIRM=1]"
+  #
+  # approve_topic only: ATTEST_IT="<the operator's own words>" waives the single requirement that the topic review page
+  # was opened (every other requirement of the gate holds) and records the words in the decision.
+  desc "Record a teacher decision from the console: KIND= TEACHER= [SUBJECT=] [REVISION=] [REASON=] [PARAMS=json] [ATTEST_IT=words] [CONFIRM=1]"
   task decide: :environment do
     kind = ENV["KIND"].presence or abort "KIND=#{DecisionRecorder::KINDS.join('|')} is required"
     teacher = ENV["TEACHER"].presence or abort "TEACHER=<login from BANCO_TEACHER_USERS> is required"
@@ -15,7 +18,7 @@ namespace :banco do
     confirm = ENV["CONFIRM"] == "1"
 
     result = DecisionConsole.call(kind: kind, teacher: teacher, subject: ENV["SUBJECT"], revision: ENV["REVISION"], reason: ENV["REASON"],
-                                  params: extra, confirm: confirm, os_user: ENV["USER"].to_s)
+                                  params: extra, attest_it: ENV["ATTEST_IT"], confirm: confirm)
     unless result.ok
       warn "refused: #{kind}"
       result.errors.each { |e| warn "  - #{e}" }

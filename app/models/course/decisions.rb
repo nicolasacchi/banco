@@ -22,6 +22,16 @@ module Course
       nil
     end
 
+    # The attestation words of the latest approve_topic of +key+ when it was a console approval that waived the
+    # page-opened requirement (D-260), else nil.
+    def attestation(key)
+      Decision.where(kind: "approve_topic").order(:id).reverse_each do |d|
+        payload = JSON.parse(d.payload_json)
+        return (payload["attested"] ? payload["attest_it"].presence : nil) if payload["topic"] == key
+      end
+      nil
+    end
+
     # Whether some topic of the course map has an approval whose skills match the map's (A6.1).
     def approved_topic_in?(course)
       keys = course.body["topics"].to_h { |t| [ t["key"], t["skills"].sort ] }
