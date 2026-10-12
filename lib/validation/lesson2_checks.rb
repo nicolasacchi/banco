@@ -222,7 +222,20 @@ module Validation
         add("E-LESSON-ROLE", "#{base}/tone", "#{card['tone']} is not a colour role of #{@subject}'s palette", line: line) if card["tone"] && !Lessons::Palette.role?(@subject, card["tone"])
         role_contract(card, base, line, extra)
         blocks.each_with_index { |b, j| block_checks(b, "#{base}/blocks/#{j}", card) }
+        leak_checks(card, base)
         icon_roles(card, base, line)
+      end
+
+      # L4 and L5 (WAVE2 1.4): what the figures of the card print, and what they can be made to show, against the answers of its checks.
+      def leak_checks(card, base)
+        Lessons::Leaks.card(card, base).each { |f| add(f.code, f.path, f.message, line: line_of(card, f.path, base), rule: f.rule) }
+      end
+
+      # The line of the block that holds the pointer: the card's blocks are at "#{base}/blocks/N...".
+      def line_of(card, pointer, base)
+        n = pointer.delete_prefix("#{base}/blocks/")[/\A\d+/]
+        block = n && card["blocks"][n.to_i]
+        (block && block["line"]) || card["line"]
       end
 
       def role_contract(card, base, line, extra)
