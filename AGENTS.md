@@ -157,7 +157,7 @@ only), `HARNESS_PORT` 3200 (internal). Never `PORT`.
   (`Lessons::VettedData`), the libraries of `lib/lessons/{chrono,dates,num_words,money,chem,words,verbs,bits,program_grammar,sheet}.rb` with their JS twins
   in `lesson/lib/`, the caps `lesson2.types` (rules version 9) and the subject briefs `briefs/lesson-SUBJECT.md`. A track makes its piece `available` in
   the commit of its look gate.
-- The docs family (T8, D-272): `Lessons::Money` (Ruby, `lesson/lib/money.js`, `test/fixtures/lesson2/money.json`), `Lessons::Diagrams::Document` and
+- The docs family (T8, D-277): `Lessons::Money` (Ruby, `lesson/lib/money.js`, `test/fixtures/lesson2/money.json`), `Lessons::Diagrams::Document` and
   `lesson/diagrams/docs/document.js` (invoice, sheet and cascade), `lib/lessons/blocks/docs.rb` (`source` legal, `reveal`, `oral`), `Lessons::Oral` (the
   outline graded as an ordering by `CheckAnswer`, the model answer withheld), `lesson/blocks/{flip,source,reveal,oral}.js` (`mistake` is on `flip`),
   `Lessons::Blocks.apparatus_words` (`E-LESSON-APPARATUS-WORDS`), `LessonPagesHelper#lesson2_family_stylesheets` and `t.FAMILY` texts. Tests:

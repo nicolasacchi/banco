@@ -79,7 +79,7 @@ each, described under `pending` in `test/fixtures/lesson2/manifest.json` until t
 stylesheet (`app/assets/stylesheets/lesson/FAMILY.css`) and a locale file (`config/locales/lesson_FAMILY.it.yml`). Each subject has
 a brief addendum (`banco brief show lesson-SUBJECT`).
 
-## The docs family (T8, D-272)
+## The docs family (T8, D-277)
 
 `document` (`kind: invoice`, views `sheet` and `cascade`), `source` (`kind: legal`), `reveal` and `oral` are `available`; their texts are
 `config/locales/lesson_docs.it.yml` (`t.docs`) and their look `app/assets/stylesheets/lesson/docs.css`, linked by `lesson2_family_stylesheets` only
