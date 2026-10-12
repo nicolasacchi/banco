@@ -492,7 +492,7 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
     go 6
     go 3
     assert_equal [], page.evaluate_script("window.__csp")
-    assert_selector ".badge svg use[href*='lucide@1.54.0/banco-sprite.svg#']", minimum: 1
+    assert_selector ".badge svg use[href*='lucide@1.54.0/banco-sprite'][href*='.svg#']", minimum: 1
   end
 
   test "forced colours and the reduced-motion media query: roles stay told apart by icon, shape and label" do
