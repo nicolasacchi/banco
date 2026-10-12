@@ -79,7 +79,7 @@ each, described under `pending` in `test/fixtures/lesson2/manifest.json` until t
 stylesheet (`app/assets/stylesheets/lesson/FAMILY.css`) and a locale file (`config/locales/lesson_FAMILY.it.yml`). Each subject has
 a brief addendum (`banco brief show lesson-SUBJECT`).
 
-## Controls, live line and select scenes (T9, D-273)
+## Controls, live line and select scenes (T9, D-274)
 
 `draw.js` builds the controls a module declares through `controls(data)` (`lesson/diagrams/controls.js`). The values are one object `{ id: value }` that
 `layout` and `describe` read as `ctx.controls` (empty at the start, reset when the figure changes state): a toggle is `true` once flipped, a stepper is a number
