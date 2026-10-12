@@ -170,9 +170,7 @@ module Lessons
       # The whitelist projection (L1, L2): the drawing's fields. The rows are derived (our code computes them in the browser from these
       # inputs); nothing here is a solution field, and hidden rows are only a list of names.
       def served(data, mode: :student)
-        declared = Diagrams.schema_def("document").fetch("properties").keys
-        out = Diagrams.merge_states(data).slice(*declared)
-        out
+        Lessons::StudentBody.diagram_generic(data)
       end
 
       # The stored ids of select set +set+ in reading order (the order lesson/diagrams/docs/document.js targets() returns): the zones the

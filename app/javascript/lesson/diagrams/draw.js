@@ -59,7 +59,7 @@ function shapeNode(s, env = null) {
   const nodes = shapeNodeBase(s, env)
   // the chart family's patterns (T6): a fixed set of <pattern> defs per figure (patternDefs), filled in over the shape's own class
   if (s.pattern && s.pattern !== "solid" && s.kind !== "path" && env?.patId) for (const n of nodes) n.style.fill = `url(#${env.patId}-${s.pattern})`
-  if (s.target && nodes[0]) decorateTarget(nodes[0], s)
+  if (s.target && nodes[0] && !env?.selectHandled) decorateTarget(nodes[0], s)
   if (s.hitFor && nodes[0]) padHit(nodes[0], s.hitFor)
   return nodes
 }
@@ -300,7 +300,7 @@ export function mountDiagram(data, ctx, options = {}) {
     const moves = new Map()
     const animated = []
     const sameWidth = state.lastWidth === scene.width
-    const env = { defs: new Map(), scale: 1, id: figure.id || id, patId: `${id}-p` }
+    const env = { defs: new Map(), scale: 1, id: figure.id || id, patId: `${id}-p`, selectHandled: mode === "select" && !!options.select }
     scene.shapes.forEach((s) => {
       for (const node of shapeNode(s, env)) {
         if (s.key && s.kind !== "group") node.dataset.key = s.key
@@ -339,7 +339,7 @@ export function mountDiagram(data, ctx, options = {}) {
     // wave 2: the legend list, the select targets, the description of the visible state, the live sentence of a control
     clear(legendHost)
     if (scene.legend?.length) legendHost.appendChild(legendNode(scene.legend))
-    if (scene.targets?.length) {
+    if (scene.targets?.length && !(mode === "select" && options.select)) { // a select check's own buttons (selectTargets) stand in for these
       wireTargets(stageSvg, {
         selected: state.picked,
         onPick: (key, refresh) => {

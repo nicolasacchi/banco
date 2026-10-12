@@ -7,7 +7,9 @@ module LessonPagesHelper
 
   # The texts of the page, one nested object (config/locales/lesson.it.yml, then lesson_FAMILY.it.yml under the family's name).
   def lesson2_texts
-    LESSON_FAMILIES.to_h { |family| [ family, I18n.t("lesson_#{family}", default: {}).deep_stringify_keys ] }.merge(I18n.t("lesson2").deep_stringify_keys)
+    nested = LESSON_FAMILIES.to_h { |family| [ family, I18n.t("lesson_#{family}", default: {}).deep_stringify_keys ] }
+    # the chart family (T6) reads its texts flat, by their chart_* names (t.chart_less); the others by their family (t.docs.x)
+    nested.merge(nested.fetch("chart")).merge(I18n.t("lesson2").deep_stringify_keys)
   end
 
   # The stylesheet of each wave 2 family whose blocks or figures a lesson uses (app/assets/stylesheets/lesson/FAMILY.css), found in the body: the

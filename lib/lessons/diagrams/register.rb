@@ -80,10 +80,7 @@ module Lessons
         # The figure as the student's page gets it: the declared fields with the states merged. In :select mode everything that marks a
         # candidate is dropped (the targets are neutral, L3).
         def served(data, mode: :student)
-          declared = Diagrams.schema_def("register").fetch("properties").keys
-          merged = Diagrams.merge_states(data)
-          out = merged.slice(*declared)
-          out["states"] = merged["states"].map { |s| s.slice(*(declared + [ "op_it" ])) } if merged["states"]
+          out = Lessons::StudentBody.diagram_generic(data) # the declared fields, the states merged, the solution fields out
           return out unless mode == :select
 
           out = out.except(*NEUTRAL_DROPS)
