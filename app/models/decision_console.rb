@@ -15,7 +15,7 @@ class DecisionConsole
   def self.call(**args) = new(**args).call
 
   # params: any other parameter of the kind (finding_id, disposition, ...), as the web form would send it.
-  def initialize(kind:, teacher:, subject: nil, revision: nil, reason: nil, params: {}, confirm: false, os_user: ENV["USER"].to_s)
+  def initialize(kind:, teacher:, subject: nil, revision: nil, reason: nil, params: {}, confirm: false, os_user: DecisionRecorder::Console.default_os_user)
     @kind = kind.to_s
     @teacher = teacher
     @subject_key = subject.presence

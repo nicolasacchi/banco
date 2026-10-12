@@ -15,7 +15,7 @@ namespace :banco do
     confirm = ENV["CONFIRM"] == "1"
 
     result = DecisionConsole.call(kind: kind, teacher: teacher, subject: ENV["SUBJECT"], revision: ENV["REVISION"], reason: ENV["REASON"],
-                                  params: extra, confirm: confirm, os_user: ENV["USER"].to_s)
+                                  params: extra, confirm: confirm)
     unless result.ok
       warn "refused: #{kind}"
       result.errors.each { |e| warn "  - #{e}" }

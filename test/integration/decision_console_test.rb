@@ -162,4 +162,95 @@ class DecisionConsoleTest < ActionDispatch::IntegrationTest
   ensure
     %w[KIND TEACHER SUBJECT CONFIRM].each { |k| saved&.key?(k) ? ENV[k] = saved[k] : ENV.delete(k) }
   end
+
+  test "the default OS user is the process account and never reads ENV[USER]" do
+    saved = ENV["USER"]
+    ENV["USER"] = "spoofed"
+    expected = Etc.getpwuid(Process.euid).name.gsub(/[^A-Za-z0-9_.-]/, "").first(40)
+    assert_equal expected, DecisionRecorder::Console.new(login: "nik").os_user
+    result = DecisionConsole.call(kind: "approve_skill_graph", teacher: "nik", subject: "math", confirm: true)
+    assert result.ok
+    assert_equal "banco:decide #{expected}", Decision.order(:id).last.user_agent
+    assert_not_includes Decision.order(:id).last.user_agent, "spoofed"
+  ensure
+    saved ? ENV["USER"] = saved : ENV.delete("USER")
+  end
+
+  test "a teacher login with a comma or surrounding spaces is refused, one in spaces is trimmed" do
+    assert_no_difference "Decision.count" do
+      assert_not console("approve_skill_graph", subject: "math", confirm: true, teacher: "nik,mallory").ok
+      assert_not console("approve_skill_graph", subject: "math", confirm: true, teacher: "mallory, nik").ok
+    end
+    assert console("approve_skill_graph", subject: "math", confirm: true, teacher: "  nik  ").ok
+    assert_equal "nik", Decision.order(:id).last.teacher_login
+  end
+
+  test "a missing subject is refused with a message" do
+    assert_no_difference "Decision.count" do
+      result = console("approve_skill_graph", subject: "nope", confirm: true)
+      assert_not result.ok
+      assert_match(/no subject/, result.errors.join)
+    end
+  end
+
+  test "a dry run of dispose_finding leaves decisions and every touched table unchanged" do
+    tables = ActiveRecord::Base.connection.tables - %w[schema_migrations ar_internal_metadata]
+    counts = -> { tables.to_h { |t| [ t, ActiveRecord::Base.connection.select_value("SELECT COUNT(*) FROM #{ActiveRecord::Base.connection.quote_table_name(t)}") ] } }
+    before = counts.call
+    result = console("dispose_finding", params: { finding_id: @finding.id, disposition: "dismissed" }, reason: "Va bene.")
+    assert result.ok, result.errors.inspect
+    assert_not result.recorded
+    assert_equal before, counts.call
+    assert_not @finding.reload.disposed?
+  end
+
+  test "the rake task exits 1 on a refusal" do
+    Rake::Task.clear
+    Rails.application.load_tasks
+    saved = ENV.to_h.slice("KIND", "TEACHER", "SUBJECT", "CONFIRM", "PARAMS")
+    run = lambda do |env|
+      %w[KIND TEACHER SUBJECT CONFIRM PARAMS].each { |k| ENV.delete(k) }
+      ENV.update(env)
+      status = nil
+      capture_io do
+        Rake::Task["banco:decide"].reenable
+        Rake::Task["banco:decide"].invoke
+      rescue SystemExit => e
+        status = e.status
+      end
+      status
+    end
+    base = { "KIND" => "approve_skill_graph", "TEACHER" => "nik", "SUBJECT" => "math", "CONFIRM" => "1" }
+    assert_no_difference "Decision.count" do
+      assert_equal 1, run.call(base.merge("TEACHER" => "mallory"))
+      assert_equal 1, run.call(base.merge("PARAMS" => "{not json"))
+      assert_equal 1, run.call(base.merge("PARAMS" => "[1]"))
+      ENV["BANCO_DECISIONS_ENABLED"] = "0"
+      assert_equal 1, run.call(base)
+    end
+  ensure
+    %w[KIND TEACHER SUBJECT CONFIRM PARAMS].each { |k| saved&.key?(k) ? ENV[k] = saved[k] : ENV.delete(k) }
+  end
+
+  test "the agent token gets 404, not just 401, on a would-be decision route" do
+    token = ApiToken.issue!(role: "agent_claude", label: "console test")
+    headers = { "Authorization" => "Bearer #{token}", "Content-Type" => "application/json" }
+    [ "/api/v1/decisions", "/api/v1/teacher/decisions/approve_skill_graph", "/teacher/decisions/approve_skill_graph" ].each do |path|
+      assert_no_difference "Decision.count" do
+        on(:api, path, method: :post, headers: headers, params: { revision_id: @graph.id }.to_json)
+      end
+      assert_equal 404, response.status, path
+    end
+  end
+
+  test "the console origin is structurally unreachable from the web and the API" do
+    # decision.rb only reads the origin's ADDR and GROUP constants to label a stored row (Decision#console?).
+    allowed = %w[lib/tasks/decide.rake app/models/decision_console.rb app/models/decision_recorder.rb app/models/decision.rb]
+    files = Dir[Rails.root.join("{app,lib}/**/*").to_s].select { |f| File.file?(f) }.map { |f| Pathname(f).relative_path_from(Rails.root).to_s }
+    offenders = files.reject { |f| allowed.include?(f) }.select { |f| File.read(f).match?(/DecisionConsole|DecisionRecorder::Console/) }
+    assert_empty offenders
+    Dir[Rails.root.join("app/controllers/api/v1/**/*.rb").to_s].each do |f|
+      assert_no_match(/DecisionRecorder|DecisionConsole/, File.read(f), f)
+    end
+  end
 end

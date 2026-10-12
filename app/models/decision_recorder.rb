@@ -7,6 +7,9 @@
 #   - a valid CSRF token (the controller verifies it and marks the request), and
 #   - no banco_device cookie (the student's computer is read-only for /teacher).
 #
+# The one other origin is DecisionRecorder::Console, the operator's host console (bin/rails banco:decide,
+# D-260), which replaces the listener, proxy, CSRF and device checks by host-shell access.
+#
 # The row keeps who, from where, with what and when: decision kind, subject and
 # student, teacher login, groups, request id, remote address, user agent, path,
 # time and the payload. Rows are never updated (ledger triggers); the latest
@@ -58,7 +61,10 @@ class DecisionRecorder
 
     attr_reader :login, :os_user, :request_id
 
-    def initialize(login:, os_user: ENV["USER"].to_s)
+    # The account the process runs as (never ENV["USER"], which is unset or spoofable).
+    def self.default_os_user = Etc.getpwuid(Process.euid)&.name.to_s
+
+    def initialize(login:, os_user: self.class.default_os_user)
       @login = login.to_s.strip
       @os_user = os_user.to_s.gsub(/[^A-Za-z0-9_.-]/, "").first(40)
       @request_id = SecureRandom.uuid
