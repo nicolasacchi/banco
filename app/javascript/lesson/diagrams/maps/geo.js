@@ -30,13 +30,15 @@ export function setTableLoader(fn) {
   assets.tables = null
 }
 
-// Loads what a figure of base +name+ needs: its base and, unless the figure is a select one, the name tables.
+// Loads what a figure of base +name+ needs: its base and the name tables, or, for a select figure (names false), its select plate only:
+// the same geometry with opaque keys in place of every gazetteer id, and no name table (L3: nothing the page loads says which shape is which).
 export async function prepare(name, { names = true } = {}) {
-  if (!assets.bases.has(name)) assets.bases.set(name, (await loader(name)).default)
+  const key = names ? name : `select/${name}`
+  if (!assets.bases.has(key)) assets.bases.set(key, (await loader(key)).default)
   if (names && !assets.tables) assets.tables = await tableLoader()
 }
 
-export const baseOf = (name) => assets.bases.get(name) ?? null
+export const baseOf = (name, select = false) => assets.bases.get(select ? `select/${name}` : name) ?? null
 export const tablesLoaded = () => assets.tables !== null
 
 // The name of an id, read from the table the base declares for the collection ("geo/names", "history/places", "history/regions").

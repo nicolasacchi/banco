@@ -22,9 +22,26 @@ class MapsBasesTest < ActiveSupport::TestCase
   end
 
   test "the directory has one module per base and the text files" do
-    assert_equal (BASES.map { |b| "#{b}.js" } + %w[LICENSE PROVENANCE.md README.txt SHA256SUMS]).sort, DIR.children.map { |c| c.basename.to_s }.sort
+    assert_equal (BASES.map { |b| "#{b}.js" } + %w[LICENSE PROVENANCE.md README.txt SHA256SUMS select]).sort, DIR.children.map { |c| c.basename.to_s }.sort
+    assert_equal BASES.map { |b| "#{b}.js" }.sort, DIR.join("select").children.map { |c| c.basename.to_s }.sort
     assert_equal %w[arctic antarctic europe italy mediterraneo_antico world].sort, (%w[arctic antarctic europe italy mediterraneo_antico world] & BASES).sort
     assert_equal %w[africa asia north_america south_america oceania], (BASES & %w[africa asia north_america south_america oceania]).sort_by { |b| %w[africa asia north_america south_america oceania].index(b) }
+  end
+
+  test "the select plates carry the geometry under opaque keys and nothing that names (L3)" do
+    BASES.each do |name|
+      full = base(name)
+      plate = Maps::Base.plate(name)
+      text = DIR.join("select/#{name}.js").read
+      keys = Maps::SelectKeys.read.dig("bases", name)
+      assert_equal %w[areas groups lines places].flat_map { |c| Array(full[c]).map { |r| r["id"] } }.sort, keys.keys.sort, "#{name}: every id has a key"
+      assert_equal keys.values.size, keys.values.uniq.size, "#{name}: keys are unique"
+      assert_equal full["areas"].map { |a| a["d"] }.sort, plate["areas"].map { |a| a["d"] }.sort, "#{name}: the shapes are the same"
+      %w[reads oceans tolerance].each { |k| assert_not plate.key?(k), "#{name}: no #{k} in the plate" }
+      keys.each_key { |id| assert_not text.include?(%("#{id}")), "#{name}: #{id} is in the plate" unless id == name }
+      assert_equal plate["areas"].map { |a| a["id"] }, plate["areas"].map { |a| a["id"] }.sort_by { |k| k[1..].to_i }, "#{name}: plate order is by key, not alphabetical by id"
+      assert_not_equal full["areas"].map { |a| a["id"] }.sort.map { |i| keys[i] }, full["areas"].map { |a| a["id"] }.sort.map { |i| keys[i] }.sort_by { |k| k[1..].to_i }, "#{name}: the keys are shuffled" if full["areas"].size > 3
+    end
   end
 
   test "the build is deterministic: two builds are byte for byte the same" do
@@ -382,7 +399,7 @@ class MapsBasesTest < ActiveSupport::TestCase
 
   test "VendorTest's checksum rule holds for this directory: every file listed once, in the sha256sum format" do
     sums = DIR.join("SHA256SUMS").read.lines.map { |l| l.strip.split(/\s+/, 2) }
-    assert_equal sums.map(&:last).sort, (DIR.children.map { |c| "./#{c.basename}" } - [ "./SHA256SUMS" ]).sort
+    assert_equal sums.map(&:last).sort, (DIR.glob("**/*").select(&:file?).map { |c| "./#{c.relative_path_from(DIR)}" } - [ "./SHA256SUMS" ]).sort
     sums.each { |sha, f| assert_equal sha, Digest::SHA256.file(DIR.join(f)).hexdigest, f }
   end
 end

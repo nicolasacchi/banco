@@ -42,6 +42,13 @@ export function decorateTarget(node, shape) {
   node.setAttribute("focusable", "true")
 }
 
+// An invisible padded hit shape of a small target (at least 24 x 24 px): a click on it is a click on the target.
+export function padHit(node, key) {
+  node.setAttribute("class", `${node.getAttribute("class") ?? ""} dg-hitpad`.trim())
+  node.dataset.hitFor = key
+  node.setAttribute("aria-hidden", "true")
+}
+
 // Arrows move to the nearest target in that direction (reading order when none lies that way); Enter and Space pick; one tab stop.
 // Returns refresh(selectedKey), which shows the pick without wiring again.
 export function wireTargets(root, { selected, onPick }) {
@@ -57,6 +64,9 @@ export function wireTargets(root, { selected, onPick }) {
       n.setAttribute("aria-pressed", keyOf(n) === key ? "true" : "false")
       n.classList.toggle("is-selected", keyOf(n) === key)
     })
+  }
+  for (const pad of root.querySelectorAll("[data-hit-for]")) {
+    pad.addEventListener("click", () => nodes.find((n) => keyOf(n) === pad.dataset.hitFor)?.dispatchEvent(new MouseEvent("click", { bubbles: true })))
   }
   const stop = nodes.find((n) => keyOf(n) === selected) ?? nodes[0]
   nodes.forEach((n) => n.setAttribute("tabindex", n === stop ? "0" : "-1"))

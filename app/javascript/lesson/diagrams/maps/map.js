@@ -22,6 +22,7 @@ import { run } from "lesson/diagrams/run"
 export const type = "map"
 export { schema }
 
+const MIN_TARGET = 24 // CSS px: a select target is at least this wide and high (E-DIAGRAM-TARGET)
 const HELD_BACK = ["compare", "inset"]
 const GRATICULE = { equator: "l'equatore", tropics: "i tropici", polar_circles: "i circoli polari", greenwich: "il meridiano di Greenwich" }
 const LABELS_DRAWN = 8 // validation_rules lesson2.types.map.labels_drawn
@@ -32,8 +33,8 @@ export const prepare = (data, ctx = {}) => G.prepare(data.base, { names: ctx.mod
 
 // ---- semantic checks (the mirror of Lessons::Diagrams::Map.static) ----------------------------------------------------------
 
-export function semanticAll(data) {
-  const doc = G.baseOf(data.base)
+export function semanticAll(data, select = false) {
+  const doc = G.baseOf(data.base, select)
   if (!doc) return [{ path: "/base", message: `the base ${data.base} is not loaded`, code: "E-DIAGRAM-LAYOUT" }]
   const out = []
   const add = (path, message) => out.push({ path, message })
@@ -62,7 +63,7 @@ export function semanticAll(data) {
   return out
 }
 
-export const semantic = (data) => semanticAll(data)[0] ?? null
+export const semantic = (data, ctx) => semanticAll(data, ctx?.mode === "select")[0] ?? null
 
 const lab = (add, path, text) => {
   if (text !== undefined && words(text) > 6) add(path, `a label has ${words(text)} words (at most 6)`)
@@ -232,14 +233,14 @@ export function describe(data, ctx = {}) {
 
 function setOf(data, eff, ctx) {
   if (ctx?.set && G.SETS.includes(ctx.set)) return ctx.set
-  return G.SETS.find((s) => targetList(data, eff, s).length > 0) ?? "areas"
+  return G.SETS.find((s) => targetList(data, eff, s, ctx?.mode === "select").length > 0) ?? "areas"
 }
 
 const SET_WORDS = { areas: "zone", places: "luoghi", bands: "fasce", lines: "linee", points: "punti" }
 
 function describeSelect(data, eff, ctx) {
   const set = setOf(data, eff, ctx)
-  return `Una carta: ${G.baseOf(data.base).title_it}. Ci sono ${targetList(data, eff, set).length} ${SET_WORDS[set]} da toccare.`
+  return `Una carta: ${G.baseOf(data.base, true).title_it}. Ci sono ${targetList(data, eff, set, true).length} ${SET_WORDS[set]} da toccare.`
 }
 
 const yearsOf = (sl) => (sl && sl.from !== sl.to ? G.yearList(sl) : [sl ? Number(sl.from) : null])
@@ -301,8 +302,8 @@ export function printViews(data) {
 
 // ---- targets ----------------------------------------------------------------------------------------------------------------------
 
-function targetList(data, eff, set) {
-  const doc = G.baseOf(data.base)
+function targetList(data, eff, set, select = false) {
+  const doc = G.baseOf(data.base, select)
   const detail = data.detail ?? G.defaultDetail(doc)
   const [w, s, e, n] = doc.box
   const midLon = (w + e) / 2
@@ -351,10 +352,10 @@ const defaultTarget = (u) => u.bbox[2] - u.bbox[0] >= G.TOO_SMALL && u.bbox[3] -
 
 // [{ key: "t1", id, bbox, neutral_it }] of a set in reading order (the Ruby twin gives the ids and the phrases). `id` is for the tests
 // and the server: the page keeps the key.
-export function targets(data, set) {
+export function targets(data, set, { select = false } = {}) {
   if (!G.SETS.includes(set)) return []
-  const doc = G.baseOf(data.base)
-  return targetList(data, G.effective(data, 0), set)
+  const doc = G.baseOf(data.base, select)
+  return targetList(data, G.effective(data, 0), set, select)
     .sort(G.byReading)
     .map((t, i) => ({ key: `t${i + 1}`, id: t.id, bbox: t.bbox, neutral_it: G.compass(doc, t.x, t.y), x: t.x, y: t.y, item: t }))
 }
@@ -445,9 +446,9 @@ export function layout(data, opts) {
 }
 
 function build(data, ctx) {
-  const doc = G.baseOf(data.base)
-  if (!doc) return fail("/base", `the base ${data.base} is not loaded`, "E-DIAGRAM-LAYOUT")
   const select = ctx.mode === "select"
+  const doc = G.baseOf(data.base, select)
+  if (!doc) return fail("/base", `the base ${data.base} is not loaded`, "E-DIAGRAM-LAYOUT")
   if (!select && !G.tablesLoaded()) return fail("/base", "the name tables are not loaded", "E-DIAGRAM-LAYOUT")
   const eff = G.effective(data, ctx.state)
   const detail = data.detail ?? G.defaultDetail(doc)
@@ -455,7 +456,7 @@ function build(data, ctx) {
   const year = select ? null : yearOf(eff, ctx.controls)
   const v = select ? null : view(data, eff, year)
   const set = select ? setOf(data, eff, ctx) : null
-  const picked = select ? targets(data, set) : []
+  const picked = select ? targets(data, set, { select }) : []
   const children = []
   const outside = []
   const legend = []
@@ -539,6 +540,7 @@ function build(data, ctx) {
 
   // the select targets: one neutral style, reading order, keys t1..tN, a compass phrase and nothing else
   const targetOut = []
+  const pads = []
   if (select) {
     picked.forEach((t, i) => {
       const aria = `zona ${i + 1} di ${picked.length}, ${t.neutral_it}`
@@ -553,7 +555,15 @@ function build(data, ctx) {
       } else outside.push({ kind: "circle", cx: px(frame, t.x), cy: py(frame, t.y), r: 12, cls: "dg-cand dg-cand-dot", ...base })
       outside.push({ kind: "text", x: px(frame, t.x), y: py(frame, t.y) + 5, px: ctx.fontPx, text: String(i + 1), cls: "dg-tnum" })
       targetOut.push({ key: t.key, bbox: t.bbox, neutral_it: t.neutral_it })
+      // a small shape gets an invisible padded hit shape of 24 x 24 px at its anchor; two chosen `candidates` that would share one are E-DIAGRAM-TARGET
+      if (set === "areas" && ((t.bbox[2] - t.bbox[0]) * frame.k < MIN_TARGET || (t.bbox[3] - t.bbox[1]) * frame.k < MIN_TARGET)) pads.push({ key: t.key, x: px(frame, t.x), y: py(frame, t.y) })
     })
+    for (const a of pads) {
+      const clash = pads.find((b) => b !== a && Math.hypot(a.x - b.x, a.y - b.y) < MIN_TARGET / 2)
+      // (the default targets, no `candidates`, are the author's no choice: their pads may overlap, the later shape wins)
+      if (clash && (eff.candidates ?? []).length > 0) return fail("/candidates", "two small areas are too close to touch one by one at 390 px: leave one out of the candidates", "E-DIAGRAM-TARGET")
+      outside.push({ kind: "circle", cx: a.x, cy: a.y, r: MIN_TARGET / 2, cls: "dg-hitpad-shape", hitFor: a.key })
+    }
   }
 
   ctx.shapes.push({ kind: "group", at: [frame.x, frame.y], scale: frame.k, cls: "dg-mapgroup", children }, ...outside)
@@ -562,8 +572,8 @@ function build(data, ctx) {
   let below = frame.y + frame.h + 6
   if (!G.polar(doc)) {
     const rowY = frame.y + frame.h + 4
-    label(ctx, "Ovest", frame.x, rowY, { anchor: "start", cls: "dg-compass" })
-    label(ctx, "Est", frame.x + frame.w, rowY, { anchor: "end", cls: "dg-compass" })
+    label(ctx, "Ovest", frame.x + 2, rowY, { anchor: "start", cls: "dg-compass" })
+    label(ctx, "Est", frame.x + frame.w - 6, rowY, { anchor: "end", cls: "dg-compass" })
     const cx = ctx.width / 2
     ctx.shapes.push({ kind: "polygon", points: [[cx - 20, rowY + 3], [cx - 12, rowY + ctx.lineH - 4], [cx - 20, rowY + ctx.lineH - 9], [cx - 28, rowY + ctx.lineH - 4]], cls: "dg-north" })
     label(ctx, "Nord", cx - 6, rowY, { anchor: "start", cls: "dg-compass" })
@@ -574,7 +584,8 @@ function build(data, ctx) {
   // labels: text when at most 8 and all fit, else numbered callouts with the legend naming them
   const box = { x0: frame.x, x1: frame.x + frame.w, y0: frame.y, y1: frame.y + frame.h }
   const placed = items.map((it) => ({ ...it, px: px(frame, it.x), py: py(frame, it.y) }))
-  let callouts = placed.length > LABELS_DRAWN
+  // on a narrow frame (a phone) two or more labels are numbered callouts: text labels collide there and cover the map
+  let callouts = placed.length > LABELS_DRAWN || (ctx.width < 420 && placed.length >= 2)
   if (!callouts) {
     const mark = ctx.labels.length
     for (const it of placed) {
@@ -591,7 +602,7 @@ function build(data, ctx) {
     const taken = []
     const crowded = []
     placed.forEach((it, i) => {
-      const spot = badgeSpot(it.px, it.py, r, box, taken, ctx.lineH)
+      const spot = badgeSpot(it.px, it.py, r, box, taken, ctx.lineH, ctx.width < 420)
       if (spot) taken.push(spot)
       else crowded.push({ it, i })
       const at = spot ?? [it.px, it.py]
@@ -645,14 +656,14 @@ function centred(ctx, it, box) {
 }
 
 // The place of a callout: on its anchor, or the nearest free spot around it (a circle of radius r that touches none taken, inside the frame).
-function badgeSpot(x, y, r, box, taken, lineH) {
+function badgeSpot(x, y, r, box, taken, lineH, beside = false) {
   // apart as circles, and so that the two numbers (a box as high as a line, about 30 px wide) do not touch
   const apart = (cx, cy, [tx, ty]) => Math.hypot(tx - cx, ty - cy) >= 2 * r + 2 && (Math.abs(tx - cx) >= 30 || Math.abs(ty - cy) >= lineH + 1)
   const free = (cx, cy) => cx - r >= box.x0 && cx + r <= box.x1 && cy - r >= box.y0 && cy + r <= box.y1 && taken.every((t) => apart(cx, cy, t))
   const sx = Math.min(Math.max(x, box.x0 + r), box.x1 - r)
   const sy = Math.min(Math.max(y, box.y0 + r), box.y1 - r)
-  if (free(sx, sy)) return [sx, sy]
-  for (let ring = 1; ring <= 14; ring++) {
+  if (!beside && free(sx, sy)) return [sx, sy]
+  for (let ring = beside ? 2 : 1; ring <= 14; ring++) {
     for (let a = 0; a < 16; a++) {
       const cx = sx + Math.cos((a * Math.PI) / 8) * ring * (r + 2)
       const cy = sy + Math.sin((a * Math.PI) / 8) * ring * (r + 2)

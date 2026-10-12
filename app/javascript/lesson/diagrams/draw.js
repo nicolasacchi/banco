@@ -8,7 +8,7 @@ import { button, clear, el, icon, spriteHref, svg, uid } from "lesson/dom"
 import { HOME_PALETTE, STATUS, describe, layout, load, moduleFor, stateCount } from "lesson/diagrams/registry"
 import { tryValues, equationTex } from "lesson/diagrams/balance"
 import { renderInlineRich, renderMath, renderRich } from "lesson/text"
-import { controlNode, decorateTarget, defsNode, legendNode, patternRef, wireTargets } from "lesson/diagrams/scene_extras"
+import { controlNode, decorateTarget, defsNode, legendNode, padHit, patternRef, wireTargets } from "lesson/diagrams/scene_extras"
 
 const MARKERS = {
   // shapes of the palette (A6), drawn in a w x h box at x, y
@@ -32,6 +32,7 @@ const MARKERS = {
 function shapeNode(s, env = null) {
   const nodes = shapeNodeBase(s, env)
   if (s.target && nodes[0]) decorateTarget(nodes[0], s)
+  if (s.hitFor && nodes[0]) padHit(nodes[0], s.hitFor)
   return nodes
 }
 

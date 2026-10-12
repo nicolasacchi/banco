@@ -56,15 +56,16 @@
 .l2 .button.dg-ctlbtn:disabled { opacity: 0.4; }
 
 /* select targets (L3): one neutral style for every candidate, a focus ring, a thicker outline once picked (never colour alone) */
-.dg-cand { fill: color-mix(in srgb, var(--primary) 14%, var(--surface)); stroke: var(--muted); stroke-width: 1.6px; cursor: pointer; fill-rule: evenodd; stroke-linejoin: round; }
-.dg-cand:hover { fill: color-mix(in srgb, var(--primary) 26%, var(--surface)); }
-.dg-cand-dot { stroke-width: 2.5px; }
+.dg-cand { fill: color-mix(in srgb, var(--primary) 30%, var(--surface)); stroke: var(--text); stroke-width: 2px; cursor: pointer; fill-rule: evenodd; stroke-linejoin: round; }
+.dg-cand:hover { fill: color-mix(in srgb, var(--primary) 44%, var(--surface)); }
+.dg-hitpad-shape { fill: transparent; stroke: none; pointer-events: all; cursor: pointer; }
+.dg-cand-dot { stroke-width: 3px; fill: color-mix(in srgb, var(--primary) 40%, var(--surface)); }
 .dg-cand-band { fill-opacity: 0.6; stroke-dasharray: 5 4; }
 .dg-cand-line { fill: none; stroke: transparent; stroke-width: 26px; stroke-linecap: round; pointer-events: stroke; cursor: pointer; }
 .dg-line-neutral { stroke: var(--primary); stroke-width: 3px; }
 .dg-target:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .dg-cand-line:focus-visible { stroke: color-mix(in srgb, var(--focus) 40%, transparent); outline: none; }
-.dg-target.is-selected { fill: color-mix(in srgb, var(--primary) 42%, var(--surface)); stroke: var(--text); stroke-width: 3.4px; stroke-dasharray: none; }
+.dg-target.is-selected { fill: color-mix(in srgb, var(--primary) 70%, var(--surface)); stroke: var(--text); stroke-width: 4px; stroke-dasharray: none; }
 .dg-cand-line.is-selected { stroke: color-mix(in srgb, var(--primary) 45%, transparent); }
 .dg-tnum { display: none; font-weight: 800; text-anchor: middle; fill: var(--text); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; pointer-events: none; }
 

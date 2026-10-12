@@ -325,12 +325,15 @@ module Lessons
 
         eff = effective(data, 0)
         set ||= SETS.find { |s| target_list(data, eff, s).any? } || "areas"
-        out = eff.slice("type", "alt_it", "caption_it", "size", "base", "detail", "mercator", "graticule", "candidates")
+        out = eff.slice("type", "alt_it", "caption_it", "size", "base", "detail", "mercator", "graticule")
+        base = data["base"]
+        key = ->(id) { Maps::SelectKeys.key(base, id) or raise ArgumentError, "#{id} has no select key on #{base}" }
+        out["candidates"] = eff["candidates"].map(&key) if set.to_s == "areas" && eff["candidates"]
         case set.to_s
         when "bands" then out["bands"] = eff["bands"].to_a.map { |b| b.slice("from_lat", "to_lat") }
-        when "places" then out["places"] = eff["places"].to_a.map { |p| p.slice("id") }
+        when "places" then out["places"] = eff["places"].to_a.map { |p| { "id" => key.call(p["id"]) } }
         when "points" then out["points"] = eff["points"].to_a.map { |p| p.slice("lat", "lon") }
-        when "lines" then out["lines"] = eff["lines"].to_a.map { |l| l.slice("id", "kind", "lon", "lat") }
+        when "lines" then out["lines"] = eff["lines"].to_a.map { |l| l["id"] ? { "id" => key.call(l["id"]) } : l.slice("kind", "lon", "lat") }
         end
         out
       end
@@ -382,7 +385,8 @@ module Lessons
       def ordered(data, set)
         raise ArgumentError, "unknown target set #{set.inspect}" unless SETS.include?(set.to_s)
 
-        target_list(data, effective(data, 0), set).sort_by { |t| Maps::Base.reading_key(t["x"], t["y"], t["id"]) }
+        base = data["base"]
+        target_list(data, effective(data, 0), set).sort_by { |t| Maps::Base.reading_key(t["x"], t["y"], Maps::SelectKeys.key(base, t["id"]) || t["id"]) }
       end
 
       # The stored ids of the targets of +set+ in reading order (the same order as the JS targets()).

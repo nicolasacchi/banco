@@ -120,9 +120,9 @@ class MapsGallerySystemTest < ApplicationSystemTestCase
         ids.each { |sid| assert_nil html.gsub(/aria-label="[^"]*"/, "")[/(?<![A-Za-z0-9])#{Regexp.escape(sid)}(?![A-Za-z0-9])/], "#{set}: the id #{sid} is in the page" }
         assert_nil html[/Brasile|Argentina|Roma|Amazzoni|foresta|ghiaccio|Italia|Lazio|fascia calda/i], "#{set}: a name is in the page"
         assert_equal [], page.evaluate_script("[...document.querySelectorAll('##{id} .dg-label')].map((l) => l.textContent).filter((t) => !/^(Ovest|Est|Nord|Quota \\(m\\)|\\d+|Altezze.*|0|100|200 km)$/.test(t.trim()))"), "#{set}: no label but the compass and the axes"
-        small = page.evaluate_script("[...document.querySelectorAll('##{id} [data-target]')].map((n) => { const r = n.getBoundingClientRect(); return [n.dataset.target, Math.round(r.width), Math.round(r.height)] }).filter(([, w, h]) => w < 24 || h < 24)")
-        # (an author's thin belts are E-DIAGRAM-TARGET at the phone, from the render check; the gallery's belts are thin on purpose)
-        assert_equal [], small, "#{set}: targets at least 24 px at the #{name}" unless set == "areas" || (set == "belts" && name == "phone")
+        # every target is at least 24 x 24 px at both sizes: its own shape, or its invisible padded hit shape (areas and belts too)
+        small = page.evaluate_script("[...document.querySelectorAll('##{id} [data-target]')].map((n) => { const rs = [n, ...document.querySelectorAll('##{id} [data-hit-for=\"' + n.dataset.target + '\"]')].map((e) => e.getBoundingClientRect()); const w = Math.max(...rs.map((r) => r.width)); const h = Math.max(...rs.map((r) => r.height)); return [n.dataset.target, Math.round(w), Math.round(h)] }).filter(([, w, h]) => w < 24 || h < 24)")
+        assert_equal [], small, "#{set}: targets at least 24 px at the #{name}"
         # one tab stop; the arrows move; Enter picks and Enter again takes it back
         assert_equal 1, page.evaluate_script("document.querySelectorAll('##{id} [data-target][tabindex=\"0\"]').length")
         page.execute_script("document.querySelector('##{id} [data-target][tabindex=\"0\"]').focus()")

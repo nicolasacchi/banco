@@ -47,7 +47,11 @@ class MapsTypesTest < ActiveSupport::TestCase
           labels = served.fetch("belts", []).map { |b| b["label_it"] }.uniq
           assert_operator labels.size, :<=, 1, "#{v['name']}: every belt has the same neutral label"
           served["points"].to_a.each { |pt| assert_nil pt["label_it"] } if type == "map"
-          v["targets"][set].each { |id| assert_not_includes json.gsub(/"candidates":\[[^\]]*\]/, "").gsub(/"id":"[^"]*"/, ""), id, "#{v['name']}: #{id}" } if type == "map" && set == "areas"
+          if type == "map"
+            ids = Maps::SelectKeys.read.dig("bases", v["data"]["base"]).keys.reject { |i| i == v["data"]["base"] }
+            ids.each { |id| assert_not_includes json, %("#{id}"), "#{v['name']} #{set}: the id #{id} is in the served select figure" }
+            assert_equal v["targets"][set].map { |id| Maps::SelectKeys.key(v["data"]["base"], id) }.compact.sort, (served["candidates"].to_a + served["places"].to_a.map { |p| p["id"] } + served["lines"].to_a.filter_map { |l| l["id"] }).sort, "#{v['name']} #{set}: keys stand for the stored ids" if %w[places lines].include?(set) || served["candidates"]
+          end
           assert_not_includes served.keys, "states"
         end
       end

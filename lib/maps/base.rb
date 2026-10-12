@@ -24,6 +24,12 @@ module Maps
       @bases[name] ||= JSON.parse(File.read(File.join(DIR, "#{name}.js")).sub(/\A.*?export default /m, "").sub(/;\s*\z/, "")).freeze
     end
 
+    # The select plate of a base (select/<base>.js): the same geometry with opaque keys instead of ids (Maps::SelectKeys, L3).
+    def plate(name)
+      @plates ||= {}
+      @plates[name] ||= JSON.parse(File.read(File.join(DIR, "select", "#{name}.js")).sub(/\A.*?export default /m, "").sub(/;\s*\z/, "")).freeze
+    end
+
     # { "id" => row } of a vetted table, "geo/names" (names), "history/places", "history/regions".
     def table(name)
       @tables ||= {}

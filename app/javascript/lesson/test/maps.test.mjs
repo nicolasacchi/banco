@@ -15,6 +15,7 @@ const mods = {
   insolation: await import("lesson/diagrams/maps/insolation"),
   cross_section: await import("lesson/diagrams/maps/cross_section")
 }
+const SELECT_KEYS = JSON.parse(readFileSync(new URL("lib/maps/select_keys.json", root), "utf8"))
 G.setBaseLoader((name) => import(pathToFileURL(new URL(`public/vendor/banco-maps@1/${name}.js`, root).pathname).href))
 
 const WIDTHS = [320, 390, 768, 1280]
@@ -65,13 +66,28 @@ for (const type of Object.keys(mods)) {
         assert.deepEqual(t.map((x) => x.id), ids, `targets ${set}`)
         assert.deepEqual(t.map((x) => x.neutral_it), v.neutral[set], `neutral ${set}`)
         assert.deepEqual(t.map((x) => x.key), ids.map((_, i) => `t${i + 1}`), "keys in reading order")
-        // select mode: a scene of the same figure, the targets t1..tN, nothing marked and no name in the page
-        const scene = mod.layout(v.data, { width: 390, fontPx: 20, subject: v.subject, mode: "select", set })
+        // select mode: a scene of the figure as the server serves it (opaque keys, the select plate), the targets t1..tN, nothing marked and no name in the page
+        const served = type === "map" ? v.served_select[set] : v.data
+        if (type === "map") {
+          await mod.prepare(served, { mode: "select" })
+          const keys = SELECT_KEYS.bases[v.data.base]
+          assert.deepEqual(mod.targets(served, set, { select: true }).map((x) => x.id), ids.map((id) => keys[id] ?? id), `the plate lists the targets of ${set} in the same order`)
+        }
+        const scene = mod.layout(served, { width: 390, fontPx: 20, subject: v.subject, mode: "select", set })
         assert.ok(!scene.error, `select ${set}: ${scene.error?.message}`)
         assert.deepEqual(scene.targets.map((x) => x.key), ids.map((_, i) => `t${i + 1}`))
         assert.equal(scene.legend.length, 0)
         const text = JSON.stringify(scene)
         for (const id of ids) if (/^[A-Z]{3}$/.test(id) || /^[a-z-]+$/.test(id)) assert.ok(!text.includes(`"${id}"`), `the id ${id} is not in the select scene`)
+        if (type === "map") {
+          const served_text = JSON.stringify(served)
+          const plate = readFileSync(new URL(`public/vendor/banco-maps@1/select/${v.data.base}.js`, root), "utf8")
+          for (const id of Object.keys(SELECT_KEYS.bases[v.data.base]).filter((x) => x !== v.data.base)) {
+            assert.ok(!served_text.includes(`"${id}"`), `the id ${id} is not in the served select figure`)
+            assert.ok(!plate.includes(`"${id}"`), `the id ${id} is not in the select plate`)
+            assert.ok(!text.includes(`"${id}"`), `the id ${id} is not in the select scene`)
+          }
+        }
         assert.ok(!/class":"[^"]*(mk-|role-|fl-|tn-)/.test(text.replace(/dg-[a-z-]+/g, "")), "no role class in a select scene")
       }
     })
@@ -83,8 +99,9 @@ test("select mode loads no name table (L3)", async () => {
     throw new Error("the names must not be loaded for a select figure")
   })
   const v = JSON.parse(readFileSync(new URL("test/fixtures/diagrams/types/map.json", root), "utf8")).vectors.find((x) => x.name === "map-south-america-neutral")
-  await mods.map.prepare(v.data, { mode: "select" })
-  const scene = mods.map.layout(v.data, { width: 390, fontPx: 20, subject: "geography", mode: "select", set: "areas" })
+  const served = v.served_select.areas
+  await mods.map.prepare(served, { mode: "select" })
+  const scene = mods.map.layout(served, { width: 390, fontPx: 20, subject: "geography", mode: "select", set: "areas" })
   assert.ok(!scene.error, scene.error?.message)
   assert.ok(scene.targets.length > 3)
   G.setTableLoader(async () => ({

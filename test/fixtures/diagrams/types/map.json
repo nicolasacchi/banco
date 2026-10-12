@@ -256,10 +256,10 @@
       "tropics"
      ],
      "candidates": [
-      "CHL",
-      "ECU",
-      "PER",
-      "BOL"
+      "a11",
+      "a10",
+      "a6",
+      "a13"
      ]
     },
     "places": {
@@ -271,15 +271,9 @@
       "equator",
       "tropics"
      ],
-     "candidates": [
-      "CHL",
-      "ECU",
-      "PER",
-      "BOL"
-     ],
      "places": [
       {
-       "id": "brasilia"
+       "id": "p10"
       }
      ]
     },
@@ -291,12 +285,6 @@
      "graticule": [
       "equator",
       "tropics"
-     ],
-     "candidates": [
-      "CHL",
-      "ECU",
-      "PER",
-      "BOL"
      ],
      "bands": [
       {
@@ -314,15 +302,9 @@
       "equator",
       "tropics"
      ],
-     "candidates": [
-      "CHL",
-      "ECU",
-      "PER",
-      "BOL"
-     ],
      "lines": [
       {
-       "id": "amazon"
+       "id": "l1"
       }
      ]
     },
@@ -334,12 +316,6 @@
      "graticule": [
       "equator",
       "tropics"
-     ],
-     "candidates": [
-      "CHL",
-      "ECU",
-      "PER",
-      "BOL"
      ],
      "points": [
       {
@@ -507,7 +483,7 @@
      ],
      "places": [
       {
-       "id": "brasilia"
+       "id": "p10"
       }
      ]
     },
@@ -538,7 +514,7 @@
      ],
      "lines": [
       {
-       "id": "amazon"
+       "id": "l1"
       },
       {
        "kind": "meridian",
@@ -788,25 +764,19 @@
      "alt_it": "L'Italia con le sue venti regioni, il Lazio e la Toscana in evidenza e Roma segnata. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
      "base": "italy",
      "candidates": [
-      "lazio",
-      "toscana",
-      "umbria",
-      "marche"
+      "a10",
+      "a19",
+      "a6",
+      "a31"
      ]
     },
     "places": {
      "type": "map",
      "alt_it": "L'Italia con le sue venti regioni, il Lazio e la Toscana in evidenza e Roma segnata. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
      "base": "italy",
-     "candidates": [
-      "lazio",
-      "toscana",
-      "umbria",
-      "marche"
-     ],
      "places": [
       {
-       "id": "rome"
+       "id": "p10"
       }
      ]
     }
@@ -1308,28 +1278,22 @@
      "alt_it": "Il Mediterraneo antico: Roma si allarga dall'Italia verso la Sicilia, la Spagna e l'Africa, con alcuni luoghi segnati. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
      "base": "mediterraneo_antico",
      "candidates": [
-      "sicilia",
-      "hispania",
-      "africa-proconsolare",
-      "macedonia"
+      "a23",
+      "a10",
+      "a8",
+      "a11"
      ]
     },
     "places": {
      "type": "map",
      "alt_it": "Il Mediterraneo antico: Roma si allarga dall'Italia verso la Sicilia, la Spagna e l'Africa, con alcuni luoghi segnati. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
      "base": "mediterraneo_antico",
-     "candidates": [
-      "sicilia",
-      "hispania",
-      "africa-proconsolare",
-      "macedonia"
-     ],
      "places": [
       {
-       "id": "roma"
+       "id": "p47"
       },
       {
-       "id": "cartagine"
+       "id": "p30"
       }
      ]
     }

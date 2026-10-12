@@ -276,6 +276,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-270 | 2026-10-12 | render-time records and the program diagram: Rails never runs an agent's program (D-270) | decided (contracts of W2-0; the pieces follow) |
 | D-271 | 2026-10-12 | wave 2, track T5 on day one: the map bases from sourced open data (`bin/build-maps`, `banco-maps@1`), the gazetteer tables, the ancient Mediterranean built from Natural Earth and Pleiades | decided |
 | D-272 | 2026-10-12 | wave 2, track T5: `map`, `insolation` and `cross_section` available (D-252 pattern), select targets, the bases cropped whole, Europe and Italy in Mercator | decided |
+| D-273 | 2026-10-12 | wave 2, track T5 review fixes: select figures are drawn from opaque select plates (no gazetteer id in the page), padded 24 px hit shapes, callouts on a phone | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2916,3 +2917,21 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Insolation and cross_section:** the spread is 1/cos(latitude - subsolar) with one decimal, subsolar within 23,5, at most 85 degrees from the Sun; a movable beam (-80 to 80 by 10) starts at the nearest free step to 0. The section's exaggeration is the largest nice number that keeps the drawing half as high as wide, always printed ("altezze esagerate 20 volte"); the temperature is base - per_km * altitude / 1000, exact; the stepper reads each 500 m (1000 above 4000 m) and the top; belts are numbered at the right with a legend list that is also the print table.
 - **Shared code changed (the lead merges with T1):** `draw.js` and the new `scene_extras.js` implement the Scene additions of D-264 (group `scale`, `pattern`, `target` with a roving tab stop and arrow keys, `controls()` as stepper and slider with - and +, `scene.legend`, `printViews`, `star` and `ring` markers, `prepare`, `mode` and `set` to layout); `describe(data, ctx)` takes the visible state; the generated registry imports only the core types at once and every wave 2 type lazily even when available (`bin/build-lesson-types`); `preloadTypes(body)` loads them before the first card; `lesson_family_stylesheets` links `lesson/FAMILY.css` in the three pages.
 - **Bases corrected:** the inner-rectangle crop of D-271 cut South America and Africa (the widest parallel lay outside it): the viewBox is now the window's bounding box (`crop: false`); `europe` and `italy` are Mercator, so that their window is a rectangle and no slanted cut crosses the Balkans. Known limit: the continent groups Europe and Asia both draw Russia whole. Texts of the maps are in the modules, as the words of the core types (layout is pure and run in node); `lesson_maps.it.yml` stays empty.
+
+## D-273 · 2026-10-12 · wave 2, track T5 review fixes: select figures are drawn from opaque select plates, small targets get padded hit shapes, callouts on a phone
+
+Review of D-272 found that a select figure loaded the full base module, which carries every gazetteer id beside its geometry (`rome` at its
+coordinates, `AUT` with its shape): a student with devtools could read which shape is which. Decided:
+
+- `bin/build-maps` also writes `public/vendor/banco-maps@1/select/<base>.js`, the same geometry with opaque keys (`a14` area, `g3` group,
+  `p20` place, `l2` line) in place of every id, no `reads`, no `oceans`, plate order by key. The keys are drawn at random once and kept in
+  `lib/maps/select_keys.json` (never under `public/`; a kept id keeps its key, a new id takes a free number; `bin/build-maps --check` compares it).
+- `Map.served(data, mode: :select)` returns `candidates`, `places[].id` and `lines[].id` as keys; the page loads only the plate for a select
+  figure (`G.prepare(name, names: false)`), never the base or the name tables. The reading-order tie of a target is its key, on both sides.
+  The Ruby, node and system tests scan the served figure, the plate and the scene for every id of the base.
+- A select target smaller than 24 CSS px (a small area, a thin belt) gets an invisible padded hit shape (`dg-hitpad`, `data-hit-for`) that
+  forwards the click to the target. Two chosen `candidates` (or two belts) whose pads would share a centre are `E-DIAGRAM-TARGET`, raised by
+  the layout; the default targets of an `areas` set, which the author does not choose, may overlap (the later shape wins).
+- On a frame narrower than 420 px a figure with two or more labels uses numbered callouts placed beside the mark with a leader, so that text
+  does not cover the map; the compass row keeps "Est" inside the frame. Select shapes have a stronger fill and outline.
+- Known limits: the europe and asia continent groups both draw Russia whole (D-271); the slider was built in W2-1 (the plan has it in W2-2).

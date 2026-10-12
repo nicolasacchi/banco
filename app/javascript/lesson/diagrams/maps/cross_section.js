@@ -6,9 +6,10 @@
 import schema from "lesson/diagram_schemas/cross_section"
 import * as N from "lesson/num"
 import * as G from "lesson/diagrams/maps/geo"
-import { finish, label, shape } from "lesson/diagrams/common"
+import { fail, finish, label, shape } from "lesson/diagrams/common"
 import { run } from "lesson/diagrams/run"
 
+const MIN_TARGET = 24 // CSS px: a select target is at least this high (E-DIAGRAM-TARGET)
 export const type = "cross_section"
 export { schema }
 
@@ -325,7 +326,15 @@ function build(data, ctx) {
       shape(ctx, "path", { d: dOf(poly), cls: `dg-belt mk-${role}`, pattern: G.patternOf(bandRoles, bt.i), role })
     }
   })
-  if (!select) {
+  if (select) {
+    // a thin belt gets an invisible padded hit shape of 24 px; two belts whose pads would share a middle are E-DIAGRAM-TARGET
+    const thin = belts.filter((bt) => (bt.from < bt.to ? Y(bt.from) - Y(bt.to) : 0) < MIN_TARGET).map((bt) => ({ bt, y: Y((bt.from + bt.to) / 2) }))
+    for (const a of thin) {
+      if (thin.some((o) => o !== a && Math.abs(o.y - a.y) < MIN_TARGET / 2)) return fail(`/belts/${a.bt.i}`, "two belts are too thin to touch one by one at 390 px: make the belts thicker or leave one out", "E-DIAGRAM-TARGET")
+      const t = tlist.find((x) => x.id === `alt:${a.bt.b.from_alt}:${a.bt.b.to_alt}`)
+      shape(ctx, "rect", { x: LM, y: a.y - MIN_TARGET / 2, w: PW, h: MIN_TARGET, cls: "dg-hitpad-shape", hitFor: t.key })
+    }
+  } else {
     for (const bt of belts) for (const a of [bt.from, bt.to]) if (a > B && a < T) shape(ctx, "line", { x1: LM, y1: Y(a), x2: LM + PW, y2: Y(a), cls: "dg-belt-edge" })
   }
   shape(ctx, "path", { d: `M${toPx(points).map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join("L")}`, cls: "dg-profile" })
