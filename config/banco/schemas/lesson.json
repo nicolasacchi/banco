@@ -722,7 +722,7 @@
               ]
             }
           },
-          "description": "Passthrough to Grading::Spec (W2-D06). chem_formula is a W2-2 draft."
+          "description": "Passthrough to Grading::Spec (D-267). chem_formula is a W2-2 draft."
         },
         "input": {
           "enum": [
@@ -2909,7 +2909,7 @@
           }
         }
       },
-      "description": "Truth at authoring time (W2-D06): Ruby calls the registered function and refuses the check (E-LESSON-VERIFY) when the answer, or the answer of a coded wrong answer, disagrees. Always dropped from the served body (L1)."
+      "description": "Truth at authoring time (D-267): Ruby calls the registered function and refuses the check (E-LESSON-VERIFY) when the answer, or the answer of a coded wrong answer, disagrees. Always dropped from the served body (L1)."
     },
     "reachable_ok": {
       "type": "string",

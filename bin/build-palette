@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 # Builds app/assets/stylesheets/lesson_roles.css and app/javascript/lesson/palette.js from config/banco/lesson_palette.yml
-# (D-246, A6; version 2, W2-D02: every subject, scoped by subject). Offline and deterministic.
+# (D-246, A6; version 2, D-263: every subject, scoped by subject). Offline and deterministic.
 #
 # The colours are custom properties set on the theme element ([data-theme="cream"], [data-theme="dark"]), so a theme
 # switched on a box inside a page (the teacher's preview) wins over the page's own theme: a custom property is inherited

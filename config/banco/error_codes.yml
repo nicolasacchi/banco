@@ -141,7 +141,7 @@ validation:
   E-LESSON-OVERFLOW: { stage: chrome, severity: error, description: "A card is wider than its viewport (horizontal overflow) at one of the render check's viewports." }
   E-DIAGRAM-LAYOUT: { stage: chrome, severity: error, description: "A diagram's layout returned an error or two label boxes overlap: shorten the labels or reduce the marks." }
   E-DIAGRAM-SMALL-TEXT: { stage: chrome, severity: error, description: "A text or a diagram label is drawn under the student's base text size." }
-  # Wave 2 of the rich lessons (WAVE2-COMPONENTS V5, W2-D03..D07; rules version 9). The checks are built by the tracks of W2-1;
+  # Wave 2 of the rich lessons (WAVE2-COMPONENTS V5, D-264..D-268; rules version 9). The checks are built by the tracks of W2-1;
   # each code has a bad fixture described in test/fixtures/lesson2/manifest.json under `pending` until its track writes it.
   E-LESSON-DATA: { stage: ruby, severity: error, description: "A reference to a vetted data table (config/banco/data) that names no row, or a value that disagrees with its table (a station, a size, an element, a verb)." }
   E-LESSON-VERIFY: { stage: ruby, severity: error, description: "A check's verify function disagrees with its answer, or a coded wrong answer equals no mutant of the function (program.* functions are checked at the render check)." }

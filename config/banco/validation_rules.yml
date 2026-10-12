@@ -9,7 +9,7 @@
 # nothing here is about a person.
 # Supports (D-216) added optional checks that only fire on the new fields: no bump.
 # v8: banco.lesson/2 (D-245): block lesson2 and lesson.accept_schema1. No existing number changes.
-# v9: wave 2 of the rich lessons (W2-D03..D07): apparatus and target-language budgets, the reachable cap, the page budgets and
+# v9: wave 2 of the rich lessons (D-264..D-268): apparatus and target-language budgets, the reachable cap, the page budgets and
 # lesson2.types, the per-type caps of the 26 new diagram types. No existing number changes.
 version: 9
 

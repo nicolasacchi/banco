@@ -4,7 +4,7 @@ require "json"
 require "yaml"
 
 module Lessons
-  # The vetted data tables of config/banco/data (W2-D08): `names` lists the tables that have a schema, `table(name)` reads one that has been
+  # The vetted data tables of config/banco/data (D-269): `names` lists the tables that have a schema, `table(name)` reads one that has been
   # written (nil before), `valid?` checks it against its schema, `row` finds a row by id (what E-LESSON-DATA asks). Pure: no database.
   module VettedData
     DIR = File.expand_path("../../config/banco/data", __dir__)

@@ -3,7 +3,7 @@
 require "yaml"
 
 module Lessons
-  # The availability registry of lesson/2 (W2-D03), read from config/banco/lesson_types.yml: which diagram types,
+  # The availability registry of lesson/2 (D-264), read from config/banco/lesson_types.yml: which diagram types,
   # blocks, check components and options authors may use now (`available`), which have a frozen schema but no module yet
   # (`reserved`, schema `final`), which are W2-2 drafts (`draft`) and which are only a name (`reserved`, schema `none`).
   # It replaces RELEASE and BUILT of Directives. A name that is not available is refused at submit (E-LESSON-BLOCK);

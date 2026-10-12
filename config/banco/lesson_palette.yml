@@ -18,7 +18,7 @@
 # pentagon): unique within a subject, so a diagram is readable without colour.
 # No underline style is used for roles, and right and wrong use no green and no red.
 #
-# Version 2 (W2-D02): the CSS variables and classes are scoped by subject (--r-SUBJECT-ROLE-fg, `[data-palette="s"] .role-x`);
+# Version 2 (D-263): the CSS variables and classes are scoped by subject (--r-SUBJECT-ROLE-fg, `[data-palette="s"] .role-x`);
 # `common` stays global. Further keys of a subject:
 #   same_as: SUBJECT.ROLE   (on a role) the role takes that role's colours, carrier, icon and shape (same meaning, same
 #                           colour across subjects); `label_it` and `question_it` may be given

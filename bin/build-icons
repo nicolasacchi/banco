@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 # Builds the icon sprites under public/vendor/lucide@VERSION/ from config/banco/icons.yml and the vendored Lucide
-# files under public/vendor/lucide@VERSION/icons/ (D-246, W2-D02). Offline and deterministic: a sprite has one
+# files under public/vendor/lucide@VERSION/icons/ (D-246, D-263). Offline and deterministic: a sprite has one
 # <symbol id="OUR-NAME"> per icon, in the order of the file.
 #   banco-sprite.svg            the structural and ui icons (every page of a lesson loads it)
 #   banco-sprite-SUBJECT.svg    the icons of one subject's list (loaded when a lesson of that subject draws one of them)

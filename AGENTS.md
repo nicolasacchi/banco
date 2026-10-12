@@ -16,10 +16,9 @@ Phase 1a: the entry diagnosis.
    over HTTP: D-260.
 3. Agent-written code runs only in browsers: the server's Chrome at validation and
    the render check, and approved free pages in the student's and the teacher's
-   browsers, in a sandboxed frame on `pages.banco.scc.im` (D-260F). Rails and the
+   browsers, in a sandboxed frame on `pages.banco.scc.im` (D-261). Rails and the
    grader worker never execute it. The teacher's approval of a free page covers
    what it shows and teaches, not its code.
-
 4. The ledger is append-only: triggers block UPDATE and DELETE on every primary
    table except `schema_migrations` and `ar_internal_metadata`. Corrections are
    new rows; states are derived.
@@ -151,7 +150,7 @@ only), `HARNESS_PORT` 3200 (internal). Never `PORT`.
   (`Validation::LessonChecks.call` dispatches on `schema:`), `Review::LessonChecklist.for`. Tests: `test/lib/lessons`, `test/validation/lesson2_checks_test.rb`,
   `test/integration/lesson2_api_test.rb` (`PROP_RUNS=300` for the StudentBody sentinel property).
 - Console decisions (D-260): `bin/rails banco:decide` (`lib/tasks/decide.rake`, `DecisionConsole`, origin `DecisionRecorder::Console`) is the operator's only non-browser way to decide; dry run unless `CONFIRM=1`; the row says `console` (address and group); no route, no CLI command. Tests: `test/models/decision_console_test.rb`.
-- Rich lessons, wave 2 (W2-0 contracts, D-260 to D-269, `docs/lessons-wave2.md`): `config/banco/lesson_types.yml` says what authors may use (`Lessons::Types`,
+- Rich lessons, wave 2 (W2-0 contracts, D-261 to D-270, `docs/lessons-wave2.md`): `config/banco/lesson_types.yml` says what authors may use (`Lessons::Types`,
   `status` available, reserved or draft; `bin/build-lesson-types` makes `lesson/diagrams/registry.js`, `lesson/checks/registry.js`, `lesson/voices.js`); the
   component contract v2 is `lesson/diagrams/contract.js` and `Lessons::Diagrams::Contract` (stubs of the 29 types under `lesson/diagrams/FAMILY/` and
   `lib/lessons/diagrams/`); palette v2 (eleven subjects, `same_as`, `data-palette`), `config/banco/voices.yml`, the vetted tables of `config/banco/data/`

@@ -5,7 +5,7 @@
 # an agent cannot name it. A subject list has at most 30 icons. A new icon is a change of this file and
 # a D entry. Generic: nothing here is about a person.
 #
-# Version 2 (W2-D02): a list per subject for the nine subjects of wave 2; bin/build-icons makes one sprite per subject
+# Version 2 (D-263): a list per subject for the nine subjects of wave 2; bin/build-icons makes one sprite per subject
 # (banco-sprite-SUBJECT.svg) beside the structural one (banco-sprite.svg: structural and ui). A name in two lists points
 # at the same file; the browser takes the icon from the first sprite that has it (palette.js `sprites`). The icons of a
 # role with `same_as` and of a step tag must be in the subject's list or the structural list.

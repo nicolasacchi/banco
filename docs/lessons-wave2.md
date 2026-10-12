@@ -3,7 +3,7 @@
 Wave 2 adds 29 diagram types, five blocks, six check components and their options, a text layer for the languages, "Ascolta", vetted
 data tables and ten small domain libraries to the lesson/2 of D-245 to D-259. W2-0 froze the contracts that the builder tracks share,
 so that ten tracks can work on different files without agreeing again. This page is the reference of those contracts; the decisions
-are D-260 (the amendment of firm rule 3) and D-261 to D-269. Nothing here is lesson content.
+are D-261 (the amendment of firm rule 3) and D-262 to D-270. Nothing here is lesson content.
 
 ## What is available: `config/banco/lesson_types.yml`
 
