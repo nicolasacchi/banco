@@ -224,6 +224,8 @@ number line intervals.
 | `concept_map` (schema) | classifications | `root`, `nodes: [{id, text_it, role?, icon?}]`, `edges: [{from, to, label_it?}]` forming a tree of depth at most 3 with at most 4 children per node, `links` (at most 3 cross links) |
 | `flow` (schema) | procedures | `nodes: [{id, kind: step\|decision\|end, text_it, role?}]`, `edges: [[from, to, "label"?]]`: one main chain, a decision has 2 or 3 branches, no cycles |
 | `table` (schema) | summaries | `header`, `rows` (at most 4 columns, 10 rows) |
+| `register` | computer science: the digits of an n-bit register with weights, a computed readout, bit switches and goals (`view: row`), or all the codes of 3 or 4 bits on a circle (`view: ring`) | `view`, `width`, `value`, `base`, `read`, `weights`, `groups`, `toggle`, `states`...: see `banco brief show lesson-computer-science` |
+| `column_calc` | computer science: an addition, subtraction or multiplication in columns inside a register; carries, borrows and partial products are computed | `op`, `a`, `b`, `width`, `base`, `reveal`, `read`: see `banco brief show lesson-computer-science` |
 
 What a balance cannot draw: negative terms, negative or zero solutions, and subtraction on a plate have no honest
 picture on a balance. For signs use a `number_line` (jumps); for equations with negative terms use the `example`
