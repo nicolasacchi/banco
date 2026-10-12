@@ -72,10 +72,10 @@ reg << <<~JS
     return run(data, opts, { build: () => ({ error: { path: "/type", message: "unknown diagram type", code: "E-LESSON-DIAGRAM" } }) })
   }
 
-  export function describe(data) {
+  export function describe(data, ctx) {
     const mod = moduleFor(data?.type)
     try {
-      return mod ? mod.describe(data) : ""
+      return mod ? mod.describe(data, ctx) : ""
     } catch (_error) {
       return ""
     }

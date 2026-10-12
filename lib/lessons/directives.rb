@@ -165,9 +165,19 @@ module Lessons
       data = YAML.safe_load(body, permitted_classes: [], aliases: false)
       raise Refused.new(line, "the body of #{what} must be a mapping of keys and values") unless data.is_a?(Hash)
 
-      data
+      yes_keys(data)
     rescue Psych::Exception, ArgumentError => e
       raise Refused.new(line, "the YAML of #{what} is not valid: #{e.message.lines.first.to_s.strip.first(160)} (LaTeX goes in single quotes or a block scalar)")
+    end
+
+    # YAML 1.1 reads a bare `yes:` as the boolean true, and `seats` has a field named yes (WAVE2 2.4): a key that came out as true is `yes`.
+    # (`on:` and `true:` are no field of ours, and `no`/`off` stay false: a key that is false is left alone and the schema refuses it.)
+    def yes_keys(node)
+      case node
+      when Hash then node.to_h { |k, v| [ k == true ? "yes" : k, yes_keys(v) ] }
+      when Array then node.map { |v| yes_keys(v) }
+      else node
+      end
     end
 
     # "a \neq 0" in double quotes becomes a newline and "eq" (and "\cdot" is no escape at all): refuse a

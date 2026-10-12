@@ -11,10 +11,13 @@ import * as sentence from "lesson/diagrams/sentence"
 import * as concept_map from "lesson/diagrams/concept_map"
 import * as table from "lesson/diagrams/table"
 import * as flow from "lesson/diagrams/flow"
+import * as climograph from "lesson/diagrams/chart/climograph"
+import * as bar_model from "lesson/diagrams/chart/bar_model"
+import * as seats from "lesson/diagrams/chart/seats"
 import { run } from "lesson/diagrams/run"
 
-export const TYPES = { balance, equation_parts, number_line, area_model, cartesian, sentence, concept_map, table, flow }
-export const STATUS = {"balance":"available","equation_parts":"available","number_line":"available","area_model":"available","cartesian":"available","sentence":"available","concept_map":"available","table":"available","flow":"available","network":"reserved","chain":"reserved","nested":"draft","timeline":"reserved","calendar":"reserved","map":"reserved","insolation":"reserved","cross_section":"reserved","climograph":"reserved","bar_model":"reserved","seats":"reserved","chart":"draft","scale":"draft","periodic_table":"reserved","register":"reserved","column_calc":"reserved","paradigm":"draft","sheet":"reserved","word_parts":"reserved","mirror":"reserved","document":"reserved","formula":"reserved","molecule":"reserved","strand":"reserved","particles":"draft","phase_changes":"draft","cell":"draft","program":"draft","rgb":"reserved"}
+export const TYPES = { balance, equation_parts, number_line, area_model, cartesian, sentence, concept_map, table, flow, climograph, bar_model, seats }
+export const STATUS = {"balance":"available","equation_parts":"available","number_line":"available","area_model":"available","cartesian":"available","sentence":"available","concept_map":"available","table":"available","flow":"available","network":"reserved","chain":"reserved","nested":"draft","timeline":"reserved","calendar":"reserved","map":"reserved","insolation":"reserved","cross_section":"reserved","climograph":"available","bar_model":"available","seats":"available","chart":"draft","scale":"draft","periodic_table":"reserved","register":"reserved","column_calc":"reserved","paradigm":"draft","sheet":"reserved","word_parts":"reserved","mirror":"reserved","document":"reserved","formula":"reserved","molecule":"reserved","strand":"reserved","particles":"draft","phase_changes":"draft","cell":"draft","program":"draft","rgb":"reserved"}
 export const HOME_PALETTE = {"balance":"math","equation_parts":"math","register":"computer_science","column_calc":"computer_science","formula":"chemistry","molecule":"chemistry","strand":"biology","particles":"chemistry","phase_changes":"chemistry","cell":"biology"}
 export const FAMILY = {"balance":"core","equation_parts":"core","number_line":"core","area_model":"core","cartesian":"core","sentence":"core","concept_map":"core","table":"core","flow":"core","network":"graph","chain":"graph","nested":"graph","timeline":"time","calendar":"time","map":"maps","insolation":"maps","cross_section":"maps","climograph":"chart","bar_model":"chart","seats":"chart","chart":"chart","scale":"chart","periodic_table":"science","register":"computing","column_calc":"computing","paradigm":"words","sheet":"computing","word_parts":"words","mirror":"words","document":"docs","formula":"science","molecule":"science","strand":"science","particles":"science","phase_changes":"science","cell":"science","program":"computing","rgb":"computing"}
 export const HELD_BACK = {"cartesian":{"sliders":{"present":"reserved"}},"sentence":{"text_en":{"present":"reserved"},"text_es":{"present":"reserved"}},"flow":{"layout":{"line":"reserved"},"walk":{"true":"draft"}},"bar_model":{"view":{"fraction":"reserved"}},"chart":{"kind":{"pyramid":"reserved","scatter":"reserved"}},"scale":{"units":{"bytes":"reserved"}},"column_calc":{"op":{"repeated_division":"reserved"}},"word_parts":{"view":{"history":"draft"}},"document":{"kind":{"contract":"draft","receipt":"draft","gazette":"draft","ballot":"draft","letter":"draft","assegno_bancario":"draft","assegno_circolare":"draft","cambiale_tratta":"draft","paghero":"draft","bonifico":"draft","ddt":"draft"}}}
@@ -27,9 +30,6 @@ const LOADERS = {
   map: () => import("lesson/diagrams/maps/map"),
   insolation: () => import("lesson/diagrams/maps/insolation"),
   cross_section: () => import("lesson/diagrams/maps/cross_section"),
-  climograph: () => import("lesson/diagrams/chart/climograph"),
-  bar_model: () => import("lesson/diagrams/chart/bar_model"),
-  seats: () => import("lesson/diagrams/chart/seats"),
   chart: () => import("lesson/diagrams/chart/chart"),
   scale: () => import("lesson/diagrams/chart/scale"),
   periodic_table: () => import("lesson/diagrams/science/periodic_table"),
@@ -78,10 +78,10 @@ export function layout(data, opts) {
   return run(data, opts, { build: () => ({ error: { path: "/type", message: "unknown diagram type", code: "E-LESSON-DIAGRAM" } }) })
 }
 
-export function describe(data) {
+export function describe(data, ctx) {
   const mod = moduleFor(data?.type)
   try {
-    return mod ? mod.describe(data) : ""
+    return mod ? mod.describe(data, ctx) : ""
   } catch (_error) {
     return ""
   }

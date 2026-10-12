@@ -6,6 +6,7 @@
 import * as N from "lesson/num"
 import { button, clear, el, icon, spriteHref, svg, uid } from "lesson/dom"
 import { HOME_PALETTE, describe, layout, moduleFor, stateCount } from "lesson/diagrams/registry"
+import { buildControls } from "lesson/diagrams/controls"
 import { tryValues, equationTex } from "lesson/diagrams/balance"
 import { renderInlineRich, renderMath, renderRich } from "lesson/text"
 
@@ -24,7 +25,37 @@ const MARKERS = {
   pentagon: (m) => [svg("polygon", { points: [[0.5, 0.04], [0.96, 0.38], [0.79, 0.94], [0.21, 0.94], [0.04, 0.38]].map(([fx, fy]) => `${m.x + m.w * fx},${m.y + m.h * fy}`).join(" "), class: m.cls })]
 }
 
-function shapeNode(s) {
+// The fixed patterns of a Scene (WAVE2 1.2, shapes[].pattern): hatch, dots, cross, grid. A shape with a pattern is drawn over its base fill, in the text colour.
+const PATTERNS = {
+  hatch: (id) => svg("pattern", { id, width: 8, height: 8, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, ),
+  dots: (id) => svg("pattern", { id, width: 7, height: 7, patternUnits: "userSpaceOnUse" }),
+  cross: (id) => svg("pattern", { id, width: 9, height: 9, patternUnits: "userSpaceOnUse" }),
+  grid: (id) => svg("pattern", { id, width: 8, height: 8, patternUnits: "userSpaceOnUse" })
+}
+const PATTERN_PARTS = {
+  hatch: () => [svg("line", { x1: 0, y1: 0, x2: 0, y2: 8, class: "dg-patink", "stroke-width": 2.5 })],
+  dots: () => [svg("circle", { cx: 3.5, cy: 3.5, r: 1.4, class: "dg-patfill" })],
+  cross: () => [svg("line", { x1: 0, y1: 0, x2: 9, y2: 9, class: "dg-patink", "stroke-width": 1.6 }), svg("line", { x1: 9, y1: 0, x2: 0, y2: 9, class: "dg-patink", "stroke-width": 1.6 })],
+  grid: () => [svg("path", { d: "M0,0 H8 M0,0 V8", class: "dg-patink", "stroke-width": 1.4 })]
+}
+export function patternDefs(prefix) {
+  const defs = svg("defs")
+  for (const name of Object.keys(PATTERNS)) {
+    const p = PATTERNS[name](`${prefix}-${name}`)
+    for (const part of PATTERN_PARTS[name]()) p.appendChild(part)
+    defs.appendChild(p)
+  }
+  return defs
+}
+
+function shapeNode(s, pat) {
+  const nodes = shapeNodeBase(s)
+  if (s.pattern && s.pattern !== "solid" && pat) for (const n of nodes) n.style.fill = `url(#${pat}-${s.pattern})`
+  if (s.target) for (const n of nodes) n.dataset.target = s.target
+  return nodes
+}
+
+function shapeNodeBase(s) {
   switch (s.kind) {
     case "line": return [svg("line", { x1: s.x1, y1: s.y1, x2: s.x2, y2: s.y2, class: s.cls })]
     case "rect": return [svg("rect", { x: s.x, y: s.y, width: s.w, height: s.h, rx: s.r ?? 0, class: s.cls })]
@@ -40,7 +71,7 @@ function shapeNode(s) {
       // a group that can move: `at` places it, `move` { tx, ty, rot, ox, oy } is what draw() animates from the last state
       const outer = svg("g", { class: s.cls ?? "", transform: s.at ? `translate(${s.at[0]},${s.at[1]})` : undefined })
       const inner = svg("g", { class: "dg-move" })
-      for (const child of s.children ?? []) for (const node of shapeNode(child)) inner.appendChild(node)
+      for (const child of s.children ?? []) for (const node of shapeNodeBase(child)) inner.appendChild(node)
       outer.appendChild(inner)
       outer.__inner = inner
       return [outer]
@@ -131,7 +162,19 @@ export function mountDiagram(data, ctx, options = {}) {
   const question = el("p", { class: "dg-question", "aria-live": "polite" })
   const caption = data?.caption_it ? el("figcaption", { class: "dg-caption" }) : null
   if (caption) renderInlineRich(data.caption_it, caption, ctx)
-  const desc = el("details", { class: "dg-desc" }, el("summary", {}, icon("description"), document.createTextNode(` ${ctx.t.description}`)), el("p", { text: describe(data) }))
+  const descText = el("p", { text: describe(data, { state: 0, mode: "student", revealed: [] }) })
+  const desc = el("details", { class: "dg-desc" }, el("summary", {}, icon("description"), document.createTextNode(` ${ctx.t.description}`)), descText)
+  // the numbers under a chart ("Vedi i numeri", WAVE2 P2): opened by the student, always printed
+  const valuesBox = el("details", { class: "dg-values" })
+  const renderValues = (scene) => {
+    if (!scene.values) {
+      valuesBox.hidden = true
+      return
+    }
+    valuesBox.hidden = false
+    const t = tableNode({ header: scene.values.header, rows: scene.values.rows }, ctx)
+    valuesBox.replaceChildren(el("summary", {}, document.createTextNode(ctx.t.chart_see_numbers ?? "Vedi i numeri")), t, ...(scene.source ? [el("p", { class: "dg-source", text: (ctx.t.chart_source ?? "Fonte: %{source}").replace("%{source}", scene.source) })] : []))
+  }
   // a balance has its equation, the state's name and a status chip above the drawing
   const top = type === "balance" ? el("div", { class: "dg-top" }) : null
   const pill = el("span", { class: "dg-pill" })
@@ -140,11 +183,15 @@ export function mountDiagram(data, ctx, options = {}) {
   if (top) top.append(pill, eqLine, chip)
   // op, question and controls sit in one side box: below the drawing, or beside it on a wide balance (CSS)
   const side = el("div", { class: "dg-side" }, op, question, controls)
-  figure.append(alt, ...(top ? [top] : []), stage, side, ...(caption ? [caption] : []), desc)
+  figure.append(alt, ...(top ? [top] : []), stage, side, valuesBox, ...(caption ? [caption] : []), desc)
 
   const mod = moduleFor(type)
   const total = mod ? stateCount(data) : 1
-  const state = { moves: new Map(), lastWidth: 0, i: 0, tryValue: data?.try && data?.type === "balance" ? Number(data.try.from) : undefined, width: 0, selected: null }
+  // the controls the type declares (WAVE2 1.2): sliders with - and +, steppers, toggles, chips; the figure redraws when one changes
+  const declared = typeof mod?.controls === "function" ? mod.controls(data) : []
+  const made = declared.length ? buildControls(declared, () => { state.announce = true; draw() }, ctx.t) : null
+  const liveEl = made ? el("p", { class: "sr-only dg-live", role: "status", "aria-live": "polite" }) : null
+  const state = { moves: new Map(), lastWidth: 0, i: 0, announce: false, tryValue: data?.try && data?.type === "balance" ? Number(data.try.from) : undefined, width: 0, selected: null }
   figure.dataset.states = String(total)
   if (total > 1 || (type === "sentence" && data.parts)) figure.dataset.nokeys = ""
   const measurer = { current: null }
@@ -167,7 +214,7 @@ export function mountDiagram(data, ctx, options = {}) {
     state.width = width
     if (!measurer.current) measurer.current = makeMeasure(stage, ctx)
     const fontPx = ctx.fontPx()
-    const scene = layout(data, { width, fontPx, measure: measurer.current.measure, subject: ctx.subject, state: state.i, tryValue: state.tryValue })
+    const scene = layout(data, { width, fontPx, measure: measurer.current.measure, subject: ctx.subject, state: state.i, tryValue: state.tryValue, mode: "student", controls: made?.values })
     if (scene.error) return showError(scene.error)
     figure.classList.remove("dg-failed")
     figure.querySelector(".dg-fallback")?.remove()
@@ -186,6 +233,7 @@ export function mountDiagram(data, ctx, options = {}) {
     labelsLayer.classList.remove("dg-tablewrap")
     clear(stageSvg)
     clear(labelsLayer)
+    if (scene.shapes.some((sh) => sh.pattern)) stageSvg.appendChild(patternDefs(`${id}-p`))
     stageSvg.setAttribute("viewBox", `0 0 ${scene.width} ${scene.height}`)
     stageSvg.setAttribute("width", String(scene.width))
     stageSvg.setAttribute("height", String(scene.height))
@@ -194,7 +242,7 @@ export function mountDiagram(data, ctx, options = {}) {
     const animated = []
     const sameWidth = state.lastWidth === scene.width
     scene.shapes.forEach((s) => {
-      for (const node of shapeNode(s)) {
+      for (const node of shapeNode(s, `${id}-p`)) {
         if (s.key && s.kind !== "group") node.dataset.key = s.key
         stageSvg.appendChild(node)
         if (s.kind === "group" && s.move && node.__inner) {
@@ -239,6 +287,9 @@ export function mountDiagram(data, ctx, options = {}) {
       })
       labelsLayer.appendChild(b)
     }
+    renderValues(scene)
+    descText.textContent = describe(data, { state: state.i, controls: made?.values, mode: "student", revealed: [] })
+    if (liveEl && state.announce && scene.live && liveEl.textContent !== scene.live) liveEl.textContent = scene.live
     op.textContent = ""
     const eff = total > 1 ? (data.states[state.i] ?? {}) : {}
     if (eff.op_it) renderInlineRich(eff.op_it, op, ctx)
@@ -307,6 +358,16 @@ export function mountDiagram(data, ctx, options = {}) {
     minus.disabled = true
   }
 
+  if (made) {
+    controls.append(...made.nodes)
+    figure.append(liveEl)
+  }
+  // print shows the numbers (P2): a closed <details> hides its content from the printer
+  const beforePrint = () => { if (!valuesBox.hidden) valuesBox.dataset.wasOpen = String(valuesBox.open), valuesBox.open = true }
+  const afterPrint = () => { if (valuesBox.dataset.wasOpen !== undefined) { valuesBox.open = valuesBox.dataset.wasOpen === "true"; delete valuesBox.dataset.wasOpen } }
+  window.addEventListener("beforeprint", beforePrint)
+  window.addEventListener("afterprint", afterPrint)
+
   let timer = null
   let observer = null
   const schedule = () => {
@@ -339,6 +400,8 @@ export function mountDiagram(data, ctx, options = {}) {
       draw()
     },
     destroy: () => {
+      window.removeEventListener("beforeprint", beforePrint)
+      window.removeEventListener("afterprint", afterPrint)
       observer?.disconnect()
       clearTimeout(timer)
     }

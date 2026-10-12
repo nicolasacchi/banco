@@ -42,3 +42,8 @@ export function exactString(x) {
   return formatValue(x, decimalsOf(x)).replace(/\./g, "").replace("−", "-")
 }
 
+
+// the author's way of writing a number rounded to `places` (or as it is): "1860,00", "-3,25" (no dot between thousands, a plain minus)
+export function authorValue(value, places) {
+  return formatValue(value, places).replace(/\./g, "").replace("−", "-")
+}

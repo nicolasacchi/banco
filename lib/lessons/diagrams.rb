@@ -90,6 +90,57 @@ module Lessons
       eff.empty? ? data : data.merge("states" => eff)
     end
 
+    # The module of a diagram type, or nil.
+    def module_for(type) = TYPES.key?(type) ? const_get(TYPES.fetch(type)) : nil
+
+    # The served form a type's module builds itself (a station resolved, a hidden value cut out, a computed value added), or nil when the
+    # type is served as the generic projection says (StudentBody.diagram_generic). A stub raises NotImplementedError: nil too.
+    def served(data, mode: :student)
+      mod = module_for(data["type"])
+      mod.respond_to?(:served) ? mod.served(data, mode: mode) : nil
+    rescue NotImplementedError
+      nil
+    end
+
+    # The numbers a check accepts as its answer (and its accepted variants), as exact numbers: what L4 and L5 compare with a figure's numbers.
+    def answer_numbers(check)
+      texts = case check["component"]
+      when "number", "fraction" then [ check["answer"] ]
+      when "normalized_text" then [ check["answer"], *Array(check["accept"]) ]
+      when "choice" then [ Array(check["options"]).find { |o| o["id"] == check["answer"] }&.fetch("text_it", nil) ]
+      else []
+      end
+      texts.compact.filter_map { |t| num(t.to_s.delete("$ ").tr("\u2212", "-").presence || "x") }
+    end
+
+    # Findings of L4/L5 for one figure against the checks of its card: [{ code:, check_path:, message: }].
+    def answer_leaks(figure, checks)
+      mod = module_for(figure["type"]) or return []
+      return [] unless mod.respond_to?(:reachable) && Types.available?(:diagram, figure["type"])
+
+      out = []
+      reach = mod.reachable(figure)
+      checks.each do |cpath, check, cline|
+        mine = answer_numbers(check)
+        next if mine.empty?
+
+        shown = Array(effective_states(figure).then { |s| s.empty? ? [ figure ] : s }).each_index.flat_map { |i| mod.printed(figure, i) }.filter_map { |t| num(t) }
+        if (hit = mine.find { |a| shown.include?(a) })
+          out << { code: "W-CHECK-ANSWER-IN-DIAGRAM", check_path: "#{cpath}/answer", check_line: cline, message: "the answer #{Lessons::Num.to_s(hit)} is a number the figure of this card prints (in some state): a student can copy it instead of finding it" }
+        end
+        next if reach == :over_cap || reach.empty? || check["reachable_ok_it"]
+
+        reached = reach.filter_map { |t| num(t) }
+        if (hit = mine.find { |a| reached.include?(a) })
+          out << { code: "E-CHECK-ANSWER-BY-SIMULATION", check_path: "#{cpath}/answer", check_line: cline, message: "the answer #{Lessons::Num.to_s(hit)} is a number the figure can show when its controls move inside their ranges: ask another number, or say in reachable_ok_it why the reach does not give it away" }
+        end
+      end
+      out << { code: "E-DIAGRAM-REACHABLE-CAP", check_path: nil, message: "the figure can show more than #{Contract::REACHABLE_CAP} numbers inside its ranges, and the card has a check: narrow the ranges or move the check" } if reach == :over_cap && checks.any?
+      out
+    rescue NotImplementedError
+      []
+    end
+
     def label_words(text) = text.to_s.gsub(/\$[^$]*\$/, "M").split.size
 
     # Findings [Finding] of a diagram (type known to the schema) for a lesson of +subject+.

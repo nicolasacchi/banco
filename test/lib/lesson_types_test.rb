@@ -28,14 +28,13 @@ class LessonTypesTest < ActiveSupport::TestCase
     assert_equal %w[amount_words cell_formula ordering select tiles trace], DATA["checks"].select { |_, e| e["batch"].start_with?("w2") }.keys.sort
   end
 
-  test "available needs a final schema, a draft status a draft schema, and wave 2 starts with nothing available" do
+  test "available needs a final schema, a draft status a draft schema" do
     DIAGRAMS.each do |name, e|
       assert_equal "final", e["schema"], name if e["status"] == "available"
       assert_equal "draft", e["schema"], name if e["status"] == "draft"
       next if e["family"] == "core"
 
-      assert_not_equal "available", e["status"], "#{name}: a track makes it available in the commit of its look gate"
-      assert_equal "w2-2", e["batch"], name if e["status"] == "draft"
+      assert_equal "w2-2", e["batch"], name if e["status"] == "draft" # a track makes a piece available in the commit of its look gate (D-264)
     end
   end
 
@@ -64,7 +63,7 @@ class LessonTypesTest < ActiveSupport::TestCase
       assert Rails.root.join("app/assets/stylesheets/lesson/#{f}.css").file?, "css #{f}"
       assert Rails.root.join("test/fixtures/lesson2/gallery/#{f}.md").file?, "gallery #{f}"
       locale = YAML.safe_load_file(Rails.root.join("config/locales/lesson_#{f}.it.yml"))
-      assert_equal({ "lesson_#{f}" => {} }, locale.fetch("it"), f)
+      assert_kind_of Hash, locale.fetch("it").fetch("lesson_#{f}"), f # the skeleton is empty; a track fills it with chart_*-style keys
     end
     assert Rails.root.join("test/fixtures/lesson2/gallery/checks.md").file?
   end
@@ -81,6 +80,8 @@ class LessonTypesTest < ActiveSupport::TestCase
     wave2.each do |type|
       mod = Lessons::Diagrams.const_get(Lessons::Diagrams::TYPES.fetch(type))
       assert mod.singleton_class.include?(Lessons::Diagrams::Contract), type
+      next if Lessons::Types.available?(:diagram, type) # a built type checks and serves its data (its own tests)
+
       assert_nil mod.static({}, nil), type
       assert_nil mod.state({}, nil, ""), type
       assert_equal [], mod.reachable({}), type

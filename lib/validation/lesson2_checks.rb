@@ -222,7 +222,37 @@ module Validation
         add("E-LESSON-ROLE", "#{base}/tone", "#{card['tone']} is not a colour role of #{@subject}'s palette", line: line) if card["tone"] && !Lessons::Palette.role?(@subject, card["tone"])
         role_contract(card, base, line, extra)
         blocks.each_with_index { |b, j| block_checks(b, "#{base}/blocks/#{j}", card) }
+        answer_leaks(card, base)
         icon_roles(card, base, line)
+      end
+
+      # L4 and L5 (WAVE2 1.4): a check whose answer is a number a figure of the same card prints in some state (W-CHECK-ANSWER-IN-DIAGRAM) or
+      # can show inside its declared ranges (E-CHECK-ANSWER-BY-SIMULATION, an error unless the check says in reachable_ok_it why not); a
+      # figure that can show more than the cap on a card with a check is E-DIAGRAM-REACHABLE-CAP. Figures of the try card are static (L7).
+      def answer_leaks(card, base)
+        figures = []
+        checks = []
+        collect = lambda do |b, path|
+          case b["type"]
+          when "diagram" then figures << [ "#{path}/diagram", b["diagram"], b["line"] ]
+          when "schema" then figures << [ "#{path}/schema", b["schema"], b["line"] ]
+          when "cases" then b["cases"].each_with_index { |c, k| figures << [ "#{path}/cases/#{k}/diagram", c["diagram"], b["line"] ] if c["diagram"] }
+          when "check" then checks << [ path, b, b["line"] ]
+          when "example"
+            figures << [ "#{path}/diagram", b["diagram"], b["line"] ] if b["diagram"]
+            b["steps"].each_with_index { |st, k| checks << [ "#{path}/steps/#{k}/blank", st["blank"], b["line"] ] if st["blank"] }
+          when "more" then b["blocks"].each_with_index { |inner, k| collect.call(inner, "#{path}/blocks/#{k}") }
+          end
+        end
+        card["blocks"].each_with_index { |b, j| collect.call(b, "#{base}/blocks/#{j}") }
+        return if figures.empty? || checks.empty?
+
+        figures.each do |path, figure, line|
+          Lessons::Diagrams.answer_leaks(figure, checks).each do |leak|
+            at = leak[:check_line] ? field_line(leak[:check_line], "answer") : line
+            add(leak[:code], leak[:check_path] || path, leak[:message], line: at, rule: "#{leak[:code]}#{path}#{leak[:check_path]}")
+          end
+        end
       end
 
       def role_contract(card, base, line, extra)
@@ -285,7 +315,21 @@ module Validation
           block["cases"].each_with_index { |c, k| diagram_checks(c["diagram"], "#{path}/cases/#{k}/diagram", line, "/cases/#{k}/diagram") if c["diagram"] }
         when "example" then diagram_checks(block["diagram"], "#{path}/diagram", line, "/diagram") if block["diagram"]
         when "try"
-          block["exercises"].each_with_index { |e, k| diagram_checks(e["diagram"], "#{path}/exercises/#{k}/diagram", line, "/exercises/#{k}/diagram") if e["diagram"] }
+          block["exercises"].each_with_index do |e, k|
+            next unless e["diagram"]
+
+            static_figure(e["diagram"], "#{path}/exercises/#{k}/diagram", line, "/exercises/#{k}/diagram")
+            diagram_checks(e["diagram"], "#{path}/exercises/#{k}/diagram", line, "/exercises/#{k}/diagram")
+          end
+        end
+      end
+
+      # L7 (WAVE2 1.4): a figure in an exercise of the try card is static: no cursor to read with, no slider to move, no toggle (types of wave 2).
+      def static_figure(diagram, path, line, yaml)
+        return if Lessons::Types.entry(:diagram, diagram["type"])&.fetch("family", "core") == "core"
+
+        %w[read try toggle controls run].each do |key|
+          add("E-LESSON-BLOCK", "#{path}/#{key}", "a figure in an exercise is static (L7): #{key} belongs to the figures of the idea cards", line: field_line(line, "#{yaml}/#{key}"), rule: "static#{path}/#{key}") if diagram.key?(key)
         end
       end
 

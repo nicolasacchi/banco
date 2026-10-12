@@ -7,6 +7,7 @@
   <%= stylesheet_link_tag "lesson" %>
 <% end %>
 <% body = Lessons::StudentBody.for(revision, seed: "preview") %>
+<% content_for :head do %><%= lesson_family_stylesheets(body) %><% end %>
 <div class="l2-box-wrap" data-controller="lesson2-preview"
      data-lesson2-preview-revision-id-value="<%= revision.id %>"
      data-lesson2-preview-topic-value="<%= topic %>"

@@ -1,115 +1,933 @@
 {
- "version": 1,
- "type": "bar_model",
- "status": "reserved",
- "batch": "w2-1",
- "track": "T6",
- "provisional": false,
- "description": "Skeleton of W2-0 for the track T6: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
- "vectors": [
-  {
-   "name": "bar_model-example-1",
-   "subject": "business",
-   "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
-   "data": {
-    "type": "bar_model",
-    "alt_it": "Una barra divisa in tre parti: centoventi, duecento e il resto, che insieme fanno quattrocentottanta in tutto.",
-    "view": "parts",
-    "bars": [
-     {
-      "label_it": "Vendite",
-      "parts": [
-       {
-        "value": "120",
-        "label_it": "primo"
-       },
-       {
-        "value": "200",
-        "label_it": "secondo"
-       },
-       {
-        "value": "160",
-        "label_it": "resto",
-        "hidden": true
-       }
-      ]
-     }
-    ],
-    "total": {
-     "value": "480",
-     "label_it": "in tutto"
-    }
-   }
-  },
-  {
-   "name": "bar_model-example-2",
-   "subject": "business",
-   "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
-   "data": {
-    "type": "bar_model",
-    "alt_it": "Una scala doppia: sopra gli euro, sotto la percentuale, con il cento per cento a milleottocentosessanta e l'IVA al ventidue.",
-    "view": "percent",
-    "base": "1860,00",
-    "unit": "euro",
-    "marks": [
-     {
-      "pct": "22",
-      "label_it": "IVA",
-      "role": "tax"
-     }
-    ],
-    "hide": [
-     "100"
-    ],
-    "chain": [
-     {
-      "pct": "90"
-     },
-     {
-      "pct": "95"
-     }
-    ]
-   }
-  },
-  {
-   "name": "bar_model-unknown-field",
-   "subject": "business",
-   "schema": "invalid",
-   "semantic": "ok",
-   "data": {
-    "type": "bar_model",
-    "alt_it": "Una barra divisa in tre parti: centoventi, duecento e il resto, che insieme fanno quattrocentottanta in tutto.",
-    "view": "parts",
-    "bars": [
-     {
-      "label_it": "Vendite",
-      "parts": [
-       {
-        "value": "120",
-        "label_it": "primo"
-       },
-       {
-        "value": "200",
-        "label_it": "secondo"
-       },
-       {
-        "value": "160",
-        "label_it": "resto",
-        "hidden": true
-       }
-      ]
-     }
-    ],
-    "total": {
-     "value": "480",
-     "label_it": "in tutto"
+  "version": 1,
+  "type": "bar_model",
+  "status": "available",
+  "batch": "w2-1",
+  "track": "T6",
+  "provisional": false,
+  "description": "The cases of the track T6 (W2-1): the schema, semantic, layout, printed and served columns. semantic is 'ok' or {code, path} (Ruby, Lessons::Diagrams.check); layout is 'ok', 'error' (the browser's layout() answers {error}) or 'ruby-only' (a check the served form cannot break); printed holds the strings of each state (filled from the Ruby side, checked by both). Invented content only.",
+  "vectors": [
+    {
+      "name": "bar_model-example-1",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "120",
+          "200",
+          "480"
+        ]
+      ],
+      "served_null": [
+        "/bars/0/parts/2/value"
+      ],
+      "targets": {
+        "parts": 3
+      },
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra divisa in tre parti: centoventi, duecento e il resto, che insieme fanno quattrocentottanta in tutto.",
+        "view": "parts",
+        "bars": [
+          {
+            "label_it": "Vendite",
+            "parts": [
+              {
+                "value": "120",
+                "label_it": "primo"
+              },
+              {
+                "value": "200",
+                "label_it": "secondo"
+              },
+              {
+                "value": "160",
+                "label_it": "resto",
+                "hidden": true
+              }
+            ]
+          }
+        ],
+        "total": {
+          "value": "480",
+          "label_it": "in tutto"
+        }
+      }
     },
-    "zzz_unknown_field": true
-   }
-  }
- ]
+    {
+      "name": "bar_model-example-2",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "22",
+          "90",
+          "95",
+          "100",
+          "409,2"
+        ]
+      ],
+      "values": [
+        {
+          "values": {
+            "22": "409,20",
+            "100": null
+          },
+          "chain_values": [
+            {
+              "from": null,
+              "to": null
+            },
+            {
+              "from": null,
+              "to": null
+            }
+          ]
+        }
+      ],
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una scala doppia: sopra gli euro, sotto la percentuale, con il cento per cento a milleottocentosessanta e l'IVA al ventidue.",
+        "view": "percent",
+        "base": "1860,00",
+        "unit": "euro",
+        "marks": [
+          {
+            "pct": "22",
+            "label_it": "IVA",
+            "role": "tax"
+          }
+        ],
+        "hide": [
+          "100"
+        ],
+        "chain": [
+          {
+            "pct": "90"
+          },
+          {
+            "pct": "95"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bar_model-parts-two-bars",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "20",
+          "30",
+          "50",
+          "70",
+          "100"
+        ],
+        [
+          "20",
+          "30",
+          "50",
+          "70",
+          "100"
+        ]
+      ],
+      "targets": {
+        "parts": 5
+      },
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "parts",
+        "bars": [
+          {
+            "label_it": "Prima",
+            "parts": [
+              {
+                "value": "30",
+                "label_it": "uno"
+              },
+              {
+                "value": "70",
+                "label_it": "due"
+              }
+            ]
+          },
+          {
+            "label_it": "Dopo",
+            "parts": [
+              {
+                "value": "50",
+                "label_it": "uno"
+              },
+              {
+                "value": "30",
+                "label_it": "due"
+              },
+              {
+                "value": "20",
+                "label_it": "tre"
+              }
+            ]
+          }
+        ],
+        "total": {
+          "value": "100",
+          "label_it": "il tutto"
+        },
+        "states": [
+          {
+            "op_it": "Le due barre"
+          },
+          {
+            "op_it": "Le stesse barre"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bar_model-parts-no-total",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "1,5",
+          "2,5",
+          "4"
+        ]
+      ],
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "parts",
+        "bars": [
+          {
+            "label_it": "Spese",
+            "parts": [
+              {
+                "value": "4",
+                "label_it": "affitto"
+              },
+              {
+                "value": "1,5",
+                "label_it": "luce"
+              },
+              {
+                "value": "2,5",
+                "label_it": "cibo"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "bar_model-parts-eight-narrow",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "1",
+          "2",
+          "3",
+          "5",
+          "8"
+        ]
+      ],
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "parts",
+        "bars": [
+          {
+            "label_it": "Otto",
+            "parts": [
+              {
+                "value": "1",
+                "label_it": "p1"
+              },
+              {
+                "value": "2",
+                "label_it": "p2"
+              },
+              {
+                "value": "1",
+                "label_it": "p1"
+              },
+              {
+                "value": "8",
+                "label_it": "p8"
+              },
+              {
+                "value": "1",
+                "label_it": "p1"
+              },
+              {
+                "value": "3",
+                "label_it": "p3"
+              },
+              {
+                "value": "1",
+                "label_it": "p1"
+              },
+              {
+                "value": "5",
+                "label_it": "p5"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "bar_model-percent-vat-on-top",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "22",
+          "100",
+          "122",
+          "409,2",
+          "1860",
+          "2269,2"
+        ]
+      ],
+      "values": [
+        {
+          "values": {
+            "22": "409,20",
+            "100": "1860,00",
+            "122": "2269,20"
+          }
+        }
+      ],
+      "targets": {
+        "marks": 2
+      },
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "percent",
+        "base": "1860,00",
+        "unit": "euro",
+        "marks": [
+          {
+            "pct": "22",
+            "label_it": "IVA",
+            "role": "tax"
+          },
+          {
+            "pct": "122",
+            "label_it": "totale",
+            "role": "outside"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bar_model-percent-scorporo-anchor",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "1,1",
+          "6,1",
+          "22",
+          "100",
+          "122"
+        ]
+      ],
+      "values": [
+        {
+          "values": {
+            "22": "1,10",
+            "100": null,
+            "122": "6,10"
+          }
+        }
+      ],
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "percent",
+        "anchor": {
+          "pct": "122",
+          "value": "6,10"
+        },
+        "unit": "euro",
+        "marks": [
+          {
+            "pct": "22",
+            "label_it": "IVA",
+            "role": "tax"
+          }
+        ],
+        "hide": [
+          "100"
+        ]
+      }
+    },
+    {
+      "name": "bar_model-percent-successive-discounts",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "50",
+          "85,5",
+          "90",
+          "95",
+          "100",
+          "171",
+          "180",
+          "200"
+        ]
+      ],
+      "values": [
+        {
+          "values": {
+            "100": "200,00"
+          },
+          "chain_values": [
+            {
+              "from": "200,00",
+              "to": "180,00"
+            },
+            {
+              "from": "180,00",
+              "to": "171,00"
+            },
+            {
+              "from": "171,00",
+              "to": "85,50"
+            }
+          ]
+        }
+      ],
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "percent",
+        "base": "200,00",
+        "unit": "euro",
+        "chain": [
+          {
+            "pct": "90"
+          },
+          {
+            "pct": "95"
+          },
+          {
+            "pct": "50"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bar_model-percent-hidden-step",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "90",
+          "95",
+          "100",
+          "200"
+        ]
+      ],
+      "values": [
+        {
+          "values": {
+            "100": "200,00"
+          },
+          "chain_values": [
+            {
+              "from": "200,00",
+              "to": null
+            },
+            {
+              "from": null,
+              "to": null
+            }
+          ]
+        }
+      ],
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "percent",
+        "base": "200,00",
+        "unit": "euro",
+        "chain": [
+          {
+            "pct": "90"
+          },
+          {
+            "pct": "95"
+          }
+        ],
+        "hide": [
+          "90"
+        ]
+      }
+    },
+    {
+      "name": "bar_model-percent-plain-numbers",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "20",
+          "25",
+          "80",
+          "100",
+          "200",
+          "250"
+        ]
+      ],
+      "values": [
+        {
+          "values": {
+            "25": "20",
+            "100": "80",
+            "250": "200"
+          }
+        }
+      ],
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "percent",
+        "base": "80",
+        "unit": "none",
+        "marks": [
+          {
+            "pct": "25",
+            "label_it": "un quarto"
+          },
+          {
+            "pct": "250",
+            "label_it": "due volte e mezzo"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bar_model-percent-states",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "100",
+          "1860"
+        ],
+        [
+          "22",
+          "100",
+          "409,2",
+          "1860"
+        ]
+      ],
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "percent",
+        "base": "1860,00",
+        "unit": "euro",
+        "marks": [],
+        "states": [
+          {
+            "op_it": "Il cento per cento"
+          },
+          {
+            "marks": [
+              {
+                "pct": "22",
+                "label_it": "IVA",
+                "role": "tax"
+              }
+            ],
+            "op_it": "L'IVA"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bar_model-parts-sum-is-not-the-total",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/bars/0/parts"
+      },
+      "layout": "error",
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "parts",
+        "bars": [
+          {
+            "label_it": "Vendite",
+            "parts": [
+              {
+                "value": "120",
+                "label_it": "primo"
+              },
+              {
+                "value": "200",
+                "label_it": "secondo"
+              }
+            ]
+          }
+        ],
+        "total": {
+          "value": "480"
+        }
+      }
+    },
+    {
+      "name": "bar_model-hidden-without-total",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/bars/0/parts"
+      },
+      "layout": "error",
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "parts",
+        "bars": [
+          {
+            "label_it": "Vendite",
+            "parts": [
+              {
+                "value": "120",
+                "label_it": "primo"
+              },
+              {
+                "value": "200",
+                "label_it": "resto",
+                "hidden": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "bar_model-two-hidden-parts",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/bars/0/parts"
+      },
+      "layout": "error",
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "parts",
+        "bars": [
+          {
+            "label_it": "Vendite",
+            "parts": [
+              {
+                "value": "100",
+                "label_it": "uno",
+                "hidden": true
+              },
+              {
+                "value": "200",
+                "label_it": "due",
+                "hidden": true
+              }
+            ]
+          }
+        ],
+        "total": {
+          "value": "300"
+        }
+      }
+    },
+    {
+      "name": "bar_model-part-is-zero",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/bars/0/parts/0/value"
+      },
+      "layout": "error",
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "parts",
+        "bars": [
+          {
+            "label_it": "Vendite",
+            "parts": [
+              {
+                "value": "0",
+                "label_it": "niente"
+              },
+              {
+                "value": "5",
+                "label_it": "tutto"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "bar_model-percent-base-and-anchor",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/base"
+      },
+      "layout": "error",
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "percent",
+        "base": "100",
+        "anchor": {
+          "pct": "50",
+          "value": "10"
+        }
+      }
+    },
+    {
+      "name": "bar_model-percent-neither-base-nor-anchor",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/base"
+      },
+      "layout": "error",
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "percent",
+        "marks": [
+          {
+            "pct": "10",
+            "label_it": "uno"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bar_model-percent-hide-names-no-mark",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/hide/0"
+      },
+      "layout": "ruby-only",
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "percent",
+        "base": "100",
+        "marks": [
+          {
+            "pct": "10",
+            "label_it": "uno"
+          }
+        ],
+        "hide": [
+          "33"
+        ]
+      }
+    },
+    {
+      "name": "bar_model-percent-mark-beyond-300",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/marks/0/pct"
+      },
+      "layout": "error",
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "percent",
+        "base": "100",
+        "marks": [
+          {
+            "pct": "301",
+            "label_it": "troppo"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bar_model-percent-two-marks-same-place",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/marks"
+      },
+      "layout": "ruby-only",
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "percent",
+        "base": "100",
+        "marks": [
+          {
+            "pct": "10",
+            "label_it": "uno"
+          },
+          {
+            "pct": "10,0",
+            "label_it": "due"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bar_model-parts-with-a-base",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/base"
+      },
+      "layout": "error",
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "parts",
+        "base": "100",
+        "bars": [
+          {
+            "label_it": "Vendite",
+            "parts": [
+              {
+                "value": "1",
+                "label_it": "uno"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "bar_model-percent-with-bars",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/bars"
+      },
+      "layout": "error",
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "percent",
+        "base": "100",
+        "bars": [
+          {
+            "label_it": "Vendite",
+            "parts": [
+              {
+                "value": "1",
+                "label_it": "uno"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "bar_model-anchor-cannot-hide",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/hide/0"
+      },
+      "layout": "ruby-only",
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra proporzionale o una scala doppia con i valori calcolati e le percentuali sotto, per capire quanto vale ogni parte.",
+        "view": "percent",
+        "anchor": {
+          "pct": "122",
+          "value": "6,10"
+        },
+        "hide": [
+          "122"
+        ]
+      }
+    },
+    {
+      "name": "bar_model-unknown-field",
+      "subject": "business",
+      "schema": "invalid",
+      "semantic": "ok",
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra divisa in tre parti: centoventi, duecento e il resto, che insieme fanno quattrocentottanta in tutto.",
+        "view": "parts",
+        "bars": [
+          {
+            "label_it": "Vendite",
+            "parts": [
+              {
+                "value": "120",
+                "label_it": "primo"
+              },
+              {
+                "value": "200",
+                "label_it": "secondo"
+              },
+              {
+                "value": "160",
+                "label_it": "resto",
+                "hidden": true
+              }
+            ]
+          }
+        ],
+        "total": {
+          "value": "480",
+          "label_it": "in tutto"
+        },
+        "zzz_unknown_field": true
+      }
+    }
+  ]
 }

@@ -95,7 +95,11 @@ module Lessons
 
     # The declared drawing fields of a diagram with its states merged; the solution fields replaced by what the
     # drawing needs (balance: tilt, computed here, and x_value only when show_value is true).
-    def diagram(data)
+    def diagram(data) = Diagrams.served(data) || diagram_generic(data)
+
+    # What every type is served as unless its module serves it itself (Diagrams.served): the declared fields, the states merged, the
+    # solution fields out.
+    def diagram_generic(data)
       type = data["type"]
       declared = Diagrams.schema_def(type).fetch("properties").keys
       solution = Diagrams.solution_fields(type)
@@ -112,7 +116,7 @@ module Lessons
         out["tilt"] = tilt_of(merged)
       end
       out["x_value"] = data["x_value"] if type == "balance" && data["show_value"] == true && data["x_value"]
-      out["try"] = data["try"].slice("from", "to") if data["try"]
+      out["try"] = data["try"].slice("from", "to") if type == "balance" && data["try"]
       out
     end
 
