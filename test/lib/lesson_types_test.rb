@@ -9,6 +9,8 @@ class LessonTypesTest < ActiveSupport::TestCase
   SCHEMA = JSON.parse(Rails.root.join("config/banco/schemas/diagram.json").read).fetch("$defs")
   LESSON = JSON.parse(Rails.root.join("config/banco/schemas/lesson.json").read).fetch("$defs")
   FAMILIES = %w[graph time maps chart science computing words docs].freeze
+  # Libraries whose track has built them: their vectors run in their own tests (test/lib/lessons/*_test.rb, lesson/test/*.test.mjs)
+  BUILT_LIBRARIES = [ Lessons::Money ].freeze
 
   def js(path) = Rails.root.join("app/javascript/#{path}.js")
 
@@ -165,7 +167,7 @@ class LessonTypesTest < ActiveSupport::TestCase
     assert_not_includes message, "reveal"
   end
 
-  test "the libraries of WAVE2 1.10 have their signatures frozen, shared with their vector file, and raise until their track" do
+  test "the libraries of WAVE2 1.10 have their signatures frozen, shared with their vector file, and raise until their track builds them" do
     libs = { Lessons::Chrono => "chrono.json", Lessons::Dates => "dates.json", Lessons::NumWords => "amount_words.json", Lessons::Money => "money.json",
              Lessons::Chem => "chem_formulas.json", Lessons::Words => "spanish_words.json", Lessons::Verbs => "verbs.json", Lessons::Bits => "bits.json",
              Lessons::ProgramGrammar => "program.json", Lessons::Sheet => "sheet.json" }
@@ -178,7 +180,7 @@ class LessonTypesTest < ActiveSupport::TestCase
         meth = spec["ruby"][/\A[a-z_?]+/]
         assert_respond_to mod, meth
         arity = mod.method(meth).parameters.count { |kind, _| kind == :req }
-        assert_raises(mod::NotBuilt, "#{mod.name}.#{meth}") { mod.public_send(meth, *Array.new(arity, "x")) }
+        assert_raises(mod::NotBuilt, "#{mod.name}.#{meth}") { mod.public_send(meth, *Array.new(arity, "x")) } unless BUILT_LIBRARIES.include?(mod)
       end
     end
     assert_equal %w[run listing], JSON.parse(Rails.root.join("test/fixtures/lesson2/program.json").read)["functions"].reject { |_, f| f["ruby"] }.keys, "Ruby parses a program, never runs it"
