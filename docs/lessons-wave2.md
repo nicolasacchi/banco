@@ -50,7 +50,7 @@ booleans on a property, `x-banco-hide` a list of paths (`bars[].parts[].hidden`)
 |---|---|---|
 | graph router (`place`, `route`, `flip`, `moveList`) | `lesson/diagrams/graph/router.js` | T4b |
 | chart axis (`linear`, `log`, `readCursor`, `legend`, `valueTable`) | `lesson/diagrams/chart/axis.js` | T6 |
-| grid API (`grid`, `cellBox`, `outline`, `stackForPhone`, `scrollFrame`, `cellTargets`) | `lesson/diagrams/grid/api.js` | T9 |
+| grid API (`grid`, `cellBox`, `outline`, `stackForPhone`, `scrollFrame`, `cellTargets`) | `lesson/diagrams/grid/api.js` (built; the engine and its helpers are in `grid/engine.js`) | T9 |
 | speech (`voiceFor`, `rateFor` done; `speechOf`, `speak`, `stopAll`) | `lesson/speech.js`, `config/banco/voices.yml` | T2 |
 | `recordAtRender(data) -> { records, findings }` | `lesson/diagrams/computing/program.js` | T9 |
 | the libraries (Chrono, Dates, NumWords, Money, Chem, Words, Verbs, Bits, ProgramGrammar, Sheet) | `lib/lessons/*.rb`, `lesson/lib/*.js`, `test/fixtures/lesson2/*.json` | T3, T4a, T7, T8, T9 |
