@@ -100,8 +100,10 @@ class LessonsChecksWave2Test < ActiveSupport::TestCase
 
   test "select on a type with no targets yet: every response is unreadable, never guessed" do
     check = select_check
-    assert_empty Lessons::Checks.id_map(check, "x")
-    assert grade(check, %w[t1], {}).invalid?
+    without_targets do
+      assert_empty Lessons::Checks.id_map(check, "x")
+      assert grade(check, %w[t1], {}).invalid?
+    end
   end
 
   # ---- options ---------------------------------------------------------------------------------------------

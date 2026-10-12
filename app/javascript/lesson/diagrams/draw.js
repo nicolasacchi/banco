@@ -7,7 +7,7 @@ import * as N from "lesson/num"
 import { button, clear, el, icon, spriteHref, svg, uid } from "lesson/dom"
 import { HOME_PALETTE, STATUS, describe, layout, load, moduleFor, stateCount } from "lesson/diagrams/registry"
 import { tryValues, equationTex } from "lesson/diagrams/balance"
-import { buildStrip, declared, overlay } from "lesson/diagrams/controls"
+import { buildChips, buildStrip, declared, overlay } from "lesson/diagrams/controls"
 import { renderInlineRich, renderMath, renderRich } from "lesson/text"
 import { nearest, targetLabel } from "lesson/checks/select_model"
 import { controlNode, decorateTarget, defsNode, legendNode, padHit, patternRef, wireTargets } from "lesson/diagrams/scene_extras"
@@ -169,9 +169,10 @@ export function mountDiagram(data, ctx, options = {}) {
   // the legend list under a figure that has one, and the print views of a figure that prints more than its current state (wave 2)
   const legendHost = el("div", { class: "dg-legendhost" })
   const printHost = el("div", { class: "dg-print", "aria-hidden": "true" })
-  // an interactive figure announces each change in one polite live line (A6)
+  // what a control just did, said once and politely (A6): spoken only (sr-only)
   const live = el("p", { class: "sr-only dg-live", "aria-live": "polite", role: "status" })
-  figure.append(alt, ...(top ? [top] : []), stage, side, legendHost, ...(caption ? [caption] : []), desc, printHost, live)
+  side.appendChild(live)
+  figure.append(alt, ...(top ? [top] : []), stage, side, legendHost, ...(caption ? [caption] : []), desc, printHost)
 
   let mod = moduleFor(type)
   const total = mod || STATUS[type] ? stateCount(data) : 1
@@ -187,9 +188,13 @@ export function mountDiagram(data, ctx, options = {}) {
     state.announce = true
     draw()
   }
+  let stripBuilt = false
   const setupStrip = () => {
+    if (stripBuilt || !mod) return // once, as soon as the module is known (a lazy type loads after the mount)
+    stripBuilt = true
     wanted = declared(mod, data).filter(isStrip)
     strip = wanted.length ? buildStrip(wanted, controls, state.controls, ctx, press) : null
+    buildChips(declared(mod, data), controls, { state, ctx, redraw: () => { state.announce = true; draw() } })
   }
   const resetControls = () => {
     for (const c of wanted) delete state.controls[c.id]
@@ -298,7 +303,7 @@ export function mountDiagram(data, ctx, options = {}) {
     state.announce = false
     if (mod?.printViews && state.printWidth !== width) paintPrint(width, fontPx)
     for (const h of scene.hits ?? []) {
-      const b = el("button", { type: "button", class: "dg-hit", "aria-pressed": state.selected === h.id ? "true" : "false", "aria-label": `${h.name}: ${h.text}${h.question_it ? `. ${ctx.t.tap_for_question}` : ""}` })
+      const b = el("button", { type: "button", class: "dg-hit", "aria-pressed": state.selected === h.id ? "true" : "false", "aria-label": `${h.name}: ${h.text}${h.hint_it ? `. ${h.hint_it}` : h.question_it ? `. ${ctx.t.tap_for_question}` : ""}` })
       b.style.left = `${h.x}px`
       b.style.top = `${h.y}px`
       b.style.width = `${h.w}px`
@@ -306,7 +311,7 @@ export function mountDiagram(data, ctx, options = {}) {
       b.dataset.key = `${h.key}:hit`
       b.addEventListener("click", () => {
         state.selected = h.id
-        question.textContent = h.question_it ? `${h.name}: ${h.question_it}` : `${h.name}.`
+        question.textContent = h.note_it ? `${h.name}: ${h.note_it}` : h.question_it ? `${h.name}: ${h.question_it}` : `${h.name}.`
         for (const other of labelsLayer.querySelectorAll(".dg-hit")) other.setAttribute("aria-pressed", String(other === b))
       })
       labelsLayer.appendChild(b)
@@ -334,6 +339,7 @@ export function mountDiagram(data, ctx, options = {}) {
         el("span", { class: `dg-verdict${v.tilt === 0 ? " is-level" : ""}`, text: v.tilt === 0 ? ctx.t.try_level : v.tilt > 0 ? ctx.t.try_left : ctx.t.try_right }))
     }
     animate(old, figure, ctx.reduced())
+    if (old.size && !ctx.reduced()) for (const node of figure.querySelectorAll("[data-key]")) if (!old.has(node.dataset.key)) node.classList.add("dg-enter")
     stepper()
   }
 
@@ -457,7 +463,7 @@ export function mountDiagram(data, ctx, options = {}) {
   let ctrlKey = null
   let ctrlIds = []
   const syncControls = () => {
-    const list = mode === "select" ? [] : (mod?.controls?.(data, { state: state.i, mode }) ?? []).filter((c) => !isStrip(c))
+    const list = mode === "select" ? [] : (mod?.controls?.(data, { state: state.i, mode }) ?? []).filter((c) => !isStrip(c) && c.kind !== "chips")
     const key = JSON.stringify(list.map((c) => [c.id, c.range, c.values, c.stops]))
     if (key === ctrlKey) return
     ctrlKey = key

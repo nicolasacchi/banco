@@ -1,18 +1,18 @@
 {
  "version": 1,
  "type": "network",
- "status": "reserved",
+ "status": "available",
  "batch": "w2-1",
  "track": "T4b",
  "provisional": false,
- "description": "Skeleton of W2-0 for the track T4b: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "description": "The vectors of network (T4b), run both ways: the schema column by config/banco/schemas/diagram.json (Ruby) and the compiled schema (browser), the semantic column by Lessons::Diagrams::Network (Ruby) and semantic() of graph/network.js, whose first finding must have the same code and path, the layout column by layout() of the browser at 320, 390, 768 and 1280 px and fontPx 18, 20, 26. 'printed', 'describe' and 'targets' are what Ruby and the browser must both answer for each state.",
  "vectors": [
   {
    "name": "network-example-1",
    "subject": "law_economics",
    "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
+   "semantic": "ok",
+   "layout": "ok",
    "data": {
     "type": "network",
     "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
@@ -56,21 +56,612 @@
      },
      {
       "op_it": "Poi si scambiano",
-      "edges": [
-       {
-        "from": "anna",
-        "to": "paolo",
-        "kind": "owes"
-       }
-      ],
       "badges": [
        {
         "node": "anna",
         "badge_it": "debitrice"
+       },
+       {
+        "node": "paolo",
+        "badge_it": "creditore"
        }
       ]
      }
     ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Anna, venditrice",
+      "Deve consegnare la bicicletta.",
+      "debitrice",
+      "Paolo, compratore",
+      "Prima si accordano",
+      "Relazioni tra Anna e Paolo. Per ora non c'è nessuna freccia. Anna: debitrice."
+     ],
+     [
+      "Anna, venditrice",
+      "Deve consegnare la bicicletta.",
+      "debitrice",
+      "Paolo, compratore",
+      "creditore",
+      "consegna la bicicletta",
+      "paga 150 euro",
+      "Poi si scambiano",
+      "Relazioni tra Anna e Paolo. Da Anna a Paolo: consegna la bicicletta. Da Paolo ad Anna: paga 150 euro. Anna: debitrice. Paolo: creditore."
+     ]
+    ],
+    "targets": {
+     "nodes": [
+      "anna",
+      "paolo"
+     ],
+     "edges": []
+    }
+   }
+  },
+  {
+   "name": "network-hub-filter",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "network",
+    "alt_it": "Nel Parlamento d'esempio il Senato è al centro: il popolo elegge i senatori, i senatori danno la fiducia al governo e votano le leggi.",
+    "layout": "hub",
+    "centre": "sen",
+    "filter": true,
+    "nodes": [
+     {
+      "id": "sen",
+      "label_it": "Senato",
+      "icon": "landmark",
+      "role": "legislative",
+      "note_it": "Qui si votano le leggi."
+     },
+     {
+      "id": "pop",
+      "label_it": "Popolo",
+      "icon": "users",
+      "role": "people"
+     },
+     {
+      "id": "gov",
+      "label_it": "Governo",
+      "icon": "briefcase",
+      "role": "executive"
+     },
+     {
+      "id": "pre",
+      "label_it": "Presidente",
+      "icon": "shield",
+      "role": "guarantee"
+     },
+     {
+      "id": "gio",
+      "label_it": "Giudici",
+      "icon": "gavel",
+      "role": "judicial"
+     }
+    ],
+    "edges": [
+     {
+      "from": "pop",
+      "to": "sen",
+      "kind": "elects"
+     },
+     {
+      "from": "sen",
+      "to": "gov",
+      "kind": "trusts"
+     },
+     {
+      "from": "sen",
+      "to": "pop",
+      "kind": "votes_laws",
+      "label_it": "vota le leggi per tutti"
+     },
+     {
+      "from": "pre",
+      "to": "gov",
+      "kind": "appoints"
+     },
+     {
+      "from": "gio",
+      "to": "sen",
+      "kind": "advises"
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Senato",
+      "Qui si votano le leggi.",
+      "Popolo",
+      "Governo",
+      "Presidente",
+      "Giudici",
+      "elegge",
+      "dà la fiducia",
+      "vota le leggi per tutti",
+      "nomina",
+      "consiglia",
+      "Relazioni tra Senato, Popolo, Governo, Presidente e Giudici. Da Popolo a Senato: elegge. Da Senato a Governo: dà la fiducia. Da Senato a Popolo: vota le leggi per tutti. Da Presidente a Governo: nomina. Da Giudici a Senato: consiglia."
+     ]
+    ],
+    "targets": {
+     "nodes": [
+      "sen",
+      "pop",
+      "gov",
+      "pre",
+      "gio"
+     ],
+     "edges": [
+      "pop>sen:elects",
+      "sen>gov:trusts",
+      "sen>pop:votes_laws",
+      "pre>gov:appoints",
+      "gio>sen:advises"
+     ]
+    }
+   }
+  },
+  {
+   "name": "network-fan-orders",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "network",
+    "alt_it": "Tre clienti ordinano al negozio: ognuno manda un ordine e il negozio risponde con la merce.",
+    "layout": "fan",
+    "into": "neg",
+    "nodes": [
+     {
+      "id": "c1",
+      "label_it": "Cliente uno",
+      "icon": "wallet"
+     },
+     {
+      "id": "c2",
+      "label_it": "Cliente due",
+      "icon": "wallet"
+     },
+     {
+      "id": "c3",
+      "label_it": "Cliente tre",
+      "icon": "wallet"
+     },
+     {
+      "id": "neg",
+      "label_it": "Negozio",
+      "icon": "store"
+     }
+    ],
+    "edges": [
+     {
+      "from": "c1",
+      "to": "neg",
+      "kind": "orders",
+      "what": "order"
+     },
+     {
+      "from": "c2",
+      "to": "neg",
+      "kind": "orders",
+      "what": "order"
+     },
+     {
+      "from": "c3",
+      "to": "neg",
+      "kind": "orders",
+      "what": "order"
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Cliente uno",
+      "Cliente due",
+      "Cliente tre",
+      "Negozio",
+      "ordina",
+      "Relazioni tra Cliente uno, Cliente due, Cliente tre e Negozio. Da Cliente uno a Negozio: ordina. Da Cliente due a Negozio: ordina. Da Cliente tre a Negozio: ordina."
+     ]
+    ],
+    "targets": {
+     "nodes": [
+      "c1",
+      "c2",
+      "c3",
+      "neg"
+     ],
+     "edges": [
+      "c1>neg:orders",
+      "c2>neg:orders",
+      "c3>neg:orders"
+     ]
+    }
+   }
+  },
+  {
+   "name": "network-triangle-loan",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "network",
+    "alt_it": "Tre persone in un prestito: chi presta, chi riceve i soldi e chi garantisce. Le frecce dicono chi deve che cosa a chi.",
+    "layout": "triangle",
+    "nodes": [
+     {
+      "id": "cre",
+      "label_it": "Creditore",
+      "icon": "piggy-bank",
+      "role": "creditor"
+     },
+     {
+      "id": "deb",
+      "label_it": "Debitore",
+      "icon": "wallet",
+      "role": "debtor"
+     },
+     {
+      "id": "ter",
+      "label_it": "Garante",
+      "icon": "user-plus",
+      "role": "third"
+     }
+    ],
+    "edges": [
+     {
+      "from": "deb",
+      "to": "cre",
+      "kind": "owes",
+      "label_it": "restituisce",
+      "what": "money"
+     },
+     {
+      "from": "ter",
+      "to": "cre",
+      "kind": "promises",
+      "label_it": "garantisce",
+      "what": "promise"
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Creditore",
+      "Debitore",
+      "Garante",
+      "restituisce",
+      "garantisce",
+      "Relazioni tra Creditore, Debitore e Garante. Da Debitore a Creditore: restituisce. Da Garante a Creditore: garantisce."
+     ]
+    ],
+    "targets": {
+     "nodes": [
+      "cre",
+      "deb",
+      "ter"
+     ],
+     "edges": [
+      "deb>cre:owes",
+      "ter>cre:promises"
+     ]
+    }
+   }
+  },
+  {
+   "name": "network-row-goods",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "network",
+    "alt_it": "Quattro tappe di una merce: il produttore la manda al grossista, il grossista al negozio, il negozio al cliente.",
+    "layout": "row",
+    "nodes": [
+     {
+      "id": "p",
+      "label_it": "Produttore",
+      "icon": "truck"
+     },
+     {
+      "id": "g",
+      "label_it": "Grossista",
+      "icon": "package"
+     },
+     {
+      "id": "n",
+      "label_it": "Negozio",
+      "icon": "store"
+     },
+     {
+      "id": "c",
+      "label_it": "Cliente",
+      "icon": "wallet"
+     }
+    ],
+    "edges": [
+     {
+      "from": "p",
+      "to": "g",
+      "kind": "sends",
+      "what": "goods"
+     },
+     {
+      "from": "g",
+      "to": "n",
+      "kind": "sends",
+      "what": "goods"
+     },
+     {
+      "from": "n",
+      "to": "c",
+      "kind": "gives",
+      "what": "goods"
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Produttore",
+      "Grossista",
+      "Negozio",
+      "Cliente",
+      "manda",
+      "dà",
+      "Relazioni tra Produttore, Grossista, Negozio e Cliente. Da Produttore a Grossista: manda. Da Grossista a Negozio: manda. Da Negozio a Cliente: dà."
+     ]
+    ],
+    "targets": {
+     "nodes": [
+      "p",
+      "g",
+      "n",
+      "c"
+     ],
+     "edges": [
+      "p>g:sends",
+      "g>n:sends",
+      "n>c:gives"
+     ]
+    }
+   }
+  },
+  {
+   "name": "network-grid-powers",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "network",
+    "alt_it": "Quattro poteri che si controllano: chi comanda, chi vota, chi giudica e chi garantisce. Le frecce mostrano chi blocca chi.",
+    "layout": "grid",
+    "nodes": [
+     {
+      "id": "a",
+      "label_it": "Chi comanda",
+      "icon": "crown"
+     },
+     {
+      "id": "b",
+      "label_it": "Chi vota",
+      "icon": "vote"
+     },
+     {
+      "id": "c",
+      "label_it": "Chi giudica",
+      "icon": "gavel"
+     },
+     {
+      "id": "d",
+      "label_it": "Chi garantisce",
+      "icon": "shield"
+     }
+    ],
+    "edges": [
+     {
+      "from": "a",
+      "to": "b",
+      "kind": "commands"
+     },
+     {
+      "from": "c",
+      "to": "a",
+      "kind": "vetoes"
+     },
+     {
+      "from": "d",
+      "to": "c",
+      "kind": "appoints"
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Chi comanda",
+      "Chi vota",
+      "Chi giudica",
+      "Chi garantisce",
+      "comanda",
+      "blocca",
+      "nomina",
+      "Relazioni tra Chi comanda, Chi vota, Chi giudica e Chi garantisce. Da Chi comanda a Chi vota: comanda. Da Chi giudica a Chi comanda: blocca. Da Chi garantisce a Chi giudica: nomina."
+     ]
+    ],
+    "targets": {
+     "nodes": [
+      "a",
+      "b",
+      "c",
+      "d"
+     ],
+     "edges": [
+      "a>b:commands",
+      "c>a:vetoes",
+      "d>c:appoints"
+     ]
+    }
+   }
+  },
+  {
+   "name": "network-everyone-holds-hide",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "network",
+    "alt_it": "Il re da solo, poi il re e il consiglio: nel secondo stato il re cede un potere e il consiglio ne riceve uno.",
+    "layout": "pair",
+    "everyone": true,
+    "nodes": [
+     {
+      "id": "re",
+      "label_it": "Il re",
+      "icon": "crown",
+      "role": "legislative"
+     },
+     {
+      "id": "con",
+      "label_it": "Il consiglio",
+      "icon": "users",
+      "role": "people"
+     }
+    ],
+    "holds": [
+     {
+      "node": "re",
+      "items_it": [
+       "fa le leggi",
+       "guida l'esercito"
+      ]
+     }
+    ],
+    "edges": [
+     {
+      "from": "everyone",
+      "to": "re",
+      "kind": "owes",
+      "label_it": "obbedisce"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Il re ha tutto"
+     },
+     {
+      "op_it": "Il re cede un potere",
+      "holds": [
+       {
+        "node": "re",
+        "items_it": [
+         "guida l'esercito"
+        ]
+       },
+       {
+        "node": "con",
+        "items_it": [
+         "fa le leggi"
+        ]
+       }
+      ],
+      "edges": [
+       {
+        "from": "everyone",
+        "to": "re",
+        "kind": "owes",
+        "label_it": "obbedisce"
+       },
+       {
+        "from": "everyone",
+        "to": "con",
+        "kind": "owes",
+        "label_it": "obbedisce"
+       }
+      ]
+     },
+     {
+      "op_it": "Solo il re",
+      "hide": [
+       "con"
+      ],
+      "edges": [
+       {
+        "from": "everyone",
+        "to": "re",
+        "kind": "owes",
+        "label_it": "obbedisce"
+       }
+      ],
+      "holds": [
+       {
+        "node": "re",
+        "items_it": [
+         "fa le leggi",
+         "guida l'esercito"
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Il re",
+      "fa le leggi",
+      "guida l'esercito",
+      "Il consiglio",
+      "Tutti gli altri",
+      "obbedisce",
+      "Il re ha tutto",
+      "Relazioni tra Il re, Il consiglio e Tutti gli altri. Da Tutti gli altri a Il re: obbedisce. Il re ha: fa le leggi e guida l'esercito."
+     ],
+     [
+      "Il re",
+      "guida l'esercito",
+      "Il consiglio",
+      "fa le leggi",
+      "Tutti gli altri",
+      "obbedisce",
+      "Il re cede un potere",
+      "Relazioni tra Il re, Il consiglio e Tutti gli altri. Da Tutti gli altri a Il re: obbedisce. Da Tutti gli altri a Il consiglio: obbedisce. Il re ha: guida l'esercito. Il consiglio ha: fa le leggi."
+     ],
+     [
+      "Il re",
+      "fa le leggi",
+      "guida l'esercito",
+      "Il consiglio",
+      "Tutti gli altri",
+      "obbedisce",
+      "Solo il re",
+      "Relazioni tra Il re e Tutti gli altri. Da Tutti gli altri a Il re: obbedisce. Il re ha: fa le leggi e guida l'esercito."
+     ]
+    ],
+    "targets": {
+     "nodes": [
+      "re",
+      "con"
+     ],
+     "edges": [
+      "everyone>re:owes"
+     ]
+    }
    }
   },
   {
@@ -78,6 +669,7 @@
    "subject": "law_economics",
    "schema": "invalid",
    "semantic": "ok",
+   "layout": "error",
    "data": {
     "type": "network",
     "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
@@ -121,22 +713,1817 @@
      },
      {
       "op_it": "Poi si scambiano",
-      "edges": [
-       {
-        "from": "anna",
-        "to": "paolo",
-        "kind": "owes"
-       }
-      ],
       "badges": [
        {
         "node": "anna",
         "badge_it": "debitrice"
+       },
+       {
+        "node": "paolo",
+        "badge_it": "creditore"
        }
       ]
      }
     ],
     "zzz_unknown_field": true
+   }
+  },
+  {
+   "name": "network-kind-not-in-list",
+   "subject": "law_economics",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
+    "layout": "pair",
+    "nodes": [
+     {
+      "id": "anna",
+      "label_it": "Anna, venditrice",
+      "icon": "user",
+      "role": "duty",
+      "note_it": "Deve consegnare la bicicletta.",
+      "badge_it": "debitrice"
+     },
+     {
+      "id": "paolo",
+      "label_it": "Paolo, compratore",
+      "icon": "user",
+      "role": "right"
+     }
+    ],
+    "edges": [
+     {
+      "from": "anna",
+      "to": "paolo",
+      "kind": "hates",
+      "label_it": "consegna la bicicletta",
+      "what": "goods"
+     },
+     {
+      "from": "paolo",
+      "to": "anna",
+      "kind": "pays",
+      "label_it": "paga 150 euro",
+      "what": "money"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Prima si accordano",
+      "edges": []
+     },
+     {
+      "op_it": "Poi si scambiano",
+      "badges": [
+       {
+        "node": "anna",
+        "badge_it": "debitrice"
+       },
+       {
+        "node": "paolo",
+        "badge_it": "creditore"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-one-node",
+   "subject": "law_economics",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
+    "layout": "pair",
+    "nodes": [
+     {
+      "id": "anna",
+      "label_it": "Anna, venditrice",
+      "icon": "user",
+      "role": "duty",
+      "note_it": "Deve consegnare la bicicletta.",
+      "badge_it": "debitrice"
+     }
+    ],
+    "edges": []
+   }
+  },
+  {
+   "name": "network-thirteen-edges",
+   "subject": "law_economics",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Nel Parlamento d'esempio il Senato è al centro: il popolo elegge i senatori, i senatori danno la fiducia al governo e votano le leggi.",
+    "layout": "hub",
+    "centre": "sen",
+    "filter": true,
+    "nodes": [
+     {
+      "id": "sen",
+      "label_it": "Senato",
+      "icon": "landmark",
+      "role": "legislative",
+      "note_it": "Qui si votano le leggi."
+     },
+     {
+      "id": "pop",
+      "label_it": "Popolo",
+      "icon": "users",
+      "role": "people"
+     },
+     {
+      "id": "gov",
+      "label_it": "Governo",
+      "icon": "briefcase",
+      "role": "executive"
+     },
+     {
+      "id": "pre",
+      "label_it": "Presidente",
+      "icon": "shield",
+      "role": "guarantee"
+     },
+     {
+      "id": "gio",
+      "label_it": "Giudici",
+      "icon": "gavel",
+      "role": "judicial"
+     }
+    ],
+    "edges": [
+     {
+      "from": "pop",
+      "to": "sen",
+      "kind": "elects"
+     },
+     {
+      "from": "pop",
+      "to": "sen",
+      "kind": "elects"
+     },
+     {
+      "from": "pop",
+      "to": "sen",
+      "kind": "elects"
+     },
+     {
+      "from": "pop",
+      "to": "sen",
+      "kind": "elects"
+     },
+     {
+      "from": "pop",
+      "to": "sen",
+      "kind": "elects"
+     },
+     {
+      "from": "pop",
+      "to": "sen",
+      "kind": "elects"
+     },
+     {
+      "from": "pop",
+      "to": "sen",
+      "kind": "elects"
+     },
+     {
+      "from": "pop",
+      "to": "sen",
+      "kind": "elects"
+     },
+     {
+      "from": "pop",
+      "to": "sen",
+      "kind": "elects"
+     },
+     {
+      "from": "pop",
+      "to": "sen",
+      "kind": "elects"
+     },
+     {
+      "from": "pop",
+      "to": "sen",
+      "kind": "elects"
+     },
+     {
+      "from": "pop",
+      "to": "sen",
+      "kind": "elects"
+     },
+     {
+      "from": "pop",
+      "to": "sen",
+      "kind": "elects"
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-ids-twice",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/nodes",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
+    "layout": "pair",
+    "nodes": [
+     {
+      "id": "anna",
+      "label_it": "Anna, venditrice",
+      "icon": "user",
+      "role": "duty",
+      "note_it": "Deve consegnare la bicicletta.",
+      "badge_it": "debitrice"
+     },
+     {
+      "id": "anna",
+      "label_it": "Paolo, compratore",
+      "icon": "user",
+      "role": "right"
+     }
+    ],
+    "edges": [
+     {
+      "from": "anna",
+      "to": "paolo",
+      "kind": "owes",
+      "label_it": "consegna la bicicletta",
+      "what": "goods"
+     },
+     {
+      "from": "paolo",
+      "to": "anna",
+      "kind": "pays",
+      "label_it": "paga 150 euro",
+      "what": "money"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Prima si accordano",
+      "edges": []
+     },
+     {
+      "op_it": "Poi si scambiano",
+      "badges": [
+       {
+        "node": "anna",
+        "badge_it": "debitrice"
+       },
+       {
+        "node": "paolo",
+        "badge_it": "creditore"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-edge-unknown-node",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/states/1/edges/1",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
+    "layout": "pair",
+    "nodes": [
+     {
+      "id": "anna",
+      "label_it": "Anna, venditrice",
+      "icon": "user",
+      "role": "duty",
+      "note_it": "Deve consegnare la bicicletta.",
+      "badge_it": "debitrice"
+     },
+     {
+      "id": "paolo",
+      "label_it": "Paolo, compratore",
+      "icon": "user",
+      "role": "right"
+     }
+    ],
+    "edges": [
+     {
+      "from": "anna",
+      "to": "paolo",
+      "kind": "owes",
+      "label_it": "consegna la bicicletta",
+      "what": "goods"
+     },
+     {
+      "from": "paolo",
+      "to": "luigi",
+      "kind": "pays",
+      "label_it": "paga 150 euro",
+      "what": "money"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Prima si accordano",
+      "edges": []
+     },
+     {
+      "op_it": "Poi si scambiano",
+      "badges": [
+       {
+        "node": "anna",
+        "badge_it": "debitrice"
+       },
+       {
+        "node": "paolo",
+        "badge_it": "creditore"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-edge-to-itself",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/states/1/edges/1",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
+    "layout": "pair",
+    "nodes": [
+     {
+      "id": "anna",
+      "label_it": "Anna, venditrice",
+      "icon": "user",
+      "role": "duty",
+      "note_it": "Deve consegnare la bicicletta.",
+      "badge_it": "debitrice"
+     },
+     {
+      "id": "paolo",
+      "label_it": "Paolo, compratore",
+      "icon": "user",
+      "role": "right"
+     }
+    ],
+    "edges": [
+     {
+      "from": "anna",
+      "to": "paolo",
+      "kind": "owes",
+      "label_it": "consegna la bicicletta",
+      "what": "goods"
+     },
+     {
+      "from": "paolo",
+      "to": "paolo",
+      "kind": "pays",
+      "label_it": "paga 150 euro",
+      "what": "money"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Prima si accordano",
+      "edges": []
+     },
+     {
+      "op_it": "Poi si scambiano",
+      "badges": [
+       {
+        "node": "anna",
+        "badge_it": "debitrice"
+       },
+       {
+        "node": "paolo",
+        "badge_it": "creditore"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-edge-twice",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/states/1/edges/2",
+   "layout": "error",
+   "note": "state 0 of the pair names its own (empty) edges, state 1 inherits the top level",
+   "data": {
+    "type": "network",
+    "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
+    "layout": "pair",
+    "nodes": [
+     {
+      "id": "anna",
+      "label_it": "Anna, venditrice",
+      "icon": "user",
+      "role": "duty",
+      "note_it": "Deve consegnare la bicicletta.",
+      "badge_it": "debitrice"
+     },
+     {
+      "id": "paolo",
+      "label_it": "Paolo, compratore",
+      "icon": "user",
+      "role": "right"
+     }
+    ],
+    "edges": [
+     {
+      "from": "anna",
+      "to": "paolo",
+      "kind": "owes",
+      "label_it": "consegna la bicicletta",
+      "what": "goods"
+     },
+     {
+      "from": "paolo",
+      "to": "anna",
+      "kind": "pays",
+      "label_it": "paga 150 euro",
+      "what": "money"
+     },
+     {
+      "from": "anna",
+      "to": "paolo",
+      "kind": "owes",
+      "label_it": "consegna la bicicletta",
+      "what": "goods"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Prima si accordano",
+      "edges": []
+     },
+     {
+      "op_it": "Poi si scambiano",
+      "badges": [
+       {
+        "node": "anna",
+        "badge_it": "debitrice"
+       },
+       {
+        "node": "paolo",
+        "badge_it": "creditore"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-edge-to-hidden-node",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/states/1/edges/0",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
+    "layout": "pair",
+    "nodes": [
+     {
+      "id": "anna",
+      "label_it": "Anna, venditrice",
+      "icon": "user",
+      "role": "duty",
+      "note_it": "Deve consegnare la bicicletta.",
+      "badge_it": "debitrice"
+     },
+     {
+      "id": "paolo",
+      "label_it": "Paolo, compratore",
+      "icon": "user",
+      "role": "right"
+     }
+    ],
+    "edges": [
+     {
+      "from": "anna",
+      "to": "paolo",
+      "kind": "owes",
+      "label_it": "consegna la bicicletta",
+      "what": "goods"
+     },
+     {
+      "from": "paolo",
+      "to": "anna",
+      "kind": "pays",
+      "label_it": "paga 150 euro",
+      "what": "money"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Prima si accordano",
+      "edges": []
+     },
+     {
+      "op_it": "Poi si scambiano",
+      "badges": [
+       {
+        "node": "anna",
+        "badge_it": "debitrice"
+       },
+       {
+        "node": "paolo",
+        "badge_it": "creditore"
+       }
+      ],
+      "hide": [
+       "paolo"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-hide-not-a-node",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/states/1/hide/0",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
+    "layout": "pair",
+    "nodes": [
+     {
+      "id": "anna",
+      "label_it": "Anna, venditrice",
+      "icon": "user",
+      "role": "duty",
+      "note_it": "Deve consegnare la bicicletta.",
+      "badge_it": "debitrice"
+     },
+     {
+      "id": "paolo",
+      "label_it": "Paolo, compratore",
+      "icon": "user",
+      "role": "right"
+     }
+    ],
+    "edges": [
+     {
+      "from": "anna",
+      "to": "paolo",
+      "kind": "owes",
+      "label_it": "consegna la bicicletta",
+      "what": "goods"
+     },
+     {
+      "from": "paolo",
+      "to": "anna",
+      "kind": "pays",
+      "label_it": "paga 150 euro",
+      "what": "money"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Prima si accordano",
+      "edges": []
+     },
+     {
+      "op_it": "Poi si scambiano",
+      "badges": [
+       {
+        "node": "anna",
+        "badge_it": "debitrice"
+       },
+       {
+        "node": "paolo",
+        "badge_it": "creditore"
+       }
+      ],
+      "hide": [
+       "nessuno"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-holds-hidden-node",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/states/2/holds/0/node",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Il re da solo, poi il re e il consiglio: nel secondo stato il re cede un potere e il consiglio ne riceve uno.",
+    "layout": "pair",
+    "everyone": true,
+    "nodes": [
+     {
+      "id": "re",
+      "label_it": "Il re",
+      "icon": "crown",
+      "role": "legislative"
+     },
+     {
+      "id": "con",
+      "label_it": "Il consiglio",
+      "icon": "users",
+      "role": "people"
+     }
+    ],
+    "holds": [
+     {
+      "node": "re",
+      "items_it": [
+       "fa le leggi",
+       "guida l'esercito"
+      ]
+     }
+    ],
+    "edges": [
+     {
+      "from": "everyone",
+      "to": "re",
+      "kind": "owes",
+      "label_it": "obbedisce"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Il re ha tutto"
+     },
+     {
+      "op_it": "Il re cede un potere",
+      "holds": [
+       {
+        "node": "re",
+        "items_it": [
+         "guida l'esercito"
+        ]
+       },
+       {
+        "node": "con",
+        "items_it": [
+         "fa le leggi"
+        ]
+       }
+      ],
+      "edges": [
+       {
+        "from": "everyone",
+        "to": "re",
+        "kind": "owes",
+        "label_it": "obbedisce"
+       },
+       {
+        "from": "everyone",
+        "to": "con",
+        "kind": "owes",
+        "label_it": "obbedisce"
+       }
+      ]
+     },
+     {
+      "op_it": "Solo il re",
+      "hide": [
+       "con"
+      ],
+      "edges": [
+       {
+        "from": "everyone",
+        "to": "re",
+        "kind": "owes",
+        "label_it": "obbedisce"
+       }
+      ],
+      "holds": [
+       {
+        "node": "con",
+        "items_it": [
+         "fa le leggi"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-holds-unknown-node",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/states/1/holds/0/node",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Il re da solo, poi il re e il consiglio: nel secondo stato il re cede un potere e il consiglio ne riceve uno.",
+    "layout": "pair",
+    "everyone": true,
+    "nodes": [
+     {
+      "id": "re",
+      "label_it": "Il re",
+      "icon": "crown",
+      "role": "legislative"
+     },
+     {
+      "id": "con",
+      "label_it": "Il consiglio",
+      "icon": "users",
+      "role": "people"
+     }
+    ],
+    "holds": [
+     {
+      "node": "re",
+      "items_it": [
+       "fa le leggi",
+       "guida l'esercito"
+      ]
+     }
+    ],
+    "edges": [
+     {
+      "from": "everyone",
+      "to": "re",
+      "kind": "owes",
+      "label_it": "obbedisce"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Il re ha tutto"
+     },
+     {
+      "op_it": "Il re cede un potere",
+      "holds": [
+       {
+        "node": "zz",
+        "items_it": [
+         "guida l'esercito"
+        ]
+       },
+       {
+        "node": "con",
+        "items_it": [
+         "fa le leggi"
+        ]
+       }
+      ],
+      "edges": [
+       {
+        "from": "everyone",
+        "to": "re",
+        "kind": "owes",
+        "label_it": "obbedisce"
+       },
+       {
+        "from": "everyone",
+        "to": "con",
+        "kind": "owes",
+        "label_it": "obbedisce"
+       }
+      ]
+     },
+     {
+      "op_it": "Solo il re",
+      "hide": [
+       "con"
+      ],
+      "edges": [
+       {
+        "from": "everyone",
+        "to": "re",
+        "kind": "owes",
+        "label_it": "obbedisce"
+       }
+      ],
+      "holds": [
+       {
+        "node": "re",
+        "items_it": [
+         "fa le leggi",
+         "guida l'esercito"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-badge-unknown-node",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/states/1/badges/0/node",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
+    "layout": "pair",
+    "nodes": [
+     {
+      "id": "anna",
+      "label_it": "Anna, venditrice",
+      "icon": "user",
+      "role": "duty",
+      "note_it": "Deve consegnare la bicicletta.",
+      "badge_it": "debitrice"
+     },
+     {
+      "id": "paolo",
+      "label_it": "Paolo, compratore",
+      "icon": "user",
+      "role": "right"
+     }
+    ],
+    "edges": [
+     {
+      "from": "anna",
+      "to": "paolo",
+      "kind": "owes",
+      "label_it": "consegna la bicicletta",
+      "what": "goods"
+     },
+     {
+      "from": "paolo",
+      "to": "anna",
+      "kind": "pays",
+      "label_it": "paga 150 euro",
+      "what": "money"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Prima si accordano",
+      "edges": []
+     },
+     {
+      "op_it": "Poi si scambiano",
+      "badges": [
+       {
+        "node": "zz",
+        "badge_it": "debitrice"
+       },
+       {
+        "node": "paolo",
+        "badge_it": "creditore"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-pair-three-nodes",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/nodes",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
+    "layout": "pair",
+    "nodes": [
+     {
+      "id": "anna",
+      "label_it": "Anna, venditrice",
+      "icon": "user",
+      "role": "duty",
+      "note_it": "Deve consegnare la bicicletta.",
+      "badge_it": "debitrice"
+     },
+     {
+      "id": "paolo",
+      "label_it": "Paolo, compratore",
+      "icon": "user",
+      "role": "right"
+     },
+     {
+      "id": "luigi",
+      "label_it": "Luigi"
+     }
+    ],
+    "edges": [
+     {
+      "from": "anna",
+      "to": "paolo",
+      "kind": "owes",
+      "label_it": "consegna la bicicletta",
+      "what": "goods"
+     },
+     {
+      "from": "paolo",
+      "to": "anna",
+      "kind": "pays",
+      "label_it": "paga 150 euro",
+      "what": "money"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Prima si accordano",
+      "edges": []
+     },
+     {
+      "op_it": "Poi si scambiano",
+      "badges": [
+       {
+        "node": "anna",
+        "badge_it": "debitrice"
+       },
+       {
+        "node": "paolo",
+        "badge_it": "creditore"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-triangle-four-nodes",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/nodes",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Tre persone in un prestito: chi presta, chi riceve i soldi e chi garantisce. Le frecce dicono chi deve che cosa a chi.",
+    "layout": "triangle",
+    "nodes": [
+     {
+      "id": "cre",
+      "label_it": "Creditore",
+      "icon": "piggy-bank",
+      "role": "creditor"
+     },
+     {
+      "id": "deb",
+      "label_it": "Debitore",
+      "icon": "wallet",
+      "role": "debtor"
+     },
+     {
+      "id": "ter",
+      "label_it": "Garante",
+      "icon": "user-plus",
+      "role": "third"
+     },
+     {
+      "id": "x",
+      "label_it": "Altro"
+     }
+    ],
+    "edges": [
+     {
+      "from": "deb",
+      "to": "cre",
+      "kind": "owes",
+      "label_it": "restituisce",
+      "what": "money"
+     },
+     {
+      "from": "ter",
+      "to": "cre",
+      "kind": "promises",
+      "label_it": "garantisce",
+      "what": "promise"
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-hub-without-centre",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/centre",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Nel Parlamento d'esempio il Senato è al centro: il popolo elegge i senatori, i senatori danno la fiducia al governo e votano le leggi.",
+    "layout": "hub",
+    "filter": true,
+    "nodes": [
+     {
+      "id": "sen",
+      "label_it": "Senato",
+      "icon": "landmark",
+      "role": "legislative",
+      "note_it": "Qui si votano le leggi."
+     },
+     {
+      "id": "pop",
+      "label_it": "Popolo",
+      "icon": "users",
+      "role": "people"
+     },
+     {
+      "id": "gov",
+      "label_it": "Governo",
+      "icon": "briefcase",
+      "role": "executive"
+     },
+     {
+      "id": "pre",
+      "label_it": "Presidente",
+      "icon": "shield",
+      "role": "guarantee"
+     },
+     {
+      "id": "gio",
+      "label_it": "Giudici",
+      "icon": "gavel",
+      "role": "judicial"
+     }
+    ],
+    "edges": [
+     {
+      "from": "pop",
+      "to": "sen",
+      "kind": "elects"
+     },
+     {
+      "from": "sen",
+      "to": "gov",
+      "kind": "trusts"
+     },
+     {
+      "from": "sen",
+      "to": "pop",
+      "kind": "votes_laws",
+      "label_it": "vota le leggi per tutti"
+     },
+     {
+      "from": "pre",
+      "to": "gov",
+      "kind": "appoints"
+     },
+     {
+      "from": "gio",
+      "to": "sen",
+      "kind": "advises"
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-hub-centre-not-a-node",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/centre",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Nel Parlamento d'esempio il Senato è al centro: il popolo elegge i senatori, i senatori danno la fiducia al governo e votano le leggi.",
+    "layout": "hub",
+    "centre": "zz",
+    "filter": true,
+    "nodes": [
+     {
+      "id": "sen",
+      "label_it": "Senato",
+      "icon": "landmark",
+      "role": "legislative",
+      "note_it": "Qui si votano le leggi."
+     },
+     {
+      "id": "pop",
+      "label_it": "Popolo",
+      "icon": "users",
+      "role": "people"
+     },
+     {
+      "id": "gov",
+      "label_it": "Governo",
+      "icon": "briefcase",
+      "role": "executive"
+     },
+     {
+      "id": "pre",
+      "label_it": "Presidente",
+      "icon": "shield",
+      "role": "guarantee"
+     },
+     {
+      "id": "gio",
+      "label_it": "Giudici",
+      "icon": "gavel",
+      "role": "judicial"
+     }
+    ],
+    "edges": [
+     {
+      "from": "pop",
+      "to": "sen",
+      "kind": "elects"
+     },
+     {
+      "from": "sen",
+      "to": "gov",
+      "kind": "trusts"
+     },
+     {
+      "from": "sen",
+      "to": "pop",
+      "kind": "votes_laws",
+      "label_it": "vota le leggi per tutti"
+     },
+     {
+      "from": "pre",
+      "to": "gov",
+      "kind": "appoints"
+     },
+     {
+      "from": "gio",
+      "to": "sen",
+      "kind": "advises"
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-centre-on-a-pair",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/centre",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
+    "layout": "pair",
+    "nodes": [
+     {
+      "id": "anna",
+      "label_it": "Anna, venditrice",
+      "icon": "user",
+      "role": "duty",
+      "note_it": "Deve consegnare la bicicletta.",
+      "badge_it": "debitrice"
+     },
+     {
+      "id": "paolo",
+      "label_it": "Paolo, compratore",
+      "icon": "user",
+      "role": "right"
+     }
+    ],
+    "edges": [
+     {
+      "from": "anna",
+      "to": "paolo",
+      "kind": "owes",
+      "label_it": "consegna la bicicletta",
+      "what": "goods"
+     },
+     {
+      "from": "paolo",
+      "to": "anna",
+      "kind": "pays",
+      "label_it": "paga 150 euro",
+      "what": "money"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Prima si accordano",
+      "edges": []
+     },
+     {
+      "op_it": "Poi si scambiano",
+      "badges": [
+       {
+        "node": "anna",
+        "badge_it": "debitrice"
+       },
+       {
+        "node": "paolo",
+        "badge_it": "creditore"
+       }
+      ]
+     }
+    ],
+    "centre": "anna"
+   }
+  },
+  {
+   "name": "network-fan-without-target",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/into",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Tre clienti ordinano al negozio: ognuno manda un ordine e il negozio risponde con la merce.",
+    "layout": "fan",
+    "nodes": [
+     {
+      "id": "c1",
+      "label_it": "Cliente uno",
+      "icon": "wallet"
+     },
+     {
+      "id": "c2",
+      "label_it": "Cliente due",
+      "icon": "wallet"
+     },
+     {
+      "id": "c3",
+      "label_it": "Cliente tre",
+      "icon": "wallet"
+     },
+     {
+      "id": "neg",
+      "label_it": "Negozio",
+      "icon": "store"
+     }
+    ],
+    "edges": [
+     {
+      "from": "c1",
+      "to": "neg",
+      "kind": "orders",
+      "what": "order"
+     },
+     {
+      "from": "c2",
+      "to": "neg",
+      "kind": "orders",
+      "what": "order"
+     },
+     {
+      "from": "c3",
+      "to": "neg",
+      "kind": "orders",
+      "what": "order"
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-fan-one-arrow-in",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/edges",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Tre clienti ordinano al negozio: ognuno manda un ordine e il negozio risponde con la merce.",
+    "layout": "fan",
+    "into": "neg",
+    "nodes": [
+     {
+      "id": "c1",
+      "label_it": "Cliente uno",
+      "icon": "wallet"
+     },
+     {
+      "id": "c2",
+      "label_it": "Cliente due",
+      "icon": "wallet"
+     },
+     {
+      "id": "c3",
+      "label_it": "Cliente tre",
+      "icon": "wallet"
+     },
+     {
+      "id": "neg",
+      "label_it": "Negozio",
+      "icon": "store"
+     }
+    ],
+    "edges": [
+     {
+      "from": "c1",
+      "to": "neg",
+      "kind": "orders",
+      "what": "order"
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-into-on-a-hub",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/into",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Nel Parlamento d'esempio il Senato è al centro: il popolo elegge i senatori, i senatori danno la fiducia al governo e votano le leggi.",
+    "layout": "hub",
+    "centre": "sen",
+    "filter": true,
+    "nodes": [
+     {
+      "id": "sen",
+      "label_it": "Senato",
+      "icon": "landmark",
+      "role": "legislative",
+      "note_it": "Qui si votano le leggi."
+     },
+     {
+      "id": "pop",
+      "label_it": "Popolo",
+      "icon": "users",
+      "role": "people"
+     },
+     {
+      "id": "gov",
+      "label_it": "Governo",
+      "icon": "briefcase",
+      "role": "executive"
+     },
+     {
+      "id": "pre",
+      "label_it": "Presidente",
+      "icon": "shield",
+      "role": "guarantee"
+     },
+     {
+      "id": "gio",
+      "label_it": "Giudici",
+      "icon": "gavel",
+      "role": "judicial"
+     }
+    ],
+    "edges": [
+     {
+      "from": "pop",
+      "to": "sen",
+      "kind": "elects"
+     },
+     {
+      "from": "sen",
+      "to": "gov",
+      "kind": "trusts"
+     },
+     {
+      "from": "sen",
+      "to": "pop",
+      "kind": "votes_laws",
+      "label_it": "vota le leggi per tutti"
+     },
+     {
+      "from": "pre",
+      "to": "gov",
+      "kind": "appoints"
+     },
+     {
+      "from": "gio",
+      "to": "sen",
+      "kind": "advises"
+     }
+    ],
+    "into": "sen"
+   }
+  },
+  {
+   "name": "network-filter-on-a-row",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/filter",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Quattro tappe di una merce: il produttore la manda al grossista, il grossista al negozio, il negozio al cliente.",
+    "layout": "row",
+    "nodes": [
+     {
+      "id": "p",
+      "label_it": "Produttore",
+      "icon": "truck"
+     },
+     {
+      "id": "g",
+      "label_it": "Grossista",
+      "icon": "package"
+     },
+     {
+      "id": "n",
+      "label_it": "Negozio",
+      "icon": "store"
+     },
+     {
+      "id": "c",
+      "label_it": "Cliente",
+      "icon": "wallet"
+     }
+    ],
+    "edges": [
+     {
+      "from": "p",
+      "to": "g",
+      "kind": "sends",
+      "what": "goods"
+     },
+     {
+      "from": "g",
+      "to": "n",
+      "kind": "sends",
+      "what": "goods"
+     },
+     {
+      "from": "n",
+      "to": "c",
+      "kind": "gives",
+      "what": "goods"
+     }
+    ],
+    "filter": true
+   }
+  },
+  {
+   "name": "network-label-too-long",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/nodes/0/label_it",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
+    "layout": "pair",
+    "nodes": [
+     {
+      "id": "anna",
+      "label_it": "Anna che vende la sua bicicletta a Paolo",
+      "icon": "user",
+      "role": "duty",
+      "note_it": "Deve consegnare la bicicletta.",
+      "badge_it": "debitrice"
+     },
+     {
+      "id": "paolo",
+      "label_it": "Paolo, compratore",
+      "icon": "user",
+      "role": "right"
+     }
+    ],
+    "edges": [
+     {
+      "from": "anna",
+      "to": "paolo",
+      "kind": "owes",
+      "label_it": "consegna la bicicletta",
+      "what": "goods"
+     },
+     {
+      "from": "paolo",
+      "to": "anna",
+      "kind": "pays",
+      "label_it": "paga 150 euro",
+      "what": "money"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Prima si accordano",
+      "edges": []
+     },
+     {
+      "op_it": "Poi si scambiano",
+      "badges": [
+       {
+        "node": "anna",
+        "badge_it": "debitrice"
+       },
+       {
+        "node": "paolo",
+        "badge_it": "creditore"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-note-too-long",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/nodes/0/note_it",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
+    "layout": "pair",
+    "nodes": [
+     {
+      "id": "anna",
+      "label_it": "Anna, venditrice",
+      "icon": "user",
+      "role": "duty",
+      "note_it": "parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola",
+      "badge_it": "debitrice"
+     },
+     {
+      "id": "paolo",
+      "label_it": "Paolo, compratore",
+      "icon": "user",
+      "role": "right"
+     }
+    ],
+    "edges": [
+     {
+      "from": "anna",
+      "to": "paolo",
+      "kind": "owes",
+      "label_it": "consegna la bicicletta",
+      "what": "goods"
+     },
+     {
+      "from": "paolo",
+      "to": "anna",
+      "kind": "pays",
+      "label_it": "paga 150 euro",
+      "what": "money"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Prima si accordano",
+      "edges": []
+     },
+     {
+      "op_it": "Poi si scambiano",
+      "badges": [
+       {
+        "node": "anna",
+        "badge_it": "debitrice"
+       },
+       {
+        "node": "paolo",
+        "badge_it": "creditore"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-edge-label-too-long",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/states/1/edges/0/label_it",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
+    "layout": "pair",
+    "nodes": [
+     {
+      "id": "anna",
+      "label_it": "Anna, venditrice",
+      "icon": "user",
+      "role": "duty",
+      "note_it": "Deve consegnare la bicicletta.",
+      "badge_it": "debitrice"
+     },
+     {
+      "id": "paolo",
+      "label_it": "Paolo, compratore",
+      "icon": "user",
+      "role": "right"
+     }
+    ],
+    "edges": [
+     {
+      "from": "anna",
+      "to": "paolo",
+      "kind": "owes",
+      "label_it": "consegna la bicicletta con tutti i suoi accessori",
+      "what": "goods"
+     },
+     {
+      "from": "paolo",
+      "to": "anna",
+      "kind": "pays",
+      "label_it": "paga 150 euro",
+      "what": "money"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Prima si accordano",
+      "edges": []
+     },
+     {
+      "op_it": "Poi si scambiano",
+      "badges": [
+       {
+        "node": "anna",
+        "badge_it": "debitrice"
+       },
+       {
+        "node": "paolo",
+        "badge_it": "creditore"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-role-not-in-palette",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-ROLE",
+   "path": "/nodes/0/role",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
+    "layout": "pair",
+    "nodes": [
+     {
+      "id": "anna",
+      "label_it": "Anna, venditrice",
+      "icon": "user",
+      "role": "creditor",
+      "note_it": "Deve consegnare la bicicletta.",
+      "badge_it": "debitrice"
+     },
+     {
+      "id": "paolo",
+      "label_it": "Paolo, compratore",
+      "icon": "user",
+      "role": "right"
+     }
+    ],
+    "edges": [
+     {
+      "from": "anna",
+      "to": "paolo",
+      "kind": "owes",
+      "label_it": "consegna la bicicletta",
+      "what": "goods"
+     },
+     {
+      "from": "paolo",
+      "to": "anna",
+      "kind": "pays",
+      "label_it": "paga 150 euro",
+      "what": "money"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Prima si accordano",
+      "edges": []
+     },
+     {
+      "op_it": "Poi si scambiano",
+      "badges": [
+       {
+        "node": "anna",
+        "badge_it": "debitrice"
+       },
+       {
+        "node": "paolo",
+        "badge_it": "creditore"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-everyone-id-taken",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/nodes",
+   "layout": "error",
+   "data": {
+    "type": "network",
+    "alt_it": "Il re da solo, poi il re e il consiglio: nel secondo stato il re cede un potere e il consiglio ne riceve uno.",
+    "layout": "pair",
+    "everyone": true,
+    "nodes": [
+     {
+      "id": "re",
+      "label_it": "Il re",
+      "icon": "crown",
+      "role": "legislative"
+     },
+     {
+      "id": "everyone",
+      "label_it": "Il consiglio",
+      "icon": "users",
+      "role": "people"
+     }
+    ],
+    "holds": [
+     {
+      "node": "re",
+      "items_it": [
+       "fa le leggi",
+       "guida l'esercito"
+      ]
+     }
+    ],
+    "edges": [
+     {
+      "from": "everyone",
+      "to": "re",
+      "kind": "owes",
+      "label_it": "obbedisce"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Il re ha tutto"
+     },
+     {
+      "op_it": "Il re cede un potere",
+      "holds": [
+       {
+        "node": "re",
+        "items_it": [
+         "guida l'esercito"
+        ]
+       },
+       {
+        "node": "con",
+        "items_it": [
+         "fa le leggi"
+        ]
+       }
+      ],
+      "edges": [
+       {
+        "from": "everyone",
+        "to": "re",
+        "kind": "owes",
+        "label_it": "obbedisce"
+       },
+       {
+        "from": "everyone",
+        "to": "con",
+        "kind": "owes",
+        "label_it": "obbedisce"
+       }
+      ]
+     },
+     {
+      "op_it": "Solo il re",
+      "hide": [
+       "con"
+      ],
+      "edges": [
+       {
+        "from": "everyone",
+        "to": "re",
+        "kind": "owes",
+        "label_it": "obbedisce"
+       }
+      ],
+      "holds": [
+       {
+        "node": "re",
+        "items_it": [
+         "fa le leggi",
+         "guida l'esercito"
+        ]
+       }
+      ]
+     }
+    ]
    }
   }
  ]

@@ -78,6 +78,8 @@ export function makeContext(data, opts) {
     controls: opts.controls ?? {},
     revealed: opts.revealed ?? [],
     set: opts.set ?? null,
+    targetSet: opts.set ?? null, // the same set as `set`, under the name the graph types read
+    forceNarrow: opts.forceNarrow ?? false,
     pad: Math.round(fontPx * 0.4),
     shapes: [],
     labels: [],

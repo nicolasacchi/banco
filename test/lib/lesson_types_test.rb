@@ -1,9 +1,12 @@
 require "test_helper"
 require "open3"
+require_relative "../support/reserved_piece"
 
 # W2-0 (WAVE2-COMPONENTS 1.2, 5.1): the availability registry (config/banco/lesson_types.yml), what it generates, the stubs it points at,
 # the schemas it must agree with, and how a directive is refused or let through the reserved dry run.
 class LessonTypesTest < ActiveSupport::TestCase
+  include ReservedPiece
+
   DATA = Lessons::Types.data
   DIAGRAMS = DATA.fetch("diagrams")
   SCHEMA = JSON.parse(Rails.root.join("config/banco/schemas/diagram.json").read).fetch("$defs")
@@ -121,16 +124,23 @@ class LessonTypesTest < ActiveSupport::TestCase
 
   test "Lessons::Types: status, usable, held-back views and options" do
     assert_equal "available", Lessons::Types.status(:diagram, "balance")
-    assert_equal "reserved", Lessons::Types.status(:diagram, "network")
+    assert_equal "reserved", Lessons::Types.status(:diagram, "calendar")
     assert_equal "draft", Lessons::Types.status(:diagram, "cell")
     assert_equal "available", Lessons::Types.status(:check, "choice")
     assert_nil Lessons::Types.status(:diagram, "venn")
     assert Lessons::Types.usable?(:diagram, "balance")
-    assert_not Lessons::Types.usable?(:diagram, "network")
-    assert Lessons::Types.usable?(:diagram, "network", allow_reserved: true)
+    assert_not Lessons::Types.usable?(:diagram, "calendar")
+    assert Lessons::Types.usable?(:diagram, "calendar", allow_reserved: true)
     assert_not Lessons::Types.usable?(:diagram, "venn", allow_reserved: true)
     assert_equal "math", Lessons::Types.home_palette("balance")
-    assert_equal [ [ "layout", "line", "reserved" ] ], Lessons::Types.held_back_uses(:diagram, "flow", { "layout" => "line" }).map { |f, v, s| [ f, v, s["status"] ] }
+    assert_empty Lessons::Types.held_back_uses(:diagram, "flow", { "layout" => "line" }), "the line layout of flow is available (T4b)"
+    assert_equal [ [ "walk", "true", "draft" ] ], Lessons::Types.held_back_uses(:diagram, "flow", { "walk" => true }).map { |f, v, s| [ f, v, s["status"] ] }
+    with_reserved(:diagram, "flow", status: "available") do
+      Lessons::Types.entry(:diagram, "flow")["views"]["layout"]["line"]["status"] = "reserved"
+      assert_equal [ [ "layout", "line", "reserved" ] ], Lessons::Types.held_back_uses(:diagram, "flow", { "layout" => "line" }).map { |f, v, s| [ f, v, s["status"] ] }
+    ensure
+      Lessons::Types.entry(:diagram, "flow")["views"]["layout"]["line"]["status"] = "available"
+    end
     assert_empty Lessons::Types.held_back_uses(:diagram, "flow", { "layout" => "tree" })
     assert_equal [ [ "text_en", "present" ] ], Lessons::Types.held_back_uses(:diagram, "sentence", { "states" => [ { "text_en" => "x" } ] }).map { |f, v, _| [ f, v ] }
     assert_equal [ "listen" ], Lessons::Types.held_back_options({ "component" => "choice", "listen" => {}, "verify" => {} }).map(&:first), "verify is available since T1"
@@ -149,21 +159,24 @@ class LessonTypesTest < ActiveSupport::TestCase
   end
 
   test "a directive of a type that is not available is refused with the reason, and passes the reserved dry run" do
-    error = assert_raises(Lessons::Directives::Refused) { build("diagram", "network", "alt_it: x\nlayout: pair\n") }
-    assert_match(/network is not available yet \(reserved; batch w2-1\)/, error.message)
-    assert_equal 10, error.line
+    with_reserved(:diagram, "network") do
+      error = assert_raises(Lessons::Directives::Refused) { build("diagram", "network", "alt_it: x\nlayout: pair\n") }
+      assert_match(/network is not available yet \(reserved; batch w2-1\)/, error.message)
+      assert_equal 10, error.line
+      block, = build("diagram", "network", "alt_it: x\nlayout: pair\n", allow_reserved: true)
+      assert_equal "network", block["diagram"]["type"]
+      assert_equal "diagram", block["type"]
+    end
     error = assert_raises(Lessons::Directives::Refused) { build("diagram", "cell", "alt_it: x\n") }
     assert_match(/draft schema/, error.message)
-    block, = build("diagram", "network", "alt_it: x\nlayout: pair\n", allow_reserved: true)
-    assert_equal "network", block["diagram"]["type"]
-    assert_equal "diagram", block["type"]
+    assert_equal "network", build("diagram", "network", "alt_it: x\nlayout: pair\n")[0]["diagram"]["type"], "network is available (T4b)"
   end
 
   test "blocks, check components, layouts, views and check options held back are refused one by one" do
     assert_match(/dialogue block is not available/, assert_raises(Lessons::Directives::Refused) { build("dialogue", nil, "title_it: x\n") }.message)
     assert_match(/page block is not available/, assert_raises(Lessons::Directives::Refused) { build("page", nil, "key: x\n") }.message)
     assert_match(/check component amount_words/, assert_raises(Lessons::Directives::Refused) { build("check", "amount_words", "prompt_it: x\n") }.message)
-    assert_match(/flow layout: line/, assert_raises(Lessons::Directives::Refused) { build("diagram", "flow", "layout: line\nnodes: []\n") }.message)
+    assert_match(/flow walk/, assert_raises(Lessons::Directives::Refused) { build("diagram", "flow", "walk: true\nnodes: []\n") }.message)
     assert_match(/check option listen/, assert_raises(Lessons::Directives::Refused) { build("check", "choice", "prompt_it: x\nlisten: {text_en: hello}\n") }.message)
     assert_match(/unknown block type "venn"/, assert_raises(Lessons::Directives::Refused) { build("venn", nil, "a: 1\n") }.message)
     block, = build("dialogue", nil, "title_it: x\n", allow_reserved: true)

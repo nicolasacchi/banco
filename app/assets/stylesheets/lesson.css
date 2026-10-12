@@ -414,6 +414,17 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 .dg-trylabel { font-weight: 700; }
 .dg-tryvalue { display: inline-block; min-width: 2em; text-align: center; font-size: 1.3em; font-weight: 700; }
 .dg-step { min-width: 2.75em; padding: 0.2em 0.6em; font-size: 1.2em; }
+/* the figure's own controls (chips) and what a change announces; new shapes of a state fade in (300 ms, a swap under reduced motion) */
+.dg-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4em; flex-basis: 100%; }
+.dg-chips-label { font-weight: 700; }
+.dg-chips-hint { flex-basis: 100%; color: var(--muted); font-size: 0.9em; }
+.dg-chipbtn { min-height: 2.4em; padding: 0.2em 0.8em; border: 2px solid var(--line); border-radius: 1.4em; background: var(--surface); color: var(--text); font: inherit; cursor: pointer; text-align: left; }
+.dg-chipbtn:hover { border-color: var(--text); }
+.dg-chipbtn[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: var(--primary-text); font-weight: 700; }
+.dg-chipbtn[aria-pressed="true"]::before { content: "\2713\00a0"; }
+.dg-live { margin: 0.2em 0; min-height: 0; color: var(--muted); }
+@keyframes dg-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.dg-enter { animation: dg-fade-in 300ms ease-out; }
 .dg-desc { margin-top: 0.3em; font-size: 0.9em; color: var(--muted); }
 .dg-desc summary { cursor: pointer; }
 .dg-caption { margin-top: 0.3em; color: var(--muted); font-size: 0.9em; }

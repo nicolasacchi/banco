@@ -54,7 +54,7 @@ Only these names, besides the structural ones of the lesson brief, and only with
 |---|---|---|---|---|
 | `document` | diagram | available | w2-1 | T8 |
 | `bar_model` | diagram | reserved | w2-1 | T6 |
-| `network` | diagram | reserved | w2-1 | T4b |
+| `network` | diagram | available | w2-1 | T4b |
 | `select` | check | reserved | w2-1 | T1 |
 | `amount_words` | check | draft | w2-2 | T8 |
 

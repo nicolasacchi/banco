@@ -2,3 +2,78 @@
    Linked on a page only when the lesson uses one of these types (the page head reads the body), never by hand.
    Rules: colours only through the role classes (.role-x, .mk-x, .st-x, .fl-x, .tn-x) and the theme variables of
    lesson_roles.css; no colour alone (A4); a forced-colors block per type; print rules for P1 to P6; targets at least 24 px. */
+
+/* ---- shared by network, chain and the line layout of flow */
+.dg-plate { background: var(--surface); box-shadow: 0 0 0 4px var(--surface); border-radius: 4px; }
+.dg-plate-rect { fill: var(--surface); stroke: none; }
+.dg-numplate { fill: var(--primary); stroke: none; }
+.dg-numlabel, .dg-label.dg-numlabel { color: var(--primary-text); font-weight: 700; text-align: center; }
+.dg-moves-title { font-weight: 700; }
+.dg-move { color: var(--text); }
+.dg-graph-note { fill: color-mix(in srgb, var(--primary) 8%, var(--surface)); stroke: var(--primary); stroke-width: 2; }
+
+/* ---- network: nodes with a role border, arrows in three styles, badges and holds */
+.dg-net-node { fill: var(--surface); stroke-width: 3; }
+.dg-net-edge { fill: none; stroke: var(--text); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.dg-net-dashed { stroke-dasharray: 9 7; }
+.dg-net-double { stroke-width: 8; }
+.dg-net-double-core { fill: none; stroke: var(--surface); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.dg-net-arrowhead { fill: var(--text); stroke: none; }
+.dg-net-what { color: var(--text); }
+.dg-net-title { font-weight: 400; }
+.dg-net-badgebox { fill: color-mix(in srgb, var(--primary) 14%, var(--surface)); stroke: var(--primary); stroke-width: 2; }
+.dg-label.dg-net-badge { font-weight: 700; color: var(--text); text-align: center; }
+.dg-net-item { fill: var(--bg); stroke: var(--line); stroke-width: 1.5; }
+.dg-label.dg-net-itemtext { color: var(--text); }
+.dg-network .dg-hit { border-radius: 12px; }
+
+/* ---- chain: four kinds of node told apart by shape and line, never by colour alone */
+.dg-chain-node { fill: var(--surface); stroke: var(--line); stroke-width: 2.5; }
+.dg-chain-event { stroke: var(--primary); stroke-width: 6; fill: color-mix(in srgb, var(--primary) 10%, var(--surface)); }
+.dg-chain-effect { stroke: var(--primary); stroke-width: 2.5; }
+.dg-chain-stage { stroke: var(--primary); stroke-width: 2.5; }
+.dg-chain-grey { fill: none; stroke: var(--muted); stroke-width: 2.5; stroke-dasharray: 8 6; }
+.dg-chain-removed { fill: none; stroke: var(--muted); stroke-width: 2.5; stroke-dasharray: 3 5; }
+.dg-label.dg-chain-text { color: var(--text); }
+.dg-label.dg-chain-text-grey, .dg-label.dg-chain-text-removed { color: var(--muted); }
+.dg-label.dg-chain-text-removed { text-decoration: line-through; }
+.dg-label.dg-chain-tag { font-weight: 700; color: var(--muted); }
+.dg-chain-link { fill: none; stroke: var(--text); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.dg-chain-notcausal { stroke: var(--muted); stroke-dasharray: 3 7; }
+.dg-chain-dead { stroke: var(--muted); stroke-dasharray: 8 6; }
+.dg-chain-head { fill: var(--text); stroke: none; }
+.dg-chain-area { color: var(--text); }
+.dg-label.dg-chain-word { font-weight: 700; color: var(--text); }
+.dg-label.dg-chain-key { color: var(--muted); }
+.dg-label.dg-chain-note { color: var(--text); }
+
+/* ---- flow, layout line: a journey with a token */
+.dg-flow-line { fill: none; stroke: var(--line); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.dg-flow-done { stroke: var(--primary); }
+.dg-flow-station { fill: var(--surface); stroke-width: 3.5; }
+.dg-flow-dot { fill: var(--text); stroke: none; }
+.dg-flow-station.dg-flow-here-station { fill: var(--primary); }
+.dg-icon.dg-flow-token-icon, .dg-flow-dot.dg-flow-token-icon { color: var(--primary-text); fill: var(--primary-text); }
+.dg-flow-here-station + .dg-icon { color: var(--primary-text); }
+.dg-flow-token { fill: none; stroke: var(--primary); stroke-width: 5; }
+.dg-flow-return { fill: none; stroke: var(--text); stroke-width: 3; stroke-dasharray: 9 7; stroke-linecap: round; }
+.dg-flow-head { fill: var(--text); stroke: none; }
+.dg-label.dg-flow-label { color: var(--text); text-align: center; }
+.dg-label.dg-flow-actor { color: var(--muted); }
+.dg-label.dg-flow-branchlabel, .dg-label.dg-flow-returnlabel { font-weight: 700; color: var(--text); }
+.dg-label.dg-flow-here { color: var(--text); font-weight: 700; }
+.dg-flow .dg-label.dg-flow-label { text-align: left; }
+
+@media (forced-colors: active) {
+  .dg-net-node, .dg-chain-node { fill: Canvas; stroke: CanvasText; }
+  .dg-net-edge, .dg-chain-link, .dg-flow-line, .dg-flow-return { stroke: CanvasText; }
+  .dg-flow-station { fill: Canvas; stroke: CanvasText; }
+  .dg-net-arrowhead, .dg-chain-head, .dg-plate-rect { fill: var(--surface); stroke: none; }
+.dg-numplate { fill: CanvasText; }
+  .dg-net-double-core { stroke: Canvas; }
+  .dg-plate { background: Canvas; box-shadow: 0 0 0 4px Canvas; }
+}
+@media print {
+  .dg-plate { background: #fff; box-shadow: 0 0 0 4px #fff; }
+  .dg-net-badgebox, .dg-chain-event { fill: #fff; }
+}

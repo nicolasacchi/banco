@@ -40,7 +40,7 @@ class LeaksTest < ActiveSupport::TestCase
   end
 
   test "a type that is not built answers nothing" do
-    stub = { "type" => "network", "alt_it" => "Una rete di tre nodi che si guardano a vicenda e si parlano." }
+    stub = { "type" => "calendar", "alt_it" => "Una rete di tre nodi che si guardano a vicenda e si parlano." }
     assert_empty codes(card({ "type" => "diagram", "diagram" => stub }, number("5")))
   end
 

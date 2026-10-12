@@ -49,7 +49,8 @@ test("home palettes, held-back views and families come from the registry file", 
   assert.equal(registry.HOME_PALETTE.strand, "biology")
   assert.equal(registry.HOME_PALETTE.formula, "chemistry")
   assert.equal(registry.HOME_PALETTE.network, undefined)
-  assert.equal(registry.HELD_BACK.flow.layout.line, "reserved")
+  assert.equal(registry.HELD_BACK.flow.layout.line, "available", "the line layout of flow is available (T4b)")
+  assert.equal(registry.HELD_BACK.flow.walk.true, "draft")
   assert.equal(registry.FAMILY.network, "graph")
 })
 
@@ -110,10 +111,10 @@ test("program declares recordAtRender, the only type that does in wave 2, and it
   }
 })
 
-test("the shared interfaces are frozen: the router and the axis export their functions, which throw NotBuilt until their track (the grid api is built, grid.test.mjs)", async () => {
-  const router = await import("lesson/diagrams/graph/router")
+test("the shared interfaces are frozen: the axis exports its functions, which throw NotBuilt until its track (the router is built by T4b, the grid api by T9)", async () => {
+  const router = await import("lesson/diagrams/graph/router") // built by T4b: its tests are graph_router.test.mjs
   const axis = await import("lesson/diagrams/chart/axis")
-  for (const [mod, names] of [[router, ["place", "route", "flip", "moveList"]], [axis, ["linear", "log", "readCursor", "legend", "valueTable"]]]) {
+  for (const [mod, names] of [[axis, ["linear", "log", "readCursor", "legend", "valueTable"]]]) {
     for (const name of names) assert.throws(() => mod[name](), NotBuilt, name)
   }
   assert.ok(router.LAYOUTS.includes("hub"))

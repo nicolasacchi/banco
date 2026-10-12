@@ -682,7 +682,7 @@
    "line": 33,
    "construct": "diagram",
    "allow_reserved": true,
-   "note": "a diagram network, run with lesson submit --dry-run --allow-reserved (without it: E-LESSON-BLOCK); a lesson with a reserved piece is never stored"
+   "note": "a diagram timeline (reserved until T4a), run with lesson submit --dry-run --allow-reserved (without it: E-LESSON-BLOCK); a lesson with a reserved piece is never stored"
   },
   {
    "file": "bad/type-draft.md",
@@ -756,6 +756,14 @@
    "line": 54,
    "construct": "block",
    "note": "a document cascade with a hidden row"
+  },
+  {
+   "file": "bad/select-alt-names-answer.md",
+   "base": "base.md",
+   "code": "E-CHECK-ANSWER-IN-ALT",
+   "line": 43,
+   "construct": "check",
+   "note": "L3 (T1, with the network of T4b): a select check whose figure's alt_it names the answer target (Grossista)"
   }
  ],
  "pending": {
@@ -769,16 +777,6 @@
     "track": "T6",
     "base": "base.md",
     "change": "a climograph naming a station that geo/stations does not hold (station: atlantis), or a size of bio/sizes that does not exist"
-   },
-   {
-    "code": "E-CHECK-ANSWER-IN-ALT",
-    "needs": [
-     "check:select",
-     "diagram:network"
-    ],
-    "track": "T1",
-    "base": "base.md",
-    "change": "a select check whose figure's alt_it says 'il nucleo è il cerchio al centro' while the answer is the nucleus"
    },
    {
     "code": "E-CHECK-ANSWER-BY-SIMULATION",
@@ -800,23 +798,19 @@
    },
    {
     "code": "E-SELECT-MARKED",
-    "needs": [
-     "check:select",
-     "diagram:network"
-    ],
+    "needs": [],
     "track": "T1",
     "base": "base.md",
-    "change": "a select check whose candidates differ in style (one labelled, one patterned)"
+    "change": "a select check whose candidates differ in style (one labelled, one patterned)",
+    "standing": "the network draws every select candidate alike by construction, so no lesson can mark one; the fixture is written with the first select figure whose style a lesson can change"
    },
    {
     "code": "E-DIAGRAM-TARGET",
-    "needs": [
-     "check:select",
-     "diagram:network"
-    ],
+    "needs": [],
     "track": "T1",
     "base": "base.md",
-    "change": "a select target under 24 x 24 CSS px at 390 px (render check)"
+    "change": "a select target under 24 x 24 CSS px at 390 px (render check)",
+    "standing": "a render-check finding (Chrome): the select look gate probe covers it in test/system/lesson_checks_system_test.rb; the fixture is written with the first select figure whose targets can be small"
    },
    {
     "code": "E-PROGRAM-BOUND",

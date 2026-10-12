@@ -48,8 +48,8 @@ Only these names, besides the structural ones of the lesson brief, and only with
 | Piece | Kind | Status | Batch | Track |
 |---|---|---|---|---|
 | `timeline` | diagram | reserved | w2-1 | T4a |
-| `chain` | diagram | reserved | w2-1 | T4b |
-| `network` | diagram | reserved | w2-1 | T4b |
+| `chain` | diagram | available | w2-1 | T4b |
+| `network` | diagram | available | w2-1 | T4b |
 | `map` | diagram | available | w2-1 | T5 |
 | `word_parts` | diagram | reserved | w2-1 | T3 |
 | `source` | block | available (`kind: legal`; the historical kinds are W2-2) | w2-1 | T8 |

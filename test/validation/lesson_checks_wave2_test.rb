@@ -65,7 +65,7 @@ class LessonChecksWave2Test < ActiveSupport::TestCase
   end
 
   test "a select figure of a type with no targets yet is refused with a reason" do
-    assert_includes run_check(select_check), [ "E-LESSON-CHECK", "/cards/1/blocks/0/targets" ].then { |x| x }
+    without_targets { assert_includes run_check(select_check), [ "E-LESSON-CHECK", "/cards/1/blocks/0/targets" ] }
   end
 
   test "the alt text or caption of a select figure that names an answer is E-CHECK-ANSWER-IN-ALT" do

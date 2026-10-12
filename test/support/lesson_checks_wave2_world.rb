@@ -1,3 +1,4 @@
+require "minitest/mock"
 # Shared by the tests of the wave 2 check components: sample checks and a fake figure type that offers select targets (no available
 # figure type has any yet; each track adds its own).
 module LessonChecksWave2World
@@ -26,6 +27,11 @@ module LessonChecksWave2World
 
     def target_names(_data, _set) = { "n2" => "nucleoide", "n4" => "ribosomi" }
   end
+
+  # A figure type whose module offers no select targets (the contract's defaults raise NotImplementedError): a still unbuilt type.
+  Unbuilt = Module.new { extend Lessons::Diagrams::Contract }
+
+  def without_targets(&) = Lessons::Diagrams.stub(:module_for, ->(type) { type == "network" ? Unbuilt : nil }, &)
 
   def select_check(pick: "many", answer: %w[n2 n4], alt: "Una cellula con cinque parti.")
     { "component" => "select", "prompt_it" => "Tocca le parti.", "targets" => "nodes", "pick" => pick, "answer" => answer,

@@ -7,6 +7,7 @@
 //   initial  the value before the first press (a stepper's range may start below it)
 //   less_it, more_it  the words on a stepper's two buttons (default "−" and "+")
 import { button, el } from "lesson/dom"
+import { renderInlineRich } from "lesson/text"
 import { checkControls } from "lesson/diagrams/contract"
 
 // The controls a module declares for a figure; [] for a module without or with an illegal list.
@@ -97,4 +98,31 @@ export function overlay(scene, list, layer, store, press, rove = { id: null }) {
     })
   }
   return made
+}
+
+// Chips (T4b): a group of buttons with aria-pressed; `multi` lets several be on at once. The values are lists in state.controls[id]
+// ({ id: [value, ...] }); a type reads them from ctx.controls and draws from them.
+export function buildChips(list, host, { state, ctx, redraw }) {
+  for (const control of list) {
+    if (control.kind !== "chips") continue
+    const group = el("div", { class: "dg-chips", role: "group", "aria-label": control.label_it })
+    const heading = el("span", { class: "dg-chips-label", text: control.label_it })
+    const chips = control.values.map((v) => {
+      const chip = button("", { class: "dg-chipbtn", "aria-pressed": "false" }, () => {
+        const now = new Set(state.controls[control.id] ?? [])
+        if (!control.multi) now.clear()
+        if (now.has(v.value)) now.delete(v.value)
+        else now.add(v.value)
+        state.controls[control.id] = [...now]
+        for (const other of chips) other.setAttribute("aria-pressed", String(now.has(other.dataset.value)))
+        redraw()
+      })
+      chip.dataset.value = v.value
+      renderInlineRich(v.label_it, chip, ctx)
+      return chip
+    })
+    group.append(heading, ...chips)
+    if (control.hint_it) group.append(el("span", { class: "dg-chips-hint", text: control.hint_it }))
+    host.appendChild(group)
+  }
 }

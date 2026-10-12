@@ -30,43 +30,16 @@ x_value: '2'
 try: {from: 0, to: 5}
 :::
 
-::: diagram network
-alt_it: 'Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna
-  la bicicletta. Una va da Paolo ad Anna: paga 150 euro.'
-layout: pair
-nodes:
-- id: anna
-  label_it: Anna, venditrice
-  icon: user
-  role: duty
-  note_it: Deve consegnare la bicicletta.
-  badge_it: debitrice
-- id: paolo
-  label_it: Paolo, compratore
-  icon: user
-  role: right
-edges:
-- from: anna
-  to: paolo
-  kind: owes
-  label_it: consegna la bicicletta
-  what: goods
-- from: paolo
-  to: anna
-  kind: pays
-  label_it: paga 150 euro
-  what: money
-states:
-- op_it: Prima si accordano
-  edges: []
-- op_it: Poi si scambiano
-  edges:
-  - from: anna
-    to: paolo
-    kind: owes
-  badges:
-  - node: anna
-    badge_it: debitrice
+::: diagram timeline
+alt_it: "Una linea del tempo dal 146 al 27 avanti Cristo con un fatto inventato nel mezzo, per provare lo schema."
+scale: years
+from: '-146'
+to: '-27'
+every: 10
+lanes:
+  - {id: rome, label_it: Roma}
+events:
+  - {id: e1, at: '-133', label_it: Un fatto di prova, note_it: Inventato., approx: false, lane: rome}
 :::
 
 ::: check choice

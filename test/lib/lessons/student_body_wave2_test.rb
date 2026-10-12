@@ -44,7 +44,7 @@ class LessonsStudentBodyWave2Test < ActiveSupport::TestCase
   end
 
   test "a select check on a type that cannot give the select projection is never served" do
-    assert_raises(NotImplementedError) { served(select_check) }
+    without_targets { assert_raises(NotImplementedError) { served(select_check) } }
   end
 
   Revision = Struct.new(:id, :body)
