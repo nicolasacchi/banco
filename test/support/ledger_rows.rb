@@ -70,6 +70,13 @@ module LedgerRows
                                                   recomputed_json: "[]", findings_json: "[]")
     rows["lesson_renders"] = LessonRender.create!(lesson_revision: lesson_revision, status: "passed", rules_version: "8", harness_version: "h" * 8, attempt: 1,
                                                   result_json: "{}", shots_json: "[]")
+    page = Page.create!(key: "math.ledger-page", subject: rows["subjects"])
+    rows["pages"] = page
+    page_revision = PageRevision.create!(page: page, seq: 1, manifest_json: "{}", bundle_sha256: "e" * 64, rules_version: "9", warnings_json: "[]")
+    rows["page_revisions"] = page_revision
+    rows["page_files"] = PageFile.create!(page_revision: page_revision, path: "main.mjs", sha256: "d" * 64, bytes: 1, media_type: "text/javascript")
+    rows["page_validations"] = PageValidation.create!(page_revision: page_revision, kit_version: "1.0", status: "passed", harness_version: "h", result_json: "{}", shots_json: "[]")
+    rows["page_reviews"] = PageReview.create!(page_revision: page_revision, agent_session: session, checklist_json: "[]", findings_json: "[]")
     course = CourseRevision.create!(subject: rows["subjects"], seq: 1, skill_graph_revision: graph, body_json: JSON_BODY, warnings_json: "[]")
     rows["course_revisions"] = course
     topic = TopicRevision.create!(lesson: lesson, seq: 1, course_revision: course, lesson_revision: lesson_revision, body_json: JSON_BODY)

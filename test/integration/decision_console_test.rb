@@ -247,7 +247,7 @@ class DecisionConsoleTest < ActionDispatch::IntegrationTest
     # decision.rb only reads the origin's ADDR and GROUP constants to label a stored row (Decision#console?).
     allowed = %w[lib/tasks/decide.rake app/models/decision_console.rb app/models/decision_recorder.rb app/models/decision.rb]
     files = Dir[Rails.root.join("{app,lib}/**/*").to_s].select { |f| File.file?(f) }.map { |f| Pathname(f).relative_path_from(Rails.root).to_s }
-    offenders = files.reject { |f| allowed.include?(f) }.select { |f| File.read(f).match?(/DecisionConsole|DecisionRecorder::Console/) }
+    offenders = files.reject { |f| allowed.include?(f) }.select { |f| File.binread(f).force_encoding("UTF-8").scrub.match?(/DecisionConsole|DecisionRecorder::Console/) }
     assert_empty offenders
     Dir[Rails.root.join("app/controllers/api/v1/**/*.rb").to_s].each do |f|
       assert_no_match(/DecisionRecorder|DecisionConsole/, File.read(f), f)
