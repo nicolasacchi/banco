@@ -2,3 +2,62 @@
    Linked on a page only when the lesson uses one of these types (the page head reads the body), never by hand.
    Rules: colours only through the role classes (.role-x, .mk-x, .st-x, .fl-x, .tn-x) and the theme variables of
    lesson_roles.css; no colour alone (A4); a forced-colors block per type; print rules for P1 to P6; targets at least 24 px. */
+
+/* ---- timeline, both scales: the axis, the ticks, the roles' markers */
+.dg-tl-axis { fill: none; stroke: var(--text); stroke-width: 3; stroke-linecap: round; }
+.dg-tl-laneline { fill: none; stroke: var(--line); stroke-width: 2.5; stroke-linecap: round; }
+.dg-tl-tick { stroke: var(--text); stroke-width: 2; }
+.dg-tl-tick-major { stroke-width: 3; }
+.dg-tl-era { stroke: var(--muted); stroke-width: 2; stroke-dasharray: 4 4; }
+.dg-label.dg-tl-ticklabel { color: var(--text); }
+.dg-label.dg-tl-legend { color: var(--muted); }
+.dg-label.dg-tl-readout { color: var(--text); }
+.dg-tl-hit { fill: transparent; stroke: none; }
+/* a label with a plate behind it, so that a line passing under it stays out of the words */
+.dg-tl-plate { background: var(--surface); box-shadow: 0 0 0 3px var(--surface); border-radius: 4px; }
+.dg-timeline .dg-hit { border-radius: 14px; }
+
+/* ---- years: bands for the centuries, bars for the periods, events with a label above, brackets for the spans */
+.dg-tl-band { stroke: none; }
+.dg-tl-band-0 { fill: color-mix(in srgb, var(--primary) 9%, var(--surface)); }
+.dg-tl-band-1 { fill: color-mix(in srgb, var(--primary) 3%, var(--surface)); }
+.dg-label.dg-tl-bandlabel { color: var(--muted); font-weight: 700; text-align: center; }
+.dg-tl-period { fill-opacity: 0.16; stroke-width: 2.5; }
+.dg-label.dg-tl-periodlabel { font-weight: 700; color: var(--text); }
+.dg-tl-periodmark { stroke: none; }
+.dg-label.dg-tl-lane-label { font-weight: 700; color: var(--muted); }
+.dg-label.dg-tl-evlabel { font-weight: 400; }
+.dg-tl-event { stroke-width: 2; }
+.dg-tl-approx { fill: none; stroke: var(--text); stroke-width: 2; stroke-dasharray: 3 3; }
+.dg-tl-picked { fill: none; stroke: var(--primary); stroke-width: 4; }
+.dg-tl-span { fill: none; stroke: var(--text); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.dg-tl-measure { stroke: var(--primary); stroke-width: 4; }
+.dg-label.dg-tl-spanlabel { font-weight: 700; color: var(--text); text-align: center; }
+
+/* ---- tense: "adesso" as a dashed line through the rows, a shape for each mark, a row of dots for a habit, an arc for a plan */
+.dg-tl-nowline { stroke: var(--text); stroke-width: 2; stroke-dasharray: 8 6; }
+.dg-tl-guide { stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 2 6; }
+.dg-label.dg-tl-now { font-weight: 700; color: var(--text); }
+.dg-label.dg-tl-side { color: var(--muted); }
+.dg-label.dg-tl-text { font-weight: 700; }
+.dg-label.dg-tl-question { color: var(--text); }
+.dg-tl-range { fill-opacity: 0.35; stroke-width: 3; }
+.dg-tl-arc { fill: none; stroke-width: 3; stroke-linecap: round; }
+.dg-tl-from { fill: var(--surface); stroke-width: 3; }
+.dg-tl-head { fill: var(--text); stroke: none; }
+.dg-tl-uncertain { stroke-dasharray: 6 4; fill-opacity: 0.3; }
+.dg-tl-mark.dg-tl-uncertain { fill-opacity: 0.3; stroke-width: 3; }
+
+@media (forced-colors: active) {
+  .dg-tl-axis, .dg-tl-laneline, .dg-tl-tick, .dg-tl-span, .dg-tl-nowline { stroke: CanvasText; }
+  .dg-tl-period, .dg-tl-range, .dg-tl-band { fill: Canvas; stroke: CanvasText; }
+  .dg-tl-head { fill: CanvasText; }
+  .dg-tl-picked { stroke: Highlight; }
+  .dg-tl-plate { background: Canvas; box-shadow: 0 0 0 3px Canvas; }
+}
+@media print {
+  .dg-tl-band-0, .dg-tl-band-1 { fill: #eee; }
+  .dg-tl-period { fill-opacity: 0.1; }
+  .dg-tl-hit { display: none; }
+  .dg-tl-plate { background: #fff; box-shadow: 0 0 0 3px #fff; }
+}

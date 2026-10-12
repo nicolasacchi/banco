@@ -42,7 +42,7 @@ diagrams:
   nested: {family: graph, status: draft, schema: draft, batch: w2-2, track: T4b, size: S, module: lesson/diagrams/graph/nested}
 
   # ---- time (T4a)
-  timeline: {family: time, status: reserved, schema: final, batch: w2-1, track: T4a, size: M, module: lesson/diagrams/time/timeline}
+  timeline: {family: time, status: available, schema: final, batch: w2-1, track: T4a, size: M, module: lesson/diagrams/time/timeline}
   calendar: {family: time, status: reserved, schema: none, batch: w2-3, track: T4a, size: S, module: lesson/diagrams/time/calendar}
 
   # ---- maps and the Earth (T5)

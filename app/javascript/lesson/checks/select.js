@@ -53,7 +53,7 @@ export function render(spec, ctx, _hooks) {
     },
     onNoTargets: () => showFallback()
   }
-  const figure = figureFor(spec.diagram, ctx, { mode: "select", select: selectApi })
+  const figure = figureFor(spec.diagram, ctx, { mode: "select", select: selectApi, set: spec.targets })
   figure.node.classList.add("dg-select")
   const list = el("ul", { class: "select-fallback", hidden: "", "aria-label": texts.select_group })
   function showFallback() {

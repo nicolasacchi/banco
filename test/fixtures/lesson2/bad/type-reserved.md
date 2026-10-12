@@ -30,16 +30,11 @@ x_value: '2'
 try: {from: 0, to: 5}
 :::
 
-::: diagram timeline
-alt_it: "Una linea del tempo dal 146 al 27 avanti Cristo con un fatto inventato nel mezzo, per provare lo schema."
-scale: years
-from: '-146'
-to: '-27'
-every: 10
-lanes:
-  - {id: rome, label_it: Roma}
-events:
-  - {id: e1, at: '-133', label_it: Un fatto di prova, note_it: Inventato., approx: false, lane: rome}
+::: diagram bar_model
+alt_it: "Una barra divisa in quattro parti uguali con una parte colorata: un quarto della barra, per provare lo schema."
+view: fraction
+fractions:
+  - {den: 4, num: 1, label_it: un quarto}
 :::
 
 ::: check choice

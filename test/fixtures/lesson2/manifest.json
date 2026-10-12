@@ -671,9 +671,9 @@
    "file": "bad/verify-disagrees.md",
    "base": "base.md",
    "code": "E-LESSON-VERIFY",
-   "line": 71,
+   "line": 70,
    "construct": "check",
-   "note": "a number check with verify: {fn: chrono.duration, args: {from: '-133', to: '-27'}} whose answer the function does not give (before Chrono is built the finding says it is not built; after, it names the difference)"
+   "note": "a number check with verify: {fn: chrono.duration, args: {from: '-133', to: '-27'}} whose answer the function does not give (Chrono gives 106; the finding names the difference)"
   },
   {
    "file": "bad/type-reserved.md",
@@ -682,7 +682,7 @@
    "line": 33,
    "construct": "diagram",
    "allow_reserved": true,
-   "note": "a diagram timeline (reserved until T4a), run with lesson submit --dry-run --allow-reserved (without it: E-LESSON-BLOCK); a lesson with a reserved piece is never stored"
+   "note": "a diagram bar_model with view fraction (reserved until W2-3), run with lesson submit --dry-run --allow-reserved (without it: E-LESSON-BLOCK); a lesson with a reserved piece is never stored"
   },
   {
    "file": "bad/type-draft.md",
