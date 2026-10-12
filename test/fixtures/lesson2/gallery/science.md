@@ -9,8 +9,9 @@
 #     patch with one unit framed, never as molecules; select targets: items, atoms (mode `select`). Cards 6 to 10.
 #   `periodic_table` (diagram): periods 1 to 4 and the main groups, symbols with names or atomic numbers, highlight sets, the latin ring, the element
 #     card on a tap, the list by group below 600 px; select targets: cells (mode `select`). Cards 11 to 14.
+#   `strand` (diagram): a nucleotide, a strand and a double strand, horizontal or (on a phone) vertical, hidden bases, highlight with its count, the unzip,
+#     a tap on a base lights its partner; select targets: bases, backbone, rungs (mode `select`). Cards 15 to 19.
 # Still to come, in this file when each is built:
-#   `strand` (diagram; reserved, schema final, batch w2-1, track T7): select targets bases, backbone, rungs
 #   `particles` (diagram; draft, schema draft, batch w2-2, track T7)
 #   `phase_changes` (diagram; draft, schema draft, batch w2-2, track T7)
 #   `cell` (diagram; draft, schema draft, batch w2-2, track T7)
@@ -207,4 +208,76 @@ answer: ['na']
 errors:
   - {answer: ['n'], code: n_for_na, message_it: "Quello è l'azoto, il simbolo N. Il sodio ha due lettere."}
 explain_it: "Il sodio è Na: la N maiuscola e la a minuscola."
+:::
+
+# I filamenti
+
+## Un nucleotide {idea icon=dna id=nucleotide}
+
+Un nucleotide ha **tre parti**: il fosfato, lo zucchero e la base.
+
+::: diagram strand
+alt_it: "Un nucleotide con la base A: un cerchio per il fosfato, un pentagono per lo zucchero e un rettangolo per la base."
+mode: nucleotide
+kind: dna
+top: 'A'
+labels: parts
+:::
+
+## Un filamento solo {idea icon=circle id=filamento}
+
+::: diagram strand
+alt_it: "Un filamento di DNA di sei basi: G, A, T, T, C, A, da sinistra a destra, con il nome di ogni base."
+mode: single
+kind: dna
+top: 'GATTCA'
+labels: bases
+:::
+
+## Un filamento ne fa un altro {idea icon=copy id=complementare}
+
+::: diagram strand
+alt_it: "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, con due o tre piroli tra le basi."
+mode: double
+kind: dna
+top: 'GATTCA'
+bottom: 'CTAAGT'
+labels: parts
+states:
+  - {hide_bottom: [1, 2, 3, 4, 5, 6], op_it: "Conosci solo il filamento di sopra"}
+  - {hide_bottom: [1, 2, 3], op_it: "Tre basi si vedono"}
+  - {hide_bottom: [], highlight: [A, T], op_it: "Le A e le T"}
+  - {hide_bottom: [], unzip: true, op_it: "I due filamenti si separano"}
+:::
+
+## Dodici coppie {idea icon=link-2 id=dodici}
+
+Tocca una base: **la sua compagna** si accende.
+
+::: diagram strand
+alt_it: "Un doppio filamento di dodici coppie: GATTACAGATTA sopra e il suo complementare sotto. Tocca una base per accendere la compagna."
+mode: double
+kind: dna
+top: 'GATTACAGATTA'
+bottom: 'CTAATGTCTAAT'
+labels: bases
+:::
+
+## Tocca il piolo {idea icon=link-2 id=tocca-piolo}
+
+::: check select
+prompt_it: "Tocca un piolo che ha tre linee: unisce due basi, C e G."
+diagram:
+  type: strand
+  alt_it: "Un doppio filamento di quattro coppie. Ogni piolo tra due basi si può toccare."
+  mode: double
+  kind: dna
+  top: 'GATC'
+  bottom: 'CTAG'
+targets: rungs
+pick: one
+answer: ['r1', 'r4']
+errors:
+  - {answer: ['r2'], code: two_lines, message_it: "Quel piolo ha due linee: A e T."}
+explain_it: "C e G si tengono con tre linee, A e T con due."
 :::

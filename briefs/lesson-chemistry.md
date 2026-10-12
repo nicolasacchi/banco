@@ -52,9 +52,9 @@ Only these names, besides the structural ones of the lesson brief, and only with
 
 | Piece | Kind | Status | Batch | Track |
 |---|---|---|---|---|
-| `formula` | diagram | reserved | w2-1 | T7 |
-| `molecule` | diagram | reserved | w2-1 | T7 |
-| `periodic_table` | diagram | reserved | w2-1 | T7 |
+| `formula` | diagram | available | w2-1 | T7 |
+| `molecule` | diagram | available | w2-1 | T7 |
+| `periodic_table` | diagram | available | w2-1 | T7 |
 | `particles` | diagram | draft | w2-2 | T7 |
 | `phase_changes` | diagram | draft | w2-2 | T7 |
 | `chart` | diagram | draft | w2-2 | T6 |

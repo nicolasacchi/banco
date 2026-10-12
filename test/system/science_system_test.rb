@@ -185,4 +185,61 @@ class ScienceSystemTest < ApplicationSystemTestCase
     click_button "Controlla"
     assert_selector "#scheda-14 .verdict-right", wait: 5
   end
+
+  test "strand: the hidden bases are empty slots and are not in the page, Avanti reveals them, the unzip separates the strands" do
+    open_card(17)
+    assert_text "Passo 1 di 4"
+    assert_selector "#scheda-17 .dg-sempty", count: 6
+    assert_no_selector "#scheda-17 .dg-rung"
+    letters = page.evaluate_script(%q(Array.from(document.querySelectorAll('#scheda-17 .dg-sletter')).map(n => n.textContent).join('')))
+    assert_equal "GATTCA", letters, "only the top strand is drawn: the hidden bottom letters are nowhere in the figure"
+    2.times { click_button "Passo avanti" }
+    assert_selector "#scheda-17 .dg-sempty", count: 0
+    assert_selector "#scheda-17 .dg-rung", minimum: 12
+    assert_selector "#scheda-17 .dg-shl", count: 4 + 4 # the A and T bases of both strands
+    assert_text "A 4 · T 4"
+    click_button "Passo avanti"
+    assert_no_selector "#scheda-17 .dg-rung"
+    assert_selector "#scheda-17 .dg-op", text: "I due filamenti si separano"
+    shot "strand-unzip"
+  end
+
+  test "strand: touching a base lights its partner and its rung; two lines for A and T, three for C and G; 12 pairs are vertical on a phone" do
+    open_card(18, size: [ 390, 844 ])
+    assert_selector "#scheda-18 button.dg-switch[role=switch]", count: 24
+    # GATTACAGATTA: three C-G pairs and nine A-T pairs: 3 x 3 + 9 x 2 lines
+    assert_selector "#scheda-18 .dg-rung", count: 3 * 3 + 9 * 2
+    find("#scheda-18 button[data-control='top-2']").click
+    assert_selector "#scheda-18 .dg-slit", count: 2, wait: 3
+    assert_selector "#scheda-18 .dg-rung-lit", count: 2
+    assert_selector "#scheda-18 [role=status]", text: "Evidenziata la coppia 3", visible: :all
+    find("#scheda-18 button[data-control='bottom-0']").click
+    assert_selector "#scheda-18 .dg-rung-lit", count: 2 + 3
+    shot "strand-ladder-390"
+  end
+
+  test "strand: select over the rungs" do
+    open_card(19, size: [ 390, 844 ])
+    assert_selector "#scheda-19 .dg-target", count: 4
+    find("#scheda-19 .dg-target[data-target='t2']").click
+    click_button "Controlla"
+    assert_selector "#scheda-19 .verdict-wrong", wait: 5
+    assert_text "Quel piolo ha due linee"
+    find("#scheda-19 .dg-target[data-target='t2']").click
+    find("#scheda-19 .dg-target[data-target='t1']").click
+    click_button "Controlla"
+    assert_selector "#scheda-19 .verdict-right", wait: 5
+    shot "strand-select-390"
+  end
+
+  test "strand: nucleotide and single strand" do
+    open_card(15)
+    assert_selector "#scheda-15 .dg-phosphate", count: 1
+    assert_selector "#scheda-15 .dg-sugar", count: 1
+    assert_text "base azotata"
+    open_card(16)
+    assert_selector "#scheda-16 .dg-sbase", count: 6
+    assert_text "A adenina"
+    shot "strand-single"
+  end
 end

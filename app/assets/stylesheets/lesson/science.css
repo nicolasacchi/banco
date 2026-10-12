@@ -92,3 +92,26 @@
   .dg-mini { fill: GrayText; }
   .dg-hl-0, .dg-hl-1, .dg-hl-2, .dg-hl-3 { fill: Canvas; stroke: Highlight; }
 }
+
+/* ---- strand: the ladder of a nucleotide, a strand or two strands. Colours come from the biology roles (pair_at, pair_cg, phosphate, sugar, base) through the
+   figure's home palette; every base also has its letter, and its shape: angular for A, T and U, rounded for C and G. ---- */
+.dg-strand .dg-svg { margin: 0 auto; }
+.dg-backbone { stroke: var(--text); stroke-width: 4; stroke-linecap: round; }
+.dg-phosphate { fill: var(--role-phosphate-mark, var(--text)); stroke: var(--text); stroke-width: 2; }
+.dg-sugar { fill: var(--role-sugar-mark, var(--text)); stroke: var(--text); stroke-width: 2; }
+.dg-sbase { stroke-width: 3; }
+.dg-sbase-at { stroke: var(--role-pair_at-mark, var(--text)); fill: color-mix(in srgb, var(--role-pair_at-mark, #888) 16%, var(--surface)); }
+.dg-sbase-cg { stroke: var(--role-pair_cg-mark, var(--text)); fill: color-mix(in srgb, var(--role-pair_cg-mark, #888) 16%, var(--surface)); }
+.dg-sbase.dg-neutral { stroke: var(--line); fill: var(--surface); }
+.dg-sbase.dg-sempty { stroke: var(--muted); fill: none; stroke-dasharray: 5 4; }
+.dg-sletter { font-weight: 800; color: var(--text); text-align: center; }
+.dg-rung { stroke: var(--text); stroke-width: 3; stroke-linecap: round; }
+.dg-rung-lit { stroke-width: 5; }
+.dg-shl { fill: none; stroke: var(--text); stroke-width: 3; stroke-dasharray: 6 4; pointer-events: none; }
+.dg-slit { fill: none; stroke: var(--text); stroke-width: 4; pointer-events: none; }
+.dg-count { font-weight: 800; color: var(--text); }
+.dg-strand .dg-switch:focus-visible, .dg-strand .dg-switch:hover { outline: 3px solid var(--text); outline-offset: 2px; }
+@media (forced-colors: active) {
+  .dg-backbone, .dg-rung, .dg-shl, .dg-slit { stroke: CanvasText; }
+  .dg-sbase, .dg-phosphate, .dg-sugar { fill: Canvas; stroke: CanvasText; }
+}

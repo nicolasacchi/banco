@@ -4,7 +4,7 @@ require "test_helper"
 # same files (app/javascript/lesson/test/science.test.mjs): the semantic column (the first finding), the printed strings, the select targets and the layout.
 class ScienceTypesTest < ActiveSupport::TestCase
   DIR = Rails.root.join("test/fixtures/diagrams/types")
-  TYPES = %w[formula molecule periodic_table].freeze
+  TYPES = %w[formula molecule periodic_table strand].freeze
   FILES = TYPES.to_h { |t| [ t, JSON.parse(DIR.join("#{t}.json").read) ] }.freeze
 
   def mod(type) = Lessons::Diagrams.const_get(Lessons::Diagrams::TYPES.fetch(type))
@@ -89,5 +89,32 @@ class ScienceTypesTest < ActiveSupport::TestCase
     assert_empty problems.map(&:message)
     wrong = Lessons::Verify.problems({ "component" => "number", "answer" => "6", "verify" => { "fn" => "chem.count", "args" => { "formula" => "2 Ca(NO3)2", "pick" => "O" } } })
     assert_equal [ "answer" ], wrong.map(&:path)
+  end
+
+  # ---- strand --------------------------------------------------------------------------------------------------------------------------
+
+  def strand_vector(name) = FILES["strand"]["vectors"].find { |v| v["name"] == name }["data"]
+
+  test "strand: a position hidden in every state is served with the top's letter, never the complement; the others keep theirs" do
+    data = strand_vector("strand-hidden-in-every-state")
+    served = mod("strand").served(data)
+    assert_equal "CTAAGT", data["bottom"]
+    assert_equal "GATTCA", served["bottom"], "all six hidden: the placeholder is the top strand"
+    assert_not_equal Lessons::Diagrams::Strand::COMPLEMENT.then { |c| data["top"].chars.map { |x| c[x] }.join }, served["bottom"]
+    partial = mod("strand").served(strand_vector("strand-hidden-then-shown"))
+    assert_equal "CTAAGT", partial["bottom"], "hidden in one state only: the letters travel with the states (L4 counts them)"
+    assert_equal [ 1, 2, 3, 4, 5, 6 ], mod("strand").always_hidden(data)
+    assert_empty mod("strand").always_hidden(strand_vector("strand-hidden-then-shown"))
+  end
+
+  test "strand: the printed set of a state never has a hidden base's letter in it, and select mode drops the labels" do
+    data = strand_vector("strand-example-1")
+    assert_equal %w[A C G T], mod("strand").printed(data, 0).select { |t| t.size == 1 }.sort, "one letter per kind: the top strand's"
+    rna = { "type" => "strand", "alt_it" => "x " * 6, "mode" => "double", "kind" => "dna", "top" => "GGGG", "bottom" => "CCCC", "hide_bottom" => [ 1, 2, 3, 4 ] }
+    assert_equal %w[G], mod("strand").printed(rna, 0).select { |t| t.size == 1 }, "the hidden C is nowhere in what the figure prints"
+    select = mod("strand").served(data, mode: :select)
+    %w[labels highlight unzip].each { |k| assert_not select.key?(k), k }
+    assert_equal %w[top bot], mod("strand").targets(data, "backbone")
+    assert_equal "base nascosta in posizione 1 (sotto)", mod("strand").target_names(strand_vector("strand-hidden-in-every-state"), "bases")["bot1"]
   end
 end

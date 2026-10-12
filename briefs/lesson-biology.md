@@ -47,7 +47,7 @@ Only these names, besides the structural ones of the lesson brief, and only with
 
 | Piece | Kind | Status | Batch | Track |
 |---|---|---|---|---|
-| `strand` | diagram | reserved | w2-1 | T7 |
+| `strand` | diagram | available | w2-1 | T7 |
 | `cell` | diagram | draft | w2-2 | T7 |
 | `word_parts` | diagram | reserved | w2-1 | T3 |
 | `scale` | diagram | draft | w2-2 | T6 |

@@ -1,21 +1,19 @@
 {
  "version": 1,
  "type": "strand",
- "status": "reserved",
+ "status": "available",
  "batch": "w2-1",
  "track": "T7",
  "provisional": false,
- "description": "Skeleton of W2-0 for the track T7: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "description": "Vectors of T7 (WAVE2 V1, V2), invented content: 'schema' valid or invalid; 'semantic' ok or {code, path} of the first finding (Ruby Lessons::Diagrams::Strand and lesson/diagrams/science/strand.js give the same one); 'layout' ok at every width (290, 360, 738, 1250 px) and text size (18, 20, 26 px), or error; 'printed' the strings of the first state (and 'printed_last' of the last), sorted, the same in Ruby and JS (L4): the hidden bases are not among them; 'targets' the stored ids of each select set in reading order.",
  "vectors": [
   {
    "name": "strand-example-1",
    "subject": "biology",
    "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
    "data": {
     "type": "strand",
-    "alt_it": "Un filamento di DNA di sei basi, GATTCA, con sotto il filamento complementare CTAAGT; i due filamenti si separano nell'ultimo passo.",
+    "alt_it": "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, con due o tre piroli tra le basi.",
     "mode": "double",
     "kind": "dna",
     "top": "GATTCA",
@@ -38,12 +36,68 @@
        "A",
        "T"
       ],
-      "op_it": "6 A e 6 T"
+      "op_it": "Le A e le T"
      },
      {
       "unzip": true,
       "op_it": "I due filamenti si separano"
      }
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "A",
+    "C",
+    "Conosci solo il filamento di sopra",
+    "G",
+    "Le forme aiutano a ricordare: le vere basi sono molecole.",
+    "T",
+    "base azotata",
+    "coppia A-T",
+    "coppia C-G",
+    "fosfato",
+    "zucchero"
+   ],
+   "printed_last": [
+    "A",
+    "C",
+    "G",
+    "I due filamenti si separano",
+    "Le forme aiutano a ricordare: le vere basi sono molecole.",
+    "T",
+    "base azotata",
+    "coppia A-T",
+    "coppia C-G",
+    "fosfato",
+    "zucchero"
+   ],
+   "targets": {
+    "bases": [
+     "top1",
+     "top2",
+     "top3",
+     "top4",
+     "top5",
+     "top6",
+     "bot1",
+     "bot2",
+     "bot3",
+     "bot4",
+     "bot5",
+     "bot6"
+    ],
+    "backbone": [
+     "top",
+     "bot"
+    ],
+    "rungs": [
+     "r1",
+     "r2",
+     "r3",
+     "r4",
+     "r5",
+     "r6"
     ]
    }
   },
@@ -51,10 +105,331 @@
    "name": "strand-unknown-field",
    "subject": "biology",
    "schema": "invalid",
-   "semantic": "ok",
    "data": {
     "type": "strand",
-    "alt_it": "Un filamento di DNA di sei basi, GATTCA, con sotto il filamento complementare CTAAGT; i due filamenti si separano nell'ultimo passo.",
+    "alt_it": "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, con due o tre piroli tra le basi.",
+    "mode": "double",
+    "kind": "dna",
+    "top": "GATTCA",
+    "bottom": "CTAAGT",
+    "labels": "parts",
+    "zzz_unknown_field": true
+   },
+   "semantic": "ok"
+  },
+  {
+   "name": "strand-nucleotide",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un nucleotide con la base A: un cerchio per il fosfato, un pentagono per lo zucchero e un rettangolo per la base.",
+    "mode": "nucleotide",
+    "kind": "dna",
+    "top": "A",
+    "labels": "parts"
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "A",
+    "base azotata",
+    "fosfato",
+    "zucchero"
+   ],
+   "targets": {
+    "bases": [
+     "top1"
+    ],
+    "backbone": [
+     "phosphate",
+     "sugar"
+    ],
+    "rungs": []
+   }
+  },
+  {
+   "name": "strand-single-dna",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un filamento di DNA di sei basi: G, A, T, T, C, A, da sinistra a destra, con il nome di ogni base.",
+    "mode": "single",
+    "kind": "dna",
+    "top": "GATTCA",
+    "labels": "bases"
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "A",
+    "C",
+    "G",
+    "T",
+    "adenina",
+    "citosina",
+    "guanina",
+    "timina"
+   ],
+   "targets": {
+    "bases": [
+     "top1",
+     "top2",
+     "top3",
+     "top4",
+     "top5",
+     "top6"
+    ],
+    "backbone": [
+     "top"
+    ],
+    "rungs": []
+   }
+  },
+  {
+   "name": "strand-single-rna",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un filamento di RNA di sei basi: A, U, G, G, C, U, da sinistra a destra, senza nomi.",
+    "mode": "single",
+    "kind": "rna",
+    "top": "AUGGCU",
+    "labels": "none"
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "A",
+    "C",
+    "G",
+    "U"
+   ],
+   "targets": {
+    "bases": [
+     "top1",
+     "top2",
+     "top3",
+     "top4",
+     "top5",
+     "top6"
+    ],
+    "backbone": [
+     "top"
+    ],
+    "rungs": []
+   }
+  },
+  {
+   "name": "strand-double-default-labels",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, senza altre scritte che le lettere.",
+    "mode": "double",
+    "kind": "dna",
+    "top": "GATTCA",
+    "bottom": "CTAAGT"
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "A",
+    "C",
+    "G",
+    "T"
+   ],
+   "targets": {
+    "bases": [
+     "top1",
+     "top2",
+     "top3",
+     "top4",
+     "top5",
+     "top6",
+     "bot1",
+     "bot2",
+     "bot3",
+     "bot4",
+     "bot5",
+     "bot6"
+    ],
+    "backbone": [
+     "top",
+     "bot"
+    ],
+    "rungs": [
+     "r1",
+     "r2",
+     "r3",
+     "r4",
+     "r5",
+     "r6"
+    ]
+   }
+  },
+  {
+   "name": "strand-twelve-pairs",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento di dodici coppie, con le sole lettere sopra e sotto, in orizzontale o in verticale.",
+    "mode": "double",
+    "kind": "dna",
+    "top": "GATTACAGATTA",
+    "bottom": "CTAATGTCTAAT",
+    "labels": "none"
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "A",
+    "C",
+    "G",
+    "T"
+   ],
+   "targets": {
+    "bases": [
+     "top1",
+     "top2",
+     "top3",
+     "top4",
+     "top5",
+     "top6",
+     "top7",
+     "top8",
+     "top9",
+     "top10",
+     "top11",
+     "top12",
+     "bot1",
+     "bot2",
+     "bot3",
+     "bot4",
+     "bot5",
+     "bot6",
+     "bot7",
+     "bot8",
+     "bot9",
+     "bot10",
+     "bot11",
+     "bot12"
+    ],
+    "backbone": [
+     "top",
+     "bot"
+    ],
+    "rungs": [
+     "r1",
+     "r2",
+     "r3",
+     "r4",
+     "r5",
+     "r6",
+     "r7",
+     "r8",
+     "r9",
+     "r10",
+     "r11",
+     "r12"
+    ]
+   }
+  },
+  {
+   "name": "strand-hidden-then-shown",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento di sei coppie: all'inizio tre basi di sotto sono nascoste, poi si vedono tutte.",
+    "mode": "double",
+    "kind": "dna",
+    "top": "GATTCA",
+    "bottom": "CTAAGT",
+    "labels": "parts",
+    "states": [
+     {
+      "hide_bottom": [
+       1,
+       2,
+       3
+      ],
+      "op_it": "Tre basi nascoste"
+     },
+     {
+      "hide_bottom": [],
+      "op_it": "Tutte visibili"
+     }
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "A",
+    "C",
+    "G",
+    "Le forme aiutano a ricordare: le vere basi sono molecole.",
+    "T",
+    "Tre basi nascoste",
+    "base azotata",
+    "coppia A-T",
+    "coppia C-G",
+    "fosfato",
+    "zucchero"
+   ],
+   "printed_last": [
+    "A",
+    "C",
+    "G",
+    "Le forme aiutano a ricordare: le vere basi sono molecole.",
+    "T",
+    "Tutte visibili",
+    "base azotata",
+    "coppia A-T",
+    "coppia C-G",
+    "fosfato",
+    "zucchero"
+   ],
+   "targets": {
+    "bases": [
+     "top1",
+     "top2",
+     "top3",
+     "top4",
+     "top5",
+     "top6",
+     "bot1",
+     "bot2",
+     "bot3",
+     "bot4",
+     "bot5",
+     "bot6"
+    ],
+    "backbone": [
+     "top",
+     "bot"
+    ],
+    "rungs": [
+     "r1",
+     "r2",
+     "r3",
+     "r4",
+     "r5",
+     "r6"
+    ]
+   }
+  },
+  {
+   "name": "strand-hidden-in-every-state",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento in cui le basi di sotto restano nascoste: si vede soltanto il filamento di sopra, sei lettere.",
     "mode": "double",
     "kind": "dna",
     "top": "GATTCA",
@@ -70,22 +445,427 @@
        5,
        6
       ],
-      "op_it": "Conosci solo il filamento di sopra"
+      "op_it": "Solo il filamento di sopra"
      },
      {
-      "highlight": [
-       "A",
-       "T"
+      "hide_bottom": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6
       ],
-      "op_it": "6 A e 6 T"
+      "highlight": [
+       "A"
+      ],
+      "op_it": "Evidenzia le A"
+     }
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "A",
+    "C",
+    "G",
+    "Le forme aiutano a ricordare: le vere basi sono molecole.",
+    "Solo il filamento di sopra",
+    "T",
+    "base azotata",
+    "coppia A-T",
+    "coppia C-G",
+    "fosfato",
+    "zucchero"
+   ],
+   "printed_last": [
+    "A",
+    "A 2",
+    "C",
+    "Evidenzia le A",
+    "G",
+    "Le forme aiutano a ricordare: le vere basi sono molecole.",
+    "T",
+    "base azotata",
+    "coppia A-T",
+    "coppia C-G",
+    "fosfato",
+    "zucchero"
+   ],
+   "targets": {
+    "bases": [
+     "top1",
+     "top2",
+     "top3",
+     "top4",
+     "top5",
+     "top6",
+     "bot1",
+     "bot2",
+     "bot3",
+     "bot4",
+     "bot5",
+     "bot6"
+    ],
+    "backbone": [
+     "top",
+     "bot"
+    ],
+    "rungs": [
+     "r1",
+     "r2",
+     "r3",
+     "r4",
+     "r5",
+     "r6"
+    ]
+   }
+  },
+  {
+   "name": "strand-highlight-count",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento con le C e le G evidenziate, e sotto il conto di quante se ne vedono.",
+    "mode": "double",
+    "kind": "dna",
+    "top": "GATTCA",
+    "bottom": "CTAAGT",
+    "labels": "parts",
+    "highlight": [
+     "C",
+     "G"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "A",
+    "C",
+    "C 2",
+    "G",
+    "G 2",
+    "Le forme aiutano a ricordare: le vere basi sono molecole.",
+    "T",
+    "base azotata",
+    "coppia A-T",
+    "coppia C-G",
+    "fosfato",
+    "zucchero"
+   ],
+   "targets": {
+    "bases": [
+     "top1",
+     "top2",
+     "top3",
+     "top4",
+     "top5",
+     "top6",
+     "bot1",
+     "bot2",
+     "bot3",
+     "bot4",
+     "bot5",
+     "bot6"
+    ],
+    "backbone": [
+     "top",
+     "bot"
+    ],
+    "rungs": [
+     "r1",
+     "r2",
+     "r3",
+     "r4",
+     "r5",
+     "r6"
+    ]
+   }
+  },
+  {
+   "name": "strand-dna-with-u",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, con due o tre piroli tra le basi.",
+    "mode": "double",
+    "kind": "dna",
+    "top": "GAUTCA",
+    "bottom": "CTAAGT",
+    "labels": "parts"
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/top"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "strand-rna-with-t",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, con due o tre piroli tra le basi.",
+    "mode": "single",
+    "kind": "rna",
+    "top": "AUGGTU",
+    "labels": "parts"
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/top"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "strand-nucleotide-two-bases",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, con due o tre piroli tra le basi.",
+    "mode": "nucleotide",
+    "kind": "dna",
+    "top": "AT",
+    "labels": "parts"
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/top"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "strand-nucleotide-with-bottom",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, con due o tre piroli tra le basi.",
+    "mode": "nucleotide",
+    "kind": "dna",
+    "top": "A",
+    "bottom": "T",
+    "labels": "parts"
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/bottom"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "strand-single-with-bottom",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, con due o tre piroli tra le basi.",
+    "mode": "single",
+    "kind": "dna",
+    "top": "GATTCA",
+    "bottom": "CTAAGT",
+    "labels": "parts"
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/bottom"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "strand-double-without-bottom",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, con due o tre piroli tra le basi.",
+    "mode": "double",
+    "kind": "dna",
+    "top": "GATTCA",
+    "labels": "parts"
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/bottom"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "strand-bottom-too-short",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, con due o tre piroli tra le basi.",
+    "mode": "double",
+    "kind": "dna",
+    "top": "GATTCA",
+    "bottom": "CTAAG",
+    "labels": "parts"
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/bottom"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "strand-bottom-not-the-complement",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, con due o tre piroli tra le basi.",
+    "mode": "double",
+    "kind": "dna",
+    "top": "GATTCA",
+    "bottom": "CTAGGT",
+    "labels": "parts"
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/bottom"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "strand-double-rna",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, con due o tre piroli tra le basi.",
+    "mode": "double",
+    "kind": "rna",
+    "top": "AUGGCU",
+    "bottom": "UACCGA",
+    "labels": "parts"
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/kind"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "strand-hide-on-a-single-strand",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, con due o tre piroli tra le basi.",
+    "mode": "single",
+    "kind": "dna",
+    "top": "GATTCA",
+    "labels": "parts",
+    "hide_bottom": [
+     1
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/hide_bottom"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "strand-hide-past-the-end",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, con due o tre piroli tra le basi.",
+    "mode": "double",
+    "kind": "dna",
+    "top": "GATTCA",
+    "bottom": "CTAAGT",
+    "labels": "parts",
+    "hide_bottom": [
+     1,
+     8
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/hide_bottom/1"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "strand-unzip-on-a-single-strand",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, con due o tre piroli tra le basi.",
+    "mode": "single",
+    "kind": "dna",
+    "top": "GATTCA",
+    "labels": "parts",
+    "unzip": true
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/unzip"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "strand-highlight-u-in-dna",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, con due o tre piroli tra le basi.",
+    "mode": "double",
+    "kind": "dna",
+    "top": "GATTCA",
+    "bottom": "CTAAGT",
+    "labels": "parts",
+    "highlight": [
+     "U"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/highlight/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "strand-state-hide-past-the-end",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "strand",
+    "alt_it": "Un doppio filamento di sei coppie: GATTCA sopra e CTAAGT sotto, con due o tre piroli tra le basi.",
+    "mode": "double",
+    "kind": "dna",
+    "top": "GATTCA",
+    "bottom": "CTAAGT",
+    "labels": "parts",
+    "states": [
+     {
+      "hide_bottom": [
+       1
+      ]
      },
      {
-      "unzip": true,
-      "op_it": "I due filamenti si separano"
+      "hide_bottom": [
+       9
+      ]
      }
-    ],
-    "zzz_unknown_field": true
-   }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/states/1/hide_bottom/0"
+   },
+   "layout": "error"
   }
  ]
 }

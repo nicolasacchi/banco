@@ -10,7 +10,7 @@ const vectors = (type) => JSON.parse(readFileSync(new URL(`test/fixtures/diagram
 const { validate } = await import("lesson/schema")
 const { checkModule, checkControls } = await import("lesson/diagrams/contract")
 const registry = await import("lesson/diagrams/registry")
-const TYPES = ["formula", "molecule", "periodic_table"]
+const TYPES = ["formula", "molecule", "periodic_table", "strand"]
 const mods = {}
 for (const t of TYPES) mods[t] = await import(`lesson/diagrams/science/${t}`)
 const HOME = { formula: "chemistry", molecule: "chemistry", periodic_table: "chemistry", strand: "biology" }
