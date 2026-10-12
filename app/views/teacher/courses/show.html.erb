@@ -44,6 +44,7 @@
               <p class="hint step-kind"><%= t("teacher.path.kind.#{entry['kind']}") %> · <%= t("teacher.course.minutes", count: entry["minutes"]) %>
                 <% if entry["term"] %> · <%= t("teacher.course.term", n: entry["term"]) %><% end %></p>
               <p class="step-skills"><%= t("teacher.path.skills") %> <%= safe_join(entry["skills"].map { |k| ref_for(k) }, ", ") %></p>
+              <% if step.row.stage == "approved" && (words = Course::Decisions.attestation(entry["key"])) %><p class="hint step-attested" data-attested><%= t("teacher.topic.attested", words: words) %></p><% end %>
               <% if step.missing_it %><p class="step-missing" data-missing><%= step.missing_it %></p><% end %>
               <% if step.lesson? %>
                 <ul class="plain step-counts" data-counts>

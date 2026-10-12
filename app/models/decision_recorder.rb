@@ -332,14 +332,30 @@ class DecisionRecorder
     latest = TopicRevision.where(lesson: lesson).maximum(:seq)
     raise Invalid, "topic revision #{revision.id} is not the latest of #{lesson.key}: approve the latest" unless revision.seq == latest
 
+    attested = attestation
     gate = Approval::TopicGate.check(revision, confirm_seen: truthy?(@params[:confirm_seen]),
-                                               lesson_findings_reason_it: @params[:lesson_findings_reason_it])
+                                               lesson_findings_reason_it: @params[:lesson_findings_reason_it],
+                                               waive_page_opened: !attested.nil?)
     raise Invalid, gate.reasons unless gate.approvable
 
     payload = { topic_revision_id: revision.id, topic: lesson.key, seq: revision.seq, course_revision_id: revision.course_revision_id,
                 lesson_revision_id: revision.lesson_revision_id, item_revision_ids: Approval::TopicGate.item_revision_ids(revision) }
     payload[:lesson_findings_reason_it] = @params[:lesson_findings_reason_it].to_s.strip if Approval::TopicGate.findings_need_reason?(revision)
+    payload.merge!(attested: true, attest_it: attested, waived: [ Approval::TopicGate::WAIVED ]) if attested
     [ lesson.subject, nil, payload ]
+  end
+
+  # The operator's own words for a console approval that waives the page-opened requirement (D-260); nil without
+  # them. Only the console origin and only approve_topic: anywhere else the parameter is a refusal, never ignored
+  # silently into a normal approval (the web form cannot send it: the controller does not permit it).
+  def attestation
+    return nil unless @params.key?(:attest_it)
+    raise Invalid, "attest_it is accepted only from the console" unless @request.is_a?(Console)
+
+    words = @params[:attest_it].to_s.strip
+    raise Invalid, "attest_it must hold the operator's own words (1..1000 characters)" unless (1..1000).cover?(words.length)
+
+    words
   end
 
   # "Rimanda" for a lesson: back to the content agent with a code and a comment; it blocks the next approval.

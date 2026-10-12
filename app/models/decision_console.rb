@@ -4,6 +4,9 @@
 # runs the whole recorder inside a savepoint that is rolled back, so it shows the payload and the gate
 # result without writing; confirm: true keeps the row.
 #
+# ATTEST_IT (approve_topic only) waives the one requirement that the review page was opened, on the operator's
+# own words, which the payload records; every other requirement of the gate holds.
+#
 #   DecisionConsole.call(kind: "approve_skill_graph", teacher: "nik", subject: "history", reason: "...", confirm: true)
 class DecisionConsole
   Result = Struct.new(:ok, :recorded, :decision, :payload, :errors, keyword_init: true)
@@ -15,13 +18,14 @@ class DecisionConsole
   def self.call(**args) = new(**args).call
 
   # params: any other parameter of the kind (finding_id, disposition, ...), as the web form would send it.
-  def initialize(kind:, teacher:, subject: nil, revision: nil, reason: nil, params: {}, confirm: false, os_user: DecisionRecorder::Console.default_os_user)
+  def initialize(kind:, teacher:, subject: nil, revision: nil, reason: nil, params: {}, attest_it: nil, confirm: false, os_user: DecisionRecorder::Console.default_os_user)
     @kind = kind.to_s
     @teacher = teacher
     @subject_key = subject.presence
     @revision = revision.presence
     @reason = reason.presence
     @params = params.to_h.with_indifferent_access
+    @attest_it = attest_it
     @confirm = confirm
     @os_user = os_user
   end
@@ -30,6 +34,9 @@ class DecisionConsole
     origin = DecisionRecorder::Console.new(login: @teacher, os_user: @os_user)
     refusal = DecisionRecorder.refusal(origin)
     raise DecisionRecorder::Refused, refusal if refusal
+    raise DecisionRecorder::Invalid, "ATTEST_IT is accepted only for approve_topic" if !@attest_it.nil? && @kind != "approve_topic"
+    raise DecisionRecorder::Invalid, "ATTEST_IT must hold the operator's own words (1..1000 characters)" if !@attest_it.nil? && !(1..1000).cover?(@attest_it.to_s.strip.length)
+
     params = build_params
     already_approved!(params)
     decision = nil
@@ -55,6 +62,8 @@ class DecisionConsole
   def build_params
     params = @params.dup
     params[:reason_it] = @reason if @reason
+    params.delete(:attest_it)
+    params[:attest_it] = @attest_it.to_s.strip unless @attest_it.nil?
     if @subject_key
       params[:subject] ||= @subject_key
       params[:revision_id] ||= latest_revision_id if APPROVALS.key?(@kind) || @kind == "confirm_test_reviewed"
