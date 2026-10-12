@@ -30,6 +30,11 @@ module Lessons
     end
 
     ROLE_NAME = /\A[a-z]+([_-][a-z]+)*\z/
+    SPAN_HEAD = /\A([a-z]+(?:[_-][a-z]+)*)(\|it)?:/
+    LANG_SPANS = %w[en es la].freeze
+    RESERVED_SPANS = (LANG_SPANS + %w[it code g]).freeze
+    CODE_MAX = 40
+    TERM = /\A[\p{L}][\p{L} '’-]*\z/
     LINK_TARGET = /\A[a-z0-9.-]+\z/
     LINK_KINDS = %w[scheda argomento].freeze
     # Commands that would let an agent reach KaTeX's trust functions or redefine the macro (A5).
@@ -50,15 +55,16 @@ module Lessons
     module_function
 
     # The canonical blocks of +text+. line_offset: the line number of the text's first line in the file.
-    def parse(text, line_offset: 1, roles: false)
-      raw_blocks(text, line_offset: line_offset, roles: roles).map { |b| block_json(b, roles) }
+    # target: the language of a language subject's lesson ("en", "es"): a role span's words are then that language unless it says |it.
+    def parse(text, line_offset: 1, roles: false, target: nil)
+      raw_blocks(text, line_offset: line_offset, roles: roles).map { |b| block_json(b, roles, target) }
     end
 
-    def block_json(block, roles = false)
+    def block_json(block, roles = false, target = nil)
       if block.type == :p
-        { "type" => "p", "children" => inline(block.text, block.line, roles: roles) }
+        { "type" => "p", "children" => inline(block.text, block.line, roles: roles, target: target) }
       else
-        items = block.items.map { |i| { "children" => inline(i[:text], i[:line], roles: roles), "sub" => i[:subs].map { |s| inline(s, i[:line], roles: roles) } } }
+        items = block.items.map { |i| { "children" => inline(i[:text], i[:line], roles: roles, target: target), "sub" => i[:subs].map { |s| inline(s, i[:line], roles: roles, target: target) } } }
         { "type" => block.type.to_s, "items" => items }
       end
     end
@@ -146,7 +152,7 @@ module Lessons
     end
 
     # Inline nodes of one paragraph or item. Strict: every construct outside $...$ and **...** is refused.
-    def inline(text, line, roles: false)
+    def inline(text, line, roles: false, target: nil)
       nodes = []
       buffer = +""
       flush = lambda do
@@ -177,15 +183,15 @@ module Lessons
           raise Refused.new(line, "an unclosed **") if stop.nil? || stop == i + 2
 
           flush.call
-          nodes << { "t" => "bold", "children" => inline(text[(i + 2)...stop], line, roles: roles) }
+          nodes << { "t" => "bold", "children" => inline(text[(i + 2)...stop], line, roles: roles, target: target) }
           i = stop + 2
         elsif roles && ch == "[" && nxt == "["
           flush.call
-          node, i = role_span(text, i, line)
+          node, i = span(text, i, line, target)
           nodes << node
         elsif roles && ch == "[" && (link = text[i..].match(/\A\[([^\[\]]*)\]\(([^()]*)\)/))
           flush.call
-          nodes << link_node(link[1], link[2], line)
+          nodes << link_node(link[1], link[2], line, target)
           i += link[0].size
         else
           refuse_char(text, i, line)
@@ -211,19 +217,78 @@ module Lessons
       end
     end
 
-    # [[role:text]] at +start+: the node and the index after the closing ]].
-    def role_span(text, start, line)
+    # The [[name:text]] span at +start+: the node and the index after the closing ]]. Dispatches on the name (see the module comment).
+    def span(text, start, line, target = nil)
+      head = text[(start + 2)..].match(SPAN_HEAD)
+      return role_span(text, start, line, target) unless head
+
+      name = head[1]
+      if head[2].nil? && LANG_SPANS.include?(name) then lang_span(text, start, line, name, head[0].size)
+      elsif head[2].nil? && name == "code" then code_span(text, start, line, head[0].size)
+      elsif head[2].nil? && name == "g" then gloss_span(text, start, line, head[0].size)
+      else role_span(text, start, line, target)
+      end
+    end
+
+    # [[en:words]]: plain words of another language.
+    def lang_span(text, start, line, lang, head_size)
+      from = start + 2 + head_size
+      stop = text.index("]]", from)
+      raise Refused.new(line, "an unclosed [[#{lang}: language span") if stop.nil?
+
+      words = text[from...stop]
+      raise Refused.new(line, "an empty [[#{lang}: language span") if words.strip.empty?
+      raise Refused.new(line, "markup inside a [[#{lang}: language span (it holds plain words)") if words.match?(/[$*\\\[_^`|]|<[A-Za-z\/!]/)
+
+      [ { "t" => "lang", "lang" => lang, "v" => words }, stop + 2 ]
+    end
+
+    # [[code:x = x + 1]]: literal, at most CODE_MAX characters; it ends at the first "]]".
+    def code_span(text, start, line, head_size)
+      from = start + 2 + head_size
+      stop = text.index("]]", from)
+      raise Refused.new(line, "an unclosed [[code: span") if stop.nil?
+
+      code = text[from...stop]
+      raise Refused.new(line, "an empty [[code: span") if code.strip.empty?
+      raise Refused.new(line, "a code span longer than #{CODE_MAX} characters") if code.length > CODE_MAX
+
+      [ { "t" => "code", "v" => code }, stop + 2 ]
+    end
+
+    # [[g:term]]: a term of the lesson's glossary (that it is one is the lesson check's business).
+    def gloss_span(text, start, line, head_size)
+      from = start + 2 + head_size
+      stop = text.index("]]", from)
+      raise Refused.new(line, "an unclosed [[g: glossary span") if stop.nil?
+
+      term = text[from...stop].strip
+      raise Refused.new(line, "an empty [[g: glossary span") if term.empty?
+      raise Refused.new(line, "a glossary term that is not letters, spaces, hyphens and apostrophes") unless term.match?(TERM)
+
+      [ { "t" => "gloss", "term" => term }, stop + 2 ]
+    end
+
+    # [[role:text]] or [[role|it:text]] at +start+: the node and the index after the closing ]].
+    def role_span(text, start, line, target = nil)
       stop = role_close(text, start + 2)
       raise Refused.new(line, "an unclosed [[ colour role span") if stop.nil?
 
       inner = text[(start + 2)...stop]
-      name, body = inner.split(":", 2)
+      head, body = inner.split(":", 2)
       raise Refused.new(line, "a [[ that is not a colour role span ([[role:text]])") if body.nil?
+
+      name, italian = head.split("|", 2)
       raise Refused.new(line, "a colour role name that is not lowercase letters, hyphens and underscores") unless name.match?(ROLE_NAME)
+      raise Refused.new(line, "#{name} is reserved for a span of its own ([[#{name}:...]]): it cannot be a colour role") if RESERVED_SPANS.include?(name)
+      raise Refused.new(line, "only |it follows a colour role name") unless italian.nil? || italian == "it"
       raise Refused.new(line, "a colour role span inside a colour role span") if outside_math(body).include?("[[")
       raise Refused.new(line, "a colour role span without text") if body.strip.empty?
 
-      [ { "t" => "role", "role" => name, "children" => inline(body, line, roles: true) }, stop + 2 ]
+      node = { "t" => "role", "role" => name, "children" => inline(body, line, roles: true, target: target) }
+      lang = italian ? "it" : target
+      node["lang"] = lang if lang
+      [ node, stop + 2 ]
     end
 
     # Index of the "]]" that closes a role span: a "]]" inside $...$ is LaTeX.
@@ -258,14 +323,14 @@ module Lessons
       out
     end
 
-    def link_node(label, target, line)
+    def link_node(label, target, line, lang = nil)
       kind, id = target.split(":", 2)
       raise Refused.new(line, "a link other than scheda: or argomento:") unless LINK_KINDS.include?(kind) && !id.nil?
       raise Refused.new(line, "a link without a target") if id.empty?
       raise Refused.new(line, "a link target that is not lowercase letters, digits, dots and hyphens") unless id.match?(LINK_TARGET)
       raise Refused.new(line, "a link without text") if label.strip.empty?
 
-      { "t" => "link", "kind" => kind, "target" => id, "children" => inline(label, line, roles: true) }
+      { "t" => "link", "kind" => kind, "target" => id, "children" => inline(label, line, roles: true, target: lang) }
     end
 
     # A formula of a lesson/2 text: no command that reaches KaTeX's trust functions or redefines a macro, and
@@ -282,7 +347,7 @@ module Lessons
     end
 
     # Every inline node of a lesson/2 text with the line of its paragraph or item: yields (node, line).
-    def each_node(text, line_offset: 1, &block)
+    def each_node(text, line_offset: 1, target: nil, &block)
       walk = lambda do |nodes, line|
         nodes.each do |n|
           yield n, line
@@ -290,8 +355,8 @@ module Lessons
         end
       end
       raw_blocks(text, line_offset: line_offset, roles: true).each do |b|
-        if b.type == :p then walk.call(inline(b.text, b.line, roles: true), b.line)
-        else b.items.each { |it| ([ it[:text] ] + it[:subs]).each { |t| walk.call(inline(t, it[:line], roles: true), it[:line]) } }
+        if b.type == :p then walk.call(inline(b.text, b.line, roles: true, target: target), b.line)
+        else b.items.each { |it| ([ it[:text] ] + it[:subs]).each { |t| walk.call(inline(t, it[:line], roles: true, target: target), it[:line]) } }
         end
       end
     end

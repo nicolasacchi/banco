@@ -230,7 +230,9 @@ module Lessons
         return if answer.empty?
 
         squash = ->(s) { s.to_s.delete("$").gsub(/\s+/, " ").strip.downcase }
-        prompt = squash.call(check["prompt_it"])
+        # a cloze's bracketed cue right after the gap, "When I ___ (get) home", is the material, not a leak (D-110, D-265)
+        cue = ->(s) { check["component"] == "normalized_text" ? s.to_s.gsub(/_{2,}\s*\([^)]*\)/, " ___ ") : s }
+        prompt = squash.call(cue.call(check["prompt_it"]))
         needle = squash.call(answer)
         return if needle.size < 2 && %w[number fraction].exclude?(check["component"]) && needle.match?(/\A\p{L}\z/)
 

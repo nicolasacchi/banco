@@ -424,6 +424,7 @@ module Lessons
         "refs" => front["refs"], "scope" => front["scope"], "minutes" => front["minutes"], "calculator" => front["calculator"]
       }
       body["book_it"] = front["book_it"] if front["book_it"]
+      %w[glossary teaches_en teaches_es].each { |k| body[k] = front[k] if front[k] }
       body["hero"] = front["hero"] if front["hero"]
       body["parts"] = parts.map { |p| p.slice("n", "title_it") } if parts.any?
       body.merge("cards" => built, "words" => { "core" => core_words, "extra" => extra_words }, "pages" => [])

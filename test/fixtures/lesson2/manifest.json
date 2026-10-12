@@ -788,6 +788,38 @@
    "line": 73,
    "construct": "diagram seats",
    "note": "seats with sliders over 100 to 900 present and 0 to 99 yes can show more than 500 numbers, on a card with a check"
+  },
+  {
+   "file": "bad/lang-span-in-math.md",
+   "base": "base.md",
+   "code": "E-LESSON-LANG",
+   "line": 48,
+   "construct": "callout",
+   "note": "T2 (D-281): a [[en:...]] span in a math lesson: math does not teach English"
+  },
+  {
+   "file": "bad/lang-level-word.md",
+   "base": "base.md",
+   "code": "W-LANG-LEVEL",
+   "line": 48,
+   "construct": "callout",
+   "note": "T2 (D-281): English words outside the first 3000 and the glossary and teaches_en (the same file also gives E-LESSON-LANG: math teaches no English; the code under test is the warning)"
+  },
+  {
+   "file": "bad/chem-symbol-unknown.md",
+   "base": "base.md",
+   "code": "E-CHEM-SYMBOL",
+   "line": 48,
+   "construct": "callout",
+   "note": "T2 (D-281): \\ce{Xx2} with a symbol that is not an element (the same file also gives E-LESSON-MARKUP: \\ce is for chemistry and biology)"
+  },
+  {
+   "file": "bad/apparatus-glossary.md",
+   "base": "base.md",
+   "code": "E-LESSON-APPARATUS-WORDS",
+   "line": null,
+   "construct": "glossary",
+   "note": "T2 (D-281): twelve glossary terms of 21 words listed under one card are 252 words open by default (at most 250)"
   }
  ],
  "pending": {
@@ -819,24 +851,6 @@
     "change": "a program with a loop that never ends and no endless flag (render check)"
    },
    {
-    "code": "E-LESSON-APPARATUS-WORDS",
-    "needs": [
-     "block:dialogue"
-    ],
-    "track": "T2",
-    "base": "base.md",
-    "change": "251 words of quotations, translations and dialogue lines open by default on top of the 500 words of prose"
-   },
-   {
-    "code": "E-CHEM-SYMBOL",
-    "needs": [
-     "diagram:formula"
-    ],
-    "track": "T2",
-    "base": "base.md",
-    "change": "a formula \\ce{Xx2} with a symbol that is not an element"
-   },
-   {
     "code": "W-ES-TILDE",
     "needs": [
      "block:dialogue"
@@ -844,24 +858,6 @@
     "track": "T3",
     "base": "base.md",
     "change": "a Spanish word written with a tilde that the stress rule does not need"
-   },
-   {
-    "code": "E-LESSON-LANG",
-    "needs": [
-     "block:dialogue"
-    ],
-    "track": "T2",
-    "base": "base.md",
-    "change": "a text_es key in an english lesson, or two target languages in one figure"
-   },
-   {
-    "code": "W-LANG-LEVEL",
-    "needs": [
-     "block:dialogue"
-    ],
-    "track": "T2",
-    "base": "base.md",
-    "change": "an English word outside the first 3000 words, the glossary and teaches_en"
    }
   ]
  }

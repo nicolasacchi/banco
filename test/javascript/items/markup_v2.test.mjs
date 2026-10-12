@@ -23,7 +23,7 @@ test("without the option a dash list stays a paragraph (items keep markup v1)", 
 const withRoles = { lists: "v2", roles: true }
 cases.filter((c) => c.options?.roles && c.blocks).forEach((c, i) => {
   test(`roles case ${i}: ${JSON.stringify(c.input).slice(0, 50)}`, () => {
-    assert.deepEqual(parse(c.input, withRoles), c.blocks)
+    assert.deepEqual(parse(c.input, { ...withRoles, target: c.options.target }), c.blocks)
   })
 })
 cases.filter((c) => c.options?.roles && c.js_refuses).forEach((c, i) => {

@@ -1038,5 +1038,358 @@
     "note": "",
     "error": "a link target that is not lowercase letters, digits, dots and hyphens",
     "line": 1
+  },
+  {
+    "input": "Dì [[en:When I arrive, I'll call you.]] a Luca.",
+    "options": {
+      "roles": true
+    },
+    "note": "D-265: a language span",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Dì "
+          },
+          {
+            "t": "lang",
+            "lang": "en",
+            "v": "When I arrive, I'll call you."
+          },
+          {
+            "t": "text",
+            "v": " a Luca."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "Dice [[es:¿Me lo das?]] e basta.",
+    "options": {
+      "roles": true
+    },
+    "note": "D-265: a Spanish span",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Dice "
+          },
+          {
+            "t": "lang",
+            "lang": "es",
+            "v": "¿Me lo das?"
+          },
+          {
+            "t": "text",
+            "v": " e basta."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "Il [[la:princeps]] governa.",
+    "options": {
+      "roles": true
+    },
+    "note": "D-265: a Latin span",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Il "
+          },
+          {
+            "t": "lang",
+            "lang": "la",
+            "v": "princeps"
+          },
+          {
+            "t": "text",
+            "v": " governa."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "Scrivi [[code:For i = 1 To 6 Step 2]] e [[code:k < 40 && k > $a]] qui.",
+    "options": {
+      "roles": true
+    },
+    "note": "D-265: a code span is literal, with < > = $ allowed",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Scrivi "
+          },
+          {
+            "t": "code",
+            "v": "For i = 1 To 6 Step 2"
+          },
+          {
+            "t": "text",
+            "v": " e "
+          },
+          {
+            "t": "code",
+            "v": "k < 40 && k > $a"
+          },
+          {
+            "t": "text",
+            "v": " qui."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "La [[g:promulgazione]] chiude l'iter.",
+    "options": {
+      "roles": true
+    },
+    "note": "D-265: a glossary word",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "La "
+          },
+          {
+            "t": "gloss",
+            "term": "promulgazione"
+          },
+          {
+            "t": "text",
+            "v": " chiude l'iter."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "[[time:when I arrive]] e [[result|it:poi]].",
+    "options": {
+      "roles": true,
+      "target": "en"
+    },
+    "note": "D-265: in an english lesson a role span is English unless it says |it",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "role",
+            "role": "time",
+            "children": [
+              {
+                "t": "text",
+                "v": "when I arrive"
+              }
+            ],
+            "lang": "en"
+          },
+          {
+            "t": "text",
+            "v": " e "
+          },
+          {
+            "t": "role",
+            "role": "result",
+            "children": [
+              {
+                "t": "text",
+                "v": "poi"
+              }
+            ],
+            "lang": "it"
+          },
+          {
+            "t": "text",
+            "v": "."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "[[time:quando arrivo]] e [[result|it:poi]].",
+    "options": {
+      "roles": true
+    },
+    "note": "D-265: without a target a role span has no lang, |it adds it",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "role",
+            "role": "time",
+            "children": [
+              {
+                "t": "text",
+                "v": "quando arrivo"
+              }
+            ]
+          },
+          {
+            "t": "text",
+            "v": " e "
+          },
+          {
+            "t": "role",
+            "role": "result",
+            "children": [
+              {
+                "t": "text",
+                "v": "poi"
+              }
+            ],
+            "lang": "it"
+          },
+          {
+            "t": "text",
+            "v": "."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "[[subject:El tren]] [[g:tren]]",
+    "options": {
+      "roles": true,
+      "target": "es"
+    },
+    "note": "D-265",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "role",
+            "role": "subject",
+            "children": [
+              {
+                "t": "text",
+                "v": "El tren"
+              }
+            ],
+            "lang": "es"
+          },
+          {
+            "t": "text",
+            "v": " "
+          },
+          {
+            "t": "gloss",
+            "term": "tren"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "Dì [[en:]] ora.",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "an empty [[en: language span",
+    "line": 1
+  },
+  {
+    "input": "Dì [[en:**bold**]] ora.",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "markup inside a [[en: language span (it holds plain words)",
+    "line": 1
+  },
+  {
+    "input": "Dì [[es:Hola.",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "an unclosed [[es: language span",
+    "line": 1
+  },
+  {
+    "input": "Scrivi [[code:]] ora.",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "an empty [[code: span",
+    "line": 1
+  },
+  {
+    "input": "Scrivi [[code:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx]] ora.",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a code span longer than 40 characters",
+    "line": 1
+  },
+  {
+    "input": "Scrivi [[code:x = 1 ora.",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "an unclosed [[code: span",
+    "line": 1
+  },
+  {
+    "input": "Vedi [[g:]] ora.",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "an empty [[g: glossary span",
+    "line": 1
+  },
+  {
+    "input": "Vedi [[g:due parole 2]] ora.",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "a glossary term that is not letters, spaces, hyphens and apostrophes",
+    "line": 1
+  },
+  {
+    "input": "Vedi [[it:ciao]] ora.",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "it is reserved for a span of its own ([[it:...]]): it cannot be a colour role",
+    "line": 1
+  },
+  {
+    "input": "Vedi [[time|es:ciao]] ora.",
+    "options": {
+      "roles": true
+    },
+    "note": "",
+    "error": "only |it follows a colour role name",
+    "line": 1
   }
 ]

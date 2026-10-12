@@ -74,7 +74,11 @@ export class Refused extends Error {}
 
 const FORBIDDEN_TEX = /\\(htmlClass|htmlId|htmlStyle|htmlData|href|url|includegraphics|def|gdef|edef|xdef|newcommand|renewcommand|providecommand|let|futurelet|global|char)(?![A-Za-z])/
 const ROLE_NAME = /^[a-z]+([_-][a-z]+)*$/
-const ROLE_SPAN = /^\[\[([a-z]+(?:-[a-z]+)*):/
+const SPAN_HEAD = /^\[\[([a-z]+(?:[_-][a-z]+)*)(\|it)?:/
+const LANG_SPANS = ["en", "es", "la"]
+const RESERVED_SPANS = [...LANG_SPANS, "it", "code", "g"]
+const CODE_MAX = 40
+const TERM = /^\p{L}[\p{L} '’-]*$/u
 const LINK = /^\[([^\]\[]+)\]\((scheda|argomento):([a-z0-9.-]*)\)/
 
 export function checkTex(tex) {
@@ -129,13 +133,33 @@ export function inline(text, options = {}) {
         buffer += "**"
         i += 2
       }
-    } else if (roles && !options.inRole && ch === "[" && text[i + 1] === "[" && ROLE_SPAN.test(text.slice(i))) {
-      const name = text.slice(i).match(ROLE_SPAN)[1]
-      const start = i + name.length + 3
+    } else if (roles && !options.inRole && ch === "[" && text[i + 1] === "[" && SPAN_HEAD.test(text.slice(i))) {
+      const head = text.slice(i).match(SPAN_HEAD)
+      const name = head[1]
+      const start = i + head[0].length
+      if (!head[2] && (LANG_SPANS.includes(name) || name === "code" || name === "g")) {
+        // [[en:..]] [[es:..]] [[la:..]] plain words; [[code:..]] literal, up to the first "]]"; [[g:term]] a glossary word (D-265)
+        const end = text.indexOf("]]", start)
+        const body = end > start ? text.slice(start, end) : ""
+        if (end > start && body.trim() !== "" && (name !== "code" || body.length <= CODE_MAX) && (name !== "g" || TERM.test(body.trim()))) {
+          flush()
+          if (name === "code") nodes.push({ t: "code", v: body })
+          else if (name === "g") nodes.push({ t: "gloss", term: body.trim() })
+          else nodes.push({ t: "lang", lang: name, v: body })
+          i = end + 2
+          continue
+        }
+        buffer += ch
+        i += 1
+        continue
+      }
       const end = text.indexOf("]]", start)
-      if (end > start) {
+      if (end > start && !RESERVED_SPANS.includes(name)) {
         flush()
-        nodes.push({ t: "role", role: name, children: inline(text.slice(start, end), { ...options, inRole: true }) })
+        const node = { t: "role", role: name, children: inline(text.slice(start, end), { ...options, inRole: true }) }
+        const lang = head[2] ? "it" : options.target
+        if (lang) node.lang = lang
+        nodes.push(node)
         i = end + 2
       } else {
         buffer += ch

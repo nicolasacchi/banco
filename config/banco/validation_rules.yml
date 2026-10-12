@@ -226,6 +226,8 @@ lesson2:
   one_per_card: [source, dialogue, reveal_options, oral]   # E-CARD-BLOCKS: at most one of each in a card
   target_sentence_words: 12          # E-READ (target-language set): a sentence, a dialogue line, a tile line, a listen text, a mirror row
   tense_mark_words: 8                # E-READ: a timeline tense mark
+  # Which subjects teach which language (D-265): only they hold its keys (_en, _es, _la) and spans ([[en:..]], [[es:..]], [[la:..]]): E-LESSON-LANG.
+  target_languages: {en: [english], es: [spanish], la: [italian, history, law_economics, biology]}
   target_vocabulary_top: 3000        # W-LANG-LEVEL: words outside an open frequency list of the first 3000 (licence checked by T2)
   glossary_terms_max: 12             # E-LESSON-BLOCK
   reachable_cap: 500                 # E-DIAGRAM-REACHABLE-CAP: values a figure on a card with a check can show within its declared ranges

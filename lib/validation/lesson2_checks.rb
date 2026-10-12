@@ -70,6 +70,9 @@ module Validation
         @catalogue = catalogue
         @ctx = Lessons::Blocks::Context.new(subject: subject, findings: findings, catalogue: @catalogue, resolver: method(:field_line), references: context.method(:reference_body))
         @plain = [] # every markup text, for the whole-lesson budgets: [[text, line]]
+        @target = Lessons::Lang.target(subject)
+        @glossary = Array(@body["glossary"]).to_h { |g| [ g["term_it"].to_s.downcase, g ] }
+        @known_words = known_words
       end
 
       def rule(*path) = Rules.get(:lesson2, *path)
@@ -81,6 +84,7 @@ module Validation
         hero
         structure
         @cards.each_with_index { |card, i| card_checks(card, i) }
+        target_keys
         lesson_counts
         whole_text
       end
@@ -140,6 +144,7 @@ module Validation
           add("E-LESSON-BLOCK", "/front_matter/goals_it/#{i}", "a goal starts with a verb in bold: **Risolvere** ...", line: line_of.call("goals_it")) unless g.match?(/\A\*\*[^*]+\*\*/)
           markup_field("/front_matter/goals_it/#{i}", g, line_of.call("goals_it") || 1, false)
         end
+        glossary_checks(line_of.call("glossary") || 1)
         markup_field("/front_matter/why_it", fm["why_it"], line_of.call("why_it") || 1, false)
         n = sentences(fm["why_it"])
         lo, hi = rule(:why_sentences)
@@ -267,10 +272,20 @@ module Validation
           end
         end
         markup_block(block, path)
+        math_block(block, path)
         block_diagrams(block, path)
         return unless block["type"] == "more"
 
         block["blocks"].each_with_index { |b, k| block_checks(b, "#{path}/blocks/#{k}", card) }
+      end
+
+      # The formulas of a math block (tex, and the tex of each line) are read for chemistry symbols like the formulas of a text.
+      def math_block(block, path)
+        return unless block["type"] == "math"
+
+        ([ [ "tex", block["tex"] ] ] + block["lines"].to_a.each_with_index.map { |l, i| [ "lines/#{i}/tex", l["tex"] ] }).each do |sub, tex|
+          chem_formula("#{path}/#{sub}", tex, field_line(block["line"], sub)) if tex.is_a?(String)
+        end
       end
 
       def more_checks(block, path, _card)
@@ -346,6 +361,7 @@ module Validation
             add("E-LESSON-ROLE", field, "line #{at}: #{name} is not a colour role of #{@subject}'s palette", line: at, rule: "role-#{name}-#{field}") unless Lessons::Palette.role?(@subject, name)
           end
           Lessons::Markup.links_used(text, line_offset: line).each { |kind, target, at| link(field, kind, target, at) }
+          spans(field, text, line)
           lint(field, blocks)
         rescue Lessons::Markup::Refused => e
           add("E-LESSON-MARKUP", field, "line #{e.line}: #{e.construct}", line: e.line, rule: "markup-#{field}", construct: e.construct)
@@ -381,9 +397,118 @@ module Validation
         end
       end
 
-      # [[role:text]] and [text](scheda:x) shown as text.
-      def unmark(text)
-        text.gsub(/\[\[[a-z-]+:(.*?)\]\](?!\])/m, '\1').gsub(/\[([^\[\]]*)\]\((?:scheda|argomento):[^()]*\)/, '\1')
+      # [[role:text]] and [text](scheda:x) shown as text; the words of another language, a code span and (in a language subject) a role
+      # span are out of the Italian lint (D-265): each stands for one word.
+      def unmark(text) = Lessons::Lang.split(text, target: @target).first
+
+      # ---- the text layer (D-265): language spans, role spans of a language subject, code spans, glossary words ---------------------------------
+
+      def spans(field, text, line)
+        Lessons::Markup.each_node(text, line_offset: line, target: @target) do |n, at|
+          case n["t"]
+          when "lang"
+            language_span(field, n["lang"], n["v"], at)
+          when "role"
+            next unless n["lang"] && n["lang"] != "it"
+
+            language_span(field, n["lang"], plain_of(n), at)
+          when "math"
+            chem_formula(field, n["v"], at)
+          when "gloss"
+            add("E-LESSON-BLOCK", field, "line #{at}: [[g:#{n['term']}]] is not a term of the lesson's glossary (front matter glossary:)", line: at, rule: "gloss-#{n['term']}-#{field}") unless @glossary.key?(n["term"].downcase)
+          end
+        end
+      end
+
+      MHCHEM_SUBJECTS = %w[chemistry biology].freeze
+
+      # \ce{} and \pu{} are for chemistry and biology (the browser loads mhchem for them only); a symbol inside \ce{} or \mathrm{} is an
+      # element symbol, case-exact (E-CHEM-SYMBOL; \mathrm is read only where \ce is allowed: a unit in a math lesson is not a symbol).
+      def chem_formula(field, tex, at)
+        mhchem = Lessons::ChemSymbols.mhchem?(tex)
+        add("E-LESSON-MARKUP", field, "line #{at}: \\ce and \\pu are for chemistry and biology lessons", line: at, rule: "mhchem-#{field}-#{at}") if mhchem && !MHCHEM_SUBJECTS.include?(@subject)
+        return unless mhchem || MHCHEM_SUBJECTS.include?(@subject)
+
+        Lessons::ChemSymbols.unknown(tex).each do |symbol|
+          add("E-CHEM-SYMBOL", field, "line #{at}: #{symbol} is not an element symbol (case-exact, chem/elements)", line: at, rule: "chem-symbol-#{symbol}-#{field}-#{at}", symbol: symbol)
+        end
+      end
+
+      def plain_of(node)
+        Array(node["children"]).map { |c| c["t"] == "text" ? c["v"] : plain_of(c) }.join
+      end
+
+      def language_span(field, lang, text, at)
+        unless Lessons::Lang.taught?(@subject, lang)
+          add("E-LESSON-LANG", field, "line #{at}: a [[#{lang}:...]] span in a #{@subject} lesson (#{@subject} does not teach #{LANGUAGE_NAMES[lang]})", line: at, rule: "lang-span-#{lang}-#{field}")
+        end
+        target_lint(field, lang, text, at)
+      end
+
+      LANGUAGE_NAMES = { "en" => "English", "es" => "Spanish", "la" => "Latin" }.freeze
+
+      # The lint of words of another language (the target-language set, WAVE2 1.8): a short sentence, and words a learner of the lesson knows.
+      def target_lint(field, lang, text, at)
+        max = rule(:target_sentence_words)
+        long = Readability.sentences_of(text.to_s).map { |t| Readability.count_words(t) }.max.to_i
+        add("E-READ", field, "a #{LANGUAGE_NAMES.fetch(lang, lang)} sentence has #{long} words (at most #{max})", line: at, rule: "target_sentence_words-#{field}-#{at}", words: long) if long > max
+        unknown = Lessons::Lexicon.unknown(lang, text, known: @known_words.fetch(lang, []))
+        return if unknown.empty?
+
+        add("W-LANG-LEVEL", field, "#{LANGUAGE_NAMES.fetch(lang, lang)} words outside the first #{rule(:target_vocabulary_top)} (and the glossary and teaches_#{lang}): #{unknown.first(6).join(', ')}", line: at, rule: "lang-level-#{field}-#{at}", words: unknown)
+      end
+
+      # Words the lesson teaches, per language: the glossary's terms and the teaches_en / teaches_es lists, downcased.
+      def known_words
+        taught = %w[en es].to_h { |l| [ l, Array(@body["teaches_#{l}"]).flat_map { |w| w.to_s.downcase.scan(Lessons::Lexicon::WORD) } ] }
+        glossed = @glossary.keys.flat_map { |t| t.scan(Lessons::Lexicon::WORD) }
+        taught.transform_values { |w| w + glossed }
+      end
+
+      # Every key _en, _es or _la of a block holds words of that language: the subject must teach it, it must not be Italian, a figure
+      # holds one language besides Italian, and the target-language lint applies.
+      def target_keys
+        @cards.each_with_index do |card, i|
+          card["blocks"].each_with_index do |block, j|
+            at = "/cards/#{i}/blocks/#{j}"
+            Lessons::Lang.keyed(block).each do |pointer, key, text|
+              lang = Lessons::Lang.key_lang(key)
+              line = field_line(block["line"], pointer)
+              field = "#{at}#{pointer}"
+              add("E-LESSON-LANG", field, "#{key} holds #{LANGUAGE_NAMES[lang]} text and #{@subject} does not teach it", line: line, rule: "lang-key-#{field}") unless Lessons::Lang.taught?(@subject, lang)
+              add("E-LESSON-LANG", field, "#{key} holds Italian words (a key ending in _#{lang} holds #{LANGUAGE_NAMES[lang]} only)", line: line, rule: "lang-italian-#{field}") if %w[en es].include?(lang) && Lessons::Lang.italian?(text)
+              target_lint(field, lang, text, line)
+            end
+            figures(block).each do |diagram, where|
+              langs = Lessons::Lang.languages_in(diagram)
+              add("E-LESSON-LANG", "#{at}#{where}", "a figure holds one language besides Italian (#{langs.map { |l| "_#{l}" }.join(', ')})", line: field_line(block["line"], where), rule: "lang-figure-#{at}#{where}") if langs.size > 1
+            end
+          end
+        end
+      end
+
+      # The figures of a block with where they sit in it: [[diagram, "/diagram"]].
+      def figures(block)
+        out = []
+        out << [ block["diagram"], "/diagram" ] if block["diagram"].is_a?(Hash)
+        out << [ block["schema"], "/schema" ] if block["schema"].is_a?(Hash)
+        block["cases"].to_a.each_with_index { |c, k| out << [ c["diagram"], "/cases/#{k}/diagram" ] if c["diagram"].is_a?(Hash) }
+        out
+      end
+
+      # The glossary of the front matter: terms once, definitions and examples as short Italian markup.
+      def glossary_checks(line)
+        seen = {}
+        Array(@body["glossary"]).each_with_index do |g, i|
+          key = g["term_it"].to_s.downcase
+          add("E-LESSON-BLOCK", "/front_matter/glossary/#{i}", "the term #{g['term_it']} is in the glossary twice", line: line, rule: "glossary-twice-#{i}") if seen[key]
+          seen[key] = true
+          %w[def_it example_it].each do |k|
+            next unless g[k]
+
+            markup_field("/front_matter/glossary/#{i}/#{k}", g[k], line, false)
+          end
+        end
       end
 
       # At most 3 roles with an icon in a card's running text (A6).
@@ -450,10 +575,34 @@ module Validation
       # Words open by default beside the prose (quotations, plain versions, reveal prompts and options), and originals closed by default.
       def apparatus(core)
         blocks = core.flat_map { |c| c["blocks"] }
-        open_words = blocks.sum { |b| Lessons::Blocks.apparatus_words(b) }
+        open_words = blocks.sum { |b| Lessons::Blocks.apparatus_words(b) } + glossary_open_words(core)
         closed = blocks.sum { |b| Lessons::Blocks.closed_original_words(b) }
         add("E-LESSON-APPARATUS-WORDS", "/cards", "the core cards show #{open_words} words of quotations, plain versions and reveal texts by default (at most #{rule(:apparatus_words)})", rule: "open") if open_words > rule(:apparatus_words)
         add("E-LESSON-APPARATUS-WORDS", "/cards", "the core cards hold #{closed} words of originals behind a tap (at most #{rule(:closed_original_words)})", rule: "closed") if closed > rule(:closed_original_words)
+      end
+
+      # The glossary lines listed under a card ("Parole di questa scheda") are open by default: each card counts the definitions of its terms.
+      def glossary_open_words(core)
+        core.sum do |card|
+          terms = card_terms(card)
+          terms.sum do |t|
+            g = @glossary[t.downcase]
+            g ? Lessons::Blocks.words(g["def_it"]) + Lessons::Blocks.words(g["example_it"]) : 0
+          end
+        end
+      end
+
+      # The glossary terms a card uses, once each, in the order of first use.
+      def card_terms(card)
+        terms = []
+        Lessons::Blocks.each_block(card).each do |b, _|
+          Lessons::Blocks.markup_fields(b).each do |_, text, _|
+            Lessons::Markup.each_node(text) { |n, _| terms << n["term"] if n["t"] == "gloss" }
+          rescue Lessons::Markup::Refused
+            nil
+          end
+        end
+        terms.uniq { |t| t.downcase }
       end
 
       def visuals(core, extra)

@@ -16,12 +16,12 @@ module Lessons
   module StudentBody
     FRONT = %w[key kind subject title_it goals_it why_it minutes scope calculator book_it].freeze
     CHECK_COLUMNS = {
-      "choice" => %w[component prompt_it answer_format_it],
+      "choice" => %w[component prompt_it answer_format_it listen],
       "number" => %w[component prompt_it answer_format_it input_before input_after unit],
       "fraction" => %w[component prompt_it answer_format_it input_before input_after mixed],
       "normalized_text" => %w[component prompt_it answer_format_it input_before input_after input],
-      "matching" => %w[component prompt_it answer_format_it reuse_right],
-      "span_select" => %w[component prompt_it answer_format_it text_it],
+      "matching" => %w[component prompt_it answer_format_it reuse_right listen],
+      "span_select" => %w[component prompt_it answer_format_it text_it listen],
       "select" => %w[component prompt_it answer_format_it targets pick],
       "tiles" => %w[component prompt_it answer_format_it],
       "ordering" => %w[component prompt_it answer_format_it]
@@ -51,6 +51,7 @@ module Lessons
       out = body.slice(*FRONT)
       out["hero"] = diagram(body["hero"]) if body["hero"]
       out["parts"] = Array(body["parts"]).map { |p| p.slice("n", "title_it") } if body["parts"]
+      out["glossary"] = body["glossary"].map { |g| g.slice("term_it", "def_it", "example_it") } if body["glossary"]
       subject = body["subject"]
       out["cards"] = body["cards"].map { |card| card_json(card, subject, revision_id, seed) }
       out

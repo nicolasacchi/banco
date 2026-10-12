@@ -22,13 +22,13 @@ class LessonsMarkupTest < ActiveSupport::TestCase
 
   CASES.select { |c| c.key?("blocks") && c.key?("options") }.each_with_index do |c, i|
     test "lesson/2 valid input #{i}: #{c['input'][0, 40].inspect}" do
-      assert_equal c["blocks"], Lessons::Markup.parse(c["input"], roles: c["options"]["roles"])
+      assert_equal c["blocks"], Lessons::Markup.parse(c["input"], roles: c["options"]["roles"], target: c["options"]["target"])
     end
   end
 
   CASES.select { |c| c.key?("error") && c.key?("options") }.each_with_index do |c, i|
     test "lesson/2 refused input #{i}: #{c['error']}" do
-      error = assert_raises(Lessons::Markup::Refused) { Lessons::Markup.parse(c["input"], roles: c["options"]["roles"]) }
+      error = assert_raises(Lessons::Markup::Refused) { Lessons::Markup.parse(c["input"], roles: c["options"]["roles"], target: c["options"]["target"]) }
       assert_equal c["error"], error.construct
       assert_equal c["line"], error.line
     end
