@@ -167,14 +167,6 @@
    "note": "unknown type"
   },
   {
-   "file": "bad/block-later-release.md",
-   "base": "base.md",
-   "code": "E-LESSON-BLOCK",
-   "line": 45,
-   "construct": "directive",
-   "note": "reveal is release 1.1: not available yet"
-  },
-  {
    "file": "bad/block-image-later-release.md",
    "base": "base.md",
    "code": "E-LESSON-BLOCK",
@@ -700,6 +692,70 @@
    "construct": "diagram",
    "allow_reserved": true,
    "note": "a diagram cell (a W2-2 draft), run with lesson submit --dry-run --allow-reserved"
+  },
+  {
+   "file": "bad/block-later-release.md",
+   "base": "base.md",
+   "code": "E-LESSON-BLOCK",
+   "line": 45,
+   "construct": "directive",
+   "note": "page (a free page) is a later release, R2: not available yet"
+  },
+  {
+   "file": "bad/source-quote-not-in-reference.md",
+   "base": "base.md",
+   "code": "E-QUOTE-REF",
+   "line": 56,
+   "construct": "block",
+   "note": "a legal source whose part is not an exact piece of the imported reference text"
+  },
+  {
+   "file": "bad/source-ref-not-imported.md",
+   "base": "base.md",
+   "code": "E-QUOTE-REF",
+   "line": 54,
+   "construct": "block",
+   "note": "a legal source naming a reference text that is not imported"
+  },
+  {
+   "file": "bad/source-plain-missing-core.md",
+   "base": "base.md",
+   "code": "E-LESSON-BLOCK",
+   "line": 56,
+   "construct": "block",
+   "note": "a legal source on a core card with no plain version of its part"
+  },
+  {
+   "file": "bad/reveal-two-real-options.md",
+   "base": "base.md",
+   "code": "E-LESSON-BLOCK",
+   "line": 53,
+   "construct": "block",
+   "note": "a reveal with options where two options are the real one"
+  },
+  {
+   "file": "bad/oral-answer-not-permutation.md",
+   "base": "base.md",
+   "code": "E-LESSON-BLOCK",
+   "line": 57,
+   "construct": "block",
+   "note": "an oral whose answer does not use every outline element once"
+  },
+  {
+   "file": "bad/document-alt-amount-not-computed.md",
+   "base": "base.md",
+   "code": "E-LESSON-ALT",
+   "line": 52,
+   "construct": "block",
+   "note": "a document whose alt_it says an euro amount the invoice does not compute"
+  },
+  {
+   "file": "bad/document-cascade-hidden.md",
+   "base": "base.md",
+   "code": "E-LESSON-DIAGRAM",
+   "line": 54,
+   "construct": "block",
+   "note": "a document cascade with a hidden row"
   }
  ],
  "pending": {
@@ -707,84 +763,111 @@
   "entries": [
    {
     "code": "E-LESSON-DATA",
-    "needs": ["diagram:climograph"],
+    "needs": [
+     "diagram:climograph"
+    ],
     "track": "T6",
     "base": "base.md",
     "change": "a climograph naming a station that geo/stations does not hold (station: atlantis), or a size of bio/sizes that does not exist"
    },
    {
     "code": "E-CHECK-ANSWER-IN-ALT",
-    "needs": ["check:select", "diagram:network"],
+    "needs": [
+     "check:select",
+     "diagram:network"
+    ],
     "track": "T1",
     "base": "base.md",
     "change": "a select check whose figure's alt_it says 'il nucleo è il cerchio al centro' while the answer is the nucleus"
    },
    {
     "code": "E-CHECK-ANSWER-BY-SIMULATION",
-    "needs": ["diagram:seats"],
+    "needs": [
+     "diagram:seats"
+    ],
     "track": "T6",
     "base": "base.md",
     "change": "a seats figure with try ranges whose readouts include the number the check on the card asks, without reachable_ok_it"
    },
    {
     "code": "E-DIAGRAM-REACHABLE-CAP",
-    "needs": ["diagram:seats"],
+    "needs": [
+     "diagram:seats"
+    ],
     "track": "T6",
     "base": "base.md",
     "change": "a figure with sliders whose ranges can show more than 500 values on a card with a check"
    },
    {
     "code": "E-SELECT-MARKED",
-    "needs": ["check:select", "diagram:network"],
+    "needs": [
+     "check:select",
+     "diagram:network"
+    ],
     "track": "T1",
     "base": "base.md",
     "change": "a select check whose candidates differ in style (one labelled, one patterned)"
    },
    {
     "code": "E-DIAGRAM-TARGET",
-    "needs": ["check:select", "diagram:network"],
+    "needs": [
+     "check:select",
+     "diagram:network"
+    ],
     "track": "T1",
     "base": "base.md",
     "change": "a select target under 24 x 24 CSS px at 390 px (render check)"
    },
    {
     "code": "E-PROGRAM-BOUND",
-    "needs": ["diagram:program"],
+    "needs": [
+     "diagram:program"
+    ],
     "track": "T9",
     "base": "base.md",
     "change": "a program with a loop that never ends and no endless flag (render check)"
    },
    {
     "code": "E-LESSON-APPARATUS-WORDS",
-    "needs": ["block:dialogue"],
+    "needs": [
+     "block:dialogue"
+    ],
     "track": "T2",
     "base": "base.md",
     "change": "251 words of quotations, translations and dialogue lines open by default on top of the 500 words of prose"
    },
    {
     "code": "E-CHEM-SYMBOL",
-    "needs": ["diagram:formula"],
+    "needs": [
+     "diagram:formula"
+    ],
     "track": "T2",
     "base": "base.md",
     "change": "a formula \\ce{Xx2} with a symbol that is not an element"
    },
    {
     "code": "W-ES-TILDE",
-    "needs": ["block:dialogue"],
+    "needs": [
+     "block:dialogue"
+    ],
     "track": "T3",
     "base": "base.md",
     "change": "a Spanish word written with a tilde that the stress rule does not need"
    },
    {
     "code": "E-LESSON-LANG",
-    "needs": ["block:dialogue"],
+    "needs": [
+     "block:dialogue"
+    ],
     "track": "T2",
     "base": "base.md",
     "change": "a text_es key in an english lesson, or two target languages in one figure"
    },
    {
     "code": "W-LANG-LEVEL",
-    "needs": ["block:dialogue"],
+    "needs": [
+     "block:dialogue"
+    ],
     "track": "T2",
     "base": "base.md",
     "change": "an English word outside the first 3000 words, the glossary and teaches_en"

@@ -3,7 +3,7 @@
 import "./setup.mjs"
 import test from "node:test"
 import assert from "node:assert/strict"
-import { readFileSync, readdirSync } from "node:fs"
+import { existsSync, readFileSync, readdirSync } from "node:fs"
 
 const root = new URL("../../../../", import.meta.url)
 const json = (path) => JSON.parse(readFileSync(new URL(path, root), "utf8"))
@@ -149,9 +149,15 @@ test("the library signatures: the JS twin of each library has the functions its 
     for (const [fn, spec] of Object.entries(doc.functions)) {
       assert.equal(lib.SIGNATURES[fn], spec.js, `${name}.${fn}`)
       const jsName = spec.js.split("(")[0]
-      if (BUILT.includes(name)) assert.equal(typeof lib[jsName], "function", `${name}.${jsName}`)
-      else assert.throws(() => lib[jsName](), NotBuilt, `${name}.${jsName}`)
-      for (const c of spec.cases) assert.ok(Array.isArray(c.args) && "result" in c, `${name}.${fn} case`)
+      // a function that does not throw NotBuilt is built: its library then runs the shared vectors in its own test file (lesson/test/NAME.test.mjs)
+      let built = true
+      try {
+        lib[jsName]()
+      } catch (error) {
+        built = !(error instanceof NotBuilt)
+      }
+      if (built) assert.ok(existsSync(new URL(`app/javascript/lesson/test/${name}.test.mjs`, root)), `${name}.${jsName} is built: it needs lesson/test/${name}.test.mjs`)
+      for (const c of spec.cases) assert.ok(Array.isArray(c.args) && ("result" in c || c.refused === true), `${name}.${fn} case`)
     }
   }
 })

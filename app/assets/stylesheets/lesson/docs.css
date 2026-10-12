@@ -1,4 +1,135 @@
 /* lesson/docs: Documents and sources (WAVE2 section 2). Owned by the track that builds document, source, reveal, oral, image.
-   Linked on a page only when the lesson uses one of these types (the page head reads the body), never by hand.
+   Linked on a page only when the lesson uses one of these types (the page head reads the body, LessonPagesHelper#lesson2_family_stylesheets), never by hand.
    Rules: colours only through the role classes (.role-x, .mk-x, .st-x, .fl-x, .tn-x) and the theme variables of
    lesson_roles.css; no colour alone (A4); a forced-colors block per type; print rules for P1 to P6; targets at least 24 px. */
+
+/* ---- the flip card of a reveal (the mistake keeps its own rules in lesson.css; the turning is lesson/blocks/flip.js) ---- */
+.reveal { display: flex; flex-direction: column; border: 2px solid var(--rule); border-radius: 1.1em; background: var(--surface); overflow: hidden; transition: border-color 0.2s; }
+.reveal:hover { border-color: var(--primary); }
+.reveal[data-open="true"] { border-color: var(--primary); }
+.reveal-toggle { display: flex; flex-direction: column; align-items: stretch; gap: 0.4em; width: 100%; text-align: left; padding: 0.7em 1em 2.2em; border: 0; background: none; color: var(--text); font: inherit; cursor: pointer; position: relative; }
+.reveal[data-open="true"] .reveal-toggle { padding-bottom: 0.6em; }
+.reveal-tag { display: flex; align-items: center; gap: 0.4em; margin: 0; color: var(--muted); }
+.reveal-tag strong { color: var(--text); font-weight: 800; }
+.reveal-tag-answer, .reveal-tag-answer strong { color: var(--primary); }
+[data-theme="dark"] .reveal-tag-answer, [data-theme="dark"] .reveal-tag-answer strong { color: var(--text); }
+.reveal-text { margin: 0.2em 0; font-size: 1.1em; max-width: 36em; }
+.reveal-text > p:first-child { margin-top: 0; }
+.reveal-hint { position: absolute; right: 0.8em; bottom: 0.45em; display: inline-flex; align-items: center; gap: 0.4em; font-size: 0.85em; font-weight: 800; color: var(--primary); }
+[data-theme="dark"] .reveal-hint { color: var(--text); }
+.reveal-hint .ic { width: 1.25em; height: 1.25em; }
+.reveal[data-open="true"] .reveal-hint { display: none; }
+.reveal-back { display: none; padding: 0.6em 1em 0.8em; border-top: 2px dashed var(--rule); }
+.reveal[data-open="true"] .reveal-back { display: block; }
+.l2[data-motion="full"] .reveal[data-open="true"] .reveal-back { animation: l2-in 0.3s ease-out; }
+
+/* the crossroads: the road to pick, what comes of it, then what really happened */
+.reveal-cross .reveal-front { padding: 0.7em 1em 0.2em; }
+.reveal-who { margin: 0.1em 0 0.3em; font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; }
+.reveal-options { list-style: none; margin: 0.5em 0 0.2em; padding: 0; display: grid; gap: 0.5em; }
+.reveal-option-row { margin: 0; }
+.reveal-option { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 0.2em 0.6em; width: 100%; min-height: 2.75em; text-align: left; padding: 0.5em 0.9em; border: 2px solid var(--rule); border-left-width: 0.5em; border-radius: 0.8em; background: var(--surface); color: var(--text); font: inherit; cursor: pointer; }
+.reveal-option:hover { border-color: var(--primary); }
+.reveal-option[aria-pressed="true"] { border-color: var(--primary); background: var(--soft-primary); font-weight: 700; }
+.reveal-option[data-real="true"] { border-style: double; border-width: 0.3em; }
+.reveal-real-mark { margin-left: auto; font-weight: 800; color: var(--primary); }
+[data-theme="dark"] .reveal-real-mark { color: var(--text); }
+.reveal-then { min-height: 0.5em; padding: 0.2em 0 0.4em; }
+.reveal-then:empty { display: none; }
+.reveal-then-print { margin: 0.2em 0 0.4em 1em; }
+.reveal-cross .reveal-flip { align-self: flex-start; margin: 0.2em 1em 0.8em; }
+.reveal-need { margin: -0.4em 1em 0.8em; color: var(--muted); }
+.reveal-cross[data-open="true"] .reveal-need { display: none; }
+.reveal-others { margin: 0.6em 0 0; color: var(--muted); font-size: 0.95em; }
+
+/* ---- a source (legal): the plain words first, the law's words behind a switch ---- */
+.source { border: 2px solid var(--rule); border-radius: 1.1em; background: var(--surface); padding: 0.7em 1em 0.9em; }
+.source-head { display: flex; align-items: center; gap: 0.5em; margin-bottom: 0.4em; }
+.source-title { font-weight: 800; }
+.source-ic { color: var(--primary); width: 1.3em; height: 1.3em; }
+[data-theme="dark"] .source-ic { color: var(--text); }
+.source-switchbox { display: inline-flex; border: 2px solid var(--rule); border-radius: 0.8em; overflow: hidden; margin: 0.2em 0 0.5em; max-width: 100%; }
+.source-switch { min-height: 2.5em; padding: 0.3em 0.9em; border: 0; background: var(--surface); color: var(--text); font: inherit; font-weight: 700; cursor: pointer; }
+.source-switch + .source-switch { border-left: 2px solid var(--rule); }
+.source-switch[aria-pressed="true"] { background: var(--primary); color: var(--primary-text); }
+.source-parts { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.7em; }
+.source-part { display: grid; grid-template-columns: 2em minmax(0, 1fr); gap: 0.4em; align-items: start; }
+.source-no { display: grid; place-items: center; width: 1.7em; height: 1.7em; border-radius: 50%; border: 2px solid var(--rule); font-weight: 800; font-size: 0.85em; color: var(--muted); font-variant-numeric: tabular-nums; }
+.source-body p { margin: 0; }
+.source-plain { font-size: 1.1em; }
+.source-original { padding: 0.1em 0 0.1em 0.8em; border-left: 0.3em solid var(--rule); max-width: 40em; }
+.source-mark { font-weight: 700; text-decoration: underline dotted 0.12em; text-underline-offset: 0.2em; }
+.source-guide { margin-top: 0.7em; }
+.source-guide summary { cursor: pointer; font-weight: 800; min-height: 2.4em; display: flex; align-items: center; }
+.source-guide-list { margin: 0.2em 0 0; padding-left: 1.4em; }
+.source-guide-list li { margin: 0.35em 0; }
+.source-span { font-weight: 700; quotes: "«" "»"; }
+.source-note { color: var(--text); }
+@container card (min-width: 44em) { .source-parts { gap: 0.9em; } }
+
+/* ---- the oral rehearsal ---- */
+.oral { border: 2px solid var(--rule); border-radius: 1.1em; background: var(--surface); padding: 0.7em 1em 0.9em; }
+.oral-tag { display: flex; align-items: center; gap: 0.4em; margin: 0; color: var(--muted); }
+.oral-tag strong { color: var(--text); font-weight: 800; }
+.oral-question { font-size: 1.15em; font-weight: 700; margin: 0.3em 0 0.5em; max-width: 36em; }
+.oral-outline, .oral-outline-plain { list-style: none; margin: 0.4em 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.45em; }
+.oral-outline-plain { list-style: disc; padding-left: 1.4em; }
+.oral-tile { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4em 0.6em; padding: 0.35em 0.5em 0.35em 0.7em; border: 2px solid var(--rule); border-radius: 0.8em; background: var(--surface); }
+.oral-pos { display: grid; place-items: center; flex: none; width: 1.7em; height: 1.7em; border-radius: 50%; border: 2px solid var(--rule); font-weight: 800; font-size: 0.85em; color: var(--muted); font-variant-numeric: tabular-nums; }
+.oral-tile-text { flex: 1 1 11em; min-width: 0; }
+.oral-moves { display: inline-flex; gap: 0.3em; flex: none; margin-left: auto; }
+.oral-move { display: grid; place-items: center; width: 2.4em; height: 2.4em; padding: 0; border: 2px solid var(--rule); border-radius: 0.6em; background: var(--surface); color: var(--text); cursor: pointer; }
+.oral-move:hover:not(:disabled) { border-color: var(--primary); }
+.oral-move:disabled { opacity: 0.4; cursor: default; }
+.oral-arrow { transform: rotate(90deg); }
+.oral-arrow-down { transform: rotate(-90deg); }
+.oral-pills { margin: 0.5em 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0.3em 0.4em; }
+.oral-pill { display: inline-block; padding: 0.05em 0.7em; border: 2px solid var(--rule); border-radius: 999px; background: var(--soft); font-weight: 700; }
+.oral-model { margin-top: 0.7em; }
+.oral-model-title, .oral-say-title { margin: 0 0 0.2em; font-size: 1.05em; font-weight: 800; }
+.oral-model-text { padding: 0.4em 0.9em; border-left: 0.3em solid var(--primary); background: var(--soft); border-radius: 0 0.6em 0.6em 0; }
+.oral-say { margin-top: 0.8em; padding-top: 0.6em; border-top: 2px dashed var(--rule); }
+.oral-private { display: flex; align-items: flex-start; gap: 0.4em; margin: 0.2em 0 0.4em; font-weight: 700; }
+.oral-self { list-style: none; margin: 0.2em 0 0; padding: 0; }
+.oral-self li { display: flex; align-items: center; gap: 0.2em; margin: 0.2em 0; }
+.oral-self input { width: 1.4em; height: 1.4em; accent-color: var(--primary); }
+.oral-self-title { margin: 0.2em 0; color: var(--muted); }
+
+/* ---- the document figure: an invoice drawn by our code (labels are in the HTML layer; these are the shapes and the label tones) ---- */
+.dg-document .dg-stage { max-width: 100%; }
+.dg-doc-box { fill: var(--surface); stroke-width: 2.5; }
+.dg-doc-rule { stroke: var(--line); stroke-width: 2; fill: none; }
+.dg-doc-rule-soft { stroke-width: 1; opacity: 0.55; }
+.dg-doc-fence { fill: none; stroke-width: 3; stroke-dasharray: 9 6; }
+.dg-doc-mark { fill: none; stroke: var(--primary); stroke-width: 3; }
+[data-theme="dark"] .dg-doc-mark { stroke: var(--text); }
+.dg-doc-blank { fill: none; stroke: var(--muted); stroke-width: 2.5; stroke-dasharray: 6 5; }
+.dg-doc-bar { stroke-width: 2.5; }
+.dg-doc-removed { fill: none; stroke-dasharray: 6 5; stroke-width: 3; }
+.dg-doc-bar[class*="mk-"] { fill-opacity: 0.45; }
+.dg-doc-title { font-weight: 800; }
+.dg-doc-cap { color: var(--muted); font-weight: 700; }
+.dg-doc-name { font-weight: 700; }
+.dg-doc-sub { color: var(--muted); }
+.dg-doc-strong { font-weight: 800; }
+.dg-doc-q { font-weight: 800; color: var(--muted); }
+.dg-label.dg-doc-title, .dg-label.dg-doc-cap, .dg-label.dg-doc-name, .dg-label.dg-doc-sub, .dg-label.dg-doc-strong { font-variant-numeric: tabular-nums; }
+.dg-hit-area { fill: transparent; stroke: transparent; stroke-width: 2.5; cursor: pointer; }
+.dg-hit-area:hover { stroke: var(--muted); }
+
+@media (forced-colors: active) {
+  .reveal, .source, .oral, .reveal-option, .oral-tile, .oral-move, .source-switchbox, .oral-pill { border-color: CanvasText; }
+  .source-switch[aria-pressed="true"], .reveal-option[aria-pressed="true"] { background: Highlight; color: HighlightText; forced-color-adjust: none; }
+  .dg-doc-box, .dg-doc-bar { fill: Canvas; stroke: CanvasText; }
+  .dg-doc-rule, .dg-doc-fence, .dg-doc-mark, .dg-doc-blank, .dg-doc-removed { stroke: CanvasText; }
+  .dg-doc-fence { stroke-dasharray: 9 6; }
+}
+
+@media print {
+  .reveal-toggle .reveal-hint, .source-switchbox, .oral-moves, .oral-form, .reveal-flip, .reveal-need { display: none !important; }
+  .l2 .reveal-back, .l2 .reveal-then-print { display: block !important; }
+  .l2 .source [hidden] { display: block !important; }
+  .l2 .source-original { margin-top: 0.2em; }
+  .l2 .reveal, .l2 .source, .l2 .oral { break-inside: avoid; }
+  .dg-hit-area { display: none; }
+}

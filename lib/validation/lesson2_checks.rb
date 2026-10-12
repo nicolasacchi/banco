@@ -68,7 +68,7 @@ module Validation
         @cards = @body["cards"]
         @ids = @cards.to_h { |c| [ c["id"], c ] }
         @catalogue = catalogue
-        @ctx = Lessons::Blocks::Context.new(subject: subject, findings: findings, catalogue: @catalogue, resolver: method(:field_line))
+        @ctx = Lessons::Blocks::Context.new(subject: subject, findings: findings, catalogue: @catalogue, resolver: method(:field_line), references: context.method(:reference_body))
         @plain = [] # every markup text, for the whole-lesson budgets: [[text, line]]
       end
 
@@ -256,12 +256,14 @@ module Validation
       # ---- one block ------------------------------------------------------------------------------
 
       def block_checks(block, path, card)
+        @ctx.card_level = card["level"]
         @ctx.at(path, block["line"]) do
           case block["type"]
           when "check" then Lessons::Blocks::Check.check(block, @ctx)
           when "example" then Lessons::Blocks::Example.check(block, @ctx)
           when "try" then Lessons::Blocks::Try.check(block, @ctx)
           when "more" then more_checks(block, path, card)
+          when "source", "reveal", "oral" then Lessons::Blocks::Docs.check(block, @ctx)
           else Lessons::Blocks::Simple.check(block, @ctx)
           end
         end
@@ -405,6 +407,7 @@ module Validation
         try_checks = core.select { |c| c["role"] == "try" }.sum { |c| c["blocks"].sum { |b| Lessons::Blocks.checks(b).size } }
         add("E-LESSON-CHECKS", "/cards", "Prova tu holds #{try_checks} checks (at most #{rule(:try_checks_max)})", rule: "try-count") if try_checks > rule(:try_checks_max)
         sparse(core)
+        apparatus(core)
         visuals(core, extra)
         extra_words(core, extra)
       end
@@ -429,6 +432,15 @@ module Validation
           end
         end
         flush.call
+      end
+
+      # Words open by default beside the prose (quotations, plain versions, reveal prompts and options), and originals closed by default.
+      def apparatus(core)
+        blocks = core.flat_map { |c| c["blocks"] }
+        open_words = blocks.sum { |b| Lessons::Blocks.apparatus_words(b) }
+        closed = blocks.sum { |b| Lessons::Blocks.closed_original_words(b) }
+        add("E-LESSON-APPARATUS-WORDS", "/cards", "the core cards show #{open_words} words of quotations, plain versions and reveal texts by default (at most #{rule(:apparatus_words)})", rule: "open") if open_words > rule(:apparatus_words)
+        add("E-LESSON-APPARATUS-WORDS", "/cards", "the core cards hold #{closed} words of originals behind a tap (at most #{rule(:closed_original_words)})", rule: "closed") if closed > rule(:closed_original_words)
       end
 
       def visuals(core, extra)

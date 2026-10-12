@@ -43,7 +43,7 @@ module Lessons
       end
     end
 
-    # The pure Rekey result for a check and seed (choice, matching), or an empty one.
+    # The pure Rekey result for a check and seed (choice, matching, ordering), or an empty one.
     def rekey(check, seed)
       case check["component"]
       when "choice" then Diagnosis::Rekey.call(display: { "options" => check["options"] }, component: "choice", answer: check["answer"], seed: seed)

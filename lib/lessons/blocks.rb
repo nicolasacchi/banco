@@ -113,6 +113,17 @@ module Lessons
         end
         add.call("result_it", block["result_it"], true)
       when "check" then check_fields(block, "", add)
+      when "source"
+        block["parts"].to_a.each_with_index { |part, i| add.call("parts/#{i}/plain_it", part["plain_it"]) }
+        block["guide"].to_a.each_with_index { |g, i| add.call("guide/#{i}/note_it", g["note_it"]) }
+      when "reveal"
+        %w[prompt_it answer_it situation_it real_it].each { |k| add.call(k, block[k]) }
+        block["options"].to_a.each_with_index { |o, i| %w[text_it then_it].each { |k| add.call("options/#{i}/#{k}", o[k]) } }
+      when "oral"
+        add.call("question_it", block["question_it"])
+        block["outline"].to_a.each_with_index { |o, i| add.call("outline/#{i}/text_it", o["text_it"]) }
+        block["errors"].to_a.each_with_index { |e, i| add.call("errors/#{i}/message_it", e["message_it"]) }
+        add.call("model_it", block["model_it"])
       when "try"
         add.call("intro_it", block["intro_it"])
         block["exercises"].to_a.each_with_index do |e, i|
@@ -129,6 +140,34 @@ module Lessons
         end
       end
       out
+    end
+
+    # ---- the apparatus (WAVE2 1.8, E-LESSON-APPARATUS-WORDS): words open by default beside the 500 words of prose ------------------
+
+    # The words of a block that are open by default and are not prose: a source's text shown first (the plain version, else the quotation),
+    # a reveal's prompt (or situation), its options and what each leads to. The back of a reveal, the model of an oral and the legal text
+    # behind the plain version are behind a tap. Other families add their branches (dialogue lines, mirror rows, document blocks, glossary).
+    def apparatus_words(block)
+      case block["type"]
+      when "source"
+        block["parts"].to_a.sum { |part| words(source_open_text(block, part)) }
+      when "reveal"
+        texts = [ block["prompt_it"], block["situation_it"] ] + block["options"].to_a.flat_map { |o| [ o["text_it"], o["then_it"] ] }
+        texts.compact.sum { |t| words(t) }
+      else 0
+      end
+    end
+
+    # Words of originals that are closed by default: the legal words behind a source's plain version.
+    def closed_original_words(block)
+      return 0 unless block["type"] == "source"
+
+      block["parts"].to_a.sum { |part| source_open_text(block, part) == part["text_it"] ? 0 : words(part["text_it"]) }
+    end
+
+    # What a source part shows first: the plain version when there is one and open is not "original", else the quotation.
+    def source_open_text(block, part)
+      block["open"] != "original" && part["plain_it"] ? part["plain_it"] : part["text_it"]
     end
 
     def check_fields(check, base, add)

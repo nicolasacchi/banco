@@ -34,8 +34,6 @@ class LessonTypesTest < ActiveSupport::TestCase
       assert_equal "draft", e["schema"], name if e["status"] == "draft"
       next if e["family"] == "core"
 
-      next if BUILT_TYPES.include?(name) # built and past its look gate (T9)
-
       # a track makes its piece available in the commit of its look gate: a W2-1 type with a schema, its vectors without a pending column
       if e["status"] == "available"
         assert_equal "w2-1", e["batch"], name
@@ -71,7 +69,8 @@ class LessonTypesTest < ActiveSupport::TestCase
       assert Rails.root.join("app/assets/stylesheets/lesson/#{f}.css").file?, "css #{f}"
       assert Rails.root.join("test/fixtures/lesson2/gallery/#{f}.md").file?, "gallery #{f}"
       locale = YAML.safe_load_file(Rails.root.join("config/locales/lesson_#{f}.it.yml"))
-      assert_equal({ "lesson_#{f}" => {} }, locale.fetch("it"), f)
+      assert_equal [ "lesson_#{f}" ], locale.fetch("it").keys, f
+      assert_kind_of Hash, locale.fetch("it").fetch("lesson_#{f}"), f
     end
     assert Rails.root.join("test/fixtures/lesson2/gallery/checks.md").file?
   end
@@ -85,9 +84,8 @@ class LessonTypesTest < ActiveSupport::TestCase
 
   test "a Ruby stub extends the contract for each type with a schema, and the contract refuses what is not built" do
     wave2 = DIAGRAMS.select { |_, e| e["family"] != "core" && e["schema"] != "none" }.keys
-    wave2.each do |type|
-      next if BUILT_TYPES.include?(type) # built: test/content/computing_types_test.rb
-
+    # a type that is available has its own tests (lessons/*_test.rb): only the ones not built are held to the stub contract
+    wave2.reject { |t| DIAGRAMS.dig(t, "status") == "available" }.each do |type|
       mod = Lessons::Diagrams.const_get(Lessons::Diagrams::TYPES.fetch(type))
       assert mod.singleton_class.include?(Lessons::Diagrams::Contract), type
       next if DIAGRAMS.fetch(type)["status"] == "available" # built: its own tests (maps_types_test and the vectors) say what it does
@@ -162,14 +160,14 @@ class LessonTypesTest < ActiveSupport::TestCase
   end
 
   test "blocks, check components, layouts, views and check options held back are refused one by one" do
-    assert_match(/reveal block is not available/, assert_raises(Lessons::Directives::Refused) { build("reveal", nil, "prompt_it: x\nanswer_it: y\n") }.message)
+    assert_match(/dialogue block is not available/, assert_raises(Lessons::Directives::Refused) { build("dialogue", nil, "title_it: x\n") }.message)
     assert_match(/page block is not available/, assert_raises(Lessons::Directives::Refused) { build("page", nil, "key: x\n") }.message)
     assert_match(/check component amount_words/, assert_raises(Lessons::Directives::Refused) { build("check", "amount_words", "prompt_it: x\n") }.message)
     assert_match(/flow layout: line/, assert_raises(Lessons::Directives::Refused) { build("diagram", "flow", "layout: line\nnodes: []\n") }.message)
     assert_match(/check option listen/, assert_raises(Lessons::Directives::Refused) { build("check", "choice", "prompt_it: x\nlisten: {text_en: hello}\n") }.message)
     assert_match(/unknown block type "venn"/, assert_raises(Lessons::Directives::Refused) { build("venn", nil, "a: 1\n") }.message)
-    block, = build("reveal", nil, "prompt_it: x\nanswer_it: y\n", allow_reserved: true)
-    assert_equal "reveal", block["type"]
+    block, = build("dialogue", nil, "title_it: x\n", allow_reserved: true)
+    assert_equal "dialogue", block["type"]
     assert_equal "flow", build("diagram", "flow", "layout: tree\n")[0]["diagram"]["type"]
     assert_equal "choice", build("check", "choice", "prompt_it: x\n")[0]["component"]
   end
@@ -178,13 +176,11 @@ class LessonTypesTest < ActiveSupport::TestCase
     message = assert_raises(Lessons::Directives::Refused) { build("venn", nil, "a: 1\n") }.message
     assert_includes message, "callout"
     assert_includes message, "try"
-    assert_not_includes message, "reveal"
+    assert_not_includes message, "dialogue"
+    assert_includes message, "reveal"
   end
 
-  BUILT_LIBS = [ Lessons::Bits ].freeze
-  BUILT_TYPES = %w[register column_calc].freeze
-
-  test "the libraries of WAVE2 1.10 have their signatures frozen, shared with their vector file, and raise until their track" do
+  test "the libraries of WAVE2 1.10 have their signatures frozen, shared with their vector file, and raise until their track builds them" do
     libs = { Lessons::Chrono => "chrono.json", Lessons::Dates => "dates.json", Lessons::NumWords => "amount_words.json", Lessons::Money => "money.json",
              Lessons::Chem => "chem_formulas.json", Lessons::Words => "spanish_words.json", Lessons::Verbs => "verbs.json", Lessons::Bits => "bits.json",
              Lessons::ProgramGrammar => "program.json", Lessons::Sheet => "sheet.json" }
@@ -197,9 +193,16 @@ class LessonTypesTest < ActiveSupport::TestCase
         meth = spec["ruby"][/\A[a-z_?]+/]
         assert_respond_to mod, meth
         arity = mod.method(meth).parameters.count { |kind, _| kind == :req }
-        next if BUILT_LIBS.include?(mod) # built by its track: its own test runs the vectors (test/lib/lessons/bits_test.rb)
-
-        assert_raises(mod::NotBuilt, "#{mod.name}.#{meth}") { mod.public_send(meth, *Array.new(arity, "x")) }
+        # a function that does not raise NotBuilt is built: its library then runs the shared vectors in its own test file
+        built = begin
+          mod.public_send(meth, *Array.new(arity, "x"))
+          true
+        rescue mod::NotBuilt
+          false
+        rescue StandardError
+          true
+        end
+        assert Rails.root.join("test/lib/lessons/#{mod.name.demodulize.underscore}_test.rb").file?, "#{mod.name}.#{meth} is built: it needs test/lib/lessons/#{mod.name.demodulize.underscore}_test.rb" if built
       end
     end
     assert_equal %w[run listing], JSON.parse(Rails.root.join("test/fixtures/lesson2/program.json").read)["functions"].reject { |_, f| f["ruby"] }.keys, "Ruby parses a program, never runs it"

@@ -2,15 +2,30 @@
 module LessonPagesHelper
   def lesson2?(body) = body.is_a?(Hash) && body["schema"] == "banco.lesson/2"
 
-  # The texts of the page, one nested object (config/locales/lesson.it.yml).
-  def lesson2_texts = I18n.t("lesson2").deep_stringify_keys
+  # The families of wave 2 each have their texts in config/locales/lesson_FAMILY.it.yml; the page gets them as t.FAMILY (t.docs, t.words...).
+  LESSON_FAMILIES = %w[graph time maps chart science computing words docs].freeze
 
-  # The stylesheet of each wave 2 family a lesson draws a type of (app/assets/stylesheets/lesson/FAMILY.css), found in the body.
+  # The texts of the page, one nested object (config/locales/lesson.it.yml, then lesson_FAMILY.it.yml under the family's name).
+  def lesson2_texts
+    LESSON_FAMILIES.to_h { |family| [ family, I18n.t("lesson_#{family}", default: {}).deep_stringify_keys ] }.merge(I18n.t("lesson2").deep_stringify_keys)
+  end
+
+  # The stylesheet of each wave 2 family whose blocks or figures a lesson uses (app/assets/stylesheets/lesson/FAMILY.css), found in the body: the
+  # page head reads the body, so a lesson of release 1 loads none of them. The switches of `input: bits` need the computing family.
   def lesson_family_stylesheets(body)
-    types = body.to_json.scan(/"type":"([a-z_]+)"/).flatten.uniq
-    families = types.filter_map { |t| Lessons::Types.entry(:diagram, t)&.fetch("family") }.uniq - [ "core" ]
-    families << "computing" if body.to_json.include?('"input":"bits"') # the switches of a register (T9)
-    families.uniq!
+    families = Set.new
+    walk = lambda do |node|
+      case node
+      when Hash
+        if (type = node["type"]).is_a?(String)
+          [ :block, :diagram ].each { |kind| (f = Lessons::Types.entry(kind, type)&.fetch("family", nil)) && f != "core" && families << f }
+        end
+        families << "computing" if node["component"] == "normalized_text" && node["input"] == "bits"
+        node.each_value(&walk)
+      when Array then node.each(&walk)
+      end
+    end
+    walk.call(body)
     safe_join(families.sort.map { |f| stylesheet_link_tag("lesson/#{f}") }, "\n")
   end
 

@@ -6,15 +6,17 @@ module Lessons
     # error catalogue of the lesson's skills, and the findings to add to.
     class Context
       attr_reader :subject, :catalogue, :findings
-      attr_accessor :path, :line, :base
+      attr_accessor :path, :line, :base, :card_level
 
       # catalogue: the set of error codes of the lesson's skills (nil = unknown: no W-MISTAKE-CODE)
       # resolver: ->(block_line, pointer_in_the_block's_yaml) { the line of that field | nil }
-      def initialize(subject:, findings:, catalogue: nil, resolver: nil)
+      def initialize(subject:, findings:, catalogue: nil, resolver: nil, references: ->(_key) { nil })
         @subject = subject
         @findings = findings
         @catalogue = catalogue
         @resolver = resolver
+        @references = references
+        @card_level = nil
         @path = ""
         @line = nil
         @base = ""
@@ -40,6 +42,9 @@ module Lessons
         detail[:line] = line if line
         @findings.add(code, field, message, **detail)
       end
+
+      # The text of an imported reference text (the Costituzione, the codice civile), or nil when it is not imported.
+      def reference_body(key) = @references.call(key.to_s)
 
       def error(sub, message, rule: nil) = add("E-LESSON-BLOCK", sub, message, rule: rule)
 

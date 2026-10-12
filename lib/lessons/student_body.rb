@@ -35,8 +35,12 @@ module Lessons
       "legend" => [ %w[n type], { "roles" => %w[role note_it question_it] } ],
       "mistake" => [ %w[n type group_it wrong_it right_it why_it], {} ],
       "summary" => [ %w[n type points_it], {} ],
-      "table" => [ %w[n type caption_it header rows], {} ]
+      "table" => [ %w[n type caption_it header rows], {} ],
+      # wave 2, the docs family (T8): teaching content, served whole (L8); the oral and the compare of a source are special below
+      "source" => [ %w[n type kind title_it ref open author_it year about_year for_whom_it where_it translation original], { "parts" => %w[text_it plain_it marks], "guide" => %w[span_it note_it] } ],
+      "reveal" => [ %w[n type prompt_it answer_it year who_it situation_it real_it], { "options" => %w[id text_it then_it real] } ]
     }.freeze
+    SOURCE_COMPARE = %w[title_it author_it year about_year for_whom_it where_it translation original].freeze
     CASE_FIELDS = %w[title_it icon tone condition_it text_it example_it].freeze
 
     module_function
@@ -69,12 +73,14 @@ module Lessons
         fields, nested = BLOCKS.fetch(type)
         out = b.slice(*fields)
         nested.each { |key, keep| out[key] = b[key].map { |e| e.slice(*keep) } if b[key] }
+        out["compare"] = compare(b["compare"]) if type == "source" && b["compare"]
         out
       else
         case type
         when "cases" then cases(b)
         when "diagram" then b.slice("n", "type").merge("diagram" => diagram(b["diagram"]))
         when "schema" then b.slice("n", "type").merge("schema" => diagram(b["schema"]))
+        when "oral" then oral(b, seed)
         when "check" then b.slice("n", "type").merge(check(b, subject, seed))
         when "example" then example(b, subject, seed)
         when "try" then try(b, subject, seed)
@@ -82,6 +88,21 @@ module Lessons
         else raise ArgumentError, "StudentBody does not serve a #{type.inspect} block"
         end
       end
+    end
+
+    def compare(c)
+      out = c.slice(*SOURCE_COMPARE)
+      out["parts"] = c["parts"].map { |part| part.slice("text_it", "plain_it", "marks") }
+      out["guide"] = c["guide"].map { |g| g.slice("span_it", "note_it") } if c["guide"]
+      out
+    end
+
+    # An oral: the question, the outline tiles shuffled (ids e1..eN in shown order, like an ordering), the connectives and the terms to
+    # say. The key, the typical errors and the model answer stay on the server; the check endpoint grades the outline.
+    def oral(b, seed)
+      out = b.slice("n", "type", "question_it", "connectives", "terms")
+      out["outline"] = Checks.rekey(Oral.check(b), seed).display["elements"]
+      out
     end
 
     def cases(b)

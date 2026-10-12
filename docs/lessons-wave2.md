@@ -88,4 +88,11 @@ a stepper's two buttons). A toggle or tap that the scene gives a box to (`scene.
 (`role=switch`), the others sit in the strip under it. `scene.live` is the one polite sentence announced after a change. In `mode: "select"` a type draws its
 candidates in one neutral style with `shapes[].target = "tN"` and returns `scene.targets = [{ target, bbox }]`; `targets(data, set, opts)` maps them to the stored ids.
 `describe(data, ctx)` and `printed(data, state)` take the state: `printed` is the set of value tokens (digits in every way they are written, weights, readouts, sums), and every
-number `describe` says is one of them or a structural count. A page links `stylesheets/lesson/FAMILY.css` for the families its diagrams use (`lesson2_family_css`).
+number `describe` says is one of them or a structural count. A page links `stylesheets/lesson/FAMILY.css` for the families its diagrams use (`lesson_family_stylesheets`).
+## The docs family (T8, D-277)
+
+`document` (`kind: invoice`, views `sheet` and `cascade`), `source` (`kind: legal`), `reveal` and `oral` are `available`; their texts are
+`config/locales/lesson_docs.it.yml` (`t.docs`) and their look `app/assets/stylesheets/lesson/docs.css`, linked by `lesson_family_stylesheets` only
+for a lesson that uses one of them. `Lessons::Money` computes every amount of an invoice; the figure never reads a hidden row. The turning of a flip
+card is `lesson/blocks/flip.js`, shared by `mistake` and `reveal`. An `oral` is graded as an ordering by the check endpoint and its model answer rides
+on the reply (`model_it`). The gallery lesson is `test/fixtures/lesson2/gallery/docs-lesson.md`, rendered by `test/system/docs_family_test.rb`.
