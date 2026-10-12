@@ -17,7 +17,7 @@
 .l2 .speak[hidden] { display: none; }
 .l2 .speak-ic { width: 1.05rem; height: 1.05rem; }
 .l2 .speak[aria-pressed="true"] { background: var(--primary); color: var(--primary-text); }
-.l2 .speak-unapproved { border-style: dashed; }
+.l2 .speak-unapproved, .l2 .card-listen.speak-unapproved .button { border-style: dashed; }
 .l2 .speak:focus-visible, .l2 .gloss-btn:focus-visible, .l2 .card-listen button:focus-visible, .l2 .check-listen button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .l2 .speaking { background: color-mix(in srgb, var(--primary) 16%, transparent); border-radius: 0.3em; box-shadow: 0 0 0 0.12em color-mix(in srgb, var(--primary) 16%, transparent); }
 

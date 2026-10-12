@@ -33,7 +33,10 @@ export function speakerButton(ctx, { lang, text, node }) {
   const t = ctx.t.speech
   const name = t.languages[lang] ?? lang
   const button = el("button", { type: "button", class: "speak speak-inline", hidden: "", "aria-pressed": "false" }, icon("listen", "speak-ic"))
-  const label = (tried) => button.setAttribute("aria-label", `${t.listen_text_in.replace("%{language}", name).replace("%{text}", clip(text))}${tried ? `. ${t.unapproved}` : ""}`)
+  const label = (tried) => {
+    button.setAttribute("aria-label", `${t.listen_text_in.replace("%{language}", name).replace("%{text}", clip(text))}${tried ? `. ${t.unapproved}` : ""}`)
+    button.title = tried ? t.unapproved : ""
+  }
   label(false)
   let handle = null
   const idle = () => {
@@ -87,7 +90,7 @@ export function cardListen(article, ctx) {
     setPreferences({ slower: on })
     ctx.savePreferences?.({ slower: on })
   })
-  follow(box, "it", ctx, () => {})
+  follow(box, "it", ctx, (tried) => { play.title = tried ? t.unapproved : "" }) // the teacher's preview may try a voice nobody accepted yet, and says so
   // it stops when the focus leaves the card
   article.addEventListener("focusout", (event) => {
     if (handle && event.relatedTarget && !article.contains(event.relatedTarget)) stopAll()

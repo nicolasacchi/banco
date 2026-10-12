@@ -51,7 +51,7 @@ booleans on a property, `x-banco-hide` a list of paths (`bars[].parts[].hidden`)
 | graph router (`place`, `route`, `flip`, `moveList`) | `lesson/diagrams/graph/router.js` | T4b |
 | chart axis (`linear`, `log`, `readCursor`, `legend`, `valueTable`) | `lesson/diagrams/chart/axis.js` | T6 |
 | grid API (`grid`, `cellBox`, `outline`, `stackForPhone`, `scrollFrame`, `cellTargets`) | `lesson/diagrams/grid/api.js` (built; the engine and its helpers are in `grid/engine.js`) | T9 |
-| speech (`voiceFor`, `rateFor` done; `speechOf`, `speak`, `stopAll`) | `lesson/speech.js`, `config/banco/voices.yml` | T2 |
+| speech (`voiceFor`, `rateFor`, `speechOf`, `speak`, `stopAll`; built, D-282) | `lesson/speech.js`, `config/banco/voices.yml` | T2 |
 | `recordAtRender(data) -> { records, findings }` | `lesson/diagrams/computing/program.js` | T9 |
 | the libraries (Chrono, Dates, NumWords, Money, Chem, Words, Verbs, Bits, ProgramGrammar, Sheet) | `lib/lessons/*.rb`, `lesson/lib/*.js`, `test/fixtures/lesson2/*.json` | T3, T4a, T7, T8, T9 |
 | the vetted data tables (15 schemas) | `config/banco/data/*/*.schema.json`, `bin/build-lesson-data`, `Lessons::VettedData` | the tracks |
@@ -96,3 +96,21 @@ number `describe` says is one of them or a structural count. A page links `style
 for a lesson that uses one of them. `Lessons::Money` computes every amount of an invoice; the figure never reads a hidden row. The turning of a flip
 card is `lesson/blocks/flip.js`, shared by `mistake` and `reveal`. An `oral` is graded as an ordering by the check endpoint and its model answer rides
 on the reply (`model_it`). The gallery lesson is `test/fixtures/lesson2/gallery/docs-lesson.md`, rendered by `test/system/docs_family_test.rb`.
+
+## The text layer and "Ascolta" (T2, D-281, D-282)
+
+**Spans** (`Lessons::Markup`, `items/markup_parser.js`, the shared cases `test/fixtures/markup/v2.json`): `[[en:..]]`, `[[es:..]]`, `[[la:..]]` (plain words of another
+language; only in a subject that teaches it, `lesson2.target_languages`), `[[code:..]]` (literal, at most 40 characters), `[[g:term]]` (a word of the front matter
+`glossary`) and `[[role|it:..]]` (in an english or spanish lesson a role span is target-language text unless it says `|it`). The names `en es it la code g` are never roles.
+A key that holds words of a language ends in its code (`text_en`, `form_es`); `Lessons::Lang.keyed` finds them in any block and `Lesson2Checks` applies `E-LESSON-LANG` (the
+subject does not teach it, Italian words in it, two languages in one figure), the target-language set (`E-READ`, 12 words a sentence) and `W-LANG-LEVEL` (words outside the
+first 3000 of `config/banco/lexicon/{en,es}.txt`, the glossary and `teaches_en` / `teaches_es`). The Italian lint reads a text without its spans. The cloze cue after a gap
+(`When I ___ (get) home`) is not an answer in the prompt. `\ce{}` and `\pu{}` (mhchem, chemistry and biology only) are checked by `Lessons::ChemSymbols` (`E-CHEM-SYMBOL`).
+
+**Speech.** `lesson/speech.js` (the contract: gate, walker, player), `speech_state.js`, `speech_device.js`, `speech_ui.js`, `speech_math.js`. `speechOf(card)` reads the rendered card
+and nothing that is not visible (a figure answers with `figure.speechSegments()`, which `draw.js` takes from the type's `speechSegments(data, ctx)` or from `describe` of the state
+shown now; a type that reads differently from its description, such as `sentence`, exports `speechSegments`). A language with no accepted voice is skipped, and with no accepted
+voice at all no speaker is shown: `config/banco/voices.yml` stays empty until the operator has used "Prova le voci" (`/settings#voci`) on the student's own Mac or iPad. The listen
+check option (`lesson/checks/listen.js`) sends `text_shown` when the text was looked at. `test/fixtures/lesson2/speech/*.json` hold what is read for the family galleries and the text
+lesson; `GOLDEN=1 bin/rails test test/system/lesson_speech_golden_test.rb` writes them again. A piece that wants a speaker (a dialogue line, a `word_parts` word, a `paradigm` cell,
+a timeline tense mark, the `oral` model) uses `speakerButton(ctx, { lang, text, node })` of `speech_ui.js` or `ctx.speaker(lang)`.

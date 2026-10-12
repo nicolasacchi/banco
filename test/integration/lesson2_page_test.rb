@@ -95,11 +95,11 @@ class Lesson2PageTest < ActionDispatch::IntegrationTest
     build_lesson2_world(approve: false, release: false)
     student = Student.find_by!(key: "prova-1")
     assert_equal({ theme: "cream", size: "normal" }, Diagnosis::Preferences.for(student))
-    assert_equal({ lesson_view: "cards", reduce_motion: false }, Diagnosis::Preferences.lesson(student))
+    assert_equal({ lesson_view: "cards", reduce_motion: false, listen: true, slower: false }, Diagnosis::Preferences.lesson(student))
     Diagnosis::Preferences.record(student, theme: "dark")
     Diagnosis::Preferences.record(student, lesson_view: "scroll", reduce_motion: "true")
     assert_equal({ theme: "dark", size: "normal" }, Diagnosis::Preferences.for(student))
-    assert_equal({ lesson_view: "scroll", reduce_motion: true }, Diagnosis::Preferences.lesson(student))
+    assert_equal({ lesson_view: "scroll", reduce_motion: true, listen: true, slower: false }, Diagnosis::Preferences.lesson(student))
     Diagnosis::Preferences.record(student, lesson_view: "nonsense")
     assert_equal "scroll", Diagnosis::Preferences.lesson(student)[:lesson_view]
   end
