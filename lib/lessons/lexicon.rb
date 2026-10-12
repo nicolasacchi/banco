@@ -17,7 +17,7 @@ module Lessons
     def words(lang, top = Validation::Rules.get(:lesson2, :target_vocabulary_top))
       @lists ||= {}
       @lists[lang] ||= File.readlines(File.join(DIR, "#{lang}.txt"), chomp: true).reject(&:empty?)
-      (@sets ||= {})[[lang, top]] ||= @lists[lang].first(top).to_set
+      (@sets ||= {})[[ lang, top ]] ||= @lists[lang].first(top).to_set
     end
 
     # Whether +word+ (any case) or a plain form of it is in the first 3000 words of +lang+.
