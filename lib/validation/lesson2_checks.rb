@@ -226,7 +226,6 @@ module Validation
         icon_roles(card, base, line)
       end
 
-      # L4 and L5 (WAVE2 1.4): what the figures of the card print, and what they can be made to show, against the answers of its checks.
       def role_contract(card, base, line, extra)
         types = card["blocks"].map { |b| b["type"] }
         case card["role"]
@@ -293,7 +292,21 @@ module Validation
           block["cases"].each_with_index { |c, k| diagram_checks(c["diagram"], "#{path}/cases/#{k}/diagram", line, "/cases/#{k}/diagram") if c["diagram"] }
         when "example" then diagram_checks(block["diagram"], "#{path}/diagram", line, "/diagram") if block["diagram"]
         when "try"
-          block["exercises"].each_with_index { |e, k| diagram_checks(e["diagram"], "#{path}/exercises/#{k}/diagram", line, "/exercises/#{k}/diagram") if e["diagram"] }
+          block["exercises"].each_with_index do |e, k|
+            next unless e["diagram"]
+
+            static_figure(e["diagram"], "#{path}/exercises/#{k}/diagram", line, "/exercises/#{k}/diagram")
+            diagram_checks(e["diagram"], "#{path}/exercises/#{k}/diagram", line, "/exercises/#{k}/diagram")
+          end
+        end
+      end
+
+      # L7 (WAVE2 1.4): a figure in an exercise of the try card is static: no cursor to read with, no slider to move, no toggle (types of wave 2).
+      def static_figure(diagram, path, line, yaml)
+        return if Lessons::Types.entry(:diagram, diagram["type"])&.fetch("family", "core") == "core"
+
+        %w[read try toggle controls run].each do |key|
+          add("E-LESSON-BLOCK", "#{path}/#{key}", "a figure in an exercise is static (L7): #{key} belongs to the figures of the idea cards", line: field_line(line, "#{yaml}/#{key}"), rule: "static#{path}/#{key}") if diagram.key?(key)
         end
       end
 

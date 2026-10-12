@@ -115,7 +115,7 @@ module Lessons
         # ---- what the browser is told -------------------------------------------------------------------
 
         def served(data, mode: :student)
-          return StudentBody.diagram(data) unless mode == :select
+          return StudentBody.diagram_generic(data) unless mode == :select
 
           nodes = data["nodes"].map { |n| { "id" => n["id"], "kind" => "stage", "text_it" => "·" } }
           { "type" => "chain", "alt_it" => "Schema con #{nodes.size} caselle collegate da frecce.", "layout" => data["layout"], "nodes" => nodes,

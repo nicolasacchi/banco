@@ -1,0 +1,358 @@
+{
+  "version": 1,
+  "description": "The climograph's computations (Lessons::Diagrams::Climograph.stats, lesson/diagrams/chart/climate.js): arid months by P <= 2T, total, mean, warmest, coldest, range as exact fractions n/d. Invented numbers only; `why` is the reasoning that was checked by hand against `expect`.",
+  "cases": [
+    {
+      "name": "equator-never-dry",
+      "why": "P=200 > 2T=52 every month: no arid month; ties for the extremes go to the first month",
+      "temp": [
+        "26",
+        "26",
+        "26",
+        "26",
+        "26",
+        "26",
+        "26",
+        "26",
+        "26",
+        "26",
+        "26",
+        "26"
+      ],
+      "precip": [
+        "200",
+        "200",
+        "200",
+        "200",
+        "200",
+        "200",
+        "200",
+        "200",
+        "200",
+        "200",
+        "200",
+        "200"
+      ],
+      "expect": {
+        "arid": [],
+        "total": "2400/1",
+        "mean": "26/1",
+        "warmest": 1,
+        "coldest": 1,
+        "range": "0/1"
+      }
+    },
+    {
+      "name": "boundary-equal-is-arid",
+      "why": "January: P=20 equals 2T=20: arid (P <= 2T); the others 100 > 40",
+      "temp": [
+        "10",
+        "20",
+        "20",
+        "20",
+        "20",
+        "20",
+        "20",
+        "20",
+        "20",
+        "20",
+        "20",
+        "20"
+      ],
+      "precip": [
+        "20",
+        "100",
+        "100",
+        "100",
+        "100",
+        "100",
+        "100",
+        "100",
+        "100",
+        "100",
+        "100",
+        "100"
+      ],
+      "expect": {
+        "arid": [
+          1
+        ],
+        "total": "1120/1",
+        "mean": "115/6",
+        "warmest": 2,
+        "coldest": 1,
+        "range": "10/1"
+      }
+    },
+    {
+      "name": "freezing-month-never-arid",
+      "why": "P=0 > 2T=-10 in January and February: not arid; a month below zero cannot be dry in this rule",
+      "temp": [
+        "-5",
+        "-4",
+        "10",
+        "10",
+        "10",
+        "10",
+        "10",
+        "10",
+        "10",
+        "10",
+        "10",
+        "10"
+      ],
+      "precip": [
+        "0",
+        "0",
+        "100",
+        "100",
+        "100",
+        "100",
+        "100",
+        "100",
+        "100",
+        "100",
+        "100",
+        "100"
+      ],
+      "expect": {
+        "arid": [],
+        "total": "1000/1",
+        "mean": "91/12",
+        "warmest": 3,
+        "coldest": 1,
+        "range": "15/1"
+      }
+    },
+    {
+      "name": "zero-rain-zero-heat",
+      "why": "January: P=0 equals 2T=0: arid",
+      "temp": [
+        "0",
+        "15",
+        "15",
+        "15",
+        "15",
+        "15",
+        "15",
+        "15",
+        "15",
+        "15",
+        "15",
+        "15"
+      ],
+      "precip": [
+        "0",
+        "60",
+        "60",
+        "60",
+        "60",
+        "60",
+        "60",
+        "60",
+        "60",
+        "60",
+        "60",
+        "60"
+      ],
+      "expect": {
+        "arid": [
+          1
+        ],
+        "total": "660/1",
+        "mean": "55/4",
+        "warmest": 2,
+        "coldest": 1,
+        "range": "15/1"
+      }
+    },
+    {
+      "name": "monsoon-shape",
+      "why": "invented: five months with almost no rain, then a monsoon; arid months 1-5 and 11-12, total 2213,4",
+      "temp": [
+        "24,8",
+        "25,4",
+        "27,4",
+        "29,1",
+        "30,7",
+        "29,4",
+        "27,7",
+        "27,6",
+        "27,9",
+        "29,1",
+        "28,7",
+        "26,7"
+      ],
+      "precip": [
+        "0,6",
+        "0,4",
+        "0,7",
+        "0,2",
+        "15,9",
+        "506",
+        "768,5",
+        "471,9",
+        "355,6",
+        "81,7",
+        "8,5",
+        "3,4"
+      ],
+      "expect": {
+        "arid": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          11,
+          12
+        ],
+        "total": "11067/5",
+        "mean": "223/8",
+        "warmest": 5,
+        "coldest": 1,
+        "range": "59/10"
+      }
+    },
+    {
+      "name": "southern-seasons",
+      "why": "invented: the warmest month is in January, the coldest in July; arid months 1,2,3,10,11,12",
+      "temp": [
+        "22,5",
+        "22,9",
+        "21,8",
+        "18,6",
+        "15,4",
+        "13,1",
+        "12,4",
+        "13,1",
+        "14,6",
+        "17,0",
+        "19,5",
+        "21,2"
+      ],
+      "precip": [
+        "14",
+        "16",
+        "19",
+        "41",
+        "93",
+        "111",
+        "92",
+        "84",
+        "40",
+        "20",
+        "10",
+        "12"
+      ],
+      "expect": {
+        "arid": [
+          1,
+          2,
+          3,
+          10,
+          11,
+          12
+        ],
+        "total": "552/1",
+        "mean": "707/40",
+        "warmest": 2,
+        "coldest": 7,
+        "range": "21/2"
+      }
+    },
+    {
+      "name": "decimal-sums-exact",
+      "why": "0,1+0,2+0,3 is exactly 0,6 and the mean 6,6/12 is exactly 0,55; no float",
+      "temp": [
+        "1,1",
+        "2,2",
+        "3,3",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "precip": [
+        "0,1",
+        "0,2",
+        "0,3",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "expect": {
+        "arid": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "total": "3/5",
+        "mean": "11/20",
+        "warmest": 3,
+        "coldest": 4,
+        "range": "33/10"
+      }
+    },
+    {
+      "name": "ties-go-first",
+      "why": "warmest is the first of the tied months (7), coldest the first of the tied (9)",
+      "temp": [
+        "5",
+        "5",
+        "5",
+        "5",
+        "5",
+        "5",
+        "9",
+        "9",
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "precip": [
+        "50",
+        "50",
+        "50",
+        "50",
+        "50",
+        "50",
+        "50",
+        "50",
+        "50",
+        "50",
+        "50",
+        "50"
+      ],
+      "expect": {
+        "arid": [],
+        "total": "600/1",
+        "mean": "13/3",
+        "warmest": 7,
+        "coldest": 9,
+        "range": "8/1"
+      }
+    }
+  ]
+}

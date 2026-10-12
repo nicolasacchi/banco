@@ -117,7 +117,7 @@ module Lessons
         out.uniq.then { |all| all.size > Contract::REACHABLE_CAP ? :over_cap : all }
       end
 
-      def served(data, mode: :student, **) = StudentBody.diagram(data)
+      def served(data, mode: :student, **) = StudentBody.diagram_generic(data)
 
       def targets(_data, set) = raise(ArgumentError, "insolation has no select targets (#{set.inspect})")
     end

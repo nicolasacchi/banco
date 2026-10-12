@@ -105,7 +105,7 @@ module Lessons
         # :student, :teacher: the whitelist projection of the diagram (states merged). :select: the figure of a select check, with no
         # label, note, badge, icon, role, kind or word, so that the picture alone is left (L3).
         def served(data, mode: :student)
-          return StudentBody.diagram(data) unless mode == :select
+          return StudentBody.diagram_generic(data) unless mode == :select
 
           neutral = ->(h) { h.merge("kind" => "owes").except("label_it", "what") }
           nodes = data["nodes"].each_with_index.map { |_n, i| { "id" => data["nodes"][i]["id"], "label_it" => "·" } }

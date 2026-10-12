@@ -1,4 +1,13 @@
 # Italian texts of the lesson/2 family chart (climograph, bar_model, seats, chart, scale): controls, live-region sentences, "Descrizione" fragments, how-to lines.
-# Keys are English; texts are Italian with high readability (short sentences, no hard words). The track fills it in.
+# Keys are English; texts are Italian with high readability (short sentences, no hard words). The page merges this file into the texts of the
+# lesson (Lessons::Texts via lesson2_texts), so a key is unique across families: chart_*.
 it:
-  lesson_chart: {}
+  lesson_chart:
+    chart_less: "Uno in meno"
+    chart_more: "Uno in più"
+    chart_month: "Mese"
+    chart_see_numbers: "Vedi i numeri"
+    chart_numbers_title: "I numeri del grafico"
+    chart_source: "Fonte: %{source}"
+    chart_slider_hint: "Muovi il cursore o usa i tasti più e meno."
+    chart_reading_hint: "Usa i tasti più e meno per leggere un mese alla volta."

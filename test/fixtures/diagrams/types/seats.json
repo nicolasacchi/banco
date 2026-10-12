@@ -1,83 +1,598 @@
 {
- "version": 1,
- "type": "seats",
- "status": "reserved",
- "batch": "w2-1",
- "track": "T6",
- "provisional": false,
- "description": "Skeleton of W2-0 for the track T6: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
- "vectors": [
-  {
-   "name": "seats-example-1",
-   "subject": "law_economics",
-   "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
-   "data": {
-    "type": "seats",
-    "alt_it": "Una camera inventata di quattrocento seggi in semicerchio: con trecentoventi presenti servono almeno centosessantuno voti a favore.",
-    "layout": "hemicycle",
-    "seats": 400,
-    "groups": [
-     {
-      "label_it": "Circoscrizione Estero",
-      "seats": 8,
-      "role": "people"
-     }
-    ],
-    "present": 320,
-    "yes": 170,
-    "thresholds": [
-     "legal_number",
-     "present_majority"
-    ],
-    "try": {
-     "present": [
-      280,
-      310
-     ],
-     "yes": [
-      150,
-      200
-     ]
-    }
-   }
-  },
-  {
-   "name": "seats-unknown-field",
-   "subject": "law_economics",
-   "schema": "invalid",
-   "semantic": "ok",
-   "data": {
-    "type": "seats",
-    "alt_it": "Una camera inventata di quattrocento seggi in semicerchio: con trecentoventi presenti servono almeno centosessantuno voti a favore.",
-    "layout": "hemicycle",
-    "seats": 400,
-    "groups": [
-     {
-      "label_it": "Circoscrizione Estero",
-      "seats": 8,
-      "role": "people"
-     }
-    ],
-    "present": 320,
-    "yes": 170,
-    "thresholds": [
-     "legal_number",
-     "present_majority"
-    ],
-    "try": {
-     "present": [
-      280,
-      310
-     ],
-     "yes": [
-      150,
-      200
-     ]
+  "version": 1,
+  "type": "seats",
+  "status": "available",
+  "batch": "w2-1",
+  "track": "T6",
+  "provisional": false,
+  "description": "The cases of the track T6 (W2-1): the schema, semantic, layout, printed and served columns. semantic is 'ok' or {code, path} (Ruby, Lessons::Diagrams.check); layout is 'ok', 'error' (the browser's layout() answers {error}) or 'ruby-only' (a check the served form cannot break); printed holds the strings of each state (filled from the Ruby side, checked by both). Invented content only.",
+  "vectors": [
+    {
+      "name": "seats-example-1",
+      "subject": "law_economics",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "8",
+          "161",
+          "170",
+          "201",
+          "320",
+          "400"
+        ]
+      ],
+      "reachable": [
+        "141",
+        "142",
+        "143",
+        "144",
+        "145",
+        "146",
+        "147",
+        "148",
+        "149",
+        "150",
+        "151",
+        "152",
+        "153",
+        "154",
+        "155",
+        "156",
+        "157",
+        "158",
+        "159",
+        "160",
+        "161",
+        "162",
+        "163",
+        "164",
+        "165",
+        "166",
+        "167",
+        "168",
+        "169",
+        "170",
+        "171",
+        "172",
+        "173",
+        "174",
+        "175",
+        "176",
+        "177",
+        "178",
+        "179",
+        "180",
+        "181",
+        "182",
+        "183",
+        "184",
+        "185",
+        "186",
+        "187",
+        "188",
+        "189",
+        "190",
+        "191",
+        "192",
+        "193",
+        "194",
+        "195",
+        "196",
+        "197",
+        "198",
+        "199",
+        "200",
+        "201",
+        "280",
+        "281",
+        "282",
+        "283",
+        "284",
+        "285",
+        "286",
+        "287",
+        "288",
+        "289",
+        "290",
+        "291",
+        "292",
+        "293",
+        "294",
+        "295",
+        "296",
+        "297",
+        "298",
+        "299",
+        "300",
+        "301",
+        "302",
+        "303",
+        "304",
+        "305",
+        "306",
+        "307",
+        "308",
+        "309",
+        "310"
+      ],
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata di quattrocento seggi in semicerchio: con trecentoventi presenti servono almeno centosessantuno voti a favore.",
+        "layout": "hemicycle",
+        "seats": 400,
+        "groups": [
+          {
+            "label_it": "Circoscrizione Estero",
+            "seats": 8,
+            "role": "people"
+          }
+        ],
+        "present": 320,
+        "yes": 170,
+        "thresholds": [
+          "legal_number",
+          "present_majority"
+        ],
+        "try": {
+          "present": [
+            280,
+            310
+          ],
+          "yes": [
+            150,
+            200
+          ]
+        }
+      }
     },
-    "zzz_unknown_field": true
-   }
-  }
- ]
+    {
+      "name": "seats-voting-states",
+      "subject": "law_economics",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "150",
+          "161",
+          "201",
+          "320",
+          "400"
+        ],
+        [
+          "161",
+          "201",
+          "320",
+          "400"
+        ],
+        [
+          "160",
+          "161",
+          "201",
+          "320",
+          "400"
+        ]
+      ],
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata in semicerchio: con i presenti serve una maggioranza di voti a favore.",
+        "layout": "hemicycle",
+        "seats": 400,
+        "present": 320,
+        "yes": 170,
+        "thresholds": [
+          "legal_number",
+          "present_majority"
+        ],
+        "states": [
+          {
+            "present": 320,
+            "yes": 150,
+            "op_it": "Troppo pochi sì"
+          },
+          {
+            "yes": 161,
+            "op_it": "Ne servono centosessantuno"
+          },
+          {
+            "yes": 160,
+            "op_it": "Con 160 pari, la maggioranza non c'è"
+          }
+        ]
+      }
+    },
+    {
+      "name": "seats-two-thirds",
+      "subject": "law_economics",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "316",
+          "378",
+          "420",
+          "600",
+          "630"
+        ]
+      ],
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata in semicerchio: con i presenti serve una maggioranza di voti a favore.",
+        "layout": "hemicycle",
+        "seats": 630,
+        "present": 600,
+        "yes": 420,
+        "thresholds": [
+          "legal_number",
+          "two_thirds",
+          "three_fifths",
+          "absolute_majority"
+        ]
+      }
+    },
+    {
+      "name": "seats-grid-of-a-hundred",
+      "subject": "business",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "25",
+          "60",
+          "100"
+        ]
+      ],
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata in semicerchio: con i presenti serve una maggioranza di voti a favore.",
+        "layout": "grid",
+        "seats": 100,
+        "groups": [
+          {
+            "label_it": "Ricavi",
+            "seats": 60
+          },
+          {
+            "label_it": "Costi",
+            "seats": 25
+          }
+        ]
+      }
+    },
+    {
+      "name": "seats-small-house",
+      "subject": "law_economics",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "3",
+          "5"
+        ]
+      ],
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata in semicerchio: con i presenti serve una maggioranza di voti a favore.",
+        "layout": "hemicycle",
+        "seats": 5,
+        "present": 5,
+        "yes": 3,
+        "thresholds": [
+          "present_majority"
+        ]
+      }
+    },
+    {
+      "name": "seats-largest-house",
+      "subject": "law_economics",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata in semicerchio: con i presenti serve una maggioranza di voti a favore.",
+        "layout": "hemicycle",
+        "seats": 1000,
+        "present": 800,
+        "yes": 400,
+        "thresholds": [
+          "legal_number",
+          "present_majority"
+        ],
+        "groups": [
+          {
+            "label_it": "Primo gruppo",
+            "seats": 500
+          },
+          {
+            "label_it": "Secondo gruppo",
+            "seats": 300
+          }
+        ]
+      }
+    },
+    {
+      "name": "seats-try-reaches-too-many-numbers",
+      "subject": "law_economics",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "reachable": ":over_cap",
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata in semicerchio: con i presenti serve una maggioranza di voti a favore.",
+        "layout": "hemicycle",
+        "seats": 1000,
+        "present": 800,
+        "yes": 400,
+        "thresholds": [
+          "present_majority"
+        ],
+        "try": {
+          "present": [
+            100,
+            900
+          ],
+          "yes": [
+            0,
+            99
+          ]
+        }
+      }
+    },
+    {
+      "name": "seats-groups-too-big",
+      "subject": "law_economics",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/groups"
+      },
+      "layout": "error",
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata in semicerchio: con i presenti serve una maggioranza di voti a favore.",
+        "layout": "hemicycle",
+        "seats": 400,
+        "groups": [
+          {
+            "label_it": "Uno",
+            "seats": 300
+          },
+          {
+            "label_it": "Due",
+            "seats": 101
+          }
+        ]
+      }
+    },
+    {
+      "name": "seats-more-present-than-seats",
+      "subject": "law_economics",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/present"
+      },
+      "layout": "error",
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata in semicerchio: con i presenti serve una maggioranza di voti a favore.",
+        "layout": "hemicycle",
+        "seats": 400,
+        "present": 401
+      }
+    },
+    {
+      "name": "seats-more-yes-than-present",
+      "subject": "law_economics",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/yes"
+      },
+      "layout": "error",
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata in semicerchio: con i presenti serve una maggioranza di voti a favore.",
+        "layout": "hemicycle",
+        "seats": 400,
+        "present": 300,
+        "yes": 301
+      }
+    },
+    {
+      "name": "seats-yes-without-present",
+      "subject": "law_economics",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/yes"
+      },
+      "layout": "error",
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata in semicerchio: con i presenti serve una maggioranza di voti a favore.",
+        "layout": "hemicycle",
+        "seats": 400,
+        "yes": 100
+      }
+    },
+    {
+      "name": "seats-threshold-twice",
+      "subject": "law_economics",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/thresholds"
+      },
+      "layout": "error",
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata in semicerchio: con i presenti serve una maggioranza di voti a favore.",
+        "layout": "hemicycle",
+        "seats": 400,
+        "present": 300,
+        "thresholds": [
+          "legal_number",
+          "legal_number"
+        ]
+      }
+    },
+    {
+      "name": "seats-quorum-without-present",
+      "subject": "law_economics",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/thresholds"
+      },
+      "layout": "ruby-only",
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata in semicerchio: con i presenti serve una maggioranza di voti a favore.",
+        "layout": "hemicycle",
+        "seats": 400,
+        "thresholds": [
+          "legal_number"
+        ]
+      }
+    },
+    {
+      "name": "seats-grid-too-big",
+      "subject": "law_economics",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/seats"
+      },
+      "layout": "error",
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata in semicerchio: con i presenti serve una maggioranza di voti a favore.",
+        "layout": "grid",
+        "seats": 300
+      }
+    },
+    {
+      "name": "seats-try-yes-above-present",
+      "subject": "law_economics",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/try"
+      },
+      "layout": "error",
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata in semicerchio: con i presenti serve una maggioranza di voti a favore.",
+        "layout": "hemicycle",
+        "seats": 400,
+        "present": 300,
+        "yes": 200,
+        "try": {
+          "present": [
+            250,
+            310
+          ],
+          "yes": [
+            200,
+            280
+          ]
+        }
+      }
+    },
+    {
+      "name": "seats-try-range-upside-down",
+      "subject": "law_economics",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/try/present"
+      },
+      "layout": "error",
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata in semicerchio: con i presenti serve una maggioranza di voti a favore.",
+        "layout": "hemicycle",
+        "seats": 400,
+        "present": 300,
+        "try": {
+          "present": [
+            310,
+            250
+          ]
+        }
+      }
+    },
+    {
+      "name": "seats-group-twice-the-id",
+      "subject": "law_economics",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/groups"
+      },
+      "layout": "ruby-only",
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata in semicerchio: con i presenti serve una maggioranza di voti a favore.",
+        "layout": "hemicycle",
+        "seats": 400,
+        "groups": [
+          {
+            "id": "a",
+            "label_it": "Uno",
+            "seats": 10
+          },
+          {
+            "id": "a",
+            "label_it": "Due",
+            "seats": 10
+          }
+        ]
+      }
+    },
+    {
+      "name": "seats-unknown-field",
+      "subject": "law_economics",
+      "schema": "invalid",
+      "semantic": "ok",
+      "data": {
+        "type": "seats",
+        "alt_it": "Una camera inventata di quattrocento seggi in semicerchio: con trecentoventi presenti servono almeno centosessantuno voti a favore.",
+        "layout": "hemicycle",
+        "seats": 400,
+        "groups": [
+          {
+            "label_it": "Circoscrizione Estero",
+            "seats": 8,
+            "role": "people"
+          }
+        ],
+        "present": 320,
+        "yes": 170,
+        "thresholds": [
+          "legal_number",
+          "present_majority"
+        ],
+        "try": {
+          "present": [
+            280,
+            310
+          ],
+          "yes": [
+            150,
+            200
+          ]
+        },
+        "zzz_unknown_field": true
+      }
+    }
+  ]
 }

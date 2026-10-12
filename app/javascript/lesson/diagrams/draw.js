@@ -5,9 +5,9 @@
 // size and again on resize. If layout() answers { error } the figure shows alt_it and the description.
 import * as N from "lesson/num"
 import { button, clear, el, icon, spriteHref, svg, uid } from "lesson/dom"
-import { HOME_PALETTE, STATUS, describe, layout, load, moduleFor, stateCount } from "lesson/diagrams/registry"
+import { FAMILY, HOME_PALETTE, STATUS, describe, layout, load, moduleFor, stateCount } from "lesson/diagrams/registry"
 import { tryValues, equationTex } from "lesson/diagrams/balance"
-import { buildChips, buildStrip, declared, overlay } from "lesson/diagrams/controls"
+import { buildChips, buildStrip, buildValueControls, declared, overlay } from "lesson/diagrams/controls"
 import { renderInlineRich, renderMath, renderRich } from "lesson/text"
 import { nearest, targetLabel } from "lesson/checks/select_model"
 import { controlNode, decorateTarget, defsNode, legendNode, padHit, patternRef, wireTargets } from "lesson/diagrams/scene_extras"
@@ -30,9 +30,35 @@ const MARKERS = {
   pentagon: (m) => [svg("polygon", { points: [[0.5, 0.04], [0.96, 0.38], [0.79, 0.94], [0.21, 0.94], [0.04, 0.38]].map(([fx, fy]) => `${m.x + m.w * fx},${m.y + m.h * fy}`).join(" "), class: m.cls })]
 }
 
+// The fixed patterns of a Scene (WAVE2 1.2, shapes[].pattern) of the chart family (T6): hatch, dots, cross, grid. A shape with a pattern is drawn over
+// its base fill, in the text colour. (The map family's path patterns are made by scene_extras.patternRef.)
+const PATTERNS = {
+  hatch: (id) => svg("pattern", { id, width: 8, height: 8, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, ),
+  dots: (id) => svg("pattern", { id, width: 7, height: 7, patternUnits: "userSpaceOnUse" }),
+  cross: (id) => svg("pattern", { id, width: 9, height: 9, patternUnits: "userSpaceOnUse" }),
+  grid: (id) => svg("pattern", { id, width: 8, height: 8, patternUnits: "userSpaceOnUse" })
+}
+const PATTERN_PARTS = {
+  hatch: () => [svg("line", { x1: 0, y1: 0, x2: 0, y2: 8, class: "dg-patink", "stroke-width": 2.5 })],
+  dots: () => [svg("circle", { cx: 3.5, cy: 3.5, r: 1.4, class: "dg-patfill" })],
+  cross: () => [svg("line", { x1: 0, y1: 0, x2: 9, y2: 9, class: "dg-patink", "stroke-width": 1.6 }), svg("line", { x1: 9, y1: 0, x2: 0, y2: 9, class: "dg-patink", "stroke-width": 1.6 })],
+  grid: () => [svg("path", { d: "M0,0 H8 M0,0 V8", class: "dg-patink", "stroke-width": 1.4 })]
+}
+export function patternDefs(prefix) {
+  const defs = svg("defs")
+  for (const name of Object.keys(PATTERNS)) {
+    const p = PATTERNS[name](`${prefix}-${name}`)
+    for (const part of PATTERN_PARTS[name]()) p.appendChild(part)
+    defs.appendChild(p)
+  }
+  return defs
+}
+
 // env: { defs, scale, id } for the patterns of this scene (scene_extras.patternRef); scale is the scale of the group a shape is in.
 function shapeNode(s, env = null) {
   const nodes = shapeNodeBase(s, env)
+  // the chart family's patterns (T6): a fixed set of <pattern> defs per figure (patternDefs), filled in over the shape's own class
+  if (s.pattern && s.pattern !== "solid" && s.kind !== "path" && env?.patId) for (const n of nodes) n.style.fill = `url(#${env.patId}-${s.pattern})`
   if (s.target && nodes[0]) decorateTarget(nodes[0], s)
   if (s.hitFor && nodes[0]) padHit(nodes[0], s.hitFor)
   return nodes
@@ -158,6 +184,17 @@ export function mountDiagram(data, ctx, options = {}) {
   if (caption) renderInlineRich(data.caption_it, caption, ctx)
   const descText = el("p", { text: describe(data, { subject: ctx.subject, state: 0, mode: options.mode ?? "student" }) })
   const desc = el("details", { class: "dg-desc" }, el("summary", {}, icon("description"), document.createTextNode(` ${ctx.t.description}`)), descText)
+  // the numbers under a chart ("Vedi i numeri", WAVE2 P2): opened by the student, always printed
+  const valuesBox = el("details", { class: "dg-values" })
+  const renderValues = (scene) => {
+    if (!scene.values) {
+      valuesBox.hidden = true
+      return
+    }
+    valuesBox.hidden = false
+    const t = tableNode({ header: scene.values.header, rows: scene.values.rows }, ctx)
+    valuesBox.replaceChildren(el("summary", {}, document.createTextNode(ctx.t.chart_see_numbers ?? "Vedi i numeri")), t, ...(scene.source ? [el("p", { class: "dg-source", text: (ctx.t.chart_source ?? "Fonte: %{source}").replace("%{source}", scene.source) })] : []))
+  }
   // a balance has its equation, the state's name and a status chip above the drawing
   const top = type === "balance" ? el("div", { class: "dg-top" }) : null
   const pill = el("span", { class: "dg-pill" })
@@ -172,13 +209,17 @@ export function mountDiagram(data, ctx, options = {}) {
   // what a control just did, said once and politely (A6): spoken only (sr-only)
   const live = el("p", { class: "sr-only dg-live", "aria-live": "polite", role: "status" })
   side.appendChild(live)
-  figure.append(alt, ...(top ? [top] : []), stage, side, legendHost, ...(caption ? [caption] : []), desc, printHost)
+  figure.append(alt, ...(top ? [top] : []), stage, side, valuesBox, legendHost, ...(caption ? [caption] : []), desc, printHost)
 
   let mod = moduleFor(type)
   const total = mod || STATUS[type] ? stateCount(data) : 1
   const state = { moves: new Map(), lastWidth: 0, i: 0, tryValue: data?.try && data?.type === "balance" ? Number(data.try.from) : undefined, width: 0, selected: null, controls: {}, announce: false, printWidth: 0 }
   // two kinds of controls: the toggles and plain steppers of controls.js (bits laid over the drawing, a strip under it), and the sliders and
   // steppers over a list of `values` of syncControls below. The first are `wanted`, built once the module is known.
+  // the chart family (T6) declares its sliders and its stepper over names in its own dialect (ranges as text, `value`): controls.js builds
+  // those whole, with the values as declared, and the other kinds below stay out of their way
+  const own = FAMILY[type] === "chart"
+  let made = null
   const isStrip = (c) => c.kind === "toggle" || (c.kind === "stepper" && !c.values)
   let wanted = []
   let strip = null
@@ -192,6 +233,15 @@ export function mountDiagram(data, ctx, options = {}) {
   const setupStrip = () => {
     if (stripBuilt || !mod) return // once, as soon as the module is known (a lazy type loads after the mount)
     stripBuilt = true
+    if (own) {
+      const list = declared(mod, data)
+      made = list.length ? buildValueControls(list, () => { state.announce = true; draw() }, ctx.t) : null
+      if (made) {
+        state.controls = made.values
+        controls.append(...made.nodes)
+      }
+      return
+    }
     wanted = declared(mod, data).filter(isStrip)
     strip = wanted.length ? buildStrip(wanted, controls, state.controls, ctx, press) : null
     buildChips(declared(mod, data), controls, { state, ctx, redraw: () => { state.announce = true; draw() } })
@@ -242,6 +292,7 @@ export function mountDiagram(data, ctx, options = {}) {
     labelsLayer.classList.remove("dg-tablewrap")
     clear(stageSvg)
     clear(labelsLayer)
+    if (scene.shapes.some((sh) => sh.pattern)) stageSvg.appendChild(patternDefs(`${id}-p`))
     stageSvg.setAttribute("viewBox", `0 0 ${scene.width} ${scene.height}`)
     stageSvg.setAttribute("width", String(scene.width))
     stageSvg.setAttribute("height", String(scene.height))
@@ -249,7 +300,7 @@ export function mountDiagram(data, ctx, options = {}) {
     const moves = new Map()
     const animated = []
     const sameWidth = state.lastWidth === scene.width
-    const env = { defs: new Map(), scale: 1, id: figure.id || id }
+    const env = { defs: new Map(), scale: 1, id: figure.id || id, patId: `${id}-p` }
     scene.shapes.forEach((s) => {
       for (const node of shapeNode(s, env)) {
         if (s.key && s.kind !== "group") node.dataset.key = s.key
@@ -298,7 +349,7 @@ export function mountDiagram(data, ctx, options = {}) {
         }
       })
     }
-    descText.textContent = describe(data, { subject: ctx.subject, state: state.i, mode, controls: state.controls })
+    descText.textContent = describe(data, { subject: ctx.subject, state: state.i, mode, controls: state.controls, revealed: [] })
     if (state.announce && scene.live) live.textContent = scene.live
     state.announce = false
     if (mod?.printViews && state.printWidth !== width) paintPrint(width, fontPx)
@@ -321,6 +372,7 @@ export function mountDiagram(data, ctx, options = {}) {
       overlay(scene, wanted, switchLayer, state.controls, press, rove)
       strip.refresh()
     }
+    renderValues(scene)
     op.textContent = ""
     const eff = total > 1 ? (data.states[state.i] ?? {}) : {}
     if (eff.op_it) renderInlineRich(eff.op_it, op, ctx)
@@ -463,7 +515,7 @@ export function mountDiagram(data, ctx, options = {}) {
   let ctrlKey = null
   let ctrlIds = []
   const syncControls = () => {
-    const list = mode === "select" ? [] : (mod?.controls?.(data, { state: state.i, mode }) ?? []).filter((c) => !isStrip(c) && c.kind !== "chips")
+    const list = mode === "select" || own ? [] : (mod?.controls?.(data, { state: state.i, mode }) ?? []).filter((c) => !isStrip(c) && c.kind !== "chips")
     const key = JSON.stringify(list.map((c) => [c.id, c.range, c.values, c.stops]))
     if (key === ctrlKey) return
     ctrlKey = key
@@ -516,6 +568,11 @@ export function mountDiagram(data, ctx, options = {}) {
     if (printHost.children.length > 0) figure.dataset.printviews = String(printHost.children.length)
     else delete figure.dataset.printviews
   }
+  // print shows the numbers (P2): a closed <details> hides its content from the printer
+  const beforePrint = () => { if (!valuesBox.hidden) valuesBox.dataset.wasOpen = String(valuesBox.open), valuesBox.open = true }
+  const afterPrint = () => { if (valuesBox.dataset.wasOpen !== undefined) { valuesBox.open = valuesBox.dataset.wasOpen === "true"; delete valuesBox.dataset.wasOpen } }
+  window.addEventListener("beforeprint", beforePrint)
+  window.addEventListener("afterprint", afterPrint)
 
   let timer = null
   let observer = null
@@ -560,6 +617,8 @@ export function mountDiagram(data, ctx, options = {}) {
       draw()
     },
     destroy: () => {
+      window.removeEventListener("beforeprint", beforePrint)
+      window.removeEventListener("afterprint", afterPrint)
       observer?.disconnect()
       clearTimeout(timer)
     }

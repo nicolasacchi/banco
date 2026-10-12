@@ -51,10 +51,10 @@ diagrams:
   cross_section: {family: maps, status: available, schema: final, batch: w2-1, track: T5, size: S, module: lesson/diagrams/maps/cross_section}
 
   # ---- charts and quantities (T6)
-  climograph: {family: chart, status: reserved, schema: final, batch: w2-1, track: T6, size: M, module: lesson/diagrams/chart/climograph}
-  bar_model: {family: chart, status: reserved, schema: final, batch: w2-1, track: T6, size: S, module: lesson/diagrams/chart/bar_model,
+  climograph: {family: chart, status: available, schema: final, batch: w2-1, track: T6, size: M, module: lesson/diagrams/chart/climograph}
+  bar_model: {family: chart, status: available, schema: final, batch: w2-1, track: T6, size: S, module: lesson/diagrams/chart/bar_model,
     views: {view: {fraction: {status: reserved, schema: draft, batch: w2-3}}}}
-  seats: {family: chart, status: reserved, schema: final, batch: w2-1, track: T6, size: S, module: lesson/diagrams/chart/seats}
+  seats: {family: chart, status: available, schema: final, batch: w2-1, track: T6, size: S, module: lesson/diagrams/chart/seats}
   chart: {family: chart, status: draft, schema: draft, batch: w2-2, track: T6, size: M, module: lesson/diagrams/chart/chart,
     views: {kind: {pyramid: {status: reserved, schema: draft, batch: w2-3}, scatter: {status: reserved, schema: draft, batch: w2-3}}}}
   scale: {family: chart, status: draft, schema: draft, batch: w2-2, track: T6, size: M, module: lesson/diagrams/chart/scale,

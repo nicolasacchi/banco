@@ -1,137 +1,897 @@
 {
- "version": 1,
- "type": "climograph",
- "status": "reserved",
- "batch": "w2-1",
- "track": "T6",
- "provisional": false,
- "description": "Skeleton of W2-0 for the track T6: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
- "vectors": [
-  {
-   "name": "climograph-example-1",
-   "subject": "geography",
-   "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
-   "data": {
-    "type": "climograph",
-    "alt_it": "Il climogramma di una città inventata: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
-    "place_it": "Città di prova",
-    "lat": "-15,8",
-    "alt_m": "1160",
-    "temp": [
-     "21,6",
-     "21,8",
-     "21,4",
-     "20,6",
-     "19,5",
-     "18,2",
-     "18,1",
-     "19,9",
-     "21,8",
-     "22,2",
-     "21,6",
-     "21,4"
-    ],
-    "precip": [
-     "209",
-     "180",
-     "169",
-     "123",
-     "44",
-     "9",
-     "10",
-     "11",
-     "47",
-     "132",
-     "194",
-     "238"
-    ],
-    "source_it": "dati inventati",
-    "show": [
-     "bars",
-     "line",
-     "arid"
-    ],
-    "states": [
-     {
-      "show": [
-       "bars"
+  "version": 1,
+  "type": "climograph",
+  "status": "available",
+  "batch": "w2-1",
+  "track": "T6",
+  "provisional": false,
+  "description": "The cases of the track T6 (W2-1): the schema, semantic, layout, printed and served columns. semantic is 'ok' or {code, path} (Ruby, Lessons::Diagrams.check); layout is 'ok', 'error' (the browser's layout() answers {error}) or 'ruby-only' (a check the served form cannot break); printed holds the strings of each state (filled from the Ruby side, checked by both). Invented content only.",
+  "vectors": [
+    {
+      "name": "climograph-example-1",
+      "subject": "geography",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "9",
+          "10",
+          "11",
+          "44",
+          "47",
+          "123",
+          "132",
+          "169",
+          "180",
+          "194",
+          "209",
+          "238"
+        ],
+        [
+          "9",
+          "10",
+          "11",
+          "18,1",
+          "18,2",
+          "19,5",
+          "19,9",
+          "20,6",
+          "21,4",
+          "21,6",
+          "21,8",
+          "22,2",
+          "44",
+          "47",
+          "123",
+          "132",
+          "169",
+          "180",
+          "194",
+          "209",
+          "238"
+        ]
       ],
-      "op_it": "Prima la pioggia"
-     },
-     {
-      "show": [
-       "bars",
-       "line"
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città inventata: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "place_it": "Città di prova",
+        "lat": "-15,8",
+        "alt_m": "1160",
+        "temp": [
+          "21,6",
+          "21,8",
+          "21,4",
+          "20,6",
+          "19,5",
+          "18,2",
+          "18,1",
+          "19,9",
+          "21,8",
+          "22,2",
+          "21,6",
+          "21,4"
+        ],
+        "precip": [
+          "209",
+          "180",
+          "169",
+          "123",
+          "44",
+          "9",
+          "10",
+          "11",
+          "47",
+          "132",
+          "194",
+          "238"
+        ],
+        "source_it": "dati inventati",
+        "show": [
+          "bars",
+          "line",
+          "arid"
+        ],
+        "states": [
+          {
+            "show": [
+              "bars"
+            ],
+            "op_it": "Prima la pioggia"
+          },
+          {
+            "show": [
+              "bars",
+              "line"
+            ],
+            "op_it": "Poi la temperatura"
+          }
+        ]
+      }
+    },
+    {
+      "name": "climograph-station-all-layers",
+      "subject": "geography",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "1,5",
+          "3,3",
+          "3,8",
+          "16,3",
+          "19,3",
+          "20,3",
+          "21",
+          "21,6",
+          "21,7",
+          "21,8",
+          "21,9",
+          "22,8",
+          "23,1",
+          "26,9",
+          "38,1",
+          "141,8",
+          "145,2",
+          "179,5",
+          "206",
+          "226",
+          "241,1",
+          "253,1",
+          "1478,8"
+        ]
       ],
-      "op_it": "Poi la temperatura"
-     }
-    ]
-   }
-  },
-  {
-   "name": "climograph-unknown-field",
-   "subject": "geography",
-   "schema": "invalid",
-   "semantic": "ok",
-   "data": {
-    "type": "climograph",
-    "alt_it": "Il climogramma di una città inventata: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
-    "place_it": "Città di prova",
-    "lat": "-15,8",
-    "alt_m": "1160",
-    "temp": [
-     "21,6",
-     "21,8",
-     "21,4",
-     "20,6",
-     "19,5",
-     "18,2",
-     "18,1",
-     "19,9",
-     "21,8",
-     "22,2",
-     "21,6",
-     "21,4"
-    ],
-    "precip": [
-     "209",
-     "180",
-     "169",
-     "123",
-     "44",
-     "9",
-     "10",
-     "11",
-     "47",
-     "132",
-     "194",
-     "238"
-    ],
-    "source_it": "dati inventati",
-    "show": [
-     "bars",
-     "line",
-     "arid"
-    ],
-    "states": [
-     {
-      "show": [
-       "bars"
+      "select": [
+        "months"
       ],
-      "op_it": "Prima la pioggia"
-     },
-     {
-      "show": [
-       "bars",
-       "line"
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "station": "geo/stations.brasilia",
+        "show": [
+          "bars",
+          "line",
+          "arid",
+          "range",
+          "total"
+        ]
+      }
+    },
+    {
+      "name": "climograph-station-monsoon-band",
+      "subject": "geography",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "0,2",
+          "0,4",
+          "0,6",
+          "0,7",
+          "3,4",
+          "8,5",
+          "15,9",
+          "81,7",
+          "355,6",
+          "471,9",
+          "506",
+          "768,5"
+        ],
+        [
+          "0,2",
+          "0,4",
+          "0,6",
+          "0,7",
+          "3,4",
+          "8,5",
+          "15,9",
+          "24,8",
+          "25,4",
+          "26,7",
+          "27,4",
+          "27,6",
+          "27,7",
+          "27,9",
+          "28,7",
+          "29,1",
+          "29,4",
+          "30,7",
+          "81,7",
+          "355,6",
+          "471,9",
+          "506",
+          "768,5"
+        ],
+        [
+          "0,2",
+          "0,4",
+          "0,6",
+          "0,7",
+          "3,4",
+          "8,5",
+          "15,9",
+          "24,8",
+          "25,4",
+          "26,7",
+          "27,4",
+          "27,6",
+          "27,7",
+          "27,9",
+          "28,7",
+          "29,1",
+          "29,4",
+          "30,7",
+          "81,7",
+          "355,6",
+          "471,9",
+          "506",
+          "768,5"
+        ]
       ],
-      "op_it": "Poi la temperatura"
-     }
-    ],
-    "zzz_unknown_field": true
-   }
-  }
- ]
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "station": "geo/stations.mumbai",
+        "show": [
+          "bars",
+          "line",
+          "arid"
+        ],
+        "states": [
+          {
+            "show": [
+              "bars"
+            ],
+            "op_it": "Prima la pioggia"
+          },
+          {
+            "show": [
+              "bars",
+              "line"
+            ],
+            "op_it": "Poi la temperatura"
+          },
+          {
+            "show": [
+              "bars",
+              "line",
+              "arid"
+            ],
+            "op_it": "Ora i mesi aridi"
+          }
+        ]
+      }
+    },
+    {
+      "name": "climograph-southern-compare",
+      "subject": "geography",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "8,5",
+          "9",
+          "9,4",
+          "11,2",
+          "12,7",
+          "13",
+          "13,1",
+          "13,2",
+          "13,8",
+          "14,5",
+          "15,4",
+          "16,9",
+          "17,4",
+          "17,8",
+          "17,9",
+          "18,6",
+          "20,5",
+          "20,7",
+          "21,2",
+          "21,8",
+          "21,9",
+          "24,4",
+          "24,7"
+        ]
+      ],
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "station": "geo/stations.rome",
+        "show": [
+          "line"
+        ],
+        "compare": {
+          "station": "geo/stations.cape_town"
+        }
+      }
+    },
+    {
+      "name": "climograph-inline-read-cursor",
+      "subject": "geography",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "reachable": [
+        "9",
+        "10",
+        "11",
+        "18,1",
+        "18,2",
+        "19,5",
+        "19,9",
+        "20,6",
+        "21,4",
+        "21,6",
+        "21,8",
+        "22,2",
+        "44",
+        "47",
+        "123",
+        "132",
+        "169",
+        "180",
+        "194",
+        "209",
+        "238"
+      ],
+      "printed": [
+        [
+          "9",
+          "10",
+          "11",
+          "18,1",
+          "18,2",
+          "19,5",
+          "19,9",
+          "20,6",
+          "21,4",
+          "21,6",
+          "21,8",
+          "22,2",
+          "44",
+          "47",
+          "123",
+          "132",
+          "169",
+          "180",
+          "194",
+          "209",
+          "238"
+        ]
+      ],
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "place_it": "Città di prova",
+        "lat": "40,5",
+        "temp": [
+          "21,6",
+          "21,8",
+          "21,4",
+          "20,6",
+          "19,5",
+          "18,2",
+          "18,1",
+          "19,9",
+          "21,8",
+          "22,2",
+          "21,6",
+          "21,4"
+        ],
+        "precip": [
+          "209",
+          "180",
+          "169",
+          "123",
+          "44",
+          "9",
+          "10",
+          "11",
+          "47",
+          "132",
+          "194",
+          "238"
+        ],
+        "source_it": "dati inventati",
+        "show": [
+          "bars",
+          "line"
+        ],
+        "read": true
+      }
+    },
+    {
+      "name": "climograph-frozen-winter",
+      "subject": "geography",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        [
+          "-37",
+          "-36,9",
+          "-32,9",
+          "-25,9",
+          "-19,1",
+          "-6,9",
+          "-3,7",
+          "6,3",
+          "6,4",
+          "7,9",
+          "8",
+          "8,5",
+          "9,7",
+          "15,6",
+          "16,9",
+          "17",
+          "18,6",
+          "19,9",
+          "20,1",
+          "29,5",
+          "29,6",
+          "37,1",
+          "40,1",
+          "56,9",
+          "232,8"
+        ]
+      ],
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "station": "geo/stations.yakutsk",
+        "show": [
+          "bars",
+          "line",
+          "range",
+          "total"
+        ]
+      }
+    },
+    {
+      "name": "climograph-arid-needs-the-line",
+      "subject": "geography",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/show"
+      },
+      "layout": "error",
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "station": "geo/stations.rome",
+        "show": [
+          "bars",
+          "arid"
+        ]
+      }
+    },
+    {
+      "name": "climograph-range-needs-the-line",
+      "subject": "geography",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/show"
+      },
+      "layout": "error",
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "station": "geo/stations.rome",
+        "show": [
+          "bars",
+          "range"
+        ]
+      }
+    },
+    {
+      "name": "climograph-state-arid-without-line",
+      "subject": "geography",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/states/1/show"
+      },
+      "layout": "error",
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "station": "geo/stations.rome",
+        "show": [
+          "bars",
+          "line"
+        ],
+        "states": [
+          {
+            "show": [
+              "bars"
+            ]
+          },
+          {
+            "show": [
+              "bars",
+              "arid"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "climograph-unknown-station",
+      "subject": "geography",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DATA",
+        "path": "/station"
+      },
+      "layout": "error",
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "station": "geo/stations.atlantide"
+      }
+    },
+    {
+      "name": "climograph-temperature-out-of-range",
+      "subject": "geography",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/temp/3"
+      },
+      "layout": "error",
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "place_it": "Città di prova",
+        "temp": [
+          "21,6",
+          "21,8",
+          "21,4",
+          "46",
+          "19,5",
+          "18,2",
+          "18,1",
+          "19,9",
+          "21,8",
+          "22,2",
+          "21,6",
+          "21,4"
+        ],
+        "precip": [
+          "209",
+          "180",
+          "169",
+          "123",
+          "44",
+          "9",
+          "10",
+          "11",
+          "47",
+          "132",
+          "194",
+          "238"
+        ],
+        "source_it": "dati inventati"
+      }
+    },
+    {
+      "name": "climograph-rain-out-of-range",
+      "subject": "geography",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/precip/5"
+      },
+      "layout": "error",
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "place_it": "Città di prova",
+        "temp": [
+          "21,6",
+          "21,8",
+          "21,4",
+          "20,6",
+          "19,5",
+          "18,2",
+          "18,1",
+          "19,9",
+          "21,8",
+          "22,2",
+          "21,6",
+          "21,4"
+        ],
+        "precip": [
+          "209",
+          "180",
+          "169",
+          "123",
+          "44",
+          "1501",
+          "10",
+          "11",
+          "47",
+          "132",
+          "194",
+          "238"
+        ],
+        "source_it": "dati inventati"
+      }
+    },
+    {
+      "name": "climograph-station-and-temp",
+      "subject": "geography",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/temp"
+      },
+      "layout": "ruby-only",
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "station": "geo/stations.rome",
+        "temp": [
+          "21,6",
+          "21,8",
+          "21,4",
+          "20,6",
+          "19,5",
+          "18,2",
+          "18,1",
+          "19,9",
+          "21,8",
+          "22,2",
+          "21,6",
+          "21,4"
+        ],
+        "precip": [
+          "209",
+          "180",
+          "169",
+          "123",
+          "44",
+          "9",
+          "10",
+          "11",
+          "47",
+          "132",
+          "194",
+          "238"
+        ]
+      }
+    },
+    {
+      "name": "climograph-inline-needs-a-place",
+      "subject": "geography",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/place_it"
+      },
+      "layout": "ruby-only",
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "temp": [
+          "21,6",
+          "21,8",
+          "21,4",
+          "20,6",
+          "19,5",
+          "18,2",
+          "18,1",
+          "19,9",
+          "21,8",
+          "22,2",
+          "21,6",
+          "21,4"
+        ],
+        "precip": [
+          "209",
+          "180",
+          "169",
+          "123",
+          "44",
+          "9",
+          "10",
+          "11",
+          "47",
+          "132",
+          "194",
+          "238"
+        ],
+        "source_it": "dati inventati"
+      }
+    },
+    {
+      "name": "climograph-latitude-out-of-range",
+      "subject": "geography",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/lat"
+      },
+      "layout": "error",
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "place_it": "Città di prova",
+        "lat": "95",
+        "temp": [
+          "21,6",
+          "21,8",
+          "21,4",
+          "20,6",
+          "19,5",
+          "18,2",
+          "18,1",
+          "19,9",
+          "21,8",
+          "22,2",
+          "21,6",
+          "21,4"
+        ],
+        "precip": [
+          "209",
+          "180",
+          "169",
+          "123",
+          "44",
+          "9",
+          "10",
+          "11",
+          "47",
+          "132",
+          "194",
+          "238"
+        ],
+        "source_it": "dati inventati"
+      }
+    },
+    {
+      "name": "climograph-compare-station-and-temp",
+      "subject": "geography",
+      "schema": "valid",
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/compare"
+      },
+      "layout": "ruby-only",
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "station": "geo/stations.rome",
+        "show": [
+          "line"
+        ],
+        "compare": {
+          "station": "geo/stations.cape_town",
+          "temp": [
+            "21,6",
+            "21,8",
+            "21,4",
+            "20,6",
+            "19,5",
+            "18,2",
+            "18,1",
+            "19,9",
+            "21,8",
+            "22,2",
+            "21,6",
+            "21,4"
+          ]
+        }
+      }
+    },
+    {
+      "name": "climograph-inline-without-source",
+      "subject": "geography",
+      "schema": "invalid",
+      "semantic": "ok",
+      "layout": "error",
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "place_it": "Città di prova",
+        "temp": [
+          "21,6",
+          "21,8",
+          "21,4",
+          "20,6",
+          "19,5",
+          "18,2",
+          "18,1",
+          "19,9",
+          "21,8",
+          "22,2",
+          "21,6",
+          "21,4"
+        ],
+        "precip": [
+          "209",
+          "180",
+          "169",
+          "123",
+          "44",
+          "9",
+          "10",
+          "11",
+          "47",
+          "132",
+          "194",
+          "238"
+        ]
+      }
+    },
+    {
+      "name": "climograph-unknown-field",
+      "subject": "geography",
+      "schema": "invalid",
+      "semantic": "ok",
+      "data": {
+        "type": "climograph",
+        "alt_it": "Il climogramma di una città inventata: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+        "place_it": "Città di prova",
+        "lat": "-15,8",
+        "alt_m": "1160",
+        "temp": [
+          "21,6",
+          "21,8",
+          "21,4",
+          "20,6",
+          "19,5",
+          "18,2",
+          "18,1",
+          "19,9",
+          "21,8",
+          "22,2",
+          "21,6",
+          "21,4"
+        ],
+        "precip": [
+          "209",
+          "180",
+          "169",
+          "123",
+          "44",
+          "9",
+          "10",
+          "11",
+          "47",
+          "132",
+          "194",
+          "238"
+        ],
+        "source_it": "dati inventati",
+        "show": [
+          "bars",
+          "line",
+          "arid"
+        ],
+        "states": [
+          {
+            "show": [
+              "bars"
+            ],
+            "op_it": "Prima la pioggia"
+          },
+          {
+            "show": [
+              "bars",
+              "line"
+            ],
+            "op_it": "Poi la temperatura"
+          }
+        ],
+        "zzz_unknown_field": true
+      }
+    }
+  ]
 }

@@ -603,7 +603,10 @@
   },
   "computed": {
    "balance": "tilt per state (-1, 0, 1) from the effective plates and x_value; x_value itself only when show_value is true",
-   "balance.try": "from and to only"
+   "balance.try": "from and to only",
+   "climograph": "temp, precip, place_it, lat, alt_m and source_it of a station, resolved by the server from geo/stations (the author names a row; compare.station likewise); the page never needs the table",
+   "bar_model": "values (the value of each mark of the percent view, exact, null for a hidden one) and chain_values (from and to of each step) per state; a hidden part is served with value null; base is withheld when 100 is hidden",
+   "bar_model.hide": "hide[] lists the percents whose value is hidden: positions, not values, so it is served; the values are served as null"
   },
   "types": {
    "equation_parts": {

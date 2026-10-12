@@ -77,7 +77,7 @@ module Lessons
 
       # What the browser is told: the whitelist projection; for a select check (line only) the stations alone, with no word on them (L3).
       def served(data, mode: :student)
-        return StudentBody.diagram(data) unless mode == :select
+        return StudentBody.diagram_generic(data) unless mode == :select
 
         stations = data["nodes"].map { |n| { "id" => n["id"], "kind" => "step", "text_it" => "·" } }
         { "type" => "flow", "alt_it" => "Un percorso con #{stations.size} tappe, una dopo l'altra.", "layout" => "line", "nodes" => stations }

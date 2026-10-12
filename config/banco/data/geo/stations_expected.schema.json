@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:banco:data:geo-stations-expected",
+  "title": "geo/stations_expected: the second table for geo/stations",
+  "description": "A summary of an independent computation of the same climate normals (annual mean, annual total, warmest and coldest month, arid months), compared with what our code derives from geo/stations. The monthly numbers of the second source are not copied (CC BY-NC); T6, D-271.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["expected"],
+  "properties": {
+    "expected": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[A-Za-z][A-Za-z0-9_()-]*$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "annual_temp", "annual_precip", "warmest", "coldest", "arid"],
+        "properties": {
+          "source": { "type": "string", "minLength": 5, "maxLength": 80 },
+          "annual_temp": { "type": "string", "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$" },
+          "annual_precip": { "type": "string", "pattern": "^(0|[1-9][0-9]*)(,[0-9]+)?$" },
+          "warmest": { "type": "integer", "minimum": 1, "maximum": 12 },
+          "coldest": { "type": "integer", "minimum": 1, "maximum": 12 },
+          "arid": { "type": "array", "items": { "type": "integer", "minimum": 1, "maximum": 12 }, "maxItems": 12 },
+          "temp_band": { "type": "string", "pattern": "^(0|[1-9][0-9]*)(,[0-9]+)?$" },
+          "temp_band_why": { "type": "string", "minLength": 10, "maxLength": 300 },
+          "arid_differs": { "type": "array", "items": { "type": "integer", "minimum": 1, "maximum": 12 }, "maxItems": 12 }
+        }
+      }
+    }
+  },
+  "x-banco-table": {
+    "name": "geo/stations_expected",
+    "track": "T6",
+    "used_by": ["checks"],
+    "second_table": false
+  }
+}

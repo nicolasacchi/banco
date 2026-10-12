@@ -111,11 +111,12 @@ test("program declares recordAtRender, the only type that does in wave 2, and it
   }
 })
 
-test("the shared interfaces are frozen: the axis exports its functions, which throw NotBuilt until its track (the router is built by T4b, the grid api by T9)", async () => {
-  const router = await import("lesson/diagrams/graph/router") // built by T4b: its tests are graph_router.test.mjs
+test("the shared interfaces are built: the router (T4b), the axis (T6) and the grid api (T9) export their functions", async () => {
+  const router = await import("lesson/diagrams/graph/router")
   const axis = await import("lesson/diagrams/chart/axis")
-  for (const [mod, names] of [[axis, ["linear", "log", "readCursor", "legend", "valueTable"]]]) {
-    for (const name of names) assert.throws(() => mod[name](), NotBuilt, name)
+  const grid = await import("lesson/diagrams/grid/api")
+  for (const [mod, names] of [[router, ["place", "route", "flip", "moveList"]], [axis, ["linear", "log", "readCursor", "legend", "valueTable"]], [grid, ["grid", "cellBox", "outline", "stackForPhone", "scrollFrame", "cellTargets"]]]) {
+    for (const name of names) assert.equal(typeof mod[name], "function", name)
   }
   assert.ok(router.LAYOUTS.includes("hub"))
 })

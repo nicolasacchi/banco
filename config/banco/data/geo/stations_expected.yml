@@ -1,0 +1,172 @@
+# geo/stations_expected: the second table of geo/stations (WAVE2 1.9). Not the monthly values of another source: a summary of an independent
+# computation of the same normals (Meteostat 1991-2020 bulk normals, derived by Meteostat from NOAA ISD/GHCN, DWD and national open data;
+# for Roma Fiumicino our own mean of the NOAA GSOD daily files 1991-2020). The Meteostat data is CC BY-NC 4.0, so it is a cross-check
+# and its monthly numbers are not copied here: only what our code derives from them (the annual mean, the annual total, the warmest and
+# coldest month, the arid months by P <= 2T). The test derives the same from geo/stations and compares:
+#   annual_temp within 0,5 degrees (`temp_band` says why a wider band is accepted), annual_precip within max(20 mm, 10 %),
+#   the same warmest and coldest month, the same arid months except those named in `arid_differs` (within the noise of the rule).
+# A difference above the band is a wrong id or a mistyped value, not a rounding.
+expected:
+  mumbai:
+    source: meteostat9120
+    annual_temp: '27,9'
+    annual_precip: '2317'
+    warmest: 5
+    coldest: 1
+    arid: [1, 2, 3, 4, 5, 11, 12]
+  tokyo:
+    source: meteostat9120
+    annual_temp: '16,8'
+    annual_precip: '1598'
+    warmest: 8
+    coldest: 1
+    arid: []
+    temp_band: '1,25'
+    temp_band_why: "the national service's mean uses another daily-mean definition than (Tmax + Tmin) / 2 of the second source"
+  winnipeg:
+    source: meteostat9120
+    annual_temp: '3,1'
+    annual_precip: '571'
+    warmest: 7
+    coldest: 1
+    arid: []
+  rome:
+    source: gsod9120
+    annual_temp: '15,9'
+    annual_precip: '658'
+    warmest: 8
+    coldest: 1
+    arid: [5, 6, 7, 8]
+    arid_differs: [5]
+  brasilia:
+    source: meteostat9120
+    annual_temp: '22,1'
+    annual_precip: '1523'
+    warmest: 10
+    coldest: 6
+    arid: [5, 6, 7, 8, 9]
+    temp_band: '1,00'
+    temp_band_why: "the national service's mean uses another daily-mean definition than (Tmax + Tmin) / 2 of the second source"
+  belem:
+    source: meteostat9120
+    annual_temp: '27,8'
+    annual_precip: '3256'
+    warmest: 11
+    coldest: 2
+    arid: []
+    temp_band: '1,25'
+    temp_band_why: "the national service's mean uses another daily-mean definition than (Tmax + Tmin) / 2 of the second source"
+  manaus:
+    source: meteostat9120
+    annual_temp: '28,4'
+    annual_precip: '2380'
+    warmest: 9
+    coldest: 2
+    arid: [8]
+    temp_band: '1,25'
+    temp_band_why: "the national service's mean uses another daily-mean definition than (Tmax + Tmin) / 2 of the second source"
+  porto_alegre:
+    source: meteostat9120
+    annual_temp: '20,9'
+    annual_precip: '1485'
+    warmest: 1
+    coldest: 7
+    arid: []
+    temp_band: '1,50'
+    temp_band_why: "the national service's mean uses another daily-mean definition than (Tmax + Tmin) / 2 of the second source"
+  darwin:
+    source: meteostat9120
+    annual_temp: '27,8'
+    annual_precip: '1845'
+    warmest: 11
+    coldest: 7
+    arid: [5, 6, 7, 8, 9]
+  cairo:
+    source: gsod9120 (temperature) + meteostat9120 (precipitation)
+    annual_temp: '22,5'
+    annual_precip: '33'
+    warmest: 8
+    coldest: 1
+    arid: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  dalanzadgad:
+    source: meteostat9120
+    annual_temp: '5,8'
+    annual_precip: '126'
+    warmest: 7
+    coldest: 1
+    arid: [4, 5, 6, 7, 8, 9, 10]
+  cape_town:
+    source: meteostat9120
+    annual_temp: '17,3'
+    annual_precip: '521'
+    warmest: 2
+    coldest: 7
+    arid: [1, 2, 3, 10, 11, 12]
+  perth:
+    source: meteostat9120
+    annual_temp: '18,8'
+    annual_precip: '694'
+    warmest: 2
+    coldest: 7
+    arid: [1, 2, 3, 4, 10, 11, 12]
+  santiago:
+    source: meteostat9120
+    annual_temp: '15,5'
+    annual_precip: '297'
+    warmest: 1
+    coldest: 7
+    arid: [1, 2, 3, 4, 10, 11, 12]
+    temp_band: '1,00'
+    temp_band_why: "the national service's mean uses another daily-mean definition than (Tmax + Tmin) / 2 of the second source"
+    arid_differs: [9]
+  singapore:
+    source: meteostat9120
+    annual_temp: '28,3'
+    annual_precip: '2119'
+    warmest: 5
+    coldest: 1
+    arid: []
+    temp_band: '1,00'
+    temp_band_why: "the national service's mean uses another daily-mean definition than (Tmax + Tmin) / 2 of the second source"
+  niamey:
+    source: meteostat9120
+    annual_temp: '30,1'
+    annual_precip: '540'
+    warmest: 4
+    coldest: 1
+    arid: [1, 2, 3, 4, 5, 10, 11, 12]
+  riyadh:
+    source: meteostat9120
+    annual_temp: '26,8'
+    annual_precip: '104'
+    warmest: 7
+    coldest: 1
+    arid: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  ulaanbaatar:
+    source: meteostat9120
+    annual_temp: '0,7'
+    annual_precip: '267'
+    warmest: 7
+    coldest: 1
+    arid: []
+  yakutsk:
+    source: meteostat9120
+    annual_temp: '-8,1'
+    annual_precip: '233'
+    warmest: 7
+    coldest: 12
+    arid: [6]
+  moscow:
+    source: meteostat9120
+    annual_temp: '6,3'
+    annual_precip: '712'
+    warmest: 7
+    coldest: 1
+    arid: []
+  kolkata:
+    source: meteostat9120
+    annual_temp: '27,3'
+    annual_precip: '1871'
+    warmest: 5
+    coldest: 1
+    arid: [1, 2, 3, 4, 11, 12]

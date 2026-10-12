@@ -6,11 +6,13 @@ class LessonDataTest < ActiveSupport::TestCase
   TABLES = %w[bio/cell_parts bio/sizes chem/elements chem/molecules chem/substances chem/terms computer_science/program_vb english/contractions english/verbs
               geo/countries geo/names geo/stations history/places network/kinds spanish/verbs].freeze
 
-  # T5 adds two tables of its own beside the contract's (D-271): the recipes of the ancient regions and the second table of the places.
+  # T5 and T6 add tables of their own beside the contract's (D-271): the recipes of the ancient regions, the second table of the places, and
+  # the second table of the stations.
   T5_EXTRA = %w[history/places_expected history/regions].freeze
+  T6_EXTRA = %w[geo/stations_expected].freeze
 
   test "the 15 tables of the plan have a schema, each a valid JSON Schema that names its track and says a second table is compared" do
-    assert_equal (TABLES + T5_EXTRA).sort, Lessons::VettedData.names
+    assert_equal (TABLES + T5_EXTRA + T6_EXTRA).sort, Lessons::VettedData.names
     (TABLES + [ "history/regions" ]).each do |name|
       schema = Lessons::VettedData.schema(name)
       assert JSONSchemer.valid_schema?(schema), name

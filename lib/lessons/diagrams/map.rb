@@ -321,7 +321,7 @@ module Lessons
       # map is a solution). :select: the neutral figure of one set of targets, no states, no labels, no roles, no patterns, nothing
       # marked (L3); +set+ is the check's `targets` (default: the first set the figure has).
       def served(data, mode: :student, set: nil)
-        return StudentBody.diagram(data) unless mode.to_sym == :select
+        return StudentBody.diagram_generic(data) unless mode.to_sym == :select
 
         eff = effective(data, 0)
         set ||= SETS.find { |s| target_list(data, eff, s).any? } || "areas"

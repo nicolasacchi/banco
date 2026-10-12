@@ -2,3 +2,82 @@
    Linked on a page only when the lesson uses one of these types (the page head reads the body), never by hand.
    Rules: colours only through the role classes (.role-x, .mk-x, .st-x, .fl-x, .tn-x) and the theme variables of
    lesson_roles.css; no colour alone (A4); a forced-colors block per type; print rules for P1 to P6; targets at least 24 px. */
+
+/* ---- shared by the chart family (climograph, bar_model, seats) ---- */
+.dg-patink { stroke: var(--text); fill: none; }
+.dg-patfill { fill: var(--text); }
+.dg-values { margin: 0.5em 0; }
+.dg-values summary { cursor: pointer; font-weight: 700; padding: 0.2em 0; }
+.dg-values[hidden] { display: none; }
+.dg-values .dg-table { font-size: 0.95em; }
+.dg-source { margin: 0.3em 0 0; color: var(--muted); font-size: 0.9em; }
+.dg-ctl { display: flex; flex-direction: column; gap: 0.3em; flex-basis: 100%; margin: 0.2em 0; }
+.dg-ctl-label { font-weight: 700; }
+.dg-ctl-row { display: flex; align-items: center; gap: 0.6em; }
+.dg-ctl-btn { flex: none; min-width: 2.6em; height: 2.6em; padding: 0; border-radius: 50%; font-size: 1.25em; line-height: 1; }
+.dg-ctl-value { flex: 1 1 auto; text-align: center; font-weight: 700; font-size: 1.25em; }
+.dg-range { flex: 1 1 6em; min-width: 5em; height: 2em; accent-color: var(--text); }
+.dg-rangevalue { flex: none; min-width: 2.6em; font-weight: 700; font-size: 1.25em; text-align: right; }
+.dg-toggle[aria-pressed="true"], .dg-chip-button[aria-pressed="true"] { outline: 3px solid var(--text); outline-offset: 1px; }
+.dg-chips { display: flex; flex-wrap: wrap; gap: 0.4em; }
+
+/* ---- climograph: rain as bars, temperature as a line, the arid months hatched ---- */
+.dgc-plot { fill: var(--surface); stroke: var(--line); stroke-width: 2; }
+.dgc-band { fill: color-mix(in srgb, var(--muted) 20%, var(--surface)); stroke: var(--line); stroke-width: 2; }
+.dgc-junction { stroke: var(--muted); stroke-width: 2; stroke-dasharray: 7 5; }
+.dgc-bar { stroke: none; }
+.dgc-line { fill: none; stroke-width: 3.5; stroke-linejoin: round; stroke-linecap: round; }
+.dgc-dashed { stroke-dasharray: 9 6; }
+.dgc-dot, .dgc-dot-square { stroke: var(--surface); stroke-width: 2; }
+.dgc-ring { fill: none; stroke-width: 3; }
+.dgc-guide { stroke: var(--muted); stroke-width: 1.6; stroke-dasharray: 3 4; }
+.dgc-bracket { fill: none; stroke-width: 3; stroke-linecap: round; }
+.dgc-arid { stroke: var(--text); stroke-width: 1; }
+.dgc-cursor { fill: color-mix(in srgb, var(--text) 9%, transparent); stroke: var(--text); stroke-width: 2; stroke-dasharray: 6 4; }
+.dgc-target { fill: transparent; stroke: none; }
+.dgc-month { font-weight: 700; }
+.dgc-axis-title { color: var(--muted); font-weight: 700; }
+.dgc-tick { color: var(--text); }
+.dgc-readout { font-weight: 700; }
+
+/* ---- seats: a full dot says yes, a ring says no, a small faint dot is absent ---- */
+.dgs-g0 { --seat: var(--text); }
+.dgs-g1 { --seat: color-mix(in srgb, var(--text) 62%, var(--surface)); }
+.dgs-g2 { --seat: color-mix(in srgb, var(--text) 42%, var(--surface)); }
+.dgs-g3 { --seat: color-mix(in srgb, var(--text) 82%, var(--surface)); }
+.dgs-other { --seat: color-mix(in srgb, var(--text) 52%, var(--surface)); }
+.dgs-g0, .dgs-g1, .dgs-g2, .dgs-g3, .dgs-other { fill: var(--seat); color: var(--seat); }
+.dgs-yes { stroke: none; }
+.dgs-no { fill: none; stroke: currentColor; stroke-width: 2; }
+.dgs-absent { stroke: none; opacity: 0.45; }
+.dgs-legend, .dgs-line { color: var(--text); }
+.dgs-line { font-weight: 600; }
+
+/* ---- bar_model: parts of a bar, or the double number line of a percentage ---- */
+.dgq-part { stroke: var(--text); stroke-width: 2; }
+.dgq-p0 { fill: color-mix(in srgb, var(--text) 8%, var(--surface)); }
+.dgq-p1 { fill: color-mix(in srgb, var(--text) 18%, var(--surface)); }
+.dgq-p2 { fill: color-mix(in srgb, var(--text) 30%, var(--surface)); }
+.dgq-p3 { fill: color-mix(in srgb, var(--text) 12%, var(--surface)); }
+.dgq-base, .dgq-neutral { fill: color-mix(in srgb, var(--text) 10%, var(--surface)); }
+.dgq-hidden { fill: var(--surface); stroke-dasharray: 7 5; }
+.dgq-extra { fill: var(--surface); stroke-dasharray: 5 4; }
+.dgq-tick { stroke: var(--text); stroke-width: 2; }
+.dgq-brace { fill: none; stroke: var(--text); stroke-width: 2.5; stroke-linejoin: round; }
+.dgq-target { fill: transparent; stroke: none; }
+.dgq-value, .dgq-euro { font-weight: 700; }
+.dgq-total { font-weight: 700; }
+
+@media (forced-colors: active) {
+  .dgc-bar, .dgc-dot, .dgc-dot-square, .dgs-yes, .dgs-absent { fill: CanvasText; }
+  .dgc-line, .dgc-ring, .dgc-bracket, .dgs-no { stroke: CanvasText; }
+  .dgc-plot, .dgq-part { stroke: CanvasText; }
+  .dg-patink { stroke: CanvasText; }
+  .dgc-cursor { stroke: Highlight; fill: transparent; }
+}
+
+@media print {
+  .dg-ctl { display: none; }
+  .dg-values > summary { display: none; }
+  .dg-values { break-inside: avoid; }
+}

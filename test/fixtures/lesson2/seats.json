@@ -1,0 +1,305 @@
+{
+ "version": 1,
+ "description": "The seats' arithmetic (Lessons::Diagrams::Seats.thresholds and .approved, lesson/diagrams/chart/seats.js): integers only. need and met are null when they cannot be known. `why` is the reasoning, checked by hand. Invented houses.",
+ "cases": [
+  {
+   "name": "house-of-400",
+   "why": "400/2+1=201; 320/2+1=161; ceil(800/3)=267; ceil(1200/5)=240; 170 yes meets only 161",
+   "seats": 400,
+   "present": 320,
+   "yes": 170,
+   "list": [
+    "legal_number",
+    "present_majority",
+    "absolute_majority",
+    "two_thirds",
+    "three_fifths"
+   ],
+   "expect": {
+    "legal_number": {
+     "need": 201,
+     "met": true
+    },
+    "present_majority": {
+     "need": 161,
+     "met": true
+    },
+    "absolute_majority": {
+     "need": 201,
+     "met": false
+    },
+    "two_thirds": {
+     "need": 267,
+     "met": false
+    },
+    "three_fifths": {
+     "need": 240,
+     "met": false
+    }
+   },
+   "approved": false
+  },
+  {
+   "name": "a-tie-fails",
+   "why": "half of 320 is 160: a tie is not a majority, 161 are needed",
+   "seats": 400,
+   "present": 320,
+   "yes": 160,
+   "list": [
+    "present_majority"
+   ],
+   "expect": {
+    "present_majority": {
+     "need": 161,
+     "met": false
+    }
+   },
+   "approved": false
+  },
+  {
+   "name": "odd-present",
+   "why": "floor(321/2)+1=161",
+   "seats": 400,
+   "present": 321,
+   "yes": 161,
+   "list": [
+    "present_majority"
+   ],
+   "expect": {
+    "present_majority": {
+     "need": 161,
+     "met": true
+    }
+   },
+   "approved": true
+  },
+  {
+   "name": "small-present",
+   "why": "floor(99/2)+1=50",
+   "seats": 400,
+   "present": 99,
+   "yes": 50,
+   "list": [
+    "present_majority"
+   ],
+   "expect": {
+    "present_majority": {
+     "need": 50,
+     "met": true
+    }
+   },
+   "approved": true
+  },
+  {
+   "name": "no-quorum",
+   "why": "200 present is below 201: the house cannot vote even with enough yes",
+   "seats": 400,
+   "present": 200,
+   "yes": 150,
+   "list": [
+    "legal_number",
+    "present_majority"
+   ],
+   "expect": {
+    "legal_number": {
+     "need": 201,
+     "met": false
+    },
+    "present_majority": {
+     "need": 101,
+     "met": true
+    }
+   },
+   "approved": false
+  },
+  {
+   "name": "camera-630",
+   "why": "630/2+1=316; ceil(1260/3)=420 exactly; ceil(1890/5)=378",
+   "seats": 630,
+   "present": 600,
+   "yes": 420,
+   "list": [
+    "legal_number",
+    "two_thirds",
+    "three_fifths"
+   ],
+   "expect": {
+    "legal_number": {
+     "need": 316,
+     "met": true
+    },
+    "two_thirds": {
+     "need": 420,
+     "met": true
+    },
+    "three_fifths": {
+     "need": 378,
+     "met": true
+    }
+   },
+   "approved": true
+  },
+  {
+   "name": "senato-315",
+   "why": "ceil(630/3)=210; ceil(945/5)=189; 209 is one short of two thirds",
+   "seats": 315,
+   "present": 315,
+   "yes": 209,
+   "list": [
+    "two_thirds",
+    "three_fifths"
+   ],
+   "expect": {
+    "two_thirds": {
+     "need": 210,
+     "met": false
+    },
+    "three_fifths": {
+     "need": 189,
+     "met": true
+    }
+   },
+   "approved": false
+  },
+  {
+   "name": "odd-house-401",
+   "why": "401/2+1=201; ceil(802/3)=268 (267.33); ceil(1203/5)=241 (240.6)",
+   "seats": 401,
+   "present": 401,
+   "yes": 267,
+   "list": [
+    "legal_number",
+    "two_thirds",
+    "three_fifths"
+   ],
+   "expect": {
+    "legal_number": {
+     "need": 201,
+     "met": true
+    },
+    "two_thirds": {
+     "need": 268,
+     "met": false
+    },
+    "three_fifths": {
+     "need": 241,
+     "met": true
+    }
+   },
+   "approved": false
+  },
+  {
+   "name": "tiny-house-5",
+   "why": "5/2+1=3; ceil(10/3)=4; ceil(15/5)=3",
+   "seats": 5,
+   "present": 5,
+   "yes": 3,
+   "list": [
+    "legal_number",
+    "present_majority",
+    "two_thirds",
+    "three_fifths"
+   ],
+   "expect": {
+    "legal_number": {
+     "need": 3,
+     "met": true
+    },
+    "present_majority": {
+     "need": 3,
+     "met": true
+    },
+    "two_thirds": {
+     "need": 4,
+     "met": false
+    },
+    "three_fifths": {
+     "need": 3,
+     "met": true
+    }
+   },
+   "approved": false
+  },
+  {
+   "name": "house-of-one",
+   "why": "floor(1/2)+1=1",
+   "seats": 1,
+   "present": 1,
+   "yes": 1,
+   "list": [
+    "legal_number",
+    "absolute_majority"
+   ],
+   "expect": {
+    "legal_number": {
+     "need": 1,
+     "met": true
+    },
+    "absolute_majority": {
+     "need": 1,
+     "met": true
+    }
+   },
+   "approved": true
+  },
+  {
+   "name": "nothing-voted-yet",
+   "why": "without present the quorum cannot be tested and the majority of the present has no number",
+   "seats": 400,
+   "present": null,
+   "yes": null,
+   "list": [
+    "legal_number",
+    "present_majority",
+    "absolute_majority"
+   ],
+   "expect": {
+    "legal_number": {
+     "need": 201,
+     "met": null
+    },
+    "present_majority": {
+     "need": null,
+     "met": null
+    },
+    "absolute_majority": {
+     "need": 201,
+     "met": null
+    }
+   },
+   "approved": null
+  },
+  {
+   "name": "present-no-vote",
+   "why": "present known, yes not yet: the quorum is met, the vote is open",
+   "seats": 400,
+   "present": 300,
+   "yes": null,
+   "list": [
+    "legal_number",
+    "present_majority"
+   ],
+   "expect": {
+    "legal_number": {
+     "need": 201,
+     "met": true
+    },
+    "present_majority": {
+     "need": 151,
+     "met": null
+    }
+   },
+   "approved": null
+  },
+  {
+   "name": "nothing-listed",
+   "why": "no threshold: nothing decides",
+   "seats": 400,
+   "present": 300,
+   "yes": 200,
+   "list": [],
+   "expect": {},
+   "approved": null
+  }
+ ]
+}

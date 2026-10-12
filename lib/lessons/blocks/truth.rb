@@ -94,14 +94,14 @@ module Lessons
         # the second argument is the index of the state (the types read Diagrams.effective_states(data)[state] themselves)
         count = [ Array(figure["states"]).size, 1 ].max
         (0...count).flat_map { |i| Array(mod.printed(figure, i)).map(&:to_s) }
-      rescue NotImplementedError
-        []
+      rescue NotImplementedError, StandardError
+        [] # not built, or a figure whose data is wrong (its own findings say so)
       end
 
       def reachable(figure)
         mod = Diagrams.module_for(figure["type"])
         mod.is_a?(Diagrams::Contract) ? mod.reachable(figure).then { |r| r == :over_cap ? r : Array(r).map(&:to_s) } : []
-      rescue NotImplementedError
+      rescue NotImplementedError, StandardError
         []
       end
 

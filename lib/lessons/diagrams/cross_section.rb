@@ -177,7 +177,7 @@ module Lessons
       end
 
       def served(data, mode: :student, **)
-        return StudentBody.diagram(data) unless mode.to_sym == :select
+        return StudentBody.diagram_generic(data) unless mode.to_sym == :select
 
         eff = effective(data, 0)
         out = data.slice("type", "alt_it", "caption_it", "size", "x", "points")

@@ -93,6 +93,18 @@ module Lessons
       eff.empty? ? data : data.merge("states" => eff)
     end
 
+    # The module of a diagram type, or nil.
+    def module_for(type) = TYPES.key?(type) ? const_get(TYPES.fetch(type)) : nil
+
+    # The served form a type's module builds itself (a station resolved, a hidden value cut out, a computed value added), or nil when the
+    # type is served as the generic projection says (StudentBody.diagram_generic). A stub raises NotImplementedError: nil too.
+    def served(data, mode: :student)
+      mod = module_for(data["type"])
+      mod.respond_to?(:served) ? mod.served(data, mode: mode) : nil
+    rescue NotImplementedError
+      nil
+    end
+
     def label_words(text) = text.to_s.gsub(/\$[^$]*\$/, "M").split.size
 
     # Findings [Finding] of a diagram (type known to the schema) for a lesson of +subject+.
