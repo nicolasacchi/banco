@@ -29,7 +29,7 @@ module Lessons
       end
     end
 
-    ROLE_NAME = /\A[a-z]+(-[a-z]+)*\z/
+    ROLE_NAME = /\A[a-z]+([_-][a-z]+)*\z/
     LINK_TARGET = /\A[a-z0-9.-]+\z/
     LINK_KINDS = %w[scheda argomento].freeze
     # Commands that would let an agent reach KaTeX's trust functions or redefine the macro (A5).
@@ -219,7 +219,7 @@ module Lessons
       inner = text[(start + 2)...stop]
       name, body = inner.split(":", 2)
       raise Refused.new(line, "a [[ that is not a colour role span ([[role:text]])") if body.nil?
-      raise Refused.new(line, "a colour role name that is not lowercase letters and hyphens") unless name.match?(ROLE_NAME)
+      raise Refused.new(line, "a colour role name that is not lowercase letters, hyphens and underscores") unless name.match?(ROLE_NAME)
       raise Refused.new(line, "a colour role span inside a colour role span") if outside_math(body).include?("[[")
       raise Refused.new(line, "a colour role span without text") if body.strip.empty?
 
@@ -269,7 +269,7 @@ module Lessons
     end
 
     # A formula of a lesson/2 text: no command that reaches KaTeX's trust functions or redefines a macro, and
-    # \role{name}{tex} with a name made of lowercase letters and hyphens.
+    # \role{name}{tex} with a name made of lowercase letters, hyphens and underscores.
     def check_tex(tex, line)
       if (m = tex.match(FORBIDDEN_TEX))
         raise Refused.new(line, "a command that is not allowed in a formula (\\#{m[1]})")
@@ -277,7 +277,7 @@ module Lessons
       tex.scan(/\\role(?![A-Za-z])(.{0,80})/m).each do |(rest)|
         group = rest.match(/\A\{([^{}]*)\}\{/)
         raise Refused.new(line, "\\role takes a role name and a formula") unless group
-        raise Refused.new(line, "a colour role name that is not lowercase letters and hyphens") unless group[1].match?(ROLE_NAME)
+        raise Refused.new(line, "a colour role name that is not lowercase letters, hyphens and underscores") unless group[1].match?(ROLE_NAME)
       end
     end
 

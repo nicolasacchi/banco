@@ -4,7 +4,12 @@
 # plus the list of the lesson's subject. `ui` is for our own templates (navigation, feedback, callouts);
 # an agent cannot name it. A subject list has at most 30 icons. A new icon is a change of this file and
 # a D entry. Generic: nothing here is about a person.
-version: 1
+#
+# Version 2 (W2-D02): a list per subject for the nine subjects of wave 2; bin/build-icons makes one sprite per subject
+# (banco-sprite-SUBJECT.svg) beside the structural one (banco-sprite.svg: structural and ui). A name in two lists points
+# at the same file; the browser takes the icon from the first sprite that has it (palette.js `sprites`). The icons of a
+# role with `same_as` and of a step tag must be in the subject's list or the structural list.
+version: 2
 lucide: "1.54.0"
 
 # Role defaults of cards and general content icons. Fixed, global, usable by agents.
@@ -42,6 +47,10 @@ ui:
   description: file-text          # "Descrizione" of a diagram
   show: eye
   pin: pin
+  listen: volume-2                # "Ascolta"
+  listen-stop: square             # stops the voice
+  slower: turtle                  # "Più lento"
+  glossary: book-a                # a glossary word
 
 # Content icons by subject (at most 30 each). Subjects not listed here use `structural` only.
 subjects:
@@ -91,3 +100,250 @@ subjects:
     pen-line: pen-line
     undo-2: undo-2
     message-circle-question: message-circle-question
+  biology:
+    microscope: microscope
+    dna: dna
+    leaf: leaf
+    sprout: sprout
+    paw-print: paw-print
+    pill: pill
+    circle-dot: circle-dot
+    circle: circle
+    pentagon: pentagon
+    rectangle-horizontal: rectangle-horizontal
+    ruler: ruler
+    scaling: scaling
+    zoom-in: zoom-in
+    layers: layers
+    link-2: link-2
+    copy: copy
+    git-compare: git-compare
+    book-a: book-a
+    puzzle: puzzle
+    droplet: droplet
+    sun: sun
+    recycle: recycle
+    heart-pulse: heart-pulse
+    boxes: boxes
+    eye: eye
+    hash: hash
+    percent: percent
+    tag: tag
+    git-branch: git-branch
+    scan-eye: scan-eye
+  business:
+    receipt: receipt
+    percent: percent
+    tag: tag
+    square-dashed: square-dashed
+    sigma: sigma
+    check-check: check-check
+    calculator: calculator
+    pen-line: pen-line
+    signature: signature
+    type: type
+    calendar-days: calendar-days
+    clock: clock
+    hourglass: hourglass
+    landmark: landmark
+    wallet: wallet
+    piggy-bank: piggy-bank
+    user-plus: user-plus
+    banknote: banknote
+    package: package
+    truck: truck
+    handshake: handshake
+    megaphone: megaphone
+    repeat: repeat
+    arrow-right-left: arrow-right-left
+    store: store
+    scale: scale
+    coins: coins
+    file-text: file-text
+  chemistry:
+    atom: atom
+    flask-conical: flask-conical
+    test-tube: test-tube
+    beaker: beaker
+    thermometer: thermometer
+    thermometer-sun: thermometer-sun
+    thermometer-snowflake: thermometer-snowflake
+    flame: flame
+    snowflake: snowflake
+    droplet: droplet
+    droplets: droplets
+    wind: wind
+    cuboid: cuboid
+    boxes: boxes
+    syringe: syringe
+    recycle: recycle
+    case-sensitive: case-sensitive
+    subscript: subscript
+    parentheses: parentheses
+    hash: hash
+    sigma: sigma
+    x: x
+    scan-eye: scan-eye
+    tag: tag
+    layers-3: layers-3
+    git-compare: git-compare
+    chart-line: chart-line
+    mountain: mountain
+    move-horizontal: move-horizontal
+    check-check: check-check
+  computer_science:
+    workflow: workflow
+    box: box
+    equal-not: equal-not
+    arrow-left-right: arrow-left-right
+    diamond: diamond
+    repeat: repeat
+    list-ordered: list-ordered
+    code-xml: code-xml
+    monitor: monitor
+    keyboard: keyboard
+    binary: binary
+    rotate-ccw: rotate-ccw
+    weight: weight
+    flip-horizontal-2: flip-horizontal-2
+    plus: plus
+    ruler: ruler
+    sigma: sigma
+    check-check: check-check
+    divide: divide
+    sheet: sheet
+    lock: lock
+    copy: copy
+    mouse-pointer-click: mouse-pointer-click
+    palette: palette
+    type: type
+    toggle-right: toggle-right
+    scale: scale
+    circle-minus: circle-minus
+    corner-up-left: corner-up-left
+    move-down: move-down
+  english:
+    volume-2: volume-2
+    languages: languages
+    hourglass: hourglass
+    scissors: scissors
+    key-round: key-round
+    flag: flag
+    hand-helping: hand-helping
+    message-square: message-square
+    clock: clock
+    box: box
+    user: user
+    user-round: user-round
+    zap: zap
+    repeat: repeat
+    check-check: check-check
+    equal: equal
+    list-ordered: list-ordered
+  spanish:
+    scissors: scissors
+    users: users
+    replace: replace
+    puzzle: puzzle
+    volume-2: volume-2
+    box: box
+    hand-helping: hand-helping
+    arrow-left-right: arrow-left-right
+    move-horizontal: move-horizontal
+    pen-line: pen-line
+    message-circle: message-circle
+    book-a: book-a
+    footprints: footprints
+    flower: flower
+    gift: gift
+    zap: zap
+    languages: languages
+  geography:
+    thermometer: thermometer
+    cloud-rain: cloud-rain
+    sun: sun
+    sun-dim: sun-dim
+    snowflake: snowflake
+    leaf: leaf
+    trees: trees
+    tree-palm: tree-palm
+    mountain: mountain
+    mountain-snow: mountain-snow
+    waves: waves
+    droplets: droplets
+    globe: globe
+    earth: earth
+    map-pin: map-pin
+    route: route
+    users: users
+    languages: languages
+    landmark: landmark
+    factory: factory
+    wheat: wheat
+    ship: ship
+    coins: coins
+    chart-column: chart-column
+    building-2: building-2
+    flame: flame
+    git-branch: git-branch
+    link: link
+    calculator: calculator
+  history:
+    landmark: landmark
+    users: users
+    vote: vote
+    crown: crown
+    milestone: milestone
+    flag: flag
+    scroll-text: scroll-text
+    hourglass: hourglass
+    calendar: calendar
+    swords: swords
+    shield: shield
+    coins: coins
+    wheat: wheat
+    church: church
+    route: route
+    map-pin: map-pin
+    waves: waves
+    mountain: mountain
+    ship: ship
+    image: image
+    git-branch: git-branch
+    signpost: signpost
+    messages-square: messages-square
+    list-ordered: list-ordered
+    quote: quote
+    search: search
+    pin: pin
+    arrow-right: arrow-right
+    user: user
+    target: target
+  law_economics:
+    handshake: handshake
+    signature: signature
+    file-text: file-text
+    stamp: stamp
+    newspaper: newspaper
+    landmark: landmark
+    gavel: gavel
+    scroll-text: scroll-text
+    users: users
+    briefcase: briefcase
+    shield: shield
+    key-round: key-round
+    hand-coins: hand-coins
+    vote: vote
+    route: route
+    repeat: repeat
+    undo-2: undo-2
+    calendar-days: calendar-days
+    clock: clock
+    ban: ban
+    git-branch: git-branch
+    book-a: book-a
+    building-2: building-2
+    crown: crown
+    user: user
+    arrow-left-right: arrow-left-right
+    calculator: calculator

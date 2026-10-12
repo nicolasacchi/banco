@@ -12,16 +12,19 @@ class LessonPaletteTest < ActiveSupport::TestCase
   # (white) takes the cream colours, which are dark enough on white.
   THEMES = { "cream" => { bg: "#fbf3df", surface: "#fffaf0", text: "#1c1a14" }, "dark" => { bg: "#1b1a17", surface: "#25231f", text: "#f3ecdc" } }.freeze
   LIGHT = { bg: "#ffffff", surface: "#f5f5f5", text: "#111111" }.freeze
-  SHAPES = %w[box weight circle square triangle diamond ring star].freeze
+  SHAPES = %w[box weight circle square triangle diamond ring star pentagon].freeze
   CARRIERS = %w[glyph position icon tint band].freeze
-  SUBJECTS = %w[math italian].freeze
+  # the eleven subjects of the file (version 2): math and italian of release 1, the nine of wave 2
+  SUBJECTS = %w[math italian english spanish history geography law_economics business biology chemistry computer_science].freeze
 
-  def roles(subject) = PALETTE.fetch(subject).fetch("roles")
+  # a subject's own roles with `same_as` resolved (Lessons::Palette)
+  def roles(subject) = Lessons::Palette.subject_roles(subject)
 
   def all_roles(subject) = PALETTE.fetch("common").merge(roles(subject))
 
   test "the file has a version, the rules and a palette per subject with at most eight roles beyond common" do
-    assert_equal 1, PALETTE["version"]
+    assert_equal 2, PALETTE["version"]
+    assert_equal SUBJECTS.sort, Lessons::Palette.subjects.sort
     SUBJECTS.each { |s| assert_operator roles(s).size, :<=, RULES["max_roles_per_subject"], s }
     assert_equal RULES["max_roles_per_subject"], 8
   end
@@ -30,7 +33,7 @@ class LessonPaletteTest < ActiveSupport::TestCase
     SUBJECTS.each do |subject|
       all_roles(subject).each do |name, role|
         where = "#{subject}.#{name}"
-        assert_match(/\A[a-z]+(-[a-z]+)*\z/, name, where)
+        assert_match(/\A[a-z]+([_-][a-z]+)*\z/, name, where)
         assert role["label_it"].to_s.size.positive?, where
         assert_includes CARRIERS, role["carrier"], where
         case role["carrier"]
@@ -105,18 +108,63 @@ class LessonPaletteTest < ActiveSupport::TestCase
     end
   end
 
-  test "roles that share a diagram stay apart under protanopia, deuteranopia and tritanopia" do
+  def pair_needs(ra, rb)
     minimum = RULES["cvd_min_delta_e"]
-    SUBJECTS.each do |subject|
-      roles = roles(subject).reject { |_, r| r["carrier"] == "band" }
-      THEMES.each_key do |theme|
-        roles.to_a.combination(2).each do |(a, ra), (b, rb)|
-          needs = [ ra, rb ].any? { |r| r["carrier"] == "icon" } ? minimum["icon"] : minimum["colour"]
-          distance = C.cvd_distance(ra["mark"][theme], rb["mark"][theme])
-          assert_operator distance, :>=, needs, "#{subject}: #{a} and #{b} in #{theme} are #{distance.round(1)} apart"
-        end
+    [ ra, rb ].any? { |r| r["carrier"] == "icon" } ? minimum["icon"] : minimum["colour"]
+  end
+
+  def check_distinct(label, named_roles)
+    THEMES.each_key do |theme|
+      named_roles.to_a.combination(2).each do |(a, ra), (b, rb)|
+        distance = C.cvd_distance(ra["mark"][theme], rb["mark"][theme])
+        assert_operator distance, :>=, pair_needs(ra, rb), "#{label}: #{a} and #{b} in #{theme} are #{distance.round(1)} apart"
       end
     end
+  end
+
+  test "roles that share a diagram stay apart under protanopia, deuteranopia and tritanopia" do
+    SUBJECTS.each { |subject| check_distinct(subject, roles(subject).reject { |_, r| r["carrier"] == "band" }) }
+  end
+
+  # Every mix a page can show (WAVE2 1.3): a subject's roles with the roles of each home palette it embeds, as one set (a
+  # computer science card with math's balance), and with the roles its same_as roles point to (already in the subject's set).
+  test "the mixes a page can show keep every carrier distinct: a subject with the roles of the home palettes it embeds" do
+    embedded = SUBJECTS.select { |s| Lessons::Palette.embeds(s).any? }
+    assert_includes embedded, "computer_science"
+    assert_includes embedded, "biology"
+    embedded.each do |subject|
+      mix = roles(subject).transform_keys { |k| "#{subject}.#{k}" }
+      Lessons::Palette.embeds(subject).each do |home, names|
+        assert_includes SUBJECTS, home
+        names.each do |name|
+          assert roles(home).key?(name), "#{subject} embeds #{home}.#{name}, which is not a role"
+          mix["#{home}.#{name}"] = roles(home).fetch(name)
+        end
+      end
+      check_distinct("#{subject} with #{Lessons::Palette.embeds(subject).keys.join(', ')}", mix)
+      icons = mix.values.filter_map { |r| r["icon"] }
+      assert_equal icons.uniq.size, icons.size, "#{subject}: an icon is used twice in the mix"
+    end
+  end
+
+  test "same_as copies a role of another subject (never a copy), the centre role exists, the span kinds are not role names" do
+    SUBJECTS.each do |subject|
+      PALETTE.fetch(subject).fetch("roles").each do |name, role|
+        refute_includes Lessons::Palette::RESERVED_SPAN_KINDS, name, "#{subject}.#{name}"
+        next unless role["same_as"]
+
+        owner_subject, owner_role = role["same_as"].split(".")
+        refute_equal subject, owner_subject, "#{subject}.#{name} copies a role of its own subject"
+        owner = PALETTE.fetch(owner_subject).fetch("roles").fetch(owner_role)
+        assert_nil owner["same_as"], "#{subject}.#{name}: a copy of a copy"
+        assert_equal(owner.slice("carrier", "icon", "shape", "fg", "mark", "tint"), roles(subject).fetch(name).slice("carrier", "icon", "shape", "fg", "mark", "tint"))
+        assert_empty role.keys - %w[same_as label_it question_it], "#{subject}.#{name} sets only same_as, label_it and question_it"
+      end
+      centre = Lessons::Palette.centre_role(subject)
+      assert roles(subject).key?(centre), "#{subject}: centre_role #{centre}" if centre
+    end
+    assert_equal "predicate", Lessons::Palette.centre_role("italian") if Lessons::Palette.centre_role("italian")
+    %w[english spanish].each { |s| assert_equal "verb", Lessons::Palette.centre_role(s) }
   end
 
   test "an icon role has an icon no other role of the subject uses, and a shape of its own" do
@@ -138,11 +186,12 @@ class LessonPaletteTest < ActiveSupport::TestCase
     assert_operator C.cvd_distance("#ff0000", "#00ff00"), :<, 25
   end
 
-  test "the step tags name icons of the subject's list or the structural list" do
+  test "the step tags name icons of the subject's list or the structural list, for every subject" do
+    assert_equal SUBJECTS.sort, PALETTE.fetch("step_tags").keys.sort
     PALETTE.fetch("step_tags").each do |subject, tags|
       allowed = ICONS["structural"].keys + ICONS["subjects"].fetch(subject).keys
       tags.each do |tag, t|
-        assert_match(/\A[a-z]+\z/, tag, subject)
+        assert_match(/\A[a-z][a-z0-9_]*\z/, tag, subject)
         assert t["label_it"].to_s.size.positive?, "#{subject}.#{tag}"
         assert_includes allowed, t["icon"], "#{subject}.#{tag}"
       end

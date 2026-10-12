@@ -73,7 +73,7 @@ function blockV2(lines, options) {
 export class Refused extends Error {}
 
 const FORBIDDEN_TEX = /\\(htmlClass|htmlId|htmlStyle|htmlData|href|url|includegraphics|def|gdef|edef|xdef|newcommand|renewcommand|providecommand|let|futurelet|global|char)(?![A-Za-z])/
-const ROLE_NAME = /^[a-z]+(-[a-z]+)*$/
+const ROLE_NAME = /^[a-z]+([_-][a-z]+)*$/
 const ROLE_SPAN = /^\[\[([a-z]+(?:-[a-z]+)*):/
 const LINK = /^\[([^\]\[]+)\]\((scheda|argomento):([a-z0-9.-]*)\)/
 
@@ -88,7 +88,7 @@ export function checkTex(tex) {
     if (/[A-Za-z]/.test(tex[at + 5] ?? "")) continue
     const m = tex.slice(at).match(/^\\role\{([^{}]*)\}\{/)
     if (!m) throw new Refused("\\role takes a role name and a formula")
-    if (!ROLE_NAME.test(m[1])) throw new Refused("a colour role name that is not lowercase letters and hyphens")
+    if (!ROLE_NAME.test(m[1])) throw new Refused("a colour role name that is not lowercase letters, hyphens and underscores")
   }
 }
 

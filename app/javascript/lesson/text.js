@@ -7,7 +7,7 @@ import { parse, Refused } from "items/markup_parser"
 import { el, icon } from "lesson/dom"
 import { colourTokens, displayPieces, displayTex } from "lesson/eq"
 
-const ROLE_CLASS = /^role-[a-z]+(-[a-z]+)*$/
+const ROLE_CLASS = /^role-[a-z]+([_-][a-z]+)*$/
 const NOT_EQUAL = "\\html@mathml{\\mathrel{\\text{\\char\"2260}}}{\\mathrel{\\char`≠}}"
 export const KATEX = {
   throwOnError: false,

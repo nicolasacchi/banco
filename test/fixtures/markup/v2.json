@@ -934,8 +934,8 @@
     "options": {
       "roles": true
     },
-    "note": "a role name is [a-z]+(-[a-z]+)*",
-    "error": "a colour role name that is not lowercase letters and hyphens",
+    "note": "a role name is [a-z]+([_-][a-z]+)*",
+    "error": "a colour role name that is not lowercase letters, hyphens and underscores",
     "line": 1,
     "js_refuses": true
   },
@@ -955,7 +955,7 @@
       "roles": true
     },
     "note": "",
-    "error": "a colour role name that is not lowercase letters and hyphens",
+    "error": "a colour role name that is not lowercase letters, hyphens and underscores",
     "line": 1
   },
   {

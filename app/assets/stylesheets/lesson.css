@@ -24,8 +24,8 @@
 
 
 /* the frame: one slim top bar (title, card counter, notices chip, icon buttons), the thin positional bar, shell, bottom bar */
-.l2 { --m1: var(--r-left-fg); --m1-bg: var(--r-left-tint); --m1-mark: var(--r-left-mark); --m2: var(--r-right-fg); --m2-bg: var(--r-right-tint); --m2-mark: var(--r-right-mark);
-  --x: var(--r-unknown-fg); --xfill: var(--r-unknown-mark); --num: var(--r-known-fg); --brass: #c79a38; --brass-dark: #8a6119; --metal: #1d3b5c;
+.l2 { --m1: var(--r-math-left-fg); --m1-bg: var(--r-math-left-tint); --m1-mark: var(--r-math-left-mark); --m2: var(--r-math-right-fg); --m2-bg: var(--r-math-right-tint); --m2-mark: var(--r-math-right-mark);
+  --x: var(--r-math-unknown-fg); --xfill: var(--r-math-unknown-mark); --num: var(--r-math-known-fg); --brass: #c79a38; --brass-dark: #8a6119; --metal: #1d3b5c;
   --soft-primary: color-mix(in srgb, var(--primary) 13%, var(--surface)); --paper: color-mix(in srgb, var(--surface) 55%, var(--bg)); --card-shadow: 0 1px 0 rgba(60, 45, 10, 0.05), 0 0.7em 1.7em -0.8em rgba(60, 45, 10, 0.3); }
 [data-theme="dark"] .l2, .l2-box[data-theme="dark"] .l2 { --metal: #8fb0d9; --card-shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 0.9em 2em -0.9em rgba(0, 0, 0, 0.7); }
 body.student:has(.l2-top) { background-image: linear-gradient(rgba(38, 58, 92, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(38, 58, 92, 0.06) 1px, transparent 1px); background-size: 26px 26px; }
@@ -132,7 +132,7 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) #trial-notice
 .l2-cover { padding-top: calc(var(--pad) * 0.9); }
 .l2-cover h1 { margin: 0.1em 0 0.3em; font-size: clamp(1.9em, 5.6vw, 3em); line-height: 1.05; letter-spacing: -0.02em; font-weight: 800; }
 .cover-lead { font-size: 1.15em; margin: 0.4em 0 0.6em; max-width: 34em; }
-.cover-hero { margin: 0.6em 0; padding: 0.3em; border-radius: 1.2em; background: radial-gradient(120% 90% at 50% 10%, color-mix(in srgb, var(--surface) 70%, var(--r-unknown-tint, #ece4fb)) 0%, var(--soft-primary) 80%); }
+.cover-hero { margin: 0.6em 0; padding: 0.3em; border-radius: 1.2em; background: radial-gradient(120% 90% at 50% 10%, color-mix(in srgb, var(--surface) 70%, var(--r-math-unknown-tint, #ece4fb)) 0%, var(--soft-primary) 80%); }
 .cover-hero .dg-top, .cover-hero .dg-controls, .cover-hero .dg-desc { display: none; }
 .cover-hero .dg-caption { text-align: center; margin: 0 0 0.4em; }
 .goals { list-style: none; padding: 0; margin: 0.4em 0 0.4em; display: grid; gap: 0.6em; }
@@ -157,8 +157,8 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) #trial-notice
 .callout-body p { margin: 0.2em 0; }
 .callout-warning { background: color-mix(in srgb, var(--brass) 18%, var(--surface)); border-left-color: var(--brass-dark); }
 .callout-warning .callout-ic { color: var(--brass-dark); }
-.callout-remember { background: color-mix(in srgb, var(--r-unknown-mark) 8%, var(--surface)); border-left-color: var(--r-unknown-mark); }
-.callout-remember .callout-ic { color: var(--r-unknown-fg); }
+.callout-remember { background: color-mix(in srgb, var(--r-math-unknown-mark) 8%, var(--surface)); border-left-color: var(--r-math-unknown-mark); }
+.callout-remember .callout-ic { color: var(--r-math-unknown-fg); }
 .callout-rule { background: var(--soft-primary); }
 
 /* formulas: the unknown and the numbers in their colours, a displayed equation as two member tiles */
@@ -185,15 +185,15 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) #trial-notice
 .l2 .eq-chain .katex { display: inline-block; }
 .l2 .eq-arrow { margin: 0 0.15em; }
 .l2 .eqd, .l2 .step-do .math, .l2 .example-problem .math { font-weight: 700; }
-.l2 .role-unknown { color: var(--r-unknown-fg); font-weight: 800; }
-.l2 .role-known { color: var(--r-known-fg); font-weight: 800; }
+.l2 .role-unknown { color: var(--r-math-unknown-fg); font-weight: 800; }
+.l2 .role-known { color: var(--r-math-known-fg); font-weight: 800; }
 .l2 .dg-label .role-unknown, .l2 .dg-label .role-known { font-weight: inherit; }
 .l2 .eqd .role-left, .l2 .eqd .role-right { padding: 0.04em 0.3em 0.1em; border-radius: 0.38em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
-.l2 .eqd .role-left { background: var(--r-left-tint); box-shadow: inset 0 -0.14em 0 var(--r-left-mark); color: var(--text); }
-.l2 .eqd .role-right { background: var(--r-right-tint); box-shadow: inset 0 -0.14em 0 var(--r-right-mark); color: var(--text); }
-.l2 .eqd .role-unknown { color: var(--r-unknown-fg); }
-.l2 .eqd .role-known { color: var(--r-known-fg); }
-.l2 .eqd .role-highlight, .l2 .katex .role-highlight { background: var(--r-highlight-tint); border-radius: 0.25em; box-shadow: 0 0 0 0.08em var(--r-highlight-tint); }
+.l2 .eqd .role-left { background: var(--r-math-left-tint); box-shadow: inset 0 -0.14em 0 var(--r-math-left-mark); color: var(--text); }
+.l2 .eqd .role-right { background: var(--r-math-right-tint); box-shadow: inset 0 -0.14em 0 var(--r-math-right-mark); color: var(--text); }
+.l2 .eqd .role-unknown { color: var(--r-math-unknown-fg); }
+.l2 .eqd .role-known { color: var(--r-math-known-fg); }
+.l2 .eqd .role-highlight, .l2 .katex .role-highlight { background: var(--r-common-highlight-tint); border-radius: 0.25em; box-shadow: 0 0 0 0.08em var(--r-common-highlight-tint); }
 .l2 p.eq-display { text-align: center; font-size: min(1.45em, 7.5cqw); margin: 0.3em 0; line-height: 1.8; max-width: none; }
 
 /* procedure */
@@ -216,7 +216,7 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) #trial-notice
 .step-example .eqd { font-size: 1.05em; }
 
 /* cases: compact rows (name, condition tile, one line, a small balance); one stepper on top sets x in all of them */
-.cases-try { display: flex; align-items: center; justify-content: center; gap: 0.5em 0.8em; flex-wrap: wrap; margin: 0.3em 0 0.8em; padding: 0.4em 0.9em; border-radius: 1em; background: color-mix(in srgb, var(--r-unknown-tint, #ece4fb) 75%, var(--surface)); border: 2px solid color-mix(in srgb, var(--x) 40%, var(--surface)); }
+.cases-try { display: flex; align-items: center; justify-content: center; gap: 0.5em 0.8em; flex-wrap: wrap; margin: 0.3em 0 0.8em; padding: 0.4em 0.9em; border-radius: 1em; background: color-mix(in srgb, var(--r-math-unknown-tint, #ece4fb) 75%, var(--surface)); border: 2px solid color-mix(in srgb, var(--x) 40%, var(--surface)); }
 .cases-try .dg-trylabel { flex: none; font-size: 1em; color: var(--text); margin-right: 0.3em; }
 .cases-try .dg-tryvalue { min-width: 3.4em; }
 .cases-try .button.dg-round { font-size: 1em; }
@@ -641,10 +641,10 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 .l2 .callout-ic { width: 1.8em; height: 1.8em; margin-top: 0; }
 .callout-head { font-size: 0.75em; line-height: 1.2; }
 .callout-body p { margin: 0.05em 0 0; }
-.callout-rule { background: color-mix(in srgb, var(--r-left-mark) 13%, var(--surface)); border-left-color: var(--r-left-mark); }
-.callout-rule .callout-ic { color: var(--r-left-mark); }
+.callout-rule { background: color-mix(in srgb, var(--r-math-left-mark) 13%, var(--surface)); border-left-color: var(--r-math-left-mark); }
+.callout-rule .callout-ic { color: var(--r-math-left-mark); }
 [data-theme="dark"] .callout-rule .callout-ic { color: var(--text); }
-.callout-tip { background: color-mix(in srgb, var(--r-highlight-tint) 55%, var(--surface)); border-left-color: var(--brass-dark); }
+.callout-tip { background: color-mix(in srgb, var(--r-common-highlight-tint) 55%, var(--surface)); border-left-color: var(--brass-dark); }
 .callout-tip .callout-ic { color: var(--brass-dark); }
 
 /* the legend chip sits under the card's content, small */

@@ -13,6 +13,7 @@ export function markerSvg(shape, cls = "") {
     case "triangle": add("polygon", { points: "12,3 22,21 2,21" }); break
     case "diamond": add("polygon", { points: "12,2 22,12 12,22 2,12" }); break
     case "ring": s.appendChild(svg("circle", { cx: 12, cy: 12, r: 8, fill: "none", "stroke-width": 4, class: cls })); break
+    case "pentagon": add("polygon", { points: "12,2 22,9.5 18.2,21 5.8,21 2,9.5" }); break
     case "star": add("polygon", { points: "12,2 15,9 22,9.5 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9.5 9,9" }); break
     default: add("circle", { cx: 12, cy: 12, r: 8 })
   }

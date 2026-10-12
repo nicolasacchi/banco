@@ -14,7 +14,7 @@ module Lessons
     HEADING = /\A## (?<title>.+?) \{(?<tag>[^{}]*)\}[ \t]*\z/
     SLUG = /\A[a-z0-9-]{1,32}\z/
     ICON = /\A[a-z][a-z0-9]*(-[a-z0-9]+)*\z/
-    ROLE_NAME = /\A[a-z]+(-[a-z]+)*\z/
+    ROLE_NAME = /\A[a-z]+([_-][a-z]+)*\z/
     FENCE_OPEN = /\A(:{3,4}) (.*)\z/
     FENCE_CLOSE = /\A:{3,4}\z/
 
