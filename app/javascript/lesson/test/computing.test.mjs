@@ -20,10 +20,10 @@ const SIZES = [18, 20, 26]
 const lay = (data, over = {}) => mods[data.type].layout(data, { width: 360, fontPx: 20, subject: "computer_science", state: 0, ...over })
 const numbers = (text) => text.match(/-?\d+/g) ?? []
 
-test("both types are in the registry as available modules that keep the contract", () => {
+test("both types are in the registry as available modules that keep the contract", async () => {
   for (const type of Object.keys(mods)) {
     assert.equal(registry.STATUS[type], "available")
-    assert.equal(registry.TYPES[type], mods[type])
+    assert.equal(await registry.load(type), mods[type])
     assert.deepEqual(checkModule(mods[type]), [], type)
   }
 })

@@ -1,7 +1,7 @@
 require "test_helper"
 require_relative "../../support/lesson2_fixtures"
 
-# Leak rules L4 and L5 on a card (Lessons::Leaks, WAVE2 1.4), with the register of T9 as the figure that prints and the figure that can be made
+# Leak rules L4 and L5 on a card (Lessons::Blocks::Truth, WAVE2 1.4), with the register of T9 as the figure that prints and the figure that can be made
 # to show values. The bad fixture of L4 is test/fixtures/lesson2/bad/check-answer-printed-by-register.md.
 class LeaksTest < ActiveSupport::TestCase
   def register(over = {})
@@ -13,14 +13,23 @@ class LeaksTest < ActiveSupport::TestCase
 
   def card(*blocks) = { "n" => 1, "blocks" => blocks.each_with_index.map { |b, i| b.merge("n" => i + 1) } }
 
-  def codes(card) = Lessons::Leaks.card(card, "/cards/0").map(&:code)
+  Collector = Struct.new(:codes) do
+    def at(*, **) = yield
+    def add(code, *, **) = codes << code
+  end
+
+  def codes(card)
+    out = Collector.new([])
+    Lessons::Blocks::Truth.card(card, "/cards/0", out)
+    out.codes
+  end
 
   test "L4: an answer a figure prints in any state is a warning, however the minus sign or the groups are written" do
     fig = { "type" => "diagram", "diagram" => register("states" => [ { "value" => "00000101" }, { "value" => "11111011" } ]) }
     assert_equal [ "W-CHECK-ANSWER-IN-DIAGRAM" ], codes(card(fig, number("-5")))
     assert_equal [ "W-CHECK-ANSWER-IN-DIAGRAM" ], codes(card(fig, number("5"))), "the first state prints 5"
-    assert_equal [ "W-CHECK-ANSWER-IN-DIAGRAM" ], codes(card(fig, { "component" => "normalized_text", "answer" => "1111 1011" }))
-    assert_equal [ "W-CHECK-ANSWER-IN-DIAGRAM" ], codes(card(fig, { "component" => "normalized_text", "answer" => "−128" })), "a weight"
+    assert_equal [ "W-CHECK-ANSWER-IN-DIAGRAM" ], codes(card(fig, { "type" => "check", "component" => "normalized_text", "answer" => "1111 1011" }))
+    assert_equal [ "W-CHECK-ANSWER-IN-DIAGRAM" ], codes(card(fig, { "type" => "check", "component" => "normalized_text", "answer" => "−128" })), "a weight"
     assert_empty codes(card(fig, number("7")))
   end
 
@@ -38,7 +47,7 @@ class LeaksTest < ActiveSupport::TestCase
   test "L5: a toggling register shows every value of its width, so a check that asks one of them is an error unless it says why not" do
     fig = { "type" => "diagram", "diagram" => register("toggle" => true, "value" => "00000000", "read" => "unsigned", "weights" => false) }
     assert_equal [ "E-CHECK-ANSWER-BY-SIMULATION" ], codes(card(fig, number("200"))), "200 is 11001000, one touch away from nothing at all"
-    assert_equal [ "E-CHECK-ANSWER-BY-SIMULATION" ], codes(card(fig, { "component" => "normalized_text", "answer" => "11001000" })), "and so is its digit string"
+    assert_equal [ "E-CHECK-ANSWER-BY-SIMULATION" ], codes(card(fig, { "type" => "check", "component" => "normalized_text", "answer" => "11001000" })), "and so is its digit string"
     assert_empty codes(card(fig, number("200", "reachable_ok_it" => "Il registro mostra i bit, non il perché del prodotto: la domanda è sulla procedura."))), "reachable_ok_it is the way past"
     assert_empty codes(card(fig, number("300"))), "a value the width cannot hold is not reachable"
     twos = { "type" => "diagram", "diagram" => register("toggle" => true, "value" => "00000000", "read" => "twos", "weights" => false) }
@@ -62,6 +71,6 @@ class LeaksTest < ActiveSupport::TestCase
     out = f.check(f.read("bad/check-answer-printed-by-register.md"), "math")
     hit = out.findings.find { |x| x.code == "W-CHECK-ANSWER-IN-DIAGRAM" }
     assert hit
-    assert_equal 56, hit.detail[:line]
+    assert_equal 58, hit.detail[:line], "the line of the answer key of the check"
   end
 end

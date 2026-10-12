@@ -13,21 +13,22 @@ const { checkModule, checkControls, defaultSegments, OPTIONAL_EXPORTS } = await 
 const { validate } = await import("lesson/schema")
 const { NotBuilt } = await import("lesson/lib/not_built")
 
-test("the registry knows 38 diagram types: the available ones eager, the rest behind a lazy loader, each with a module that keeps the contract", async () => {
+test("the registry knows 38 diagram types: the 9 core ones at once and 29 behind a lazy loader, each with a module that keeps the contract", async () => {
   assert.equal(Object.keys(registry.STATUS).length, 38)
-  assert.equal(Object.keys(registry.TYPES).length, Object.values(registry.STATUS).filter((s) => s === "available").length)
+  assert.equal(Object.keys(registry.TYPES).length, 9)
+  assert.deepEqual(Object.keys(registry.TYPES).sort(), Object.keys(registry.FAMILY).filter((t) => registry.FAMILY[t] === "core").sort())
   for (const [type, status] of Object.entries(registry.STATUS)) {
     const mod = await registry.load(type)
     assert.ok(mod, `${type} loads`)
     assert.deepEqual(checkModule(mod), [], type)
-    if (status === "available") assert.equal(registry.TYPES[type], mod, `${type} is eager`)
+    if (status === "available" && registry.FAMILY[type] === "core") assert.equal(registry.TYPES[type], mod, `${type} is eager`)
   }
   assert.equal(await registry.load("venn"), null)
 })
 
 test("a stub answers the contract's error and an empty description, and never throws", async () => {
   for (const type of Object.keys(registry.STATUS)) {
-    if (registry.STATUS[type] === "available") continue
+    if (registry.STATUS[type] === "available") continue // built: the vectors of its family say what it does
     const mod = await registry.load(type)
     const scene = mod.layout({ type }, { width: 390, fontPx: 18 })
     assert.equal(scene.error.code, "E-LESSON-DIAGRAM", type)

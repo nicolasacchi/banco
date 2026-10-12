@@ -1,0 +1,153 @@
+# The regions of the mediterraneo_antico base, composed from Natural Earth modern units (public
+# domain). The Ancient World Mapping Center's province polygons carry no names and are under the
+# ODbL (share-alike), so they are not used (bin/build-maps PROVENANCE). Every region is therefore an
+# APPROXIMATION made of whole modern countries, whole modern provinces of Greece and Turkey, the twenty
+# regions of Italy, or a modern country cut by a box [west, south, east, north]; the base prints
+# "Confini approssimativi". Reviewed per region by the teacher in the topic review (plan 2.3).
+#
+# unit syntax: "XXX"                a whole country (ISO alpha-3 or Natural Earth code)
+#              "XXX@w,s,e,n"        the country within the box (degrees)
+#              "XXX/Name"           an admin-1 unit of XXX whose name or region is Name (ITA, GRC, TUR)
+# why: what the region means and what the modern units miss.
+version: 2
+regions:
+  italia:
+    name_it: Italia
+    units: [ ITA/Toscana, ITA/Umbria, ITA/Marche, ITA/Lazio, ITA/Abruzzo, ITA/Molise, ITA/Campania, ITA/Apulia, ITA/Basilicata, ITA/Calabria ]
+    why: "La penisola a sud dell'Appennino settentrionale, senza la Gallia Cisalpina, le isole e la Rezia. Il confine a nord segue le regioni di oggi, non il Rubicone."
+  gallia-cisalpina:
+    name_it: Gallia Cisalpina
+    units: [ ITA/Piemonte, ITA/Valle d'Aosta, ITA/Lombardia, ITA/Veneto, ITA/Friuli-Venezia Giulia, ITA/Liguria, ITA/Emilia-Romagna ]
+    why: "La pianura padana e i suoi margini: il confine con l'Italia segue le regioni di oggi, non il Rubicone."
+  sicilia:
+    name_it: Sicilia
+    units: [ ITA/Sicily ]
+    why: "L'isola, provincia dal 241 a.C."
+  sardegna-corsica:
+    name_it: Sardegna e Corsica
+    units: [ ITA/Sardegna, "FRA@8.4,41.2,9.7,43.1" ]
+    why: "Le due isole, provincia dal 238 a.C."
+  hispania:
+    name_it: Hispania
+    units: [ ESP, PRT, AND ]
+    why: "La penisola iberica; le Baleari sono incluse."
+  gallia:
+    name_it: Gallia
+    units: [ "FRA@-5.5,41,8.3,51.3", BEL, LUX, CHE ]
+    why: "Francia continentale, Belgio, Lussemburgo e Svizzera; manca la riva sinistra del Reno in Germania."
+  britannia:
+    name_it: Britannia
+    units: [ "GBR@-6.5,49.8,2,55.1" ]
+    why: "L'isola fino alla latitudine del Vallo di Adriano (circa 55 gradi nord)."
+  hibernia:
+    name_it: Ibernia
+    units: [ IRL ]
+    why: "L'Irlanda, mai conquistata."
+  germania:
+    name_it: Germania
+    units: [ DEU, NLD, CZE ]
+    why: "La Germania libera e le province renane, senza la Danimarca e senza la Polonia."
+  rezia-norico:
+    name_it: Rezia e Norico
+    units: [ AUT, LIE, ITA/Trentino-Alto Adige ]
+    why: "Le Alpi orientali; manca la Baviera meridionale."
+  pannonia:
+    name_it: Pannonia
+    units: [ HUN, SVN ]
+    why: "La pianura a ovest del Danubio e la Slovenia; la Croazia del nord è nell'Illirico."
+  moesia:
+    name_it: Mesia
+    units: [ SRB, XKX ]
+    why: "La Serbia e il Kosovo; la Mesia Inferiore (la Dobrugia) sta nella Tracia e nella Dacia di oggi."
+  dacia:
+    name_it: Dacia
+    units: [ ROU ]
+    why: "La Romania di oggi; la provincia romana (106 d.C.) era solo la parte a ovest e a nord del Danubio."
+  illirico:
+    name_it: Illirico (Dalmazia)
+    units: [ HRV, BIH, MNE, ALB ]
+    why: "La costa orientale dell'Adriatico e il suo entroterra."
+  macedonia:
+    name_it: Macedonia
+    units: [ MKD, GRC/Dytiki Makedonia, GRC/Kentriki Makedonia, GRC/Anatoliki Makedonia kai Thraki, GRC/Ayion Oros ]
+    why: "La Macedonia greca e la Macedonia del Nord."
+  grecia-acaia:
+    name_it: Grecia (Acaia)
+    units: [ GRC/Ipeiros, GRC/Thessalia, GRC/Stereá Elláda, GRC/Attiki, GRC/Peloponnisos, GRC/Dytiki Ellada, GRC/Ionioi Nisoi, GRC/Notio Aigaio, GRC/Voreio Aigaio ]
+    why: "La Grecia continentale e le isole dell'Egeo, senza Creta e senza la Macedonia."
+  creta:
+    name_it: Creta
+    units: [ GRC/Kriti ]
+    why: "L'isola, unita alla Cirenaica in una provincia dal 67 a.C."
+  tracia:
+    name_it: Tracia
+    units: [ BGR, TUR/Edirne, TUR/Kirklareli, TUR/Tekirdag, TUR/Istanbul ]
+    why: "La Bulgaria e la Tracia turca; la provincia di Istanbul comprende anche la riva asiatica del Bosforo."
+  asia-provincia:
+    name_it: Asia
+    units: [ TUR/Çanakkale, TUR/Balikesir, TUR/Izmir, TUR/Manisa, TUR/Aydin, TUR/Mugla, TUR/Denizli, TUR/Kütahya, TUR/Usak, TUR/Afyonkarahisar ]
+    why: "La costa occidentale dell'Anatolia, provincia dal 133 a.C.; i confini seguono le province turche di oggi."
+  bitinia-ponto:
+    name_it: Bitinia e Ponto
+    units: [ TUR/Bursa, TUR/Bilecik, TUR/Sakarya, TUR/Kocaeli, TUR/Yalova, TUR/Düzce, TUR/Bolu, TUR/Zinguldak, TUR/Karabük, TUR/Bartın, TUR/Kastamonu, TUR/Sinop, TUR/Samsun, TUR/Amasya, TUR/Tokat, TUR/Çorum, TUR/Ordu, TUR/Giresun, TUR/Trabzon, TUR/Gümüshane, TUR/Rize ]
+    why: "La costa del Mar Nero in Anatolia; confini approssimati sulle province turche di oggi."
+  galazia:
+    name_it: Galazia
+    units: [ TUR/Ankara, TUR/Eskisehir, TUR/Çankiri, TUR/Kinkkale, TUR/Kirsehir, TUR/Yozgat, TUR/Konya, TUR/Karaman ]
+    why: "L'altopiano centrale dell'Anatolia; la Licaonia (Konya) apparteneva alla provincia dal 25 a.C."
+  cappadocia:
+    name_it: Cappadocia
+    units: [ TUR/Kayseri, TUR/Nevsehir, TUR/Nigde, TUR/Aksaray, TUR/Sivas, TUR/Malatya, TUR/K. Maras, TUR/Adiyaman ]
+    why: "L'Anatolia orientale-centrale; confini approssimati sulle province turche di oggi."
+  licia-cilicia:
+    name_it: Licia, Panfilia e Cilicia
+    units: [ TUR/Antalya, TUR/Isparta, TUR/Burdur, TUR/Mersin, TUR/Adana, TUR/Osmaniye ]
+    why: "La costa meridionale dell'Anatolia."
+  cipro:
+    name_it: Cipro
+    units: [ CYP, CYN ]
+    why: "L'isola intera, con la parte turca e quella greca."
+  siria:
+    name_it: Siria
+    units: [ SYR, LBN, TUR/Hatay, TUR/Gaziantep, TUR/Kilis ]
+    why: "La Siria, il Libano e il sud-est della Turchia con Antiochia; la Giudea è a parte."
+  giudea:
+    name_it: Giudea
+    units: [ ISR, PSE ]
+    why: "Israele e la Palestina di oggi."
+  arabia:
+    name_it: Arabia (Nabatea)
+    units: [ JOR ]
+    why: "La Giordania di oggi, con Petra; manca il Sinai."
+  egitto:
+    name_it: Egitto
+    units: [ EGY ]
+    why: "L'Egitto di oggi, deserti compresi."
+  cirenaica:
+    name_it: Cirenaica
+    units: [ "LBY@19,29.5,25.2,33" ]
+    why: "La costa orientale della Libia."
+  africa-proconsolare:
+    name_it: Africa (proconsolare)
+    units: [ TUN, "LBY@9,28,19,33.5" ]
+    why: "La Tunisia e la Tripolitania."
+  numidia:
+    name_it: Numidia
+    units: [ "DZA@4.8,34,8.7,37.3" ]
+    why: "L'Algeria nord-orientale; confini approssimati da una scatola, non dalle province."
+  mauretania:
+    name_it: Mauretania
+    units: [ "MAR@-13,30,-1,36", "DZA@-2.3,34,4.8,37.3" ]
+    why: "Il Marocco settentrionale e l'Algeria occidentale; confini approssimati da una scatola."
+  armenia:
+    name_it: Armenia
+    units: [ ARM, TUR/Erzurum, TUR/Erzincan, TUR/Bayburt, TUR/Kars, TUR/Ardahan, TUR/Agri, TUR/Iğdir, TUR/Van, TUR/Mus, TUR/Bitlis, TUR/Bingöl, TUR/Tunceli, TUR/Elazig ]
+    why: "L'altopiano armeno; confini approssimati sulle province turche di oggi."
+  mesopotamia:
+    name_it: Mesopotamia
+    units: [ IRQ, TUR/Mardin, TUR/Sanliurfa, TUR/Diyarbakir, TUR/Batman, TUR/Siirt, TUR/Sirnak ]
+    why: "L'Iraq e l'alta Mesopotamia turca (Edessa, Carre)."
+  partia:
+    name_it: Partia
+    units: [ IRN ]
+    why: "L'Iran di oggi, senza la Battriana e le terre a est."

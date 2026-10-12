@@ -2,94 +2,66 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:banco:data:geo-countries",
   "title": "banco data table geo/countries",
-  "description": "Area and population with year and source, per ISO alpha-3 id. Each value carries its source; a second table typed separately by another session is compared by the unit test; changed only by a D entry (WAVE2 1.9).",
+  "description": "Area and population with year and source, per ISO alpha-3 id. T5 data shape, version 2 (D-T5).",
   "type": "object",
-  "additionalProperties": false,
   "required": [
     "version",
+    "generated_by",
     "countries"
   ],
+  "additionalProperties": false,
   "properties": {
     "version": {
-      "const": 1
+      "const": 2
+    },
+    "generated_by": {
+      "type": "string"
     },
     "countries": {
       "type": "object",
-      "minProperties": 1,
       "propertyNames": {
-        "pattern": "^[A-Za-z][A-Za-z0-9_()-]*$"
+        "pattern": "^[A-Z]{3}$"
       },
       "additionalProperties": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "name_it",
-          "area_km2",
-          "population"
-        ],
         "properties": {
-          "name_it": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 60
-          },
-          "capital_it": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 40
-          },
           "area_km2": {
-            "type": "object",
-            "required": [
-              "value",
-              "year",
-              "source"
-            ],
-            "properties": {
-              "value": {
-                "type": "string",
-                "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
-                "description": "An exact number as a string, decimal comma (lesson/num)."
-              },
-              "year": {
-                "type": "integer",
-                "minimum": 1900,
-                "maximum": 2100
-              },
-              "source": {
-                "type": "string",
-                "minLength": 3,
-                "maxLength": 300,
-                "description": "Where the value comes from (a book, a standard, a dataset with its year); required on every row (WAVE2 1.9)."
-              }
-            }
+            "type": "integer",
+            "minimum": 1
+          },
+          "area_year": {
+            "type": "integer",
+            "minimum": 1990,
+            "maximum": 2100
+          },
+          "area_source": {
+            "type": "string",
+            "minLength": 1
           },
           "population": {
-            "type": "object",
-            "required": [
-              "value",
-              "year",
-              "source"
-            ],
-            "properties": {
-              "value": {
-                "type": "string",
-                "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$",
-                "description": "An exact number as a string, decimal comma (lesson/num)."
-              },
-              "year": {
-                "type": "integer",
-                "minimum": 1900,
-                "maximum": 2100
-              },
-              "source": {
-                "type": "string",
-                "minLength": 3,
-                "maxLength": 300,
-                "description": "Where the value comes from (a book, a standard, a dataset with its year); required on every row (WAVE2 1.9)."
-              }
-            }
+            "type": "integer",
+            "minimum": 1
+          },
+          "population_year": {
+            "type": "integer",
+            "minimum": 1990,
+            "maximum": 2100
+          },
+          "population_source": {
+            "type": "string",
+            "minLength": 1
           }
+        },
+        "dependentRequired": {
+          "area_km2": [
+            "area_year",
+            "area_source"
+          ],
+          "population": [
+            "population_year",
+            "population_source"
+          ]
         }
       }
     }

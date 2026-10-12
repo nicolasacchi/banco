@@ -5,7 +5,7 @@
   <%= stylesheet_link_tag "lesson_roles" %>
   <%= stylesheet_link_tag "lesson" %>
   <%= stylesheet_link_tag "lesson/checks" %>
-  <% lesson2_family_css(@student_body).each do |css| %><%= stylesheet_link_tag css %><% end %>
+  <%= lesson_family_stylesheets(@student_body) %>
 <% end %>
 <main class="lesson2-page" id="lesson-page">
   <p class="l2-back"><a href="/topics/<%= @topic.key %>"><%= t("lesson2.back_to_topic") %></a></p>

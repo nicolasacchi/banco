@@ -1,0 +1,14 @@
+banco-maps@1: licences of the data in the .js files
+
+Natural Earth (https://www.naturalearthdata.com/): all versions of Natural Earth raster and vector map data
+are in the public domain. You may use the maps in any manner, including modifying the content and design,
+electronic dissemination, and offset printing. No permission is needed; crediting is unnecessary.
+"Made with Natural Earth. Free vector and raster map data @ naturalearthdata.com."
+
+Pleiades (https://pleiades.stoa.org/), used by mediterraneo_antico.js only:
+Copyright (c) The Contributors. Sharing and remixing permitted under the terms of the
+Creative Commons Attribution 3.0 License (CC BY 3.0), https://creativecommons.org/licenses/by/3.0/.
+The coordinates of the places are from the Pleiades dump of 2026-10-11; the Italian names and the
+choice of places are ours.
+
+The paths, anchors and boxes in the files are our own derivative work of the sources above.

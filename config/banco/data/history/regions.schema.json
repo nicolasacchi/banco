@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:banco:data:history-regions",
+  "title": "history/regions: the regions of the mediterraneo_antico base, composed from Natural Earth units (W2-D08)",
+  "description": "The recipe of each ancient region (what modern units make its shape), apart from history/places (the points, with Pleiades) because the two have different sources and different rows. Version 2 adds the optional `since` year with its source (negative = a.C., no year 0, as lesson/chrono); there is no ad hoc key for dates. ids resolve per base: this table is read by the areas of mediterraneo_antico only.",
+  "type": "object",
+  "required": ["version", "regions"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 2 },
+    "regions": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z]+(-[a-z]+)*$" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["name_it", "units", "why"],
+        "additionalProperties": false,
+        "properties": {
+          "name_it": { "type": "string", "minLength": 1 },
+          "why": { "type": "string", "minLength": 20 },
+          "units": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "pattern": "^[A-Z]{3}(/[^/@]+|@-?[0-9.]+,-?[0-9.]+,-?[0-9.]+,-?[0-9.]+)?$" }
+          },
+          "since": {
+            "type": "integer",
+            "minimum": -1500,
+            "maximum": 1500,
+            "not": { "const": 0 },
+            "description": "The year from which the region is what the name says (a province from its year of creation); negative = a.C."
+          },
+          "since_source": { "type": "string", "minLength": 3, "maxLength": 300 }
+        },
+        "dependentRequired": { "since": ["since_source"] }
+      }
+    }
+  },
+  "x-banco-table": {
+    "name": "history/regions",
+    "track": "T5",
+    "used_by": ["map mediterraneo_antico"],
+    "second_table": false
+  }
+}

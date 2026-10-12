@@ -50,9 +50,9 @@
    "file": "bad/check-answer-printed-by-register.md",
    "base": "base.md",
    "code": "W-CHECK-ANSWER-IN-DIAGRAM",
-   "line": 56,
+   "line": 58,
    "construct": "check",
-   "note": "L4 (T9, with the register): a number check asking the value that a register of the same card prints; Lessons::Leaks reads the type's printed()"
+   "note": "L4 (T9, with the register): a number check asking the value that a register of the same card prints; Lessons::Blocks::Truth reads the type's printed()"
   },
   {
    "file": "bad/card-brace-in-title.md",

@@ -2,8 +2,8 @@
 # frozen_string_literal: true
 
 # Builds the browser's registries from config/banco/lesson_types.yml (D-264):
-#   app/javascript/lesson/diagrams/registry.js   the diagram types: the available ones imported eagerly (the nine of release 1
-#                                                until their successors are built), every other type behind a lazy loader, the
+#   app/javascript/lesson/diagrams/registry.js   the diagram types: the core ones (release 1) imported eagerly, every
+#                                                type of a wave 2 family behind a lazy loader, even when available, the
 #                                                status of each, the home palettes, and the layouts and views held back
 #   app/javascript/lesson/checks/registry.js     the check components (lesson/checks/*) and options, the same way
 #   app/javascript/lesson/voices.js              the accepted voices of config/banco/voices.yml (the voice gate of "Ascolta")
@@ -26,13 +26,15 @@ end
 
 # ---- diagrams
 diagrams = types.fetch("diagrams")
-eager = diagrams.select { |_, e| e["status"] == "available" }
-lazy = diagrams.reject { |_, e| e["status"] == "available" }
+# The core types of release 1 are imported at once; every type of a wave 2 family is loaded on demand even when it is available, so a
+# lesson that draws no map does not carry the maps (WAVE2 1.2: "the browser imports each type lazily").
+eager = diagrams.select { |_, e| e["status"] == "available" && e["family"] == "core" }
+lazy = diagrams.reject { |_, e| e["status"] == "available" && e["family"] == "core" }
 reg = +header
 reg << <<~JS
   // The diagram types of lesson/2 (A7, A8, WAVE2 1.2): type name -> module { layout, describe, ... }.
-  // The available types are imported at once; the others are loaded on demand (`load`, `preload`): the page head carries a
-  // modulepreload for each type the lesson uses, so a lesson with six types does not wait on six sequential imports.
+  // The core types are imported at once; every type of a wave 2 family is loaded on demand (`load`, `preload`): the page head
+  // carries a modulepreload for each type the lesson uses, so a lesson with six types does not wait on six sequential imports.
 JS
 eager.each { |name, e| reg << %(import * as #{ident.call(name)} from "#{module_file.call(e.fetch('module'))}"\n) }
 reg << %(import { run } from "lesson/diagrams/run"\n\n)

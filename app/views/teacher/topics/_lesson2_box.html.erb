@@ -7,7 +7,7 @@
   <%= stylesheet_link_tag "lesson_roles" %>
   <%= stylesheet_link_tag "lesson" %>
   <%= stylesheet_link_tag "lesson/checks" %>
-  <% lesson2_family_css(body).each do |css| %><%= stylesheet_link_tag css %><% end %>
+  <%= lesson_family_stylesheets(body) %>
 <% end %>
 <div class="l2-box-wrap" data-controller="lesson2-preview"
      data-lesson2-preview-revision-id-value="<%= revision.id %>"

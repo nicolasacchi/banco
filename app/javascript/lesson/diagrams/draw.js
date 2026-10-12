@@ -5,11 +5,12 @@
 // size and again on resize. If layout() answers { error } the figure shows alt_it and the description.
 import * as N from "lesson/num"
 import { button, clear, el, icon, spriteHref, svg, uid } from "lesson/dom"
-import { HOME_PALETTE, describe, layout, moduleFor, stateCount } from "lesson/diagrams/registry"
+import { HOME_PALETTE, STATUS, describe, layout, load, moduleFor, stateCount } from "lesson/diagrams/registry"
 import { tryValues, equationTex } from "lesson/diagrams/balance"
 import { buildStrip, declared, overlay } from "lesson/diagrams/controls"
 import { renderInlineRich, renderMath, renderRich } from "lesson/text"
 import { nearest, targetLabel } from "lesson/checks/select_model"
+import { controlNode, decorateTarget, defsNode, legendNode, padHit, patternRef, wireTargets } from "lesson/diagrams/scene_extras"
 
 const MARKERS = {
   // shapes of the palette (A6), drawn in a w x h box at x, y
@@ -22,16 +23,32 @@ const MARKERS = {
   square: (m) => [svg("rect", { x: m.x + 2, y: m.y + 2, width: m.w - 4, height: m.h - 4, class: m.cls })],
   triangle: (m) => [svg("polygon", { points: `${m.x + m.w / 2},${m.y + 1} ${m.x + m.w - 1},${m.y + m.h - 1} ${m.x + 1},${m.y + m.h - 1}`, class: m.cls })],
   diamond: (m) => [svg("polygon", { points: `${m.x + m.w / 2},${m.y + 1} ${m.x + m.w - 1},${m.y + m.h / 2} ${m.x + m.w / 2},${m.y + m.h - 1} ${m.x + 1},${m.y + m.h / 2}`, class: m.cls })],
+  // ring and star: the shapes of palette v2 roles (an open circle; a five-pointed star)
+  ring: (m) => [svg("circle", { cx: m.x + m.w / 2, cy: m.y + m.h / 2, r: Math.min(m.w, m.h) / 2 - 2, class: m.cls, fill: "none", "stroke-width": 3 })],
+  star: (m) => [svg("polygon", { points: [0, 1, 2, 3, 4].map((i) => { const a = (-90 + i * 144) * Math.PI / 180; return `${m.x + m.w / 2 + Math.cos(a) * (m.w / 2 - 1)},${m.y + m.h / 2 + Math.sin(a) * (m.h / 2 - 1)}` }).join(" "), class: m.cls })],
   // pentagon: the sugar of a nucleotide (palette v2)
   pentagon: (m) => [svg("polygon", { points: [[0.5, 0.04], [0.96, 0.38], [0.79, 0.94], [0.21, 0.94], [0.04, 0.38]].map(([fx, fy]) => `${m.x + m.w * fx},${m.y + m.h * fy}`).join(" "), class: m.cls })]
 }
 
-function shapeNode(s) {
+// env: { defs, scale, id } for the patterns of this scene (scene_extras.patternRef); scale is the scale of the group a shape is in.
+function shapeNode(s, env = null) {
+  const nodes = shapeNodeBase(s, env)
+  if (s.target && nodes[0]) decorateTarget(nodes[0], s)
+  if (s.hitFor && nodes[0]) padHit(nodes[0], s.hitFor)
+  return nodes
+}
+
+function shapeNodeBase(s, env) {
   switch (s.kind) {
     case "line": return [svg("line", { x1: s.x1, y1: s.y1, x2: s.x2, y2: s.y2, class: s.cls })]
     case "rect": return [svg("rect", { x: s.x, y: s.y, width: s.w, height: s.h, rx: s.r ?? 0, class: s.cls })]
     case "circle": return [svg("circle", { cx: s.cx, cy: s.cy, r: s.r, class: s.cls })]
-    case "path": return [svg("path", { d: s.d, class: s.cls })]
+    case "path": {
+      const nodes = [svg("path", { d: s.d, class: s.cls, "fill-rule": s.fillRule })]
+      // a pattern as well as a colour (A4): a second path over the first, filled with the role's pattern
+      if (s.pattern && s.pattern !== "solid" && env) nodes.push(svg("path", { d: s.d, class: "dg-pat", fill: patternRef(env, s.pattern, s.role ?? "muted"), "fill-rule": s.fillRule, "pointer-events": "none" }))
+      return nodes
+    }
     case "ellipse": return [svg("ellipse", { cx: s.cx, cy: s.cy, rx: s.rx, ry: s.ry, class: s.cls })]
     case "text": {
       const t = svg("text", { x: s.x, y: s.y, "text-anchor": "middle", class: s.cls, style: `font-size:${s.px}px` })
@@ -40,14 +57,16 @@ function shapeNode(s) {
     }
     case "group": {
       // a group that can move: `at` places it, `move` { tx, ty, rot, ox, oy } is what draw() animates from the last state
-      const outer = svg("g", { class: s.cls ?? "", transform: s.at ? `translate(${s.at[0]},${s.at[1]})` : undefined })
+      // `scale` scales the group's own units (a map's viewBox) to the stage: paths keep their coordinates, strokes stay in screen pixels (CSS)
+      const outer = svg("g", { class: s.cls ?? "", transform: s.at ? `translate(${s.at[0]},${s.at[1]})${s.scale ? ` scale(${s.scale})` : ""}` : undefined })
       const inner = svg("g", { class: "dg-move" })
-      for (const child of s.children ?? []) for (const node of shapeNode(child)) inner.appendChild(node)
+      const inside = env ? { ...env, scale: (env.scale || 1) * (s.scale ?? 1) } : null
+      for (const child of s.children ?? []) for (const node of shapeNode(child, inside)) inner.appendChild(node)
       outer.appendChild(inner)
       outer.__inner = inner
       return [outer]
     }
-    case "polygon": return [svg("polygon", { points: s.points.map((p) => p.join(",")).join(" "), class: s.cls })]
+    case "polygon": return [svg("polygon", { points: s.points.map((p) => p.map((v) => Math.round(v * 10) / 10).join(",")).join(" "), class: s.cls })]
     case "marker": return (MARKERS[s.shape] ?? MARKERS.circle)(s)
     case "icon": {
       const g = svg("svg", { x: s.x, y: s.y, width: s.size, height: s.size, viewBox: "0 0 24 24", class: `dg-icon ${s.cls ?? ""}`, "aria-hidden": "true" })
@@ -137,10 +156,8 @@ export function mountDiagram(data, ctx, options = {}) {
   const question = el("p", { class: "dg-question", "aria-live": "polite" })
   const caption = data?.caption_it ? el("figcaption", { class: "dg-caption" }) : null
   if (caption) renderInlineRich(data.caption_it, caption, ctx)
-  const descText = el("p", { text: describe(data, { subject: ctx.subject, state: 0 }) })
+  const descText = el("p", { text: describe(data, { subject: ctx.subject, state: 0, mode: options.mode ?? "student" }) })
   const desc = el("details", { class: "dg-desc" }, el("summary", {}, icon("description"), document.createTextNode(` ${ctx.t.description}`)), descText)
-  // an interactive figure (a type that declares controls) announces each change in one polite live line (A6)
-  const live = el("p", { class: "sr-only", role: "status", "aria-live": "polite" })
   // a balance has its equation, the state's name and a status chip above the drawing
   const top = type === "balance" ? el("div", { class: "dg-top" }) : null
   const pill = el("span", { class: "dg-pill" })
@@ -149,22 +166,35 @@ export function mountDiagram(data, ctx, options = {}) {
   if (top) top.append(pill, eqLine, chip)
   // op, question and controls sit in one side box: below the drawing, or beside it on a wide balance (CSS)
   const side = el("div", { class: "dg-side" }, op, question, controls)
-  figure.append(alt, ...(top ? [top] : []), stage, side, live, ...(caption ? [caption] : []), desc)
+  // the legend list under a figure that has one, and the print views of a figure that prints more than its current state (wave 2)
+  const legendHost = el("div", { class: "dg-legendhost" })
+  const printHost = el("div", { class: "dg-print", "aria-hidden": "true" })
+  // an interactive figure announces each change in one polite live line (A6)
+  const live = el("p", { class: "sr-only dg-live", "aria-live": "polite", role: "status" })
+  figure.append(alt, ...(top ? [top] : []), stage, side, legendHost, ...(caption ? [caption] : []), desc, printHost, live)
 
-  const mod = moduleFor(type)
-  const wanted = declared(mod, data)
-  const resetControls = () => {
-    for (const k of Object.keys(state.controls)) delete state.controls[k]
-  }
+  let mod = moduleFor(type)
+  const total = mod || STATUS[type] ? stateCount(data) : 1
+  const state = { moves: new Map(), lastWidth: 0, i: 0, tryValue: data?.try && data?.type === "balance" ? Number(data.try.from) : undefined, width: 0, selected: null, controls: {}, announce: false, printWidth: 0 }
+  // two kinds of controls: the toggles and plain steppers of controls.js (bits laid over the drawing, a strip under it), and the sliders and
+  // steppers over a list of `values` of syncControls below. The first are `wanted`, built once the module is known.
+  const isStrip = (c) => c.kind === "toggle" || (c.kind === "stepper" && !c.values)
+  let wanted = []
+  let strip = null
   const rove = { id: null }
   const press = (control, value) => {
     state.controls[control.id] = value
     state.announce = true
     draw()
   }
-  const total = mod ? stateCount(data) : 1
-  const state = { controls: {}, announce: false, moves: new Map(), lastWidth: 0, i: 0, tryValue: data?.try && data?.type === "balance" ? Number(data.try.from) : undefined, width: 0, selected: null }
-  const strip = wanted.length ? buildStrip(wanted, controls, state.controls, ctx, press) : null
+  const setupStrip = () => {
+    wanted = declared(mod, data).filter(isStrip)
+    strip = wanted.length ? buildStrip(wanted, controls, state.controls, ctx, press) : null
+  }
+  const resetControls = () => {
+    for (const c of wanted) delete state.controls[c.id]
+  }
+  setupStrip()
   figure.dataset.states = String(total)
   if (total > 1 || (type === "sentence" && data.parts)) figure.dataset.nokeys = ""
   const measurer = { current: null }
@@ -187,7 +217,8 @@ export function mountDiagram(data, ctx, options = {}) {
     state.width = width
     if (!measurer.current) measurer.current = makeMeasure(stage, ctx)
     const fontPx = ctx.fontPx()
-    const scene = layout(data, { width, fontPx, measure: measurer.current.measure, subject: ctx.subject, state: state.i, tryValue: state.tryValue, mode, revealed: [], controls: state.controls })
+    syncControls()
+    const scene = layout(data, { width, fontPx, measure: measurer.current.measure, subject: ctx.subject, state: state.i, tryValue: state.tryValue, mode, set: options.set ?? null, controls: state.controls, revealed: [] })
     if (scene.error) return showError(scene.error)
     figure.classList.remove("dg-failed")
     figure.querySelector(".dg-fallback")?.remove()
@@ -213,8 +244,9 @@ export function mountDiagram(data, ctx, options = {}) {
     const moves = new Map()
     const animated = []
     const sameWidth = state.lastWidth === scene.width
+    const env = { defs: new Map(), scale: 1, id: figure.id || id }
     scene.shapes.forEach((s) => {
-      for (const node of shapeNode(s)) {
+      for (const node of shapeNode(s, env)) {
         if (s.key && s.kind !== "group") node.dataset.key = s.key
         if (s.target && mode === "select") node.dataset.target = s.target
         stageSvg.appendChild(node)
@@ -230,6 +262,7 @@ export function mountDiagram(data, ctx, options = {}) {
         }
       }
     })
+    if (env.defs.size) stageSvg.insertBefore(defsNode(env), stageSvg.firstChild)
     state.moves = moves
     state.lastWidth = scene.width
     if (animated.length) {
@@ -247,6 +280,23 @@ export function mountDiagram(data, ctx, options = {}) {
       if (l.lang) node.setAttribute("lang", l.lang)
       labelsLayer.appendChild(node)
     }
+    // wave 2: the legend list, the select targets, the description of the visible state, the live sentence of a control
+    clear(legendHost)
+    if (scene.legend?.length) legendHost.appendChild(legendNode(scene.legend))
+    if (scene.targets?.length) {
+      wireTargets(stageSvg, {
+        selected: state.picked,
+        onPick: (key, refresh) => {
+          state.picked = state.picked === key ? null : key
+          refresh(state.picked)
+          figure.dispatchEvent(new CustomEvent("dg:target", { bubbles: true, detail: { key: state.picked } }))
+        }
+      })
+    }
+    descText.textContent = describe(data, { subject: ctx.subject, state: state.i, mode, controls: state.controls })
+    if (state.announce && scene.live) live.textContent = scene.live
+    state.announce = false
+    if (mod?.printViews && state.printWidth !== width) paintPrint(width, fontPx)
     for (const h of scene.hits ?? []) {
       const b = el("button", { type: "button", class: "dg-hit", "aria-pressed": state.selected === h.id ? "true" : "false", "aria-label": `${h.name}: ${h.text}${h.question_it ? `. ${ctx.t.tap_for_question}` : ""}` })
       b.style.left = `${h.x}px`
@@ -265,9 +315,6 @@ export function mountDiagram(data, ctx, options = {}) {
     if (strip) {
       overlay(scene, wanted, switchLayer, state.controls, press, rove)
       strip.refresh()
-      descText.textContent = describe(data, { subject: ctx.subject, state: state.i, controls: state.controls })
-      if (state.announce && scene.live) live.textContent = scene.live
-      state.announce = false
     }
     op.textContent = ""
     const eff = total > 1 ? (data.states[state.i] ?? {}) : {}
@@ -405,6 +452,65 @@ export function mountDiagram(data, ctx, options = {}) {
     minus.disabled = true
   }
 
+  // controls() of a wave 2 type (a stepper, a slider with its - and + buttons): rebuilt when the state brings other ones
+  const ctrlHost = el("div", { class: "dg-ctrls" })
+  let ctrlKey = null
+  let ctrlIds = []
+  const syncControls = () => {
+    const list = mode === "select" ? [] : (mod?.controls?.(data, { state: state.i, mode }) ?? []).filter((c) => !isStrip(c))
+    const key = JSON.stringify(list.map((c) => [c.id, c.range, c.values, c.stops]))
+    if (key === ctrlKey) return
+    ctrlKey = key
+    clear(ctrlHost)
+    for (const id of ctrlIds) if (!list.some((c) => c.id === id)) delete state.controls[id]
+    ctrlIds = list.map((c) => c.id)
+    const next = state.controls
+    for (const c of list) {
+      const options = c.values ?? []
+      let v = state.controls[c.id] ?? c.initial ?? (options.length ? options[0] : c.range[0])
+      v = options.length ? options.reduce((best, x) => (Math.abs(x - v) < Math.abs(best - v) ? x : best), options[0]) : Math.max(c.range[0], Math.min(c.range[1], v))
+      next[c.id] = v
+      ctrlHost.appendChild(controlNode(c, v, (nv) => {
+        state.controls[c.id] = nv
+        state.announce = true
+        draw()
+      }))
+    }
+    if (list.length && !ctrlHost.parentNode) controls.appendChild(ctrlHost)
+    if (!list.length) ctrlHost.remove()
+  }
+
+  // the print views (P1): all the states of a figure that prints them, a slider's first, middle and last year
+  const paintPrint = (width, fontPx) => {
+    state.printWidth = width
+    clear(printHost)
+    for (const view of mod.printViews(data) ?? []) {
+      const scene = layout(data, { width, fontPx, measure: measurer.current.measure, subject: ctx.subject, state: view.state, mode: "print", controls: view.controls })
+      if (scene.error) continue
+      const env = { defs: new Map(), scale: 1, id: `${id}-print${printHost.children.length}` }
+      const pane = svg("svg", { class: "dg-svg", viewBox: `0 0 ${scene.width} ${scene.height}`, width: scene.width, height: scene.height, role: "img", "aria-label": data.alt_it })
+      for (const s of scene.shapes) for (const node of shapeNode(s, env)) pane.appendChild(node)
+      if (env.defs.size) pane.insertBefore(defsNode(env), pane.firstChild)
+      const texts = el("div", { class: "dg-labels" })
+      for (const l of scene.labels) {
+        const node = el("div", { class: `dg-label ${l.cls} dg-a-${l.anchor}${l.wrap ? " dg-wrap" : ""}` })
+        node.style.left = `${l.x}px`
+        node.style.top = `${l.y}px`
+        node.style.width = `${l.w + (l.wrap ? 0 : 2)}px`
+        node.style.fontSize = `${l.px}px`
+        renderInlineRich(l.text_it, node, ctx)
+        texts.appendChild(node)
+      }
+      const cap = view.caption_it ?? data.states?.[view.state]?.op_it
+      const cell = el("figure", { class: "dg-printview" }, el("div", { class: "dg-stage", style: `height:${scene.height}px` }, pane, texts))
+      if (cap) cell.appendChild(el("figcaption", { class: "dg-caption", text: cap }))
+      if (scene.legend?.length) cell.appendChild(legendNode(scene.legend))
+      printHost.appendChild(cell)
+    }
+    if (printHost.children.length > 0) figure.dataset.printviews = String(printHost.children.length)
+    else delete figure.dataset.printviews
+  }
+
   let timer = null
   let observer = null
   const schedule = () => {
@@ -415,11 +521,21 @@ export function mountDiagram(data, ctx, options = {}) {
     }, 60)
   }
   const mounted = () => {
-    draw()
-    if (typeof ResizeObserver !== "undefined") {
-      observer = new ResizeObserver(schedule)
-      observer.observe(stage)
+    const start = () => {
+      draw()
+      if (typeof ResizeObserver !== "undefined") {
+        observer = new ResizeObserver(schedule)
+        observer.observe(stage)
+      }
     }
+    if (mod && !mod.prepare) return start() // the core types: drawn at once, as before
+    // a wave 2 type loads its module on demand and, if it says so, its assets (a map's base) before the first layout
+    const ready = Promise.resolve(mod ?? load(type)).then((m) => {
+      mod = m
+      setupStrip()
+      return m?.prepare?.(data, { mode })
+    })
+    ready.then(start, (error) => showError({ code: "E-DIAGRAM-LAYOUT", path: "", message: `could not load the ${type} figure: ${error?.message ?? error}` }))
   }
   return {
     element: figure,

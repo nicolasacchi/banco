@@ -1,18 +1,15 @@
 {
  "version": 1,
  "type": "cross_section",
- "status": "reserved",
+ "status": "available",
  "batch": "w2-1",
  "track": "T5",
  "provisional": false,
- "description": "Skeleton of W2-0 for the track T5: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "description": "Vectors of T5 (W2-1), run by both implementations: lib/lessons/diagrams/cross_section.rb in test/lib/lessons/maps_types_test.rb and app/javascript/lesson/diagrams/maps/cross_section.js in app/javascript/lesson/test/maps.test.mjs. Columns: schema (valid or invalid), semantic ('ok' or {code, path} of the first finding), layout ('ok' or 'error', at 320, 390, 768 and 1280 px and fontPx 18, 20 and 26), describe (per state, the Italian text of the visible state at the default controls), printed (per state, the strings of L4), targets and neutral (per set, in reading order), reachable, served_select (the neutral projection of a select figure). Invented content only.",
  "vectors": [
   {
    "name": "cross_section-example-1",
    "subject": "geography",
-   "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
    "data": {
     "type": "cross_section",
     "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende di sei gradi ogni mille metri.",
@@ -62,7 +59,1642 @@
      "per_km": "6"
     },
     "stepper": true
+   },
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Sezione del terreno, lunga 200 km. La quota va da 0 a 5000 m. Altezze esagerate 20 volte. Cima, a 100 km. Fascia foresta: da 0 a 1000 m (da 26 °C a 20 °C). Con la quota la temperatura scende di 6 °C ogni 1000 m. A 0 m: 26 °C."
+   ],
+   "printed": [
+    [
+     "Sezione del terreno, lunga 200 km. La quota va da 0 a 5000 m. Altezze esagerate 20 volte. Cima, a 100 km. Fascia foresta: da 0 a 1000 m (da 26 °C a 20 °C). Con la quota la temperatura scende di 6 °C ogni 1000 m. A 0 m: 26 °C.",
+     "altezze esagerate 20 volte",
+     "cima",
+     "foresta",
+     "26 °C",
+     "20 °C"
+    ]
+   ],
+   "reachable": [
+    "0 m",
+    "26 °C",
+    "1000 m",
+    "20 °C",
+    "2000 m",
+    "14 °C",
+    "3000 m",
+    "8 °C",
+    "4000 m",
+    "2 °C",
+    "5000 m",
+    "−4 °C"
+   ]
+  },
+  {
+   "name": "cross_section-volcano",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "80",
+      "3000"
+     ],
+     [
+      "100",
+      "5000"
+     ],
+     [
+      "120",
+      "3000"
+     ],
+     [
+      "200",
+      "0"
+     ]
+    ],
+    "features": [
+     {
+      "at": "100",
+      "label_it": "cima",
+      "kind": "peak"
+     },
+     {
+      "at": "20",
+      "label_it": "pianura",
+      "kind": "plain"
+     }
+    ],
+    "belts": [
+     {
+      "from_alt": "0",
+      "to_alt": "1000",
+      "label_it": "foresta",
+      "role": "temperate"
+     },
+     {
+      "from_alt": "1000",
+      "to_alt": "3000",
+      "label_it": "foresta di montagna",
+      "role": "place"
+     },
+     {
+      "from_alt": "3000",
+      "to_alt": "4500",
+      "label_it": "prato alto",
+      "role": "cold"
+     },
+     {
+      "from_alt": "4500",
+      "to_alt": "5000",
+      "label_it": "ghiaccio",
+      "role": "arid"
+     }
+    ],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    },
+    "stepper": true
+   },
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Sezione del terreno, lunga 200 km. La quota va da 0 a 5000 m. Altezze esagerate 20 volte. Cima, a 100 km. Pianura, a 20 km. Fascia foresta: da 0 a 1000 m (da 26 °C a 20 °C). Fascia foresta di montagna: da 1000 a 3000 m (da 20 °C a 8 °C). Fascia prato alto: da 3000 a 4500 m (da 8 °C a −1 °C). Fascia ghiaccio: da 4500 a 5000 m (da −1 °C a −4 °C). Con la quota la temperatura scende di 6 °C ogni 1000 m. A 0 m: 26 °C."
+   ],
+   "printed": [
+    [
+     "Sezione del terreno, lunga 200 km. La quota va da 0 a 5000 m. Altezze esagerate 20 volte. Cima, a 100 km. Pianura, a 20 km. Fascia foresta: da 0 a 1000 m (da 26 °C a 20 °C). Fascia foresta di montagna: da 1000 a 3000 m (da 20 °C a 8 °C). Fascia prato alto: da 3000 a 4500 m (da 8 °C a −1 °C). Fascia ghiaccio: da 4500 a 5000 m (da −1 °C a −4 °C). Con la quota la temperatura scende di 6 °C ogni 1000 m. A 0 m: 26 °C.",
+     "altezze esagerate 20 volte",
+     "cima",
+     "pianura",
+     "foresta",
+     "26 °C",
+     "20 °C",
+     "foresta di montagna",
+     "8 °C",
+     "prato alto",
+     "−1 °C",
+     "ghiaccio",
+     "−4 °C"
+    ]
+   ],
+   "reachable": [
+    "0 m",
+    "26 °C",
+    "1000 m",
+    "20 °C",
+    "2000 m",
+    "14 °C",
+    "3000 m",
+    "8 °C",
+    "4000 m",
+    "2 °C",
+    "5000 m",
+    "−4 °C"
+   ],
+   "targets": {
+    "belts": [
+     "alt:4500:5000",
+     "alt:3000:4500",
+     "alt:1000:3000",
+     "alt:0:1000"
+    ]
+   },
+   "neutral": {
+    "belts": [
+     "fascia 1 di 4, contando dall'alto",
+     "fascia 2 di 4, contando dall'alto",
+     "fascia 3 di 4, contando dall'alto",
+     "fascia 4 di 4, contando dall'alto"
+    ]
+   },
+   "served_select": {
+    "belts": {
+     "type": "cross_section",
+     "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "x": {
+      "to": "200",
+      "unit": "km"
+     },
+     "points": [
+      [
+       "0",
+       "0"
+      ],
+      [
+       "80",
+       "3000"
+      ],
+      [
+       "100",
+       "5000"
+      ],
+      [
+       "120",
+       "3000"
+      ],
+      [
+       "200",
+       "0"
+      ]
+     ],
+     "belts": [
+      {
+       "from_alt": "0",
+       "to_alt": "1000",
+       "label_it": "fascia"
+      },
+      {
+       "from_alt": "1000",
+       "to_alt": "3000",
+       "label_it": "fascia"
+      },
+      {
+       "from_alt": "3000",
+       "to_alt": "4500",
+       "label_it": "fascia"
+      },
+      {
+       "from_alt": "4500",
+       "to_alt": "5000",
+       "label_it": "fascia"
+      }
+     ]
+    }
    }
+  },
+  {
+   "name": "cross_section-states",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "80",
+      "3000"
+     ],
+     [
+      "100",
+      "5000"
+     ],
+     [
+      "120",
+      "3000"
+     ],
+     [
+      "200",
+      "0"
+     ]
+    ],
+    "features": [
+     {
+      "at": "100",
+      "label_it": "cima",
+      "kind": "peak"
+     },
+     {
+      "at": "20",
+      "label_it": "pianura",
+      "kind": "plain"
+     }
+    ],
+    "belts": [
+     {
+      "from_alt": "0",
+      "to_alt": "1000",
+      "label_it": "foresta",
+      "role": "temperate"
+     },
+     {
+      "from_alt": "1000",
+      "to_alt": "3000",
+      "label_it": "foresta di montagna",
+      "role": "place"
+     },
+     {
+      "from_alt": "3000",
+      "to_alt": "4500",
+      "label_it": "prato alto",
+      "role": "cold"
+     },
+     {
+      "from_alt": "4500",
+      "to_alt": "5000",
+      "label_it": "ghiaccio",
+      "role": "arid"
+     }
+    ],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    },
+    "stepper": true,
+    "states": [
+     {
+      "belts": [
+       {
+        "from_alt": "0",
+        "to_alt": "1000",
+        "label_it": "foresta",
+        "role": "temperate"
+       },
+       {
+        "from_alt": "1000",
+        "to_alt": "3000",
+        "label_it": "foresta di montagna",
+        "role": "place"
+       }
+      ],
+      "op_it": "Sotto i 3000 metri"
+     },
+     {
+      "belts": [
+       {
+        "from_alt": "0",
+        "to_alt": "1000",
+        "label_it": "foresta",
+        "role": "temperate"
+       },
+       {
+        "from_alt": "1000",
+        "to_alt": "3000",
+        "label_it": "foresta di montagna",
+        "role": "place"
+       },
+       {
+        "from_alt": "3000",
+        "to_alt": "4500",
+        "label_it": "prato alto",
+        "role": "cold"
+       },
+       {
+        "from_alt": "4500",
+        "to_alt": "5000",
+        "label_it": "ghiaccio",
+        "role": "arid"
+       }
+      ],
+      "op_it": "Fino alla cima"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Sezione del terreno, lunga 200 km. La quota va da 0 a 5000 m. Altezze esagerate 20 volte. Cima, a 100 km. Pianura, a 20 km. Fascia foresta: da 0 a 1000 m (da 26 °C a 20 °C). Fascia foresta di montagna: da 1000 a 3000 m (da 20 °C a 8 °C). Con la quota la temperatura scende di 6 °C ogni 1000 m. A 0 m: 26 °C. Sotto i 3000 metri.",
+    "Sezione del terreno, lunga 200 km. La quota va da 0 a 5000 m. Altezze esagerate 20 volte. Cima, a 100 km. Pianura, a 20 km. Fascia foresta: da 0 a 1000 m (da 26 °C a 20 °C). Fascia foresta di montagna: da 1000 a 3000 m (da 20 °C a 8 °C). Fascia prato alto: da 3000 a 4500 m (da 8 °C a −1 °C). Fascia ghiaccio: da 4500 a 5000 m (da −1 °C a −4 °C). Con la quota la temperatura scende di 6 °C ogni 1000 m. A 0 m: 26 °C. Fino alla cima."
+   ],
+   "printed": [
+    [
+     "Sezione del terreno, lunga 200 km. La quota va da 0 a 5000 m. Altezze esagerate 20 volte. Cima, a 100 km. Pianura, a 20 km. Fascia foresta: da 0 a 1000 m (da 26 °C a 20 °C). Fascia foresta di montagna: da 1000 a 3000 m (da 20 °C a 8 °C). Con la quota la temperatura scende di 6 °C ogni 1000 m. A 0 m: 26 °C. Sotto i 3000 metri.",
+     "altezze esagerate 20 volte",
+     "cima",
+     "pianura",
+     "foresta",
+     "26 °C",
+     "20 °C",
+     "foresta di montagna",
+     "8 °C",
+     "Sotto i 3000 metri"
+    ],
+    [
+     "Sezione del terreno, lunga 200 km. La quota va da 0 a 5000 m. Altezze esagerate 20 volte. Cima, a 100 km. Pianura, a 20 km. Fascia foresta: da 0 a 1000 m (da 26 °C a 20 °C). Fascia foresta di montagna: da 1000 a 3000 m (da 20 °C a 8 °C). Fascia prato alto: da 3000 a 4500 m (da 8 °C a −1 °C). Fascia ghiaccio: da 4500 a 5000 m (da −1 °C a −4 °C). Con la quota la temperatura scende di 6 °C ogni 1000 m. A 0 m: 26 °C. Fino alla cima.",
+     "altezze esagerate 20 volte",
+     "cima",
+     "pianura",
+     "foresta",
+     "26 °C",
+     "20 °C",
+     "foresta di montagna",
+     "8 °C",
+     "prato alto",
+     "−1 °C",
+     "ghiaccio",
+     "−4 °C",
+     "Fino alla cima"
+    ]
+   ],
+   "reachable": [
+    "0 m",
+    "26 °C",
+    "1000 m",
+    "20 °C",
+    "2000 m",
+    "14 °C",
+    "3000 m",
+    "8 °C",
+    "4000 m",
+    "2 °C",
+    "5000 m",
+    "−4 °C"
+   ],
+   "targets": {
+    "belts": [
+     "alt:1000:3000",
+     "alt:0:1000"
+    ]
+   },
+   "neutral": {
+    "belts": [
+     "fascia 1 di 2, contando dall'alto",
+     "fascia 2 di 2, contando dall'alto"
+    ]
+   },
+   "served_select": {
+    "belts": {
+     "type": "cross_section",
+     "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "x": {
+      "to": "200",
+      "unit": "km"
+     },
+     "points": [
+      [
+       "0",
+       "0"
+      ],
+      [
+       "80",
+       "3000"
+      ],
+      [
+       "100",
+       "5000"
+      ],
+      [
+       "120",
+       "3000"
+      ],
+      [
+       "200",
+       "0"
+      ]
+     ],
+     "belts": [
+      {
+       "from_alt": "0",
+       "to_alt": "1000",
+       "label_it": "fascia"
+      },
+      {
+       "from_alt": "1000",
+       "to_alt": "3000",
+       "label_it": "fascia"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "cross_section-no-lapse-meters",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "60000",
+     "unit": "m"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "20000",
+      "1200"
+     ],
+     [
+      "40000",
+      "400"
+     ],
+     [
+      "60000",
+      "0"
+     ]
+    ],
+    "belts": [
+     {
+      "from_alt": "0",
+      "to_alt": "400",
+      "label_it": "pianura"
+     },
+     {
+      "from_alt": "400",
+      "to_alt": "1200",
+      "label_it": "collina",
+      "role": "place"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Sezione del terreno, lunga 60000 m. La quota va da 0 a 1200 m. Altezze esagerate 25 volte. Fascia pianura: da 0 a 400 m. Fascia collina: da 400 a 1200 m."
+   ],
+   "printed": [
+    [
+     "Sezione del terreno, lunga 60000 m. La quota va da 0 a 1200 m. Altezze esagerate 25 volte. Fascia pianura: da 0 a 400 m. Fascia collina: da 400 a 1200 m.",
+     "altezze esagerate 25 volte",
+     "pianura",
+     "collina"
+    ]
+   ]
+  },
+  {
+   "name": "cross_section-sea-floor",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "-800"
+     ],
+     [
+      "60",
+      "0"
+     ],
+     [
+      "100",
+      "4000"
+     ],
+     [
+      "140",
+      "0"
+     ],
+     [
+      "200",
+      "-400"
+     ]
+    ],
+    "features": [
+     {
+      "at": "100",
+      "label_it": "cima",
+      "kind": "peak"
+     },
+     {
+      "at": "20",
+      "label_it": "pianura",
+      "kind": "plain"
+     }
+    ],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    }
+   },
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Sezione del terreno, lunga 200 km. La quota va da −800 a 4000 m. Altezze esagerate 20 volte. Cima, a 100 km. Pianura, a 20 km. Con la quota la temperatura scende di 6 °C ogni 1000 m."
+   ],
+   "printed": [
+    [
+     "Sezione del terreno, lunga 200 km. La quota va da −800 a 4000 m. Altezze esagerate 20 volte. Cima, a 100 km. Pianura, a 20 km. Con la quota la temperatura scende di 6 °C ogni 1000 m.",
+     "altezze esagerate 20 volte",
+     "cima",
+     "pianura"
+    ]
+   ]
+  },
+  {
+   "name": "cross_section-many-features",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "80",
+      "3000"
+     ],
+     [
+      "100",
+      "5000"
+     ],
+     [
+      "120",
+      "3000"
+     ],
+     [
+      "200",
+      "0"
+     ]
+    ],
+    "features": [
+     {
+      "at": "10",
+      "label_it": "costa",
+      "kind": "sea"
+     },
+     {
+      "at": "30",
+      "label_it": "fiume",
+      "kind": "river"
+     },
+     {
+      "at": "55",
+      "label_it": "altopiano",
+      "kind": "plateau"
+     },
+     {
+      "at": "78",
+      "label_it": "città alta",
+      "kind": "city"
+     },
+     {
+      "at": "100",
+      "label_it": "cima",
+      "kind": "peak"
+     },
+     {
+      "at": "125",
+      "label_it": "passo",
+      "kind": "plain"
+     }
+    ],
+    "belts": [
+     {
+      "from_alt": "0",
+      "to_alt": "1000",
+      "label_it": "foresta",
+      "role": "temperate"
+     },
+     {
+      "from_alt": "1000",
+      "to_alt": "3000",
+      "label_it": "foresta di montagna",
+      "role": "place"
+     },
+     {
+      "from_alt": "3000",
+      "to_alt": "4500",
+      "label_it": "prato alto",
+      "role": "cold"
+     },
+     {
+      "from_alt": "4500",
+      "to_alt": "5000",
+      "label_it": "ghiaccio",
+      "role": "arid"
+     }
+    ],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    },
+    "stepper": true
+   },
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Sezione del terreno, lunga 200 km. La quota va da 0 a 5000 m. Altezze esagerate 20 volte. Costa, a 10 km. Fiume, a 30 km. Altopiano, a 55 km. Città alta, a 78 km. Cima, a 100 km. Passo, a 125 km. Fascia foresta: da 0 a 1000 m (da 26 °C a 20 °C). Fascia foresta di montagna: da 1000 a 3000 m (da 20 °C a 8 °C). Fascia prato alto: da 3000 a 4500 m (da 8 °C a −1 °C). Fascia ghiaccio: da 4500 a 5000 m (da −1 °C a −4 °C). Con la quota la temperatura scende di 6 °C ogni 1000 m. A 0 m: 26 °C."
+   ],
+   "printed": [
+    [
+     "Sezione del terreno, lunga 200 km. La quota va da 0 a 5000 m. Altezze esagerate 20 volte. Costa, a 10 km. Fiume, a 30 km. Altopiano, a 55 km. Città alta, a 78 km. Cima, a 100 km. Passo, a 125 km. Fascia foresta: da 0 a 1000 m (da 26 °C a 20 °C). Fascia foresta di montagna: da 1000 a 3000 m (da 20 °C a 8 °C). Fascia prato alto: da 3000 a 4500 m (da 8 °C a −1 °C). Fascia ghiaccio: da 4500 a 5000 m (da −1 °C a −4 °C). Con la quota la temperatura scende di 6 °C ogni 1000 m. A 0 m: 26 °C.",
+     "altezze esagerate 20 volte",
+     "costa",
+     "fiume",
+     "altopiano",
+     "città alta",
+     "cima",
+     "passo",
+     "foresta",
+     "26 °C",
+     "20 °C",
+     "foresta di montagna",
+     "8 °C",
+     "prato alto",
+     "−1 °C",
+     "ghiaccio",
+     "−4 °C"
+    ]
+   ],
+   "reachable": [
+    "0 m",
+    "26 °C",
+    "1000 m",
+    "20 °C",
+    "2000 m",
+    "14 °C",
+    "3000 m",
+    "8 °C",
+    "4000 m",
+    "2 °C",
+    "5000 m",
+    "−4 °C"
+   ]
+  },
+  {
+   "name": "cross_section-bad-first-x",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "10",
+      "0"
+     ],
+     [
+      "200",
+      "3000"
+     ]
+    ],
+    "features": [
+     {
+      "at": "100",
+      "label_it": "cima",
+      "kind": "peak"
+     },
+     {
+      "at": "20",
+      "label_it": "pianura",
+      "kind": "plain"
+     }
+    ],
+    "belts": [
+     {
+      "from_alt": "0",
+      "to_alt": "1000",
+      "label_it": "foresta",
+      "role": "temperate"
+     },
+     {
+      "from_alt": "1000",
+      "to_alt": "3000",
+      "label_it": "foresta di montagna",
+      "role": "place"
+     },
+     {
+      "from_alt": "3000",
+      "to_alt": "4500",
+      "label_it": "prato alto",
+      "role": "cold"
+     },
+     {
+      "from_alt": "4500",
+      "to_alt": "5000",
+      "label_it": "ghiaccio",
+      "role": "arid"
+     }
+    ],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    },
+    "stepper": true
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/points"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cross_section-bad-last-x",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "150",
+      "3000"
+     ]
+    ],
+    "features": [
+     {
+      "at": "100",
+      "label_it": "cima",
+      "kind": "peak"
+     },
+     {
+      "at": "20",
+      "label_it": "pianura",
+      "kind": "plain"
+     }
+    ],
+    "belts": [
+     {
+      "from_alt": "0",
+      "to_alt": "1000",
+      "label_it": "foresta",
+      "role": "temperate"
+     },
+     {
+      "from_alt": "1000",
+      "to_alt": "3000",
+      "label_it": "foresta di montagna",
+      "role": "place"
+     },
+     {
+      "from_alt": "3000",
+      "to_alt": "4500",
+      "label_it": "prato alto",
+      "role": "cold"
+     },
+     {
+      "from_alt": "4500",
+      "to_alt": "5000",
+      "label_it": "ghiaccio",
+      "role": "arid"
+     }
+    ],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    },
+    "stepper": true
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/points"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cross_section-bad-decreasing",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "100",
+      "3000"
+     ],
+     [
+      "90",
+      "1000"
+     ],
+     [
+      "200",
+      "0"
+     ]
+    ],
+    "features": [
+     {
+      "at": "100",
+      "label_it": "cima",
+      "kind": "peak"
+     },
+     {
+      "at": "20",
+      "label_it": "pianura",
+      "kind": "plain"
+     }
+    ],
+    "belts": [
+     {
+      "from_alt": "0",
+      "to_alt": "1000",
+      "label_it": "foresta",
+      "role": "temperate"
+     },
+     {
+      "from_alt": "1000",
+      "to_alt": "3000",
+      "label_it": "foresta di montagna",
+      "role": "place"
+     },
+     {
+      "from_alt": "3000",
+      "to_alt": "4500",
+      "label_it": "prato alto",
+      "role": "cold"
+     },
+     {
+      "from_alt": "4500",
+      "to_alt": "5000",
+      "label_it": "ghiaccio",
+      "role": "arid"
+     }
+    ],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    },
+    "stepper": true
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/points"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cross_section-bad-flat",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "200",
+      "0"
+     ]
+    ],
+    "features": [],
+    "belts": [],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    },
+    "stepper": true
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/points"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cross_section-bad-steep",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "2",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "2",
+      "3000"
+     ]
+    ],
+    "features": [],
+    "belts": [],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    },
+    "stepper": true
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/points"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cross_section-bad-altitude",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "100",
+      "9500"
+     ],
+     [
+      "200",
+      "0"
+     ]
+    ],
+    "features": [],
+    "belts": [],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    },
+    "stepper": true
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/points/1"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cross_section-bad-feature-outside",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "80",
+      "3000"
+     ],
+     [
+      "100",
+      "5000"
+     ],
+     [
+      "120",
+      "3000"
+     ],
+     [
+      "200",
+      "0"
+     ]
+    ],
+    "features": [
+     {
+      "at": "250",
+      "label_it": "fuori",
+      "kind": "city"
+     }
+    ],
+    "belts": [
+     {
+      "from_alt": "0",
+      "to_alt": "1000",
+      "label_it": "foresta",
+      "role": "temperate"
+     },
+     {
+      "from_alt": "1000",
+      "to_alt": "3000",
+      "label_it": "foresta di montagna",
+      "role": "place"
+     },
+     {
+      "from_alt": "3000",
+      "to_alt": "4500",
+      "label_it": "prato alto",
+      "role": "cold"
+     },
+     {
+      "from_alt": "4500",
+      "to_alt": "5000",
+      "label_it": "ghiaccio",
+      "role": "arid"
+     }
+    ],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    },
+    "stepper": true
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/features/0/at"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cross_section-bad-belt-order",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "80",
+      "3000"
+     ],
+     [
+      "100",
+      "5000"
+     ],
+     [
+      "120",
+      "3000"
+     ],
+     [
+      "200",
+      "0"
+     ]
+    ],
+    "features": [
+     {
+      "at": "100",
+      "label_it": "cima",
+      "kind": "peak"
+     },
+     {
+      "at": "20",
+      "label_it": "pianura",
+      "kind": "plain"
+     }
+    ],
+    "belts": [
+     {
+      "from_alt": "2000",
+      "to_alt": "1000",
+      "label_it": "al contrario"
+     }
+    ],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    },
+    "stepper": true
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/belts/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cross_section-bad-belt-high",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "80",
+      "3000"
+     ],
+     [
+      "100",
+      "5000"
+     ],
+     [
+      "120",
+      "3000"
+     ],
+     [
+      "200",
+      "0"
+     ]
+    ],
+    "features": [
+     {
+      "at": "100",
+      "label_it": "cima",
+      "kind": "peak"
+     },
+     {
+      "at": "20",
+      "label_it": "pianura",
+      "kind": "plain"
+     }
+    ],
+    "belts": [
+     {
+      "from_alt": "4000",
+      "to_alt": "6000",
+      "label_it": "troppo alta"
+     }
+    ],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    },
+    "stepper": true
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/belts/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cross_section-bad-belt-overlap",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "80",
+      "3000"
+     ],
+     [
+      "100",
+      "5000"
+     ],
+     [
+      "120",
+      "3000"
+     ],
+     [
+      "200",
+      "0"
+     ]
+    ],
+    "features": [
+     {
+      "at": "100",
+      "label_it": "cima",
+      "kind": "peak"
+     },
+     {
+      "at": "20",
+      "label_it": "pianura",
+      "kind": "plain"
+     }
+    ],
+    "belts": [
+     {
+      "from_alt": "0",
+      "to_alt": "2000",
+      "label_it": "una"
+     },
+     {
+      "from_alt": "1500",
+      "to_alt": "3000",
+      "label_it": "due"
+     }
+    ],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    },
+    "stepper": true
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/belts"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cross_section-bad-stepper-no-lapse",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "80",
+      "3000"
+     ],
+     [
+      "100",
+      "5000"
+     ],
+     [
+      "120",
+      "3000"
+     ],
+     [
+      "200",
+      "0"
+     ]
+    ],
+    "features": [
+     {
+      "at": "100",
+      "label_it": "cima",
+      "kind": "peak"
+     },
+     {
+      "at": "20",
+      "label_it": "pianura",
+      "kind": "plain"
+     }
+    ],
+    "belts": [
+     {
+      "from_alt": "0",
+      "to_alt": "1000",
+      "label_it": "foresta",
+      "role": "temperate"
+     },
+     {
+      "from_alt": "1000",
+      "to_alt": "3000",
+      "label_it": "foresta di montagna",
+      "role": "place"
+     },
+     {
+      "from_alt": "3000",
+      "to_alt": "4500",
+      "label_it": "prato alto",
+      "role": "cold"
+     },
+     {
+      "from_alt": "4500",
+      "to_alt": "5000",
+      "label_it": "ghiaccio",
+      "role": "arid"
+     }
+    ],
+    "stepper": true
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/stepper"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cross_section-bad-lapse",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "80",
+      "3000"
+     ],
+     [
+      "100",
+      "5000"
+     ],
+     [
+      "120",
+      "3000"
+     ],
+     [
+      "200",
+      "0"
+     ]
+    ],
+    "features": [
+     {
+      "at": "100",
+      "label_it": "cima",
+      "kind": "peak"
+     },
+     {
+      "at": "20",
+      "label_it": "pianura",
+      "kind": "plain"
+     }
+    ],
+    "belts": [
+     {
+      "from_alt": "0",
+      "to_alt": "1000",
+      "label_it": "foresta",
+      "role": "temperate"
+     },
+     {
+      "from_alt": "1000",
+      "to_alt": "3000",
+      "label_it": "foresta di montagna",
+      "role": "place"
+     },
+     {
+      "from_alt": "3000",
+      "to_alt": "4500",
+      "label_it": "prato alto",
+      "role": "cold"
+     },
+     {
+      "from_alt": "4500",
+      "to_alt": "5000",
+      "label_it": "ghiaccio",
+      "role": "arid"
+     }
+    ],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "0"
+    },
+    "stepper": true
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/lapse/per_km"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cross_section-bad-state-belt",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "80",
+      "3000"
+     ],
+     [
+      "100",
+      "5000"
+     ],
+     [
+      "120",
+      "3000"
+     ],
+     [
+      "200",
+      "0"
+     ]
+    ],
+    "features": [
+     {
+      "at": "100",
+      "label_it": "cima",
+      "kind": "peak"
+     },
+     {
+      "at": "20",
+      "label_it": "pianura",
+      "kind": "plain"
+     }
+    ],
+    "belts": [
+     {
+      "from_alt": "0",
+      "to_alt": "1000",
+      "label_it": "foresta",
+      "role": "temperate"
+     },
+     {
+      "from_alt": "1000",
+      "to_alt": "3000",
+      "label_it": "foresta di montagna",
+      "role": "place"
+     },
+     {
+      "from_alt": "3000",
+      "to_alt": "4500",
+      "label_it": "prato alto",
+      "role": "cold"
+     },
+     {
+      "from_alt": "4500",
+      "to_alt": "5000",
+      "label_it": "ghiaccio",
+      "role": "arid"
+     }
+    ],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    },
+    "stepper": true,
+    "states": [
+     {
+      "op_it": "Prima"
+     },
+     {
+      "belts": [
+       {
+        "from_alt": "4000",
+        "to_alt": "9000",
+        "label_it": "fuori"
+       }
+      ],
+      "op_it": "Dopo"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/states/1/belts/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cross_section-bad-role",
+   "subject": "geography",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende con la quota. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "80",
+      "3000"
+     ],
+     [
+      "100",
+      "5000"
+     ],
+     [
+      "120",
+      "3000"
+     ],
+     [
+      "200",
+      "0"
+     ]
+    ],
+    "features": [
+     {
+      "at": "100",
+      "label_it": "cima",
+      "kind": "peak"
+     },
+     {
+      "at": "20",
+      "label_it": "pianura",
+      "kind": "plain"
+     }
+    ],
+    "belts": [
+     {
+      "from_alt": "0",
+      "to_alt": "1000",
+      "label_it": "foresta",
+      "role": "rome"
+     }
+    ],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    },
+    "stepper": true
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-ROLE",
+    "path": "/belts/0/role"
+   },
+   "layout": "error"
   },
   {
    "name": "cross_section-unknown-field",

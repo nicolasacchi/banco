@@ -91,9 +91,9 @@ module Lessons
         mod = Diagrams.module_for(figure["type"])
         return [] unless mod.is_a?(Diagrams::Contract)
 
-        states = Diagrams.effective_states(figure)
-        states = [ figure ] if states.empty?
-        states.flat_map { |s| Array(mod.printed(figure, s)).map(&:to_s) }
+        # the second argument is the index of the state (the types read Diagrams.effective_states(data)[state] themselves)
+        count = [ Array(figure["states"]).size, 1 ].max
+        (0...count).flat_map { |i| Array(mod.printed(figure, i)).map(&:to_s) }
       rescue NotImplementedError
         []
       end
@@ -126,7 +126,7 @@ module Lessons
         ([ check["answer"] ] + check["accept"].to_a).filter_map { |a| squash(a) if a.is_a?(String) }
       end
 
-      def squash(text) = text.to_s.delete("$").gsub(/\s+/, " ").strip.downcase
+      def squash(text) = text.to_s.delete("$").gsub(/[[:space:]]/, "").tr("\u2212", "-").downcase # "0010 1101" and "00101101", "-5" and "−5" are one answer to the eye
 
       def same?(a, b)
         a == b || (Num.valid?(a) && Num.valid?(b) && Num.compare(a, b)&.zero?)

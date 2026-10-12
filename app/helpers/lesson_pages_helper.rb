@@ -2,25 +2,17 @@
 module LessonPagesHelper
   def lesson2?(body) = body.is_a?(Hash) && body["schema"] == "banco.lesson/2"
 
-  # The stylesheets of the families whose diagrams the body draws (app/assets/stylesheets/lesson/FAMILY.css): a page links only what it uses.
-  def lesson2_family_css(body)
-    families = []
-    walk = lambda do |node|
-      case node
-      when Hash
-        entry = node["type"].is_a?(String) && node.key?("alt_it") ? Lessons::Types.entry(:diagram, node["type"]) : nil
-        families << entry["family"] if entry && entry["family"] != "core"
-        families << "computing" if node["component"] == "normalized_text" && node["input"] == "bits" # the switches of a register (T9)
-        node.each_value(&walk)
-      when Array then node.each(&walk)
-      end
-    end
-    walk.call(body)
-    families.uniq.map { |f| "lesson/#{f}" }
-  end
-
   # The texts of the page, one nested object (config/locales/lesson.it.yml).
   def lesson2_texts = I18n.t("lesson2").deep_stringify_keys
+
+  # The stylesheet of each wave 2 family a lesson draws a type of (app/assets/stylesheets/lesson/FAMILY.css), found in the body.
+  def lesson_family_stylesheets(body)
+    types = body.to_json.scan(/"type":"([a-z_]+)"/).flatten.uniq
+    families = types.filter_map { |t| Lessons::Types.entry(:diagram, t)&.fetch("family") }.uniq - [ "core" ]
+    families << "computing" if body.to_json.include?('"input":"bits"') # the switches of a register (T9)
+    families.uniq!
+    safe_join(families.sort.map { |f| stylesheet_link_tag("lesson/#{f}") }, "\n")
+  end
 
   # The item templates' texts that the checks reuse (number, fraction, choice, text), and the accents label.
   def lesson2_item_texts = I18n.t("items").merge(accents_label: I18n.t("accents.label")).deep_stringify_keys

@@ -26,9 +26,9 @@ class BitsInputTest < ActiveSupport::TestCase
     assert_empty findings(check)
   end
 
-  test "the option is available for normalized_text; what still holds a check back is the profile it carries (T1's option)" do
+  test "the option is available for normalized_text, and so is the profile it carries (T1's option)" do
     assert_equal "available", Lessons::Types.data.fetch("check_options").fetch("input_bits")["status"]
-    assert_equal %w[profile], Lessons::Types.held_back_options(check).map(&:first), "input: bits itself is not held back"
+    assert_empty Lessons::Types.held_back_options(check)
   end
 
   test "switches need the binary profile with its width" do
