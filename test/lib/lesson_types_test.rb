@@ -165,6 +165,8 @@ class LessonTypesTest < ActiveSupport::TestCase
     assert_not_includes message, "reveal"
   end
 
+  BUILT_LIBS = [ Lessons::Bits ].freeze
+
   test "the libraries of WAVE2 1.10 have their signatures frozen, shared with their vector file, and raise until their track" do
     libs = { Lessons::Chrono => "chrono.json", Lessons::Dates => "dates.json", Lessons::NumWords => "amount_words.json", Lessons::Money => "money.json",
              Lessons::Chem => "chem_formulas.json", Lessons::Words => "spanish_words.json", Lessons::Verbs => "verbs.json", Lessons::Bits => "bits.json",
@@ -178,6 +180,8 @@ class LessonTypesTest < ActiveSupport::TestCase
         meth = spec["ruby"][/\A[a-z_?]+/]
         assert_respond_to mod, meth
         arity = mod.method(meth).parameters.count { |kind, _| kind == :req }
+        next if BUILT_LIBS.include?(mod) # built by its track: its own test runs the vectors (test/lib/lessons/bits_test.rb)
+
         assert_raises(mod::NotBuilt, "#{mod.name}.#{meth}") { mod.public_send(meth, *Array.new(arity, "x")) }
       end
     end

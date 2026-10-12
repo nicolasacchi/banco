@@ -135,6 +135,7 @@ test("speech: the voice gate keeps local voices of the language that the operato
 
 test("the library signatures: the JS twin of each library has the functions its vector file lists, and they throw NotBuilt", async () => {
   const dir = new URL("test/fixtures/lesson2/", root)
+  const BUILT = ["bits"] // built by its track: its own test runs the vectors
   const vectors = { chrono: "chrono.json", dates: "dates.json", num_words: "amount_words.json", money: "money.json", chem: "chem_formulas.json", words: "spanish_words.json", verbs: "verbs.json", bits: "bits.json", program: "program.json", sheet: "sheet.json" }
   for (const [name, file] of Object.entries(vectors)) {
     const doc = JSON.parse(readFileSync(new URL(file, dir), "utf8"))
@@ -143,7 +144,8 @@ test("the library signatures: the JS twin of each library has the functions its 
     for (const [fn, spec] of Object.entries(doc.functions)) {
       assert.equal(lib.SIGNATURES[fn], spec.js, `${name}.${fn}`)
       const jsName = spec.js.split("(")[0]
-      assert.throws(() => lib[jsName](), NotBuilt, `${name}.${jsName}`)
+      if (BUILT.includes(name)) assert.equal(typeof lib[jsName], "function", `${name}.${jsName}`)
+      else assert.throws(() => lib[jsName](), NotBuilt, `${name}.${jsName}`)
       for (const c of spec.cases) assert.ok(Array.isArray(c.args) && "result" in c, `${name}.${fn} case`)
     }
   }
