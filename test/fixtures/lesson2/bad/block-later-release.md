@@ -42,9 +42,8 @@ errors:
 explain_it: 'Con $x = 2$: $2 \cdot 2 + 3 = 7$. I piatti sono uguali.'
 :::
 
-::: reveal
-prompt_it: "Pensaci."
-answer_it: "Ecco."
+::: page
+key: pagina-libera
 :::
 
 ## Togli lo stesso peso dai due piatti {idea icon=scale}

@@ -74,7 +74,7 @@ diagrams:
   mirror: {family: words, status: reserved, schema: final, batch: w2-1, track: T3, size: M, module: lesson/diagrams/words/mirror}
 
   # ---- documents (T8)
-  document: {family: docs, status: reserved, schema: final, batch: w2-1, track: T8, size: M, module: lesson/diagrams/docs/document,
+  document: {family: docs, status: available, schema: final, batch: w2-1, track: T8, size: M, module: lesson/diagrams/docs/document,
     views: {kind: {contract: {status: draft, schema: draft, batch: w2-2}, receipt: {status: draft, schema: draft, batch: w2-2},
       gazette: {status: draft, schema: draft, batch: w2-2}, ballot: {status: draft, schema: draft, batch: w2-2}, letter: {status: draft, schema: draft, batch: w2-2},
       assegno_bancario: {status: draft, schema: draft, batch: w2-2}, assegno_circolare: {status: draft, schema: draft, batch: w2-2},
@@ -111,10 +111,10 @@ blocks:
   table: {status: available, batch: r1, module: lesson/blocks/table}
   try: {status: available, batch: r1, module: lesson/blocks/try}
   # wave 2
-  source: {family: docs, status: reserved, schema: final, batch: w2-1, track: T8, module: lesson/blocks/source,
+  source: {family: docs, status: available, schema: final, batch: w2-1, track: T8, module: lesson/blocks/source,
     views: {kind: {written: {status: draft, schema: draft, batch: w2-2}, iconographic: {status: draft, schema: draft, batch: w2-2}, material: {status: draft, schema: draft, batch: w2-2}}}}
-  reveal: {family: docs, status: reserved, schema: final, batch: w2-1, track: T8, module: lesson/blocks/reveal}
-  oral: {family: docs, status: reserved, schema: final, batch: w2-1, track: T8, module: lesson/blocks/oral}
+  reveal: {family: docs, status: available, schema: final, batch: w2-1, track: T8, module: lesson/blocks/reveal}
+  oral: {family: docs, status: available, schema: final, batch: w2-1, track: T8, module: lesson/blocks/oral}
   dialogue: {family: words, status: reserved, schema: final, batch: w2-1, track: T3, module: lesson/blocks/dialogue}
   image: {family: docs, status: draft, schema: draft, batch: w2-2, track: T8, module: lesson/blocks/image}
   page: {family: pages, status: reserved, schema: none, batch: r2, track: T11, module: lesson/blocks/page}

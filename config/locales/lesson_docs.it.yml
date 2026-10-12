@@ -1,4 +1,43 @@
 # Italian texts of the lesson/2 family docs (document, source, reveal, oral, image): controls, live-region sentences, "Descrizione" fragments, how-to lines.
-# Keys are English; texts are Italian with high readability (short sentences, no hard words). The track fills it in.
+# Keys are English; texts are Italian with high readability (short sentences, no hard words). They reach the page as t.docs (LessonPagesHelper).
+# The texts a diagram draws itself (the rows of an invoice, its "Descrizione") are in lesson/diagrams/docs/document.js, like every figure's description.
 it:
-  lesson_docs: {}
+  lesson_docs:
+    # the flip card of a reveal (a mistake keeps its own texts in lesson2)
+    flip_hint: "Tocca per girare"
+    reveal_think: "Pensaci"
+    reveal_turn: "Tocca per vedere la risposta"
+    reveal_answer: "Risposta"
+    # the crossroads
+    cross_title: "Che cosa fai?"
+    cross_choose: "Scegli una strada"
+    cross_then: "Che cosa succede dopo"
+    cross_real_button: "Che cosa successe davvero"
+    cross_real_title: "Che cosa successe davvero"
+    cross_real_tag: "È andata così"
+    cross_pick_first: "Prima scegli una strada."
+    cross_others: "Le altre strade sono ipotesi: nessuno sa come sarebbe andata."
+    # a source
+    source_switch_label: "Come vuoi leggere"
+    source_plain: "In parole semplici"
+    source_original: "Testo della legge"
+    source_comma: "Comma %{n}"
+    source_guide: "Leggi con me"
+    # the oral rehearsal
+    oral_title: "Prova a dirlo"
+    oral_help: "Metti in ordine la scaletta della risposta, poi premi Controlla."
+    oral_outline_label: "La scaletta, da mettere in ordine"
+    oral_up: "Sposta su"
+    oral_down: "Sposta giù"
+    oral_moved: "Ora è al posto %{n} di %{total}."
+    oral_connectives: "Parole per collegare"
+    oral_terms: "Parole da usare"
+    oral_model: "Risposta modello"
+    oral_say: "Ora dilla tu, ad alta voce"
+    oral_private: "Facoltativo. Nessuno ti ascolta e non registriamo niente."
+    oral_self_title: "Per controllarti"
+    oral_self:
+      - "Ho detto le parti nell'ordine giusto."
+      - "Ho usato le parole per collegare."
+      - "Ho usato le parole della lezione."
+      - "Ho risposto proprio alla domanda."

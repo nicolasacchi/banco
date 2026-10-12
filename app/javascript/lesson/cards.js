@@ -9,6 +9,9 @@ import { render as example } from "lesson/blocks/example"
 import { render as legend, sample } from "lesson/blocks/legend"
 import { render as math } from "lesson/blocks/math"
 import { render as mistake } from "lesson/blocks/mistake"
+import { render as oral } from "lesson/blocks/oral"
+import { render as reveal } from "lesson/blocks/reveal"
+import { render as source } from "lesson/blocks/source"
 import { render as more } from "lesson/blocks/more"
 import { render as procedure } from "lesson/blocks/procedure"
 import { render as summary } from "lesson/blocks/summary"
@@ -124,6 +127,9 @@ function renderOne(block, card, ctx, renderBlock) {
     case "legend": return legend(block, ctx)
     case "mistake": return mistake(block, ctx)
     case "summary": return summary(block, ctx)
+    case "source": return source(block, ctx)
+    case "reveal": return reveal(block, ctx)
+    case "oral": return oral(block, ctx, loc)
     case "table": return table(block, ctx)
     case "diagram":
     case "schema": return diagram(block, ctx)

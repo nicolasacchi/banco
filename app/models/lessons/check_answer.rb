@@ -75,6 +75,8 @@ module Lessons
 
         blank = block["steps"][loc[:step] - 1]&.dig("blank") or return nil
         Located.new(blank, StudentBody.seed_for_step(base, loc[:step] - 1), block, loc[:step] - 1)
+      elsif block["type"] == "oral"
+        Located.new(Oral.check(block), base, nil, nil)
       else
         return nil unless block["type"] == "check"
 
@@ -127,6 +129,7 @@ module Lessons
       out[:message_it] = graded.message_it if graded.message_it
       reveal = graded.right? || try >= EXPLAIN_FROM_TRY
       out[:explain_it] = check["explain_it"] if reveal && check["explain_it"].present?
+      out[:model_it] = check["model_it"] if reveal && check["model_it"].present? # an oral's model answer (withheld until now, L6)
       out.merge!(rest_of_example(located)) if reveal && located.example
       out
     end

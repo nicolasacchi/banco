@@ -20,6 +20,9 @@ const MARKERS = {
   square: (m) => [svg("rect", { x: m.x + 2, y: m.y + 2, width: m.w - 4, height: m.h - 4, class: m.cls })],
   triangle: (m) => [svg("polygon", { points: `${m.x + m.w / 2},${m.y + 1} ${m.x + m.w - 1},${m.y + m.h - 1} ${m.x + 1},${m.y + m.h - 1}`, class: m.cls })],
   diamond: (m) => [svg("polygon", { points: `${m.x + m.w / 2},${m.y + 1} ${m.x + m.w - 1},${m.y + m.h / 2} ${m.x + m.w / 2},${m.y + m.h - 1} ${m.x + 1},${m.y + m.h / 2}`, class: m.cls })],
+  // ring and star: the shapes of palette v2 that had no marker in a figure (business: outside the imponibile; computing: output)
+  ring: (m) => [svg("circle", { cx: m.x + m.w / 2, cy: m.y + m.h / 2, r: Math.min(m.w, m.h) / 2 - 3, class: m.cls, style: "fill:none;stroke-width:3" })],
+  star: (m) => [svg("polygon", { points: [[0.5, 0.04], [0.62, 0.38], [0.97, 0.4], [0.7, 0.62], [0.8, 0.96], [0.5, 0.76], [0.2, 0.96], [0.3, 0.62], [0.03, 0.4], [0.38, 0.38]].map(([fx, fy]) => `${m.x + m.w * fx},${m.y + m.h * fy}`).join(" "), class: m.cls })],
   // pentagon: the sugar of a nucleotide (palette v2)
   pentagon: (m) => [svg("polygon", { points: [[0.5, 0.04], [0.96, 0.38], [0.79, 0.94], [0.21, 0.94], [0.04, 0.38]].map(([fx, fy]) => `${m.x + m.w * fx},${m.y + m.h * fy}`).join(" "), class: m.cls })]
 }

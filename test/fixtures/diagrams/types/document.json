@@ -1,21 +1,21 @@
 {
  "version": 1,
  "type": "document",
- "status": "reserved",
+ "status": "available",
  "batch": "w2-1",
  "track": "T8",
  "provisional": false,
- "description": "Skeleton of W2-0 for the track T8: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "description": "Vectors of the document type (T8): the invoice kind, in the sheet and cascade views. 'schema' is judged by both schemas, 'semantic' ('ok', or {code, path}) by Lessons::Diagrams::Document and by the browser's layout() (same code, same path), 'layout' ('ok') by layout() at 320, 390, 768 and 1280 px and fontPx 18, 20 and 26 (inside the width, no label under the base size, no two labels over each other, a description). The other kinds are W2-2 drafts the registry holds back.",
  "vectors": [
   {
    "name": "document-example-1",
    "subject": "business",
    "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
+   "semantic": "ok",
+   "layout": "ok",
    "data": {
     "type": "document",
-    "alt_it": "Una fattura inventata di Cartoleria Alfa a Studio Beta con due righe di merci, uno sconto e l'IVA, e il totale calcolato in fondo.",
+    "alt_it": "Una fattura inventata di Cartoleria Alfa a Studio Beta con una riga di merci, uno sconto, le spese e l'IVA. Il totale si calcola in fondo.",
     "kind": "invoice",
     "view": "sheet",
     "head": {
@@ -40,6 +40,11 @@
       "text_it": "Imballaggio",
       "amount": "60,00",
       "documented": false
+     },
+     {
+      "text_it": "Corriere",
+      "amount": "50,00",
+      "documented": true
      }
     ],
     "rows": [
@@ -76,7 +81,8 @@
       ]
      }
     ]
-   }
+   },
+   "note": "the plan's example: the total hidden, the imponibile fenced, two steps, drawn as an invoice with a typical error"
   },
   {
    "name": "document-unknown-field",
@@ -148,6 +154,798 @@
     ],
     "zzz_unknown_field": true
    }
+  },
+  {
+   "name": "invoice-sheet-cover",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "document",
+    "alt_it": "Fattura di Cartoleria Alfa a Studio Beta: 800 quaderni a 2,50 euro, sconto del 10%, spese del venditore 60,00 euro, IVA 22%, totale 2.319,20 euro.",
+    "kind": "invoice",
+    "view": "sheet",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta",
+     "number": "41",
+     "date": "2026-10-12"
+    },
+    "lines": [
+     {
+      "text_it": "Quaderni A4",
+      "qty": "800",
+      "price": "2,50",
+      "vat": "22"
+     }
+    ],
+    "discounts": [
+     "10"
+    ],
+    "costs": [
+     {
+      "text_it": "Imballaggio",
+      "amount": "60,00",
+      "documented": false
+     },
+     {
+      "text_it": "Corriere",
+      "amount": "50,00",
+      "documented": true
+     }
+    ],
+    "rows": [
+     "gross",
+     "discounts",
+     "net",
+     "costs_in",
+     "base",
+     "vat",
+     "costs_out",
+     "total"
+    ],
+    "mark": [
+     "base"
+    ],
+    "caption_it": "Hai comprato merce per 2.000,00 euro. Perché paghi 2.319,20 euro?"
+   },
+   "note": "the cover invoice of invoice-total: every row, the fence, amounts only from the computed rows"
+  },
+  {
+   "name": "invoice-cascade-steps",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "document",
+    "alt_it": "Fattura di Cartoleria Alfa a Studio Beta: 800 quaderni a 2,50 euro, sconto del 10%, spese del venditore 60,00 euro, IVA 22%, totale 2.319,20 euro.",
+    "kind": "invoice",
+    "view": "cascade",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta",
+     "number": "41",
+     "date": "2026-10-12"
+    },
+    "lines": [
+     {
+      "text_it": "Quaderni A4",
+      "qty": "800",
+      "price": "2,50",
+      "vat": "22"
+     }
+    ],
+    "discounts": [
+     "10"
+    ],
+    "costs": [
+     {
+      "text_it": "Imballaggio",
+      "amount": "60,00",
+      "documented": false
+     },
+     {
+      "text_it": "Corriere",
+      "amount": "50,00",
+      "documented": true
+     }
+    ],
+    "rows": [
+     "gross"
+    ],
+    "states": [
+     {
+      "rows": [
+       "gross"
+      ],
+      "op_it": "Il lordo della merce."
+     },
+     {
+      "rows": [
+       "gross",
+       "discounts",
+       "net"
+      ],
+      "op_it": "Togli lo sconto."
+     },
+     {
+      "rows": [
+       "gross",
+       "discounts",
+       "net",
+       "costs_in",
+       "base"
+      ],
+      "mark": [
+       "base"
+      ],
+      "op_it": "Aggiungi le spese del venditore."
+     },
+     {
+      "rows": [
+       "gross",
+       "discounts",
+       "net",
+       "costs_in",
+       "base",
+       "vat"
+      ],
+      "mark": [
+       "base"
+      ],
+      "op_it": "Calcola l'IVA."
+     },
+     {
+      "rows": [
+       "gross",
+       "discounts",
+       "net",
+       "costs_in",
+       "base",
+       "vat",
+       "costs_out",
+       "total"
+      ],
+      "mark": [
+       "base"
+      ],
+      "op_it": "Aggiungi le spese anticipate."
+     }
+    ]
+   },
+   "note": "the cascade with five steps: take away, then add"
+  },
+  {
+   "name": "invoice-hidden-rows",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "document",
+    "alt_it": "Fattura di Cartoleria Alfa a Studio Beta: 800 quaderni a 2,50 euro, sconto del 10% e spese del venditore. L'imponibile e l'IVA sono da calcolare.",
+    "kind": "invoice",
+    "view": "sheet",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta",
+     "number": "41",
+     "date": "2026-10-12"
+    },
+    "lines": [
+     {
+      "text_it": "Quaderni A4",
+      "qty": "800",
+      "price": "2,50",
+      "vat": "22"
+     }
+    ],
+    "discounts": [
+     "10"
+    ],
+    "costs": [
+     {
+      "text_it": "Imballaggio",
+      "amount": "60,00",
+      "documented": false
+     },
+     {
+      "text_it": "Corriere",
+      "amount": "50,00",
+      "documented": true
+     }
+    ],
+    "hide": [
+     "base",
+     "vat"
+    ]
+   },
+   "note": "two hidden rows: drawn as empty boxes; the alt text names no hidden amount"
+  },
+  {
+   "name": "invoice-two-rates",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "document",
+    "alt_it": "Fattura di Cartoleria Alfa a Studio Beta con due righe di merci, quaderni al 22% e libri al 4%, e il totale in fondo.",
+    "kind": "invoice",
+    "view": "sheet",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta"
+    },
+    "lines": [
+     {
+      "text_it": "Quaderni",
+      "qty": "1",
+      "price": "600",
+      "vat": "22"
+     },
+     {
+      "text_it": "Libri",
+      "qty": "1",
+      "price": "400",
+      "vat": "4"
+     }
+    ],
+    "hide": [
+     "vat"
+    ]
+   },
+   "note": "two VAT rates: the VAT row is the sum of the two"
+  },
+  {
+   "name": "invoice-error-documented-costs-taxed",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "document",
+    "alt_it": "Fattura di Cartoleria Alfa a Studio Beta con un errore da trovare: guarda con attenzione la riga dell'imponibile e quella del totale.",
+    "kind": "invoice",
+    "view": "sheet",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta",
+     "number": "41",
+     "date": "2026-10-12"
+    },
+    "lines": [
+     {
+      "text_it": "Quaderni A4",
+      "qty": "800",
+      "price": "2,50",
+      "vat": "22"
+     }
+    ],
+    "discounts": [
+     "10"
+    ],
+    "costs": [
+     {
+      "text_it": "Imballaggio",
+      "amount": "60,00",
+      "documented": false
+     },
+     {
+      "text_it": "Corriere",
+      "amount": "50,00",
+      "documented": true
+     }
+    ],
+    "error": "documented_costs_taxed"
+   },
+   "note": "drawn as the typical error computes it, titled 'Fattura con un errore'"
+  },
+  {
+   "name": "invoice-interest",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "document",
+    "alt_it": "Fattura di Cartoleria Alfa a Studio Beta per dieci quaderni con gli interessi di dilazione al 6% per sessanta giorni.",
+    "kind": "invoice",
+    "lines": [
+     {
+      "text_it": "Quaderni",
+      "qty": "10",
+      "price": "100",
+      "vat": "22"
+     }
+    ],
+    "interest": {
+     "rate": "6",
+     "days": 60,
+     "year": 360
+    }
+   },
+   "note": "interest on the net goods, added after the documented costs"
+  },
+  {
+   "name": "invoice-cascade-hidden",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/view",
+   "data": {
+    "type": "document",
+    "alt_it": "Fattura di Cartoleria Alfa a Studio Beta: 800 quaderni a 2,50 euro, sconto del 10%, spese del venditore 60,00 euro, IVA 22%, totale 2.319,20 euro.",
+    "kind": "invoice",
+    "view": "cascade",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta",
+     "number": "41",
+     "date": "2026-10-12"
+    },
+    "lines": [
+     {
+      "text_it": "Quaderni A4",
+      "qty": "800",
+      "price": "2,50",
+      "vat": "22"
+     }
+    ],
+    "discounts": [
+     "10"
+    ],
+    "costs": [
+     {
+      "text_it": "Imballaggio",
+      "amount": "60,00",
+      "documented": false
+     },
+     {
+      "text_it": "Corriere",
+      "amount": "50,00",
+      "documented": true
+     }
+    ],
+    "hide": [
+     "total"
+    ]
+   },
+   "note": "a cascade cannot hide a row: its bars would show the value"
+  },
+  {
+   "name": "invoice-unknown-rate",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/lines/0/vat",
+   "data": {
+    "type": "document",
+    "alt_it": "Fattura di Cartoleria Alfa a Studio Beta: 800 quaderni a 2,50 euro, sconto del 10%, spese del venditore 60,00 euro, IVA 22%, totale 2.319,20 euro.",
+    "kind": "invoice",
+    "view": "sheet",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta",
+     "number": "41",
+     "date": "2026-10-12"
+    },
+    "lines": [
+     {
+      "text_it": "Quaderni A4",
+      "qty": "800",
+      "price": "2,50",
+      "vat": "21"
+     }
+    ],
+    "discounts": [
+     "10"
+    ],
+    "costs": [
+     {
+      "text_it": "Imballaggio",
+      "amount": "60,00",
+      "documented": false
+     },
+     {
+      "text_it": "Corriere",
+      "amount": "50,00",
+      "documented": true
+     }
+    ]
+   },
+   "note": "21 is not a rate of the programme"
+  },
+  {
+   "name": "invoice-error-changes-nothing",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/error",
+   "data": {
+    "type": "document",
+    "alt_it": "Fattura di Cartoleria Alfa a Studio Beta: 800 quaderni a 2,50 euro, sconto del 10%, spese del venditore 60,00 euro, IVA 22%, totale 2.319,20 euro.",
+    "kind": "invoice",
+    "view": "sheet",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta",
+     "number": "41",
+     "date": "2026-10-12"
+    },
+    "lines": [
+     {
+      "text_it": "Quaderni A4",
+      "qty": "800",
+      "price": "2,50",
+      "vat": "22"
+     }
+    ],
+    "discounts": [
+     "10"
+    ],
+    "costs": [
+     {
+      "text_it": "Imballaggio",
+      "amount": "60,00",
+      "documented": false
+     },
+     {
+      "text_it": "Corriere",
+      "amount": "50,00",
+      "documented": true
+     }
+    ],
+    "error": "two_rates_combined"
+   },
+   "note": "one rate: the error cannot be drawn"
+  },
+  {
+   "name": "invoice-error-not-on-this-invoice",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/error",
+   "data": {
+    "type": "document",
+    "alt_it": "Fattura di Cartoleria Alfa a Studio Beta: 800 quaderni a 2,50 euro, sconto del 10%, spese del venditore 60,00 euro, IVA 22%, totale 2.319,20 euro.",
+    "kind": "invoice",
+    "view": "sheet",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta",
+     "number": "41",
+     "date": "2026-10-12"
+    },
+    "lines": [
+     {
+      "text_it": "Quaderni A4",
+      "qty": "800",
+      "price": "2,50",
+      "vat": "22"
+     }
+    ],
+    "discounts": [
+     "10"
+    ],
+    "costs": [
+     {
+      "text_it": "Imballaggio",
+      "amount": "60,00",
+      "documented": false
+     }
+    ],
+    "error": "documented_costs_taxed"
+   },
+   "note": "no documented cost: the error changes nothing"
+  },
+  {
+   "name": "invoice-alt-amount-not-computed",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "E-LESSON-ALT",
+   "path": "/alt_it",
+   "data": {
+    "type": "document",
+    "alt_it": "Fattura di Cartoleria Alfa a Studio Beta: 800 quaderni a 2,50 euro, sconto del 10% e totale di 2.400,00 euro.",
+    "kind": "invoice",
+    "view": "sheet",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta",
+     "number": "41",
+     "date": "2026-10-12"
+    },
+    "lines": [
+     {
+      "text_it": "Quaderni A4",
+      "qty": "800",
+      "price": "2,50",
+      "vat": "22"
+     }
+    ],
+    "discounts": [
+     "10"
+    ],
+    "costs": [
+     {
+      "text_it": "Imballaggio",
+      "amount": "60,00",
+      "documented": false
+     },
+     {
+      "text_it": "Corriere",
+      "amount": "50,00",
+      "documented": true
+     }
+    ]
+   },
+   "note": "the alt text says an amount the invoice does not compute"
+  },
+  {
+   "name": "invoice-alt-says-hidden-amount",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "E-LESSON-ALT",
+   "path": "/alt_it",
+   "data": {
+    "type": "document",
+    "alt_it": "Fattura di Cartoleria Alfa a Studio Beta: 800 quaderni a 2,50 euro, sconto del 10% e totale di 2.319,20 euro.",
+    "kind": "invoice",
+    "view": "sheet",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta",
+     "number": "41",
+     "date": "2026-10-12"
+    },
+    "lines": [
+     {
+      "text_it": "Quaderni A4",
+      "qty": "800",
+      "price": "2,50",
+      "vat": "22"
+     }
+    ],
+    "discounts": [
+     "10"
+    ],
+    "costs": [
+     {
+      "text_it": "Imballaggio",
+      "amount": "60,00",
+      "documented": false
+     },
+     {
+      "text_it": "Corriere",
+      "amount": "50,00",
+      "documented": true
+     }
+    ],
+    "hide": [
+     "total"
+    ]
+   },
+   "note": "the alt text gives the amount of a hidden row"
+  },
+  {
+   "name": "invoice-date-does-not-exist",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/head/date",
+   "data": {
+    "type": "document",
+    "alt_it": "Fattura di Cartoleria Alfa a Studio Beta: 800 quaderni a 2,50 euro, sconto del 10%, spese del venditore 60,00 euro, IVA 22%, totale 2.319,20 euro.",
+    "kind": "invoice",
+    "view": "sheet",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta",
+     "number": "41",
+     "date": "2026-02-30"
+    },
+    "lines": [
+     {
+      "text_it": "Quaderni A4",
+      "qty": "800",
+      "price": "2,50",
+      "vat": "22"
+     }
+    ],
+    "discounts": [
+     "10"
+    ],
+    "costs": [
+     {
+      "text_it": "Imballaggio",
+      "amount": "60,00",
+      "documented": false
+     },
+     {
+      "text_it": "Corriere",
+      "amount": "50,00",
+      "documented": true
+     }
+    ]
+   },
+   "note": "30 February"
+  },
+  {
+   "name": "invoice-costs-two-rates",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/costs",
+   "data": {
+    "type": "document",
+    "alt_it": "Fattura di Cartoleria Alfa a Studio Beta: 800 quaderni a 2,50 euro, sconto del 10%, spese del venditore 60,00 euro, IVA 22%, totale 2.319,20 euro.",
+    "kind": "invoice",
+    "view": "sheet",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta",
+     "number": "41",
+     "date": "2026-10-12"
+    },
+    "lines": [
+     {
+      "text_it": "Quaderni",
+      "qty": "1",
+      "price": "600",
+      "vat": "22"
+     },
+     {
+      "text_it": "Libri",
+      "qty": "1",
+      "price": "400",
+      "vat": "4"
+     }
+    ],
+    "discounts": [
+     "10"
+    ],
+    "costs": [
+     {
+      "text_it": "Imballaggio",
+      "amount": "60,00",
+      "documented": false
+     },
+     {
+      "text_it": "Corriere",
+      "amount": "50,00",
+      "documented": true
+     }
+    ]
+   },
+   "note": "a cost that is not documented has no rate when there are two"
+  },
+  {
+   "name": "invoice-no-lines",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/lines",
+   "data": {
+    "type": "document",
+    "alt_it": "Fattura di Cartoleria Alfa a Studio Beta: 800 quaderni a 2,50 euro, sconto del 10%, spese del venditore 60,00 euro, IVA 22%, totale 2.319,20 euro.",
+    "kind": "invoice",
+    "view": "sheet",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta",
+     "number": "41",
+     "date": "2026-10-12"
+    },
+    "lines": [],
+    "discounts": [
+     "10"
+    ],
+    "costs": [
+     {
+      "text_it": "Imballaggio",
+      "amount": "60,00",
+      "documented": false
+     },
+     {
+      "text_it": "Corriere",
+      "amount": "50,00",
+      "documented": true
+     }
+    ]
+   },
+   "note": "an invoice has goods"
+  },
+  {
+   "name": "invoice-row-unknown",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/mark/0",
+   "data": {
+    "type": "document",
+    "alt_it": "Fattura di Cartoleria Alfa a Studio Beta: 800 quaderni a 2,50 euro, sconto del 10%, spese del venditore 60,00 euro, IVA 22%, totale 2.319,20 euro.",
+    "kind": "invoice",
+    "view": "sheet",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta",
+     "number": "41",
+     "date": "2026-10-12"
+    },
+    "lines": [
+     {
+      "text_it": "Quaderni A4",
+      "qty": "800",
+      "price": "2,50",
+      "vat": "22"
+     }
+    ],
+    "discounts": [
+     "10"
+    ],
+    "costs": [
+     {
+      "text_it": "Imballaggio",
+      "amount": "60,00",
+      "documented": false
+     },
+     {
+      "text_it": "Corriere",
+      "amount": "50,00",
+      "documented": true
+     }
+    ],
+    "mark": [
+     "imponibile"
+    ]
+   },
+   "note": "a mark names a row"
+  },
+  {
+   "name": "invoice-discount-100",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/discounts/0",
+   "data": {
+    "type": "document",
+    "alt_it": "Fattura di Cartoleria Alfa a Studio Beta: 800 quaderni a 2,50 euro, sconto del 10%, spese del venditore 60,00 euro, IVA 22%, totale 2.319,20 euro.",
+    "kind": "invoice",
+    "view": "sheet",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta",
+     "number": "41",
+     "date": "2026-10-12"
+    },
+    "lines": [
+     {
+      "text_it": "Quaderni A4",
+      "qty": "800",
+      "price": "2,50",
+      "vat": "22"
+     }
+    ],
+    "discounts": [
+     "100"
+    ],
+    "costs": [
+     {
+      "text_it": "Imballaggio",
+      "amount": "60,00",
+      "documented": false
+     },
+     {
+      "text_it": "Corriere",
+      "amount": "50,00",
+      "documented": true
+     }
+    ]
+   },
+   "note": "a discount under 100"
   }
  ]
 }

@@ -164,7 +164,7 @@
    "code": "E-LESSON-BLOCK",
    "line": 45,
    "construct": "directive",
-   "note": "reveal is release 1.1: not available yet"
+   "note": "page (a free page) is a later release, R2: not available yet"
   },
   {
    "file": "bad/block-image-later-release.md",
