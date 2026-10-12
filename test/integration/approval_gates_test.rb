@@ -242,20 +242,20 @@ class ApprovalGatesTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  test "the diagnosis is released only with the consent, the warm-up and every subject approved, all together" do
+  test "the diagnosis is released only with the consent and every subject approved, all together; the warm-up is not asked" do
     other = build_ui_subject(key: "italian", name: "Italiano", position: 2, approve: false)
     decide("/teacher/release")
     assert_response :unprocessable_entity
     reasons = json["reasons"]
     assert_includes reasons, "the consent is not recorded"
-    assert_includes reasons, "the warm-up is not completed"
+    assert_not(reasons.any? { |r| r.include?("warm-up") })
     assert_includes reasons, "math: graph and entry test are not both approved"
     assert_includes reasons, "italian: graph and entry test are not both approved"
 
     decide("/teacher/consent", { acknowledged: true })
     decide("/teacher/consent", { acknowledged: true })
     assert_response :unprocessable_entity
-    AppEvent.create!(kind: "warmup_completed", student: @student)
+    assert_not Diagnosis::Warmup.complete?(@student)
     approve_ui_subject!(@subject, @graph, @blueprint)
     decide("/teacher/release")
     assert_equal [ "italian: graph and entry test are not both approved" ], json["reasons"]

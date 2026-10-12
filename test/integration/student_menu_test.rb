@@ -51,23 +51,29 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     assert_select "#entry-test a.button[href='/diagnosis/warmup']"
     assert_select "#entry-test-title", "Riscaldamento"
     assert_equal [ "Oggi", "Riscaldamento", "Impostazioni" ], labels
+    assert_select "#entry-test p", /i test si aprono|Il test non è ancora aperto/i
     warmup_done!(student("student"))
     page(OFFICIAL, "/today")
-    assert_select "#entry-test", 0
-    assert_select "#course-closed"
+    assert_select "#entry-test[data-state=closed]"
+    assert_select "#entry-warmup", /rifarla/
+    assert_select "#entry-test a[href='/diagnosis/warmup']"
     assert_equal [ "Oggi", "Impostazioni" ], labels
   end
 
-  test "released: the official student no longer gets the warm-up; a trial student gets it first, then the subjects with one next button" do
+  test "released: the warm-up is a small optional link under the subjects, for the official and the trial student, never the main button" do
     build_ui_subject
     release_diagnosis!
     page(OFFICIAL, "/today")
     assert_select "#entry-test[data-state=open]"
     assert_select "#entry-test-title", "Test d'ingresso"
-    assert_select "#entry-warmup", 0
+    assert_select "#entry-warmup.optional a[href='/diagnosis/warmup']", "Riscaldamento, facoltativo"
+    assert_select "#entry-test a.button[href='/diagnosis/warmup']", 0
+    warmup_done!(student("student"))
+    page(OFFICIAL, "/today")
+    assert_select "#entry-warmup.optional a[href='/diagnosis/warmup']"
     page(TRIAL, "/today")
-    assert_select "#entry-warmup"
-    assert_select "#entry-test a.button.secondary[href='/diagnosis/warmup']"
+    assert_select "#entry-warmup.optional a[href='/diagnosis/warmup']"
+    assert_select "#entry-next", "Comincia"
     page(OFFICIAL, "/today")
     assert_select "#entry-subjects li.subject[data-subject=math][data-state=not_started] .subject-state", "Da fare"
     assert_select "#entry-next", "Comincia"
@@ -83,7 +89,7 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     run = Diagnosis::Conductor.run_for(official, rows[:subject])
     Diagnosis::Conductor.new(run).step!
     page(OFFICIAL, "/today")
-    assert_select "#entry-warmup", 0
+    assert_select "#entry-warmup.optional"
     assert_select "#entry-subjects li.subject[data-state=in_progress]"
     assert_select "#entry-next", "Riprendi"
     play_run(official, rows[:subject])
@@ -105,9 +111,9 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
   test "nothing at all: one friendly line" do
     warmup_done!(student("student"))
     page(OFFICIAL, "/today")
-    assert_select "#entry-test", 0
+    assert_select "#entry-test[data-state=closed]"
     assert_select "#course-part", 0
-    assert_select "#course-closed", /niente da fare/
+    assert_select "#entry-warmup"
   end
 
   # ---- Oggi with the course ------------------------------------------------------------------------------

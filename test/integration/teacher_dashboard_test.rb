@@ -105,13 +105,16 @@ class TeacherDashboardTest < ActionDispatch::IntegrationTest
     decide_row!("confirm_grade", attempt_id: @attempt.id, grade_proposal_id: @proposal.id, passed: true)
     page("/teacher/dashboard/fragment")
     assert_select "#todo-list li", 1
-    assert_select "li[data-todo=release]", "Puoi aprire la diagnosi. Manca ancora: il consenso e la prova dei comandi."
+    assert_select "li[data-todo=release]", "Puoi aprire la diagnosi. Manca ancora: il consenso."
     assert_select "li[data-todo=release] a[href='#release-state']:not([target])"
     assert_select "#todo-empty", 0
     decide_row!("record_consent", {})
-    AppEvent.create!(kind: "warmup_completed", student: @student)
     page("/teacher/dashboard/fragment")
     assert_select "li[data-todo=release]", "Puoi aprire la diagnosi."
+    assert_select "#release-state", /Prova dei comandi: non fatta \(facoltativa\)/
+    AppEvent.create!(kind: "warmup_completed", student: @student)
+    page("/teacher/dashboard/fragment")
+    assert_select "#release-state", /Prova dei comandi: fatta \(facoltativa\)/
     decide_row!("release_diagnosis", {})
     page("/teacher/dashboard/fragment")
     assert_select "#todo-list", 0

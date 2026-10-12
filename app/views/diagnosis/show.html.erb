@@ -19,6 +19,7 @@
         </li>
       <% end %>
     </ul>
+    <p class="optional"><%= t("diagnosis.warmup_optional") %> <a href="/diagnosis/warmup"><%= t("diagnosis.warmup_link") %></a></p>
   <% else %>
     <p class="notice"><%= t("diagnosis.not_open") %></p>
     <% if @warmup_done %>

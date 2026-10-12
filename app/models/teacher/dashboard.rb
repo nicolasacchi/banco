@@ -80,7 +80,7 @@ module Teacher
       [ Todo.new(:release, nil, nil, "#release-state", nil, nil, release_missing) ]
     end
 
-    def release_missing = [ (:consent unless release.consent), (:warmup unless release.warmup) ].compact
+    def release_missing = [ (:consent unless release.consent) ].compact
 
     def href(helper, row, anchor = "")
       Rails.application.routes.url_helpers.public_send(helper, key: row.subject.key) + anchor

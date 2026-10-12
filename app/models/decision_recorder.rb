@@ -279,7 +279,6 @@ class DecisionRecorder
     reasons = []
     reasons << "the consent is not recorded" unless Decision.exists?(kind: "record_consent")
     student = Student.find_by(key: "student")
-    reasons << "the warm-up is not completed" unless student && Diagnosis::Warmup.complete?(student)
     subjects = Subject.order(:position).to_a
     reasons << "there is no subject" if subjects.empty?
     subjects.each do |s|
