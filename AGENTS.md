@@ -49,6 +49,8 @@ node --test 'app/javascript/lesson/test/*.test.mjs'      # lesson/2 renderer: nu
 bin/hygiene                                   # public-repo checks (also in CI)
 # the forbidden terms are private: HYGIENE_TERMS (CI secret) or untracked prep/hygiene-terms, one per line
 bin/check-structure                           # db/structure.sql equals a fresh dump of the migrations (also in CI)
+# generated lesson files, each also with --check (run by test/lib/lesson_types_test.rb): colours and icon sprites, the diagram schemas, the registries, the data tables
+bin/build-palette; bin/build-icons; bin/build-diagram-schema; bin/build-lesson-types; bin/build-lesson-data
 bin/build-icons --check                       # the committed Lucide sprite equals the build from config/banco/icons.yml
 bin/preflight --json | jq .ok                 # health of this installation (also: banco health --json)
 bin/rubocop && bin/brakeman --no-pager        # style and security
@@ -149,6 +151,13 @@ only), `HARNESS_PORT` 3200 (internal). Never `PORT`.
   (`Validation::LessonChecks.call` dispatches on `schema:`), `Review::LessonChecklist.for`. Tests: `test/lib/lessons`, `test/validation/lesson2_checks_test.rb`,
   `test/integration/lesson2_api_test.rb` (`PROP_RUNS=300` for the StudentBody sentinel property).
 - Console decisions (D-260): `bin/rails banco:decide` (`lib/tasks/decide.rake`, `DecisionConsole`, origin `DecisionRecorder::Console`) is the operator's only non-browser way to decide; dry run unless `CONFIRM=1`; the row says `console` (address and group); no route, no CLI command. Tests: `test/models/decision_console_test.rb`.
+- Rich lessons, wave 2 (W2-0 contracts, D-260 to D-269, `docs/lessons-wave2.md`): `config/banco/lesson_types.yml` says what authors may use (`Lessons::Types`,
+  `status` available, reserved or draft; `bin/build-lesson-types` makes `lesson/diagrams/registry.js`, `lesson/checks/registry.js`, `lesson/voices.js`); the
+  component contract v2 is `lesson/diagrams/contract.js` and `Lessons::Diagrams::Contract` (stubs of the 29 types under `lesson/diagrams/FAMILY/` and
+  `lib/lessons/diagrams/`); palette v2 (eleven subjects, `same_as`, `data-palette`), `config/banco/voices.yml`, the vetted tables of `config/banco/data/`
+  (`Lessons::VettedData`), the libraries of `lib/lessons/{chrono,dates,num_words,money,chem,words,verbs,bits,program_grammar,sheet}.rb` with their JS twins
+  in `lesson/lib/`, the caps `lesson2.types` (rules version 9) and the subject briefs `briefs/lesson-SUBJECT.md`. A track makes its piece `available` in
+  the commit of its look gate.
 - Third reviewer (D-222): role `arbiter` (`FindingAssessment`, `FindingOpinion`, `Teacher::FindingField`, `banco findings assess`, `briefs/arbiter.md`); first opinion claude-opus-5-5, second claude-haiku-4-5-20251001 (`config/banco/providers.yml`); blocker and major findings stay a teacher click ("Segui il parere", `follow_opinions`), minor ones are closed or marked to fix as derived state by the first opinion alone (D-239); no effect on `Review::Gate` or `Approval::BlueprintGate`.
 - The student's front door and menu (D-240): `GET /` (`HomeController`) sends a student to `/today`, the teacher and a guest to `/teacher`; `/today` is the student's home (entry test block, then the course); `shared/_student_menu` (helpers `student_menu_*`) is on every student page, one item "Pausa: torna a Oggi" in a sitting and none in the teacher's preview; `/settings` holds the theme and size.
 - The course path and the guided review (D-241): the course page is the subject's path (`Teacher::CourseReview#steps`, badges, `?only=ready`), the topic page has four steps (lesson as S sees it, exercises drawn by `items/frozen_slot.js`, findings through `teacher/tests/_finding`, approval); `Teacher::TopicSeen` and `POST /teacher/topic-revisions/:id/seen` keep app events `teacher_read_lesson` and `teacher_saw_exercise`, never decisions; the gate is unchanged. Tests: `test/support/course_path_world.rb`.
