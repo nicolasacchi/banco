@@ -89,6 +89,20 @@ class DocsFamilySystemTest < ApplicationSystemTestCase
     end
   end
 
+  test "the cards of the family in the dark theme (shots): nothing disappears and the page does not overflow" do
+    open_gallery
+    page.execute_script("document.documentElement.setAttribute('data-theme', 'dark')")
+    [ 1, 3, 4, 5, 7 ].each do |n|
+      go(n)
+      assert_selector "#scheda-#{n}"
+      no_overflow!("dark card #{n}")
+      shot("#{n}-#{CARDS.fetch(n)}-dark")
+    end
+    go(2)
+    4.times { find("#scheda-2 .dg-next").click }
+    shot("2-cascata-last-dark")
+  end
+
   test "the invoice: the sheet draws the rows with their amounts and the hidden ones as boxes that say nothing" do
     open_gallery
     go(1)

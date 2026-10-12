@@ -85,19 +85,10 @@ export function render(block, ctx, loc = {}) {
     root.appendChild(el("p", { class: "hint", text: ctx.t.docs.oral_help }))
     const form = el("form", { class: "oral-form", novalidate: "" })
     const fallback = outlineList(block.outline, ctx)
-    let input = { element: fallback.element, order: fallback.order, focus: fallback.focus }
-    const slot = el("div", { class: "oral-slot" }, input.element)
-    // T1's ordering component, when it has landed: the same answer, its own tiles
-    if (isAvailable("ordering")) {
-      load("ordering").then((mod) => {
-        let answer = null
-        const node = mod.render({ component: "ordering", elements: block.outline, prompt_it: block.question_it }, ctx, { answer: (value) => { answer = value } })
-        slot.replaceChildren(node?.element ?? node)
-        input = { element: slot, order: () => answer ?? node?.order?.() ?? fallback.order(), focus: () => node?.focus?.() }
-      }).catch(() => {})
-    }
+    const slot = el("div", { class: "oral-slot" }, fallback.element)
     const submit = button(ctx.t.check_button, { class: "button small", type: "submit" })
-    form.append(slot, el("p", { class: "check-actions" }, submit), feedback)
+    const actions = el("p", { class: "check-actions" }, submit)
+    form.append(slot, actions, feedback)
     let tries = 0
     let pending = null
     let done = false
@@ -105,14 +96,14 @@ export function render(block, ctx, loc = {}) {
       feedback.replaceChildren(el("p", { class: `verdict verdict-${kind}` }, icon(kind === "right" ? "circle-check" : "wrong-hint", "verdict-ic"), el("strong", { text: kind === "right" ? ctx.t.right : kind === "wrong" ? ctx.t.wrong : ctx.t.invalid })))
       if (text) feedback.appendChild(el("div", { class: "verdict-text" }, renderRich(text, ctx)))
     }
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault()
+    // the answer is the shown ids in the order S built; both the stand-in and T1's component end here
+    const answer = async (response) => {
       if (done) return
       submit.disabled = true
       pending ||= newId()
       let reply = null
       try {
-        reply = await ctx.postCheck(loc, { response: input.order(), try: tries + 1, client_event_id: pending })
+        reply = await ctx.postCheck(loc, { response, try: tries + 1, client_event_id: pending })
       } catch (_error) {
         reply = null
       }
@@ -125,10 +116,23 @@ export function render(block, ctx, loc = {}) {
         say("right")
         done = true
         submit.disabled = true
-        for (const b of form.querySelectorAll(".oral-move")) b.disabled = true
+        for (const b of form.querySelectorAll(".oral-move, .tile, button")) if (b !== submit) b.disabled = true
       } else say("wrong", reply.message_it || ctx.t.try_again)
       showModel(reply.model_it)
+    }
+    form.addEventListener("submit", (event) => {
+      event.preventDefault()
+      answer(fallback.order())
     })
+    // T1's ordering component, when it has landed (the frozen signature render(check, ctx, hooks): hooks.answer(response) when S presses Controlla):
+    // its own tiles and its own button replace the stand-in
+    if (isAvailable("ordering")) {
+      load("ordering").then((mod) => {
+        const node = mod.render({ component: "ordering", elements: block.outline, prompt_it: block.question_it }, ctx, { answer })
+        slot.replaceChildren(node?.element ?? node)
+        actions.remove()
+      }).catch(() => {})
+    }
     root.appendChild(form)
   }
   pillRows.forEach((row) => row && root.appendChild(row))

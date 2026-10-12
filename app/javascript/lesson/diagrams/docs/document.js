@@ -290,7 +290,7 @@ function costsList(ctx, v, y) {
   const start = y
   const amountW = ctx.measure("€ 9.999,99", ctx.fontPx).w
   costs.forEach((k) => {
-    const d = put(ctx, `${k.text_it} (${k.documented ? "anticipata per il cliente" : "del venditore"})`, pad, y, { maxW: W - 2 * pad - amountW - 2 * pad })
+    const d = put(ctx, `${k.text_it} (${k.documented ? "anticipata" : "del venditore"})`, pad, y, { maxW: W - 2 * pad - amountW - 2 * pad })
     put(ctx, euro(Money.roundHalfUp(k.amount)), W - pad, y, { anchor: "end" })
     y += Math.max(d.h, ctx.lineH) + pad
   })
@@ -429,7 +429,7 @@ export function describe(data, ctx = {}) {
   const who = [eff.head?.seller_it ? `${IT.seller.toLowerCase()}: ${eff.head.seller_it}` : null, eff.head?.buyer_it ? `${IT.buyer.toLowerCase()}: ${eff.head.buyer_it}` : null].filter(Boolean)
   parts.push(`${eff.error ? IT.error_title : IT.invoice}${eff.head?.number ? ` numero ${eff.head.number}` : ""}${eff.head?.date ? ` ${IT.date.replace("%{date}", dateIt(eff.head.date))}` : ""}${who.length ? `. ${who.join("; ")}` : ""}.`)
   eff.lines.forEach((l, i) => parts.push(`${l.text_it}: ${l.qty} per ${euro(Money.roundHalfUp(l.price))}, ${euro(calc.lines[i])}, IVA ${l.vat}%.`))
-  for (const k of eff.costs ?? []) parts.push(`${k.text_it}: ${euro(Money.roundHalfUp(k.amount))}, ${k.documented ? "anticipata per il cliente" : "del venditore"}.`)
+  for (const k of eff.costs ?? []) parts.push(`${k.text_it}: ${euro(Money.roundHalfUp(k.amount))}, ${k.documented ? "anticipata" : "del venditore"}.`)
   const rows = rowsOf(eff).map((id) => `${rowLabel(id, eff)}: ${hidden.has(id) ? IT.blank : euro(calc.rows[id])}`)
   parts.push(`Righe. ${rows.join("; ")}.`)
   if (eff.view === "cascade") parts.push("Le righe sono disegnate come una cascata: prima si toglie, poi si aggiunge.")
