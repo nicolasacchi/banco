@@ -321,7 +321,7 @@
     "outline"
    ],
    "withheld": [
-    "model_it (x-banco-withheld, L6): the check endpoint serves it after the outline is right or the second try"
+    "model_it"
    ]
   },
   "dialogue": {
@@ -921,7 +921,7 @@
      "aligned",
      "states"
     ],
-    "hide": "bars[].parts[].hidden and hide[]: the value is served as null",
+    "hide": ["bars[].parts[].hidden", "hide[]"],
     "targets": [
      "parts",
      "marks"
@@ -1075,7 +1075,7 @@
      "mark",
      "states"
     ],
-    "hide": "hide[]: the fields, rows or blocks drawn empty; served as null",
+    "hide": ["hide[]"],
     "targets": [
      "zones",
      "rows"
@@ -1132,7 +1132,7 @@
      "unzip",
      "states"
     ],
-    "hide": "hide_bottom[]: the bases of the bottom strand served as null",
+    "hide": ["hide_bottom[]"],
     "targets": [
      "bases",
      "backbone",
@@ -1178,7 +1178,7 @@
      "states"
     ],
     "provisional": true,
-    "hide": "hide[]: [series, category] values drawn empty; served as null",
+    "hide": ["hide[]"],
     "targets": [
      "bars"
     ]
@@ -1226,7 +1226,7 @@
      "states"
     ],
     "provisional": true,
-    "hide": "hide[]: persons drawn empty; served as null",
+    "hide": ["hide[]"],
     "targets": [
      "cells"
     ]

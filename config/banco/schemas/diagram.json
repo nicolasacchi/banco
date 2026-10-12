@@ -5140,7 +5140,7 @@
         "parts",
         "marks"
       ],
-      "x-banco-hide": "bars[].parts[].hidden and hide[]: the value is served as null",
+      "x-banco-hide": ["bars[].parts[].hidden", "hide[]"],
       "description": "One proportional-bar module (2.4). W2-1: parts and percent. The fraction view is reserved (W2-3)."
     },
     "seats": {
@@ -6535,7 +6535,7 @@
         "zones",
         "rows"
       ],
-      "x-banco-hide": "hide[]: the fields, rows or blocks drawn empty; served as null",
+      "x-banco-hide": ["hide[]"],
       "description": "One type, a registry of kinds, each a template of fixed zones (2.7). W2-1 builds the frame and the invoice kind; the other kinds are W2-2 drafts. Invented names only.",
       "x-banco-draft-values": {
         "kind": [
@@ -6864,7 +6864,7 @@
         "rungs"
       ],
       "x-banco-home-palette": "biology",
-      "x-banco-hide": "hide_bottom[]: the bases of the bottom strand served as null",
+      "x-banco-hide": ["hide_bottom[]"],
       "description": "A nucleotide, a strand or a double strand (2.8). bottom must be the complement of top; 2D in W2-1, 3D in W2-3."
     },
     "nested": {
@@ -7244,7 +7244,7 @@
       "x-banco-targets": [
         "bars"
       ],
-      "x-banco-hide": "hide[]: [series, category] values drawn empty; served as null",
+      "x-banco-hide": ["hide[]"],
       "description": "Bars, stacked100 and line with a computed heating series are W2-2; pyramid and scatter are W2-3 (2.4). DRAFT."
     },
     "scale": {
@@ -7649,7 +7649,7 @@
       "x-banco-targets": [
         "cells"
       ],
-      "x-banco-hide": "hide[]: persons drawn empty; served as null",
+      "x-banco-hide": ["hide[]"],
       "description": "One grid of verb forms, two shapes (2.5). DRAFT."
     },
     "particles": {
