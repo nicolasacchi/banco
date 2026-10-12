@@ -6,6 +6,8 @@ import palette from "lesson/palette"
 import { parse, Refused } from "items/markup_parser"
 import { el, icon } from "lesson/dom"
 import { colourTokens, displayPieces, displayTex } from "lesson/eq"
+import { speakerButton } from "lesson/speech_ui"
+import { targetOf } from "lesson/lang"
 
 const ROLE_CLASS = /^role-[a-z]+([_-][a-z]+)*$/
 const NOT_EQUAL = "\\html@mathml{\\mathrel{\\text{\\char\"2260}}}{\\mathrel{\\char`≠}}"
@@ -57,6 +59,40 @@ export function renderMath(tex, target, ctx, display = false, tiles = false) {
   return target
 }
 
+// A glossary word: the word, a small book icon that is the button (a padded hit area), and the definition that opens under it (D-265). The
+// definition is hidden until asked for, so the voice reads it only after the student opened it (L10); the card lists its words anyway.
+function glossWord(term, ctx) {
+  const entry = ctx.glossary?.get(term.toLowerCase())
+  const word = el("span", { class: "gloss-word", text: term })
+  if (!entry) return word
+  const t = ctx.t.gloss
+  const pop = el("span", { class: "gloss-pop", role: "note", hidden: "" })
+  const inner = { ...ctx, glossary: null } // a word inside a definition is only a word: no glossary inside the glossary
+  renderInlineRich(entry.def_it, pop.appendChild(el("span", { class: "gloss-def" })), inner)
+  if (entry.example_it) renderInlineRich(entry.example_it, pop.appendChild(el("span", { class: "gloss-example" })), inner)
+  const button = el("button", { type: "button", class: "gloss-btn", "aria-expanded": "false", "aria-label": `${t.what} ${term}?` }, icon("glossary", "gloss-ic"))
+  const close = () => {
+    pop.hidden = true
+    button.setAttribute("aria-expanded", "false")
+    document.removeEventListener("pointerdown", outside, true)
+    document.removeEventListener("keydown", escape, true)
+  }
+  const outside = (event) => { if (!pop.contains(event.target) && event.target !== button && !button.contains(event.target)) close() }
+  const escape = (event) => { if (event.key === "Escape") { close(); button.focus() } }
+  button.addEventListener("click", () => {
+    if (!pop.hidden) { close(); return }
+    pop.hidden = false
+    button.setAttribute("aria-expanded", "true")
+    // keep the bubble inside the screen: it opens under the word and slides left when it would leave the right edge
+    pop.style.left = "0px"
+    const room = document.documentElement.clientWidth - pop.getBoundingClientRect().right - 8
+    if (room < 0) pop.style.left = `${room}px`
+    document.addEventListener("pointerdown", outside, true)
+    document.addEventListener("keydown", escape, true)
+  })
+  return el("span", { class: "gloss" }, word, button, pop)
+}
+
 function inlineNodes(nodes, parent, ctx, display = false, tiles = false) {
   for (const node of nodes) {
     if (node.t === "math" && display) {
@@ -69,9 +105,19 @@ function inlineNodes(nodes, parent, ctx, display = false, tiles = false) {
       inlineNodes(node.children, strong, ctx)
       parent.appendChild(strong)
     } else if (node.t === "math") parent.appendChild(renderMath(node.v, el("span", { class: "math" }), ctx, false, tiles && /=/.test(node.v)))
-    else if (node.t === "role") {
+    else if (node.t === "lang") {
+      // [[en:..]] [[es:..]] [[la:..]]: words of another language, in the target ink, with a speaker where the device has a voice (D-265)
+      const span = el("span", { class: `lang lang-${node.lang}`, lang: node.lang, text: node.v })
+      parent.appendChild(span)
+      if (!ctx.safe && node.lang !== "la" && !ctx.noSpeech) parent.appendChild(speakerButton(ctx, { lang: node.lang, text: node.v, node: span }))
+    } else if (node.t === "code") {
+      parent.appendChild(el("code", { class: "code-span", text: node.v }))
+    } else if (node.t === "gloss") {
+      parent.appendChild(glossWord(node.term, ctx))
+    } else if (node.t === "role") {
       const info = roleOf(ctx.subject, node.role)
-      const span = el("span", { class: `role role-${node.role}` })
+      const span = el("span", { class: `role role-${node.role}${node.lang && node.lang !== "it" ? ` lang lang-${node.lang}` : ""}` })
+      if (node.lang) span.setAttribute("lang", node.lang)
       if (info?.carrier === "icon" && info.icon) span.appendChild(icon(info.icon, "role-ic"))
       inlineNodes(node.children, span, ctx)
       parent.appendChild(span)
@@ -123,7 +169,7 @@ export function renderRich(text, ctx, options = {}) {
   const fragment = document.createDocumentFragment()
   let blocks
   try {
-    blocks = parse(text, { lists: "v2", roles: true })
+    blocks = parse(text, { lists: "v2", roles: true, target: targetOf(ctx.subject) })
   } catch (error) {
     if (!(error instanceof Refused)) throw error
     fragment.appendChild(el("p", { text: String(text) }))
@@ -137,7 +183,7 @@ export function renderRich(text, ctx, options = {}) {
 export function renderInlineRich(text, target, ctx, options = {}) {
   let blocks
   try {
-    blocks = parse(text, { lists: "v2", roles: true })
+    blocks = parse(text, { lists: "v2", roles: true, target: targetOf(ctx.subject) })
   } catch (_error) {
     target.textContent = String(text)
     return target

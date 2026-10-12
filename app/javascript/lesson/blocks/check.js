@@ -15,6 +15,7 @@ import { checkNotes } from "lesson/teacher_notes"
 import { moduleFor as checkModule } from "lesson/checks/registry"
 import { howtoNodes } from "lesson/checks/howto"
 import { bitsInput } from "lesson/checks/bits_input"
+import { listenBox } from "lesson/checks/listen"
 
 // matching: one row per item, the categories as chips (radios styled as chips: arrows move inside a row)
 function matchingInput(spec, ctx) {
@@ -152,6 +153,9 @@ export function renderCheck(spec, ctx, loc, options = {}) {
   const [howto, help] = howtoNodes(spec, ctx, loc)
   if (howto) prompt.after(howto)
   if (help) form.appendChild(help)
+  // `listen`: the question is heard; its text stays behind "Mostra il testo" and an answer after looking is sent as text_shown
+  const listen = ctx.safe ? null : listenBox(spec, ctx)
+  if (listen) (howto ?? prompt).after(listen.element)
 
   if (ctx.teacher) {
     const notes = checkNotes(ctx.full?.spec(loc), ctx)
@@ -185,7 +189,7 @@ export function renderCheck(spec, ctx, loc, options = {}) {
     pending ||= newId()
     let reply = null
     try {
-      reply = await ctx.postCheck(loc, { response: handleInput.raw(), try: tries + 1, client_event_id: pending })
+      reply = await ctx.postCheck(loc, { response: handleInput.raw(), try: tries + 1, client_event_id: pending, ...(listen?.shown() ? { text_shown: true } : {}) })
     } catch (_error) {
       reply = null
     }

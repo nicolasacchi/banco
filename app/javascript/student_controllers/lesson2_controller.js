@@ -5,7 +5,7 @@ import { Controller } from "@hotwired/stimulus"
 // come as values. All the work is in lesson/render.js, loaded here on demand.
 export default class extends Controller {
   static values = {
-    topic: String, revisionId: Number, urls: Object, resume: Number, view: String, reduceMotion: Boolean, safe: Boolean,
+    topic: String, revisionId: Number, urls: Object, resume: Number, view: String, reduceMotion: Boolean, safe: Boolean, listen: { type: Boolean, default: true }, slower: Boolean,
     labels: Object, items: Object, questionLabels: Object, unavailable: Array, seen: Array, mode: { type: String, default: "student" }
   }
 
@@ -19,7 +19,7 @@ export default class extends Controller {
     this.api = renderLesson(this.element, body, {
       mode: this.modeValue, safe: this.safeValue, topic: this.topicValue, revisionId: this.revisionIdValue, urls: this.urlsValue,
       resume: this.hasResumeValue && this.resumeValue > 0 ? this.resumeValue : null, view: this.viewValue,
-      reduceMotion: this.reduceMotionValue, labels: this.labelsValue, items: this.itemsValue, questionLabels: this.questionLabelsValue,
+      reduceMotion: this.reduceMotionValue, listen: this.listenValue, slower: this.slowerValue, labels: this.labelsValue, items: this.itemsValue, questionLabels: this.questionLabelsValue,
       unavailableTopics: this.unavailableValue, seen: this.seenValue,
       savePreferences: (change) => this.save(change)
     })

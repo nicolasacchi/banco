@@ -27,7 +27,7 @@ module Lessons
       @trial_try = trial_try
     end
 
-    def call(locator, response, client_event_id: nil)
+    def call(locator, response, client_event_id: nil, text_shown: false)
       located = locate(locator) or return Reply.new(404, { status: "not_found" })
       return Reply.new(422, { status: "invalid" }) if client_event_id.present? && !client_event_id.to_s.match?(LessonEvent::ID_FORMAT)
 
@@ -43,7 +43,7 @@ module Lessons
       return Reply.new(200, { verdict: "invalid", message_it: graded.message_it }) if graded.invalid?
 
       try = stored ? stored.payload.fetch("try") : next_try(locator, key)
-      record(locator, key, check, response, graded, try, client_event_id) if stored.nil? && @student
+      record(locator, key, check, response, graded, try, client_event_id, text_shown: text_shown) if stored.nil? && @student
       Reply.new(200, reply(graded, check, located, try))
     end
 
@@ -111,15 +111,20 @@ module Lessons
         row.payload.slice("step", "ex", "part") == key_of(loc)
     end
 
-    def record(loc, key, check, response, graded, try, client_event_id)
+    def record(loc, key, check, response, graded, try, client_event_id, text_shown: false)
       now = Time.current
       LessonEvent.create!(
         student: @student, topic_revision: @topic_revision, lesson_revision: @revision, kind: "check_answered", card: loc[:card], block: loc[:block],
-        payload_json: JSON.generate({ component: check["component"], response: response, verdict: graded.verdict, code: graded.code, try: try }.merge(key).compact),
+        payload_json: JSON.generate({ component: check["component"], response: response, verdict: graded.verdict, code: graded.code, try: try }.merge(key).merge(shown_text(check, text_shown)).compact),
         grader_version: graded.grader_version, client_event_id: client_event_id.presence&.to_s, at: now, created_at: now
       )
     rescue ActiveRecord::RecordNotUnique
       nil # the same answer arrived twice at once: the first one stands
+    end
+
+    # An answer to a `listen` check given after S looked at the text is recorded as such (D-266): the ledger tells hearing from reading.
+    def shown_text(check, text_shown)
+      check["listen"].present? && text_shown ? { text_shown: true } : {}
     end
 
     # ---- the reply --------------------------------------------------------------------------------

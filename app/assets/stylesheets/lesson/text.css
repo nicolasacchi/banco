@@ -1,0 +1,75 @@
+/* lesson/text: the text layer of the languages (D-281, D-282). Linked on every lesson page (it is small): words of another language, code spans,
+   glossary words and the list under a card, "Ascolta", the listen check, the voices of the settings page.
+   Rules: colour only through the theme variables; no colour alone (the target ink also has the lang attribute and the speaker); every tap target at
+   least 24 px (2.75rem for the main buttons); no italics; forced-colors and print blocks at the end. */
+
+/* words of another language: the subject's target ink, a little heavier, never underlined */
+.l2 .lang { color: var(--primary); font-weight: 650; letter-spacing: 0.01em; }
+.l2 .role.lang { color: inherit; }
+
+/* a code span: the body font on a calm tint, never monospace (the reading difficulty of S), whole on one line when it fits */
+.l2 .code-span { font-family: inherit; font-weight: 650; font-size: 0.95em; padding: 0.06em 0.4em 0.1em; border-radius: 0.35em; white-space: pre-wrap;
+  background: color-mix(in srgb, var(--text) 9%, var(--surface)); border: 1px solid color-mix(in srgb, var(--text) 22%, var(--surface)); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+
+/* a small speaker after a word of another language, and wherever a text can be heard */
+.l2 .speak { display: inline-grid; place-items: center; min-width: 1.75rem; min-height: 1.75rem; margin: 0 0.15em; padding: 0; vertical-align: middle;
+  border: 2px solid var(--primary); border-radius: 50%; background: var(--surface); color: var(--primary); cursor: pointer; line-height: 1; }
+.l2 .speak[hidden] { display: none; }
+.l2 .speak-ic { width: 1.05rem; height: 1.05rem; }
+.l2 .speak[aria-pressed="true"] { background: var(--primary); color: var(--primary-text); }
+.l2 .speak-unapproved { border-style: dashed; }
+.l2 .speak:focus-visible, .l2 .gloss-btn:focus-visible, .l2 .card-listen button:focus-visible, .l2 .check-listen button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.l2 .speaking { background: color-mix(in srgb, var(--primary) 16%, transparent); border-radius: 0.3em; box-shadow: 0 0 0 0.12em color-mix(in srgb, var(--primary) 16%, transparent); }
+
+/* the card's "Ascolta" and "Più lento" */
+.l2 .card-head .card-listen { margin-left: auto; display: flex; flex-wrap: wrap; gap: 0.4em; justify-content: flex-end; }
+.l2 .card-listen[hidden] { display: none; }
+.l2 .card-listen .button { display: inline-flex; align-items: center; gap: 0.4em; min-height: 2.75rem; padding: 0.25rem 0.9rem; white-space: nowrap; }
+.l2 .card-listen .speak-slower { min-height: 2.75rem; }
+.l2 .card-listen [aria-pressed="true"] { background: var(--primary); color: var(--primary-text); border-color: var(--primary); }
+@container (max-width: 30rem) { .l2 .card-listen .button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } }
+@media (max-width: 520px) {
+  .l2 .card-head { flex-wrap: wrap; }
+  .l2 .card-head .card-listen { margin-left: 0; flex: 1 0 100%; justify-content: flex-start; }
+}
+
+/* glossary: the word, a book icon that is the button, the definition that opens under it */
+.l2 .gloss { position: relative; white-space: nowrap; }
+.l2 .gloss-word { border-bottom: 2px dotted var(--primary); font-weight: 650; }
+.l2 .gloss-btn { display: inline-grid; place-items: center; min-width: 1.75rem; min-height: 1.75rem; padding: 0; margin: 0 0.1em; vertical-align: middle; border: 0; background: none; color: var(--primary); cursor: pointer; }
+.l2 .gloss-ic { width: 1.15rem; height: 1.15rem; }
+.l2 .gloss-pop { position: absolute; z-index: 6; left: 0; top: 100%; display: block; width: max-content; max-width: min(22rem, 80vw); padding: 0.7em 0.9em; white-space: normal; text-align: left;
+  font-weight: 400; background: var(--surface); color: var(--text); border: 2px solid var(--primary); border-radius: 0.8em; box-shadow: 0 0.5em 1.4em rgba(0, 0, 0, 0.18); }
+.l2 .gloss-pop[hidden] { display: none; }
+.l2 .gloss-example { display: block; margin-top: 0.4em; color: var(--muted); }
+.l2 .card-glossary { margin: 1em 0 0.4em; padding: 0.7em 1em 0.9em; border-top: 1px solid var(--rule); }
+.l2 .card-glossary h3 { margin: 0 0 0.3em; font-size: 1em; color: var(--muted); }
+.l2 .card-glossary-list { display: grid; grid-template-columns: max-content 1fr; gap: 0.25em 0.9em; margin: 0; }
+.l2 .card-glossary-list dt { font-weight: 800; }
+.l2 .card-glossary-list dd { margin: 0; }
+.l2 .glossary-example { color: var(--muted); }
+@media (max-width: 520px) { .l2 .card-glossary-list { grid-template-columns: 1fr; } .l2 .card-glossary-list dd { margin-bottom: 0.4em; } }
+
+/* a check that is heard */
+.l2 .check-listen { flex: 1 0 100%; margin: 0.2em 0 0.6em; padding: 0.6em 0.8em; border: 2px solid var(--rule); border-radius: 0.9em; background: color-mix(in srgb, var(--primary) 6%, var(--surface)); }
+.l2 .listen-lead { margin: 0 0 0.4em; font-weight: 800; }
+.l2 .listen-buttons { display: flex; flex-wrap: wrap; gap: 0.5em; }
+.l2 .listen-play { display: inline-flex; align-items: center; gap: 0.4em; min-height: 2.75rem; }
+.l2 .listen-play[hidden] { display: none; }
+.l2 .listen-play[aria-pressed="true"] { background: var(--primary); color: var(--primary-text); }
+.l2 .listen-text { margin: 0.6em 0 0; font-size: 1.1em; }
+.l2 .listen-note { margin: 0.4em 0 0; }
+
+@media (forced-colors: active) {
+  .l2 .speak, .l2 .gloss-pop, .l2 .code-span, .l2 .check-listen { border-color: CanvasText; forced-color-adjust: auto; }
+  .l2 .speaking { outline: 2px solid Highlight; background: none; box-shadow: none; }
+  .l2 .gloss-word { border-bottom-color: CanvasText; }
+}
+
+@media print {
+  .l2 .speak, .l2 .gloss-btn, .l2 .card-listen, .l2 .listen-buttons, .l2 .listen-note { display: none !important; }
+  .l2 .gloss-pop { display: none !important; }
+  .l2 .listen-text[hidden] { display: block !important; }
+  .l2 .code-span { background: none; border-color: CanvasText; }
+  .l2 .card-glossary { break-inside: avoid; }
+}

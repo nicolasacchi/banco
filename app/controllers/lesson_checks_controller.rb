@@ -16,7 +16,7 @@ class LessonChecksController < ApplicationController
 
     locator = { card: params[:card].to_i, block: params[:block].to_i, step: params[:step]&.to_i, ex: params[:n]&.to_i, part: params[:part]&.to_i }
     answer = Lessons::CheckAnswer.new(revision, student_key: acting_student.key, student: acting_student, topic_revision: @topic.topic_revision)
-    reply = answer.call(locator, response_value, client_event_id: params[:client_event_id].presence)
+    reply = answer.call(locator, response_value, client_event_id: params[:client_event_id].presence, text_shown: ActiveModel::Type::Boolean.new.cast(params[:text_shown]) == true)
     render json: reply.body, status: reply.status
   end
 

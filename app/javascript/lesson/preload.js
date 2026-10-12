@@ -34,8 +34,14 @@ export function usedBy(body) {
   return { types, components }
 }
 
+// The subjects whose formulas may hold \ce{} and \pu{} (the server refuses them elsewhere): they load KaTeX's mhchem before the first card is drawn.
+export const MHCHEM_SUBJECTS = ["chemistry", "biology"]
+
 export async function preloadFor(body) {
   const { types, components } = usedBy(body)
+  if (MHCHEM_SUBJECTS.includes(body?.subject)) {
+    try { await import("katex/mhchem") } catch (_error) { /* the formulas then show as plain text */ }
+  }
   const wanted = [...types].filter((t) => !TYPES[t])
   const modules = [...components].filter((c) => !BUILT_IN.includes(c))
   const settle = (list) => Promise.allSettled(list)

@@ -12,6 +12,7 @@ registerHooks({
   resolve(specifier, context, nextResolve) {
     let file
     if (specifier === "katex") file = new URL("public/vendor/katex@0.19.0/katex.mjs", root)
+    else if (specifier === "katex/mhchem") file = new URL("public/vendor/katex@0.19.0/contrib/mhchem.mjs", root)
     else if (/^(lesson|items)\//.test(specifier)) file = new URL(`app/javascript/${specifier}.js`, root)
     if (file && existsSync(file)) return { url: pathToFileURL(file.pathname).href, shortCircuit: true }
     return nextResolve(specifier, context)

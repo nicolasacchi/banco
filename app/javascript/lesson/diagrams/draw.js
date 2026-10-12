@@ -9,6 +9,7 @@ import { FAMILY, HOME_PALETTE, STATUS, describe, layout, load, moduleFor, stateC
 import { tryValues, equationTex } from "lesson/diagrams/balance"
 import { buildChips, buildStrip, buildValueControls, declared, overlay } from "lesson/diagrams/controls"
 import { renderInlineRich, renderMath, renderRich } from "lesson/text"
+import { defaultSegments } from "lesson/diagrams/contract"
 import { nearest, targetLabel } from "lesson/checks/select_model"
 import { controlNode, decorateTarget, defsNode, legendNode, padHit, patternRef, wireTargets } from "lesson/diagrams/scene_extras"
 
@@ -253,6 +254,17 @@ export function mountDiagram(data, ctx, options = {}) {
   figure.dataset.states = String(total)
   if (total > 1 || (type === "sentence" && data.parts)) figure.dataset.nokeys = ""
   const measurer = { current: null }
+  // What the voice reads for this figure (WAVE2 4.3, L10): the type's speechSegments, else its description, of the state shown now. The walker of
+  // lesson/speech.js calls this instead of reading the drawing's labels.
+  figure.speechSegments = () => {
+    const spoken = { subject: ctx.subject, state: state.i, mode, controls: state.controls, revealed: [] }
+    try {
+      if (typeof mod?.speechSegments === "function") return mod.speechSegments(data, spoken)
+      return defaultSegments(describe, data, spoken)
+    } catch (_error) {
+      return []
+    }
+  }
 
   const showError = (error) => {
     clear(stageSvg)

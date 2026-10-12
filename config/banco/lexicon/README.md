@@ -12,3 +12,4 @@ source). They are only looked up by `Lessons::Lexicon` when the lint of a langua
   OpenSubtitles and other sources listed in wordfreq's README. These two files are lists of words derived from that data: treat them as CC BY-SA 4.0,
   attributed to wordfreq (<https://github.com/rspeer/wordfreq>) and its sources. No other file of the repository is derived from them.
 - **Changed** only through a D entry, like the vetted data tables.
+- **One word is left out** of `en.txt` (position 4704, beyond the 3000 that count): it contains a string that the public-repository hygiene check forbids. A lesson that uses it lists it in `teaches_en`.

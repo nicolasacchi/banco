@@ -137,7 +137,7 @@ checks:
 # `all`; the key is not `on`, which YAML 1.1 reads as true).
 # `value` limits the option to one value of the field (a profile name, an input mode).
 check_options:
-  listen: {field: listen, applies_to: [choice, matching, span_select], status: reserved, schema: final, batch: w2-1, track: T2}
+  listen: {field: listen, applies_to: [choice, matching, span_select], status: available, schema: final, batch: w2-1, track: T2}
   verify: {field: verify, applies_to: all, status: available, schema: final, batch: w2-1, track: T1}
   profile: {field: profile, applies_to: [normalized_text], status: available, schema: final, batch: w2-1, track: T1}
   chem_formula_profile: {field: profile, value: chem_formula, applies_to: [normalized_text], status: draft, schema: draft, batch: w2-2, track: T7}

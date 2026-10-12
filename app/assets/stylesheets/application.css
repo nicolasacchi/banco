@@ -494,3 +494,11 @@ ul.checks li { padding: 0.25rem 0; }
 .subject-switch ul { display: flex; flex-wrap: wrap; gap: 0 1rem; margin: 0; padding: 0; list-style: none; }
 .subject-switch li { margin: 0; }
 @media print { .crumbs-bar { display: none !important; } }
+
+/* the voices of the settings page */
+.voices { margin-top: 2rem; }
+.voice-list { list-style: none; padding: 0; margin: 0 0 1rem; }
+.voice-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 1rem; padding: 0.5rem 0; border-bottom: 1px solid var(--line); }
+.voice-name { font-weight: 700; flex: 1 1 14rem; }
+.voice-status { color: var(--muted); }
+.voice-row [aria-pressed="true"] { background: var(--primary); color: var(--primary-text); }

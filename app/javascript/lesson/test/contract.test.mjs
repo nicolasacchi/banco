@@ -82,7 +82,7 @@ test("the check registry lists every component with its status and a loader for 
     assert.equal(typeof mod.render, "function")
   }
   assert.equal(checks.moduleFor("tiles").type, "tiles", "loaded once, then known to moduleFor")
-  assert.equal(checks.OPTIONS.listen.status, "reserved")
+  assert.equal(checks.OPTIONS.listen.status, "available", "listen is T2's and available")
   assert.equal(checks.OPTIONS.verify.status, "available")
 })
 
@@ -137,7 +137,7 @@ test("speech: the voice gate keeps local voices of the language that the operato
   assert.equal(speech.rateFor("it", true), 0.8)
   assert.equal(speech.rateFor("en", true), 0.75)
   assert.equal(speech.rateFor("es", true), 0.7)
-  assert.throws(() => speech.speak([]), NotBuilt)
+  assert.equal(typeof speech.speak([]).stop, "function", "speak is built (T2): an empty list ends at once")
 })
 
 test("the library signatures: the JS twin of each library has the functions its vector file lists, and they throw NotBuilt", async () => {

@@ -6,7 +6,8 @@ class PreferencesController < ApplicationController
 
   def update
     chosen = Diagnosis::Preferences.record(acting_student, theme: params[:theme], size: params[:size],
-                                                         lesson_view: params[:lesson_view], reduce_motion: params[:reduce_motion])
+                                                         lesson_view: params[:lesson_view], reduce_motion: params[:reduce_motion],
+                                                         listen: params[:listen], slower: params[:slower])
     if request.format.json?
       render json: chosen.merge(Diagnosis::Preferences.lesson(acting_student))
     else

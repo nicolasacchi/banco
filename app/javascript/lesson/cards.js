@@ -20,7 +20,11 @@ import { render as text } from "lesson/blocks/text"
 import { render as tryBlock } from "lesson/blocks/try"
 import { questionControl } from "lesson/question"
 import { equationTex } from "lesson/diagrams/balance"
-import { roleOf } from "lesson/text"
+import { roleOf, renderInlineRich } from "lesson/text"
+import { cardListen } from "lesson/speech_ui"
+
+// The names that [[name:..]] reserves for spans of their own (D-265): never colour roles.
+const RESERVED_SPANS = ["en", "es", "it", "la", "code", "g"]
 
 const DEFAULT_ICON = { idea: "lightbulb", example: "pencil-ruler", mistakes: "triangle-alert", try: "notebook-pen", summary: "list-checks" }
 
@@ -29,15 +33,43 @@ export function rolesUsed(card) {
   const found = []
   const scan = (value) => {
     if (typeof value === "string") {
-      for (const m of value.matchAll(/\[\[([a-z]+(?:-[a-z]+)*):|\\role\{([a-z]+(?:-[a-z]+)*)\}/g)) {
+      for (const m of value.matchAll(/\[\[([a-z]+(?:[_-][a-z]+)*)(?:\|it)?:|\\role\{([a-z]+(?:-[a-z]+)*)\}/g)) {
         const name = m[1] ?? m[2]
-        if (!found.includes(name)) found.push(name)
+        if (!RESERVED_SPANS.includes(name) && !found.includes(name)) found.push(name)
       }
     } else if (Array.isArray(value)) value.forEach(scan)
     else if (value && typeof value === "object") Object.entries(value).forEach(([k, v]) => k !== "diagram" && k !== "schema" && scan(v))
   }
   scan(card.blocks)
   return found
+}
+
+// The glossary words a card uses ([[g:term]]), once each, in the order of first use.
+export function glossTerms(card) {
+  const found = []
+  const scan = (value) => {
+    if (typeof value === "string") {
+      for (const m of value.matchAll(/\[\[g:([^\]]+?)\]\]/g)) if (!found.some((t) => t.toLowerCase() === m[1].trim().toLowerCase())) found.push(m[1].trim())
+    } else if (Array.isArray(value)) value.forEach(scan)
+    else if (value && typeof value === "object") Object.values(value).forEach(scan)
+  }
+  scan(card.blocks)
+  return found
+}
+
+// "Parole di questa scheda": the card's glossary words, one line each, always shown (a student who mis-taps a word still finds its meaning).
+export function glossaryList(card, ctx) {
+  const entries = glossTerms(card).map((t) => ctx.glossary?.get(t.toLowerCase())).filter(Boolean)
+  if (entries.length === 0) return null
+  const id = `scheda-${card.n}-words`
+  const list = el("dl", { class: "card-glossary-list" })
+  const inner = { ...ctx, glossary: null }
+  for (const e of entries) {
+    const dd = el("dd", {}, renderInlineRich(e.def_it, el("span", { class: "glossary-def" }), inner))
+    if (e.example_it) dd.appendChild(renderInlineRich(e.example_it, el("span", { class: "glossary-example" }), inner))
+    list.append(el("dt", { text: e.term_it }), dd)
+  }
+  return el("aside", { class: "card-glossary", "aria-labelledby": id }, el("h3", { id, text: ctx.t.gloss.card_title }), list)
 }
 
 export const iconOf = (card) => card.icon || DEFAULT_ICON[card.role] || "lightbulb"
@@ -73,7 +105,8 @@ export function renderCard(card, ctx, position) {
   const heading = el("h2", { id: `scheda-${card.n}-title`, tabindex: "-1", text: card.title_it })
   article.appendChild(el("header", { class: "card-head" },
     el("span", { class: "badge", "aria-hidden": "true" }, icon(iconOf(card), "badge-ic")),
-    el("div", { class: "card-titles" }, position.kicker ? el("p", { class: "kicker", text: position.kicker }) : null, heading)))
+    el("div", { class: "card-titles" }, position.kicker ? el("p", { class: "kicker", "data-nospeech": "", text: position.kicker }) : null, heading),
+    ctx.safe || ctx.noSpeech ? null : cardListen(article, ctx)))
   // a legend chip only on the first card where a role appears (the lesson map has them all); it sits below the card, not above the picture
   const roles = position.newRoles ?? rolesUsed(card)
   const hasLegend = card.blocks.some((b) => b.type === "legend")
@@ -104,14 +137,16 @@ export function renderCard(card, ctx, position) {
     body.appendChild(renderBlock(block))
   }
   if (roles.length > 0 && !hasLegend) {
-    const line = el("p", { class: "card-legend", "aria-label": ctx.t.legend_label }, el("span", { class: "legend-intro", text: `${ctx.t.legend_label}: ` }))
+    const line = el("p", { class: "card-legend", "data-nospeech": "", "aria-label": ctx.t.legend_label }, el("span", { class: "legend-intro", text: `${ctx.t.legend_label}: ` }))
     roles.forEach((r) => line.appendChild(sample(r, ctx)))
     body.appendChild(line)
   }
   article.appendChild(body)
+  const words = ctx.safe ? null : glossaryList(card, ctx)
+  if (words) article.appendChild(words)
   if (card.n !== undefined && card.role !== "try") {
     const q = questionControl(ctx, { section: card.role, card: card.n })
-    if (q) article.appendChild(el("footer", { class: "card-foot" }, q))
+    if (q) article.appendChild(el("footer", { class: "card-foot", "data-nospeech": "" }, q))
   }
   return article
 }

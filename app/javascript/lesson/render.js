@@ -3,7 +3,7 @@
 // renderLesson(root, body, config) returns { goTo, current, renderAll, setView, setReduceMotion, destroy }.
 //   body    the projection the page receives (Lessons::StudentBody): no answer in it
 //   config  { mode: "student" | "preview" | "render", expand, teacher, safe, topic, revisionId, urls, resume, view, reduceMotion,
-//             labels (t), items (the item templates' texts), seen, unavailableTopics, full, savePreferences }
+//             labels (t), items (the item templates' texts), seen, unavailableTopics, full, savePreferences, listen, slower }
 import { newId } from "items/outbox"
 import { button, clear, el, icon } from "lesson/dom"
 import { iconOf, renderCard, rolesUsed } from "lesson/cards"
@@ -12,6 +12,10 @@ import { renderInlineRich, renderRich } from "lesson/text"
 import { figureFor } from "lesson/blocks/diagram"
 import { firstUses } from "lesson/checks/howto"
 import { FAMILY, STATUS, preload } from "lesson/diagrams/registry"
+import { stopAll } from "lesson/speech"
+import { speak } from "lesson/speech"
+import { hasVoice, setPreferences, preferences } from "lesson/speech_device"
+import { bindEscape } from "lesson/speech_ui"
 
 const csrf = () => document.querySelector("meta[name=csrf-token]")?.content || ""
 
@@ -50,7 +54,16 @@ export function renderLesson(root, body, config) {
   const expand = !!config.expand
   let mounts = []
 
+  // "Ascolta" (D-282): the student's two switches, from the server; the buttons appear when the device has an accepted voice
+  setPreferences({ listen: config.listen !== false, slower: config.slower === true })
+  bindEscape()
   const ctx = {
+    savePreferences: (change) => config.savePreferences?.(change),
+    // a speaker for a language, or null where the device has no accepted voice for it (the tiles' "Ascolta la frase" asks): { speak(text) }
+    speaker: (lang) => (!(config.mode === "render" || typeof document === "undefined") && hasVoice(lang, { preview: config.mode === "preview" })
+      ? { speak: (text) => speak([{ lang, text }], { preview: config.mode === "preview", slower: preferences().slower }) } : null),
+    glossary: new Map((body.glossary ?? []).map((g) => [g.term_it.toLowerCase(), g])),
+    noSpeech: config.mode === "render" || typeof document === "undefined", // the render check runs without voices
     subject: body.subject, t, items: config.items ?? {}, topic: config.topic, revisionId: config.revisionId,
     safe: !!config.safe, preview: config.mode === "preview", get teacher() { return state.teacher },
     // config.expand (the render check, R4): every "more" open, every mistake turned, every step shown, as in safe mode
@@ -315,12 +328,25 @@ export function renderLesson(root, body, config) {
     }
     const motion = el("input", { type: "checkbox", checked: state.reduce })
     motion.addEventListener("change", () => setReduceMotion(motion.checked, true))
+    // the voice: the switch and the speed (the speed is also on the card), and the way to the page where the voices are tried
+    const voiceRows = []
+    if (!ctx.noSpeech && typeof speechSynthesis !== "undefined") {
+      const listen = el("input", { type: "checkbox", checked: preferences().listen })
+      listen.addEventListener("change", () => { setPreferences({ listen: listen.checked }); config.savePreferences?.({ listen: listen.checked }) })
+      const slower = el("input", { type: "checkbox", checked: preferences().slower })
+      slower.addEventListener("change", () => { setPreferences({ slower: slower.checked }); config.savePreferences?.({ slower: slower.checked }) })
+      voiceRows.push(
+        el("label", { class: "option" }, listen, el("span", { text: t.speech.switch })),
+        el("label", { class: "option" }, slower, el("span", { text: t.speech.slower })),
+        config.mode === "student" ? el("p", {}, el("a", { href: "/settings#voci", text: t.speech.try_voices })) : null)
+    }
     settingsDialog.append(
       el("h2", { text: t.settings }),
       radios("theme", t.themes, current.theme, (v) => applyPreference({ theme: v })),
       radios("size", t.sizes, current.size, (v) => applyPreference({ size: v })),
       radios("view", t.views, state.view, (v) => setView(v, true)),
       el("label", { class: "option" }, motion, el("span", { text: t.reduce_motion })),
+      ...voiceRows.filter(Boolean),
       button(t.close, { class: "button" }, () => settingsDialog.close()))
     settingsDialog.showModal?.()
   }
@@ -375,6 +401,7 @@ export function renderLesson(root, body, config) {
   }
   function goTo(n, options = {}) {
     if (!byN.has(n) && n !== 0) n = 0
+    if (n !== state.n) stopAll() // the voice stops on a card change (A10)
     state.n = n
     if (state.view === "scroll") {
       refreshChrome()
@@ -583,6 +610,7 @@ export function renderLesson(root, body, config) {
       for (const api of trackers) api.relayout()
     },
     destroy() {
+      stopAll()
       document.removeEventListener("keydown", onKey)
       window.removeEventListener("hashchange", onHash)
       window.removeEventListener("beforeprint", onBeforePrint)

@@ -1,0 +1,40 @@
+# Texts of the text layer of the lesson page (T2, D-281, D-282): "Ascolta", the glossary, the code span. Short sentences, plain words.
+it:
+  lesson2:
+    speech:
+      listen: "Ascolta"
+      stop: "Ferma"
+      slower: "Più lento"
+      listen_text: "Ascolta questa frase"
+      listen_text_in: "Ascolta in %{language}: %{text}"
+      unapproved: "voce non ancora approvata"
+      listen_check: "Ascolta e rispondi"
+      show_text: "Mostra il testo"
+      hide_text: "Nascondi il testo"
+      no_voice: "Questo dispositivo non ha una voce per questa lingua. Mostra il testo e leggilo."
+      switch: "Ascolta con la voce del dispositivo"
+      try_voices: "Prova le voci"
+      languages:
+        it: "italiano"
+        en: "inglese"
+        es: "spagnolo"
+        la: "latino"
+    gloss:
+      what: "Che cosa vuol dire"
+      card_title: "Parole di questa scheda"
+      close: "Chiudi"
+    voices:
+      title: "Prova le voci"
+      intro: "Questo dispositivo legge le lezioni con le sue voci. Ascolta ogni voce: se ti piace, dillo al docente."
+      none: "Questo dispositivo non ha voci da provare."
+      try: "Prova"
+      stop: "Ferma"
+      accepted: "scelta"
+      not_accepted: "non ancora scelta"
+      language_it: "Italiano"
+      language_en: "Inglese"
+      language_es: "Spagnolo"
+      sentences:
+        it: "Ciao, questa è la mia voce. Leggo una frase molto semplice."
+        en: "Hello, this is my voice. When I arrive, I will call you."
+        es: "Hola, esta es mi voz. Cuando llegue, te llamaré."

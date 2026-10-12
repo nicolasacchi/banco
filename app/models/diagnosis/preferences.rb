@@ -9,7 +9,7 @@ module Diagnosis
     SIZES = %w[normal large larger].freeze
     LESSON_VIEWS = %w[cards scroll].freeze
     DEFAULT = { theme: "cream", size: "normal" }.freeze
-    LESSON_DEFAULT = { lesson_view: "cards", reduce_motion: false }.freeze
+    LESSON_DEFAULT = { lesson_view: "cards", reduce_motion: false, listen: true, slower: false }.freeze
     KIND = "student_preference".freeze
 
     module_function
@@ -27,21 +27,26 @@ module Diagnosis
         size: SIZES.include?(stored["size"]) ? stored["size"] : DEFAULT[:size] }
     end
 
-    # { lesson_view: "cards" | "scroll", reduce_motion: true | false }
+    # { lesson_view: "cards" | "scroll", reduce_motion: true | false, listen: true | false, slower: true | false }
+    # listen is the "Ascolta" switch (on until the student turns it off), slower the "Più lento" speed (D-282).
     def lesson(student)
       stored = stored(student)
       { lesson_view: LESSON_VIEWS.include?(stored["lesson_view"]) ? stored["lesson_view"] : LESSON_DEFAULT[:lesson_view],
-        reduce_motion: stored["reduce_motion"] == true }
+        reduce_motion: stored["reduce_motion"] == true,
+        listen: stored["listen"] != false,
+        slower: stored["slower"] == true }
     end
 
     # Records the choice (unknown values are ignored: the old one stays). Returns the theme and size now in
-    # force. The lesson keys are kept apart from them: a payload carries all four when any is set.
-    def record(student, theme: nil, size: nil, lesson_view: nil, reduce_motion: nil)
+    # force. The lesson keys are kept apart from them: a payload carries all six when any is set.
+    def record(student, theme: nil, size: nil, lesson_view: nil, reduce_motion: nil, listen: nil, slower: nil)
       now = self.for(student)
       before = lesson(student)
       chosen = { theme: THEMES.include?(theme.to_s) ? theme.to_s : now[:theme], size: SIZES.include?(size.to_s) ? size.to_s : now[:size] }
       lessons = { lesson_view: LESSON_VIEWS.include?(lesson_view.to_s) ? lesson_view.to_s : before[:lesson_view],
-                  reduce_motion: reduce_motion.nil? ? before[:reduce_motion] : ActiveModel::Type::Boolean.new.cast(reduce_motion) == true }
+                  reduce_motion: reduce_motion.nil? ? before[:reduce_motion] : ActiveModel::Type::Boolean.new.cast(reduce_motion) == true,
+                  listen: listen.nil? ? before[:listen] : ActiveModel::Type::Boolean.new.cast(listen) == true,
+                  slower: slower.nil? ? before[:slower] : ActiveModel::Type::Boolean.new.cast(slower) == true }
       AppEvent.create!(kind: KIND, student: student, payload_json: chosen.merge(lessons).to_json) unless chosen == now && lessons == before
       chosen
     end

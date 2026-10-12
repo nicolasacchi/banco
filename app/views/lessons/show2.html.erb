@@ -5,6 +5,7 @@
   <%= stylesheet_link_tag "lesson_roles" %>
   <%= stylesheet_link_tag "lesson" %>
   <%= stylesheet_link_tag "lesson/checks" %>
+  <%= stylesheet_link_tag "lesson/text" %>
   <%= lesson_family_stylesheets(@student_body) %>
 <% end %>
 <main class="lesson2-page" id="lesson-page">
@@ -19,6 +20,8 @@
        data-lesson2-seen-value="<%= Array(@resume[:seen]).to_json %>"
        data-lesson2-view-value="<%= @safe ? 'scroll' : @preferences[:lesson_view] %>"
        data-lesson2-reduce-motion-value="<%= @preferences[:reduce_motion] %>"
+       data-lesson2-listen-value="<%= @preferences[:listen] %>"
+       data-lesson2-slower-value="<%= @preferences[:slower] %>"
        data-lesson2-safe-value="<%= @safe %>"
        data-lesson2-labels-value="<%= lesson2_texts.to_json %>"
        data-lesson2-items-value="<%= lesson2_item_texts.to_json %>"
