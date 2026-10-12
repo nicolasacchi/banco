@@ -1,4 +1,4 @@
-// insolation (T5, W2-1, D-272): the Earth's profile with parallel rays on up to four latitudes and, with `stepper`, one movable beam
+// insolation (T5, W2-1, D-275): the Earth's profile with parallel rays on up to four latitudes and, with `stepper`, one movable beam
 // (-80 to 80 degrees, every 10). The same beam of light covers 1/cos(latitude - subsolar latitude) times the ground; that number is computed
 // here and in Ruby (lib/lessons/diagrams/insolation.rb), printed with one decimal and never written by the author. `subsolar` is the latitude
 // where the Sun is overhead (0 at an equinox, 23,4 on 21 June, -23,4 on 21 December). The 3D globe with the Sun is W2-3.

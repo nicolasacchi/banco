@@ -1,4 +1,4 @@
-// The shared geometry, data and wording of the maps family (T5, W2-1, D-272): the vendored bases (public/vendor/banco-maps@1) and the
+// The shared geometry, data and wording of the maps family (T5, W2-1, D-275): the vendored bases (public/vendor/banco-maps@1) and the
 // name tables, ids resolved per base, the units a detail draws, reading order, compass words, and the numbers and words that map,
 // insolation and cross_section print. The Ruby twins are lib/maps/base.rb and lib/lessons/diagrams/geo_format.rb; both are run by
 // test/fixtures/diagrams/types/{map,insolation,cross_section}.json. Pure, except that the assets are loaded once by `prepare`.

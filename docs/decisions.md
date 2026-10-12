@@ -275,8 +275,8 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-269 | 2026-10-12 | vetted data tables: config/banco/data, schemas, second table, reference texts (D-269) | decided (contracts of W2-0; the pieces follow) |
 | D-270 | 2026-10-12 | render-time records and the program diagram: Rails never runs an agent's program (D-270) | decided (contracts of W2-0; the pieces follow) |
 | D-271 | 2026-10-12 | wave 2, track T5 on day one: the map bases from sourced open data (`bin/build-maps`, `banco-maps@1`), the gazetteer tables, the ancient Mediterranean built from Natural Earth and Pleiades | decided |
-| D-272 | 2026-10-12 | wave 2, track T5: `map`, `insolation` and `cross_section` available (D-252 pattern), select targets, the bases cropped whole, Europe and Italy in Mercator | decided |
-| D-273 | 2026-10-12 | wave 2, track T5 review fixes: select figures are drawn from opaque select plates (no gazetteer id in the page), padded 24 px hit shapes, callouts on a phone | decided |
+| D-275 | 2026-10-12 | wave 2, track T5: `map`, `insolation` and `cross_section` available (D-252 pattern), select targets, the bases cropped whole, Europe and Italy in Mercator | decided |
+| D-276 | 2026-10-12 | wave 2, track T5 review fixes: select figures are drawn from opaque select plates (no gazetteer id in the page), padded 24 px hit shapes, callouts on a phone | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2909,7 +2909,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Status:** decided
 - **Back-port:** none.
 
-## D-272 · 2026-10-12 · wave 2, track T5: `map`, `insolation` and `cross_section` available (D-252 pattern), select targets, the bases cropped whole, Europe and Italy in Mercator
+## D-275 · 2026-10-12 · wave 2, track T5: `map`, `insolation` and `cross_section` available (D-252 pattern), select targets, the bases cropped whole, Europe and Italy in Mercator
 
 - **We do:** the three types of the maps family are `available` (W2-1). Ruby: `Lessons::Diagrams::{Map,Insolation,CrossSection}` (checks, `served`, `targets`, `printed`, `reachable`, words) with `Maps::Base` (reads a base: units per detail, ids resolved per base, compass phrase, reading order) and `GeoFormat`; JS twins `lesson/diagrams/maps/{map,insolation,cross_section,geo}.js`; vectors `test/fixtures/diagrams/types/{map,insolation,cross_section}.json` run both ways (`maps_types_test.rb`, `maps.test.mjs`: semantic first finding, layout at 320 to 1280 px and 18 to 26 px, describe, printed, reachable, targets and neutral phrases); gallery `gallery/maps.md` and `test/system/maps_gallery_test.rb`.
 - **Map, built now:** the modern bases and `mediterraneo_antico`, `detail`, graticule, highlight with a pattern as well as a colour (auto pattern by order of the roles), bands, places, points (labels), lines (base line, meridian, parallel), routes, `candidates`, `states`, the year `slider` with `regions_since` (a year state when from equals to; its - and + jump to the next year a region appears), "Ovest", "Nord" and "Est" in a row under the map, the legend list, "Confini approssimativi", at most 8 text labels else numbered callouts (a crowded callout goes in a row under the map). **Held back for W2-2 and refused with E-LESSON-DIAGRAM:** `arrows`, `points[].value`, `compare`, `inset`, `mercator` on a base not built in Mercator. No coordinates on a historical base (points, bands, meridians, parallels, graticule other than greenwich are refused there).
@@ -2918,9 +2918,9 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Shared code changed (the lead merges with T1):** `draw.js` and the new `scene_extras.js` implement the Scene additions of D-264 (group `scale`, `pattern`, `target` with a roving tab stop and arrow keys, `controls()` as stepper and slider with - and +, `scene.legend`, `printViews`, `star` and `ring` markers, `prepare`, `mode` and `set` to layout); `describe(data, ctx)` takes the visible state; the generated registry imports only the core types at once and every wave 2 type lazily even when available (`bin/build-lesson-types`); `preloadTypes(body)` loads them before the first card; `lesson_family_stylesheets` links `lesson/FAMILY.css` in the three pages.
 - **Bases corrected:** the inner-rectangle crop of D-271 cut South America and Africa (the widest parallel lay outside it): the viewBox is now the window's bounding box (`crop: false`); `europe` and `italy` are Mercator, so that their window is a rectangle and no slanted cut crosses the Balkans. Known limit: the continent groups Europe and Asia both draw Russia whole. Texts of the maps are in the modules, as the words of the core types (layout is pure and run in node); `lesson_maps.it.yml` stays empty.
 
-## D-273 · 2026-10-12 · wave 2, track T5 review fixes: select figures are drawn from opaque select plates, small targets get padded hit shapes, callouts on a phone
+## D-276 · 2026-10-12 · wave 2, track T5 review fixes: select figures are drawn from opaque select plates, small targets get padded hit shapes, callouts on a phone
 
-Review of D-272 found that a select figure loaded the full base module, which carries every gazetteer id beside its geometry (`rome` at its
+Review of D-275 found that a select figure loaded the full base module, which carries every gazetteer id beside its geometry (`rome` at its
 coordinates, `AUT` with its shape): a student with devtools could read which shape is which. Decided:
 
 - `bin/build-maps` also writes `public/vendor/banco-maps@1/select/<base>.js`, the same geometry with opaque keys (`a14` area, `g3` group,

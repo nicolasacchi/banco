@@ -1,4 +1,4 @@
-// cross_section (T5, W2-1, D-272): a section of the ground, `points` [[x, altitude in m]] exact, features, belts of altitude, and with `lapse`
+// cross_section (T5, W2-1, D-275): a section of the ground, `points` [[x, altitude in m]] exact, features, belts of altitude, and with `lapse`
 // the temperature at each belt edge and under the altitude stepper, computed (base_temp - per_km * altitude / 1000). The vertical
 // exaggeration is computed from the data (the largest "nice" number that keeps the drawing about half as high as wide) and always printed:
 // "altezze esagerate 15 volte". Ruby twin: lib/lessons/diagrams/cross_section.rb; both run test/fixtures/diagrams/types/cross_section.json.

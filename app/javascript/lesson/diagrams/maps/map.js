@@ -1,4 +1,4 @@
-// map (T5, W2-1, D-272): one type, a registry of vendored bases (public/vendor/banco-maps@1). The author writes gazetteer ids, never
+// map (T5, W2-1, D-275): one type, a registry of vendored bases (public/vendor/banco-maps@1). The author writes gazetteer ids, never
 // coordinates on a historical base; the base says where everything is. Ruby twin: lib/lessons/diagrams/map.rb; both run
 // test/fixtures/diagrams/types/map.json.
 //

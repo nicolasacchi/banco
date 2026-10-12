@@ -2,7 +2,7 @@
 
 module Lessons
   module Diagrams
-    # map (T5, W2-1, D-272): one type, a registry of vendored bases (public/vendor/banco-maps@1). The author writes gazetteer ids, never
+    # map (T5, W2-1, D-275): one type, a registry of vendored bases (public/vendor/banco-maps@1). The author writes gazetteer ids, never
     # coordinates on a historical base; the base says where everything is. The browser twin is app/javascript/lesson/diagrams/maps/map.js
     # (with geo.js for the shared geometry and wording); both run test/fixtures/diagrams/types/map.json.
     #
