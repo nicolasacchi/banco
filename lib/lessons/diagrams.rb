@@ -51,9 +51,16 @@ module Lessons
       end
     end
 
+    # Ruby modules by diagram type. The nine of release 1 check their data; the 26 of wave 2 are contract stubs
+    # (Contract) until their track builds them. Types without a schema (calendar, rgb, sheet) have no module yet.
     TYPES = {
       "equation_parts" => "EquationParts", "number_line" => "NumberLine", "balance" => "Balance", "area_model" => "AreaModel",
-      "cartesian" => "Cartesian", "sentence" => "Sentence", "concept_map" => "ConceptMap", "flow" => "Flow", "table" => "Table"
+      "cartesian" => "Cartesian", "sentence" => "Sentence", "concept_map" => "ConceptMap", "flow" => "Flow", "table" => "Table",
+      "network" => "Network", "chain" => "Chain", "nested" => "Nested", "timeline" => "Timeline", "map" => "Map", "insolation" => "Insolation",
+      "cross_section" => "CrossSection", "climograph" => "Climograph", "bar_model" => "BarModel", "seats" => "Seats", "chart" => "Chart",
+      "scale" => "Scale", "periodic_table" => "PeriodicTable", "register" => "Register", "column_calc" => "ColumnCalc", "paradigm" => "Paradigm",
+      "word_parts" => "WordParts", "mirror" => "Mirror", "document" => "Document", "formula" => "Formula", "molecule" => "Molecule",
+      "strand" => "Strand", "particles" => "Particles", "phase_changes" => "PhaseChanges", "cell" => "Cell", "program" => "Program"
     }.freeze
 
     module_function

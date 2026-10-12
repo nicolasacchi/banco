@@ -130,7 +130,8 @@ class Lesson2FixturesTest < ActiveSupport::TestCase
       assert_empty (entry["serve"] + entry["drop"]) - declared, "#{name}: listed and not declared"
       assert_empty entry["serve"] & entry["drop"], name
     end
-    assert_equal %w[choice fraction matching normalized_text number span_select], wl["checks"].keys.reject { |k| k.start_with?("_") }.sort
+    assert_equal %w[amount_words choice fraction matching normalized_text number ordering select span_select tiles], wl["checks"].keys.reject { |k| k.start_with?("_") }.sort
+    assert_equal %w[callout cases diagram dialogue example image legend math mistake more oral procedure reveal schema source summary table text try], wl["blocks"].keys.sort
   end
 
   test "the whitelist drops every answer-side field of every component, and the solution fields match the schema" do
@@ -138,9 +139,11 @@ class Lesson2FixturesTest < ActiveSupport::TestCase
     wl["checks"].each do |name, entry|
       next if name.start_with?("_")
 
-      assert_includes entry["drop"], "answer", name
+      assert_includes entry["drop"], "answer", name unless entry["answer_computed"] # amount_words has no answer: NumWords builds it
       assert_includes entry["drop"], "errors", name
       assert_includes entry["drop"], "explain_it", name
+      assert_includes entry["drop"], "verify", name unless name == "_blank"
+      assert_includes entry["drop"], "reachable_ok_it", name unless name == "_blank"
     end
     try = wl["blocks"]["try"]["nested"]["exercises"]
     assert_empty %w[final_it solution_it solution_steps] - try["drop"]

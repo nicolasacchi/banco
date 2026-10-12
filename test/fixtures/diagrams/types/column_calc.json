@@ -1,0 +1,47 @@
+{
+ "version": 1,
+ "type": "column_calc",
+ "status": "reserved",
+ "batch": "w2-1",
+ "track": "T9",
+ "provisional": false,
+ "description": "Skeleton of W2-0 for the track T9: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "column_calc-example-1",
+   "subject": "computer_science",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "column_calc",
+    "alt_it": "Somma in colonna di 0000 0101 e 1111 1011 su otto bit: il riporto attraversa tutte le colonne e il nono bit esce dal registro.",
+    "base": 2,
+    "op": "add",
+    "a": "00000101",
+    "b": "11111011",
+    "width": 8,
+    "reveal": "columns",
+    "read": "twos"
+   }
+  },
+  {
+   "name": "column_calc-unknown-field",
+   "subject": "computer_science",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "column_calc",
+    "alt_it": "Somma in colonna di 0000 0101 e 1111 1011 su otto bit: il riporto attraversa tutte le colonne e il nono bit esce dal registro.",
+    "base": 2,
+    "op": "add",
+    "a": "00000101",
+    "b": "11111011",
+    "width": 8,
+    "reveal": "columns",
+    "read": "twos",
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

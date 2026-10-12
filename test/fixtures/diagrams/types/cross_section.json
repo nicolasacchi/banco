@@ -1,0 +1,125 @@
+{
+ "version": 1,
+ "type": "cross_section",
+ "status": "reserved",
+ "batch": "w2-1",
+ "track": "T5",
+ "provisional": false,
+ "description": "Skeleton of W2-0 for the track T5: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "cross_section-example-1",
+   "subject": "geography",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende di sei gradi ogni mille metri.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "80",
+      "3000"
+     ],
+     [
+      "100",
+      "5000"
+     ],
+     [
+      "120",
+      "3000"
+     ],
+     [
+      "200",
+      "0"
+     ]
+    ],
+    "features": [
+     {
+      "at": "100",
+      "label_it": "cima",
+      "kind": "peak"
+     }
+    ],
+    "belts": [
+     {
+      "from_alt": "0",
+      "to_alt": "1000",
+      "label_it": "foresta",
+      "role": "temperate"
+     }
+    ],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    },
+    "stepper": true
+   }
+  },
+  {
+   "name": "cross_section-unknown-field",
+   "subject": "geography",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "cross_section",
+    "alt_it": "La sezione di un vulcano ideale all'equatore, con le fasce di vegetazione e la temperatura che scende di sei gradi ogni mille metri.",
+    "x": {
+     "to": "200",
+     "unit": "km"
+    },
+    "points": [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "80",
+      "3000"
+     ],
+     [
+      "100",
+      "5000"
+     ],
+     [
+      "120",
+      "3000"
+     ],
+     [
+      "200",
+      "0"
+     ]
+    ],
+    "features": [
+     {
+      "at": "100",
+      "label_it": "cima",
+      "kind": "peak"
+     }
+    ],
+    "belts": [
+     {
+      "from_alt": "0",
+      "to_alt": "1000",
+      "label_it": "foresta",
+      "role": "temperate"
+     }
+    ],
+    "lapse": {
+     "base_temp": "26",
+     "per_km": "6"
+    },
+    "stepper": true,
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

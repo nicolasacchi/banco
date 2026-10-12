@@ -1,0 +1,137 @@
+{
+ "version": 1,
+ "type": "climograph",
+ "status": "reserved",
+ "batch": "w2-1",
+ "track": "T6",
+ "provisional": false,
+ "description": "Skeleton of W2-0 for the track T6: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "climograph-example-1",
+   "subject": "geography",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "climograph",
+    "alt_it": "Il climogramma di una città inventata: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+    "place_it": "Città di prova",
+    "lat": "-15,8",
+    "alt_m": "1160",
+    "temp": [
+     "21,6",
+     "21,8",
+     "21,4",
+     "20,6",
+     "19,5",
+     "18,2",
+     "18,1",
+     "19,9",
+     "21,8",
+     "22,2",
+     "21,6",
+     "21,4"
+    ],
+    "precip": [
+     "209",
+     "180",
+     "169",
+     "123",
+     "44",
+     "9",
+     "10",
+     "11",
+     "47",
+     "132",
+     "194",
+     "238"
+    ],
+    "source_it": "dati inventati",
+    "show": [
+     "bars",
+     "line",
+     "arid"
+    ],
+    "states": [
+     {
+      "show": [
+       "bars"
+      ],
+      "op_it": "Prima la pioggia"
+     },
+     {
+      "show": [
+       "bars",
+       "line"
+      ],
+      "op_it": "Poi la temperatura"
+     }
+    ]
+   }
+  },
+  {
+   "name": "climograph-unknown-field",
+   "subject": "geography",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "climograph",
+    "alt_it": "Il climogramma di una città inventata: barre per la pioggia di ogni mese e una linea per la temperatura, con i mesi aridi segnati.",
+    "place_it": "Città di prova",
+    "lat": "-15,8",
+    "alt_m": "1160",
+    "temp": [
+     "21,6",
+     "21,8",
+     "21,4",
+     "20,6",
+     "19,5",
+     "18,2",
+     "18,1",
+     "19,9",
+     "21,8",
+     "22,2",
+     "21,6",
+     "21,4"
+    ],
+    "precip": [
+     "209",
+     "180",
+     "169",
+     "123",
+     "44",
+     "9",
+     "10",
+     "11",
+     "47",
+     "132",
+     "194",
+     "238"
+    ],
+    "source_it": "dati inventati",
+    "show": [
+     "bars",
+     "line",
+     "arid"
+    ],
+    "states": [
+     {
+      "show": [
+       "bars"
+      ],
+      "op_it": "Prima la pioggia"
+     },
+     {
+      "show": [
+       "bars",
+       "line"
+      ],
+      "op_it": "Poi la temperatura"
+     }
+    ],
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

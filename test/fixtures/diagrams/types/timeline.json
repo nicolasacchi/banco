@@ -1,0 +1,157 @@
+{
+ "version": 1,
+ "type": "timeline",
+ "status": "reserved",
+ "batch": "w2-1",
+ "track": "T4a",
+ "provisional": false,
+ "description": "Skeleton of W2-0 for the track T4a: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "timeline-example-1",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 146 al 27 avanti Cristo con la Repubblica e un fatto inventato nel mezzo, per provare lo schema.",
+    "scale": "years",
+    "from": "-146",
+    "to": "-27",
+    "every": 10,
+    "centuries": true,
+    "lanes": [
+     {
+      "id": "rome",
+      "label_it": "Roma"
+     }
+    ],
+    "periods": [
+     {
+      "from": "-146",
+      "to": "-27",
+      "label_it": "Repubblica",
+      "role": "senate"
+     }
+    ],
+    "events": [
+     {
+      "id": "e1",
+      "at": "-133",
+      "label_it": "Un fatto di prova",
+      "note_it": "Inventato.",
+      "role": "cause",
+      "approx": false,
+      "lane": "rome"
+     }
+    ],
+    "spans": [
+     {
+      "from": "e1",
+      "to": "e1",
+      "show_value": true
+     }
+    ],
+    "states": [
+     {
+      "from": "-146",
+      "to": "-27",
+      "op_it": "Tutto"
+     },
+     {
+      "from": "-146",
+      "to": "-100",
+      "op_it": "Il primo tratto"
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-example-2",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Segna quando succede una frase di prova con when I arrive.",
+    "scale": "tense",
+    "window": [
+     "-3",
+     "3"
+    ],
+    "marks": [
+     {
+      "id": "a",
+      "at": "1",
+      "span": "point",
+      "text_en": "I arrive",
+      "label_it": "quando?",
+      "role": "time"
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-unknown-field",
+   "subject": "history",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 146 al 27 avanti Cristo con la Repubblica e un fatto inventato nel mezzo, per provare lo schema.",
+    "scale": "years",
+    "from": "-146",
+    "to": "-27",
+    "every": 10,
+    "centuries": true,
+    "lanes": [
+     {
+      "id": "rome",
+      "label_it": "Roma"
+     }
+    ],
+    "periods": [
+     {
+      "from": "-146",
+      "to": "-27",
+      "label_it": "Repubblica",
+      "role": "senate"
+     }
+    ],
+    "events": [
+     {
+      "id": "e1",
+      "at": "-133",
+      "label_it": "Un fatto di prova",
+      "note_it": "Inventato.",
+      "role": "cause",
+      "approx": false,
+      "lane": "rome"
+     }
+    ],
+    "spans": [
+     {
+      "from": "e1",
+      "to": "e1",
+      "show_value": true
+     }
+    ],
+    "states": [
+     {
+      "from": "-146",
+      "to": "-27",
+      "op_it": "Tutto"
+     },
+     {
+      "from": "-146",
+      "to": "-100",
+      "op_it": "Il primo tratto"
+     }
+    ],
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

@@ -1,0 +1,83 @@
+{
+ "version": 1,
+ "type": "formula",
+ "status": "reserved",
+ "batch": "w2-1",
+ "track": "T7",
+ "provisional": false,
+ "description": "Skeleton of W2-0 for the track T7: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "formula-example-1",
+   "subject": "chemistry",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "3 H2O"
+    ],
+    "show": [
+     "parts",
+     "count",
+     "molecules"
+    ],
+    "focus": "H",
+    "states": [
+     {
+      "show": [
+       "parts"
+      ],
+      "op_it": "Trova i simboli"
+     },
+     {
+      "show": [
+       "parts",
+       "count"
+      ],
+      "focus": "H",
+      "op_it": "Il pedice 2 è dell'H"
+     }
+    ]
+   }
+  },
+  {
+   "name": "formula-unknown-field",
+   "subject": "chemistry",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "3 H2O"
+    ],
+    "show": [
+     "parts",
+     "count",
+     "molecules"
+    ],
+    "focus": "H",
+    "states": [
+     {
+      "show": [
+       "parts"
+      ],
+      "op_it": "Trova i simboli"
+     },
+     {
+      "show": [
+       "parts",
+       "count"
+      ],
+      "focus": "H",
+      "op_it": "Il pedice 2 è dell'H"
+     }
+    ],
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

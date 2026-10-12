@@ -103,6 +103,7 @@ export function renderLesson(root, body, config) {
   // ---- the frame ----
   root.classList.add("l2")
   root.dataset.subject = body.subject
+  root.dataset.palette = body.subject // the colour roles are scoped by subject (palette v2); a figure of a home palette sets its own
   root.dataset.view = state.view
   root.dataset.motion = ctx.reduced() ? "reduced" : "full"
   clear(root)

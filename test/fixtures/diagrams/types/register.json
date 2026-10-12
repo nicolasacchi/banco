@@ -1,0 +1,114 @@
+{
+ "version": 1,
+ "type": "register",
+ "status": "reserved",
+ "batch": "w2-1",
+ "track": "T9",
+ "provisional": false,
+ "description": "Skeleton of W2-0 for the track T9: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "register-example-1",
+   "subject": "computer_science",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "register",
+    "alt_it": "Otto bit: 1111 1011. Sopra ogni bit il suo peso; il primo pesa meno centoventotto. La somma dei pesi dei bit a uno dà meno cinque.",
+    "view": "row",
+    "width": 8,
+    "base": 2,
+    "value": "11111011",
+    "read": "twos",
+    "weights": true,
+    "groups": 4,
+    "toggle": false,
+    "mark": [
+     {
+      "at": 1,
+      "role": "sign",
+      "label_it": "segno"
+     }
+    ],
+    "states": [
+     {
+      "value": "00000101",
+      "op_it": "5 su 8 bit"
+     },
+     {
+      "value": "11111010",
+      "op_it": "Inverti"
+     }
+    ]
+   }
+  },
+  {
+   "name": "register-example-2",
+   "subject": "computer_science",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "register",
+    "alt_it": "La ruota dei sedici codici di quattro bit: fuori il valore senza segno, dentro quello con segno; il salto è tra zero uno uno uno e uno zero zero zero.",
+    "view": "ring",
+    "width": 4,
+    "read": "both",
+    "cliff": true,
+    "pointer": "0010",
+    "step": true,
+    "highlight": [
+     {
+      "code": "1111",
+      "label_it": "-1"
+     }
+    ],
+    "moves": [
+     {
+      "from": "0111",
+      "by": 1,
+      "label_it": "7 + 1",
+      "role": "carry"
+     }
+    ]
+   }
+  },
+  {
+   "name": "register-unknown-field",
+   "subject": "computer_science",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "register",
+    "alt_it": "Otto bit: 1111 1011. Sopra ogni bit il suo peso; il primo pesa meno centoventotto. La somma dei pesi dei bit a uno dà meno cinque.",
+    "view": "row",
+    "width": 8,
+    "base": 2,
+    "value": "11111011",
+    "read": "twos",
+    "weights": true,
+    "groups": 4,
+    "toggle": false,
+    "mark": [
+     {
+      "at": 1,
+      "role": "sign",
+      "label_it": "segno"
+     }
+    ],
+    "states": [
+     {
+      "value": "00000101",
+      "op_it": "5 su 8 bit"
+     },
+     {
+      "value": "11111010",
+      "op_it": "Inverti"
+     }
+    ],
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

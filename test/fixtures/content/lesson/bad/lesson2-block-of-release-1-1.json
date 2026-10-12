@@ -138,9 +138,8 @@
         },
         {
           "n": 4,
-          "type": "reveal",
-          "prompt_it": "x",
-          "answer_it": "y"
+          "type": "page",
+          "key": "x"
         }
       ],
       "part": 1

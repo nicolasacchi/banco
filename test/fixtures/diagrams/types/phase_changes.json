@@ -1,0 +1,81 @@
+{
+ "version": 1,
+ "type": "phase_changes",
+ "status": "draft",
+ "batch": "w2-2",
+ "track": "T7",
+ "provisional": true,
+ "description": "Skeleton of W2-0 for the track T7: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "phase_changes-example-1",
+   "subject": "chemistry",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "phase_changes",
+    "alt_it": "Il triangolo degli stati: solido, liquido e gassoso ai vertici, sei frecce; quelle verso l'alto assorbono calore, quelle verso il basso lo cedono.",
+    "show": [
+     "names",
+     "energy"
+    ],
+    "highlight": [
+     "deposition",
+     "sublimation"
+    ],
+    "examples_it": {
+     "deposition": "la brina sull'erba"
+    },
+    "states": [
+     {
+      "highlight": [
+       "melting",
+       "freezing"
+      ],
+      "op_it": "Una coppia"
+     },
+     {
+      "highlight": [],
+      "op_it": "Tutte"
+     }
+    ]
+   }
+  },
+  {
+   "name": "phase_changes-unknown-field",
+   "subject": "chemistry",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "phase_changes",
+    "alt_it": "Il triangolo degli stati: solido, liquido e gassoso ai vertici, sei frecce; quelle verso l'alto assorbono calore, quelle verso il basso lo cedono.",
+    "show": [
+     "names",
+     "energy"
+    ],
+    "highlight": [
+     "deposition",
+     "sublimation"
+    ],
+    "examples_it": {
+     "deposition": "la brina sull'erba"
+    },
+    "states": [
+     {
+      "highlight": [
+       "melting",
+       "freezing"
+      ],
+      "op_it": "Una coppia"
+     },
+     {
+      "highlight": [],
+      "op_it": "Tutte"
+     }
+    ],
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

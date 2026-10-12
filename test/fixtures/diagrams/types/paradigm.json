@@ -1,0 +1,91 @@
+{
+ "version": 1,
+ "type": "paradigm",
+ "status": "draft",
+ "batch": "w2-2",
+ "track": "T3",
+ "provisional": true,
+ "description": "Skeleton of W2-0 for the track T3: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "paradigm-example-1",
+   "subject": "spanish",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "paradigm",
+    "alt_it": "Le sei forme del presente del verbo poder: nelle persone dello stivale la o diventa ue, in nosotros e vosotros resta o.",
+    "shape": "persons",
+    "verb_es": "poder",
+    "pattern": "o-ue",
+    "cells_es": [
+     "p[ue]d|o",
+     "p[ue]d|es",
+     "p[ue]d|e",
+     "pod|emos",
+     "pod|éis",
+     "p[ue]d|en"
+    ],
+    "boot": true,
+    "stress": true,
+    "hide": [
+     "nosotros"
+    ]
+   }
+  },
+  {
+   "name": "paradigm-example-2",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "paradigm",
+    "alt_it": "Verbi inglesi in famiglie: la terza forma si forma dalla base con la n, come in give, gave, given.",
+    "shape": "principal_parts",
+    "groups": [
+     {
+      "label_it": "Base + n",
+      "mark": "participle_from_base",
+      "verbs": [
+       {
+        "base_en": "give",
+        "past_en": "gave",
+        "participle_en": "given"
+       }
+      ]
+     }
+    ],
+    "reveal_column": "participle"
+   }
+  },
+  {
+   "name": "paradigm-unknown-field",
+   "subject": "spanish",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "paradigm",
+    "alt_it": "Le sei forme del presente del verbo poder: nelle persone dello stivale la o diventa ue, in nosotros e vosotros resta o.",
+    "shape": "persons",
+    "verb_es": "poder",
+    "pattern": "o-ue",
+    "cells_es": [
+     "p[ue]d|o",
+     "p[ue]d|es",
+     "p[ue]d|e",
+     "pod|emos",
+     "pod|éis",
+     "p[ue]d|en"
+    ],
+    "boot": true,
+    "stress": true,
+    "hide": [
+     "nosotros"
+    ],
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

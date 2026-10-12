@@ -1,0 +1,147 @@
+# The availability registry of lesson/2 (W2-D03; WAVE2-COMPONENTS 1.2): every diagram type, layout or view, block, check
+# component and check option, with what state it is in. It replaces RELEASE and BUILT of lib/lessons/directives.rb.
+# bin/build-lesson-types generates app/javascript/lesson/diagrams/registry.js and app/javascript/lesson/checks/registry.js
+# from this file (bin/build-lesson-types --check in CI); Ruby reads it through Lessons::Types.
+#
+# status    available  authors may use it: its module, Ruby checks, vectors and gallery card exist and passed the look gate
+#           reserved   the name is held. With schema `final` the JSON schema is frozen (W2-1 pieces until they are built);
+#                      with schema `none` only the name exists (W2-3)
+#           draft      a W2-2 piece whose schema is a draft (x-banco-draft): not frozen until its family's first look
+# A reserved or draft name is refused at submit (E-LESSON-BLOCK, "non ancora disponibile"). The reserved dry run
+# (`lesson submit --dry-run --allow-reserved`) validates it against its frozen or draft schema and answers
+# W-TYPE-RESERVED or W-TYPE-DRAFT per use; a lesson with such a use can never be stored, rendered or reach
+# awaiting_teacher. Building a piece ends with its status changed to `available` in the same commit as its look gate.
+#
+# batch     r1 (release 1), w2-1, w2-2, w2-3 (WAVE2 5.1)        track  T1..T12 (WAVE2 5.2)
+# family    the directory of the module under lesson/diagrams/ (`core`: the flat modules of release 1), its stylesheet
+#           app/assets/stylesheets/lesson/FAMILY.css, its texts config/locales/lesson_FAMILY.it.yml and its gallery
+#           test/fixtures/lesson2/gallery/FAMILY.md
+# views     the layouts, views, scales, shapes, kinds, ranges and bases of a type that have their own status: {FIELD:
+#           {VALUE: status}}. A value not listed is as the type; a value listed is used only when its status allows.
+# home_palette  the subject whose palette the figure draws in (x-banco-home-palette in diagram.json)
+version: 1
+
+diagrams:
+  # ---- release 1 (core)
+  balance: {family: core, status: available, schema: final, batch: r1, track: "-", module: lesson/diagrams/balance, home_palette: math}
+  equation_parts: {family: core, status: available, schema: final, batch: r1, track: "-", module: lesson/diagrams/equation_parts, home_palette: math}
+  number_line: {family: core, status: available, schema: final, batch: r1, track: "-", module: lesson/diagrams/number_line}
+  area_model: {family: core, status: available, schema: final, batch: r1, track: "-", module: lesson/diagrams/area_model}
+  cartesian: {family: core, status: available, schema: final, batch: r1, track: "-", module: lesson/diagrams/cartesian,
+    views: {sliders: {present: {status: reserved, schema: none, batch: w2-3}}}}
+  sentence: {family: core, status: available, schema: final, batch: r1, track: T1, module: lesson/diagrams/sentence,
+    views: {text_en: {present: {status: reserved, schema: final, batch: w2-1}}, text_es: {present: {status: reserved, schema: final, batch: w2-1}}}}
+  concept_map: {family: core, status: available, schema: final, batch: r1, track: "-", module: lesson/diagrams/concept_map}
+  table: {family: core, status: available, schema: final, batch: r1, track: "-", module: lesson/diagrams/table}
+  flow: {family: core, status: available, schema: final, batch: r1, track: T4b, module: lesson/diagrams/flow,
+    views: {layout: {line: {status: reserved, schema: final, batch: w2-1}}, walk: {"true": {status: draft, schema: draft, batch: w2-2}}}}
+
+  # ---- graphs and processes (T4b)
+  network: {family: graph, status: reserved, schema: final, batch: w2-1, track: T4b, size: M, module: lesson/diagrams/graph/network}
+  chain: {family: graph, status: reserved, schema: final, batch: w2-1, track: T4b, size: M, module: lesson/diagrams/graph/chain}
+  nested: {family: graph, status: draft, schema: draft, batch: w2-2, track: T4b, size: S, module: lesson/diagrams/graph/nested}
+
+  # ---- time (T4a)
+  timeline: {family: time, status: reserved, schema: final, batch: w2-1, track: T4a, size: M, module: lesson/diagrams/time/timeline}
+  calendar: {family: time, status: reserved, schema: none, batch: w2-3, track: T4a, size: S, module: lesson/diagrams/time/calendar}
+
+  # ---- maps and the Earth (T5)
+  map: {family: maps, status: reserved, schema: final, batch: w2-1, track: T5, size: L, module: lesson/diagrams/maps/map}
+  insolation: {family: maps, status: reserved, schema: final, batch: w2-1, track: T5, size: S, module: lesson/diagrams/maps/insolation}
+  cross_section: {family: maps, status: reserved, schema: final, batch: w2-1, track: T5, size: S, module: lesson/diagrams/maps/cross_section}
+
+  # ---- charts and quantities (T6)
+  climograph: {family: chart, status: reserved, schema: final, batch: w2-1, track: T6, size: M, module: lesson/diagrams/chart/climograph}
+  bar_model: {family: chart, status: reserved, schema: final, batch: w2-1, track: T6, size: S, module: lesson/diagrams/chart/bar_model,
+    views: {view: {fraction: {status: reserved, schema: draft, batch: w2-3}}}}
+  seats: {family: chart, status: reserved, schema: final, batch: w2-1, track: T6, size: S, module: lesson/diagrams/chart/seats}
+  chart: {family: chart, status: draft, schema: draft, batch: w2-2, track: T6, size: M, module: lesson/diagrams/chart/chart,
+    views: {kind: {pyramid: {status: reserved, schema: draft, batch: w2-3}, scatter: {status: reserved, schema: draft, batch: w2-3}}}}
+  scale: {family: chart, status: draft, schema: draft, batch: w2-2, track: T6, size: M, module: lesson/diagrams/chart/scale,
+    views: {units: {bytes: {status: reserved, schema: draft, batch: w2-3}}}}
+
+  # ---- grids and forms (T7 periodic_table, T3 paradigm, T9 register, column_calc, sheet)
+  periodic_table: {family: science, status: reserved, schema: final, batch: w2-1, track: T7, size: M, module: lesson/diagrams/science/periodic_table}
+  register: {family: computing, status: reserved, schema: final, batch: w2-1, track: T9, size: M, module: lesson/diagrams/computing/register, home_palette: computer_science}
+  column_calc: {family: computing, status: reserved, schema: final, batch: w2-1, track: T9, size: M, module: lesson/diagrams/computing/column_calc, home_palette: computer_science,
+    views: {op: {repeated_division: {status: reserved, schema: none, batch: w2-3}}}}
+  paradigm: {family: words, status: draft, schema: draft, batch: w2-2, track: T3, size: M, module: lesson/diagrams/words/paradigm}
+  sheet: {family: computing, status: reserved, schema: none, batch: w2-3, track: T9, size: L, module: lesson/diagrams/computing/sheet}
+
+  # ---- words and languages (T3)
+  word_parts: {family: words, status: reserved, schema: final, batch: w2-1, track: T3, size: M, module: lesson/diagrams/words/word_parts,
+    views: {view: {history: {status: draft, schema: draft, batch: w2-2}}}}
+  mirror: {family: words, status: reserved, schema: final, batch: w2-1, track: T3, size: M, module: lesson/diagrams/words/mirror}
+
+  # ---- documents (T8)
+  document: {family: docs, status: reserved, schema: final, batch: w2-1, track: T8, size: M, module: lesson/diagrams/docs/document,
+    views: {kind: {contract: {status: draft, schema: draft, batch: w2-2}, receipt: {status: draft, schema: draft, batch: w2-2},
+      gazette: {status: draft, schema: draft, batch: w2-2}, ballot: {status: draft, schema: draft, batch: w2-2}, letter: {status: draft, schema: draft, batch: w2-2},
+      assegno_bancario: {status: draft, schema: draft, batch: w2-2}, assegno_circolare: {status: draft, schema: draft, batch: w2-2},
+      cambiale_tratta: {status: draft, schema: draft, batch: w2-2}, paghero: {status: draft, schema: draft, batch: w2-2},
+      bonifico: {status: draft, schema: draft, batch: w2-2}, ddt: {status: draft, schema: draft, batch: w2-2}}}}
+
+  # ---- science models (T7)
+  formula: {family: science, status: reserved, schema: final, batch: w2-1, track: T7, size: M, module: lesson/diagrams/science/formula, home_palette: chemistry}
+  molecule: {family: science, status: reserved, schema: final, batch: w2-1, track: T7, size: M, module: lesson/diagrams/science/molecule, home_palette: chemistry}
+  strand: {family: science, status: reserved, schema: final, batch: w2-1, track: T7, size: M, module: lesson/diagrams/science/strand, home_palette: biology}
+  particles: {family: science, status: draft, schema: draft, batch: w2-2, track: T7, size: L, module: lesson/diagrams/science/particles, home_palette: chemistry}
+  phase_changes: {family: science, status: draft, schema: draft, batch: w2-2, track: T7, size: S, module: lesson/diagrams/science/phase_changes, home_palette: chemistry}
+  cell: {family: science, status: draft, schema: draft, batch: w2-2, track: T7, size: L, module: lesson/diagrams/science/cell, home_palette: biology}
+
+  # ---- computing (T9)
+  program: {family: computing, status: draft, schema: draft, batch: w2-2, track: T9, size: L, module: lesson/diagrams/computing/program}
+  rgb: {family: computing, status: reserved, schema: none, batch: w2-3, track: T9, size: S, module: lesson/diagrams/computing/rgb}
+
+blocks:
+  # release 1 blocks are available; the module is lesson/blocks/TYPE
+  text: {status: available, batch: r1, module: lesson/blocks/text}
+  callout: {status: available, batch: r1, module: lesson/blocks/callout}
+  math: {status: available, batch: r1, module: lesson/blocks/math}
+  procedure: {status: available, batch: r1, module: lesson/blocks/procedure}
+  cases: {status: available, batch: r1, module: lesson/blocks/cases}
+  legend: {status: available, batch: r1, module: lesson/blocks/legend}
+  example: {status: available, batch: r1, module: lesson/blocks/example}
+  mistake: {status: available, batch: r1, module: lesson/blocks/mistake}
+  check: {status: available, batch: r1, module: lesson/blocks/check}
+  more: {status: available, batch: r1, module: lesson/blocks/more}
+  summary: {status: available, batch: r1, module: lesson/blocks/summary}
+  schema: {status: available, batch: r1, module: lesson/blocks/diagram}
+  diagram: {status: available, batch: r1, module: lesson/blocks/diagram}
+  table: {status: available, batch: r1, module: lesson/blocks/table}
+  try: {status: available, batch: r1, module: lesson/blocks/try}
+  # wave 2
+  source: {family: docs, status: reserved, schema: final, batch: w2-1, track: T8, module: lesson/blocks/source,
+    views: {kind: {written: {status: draft, schema: draft, batch: w2-2}, iconographic: {status: draft, schema: draft, batch: w2-2}, material: {status: draft, schema: draft, batch: w2-2}}}}
+  reveal: {family: docs, status: reserved, schema: final, batch: w2-1, track: T8, module: lesson/blocks/reveal}
+  oral: {family: docs, status: reserved, schema: final, batch: w2-1, track: T8, module: lesson/blocks/oral}
+  dialogue: {family: words, status: reserved, schema: final, batch: w2-1, track: T3, module: lesson/blocks/dialogue}
+  image: {family: docs, status: draft, schema: draft, batch: w2-2, track: T8, module: lesson/blocks/image}
+  page: {family: pages, status: reserved, schema: none, batch: r2, track: T11, module: lesson/blocks/page}
+
+checks:
+  choice: {status: available, batch: r1, module: lesson/blocks/check}
+  number: {status: available, batch: r1, module: lesson/blocks/check}
+  fraction: {status: available, batch: r1, module: lesson/blocks/check}
+  normalized_text: {status: available, batch: r1, module: lesson/blocks/check}
+  matching: {status: available, batch: r1, module: lesson/blocks/check}
+  span_select: {status: available, batch: r1, module: lesson/blocks/check}
+  select: {status: reserved, schema: final, batch: w2-1, track: T1, module: lesson/checks/select}
+  tiles: {status: reserved, schema: final, batch: w2-1, track: T1, module: lesson/checks/tiles}
+  ordering: {status: reserved, schema: final, batch: w2-1, track: T1, module: lesson/checks/ordering}
+  amount_words: {status: draft, schema: draft, batch: w2-2, track: T8, module: lesson/checks/amount_words}
+  cell_formula: {status: reserved, schema: none, batch: w2-3, track: T9, module: lesson/checks/cell_formula}
+  trace: {status: reserved, schema: none, batch: w2-3, track: T9, module: lesson/checks/trace}
+
+# Options of check components: the field of the check body that switches them on, and the components they apply to (`applies_to`: a list, or
+# `all`; the key is not `on`, which YAML 1.1 reads as true).
+# `value` limits the option to one value of the field (a profile name, an input mode).
+check_options:
+  listen: {field: listen, applies_to: [choice, matching, span_select], status: reserved, schema: final, batch: w2-1, track: T2}
+  verify: {field: verify, applies_to: all, status: reserved, schema: final, batch: w2-1, track: T1}
+  profile: {field: profile, applies_to: [normalized_text], status: reserved, schema: final, batch: w2-1, track: T1}
+  chem_formula_profile: {field: profile, value: chem_formula, applies_to: [normalized_text], status: draft, schema: draft, batch: w2-2, track: T7}
+  input_bits: {field: input, value: bits, applies_to: [normalized_text], status: reserved, schema: final, batch: w2-1, track: T9}
+  contractions: {field: contractions, applies_to: [normalized_text], status: reserved, schema: final, batch: w2-1, track: T1}
+  thousands: {field: thousands, applies_to: [number], status: reserved, schema: final, batch: w2-1, track: T1}
+  reachable_ok: {field: reachable_ok_it, applies_to: all, status: reserved, schema: final, batch: w2-1, track: T1}

@@ -1,0 +1,91 @@
+{
+ "version": 1,
+ "type": "nested",
+ "status": "draft",
+ "batch": "w2-2",
+ "track": "T4b",
+ "provisional": true,
+ "description": "Skeleton of W2-0 for the track T4b: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "nested-example-1",
+   "subject": "biology",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "nested",
+    "alt_it": "Scatole una dentro l'altra: la cellula nel tessuto, il tessuto nell'organo, l'organo nell'apparato, l'apparato nell'organismo.",
+    "levels": [
+     {
+      "id": "cell",
+      "label_it": "cellula",
+      "example_it": "cellula muscolare"
+     },
+     {
+      "id": "tissue",
+      "label_it": "tessuto"
+     },
+     {
+      "id": "organ",
+      "label_it": "organo"
+     }
+    ],
+    "inside": {
+     "label_it": "organuli",
+     "note_it": "stanno dentro la cellula"
+    },
+    "states": [
+     {
+      "focus": "cell",
+      "op_it": "Una cellula"
+     },
+     {
+      "focus": "tissue",
+      "op_it": "Tante cellule"
+     }
+    ]
+   }
+  },
+  {
+   "name": "nested-unknown-field",
+   "subject": "biology",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "nested",
+    "alt_it": "Scatole una dentro l'altra: la cellula nel tessuto, il tessuto nell'organo, l'organo nell'apparato, l'apparato nell'organismo.",
+    "levels": [
+     {
+      "id": "cell",
+      "label_it": "cellula",
+      "example_it": "cellula muscolare"
+     },
+     {
+      "id": "tissue",
+      "label_it": "tessuto"
+     },
+     {
+      "id": "organ",
+      "label_it": "organo"
+     }
+    ],
+    "inside": {
+     "label_it": "organuli",
+     "note_it": "stanno dentro la cellula"
+    },
+    "states": [
+     {
+      "focus": "cell",
+      "op_it": "Una cellula"
+     },
+     {
+      "focus": "tissue",
+      "op_it": "Tante cellule"
+     }
+    ],
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

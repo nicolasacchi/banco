@@ -1,0 +1,135 @@
+{
+ "version": 1,
+ "type": "program",
+ "status": "draft",
+ "batch": "w2-2",
+ "track": "T9",
+ "provisional": true,
+ "description": "Skeleton of W2-0 for the track T9: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "program-example-1",
+   "subject": "computer_science",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "program",
+    "alt_it": "Diagramma del salvadanaio: soldi e settimane partono da zero; finché soldi è minore di trenta aggiunge otto e una settimana; poi scrive le settimane.",
+    "view": "flow",
+    "run": "step",
+    "watch": [
+     "soldi",
+     "settimane"
+    ],
+    "trace": "table",
+    "inputs": {
+     "voto": [
+      "6",
+      "8"
+     ]
+    },
+    "try": {
+     "var": "punti",
+     "values": [
+      "99",
+      "100",
+      "101"
+     ]
+    },
+    "program": [
+     {
+      "set": "soldi",
+      "to": "0"
+     },
+     {
+      "while": "soldi < 30",
+      "do": [
+       {
+        "set": "soldi",
+        "to": "soldi + 8"
+       }
+      ]
+     },
+     {
+      "write": "soldi"
+     }
+    ],
+    "endless": false,
+    "shapes_legend": true,
+    "states": [
+     {
+      "upto": 2,
+      "op_it": "Prima del ciclo"
+     },
+     {
+      "upto": 3,
+      "op_it": "Il ciclo"
+     }
+    ]
+   }
+  },
+  {
+   "name": "program-unknown-field",
+   "subject": "computer_science",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "program",
+    "alt_it": "Diagramma del salvadanaio: soldi e settimane partono da zero; finché soldi è minore di trenta aggiunge otto e una settimana; poi scrive le settimane.",
+    "view": "flow",
+    "run": "step",
+    "watch": [
+     "soldi",
+     "settimane"
+    ],
+    "trace": "table",
+    "inputs": {
+     "voto": [
+      "6",
+      "8"
+     ]
+    },
+    "try": {
+     "var": "punti",
+     "values": [
+      "99",
+      "100",
+      "101"
+     ]
+    },
+    "program": [
+     {
+      "set": "soldi",
+      "to": "0"
+     },
+     {
+      "while": "soldi < 30",
+      "do": [
+       {
+        "set": "soldi",
+        "to": "soldi + 8"
+       }
+      ]
+     },
+     {
+      "write": "soldi"
+     }
+    ],
+    "endless": false,
+    "shapes_legend": true,
+    "states": [
+     {
+      "upto": 2,
+      "op_it": "Prima del ciclo"
+     },
+     {
+      "upto": 3,
+      "op_it": "Il ciclo"
+     }
+    ],
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

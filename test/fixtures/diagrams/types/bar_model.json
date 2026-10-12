@@ -1,0 +1,115 @@
+{
+ "version": 1,
+ "type": "bar_model",
+ "status": "reserved",
+ "batch": "w2-1",
+ "track": "T6",
+ "provisional": false,
+ "description": "Skeleton of W2-0 for the track T6: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "bar_model-example-1",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "bar_model",
+    "alt_it": "Una barra divisa in tre parti: centoventi, duecento e il resto, che insieme fanno quattrocentottanta in tutto.",
+    "view": "parts",
+    "bars": [
+     {
+      "label_it": "Vendite",
+      "parts": [
+       {
+        "value": "120",
+        "label_it": "primo"
+       },
+       {
+        "value": "200",
+        "label_it": "secondo"
+       },
+       {
+        "value": "160",
+        "label_it": "resto",
+        "hidden": true
+       }
+      ]
+     }
+    ],
+    "total": {
+     "value": "480",
+     "label_it": "in tutto"
+    }
+   }
+  },
+  {
+   "name": "bar_model-example-2",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "bar_model",
+    "alt_it": "Una scala doppia: sopra gli euro, sotto la percentuale, con il cento per cento a milleottocentosessanta e l'IVA al ventidue.",
+    "view": "percent",
+    "base": "1860,00",
+    "unit": "euro",
+    "marks": [
+     {
+      "pct": "22",
+      "label_it": "IVA",
+      "role": "tax"
+     }
+    ],
+    "hide": [
+     "100"
+    ],
+    "chain": [
+     {
+      "pct": "90"
+     },
+     {
+      "pct": "95"
+     }
+    ]
+   }
+  },
+  {
+   "name": "bar_model-unknown-field",
+   "subject": "business",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "bar_model",
+    "alt_it": "Una barra divisa in tre parti: centoventi, duecento e il resto, che insieme fanno quattrocentottanta in tutto.",
+    "view": "parts",
+    "bars": [
+     {
+      "label_it": "Vendite",
+      "parts": [
+       {
+        "value": "120",
+        "label_it": "primo"
+       },
+       {
+        "value": "200",
+        "label_it": "secondo"
+       },
+       {
+        "value": "160",
+        "label_it": "resto",
+        "hidden": true
+       }
+      ]
+     }
+    ],
+    "total": {
+     "value": "480",
+     "label_it": "in tutto"
+    },
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

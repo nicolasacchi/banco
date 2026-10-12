@@ -1,0 +1,69 @@
+{
+ "version": 1,
+ "type": "molecule",
+ "status": "reserved",
+ "batch": "w2-1",
+ "track": "T7",
+ "provisional": false,
+ "description": "Skeleton of W2-0 for the track T7: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "molecule-example-1",
+   "subject": "chemistry",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Quattro molecole: CO con un carbonio e un ossigeno, CO2 con due ossigeni, H2O con due idrogeni, H2O2 con due idrogeni e due ossigeni.",
+    "items": [
+     {
+      "formula": "CO",
+      "label_it": "monossido di carbonio"
+     },
+     {
+      "formula": "CO2",
+      "label_it": "anidride carbonica"
+     },
+     {
+      "formula": "H2O",
+      "label_it": "acqua"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols"
+    ]
+   }
+  },
+  {
+   "name": "molecule-unknown-field",
+   "subject": "chemistry",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Quattro molecole: CO con un carbonio e un ossigeno, CO2 con due ossigeni, H2O con due idrogeni, H2O2 con due idrogeni e due ossigeni.",
+    "items": [
+     {
+      "formula": "CO",
+      "label_it": "monossido di carbonio"
+     },
+     {
+      "formula": "CO2",
+      "label_it": "anidride carbonica"
+     },
+     {
+      "formula": "H2O",
+      "label_it": "acqua"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols"
+    ],
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:banco:schema:diagram",
   "title": "banco.diagram/1",
-  "description": "One drawing of a lesson/2: a diagram (A7) or a schema (A8), release 1 types. Agents write this data, our templates draw it. 'x-banco-state-keys' lists the keys a state may carry; 'x-banco-solution' marks a solution field that is never served to the browser as such.",
+  "description": "One drawing of a lesson/2: a diagram (A7) or a schema (A8). Release 1 types plus the wave 2 types (WAVE2 section 2): 'x-banco-release' is the batch (1, w2-1, w2-2), 'x-banco-draft' marks a W2-2 schema that is not frozen until its family's first look; what is available to authors is config/banco/lesson_types.yml. Agents write this data, our templates draw it. 'x-banco-state-keys' lists the keys a state may carry; 'x-banco-solution' marks a solution field that is never served to the browser as such; 'x-banco-hide' says which field nulls served values; 'x-banco-targets' names the select target sets; 'x-banco-home-palette' the palette a figure draws in; 'x-banco-withheld' fields come only from the check endpoint.",
   "type": "object",
   "required": [
     "type"
@@ -18,7 +18,33 @@
         "sentence",
         "concept_map",
         "flow",
-        "table"
+        "table",
+        "network",
+        "chain",
+        "timeline",
+        "map",
+        "insolation",
+        "cross_section",
+        "climograph",
+        "bar_model",
+        "seats",
+        "periodic_table",
+        "register",
+        "column_calc",
+        "word_parts",
+        "mirror",
+        "document",
+        "formula",
+        "molecule",
+        "strand",
+        "nested",
+        "chart",
+        "scale",
+        "paradigm",
+        "particles",
+        "phase_changes",
+        "cell",
+        "program"
       ]
     }
   },
@@ -157,6 +183,396 @@
       "then": {
         "$ref": "#/$defs/table"
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "network"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/network"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "chain"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/chain"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "timeline"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/timeline"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "map"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/map"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "insolation"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/insolation"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "cross_section"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/cross_section"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "climograph"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/climograph"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "bar_model"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/bar_model"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "seats"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/seats"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "periodic_table"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/periodic_table"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "register"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/register"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "column_calc"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/column_calc"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "word_parts"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/word_parts"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mirror"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/mirror"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "document"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/document"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "formula"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/formula"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "molecule"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/molecule"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "strand"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/strand"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "nested"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/nested"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "chart"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/chart"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "scale"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/scale"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "paradigm"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/paradigm"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "particles"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/particles"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "phase_changes"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/phase_changes"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "cell"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/cell"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "program"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/program"
+      }
     }
   ],
   "$defs": {
@@ -192,7 +608,7 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 32,
-      "pattern": "^[a-z]+(-[a-z]+)*$",
+      "pattern": "^[a-z]+([_-][a-z]+)*$",
       "description": "A colour role of the lesson's subject palette (E-LESSON-ROLE, checked in Ruby)."
     },
     "id": {
@@ -359,7 +775,8 @@
       "x-banco-state-keys": [
         "brackets"
       ],
-      "description": "The anatomy of an equation: its parts in order (members and the = sign) and brackets over whole parts."
+      "description": "The anatomy of an equation: its parts in order (members and the = sign) and brackets over whole parts.",
+      "x-banco-home-palette": "math"
     },
     "number_line": {
       "type": "object",
@@ -721,7 +1138,8 @@
             }
           }
         }
-      ]
+      ],
+      "x-banco-home-palette": "math"
     },
     "area_model": {
       "type": "object",
@@ -1101,7 +1519,6 @@
             "type": "object",
             "additionalProperties": false,
             "required": [
-              "text_it",
               "role"
             ],
             "properties": {
@@ -1109,6 +1526,16 @@
                 "$ref": "#/$defs/id"
               },
               "text_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "text_en": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "text_es": {
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 80
@@ -1127,7 +1554,24 @@
               "implied": {
                 "type": "boolean"
               }
-            }
+            },
+            "anyOf": [
+              {
+                "required": [
+                  "text_it"
+                ]
+              },
+              {
+                "required": [
+                  "text_en"
+                ]
+              },
+              {
+                "required": [
+                  "text_es"
+                ]
+              }
+            ]
           },
           "minItems": 1,
           "maxItems": 10
@@ -1186,7 +1630,6 @@
                   "type": "object",
                   "additionalProperties": false,
                   "required": [
-                    "text_it",
                     "role"
                   ],
                   "properties": {
@@ -1194,6 +1637,16 @@
                       "$ref": "#/$defs/id"
                     },
                     "text_it": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80
+                    },
+                    "text_en": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80
+                    },
+                    "text_es": {
                       "type": "string",
                       "minLength": 1,
                       "maxLength": 80
@@ -1212,7 +1665,24 @@
                     "implied": {
                       "type": "boolean"
                     }
-                  }
+                  },
+                  "anyOf": [
+                    {
+                      "required": [
+                        "text_it"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "text_en"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "text_es"
+                      ]
+                    }
+                  ]
                 },
                 "minItems": 1,
                 "maxItems": 10
@@ -1250,18 +1720,40 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 40
+              },
+              "text_en": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 240
+              },
+              "text_es": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 240
               }
             }
           },
           "minItems": 2,
           "maxItems": 6,
           "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        },
+        "text_en": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "text_es": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
         }
       },
       "x-banco-kind": "diagram",
       "x-banco-release": "1",
       "x-banco-state-keys": [
         "text_it",
+        "text_en",
+        "text_es",
         "parts",
         "links"
       ],
@@ -1278,21 +1770,49 @@
         },
         {
           "required": [
+            "text_en",
+            "parts"
+          ]
+        },
+        {
+          "required": [
+            "text_es",
+            "parts"
+          ]
+        },
+        {
+          "required": [
             "states"
           ],
           "properties": {
             "states": {
               "items": {
-                "required": [
-                  "text_it",
-                  "parts"
+                "anyOf": [
+                  {
+                    "required": [
+                      "text_it",
+                      "parts"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "text_en",
+                      "parts"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "text_es",
+                      "parts"
+                    ]
+                  }
                 ]
               }
             }
           }
         }
       ],
-      "description": "The plates are given at the top level, or in every state (D-247)."
+      "description": "The sentence is given at the top level, or in every state (D-247). Neutral (wave 2): text_it, text_en or text_es (exactly one language), and the same per part; layout centre centres on the subject's centre_role."
     },
     "concept_map": {
       "type": "object",
@@ -1416,8 +1936,7 @@
       "required": [
         "type",
         "alt_it",
-        "nodes",
-        "edges"
+        "nodes"
       ],
       "properties": {
         "type": {
@@ -1460,6 +1979,14 @@
               },
               "role": {
                 "$ref": "#/$defs/role"
+              },
+              "icon": {
+                "$ref": "#/$defs/icon_name"
+              },
+              "actor_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60
               }
             }
           },
@@ -1489,12 +2016,166 @@
           },
           "minItems": 2,
           "maxItems": 14
+        },
+        "layout": {
+          "enum": [
+            "tree",
+            "line"
+          ]
+        },
+        "branch": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "from",
+            "to",
+            "nodes"
+          ],
+          "properties": {
+            "from": {
+              "$ref": "#/$defs/id"
+            },
+            "to": {
+              "$ref": "#/$defs/id"
+            },
+            "label_it": {
+              "$ref": "#/$defs/label"
+            },
+            "nodes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "kind",
+                  "text_it"
+                ],
+                "properties": {
+                  "id": {
+                    "$ref": "#/$defs/id"
+                  },
+                  "kind": {
+                    "enum": [
+                      "step"
+                    ]
+                  },
+                  "text_it": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "icon": {
+                    "$ref": "#/$defs/icon_name"
+                  },
+                  "role": {
+                    "$ref": "#/$defs/role"
+                  }
+                }
+              },
+              "minItems": 1,
+              "maxItems": 4
+            }
+          }
+        },
+        "returns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "to"
+            ],
+            "properties": {
+              "from": {
+                "$ref": "#/$defs/id"
+              },
+              "to": {
+                "$ref": "#/$defs/id"
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 3
+        },
+        "token": {
+          "$ref": "#/$defs/id"
+        },
+        "walk": {
+          "type": "boolean",
+          "x-banco-draft": true,
+          "description": "Tree only: one decision at a time (W2-2 draft)."
+        },
+        "case_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "x-banco-draft": true
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "token": {
+                "$ref": "#/$defs/id"
+              },
+              "via": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/id"
+                },
+                "minItems": 1,
+                "maxItems": 8
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Line layout: the token moves; via follows drawn edges or returns (2.1)."
         }
       },
-      "x-banco-kind": "schema",
+      "x-banco-kind": "both",
       "x-banco-release": "1",
-      "x-banco-state-keys": [],
-      "description": "One main chain, decisions with 2 or 3 branches, no cycles (A8, checked in Ruby)."
+      "x-banco-state-keys": [
+        "token"
+      ],
+      "description": "tree (the default): one main chain, decisions with 2 or 3 branches, no cycles (A8, checked in Ruby). line: a journey of stations with a token, one branch lane and at most 3 returns drawn as arcs (W2-1).",
+      "anyOf": [
+        {
+          "required": [
+            "edges"
+          ]
+        },
+        {
+          "required": [
+            "layout"
+          ],
+          "properties": {
+            "layout": {
+              "const": "line"
+            }
+          }
+        }
+      ],
+      "x-banco-state-only-keys": [
+        "via",
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "stations"
+      ]
     },
     "table": {
       "type": "object",
@@ -1562,7 +2243,34 @@
             "balance",
             "area_model",
             "cartesian",
-            "sentence"
+            "sentence",
+            "flow",
+            "network",
+            "chain",
+            "timeline",
+            "map",
+            "insolation",
+            "cross_section",
+            "climograph",
+            "bar_model",
+            "seats",
+            "periodic_table",
+            "register",
+            "column_calc",
+            "word_parts",
+            "mirror",
+            "document",
+            "formula",
+            "molecule",
+            "strand",
+            "nested",
+            "chart",
+            "scale",
+            "paradigm",
+            "particles",
+            "phase_changes",
+            "cell",
+            "program"
           ]
         }
       },
@@ -1656,6 +2364,411 @@
           "then": {
             "$ref": "#/$defs/sentence"
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "flow"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/flow"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "network"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/network"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "chain"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/chain"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "timeline"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/timeline"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "map"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/map"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "insolation"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/insolation"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "cross_section"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/cross_section"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "climograph"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/climograph"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "bar_model"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/bar_model"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "seats"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/seats"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "periodic_table"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/periodic_table"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "register"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/register"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "column_calc"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/column_calc"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "word_parts"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/word_parts"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "mirror"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/mirror"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "document"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/document"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "formula"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/formula"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "molecule"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/molecule"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "strand"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/strand"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "nested"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/nested"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "chart"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/chart"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "scale"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/scale"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "paradigm"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/paradigm"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "particles"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/particles"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "phase_changes"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/phase_changes"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "cell"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/cell"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "program"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/program"
+          }
         }
       ]
     },
@@ -1720,6 +2833,5533 @@
           }
         }
       ]
+    },
+    "year": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 5,
+      "pattern": "^-?[1-9][0-9]{0,3}$",
+      "description": "A year as an integer string; negative = a.C.; '0' does not exist (Lessons::Chrono)."
+    },
+    "gaz_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+      "description": "A gazetteer id: ISO alpha-3 (BRA), a continent or ocean id, a place or historical region id (config/banco/data)."
+    },
+    "data_ref": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 48,
+      "pattern": "^[a-z_]+/[a-z0-9_]+(\\.[a-z0-9_-]+)?$",
+      "description": "A row of a vetted data table: 'bio/sizes.hair' (config/banco/data)."
+    },
+    "lang_text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Target-language text (a key ending in _en, _es or _la); at most 12 words in running sentences (E-READ target-language set)."
+    },
+    "icon_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+      "description": "One of our icon names (config/banco/icons.yml; E-LESSON-ICON in Ruby)."
+    },
+    "network_edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from",
+        "to",
+        "kind"
+      ],
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/id"
+        },
+        "to": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "enum": [
+            "owes",
+            "pays",
+            "elects",
+            "trusts",
+            "appoints",
+            "commands",
+            "advises",
+            "votes_laws",
+            "vetoes",
+            "orders",
+            "promises",
+            "gives",
+            "sends"
+          ]
+        },
+        "label_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "what": {
+          "enum": [
+            "goods",
+            "money",
+            "document",
+            "order",
+            "promise",
+            "signature",
+            "information",
+            "vote"
+          ]
+        }
+      }
+    },
+    "network_hold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node",
+        "items_it"
+      ],
+      "properties": {
+        "node": {
+          "$ref": "#/$defs/id"
+        },
+        "items_it": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "minItems": 1,
+          "maxItems": 6
+        }
+      }
+    },
+    "network_badge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node",
+        "badge_it"
+      ],
+      "properties": {
+        "node": {
+          "$ref": "#/$defs/id"
+        },
+        "badge_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 30
+        }
+      }
+    },
+    "timeline_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "at",
+        "label_it"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "at": {
+          "$ref": "#/$defs/year"
+        },
+        "label_it": {
+          "$ref": "#/$defs/label"
+        },
+        "note_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "role": {
+          "$ref": "#/$defs/role"
+        },
+        "approx": {
+          "type": "boolean"
+        },
+        "lane": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "timeline_period": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from",
+        "to",
+        "label_it"
+      ],
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/year"
+        },
+        "to": {
+          "$ref": "#/$defs/year"
+        },
+        "label_it": {
+          "$ref": "#/$defs/label"
+        },
+        "role": {
+          "$ref": "#/$defs/role"
+        }
+      }
+    },
+    "timeline_mark": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "at",
+        "span"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4,
+          "pattern": "^-?[0-9]{1,2}$",
+          "description": "An order around 'adesso' (0): the unit is order, not hours."
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4,
+          "pattern": "^-?[0-9]{1,2}$",
+          "description": "An order around 'adesso' (0): the unit is order, not hours."
+        },
+        "from": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4,
+          "pattern": "^-?[0-9]{1,2}$",
+          "description": "An order around 'adesso' (0): the unit is order, not hours."
+        },
+        "span": {
+          "enum": [
+            "point",
+            "range",
+            "habit",
+            "plan"
+          ]
+        },
+        "text_en": {
+          "$ref": "#/$defs/lang_text"
+        },
+        "text_es": {
+          "$ref": "#/$defs/lang_text"
+        },
+        "label_it": {
+          "$ref": "#/$defs/label"
+        },
+        "role": {
+          "$ref": "#/$defs/role"
+        },
+        "uncertain": {
+          "type": "boolean"
+        }
+      }
+    },
+    "map_point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "properties": {
+        "lat": {
+          "$ref": "#/$defs/num"
+        },
+        "lon": {
+          "$ref": "#/$defs/num"
+        },
+        "label_it": {
+          "$ref": "#/$defs/label"
+        },
+        "value": {
+          "$ref": "#/$defs/num"
+        }
+      }
+    },
+    "map_highlight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/gaz_id"
+        },
+        "role": {
+          "$ref": "#/$defs/role"
+        },
+        "pattern": {
+          "enum": [
+            "solid",
+            "hatch",
+            "dots",
+            "cross",
+            "grid"
+          ]
+        }
+      }
+    },
+    "map_band": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from_lat",
+        "to_lat"
+      ],
+      "properties": {
+        "from_lat": {
+          "$ref": "#/$defs/num"
+        },
+        "to_lat": {
+          "$ref": "#/$defs/num"
+        },
+        "role": {
+          "$ref": "#/$defs/role"
+        },
+        "label_it": {
+          "$ref": "#/$defs/label"
+        }
+      }
+    },
+    "map_arrow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from",
+        "to"
+      ],
+      "properties": {
+        "from": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/gaz_id"
+            },
+            {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "prefixItems": [
+                {
+                  "$ref": "#/$defs/num"
+                },
+                {
+                  "$ref": "#/$defs/num"
+                }
+              ],
+              "items": false
+            }
+          ]
+        },
+        "to": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/gaz_id"
+            },
+            {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "prefixItems": [
+                {
+                  "$ref": "#/$defs/num"
+                },
+                {
+                  "$ref": "#/$defs/num"
+                }
+              ],
+              "items": false
+            }
+          ]
+        },
+        "label_it": {
+          "$ref": "#/$defs/label"
+        },
+        "role": {
+          "$ref": "#/$defs/role"
+        }
+      }
+    },
+    "map_line": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/gaz_id"
+        },
+        "kind": {
+          "enum": [
+            "meridian",
+            "parallel"
+          ]
+        },
+        "lon": {
+          "$ref": "#/$defs/num"
+        },
+        "lat": {
+          "$ref": "#/$defs/num"
+        },
+        "label_it": {
+          "$ref": "#/$defs/label"
+        }
+      }
+    },
+    "map_route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "via"
+      ],
+      "properties": {
+        "via": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/gaz_id"
+          },
+          "minItems": 2,
+          "maxItems": 8
+        },
+        "role": {
+          "$ref": "#/$defs/role"
+        },
+        "label_it": {
+          "$ref": "#/$defs/label"
+        }
+      }
+    },
+    "bar_part": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "label_it"
+      ],
+      "properties": {
+        "value": {
+          "$ref": "#/$defs/num"
+        },
+        "label_it": {
+          "$ref": "#/$defs/label"
+        },
+        "role": {
+          "$ref": "#/$defs/role"
+        },
+        "hidden": {
+          "type": "boolean"
+        }
+      }
+    },
+    "word_parts_word": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "form_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "form_en": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "form_es": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "form_la": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "parts_it": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "minItems": 1,
+          "maxItems": 4
+        },
+        "meaning_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "syllables": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "stress": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "label_it": {
+          "$ref": "#/$defs/label"
+        },
+        "from_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "then_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "now_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      }
+    },
+    "mirror_row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pieces_it"
+      ],
+      "properties": {
+        "pieces_it": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "minItems": 1,
+          "maxItems": 12
+        },
+        "pieces_en": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "minItems": 1,
+          "maxItems": 12
+        },
+        "pieces_es": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "minItems": 1,
+          "maxItems": 12
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "prefixItems": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 11
+              },
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 11
+              },
+              {
+                "enum": [
+                  "same",
+                  "shift",
+                  "false_friend"
+                ]
+              }
+            ],
+            "items": false
+          },
+          "minItems": 0,
+          "maxItems": 14
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "side",
+              "piece",
+              "note_it"
+            ],
+            "properties": {
+              "side": {
+                "enum": [
+                  "it",
+                  "en",
+                  "es"
+                ]
+              },
+              "piece": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 11
+              },
+              "note_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 6
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "side",
+              "piece",
+              "role"
+            ],
+            "properties": {
+              "side": {
+                "enum": [
+                  "it",
+                  "en",
+                  "es"
+                ]
+              },
+              "piece": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 11
+              },
+              "role": {
+                "$ref": "#/$defs/role"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 8
+        }
+      }
+    },
+    "network": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "layout",
+        "nodes"
+      ],
+      "properties": {
+        "type": {
+          "const": "network"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "layout": {
+          "enum": [
+            "pair",
+            "row",
+            "triangle",
+            "hub",
+            "fan",
+            "grid"
+          ]
+        },
+        "centre": {
+          "$ref": "#/$defs/id"
+        },
+        "into": {
+          "$ref": "#/$defs/id"
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label_it"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              },
+              "icon": {
+                "$ref": "#/$defs/icon_name"
+              },
+              "role": {
+                "$ref": "#/$defs/role"
+              },
+              "note_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "badge_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 30
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 8
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/network_edge"
+          },
+          "minItems": 0,
+          "maxItems": 12
+        },
+        "holds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/network_hold"
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "everyone": {
+          "type": "boolean"
+        },
+        "filter": {
+          "type": "boolean"
+        },
+        "hide": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/network_edge"
+                },
+                "minItems": 0,
+                "maxItems": 12
+              },
+              "holds": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/network_hold"
+                },
+                "minItems": 0,
+                "maxItems": 8
+              },
+              "hide": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/id"
+                },
+                "minItems": 0,
+                "maxItems": 8
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "badges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/network_badge"
+                },
+                "minItems": 0,
+                "maxItems": 8
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [
+        "edges",
+        "holds",
+        "hide"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it",
+        "badges"
+      ],
+      "x-banco-targets": [
+        "nodes",
+        "edges"
+      ],
+      "description": "Typed, directed relations between actors (2.1). A node hidden in a state is not drawn there; L4 counts every state and every hidden label."
+    },
+    "chain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "layout",
+        "nodes",
+        "links"
+      ],
+      "properties": {
+        "type": {
+          "const": "chain"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "layout": {
+          "enum": [
+            "line",
+            "fan",
+            "ring"
+          ]
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "kind",
+              "text_it"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "enum": [
+                  "cause",
+                  "event",
+                  "effect",
+                  "stage"
+                ]
+              },
+              "area": {
+                "enum": [
+                  "economy",
+                  "society",
+                  "politics",
+                  "military",
+                  "religion",
+                  "environment",
+                  "science"
+                ]
+              },
+              "text_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 3,
+          "maxItems": 10
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "to"
+            ],
+            "properties": {
+              "from": {
+                "$ref": "#/$defs/id"
+              },
+              "to": {
+                "$ref": "#/$defs/id"
+              },
+              "word": {
+                "enum": [
+                  "perché",
+                  "quindi",
+                  "per questo",
+                  "porta a",
+                  "poi"
+                ]
+              },
+              "causal": {
+                "type": "boolean"
+              },
+              "back": {
+                "type": "boolean"
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 14
+        },
+        "remove": {
+          "type": "boolean"
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "show": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/id"
+                },
+                "minItems": 1,
+                "maxItems": 10
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [
+        "show"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "nodes"
+      ],
+      "description": "Causes, effects and cycles (2.1)."
+    },
+    "timeline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "scale"
+      ],
+      "properties": {
+        "type": {
+          "const": "timeline"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "scale": {
+          "enum": [
+            "years",
+            "tense"
+          ]
+        },
+        "from": {
+          "$ref": "#/$defs/year"
+        },
+        "to": {
+          "$ref": "#/$defs/year"
+        },
+        "every": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "centuries": {
+          "type": "boolean"
+        },
+        "lanes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label_it"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 3
+        },
+        "periods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/timeline_period"
+          },
+          "minItems": 0,
+          "maxItems": 6
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/timeline_event"
+          },
+          "minItems": 0,
+          "maxItems": 12
+        },
+        "spans": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "to"
+            ],
+            "properties": {
+              "from": {
+                "$ref": "#/$defs/id"
+              },
+              "to": {
+                "$ref": "#/$defs/id"
+              },
+              "show_value": {
+                "type": "boolean"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 4
+        },
+        "measure": {
+          "type": "boolean"
+        },
+        "window": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4,
+            "pattern": "^-?[0-9]{1,2}$",
+            "description": "An order around 'adesso' (0): the unit is order, not hours."
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "marks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/timeline_mark"
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "from": {
+                "$ref": "#/$defs/year"
+              },
+              "to": {
+                "$ref": "#/$defs/year"
+              },
+              "periods": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/timeline_period"
+                },
+                "minItems": 0,
+                "maxItems": 6
+              },
+              "events": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/timeline_event"
+                },
+                "minItems": 0,
+                "maxItems": 12
+              },
+              "spans": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "from",
+                    "to"
+                  ],
+                  "properties": {
+                    "from": {
+                      "$ref": "#/$defs/id"
+                    },
+                    "to": {
+                      "$ref": "#/$defs/id"
+                    },
+                    "show_value": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "minItems": 0,
+                "maxItems": 4
+              },
+              "marks": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/timeline_mark"
+                },
+                "minItems": 0,
+                "maxItems": 8
+              },
+              "window": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4,
+                  "pattern": "^-?[0-9]{1,2}$",
+                  "description": "An order around 'adesso' (0): the unit is order, not hours."
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [
+        "from",
+        "to",
+        "periods",
+        "events",
+        "spans",
+        "marks",
+        "window"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "events",
+        "periods",
+        "marks"
+      ],
+      "description": "One time-axis engine, two scales (2.2). Years run from 1 a.C. straight into 1 d.C.; durations and century labels come from Chrono.",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "scale": {
+                "const": "years"
+              }
+            },
+            "required": [
+              "scale"
+            ]
+          },
+          "then": {
+            "required": [
+              "from",
+              "to"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "scale": {
+                "const": "tense"
+              }
+            },
+            "required": [
+              "scale"
+            ]
+          },
+          "then": {
+            "required": [
+              "window",
+              "marks"
+            ]
+          }
+        }
+      ]
+    },
+    "map": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "base"
+      ],
+      "properties": {
+        "type": {
+          "const": "map"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "base": {
+          "enum": [
+            "world",
+            "europe",
+            "africa",
+            "asia",
+            "north_america",
+            "south_america",
+            "oceania",
+            "arctic",
+            "antarctic",
+            "italy",
+            "mediterraneo_antico"
+          ]
+        },
+        "detail": {
+          "enum": [
+            "continents",
+            "states",
+            "regions"
+          ]
+        },
+        "mercator": {
+          "type": "boolean"
+        },
+        "graticule": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "equator",
+              "tropics",
+              "polar_circles",
+              "greenwich"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 4
+        },
+        "highlight": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/map_highlight"
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "bands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/map_band"
+          },
+          "minItems": 0,
+          "maxItems": 4
+        },
+        "places": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/gaz_id"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 12
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/map_point"
+          },
+          "minItems": 0,
+          "maxItems": 12
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/map_line"
+          },
+          "minItems": 0,
+          "maxItems": 6
+        },
+        "arrows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/map_arrow"
+          },
+          "minItems": 0,
+          "maxItems": 6
+        },
+        "routes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/map_route"
+          },
+          "minItems": 0,
+          "maxItems": 3
+        },
+        "compare": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/gaz_id"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "slider": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "from",
+            "to"
+          ],
+          "properties": {
+            "from": {
+              "$ref": "#/$defs/year"
+            },
+            "to": {
+              "$ref": "#/$defs/year"
+            }
+          }
+        },
+        "regions_since": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "since"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/gaz_id"
+              },
+              "since": {
+                "$ref": "#/$defs/year"
+              },
+              "role": {
+                "$ref": "#/$defs/role"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 12
+        },
+        "inset": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "base"
+          ],
+          "properties": {
+            "base": {
+              "enum": [
+                "world",
+                "europe",
+                "africa",
+                "asia",
+                "north_america",
+                "south_america",
+                "oceania"
+              ]
+            },
+            "highlight": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/gaz_id"
+              },
+              "minItems": 0,
+              "maxItems": 4
+            }
+          }
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/gaz_id"
+          },
+          "minItems": 2,
+          "maxItems": 12
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "highlight": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/map_highlight"
+                },
+                "minItems": 0,
+                "maxItems": 8
+              },
+              "bands": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/map_band"
+                },
+                "minItems": 0,
+                "maxItems": 4
+              },
+              "places": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id"
+                  ],
+                  "properties": {
+                    "id": {
+                      "$ref": "#/$defs/gaz_id"
+                    }
+                  }
+                },
+                "minItems": 0,
+                "maxItems": 12
+              },
+              "points": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/map_point"
+                },
+                "minItems": 0,
+                "maxItems": 12
+              },
+              "lines": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/map_line"
+                },
+                "minItems": 0,
+                "maxItems": 6
+              },
+              "arrows": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/map_arrow"
+                },
+                "minItems": 0,
+                "maxItems": 6
+              },
+              "routes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/map_route"
+                },
+                "minItems": 0,
+                "maxItems": 3
+              },
+              "slider": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "from",
+                  "to"
+                ],
+                "properties": {
+                  "from": {
+                    "$ref": "#/$defs/year"
+                  },
+                  "to": {
+                    "$ref": "#/$defs/year"
+                  }
+                }
+              },
+              "regions_since": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "since"
+                  ],
+                  "properties": {
+                    "id": {
+                      "$ref": "#/$defs/gaz_id"
+                    },
+                    "since": {
+                      "$ref": "#/$defs/year"
+                    },
+                    "role": {
+                      "$ref": "#/$defs/role"
+                    }
+                  }
+                },
+                "minItems": 0,
+                "maxItems": 12
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [
+        "highlight",
+        "bands",
+        "places",
+        "points",
+        "lines",
+        "arrows",
+        "routes",
+        "slider",
+        "regions_since"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "areas",
+        "places",
+        "bands",
+        "lines",
+        "points"
+      ],
+      "description": "One type, a registry of vendored bases (2.3). Agents never write coordinates on historical bases; candidates restrict a select check."
+    },
+    "insolation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "latitudes"
+      ],
+      "properties": {
+        "type": {
+          "const": "insolation"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "latitudes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/num"
+          },
+          "minItems": 1,
+          "maxItems": 4
+        },
+        "subsolar": {
+          "$ref": "#/$defs/num"
+        },
+        "stepper": {
+          "type": "boolean"
+        },
+        "spread": {
+          "type": "boolean"
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "latitudes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/num"
+                },
+                "minItems": 1,
+                "maxItems": 4
+              },
+              "subsolar": {
+                "$ref": "#/$defs/num"
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [
+        "latitudes",
+        "subsolar"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "description": "Parallel rays on the Earth's profile; the spread 1/cos is computed (2.3). Its 3D globe is W2-3."
+    },
+    "cross_section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "x",
+        "points"
+      ],
+      "properties": {
+        "type": {
+          "const": "cross_section"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "x": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "to",
+            "unit"
+          ],
+          "properties": {
+            "to": {
+              "$ref": "#/$defs/num"
+            },
+            "unit": {
+              "enum": [
+                "km",
+                "m"
+              ]
+            }
+          }
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "prefixItems": [
+              {
+                "$ref": "#/$defs/num"
+              },
+              {
+                "$ref": "#/$defs/num"
+              }
+            ],
+            "items": false
+          },
+          "minItems": 2,
+          "maxItems": 16
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "at",
+              "label_it",
+              "kind"
+            ],
+            "properties": {
+              "at": {
+                "$ref": "#/$defs/num"
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              },
+              "kind": {
+                "enum": [
+                  "peak",
+                  "city",
+                  "river",
+                  "sea",
+                  "plain",
+                  "plateau"
+                ]
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "belts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from_alt",
+              "to_alt",
+              "label_it"
+            ],
+            "properties": {
+              "from_alt": {
+                "$ref": "#/$defs/num"
+              },
+              "to_alt": {
+                "$ref": "#/$defs/num"
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              },
+              "role": {
+                "$ref": "#/$defs/role"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 6
+        },
+        "lapse": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "base_temp",
+            "per_km"
+          ],
+          "properties": {
+            "base_temp": {
+              "$ref": "#/$defs/num"
+            },
+            "per_km": {
+              "$ref": "#/$defs/num"
+            }
+          }
+        },
+        "stepper": {
+          "type": "boolean"
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "belts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "from_alt",
+                    "to_alt",
+                    "label_it"
+                  ],
+                  "properties": {
+                    "from_alt": {
+                      "$ref": "#/$defs/num"
+                    },
+                    "to_alt": {
+                      "$ref": "#/$defs/num"
+                    },
+                    "label_it": {
+                      "$ref": "#/$defs/label"
+                    },
+                    "role": {
+                      "$ref": "#/$defs/role"
+                    }
+                  }
+                },
+                "minItems": 0,
+                "maxItems": 6
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [
+        "belts"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "belts"
+      ],
+      "description": "Geography's profile (2.3). The exaggeration is computed and printed."
+    },
+    "climograph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it"
+      ],
+      "properties": {
+        "type": {
+          "const": "climograph"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "place_it": {
+          "$ref": "#/$defs/label"
+        },
+        "lat": {
+          "$ref": "#/$defs/num"
+        },
+        "alt_m": {
+          "$ref": "#/$defs/num"
+        },
+        "station": {
+          "$ref": "#/$defs/data_ref"
+        },
+        "temp": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/num"
+          },
+          "minItems": 12,
+          "maxItems": 12
+        },
+        "precip": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/num"
+          },
+          "minItems": 12,
+          "maxItems": 12
+        },
+        "source_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "show": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "bars",
+              "line",
+              "arid",
+              "range",
+              "total"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 5
+        },
+        "compare": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "place_it": {
+              "$ref": "#/$defs/label"
+            },
+            "station": {
+              "$ref": "#/$defs/data_ref"
+            },
+            "temp": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/num"
+              },
+              "minItems": 12,
+              "maxItems": 12
+            }
+          }
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "show": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "bars",
+                    "line",
+                    "arid",
+                    "range",
+                    "total"
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 5
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [
+        "show"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "months"
+      ],
+      "description": "Bagnouls-Gaussen scale fixed by us; arid months, range, total and extremes computed (2.4). One scale at a time: the states add the layers in order.",
+      "anyOf": [
+        {
+          "required": [
+            "station"
+          ]
+        },
+        {
+          "required": [
+            "temp",
+            "precip",
+            "source_it"
+          ]
+        }
+      ]
+    },
+    "bar_model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "view"
+      ],
+      "properties": {
+        "type": {
+          "const": "bar_model"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "view": {
+          "enum": [
+            "parts",
+            "percent",
+            "fraction"
+          ]
+        },
+        "bars": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "label_it",
+              "parts"
+            ],
+            "properties": {
+              "label_it": {
+                "$ref": "#/$defs/label"
+              },
+              "parts": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/bar_part"
+                },
+                "minItems": 1,
+                "maxItems": 8
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 4
+        },
+        "total": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value"
+          ],
+          "properties": {
+            "value": {
+              "$ref": "#/$defs/num"
+            },
+            "label_it": {
+              "$ref": "#/$defs/label"
+            }
+          }
+        },
+        "base": {
+          "$ref": "#/$defs/num"
+        },
+        "anchor": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "pct",
+            "value"
+          ],
+          "properties": {
+            "pct": {
+              "$ref": "#/$defs/num"
+            },
+            "value": {
+              "$ref": "#/$defs/num"
+            }
+          }
+        },
+        "unit": {
+          "enum": [
+            "euro",
+            "none"
+          ]
+        },
+        "marks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "pct",
+              "label_it"
+            ],
+            "properties": {
+              "pct": {
+                "$ref": "#/$defs/num"
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              },
+              "role": {
+                "$ref": "#/$defs/role"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 6
+        },
+        "hide": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/num"
+          },
+          "minItems": 0,
+          "maxItems": 6
+        },
+        "chain": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "pct"
+            ],
+            "properties": {
+              "pct": {
+                "$ref": "#/$defs/num"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 3
+        },
+        "fractions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "den",
+              "num"
+            ],
+            "properties": {
+              "den": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 24
+              },
+              "num": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 72
+              },
+              "role": {
+                "$ref": "#/$defs/role"
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 4
+        },
+        "aligned": {
+          "type": "boolean"
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "bars": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "label_it",
+                    "parts"
+                  ],
+                  "properties": {
+                    "label_it": {
+                      "$ref": "#/$defs/label"
+                    },
+                    "parts": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/bar_part"
+                      },
+                      "minItems": 1,
+                      "maxItems": 8
+                    }
+                  }
+                },
+                "minItems": 1,
+                "maxItems": 4
+              },
+              "marks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "pct",
+                    "label_it"
+                  ],
+                  "properties": {
+                    "pct": {
+                      "$ref": "#/$defs/num"
+                    },
+                    "label_it": {
+                      "$ref": "#/$defs/label"
+                    },
+                    "role": {
+                      "$ref": "#/$defs/role"
+                    }
+                  }
+                },
+                "minItems": 0,
+                "maxItems": 6
+              },
+              "hide": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/num"
+                },
+                "minItems": 0,
+                "maxItems": 6
+              },
+              "chain": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "pct"
+                  ],
+                  "properties": {
+                    "pct": {
+                      "$ref": "#/$defs/num"
+                    }
+                  }
+                },
+                "minItems": 0,
+                "maxItems": 3
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [
+        "bars",
+        "marks",
+        "hide",
+        "chain"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "parts",
+        "marks"
+      ],
+      "x-banco-hide": "bars[].parts[].hidden and hide[]: the value is served as null",
+      "description": "One proportional-bar module (2.4). W2-1: parts and percent. The fraction view is reserved (W2-3)."
+    },
+    "seats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "layout",
+        "seats"
+      ],
+      "properties": {
+        "type": {
+          "const": "seats"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "layout": {
+          "enum": [
+            "hemicycle",
+            "grid"
+          ]
+        },
+        "seats": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "label_it",
+              "seats"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              },
+              "seats": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "role": {
+                "$ref": "#/$defs/role"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "present": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "yes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "thresholds": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "legal_number",
+              "present_majority",
+              "absolute_majority",
+              "two_thirds",
+              "three_fifths"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 5
+        },
+        "try": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "present": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "yes": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "groups": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "label_it",
+                    "seats"
+                  ],
+                  "properties": {
+                    "id": {
+                      "$ref": "#/$defs/id"
+                    },
+                    "label_it": {
+                      "$ref": "#/$defs/label"
+                    },
+                    "seats": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 1000
+                    },
+                    "role": {
+                      "$ref": "#/$defs/role"
+                    }
+                  }
+                },
+                "minItems": 0,
+                "maxItems": 8
+              },
+              "present": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "yes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "thresholds": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "legal_number",
+                    "present_majority",
+                    "absolute_majority",
+                    "two_thirds",
+                    "three_fifths"
+                  ]
+                },
+                "minItems": 0,
+                "maxItems": 5
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [
+        "groups",
+        "present",
+        "yes",
+        "thresholds"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "description": "A hemicycle or grid; every threshold computed in integers (2.4). try declares ranges: any check answer inside their readouts is E-CHECK-ANSWER-BY-SIMULATION."
+    },
+    "periodic_table": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "range"
+      ],
+      "properties": {
+        "type": {
+          "const": "periodic_table"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "range": {
+          "enum": [
+            "periods_1_4",
+            "main_groups"
+          ]
+        },
+        "show": {
+          "enum": [
+            "symbol",
+            "symbol_name",
+            "symbol_z"
+          ]
+        },
+        "highlight": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "symbols"
+            ],
+            "properties": {
+              "symbols": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 3,
+                  "pattern": "^[A-Z][a-z]{0,2}$"
+                },
+                "minItems": 1,
+                "maxItems": 20
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 4
+        },
+        "mark_latin": {
+          "type": "boolean"
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "highlight": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "symbols"
+                  ],
+                  "properties": {
+                    "symbols": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 3,
+                        "pattern": "^[A-Z][a-z]{0,2}$"
+                      },
+                      "minItems": 1,
+                      "maxItems": 20
+                    },
+                    "label_it": {
+                      "$ref": "#/$defs/label"
+                    }
+                  }
+                },
+                "minItems": 0,
+                "maxItems": 4
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [
+        "highlight"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "cells"
+      ],
+      "description": "Cells from chem/elements (2.5); the full table is not built in wave 2; below 600 px a list by group."
+    },
+    "register": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "view",
+        "width"
+      ],
+      "properties": {
+        "type": {
+          "const": "register"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "view": {
+          "enum": [
+            "row",
+            "ring"
+          ]
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16
+        },
+        "base": {
+          "enum": [
+            2,
+            8,
+            10,
+            16
+          ]
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16,
+          "pattern": "^[0-9A-F]+$"
+        },
+        "read": {
+          "enum": [
+            "none",
+            "unsigned",
+            "twos",
+            "both"
+          ]
+        },
+        "weights": {
+          "type": "boolean"
+        },
+        "groups": {
+          "enum": [
+            0,
+            3,
+            4
+          ]
+        },
+        "group_digits": {
+          "type": "boolean"
+        },
+        "toggle": {
+          "type": "boolean"
+        },
+        "goals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/num"
+          },
+          "minItems": 0,
+          "maxItems": 4
+        },
+        "mark": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "at",
+              "role"
+            ],
+            "properties": {
+              "at": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 16
+              },
+              "role": {
+                "$ref": "#/$defs/role"
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 3
+        },
+        "cliff": {
+          "type": "boolean"
+        },
+        "pointer": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 4,
+          "pattern": "^[01]+$"
+        },
+        "step": {
+          "type": "boolean"
+        },
+        "highlight": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 4,
+                "pattern": "^[01]+$"
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 4
+        },
+        "moves": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "by"
+            ],
+            "properties": {
+              "from": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 4,
+                "pattern": "^[01]+$"
+              },
+              "by": {
+                "type": "integer",
+                "minimum": -15,
+                "maximum": 15
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              },
+              "role": {
+                "$ref": "#/$defs/role"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 3
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "value": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 16,
+                "pattern": "^[0-9A-F]+$"
+              },
+              "mark": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "at",
+                    "role"
+                  ],
+                  "properties": {
+                    "at": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 16
+                    },
+                    "role": {
+                      "$ref": "#/$defs/role"
+                    },
+                    "label_it": {
+                      "$ref": "#/$defs/label"
+                    }
+                  }
+                },
+                "minItems": 0,
+                "maxItems": 3
+              },
+              "pointer": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 4,
+                "pattern": "^[01]+$"
+              },
+              "highlight": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "code"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 4,
+                      "pattern": "^[01]+$"
+                    },
+                    "label_it": {
+                      "$ref": "#/$defs/label"
+                    }
+                  }
+                },
+                "minItems": 0,
+                "maxItems": 4
+              },
+              "moves": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "from",
+                    "by"
+                  ],
+                  "properties": {
+                    "from": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 4,
+                      "pattern": "^[01]+$"
+                    },
+                    "by": {
+                      "type": "integer",
+                      "minimum": -15,
+                      "maximum": 15
+                    },
+                    "label_it": {
+                      "$ref": "#/$defs/label"
+                    },
+                    "role": {
+                      "$ref": "#/$defs/role"
+                    }
+                  }
+                },
+                "minItems": 0,
+                "maxItems": 3
+              },
+              "width": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 16
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [
+        "value",
+        "mark",
+        "pointer",
+        "highlight",
+        "moves",
+        "width"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "bits",
+        "codes"
+      ],
+      "x-banco-home-palette": "computer_science",
+      "description": "The n-bit value space, two views (2.5). Weights, readouts, group digits and landings computed (Bits)."
+    },
+    "column_calc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "base",
+        "op",
+        "a",
+        "b",
+        "width"
+      ],
+      "properties": {
+        "type": {
+          "const": "column_calc"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "base": {
+          "enum": [
+            2,
+            8,
+            10,
+            16
+          ]
+        },
+        "op": {
+          "enum": [
+            "add",
+            "sub",
+            "mul"
+          ]
+        },
+        "a": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16,
+          "pattern": "^[0-9A-F]+$"
+        },
+        "b": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16,
+          "pattern": "^[0-9A-F]+$"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16
+        },
+        "reveal": {
+          "enum": [
+            "all",
+            "columns"
+          ]
+        },
+        "read": {
+          "enum": [
+            "none",
+            "unsigned",
+            "twos"
+          ]
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "a": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 16,
+                "pattern": "^[0-9A-F]+$"
+              },
+              "b": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 16,
+                "pattern": "^[0-9A-F]+$"
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [
+        "a",
+        "b"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "digits"
+      ],
+      "x-banco-home-palette": "computer_science",
+      "description": "Column operations inside a fixed width; carries, borrows and results computed (2.5). repeated_division is W2-3."
+    },
+    "word_parts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "view",
+        "words"
+      ],
+      "properties": {
+        "type": {
+          "const": "word_parts"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "view": {
+          "enum": [
+            "decode",
+            "syllables",
+            "history"
+          ]
+        },
+        "words": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/word_parts_word"
+          },
+          "minItems": 1,
+          "maxItems": 4
+        },
+        "arrows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "to"
+            ],
+            "properties": {
+              "from": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3
+              },
+              "to": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 4
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "words": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/word_parts_word"
+                },
+                "minItems": 1,
+                "maxItems": 4
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [
+        "words"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "pieces",
+        "syllables"
+      ],
+      "description": "Words split into pieces (2.6). One language per figure (E-LESSON-LANG); the Spanish syllables and stress are computed. The history view is a W2-2 draft."
+    },
+    "mirror": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "rows"
+      ],
+      "properties": {
+        "type": {
+          "const": "mirror"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mirror_row"
+          },
+          "minItems": 1,
+          "maxItems": 3
+        },
+        "same_ok": {
+          "type": "boolean"
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [],
+      "x-banco-targets": [
+        "pieces"
+      ],
+      "description": "Italian over the target language, piece by piece (2.6)."
+    },
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "kind"
+      ],
+      "properties": {
+        "type": {
+          "const": "document"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "kind": {
+          "enum": [
+            "invoice",
+            "contract",
+            "receipt",
+            "gazette",
+            "ballot",
+            "letter",
+            "assegno_bancario",
+            "assegno_circolare",
+            "cambiale_tratta",
+            "paghero",
+            "bonifico",
+            "ddt"
+          ]
+        },
+        "view": {
+          "enum": [
+            "sheet",
+            "cascade"
+          ]
+        },
+        "head": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "seller_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            },
+            "buyer_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            },
+            "number": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 8,
+              "pattern": "^[0-9]+$"
+            },
+            "date": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 10,
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            }
+          }
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "text_it",
+              "qty",
+              "price",
+              "vat"
+            ],
+            "properties": {
+              "text_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60
+              },
+              "qty": {
+                "$ref": "#/$defs/num"
+              },
+              "price": {
+                "$ref": "#/$defs/num"
+              },
+              "vat": {
+                "$ref": "#/$defs/num"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 6
+        },
+        "discounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/num"
+          },
+          "minItems": 0,
+          "maxItems": 4
+        },
+        "costs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "text_it",
+              "amount"
+            ],
+            "properties": {
+              "text_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60
+              },
+              "amount": {
+                "$ref": "#/$defs/num"
+              },
+              "documented": {
+                "type": "boolean"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 4
+        },
+        "interest": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rate",
+            "days"
+          ],
+          "properties": {
+            "rate": {
+              "$ref": "#/$defs/num"
+            },
+            "days": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 366
+            },
+            "year": {
+              "enum": [
+                360,
+                365
+              ]
+            }
+          }
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "gross",
+              "discounts",
+              "net",
+              "costs_in",
+              "base",
+              "vat",
+              "costs_out",
+              "interest",
+              "total"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 9
+        },
+        "error": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[a-z_]+$"
+        },
+        "title_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "text_it"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "text_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 400
+              },
+              "label_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40
+              },
+              "tag_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40
+              },
+              "kind": {
+                "enum": [
+                  "text",
+                  "signature"
+                ]
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 10
+        },
+        "labels": {
+          "enum": [
+            "shown",
+            "hidden"
+          ]
+        },
+        "side": {
+          "enum": [
+            "front",
+            "back",
+            "both"
+          ]
+        },
+        "issue": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "place_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "date": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 10,
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            }
+          }
+        },
+        "due": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "days_after": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 366
+            },
+            "date": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 10,
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            }
+          }
+        },
+        "amount": {
+          "$ref": "#/$defs/num"
+        },
+        "parties": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "drawer": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "name_it"
+              ],
+              "properties": {
+                "name_it": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 60
+                },
+                "role": {
+                  "$ref": "#/$defs/role"
+                },
+                "address_it": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                }
+              }
+            },
+            "drawee": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "name_it"
+              ],
+              "properties": {
+                "name_it": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 60
+                },
+                "role": {
+                  "$ref": "#/$defs/role"
+                },
+                "address_it": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                }
+              }
+            },
+            "payee": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "name_it"
+              ],
+              "properties": {
+                "name_it": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 60
+                },
+                "role": {
+                  "$ref": "#/$defs/role"
+                },
+                "address_it": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                }
+              }
+            }
+          }
+        },
+        "accepted": {
+          "type": "boolean"
+        },
+        "clauses": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "non_transferable",
+              "non_negotiable"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 3
+        },
+        "endorsements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "to_it"
+            ],
+            "properties": {
+              "to_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60
+              },
+              "role": {
+                "$ref": "#/$defs/role"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 4
+        },
+        "hide": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 24,
+            "pattern": "^[a-z_]+$"
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "mark": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 24,
+            "pattern": "^[a-z_]+$"
+          },
+          "minItems": 0,
+          "maxItems": 4
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "rows": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "gross",
+                    "discounts",
+                    "net",
+                    "costs_in",
+                    "base",
+                    "vat",
+                    "costs_out",
+                    "interest",
+                    "total"
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 9
+              },
+              "hide": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 24,
+                  "pattern": "^[a-z_]+$"
+                },
+                "minItems": 0,
+                "maxItems": 8
+              },
+              "mark": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 24,
+                  "pattern": "^[a-z_]+$"
+                },
+                "minItems": 0,
+                "maxItems": 4
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "fill": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 24,
+                  "pattern": "^[a-z_]+$"
+                },
+                "minItems": 0,
+                "maxItems": 12
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [
+        "rows",
+        "hide",
+        "mark"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it",
+        "fill"
+      ],
+      "x-banco-targets": [
+        "zones",
+        "rows"
+      ],
+      "x-banco-hide": "hide[]: the fields, rows or blocks drawn empty; served as null",
+      "description": "One type, a registry of kinds, each a template of fixed zones (2.7). W2-1 builds the frame and the invoice kind; the other kinds are W2-2 drafts. Invented names only.",
+      "x-banco-draft-values": {
+        "kind": [
+          "contract",
+          "receipt",
+          "gazette",
+          "ballot",
+          "letter",
+          "assegno_bancario",
+          "assegno_circolare",
+          "cambiale_tratta",
+          "paghero",
+          "bonifico",
+          "ddt"
+        ]
+      }
+    },
+    "formula": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "formulas"
+      ],
+      "properties": {
+        "type": {
+          "const": "formula"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "formulas": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "minItems": 1,
+          "maxItems": 3
+        },
+        "show": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "parts",
+              "count",
+              "molecules"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 3
+        },
+        "focus": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 3,
+          "pattern": "^[A-Z][a-z]{0,2}$"
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "show": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "parts",
+                    "count",
+                    "molecules"
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 3
+              },
+              "focus": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 3,
+                "pattern": "^[A-Z][a-z]{0,2}$"
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [
+        "show",
+        "focus"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "pieces"
+      ],
+      "x-banco-home-palette": "chemistry",
+      "description": "The formula decoder (2.8): formulas parsed by Chem (case-exact), counts computed and never written."
+    },
+    "molecule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "items"
+      ],
+      "properties": {
+        "type": {
+          "const": "molecule"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "formula"
+            ],
+            "properties": {
+              "formula": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 6
+        },
+        "style": {
+          "enum": [
+            "balls",
+            "sticks"
+          ]
+        },
+        "show": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "symbols",
+              "angle",
+              "partial"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 3
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [],
+      "x-banco-targets": [
+        "items",
+        "atoms"
+      ],
+      "x-banco-home-palette": "chemistry",
+      "description": "2D molecules from chem/molecules (2.8). Ionic and metallic kinds are lattice patches labelled 'unità'. 3D is W2-3."
+    },
+    "strand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "mode",
+        "kind",
+        "top"
+      ],
+      "properties": {
+        "type": {
+          "const": "strand"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "mode": {
+          "enum": [
+            "nucleotide",
+            "single",
+            "double"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "dna",
+            "rna"
+          ]
+        },
+        "top": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 12,
+          "pattern": "^[ACGTU]+$"
+        },
+        "bottom": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 12,
+          "pattern": "^[ACGTU]+$"
+        },
+        "labels": {
+          "enum": [
+            "parts",
+            "bases",
+            "none"
+          ]
+        },
+        "hide_bottom": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "minItems": 0,
+          "maxItems": 12
+        },
+        "highlight": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1,
+            "pattern": "^[ACGTU]$"
+          },
+          "minItems": 0,
+          "maxItems": 4
+        },
+        "unzip": {
+          "type": "boolean"
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "hide_bottom": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 12
+                },
+                "minItems": 0,
+                "maxItems": 12
+              },
+              "highlight": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1,
+                  "pattern": "^[ACGTU]$"
+                },
+                "minItems": 0,
+                "maxItems": 4
+              },
+              "unzip": {
+                "type": "boolean"
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-1",
+      "x-banco-state-keys": [
+        "hide_bottom",
+        "highlight",
+        "unzip"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "bases",
+        "backbone",
+        "rungs"
+      ],
+      "x-banco-home-palette": "biology",
+      "x-banco-hide": "hide_bottom[]: the bases of the bottom strand served as null",
+      "description": "A nucleotide, a strand or a double strand (2.8). bottom must be the complement of top; 2D in W2-1, 3D in W2-3."
+    },
+    "nested": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "levels"
+      ],
+      "properties": {
+        "type": {
+          "const": "nested"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "levels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label_it"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              },
+              "example_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 3,
+          "maxItems": 6
+        },
+        "inside": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "label_it"
+          ],
+          "properties": {
+            "label_it": {
+              "$ref": "#/$defs/label"
+            },
+            "note_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          }
+        },
+        "focus": {
+          "$ref": "#/$defs/id"
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "focus": {
+                "$ref": "#/$defs/id"
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-2",
+      "x-banco-draft": true,
+      "x-banco-state-keys": [
+        "focus"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "levels"
+      ],
+      "description": "Boxes inside boxes: 'is made of' (2.1). DRAFT until the graphs family's first look."
+    },
+    "chart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "kind"
+      ],
+      "properties": {
+        "type": {
+          "const": "chart"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "kind": {
+          "enum": [
+            "bars",
+            "stacked100",
+            "line",
+            "pyramid",
+            "scatter"
+          ]
+        },
+        "categories_it": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 30
+          },
+          "minItems": 2,
+          "maxItems": 12
+        },
+        "series": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "label_it",
+              "values"
+            ],
+            "properties": {
+              "label_it": {
+                "$ref": "#/$defs/label"
+              },
+              "values": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/num"
+                },
+                "minItems": 1,
+                "maxItems": 12
+              },
+              "role": {
+                "$ref": "#/$defs/role"
+              },
+              "pattern": {
+                "enum": [
+                  "solid",
+                  "hatch",
+                  "dots",
+                  "cross",
+                  "grid"
+                ]
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 4
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 12
+        },
+        "source_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "hide": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "prefixItems": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3
+              },
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 11
+              }
+            ],
+            "items": false
+          },
+          "minItems": 0,
+          "maxItems": 12
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "heating": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "substance",
+            "mass_kg",
+            "power_w",
+            "from_c",
+            "to_c"
+          ],
+          "properties": {
+            "substance": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 24,
+              "pattern": "^[a-z_0-9]+$"
+            },
+            "mass_kg": {
+              "$ref": "#/$defs/num"
+            },
+            "power_w": {
+              "$ref": "#/$defs/num"
+            },
+            "from_c": {
+              "$ref": "#/$defs/num"
+            },
+            "to_c": {
+              "$ref": "#/$defs/num"
+            },
+            "pressure": {
+              "enum": [
+                "standard"
+              ]
+            }
+          }
+        },
+        "compare": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "mass_kg": {
+              "$ref": "#/$defs/num"
+            },
+            "substance": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 24
+            },
+            "pressure": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 12
+            }
+          }
+        },
+        "window": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/num"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "break": {
+          "type": "boolean"
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "series": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "label_it",
+                    "values"
+                  ],
+                  "properties": {
+                    "label_it": {
+                      "$ref": "#/$defs/label"
+                    },
+                    "values": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/num"
+                      },
+                      "minItems": 1,
+                      "maxItems": 12
+                    },
+                    "role": {
+                      "$ref": "#/$defs/role"
+                    },
+                    "pattern": {
+                      "enum": [
+                        "solid",
+                        "hatch",
+                        "dots",
+                        "cross",
+                        "grid"
+                      ]
+                    }
+                  }
+                },
+                "minItems": 1,
+                "maxItems": 4
+              },
+              "hide": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "prefixItems": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 3
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 11
+                    }
+                  ],
+                  "items": false
+                },
+                "minItems": 0,
+                "maxItems": 12
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-2",
+      "x-banco-draft": true,
+      "x-banco-state-keys": [
+        "series",
+        "hide"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "bars"
+      ],
+      "x-banco-hide": "hide[]: [series, category] values drawn empty; served as null",
+      "description": "Bars, stacked100 and line with a computed heating series are W2-2; pyramid and scatter are W2-3 (2.4). DRAFT."
+    },
+    "scale": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "objects"
+      ],
+      "properties": {
+        "type": {
+          "const": "scale"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "objects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label_it"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              },
+              "size": {
+                "$ref": "#/$defs/num"
+              },
+              "unit": {
+                "enum": [
+                  "m",
+                  "cm",
+                  "mm",
+                  "um",
+                  "nm",
+                  "pm"
+                ]
+              },
+              "ref": {
+                "$ref": "#/$defs/data_ref"
+              },
+              "role": {
+                "$ref": "#/$defs/role"
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 8
+        },
+        "limits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "size",
+              "unit",
+              "label_it"
+            ],
+            "properties": {
+              "size": {
+                "$ref": "#/$defs/num"
+              },
+              "unit": {
+                "enum": [
+                  "m",
+                  "cm",
+                  "mm",
+                  "um",
+                  "nm",
+                  "pm"
+                ]
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 3
+        },
+        "pair": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "pairs_menu": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/id"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "minItems": 0,
+          "maxItems": 4
+        },
+        "pictograms": {
+          "type": "boolean"
+        },
+        "units": {
+          "enum": [
+            "metric",
+            "bytes"
+          ]
+        },
+        "focus": {
+          "$ref": "#/$defs/id"
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "pair": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/id"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "focus": {
+                "$ref": "#/$defs/id"
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-2",
+      "x-banco-draft": true,
+      "x-banco-state-keys": [
+        "pair",
+        "focus"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "objects"
+      ],
+      "description": "A powers-of-ten ruler with a true-size panel; the ratio is computed (2.4). DRAFT. units: bytes is W2-3."
+    },
+    "paradigm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "shape"
+      ],
+      "properties": {
+        "type": {
+          "const": "paradigm"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "shape": {
+          "enum": [
+            "persons",
+            "principal_parts"
+          ]
+        },
+        "verb_es": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24
+        },
+        "verb_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24
+        },
+        "pattern": {
+          "enum": [
+            "regular",
+            "e-ie",
+            "o-ue",
+            "u-ue",
+            "e-i",
+            "go",
+            "go-e-ie",
+            "go-e-i",
+            "irregular"
+          ]
+        },
+        "cells_es": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 24
+          },
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "cells_it": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 24
+          },
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "boot": {
+          "type": "boolean"
+        },
+        "stress": {
+          "type": "boolean"
+        },
+        "mirror_it": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "verb_it",
+            "cells_it"
+          ],
+          "properties": {
+            "verb_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 24
+            },
+            "cells_it": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              },
+              "minItems": 6,
+              "maxItems": 6
+            }
+          }
+        },
+        "hide": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "yo",
+              "tu",
+              "el",
+              "nosotros",
+              "vosotros",
+              "ellos"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 6
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "label_it",
+              "mark",
+              "verbs"
+            ],
+            "properties": {
+              "label_it": {
+                "$ref": "#/$defs/label"
+              },
+              "mark": {
+                "enum": [
+                  "same_forms",
+                  "vowel",
+                  "participle_from_base",
+                  "participle_from_past",
+                  "none"
+                ]
+              },
+              "verbs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "base_en",
+                    "past_en",
+                    "participle_en"
+                  ],
+                  "properties": {
+                    "base_en": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 16
+                    },
+                    "past_en": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 24
+                    },
+                    "participle_en": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 24
+                    }
+                  }
+                },
+                "minItems": 1,
+                "maxItems": 10
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 3
+        },
+        "reveal_column": {
+          "enum": [
+            "past",
+            "participle"
+          ]
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "boot": {
+                "type": "boolean"
+              },
+              "hide": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "yo",
+                    "tu",
+                    "el",
+                    "nosotros",
+                    "vosotros",
+                    "ellos"
+                  ]
+                },
+                "minItems": 0,
+                "maxItems": 6
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-2",
+      "x-banco-draft": true,
+      "x-banco-state-keys": [
+        "boot",
+        "hide"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "cells"
+      ],
+      "x-banco-hide": "hide[]: persons drawn empty; served as null",
+      "description": "One grid of verb forms, two shapes (2.5). DRAFT."
+    },
+    "particles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "boxes"
+      ],
+      "properties": {
+        "type": {
+          "const": "particles"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "boxes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label_it"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "substance": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24,
+                "pattern": "^[a-z_0-9]+$"
+              },
+              "state": {
+                "enum": [
+                  "solid",
+                  "liquid",
+                  "gas"
+                ]
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              },
+              "macro_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60
+              },
+              "species": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "formula",
+                    "count"
+                  ],
+                  "properties": {
+                    "formula": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 16
+                    },
+                    "count": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 30
+                    }
+                  }
+                },
+                "minItems": 0,
+                "maxItems": 4
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 4
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "macro",
+              "particles",
+              "formula"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 3
+        },
+        "container": {
+          "enum": [
+            "box",
+            "syringe",
+            "beaker"
+          ]
+        },
+        "motion": {
+          "type": "boolean"
+        },
+        "classify": {
+          "type": "boolean"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "escape_surface",
+              "bubbles"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 2
+        },
+        "press": {
+          "type": "boolean"
+        },
+        "conserve": {
+          "type": "boolean"
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "boxes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "label_it"
+                  ],
+                  "properties": {
+                    "id": {
+                      "$ref": "#/$defs/id"
+                    },
+                    "substance": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 24,
+                      "pattern": "^[a-z_0-9]+$"
+                    },
+                    "state": {
+                      "enum": [
+                        "solid",
+                        "liquid",
+                        "gas"
+                      ]
+                    },
+                    "label_it": {
+                      "$ref": "#/$defs/label"
+                    },
+                    "macro_it": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 60
+                    },
+                    "species": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "formula",
+                          "count"
+                        ],
+                        "properties": {
+                          "formula": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 16
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 30
+                          }
+                        }
+                      },
+                      "minItems": 0,
+                      "maxItems": 4
+                    }
+                  }
+                },
+                "minItems": 1,
+                "maxItems": 4
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-2",
+      "x-banco-draft": true,
+      "x-banco-state-keys": [
+        "boxes"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "boxes"
+      ],
+      "x-banco-home-palette": "chemistry",
+      "description": "Boxes of particles, still until 'Muovi' (2.8). DRAFT."
+    },
+    "phase_changes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it"
+      ],
+      "properties": {
+        "type": {
+          "const": "phase_changes"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "show": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "names",
+              "blank",
+              "energy"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 3
+        },
+        "highlight": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "melting",
+              "freezing",
+              "vaporization",
+              "condensation",
+              "sublimation",
+              "deposition"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 6
+        },
+        "examples_it": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "maxProperties": 6
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "highlight": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "melting",
+                    "freezing",
+                    "vaporization",
+                    "condensation",
+                    "sublimation",
+                    "deposition"
+                  ]
+                },
+                "minItems": 0,
+                "maxItems": 6
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-2",
+      "x-banco-draft": true,
+      "x-banco-state-keys": [
+        "highlight"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "arrows"
+      ],
+      "x-banco-home-palette": "chemistry",
+      "description": "The triangle of the states; names from chem/terms only (2.8). DRAFT."
+    },
+    "cell": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "cells"
+      ],
+      "properties": {
+        "type": {
+          "const": "cell"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "labels": {
+          "enum": [
+            "all",
+            "tap",
+            "none"
+          ]
+        },
+        "cells": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "parts"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "bacterium",
+                  "animal",
+                  "plant",
+                  "red_blood"
+                ]
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              },
+              "parts": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 24,
+                  "pattern": "^[a-z_]+$"
+                },
+                "minItems": 1,
+                "maxItems": 14
+              },
+              "omit_shared": {
+                "type": "boolean"
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 2
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "part",
+              "text_it"
+            ],
+            "properties": {
+              "part": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              },
+              "text_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 6
+        },
+        "true_scale": {
+          "type": "boolean"
+        },
+        "highlight": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 24
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "to"
+            ],
+            "properties": {
+              "from": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              },
+              "to": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 3
+        },
+        "fill": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "low",
+              "mid",
+              "high"
+            ]
+          },
+          "maxProperties": 4
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "highlight": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 24
+                },
+                "minItems": 0,
+                "maxItems": 8
+              },
+              "paths": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "from",
+                    "to"
+                  ],
+                  "properties": {
+                    "from": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 24
+                    },
+                    "to": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 24
+                    },
+                    "label_it": {
+                      "$ref": "#/$defs/label"
+                    }
+                  }
+                },
+                "minItems": 0,
+                "maxItems": 3
+              },
+              "fill": {
+                "type": "object",
+                "additionalProperties": {
+                  "enum": [
+                    "low",
+                    "mid",
+                    "high"
+                  ]
+                },
+                "maxProperties": 4
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-2",
+      "x-banco-draft": true,
+      "x-banco-state-keys": [
+        "highlight",
+        "paths",
+        "fill"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "parts"
+      ],
+      "x-banco-home-palette": "biology",
+      "description": "Cell kinds and parts from bio/cell_parts (2.8). DRAFT."
+    },
+    "program": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "alt_it",
+        "program"
+      ],
+      "properties": {
+        "type": {
+          "const": "program"
+        },
+        "alt_it": {
+          "$ref": "#/$defs/alt_it"
+        },
+        "caption_it": {
+          "$ref": "#/$defs/caption_it"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "view": {
+          "enum": [
+            "flow",
+            "code",
+            "both",
+            "memory"
+          ]
+        },
+        "run": {
+          "enum": [
+            "none",
+            "step",
+            "try",
+            "predict"
+          ]
+        },
+        "watch": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12,
+            "pattern": "^[a-z][a-z0-9]*$"
+          },
+          "minItems": 0,
+          "maxItems": 6
+        },
+        "trace": {
+          "enum": [
+            "none",
+            "table"
+          ]
+        },
+        "inputs": {
+          "type": "object",
+          "maxProperties": 4,
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/num"
+            },
+            "minItems": 1,
+            "maxItems": 8
+          }
+        },
+        "try": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "var",
+            "values"
+          ],
+          "properties": {
+            "var": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 12,
+              "pattern": "^[a-z][a-z0-9]*$"
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/num"
+              },
+              "minItems": 1,
+              "maxItems": 6
+            }
+          }
+        },
+        "program": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "maxProperties": 5,
+            "description": "A statement of the closed language (set, read, write, write_it, if, while, do/loop_while, for); parsed in Ruby, never run there (2.9)."
+          },
+          "minItems": 1,
+          "maxItems": 12
+        },
+        "endless": {
+          "type": "boolean"
+        },
+        "shapes_legend": {
+          "type": "boolean"
+        },
+        "upto": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "upto": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 12
+              },
+              "op_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Each state overlays the top level, shallowly (A7); at most 6."
+        }
+      },
+      "x-banco-kind": "diagram",
+      "x-banco-release": "w2-2",
+      "x-banco-draft": true,
+      "x-banco-state-keys": [
+        "upto"
+      ],
+      "x-banco-state-only-keys": [
+        "op_it"
+      ],
+      "x-banco-targets": [
+        "blocks"
+      ],
+      "description": "A structured flowchart that runs only in the server's Chrome at the render check; S's page replays the records (2.9). DRAFT."
     }
   }
 }

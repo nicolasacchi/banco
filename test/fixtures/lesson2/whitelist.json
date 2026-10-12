@@ -1,6 +1,6 @@
 {
- "version": 1,
- "description": "The StudentBody whitelist (D-248, A2): for each block type and each check component, the fields copied to the student's page ('serve') and the declared fields that are not ('drop'). Everything not named is dropped, so a field added to a schema later cannot leak: test/content/lesson2_fixtures_test.rb fails until a new field is listed here in one of the two columns. 'line' (the source line, for findings) is never served. Nested objects are listed under 'nested' with the same two columns. 'rekey' names the lists whose ids are re-keyed by Diagnosis::Rekey; 'computed' what the server adds.",
+ "version": 2,
+ "description": "The StudentBody whitelist (D-248, A2): for each block type and each check component, the fields copied to the student's page ('serve') and the declared fields that are not ('drop'). Everything not named is dropped, so a field added to a schema later cannot leak: test/content/lesson2_fixtures_test.rb fails until a new field is listed here in one of the two columns. 'line' (the source line, for findings) is never served. Nested objects are listed under 'nested' with the same two columns. 'rekey' names the lists whose ids are re-keyed by Diagnosis::Rekey; 'computed' what the server adds. Version 2 (W2-D07): the always-dropped fields of every wave 2 piece are listed once under 'always_dropped'; each new check component, block and diagram type has its row (the diagram ones under diagram.types), final for the W2-1 pieces and 'provisional' for the W2-2 drafts, and the sentinel property test (A2) draws ANS-<hex> sentinels in every dropped, hidden, withheld and L8 field and asserts none reaches StudentBody.for(...), describe(), speak() or the card's speech before its reveal.",
  "blocks": {
   "text": {
    "def": "b_text",
@@ -257,6 +257,108 @@
      ]
     }
    }
+  },
+  "source": {
+   "def": "b_source",
+   "serve": [
+    "n",
+    "type",
+    "kind",
+    "title_it",
+    "ref",
+    "open",
+    "parts",
+    "author_it",
+    "year",
+    "about_year",
+    "for_whom_it",
+    "where_it",
+    "translation",
+    "original",
+    "guide",
+    "compare"
+   ],
+   "drop": [
+    "line"
+   ],
+   "note": "teaching content: every part, the plain version and the original are served (L8); the original is closed by default"
+  },
+  "reveal": {
+   "def": "b_reveal",
+   "serve": [
+    "n",
+    "type",
+    "prompt_it",
+    "answer_it",
+    "year",
+    "who_it",
+    "situation_it",
+    "options",
+    "real_it"
+   ],
+   "drop": [
+    "line"
+   ],
+   "note": "ungraded teaching content, served (L8); speech and describe() read it only once the student opened it (L10)"
+  },
+  "oral": {
+   "def": "b_oral",
+   "serve": [
+    "n",
+    "type",
+    "question_it",
+    "outline",
+    "connectives",
+    "terms"
+   ],
+   "drop": [
+    "line",
+    "answer",
+    "errors",
+    "model_it"
+   ],
+   "rekey": [
+    "outline"
+   ],
+   "withheld": [
+    "model_it (x-banco-withheld, L6): the check endpoint serves it after the outline is right or the second try"
+   ]
+  },
+  "dialogue": {
+   "def": "b_dialogue",
+   "serve": [
+    "n",
+    "type",
+    "title_it",
+    "speakers",
+    "transcript",
+    "lines"
+   ],
+   "drop": [
+    "line"
+   ],
+   "note": "every line's gloss_it is served (L8) and read only once opened"
+  },
+  "image": {
+   "def": "b_image",
+   "serve": [
+    "n",
+    "type",
+    "file",
+    "alt_it",
+    "caption_it",
+    "source_it",
+    "license",
+    "author",
+    "source_url",
+    "text_it",
+    "hotspots",
+    "tour"
+   ],
+   "drop": [
+    "line"
+   ],
+   "provisional": true
   }
  },
  "checks": {
@@ -266,12 +368,15 @@
     "component",
     "prompt_it",
     "answer_format_it",
-    "options"
+    "options",
+    "listen"
    ],
    "drop": [
     "errors",
     "explain_it",
-    "answer"
+    "answer",
+    "verify",
+    "reachable_ok_it"
    ],
    "rekey": [
     "options"
@@ -290,7 +395,10 @@
    "drop": [
     "errors",
     "explain_it",
-    "answer"
+    "answer",
+    "verify",
+    "reachable_ok_it",
+    "thousands"
    ]
   },
   "fraction": {
@@ -306,7 +414,9 @@
    "drop": [
     "errors",
     "explain_it",
-    "answer"
+    "answer",
+    "verify",
+    "reachable_ok_it"
    ]
   },
   "normalized_text": {
@@ -316,16 +426,22 @@
     "prompt_it",
     "answer_format_it",
     "input_before",
-    "input_after"
+    "input_after",
+    "input"
    ],
    "drop": [
     "errors",
     "explain_it",
     "answer",
-    "accept"
+    "accept",
+    "verify",
+    "reachable_ok_it",
+    "profile",
+    "contractions"
    ],
    "computed": [
-    "accents (from the subject, as Items::Part)"
+    "accents (from the subject, as Items::Part)",
+    "input_width: the profile's width, when input is bits"
    ]
   },
   "matching": {
@@ -336,12 +452,15 @@
     "answer_format_it",
     "left",
     "right",
-    "reuse_right"
+    "reuse_right",
+    "listen"
    ],
    "drop": [
     "errors",
     "explain_it",
-    "answer"
+    "answer",
+    "verify",
+    "reachable_ok_it"
    ],
    "rekey": [
     "left",
@@ -355,12 +474,15 @@
     "prompt_it",
     "answer_format_it",
     "text_it",
-    "spans"
+    "spans",
+    "listen"
    ],
    "drop": [
     "errors",
     "explain_it",
-    "answer"
+    "answer",
+    "verify",
+    "reachable_ok_it"
    ],
    "computed": [
     "spans re-keyed s1..sN in text order"
@@ -369,6 +491,95 @@
   "_blank": {
    "def": "blank",
    "note": "a step blank is served as the check of its component (choice, number, fraction, normalized_text) with the same columns"
+  },
+  "select": {
+   "def": "check_select",
+   "serve": [
+    "component",
+    "prompt_it",
+    "answer_format_it",
+    "diagram",
+    "targets",
+    "pick"
+   ],
+   "drop": [
+    "errors",
+    "explain_it",
+    "verify",
+    "reachable_ok_it",
+    "answer"
+   ],
+   "rekey": [
+    "targets"
+   ],
+   "computed": [
+    "the figure in mode select: targets t1..tN in reading order, every candidate in one neutral style (L3), neutral_it descriptions only"
+   ]
+  },
+  "tiles": {
+   "def": "check_tiles",
+   "serve": [
+    "component",
+    "prompt_it",
+    "answer_format_it",
+    "tiles"
+   ],
+   "drop": [
+    "errors",
+    "explain_it",
+    "verify",
+    "reachable_ok_it",
+    "answer",
+    "accept"
+   ],
+   "rekey": [
+    "tiles"
+   ],
+   "computed": [
+    "tiles shuffled by Rekey"
+   ]
+  },
+  "ordering": {
+   "def": "check_ordering",
+   "serve": [
+    "component",
+    "prompt_it",
+    "answer_format_it",
+    "items"
+   ],
+   "drop": [
+    "errors",
+    "explain_it",
+    "verify",
+    "reachable_ok_it",
+    "answer"
+   ],
+   "rekey": [
+    "items"
+   ],
+   "computed": [
+    "items shuffled by Rekey"
+   ]
+  },
+  "amount_words": {
+   "def": "check_amount_words",
+   "serve": [
+    "component",
+    "prompt_it",
+    "answer_format_it",
+    "amount"
+   ],
+   "drop": [
+    "errors",
+    "explain_it",
+    "verify",
+    "reachable_ok_it"
+   ],
+   "provisional": true,
+   "answer_computed": true,
+   "computed": [
+    "the accepted forms and the typical wrong ones are built by NumWords at grading time; nothing of them is served"
+   ]
   }
  },
  "never_served": [
@@ -384,7 +595,7 @@
   "a diagram's solution fields (see diagram.solution_fields)"
  ],
  "diagram": {
-  "served": "every declared property of the type except the solution fields; states already merged (the state rule of A7)",
+  "served": "every declared property of the type except the solution fields; states already merged (the state rule of A7); the values listed by x-banco-hide are served as null",
   "solution_fields": {
    "balance": [
     "x_value"
@@ -393,6 +604,720 @@
   "computed": {
    "balance": "tilt per state (-1, 0, 1) from the effective plates and x_value; x_value itself only when show_value is true",
    "balance.try": "from and to only"
+  },
+  "types": {
+   "equation_parts": {
+    "release": "1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "parts",
+     "brackets",
+     "states"
+    ],
+    "home_palette": "math"
+   },
+   "number_line": {
+    "release": "1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "min",
+     "max",
+     "step",
+     "labels",
+     "marks",
+     "intervals",
+     "jumps",
+     "states"
+    ]
+   },
+   "balance": {
+    "release": "1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "left",
+     "right",
+     "show_value",
+     "try",
+     "states"
+    ],
+    "solution": [
+     "x_value"
+    ],
+    "home_palette": "math"
+   },
+   "area_model": {
+    "release": "1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "rows",
+     "cols",
+     "cells",
+     "states"
+    ]
+   },
+   "cartesian": {
+    "release": "1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "x",
+     "y",
+     "grid",
+     "points",
+     "lines",
+     "segments",
+     "states"
+    ]
+   },
+   "sentence": {
+    "release": "1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "text_it",
+     "parts",
+     "links",
+     "layout",
+     "mode",
+     "states",
+     "text_en",
+     "text_es"
+    ]
+   },
+   "concept_map": {
+    "release": "1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "root",
+     "nodes",
+     "edges",
+     "links"
+    ]
+   },
+   "flow": {
+    "release": "1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "nodes",
+     "edges",
+     "layout",
+     "branch",
+     "returns",
+     "token",
+     "walk",
+     "case_it",
+     "states"
+    ],
+    "targets": [
+     "stations"
+    ]
+   },
+   "table": {
+    "release": "1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "header",
+     "rows"
+    ]
+   },
+   "network": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "layout",
+     "centre",
+     "into",
+     "nodes",
+     "edges",
+     "holds",
+     "everyone",
+     "filter",
+     "hide",
+     "states"
+    ],
+    "targets": [
+     "nodes",
+     "edges"
+    ]
+   },
+   "chain": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "layout",
+     "nodes",
+     "links",
+     "remove",
+     "states"
+    ],
+    "targets": [
+     "nodes"
+    ]
+   },
+   "timeline": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "scale",
+     "from",
+     "to",
+     "every",
+     "centuries",
+     "lanes",
+     "periods",
+     "events",
+     "spans",
+     "measure",
+     "window",
+     "marks",
+     "states"
+    ],
+    "targets": [
+     "events",
+     "periods",
+     "marks"
+    ]
+   },
+   "map": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "base",
+     "detail",
+     "mercator",
+     "graticule",
+     "highlight",
+     "bands",
+     "places",
+     "points",
+     "lines",
+     "arrows",
+     "routes",
+     "compare",
+     "slider",
+     "regions_since",
+     "inset",
+     "candidates",
+     "states"
+    ],
+    "targets": [
+     "areas",
+     "places",
+     "bands",
+     "lines",
+     "points"
+    ]
+   },
+   "insolation": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "latitudes",
+     "subsolar",
+     "stepper",
+     "spread",
+     "states"
+    ]
+   },
+   "cross_section": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "x",
+     "points",
+     "features",
+     "belts",
+     "lapse",
+     "stepper",
+     "states"
+    ],
+    "targets": [
+     "belts"
+    ]
+   },
+   "climograph": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "place_it",
+     "lat",
+     "alt_m",
+     "station",
+     "temp",
+     "precip",
+     "source_it",
+     "show",
+     "compare",
+     "read",
+     "states"
+    ],
+    "targets": [
+     "months"
+    ]
+   },
+   "bar_model": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "view",
+     "bars",
+     "total",
+     "base",
+     "anchor",
+     "unit",
+     "marks",
+     "hide",
+     "chain",
+     "fractions",
+     "aligned",
+     "states"
+    ],
+    "hide": "bars[].parts[].hidden and hide[]: the value is served as null",
+    "targets": [
+     "parts",
+     "marks"
+    ]
+   },
+   "seats": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "layout",
+     "seats",
+     "groups",
+     "present",
+     "yes",
+     "thresholds",
+     "try",
+     "states"
+    ]
+   },
+   "periodic_table": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "range",
+     "show",
+     "highlight",
+     "mark_latin",
+     "states"
+    ],
+    "targets": [
+     "cells"
+    ]
+   },
+   "register": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "view",
+     "width",
+     "base",
+     "value",
+     "read",
+     "weights",
+     "groups",
+     "group_digits",
+     "toggle",
+     "goals",
+     "mark",
+     "cliff",
+     "pointer",
+     "step",
+     "highlight",
+     "moves",
+     "states"
+    ],
+    "targets": [
+     "bits",
+     "codes"
+    ],
+    "home_palette": "computer_science"
+   },
+   "column_calc": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "base",
+     "op",
+     "a",
+     "b",
+     "width",
+     "reveal",
+     "read",
+     "states"
+    ],
+    "targets": [
+     "digits"
+    ],
+    "home_palette": "computer_science"
+   },
+   "word_parts": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "view",
+     "words",
+     "arrows",
+     "states"
+    ],
+    "targets": [
+     "pieces",
+     "syllables"
+    ]
+   },
+   "mirror": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "rows",
+     "same_ok"
+    ],
+    "targets": [
+     "pieces"
+    ]
+   },
+   "document": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "kind",
+     "view",
+     "head",
+     "lines",
+     "discounts",
+     "costs",
+     "interest",
+     "rows",
+     "error",
+     "title_it",
+     "blocks",
+     "labels",
+     "side",
+     "issue",
+     "due",
+     "amount",
+     "parties",
+     "accepted",
+     "clauses",
+     "endorsements",
+     "hide",
+     "mark",
+     "states"
+    ],
+    "hide": "hide[]: the fields, rows or blocks drawn empty; served as null",
+    "targets": [
+     "zones",
+     "rows"
+    ]
+   },
+   "formula": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "formulas",
+     "show",
+     "focus",
+     "states"
+    ],
+    "targets": [
+     "pieces"
+    ],
+    "home_palette": "chemistry"
+   },
+   "molecule": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "items",
+     "style",
+     "show"
+    ],
+    "targets": [
+     "items",
+     "atoms"
+    ],
+    "home_palette": "chemistry"
+   },
+   "strand": {
+    "release": "w2-1",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "mode",
+     "kind",
+     "top",
+     "bottom",
+     "labels",
+     "hide_bottom",
+     "highlight",
+     "unzip",
+     "states"
+    ],
+    "hide": "hide_bottom[]: the bases of the bottom strand served as null",
+    "targets": [
+     "bases",
+     "backbone",
+     "rungs"
+    ],
+    "home_palette": "biology"
+   },
+   "nested": {
+    "release": "w2-2",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "levels",
+     "inside",
+     "focus",
+     "states"
+    ],
+    "provisional": true,
+    "targets": [
+     "levels"
+    ]
+   },
+   "chart": {
+    "release": "w2-2",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "kind",
+     "categories_it",
+     "series",
+     "unit",
+     "source_it",
+     "hide",
+     "read",
+     "heating",
+     "compare",
+     "window",
+     "break",
+     "states"
+    ],
+    "provisional": true,
+    "hide": "hide[]: [series, category] values drawn empty; served as null",
+    "targets": [
+     "bars"
+    ]
+   },
+   "scale": {
+    "release": "w2-2",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "objects",
+     "limits",
+     "pair",
+     "pairs_menu",
+     "pictograms",
+     "units",
+     "focus",
+     "states"
+    ],
+    "provisional": true,
+    "targets": [
+     "objects"
+    ]
+   },
+   "paradigm": {
+    "release": "w2-2",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "shape",
+     "verb_es",
+     "verb_it",
+     "pattern",
+     "cells_es",
+     "cells_it",
+     "boot",
+     "stress",
+     "mirror_it",
+     "hide",
+     "groups",
+     "reveal_column",
+     "states"
+    ],
+    "provisional": true,
+    "hide": "hide[]: persons drawn empty; served as null",
+    "targets": [
+     "cells"
+    ]
+   },
+   "particles": {
+    "release": "w2-2",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "boxes",
+     "rows",
+     "container",
+     "motion",
+     "classify",
+     "events",
+     "press",
+     "conserve",
+     "states"
+    ],
+    "provisional": true,
+    "targets": [
+     "boxes"
+    ],
+    "home_palette": "chemistry"
+   },
+   "phase_changes": {
+    "release": "w2-2",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "show",
+     "highlight",
+     "examples_it",
+     "states"
+    ],
+    "provisional": true,
+    "targets": [
+     "arrows"
+    ],
+    "home_palette": "chemistry"
+   },
+   "cell": {
+    "release": "w2-2",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "labels",
+     "cells",
+     "notes",
+     "true_scale",
+     "highlight",
+     "paths",
+     "fill",
+     "states"
+    ],
+    "provisional": true,
+    "targets": [
+     "parts"
+    ],
+    "home_palette": "biology"
+   },
+   "program": {
+    "release": "w2-2",
+    "serve": [
+     "type",
+     "alt_it",
+     "caption_it",
+     "size",
+     "view",
+     "run",
+     "watch",
+     "trace",
+     "inputs",
+     "try",
+     "program",
+     "endless",
+     "shapes_legend",
+     "upto",
+     "states"
+    ],
+    "provisional": true,
+    "targets": [
+     "blocks"
+    ]
+   }
   }
  },
  "front_matter": {
@@ -408,7 +1333,8 @@
    "subject",
    "scope",
    "calculator",
-   "parts"
+   "parts",
+   "glossary"
   ],
   "drop": [
    "skills",
@@ -417,8 +1343,21 @@
    "schema",
    "schema_version",
    "pages",
-   "words (the cover shows its own counts)"
+   "words (the cover shows its own counts)",
+   "teaches_en",
+   "teaches_es"
   ],
   "note": "skills, uses and refs are for the teacher; the cover is drawn from the served fields and the card titles"
- }
+ },
+ "always_dropped": [
+  "answer",
+  "accept",
+  "errors (with their code and message_it)",
+  "explain_it",
+  "verify",
+  "reachable_ok_it",
+  "every x-banco-solution field",
+  "every x-banco-withheld field (oral.model_it)",
+  "the values listed by x-banco-hide, served as null"
+ ]
 }

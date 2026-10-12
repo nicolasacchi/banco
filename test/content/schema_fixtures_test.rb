@@ -123,7 +123,7 @@ class SchemaFixturesTest < ActiveSupport::TestCase
       schema = JSON.parse(File.read(Rails.root.join("config/banco/schemas/#{name}.json")))
       if name == "diagram" # dispatched on "type" (D-247): each type is closed
         types = schema.fetch("$defs").values.select { |d| d.is_a?(Hash) && d.key?("x-banco-kind") }
-        assert_equal 9, types.size
+        assert_equal 35, types.size # 9 of release 1 and the 26 of wave 2 with a schema (calendar, rgb and sheet are reserved names only)
         assert(types.all? { |d| d["additionalProperties"] == false }, "every diagram type is closed")
         assert_equal "banco.diagram/1", schema["title"]
         next

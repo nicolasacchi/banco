@@ -1,0 +1,77 @@
+{
+ "version": 1,
+ "type": "particles",
+ "status": "draft",
+ "batch": "w2-2",
+ "track": "T7",
+ "provisional": true,
+ "description": "Skeleton of W2-0 for the track T7: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "particles-example-1",
+   "subject": "chemistry",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "particles",
+    "alt_it": "Tre riquadri d'acqua: nel ghiaccio le particelle stanno in file e vibrano, nell'acqua scivolano, nel vapore sono lontane e veloci.",
+    "boxes": [
+     {
+      "id": "s",
+      "substance": "water",
+      "state": "solid",
+      "label_it": "Ghiaccio",
+      "macro_it": "forma e volume propri"
+     },
+     {
+      "id": "g",
+      "substance": "water",
+      "state": "gas",
+      "label_it": "Vapore"
+     }
+    ],
+    "rows": [
+     "macro",
+     "particles",
+     "formula"
+    ],
+    "container": "box",
+    "motion": true
+   }
+  },
+  {
+   "name": "particles-unknown-field",
+   "subject": "chemistry",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "particles",
+    "alt_it": "Tre riquadri d'acqua: nel ghiaccio le particelle stanno in file e vibrano, nell'acqua scivolano, nel vapore sono lontane e veloci.",
+    "boxes": [
+     {
+      "id": "s",
+      "substance": "water",
+      "state": "solid",
+      "label_it": "Ghiaccio",
+      "macro_it": "forma e volume propri"
+     },
+     {
+      "id": "g",
+      "substance": "water",
+      "state": "gas",
+      "label_it": "Vapore"
+     }
+    ],
+    "rows": [
+     "macro",
+     "particles",
+     "formula"
+    ],
+    "container": "box",
+    "motion": true,
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

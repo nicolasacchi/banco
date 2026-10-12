@@ -1,0 +1,143 @@
+{
+ "version": 1,
+ "type": "network",
+ "status": "reserved",
+ "batch": "w2-1",
+ "track": "T4b",
+ "provisional": false,
+ "description": "Skeleton of W2-0 for the track T4b: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "network-example-1",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "network",
+    "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
+    "layout": "pair",
+    "nodes": [
+     {
+      "id": "anna",
+      "label_it": "Anna, venditrice",
+      "icon": "user",
+      "role": "duty",
+      "note_it": "Deve consegnare la bicicletta.",
+      "badge_it": "debitrice"
+     },
+     {
+      "id": "paolo",
+      "label_it": "Paolo, compratore",
+      "icon": "user",
+      "role": "right"
+     }
+    ],
+    "edges": [
+     {
+      "from": "anna",
+      "to": "paolo",
+      "kind": "owes",
+      "label_it": "consegna la bicicletta",
+      "what": "goods"
+     },
+     {
+      "from": "paolo",
+      "to": "anna",
+      "kind": "pays",
+      "label_it": "paga 150 euro",
+      "what": "money"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Prima si accordano",
+      "edges": []
+     },
+     {
+      "op_it": "Poi si scambiano",
+      "edges": [
+       {
+        "from": "anna",
+        "to": "paolo",
+        "kind": "owes"
+       }
+      ],
+      "badges": [
+       {
+        "node": "anna",
+        "badge_it": "debitrice"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "network-unknown-field",
+   "subject": "law_economics",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "network",
+    "alt_it": "Anna vende la bicicletta a Paolo. Una freccia va da Anna a Paolo: consegna la bicicletta. Una va da Paolo ad Anna: paga 150 euro.",
+    "layout": "pair",
+    "nodes": [
+     {
+      "id": "anna",
+      "label_it": "Anna, venditrice",
+      "icon": "user",
+      "role": "duty",
+      "note_it": "Deve consegnare la bicicletta.",
+      "badge_it": "debitrice"
+     },
+     {
+      "id": "paolo",
+      "label_it": "Paolo, compratore",
+      "icon": "user",
+      "role": "right"
+     }
+    ],
+    "edges": [
+     {
+      "from": "anna",
+      "to": "paolo",
+      "kind": "owes",
+      "label_it": "consegna la bicicletta",
+      "what": "goods"
+     },
+     {
+      "from": "paolo",
+      "to": "anna",
+      "kind": "pays",
+      "label_it": "paga 150 euro",
+      "what": "money"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Prima si accordano",
+      "edges": []
+     },
+     {
+      "op_it": "Poi si scambiano",
+      "edges": [
+       {
+        "from": "anna",
+        "to": "paolo",
+        "kind": "owes"
+       }
+      ],
+      "badges": [
+       {
+        "node": "anna",
+        "badge_it": "debitrice"
+       }
+      ]
+     }
+    ],
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

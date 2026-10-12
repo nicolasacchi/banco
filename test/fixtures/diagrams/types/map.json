@@ -1,0 +1,183 @@
+{
+ "version": 1,
+ "type": "map",
+ "status": "reserved",
+ "batch": "w2-1",
+ "track": "T5",
+ "provisional": false,
+ "description": "Skeleton of W2-0 for the track T5: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "map-example-1",
+   "subject": "geography",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta dell'America del Sud con il Brasile in evidenza, l'equatore e il tropico, e un punto di prova sulla costa.",
+    "base": "south_america",
+    "detail": "states",
+    "graticule": [
+     "equator",
+     "tropics"
+    ],
+    "highlight": [
+     {
+      "id": "BRA",
+      "role": "place",
+      "pattern": "solid"
+     }
+    ],
+    "bands": [
+     {
+      "from_lat": "-23,4",
+      "to_lat": "23,4",
+      "role": "hot",
+      "label_it": "fascia calda"
+     }
+    ],
+    "places": [
+     {
+      "id": "brasilia"
+     }
+    ],
+    "points": [
+     {
+      "lat": "0",
+      "lon": "-51,1",
+      "label_it": "Macapá",
+      "value": "2,1"
+     }
+    ],
+    "lines": [
+     {
+      "id": "amazon"
+     },
+     {
+      "kind": "meridian",
+      "lon": "-46,6",
+      "label_it": "Tordesillas, 1494"
+     }
+    ],
+    "arrows": [
+     {
+      "from": [
+       "0",
+       "-50"
+      ],
+      "to": "BRA",
+      "label_it": "movimento",
+      "role": "flow"
+     }
+    ],
+    "candidates": [
+     "CHL",
+     "ECU",
+     "PER",
+     "BOL"
+    ],
+    "states": [
+     {
+      "lines": [
+       {
+        "id": "amazon"
+       }
+      ],
+      "op_it": "Il fiume"
+     },
+     {
+      "lines": [],
+      "op_it": "Oggi"
+     }
+    ]
+   }
+  },
+  {
+   "name": "map-unknown-field",
+   "subject": "geography",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta dell'America del Sud con il Brasile in evidenza, l'equatore e il tropico, e un punto di prova sulla costa.",
+    "base": "south_america",
+    "detail": "states",
+    "graticule": [
+     "equator",
+     "tropics"
+    ],
+    "highlight": [
+     {
+      "id": "BRA",
+      "role": "place",
+      "pattern": "solid"
+     }
+    ],
+    "bands": [
+     {
+      "from_lat": "-23,4",
+      "to_lat": "23,4",
+      "role": "hot",
+      "label_it": "fascia calda"
+     }
+    ],
+    "places": [
+     {
+      "id": "brasilia"
+     }
+    ],
+    "points": [
+     {
+      "lat": "0",
+      "lon": "-51,1",
+      "label_it": "Macapá",
+      "value": "2,1"
+     }
+    ],
+    "lines": [
+     {
+      "id": "amazon"
+     },
+     {
+      "kind": "meridian",
+      "lon": "-46,6",
+      "label_it": "Tordesillas, 1494"
+     }
+    ],
+    "arrows": [
+     {
+      "from": [
+       "0",
+       "-50"
+      ],
+      "to": "BRA",
+      "label_it": "movimento",
+      "role": "flow"
+     }
+    ],
+    "candidates": [
+     "CHL",
+     "ECU",
+     "PER",
+     "BOL"
+    ],
+    "states": [
+     {
+      "lines": [
+       {
+        "id": "amazon"
+       }
+      ],
+      "op_it": "Il fiume"
+     },
+     {
+      "lines": [],
+      "op_it": "Oggi"
+     }
+    ],
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

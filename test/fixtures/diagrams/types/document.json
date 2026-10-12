@@ -1,0 +1,153 @@
+{
+ "version": 1,
+ "type": "document",
+ "status": "reserved",
+ "batch": "w2-1",
+ "track": "T8",
+ "provisional": false,
+ "description": "Skeleton of W2-0 for the track T8: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "document-example-1",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "document",
+    "alt_it": "Una fattura inventata di Cartoleria Alfa a Studio Beta con due righe di merci, uno sconto e l'IVA, e il totale calcolato in fondo.",
+    "kind": "invoice",
+    "view": "sheet",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta",
+     "number": "41",
+     "date": "2026-10-12"
+    },
+    "lines": [
+     {
+      "text_it": "Quaderni A4",
+      "qty": "800",
+      "price": "2,50",
+      "vat": "22"
+     }
+    ],
+    "discounts": [
+     "10"
+    ],
+    "costs": [
+     {
+      "text_it": "Imballaggio",
+      "amount": "60,00",
+      "documented": false
+     }
+    ],
+    "rows": [
+     "gross",
+     "discounts",
+     "net",
+     "base",
+     "vat",
+     "total"
+    ],
+    "error": "documented_costs_taxed",
+    "hide": [
+     "total"
+    ],
+    "mark": [
+     "base"
+    ],
+    "states": [
+     {
+      "rows": [
+       "gross"
+      ],
+      "op_it": "Il lordo"
+     },
+     {
+      "rows": [
+       "gross",
+       "discounts",
+       "net"
+      ],
+      "op_it": "Lo sconto",
+      "fill": [
+       "discounts"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "document-unknown-field",
+   "subject": "business",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "document",
+    "alt_it": "Una fattura inventata di Cartoleria Alfa a Studio Beta con due righe di merci, uno sconto e l'IVA, e il totale calcolato in fondo.",
+    "kind": "invoice",
+    "view": "sheet",
+    "head": {
+     "seller_it": "Cartoleria Alfa srl",
+     "buyer_it": "Studio Beta",
+     "number": "41",
+     "date": "2026-10-12"
+    },
+    "lines": [
+     {
+      "text_it": "Quaderni A4",
+      "qty": "800",
+      "price": "2,50",
+      "vat": "22"
+     }
+    ],
+    "discounts": [
+     "10"
+    ],
+    "costs": [
+     {
+      "text_it": "Imballaggio",
+      "amount": "60,00",
+      "documented": false
+     }
+    ],
+    "rows": [
+     "gross",
+     "discounts",
+     "net",
+     "base",
+     "vat",
+     "total"
+    ],
+    "error": "documented_costs_taxed",
+    "hide": [
+     "total"
+    ],
+    "mark": [
+     "base"
+    ],
+    "states": [
+     {
+      "rows": [
+       "gross"
+      ],
+      "op_it": "Il lordo"
+     },
+     {
+      "rows": [
+       "gross",
+       "discounts",
+       "net"
+      ],
+      "op_it": "Lo sconto",
+      "fill": [
+       "discounts"
+      ]
+     }
+    ],
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

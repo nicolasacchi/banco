@@ -1,0 +1,131 @@
+{
+ "version": 1,
+ "type": "cell",
+ "status": "draft",
+ "batch": "w2-2",
+ "track": "T7",
+ "provisional": true,
+ "description": "Skeleton of W2-0 for the track T7: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "cell-example-1",
+   "subject": "biology",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "cell",
+    "alt_it": "Due cellule affiancate: un batterio con il DNA nel citoplasma e una cellula animale con il nucleo e i mitocondri.",
+    "labels": "all",
+    "cells": [
+     {
+      "kind": "bacterium",
+      "label_it": "Batterio",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleoid",
+       "ribosomes",
+       "wall"
+      ]
+     },
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     }
+    ],
+    "notes": [
+     {
+      "part": "nucleoid",
+      "text_it": "Il DNA sta nel citoplasma."
+     }
+    ],
+    "true_scale": false,
+    "states": [
+     {
+      "op_it": "Le due cellule"
+     },
+     {
+      "highlight": [
+       "membrane"
+      ],
+      "paths": [
+       {
+        "from": "nucleus",
+        "to": "ribosomes",
+        "label_it": "copia di RNA"
+       }
+      ],
+      "op_it": "L'RNA esce"
+     }
+    ]
+   }
+  },
+  {
+   "name": "cell-unknown-field",
+   "subject": "biology",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "cell",
+    "alt_it": "Due cellule affiancate: un batterio con il DNA nel citoplasma e una cellula animale con il nucleo e i mitocondri.",
+    "labels": "all",
+    "cells": [
+     {
+      "kind": "bacterium",
+      "label_it": "Batterio",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleoid",
+       "ribosomes",
+       "wall"
+      ]
+     },
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     }
+    ],
+    "notes": [
+     {
+      "part": "nucleoid",
+      "text_it": "Il DNA sta nel citoplasma."
+     }
+    ],
+    "true_scale": false,
+    "states": [
+     {
+      "op_it": "Le due cellule"
+     },
+     {
+      "highlight": [
+       "membrane"
+      ],
+      "paths": [
+       {
+        "from": "nucleus",
+        "to": "ribosomes",
+        "label_it": "copia di RNA"
+       }
+      ],
+      "op_it": "L'RNA esce"
+     }
+    ],
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

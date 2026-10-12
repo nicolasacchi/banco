@@ -176,18 +176,22 @@ class LessonsStudentBodyTest < ActiveSupport::TestCase
     "balance" => %w[type alt_it caption_it size left right show_value try states],
     "area_model" => %w[type alt_it caption_it size rows cols cells states],
     "cartesian" => %w[type alt_it caption_it size x y grid points lines segments states],
-    "sentence" => %w[type alt_it caption_it size text_it parts links layout mode states],
+    "sentence" => %w[type alt_it caption_it size text_it text_en text_es parts links layout mode states],
     "concept_map" => %w[type alt_it caption_it size root nodes edges links],
-    "flow" => %w[type alt_it caption_it size nodes edges],
+    "flow" => %w[type alt_it caption_it size layout nodes edges branch returns token walk case_it states],
     "table" => %w[type alt_it caption_it size header rows]
   }.freeze
 
   test "every diagram property is served on purpose or marked x-banco-solution" do
-    assert_equal SERVED_DIAGRAM_FIELDS.keys.sort, Lessons::Diagrams::TYPES.keys.sort
+    whitelist = JSON.parse(Rails.root.join("test/fixtures/lesson2/whitelist.json").read).fetch("diagram").fetch("types")
+    assert_equal whitelist.keys.sort, Lessons::Diagrams::TYPES.keys.sort
     Lessons::Diagrams::TYPES.each_key do |type|
       props = Lessons::Diagrams.schema_def(type).fetch("properties").keys
       unmarked = props - Lessons::Diagrams.solution_fields(type)
-      assert_equal SERVED_DIAGRAM_FIELDS.fetch(type).sort, unmarked.sort, "#{type}: decide whether the new field is served or a solution"
+      # the nine of release 1 are listed here on purpose; the wave 2 types by whitelist.json (final for W2-1, provisional for the drafts)
+      expected = SERVED_DIAGRAM_FIELDS[type] || whitelist.fetch(type).fetch("serve")
+      assert_equal expected.sort, unmarked.sort, "#{type}: decide whether the new field is served or a solution"
+      assert_equal whitelist.fetch(type).fetch("serve").sort, unmarked.sort, "#{type}: whitelist.json differs from the schema"
     end
   end
 end

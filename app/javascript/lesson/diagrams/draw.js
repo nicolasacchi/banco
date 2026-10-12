@@ -4,8 +4,8 @@
 // alternative and a "Descrizione". The layout is computed at the container's width with the body font
 // size and again on resize. If layout() answers { error } the figure shows alt_it and the description.
 import * as N from "lesson/num"
-import { button, clear, el, icon, svg, uid } from "lesson/dom"
-import { describe, layout, moduleFor, stateCount } from "lesson/diagrams/registry"
+import { button, clear, el, icon, spriteHref, svg, uid } from "lesson/dom"
+import { HOME_PALETTE, describe, layout, moduleFor, stateCount } from "lesson/diagrams/registry"
 import { tryValues, equationTex } from "lesson/diagrams/balance"
 import { renderInlineRich, renderMath, renderRich } from "lesson/text"
 
@@ -19,7 +19,9 @@ const MARKERS = {
   circle: (m) => [svg("circle", { cx: m.x + m.w / 2, cy: m.y + m.h / 2, r: Math.min(m.w, m.h) / 2 - 1, class: m.cls })],
   square: (m) => [svg("rect", { x: m.x + 2, y: m.y + 2, width: m.w - 4, height: m.h - 4, class: m.cls })],
   triangle: (m) => [svg("polygon", { points: `${m.x + m.w / 2},${m.y + 1} ${m.x + m.w - 1},${m.y + m.h - 1} ${m.x + 1},${m.y + m.h - 1}`, class: m.cls })],
-  diamond: (m) => [svg("polygon", { points: `${m.x + m.w / 2},${m.y + 1} ${m.x + m.w - 1},${m.y + m.h / 2} ${m.x + m.w / 2},${m.y + m.h - 1} ${m.x + 1},${m.y + m.h / 2}`, class: m.cls })]
+  diamond: (m) => [svg("polygon", { points: `${m.x + m.w / 2},${m.y + 1} ${m.x + m.w - 1},${m.y + m.h / 2} ${m.x + m.w / 2},${m.y + m.h - 1} ${m.x + 1},${m.y + m.h / 2}`, class: m.cls })],
+  // pentagon: the sugar of a nucleotide (palette v2)
+  pentagon: (m) => [svg("polygon", { points: [[0.5, 0.04], [0.96, 0.38], [0.79, 0.94], [0.21, 0.94], [0.04, 0.38]].map(([fx, fy]) => `${m.x + m.w * fx},${m.y + m.h * fy}`).join(" "), class: m.cls })]
 }
 
 function shapeNode(s) {
@@ -47,7 +49,7 @@ function shapeNode(s) {
     case "marker": return (MARKERS[s.shape] ?? MARKERS.circle)(s)
     case "icon": {
       const g = svg("svg", { x: s.x, y: s.y, width: s.size, height: s.size, viewBox: "0 0 24 24", class: `dg-icon ${s.cls ?? ""}`, "aria-hidden": "true" })
-      g.appendChild(svg("use", { href: `/vendor/lucide@1.54.0/banco-sprite.svg#${s.name}` }))
+      g.appendChild(svg("use", { href: spriteHref(s.name) }))
       return [g]
     }
     default: return []
@@ -117,6 +119,8 @@ export function mountDiagram(data, ctx, options = {}) {
   const type = data?.type
   const id = uid("dg")
   const figure = el("figure", { class: `dg dg-${type} dg-size-${data?.size ?? "m"}${options.hero ? " dg-hero" : ""}${options.compact ? " dg-compact" : ""}`, "data-type": type })
+  // a type with a home palette draws in its subject's colours whatever the lesson's subject (WAVE2 1.3)
+  if (HOME_PALETTE[type]) figure.dataset.palette = HOME_PALETTE[type]
   const stage = el("div", { class: "dg-stage" })
   const labelsLayer = el("div", { class: "dg-labels" })
   const stageSvg = svg("svg", { class: "dg-svg", role: "img", "aria-labelledby": `${id}-alt`, focusable: "false" })

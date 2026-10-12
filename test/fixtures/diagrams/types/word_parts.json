@@ -1,0 +1,61 @@
+{
+ "version": 1,
+ "type": "word_parts",
+ "status": "reserved",
+ "batch": "w2-1",
+ "track": "T3",
+ "provisional": false,
+ "description": "Skeleton of W2-0 for the track T3: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "vectors": [
+  {
+   "name": "word_parts-example-1",
+   "subject": "biology",
+   "schema": "valid",
+   "semantic": "pending",
+   "layout": "pending",
+   "data": {
+    "type": "word_parts",
+    "alt_it": "La parola eucariote spezzata in due pezzi: eu, che vuol dire vero, e cariote, che vuol dire nucleo. Insieme: con un vero nucleo.",
+    "view": "decode",
+    "words": [
+     {
+      "form_it": "eu|cariote",
+      "parts_it": [
+       "vero, bene",
+       "nucleo"
+      ],
+      "meaning_it": "con un vero nucleo",
+      "syllables": "eu-ca-ri-o-te",
+      "stress": 4
+     }
+    ],
+    "arrows": []
+   }
+  },
+  {
+   "name": "word_parts-unknown-field",
+   "subject": "biology",
+   "schema": "invalid",
+   "semantic": "ok",
+   "data": {
+    "type": "word_parts",
+    "alt_it": "La parola eucariote spezzata in due pezzi: eu, che vuol dire vero, e cariote, che vuol dire nucleo. Insieme: con un vero nucleo.",
+    "view": "decode",
+    "words": [
+     {
+      "form_it": "eu|cariote",
+      "parts_it": [
+       "vero, bene",
+       "nucleo"
+      ],
+      "meaning_it": "con un vero nucleo",
+      "syllables": "eu-ca-ri-o-te",
+      "stress": 4
+     }
+    ],
+    "arrows": [],
+    "zzz_unknown_field": true
+   }
+  }
+ ]
+}

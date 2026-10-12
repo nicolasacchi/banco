@@ -18,13 +18,6 @@ module Lessons
     end
 
     OPENING = /\A(?<type>[a-z][a-z_0-9]*)(?: (?<arg>[a-z][a-z_0-9-]*))?(?: "(?<title>[^"\n]*)")?\z/
-    # Release of each block type (A4). A block of a later release is refused by an earlier parser.
-    RELEASE = {
-      "text" => "1", "callout" => "1", "math" => "1", "procedure" => "1", "cases" => "1", "legend" => "1", "example" => "1",
-      "mistake" => "1", "check" => "1", "more" => "1", "summary" => "1", "schema" => "1", "diagram" => "1", "table" => "1", "try" => "1",
-      "reveal" => "1.1", "image" => "1.1", "page" => "2"
-    }.freeze
-    BUILT = %w[1].freeze
     # What each directive's opening line may carry besides the type: [argument required?, values or nil, title allowed?]
     SHAPE = {
       "callout" => [ true, %w[tip warning remember rule], true ],
@@ -44,10 +37,12 @@ module Lessons
     end
 
     # The block hash for a directive. +lines+: the body lines; +first_line+: the lesson line of the opening line.
-    def build(head, lines, first_line, in_more: false)
+    # +allow_reserved+ is the reserved dry run (WAVE2 1.2): a block, type or option that is reserved or a draft passes here
+    # and is validated against its frozen or draft schema; the caller reports it (W-TYPE-RESERVED, W-TYPE-DRAFT).
+    def build(head, lines, first_line, in_more: false, allow_reserved: false)
       type = head[:type]
-      raise Refused.new(first_line, "unknown block type #{type.inspect} (text, callout, math, procedure, cases, legend, example, mistake, check, more, summary, schema, diagram, table, try)") unless RELEASE.key?(type) && type != "text"
-      raise Refused.new(first_line, "#{type} is not available yet (release #{RELEASE[type]})") unless BUILT.include?(RELEASE.fetch(type))
+      raise Refused.new(first_line, "unknown block type #{type.inspect} (#{Types.names(:block, status: 'available').reject { |n| n == 'text' }.join(', ')})") unless Types.known?(:block, type) && type != "text"
+      refuse_held_back(:block, type, "the #{type} block", first_line, allow_reserved)
       raise Refused.new(first_line, "a #{type} block cannot go inside a more block (only text, callout, math, diagram, schema, table, procedure)") if in_more && !IN_MORE.include?(type)
 
       needs_arg, values, title_ok = SHAPE.fetch(type, NO_ARG)
@@ -61,12 +56,40 @@ module Lessons
       when "callout" then { "type" => "callout", "kind" => head[:arg], "title_it" => head[:title], "text_it" => text(body, first_line) }.compact
       when "summary" then summary(body, first_line)
       when "math" then math(body, first_line)
-      when "diagram" then { "type" => "diagram", "diagram" => yaml(body, first_line, "diagram").merge("type" => head[:arg]) }
-      when "schema" then { "type" => "schema", "schema" => yaml(body, first_line, "schema").merge("type" => head[:arg]) }
-      when "check" then yaml(body, first_line, "check").merge("type" => "check", "component" => head[:arg])
-      else yaml(body, first_line, type).merge("type" => type).merge(head[:title] ? { "title_it" => head[:title] } : {})
+      when "diagram", "schema"
+        refuse_held_back(:diagram, head[:arg], "the diagram type #{head[:arg]}", first_line, allow_reserved)
+        data = yaml(body, first_line, type).merge("type" => head[:arg])
+        refuse_uses(Types.held_back_uses(:diagram, head[:arg], data), "#{head[:arg]}", first_line, allow_reserved)
+        { "type" => type, type => data }
+      when "check"
+        refuse_held_back(:check, head[:arg], "the check component #{head[:arg]}", first_line, allow_reserved) if Types.known?(:check, head[:arg])
+        data = yaml(body, first_line, "check").merge("type" => "check", "component" => head[:arg])
+        Types.held_back_options(data).each { |name, spec| refuse_one(Types.describe_hold("the check option #{name}", spec["status"], spec["batch"]), spec, first_line, allow_reserved) }
+        data
+      else
+        data = yaml(body, first_line, type).merge("type" => type).merge(head[:title] ? { "title_it" => head[:title] } : {})
+        refuse_uses(Types.held_back_uses(:block, type, data), type, first_line, allow_reserved)
+        data
       end
       [ block, pointer_lines(body, first_line) ]
+    end
+
+    # A name the registry holds back (reserved or a draft) is E-LESSON-BLOCK unless the reserved dry run allows it.
+    def refuse_held_back(kind, name, label, line, allow_reserved)
+      entry = Types.entry(kind, name)
+      return if entry.nil? || entry["status"] == "available"
+
+      refuse_one(Types.describe_hold(label, entry["status"], entry["batch"]), entry, line, allow_reserved)
+    end
+
+    def refuse_uses(uses, name, line, allow_reserved)
+      uses.each do |field, value, spec|
+        refuse_one(Types.describe_hold("#{name} #{field}#{value == 'present' ? '' : ": #{value}"}", spec["status"], spec["batch"]), spec, line, allow_reserved)
+      end
+    end
+
+    def refuse_one(message, spec, line, allow_reserved)
+      raise Refused.new(line, message) unless allow_reserved && Types::STATUSES.include?(spec["status"])
     end
 
     # {JSON pointer of the YAML body => lesson line of its key}, so that a finding names the line of the field.

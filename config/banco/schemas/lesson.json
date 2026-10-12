@@ -222,7 +222,7 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 32,
-      "pattern": "^[a-z]+(-[a-z]+)*$",
+      "pattern": "^[a-z]+([_-][a-z]+)*$",
       "description": "A colour role of the subject's palette (E-LESSON-ROLE in Ruby)."
     },
     "tag_name": {
@@ -392,6 +392,59 @@
         "hero": {
           "$ref": "urn:banco:schema:diagram",
           "description": "Optional: one diagram of the lesson's subject, drawn large on the cover (A1)."
+        },
+        "glossary": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "term_it",
+              "def_it"
+            ],
+            "properties": {
+              "term_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40
+              },
+              "def_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              "example_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 12,
+          "description": "At most 12 terms; readability and the apparatus budget apply (1.11)."
+        },
+        "teaches_en": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "minItems": 0,
+          "maxItems": 60,
+          "description": "Target-language words the lesson teaches: outside the first 3000 words they are not W-LANG-LEVEL."
+        },
+        "teaches_es": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "minItems": 0,
+          "maxItems": 60,
+          "description": "Target-language words the lesson teaches: outside the first 3000 words they are not W-LANG-LEVEL."
         }
       },
       "description": "The front matter of a lesson.md with schema banco.lesson/2 (violations are E-SCHEMA with path /front_matter/...)."
@@ -484,6 +537,15 @@
         },
         "answer": {
           "$ref": "#/$defs/opt_id"
+        },
+        "listen": {
+          "$ref": "#/$defs/listen"
+        },
+        "verify": {
+          "$ref": "#/$defs/verify"
+        },
+        "reachable_ok_it": {
+          "$ref": "#/$defs/reachable_ok"
         }
       },
       "description": "check component choice"
@@ -526,6 +588,15 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 20
+        },
+        "verify": {
+          "$ref": "#/$defs/verify"
+        },
+        "reachable_ok_it": {
+          "$ref": "#/$defs/reachable_ok"
+        },
+        "thousands": {
+          "type": "boolean"
         }
       },
       "description": "check component number"
@@ -566,6 +637,12 @@
         },
         "mixed": {
           "type": "boolean"
+        },
+        "verify": {
+          "$ref": "#/$defs/verify"
+        },
+        "reachable_ok_it": {
+          "$ref": "#/$defs/reachable_ok"
         }
       },
       "description": "check component fraction"
@@ -613,6 +690,49 @@
           },
           "minItems": 0,
           "maxItems": 10
+        },
+        "verify": {
+          "$ref": "#/$defs/verify"
+        },
+        "reachable_ok_it": {
+          "$ref": "#/$defs/reachable_ok"
+        },
+        "profile": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "enum": [
+                "binary",
+                "chem_formula"
+              ]
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 16
+            },
+            "leading_zeros": {
+              "enum": [
+                "required",
+                "optional"
+              ]
+            }
+          },
+          "description": "Passthrough to Grading::Spec (W2-D06). chem_formula is a W2-2 draft."
+        },
+        "input": {
+          "enum": [
+            "bits"
+          ]
+        },
+        "contractions": {
+          "enum": [
+            "en"
+          ]
         }
       },
       "description": "check component normalized_text"
@@ -673,6 +793,15 @@
         "reuse_right": {
           "type": "boolean",
           "description": "A classification: each category may be used by several items; drawn as rows of chips."
+        },
+        "listen": {
+          "$ref": "#/$defs/listen"
+        },
+        "verify": {
+          "$ref": "#/$defs/verify"
+        },
+        "reachable_ok_it": {
+          "$ref": "#/$defs/reachable_ok"
         }
       },
       "description": "check component matching"
@@ -745,6 +874,15 @@
           "maxItems": 12,
           "uniqueItems": true,
           "description": "A set of span ids; graded as a set."
+        },
+        "listen": {
+          "$ref": "#/$defs/listen"
+        },
+        "verify": {
+          "$ref": "#/$defs/verify"
+        },
+        "reachable_ok_it": {
+          "$ref": "#/$defs/reachable_ok"
         }
       },
       "description": "check component span_select"
@@ -762,7 +900,11 @@
             "fraction",
             "normalized_text",
             "matching",
-            "span_select"
+            "span_select",
+            "select",
+            "tiles",
+            "ordering",
+            "amount_words"
           ]
         }
       },
@@ -856,6 +998,66 @@
           "then": {
             "$ref": "#/$defs/check_span_select"
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "component": {
+                "const": "select"
+              }
+            },
+            "required": [
+              "component"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/check_select"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "component": {
+                "const": "tiles"
+              }
+            },
+            "required": [
+              "component"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/check_tiles"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "component": {
+                "const": "ordering"
+              }
+            },
+            "required": [
+              "component"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/check_ordering"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "component": {
+                "const": "amount_words"
+              }
+            },
+            "required": [
+              "component"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/check_amount_words"
+          }
         }
       ]
     },
@@ -879,7 +1081,9 @@
                 "choice",
                 "number",
                 "fraction",
-                "normalized_text"
+                "normalized_text",
+                "select",
+                "amount_words"
               ]
             }
           }
@@ -1683,7 +1887,12 @@
             "schema",
             "diagram",
             "table",
-            "try"
+            "try",
+            "source",
+            "reveal",
+            "oral",
+            "dialogue",
+            "image"
           ]
         }
       },
@@ -1912,6 +2121,81 @@
           "then": {
             "$ref": "#/$defs/b_try"
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "source"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_source"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "reveal"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_reveal"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "oral"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_oral"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "dialogue"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_dialogue"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "image"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_image"
+          }
         }
       ]
     },
@@ -1929,7 +2213,8 @@
             "diagram",
             "schema",
             "table",
-            "procedure"
+            "procedure",
+            "image"
           ]
         }
       },
@@ -2037,6 +2322,21 @@
           },
           "then": {
             "$ref": "#/$defs/b_table"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "image"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_image"
           }
         }
       ]
@@ -2503,9 +2803,1024 @@
           "minItems": 0,
           "maxItems": 0,
           "description": "Reserved for free pages (release 2): empty in release 1."
+        },
+        "glossary": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "term_it",
+              "def_it"
+            ],
+            "properties": {
+              "term_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40
+              },
+              "def_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              "example_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 12,
+          "description": "At most 12 terms; readability and the apparatus budget apply (1.11)."
+        },
+        "teaches_en": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "minItems": 0,
+          "maxItems": 60,
+          "description": "Target-language words the lesson teaches: outside the first 3000 words they are not W-LANG-LEVEL."
+        },
+        "teaches_es": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "minItems": 0,
+          "maxItems": 60,
+          "description": "Target-language words the lesson teaches: outside the first 3000 words they are not W-LANG-LEVEL."
         }
       },
       "description": "The parsed body of a banco.lesson/2 lesson (what lesson_revisions.body_json stores): cards of typed blocks. Text fields hold the source markup, parsed again where drawn."
+    },
+    "lang_text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Target-language text (a key ending in _en, _es or _la); at most 12 words in running sentences (E-READ target-language set)."
+    },
+    "target_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48,
+      "pattern": "^[a-z0-9][a-z0-9_.:-]{0,47}$",
+      "description": "A stored target id of a diagram's select set, as the type names it ('c1.nucleoid'); the student's page only ever sees tN."
+    },
+    "short_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 16,
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "An id inside a block (a speaker, a hotspot)."
+    },
+    "year": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 5,
+      "pattern": "^-?[1-9][0-9]{0,3}$",
+      "description": "A year as an integer string; negative = a.C.; '0' does not exist."
+    },
+    "verify": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fn"
+      ],
+      "properties": {
+        "fn": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 40,
+          "pattern": "^[a-z_]+\\.[a-z_0-9]+$"
+        },
+        "args": {
+          "type": "object",
+          "maxProperties": 6,
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 40
+          }
+        }
+      },
+      "description": "Truth at authoring time (W2-D06): Ruby calls the registered function and refuses the check (E-LESSON-VERIFY) when the answer, or the answer of a coded wrong answer, disagrees. Always dropped from the served body (L1)."
+    },
+    "reachable_ok": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "description": "One Italian sentence saying why the figure's reachable values do not give the answer away (L5); shown to the reviewer and the teacher, never served."
+    },
+    "listen": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "text_en": {
+          "$ref": "#/$defs/lang_text"
+        },
+        "text_es": {
+          "$ref": "#/$defs/lang_text"
+        }
+      },
+      "description": "The text a listen check reads aloud, behind 'Mostra il testo' (A8): exactly one of text_en and text_es.",
+      "anyOf": [
+        {
+          "required": [
+            "text_en"
+          ]
+        },
+        {
+          "required": [
+            "text_es"
+          ]
+        }
+      ]
+    },
+    "check_select": {
+      "type": "object",
+      "required": [
+        "component",
+        "prompt_it",
+        "diagram",
+        "targets",
+        "pick",
+        "answer"
+      ],
+      "properties": {
+        "component": {
+          "const": "select"
+        },
+        "prompt_it": {
+          "$ref": "#/$defs/prompt"
+        },
+        "errors": {
+          "$ref": "#/$defs/check_errors"
+        },
+        "explain_it": {
+          "$ref": "#/$defs/check_explain"
+        },
+        "answer_format_it": {
+          "$ref": "#/$defs/answer_format"
+        },
+        "verify": {
+          "$ref": "#/$defs/verify"
+        },
+        "reachable_ok_it": {
+          "$ref": "#/$defs/reachable_ok"
+        },
+        "diagram": {
+          "$ref": "urn:banco:schema:diagram#/$defs/any_diagram",
+          "description": "The check's own figure, of a type that declares target sets (x-banco-targets); drawn in mode select with neutral targets (L3)."
+        },
+        "targets": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24,
+          "pattern": "^[a-z_]+$"
+        },
+        "pick": {
+          "enum": [
+            "one",
+            "many"
+          ]
+        },
+        "answer": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/target_id"
+          },
+          "minItems": 1,
+          "maxItems": 12
+        }
+      },
+      "description": "check component select: tap zones of a drawing (WAVE2 2.11). pick one: any one member of answer is right; many: exactly the set answer."
+    },
+    "check_tiles": {
+      "type": "object",
+      "required": [
+        "component",
+        "prompt_it",
+        "tiles",
+        "answer"
+      ],
+      "properties": {
+        "component": {
+          "const": "tiles"
+        },
+        "prompt_it": {
+          "$ref": "#/$defs/prompt"
+        },
+        "errors": {
+          "$ref": "#/$defs/check_errors"
+        },
+        "explain_it": {
+          "$ref": "#/$defs/check_explain"
+        },
+        "answer_format_it": {
+          "$ref": "#/$defs/answer_format"
+        },
+        "verify": {
+          "$ref": "#/$defs/verify"
+        },
+        "reachable_ok_it": {
+          "$ref": "#/$defs/reachable_ok"
+        },
+        "tiles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/opt_id"
+              },
+              "text_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "text_en": {
+                "$ref": "#/$defs/lang_text"
+              },
+              "text_es": {
+                "$ref": "#/$defs/lang_text"
+              }
+            },
+            "anyOf": [
+              {
+                "required": [
+                  "text_it"
+                ]
+              },
+              {
+                "required": [
+                  "text_en"
+                ]
+              },
+              {
+                "required": [
+                  "text_es"
+                ]
+              }
+            ]
+          },
+          "minItems": 3,
+          "maxItems": 10
+        },
+        "answer": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/opt_id"
+          },
+          "minItems": 2,
+          "maxItems": 10
+        },
+        "accept": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/opt_id"
+            },
+            "minItems": 2,
+            "maxItems": 10
+          },
+          "minItems": 0,
+          "maxItems": 6
+        }
+      },
+      "description": "check component tiles: build a sentence from tiles (WAVE2 2.11); distractors are the tiles outside the answer; graded as a sequence."
+    },
+    "check_ordering": {
+      "type": "object",
+      "required": [
+        "component",
+        "prompt_it",
+        "items",
+        "answer"
+      ],
+      "properties": {
+        "component": {
+          "const": "ordering"
+        },
+        "prompt_it": {
+          "$ref": "#/$defs/prompt"
+        },
+        "errors": {
+          "$ref": "#/$defs/check_errors"
+        },
+        "explain_it": {
+          "$ref": "#/$defs/check_explain"
+        },
+        "answer_format_it": {
+          "$ref": "#/$defs/answer_format"
+        },
+        "verify": {
+          "$ref": "#/$defs/verify"
+        },
+        "reachable_ok_it": {
+          "$ref": "#/$defs/reachable_ok"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id_text"
+          },
+          "minItems": 3,
+          "maxItems": 8
+        },
+        "answer": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/opt_id"
+          },
+          "minItems": 3,
+          "maxItems": 8
+        }
+      },
+      "description": "check component ordering: put items in order (WAVE2 2.11); graded as a sequence."
+    },
+    "check_amount_words": {
+      "type": "object",
+      "required": [
+        "component",
+        "prompt_it",
+        "amount"
+      ],
+      "properties": {
+        "component": {
+          "const": "amount_words"
+        },
+        "prompt_it": {
+          "$ref": "#/$defs/prompt"
+        },
+        "errors": {
+          "$ref": "#/$defs/check_errors"
+        },
+        "explain_it": {
+          "$ref": "#/$defs/check_explain"
+        },
+        "answer_format_it": {
+          "$ref": "#/$defs/answer_format"
+        },
+        "verify": {
+          "$ref": "#/$defs/verify"
+        },
+        "reachable_ok_it": {
+          "$ref": "#/$defs/reachable_ok"
+        },
+        "amount": {
+          "$ref": "urn:banco:schema:diagram#/$defs/num"
+        }
+      },
+      "description": "check component amount_words: write an amount in words; NumWords builds the accepted forms and the typical wrong ones (W2-2 draft).",
+      "x-banco-draft": true
+    },
+    "source_part": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text_it"
+      ],
+      "properties": {
+        "text_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "plain_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "marks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "text_it",
+              "role"
+            ],
+            "properties": {
+              "text_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "role": {
+                "$ref": "#/$defs/role_name"
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 6
+        }
+      }
+    },
+    "b_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "kind",
+        "title_it",
+        "parts"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "source"
+        },
+        "kind": {
+          "enum": [
+            "legal",
+            "written",
+            "iconographic",
+            "material"
+          ]
+        },
+        "title_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 48,
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "open": {
+          "enum": [
+            "plain",
+            "original"
+          ]
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source_part"
+          },
+          "minItems": 1,
+          "maxItems": 4
+        },
+        "author_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "year": {
+          "$ref": "#/$defs/year"
+        },
+        "about_year": {
+          "$ref": "#/$defs/year"
+        },
+        "for_whom_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "where_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "translation": {
+          "enum": [
+            "simplified",
+            "full",
+            "original"
+          ]
+        },
+        "original": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1500
+        },
+        "guide": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "span_it",
+              "note_it"
+            ],
+            "properties": {
+              "span_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "note_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 6
+        },
+        "compare": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "parts"
+          ],
+          "properties": {
+            "title_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "parts": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/source_part"
+              },
+              "minItems": 1,
+              "maxItems": 4
+            },
+            "author_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "year": {
+              "$ref": "#/$defs/year"
+            },
+            "about_year": {
+              "$ref": "#/$defs/year"
+            },
+            "for_whom_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "where_it": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "translation": {
+              "enum": [
+                "simplified",
+                "full",
+                "original"
+              ]
+            },
+            "original": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1500
+            },
+            "guide": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "span_it",
+                  "note_it"
+                ],
+                "properties": {
+                  "span_it": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "note_it": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                }
+              },
+              "minItems": 0,
+              "maxItems": 6
+            }
+          }
+        }
+      },
+      "description": "A source: a legal text with its plain version (W2-1), a historical source (W2-2 draft half). Counts as a visual (1.8). Every part's text is an exact substring of the imported reference (E-QUOTE-REF)."
+    },
+    "b_reveal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "reveal"
+        },
+        "prompt_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "answer_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "year": {
+          "$ref": "#/$defs/year"
+        },
+        "who_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "situation_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "text_it",
+              "then_it"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/opt_id"
+              },
+              "text_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "then_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "real": {
+                "type": "boolean"
+              }
+            }
+          },
+          "minItems": 2,
+          "maxItems": 4
+        },
+        "real_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "description": "An ungraded reveal (WAVE2 2.10): a flip card with a question and its answer, or the crossroads with options. Served: teaching content (L8), read aloud only once shown (L10).",
+      "anyOf": [
+        {
+          "required": [
+            "prompt_it",
+            "answer_it"
+          ]
+        },
+        {
+          "required": [
+            "situation_it",
+            "options",
+            "real_it"
+          ]
+        }
+      ]
+    },
+    "b_oral": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "question_it",
+        "outline",
+        "answer",
+        "model_it"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "oral"
+        },
+        "question_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "outline": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id_text"
+          },
+          "minItems": 3,
+          "maxItems": 7
+        },
+        "answer": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/opt_id"
+          },
+          "minItems": 3,
+          "maxItems": 7
+        },
+        "errors": {
+          "$ref": "#/$defs/check_errors"
+        },
+        "connectives": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 30
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "terms": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "model_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 900,
+          "x-banco-withheld": true,
+          "description": "Withheld (L6): served only by the check endpoint after the outline is right or the second try."
+        }
+      },
+      "description": "The oral rehearsal (WAVE2 2.10): a question, an outline to put in order (graded as an ordering), the connectives and terms to say, then the model answer. No microphone, nothing recorded."
+    },
+    "b_dialogue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "title_it",
+        "speakers",
+        "lines"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "dialogue"
+        },
+        "title_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "speakers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "name"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/short_id"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 12
+              },
+              "voice": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 3
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 3
+        },
+        "transcript": {
+          "enum": [
+            "shown",
+            "hidden"
+          ]
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "speaker",
+              "gloss_it"
+            ],
+            "properties": {
+              "speaker": {
+                "$ref": "#/$defs/short_id"
+              },
+              "text_en": {
+                "$ref": "#/$defs/lang_text"
+              },
+              "text_es": {
+                "$ref": "#/$defs/lang_text"
+              },
+              "gloss_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              }
+            },
+            "anyOf": [
+              {
+                "required": [
+                  "text_en"
+                ]
+              },
+              {
+                "required": [
+                  "text_es"
+                ]
+              }
+            ]
+          },
+          "minItems": 2,
+          "maxItems": 12
+        }
+      },
+      "description": "A scripted dialogue in the target language (WAVE2 2.6), every line with its Italian gloss one tap away. Counts as a visual in english and spanish lessons."
+    },
+    "b_image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "file",
+        "alt_it",
+        "source_it",
+        "license",
+        "author",
+        "source_url"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "image"
+        },
+        "file": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[a-z0-9][a-z0-9._-]*$"
+        },
+        "alt_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "caption_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "source_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "license": {
+          "enum": [
+            "pd",
+            "cc0",
+            "cc-by-4.0",
+            "cc-by-sa-4.0",
+            "cc-by-3.0",
+            "cc-by-sa-3.0"
+          ]
+        },
+        "author": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "source_url": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 300,
+          "pattern": "^https://"
+        },
+        "text_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "hotspots": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "x",
+              "y",
+              "label_it"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/short_id"
+              },
+              "x": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "y": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "label_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60
+              },
+              "note_it": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "tour": {
+          "type": "boolean"
+        }
+      },
+      "description": "A licensed photo (WAVE2 2.7; the operator said yes on 2026-10-12): at most 2 per lesson, 300 KB. W2-2 draft: it needs the lesson_assets migration.",
+      "x-banco-draft": true
     }
   },
   "unevaluatedProperties": false

@@ -19,7 +19,7 @@ function withoutServed(data) {
 export function run(data, opts, mod) {
   try {
     if (!data || typeof data !== "object") return fail("", "no data", "E-LESSON-DIAGRAM")
-    const bad = validate(schema, withoutServed(data))
+    const bad = validate(mod.schema ?? schema, withoutServed(data))
     if (bad) return fail(bad.path, bad.message, "E-LESSON-DIAGRAM")
     const altWords = words(data.alt_it)
     if (altWords < 5 || altWords > 50) return fail("/alt_it", "alt_it has 5 to 50 words", "E-LESSON-ALT")
