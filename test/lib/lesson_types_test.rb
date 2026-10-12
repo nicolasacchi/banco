@@ -100,6 +100,17 @@ class LessonTypesTest < ActiveSupport::TestCase
     assert_equal 9, Validation::Rules.version
   end
 
+  # Every key of lesson2.types is a diagram type, a block, or TYPE_VALUE of a view the registry lists (flow_line is flow layout: line): a cap for
+  # something the registry does not know would never be read.
+  test "every key under lesson2.types maps to a type or a view in lesson_types.yml" do
+    views = Lessons::Types.data.slice("diagrams", "blocks").values.flat_map do |group|
+      group.flat_map { |name, e| (e["views"] || {}).flat_map { |_field, values| values.keys.map { |value| "#{name}_#{value}" } } }
+    end
+    known = Lessons::Types.names(:diagram) + Lessons::Types.names(:block) + views
+    unknown = Validation::Rules.get(:lesson2, :types).keys - known
+    assert_empty unknown, "caps for names that lesson_types.yml does not list: #{unknown.join(', ')}"
+  end
+
   test "Lessons::Types: status, usable, held-back views and options" do
     assert_equal "available", Lessons::Types.status(:diagram, "balance")
     assert_equal "reserved", Lessons::Types.status(:diagram, "network")

@@ -18,8 +18,9 @@ The registry lists every diagram type, layout or view, block, check component an
 
 `Lessons::Types` reads the file; `Lessons::Directives.build` refuses a name that is not available with `E-LESSON-BLOCK` ("is not
 available yet") and names the layout, view or option that is held back (`flow layout: line`, `check listen`). With `allow_reserved:`
-(the reserved dry run, `lesson submit --dry-run --allow-reserved`, built by T1) the schema sees it and the caller answers
-`W-TYPE-RESERVED` or `W-TYPE-DRAFT` per use; such a lesson can never be stored. A track makes its piece `available` in the commit of
+(the reserved dry run, `lesson submit --dry-run --allow-reserved`: the CLI sends `X-Banco-Allow-Reserved: 1`, which the API honours only
+with `X-Banco-Dry-Run: 1`) the schema sees it and the parse answers `W-TYPE-RESERVED` or `W-TYPE-DRAFT` per use; such a lesson can never be
+stored. A track makes its piece `available` in the commit of
 its look gate. `bin/build-lesson-types` generates `lesson/diagrams/registry.js` (the available types imported at once, every other type
 behind a lazy loader, `STATUS`, `HOME_PALETTE`, `FAMILY`, `HELD_BACK`), `lesson/checks/registry.js` and `lesson/voices.js`.
 
@@ -38,7 +39,9 @@ check nothing, which is what the reserved dry run needs; the rest refuses until 
 
 The schema of a type is one `$defs` entry of `config/banco/schemas/diagram.json` with `x-banco-kind`, `x-banco-release`,
 `x-banco-draft`, `x-banco-state-keys`, `x-banco-state-only-keys`, `x-banco-solution`, `x-banco-hide`, `x-banco-targets`,
-`x-banco-home-palette` and `x-banco-withheld`. `bin/build-diagram-schema` writes the browser's copies: `lesson/diagram_schema.js`
+`x-banco-home-palette` and `x-banco-withheld`. The leak annotations are machine-readable: `x-banco-solution` and `x-banco-withheld` are
+booleans on a property, `x-banco-hide` a list of paths (`bars[].parts[].hidden`); `test/fixtures/lesson2/whitelist.json` repeats them
+(`solution`, `hide`, `withheld`) and `test/content/leak_contract_test.rb` fails when the two drift. `bin/build-diagram-schema` writes the browser's copies: `lesson/diagram_schema.js`
 (release 1) and one `lesson/diagram_schemas/TYPE.js` per wave 2 type, which a type module exports as `schema`.
 
 ## Shared interfaces (frozen; only the lead changes them)
