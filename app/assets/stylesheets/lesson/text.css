@@ -30,7 +30,7 @@
 @container (max-width: 30rem) { .l2 .card-listen .button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } }
 @media (max-width: 520px) {
   .l2 .card-head { flex-wrap: wrap; }
-  .l2 .card-head .card-listen { margin-left: 0; flex: 1 0 100%; justify-content: flex-start; }
+  .l2 .card-head .card-listen { margin-left: 0; flex: 1 0 100%; flex-wrap: wrap; justify-content: flex-start; }
 }
 
 /* glossary: the word, a book icon that is the button, the definition that opens under it */

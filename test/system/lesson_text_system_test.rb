@@ -219,6 +219,54 @@ class LessonTextSystemTest < ApplicationSystemTestCase
     assert_includes speech, "Una parte della frase che non sta in piedi da sola."
   end
 
+  test "A1 the keyboard: the glossary button and the card's Ascolta are real buttons that Enter and Space work, Escape closes the bubble and gives the focus back" do
+    open_lesson(accept: true)
+    go 1
+    # a keyboard activation of a button is a click on the focused button (the driver's key synthesis can fire it twice)
+    page.execute_script("document.querySelector('#scheda-1 .gloss-btn').focus()")
+    assert_equal "BUTTON", page.evaluate_script("document.activeElement.tagName"), "the word's button takes the focus"
+    page.execute_script("document.activeElement.click()")
+    assert_selector "#scheda-1 .gloss-pop", visible: :visible
+    page.send_keys(:escape)
+    assert_no_selector "#scheda-1 .gloss-pop", visible: :visible
+    assert_equal "gloss-btn", page.evaluate_script("document.activeElement.className.split(' ')[0]"), "the focus is back on the word's button"
+    page.execute_script("document.querySelector('#scheda-1 .speak-card').focus()")
+    assert_equal "speak-card", page.evaluate_script("document.activeElement.className.split(' ').find((c) => c === 'speak-card')")
+    page.execute_script("document.activeElement.click()")
+    assert_selector "#scheda-1 .speak-card[aria-pressed='true']"
+    assert_equal "BUTTON", page.evaluate_script("document.querySelector('#scheda-1 .speak-card').tagName")
+    speaker = find("#scheda-1 .card-body .block .speak-inline")
+    assert_equal "BUTTON", speaker.evaluate_script("this.tagName")
+    assert_operator speaker.evaluate_script("this.getBoundingClientRect().width"), :>=, 24
+  end
+
+  test "A3 and A4 at the largest text size on a phone, and with forced colours: nothing overflows and the controls keep a border" do
+    open_lesson(accept: true, size: [ 390, 844 ])
+    page.execute_script("document.documentElement.dataset.size = 'larger'")
+    go 1
+    assert_selector "#scheda-1 .speak-card"
+    assert_operator page.evaluate_script("document.documentElement.scrollWidth"), :<=, 391, "no sideways scroll at the largest size"
+    first("#scheda-1 .gloss-btn").click
+    rects = page.evaluate_script("(() => { const r = document.querySelector('#scheda-1 .gloss-pop').getBoundingClientRect(); const c = document.querySelector('#scheda-1').getBoundingClientRect(); return { pop: [r.left, r.right], card: [c.left, c.right] } })()")
+    assert rects["pop"][0] >= rects["card"][0] - 1 && rects["pop"][1] <= rects["card"][1] + 1, "the bubble stays inside the card: #{rects.inspect}"
+    page.send_keys(:escape)
+    page.driver.browser.page.command("Emulation.setEmulatedMedia", media: "", features: [ { name: "forced-colors", value: "active" } ])
+    go 2
+    assert_selector "#scheda-2 .listen-play"
+    assert_not_equal "0px", page.evaluate_script("getComputedStyle(document.querySelector('#scheda-2 .listen-play')).borderTopWidth")
+    shot "forced-colors-390"
+  end
+
+  test "P6 print: no speaker, no button, no bubble; the list of words under the card and the text of a heard check are on the paper" do
+    open_lesson(accept: true)
+    page.driver.browser.page.command("Emulation.setEmulatedMedia", media: "print")
+    Timeout.timeout(10) { sleep 0.1 until page.evaluate_script("matchMedia('print').matches") }
+    page.execute_script("window.lessonApi.renderAll()")
+    assert_selector "#scheda-1 .card-glossary", visible: :visible, wait: 10
+    assert_no_selector ".speak, .gloss-btn, .gloss-pop, .card-listen", visible: :visible
+    assert_selector "#scheda-2 .listen-text", visible: :visible, text: "I will call you when I get home."
+  end
+
   test "the listen check keeps its text behind Mostra il testo, plays it with the English voice, and tells the server when the text was looked at" do
     open_lesson(accept: true)
     go 2
