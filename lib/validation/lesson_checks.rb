@@ -15,9 +15,9 @@ module Validation
     module_function
 
     # +md+: the text of lesson.md; +subject+: the subject key of the submit.
-    def call(md, subject:, context:)
+    def call(md, subject:, context:, allow_reserved: false)
       source = Lessons::Parser.normalize(md)
-      return Lesson2Checks.call(source, subject: subject, context: context) if Lessons::Parser2.schema2?(source)
+      return Lesson2Checks.call(source, subject: subject, context: context, allow_reserved: allow_reserved) if Lessons::Parser2.schema2?(source)
 
       findings = Findings.new
       if rule(:accept_schema1) == false

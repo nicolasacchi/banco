@@ -319,3 +319,33 @@ func TestLessonShotsDownloadsEveryImage(t *testing.T) {
 		t.Error("a revision that is not a number must be refused")
 	}
 }
+
+func TestLessonSubmitAllowReservedSendsItsHeaderOnlyWithADryRun(t *testing.T) {
+	var dry, reserved string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("X-Banco-Contract", contract.Digest())
+		w.Header().Set("Content-Type", "application/json")
+		dry, reserved = req.Header.Get("X-Banco-Dry-Run"), req.Header.Get("X-Banco-Allow-Reserved")
+		_, _ = w.Write([]byte(`{"dry_run":true,"status":"passed","codes":[],"warnings":[]}`))
+	}))
+	t.Cleanup(srv.Close)
+	dir := t.TempDir()
+	md := "---\nkey: ripasso.math.demo-equations\n---\n\n## Perché ti serve\nTesto.\n"
+	if err := os.WriteFile(filepath.Join(dir, "lesson.md"), []byte(md), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	res := runCLI(t, srv.URL, envToken("tok"), "lesson", "submit", dir, "--dry-run", "--allow-reserved")
+	if res.exit != 0 || dry != "1" || reserved != "1" {
+		t.Fatalf("dry run with --allow-reserved: exit %d, dry %q, reserved %q, stderr %s", res.exit, dry, reserved, res.stderr)
+	}
+	dry, reserved = "", ""
+	res = runCLI(t, srv.URL, envToken("tok"), "lesson", "submit", dir, "--dry-run")
+	if res.exit != 0 || dry != "1" || reserved != "" {
+		t.Fatalf("dry run alone: exit %d, dry %q, reserved %q", res.exit, dry, reserved)
+	}
+	dry, reserved = "", ""
+	res = runCLI(t, srv.URL, envToken("tok"), "lesson", "submit", dir, "--allow-reserved")
+	if res.exit == 0 || dry != "" || reserved != "" || !strings.Contains(res.stderr, "allow-reserved") {
+		t.Fatalf("--allow-reserved without --dry-run must be refused before any request: exit %d, sent %q/%q, stderr %s", res.exit, dry, reserved, res.stderr)
+	}
+}

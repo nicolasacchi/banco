@@ -28,7 +28,9 @@ module Lessons
     end
 
     # Returns Parsed2, or nil when there is no front matter to speak of (the finding says why).
-    def call(md, findings)
+    # +allow_reserved+: the reserved dry run (lesson submit --dry-run --allow-reserved): a reserved or draft piece passes the parse and
+    # each use is a warning W-TYPE-RESERVED or W-TYPE-DRAFT. A lesson with such a use is never stored.
+    def call(md, findings, allow_reserved: false)
       source = Parser.normalize(md)
       unless source.valid_encoding?
         findings.add("E-LESSON-PARSE", "/", "lesson.md is not valid UTF-8", rule: "encoding")
@@ -40,7 +42,7 @@ module Lessons
       lines = source.split("\n", -1)
       schema_ok = front_matter_schema(front, lines, findings)
       key_consistent(front, lines, findings)
-      cards, parts, field_lines = scan(lines, body_start, findings)
+      cards, parts, field_lines = scan(lines, body_start, findings, allow_reserved)
       structure(cards, parts, findings)
       parsed = Parsed2.new(front_matter: front, cards: cards, parts: parts, source: source, lines: lines, body_start: body_start, field_lines: field_lines)
       parsed.body = build_body(front, cards, parts) if schema_ok && !findings.any_error?
@@ -73,8 +75,8 @@ module Lessons
 
     # ---- the splitter -------------------------------------------------------------------------------
 
-    def scan(lines, body_start, findings)
-      s = Scan.new(findings)
+    def scan(lines, body_start, findings, allow_reserved = false)
+      s = Scan.new(findings, allow_reserved: allow_reserved)
       lines.each_with_index do |line, i|
         n = i + 1
         next if n < body_start
@@ -89,8 +91,9 @@ module Lessons
     class Scan
       attr_reader :cards, :parts, :field_lines
 
-      def initialize(findings)
+      def initialize(findings, allow_reserved: false)
         @findings = findings
+        @allow_reserved = allow_reserved
         @cards = []
         @parts = []
         @stack = []
@@ -153,12 +156,22 @@ module Lessons
       def build(frame)
         return nil unless frame[:head]
 
-        block, index = Directives.build(frame[:head], frame[:body], frame[:line], in_more: frame[:in_more])
+        holds = @allow_reserved ? [] : false
+        block, index = Directives.build(frame[:head], frame[:body], frame[:line], in_more: frame[:in_more], allow_reserved: holds)
+        report_holds(holds)
         @field_lines[frame[:line]] = index
         valid(block.merge("line" => frame[:line]), frame[:line])
       rescue Directives::Refused => e
         block_error(e.line, e.message)
         nil
+      end
+
+      # The reserved dry run: each use of a reserved or draft piece is a warning with the line of its block.
+      def report_holds(holds)
+        Array(holds).each do |status, message, line|
+          code = status == "draft" ? "W-TYPE-DRAFT" : "W-TYPE-RESERVED"
+          @findings.add(code, "/lesson.md", "line #{line}: #{message}", rule: "#{code.downcase}-#{line}", line: line)
+        end
       end
 
       # The block against its schema (the shape of A4): a refusal is E-LESSON-BLOCK at the block's opening line.

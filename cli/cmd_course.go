@@ -119,12 +119,16 @@ func runLessonSubmit(e *env, args []string) error {
 	fs.SetOutput(io.Discard)
 	baseFlag := fs.String("base", "", "the revision the folder is based on (default: DIR/.base)")
 	dry := fs.Bool("dry-run", false, "validate and store nothing")
+	allowReserved := fs.Bool("allow-reserved", false, "with --dry-run: let a reserved or draft piece pass (a warning per use); such a lesson is never stored")
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
 	if err != nil {
 		return err
 	}
 	const next = "banco lesson submit DIR --dry-run"
+	if *allowReserved && !*dry {
+		return newErr(ExitUsage, "E-USAGE", "allow-reserved", "--allow-reserved only works together with --dry-run: a lesson with a reserved piece is never stored", next)
+	}
 	if len(pos) != 1 {
 		return newErr(ExitUsage, "E-USAGE", "dir", "lesson submit takes exactly one folder with lesson.md", next)
 	}
@@ -159,6 +163,9 @@ func runLessonSubmit(e *env, args []string) error {
 	headers := map[string]string{}
 	if *dry {
 		headers["X-Banco-Dry-Run"] = "1"
+		if *allowReserved {
+			headers["X-Banco-Allow-Reserved"] = "1"
+		}
 	}
 	out, err := e.client().doWith("lesson submit", "POST", "/api/v1/lessons/submit", payload, headers)
 	if err != nil {

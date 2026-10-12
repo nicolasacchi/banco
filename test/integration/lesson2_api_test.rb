@@ -24,10 +24,11 @@ class Lesson2ApiTest < ActionDispatch::IntegrationTest
     @author = AgentSession.create!(label: "t", role: "author", agent: "test", model: "claude-opus-5-5")
   end
 
-  def api(path, method: :get, body: nil, as: nil, dry: false)
+  def api(path, method: :get, body: nil, as: nil, dry: false, reserved: false)
     headers = { "Authorization" => "Bearer #{@token}" }
     headers["X-Banco-Session"] = as.id.to_s if as
     headers["X-Banco-Dry-Run"] = "1" if dry
+    headers["X-Banco-Allow-Reserved"] = "1" if reserved
     on(:api, path, method: method, headers: headers, params: body, as: body ? :json : nil)
   end
 
@@ -41,7 +42,35 @@ class Lesson2ApiTest < ActionDispatch::IntegrationTest
     block_given? ? yield(text) : text
   end
 
-  def submit(md, base: nil, dry: false) = api("/api/v1/lessons/submit", method: :post, body: { lesson: KEY, base: base, files: { "lesson.md" => md } }, as: @author, dry: dry)
+  def submit(md, base: nil, dry: false, reserved: false) = api("/api/v1/lessons/submit", method: :post, body: { lesson: KEY, base: base, files: { "lesson.md" => md } }, as: @author, dry: dry, reserved: reserved)
+
+  NETWORK = "::: diagram network\nalt_it: Due nodi, A e B, uniti da una freccia che va da A a B.\nlayout: pair\nnodes:\n  - {id: a, label_it: A}\n  - {id: b, label_it: B}\n:::\n\n".freeze
+
+  def md2_with_network = md2 { |t| t.sub("::: diagram balance\n", "#{NETWORK}::: diagram balance\n") }
+
+  test "the reserved dry run needs the dry run header and the allow-reserved header; a reserved piece is never stored" do
+    md = md2_with_network
+    assert_includes md, "::: diagram network"
+    submit(md, dry: true)
+    assert_response :unprocessable_entity, json.inspect
+    assert_equal "E-LESSON-BLOCK", json["code"]
+    submit(md, reserved: true)
+    assert_response :unprocessable_entity, "the allow-reserved header alone does nothing: #{json.inspect}"
+    assert_equal "E-LESSON-BLOCK", json["code"]
+    assert_equal 0, LessonRevision.count
+    submit(md, dry: true, reserved: true)
+    assert_response :ok, json.inspect
+    assert_equal true, json["dry_run"]
+    assert_includes json["warnings"].map { |w| w["code"] }, "W-TYPE-RESERVED"
+    assert_equal 0, LessonRevision.count
+  end
+
+  test "the reserved dry run reports W-TYPE-DRAFT for a draft piece" do
+    md = md2 { |t| t.sub("::: diagram balance\n", "::: diagram cell\nalt_it: Una cellula animale con il nucleo e la membrana, disegnata per provare.\ncells:\n  - {kind: animal, parts: [nucleus, membrane]}\n:::\n\n::: diagram balance\n") }
+    submit(md, dry: true, reserved: true)
+    assert_response :ok, json.inspect
+    assert_includes json["warnings"].map { |w| w["code"] }, "W-TYPE-DRAFT"
+  end
 
   test "a lesson/2 file is checked by the lesson/2 checks and stored as a banco.lesson/2 body" do
     submit(md2, dry: true)

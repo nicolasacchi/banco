@@ -38,7 +38,8 @@ module Lessons
 
     # The block hash for a directive. +lines+: the body lines; +first_line+: the lesson line of the opening line.
     # +allow_reserved+ is the reserved dry run (WAVE2 1.2): a block, type or option that is reserved or a draft passes here
-    # and is validated against its frozen or draft schema; the caller reports it (W-TYPE-RESERVED, W-TYPE-DRAFT).
+    # and is validated against its frozen or draft schema; the caller reports it (W-TYPE-RESERVED, W-TYPE-DRAFT), and passes an Array
+    # as +allow_reserved+ to be handed each use.
     def build(head, lines, first_line, in_more: false, allow_reserved: false)
       type = head[:type]
       raise Refused.new(first_line, "unknown block type #{type.inspect} (#{Types.names(:block, status: 'available').reject { |n| n == 'text' }.join(', ')})") unless Types.known?(:block, type) && type != "text"
@@ -88,8 +89,12 @@ module Lessons
       end
     end
 
+    # +allow_reserved+ is false (refuse), true (let it pass) or an Array that collects [status, message, line] of each use that
+    # passes, so that the caller can answer W-TYPE-RESERVED or W-TYPE-DRAFT per use.
     def refuse_one(message, spec, line, allow_reserved)
       raise Refused.new(line, message) unless allow_reserved && Types::STATUSES.include?(spec["status"])
+
+      allow_reserved << [ spec["status"], message, line ] if allow_reserved.is_a?(Array)
     end
 
     # {JSON pointer of the YAML body => lesson line of its key}, so that a finding names the line of the field.

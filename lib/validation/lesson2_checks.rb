@@ -18,14 +18,14 @@ module Validation
     def rule(*path) = Rules.get(:lesson2, *path)
 
     # +md+: the text of lesson.md; +subject+: the subject key of the submit.
-    def call(md, subject:, context:)
+    def call(md, subject:, context:, allow_reserved: false)
       findings = Findings.new
       source = Lessons::Parser.normalize(md)
       if source.bytesize > rule(:max_bytes)
         findings.add("E-LESSON-SIZE", "/lesson.md", "lesson.md is #{source.bytesize / 1024} KB (at most #{rule(:max_bytes) / 1024} KB)", bytes: source.bytesize)
         return Outcome.new(findings: findings, parsed: nil)
       end
-      parsed = Lessons::Parser2.call(source, findings)
+      parsed = Lessons::Parser2.call(source, findings, allow_reserved: allow_reserved)
       return Outcome.new(findings: findings, parsed: nil) unless parsed
 
       front = parsed.front_matter

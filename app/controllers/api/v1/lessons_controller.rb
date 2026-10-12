@@ -82,7 +82,7 @@ module Api
         return refuse("E-NOT-FOUND", "lesson", "no subject #{key.split('.', 3)[1].inspect}", "banco status", 404) unless subject
 
         source = Lessons::Parser.normalize(files["lesson.md"])
-        outcome = Validation::LessonChecks.call(source, subject: subject.key, context: Validation::CourseContext.for(subject))
+        outcome = Validation::LessonChecks.call(source, subject: subject.key, context: Validation::CourseContext.for(subject), allow_reserved: allow_reserved?)
         if outcome.parsed && outcome.parsed.front_matter["key"] != key
           return refuse("E-FILES", "lesson", "the front matter key #{outcome.parsed.front_matter['key'].inspect} differs from the lesson #{key}", "banco lesson submit DIR", 422)
         end

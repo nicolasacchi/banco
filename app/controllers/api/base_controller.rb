@@ -10,6 +10,10 @@ module Api
     # The agent asked for a dry run: nothing is written and no job is queued.
     def dry_run? = request.headers["X-Banco-Dry-Run"] == "1"
 
+    # The reserved dry run (lesson submit --dry-run --allow-reserved): honoured only together with the dry run header, so a request
+    # that stores can never carry a reserved piece.
+    def allow_reserved? = dry_run? && request.headers["X-Banco-Allow-Reserved"] == "1"
+
     # {code, field, message, next} (plus extra members) with the status of the code.
     def refuse(code, field, message, next_step, status, **extra)
       render json: { code: code, field: field, message: message, next: next_step }.merge(extra), status: status
