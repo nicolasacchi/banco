@@ -14,8 +14,12 @@ Phase 1a: the entry diagnosis.
    (a derived state, never a decision row): D-222, D-239. Exception: the operator may
    record a teacher decision from the host console (`bin/rails banco:decide`), never
    over HTTP: D-260.
-3. Agent-written code runs only in browsers (the server's Chrome at validation).
-   Rails and the grader worker never execute it.
+3. Agent-written code runs only in browsers: the server's Chrome at validation and
+   the render check, and approved free pages in the student's and the teacher's
+   browsers, in a sandboxed frame on `pages.banco.scc.im` (D-260F). Rails and the
+   grader worker never execute it. The teacher's approval of a free page covers
+   what it shows and teaches, not its code.
+
 4. The ledger is append-only: triggers block UPDATE and DELETE on every primary
    table except `schema_migrations` and `ar_internal_metadata`. Corrections are
    new rows; states are derived.
