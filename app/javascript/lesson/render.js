@@ -10,6 +10,7 @@ import { iconOf, renderCard, rolesUsed } from "lesson/cards"
 import { sample } from "lesson/blocks/legend"
 import { renderInlineRich, renderRich } from "lesson/text"
 import { figureFor } from "lesson/blocks/diagram"
+import { firstUses } from "lesson/checks/howto"
 
 const csrf = () => document.querySelector("meta[name=csrf-token]")?.content || ""
 
@@ -48,6 +49,7 @@ export function renderLesson(root, body, config) {
     get openAll() { return state.teacher || ctx.safe || expand },
     get showAll() { return ctx.safe || expand },
     unavailableTopics: config.unavailableTopics ?? [],
+    firstUse: firstUses(body), // where the fixed how-to line of each new check component is printed (A9)
     cardNumber: (slug) => idToN.get(slug),
     fontPx: () => parseFloat(getComputedStyle(root).fontSize) || 20,
     reduced: () => state.reduce || !!motionQuery?.matches,

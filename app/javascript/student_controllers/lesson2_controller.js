@@ -14,6 +14,8 @@ export default class extends Controller {
     if (!source) return
     const body = JSON.parse(source.textContent)
     const { renderLesson } = await import("lesson/render")
+    const { preloadFor } = await import("lesson/preload")
+    await preloadFor(body)
     this.api = renderLesson(this.element, body, {
       mode: this.modeValue, safe: this.safeValue, topic: this.topicValue, revisionId: this.revisionIdValue, urls: this.urlsValue,
       resume: this.hasResumeValue && this.resumeValue > 0 ? this.resumeValue : null, view: this.viewValue,

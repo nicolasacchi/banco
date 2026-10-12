@@ -1,0 +1,75 @@
+/* lesson/checks: the check components select, tiles and ordering (WAVE2 2.11, T1). Calm and plain, like the span chips of release 1:
+   a dashed outline is a thing you can pick, a solid inverted one is picked. Colours only through the theme variables (--text, --bg,
+   --surface, --muted, --rule, --focus); a chosen thing never differs by colour alone (a solid outline, a check mark, a position number).
+   Targets are at least 24 px (the buttons are 2.6em). Forced-colors and print rules at the end. */
+
+/* ---- tiles: a line to build, a bank to take from ---- */
+.check > .tiles, .check > .ordering, .check > .select { flex: 1 0 100%; }
+.tiles { display: grid; gap: 0.5em; margin: 0.3em 0; }
+.tiles-label { margin: 0.2em 0 0; font-size: 0.85em; font-weight: 800; color: var(--muted); }
+.tiles-line { list-style: none; margin: 0; padding: 0.5em; min-height: 3.8em; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5em; border: 2px solid var(--text); border-radius: 0.9em; background: var(--paper, var(--surface)); }
+.tiles-slot { display: contents; }
+.tiles-empty { list-style: none; color: var(--muted); padding: 0 0.4em; font-size: 0.95em; }
+.tiles-bank { display: flex; flex-wrap: wrap; gap: 0.5em; }
+.tile { font: inherit; font-size: 1.1em; min-height: 2.6em; min-width: 2.6em; padding: 0.3em 0.9em; border: 2px solid var(--text); border-radius: 0.7em; background: var(--surface); color: var(--text); cursor: pointer; line-height: 1.3; }
+.tile:hover { border-color: var(--primary); }
+.tile:focus-visible, .order-move:focus-visible, .dg-target:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.tile-built { background: var(--soft-primary, var(--surface)); border-width: 3px; }
+.tile-bank.is-used { border-style: dashed; color: transparent; background: transparent; cursor: default; }
+.tile-bank.is-used:hover { border-color: var(--text); }
+.tiles-actions { margin: 0; display: flex; flex-wrap: wrap; gap: 0.5em; }
+
+/* ---- ordering: every item is in the list, Su and Giù move it ---- */
+.order-list { list-style: none; margin: 0.4em 0; padding: 0; display: grid; gap: 0.5em; }
+.order-item { display: flex; align-items: center; gap: 0.7em; border: 2px solid var(--text); border-radius: 0.9em; padding: 0.4em 0.6em; background: var(--surface); min-height: 3.2em; }
+.order-pos { display: inline-grid; place-items: center; flex: none; width: 1.8em; height: 1.8em; border: 2px solid var(--muted); border-radius: 0.4em; font-size: 0.85em; font-weight: 800; }
+.order-text { flex: 1 1 auto; min-width: 0; font-size: 1.05em; }
+.order-moves { display: inline-flex; flex: none; gap: 0.35em; }
+.order-move { display: inline-grid; place-items: center; width: 2.6em; height: 2.6em; padding: 0; font: inherit; border: 2px solid var(--text); border-radius: 0.6em; background: var(--surface); color: var(--text); cursor: pointer; }
+.order-move:disabled { opacity: 0.35; cursor: default; }
+.order-chevron { width: 1.3em; height: 1.3em; }
+
+/* ---- select: the figure with its tap zones ---- */
+.select { display: grid; gap: 0.4em; margin: 0.3em 0; }
+.dg-targets { position: absolute; inset: 0; pointer-events: none; }
+.dg-target { position: absolute; pointer-events: auto; padding: 0; border: 2px dashed var(--text); border-radius: 0.5em; background: transparent; color: var(--bg); cursor: pointer; display: grid; place-items: center; }
+.dg-target:hover { border-style: solid; border-color: var(--muted); }
+.dg-target .dg-target-ic { width: 1.2em; height: 1.2em; padding: 0.1em; border-radius: 50%; background: var(--text); color: var(--bg); visibility: hidden; position: absolute; top: -0.5em; right: -0.5em; }
+.dg-target.is-on { border: 3px solid var(--text); background: color-mix(in srgb, var(--text) 14%, transparent); }
+.dg-target.is-on .dg-target-ic { visibility: visible; }
+.dg-target::after { content: attr(data-n); position: absolute; left: 0.15em; top: 0.1em; font-size: 0.7em; font-weight: 800; color: var(--text); display: none; }
+.select-live { margin: 0; font-weight: 800; min-height: 1.6em; }
+.select-fallback { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5em; }
+.select-fallback .span-chip { min-height: 2.6em; padding: 0.2em 0.9em; }
+.select-print { display: none; }
+
+/* ---- the how-to line and "Come si risponde" ---- */
+.howto { font-weight: 700; }
+.howto-help { flex: 1 0 100%; margin: 0.3em 0 0; font-size: 0.92em; }
+.howto-help summary { cursor: pointer; font-weight: 800; min-height: 1.8em; }
+.howto-help ul { margin: 0.3em 0 0.3em 1.2em; padding: 0; }
+.howto-example { margin: 0.2em 0; }
+
+@media (forced-colors: active) {
+  .tile, .order-move, .order-item, .tiles-line { border-color: ButtonText; background: ButtonFace; color: ButtonText; }
+  .tile-bank.is-used { color: GrayText; border-color: GrayText; border-style: dashed; }
+  .tile-built, .dg-target.is-on { border-color: Highlight; border-width: 4px; }
+  .dg-target { border-color: ButtonText; color: ButtonText; }
+  .dg-target .dg-target-ic { background: Highlight; color: HighlightText; forced-color-adjust: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile, .order-move, .dg-target { transition: none; }
+}
+
+@media print {
+  .tiles-actions, .order-moves, .howto-help { display: none !important; }
+  .tiles-line, .tiles-bank { border: 1px solid #000; }
+  /* P3/P6: a select check prints its figure with numbered, unchosen targets and a line to write the numbers on */
+  .dg-target { display: block; border: 1px dashed #000; background: transparent !important; }
+  .dg-target.is-on { border: 1px dashed #000; }
+  .dg-target .dg-target-ic { display: none; }
+  .dg-target::after { display: block; }
+  .select-print { display: block; margin: 0.3em 0 0; }
+  .select-live { display: none; }
+}

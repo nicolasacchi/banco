@@ -666,6 +666,32 @@
    "rules": {
     "lesson.accept_schema1": false
    }
+  },
+  {
+   "file": "bad/verify-disagrees.md",
+   "base": "base.md",
+   "code": "E-LESSON-VERIFY",
+   "line": 71,
+   "construct": "check",
+   "note": "a number check with verify: {fn: chrono.duration, args: {from: '-133', to: '-27'}} whose answer the function does not give (before Chrono is built the finding says it is not built; after, it names the difference)"
+  },
+  {
+   "file": "bad/type-reserved.md",
+   "base": "base.md",
+   "code": "W-TYPE-RESERVED",
+   "line": 33,
+   "construct": "diagram",
+   "allow_reserved": true,
+   "note": "a diagram network, run with lesson submit --dry-run --allow-reserved (without it: E-LESSON-BLOCK); a lesson with a reserved piece is never stored"
+  },
+  {
+   "file": "bad/type-draft.md",
+   "base": "base.md",
+   "code": "W-TYPE-DRAFT",
+   "line": 33,
+   "construct": "diagram",
+   "allow_reserved": true,
+   "note": "a diagram cell (a W2-2 draft), run with lesson submit --dry-run --allow-reserved"
   }
  ],
  "pending": {
@@ -679,15 +705,8 @@
     "change": "a climograph naming a station that geo/stations does not hold (station: atlantis), or a size of bio/sizes that does not exist"
    },
    {
-    "code": "E-LESSON-VERIFY",
-    "needs": ["option:verify"],
-    "track": "T1",
-    "base": "base.md",
-    "change": "a number check with verify: {fn: chrono.duration, args: {from: '-133', to: '-27'}} and answer '107'"
-   },
-   {
     "code": "E-CHECK-ANSWER-IN-ALT",
-    "needs": ["check:select"],
+    "needs": ["check:select", "diagram:network"],
     "track": "T1",
     "base": "base.md",
     "change": "a select check whose figure's alt_it says 'il nucleo è il cerchio al centro' while the answer is the nucleus"
@@ -715,33 +734,17 @@
    },
    {
     "code": "E-SELECT-MARKED",
-    "needs": ["check:select"],
+    "needs": ["check:select", "diagram:network"],
     "track": "T1",
     "base": "base.md",
     "change": "a select check whose candidates differ in style (one labelled, one patterned)"
    },
    {
     "code": "E-DIAGRAM-TARGET",
-    "needs": ["check:select"],
+    "needs": ["check:select", "diagram:network"],
     "track": "T1",
     "base": "base.md",
     "change": "a select target under 24 x 24 CSS px at 390 px (render check)"
-   },
-   {
-    "code": "W-TYPE-RESERVED",
-    "needs": [],
-    "standing": "the reserved dry run exists from W2-0: the fixture is written with the first track that ships a bad lesson file for it",
-    "track": "T1",
-    "base": "base.md",
-    "change": "a lesson with a diagram network, run with lesson submit --dry-run --allow-reserved"
-   },
-   {
-    "code": "W-TYPE-DRAFT",
-    "needs": [],
-    "standing": "the reserved dry run exists from W2-0: the fixture is written with the first track that ships a bad lesson file for it",
-    "track": "T1",
-    "base": "base.md",
-    "change": "a lesson with a diagram cell, run with lesson submit --dry-run --allow-reserved"
    },
    {
     "code": "E-PROGRAM-BOUND",

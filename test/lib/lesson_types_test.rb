@@ -125,9 +125,15 @@ class LessonTypesTest < ActiveSupport::TestCase
     assert_equal [ [ "layout", "line", "reserved" ] ], Lessons::Types.held_back_uses(:diagram, "flow", { "layout" => "line" }).map { |f, v, s| [ f, v, s["status"] ] }
     assert_empty Lessons::Types.held_back_uses(:diagram, "flow", { "layout" => "tree" })
     assert_equal [ [ "text_en", "present" ] ], Lessons::Types.held_back_uses(:diagram, "sentence", { "states" => [ { "text_en" => "x" } ] }).map { |f, v, _| [ f, v ] }
-    assert_equal [ "listen", "verify" ], Lessons::Types.held_back_options({ "component" => "choice", "listen" => {}, "verify" => {} }).map(&:first)
+    assert_equal [ "listen" ], Lessons::Types.held_back_options({ "component" => "choice", "listen" => {}, "verify" => {} }).map(&:first), "verify is available since T1"
+    assert_equal [ "contractions" ], Lessons::Types.held_back_options({ "component" => "normalized_text", "contractions" => "en", "profile" => { "name" => "binary" } }).map(&:first)
     assert_equal [ "input_bits" ], Lessons::Types.held_back_options({ "component" => "normalized_text", "input" => "bits" }).map(&:first)
     assert_empty Lessons::Types.held_back_options({ "component" => "number", "input" => "bits" })
+  end
+
+  test "contractions stays reserved until the vetted table it reads is written (otherwise the option would grade as if it were off)" do
+    status = Lessons::Types.data.fetch("check_options").fetch("contractions").fetch("status")
+    assert status != "available" || Lessons::VettedData.written?("english/contractions"), "contractions is available but config/banco/data/english/contractions.yml is missing"
   end
 
   def build(type, arg, body, **opts)
@@ -148,7 +154,7 @@ class LessonTypesTest < ActiveSupport::TestCase
   test "blocks, check components, layouts, views and check options held back are refused one by one" do
     assert_match(/reveal block is not available/, assert_raises(Lessons::Directives::Refused) { build("reveal", nil, "prompt_it: x\nanswer_it: y\n") }.message)
     assert_match(/page block is not available/, assert_raises(Lessons::Directives::Refused) { build("page", nil, "key: x\n") }.message)
-    assert_match(/check component select/, assert_raises(Lessons::Directives::Refused) { build("check", "select", "prompt_it: x\n") }.message)
+    assert_match(/check component amount_words/, assert_raises(Lessons::Directives::Refused) { build("check", "amount_words", "prompt_it: x\n") }.message)
     assert_match(/flow layout: line/, assert_raises(Lessons::Directives::Refused) { build("diagram", "flow", "layout: line\nnodes: []\n") }.message)
     assert_match(/check option listen/, assert_raises(Lessons::Directives::Refused) { build("check", "choice", "prompt_it: x\nlisten: {text_en: hello}\n") }.message)
     assert_match(/unknown block type "venn"/, assert_raises(Lessons::Directives::Refused) { build("venn", nil, "a: 1\n") }.message)

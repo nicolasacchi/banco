@@ -12,6 +12,8 @@ import { render as textT } from "items/normalized_text"
 import { button, el, icon, uid } from "lesson/dom"
 import { renderInlineRich, renderRich } from "lesson/text"
 import { checkNotes } from "lesson/teacher_notes"
+import { moduleFor as checkModule } from "lesson/checks/registry"
+import { howtoNodes } from "lesson/checks/howto"
 
 // matching: one row per item, the categories as chips (radios styled as chips: arrows move inside a row)
 function matchingInput(spec, ctx) {
@@ -108,7 +110,12 @@ function input(spec, ctx, options = {}) {
     case "normalized_text": return textT(part, { t: ctx.items })
     case "matching": return matchingInput(spec, ctx)
     case "span_select": return spanInput(spec, ctx)
-    default: throw new Error(`no check component ${spec.component}`)
+    default: {
+      // select, tiles, ordering...: lesson/checks/*, loaded before the page is drawn (lesson/preload.js); render() gives the input handle
+      const mod = checkModule(spec.component)
+      if (!mod) throw new Error(`no check component ${spec.component}`)
+      return mod.render(spec, ctx, {})
+    }
   }
 }
 
@@ -139,6 +146,11 @@ export function renderCheck(spec, ctx, loc, options = {}) {
     form.append(prompt, row, feedback)
     if (spec.component === "fraction" && !spec.answer_format_it) form.insertBefore(el("p", { class: "hint line-hint", text: ctx.t.fraction_line_hint }), feedback)
   } else form.append(prompt, row, el("p", { class: "check-actions" }, submit), feedback)
+
+  // the fixed how-to line of a new component on its first use in the lesson, and its closed "Come si risponde" (A9)
+  const [howto, help] = howtoNodes(spec, ctx, loc)
+  if (howto) prompt.after(howto)
+  if (help) form.appendChild(help)
 
   if (ctx.teacher) {
     const notes = checkNotes(ctx.full?.spec(loc), ctx)
@@ -202,7 +214,7 @@ export function renderCheck(spec, ctx, loc, options = {}) {
 }
 
 function lock(form) {
-  for (const control of form.querySelectorAll("input, button.span-chip, textarea, select")) control.disabled = true
+  for (const control of form.querySelectorAll("input, button.span-chip, button.tile, button.order-move, button.dg-target, button.tiles-clear, button.tiles-listen, textarea, select")) control.disabled = true
   form.classList.add("is-done")
   form.querySelector("[type=submit]").disabled = true
 }

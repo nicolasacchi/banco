@@ -24,7 +24,7 @@ module Lesson2Fixtures
                             topic: ->(k) { c["topics"].include?(k) })
   end
 
-  def check(text, subject = "math") = Validation::LessonChecks.call(text, subject: subject, context: context(subject))
+  def check(text, subject = "math", allow_reserved: false) = Validation::LessonChecks.call(text, subject: subject, context: context(subject), allow_reserved: allow_reserved)
 
   def front_matter(text) = YAML.safe_load(text[/\A---\n(.*?)\n---\n/m, 1])
 

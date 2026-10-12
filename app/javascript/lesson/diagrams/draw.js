@@ -8,6 +8,7 @@ import { button, clear, el, icon, spriteHref, svg, uid } from "lesson/dom"
 import { HOME_PALETTE, describe, layout, moduleFor, stateCount } from "lesson/diagrams/registry"
 import { tryValues, equationTex } from "lesson/diagrams/balance"
 import { renderInlineRich, renderMath, renderRich } from "lesson/text"
+import { nearest, targetLabel } from "lesson/checks/select_model"
 
 const MARKERS = {
   // shapes of the palette (A6), drawn in a w x h box at x, y
@@ -117,6 +118,8 @@ function animate(oldBoxes, root, reduced) {
 // hero: a larger cover drawing.
 export function mountDiagram(data, ctx, options = {}) {
   const type = data?.type
+  // ctx.mode of the component contract (WAVE2 1.2): "select" draws the figure of a select check with tap targets (options.select)
+  const mode = options.mode ?? "student"
   const id = uid("dg")
   const figure = el("figure", { class: `dg dg-${type} dg-size-${data?.size ?? "m"}${options.hero ? " dg-hero" : ""}${options.compact ? " dg-compact" : ""}`, "data-type": type })
   // a type with a home palette draws in its subject's colours whatever the lesson's subject (WAVE2 1.3)
@@ -167,7 +170,7 @@ export function mountDiagram(data, ctx, options = {}) {
     state.width = width
     if (!measurer.current) measurer.current = makeMeasure(stage, ctx)
     const fontPx = ctx.fontPx()
-    const scene = layout(data, { width, fontPx, measure: measurer.current.measure, subject: ctx.subject, state: state.i, tryValue: state.tryValue })
+    const scene = layout(data, { width, fontPx, measure: measurer.current.measure, subject: ctx.subject, state: state.i, tryValue: state.tryValue, mode, revealed: [] })
     if (scene.error) return showError(scene.error)
     figure.classList.remove("dg-failed")
     figure.querySelector(".dg-fallback")?.remove()
@@ -196,6 +199,7 @@ export function mountDiagram(data, ctx, options = {}) {
     scene.shapes.forEach((s) => {
       for (const node of shapeNode(s)) {
         if (s.key && s.kind !== "group") node.dataset.key = s.key
+        if (s.target && mode === "select") node.dataset.target = s.target
         stageSvg.appendChild(node)
         if (s.kind === "group" && s.move && node.__inner) {
           const inner = node.__inner
@@ -239,6 +243,7 @@ export function mountDiagram(data, ctx, options = {}) {
       })
       labelsLayer.appendChild(b)
     }
+    if (mode === "select" && options.select) selectTargets()
     op.textContent = ""
     const eff = total > 1 ? (data.states[state.i] ?? {}) : {}
     if (eff.op_it) renderInlineRich(eff.op_it, op, ctx)
@@ -258,6 +263,72 @@ export function mountDiagram(data, ctx, options = {}) {
     }
     animate(old, figure, ctx.reduced())
     stepper()
+  }
+
+  // The tap targets of a select check (WAVE2 2.11): one HTML button over each shape the layout marked with a target id (tN), in reading order.
+  // One tab stop (roving): the arrows go to the nearest target in that direction, Space or Enter toggles. Every target is the same neutral
+  // outline (L3); a chosen one is a solid outline with a check mark, never a colour alone. The name read is "zona n di N" plus the type's
+  // neutral description, never a label.
+  const selectTargets = () => {
+    const sel = options.select
+    const texts = ctx.t.checks
+    const found = [...stageSvg.querySelectorAll("[data-target]")].map((node) => ({ id: node.dataset.target, box: node.getBBox() }))
+    found.sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)))
+    if (found.length === 0) {
+      sel.onNoTargets?.()
+      return
+    }
+    const layer = el("div", { class: "dg-targets", role: "group", "aria-label": texts.select_group })
+    const buttons = found.map(({ id: tid, box }) => {
+      const w = Math.max(box.width, 28)
+      const h = Math.max(box.height, 28)
+      const b = el("button", {
+        type: "button", class: "dg-target", "data-target": tid, "data-n": tid.slice(1), "aria-pressed": "false", tabindex: "-1",
+        "aria-label": targetLabel(texts.select_zone, tid.slice(1), sel.total ?? found.length, sel.info?.get(tid)?.neutral_it)
+      }, icon("check", "dg-target-ic"))
+      b.style.left = `${box.x + box.width / 2 - w / 2}px`
+      b.style.top = `${box.y + box.height / 2 - h / 2}px`
+      b.style.width = `${w}px`
+      b.style.height = `${h}px`
+      return b
+    })
+    const sync = () => {
+      for (const b of buttons) {
+        const on = sel.isOn(b.dataset.target)
+        b.setAttribute("aria-pressed", String(on))
+        b.classList.toggle("is-on", on)
+      }
+    }
+    const boxes = found.map(({ box }) => ({ x: box.x, y: box.y, w: box.width, h: box.height }))
+    let current = Math.max(0, buttons.findIndex((b) => sel.isOn(b.dataset.target)))
+    const focusAt = (i) => {
+      buttons[current].tabIndex = -1
+      current = i
+      buttons[current].tabIndex = 0
+      buttons[current].focus()
+    }
+    buttons[current].tabIndex = 0
+    buttons.forEach((b, i) => {
+      b.addEventListener("click", () => {
+        current = i
+        sel.toggle(b.dataset.target)
+        sync()
+      })
+      b.addEventListener("keydown", (event) => {
+        if (event.altKey || event.ctrlKey || event.metaKey) return
+        const dir = { ArrowLeft: "left", ArrowRight: "right", ArrowUp: "up", ArrowDown: "down" }[event.key]
+        if (dir) {
+          event.preventDefault()
+          focusAt(nearest(boxes, i, dir))
+        } else if (event.key === "Home" || event.key === "End") {
+          event.preventDefault()
+          focusAt(event.key === "Home" ? 0 : buttons.length - 1)
+        }
+      })
+      layer.appendChild(b)
+    })
+    sync()
+    labelsLayer.appendChild(layer)
   }
 
   // controls: states ("Avanti") and the balance's try stepper

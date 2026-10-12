@@ -19,6 +19,7 @@ it:
         E-LESSON-OVERFLOW: "qualcosa esce dalla pagina"
         E-DIAGRAM-LAYOUT: "le scritte del disegno non stanno"
         E-DIAGRAM-SMALL-TEXT: "scritte troppo piccole"
+        E-DIAGRAM-TARGET: "le zone da toccare sono troppo piccole"
       shots:
         title: "Immagini della lezione, revisione %{seq}"
         intro: "Ogni scheda come la vede lo studente, a tre misure. Le immagini senza risposte: sono quelle del controllo grafico."

@@ -18,10 +18,14 @@ export default class extends Controller {
 
   async mount(teacher) {
     const { renderLesson } = await import("lesson/render")
+    const { preloadFor } = await import("lesson/preload")
+    const body = JSON.parse(this.bodyTarget.textContent)
+    await preloadFor(body)
+    await preloadFor(teacher ? this.full : null)
     const keep = this.api?.current?.() ?? 0
     this.api?.destroy()
     const base = `/teacher/lesson-revisions/${this.revisionIdValue}`
-    this.api = renderLesson(this.rootTarget, JSON.parse(this.bodyTarget.textContent), {
+    this.api = renderLesson(this.rootTarget, body, {
       mode: "preview", teacher, full: teacher ? this.full : null, topic: this.topicValue, revisionId: this.revisionIdValue,
       urls: { check: `${base}/checks`, solution: `${base}/exercises`, practice: "#" }, view: "cards", labels: this.labelsValue, items: this.itemsValue,
       startCard: keep

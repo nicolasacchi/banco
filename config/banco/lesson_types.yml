@@ -126,9 +126,9 @@ checks:
   normalized_text: {status: available, batch: r1, module: lesson/blocks/check}
   matching: {status: available, batch: r1, module: lesson/blocks/check}
   span_select: {status: available, batch: r1, module: lesson/blocks/check}
-  select: {status: reserved, schema: final, batch: w2-1, track: T1, module: lesson/checks/select}
-  tiles: {status: reserved, schema: final, batch: w2-1, track: T1, module: lesson/checks/tiles}
-  ordering: {status: reserved, schema: final, batch: w2-1, track: T1, module: lesson/checks/ordering}
+  select: {status: available, schema: final, batch: w2-1, track: T1, module: lesson/checks/select}
+  tiles: {status: available, schema: final, batch: w2-1, track: T1, module: lesson/checks/tiles}
+  ordering: {status: available, schema: final, batch: w2-1, track: T1, module: lesson/checks/ordering}
   amount_words: {status: draft, schema: draft, batch: w2-2, track: T8, module: lesson/checks/amount_words}
   cell_formula: {status: reserved, schema: none, batch: w2-3, track: T9, module: lesson/checks/cell_formula}
   trace: {status: reserved, schema: none, batch: w2-3, track: T9, module: lesson/checks/trace}
@@ -138,10 +138,12 @@ checks:
 # `value` limits the option to one value of the field (a profile name, an input mode).
 check_options:
   listen: {field: listen, applies_to: [choice, matching, span_select], status: reserved, schema: final, batch: w2-1, track: T2}
-  verify: {field: verify, applies_to: all, status: reserved, schema: final, batch: w2-1, track: T1}
-  profile: {field: profile, applies_to: [normalized_text], status: reserved, schema: final, batch: w2-1, track: T1}
+  verify: {field: verify, applies_to: all, status: available, schema: final, batch: w2-1, track: T1}
+  profile: {field: profile, applies_to: [normalized_text], status: available, schema: final, batch: w2-1, track: T1}
   chem_formula_profile: {field: profile, value: chem_formula, applies_to: [normalized_text], status: draft, schema: draft, batch: w2-2, track: T7}
   input_bits: {field: input, value: bits, applies_to: [normalized_text], status: reserved, schema: final, batch: w2-1, track: T9}
+  # contractions: the engine is Grading::Closed::Contractions; it stays reserved until the vetted table config/banco/data/english/contractions.yml is
+  # written and reviewed (T3's data), because without it the option would grade as if it were off (a test holds this).
   contractions: {field: contractions, applies_to: [normalized_text], status: reserved, schema: final, batch: w2-1, track: T1}
-  thousands: {field: thousands, applies_to: [number], status: reserved, schema: final, batch: w2-1, track: T1}
-  reachable_ok: {field: reachable_ok_it, applies_to: all, status: reserved, schema: final, batch: w2-1, track: T1}
+  thousands: {field: thousands, applies_to: [number], status: available, schema: final, batch: w2-1, track: T1}
+  reachable_ok: {field: reachable_ok_it, applies_to: all, status: available, schema: final, batch: w2-1, track: T1}

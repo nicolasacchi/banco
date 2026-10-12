@@ -43,7 +43,7 @@ class Lesson2ChecksTest < ActiveSupport::TestCase
     next if bad["file"].nil? || bad["code"] == "E-LESSON-SCHEMA" || bad["pad_front_matter_bytes"]
 
     test "#{bad['file']} gives #{bad['code']}#{" at line #{bad['line']}" if bad['line']}" do
-      o = F.check(F.read(bad["file"]), subject_of(bad["base"]))
+      o = F.check(F.read(bad["file"]), subject_of(bad["base"]), allow_reserved: bad["allow_reserved"] == true)
       hits = o.findings.select { |f| f.code == bad["code"] }
       assert hits.any?, "#{bad['file']}: expected #{bad['code']}, got #{o.findings.map { |f| [ f.code, f.detail[:line] ] }.inspect}"
       next unless bad["line"]
@@ -107,7 +107,7 @@ class Lesson2ChecksTest < ActiveSupport::TestCase
     F::MANIFEST["bad"].each do |bad|
       next if bad["file"].nil? || bad["code"] == "E-LESSON-SCHEMA" || bad["pad_front_matter_bytes"]
 
-      codes = F.check(F.read(bad["file"]), subject_of(bad["base"])).findings.map(&:code).uniq - %w[W-ABSOLUTE]
+      codes = F.check(F.read(bad["file"]), subject_of(bad["base"]), allow_reserved: bad["allow_reserved"] == true).findings.map(&:code).uniq - %w[W-ABSOLUTE]
       assert_empty codes - [ bad["code"] ] - companions.fetch(bad["file"], []), bad["file"]
     end
   end

@@ -9,9 +9,10 @@
 //
 // Findings (all errors, they depend on the author's data): E-LESSON-RENDER (an exception, a KaTeX error),
 // E-LESSON-OVERFLOW (something wider than its box or than the page), E-DIAGRAM-LAYOUT (a layout that answered an
-// error, two labels overlapping, a label outside the drawing), E-DIAGRAM-SMALL-TEXT (a label under the minimum).
+// error, two labels overlapping, a label outside the drawing), E-DIAGRAM-SMALL-TEXT (a label under the minimum), E-DIAGRAM-TARGET (a select target under 24 x 24 px).
 // Nothing here is sent anywhere; the CSP of the host allows no connection.
 import { renderLesson } from "lesson/render"
+import { preloadFor } from "lesson/preload"
 
 const errors = []
 const note = (message) => errors.push(String(message).slice(0, 300))
@@ -49,6 +50,12 @@ function figureFindings(figure, minPx, state, out) {
     if (px < minPx - 0.01) out.push({ code: "E-DIAGRAM-SMALL-TEXT", message: `the label "${text(label)}" is drawn at ${px.toFixed(1)} px, under ${minPx} px`, where: `${figure.dataset.type} figure, ${tag}` })
     if (stage && (rect.left < stage.left - 2 || rect.right > stage.right + 2))
       out.push({ code: "E-DIAGRAM-LAYOUT", message: `the label "${text(label)}" is drawn outside the figure`, where: `${figure.dataset.type} figure, ${tag}` })
+  }
+  // a select check's tap targets are at least 24 x 24 CSS px (WCAG 2.2 target size, A2)
+  for (const target of figure.querySelectorAll(".dg-target")) {
+    const r = target.getBoundingClientRect()
+    if (r.width < 23.5 || r.height < 23.5)
+      out.push({ code: "E-DIAGRAM-TARGET", message: `a select target is ${r.width.toFixed(0)} x ${r.height.toFixed(0)} px, under 24 x 24`, where: `${figure.dataset.type} figure, ${tag}` })
   }
   for (let i = 0; i < boxes.length; i++) {
     for (let j = i + 1; j < boxes.length; j++) {
@@ -96,6 +103,7 @@ let api = null
 const ready = (async () => {
   try {
     await document.fonts?.ready
+    await preloadFor(body)
     api = renderLesson(root, body, {
       mode: "render", expand: true, view: "scroll", reduceMotion: true, labels: config.labels, items: config.items, topic: body.key,
       revisionId: 0, urls: { check: "", solution: "", practice: "#" }, savePreferences: () => {}

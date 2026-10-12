@@ -1,0 +1,66 @@
+# Italian texts of the check components of lesson/2 (select, tiles, ordering; WAVE2 2.11, A9): controls, live-region sentences, the fixed
+# how-to line of a component's first use in a lesson, and its "Come si risponde" entry. Short sentences, plain words. Read through
+# lesson2_texts as t.checks (the lesson page) and never written by an author.
+it:
+  lesson2:
+    checks:
+      # the one line printed on the first use of a component in a lesson (A9)
+      howto:
+        select_many: "Tocca le zone giuste, poi premi Controlla."
+        select_one: "Tocca una zona, poi premi Controlla."
+        tiles: "Tocca le parole nell'ordine giusto. Per toglierne una, toccala di nuovo."
+        ordering: "Usa Su e Giù per mettere le voci in ordine, poi premi Controlla."
+      # "Come si risponde": lines and a small example, closed until the student opens it
+      help_title: "Come si risponde"
+      help_example: "Esempio"
+      help:
+        select:
+          lines:
+            - "Tocca una zona del disegno per sceglierla."
+            - "Per togliere la scelta, toccala di nuovo."
+            - "Con la tastiera: Tab entra nel disegno, le frecce cambiano zona, Spazio sceglie."
+          example: "Tocchi due zone. Sotto il disegno leggi «Selezionate: 2». Poi premi Controlla."
+        tiles:
+          lines:
+            - "Tocca una parola: va nella tua frase."
+            - "Per toglierla, toccala nella tua frase."
+            - "Con la tastiera: Invio sceglie una parola, le frecce destra e sinistra la spostano."
+            - "Alcune parole non servono."
+          example: "Tocchi «If», «it», «rains»: la frase diventa «If it rains». Poi premi Controlla."
+        ordering:
+          lines:
+            - "Ogni voce ha due pulsanti: Su e Giù."
+            - "Premi Su per portare la voce più in alto."
+            - "Con la tastiera: Alt con la freccia su o giù sposta la voce."
+          example: "Premi Giù sulla prima voce: passa al secondo posto. Alla fine premi Controlla."
+      # tiles
+      tiles_line: "La tua frase"
+      tiles_bank: "Le parole"
+      tiles_empty: "Tocca le parole qui sotto."
+      tiles_clear: "Svuota"
+      tiles_cleared: "Hai tolto tutto."
+      tiles_listen: "Ascolta la frase"
+      tile_built: "%{text}, posto %{n} di %{total}. Toccala per toglierla. Con le frecce la sposti."
+      tile_used: "%{text}, già nella frase."
+      tile_placed: "La tua frase: %{text}."
+      tile_removed: "Hai tolto: %{text}."
+      tile_moved: "Ora è al posto %{n} di %{total}."
+      # ordering
+      order_list: "Le voci da mettere in ordine"
+      order_up: "Sposta su: %{text}"
+      order_down: "Sposta giù: %{text}"
+      order_moved: "Ora è al posto %{n} di %{total}."
+      # select
+      select_group: "Zone da toccare"
+      select_zone: "zona %{n} di %{total}"
+      select_zone_short: "zona %{n} di %{total}"
+      select_count: "Selezionate: %{n}"
+      select_print: "Scrivi i numeri: ____"
+      select_none: "Nessuna zona selezionata."
+      select_none_one: "Tocca la zona giusta."
+      # the teacher's view
+      teacher_built: "Frase costruita"
+      teacher_list: "Elenco"
+      teacher_zones: "Zone"
+      teacher_pick_one: "una sola zona"
+      teacher_pick_many: "tutte le zone indicate"

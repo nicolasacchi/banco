@@ -103,10 +103,25 @@ creg << <<~JS
     return COMPONENTS[component]?.status === "available"
   }
 
-  // The module of a component of lesson/checks, or null for the built-in ones and unknown names.
+  const loaded = new Map()
+
+  // The module of a component of lesson/checks, loading it when needed; null for the built-in ones and unknown names.
   export async function load(component) {
+    if (loaded.has(component)) return loaded.get(component)
     const loader = LOADERS[component]
-    return loader ? loader() : null
+    if (!loader) return null
+    const mod = await loader()
+    loaded.set(component, mod)
+    return mod
+  }
+
+  export function preload(components) {
+    return Promise.all([...new Set(components)].map(load))
+  }
+
+  // The module of a component that has been loaded (preload before the page is drawn), or null.
+  export function moduleFor(component) {
+    return loaded.get(component) ?? null
   }
 JS
 

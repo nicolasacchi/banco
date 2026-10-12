@@ -1,7 +1,7 @@
 // The lines of "Come si risponde" (D-216) by the component of the item on screen. Pure: no DOM,
 // so node tests read it. The texts live in config/locales/it.yml (t.help).
 
-const COMPONENTS = ["number", "fraction", "expression", "choice", "ordering", "matching", "normalized_text", "short_answer"]
+const COMPONENTS = ["number", "fraction", "expression", "choice", "ordering", "matching", "normalized_text", "short_answer", "tiles", "select"]
 
 function linesFor(component, part, help) {
   const lines = [...(help[component] || [])]

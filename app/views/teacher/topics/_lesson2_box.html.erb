@@ -5,6 +5,7 @@
 <% content_for :head do %>
   <%= stylesheet_link_tag "lesson_roles" %>
   <%= stylesheet_link_tag "lesson" %>
+  <%= stylesheet_link_tag "lesson/checks" %>
 <% end %>
 <% body = Lessons::StudentBody.for(revision, seed: "preview") %>
 <div class="l2-box-wrap" data-controller="lesson2-preview"

@@ -137,6 +137,14 @@ it:
         - "Controlla di aver scritto tutte le lettere."
       normalized_text_accents:
         - "Per una lettera con l'accento usa i pulsanti sotto la casella."
+      tiles:
+        - "Tocca una parola: va nella tua frase."
+        - "Per toglierla, toccala nella tua frase."
+        - "Alcune parole non servono."
+      select:
+        - "Tocca una zona del disegno per sceglierla."
+        - "Per togliere la scelta, toccala di nuovo."
+        - "Con la tastiera: Tab entra nel disegno, le frecce cambiano zona, Spazio sceglie."
       short_answer:
         - "Scrivi la risposta con parole tue."
         - "Usa frasi corte e complete."
@@ -154,6 +162,8 @@ it:
         ordering: "Domande da mettere in ordine"
         matching: "Domande da abbinare"
         normalized_text: "Domande con una parola"
+        tiles: "Domande con le parole da mettere in fila"
+        select: "Domande da toccare nel disegno"
   items:
     number_scientific_label: "Scrivi il numero in notazione scientifica, per esempio 3,2 x 10^5 (x per moltiplicare, ^ per l'esponente). Per i decimali usa la virgola."
     number_label: "Scrivi il numero. Per i decimali usa la virgola."
