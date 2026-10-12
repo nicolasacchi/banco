@@ -58,6 +58,7 @@ export function render(block, ctx, loc = {}) {
       iframe.remove()
       root.dataset.state = "failed"
       open.disabled = false
+      open.hidden = false
       open.textContent = ctx.t.pages.again
       status.replaceChildren(...failMessage())
       ctx.pageEvent?.("page_failed", { ...loc, limit })
@@ -78,6 +79,7 @@ export function render(block, ctx, loc = {}) {
         const doc = document.documentElement
         post(initMessage({ seed: view.seed, theme: doc.dataset.theme, size: doc.dataset.size, reduced: ctx.reduced(), visible: true }))
         root.dataset.state = "running"
+        open.hidden = true
         status.textContent = ""
         stage.hidden = true
         iframe.style.height = `${clampHeight(m.height ?? view.min_height)}px`

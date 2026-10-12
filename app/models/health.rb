@@ -23,7 +23,7 @@ module Health
         chrome: chrome ? browser(chrome_wait) : "skipped",
         chrome_egress: chrome ? egress(chrome_wait) : "skipped",
         harness: chrome ? harness(chrome_wait) : "skipped",
-        disk: disk, backup: backup, student_users: student_users
+        disk: disk, backup: backup, student_users: student_users, pages: pages
       }
       problems = parts.filter_map { |name, value| name if failing?(name, value) }
       { ok: problems.empty?, problems: problems.map(&:to_s) }.merge(parts).merge(
@@ -44,6 +44,13 @@ module Health
 
       value = value[:status] if value.is_a?(Hash)
       !OK_VALUES.include?(value)
+    end
+
+    # Free pages (D-281): the switch, and a check that fails when a Cookie header reached the pages origin since the restart (a layer in
+    # front of it, the Traefik strip, is broken).
+    def pages
+      seen = Banco::PagesApp.cookie_headers_seen
+      { status: seen.positive? ? "error: #{seen} Cookie header(s) reached the pages origin: the edge strip is broken" : "ok", enabled: Pages.enabled?, cookie_headers_seen: seen }
     end
 
     def db

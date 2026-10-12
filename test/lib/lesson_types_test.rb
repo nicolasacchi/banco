@@ -174,7 +174,6 @@ class LessonTypesTest < ActiveSupport::TestCase
 
   test "blocks, check components, layouts, views and check options held back are refused one by one" do
     assert_match(/dialogue block is not available/, assert_raises(Lessons::Directives::Refused) { build("dialogue", nil, "title_it: x\n") }.message)
-    assert_match(/page block is not available/, assert_raises(Lessons::Directives::Refused) { build("page", nil, "key: x\n") }.message)
     assert_match(/check component amount_words/, assert_raises(Lessons::Directives::Refused) { build("check", "amount_words", "prompt_it: x\n") }.message)
     assert_match(/flow walk/, assert_raises(Lessons::Directives::Refused) { build("diagram", "flow", "walk: true\nnodes: []\n") }.message)
     assert_match(/check option listen/, assert_raises(Lessons::Directives::Refused) { build("check", "choice", "prompt_it: x\nlisten: {text_en: hello}\n") }.message)

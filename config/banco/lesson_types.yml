@@ -117,7 +117,7 @@ blocks:
   oral: {family: docs, status: available, schema: final, batch: w2-1, track: T8, module: lesson/blocks/oral}
   dialogue: {family: words, status: reserved, schema: final, batch: w2-1, track: T3, module: lesson/blocks/dialogue}
   image: {family: docs, status: draft, schema: draft, batch: w2-2, track: T8, module: lesson/blocks/image}
-  page: {family: pages, status: reserved, schema: none, batch: r2, track: T11, module: lesson/blocks/page}
+  page: {family: pages, status: available, schema: final, batch: r2, track: T11, module: lesson/blocks/page}
 
 checks:
   choice: {status: available, batch: r1, module: lesson/blocks/check}

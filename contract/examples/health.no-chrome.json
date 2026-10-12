@@ -23,6 +23,11 @@
       },
       "backup": "not_configured",
       "student_users": "not_configured",
+      "pages": {
+        "status": "ok",
+        "enabled": false,
+        "cookie_headers_seen": 0
+      },
       "validation_queue": {
         "waiting": 0
       },
