@@ -1,0 +1,184 @@
+{
+  "relazioni-coppia": [
+    {
+      "lang": "it",
+      "text": "Chi deve che cosa a chi"
+    },
+    {
+      "lang": "it",
+      "text": "Una coppia di persone, due frecce, e uno stato che mostra i ruoli. Tocca il nome di Anna per leggere la nota."
+    },
+    {
+      "lang": "it",
+      "text": "Relazioni tra Anna e Paolo. Per ora non c'è nessuna freccia. Anna: debitrice."
+    }
+  ],
+  "relazioni-centro": [
+    {
+      "lang": "it",
+      "text": "Chi elegge chi"
+    },
+    {
+      "lang": "it",
+      "text": "Il Senato è al centro. I tipi di freccia si possono scegliere uno per uno."
+    },
+    {
+      "lang": "it",
+      "text": "Relazioni tra Senato, Popolo, Governo, Presidente e Giudici. Da Popolo a Senato: elegge. Da Senato a Governo: dà la fiducia. Da Senato a Popolo: vota le leggi per tutti. Da Presidente a Governo: nomina. Da Giudici a Senato: consiglia."
+    }
+  ],
+  "relazioni-ventaglio": [
+    {
+      "lang": "it",
+      "text": "Tanti verso uno"
+    },
+    {
+      "lang": "it",
+      "text": "Tre clienti, un solo negozio."
+    },
+    {
+      "lang": "it",
+      "text": "Relazioni tra Cliente uno, Cliente due, Cliente tre e Negozio. Da Cliente uno a Negozio: ordina. Da Cliente due a Negozio: ordina. Da Cliente tre a Negozio: ordina."
+    }
+  ],
+  "relazioni-triangolo": [
+    {
+      "lang": "it",
+      "text": "Tre ruoli"
+    },
+    {
+      "lang": "it",
+      "text": "Chi presta, chi riceve e chi garantisce."
+    },
+    {
+      "lang": "it",
+      "text": "Relazioni tra Creditore, Debitore e Garante. Da Debitore a Creditore: restituisce. Da Garante a Creditore: garantisce."
+    }
+  ],
+  "relazioni-riga": [
+    {
+      "lang": "it",
+      "text": "Quattro tappe di una merce"
+    },
+    {
+      "lang": "it",
+      "text": "Le frecce vanno da sinistra a destra."
+    },
+    {
+      "lang": "it",
+      "text": "Relazioni tra Produttore, Grossista, Negozio e Cliente. Da Produttore a Grossista: manda. Da Grossista a Negozio: manda. Da Negozio a Cliente: dà."
+    }
+  ],
+  "relazioni-griglia": [
+    {
+      "lang": "it",
+      "text": "Quattro poteri"
+    },
+    {
+      "lang": "it",
+      "text": "Chi comanda, chi vota, chi giudica, chi garantisce."
+    },
+    {
+      "lang": "it",
+      "text": "Relazioni tra Chi comanda, Chi vota, Chi giudica e Chi garantisce. Da Chi comanda a Chi vota: comanda. Da Chi giudica a Chi comanda: blocca. Da Chi garantisce a Chi giudica: nomina."
+    }
+  ],
+  "relazioni-poteri": [
+    {
+      "lang": "it",
+      "text": "Il re cede un potere"
+    },
+    {
+      "lang": "it",
+      "text": "Tutti gli altri devono obbedire. Nel secondo stato il potere passa al consiglio."
+    },
+    {
+      "lang": "it",
+      "text": "Relazioni tra Il re, Il consiglio e Tutti gli altri. Da Tutti gli altri a Il re: obbedisce. Il re ha: fa le leggi e guida l'esercito."
+    }
+  ],
+  "catena-linea": [
+    {
+      "lang": "it",
+      "text": "Una catena che cresce"
+    },
+    {
+      "lang": "it",
+      "text": "Una causa dopo l'altra. Puoi togliere una causa e vedere che cosa perde la sua ragione."
+    },
+    {
+      "lang": "it",
+      "text": "Una catena di cause. Una lunga siccità porta a Il raccolto è scarso. Il raccolto è scarso per questo Il pane costa di più. Il pane costa di più quindi La gente protesta."
+    }
+  ],
+  "catena-ventaglio": [
+    {
+      "lang": "it",
+      "text": "Tante cause, un solo fatto"
+    },
+    {
+      "lang": "it",
+      "text": "Cinque cause portano a un fatto. Togli una causa alla volta."
+    },
+    {
+      "lang": "it",
+      "text": "Tante cause per un fatto solo. Guerre lunghe e lontane."
+    }
+  ],
+  "catena-anello": [
+    {
+      "lang": "it",
+      "text": "Un giro che ricomincia"
+    },
+    {
+      "lang": "it",
+      "text": "Quattro tappe e poi di nuovo la prima."
+    },
+    {
+      "lang": "it",
+      "text": "Un giro che ricomincia. L'acqua evapora poi Si formano le nuvole. Si formano le nuvole poi Cade la pioggia. Cade la pioggia poi I fiumi tornano al mare. I fiumi tornano al mare poi L'acqua evapora."
+    }
+  ],
+  "catena-ritorno": [
+    {
+      "lang": "it",
+      "text": "Un giro vizioso e una freccia solo prima"
+    },
+    {
+      "lang": "it",
+      "text": "La prima catena torna al suo inizio. La seconda ha una causa che viene solo prima."
+    },
+    {
+      "lang": "it",
+      "text": "Una catena di cause. I prezzi salgono porta a Servono salari più alti. Servono salari più alti quindi Le imprese spendono di più. Poi si torna indietro: Le imprese spendono di più porta a I prezzi salgono."
+    }
+  ],
+  "percorso-lettera": [
+    {
+      "lang": "it",
+      "text": "Il viaggio di una lettera"
+    },
+    {
+      "lang": "it",
+      "text": "Un segnalino che cammina, una strada più corta e un ritorno."
+    },
+    {
+      "lang": "it",
+      "text": "Un percorso con 5 tappe: Imbucata, Ufficio postale, Smistamento, Portalettere e A casa. Da Imbucata parte una strada più corta (Posta prioritaria): Corsia veloce, e arriva a Smistamento. Da Portalettere si torna a Smistamento: indirizzo sbagliato. Ora siamo qui: Ufficio postale. Un impiegato la timbra."
+    }
+  ],
+  "percorso-corto": [
+    {
+      "lang": "it",
+      "text": "Un percorso corto"
+    },
+    {
+      "lang": "it",
+      "text": "Tre tappe e basta."
+    },
+    {
+      "lang": "it",
+      "text": "Un percorso con 3 tappe: Partenza, Controllo e Arrivo. Ora siamo qui: Partenza."
+    }
+  ]
+}

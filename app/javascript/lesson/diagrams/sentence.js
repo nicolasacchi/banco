@@ -247,4 +247,21 @@ export function describe(data, ctx = {}) {
   return out.join(" ")
 }
 
+// What the voice reads (D-282, L10): the sentence of the state shown now, in its own language, then each part (its words in their language, then
+// what the part is). Unlike describe it reads one state, not all of them.
+export function speechSegments(data, ctx = {}) {
+  const subject = ctx.subject ?? "italian"
+  const n = stateCount(data)
+  const i = Math.max(0, Math.min(ctx.state ?? 0, n - 1))
+  const e = effectiveState(data, i)
+  const say = (o) => ({ lang: langOf(o) ?? "it", text: plain(textOf(o)) })
+  const out = [{ lang: "it", text: `${n > 1 ? `Passo ${i + 1}${e.op_it ? `, ${plain(e.op_it)}` : ""}. ` : ""}La frase:` }, say(e)]
+  for (const p of e.parts ?? []) {
+    const r = palette.subjects[subject]?.[p.role] ?? palette.common[p.role]
+    const what = `è ${p.implied ? "sottinteso: " : ""}${r?.label_it ?? p.role}${p.question_it ? `, ${plain(p.question_it)}` : ""}`
+    out.push(say(p), { lang: "it", text: /[.?!]$/.test(what) ? what : `${what}.` })
+  }
+  return out.filter((seg) => seg.text)
+}
+
 export const layout = (data, opts) => run(data, opts, { semantic, build })

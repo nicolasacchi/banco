@@ -1,0 +1,104 @@
+{
+  "pioggia": [
+    {
+      "lang": "it",
+      "text": "Prima la pioggia, poi la linea"
+    },
+    {
+      "lang": "it",
+      "text": "Guarda una cosa alla volta. Prima la pioggia, poi la temperatura."
+    },
+    {
+      "lang": "it",
+      "text": "Passo 1. Climogramma di Winnipeg (Canada) (latitudine 49,92 gradi). Le barre mostrano la pioggia di ogni mese, in millimetri. Il mese con più pioggia è luglio: 76,6. Quello con meno pioggia è febbraio: 13,3."
+    }
+  ],
+  "arido": [
+    {
+      "lang": "it",
+      "text": "Un mese è arido"
+    },
+    {
+      "lang": "it",
+      "text": "Un mese è arido se la barra sta sotto la linea. A Brasília succede da maggio a settembre."
+    },
+    {
+      "lang": "it",
+      "text": "Passo 1. Climogramma di Brasília (Brasile) (latitudine meno 15,79 gradi). Le barre mostrano la pioggia di ogni mese, in millimetri. Il mese con più pioggia è novembre: 253,1. Quello con meno pioggia è luglio: 1,5. La linea mostra la temperatura di ogni mese, in gradi: da 19,3 a 23,1."
+    }
+  ],
+  "monsone": [
+    {
+      "lang": "it",
+      "text": "Quando piove tantissimo"
+    },
+    {
+      "lang": "it",
+      "text": "Sopra i 100 mm la scala cambia. A Mumbai piove moltissimo, ma per cinque mesi quasi niente."
+    },
+    {
+      "lang": "it",
+      "text": "Climogramma di Mumbai (India) (latitudine 18,9 gradi). Le barre mostrano la pioggia di ogni mese, in millimetri. Il mese con più pioggia è luglio: 768,5. Quello con meno pioggia è aprile: 0,2. La linea mostra la temperatura di ogni mese, in gradi: da 24,8 a 30,7. Mesi aridi, con la barra sotto la linea: da gennaio a maggio, novembre e dicembre. In un anno cadono 2.213,4 millimetri di pioggia."
+    }
+  ],
+  "sud": [
+    {
+      "lang": "it",
+      "text": "Sotto l'equatore le stagioni cambiano"
+    },
+    {
+      "lang": "it",
+      "text": "La linea tratteggiata è la città del sud: l'estate è a gennaio."
+    },
+    {
+      "lang": "it",
+      "text": "Climogramma di Roma (Italia) (latitudine 41,81 gradi). La linea mostra la temperatura di ogni mese, in gradi: da 8,5 a 24,7. La linea tratteggiata è la temperatura di Città del Capo (Sudafrica)."
+    }
+  ],
+  "parti": [
+    {
+      "lang": "it",
+      "text": "Le parti di una barra"
+    },
+    {
+      "lang": "it",
+      "text": "Le parti sono larghe come i loro valori. Una parte nascosta è quello che resta."
+    },
+    {
+      "lang": "it",
+      "text": "Vendite: una barra divisa in 3 parti: primo 120, secondo 200 e resto (da trovare). In tutto: 480."
+    }
+  ],
+  "percento": [
+    {
+      "lang": "it",
+      "text": "Euro sopra, percentuale sotto"
+    },
+    {
+      "lang": "it",
+      "text": "Il cento per cento è la base. Il ventidue per cento è una parte della base."
+    },
+    {
+      "lang": "it",
+      "text": "Una scala doppia: sopra i valori, sotto le percentuali. Il 22% (parte) vale 409,20 €. Il 100% vale 1.860,00 €. Il 122% (base e parte) vale 2.269,20 €. Nuova riga: il 90% di 1.860,00 € vale 1.674,00 €. Nuova riga: il 95% di 1.674,00 € vale 1.590,30 €."
+    }
+  ],
+  "seggi": [
+    {
+      "lang": "it",
+      "text": "Chi vota"
+    },
+    {
+      "lang": "it",
+      "text": "Ogni punto è un seggio. Pieno vuol dire sì, vuoto vuol dire no, piccolo vuol dire assente."
+    },
+    {
+      "lang": "it",
+      "text": "Una camera di 400 seggi disposti a semicerchio. Presenti: 300. Numero legale: servono 201 presenti. Ci sono. Maggioranza dei presenti: servono 151 sì. Ci sono. Voti sì: 170. Esito: approvata."
+    },
+    {
+      "lang": "it",
+      "text": "Una camera di 100 seggi disposti in una griglia di righe da dieci. Gruppi: Primo gruppo, 60 seggi e Secondo gruppo, 25 seggi."
+    }
+  ]
+}

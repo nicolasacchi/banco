@@ -45,19 +45,32 @@ export const SIGNATURES = {
 
 // ---- the walker: what the rendered card says ---------------------------------------------------------------------------------------------
 
-const SKIP_TAGS = new Set(["BUTTON", "INPUT", "SELECT", "TEXTAREA", "SVG", "SCRIPT", "STYLE", "NAV", "TEMPLATE", "DIALOG", "AUDIO", "VIDEO", "CANVAS", "IMG"])
-const INLINE_TAGS = new Set(["SPAN", "A", "STRONG", "EM", "B", "I", "SMALL", "MARK", "CODE", "SUB", "SUP", "LABEL", "ABBR", "U"])
+const SKIP_TAGS = new Set(["INPUT", "SELECT", "TEXTAREA", "SVG", "SCRIPT", "STYLE", "NAV", "TEMPLATE", "DIALOG", "AUDIO", "VIDEO", "CANVAS", "IMG"])
+const INLINE_TAGS = new Set(["SPAN", "A", "STRONG", "EM", "B", "I", "SMALL", "MARK", "CODE", "SUB", "SUP", "ABBR", "U"])
 const LANGS = ["it", "en", "es", "la"]
 
 const attr = (node, name) => (typeof node.getAttribute === "function" ? node.getAttribute(name) : (node.attrs?.[name] ?? null))
 const hasAttr = (node, name) => attr(node, name) !== null && attr(node, name) !== undefined
 const classes = (node) => String(attr(node, "class") ?? "").split(/\s+/)
 
-// Whether a node is out of the reading: hidden, aria-hidden, inert, marked as not spoken, or (when the browser can say) not rendered.
+// A button is a control, not text, except the ones whose face is the lesson's own words: the card that turns (`mistake-toggle`, `reveal-toggle`),
+// the option of a crossroads, the span of a span_select and the tile of a tile check.
+const CONTENT_BUTTON = /(^|\s)(?:[a-z]+-toggle|reveal-option|span-chip|tile)(\s|$)/
+
+// Whether a node is out of the reading: hidden, aria-hidden, inert, marked as not spoken, for screen readers only, a control, or not drawn
+// (checkVisibility where the browser has it, else the computed style: an unflipped back is `display: none`).
 function isOut(node) {
   if (node.hidden === true || hasAttr(node, "hidden") || attr(node, "aria-hidden") === "true" || hasAttr(node, "inert") || hasAttr(node, "data-nospeech")) return true
-  if (SKIP_TAGS.has(String(node.tagName).toUpperCase())) return true
-  if (typeof node.checkVisibility === "function" && node.checkVisibility() === false) return true
+  const tag = String(node.tagName).toUpperCase()
+  if (SKIP_TAGS.has(tag)) return true
+  const cls = String(attr(node, "class") ?? "")
+  if (/(^|\s)sr-only(\s|$)/.test(cls)) return true
+  if (tag === "BUTTON" && !CONTENT_BUTTON.test(cls)) return true
+  if (typeof node.checkVisibility === "function") return node.checkVisibility() === false
+  if (typeof globalThis.getComputedStyle === "function" && typeof node.nodeType === "number" && node.ownerDocument) {
+    const style = globalThis.getComputedStyle(node)
+    return style.display === "none" || style.visibility === "hidden"
+  }
   return false
 }
 
@@ -77,18 +90,19 @@ export function speechOf(root) {
   const out = []
   let current = null
   const flush = () => {
-    if (current && current.text.trim()) out.push({ lang: current.lang, text: current.text.replace(/\s+/g, " ").trim(), node: current.node })
+    // the pieces of an inline run are joined as the page has them (the text nodes keep their own spaces); a space never stands before a mark
+    if (current && current.text.trim()) out.push({ lang: current.lang, text: current.text.replace(/\s+/g, " ").replace(/\s+([.,;:!?)»])/g, "$1").trim(), node: current.node })
     current = null
   }
   const add = (lang, text, node) => {
     if (!text) return
     if (current && current.lang !== lang) flush()
     if (!current) current = { lang, text: "", node }
-    current.text += `${text} `
+    current.text += text
   }
   const walk = (node, lang) => {
     if (node.nodeType === 3) {
-      add(lang, plainToSpeech(node.nodeValue ?? node.data ?? node.textContent ?? ""), node.parentNode)
+      add(lang, plainToSpeech(node.nodeValue ?? node.data ?? node.textContent ?? "", lang), node.parentNode)
       return
     }
     if (node.nodeType !== 1 || (node !== root && isOut(node))) return
@@ -111,11 +125,11 @@ export function speechOf(root) {
     }
     if (cls.includes("katex")) {
       const tex = node.querySelector?.('annotation[encoding="application/x-tex"]')?.textContent
-      add("it", tex ? texToSpeech(tex) : (node.textContent ?? ""), node)
+      add("it", ` ${tex ? texToSpeech(tex) : (node.textContent ?? "")} `, node)
       return
     }
     if (cls.includes("code-span")) {
-      add("it", codeToSpeech(node.textContent ?? ""), node)
+      add("it", ` ${codeToSpeech(node.textContent ?? "")} `, node)
       return
     }
     const tag = String(node.tagName).toUpperCase()
@@ -127,7 +141,11 @@ export function speechOf(root) {
       flush()
       return
     }
+    // a bubble that opens next to its word is read after it, as a separate breath
+    const spaced = cls.includes("gloss-pop") || cls.includes("speak")
+    if (spaced) add(own, " ", node)
     for (const child of node.childNodes ?? []) walk(child, own)
+    if (spaced) add(own, " ", node)
     if (block || own !== lang) flush()
   }
   walk(root, langOf(root, "it"))

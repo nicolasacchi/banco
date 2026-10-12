@@ -1,0 +1,314 @@
+{
+  "fattura": [
+    {
+      "lang": "it",
+      "text": "Una fattura, riga per riga"
+    },
+    {
+      "lang": "it",
+      "text": "Fattura numero 41 del 12 ottobre 2026. chi vende: Cartoleria Alfa srl; chi compra: Studio Beta. Quaderni A4: 800 per € 2,50, € 2.000,00, IVA 22%. Imballaggio: € 60,00, del venditore. Corriere pagato per il cliente: € 50,00, anticipata. Righe. Merce (lordo): € 2.000,00; Sconto 10%: € 200,00; Netto merce: € 1.800,00; Spese del venditore: € 60,00; Imponibile: € 1.860,00; IVA 22%: € 409,20; Spese anticipate per il cliente: € 50,00; Totale fattura: € 2.319,20. Un recinto tratteggiato racchiude le righe che formano l'imponibile."
+    },
+    {
+      "lang": "it",
+      "text": "Nella fattura, chi compra?"
+    },
+    {
+      "lang": "it",
+      "text": "Scegli una risposta"
+    },
+    {
+      "lang": "it",
+      "text": "Il corriere"
+    },
+    {
+      "lang": "it",
+      "text": "Cartoleria Alfa"
+    },
+    {
+      "lang": "it",
+      "text": "Studio Beta"
+    }
+  ],
+  "cascata": [
+    {
+      "lang": "it",
+      "text": "Prima togli, poi aggiungi"
+    },
+    {
+      "lang": "it",
+      "text": "Fattura. chi vende: Cartoleria Alfa srl; chi compra: Studio Beta. Quaderni A4: 800 per € 2,50, € 2.000,00, IVA 22%. Imballaggio: € 60,00, del venditore. Corriere pagato per il cliente: € 50,00, anticipata. Righe. Merce (lordo): € 2.000,00. Le righe sono disegnate come una cascata: prima si toglie, poi si aggiunge. La figura ha 5 passi."
+    },
+    {
+      "lang": "it",
+      "text": "Netto 2.000,00 euro. Spese del venditore 80,00 euro. Quanto è l'imponibile?"
+    },
+    {
+      "lang": "it",
+      "text": "Imponibile"
+    },
+    {
+      "lang": "it",
+      "text": "Scrivi il numero. Per i decimali usa la virgola."
+    }
+  ],
+  "legge": [
+    {
+      "lang": "it",
+      "text": "Le parole della legge"
+    },
+    {
+      "lang": "it",
+      "text": "Codice di prova, art. 1"
+    },
+    {
+      "lang": "it",
+      "text": "Il venditore porta la merce dove e quando dice il contratto."
+    },
+    {
+      "lang": "it",
+      "text": "Se il compratore non ritira la merce entro cinque giorni, il venditore la mette in deposito. Il deposito lo paga il compratore."
+    },
+    {
+      "lang": "it",
+      "text": "Leggi con me"
+    },
+    {
+      "lang": "it",
+      "text": "Dopo cinque giorni, chi paga il deposito della merce?"
+    },
+    {
+      "lang": "it",
+      "text": "Scegli una risposta"
+    },
+    {
+      "lang": "it",
+      "text": "Il compratore"
+    },
+    {
+      "lang": "it",
+      "text": "Il venditore"
+    }
+  ],
+  "bivio": [
+    {
+      "lang": "it",
+      "text": "Che cosa fai?"
+    },
+    {
+      "lang": "it",
+      "text": "Che cosa fai?"
+    },
+    {
+      "lang": "it",
+      "text": "Sei il venditore"
+    },
+    {
+      "lang": "it",
+      "text": "Hai spedito la merce. Il cliente non paga la fattura da due mesi. Che cosa fai?"
+    },
+    {
+      "lang": "it",
+      "text": "Aspetto ancora, senza dire niente"
+    },
+    {
+      "lang": "it",
+      "text": "Gli scrivo e chiedo di pagare"
+    },
+    {
+      "lang": "it",
+      "text": "Non consegno più nulla, senza avvisare"
+    },
+    {
+      "lang": "it",
+      "text": "Prima scegli una strada."
+    }
+  ],
+  "errore": [
+    {
+      "lang": "it",
+      "text": "Pensaci, poi gira"
+    },
+    {
+      "lang": "it",
+      "text": "Pensaci"
+    },
+    {
+      "lang": "it",
+      "text": "Perché le spese anticipate per il cliente restano fuori dall'imponibile?"
+    },
+    {
+      "lang": "it",
+      "text": "Fattura numero 42 del 19 ottobre 2026. chi vende: Cartoleria Alfa srl; chi compra: Studio Beta. Penne: 200 per € 1,20, € 240,00, IVA 22%. Trasporto: € 30,00, anticipata. Righe. Merce (lordo): € 240,00; Netto merce: € 240,00; Imponibile: da calcolare; IVA 22%: € 52,80; Spese anticipate per il cliente: € 30,00; Totale fattura: da calcolare. Un recinto tratteggiato racchiude le righe che formano l'imponibile."
+    },
+    {
+      "lang": "it",
+      "text": "Quanto è il totale della fattura?"
+    },
+    {
+      "lang": "it",
+      "text": "Totale"
+    },
+    {
+      "lang": "it",
+      "text": "Scrivi il numero. Per i decimali usa la virgola."
+    }
+  ],
+  "esempio": [
+    {
+      "lang": "it",
+      "text": "Un esempio"
+    },
+    {
+      "lang": "it",
+      "text": "Da risolvere"
+    },
+    {
+      "lang": "it",
+      "text": "Calcola il totale: 10 risme a 4,00 euro, IVA 22 per cento."
+    },
+    {
+      "lang": "it",
+      "text": "passo 0 di 2"
+    }
+  ],
+  "orale": [
+    {
+      "lang": "it",
+      "text": "Prova a dirlo"
+    },
+    {
+      "lang": "it",
+      "text": "Domanda per l'orale"
+    },
+    {
+      "lang": "it",
+      "text": "Spiega come si arriva dal lordo al totale di una fattura."
+    },
+    {
+      "lang": "it",
+      "text": "Metti in ordine la scaletta della risposta, poi premi Controlla."
+    },
+    {
+      "lang": "it",
+      "text": "Calcolo l'IVA e aggiungo le spese anticipate"
+    },
+    {
+      "lang": "it",
+      "text": "Tolgo gli sconti e ho il netto"
+    },
+    {
+      "lang": "it",
+      "text": "Parto dal lordo della merce"
+    },
+    {
+      "lang": "it",
+      "text": "Aggiungo le spese del venditore: ecco l'imponibile"
+    },
+    {
+      "lang": "it",
+      "text": "Parole per collegare: prima poi infine"
+    },
+    {
+      "lang": "it",
+      "text": "Parole da usare: lordo netto imponibile IVA"
+    }
+  ],
+  "c8": [
+    {
+      "lang": "it",
+      "text": "Errori da evitare"
+    },
+    {
+      "lang": "it",
+      "text": "Sono gli errori più comuni. Tocca una carta per vedere la versione giusta e il perché."
+    },
+    {
+      "lang": "it",
+      "text": "Percentuali"
+    },
+    {
+      "lang": "it",
+      "text": "Sbagliato"
+    },
+    {
+      "lang": "it",
+      "text": "Sconti del 10 per cento e del 5 per cento: tolgo il 15 per cento."
+    },
+    {
+      "lang": "it",
+      "text": "Sbagliato"
+    },
+    {
+      "lang": "it",
+      "text": "L'IVA si calcola sul lordo."
+    },
+    {
+      "lang": "it",
+      "text": "Il recinto"
+    },
+    {
+      "lang": "it",
+      "text": "Sbagliato"
+    },
+    {
+      "lang": "it",
+      "text": "Le spese anticipate entrano nell'imponibile."
+    }
+  ],
+  "c9": [
+    {
+      "lang": "it",
+      "text": "Prova tu"
+    },
+    {
+      "lang": "it",
+      "text": "Fai i conti sul quaderno, poi scrivi il risultato."
+    },
+    {
+      "lang": "it",
+      "text": "Imponibile 640,00 euro, IVA 22 per cento. Quanto è l'IVA?"
+    },
+    {
+      "lang": "it",
+      "text": "IVA"
+    },
+    {
+      "lang": "it",
+      "text": "Scrivi il numero. Per i decimali usa la virgola."
+    }
+  ],
+  "c10": [
+    {
+      "lang": "it",
+      "text": "In sintesi"
+    },
+    {
+      "lang": "it",
+      "text": "Prima togli gli sconti, uno dopo l'altro."
+    },
+    {
+      "lang": "it",
+      "text": "L'imponibile è il netto più le spese del venditore."
+    },
+    {
+      "lang": "it",
+      "text": "Il totale è imponibile, IVA e spese anticipate."
+    },
+    {
+      "lang": "it",
+      "text": "Una tabella con le colonne Riga, Come si calcola. Riga 1. Riga: Netto; Come si calcola: Lordo meno gli sconti. Riga 2. Riga: Imponibile; Come si calcola: Netto più spese del venditore. Riga 3. Riga: IVA; Come si calcola: Imponibile per l'aliquota. Riga 4. Riga: Totale; Come si calcola: Imponibile, IVA e spese anticipate."
+    },
+    {
+      "lang": "it",
+      "text": "Hai finito la lezione"
+    },
+    {
+      "lang": "it",
+      "text": "Ora puoi esercitarti."
+    },
+    {
+      "lang": "it",
+      "text": "Allenati: esercizi con correzione"
+    }
+  ]
+}

@@ -66,7 +66,7 @@ export function glossaryList(card, ctx) {
   const inner = { ...ctx, glossary: null }
   for (const e of entries) {
     const dd = el("dd", {}, renderInlineRich(e.def_it, el("span", { class: "glossary-def" }), inner))
-    if (e.example_it) dd.appendChild(renderInlineRich(e.example_it, el("span", { class: "glossary-example" }), inner))
+    if (e.example_it) dd.append(document.createTextNode(" "), renderInlineRich(e.example_it, el("span", { class: "glossary-example" }), inner))
     list.append(el("dt", { text: e.term_it }), dd)
   }
   return el("aside", { class: "card-glossary", "aria-labelledby": id }, el("h3", { id, text: ctx.t.gloss.card_title }), list)

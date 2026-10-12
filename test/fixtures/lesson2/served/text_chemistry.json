@@ -1,0 +1,57 @@
+{
+ "schema": "banco.lesson/2",
+ "schema_version": 2,
+ "key": "ripasso.chemistry.demo-text",
+ "kind": "ripasso",
+ "subject": "chemistry",
+ "title_it": "Le formule delle reazioni",
+ "goals_it": [
+  "**Leggere** una reazione",
+  "**Contare** gli atomi"
+ ],
+ "why_it": "Una reazione si scrive con le formule. Così vedi che cosa si trasforma.",
+ "skills": [
+  "chemistry.demo-formulas"
+ ],
+ "uses": [],
+ "refs": [],
+ "scope": "studied",
+ "minutes": 15,
+ "calculator": false,
+ "cards": [
+  {
+   "n": 1,
+   "id": "acqua",
+   "role": "idea",
+   "level": "core",
+   "title_it": "Una reazione si scrive con le formule",
+   "icon": "lightbulb",
+   "blocks": [
+    {
+     "type": "text",
+     "text_it": "L'acqua si forma così: $\\ce{2H2 + O2 -> 2H2O}$.",
+     "n": 1
+    },
+    {
+     "type": "math",
+     "tex": "\\ce{2H2 + O2 -> 2H2O}",
+     "n": 2
+    },
+    {
+     "type": "text",
+     "text_it": "Tre molecole d'acqua si scrivono $\\ce{3H2O}$. Una quantità si scrive $\\pu{25 kJ/mol}$.",
+     "n": 3
+    },
+    {
+     "type": "text",
+     "text_it": "Il ferro dà uno ione: $\\ce{Fe^{3+}}$. Il sale è $\\ce{NaCl}$ e la soda è $\\ce{NaOH}$.",
+     "n": 4
+    }
+   ]
+  }
+ ],
+ "words": {
+  "core": 60,
+  "extra": 0
+ }
+}

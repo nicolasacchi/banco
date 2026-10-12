@@ -1,0 +1,175 @@
+{
+ "schema": "banco.lesson/2",
+ "schema_version": 2,
+ "key": "ripasso.english.demo-text",
+ "kind": "ripasso",
+ "subject": "english",
+ "title_it": "Quando arrivo, ti chiamo: il futuro dopo when",
+ "goals_it": [
+  "**Scrivere** il presente dopo when",
+  "**Ascoltare** una frase e capirla"
+ ],
+ "why_it": "Per dire quando succede una cosa serve la parte con when. Il suo verbo sta al presente.",
+ "skills": [
+  "english.demo-when"
+ ],
+ "uses": [],
+ "refs": [],
+ "scope": "studied",
+ "minutes": 15,
+ "calculator": false,
+ "glossary": [
+  {
+   "term_it": "subordinata",
+   "def_it": "Una parte della frase che non sta in piedi da sola.",
+   "example_it": "[[en:When I arrive]] aspetta il resto della frase."
+  },
+  {
+   "term_it": "presente",
+   "def_it": "Il tempo del verbo che dice che cosa succede adesso."
+  },
+  {
+   "term_it": "futuro",
+   "def_it": "Il tempo del verbo che dice che cosa succederà dopo."
+  }
+ ],
+ "cards": [
+  {
+   "n": 1,
+   "id": "when",
+   "role": "idea",
+   "level": "core",
+   "title_it": "Dopo when il verbo sta al presente",
+   "icon": "lightbulb",
+   "blocks": [
+    {
+     "type": "text",
+     "text_it": "La [[g:subordinata]] con **when** dice il momento. Il suo verbo è al [[g:presente]], anche se parla del [[g:futuro]].",
+     "n": 1
+    },
+    {
+     "type": "diagram",
+     "diagram": {
+      "type": "sentence",
+      "layout": "line",
+      "alt_it": "La frase When I arrive, I will call you: la parte con when dice il momento, il verbo sta al presente.",
+      "text_en": "When I arrive, I will call you.",
+      "parts": [
+       {
+        "id": "w",
+        "text_en": "When I arrive,",
+        "role": "time",
+        "question_it": "Quando?"
+       },
+       {
+        "id": "m",
+        "text_en": "I will call you.",
+        "role": "main",
+        "question_it": "Che cosa succede?"
+       }
+      ]
+     },
+     "n": 2
+    },
+    {
+     "type": "text",
+     "text_it": "Leggi: [[en:When I arrive, I will call you.]] In Italia diresti: quando arriverò, ti chiamerò.",
+     "n": 3
+    },
+    {
+     "type": "text",
+     "text_it": "[[time:when I arrive]] dice il momento; [[main:I will call you]] dice che cosa succede. La parola [[time|it:momento]] è italiana.",
+     "n": 4
+    },
+    {
+     "type": "text",
+     "text_it": "In un programma si scrive così: [[code:Do While k < 40]] e [[code:soldi = soldi + 8]].",
+     "n": 5
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "id": "ascolto",
+   "role": "idea",
+   "level": "core",
+   "title_it": "Ascolta e rispondi",
+   "icon": "lightbulb",
+   "blocks": [
+    {
+     "type": "text",
+     "text_it": "Ascolta la frase. Poi scegli la risposta giusta.",
+     "n": 1
+    },
+    {
+     "type": "check",
+     "component": "choice",
+     "prompt_it": "Quando chiama Luca?",
+     "listen": {
+      "text_en": "I will call you when I get home."
+     },
+     "options": [
+      {
+       "id": "a",
+       "text_it": "Quando arriva a casa"
+      },
+      {
+       "id": "b",
+       "text_it": "Domani mattina"
+      },
+      {
+       "id": "c",
+       "text_it": "Dopo la scuola"
+      }
+     ],
+     "n": 2
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "id": "cloze",
+   "role": "example",
+   "level": "core",
+   "title_it": "Completa la frase",
+   "icon": "pencil-ruler",
+   "blocks": [
+    {
+     "type": "check",
+     "component": "normalized_text",
+     "prompt_it": "Completa: [[en:When I ___ (get) home, I will call you.]]",
+     "answer_format_it": "Scrivi una sola parola.",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "id": "gira",
+   "role": "mistakes",
+   "level": "core",
+   "title_it": "Pensaci, poi gira",
+   "icon": "triangle-alert",
+   "blocks": [
+    {
+     "n": 1,
+     "type": "reveal",
+     "prompt_it": "Dopo when, il verbo sta al futuro?",
+     "answer_it": "No: sta al presente, anche se parla del futuro."
+    },
+    {
+     "n": 2,
+     "type": "mistake",
+     "group_it": "Tempi",
+     "wrong_it": "When I will arrive, I will call you.",
+     "right_it": "When I arrive, I will call you.",
+     "why_it": "Dopo when il verbo sta al presente."
+    }
+   ]
+  }
+ ],
+ "words": {
+  "core": 80,
+  "extra": 0
+ }
+}

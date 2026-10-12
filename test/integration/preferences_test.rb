@@ -56,4 +56,15 @@ class PreferencesTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
     assert_equal 1, AppEvent.where(kind: "student_preference").count
   end
+
+  test "Ascolta is on until the student turns it off, the speed is normal until the student asks for slower, and the choice is kept (D-282)" do
+    assert_equal({ lesson_view: "cards", reduce_motion: false, listen: true, slower: false }, Diagnosis::Preferences.lesson(@rows[:student]))
+    as_student "/diagnosis/preferences", method: :post, params: { slower: "true" }
+    assert_equal({ lesson_view: "cards", reduce_motion: false, listen: true, slower: true }, Diagnosis::Preferences.lesson(@rows[:student]))
+    as_student "/diagnosis/preferences", method: :post, params: { listen: "false" }
+    assert_equal({ lesson_view: "cards", reduce_motion: false, listen: false, slower: true }, Diagnosis::Preferences.lesson(@rows[:student]), "the other choices stay")
+    as_student "/diagnosis/preferences", method: :post, params: { listen: "false" }
+    assert_equal 2, AppEvent.where(kind: "student_preference").count, "saying the same again writes nothing"
+    assert_equal({ theme: "cream", size: "normal" }, Diagnosis::Preferences.for(@rows[:student]), "theme and size are untouched")
+  end
 end

@@ -1391,5 +1391,32 @@
     "note": "",
     "error": "only |it follows a colour role name",
     "line": 1
+  },
+  {
+    "input": "Completa [[en:When I ___ (get) home]] ora.",
+    "options": {
+      "roles": true
+    },
+    "note": "D-281: the gap of a cloze is an underscore, allowed inside a language span",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Completa "
+          },
+          {
+            "t": "lang",
+            "lang": "en",
+            "v": "When I ___ (get) home"
+          },
+          {
+            "t": "text",
+            "v": " ora."
+          }
+        ]
+      }
+    ]
   }
 ]

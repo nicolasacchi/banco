@@ -59,6 +59,18 @@ export function renderMath(tex, target, ctx, display = false, tiles = false) {
   return target
 }
 
+// The bubble opens under its word and stays inside the card: as wide as the card allows (22rem at most), slid left when it would leave it.
+function place(button, pop) {
+  const box = pop.closest(".card-body, .l2-card") ?? document.documentElement
+  const bounds = box.getBoundingClientRect()
+  const anchor = pop.parentElement.getBoundingClientRect()
+  const width = Math.min(bounds.width - 16, 22 * (parseFloat(getComputedStyle(pop).fontSize) || 20))
+  pop.style.width = `${width}px`
+  pop.style.maxWidth = `${width}px`
+  const left = Math.max(bounds.left + 8, Math.min(anchor.left, bounds.right - 8 - width))
+  pop.style.left = `${left - anchor.left}px`
+}
+
 // A glossary word: the word, a small book icon that is the button (a padded hit area), and the definition that opens under it (D-265). The
 // definition is hidden until asked for, so the voice reads it only after the student opened it (L10); the card lists its words anyway.
 function glossWord(term, ctx) {
@@ -83,10 +95,7 @@ function glossWord(term, ctx) {
     if (!pop.hidden) { close(); return }
     pop.hidden = false
     button.setAttribute("aria-expanded", "true")
-    // keep the bubble inside the screen: it opens under the word and slides left when it would leave the right edge
-    pop.style.left = "0px"
-    const room = document.documentElement.clientWidth - pop.getBoundingClientRect().right - 8
-    if (room < 0) pop.style.left = `${room}px`
+    place(button, pop)
     document.addEventListener("pointerdown", outside, true)
     document.addEventListener("keydown", escape, true)
   })

@@ -221,8 +221,10 @@ export function bitsToSpeech(bits) {
 }
 
 // Plain text as the device should say it: arrows and signs that a voice would skip or spell badly.
-export function plainToSpeech(text) {
+export function plainToSpeech(text, lang = "it") {
+  const blank = { en: " blank ", es: " espacio " }[lang] ?? " spazio vuoto "
   return String(text)
+    .replace(/_{2,}/g, blank)
     .replace(/←/g, " prende ").replace(/→/g, " diventa ").replace(/≠/g, " diverso da ").replace(/≤/g, " minore o uguale a ").replace(/≥/g, " maggiore o uguale a ")
     .replace(/×/g, " per ").replace(/÷/g, " diviso ").replace(/−/g, " meno ").replace(/(\d)\s*%/g, "$1 per cento")
     .replace(/\s+/g, " ")

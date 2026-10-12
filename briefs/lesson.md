@@ -353,6 +353,20 @@ products, `cartesian` for lines and systems, `equation_parts` for anatomy; itali
   explanation under its title; add a `legend` block when a card is about the roles.
 - **Links**: `[testo](scheda:SLUG)` to a card of the same lesson (the card needs `id=SLUG`), `[testo](argomento:KEY)`
   to a topic of the subject's course map (`E-LESSON-LINK` when it does not exist).
+- **Words of another language** (D-281): `[[en:When I arrive, I will call you.]]`, `[[es:...]]` (and `[[la:...]]`) in any `_it` text, only in a
+  subject that teaches that language (`E-LESSON-LANG`: english `en`, spanish `es`; `la` in italian, history, law_economics, biology). Plain words, no markup
+  inside; the Italian lint skips them and a target-language sentence has at most 12 words (`E-READ`). Words beyond the first 3000 of the language, the
+  lesson's glossary and `teaches_en` / `teaches_es` are `W-LANG-LEVEL`. In an english or spanish lesson a colour role span is target-language text
+  (`[[time:when I arrive]]`); an Italian one says `[[time|it:momento]]`. A key holding such words ends in the language: `text_en`, `form_es`.
+  A cloze keeps its cue, `When I ___ (get) home`, without a warning.
+- **Code**: `[[code:soldi = soldi + 8]]`, at most 40 characters, literal (`<`, `>`, `=`, `"`, `;`, `$` allowed; `]]` cannot be typed), in the body font.
+- **Glossary** (front matter `glossary: [{term_it, def_it, example_it?}]`, at most 12, short Italian): `[[g:promulgazione]]` in a text gives the word
+  with a small book icon that opens the definition; the card lists its words under it ("Parole di questa scheda", counted in the 250 apparatus words).
+- **Chemistry** (chemistry and biology only): `$\ce{2H2 + O2 -> 2H2O}$` and `$\pu{25 kJ/mol}$`; every symbol in `\ce{}` or `\mathrm{}` is an element symbol,
+  case-exact (`E-CHEM-SYMBOL`).
+- **Ascolta**: the card has a button that reads it aloud with the device's voice (only voices the operator accepted); nothing in the lesson may depend on
+  it. A check can be heard: `listen: {text_en: "I will call you when I get home."}` on a `choice`, `matching` or `span_select` (the text stays behind
+  "Mostra il testo").
 - Refused (`E-LESSON-MARKUP`, with line and construct): headings inside a block, tables, `<` tags, any other link,
   images, `*italic*`, `_italic_`, backticks, `>` quotes, `---`, bare math (any `^`, `_` or backslash outside
   `$...$`), an unclosed `$` or `**`, and in any formula `\htmlClass`, `\htmlId`, `\htmlStyle`, `\htmlData`,

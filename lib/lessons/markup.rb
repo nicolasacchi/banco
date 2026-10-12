@@ -238,7 +238,7 @@ module Lessons
 
       words = text[from...stop]
       raise Refused.new(line, "an empty [[#{lang}: language span") if words.strip.empty?
-      raise Refused.new(line, "markup inside a [[#{lang}: language span (it holds plain words)") if words.match?(/[$*\\\[_^`|]|<[A-Za-z\/!]/)
+      raise Refused.new(line, "markup inside a [[#{lang}: language span (it holds plain words)") if words.match?(/[$*\\\[^`|]|<[A-Za-z\/!]/)
 
       [ { "t" => "lang", "lang" => lang, "v" => words }, stop + 2 ]
     end

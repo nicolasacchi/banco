@@ -1,0 +1,152 @@
+{
+  "carta": [
+    {
+      "lang": "it",
+      "text": "Una carta con i suoi lati"
+    },
+    {
+      "lang": "it",
+      "text": "In ogni carta il nord è in alto. A sinistra c'è l'ovest, a destra l'est. Le linee tratteggiate sono l'equatore e il tropico."
+    },
+    {
+      "lang": "it",
+      "text": "Carta: America del Sud. Il nord è in alto, l'ovest a sinistra e l'est a destra. Si vedono: l'equatore e i tropici. In evidenza: Brasile e Argentina. Luoghi: Brasilia. Macapá: 0°, 51,1° ovest. Linea: Rio delle Amazzoni. Il Brasile e il suo vicino a sud."
+    }
+  ],
+  "mondo": [
+    {
+      "lang": "it",
+      "text": "Il mondo a continenti"
+    },
+    {
+      "lang": "it",
+      "text": "Un planisfero mostra tutti i continenti insieme. Le fasce di latitudine hanno trame diverse, non solo colori diversi."
+    },
+    {
+      "lang": "it",
+      "text": "Carta: Il mondo. Il nord è in alto, l'ovest a sinistra e l'est a destra. Si vedono: l'equatore, i tropici e i circoli polari. In evidenza: Europa e Africa. Fascia calda, da 23,4° sud a 23,4° nord. Fascia temperata, da 23,4° nord a 66,6° nord."
+    }
+  ],
+  "italia": [
+    {
+      "lang": "it",
+      "text": "L'Italia e le sue regioni"
+    },
+    {
+      "lang": "it",
+      "text": "Le regioni dell'Italia sono venti. Qui si vedono il Lazio e la Toscana, con Roma."
+    },
+    {
+      "lang": "it",
+      "text": "Carta: Italia. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Lazio e Toscana. Luoghi: Roma."
+    }
+  ],
+  "antico": [
+    {
+      "lang": "it",
+      "text": "Il Mediterraneo antico"
+    },
+    {
+      "lang": "it",
+      "text": "I confini antichi non si conoscono con precisione: la carta dice sempre \"Confini approssimativi\". Muovi l'anno e guarda che cosa cambia."
+    },
+    {
+      "lang": "it",
+      "text": "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 264 a.C.. Luoghi: Roma e Cartagine."
+    }
+  ],
+  "numeri": [
+    {
+      "lang": "it",
+      "text": "Tanti luoghi, i numeri"
+    },
+    {
+      "lang": "it",
+      "text": "Se i nomi non entrano nella carta, ogni luogo ha un numero. L'elenco sotto la carta dice quale è quale."
+    },
+    {
+      "lang": "it",
+      "text": "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. Luoghi: Roma, Cartagine, Atene, Alessandria d'Egitto, Bisanzio (poi Costantinopoli), Gerusalemme, Ravenna, Milano, Azio, Canne, Zama e Alesia."
+    }
+  ],
+  "percorso": [
+    {
+      "lang": "it",
+      "text": "Un percorso sulla carta"
+    },
+    {
+      "lang": "it",
+      "text": "Una linea collega i luoghi di un viaggio, nell'ordine in cui si fanno."
+    },
+    {
+      "lang": "it",
+      "text": "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. Luoghi: Rubicone e Roma. Percorso (Cesare, 49 a.C.): Gallia, Rubicone e Roma."
+    }
+  ],
+  "luce": [
+    {
+      "lang": "it",
+      "text": "La stessa luce, più terreno"
+    },
+    {
+      "lang": "it",
+      "text": "Lontano dall'equatore la luce arriva storta e si spalma su più terreno. Per questo scalda meno."
+    },
+    {
+      "lang": "it",
+      "text": "La Terra vista di lato, con i raggi del Sole paralleli. Il Sole è alto sopra l'equatore. Il raggio a 0°: la luce si spalma su 1,0 volte il terreno. Il raggio a 30° nord: la luce si spalma su 1,2 volte il terreno. Il raggio a 60° nord: la luce si spalma su 2,0 volte il terreno. Il raggio mobile a 10° nord: la luce si spalma su 1,0 volte il terreno. Equinozio."
+    }
+  ],
+  "quota": [
+    {
+      "lang": "it",
+      "text": "Salire in quota"
+    },
+    {
+      "lang": "it",
+      "text": "Ogni mille metri si perdono circa sei gradi. Per questo le cime vicine all'equatore hanno la neve."
+    },
+    {
+      "lang": "it",
+      "text": "Sezione del terreno, lunga 200 km. La quota va da 0 a 5000 m. Altezze esagerate 20 volte. Cima, a 100 km. Pianura, a 20 km. Fascia foresta: da 0 a 1000 m (da 26 °C a 20 °C). Fascia foresta di montagna: da 1000 a 3000 m (da 20 °C a 8 °C). Fascia prato alto: da 3000 a 4500 m (da 8 °C a −1 °C). Fascia ghiaccio: da 4500 a 5000 m (da −1 °C a −4 °C). Con la quota la temperatura scende di 6 °C ogni 1000 m. A 0 m: 26 °C."
+    }
+  ],
+  "c9": [
+    {
+      "lang": "it",
+      "text": "In sintesi"
+    },
+    {
+      "lang": "it",
+      "text": "Il nord è in alto, l'ovest a sinistra, l'est a destra."
+    },
+    {
+      "lang": "it",
+      "text": "Una trama aiuta quando i colori non bastano."
+    },
+    {
+      "lang": "it",
+      "text": "Più lontano dall'equatore la luce copre più terreno."
+    },
+    {
+      "lang": "it",
+      "text": "Salendo di mille metri si perdono circa sei gradi."
+    },
+    {
+      "lang": "it",
+      "text": "Uno schema a domande. Passo: Più lontano dall'equatore, poi «La luce arriva storta». Passo: La luce arriva storta, poi «Copre più terreno». Passo: Copre più terreno, poi «Scalda meno». Fine: Scalda meno."
+    },
+    {
+      "lang": "it",
+      "text": "Hai finito la lezione"
+    },
+    {
+      "lang": "it",
+      "text": "Ora puoi esercitarti."
+    },
+    {
+      "lang": "it",
+      "text": "Allenati: esercizi con correzione"
+    }
+  ]
+}

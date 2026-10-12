@@ -54,7 +54,7 @@ test("an unopened gloss and an unflipped back are not read; once they are open t
 
 test("a formula is read from its TeX source, a chemical formula by its atoms, a code span by its symbols", () => {
   const card = el("article", {}, el("p", {}, "Risolvi ", katex("2x + 3 = 7"), "."), el("p", {}, "Scrivi ", katex("\\ce{3H2O}"), "."), el("p", {}, "Poi ", el("span", { class: "code-span" }, "k < 40"), "."))
-  assert.deepEqual(said(card), ["it: Risolvi 2 x più 3 uguale 7 .", "it: Scrivi tre molecole: 6 atomi di idrogeno e 3 di ossigeno .", "it: Poi k minore di 40 ."])
+  assert.deepEqual(said(card), ["it: Risolvi 2 x più 3 uguale 7.", "it: Scrivi tre molecole: 6 atomi di idrogeno e 3 di ossigeno.", "it: Poi k minore di 40."])
 })
 
 test("a figure speaks for itself, from the state it shows now; data-speech-text and data-speech-bits say what they say", () => {
@@ -84,6 +84,8 @@ test("the speech of chemistry, code and bits", () => {
   assert.equal(bitsToSpeech("01101011"), "zero uno uno zero, uno zero uno uno")
   assert.equal(bitsToSpeech("101"), "uno zero uno")
   assert.equal(plainToSpeech("k ← 5 e 35%"), "k prende 5 e 35 per cento")
+  assert.equal(plainToSpeech("When I ___ (get) home", "en"), "When I blank (get) home")
+  assert.equal(plainToSpeech("Completa ___ ora"), "Completa spazio vuoto ora")
 })
 
 // a fake speechSynthesis: records what is spoken and lets the test end each utterance
@@ -155,4 +157,28 @@ test("Prova le voci lists the local voices of it, en and es, with whether each i
   speech.configure({ synth, accepted: { it: [], en: ["Daniel"], es: [] } })
   assert.deepEqual(speech.localVoices().map((v) => [v.name, v.language, v.accepted]), [["Daniel", "en", true], ["Alice", "it", false]])
   assert.ok(speech.TRY_SENTENCES.it && speech.TRY_SENTENCES.en && speech.TRY_SENTENCES.es)
+})
+
+test("a sentence figure reads its state in the language of its words, and only the state shown", async () => {
+  const sentence = await import("lesson/diagrams/sentence")
+  const data = { type: "sentence", alt_it: "x", text_en: "When I arrive, I will call you.", parts: [
+    { id: "w", text_en: "When I arrive,", role: "time", question_it: "Quando?" }, { id: "m", text_en: "I will call you.", role: "main" }] }
+  assert.deepEqual(sentence.speechSegments(data, { subject: "english", state: 0 }), [
+    { lang: "it", text: "La frase:" }, { lang: "en", text: "When I arrive, I will call you." },
+    { lang: "en", text: "When I arrive," }, { lang: "it", text: "è tempo, Quando?" }, { lang: "en", text: "I will call you." }, { lang: "it", text: "è frase principale." }])
+  const steps = { type: "sentence", alt_it: "x", text_it: "Il treno è arrivato", parts: [{ id: "a", text_it: "Il treno", role: "subject" }, { id: "b", text_it: "è arrivato", role: "predicate" }], states: [{}, { parts: [{ id: "a", text_it: "Il treno", role: "subject" }], op_it: "Solo il soggetto" }] }
+  const second = sentence.speechSegments(steps, { subject: "italian", state: 1 })
+  assert.match(second[0].text, /^Passo 2, Solo il soggetto\. La frase:/)
+  assert.equal(second.some((s) => s.text === "è arrivato"), false, "a part that this state does not show is not read")
+})
+
+test("a control is not text, but a card that turns, an option of a crossroads, a span and a tile are the lesson's own words", () => {
+  const card = el("article", {},
+    el("button", { class: "mistake-toggle" }, el("p", {}, "Sbagliato. 2x - 3 = 7"), el("span", { class: "mistake-hint" }, el("span", { class: "sr-only" }, "Tocca per girare"))),
+    el("div", { class: "mistake-back", hidden: "" }, "La risposta giusta."),
+    el("button", { class: "reveal-option" }, "Aspetto ancora"),
+    el("button", { class: "button small", type: "submit" }, "Controlla"),
+    el("button", { class: "tile tile-bank" }, "will"),
+    el("p", {}, "Fine."))
+  assert.deepEqual(said(card), ["it: Sbagliato. 2x - 3 = 7", "it: Aspetto ancora", "it: will", "it: Fine."])
 })

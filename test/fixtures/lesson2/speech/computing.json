@@ -1,0 +1,112 @@
+{
+  "otto-bit": [
+    {
+      "lang": "it",
+      "text": "Otto bit con i loro pesi"
+    },
+    {
+      "lang": "it",
+      "text": "Passo 1. 5 su 8 bit. Un registro di 8 bit in base 2: 0000 0101. I pesi, da sinistra: −128, 64, 32, 16, 8, 4, 2 e 1. Letto con segno vale 5. 4 + 1 = 5. Il bit 1 è il segno."
+    }
+  ],
+  "accendi": [
+    {
+      "lang": "it",
+      "text": "Accendi i bit"
+    },
+    {
+      "lang": "it",
+      "text": "Un registro di 8 bit in base 2: 0010 1101. I pesi, da sinistra: 128, 64, 32, 16, 8, 4, 2 e 1. Letto senza segno vale 45. 32 + 8 + 4 + 1 = 45. Ogni bit si può cambiare con un tocco. Prova a fare 45, 255 e 0."
+    }
+  ],
+  "con-segno": [
+    {
+      "lang": "it",
+      "text": "Con il segno"
+    },
+    {
+      "lang": "it",
+      "text": "Un registro di 8 bit in base 2: 0000 0000. I pesi, da sinistra: −128, 64, 32, 16, 8, 4, 2 e 1. Letto con segno vale 0. Il bit 1 è il segno. Ogni bit si può cambiare con un tocco. Prova a fare −1, −128 e 127."
+    }
+  ],
+  "altre-basi": [
+    {
+      "lang": "it",
+      "text": "Altre basi"
+    },
+    {
+      "lang": "it",
+      "text": "Un registro di 4 cifre in base 16: 00FF. I pesi, da sinistra: 4096, 256, 16 e 1. Letto senza segno vale 255."
+    },
+    {
+      "lang": "it",
+      "text": "Passo 1. Un registro di 3 cifre in base 10: 002."
+    },
+    {
+      "lang": "it",
+      "text": "Un registro di 8 bit in base 2: 1011 0110. Letto senza segno vale 182."
+    }
+  ],
+  "ruota": [
+    {
+      "lang": "it",
+      "text": "La ruota dei codici"
+    },
+    {
+      "lang": "it",
+      "text": "Una ruota con tutti i 16 codici di 4 bit, da 0000 a 1111, in senso orario dall'alto. Fuori c'è il valore senza segno, da 0 a 15. Dentro c'è il valore con segno, da −8 a 7. Il valore con segno salta tra 0111 e 1000. Il valore senza segno salta tra 1111 e 0000. Il puntatore è su 0010: senza segno 2, con segno 2. Il codice 1111 è segnato: -1. Da 0111 avanti di 1 si arriva a 1000, che vale senza segno 8, con segno −8."
+    },
+    {
+      "lang": "it",
+      "text": "Una ruota con tutti i 8 codici di 3 bit, da 000 a 111, in senso orario dall'alto. Sulla ruota c'è il valore con segno, da −4 a 3. Il valore con segno salta tra 011 e 100. Il puntatore è su 111: con segno −1."
+    }
+  ],
+  "somma": [
+    {
+      "lang": "it",
+      "text": "Una somma che esce dal registro"
+    },
+    {
+      "lang": "it",
+      "text": "Somma in colonna, in base 2, su 8 cifre: 0000 0101 più 1111 1011. Il lavoro non è ancora cominciato: appare una colonna alla volta, da destra."
+    }
+  ],
+  "sottrazione": [
+    {
+      "lang": "it",
+      "text": "Una sottrazione con il prestito"
+    },
+    {
+      "lang": "it",
+      "text": "Sottrazione in colonna, in base 2, su 8 cifre: 1000 0000 meno 0000 0001. Il lavoro non è ancora cominciato: appare una colonna alla volta, da destra."
+    }
+  ],
+  "moltiplicazione": [
+    {
+      "lang": "it",
+      "text": "Una moltiplicazione"
+    },
+    {
+      "lang": "it",
+      "text": "Moltiplicazione in colonna, in base 2, su 8 cifre: 0000 0101 per 0000 0101. Il lavoro non è ancora cominciato: appare un prodotto alla volta."
+    },
+    {
+      "lang": "it",
+      "text": "Somma in colonna, in base 10, su 3 cifre: 487 più 256. Il risultato nel registro è 743."
+    }
+  ],
+  "interruttori": [
+    {
+      "lang": "it",
+      "text": "Scrivi i bit con gli interruttori"
+    },
+    {
+      "lang": "it",
+      "text": "Scrivi meno 3 in complemento a 2 su 8 bit."
+    },
+    {
+      "lang": "it",
+      "text": "Tocca un bit per cambiarlo da 0 a 1 e da 1 a 0."
+    }
+  ]
+}

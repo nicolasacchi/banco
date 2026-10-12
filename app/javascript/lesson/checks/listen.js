@@ -16,7 +16,7 @@ export function listenBox(spec, ctx) {
   let shown = false
   let handle = null
   const text = el("p", { class: `listen-text lang lang-${heard.lang}`, lang: heard.lang, hidden: "", text: heard.text })
-  const play = el("button", { type: "button", class: "button secondary listen-play", "aria-pressed": "false", hidden: "" }, icon("listen", "speak-ic"), el("span", { text: t.listen }))
+  const play = el("button", { type: "button", class: "button secondary listen-play", "aria-pressed": "false", hidden: "" }, icon("listen", "speak-ic"), el("span", { text: t.listen_sentence }))
   const toggle = button(t.show_text, { class: "button secondary small listen-show", "aria-expanded": "false" }, () => {
     const open = text.hidden
     text.hidden = !open
@@ -28,7 +28,7 @@ export function listenBox(spec, ctx) {
   const idle = () => {
     handle = null
     play.setAttribute("aria-pressed", "false")
-    play.replaceChildren(icon("listen", "speak-ic"), el("span", { text: t.listen }))
+    play.replaceChildren(icon("listen", "speak-ic"), el("span", { text: t.listen_sentence }))
   }
   play.addEventListener("click", () => {
     if (handle) { stopAll(); return }
