@@ -168,7 +168,9 @@ module Lessons
 
       # The reserved dry run: each use of a reserved or draft piece is a warning with the line of its block.
       def report_holds(holds)
-        Array(holds).each do |status, message, line|
+        return unless holds.is_a?(Array)
+
+        holds.each do |status, message, line|
           code = status == "draft" ? "W-TYPE-DRAFT" : "W-TYPE-RESERVED"
           @findings.add(code, "/lesson.md", "line #{line}: #{message}", rule: "#{code.downcase}-#{line}", line: line)
         end
