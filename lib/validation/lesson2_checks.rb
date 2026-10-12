@@ -263,6 +263,7 @@ module Validation
           when "try" then Lessons::Blocks::Try.check(block, @ctx)
           when "more" then more_checks(block, path, card)
           when "source", "reveal", "oral" then Lessons::Blocks::Docs.check(block, @ctx)
+          when "dialogue" then Lessons::Blocks::Dialogue.check(block, @ctx)
           else Lessons::Blocks::Simple.check(block, @ctx)
           end
         end

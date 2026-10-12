@@ -788,6 +788,30 @@
    "line": 73,
    "construct": "diagram seats",
    "note": "seats with sliders over 100 to 900 present and 0 to 99 yes can show more than 500 numbers, on a card with a check"
+  },
+  {
+   "file": "bad/dialogue-language-not-taught.md",
+   "base": "base.md",
+   "code": "E-LESSON-LANG",
+   "line": 68,
+   "construct": "block dialogue",
+   "note": "a dialogue in Spanish (text_es) in a lesson of a subject that does not teach it (T3, dialogue; the same code covers two target languages in one figure, test/validation/lesson_checks_wave2_test.rb)"
+  },
+  {
+   "file": "bad/dialogue-es-tilde-not-needed.md",
+   "base": "base.md",
+   "code": "W-ES-TILDE",
+   "line": 68,
+   "construct": "block dialogue",
+   "note": "a Spanish dialogue line with a tilde the stress rule does not need (fué); the subject is math only to keep the base, so E-LESSON-LANG comes with it"
+  },
+  {
+   "file": "bad/dialogue-apparatus-words.md",
+   "base": "base.md",
+   "code": "E-LESSON-APPARATUS-WORDS",
+   "line": null,
+   "construct": "block dialogue",
+   "note": "two dialogues of 12 lines of 12 words (288 words) open by default on top of the prose; the subject is math only to keep the base, so E-LESSON-LANG comes with it"
   }
  ],
  "pending": {
@@ -819,15 +843,6 @@
     "change": "a program with a loop that never ends and no endless flag (render check)"
    },
    {
-    "code": "E-LESSON-APPARATUS-WORDS",
-    "needs": [
-     "block:dialogue"
-    ],
-    "track": "T2",
-    "base": "base.md",
-    "change": "251 words of quotations, translations and dialogue lines open by default on top of the 500 words of prose"
-   },
-   {
     "code": "E-CHEM-SYMBOL",
     "needs": [
      "diagram:formula"
@@ -837,27 +852,9 @@
     "change": "a formula \\ce{Xx2} with a symbol that is not an element"
    },
    {
-    "code": "W-ES-TILDE",
-    "needs": [
-     "block:dialogue"
-    ],
-    "track": "T3",
-    "base": "base.md",
-    "change": "a Spanish word written with a tilde that the stress rule does not need"
-   },
-   {
-    "code": "E-LESSON-LANG",
-    "needs": [
-     "block:dialogue"
-    ],
-    "track": "T2",
-    "base": "base.md",
-    "change": "a text_es key in an english lesson, or two target languages in one figure"
-   },
-   {
     "code": "W-LANG-LEVEL",
     "needs": [
-     "block:dialogue"
+     "option:listen"
     ],
     "track": "T2",
     "base": "base.md",

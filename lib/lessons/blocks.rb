@@ -119,6 +119,9 @@ module Lessons
       when "reveal"
         %w[prompt_it answer_it situation_it real_it].each { |k| add.call(k, block[k]) }
         block["options"].to_a.each_with_index { |o, i| %w[text_it then_it].each { |k| add.call("options/#{i}/#{k}", o[k]) } }
+      when "dialogue"
+        add.call("title_it", block["title_it"])
+        block["lines"].to_a.each_with_index { |l, i| add.call("lines/#{i}/gloss_it", l["gloss_it"]) }
       when "oral"
         add.call("question_it", block["question_it"])
         block["outline"].to_a.each_with_index { |o, i| add.call("outline/#{i}/text_it", o["text_it"]) }
@@ -154,8 +157,20 @@ module Lessons
       when "reveal"
         texts = [ block["prompt_it"], block["situation_it"] ] + block["options"].to_a.flat_map { |o| [ o["text_it"], o["then_it"] ] }
         texts.compact.sum { |t| words(t) }
+      when "dialogue"
+        # the lines are open by default unless the transcript starts hidden; the glosses are behind the IT buttons
+        block["transcript"] == "hidden" ? 0 : block["lines"].to_a.sum { |l| words(l["text_en"] || l["text_es"]) }
+      when "diagram", "schema"
+        mirror_words(block["diagram"] || block["schema"])
       else 0
       end
+    end
+
+    # The words of a mirror figure's rows (both sides, a piece written joined counts as one word): open by default, so apparatus.
+    def mirror_words(diagram)
+      return 0 unless diagram.is_a?(Hash) && diagram["type"] == "mirror"
+
+      diagram["rows"].to_a.sum { |row| row.slice("pieces_it", "pieces_en", "pieces_es").values.sum { |pieces| pieces.sum { |p| words(p.delete("+")) } } }
     end
 
     # Words of originals that are closed by default: the legal words behind a source's plain version.

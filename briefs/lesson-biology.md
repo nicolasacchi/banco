@@ -49,7 +49,7 @@ Only these names, besides the structural ones of the lesson brief, and only with
 |---|---|---|---|---|
 | `strand` | diagram | reserved | w2-1 | T7 |
 | `cell` | diagram | draft | w2-2 | T7 |
-| `word_parts` | diagram | reserved | w2-1 | T3 |
+| `word_parts` | diagram | available | w2-1 | T3 |
 | `scale` | diagram | draft | w2-2 | T6 |
 | `nested` | diagram | draft | w2-2 | T4b |
 | `bar_model` | diagram | reserved | w2-1 | T6 |
@@ -65,6 +65,11 @@ Only `available` pieces can be used; `banco lesson submit --dry-run` says what i
 - A mnemonic shape (the pentagon of the sugar, the tabs of the bases) is said to be a mnemonic: "le forme aiutano a ricordare".
 - At most one `more` for the exceptions (the red blood cell, root cells).
 - The pair colours (`pair_at`, `pair_cg`) are a rule of pairing, not the identity of a base: the letter says the base.
+
+## The `word_parts` figure
+
+Available now, `view: decode`: `form_it: 'eu|cariote'`, `parts_it: ["vero, bene", "nucleo"]`, `meaning_it: "con un vero nucleo"`. `|` is the line between pieces (at most 4 pieces, 16
+letters). One short Italian meaning for each piece; only an etymology a dictionary gives. For a Latin or Greek root written in Latin letters use `form_la`.
 
 ## Public repository
 

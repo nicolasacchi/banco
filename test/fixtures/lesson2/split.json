@@ -1,45 +1,304 @@
 {
- "version": 1,
- "library": "words",
- "track": "T3",
- "batch": "w2-1",
- "description": "Vectors of the split notation (| stem and ending, [..] changed letters, + attached piece) shared by paradigm and word_parts: Lessons::Words.split and lesson/lib/words.js. Skeleton of W2-0.",
- "cases": [
-  {
-   "input": "p[ue]d|o",
-   "pieces": [
+  "version": 1,
+  "library": "words",
+  "track": "T3",
+  "batch": "w2-1",
+  "description": "Vectors of the split notation (| stem and ending, [..] changed letters, + attached piece) shared by paradigm and word_parts: Lessons::Words.split and lesson/lib/words.js. The same cases as spanish_words.json, with the pieces and the word the marks removed give.",
+  "cases": [
     {
-     "text": "p",
-     "mark": "stem"
+      "input": "p[ue]d|o",
+      "pieces": [
+        {
+          "text": "p",
+          "mark": "stem",
+          "group": 0
+        },
+        {
+          "text": "ue",
+          "mark": "change",
+          "group": 0
+        },
+        {
+          "text": "d",
+          "mark": "stem",
+          "group": 0
+        },
+        {
+          "text": "o",
+          "mark": "ending",
+          "group": 1
+        }
+      ],
+      "word": "puedo"
     },
     {
-     "text": "ue",
-     "mark": "change"
+      "input": "pod|emos",
+      "pieces": [
+        {
+          "text": "pod",
+          "mark": "stem",
+          "group": 0
+        },
+        {
+          "text": "emos",
+          "mark": "ending",
+          "group": 1
+        }
+      ],
+      "word": "podemos"
     },
     {
-     "text": "d",
-     "mark": "stem"
+      "input": "habl|ar",
+      "pieces": [
+        {
+          "text": "habl",
+          "mark": "stem",
+          "group": 0
+        },
+        {
+          "text": "ar",
+          "mark": "ending",
+          "group": 1
+        }
+      ],
+      "word": "hablar"
     },
     {
-     "text": "o",
-     "mark": "ending"
+      "input": "qu[ie]r|o",
+      "pieces": [
+        {
+          "text": "qu",
+          "mark": "stem",
+          "group": 0
+        },
+        {
+          "text": "ie",
+          "mark": "change",
+          "group": 0
+        },
+        {
+          "text": "r",
+          "mark": "stem",
+          "group": 0
+        },
+        {
+          "text": "o",
+          "mark": "ending",
+          "group": 1
+        }
+      ],
+      "word": "quiero"
+    },
+    {
+      "input": "dar+lo",
+      "pieces": [
+        {
+          "text": "dar",
+          "mark": "stem",
+          "group": 0
+        },
+        {
+          "text": "lo",
+          "mark": "attached",
+          "group": 1
+        }
+      ],
+      "word": "darlo"
+    },
+    {
+      "input": "dár+se+lo",
+      "pieces": [
+        {
+          "text": "dár",
+          "mark": "stem",
+          "group": 0
+        },
+        {
+          "text": "se",
+          "mark": "attached",
+          "group": 1
+        },
+        {
+          "text": "lo",
+          "mark": "attached",
+          "group": 2
+        }
+      ],
+      "word": "dárselo"
+    },
+    {
+      "input": "eu|cariote",
+      "pieces": [
+        {
+          "text": "eu",
+          "mark": "stem",
+          "group": 0
+        },
+        {
+          "text": "cariote",
+          "mark": "ending",
+          "group": 1
+        }
+      ],
+      "word": "eucariote"
+    },
+    {
+      "input": "bio|logia",
+      "pieces": [
+        {
+          "text": "bio",
+          "mark": "stem",
+          "group": 0
+        },
+        {
+          "text": "logia",
+          "mark": "ending",
+          "group": 1
+        }
+      ],
+      "word": "biologia"
+    },
+    {
+      "input": "mi|cro|scopio",
+      "pieces": [
+        {
+          "text": "mi",
+          "mark": "stem",
+          "group": 0
+        },
+        {
+          "text": "cro",
+          "mark": "ending",
+          "group": 1
+        },
+        {
+          "text": "scopio",
+          "mark": "ending",
+          "group": 2
+        }
+      ],
+      "word": "microscopio"
+    },
+    {
+      "input": "p[i]d|iendo",
+      "pieces": [
+        {
+          "text": "p",
+          "mark": "stem",
+          "group": 0
+        },
+        {
+          "text": "i",
+          "mark": "change",
+          "group": 0
+        },
+        {
+          "text": "d",
+          "mark": "stem",
+          "group": 0
+        },
+        {
+          "text": "iendo",
+          "mark": "ending",
+          "group": 1
+        }
+      ],
+      "word": "pidiendo"
+    },
+    {
+      "input": "[ue]",
+      "pieces": [
+        {
+          "text": "ue",
+          "mark": "change",
+          "group": 0
+        }
+      ],
+      "word": "ue"
+    },
+    {
+      "input": "casa",
+      "pieces": [
+        {
+          "text": "casa",
+          "mark": "stem",
+          "group": 0
+        }
+      ],
+      "word": "casa"
+    },
+    {
+      "input": "habl|ar+me",
+      "pieces": [
+        {
+          "text": "habl",
+          "mark": "stem",
+          "group": 0
+        },
+        {
+          "text": "ar",
+          "mark": "ending",
+          "group": 1
+        },
+        {
+          "text": "me",
+          "mark": "attached",
+          "group": 2
+        }
+      ],
+      "word": "hablarme"
+    },
+    {
+      "input": "",
+      "refused": true
+    },
+    {
+      "input": "a|",
+      "refused": true
+    },
+    {
+      "input": "|a",
+      "refused": true
+    },
+    {
+      "input": "a||b",
+      "refused": true
+    },
+    {
+      "input": "a[b",
+      "refused": true
+    },
+    {
+      "input": "a]b",
+      "refused": true
+    },
+    {
+      "input": "[]",
+      "refused": true
+    },
+    {
+      "input": "a[b[c]]",
+      "refused": true
+    },
+    {
+      "input": "a [b]",
+      "refused": true
+    },
+    {
+      "input": "a|[b",
+      "refused": true
+    },
+    {
+      "input": "a+",
+      "refused": true
+    },
+    {
+      "input": "[a|b]",
+      "refused": true
+    },
+    {
+      "input": "a|+b",
+      "refused": true
     }
-   ],
-   "word": "puedo"
-  },
-  {
-   "input": "pod|emos",
-   "pieces": [
-    {
-     "text": "pod",
-     "mark": "stem"
-    },
-    {
-     "text": "emos",
-     "mark": "ending"
-    }
-   ],
-   "word": "podemos"
-  }
- ]
+  ]
 }

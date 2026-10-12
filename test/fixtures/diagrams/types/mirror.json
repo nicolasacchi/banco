@@ -1,123 +1,1162 @@
 {
- "version": 1,
- "type": "mirror",
- "status": "reserved",
- "batch": "w2-1",
- "track": "T3",
- "provisional": false,
- "description": "Skeleton of W2-0 for the track T3: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
- "vectors": [
-  {
-   "name": "mirror-example-1",
-   "subject": "spanish",
-   "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
-   "data": {
-    "type": "mirror",
-    "alt_it": "La frase italiana glielo do sopra la spagnola se lo doy, pezzo per pezzo: in spagnolo sono tre parole separate, in italiano due.",
-    "rows": [
-     {
-      "pieces_it": [
-       "Glie+lo",
-       "do"
-      ],
-      "pieces_es": [
-       "Se",
-       "lo",
-       "doy"
-      ],
-      "links": [
-       [
-        0,
-        0,
-        "shift"
-       ],
-       [
-        0,
-        1,
-        "same"
-       ],
-       [
-        1,
-        2,
-        "same"
-       ]
-      ],
-      "notes": [
-       {
-        "side": "es",
-        "piece": 0,
-        "note_it": "due parole, non una"
-       }
-      ],
-      "roles": [
-       {
-        "side": "es",
-        "piece": 0,
-        "role": "oi"
-       }
-      ]
-     }
-    ],
-    "same_ok": false
-   }
-  },
-  {
-   "name": "mirror-unknown-field",
-   "subject": "spanish",
-   "schema": "invalid",
-   "semantic": "ok",
-   "data": {
-    "type": "mirror",
-    "alt_it": "La frase italiana glielo do sopra la spagnola se lo doy, pezzo per pezzo: in spagnolo sono tre parole separate, in italiano due.",
-    "rows": [
-     {
-      "pieces_it": [
-       "Glie+lo",
-       "do"
-      ],
-      "pieces_es": [
-       "Se",
-       "lo",
-       "doy"
-      ],
-      "links": [
-       [
-        0,
-        0,
-        "shift"
-       ],
-       [
-        0,
-        1,
-        "same"
-       ],
-       [
-        1,
-        2,
-        "same"
-       ]
-      ],
-      "notes": [
-       {
-        "side": "es",
-        "piece": 0,
-        "note_it": "due parole, non una"
-       }
-      ],
-      "roles": [
-       {
-        "side": "es",
-        "piece": 0,
-        "role": "oi"
-       }
-      ]
-     }
-    ],
-    "same_ok": false,
-    "zzz_unknown_field": true
-   }
-  }
- ]
+  "version": 1,
+  "type": "mirror",
+  "status": "available",
+  "batch": "w2-1",
+  "track": "T3",
+  "provisional": false,
+  "description": "The vectors of mirror (T3), run both ways (schema, semantic, layout). The semantic column and its path are written by hand from the rules; 'printed' (what each state prints, describe included) and 'targets' (the stored ids a select check can name, in reading order) are what Ruby computes and the browser must agree with.",
+  "vectors": [
+    {
+      "name": "mirror-pronouns",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "mirror",
+        "alt_it": "La frase italiana glielo do sopra la spagnola se lo doy, pezzo per pezzo: in spagnolo sono tre parole separate, in italiano due.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Glie+lo",
+              "do"
+            ],
+            "pieces_es": [
+              "Se",
+              "lo",
+              "doy"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ],
+              [
+                0,
+                1,
+                "same"
+              ],
+              [
+                1,
+                2,
+                "same"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 0,
+                "note_it": "due parole, non una"
+              }
+            ],
+            "roles": [
+              {
+                "side": "es",
+                "piece": 0,
+                "role": "oi"
+              }
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "Glielo",
+            "do",
+            "Se",
+            "lo",
+            "doy",
+            "Glielo do",
+            "Se lo doy",
+            "Italiano",
+            "Spagnolo",
+            "due parole, non una",
+            "cambia",
+            "uguale",
+            "Italiano: Glielo do. Spagnolo: Se lo doy. Glielo e Se: cambia. Glielo e lo: uguale. do e doy: uguale. Nota su Se: due parole, non una."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "r1i1",
+            "r1i2",
+            "r1t1",
+            "r1t2",
+            "r1t3"
+          ]
+        }
+      }
+    },
+    {
+      "name": "mirror-english",
+      "subject": "english",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Chiamerò Marco quando arrivo, e sotto la frase inglese: I will call Marco when I arrive. Dopo when l'inglese usa il presente.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Chiamerò",
+              "Marco",
+              "quando",
+              "arrivo"
+            ],
+            "pieces_en": [
+              "I will call",
+              "Marco",
+              "when",
+              "I arrive"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ],
+              [
+                1,
+                1,
+                "same"
+              ],
+              [
+                2,
+                2,
+                "same"
+              ],
+              [
+                3,
+                3,
+                "shift"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "en",
+                "piece": 0,
+                "note_it": "will, poi il verbo"
+              },
+              {
+                "side": "en",
+                "piece": 3,
+                "note_it": "dopo when il presente, non il futuro"
+              }
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "Chiamerò",
+            "Marco",
+            "quando",
+            "arrivo",
+            "I will call",
+            "when",
+            "I arrive",
+            "Chiamerò Marco quando arrivo",
+            "I will call Marco when I arrive",
+            "Italiano",
+            "Inglese",
+            "will, poi il verbo",
+            "dopo when il presente, non il futuro",
+            "cambia",
+            "uguale",
+            "Italiano: Chiamerò Marco quando arrivo. Inglese: I will call Marco when I arrive. Chiamerò e I will call: cambia. Marco e Marco: uguale. quando e when: uguale. arrivo e I arrive: cambia. Nota su I will call: will, poi il verbo. Nota su I arrive: dopo when il presente, non il futuro."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "r1i1",
+            "r1i2",
+            "r1i3",
+            "r1i4",
+            "r1t1",
+            "r1t2",
+            "r1t3",
+            "r1t4"
+          ]
+        }
+      }
+    },
+    {
+      "name": "mirror-false-friend",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Sono costipato in italiano e estoy constipado in spagnolo si somigliano, ma constipado vuol dire raffreddato. È un falso amico.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Sono",
+              "costipato"
+            ],
+            "pieces_es": [
+              "Estoy",
+              "constipado"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ],
+              [
+                1,
+                1,
+                "false_friend"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 0,
+                "note_it": "per come stai si usa estar"
+              },
+              {
+                "side": "es",
+                "piece": 1,
+                "note_it": "vuol dire raffreddato"
+              }
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "Sono",
+            "costipato",
+            "Estoy",
+            "constipado",
+            "Sono costipato",
+            "Estoy constipado",
+            "Italiano",
+            "Spagnolo",
+            "per come stai si usa estar",
+            "vuol dire raffreddato",
+            "cambia",
+            "falso amico",
+            "Italiano: Sono costipato. Spagnolo: Estoy constipado. Sono e Estoy: cambia. costipato e constipado: falso amico. Nota su Estoy: per come stai si usa estar. Nota su constipado: vuol dire raffreddato."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "r1i1",
+            "r1i2",
+            "r1t1",
+            "r1t2"
+          ]
+        }
+      }
+    },
+    {
+      "name": "mirror-same-is-the-point",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Io parlo e yo hablo: i pezzi corrispondono uno a uno, nello stesso ordine. In questo caso l'ordine è uguale.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Io",
+              "parlo"
+            ],
+            "pieces_es": [
+              "Yo",
+              "hablo"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "same"
+              ],
+              [
+                1,
+                1,
+                "same"
+              ]
+            ]
+          }
+        ],
+        "same_ok": true
+      },
+      "expect": {
+        "printed": [
+          [
+            "Io",
+            "parlo",
+            "Yo",
+            "hablo",
+            "Io parlo",
+            "Yo hablo",
+            "Italiano",
+            "Spagnolo",
+            "uguale",
+            "Italiano: Io parlo. Spagnolo: Yo hablo. Io e Yo: uguale. parlo e hablo: uguale."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "r1i1",
+            "r1i2",
+            "r1t1",
+            "r1t2"
+          ]
+        }
+      }
+    },
+    {
+      "name": "mirror-two-rows-unlinked",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Due coppie di frasi. Glielo do diventa se lo doy. Mi piace diventa me gusta, e in spagnolo si può aggiungere el libro.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Glie+lo",
+              "do"
+            ],
+            "pieces_es": [
+              "Se",
+              "lo",
+              "doy"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ],
+              [
+                0,
+                1,
+                "same"
+              ],
+              [
+                1,
+                2,
+                "same"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 0,
+                "note_it": "due parole, non una"
+              }
+            ]
+          },
+          {
+            "pieces_it": [
+              "Mi",
+              "piace"
+            ],
+            "pieces_es": [
+              "Me",
+              "gusta",
+              "el",
+              "libro"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "same"
+              ],
+              [
+                1,
+                1,
+                "shift"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 1,
+                "note_it": "la cosa che piace è il soggetto"
+              },
+              {
+                "side": "es",
+                "piece": 2,
+                "note_it": "qui c'è l'articolo"
+              },
+              {
+                "side": "es",
+                "piece": 3,
+                "note_it": "il libro, il soggetto"
+              }
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "Glielo",
+            "do",
+            "Se",
+            "lo",
+            "doy",
+            "Glielo do",
+            "Se lo doy",
+            "Italiano",
+            "Spagnolo",
+            "due parole, non una",
+            "cambia",
+            "uguale",
+            "Mi",
+            "piace",
+            "Me",
+            "gusta",
+            "el",
+            "libro",
+            "Mi piace",
+            "Me gusta el libro",
+            "la cosa che piace è il soggetto",
+            "qui c'è l'articolo",
+            "il libro, il soggetto",
+            "senza coppia",
+            "Coppia 1. Italiano: Glielo do. Spagnolo: Se lo doy. Glielo e Se: cambia. Glielo e lo: uguale. do e doy: uguale. Nota su Se: due parole, non una. Coppia 2. Italiano: Mi piace. Spagnolo: Me gusta el libro. Mi e Me: uguale. piace e gusta: cambia. Nota su gusta: la cosa che piace è il soggetto. Nota su el: qui c'è l'articolo. Nota su libro: il libro, il soggetto. el: senza coppia. libro: senza coppia."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "r1i1",
+            "r1i2",
+            "r1t1",
+            "r1t2",
+            "r1t3",
+            "r2i1",
+            "r2i2",
+            "r2t1",
+            "r2t2",
+            "r2t3",
+            "r2t4"
+          ]
+        }
+      }
+    },
+    {
+      "name": "mirror-target-both",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/rows/0",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Io"
+            ],
+            "pieces_es": [
+              "Yo"
+            ],
+            "pieces_en": [
+              "I"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 0,
+                "note_it": "due parole, non una"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "mirror-target-none",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/rows/0",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Io"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "mirror-two-languages",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-LANG",
+      "path": "/rows",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Io"
+            ],
+            "pieces_es": [
+              "Yo"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 0,
+                "note_it": "due parole, non una"
+              }
+            ]
+          },
+          {
+            "pieces_it": [
+              "Io"
+            ],
+            "pieces_en": [
+              "I"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "en",
+                "piece": 0,
+                "note_it": "x"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "mirror-language-not-taught",
+      "subject": "english",
+      "schema": "valid",
+      "semantic": "E-LESSON-LANG",
+      "path": "/rows/0/pieces_es",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Io"
+            ],
+            "pieces_es": [
+              "Yo"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 0,
+                "note_it": "due parole, non una"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "mirror-side-too-long",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/rows/0/pieces_it",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "a b",
+              "a b",
+              "a b",
+              "a b",
+              "a b",
+              "a b",
+              "a b"
+            ],
+            "pieces_es": [
+              "Yo"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 0,
+                "note_it": "due parole, non una"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "mirror-link-out-of-range",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-MAP",
+      "path": "/rows/0/links/0",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Io"
+            ],
+            "pieces_es": [
+              "Yo"
+            ],
+            "links": [
+              [
+                0,
+                3,
+                "shift"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 0,
+                "note_it": "due parole, non una"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "mirror-link-twice",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-MAP",
+      "path": "/rows/0/links/1",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Io",
+              "parlo"
+            ],
+            "pieces_es": [
+              "Yo",
+              "hablo"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ],
+              [
+                0,
+                0,
+                "same"
+              ],
+              [
+                1,
+                1,
+                "same"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 0,
+                "note_it": "x"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "mirror-shift-without-note",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/rows/0/notes",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Glie+lo",
+              "do"
+            ],
+            "pieces_es": [
+              "Se",
+              "lo",
+              "doy"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ],
+              [
+                0,
+                1,
+                "same"
+              ],
+              [
+                1,
+                2,
+                "same"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "mirror-unlinked-without-note",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/rows/0/notes",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Io",
+              "parlo"
+            ],
+            "pieces_es": [
+              "Yo",
+              "hablo"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 0,
+                "note_it": "x"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "mirror-all-same-without-permission",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/rows",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Io",
+              "parlo"
+            ],
+            "pieces_es": [
+              "Yo",
+              "hablo"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "same"
+              ],
+              [
+                1,
+                1,
+                "same"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "mirror-same-ok-with-a-shift",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/same_ok",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Glie+lo",
+              "do"
+            ],
+            "pieces_es": [
+              "Se",
+              "lo",
+              "doy"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ],
+              [
+                0,
+                1,
+                "same"
+              ],
+              [
+                1,
+                2,
+                "same"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 0,
+                "note_it": "due parole, non una"
+              }
+            ]
+          }
+        ],
+        "same_ok": true
+      }
+    },
+    {
+      "name": "mirror-note-too-long",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/rows/0/notes/0/note_it",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Io"
+            ],
+            "pieces_es": [
+              "Yo"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 0,
+                "note_it": "una nota che ha davvero troppe parole per essere letta con comodità da chi fa fatica a leggere"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "mirror-note-on-a-missing-piece",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-MAP",
+      "path": "/rows/0/notes/0/piece",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Io"
+            ],
+            "pieces_es": [
+              "Yo"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 4,
+                "note_it": "x"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "mirror-note-on-the-wrong-side",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/rows/0/notes/0/side",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Io"
+            ],
+            "pieces_es": [
+              "Yo"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "en",
+                "piece": 0,
+                "note_it": "x"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "mirror-role-not-in-the-palette",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-ROLE",
+      "path": "/rows/0/roles/0/role",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Io"
+            ],
+            "pieces_es": [
+              "Yo"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 0,
+                "note_it": "due parole, non una"
+              }
+            ],
+            "roles": [
+              {
+                "side": "es",
+                "piece": 0,
+                "role": "wrongrole"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "mirror-unknown-link-kind",
+      "subject": "spanish",
+      "schema": "invalid",
+      "semantic": "ok",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Io"
+            ],
+            "pieces_es": [
+              "Yo"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "weird"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "mirror-unknown-field",
+      "subject": "spanish",
+      "schema": "invalid",
+      "semantic": "ok",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Io"
+            ],
+            "pieces_es": [
+              "Yo"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 0,
+                "note_it": "due parole, non una"
+              }
+            ]
+          }
+        ],
+        "zzz_unknown_field": true
+      }
+    },
+    {
+      "name": "mirror-four-rows",
+      "subject": "spanish",
+      "schema": "invalid",
+      "semantic": "ok",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Io"
+            ],
+            "pieces_es": [
+              "Yo"
+            ]
+          },
+          {
+            "pieces_it": [
+              "Io"
+            ],
+            "pieces_es": [
+              "Yo"
+            ]
+          },
+          {
+            "pieces_it": [
+              "Io"
+            ],
+            "pieces_es": [
+              "Yo"
+            ]
+          },
+          {
+            "pieces_it": [
+              "Io"
+            ],
+            "pieces_es": [
+              "Yo"
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }

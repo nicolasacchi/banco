@@ -1,72 +1,1964 @@
 {
- "version": 1,
- "description": "Shared vectors of Words (Ruby and JS), skeleton of W2-0: the cases below are certain; the track T3 adds the rest (including the mutants of a wrong answer) before it builds the functions. 'args' are strings as the schema holds them; 'result' is the canonical output.",
- "library": "words",
- "batch": "w2-1",
- "track": "T3",
- "functions": {
-  "split": {
-   "ruby": "split(notation)",
-   "js": "split(notation)",
-   "doc": "A form in split notation as pieces with their marks; the marks removed give the word.",
-   "cases": []
-  },
-  "syllables_es": {
-   "ruby": "syllables_es(word)",
-   "js": "syllablesEs(word)",
-   "doc": "The syllables of a Spanish word.",
-   "cases": [
-    {
-     "args": [
-      "queremos"
-     ],
-     "result": [
-      "que",
-      "re",
-      "mos"
-     ]
+  "version": 1,
+  "description": "Shared vectors of Words (Ruby and JS). The expected values were typed by hand from the RAE rules (stated in lib/lessons/words.rb) and compared with the engine, never copied from it. 'args' are strings as the schema holds them; 'result' is the canonical output ('refused': the function raises). `present` is W2-2.",
+  "library": "words",
+  "batch": "w2-1",
+  "track": "T3",
+  "functions": {
+    "split": {
+      "ruby": "split(notation)",
+      "js": "split(notation)",
+      "doc": "A form in split notation as pieces with their marks; the marks removed give the word.",
+      "cases": [
+        {
+          "args": [
+            "p[ue]d|o"
+          ],
+          "result": {
+            "pieces": [
+              {
+                "text": "p",
+                "mark": "stem",
+                "group": 0
+              },
+              {
+                "text": "ue",
+                "mark": "change",
+                "group": 0
+              },
+              {
+                "text": "d",
+                "mark": "stem",
+                "group": 0
+              },
+              {
+                "text": "o",
+                "mark": "ending",
+                "group": 1
+              }
+            ],
+            "word": "puedo"
+          }
+        },
+        {
+          "args": [
+            "pod|emos"
+          ],
+          "result": {
+            "pieces": [
+              {
+                "text": "pod",
+                "mark": "stem",
+                "group": 0
+              },
+              {
+                "text": "emos",
+                "mark": "ending",
+                "group": 1
+              }
+            ],
+            "word": "podemos"
+          }
+        },
+        {
+          "args": [
+            "habl|ar"
+          ],
+          "result": {
+            "pieces": [
+              {
+                "text": "habl",
+                "mark": "stem",
+                "group": 0
+              },
+              {
+                "text": "ar",
+                "mark": "ending",
+                "group": 1
+              }
+            ],
+            "word": "hablar"
+          }
+        },
+        {
+          "args": [
+            "qu[ie]r|o"
+          ],
+          "result": {
+            "pieces": [
+              {
+                "text": "qu",
+                "mark": "stem",
+                "group": 0
+              },
+              {
+                "text": "ie",
+                "mark": "change",
+                "group": 0
+              },
+              {
+                "text": "r",
+                "mark": "stem",
+                "group": 0
+              },
+              {
+                "text": "o",
+                "mark": "ending",
+                "group": 1
+              }
+            ],
+            "word": "quiero"
+          }
+        },
+        {
+          "args": [
+            "dar+lo"
+          ],
+          "result": {
+            "pieces": [
+              {
+                "text": "dar",
+                "mark": "stem",
+                "group": 0
+              },
+              {
+                "text": "lo",
+                "mark": "attached",
+                "group": 1
+              }
+            ],
+            "word": "darlo"
+          }
+        },
+        {
+          "args": [
+            "dár+se+lo"
+          ],
+          "result": {
+            "pieces": [
+              {
+                "text": "dár",
+                "mark": "stem",
+                "group": 0
+              },
+              {
+                "text": "se",
+                "mark": "attached",
+                "group": 1
+              },
+              {
+                "text": "lo",
+                "mark": "attached",
+                "group": 2
+              }
+            ],
+            "word": "dárselo"
+          }
+        },
+        {
+          "args": [
+            "eu|cariote"
+          ],
+          "result": {
+            "pieces": [
+              {
+                "text": "eu",
+                "mark": "stem",
+                "group": 0
+              },
+              {
+                "text": "cariote",
+                "mark": "ending",
+                "group": 1
+              }
+            ],
+            "word": "eucariote"
+          }
+        },
+        {
+          "args": [
+            "bio|logia"
+          ],
+          "result": {
+            "pieces": [
+              {
+                "text": "bio",
+                "mark": "stem",
+                "group": 0
+              },
+              {
+                "text": "logia",
+                "mark": "ending",
+                "group": 1
+              }
+            ],
+            "word": "biologia"
+          }
+        },
+        {
+          "args": [
+            "mi|cro|scopio"
+          ],
+          "result": {
+            "pieces": [
+              {
+                "text": "mi",
+                "mark": "stem",
+                "group": 0
+              },
+              {
+                "text": "cro",
+                "mark": "ending",
+                "group": 1
+              },
+              {
+                "text": "scopio",
+                "mark": "ending",
+                "group": 2
+              }
+            ],
+            "word": "microscopio"
+          }
+        },
+        {
+          "args": [
+            "p[i]d|iendo"
+          ],
+          "result": {
+            "pieces": [
+              {
+                "text": "p",
+                "mark": "stem",
+                "group": 0
+              },
+              {
+                "text": "i",
+                "mark": "change",
+                "group": 0
+              },
+              {
+                "text": "d",
+                "mark": "stem",
+                "group": 0
+              },
+              {
+                "text": "iendo",
+                "mark": "ending",
+                "group": 1
+              }
+            ],
+            "word": "pidiendo"
+          }
+        },
+        {
+          "args": [
+            "[ue]"
+          ],
+          "result": {
+            "pieces": [
+              {
+                "text": "ue",
+                "mark": "change",
+                "group": 0
+              }
+            ],
+            "word": "ue"
+          }
+        },
+        {
+          "args": [
+            "casa"
+          ],
+          "result": {
+            "pieces": [
+              {
+                "text": "casa",
+                "mark": "stem",
+                "group": 0
+              }
+            ],
+            "word": "casa"
+          }
+        },
+        {
+          "args": [
+            "habl|ar+me"
+          ],
+          "result": {
+            "pieces": [
+              {
+                "text": "habl",
+                "mark": "stem",
+                "group": 0
+              },
+              {
+                "text": "ar",
+                "mark": "ending",
+                "group": 1
+              },
+              {
+                "text": "me",
+                "mark": "attached",
+                "group": 2
+              }
+            ],
+            "word": "hablarme"
+          }
+        },
+        {
+          "args": [
+            ""
+          ],
+          "refused": true
+        },
+        {
+          "args": [
+            "a|"
+          ],
+          "refused": true
+        },
+        {
+          "args": [
+            "|a"
+          ],
+          "refused": true
+        },
+        {
+          "args": [
+            "a||b"
+          ],
+          "refused": true
+        },
+        {
+          "args": [
+            "a[b"
+          ],
+          "refused": true
+        },
+        {
+          "args": [
+            "a]b"
+          ],
+          "refused": true
+        },
+        {
+          "args": [
+            "[]"
+          ],
+          "refused": true
+        },
+        {
+          "args": [
+            "a[b[c]]"
+          ],
+          "refused": true
+        },
+        {
+          "args": [
+            "a [b]"
+          ],
+          "refused": true
+        },
+        {
+          "args": [
+            "a|[b"
+          ],
+          "refused": true
+        },
+        {
+          "args": [
+            "a+"
+          ],
+          "refused": true
+        },
+        {
+          "args": [
+            "[a|b]"
+          ],
+          "refused": true
+        },
+        {
+          "args": [
+            "a|+b"
+          ],
+          "refused": true
+        }
+      ]
     },
-    {
-     "args": [
-      "canción"
-     ],
-     "result": [
-      "can",
-      "ción"
-     ]
-    }
-   ]
-  },
-  "stress_es": {
-   "ruby": "stress_es(word)",
-   "js": "stressEs(word)",
-   "doc": "The 1-based index of the stressed syllable.",
-   "cases": [
-    {
-     "args": [
-      "queremos"
-     ],
-     "result": 2
+    "syllables_es": {
+      "ruby": "syllables_es(word)",
+      "js": "syllablesEs(word)",
+      "doc": "The syllables of a Spanish word.",
+      "cases": [
+        {
+          "args": [
+            "queremos"
+          ],
+          "result": [
+            "que",
+            "re",
+            "mos"
+          ]
+        },
+        {
+          "args": [
+            "canción"
+          ],
+          "result": [
+            "can",
+            "ción"
+          ]
+        },
+        {
+          "args": [
+            "dárselo"
+          ],
+          "result": [
+            "dár",
+            "se",
+            "lo"
+          ]
+        },
+        {
+          "args": [
+            "darlo"
+          ],
+          "result": [
+            "dar",
+            "lo"
+          ]
+        },
+        {
+          "args": [
+            "darselo"
+          ],
+          "result": [
+            "dar",
+            "se",
+            "lo"
+          ]
+        },
+        {
+          "args": [
+            "explicárselo"
+          ],
+          "result": [
+            "ex",
+            "pli",
+            "cár",
+            "se",
+            "lo"
+          ]
+        },
+        {
+          "args": [
+            "regalárselo"
+          ],
+          "result": [
+            "re",
+            "ga",
+            "lár",
+            "se",
+            "lo"
+          ]
+        },
+        {
+          "args": [
+            "contándosela"
+          ],
+          "result": [
+            "con",
+            "tán",
+            "do",
+            "se",
+            "la"
+          ]
+        },
+        {
+          "args": [
+            "ayuda"
+          ],
+          "result": [
+            "a",
+            "yu",
+            "da"
+          ]
+        },
+        {
+          "args": [
+            "casa"
+          ],
+          "result": [
+            "ca",
+            "sa"
+          ]
+        },
+        {
+          "args": [
+            "mesa"
+          ],
+          "result": [
+            "me",
+            "sa"
+          ]
+        },
+        {
+          "args": [
+            "paraguas"
+          ],
+          "result": [
+            "pa",
+            "ra",
+            "guas"
+          ]
+        },
+        {
+          "args": [
+            "paraguay"
+          ],
+          "result": [
+            "pa",
+            "ra",
+            "guay"
+          ]
+        },
+        {
+          "args": [
+            "hoy"
+          ],
+          "result": [
+            "hoy"
+          ]
+        },
+        {
+          "args": [
+            "muy"
+          ],
+          "result": [
+            "muy"
+          ]
+        },
+        {
+          "args": [
+            "Uruguay"
+          ],
+          "result": [
+            "U",
+            "ru",
+            "guay"
+          ]
+        },
+        {
+          "args": [
+            "estudiáis"
+          ],
+          "result": [
+            "es",
+            "tu",
+            "diáis"
+          ]
+        },
+        {
+          "args": [
+            "buey"
+          ],
+          "result": [
+            "buey"
+          ]
+        },
+        {
+          "args": [
+            "ciudad"
+          ],
+          "result": [
+            "ciu",
+            "dad"
+          ]
+        },
+        {
+          "args": [
+            "cuidado"
+          ],
+          "result": [
+            "cui",
+            "da",
+            "do"
+          ]
+        },
+        {
+          "args": [
+            "país"
+          ],
+          "result": [
+            "pa",
+            "ís"
+          ]
+        },
+        {
+          "args": [
+            "día"
+          ],
+          "result": [
+            "dí",
+            "a"
+          ]
+        },
+        {
+          "args": [
+            "había"
+          ],
+          "result": [
+            "ha",
+            "bí",
+            "a"
+          ]
+        },
+        {
+          "args": [
+            "baúl"
+          ],
+          "result": [
+            "ba",
+            "úl"
+          ]
+        },
+        {
+          "args": [
+            "leer"
+          ],
+          "result": [
+            "le",
+            "er"
+          ]
+        },
+        {
+          "args": [
+            "cree"
+          ],
+          "result": [
+            "cre",
+            "e"
+          ]
+        },
+        {
+          "args": [
+            "zoológico"
+          ],
+          "result": [
+            "zo",
+            "o",
+            "ló",
+            "gi",
+            "co"
+          ]
+        },
+        {
+          "args": [
+            "oasis"
+          ],
+          "result": [
+            "o",
+            "a",
+            "sis"
+          ]
+        },
+        {
+          "args": [
+            "aire"
+          ],
+          "result": [
+            "ai",
+            "re"
+          ]
+        },
+        {
+          "args": [
+            "peine"
+          ],
+          "result": [
+            "pei",
+            "ne"
+          ]
+        },
+        {
+          "args": [
+            "guerra"
+          ],
+          "result": [
+            "gue",
+            "rra"
+          ]
+        },
+        {
+          "args": [
+            "queso"
+          ],
+          "result": [
+            "que",
+            "so"
+          ]
+        },
+        {
+          "args": [
+            "pingüino"
+          ],
+          "result": [
+            "pin",
+            "güi",
+            "no"
+          ]
+        },
+        {
+          "args": [
+            "antes"
+          ],
+          "result": [
+            "an",
+            "tes"
+          ]
+        },
+        {
+          "args": [
+            "instrumento"
+          ],
+          "result": [
+            "ins",
+            "tru",
+            "men",
+            "to"
+          ]
+        },
+        {
+          "args": [
+            "extranjero"
+          ],
+          "result": [
+            "ex",
+            "tran",
+            "je",
+            "ro"
+          ]
+        },
+        {
+          "args": [
+            "abstracto"
+          ],
+          "result": [
+            "abs",
+            "trac",
+            "to"
+          ]
+        },
+        {
+          "args": [
+            "obstáculo"
+          ],
+          "result": [
+            "obs",
+            "tá",
+            "cu",
+            "lo"
+          ]
+        },
+        {
+          "args": [
+            "atlas"
+          ],
+          "result": [
+            "at",
+            "las"
+          ]
+        },
+        {
+          "args": [
+            "aplicar"
+          ],
+          "result": [
+            "a",
+            "pli",
+            "car"
+          ]
+        },
+        {
+          "args": [
+            "hablar"
+          ],
+          "result": [
+            "ha",
+            "blar"
+          ]
+        },
+        {
+          "args": [
+            "compra"
+          ],
+          "result": [
+            "com",
+            "pra"
+          ]
+        },
+        {
+          "args": [
+            "costra"
+          ],
+          "result": [
+            "cos",
+            "tra"
+          ]
+        },
+        {
+          "args": [
+            "construí"
+          ],
+          "result": [
+            "cons",
+            "truí"
+          ]
+        },
+        {
+          "args": [
+            "huir"
+          ],
+          "result": [
+            "huir"
+          ]
+        },
+        {
+          "args": [
+            "cantáis"
+          ],
+          "result": [
+            "can",
+            "táis"
+          ]
+        },
+        {
+          "args": [
+            "lápiz"
+          ],
+          "result": [
+            "lá",
+            "piz"
+          ]
+        },
+        {
+          "args": [
+            "árbol"
+          ],
+          "result": [
+            "ár",
+            "bol"
+          ]
+        },
+        {
+          "args": [
+            "azúcar"
+          ],
+          "result": [
+            "a",
+            "zú",
+            "car"
+          ]
+        },
+        {
+          "args": [
+            "cállate"
+          ],
+          "result": [
+            "cá",
+            "lla",
+            "te"
+          ]
+        },
+        {
+          "args": [
+            "caballo"
+          ],
+          "result": [
+            "ca",
+            "ba",
+            "llo"
+          ]
+        },
+        {
+          "args": [
+            "muchacho"
+          ],
+          "result": [
+            "mu",
+            "cha",
+            "cho"
+          ]
+        },
+        {
+          "args": [
+            "exámenes"
+          ],
+          "result": [
+            "e",
+            "xá",
+            "me",
+            "nes"
+          ]
+        },
+        {
+          "args": [
+            "cómo"
+          ],
+          "result": [
+            "có",
+            "mo"
+          ]
+        },
+        {
+          "args": [
+            "dónde"
+          ],
+          "result": [
+            "dón",
+            "de"
+          ]
+        },
+        {
+          "args": [
+            "fue"
+          ],
+          "result": [
+            "fue"
+          ]
+        },
+        {
+          "args": [
+            "río"
+          ],
+          "result": [
+            "rí",
+            "o"
+          ]
+        },
+        {
+          "args": [
+            "reír"
+          ],
+          "result": [
+            "re",
+            "ír"
+          ]
+        },
+        {
+          "args": [
+            "poeta"
+          ],
+          "result": [
+            "po",
+            "e",
+            "ta"
+          ]
+        },
+        {
+          "args": [
+            "Israel"
+          ],
+          "result": [
+            "Is",
+            "ra",
+            "el"
+          ]
+        },
+        {
+          "args": [
+            "enredo"
+          ],
+          "result": [
+            "en",
+            "re",
+            "do"
+          ]
+        },
+        {
+          "args": [
+            "alcohol"
+          ],
+          "result": [
+            "al",
+            "co",
+            "hol"
+          ]
+        },
+        {
+          "args": [
+            "ahumar"
+          ],
+          "result": [
+            "a",
+            "hu",
+            "mar"
+          ]
+        },
+        {
+          "args": [
+            "albahaca"
+          ],
+          "result": [
+            "al",
+            "ba",
+            "ha",
+            "ca"
+          ]
+        },
+        {
+          "args": [
+            "trabajar"
+          ],
+          "result": [
+            "tra",
+            "ba",
+            "jar"
+          ]
+        },
+        {
+          "args": [
+            "problema"
+          ],
+          "result": [
+            "pro",
+            "ble",
+            "ma"
+          ]
+        },
+        {
+          "args": [
+            "flores"
+          ],
+          "result": [
+            "flo",
+            "res"
+          ]
+        },
+        {
+          "args": [
+            "grande"
+          ],
+          "result": [
+            "gran",
+            "de"
+          ]
+        },
+        {
+          "args": [
+            "blanco"
+          ],
+          "result": [
+            "blan",
+            "co"
+          ]
+        },
+        {
+          "args": [
+            "clase"
+          ],
+          "result": [
+            "cla",
+            "se"
+          ]
+        },
+        {
+          "args": [
+            "drama"
+          ],
+          "result": [
+            "dra",
+            "ma"
+          ]
+        },
+        {
+          "args": [
+            "libro"
+          ],
+          "result": [
+            "li",
+            "bro"
+          ]
+        },
+        {
+          "args": [
+            "madre"
+          ],
+          "result": [
+            "ma",
+            "dre"
+          ]
+        },
+        {
+          "args": [
+            "fresa"
+          ],
+          "result": [
+            "fre",
+            "sa"
+          ]
+        },
+        {
+          "args": [
+            "agua"
+          ],
+          "result": [
+            "a",
+            "gua"
+          ]
+        },
+        {
+          "args": [
+            "averiguáis"
+          ],
+          "result": [
+            "a",
+            "ve",
+            "ri",
+            "guáis"
+          ]
+        },
+        {
+          "args": [
+            "antiguo"
+          ],
+          "result": [
+            "an",
+            "ti",
+            "guo"
+          ]
+        },
+        {
+          "args": [
+            "cancióncita"
+          ],
+          "result": [
+            "can",
+            "ción",
+            "ci",
+            "ta"
+          ]
+        },
+        {
+          "args": [
+            "vergüenza"
+          ],
+          "result": [
+            "ver",
+            "güen",
+            "za"
+          ]
+        },
+        {
+          "args": [
+            "guita"
+          ],
+          "result": [
+            "gui",
+            "ta"
+          ]
+        },
+        {
+          "args": [
+            "a1"
+          ],
+          "refused": true
+        },
+        {
+          "args": [
+            "pa ra"
+          ],
+          "refused": true
+        },
+        {
+          "args": [
+            "ñ-"
+          ],
+          "refused": true
+        }
+      ]
     },
-    {
-     "args": [
-      "canción"
-     ],
-     "result": 2
+    "stress_es": {
+      "ruby": "stress_es(word)",
+      "js": "stressEs(word)",
+      "doc": "The 1-based index of the stressed syllable.",
+      "cases": [
+        {
+          "args": [
+            "queremos"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "canción"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "dárselo"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "darlo"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "explicárselo"
+          ],
+          "result": 3
+        },
+        {
+          "args": [
+            "dáselo"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "mesa"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "papel"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "árbol"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "lápiz"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "examen"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "exámenes"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "jóvenes"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "estudiáis"
+          ],
+          "result": 3
+        },
+        {
+          "args": [
+            "cantáis"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "buey"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "virrey"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "ciudad"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "país"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "día"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "había"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "baúl"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "río"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "reír"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "azúcar"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "hablar"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "hablo"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "hablan"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "habláis"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "cantó"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "canto"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "cantan"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "libro"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "libertad"
+          ],
+          "result": 3
+        },
+        {
+          "args": [
+            "sofá"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "café"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "mamá"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "bebé"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "tú"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "qué"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "cómo"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "dónde"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "están"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "estás"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "ver"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "dar"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "da"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "dé"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "voy"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "Uruguay"
+          ],
+          "result": 3
+        },
+        {
+          "args": [
+            "hoy"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "teléfono"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "médico"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "pájaro"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "música"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "ciudades"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "bíceps"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "robots"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "lunes"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "crisis"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "tenis"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "alcohol"
+          ],
+          "result": 3
+        },
+        {
+          "args": [
+            "reloj"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "feliz"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "cárcel"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "fácil"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "difícil"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "dificil"
+          ],
+          "result": 3
+        },
+        {
+          "args": [
+            "cántalé"
+          ],
+          "refused": true
+        }
+      ]
+    },
+    "tilde_ok": {
+      "ruby": "tilde_ok?(word)",
+      "js": "tildeOk(word)",
+      "doc": "Whether the written tilde (or its absence) follows the stress rule.",
+      "cases": [
+        {
+          "args": [
+            "queremos"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "canción"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "cancion"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "dárselo"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "darselo"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "dáselo"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "árbol"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "lápiz"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "cámara"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "camára"
+          ],
+          "result": false
+        },
+        {
+          "args": [
+            "mésa"
+          ],
+          "result": false
+        },
+        {
+          "args": [
+            "fué"
+          ],
+          "result": false
+        },
+        {
+          "args": [
+            "fue"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "dió"
+          ],
+          "result": false
+        },
+        {
+          "args": [
+            "dio"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "tú"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "tu"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "él"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "más"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "qué"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "cómo"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "dónde"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "sé"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "té"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "mí"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "sí"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "aún"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "día"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "país"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "baúl"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "río"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "reír"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "había"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "cantó"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "azúcar"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "azucár"
+          ],
+          "result": false
+        },
+        {
+          "args": [
+            "papél"
+          ],
+          "result": false
+        },
+        {
+          "args": [
+            "papel"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "fácil"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "fáci"
+          ],
+          "result": false
+        },
+        {
+          "args": [
+            "jóvenes"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "jovenes"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "ciudád"
+          ],
+          "result": false
+        },
+        {
+          "args": [
+            "música"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "musíca"
+          ],
+          "result": false
+        },
+        {
+          "args": [
+            "Qué"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "Árbol"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "sofá"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "sofa"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "reloj"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "hoy"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "hóy"
+          ],
+          "result": false
+        },
+        {
+          "args": [
+            "cantáis"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "cantais"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "estudiáis"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "bíceps"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "lunes"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "lúnes"
+          ],
+          "result": false
+        }
+      ]
+    },
+    "present": {
+      "ruby": "present(verb, pattern)",
+      "js": "present(verb, pattern)",
+      "doc": "W2-2: the six present forms by pattern; spanish/verbs is the truth and the engine only cross-checks regular and stem-changing rows.",
+      "cases": []
     }
-   ]
-  },
-  "tilde_ok": {
-   "ruby": "tilde_ok?(word)",
-   "js": "tildeOk(word)",
-   "doc": "Whether the written tilde (or its absence) follows the stress rule.",
-   "cases": []
-  },
-  "present": {
-   "ruby": "present(verb, pattern)",
-   "js": "present(verb, pattern)",
-   "doc": "W2-2: the six present forms by pattern; spanish/verbs is the truth and the engine only cross-checks regular and stem-changing rows.",
-   "cases": []
   }
- }
 }
