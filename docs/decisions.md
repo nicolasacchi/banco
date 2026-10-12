@@ -274,7 +274,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-268 | 2026-10-12 | leak rules L1 to L10 for the wave 2 pieces, the whitelist and the sentinel test (D-268) | decided (contracts of W2-0; the pieces follow) |
 | D-269 | 2026-10-12 | vetted data tables: config/banco/data, schemas, second table, reference texts (D-269) | decided (contracts of W2-0; the pieces follow) |
 | D-270 | 2026-10-12 | render-time records and the program diagram: Rails never runs an agent's program (D-270) | decided (contracts of W2-0; the pieces follow) |
-| D-272 | 2026-10-12 | graphs and processes (T4b): the graph router, network, chain and the line layout of flow are available | decided |
+| D-278 | 2026-10-12 | graphs and processes (T4b): the graph router, network, chain and the line layout of flow are available | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2896,7 +2896,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Status:** decided (the contracts of W2-0; the pieces they name are built by their tracks, each with its own entry)
 - **Back-port:** none.
 
-## D-272 · 2026-10-12 · graphs and processes (T4b): the graph router, network, chain and the line layout of flow are available
+## D-278 · 2026-10-12 · graphs and processes (T4b): the graph router, network, chain and the line layout of flow are available
 
 - **Design ref:** WAVE2-COMPONENTS 2.1, 1.2 (contract v2), 1.4 (L1 to L10), D-252 pattern, D-264, D-268, D-269.
 - **Design said:** one layout engine for node-and-arrow figures; `network`, `chain` and `flow layout: line` final in W2-1.
