@@ -47,6 +47,14 @@
  ],
  "bad": [
   {
+   "file": "bad/check-answer-printed-by-register.md",
+   "base": "base.md",
+   "code": "W-CHECK-ANSWER-IN-DIAGRAM",
+   "line": 56,
+   "construct": "check",
+   "note": "L4 (T9, with the register): a number check asking the value that a register of the same card prints; Lessons::Leaks reads the type's printed()"
+  },
+  {
    "file": "bad/card-brace-in-title.md",
    "base": "base.md",
    "code": "E-LESSON-CARD",
@@ -710,13 +718,6 @@
     "track": "T1",
     "base": "base.md",
     "change": "a select check whose figure's alt_it says 'il nucleo è il cerchio al centro' while the answer is the nucleus"
-   },
-   {
-    "code": "W-CHECK-ANSWER-IN-DIAGRAM",
-    "needs": ["diagram:register"],
-    "track": "T1",
-    "base": "base.md",
-    "change": "a number check asking the value that a register of the same card prints in one of its states"
    },
    {
     "code": "E-CHECK-ANSWER-BY-SIMULATION",

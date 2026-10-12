@@ -1,89 +1,1167 @@
 {
- "version": 1,
- "description": "Shared vectors of Bits (Ruby and JS), skeleton of W2-0: the cases below are certain; the track T9 adds the rest (including the mutants of a wrong answer) before it builds the functions. 'args' are strings as the schema holds them; 'result' is the canonical output.",
- "library": "bits",
- "batch": "w2-1",
- "track": "T9",
- "functions": {
-  "read": {
-   "ruby": "read(digits, base: 2, twos: false)",
-   "js": "read(digits, base, twos)",
-   "doc": "The value of a register's digits.",
-   "cases": [
-    {
-     "args": [
-      "11111011",
-      "2",
-      "true"
-     ],
-     "result": "-5"
+  "version": 1,
+  "description": "Shared vectors of Bits (Ruby Lessons::Bits and lesson/lib/bits.js), built by T9. 'args' are strings as the schema holds them (base, width and twos are written as '2', '8', 'true'; a missing trailing argument is its default); 'result' is the canonical output: a string (a digit string or a value), null (does not fit), or an object (column results; index 0 is the leftmost column). {\"error\": \"argument\"} means the call is refused (ArgumentError, RangeError). The cases are certain by hand; the track adds none by running the code.",
+  "library": "bits",
+  "batch": "w2-1",
+  "track": "T9",
+  "functions": {
+    "read": {
+      "ruby": "read(digits, base: 2, twos: false)",
+      "js": "read(digits, base, twos)",
+      "doc": "The value of a register's digits.",
+      "cases": [
+        {
+          "args": [
+            "11111011",
+            "2",
+            "true"
+          ],
+          "result": -5
+        },
+        {
+          "args": [
+            "10000000",
+            "2",
+            "true"
+          ],
+          "result": -128
+        },
+        {
+          "args": [
+            "10000000",
+            "2",
+            "false"
+          ],
+          "result": 128
+        },
+        {
+          "args": [
+            "00000000",
+            "2",
+            "true"
+          ],
+          "result": 0
+        },
+        {
+          "args": [
+            "01111111",
+            "2",
+            "true"
+          ],
+          "result": 127
+        },
+        {
+          "args": [
+            "1111",
+            "2",
+            "true"
+          ],
+          "result": -1
+        },
+        {
+          "args": [
+            "1",
+            "2",
+            "true"
+          ],
+          "result": -1
+        },
+        {
+          "args": [
+            "FF",
+            "16",
+            "false"
+          ],
+          "result": 255
+        },
+        {
+          "args": [
+            "7F",
+            "16",
+            "false"
+          ],
+          "result": 127
+        },
+        {
+          "args": [
+            "777",
+            "8",
+            "false"
+          ],
+          "result": 511
+        },
+        {
+          "args": [
+            "999",
+            "10",
+            "false"
+          ],
+          "result": 999
+        },
+        {
+          "args": [
+            "001",
+            "10",
+            "false"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "12",
+            "2",
+            "false"
+          ],
+          "result": {
+            "error": "argument"
+          }
+        },
+        {
+          "args": [
+            "2",
+            "2",
+            "false"
+          ],
+          "result": {
+            "error": "argument"
+          }
+        },
+        {
+          "args": [
+            "G",
+            "16",
+            "false"
+          ],
+          "result": {
+            "error": "argument"
+          }
+        },
+        {
+          "args": [
+            "1",
+            "17",
+            "false"
+          ],
+          "result": {
+            "error": "argument"
+          }
+        },
+        {
+          "args": [
+            "11",
+            "10",
+            "true"
+          ],
+          "result": {
+            "error": "argument"
+          }
+        },
+        {
+          "args": [
+            "",
+            "2",
+            "false"
+          ],
+          "result": {
+            "error": "argument"
+          }
+        }
+      ]
     },
-    {
-     "args": [
-      "10000000",
-      "2",
-      "true"
-     ],
-     "result": "-128"
+    "write": {
+      "ruby": "write(value, width, base: 2, twos: false)",
+      "js": "write(value, width, base, twos)",
+      "doc": "The digits of a value at a width; nil when it does not fit.",
+      "cases": [
+        {
+          "args": [
+            "-5",
+            "8",
+            "2",
+            "true"
+          ],
+          "result": "11111011"
+        },
+        {
+          "args": [
+            "5",
+            "8",
+            "2",
+            "true"
+          ],
+          "result": "00000101"
+        },
+        {
+          "args": [
+            "-128",
+            "8",
+            "2",
+            "true"
+          ],
+          "result": "10000000"
+        },
+        {
+          "args": [
+            "127",
+            "8",
+            "2",
+            "true"
+          ],
+          "result": "01111111"
+        },
+        {
+          "args": [
+            "128",
+            "8",
+            "2",
+            "true"
+          ],
+          "result": null
+        },
+        {
+          "args": [
+            "-129",
+            "8",
+            "2",
+            "true"
+          ],
+          "result": null
+        },
+        {
+          "args": [
+            "-1",
+            "4",
+            "2",
+            "true"
+          ],
+          "result": "1111"
+        },
+        {
+          "args": [
+            "-8",
+            "4",
+            "2",
+            "true"
+          ],
+          "result": "1000"
+        },
+        {
+          "args": [
+            "7",
+            "4",
+            "2",
+            "true"
+          ],
+          "result": "0111"
+        },
+        {
+          "args": [
+            "8",
+            "4",
+            "2",
+            "true"
+          ],
+          "result": null
+        },
+        {
+          "args": [
+            "255",
+            "8",
+            "2",
+            "false"
+          ],
+          "result": "11111111"
+        },
+        {
+          "args": [
+            "256",
+            "8",
+            "2",
+            "false"
+          ],
+          "result": null
+        },
+        {
+          "args": [
+            "-1",
+            "8",
+            "2",
+            "false"
+          ],
+          "result": null
+        },
+        {
+          "args": [
+            "0",
+            "8",
+            "2",
+            "false"
+          ],
+          "result": "00000000"
+        },
+        {
+          "args": [
+            "255",
+            "2",
+            "16",
+            "false"
+          ],
+          "result": "FF"
+        },
+        {
+          "args": [
+            "255",
+            "1",
+            "16",
+            "false"
+          ],
+          "result": null
+        },
+        {
+          "args": [
+            "0",
+            "3",
+            "10",
+            "false"
+          ],
+          "result": "000"
+        },
+        {
+          "args": [
+            "999",
+            "3",
+            "10",
+            "false"
+          ],
+          "result": "999"
+        },
+        {
+          "args": [
+            "1000",
+            "3",
+            "10",
+            "false"
+          ],
+          "result": null
+        },
+        {
+          "args": [
+            "8",
+            "3",
+            "8",
+            "false"
+          ],
+          "result": "010"
+        },
+        {
+          "args": [
+            "64",
+            "2",
+            "8",
+            "false"
+          ],
+          "result": null
+        },
+        {
+          "args": [
+            "5",
+            "3",
+            "10",
+            "true"
+          ],
+          "result": {
+            "error": "argument"
+          }
+        },
+        {
+          "args": [
+            "abc",
+            "8",
+            "2",
+            "false"
+          ],
+          "result": {
+            "error": "argument"
+          }
+        },
+        {
+          "args": [
+            "",
+            "8",
+            "2",
+            "false"
+          ],
+          "result": {
+            "error": "argument"
+          }
+        },
+        {
+          "args": [
+            "5",
+            "0",
+            "2",
+            "false"
+          ],
+          "result": {
+            "error": "argument"
+          }
+        }
+      ]
     },
-    {
-     "args": [
-      "10000000",
-      "2",
-      "false"
-     ],
-     "result": "128"
+    "add": {
+      "ruby": "add(a, b, width, base: 2)",
+      "js": "add(a, b, width, base)",
+      "doc": "A column addition: {digits, carries, carry_out}.",
+      "cases": [
+        {
+          "args": [
+            "0101",
+            "1011",
+            "4",
+            "2"
+          ],
+          "result": {
+            "digits": "0000",
+            "carries": [
+              1,
+              1,
+              1,
+              0
+            ],
+            "carry_out": 1
+          }
+        },
+        {
+          "args": [
+            "00000101",
+            "11111011",
+            "8",
+            "2"
+          ],
+          "result": {
+            "digits": "00000000",
+            "carries": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              0
+            ],
+            "carry_out": 1
+          }
+        },
+        {
+          "args": [
+            "0111",
+            "0001",
+            "4",
+            "2"
+          ],
+          "result": {
+            "digits": "1000",
+            "carries": [
+              1,
+              1,
+              1,
+              0
+            ],
+            "carry_out": 0
+          }
+        },
+        {
+          "args": [
+            "1111",
+            "0001",
+            "4",
+            "2"
+          ],
+          "result": {
+            "digits": "0000",
+            "carries": [
+              1,
+              1,
+              1,
+              0
+            ],
+            "carry_out": 1
+          }
+        },
+        {
+          "args": [
+            "0011",
+            "0010",
+            "4",
+            "2"
+          ],
+          "result": {
+            "digits": "0101",
+            "carries": [
+              0,
+              1,
+              0,
+              0
+            ],
+            "carry_out": 0
+          }
+        },
+        {
+          "args": [
+            "101",
+            "11",
+            "4",
+            "2"
+          ],
+          "result": {
+            "digits": "1000",
+            "carries": [
+              1,
+              1,
+              1,
+              0
+            ],
+            "carry_out": 0
+          }
+        },
+        {
+          "args": [
+            "FF",
+            "01",
+            "2",
+            "16"
+          ],
+          "result": {
+            "digits": "00",
+            "carries": [
+              1,
+              0
+            ],
+            "carry_out": 1
+          }
+        },
+        {
+          "args": [
+            "999",
+            "1",
+            "3",
+            "10"
+          ],
+          "result": {
+            "digits": "000",
+            "carries": [
+              1,
+              1,
+              0
+            ],
+            "carry_out": 1
+          }
+        },
+        {
+          "args": [
+            "123",
+            "456",
+            "3",
+            "10"
+          ],
+          "result": {
+            "digits": "579",
+            "carries": [
+              0,
+              0,
+              0
+            ],
+            "carry_out": 0
+          }
+        },
+        {
+          "args": [
+            "11111",
+            "1",
+            "4",
+            "2"
+          ],
+          "result": {
+            "error": "argument"
+          }
+        },
+        {
+          "args": [
+            "1012",
+            "1",
+            "4",
+            "2"
+          ],
+          "result": {
+            "error": "argument"
+          }
+        }
+      ]
+    },
+    "sub": {
+      "ruby": "sub(a, b, width, base: 2)",
+      "js": "sub(a, b, width, base)",
+      "doc": "A column subtraction: {digits, borrows}.",
+      "cases": [
+        {
+          "args": [
+            "1000",
+            "0001",
+            "4",
+            "2"
+          ],
+          "result": {
+            "digits": "0111",
+            "borrows": [
+              0,
+              1,
+              1,
+              1
+            ]
+          }
+        },
+        {
+          "args": [
+            "0101",
+            "0111",
+            "4",
+            "2"
+          ],
+          "result": {
+            "digits": "1110",
+            "borrows": [
+              1,
+              1,
+              1,
+              0
+            ]
+          }
+        },
+        {
+          "args": [
+            "0111",
+            "0101",
+            "4",
+            "2"
+          ],
+          "result": {
+            "digits": "0010",
+            "borrows": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "args": [
+            "0000",
+            "0001",
+            "4",
+            "2"
+          ],
+          "result": {
+            "digits": "1111",
+            "borrows": [
+              1,
+              1,
+              1,
+              1
+            ]
+          }
+        },
+        {
+          "args": [
+            "1010",
+            "1010",
+            "4",
+            "2"
+          ],
+          "result": {
+            "digits": "0000",
+            "borrows": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "args": [
+            "100",
+            "1",
+            "3",
+            "10"
+          ],
+          "result": {
+            "digits": "099",
+            "borrows": [
+              0,
+              1,
+              1
+            ]
+          }
+        },
+        {
+          "args": [
+            "000",
+            "001",
+            "3",
+            "10"
+          ],
+          "result": {
+            "digits": "999",
+            "borrows": [
+              1,
+              1,
+              1
+            ]
+          }
+        },
+        {
+          "args": [
+            "00",
+            "01",
+            "2",
+            "16"
+          ],
+          "result": {
+            "digits": "FF",
+            "borrows": [
+              1,
+              1
+            ]
+          }
+        },
+        {
+          "args": [
+            "10",
+            "1",
+            "2",
+            "16"
+          ],
+          "result": {
+            "digits": "0F",
+            "borrows": [
+              0,
+              1
+            ]
+          }
+        },
+        {
+          "args": [
+            "0101",
+            "11111",
+            "4",
+            "2"
+          ],
+          "result": {
+            "error": "argument"
+          }
+        }
+      ]
+    },
+    "mul": {
+      "ruby": "mul(a, b, width, base: 2)",
+      "js": "mul(a, b, width, base)",
+      "doc": "A column multiplication: partial products and the result.",
+      "cases": [
+        {
+          "args": [
+            "0101",
+            "11",
+            "8",
+            "2"
+          ],
+          "result": {
+            "partials": [
+              {
+                "shift": 0,
+                "digit": "1",
+                "digits": "00000101"
+              },
+              {
+                "shift": 1,
+                "digit": "1",
+                "digits": "00001010"
+              }
+            ],
+            "digits": "00001111",
+            "full": "00001111",
+            "overflow": false
+          }
+        },
+        {
+          "args": [
+            "0101",
+            "101",
+            "8",
+            "2"
+          ],
+          "result": {
+            "partials": [
+              {
+                "shift": 0,
+                "digit": "1",
+                "digits": "00000101"
+              },
+              {
+                "shift": 1,
+                "digit": "0",
+                "digits": "00000000"
+              },
+              {
+                "shift": 2,
+                "digit": "1",
+                "digits": "00010100"
+              }
+            ],
+            "digits": "00011001",
+            "full": "00011001",
+            "overflow": false
+          }
+        },
+        {
+          "args": [
+            "11111111",
+            "10",
+            "8",
+            "2"
+          ],
+          "result": {
+            "partials": [
+              {
+                "shift": 0,
+                "digit": "0",
+                "digits": "00000000"
+              },
+              {
+                "shift": 1,
+                "digit": "1",
+                "digits": "111111110"
+              }
+            ],
+            "digits": "11111110",
+            "full": "111111110",
+            "overflow": true
+          }
+        },
+        {
+          "args": [
+            "1",
+            "0",
+            "4",
+            "2"
+          ],
+          "result": {
+            "partials": [
+              {
+                "shift": 0,
+                "digit": "0",
+                "digits": "0000"
+              }
+            ],
+            "digits": "0000",
+            "full": "0000",
+            "overflow": false
+          }
+        },
+        {
+          "args": [
+            "0011",
+            "11",
+            "4",
+            "2"
+          ],
+          "result": {
+            "partials": [
+              {
+                "shift": 0,
+                "digit": "1",
+                "digits": "0011"
+              },
+              {
+                "shift": 1,
+                "digit": "1",
+                "digits": "0110"
+              }
+            ],
+            "digits": "1001",
+            "full": "1001",
+            "overflow": false
+          }
+        },
+        {
+          "args": [
+            "12",
+            "3",
+            "3",
+            "10"
+          ],
+          "result": {
+            "partials": [
+              {
+                "shift": 0,
+                "digit": "3",
+                "digits": "036"
+              }
+            ],
+            "digits": "036",
+            "full": "036",
+            "overflow": false
+          }
+        },
+        {
+          "args": [
+            "99",
+            "99",
+            "2",
+            "10"
+          ],
+          "result": {
+            "partials": [
+              {
+                "shift": 0,
+                "digit": "9",
+                "digits": "891"
+              },
+              {
+                "shift": 1,
+                "digit": "9",
+                "digits": "8910"
+              }
+            ],
+            "digits": "01",
+            "full": "9801",
+            "overflow": true
+          }
+        },
+        {
+          "args": [
+            "0F",
+            "2",
+            "2",
+            "16"
+          ],
+          "result": {
+            "partials": [
+              {
+                "shift": 0,
+                "digit": "2",
+                "digits": "1E"
+              }
+            ],
+            "digits": "1E",
+            "full": "1E",
+            "overflow": false
+          }
+        },
+        {
+          "args": [
+            "0101",
+            "12",
+            "8",
+            "2"
+          ],
+          "result": {
+            "error": "argument"
+          }
+        }
+      ]
+    },
+    "repeated_division": {
+      "ruby": "repeated_division(n, base)",
+      "js": "repeatedDivision(n, base)",
+      "doc": "W2-3: the quotients and remainders of dividing by the base until 0.",
+      "cases": [
+        {
+          "args": [
+            "13",
+            "2"
+          ],
+          "result": {
+            "steps": [
+              {
+                "dividend": "13",
+                "quotient": "6",
+                "remainder": "1"
+              },
+              {
+                "dividend": "6",
+                "quotient": "3",
+                "remainder": "0"
+              },
+              {
+                "dividend": "3",
+                "quotient": "1",
+                "remainder": "1"
+              },
+              {
+                "dividend": "1",
+                "quotient": "0",
+                "remainder": "1"
+              }
+            ],
+            "digits": "1101"
+          }
+        },
+        {
+          "args": [
+            "0",
+            "2"
+          ],
+          "result": {
+            "steps": [
+              {
+                "dividend": "0",
+                "quotient": "0",
+                "remainder": "0"
+              }
+            ],
+            "digits": "0"
+          }
+        },
+        {
+          "args": [
+            "255",
+            "16"
+          ],
+          "result": {
+            "steps": [
+              {
+                "dividend": "255",
+                "quotient": "15",
+                "remainder": "F"
+              },
+              {
+                "dividend": "15",
+                "quotient": "0",
+                "remainder": "F"
+              }
+            ],
+            "digits": "FF"
+          }
+        },
+        {
+          "args": [
+            "255",
+            "2"
+          ],
+          "result": {
+            "steps": [
+              {
+                "dividend": "255",
+                "quotient": "127",
+                "remainder": "1"
+              },
+              {
+                "dividend": "127",
+                "quotient": "63",
+                "remainder": "1"
+              },
+              {
+                "dividend": "63",
+                "quotient": "31",
+                "remainder": "1"
+              },
+              {
+                "dividend": "31",
+                "quotient": "15",
+                "remainder": "1"
+              },
+              {
+                "dividend": "15",
+                "quotient": "7",
+                "remainder": "1"
+              },
+              {
+                "dividend": "7",
+                "quotient": "3",
+                "remainder": "1"
+              },
+              {
+                "dividend": "3",
+                "quotient": "1",
+                "remainder": "1"
+              },
+              {
+                "dividend": "1",
+                "quotient": "0",
+                "remainder": "1"
+              }
+            ],
+            "digits": "11111111"
+          }
+        },
+        {
+          "args": [
+            "64",
+            "8"
+          ],
+          "result": {
+            "steps": [
+              {
+                "dividend": "64",
+                "quotient": "8",
+                "remainder": "0"
+              },
+              {
+                "dividend": "8",
+                "quotient": "1",
+                "remainder": "0"
+              },
+              {
+                "dividend": "1",
+                "quotient": "0",
+                "remainder": "1"
+              }
+            ],
+            "digits": "100"
+          }
+        },
+        {
+          "args": [
+            "10",
+            "10"
+          ],
+          "result": {
+            "steps": [
+              {
+                "dividend": "10",
+                "quotient": "1",
+                "remainder": "0"
+              },
+              {
+                "dividend": "1",
+                "quotient": "0",
+                "remainder": "1"
+              }
+            ],
+            "digits": "10"
+          }
+        },
+        {
+          "args": [
+            "-1",
+            "2"
+          ],
+          "result": {
+            "error": "argument"
+          }
+        },
+        {
+          "args": [
+            "3",
+            "1"
+          ],
+          "result": {
+            "error": "argument"
+          }
+        }
+      ]
     }
-   ]
-  },
-  "write": {
-   "ruby": "write(value, width, base: 2, twos: false)",
-   "js": "write(value, width, base, twos)",
-   "doc": "The digits of a value at a width; nil when it does not fit.",
-   "cases": [
-    {
-     "args": [
-      "-5",
-      "8",
-      "2",
-      "true"
-     ],
-     "result": "11111011"
-    },
-    {
-     "args": [
-      "5",
-      "8",
-      "2",
-      "true"
-     ],
-     "result": "00000101"
-    }
-   ]
-  },
-  "add": {
-   "ruby": "add(a, b, width, base: 2)",
-   "js": "add(a, b, width, base)",
-   "doc": "A column addition: {digits, carries, carry_out}.",
-   "cases": []
-  },
-  "sub": {
-   "ruby": "sub(a, b, width, base: 2)",
-   "js": "sub(a, b, width, base)",
-   "doc": "A column subtraction: {digits, borrows}.",
-   "cases": []
-  },
-  "mul": {
-   "ruby": "mul(a, b, width, base: 2)",
-   "js": "mul(a, b, width, base)",
-   "doc": "A column multiplication: partial products and the result.",
-   "cases": []
-  },
-  "repeated_division": {
-   "ruby": "repeated_division(n, base)",
-   "js": "repeatedDivision(n, base)",
-   "doc": "W2-3: the quotients and remainders of dividing by the base until 0.",
-   "cases": []
   }
- }
 }

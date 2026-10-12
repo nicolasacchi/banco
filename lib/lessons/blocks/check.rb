@@ -61,9 +61,31 @@ module Lessons
 
       def text(check, ctx)
         ctx.add("E-LESSON-CHECK", "answer", "the answer is empty") if check["answer"].to_s.strip.empty?
+        bits(check, ctx) if check["input"] == "bits"
         norm = ->(s) { s.to_s.strip.downcase }
         check["errors"].to_a.each_with_index do |e, i|
           ctx.add("E-LESSON-CHECK", "errors/#{i}/answer", "an error answer equals the right answer") if norm.call(e["answer"]) == norm.call(check["answer"])
+        end
+      end
+
+      # input: bits (T9): the switches of a register. They need the binary profile with its width; the right answer is exactly that many bits;
+      # and with switches every error answer is that many bits too (a shorter one cannot be given), unless an error under test is
+      # padding_missing, which keeps the typed input (Lessons::Checks.bits_switches?).
+      def bits(check, ctx)
+        profile = check["profile"]
+        unless profile.is_a?(Hash) && profile["name"] == "binary" && profile["width"]
+          ctx.add("E-LESSON-CHECK", "input", "input: bits needs profile: {name: binary, width: N}")
+          return
+        end
+        width = profile["width"]
+        binary = ->(s) { s.is_a?(String) && s.match?(/\A[01]+\z/) }
+        ctx.add("E-LESSON-CHECK", "answer", "the answer of input: bits is #{width} bits, written as 0 and 1") unless binary.call(check["answer"]) && check["answer"].size == width
+        return unless Checks.bits_switches?(check)
+
+        check["errors"].to_a.each_with_index do |e, i|
+          next if binary.call(e["answer"]) && e["answer"].size == width
+
+          ctx.add("E-LESSON-CHECK", "errors/#{i}/answer", "with switches an error answer is #{width} bits; a shorter one can only be typed: use the code padding_missing")
         end
       end
 

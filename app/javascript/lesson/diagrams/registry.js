@@ -11,10 +11,12 @@ import * as sentence from "lesson/diagrams/sentence"
 import * as concept_map from "lesson/diagrams/concept_map"
 import * as table from "lesson/diagrams/table"
 import * as flow from "lesson/diagrams/flow"
+import * as register from "lesson/diagrams/computing/register"
+import * as column_calc from "lesson/diagrams/computing/column_calc"
 import { run } from "lesson/diagrams/run"
 
-export const TYPES = { balance, equation_parts, number_line, area_model, cartesian, sentence, concept_map, table, flow }
-export const STATUS = {"balance":"available","equation_parts":"available","number_line":"available","area_model":"available","cartesian":"available","sentence":"available","concept_map":"available","table":"available","flow":"available","network":"reserved","chain":"reserved","nested":"draft","timeline":"reserved","calendar":"reserved","map":"reserved","insolation":"reserved","cross_section":"reserved","climograph":"reserved","bar_model":"reserved","seats":"reserved","chart":"draft","scale":"draft","periodic_table":"reserved","register":"reserved","column_calc":"reserved","paradigm":"draft","sheet":"reserved","word_parts":"reserved","mirror":"reserved","document":"reserved","formula":"reserved","molecule":"reserved","strand":"reserved","particles":"draft","phase_changes":"draft","cell":"draft","program":"draft","rgb":"reserved"}
+export const TYPES = { balance, equation_parts, number_line, area_model, cartesian, sentence, concept_map, table, flow, register, column_calc }
+export const STATUS = {"balance":"available","equation_parts":"available","number_line":"available","area_model":"available","cartesian":"available","sentence":"available","concept_map":"available","table":"available","flow":"available","network":"reserved","chain":"reserved","nested":"draft","timeline":"reserved","calendar":"reserved","map":"reserved","insolation":"reserved","cross_section":"reserved","climograph":"reserved","bar_model":"reserved","seats":"reserved","chart":"draft","scale":"draft","periodic_table":"reserved","register":"available","column_calc":"available","paradigm":"draft","sheet":"reserved","word_parts":"reserved","mirror":"reserved","document":"reserved","formula":"reserved","molecule":"reserved","strand":"reserved","particles":"draft","phase_changes":"draft","cell":"draft","program":"draft","rgb":"reserved"}
 export const HOME_PALETTE = {"balance":"math","equation_parts":"math","register":"computer_science","column_calc":"computer_science","formula":"chemistry","molecule":"chemistry","strand":"biology","particles":"chemistry","phase_changes":"chemistry","cell":"biology"}
 export const FAMILY = {"balance":"core","equation_parts":"core","number_line":"core","area_model":"core","cartesian":"core","sentence":"core","concept_map":"core","table":"core","flow":"core","network":"graph","chain":"graph","nested":"graph","timeline":"time","calendar":"time","map":"maps","insolation":"maps","cross_section":"maps","climograph":"chart","bar_model":"chart","seats":"chart","chart":"chart","scale":"chart","periodic_table":"science","register":"computing","column_calc":"computing","paradigm":"words","sheet":"computing","word_parts":"words","mirror":"words","document":"docs","formula":"science","molecule":"science","strand":"science","particles":"science","phase_changes":"science","cell":"science","program":"computing","rgb":"computing"}
 export const HELD_BACK = {"cartesian":{"sliders":{"present":"reserved"}},"sentence":{"text_en":{"present":"reserved"},"text_es":{"present":"reserved"}},"flow":{"layout":{"line":"reserved"},"walk":{"true":"draft"}},"bar_model":{"view":{"fraction":"reserved"}},"chart":{"kind":{"pyramid":"reserved","scatter":"reserved"}},"scale":{"units":{"bytes":"reserved"}},"column_calc":{"op":{"repeated_division":"reserved"}},"word_parts":{"view":{"history":"draft"}},"document":{"kind":{"contract":"draft","receipt":"draft","gazette":"draft","ballot":"draft","letter":"draft","assegno_bancario":"draft","assegno_circolare":"draft","cambiale_tratta":"draft","paghero":"draft","bonifico":"draft","ddt":"draft"}}}
@@ -33,8 +35,6 @@ const LOADERS = {
   chart: () => import("lesson/diagrams/chart/chart"),
   scale: () => import("lesson/diagrams/chart/scale"),
   periodic_table: () => import("lesson/diagrams/science/periodic_table"),
-  register: () => import("lesson/diagrams/computing/register"),
-  column_calc: () => import("lesson/diagrams/computing/column_calc"),
   paradigm: () => import("lesson/diagrams/words/paradigm"),
   sheet: () => import("lesson/diagrams/computing/sheet"),
   word_parts: () => import("lesson/diagrams/words/word_parts"),

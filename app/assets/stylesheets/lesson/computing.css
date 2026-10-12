@@ -2,3 +2,78 @@
    Linked on a page only when the lesson uses one of these types (the page head reads the body), never by hand.
    Rules: colours only through the role classes (.role-x, .mk-x, .st-x, .fl-x, .tn-x) and the theme variables of
    lesson_roles.css; no colour alone (A4); a forced-colors block per type; print rules for P1 to P6; targets at least 24 px. */
+
+/* ---- the digits of a register: every digit in its own cell (register, column_calc) ---- */
+.dg-register .dg-svg, .dg-column_calc .dg-svg { margin: 0 auto; }
+.dg-bit { fill: var(--surface); stroke: var(--line); stroke-width: 2; }
+.dg-bit.dg-on { fill: var(--soft); stroke: var(--text); }
+.dg-bit.dg-empty { fill: none; stroke: var(--muted); stroke-dasharray: 5 5; }
+/* a cell with a role (the sign bit, a mark): the role colours the border, the border is thicker and the cell keeps its fill */
+.dg-bit[class*="st-"] { fill: var(--surface); stroke-width: 4; }
+.dg-bit.dg-on[class*="st-"] { fill: var(--soft); }
+.dg-bit.dg-chip, .dg-bit.dg-sample { fill: var(--surface); stroke-width: 3; stroke-dasharray: 5 3; }
+.dg-bit.dg-outside { fill: none; stroke-width: 3; stroke-dasharray: 5 3; }
+.dg-bit.dg-outside.dg-empty { stroke: var(--muted); stroke-width: 2; }
+.dg-digit { font-weight: 700; font-variant-numeric: tabular-nums; }
+.dg-digit.dg-dim { color: var(--muted); font-weight: 600; }
+.dg-weight { font-weight: 600; font-variant-numeric: tabular-nums; }
+.dg-weight.role-sign { font-weight: 800; }
+.dg-groupdigit { color: var(--muted); font-weight: 800; }
+.dg-rule { stroke: var(--text); stroke-width: 3; }
+.dg-opsign { font-weight: 800; }
+.dg-strike { stroke: var(--text); stroke-width: 3; stroke-linecap: round; }
+.dg-readout-line { font-weight: 800; }
+.dg-sumline { color: var(--text); font-variant-numeric: tabular-nums; }
+.dg-stepline { font-weight: 700; }
+.dg-legend { color: var(--text); }
+.dg-goaltag { font-weight: 800; }
+.dg-goal { fill: var(--surface); stroke: var(--muted); stroke-width: 2; stroke-dasharray: 4 3; }
+.dg-goal.dg-reached { fill: var(--soft); stroke: var(--text); stroke-width: 3; stroke-dasharray: none; }
+.dg-goaltext.dg-reachedtext { font-weight: 800; }
+
+/* a bit as a switch: a button laid over its cell, in a layer of its own */
+.dg-switches { position: absolute; inset: 0; pointer-events: none; }
+.dg-switches:empty { display: none; }
+.dg-switch { position: absolute; pointer-events: auto; padding: 0; background: transparent; border: 2px solid transparent; border-radius: 8px; cursor: pointer; }
+.dg-switch:hover { border-color: var(--text); }
+.dg-stepper { display: flex; align-items: center; gap: 0.6em; flex-wrap: wrap; width: 100%; }
+.dg-steplabel { font-weight: 800; color: var(--muted); flex-basis: 100%; }
+.dg-stepper .button { flex: 0 1 auto; }
+
+/* ---- the ring (register view ring) ---- */
+.dg-ringpath { fill: none; stroke: var(--line); stroke-width: 3; }
+.dg-codenode { fill: var(--surface); stroke: var(--text); stroke-width: 2; }
+.dg-codenode.dg-on { fill: var(--text); }
+.dg-cliff { stroke: var(--text); stroke-width: 4; stroke-dasharray: 4 3; stroke-linecap: round; }
+.dg-arc { fill: none; stroke-width: 6; stroke-linecap: round; }
+.dg-pointer-ring { fill: none; stroke-width: 4; }
+.dg-highlight-ring { fill: none; stroke: var(--text); stroke-width: 3; stroke-dasharray: 3 3; }
+.dg-ringnum { font-weight: 700; font-variant-numeric: tabular-nums; }
+.dg-ringnum-in { color: var(--muted); }
+.dg-ringnum.dg-forced { color: var(--text); font-weight: 800; }
+
+@media (forced-colors: active) {
+  .dg-bit, .dg-ringpath, .dg-codenode, .dg-goal { stroke: CanvasText; fill: Canvas; }
+  .dg-bit.dg-on { stroke-width: 5; }
+  .dg-bit.dg-empty, .dg-bit.dg-outside, .dg-bit.dg-chip { stroke-dasharray: 5 4; }
+  .dg-codenode.dg-on { fill: CanvasText; }
+  .dg-rule, .dg-strike, .dg-cliff, .dg-highlight-ring { stroke: CanvasText; }
+  .dg-switch:focus-visible { outline: 3px solid Highlight; }
+}
+@media print {
+  .dg-switch, .dg-stepper { display: none; }
+}
+
+/* ---- check option input: bits (the switches of a register, WAVE2 2.11) ---- */
+.answer-bits { display: flex; flex-direction: column; gap: 0.4em; align-items: flex-start; }
+.bits-hint { margin: 0; }
+.bits-input { display: flex; flex-wrap: wrap; gap: 0.6em 1em; }
+.bit-group { display: inline-flex; gap: 0.25em; }
+.bit-switch { box-sizing: border-box; min-width: 2.4em; height: 2.8em; padding: 0; font: inherit; font-size: 1.15em; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text); background: var(--surface); border: 2px solid var(--line); border-radius: 0.5em; cursor: pointer; }
+.bit-switch[aria-checked="true"] { background: var(--soft); border: 4px solid var(--text); }
+.bit-switch:disabled { cursor: default; }
+.bits-readout { margin: 0; color: var(--muted); font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 0.05em; }
+@media (forced-colors: active) {
+  .bit-switch { border-color: ButtonText; background: ButtonFace; }
+  .bit-switch[aria-checked="true"] { border-width: 5px; }
+}

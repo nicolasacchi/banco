@@ -50,7 +50,7 @@ booleans on a property, `x-banco-hide` a list of paths (`bars[].parts[].hidden`)
 |---|---|---|
 | graph router (`place`, `route`, `flip`, `moveList`) | `lesson/diagrams/graph/router.js` | T4b |
 | chart axis (`linear`, `log`, `readCursor`, `legend`, `valueTable`) | `lesson/diagrams/chart/axis.js` | T6 |
-| grid API (`grid`, `cellBox`, `outline`, `stackForPhone`, `scrollFrame`, `cellTargets`) | `lesson/diagrams/grid/api.js` | T9 |
+| grid API (`grid`, `cellBox`, `outline`, `stackForPhone`, `scrollFrame`, `cellTargets`) | `lesson/diagrams/grid/api.js` (built; the engine and its helpers are in `grid/engine.js`) | T9 |
 | speech (`voiceFor`, `rateFor` done; `speechOf`, `speak`, `stopAll`) | `lesson/speech.js`, `config/banco/voices.yml` | T2 |
 | `recordAtRender(data) -> { records, findings }` | `lesson/diagrams/computing/program.js` | T9 |
 | the libraries (Chrono, Dates, NumWords, Money, Chem, Words, Verbs, Bits, ProgramGrammar, Sheet) | `lib/lessons/*.rb`, `lesson/lib/*.js`, `test/fixtures/lesson2/*.json` | T3, T4a, T7, T8, T9 |
@@ -78,3 +78,14 @@ each, described under `pending` in `test/fixtures/lesson2/manifest.json` until t
 (`test/fixtures/diagrams/types/TYPE.json`). Each family has a gallery skeleton (`test/fixtures/lesson2/gallery/FAMILY.md`), a
 stylesheet (`app/assets/stylesheets/lesson/FAMILY.css`) and a locale file (`config/locales/lesson_FAMILY.it.yml`). Each subject has
 a brief addendum (`banco brief show lesson-SUBJECT`).
+
+## Controls, live line and select scenes (T9, D-274)
+
+`draw.js` builds the controls a module declares through `controls(data)` (`lesson/diagrams/controls.js`). The values are one object `{ id: value }` that
+`layout` and `describe` read as `ctx.controls` (empty at the start, reset when the figure changes state): a toggle is `true` once flipped, a stepper is a number
+(its `initial` until it is pressed). Beyond the contract's `{ id, kind, range?, values?, label_it }` a control may carry `initial`, `less_it` and `more_it` (the words on
+a stepper's two buttons). A toggle or tap that the scene gives a box to (`scene.controls[id] = { x, y, w, h, label_it, on }`) is a native button laid over the drawing
+(`role=switch`), the others sit in the strip under it. `scene.live` is the one polite sentence announced after a change. In `mode: "select"` a type draws its
+candidates in one neutral style with `shapes[].target = "tN"` and returns `scene.targets = [{ target, bbox }]`; `targets(data, set, opts)` maps them to the stored ids.
+`describe(data, ctx)` and `printed(data, state)` take the state: `printed` is the set of value tokens (digits in every way they are written, weights, readouts, sums), and every
+number `describe` says is one of them or a structural count. A page links `stylesheets/lesson/FAMILY.css` for the families its diagrams use (`lesson2_family_css`).

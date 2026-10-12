@@ -72,6 +72,10 @@ export function makeContext(data, opts) {
     measure: (text, px = fontPx, maxW) => measure(text, px, maxW),
     state: Math.max(0, opts.state ?? 0),
     tryValue: opts.tryValue,
+    // contract v2 (WAVE2 1.2): the mode of the page, what the student has opened, the values of the figure's controls ({ id: value }, empty at the start)
+    mode: opts.mode ?? "student",
+    revealed: opts.revealed ?? [],
+    controls: opts.controls ?? {},
     pad: Math.round(fontPx * 0.4),
     shapes: [],
     labels: [],

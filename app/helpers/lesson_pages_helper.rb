@@ -2,6 +2,23 @@
 module LessonPagesHelper
   def lesson2?(body) = body.is_a?(Hash) && body["schema"] == "banco.lesson/2"
 
+  # The stylesheets of the families whose diagrams the body draws (app/assets/stylesheets/lesson/FAMILY.css): a page links only what it uses.
+  def lesson2_family_css(body)
+    families = []
+    walk = lambda do |node|
+      case node
+      when Hash
+        entry = node["type"].is_a?(String) && node.key?("alt_it") ? Lessons::Types.entry(:diagram, node["type"]) : nil
+        families << entry["family"] if entry && entry["family"] != "core"
+        families << "computing" if node["component"] == "normalized_text" && node["input"] == "bits" # the switches of a register (T9)
+        node.each_value(&walk)
+      when Array then node.each(&walk)
+      end
+    end
+    walk.call(body)
+    families.uniq.map { |f| "lesson/#{f}" }
+  end
+
   # The texts of the page, one nested object (config/locales/lesson.it.yml).
   def lesson2_texts = I18n.t("lesson2").deep_stringify_keys
 

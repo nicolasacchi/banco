@@ -13,9 +13,9 @@ const { checkModule, checkControls, defaultSegments, OPTIONAL_EXPORTS } = await 
 const { validate } = await import("lesson/schema")
 const { NotBuilt } = await import("lesson/lib/not_built")
 
-test("the registry knows 38 diagram types: 9 available and 29 behind a lazy loader, each with a module that keeps the contract", async () => {
+test("the registry knows 38 diagram types: the available ones eager, the rest behind a lazy loader, each with a module that keeps the contract", async () => {
   assert.equal(Object.keys(registry.STATUS).length, 38)
-  assert.equal(Object.keys(registry.TYPES).length, 9)
+  assert.equal(Object.keys(registry.TYPES).length, Object.values(registry.STATUS).filter((s) => s === "available").length)
   for (const [type, status] of Object.entries(registry.STATUS)) {
     const mod = await registry.load(type)
     assert.ok(mod, `${type} loads`)
@@ -109,11 +109,10 @@ test("program declares recordAtRender, the only type that does in wave 2, and it
   }
 })
 
-test("the shared interfaces are frozen: the router, the axis and the grid api export their functions, which throw NotBuilt until their track", async () => {
+test("the shared interfaces are frozen: the router and the axis export their functions, which throw NotBuilt until their track (the grid api is built, grid.test.mjs)", async () => {
   const router = await import("lesson/diagrams/graph/router")
   const axis = await import("lesson/diagrams/chart/axis")
-  const grid = await import("lesson/diagrams/grid/api")
-  for (const [mod, names] of [[router, ["place", "route", "flip", "moveList"]], [axis, ["linear", "log", "readCursor", "legend", "valueTable"]], [grid, ["grid", "cellBox", "outline", "stackForPhone", "scrollFrame", "cellTargets"]]]) {
+  for (const [mod, names] of [[router, ["place", "route", "flip", "moveList"]], [axis, ["linear", "log", "readCursor", "legend", "valueTable"]]]) {
     for (const name of names) assert.throws(() => mod[name](), NotBuilt, name)
   }
   assert.ok(router.LAYOUTS.includes("hub"))
@@ -140,6 +139,7 @@ test("speech: the voice gate keeps local voices of the language that the operato
 
 test("the library signatures: the JS twin of each library has the functions its vector file lists, and they throw NotBuilt", async () => {
   const dir = new URL("test/fixtures/lesson2/", root)
+  const BUILT = ["bits"] // built by its track: its own test runs the vectors
   const vectors = { chrono: "chrono.json", dates: "dates.json", num_words: "amount_words.json", money: "money.json", chem: "chem_formulas.json", words: "spanish_words.json", verbs: "verbs.json", bits: "bits.json", program: "program.json", sheet: "sheet.json" }
   for (const [name, file] of Object.entries(vectors)) {
     const doc = JSON.parse(readFileSync(new URL(file, dir), "utf8"))
@@ -148,7 +148,8 @@ test("the library signatures: the JS twin of each library has the functions its 
     for (const [fn, spec] of Object.entries(doc.functions)) {
       assert.equal(lib.SIGNATURES[fn], spec.js, `${name}.${fn}`)
       const jsName = spec.js.split("(")[0]
-      assert.throws(() => lib[jsName](), NotBuilt, `${name}.${jsName}`)
+      if (BUILT.includes(name)) assert.equal(typeof lib[jsName], "function", `${name}.${jsName}`)
+      else assert.throws(() => lib[jsName](), NotBuilt, `${name}.${jsName}`)
       for (const c of spec.cases) assert.ok(Array.isArray(c.args) && "result" in c, `${name}.${fn} case`)
     }
   }

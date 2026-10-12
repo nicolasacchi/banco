@@ -53,12 +53,20 @@ Only these names, besides the structural ones of the lesson brief, and only with
 
 | Piece | Kind | Status | Batch | Track |
 |---|---|---|---|---|
-| `register` | diagram | reserved | w2-1 | T9 |
-| `column_calc` | diagram | reserved | w2-1 | T9 |
+| `register` | diagram | available | w2-1 | T9 |
+| `column_calc` | diagram | available | w2-1 | T9 (`op: repeated_division` is w2-3) |
+| `input: bits` | check option | available (it carries a `profile`, still T1's) | w2-1 | T9 |
 | `program` | diagram | draft | w2-2 | T9 |
 | `select` | check | reserved | w2-1 | T1 |
 
 Only `available` pieces can be used; `banco lesson submit --dry-run` says what is not. Until a piece lands, use the per-card fallback of the card plan.
+
+## How to write the pieces that are available
+
+- `register view: row`: `width`, `base` (2, 8, 10, 16), `value` with exactly `width` digits (leading zeros are part of the register), `read: unsigned | twos`, `weights: true` (the first weight is the negative one in two's complement), `groups: 4`, `group_digits: true` (the hex digit under each group of four), `mark` (a role marker under a digit, positions from the left starting at 1), `states` with a new `value` and a short `op_it` ("Inverti ogni bit"). The readout ("Il registro con segno vale -5") and the sum of the weights are ours: never write them. `toggle: true` (base 2) makes every bit a switch; `goals` ("Prova a fare ...") name numbers the register can show: the card says "Sì" when one is reached, nothing is graded. A figure with `toggle` shows every value of its width: no check on the same card may ask for one of them (`E-CHECK-ANSWER-BY-SIMULATION`), and a wider register than 8 bits cannot sit on a card with a check at all.
+- `register view: ring`: `width` 3 or 4, `read: unsigned | twos | both`, `cliff: true` (the seam where the value jumps), `pointer` and `step: true` (the student moves it with -1 and +1), `highlight` (a code and a word), `moves` (`from` and `by`: the landing code is computed and drawn as an arc along the ring). The codes are read off the pointer and the legend, not written round the circle.
+- `column_calc`: `op: add | sub | mul`, `a`, `b` (at most `width` digits; a multiplier has at most 4), `width` (a phone shows 8 digits, not 16), `reveal: columns` to show the work one column (one partial product for `mul`) at a time with Avanti, `read: unsigned | twos`. A carry that leaves the register falls out to the left, dashed, in the role `carry`; a borrow across zeros changes every digit it runs through. Carries, borrows, partial products and the result are computed: you give only the two numbers.
+- `input: bits` on a `normalized_text` check: eight switches in two groups of four instead of a typed line; the check carries `profile: {name: binary, width: 8, leading_zeros: required}`, the answer is exactly 8 bits, and so is every `errors[].answer`. When the error under test is `padding_missing` (too few bits) the check keeps the typed line, because switches always give the whole width. No weights are drawn on the switches.
 
 ## Rules of the subject
 

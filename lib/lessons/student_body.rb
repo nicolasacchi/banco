@@ -144,7 +144,13 @@ module Lessons
       when "normalized_text"
         accents = Items::Part::ACCENT_SETS[subject]
         out["accents"] = accents if accents
-        out["input_width"] = c.dig("profile", "width") if c["input"] == "bits" && c.dig("profile", "width")
+        # input: bits is the switches of a register (T9): they are served with the width of the profile; an error under test that the
+        # switches would make impossible (padding_missing: the answer is too short) keeps the typed input
+        if c["input"] == "bits"
+          if Checks.bits_switches?(c) then out["input_width"] = c.dig("profile", "width")
+          else out.delete("input")
+          end
+        end
       end
       out
     end
