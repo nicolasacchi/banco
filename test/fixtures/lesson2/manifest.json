@@ -788,6 +788,14 @@
    "line": 73,
    "construct": "diagram seats",
    "note": "seats with sliders over 100 to 900 present and 0 to 99 yes can show more than 500 numbers, on a card with a check"
+  },
+  {
+   "file": "bad/diagram-formula-unknown-symbol.md",
+   "base": "base.md",
+   "code": "E-CHEM-SYMBOL",
+   "line": 63,
+   "construct": "diagram formula",
+   "note": "a formula whose symbol is not an element (formulas: ['Xx2']); the same code is raised for CL2, where the capital L is no symbol"
   }
  ],
  "pending": {
@@ -826,15 +834,6 @@
     "track": "T2",
     "base": "base.md",
     "change": "251 words of quotations, translations and dialogue lines open by default on top of the 500 words of prose"
-   },
-   {
-    "code": "E-CHEM-SYMBOL",
-    "needs": [
-     "diagram:formula"
-    ],
-    "track": "T2",
-    "base": "base.md",
-    "change": "a formula \\ce{Xx2} with a symbol that is not an element"
    },
    {
     "code": "W-ES-TILDE",
