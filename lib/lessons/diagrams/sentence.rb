@@ -4,14 +4,24 @@ module Lessons
   module Diagrams
     # A sentence analysed in parts: each part an exact substring of the text, in order, not overlapping, except
     # implied parts ("(noi)"). Across states a part with the same id keeps its role (it moves, it does not change).
+    #
+    # Neutral (WAVE2 2.6): the text of the sentence and of each part is text_it, text_en or text_es, exactly one of them, and the
+    # parts are written in the language of their sentence. The JS twin is lesson/diagrams/sentence.js.
     module Sentence
+      TEXT_KEYS = %w[text_it text_en text_es].freeze
+
       module_function
 
+      # The one text key a sentence, a state or a part is written in; nil when it has none.
+      def key_of(hash) = TEXT_KEYS.find { |k| hash[k] }
+
       def state(eff, c, path)
-        text = eff["text_it"]
+        key = key_of(eff)
+        text = key && eff[key]
         parts = eff["parts"]
+        c.diagram(path.empty? ? "/#{key}" : path, "the sentence is written in one language: #{TEXT_KEYS.select { |k| eff[k] }.join(', ')} are alternatives", rule: "one-language#{path}") if key && TEXT_KEYS.count { |k| eff[k] } > 1
         if text.nil? || parts.nil?
-          c.diagram(path.empty? ? "/text_it" : path, "a sentence needs text_it and parts (at the top level or in the state)", rule: "missing#{path}")
+          c.diagram(path.empty? ? "/text_it" : path, "a sentence needs text_it, text_en or text_es and parts (at the top level or in the state)", rule: "missing#{path}")
           return
         end
         ids = {}
@@ -19,6 +29,9 @@ module Lessons
         spans = []
         parts.each_with_index do |p, i|
           at = "#{path}/parts/#{i}"
+          pkey = key_of(p)
+          c.diagram("#{at}/#{pkey}", "a part is written in the language of its sentence (#{key}), not #{pkey}", rule: "part-language#{at}") if pkey && pkey != key
+          c.diagram(at, "a part is written in the language of its sentence: #{TEXT_KEYS.select { |k| p[k] }.join(', ')} are alternatives", rule: "part-one-language#{at}") if TEXT_KEYS.count { |k| p[k] } > 1
           c.role("#{at}/role", p["role"])
           c.label("#{at}/label_it", p["label_it"])
           if p["id"]
@@ -27,19 +40,22 @@ module Lessons
           end
           next if p["implied"]
 
-          found = text.index(p["text_it"], cursor)
+          piece = p[pkey || key]
+          next if piece.nil?
+
+          found = text.index(piece, cursor)
           if found
-            spans << [ found, found + p["text_it"].size ]
-            cursor = found + p["text_it"].size
+            spans << [ found, found + piece.size ]
+            cursor = found + piece.size
             next
           end
-          anywhere = text.index(p["text_it"])
+          anywhere = text.index(piece)
           if anywhere.nil?
-            c.diagram("#{at}/text_it", "parts are exact substrings of text_it: #{p['text_it'].inspect} is not in #{text.inspect}", rule: "substring#{at}")
-          elsif spans.any? { |s, e| anywhere < e && anywhere + p["text_it"].size > s }
-            c.diagram(at, "the part #{p['text_it'].inspect} overlaps the one before it", rule: "overlap#{at}")
+            c.diagram("#{at}/#{pkey || key}", "parts are exact substrings of #{key}: #{piece.inspect} is not in #{text.inspect}", rule: "substring#{at}")
+          elsif spans.any? { |s, e| anywhere < e && anywhere + piece.size > s }
+            c.diagram(at, "the part #{piece.inspect} overlaps the one before it", rule: "overlap#{at}")
           else
-            c.diagram(path.empty? ? "/parts" : "#{path}/parts", "the parts must follow the order of the sentence: #{p['text_it'].inspect} comes earlier in the text", rule: "order#{path}")
+            c.diagram(path.empty? ? "/parts" : "#{path}/parts", "the parts must follow the order of the sentence: #{piece.inspect} comes earlier in the text", rule: "order#{path}")
           end
         end
         eff["links"].to_a.each_with_index do |l, i|

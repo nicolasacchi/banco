@@ -84,7 +84,7 @@ export function makeContext(data, opts) {
 
 // Puts a label. (ax, ay) is the anchor: anchor "start" (left edge), "middle" (centre) or "end" (right edge)
 // horizontally; valign "top" | "middle" | "bottom" vertically. maxW wraps. Returns the label (with its box).
-export function label(ctx, text, ax, ay, { anchor = "middle", valign = "top", maxW, cls = "", px, key, role, tag } = {}) {
+export function label(ctx, text, ax, ay, { anchor = "middle", valign = "top", maxW, cls = "", px, key, role, tag, lang } = {}) {
   const size = Math.max(px ?? ctx.fontPx, ctx.fontPx)
   const m = ctx.measure(text, size, maxW)
   const w = Math.min(m.w, maxW ?? m.w)
@@ -96,6 +96,7 @@ export function label(ctx, text, ax, ay, { anchor = "middle", valign = "top", ma
   if (key) item.key = key
   if (role) item.role = role
   if (tag) item.tag = tag
+  if (lang) item.lang = lang // a label of the target language: the node carries lang (WCAG 3.1.2, WAVE2 1.2 Scene additions)
   ctx.labels.push(item)
   return item
 }

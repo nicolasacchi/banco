@@ -134,7 +134,7 @@ export function mountDiagram(data, ctx, options = {}) {
   const question = el("p", { class: "dg-question", "aria-live": "polite" })
   const caption = data?.caption_it ? el("figcaption", { class: "dg-caption" }) : null
   if (caption) renderInlineRich(data.caption_it, caption, ctx)
-  const desc = el("details", { class: "dg-desc" }, el("summary", {}, icon("description"), document.createTextNode(` ${ctx.t.description}`)), el("p", { text: describe(data) }))
+  const desc = el("details", { class: "dg-desc" }, el("summary", {}, icon("description"), document.createTextNode(` ${ctx.t.description}`)), el("p", { text: describe(data, { subject: ctx.subject }) }))
   // a balance has its equation, the state's name and a status chip above the drawing
   const top = type === "balance" ? el("div", { class: "dg-top" }) : null
   const pill = el("span", { class: "dg-pill" })
@@ -227,6 +227,7 @@ export function mountDiagram(data, ctx, options = {}) {
       node.style.fontSize = `${l.px}px`
       renderInlineRich(l.text_it, node, ctx)
       if (l.key) node.dataset.key = l.key
+      if (l.lang) node.setAttribute("lang", l.lang)
       labelsLayer.appendChild(node)
     }
     for (const h of scene.hits ?? []) {

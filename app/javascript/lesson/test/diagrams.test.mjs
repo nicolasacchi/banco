@@ -38,7 +38,7 @@ for (const v of vectors) {
       }
       return
     }
-    assert.ok(describe(v.data).length > 10, "a description")
+    assert.ok(describe(v.data, { subject: v.subject }).length > 10, "a description")
     for (const width of WIDTHS) {
       for (const fontPx of SIZES) {
         for (let state = 0; state < stateCount(v.data); state++) {

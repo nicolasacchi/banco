@@ -4076,6 +4076,197 @@
     "x_value": "2",
     "size": "xl"
    }
+  },
+  {
+   "name": "sentence-neutral-english-line",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "ok",
+   "note": "wave 2: a sentence in English, its parts in English, the roles of the english palette",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase She reads a book con il soggetto, il verbo e il complemento oggetto colorati.",
+    "text_en": "She reads a book",
+    "parts": [
+     {
+      "id": "s",
+      "text_en": "She",
+      "role": "subject",
+      "question_it": "Chi legge?"
+     },
+     {
+      "id": "v",
+      "text_en": "reads",
+      "role": "verb",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "o",
+      "text_en": "a book",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+     }
+    ],
+    "layout": "line"
+   }
+  },
+  {
+   "name": "sentence-neutral-english-centre",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "ok",
+   "note": "centre centres on the english centre_role, the verb",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase She reads a book con il soggetto, il verbo e il complemento oggetto colorati.",
+    "text_en": "She reads a book",
+    "parts": [
+     {
+      "id": "s",
+      "text_en": "She",
+      "role": "subject",
+      "question_it": "Chi legge?"
+     },
+     {
+      "id": "v",
+      "text_en": "reads",
+      "role": "verb",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "o",
+      "text_en": "a book",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+     }
+    ],
+    "layout": "centre"
+   }
+  },
+  {
+   "name": "sentence-neutral-spanish-line",
+   "subject": "spanish",
+   "schema": "valid",
+   "semantic": "ok",
+   "note": "Spanish text and parts, the roles of the spanish palette",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase Ella lee un libro con il soggetto sottinteso, il verbo e il complemento diretto colorati.",
+    "text_es": "Ella lee un libro",
+    "layout": "line",
+    "parts": [
+     {
+      "id": "v",
+      "text_es": "lee",
+      "role": "verb",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "o",
+      "text_es": "un libro",
+      "role": "od",
+      "question_it": "Che cosa lee?"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sentence-neutral-part-in-another-language",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/parts/0/text_it",
+   "note": "a part is written in the language of its sentence",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase She reads a book con il soggetto, il verbo e il complemento oggetto colorati.",
+    "text_en": "She reads a book",
+    "parts": [
+     {
+      "id": "s",
+      "text_it": "She",
+      "role": "subject"
+     },
+     {
+      "id": "v",
+      "text_en": "reads",
+      "role": "verb",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "o",
+      "text_en": "a book",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sentence-neutral-two-languages",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/text_it",
+   "note": "text_it, text_en and text_es are alternatives",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase She reads a book con il soggetto, il verbo e il complemento oggetto colorati.",
+    "text_en": "She reads a book",
+    "parts": [
+     {
+      "id": "s",
+      "text_en": "She",
+      "role": "subject",
+      "question_it": "Chi legge?"
+     },
+     {
+      "id": "v",
+      "text_en": "reads",
+      "role": "verb",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "o",
+      "text_en": "a book",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+     }
+    ],
+    "text_it": "Lei legge un libro"
+   }
+  },
+  {
+   "name": "sentence-neutral-role-of-another-subject",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "E-LESSON-ROLE",
+   "path": "/parts/0/role",
+   "note": "predicate is italian's role; english says verb",
+   "data": {
+    "type": "sentence",
+    "alt_it": "La frase She reads a book con il soggetto, il verbo e il complemento oggetto colorati.",
+    "text_en": "She reads a book",
+    "parts": [
+     {
+      "id": "s",
+      "text_en": "She",
+      "role": "predicate"
+     },
+     {
+      "id": "v",
+      "text_en": "reads",
+      "role": "verb",
+      "question_it": "Che cosa fa?"
+     },
+     {
+      "id": "o",
+      "text_en": "a book",
+      "role": "object",
+      "question_it": "Che cosa legge?"
+     }
+    ]
+   }
   }
  ]
 }

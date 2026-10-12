@@ -27,7 +27,7 @@ class DiagramVectorsTest < ActiveSupport::TestCase
     assert_equal VECTORS.size, VECTORS.map { |v| v["name"] }.uniq.size
     VECTORS.each do |vec|
       assert_includes %w[valid invalid], vec["schema"], vec["name"]
-      assert_includes %w[math italian], vec["subject"], vec["name"]
+      assert_includes %w[math italian english spanish], vec["subject"], vec["name"]
       if vec["schema"] == "invalid"
         assert_equal "ok", vec["semantic"], "#{vec['name']}: the semantic column only judges data the schema accepts"
       elsif vec["semantic"] != "ok"

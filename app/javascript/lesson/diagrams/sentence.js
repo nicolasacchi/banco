@@ -2,13 +2,22 @@
 // its role colour, icon and label under it. `centre`: the predicate in the middle, the parts before it on
 // its left and the parts after it on its right (stacked under it on a narrow screen), joined by lines.
 // Parts that keep their id between states move (draw.js animates them); tapping a part shows its question.
+// Neutral (wave 2): the text of the sentence and of each part is text_it, text_en or text_es (one language), the part's language is its
+// label's `lang`; `centre` centres on the lesson subject's centre_role (italian predicate, english and spanish verb); the description
+// reads the lesson subject's palette, not italian's.
 import palette from "lesson/palette"
 import { effectiveState, finish, label, listIt, plain, roleInfo, shape, stateCount } from "lesson/diagrams/common"
 import { run } from "lesson/diagrams/run"
 
 export const states = stateCount
 
-function checkParts(parts, base, text) {
+// The text of a sentence, a state or a part, in the one language it is written in; "it" is the default and carries no lang.
+export const textOf = (o) => o?.text_it ?? o?.text_en ?? o?.text_es ?? ""
+export const keyOf = (o) => (o?.text_it != null ? "text_it" : o?.text_en != null ? "text_en" : "text_es")
+export const langOf = (o) => (o?.text_it != null ? undefined : o?.text_en != null ? "en" : "es")
+export const centreRole = (subject) => palette.centre?.[subject] ?? "predicate"
+
+function checkParts(parts, base, text, key) {
   const ids = new Set()
   let pos = 0
   const taken = []
@@ -18,17 +27,19 @@ function checkParts(parts, base, text) {
       if (ids.has(p.id)) return { path: `${base}/${i}/id`, message: "part ids are unique" }
       ids.add(p.id)
     }
+    if (keyOf(p) !== key) return { path: `${base}/${i}/${keyOf(p)}`, message: "a part is written in the language of its sentence" }
     if (p.implied) continue
+    const piece = textOf(p)
     const occurrences = []
-    for (let at = text.indexOf(p.text_it); at >= 0; at = text.indexOf(p.text_it, at + 1)) occurrences.push(at)
-    if (occurrences.length === 0) return { path: `${base}/${i}/text_it`, message: "a part is a piece of the sentence" }
+    for (let at = text.indexOf(piece); at >= 0; at = text.indexOf(piece, at + 1)) occurrences.push(at)
+    if (occurrences.length === 0) return { path: `${base}/${i}/${keyOf(p)}`, message: "a part is a piece of the sentence" }
     const ok = occurrences.find((at) => at >= pos)
     if (ok === undefined) {
-      const clash = occurrences.some((at) => taken.some(([a, z]) => at < z && a < at + p.text_it.length))
+      const clash = occurrences.some((at) => taken.some(([a, z]) => at < z && a < at + piece.length))
       return clash ? { path: `${base}/${i}`, message: "parts do not overlap" } : { path: base, message: "parts follow the order of the sentence" }
     }
-    taken.push([ok, ok + p.text_it.length])
-    pos = ok + p.text_it.length
+    taken.push([ok, ok + piece.length])
+    pos = ok + piece.length
   }
   return null
 }
@@ -40,7 +51,9 @@ export function semantic(data) {
   for (let j = 0; j < n; j++) {
     const e = effectiveState(data, j)
     const base = data.states ? (data.parts && !data.states[j].parts ? "/parts" : `/states/${j}/parts`) : "/parts"
-    const bad = checkParts(e.parts, base, e.text_it)
+    const languages = [e.text_it, e.text_en, e.text_es].filter((x) => x != null).length
+    if (languages > 1) return { path: data.states ? `/states/${j}` : `/${keyOf(e)}`, message: "a sentence is written in one language: text_it, text_en and text_es are alternatives" }
+    const bad = checkParts(e.parts, base, textOf(e), keyOf(e))
     if (bad) return bad
     const ids = new Set(e.parts.map((p) => p.id).filter(Boolean))
     for (let k = 0; k < (e.links ?? []).length; k++) {
@@ -65,7 +78,7 @@ function measureNode(ctx, p, maxW) {
   const f = ctx.fontPx
   const r = info(ctx, p.role)
   const iconW = r.icon ? Math.round(f * 1.1) + 4 : 0
-  const text = ctx.measure(p.text_it, f, maxW ? maxW - iconW : undefined)
+  const text = ctx.measure(textOf(p), f, maxW ? maxW - iconW : undefined)
   const labelText = p.label_it ?? r.label_it
   const lab = ctx.measure(labelText, f, maxW)
   return { r, iconW, text, lab, labelText, w: Math.ceil(Math.max(text.w + iconW, lab.w)), th: text.h, lh: lab.h }
@@ -80,11 +93,11 @@ function drawNode(ctx, p, i, x, y, w, nd, hits, boxed) {
   if (boxed) shape(ctx, "rect", { x, y, w, h: nd.th + nd.lh + 2 * ctx.pad + 6, r: 12, cls: `dg-node st-${p.role}${p.implied ? " dg-implied" : ""}`, key: `${key}:box` })
   const ty = y + (boxed ? ctx.pad : 0)
   if (nd.r.icon) shape(ctx, "icon", { name: nd.r.icon, x: startX, y: ty + (nd.th > ctx.lineH ? 2 : Math.round((nd.th - f * 1.1) / 2)), size: Math.round(f * 1.1), cls: `role-${p.role}`, key: `${key}:icon` })
-  label(ctx, p.text_it, startX + nd.iconW, ty, { anchor: "start", maxW: nd.text.h > ctx.lineH ? nd.text.w : undefined, cls: `role-${p.role} dg-parttext${p.implied ? " dg-implied-text" : ""}`, role: p.role, key: `${key}:text` })
+  label(ctx, textOf(p), startX + nd.iconW, ty, { anchor: "start", maxW: nd.text.h > ctx.lineH ? nd.text.w : undefined, cls: `role-${p.role} dg-parttext${p.implied ? " dg-implied-text" : ""}`, role: p.role, key: `${key}:text`, lang: langOf(p) })
   const barY = ty + nd.th + 1
   if (!boxed) shape(ctx, "line", { x1: x + 2, y1: barY + 2, x2: x + w - 2, y2: barY + 2, cls: `dg-bar st-${p.role}${p.implied ? " dg-implied" : ""}`, key: `${key}:bar` })
   const lab = label(ctx, nd.labelText, cx, barY + 6, { maxW: w, cls: `role-${p.role} dg-partlabel`, role: p.role, key: `${key}:label` })
-  hits.push({ key, id: p.id ?? `p${i}`, x, y, w, h: barY + 6 + lab.h - y, role: p.role, name: nd.r.label_it, text: p.text_it, question_it: p.question_it ?? null })
+  hits.push({ key, id: p.id ?? `p${i}`, x, y, w, h: barY + 6 + lab.h - y, role: p.role, name: nd.r.label_it, text: textOf(p), question_it: p.question_it ?? null })
 }
 
 function build(data, ctx) {
@@ -152,7 +165,7 @@ function lineLayout(ctx, parts, links, hits, W, m) {
     } else extra.push(l)
   })
   for (const l of extra) {
-    const lbl = `${parts.find((p) => p.id === l.from)?.text_it} → ${parts.find((p) => p.id === l.to)?.text_it}${l.label_it ? `: ${l.label_it}` : ""}`
+    const lbl = `${textOf(parts.find((p) => p.id === l.from))} → ${textOf(parts.find((p) => p.id === l.to))}${l.label_it ? `: ${l.label_it}` : ""}`
     const t = label(ctx, lbl, m, y, { anchor: "start", maxW: W - 2 * m, cls: "dg-note" })
     y += t.h + 4
   }
@@ -162,7 +175,7 @@ function lineLayout(ctx, parts, links, hits, W, m) {
 function centreLayout(ctx, parts, hits, W, m) {
   const f = ctx.fontPx
   const gapX = Math.round(f * 1.6)
-  const center = Math.max(0, parts.findIndex((p) => p.role === "predicate"))
+  const center = Math.max(0, parts.findIndex((p) => p.role === centreRole(ctx.subject)))
   const nodes = parts.map((p) => measureNode(ctx, p, Math.min(Math.round(W * 0.42), 240)))
   const boxW = (nd) => nd.w + 2 * ctx.pad + 8
   const boxH = (nd) => nd.th + nd.lh + 2 * ctx.pad + 6
@@ -219,16 +232,17 @@ function centreLayout(ctx, parts, hits, W, m) {
   return y - 6
 }
 
-export function describe(data) {
+export function describe(data, ctx = {}) {
+  const subject = ctx.subject ?? "italian"
   const n = stateCount(data)
   const out = []
   for (let i = 0; i < n; i++) {
     const e = effectiveState(data, i)
     const parts = e.parts.map((p) => {
-      const r = palette.subjects.italian[p.role] ?? palette.common[p.role]
-      return `«${plain(p.text_it)}» è ${p.implied ? "sottinteso: " : ""}${r?.label_it ?? p.role}${p.question_it ? ` (${plain(p.question_it)})` : ""}`
+      const r = palette.subjects[subject]?.[p.role] ?? palette.common[p.role]
+      return `«${plain(textOf(p))}» è ${p.implied ? "sottinteso: " : ""}${r?.label_it ?? p.role}${p.question_it ? ` (${plain(p.question_it)})` : ""}`
     })
-    out.push(`${n > 1 ? `Passo ${i + 1}${e.op_it ? ` (${plain(e.op_it)})` : ""}. ` : ""}La frase «${plain(e.text_it)}» si divide così: ${listIt(parts)}.`)
+    out.push(`${n > 1 ? `Passo ${i + 1}${e.op_it ? ` (${plain(e.op_it)})` : ""}. ` : ""}La frase «${plain(textOf(e))}» si divide così: ${listIt(parts)}.`)
   }
   return out.join(" ")
 }

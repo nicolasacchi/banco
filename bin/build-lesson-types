@@ -72,10 +72,11 @@ reg << <<~JS
     return run(data, opts, { build: () => ({ error: { path: "/type", message: "unknown diagram type", code: "E-LESSON-DIAGRAM" } }) })
   }
 
-  export function describe(data) {
+  // ctx: { subject, state, revealed } of the component contract (WAVE2 1.2); the figures of release 1 read only the subject
+  export function describe(data, ctx = {}) {
     const mod = moduleFor(data?.type)
     try {
-      return mod ? mod.describe(data) : ""
+      return mod ? mod.describe(data, ctx) : ""
     } catch (_error) {
       return ""
     }

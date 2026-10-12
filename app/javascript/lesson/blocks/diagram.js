@@ -8,7 +8,7 @@ import { renderInlineRich } from "lesson/text"
 export function safeFigure(data, ctx) {
   const figure = el("figure", { class: "dg dg-safe" }, el("p", { class: "dg-fallback", text: data.alt_it }))
   if (data.caption_it) figure.appendChild(renderInlineRich(data.caption_it, el("figcaption", { class: "dg-caption" }), ctx))
-  figure.appendChild(el("details", { class: "dg-desc", open: "" }, el("summary", { text: ctx.t.description }), el("p", { text: describe(data) })))
+  figure.appendChild(el("details", { class: "dg-desc", open: "" }, el("summary", { text: ctx.t.description }), el("p", { text: describe(data, { subject: ctx.subject }) })))
   return figure
 }
 

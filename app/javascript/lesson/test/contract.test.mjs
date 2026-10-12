@@ -70,14 +70,18 @@ test("the schema of every wave 2 type accepts its example and refuses the case w
 test("the check registry lists every component with its status and a loader for the new ones", async () => {
   assert.equal(Object.keys(checks.COMPONENTS).length, 12)
   assert.equal(checks.isAvailable("choice"), true)
-  assert.equal(checks.isAvailable("select"), false)
+  assert.equal(checks.isAvailable("select"), true, "select, tiles and ordering are T1's and available")
+  assert.equal(checks.isAvailable("amount_words"), false)
+  assert.equal(checks.moduleFor("tiles"), null, "not loaded yet")
   assert.equal(await checks.load("choice"), null)
   for (const name of ["select", "tiles", "ordering", "amount_words", "cell_formula", "trace"]) {
     const mod = await checks.load(name)
     assert.equal(mod.type, name)
     assert.equal(typeof mod.render, "function")
   }
+  assert.equal(checks.moduleFor("tiles").type, "tiles", "loaded once, then known to moduleFor")
   assert.equal(checks.OPTIONS.listen.status, "reserved")
+  assert.equal(checks.OPTIONS.verify.status, "available")
 })
 
 test("controls: a slider declares its range and step, every control a label, kinds are the contract's", () => {

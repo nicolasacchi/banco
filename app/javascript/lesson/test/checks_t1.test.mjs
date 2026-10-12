@@ -98,3 +98,35 @@ test("teacher: tiles read as the built sentence, an ordering as a numbered list,
   // no available type has targets yet: the ids stand in for the names
   assert.deepEqual(targetNames({ diagram: { type: "table" }, targets: "cells" }, ["c1.nucleoid"]), ["c1.nucleoid"])
 })
+
+const { layout, describe } = await import("lesson/diagrams/registry")
+const english = {
+  type: "sentence", alt_it: "La frase She reads a book con il soggetto, il verbo e il complemento oggetto colorati.", text_en: "She reads a book",
+  parts: [{ id: "s", text_en: "She", role: "subject" }, { id: "v", text_en: "reads", role: "verb" }, { id: "o", text_en: "a book", role: "object" }]
+}
+const measure = (text, px) => ({ w: Math.ceil(String(text).length * px * 0.5), h: Math.ceil(px * 1.4) })
+
+test("sentence neutral: layout centre joins the parts to the verb, the centre role of english; the target-language labels carry lang", () => {
+  const scene = layout({ ...english, layout: "centre" }, { width: 900, fontPx: 20, subject: "english", measure, state: 0 })
+  assert.ok(!scene.error, scene.error?.message)
+  assert.ok(scene.shapes.some((s) => s.key === "edge:s") && scene.shapes.some((s) => s.key === "edge:o"), "the subject and the object are joined to the verb")
+  assert.ok(scene.shapes.some((s) => String(s.cls).includes("st-verb")), "the verb is the boxed centre")
+  const text = scene.labels.find((l) => l.key === "part:v:text")
+  assert.equal(text.lang, "en")
+  assert.equal(text.text_it, "reads")
+})
+
+test("sentence neutral: an italian sentence has no lang and centres on the predicate", () => {
+  const { text_en, ...rest } = english
+  const it = { ...rest, text_it: "Marco legge un libro", parts: [{ id: "s", text_it: "Marco", role: "subject" }, { id: "v", text_it: "legge", role: "predicate" }, { id: "o", text_it: "un libro", role: "object" }] }
+  const scene = layout({ ...it, layout: "centre" }, { width: 900, fontPx: 20, subject: "italian", measure, state: 0 })
+  assert.ok(!scene.error, scene.error?.message)
+  assert.equal(scene.labels.find((l) => l.key === "part:v:text").lang, undefined)
+  assert.ok(scene.shapes.some((s) => String(s.cls).includes("st-predicate")))
+})
+
+test("sentence neutral: the description reads the lesson subject's palette", () => {
+  assert.match(describe(english, { subject: "english" }), /«reads» è verbo/)
+  assert.match(describe(english, { subject: "english" }), /«She» è soggetto/)
+  assert.match(describe({ type: "sentence", alt_it: english.alt_it, text_it: "Marco legge", parts: [{ id: "v", text_it: "legge", role: "predicate" }] }), /«legge» è predicato/, "the default stays italian")
+})
