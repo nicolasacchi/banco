@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Builds public/vendor/banco-maps@1/ (the bases of the lesson `map`, T5) from the committed sources
+# and tables. Offline and deterministic.
+#   bin/build-maps                write the bases, SHA256SUMS, PROVENANCE.md and the projection vectors
+#   bin/build-maps --check        exit 1 when the committed files differ from the build (CI)
+#   bin/build-maps --fetch        download the upstream data again (network): refreshes
+#                                 config/banco/data/geo/source/, geo/names.yml and geo/countries.yml;
+#                                 MAPS_CACHE=dir keeps the downloads (default tmp/maps-cache)
+#   bin/build-maps --verify-pleiades PATH   compare history/places with a Pleiades CSV dump (the
+#                                 file named in places.yml); exit 1 on any difference
+require "fileutils"
+require_relative "../lib/maps/builder"
+require_relative "../lib/maps/pleiades"
+
+root = File.expand_path("..", __dir__)
+
+if ARGV.include?("--fetch")
+  cache = ENV.fetch("MAPS_CACHE", File.join(root, "tmp/maps-cache"))
+  Maps::Sources.fetch!(cache)
+  Maps::Tables.write!
+  puts "build-maps: sources, geo/names and geo/countries refreshed from #{cache}"
+elsif (i = ARGV.index("--verify-pleiades"))
+  places = YAML.safe_load_file(File.join(root, "config/banco/data/history/places.yml")).fetch("places")
+  issues = Maps::Pleiades.verify(places, ARGV.fetch(i + 1))
+  puts issues
+  abort "build-maps: history/places differs from the Pleiades dump" unless issues.empty?
+  puts "build-maps: history/places agrees with the dump (#{places.size} places)"
+elsif ARGV.include?("--check")
+  bad, extra = Maps::Builder.new.check
+  abort "build-maps: differ from the build: #{bad.join(', ')}#{" (and not built: #{extra.join(', ')})" if extra.any?} (run bin/build-maps)" if bad.any? || extra.any?
+  puts "build-maps: banco-maps@1 equals the build"
+else
+  builder = Maps::Builder.new
+  files = builder.write!
+  builder.stats.each { |b, (eps, gz, raw)| puts format("%-22s tolerance %.2f  %7d bytes  %6d gzip", b, eps, raw, gz) }
+  puts "build-maps: wrote #{files.size} files to public/vendor/banco-maps@1"
+end
