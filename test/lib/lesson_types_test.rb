@@ -34,6 +34,8 @@ class LessonTypesTest < ActiveSupport::TestCase
       assert_equal "draft", e["schema"], name if e["status"] == "draft"
       next if e["family"] == "core"
 
+      next if BUILT_TYPES.include?(name) # built and past its look gate (T9)
+
       assert_not_equal "available", e["status"], "#{name}: a track makes it available in the commit of its look gate"
       assert_equal "w2-2", e["batch"], name if e["status"] == "draft"
     end
@@ -79,6 +81,8 @@ class LessonTypesTest < ActiveSupport::TestCase
   test "a Ruby stub extends the contract for each type with a schema, and the contract refuses what is not built" do
     wave2 = DIAGRAMS.select { |_, e| e["family"] != "core" && e["schema"] != "none" }.keys
     wave2.each do |type|
+      next if BUILT_TYPES.include?(type) # built: test/content/computing_types_test.rb
+
       mod = Lessons::Diagrams.const_get(Lessons::Diagrams::TYPES.fetch(type))
       assert mod.singleton_class.include?(Lessons::Diagrams::Contract), type
       assert_nil mod.static({}, nil), type
@@ -126,7 +130,8 @@ class LessonTypesTest < ActiveSupport::TestCase
     assert_empty Lessons::Types.held_back_uses(:diagram, "flow", { "layout" => "tree" })
     assert_equal [ [ "text_en", "present" ] ], Lessons::Types.held_back_uses(:diagram, "sentence", { "states" => [ { "text_en" => "x" } ] }).map { |f, v, _| [ f, v ] }
     assert_equal [ "listen", "verify" ], Lessons::Types.held_back_options({ "component" => "choice", "listen" => {}, "verify" => {} }).map(&:first)
-    assert_equal [ "input_bits" ], Lessons::Types.held_back_options({ "component" => "normalized_text", "input" => "bits" }).map(&:first)
+    assert_equal [ "contractions" ], Lessons::Types.held_back_options({ "component" => "normalized_text", "contractions" => "en" }).map(&:first)
+    assert_empty Lessons::Types.held_back_options({ "component" => "normalized_text", "input" => "bits" }), "input: bits is built (T9)"
     assert_empty Lessons::Types.held_back_options({ "component" => "number", "input" => "bits" })
   end
 
@@ -166,6 +171,7 @@ class LessonTypesTest < ActiveSupport::TestCase
   end
 
   BUILT_LIBS = [ Lessons::Bits ].freeze
+  BUILT_TYPES = %w[register column_calc].freeze
 
   test "the libraries of WAVE2 1.10 have their signatures frozen, shared with their vector file, and raise until their track" do
     libs = { Lessons::Chrono => "chrono.json", Lessons::Dates => "dates.json", Lessons::NumWords => "amount_words.json", Lessons::Money => "money.json",

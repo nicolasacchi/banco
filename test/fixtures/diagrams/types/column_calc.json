@@ -1,47 +1,771 @@
 {
- "version": 1,
- "type": "column_calc",
- "status": "reserved",
- "batch": "w2-1",
- "track": "T9",
- "provisional": false,
- "description": "Skeleton of W2-0 for the track T9: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
- "vectors": [
-  {
-   "name": "column_calc-example-1",
-   "subject": "computer_science",
-   "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
-   "data": {
-    "type": "column_calc",
-    "alt_it": "Somma in colonna di 0000 0101 e 1111 1011 su otto bit: il riporto attraversa tutte le colonne e il nono bit esce dal registro.",
-    "base": 2,
-    "op": "add",
-    "a": "00000101",
-    "b": "11111011",
-    "width": 8,
-    "reveal": "columns",
-    "read": "twos"
-   }
-  },
-  {
-   "name": "column_calc-unknown-field",
-   "subject": "computer_science",
-   "schema": "invalid",
-   "semantic": "ok",
-   "data": {
-    "type": "column_calc",
-    "alt_it": "Somma in colonna di 0000 0101 e 1111 1011 su otto bit: il riporto attraversa tutte le colonne e il nono bit esce dal registro.",
-    "base": 2,
-    "op": "add",
-    "a": "00000101",
-    "b": "11111011",
-    "width": 8,
-    "reveal": "columns",
-    "read": "twos",
-    "zzz_unknown_field": true
-   }
-  }
- ]
+  "version": 1,
+  "type": "column_calc",
+  "status": "available",
+  "batch": "w2-1",
+  "track": "T9",
+  "provisional": false,
+  "description": "Vectors of T9 (WAVE2 V1, V2), invented content: 'schema' valid or invalid; 'semantic' ok or {code, path} of the first finding (Ruby Lessons::Diagrams::ColumnCalc and lesson/diagrams/computing/column_calc.js give the same one); 'layout' ok at every width (290, 360, 738, 1250 px) and text size (18, 20, 26 px), or error; 'printed' the value tokens of the first state (and 'printed_last' of the last), sorted, the same in Ruby and JS (L4); 'targets' the stored ids of each select set in reading order; 'reachable' the number of outputs the controls can show, or over_cap (L5).",
+  "vectors": [
+    {
+      "name": "column_calc-example-1",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "column_calc",
+        "alt_it": "Somma in colonna di due numeri di otto cifre in base due, con il riporto che esce dal registro.",
+        "base": 2,
+        "op": "add",
+        "a": "00000101",
+        "b": "11111011",
+        "width": 8,
+        "reveal": "columns",
+        "read": "twos"
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "0",
+        "0000 0000",
+        "0000 0101",
+        "00000000",
+        "00000101",
+        "0000 0000",
+        "0000 0101",
+        "1",
+        "10",
+        "1111 1011",
+        "11111011",
+        "1111 1011",
+        "2",
+        "5",
+        "−5"
+      ],
+      "targets": {
+        "digits": [
+          "a1",
+          "a2",
+          "a3",
+          "a4",
+          "a5",
+          "a6",
+          "a7",
+          "a8",
+          "b1",
+          "b2",
+          "b3",
+          "b4",
+          "b5",
+          "b6",
+          "b7",
+          "b8",
+          "r1",
+          "r2",
+          "r3",
+          "r4",
+          "r5",
+          "r6",
+          "r7",
+          "r8"
+        ]
+      }
+    },
+    {
+      "name": "column_calc-unknown-field",
+      "subject": "computer_science",
+      "schema": "invalid",
+      "data": {
+        "type": "column_calc",
+        "alt_it": "Somma in colonna di due numeri di otto cifre in base due, con il riporto che esce dal registro.",
+        "base": 2,
+        "op": "add",
+        "a": "00000101",
+        "b": "11111011",
+        "width": 8,
+        "reveal": "columns",
+        "read": "twos",
+        "zzz_unknown_field": true
+      },
+      "semantic": "ok"
+    },
+    {
+      "name": "add-no-carry-out",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "column_calc",
+        "alt_it": "Somma in colonna di due numeri di otto cifre in base due, con il riporto che esce dal registro.",
+        "base": 2,
+        "op": "add",
+        "a": "00000011",
+        "b": "00000100",
+        "width": 8
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "0",
+        "0000 0011",
+        "0000 0100",
+        "0000 0111",
+        "00000011",
+        "00000100",
+        "00000111",
+        "0000 0011",
+        "0000 0100",
+        "0000 0111",
+        "1"
+      ],
+      "targets": {
+        "digits": [
+          "a1",
+          "a2",
+          "a3",
+          "a4",
+          "a5",
+          "a6",
+          "a7",
+          "a8",
+          "b1",
+          "b2",
+          "b3",
+          "b4",
+          "b5",
+          "b6",
+          "b7",
+          "b8",
+          "r1",
+          "r2",
+          "r3",
+          "r4",
+          "r5",
+          "r6",
+          "r7",
+          "r8"
+        ]
+      }
+    },
+    {
+      "name": "add-hex",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "column_calc",
+        "alt_it": "Somma in colonna di due numeri di otto cifre in base due, con il riporto che esce dal registro.",
+        "base": 16,
+        "op": "add",
+        "a": "00FF",
+        "b": "0001",
+        "width": 4,
+        "read": "unsigned"
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "0001",
+        "00FF",
+        "0100",
+        "1",
+        "10",
+        "15",
+        "16",
+        "255",
+        "256"
+      ],
+      "targets": {
+        "digits": [
+          "a1",
+          "a2",
+          "a3",
+          "a4",
+          "b1",
+          "b2",
+          "b3",
+          "b4",
+          "r1",
+          "r2",
+          "r3",
+          "r4"
+        ]
+      }
+    },
+    {
+      "name": "add-decimal",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "column_calc",
+        "alt_it": "Somma in colonna di due numeri di otto cifre in base due, con il riporto che esce dal registro.",
+        "base": 10,
+        "op": "add",
+        "a": "487",
+        "b": "256",
+        "width": 3
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "1",
+        "13",
+        "256",
+        "487",
+        "7",
+        "743"
+      ],
+      "targets": {
+        "digits": [
+          "a1",
+          "a2",
+          "a3",
+          "b1",
+          "b2",
+          "b3",
+          "r1",
+          "r2",
+          "r3"
+        ]
+      }
+    },
+    {
+      "name": "add-states",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "column_calc",
+        "alt_it": "Somma in colonna di due numeri di otto cifre in base due, con il riporto che esce dal registro.",
+        "base": 2,
+        "op": "add",
+        "a": "00000101",
+        "b": "11111011",
+        "width": 8,
+        "states": [
+          {
+            "a": "00000101",
+            "b": "11111010",
+            "op_it": "Un numero e la sua inversione"
+          },
+          {
+            "a": "00000101",
+            "b": "11111011"
+          }
+        ]
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "0000 0101",
+        "00000101",
+        "0000 0101",
+        "1",
+        "1111 1010",
+        "1111 1111",
+        "11111010",
+        "11111111",
+        "1111 1010",
+        "1111 1111",
+        "Un numero e la sua inversione"
+      ],
+      "printed_last": [
+        "0000 0000",
+        "0000 0101",
+        "00000000",
+        "00000101",
+        "0000 0000",
+        "0000 0101",
+        "1",
+        "10",
+        "1111 1011",
+        "11111011",
+        "1111 1011",
+        "2"
+      ],
+      "targets": {
+        "digits": [
+          "a1",
+          "a2",
+          "a3",
+          "a4",
+          "a5",
+          "a6",
+          "a7",
+          "a8",
+          "b1",
+          "b2",
+          "b3",
+          "b4",
+          "b5",
+          "b6",
+          "b7",
+          "b8",
+          "r1",
+          "r2",
+          "r3",
+          "r4",
+          "r5",
+          "r6",
+          "r7",
+          "r8"
+        ]
+      }
+    },
+    {
+      "name": "sub-borrow-across-zeros",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "column_calc",
+        "alt_it": "Somma in colonna di due numeri di otto cifre in base due, con il riporto che esce dal registro.",
+        "base": 2,
+        "op": "sub",
+        "a": "10000000",
+        "b": "00000001",
+        "width": 8,
+        "reveal": "columns"
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "-1",
+        "0",
+        "0000 0001",
+        "00000001",
+        "0000 0001",
+        "0111 1111",
+        "01111111",
+        "0111 1111",
+        "1",
+        "1000 0000",
+        "10000000",
+        "1000 0000",
+        "2"
+      ],
+      "targets": {
+        "digits": [
+          "a1",
+          "a2",
+          "a3",
+          "a4",
+          "a5",
+          "a6",
+          "a7",
+          "a8",
+          "b1",
+          "b2",
+          "b3",
+          "b4",
+          "b5",
+          "b6",
+          "b7",
+          "b8",
+          "r1",
+          "r2",
+          "r3",
+          "r4",
+          "r5",
+          "r6",
+          "r7",
+          "r8"
+        ]
+      }
+    },
+    {
+      "name": "sub-wraps",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "column_calc",
+        "alt_it": "Somma in colonna di due numeri di otto cifre in base due, con il riporto che esce dal registro.",
+        "base": 2,
+        "op": "sub",
+        "a": "00000101",
+        "b": "00000111",
+        "width": 8,
+        "read": "twos"
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "-1",
+        "0",
+        "0000 0101",
+        "0000 0111",
+        "00000101",
+        "00000111",
+        "0000 0101",
+        "0000 0111",
+        "1",
+        "1111 1110",
+        "11111110",
+        "1111 1110",
+        "2",
+        "5",
+        "7",
+        "−2"
+      ],
+      "targets": {
+        "digits": [
+          "a1",
+          "a2",
+          "a3",
+          "a4",
+          "a5",
+          "a6",
+          "a7",
+          "a8",
+          "b1",
+          "b2",
+          "b3",
+          "b4",
+          "b5",
+          "b6",
+          "b7",
+          "b8",
+          "r1",
+          "r2",
+          "r3",
+          "r4",
+          "r5",
+          "r6",
+          "r7",
+          "r8"
+        ]
+      }
+    },
+    {
+      "name": "sub-decimal",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "column_calc",
+        "alt_it": "Somma in colonna di due numeri di otto cifre in base due, con il riporto che esce dal registro.",
+        "base": 10,
+        "op": "sub",
+        "a": "300",
+        "b": "123",
+        "width": 3
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "-1",
+        "0",
+        "10",
+        "123",
+        "177",
+        "2",
+        "300",
+        "9",
+        "A"
+      ],
+      "targets": {
+        "digits": [
+          "a1",
+          "a2",
+          "a3",
+          "b1",
+          "b2",
+          "b3",
+          "r1",
+          "r2",
+          "r3"
+        ]
+      }
+    },
+    {
+      "name": "mul-binary",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "column_calc",
+        "alt_it": "Somma in colonna di due numeri di otto cifre in base due, con il riporto che esce dal registro.",
+        "base": 2,
+        "op": "mul",
+        "a": "00000101",
+        "b": "101",
+        "width": 8,
+        "reveal": "columns"
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "0000 0101",
+        "00000000",
+        "00000101",
+        "0000 0101",
+        "0001 1001",
+        "00010100",
+        "00011001",
+        "0001 1001",
+        "101"
+      ],
+      "targets": {
+        "digits": [
+          "a1",
+          "a2",
+          "a3",
+          "a4",
+          "a5",
+          "a6",
+          "a7",
+          "a8",
+          "b1",
+          "b2",
+          "b3",
+          "b4",
+          "b5",
+          "b6",
+          "b7",
+          "b8",
+          "p1.1",
+          "p1.2",
+          "p1.3",
+          "p1.4",
+          "p1.5",
+          "p1.6",
+          "p1.7",
+          "p1.8",
+          "p2.1",
+          "p2.2",
+          "p2.3",
+          "p2.4",
+          "p2.5",
+          "p2.6",
+          "p2.7",
+          "p2.8",
+          "p3.1",
+          "p3.2",
+          "p3.3",
+          "p3.4",
+          "p3.5",
+          "p3.6",
+          "p3.7",
+          "p3.8",
+          "r1",
+          "r2",
+          "r3",
+          "r4",
+          "r5",
+          "r6",
+          "r7",
+          "r8"
+        ]
+      }
+    },
+    {
+      "name": "mul-overflow",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "column_calc",
+        "alt_it": "Somma in colonna di due numeri di otto cifre in base due, con il riporto che esce dal registro.",
+        "base": 2,
+        "op": "mul",
+        "a": "11111111",
+        "b": "10",
+        "width": 8
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "0000 0010",
+        "00000000",
+        "00000010",
+        "0000 0010",
+        "10",
+        "1111 1110",
+        "1111 1111",
+        "11111110",
+        "11111111",
+        "111111110",
+        "1111 1110",
+        "1111 1111"
+      ],
+      "targets": {
+        "digits": [
+          "a1",
+          "a2",
+          "a3",
+          "a4",
+          "a5",
+          "a6",
+          "a7",
+          "a8",
+          "b1",
+          "b2",
+          "b3",
+          "b4",
+          "b5",
+          "b6",
+          "b7",
+          "b8",
+          "p1.1",
+          "p1.2",
+          "p1.3",
+          "p1.4",
+          "p1.5",
+          "p1.6",
+          "p1.7",
+          "p1.8",
+          "p2.1",
+          "p2.2",
+          "p2.3",
+          "p2.4",
+          "p2.5",
+          "p2.6",
+          "p2.7",
+          "p2.8",
+          "r1",
+          "r2",
+          "r3",
+          "r4",
+          "r5",
+          "r6",
+          "r7",
+          "r8"
+        ]
+      }
+    },
+    {
+      "name": "mul-decimal",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "column_calc",
+        "alt_it": "Somma in colonna di due numeri di otto cifre in base due, con il riporto che esce dal registro.",
+        "base": 10,
+        "op": "mul",
+        "a": "012",
+        "b": "3",
+        "width": 3
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "003",
+        "012",
+        "036",
+        "3"
+      ],
+      "targets": {
+        "digits": [
+          "a1",
+          "a2",
+          "a3",
+          "b1",
+          "b2",
+          "b3",
+          "p1.1",
+          "p1.2",
+          "p1.3",
+          "r1",
+          "r2",
+          "r3"
+        ]
+      }
+    },
+    {
+      "name": "column-a-too-long",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "column_calc",
+        "alt_it": "Somma in colonna di due numeri di otto cifre in base due, con il riporto che esce dal registro.",
+        "base": 2,
+        "op": "add",
+        "a": "000001010",
+        "b": "11111011",
+        "width": 8
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/a"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "column-digit-not-of-base",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "column_calc",
+        "alt_it": "Somma in colonna di due numeri di otto cifre in base due, con il riporto che esce dal registro.",
+        "base": 10,
+        "op": "add",
+        "a": "12A",
+        "b": "001",
+        "width": 3
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/a"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "column-multiplier-too-long",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "column_calc",
+        "alt_it": "Somma in colonna di due numeri di otto cifre in base due, con il riporto che esce dal registro.",
+        "base": 2,
+        "op": "mul",
+        "a": "00000101",
+        "b": "10101",
+        "width": 8
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/b"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "column-twos-needs-base-2",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "column_calc",
+        "alt_it": "Somma in colonna di due numeri di otto cifre in base due, con il riporto che esce dal registro.",
+        "base": 16,
+        "op": "add",
+        "a": "00FF",
+        "b": "0001",
+        "width": 4,
+        "read": "twos"
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/read"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "column-state-b-too-long",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "column_calc",
+        "alt_it": "Somma in colonna di due numeri di otto cifre in base due, con il riporto che esce dal registro.",
+        "base": 2,
+        "op": "add",
+        "a": "00000101",
+        "b": "11111011",
+        "width": 8,
+        "states": [
+          {
+            "b": "11111011"
+          },
+          {
+            "b": "111110110"
+          }
+        ]
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/states/1/b"
+      },
+      "layout": "error"
+    }
+  ]
 }

@@ -62,8 +62,8 @@ diagrams:
 
   # ---- grids and forms (T7 periodic_table, T3 paradigm, T9 register, column_calc, sheet)
   periodic_table: {family: science, status: reserved, schema: final, batch: w2-1, track: T7, size: M, module: lesson/diagrams/science/periodic_table}
-  register: {family: computing, status: reserved, schema: final, batch: w2-1, track: T9, size: M, module: lesson/diagrams/computing/register, home_palette: computer_science}
-  column_calc: {family: computing, status: reserved, schema: final, batch: w2-1, track: T9, size: M, module: lesson/diagrams/computing/column_calc, home_palette: computer_science,
+  register: {family: computing, status: available, schema: final, batch: w2-1, track: T9, size: M, module: lesson/diagrams/computing/register, home_palette: computer_science}
+  column_calc: {family: computing, status: available, schema: final, batch: w2-1, track: T9, size: M, module: lesson/diagrams/computing/column_calc, home_palette: computer_science,
     views: {op: {repeated_division: {status: reserved, schema: none, batch: w2-3}}}}
   paradigm: {family: words, status: draft, schema: draft, batch: w2-2, track: T3, size: M, module: lesson/diagrams/words/paradigm}
   sheet: {family: computing, status: reserved, schema: none, batch: w2-3, track: T9, size: L, module: lesson/diagrams/computing/sheet}
@@ -141,7 +141,7 @@ check_options:
   verify: {field: verify, applies_to: all, status: reserved, schema: final, batch: w2-1, track: T1}
   profile: {field: profile, applies_to: [normalized_text], status: reserved, schema: final, batch: w2-1, track: T1}
   chem_formula_profile: {field: profile, value: chem_formula, applies_to: [normalized_text], status: draft, schema: draft, batch: w2-2, track: T7}
-  input_bits: {field: input, value: bits, applies_to: [normalized_text], status: reserved, schema: final, batch: w2-1, track: T9}
+  input_bits: {field: input, value: bits, applies_to: [normalized_text], status: available, schema: final, batch: w2-1, track: T9}
   contractions: {field: contractions, applies_to: [normalized_text], status: reserved, schema: final, batch: w2-1, track: T1}
   thousands: {field: thousands, applies_to: [number], status: reserved, schema: final, batch: w2-1, track: T1}
   reachable_ok: {field: reachable_ok_it, applies_to: all, status: reserved, schema: final, batch: w2-1, track: T1}

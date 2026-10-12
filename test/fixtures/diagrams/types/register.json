@@ -1,114 +1,1196 @@
 {
- "version": 1,
- "type": "register",
- "status": "reserved",
- "batch": "w2-1",
- "track": "T9",
- "provisional": false,
- "description": "Skeleton of W2-0 for the track T9: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
- "vectors": [
-  {
-   "name": "register-example-1",
-   "subject": "computer_science",
-   "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
-   "data": {
-    "type": "register",
-    "alt_it": "Otto bit: 1111 1011. Sopra ogni bit il suo peso; il primo pesa meno centoventotto. La somma dei pesi dei bit a uno dà meno cinque.",
-    "view": "row",
-    "width": 8,
-    "base": 2,
-    "value": "11111011",
-    "read": "twos",
-    "weights": true,
-    "groups": 4,
-    "toggle": false,
-    "mark": [
-     {
-      "at": 1,
-      "role": "sign",
-      "label_it": "segno"
-     }
-    ],
-    "states": [
-     {
-      "value": "00000101",
-      "op_it": "5 su 8 bit"
-     },
-     {
-      "value": "11111010",
-      "op_it": "Inverti"
-     }
-    ]
-   }
-  },
-  {
-   "name": "register-example-2",
-   "subject": "computer_science",
-   "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
-   "data": {
-    "type": "register",
-    "alt_it": "La ruota dei sedici codici di quattro bit: fuori il valore senza segno, dentro quello con segno; il salto è tra zero uno uno uno e uno zero zero zero.",
-    "view": "ring",
-    "width": 4,
-    "read": "both",
-    "cliff": true,
-    "pointer": "0010",
-    "step": true,
-    "highlight": [
-     {
-      "code": "1111",
-      "label_it": "-1"
-     }
-    ],
-    "moves": [
-     {
-      "from": "0111",
-      "by": 1,
-      "label_it": "7 + 1",
-      "role": "carry"
-     }
-    ]
-   }
-  },
-  {
-   "name": "register-unknown-field",
-   "subject": "computer_science",
-   "schema": "invalid",
-   "semantic": "ok",
-   "data": {
-    "type": "register",
-    "alt_it": "Otto bit: 1111 1011. Sopra ogni bit il suo peso; il primo pesa meno centoventotto. La somma dei pesi dei bit a uno dà meno cinque.",
-    "view": "row",
-    "width": 8,
-    "base": 2,
-    "value": "11111011",
-    "read": "twos",
-    "weights": true,
-    "groups": 4,
-    "toggle": false,
-    "mark": [
-     {
-      "at": 1,
-      "role": "sign",
-      "label_it": "segno"
-     }
-    ],
-    "states": [
-     {
-      "value": "00000101",
-      "op_it": "5 su 8 bit"
-     },
-     {
-      "value": "11111010",
-      "op_it": "Inverti"
-     }
-    ],
-    "zzz_unknown_field": true
-   }
-  }
- ]
+  "version": 1,
+  "type": "register",
+  "status": "available",
+  "batch": "w2-1",
+  "track": "T9",
+  "provisional": false,
+  "description": "Vectors of T9 (WAVE2 V1, V2), invented content: 'schema' valid or invalid; 'semantic' ok or {code, path} of the first finding (Ruby Lessons::Diagrams::Register and lesson/diagrams/computing/register.js give the same one); 'layout' ok at every width (290, 360, 738, 1250 px) and text size (18, 20, 26 px), or error; 'printed' the value tokens of the first state (and 'printed_last' of the last), sorted, the same in Ruby and JS (L4); 'targets' the stored ids of each select set in reading order; 'reachable' the number of outputs the controls can show, or over_cap (L5).",
+  "vectors": [
+    {
+      "name": "register-example-1",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Otto bit: 1111 1011. Sopra ogni bit il suo peso; il primo pesa meno centoventotto. La somma dei pesi dei bit a uno dà meno cinque.",
+        "view": "row",
+        "width": 8,
+        "base": 2,
+        "value": "11111011",
+        "read": "twos",
+        "weights": true,
+        "groups": 4,
+        "toggle": false,
+        "mark": [
+          {
+            "at": 1,
+            "role": "sign",
+            "label_it": "segno"
+          }
+        ],
+        "states": [
+          {
+            "value": "00000101",
+            "op_it": "5 su 8 bit"
+          },
+          {
+            "value": "11111010",
+            "op_it": "Inverti"
+          }
+        ]
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "0000 0101",
+        "00000101",
+        "0000 0101",
+        "1",
+        "16",
+        "2",
+        "32",
+        "4",
+        "4 + 1 = 5",
+        "5",
+        "5 su 8 bit",
+        "64",
+        "8",
+        "segno",
+        "−128"
+      ],
+      "printed_last": [
+        "1",
+        "1111 1010",
+        "11111010",
+        "1111 1010",
+        "16",
+        "2",
+        "32",
+        "4",
+        "64",
+        "8",
+        "Inverti",
+        "segno",
+        "−128",
+        "−128 + 64 + 32 + 16 + 8 + 2 = −6",
+        "−6"
+      ],
+      "targets": {
+        "bits": [
+          "b1",
+          "b2",
+          "b3",
+          "b4",
+          "b5",
+          "b6",
+          "b7",
+          "b8"
+        ]
+      }
+    },
+    {
+      "name": "register-example-2",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "La ruota dei sedici codici di quattro bit: fuori il valore senza segno, dentro quello con segno; il salto è tra zero uno uno uno e uno zero zero zero.",
+        "view": "ring",
+        "width": 4,
+        "read": "both",
+        "cliff": true,
+        "pointer": "0010",
+        "step": true,
+        "highlight": [
+          {
+            "code": "1111",
+            "label_it": "-1"
+          }
+        ],
+        "moves": [
+          {
+            "from": "0111",
+            "by": 1,
+            "label_it": "7 + 1",
+            "role": "carry"
+          }
+        ]
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "-1",
+        "0",
+        "0010",
+        "0111",
+        "1",
+        "10",
+        "1000",
+        "11",
+        "1111",
+        "12",
+        "13",
+        "14",
+        "15",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "7 + 1",
+        "8",
+        "9",
+        "−1",
+        "−2",
+        "−3",
+        "−4",
+        "−5",
+        "−6",
+        "−7",
+        "−8"
+      ],
+      "targets": {
+        "codes": [
+          "0000",
+          "0001",
+          "0010",
+          "0011",
+          "0100",
+          "0101",
+          "0110",
+          "0111",
+          "1000",
+          "1001",
+          "1010",
+          "1011",
+          "1100",
+          "1101",
+          "1110",
+          "1111"
+        ]
+      },
+      "reachable": 40
+    },
+    {
+      "name": "register-unknown-field",
+      "subject": "computer_science",
+      "schema": "invalid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 8,
+        "base": 2,
+        "value": "11111011",
+        "read": "twos",
+        "weights": true,
+        "groups": 4,
+        "zzz_unknown_field": true
+      },
+      "semantic": "ok"
+    },
+    {
+      "name": "row-lab-toggle",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 8,
+        "base": 2,
+        "value": "00101101",
+        "read": "unsigned",
+        "weights": true,
+        "groups": 4,
+        "toggle": true,
+        "goals": [
+          "45",
+          "255",
+          "0"
+        ]
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "0",
+        "0010 1101",
+        "00101101",
+        "0010 1101",
+        "1",
+        "128",
+        "16",
+        "2",
+        "255",
+        "32",
+        "32 + 8 + 4 + 1 = 45",
+        "4",
+        "45",
+        "64",
+        "8"
+      ],
+      "targets": {
+        "bits": [
+          "b1",
+          "b2",
+          "b3",
+          "b4",
+          "b5",
+          "b6",
+          "b7",
+          "b8"
+        ]
+      },
+      "reachable": 1024
+    },
+    {
+      "name": "row-lab-twos-goals",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 8,
+        "base": 2,
+        "value": "00000000",
+        "read": "twos",
+        "weights": true,
+        "groups": 4,
+        "toggle": true,
+        "goals": [
+          "-1",
+          "-128",
+          "127"
+        ],
+        "mark": [
+          {
+            "at": 1,
+            "role": "sign",
+            "label_it": "segno"
+          }
+        ]
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "0",
+        "0000 0000",
+        "00000000",
+        "0000 0000",
+        "1",
+        "127",
+        "16",
+        "2",
+        "32",
+        "4",
+        "64",
+        "8",
+        "segno",
+        "−1",
+        "−128"
+      ],
+      "targets": {
+        "bits": [
+          "b1",
+          "b2",
+          "b3",
+          "b4",
+          "b5",
+          "b6",
+          "b7",
+          "b8"
+        ]
+      },
+      "reachable": 1024
+    },
+    {
+      "name": "row-hex-groups",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 4,
+        "base": 16,
+        "value": "00FF",
+        "read": "unsigned",
+        "weights": true,
+        "groups": 0
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "00FF",
+        "1",
+        "16",
+        "255",
+        "256",
+        "4096"
+      ],
+      "targets": {
+        "bits": [
+          "b1",
+          "b2",
+          "b3",
+          "b4"
+        ]
+      }
+    },
+    {
+      "name": "row-octal",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 3,
+        "base": 8,
+        "value": "755",
+        "read": "unsigned",
+        "weights": true,
+        "groups": 0
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "1",
+        "493",
+        "64",
+        "755",
+        "8"
+      ],
+      "targets": {
+        "bits": [
+          "b1",
+          "b2",
+          "b3"
+        ]
+      }
+    },
+    {
+      "name": "row-counter-base-10",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 3,
+        "base": 10,
+        "value": "002",
+        "read": "none",
+        "weights": false,
+        "groups": 0,
+        "states": [
+          {
+            "value": "001",
+            "op_it": "indietro di 1"
+          },
+          {
+            "value": "000"
+          },
+          {
+            "value": "999",
+            "op_it": "999 sta prima di 000"
+          }
+        ]
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "001",
+        "indietro di 1"
+      ],
+      "printed_last": [
+        "999",
+        "999 sta prima di 000"
+      ],
+      "targets": {
+        "bits": [
+          "b1",
+          "b2",
+          "b3"
+        ]
+      }
+    },
+    {
+      "name": "row-group-digits",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 8,
+        "base": 2,
+        "value": "10110110",
+        "read": "unsigned",
+        "weights": true,
+        "groups": 4,
+        "group_digits": true
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "1",
+        "1011 0110",
+        "10110110",
+        "1011 0110",
+        "128",
+        "128 + 32 + 16 + 4 + 2 = 182",
+        "16",
+        "182",
+        "2",
+        "32",
+        "4",
+        "6",
+        "64",
+        "8",
+        "B"
+      ],
+      "targets": {
+        "bits": [
+          "b1",
+          "b2",
+          "b3",
+          "b4",
+          "b5",
+          "b6",
+          "b7",
+          "b8"
+        ]
+      }
+    },
+    {
+      "name": "row-sixteen-bits",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 16,
+        "base": 2,
+        "value": "1111111111111011",
+        "read": "twos",
+        "weights": true,
+        "groups": 4
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "1",
+        "1024",
+        "1111 1111 1111 1011",
+        "1111111111111011",
+        "1111 1111 1111 1011",
+        "128",
+        "16",
+        "16384",
+        "2",
+        "2048",
+        "256",
+        "32",
+        "4",
+        "4096",
+        "512",
+        "64",
+        "8",
+        "8192",
+        "−32768",
+        "−32768 + 16384 + 8192 + 4096 + 2048 + 1024 + 512 + 256 + 128 + 64 + 32 + 16 + 8 + 2 + 1 = −5",
+        "−5"
+      ],
+      "targets": {
+        "bits": [
+          "b1",
+          "b2",
+          "b3",
+          "b4",
+          "b5",
+          "b6",
+          "b7",
+          "b8",
+          "b9",
+          "b10",
+          "b11",
+          "b12",
+          "b13",
+          "b14",
+          "b15",
+          "b16"
+        ]
+      }
+    },
+    {
+      "name": "row-width-changes",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 3,
+        "base": 2,
+        "value": "101",
+        "read": "none",
+        "weights": true,
+        "groups": 0,
+        "states": [
+          {
+            "value": "101"
+          },
+          {
+            "value": "00000011",
+            "width": 8,
+            "op_it": "Porta a 8 bit"
+          }
+        ]
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "1",
+        "101",
+        "2",
+        "4"
+      ],
+      "printed_last": [
+        "0000 0011",
+        "00000011",
+        "0000 0011",
+        "1",
+        "128",
+        "16",
+        "2",
+        "32",
+        "4",
+        "64",
+        "8",
+        "Porta a 8 bit"
+      ],
+      "targets": {
+        "bits": [
+          "b1",
+          "b2",
+          "b3"
+        ]
+      }
+    },
+    {
+      "name": "ring-three-bits",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "La ruota dei sedici codici di quattro bit: fuori il valore senza segno, dentro quello con segno, con il salto.",
+        "view": "ring",
+        "width": 3,
+        "read": "twos",
+        "cliff": true,
+        "pointer": "111",
+        "step": true,
+        "moves": [
+          {
+            "from": "011",
+            "by": 1,
+            "label_it": "3 + 1"
+          }
+        ]
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "0",
+        "011",
+        "1",
+        "100",
+        "111",
+        "2",
+        "3",
+        "3 + 1",
+        "−1",
+        "−2",
+        "−3",
+        "−4"
+      ],
+      "targets": {
+        "codes": [
+          "000",
+          "001",
+          "010",
+          "011",
+          "100",
+          "101",
+          "110",
+          "111"
+        ]
+      },
+      "reachable": 16
+    },
+    {
+      "name": "ring-unsigned",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "La ruota dei sedici codici di quattro bit: fuori il valore senza segno, dentro quello con segno, con il salto.",
+        "view": "ring",
+        "width": 4,
+        "read": "unsigned",
+        "cliff": true,
+        "highlight": [
+          {
+            "code": "0000"
+          },
+          {
+            "code": "1000",
+            "label_it": "metà"
+          }
+        ]
+      },
+      "semantic": "ok",
+      "layout": "ok",
+      "printed": [
+        "0",
+        "0000",
+        "1",
+        "10",
+        "1000",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "metà"
+      ],
+      "targets": {
+        "codes": [
+          "0000",
+          "0001",
+          "0010",
+          "0011",
+          "0100",
+          "0101",
+          "0110",
+          "0111",
+          "1000",
+          "1001",
+          "1010",
+          "1011",
+          "1100",
+          "1101",
+          "1110",
+          "1111"
+        ]
+      }
+    },
+    {
+      "name": "row-value-too-short",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 8,
+        "base": 2,
+        "value": "1111011",
+        "read": "twos",
+        "weights": true,
+        "groups": 4
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/value"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "row-digit-not-of-base",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 3,
+        "base": 10,
+        "value": "12A",
+        "read": "none",
+        "weights": true,
+        "groups": 0
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/value"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "row-twos-needs-base-2",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 4,
+        "base": 16,
+        "value": "00FF",
+        "read": "twos",
+        "weights": true,
+        "groups": 0
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/read"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "row-read-both-is-ring",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 8,
+        "base": 2,
+        "value": "11111011",
+        "read": "both",
+        "weights": true,
+        "groups": 4
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/read"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "row-toggle-needs-base-2",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 3,
+        "base": 10,
+        "value": "005",
+        "read": "unsigned",
+        "weights": true,
+        "groups": 0,
+        "toggle": true
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/toggle"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "row-goals-need-toggle",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 8,
+        "base": 2,
+        "value": "11111011",
+        "read": "twos",
+        "weights": true,
+        "groups": 4,
+        "goals": [
+          "-1"
+        ]
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/goals"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "row-goal-out-of-range",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 8,
+        "base": 2,
+        "value": "11111011",
+        "read": "twos",
+        "weights": true,
+        "groups": 4,
+        "toggle": true,
+        "goals": [
+          "200"
+        ]
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/goals/0"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "row-goal-without-readout",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 8,
+        "base": 2,
+        "value": "11111011",
+        "read": "none",
+        "weights": true,
+        "groups": 4,
+        "toggle": true,
+        "goals": [
+          "5"
+        ]
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/goals/0"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "row-group-digits-needs-groups",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 8,
+        "base": 2,
+        "value": "11111011",
+        "read": "twos",
+        "weights": true,
+        "groups": 0,
+        "group_digits": true
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/group_digits"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "row-mark-past-the-end",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 8,
+        "base": 2,
+        "value": "11111011",
+        "read": "twos",
+        "weights": true,
+        "groups": 4,
+        "mark": [
+          {
+            "at": 9,
+            "role": "sign"
+          }
+        ]
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/mark/0/at"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "row-mark-label-too-long",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 8,
+        "base": 2,
+        "value": "11111011",
+        "read": "twos",
+        "weights": true,
+        "groups": 4,
+        "mark": [
+          {
+            "at": 1,
+            "role": "sign",
+            "label_it": "il bit che pesa meno di tutti gli altri"
+          }
+        ]
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/mark/0/label_it"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "row-mark-role-unknown",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 8,
+        "base": 2,
+        "value": "11111011",
+        "read": "twos",
+        "weights": true,
+        "groups": 4,
+        "mark": [
+          {
+            "at": 1,
+            "role": "nonesiste"
+          }
+        ]
+      },
+      "semantic": {
+        "code": "E-LESSON-ROLE",
+        "path": "/mark/0/role"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "row-with-ring-field",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 8,
+        "base": 2,
+        "value": "11111011",
+        "read": "twos",
+        "weights": true,
+        "groups": 4,
+        "pointer": "0010"
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/pointer"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "row-state-value-length",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "Un registro di otto bit con i pesi sopra ogni cifra e il valore che si legge sotto, calcolato.",
+        "view": "row",
+        "width": 8,
+        "base": 2,
+        "value": "11111011",
+        "read": "twos",
+        "weights": true,
+        "groups": 4,
+        "states": [
+          {
+            "value": "00000101"
+          },
+          {
+            "value": "1111010"
+          }
+        ]
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/states/1/value"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "ring-five-bits",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "La ruota dei sedici codici di quattro bit: fuori il valore senza segno, dentro quello con segno, con il salto.",
+        "view": "ring",
+        "width": 5,
+        "read": "both",
+        "cliff": true
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/width"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "ring-with-row-field",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "La ruota dei sedici codici di quattro bit: fuori il valore senza segno, dentro quello con segno, con il salto.",
+        "view": "ring",
+        "width": 4,
+        "read": "both",
+        "cliff": true,
+        "value": "0101"
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/value"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "ring-step-needs-pointer",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "La ruota dei sedici codici di quattro bit: fuori il valore senza segno, dentro quello con segno, con il salto.",
+        "view": "ring",
+        "width": 4,
+        "read": "both",
+        "cliff": true,
+        "step": true
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/step"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "ring-pointer-length",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "La ruota dei sedici codici di quattro bit: fuori il valore senza segno, dentro quello con segno, con il salto.",
+        "view": "ring",
+        "width": 4,
+        "read": "both",
+        "cliff": true,
+        "pointer": "001"
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/pointer"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "ring-highlight-length",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "La ruota dei sedici codici di quattro bit: fuori il valore senza segno, dentro quello con segno, con il salto.",
+        "view": "ring",
+        "width": 4,
+        "read": "both",
+        "cliff": true,
+        "highlight": [
+          {
+            "code": "111"
+          }
+        ]
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/highlight/0/code"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "ring-move-from-length",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "La ruota dei sedici codici di quattro bit: fuori il valore senza segno, dentro quello con segno, con il salto.",
+        "view": "ring",
+        "width": 4,
+        "read": "both",
+        "cliff": true,
+        "moves": [
+          {
+            "from": "010",
+            "by": 1
+          }
+        ]
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/moves/0/from"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "ring-read-none",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "La ruota dei sedici codici di quattro bit: fuori il valore senza segno, dentro quello con segno, con il salto.",
+        "view": "ring",
+        "width": 4,
+        "read": "none",
+        "cliff": true
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/read"
+      },
+      "layout": "error"
+    },
+    {
+      "name": "ring-base-8",
+      "subject": "computer_science",
+      "schema": "valid",
+      "data": {
+        "type": "register",
+        "alt_it": "La ruota dei sedici codici di quattro bit: fuori il valore senza segno, dentro quello con segno, con il salto.",
+        "view": "ring",
+        "width": 4,
+        "read": "both",
+        "cliff": true,
+        "base": 8
+      },
+      "semantic": {
+        "code": "E-LESSON-DIAGRAM",
+        "path": "/base"
+      },
+      "layout": "error"
+    }
+  ]
 }
