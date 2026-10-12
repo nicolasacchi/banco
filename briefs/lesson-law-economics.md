@@ -47,8 +47,8 @@ Only these names, besides the structural ones of the lesson brief, and only with
 | `seats` | diagram | reserved | w2-1 | T6 |
 | `network` | diagram | reserved | w2-1 | T4b |
 | `flow` | diagram | available | r1 | T4b |
-| `source` | block | reserved | w2-1 | T8 |
-| `document` | diagram | reserved | w2-1 | T8 |
+| `source` | block | available (`kind: legal`; the historical kinds are W2-2) | w2-1 | T8 |
+| `document` | diagram | available | w2-1 | T8 |
 | `tiles` | check | reserved | w2-1 | T1 |
 
 Only `available` pieces can be used; `banco lesson submit --dry-run` says what is not. Until a piece lands, use the per-card fallback of the card plan.

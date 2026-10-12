@@ -21,7 +21,8 @@ module Lesson2Fixtures
     skills = c["skills"].to_h { |k| [ k, { "key" => k, "errors" => c["error_codes"].map { |code| { "code" => code } } } ] }
     Validation::Context.new(subject: subject, skill: ->(k) { skills[k] },
                             source_line: ->(s, n) { (t = lines[[ s, n ]]) && { text: t, origin: "pdf" } },
-                            topic: ->(k) { c["topics"].include?(k) })
+                            topic: ->(k) { c["topics"].include?(k) },
+                            reference_body: ->(k) { c.dig("references", k) })
   end
 
   def check(text, subject = "math") = Validation::LessonChecks.call(text, subject: subject, context: context(subject))

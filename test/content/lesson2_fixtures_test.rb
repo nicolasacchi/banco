@@ -19,8 +19,8 @@ class Lesson2FixturesTest < ActiveSupport::TestCase
     end
   end
 
-  test "every fence of every fixture is a block of release 1" do
-    allowed = %w[callout math procedure cases legend example mistake check more summary schema diagram table try]
+  test "every fence of every fixture is a block that is available" do
+    allowed = %w[callout math procedure cases legend example mistake check more summary schema diagram table try] + Lessons::Types.names(:block, status: "available")
     (GOOD_FILES + F::MANIFEST["bad"].filter_map { |b| b["file"] }).each do |file|
       next if file == "bad/lesson1-after-the-switch.md"
 

@@ -321,7 +321,8 @@ function summary(ctx, v, y) {
   const pad = ctx.pad
   const f = ctx.fontPx
   const amountW = ctx.measure("€ 99.999,99", f).w
-  const labelW = W - 2 * pad - amountW - 3 * pad
+  const edge = pad * 1.5 // room for the fence and the marks around the rows
+  const labelW = W - 2 * edge - amountW - 3 * pad
   const mark = Math.round(f * 0.7)
   const spans = new Map()
   shape(ctx, "line", { x1: 0, y1: y, x2: W, y2: y, cls: "dg-doc-rule" })
@@ -329,13 +330,13 @@ function summary(ctx, v, y) {
   for (const id of v.shown) {
     const top = y
     const offset = ROW_ROLE[id] && roleInfo(palette, ctx.subject, ROW_ROLE[id]) ? mark + pad : 0
-    const l = put(ctx, rowLabel(id, v.eff), pad + offset, top, { maxW: labelW - offset, cls: strongCls(id) })
-    marker(ctx, id, pad, top + (ctx.lineH - mark) / 2, mark)
+    const l = put(ctx, rowLabel(id, v.eff), edge + offset, top, { maxW: labelW - offset, cls: strongCls(id) })
+    marker(ctx, id, edge, top + (ctx.lineH - mark) / 2, mark)
     if (v.hidden.has(id)) {
-      shape(ctx, "rect", { x: W - pad - amountW, y: top, w: amountW, h: ctx.lineH, r: 6, cls: "dg-doc-blank", key: `b:${id}` })
-      put(ctx, "?", W - pad - amountW / 2, top, { anchor: "middle", cls: "dg-doc-q" })
+      shape(ctx, "rect", { x: W - edge - amountW, y: top, w: amountW, h: ctx.lineH, r: 6, cls: "dg-doc-blank", key: `b:${id}` })
+      put(ctx, "?", W - edge - amountW / 2, top, { anchor: "middle", cls: "dg-doc-q" })
     } else {
-      put(ctx, euro(calc.rows[id]), W - pad, top, { anchor: "end", cls: strongCls(id) })
+      put(ctx, euro(calc.rows[id]), W - edge, top, { anchor: "end", cls: strongCls(id) })
     }
     const h = Math.max(l.h, ctx.lineH)
     spans.set(id, [top, top + h])
@@ -388,23 +389,24 @@ function cascade(ctx, v) {
   const max = Math.max(1, ...Money.ROWS.map((id) => Math.max(seg[id][0], seg[id][1])))
   const side = W >= 700
   const amountW = ctx.measure("€ 99.999,99", f).w
+  const edge = pad * 1.5 // room for the fence around the rows
   const labelW = side ? Math.min(W * 0.36, ctx.measure("Spese anticipate per il cliente", f).w + pad) : 0
-  const x0 = pad + labelW + (side ? pad : 0)
-  const x1 = W - pad - (side ? amountW + pad : 0)
+  const x0 = edge + labelW + (side ? pad : 0)
+  const x1 = W - edge - (side ? amountW + pad : 0)
   const barH = Math.round(f * 1.1)
   let y = pad
   const spans = new Map()
   for (const id of v.shown) {
     const top = y
     const text = rowLabel(id, v.eff)
-    const l = put(ctx, text, pad, top, { maxW: side ? labelW : W - 2 * pad - amountW - pad, cls: strongCls(id) })
-    put(ctx, euro(calc.rows[id]), W - pad, top, { anchor: "end", cls: strongCls(id) })
+    const l = put(ctx, text, edge, top, { maxW: side ? labelW : W - 2 * edge - amountW - pad, cls: strongCls(id) })
+    put(ctx, euro(calc.rows[id]), W - edge, top, { anchor: "end", cls: strongCls(id) })
     const [a, b] = seg[id]
     const left = x0 + (Math.min(a, b) / max) * (x1 - x0)
     const width = Math.max(3, (Math.abs(b - a) / max) * (x1 - x0))
     const by = side ? top + Math.max(0, (l.h - barH) / 2) : top + l.h + 2
     const role = roleCls(ctx, BAR_ROLE[id])
-    const cls = id === "discounts" ? `dg-doc-bar dg-doc-removed st-${role}` : `dg-doc-bar fl-${role} st-${role}`
+    const cls = id === "discounts" ? `dg-doc-bar dg-doc-removed st-${role}` : `dg-doc-bar mk-${role}`
     shape(ctx, "rect", { x: left, y: by, w: width, h: barH, r: 5, cls, key: `bar:${id}` })
     const bottom = Math.max(top + l.h, by + barH)
     spans.set(id, [top, bottom])

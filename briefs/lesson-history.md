@@ -52,9 +52,9 @@ Only these names, besides the structural ones of the lesson brief, and only with
 | `network` | diagram | reserved | w2-1 | T4b |
 | `map` | diagram | reserved | w2-1 | T5 |
 | `word_parts` | diagram | reserved | w2-1 | T3 |
-| `source` | block | reserved | w2-1 | T8 |
-| `reveal` | block | reserved | w2-1 | T8 |
-| `oral` | block | reserved | w2-1 | T8 |
+| `source` | block | available (`kind: legal`; the historical kinds are W2-2) | w2-1 | T8 |
+| `reveal` | block | available | w2-1 | T8 |
+| `oral` | block | available | w2-1 | T8 |
 | `image` | block | draft | w2-2 | T8 |
 | `select` | check | reserved | w2-1 | T1 |
 | `tiles` | check | reserved | w2-1 | T1 |

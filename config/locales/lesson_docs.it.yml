@@ -24,7 +24,7 @@ it:
     source_comma: "Comma %{n}"
     source_guide: "Leggi con me"
     # the oral rehearsal
-    oral_title: "Prova a dirlo"
+    oral_title: "Domanda per l'orale"
     oral_help: "Metti in ordine la scaletta della risposta, poi premi Controlla."
     oral_outline_label: "La scaletta, da mettere in ordine"
     oral_up: "Sposta su"

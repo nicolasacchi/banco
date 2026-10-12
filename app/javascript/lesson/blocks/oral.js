@@ -39,7 +39,7 @@ export function outlineList(outline, ctx) {
     draw(order[j], step < 0 ? "up" : "down")
   }
   draw()
-  return { element: el("div", { class: "answer oral-answer" }, list, live), order: () => order.slice(), focus: () => list.querySelector(".oral-move:not(:disabled)")?.focus() }
+  return { element: el("div", { class: "oral-answer" }, list, live), order: () => order.slice(), focus: () => list.querySelector(".oral-move:not(:disabled)")?.focus() }
 }
 
 function pills(title, items, cls) {
@@ -83,7 +83,7 @@ export function render(block, ctx, loc = {}) {
   const pillRows = [pills(ctx.t.docs.oral_connectives, block.connectives, "oral-connectives"), pills(ctx.t.docs.oral_terms, block.terms, "oral-terms")]
   if (!ctx.safe && !ctx.openAll) {
     root.appendChild(el("p", { class: "hint", text: ctx.t.docs.oral_help }))
-    const form = el("form", { class: "check oral-form", novalidate: "" })
+    const form = el("form", { class: "oral-form", novalidate: "" })
     const fallback = outlineList(block.outline, ctx)
     let input = { element: fallback.element, order: fallback.order, focus: fallback.focus }
     const slot = el("div", { class: "oral-slot" }, input.element)

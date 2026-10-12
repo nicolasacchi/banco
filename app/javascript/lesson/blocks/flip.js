@@ -14,7 +14,7 @@ export function flip({ prefix, front, back, ctx, control = "card", hint = {}, bu
   const backBox = el("div", { class: `${prefix}-back flip-back`, id }, back)
   let toggle
   if (control === "button") {
-    toggle = el("button", { type: "button", class: `${prefix}-toggle flip-go button secondary small`, "aria-expanded": "false", "aria-controls": id }, icon("show", `${prefix}-hand`), el("span", { text: button.text }))
+    toggle = el("button", { type: "button", class: `${prefix}-flip flip-go button secondary small`, "aria-expanded": "false", "aria-controls": id }, icon("show", `${prefix}-hand`), el("span", { text: button.text }))
   } else {
     const hintNode = el("span", { class: `${prefix}-hint`, title: hint.label }, icon("show", `${prefix}-hand`),
       el("span", { class: `${prefix}-hint-text`, "aria-hidden": "true", text: hint.text }), el("span", { class: "sr-only", text: hint.label }))

@@ -10,6 +10,24 @@ module LessonPagesHelper
     LESSON_FAMILIES.to_h { |family| [ family, I18n.t("lesson_#{family}", default: {}).deep_stringify_keys ] }.merge(I18n.t("lesson2").deep_stringify_keys)
   end
 
+  # The stylesheets of the families whose blocks or figures a lesson uses (app/assets/stylesheets/lesson/FAMILY.css): the page head reads the
+  # body, so a lesson of release 1 loads none of them. ["lesson/docs", ...] for stylesheet_link_tag.
+  def lesson2_family_stylesheets(body)
+    families = Set.new
+    walk = lambda do |node|
+      case node
+      when Hash
+        if (type = node["type"]).is_a?(String)
+          [ :block, :diagram ].each { |kind| (f = Lessons::Types.entry(kind, type)&.fetch("family", nil)) && f != "core" && families << f }
+        end
+        node.each_value(&walk)
+      when Array then node.each(&walk)
+      end
+    end
+    walk.call(body)
+    families.sort.map { |f| "lesson/#{f}" }
+  end
+
   # The item templates' texts that the checks reuse (number, fraction, choice, text), and the accents label.
   def lesson2_item_texts = I18n.t("items").merge(accents_label: I18n.t("accents.label")).deep_stringify_keys
 

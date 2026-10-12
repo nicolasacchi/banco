@@ -78,3 +78,11 @@ each, described under `pending` in `test/fixtures/lesson2/manifest.json` until t
 (`test/fixtures/diagrams/types/TYPE.json`). Each family has a gallery skeleton (`test/fixtures/lesson2/gallery/FAMILY.md`), a
 stylesheet (`app/assets/stylesheets/lesson/FAMILY.css`) and a locale file (`config/locales/lesson_FAMILY.it.yml`). Each subject has
 a brief addendum (`banco brief show lesson-SUBJECT`).
+
+## The docs family (T8, D-272)
+
+`document` (`kind: invoice`, views `sheet` and `cascade`), `source` (`kind: legal`), `reveal` and `oral` are `available`; their texts are
+`config/locales/lesson_docs.it.yml` (`t.docs`) and their look `app/assets/stylesheets/lesson/docs.css`, linked by `lesson2_family_stylesheets` only
+for a lesson that uses one of them. `Lessons::Money` computes every amount of an invoice; the figure never reads a hidden row. The turning of a flip
+card is `lesson/blocks/flip.js`, shared by `mistake` and `reveal`. An `oral` is graded as an ordering by the check endpoint and its model answer rides
+on the reply (`model_it`). The gallery lesson is `test/fixtures/lesson2/gallery/docs-lesson.md`, rendered by `test/system/docs_family_test.rb`.

@@ -181,6 +181,104 @@ or check option that the registry `config/banco/lesson_types.yml` does not list 
 than math and italian have an addendum with their roles, verbs, icons and pieces: `banco brief show lesson-SUBJECT`
 (for example `lesson-biology`; the subject key with hyphens).
 
+## The docs family: `document`, `source`, `reveal`, `oral`
+
+Four pieces for documents, texts to read and answers to rehearse. They are `available` as far as the table says; the draft kinds are refused
+(`banco lesson submit --dry-run --allow-reserved` checks them against their draft schema).
+
+**`diagram document`, `kind: invoice`** (`view: sheet` the invoice as a document, `view: cascade` the rows as a waterfall). You give the goods, the
+discounts and the costs; **our code computes every row** (the amounts are `Lessons::Money`, in exact euros, VAT rounded half up to the cent) and draws
+them. Never write a total.
+
+```yaml
+::: diagram document
+alt_it: "Fattura di Cartoleria Alfa a Studio Beta: 800 quaderni a 2,50 euro, sconto del 10%, spese del venditore 60,00 euro, IVA 22%, totale 2.319,20 euro."
+kind: invoice
+view: sheet                        # sheet | cascade (default sheet)
+head: {seller_it: "Cartoleria Alfa srl", buyer_it: "Studio Beta", number: '41', date: '2026-10-12'}
+lines:                             # 1 to 6: quantity times price; vat is 22, 10, 5 or 4
+  - {text_it: "Quaderni A4", qty: '800', price: '2,50', vat: '22'}
+discounts: ['10']                  # successive percentages, each on what is left (at most 4)
+costs:                             # at most 4: documented false = the seller's own cost, inside the imponibile; true = advanced for the buyer, outside
+  - {text_it: "Imballaggio", amount: '60,00', documented: false}
+  - {text_it: "Corriere pagato per il cliente", amount: '50,00', documented: true}
+interest: {rate: '6', days: 60, year: 360}   # optional: on the net goods, added after the documented costs
+rows: [gross, discounts, net, costs_in, base, vat, costs_out, interest, total]   # optional subset; the order is ours
+hide: [base, total]                # rows drawn as an empty box with "?" (a sheet only; a cascade cannot hide a row)
+mark: [base]                       # the dashed fence around net, the seller's costs and the imponibile; another row id is outlined
+error: documented_costs_taxed      # draw the invoice as that typical error computes it (see below)
+states: [{rows: [gross], op_it: "Il lordo."}, {rows: [gross, discounts, net], op_it: "Togli lo sconto."}]   # rows, hide and mark per state
+:::
+```
+
+- `error` is one of: `taxable_base_on_gross`, `vat_on_gross_added_to_net`, `documented_costs_taxed`, `undocumented_costs_untaxed`,
+  `undocumented_costs_omitted`, `successive_discounts_added`, `two_rates_single_rate`, `two_rates_combined`, `vat_added_as_amount`. The error must
+  change the total of this invoice (`E-LESSON-DIAGRAM`). The drawing is then titled "Fattura con un errore".
+- Two VAT rates: every cost must be `documented: true` (an own cost has no rate).
+- Every euro amount written in `alt_it` or `caption_it` must be an amount the figure computes or you wrote in the data (a price, a cost), and never the
+  amount of a hidden row (`E-LESSON-ALT`). Invented names only.
+- The amounts a check asks come from the same code: ask the value, never copy it from a drawing the student can read. `verify: {fn: money.row, args:
+  {qty: '800', price: '2,50'}}` recomputes a line when `verify` is available.
+
+**`source`, `kind: legal`**: the words of a law with the plain version first. The quotation is an exact substring of the imported reference text
+(`ref`, `banco references list`; `E-QUOTE-REF`), never from memory.
+
+```yaml
+::: source
+kind: legal
+title_it: "Costituzione, art. 74"
+ref: costituzione-artt-55-96          # an imported reference text
+open: plain                           # plain (default) | original: which text the switch shows first
+parts:                                # 1 to 4 commi, at most 60 words each
+  - text_it: "Il Presidente della Repubblica, prima di promulgare la legge, può con messaggio motivato alle Camere chiedere una nuova deliberazione."
+    plain_it: "Prima di firmare la legge, il Presidente può rimandarla alle Camere. Deve spiegare perché."   # required on a core card
+    marks: [{text_it: "Presidente della Repubblica", role: guarantee}]   # exact words of text_it, a role of the subject
+guide: [{span_it: "con messaggio motivato", note_it: "Deve scrivere il motivo."}]   # "Leggi con me": exact spans of a part
+:::
+```
+
+The student sees "In parole semplici" first and the switch "Testo della legge"; both are printed. A source counts as a visual, one per card, at most 3
+cards whose only visual is a source; the plain versions count in the 250 words open by default and the quotations behind the switch in the 240 words
+of originals (`E-LESSON-APPARATUS-WORDS`). The other kinds (`written`, `iconographic`, `material`) are W2-2.
+
+**`reveal`**: think first, then turn. Ungraded, nothing is stored.
+
+```yaml
+::: reveal
+prompt_it: "Pensaci: perché il Senato non riforma?"     # the front
+answer_it: "..."                                         # the back, at most 40 words
+:::
+::: reveal
+who_it: "Sei il venditore"
+year: '-27'                                              # optional
+situation_it: "Hai spedito la merce. Il cliente non paga da due mesi. Che cosa fai?"   # replaces prompt_it
+options:                                                 # 2 to 4, exactly one real
+  - {id: a, text_it: "Aspetto ancora", then_it: "Il tempo passa."}    # then_it at most 25 words
+  - {id: b, text_it: "Gli scrivo", then_it: "Resta una prova scritta.", real: true}
+real_it: "Di solito si manda prima un sollecito scritto."   # replaces answer_it, at most 40 words
+:::
+```
+
+With options the card is a crossroads: S picks a road, sees what comes of it, then turns to what really happened; the real road is marked in words. Our
+line "Le altre strade sono ipotesi: nessuno sa come sarebbe andata." is always added: never ask what would have happened. A reveal with options counts as
+a visual, one per card; a plain one does not.
+
+**`oral`**: rehearse an answer for the oral exam. S puts the outline in order (graded like an ordering) and then reads the model answer.
+
+```yaml
+::: oral
+question_it: "Spiega come si arriva dal lordo al totale di una fattura."
+outline: [{id: o1, text_it: "Parto dal lordo"}, {id: o2, text_it: "Tolgo gli sconti"}, {id: o3, text_it: "Calcolo l'IVA"}]   # 3 to 7
+answer: [o1, o2, o3]                  # every outline id once, in order
+errors: [{answer: [o2, o1, o3], code: business_discounts_added, message_it: "Prima il lordo."}]   # other orders
+connectives: ["prima", "poi", "infine"]
+terms: ["lordo", "netto"]
+model_it: "Parto dal lordo. Poi tolgo gli sconti. Infine calcolo l'IVA."   # at most 120 words, shown only after the outline is right or the second try
+:::
+```
+
+Nothing is recorded: our fixed line on the card says it is optional and that no one listens. One oral per card; it counts as a visual.
+
 ## Checks
 
 `::: check COMPONENT` with `choice`, `number`, `fraction`, `normalized_text`, `matching` or `span_select`. The
