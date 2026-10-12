@@ -2,11 +2,12 @@
     picks, live (cards, navigation, step reveal, checks graded by a teacher-only endpoint that records nothing,
     seed "preview"). "Modalità docente" opens every "more", shows answers and solutions from full.json.
     Locals: revision (the lesson revision), topic (key). %>
+<% body = Lessons::StudentBody.for(revision, seed: "preview") %>
 <% content_for :head do %>
   <%= stylesheet_link_tag "lesson_roles" %>
   <%= stylesheet_link_tag "lesson" %>
+  <% lesson2_family_css(body).each do |css| %><%= stylesheet_link_tag css %><% end %>
 <% end %>
-<% body = Lessons::StudentBody.for(revision, seed: "preview") %>
 <div class="l2-box-wrap" data-controller="lesson2-preview"
      data-lesson2-preview-revision-id-value="<%= revision.id %>"
      data-lesson2-preview-topic-value="<%= topic %>"

@@ -7,6 +7,7 @@ import * as N from "lesson/num"
 import { button, clear, el, icon, spriteHref, svg, uid } from "lesson/dom"
 import { HOME_PALETTE, describe, layout, moduleFor, stateCount } from "lesson/diagrams/registry"
 import { tryValues, equationTex } from "lesson/diagrams/balance"
+import { buildStrip, declared, overlay } from "lesson/diagrams/controls"
 import { renderInlineRich, renderMath, renderRich } from "lesson/text"
 
 const MARKERS = {
@@ -125,13 +126,18 @@ export function mountDiagram(data, ctx, options = {}) {
   const labelsLayer = el("div", { class: "dg-labels" })
   const stageSvg = svg("svg", { class: "dg-svg", role: "img", "aria-labelledby": `${id}-alt`, focusable: "false" })
   const alt = el("span", { id: `${id}-alt`, class: "sr-only", text: data?.alt_it ?? "" })
-  stage.append(stageSvg, labelsLayer)
+  // the buttons of a figure's controls (the bits of a register) live in a layer that a redraw does not clear, so they keep the focus
+  const switchLayer = el("div", { class: "dg-switches" })
+  stage.append(stageSvg, labelsLayer, switchLayer)
   const controls = el("div", { class: "dg-controls" })
   const op = el("p", { class: "dg-op", "aria-live": "polite" })
   const question = el("p", { class: "dg-question", "aria-live": "polite" })
   const caption = data?.caption_it ? el("figcaption", { class: "dg-caption" }) : null
   if (caption) renderInlineRich(data.caption_it, caption, ctx)
-  const desc = el("details", { class: "dg-desc" }, el("summary", {}, icon("description"), document.createTextNode(` ${ctx.t.description}`)), el("p", { text: describe(data) }))
+  const descText = el("p", { text: describe(data, { state: 0 }) })
+  const desc = el("details", { class: "dg-desc" }, el("summary", {}, icon("description"), document.createTextNode(` ${ctx.t.description}`)), descText)
+  // an interactive figure (a type that declares controls) announces each change in one polite live line (A6)
+  const live = el("p", { class: "sr-only", role: "status", "aria-live": "polite" })
   // a balance has its equation, the state's name and a status chip above the drawing
   const top = type === "balance" ? el("div", { class: "dg-top" }) : null
   const pill = el("span", { class: "dg-pill" })
@@ -140,11 +146,22 @@ export function mountDiagram(data, ctx, options = {}) {
   if (top) top.append(pill, eqLine, chip)
   // op, question and controls sit in one side box: below the drawing, or beside it on a wide balance (CSS)
   const side = el("div", { class: "dg-side" }, op, question, controls)
-  figure.append(alt, ...(top ? [top] : []), stage, side, ...(caption ? [caption] : []), desc)
+  figure.append(alt, ...(top ? [top] : []), stage, side, live, ...(caption ? [caption] : []), desc)
 
   const mod = moduleFor(type)
+  const wanted = declared(mod, data)
+  const resetControls = () => {
+    for (const k of Object.keys(state.controls)) delete state.controls[k]
+  }
+  const rove = { id: null }
+  const press = (control, value) => {
+    state.controls[control.id] = value
+    state.announce = true
+    draw()
+  }
   const total = mod ? stateCount(data) : 1
-  const state = { moves: new Map(), lastWidth: 0, i: 0, tryValue: data?.try && data?.type === "balance" ? Number(data.try.from) : undefined, width: 0, selected: null }
+  const state = { controls: {}, announce: false, moves: new Map(), lastWidth: 0, i: 0, tryValue: data?.try && data?.type === "balance" ? Number(data.try.from) : undefined, width: 0, selected: null }
+  const strip = wanted.length ? buildStrip(wanted, controls, state.controls, ctx, press) : null
   figure.dataset.states = String(total)
   if (total > 1 || (type === "sentence" && data.parts)) figure.dataset.nokeys = ""
   const measurer = { current: null }
@@ -167,7 +184,7 @@ export function mountDiagram(data, ctx, options = {}) {
     state.width = width
     if (!measurer.current) measurer.current = makeMeasure(stage, ctx)
     const fontPx = ctx.fontPx()
-    const scene = layout(data, { width, fontPx, measure: measurer.current.measure, subject: ctx.subject, state: state.i, tryValue: state.tryValue })
+    const scene = layout(data, { width, fontPx, measure: measurer.current.measure, subject: ctx.subject, state: state.i, tryValue: state.tryValue, mode: options.mode ?? "student", controls: state.controls })
     if (scene.error) return showError(scene.error)
     figure.classList.remove("dg-failed")
     figure.querySelector(".dg-fallback")?.remove()
@@ -239,6 +256,13 @@ export function mountDiagram(data, ctx, options = {}) {
       })
       labelsLayer.appendChild(b)
     }
+    if (strip) {
+      overlay(scene, wanted, switchLayer, state.controls, press, rove)
+      strip.refresh()
+      descText.textContent = describe(data, { state: state.i, controls: state.controls })
+      if (state.announce && scene.live) live.textContent = scene.live
+      state.announce = false
+    }
     op.textContent = ""
     const eff = total > 1 ? (data.states[state.i] ?? {}) : {}
     if (eff.op_it) renderInlineRich(eff.op_it, op, ctx)
@@ -276,10 +300,12 @@ export function mountDiagram(data, ctx, options = {}) {
   if (total > 1) {
     prev = button(ctx.t.prev_step, { class: "button secondary small dg-prev" }, () => {
       state.i = Math.max(0, state.i - 1)
+      resetControls()
       draw()
     })
     next = button("", { class: "button secondary small dg-next" }, () => {
       state.i = state.i === total - 1 ? 0 : state.i + 1
+      resetControls()
       draw()
     })
     next.textContent = ctx.t.next_step
@@ -330,6 +356,7 @@ export function mountDiagram(data, ctx, options = {}) {
     relayout: draw,
     setState: (i) => {
       state.i = Math.max(0, Math.min(total - 1, i))
+      resetControls()
       draw()
     },
     // the number in the boxes of a balance, set from outside (the shared stepper of the cases)
