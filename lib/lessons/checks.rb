@@ -64,8 +64,23 @@ module Lessons
       rekey(check, seed).id_map
     end
 
+    # The components whose input hands over JSON text (the page sends the text of items/*.js `raw`): the server reads it as data.
+    STRUCTURED = %w[fraction matching span_select tiles ordering select].freeze
+
+    # A String that is JSON for a Hash or an Array becomes that data, for the components that take data; anything else stays as sent.
+    def structured(check, response)
+      return response unless response.is_a?(String) && STRUCTURED.include?(check["component"]) && response.start_with?("{", "[")
+
+      parsed = JSON.parse(response)
+      parsed.is_a?(Hash) || parsed.is_a?(Array) ? parsed : response
+    rescue JSON::ParserError
+      response
+    end
+
     def grade(check, response, id_map = nil, subject: nil)
       return invalid("unparseable") unless small?(response)
+
+      response = structured(check, response)
 
       case check["component"]
       when "span_select" then span_select(check, response, id_map || {})

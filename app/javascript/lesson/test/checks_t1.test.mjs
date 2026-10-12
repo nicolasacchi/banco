@@ -90,11 +90,11 @@ test("preload: the diagram types and the components a body uses, a select check'
   assert.deepEqual([...components].sort(), ["choice", "number", "ordering", "select", "tiles"])
 })
 
-test("teacher: tiles read as the built sentence, an ordering as a numbered list, a select by the names of its targets", () => {
+test("teacher: tiles read as the built sentence, an ordering as its items joined by arrows, a select by the names of its targets", () => {
   const tiles = { component: "tiles", tiles: [{ id: "a", text_en: "If" }, { id: "b", text_en: "it" }, { id: "c", text_en: "rains" }] }
   assert.equal(sequenceText(tiles, ["a", "b", "c"]), "If it rains")
   const order = { component: "ordering", items: [{ id: "p", text_it: "La proposta" }, { id: "q", text_it: "Il voto" }] }
-  assert.equal(sequenceText(order, ["p", "q"]), "1. La proposta · 2. Il voto")
+  assert.equal(sequenceText(order, ["p", "q"]), "La proposta → Il voto")
   // no available type has targets yet: the ids stand in for the names
   assert.deepEqual(targetNames({ diagram: { type: "table" }, targets: "cells" }, ["c1.nucleoid"]), ["c1.nucleoid"])
 })
@@ -129,4 +129,16 @@ test("sentence neutral: the description reads the lesson subject's palette", () 
   assert.match(describe(english, { subject: "english" }), /«reads» è verbo/)
   assert.match(describe(english, { subject: "english" }), /«She» è soggetto/)
   assert.match(describe({ type: "sentence", alt_it: english.alt_it, text_it: "Marco legge", parts: [{ id: "v", text_it: "legge", role: "predicate" }] }), /«legge» è predicato/, "the default stays italian")
+})
+
+test("teacher: a select answer is read by the names the type gives its targets (name_it), never by tN", async () => {
+  const { TYPES } = await import("lesson/diagrams/registry")
+  TYPES.probe = { layout: () => ({ error: { path: "", message: "x", code: "E-LESSON-DIAGRAM" } }), describe: () => "", targets: () => [{ key: "z1", neutral_it: "in alto" }, { key: "z2", neutral_it: "in basso", name_it: "nucleoide" }, { key: "z3", name_it: "ribosomi" }] }
+  try {
+    const spec = { component: "select", diagram: { type: "probe" }, targets: "zones", pick: "many", answer: ["z2", "z3"] }
+    assert.deepEqual(targetNames(spec, spec.answer), ["nucleoide", "ribosomi"])
+    assert.deepEqual(targetNames(spec, ["z1"]), ["z1"], "a target without a name shows its id")
+  } finally {
+    delete TYPES.probe
+  }
 })

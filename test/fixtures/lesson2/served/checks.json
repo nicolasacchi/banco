@@ -1,0 +1,229 @@
+{
+ "schema": "banco.lesson/2",
+ "schema_version": 2,
+ "key": "ripasso.english.demo-checks",
+ "kind": "ripasso",
+ "subject": "english",
+ "title_it": "Frasi con if: costruire e mettere in ordine",
+ "goals_it": [
+  "**Costruire** una frase con if",
+  "**Mettere** in ordine i passi"
+ ],
+ "why_it": "Per scrivere una frase giusta serve sapere quali parole vanno prima.",
+ "skills": [
+  "english.demo-if"
+ ],
+ "uses": [],
+ "refs": [],
+ "scope": "studied",
+ "minutes": 15,
+ "calculator": false,
+ "cards": [
+  {
+   "n": 1,
+   "id": "frase",
+   "role": "idea",
+   "level": "core",
+   "title_it": "Una frase ha un centro",
+   "icon": "lightbulb",
+   "blocks": [
+    {
+     "n": 1,
+     "type": "text",
+     "text_it": "Il **verbo** è il centro della frase. Tocca una parte per sapere che cosa fa."
+    },
+    {
+     "n": 2,
+     "type": "diagram",
+     "diagram": {
+      "type": "sentence",
+      "layout": "centre",
+      "alt_it": "La frase She reads a book: il verbo reads al centro, il soggetto She a sinistra, l'oggetto a book a destra.",
+      "text_en": "She reads a book",
+      "parts": [
+       {
+        "id": "s",
+        "text_en": "She",
+        "role": "subject",
+        "question_it": "Chi legge?"
+       },
+       {
+        "id": "v",
+        "text_en": "reads",
+        "role": "verb",
+        "question_it": "Che cosa fa?"
+       },
+       {
+        "id": "o",
+        "text_en": "a book",
+        "role": "object",
+        "question_it": "Che cosa legge?"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "id": "if",
+   "role": "idea",
+   "level": "core",
+   "title_it": "If e il presente",
+   "icon": "lightbulb",
+   "blocks": [
+    {
+     "n": 1,
+     "type": "text",
+     "text_it": "Dopo **if** il verbo sta al presente. Il futuro va nell'altra parte della frase."
+    },
+    {
+     "n": 2,
+     "type": "check",
+     "component": "tiles",
+     "prompt_it": "Costruisci la frase: «Se piove, resto a casa».",
+     "tiles": [
+      {
+       "id": "a",
+       "text_en": "If"
+      },
+      {
+       "id": "b",
+       "text_en": "it"
+      },
+      {
+       "id": "c",
+       "text_en": "rains,"
+      },
+      {
+       "id": "d",
+       "text_en": "I"
+      },
+      {
+       "id": "e",
+       "text_en": "will"
+      },
+      {
+       "id": "f",
+       "text_en": "stay"
+      },
+      {
+       "id": "g",
+       "text_en": "home"
+      },
+      {
+       "id": "h",
+       "text_en": "rained"
+      },
+      {
+       "id": "i",
+       "text_en": "would"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "id": "ordine",
+   "role": "idea",
+   "level": "core",
+   "title_it": "I passi per scrivere",
+   "icon": "list-checks",
+   "blocks": [
+    {
+     "n": 1,
+     "type": "text",
+     "text_it": "Per scrivere una frase giusta si va per passi."
+    },
+    {
+     "n": 2,
+     "type": "check",
+     "component": "ordering",
+     "prompt_it": "Metti i passi nell'ordine giusto.",
+     "items": [
+      {
+       "id": "p",
+       "text_it": "Scegli il soggetto"
+      },
+      {
+       "id": "q",
+       "text_it": "Scegli il verbo"
+      },
+      {
+       "id": "r",
+       "text_it": "Aggiungi il resto"
+      },
+      {
+       "id": "s",
+       "text_it": "Rileggi la frase"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "id": "ancora",
+   "role": "idea",
+   "level": "core",
+   "title_it": "Ancora una frase",
+   "icon": "lightbulb",
+   "blocks": [
+    {
+     "n": 1,
+     "type": "text",
+     "text_it": "Costruisci un'altra frase."
+    },
+    {
+     "n": 2,
+     "type": "check",
+     "component": "tiles",
+     "prompt_it": "Costruisci la frase: «Se studi, passi l'esame».",
+     "tiles": [
+      {
+       "id": "a",
+       "text_en": "If"
+      },
+      {
+       "id": "b",
+       "text_en": "you"
+      },
+      {
+       "id": "c",
+       "text_en": "study,"
+      },
+      {
+       "id": "d",
+       "text_en": "you"
+      },
+      {
+       "id": "e",
+       "text_en": "will"
+      },
+      {
+       "id": "f",
+       "text_en": "pass"
+      },
+      {
+       "id": "g",
+       "text_en": "the"
+      },
+      {
+       "id": "h",
+       "text_en": "exam"
+      },
+      {
+       "id": "i",
+       "text_en": "passed"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "words": {
+  "core": 80,
+  "extra": 0
+ }
+}

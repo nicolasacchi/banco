@@ -19,11 +19,11 @@ export function targetNames(spec, ids) {
   return (ids ?? []).map((id) => list.find((t) => String(t.key) === String(id))?.name_it ?? id)
 }
 
-// A list of ids of tiles or items as the teacher reads it: the built sentence, or the numbered list.
+// A list of ids of tiles or items as the teacher reads it: the built sentence, or the items in order, joined by arrows.
 export function sequenceText(spec, ids) {
   const pool = new Map((spec.tiles ?? spec.items ?? []).map((t) => [t.id, t]))
   const texts = (ids ?? []).map((id) => tileText(pool.get(id)) || id)
-  return spec.component === "ordering" ? texts.map((t, i) => `${i + 1}. ${t}`).join(" · ") : texts.join(" ")
+  return spec.component === "ordering" ? texts.join(" → ") : texts.join(" ")
 }
 
 function answerText(spec, ctx, value = spec.answer) {
