@@ -1,0 +1,180 @@
+# chem/molecules: the substances of ponte.chemistry.symbols-formulas (W2-D08, WAVE2 1.9; T7). Read by `molecule` and `formula`.
+# Typed by the data author, kept in git, changed only by a D entry. Sources: CCCBDB (NIST Standard Reference Database 101, experimental
+# geometries, accessed 2026-10-12) for atoms, bond orders, Cartesian coordinates and angles; PubChem compound records (bond orders of the 2D
+# record, the ions of the salts as separate covalent units) as the second source; Pauling electronegativities (PubChem periodic table and
+# Zanichelli's Tavola periodica) for the sign of the partial charges; Treccani and it.wikipedia for the names.
+#   atoms     in CCCBDB's order; `xyz` is the experimental Cartesian position in angstrom (3 decimals); `xy` is a drawing position our script
+#             derived from it by a projection (the plane of the two widest spreads; for CH4 the view along an axis (a square) and for NH3 the view
+#             along its axis (a triangle), so that no H atom falls on another). Atom counts are never stored: Lessons::Chem computes them from the formula.
+#   angle     in degrees, computed from the Cartesians and rounded half up to 0,1 (H2O 104,5 as the books print it); only on molecules whose
+#             bond angle is drawn between two bonds of one atom.
+#   partial_charges   RELATIVE units that add up to zero: the SIGN is the fact (Pauling electronegativity difference at least 0,4), the size only
+#             keeps the sum at zero. CO has none on purpose (its dipole is small and not what the electronegativity rule predicts); CH4 has none
+#             (C-H differs by 0,35); the homonuclear molecules have none.
+#   ionic     the atoms of ONE formula unit, ions in order (the cation first); positions are schematic, the ion is drawn as one circle.
+#   metal     one atom: the metal is drawn as a patch of identical circles, never as a molecule.
+version: 1
+molecules:
+  'H2O':
+    name_it: 'acqua'
+    kind: molecular
+    atoms:
+      - {symbol: O, xy: ['0,000', '0,391'], xyz: ['0,000', '0,000', '0,117']}
+      - {symbol: H, xy: ['-0,757', '-0,195'], xyz: ['0,000', '0,757', '-0,469']}
+      - {symbol: H, xy: ['0,757', '-0,195'], xyz: ['0,000', '-0,757', '-0,469']}
+    bonds: [[0, 1, 1], [0, 2, 1]]
+    angle: '104,5'
+    partial_charges: ['-2', '1', '1']
+    source: 'CCCBDB experimental geometry (NIST SRD 101, 2026-10-12); bond orders CCCBDB and PubChem; partial charge signs from Pauling electronegativity (PubChem, Zanichelli)'
+  'CO2':
+    name_it: 'diossido di carbonio'
+    kind: molecular
+    atoms:
+      - {symbol: C, xy: ['0,000', '0,000'], xyz: ['0,000', '0,000', '0,000']}
+      - {symbol: O, xy: ['-1,162', '0,000'], xyz: ['0,000', '0,000', '1,162']}
+      - {symbol: O, xy: ['1,162', '0,000'], xyz: ['0,000', '0,000', '-1,162']}
+    bonds: [[0, 1, 2], [0, 2, 2]]
+    angle: '180,0'
+    partial_charges: ['2', '-1', '-1']
+    source: 'CCCBDB experimental geometry (NIST SRD 101, 2026-10-12); bond orders CCCBDB and PubChem; partial charge signs from Pauling electronegativity (PubChem, Zanichelli)'
+  'CO':
+    name_it: 'monossido di carbonio'
+    kind: molecular
+    atoms:
+      - {symbol: C, xy: ['-0,564', '0,000'], xyz: ['0,000', '0,000', '0,000']}
+      - {symbol: O, xy: ['0,564', '0,000'], xyz: ['0,000', '0,000', '1,128']}
+    bonds: [[0, 1, 3]]
+    source: 'CCCBDB experimental geometry (NIST SRD 101, 2026-10-12); bond orders CCCBDB and PubChem; partial charge signs from Pauling electronegativity (PubChem, Zanichelli)'
+  'H2O2':
+    name_it: 'perossido di idrogeno'
+    kind: molecular
+    atoms:
+      - {symbol: O, xy: ['-0,612', '0,413'], xyz: ['0,000', '0,738', '-0,053']}
+      - {symbol: O, xy: ['0,612', '-0,413'], xyz: ['0,000', '-0,738', '-0,053']}
+      - {symbol: H, xy: ['-1,135', '-0,222'], xyz: ['0,819', '0,817', '0,422']}
+      - {symbol: H, xy: ['1,135', '0,222'], xyz: ['-0,819', '-0,817', '0,422']}
+    bonds: [[0, 1, 1], [0, 2, 1], [1, 3, 1]]
+    partial_charges: ['-1', '-1', '1', '1']
+    source: 'CCCBDB experimental geometry (NIST SRD 101, 2026-10-12); bond orders CCCBDB and PubChem; partial charge signs from Pauling electronegativity (PubChem, Zanichelli)'
+  'O2':
+    name_it: 'ossigeno'
+    kind: molecular
+    atoms:
+      - {symbol: O, xy: ['-0,604', '0,000'], xyz: ['0,000', '0,000', '0,000']}
+      - {symbol: O, xy: ['0,604', '0,000'], xyz: ['0,000', '0,000', '1,208']}
+    bonds: [[0, 1, 2]]
+    source: 'CCCBDB experimental geometry (NIST SRD 101, 2026-10-12); bond orders CCCBDB and PubChem; partial charge signs from Pauling electronegativity (PubChem, Zanichelli)'
+  'O3':
+    name_it: 'ozono'
+    kind: molecular
+    atoms:
+      - {symbol: O, xy: ['0,000', '0,447'], xyz: ['0,000', '0,000', '0,000']}
+      - {symbol: O, xy: ['-1,089', '-0,223'], xyz: ['0,000', '1,089', '0,670']}
+      - {symbol: O, xy: ['1,089', '-0,223'], xyz: ['0,000', '-1,089', '0,670']}
+    bonds: [[0, 1, 2], [0, 2, 1]]
+    angle: '116,8'
+    source: 'CCCBDB experimental geometry (NIST SRD 101, 2026-10-12); bond orders CCCBDB and PubChem; partial charge signs from Pauling electronegativity (PubChem, Zanichelli)'
+  'CH4':
+    name_it: 'metano'
+    kind: molecular
+    atoms:
+      - {symbol: C, xy: ['0,000', '0,000'], xyz: ['0,000', '0,000', '0,000']}
+      - {symbol: H, xy: ['0,628', '0,628'], xyz: ['0,628', '0,628', '0,628']}
+      - {symbol: H, xy: ['0,628', '-0,628'], xyz: ['0,628', '-0,628', '-0,628']}
+      - {symbol: H, xy: ['-0,628', '-0,628'], xyz: ['-0,628', '0,628', '-0,628']}
+      - {symbol: H, xy: ['-0,628', '0,628'], xyz: ['-0,628', '-0,628', '0,628']}
+    bonds: [[0, 1, 1], [0, 2, 1], [0, 3, 1], [0, 4, 1]]
+    source: 'CCCBDB experimental geometry (NIST SRD 101, 2026-10-12); bond orders CCCBDB and PubChem; partial charge signs from Pauling electronegativity (PubChem, Zanichelli)'
+  'NH3':
+    name_it: 'ammoniaca'
+    kind: molecular
+    atoms:
+      - {symbol: N, xy: ['0,000', '0,000'], xyz: ['0,000', '0,000', '0,000']}
+      - {symbol: H, xy: ['0,000', '-0,938'], xyz: ['0,000', '-0,938', '-0,382']}
+      - {symbol: H, xy: ['0,812', '0,469'], xyz: ['0,812', '0,469', '-0,382']}
+      - {symbol: H, xy: ['-0,812', '0,469'], xyz: ['-0,812', '0,469', '-0,382']}
+    bonds: [[0, 1, 1], [0, 2, 1], [0, 3, 1]]
+    partial_charges: ['-3', '1', '1', '1']
+    source: 'CCCBDB experimental geometry (NIST SRD 101, 2026-10-12); bond orders CCCBDB and PubChem; partial charge signs from Pauling electronegativity (PubChem, Zanichelli)'
+  'N2':
+    name_it: 'azoto'
+    kind: molecular
+    atoms:
+      - {symbol: N, xy: ['-0,549', '0,000'], xyz: ['0,000', '0,000', '0,549']}
+      - {symbol: N, xy: ['0,549', '0,000'], xyz: ['0,000', '0,000', '-0,549']}
+    bonds: [[0, 1, 3]]
+    source: 'CCCBDB experimental geometry (NIST SRD 101, 2026-10-12); bond orders CCCBDB and PubChem; partial charge signs from Pauling electronegativity (PubChem, Zanichelli)'
+  'Cl2':
+    name_it: 'cloro'
+    kind: molecular
+    atoms:
+      - {symbol: Cl, xy: ['-0,994', '0,000'], xyz: ['0,000', '0,000', '0,000']}
+      - {symbol: Cl, xy: ['0,994', '0,000'], xyz: ['0,000', '0,000', '1,988']}
+    bonds: [[0, 1, 1]]
+    source: 'CCCBDB experimental geometry (NIST SRD 101, 2026-10-12); bond orders CCCBDB and PubChem; partial charge signs from Pauling electronegativity (PubChem, Zanichelli)'
+  'H2':
+    name_it: 'idrogeno'
+    kind: molecular
+    atoms:
+      - {symbol: H, xy: ['-0,370', '0,000'], xyz: ['0,000', '0,000', '0,000']}
+      - {symbol: H, xy: ['0,370', '0,000'], xyz: ['0,000', '0,000', '0,741']}
+    bonds: [[0, 1, 1]]
+    source: 'CCCBDB experimental geometry (NIST SRD 101, 2026-10-12); bond orders CCCBDB and PubChem; partial charge signs from Pauling electronegativity (PubChem, Zanichelli)'
+  'NaCl':
+    name_it: 'cloruro di sodio'
+    kind: ionic
+    atoms:
+      - {symbol: Na, xy: ['0,000', '0,000']}
+      - {symbol: Cl, xy: ['2,000', '0,000']}
+    bonds: []
+    source: 'Ions: PubChem SMILES and covalent units (2026-10-12), checked against the textbook formula; bonds for the ions say which atoms belong to the same ion (order 1 is only ''joined'', the resonance of nitrate and carbonate is not drawn)'
+  'Ca(OH)2':
+    name_it: 'idrossido di calcio'
+    kind: ionic
+    atoms:
+      - {symbol: Ca, xy: ['0,000', '0,000']}
+      - {symbol: O, xy: ['2,000', '0,000']}
+      - {symbol: H, xy: ['2,000', '0,600']}
+      - {symbol: O, xy: ['4,000', '0,000']}
+      - {symbol: H, xy: ['4,000', '0,600']}
+    bonds: [[1, 2, 1], [3, 4, 1]]
+    source: 'Ions: PubChem SMILES and covalent units (2026-10-12), checked against the textbook formula; bonds for the ions say which atoms belong to the same ion (order 1 is only ''joined'', the resonance of nitrate and carbonate is not drawn)'
+  'Ca(NO3)2':
+    name_it: 'nitrato di calcio'
+    kind: ionic
+    atoms:
+      - {symbol: Ca, xy: ['0,000', '0,000']}
+      - {symbol: N, xy: ['2,000', '0,000']}
+      - {symbol: O, xy: ['2,000', '0,600']}
+      - {symbol: O, xy: ['1,480', '-0,300']}
+      - {symbol: O, xy: ['2,520', '-0,300']}
+      - {symbol: N, xy: ['4,000', '0,000']}
+      - {symbol: O, xy: ['4,000', '0,600']}
+      - {symbol: O, xy: ['3,480', '-0,300']}
+      - {symbol: O, xy: ['4,520', '-0,300']}
+    bonds: [[1, 2, 1], [1, 3, 1], [1, 4, 1], [5, 6, 1], [5, 7, 1], [5, 8, 1]]
+    source: 'Ions: PubChem SMILES and covalent units (2026-10-12), checked against the textbook formula; bonds for the ions say which atoms belong to the same ion (order 1 is only ''joined'', the resonance of nitrate and carbonate is not drawn)'
+  'NaHCO3':
+    name_it: 'idrogenocarbonato di sodio'
+    kind: ionic
+    atoms:
+      - {symbol: Na, xy: ['0,000', '0,000']}
+      - {symbol: H, xy: ['2,000', '0,000']}
+      - {symbol: C, xy: ['2,000', '0,600']}
+      - {symbol: O, xy: ['1,400', '0,000']}
+      - {symbol: O, xy: ['2,000', '-0,600']}
+      - {symbol: O, xy: ['2,600', '0,000']}
+    bonds: [[1, 2, 1], [1, 3, 1], [1, 4, 1], [1, 5, 1]]
+    source: 'Ions: PubChem SMILES and covalent units (2026-10-12), checked against the textbook formula; bonds for the ions say which atoms belong to the same ion (order 1 is only ''joined'', the resonance of nitrate and carbonate is not drawn)'
+  'Co':
+    name_it: 'cobalto'
+    kind: metal
+    atoms:
+      - {symbol: Co, xy: ['0,000', '0,000']}
+    source: 'Metal: one atom drawn as a patch (WebElements crystal structure pages, it.wikipedia, 2026-10-12)'
+  'Fe':
+    name_it: 'ferro'
+    kind: metal
+    atoms:
+      - {symbol: Fe, xy: ['0,000', '0,000']}
+    source: 'Metal: one atom drawn as a patch (WebElements crystal structure pages, it.wikipedia, 2026-10-12)'

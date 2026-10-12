@@ -1,0 +1,23 @@
+# chem/terms: the Italian names of the changes of state (W2-D08, WAVE2 1.9; T7). Read by `phase_changes` and the heating-curve plateaus.
+# These are CONVENTIONS, not facts of nature: the names below are the ones both sources give, and the teacher's book decides (the lead's
+# conventions list, WAVE2 7.0 e). Sources: Vocabolario Treccani on line (entries fusione, solidificazione, vaporizzazione, evaporazione,
+# ebollizione, condensazione, liquefazione, sublimazione, brinamento, accessed 2026-10-12) and it.wikipedia 'Transizione di fase' (revision
+# 151801031, accessed 2026-10-12), which lists: fusione, solidificazione, sublimazione, brinamento, vaporizzazione (evaporazione ed
+# ebollizione), condensazione. Defaults and what is on the conventions list:
+#   vaporization  the umbrella of evaporazione (from the surface, at any temperature) and ebollizione (in the whole liquid, at the boiling point);
+#                 Treccani makes vaporizzazione a synonym of evaporazione. The heating-curve plateau is `boiling`; `phase_changes` draws one arrow
+#                 `vaporization` and names the plateau `boiling`.
+#   condensation  some books split it into condensazione (a vapour) and liquefazione (a gas under pressure); `also_it` holds liquefazione.
+#   deposition    brinamento in both sources; everyday use says sublimazione for both directions; 'deposizione' is NOT used (it means
+#                 sediments, art and law in Treccani).
+# `energy` is the direction of the heat: heat_in (the substance takes heat) or heat_out (it gives it away).
+version: 1
+source: 'Treccani vocabolario on line; it.wikipedia Transizione di fase rev 151801031; both accessed 2026-10-12'
+changes:
+  melting: {name_it: fusione, from: solid, to: liquid, energy: heat_in}
+  freezing: {name_it: solidificazione, from: liquid, to: solid, energy: heat_out}
+  vaporization: {name_it: vaporizzazione, from: liquid, to: gas, energy: heat_in}
+  boiling: {name_it: ebollizione, from: liquid, to: gas, energy: heat_in}
+  condensation: {name_it: condensazione, also_it: liquefazione, from: gas, to: liquid, energy: heat_out}
+  sublimation: {name_it: sublimazione, from: solid, to: gas, energy: heat_in}
+  deposition: {name_it: brinamento, from: gas, to: solid, energy: heat_out}

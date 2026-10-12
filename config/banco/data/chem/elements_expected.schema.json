@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:banco:data:chem-elements-expected",
+  "title": "chem/elements_expected: the second table for chem/elements",
+  "description": "A separate extraction of the same facts by another route (PubChem symbol, mass and state; Zanichelli's Italian name), compared by the unit test with chem/elements; T7 (WAVE2 1.9).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "expected"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "expected": {
+      "type": "object",
+      "minProperties": 118,
+      "maxProperties": 118,
+      "propertyNames": {
+        "pattern": "^[A-Z][a-z]{0,2}$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "symbol",
+          "mass",
+          "state",
+          "name_it"
+        ],
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "pattern": "^[A-Z][a-z]{0,2}$"
+          },
+          "mass": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$"
+          },
+          "state": {
+            "enum": [
+              "solid",
+              "liquid",
+              "gas",
+              "expected_solid",
+              "expected_gas"
+            ]
+          },
+          "name_it": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 30
+          }
+        }
+      }
+    }
+  },
+  "x-banco-table": {
+    "name": "chem/elements_expected",
+    "track": "T7",
+    "used_by": [
+      "chem/elements"
+    ],
+    "second_table": false
+  }
+}

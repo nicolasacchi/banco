@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:banco:data:chem-molecules-expected",
+  "title": "chem/molecules_expected: the second table for chem/molecules",
+  "description": "The PubChem route to the same facts (2D bonds, the angle of the computed 3D conformer, the SMILES and covalent units of a salt), compared by the unit test with chem/molecules; T7 (WAVE2 1.9).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "expected"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "expected": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_()-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pubchem_cid"
+        ],
+        "properties": {
+          "pubchem_cid": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "bonds": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "maxLength": 3
+                },
+                {
+                  "type": "string",
+                  "maxLength": 3
+                },
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 3
+                }
+              ],
+              "items": false
+            },
+            "maxItems": 40
+          },
+          "angle_3d": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(,[0-9]+)?$"
+          },
+          "formula": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 24
+          },
+          "covalent_units": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6
+          },
+          "smiles": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 80
+          }
+        }
+      }
+    }
+  },
+  "x-banco-table": {
+    "name": "chem/molecules_expected",
+    "track": "T7",
+    "used_by": [
+      "chem/molecules"
+    ],
+    "second_table": false
+  }
+}
