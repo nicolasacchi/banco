@@ -26,7 +26,9 @@ class CodeFixturesTest < ActiveSupport::TestCase
   ].freeze
   # The banco.lesson/2 codes (D-245): their bad fixtures are test/fixtures/lesson2/bad (one code each, manifest.json),
   # run by the lesson/2 checks (R1) and the render check (R4). Until then they are registered and have a fixture file.
-  LESSON2 = (Lesson2Fixtures::MANIFEST["bad"].map { |b| b["code"] } + %w[E-LESSON-RENDER E-LESSON-OVERFLOW E-DIAGRAM-LAYOUT E-DIAGRAM-SMALL-TEXT]).uniq.freeze
+  # (and the wave 2 codes whose fixture is only described under `pending` until their track writes it, rules version 9)
+  LESSON2 = (Lesson2Fixtures::MANIFEST["bad"].map { |b| b["code"] } + Lesson2Fixtures::MANIFEST.dig("pending", "entries").map { |e| e["code"] } +
+             %w[E-LESSON-RENDER E-LESSON-OVERFLOW E-DIAGRAM-LAYOUT E-DIAGRAM-SMALL-TEXT]).uniq.freeze
   LATER = (%w[E-VERIFY-AUTHOR E-SESSION-NOT-INDEPENDENT] + PHASE_1B + LESSON2).freeze
 
   test "every Phase 1b code of this list has a bad fixture in the lesson or the course tests" do

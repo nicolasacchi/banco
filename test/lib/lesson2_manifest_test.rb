@@ -22,4 +22,20 @@ class Lesson2ManifestTest < ActiveSupport::TestCase
       assert(b["line"].nil? || b["line"].is_a?(Integer), b["file"])
     end
   end
+
+  # Rules version 9 (WAVE2 V5): the new codes each have a bad fixture, written by their track; until then the manifest describes it.
+  test "every code added by wave 2 has a bad fixture or a pending description with the track that writes it" do
+    registry = YAML.safe_load_file(Rails.root.join("config/banco/error_codes.yml")).fetch("validation")
+    wave2 = %w[E-LESSON-DATA E-LESSON-VERIFY E-CHECK-ANSWER-IN-ALT W-CHECK-ANSWER-IN-DIAGRAM E-CHECK-ANSWER-BY-SIMULATION E-DIAGRAM-REACHABLE-CAP E-SELECT-MARKED
+               E-DIAGRAM-TARGET W-TYPE-RESERVED W-TYPE-DRAFT E-PROGRAM-BOUND E-LESSON-APPARATUS-WORDS E-CHEM-SYMBOL W-ES-TILDE E-LESSON-LANG W-LANG-LEVEL]
+    pending = MANIFEST.dig("pending", "entries")
+    wave2.each { |code| assert registry.key?(code), "#{code} is in the registry" }
+    assert_equal wave2.sort, (pending.map { |e| e["code"] } + MANIFEST["bad"].map { |b| b["code"] }).uniq.select { |c| wave2.include?(c) }.sort
+    pending.each do |e|
+      assert_match(/\AT\d+[ab]?\z/, e["track"], e["code"])
+      assert e["change"].present?, e["code"]
+      assert_nil MANIFEST["bad"].find { |b| b["code"] == e["code"] }, "#{e['code']} has its fixture: remove the pending entry"
+    end
+    assert_operator YAML.safe_load_file(Rails.root.join("config/banco/error_codes.yml"))["version"], :>=, 20
+  end
 end

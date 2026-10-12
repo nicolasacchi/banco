@@ -209,6 +209,10 @@ module Validation
         extra = card["level"] == "extra"
         lo, hi = rule(:blocks_per_card)
         add("E-CARD-BLOCKS", base, "the card has #{blocks.size} blocks (#{lo} to #{hi})", line: line) unless (lo..hi).cover?(blocks.size)
+        # wave 2 (rules version 9): one source, one dialogue, one reveal with options or one oral per card
+        blocks.filter_map { |b| Lessons::Blocks.single_kind(b) }.tally.each do |kind, n|
+          add("E-CARD-BLOCKS", base, "the card has #{n} #{kind.tr('_', ' ')} blocks (at most 1)", line: line, rule: "one-#{kind}") if n > 1 && rule(:one_per_card).include?(kind)
+        end
         if !extra && (n = Lessons::Blocks.prose_words(card)) > rule(:max_card_words)
           running = Lessons::Blocks.words(card["title_it"])
           over = blocks.find { |b| (running += Lessons::Blocks.prose(b).sum { |t| Lessons::Blocks.words(t) }) > rule(:max_card_words) }
@@ -422,6 +426,9 @@ module Validation
       end
 
       def visuals(core, extra)
+        # a card whose only visual is a `source` is a reading card: at most lesson2.card_source_only_visual_max in a lesson
+        only_source = core.count { |c| (v = c["blocks"].select { |b| Lessons::Blocks.visual?(b) }).any? && v.all? { |b| b["type"] == "source" } }
+        add("E-CARD-NO-VISUAL", "/cards", "#{only_source} cards have a source as their only visual (at most #{rule(:card_source_only_visual_max)})", rule: "source-only") if only_source > rule(:card_source_only_visual_max)
         in_core = core.sum { |c| c["blocks"].sum { |b| Lessons::Blocks.visual_count(b) } }
         in_extra = extra.sum { |c| c["blocks"].sum { |b| Lessons::Blocks.visual_count(b) } } +
                    core.sum { |c| c["blocks"].select { |b| b["type"] == "more" }.sum { |m| m["blocks"].sum { |b| Lessons::Blocks.visual_count(b) } } }

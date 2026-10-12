@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 19
+version: 20
 
 validation:
   # Skill graph (synchronous).
@@ -141,6 +141,24 @@ validation:
   E-LESSON-OVERFLOW: { stage: chrome, severity: error, description: "A card is wider than its viewport (horizontal overflow) at one of the render check's viewports." }
   E-DIAGRAM-LAYOUT: { stage: chrome, severity: error, description: "A diagram's layout returned an error or two label boxes overlap: shorten the labels or reduce the marks." }
   E-DIAGRAM-SMALL-TEXT: { stage: chrome, severity: error, description: "A text or a diagram label is drawn under the student's base text size." }
+  # Wave 2 of the rich lessons (WAVE2-COMPONENTS V5, W2-D03..D07; rules version 9). The checks are built by the tracks of W2-1;
+  # each code has a bad fixture described in test/fixtures/lesson2/manifest.json under `pending` until its track writes it.
+  E-LESSON-DATA: { stage: ruby, severity: error, description: "A reference to a vetted data table (config/banco/data) that names no row, or a value that disagrees with its table (a station, a size, an element, a verb)." }
+  E-LESSON-VERIFY: { stage: ruby, severity: error, description: "A check's verify function disagrees with its answer, or a coded wrong answer equals no mutant of the function (program.* functions are checked at the render check)." }
+  E-CHECK-ANSWER-IN-ALT: { stage: ruby, severity: error, description: "The alt_it or caption_it of a select check's own figure names a target that is the answer." }
+  W-CHECK-ANSWER-IN-DIAGRAM: { stage: ruby, severity: warning, description: "A text-answer check whose answer equals a string that a figure of the same card prints in any of its states, describe() included." }
+  E-CHECK-ANSWER-BY-SIMULATION: { stage: ruby, severity: error, description: "A check whose answer equals an output an interactive figure of the same card can show inside its declared ranges; the only way past is reachable_ok_it on the check." }
+  E-DIAGRAM-REACHABLE-CAP: { stage: ruby, severity: error, description: "A figure on a card with a check can show more than 500 values within its declared ranges: narrow the ranges or move the check." }
+  E-SELECT-MARKED: { stage: ruby, severity: error, description: "A select check's candidate is drawn in a style that differs from the other candidates (a label, an icon, a role class, a pattern, a size): the answer would show." }
+  E-DIAGRAM-TARGET: { stage: chrome, severity: error, description: "A select target is smaller than 24 x 24 CSS px at 390 px." }
+  W-TYPE-RESERVED: { stage: ruby, severity: warning, description: "Reserved dry run only: the lesson uses a block, type, view or option that is reserved (schema frozen or only a name); it is validated against its frozen schema and can never be stored." }
+  W-TYPE-DRAFT: { stage: ruby, severity: warning, description: "Reserved dry run only: the lesson uses a piece of a W2-2 draft; it is validated against its draft schema and can never be stored." }
+  E-PROGRAM-BOUND: { stage: chrome, severity: error, description: "A program run at the render check broke a bound: more than 200 executed blocks, more than 12 trace rows, a division by 0, a value over 10^6 or a decimal that does not end, or no end without endless." }
+  E-LESSON-APPARATUS-WORDS: { stage: ruby, severity: error, description: "The apparatus words open by default (quotations, translations, dialogue lines, reveal texts, mirror rows, document blocks, glossary definitions) exceed lesson2.apparatus_words, or the originals closed by default exceed lesson2.closed_original_words." }
+  E-CHEM-SYMBOL: { stage: ruby, severity: error, description: "An element symbol inside \\ce{} or \\mathrm{} that is not in chem/elements, case-exact." }
+  W-ES-TILDE: { stage: ruby, severity: warning, description: "A Spanish word written with a tilde that the stress rule does not need, or without the tilde it needs." }
+  E-LESSON-LANG: { stage: ruby, severity: error, description: "A target-language key (_en, _es, _la) in a subject that does not teach that language, two target languages in one figure, or Italian text that the lint can tell in a _en or _es key." }
+  W-LANG-LEVEL: { stage: ruby, severity: warning, description: "A target-language word outside the first 3000 words, the lesson's glossary and its teaches_en or teaches_es list; the reviewer judges." }
   W-LESSON-CHECKS-SPARSE: { stage: ruby, severity: warning, description: "Three idea or example cards in a row with no check or step blank." }
   W-CHECK-ANSWER-IN-PROMPT: { stage: ruby, severity: warning, description: "A check's answer text appears in its own prompt." }
   W-MISTAKE-CODE: { stage: ruby, severity: warning, description: "A mistake or check error code that is not in the skills' error catalogue." }

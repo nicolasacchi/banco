@@ -176,8 +176,10 @@ our code; one without a check keeps a `final_it` (`W-LESSON-FINAL-MISSING` when 
 `W-LESSON-FINAL-IN-TRY` when the exercise text gives the final away). `solution_steps` is a list of tagged
 steps `{tag?, do_it, why_it}`; `solution_it` is markup text. The solution is shown only when the student asks.
 
-Not available yet (a later release, `E-LESSON-BLOCK` "not available yet"): `reveal`, `image`, `page`, the
-`ordering` and `tiles` checks, the `bar_model` and `fraction_bar` diagrams.
+Not available yet (`E-LESSON-BLOCK`, "not available yet"): any block, diagram type, layout, view, check component
+or check option that the registry `config/banco/lesson_types.yml` does not list as `available`. The subjects other
+than math and italian have an addendum with their roles, verbs, icons and pieces: `banco brief show lesson-SUBJECT`
+(for example `lesson-biology`; the subject key with hyphens).
 
 ## Checks
 

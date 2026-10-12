@@ -53,7 +53,7 @@ class Lesson2ApiTest < ActionDispatch::IntegrationTest
     assert_equal "banco.lesson/2", revision.body["schema"]
     assert_equal 7, revision.body["cards"].size
     assert_empty Banco::Schemas.validate("lesson", revision.body)
-    assert_equal "8", revision.rules_version
+    assert_equal "9", revision.rules_version
     submit(md2, base: revision.id)
     assert_response :ok
     assert_equal true, json["replayed"]

@@ -11,7 +11,7 @@
       "lesson": "ripasso.math.demo-equations",
       "seq": 1,
       "superseded": false,
-      "rules_version": "8",
+      "rules_version": "9",
       "older_rules": false,
       "warnings": [
         {

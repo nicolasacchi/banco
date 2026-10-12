@@ -2,10 +2,12 @@ require "test_helper"
 
 # C-03: the authoring briefs are versioned files in git.
 class BriefTest < ActiveSupport::TestCase
-  NAMES = %w[arbiter blueprint course diagnosis-item grade lesson lesson-review lesson-v1 practice-item review skill-graph solve topic].freeze
+  SUBJECT_BRIEFS = %w[biology business chemistry computer_science english geography history law_economics spanish].freeze
+  NAMES = (%w[arbiter blueprint course diagnosis-item grade lesson lesson-review lesson-v1 practice-item review skill-graph solve topic] +
+           SUBJECT_BRIEFS.map { |s| "lesson-#{s.tr('_', '-')}" }).sort.freeze
   VERSION_2 = %w[diagnosis-item review lesson lesson-review].freeze # D-227: practice items, review points 12-13; D-245: lesson/2 and its review
 
-  test "the thirteen briefs exist (version 1, or 2 for the Phase 1b and rich-lesson deltas) with a body" do
+  test "the briefs exist (version 1, or 2 for the Phase 1b and rich-lesson deltas) with a body" do
     assert_equal NAMES, Brief.names
     NAMES.each do |name|
       brief = Brief.find(name)
@@ -148,19 +150,35 @@ class BriefTest < ActiveSupport::TestCase
     assert_includes body, "banco brief show lesson-v1"
   end
 
-  test "the lesson brief names every role, icon, step verb and diagram type of release 1, and no other" do
+  # The lesson brief is the brief of release 1 (math and italian) and of what is available: the roles, icons and step verbs of the
+  # other subjects are in their own addenda (`banco brief show lesson-SUBJECT`), which the tests below check.
+  test "the lesson brief names every role, icon, step verb and available diagram type of release 1, and no ui icon" do
     body = Brief.find("lesson").body
     palette = YAML.safe_load_file(Rails.root.join("config/banco/lesson_palette.yml"))
     icons = YAML.safe_load_file(Rails.root.join("config/banco/icons.yml"))
-    (palette["common"].keys + palette["math"]["roles"].keys + palette["italian"]["roles"].keys).uniq.each { |role| assert_includes body, "`#{role}`", role }
-    palette["step_tags"].each_value { |tags| tags.each_key { |tag| assert_includes body, "`#{tag}`", tag } }
-    (icons["structural"].keys + icons["subjects"].values.flat_map(&:keys)).uniq.each { |icon| assert_includes body, "`#{icon}`", icon }
+    release1 = %w[math italian]
+    (palette["common"].keys + release1.flat_map { |s| palette[s]["roles"].keys }).uniq.each { |role| assert_includes body, "`#{role}`", role }
+    release1.each { |s| palette["step_tags"][s].each_key { |tag| assert_includes body, "`#{tag}`", tag } }
+    (icons["structural"].keys + release1.flat_map { |s| icons["subjects"][s].keys }).uniq.each { |icon| assert_includes body, "`#{icon}`", icon }
     # `check` is also a block name of the brief, so it cannot tell a ui icon from the block
     icons["ui"].keys.reject { |k| icons["structural"].key?(k) || icons["subjects"].values.any? { |l| l.key?(k) } || k == "check" }.each do |name|
       assert_not_includes body, "`#{name}`", "#{name} is a ui icon: an agent does not name it"
     end
-    diagram = JSON.parse(Rails.root.join("config/banco/schemas/diagram.json").read)
-    diagram["properties"]["type"]["enum"].each { |type| assert_includes body, "`#{type}`", type }
+    Lessons::Types.names(:diagram, status: "available").each { |type| assert_includes body, "`#{type}`", type }
+    icon_names = icons["structural"].keys + icons["subjects"].values.flat_map(&:keys) # `map` and `scale` are also icons
+    Lessons::Types.names(:diagram).reject { |t| Lessons::Types.available?(:diagram, t) || icon_names.include?(t) }.each { |type| assert_not_includes body, "`#{type}`", "#{type} is not available: the brief does not teach it yet" }
+  end
+
+  test "each subject addendum lists the roles, step verbs, icons and diagram types of its subject, with their status" do
+    palette = YAML.safe_load_file(Rails.root.join("config/banco/lesson_palette.yml"))
+    icons = YAML.safe_load_file(Rails.root.join("config/banco/icons.yml"))
+    SUBJECT_BRIEFS.each do |subject|
+      body = Brief.find("lesson-#{subject.tr('_', '-')}").body
+      palette[subject]["roles"].each_key { |role| assert_includes body, "`#{role}`", "#{subject}: #{role}" }
+      palette["step_tags"][subject].each_key { |tag| assert_includes body, "`#{tag}`", "#{subject}: #{tag}" }
+      icons["subjects"][subject].each_key { |icon| assert_includes body, "`#{icon}`", "#{subject}: #{icon}" }
+      assert_includes body, "banco brief show lesson", subject
+    end
   end
 
   test "the lesson brief names the error codes of the lesson/2 checks it teaches" do

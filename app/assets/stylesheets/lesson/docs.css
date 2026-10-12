@@ -1,0 +1,4 @@
+/* lesson/docs: Documents and sources (WAVE2 section 2). Owned by the track that builds document, source, reveal, oral, image.
+   Linked on a page only when the lesson uses one of these types (the page head reads the body), never by hand.
+   Rules: colours only through the role classes (.role-x, .mk-x, .st-x, .fl-x, .tn-x) and the theme variables of
+   lesson_roles.css; no colour alone (A4); a forced-colors block per type; print rules for P1 to P6; targets at least 24 px. */

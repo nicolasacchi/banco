@@ -13,7 +13,7 @@
       "latest": {
         "revision_id": 1,
         "seq": 1,
-        "rules_version": "8",
+        "rules_version": "9",
         "older_rules": false,
         "warnings": [
           {

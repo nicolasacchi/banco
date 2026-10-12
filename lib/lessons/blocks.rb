@@ -4,8 +4,11 @@ module Lessons
   # The blocks of a lesson/2 card (A4): what each type is, what counts as prose, as a visual, as a check, and the
   # walks over a body the checks and the converter need. Semantic checks per type live in lib/lessons/blocks/*.
   module Blocks
-    # A "visual" (A3): a diagram, a schema, a procedure, an image or a page, or a cases block with a diagram in one case.
-    VISUAL_TYPES = %w[diagram schema procedure image page].freeze
+    # A "visual" (A3): a diagram, a schema, a procedure, an image or a page, or a cases block with a diagram in one case. Wave 2
+    # (WAVE2 1.8): a `source`, a `dialogue`, an `oral` and a `reveal` with options count as a visual, as diagrams do; a plain `reveal` does not.
+    VISUAL_TYPES = %w[diagram schema procedure image page source dialogue oral].freeze
+    # At most one of these per card (E-CARD-BLOCKS, lesson2.one_per_card): a `reveal` counts only with options.
+    ONE_PER_CARD = { "source" => "source", "dialogue" => "dialogue", "oral" => "oral" }.freeze
     CHECK_FREE = %w[text callout math summary mistake table legend more].freeze
 
     module_function
@@ -57,13 +60,19 @@ module Lessons
     end
 
     def visual?(block)
-      VISUAL_TYPES.include?(block["type"]) || (block["type"] == "cases" && diagrams(block).any?) || (block["type"] == "example" && false)
+      VISUAL_TYPES.include?(block["type"]) || reveal_with_options?(block) || (block["type"] == "cases" && diagrams(block).any?) || (block["type"] == "example" && false)
     end
+
+    def reveal_with_options?(block) = block["type"] == "reveal" && block["options"].present?
+
+    # The keys of lesson2.one_per_card that a block stands for: "source", "dialogue", "oral" or "reveal_options".
+    def single_kind(block) = reveal_with_options?(block) ? "reveal_options" : ONE_PER_CARD[block["type"]]
 
     # How many diagrams, schemas and procedures a block counts for A3's ceiling (a cases counts each diagram in it).
     def visual_count(block)
       case block["type"]
-      when "diagram", "schema", "procedure" then 1
+      when "diagram", "schema", "procedure", "source", "dialogue", "oral", "image", "page" then 1
+      when "reveal" then reveal_with_options?(block) ? 1 : 0
       when "cases", "example" then diagrams(block).size
       else 0
       end
