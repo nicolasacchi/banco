@@ -4,10 +4,12 @@
 import { finish, hasOverlap, label, listIt, plain, roleInfo, shape } from "lesson/diagrams/common"
 import palette from "lesson/palette"
 import { run } from "lesson/diagrams/run"
+import { buildLine, describeLine, printedLine, semanticLine, targetsLine } from "lesson/diagrams/graph/flow_line"
 
 export const states = () => 1
 
 export function semantic(data) {
+  if (data.layout === "line") return semanticLine(data)
   const index = new Map(data.nodes.map((n, i) => [n.id, i]))
   if (index.size !== data.nodes.length) return { path: "/nodes", message: "node ids are unique", code: "E-LESSON-MAP" }
   const out = new Map(data.nodes.map((n) => [n.id, []]))
@@ -128,6 +130,7 @@ function buildTree(data, ctx) {
 }
 
 function build(data, ctx) {
+  if (data.layout === "line") return buildLine(data, ctx)
   return buildTree(data, ctx) ?? buildIndented(data, ctx)
 }
 
@@ -199,7 +202,8 @@ function buildIndented(data, ctx) {
   return finish(ctx, y, { states: 1, state: 0 })
 }
 
-export function describe(data) {
+export function describe(data, ctx) {
+  if (data.layout === "line") return describeLine(data, ctx)
   const byId = new Map(data.nodes.map((n) => [n.id, n]))
   const out = new Map(data.nodes.map((n) => [n.id, []]))
   for (const [from, to, text] of data.edges) out.get(from).push({ to, text })
@@ -214,3 +218,12 @@ export function describe(data) {
 }
 
 export const layout = (data, opts) => run(data, opts, { semantic, build })
+
+// Every string a state prints (L4); the select targets of a line are its stations.
+export function printed(data, state = 0) {
+  if (data.layout === "line") return printedLine(data, state)
+  const out = data.nodes.flatMap((n) => [n.text_it, n.actor_it]).concat(data.edges.map((e) => e[2]))
+  return [...new Set(out.filter(Boolean).map(String))]
+}
+
+export const targets = (data, set) => targetsLine(data, set, layout)

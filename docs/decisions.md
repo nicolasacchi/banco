@@ -274,6 +274,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-268 | 2026-10-12 | leak rules L1 to L10 for the wave 2 pieces, the whitelist and the sentinel test (D-268) | decided (contracts of W2-0; the pieces follow) |
 | D-269 | 2026-10-12 | vetted data tables: config/banco/data, schemas, second table, reference texts (D-269) | decided (contracts of W2-0; the pieces follow) |
 | D-270 | 2026-10-12 | render-time records and the program diagram: Rails never runs an agent's program (D-270) | decided (contracts of W2-0; the pieces follow) |
+| D-272 | 2026-10-12 | graphs and processes (T4b): the graph router, network, chain and the line layout of flow are available | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -2894,3 +2895,15 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 - **Cost:** The render check gains a recording step (its 90 s budget is re-measured on the heaviest lesson) and `StudentBody` a merge.
 - **Status:** decided (the contracts of W2-0; the pieces they name are built by their tracks, each with its own entry)
 - **Back-port:** none.
+
+## D-272 · 2026-10-12 · graphs and processes (T4b): the graph router, network, chain and the line layout of flow are available
+
+- **Design ref:** WAVE2-COMPONENTS 2.1, 1.2 (contract v2), 1.4 (L1 to L10), D-252 pattern, D-264, D-268, D-269.
+- **Design said:** one layout engine for node-and-arrow figures; `network`, `chain` and `flow layout: line` final in W2-1.
+- **We do:** `lesson/diagrams/graph/router.js` (`place`, `route`, `flip`, `moveList`, signatures as frozen); `network` (pair, row, triangle, hub, fan, grid; notes, badges, holds, `everyone`, kind chips, hide per state), `chain` (line, fan, ring; "Togli una causa" with the fixed sentence; `show` states), `flow` line (stations, one second lane, returns as arcs, a token that jumps); Ruby twins `Lessons::Diagrams::{Network,Chain,Flow}` with checks, `served` (also the neutral select form), `targets`, `printed` and the descriptions; the table `network/kinds` (second table `test/fixtures/lesson2/network_kinds_expected.json`); vectors `types/network.json`, `types/chain.json`, `diagrams/flow_line.json` run by Ruby and the browser, with the printed strings and targets Ruby computed; gallery `gallery/graph.md` rendered in Chrome with no finding; `controls.js` builds the chips a type declares; draw.js passes `controls` and `mode` to layout and `{state, controls}` to describe, shows a note on a node, fades in the shapes a state adds, and has a polite live line.
+- **Choices to confirm:** (1) nodes are written in reading order, so a chain link goes to the next node (or into the fan's event): that makes the layout fixed and the checks short. (2) A fan's links into the event use one word, printed once. (3) A station label is at most 4 words (the cap file says 2 to 4; the plan's own example has a one-word station). (4) The phone shows stacked nodes and a numbered list of moves (`Da A a B: ...`); a crowded wide figure takes numbers on its arrows, and if even those touch it is drawn as on a phone. (5) `states[0]` is the first state drawn; the top-level `token` is where the token was before it (a state's `via` starts there).
+- **Why:** a figure is the same for every student and in print; the reading list keeps arrows readable for a student who reads with difficulty.
+- **Cost:** the registry tests that named `network` as the held-back example now hold a piece back for the length of a test (`test/support/reserved_piece.rb`).
+- **Status:** decided; the select mode is covered by figure tests until the `select` check (T1) can show it in a lesson.
+- **Back-port:** none.
+

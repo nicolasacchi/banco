@@ -3,12 +3,14 @@ require_relative "../support/validation_fixtures"
 require_relative "../support/course_rows"
 require_relative "../support/lesson_md"
 require_relative "../support/lesson2_fixtures"
+require_relative "../support/reserved_piece"
 
 # banco.lesson/2 over the agent API (rich lessons R1): submit dispatches on the schema, open --schema 2 converts,
 # the switch lesson.accept_schema1. Invented content only.
 class Lesson2ApiTest < ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
   include CourseRows
+  include ReservedPiece
   SKILL = "math.linear-equation-integer".freeze
   KEY = "ripasso.math.demo-equations".freeze
 
@@ -49,6 +51,10 @@ class Lesson2ApiTest < ActionDispatch::IntegrationTest
   def md2_with_network = md2 { |t| t.sub("::: diagram balance\n", "#{NETWORK}::: diagram balance\n") }
 
   test "the reserved dry run needs the dry run header and the allow-reserved header; a reserved piece is never stored" do
+    with_reserved(:diagram, "network") { reserved_dry_run }
+  end
+
+  def reserved_dry_run
     md = md2_with_network
     assert_includes md, "::: diagram network"
     submit(md, dry: true)

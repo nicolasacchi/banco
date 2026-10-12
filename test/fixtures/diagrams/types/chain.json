@@ -1,18 +1,18 @@
 {
  "version": 1,
  "type": "chain",
- "status": "reserved",
+ "status": "available",
  "batch": "w2-1",
  "track": "T4b",
  "provisional": false,
- "description": "Skeleton of W2-0 for the track T4b: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "description": "The vectors of chain (T4b), run both ways like network.json (schema, semantic, layout). 'removed' lists the causes the student took away for the printed, describe and layout columns.",
  "vectors": [
   {
    "name": "chain-example-1",
    "subject": "history",
    "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
+   "semantic": "ok",
+   "layout": "ok",
    "data": {
     "type": "chain",
     "alt_it": "Una catena di cause: guerre lontane portano ricchezza, la ricchezza cambia il possesso della terra, e per questo i contadini si impoveriscono.",
@@ -65,17 +65,56 @@
       "op_it": "Poi la terra"
      }
     ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Guerre lunghe e lontane",
+      "La terra cambia padrone",
+      "I contadini si impoveriscono",
+      "porta a",
+      "per questo",
+      "Prima la guerra",
+      "Senza questa causa, questi fatti perdono una delle loro ragioni. Che cosa sarebbe successo davvero non lo sappiamo: è un'ipotesi.",
+      "Ogni fatto ha ancora una causa.",
+      "senza causa",
+      "tolta",
+      "Una catena di cause. Guerre lunghe e lontane."
+     ],
+     [
+      "Guerre lunghe e lontane",
+      "La terra cambia padrone",
+      "I contadini si impoveriscono",
+      "porta a",
+      "per questo",
+      "Poi la terra",
+      "Senza questa causa, questi fatti perdono una delle loro ragioni. Che cosa sarebbe successo davvero non lo sappiamo: è un'ipotesi.",
+      "Ogni fatto ha ancora una causa.",
+      "senza causa",
+      "tolta",
+      "Una catena di cause. Guerre lunghe e lontane porta a La terra cambia padrone."
+     ]
+    ],
+    "targets": {
+     "nodes": [
+      "c1",
+      "c2",
+      "e1"
+     ]
+    }
    }
   },
   {
-   "name": "chain-unknown-field",
+   "name": "chain-fan-remove-states",
    "subject": "history",
-   "schema": "invalid",
+   "schema": "valid",
    "semantic": "ok",
+   "layout": "ok",
    "data": {
     "type": "chain",
-    "alt_it": "Una catena di cause: guerre lontane portano ricchezza, la ricchezza cambia il possesso della terra, e per questo i contadini si impoveriscono.",
-    "layout": "line",
+    "alt_it": "Cinque cause portano alla fine di un regno d'esempio: guerre lontane, terre ai ricchi, poveri in città, soldati fedeli al generale, consiglio fermo.",
+    "layout": "fan",
+    "remove": true,
     "nodes": [
      {
       "id": "c1",
@@ -87,44 +126,2279 @@
       "id": "c2",
       "kind": "cause",
       "area": "economy",
-      "text_it": "La terra cambia padrone"
+      "text_it": "Terre in mano ai ricchi"
+     },
+     {
+      "id": "c3",
+      "kind": "cause",
+      "area": "society",
+      "text_it": "Contadini poveri in città"
+     },
+     {
+      "id": "c4",
+      "kind": "cause",
+      "area": "military",
+      "text_it": "Soldati fedeli al generale"
+     },
+     {
+      "id": "c5",
+      "kind": "cause",
+      "area": "politics",
+      "text_it": "Il consiglio blocca le riforme"
+     },
+     {
+      "id": "ev",
+      "kind": "event",
+      "text_it": "Fine del regno"
      },
      {
       "id": "e1",
       "kind": "effect",
-      "area": "society",
-      "text_it": "I contadini si impoveriscono"
+      "text_it": "Nasce un impero"
      }
     ],
     "links": [
      {
       "from": "c1",
       "to": "c2",
-      "word": "porta a"
+      "word": "quindi"
      },
      {
       "from": "c2",
+      "to": "c3",
+      "word": "quindi"
+     },
+     {
+      "from": "c3",
+      "to": "c4",
+      "word": "quindi"
+     },
+     {
+      "from": "c4",
+      "to": "ev"
+     },
+     {
+      "from": "c5",
+      "to": "ev"
+     },
+     {
+      "from": "ev",
       "to": "e1",
-      "word": "per questo"
+      "word": "porta a"
      }
     ],
-    "remove": true,
     "states": [
      {
       "show": [
        "c1"
       ],
-      "op_it": "Prima la guerra"
+      "op_it": "Si comincia dalle guerre"
      },
      {
       "show": [
        "c1",
-       "c2"
+       "c2",
+       "c3"
       ],
-      "op_it": "Poi la terra"
+      "op_it": "La terra cambia padrone"
+     },
+     {
+      "show": [
+       "c1",
+       "c2",
+       "c3",
+       "c4",
+       "c5",
+       "ev",
+       "e1"
+      ],
+      "op_it": "Tutto insieme"
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Guerre lunghe e lontane",
+      "Terre in mano ai ricchi",
+      "Contadini poveri in città",
+      "Soldati fedeli al generale",
+      "Il consiglio blocca le riforme",
+      "Fine del regno",
+      "Nasce un impero",
+      "quindi",
+      "porta a",
+      "Si comincia dalle guerre",
+      "Senza questa causa, questi fatti perdono una delle loro ragioni. Che cosa sarebbe successo davvero non lo sappiamo: è un'ipotesi.",
+      "Ogni fatto ha ancora una causa.",
+      "senza causa",
+      "tolta",
+      "Tante cause per un fatto solo. Guerre lunghe e lontane."
+     ],
+     [
+      "Guerre lunghe e lontane",
+      "Terre in mano ai ricchi",
+      "Contadini poveri in città",
+      "Soldati fedeli al generale",
+      "Il consiglio blocca le riforme",
+      "Fine del regno",
+      "Nasce un impero",
+      "quindi",
+      "porta a",
+      "La terra cambia padrone",
+      "Senza questa causa, questi fatti perdono una delle loro ragioni. Che cosa sarebbe successo davvero non lo sappiamo: è un'ipotesi.",
+      "Ogni fatto ha ancora una causa.",
+      "senza causa",
+      "tolta",
+      "Tante cause per un fatto solo. Guerre lunghe e lontane quindi Terre in mano ai ricchi. Terre in mano ai ricchi quindi Contadini poveri in città."
+     ],
+     [
+      "Guerre lunghe e lontane",
+      "Terre in mano ai ricchi",
+      "Contadini poveri in città",
+      "Soldati fedeli al generale",
+      "Il consiglio blocca le riforme",
+      "Fine del regno",
+      "Nasce un impero",
+      "quindi",
+      "porta a",
+      "Tutto insieme",
+      "Senza questa causa, questi fatti perdono una delle loro ragioni. Che cosa sarebbe successo davvero non lo sappiamo: è un'ipotesi.",
+      "Ogni fatto ha ancora una causa.",
+      "senza causa",
+      "tolta",
+      "Tante cause per un fatto solo. Guerre lunghe e lontane quindi Terre in mano ai ricchi. Terre in mano ai ricchi quindi Contadini poveri in città. Contadini poveri in città quindi Soldati fedeli al generale. Soldati fedeli al generale quindi Fine del regno. Il consiglio blocca le riforme quindi Fine del regno. Fine del regno porta a Nasce un impero."
+     ]
+    ],
+    "targets": {
+     "nodes": [
+      "c1",
+      "c2",
+      "c3",
+      "c4",
+      "c5",
+      "ev",
+      "e1"
+     ]
+    }
+   }
+  },
+  {
+   "name": "chain-line-remove",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "chain",
+    "alt_it": "Una catena di cause: una siccità rovina il raccolto, per questo il pane costa di più e la gente protesta in piazza.",
+    "layout": "line",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "cause",
+      "area": "environment",
+      "text_it": "Una lunga siccità"
+     },
+     {
+      "id": "b",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Il raccolto è scarso"
+     },
+     {
+      "id": "c",
+      "kind": "effect",
+      "area": "economy",
+      "text_it": "Il pane costa di più"
+     },
+     {
+      "id": "d",
+      "kind": "effect",
+      "area": "society",
+      "text_it": "La gente protesta"
+     }
+    ],
+    "links": [
+     {
+      "from": "a",
+      "to": "b",
+      "word": "porta a"
+     },
+     {
+      "from": "b",
+      "to": "c",
+      "word": "per questo"
+     },
+     {
+      "from": "c",
+      "to": "d",
+      "word": "quindi"
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Una lunga siccità",
+      "Il raccolto è scarso",
+      "Il pane costa di più",
+      "La gente protesta",
+      "porta a",
+      "per questo",
+      "quindi",
+      "Senza questa causa, questi fatti perdono una delle loro ragioni. Che cosa sarebbe successo davvero non lo sappiamo: è un'ipotesi.",
+      "Ogni fatto ha ancora una causa.",
+      "senza causa",
+      "tolta",
+      "Una catena di cause. Una lunga siccità porta a Il raccolto è scarso. Il raccolto è scarso per questo Il pane costa di più. Il pane costa di più quindi La gente protesta."
+     ]
+    ],
+    "targets": {
+     "nodes": [
+      "a",
+      "b",
+      "c",
+      "d"
+     ]
+    }
+   }
+  },
+  {
+   "name": "chain-line-with-back",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "chain",
+    "alt_it": "Un giro vizioso: i prezzi salgono, i salari salgono, e i prezzi salgono ancora. L'ultima freccia torna al primo fatto.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "event",
+      "text_it": "I prezzi salgono"
+     },
+     {
+      "id": "b",
+      "kind": "effect",
+      "text_it": "Servono salari più alti"
+     },
+     {
+      "id": "c",
+      "kind": "effect",
+      "text_it": "Le imprese spendono di più"
+     }
+    ],
+    "links": [
+     {
+      "from": "a",
+      "to": "b",
+      "word": "porta a"
+     },
+     {
+      "from": "b",
+      "to": "c",
+      "word": "quindi"
+     },
+     {
+      "from": "c",
+      "to": "a",
+      "back": true,
+      "word": "porta a"
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "I prezzi salgono",
+      "Servono salari più alti",
+      "Le imprese spendono di più",
+      "porta a",
+      "quindi",
+      "Una catena di cause. I prezzi salgono porta a Servono salari più alti. Servono salari più alti quindi Le imprese spendono di più. Poi si torna indietro: Le imprese spendono di più porta a I prezzi salgono."
+     ]
+    ],
+    "targets": {
+     "nodes": [
+      "a",
+      "b",
+      "c"
+     ]
+    }
+   }
+  },
+  {
+   "name": "chain-ring-water",
+   "subject": "biology",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "chain",
+    "alt_it": "Il ciclo dell'acqua in quattro tappe: evaporazione, nuvole, pioggia, fiumi. Poi tutto ricomincia dall'evaporazione.",
+    "layout": "ring",
+    "nodes": [
+     {
+      "id": "s1",
+      "kind": "stage",
+      "text_it": "L'acqua evapora"
+     },
+     {
+      "id": "s2",
+      "kind": "stage",
+      "text_it": "Si formano le nuvole"
+     },
+     {
+      "id": "s3",
+      "kind": "stage",
+      "text_it": "Cade la pioggia"
+     },
+     {
+      "id": "s4",
+      "kind": "stage",
+      "text_it": "I fiumi tornano al mare"
+     }
+    ],
+    "links": [
+     {
+      "from": "s1",
+      "to": "s2"
+     },
+     {
+      "from": "s2",
+      "to": "s3"
+     },
+     {
+      "from": "s3",
+      "to": "s4"
+     },
+     {
+      "from": "s4",
+      "to": "s1"
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "L'acqua evapora",
+      "Si formano le nuvole",
+      "Cade la pioggia",
+      "I fiumi tornano al mare",
+      "poi",
+      "Un giro che ricomincia. L'acqua evapora poi Si formano le nuvole. Si formano le nuvole poi Cade la pioggia. Cade la pioggia poi I fiumi tornano al mare. I fiumi tornano al mare poi L'acqua evapora."
+     ]
+    ],
+    "targets": {
+     "nodes": [
+      "s1",
+      "s2",
+      "s3",
+      "s4"
+     ]
+    }
+   }
+  },
+  {
+   "name": "chain-fan-not-causal",
+   "subject": "geography",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "chain",
+    "alt_it": "Due cause portano a un fatto, ma una terza viene solo prima e non è una causa. La freccia tratteggiata dice solo prima.",
+    "layout": "fan",
+    "nodes": [
+     {
+      "id": "c1",
+      "kind": "cause",
+      "text_it": "Il fiume esce dagli argini"
+     },
+     {
+      "id": "c2",
+      "kind": "cause",
+      "text_it": "Il ponte è vecchio"
+     },
+     {
+      "id": "c3",
+      "kind": "cause",
+      "text_it": "Piove da giorni"
+     },
+     {
+      "id": "ev",
+      "kind": "event",
+      "text_it": "Il ponte crolla"
+     }
+    ],
+    "links": [
+     {
+      "from": "c1",
+      "to": "ev",
+      "word": "perché"
+     },
+     {
+      "from": "c2",
+      "to": "ev",
+      "word": "perché"
+     },
+     {
+      "from": "c3",
+      "to": "ev",
+      "causal": false
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Il fiume esce dagli argini",
+      "Il ponte è vecchio",
+      "Piove da giorni",
+      "Il ponte crolla",
+      "perché",
+      "solo prima",
+      "Tante cause per un fatto solo. Il ponte crolla perché Il fiume esce dagli argini. Il ponte crolla perché Il ponte è vecchio. Piove da giorni: solo prima, non è una causa di Il ponte crolla."
+     ]
+    ],
+    "targets": {
+     "nodes": [
+      "c1",
+      "c2",
+      "c3",
+      "ev"
+     ]
+    }
+   }
+  },
+  {
+   "name": "chain-unknown-field",
+   "subject": "history",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Una catena di cause: una siccità rovina il raccolto, per questo il pane costa di più e la gente protesta in piazza.",
+    "layout": "line",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "cause",
+      "area": "environment",
+      "text_it": "Una lunga siccità"
+     },
+     {
+      "id": "b",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Il raccolto è scarso"
+     },
+     {
+      "id": "c",
+      "kind": "effect",
+      "area": "economy",
+      "text_it": "Il pane costa di più"
+     },
+     {
+      "id": "d",
+      "kind": "effect",
+      "area": "society",
+      "text_it": "La gente protesta"
+     }
+    ],
+    "links": [
+     {
+      "from": "a",
+      "to": "b",
+      "word": "porta a"
+     },
+     {
+      "from": "b",
+      "to": "c",
+      "word": "per questo"
+     },
+     {
+      "from": "c",
+      "to": "d",
+      "word": "quindi"
      }
     ],
     "zzz_unknown_field": true
+   }
+  },
+  {
+   "name": "chain-two-nodes",
+   "subject": "history",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Una catena di cause: una siccità rovina il raccolto, per questo il pane costa di più e la gente protesta in piazza.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "cause",
+      "area": "environment",
+      "text_it": "Una lunga siccità"
+     },
+     {
+      "id": "b",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Il raccolto è scarso"
+     }
+    ],
+    "links": [
+     {
+      "from": "a",
+      "to": "b",
+      "word": "porta a"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-word-not-in-list",
+   "subject": "history",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Una catena di cause: una siccità rovina il raccolto, per questo il pane costa di più e la gente protesta in piazza.",
+    "layout": "line",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "cause",
+      "area": "environment",
+      "text_it": "Una lunga siccità"
+     },
+     {
+      "id": "b",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Il raccolto è scarso"
+     },
+     {
+      "id": "c",
+      "kind": "effect",
+      "area": "economy",
+      "text_it": "Il pane costa di più"
+     },
+     {
+      "id": "d",
+      "kind": "effect",
+      "area": "society",
+      "text_it": "La gente protesta"
+     }
+    ],
+    "links": [
+     {
+      "from": "a",
+      "to": "b",
+      "word": "dunque"
+     },
+     {
+      "from": "b",
+      "to": "c",
+      "word": "per questo"
+     },
+     {
+      "from": "c",
+      "to": "d",
+      "word": "quindi"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-area-not-in-list",
+   "subject": "history",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Una catena di cause: una siccità rovina il raccolto, per questo il pane costa di più e la gente protesta in piazza.",
+    "layout": "line",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "cause",
+      "area": "sport",
+      "text_it": "Una lunga siccità"
+     },
+     {
+      "id": "b",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Il raccolto è scarso"
+     },
+     {
+      "id": "c",
+      "kind": "effect",
+      "area": "economy",
+      "text_it": "Il pane costa di più"
+     },
+     {
+      "id": "d",
+      "kind": "effect",
+      "area": "society",
+      "text_it": "La gente protesta"
+     }
+    ],
+    "links": [
+     {
+      "from": "a",
+      "to": "b",
+      "word": "porta a"
+     },
+     {
+      "from": "b",
+      "to": "c",
+      "word": "per questo"
+     },
+     {
+      "from": "c",
+      "to": "d",
+      "word": "quindi"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-ids-twice",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/nodes",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Una catena di cause: una siccità rovina il raccolto, per questo il pane costa di più e la gente protesta in piazza.",
+    "layout": "line",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "cause",
+      "area": "environment",
+      "text_it": "Una lunga siccità"
+     },
+     {
+      "id": "a",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Il raccolto è scarso"
+     },
+     {
+      "id": "c",
+      "kind": "effect",
+      "area": "economy",
+      "text_it": "Il pane costa di più"
+     },
+     {
+      "id": "d",
+      "kind": "effect",
+      "area": "society",
+      "text_it": "La gente protesta"
+     }
+    ],
+    "links": [
+     {
+      "from": "a",
+      "to": "b",
+      "word": "porta a"
+     },
+     {
+      "from": "b",
+      "to": "c",
+      "word": "per questo"
+     },
+     {
+      "from": "c",
+      "to": "d",
+      "word": "quindi"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-link-unknown-node",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/links/1",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Una catena di cause: una siccità rovina il raccolto, per questo il pane costa di più e la gente protesta in piazza.",
+    "layout": "line",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "cause",
+      "area": "environment",
+      "text_it": "Una lunga siccità"
+     },
+     {
+      "id": "b",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Il raccolto è scarso"
+     },
+     {
+      "id": "c",
+      "kind": "effect",
+      "area": "economy",
+      "text_it": "Il pane costa di più"
+     },
+     {
+      "id": "d",
+      "kind": "effect",
+      "area": "society",
+      "text_it": "La gente protesta"
+     }
+    ],
+    "links": [
+     {
+      "from": "a",
+      "to": "b",
+      "word": "porta a"
+     },
+     {
+      "from": "b",
+      "to": "zz",
+      "word": "per questo"
+     },
+     {
+      "from": "c",
+      "to": "d",
+      "word": "quindi"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-link-to-itself",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/links/1",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Una catena di cause: una siccità rovina il raccolto, per questo il pane costa di più e la gente protesta in piazza.",
+    "layout": "line",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "cause",
+      "area": "environment",
+      "text_it": "Una lunga siccità"
+     },
+     {
+      "id": "b",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Il raccolto è scarso"
+     },
+     {
+      "id": "c",
+      "kind": "effect",
+      "area": "economy",
+      "text_it": "Il pane costa di più"
+     },
+     {
+      "id": "d",
+      "kind": "effect",
+      "area": "society",
+      "text_it": "La gente protesta"
+     }
+    ],
+    "links": [
+     {
+      "from": "a",
+      "to": "b",
+      "word": "porta a"
+     },
+     {
+      "from": "b",
+      "to": "b",
+      "word": "per questo"
+     },
+     {
+      "from": "c",
+      "to": "d",
+      "word": "quindi"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-line-skips-a-node",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/links",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Una catena di cause: una siccità rovina il raccolto, per questo il pane costa di più e la gente protesta in piazza.",
+    "layout": "line",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "cause",
+      "area": "environment",
+      "text_it": "Una lunga siccità"
+     },
+     {
+      "id": "b",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Il raccolto è scarso"
+     },
+     {
+      "id": "c",
+      "kind": "effect",
+      "area": "economy",
+      "text_it": "Il pane costa di più"
+     },
+     {
+      "id": "d",
+      "kind": "effect",
+      "area": "society",
+      "text_it": "La gente protesta"
+     }
+    ],
+    "links": [
+     {
+      "from": "a",
+      "to": "b",
+      "word": "porta a"
+     },
+     {
+      "from": "b",
+      "to": "d",
+      "word": "quindi"
+     },
+     {
+      "from": "c",
+      "to": "d",
+      "word": "quindi"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-line-two-events",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/nodes",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Un giro vizioso: i prezzi salgono, i salari salgono, e i prezzi salgono ancora. L'ultima freccia torna al primo fatto.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "event",
+      "text_it": "I prezzi salgono"
+     },
+     {
+      "id": "b",
+      "kind": "event",
+      "text_it": "Servono salari più alti"
+     },
+     {
+      "id": "c",
+      "kind": "effect",
+      "text_it": "Le imprese spendono di più"
+     }
+    ],
+    "links": [
+     {
+      "from": "a",
+      "to": "b",
+      "word": "porta a"
+     },
+     {
+      "from": "b",
+      "to": "c",
+      "word": "quindi"
+     },
+     {
+      "from": "c",
+      "to": "a",
+      "back": true,
+      "word": "porta a"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-fan-two-events",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/nodes",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Cinque cause portano alla fine di un regno d'esempio: guerre lontane, terre ai ricchi, poveri in città, soldati fedeli al generale, consiglio fermo.",
+    "layout": "fan",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "c1",
+      "kind": "cause",
+      "area": "military",
+      "text_it": "Guerre lunghe e lontane"
+     },
+     {
+      "id": "c2",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Terre in mano ai ricchi"
+     },
+     {
+      "id": "c3",
+      "kind": "cause",
+      "area": "society",
+      "text_it": "Contadini poveri in città"
+     },
+     {
+      "id": "c4",
+      "kind": "cause",
+      "area": "military",
+      "text_it": "Soldati fedeli al generale"
+     },
+     {
+      "id": "c5",
+      "kind": "cause",
+      "area": "politics",
+      "text_it": "Il consiglio blocca le riforme"
+     },
+     {
+      "id": "ev",
+      "kind": "event",
+      "text_it": "Fine del regno"
+     },
+     {
+      "id": "e1",
+      "kind": "event",
+      "text_it": "Nasce un impero"
+     }
+    ],
+    "links": [
+     {
+      "from": "c1",
+      "to": "c2",
+      "word": "quindi"
+     },
+     {
+      "from": "c2",
+      "to": "c3",
+      "word": "quindi"
+     },
+     {
+      "from": "c3",
+      "to": "c4",
+      "word": "quindi"
+     },
+     {
+      "from": "c4",
+      "to": "ev"
+     },
+     {
+      "from": "c5",
+      "to": "ev"
+     },
+     {
+      "from": "ev",
+      "to": "e1",
+      "word": "porta a"
+     }
+    ],
+    "states": [
+     {
+      "show": [
+       "c1"
+      ],
+      "op_it": "Si comincia dalle guerre"
+     },
+     {
+      "show": [
+       "c1",
+       "c2",
+       "c3"
+      ],
+      "op_it": "La terra cambia padrone"
+     },
+     {
+      "show": [
+       "c1",
+       "c2",
+       "c3",
+       "c4",
+       "c5",
+       "ev",
+       "e1"
+      ],
+      "op_it": "Tutto insieme"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-fan-one-link-in",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/links",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Cinque cause portano alla fine di un regno d'esempio: guerre lontane, terre ai ricchi, poveri in città, soldati fedeli al generale, consiglio fermo.",
+    "layout": "fan",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "c1",
+      "kind": "cause",
+      "area": "military",
+      "text_it": "Guerre lunghe e lontane"
+     },
+     {
+      "id": "c2",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Terre in mano ai ricchi"
+     },
+     {
+      "id": "c3",
+      "kind": "cause",
+      "area": "society",
+      "text_it": "Contadini poveri in città"
+     },
+     {
+      "id": "c4",
+      "kind": "cause",
+      "area": "military",
+      "text_it": "Soldati fedeli al generale"
+     },
+     {
+      "id": "c5",
+      "kind": "cause",
+      "area": "politics",
+      "text_it": "Il consiglio blocca le riforme"
+     },
+     {
+      "id": "ev",
+      "kind": "event",
+      "text_it": "Fine del regno"
+     },
+     {
+      "id": "e1",
+      "kind": "effect",
+      "text_it": "Nasce un impero"
+     }
+    ],
+    "links": [
+     {
+      "from": "c1",
+      "to": "c2",
+      "word": "quindi"
+     },
+     {
+      "from": "c2",
+      "to": "c3",
+      "word": "quindi"
+     },
+     {
+      "from": "c3",
+      "to": "c4",
+      "word": "quindi"
+     },
+     {
+      "from": "c4",
+      "to": "ev"
+     },
+     {
+      "from": "ev",
+      "to": "e1",
+      "word": "porta a"
+     }
+    ],
+    "states": [
+     {
+      "show": [
+       "c1"
+      ],
+      "op_it": "Si comincia dalle guerre"
+     },
+     {
+      "show": [
+       "c1",
+       "c2",
+       "c3"
+      ],
+      "op_it": "La terra cambia padrone"
+     },
+     {
+      "show": [
+       "c1",
+       "c2",
+       "c3",
+       "c4",
+       "c5",
+       "ev",
+       "e1"
+      ],
+      "op_it": "Tutto insieme"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-fan-link-skips",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/links/0",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Cinque cause portano alla fine di un regno d'esempio: guerre lontane, terre ai ricchi, poveri in città, soldati fedeli al generale, consiglio fermo.",
+    "layout": "fan",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "c1",
+      "kind": "cause",
+      "area": "military",
+      "text_it": "Guerre lunghe e lontane"
+     },
+     {
+      "id": "c2",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Terre in mano ai ricchi"
+     },
+     {
+      "id": "c3",
+      "kind": "cause",
+      "area": "society",
+      "text_it": "Contadini poveri in città"
+     },
+     {
+      "id": "c4",
+      "kind": "cause",
+      "area": "military",
+      "text_it": "Soldati fedeli al generale"
+     },
+     {
+      "id": "c5",
+      "kind": "cause",
+      "area": "politics",
+      "text_it": "Il consiglio blocca le riforme"
+     },
+     {
+      "id": "ev",
+      "kind": "event",
+      "text_it": "Fine del regno"
+     },
+     {
+      "id": "e1",
+      "kind": "effect",
+      "text_it": "Nasce un impero"
+     }
+    ],
+    "links": [
+     {
+      "from": "c1",
+      "to": "c3",
+      "word": "quindi"
+     },
+     {
+      "from": "c2",
+      "to": "c3",
+      "word": "quindi"
+     },
+     {
+      "from": "c3",
+      "to": "c4",
+      "word": "quindi"
+     },
+     {
+      "from": "c4",
+      "to": "ev"
+     },
+     {
+      "from": "c5",
+      "to": "ev"
+     },
+     {
+      "from": "ev",
+      "to": "e1",
+      "word": "porta a"
+     }
+    ],
+    "states": [
+     {
+      "show": [
+       "c1"
+      ],
+      "op_it": "Si comincia dalle guerre"
+     },
+     {
+      "show": [
+       "c1",
+       "c2",
+       "c3"
+      ],
+      "op_it": "La terra cambia padrone"
+     },
+     {
+      "show": [
+       "c1",
+       "c2",
+       "c3",
+       "c4",
+       "c5",
+       "ev",
+       "e1"
+      ],
+      "op_it": "Tutto insieme"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-fan-words-differ",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/links",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Cinque cause portano alla fine di un regno d'esempio: guerre lontane, terre ai ricchi, poveri in città, soldati fedeli al generale, consiglio fermo.",
+    "layout": "fan",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "c1",
+      "kind": "cause",
+      "area": "military",
+      "text_it": "Guerre lunghe e lontane"
+     },
+     {
+      "id": "c2",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Terre in mano ai ricchi"
+     },
+     {
+      "id": "c3",
+      "kind": "cause",
+      "area": "society",
+      "text_it": "Contadini poveri in città"
+     },
+     {
+      "id": "c4",
+      "kind": "cause",
+      "area": "military",
+      "text_it": "Soldati fedeli al generale"
+     },
+     {
+      "id": "c5",
+      "kind": "cause",
+      "area": "politics",
+      "text_it": "Il consiglio blocca le riforme"
+     },
+     {
+      "id": "ev",
+      "kind": "event",
+      "text_it": "Fine del regno"
+     },
+     {
+      "id": "e1",
+      "kind": "effect",
+      "text_it": "Nasce un impero"
+     }
+    ],
+    "links": [
+     {
+      "from": "c1",
+      "to": "c2",
+      "word": "quindi"
+     },
+     {
+      "from": "c2",
+      "to": "c3",
+      "word": "quindi"
+     },
+     {
+      "from": "c3",
+      "to": "c4",
+      "word": "quindi"
+     },
+     {
+      "from": "c4",
+      "to": "ev",
+      "word": "perché"
+     },
+     {
+      "from": "c5",
+      "to": "ev"
+     },
+     {
+      "from": "ev",
+      "to": "e1",
+      "word": "porta a"
+     }
+    ],
+    "states": [
+     {
+      "show": [
+       "c1"
+      ],
+      "op_it": "Si comincia dalle guerre"
+     },
+     {
+      "show": [
+       "c1",
+       "c2",
+       "c3"
+      ],
+      "op_it": "La terra cambia padrone"
+     },
+     {
+      "show": [
+       "c1",
+       "c2",
+       "c3",
+       "c4",
+       "c5",
+       "ev",
+       "e1"
+      ],
+      "op_it": "Tutto insieme"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-fan-effect-before-event",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/nodes/0/kind",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Cinque cause portano alla fine di un regno d'esempio: guerre lontane, terre ai ricchi, poveri in città, soldati fedeli al generale, consiglio fermo.",
+    "layout": "fan",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "c1",
+      "kind": "effect",
+      "area": "military",
+      "text_it": "Guerre lunghe e lontane"
+     },
+     {
+      "id": "c2",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Terre in mano ai ricchi"
+     },
+     {
+      "id": "c3",
+      "kind": "cause",
+      "area": "society",
+      "text_it": "Contadini poveri in città"
+     },
+     {
+      "id": "c4",
+      "kind": "cause",
+      "area": "military",
+      "text_it": "Soldati fedeli al generale"
+     },
+     {
+      "id": "c5",
+      "kind": "cause",
+      "area": "politics",
+      "text_it": "Il consiglio blocca le riforme"
+     },
+     {
+      "id": "ev",
+      "kind": "event",
+      "text_it": "Fine del regno"
+     },
+     {
+      "id": "e1",
+      "kind": "effect",
+      "text_it": "Nasce un impero"
+     }
+    ],
+    "links": [
+     {
+      "from": "c1",
+      "to": "c2",
+      "word": "quindi"
+     },
+     {
+      "from": "c2",
+      "to": "c3",
+      "word": "quindi"
+     },
+     {
+      "from": "c3",
+      "to": "c4",
+      "word": "quindi"
+     },
+     {
+      "from": "c4",
+      "to": "ev"
+     },
+     {
+      "from": "c5",
+      "to": "ev"
+     },
+     {
+      "from": "ev",
+      "to": "e1",
+      "word": "porta a"
+     }
+    ],
+    "states": [
+     {
+      "show": [
+       "c1"
+      ],
+      "op_it": "Si comincia dalle guerre"
+     },
+     {
+      "show": [
+       "c1",
+       "c2",
+       "c3"
+      ],
+      "op_it": "La terra cambia padrone"
+     },
+     {
+      "show": [
+       "c1",
+       "c2",
+       "c3",
+       "c4",
+       "c5",
+       "ev",
+       "e1"
+      ],
+      "op_it": "Tutto insieme"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-ring-missing-link",
+   "subject": "biology",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/links",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Il ciclo dell'acqua in quattro tappe: evaporazione, nuvole, pioggia, fiumi. Poi tutto ricomincia dall'evaporazione.",
+    "layout": "ring",
+    "nodes": [
+     {
+      "id": "s1",
+      "kind": "stage",
+      "text_it": "L'acqua evapora"
+     },
+     {
+      "id": "s2",
+      "kind": "stage",
+      "text_it": "Si formano le nuvole"
+     },
+     {
+      "id": "s3",
+      "kind": "stage",
+      "text_it": "Cade la pioggia"
+     },
+     {
+      "id": "s4",
+      "kind": "stage",
+      "text_it": "I fiumi tornano al mare"
+     }
+    ],
+    "links": [
+     {
+      "from": "s1",
+      "to": "s2"
+     },
+     {
+      "from": "s2",
+      "to": "s3"
+     },
+     {
+      "from": "s3",
+      "to": "s4"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-ring-with-remove",
+   "subject": "biology",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/remove",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Il ciclo dell'acqua in quattro tappe: evaporazione, nuvole, pioggia, fiumi. Poi tutto ricomincia dall'evaporazione.",
+    "layout": "ring",
+    "nodes": [
+     {
+      "id": "s1",
+      "kind": "stage",
+      "text_it": "L'acqua evapora"
+     },
+     {
+      "id": "s2",
+      "kind": "stage",
+      "text_it": "Si formano le nuvole"
+     },
+     {
+      "id": "s3",
+      "kind": "stage",
+      "text_it": "Cade la pioggia"
+     },
+     {
+      "id": "s4",
+      "kind": "stage",
+      "text_it": "I fiumi tornano al mare"
+     }
+    ],
+    "links": [
+     {
+      "from": "s1",
+      "to": "s2"
+     },
+     {
+      "from": "s2",
+      "to": "s3"
+     },
+     {
+      "from": "s3",
+      "to": "s4"
+     },
+     {
+      "from": "s4",
+      "to": "s1"
+     }
+    ],
+    "remove": true
+   }
+  },
+  {
+   "name": "chain-stage-in-a-line",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/nodes/0/kind",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Una catena di cause: una siccità rovina il raccolto, per questo il pane costa di più e la gente protesta in piazza.",
+    "layout": "line",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "stage",
+      "area": "environment",
+      "text_it": "Una lunga siccità"
+     },
+     {
+      "id": "b",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Il raccolto è scarso"
+     },
+     {
+      "id": "c",
+      "kind": "effect",
+      "area": "economy",
+      "text_it": "Il pane costa di più"
+     },
+     {
+      "id": "d",
+      "kind": "effect",
+      "area": "society",
+      "text_it": "La gente protesta"
+     }
+    ],
+    "links": [
+     {
+      "from": "a",
+      "to": "b",
+      "word": "porta a"
+     },
+     {
+      "from": "b",
+      "to": "c",
+      "word": "per questo"
+     },
+     {
+      "from": "c",
+      "to": "d",
+      "word": "quindi"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-node-text-too-long",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/nodes/0/text_it",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Una catena di cause: una siccità rovina il raccolto, per questo il pane costa di più e la gente protesta in piazza.",
+    "layout": "line",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "cause",
+      "area": "environment",
+      "text_it": "Una siccità molto lunga che dura per anni e anni senza pioggia"
+     },
+     {
+      "id": "b",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Il raccolto è scarso"
+     },
+     {
+      "id": "c",
+      "kind": "effect",
+      "area": "economy",
+      "text_it": "Il pane costa di più"
+     },
+     {
+      "id": "d",
+      "kind": "effect",
+      "area": "society",
+      "text_it": "La gente protesta"
+     }
+    ],
+    "links": [
+     {
+      "from": "a",
+      "to": "b",
+      "word": "porta a"
+     },
+     {
+      "from": "b",
+      "to": "c",
+      "word": "per questo"
+     },
+     {
+      "from": "c",
+      "to": "d",
+      "word": "quindi"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-two-links-back",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/links",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Un giro vizioso: i prezzi salgono, i salari salgono, e i prezzi salgono ancora. L'ultima freccia torna al primo fatto.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "event",
+      "text_it": "I prezzi salgono"
+     },
+     {
+      "id": "b",
+      "kind": "effect",
+      "text_it": "Servono salari più alti"
+     },
+     {
+      "id": "c",
+      "kind": "effect",
+      "text_it": "Le imprese spendono di più"
+     }
+    ],
+    "links": [
+     {
+      "from": "a",
+      "to": "b",
+      "word": "porta a"
+     },
+     {
+      "from": "b",
+      "to": "c",
+      "word": "quindi"
+     },
+     {
+      "from": "c",
+      "to": "a",
+      "back": true,
+      "word": "porta a"
+     },
+     {
+      "from": "b",
+      "to": "a",
+      "back": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-back-in-a-fan",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/links/0/back",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Cinque cause portano alla fine di un regno d'esempio: guerre lontane, terre ai ricchi, poveri in città, soldati fedeli al generale, consiglio fermo.",
+    "layout": "fan",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "c1",
+      "kind": "cause",
+      "area": "military",
+      "text_it": "Guerre lunghe e lontane"
+     },
+     {
+      "id": "c2",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Terre in mano ai ricchi"
+     },
+     {
+      "id": "c3",
+      "kind": "cause",
+      "area": "society",
+      "text_it": "Contadini poveri in città"
+     },
+     {
+      "id": "c4",
+      "kind": "cause",
+      "area": "military",
+      "text_it": "Soldati fedeli al generale"
+     },
+     {
+      "id": "c5",
+      "kind": "cause",
+      "area": "politics",
+      "text_it": "Il consiglio blocca le riforme"
+     },
+     {
+      "id": "ev",
+      "kind": "event",
+      "text_it": "Fine del regno"
+     },
+     {
+      "id": "e1",
+      "kind": "effect",
+      "text_it": "Nasce un impero"
+     }
+    ],
+    "links": [
+     {
+      "from": "c2",
+      "to": "c1",
+      "word": "quindi",
+      "back": true
+     },
+     {
+      "from": "c2",
+      "to": "c3",
+      "word": "quindi"
+     },
+     {
+      "from": "c3",
+      "to": "c4",
+      "word": "quindi"
+     },
+     {
+      "from": "c4",
+      "to": "ev"
+     },
+     {
+      "from": "c5",
+      "to": "ev"
+     },
+     {
+      "from": "ev",
+      "to": "e1",
+      "word": "porta a"
+     }
+    ],
+    "states": [
+     {
+      "show": [
+       "c1"
+      ],
+      "op_it": "Si comincia dalle guerre"
+     },
+     {
+      "show": [
+       "c1",
+       "c2",
+       "c3"
+      ],
+      "op_it": "La terra cambia padrone"
+     },
+     {
+      "show": [
+       "c1",
+       "c2",
+       "c3",
+       "c4",
+       "c5",
+       "ev",
+       "e1"
+      ],
+      "op_it": "Tutto insieme"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-back-goes-forward",
+   "subject": "business",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/links/2",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Un giro vizioso: i prezzi salgono, i salari salgono, e i prezzi salgono ancora. L'ultima freccia torna al primo fatto.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "event",
+      "text_it": "I prezzi salgono"
+     },
+     {
+      "id": "b",
+      "kind": "effect",
+      "text_it": "Servono salari più alti"
+     },
+     {
+      "id": "c",
+      "kind": "effect",
+      "text_it": "Le imprese spendono di più"
+     }
+    ],
+    "links": [
+     {
+      "from": "a",
+      "to": "b",
+      "word": "porta a"
+     },
+     {
+      "from": "b",
+      "to": "c",
+      "word": "quindi"
+     },
+     {
+      "from": "a",
+      "to": "c",
+      "back": true,
+      "word": "porta a"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-three-not-causal",
+   "subject": "geography",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/links",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Due cause portano a un fatto, ma una terza viene solo prima e non è una causa. La freccia tratteggiata dice solo prima.",
+    "layout": "fan",
+    "nodes": [
+     {
+      "id": "c1",
+      "kind": "cause",
+      "text_it": "Il fiume esce dagli argini"
+     },
+     {
+      "id": "c2",
+      "kind": "cause",
+      "text_it": "Il ponte è vecchio"
+     },
+     {
+      "id": "c3",
+      "kind": "cause",
+      "text_it": "Piove da giorni"
+     },
+     {
+      "id": "ev",
+      "kind": "event",
+      "text_it": "Il ponte crolla"
+     },
+     {
+      "id": "c4",
+      "kind": "cause",
+      "text_it": "Un altro fatto"
+     }
+    ],
+    "links": [
+     {
+      "from": "c1",
+      "to": "ev",
+      "word": "perché"
+     },
+     {
+      "from": "c2",
+      "to": "ev",
+      "word": "perché"
+     },
+     {
+      "from": "c3",
+      "to": "ev",
+      "causal": false
+     },
+     {
+      "from": "c4",
+      "to": "ev",
+      "causal": false
+     },
+     {
+      "from": "c2",
+      "to": "c1",
+      "causal": false
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-word-on-a-not-causal-link",
+   "subject": "geography",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/links/2/word",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Due cause portano a un fatto, ma una terza viene solo prima e non è una causa. La freccia tratteggiata dice solo prima.",
+    "layout": "fan",
+    "nodes": [
+     {
+      "id": "c1",
+      "kind": "cause",
+      "text_it": "Il fiume esce dagli argini"
+     },
+     {
+      "id": "c2",
+      "kind": "cause",
+      "text_it": "Il ponte è vecchio"
+     },
+     {
+      "id": "c3",
+      "kind": "cause",
+      "text_it": "Piove da giorni"
+     },
+     {
+      "id": "ev",
+      "kind": "event",
+      "text_it": "Il ponte crolla"
+     }
+    ],
+    "links": [
+     {
+      "from": "c1",
+      "to": "ev",
+      "word": "perché"
+     },
+     {
+      "from": "c2",
+      "to": "ev",
+      "word": "perché"
+     },
+     {
+      "from": "c3",
+      "to": "ev",
+      "causal": false,
+      "word": "perché"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-remove-effect-without-cause",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/nodes/3",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Una catena di cause: una siccità rovina il raccolto, per questo il pane costa di più e la gente protesta in piazza.",
+    "layout": "line",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "cause",
+      "area": "environment",
+      "text_it": "Una lunga siccità"
+     },
+     {
+      "id": "b",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Il raccolto è scarso"
+     },
+     {
+      "id": "c",
+      "kind": "effect",
+      "area": "economy",
+      "text_it": "Il pane costa di più"
+     },
+     {
+      "id": "d",
+      "kind": "effect",
+      "area": "society",
+      "text_it": "La gente protesta"
+     }
+    ],
+    "links": [
+     {
+      "from": "a",
+      "to": "b",
+      "word": "porta a"
+     },
+     {
+      "from": "b",
+      "to": "c",
+      "word": "per questo"
+     },
+     {
+      "from": "c",
+      "to": "d",
+      "causal": false
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-remove-without-a-cause",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/remove",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Una catena di cause: una siccità rovina il raccolto, per questo il pane costa di più e la gente protesta in piazza.",
+    "layout": "line",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "event",
+      "area": "environment",
+      "text_it": "Una lunga siccità"
+     },
+     {
+      "id": "b",
+      "kind": "effect",
+      "area": "economy",
+      "text_it": "Il raccolto è scarso"
+     },
+     {
+      "id": "c",
+      "kind": "effect",
+      "area": "economy",
+      "text_it": "Il pane costa di più"
+     },
+     {
+      "id": "d",
+      "kind": "effect",
+      "area": "society",
+      "text_it": "La gente protesta"
+     }
+    ],
+    "links": [
+     {
+      "from": "a",
+      "to": "b",
+      "word": "porta a"
+     },
+     {
+      "from": "b",
+      "to": "c",
+      "word": "per questo"
+     },
+     {
+      "from": "c",
+      "to": "d",
+      "word": "quindi"
+     }
+    ]
+   }
+  },
+  {
+   "name": "chain-show-unknown-node",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/states/0/show/0",
+   "layout": "error",
+   "data": {
+    "type": "chain",
+    "alt_it": "Cinque cause portano alla fine di un regno d'esempio: guerre lontane, terre ai ricchi, poveri in città, soldati fedeli al generale, consiglio fermo.",
+    "layout": "fan",
+    "remove": true,
+    "nodes": [
+     {
+      "id": "c1",
+      "kind": "cause",
+      "area": "military",
+      "text_it": "Guerre lunghe e lontane"
+     },
+     {
+      "id": "c2",
+      "kind": "cause",
+      "area": "economy",
+      "text_it": "Terre in mano ai ricchi"
+     },
+     {
+      "id": "c3",
+      "kind": "cause",
+      "area": "society",
+      "text_it": "Contadini poveri in città"
+     },
+     {
+      "id": "c4",
+      "kind": "cause",
+      "area": "military",
+      "text_it": "Soldati fedeli al generale"
+     },
+     {
+      "id": "c5",
+      "kind": "cause",
+      "area": "politics",
+      "text_it": "Il consiglio blocca le riforme"
+     },
+     {
+      "id": "ev",
+      "kind": "event",
+      "text_it": "Fine del regno"
+     },
+     {
+      "id": "e1",
+      "kind": "effect",
+      "text_it": "Nasce un impero"
+     }
+    ],
+    "links": [
+     {
+      "from": "c1",
+      "to": "c2",
+      "word": "quindi"
+     },
+     {
+      "from": "c2",
+      "to": "c3",
+      "word": "quindi"
+     },
+     {
+      "from": "c3",
+      "to": "c4",
+      "word": "quindi"
+     },
+     {
+      "from": "c4",
+      "to": "ev"
+     },
+     {
+      "from": "c5",
+      "to": "ev"
+     },
+     {
+      "from": "ev",
+      "to": "e1",
+      "word": "porta a"
+     }
+    ],
+    "states": [
+     {
+      "show": [
+       "zz"
+      ],
+      "op_it": "Si comincia dalle guerre"
+     },
+     {
+      "show": [
+       "c1",
+       "c2",
+       "c3"
+      ],
+      "op_it": "La terra cambia padrone"
+     },
+     {
+      "show": [
+       "c1",
+       "c2",
+       "c3",
+       "c4",
+       "c5",
+       "ev",
+       "e1"
+      ],
+      "op_it": "Tutto insieme"
+     }
+    ]
    }
   }
  ]

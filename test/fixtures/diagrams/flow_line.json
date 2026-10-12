@@ -1,0 +1,2117 @@
+{
+ "version": 1,
+ "type": "flow",
+ "view": "layout: line",
+ "status": "available",
+ "batch": "w2-1",
+ "track": "T4b",
+ "provisional": false,
+ "description": "The vectors of flow with layout: line (T4b), run both ways like the other graph files; flow is a release 1 type, so they live beside test/fixtures/diagrams/vectors.json and not in types/.",
+ "vectors": [
+  {
+   "name": "flow-line-letter",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "flow",
+    "alt_it": "Il viaggio di una lettera: imbucata, ufficio postale, smistamento, portalettere, casa. Se l'indirizzo è sbagliato la lettera torna indietro.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "imb",
+      "kind": "step",
+      "text_it": "Imbucata",
+      "icon": "file-text"
+     },
+     {
+      "id": "uff",
+      "kind": "step",
+      "text_it": "Ufficio postale",
+      "icon": "building-2",
+      "actor_it": "un impiegato la timbra"
+     },
+     {
+      "id": "smi",
+      "kind": "step",
+      "text_it": "Smistamento",
+      "icon": "route",
+      "actor_it": "le macchine la dividono per città"
+     },
+     {
+      "id": "por",
+      "kind": "step",
+      "text_it": "Portalettere",
+      "icon": "clock",
+      "actor_it": "la porta all'indirizzo"
+     },
+     {
+      "id": "cas",
+      "kind": "end",
+      "text_it": "A casa",
+      "icon": "key-round"
+     }
+    ],
+    "branch": {
+     "from": "imb",
+     "to": "smi",
+     "label_it": "Posta prioritaria",
+     "nodes": [
+      {
+       "id": "pri",
+       "kind": "step",
+       "text_it": "Corsia veloce",
+       "icon": "stamp"
+      }
+     ]
+    },
+    "returns": [
+     {
+      "from": "por",
+      "to": "smi",
+      "label_it": "indirizzo sbagliato"
+     }
+    ],
+    "token": "imb",
+    "states": [
+     {
+      "token": "uff",
+      "via": [
+       "imb",
+       "uff"
+      ],
+      "op_it": "La lettera arriva all'ufficio"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "uff",
+       "smi"
+      ],
+      "op_it": "Le macchine la smistano"
+     },
+     {
+      "token": "por",
+      "via": [
+       "smi",
+       "por"
+      ],
+      "op_it": "Il portalettere la prende"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "por",
+       "smi"
+      ],
+      "op_it": "L'indirizzo è sbagliato: torna indietro"
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Imbucata",
+      "Ufficio postale",
+      "un impiegato la timbra",
+      "Smistamento",
+      "le macchine la dividono per città",
+      "Portalettere",
+      "la porta all'indirizzo",
+      "A casa",
+      "Corsia veloce",
+      "Posta prioritaria",
+      "indirizzo sbagliato",
+      "La lettera arriva all'ufficio",
+      "Si torna indietro",
+      "Tu sei qui",
+      "Un percorso con 5 tappe: Imbucata, Ufficio postale, Smistamento, Portalettere e A casa. Da Imbucata parte una strada più corta (Posta prioritaria): Corsia veloce, e arriva a Smistamento. Da Portalettere si torna a Smistamento: indirizzo sbagliato. Ora siamo qui: Ufficio postale. Un impiegato la timbra."
+     ],
+     [
+      "Imbucata",
+      "Ufficio postale",
+      "un impiegato la timbra",
+      "Smistamento",
+      "le macchine la dividono per città",
+      "Portalettere",
+      "la porta all'indirizzo",
+      "A casa",
+      "Corsia veloce",
+      "Posta prioritaria",
+      "indirizzo sbagliato",
+      "Le macchine la smistano",
+      "Si torna indietro",
+      "Tu sei qui",
+      "Un percorso con 5 tappe: Imbucata, Ufficio postale, Smistamento, Portalettere e A casa. Da Imbucata parte una strada più corta (Posta prioritaria): Corsia veloce, e arriva a Smistamento. Da Portalettere si torna a Smistamento: indirizzo sbagliato. Ora siamo qui: Smistamento. Le macchine la dividono per città."
+     ],
+     [
+      "Imbucata",
+      "Ufficio postale",
+      "un impiegato la timbra",
+      "Smistamento",
+      "le macchine la dividono per città",
+      "Portalettere",
+      "la porta all'indirizzo",
+      "A casa",
+      "Corsia veloce",
+      "Posta prioritaria",
+      "indirizzo sbagliato",
+      "Il portalettere la prende",
+      "Si torna indietro",
+      "Tu sei qui",
+      "Un percorso con 5 tappe: Imbucata, Ufficio postale, Smistamento, Portalettere e A casa. Da Imbucata parte una strada più corta (Posta prioritaria): Corsia veloce, e arriva a Smistamento. Da Portalettere si torna a Smistamento: indirizzo sbagliato. Ora siamo qui: Portalettere. La porta all'indirizzo."
+     ],
+     [
+      "Imbucata",
+      "Ufficio postale",
+      "un impiegato la timbra",
+      "Smistamento",
+      "le macchine la dividono per città",
+      "Portalettere",
+      "la porta all'indirizzo",
+      "A casa",
+      "Corsia veloce",
+      "Posta prioritaria",
+      "indirizzo sbagliato",
+      "L'indirizzo è sbagliato: torna indietro",
+      "Si torna indietro",
+      "Tu sei qui",
+      "Un percorso con 5 tappe: Imbucata, Ufficio postale, Smistamento, Portalettere e A casa. Da Imbucata parte una strada più corta (Posta prioritaria): Corsia veloce, e arriva a Smistamento. Da Portalettere si torna a Smistamento: indirizzo sbagliato. Ora siamo qui: Smistamento. Le macchine la dividono per città."
+     ]
+    ],
+    "targets": {
+     "stations": [
+      "imb",
+      "uff",
+      "smi",
+      "por",
+      "cas",
+      "pri"
+     ]
+    }
+   }
+  },
+  {
+   "name": "flow-line-three",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un percorso con tre tappe: si parte, si passa dal controllo, si arriva. Il segnalino sta alla partenza.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "Partenza",
+      "icon": "route"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "Controllo",
+      "icon": "shield"
+     },
+     {
+      "id": "c",
+      "kind": "end",
+      "text_it": "Arrivo",
+      "icon": "key-round"
+     }
+    ],
+    "token": "a"
+   },
+   "expect": {
+    "printed": [
+     [
+      "Partenza",
+      "Controllo",
+      "Arrivo",
+      "Un percorso con 3 tappe: Partenza, Controllo e Arrivo. Ora siamo qui: Partenza."
+     ]
+    ],
+    "targets": {
+     "stations": [
+      "a",
+      "b",
+      "c"
+     ]
+    }
+   }
+  },
+  {
+   "name": "flow-line-eight",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un percorso di otto tappe, una dopo l'altra, dalla prima all'ultima. Il segnalino parte dalla prima e arriva alla fine.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "s0",
+      "kind": "step",
+      "text_it": "Domanda",
+      "icon": "route"
+     },
+     {
+      "id": "s1",
+      "kind": "step",
+      "text_it": "Esame",
+      "icon": "route"
+     },
+     {
+      "id": "s2",
+      "kind": "step",
+      "text_it": "Parere",
+      "icon": "route"
+     },
+     {
+      "id": "s3",
+      "kind": "step",
+      "text_it": "Voto",
+      "icon": "route"
+     },
+     {
+      "id": "s4",
+      "kind": "step",
+      "text_it": "Firma",
+      "icon": "route"
+     },
+     {
+      "id": "s5",
+      "kind": "step",
+      "text_it": "Registro",
+      "icon": "route"
+     },
+     {
+      "id": "s6",
+      "kind": "step",
+      "text_it": "Pubblico",
+      "icon": "route"
+     },
+     {
+      "id": "s7",
+      "kind": "step",
+      "text_it": "Valido",
+      "icon": "route"
+     }
+    ],
+    "token": "s0",
+    "states": [
+     {
+      "token": "s2",
+      "via": [
+       "s0",
+       "s1",
+       "s2"
+      ],
+      "op_it": "Si va avanti di due passi"
+     },
+     {
+      "token": "s4",
+      "via": [
+       "s2",
+       "s3",
+       "s4"
+      ],
+      "op_it": "Ancora due passi"
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Domanda",
+      "Esame",
+      "Parere",
+      "Voto",
+      "Firma",
+      "Registro",
+      "Pubblico",
+      "Valido",
+      "Si va avanti di due passi",
+      "Un percorso con 8 tappe: Domanda, Esame, Parere, Voto, Firma, Registro, Pubblico e Valido. Ora siamo qui: Parere."
+     ],
+     [
+      "Domanda",
+      "Esame",
+      "Parere",
+      "Voto",
+      "Firma",
+      "Registro",
+      "Pubblico",
+      "Valido",
+      "Ancora due passi",
+      "Un percorso con 8 tappe: Domanda, Esame, Parere, Voto, Firma, Registro, Pubblico e Valido. Ora siamo qui: Firma."
+     ]
+    ],
+    "targets": {
+     "stations": [
+      "s0",
+      "s1",
+      "s2",
+      "s3",
+      "s4",
+      "s5",
+      "s6",
+      "s7"
+     ]
+    }
+   }
+  },
+  {
+   "name": "flow-line-with-edges",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/edges",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un percorso con tre tappe: si parte, si passa dal controllo, si arriva. Il segnalino sta alla partenza.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "Partenza",
+      "icon": "route"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "Controllo",
+      "icon": "shield"
+     },
+     {
+      "id": "c",
+      "kind": "end",
+      "text_it": "Arrivo",
+      "icon": "key-round"
+     }
+    ],
+    "token": "a",
+    "edges": [
+     [
+      "a",
+      "b"
+     ],
+     [
+      "b",
+      "c"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "flow-line-walk",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/walk",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un percorso con tre tappe: si parte, si passa dal controllo, si arriva. Il segnalino sta alla partenza.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "Partenza",
+      "icon": "route"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "Controllo",
+      "icon": "shield"
+     },
+     {
+      "id": "c",
+      "kind": "end",
+      "text_it": "Arrivo",
+      "icon": "key-round"
+     }
+    ],
+    "token": "a",
+    "walk": true
+   }
+  },
+  {
+   "name": "flow-line-ids-twice",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/nodes",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un percorso con tre tappe: si parte, si passa dal controllo, si arriva. Il segnalino sta alla partenza.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "Partenza",
+      "icon": "route"
+     },
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "Controllo",
+      "icon": "shield"
+     },
+     {
+      "id": "c",
+      "kind": "end",
+      "text_it": "Arrivo",
+      "icon": "key-round"
+     }
+    ],
+    "token": "a"
+   }
+  },
+  {
+   "name": "flow-line-nine-stations",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/nodes",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un percorso di otto tappe, una dopo l'altra, dalla prima all'ultima. Il segnalino parte dalla prima e arriva alla fine.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "s0",
+      "kind": "step",
+      "text_it": "Domanda",
+      "icon": "route"
+     },
+     {
+      "id": "s1",
+      "kind": "step",
+      "text_it": "Esame",
+      "icon": "route"
+     },
+     {
+      "id": "s2",
+      "kind": "step",
+      "text_it": "Parere",
+      "icon": "route"
+     },
+     {
+      "id": "s3",
+      "kind": "step",
+      "text_it": "Voto",
+      "icon": "route"
+     },
+     {
+      "id": "s4",
+      "kind": "step",
+      "text_it": "Firma",
+      "icon": "route"
+     },
+     {
+      "id": "s5",
+      "kind": "step",
+      "text_it": "Registro",
+      "icon": "route"
+     },
+     {
+      "id": "s6",
+      "kind": "step",
+      "text_it": "Pubblico",
+      "icon": "route"
+     },
+     {
+      "id": "s7",
+      "kind": "step",
+      "text_it": "Valido",
+      "icon": "route"
+     },
+     {
+      "id": "s8",
+      "kind": "step",
+      "text_it": "Extra"
+     }
+    ],
+    "token": "s0",
+    "states": [
+     {
+      "token": "s2",
+      "via": [
+       "s0",
+       "s1",
+       "s2"
+      ],
+      "op_it": "Si va avanti di due passi"
+     },
+     {
+      "token": "s4",
+      "via": [
+       "s2",
+       "s3",
+       "s4"
+      ],
+      "op_it": "Ancora due passi"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-line-station-five-words",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/nodes/0/text_it",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un percorso con tre tappe: si parte, si passa dal controllo, si arriva. Il segnalino sta alla partenza.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "Una partenza con cinque parole",
+      "icon": "route"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "Controllo",
+      "icon": "shield"
+     },
+     {
+      "id": "c",
+      "kind": "end",
+      "text_it": "Arrivo",
+      "icon": "key-round"
+     }
+    ],
+    "token": "a"
+   }
+  },
+  {
+   "name": "flow-line-decision-station",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/nodes/1/kind",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un percorso con tre tappe: si parte, si passa dal controllo, si arriva. Il segnalino sta alla partenza.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "Partenza",
+      "icon": "route"
+     },
+     {
+      "id": "b",
+      "kind": "decision",
+      "text_it": "Controllo",
+      "icon": "shield"
+     },
+     {
+      "id": "c",
+      "kind": "end",
+      "text_it": "Arrivo",
+      "icon": "key-round"
+     }
+    ],
+    "token": "a"
+   }
+  },
+  {
+   "name": "flow-line-branch-runs-backwards",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/branch",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Il viaggio di una lettera: imbucata, ufficio postale, smistamento, portalettere, casa. Se l'indirizzo è sbagliato la lettera torna indietro.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "imb",
+      "kind": "step",
+      "text_it": "Imbucata",
+      "icon": "file-text"
+     },
+     {
+      "id": "uff",
+      "kind": "step",
+      "text_it": "Ufficio postale",
+      "icon": "building-2",
+      "actor_it": "un impiegato la timbra"
+     },
+     {
+      "id": "smi",
+      "kind": "step",
+      "text_it": "Smistamento",
+      "icon": "route",
+      "actor_it": "le macchine la dividono per città"
+     },
+     {
+      "id": "por",
+      "kind": "step",
+      "text_it": "Portalettere",
+      "icon": "clock",
+      "actor_it": "la porta all'indirizzo"
+     },
+     {
+      "id": "cas",
+      "kind": "end",
+      "text_it": "A casa",
+      "icon": "key-round"
+     }
+    ],
+    "branch": {
+     "from": "smi",
+     "to": "imb",
+     "label_it": "Posta prioritaria",
+     "nodes": [
+      {
+       "id": "pri",
+       "kind": "step",
+       "text_it": "Corsia veloce",
+       "icon": "stamp"
+      }
+     ]
+    },
+    "returns": [
+     {
+      "from": "por",
+      "to": "smi",
+      "label_it": "indirizzo sbagliato"
+     }
+    ],
+    "token": "imb",
+    "states": [
+     {
+      "token": "uff",
+      "via": [
+       "imb",
+       "uff"
+      ],
+      "op_it": "La lettera arriva all'ufficio"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "uff",
+       "smi"
+      ],
+      "op_it": "Le macchine la smistano"
+     },
+     {
+      "token": "por",
+      "via": [
+       "smi",
+       "por"
+      ],
+      "op_it": "Il portalettere la prende"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "por",
+       "smi"
+      ],
+      "op_it": "L'indirizzo è sbagliato: torna indietro"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-line-branch-unknown-station",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/branch",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Il viaggio di una lettera: imbucata, ufficio postale, smistamento, portalettere, casa. Se l'indirizzo è sbagliato la lettera torna indietro.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "imb",
+      "kind": "step",
+      "text_it": "Imbucata",
+      "icon": "file-text"
+     },
+     {
+      "id": "uff",
+      "kind": "step",
+      "text_it": "Ufficio postale",
+      "icon": "building-2",
+      "actor_it": "un impiegato la timbra"
+     },
+     {
+      "id": "smi",
+      "kind": "step",
+      "text_it": "Smistamento",
+      "icon": "route",
+      "actor_it": "le macchine la dividono per città"
+     },
+     {
+      "id": "por",
+      "kind": "step",
+      "text_it": "Portalettere",
+      "icon": "clock",
+      "actor_it": "la porta all'indirizzo"
+     },
+     {
+      "id": "cas",
+      "kind": "end",
+      "text_it": "A casa",
+      "icon": "key-round"
+     }
+    ],
+    "branch": {
+     "from": "imb",
+     "to": "zz",
+     "label_it": "Posta prioritaria",
+     "nodes": [
+      {
+       "id": "pri",
+       "kind": "step",
+       "text_it": "Corsia veloce",
+       "icon": "stamp"
+      }
+     ]
+    },
+    "returns": [
+     {
+      "from": "por",
+      "to": "smi",
+      "label_it": "indirizzo sbagliato"
+     }
+    ],
+    "token": "imb",
+    "states": [
+     {
+      "token": "uff",
+      "via": [
+       "imb",
+       "uff"
+      ],
+      "op_it": "La lettera arriva all'ufficio"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "uff",
+       "smi"
+      ],
+      "op_it": "Le macchine la smistano"
+     },
+     {
+      "token": "por",
+      "via": [
+       "smi",
+       "por"
+      ],
+      "op_it": "Il portalettere la prende"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "por",
+       "smi"
+      ],
+      "op_it": "L'indirizzo è sbagliato: torna indietro"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-line-return-goes-forward",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/returns/0",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Il viaggio di una lettera: imbucata, ufficio postale, smistamento, portalettere, casa. Se l'indirizzo è sbagliato la lettera torna indietro.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "imb",
+      "kind": "step",
+      "text_it": "Imbucata",
+      "icon": "file-text"
+     },
+     {
+      "id": "uff",
+      "kind": "step",
+      "text_it": "Ufficio postale",
+      "icon": "building-2",
+      "actor_it": "un impiegato la timbra"
+     },
+     {
+      "id": "smi",
+      "kind": "step",
+      "text_it": "Smistamento",
+      "icon": "route",
+      "actor_it": "le macchine la dividono per città"
+     },
+     {
+      "id": "por",
+      "kind": "step",
+      "text_it": "Portalettere",
+      "icon": "clock",
+      "actor_it": "la porta all'indirizzo"
+     },
+     {
+      "id": "cas",
+      "kind": "end",
+      "text_it": "A casa",
+      "icon": "key-round"
+     }
+    ],
+    "branch": {
+     "from": "imb",
+     "to": "smi",
+     "label_it": "Posta prioritaria",
+     "nodes": [
+      {
+       "id": "pri",
+       "kind": "step",
+       "text_it": "Corsia veloce",
+       "icon": "stamp"
+      }
+     ]
+    },
+    "returns": [
+     {
+      "from": "smi",
+      "to": "por",
+      "label_it": "indirizzo sbagliato"
+     }
+    ],
+    "token": "imb",
+    "states": [
+     {
+      "token": "uff",
+      "via": [
+       "imb",
+       "uff"
+      ],
+      "op_it": "La lettera arriva all'ufficio"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "uff",
+       "smi"
+      ],
+      "op_it": "Le macchine la smistano"
+     },
+     {
+      "token": "por",
+      "via": [
+       "smi",
+       "por"
+      ],
+      "op_it": "Il portalettere la prende"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "por",
+       "smi"
+      ],
+      "op_it": "L'indirizzo è sbagliato: torna indietro"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-line-return-unknown-station",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/returns/0",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Il viaggio di una lettera: imbucata, ufficio postale, smistamento, portalettere, casa. Se l'indirizzo è sbagliato la lettera torna indietro.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "imb",
+      "kind": "step",
+      "text_it": "Imbucata",
+      "icon": "file-text"
+     },
+     {
+      "id": "uff",
+      "kind": "step",
+      "text_it": "Ufficio postale",
+      "icon": "building-2",
+      "actor_it": "un impiegato la timbra"
+     },
+     {
+      "id": "smi",
+      "kind": "step",
+      "text_it": "Smistamento",
+      "icon": "route",
+      "actor_it": "le macchine la dividono per città"
+     },
+     {
+      "id": "por",
+      "kind": "step",
+      "text_it": "Portalettere",
+      "icon": "clock",
+      "actor_it": "la porta all'indirizzo"
+     },
+     {
+      "id": "cas",
+      "kind": "end",
+      "text_it": "A casa",
+      "icon": "key-round"
+     }
+    ],
+    "branch": {
+     "from": "imb",
+     "to": "smi",
+     "label_it": "Posta prioritaria",
+     "nodes": [
+      {
+       "id": "pri",
+       "kind": "step",
+       "text_it": "Corsia veloce",
+       "icon": "stamp"
+      }
+     ]
+    },
+    "returns": [
+     {
+      "from": "por",
+      "to": "zz",
+      "label_it": "indirizzo sbagliato"
+     }
+    ],
+    "token": "imb",
+    "states": [
+     {
+      "token": "uff",
+      "via": [
+       "imb",
+       "uff"
+      ],
+      "op_it": "La lettera arriva all'ufficio"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "uff",
+       "smi"
+      ],
+      "op_it": "Le macchine la smistano"
+     },
+     {
+      "token": "por",
+      "via": [
+       "smi",
+       "por"
+      ],
+      "op_it": "Il portalettere la prende"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "por",
+       "smi"
+      ],
+      "op_it": "L'indirizzo è sbagliato: torna indietro"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-line-return-across-lanes",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/returns/0",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Il viaggio di una lettera: imbucata, ufficio postale, smistamento, portalettere, casa. Se l'indirizzo è sbagliato la lettera torna indietro.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "imb",
+      "kind": "step",
+      "text_it": "Imbucata",
+      "icon": "file-text"
+     },
+     {
+      "id": "uff",
+      "kind": "step",
+      "text_it": "Ufficio postale",
+      "icon": "building-2",
+      "actor_it": "un impiegato la timbra"
+     },
+     {
+      "id": "smi",
+      "kind": "step",
+      "text_it": "Smistamento",
+      "icon": "route",
+      "actor_it": "le macchine la dividono per città"
+     },
+     {
+      "id": "por",
+      "kind": "step",
+      "text_it": "Portalettere",
+      "icon": "clock",
+      "actor_it": "la porta all'indirizzo"
+     },
+     {
+      "id": "cas",
+      "kind": "end",
+      "text_it": "A casa",
+      "icon": "key-round"
+     }
+    ],
+    "branch": {
+     "from": "imb",
+     "to": "smi",
+     "label_it": "Posta prioritaria",
+     "nodes": [
+      {
+       "id": "pri",
+       "kind": "step",
+       "text_it": "Corsia veloce",
+       "icon": "stamp"
+      }
+     ]
+    },
+    "returns": [
+     {
+      "from": "pri",
+      "to": "imb",
+      "label_it": "indirizzo sbagliato"
+     }
+    ],
+    "token": "imb",
+    "states": [
+     {
+      "token": "uff",
+      "via": [
+       "imb",
+       "uff"
+      ],
+      "op_it": "La lettera arriva all'ufficio"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "uff",
+       "smi"
+      ],
+      "op_it": "Le macchine la smistano"
+     },
+     {
+      "token": "por",
+      "via": [
+       "smi",
+       "por"
+      ],
+      "op_it": "Il portalettere la prende"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "por",
+       "smi"
+      ],
+      "op_it": "L'indirizzo è sbagliato: torna indietro"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-line-four-returns",
+   "subject": "law_economics",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Il viaggio di una lettera: imbucata, ufficio postale, smistamento, portalettere, casa. Se l'indirizzo è sbagliato la lettera torna indietro.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "imb",
+      "kind": "step",
+      "text_it": "Imbucata",
+      "icon": "file-text"
+     },
+     {
+      "id": "uff",
+      "kind": "step",
+      "text_it": "Ufficio postale",
+      "icon": "building-2",
+      "actor_it": "un impiegato la timbra"
+     },
+     {
+      "id": "smi",
+      "kind": "step",
+      "text_it": "Smistamento",
+      "icon": "route",
+      "actor_it": "le macchine la dividono per città"
+     },
+     {
+      "id": "por",
+      "kind": "step",
+      "text_it": "Portalettere",
+      "icon": "clock",
+      "actor_it": "la porta all'indirizzo"
+     },
+     {
+      "id": "cas",
+      "kind": "end",
+      "text_it": "A casa",
+      "icon": "key-round"
+     }
+    ],
+    "branch": {
+     "from": "imb",
+     "to": "smi",
+     "label_it": "Posta prioritaria",
+     "nodes": [
+      {
+       "id": "pri",
+       "kind": "step",
+       "text_it": "Corsia veloce",
+       "icon": "stamp"
+      }
+     ]
+    },
+    "returns": [
+     {
+      "from": "por",
+      "to": "smi"
+     },
+     {
+      "from": "por",
+      "to": "uff"
+     },
+     {
+      "from": "cas",
+      "to": "por"
+     },
+     {
+      "from": "cas",
+      "to": "uff"
+     }
+    ],
+    "token": "imb",
+    "states": [
+     {
+      "token": "uff",
+      "via": [
+       "imb",
+       "uff"
+      ],
+      "op_it": "La lettera arriva all'ufficio"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "uff",
+       "smi"
+      ],
+      "op_it": "Le macchine la smistano"
+     },
+     {
+      "token": "por",
+      "via": [
+       "smi",
+       "por"
+      ],
+      "op_it": "Il portalettere la prende"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "por",
+       "smi"
+      ],
+      "op_it": "L'indirizzo è sbagliato: torna indietro"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-line-token-not-a-station",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/token",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Il viaggio di una lettera: imbucata, ufficio postale, smistamento, portalettere, casa. Se l'indirizzo è sbagliato la lettera torna indietro.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "imb",
+      "kind": "step",
+      "text_it": "Imbucata",
+      "icon": "file-text"
+     },
+     {
+      "id": "uff",
+      "kind": "step",
+      "text_it": "Ufficio postale",
+      "icon": "building-2",
+      "actor_it": "un impiegato la timbra"
+     },
+     {
+      "id": "smi",
+      "kind": "step",
+      "text_it": "Smistamento",
+      "icon": "route",
+      "actor_it": "le macchine la dividono per città"
+     },
+     {
+      "id": "por",
+      "kind": "step",
+      "text_it": "Portalettere",
+      "icon": "clock",
+      "actor_it": "la porta all'indirizzo"
+     },
+     {
+      "id": "cas",
+      "kind": "end",
+      "text_it": "A casa",
+      "icon": "key-round"
+     }
+    ],
+    "branch": {
+     "from": "imb",
+     "to": "smi",
+     "label_it": "Posta prioritaria",
+     "nodes": [
+      {
+       "id": "pri",
+       "kind": "step",
+       "text_it": "Corsia veloce",
+       "icon": "stamp"
+      }
+     ]
+    },
+    "returns": [
+     {
+      "from": "por",
+      "to": "smi",
+      "label_it": "indirizzo sbagliato"
+     }
+    ],
+    "token": "zz",
+    "states": [
+     {
+      "token": "uff",
+      "via": [
+       "imb",
+       "uff"
+      ],
+      "op_it": "La lettera arriva all'ufficio"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "uff",
+       "smi"
+      ],
+      "op_it": "Le macchine la smistano"
+     },
+     {
+      "token": "por",
+      "via": [
+       "smi",
+       "por"
+      ],
+      "op_it": "Il portalettere la prende"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "por",
+       "smi"
+      ],
+      "op_it": "L'indirizzo è sbagliato: torna indietro"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-line-via-starts-elsewhere",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/states/0/via",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Il viaggio di una lettera: imbucata, ufficio postale, smistamento, portalettere, casa. Se l'indirizzo è sbagliato la lettera torna indietro.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "imb",
+      "kind": "step",
+      "text_it": "Imbucata",
+      "icon": "file-text"
+     },
+     {
+      "id": "uff",
+      "kind": "step",
+      "text_it": "Ufficio postale",
+      "icon": "building-2",
+      "actor_it": "un impiegato la timbra"
+     },
+     {
+      "id": "smi",
+      "kind": "step",
+      "text_it": "Smistamento",
+      "icon": "route",
+      "actor_it": "le macchine la dividono per città"
+     },
+     {
+      "id": "por",
+      "kind": "step",
+      "text_it": "Portalettere",
+      "icon": "clock",
+      "actor_it": "la porta all'indirizzo"
+     },
+     {
+      "id": "cas",
+      "kind": "end",
+      "text_it": "A casa",
+      "icon": "key-round"
+     }
+    ],
+    "branch": {
+     "from": "imb",
+     "to": "smi",
+     "label_it": "Posta prioritaria",
+     "nodes": [
+      {
+       "id": "pri",
+       "kind": "step",
+       "text_it": "Corsia veloce",
+       "icon": "stamp"
+      }
+     ]
+    },
+    "returns": [
+     {
+      "from": "por",
+      "to": "smi",
+      "label_it": "indirizzo sbagliato"
+     }
+    ],
+    "token": "imb",
+    "states": [
+     {
+      "token": "uff",
+      "via": [
+       "uff",
+       "imb",
+       "uff"
+      ],
+      "op_it": "La lettera arriva all'ufficio"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "uff",
+       "smi"
+      ],
+      "op_it": "Le macchine la smistano"
+     },
+     {
+      "token": "por",
+      "via": [
+       "smi",
+       "por"
+      ],
+      "op_it": "Il portalettere la prende"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "por",
+       "smi"
+      ],
+      "op_it": "L'indirizzo è sbagliato: torna indietro"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-line-via-skips-an-edge",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/states/1/via",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Il viaggio di una lettera: imbucata, ufficio postale, smistamento, portalettere, casa. Se l'indirizzo è sbagliato la lettera torna indietro.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "imb",
+      "kind": "step",
+      "text_it": "Imbucata",
+      "icon": "file-text"
+     },
+     {
+      "id": "uff",
+      "kind": "step",
+      "text_it": "Ufficio postale",
+      "icon": "building-2",
+      "actor_it": "un impiegato la timbra"
+     },
+     {
+      "id": "smi",
+      "kind": "step",
+      "text_it": "Smistamento",
+      "icon": "route",
+      "actor_it": "le macchine la dividono per città"
+     },
+     {
+      "id": "por",
+      "kind": "step",
+      "text_it": "Portalettere",
+      "icon": "clock",
+      "actor_it": "la porta all'indirizzo"
+     },
+     {
+      "id": "cas",
+      "kind": "end",
+      "text_it": "A casa",
+      "icon": "key-round"
+     }
+    ],
+    "branch": {
+     "from": "imb",
+     "to": "smi",
+     "label_it": "Posta prioritaria",
+     "nodes": [
+      {
+       "id": "pri",
+       "kind": "step",
+       "text_it": "Corsia veloce",
+       "icon": "stamp"
+      }
+     ]
+    },
+    "returns": [
+     {
+      "from": "por",
+      "to": "smi",
+      "label_it": "indirizzo sbagliato"
+     }
+    ],
+    "token": "imb",
+    "states": [
+     {
+      "token": "uff",
+      "via": [
+       "imb",
+       "uff"
+      ],
+      "op_it": "La lettera arriva all'ufficio"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "uff",
+       "por",
+       "smi"
+      ],
+      "op_it": "Le macchine la smistano"
+     },
+     {
+      "token": "por",
+      "via": [
+       "smi",
+       "por"
+      ],
+      "op_it": "Il portalettere la prende"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "por",
+       "smi"
+      ],
+      "op_it": "L'indirizzo è sbagliato: torna indietro"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-line-via-ends-elsewhere",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/states/0/via",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Il viaggio di una lettera: imbucata, ufficio postale, smistamento, portalettere, casa. Se l'indirizzo è sbagliato la lettera torna indietro.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "imb",
+      "kind": "step",
+      "text_it": "Imbucata",
+      "icon": "file-text"
+     },
+     {
+      "id": "uff",
+      "kind": "step",
+      "text_it": "Ufficio postale",
+      "icon": "building-2",
+      "actor_it": "un impiegato la timbra"
+     },
+     {
+      "id": "smi",
+      "kind": "step",
+      "text_it": "Smistamento",
+      "icon": "route",
+      "actor_it": "le macchine la dividono per città"
+     },
+     {
+      "id": "por",
+      "kind": "step",
+      "text_it": "Portalettere",
+      "icon": "clock",
+      "actor_it": "la porta all'indirizzo"
+     },
+     {
+      "id": "cas",
+      "kind": "end",
+      "text_it": "A casa",
+      "icon": "key-round"
+     }
+    ],
+    "branch": {
+     "from": "imb",
+     "to": "smi",
+     "label_it": "Posta prioritaria",
+     "nodes": [
+      {
+       "id": "pri",
+       "kind": "step",
+       "text_it": "Corsia veloce",
+       "icon": "stamp"
+      }
+     ]
+    },
+    "returns": [
+     {
+      "from": "por",
+      "to": "smi",
+      "label_it": "indirizzo sbagliato"
+     }
+    ],
+    "token": "imb",
+    "states": [
+     {
+      "token": "uff",
+      "via": [
+       "imb",
+       "pri"
+      ],
+      "op_it": "La lettera arriva all'ufficio"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "uff",
+       "smi"
+      ],
+      "op_it": "Le macchine la smistano"
+     },
+     {
+      "token": "por",
+      "via": [
+       "smi",
+       "por"
+      ],
+      "op_it": "Il portalettere la prende"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "por",
+       "smi"
+      ],
+      "op_it": "L'indirizzo è sbagliato: torna indietro"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-line-via-follows-the-lane-and-a-return",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "note": "a via may follow the second lane and a return",
+   "data": {
+    "type": "flow",
+    "alt_it": "Il viaggio di una lettera: imbucata, ufficio postale, smistamento, portalettere, casa. Se l'indirizzo è sbagliato la lettera torna indietro.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "imb",
+      "kind": "step",
+      "text_it": "Imbucata",
+      "icon": "file-text"
+     },
+     {
+      "id": "uff",
+      "kind": "step",
+      "text_it": "Ufficio postale",
+      "icon": "building-2",
+      "actor_it": "un impiegato la timbra"
+     },
+     {
+      "id": "smi",
+      "kind": "step",
+      "text_it": "Smistamento",
+      "icon": "route",
+      "actor_it": "le macchine la dividono per città"
+     },
+     {
+      "id": "por",
+      "kind": "step",
+      "text_it": "Portalettere",
+      "icon": "clock",
+      "actor_it": "la porta all'indirizzo"
+     },
+     {
+      "id": "cas",
+      "kind": "end",
+      "text_it": "A casa",
+      "icon": "key-round"
+     }
+    ],
+    "branch": {
+     "from": "imb",
+     "to": "smi",
+     "label_it": "Posta prioritaria",
+     "nodes": [
+      {
+       "id": "pri",
+       "kind": "step",
+       "text_it": "Corsia veloce",
+       "icon": "stamp"
+      }
+     ]
+    },
+    "returns": [
+     {
+      "from": "por",
+      "to": "smi",
+      "label_it": "indirizzo sbagliato"
+     }
+    ],
+    "token": "imb",
+    "states": [
+     {
+      "token": "smi",
+      "via": [
+       "imb",
+       "pri",
+       "smi"
+      ],
+      "op_it": "La lettera arriva all'ufficio"
+     },
+     {
+      "token": "por",
+      "via": [
+       "smi",
+       "por"
+      ],
+      "op_it": "Le macchine la smistano"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "por",
+       "smi"
+      ],
+      "op_it": "Il portalettere la prende"
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Imbucata",
+      "Ufficio postale",
+      "un impiegato la timbra",
+      "Smistamento",
+      "le macchine la dividono per città",
+      "Portalettere",
+      "la porta all'indirizzo",
+      "A casa",
+      "Corsia veloce",
+      "Posta prioritaria",
+      "indirizzo sbagliato",
+      "La lettera arriva all'ufficio",
+      "Si torna indietro",
+      "Tu sei qui",
+      "Un percorso con 5 tappe: Imbucata, Ufficio postale, Smistamento, Portalettere e A casa. Da Imbucata parte una strada più corta (Posta prioritaria): Corsia veloce, e arriva a Smistamento. Da Portalettere si torna a Smistamento: indirizzo sbagliato. Ora siamo qui: Smistamento. Le macchine la dividono per città."
+     ],
+     [
+      "Imbucata",
+      "Ufficio postale",
+      "un impiegato la timbra",
+      "Smistamento",
+      "le macchine la dividono per città",
+      "Portalettere",
+      "la porta all'indirizzo",
+      "A casa",
+      "Corsia veloce",
+      "Posta prioritaria",
+      "indirizzo sbagliato",
+      "Le macchine la smistano",
+      "Si torna indietro",
+      "Tu sei qui",
+      "Un percorso con 5 tappe: Imbucata, Ufficio postale, Smistamento, Portalettere e A casa. Da Imbucata parte una strada più corta (Posta prioritaria): Corsia veloce, e arriva a Smistamento. Da Portalettere si torna a Smistamento: indirizzo sbagliato. Ora siamo qui: Portalettere. La porta all'indirizzo."
+     ],
+     [
+      "Imbucata",
+      "Ufficio postale",
+      "un impiegato la timbra",
+      "Smistamento",
+      "le macchine la dividono per città",
+      "Portalettere",
+      "la porta all'indirizzo",
+      "A casa",
+      "Corsia veloce",
+      "Posta prioritaria",
+      "indirizzo sbagliato",
+      "Il portalettere la prende",
+      "Si torna indietro",
+      "Tu sei qui",
+      "Un percorso con 5 tappe: Imbucata, Ufficio postale, Smistamento, Portalettere e A casa. Da Imbucata parte una strada più corta (Posta prioritaria): Corsia veloce, e arriva a Smistamento. Da Portalettere si torna a Smistamento: indirizzo sbagliato. Ora siamo qui: Smistamento. Le macchine la dividono per città."
+     ]
+    ],
+    "targets": {
+     "stations": [
+      "imb",
+      "uff",
+      "smi",
+      "por",
+      "cas",
+      "pri"
+     ]
+    }
+   }
+  },
+  {
+   "name": "flow-line-actor-nine-words",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/nodes/1/actor_it",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Il viaggio di una lettera: imbucata, ufficio postale, smistamento, portalettere, casa. Se l'indirizzo è sbagliato la lettera torna indietro.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "imb",
+      "kind": "step",
+      "text_it": "Imbucata",
+      "icon": "file-text"
+     },
+     {
+      "id": "uff",
+      "kind": "step",
+      "text_it": "Ufficio postale",
+      "icon": "building-2",
+      "actor_it": "a b c d e f g h i"
+     },
+     {
+      "id": "smi",
+      "kind": "step",
+      "text_it": "Smistamento",
+      "icon": "route",
+      "actor_it": "le macchine la dividono per città"
+     },
+     {
+      "id": "por",
+      "kind": "step",
+      "text_it": "Portalettere",
+      "icon": "clock",
+      "actor_it": "la porta all'indirizzo"
+     },
+     {
+      "id": "cas",
+      "kind": "end",
+      "text_it": "A casa",
+      "icon": "key-round"
+     }
+    ],
+    "branch": {
+     "from": "imb",
+     "to": "smi",
+     "label_it": "Posta prioritaria",
+     "nodes": [
+      {
+       "id": "pri",
+       "kind": "step",
+       "text_it": "Corsia veloce",
+       "icon": "stamp"
+      }
+     ]
+    },
+    "returns": [
+     {
+      "from": "por",
+      "to": "smi",
+      "label_it": "indirizzo sbagliato"
+     }
+    ],
+    "token": "imb",
+    "states": [
+     {
+      "token": "uff",
+      "via": [
+       "imb",
+       "uff"
+      ],
+      "op_it": "La lettera arriva all'ufficio"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "uff",
+       "smi"
+      ],
+      "op_it": "Le macchine la smistano"
+     },
+     {
+      "token": "por",
+      "via": [
+       "smi",
+       "por"
+      ],
+      "op_it": "Il portalettere la prende"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "por",
+       "smi"
+      ],
+      "op_it": "L'indirizzo è sbagliato: torna indietro"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-line-role-not-in-palette",
+   "subject": "law_economics",
+   "schema": "valid",
+   "semantic": "E-LESSON-ROLE",
+   "path": "/nodes/0/role",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un percorso con tre tappe: si parte, si passa dal controllo, si arriva. Il segnalino sta alla partenza.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "Partenza",
+      "icon": "route",
+      "role": "creditor"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "Controllo",
+      "icon": "shield"
+     },
+     {
+      "id": "c",
+      "kind": "end",
+      "text_it": "Arrivo",
+      "icon": "key-round"
+     }
+    ],
+    "token": "a"
+   }
+  },
+  {
+   "name": "flow-line-unknown-field",
+   "subject": "law_economics",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un percorso con tre tappe: si parte, si passa dal controllo, si arriva. Il segnalino sta alla partenza.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "Partenza",
+      "icon": "route"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "Controllo",
+      "icon": "shield"
+     },
+     {
+      "id": "c",
+      "kind": "end",
+      "text_it": "Arrivo",
+      "icon": "key-round"
+     }
+    ],
+    "token": "a",
+    "zzz_unknown_field": true
+   }
+  },
+  {
+   "name": "flow-line-branch-node-with-actor",
+   "subject": "law_economics",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "flow",
+    "alt_it": "Il viaggio di una lettera: imbucata, ufficio postale, smistamento, portalettere, casa. Se l'indirizzo è sbagliato la lettera torna indietro.",
+    "layout": "line",
+    "nodes": [
+     {
+      "id": "imb",
+      "kind": "step",
+      "text_it": "Imbucata",
+      "icon": "file-text"
+     },
+     {
+      "id": "uff",
+      "kind": "step",
+      "text_it": "Ufficio postale",
+      "icon": "building-2",
+      "actor_it": "un impiegato la timbra"
+     },
+     {
+      "id": "smi",
+      "kind": "step",
+      "text_it": "Smistamento",
+      "icon": "route",
+      "actor_it": "le macchine la dividono per città"
+     },
+     {
+      "id": "por",
+      "kind": "step",
+      "text_it": "Portalettere",
+      "icon": "clock",
+      "actor_it": "la porta all'indirizzo"
+     },
+     {
+      "id": "cas",
+      "kind": "end",
+      "text_it": "A casa",
+      "icon": "key-round"
+     }
+    ],
+    "branch": {
+     "from": "imb",
+     "to": "smi",
+     "label_it": "Posta prioritaria",
+     "nodes": [
+      {
+       "id": "pri",
+       "kind": "step",
+       "text_it": "Corsia veloce",
+       "icon": "stamp",
+       "actor_it": "va per prima"
+      }
+     ]
+    },
+    "returns": [
+     {
+      "from": "por",
+      "to": "smi",
+      "label_it": "indirizzo sbagliato"
+     }
+    ],
+    "token": "imb",
+    "states": [
+     {
+      "token": "uff",
+      "via": [
+       "imb",
+       "uff"
+      ],
+      "op_it": "La lettera arriva all'ufficio"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "uff",
+       "smi"
+      ],
+      "op_it": "Le macchine la smistano"
+     },
+     {
+      "token": "por",
+      "via": [
+       "smi",
+       "por"
+      ],
+      "op_it": "Il portalettere la prende"
+     },
+     {
+      "token": "smi",
+      "via": [
+       "por",
+       "smi"
+      ],
+      "op_it": "L'indirizzo è sbagliato: torna indietro"
+     }
+    ]
+   }
+  }
+ ]
+}

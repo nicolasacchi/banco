@@ -1,0 +1,66 @@
+{
+ "kinds": {
+  "owes": [
+   "deve",
+   "solid"
+  ],
+  "pays": [
+   "paga",
+   "solid"
+  ],
+  "elects": [
+   "elegge",
+   "solid"
+  ],
+  "trusts": [
+   "dà la fiducia",
+   "dashed"
+  ],
+  "appoints": [
+   "nomina",
+   "solid"
+  ],
+  "commands": [
+   "comanda",
+   "double"
+  ],
+  "advises": [
+   "consiglia",
+   "dashed"
+  ],
+  "votes_laws": [
+   "vota le leggi",
+   "solid"
+  ],
+  "vetoes": [
+   "blocca",
+   "double"
+  ],
+  "orders": [
+   "ordina",
+   "solid"
+  ],
+  "promises": [
+   "promette",
+   "dashed"
+  ],
+  "gives": [
+   "dà",
+   "solid"
+  ],
+  "sends": [
+   "manda",
+   "solid"
+  ]
+ },
+ "what": {
+  "goods": "merce",
+  "money": "denaro",
+  "document": "documento",
+  "order": "ordine",
+  "promise": "promessa",
+  "signature": "firma",
+  "information": "informazione",
+  "vote": "voto"
+ }
+}

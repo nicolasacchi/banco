@@ -34,11 +34,11 @@ diagrams:
   concept_map: {family: core, status: available, schema: final, batch: r1, track: "-", module: lesson/diagrams/concept_map}
   table: {family: core, status: available, schema: final, batch: r1, track: "-", module: lesson/diagrams/table}
   flow: {family: core, status: available, schema: final, batch: r1, track: T4b, module: lesson/diagrams/flow,
-    views: {layout: {line: {status: reserved, schema: final, batch: w2-1}}, walk: {"true": {status: draft, schema: draft, batch: w2-2}}}}
+    views: {layout: {line: {status: available, schema: final, batch: w2-1}}, walk: {"true": {status: draft, schema: draft, batch: w2-2}}}}
 
   # ---- graphs and processes (T4b)
-  network: {family: graph, status: reserved, schema: final, batch: w2-1, track: T4b, size: M, module: lesson/diagrams/graph/network}
-  chain: {family: graph, status: reserved, schema: final, batch: w2-1, track: T4b, size: M, module: lesson/diagrams/graph/chain}
+  network: {family: graph, status: available, schema: final, batch: w2-1, track: T4b, size: M, module: lesson/diagrams/graph/network}
+  chain: {family: graph, status: available, schema: final, batch: w2-1, track: T4b, size: M, module: lesson/diagrams/graph/chain}
   nested: {family: graph, status: draft, schema: draft, batch: w2-2, track: T4b, size: S, module: lesson/diagrams/graph/nested}
 
   # ---- time (T4a)

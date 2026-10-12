@@ -13,9 +13,9 @@ const { checkModule, checkControls, defaultSegments, OPTIONAL_EXPORTS } = await 
 const { validate } = await import("lesson/schema")
 const { NotBuilt } = await import("lesson/lib/not_built")
 
-test("the registry knows 38 diagram types: 9 available and 29 behind a lazy loader, each with a module that keeps the contract", async () => {
+test("the registry knows 38 diagram types: the available ones eager and the others behind a lazy loader, each with a module that keeps the contract", async () => {
   assert.equal(Object.keys(registry.STATUS).length, 38)
-  assert.equal(Object.keys(registry.TYPES).length, 9)
+  assert.equal(Object.keys(registry.TYPES).length, Object.values(registry.STATUS).filter((x) => x === "available").length)
   for (const [type, status] of Object.entries(registry.STATUS)) {
     const mod = await registry.load(type)
     assert.ok(mod, `${type} loads`)
@@ -48,7 +48,8 @@ test("home palettes, held-back views and families come from the registry file", 
   assert.equal(registry.HOME_PALETTE.strand, "biology")
   assert.equal(registry.HOME_PALETTE.formula, "chemistry")
   assert.equal(registry.HOME_PALETTE.network, undefined)
-  assert.equal(registry.HELD_BACK.flow.layout.line, "reserved")
+  assert.equal(registry.HELD_BACK.flow.layout.line, "available", "the line layout of flow is available (T4b)")
+  assert.equal(registry.HELD_BACK.flow.walk.true, "draft")
   assert.equal(registry.FAMILY.network, "graph")
 })
 

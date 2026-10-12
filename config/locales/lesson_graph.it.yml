@@ -1,4 +1,32 @@
-# Italian texts of the lesson/2 family graph (network, chain, nested): controls, live-region sentences, "Descrizione" fragments, how-to lines.
-# Keys are English; texts are Italian with high readability (short sentences, no hard words). The track fills it in.
+# Italian texts of the lesson/2 family graph (network, chain, nested, and the line layout of flow): what a layout or a description prints,
+# the controls and their hints. Keys are English; texts are Italian with high readability (short sentences, no hard words).
+# `scene` is the twin of app/javascript/lesson/diagrams/graph/texts.js (graph_texts.test.mjs compares them).
 it:
-  lesson_graph: {}
+  lesson_graph:
+    scene:
+      everyone: "Tutti gli altri"
+      not_causal: "solo prima"
+      hypothesis: "Senza questa causa, questi fatti perdono una delle loro ragioni. Che cosa sarebbe successo davvero non lo sappiamo: è un'ipotesi."
+      nothing_grey: "Ogni fatto ha ancora una causa."
+      remove_label: "Togli una causa"
+      remove_hint: "Tocca una causa per toglierla. Toccala di nuovo per rimetterla."
+      removed: "tolta"
+      filter_label: "Che cosa vuoi vedere?"
+      filter_hint: "Tocca un tipo di freccia per vedere solo quelle."
+      note_hint: "Tocca la casella per leggere la nota."
+      no_edges: "Per ora non c'è nessuna freccia."
+      moves_title: "Le mosse"
+      station_here: "Tu sei qui"
+      return_label: "Si torna indietro"
+      journey_title: "Il percorso"
+      path_here: "Ora siamo qui:"
+      grey_tag: "senza causa"
+      removed_now: "Ora hai tolto"
+      areas:
+        economy: "economia"
+        society: "società"
+        politics: "politica"
+        military: "guerra"
+        religion: "religione"
+        environment: "ambiente"
+        science: "scienza"

@@ -45,7 +45,7 @@ Only these names, besides the structural ones of the lesson brief, and only with
 | Piece | Kind | Status | Batch | Track |
 |---|---|---|---|---|
 | `seats` | diagram | reserved | w2-1 | T6 |
-| `network` | diagram | reserved | w2-1 | T4b |
+| `network` | diagram | available | w2-1 | T4b |
 | `flow` | diagram | available | r1 | T4b |
 | `source` | block | reserved | w2-1 | T8 |
 | `document` | diagram | reserved | w2-1 | T8 |

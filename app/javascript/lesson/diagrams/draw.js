@@ -6,6 +6,7 @@
 import * as N from "lesson/num"
 import { button, clear, el, icon, spriteHref, svg, uid } from "lesson/dom"
 import { HOME_PALETTE, describe, layout, moduleFor, stateCount } from "lesson/diagrams/registry"
+import { buildControls } from "lesson/diagrams/controls"
 import { tryValues, equationTex } from "lesson/diagrams/balance"
 import { renderInlineRich, renderMath, renderRich } from "lesson/text"
 
@@ -131,7 +132,10 @@ export function mountDiagram(data, ctx, options = {}) {
   const question = el("p", { class: "dg-question", "aria-live": "polite" })
   const caption = data?.caption_it ? el("figcaption", { class: "dg-caption" }) : null
   if (caption) renderInlineRich(data.caption_it, caption, ctx)
-  const desc = el("details", { class: "dg-desc" }, el("summary", {}, icon("description"), document.createTextNode(` ${ctx.t.description}`)), el("p", { text: describe(data) }))
+  const descText = el("p", { text: describe(data, { state: 0, controls: {} }) })
+  const desc = el("details", { class: "dg-desc" }, el("summary", {}, icon("description"), document.createTextNode(` ${ctx.t.description}`)), descText)
+  // what a control just did, said once and politely (A6)
+  const live = el("p", { class: "dg-live", role: "status", "aria-live": "polite" })
   // a balance has its equation, the state's name and a status chip above the drawing
   const top = type === "balance" ? el("div", { class: "dg-top" }) : null
   const pill = el("span", { class: "dg-pill" })
@@ -139,12 +143,12 @@ export function mountDiagram(data, ctx, options = {}) {
   const chip = el("span", { class: "dg-status", role: "status" })
   if (top) top.append(pill, eqLine, chip)
   // op, question and controls sit in one side box: below the drawing, or beside it on a wide balance (CSS)
-  const side = el("div", { class: "dg-side" }, op, question, controls)
+  const side = el("div", { class: "dg-side" }, op, question, controls, live)
   figure.append(alt, ...(top ? [top] : []), stage, side, ...(caption ? [caption] : []), desc)
 
   const mod = moduleFor(type)
   const total = mod ? stateCount(data) : 1
-  const state = { moves: new Map(), lastWidth: 0, i: 0, tryValue: data?.try && data?.type === "balance" ? Number(data.try.from) : undefined, width: 0, selected: null }
+  const state = { moves: new Map(), lastWidth: 0, i: 0, tryValue: data?.try && data?.type === "balance" ? Number(data.try.from) : undefined, width: 0, selected: null, controls: {} }
   figure.dataset.states = String(total)
   if (total > 1 || (type === "sentence" && data.parts)) figure.dataset.nokeys = ""
   const measurer = { current: null }
@@ -167,7 +171,7 @@ export function mountDiagram(data, ctx, options = {}) {
     state.width = width
     if (!measurer.current) measurer.current = makeMeasure(stage, ctx)
     const fontPx = ctx.fontPx()
-    const scene = layout(data, { width, fontPx, measure: measurer.current.measure, subject: ctx.subject, state: state.i, tryValue: state.tryValue })
+    const scene = layout(data, { width, fontPx, measure: measurer.current.measure, subject: ctx.subject, state: state.i, tryValue: state.tryValue, controls: state.controls, mode: "student" })
     if (scene.error) return showError(scene.error)
     figure.classList.remove("dg-failed")
     figure.querySelector(".dg-fallback")?.remove()
@@ -226,7 +230,7 @@ export function mountDiagram(data, ctx, options = {}) {
       labelsLayer.appendChild(node)
     }
     for (const h of scene.hits ?? []) {
-      const b = el("button", { type: "button", class: "dg-hit", "aria-pressed": state.selected === h.id ? "true" : "false", "aria-label": `${h.name}: ${h.text}${h.question_it ? `. ${ctx.t.tap_for_question}` : ""}` })
+      const b = el("button", { type: "button", class: "dg-hit", "aria-pressed": state.selected === h.id ? "true" : "false", "aria-label": `${h.name}: ${h.text}${h.hint_it ? `. ${h.hint_it}` : h.question_it ? `. ${ctx.t.tap_for_question}` : ""}` })
       b.style.left = `${h.x}px`
       b.style.top = `${h.y}px`
       b.style.width = `${h.w}px`
@@ -234,11 +238,14 @@ export function mountDiagram(data, ctx, options = {}) {
       b.dataset.key = `${h.key}:hit`
       b.addEventListener("click", () => {
         state.selected = h.id
-        question.textContent = h.question_it ? `${h.name}: ${h.question_it}` : `${h.name}.`
+        question.textContent = h.note_it ? `${h.name}: ${h.note_it}` : h.question_it ? `${h.name}: ${h.question_it}` : `${h.name}.`
         for (const other of labelsLayer.querySelectorAll(".dg-hit")) other.setAttribute("aria-pressed", String(other === b))
       })
       labelsLayer.appendChild(b)
     }
+    descText.textContent = describe(data, { state: state.i, controls: state.controls })
+    live.textContent = scene.live ?? ""
+    live.classList.toggle("sr-only", scene.liveVisible === false)
     op.textContent = ""
     const eff = total > 1 ? (data.states[state.i] ?? {}) : {}
     if (eff.op_it) renderInlineRich(eff.op_it, op, ctx)
@@ -257,6 +264,7 @@ export function mountDiagram(data, ctx, options = {}) {
         el("span", { class: `dg-verdict${v.tilt === 0 ? " is-level" : ""}`, text: v.tilt === 0 ? ctx.t.try_level : v.tilt > 0 ? ctx.t.try_left : ctx.t.try_right }))
     }
     animate(old, figure, ctx.reduced())
+    if (old.size && !ctx.reduced()) for (const node of figure.querySelectorAll("[data-key]")) if (!old.has(node.dataset.key)) node.classList.add("dg-enter")
     stepper()
   }
 
@@ -306,6 +314,9 @@ export function mountDiagram(data, ctx, options = {}) {
     value.textContent = `x = ${state.tryValue}`
     minus.disabled = true
   }
+
+  // the figure's own controls (contract v2): chips, toggles; a change redraws with the new values
+  if (mod?.controls) buildControls(mod.controls(data), controls, { state, ctx, redraw: () => draw() })
 
   let timer = null
   let observer = null
