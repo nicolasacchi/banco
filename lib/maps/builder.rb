@@ -96,7 +96,7 @@ module Maps
     def projection_of(base)
       cfg = BASES.fetch(base)
       @proj ||= {}
-      @proj[base] ||= Geom.fit(cfg[:proj], cfg[:window], WIDTH, crop: cfg.fetch(:crop, true), pole: cfg[:pole])
+      @proj[base] ||= Geom.fit(cfg[:proj], cfg[:window], WIDTH, crop: cfg.fetch(:crop, false), pole: cfg[:pole])
     end
 
     # Sample points for the JS twin (app/javascript/lesson/lib/map_projection.js), both for each base's own
@@ -158,7 +158,7 @@ module Maps
       areas, groups = cfg[:detail] == "historical" ? historical_areas : modern_areas(cfg)
       doc = {
         "v" => 1, "base" => base, "title_it" => cfg[:title_it], "fill_rule" => "evenodd",
-        "projection" => pr.to_h, "viewBox" => [ 0, 0, WIDTH.to_i, pr.height.round(1) ], "box" => window, "crop" => cfg.fetch(:crop, true),
+        "projection" => pr.to_h, "viewBox" => [ 0, 0, WIDTH.to_i, pr.height.round(1) ], "box" => window, "crop" => cfg.fetch(:crop, false),
         "detail" => cfg[:detail], "tolerance" => eps, "reads" => reads_of(cfg)
       }
       doc["approximate"] = true if cfg[:detail] == "historical"

@@ -236,6 +236,23 @@ class MapsBasesTest < ActiveSupport::TestCase
     end
   end
 
+  test "a continent is whole in its viewBox: the widest parallel of its window fits (no inner-rectangle crop)" do
+    %w[south_america africa asia north_america europe oceania italy].each do |b|
+      d = base(b)
+      w, s, e, n = d["box"]
+      assert_equal false, d["crop"], b
+      lats = (0..40).map { |i| s + (n - s) * i / 40.0 }
+      lats.each do |lat|
+        x_w, = Maps::Geom::Projection.new(d["projection"]["type"], d["projection"]["scale"], d["projection"]["tx"], d["projection"]["ty"], 1000.0, d["viewBox"][3], nil).project(w, lat)
+        x_e, = Maps::Geom::Projection.new(d["projection"]["type"], d["projection"]["scale"], d["projection"]["tx"], d["projection"]["ty"], 1000.0, d["viewBox"][3], nil).project(e, lat)
+        assert_operator x_w, :>=, -0.5, "#{b}: the window's west edge at #{lat} is outside the viewBox (#{x_w})"
+        assert_operator x_e, :<=, 1000.5, "#{b}: the window's east edge at #{lat} is outside the viewBox (#{x_e})"
+      end
+    end
+    brazil = base("south_america")["areas"].find { |a| a["id"] == "BRA" }
+    assert_operator brazil["bbox"][2] - brazil["bbox"][0], :>, 500, "Brazil is whole"
+  end
+
   test "the modern bases carry the graticule: equator and tropics where they fall, the same latitudes everywhere" do
     sa = base("south_america")["graticule"]
     assert sa["equator"]
