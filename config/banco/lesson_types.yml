@@ -83,7 +83,7 @@ diagrams:
 
   # ---- science models (T7)
   formula: {family: science, status: available, schema: final, batch: w2-1, track: T7, size: M, module: lesson/diagrams/science/formula, home_palette: chemistry}
-  molecule: {family: science, status: reserved, schema: final, batch: w2-1, track: T7, size: M, module: lesson/diagrams/science/molecule, home_palette: chemistry}
+  molecule: {family: science, status: available, schema: final, batch: w2-1, track: T7, size: M, module: lesson/diagrams/science/molecule, home_palette: chemistry}
   strand: {family: science, status: reserved, schema: final, batch: w2-1, track: T7, size: M, module: lesson/diagrams/science/strand, home_palette: biology}
   particles: {family: science, status: draft, schema: draft, batch: w2-2, track: T7, size: L, module: lesson/diagrams/science/particles, home_palette: chemistry}
   phase_changes: {family: science, status: draft, schema: draft, batch: w2-2, track: T7, size: S, module: lesson/diagrams/science/phase_changes, home_palette: chemistry}

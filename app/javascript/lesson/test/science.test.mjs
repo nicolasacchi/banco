@@ -10,12 +10,12 @@ const vectors = (type) => JSON.parse(readFileSync(new URL(`test/fixtures/diagram
 const { validate } = await import("lesson/schema")
 const { checkModule, checkControls } = await import("lesson/diagrams/contract")
 const registry = await import("lesson/diagrams/registry")
-const TYPES = ["formula"]
+const TYPES = ["formula", "molecule"]
 const mods = {}
 for (const t of TYPES) mods[t] = await import(`lesson/diagrams/science/${t}`)
 const HOME = { formula: "chemistry", molecule: "chemistry", periodic_table: "chemistry", strand: "biology" }
 
-const OVERLAP_CHECKED = ["formula"] // the types whose targets are laid out apart (the others touch by design: bonded atoms, cells of a grid)
+const OVERLAP_CHECKED = ["formula", "molecule"] // the types whose targets are laid out apart (the others touch by design: bonded atoms, cells of a grid)
 const WIDTHS = [290, 360, 738, 1250]
 const SIZES = [18, 20, 26]
 const lay = (data, over = {}) => mods[data.type].layout(data, { width: 360, fontPx: 20, subject: HOME[data.type], state: 0, ...over })

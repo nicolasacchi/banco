@@ -5,8 +5,9 @@
 # Built so far (T7, w2-1):
 #   `formula` (diagram): the decoder with its pieces, labels, arrows, count table and molecules, one and several formulas, the brackets of a
 #     group, a focus followed through the states; select targets: pieces (mode `select`). Cards 1 to 4.
+#   `molecule` (diagram): balls and sticks, copies by the coefficient, the angle and the partial charges from the library, salts and metals as a
+#     patch with one unit framed, never as molecules; select targets: items, atoms (mode `select`). Cards 6 to 10.
 # Still to come, in this file when each is built:
-#   `molecule` (diagram; reserved, schema final, batch w2-1, track T7): select targets items, atoms
 #   `periodic_table` (diagram; reserved, schema final, batch w2-1, track T7): select targets cells
 #   `strand` (diagram; reserved, schema final, batch w2-1, track T7): select targets bases, backbone, rungs
 #   `particles` (diagram; draft, schema draft, batch w2-2, track T7)
@@ -86,4 +87,71 @@ answer: ['f1p3']
 errors:
   - {answer: ['f1p1'], code: coefficient_for_subscript, message_it: "Quello è il coefficiente, il numero grande davanti."}
 explain_it: "Il pedice è il numero piccolo in basso: il 2 conta gli atomi di H."
+:::
+
+# Le molecole
+
+## Quattro molecole {idea icon=flask-conical id=quattro}
+
+Ogni atomo ha **il suo simbolo** scritto dentro. Gli idrogeni sono i più piccoli.
+
+::: diagram molecule
+alt_it: "Quattro molecole: CO con un carbonio e un ossigeno, CO2 con due ossigeni, H2O con due idrogeni, H2O2 con due idrogeni e due ossigeni."
+items:
+  - {formula: 'CO', label_it: "monossido di carbonio"}
+  - {formula: 'CO2', label_it: "anidride carbonica"}
+  - {formula: 'H2O', label_it: "acqua"}
+  - {formula: 'H2O2', label_it: "acqua ossigenata"}
+style: balls
+show: [symbols]
+:::
+
+## L'angolo e le cariche {idea icon=thermometer id=angolo}
+
+::: diagram molecule
+alt_it: "Una molecola d'acqua e una di anidride carbonica: l'angolo tra i legami dell'acqua e le cariche parziali dei suoi atomi."
+items:
+  - {formula: 'H2O'}
+  - {formula: 'CO2'}
+show: [symbols, angle, partial]
+:::
+
+## Più copie, solo le aste {idea icon=copy id=copie}
+
+::: diagram molecule
+alt_it: "Due molecole di ossigeno e tre di idrogeno, disegnate con le sole aste: ogni molecola ha due atomi legati."
+items:
+  - {formula: '2 O2'}
+  - {formula: '3 H2'}
+style: sticks
+:::
+
+## Un sale e un metallo {idea icon=boxes id=reticoli}
+
+::: diagram molecule
+alt_it: "Il cloruro di sodio, l'idrossido di calcio e il cobalto: nessuna molecola, ma reticoli con una unità in un riquadro."
+items:
+  - {formula: 'NaCl'}
+  - {formula: 'Ca(OH)2'}
+  - {formula: 'Co'}
+:::
+
+## Trova la molecola {idea icon=test-tube id=trova-molecola}
+
+::: check select
+prompt_it: "Tocca la molecola che ha quattro atomi."
+diagram:
+  type: molecule
+  alt_it: "Quattro molecole in fila, di due, tre, tre e quattro atomi. Ogni molecola si può toccare."
+  items:
+    - {formula: 'CO'}
+    - {formula: 'CO2'}
+    - {formula: 'H2O'}
+    - {formula: 'H2O2'}
+targets: items
+pick: one
+answer: ['i4']
+errors:
+  - {answer: ['i2'], code: count_letters, message_it: "Quella ha tre atomi: due ossigeni e un carbonio."}
+explain_it: "Conta le palline: la quarta molecola ne ha quattro."
 :::

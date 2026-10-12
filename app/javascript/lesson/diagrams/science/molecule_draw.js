@@ -8,8 +8,8 @@ const toNumber = (text) => Number(String(text).replace(",", "."))
 
 // The radius of an atom: relative sizes (H small) in balls, one size for every atom in sticks. In select mode every atom has the same size (L3).
 export function atomRadius(symbol, F, style = "balls", neutral = false) {
-  if (neutral) return Math.round(F * 0.95)
-  if (style === "sticks") return Math.round(F * (symbol === "H" ? 0.7 : 0.8))
+  if (neutral) return Math.round(F * 0.8)
+  if (style === "sticks") return Math.round(F * 0.72)
   if (symbol === "H") return Math.round(F * 0.72)
   if (["C", "N", "O"].includes(symbol)) return Math.round(F * 0.92)
   return Math.round(F * 1.05)
@@ -33,14 +33,15 @@ export function ionText(row, indices) {
 
 // The pose of one molecule: atoms at pixel positions from 0,0 (the top left of the box), bonds, the box size. S px per angstrom grows with the text.
 export function pose(row, F, { style = "balls", neutral = false, margin = 0 } = {}) {
+  const [mx, my] = Array.isArray(margin) ? margin : [margin, margin]
   const S = F * 3
   const raw = row.atoms.map((a) => ({ symbol: a.symbol, x: toNumber(a.xy[0]) * S, y: -toNumber(a.xy[1]) * S, r: atomRadius(a.symbol, F, style, neutral) }))
   const x0 = Math.min(...raw.map((a) => a.x - a.r))
   const y0 = Math.min(...raw.map((a) => a.y - a.r))
-  const atoms = raw.map((a) => ({ ...a, x: Math.round(a.x - x0 + margin), y: Math.round(a.y - y0 + margin) }))
-  const w = Math.ceil(Math.max(...raw.map((a) => a.x + a.r)) - x0) + 2 * margin
-  const h = Math.ceil(Math.max(...raw.map((a) => a.y + a.r)) - y0) + 2 * margin
-  return { kind: "molecular", atoms, bonds: row.bonds ?? [], w, h, margin }
+  const atoms = raw.map((a) => ({ ...a, x: Math.round(a.x - x0 + mx), y: Math.round(a.y - y0 + my) }))
+  const w = Math.ceil(Math.max(...raw.map((a) => a.x + a.r)) - x0) + 2 * mx
+  const h = Math.ceil(Math.max(...raw.map((a) => a.y + a.r)) - y0) + 2 * my
+  return { kind: "molecular", atoms, bonds: row.bonds ?? [], w, h, margin: my }
 }
 
 const polar = (cx, cy, r, deg) => [cx + r * Math.cos((deg * Math.PI) / 180), cy - r * Math.sin((deg * Math.PI) / 180)]
@@ -79,7 +80,7 @@ export function drawMolecule(ctx, p, x, y, row, opts = {}) {
     const s = shape(ctx, "circle", { cx: x + a.x, cy: y + a.y, r: a.r, cls: neutral ? "dg-atom dg-neutral" : `dg-atom dg-atom-${a.symbol}` })
     if (opts.atomTargets) {
       s.target = `t${n}`
-      boxes.push({ target: `t${n}`, bbox: { x: x + a.x - Math.max(a.r, 14), y: y + a.y - Math.max(a.r, 14), w: 2 * Math.max(a.r, 14), h: 2 * Math.max(a.r, 14) } })
+      boxes.push({ target: `t${n}`, bbox: { x: x + a.x - a.r, y: y + a.y - a.r, w: 2 * a.r, h: 2 * a.r } })
       n += 1
     }
   })
@@ -92,20 +93,16 @@ export function drawMolecule(ctx, p, x, y, row, opts = {}) {
     p.atoms.forEach((a, i) => {
       const c = toNumber(row.partial_charges[i])
       if (c === 0) return
-      let dx = a.x - cx
-      let dy = a.y - cy
-      const len = Math.hypot(dx, dy)
-      if (len < 6) {
-        dx = 0
-        dy = -1
-      } else {
-        dx /= len
-        dy /= len
-      }
+      // the sign goes over the atom when the atom is above the middle of the molecule, under it when below; the middle atom: under it when the angle
+      // arc is over it, else over it; an atom off to one side leans a little outward.
+      const dy0 = a.y - cy
+      const dy = Math.abs(dy0) < 6 ? (opts.angle && row.angle ? 1 : -1) : Math.sign(dy0)
+      const off = a.x - cx
+      const dx = Math.abs(off) < 6 ? 0 : Math.sign(off) * Math.round(F * 0.5) // an atom to the side: its sign leans outward, away from the angle label
       const text = c > 0 ? "$\\delta^{+}$" : "$\\delta^{-}$"
       const m = ctx.measure(text, F)
       const reach = a.r + 4
-      const lx = x + a.x + dx * (reach + m.w / 2) - m.w / 2
+      const lx = x + a.x + dx - m.w / 2
       const ly = y + a.y + dy * (reach + m.h / 2) - m.h / 2
       label(ctx, text, lx, ly, { anchor: "start", cls: "dg-partial" })
     })
@@ -125,6 +122,10 @@ export function drawMolecule(ctx, p, x, y, row, opts = {}) {
         ;[a1, a2] = [a2, a1]
         span = 360 - span
       }
+      if (Math.abs(span - 180) < 0.5) {
+        a1 = 0 // a straight angle: the half circle goes over the top
+        span = 180
+      }
       const ra = c.r + 12
       const [sx, sy] = polar(x + c.x, y + c.y, ra, a1)
       const [ex, ey] = polar(x + c.x, y + c.y, ra, a1 + span)
@@ -143,7 +144,7 @@ export function drawMolecule(ctx, p, x, y, row, opts = {}) {
 // ---- patches (ionic and metal) --------------------------------------------------------------------------------------------------------------
 
 // The pose of a patch: ions at pixel positions, the box, and the frames of the units.
-export function patchPose(row, ctx, units = 1) {
+export function patchPose(row, ctx, nUnits = 1) {
   const F = ctx.fontPx
   const r = Math.round(F * 0.95)
   const gap = 8
@@ -165,31 +166,31 @@ export function patchPose(row, ctx, units = 1) {
     const w = idx.length === 1 ? 2 * r : Math.max(2 * r, textW + 18)
     return { ...t, cation: k === 0, w, r }
   })
-  const cycle = list
-  const per = cycle.length * PATCH_UNITS
-  const rowsOut = []
-  let width = 0
-  for (let ri = 0; ri < PATCH_ROWS; ri++) {
-    let x = 0
-    const items = []
-    for (let k = 0; k < per; k++) {
-      const ion = cycle[(k + ri) % cycle.length]
-      items.push({ ...ion, x, y: ri * (2 * r + gap) })
-      x += ion.w + gap
-    }
-    width = Math.max(width, x - gap)
-    rowsOut.push(items)
+  // PATCH_ROWS x PATCH_UNITS units, each the ions of the formula in order, a row of units shifted by one ion from the one above (a lattice, not a column).
+  // Two units side by side when they fit, else one under the other: the discs and their order are the same.
+  const units = []
+  for (let u = 0; u < PATCH_ROWS * PATCH_UNITS; u++) {
+    const shift = Math.floor(u / PATCH_UNITS)
+    units.push(list.map((_, k) => list[(k + shift) % list.length]))
   }
-  const first = rowsOut[0].slice(0, cycle.length * Math.min(units, PATCH_UNITS))
-  const last = first[first.length - 1]
-  return {
-    kind: "ionic",
-    rows: rowsOut,
-    w: Math.ceil(width),
-    h: Math.ceil(PATCH_ROWS * (2 * r) + (PATCH_ROWS - 1) * gap),
-    frames: [{ x: -5, y: -5, w: last.x + last.w - first[0].x + 10, h: 2 * r + 10 }],
-    units: Math.min(units, PATCH_UNITS)
-  }
+  const unitW = (ions) => ions.reduce((s, ion) => s + ion.w, 0) + (ions.length - 1) * gap
+  const wide = unitW(units[0]) * PATCH_UNITS + gap * 2 + 16 <= ctx.width
+  const cols = wide ? PATCH_UNITS : 1
+  const rowH = 2 * r + gap
+  const placed = units.map((ions, u) => {
+    const col = u % cols
+    const rowIndex = Math.floor(u / cols)
+    let x = col * (unitW(ions) + gap * 2)
+    return { ions: ions.map((ion) => { const at = { ...ion, x, y: rowIndex * rowH }; x += ion.w + gap; return at }), u, x0: col * (unitW(ions) + gap * 2), w: unitW(ions), y: rowIndex * rowH }
+  })
+  const rowsOut = [placed.flatMap((p) => p.ions)]
+  const framed = placed.slice(0, Math.min(nUnits, PATCH_UNITS))
+  const width = Math.max(...placed.map((p) => p.x0 + p.w))
+  const rows = Math.ceil(units.length / cols)
+  const frames = wide
+    ? [{ x: framed[0].x0 - 5, y: -5, w: framed[framed.length - 1].x0 + framed[framed.length - 1].w - framed[0].x0 + 10, h: 2 * r + 10 }]
+    : framed.map((p) => ({ x: p.x0 - 5, y: p.y - 5, w: p.w + 10, h: 2 * r + 10 }))
+  return { kind: "ionic", rows: rowsOut, w: Math.ceil(width), h: Math.ceil(rows * 2 * r + (rows - 1) * gap), frames, units: framed.length }
 }
 
 // Draws a patch with its top left at (x, y). Returns the boxes of the discs in reading order (rows from the top, ions from the left).
@@ -209,7 +210,7 @@ export function drawPatch(ctx, p, x, y, opts = {}) {
     for (const d of p.discs) {
       const s = shape(ctx, "circle", { cx: x + d.x, cy: y + d.y, r: d.r, cls: neutral ? "dg-atom dg-neutral" : `dg-atom dg-atom-${d.symbol}` })
       mark(s, 2 * d.r, 2 * d.r, x + d.x - d.r, y + d.y - d.r)
-      if (!neutral) label(ctx, d.symbol, x + d.x, y + d.y, { anchor: "middle", valign: "middle", cls: "dg-atomtext" })
+      if (!neutral && opts.symbols !== false) label(ctx, d.symbol, x + d.x, y + d.y, { anchor: "middle", valign: "middle", cls: "dg-atomtext" })
     }
   } else {
     for (const items of p.rows) {
@@ -218,7 +219,7 @@ export function drawPatch(ctx, p, x, y, opts = {}) {
         const s = ion.atoms === 1 ? shape(ctx, "circle", { cx: x + ion.x + ion.w / 2, cy: y + ion.y + ion.r, r: ion.r, cls }) : shape(ctx, "rect", { x: x + ion.x, y: y + ion.y, w: ion.w, h: 2 * ion.r, r: ion.r, cls })
         mark(s, ion.w, 2 * ion.r, x + ion.x, y + ion.y)
         if (!neutral) {
-          label(ctx, ion.label, x + ion.x + ion.w / 2, y + ion.y + ion.r, { anchor: "middle", valign: "middle", cls: "dg-atomtext" })
+          if (opts.symbols !== false) label(ctx, ion.label, x + ion.x + ion.w / 2, y + ion.y + ion.r, { anchor: "middle", valign: "middle", cls: "dg-atomtext" })
           // the sign of the ion, a small mark in the corner: a plus for the cation and a minus for the anion (a shape, not a colour)
           const sx = x + ion.x + ion.w - 4
           const sy = y + ion.y + 4

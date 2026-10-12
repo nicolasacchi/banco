@@ -78,7 +78,7 @@ class ScienceSystemTest < ApplicationSystemTestCase
     assert_selector "#scheda-4 .dg-unitframe", count: 1
     assert_selector "#scheda-4 .dg-ion", count: 8
     assert_selector "#scheda-4 .dg-unitword", text: "unità"
-    assert_no_text "molecola"
+    within("#scheda-4 .dg") { assert_no_text "molecola" }
     open_card(3)
     assert_selector "#scheda-3 .dg-atom-Co", count: 7
     assert_selector "#scheda-3 .dg-atom-C, #scheda-3 .dg-atom-O", minimum: 2
@@ -100,5 +100,43 @@ class ScienceSystemTest < ApplicationSystemTestCase
     click_button "Controlla"
     assert_selector "#scheda-5 .verdict-right", wait: 5
     shot "formula-select"
+  end
+
+  test "molecule: every atom has its symbol inside, hydrogens are smaller, the angle and the signs of the charges are drawn from the library" do
+    open_card(6)
+    assert_selector "#scheda-6 .dg-atom", count: 2 + 3 + 3 + 4
+    radii = ->(sym) { all("#scheda-6 .dg-atom-#{sym}").map { |c| c["r"].to_f }.max }
+    assert_operator radii.call("H"), :<, radii.call("O"), "the hydrogens are the smallest"
+    assert_equal %w[C C H H H H O O O O O O], all("#scheda-6 .dg-atomtext").map(&:text).sort
+    assert_selector "#scheda-6 .dg-molname", text: "acqua ossigenata"
+    open_card(7)
+    assert_selector "#scheda-7 .dg-angletext", text: "104,5°"
+    assert_selector "#scheda-7 .dg-angletext", text: "180°"
+    assert_selector "#scheda-7 .dg-partial", count: 6
+    assert_selector "#scheda-7 .dg-anglearc", count: 2
+    find("#scheda-7 .dg-desc summary").click
+    assert_text "L'angolo tra i due legami è di 104,5 gradi"
+    assert_text "Carica parziale negativa: ossigeno. Positiva: idrogeno."
+    shot "molecule-angle-partial"
+    open_card(9, size: [ 390, 844 ])
+    assert_selector "#scheda-9 .dg-unitframe", count: 3
+    assert_selector "#scheda-9 .dg-unitword", count: 3
+    shot "molecule-patches-390"
+  end
+
+  test "molecule: select over the groups, every group is a neutral dashed box named only by its place, the answer is graded" do
+    open_card(10, size: [ 390, 844 ])
+    assert_selector "#scheda-10 .dg-target", count: 4
+    assert_equal "zona 1 di 4, Gruppo 1 di 4", find("#scheda-10 .dg-target[data-target='t1']")["aria-label"]
+    assert_no_selector "#scheda-10 .dg-atomtext"
+    find("#scheda-10 .dg-target[data-target='t2']").click
+    click_button "Controlla"
+    assert_selector "#scheda-10 .verdict-wrong", wait: 5
+    assert_text "Quella ha tre atomi"
+    find("#scheda-10 .dg-target[data-target='t2']").click
+    find("#scheda-10 .dg-target[data-target='t4']").click
+    click_button "Controlla"
+    assert_selector "#scheda-10 .verdict-right", wait: 5
+    shot "molecule-select-390"
   end
 end

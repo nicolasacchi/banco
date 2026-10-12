@@ -265,7 +265,7 @@ function build(data, ctx) {
     return extent(sub) + 4
   })
   const gap = Math.round(ctx.fontPx * 1.6)
-  const sideBySide = natural.reduce((s, w) => s + w, 0) + gap * (blocks.length - 1) <= ctx.width
+  const sideBySide = natural.reduce((s, w) => s + w, 0) + gap * (blocks.length - 1) <= ctx.width - 6
   let y = 0
   let x = 0
   let rowH = 0
