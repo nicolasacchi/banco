@@ -11,7 +11,7 @@
 // E-LESSON-OVERFLOW (something wider than its box or than the page), E-DIAGRAM-LAYOUT (a layout that answered an
 // error, two labels overlapping, a label outside the drawing), E-DIAGRAM-SMALL-TEXT (a label under the minimum).
 // Nothing here is sent anywhere; the CSP of the host allows no connection.
-import { renderLesson } from "lesson/render"
+import { preloadTypes, renderLesson } from "lesson/render"
 
 const errors = []
 const note = (message) => errors.push(String(message).slice(0, 300))
@@ -96,6 +96,7 @@ let api = null
 const ready = (async () => {
   try {
     await document.fonts?.ready
+    await preloadTypes(body)
     api = renderLesson(root, body, {
       mode: "render", expand: true, view: "scroll", reduceMotion: true, labels: config.labels, items: config.items, topic: body.key,
       revisionId: 0, urls: { check: "", solution: "", practice: "#" }, savePreferences: () => {}

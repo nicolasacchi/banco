@@ -61,5 +61,27 @@
   "lesson_files": [
    "demo-italian.md"
   ]
+ },
+ "geography": {
+  "subject": "geography",
+  "skills": [
+   "geography.gallery-maps"
+  ],
+  "error_codes": [
+   "geography_demo_swap"
+  ],
+  "source_lines": [
+   {
+    "source": "seconda-2025-26",
+    "line": 31,
+    "text": "carte geografiche e fusi climatici"
+   }
+  ],
+  "topics": [
+   "ripasso.geography.gallery-maps"
+  ],
+  "lesson_files": [
+   "gallery/maps.md"
+  ]
  }
 }

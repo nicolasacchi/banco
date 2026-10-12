@@ -44,7 +44,7 @@ class DiagramTypeVectorsTest < ActiveSupport::TestCase
 
   test "roles in the cases are roles of their subject's palette, and an available type has no pending column" do
     FILES.each do |type, doc|
-      doc["vectors"].select { |v| v["schema"] == "valid" }.each do |v|
+      doc["vectors"].select { |v| v["schema"] == "valid" && !(v["semantic"].is_a?(Hash) && v["semantic"]["code"] == "E-LESSON-ROLE") }.each do |v|
         roles = []
         walk = ->(x) { x.is_a?(Hash) ? x.each { |k, val| (roles << val if k == "role" && val.is_a?(String)) || walk.call(val) } : (x.is_a?(Array) && x.each { |i| walk.call(i) }) }
         walk.call(v["data"])

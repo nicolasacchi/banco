@@ -52,9 +52,9 @@ Only these names, besides the structural ones of the lesson brief, and only with
 | Piece | Kind | Status | Batch | Track |
 |---|---|---|---|---|
 | `climograph` | diagram | reserved | w2-1 | T6 |
-| `map` | diagram | reserved | w2-1 | T5 |
-| `insolation` | diagram | reserved | w2-1 | T5 |
-| `cross_section` | diagram | reserved | w2-1 | T5 |
+| `map` | diagram | available | w2-1 | T5 |
+| `insolation` | diagram | available | w2-1 | T5 |
+| `cross_section` | diagram | available | w2-1 | T5 |
 | `chart` | diagram | draft | w2-2 | T6 |
 | `chain` | diagram | reserved | w2-1 | T4b |
 | `timeline` | diagram | reserved | w2-1 | T4a |

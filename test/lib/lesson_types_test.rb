@@ -28,13 +28,18 @@ class LessonTypesTest < ActiveSupport::TestCase
     assert_equal %w[amount_words cell_formula ordering select tiles trace], DATA["checks"].select { |_, e| e["batch"].start_with?("w2") }.keys.sort
   end
 
-  test "available needs a final schema, a draft status a draft schema, and wave 2 starts with nothing available" do
+  test "available needs a final schema, a draft status a draft schema, and a wave 2 type is available only from its look gate" do
     DIAGRAMS.each do |name, e|
       assert_equal "final", e["schema"], name if e["status"] == "available"
       assert_equal "draft", e["schema"], name if e["status"] == "draft"
       next if e["family"] == "core"
 
-      assert_not_equal "available", e["status"], "#{name}: a track makes it available in the commit of its look gate"
+      # a track makes its piece available in the commit of its look gate: a W2-1 type with a schema, its vectors without a pending column
+      if e["status"] == "available"
+        assert_equal "w2-1", e["batch"], name
+        vectors = JSON.parse(Rails.root.join("test/fixtures/diagrams/types/#{name}.json").read)["vectors"]
+        assert(vectors.none? { |v| v["semantic"] == "pending" || v["layout"] == "pending" }, "#{name}: pending columns")
+      end
       assert_equal "w2-2", e["batch"], name if e["status"] == "draft"
     end
   end
@@ -81,6 +86,7 @@ class LessonTypesTest < ActiveSupport::TestCase
     wave2.each do |type|
       mod = Lessons::Diagrams.const_get(Lessons::Diagrams::TYPES.fetch(type))
       assert mod.singleton_class.include?(Lessons::Diagrams::Contract), type
+      next if DIAGRAMS.fetch(type)["status"] == "available" # built: its own tests (maps_types_test and the vectors) say what it does
       assert_nil mod.static({}, nil), type
       assert_nil mod.state({}, nil, ""), type
       assert_equal [], mod.reachable({}), type
@@ -191,7 +197,7 @@ class LessonTypesTest < ActiveSupport::TestCase
     end
     FAMILIES.each do |f|
       text = Rails.root.join("test/fixtures/lesson2/gallery/#{f}.md").read
-      DIAGRAMS.select { |_, e| e["family"] == f }.each_key { |type| assert_includes text, "`#{type}`", "#{f}: #{type}" }
+      DIAGRAMS.select { |_, e| e["family"] == f }.each_key { |type| assert(text.include?("`#{type}`") || text.include?("diagram #{type}"), "#{f}: #{type}") }
     end
   end
 

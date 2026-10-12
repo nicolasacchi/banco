@@ -50,7 +50,7 @@ Only these names, besides the structural ones of the lesson brief, and only with
 | `timeline` | diagram | reserved | w2-1 | T4a |
 | `chain` | diagram | reserved | w2-1 | T4b |
 | `network` | diagram | reserved | w2-1 | T4b |
-| `map` | diagram | reserved | w2-1 | T5 |
+| `map` | diagram | available | w2-1 | T5 |
 | `word_parts` | diagram | reserved | w2-1 | T3 |
 | `source` | block | reserved | w2-1 | T8 |
 | `reveal` | block | reserved | w2-1 | T8 |

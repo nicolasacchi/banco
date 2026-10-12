@@ -10,6 +10,7 @@ import { iconOf, renderCard, rolesUsed } from "lesson/cards"
 import { sample } from "lesson/blocks/legend"
 import { renderInlineRich, renderRich } from "lesson/text"
 import { figureFor } from "lesson/blocks/diagram"
+import { FAMILY, STATUS, preload } from "lesson/diagrams/registry"
 
 const csrf = () => document.querySelector("meta[name=csrf-token]")?.content || ""
 
@@ -23,6 +24,14 @@ async function postJson(url, body) {
   if (response.status !== 200 && response.status !== 422) return null
   return response.json()
 }
+
+// The wave 2 types a lesson draws, loaded before the first card is (a type of a wave 2 family is a module of its own, loaded on demand).
+export function typesOf(body) {
+  const found = new Set()
+  for (const m of JSON.stringify(body).matchAll(/"type":"([a-z_]+)"/g)) if (STATUS[m[1]] && FAMILY[m[1]] !== "core") found.add(m[1])
+  return [...found]
+}
+export const preloadTypes = (body) => preload(typesOf(body))
 
 export function renderLesson(root, body, config) {
   const t = config.labels

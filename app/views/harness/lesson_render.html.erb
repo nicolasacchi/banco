@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="/vendor/katex@0.19.0/katex.min.css">
     <%= stylesheet_link_tag "lesson_roles" %>
     <%= stylesheet_link_tag "lesson" %>
+    <%= lesson_family_stylesheets(@body) %>
     <%= javascript_importmap_tags "lesson/render_host", importmap: student_importmap %>
   </head>
   <body class="student">

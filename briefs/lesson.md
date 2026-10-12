@@ -224,6 +224,9 @@ number line intervals.
 | `concept_map` (schema) | classifications | `root`, `nodes: [{id, text_it, role?, icon?}]`, `edges: [{from, to, label_it?}]` forming a tree of depth at most 3 with at most 4 children per node, `links` (at most 3 cross links) |
 | `flow` (schema) | procedures | `nodes: [{id, kind: step\|decision\|end, text_it, role?}]`, `edges: [[from, to, "label"?]]`: one main chain, a decision has 2 or 3 branches, no cycles |
 | `table` (schema) | summaries | `header`, `rows` (at most 4 columns, 10 rows) |
+| `map` | where things are: continents, countries, regions of Italy, the ancient Mediterranean | `base` (`world`, `europe`, `africa`, `asia`, `north_america`, `south_america`, `oceania`, `arctic`, `antarctic`, `italy`, `mediterraneo_antico`), `detail`, `graticule`, `highlight: [{id, role?, pattern?}]` (ids of the gazetteer, never names, never coordinates on the ancient base), `bands`, `places: [{id}]`, `points`, `lines`, `routes: [{via: [ids], role?, label_it?}]`, `slider` with `regions_since` (ancient base), `candidates`, `states`. Not yet: `arrows`, `compare`, `inset`, a circle `value` |
+| `insolation` | why the same light warms less far from the equator | `latitudes` (at most 4), `subsolar` (`'23,4'`, `'-23,4'`), `stepper`, `spread`, `states`; the spread 1/cos is computed and printed |
+| `cross_section` | altitude and climate, a river's profile | `x: {to, unit}`, `points: [[x, altitude in m]]`, `features`, `belts: [{from_alt, to_alt, label_it, role?}]`, `lapse: {base_temp, per_km}`, `stepper`; the exaggeration is computed and printed |
 
 What a balance cannot draw: negative terms, negative or zero solutions, and subtraction on a plate have no honest
 picture on a balance. For signs use a `number_line` (jumps); for equations with negative terms use the `example`

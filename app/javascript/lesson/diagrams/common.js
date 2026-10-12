@@ -72,6 +72,12 @@ export function makeContext(data, opts) {
     measure: (text, px = fontPx, maxW) => measure(text, px, maxW),
     state: Math.max(0, opts.state ?? 0),
     tryValue: opts.tryValue,
+    // the contract v2 context (WAVE2 1.2): the mode, the values of the controls the type declares, what the student has opened, and
+    // (select mode) the target set the check asks
+    mode: opts.mode ?? "student",
+    controls: opts.controls ?? {},
+    revealed: opts.revealed ?? [],
+    set: opts.set ?? null,
     pad: Math.round(fontPx * 0.4),
     shapes: [],
     labels: [],

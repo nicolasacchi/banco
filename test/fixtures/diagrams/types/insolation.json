@@ -1,18 +1,15 @@
 {
  "version": 1,
  "type": "insolation",
- "status": "reserved",
+ "status": "available",
  "batch": "w2-1",
  "track": "T5",
  "provisional": false,
- "description": "Skeleton of W2-0 for the track T5: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "description": "Vectors of T5 (W2-1), run by both implementations: lib/lessons/diagrams/insolation.rb in test/lib/lessons/maps_types_test.rb and app/javascript/lesson/diagrams/maps/insolation.js in app/javascript/lesson/test/maps.test.mjs. Columns: schema (valid or invalid), semantic ('ok' or {code, path} of the first finding), layout ('ok' or 'error', at 320, 390, 768 and 1280 px and fontPx 18, 20 and 26), describe (per state, the Italian text of the visible state at the default controls), printed (per state, the strings of L4), targets and neutral (per set, in reading order), reachable, served_select (the neutral projection of a select figure). Invented content only.",
  "vectors": [
   {
    "name": "insolation-example-1",
    "subject": "geography",
-   "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
    "data": {
     "type": "insolation",
     "alt_it": "Il profilo della Terra con raggi paralleli su tre latitudini: la stessa luce si spalma su più terreno lontano dall'equatore.",
@@ -34,7 +31,334 @@
       "op_it": "21 dicembre"
      }
     ]
-   }
+   },
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "La Terra vista di lato, con i raggi del Sole paralleli. Il Sole è alto sopra 23,4° nord. Il raggio a 0°: la luce si spalma su 1,1 volte il terreno. Il raggio a 30° nord: la luce si spalma su 1,0 volte il terreno. Il raggio a 60° nord: la luce si spalma su 1,2 volte il terreno. Il raggio mobile a 10° nord: la luce si spalma su 1,0 volte il terreno. 21 giugno.",
+    "La Terra vista di lato, con i raggi del Sole paralleli. Il Sole è alto sopra 23,4° sud. Il raggio a 0°: la luce si spalma su 1,1 volte il terreno. Il raggio a 30° nord: la luce si spalma su 1,7 volte il terreno. Il raggio a 60° nord: la luce si spalma su 8,7 volte il terreno. Il raggio mobile a 10° nord: la luce si spalma su 1,2 volte il terreno. 21 dicembre."
+   ],
+   "printed": [
+    [
+     "La Terra vista di lato, con i raggi del Sole paralleli. Il Sole è alto sopra 23,4° nord. Il raggio a 0°: la luce si spalma su 1,1 volte il terreno. Il raggio a 30° nord: la luce si spalma su 1,0 volte il terreno. Il raggio a 60° nord: la luce si spalma su 1,2 volte il terreno. Il raggio mobile a 10° nord: la luce si spalma su 1,0 volte il terreno. 21 giugno.",
+     "0°",
+     "30° nord",
+     "60° nord",
+     "1,1",
+     "1,0",
+     "1,2",
+     "21 giugno"
+    ],
+    [
+     "La Terra vista di lato, con i raggi del Sole paralleli. Il Sole è alto sopra 23,4° sud. Il raggio a 0°: la luce si spalma su 1,1 volte il terreno. Il raggio a 30° nord: la luce si spalma su 1,7 volte il terreno. Il raggio a 60° nord: la luce si spalma su 8,7 volte il terreno. Il raggio mobile a 10° nord: la luce si spalma su 1,2 volte il terreno. 21 dicembre.",
+     "0°",
+     "30° nord",
+     "60° nord",
+     "1,1",
+     "1,7",
+     "8,7",
+     "21 dicembre"
+    ]
+   ],
+   "reachable": [
+    "1,1",
+    "1,0",
+    "1,2",
+    "60° sud",
+    "8,7",
+    "50° sud",
+    "3,5",
+    "40° sud",
+    "2,2",
+    "30° sud",
+    "1,7",
+    "20° sud",
+    "1,4",
+    "10° sud",
+    "0°",
+    "10° nord",
+    "20° nord",
+    "30° nord",
+    "40° nord",
+    "50° nord",
+    "60° nord",
+    "70° nord",
+    "1,5",
+    "80° nord",
+    "1,8",
+    "80° sud",
+    "70° sud"
+   ]
+  },
+  {
+   "name": "insolation-equinox-no-stepper",
+   "subject": "geography",
+   "data": {
+    "type": "insolation",
+    "alt_it": "Il profilo della Terra con raggi paralleli del Sole che arrivano su alcune latitudini. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "latitudes": [
+     "0",
+     "30",
+     "60"
+    ],
+    "subsolar": "0"
+   },
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "La Terra vista di lato, con i raggi del Sole paralleli. Il Sole è alto sopra l'equatore. Il raggio a 0°: la luce si spalma su 1,0 volte il terreno. Il raggio a 30° nord: la luce si spalma su 1,2 volte il terreno. Il raggio a 60° nord: la luce si spalma su 2,0 volte il terreno."
+   ],
+   "printed": [
+    [
+     "La Terra vista di lato, con i raggi del Sole paralleli. Il Sole è alto sopra l'equatore. Il raggio a 0°: la luce si spalma su 1,0 volte il terreno. Il raggio a 30° nord: la luce si spalma su 1,2 volte il terreno. Il raggio a 60° nord: la luce si spalma su 2,0 volte il terreno.",
+     "0°",
+     "30° nord",
+     "60° nord",
+     "1,0",
+     "1,2",
+     "2,0"
+    ]
+   ],
+   "reachable": [
+    "1,0",
+    "1,2",
+    "2,0"
+   ]
+  },
+  {
+   "name": "insolation-no-spread",
+   "subject": "geography",
+   "data": {
+    "type": "insolation",
+    "alt_it": "Il profilo della Terra con raggi paralleli del Sole che arrivano su alcune latitudini. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "latitudes": [
+     "-30",
+     "0",
+     "30"
+    ],
+    "spread": false,
+    "caption_it": "Tre raggi uguali."
+   },
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "La Terra vista di lato, con i raggi del Sole paralleli. Il Sole è alto sopra l'equatore. C'è un raggio a 30° sud. C'è un raggio a 0°. C'è un raggio a 30° nord."
+   ],
+   "printed": [
+    [
+     "La Terra vista di lato, con i raggi del Sole paralleli. Il Sole è alto sopra l'equatore. C'è un raggio a 30° sud. C'è un raggio a 0°. C'è un raggio a 30° nord.",
+     "30° sud",
+     "0°",
+     "30° nord",
+     "Tre raggi uguali."
+    ]
+   ],
+   "reachable": [
+    "1,2",
+    "1,0"
+   ]
+  },
+  {
+   "name": "insolation-four-latitudes-stepper",
+   "subject": "geography",
+   "data": {
+    "type": "insolation",
+    "alt_it": "Il profilo della Terra con raggi paralleli del Sole che arrivano su alcune latitudini. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "latitudes": [
+     "-60",
+     "-30",
+     "30",
+     "60"
+    ],
+    "stepper": true,
+    "subsolar": "23,4"
+   },
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "La Terra vista di lato, con i raggi del Sole paralleli. Il Sole è alto sopra 23,4° nord. Il raggio a 60° sud: la luce si spalma su 8,7 volte il terreno. Il raggio a 30° sud: la luce si spalma su 1,7 volte il terreno. Il raggio a 30° nord: la luce si spalma su 1,0 volte il terreno. Il raggio a 60° nord: la luce si spalma su 1,2 volte il terreno. Il raggio mobile a 0°: la luce si spalma su 1,1 volte il terreno."
+   ],
+   "printed": [
+    [
+     "La Terra vista di lato, con i raggi del Sole paralleli. Il Sole è alto sopra 23,4° nord. Il raggio a 60° sud: la luce si spalma su 8,7 volte il terreno. Il raggio a 30° sud: la luce si spalma su 1,7 volte il terreno. Il raggio a 30° nord: la luce si spalma su 1,0 volte il terreno. Il raggio a 60° nord: la luce si spalma su 1,2 volte il terreno. Il raggio mobile a 0°: la luce si spalma su 1,1 volte il terreno.",
+     "60° sud",
+     "30° sud",
+     "30° nord",
+     "60° nord",
+     "8,7",
+     "1,7",
+     "1,0",
+     "1,2"
+    ]
+   ],
+   "reachable": [
+    "8,7",
+    "1,7",
+    "1,0",
+    "1,2",
+    "60° sud",
+    "50° sud",
+    "3,5",
+    "40° sud",
+    "2,2",
+    "30° sud",
+    "20° sud",
+    "1,4",
+    "10° sud",
+    "0°",
+    "1,1",
+    "10° nord",
+    "20° nord",
+    "30° nord",
+    "40° nord",
+    "50° nord",
+    "60° nord",
+    "70° nord",
+    "1,5",
+    "80° nord",
+    "1,8"
+   ]
+  },
+  {
+   "name": "insolation-solstice-low-sun",
+   "subject": "geography",
+   "data": {
+    "type": "insolation",
+    "alt_it": "Il profilo della Terra con raggi paralleli del Sole che arrivano su alcune latitudini. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "latitudes": [
+     "0",
+     "30",
+     "60"
+    ],
+    "subsolar": "-23,4"
+   },
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "La Terra vista di lato, con i raggi del Sole paralleli. Il Sole è alto sopra 23,4° sud. Il raggio a 0°: la luce si spalma su 1,1 volte il terreno. Il raggio a 30° nord: la luce si spalma su 1,7 volte il terreno. Il raggio a 60° nord: la luce si spalma su 8,7 volte il terreno."
+   ],
+   "printed": [
+    [
+     "La Terra vista di lato, con i raggi del Sole paralleli. Il Sole è alto sopra 23,4° sud. Il raggio a 0°: la luce si spalma su 1,1 volte il terreno. Il raggio a 30° nord: la luce si spalma su 1,7 volte il terreno. Il raggio a 60° nord: la luce si spalma su 8,7 volte il terreno.",
+     "0°",
+     "30° nord",
+     "60° nord",
+     "1,1",
+     "1,7",
+     "8,7"
+    ]
+   ],
+   "reachable": [
+    "1,1",
+    "1,7",
+    "8,7"
+   ]
+  },
+  {
+   "name": "insolation-bad-subsolar",
+   "subject": "geography",
+   "data": {
+    "type": "insolation",
+    "alt_it": "Il profilo della Terra con raggi paralleli del Sole che arrivano su alcune latitudini. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "latitudes": [
+     "0",
+     "30"
+    ],
+    "subsolar": "30"
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/subsolar"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "insolation-bad-latitude",
+   "subject": "geography",
+   "data": {
+    "type": "insolation",
+    "alt_it": "Il profilo della Terra con raggi paralleli del Sole che arrivano su alcune latitudini. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "latitudes": [
+     "100"
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/latitudes/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "insolation-bad-grazing",
+   "subject": "geography",
+   "data": {
+    "type": "insolation",
+    "alt_it": "Il profilo della Terra con raggi paralleli del Sole che arrivano su alcune latitudini. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "latitudes": [
+     "80"
+    ],
+    "subsolar": "-23,4"
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/latitudes/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "insolation-bad-duplicate",
+   "subject": "geography",
+   "data": {
+    "type": "insolation",
+    "alt_it": "Il profilo della Terra con raggi paralleli del Sole che arrivano su alcune latitudini. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "latitudes": [
+     "30",
+     "30"
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/latitudes"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "insolation-bad-state",
+   "subject": "geography",
+   "data": {
+    "type": "insolation",
+    "alt_it": "Il profilo della Terra con raggi paralleli del Sole che arrivano su alcune latitudini. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "latitudes": [
+     "0",
+     "30"
+    ],
+    "states": [
+     {
+      "subsolar": "0"
+     },
+     {
+      "subsolar": "-23,4",
+      "latitudes": [
+       "80"
+      ]
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/states/1/latitudes/0"
+   },
+   "layout": "error"
   },
   {
    "name": "insolation-unknown-field",

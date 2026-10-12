@@ -36,7 +36,7 @@ module Maps
     # detail: continents | states | regions (italy) | historical
     BASES = {
       "world" => { title_it: "Il mondo", proj: "equal_earth", window: [ -180, -90, 180, 90 ], crop: false, res: 110, detail: "continents", river_rank: 2, lake_rank: 1 },
-      "europe" => { title_it: "Europa", proj: "equal_earth", window: [ -25, 34, 45, 72 ], res: 50, detail: "states", river_rank: 4, lake_rank: 2 },
+      "europe" => { title_it: "Europa", proj: "mercator", window: [ -25, 34, 45, 72 ], res: 50, detail: "states", river_rank: 4, lake_rank: 2 },
       "africa" => { title_it: "Africa", proj: "equal_earth", window: [ -20, -36, 53, 38 ], res: 110, detail: "states", river_rank: 3, lake_rank: 2 },
       "asia" => { title_it: "Asia", proj: "equal_earth", window: [ 25, -11, 180, 78 ], res: 110, detail: "states", river_rank: 3, lake_rank: 2 },
       "north_america" => { title_it: "America del Nord", proj: "equal_earth", window: [ -170, 5, -20, 84 ], res: 110, detail: "states", river_rank: 3, lake_rank: 3 },
@@ -44,7 +44,7 @@ module Maps
       "oceania" => { title_it: "Oceania", proj: "equal_earth", window: [ 110, -50, 180, 0 ], res: 110, detail: "states", river_rank: 3, lake_rank: 2 },
       "arctic" => { title_it: "L'Artico", proj: "lambert_azimuthal", pole: "north", window: [ -180, 60, 180, 90 ], crop: false, res: 110, detail: "states", river_rank: 2, lake_rank: 1 },
       "antarctic" => { title_it: "L'Antartide", proj: "lambert_azimuthal", pole: "south", window: [ -180, -90, 180, -60 ], crop: false, res: 110, detail: "states", river_rank: 0, lake_rank: 0 },
-      "italy" => { title_it: "Italia", proj: "equal_earth", window: [ 6, 35.4, 19, 47.3 ], res: 50, detail: "regions", river_rank: 4, lake_rank: 4 },
+      "italy" => { title_it: "Italia", proj: "mercator", window: [ 6, 35.4, 19, 47.3 ], res: 50, detail: "regions", river_rank: 4, lake_rank: 4 },
       "mediterraneo_antico" => { title_it: "Il Mediterraneo antico", proj: "mercator", window: [ -12, 24, 58, 58 ], res: 50, detail: "historical", river_rank: 4, lake_rank: 3 }
     }.freeze
 

@@ -17,7 +17,8 @@ export default class extends Controller {
   }
 
   async mount(teacher) {
-    const { renderLesson } = await import("lesson/render")
+    const { renderLesson, preloadTypes } = await import("lesson/render")
+    await preloadTypes(JSON.parse(this.bodyTarget.textContent))
     const keep = this.api?.current?.() ?? 0
     this.api?.destroy()
     const base = `/teacher/lesson-revisions/${this.revisionIdValue}`

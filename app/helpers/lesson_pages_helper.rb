@@ -5,6 +5,13 @@ module LessonPagesHelper
   # The texts of the page, one nested object (config/locales/lesson.it.yml).
   def lesson2_texts = I18n.t("lesson2").deep_stringify_keys
 
+  # The stylesheet of each wave 2 family a lesson draws a type of (app/assets/stylesheets/lesson/FAMILY.css), found in the body.
+  def lesson_family_stylesheets(body)
+    types = body.to_json.scan(/"type":"([a-z_]+)"/).flatten.uniq
+    families = types.filter_map { |t| Lessons::Types.entry(:diagram, t)&.fetch("family") }.uniq - [ "core" ]
+    safe_join(families.sort.map { |f| stylesheet_link_tag("lesson/#{f}") }, "\n")
+  end
+
   # The item templates' texts that the checks reuse (number, fraction, choice, text), and the accents label.
   def lesson2_item_texts = I18n.t("items").merge(accents_label: I18n.t("accents.label")).deep_stringify_keys
 

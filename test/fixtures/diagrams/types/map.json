@@ -1,18 +1,15 @@
 {
  "version": 1,
  "type": "map",
- "status": "reserved",
+ "status": "available",
  "batch": "w2-1",
  "track": "T5",
  "provisional": false,
- "description": "Skeleton of W2-0 for the track T5: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "description": "Vectors of T5 (W2-1), run by both implementations: lib/lessons/diagrams/map.rb in test/lib/lessons/maps_types_test.rb and app/javascript/lesson/diagrams/maps/map.js in app/javascript/lesson/test/maps.test.mjs. Columns: schema (valid or invalid), semantic ('ok' or {code, path} of the first finding), layout ('ok' or 'error', at 320, 390, 768 and 1280 px and fontPx 18, 20 and 26), describe (per state, the Italian text of the visible state at the default controls), printed (per state, the strings of L4), targets and neutral (per set, in reading order), reachable, served_select (the neutral projection of a select figure). Invented content only.",
  "vectors": [
   {
    "name": "map-example-1",
    "subject": "geography",
-   "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
    "data": {
     "type": "map",
     "alt_it": "Una carta dell'America del Sud con il Brasile in evidenza, l'equatore e il tropico, e un punto di prova sulla costa.",
@@ -91,7 +88,2248 @@
       "op_it": "Oggi"
      }
     ]
+   },
+   "note": "the plan's example: arrows and the proportional circle are held back for the map layers (W2-2), so Ruby refuses it at the first of them",
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/points/0/value"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-south-america-core",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta dell'America del Sud con il Brasile in evidenza, l'equatore e il tropico, una fascia calda e un punto sulla costa. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "detail": "states",
+    "graticule": [
+     "equator",
+     "tropics"
+    ],
+    "highlight": [
+     {
+      "id": "BRA",
+      "role": "place",
+      "pattern": "solid"
+     },
+     {
+      "id": "ARG",
+      "role": "temperate"
+     }
+    ],
+    "bands": [
+     {
+      "from_lat": "-23,4",
+      "to_lat": "23,4",
+      "role": "hot",
+      "label_it": "fascia calda"
+     }
+    ],
+    "places": [
+     {
+      "id": "brasilia"
+     }
+    ],
+    "points": [
+     {
+      "lat": "0",
+      "lon": "-51,1",
+      "label_it": "Macapá"
+     }
+    ],
+    "lines": [
+     {
+      "id": "amazon"
+     },
+     {
+      "kind": "meridian",
+      "lon": "-46,6",
+      "label_it": "Tordesillas, 1494"
+     }
+    ],
+    "candidates": [
+     "CHL",
+     "ECU",
+     "PER",
+     "BOL"
+    ],
+    "states": [
+     {
+      "lines": [
+       {
+        "id": "amazon"
+       }
+      ],
+      "op_it": "Il fiume"
+     },
+     {
+      "lines": [],
+      "highlight": [
+       {
+        "id": "BRA",
+        "role": "place"
+       }
+      ],
+      "op_it": "Solo il Brasile"
+     }
+    ]
+   },
+   "note": "the core layers on a modern base, two states, candidates for the areas set",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Carta: America del Sud. Il nord è in alto, l'ovest a sinistra e l'est a destra. Si vedono: l'equatore e i tropici. In evidenza: Brasile e Argentina. Fascia calda, da 23,4° sud a 23,4° nord. Luoghi: Brasilia. Macapá: 0°, 51,1° ovest. Linea: Rio delle Amazzoni. Il fiume.",
+    "Carta: America del Sud. Il nord è in alto, l'ovest a sinistra e l'est a destra. Si vedono: l'equatore e i tropici. In evidenza: Brasile. Fascia calda, da 23,4° sud a 23,4° nord. Luoghi: Brasilia. Macapá: 0°, 51,1° ovest. Solo il Brasile."
+   ],
+   "printed": [
+    [
+     "Carta: America del Sud. Il nord è in alto, l'ovest a sinistra e l'est a destra. Si vedono: l'equatore e i tropici. In evidenza: Brasile e Argentina. Fascia calda, da 23,4° sud a 23,4° nord. Luoghi: Brasilia. Macapá: 0°, 51,1° ovest. Linea: Rio delle Amazzoni. Il fiume.",
+     "Brasile",
+     "Argentina",
+     "Brasilia",
+     "Macapá",
+     "fascia calda",
+     "Rio delle Amazzoni",
+     "Il fiume"
+    ],
+    [
+     "Carta: America del Sud. Il nord è in alto, l'ovest a sinistra e l'est a destra. Si vedono: l'equatore e i tropici. In evidenza: Brasile. Fascia calda, da 23,4° sud a 23,4° nord. Luoghi: Brasilia. Macapá: 0°, 51,1° ovest. Solo il Brasile.",
+     "Brasile",
+     "Brasilia",
+     "Macapá",
+     "fascia calda",
+     "Solo il Brasile"
+    ]
+   ],
+   "targets": {
+    "areas": [
+     "ECU",
+     "PER",
+     "BOL",
+     "CHL"
+    ],
+    "places": [
+     "brasilia"
+    ],
+    "bands": [
+     "lat:-23,4:23,4"
+    ],
+    "lines": [
+     "amazon"
+    ],
+    "points": [
+     "pt:0:-51,1"
+    ]
+   },
+   "neutral": {
+    "areas": [
+     "a nord-ovest",
+     "a ovest",
+     "al centro",
+     "a sud-ovest"
+    ],
+    "places": [
+     "al centro"
+    ],
+    "bands": [
+     "a nord"
+    ],
+    "lines": [
+     "a nord"
+    ],
+    "points": [
+     "a nord"
+    ]
+   },
+   "served_select": {
+    "areas": {
+     "type": "map",
+     "alt_it": "Una carta dell'America del Sud con il Brasile in evidenza, l'equatore e il tropico, una fascia calda e un punto sulla costa. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "south_america",
+     "detail": "states",
+     "graticule": [
+      "equator",
+      "tropics"
+     ],
+     "candidates": [
+      "CHL",
+      "ECU",
+      "PER",
+      "BOL"
+     ]
+    },
+    "places": {
+     "type": "map",
+     "alt_it": "Una carta dell'America del Sud con il Brasile in evidenza, l'equatore e il tropico, una fascia calda e un punto sulla costa. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "south_america",
+     "detail": "states",
+     "graticule": [
+      "equator",
+      "tropics"
+     ],
+     "candidates": [
+      "CHL",
+      "ECU",
+      "PER",
+      "BOL"
+     ],
+     "places": [
+      {
+       "id": "brasilia"
+      }
+     ]
+    },
+    "bands": {
+     "type": "map",
+     "alt_it": "Una carta dell'America del Sud con il Brasile in evidenza, l'equatore e il tropico, una fascia calda e un punto sulla costa. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "south_america",
+     "detail": "states",
+     "graticule": [
+      "equator",
+      "tropics"
+     ],
+     "candidates": [
+      "CHL",
+      "ECU",
+      "PER",
+      "BOL"
+     ],
+     "bands": [
+      {
+       "from_lat": "-23,4",
+       "to_lat": "23,4"
+      }
+     ]
+    },
+    "lines": {
+     "type": "map",
+     "alt_it": "Una carta dell'America del Sud con il Brasile in evidenza, l'equatore e il tropico, una fascia calda e un punto sulla costa. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "south_america",
+     "detail": "states",
+     "graticule": [
+      "equator",
+      "tropics"
+     ],
+     "candidates": [
+      "CHL",
+      "ECU",
+      "PER",
+      "BOL"
+     ],
+     "lines": [
+      {
+       "id": "amazon"
+      }
+     ]
+    },
+    "points": {
+     "type": "map",
+     "alt_it": "Una carta dell'America del Sud con il Brasile in evidenza, l'equatore e il tropico, una fascia calda e un punto sulla costa. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "south_america",
+     "detail": "states",
+     "graticule": [
+      "equator",
+      "tropics"
+     ],
+     "candidates": [
+      "CHL",
+      "ECU",
+      "PER",
+      "BOL"
+     ],
+     "points": [
+      {
+       "lat": "0",
+       "lon": "-51,1"
+      }
+     ]
+    }
    }
+  },
+  {
+   "name": "map-south-america-neutral",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta dell'America del Sud con il Brasile in evidenza, l'equatore e il tropico, una fascia calda e un punto sulla costa. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "detail": "states",
+    "graticule": [
+     "equator",
+     "tropics"
+    ],
+    "highlight": [
+     {
+      "id": "BRA",
+      "role": "place",
+      "pattern": "solid"
+     },
+     {
+      "id": "ARG",
+      "role": "temperate"
+     }
+    ],
+    "bands": [
+     {
+      "from_lat": "-23,4",
+      "to_lat": "23,4",
+      "role": "hot",
+      "label_it": "fascia calda"
+     }
+    ],
+    "places": [
+     {
+      "id": "brasilia"
+     }
+    ],
+    "points": [
+     {
+      "lat": "0",
+      "lon": "-51,1",
+      "label_it": "Macapá"
+     }
+    ],
+    "lines": [
+     {
+      "id": "amazon"
+     },
+     {
+      "kind": "meridian",
+      "lon": "-46,6",
+      "label_it": "Tordesillas, 1494"
+     }
+    ]
+   },
+   "note": "no candidates: the areas that are big enough to touch, in reading order",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Carta: America del Sud. Il nord è in alto, l'ovest a sinistra e l'est a destra. Si vedono: l'equatore e i tropici. In evidenza: Brasile e Argentina. Fascia calda, da 23,4° sud a 23,4° nord. Luoghi: Brasilia. Macapá: 0°, 51,1° ovest. Linea: Rio delle Amazzoni. Meridiano 46,6° ovest: Tordesillas, 1494."
+   ],
+   "printed": [
+    [
+     "Carta: America del Sud. Il nord è in alto, l'ovest a sinistra e l'est a destra. Si vedono: l'equatore e i tropici. In evidenza: Brasile e Argentina. Fascia calda, da 23,4° sud a 23,4° nord. Luoghi: Brasilia. Macapá: 0°, 51,1° ovest. Linea: Rio delle Amazzoni. Meridiano 46,6° ovest: Tordesillas, 1494.",
+     "Brasile",
+     "Argentina",
+     "Brasilia",
+     "Macapá",
+     "fascia calda",
+     "Rio delle Amazzoni",
+     "Tordesillas, 1494"
+    ]
+   ],
+   "targets": {
+    "areas": [
+     "PAN",
+     "VEN",
+     "GUY",
+     "SUR",
+     "COL",
+     "FRA",
+     "ECU",
+     "PER",
+     "BRA",
+     "BOL",
+     "PRY",
+     "URY",
+     "ARG",
+     "CHL"
+    ],
+    "places": [
+     "brasilia"
+    ],
+    "bands": [
+     "lat:-23,4:23,4"
+    ],
+    "lines": [
+     "amazon",
+     "meridian:-46,6"
+    ],
+    "points": [
+     "pt:0:-51,1"
+    ]
+   },
+   "neutral": {
+    "areas": [
+     "a nord-ovest",
+     "a nord-ovest",
+     "a nord",
+     "a nord",
+     "a nord-ovest",
+     "a nord",
+     "a nord-ovest",
+     "a ovest",
+     "al centro",
+     "al centro",
+     "al centro",
+     "a sud",
+     "a sud",
+     "a sud-ovest"
+    ],
+    "places": [
+     "al centro"
+    ],
+    "bands": [
+     "a nord"
+    ],
+    "lines": [
+     "a nord",
+     "al centro"
+    ],
+    "points": [
+     "a nord"
+    ]
+   },
+   "served_select": {
+    "areas": {
+     "type": "map",
+     "alt_it": "Una carta dell'America del Sud con il Brasile in evidenza, l'equatore e il tropico, una fascia calda e un punto sulla costa. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "south_america",
+     "detail": "states",
+     "graticule": [
+      "equator",
+      "tropics"
+     ]
+    },
+    "places": {
+     "type": "map",
+     "alt_it": "Una carta dell'America del Sud con il Brasile in evidenza, l'equatore e il tropico, una fascia calda e un punto sulla costa. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "south_america",
+     "detail": "states",
+     "graticule": [
+      "equator",
+      "tropics"
+     ],
+     "places": [
+      {
+       "id": "brasilia"
+      }
+     ]
+    },
+    "bands": {
+     "type": "map",
+     "alt_it": "Una carta dell'America del Sud con il Brasile in evidenza, l'equatore e il tropico, una fascia calda e un punto sulla costa. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "south_america",
+     "detail": "states",
+     "graticule": [
+      "equator",
+      "tropics"
+     ],
+     "bands": [
+      {
+       "from_lat": "-23,4",
+       "to_lat": "23,4"
+      }
+     ]
+    },
+    "lines": {
+     "type": "map",
+     "alt_it": "Una carta dell'America del Sud con il Brasile in evidenza, l'equatore e il tropico, una fascia calda e un punto sulla costa. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "south_america",
+     "detail": "states",
+     "graticule": [
+      "equator",
+      "tropics"
+     ],
+     "lines": [
+      {
+       "id": "amazon"
+      },
+      {
+       "kind": "meridian",
+       "lon": "-46,6"
+      }
+     ]
+    },
+    "points": {
+     "type": "map",
+     "alt_it": "Una carta dell'America del Sud con il Brasile in evidenza, l'equatore e il tropico, una fascia calda e un punto sulla costa. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "south_america",
+     "detail": "states",
+     "graticule": [
+      "equator",
+      "tropics"
+     ],
+     "points": [
+      {
+       "lat": "0",
+       "lon": "-51,1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "map-world-continents",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Il mondo con l'Europa e l'Africa in evidenza, l'equatore, i tropici e due fasce di latitudine. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "world",
+    "graticule": [
+     "equator",
+     "tropics",
+     "polar_circles"
+    ],
+    "highlight": [
+     {
+      "id": "europe",
+      "role": "temperate"
+     },
+     {
+      "id": "africa",
+      "role": "hot"
+     }
+    ],
+    "bands": [
+     {
+      "from_lat": "-23,4",
+      "to_lat": "23,4",
+      "role": "hot"
+     },
+     {
+      "from_lat": "23,4",
+      "to_lat": "66,6",
+      "role": "temperate",
+      "label_it": "zona temperata"
+     }
+    ]
+   },
+   "note": "the world at continent detail",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Carta: Il mondo. Il nord è in alto, l'ovest a sinistra e l'est a destra. Si vedono: l'equatore, i tropici e i circoli polari. In evidenza: Europa e Africa. Fascia, da 23,4° sud a 23,4° nord. Zona temperata, da 23,4° nord a 66,6° nord."
+   ],
+   "printed": [
+    [
+     "Carta: Il mondo. Il nord è in alto, l'ovest a sinistra e l'est a destra. Si vedono: l'equatore, i tropici e i circoli polari. In evidenza: Europa e Africa. Fascia, da 23,4° sud a 23,4° nord. Zona temperata, da 23,4° nord a 66,6° nord.",
+     "Europa",
+     "Africa",
+     "zona temperata"
+    ]
+   ],
+   "targets": {
+    "areas": [
+     "europe",
+     "north_america",
+     "asia",
+     "africa",
+     "south_america",
+     "oceania"
+    ],
+    "bands": [
+     "lat:23,4:66,6",
+     "lat:-23,4:23,4"
+    ]
+   },
+   "neutral": {
+    "areas": [
+     "a nord",
+     "a nord-ovest",
+     "a nord-est",
+     "al centro",
+     "al centro",
+     "a sud-est"
+    ],
+    "bands": [
+     "a nord",
+     "al centro"
+    ]
+   },
+   "served_select": {
+    "areas": {
+     "type": "map",
+     "alt_it": "Il mondo con l'Europa e l'Africa in evidenza, l'equatore, i tropici e due fasce di latitudine. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "world",
+     "graticule": [
+      "equator",
+      "tropics",
+      "polar_circles"
+     ]
+    },
+    "bands": {
+     "type": "map",
+     "alt_it": "Il mondo con l'Europa e l'Africa in evidenza, l'equatore, i tropici e due fasce di latitudine. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "world",
+     "graticule": [
+      "equator",
+      "tropics",
+      "polar_circles"
+     ],
+     "bands": [
+      {
+       "from_lat": "-23,4",
+       "to_lat": "23,4"
+      },
+      {
+       "from_lat": "23,4",
+       "to_lat": "66,6"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "map-world-states",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Il mondo con tutti gli stati e il Brasile, l'India e l'Italia in evidenza con trame diverse. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "world",
+    "detail": "states",
+    "highlight": [
+     {
+      "id": "BRA",
+      "role": "place"
+     },
+     {
+      "id": "IND",
+      "role": "hot"
+     },
+     {
+      "id": "ITA",
+      "role": "temperate"
+     }
+    ]
+   },
+   "note": "countries; three roles get three patterns",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Carta: Il mondo. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Brasile, India e Italia."
+   ],
+   "printed": [
+    [
+     "Carta: Il mondo. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Brasile, India e Italia.",
+     "Brasile",
+     "India",
+     "Italia"
+    ]
+   ]
+  },
+  {
+   "name": "map-italy-regions",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "L'Italia con le sue venti regioni, il Lazio e la Toscana in evidenza e Roma segnata. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "italy",
+    "highlight": [
+     {
+      "id": "lazio",
+      "role": "place"
+     },
+     {
+      "id": "toscana",
+      "role": "temperate",
+      "pattern": "dots"
+     }
+    ],
+    "places": [
+     {
+      "id": "rome"
+     }
+    ],
+    "candidates": [
+     "lazio",
+     "toscana",
+     "umbria",
+     "marche"
+    ]
+   },
+   "note": "the regions of Italy; the neighbours are context",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Carta: Italia. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Lazio e Toscana. Luoghi: Roma."
+   ],
+   "printed": [
+    [
+     "Carta: Italia. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Lazio e Toscana. Luoghi: Roma.",
+     "Lazio",
+     "Toscana",
+     "Roma"
+    ]
+   ],
+   "targets": {
+    "areas": [
+     "toscana",
+     "marche",
+     "umbria",
+     "lazio"
+    ],
+    "places": [
+     "rome"
+    ]
+   },
+   "neutral": {
+    "areas": [
+     "al centro",
+     "al centro",
+     "al centro",
+     "al centro"
+    ],
+    "places": [
+     "al centro"
+    ]
+   },
+   "served_select": {
+    "areas": {
+     "type": "map",
+     "alt_it": "L'Italia con le sue venti regioni, il Lazio e la Toscana in evidenza e Roma segnata. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "italy",
+     "candidates": [
+      "lazio",
+      "toscana",
+      "umbria",
+      "marche"
+     ]
+    },
+    "places": {
+     "type": "map",
+     "alt_it": "L'Italia con le sue venti regioni, il Lazio e la Toscana in evidenza e Roma segnata. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "italy",
+     "candidates": [
+      "lazio",
+      "toscana",
+      "umbria",
+      "marche"
+     ],
+     "places": [
+      {
+       "id": "rome"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "map-italy-states",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "L'Italia come un solo stato con i paesi vicini e il Mediterraneo. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "italy",
+    "detail": "states",
+    "highlight": [
+     {
+      "id": "ITA",
+      "role": "place"
+     }
+    ]
+   },
+   "note": "the regions merged into one unit",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Carta: Italia. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia."
+   ],
+   "printed": [
+    [
+     "Carta: Italia. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia.",
+     "Italia"
+    ]
+   ]
+  },
+  {
+   "name": "map-arctic",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta del Polo Nord con il circolo polare e una fascia di latitudine. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "arctic",
+    "graticule": [
+     "polar_circles"
+    ],
+    "bands": [
+     {
+      "from_lat": "66,6",
+      "to_lat": "90",
+      "role": "cold",
+      "label_it": "zona polare"
+     }
+    ]
+   },
+   "note": "a polar base: no compass sides, an even-odd ring for the band",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Carta: L'Artico. Il polo è al centro della carta. Si vedono: i circoli polari. Zona polare, da 66,6° nord a 90° nord."
+   ],
+   "printed": [
+    [
+     "Carta: L'Artico. Il polo è al centro della carta. Si vedono: i circoli polari. Zona polare, da 66,6° nord a 90° nord.",
+     "zona polare"
+    ]
+   ],
+   "targets": {
+    "areas": [
+     "USA",
+     "CAN",
+     "RUS",
+     "GRL",
+     "FIN",
+     "ISL",
+     "NOR",
+     "SWE"
+    ],
+    "bands": [
+     "lat:66,6:90"
+    ]
+   },
+   "neutral": {
+    "areas": [
+     "in alto a sinistra",
+     "a sinistra",
+     "a destra",
+     "in basso a sinistra",
+     "in basso a destra",
+     "in basso",
+     "in basso",
+     "in basso"
+    ],
+    "bands": [
+     "in basso"
+    ]
+   },
+   "served_select": {
+    "areas": {
+     "type": "map",
+     "alt_it": "Una carta del Polo Nord con il circolo polare e una fascia di latitudine. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "arctic",
+     "graticule": [
+      "polar_circles"
+     ]
+    },
+    "bands": {
+     "type": "map",
+     "alt_it": "Una carta del Polo Nord con il circolo polare e una fascia di latitudine. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "arctic",
+     "graticule": [
+      "polar_circles"
+     ],
+     "bands": [
+      {
+       "from_lat": "66,6",
+       "to_lat": "90"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "map-ancient-slider",
+   "subject": "history",
+   "data": {
+    "type": "map",
+    "alt_it": "Il Mediterraneo antico: Roma si allarga dall'Italia verso la Sicilia, la Spagna e l'Africa, con alcuni luoghi segnati. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "mediterraneo_antico",
+    "places": [
+     {
+      "id": "roma"
+     },
+     {
+      "id": "cartagine"
+     }
+    ],
+    "highlight": [
+     {
+      "id": "italia",
+      "role": "rome"
+     }
+    ],
+    "slider": {
+     "from": "-264",
+     "to": "-133"
+    },
+    "regions_since": [
+     {
+      "id": "sicilia",
+      "since": "-241",
+      "role": "rome"
+     },
+     {
+      "id": "sardegna-corsica",
+      "since": "-238",
+      "role": "rome"
+     },
+     {
+      "id": "hispania",
+      "since": "-197",
+      "role": "rome"
+     },
+     {
+      "id": "africa-proconsolare",
+      "since": "-146",
+      "role": "rome"
+     },
+     {
+      "id": "macedonia",
+      "since": "-146",
+      "role": "rome"
+     }
+    ],
+    "candidates": [
+     "sicilia",
+     "hispania",
+     "africa-proconsolare",
+     "macedonia"
+    ]
+   },
+   "note": "the ancient base: a year slider with regions_since, places, Confini approssimativi",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 264 a.C.. Luoghi: Roma e Cartagine."
+   ],
+   "printed": [
+    [
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 264 a.C.. Luoghi: Roma e Cartagine.",
+     "Italia",
+     "Roma",
+     "Cartagine",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 263 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 262 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 261 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 260 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 259 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 258 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 257 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 256 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 255 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 254 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 253 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 252 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 251 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 250 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 249 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 248 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 247 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 246 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 245 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 244 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 243 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 242 a.C.. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 241 a.C. in evidenza: Sicilia. Luoghi: Roma e Cartagine.",
+     "Sicilia",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 240 a.C. in evidenza: Sicilia. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 239 a.C. in evidenza: Sicilia. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 238 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Sardegna e Corsica",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 237 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 236 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 235 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 234 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 233 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 232 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 231 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 230 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 229 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 228 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 227 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 226 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 225 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 224 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 223 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 222 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 221 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 220 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 219 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 218 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 217 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 216 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 215 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 214 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 213 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 212 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 211 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 210 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 209 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 208 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 207 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 206 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 205 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 204 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 203 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 202 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 201 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 200 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 199 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 198 a.C. in evidenza: Sicilia e Sardegna e Corsica. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 197 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Hispania",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 196 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 195 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 194 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 193 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 192 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 191 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 190 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 189 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 188 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 187 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 186 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 185 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 184 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 183 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 182 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 181 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 180 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 179 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 178 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 177 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 176 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 175 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 174 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 173 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 172 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 171 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 170 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 169 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 168 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 167 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 166 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 165 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 164 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 163 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 162 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 161 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 160 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 159 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 158 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 157 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 156 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 155 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 154 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 153 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 152 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 151 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 150 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 149 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 148 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 147 a.C. in evidenza: Sicilia, Sardegna e Corsica e Hispania. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 146 a.C. in evidenza: Sicilia, Sardegna e Corsica, Hispania, Africa (proconsolare) e Macedonia. Luoghi: Roma e Cartagine.",
+     "Africa (proconsolare)",
+     "Macedonia",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 145 a.C. in evidenza: Sicilia, Sardegna e Corsica, Hispania, Africa (proconsolare) e Macedonia. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 144 a.C. in evidenza: Sicilia, Sardegna e Corsica, Hispania, Africa (proconsolare) e Macedonia. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 143 a.C. in evidenza: Sicilia, Sardegna e Corsica, Hispania, Africa (proconsolare) e Macedonia. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 142 a.C. in evidenza: Sicilia, Sardegna e Corsica, Hispania, Africa (proconsolare) e Macedonia. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 141 a.C. in evidenza: Sicilia, Sardegna e Corsica, Hispania, Africa (proconsolare) e Macedonia. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 140 a.C. in evidenza: Sicilia, Sardegna e Corsica, Hispania, Africa (proconsolare) e Macedonia. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 139 a.C. in evidenza: Sicilia, Sardegna e Corsica, Hispania, Africa (proconsolare) e Macedonia. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 138 a.C. in evidenza: Sicilia, Sardegna e Corsica, Hispania, Africa (proconsolare) e Macedonia. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 137 a.C. in evidenza: Sicilia, Sardegna e Corsica, Hispania, Africa (proconsolare) e Macedonia. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 136 a.C. in evidenza: Sicilia, Sardegna e Corsica, Hispania, Africa (proconsolare) e Macedonia. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 135 a.C. in evidenza: Sicilia, Sardegna e Corsica, Hispania, Africa (proconsolare) e Macedonia. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 134 a.C. in evidenza: Sicilia, Sardegna e Corsica, Hispania, Africa (proconsolare) e Macedonia. Luoghi: Roma e Cartagine.",
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 133 a.C. in evidenza: Sicilia, Sardegna e Corsica, Hispania, Africa (proconsolare) e Macedonia. Luoghi: Roma e Cartagine.",
+     "Confini approssimativi"
+    ]
+   ],
+   "reachable": [
+    "264 a.C.",
+    "263 a.C.",
+    "262 a.C.",
+    "261 a.C.",
+    "260 a.C.",
+    "259 a.C.",
+    "258 a.C.",
+    "257 a.C.",
+    "256 a.C.",
+    "255 a.C.",
+    "254 a.C.",
+    "253 a.C.",
+    "252 a.C.",
+    "251 a.C.",
+    "250 a.C.",
+    "249 a.C.",
+    "248 a.C.",
+    "247 a.C.",
+    "246 a.C.",
+    "245 a.C.",
+    "244 a.C.",
+    "243 a.C.",
+    "242 a.C.",
+    "241 a.C.",
+    "Sicilia",
+    "240 a.C.",
+    "239 a.C.",
+    "238 a.C.",
+    "Sardegna e Corsica",
+    "237 a.C.",
+    "236 a.C.",
+    "235 a.C.",
+    "234 a.C.",
+    "233 a.C.",
+    "232 a.C.",
+    "231 a.C.",
+    "230 a.C.",
+    "229 a.C.",
+    "228 a.C.",
+    "227 a.C.",
+    "226 a.C.",
+    "225 a.C.",
+    "224 a.C.",
+    "223 a.C.",
+    "222 a.C.",
+    "221 a.C.",
+    "220 a.C.",
+    "219 a.C.",
+    "218 a.C.",
+    "217 a.C.",
+    "216 a.C.",
+    "215 a.C.",
+    "214 a.C.",
+    "213 a.C.",
+    "212 a.C.",
+    "211 a.C.",
+    "210 a.C.",
+    "209 a.C.",
+    "208 a.C.",
+    "207 a.C.",
+    "206 a.C.",
+    "205 a.C.",
+    "204 a.C.",
+    "203 a.C.",
+    "202 a.C.",
+    "201 a.C.",
+    "200 a.C.",
+    "199 a.C.",
+    "198 a.C.",
+    "197 a.C.",
+    "Hispania",
+    "196 a.C.",
+    "195 a.C.",
+    "194 a.C.",
+    "193 a.C.",
+    "192 a.C.",
+    "191 a.C.",
+    "190 a.C.",
+    "189 a.C.",
+    "188 a.C.",
+    "187 a.C.",
+    "186 a.C.",
+    "185 a.C.",
+    "184 a.C.",
+    "183 a.C.",
+    "182 a.C.",
+    "181 a.C.",
+    "180 a.C.",
+    "179 a.C.",
+    "178 a.C.",
+    "177 a.C.",
+    "176 a.C.",
+    "175 a.C.",
+    "174 a.C.",
+    "173 a.C.",
+    "172 a.C.",
+    "171 a.C.",
+    "170 a.C.",
+    "169 a.C.",
+    "168 a.C.",
+    "167 a.C.",
+    "166 a.C.",
+    "165 a.C.",
+    "164 a.C.",
+    "163 a.C.",
+    "162 a.C.",
+    "161 a.C.",
+    "160 a.C.",
+    "159 a.C.",
+    "158 a.C.",
+    "157 a.C.",
+    "156 a.C.",
+    "155 a.C.",
+    "154 a.C.",
+    "153 a.C.",
+    "152 a.C.",
+    "151 a.C.",
+    "150 a.C.",
+    "149 a.C.",
+    "148 a.C.",
+    "147 a.C.",
+    "146 a.C.",
+    "Africa (proconsolare)",
+    "Macedonia",
+    "145 a.C.",
+    "144 a.C.",
+    "143 a.C.",
+    "142 a.C.",
+    "141 a.C.",
+    "140 a.C.",
+    "139 a.C.",
+    "138 a.C.",
+    "137 a.C.",
+    "136 a.C.",
+    "135 a.C.",
+    "134 a.C.",
+    "133 a.C."
+   ],
+   "targets": {
+    "areas": [
+     "macedonia",
+     "hispania",
+     "sicilia",
+     "africa-proconsolare"
+    ],
+    "places": [
+     "roma",
+     "cartagine"
+    ]
+   },
+   "neutral": {
+    "areas": [
+     "al centro",
+     "a ovest",
+     "al centro",
+     "a sud"
+    ],
+    "places": [
+     "al centro",
+     "a sud-ovest"
+    ]
+   },
+   "served_select": {
+    "areas": {
+     "type": "map",
+     "alt_it": "Il Mediterraneo antico: Roma si allarga dall'Italia verso la Sicilia, la Spagna e l'Africa, con alcuni luoghi segnati. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "mediterraneo_antico",
+     "candidates": [
+      "sicilia",
+      "hispania",
+      "africa-proconsolare",
+      "macedonia"
+     ]
+    },
+    "places": {
+     "type": "map",
+     "alt_it": "Il Mediterraneo antico: Roma si allarga dall'Italia verso la Sicilia, la Spagna e l'Africa, con alcuni luoghi segnati. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+     "base": "mediterraneo_antico",
+     "candidates": [
+      "sicilia",
+      "hispania",
+      "africa-proconsolare",
+      "macedonia"
+     ],
+     "places": [
+      {
+       "id": "roma"
+      },
+      {
+       "id": "cartagine"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "map-ancient-fixed-year",
+   "subject": "history",
+   "data": {
+    "type": "map",
+    "alt_it": "Il Mediterraneo antico: Roma si allarga dall'Italia verso la Sicilia, la Spagna e l'Africa, con alcuni luoghi segnati. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "mediterraneo_antico",
+    "places": [
+     {
+      "id": "roma"
+     },
+     {
+      "id": "cartagine"
+     }
+    ],
+    "highlight": [
+     {
+      "id": "italia",
+      "role": "rome"
+     }
+    ],
+    "slider": {
+     "from": "-133",
+     "to": "-133"
+    },
+    "regions_since": [
+     {
+      "id": "sicilia",
+      "since": "-241",
+      "role": "rome"
+     },
+     {
+      "id": "sardegna-corsica",
+      "since": "-238",
+      "role": "rome"
+     },
+     {
+      "id": "hispania",
+      "since": "-197",
+      "role": "rome"
+     },
+     {
+      "id": "africa-proconsolare",
+      "since": "-146",
+      "role": "rome"
+     },
+     {
+      "id": "macedonia",
+      "since": "-146",
+      "role": "rome"
+     }
+    ]
+   },
+   "note": "from equal to to: a year state, no slider",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 133 a.C. in evidenza: Sicilia, Sardegna e Corsica, Hispania, Africa (proconsolare) e Macedonia. Luoghi: Roma e Cartagine."
+   ],
+   "printed": [
+    [
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. In evidenza: Italia. Nel 133 a.C. in evidenza: Sicilia, Sardegna e Corsica, Hispania, Africa (proconsolare) e Macedonia. Luoghi: Roma e Cartagine.",
+     "Italia",
+     "Sicilia",
+     "Sardegna e Corsica",
+     "Hispania",
+     "Africa (proconsolare)",
+     "Macedonia",
+     "Roma",
+     "Cartagine",
+     "Confini approssimativi"
+    ]
+   ]
+  },
+  {
+   "name": "map-ancient-routes-states",
+   "subject": "history",
+   "data": {
+    "type": "map",
+    "alt_it": "Due percorsi dei generali romani nel Mediterraneo, prima verso Roma e poi dalla Gallia al Rubicone. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "mediterraneo_antico",
+    "places": [
+     {
+      "id": "roma"
+     }
+    ],
+    "states": [
+     {
+      "routes": [
+       {
+        "via": [
+         "atene",
+         "roma"
+        ],
+        "role": "rome",
+        "label_it": "Silla, 88 a.C."
+       }
+      ],
+      "op_it": "Silla"
+     },
+     {
+      "routes": [
+       {
+        "via": [
+         "gallia",
+         "rubicone",
+         "roma"
+        ],
+        "role": "rome",
+        "label_it": "Cesare, 49 a.C."
+       }
+      ],
+      "places": [
+       {
+        "id": "rubicone"
+       },
+       {
+        "id": "roma"
+       }
+      ],
+      "op_it": "Cesare"
+     }
+    ]
+   },
+   "note": "routes through regions and places, two states",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. Luoghi: Roma. Percorso (Silla, 88 a.C.): Atene e Roma. Silla.",
+    "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. Luoghi: Rubicone e Roma. Percorso (Cesare, 49 a.C.): Gallia, Rubicone e Roma. Cesare."
+   ],
+   "printed": [
+    [
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. Luoghi: Roma. Percorso (Silla, 88 a.C.): Atene e Roma. Silla.",
+     "Roma",
+     "Silla, 88 a.C.",
+     "Atene",
+     "Silla",
+     "Confini approssimativi"
+    ],
+    [
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. Luoghi: Rubicone e Roma. Percorso (Cesare, 49 a.C.): Gallia, Rubicone e Roma. Cesare.",
+     "Rubicone",
+     "Roma",
+     "Cesare, 49 a.C.",
+     "Gallia",
+     "Cesare",
+     "Confini approssimativi"
+    ]
+   ]
+  },
+  {
+   "name": "map-ancient-many-labels",
+   "subject": "history",
+   "data": {
+    "type": "map",
+    "alt_it": "Il Mediterraneo antico con dodici luoghi segnati da numeri che si leggono nell'elenco sotto la carta. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "mediterraneo_antico",
+    "places": [
+     {
+      "id": "roma"
+     },
+     {
+      "id": "cartagine"
+     },
+     {
+      "id": "atene"
+     },
+     {
+      "id": "alessandria"
+     },
+     {
+      "id": "bisanzio"
+     },
+     {
+      "id": "gerusalemme"
+     },
+     {
+      "id": "ravenna"
+     },
+     {
+      "id": "milano"
+     },
+     {
+      "id": "azio"
+     },
+     {
+      "id": "canne"
+     },
+     {
+      "id": "zama"
+     },
+     {
+      "id": "alesia"
+     }
+    ]
+   },
+   "note": "more than 8 labels: numbered callouts and the legend list",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. Luoghi: Roma, Cartagine, Atene, Alessandria d'Egitto, Bisanzio (poi Costantinopoli), Gerusalemme, Ravenna, Milano, Azio, Canne, Zama e Alesia."
+   ],
+   "printed": [
+    [
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. Luoghi: Roma, Cartagine, Atene, Alessandria d'Egitto, Bisanzio (poi Costantinopoli), Gerusalemme, Ravenna, Milano, Azio, Canne, Zama e Alesia.",
+     "Roma",
+     "Cartagine",
+     "Atene",
+     "Alessandria d'Egitto",
+     "Bisanzio (poi Costantinopoli)",
+     "Gerusalemme",
+     "Ravenna",
+     "Milano",
+     "Azio",
+     "Canne",
+     "Zama",
+     "Alesia",
+     "Confini approssimativi"
+    ]
+   ]
+  },
+  {
+   "name": "map-ancient-grid-polar",
+   "subject": "history",
+   "data": {
+    "type": "map",
+    "alt_it": "Il Mediterraneo antico: Roma si allarga dall'Italia verso la Sicilia, la Spagna e l'Africa, con alcuni luoghi segnati. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "mediterraneo_antico",
+    "places": [
+     {
+      "id": "roma"
+     },
+     {
+      "id": "cartagine"
+     }
+    ],
+    "highlight": [
+     {
+      "id": "italia",
+      "role": "rome"
+     }
+    ],
+    "graticule": [
+     "greenwich"
+    ]
+   },
+   "note": "the Greenwich meridian of the ancient base",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "describe": [
+    "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. Si vedono: il meridiano di Greenwich. In evidenza: Italia. Luoghi: Roma e Cartagine."
+   ],
+   "printed": [
+    [
+     "Carta: Il Mediterraneo antico. Confini approssimativi. Il nord è in alto, l'ovest a sinistra e l'est a destra. Si vedono: il meridiano di Greenwich. In evidenza: Italia. Luoghi: Roma e Cartagine.",
+     "Italia",
+     "Roma",
+     "Cartagine",
+     "Confini approssimativi"
+    ]
+   ]
+  },
+  {
+   "name": "map-bad-highlight-id",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "highlight": [
+     {
+      "id": "XXX"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/highlight/0/id"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-highlight-dup",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "highlight": [
+     {
+      "id": "BRA"
+     },
+     {
+      "id": "BRA"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/highlight"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-highlight-detail",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "detail": "continents",
+    "highlight": [
+     {
+      "id": "BRA"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/highlight/0/id"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-detail-regions",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "detail": "regions"
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/detail"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-place-id",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "places": [
+     {
+      "id": "atlantide"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/places/0/id"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-place-twice",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "places": [
+     {
+      "id": "lima"
+     },
+     {
+      "id": "lima"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/places/1/id"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-point-outside",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "points": [
+     {
+      "lat": "50",
+      "lon": "10",
+      "label_it": "Fuori"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/points/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-point-value",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "points": [
+     {
+      "lat": "0",
+      "lon": "-51,1",
+      "value": "2,1"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/points/0/value"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-band-order",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "bands": [
+     {
+      "from_lat": "10",
+      "to_lat": "-10"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/bands/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-band-outside",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "bands": [
+     {
+      "from_lat": "50",
+      "to_lat": "60"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/bands/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-line-id",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "lines": [
+     {
+      "id": "nilo"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/lines/0/id"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-line-both",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "lines": [
+     {
+      "id": "amazon",
+      "kind": "meridian",
+      "lon": "-60"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/lines/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-meridian-outside",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "lines": [
+     {
+      "kind": "meridian",
+      "lon": "10"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/lines/0/lon"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-graticule",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "graticule": [
+     "greenwich"
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/graticule/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-candidate",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "candidates": [
+     "BRA",
+     "XXX"
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/candidates/1"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-route-via",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "routes": [
+     {
+      "via": [
+       "lima",
+       "atlantide"
+      ]
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/routes/0/via/1"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-arrows",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "arrows": [
+     {
+      "from": [
+       "0",
+       "-50"
+      ],
+      "to": "BRA"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/arrows"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-compare",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "compare": [
+     "BRA",
+     "ARG"
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/compare"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-inset",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "inset": {
+     "base": "world"
+    }
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/inset"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-mercator",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "mercator": true
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/mercator"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-slider-modern",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "slider": {
+     "from": "-264",
+     "to": "-133"
+    }
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/slider"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-since-modern",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "regions_since": [
+     {
+      "id": "BRA",
+      "since": "-100"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/regions_since"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-since-no-slider",
+   "subject": "history",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta antica che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "mediterraneo_antico",
+    "regions_since": [
+     {
+      "id": "sicilia",
+      "since": "-241"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/regions_since"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-since-late",
+   "subject": "history",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta antica che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "mediterraneo_antico",
+    "slider": {
+     "from": "-264",
+     "to": "-200"
+    },
+    "regions_since": [
+     {
+      "id": "sicilia",
+      "since": "-100"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/regions_since/0/since"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-since-region",
+   "subject": "history",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta antica che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "mediterraneo_antico",
+    "slider": {
+     "from": "-264",
+     "to": "-133"
+    },
+    "regions_since": [
+     {
+      "id": "atlantide",
+      "since": "-200"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/regions_since/0/id"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-slider-era",
+   "subject": "history",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta antica che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "mediterraneo_antico",
+    "slider": {
+     "from": "-44",
+     "to": "14"
+    }
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/slider"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-slider-order",
+   "subject": "history",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta antica che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "mediterraneo_antico",
+    "slider": {
+     "from": "-133",
+     "to": "-264"
+    }
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/slider"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-hist-points",
+   "subject": "history",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta antica che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "mediterraneo_antico",
+    "points": [
+     {
+      "lat": "41,9",
+      "lon": "12,5"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/points/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-hist-bands",
+   "subject": "history",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta antica che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "mediterraneo_antico",
+    "bands": [
+     {
+      "from_lat": "30",
+      "to_lat": "40"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/bands/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-hist-meridian",
+   "subject": "history",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta antica che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "mediterraneo_antico",
+    "lines": [
+     {
+      "kind": "meridian",
+      "lon": "10"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/lines/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-hist-detail",
+   "subject": "history",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta antica che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "mediterraneo_antico",
+    "detail": "states"
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/detail"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-hist-graticule",
+   "subject": "history",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta antica che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "mediterraneo_antico",
+    "graticule": [
+     "equator"
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/graticule/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-label-words",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "points": [
+     {
+      "lat": "0",
+      "lon": "-51,1",
+      "label_it": "una due tre quattro cinque sei sette"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/points/0/label_it"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-role",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "highlight": [
+     {
+      "id": "BRA",
+      "role": "rome"
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-ROLE",
+    "path": "/highlight/0/role"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "map-bad-state-id",
+   "subject": "geography",
+   "data": {
+    "type": "map",
+    "alt_it": "Una carta che serve a provare un errore nei dati della figura. Il disegno ha parole semplici e dice che cosa si vede nella carta.",
+    "base": "south_america",
+    "states": [
+     {
+      "highlight": [
+       {
+        "id": "BRA"
+       }
+      ]
+     },
+     {
+      "highlight": [
+       {
+        "id": "XXX"
+       }
+      ]
+     }
+    ]
+   },
+   "schema": "valid",
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/states/1/highlight/0/id"
+   },
+   "layout": "error"
   },
   {
    "name": "map-unknown-field",
