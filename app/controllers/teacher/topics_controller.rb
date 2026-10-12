@@ -3,8 +3,7 @@ module Teacher
   # latest topic revision is what the approval gate calls "read the page" (teacher_viewed_topic); a guest and
   # the student's computer only read.
   class TopicsController < Teacher::BaseController
-    # The box of a lesson/2 holds the free pages' frames (D-281, SPEC B4): this page and the student's lesson page alone may frame the pages origin.
-    content_security_policy { |policy| policy.frame_src Pages.origin }
+    include FramesPagesOrigin
 
     def show
       subject! or return

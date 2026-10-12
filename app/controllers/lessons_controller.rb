@@ -3,8 +3,7 @@
 class LessonsController < ApplicationController
   include StudentCourse
 
-  # The lesson page may frame the pages origin and nothing else (D-281, SPEC B4); every other page keeps frame-src 'none'.
-  content_security_policy { |policy| policy.frame_src Pages.origin }
+  include FramesPagesOrigin
 
   before_action :load_topic
   # The page of a lesson/2 depends on the student (the shuffle, preferences, progress) and on BANCO_LESSON2_ENABLED:

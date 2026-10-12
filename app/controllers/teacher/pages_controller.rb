@@ -4,7 +4,7 @@ module Teacher
   # on Chrome, Firefox, Safari on iPad and iPhone and Chrome on Android, and writes the results in the RUNBOOK; the pages ship only
   # when every "must be blocked" row holds in every browser.
   class PagesController < Teacher::BaseController
-    content_security_policy { |policy| policy.frame_src Pages.origin }
+    include FramesPagesOrigin
 
     def selftest
       @page = Page.find_by(key: "math.pages-selftest")

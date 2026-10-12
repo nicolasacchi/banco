@@ -1,0 +1,15 @@
+Please switch from -n/--name to -i/--include
+
+Run options: -n "/question from the lesson/" --seed 1402
+
+# Running:
+
+.
+
+Finished in 1.459648s, 0.6851 runs/s, 2.7404 assertions/s.
+1 runs, 4 assertions, 0 failures, 0 errors, 0 skips
+
+real	0m2.320s
+user	0m1.653s
+sys	0m0.286s
+== done
