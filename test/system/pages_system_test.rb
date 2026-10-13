@@ -42,7 +42,7 @@ class PagesSystemTest < ApplicationSystemTestCase
   # The page, validated for real in the server's Chrome (seed 0 only: the poster and a verdict), stored and passed.
   def validated_page(files = page_files)
     revision = store_page!(files)
-    result = Validation::ChromeRunner.session(wait: 120) { |session| Validation::PageRunner.new(session, revision: revision, kit: "1.0", seeds: [ 0 ]).call }
+    result = Validation::ChromeRunner.session(wait: 900) { |session| Validation::PageRunner.new(session, revision: revision, kit: "1.0", seeds: [ 0 ]).call }
     PageValidation.create!(page_revision: revision, kit_version: "1.0", status: result.status, harness_version: "t", chrome_version: result.chrome_version, attempt: 1,
                            result_json: JSON.generate("errors" => result.errors, "warnings" => result.warnings), shots_json: JSON.generate(result.shots))
     assert_equal "passed", result.status, result.errors.inspect

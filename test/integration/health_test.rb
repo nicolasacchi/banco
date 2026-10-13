@@ -2,7 +2,10 @@ require "test_helper"
 
 # banco health (GET /api/v1/health): the parts of the installation, read-only.
 class HealthTest < ActionDispatch::IntegrationTest
-  setup { @token = ApiToken.issue!(role: "agent_claude", label: "health test") }
+  setup do
+    @token = ApiToken.issue!(role: "agent_claude", label: "health test")
+    Banco::PagesApp.reset_cookie_count! # the counter is the process's: another test may have left it
+  end
 
   def api(path) = on(:api, path, headers: { "Authorization" => "Bearer #{@token}" })
 

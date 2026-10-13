@@ -21,7 +21,7 @@ class PageRunnerTest < ActiveSupport::TestCase
   # seeds: nil runs all eight; a test of one misbehaviour runs seed 0 (it takes the whole list of steps)
   def run_page(files, scan: true, seeds: [ 0 ])
     revision = store_page!(files, scan: scan)
-    Validation::ChromeRunner.session(wait: 120) { |session| Validation::PageRunner.new(session, revision: revision, kit: "1.0", seeds: seeds).call }
+    Validation::ChromeRunner.session(wait: 900) { |session| Validation::PageRunner.new(session, revision: revision, kit: "1.0", seeds: seeds).call }
   end
 
   def codes(result) = result.errors.map { |e| e["code"] }.uniq

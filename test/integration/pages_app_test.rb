@@ -18,7 +18,10 @@ class PagesAppTest < ActiveSupport::TestCase
     @env = { "BANCO_PAGES_DIR" => nil }
   end
 
-  teardown { FileUtils.rm_rf(@dir) }
+  teardown do
+    FileUtils.rm_rf(@dir)
+    Banco::PagesApp.reset_cookie_count!
+  end
 
   def get(app, path, headers = {}, method: "GET")
     status, h, body = app.call(Rack::MockRequest.env_for(path, { method: method }.merge(headers)))
