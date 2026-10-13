@@ -31,11 +31,9 @@ export const inside = (ctx, r) => r.x >= 0 && r.x + r.w <= ctx.width
 
 // A label with a plate behind it so that a line passing under stays readable: the plate is the label's own background (CSS dg-plate).
 export function plateLabel(ctx, text, cx, cy, { maxW, cls = "", key, role } = {}) {
-  const probe = ctx.measure(text, ctx.fontPx, maxW, `dg-plate ${cls}`.trim())
+  const probe = ctx.measure(text, ctx.fontPx, maxW)
   const w = Math.min(Math.ceil(probe.w), maxW ?? Infinity)
-  const item = label(ctx, text, cx - w / 2, cy - probe.h / 2, { anchor: "start", maxW: maxW ? w : undefined, cls: `dg-plate ${cls}`.trim(), key, role })
-  item.x = Math.max(0, Math.min(item.x, ctx.width - item.w - 6)) // the plate has a padding: the word stays inside the figure
-  return item
+  return label(ctx, text, cx - w / 2, cy - probe.h / 2, { anchor: "start", maxW: maxW ? w : undefined, cls: `dg-plate ${cls}`.trim(), key, role })
 }
 
 // The numbered list of moves under a figure (the phone, and a crowded figure): a number in a round plate, then the move, one under

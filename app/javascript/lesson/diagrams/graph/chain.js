@@ -270,7 +270,10 @@ function build(data, ctx) {
         // the word of the fan-in, once, at the right edge above the event
         const text = wordOf(data, mine[0])
         const m = measureLabel(ctx, text, undefined, 0, "dg-plate dg-chain-word")
-        wordLabel(text, W - 6 - m.w / 2, ev.y - ctx.lineH * 0.7, "fanword", m.w + 2)
+        const word = wordLabel(text, W - 6 - m.w / 2, ev.y - ctx.lineH * 0.7, "fanword", m.w + 2)
+        // the word is bold: its box is the bold width, ending at the right margin (the regular width left the end of the word outside the figure)
+        word.w = m.w + 2
+        word.x = Math.max(0, W - 6 - word.w)
       }
     }
     // a closing link of a ring, or a link that goes back: a bracket on the right
@@ -283,7 +286,7 @@ function build(data, ctx) {
       arrowhead(ctx, { x: b.x + b.w + 2, y: b.y + b.h / 2, angle: 180 }, "dg-arrowhead dg-chain-head").key = `l:${l.from}>${l.to}:head`
       // the words fit beside the bracket on a wide page; on a phone the bracket is the picture and the description says the rest
       const hx = rx + 8
-      const m = measureLabel(ctx, TEXT.return_label, undefined, 0, "dg-chain-word dg-plate")
+      const m = measureLabel(ctx, TEXT.return_label)
       if (hx + m.w + 4 <= W) label(ctx, TEXT.return_label, hx, (a.y + b.y + a.h) / 2 - ctx.lineH / 2, { anchor: "start", cls: "dg-chain-word dg-plate", key: `l:${l.from}>${l.to}:word` })
     }
     return { bottom }
