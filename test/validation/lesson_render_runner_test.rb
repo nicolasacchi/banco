@@ -140,4 +140,38 @@ class LessonRenderRunnerTest < ActiveSupport::TestCase
     row = render(served("equations"))
     assert_nil row.result["errors"].find { |e| e["where"] == "print" }, dump(row)
   end
+
+  GALLERY = Rails.root.join("test/fixtures/lesson2/gallery")
+
+  def gallery_body(file)
+    findings = Validation::Findings.new
+    parsed = Lessons::Parser2.call(GALLERY.join(file).read, findings)
+    raise "#{file} does not parse: #{findings.map(&:message).first(3)}" unless parsed&.body
+
+    parsed.body
+  end
+
+  # D-293: a figure measured while its card was hidden (the cards view shows one card) kept the 0 x 0 widths it got there, so the
+  # compass words and callouts of a map were placed on top of each other and "outside the figure" at every width, and the ticks
+  # of a climograph (laid out with width 0 labels) smeared into one another. The print views hold hidden labels that are not judged.
+  test "a map on the ancient base and a map on a modern base draw inside their box at 390 and 1280, light and dark" do
+    row = render(gallery_body("maps.md"))
+    keep_shots(row, "maps")
+    assert_equal "passed", row.status, dump(row)
+    assert_equal %w[1280x800-cream 1280x800-dark 390x844-cream], row.result["viewports"].sort
+  end
+
+  test "the climograph ticks of both axes are legible at 390 px (no overlap, none outside the figure)" do
+    row = render(gallery_body("chart.md"))
+    keep_shots(row, "chart")
+    bad = row.result["errors"].select { |e| %w[E-DIAGRAM-LAYOUT E-DIAGRAM-SMALL-TEXT].include?(e["code"]) }
+    assert_empty bad, dump(row)
+  end
+
+  test "a render stays inside its time budget: no card or viewport over the per-card limit, the whole revision well under 90 s" do
+    row = render(gallery_body("maps.md"))
+    timeouts = row.result["errors"].select { |e| e["message"].to_s.start_with?("timeout") }
+    assert_empty timeouts, dump(row)
+    assert_operator row.result["elapsed_seconds"], :<, Validation::Rules.get(:lesson2, :render, :budget_seconds) / 2.0
+  end
 end

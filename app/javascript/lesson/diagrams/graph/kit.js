@@ -19,8 +19,8 @@ export function polyline(ctx, points, cls, key) {
 }
 
 // The measured size of a node's content: a label (and an icon before it), then optional lines under it.
-export function measureLabel(ctx, text, maxW, iconW = 0) {
-  const m = ctx.measure(text, ctx.fontPx, Math.max(40, maxW - iconW))
+export function measureLabel(ctx, text, maxW, iconW = 0, cls = "") {
+  const m = ctx.measure(text, ctx.fontPx, Math.max(40, maxW - iconW), cls)
   return { w: Math.ceil(m.w) + iconW, h: Math.ceil(m.h) }
 }
 
@@ -31,9 +31,11 @@ export const inside = (ctx, r) => r.x >= 0 && r.x + r.w <= ctx.width
 
 // A label with a plate behind it so that a line passing under stays readable: the plate is the label's own background (CSS dg-plate).
 export function plateLabel(ctx, text, cx, cy, { maxW, cls = "", key, role } = {}) {
-  const probe = ctx.measure(text, ctx.fontPx, maxW)
+  const probe = ctx.measure(text, ctx.fontPx, maxW, `dg-plate ${cls}`.trim())
   const w = Math.min(Math.ceil(probe.w), maxW ?? Infinity)
-  return label(ctx, text, cx - w / 2, cy - probe.h / 2, { anchor: "start", maxW: maxW ? w : undefined, cls: `dg-plate ${cls}`.trim(), key, role })
+  const item = label(ctx, text, cx - w / 2, cy - probe.h / 2, { anchor: "start", maxW: maxW ? w : undefined, cls: `dg-plate ${cls}`.trim(), key, role })
+  item.x = Math.max(0, Math.min(item.x, ctx.width - item.w - 6)) // the plate has a padding: the word stays inside the figure
+  return item
 }
 
 // The numbered list of moves under a figure (the phone, and a crowded figure): a number in a round plate, then the move, one under

@@ -19,7 +19,12 @@ const note = (message) => errors.push(String(message).slice(0, 300))
 window.addEventListener("error", (event) => note(event.message || event.error))
 window.addEventListener("unhandledrejection", (event) => note(event.reason?.message ?? event.reason))
 
-const frames = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+// two animation frames, but never longer than 120 ms: a page that Chrome throttles (not in front, a busy machine) answers no frame for seconds,
+// and a card must not wait for what the check does not need (the render time budget, D-255)
+const frames = () => new Promise((resolve) => {
+  const timer = setTimeout(resolve, 120)
+  requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(timer); resolve() }))
+})
 const text = (node) => (node.textContent || "").replace(/\s+/g, " ").trim().slice(0, 60)
 
 function rectOfText(node) {
@@ -43,7 +48,7 @@ function figureFindings(figure, minPx, state, out) {
     return
   }
   const stage = figure.querySelector(".dg-stage")?.getBoundingClientRect()
-  const labels = [...figure.querySelectorAll(".dg-label")].filter((l) => l.textContent.trim() !== "")
+  const labels = [...figure.querySelectorAll(".dg-label")].filter((l) => l.textContent.trim() !== "" && l.getClientRects().length > 0) // a hidden label (the print views) has no box to judge
   const boxes = labels.map((l) => ({ label: l, rect: rectOfText(l) }))
   for (const { label, rect } of boxes) {
     const px = parseFloat(getComputedStyle(label).fontSize)
@@ -78,6 +83,7 @@ function overflowFindings(card, out) {
   const wide = []
   for (const node of nodes) {
     if (node.closest(".sr-only") || node.namespaceURI !== "http://www.w3.org/1999/xhtml") continue
+    if (node.closest("thead")?.clientWidth <= 2) continue // a stacked table's head is visually hidden (1 px, clipped): its cells overflow nothing the student sees
     if (node.clientWidth < 3 || node.closest(".dg-labels")) continue // a label's own box is exact to within rounding: figureFindings reads the labels
     if (node.scrollWidth > node.clientWidth + 3 && getComputedStyle(node).display !== "inline") wide.push(node)
   }
@@ -129,7 +135,7 @@ async function inspect(n) {
     if (figures.length === 0) overflowFindings(card, findings)
     const settle = async () => {
       await frames()
-      await new Promise((resolve) => setTimeout(resolve, 30))
+      await new Promise((resolve) => setTimeout(resolve, 90))
     }
     for (const figure of figures) {
       const total = figure.total ?? 1

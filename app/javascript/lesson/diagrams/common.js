@@ -70,7 +70,7 @@ export function makeContext(data, opts) {
     width: Math.max(240, Math.floor(opts.width ?? 600)),
     fontPx,
     lineH,
-    measure: (text, px = fontPx, maxW) => measure(text, px, maxW),
+    measure: (text, px = fontPx, maxW, cls) => measure(text, px, maxW, cls),
     state: Math.max(0, opts.state ?? 0),
     tryValue: opts.tryValue,
     // the contract v2 context (WAVE2 1.2): the mode, the values of the controls the type declares, what the student has opened, and

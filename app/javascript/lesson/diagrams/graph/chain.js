@@ -269,7 +269,7 @@ function build(data, ctx) {
       if (mine.length) {
         // the word of the fan-in, once, at the right edge above the event
         const text = wordOf(data, mine[0])
-        const m = measureLabel(ctx, text)
+        const m = measureLabel(ctx, text, undefined, 0, "dg-plate dg-chain-word")
         wordLabel(text, W - 6 - m.w / 2, ev.y - ctx.lineH * 0.7, "fanword", m.w + 2)
       }
     }
@@ -283,7 +283,7 @@ function build(data, ctx) {
       arrowhead(ctx, { x: b.x + b.w + 2, y: b.y + b.h / 2, angle: 180 }, "dg-arrowhead dg-chain-head").key = `l:${l.from}>${l.to}:head`
       // the words fit beside the bracket on a wide page; on a phone the bracket is the picture and the description says the rest
       const hx = rx + 8
-      const m = measureLabel(ctx, TEXT.return_label)
+      const m = measureLabel(ctx, TEXT.return_label, undefined, 0, "dg-chain-word dg-plate")
       if (hx + m.w + 4 <= W) label(ctx, TEXT.return_label, hx, (a.y + b.y + a.h) / 2 - ctx.lineH / 2, { anchor: "start", cls: "dg-chain-word dg-plate", key: `l:${l.from}>${l.to}:word` })
     }
     return { bottom }

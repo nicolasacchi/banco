@@ -110,10 +110,13 @@ export function makeMeasure(host, ctx) {
   const probe = el("span", { class: "dg-measure", "aria-hidden": "true" })
   host.appendChild(probe)
   const cache = new Map()
-  const measure = (text, px, maxW) => {
-    const key = `${px}|${maxW ?? ""}|${text}`
+  const self = { degenerate: false }
+  const measure = (text, px, maxW, cls = "") => {
+    const key = `${px}|${maxW ?? ""}|${cls}|${text}`
     if (cache.has(key)) return cache.get(key)
     clear(probe)
+    // the label's own classes (bold compass, plate words) change the width: the probe wears them
+    probe.className = cls ? `dg-measure dg-label ${cls}` : "dg-measure"
     probe.style.fontSize = `${px}px`
     probe.style.maxWidth = maxW ? `${maxW}px` : "none"
     probe.style.whiteSpace = maxW ? "normal" : "nowrap"
@@ -121,6 +124,11 @@ export function makeMeasure(host, ctx) {
     renderInlineRich(text, probe, ctx)
     const rect = probe.getBoundingClientRect()
     const result = { w: Math.ceil(rect.width), h: Math.ceil(rect.height) }
+    // a hidden host (a card not shown, display: none) measures every text as 0 x 0: never cached, and the figure draws again when it shows
+    if (rect.width === 0 && rect.height === 0 && String(text).trim() !== "") {
+      self.degenerate = true
+      return result
+    }
     // with a width given the box is that wide; the text may be narrower: shrink to the widest line
     if (maxW) {
       probe.style.width = "auto"
@@ -132,7 +140,7 @@ export function makeMeasure(host, ctx) {
     cache.set(key, result)
     return result
   }
-  return { measure, probe, drop: () => probe.remove() }
+  return Object.assign(self, { measure, probe, drop: () => probe.remove() })
 }
 
 // FLIP: the elements of the new scene that had the same key in the old one start where they were.
@@ -284,6 +292,7 @@ export function mountDiagram(data, ctx, options = {}) {
     state.width = width
     if (!measurer.current) measurer.current = makeMeasure(stage, ctx)
     const fontPx = ctx.fontPx()
+    measurer.current.degenerate = false
     syncControls()
     const scene = layout(data, { width, fontPx, measure: measurer.current.measure, subject: ctx.subject, state: state.i, tryValue: state.tryValue, mode, set: options.set ?? null, controls: state.controls, revealed: [] })
     if (scene.error) return showError(scene.error)
@@ -592,7 +601,7 @@ export function mountDiagram(data, ctx, options = {}) {
     clearTimeout(timer)
     timer = setTimeout(() => {
       const width = Math.floor(stage.clientWidth)
-      if (width && Math.abs(width - state.width) > 1) draw()
+      if (width && (Math.abs(width - state.width) > 1 || measurer.current?.degenerate)) draw()
     }, 60)
   }
   const mounted = () => {
