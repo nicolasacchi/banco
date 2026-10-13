@@ -1,18 +1,16 @@
 {
  "version": 1,
  "type": "formula",
- "status": "reserved",
+ "status": "available",
  "batch": "w2-1",
  "track": "T7",
  "provisional": false,
- "description": "Skeleton of W2-0 for the track T7: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "description": "Vectors of T7 (WAVE2 V1, V2), invented content: 'schema' valid or invalid; 'semantic' ok or {code, path} of the first finding (Ruby Lessons::Diagrams::Formula and lesson/diagrams/science/formula.js give the same one); 'layout' ok at every width (290, 360, 738, 1250 px) and text size (18, 20, 26 px), or error; 'printed' the strings the first state prints (and 'printed_last' of the last), sorted, the same in Ruby and JS (L4); 'targets' the stored ids of each select set in reading order.",
  "vectors": [
   {
    "name": "formula-example-1",
    "subject": "chemistry",
    "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
    "data": {
     "type": "formula",
     "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
@@ -41,13 +39,52 @@
       "op_it": "Il pedice 2 è dell'H"
      }
     ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "2",
+    "3",
+    "3 H2O",
+    "H",
+    "O",
+    "Trova i simboli",
+    "coefficiente",
+    "il tipo di atomo",
+    "pedice",
+    "quante volte tutta la formula",
+    "quanti atomi: conta quello prima",
+    "simbolo"
+   ],
+   "printed_last": [
+    "1",
+    "2",
+    "3",
+    "3 H2O",
+    "6",
+    "H",
+    "Il pedice 2 è dell'H",
+    "O",
+    "coefficiente",
+    "il tipo di atomo",
+    "pedice",
+    "quante volte tutta la formula",
+    "quanti atomi: conta quello prima",
+    "simbolo"
+   ],
+   "targets": {
+    "pieces": [
+     "f1p1",
+     "f1p2",
+     "f1p3",
+     "f1p4"
+    ]
    }
   },
   {
-   "name": "formula-unknown-field",
+   "name": "formula-three-steps",
    "subject": "chemistry",
-   "schema": "invalid",
-   "semantic": "ok",
+   "schema": "valid",
    "data": {
     "type": "formula",
     "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
@@ -55,16 +92,10 @@
      "3 H2O"
     ],
     "show": [
-     "parts",
-     "count",
-     "molecules"
+     "parts"
     ],
-    "focus": "H",
     "states": [
      {
-      "show": [
-       "parts"
-      ],
       "op_it": "Trova i simboli"
      },
      {
@@ -74,10 +105,711 @@
       ],
       "focus": "H",
       "op_it": "Il pedice 2 è dell'H"
+     },
+     {
+      "show": [
+       "parts",
+       "count",
+       "molecules"
+      ],
+      "op_it": "Tre molecole per due atomi: sei"
      }
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "2",
+    "3",
+    "3 H2O",
+    "H",
+    "O",
+    "Trova i simboli",
+    "coefficiente",
+    "il tipo di atomo",
+    "pedice",
+    "quante volte tutta la formula",
+    "quanti atomi: conta quello prima",
+    "simbolo"
+   ],
+   "printed_last": [
+    "1",
+    "2",
+    "3",
+    "3 H2O",
+    "6",
+    "H",
+    "O",
+    "Tre molecole per due atomi: sei",
+    "acqua",
+    "coefficiente",
+    "il tipo di atomo",
+    "pedice",
+    "quante volte tutta la formula",
+    "quanti atomi: conta quello prima",
+    "simbolo"
+   ],
+   "targets": {
+    "pieces": [
+     "f1p1",
+     "f1p2",
+     "f1p3",
+     "f1p4"
+    ]
+   }
+  },
+  {
+   "name": "formula-unknown-field",
+   "subject": "chemistry",
+   "schema": "invalid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "3 H2O"
+    ],
+    "show": [
+     "parts"
     ],
     "zzz_unknown_field": true
+   },
+   "semantic": "ok"
+  },
+  {
+   "name": "formula-compare-co-and-co",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "Due formule vicine: il cobalto, un solo simbolo, e il monossido di carbonio, con due simboli.",
+    "formulas": [
+     "Co",
+     "CO"
+    ],
+    "show": [
+     "parts",
+     "count",
+     "molecules"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "1",
+    "C",
+    "CO",
+    "Co",
+    "O",
+    "cobalto",
+    "il tipo di atomo",
+    "monossido di carbonio",
+    "simbolo"
+   ],
+   "targets": {
+    "pieces": [
+     "f1p1",
+     "f2p1",
+     "f2p2"
+    ]
    }
+  },
+  {
+   "name": "formula-brackets-and-count",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 2 Ca(NO3)2: il coefficiente 2, il simbolo Ca, il pacchetto NO3 con il pedice 2. Sotto il conto degli atomi.",
+    "formulas": [
+     "2 Ca(NO3)2"
+    ],
+    "show": [
+     "parts",
+     "count"
+    ],
+    "focus": "O"
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "1",
+    "12",
+    "2",
+    "2 Ca(NO3)2",
+    "3",
+    "4",
+    "Ca",
+    "N",
+    "O",
+    "coefficiente",
+    "il tipo di atomo",
+    "pacchetto",
+    "pedice",
+    "quante volte tutta la formula",
+    "quanti atomi: conta quello prima",
+    "si ripete tutto insieme",
+    "simbolo"
+   ],
+   "targets": {
+    "pieces": [
+     "f1p1",
+     "f1p2",
+     "f1p3",
+     "f1p4",
+     "f1p5",
+     "f1p6"
+    ]
+   }
+  },
+  {
+   "name": "formula-ionic-unit",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula NaCl: il simbolo Na e il simbolo Cl. Sotto, un reticolo di ioni con una unità in un riquadro.",
+    "formulas": [
+     "NaCl"
+    ],
+    "show": [
+     "parts",
+     "molecules"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Cl",
+    "Na",
+    "NaCl",
+    "cloruro di sodio",
+    "il tipo di atomo",
+    "simbolo"
+   ],
+   "targets": {
+    "pieces": [
+     "f1p1",
+     "f1p2"
+    ]
+   }
+  },
+  {
+   "name": "formula-state-suffix",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula NaCl con lo stato acquoso: il simbolo Na e il simbolo Cl, poi la sigla aq tra parentesi.",
+    "formulas": [
+     "NaCl(aq)"
+    ],
+    "show": [
+     "parts",
+     "count"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "1",
+    "Cl",
+    "Na",
+    "NaCl(aq)",
+    "il tipo di atomo",
+    "simbolo"
+   ],
+   "targets": {
+    "pieces": [
+     "f1p1",
+     "f1p2"
+    ]
+   }
+  },
+  {
+   "name": "formula-no-subscript",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula del rame: il solo simbolo Cu, senza pedice, quindi un atomo. Sotto il conto degli atomi.",
+    "formulas": [
+     "Cu"
+    ],
+    "show": [
+     "parts",
+     "count"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "1",
+    "Cu",
+    "il tipo di atomo",
+    "simbolo"
+   ],
+   "targets": {
+    "pieces": [
+     "f1p1"
+    ]
+   }
+  },
+  {
+   "name": "formula-default-show",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula C6H12O6 con i suoi pezzi: tre simboli, ognuno con il suo pedice scritto accanto in basso.",
+    "formulas": [
+     "C6H12O6"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "12",
+    "6",
+    "C",
+    "C6H12O6",
+    "H",
+    "O",
+    "il tipo di atomo",
+    "pedice",
+    "quanti atomi: conta quello prima",
+    "simbolo"
+   ],
+   "targets": {
+    "pieces": [
+     "f1p1",
+     "f1p2",
+     "f1p3",
+     "f1p4",
+     "f1p5",
+     "f1p6"
+    ]
+   }
+  },
+  {
+   "name": "formula-three-side-by-side",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "Tre formule vicine: l'ossigeno O2, l'acqua H2O e l'ammoniaca NH3, con i loro pezzi e il conto degli atomi.",
+    "formulas": [
+     "O2",
+     "H2O",
+     "NH3"
+    ],
+    "show": [
+     "parts",
+     "count"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "1",
+    "2",
+    "3",
+    "H",
+    "H2O",
+    "N",
+    "NH3",
+    "O",
+    "O2",
+    "il tipo di atomo",
+    "pedice",
+    "quanti atomi: conta quello prima",
+    "simbolo"
+   ],
+   "targets": {
+    "pieces": [
+     "f1p1",
+     "f1p2",
+     "f2p1",
+     "f2p2",
+     "f2p3",
+     "f3p1",
+     "f3p2",
+     "f3p3"
+    ]
+   }
+  },
+  {
+   "name": "formula-two-units-of-same-element",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula del perossido di idrogeno H2O2, con il conto degli atomi per ogni simbolo che compare nella formula.",
+    "formulas": [
+     "H2O2"
+    ],
+    "show": [
+     "parts",
+     "count",
+     "molecules"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "2",
+    "H",
+    "H2O2",
+    "O",
+    "il tipo di atomo",
+    "pedice",
+    "perossido di idrogeno",
+    "quanti atomi: conta quello prima",
+    "simbolo"
+   ],
+   "targets": {
+    "pieces": [
+     "f1p1",
+     "f1p2",
+     "f1p3",
+     "f1p4"
+    ]
+   }
+  },
+  {
+   "name": "formula-symbol-case",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "CL2"
+    ]
+   },
+   "semantic": {
+    "code": "E-CHEM-SYMBOL",
+    "path": "/formulas/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "formula-symbol-not-an-element",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "Xx2"
+    ]
+   },
+   "semantic": {
+    "code": "E-CHEM-SYMBOL",
+    "path": "/formulas/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "formula-second-formula-bad",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "H2O",
+     "Na2Cl3Q"
+    ]
+   },
+   "semantic": {
+    "code": "E-CHEM-SYMBOL",
+    "path": "/formulas/1"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "formula-subscript-one",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "H1O"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/formulas/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "formula-coefficient-one",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "1 H2O"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/formulas/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "formula-coefficient-21",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "21 H2O"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/formulas/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "formula-subscript-100",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "H100"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/formulas/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "formula-nested-brackets",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "Ca(O(H)2)2"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/formulas/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "formula-bracket-without-subscript",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "Ca(OH)"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/formulas/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "formula-spaces-inside",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "H 2 O"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/formulas/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "formula-molecules-outside-library",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "C6H12O6"
+    ],
+    "show": [
+     "parts",
+     "molecules"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DATA",
+    "path": "/show"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "formula-molecules-patch-three-units",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "3 NaCl"
+    ],
+    "show": [
+     "parts",
+     "molecules"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/show"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "formula-molecules-too-many-atoms",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "20 O2"
+    ],
+    "show": [
+     "molecules"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/show"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "formula-focus-not-in-formula",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "3 H2O"
+    ],
+    "show": [
+     "parts"
+    ],
+    "focus": "Na"
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/focus"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "formula-focus-not-an-element",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "3 H2O"
+    ],
+    "show": [
+     "parts"
+    ],
+    "focus": "Xx"
+   },
+   "semantic": {
+    "code": "E-CHEM-SYMBOL",
+    "path": "/focus"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "formula-state-molecules-outside-library",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "C6H12O6"
+    ],
+    "show": [
+     "parts"
+    ],
+    "states": [
+     {
+      "op_it": "Prima i pezzi"
+     },
+     {
+      "show": [
+       "parts",
+       "molecules"
+      ],
+      "op_it": "Poi le molecole"
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DATA",
+    "path": "/states/1/show"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "formula-state-focus-not-in-formula",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "formula",
+    "alt_it": "La formula 3 H2O: il coefficiente 3, il simbolo H con il pedice 2, il simbolo O. Sotto, tre molecole d'acqua.",
+    "formulas": [
+     "3 H2O"
+    ],
+    "show": [
+     "parts"
+    ],
+    "states": [
+     {
+      "op_it": "Prima i pezzi"
+     },
+     {
+      "focus": "Cl",
+      "op_it": "Poi un altro simbolo"
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/states/1/focus"
+   },
+   "layout": "error"
   }
  ]
 }

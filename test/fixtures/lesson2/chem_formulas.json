@@ -1,6 +1,6 @@
 {
  "version": 1,
- "description": "Shared vectors of Chem (Ruby and JS), skeleton of W2-0: the cases below are certain; the track T7 adds the rest (including the mutants of a wrong answer) before it builds the functions. 'args' are strings as the schema holds them; 'result' is the canonical output.",
+ "description": "Shared vectors of Chem (Ruby Lessons::Chem and lesson/lib/chem.js), built by T7. 'args' are strings as the schema holds them; 'result' is the canonical output: an object (parse: {coefficient, groups, state}, count: atoms by symbol), a string (classify), a boolean (same_composition) or null (a formula that does not parse). The cases are certain by hand; the track adds none by running the code.",
  "library": "chem",
  "batch": "w2-1",
  "track": "T7",
@@ -9,7 +9,436 @@
    "ruby": "parse(formula)",
    "js": "parse(formula)",
    "doc": "A formula as {coefficient, groups}; nil when it does not parse.",
-   "cases": []
+   "cases": [
+    {
+     "args": [
+      "H2O"
+     ],
+     "result": {
+      "coefficient": 1,
+      "groups": [
+       {
+        "symbol": "H",
+        "count": 2
+       },
+       {
+        "symbol": "O",
+        "count": 1
+       }
+      ],
+      "state": null
+     }
+    },
+    {
+     "args": [
+      "3 H2O"
+     ],
+     "result": {
+      "coefficient": 3,
+      "groups": [
+       {
+        "symbol": "H",
+        "count": 2
+       },
+       {
+        "symbol": "O",
+        "count": 1
+       }
+      ],
+      "state": null
+     }
+    },
+    {
+     "args": [
+      "3H2O"
+     ],
+     "result": {
+      "coefficient": 3,
+      "groups": [
+       {
+        "symbol": "H",
+        "count": 2
+       },
+       {
+        "symbol": "O",
+        "count": 1
+       }
+      ],
+      "state": null
+     }
+    },
+    {
+     "args": [
+      "2 Ca(NO3)2"
+     ],
+     "result": {
+      "coefficient": 2,
+      "groups": [
+       {
+        "symbol": "Ca",
+        "count": 1
+       },
+       {
+        "group": [
+         {
+          "symbol": "N",
+          "count": 1
+         },
+         {
+          "symbol": "O",
+          "count": 3
+         }
+        ],
+        "count": 2
+       }
+      ],
+      "state": null
+     }
+    },
+    {
+     "args": [
+      "Ca(OH)2"
+     ],
+     "result": {
+      "coefficient": 1,
+      "groups": [
+       {
+        "symbol": "Ca",
+        "count": 1
+       },
+       {
+        "group": [
+         {
+          "symbol": "O",
+          "count": 1
+         },
+         {
+          "symbol": "H",
+          "count": 1
+         }
+        ],
+        "count": 2
+       }
+      ],
+      "state": null
+     }
+    },
+    {
+     "args": [
+      "CO"
+     ],
+     "result": {
+      "coefficient": 1,
+      "groups": [
+       {
+        "symbol": "C",
+        "count": 1
+       },
+       {
+        "symbol": "O",
+        "count": 1
+       }
+      ],
+      "state": null
+     }
+    },
+    {
+     "args": [
+      "Co"
+     ],
+     "result": {
+      "coefficient": 1,
+      "groups": [
+       {
+        "symbol": "Co",
+        "count": 1
+       }
+      ],
+      "state": null
+     }
+    },
+    {
+     "args": [
+      "NaCl(aq)"
+     ],
+     "result": {
+      "coefficient": 1,
+      "groups": [
+       {
+        "symbol": "Na",
+        "count": 1
+       },
+       {
+        "symbol": "Cl",
+        "count": 1
+       }
+      ],
+      "state": "aq"
+     }
+    },
+    {
+     "args": [
+      "H2O(l)"
+     ],
+     "result": {
+      "coefficient": 1,
+      "groups": [
+       {
+        "symbol": "H",
+        "count": 2
+       },
+       {
+        "symbol": "O",
+        "count": 1
+       }
+      ],
+      "state": "l"
+     }
+    },
+    {
+     "args": [
+      "20 O2"
+     ],
+     "result": {
+      "coefficient": 20,
+      "groups": [
+       {
+        "symbol": "O",
+        "count": 2
+       }
+      ],
+      "state": null
+     }
+    },
+    {
+     "args": [
+      "NH4Cl"
+     ],
+     "result": {
+      "coefficient": 1,
+      "groups": [
+       {
+        "symbol": "N",
+        "count": 1
+       },
+       {
+        "symbol": "H",
+        "count": 4
+       },
+       {
+        "symbol": "Cl",
+        "count": 1
+       }
+      ],
+      "state": null
+     }
+    },
+    {
+     "args": [
+      "C6H12O6"
+     ],
+     "result": {
+      "coefficient": 1,
+      "groups": [
+       {
+        "symbol": "C",
+        "count": 6
+       },
+       {
+        "symbol": "H",
+        "count": 12
+       },
+       {
+        "symbol": "O",
+        "count": 6
+       }
+      ],
+      "state": null
+     }
+    },
+    {
+     "args": [
+      "CL2"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "NH"
+     ],
+     "result": {
+      "coefficient": 1,
+      "groups": [
+       {
+        "symbol": "N",
+        "count": 1
+       },
+       {
+        "symbol": "H",
+        "count": 1
+       }
+      ],
+      "state": null
+     }
+    },
+    {
+     "args": [
+      "Nh"
+     ],
+     "result": {
+      "coefficient": 1,
+      "groups": [
+       {
+        "symbol": "Nh",
+        "count": 1
+       }
+      ],
+      "state": null
+     }
+    },
+    {
+     "args": [
+      "H1"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "H02"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "H100"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "1 H2O"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "21 H2O"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "Ca(OH)"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "Ca(OH"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "Ca()2"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "Ca(O(H)2)2"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "h2o"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "H2o"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      " H2O"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "H2O "
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "3  H2O"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "H 2 O"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      ""
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "3"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "Xx2"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "Cu(s)"
+     ],
+     "result": {
+      "coefficient": 1,
+      "groups": [
+       {
+        "symbol": "Cu",
+        "count": 1
+       }
+      ],
+      "state": "s"
+     }
+    },
+    {
+     "args": [
+      "CO2(g)"
+     ],
+     "result": {
+      "coefficient": 1,
+      "groups": [
+       {
+        "symbol": "C",
+        "count": 1
+       },
+       {
+        "symbol": "O",
+        "count": 2
+       }
+      ],
+      "state": "g"
+     }
+    }
+   ]
   },
   "count": {
    "ruby": "count(formula)",
@@ -34,6 +463,122 @@
       "N": 4,
       "O": 12
      }
+    },
+    {
+     "args": [
+      "H2O"
+     ],
+     "result": {
+      "H": 2,
+      "O": 1
+     }
+    },
+    {
+     "args": [
+      "Ca(OH)2"
+     ],
+     "result": {
+      "Ca": 1,
+      "O": 2,
+      "H": 2
+     }
+    },
+    {
+     "args": [
+      "Co"
+     ],
+     "result": {
+      "Co": 1
+     }
+    },
+    {
+     "args": [
+      "CO"
+     ],
+     "result": {
+      "C": 1,
+      "O": 1
+     }
+    },
+    {
+     "args": [
+      "20 O2"
+     ],
+     "result": {
+      "O": 40
+     }
+    },
+    {
+     "args": [
+      "C6H12O6"
+     ],
+     "result": {
+      "C": 6,
+      "H": 12,
+      "O": 6
+     }
+    },
+    {
+     "args": [
+      "2 NaHCO3"
+     ],
+     "result": {
+      "Na": 2,
+      "H": 2,
+      "C": 2,
+      "O": 6
+     }
+    },
+    {
+     "args": [
+      "Fe2(SO4)3"
+     ],
+     "result": {
+      "Fe": 2,
+      "S": 3,
+      "O": 12
+     }
+    },
+    {
+     "args": [
+      "(NH4)2SO4"
+     ],
+     "result": {
+      "N": 2,
+      "H": 8,
+      "S": 1,
+      "O": 4
+     }
+    },
+    {
+     "args": [
+      "HO2H"
+     ],
+     "result": {
+      "H": 2,
+      "O": 2
+     }
+    },
+    {
+     "args": [
+      "3 H2O(l)"
+     ],
+     "result": {
+      "H": 6,
+      "O": 3
+     }
+    },
+    {
+     "args": [
+      "NaCL"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "H1O"
+     ],
+     "result": null
     }
    ]
   },
@@ -65,6 +610,66 @@
       "Co"
      ],
      "result": "element"
+    },
+    {
+     "args": [
+      "3 O2"
+     ],
+     "result": "element"
+    },
+    {
+     "args": [
+      "O3"
+     ],
+     "result": "element"
+    },
+    {
+     "args": [
+      "Fe"
+     ],
+     "result": "element"
+    },
+    {
+     "args": [
+      "NaCl"
+     ],
+     "result": "compound"
+    },
+    {
+     "args": [
+      "Ca(OH)2"
+     ],
+     "result": "compound"
+    },
+    {
+     "args": [
+      "(O2)3"
+     ],
+     "result": "element"
+    },
+    {
+     "args": [
+      "Cl2(g)"
+     ],
+     "result": "element"
+    },
+    {
+     "args": [
+      "HO"
+     ],
+     "result": "compound"
+    },
+    {
+     "args": [
+      "CL"
+     ],
+     "result": null
+    },
+    {
+     "args": [
+      "h2"
+     ],
+     "result": null
     }
    ]
   },
@@ -72,7 +677,92 @@
    "ruby": "same_composition(a, b)",
    "js": "sameComposition(a, b)",
    "doc": "Whether two formulas have the same atom counts (a near miss of a typed answer).",
-   "cases": []
+   "cases": [
+    {
+     "args": [
+      "H2O2",
+      "O2H2"
+     ],
+     "result": true
+    },
+    {
+     "args": [
+      "2 H2O",
+      "H4O2"
+     ],
+     "result": true
+    },
+    {
+     "args": [
+      "H2O",
+      "H2O2"
+     ],
+     "result": false
+    },
+    {
+     "args": [
+      "CO",
+      "Co"
+     ],
+     "result": false
+    },
+    {
+     "args": [
+      "Ca(OH)2",
+      "CaO2H2"
+     ],
+     "result": true
+    },
+    {
+     "args": [
+      "3 H2O",
+      "H6O3"
+     ],
+     "result": true
+    },
+    {
+     "args": [
+      "3 H2O",
+      "H2O"
+     ],
+     "result": false
+    },
+    {
+     "args": [
+      "NaCl",
+      "ClNa"
+     ],
+     "result": true
+    },
+    {
+     "args": [
+      "NaCl",
+      "NaCL"
+     ],
+     "result": false
+    },
+    {
+     "args": [
+      "H1O",
+      "H1O"
+     ],
+     "result": false
+    },
+    {
+     "args": [
+      "O2",
+      "O2"
+     ],
+     "result": true
+    },
+    {
+     "args": [
+      "O2",
+      "O3"
+     ],
+     "result": false
+    }
+   ]
   }
  }
 }

@@ -1,18 +1,16 @@
 {
  "version": 1,
  "type": "molecule",
- "status": "reserved",
+ "status": "available",
  "batch": "w2-1",
  "track": "T7",
  "provisional": false,
- "description": "Skeleton of W2-0 for the track T7: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "description": "Vectors of T7 (WAVE2 V1, V2), invented content: 'schema' valid or invalid; 'semantic' ok or {code, path} of the first finding (Ruby Lessons::Diagrams::Molecule and lesson/diagrams/science/molecule.js give the same one); 'layout' ok at every width (290, 360, 738, 1250 px) and text size (18, 20, 26 px), or error; 'printed' the strings the figure prints, sorted, the same in Ruby and JS (L4); 'targets' the stored ids of each select set in reading order.",
  "vectors": [
   {
    "name": "molecule-example-1",
    "subject": "chemistry",
    "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
    "data": {
     "type": "molecule",
     "alt_it": "Quattro molecole: CO con un carbonio e un ossigeno, CO2 con due ossigeni, H2O con due idrogeni, H2O2 con due idrogeni e due ossigeni.",
@@ -28,11 +26,52 @@
      {
       "formula": "H2O",
       "label_it": "acqua"
+     },
+     {
+      "formula": "H2O2",
+      "label_it": "acqua ossigenata"
      }
     ],
     "style": "balls",
     "show": [
      "symbols"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "C",
+    "CO",
+    "CO2",
+    "H",
+    "H2O",
+    "H2O2",
+    "O",
+    "acqua",
+    "acqua ossigenata",
+    "anidride carbonica",
+    "monossido di carbonio"
+   ],
+   "targets": {
+    "items": [
+     "i1",
+     "i2",
+     "i3",
+     "i4"
+    ],
+    "atoms": [
+     "i1c1a1",
+     "i1c1a2",
+     "i2c1a1",
+     "i2c1a2",
+     "i2c1a3",
+     "i3c1a1",
+     "i3c1a2",
+     "i3c1a3",
+     "i4c1a1",
+     "i4c1a2",
+     "i4c1a3",
+     "i4c1a4"
     ]
    }
   },
@@ -40,7 +79,6 @@
    "name": "molecule-unknown-field",
    "subject": "chemistry",
    "schema": "invalid",
-   "semantic": "ok",
    "data": {
     "type": "molecule",
     "alt_it": "Quattro molecole: CO con un carbonio e un ossigeno, CO2 con due ossigeni, H2O con due idrogeni, H2O2 con due idrogeni e due ossigeni.",
@@ -56,6 +94,10 @@
      {
       "formula": "H2O",
       "label_it": "acqua"
+     },
+     {
+      "formula": "H2O2",
+      "label_it": "acqua ossigenata"
      }
     ],
     "style": "balls",
@@ -63,7 +105,806 @@
      "symbols"
     ],
     "zzz_unknown_field": true
+   },
+   "semantic": "ok"
+  },
+  {
+   "name": "molecule-water-angle-and-partial",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Una molecola d'acqua con i suoi tre atomi, l'angolo tra i due legami e le cariche parziali dell'ossigeno e dell'idrogeno.",
+    "items": [
+     {
+      "formula": "H2O"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols",
+     "angle",
+     "partial"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "104,5°",
+    "H",
+    "H2O",
+    "O",
+    "acqua",
+    "δ+",
+    "δ−"
+   ],
+   "targets": {
+    "items": [
+     "i1"
+    ],
+    "atoms": [
+     "i1c1a1",
+     "i1c1a2",
+     "i1c1a3"
+    ]
    }
+  },
+  {
+   "name": "molecule-co2-straight-and-partial",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Una molecola di anidride carbonica: tre atomi in fila, l'angolo piatto e le cariche parziali del carbonio e dell'ossigeno.",
+    "items": [
+     {
+      "formula": "CO2",
+      "label_it": "anidride carbonica"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols",
+     "angle",
+     "partial"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "180°",
+    "C",
+    "CO2",
+    "O",
+    "anidride carbonica",
+    "δ+",
+    "δ−"
+   ],
+   "targets": {
+    "items": [
+     "i1"
+    ],
+    "atoms": [
+     "i1c1a1",
+     "i1c1a2",
+     "i1c1a3"
+    ]
+   }
+  },
+  {
+   "name": "molecule-ozone-angle",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Una molecola di ozono con tre atomi di ossigeno, dove un legame è doppio e uno è semplice, e l'angolo tra i due legami.",
+    "items": [
+     {
+      "formula": "O3"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols",
+     "angle"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "116,8°",
+    "O",
+    "O3",
+    "ozono"
+   ],
+   "targets": {
+    "items": [
+     "i1"
+    ],
+    "atoms": [
+     "i1c1a1",
+     "i1c1a2",
+     "i1c1a3"
+    ]
+   }
+  },
+  {
+   "name": "molecule-sticks-style",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Il metano con un carbonio e quattro idrogeni, e l'ammoniaca con un azoto e tre idrogeni, disegnati con le sole aste.",
+    "items": [
+     {
+      "formula": "CH4"
+     },
+     {
+      "formula": "NH3"
+     }
+    ],
+    "style": "sticks",
+    "show": [
+     "symbols"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "C",
+    "CH4",
+    "H",
+    "N",
+    "NH3",
+    "ammoniaca",
+    "metano"
+   ],
+   "targets": {
+    "items": [
+     "i1",
+     "i2"
+    ],
+    "atoms": [
+     "i1c1a1",
+     "i1c1a2",
+     "i1c1a3",
+     "i1c1a4",
+     "i1c1a5",
+     "i2c1a1",
+     "i2c1a2",
+     "i2c1a3",
+     "i2c1a4"
+    ]
+   }
+  },
+  {
+   "name": "molecule-copies",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Due molecole di ossigeno, ognuna con due atomi legati, e tre molecole di idrogeno, ognuna con due atomi legati.",
+    "items": [
+     {
+      "formula": "2 O2"
+     },
+     {
+      "formula": "3 H2"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "2 O2",
+    "3 H2",
+    "H",
+    "O",
+    "idrogeno",
+    "ossigeno"
+   ],
+   "targets": {
+    "items": [
+     "i1",
+     "i2"
+    ],
+    "atoms": [
+     "i1c1a1",
+     "i1c1a2",
+     "i1c2a1",
+     "i1c2a2",
+     "i2c1a1",
+     "i2c1a2",
+     "i2c2a1",
+     "i2c2a2",
+     "i2c3a1",
+     "i2c3a2"
+    ]
+   }
+  },
+  {
+   "name": "molecule-salt-and-metal",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Il sale da cucina e il cobalto: nessuna molecola, ma un reticolo di ioni e uno di atomi, con una unità in un riquadro.",
+    "items": [
+     {
+      "formula": "NaCl"
+     },
+     {
+      "formula": "Co"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Cl",
+    "Co",
+    "Na",
+    "NaCl",
+    "cloruro di sodio",
+    "cobalto",
+    "unità"
+   ],
+   "targets": {
+    "items": [
+     "i1",
+     "i2"
+    ],
+    "atoms": [
+     "i1x1",
+     "i1x2",
+     "i1x3",
+     "i1x4",
+     "i1x5",
+     "i1x6",
+     "i1x7",
+     "i1x8",
+     "i2x1",
+     "i2x2",
+     "i2x3",
+     "i2x4",
+     "i2x5",
+     "i2x6",
+     "i2x7"
+    ]
+   }
+  },
+  {
+   "name": "molecule-salt-two-units",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Due unità di cloruro di sodio in un reticolo di ioni: due unità in un riquadro, nessuna molecola.",
+    "items": [
+     {
+      "formula": "2 NaCl"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "2 NaCl",
+    "Cl",
+    "Na",
+    "cloruro di sodio",
+    "unità"
+   ],
+   "targets": {
+    "items": [
+     "i1"
+    ],
+    "atoms": [
+     "i1x1",
+     "i1x2",
+     "i1x3",
+     "i1x4",
+     "i1x5",
+     "i1x6",
+     "i1x7",
+     "i1x8"
+    ]
+   }
+  },
+  {
+   "name": "molecule-calcium-hydroxide",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "L'idrossido di calcio: un ione di calcio ogni due ioni OH, in un reticolo con una unità in un riquadro.",
+    "items": [
+     {
+      "formula": "Ca(OH)2"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Ca",
+    "Ca(OH)2",
+    "OH",
+    "idrossido di calcio",
+    "unità"
+   ],
+   "targets": {
+    "items": [
+     "i1"
+    ],
+    "atoms": [
+     "i1x1",
+     "i1x2",
+     "i1x3",
+     "i1x4",
+     "i1x5",
+     "i1x6",
+     "i1x7",
+     "i1x8",
+     "i1x9",
+     "i1x10",
+     "i1x11",
+     "i1x12"
+    ]
+   }
+  },
+  {
+   "name": "molecule-calcium-nitrate",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Il nitrato di calcio: un ione di calcio ogni due ioni nitrato, in un reticolo con una unità in un riquadro.",
+    "items": [
+     {
+      "formula": "Ca(NO3)2"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Ca",
+    "Ca(NO3)2",
+    "NO3",
+    "nitrato di calcio",
+    "unità"
+   ],
+   "targets": {
+    "items": [
+     "i1"
+    ],
+    "atoms": [
+     "i1x1",
+     "i1x2",
+     "i1x3",
+     "i1x4",
+     "i1x5",
+     "i1x6",
+     "i1x7",
+     "i1x8",
+     "i1x9",
+     "i1x10",
+     "i1x11",
+     "i1x12"
+    ]
+   }
+  },
+  {
+   "name": "molecule-baking-soda",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "L'idrogenocarbonato di sodio: uno ione di sodio e uno ione HCO3 per ogni unità del reticolo, nessuna molecola.",
+    "items": [
+     {
+      "formula": "NaHCO3"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "HCO3",
+    "Na",
+    "NaHCO3",
+    "idrogenocarbonato di sodio",
+    "unità"
+   ],
+   "targets": {
+    "items": [
+     "i1"
+    ],
+    "atoms": [
+     "i1x1",
+     "i1x2",
+     "i1x3",
+     "i1x4",
+     "i1x5",
+     "i1x6",
+     "i1x7",
+     "i1x8"
+    ]
+   }
+  },
+  {
+   "name": "molecule-six-groups",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Sei molecole una vicina all'altra: monossido e diossido di carbonio, acqua, acqua ossigenata, ozono e ammoniaca.",
+    "items": [
+     {
+      "formula": "CO"
+     },
+     {
+      "formula": "CO2"
+     },
+     {
+      "formula": "H2O"
+     },
+     {
+      "formula": "H2O2"
+     },
+     {
+      "formula": "O3"
+     },
+     {
+      "formula": "NH3"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "C",
+    "CO",
+    "CO2",
+    "H",
+    "H2O",
+    "H2O2",
+    "N",
+    "NH3",
+    "O",
+    "O3",
+    "acqua",
+    "ammoniaca",
+    "diossido di carbonio",
+    "monossido di carbonio",
+    "ozono",
+    "perossido di idrogeno"
+   ],
+   "targets": {
+    "items": [
+     "i1",
+     "i2",
+     "i3",
+     "i4",
+     "i5",
+     "i6"
+    ],
+    "atoms": [
+     "i1c1a1",
+     "i1c1a2",
+     "i2c1a1",
+     "i2c1a2",
+     "i2c1a3",
+     "i3c1a1",
+     "i3c1a2",
+     "i3c1a3",
+     "i4c1a1",
+     "i4c1a2",
+     "i4c1a3",
+     "i4c1a4",
+     "i5c1a1",
+     "i5c1a2",
+     "i5c1a3",
+     "i6c1a1",
+     "i6c1a2",
+     "i6c1a3",
+     "i6c1a4"
+    ]
+   }
+  },
+  {
+   "name": "molecule-bare-atoms",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Una molecola d'acqua senza lettere: tre atomi, uno grande al centro in alto e due piccoli in basso, legati.",
+    "items": [
+     {
+      "formula": "H2O"
+     }
+    ],
+    "style": "balls",
+    "show": []
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "H2O",
+    "acqua"
+   ],
+   "targets": {
+    "items": [
+     "i1"
+    ],
+    "atoms": [
+     "i1c1a1",
+     "i1c1a2",
+     "i1c1a3"
+    ]
+   }
+  },
+  {
+   "name": "molecule-default-show",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Due molecole di due atomi uguali: il cloro con un legame semplice e l'azoto con un legame triplo.",
+    "items": [
+     {
+      "formula": "Cl2"
+     },
+     {
+      "formula": "N2"
+     }
+    ],
+    "style": "balls"
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Cl",
+    "Cl2",
+    "N",
+    "N2",
+    "azoto",
+    "cloro"
+   ],
+   "targets": {
+    "items": [
+     "i1",
+     "i2"
+    ],
+    "atoms": [
+     "i1c1a1",
+     "i1c1a2",
+     "i2c1a1",
+     "i2c1a2"
+    ]
+   }
+  },
+  {
+   "name": "molecule-symbol-case",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Quattro molecole: CO con un carbonio e un ossigeno, CO2 con due ossigeni, H2O con due idrogeni, H2O2 con due idrogeni e due ossigeni.",
+    "items": [
+     {
+      "formula": "CL2"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols"
+    ]
+   },
+   "semantic": {
+    "code": "E-CHEM-SYMBOL",
+    "path": "/items/0/formula"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "molecule-not-a-formula",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Quattro molecole: CO con un carbonio e un ossigeno, CO2 con due ossigeni, H2O con due idrogeni, H2O2 con due idrogeni e due ossigeni.",
+    "items": [
+     {
+      "formula": "H1O"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/items/0/formula"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "molecule-second-item-not-in-library",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Quattro molecole: CO con un carbonio e un ossigeno, CO2 con due ossigeni, H2O con due idrogeni, H2O2 con due idrogeni e due ossigeni.",
+    "items": [
+     {
+      "formula": "H2O"
+     },
+     {
+      "formula": "C6H12O6"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DATA",
+    "path": "/items/1/formula"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "molecule-salt-three-units",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Quattro molecole: CO con un carbonio e un ossigeno, CO2 con due ossigeni, H2O con due idrogeni, H2O2 con due idrogeni e due ossigeni.",
+    "items": [
+     {
+      "formula": "3 NaCl"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/items/0/formula"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "molecule-label-seven-words",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Quattro molecole: CO con un carbonio e un ossigeno, CO2 con due ossigeni, H2O con due idrogeni, H2O2 con due idrogeni e due ossigeni.",
+    "items": [
+     {
+      "formula": "H2O",
+      "label_it": "una molecola molto piccola di acqua che bevi"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/items/0/label_it"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "molecule-too-many-atoms",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Quattro molecole: CO con un carbonio e un ossigeno, CO2 con due ossigeni, H2O con due idrogeni, H2O2 con due idrogeni e due ossigeni.",
+    "items": [
+     {
+      "formula": "4 NH3"
+     },
+     {
+      "formula": "4 H2O2"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/items"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "molecule-angle-without-an-angle",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Quattro molecole: CO con un carbonio e un ossigeno, CO2 con due ossigeni, H2O con due idrogeni, H2O2 con due idrogeni e due ossigeni.",
+    "items": [
+     {
+      "formula": "CH4"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols",
+     "angle"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/show"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "molecule-partial-on-co",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Quattro molecole: CO con un carbonio e un ossigeno, CO2 con due ossigeni, H2O con due idrogeni, H2O2 con due idrogeni e due ossigeni.",
+    "items": [
+     {
+      "formula": "CO"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols",
+     "partial"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/show"
+   },
+   "layout": "error"
   }
  ]
 }

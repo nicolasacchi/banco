@@ -2,3 +2,116 @@
    Linked on a page only when the lesson uses one of these types (the page head reads the body), never by hand.
    Rules: colours only through the role classes (.role-x, .mk-x, .st-x, .fl-x, .tn-x) and the theme variables of
    lesson_roles.css; no colour alone (A4); a forced-colors block per type; print rules for P1 to P6; targets at least 24 px. */
+
+/* ---- the atom colours: CPK-derived, one stroke colour per element, at 4:1 or more on the surface of every theme (checked in test/content/science_colours_test.rb).
+   The symbol is always written inside the atom and the sizes differ, so colour is never the only cue (A4). ---- */
+:root, :root[data-theme="light"], .l2-box[data-theme="cream"] {
+  --atom-H: var(--text); --atom-C: #55524a; --atom-N: #2f5fb3; --atom-O: #b5322e; --atom-Cl: #2c7d3d; --atom-Na: #7b45b5; --atom-Ca: #8a6a00;
+  --atom-Fe: #b25a12; --atom-Co: #1d7a8c; --atom-S: #7a6400; --atom-def: #6a5a3a;
+}
+:root[data-theme="dark"], .l2-box[data-theme="dark"] {
+  --atom-H: var(--text); --atom-C: #c2bfb4; --atom-N: #86aef2; --atom-O: #f2827b; --atom-Cl: #66c97f; --atom-Na: #bb98f0; --atom-Ca: #dcbc4c;
+  --atom-Fe: #f1a45e; --atom-Co: #55c4d6; --atom-S: #e0c84a; --atom-def: #cfc6a8;
+}
+.dg-atom-H { --atom: var(--atom-H); } .dg-atom-C { --atom: var(--atom-C); } .dg-atom-N { --atom: var(--atom-N); } .dg-atom-O { --atom: var(--atom-O); }
+.dg-atom-Cl { --atom: var(--atom-Cl); } .dg-atom-Na { --atom: var(--atom-Na); } .dg-atom-Ca { --atom: var(--atom-Ca); } .dg-atom-Fe { --atom: var(--atom-Fe); }
+.dg-atom-Co { --atom: var(--atom-Co); } .dg-atom-S { --atom: var(--atom-S); }
+.dg-atom { stroke-width: 3; stroke: var(--atom, var(--atom-def)); fill: color-mix(in srgb, var(--atom, var(--atom-def)) 16%, var(--surface)); }
+.dg-atom.dg-neutral { stroke: var(--muted); fill: var(--surface); }
+.dg-atom.dg-cation { --atom: var(--atom-Na); }
+.dg-atom.dg-anion { --atom: var(--atom-Cl); }
+.dg-atomtext { font-weight: 800; color: var(--text); text-align: center; }
+.dg-bond { stroke: var(--muted); stroke-width: 3; stroke-linecap: round; fill: none; }
+.dg-bond.dg-stick { stroke-width: 5; stroke: var(--text); }
+.dg-sign-disc { fill: var(--surface); stroke: var(--text); stroke-width: 2; }
+.dg-sign-stroke { stroke: var(--text); stroke-width: 2.5; stroke-linecap: round; }
+.dg-unitframe { fill: none; stroke: var(--text); stroke-width: 3; stroke-dasharray: 7 5; }
+.dg-unitword, .dg-molname { font-weight: 700; color: var(--muted); }
+.dg-partial, .dg-angletext { color: var(--text); font-weight: 700; }
+.dg-anglearc { fill: none; stroke: var(--text); stroke-width: 2.5; }
+
+/* ---- formula ---- */
+.dg-formula .dg-svg { margin: 0 auto; }
+.dg-fbig { font-weight: 700; letter-spacing: 0.02em; line-height: 1.4; color: var(--text); }
+.dg-fsym { color: var(--text); }
+.dg-fsub { font-weight: 700; }
+.dg-fparen { color: var(--muted); font-weight: 400; }
+.dg-fstate { color: var(--muted); font-weight: 700; }
+.dg-gframe { fill: var(--role-group-tint, var(--soft)); stroke: var(--role-group-mark, var(--muted)); stroke-width: 2; stroke-dasharray: 6 4; }
+.dg-neutral-frame { fill: none; stroke: var(--line); stroke-width: 2; stroke-dasharray: 6 4; }
+.dg-focus { fill: var(--r-common-highlight-tint, #fff1a8); stroke: none; }
+.dg-arrow { fill: none; stroke: var(--muted); stroke-width: 2.5; stroke-linecap: round; }
+.dg-arrowhead { fill: var(--muted); }
+.dg-partname { font-weight: 700; }
+.dg-tablehead { font-weight: 800; color: var(--muted); }
+.dg-rowsym { font-weight: 800; }
+.dg-rowfocus { background: var(--r-common-highlight-tint, #fff1a8); border-radius: 0.2em; padding: 0 0.2em; margin-left: -0.2em; }
+.dg-rowchain { font-variant-numeric: tabular-nums; }
+.dg-piece { fill: transparent; stroke: var(--line); stroke-width: 2; }
+.dg-piece:hover, .dg-piece:focus-visible { stroke: var(--text); }
+.dg-piece.is-selected { stroke: var(--text); stroke-width: 4; fill: var(--soft); }
+
+@media (forced-colors: active) {
+  .dg-atom { fill: Canvas; stroke: CanvasText; }
+  .dg-bond, .dg-arrow, .dg-anglearc, .dg-unitframe { stroke: CanvasText; }
+  .dg-arrowhead { fill: CanvasText; }
+  .dg-gframe, .dg-neutral-frame, .dg-piece { stroke: CanvasText; }
+  .dg-focus { fill: Highlight; }
+}
+.dg-keysample { font-weight: 800; font-size: 1.15em; text-align: left; }
+.dg-keygroup { background: var(--role-group-tint, var(--soft)); border-radius: 0.4em; padding: 0 0.3em; margin-left: -0.3em; }
+.dg-keytext { color: var(--text); }
+
+/* ---- periodic_table: cells, highlight sets (a tint, an outline style and a marker shape each), the latin ring, the list by group on a phone ---- */
+.dg-periodic_table .dg-svg { margin: 0 auto; }
+.dg-pcell { fill: var(--surface); stroke: var(--line); stroke-width: 2; }
+.dg-hl { stroke: var(--text); }
+.dg-hl-0 { fill: var(--r-common-highlight-tint, #fff1a8); stroke-width: 3; }
+.dg-hl-1 { fill: color-mix(in srgb, var(--atom-N, #2f5fb3) 22%, var(--surface)); stroke-width: 3; stroke-dasharray: 7 4; }
+.dg-hl-2 { fill: color-mix(in srgb, var(--atom-O, #b5322e) 22%, var(--surface)); stroke-width: 3; stroke-dasharray: 2 5; stroke-linecap: round; }
+.dg-hl-3 { fill: color-mix(in srgb, var(--atom-Cl, #2c7d3d) 22%, var(--surface)); stroke-width: 3; stroke-dasharray: 10 3 2 3; }
+.dg-hlout { fill: none; stroke: var(--text); stroke-width: 3; pointer-events: none; }
+.dg-hlout-1 { stroke-dasharray: 7 4; }
+.dg-hlout-2 { stroke-dasharray: 2 5; stroke-linecap: round; }
+.dg-hlout-3 { stroke-dasharray: 10 3 2 3; }
+.dg-hlmark { fill: var(--text); stroke: var(--text); }
+.dg-latinmark { fill: none; stroke: var(--text); stroke-width: 2; }
+.dg-psym { font-weight: 800; color: var(--text); text-align: center; }
+.dg-pz { color: var(--muted); font-weight: 700; text-align: center; }
+.dg-phead { color: var(--muted); font-weight: 700; }
+.dg-gword { color: var(--text); }
+.dg-mini { fill: var(--line); stroke: none; opacity: 0.55; }
+.dg-mini.dg-mini-on { fill: var(--text); opacity: 1; }
+.dg-legendtext { color: var(--text); }
+.dg-hint { color: var(--muted); font-weight: 700; }
+.dg-pcell.dg-target:hover, .dg-pcell.dg-target:focus-visible { stroke: var(--text); stroke-width: 3; }
+.dg-pcell.dg-target.is-selected { stroke: var(--text); stroke-width: 4; fill: var(--soft); }
+@media (forced-colors: active) {
+  .dg-pcell { fill: Canvas; stroke: CanvasText; }
+  .dg-hlout, .dg-hlmark, .dg-latinmark, .dg-mini-on { stroke: CanvasText; }
+  .dg-mini { fill: GrayText; }
+  .dg-hl-0, .dg-hl-1, .dg-hl-2, .dg-hl-3 { fill: Canvas; stroke: Highlight; }
+}
+
+/* ---- strand: the ladder of a nucleotide, a strand or two strands. Colours come from the biology roles (pair_at, pair_cg, phosphate, sugar, base) through the
+   figure's home palette; every base also has its letter, and its shape: angular for A, T and U, rounded for C and G. ---- */
+.dg-strand .dg-svg { margin: 0 auto; }
+.dg-backbone { stroke: var(--text); stroke-width: 4; stroke-linecap: round; }
+.dg-phosphate { fill: var(--role-phosphate-mark, var(--text)); stroke: var(--text); stroke-width: 2; }
+.dg-sugar { fill: var(--role-sugar-mark, var(--text)); stroke: var(--text); stroke-width: 2; }
+.dg-sbase { stroke-width: 3; }
+.dg-sbase-at { stroke: var(--role-pair_at-mark, var(--text)); fill: color-mix(in srgb, var(--role-pair_at-mark, #888) 16%, var(--surface)); }
+.dg-sbase-cg { stroke: var(--role-pair_cg-mark, var(--text)); fill: color-mix(in srgb, var(--role-pair_cg-mark, #888) 16%, var(--surface)); }
+.dg-sbase.dg-neutral { stroke: var(--line); fill: var(--surface); }
+.dg-sbase.dg-sempty { stroke: var(--muted); fill: none; stroke-dasharray: 5 4; }
+.dg-sletter { font-weight: 800; color: var(--text); text-align: center; }
+.dg-rung { stroke: var(--text); stroke-width: 3; stroke-linecap: round; }
+.dg-rung-lit { stroke-width: 5; }
+.dg-shl { fill: none; stroke: var(--text); stroke-width: 3; stroke-dasharray: 6 4; pointer-events: none; }
+.dg-slit { fill: none; stroke: var(--text); stroke-width: 4; pointer-events: none; }
+.dg-count { font-weight: 800; color: var(--text); }
+.dg-strand .dg-switch:focus-visible, .dg-strand .dg-switch:hover { outline: 3px solid var(--text); outline-offset: 2px; }
+@media (forced-colors: active) {
+  .dg-backbone, .dg-rung, .dg-shl, .dg-slit { stroke: CanvasText; }
+  .dg-sbase, .dg-phosphate, .dg-sugar { fill: Canvas; stroke: CanvasText; }
+}

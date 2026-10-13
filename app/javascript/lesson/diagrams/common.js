@@ -12,8 +12,9 @@ export const isError = (x) => x && x.error !== undefined
 
 // Plain text of a label: "$...$" kept readable ("x" for "$x$"), markup removed. For descriptions.
 export function plain(text) {
-  return String(text ?? "").replace(/\\\$/g, "\u0000").replace(/\$/g, "").replace(/\u0000/g, "$")
-    .replace(/\\role\{[a-z-]+\}\{([^{}]*)\}/g, "$1").replace(/\\cdot/g, "·").replace(/\\times/g, "×")
+  return String(text ?? "").replace(/\[\[[a-z_]+:([^\]]*)\]\]/g, "$1").replace(/\\\$/g, "\u0000").replace(/\$/g, "").replace(/\u0000/g, "$")
+    .replace(/\\role\{[a-z-]+\}\{([^{}]*)\}/g, "$1").replace(/\\mathrm\{([^{}]*)\}/g, "$1").replace(/\\delta\^\{([+-])\}/g, (_m, sign) => `δ${sign === "-" ? "−" : "+"}`)
+    .replace(/_\{?(\d+)\}?/g, "$1").replace(/\\cdot/g, "·").replace(/\\times/g, "×")
     .replace(/\\neq/g, "≠").replace(/\\le(?![a-z])/g, "≤").replace(/\\ge(?![a-z])/g, "≥")
     .replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, "$1/$2").replace(/\\to/g, "→").replace(/\\[a-zA-Z]+/g, "").replace(/[{}]/g, "")
 }

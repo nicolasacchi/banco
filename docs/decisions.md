@@ -287,6 +287,10 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-281 | 2026-10-13 | wave 2, track T2: the text layer is built (language spans, code spans, glossary, role spans of a language subject, the lint split, W-LANG-LEVEL with the frequency lists, mhchem and E-CHEM-SYMBOL, the cloze exemption) | decided |
 | D-282 | 2026-10-13 | wave 2, track T2: "Ascolta" is built (the voice gate, the walker of a rendered card, the player, the speech forms, "Prova le voci", the listen check, the golden files) | decided |
 | D-283 | 2026-10-13 | words and languages (T3, W2-1): `Lessons::Words` (split notation, Spanish syllables, stress and tilde), `word_parts` (decode, syllables), `mirror` and `dialogue` available | decided |
+| D-284 | 2026-10-13 | chemistry data (T7): chem/elements, chem/molecules and chem/terms with their second tables, `Lessons::Chem` and the symbol lint on diagrams | decided |
+| D-285 | 2026-10-13 | `formula` and `molecule` (T7, W2-1): the decoder, the library drawings, salts and metals as patches, the select check passes its set | decided |
+| D-286 | 2026-10-13 | `periodic_table` (T7, W2-1): the table, the highlight sets, the element card, the list below 600 px | decided |
+| D-287 | 2026-10-13 | `strand` (T7, W2-1): nucleotide, strand and ladder, hidden bases that never reach the page | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -3058,4 +3062,48 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Cost:** `word_parts` is about 11 KB gzip with its schema and the engine (3.3 KB of it the engine), `mirror` about 6.7 KB, and the dialogue block, which is imported with the cards, 2.7 KB; a lesson that draws no word figure loads none of the first two.
 - **Not done:** `paradigm`, `present`, the English verbs table, the `history` view (W2-2); tap-to-hear on a piece (T2's `speak`); the teacher's view of the select answers over these figures by name (T1's plumbing already names them with `target_names`).
 - **Status:** decided; the three pieces are `available` in `lesson_types.yml`.
+- **Back-port:** none.
+
+## D-284 · 2026-10-13 · chemistry data (T7): chem/elements, chem/molecules and chem/terms with their second tables, `Lessons::Chem` and the symbol lint on diagrams
+
+- **Design ref:** `prep/rich-lessons/WAVE2-COMPONENTS.md` 1.9, 1.10 (Chem), 2.8; D-269.
+- **Design said:** four vetted chemistry tables (elements, substances, molecules, terms), each with a second table typed separately and a unit test that compares them; a Chem library in Ruby and JS with shared vectors; `E-CHEM-SYMBOL` on every symbol in `\ce{}`.
+- **We do:** `config/banco/data/chem/{elements,molecules,terms}.yml` from the data author's drafts (sources named per row, IUPAC Italian names 2024, CIAAW masses, PubChem state and category, CCCBDB geometry), the second tables `elements_expected` (PubChem and Zanichelli) and `molecules_expected` (PubChem's 2D bonds, its 3D angle, the SMILES of a salt); the second source of `terms` is it.wikipedia and sits in `test/lib/chem_data_test.rb`. The test compares them (masses within a band, the four names the IUPAC table spells differently from Zanichelli, the superheavy states) and checks the layout (period and group of every element, the atoms of every formula, the angle from the Cartesians, the partial charges that add up to zero and follow the electronegativity). `Lessons::Chem` and `lesson/lib/chem.js` (`parse`, `count`, `classify`, `same_composition`, `base`, `unknown_symbol`) run `test/fixtures/lesson2/chem_formulas.json` (34 parse cases, mutants of a wrong formula included), and `chem.count` is a `verify:` function through the library route. The molecules table keeps to the frozen schema: an ionic row lists the atoms of one formula unit with their bonds saying which atoms form one ion (the ions' charges are not stored: the cation is the first group), a metal row one atom, and the partial charges are relative units that add up to zero (only the sign is a fact). `E-CHEM-SYMBOL` is raised by a diagram that names a symbol that is not an element (`formula`, `molecule`, `periodic_table`); its bad fixture `diagram-formula-unknown-symbol.md` replaces the pending entry, and T2 adds the `\ce{}` one with the same code. `chem/substances` is not written: it feeds `chart` heating and `particles` (W2-2) and has no vetted draft yet.
+- **Number:** D-284.
+- **Why:** the lessons never type a mass, a name or an angle: a row names it and our code draws it; a second route to the same facts catches a mistyped value.
+- **Cost:** a model of another family still has to review the tables (the second tables are separate extractions, not a second session); the teacher's book decides the conventions (`kripton` or `cripton`, `vaporizzazione`, `brinamento`).
+- **Status:** decided
+- **Back-port:** none.
+
+## D-285 · 2026-10-13 · `formula` and `molecule` (T7, W2-1): the decoder, the library drawings, salts and metals as patches, the select check passes its set
+
+- **Design ref:** WAVE2-COMPONENTS 2.8, chemistry.md 2.4 and 2.5; D-252, D-264, D-274.
+- **Design said:** `formula` shows each piece with its label, the count table computed, the molecules from the library; `molecule` draws the library rows, ionic and metallic kinds as a patch labelled "unità".
+- **We do:** both types are `available`. `formula`: the large formula (as large as the room allows), a key of the pieces (one row per kind with what it counts, in the role colour), an arrow from every subscript back to what it counts (the group's arrow lands on its bracket), a frame behind a bracket group, the focus highlighted, the count table (`1 × 3 = 3`, every factor shown, the coefficient and the bracket in their colours), and with `molecules` the library drawing of each formula copied by the coefficient. `describe` and `speechSegments` say the meaning ("tre molecole d'acqua. In tutto 6 atomi di idrogeno e 3 di ossigeno"), never the letters, and only what the state shows. `molecule`: balls (hydrogens smaller) or sticks, the symbol inside every atom, the angle and the partial charges from the library (never on CO or CH4), copies by the coefficient; a salt or a metal is a patch (two units wide, or one column on a phone: the discs and their order are the same) with the first one or two units framed and the word "unità", never "molecola". Atom colours are CPK-derived strokes at 4:1 or more on every theme (`science_colours_test.rb`). Select sets: `pieces` (`f1p3`), `items` (`i2`), `atoms` (`i1c2a3`, a patch's disc `i1x5`), lower-case ids, every candidate in one neutral style with its box apart from the others. The caps: a figure draws at most 30 atoms or discs (`lesson2.types.formula.atoms_drawn`). `E-LESSON-DATA` names a formula that is not in the library. One line outside the family: `lesson/checks/select.js` now passes `set: spec.targets` to the figure it mounts; without it a type with several target sets drew the default set's targets whatever the check asked (found with `molecule items`; `network` edges had the same fault).
+- **Number:** D-285.
+- **Why:** S cannot hold "the 2 after the bracket multiplies O, then the 3 in front multiplies everything" in working memory; the decoder keeps every step on screen and our code does the arithmetic.
+- **Cost:** `molecule` has no 3D (W2-3); an ionic charge is a "+" or a "−" mark, not a number.
+- **Status:** decided
+- **Back-port:** none.
+
+## D-286 · 2026-10-13 · `periodic_table` (T7, W2-1): the table, the highlight sets, the element card, the list below 600 px
+
+- **Design ref:** WAVE2-COMPONENTS 2.5, 1.5 (A3), chemistry.md 2.9; D-274 (the grid engine).
+- **Design said:** `periods_1_4` and `main_groups`, a tap opens the element card, below 600 px a list by group with the outline of the table beside it, never a two-axis scroll.
+- **We do:** a table on `grid/api.js` (group and period numbers on the edges, cells at least 34 px, the atomic number above the symbol with `symbol_z`), up to four highlight sets each with a tint, an outline style (solid, dashed, dotted, dash-dot) and a marker shape (circle, square, triangle, diamond) drawn in the cell and in a legend, `mark_latin` as an empty ring with its legend; with `symbol_name` the legend lists the names of the highlighted elements and the list view writes every name. Below 600 px, or when a cell would be under its text, a list by group: a tiny outline of the table with the group's cells filled, "Gruppo N", and the elements as chips of at least 44 by 38 px, on the line of the heading when they fit. A tap on an element opens its card (number, group, period, where the symbol comes from) in the figure's question line; the cells are `scene.hits`. Select set `cells`: ids are the symbols in lower case (a target id starts with a lower-case letter: `na`, `co`), numbered in the table's reading order whatever view is drawn; the select figure has no group numbers, names, highlights or latin marks (L3). The tap cards count as printed for L4 (L8).
+- **Number:** D-286.
+- **Why:** the symbols are a closed vocabulary with one fixed place each; the table is the chemist's map, and a phone needs a list, not a table of 20 px cells.
+- **Cost:** the list on a phone is long (about 2500 px for periods 1 to 4); 118 elements are not drawn (`full` is not built); the hits are one tab stop each.
+- **Status:** decided
+- **Back-port:** none.
+
+## D-287 · 2026-10-13 · `strand` (T7, W2-1): nucleotide, strand and ladder, hidden bases that never reach the page
+
+- **Design ref:** WAVE2-COMPONENTS 2.8, biology.md 2.2; L2, L4.
+- **Design said:** a nucleotide, a single strand or a double strand drawn with the textbook symbols, the pair colour and shape, two lines for A-T and three for C-G, `bottom` the complement of `top`, hidden bottom bases a solution field.
+- **We do:** a phosphate (circle), a sugar (pentagon) and a base (angular for A, T and U, rounded for C and G, coloured by pair with the letter inside), the rungs with two or three lines, horizontal when the positions fit and vertical (two columns, rungs across) when they do not, a short strand grown up to 1.7 times on a wide page, a key of the parts (`labels: parts`) or the names of the bases (`labels: bases`), the pair legend with our one-line note that the shapes are a memory aid, the highlight with the count of the visible bases, `unzip`. The frozen schema has no solution field on `bottom`, so the page is served `bottom` with a position that is hidden in every state replaced by the letter of the top strand (never the complement) and the figure draws no letter there and no rung; a position hidden in one state only travels with its letter (L4 counts it). Ruby is strict (the complement is checked on every position), the browser only on the others. Tapping a visible base lights its partner and its rung (switches in one roving group, one tab stop). Select sets `bases` (`top1`, `bot3`), `backbone` (`top`, `bot`; a nucleotide `phosphate`, `sugar`) and `rungs` (`r1`); an RNA double strand is refused until transcription needs it.
+- **Number:** D-287.
+- **Why:** the rule (A with T, C with G) is visual before it is verbal, and a drawing that can only show true pairs cannot teach a wrong one.
+- **Cost:** no 3D twisted ladder (W2-3); a long strand is a tall column on a phone (12 pairs about 500 px).
+- **Status:** decided
 - **Back-port:** none.
