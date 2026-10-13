@@ -115,7 +115,7 @@ module Validation
         page.go_to(url)
         break if defined_in?(page)
 
-        raise ChromeRunner::Unavailable, "the lesson render host did not define bancoLessonRender" if attempt == ChromeRunner::LOAD_ATTEMPTS - 1
+        raise ChromeRunner::Unavailable, "the lesson render host did not define bancoLessonRender" if attempt == LOAD_ATTEMPTS - 1
       end
       page
     end

@@ -1,21 +1,21 @@
 {
  "version": 1,
  "type": "timeline",
- "status": "reserved",
+ "status": "available",
  "batch": "w2-1",
  "track": "T4a",
  "provisional": false,
- "description": "Skeleton of W2-0 for the track T4a: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "description": "The vectors of timeline (T4a), run both ways like chain.json (schema, semantic, layout). 'expect' holds, per state, what the figure prints (describe included) and the select targets of each set; Ruby computes it and the browser must agree.",
  "vectors": [
   {
    "name": "timeline-example-1",
    "subject": "history",
    "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
+   "semantic": "ok",
+   "layout": "ok",
    "data": {
     "type": "timeline",
-    "alt_it": "Una linea del tempo dal 146 al 27 avanti Cristo con la Repubblica e un fatto inventato nel mezzo, per provare lo schema.",
+    "alt_it": "Una linea del tempo dal 146 al 27 avanti Cristo con la Repubblica e due fatti inventati nel mezzo, per provare lo schema.",
     "scale": "years",
     "from": "-146",
     "to": "-27",
@@ -44,12 +44,19 @@
       "role": "cause",
       "approx": false,
       "lane": "rome"
+     },
+     {
+      "id": "e2",
+      "at": "-120",
+      "label_it": "Un altro fatto",
+      "lane": "rome",
+      "role": "effect"
      }
     ],
     "spans": [
      {
       "from": "e1",
-      "to": "e1",
+      "to": "e2",
       "show_value": true
      }
     ],
@@ -65,14 +72,94 @@
       "op_it": "Il primo tratto"
      }
     ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Un fatto di prova",
+      "Inventato.",
+      "133 a.C.",
+      "-133",
+      "Un altro fatto",
+      "120 a.C.",
+      "-120",
+      "Repubblica",
+      "Roma",
+      "II secolo a.C.",
+      "I secolo a.C.",
+      "140 a.C.",
+      "-140",
+      "130 a.C.",
+      "-130",
+      "110 a.C.",
+      "-110",
+      "100 a.C.",
+      "-100",
+      "90 a.C.",
+      "-90",
+      "80 a.C.",
+      "-80",
+      "70 a.C.",
+      "-70",
+      "60 a.C.",
+      "-60",
+      "50 a.C.",
+      "-50",
+      "40 a.C.",
+      "-40",
+      "30 a.C.",
+      "-30",
+      "13",
+      "13 anni",
+      "Tocca il punto per leggere la nota.",
+      "Tutto",
+      "Linea del tempo dal 146 a.C. al 27 a.C.. Secoli: II secolo a.C. e I secolo a.C.. Repubblica: dal 146 a.C. al 27 a.C.. 133 a.C.: Un fatto di prova. 120 a.C.: Un altro fatto. Da Un fatto di prova a Un altro fatto passano 13 anni."
+     ],
+     [
+      "Un fatto di prova",
+      "Inventato.",
+      "133 a.C.",
+      "-133",
+      "Un altro fatto",
+      "120 a.C.",
+      "-120",
+      "Repubblica",
+      "Roma",
+      "II secolo a.C.",
+      "I secolo a.C.",
+      "140 a.C.",
+      "-140",
+      "130 a.C.",
+      "-130",
+      "110 a.C.",
+      "-110",
+      "100 a.C.",
+      "-100",
+      "13",
+      "13 anni",
+      "Tocca il punto per leggere la nota.",
+      "Il primo tratto",
+      "Linea del tempo dal 146 a.C. al 100 a.C.. Secoli: II secolo a.C. e I secolo a.C.. Repubblica: dal 146 a.C. al 27 a.C.. 133 a.C.: Un fatto di prova. 120 a.C.: Un altro fatto. Da Un fatto di prova a Un altro fatto passano 13 anni."
+     ]
+    ],
+    "targets": {
+     "events": [
+      "e1",
+      "e2"
+     ],
+     "periods": [
+      "p1"
+     ],
+     "marks": []
+    }
    }
   },
   {
    "name": "timeline-example-2",
    "subject": "english",
    "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
+   "semantic": "ok",
+   "layout": "ok",
    "data": {
     "type": "timeline",
     "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Segna quando succede una frase di prova con when I arrive.",
@@ -91,27 +178,41 @@
       "role": "time"
      }
     ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "prima",
+      "adesso",
+      "dopo",
+      "I arrive",
+      "quando?",
+      "Una linea dell'ordine: prima, adesso, dopo. I arrive (quando?): un momento dopo adesso."
+     ]
+    ],
+    "targets": {
+     "events": [],
+     "periods": [],
+     "marks": [
+      "a"
+     ]
+    }
    }
   },
   {
-   "name": "timeline-unknown-field",
+   "name": "timeline-republic-zoom",
    "subject": "history",
-   "schema": "invalid",
+   "schema": "valid",
    "semantic": "ok",
+   "layout": "ok",
    "data": {
     "type": "timeline",
-    "alt_it": "Una linea del tempo dal 146 al 27 avanti Cristo con la Repubblica e un fatto inventato nel mezzo, per provare lo schema.",
+    "alt_it": "Una linea del tempo dal 146 al 27 avanti Cristo con la Repubblica e quattro fatti inventati, per provare la figura.",
     "scale": "years",
     "from": "-146",
     "to": "-27",
     "every": 10,
     "centuries": true,
-    "lanes": [
-     {
-      "id": "rome",
-      "label_it": "Roma"
-     }
-    ],
     "periods": [
      {
       "from": "-146",
@@ -124,33 +225,2657 @@
      {
       "id": "e1",
       "at": "-133",
-      "label_it": "Un fatto di prova",
-      "note_it": "Inventato.",
-      "role": "cause",
-      "approx": false,
-      "lane": "rome"
+      "label_it": "Primo fatto di prova",
+      "note_it": "Un fatto inventato, prima.",
+      "role": "cause"
+     },
+     {
+      "id": "e2",
+      "at": "-100",
+      "label_it": "Secondo fatto",
+      "role": "rome"
+     },
+     {
+      "id": "e3",
+      "at": "-82",
+      "label_it": "Terzo fatto di prova",
+      "approx": true,
+      "role": "effect"
+     },
+     {
+      "id": "e4",
+      "at": "-44",
+      "label_it": "Quarto fatto",
+      "role": "effect",
+      "note_it": "Un fatto inventato, dopo."
      }
     ],
     "spans": [
      {
       "from": "e1",
-      "to": "e1",
+      "to": "e4",
       "show_value": true
      }
     ],
     "states": [
      {
-      "from": "-146",
-      "to": "-27",
-      "op_it": "Tutto"
+      "op_it": "Tutta la linea"
      },
      {
       "from": "-146",
       "to": "-100",
-      "op_it": "Il primo tratto"
+      "periods": [
+       {
+        "from": "-146",
+        "to": "-100",
+        "label_it": "Il primo tratto",
+        "role": "senate"
+       }
+      ],
+      "events": [
+       {
+        "id": "e1",
+        "at": "-133",
+        "label_it": "Primo fatto di prova",
+        "role": "cause"
+       },
+       {
+        "id": "e2",
+        "at": "-100",
+        "label_it": "Secondo fatto",
+        "role": "rome"
+       }
+      ],
+      "spans": [
+       {
+        "from": "e1",
+        "to": "e2",
+        "show_value": false
+       }
+      ],
+      "op_it": "Zoom sul primo tratto"
+     },
+     {
+      "from": "-146",
+      "to": "-100",
+      "periods": [
+       {
+        "from": "-146",
+        "to": "-100",
+        "label_it": "Il primo tratto",
+        "role": "senate"
+       }
+      ],
+      "events": [
+       {
+        "id": "e1",
+        "at": "-133",
+        "label_it": "Primo fatto di prova",
+        "role": "cause"
+       },
+       {
+        "id": "e2",
+        "at": "-100",
+        "label_it": "Secondo fatto",
+        "role": "rome"
+       }
+      ],
+      "spans": [
+       {
+        "from": "e1",
+        "to": "e2",
+        "show_value": true
+       }
+      ],
+      "op_it": "Quanto tempo passa?"
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Primo fatto di prova",
+      "Un fatto inventato, prima.",
+      "133 a.C.",
+      "-133",
+      "Secondo fatto",
+      "100 a.C.",
+      "-100",
+      "Terzo fatto di prova",
+      "circa 82 a.C.",
+      "-82",
+      "Quarto fatto",
+      "Un fatto inventato, dopo.",
+      "44 a.C.",
+      "-44",
+      "Repubblica",
+      "II secolo a.C.",
+      "I secolo a.C.",
+      "140 a.C.",
+      "-140",
+      "130 a.C.",
+      "-130",
+      "120 a.C.",
+      "-120",
+      "110 a.C.",
+      "-110",
+      "90 a.C.",
+      "-90",
+      "80 a.C.",
+      "-80",
+      "70 a.C.",
+      "-70",
+      "60 a.C.",
+      "-60",
+      "50 a.C.",
+      "-50",
+      "40 a.C.",
+      "-40",
+      "30 a.C.",
+      "-30",
+      "89",
+      "89 anni",
+      "Tocca il punto per leggere la nota.",
+      "Tutta la linea",
+      "Linea del tempo dal 146 a.C. al 27 a.C.. Secoli: II secolo a.C. e I secolo a.C.. Repubblica: dal 146 a.C. al 27 a.C.. 133 a.C.: Primo fatto di prova. 100 a.C.: Secondo fatto. circa 82 a.C.: Terzo fatto di prova. 44 a.C.: Quarto fatto. Da Primo fatto di prova a Quarto fatto passano 89 anni."
+     ],
+     [
+      "Primo fatto di prova",
+      "133 a.C.",
+      "-133",
+      "Secondo fatto",
+      "100 a.C.",
+      "-100",
+      "Il primo tratto",
+      "II secolo a.C.",
+      "I secolo a.C.",
+      "140 a.C.",
+      "-140",
+      "130 a.C.",
+      "-130",
+      "120 a.C.",
+      "-120",
+      "110 a.C.",
+      "-110",
+      "Zoom sul primo tratto",
+      "Linea del tempo dal 146 a.C. al 100 a.C.. Secoli: II secolo a.C. e I secolo a.C.. Il primo tratto: dal 146 a.C. al 100 a.C.. 133 a.C.: Primo fatto di prova. 100 a.C.: Secondo fatto. Una parentesi va da Primo fatto di prova a Secondo fatto."
+     ],
+     [
+      "Primo fatto di prova",
+      "133 a.C.",
+      "-133",
+      "Secondo fatto",
+      "100 a.C.",
+      "-100",
+      "Il primo tratto",
+      "II secolo a.C.",
+      "I secolo a.C.",
+      "140 a.C.",
+      "-140",
+      "130 a.C.",
+      "-130",
+      "120 a.C.",
+      "-120",
+      "110 a.C.",
+      "-110",
+      "33",
+      "33 anni",
+      "Quanto tempo passa?",
+      "Linea del tempo dal 146 a.C. al 100 a.C.. Secoli: II secolo a.C. e I secolo a.C.. Il primo tratto: dal 146 a.C. al 100 a.C.. 133 a.C.: Primo fatto di prova. 100 a.C.: Secondo fatto. Da Primo fatto di prova a Secondo fatto passano 33 anni."
+     ]
+    ],
+    "targets": {
+     "events": [
+      "e1",
+      "e2",
+      "e3",
+      "e4"
+     ],
+     "periods": [
+      "p1"
+     ],
+     "marks": []
+    }
+   }
+  },
+  {
+   "name": "timeline-two-eras",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 50 avanti Cristo al 50 dopo Cristo, con due fatti inventati e gli anni che passano tra loro.",
+    "scale": "years",
+    "from": "-50",
+    "to": "50",
+    "every": 10,
+    "events": [
+     {
+      "id": "a",
+      "at": "-27",
+      "label_it": "Fatto prima"
+     },
+     {
+      "id": "b",
+      "at": "14",
+      "label_it": "Fatto dopo",
+      "role": "effect"
+     }
+    ],
+    "spans": [
+     {
+      "from": "a",
+      "to": "b",
+      "show_value": true
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Fatto prima",
+      "27 a.C.",
+      "-27",
+      "Fatto dopo",
+      "14 d.C.",
+      "14",
+      "50 a.C.",
+      "-50",
+      "40 a.C.",
+      "-40",
+      "30 a.C.",
+      "-30",
+      "20 a.C.",
+      "-20",
+      "10 a.C.",
+      "-10",
+      "10 d.C.",
+      "10",
+      "20 d.C.",
+      "20",
+      "30 d.C.",
+      "30",
+      "40 d.C.",
+      "40",
+      "50 d.C.",
+      "50",
+      "40 anni",
+      "Linea del tempo dal 50 a.C. al 50 d.C.. 27 a.C.: Fatto prima. 14 d.C.: Fatto dopo. Da Fatto prima a Fatto dopo passano 40 anni."
+     ]
+    ],
+    "targets": {
+     "events": [
+      "a",
+      "b"
+     ],
+     "periods": [],
+     "marks": []
+    }
+   }
+  },
+  {
+   "name": "timeline-lanes",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo con due righe, Roma e altri popoli, dal 300 al 100 avanti Cristo, con fatti inventati.",
+    "scale": "years",
+    "from": "-300",
+    "to": "-100",
+    "centuries": true,
+    "lanes": [
+     {
+      "id": "rome",
+      "label_it": "Roma"
+     },
+     {
+      "id": "other",
+      "label_it": "Altri popoli"
+     }
+    ],
+    "periods": [
+     {
+      "from": "-300",
+      "to": "-200",
+      "label_it": "Un periodo lungo di prova",
+      "role": "other"
+     }
+    ],
+    "events": [
+     {
+      "id": "r1",
+      "at": "-264",
+      "label_it": "Fatto a Roma",
+      "lane": "rome",
+      "role": "rome"
+     },
+     {
+      "id": "r2",
+      "at": "-146",
+      "label_it": "Un altro fatto a Roma",
+      "lane": "rome",
+      "role": "rome"
+     },
+     {
+      "id": "o1",
+      "at": "-218",
+      "label_it": "Fatto altrove",
+      "lane": "other",
+      "role": "other",
+      "approx": true
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Fatto a Roma",
+      "264 a.C.",
+      "-264",
+      "Un altro fatto a Roma",
+      "146 a.C.",
+      "-146",
+      "Fatto altrove",
+      "circa 218 a.C.",
+      "-218",
+      "Un periodo lungo di prova",
+      "Roma",
+      "Altri popoli",
+      "III secolo a.C.",
+      "II secolo a.C.",
+      "I secolo a.C.",
+      "Linea del tempo dal 300 a.C. al 100 a.C.. Secoli: III secolo a.C., II secolo a.C. e I secolo a.C.. Riga Roma. Riga Altri popoli. Un periodo lungo di prova: dal 300 a.C. al 200 a.C.. 264 a.C.: Fatto a Roma. circa 218 a.C.: Fatto altrove. 146 a.C.: Un altro fatto a Roma."
+     ]
+    ],
+    "targets": {
+     "events": [
+      "r1",
+      "r2",
+      "o1"
+     ],
+     "periods": [
+      "p1"
+     ],
+     "marks": []
+    }
+   }
+  },
+  {
+   "name": "timeline-wide-auto-step",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo molto lunga, dal 753 avanti Cristo al 476 dopo Cristo, con tre fatti inventati.",
+    "scale": "years",
+    "from": "-753",
+    "to": "476",
+    "centuries": true,
+    "periods": [
+     {
+      "from": "-753",
+      "to": "-509",
+      "label_it": "Il primo periodo",
+      "role": "rome"
+     },
+     {
+      "from": "-509",
+      "to": "-27",
+      "label_it": "Il secondo periodo",
+      "role": "senate"
+     },
+     {
+      "from": "-27",
+      "to": "476",
+      "label_it": "Il terzo",
+      "role": "princeps"
+     }
+    ],
+    "events": [
+     {
+      "id": "w1",
+      "at": "-753",
+      "label_it": "Inizio",
+      "role": "rome"
+     },
+     {
+      "id": "w2",
+      "at": "-27",
+      "label_it": "Svolta",
+      "role": "princeps"
+     },
+     {
+      "id": "w3",
+      "at": "476",
+      "label_it": "Fine",
+      "role": "effect"
+     }
+    ],
+    "spans": [
+     {
+      "from": "w1",
+      "to": "w3",
+      "show_value": true
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Inizio",
+      "753 a.C.",
+      "-753",
+      "Svolta",
+      "27 a.C.",
+      "-27",
+      "Fine",
+      "476 d.C.",
+      "476",
+      "Il primo periodo",
+      "Il secondo periodo",
+      "Il terzo",
+      "VIII secolo a.C.",
+      "VII secolo a.C.",
+      "VI secolo a.C.",
+      "V secolo a.C.",
+      "IV secolo a.C.",
+      "III secolo a.C.",
+      "II secolo a.C.",
+      "I secolo a.C.",
+      "I secolo d.C.",
+      "II secolo d.C.",
+      "III secolo d.C.",
+      "IV secolo d.C.",
+      "V secolo d.C.",
+      "1228",
+      "1228 anni",
+      "Linea del tempo dal 753 a.C. al 476 d.C.. Secoli: VIII secolo a.C., VII secolo a.C., VI secolo a.C., V secolo a.C., IV secolo a.C., III secolo a.C., II secolo a.C., I secolo a.C., I secolo d.C., II secolo d.C., III secolo d.C., IV secolo d.C. e V secolo d.C.. Il primo periodo: dal 753 a.C. al 509 a.C.. Il secondo periodo: dal 509 a.C. al 27 a.C.. Il terzo: dal 27 a.C. al 476 d.C.. 753 a.C.: Inizio. 27 a.C.: Svolta. 476 d.C.: Fine. Da Inizio a Fine passano 1228 anni."
+     ]
+    ],
+    "targets": {
+     "events": [
+      "w1",
+      "w2",
+      "w3"
+     ],
+     "periods": [
+      "p1",
+      "p2",
+      "p3"
+     ],
+     "marks": []
+    }
+   }
+  },
+  {
+   "name": "timeline-measure",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 150 al 20 avanti Cristo con tre fatti inventati: scegline due per vedere quanti anni passano.",
+    "scale": "years",
+    "from": "-150",
+    "to": "-20",
+    "every": 10,
+    "measure": true,
+    "events": [
+     {
+      "id": "m1",
+      "at": "-133",
+      "label_it": "Primo fatto"
+     },
+     {
+      "id": "m2",
+      "at": "-100",
+      "label_it": "Secondo fatto"
+     },
+     {
+      "id": "m3",
+      "at": "-44",
+      "label_it": "Terzo fatto"
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "Primo fatto",
+      "133 a.C.",
+      "-133",
+      "Secondo fatto",
+      "100 a.C.",
+      "-100",
+      "Terzo fatto",
+      "44 a.C.",
+      "-44",
+      "150 a.C.",
+      "-150",
+      "140 a.C.",
+      "-140",
+      "130 a.C.",
+      "-130",
+      "120 a.C.",
+      "-120",
+      "110 a.C.",
+      "-110",
+      "90 a.C.",
+      "-90",
+      "80 a.C.",
+      "-80",
+      "70 a.C.",
+      "-70",
+      "60 a.C.",
+      "-60",
+      "50 a.C.",
+      "-50",
+      "40 a.C.",
+      "-40",
+      "30 a.C.",
+      "-30",
+      "20 a.C.",
+      "-20",
+      "Quanti anni passano?",
+      "Scegli due fatti per vedere quanti anni passano.",
+      "Hai scelto più di due fatti. Toglierne uno.",
+      "Linea del tempo dal 150 a.C. al 20 a.C.. 133 a.C.: Primo fatto. 100 a.C.: Secondo fatto. 44 a.C.: Terzo fatto."
+     ]
+    ],
+    "targets": {
+     "events": [
+      "m1",
+      "m2",
+      "m3"
+     ],
+     "periods": [],
+     "marks": []
+    }
+   }
+  },
+  {
+   "name": "timeline-tense-two-points",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-3",
+     "3"
+    ],
+    "marks": [
+     {
+      "id": "a",
+      "at": "1",
+      "span": "point",
+      "text_en": "I arrive",
+      "label_it": "quando?",
+      "role": "time"
+     },
+     {
+      "id": "b",
+      "at": "2",
+      "span": "point",
+      "text_en": "I'll call you",
+      "label_it": "che cosa succede",
+      "role": "main"
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "prima",
+      "adesso",
+      "dopo",
+      "I arrive",
+      "quando?",
+      "I'll call you",
+      "che cosa succede",
+      "Una linea dell'ordine: prima, adesso, dopo. I arrive (quando?): un momento dopo adesso. I'll call you (che cosa succede): un momento dopo adesso."
+     ]
+    ],
+    "targets": {
+     "events": [],
+     "periods": [],
+     "marks": [
+      "a",
+      "b"
+     ]
+    }
+   }
+  },
+  {
+   "name": "timeline-tense-states",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-3",
+     "3"
+    ],
+    "marks": [
+     {
+      "id": "a",
+      "at": "1",
+      "span": "point",
+      "text_en": "I arrive",
+      "label_it": "quando?",
+      "role": "time"
+     },
+     {
+      "id": "b",
+      "at": "2",
+      "span": "point",
+      "text_en": "I'll call you",
+      "label_it": "che cosa succede",
+      "role": "main"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Due azioni nel futuro",
+      "marks": [
+       {
+        "id": "a",
+        "at": "1",
+        "span": "point",
+        "text_en": "I arrive",
+        "label_it": "quando?",
+        "role": "time"
+       }
+      ]
+     },
+     {
+      "op_it": "Poi la seconda",
+      "marks": [
+       {
+        "id": "a",
+        "at": "1",
+        "span": "point",
+        "text_en": "I arrive",
+        "label_it": "quando?",
+        "role": "time"
+       },
+       {
+        "id": "b",
+        "at": "2",
+        "span": "point",
+        "text_en": "I'll call you",
+        "label_it": "che cosa succede",
+        "role": "main"
+       }
+      ]
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "prima",
+      "adesso",
+      "dopo",
+      "I arrive",
+      "quando?",
+      "Due azioni nel futuro",
+      "Una linea dell'ordine: prima, adesso, dopo. I arrive (quando?): un momento dopo adesso."
+     ],
+     [
+      "prima",
+      "adesso",
+      "dopo",
+      "I arrive",
+      "quando?",
+      "I'll call you",
+      "che cosa succede",
+      "Poi la seconda",
+      "Una linea dell'ordine: prima, adesso, dopo. I arrive (quando?): un momento dopo adesso. I'll call you (che cosa succede): un momento dopo adesso."
+     ]
+    ],
+    "targets": {
+     "events": [],
+     "periods": [],
+     "marks": [
+      "a",
+      "b"
+     ]
+    }
+   }
+  },
+  {
+   "name": "timeline-tense-all-kinds",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-4",
+     "4"
+    ],
+    "marks": [
+     {
+      "id": "p",
+      "at": "-2",
+      "span": "point",
+      "text_en": "I called",
+      "label_it": "è finito",
+      "role": "time"
+     },
+     {
+      "id": "r",
+      "at": "-2",
+      "to": "0",
+      "span": "range",
+      "text_en": "I have lived here",
+      "label_it": "arriva a adesso",
+      "role": "main"
+     },
+     {
+      "id": "h",
+      "at": "-3",
+      "to": "3",
+      "span": "habit",
+      "text_en": "I always walk",
+      "label_it": "di solito",
+      "role": "auxiliary"
+     },
+     {
+      "id": "l",
+      "at": "3",
+      "from": "-1",
+      "span": "plan",
+      "text_en": "I'm going to buy it",
+      "label_it": "deciso prima",
+      "role": "time"
+     },
+     {
+      "id": "u",
+      "at": "2",
+      "span": "point",
+      "text_en": "I might go",
+      "label_it": "non è sicuro",
+      "role": "main",
+      "uncertain": true
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "prima",
+      "adesso",
+      "dopo",
+      "I called",
+      "è finito",
+      "I have lived here",
+      "arriva a adesso",
+      "I always walk",
+      "di solito",
+      "I'm going to buy it",
+      "deciso prima",
+      "I might go",
+      "non è sicuro",
+      "Una linea dell'ordine: prima, adesso, dopo. I always walk (di solito): succede di solito. I called (è finito): un momento prima di adesso. I have lived here (arriva a adesso): dura da prima di adesso a adesso. I might go (non è sicuro): un momento dopo adesso, forse. I'm going to buy it (deciso prima): è deciso prima di adesso e succede dopo adesso."
+     ]
+    ],
+    "targets": {
+     "events": [],
+     "periods": [],
+     "marks": [
+      "p",
+      "r",
+      "h",
+      "l",
+      "u"
+     ]
+    }
+   }
+  },
+  {
+   "name": "timeline-tense-spanish",
+   "subject": "spanish",
+   "schema": "valid",
+   "semantic": "ok",
+   "layout": "ok",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine in spagnolo: prima, adesso, dopo. Mostra due frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-2",
+     "2"
+    ],
+    "marks": [
+     {
+      "id": "a",
+      "at": "-1",
+      "span": "point",
+      "text_es": "llegué",
+      "label_it": "è già successo"
+     },
+     {
+      "id": "b",
+      "at": "1",
+      "span": "point",
+      "text_es": "llegaré",
+      "label_it": "succederà"
+     }
+    ]
+   },
+   "expect": {
+    "printed": [
+     [
+      "prima",
+      "adesso",
+      "dopo",
+      "llegué",
+      "è già successo",
+      "llegaré",
+      "succederà",
+      "Una linea dell'ordine: prima, adesso, dopo. llegué (è già successo): un momento prima di adesso. llegaré (succederà): un momento dopo adesso."
+     ]
+    ],
+    "targets": {
+     "events": [],
+     "periods": [],
+     "marks": [
+      "a",
+      "b"
+     ]
+    }
+   }
+  },
+  {
+   "name": "timeline-years-with-window",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/window",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 50 avanti Cristo al 50 dopo Cristo, con due fatti inventati e gli anni che passano tra loro.",
+    "scale": "years",
+    "from": "-50",
+    "to": "50",
+    "every": 10,
+    "events": [
+     {
+      "id": "a",
+      "at": "-27",
+      "label_it": "Fatto prima"
+     },
+     {
+      "id": "b",
+      "at": "14",
+      "label_it": "Fatto dopo",
+      "role": "effect"
+     }
+    ],
+    "spans": [
+     {
+      "from": "a",
+      "to": "b",
+      "show_value": true
+     }
+    ],
+    "window": [
+     "-3",
+     "3"
+    ]
+   }
+  },
+  {
+   "name": "timeline-tense-with-events",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/events",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-3",
+     "3"
+    ],
+    "marks": [
+     {
+      "id": "a",
+      "at": "1",
+      "span": "point",
+      "text_en": "I arrive",
+      "label_it": "quando?",
+      "role": "time"
+     },
+     {
+      "id": "b",
+      "at": "2",
+      "span": "point",
+      "text_en": "I'll call you",
+      "label_it": "che cosa succede",
+      "role": "main"
+     }
+    ],
+    "events": [
+     {
+      "id": "e",
+      "at": "-3",
+      "label_it": "x"
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-tense-state-with-from",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/states/0/from",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-3",
+     "3"
+    ],
+    "marks": [
+     {
+      "id": "a",
+      "at": "1",
+      "span": "point",
+      "text_en": "I arrive",
+      "label_it": "quando?",
+      "role": "time"
+     },
+     {
+      "id": "b",
+      "at": "2",
+      "span": "point",
+      "text_en": "I'll call you",
+      "label_it": "che cosa succede",
+      "role": "main"
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Due azioni nel futuro",
+      "marks": [
+       {
+        "id": "a",
+        "at": "1",
+        "span": "point",
+        "text_en": "I arrive",
+        "label_it": "quando?",
+        "role": "time"
+       }
+      ],
+      "from": "-100"
+     },
+     {
+      "op_it": "Poi la seconda",
+      "marks": [
+       {
+        "id": "a",
+        "at": "1",
+        "span": "point",
+        "text_en": "I arrive",
+        "label_it": "quando?",
+        "role": "time"
+       },
+       {
+        "id": "b",
+        "at": "2",
+        "span": "point",
+        "text_en": "I'll call you",
+        "label_it": "che cosa succede",
+        "role": "main"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-lanes-twice",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/lanes",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo con due righe, Roma e altri popoli, dal 300 al 100 avanti Cristo, con fatti inventati.",
+    "scale": "years",
+    "from": "-300",
+    "to": "-100",
+    "centuries": true,
+    "lanes": [
+     {
+      "id": "rome",
+      "label_it": "Roma"
+     },
+     {
+      "id": "rome",
+      "label_it": "Roma ancora"
+     }
+    ],
+    "periods": [
+     {
+      "from": "-300",
+      "to": "-200",
+      "label_it": "Un periodo lungo di prova",
+      "role": "other"
+     }
+    ],
+    "events": [
+     {
+      "id": "r1",
+      "at": "-264",
+      "label_it": "Fatto a Roma",
+      "lane": "rome"
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-measure-one-event",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/measure",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 150 al 20 avanti Cristo con tre fatti inventati: scegline due per vedere quanti anni passano.",
+    "scale": "years",
+    "from": "-150",
+    "to": "-20",
+    "every": 10,
+    "measure": true,
+    "events": [
+     {
+      "id": "m1",
+      "at": "-133",
+      "label_it": "Solo uno"
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-every-too-fine",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/every",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 146 al 27 avanti Cristo con la Repubblica e quattro fatti inventati, per provare la figura.",
+    "scale": "years",
+    "from": "-146",
+    "to": "-27",
+    "every": 1,
+    "centuries": true,
+    "periods": [
+     {
+      "from": "-146",
+      "to": "-27",
+      "label_it": "Repubblica",
+      "role": "senate"
+     }
+    ],
+    "events": [
+     {
+      "id": "e1",
+      "at": "-133",
+      "label_it": "Primo fatto di prova",
+      "note_it": "Un fatto inventato, prima.",
+      "role": "cause"
+     },
+     {
+      "id": "e2",
+      "at": "-100",
+      "label_it": "Secondo fatto",
+      "role": "rome"
+     },
+     {
+      "id": "e3",
+      "at": "-82",
+      "label_it": "Terzo fatto di prova",
+      "approx": true,
+      "role": "effect"
+     },
+     {
+      "id": "e4",
+      "at": "-44",
+      "label_it": "Quarto fatto",
+      "role": "effect",
+      "note_it": "Un fatto inventato, dopo."
+     }
+    ],
+    "spans": [
+     {
+      "from": "e1",
+      "to": "e4",
+      "show_value": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-range-backwards",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/to",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 50 avanti Cristo al 50 dopo Cristo, con due fatti inventati e gli anni che passano tra loro.",
+    "scale": "years",
+    "from": "50",
+    "to": "-50",
+    "every": 10,
+    "events": [
+     {
+      "id": "a",
+      "at": "-27",
+      "label_it": "Fatto prima"
+     },
+     {
+      "id": "b",
+      "at": "14",
+      "label_it": "Fatto dopo",
+      "role": "effect"
+     }
+    ],
+    "spans": [
+     {
+      "from": "a",
+      "to": "b",
+      "show_value": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-event-outside",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/events/1/at",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 50 avanti Cristo al 50 dopo Cristo, con due fatti inventati e gli anni che passano tra loro.",
+    "scale": "years",
+    "from": "-50",
+    "to": "50",
+    "every": 10,
+    "events": [
+     {
+      "id": "a",
+      "at": "-27",
+      "label_it": "Fatto prima"
+     },
+     {
+      "id": "b",
+      "at": "60",
+      "label_it": "Fatto dopo",
+      "role": "effect"
+     }
+    ],
+    "spans": [
+     {
+      "from": "a",
+      "to": "b",
+      "show_value": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-event-label-too-long",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/events/0/label_it",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 50 avanti Cristo al 50 dopo Cristo, con due fatti inventati e gli anni che passano tra loro.",
+    "scale": "years",
+    "from": "-50",
+    "to": "50",
+    "every": 10,
+    "events": [
+     {
+      "id": "a",
+      "at": "-27",
+      "label_it": "Un nome davvero troppo lungo per una linea"
+     },
+     {
+      "id": "b",
+      "at": "14",
+      "label_it": "Fatto dopo",
+      "role": "effect"
+     }
+    ],
+    "spans": [
+     {
+      "from": "a",
+      "to": "b",
+      "show_value": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-note-too-long",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/events/0/note_it",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 50 avanti Cristo al 50 dopo Cristo, con due fatti inventati e gli anni che passano tra loro.",
+    "scale": "years",
+    "from": "-50",
+    "to": "50",
+    "every": 10,
+    "events": [
+     {
+      "id": "a",
+      "at": "-27",
+      "label_it": "Fatto prima",
+      "note_it": "parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola"
+     },
+     {
+      "id": "b",
+      "at": "14",
+      "label_it": "Fatto dopo",
+      "role": "effect"
+     }
+    ],
+    "spans": [
+     {
+      "from": "a",
+      "to": "b",
+      "show_value": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-lane-missing",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/events/0/lane",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo con due righe, Roma e altri popoli, dal 300 al 100 avanti Cristo, con fatti inventati.",
+    "scale": "years",
+    "from": "-300",
+    "to": "-100",
+    "centuries": true,
+    "lanes": [
+     {
+      "id": "rome",
+      "label_it": "Roma"
+     },
+     {
+      "id": "other",
+      "label_it": "Altri popoli"
+     }
+    ],
+    "periods": [
+     {
+      "from": "-300",
+      "to": "-200",
+      "label_it": "Un periodo lungo di prova",
+      "role": "other"
+     }
+    ],
+    "events": [
+     {
+      "id": "r1",
+      "at": "-264",
+      "label_it": "Fatto a Roma",
+      "role": "rome"
+     },
+     {
+      "id": "r2",
+      "at": "-146",
+      "label_it": "Un altro fatto a Roma",
+      "lane": "rome",
+      "role": "rome"
+     },
+     {
+      "id": "o1",
+      "at": "-218",
+      "label_it": "Fatto altrove",
+      "lane": "other",
+      "role": "other",
+      "approx": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-lane-unknown",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/events/0/lane",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo con due righe, Roma e altri popoli, dal 300 al 100 avanti Cristo, con fatti inventati.",
+    "scale": "years",
+    "from": "-300",
+    "to": "-100",
+    "centuries": true,
+    "lanes": [
+     {
+      "id": "rome",
+      "label_it": "Roma"
+     },
+     {
+      "id": "other",
+      "label_it": "Altri popoli"
+     }
+    ],
+    "periods": [
+     {
+      "from": "-300",
+      "to": "-200",
+      "label_it": "Un periodo lungo di prova",
+      "role": "other"
+     }
+    ],
+    "events": [
+     {
+      "id": "r1",
+      "at": "-264",
+      "label_it": "Fatto a Roma",
+      "lane": "mars",
+      "role": "rome"
+     },
+     {
+      "id": "r2",
+      "at": "-146",
+      "label_it": "Un altro fatto a Roma",
+      "lane": "rome",
+      "role": "rome"
+     },
+     {
+      "id": "o1",
+      "at": "-218",
+      "label_it": "Fatto altrove",
+      "lane": "other",
+      "role": "other",
+      "approx": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-lane-without-lanes",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/events/0/lane",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 50 avanti Cristo al 50 dopo Cristo, con due fatti inventati e gli anni che passano tra loro.",
+    "scale": "years",
+    "from": "-50",
+    "to": "50",
+    "every": 10,
+    "events": [
+     {
+      "id": "a",
+      "at": "-27",
+      "label_it": "Fatto prima",
+      "lane": "rome"
+     },
+     {
+      "id": "b",
+      "at": "14",
+      "label_it": "Fatto dopo",
+      "role": "effect"
+     }
+    ],
+    "spans": [
+     {
+      "from": "a",
+      "to": "b",
+      "show_value": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-event-ids-twice",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/events",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 50 avanti Cristo al 50 dopo Cristo, con due fatti inventati e gli anni che passano tra loro.",
+    "scale": "years",
+    "from": "-50",
+    "to": "50",
+    "every": 10,
+    "events": [
+     {
+      "id": "a",
+      "at": "-27",
+      "label_it": "Fatto prima"
+     },
+     {
+      "id": "a",
+      "at": "14",
+      "label_it": "Fatto dopo",
+      "role": "effect"
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-period-backwards",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/periods/0/to",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo molto lunga, dal 753 avanti Cristo al 476 dopo Cristo, con tre fatti inventati.",
+    "scale": "years",
+    "from": "-753",
+    "to": "476",
+    "centuries": true,
+    "periods": [
+     {
+      "from": "-509",
+      "to": "-753",
+      "label_it": "Il primo periodo",
+      "role": "rome"
+     },
+     {
+      "from": "-509",
+      "to": "-27",
+      "label_it": "Il secondo periodo",
+      "role": "senate"
+     },
+     {
+      "from": "-27",
+      "to": "476",
+      "label_it": "Il terzo",
+      "role": "princeps"
+     }
+    ],
+    "events": [
+     {
+      "id": "w1",
+      "at": "-753",
+      "label_it": "Inizio",
+      "role": "rome"
+     },
+     {
+      "id": "w2",
+      "at": "-27",
+      "label_it": "Svolta",
+      "role": "princeps"
+     },
+     {
+      "id": "w3",
+      "at": "476",
+      "label_it": "Fine",
+      "role": "effect"
+     }
+    ],
+    "spans": [
+     {
+      "from": "w1",
+      "to": "w3",
+      "show_value": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-period-outside",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/periods/0",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 50 avanti Cristo al 50 dopo Cristo, con due fatti inventati e gli anni che passano tra loro.",
+    "scale": "years",
+    "from": "-50",
+    "to": "50",
+    "every": 10,
+    "events": [
+     {
+      "id": "a",
+      "at": "-27",
+      "label_it": "Fatto prima"
+     },
+     {
+      "id": "b",
+      "at": "14",
+      "label_it": "Fatto dopo",
+      "role": "effect"
+     }
+    ],
+    "spans": [
+     {
+      "from": "a",
+      "to": "b",
+      "show_value": true
+     }
+    ],
+    "periods": [
+     {
+      "from": "100",
+      "to": "200",
+      "label_it": "Fuori"
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-span-unknown-event",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/spans/0",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 50 avanti Cristo al 50 dopo Cristo, con due fatti inventati e gli anni che passano tra loro.",
+    "scale": "years",
+    "from": "-50",
+    "to": "50",
+    "every": 10,
+    "events": [
+     {
+      "id": "a",
+      "at": "-27",
+      "label_it": "Fatto prima"
+     },
+     {
+      "id": "b",
+      "at": "14",
+      "label_it": "Fatto dopo",
+      "role": "effect"
+     }
+    ],
+    "spans": [
+     {
+      "from": "a",
+      "to": "zzz",
+      "show_value": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-span-backwards",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/spans/0/to",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 50 avanti Cristo al 50 dopo Cristo, con due fatti inventati e gli anni che passano tra loro.",
+    "scale": "years",
+    "from": "-50",
+    "to": "50",
+    "every": 10,
+    "events": [
+     {
+      "id": "a",
+      "at": "-27",
+      "label_it": "Fatto prima"
+     },
+     {
+      "id": "b",
+      "at": "14",
+      "label_it": "Fatto dopo",
+      "role": "effect"
+     }
+    ],
+    "spans": [
+     {
+      "from": "b",
+      "to": "a",
+      "show_value": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-span-twice",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/spans/1",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 50 avanti Cristo al 50 dopo Cristo, con due fatti inventati e gli anni che passano tra loro.",
+    "scale": "years",
+    "from": "-50",
+    "to": "50",
+    "every": 10,
+    "events": [
+     {
+      "id": "a",
+      "at": "-27",
+      "label_it": "Fatto prima"
+     },
+     {
+      "id": "b",
+      "at": "14",
+      "label_it": "Fatto dopo",
+      "role": "effect"
+     }
+    ],
+    "spans": [
+     {
+      "from": "a",
+      "to": "b"
+     },
+     {
+      "from": "a",
+      "to": "b",
+      "show_value": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-role-unknown",
+   "subject": "history",
+   "schema": "valid",
+   "semantic": "E-LESSON-ROLE",
+   "path": "/events/0/role",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 50 avanti Cristo al 50 dopo Cristo, con due fatti inventati e gli anni che passano tra loro.",
+    "scale": "years",
+    "from": "-50",
+    "to": "50",
+    "every": 10,
+    "events": [
+     {
+      "id": "a",
+      "at": "-27",
+      "label_it": "Fatto prima",
+      "role": "volcano"
+     },
+     {
+      "id": "b",
+      "at": "14",
+      "label_it": "Fatto dopo",
+      "role": "effect"
+     }
+    ],
+    "spans": [
+     {
+      "from": "a",
+      "to": "b",
+      "show_value": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-window-without-now",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/window",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "1",
+     "3"
+    ],
+    "marks": [
+     {
+      "id": "a",
+      "at": "1",
+      "span": "point",
+      "text_en": "I arrive",
+      "label_it": "quando?",
+      "role": "time"
+     },
+     {
+      "id": "b",
+      "at": "2",
+      "span": "point",
+      "text_en": "I'll call you",
+      "label_it": "che cosa succede",
+      "role": "main"
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-mark-two-languages",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/marks/0",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-3",
+     "3"
+    ],
+    "marks": [
+     {
+      "id": "a",
+      "at": "1",
+      "span": "point",
+      "text_en": "I arrive",
+      "label_it": "quando?",
+      "role": "time",
+      "text_es": "llego"
+     },
+     {
+      "id": "b",
+      "at": "2",
+      "span": "point",
+      "text_en": "I'll call you",
+      "label_it": "che cosa succede",
+      "role": "main"
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-mark-spanish-in-english",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/marks/0/text_es",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine in spagnolo: prima, adesso, dopo. Mostra due frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-2",
+     "2"
+    ],
+    "marks": [
+     {
+      "id": "a",
+      "at": "-1",
+      "span": "point",
+      "text_es": "llegué",
+      "label_it": "è già successo"
+     },
+     {
+      "id": "b",
+      "at": "1",
+      "span": "point",
+      "text_es": "llegaré",
+      "label_it": "succederà"
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-mark-too-long",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "E-READ",
+   "path": "/marks/0/text_en",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-3",
+     "3"
+    ],
+    "marks": [
+     {
+      "id": "a",
+      "at": "1",
+      "span": "point",
+      "text_en": "when I arrive at the station this evening for you",
+      "label_it": "quando?",
+      "role": "time"
+     },
+     {
+      "id": "b",
+      "at": "2",
+      "span": "point",
+      "text_en": "I'll call you",
+      "label_it": "che cosa succede",
+      "role": "main"
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-range-without-to",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/marks/1/to",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-4",
+     "4"
+    ],
+    "marks": [
+     {
+      "id": "p",
+      "at": "-2",
+      "span": "point",
+      "text_en": "I called",
+      "label_it": "è finito",
+      "role": "time"
+     },
+     {
+      "id": "r",
+      "at": "-2",
+      "span": "range",
+      "text_en": "I have lived here",
+      "label_it": "arriva a adesso",
+      "role": "main"
+     },
+     {
+      "id": "h",
+      "at": "-3",
+      "to": "3",
+      "span": "habit",
+      "text_en": "I always walk",
+      "label_it": "di solito",
+      "role": "auxiliary"
+     },
+     {
+      "id": "l",
+      "at": "3",
+      "from": "-1",
+      "span": "plan",
+      "text_en": "I'm going to buy it",
+      "label_it": "deciso prima",
+      "role": "time"
+     },
+     {
+      "id": "u",
+      "at": "2",
+      "span": "point",
+      "text_en": "I might go",
+      "label_it": "non è sicuro",
+      "role": "main",
+      "uncertain": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-point-with-to",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/marks/0/to",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-3",
+     "3"
+    ],
+    "marks": [
+     {
+      "id": "a",
+      "at": "1",
+      "span": "point",
+      "text_en": "I arrive",
+      "label_it": "quando?",
+      "role": "time",
+      "to": "2"
+     },
+     {
+      "id": "b",
+      "at": "2",
+      "span": "point",
+      "text_en": "I'll call you",
+      "label_it": "che cosa succede",
+      "role": "main"
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-plan-without-from",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/marks/3/from",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-4",
+     "4"
+    ],
+    "marks": [
+     {
+      "id": "p",
+      "at": "-2",
+      "span": "point",
+      "text_en": "I called",
+      "label_it": "è finito",
+      "role": "time"
+     },
+     {
+      "id": "r",
+      "at": "-2",
+      "to": "0",
+      "span": "range",
+      "text_en": "I have lived here",
+      "label_it": "arriva a adesso",
+      "role": "main"
+     },
+     {
+      "id": "h",
+      "at": "-3",
+      "to": "3",
+      "span": "habit",
+      "text_en": "I always walk",
+      "label_it": "di solito",
+      "role": "auxiliary"
+     },
+     {
+      "id": "l",
+      "at": "3",
+      "span": "plan",
+      "text_en": "I'm going to buy it",
+      "label_it": "deciso prima",
+      "role": "time"
+     },
+     {
+      "id": "u",
+      "at": "2",
+      "span": "point",
+      "text_en": "I might go",
+      "label_it": "non è sicuro",
+      "role": "main",
+      "uncertain": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-mark-outside-window",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/marks/0/at",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-3",
+     "3"
+    ],
+    "marks": [
+     {
+      "id": "a",
+      "at": "5",
+      "span": "point",
+      "text_en": "I arrive",
+      "label_it": "quando?",
+      "role": "time"
+     },
+     {
+      "id": "b",
+      "at": "2",
+      "span": "point",
+      "text_en": "I'll call you",
+      "label_it": "che cosa succede",
+      "role": "main"
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-range-backwards-in-time",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/marks/1/to",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-4",
+     "4"
+    ],
+    "marks": [
+     {
+      "id": "p",
+      "at": "-2",
+      "span": "point",
+      "text_en": "I called",
+      "label_it": "è finito",
+      "role": "time"
+     },
+     {
+      "id": "r",
+      "at": "-2",
+      "to": "-3",
+      "span": "range",
+      "text_en": "I have lived here",
+      "label_it": "arriva a adesso",
+      "role": "main"
+     },
+     {
+      "id": "h",
+      "at": "-3",
+      "to": "3",
+      "span": "habit",
+      "text_en": "I always walk",
+      "label_it": "di solito",
+      "role": "auxiliary"
+     },
+     {
+      "id": "l",
+      "at": "3",
+      "from": "-1",
+      "span": "plan",
+      "text_en": "I'm going to buy it",
+      "label_it": "deciso prima",
+      "role": "time"
+     },
+     {
+      "id": "u",
+      "at": "2",
+      "span": "point",
+      "text_en": "I might go",
+      "label_it": "non è sicuro",
+      "role": "main",
+      "uncertain": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-plan-after-its-moment",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/marks/3/from",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-4",
+     "4"
+    ],
+    "marks": [
+     {
+      "id": "p",
+      "at": "-2",
+      "span": "point",
+      "text_en": "I called",
+      "label_it": "è finito",
+      "role": "time"
+     },
+     {
+      "id": "r",
+      "at": "-2",
+      "to": "0",
+      "span": "range",
+      "text_en": "I have lived here",
+      "label_it": "arriva a adesso",
+      "role": "main"
+     },
+     {
+      "id": "h",
+      "at": "-3",
+      "to": "3",
+      "span": "habit",
+      "text_en": "I always walk",
+      "label_it": "di solito",
+      "role": "auxiliary"
+     },
+     {
+      "id": "l",
+      "at": "3",
+      "from": "3",
+      "span": "plan",
+      "text_en": "I'm going to buy it",
+      "label_it": "deciso prima",
+      "role": "time"
+     },
+     {
+      "id": "u",
+      "at": "2",
+      "span": "point",
+      "text_en": "I might go",
+      "label_it": "non è sicuro",
+      "role": "main",
+      "uncertain": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-mark-ids-twice",
+   "subject": "english",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/marks",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-3",
+     "3"
+    ],
+    "marks": [
+     {
+      "id": "a",
+      "at": "1",
+      "span": "point",
+      "text_en": "I arrive",
+      "label_it": "quando?",
+      "role": "time"
+     },
+     {
+      "id": "a",
+      "at": "2",
+      "span": "point",
+      "text_en": "I'll call you",
+      "label_it": "che cosa succede",
+      "role": "main"
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-year-zero",
+   "subject": "history",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 50 avanti Cristo al 50 dopo Cristo, con due fatti inventati e gli anni che passano tra loro.",
+    "scale": "years",
+    "from": "0",
+    "to": "50",
+    "every": 10,
+    "events": [
+     {
+      "id": "a",
+      "at": "-27",
+      "label_it": "Fatto prima"
+     },
+     {
+      "id": "b",
+      "at": "14",
+      "label_it": "Fatto dopo",
+      "role": "effect"
+     }
+    ],
+    "spans": [
+     {
+      "from": "a",
+      "to": "b",
+      "show_value": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-scale-unknown",
+   "subject": "history",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 50 avanti Cristo al 50 dopo Cristo, con due fatti inventati e gli anni che passano tra loro.",
+    "scale": "months",
+    "from": "-50",
+    "to": "50",
+    "every": 10,
+    "events": [
+     {
+      "id": "a",
+      "at": "-27",
+      "label_it": "Fatto prima"
+     },
+     {
+      "id": "b",
+      "at": "14",
+      "label_it": "Fatto dopo",
+      "role": "effect"
+     }
+    ],
+    "spans": [
+     {
+      "from": "a",
+      "to": "b",
+      "show_value": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-four-lanes",
+   "subject": "history",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo con due righe, Roma e altri popoli, dal 300 al 100 avanti Cristo, con fatti inventati.",
+    "scale": "years",
+    "from": "-300",
+    "to": "-100",
+    "centuries": true,
+    "lanes": [
+     {
+      "id": "a",
+      "label_it": "A"
+     },
+     {
+      "id": "b",
+      "label_it": "B"
+     },
+     {
+      "id": "c",
+      "label_it": "C"
+     },
+     {
+      "id": "d",
+      "label_it": "D"
+     }
+    ],
+    "periods": [
+     {
+      "from": "-300",
+      "to": "-200",
+      "label_it": "Un periodo lungo di prova",
+      "role": "other"
+     }
+    ],
+    "events": [
+     {
+      "id": "r1",
+      "at": "-264",
+      "label_it": "Fatto a Roma",
+      "lane": "rome",
+      "role": "rome"
+     },
+     {
+      "id": "r2",
+      "at": "-146",
+      "label_it": "Un altro fatto a Roma",
+      "lane": "rome",
+      "role": "rome"
+     },
+     {
+      "id": "o1",
+      "at": "-218",
+      "label_it": "Fatto altrove",
+      "lane": "other",
+      "role": "other",
+      "approx": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-years-needs-to",
+   "subject": "history",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 50 avanti Cristo al 50 dopo Cristo, con due fatti inventati e gli anni che passano tra loro.",
+    "scale": "years",
+    "from": "-50",
+    "every": 10,
+    "events": [
+     {
+      "id": "a",
+      "at": "-27",
+      "label_it": "Fatto prima"
+     },
+     {
+      "id": "b",
+      "at": "14",
+      "label_it": "Fatto dopo",
+      "role": "effect"
+     }
+    ],
+    "spans": [
+     {
+      "from": "a",
+      "to": "b",
+      "show_value": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-tense-needs-marks",
+   "subject": "english",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-3",
+     "3"
+    ]
+   }
+  },
+  {
+   "name": "timeline-nine-marks",
+   "subject": "english",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-3",
+     "3"
+    ],
+    "marks": [
+     {
+      "id": "m0",
+      "at": "1",
+      "span": "point",
+      "text_en": "x y"
+     },
+     {
+      "id": "m1",
+      "at": "1",
+      "span": "point",
+      "text_en": "x y"
+     },
+     {
+      "id": "m2",
+      "at": "1",
+      "span": "point",
+      "text_en": "x y"
+     },
+     {
+      "id": "m3",
+      "at": "1",
+      "span": "point",
+      "text_en": "x y"
+     },
+     {
+      "id": "m4",
+      "at": "1",
+      "span": "point",
+      "text_en": "x y"
+     },
+     {
+      "id": "m5",
+      "at": "1",
+      "span": "point",
+      "text_en": "x y"
+     },
+     {
+      "id": "m6",
+      "at": "1",
+      "span": "point",
+      "text_en": "x y"
+     },
+     {
+      "id": "m7",
+      "at": "1",
+      "span": "point",
+      "text_en": "x y"
+     },
+     {
+      "id": "m8",
+      "at": "1",
+      "span": "point",
+      "text_en": "x y"
+     }
+    ]
+   }
+  },
+  {
+   "name": "timeline-unknown-field",
+   "subject": "history",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea del tempo dal 146 al 27 avanti Cristo con la Repubblica e quattro fatti inventati, per provare la figura.",
+    "scale": "years",
+    "from": "-146",
+    "to": "-27",
+    "every": 10,
+    "centuries": true,
+    "periods": [
+     {
+      "from": "-146",
+      "to": "-27",
+      "label_it": "Repubblica",
+      "role": "senate"
+     }
+    ],
+    "events": [
+     {
+      "id": "e1",
+      "at": "-133",
+      "label_it": "Primo fatto di prova",
+      "note_it": "Un fatto inventato, prima.",
+      "role": "cause"
+     },
+     {
+      "id": "e2",
+      "at": "-100",
+      "label_it": "Secondo fatto",
+      "role": "rome"
+     },
+     {
+      "id": "e3",
+      "at": "-82",
+      "label_it": "Terzo fatto di prova",
+      "approx": true,
+      "role": "effect"
+     },
+     {
+      "id": "e4",
+      "at": "-44",
+      "label_it": "Quarto fatto",
+      "role": "effect",
+      "note_it": "Un fatto inventato, dopo."
+     }
+    ],
+    "spans": [
+     {
+      "from": "e1",
+      "to": "e4",
+      "show_value": true
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Tutta la linea"
+     },
+     {
+      "from": "-146",
+      "to": "-100",
+      "periods": [
+       {
+        "from": "-146",
+        "to": "-100",
+        "label_it": "Il primo tratto",
+        "role": "senate"
+       }
+      ],
+      "events": [
+       {
+        "id": "e1",
+        "at": "-133",
+        "label_it": "Primo fatto di prova",
+        "role": "cause"
+       },
+       {
+        "id": "e2",
+        "at": "-100",
+        "label_it": "Secondo fatto",
+        "role": "rome"
+       }
+      ],
+      "spans": [
+       {
+        "from": "e1",
+        "to": "e2",
+        "show_value": false
+       }
+      ],
+      "op_it": "Zoom sul primo tratto"
+     },
+     {
+      "from": "-146",
+      "to": "-100",
+      "periods": [
+       {
+        "from": "-146",
+        "to": "-100",
+        "label_it": "Il primo tratto",
+        "role": "senate"
+       }
+      ],
+      "events": [
+       {
+        "id": "e1",
+        "at": "-133",
+        "label_it": "Primo fatto di prova",
+        "role": "cause"
+       },
+       {
+        "id": "e2",
+        "at": "-100",
+        "label_it": "Secondo fatto",
+        "role": "rome"
+       }
+      ],
+      "spans": [
+       {
+        "from": "e1",
+        "to": "e2",
+        "show_value": true
+       }
+      ],
+      "op_it": "Quanto tempo passa?"
      }
     ],
     "zzz_unknown_field": true
+   }
+  },
+  {
+   "name": "timeline-mark-span-unknown",
+   "subject": "english",
+   "schema": "invalid",
+   "semantic": "ok",
+   "layout": "error",
+   "data": {
+    "type": "timeline",
+    "alt_it": "Una linea dell'ordine: prima, adesso, dopo. Mostra quando succedono alcune frasi di prova.",
+    "scale": "tense",
+    "window": [
+     "-3",
+     "3"
+    ],
+    "marks": [
+     {
+      "id": "a",
+      "at": "1",
+      "span": "stretch",
+      "text_en": "x y"
+     }
+    ]
    }
   }
  ]

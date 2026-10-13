@@ -1,6 +1,6 @@
 {
  "version": 1,
- "description": "Shared vectors of Chrono (Ruby and JS), skeleton of W2-0: the cases below are certain; the track T4a adds the rest (including the mutants of a wrong answer) before it builds the functions. 'args' are strings as the schema holds them; 'result' is the canonical output.",
+ "description": "Shared vectors of Chrono (Ruby and JS). 'args' are strings as the schema holds them; 'result' is the canonical output (a whole number as its decimal text); 'refused': true is a call that raises (Ruby ArgumentError, JS RangeError) or, for parse_roman, gives nil/null. Invented from the calendar, checked by hand: -27 to 14 is 40, not 41.",
  "library": "chrono",
  "batch": "w2-1",
  "track": "T4a",
@@ -30,6 +30,118 @@
       "1"
      ],
      "result": "1"
+    },
+    {
+     "args": [
+      "-1",
+      "-1"
+     ],
+     "result": "0"
+    },
+    {
+     "args": [
+      "1",
+      "1"
+     ],
+     "result": "0"
+    },
+    {
+     "args": [
+      "1",
+      "100"
+     ],
+     "result": "99"
+    },
+    {
+     "args": [
+      "-100",
+      "-1"
+     ],
+     "result": "99"
+    },
+    {
+     "args": [
+      "-146",
+      "-27"
+     ],
+     "result": "119"
+    },
+    {
+     "args": [
+      "-753",
+      "476"
+     ],
+     "result": "1228"
+    },
+    {
+     "args": [
+      "-44",
+      "14"
+     ],
+     "result": "57"
+    },
+    {
+     "args": [
+      "14",
+      "-27"
+     ],
+     "result": "-40"
+    },
+    {
+     "args": [
+      "476",
+      "1492"
+     ],
+     "result": "1016"
+    },
+    {
+     "args": [
+      "-509",
+      "-27"
+     ],
+     "result": "482"
+    },
+    {
+     "args": [
+      "-2",
+      "2"
+     ],
+     "result": "3"
+    },
+    {
+     "args": [
+      "0",
+      "10"
+     ],
+     "refused": true
+    },
+    {
+     "args": [
+      "-10",
+      "0"
+     ],
+     "refused": true
+    },
+    {
+     "args": [
+      "abc",
+      "10"
+     ],
+     "refused": true
+    },
+    {
+     "args": [
+      "1.5",
+      "10"
+     ],
+     "refused": true
+    },
+    {
+     "args": [
+      "",
+      "10"
+     ],
+     "refused": true
     }
    ]
   },
@@ -61,6 +173,72 @@
       "101"
      ],
      "result": "II secolo d.C."
+    },
+    {
+     "args": [
+      "1"
+     ],
+     "result": "I secolo d.C."
+    },
+    {
+     "args": [
+      "-1"
+     ],
+     "result": "I secolo a.C."
+    },
+    {
+     "args": [
+      "-100"
+     ],
+     "result": "I secolo a.C."
+    },
+    {
+     "args": [
+      "-101"
+     ],
+     "result": "II secolo a.C."
+    },
+    {
+     "args": [
+      "-753"
+     ],
+     "result": "VIII secolo a.C."
+    },
+    {
+     "args": [
+      "476"
+     ],
+     "result": "V secolo d.C."
+    },
+    {
+     "args": [
+      "1492"
+     ],
+     "result": "XV secolo d.C."
+    },
+    {
+     "args": [
+      "2000"
+     ],
+     "result": "XX secolo d.C."
+    },
+    {
+     "args": [
+      "2001"
+     ],
+     "result": "XXI secolo d.C."
+    },
+    {
+     "args": [
+      "0"
+     ],
+     "refused": true
+    },
+    {
+     "args": [
+      "x"
+     ],
+     "refused": true
     }
    ]
   },
@@ -71,15 +249,87 @@
    "cases": [
     {
      "args": [
+      "1"
+     ],
+     "result": "I"
+    },
+    {
+     "args": [
+      "4"
+     ],
+     "result": "IV"
+    },
+    {
+     "args": [
+      "9"
+     ],
+     "result": "IX"
+    },
+    {
+     "args": [
       "14"
      ],
      "result": "XIV"
     },
     {
      "args": [
+      "40"
+     ],
+     "result": "XL"
+    },
+    {
+     "args": [
+      "90"
+     ],
+     "result": "XC"
+    },
+    {
+     "args": [
+      "400"
+     ],
+     "result": "CD"
+    },
+    {
+     "args": [
       "1994"
      ],
      "result": "MCMXCIV"
+    },
+    {
+     "args": [
+      "3999"
+     ],
+     "result": "MMMCMXCIX"
+    },
+    {
+     "args": [
+      "2024"
+     ],
+     "result": "MMXXIV"
+    },
+    {
+     "args": [
+      "0"
+     ],
+     "refused": true
+    },
+    {
+     "args": [
+      "4000"
+     ],
+     "refused": true
+    },
+    {
+     "args": [
+      "-3"
+     ],
+     "refused": true
+    },
+    {
+     "args": [
+      "IV"
+     ],
+     "refused": true
     }
    ]
   },
@@ -93,6 +343,78 @@
       "XIV"
      ],
      "result": "14"
+    },
+    {
+     "args": [
+      "MCMXCIV"
+     ],
+     "result": "1994"
+    },
+    {
+     "args": [
+      "I"
+     ],
+     "result": "1"
+    },
+    {
+     "args": [
+      "xiv"
+     ],
+     "result": "14"
+    },
+    {
+     "args": [
+      "MMMCMXCIX"
+     ],
+     "result": "3999"
+    },
+    {
+     "args": [
+      "XL"
+     ],
+     "result": "40"
+    },
+    {
+     "args": [
+      "IIII"
+     ],
+     "refused": true
+    },
+    {
+     "args": [
+      "IC"
+     ],
+     "refused": true
+    },
+    {
+     "args": [
+      "VX"
+     ],
+     "refused": true
+    },
+    {
+     "args": [
+      "ABC"
+     ],
+     "refused": true
+    },
+    {
+     "args": [
+      ""
+     ],
+     "refused": true
+    },
+    {
+     "args": [
+      "MMMM"
+     ],
+     "refused": true
+    },
+    {
+     "args": [
+      "IIX"
+     ],
+     "refused": true
     }
    ]
   },
@@ -100,7 +422,72 @@
    "ruby": "mutants(from, to)",
    "js": "mutants(from, to)",
    "doc": "The wrong values of duration that a typical error gives (year 0 counted, eras subtracted, same era added), by name.",
-   "cases": []
+   "cases": [
+    {
+     "args": [
+      "-27",
+      "14"
+     ],
+     "result": {
+      "year_zero_counted": "41",
+      "eras_subtracted": "13"
+     }
+    },
+    {
+     "args": [
+      "-133",
+      "-27"
+     ],
+     "result": {
+      "same_era_added": "160"
+     }
+    },
+    {
+     "args": [
+      "-1",
+      "1"
+     ],
+     "result": {
+      "year_zero_counted": "2",
+      "eras_subtracted": "0"
+     }
+    },
+    {
+     "args": [
+      "14",
+      "100"
+     ],
+     "result": {
+      "same_era_added": "114"
+     }
+    },
+    {
+     "args": [
+      "-44",
+      "14"
+     ],
+     "result": {
+      "year_zero_counted": "58",
+      "eras_subtracted": "30"
+     }
+    },
+    {
+     "args": [
+      "1",
+      "1"
+     ],
+     "result": {
+      "same_era_added": "2"
+     }
+    },
+    {
+     "args": [
+      "0",
+      "14"
+     ],
+     "refused": true
+    }
+   ]
   }
  }
 }

@@ -49,7 +49,7 @@ Only these names, besides the structural ones of the lesson brief, and only with
 |---|---|---|---|---|
 | `sentence` | diagram | available | r1 | T1 |
 | `mirror` | diagram | available | w2-1 | T3 |
-| `timeline` | diagram | reserved | w2-1 | T4a |
+| `timeline` | diagram | available | w2-1 | T4a |
 | `paradigm` | diagram | draft | w2-2 | T3 |
 | `dialogue` | block | available | w2-1 | T3 |
 | `tiles` | check | reserved | w2-1 | T1 |

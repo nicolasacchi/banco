@@ -47,7 +47,7 @@ Only these names, besides the structural ones of the lesson brief, and only with
 
 | Piece | Kind | Status | Batch | Track |
 |---|---|---|---|---|
-| `timeline` | diagram | reserved | w2-1 | T4a |
+| `timeline` | diagram | available | w2-1 | T4a |
 | `chain` | diagram | available | w2-1 | T4b |
 | `network` | diagram | available | w2-1 | T4b |
 | `map` | diagram | available | w2-1 | T5 |
