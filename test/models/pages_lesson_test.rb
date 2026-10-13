@@ -74,6 +74,16 @@ class PagesLessonTest < ActiveSupport::TestCase
     assert(outcome.findings.any? { |f| f.code == "W-PAGE-KEY" }, outcome.findings.map(&:code).inspect)
   end
 
+  test "a caption that repeats the page's instructions is W-PAGE-REPEAT, a different one is not" do
+    pass_page!(@revision)
+    md = F.read("good/page-extra-card.md")
+    outcome = Validation::LessonChecks.call(md, subject: "math", context: context)
+    assert(outcome.findings.any? { |f| f.code == "W-PAGE-REPEAT" }, outcome.findings.map(&:code).inspect)
+    other = md.sub(/caption_it: ".*"/, 'caption_it: "Il punto in cui si incrociano le strade."')
+    outcome = Validation::LessonChecks.call(other, subject: "math", context: context)
+    assert_not(outcome.findings.any? { |f| f.code == "W-PAGE-REPEAT" }, outcome.findings.map(&:code).inspect)
+  end
+
   test "the student's body carries the view of the page, never its code; the poster only when it exists" do
     shot = PageShots.put("RIFF1234WEBPdata")
     pass_page!(@revision, shots: [ { "kind" => "ready", "seed_index" => 0, "width" => 1280, "height" => 300, "sha256" => shot, "bytes" => 16 } ])

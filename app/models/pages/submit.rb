@@ -4,7 +4,13 @@ module Pages
   module Submit
     module_function
 
-    def store(key:, subject:, outcome:, warnings:, author:)
+    # The browser matrix page is served on the production mount without a passed validation (it tries the forbidden on purpose), so
+    # only the operator's console may store a revision under its key: never the API, never an agent.
+    def reserved?(key) = key.to_s.end_with?(".pages-selftest")
+
+    def store(key:, subject:, outcome:, warnings:, author:, operator: false)
+      raise ArgumentError, "the key #{key} is reserved for the operator's console" if reserved?(key) && !operator
+
       sha = outcome.bundle_sha256 || Bundle.sha256(outcome.manifest, outcome.infos)
       outcome.infos.each { |f| Store.put(f.content) }
       replay = nil

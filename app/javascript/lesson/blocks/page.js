@@ -16,6 +16,14 @@ function poster(view) {
   return el("p", { class: "free-page-poster free-page-noposter", role: "img", "aria-label": view.alt_it, text: view.alt_it })
 }
 
+// The caption and the instructions that share most of their words are shown once (the caption).
+const wordsOf = (s) => [...new Set(String(s ?? "").toLowerCase().match(/\p{L}{3,}/gu) ?? [])]
+export function repeats(caption, instructions) {
+  const a = wordsOf(caption), b = wordsOf(instructions)
+  if (a.length < 3 || b.length < 3) return false
+  return a.filter((w) => b.includes(w)).length >= 0.5 * Math.min(a.length, b.length)
+}
+
 export function render(block, ctx, loc = {}) {
   const view = block.view ?? {}
   const root = el("figure", { class: "block block-page free-page", "data-state": "idle", "data-page": block.page })
@@ -23,7 +31,7 @@ export function render(block, ctx, loc = {}) {
   root.append(stage)
   const caption = block.caption_it ? renderInlineRich(block.caption_it, el("figcaption", { class: "free-page-caption" }), ctx) : null
   if (caption) root.append(caption)
-  if (view.instructions_it) root.append(el("p", { class: "free-page-help" }, icon("hand", "free-page-ic"), el("span", { text: view.instructions_it })))
+  if (view.instructions_it && !repeats(block.caption_it, view.instructions_it)) root.append(el("p", { class: "free-page-help" }, icon("hand", "free-page-ic"), el("span", { text: view.instructions_it })))
   const status = el("p", { class: "free-page-status", "aria-live": "polite" })
   const actions = el("div", { class: "free-page-actions" })
   root.append(actions, status)

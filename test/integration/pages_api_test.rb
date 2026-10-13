@@ -93,6 +93,17 @@ class PagesApiTest < ActionDispatch::IntegrationTest
     assert_equal "E-FILES", json["code"]
   end
 
+  test "the reserved browser matrix key is refused by the API and by the store" do
+    files = page_files { |f| f["page.json"] = f["page.json"].sub("math.pages-sample", "math.pages-selftest") }
+    submit(files, key: "math.pages-selftest")
+    assert_response :unprocessable_entity, json.inspect
+    assert_equal "E-PAGE-TEXT", json["code"]
+    assert_equal 0, Page.count
+    outcome = Validation::PageChecks.call(files, key: "math.pages-selftest", subject: "math", operator: true)
+    assert_raises(ArgumentError) { Pages::Submit.store(key: "math.pages-selftest", subject: page_subject!, outcome: outcome, warnings: [], author: @author) }
+    assert_equal 0, Page.count
+  end
+
   test "binary assets travel as base64 and are checked by their bytes" do
     png = File.binread(PageWorld::FIXTURES.join("math.pages-selftest/assets/checker.png"))
     submit(page_files { |f| f["assets/checker.png"] = png })

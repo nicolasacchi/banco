@@ -191,6 +191,7 @@ validation:
   E-PAGE-IMPORT: { stage: ruby, severity: error, description: "A page module imports something other than a relative file of the bundle, banco, or a declared library, or uses import()." }
   E-PAGE-HYGIENE: { stage: ruby, severity: error, description: "A text file of a page carries one of the private hygiene terms." }
   W-PAGE-KEY: { stage: ruby, severity: warning, description: "A string of the page equals a key text of the topic's pinned practice instances or a final of the lesson's try exercises." }
+  W-PAGE-REPEAT: { stage: ruby, severity: warning, description: "The caption of a page block and the page's instructions_it say nearly the same thing: the student reads it twice. Say it once, or make the caption about the idea and the instructions about the action." }
   E-PAGE-READY: { stage: chrome, severity: error, description: "The page did not send ready within 3 seconds at 4x CPU throttling." }
   E-PAGE-ERROR: { stage: chrome, severity: error, description: "An uncaught error, a rejected promise or a console error in the page, on some seed or in the scripted session." }
   E-PAGE-NETWORK: { stage: chrome, severity: error, description: "A CSP violation (any network attempt shows here) or a request outside the bundle, the kit and the declared libraries." }

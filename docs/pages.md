@@ -37,8 +37,15 @@ button). Page bytes are the source of truth: `BANCO_PAGES_DIR` (default `$BANCO_
    `/teacher/pages/selftest` on Chrome desktop, Firefox desktop, Safari on iPadOS/iOS and Chrome on Android (with `BANCO_PAGES_ENABLED=1`) and write
    each result table in the RUNBOOK. Every "bloccato" row must hold everywhere. Expected: Firefox sends the cookie header, which the Traefik strip
    removes; WebRTC is covered by the kit stub only, not by the CSP.
+7. Traefik check: `curl -s -H 'Cookie: probe=1' https://<pages origin>/kit/banco-page@1.0/bridge.mjs` must leave `banco health` with
+   `pages.cookie_headers_seen` 0 (the strip removed the header before the app). The counter is per process and starts again at 0 at every restart,
+   so run this curl after each restart and deploy, not only once.
 
 ## New kit versions
 
 A released kit directory never changes (`lib/pages_kit/LOCK`, checked by `test/lib/pages_kit_test.rb`). A fix is `1.1`; then `bin/pages-kit-lock` and
 `bin/revalidate-pages --kit 1.1`. The pages app serves a revision only with a kit of one of its passed validations.
+
+## Three.js is vendored once
+
+`vendor/pages/three@0.186.1` is the one copy of three for pages; if T10 needs three in `public/vendor`, it links or reuses this copy rather than adding a second one of about 2 MB.

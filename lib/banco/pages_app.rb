@@ -121,7 +121,7 @@ module Banco
       end
     end
 
-    def selftest?(revision) = revision.page.key.end_with?(".pages-selftest")
+    def selftest?(revision) = Pages::Submit.reserved?(revision.page.key) && revision.author_session_id.nil?
 
     def shell(sha, kit)
       ActiveRecord::Base.connection_pool.with_connection do

@@ -95,6 +95,20 @@ class PagesAppTest < ActiveSupport::TestCase
     assert_equal 200, get(@validate, "/p/#{other.bundle_sha256}/k1.0/").first
   end
 
+  test "an operator-stored selftest revision is served unvalidated, a validated-less agent revision under a normal key is not" do
+    subject = page_subject!
+    files = page_files { |f| f["page.json"] = f["page.json"].sub("math.pages-sample", "math.pages-selftest") }
+    outcome = Validation::PageChecks.call(files, key: "math.pages-selftest", subject: "math", operator: true)
+    rev, = Pages::Submit.store(key: "math.pages-selftest", subject: subject, outcome: outcome, warnings: [], author: nil, operator: true)
+    enabled do
+      assert_equal 200, get(@prod, "/p/#{rev.bundle_sha256}/k1.0/").first
+      assert_equal 404, get(@prod, "/p/#{@sha}/k1.0/").first, "an unvalidated revision under another key"
+    end
+    page = rev.page
+    sneaky = PageRevision.create!(page: page, seq: 2, base_revision_id: rev.id, manifest_json: rev.manifest_json, bundle_sha256: "a" * 64, rules_version: "x", warnings_json: "[]", author_session: page_author!)
+    enabled { assert_equal 404, get(@prod, "/p/#{sneaky.bundle_sha256}/k1.0/").first, "a revision under the key that an agent session wrote" }
+  end
+
   test "a file of the bundle is found by lookup in the manifest, with CORS and a sandboxing CSP" do
     pass_page!(@rev)
     enabled do

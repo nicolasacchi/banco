@@ -72,7 +72,7 @@ class PagesSystemTest < ApplicationSystemTestCase
       assert_selector ".free-page[data-state='idle']"
       assert_selector "img.free-page-poster[src^='/page-posters/']"
       assert_text "Prova tu: muovi il cursore e guarda cosa cambia."
-      assert_text "Muovi il cursore e guarda dove le due rette si incontrano."
+      assert_no_selector ".free-page-help", wait: 0.3 # the instructions repeat the caption, so only the caption is shown
       assert_selector "button.free-page-open", text: /\AApri la parte interattiva \(circa \d+ KB\)\z/
       assert_no_selector "iframe.free-page", wait: 0.3
       assert_equal 0, page.driver.network_traffic.count { |r| r.url.to_s.start_with?(@origin) }, "nothing of the page loads until it is asked for"
@@ -166,9 +166,9 @@ class PagesSystemTest < ApplicationSystemTestCase
     dir = PageWorld::FIXTURES.join("math.pages-selftest")
     files = Dir.glob("**/*", base: dir.to_s).select { |f| File.file?(dir.join(f)) }.to_h { |f| [ f, File.binread(dir.join(f)) ] }
     subject = page_subject!
-    outcome = Validation::PageChecks.call(files, key: "math.pages-selftest", subject: "math", scan: false)
+    outcome = Validation::PageChecks.call(files, key: "math.pages-selftest", subject: "math", scan: false, operator: true)
     assert_empty outcome.findings.errors.map(&:message)
-    Pages::Submit.store(key: "math.pages-selftest", subject: subject, outcome: outcome, warnings: [], author: nil)
+    Pages::Submit.store(key: "math.pages-selftest", subject: subject, outcome: outcome, warnings: [], author: nil, operator: true)
     sign_in_as :teacher
     visit "/teacher/pages/selftest"
     assert_selector ".free-page[data-state='idle']", wait: 15

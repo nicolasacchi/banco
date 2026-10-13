@@ -95,3 +95,10 @@ test("init carries the seed, the level and the preferences, and nothing about th
   assert.equal(m.reduced_motion, true)
   assert.equal(initMessage({ seed: 1, theme: "weird" }).theme, "cream")
 })
+
+test("an instruction line that repeats the caption is not shown twice", async () => {
+  const { repeats } = await import("lesson/blocks/page")
+  assert.equal(repeats("Prova tu: muovi il cursore e guarda cosa cambia.", "Muovi il cursore e guarda dove le due rette si incontrano."), true)
+  assert.equal(repeats("Il punto in cui si incrociano le strade.", "Muovi il cursore e guarda dove le due rette si incontrano."), false)
+  assert.equal(repeats(null, "Muovi il cursore."), false)
+})

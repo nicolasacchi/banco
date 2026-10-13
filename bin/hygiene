@@ -33,7 +33,12 @@ if [ "${#terms[@]}" -eq 0 ]; then
   echo "hygiene: no forbidden-term list (HYGIENE_TERMS or prep/hygiene-terms); term check skipped" >&2
 else
   pattern=$(IFS='|'; echo "${terms[*]}")
-  if git grep -n -I -i -E "$pattern" -- . ':(exclude)bin/hygiene' ':(exclude)vendor/pages' >&2; then
+  # only vendored libraries that carry a SHA256SUMS (checked by bin/vendor-pages) are left out
+  excludes=(':(exclude)bin/hygiene')
+  while IFS= read -r sums; do
+    [ -n "$sums" ] && excludes+=(":(exclude)$(dirname "$sums")")
+  done < <(git ls-files 'vendor/pages/*/SHA256SUMS')
+  if git grep -n -I -i -E "$pattern" -- . "${excludes[@]}" >&2; then
     echo "hygiene: forbidden term found" >&2; fail=1
   fi
 fi

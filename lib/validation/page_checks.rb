@@ -23,9 +23,13 @@ module Validation
     module_function
 
     # files: { "page.json" => bytes, "main.mjs" => bytes, ... }; key: the page key the submit names; subject: the subject key.
+    # operator: true is the console task alone (bin/rails banco:pages_selftest); a reserved key is refused without it.
     # scan: false leaves out the JavaScript scan: only the operator's console stores the browser matrix page, which uses the APIs on purpose.
-    def call(files, key:, subject:, scan: true)
+    def call(files, key:, subject:, scan: true, operator: false)
       findings = Findings.new
+      if Pages::Submit.reserved?(key) && !operator
+        findings.add("E-PAGE-TEXT", "/page.json/key", "the key #{key} is reserved for the operator's browser matrix page", rule: "key")
+      end
       files = files.transform_values { |v| v.to_s.b }
       manifest = parse_manifest(files.delete("page.json"), key, subject, findings)
       names(files, findings)

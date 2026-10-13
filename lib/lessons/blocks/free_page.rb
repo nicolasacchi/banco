@@ -27,7 +27,19 @@ module Lessons
         end
         block["revision"] = found[:revision_id] if block["revision"] == "latest"
         leak(block, ctx, found[:strings], body)
+        repeat(block, ctx, found[:instructions])
       end
+
+      # W-PAGE-REPEAT: the caption and the page's instructions share most of their words (the card would say it twice).
+      def repeat(block, ctx, instructions)
+        a = words(block["caption_it"])
+        b = words(instructions)
+        return if a.size < 3 || b.size < 3
+
+        ctx.add("W-PAGE-REPEAT", "caption_it", "the caption and the page's instructions say nearly the same thing: say it once", rule: "repeat-#{ctx.path}") if (a & b).size >= 0.5 * [ a.size, b.size ].min
+      end
+
+      def words(text) = text.to_s.downcase.scan(/[[:alpha:]]{3,}/).uniq
 
       # Only the pages beyond the limit are reported, each once.
       def first_beyond?(block, card, body, limit)

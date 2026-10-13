@@ -17,7 +17,7 @@ module Pages
         verdict = rev.verdict
         verdict ? "revision #{rev.id} of #{key} did not pass validation (banco page status #{rev.id})" : "revision #{rev.id} of #{key} has not been validated yet (banco page status #{rev.id})"
       end
-      { revision_id: rev.id, problem: problem, strings: strings_of(rev) }
+      { revision_id: rev.id, problem: problem, strings: strings_of(rev), instructions: JSON.parse(rev.manifest_json)["instructions_it"] }
     end
 
     # Every string literal of the page's modules (comments and the rest blanked by the lexer).
