@@ -113,13 +113,13 @@ states:
 ## Altre lingue, altri pezzi {idea icon=languages id=altre}
 
 ::: diagram word_parts
-alt_it: "Una parola latina e una italiana divise in sillabe: nu, cle, us e mi, cro, sco, pio. La voce batte su cle e su sco."
+alt_it: "Una parola spagnola e una italiana divise in sillabe: nú, cle, o e mi, cro, sco, pio. La voce batte su nú e su sco."
 view: syllables
 words:
-  - form_la: 'nucleus'
-    syllables: 'nu-cle-us'
-    stress: 2
-    label_it: "latino"
+  - form_es: 'núcleo'
+    syllables: 'nú-cle-o'
+    stress: 1
+    label_it: "spagnolo"
   - form_it: 'micro|scopio'
     syllables: 'mi-cro-sco-pio'
     stress: 3

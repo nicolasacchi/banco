@@ -293,6 +293,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-287 | 2026-10-13 | `strand` (T7, W2-1): nucleotide, strand and ladder, hidden bases that never reach the page | decided |
 | D-288 | 2026-10-13 | time (T4a, W2-1): `Lessons::Chrono` with its twin and mutants, `timeline` on the scales of years and tense available | decided |
 | D-289 | 2026-10-13 | free pages, release 2 (T11): the pages origin, the kit, validation in Chrome, review, approval with one tick per page, the page block available, the browser matrix page |  decided |
+| D-290 | 2026-10-13 | wave 2 integration 2 (w2-int): T2, T3, T7, T4a and T11 merged; one finding for a language the subject does not teach; the gallery of the words in Spanish only | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -3131,4 +3132,15 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Why:** the operator asked for anything a web page can do where components cannot, with the safety resting on sandbox, CSP, validation and independent review.
 - **Cost:** a second Puma mount, 5 tables, about 1.3 MB of vendored libraries, a Chrome validation of about 1 minute per revision.
 - **Status:** decided; release 2 ships to students only after R6 and the browser matrix (operator).
+- **Back-port:** none.
+
+## D-290 · 2026-10-13 · wave 2 integration 2 (w2-int): T2, T3, T7, T4a and T11 merged; one finding for a language the subject does not teach
+
+- **Design ref:** D-280 (one implementation where tracks overlapped), D-281, D-283.
+- **Design said:** each track keeps its own checks.
+- **We do:** the branches were merged with their entries renumbered (T3 D-283, T7 D-284 to D-287, T4a D-288, T11 D-289). T2's key lint (`target_keys`) and T3's dialogue, `mirror` and `word_parts` checks both refused a language the subject does not teach: the lesson-level lint now stays silent under a block that already carries that finding (`block_owns_language?`). The Latin word in the Spanish gallery of the words became a Spanish one, because a Spanish lesson does not teach Latin (D-265). `page` is now in the list of the available blocks.
+- **Number:** D-290.
+- **Why:** two copies of a rule give two findings for one fault.
+- **Cost:** none.
+- **Status:** decided
 - **Back-port:** none.

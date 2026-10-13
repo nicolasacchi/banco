@@ -467,6 +467,11 @@ module Validation
         taught.transform_values { |w| w + glossed }
       end
 
+      # The dialogue, mirror and word_parts checks already refused a language the subject does not teach, under this block: one fault, one finding.
+      def block_owns_language?(at)
+        @findings.any? { |f| f.code == "E-LESSON-LANG" && f.field.to_s.start_with?("#{at}/") && f.message.include?("is not a language this subject teaches") }
+      end
+
       # Every key _en, _es or _la of a block holds words of that language: the subject must teach it, it must not be Italian, a figure
       # holds one language besides Italian, and the target-language lint applies.
       def target_keys
@@ -477,7 +482,7 @@ module Validation
               lang = Lessons::Lang.key_lang(key)
               line = field_line(block["line"], pointer)
               field = "#{at}#{pointer}"
-              add("E-LESSON-LANG", field, "#{key} holds #{LANGUAGE_NAMES[lang]} text and #{@subject} does not teach it", line: line, rule: "lang-key-#{field}") unless Lessons::Lang.taught?(@subject, lang)
+              add("E-LESSON-LANG", field, "#{key} holds #{LANGUAGE_NAMES[lang]} text and #{@subject} does not teach it", line: line, rule: "lang-key-#{field}") unless Lessons::Lang.taught?(@subject, lang) || block_owns_language?(at)
               add("E-LESSON-LANG", field, "#{key} holds Italian words (a key ending in _#{lang} holds #{LANGUAGE_NAMES[lang]} only)", line: line, rule: "lang-italian-#{field}") if %w[en es].include?(lang) && Lessons::Lang.italian?(text)
               target_lint(field, lang, text, line)
             end

@@ -190,7 +190,7 @@ class LessonTypesTest < ActiveSupport::TestCase
     message = assert_raises(Lessons::Directives::Refused) { build("venn", nil, "a: 1\n") }.message
     assert_includes message, "callout"
     assert_includes message, "try"
-    assert_not_includes message, "page"
+    assert_includes message, "page"
     assert_includes message, "dialogue"
     assert_includes message, "reveal"
   end

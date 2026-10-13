@@ -69,7 +69,7 @@ class Lesson2TextLayerTest < ActiveSupport::TestCase
     fine = run_checks("english") { |b| b["cards"][1]["blocks"] << dialogue.call("text_en", "See you soon.") }
     assert_empty codes(fine, "E-LESSON-LANG")
     wrong = run_checks("english") { |b| b["cards"][1]["blocks"] << dialogue.call("text_es", "Hasta pronto.") }
-    assert_equal 2, codes(wrong, "E-LESSON-LANG").size
+    assert_equal 1, codes(wrong, "E-LESSON-LANG").size, "the dialogue block names the language once (one fault, one finding)"
     italian = run_checks("english") { |b| b["cards"][1]["blocks"] << dialogue.call("text_en", "Il gatto è sul tavolo.") }
     assert codes(italian, "E-LESSON-LANG").any? { |f| f.message.include?("Italian") }
     two = run_checks("english") do |b|

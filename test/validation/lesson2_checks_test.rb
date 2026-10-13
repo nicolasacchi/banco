@@ -105,7 +105,7 @@ class Lesson2ChecksTest < ActiveSupport::TestCase
                    "bad/visuals-thirteen.md" => %w[E-CARD-BLOCKS], "bad/front-kind-disagrees-with-key.md" => %w[E-LESSON-REFS], "bad/front-book-too-long.md" => %w[E-READ],
                    "bad/bold-too-much.md" => %w[E-READ],
                    "bad/lang-level-word.md" => %w[E-LESSON-LANG], "bad/chem-symbol-unknown.md" => %w[E-LESSON-MARKUP],
-                   "bad/dialogue-es-tilde-not-needed.md" => %w[E-LESSON-LANG], "bad/dialogue-apparatus-words.md" => %w[E-LESSON-LANG] }
+                   "bad/dialogue-es-tilde-not-needed.md" => %w[E-LESSON-LANG W-LANG-LEVEL], "bad/dialogue-apparatus-words.md" => %w[E-LESSON-LANG] }
     F::MANIFEST["bad"].each do |bad|
       next if bad["file"].nil? || bad["code"] == "E-LESSON-SCHEMA" || bad["pad_front_matter_bytes"]
 
