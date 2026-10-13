@@ -20,7 +20,7 @@ export const TEXT = {
 
 // The caps the layouts mirror (config/banco/validation_rules.yml, lesson2.types).
 export const CAPS = {
-  word_parts: { words: [1, 4], parts: 4, letters: 16, syllables: 8, meaning_words: 12 },
+  word_parts: { words: [1, 4], parts: 4, letters: 20, syllables: 8, meaning_words: 12 },
   mirror: { rows: [1, 3], words_per_side: 12 }
 }
 

@@ -339,7 +339,7 @@ module Validation
 
       def markup_block(block, path)
         Lessons::Blocks.markup_fields(block).each do |sub, text, lists|
-          next if block["type"] == "check" && block["component"] == "span_select" && sub == "text_it"
+          next if block["type"] == "check" && block["component"] == "span_select" && sub == "text_it" # text_en and text_es are not Italian markup at all
 
           line = case block["type"]
           when "text" then block["line"]

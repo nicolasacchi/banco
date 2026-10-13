@@ -112,13 +112,21 @@ module Lessons
         spans = check["spans"].to_a
         ids = spans.map { |s| s["id"] }
         ctx.add("E-LESSON-CHECK", "spans", "span ids must be unique") if ids.uniq.size != ids.size
+        keys = TEXT_KEYS.select { |k| check.key?(k) }
+        ctx.add("E-LESSON-CHECK", "text_it", "a span_select has exactly one of text_it, text_en, text_es (it has #{keys.size})") unless keys.size == 1
+        key = keys.first || "text_it"
+        spans.each_with_index do |s, i|
+          wrong = (s.keys & TEXT_KEYS) - [ key ]
+          ctx.add("E-LESSON-LANG", "spans/#{i}/#{wrong.first}", "the spans are written in the sentence's language, #{key}") unless wrong.empty?
+        end
         cursor = 0
         spans.each_with_index do |s, i|
-          found = check["text_it"].to_s.index(s["text_it"], cursor)
+          piece = s[key].to_s
+          found = piece.empty? ? nil : check[key].to_s.index(piece, cursor)
           if found
-            cursor = found + s["text_it"].size
+            cursor = found + piece.size
           else
-            ctx.add("E-LESSON-CHECK", "spans/#{i}/text_it", "spans are exact pieces of text_it, in order: #{s['text_it'].inspect}")
+            ctx.add("E-LESSON-CHECK", "spans/#{i}/#{key}", "spans are exact pieces of #{key}, in order: #{piece.inspect}")
           end
         end
         ctx.add("E-LESSON-CHECK", "answer", "the answer names a span that does not exist") unless (check["answer"].to_a - ids).empty?

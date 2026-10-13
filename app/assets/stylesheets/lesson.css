@@ -601,7 +601,7 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 .dg-controls .button, .check .button { min-height: 2.9em; font-size: 1.05em; }
 .check .button.small { padding: 0.4em 1.2em; }
 .check-prompt { font-size: 1.1em; font-weight: 700; }
-.dg-desc { font-size: 0.8em; }
+.dg-desc { font-size: 1em; } /* the text alternative is read by the student who needs it: the base size, not smaller (S reads with difficulty) */
 .dg-desc[open] p { max-height: 8em; overflow: auto; }
 .question .status:empty { display: none; min-height: 0; }
 

@@ -11,7 +11,7 @@ module Lessons
   #   2. the figure types: Lessons::Diagrams::TYPE.verify_functions -> {"seats.threshold" => callable};
   #   3. the domain libraries (LIBRARIES): "chrono.duration" calls Lessons::Chrono.duration with the arguments named as the frozen
   #      signature names them (SIGNATURES): positional ones in order, `base:` style ones as keywords. A result that is a Hash or an
-  #      Array is read through the reserved argument `pick` ("digits", or an index); mutants come from Lib.mutants(*the same arguments).
+  #      Array is read through the reserved argument `pick` ("digits", or an index; `element` is the same key for chem.count); mutants come from Lib.mutants(*the same arguments).
   # `program.*` functions are not Ruby's: they are checked by the render check in the server's Chrome (firm rule 3).
   module Verify
     LIBRARIES = {
@@ -75,7 +75,10 @@ module Lessons
       end
       call = lambda do |args|
         positional, keyword = build.call(args)
-        pick(mod.public_send(fn, *positional, **keyword), args["pick"])
+        result = mod.public_send(fn, *positional, **keyword)
+        # chem.count without an element is all the atoms of the formula, coefficient included (a number, as a check answers a number)
+        result = result.values.sum if lib == "chem" && fn == "count" && result.is_a?(Hash) && (args["pick"] || args["element"]).nil?
+        pick(result, args["pick"] || args["element"])
       end
       mutants = if mod.respond_to?(:mutants) && fn == "duration"
         lambda do |args|

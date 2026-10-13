@@ -491,6 +491,8 @@
     "prompt_it",
     "answer_format_it",
     "text_it",
+    "text_en",
+    "text_es",
     "spans",
     "listen"
    ],

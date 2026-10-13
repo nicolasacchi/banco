@@ -21,7 +21,7 @@ module Lessons
       "fraction" => %w[component prompt_it answer_format_it input_before input_after mixed],
       "normalized_text" => %w[component prompt_it answer_format_it input_before input_after input],
       "matching" => %w[component prompt_it answer_format_it reuse_right listen],
-      "span_select" => %w[component prompt_it answer_format_it text_it listen],
+      "span_select" => %w[component prompt_it answer_format_it text_it text_en text_es listen],
       "select" => %w[component prompt_it answer_format_it targets pick],
       "tiles" => %w[component prompt_it answer_format_it],
       "ordering" => %w[component prompt_it answer_format_it]
@@ -173,7 +173,8 @@ module Lessons
         out["left"] = shown["left"]
         out["right"] = shown["right"]
       when "span_select"
-        out["spans"] = c["spans"].each_with_index.map { |s, i| { "id" => "s#{i + 1}", "text_it" => s["text_it"] } }
+        key = Blocks::Check::TEXT_KEYS.find { |k| c.key?(k) } || "text_it"
+        out["spans"] = c["spans"].each_with_index.map { |s, i| { "id" => "s#{i + 1}", key => s[key] } }
       when "tiles" then out["tiles"] = Checks.rekey(c, seed).display["elements"]
       when "ordering" then out["items"] = Checks.rekey(c, seed).display["elements"]
       when "select" then out["diagram"] = select_figure(c)
@@ -220,10 +221,20 @@ module Lessons
       out["result_it"] = b["result_it"] if b["result_it"] && cut.nil?
       if b["diagram"]
         d = diagram(b["diagram"])
-        d["states"] = d["states"].first(cut) if cut && d["states"]
+        d = cut_states(d, cut) if cut && d["states"]
         out["diagram"] = d
       end
       out
+    end
+
+    # The states up to the blank step. A figure with states has at least two (schema minItems 2): with one state left that state is the
+    # figure, with none the figure is drawn as its base, so that the page never gets a states list the browser refuses (a blank at step 1 or 2).
+    def cut_states(d, cut)
+      kept = d["states"].first(cut)
+      return d.merge("states" => kept) if kept.size >= 2
+
+      d = d.except("states")
+      kept.size == 1 ? d.merge(kept.first) : d
     end
 
     def seed_for_step(seed, step) = "#{seed}|step#{step}"

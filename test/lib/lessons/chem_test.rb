@@ -57,4 +57,13 @@ class LessonsChemTest < ActiveSupport::TestCase
     assert_equal 12, fn.call.call("formula" => "2 Ca(NO3)2", "pick" => "O")
     assert_equal 6, fn.call.call("formula" => "3 H2O", "pick" => "H")
   end
+
+  test "chem.count reads the element argument like pick, so a check gets a number and not the whole map" do
+    fn = Lessons::Verify.resolve("chem.count")
+    assert_equal 8, fn.call.call("formula" => "4 H2O", "element" => "H")
+    assert_equal 4, fn.call.call("formula" => "4 H2O", "element" => "O")
+    assert_equal 12, fn.call.call("formula" => "4 H2O"), "no element: all the atoms"
+    assert_equal 7, fn.call.call("formula" => "Al(OH)3")
+    assert_empty Lessons::Verify.problems({ "component" => "number", "answer" => "8", "verify" => { "fn" => "chem.count", "args" => { "formula" => "4 H2O", "element" => "H" } } })
+  end
 end

@@ -13,7 +13,17 @@ module Lessons
       module_function
 
       # The row of chem/molecules for a formula key (coefficient and state already removed), or nil.
-      def molecule_row(key) = key && VettedData.row(MOLECULES, "molecules", key)
+      def molecule_row(key) = key && (VettedData.row(MOLECULES, "molecules", key) || atom_row(key))
+
+      # A bare atom of a nonmetal or noble gas that the library has no row for ("O", "2 O": two unbound atoms, chemistry.md 2.5): one atom, no bonds,
+      # named as the element. A metal or a metalloid is never drawn as a lone atom (a metal is a patch, honesty rule), so it stays outside.
+      ATOM_CATEGORIES = %w[nonmetal halogen noble_gas].freeze
+      def atom_row(key)
+        el = Chem.element(key)
+        return nil unless el && ATOM_CATEGORIES.include?(el["category"])
+
+        { "name_it" => el["name_it"], "kind" => "molecular", "atoms" => [ { "symbol" => key, "xy" => [ "0,000", "0,000" ] } ], "bonds" => [], "source" => "chem/elements" }
+      end
 
       # The row of the library for a formula as an author writes it ("3 H2O", "Ca(NO3)2(aq)"), or nil.
       def row_of_formula(formula) = molecule_row(Chem.base(formula))

@@ -35,6 +35,27 @@ class LessonChecksWave2Test < ActiveSupport::TestCase
     assert_includes codes(run_check(mixed)), "E-LESSON-LANG"
   end
 
+  SPAN_EN = { "type" => "check", "n" => 1, "component" => "span_select", "prompt_it" => "Tocca la frase temporale.", "text_en" => "I will text you as soon as the film ends.",
+              "spans" => [ { "id" => "s1", "text_en" => "I will text you" }, { "id" => "s2", "text_en" => "as soon as" }, { "id" => "s3", "text_en" => "the film ends." } ],
+              "answer" => %w[s2 s3] }.freeze
+
+  test "a span_select can be written in english: spans are exact pieces of text_en, in one language" do
+    assert_empty run_check(SPAN_EN)
+    assert_includes run_check(SPAN_EN.merge("spans" => SPAN_EN["spans"].dup.tap { |s| s[1] = { "id" => "s2", "text_en" => "as soon" + "x" } })), [ "E-LESSON-CHECK", "/cards/1/blocks/0/spans/1/text_en" ]
+    assert_includes run_check(SPAN_EN.merge("text_it" => "Ti scrivo.")), [ "E-LESSON-CHECK", "/cards/1/blocks/0/text_it" ]
+    mixed = SPAN_EN.merge("spans" => SPAN_EN["spans"].dup.tap { |s| s[0] = { "id" => "s1", "text_it" => "I will text you" } })
+    assert_includes codes(run_check(mixed)), "E-LESSON-LANG"
+  end
+
+  test "a span_select in english is served with text_en and its spans re-keyed, without the answer" do
+    served = Lessons::StudentBody.block(SPAN_EN, "english", "s")
+    assert_equal "I will text you as soon as the film ends.", served["text_en"]
+    assert_equal %w[s1 s2 s3], served["spans"].map { |x| x["id"] }
+    assert_equal "as soon as", served["spans"][1]["text_en"]
+    assert_nil served["answer"]
+    assert_nil served["spans"][0]["text_it"]
+  end
+
   test "a sentence to build that stands in its own prompt is W-CHECK-ANSWER-IN-PROMPT" do
     leaky = TILES.merge("prompt_it" => "Costruisci: If it rains I will stay.")
     assert_includes codes(run_check(leaky)), "W-CHECK-ANSWER-IN-PROMPT"

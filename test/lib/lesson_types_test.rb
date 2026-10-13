@@ -142,7 +142,7 @@ class LessonTypesTest < ActiveSupport::TestCase
       Lessons::Types.entry(:diagram, "flow")["views"]["layout"]["line"]["status"] = "available"
     end
     assert_empty Lessons::Types.held_back_uses(:diagram, "flow", { "layout" => "tree" })
-    assert_equal [ [ "text_en", "present" ] ], Lessons::Types.held_back_uses(:diagram, "sentence", { "states" => [ { "text_en" => "x" } ] }).map { |f, v, _| [ f, v ] }
+    assert_empty Lessons::Types.held_back_uses(:diagram, "sentence", { "states" => [ { "text_en" => "x" } ] }), "sentence neutral is built (D-273)"
     assert_empty Lessons::Types.held_back_options({ "component" => "choice", "listen" => {}, "verify" => {} }), "verify is available since T1 and listen since T2"
     assert_equal [ "contractions" ], Lessons::Types.held_back_options({ "component" => "normalized_text", "contractions" => "en", "profile" => { "name" => "binary" } }).map(&:first)
     assert_empty Lessons::Types.held_back_options({ "component" => "normalized_text", "input" => "bits" }), "input: bits is built (T9)"

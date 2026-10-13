@@ -30,7 +30,7 @@ diagrams:
   cartesian: {family: core, status: available, schema: final, batch: r1, track: "-", module: lesson/diagrams/cartesian,
     views: {sliders: {present: {status: reserved, schema: none, batch: w2-3}}}}
   sentence: {family: core, status: available, schema: final, batch: r1, track: T1, module: lesson/diagrams/sentence,
-    views: {text_en: {present: {status: reserved, schema: final, batch: w2-1}}, text_es: {present: {status: reserved, schema: final, batch: w2-1}}}}
+    views: {text_en: {present: {status: available, schema: final, batch: w2-1}}, text_es: {present: {status: available, schema: final, batch: w2-1}}}}
   concept_map: {family: core, status: available, schema: final, batch: r1, track: "-", module: lesson/diagrams/concept_map}
   table: {family: core, status: available, schema: final, batch: r1, track: "-", module: lesson/diagrams/table}
   flow: {family: core, status: available, schema: final, batch: r1, track: T4b, module: lesson/diagrams/flow,

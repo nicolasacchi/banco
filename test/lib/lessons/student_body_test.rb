@@ -103,7 +103,25 @@ class LessonsStudentBodyTest < ActiveSupport::TestCase
                       "states" => Array.new(ex["steps"].size) { |i| { "op_it" => "passo #{i}" } } }
     served = blocks_of(project(source), "example").first
     cut = ex["steps"].index { |s| s["blank"] }
-    assert_equal cut, served["diagram"]["states"].size
+    if cut >= 2 then assert_equal cut, served["diagram"]["states"].size
+    else assert_nil served["diagram"]["states"], "fewer than two states left: the browser's schema wants two or none"
+    end
+  end
+
+  test "an example whose blank comes early never serves fewer than two states: one state becomes the figure, none leaves the base" do
+    blank = { "component" => "number", "prompt_it" => "Quanto?", "answer" => "3" }
+    steps = ->(at) { Array.new(4) { |i| { "tag" => "apply", "do_it" => "passo #{i}", "why_it" => "perché #{i}" }.tap { |s| s["blank"] = blank if i == at } } }
+    diagram = { "type" => "balance", "alt_it" => "Una bilancia che cambia ad ogni passo.", "x_value" => "5", "left" => { "x" => 1 }, "right" => { "units" => 5 },
+                "states" => [ { "op_it" => "uno" }, { "op_it" => "due", "left" => { "x" => 1, "units" => 1 } }, { "op_it" => "tre" }, { "op_it" => "quattro" } ] }
+    block = ->(at) { { "n" => 1, "type" => "example", "problem_it" => "Un problema.", "steps" => steps.call(at), "diagram" => diagram } }
+    assert_equal 3, Lessons::StudentBody.block(block.call(3), "math", "s")["diagram"]["states"].size
+    assert_equal 2, Lessons::StudentBody.block(block.call(2), "math", "s")["diagram"]["states"].size
+    one = Lessons::StudentBody.block(block.call(1), "math", "s")["diagram"]
+    assert_nil one["states"]
+    assert_equal "uno", one["op_it"], "the one state is the figure"
+    none = Lessons::StudentBody.block(block.call(0), "math", "s")["diagram"]
+    assert_nil none["states"]
+    assert_nil none["op_it"]
   end
 
   test "a balance is served with a computed tilt per state and no x_value; show_value serves it" do

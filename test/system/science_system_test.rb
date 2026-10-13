@@ -242,4 +242,18 @@ class ScienceSystemTest < ApplicationSystemTestCase
     assert_text "A adenina"
     shot "strand-single"
   end
+
+  test "scrolled to the end, the last block of a card ends above the fixed bar, at 390 and at 1366" do
+    [ [ 390, 844 ], [ 1366, 900 ] ].each do |size|
+      open_card(1, size: size)
+      [ 1, 8, 16 ].each do |k|
+        page.execute_script("window.lessonApi.goTo(#{k}, { focus: true })")
+        assert_selector "#scheda-#{k} .dg", wait: 10
+        page.execute_script("window.scrollTo(0, document.documentElement.scrollHeight)")
+        sleep 0.3
+        top, bottom = page.evaluate_script("(() => { const last = [...document.querySelectorAll('#scheda-#{k} .block')].pop(); return [document.querySelector('.l2-bar').getBoundingClientRect().top, last.getBoundingClientRect().bottom] })()")
+        assert_operator bottom, :<=, top, "card #{k} at #{size.first}: its last block ends under the bar"
+      end
+    end
+  end
 end

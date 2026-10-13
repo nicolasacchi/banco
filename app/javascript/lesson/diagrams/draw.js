@@ -186,7 +186,7 @@ export function mountDiagram(data, ctx, options = {}) {
   const descText = el("p", { text: describe(data, { subject: ctx.subject, state: 0, mode: options.mode ?? "student" }) })
   const desc = el("details", { class: "dg-desc" }, el("summary", {}, icon("description"), document.createTextNode(` ${ctx.t.description}`)), descText)
   // the numbers under a chart ("Vedi i numeri", WAVE2 P2): opened by the student, always printed
-  const valuesBox = el("details", { class: "dg-values" })
+  const valuesBox = el("details", { class: "dg-values", hidden: "" }) // hidden until a scene has numbers: an empty <details> would print the browser's English "Details"
   const renderValues = (scene) => {
     if (!scene.values) {
       valuesBox.hidden = true

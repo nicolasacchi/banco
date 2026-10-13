@@ -36,6 +36,22 @@ module Lessons
           verdicts.all?
         end
 
+        # The `verify:` function of the seats (WAVE2 1.10): seats.threshold {threshold: present_majority, seats: "400", present: "320"} gives
+        # the number of votes or presences that threshold needs, in integers (the same arithmetic as the figure's readout).
+        def verify_functions
+          { "seats.threshold" => lambda do |args|
+            name = args["threshold"].to_s
+            raise ArgumentError, "threshold is one of #{THRESHOLDS.join(', ')}" unless THRESHOLDS.include?(name)
+
+            seats = Integer(args["seats"].to_s, 10)
+            present = args["present"].nil? ? nil : Integer(args["present"].to_s, 10)
+            need = thresholds(seats, present, nil, [ name ]).fetch(name)[:need]
+            raise ArgumentError, "#{name} needs present" if need.nil?
+
+            need.to_s
+          end }
+        end
+
         def static(data, c)
           cap = data["layout"] == "grid" ? GRID_MAX : Validation::Rules.get(:lesson2, :types, :seats, :seats)
           c.diagram("/seats", "a #{data['layout']} holds at most #{cap} seats", rule: "cap") if data["seats"].to_i > cap

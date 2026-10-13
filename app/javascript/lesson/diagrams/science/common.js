@@ -18,7 +18,16 @@ export function rangeElements(range) {
 export const rangeGroups = (range) => (range === "periods_1_4" ? Array.from({ length: 18 }, (_, i) => i + 1) : MAIN_GROUPS)
 
 // The row of chem/molecules for a formula key (coefficient and state already removed), or null.
-export const moleculeRow = (key) => (key ? molecules[key] ?? null : null)
+export const moleculeRow = (key) => (key ? molecules[key] ?? atomRow(key) : null)
+
+// A bare atom of a nonmetal or noble gas that the library has no row for ("O", "2 O": two unbound atoms): one atom, no bonds, named as the element.
+// A metal or a metalloid is never a lone atom (a metal is a patch), so it stays outside. The Ruby twin is ScienceSupport.atom_row.
+const ATOM_CATEGORIES = ["nonmetal", "halogen", "noble_gas"]
+function atomRow(key) {
+  const el = ELEMENTS.elements.find((e) => e.symbol === key)
+  if (!el || !ATOM_CATEGORIES.includes(el.category)) return null
+  return { name_it: el.name_it, kind: "molecular", atoms: [{ symbol: key, xy: ["0,000", "0,000"] }], bonds: [], source: "chem/elements" }
+}
 
 // The row of the library for a formula as an author writes it ("3 H2O", "Ca(NO3)2(aq)"), or null.
 export const rowOfFormula = (formula) => moleculeRow(Chem.base(formula))

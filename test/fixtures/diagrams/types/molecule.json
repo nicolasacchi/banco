@@ -905,6 +905,83 @@
     "path": "/show"
    },
    "layout": "error"
+  },
+  {
+   "name": "molecule-lone-nonmetal-atoms",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Tre disegni di ossigeno. O: un atomo. 2 O: due atomi separati. O2: due atomi legati.",
+    "items": [
+     {
+      "formula": "O",
+      "label_it": "un atomo"
+     },
+     {
+      "formula": "2 O",
+      "label_it": "due atomi separati"
+     },
+     {
+      "formula": "O2",
+      "label_it": "una molecola"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols"
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "2 O",
+    "O",
+    "O2",
+    "due atomi separati",
+    "un atomo",
+    "una molecola"
+   ],
+   "targets": {
+    "items": [
+     "i1",
+     "i2",
+     "i3"
+    ],
+    "atoms": [
+     "i1c1a1",
+     "i2c1a1",
+     "i2c2a1",
+     "i3c1a1",
+     "i3c1a2"
+    ]
+   }
+  },
+  {
+   "name": "molecule-lone-metal-atom-not-drawn",
+   "subject": "chemistry",
+   "schema": "valid",
+   "data": {
+    "type": "molecule",
+    "alt_it": "Un atomo di ossigeno e lo zinco, che non si disegna come atomo solo.",
+    "items": [
+     {
+      "formula": "O"
+     },
+     {
+      "formula": "Zn"
+     }
+    ],
+    "style": "balls",
+    "show": [
+     "symbols"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DATA",
+    "path": "/items/1/formula"
+   },
+   "layout": "error"
   }
  ]
 }

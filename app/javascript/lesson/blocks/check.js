@@ -41,20 +41,24 @@ function matchingInput(spec, ctx) {
 function spanInput(spec, ctx) {
   const chosen = new Set()
   const box = el("p", { class: "spans", role: "group", "aria-label": ctx.t.spans_label })
-  let rest = spec.text_it
+  const key = spec.text_en != null ? "text_en" : spec.text_es != null ? "text_es" : "text_it"
+  const lang = key === "text_en" ? "en" : key === "text_es" ? "es" : null
+  if (lang) box.setAttribute("lang", lang)
+  let rest = spec[key]
   for (const span of spec.spans) {
-    const at = rest.indexOf(span.text_it)
+    const at = rest.indexOf(span[key])
     if (at < 0) continue
     if (at > 0) box.appendChild(document.createTextNode(rest.slice(0, at)))
     const b = el("button", { type: "button", class: "span-chip", "aria-pressed": "false", "data-span": span.id })
-    renderInlineRich(span.text_it, b, ctx)
+    if (lang) b.appendChild(document.createTextNode(span[key]))
+    else renderInlineRich(span[key], b, ctx)
     b.addEventListener("click", () => {
       if (chosen.has(span.id)) chosen.delete(span.id)
       else chosen.add(span.id)
       b.setAttribute("aria-pressed", String(chosen.has(span.id)))
     })
     box.appendChild(b)
-    rest = rest.slice(at + span.text_it.length)
+    rest = rest.slice(at + span[key].length)
   }
   if (rest) box.appendChild(document.createTextNode(rest))
   return handle(el("div", { class: "answer" }, box), {

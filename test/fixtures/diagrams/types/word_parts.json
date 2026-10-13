@@ -1282,6 +1282,52 @@
           }
         ]
       }
+    },
+    {
+      "name": "word_parts-decode-nineteen-letters",
+      "subject": "biology",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "La parola desossiribonucleico in tre pezzi: desossi, con un ossigeno in meno, ribo, dal ribosio, e nucleico, del nucleo.",
+        "view": "decode",
+        "words": [
+          {
+            "form_it": "desossi|ribo|nucleico",
+            "parts_it": [
+              "con un ossigeno in meno",
+              "dal ribosio, uno zucchero",
+              "del nucleo"
+            ],
+            "meaning_it": "del nucleo, con uno zucchero senza un ossigeno"
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "desossiribonucleico",
+            "desossi",
+            "ribo",
+            "nucleico",
+            "con un ossigeno in meno",
+            "dal ribosio, uno zucchero",
+            "del nucleo",
+            "del nucleo, con uno zucchero senza un ossigeno",
+            "La parola desossiribonucleico è fatta di 3 pezzi: desossi vuol dire con un ossigeno in meno; ribo vuol dire dal ribosio, uno zucchero; nucleico vuol dire del nucleo. Tutto insieme: del nucleo, con uno zucchero senza un ossigeno."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "w1p1",
+            "w1p2",
+            "w1p3"
+          ],
+          "syllables": []
+        }
+      }
     }
   ]
 }

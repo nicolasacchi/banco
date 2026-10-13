@@ -246,4 +246,15 @@ class LessonsChartTypesTest < ActiveSupport::TestCase
     assert(blocked.any? { |f| f.code == "E-LESSON-BLOCK" && f.message.include?("L7") })
     assert(ok.none? { |f| f.message.to_s.include?("L7") })
   end
+
+  test "seats.threshold is a verify function: the integers of the readout, and a check on it holds or fails" do
+    fn = Lessons::Verify.resolve("seats.threshold")
+    assert_equal "161", fn.call.call("threshold" => "present_majority", "seats" => "400", "present" => "320")
+    assert_equal "201", fn.call.call("threshold" => "legal_number", "seats" => "400")
+    assert_equal "267", fn.call.call("threshold" => "two_thirds", "seats" => "400")
+    ok = { "component" => "number", "answer" => "161", "verify" => { "fn" => "seats.threshold", "args" => { "threshold" => "present_majority", "seats" => "400", "present" => "320" } } }
+    assert_empty Lessons::Verify.problems(ok)
+    assert_equal [ "answer" ], Lessons::Verify.problems(ok.merge("answer" => "160")).map(&:path)
+    assert_equal [ "verify/args" ], Lessons::Verify.problems(ok.merge("verify" => { "fn" => "seats.threshold", "args" => { "threshold" => "present_majority", "seats" => "400" } })).map(&:path)
+  end
 end

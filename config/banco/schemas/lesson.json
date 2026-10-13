@@ -811,7 +811,6 @@
       "required": [
         "component",
         "prompt_it",
-        "text_it",
         "spans",
         "answer"
       ],
@@ -836,14 +835,19 @@
           "minLength": 1,
           "maxLength": 300
         },
+        "text_en": {
+          "$ref": "#/$defs/lang_text"
+        },
+        "text_es": {
+          "$ref": "#/$defs/lang_text"
+        },
         "spans": {
           "type": "array",
           "items": {
             "type": "object",
             "additionalProperties": false,
             "required": [
-              "id",
-              "text_it"
+              "id"
             ],
             "properties": {
               "id": {
@@ -856,8 +860,31 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 80
+              },
+              "text_en": {
+                "$ref": "#/$defs/lang_text"
+              },
+              "text_es": {
+                "$ref": "#/$defs/lang_text"
               }
-            }
+            },
+            "anyOf": [
+              {
+                "required": [
+                  "text_it"
+                ]
+              },
+              {
+                "required": [
+                  "text_en"
+                ]
+              },
+              {
+                "required": [
+                  "text_es"
+                ]
+              }
+            ]
           },
           "minItems": 2,
           "maxItems": 12
@@ -885,7 +912,24 @@
           "$ref": "#/$defs/reachable_ok"
         }
       },
-      "description": "check component span_select"
+      "description": "check component span_select; the sentence and its spans are written in one language: text_it, text_en or text_es (D-292)",
+      "anyOf": [
+        {
+          "required": [
+            "text_it"
+          ]
+        },
+        {
+          "required": [
+            "text_en"
+          ]
+        },
+        {
+          "required": [
+            "text_es"
+          ]
+        }
+      ]
     },
     "check_spec": {
       "type": "object",
