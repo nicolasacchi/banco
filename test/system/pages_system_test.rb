@@ -23,6 +23,7 @@ class PagesSystemTest < ApplicationSystemTestCase
     ENV["BANCO_PAGES_DIR"] = Dir.mktmpdir
     FileUtils.mkdir_p(SHOT_DIR)
     @origin = start_pages_origin!
+    page.driver.clear_network_traffic # the runner's Chrome is shared: the traffic of the tests before is not this test's
   end
 
   teardown do
@@ -33,6 +34,7 @@ class PagesSystemTest < ApplicationSystemTestCase
     end
     sign_out_env
     stop_pages_origin!
+    (page.driver.clear_network_traffic rescue nil) # so that the tests after do not see the pages origin as a foreign request
     @saved_users ? ENV["BANCO_STUDENT_USERS"] = @saved_users : ENV.delete("BANCO_STUDENT_USERS")
     FileUtils.rm_rf([ ENV.delete("BANCO_PAGE_SHOTS_DIR"), ENV.delete("BANCO_PAGES_DIR") ].compact)
   end
@@ -61,8 +63,17 @@ class PagesSystemTest < ApplicationSystemTestCase
     assert_selector ".free-page", wait: 10
   end
 
+  # A frame that is still being created has no execution context yet: look again a few times before giving up.
   def frame_for_pages
-    page.driver.browser.page.frames.find { |f| f.url.to_s.start_with?(@origin) }
+    5.times do
+      frame = page.driver.browser.page.frames.find { |f| f.url.to_s.start_with?(@origin) }
+      return frame if frame
+    rescue Ferrum::NoExecutionContextError, Ferrum::NodeNotFoundError
+      nil
+    ensure
+      sleep 0.5
+    end
+    nil
   end
 
   { "1366" => [ 1366, 900 ], "390" => [ 390, 844 ] }.each do |label, size|
