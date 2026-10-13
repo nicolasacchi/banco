@@ -46,8 +46,9 @@ module Validation
       "password-store" => "basic",
       "use-mock-keychain" => nil,
       "remote-allow-origins" => "*",
-      # A local Chrome resolves nothing but the loopback harness listener.
-      "host-resolver-rules" => "MAP * ~NOTFOUND, EXCLUDE 127.0.0.1"
+      # A local Chrome resolves nothing but the loopback harness listener; the pages validation mount is the same listener under
+      # the name banco-pages-internal (D-289), which the sidecar resolves on banco-internal.
+      "host-resolver-rules" => "MAP banco-pages-internal 127.0.0.1, MAP * ~NOTFOUND, EXCLUDE 127.0.0.1"
     }.freeze
 
     CHROME_CANDIDATES = %w[google-chrome chromium chromium-browser chrome-headless-shell].freeze

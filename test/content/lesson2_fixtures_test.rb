@@ -131,7 +131,7 @@ class Lesson2FixturesTest < ActiveSupport::TestCase
       assert_empty entry["serve"] & entry["drop"], name
     end
     assert_equal %w[amount_words choice fraction matching normalized_text number ordering select span_select tiles], wl["checks"].keys.reject { |k| k.start_with?("_") }.sort
-    assert_equal %w[callout cases diagram dialogue example image legend math mistake more oral procedure reveal schema source summary table text try], wl["blocks"].keys.sort
+    assert_equal %w[callout cases diagram dialogue example image legend math mistake more oral page procedure reveal schema source summary table text try], wl["blocks"].keys.sort
   end
 
   test "the whitelist drops every answer-side field of every component, and the solution fields match the schema" do

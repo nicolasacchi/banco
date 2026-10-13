@@ -63,6 +63,21 @@ module Validation
       "#{base_url}/h/#{token}/lesson-render.html?theme=#{theme}"
     end
 
+    # The host page of a free page validation (D-289, SPEC B7): token kind prev (a page revision).
+    PAGE_HOST_CSP = "default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; frame-src %<origin>s; connect-src 'none'; img-src 'none'; base-uri 'none'; form-action 'none'"
+    PAGE_FILES = %w[page_host.mjs page_audit.mjs].freeze
+
+    # sha256 of what makes a page validation differ: the host, the audit and the numbers of the check (A-07).
+    def page_version
+      Digest::SHA256.hexdigest((PAGE_FILES.map { |n| file(n) } + [ JSON.generate(Rules.get(:page, :validate)) ]).join("\n"))
+    end
+
+    def page_host_url(token, seed:, kit:, reduced: false, theme: "cream", nowebgl: false, width: nil)
+      query = { seed: seed, kit: kit, reduced: reduced ? 1 : 0, theme: theme, nowebgl: nowebgl ? 1 : 0 }
+      query[:width] = width if width
+      "#{base_url}/h/#{token}/page-host.html?#{query.to_query}"
+    end
+
     def page_url(token, generator: true, verify: false)
       query = []
       query << "generator=0" unless generator
@@ -88,7 +103,7 @@ module Validation
       return nil unless ActiveSupport::SecurityUtils.secure_compare(sign(message), signature)
 
       kind, id, expires = message.split(":", 3)
-      return nil unless %w[rev stage lrev].include?(kind) && expires.to_i >= now
+      return nil unless %w[rev stage lrev prev].include?(kind) && expires.to_i >= now
 
       [ kind, id ]
     rescue ArgumentError

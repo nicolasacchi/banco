@@ -1,0 +1,30 @@
+<% content_for :title, t("teacher.pages.shots.title", key: @revision.page.key, seq: @revision.seq) %>
+<main class="page wide" id="page-shots">
+  <h1><%= t("teacher.pages.shots.title", key: @revision.page.key, seq: @revision.seq) %></h1>
+  <p class="hint"><%= t("teacher.pages.shots.intro") %></p>
+  <% if @validation %>
+    <p><strong><%= t("teacher.pages.status.#{@validation.status}") %></strong> <%= t("teacher.pages.shots.kit", kit: @validation.kit_version) %></p>
+    <% if @validation.errors_list.any? %>
+      <ul class="plain">
+        <% @validation.errors_list.each do |e| %><li><code><%= e["code"] %></code> <%= e["message"] %></li><% end %>
+      </ul>
+    <% end %>
+  <% end %>
+  <% if @shots.empty? %>
+    <p><%= t("teacher.pages.shots.none") %></p>
+  <% else %>
+    <div class="shots-row" style="display: flex; flex-wrap: wrap; gap: 1em; align-items: flex-start">
+      <% @shots.each do |s| %>
+        <% label = t("teacher.pages.shots.kind.#{s['kind']}", default: s["kind"]) %>
+        <figure style="margin: 0; max-width: <%= s['width'].to_i > 600 ? "48%" : "30%" %>">
+          <% if PageShots.exist?(s["sha256"]) %>
+            <a href="<%= teacher_page_shot_path(page_revision_id: @revision.id, sha256: s["sha256"]) %>"><img src="<%= teacher_page_shot_path(page_revision_id: @revision.id, sha256: s["sha256"]) %>" alt="<%= label %>" loading="lazy" style="max-width: 100%; height: auto; border: 1px solid #888"></a>
+          <% else %>
+            <p class="hint"><%= t("teacher.pages.shots.removed") %></p>
+          <% end %>
+          <figcaption><%= label %> · <%= s["width"] %> px<%= " · #{t('teacher.pages.shots.seed', n: s['seed_index'] + 1)}" if s["seed_index"] %></figcaption>
+        </figure>
+      <% end %>
+    </div>
+  <% end %>
+</main>

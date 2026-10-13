@@ -333,16 +333,27 @@ class DecisionRecorder
     raise Invalid, "topic revision #{revision.id} is not the latest of #{lesson.key}: approve the latest" unless revision.seq == latest
 
     attested = attestation
+    confirmed = pages_confirmed
     gate = Approval::TopicGate.check(revision, confirm_seen: truthy?(@params[:confirm_seen]),
                                                lesson_findings_reason_it: @params[:lesson_findings_reason_it],
-                                               waive_page_opened: !attested.nil?)
+                                               waive_page_opened: !attested.nil?, pages_confirmed: confirmed)
     raise Invalid, gate.reasons unless gate.approvable
 
     payload = { topic_revision_id: revision.id, topic: lesson.key, seq: revision.seq, course_revision_id: revision.course_revision_id,
                 lesson_revision_id: revision.lesson_revision_id, item_revision_ids: Approval::TopicGate.item_revision_ids(revision) }
     payload[:lesson_findings_reason_it] = @params[:lesson_findings_reason_it].to_s.strip if Approval::TopicGate.findings_need_reason?(revision)
+    # D-289: the revision ids of the free pages the teacher tried, one explicit act per page; the approval covers what a page shows and
+    # teaches, not its code.
+    payload[:pages_confirmed] = confirmed.map(&:to_i).sort if Approval::TopicGate.page_revisions(revision).any?
     payload.merge!(attested: true, attest_it: attested, waived: [ Approval::TopicGate::WAIVED ]) if attested
     [ lesson.subject, nil, payload ]
+  end
+
+  # The page revision ids ticked on the form ("Ho provato ..."): integers, strings or one comma-separated string from the console.
+  def pages_confirmed
+    raw = @params[:pages_confirmed]
+    list = raw.is_a?(String) ? raw.split(",") : Array(raw)
+    list.map { |v| v.to_s.strip }.reject(&:empty?).map { |v| v.match?(/\A\d+\z/) ? v.to_i : raise(Invalid, "pages_confirmed holds page revision ids") }
   end
 
   # The operator's own words for a console approval that waives the page-opened requirement (D-260); nil without

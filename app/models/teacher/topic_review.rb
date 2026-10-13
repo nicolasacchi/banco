@@ -10,7 +10,8 @@ module Teacher
     Sample = Data.define(:view, :presentation)
     Check = Data.define(:name, :done, :reasons)
     CHECK_GROUPS = { map: /not in the latest course map/, versions: /pinned lesson revision|no longer the newest passed/,
-                     lesson: /no review by an independent|sent the lesson revision back/, exercises: /is not approvable/, viewed: /was not opened/, render: /render check/ }.freeze
+                     lesson: /no review by an independent|sent the lesson revision back/, exercises: /is not approvable/, viewed: /was not opened/, render: /render check/,
+                     pages: /\Athe page \S+ \(revision \d+\) (has not passed|has no review|has \d+ blocker)/ }.freeze
     ReviewRow = Data.define(:review, :model, :results, :checklist, :recomputed, :findings)
 
     attr_reader :subject, :lesson, :key
@@ -31,6 +32,9 @@ module Teacher
     def lesson_body = lesson_revision&.body
     def gate = @gate ||= Approval::TopicGate.mechanical(latest)
     def needs_reason? = Approval::TopicGate.findings_need_reason?(latest)
+
+    # The free pages the lesson revision pins (D-289): one "Ho provato ..." box each in the approval form.
+    def pages = @pages ||= latest ? Approval::TopicGate.page_revisions(latest) : []
     def intro_it = latest&.body&.dig("intro_it")
 
     # Whether the teacher can approve now, ignoring the two form inputs (confirmation and reason).
@@ -118,7 +122,7 @@ module Teacher
 
     # The gate's reasons grouped into the lines of the checklist of the last step.
     def checks
-      @checks ||= CHECK_GROUPS.reject { |name, _| name == :render && !lesson_revision&.lesson2? }.map do |name, pattern|
+      @checks ||= CHECK_GROUPS.reject { |name, _| (name == :render && !lesson_revision&.lesson2?) || (name == :pages && pages.empty?) }.map do |name, pattern|
         reasons = gate.reasons.select { |r| pattern.match?(r) }
         Check.new(name, reasons.empty?, reasons)
       end

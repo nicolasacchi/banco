@@ -34,6 +34,8 @@ Rails.application.routes.draw do
       concerns :sitting
     end
     get "settings" => "settings#show", format: false
+    # The poster of a free page (D-289): the validation screenshot by content address, for every signed-in role.
+    get "page-posters/:sha" => "page_posters#show", constraints: { sha: /[0-9a-f]{64}/ }, format: false
     # The course of Phase 1b (A9): Oggi, the subjects, a topic, its lesson and its practice. Students only, official
     # and trial; the teacher and guests get 403. The official student sees nothing until release_course.
     scope format: false do
@@ -104,6 +106,10 @@ Rails.application.routes.draw do
       get "dashboard/state" => "dashboard#state", as: :teacher_dashboard_state
       get "dashboard/fragment" => "dashboard#fragment", as: :teacher_dashboard_fragment
       get "refs/:key" => "refs#show", constraints: { key: /[a-z0-9][a-z0-9._-]*/ }, as: :teacher_ref
+      # Free pages (D-289): the screenshots of a page validation and the browser matrix page.
+      get "page-revisions/:page_revision_id/shots" => "page_shots#index", constraints: { page_revision_id: /\d+/ }, as: :teacher_page_shots
+      get "page-revisions/:page_revision_id/shots/:sha256" => "page_shots#show", constraints: { page_revision_id: /\d+/, sha256: /[0-9a-f]{64}/ }, as: :teacher_page_shot
+      get "pages/selftest" => "pages#selftest", as: :teacher_pages_selftest
       get "lesson-revisions/:lesson_revision_id/shots" => "lesson_shots#index", constraints: { lesson_revision_id: /\d+/ }, as: :teacher_lesson_shots
       get "lesson-revisions/:lesson_revision_id/shots/:sha256" => "lesson_shots#show", constraints: { lesson_revision_id: /\d+/, sha256: /[0-9a-f]{64}/ }, as: :teacher_lesson_shot
       get "items/:revision_id/play" => "item_plays#show", constraints: { revision_id: /\d+/ }, as: :teacher_item_play
@@ -188,6 +194,17 @@ Rails.application.routes.draw do
     get "api/v1/lesson-revisions/:revision/shots/:sha" => "api/v1/lesson_shots#show", constraints: revision.merge(sha: /[0-9a-f]{64}/), format: false
     get "api/v1/lesson-revisions/:revision/review" => "api/v1/lesson_reviews#open", constraints: revision, format: false
     post "api/v1/lesson-revisions/:revision/review" => "api/v1/lesson_reviews#submit", constraints: revision, format: false
+    # Free pages, release 2 (D-289, SPEC B9). No route decides.
+    page = { key: /[a-z_]+\.[a-z0-9]+(?:-[a-z0-9]+)*/ }
+    get "api/v1/subjects/:subject/pages" => "api/v1/pages#index", constraints: subject, format: false
+    post "api/v1/pages/submit" => "api/v1/pages#submit", format: false
+    get "api/v1/pages/:key" => "api/v1/pages#open", constraints: page, format: false
+    get "api/v1/page-revisions/:revision" => "api/v1/pages#status", constraints: revision, format: false
+    get "api/v1/page-revisions/:revision/shots" => "api/v1/pages#shots", constraints: revision, format: false
+    get "api/v1/page-revisions/:revision/shots/:sha" => "api/v1/pages#shot", constraints: revision.merge(sha: /[0-9a-f]{64}/), format: false
+    get "api/v1/page-revisions/:revision/diff" => "api/v1/pages#diff", constraints: revision, format: false
+    get "api/v1/page-revisions/:revision/review" => "api/v1/page_reviews#open", constraints: revision, format: false
+    post "api/v1/page-revisions/:revision/review" => "api/v1/page_reviews#submit", constraints: revision, format: false
     get "api/v1/topics/:topic" => "api/v1/topics#open", constraints: { topic: lesson[:lesson] }, format: false
     post "api/v1/topics/:topic" => "api/v1/topics#submit", constraints: { topic: lesson[:lesson] }, format: false
   end
@@ -198,6 +215,7 @@ Rails.application.routes.draw do
   constraints(harness) do
     get "h/:token/:file" => "harness#show", constraints: { token: /[A-Za-z0-9_.-]+/, file: /harness\.html|runner\.mjs|generator\.mjs|verify\.mjs/ }, format: false
     get "h/:token/lesson-render.html" => "harness#lesson", constraints: { token: /[A-Za-z0-9_.-]+/ }, format: false
+    get "h/:token/:file" => "harness#page_host", constraints: { token: /[A-Za-z0-9_.-]+/, file: /page-host\.html|page-host\.mjs/ }, format: false
     get "lib/:file" => "harness#lib", constraints: { file: /rng\.mjs|fmt\.mjs/ }, format: false
   end
 

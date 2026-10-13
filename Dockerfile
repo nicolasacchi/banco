@@ -30,6 +30,7 @@ ENV RAILS_ENV="production" \
     WEB_PORT="3000" \
     API_PORT="3100" \
     HARNESS_PORT="3200" \
+    PAGES_PORT="3300" \
     BANCO_DATA_DIR="/data/db"
 
 # Throw-away build stage
@@ -78,7 +79,7 @@ USER ${APP_UID}:${APP_GID}
 
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
-EXPOSE 3000 3100 3200
+EXPOSE 3000 3100 3200 3300
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
   CMD curl -fsS http://localhost:3000/up || exit 1
 

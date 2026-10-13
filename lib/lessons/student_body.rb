@@ -40,22 +40,30 @@ module Lessons
       "source" => [ %w[n type kind title_it ref open author_it year about_year for_whom_it where_it translation original], { "parts" => %w[text_it plain_it marks], "guide" => %w[span_it note_it] } ],
       "reveal" => [ %w[n type prompt_it answer_it year who_it situation_it real_it], { "options" => %w[id text_it then_it real] } ],
       # words (T3): the glosses are teaching content, served whole (L8), and read aloud only after the student opens them
-      "dialogue" => [ %w[n type title_it speakers transcript], { "lines" => %w[speaker text_en text_es gloss_it] } ]
+      "dialogue" => [ %w[n type title_it speakers transcript], { "lines" => %w[speaker text_en text_es gloss_it] } ],
+      # release 2 (D-289): a free page pin; `for` adds the server's `view` (poster, texts, shell address) from the page revision
+      "page" => [ %w[n type page revision caption_it], {} ]
     }.freeze
     SOURCE_COMPARE = %w[title_it author_it year about_year for_whom_it where_it translation original].freeze
     CASE_FIELDS = %w[title_it icon tone condition_it text_it example_it].freeze
 
     module_function
 
-    def for(revision, seed:) = project(revision.body, revision_id: revision.id, seed: seed)
+    # Pure except for the page blocks (D-289): their `view` is read from the page revision (Pages::Served), the one place that
+    # asks the database.
+    def for(revision, seed:) = project(revision.body, revision_id: revision.id, seed: seed, pages: Pages::Served)
 
-    def project(body, revision_id:, seed:)
+    # +pages+: an object with view(block, student:) -> Hash, or nil (a page block is then served without its view).
+    def project(body, revision_id:, seed:, pages: nil)
       out = body.slice(*FRONT)
       out["hero"] = diagram(body["hero"]) if body["hero"]
       out["parts"] = Array(body["parts"]).map { |p| p.slice("n", "title_it") } if body["parts"]
       out["glossary"] = body["glossary"].map { |g| g.slice("term_it", "def_it", "example_it") } if body["glossary"]
       subject = body["subject"]
       out["cards"] = body["cards"].map { |card| card_json(card, subject, revision_id, seed) }
+      if pages
+        out["cards"].each { |card| card["blocks"].each { |b| b["view"] = pages.view(b, student: seed) if b["type"] == "page" } }
+      end
       out
     end
 

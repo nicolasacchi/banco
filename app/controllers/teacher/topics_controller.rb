@@ -3,6 +3,8 @@ module Teacher
   # latest topic revision is what the approval gate calls "read the page" (teacher_viewed_topic); a guest and
   # the student's computer only read.
   class TopicsController < Teacher::BaseController
+    include FramesPagesOrigin
+
     def show
       subject! or return
       @unit = "#{@subject.key}:topic"

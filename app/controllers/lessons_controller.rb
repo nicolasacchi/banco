@@ -3,6 +3,8 @@
 class LessonsController < ApplicationController
   include StudentCourse
 
+  include FramesPagesOrigin
+
   before_action :load_topic
   # The page of a lesson/2 depends on the student (the shuffle, preferences, progress) and on BANCO_LESSON2_ENABLED:
   # it is never kept by the browser.

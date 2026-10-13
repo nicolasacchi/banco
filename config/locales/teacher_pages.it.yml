@@ -1,0 +1,37 @@
+# Texts of the teacher's pages for the free pages (D-289): the screenshots of a validation and the browser matrix page. Short sentences.
+it:
+  teacher:
+    pages:
+      status:
+        passed: "Il controllo è passato."
+        failed: "Il controllo non è passato."
+        error: "Il controllo non è riuscito: il browser del server non risponde."
+      line:
+        label: "Pagine interattive"
+        passed: "controllo passato (kit %{kit}), %{reviews} riviste da un altro agente"
+        failed: "controllo non passato"
+        pending: "controllo non ancora fatto"
+        error: "controllo non riuscito, riprova tra poco"
+        shots: "Vedi le immagini"
+      shots:
+        title: "Immagini della pagina %{key}, revisione %{seq}"
+        intro: "Tutti gli otto casi della pagina, com'è partita e come si è comportata. Sono le immagini del controllo."
+        none: "Non ci sono ancora immagini per questa revisione."
+        removed: "immagine rimossa"
+        kit: "Kit %{kit}."
+        seed: "caso %{n}"
+        kind:
+          ready: "Partenza"
+          reduced: "Con poco movimento"
+          fallback: "Senza 3D"
+          session: "Dopo molte azioni"
+      selftest:
+        title: "Prova del browser per le pagine interattive"
+        intro: "La pagina di prova carica una scena 3D, una texture e un font, e prova cose che devono restare bloccate. Aprila su ogni browser e copia la tabella nel RUNBOOK."
+        none: "La pagina di prova non c'è ancora. Il responsabile la mette con il comando della console."
+        off: "Le pagine interattive sono spente (BANCO_PAGES_ENABLED)."
+        report: "Cosa ha risposto il browser"
+        waiting: "Apri la parte interattiva, poi aspetta un momento."
+        test: "Prova"
+        expected: "Atteso"
+        result: "Risultato"

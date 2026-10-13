@@ -40,9 +40,18 @@ module ValidationServers
     end
 
     def start(name)
-      app = lambda do |env|
+      rails = lambda do |env|
         env["banco.test_listener"] = name.to_s
         Rails.application.call(env)
+      end
+      # The harness listener also carries the validation mount of the pages app under Host: banco-pages-internal (D-289), built on
+      # the first request, when BANCO_HARNESS_URL names this server.
+      validation = nil
+      mount = ->(env) { (validation ||= Banco::PagesApp.new(mode: :validate, origin: Pages.validation_origin, parent: Pages.validation_parent)).call(env) }
+      switch = Banco::ListenerSwitch.new(rails, production: mount, validation: mount, allow_test_seam: true)
+      app = lambda do |env|
+        env["banco.test_listener"] = name.to_s
+        switch.call(env)
       end
       server = Puma::Server.new(app, nil, { min_threads: 0, max_threads: 6, log_writer: Puma::LogWriter.strings })
       server.add_tcp_listener("127.0.0.1", 0)

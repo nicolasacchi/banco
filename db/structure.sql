@@ -498,7 +498,71 @@ CREATE TRIGGER lesson_renders_no_update BEFORE UPDATE ON lesson_renders
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER lesson_renders_no_delete BEFORE DELETE ON lesson_renders
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "pages" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "key" varchar NOT NULL, "subject_id" integer NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_037a1f92d6"
+FOREIGN KEY ("subject_id")
+  REFERENCES "subjects" ("id")
+);
+CREATE INDEX "index_pages_on_subject_id" ON "pages" ("subject_id");
+CREATE UNIQUE INDEX "index_pages_on_key" ON "pages" ("key");
+CREATE TABLE "page_revisions" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "page_id" integer NOT NULL, "seq" integer NOT NULL, "base_revision_id" integer, "manifest_json" text NOT NULL, "bundle_sha256" varchar NOT NULL, "rules_version" varchar NOT NULL, "warnings_json" text NOT NULL, "author_session_id" integer, "brief_sha256" varchar, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_6eb3eeb6b7"
+FOREIGN KEY ("page_id")
+  REFERENCES "pages" ("id")
+, CONSTRAINT "fk_rails_1c0f82bf97"
+FOREIGN KEY ("base_revision_id")
+  REFERENCES "page_revisions" ("id")
+, CONSTRAINT "fk_rails_98faae75b3"
+FOREIGN KEY ("author_session_id")
+  REFERENCES "agent_sessions" ("id")
+, CONSTRAINT page_revisions_sha256_length CHECK (length(bundle_sha256) = 64));
+CREATE INDEX "index_page_revisions_on_page_id" ON "page_revisions" ("page_id");
+CREATE INDEX "index_page_revisions_on_base_revision_id" ON "page_revisions" ("base_revision_id");
+CREATE INDEX "index_page_revisions_on_author_session_id" ON "page_revisions" ("author_session_id");
+CREATE UNIQUE INDEX "index_page_revisions_on_page_id_and_seq" ON "page_revisions" ("page_id", "seq");
+CREATE UNIQUE INDEX "index_page_revisions_on_bundle_sha256" ON "page_revisions" ("bundle_sha256");
+CREATE TABLE "page_files" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "page_revision_id" integer NOT NULL, "path" varchar NOT NULL, "sha256" varchar NOT NULL, "bytes" integer NOT NULL, "media_type" varchar NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_8cd125573a"
+FOREIGN KEY ("page_revision_id")
+  REFERENCES "page_revisions" ("id")
+, CONSTRAINT page_files_sha256_length CHECK (length(sha256) = 64));
+CREATE INDEX "index_page_files_on_page_revision_id" ON "page_files" ("page_revision_id");
+CREATE UNIQUE INDEX "index_page_files_on_page_revision_id_and_path" ON "page_files" ("page_revision_id", "path");
+CREATE TABLE "page_validations" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "page_revision_id" integer NOT NULL, "kit_version" varchar NOT NULL, "status" varchar NOT NULL, "harness_version" varchar NOT NULL, "chrome_version" varchar, "attempt" integer, "result_json" text NOT NULL, "shots_json" text NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_f812de992c"
+FOREIGN KEY ("page_revision_id")
+  REFERENCES "page_revisions" ("id")
+, CONSTRAINT page_validations_status CHECK (status IN ('passed','failed','error')));
+CREATE INDEX "index_page_validations_on_page_revision_id" ON "page_validations" ("page_revision_id");
+CREATE INDEX "index_page_validations_on_page_revision_id_and_id" ON "page_validations" ("page_revision_id", "id");
+CREATE TABLE "page_reviews" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "page_revision_id" integer NOT NULL, "agent_session_id" integer NOT NULL, "checklist_json" text NOT NULL, "findings_json" text NOT NULL, "brief_sha256" varchar, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_326e06e2c7"
+FOREIGN KEY ("page_revision_id")
+  REFERENCES "page_revisions" ("id")
+, CONSTRAINT "fk_rails_6185676968"
+FOREIGN KEY ("agent_session_id")
+  REFERENCES "agent_sessions" ("id")
+);
+CREATE INDEX "index_page_reviews_on_page_revision_id" ON "page_reviews" ("page_revision_id");
+CREATE INDEX "index_page_reviews_on_agent_session_id" ON "page_reviews" ("agent_session_id");
+CREATE UNIQUE INDEX "index_page_reviews_on_page_revision_id_and_agent_session_id" ON "page_reviews" ("page_revision_id", "agent_session_id");
+CREATE TRIGGER pages_no_update BEFORE UPDATE ON pages
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER pages_no_delete BEFORE DELETE ON pages
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER page_revisions_no_update BEFORE UPDATE ON page_revisions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER page_revisions_no_delete BEFORE DELETE ON page_revisions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER page_files_no_update BEFORE UPDATE ON page_files
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER page_files_no_delete BEFORE DELETE ON page_files
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER page_validations_no_update BEFORE UPDATE ON page_validations
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER page_validations_no_delete BEFORE DELETE ON page_validations
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER page_reviews_no_update BEFORE UPDATE ON page_reviews
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER page_reviews_no_delete BEFORE DELETE ON page_reviews
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261012100001'),
 ('20261010120001'),
 ('20261010100001'),
 ('20261009100003'),

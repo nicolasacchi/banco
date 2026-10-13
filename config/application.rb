@@ -23,6 +23,8 @@ Bundler.require(*Rails.groups)
 require_relative "../lib/banco/listeners"
 require_relative "../lib/banco/listener_tag"
 require_relative "../lib/banco/listener_constraint"
+require_relative "../lib/banco/listener_switch"
+require_relative "../lib/banco/pages_app"
 require_relative "../lib/banco/edge_proxy"
 require_relative "../lib/banco/token_auth"
 require_relative "../lib/banco/lesson2_switch"
@@ -38,7 +40,7 @@ module Banco
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w[assets tasks banco harness])
+    config.autoload_lib(ignore: %w[assets tasks banco harness pages_kit])
 
     # Configuration for the application, engines, and railties goes here.
     #

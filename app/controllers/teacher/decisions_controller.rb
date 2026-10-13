@@ -113,7 +113,7 @@ module Teacher
     # JSON callers (tests, scripts) get JSON. The teacher's forms get a redirect back to the
     # page they came from, with a sentence in Italian: what was recorded, or why not.
     def decide(kind)
-      params_in = params.permit(*PERMITTED, scores: {}).to_h
+      params_in = params.permit(*PERMITTED, pages_confirmed: [], scores: {}).to_h
       decision = DecisionRecorder.call(request: request, kind: kind, params: params_in)
       if json_caller?
         render json: { ok: true, decision_id: decision.id, kind: decision.kind }

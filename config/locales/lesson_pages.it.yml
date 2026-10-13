@@ -1,0 +1,9 @@
+# Italian texts of the free page block (release 2, D-289): the card's button and its status lines. Short sentences, easy words.
+it:
+  lesson_pages:
+    open: "Apri la parte interattiva (circa %{kb} KB)"
+    again: "Riprova"
+    loading: "Sto caricando la parte interattiva..."
+    failed: "La parte interattiva non si è avviata."
+    fullscreen: "Schermo intero"
+    hint: "Se non parte, leggi il testo qui sopra: dice le stesse cose."

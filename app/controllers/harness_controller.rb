@@ -39,6 +39,31 @@ class HarnessController < ActionController::API
     send_data html, type: "text/html; charset=utf-8", disposition: "inline"
   end
 
+  # GET /h/:token/page-host.html and page-host.mjs: the host page of a free page validation (token kind prev). Our page and our script;
+  # the frame source is fixed here from the stored revision (the validation mount of the pages app, with the kit asked for).
+  def page_host
+    kind, id = Validation::Harness.verify(params[:token])
+    return head :not_found unless kind == "prev"
+
+    revision = PageRevision.find_by(id: id)
+    return head :not_found unless revision
+
+    if params[:file] == "page-host.mjs"
+      return send_data Validation::Harness.file("page_host.mjs"), type: "text/javascript; charset=utf-8", disposition: "inline"
+    end
+
+    kit = params[:kit].to_s
+    return head :not_found unless Pages::Kit.released?(kit)
+
+    src = Pages.shell_url(revision.bundle_sha256, kit, base: Pages.validation_origin)
+    src += "?nowebgl=1" if params[:nowebgl].to_s == "1"
+    h = ERB::Util.method(:html_escape)
+    html = %(<!doctype html><html lang="it"><head><meta charset="utf-8"><title>page host</title><style>html,body{margin:0;background:#fff}</style></head>) +
+           %(<body><div id="stage" data-src="#{h.call(src)}" data-min-height="#{revision.manifest['min_height'].to_i}"></div><script type="module" src="page-host.mjs"></script></body></html>)
+    response.set_header("Content-Security-Policy", format(Validation::Harness::PAGE_HOST_CSP, origin: Pages.validation_origin))
+    send_data html, type: "text/html; charset=utf-8", disposition: "inline"
+  end
+
   # GET /lib/:file: the two libraries a generator may import.
   def lib
     name = params[:file]

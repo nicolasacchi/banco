@@ -1,0 +1,24 @@
+{
+  "schema": "banco.page/1",
+  "key": "math.pages-three",
+  "subject": "math",
+  "title_it": "Una pagina di prova",
+  "why_free_it": "Serve una scena che cambia in modo continuo, che i componenti non sanno disegnare.",
+  "instructions_it": "Muovi il cursore e guarda come cambia il disegno.",
+  "alt_it": "Un disegno con un cursore: spostandolo, il disegno cambia forma in modo continuo.",
+  "fallback_it": "Il disegno non parte su questo dispositivo. Nella scheda trovi la figura ferma e il testo con gli stessi numeri.",
+  "libs": [
+    "three@0.186.1",
+    "three-addons@0.186.1:controls/OrbitControls.js"
+  ],
+  "bridge": 1,
+  "aspect": "16:9",
+  "min_height": 320,
+  "uses_seed": true,
+  "reduced_motion": "static",
+  "webgl": true,
+  "roles": [
+    "unknown",
+    "known"
+  ]
+}

@@ -4,7 +4,7 @@ require_relative "listeners"
 
 module Banco
   # Rack middleware that tags every request with the listener it arrived on:
-  # env["banco.listener"] is :web, :api, :harness or nil.
+  # env["banco.listener"] is :web, :api, :harness, :pages or nil.
   #
   # The tag comes from the LOCAL port of the accepted socket (Puma exposes the
   # socket as env["puma.socket"]), never from request.port, SERVER_PORT or the

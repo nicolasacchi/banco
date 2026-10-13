@@ -10,7 +10,7 @@ class CspHeaderTest < ActionDispatch::IntegrationTest
 
   # The policy, with the nonce left as a placeholder.
   EXPECTED = "default-src 'self'; script-src 'self' 'nonce-NONCE'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; " \
-             "font-src 'self'; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'".freeze
+             "font-src 'self'; connect-src 'self'; frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'self'".freeze
 
   setup do
     @saved = ENV.to_h.slice("BANCO_EDGE_PROXY", "BANCO_TEACHER_USERS")

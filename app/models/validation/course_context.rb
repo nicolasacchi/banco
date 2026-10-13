@@ -27,7 +27,8 @@ module Validation
         source_line: ->(source, number) { source_line(source, number) },
         source_section: ->(source, number) { source_section(source, number) },
         reference_body: ->(key) { ReferenceText.find_by(key: key)&.body },
-        topic: ->(key) { course_topics.include?(key) }
+        topic: ->(key) { course_topics.include?(key) },
+        page: ->(key, revision) { Pages::Embed.lookup(@subject, key, revision) }
       )
     end
 

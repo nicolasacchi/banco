@@ -1,0 +1,18 @@
+{
+  "schema": "banco.page/1",
+  "key": "math.pages-selftest",
+  "subject": "math",
+  "title_it": "Prova della pagina interattiva",
+  "why_free_it": "Serve a provare il browser: carica una scena 3D, una texture e un font, e tenta cose che devono restare bloccate.",
+  "instructions_it": "Aspetta un momento: la tabella si riempie da sola.",
+  "alt_it": "Un cubo a quadri che gira e sotto una tabella con una riga per ogni prova: caricamento, 3D, texture, font e cose bloccate.",
+  "fallback_it": "La prova non parte su questo dispositivo. Il 3D non c'è: leggi la tabella per vedere cosa ha funzionato e cosa no.",
+  "libs": ["three@0.186.1"],
+  "bridge": 1,
+  "aspect": "16:9",
+  "min_height": 420,
+  "uses_seed": false,
+  "reduced_motion": "static",
+  "webgl": true,
+  "roles": []
+}

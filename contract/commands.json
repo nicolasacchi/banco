@@ -320,6 +320,76 @@
       "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-SCHEMA", "E-REVIEW-EMPTY", "E-REVIEW-CHECKLIST", "E-QUOTE-NOT-FOUND", "E-LESSON-REVIEW-RECOMPUTED", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT"]
     },
     {
+      "name": "pages list",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/subjects/:subject/pages",
+      "args": [],
+      "flags": ["--subject"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "page open",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/pages/:key",
+      "args": ["key"],
+      "flags": ["--dir"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-FILES"]
+    },
+    {
+      "name": "page submit",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/pages/submit",
+      "args": ["dir"],
+      "flags": ["--base", "--dry-run"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-TOO-LARGE", "E-NOT-FOUND", "E-STALE-BASE", "E-SCHEMA", "E-PAGE-FILES", "E-PAGE-SIZE", "E-PAGE-LIBS", "E-PAGE-TEXT", "E-PAGE-CSS", "E-PAGE-API", "E-PAGE-IMPORT", "E-PAGE-HYGIENE", "W-PAGE-A11Y", "E-READ", "E-PHRASE", "E-MESSAGE", "E-SESSION", "E-SESSION-ROLE"]
+    },
+    {
+      "name": "page status",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/page-revisions/:revision",
+      "args": ["revision"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "page shots",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/page-revisions/:revision/shots",
+      "args": ["revision"],
+      "flags": ["--dir"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "page diff",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/page-revisions/:revision/diff",
+      "args": ["revision"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "page-review open",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/page-revisions/:revision/review",
+      "args": ["revision"],
+      "flags": ["--json"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT"]
+    },
+    {
+      "name": "page-review submit",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/page-revisions/:revision/review",
+      "args": ["revision"],
+      "flags": ["--file", "--dry-run"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-STALE-BASE", "E-SCHEMA", "E-REVIEW-EMPTY", "E-QUOTE-NOT-FOUND", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT"]
+    },
+    {
       "name": "topics list",
       "local": false,
       "method": "GET",

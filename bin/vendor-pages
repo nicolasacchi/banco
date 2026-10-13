@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# The libraries of the free pages (D-289, SPEC C1), vendored under vendor/pages/NAME@VERSION/ from config/banco/pages_libs.yml.
+#   bin/vendor-pages          fetch the upstream tarballs (npm pack), check their sha256, copy the files, write SHA256SUMS
+#   bin/vendor-pages --check  exit 1 when a committed file differs from its SHA256SUMS or is missing (CI, offline)
+require "yaml"
+require "digest"
+require "fileutils"
+require "tmpdir"
+require "open3"
+
+root = File.expand_path("..", __dir__)
+config = YAML.safe_load_file(File.join(root, "config/banco/pages_libs.yml")).fetch("libs")
+check = ARGV.include?("--check")
+bad = []
+
+config.each do |name, lib|
+  dir = File.join(root, "vendor/pages/#{name}@#{lib['version']}")
+  sums = File.join(dir, "SHA256SUMS")
+  if check
+    unless File.file?(sums)
+      bad << "#{name}: no SHA256SUMS"
+      next
+    end
+    listed = File.readlines(sums, chomp: true).map { |l| l.split("  ", 2).reverse }.to_h
+    lib["files"].each_value { |dest| bad << "#{name}: #{dest} is not in SHA256SUMS" unless listed.key?("./#{dest}") }
+    listed.each do |file, sha|
+      path = File.join(dir, file)
+      bad << "#{name}: #{file} is missing" unless File.file?(path)
+      bad << "#{name}: #{file} differs from SHA256SUMS" if File.file?(path) && Digest::SHA256.file(path).hexdigest != sha
+    end
+    next
+  end
+
+  Dir.mktmpdir("vendor-pages") do |tmp|
+    out, status = Open3.capture2e("npm", "pack", "#{lib['package']}@#{lib['version']}", "--silent", chdir: tmp)
+    abort "vendor-pages: npm pack #{name} failed: #{out}" unless status.success?
+    tarball = File.join(tmp, out.lines.last.strip)
+    sha = Digest::SHA256.file(tarball).hexdigest
+    abort "vendor-pages: #{name}@#{lib['version']} tarball is #{sha}, expected #{lib['tarball_sha256']}" unless sha == lib["tarball_sha256"]
+    system("tar", "xzf", tarball, "-C", tmp) or abort "vendor-pages: cannot unpack #{tarball}"
+    FileUtils.rm_rf(dir)
+    lib["files"].each do |from, to|
+      FileUtils.mkdir_p(File.dirname(File.join(dir, to)))
+      FileUtils.cp(File.join(tmp, "package", from), File.join(dir, to))
+    end
+    lines = Dir.glob("**/*", base: dir).select { |f| File.file?(File.join(dir, f)) }.sort.map { |f| "#{Digest::SHA256.file(File.join(dir, f)).hexdigest}  ./#{f}" }
+    File.write(sums, "#{lines.join("\n")}\n")
+    puts "vendor-pages: #{name}@#{lib['version']} (#{lines.size} files)"
+  end
+end
+
+if check
+  puts bad
+  exit(bad.empty? ? 0 : 1)
+end

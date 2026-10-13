@@ -75,6 +75,7 @@ it:
       not_approved: "Non ancora approvato."
       approve_title: "Approvazione"
       confirm_seen: "Ho letto la lezione e le istanze campione di ogni esercizio, con aiuti, messaggi e soluzioni."
+      confirm_page: "Ho provato «%{title}»: quello che mostra e insegna va bene."
       findings_reason_label: "La revisione ha rilievi gravi. Scrivi perché approvi lo stesso."
       findings_reason_placeholder: "Approvo nonostante i rilievi della revisione perché ..."
       approve: "Approva l'argomento"

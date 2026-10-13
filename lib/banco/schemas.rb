@@ -15,7 +15,7 @@ module Banco
   # (banco.item/2) and a small migration for drafts; schema_version is in every
   # document.
   module Schemas
-    NAMES = %w[skill_graph item blueprint review solve lesson course topic lesson_review diagram].freeze
+    NAMES = %w[skill_graph item blueprint review solve lesson course topic lesson_review diagram page page_review].freeze
     # banco.lesson/2 shares the lesson schema (a oneOf on its schema member, D-245).
     LESSON_FORMATS = %w[banco.lesson/1 banco.lesson/2].freeze
     URN = "urn:banco:schema:"

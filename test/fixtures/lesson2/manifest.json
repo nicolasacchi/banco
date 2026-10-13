@@ -43,6 +43,14 @@
    "parts": 0,
    "extra": 1,
    "note": "an extra card after the summary, outside the parts"
+  },
+  {
+   "file": "good/page-extra-card.md",
+   "base": "base.md",
+   "cards": 8,
+   "parts": 0,
+   "note": "an extra card with a still balance and a free page (release 2); the page lookup is the server's, so here only the shape and the card rules are checked",
+   "extra": 1
   }
  ],
  "bad": [
@@ -699,7 +707,39 @@
    "code": "E-LESSON-BLOCK",
    "line": 45,
    "construct": "directive",
-   "note": "page (a free page) is a later release, R2: not available yet"
+   "note": "dialogue (a W2-1 block of track T3, reserved until its look gate): not available yet"
+  },
+  {
+   "file": "bad/page-in-core-card.md",
+   "base": "base.md",
+   "code": "E-LESSON-FREEPAGE",
+   "line": 47,
+   "construct": "block",
+   "note": "a free page in a core card (release 2 puts pages in extra cards only)"
+  },
+  {
+   "file": "bad/page-no-still-visual.md",
+   "base": "base.md",
+   "code": "E-LESSON-FREEPAGE",
+   "line": 196,
+   "construct": "block",
+   "note": "an extra card whose only visual is the page: the idea must also have a still visual"
+  },
+  {
+   "file": "bad/page-three.md",
+   "base": "base.md",
+   "code": "E-LESSON-FREEPAGE",
+   "line": 211,
+   "construct": "block",
+   "note": "three free pages in one lesson (at most 2)"
+  },
+  {
+   "file": "bad/page-revision-shape.md",
+   "base": "base.md",
+   "code": "E-LESSON-BLOCK",
+   "line": 199,
+   "construct": "block",
+   "note": "revision is an integer or latest"
   },
   {
    "file": "bad/source-quote-not-in-reference.md",
