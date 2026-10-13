@@ -1,4 +1,4 @@
-# Free pages, release 2 (D-261, D-289; SPEC B): the namespace, the switch and the constants shared by the pages origin,
+# Free pages, release 2 (D-262, D-290; SPEC B): the namespace, the switch and the constants shared by the pages origin,
 # the validation and the lesson block. Rails stores bytes, hashes them, scans them and serves them; it never runs them.
 module Pages
   # The eight seeds a student can ever receive (B5): a finite set, so validation runs every one of them. Seed 0 is the

@@ -1,5 +1,5 @@
 module Validation
-  # Validates one stored page revision in the server's Chrome and appends what it found as a page_validations row (D-289, SPEC B7).
+  # Validates one stored page revision in the server's Chrome and appends what it found as a page_validations row (D-290, SPEC B7).
   # Outside any transaction while Chrome works; one insert after. Infrastructure trouble is raised, and the job records it as an
   # `error` row (never a pass) and retries.
   class PageValidationCheck

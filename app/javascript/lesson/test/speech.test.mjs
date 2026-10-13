@@ -1,4 +1,4 @@
-// "Ascolta" (T2, D-282): the walker reads what is visible, the player switches voice per language and stops, the maths and the chemistry sound as
+// "Ascolta" (T2, D-283): the walker reads what is visible, the player switches voice per language and stops, the maths and the chemistry sound as
 // they should. A tiny DOM stands in for the browser (Node has none); the goldens of the gallery cards are read from Chrome by the system test.
 import "./setup.mjs"
 import assert from "node:assert/strict"

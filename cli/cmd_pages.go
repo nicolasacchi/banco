@@ -16,7 +16,7 @@ import (
 	"strings"
 )
 
-// Free pages, release 2 (D-289, SPEC B9): list a subject's pages, open one as a folder, submit a revision, read its state, its
+// Free pages, release 2 (D-290, SPEC B9): list a subject's pages, open one as a folder, submit a revision, read its state, its
 // screenshots and its diff, review it. None of these commands decides anything: the teacher tries a page and approves the topic that
 // embeds it in the browser (firm rule 2).
 

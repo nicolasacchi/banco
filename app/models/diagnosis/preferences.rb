@@ -28,7 +28,7 @@ module Diagnosis
     end
 
     # { lesson_view: "cards" | "scroll", reduce_motion: true | false, listen: true | false, slower: true | false }
-    # listen is the "Ascolta" switch (on until the student turns it off), slower the "Più lento" speed (D-282).
+    # listen is the "Ascolta" switch (on until the student turns it off), slower the "Più lento" speed (D-283).
     def lesson(student)
       stored = stored(student)
       { lesson_view: LESSON_VIEWS.include?(stored["lesson_view"]) ? stored["lesson_view"] : LESSON_DEFAULT[:lesson_view],

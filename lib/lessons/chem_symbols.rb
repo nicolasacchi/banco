@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Lessons
-  # The element symbols a chemistry formula may use (E-CHEM-SYMBOL, D-281): every symbol inside \ce{...} or \mathrm{...} of a lesson formula
+  # The element symbols a chemistry formula may use (E-CHEM-SYMBOL, D-282): every symbol inside \ce{...} or \mathrm{...} of a lesson formula
   # is an element symbol, case-exact. The list is the table chem/elements once T7 has written it (Lessons::VettedData); until then the 118
   # symbols of the IUPAC periodic table below. Pure: no database. (Lessons::Chem, T7's, parses formulas into atoms; this only reads the
   # symbols of a formula as a lesson writes it in TeX.)

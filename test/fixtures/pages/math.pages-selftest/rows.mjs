@@ -1,6 +1,6 @@
 // The rows of the table: what each browser must do or must not do (SPEC B10.8). "must" is what the lesson page depends on.
 // A "blocked" row is good: the sandbox and the CSP held. The WebRTC row only reports what the kit's stub does: the CSP does not
-// cover WebRTC (a residual accepted in D-261), so a second realm would be needed to see the browser itself.
+// cover WebRTC (a residual accepted in D-262), so a second realm would be needed to see the browser itself.
 export const ROWS = [
   { id: "module", label: "Il modulo si carica dall'origine delle pagine", must: "works" },
   { id: "kit", label: "Il kit risponde (banco.init)", must: "works" },

@@ -1,4 +1,4 @@
-# geo/stations: climate normals 1991-2020 of 22 stations (WAVE2 1.9, D-269, D-271). Facts of the world: the author of a lesson names a row
+# geo/stations: climate normals 1991-2020 of 22 stations (WAVE2 1.9, D-270, D-272). Facts of the world: the author of a lesson names a row
 # (`station: geo/stations.brasilia`) and our code draws what is here and computes the rest (arid months, range, total, extremes).
 #
 # Values are strings with the decimal comma, as published (one decimal). temp in degrees Celsius, precip in mm, January to December.

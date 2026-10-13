@@ -247,7 +247,7 @@ export function describe(data, ctx = {}) {
   return out.join(" ")
 }
 
-// What the voice reads (D-282, L10): the sentence of the state shown now, in its own language, then each part (its words in their language, then
+// What the voice reads (D-283, L10): the sentence of the state shown now, in its own language, then each part (its words in their language, then
 // what the part is). Unlike describe it reads one state, not all of them.
 export function speechSegments(data, ctx = {}) {
   const subject = ctx.subject ?? "italian"

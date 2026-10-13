@@ -1,5 +1,5 @@
 module Teacher
-  # The screenshots of a page validation (D-289, SPEC B7): for the teacher and the guest to look at (every seed, the narrow
+  # The screenshots of a page validation (D-290, SPEC B7): for the teacher and the guest to look at (every seed, the narrow
   # state, reduced motion, the fallback, the three states of the scripted session), and the image by content address. Read-only.
   class PageShotsController < Teacher::BaseController
     def index

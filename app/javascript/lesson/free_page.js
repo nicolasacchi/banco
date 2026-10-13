@@ -1,4 +1,4 @@
-// The parent side of a free page (D-289, SPEC B4, B5): what the lesson page accepts from the sandboxed frame, and the watchdog
+// The parent side of a free page (D-290, SPEC B4, B5): what the lesson page accepts from the sandboxed frame, and the watchdog
 // that takes a broken page away. Pure (no DOM): lesson/blocks/page.js wires it to the iframe, the tests drive it with fake timers.
 //
 // A message is accepted only if its source is the frame's own window (the origin of a sandboxed frame is the string "null", so the

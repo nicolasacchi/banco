@@ -1,5 +1,5 @@
-// "Ascolta": the device's own voice (WAVE2 section 4; contract frozen in W2-0, built by T2, D-282). The Web Speech API's speechSynthesis with a
-// voice of the device: no network, nothing generated, no recognition, no recording of the student (firm rule 1, D-266).
+// "Ascolta": the device's own voice (WAVE2 section 4; contract frozen in W2-0, built by T2, D-283). The Web Speech API's speechSynthesis with a
+// voice of the device: no network, nothing generated, no recognition, no recording of the student (firm rule 1, D-267).
 // A voice is used only if it is local, speaks it, en or es, and is in config/banco/voices.yml (the voices the operator heard on the student's
 // device and accepted). "Ascolta" never autoplays; it stops on card change, on Escape, when focus leaves the card and when another speaker
 // starts (A10). Speech is built from the VISIBLE state of the card (4.3): a value not yet on screen is never read aloud.

@@ -1,4 +1,4 @@
-// What a lesson body needs loaded before its first card is drawn (WAVE2 1.2, D-264): the diagram types that are not in the main bundle and
+// What a lesson body needs loaded before its first card is drawn (WAVE2 1.2, D-265): the diagram types that are not in the main bundle and
 // the check components of lesson/checks. renderLesson draws synchronously, so the page awaits `preloadFor(body)` first; a lesson that uses
 // only the nine types of release 1 and the six built-in components waits for nothing. A module that fails to load does not stop the page:
 // the figure draws its fallback (alt text and description) and the check says it cannot be shown.

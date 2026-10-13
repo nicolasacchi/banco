@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "banco.page/1",
-  "description": "The manifest (page.json) of a free page, release 2 (D-289, SPEC B2). The key is SUBJECT.slug; the checks that need the files or the rules (word counts, readability, the libraries the server vendors) are made in Ruby (Validation::PageChecks).",
+  "description": "The manifest (page.json) of a free page, release 2 (D-290, SPEC B2). The key is SUBJECT.slug; the checks that need the files or the rules (word counts, readability, the libraries the server vendors) are made in Ruby (Validation::PageChecks).",
   "type": "object",
   "additionalProperties": false,
   "required": [

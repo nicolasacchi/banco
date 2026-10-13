@@ -1,7 +1,7 @@
 require "test_helper"
 require_relative "../support/lesson2_fixtures"
 
-# T2, the text layer (D-281, WAVE2 1.11): language spans and target-language keys with the lint split, the cloze exemption, W-LANG-LEVEL,
+# T2, the text layer (D-282, WAVE2 1.11): language spans and target-language keys with the lint split, the cloze exemption, W-LANG-LEVEL,
 # code spans, the glossary. The checks run on the parsed body of base.md changed after parsing, for the subject named.
 class Lesson2TextLayerTest < ActiveSupport::TestCase
   F = Lesson2Fixtures

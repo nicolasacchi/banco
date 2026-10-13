@@ -1,4 +1,4 @@
-# The lookup behind the lesson's `page` block (SPEC B4, D-289): does the page revision exist, belong to the lesson's subject and
+# The lookup behind the lesson's `page` block (SPEC B4, D-290): does the page revision exist, belong to the lesson's subject and
 # have passed validation. `latest` is the page's newest revision. Returns { revision_id:, problem:, strings: }: problem is nil
 # when the pin is good; strings are the text constants of the page's modules, for the leak scan (W-PAGE-KEY).
 module Pages

@@ -1,4 +1,4 @@
-# The two pages that may frame the free pages' origin (D-289, SPEC B4): the student's lesson page and the teacher's pages that hold the box.
+# The two pages that may frame the free pages' origin (D-290, SPEC B4): the student's lesson page and the teacher's pages that hold the box.
 # Every other page keeps frame-src 'none'. Done on a clone of the request's policy, so no other request sees it.
 module FramesPagesOrigin
   extend ActiveSupport::Concern

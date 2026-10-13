@@ -1,4 +1,4 @@
-# Stores a page revision (D-289): the bytes by content in storage/pages, then one transaction of rows. Used by the API and by the
+# Stores a page revision (D-290): the bytes by content in storage/pages, then one transaction of rows. Used by the API and by the
 # operator's console task for the browser matrix page. Returns [revision, replayed] or nil when the same files already exist.
 module Pages
   module Submit

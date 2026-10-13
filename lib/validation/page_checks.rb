@@ -3,7 +3,7 @@
 require "zlib"
 
 module Validation
-  # The static checks of a free page bundle at submit and dry run (D-289, SPEC B7): the manifest schema, the allowlist of
+  # The static checks of a free page bundle at submit and dry run (D-290, SPEC B7): the manifest schema, the allowlist of
   # files and the budgets, the SVG checks of item figures, style.css, the readability of the texts, the `pages` rule set
   # of the JavaScript scan, the private hygiene terms. Nothing is written and nothing is run: Chrome comes later
   # (PageRunner). Thresholds: config/banco/validation_rules.yml, block page.

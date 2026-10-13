@@ -25,7 +25,7 @@ import { equationTex } from "lesson/diagrams/balance"
 import { roleOf, renderInlineRich } from "lesson/text"
 import { cardListen } from "lesson/speech_ui"
 
-// The names that [[name:..]] reserves for spans of their own (D-265): never colour roles.
+// The names that [[name:..]] reserves for spans of their own (D-266): never colour roles.
 const RESERVED_SPANS = ["en", "es", "it", "la", "code", "g"]
 
 const DEFAULT_ICON = { idea: "lightbulb", example: "pencil-ruler", mistakes: "triangle-alert", try: "notebook-pen", summary: "list-checks" }

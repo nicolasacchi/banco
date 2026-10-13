@@ -1,9 +1,9 @@
-# Free pages (release 2, D-289)
+# Free pages (release 2, D-290)
 
 A free page is a small interactive scene written by an agent (a 3D solid, a simulation) that the lesson's components cannot do. It runs in the
 browser inside a sandboxed iframe on its own origin, is validated in the server's Chrome on eight seeds, reviewed by an independent session,
-and approved by the teacher for what it shows, never for its code. It never counts for a skill state. Design: SPEC B (private); decision D-261
-and D-289.
+and approved by the teacher for what it shows, never for its code. It never counts for a skill state. Design: SPEC B (private); decision D-262
+and D-290.
 
 ## Flow
 

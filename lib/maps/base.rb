@@ -7,7 +7,7 @@ module Maps
   # holds, the units it draws at a detail, where each one is, and the names of the vetted tables. The JS twin is
   # app/javascript/lesson/diagrams/maps/geo.js; both run the same vectors (test/fixtures/diagrams/types/map.json).
   #
-  # Ids resolve PER BASE (D-271): the base's `reads` names the table of each collection (`areas`, `groups`, `places`, `lines`,
+  # Ids resolve PER BASE (D-272): the base's `reads` names the table of each collection (`areas`, `groups`, `places`, `lines`,
   # `oceans`), so "sicilia" the Roman province (history/regions) is never "sicilia" the Italian region (geo/names).
   module Base
     DIR = File.expand_path("../../public/vendor/banco-maps@1", __dir__)

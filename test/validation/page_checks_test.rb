@@ -1,7 +1,7 @@
 require "test_helper"
 require "support/page_world"
 
-# The static checks of a page bundle (D-289, SPEC B7).
+# The static checks of a page bundle (D-290, SPEC B7).
 class PageChecksTest < ActiveSupport::TestCase
   include PageWorld
 

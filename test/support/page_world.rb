@@ -1,4 +1,4 @@
-# Invented free pages for the tests (D-289): the folders of test/fixtures/pages, stored as page revisions without the API.
+# Invented free pages for the tests (D-290): the folders of test/fixtures/pages, stored as page revisions without the API.
 module PageWorld
   FIXTURES = Rails.root.join("test/fixtures/pages")
 

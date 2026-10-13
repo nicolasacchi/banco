@@ -1,4 +1,4 @@
-# What the student's page is told about a pinned free page (SPEC B4, D-289): the page revision's served fields, the poster
+# What the student's page is told about a pinned free page (SPEC B4, D-290): the page revision's served fields, the poster
 # (the validation screenshot, served by the app as WebP), the size of what a click will load and the shell's address on the pages
 # origin. The code of the page is never here. `src` is nil while the pages are switched off (BANCO_PAGES_ENABLED=0) or the
 # revision has no passed validation: the card then shows its poster, caption and fallback without the button.

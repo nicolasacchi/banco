@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:banco:data:geo-stations-expected",
   "title": "geo/stations_expected: the second table for geo/stations",
-  "description": "A summary of an independent computation of the same climate normals (annual mean, annual total, warmest and coldest month, arid months), compared with what our code derives from geo/stations. The monthly numbers of the second source are not copied (CC BY-NC); T6, D-271.",
+  "description": "A summary of an independent computation of the same climate normals (annual mean, annual total, warmest and coldest month, arid months), compared with what our code derives from geo/stations. The monthly numbers of the second source are not copied (CC BY-NC); T6, D-272.",
   "type": "object",
   "additionalProperties": false,
   "required": ["expected"],

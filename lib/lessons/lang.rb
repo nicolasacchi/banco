@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Lessons
-  # The languages of a lesson's text (D-265, WAVE2 1.11): which subject teaches which language, the keys that hold words of a language
+  # The languages of a lesson's text (D-266, WAVE2 1.11): which subject teaches which language, the keys that hold words of a language
   # (`text_en`, `form_es`: the suffix names the language, firm rule 6), the Italian that the lint can tell in such a key, and the plain
   # reading of a text without its spans for the Italian lint. The JS twin of TARGET_OF is app/javascript/lesson/lang.js.
   module Lang

@@ -2,7 +2,7 @@
 
 module Lessons
   module Blocks
-    # The `page` block (release 2, D-289, SPEC B4): a pin of a free page revision. The pinned revision must exist, belong to the
+    # The `page` block (release 2, D-290, SPEC B4): a pin of a free page revision. The pinned revision must exist, belong to the
     # lesson's subject and have passed validation (E-LESSON-FREEPAGE); `latest` is resolved to an integer here and stored as it is,
     # like a topic pin. At most lesson2.page.max per lesson, never in a core card in this round, never the only visual of a card
     # (the card also has a still visual, so print, no WebGL and a refusal to click lose nothing essential).

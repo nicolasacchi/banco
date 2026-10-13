@@ -1,5 +1,5 @@
 namespace :banco do
-  desc "Store the browser matrix page math.pages-selftest as an unpinned revision (D-289, SPEC B10.8). Operator's console only; dry run unless CONFIRM=1."
+  desc "Store the browser matrix page math.pages-selftest as an unpinned revision (D-290, SPEC B10.8). Operator's console only; dry run unless CONFIRM=1."
   task pages_selftest: :environment do
     dir = Rails.root.join("test/fixtures/pages/math.pages-selftest")
     files = Dir.glob("**/*", base: dir.to_s).select { |f| File.file?(dir.join(f)) }.to_h { |f| [ f, File.binread(dir.join(f)) ] }

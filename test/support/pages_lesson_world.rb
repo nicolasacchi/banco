@@ -3,7 +3,7 @@ require_relative "lesson2_fixtures"
 require_relative "page_world"
 require "support/validation_servers"
 
-# A lesson/2 of the student's page that holds a free page in an extra card (D-289): the body is the real parse of
+# A lesson/2 of the student's page that holds a free page in an extra card (D-290): the body is the real parse of
 # test/fixtures/lesson2/good/page-extra-card.md (invented content) with the pin resolved to a stored page revision, and the pages origin is a
 # real server (the production mount of Banco::PagesApp on a free local port), so the iframe loads for real.
 module PagesLessonWorld

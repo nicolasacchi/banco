@@ -1,7 +1,7 @@
 require "test_helper"
 require "support/page_world"
 
-# The pages origin (D-289, SPEC B3): exact headers per mount, lookup by manifest, 404 shapes, no cookies.
+# The pages origin (D-290, SPEC B3): exact headers per mount, lookup by manifest, 404 shapes, no cookies.
 class PagesAppTest < ActiveSupport::TestCase
   include PageWorld
 

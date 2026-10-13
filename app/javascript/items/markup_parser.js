@@ -138,7 +138,7 @@ export function inline(text, options = {}) {
       const name = head[1]
       const start = i + head[0].length
       if (!head[2] && (LANG_SPANS.includes(name) || name === "code" || name === "g")) {
-        // [[en:..]] [[es:..]] [[la:..]] plain words; [[code:..]] literal, up to the first "]]"; [[g:term]] a glossary word (D-265)
+        // [[en:..]] [[es:..]] [[la:..]] plain words; [[code:..]] literal, up to the first "]]"; [[g:term]] a glossary word (D-266)
         const end = text.indexOf("]]", start)
         const body = end > start ? text.slice(start, end) : ""
         if (end > start && body.trim() !== "" && (name !== "code" || body.length <= CODE_MAX) && (name !== "g" || TERM.test(body.trim()))) {

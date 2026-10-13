@@ -2,7 +2,7 @@ require "test_helper"
 require_relative "../support/multi_user"
 require_relative "../support/lesson_events_world"
 
-# T2 (D-282): a check with the `listen` option. The text of what is heard is served (behind "Mostra il testo" in the page); an answer sent after the
+# T2 (D-283): a check with the `listen` option. The text of what is heard is served (behind "Mostra il testo" in the page); an answer sent after the
 # text was shown is recorded as text_shown in the check_answered row, and only for a check that has the option; the glossary of the front matter is
 # served to the student and the lists of words the lesson teaches stay with the author.
 class LessonListenTest < ActionDispatch::IntegrationTest

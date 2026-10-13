@@ -3,7 +3,7 @@
 require "base64"
 
 module Validation
-  # The validation of a page revision in the server's Chrome (D-289, SPEC B7). The host page (lib/harness/page_host.mjs, token
+  # The validation of a page revision in the server's Chrome (D-290, SPEC B7). The host page (lib/harness/page_host.mjs, token
   # kind prev) embeds the page's shell from the validation mount of the pages app (Host: banco-pages-internal) with the production
   # iframe attributes and plays the parent side of the bridge. Every one of the eight seeds is loaded: ready, errors, network and
   # the ready screenshots; seeds 0 and 1 (page.validate.full_seeds) run the whole list: narrow shot, determinism, axe and the

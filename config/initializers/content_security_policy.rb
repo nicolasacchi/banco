@@ -13,7 +13,7 @@ Rails.application.configure do
     policy.font_src :self
     policy.connect_src :self
     policy.frame_src :none
-    # No app page is framed anywhere (D-261, SPEC B4): a free page that navigates its own frame to a banco URL gets a blocked frame.
+    # No app page is framed anywhere (D-262, SPEC B4): a free page that navigates its own frame to a banco URL gets a blocked frame.
     policy.frame_ancestors :none
     policy.object_src :none
     policy.base_uri :none

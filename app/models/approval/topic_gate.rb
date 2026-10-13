@@ -11,7 +11,7 @@ module Approval
   #   6. the teacher confirmed reading the lesson and the sample instances (confirm_seen), and
   #   7. when the latest review of the lesson revision has blocker or major findings, the teacher gave a
   #      reason for approving anyway (3..1000 chars),
-  #   8. (D-289) every free page the lesson revision pins has a passed validation in Chrome, a review by an
+  #   8. (D-290) every free page the lesson revision pins has a passed validation in Chrome, a review by an
   #      independent session and no blocker in its latest review (a major needs the reason of 7), and
   #   9. the teacher ticked "Ho provato «title»" for each of them (pages_confirmed): the one explicit act per page.
   #
@@ -79,7 +79,7 @@ module Approval
       reasons
     end
 
-    # The free page revisions the topic's lesson revision pins (D-289), in card order.
+    # The free page revisions the topic's lesson revision pins (D-290), in card order.
     def page_revisions(revision)
       ids = Pages::Embeds.revision_ids(revision.lesson_revision.body).uniq
       PageRevision.where(id: ids).includes(:page).sort_by { |r| ids.index(r.id) }

@@ -835,7 +835,7 @@
    "code": "E-LESSON-LANG",
    "line": 48,
    "construct": "callout",
-   "note": "T2 (D-281): a [[en:...]] span in a math lesson: math does not teach English"
+   "note": "T2 (D-282): a [[en:...]] span in a math lesson: math does not teach English"
   },
   {
    "file": "bad/lang-level-word.md",
@@ -843,7 +843,7 @@
    "code": "W-LANG-LEVEL",
    "line": 48,
    "construct": "callout",
-   "note": "T2 (D-281): English words outside the first 3000 and the glossary and teaches_en (the same file also gives E-LESSON-LANG: math teaches no English; the code under test is the warning)"
+   "note": "T2 (D-282): English words outside the first 3000 and the glossary and teaches_en (the same file also gives E-LESSON-LANG: math teaches no English; the code under test is the warning)"
   },
   {
    "file": "bad/chem-symbol-unknown.md",
@@ -851,7 +851,7 @@
    "code": "E-CHEM-SYMBOL",
    "line": 48,
    "construct": "callout",
-   "note": "T2 (D-281): \\ce{Xx2} with a symbol that is not an element (the same file also gives E-LESSON-MARKUP: \\ce is for chemistry and biology)"
+   "note": "T2 (D-282): \\ce{Xx2} with a symbol that is not an element (the same file also gives E-LESSON-MARKUP: \\ce is for chemistry and biology)"
   },
   {
    "file": "bad/apparatus-glossary.md",
@@ -859,7 +859,7 @@
    "code": "E-LESSON-APPARATUS-WORDS",
    "line": null,
    "construct": "glossary",
-   "note": "T2 (D-281): twelve glossary terms of 21 words listed under one card are 252 words open by default (at most 250)"
+   "note": "T2 (D-282): twelve glossary terms of 21 words listed under one card are 252 words open by default (at most 250)"
   },
   {
    "file": "bad/dialogue-language-not-taught.md",

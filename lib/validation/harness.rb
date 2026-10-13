@@ -63,7 +63,7 @@ module Validation
       "#{base_url}/h/#{token}/lesson-render.html?theme=#{theme}"
     end
 
-    # The host page of a free page validation (D-289, SPEC B7): token kind prev (a page revision).
+    # The host page of a free page validation (D-290, SPEC B7): token kind prev (a page revision).
     PAGE_HOST_CSP = "default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; frame-src %<origin>s; connect-src 'none'; img-src 'none'; base-uri 'none'; form-action 'none'"
     PAGE_FILES = %w[page_host.mjs page_audit.mjs].freeze
 

@@ -41,7 +41,7 @@ module Lessons
       "reveal" => [ %w[n type prompt_it answer_it year who_it situation_it real_it], { "options" => %w[id text_it then_it real] } ],
       # words (T3): the glosses are teaching content, served whole (L8), and read aloud only after the student opens them
       "dialogue" => [ %w[n type title_it speakers transcript], { "lines" => %w[speaker text_en text_es gloss_it] } ],
-      # release 2 (D-289): a free page pin; `for` adds the server's `view` (poster, texts, shell address) from the page revision
+      # release 2 (D-290): a free page pin; `for` adds the server's `view` (poster, texts, shell address) from the page revision
       "page" => [ %w[n type page revision caption_it], {} ]
     }.freeze
     SOURCE_COMPARE = %w[title_it author_it year about_year for_whom_it where_it translation original].freeze
@@ -49,7 +49,7 @@ module Lessons
 
     module_function
 
-    # Pure except for the page blocks (D-289): their `view` is read from the page revision (Pages::Served), the one place that
+    # Pure except for the page blocks (D-290): their `view` is read from the page revision (Pages::Served), the one place that
     # asks the database.
     def for(revision, seed:) = project(revision.body, revision_id: revision.id, seed: seed, pages: Pages::Served)
 

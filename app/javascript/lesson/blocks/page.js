@@ -1,4 +1,4 @@
-// page (release 2, D-289, SPEC B4): a free page, a sandboxed scene on its own origin. Inside the card the student sees the poster
+// page (release 2, D-290, SPEC B4): a free page, a sandboxed scene on its own origin. Inside the card the student sees the poster
 // (the validation screenshot of its first state), the caption, the page's instructions and a button "Apri la parte interattiva (circa
 // N KB)": nothing heavy loads until asked. On the click the iframe is inserted with the production attributes (sandbox
 // "allow-scripts", no allow-same-origin, credentialless, no referrer); the bridge and the watchdog are lesson/free_page. A page that

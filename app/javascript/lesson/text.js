@@ -71,7 +71,7 @@ function place(button, pop) {
   pop.style.left = `${left - anchor.left}px`
 }
 
-// A glossary word: the word, a small book icon that is the button (a padded hit area), and the definition that opens under it (D-265). The
+// A glossary word: the word, a small book icon that is the button (a padded hit area), and the definition that opens under it (D-266). The
 // definition is hidden until asked for, so the voice reads it only after the student opened it (L10); the card lists its words anyway.
 function glossWord(term, ctx) {
   const entry = ctx.glossary?.get(term.toLowerCase())
@@ -115,7 +115,7 @@ function inlineNodes(nodes, parent, ctx, display = false, tiles = false) {
       parent.appendChild(strong)
     } else if (node.t === "math") parent.appendChild(renderMath(node.v, el("span", { class: "math" }), ctx, false, tiles && /=/.test(node.v)))
     else if (node.t === "lang") {
-      // [[en:..]] [[es:..]] [[la:..]]: words of another language, in the target ink, with a speaker where the device has a voice (D-265)
+      // [[en:..]] [[es:..]] [[la:..]]: words of another language, in the target ink, with a speaker where the device has a voice (D-266)
       const span = el("span", { class: `lang lang-${node.lang}`, lang: node.lang, text: node.v })
       parent.appendChild(span)
       if (!ctx.safe && node.lang !== "la" && !ctx.noSpeech) parent.appendChild(speakerButton(ctx, { lang: node.lang, text: node.v, node: span }))

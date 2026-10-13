@@ -342,7 +342,7 @@ class DecisionRecorder
     payload = { topic_revision_id: revision.id, topic: lesson.key, seq: revision.seq, course_revision_id: revision.course_revision_id,
                 lesson_revision_id: revision.lesson_revision_id, item_revision_ids: Approval::TopicGate.item_revision_ids(revision) }
     payload[:lesson_findings_reason_it] = @params[:lesson_findings_reason_it].to_s.strip if Approval::TopicGate.findings_need_reason?(revision)
-    # D-289: the revision ids of the free pages the teacher tried, one explicit act per page; the approval covers what a page shows and
+    # D-290: the revision ids of the free pages the teacher tried, one explicit act per page; the approval covers what a page shows and
     # teaches, not its code.
     payload[:pages_confirmed] = confirmed.map(&:to_i).sort if Approval::TopicGate.page_revisions(revision).any?
     payload.merge!(attested: true, attest_it: attested, waived: [ Approval::TopicGate::WAIVED ]) if attested

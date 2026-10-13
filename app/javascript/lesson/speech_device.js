@@ -1,4 +1,4 @@
-// The device side of "Ascolta" (D-282): which voices the device has, whether a speaker may be shown, the student's two switches, and the sentences
+// The device side of "Ascolta" (D-283): which voices the device has, whether a speaker may be shown, the student's two switches, and the sentences
 // of "Prova le voci". The frozen contract (gate, walker, player) is lesson/speech.js.
 import { GATE, voiceFor } from "lesson/speech"
 import { state, device, notify, voicesList } from "lesson/speech_state"

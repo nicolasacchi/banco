@@ -1,4 +1,4 @@
-# The libraries a free page may declare in `libs` (SPEC B2, C1, D-289), vendored under vendor/pages/NAME@VERSION/ (never
+# The libraries a free page may declare in `libs` (SPEC B2, C1, D-290), vendored under vendor/pages/NAME@VERSION/ (never
 # public/: they are served only by the pages origin, found by listing). bin/vendor-pages fetches each upstream tarball with
 # `npm pack`, checks its sha256 against `tarball_sha256` here, copies `files` and writes SHA256SUMS; bin/vendor-pages --check
 # (CI, offline) verifies the committed files against SHA256SUMS. A page names a library as "three@0.186.1" or an addon as

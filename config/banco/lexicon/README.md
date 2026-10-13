@@ -1,4 +1,4 @@
-# Frequency lists for W-LANG-LEVEL (D-281)
+# Frequency lists for W-LANG-LEVEL (D-282)
 
 `en.txt` and `es.txt` hold the 5000 most frequent words of English and Spanish, one per line, most frequent first (the rule
 `lesson2.target_vocabulary_top`, 3000, says how many of them count as easy; the rest of the list lets the reviewer move that line without a new

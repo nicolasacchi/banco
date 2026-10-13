@@ -2,7 +2,7 @@ require "test_helper"
 require "minitest/mock"
 require_relative "../../support/lesson_checks_wave2_world"
 
-# The check components of wave 2 that T1 owns (WAVE2 2.11, D-267): tiles, ordering, select, and the options thousands, profile, contractions.
+# The check components of wave 2 that T1 owns (WAVE2 2.11, D-268): tiles, ordering, select, and the options thousands, profile, contractions.
 class LessonsChecksWave2Test < ActiveSupport::TestCase
   include LessonChecksWave2World
 

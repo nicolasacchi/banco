@@ -6,7 +6,7 @@ require "rack"
 require "concurrent"
 
 module Banco
-  # The free pages origin (D-289, SPEC B3): a plain Rack app with no Rails session, no cookies, no CSRF and no identity.
+  # The free pages origin (D-290, SPEC B3): a plain Rack app with no Rails session, no cookies, no CSRF and no identity.
   # There is nothing to authenticate and nothing to protect but the bytes. It is mounted in config.ru, before Rails, by
   # ListenerSwitch, so no Rails middleware (session, cookies, the app CSP, default headers) ever touches a page response.
   # Two mounts, each with its mode fixed at construction (never a request parameter):
@@ -113,7 +113,7 @@ module Banco
 
       ActiveRecord::Base.connection_pool.with_connection do
         revision = PageRevision.find_by(bundle_sha256: sha) or next nil
-        # The browser matrix page (D-289, SPEC B10.8) is stored by the operator's console and never passes validation (it tries the
+        # The browser matrix page (D-290, SPEC B10.8) is stored by the operator's console and never passes validation (it tries the
         # forbidden on purpose): only its key is served without a passed validation.
         next nil if @mode == :production && !selftest?(revision) && !revision.validations.exists?(status: "passed", kit_version: kit)
 

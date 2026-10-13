@@ -400,10 +400,10 @@ module Validation
       end
 
       # [[role:text]] and [text](scheda:x) shown as text; the words of another language, a code span and (in a language subject) a role
-      # span are out of the Italian lint (D-265): each stands for one word.
+      # span are out of the Italian lint (D-266): each stands for one word.
       def unmark(text) = Lessons::Lang.split(text, target: @target).first
 
-      # ---- the text layer (D-265): language spans, role spans of a language subject, code spans, glossary words ---------------------------------
+      # ---- the text layer (D-266): language spans, role spans of a language subject, code spans, glossary words ---------------------------------
 
       def spans(field, text, line)
         Lessons::Markup.each_node(text, line_offset: line, target: @target) do |n, at|

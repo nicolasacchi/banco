@@ -3,7 +3,7 @@
 Wave 2 adds 29 diagram types, five blocks, six check components and their options, a text layer for the languages, "Ascolta", vetted
 data tables and ten small domain libraries to the lesson/2 of D-245 to D-259. W2-0 froze the contracts that the builder tracks share,
 so that ten tracks can work on different files without agreeing again. This page is the reference of those contracts; the decisions
-are D-261 (the amendment of firm rule 3) and D-262 to D-270. Nothing here is lesson content.
+are D-262 (the amendment of firm rule 3) and D-263 to D-271. Nothing here is lesson content.
 
 ## What is available: `config/banco/lesson_types.yml`
 
@@ -51,7 +51,7 @@ booleans on a property, `x-banco-hide` a list of paths (`bars[].parts[].hidden`)
 | graph router (`place`, `route`, `flip`, `moveList`) | `lesson/diagrams/graph/router.js` | T4b |
 | chart axis (`linear`, `log`, `readCursor`, `legend`, `valueTable`) | `lesson/diagrams/chart/axis.js` | T6 |
 | grid API (`grid`, `cellBox`, `outline`, `stackForPhone`, `scrollFrame`, `cellTargets`) | `lesson/diagrams/grid/api.js` (built; the engine and its helpers are in `grid/engine.js`) | T9 |
-| speech (`voiceFor`, `rateFor`, `speechOf`, `speak`, `stopAll`; built, D-282) | `lesson/speech.js`, `config/banco/voices.yml` | T2 |
+| speech (`voiceFor`, `rateFor`, `speechOf`, `speak`, `stopAll`; built, D-283) | `lesson/speech.js`, `config/banco/voices.yml` | T2 |
 | `recordAtRender(data) -> { records, findings }` | `lesson/diagrams/computing/program.js` | T9 |
 | the libraries (Chrono, Dates, NumWords, Money, Chem, Words, Verbs, Bits, ProgramGrammar, Sheet) | `lib/lessons/*.rb`, `lesson/lib/*.js`, `test/fixtures/lesson2/*.json` | T3, T4a, T7, T8, T9 |
 | the vetted data tables (15 schemas) | `config/banco/data/*/*.schema.json`, `bin/build-lesson-data`, `Lessons::VettedData` | the tracks |
@@ -79,7 +79,7 @@ each, described under `pending` in `test/fixtures/lesson2/manifest.json` until t
 stylesheet (`app/assets/stylesheets/lesson/FAMILY.css`) and a locale file (`config/locales/lesson_FAMILY.it.yml`). Each subject has
 a brief addendum (`banco brief show lesson-SUBJECT`).
 
-## Controls, live line and select scenes (T9, D-274)
+## Controls, live line and select scenes (T9, D-275)
 
 `draw.js` builds the controls a module declares through `controls(data)` (`lesson/diagrams/controls.js`). The values are one object `{ id: value }` that
 `layout` and `describe` read as `ctx.controls` (empty at the start, reset when the figure changes state): a toggle is `true` once flipped, a stepper is a number
@@ -89,7 +89,7 @@ a stepper's two buttons). A toggle or tap that the scene gives a box to (`scene.
 candidates in one neutral style with `shapes[].target = "tN"` and returns `scene.targets = [{ target, bbox }]`; `targets(data, set, opts)` maps them to the stored ids.
 `describe(data, ctx)` and `printed(data, state)` take the state: `printed` is the set of value tokens (digits in every way they are written, weights, readouts, sums), and every
 number `describe` says is one of them or a structural count. A page links `stylesheets/lesson/FAMILY.css` for the families its diagrams use (`lesson_family_stylesheets`).
-## The docs family (T8, D-277)
+## The docs family (T8, D-278)
 
 `document` (`kind: invoice`, views `sheet` and `cascade`), `source` (`kind: legal`), `reveal` and `oral` are `available`; their texts are
 `config/locales/lesson_docs.it.yml` (`t.docs`) and their look `app/assets/stylesheets/lesson/docs.css`, linked by `lesson_family_stylesheets` only
@@ -97,7 +97,7 @@ for a lesson that uses one of them. `Lessons::Money` computes every amount of an
 card is `lesson/blocks/flip.js`, shared by `mistake` and `reveal`. An `oral` is graded as an ordering by the check endpoint and its model answer rides
 on the reply (`model_it`). The gallery lesson is `test/fixtures/lesson2/gallery/docs-lesson.md`, rendered by `test/system/docs_family_test.rb`.
 
-## The text layer and "Ascolta" (T2, D-281, D-282)
+## The text layer and "Ascolta" (T2, D-282, D-283)
 
 **Spans** (`Lessons::Markup`, `items/markup_parser.js`, the shared cases `test/fixtures/markup/v2.json`): `[[en:..]]`, `[[es:..]]`, `[[la:..]]` (plain words of another
 language; only in a subject that teaches it, `lesson2.target_languages`), `[[code:..]]` (literal, at most 40 characters), `[[g:term]]` (a word of the front matter

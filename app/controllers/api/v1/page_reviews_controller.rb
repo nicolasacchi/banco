@@ -1,6 +1,6 @@
 module Api
   module V1
-    # The review of a page revision (D-289, SPEC B8): one per independent session, banco.page_review/1, eleven points and
+    # The review of a page revision (D-290, SPEC B8): one per independent session, banco.page_review/1, eleven points and
     # findings by file. The reviewer receives the manifest, every file, the card, the validation report, the screenshots of
     # every seed and the plain diff; never the course sources. Nothing here approves anything.
     class PageReviewsController < Api::BaseController

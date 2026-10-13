@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 
-// "Prova le voci" (D-282, the operator's Q1): on the student's own Mac or iPad, with Safari, each local voice of the device says a fixed sentence
+// "Prova le voci" (D-283, the operator's Q1): on the student's own Mac or iPad, with Safari, each local voice of the device says a fixed sentence
 // with its name beside it. The operator listens once and tells which voices are good; their names go into config/banco/voices.yml and only then do
 // the lessons show a speaker. Nothing is recorded and nothing is sent: the page only plays.
 export default class extends Controller {

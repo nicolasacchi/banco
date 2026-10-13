@@ -5,7 +5,7 @@ require_relative "../support/topic_world"
 require_relative "../support/practice_rows"
 require_relative "../support/page_world"
 
-# Free pages and the teacher's approval (D-261, D-289, SPEC B8): approve_topic carries one explicit confirmation per pinned page
+# Free pages and the teacher's approval (D-262, D-290, SPEC B8): approve_topic carries one explicit confirmation per pinned page
 # ("Ho provato ..."), the gate asks for a passed validation and an independent review of each, and what the click covers is what the
 # page shows and teaches, not its code.
 class PagesApprovalTest < ActionDispatch::IntegrationTest

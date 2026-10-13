@@ -1,4 +1,4 @@
-# The validation of a stored page revision in the server's Chrome (D-289, SPEC B7): every seed, the scripted session, the
+# The validation of a stored page revision in the server's Chrome (D-290, SPEC B7): every seed, the scripted session, the
 # screenshots stored by content. Runs on the `chrome` queue (one thread, one Chrome at a time, inside ChromeRunner's lock) at a priority
 # below item validation. A verdict (passed, failed) is appended to page_validations; Chrome that cannot be reached is not a verdict: each
 # attempt appends an `error` row and the job retries. The kit is the newest released one unless the job is given another

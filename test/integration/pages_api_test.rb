@@ -1,7 +1,7 @@
 require "test_helper"
 require_relative "../support/page_world"
 
-# Free pages over the agent API (D-289, SPEC B9): open, submit and its refusals, the status, the diff, the independent review.
+# Free pages over the agent API (D-290, SPEC B9): open, submit and its refusals, the status, the diff, the independent review.
 class PagesApiTest < ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
   include PageWorld

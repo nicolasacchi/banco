@@ -1,6 +1,6 @@
 require "test_helper"
 
-# The maps family (T5, W2-1, D-275): map, insolation and cross_section against their vectors, the Ruby half. The browser's half is
+# The maps family (T5, W2-1, D-276): map, insolation and cross_section against their vectors, the Ruby half. The browser's half is
 # app/javascript/lesson/test/maps.test.mjs; both read test/fixtures/diagrams/types/TYPE.json, so the two implementations say the same words,
 # list the same targets in the same order and refuse the same figures at the same JSON pointer.
 class MapsTypesTest < ActiveSupport::TestCase

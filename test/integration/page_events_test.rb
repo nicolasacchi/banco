@@ -2,7 +2,7 @@ require "test_helper"
 require_relative "../support/multi_user"
 require_relative "../support/lesson_events_world"
 
-# The events of a free page in the lesson's own ledger (D-289, SPEC B4, B5): page_opened, page_event, page_failed. Append-only, never
+# The events of a free page in the lesson's own ledger (D-290, SPEC B4, B5): page_opened, page_event, page_failed. Append-only, never
 # an outcome, never a skill state; refused when malformed.
 class PageEventsTest < ActionDispatch::IntegrationTest
   include MultiUser

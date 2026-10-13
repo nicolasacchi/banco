@@ -1,4 +1,4 @@
-// The buttons of "Ascolta" (D-282): a speaker for one piece of text (tap to hear), and the card's "Ascolta" with "Più lento". A speaker is hidden until
+// The buttons of "Ascolta" (D-283): a speaker for one piece of text (tap to hear), and the card's "Ascolta" with "Più lento". A speaker is hidden until
 // the voice gate lets a voice through for its language and the student's switch is on (the device's voice list can arrive late), and the teacher's
 // preview, which may try any local voice, says so. Nothing here plays by itself: every sound starts with a tap (Safari insists, and so does A10).
 import { el, icon } from "lesson/dom"

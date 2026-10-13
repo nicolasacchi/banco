@@ -1,7 +1,7 @@
 require "test_helper"
 require "open3"
 
-# chem/elements, chem/molecules and chem/terms (T7, WAVE2 1.9, D-269): the vetted tables of chemistry and their second tables. The first tables come from
+# chem/elements, chem/molecules and chem/terms (T7, WAVE2 1.9, D-270): the vetted tables of chemistry and their second tables. The first tables come from
 # the primary sources (CIAAW, the IUPAC Italian table, PubChem for state and category, CCCBDB for geometry); the second tables are separate extractions
 # (PubChem, Zanichelli, PubChem's 2D records) and the unit test compares the two and checks the internal consistency.
 class ChemDataTest < ActiveSupport::TestCase

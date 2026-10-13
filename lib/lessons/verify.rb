@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Lessons
-  # Truth at authoring time (WAVE2 1.10, D-267): a check may declare `verify: {fn: "chrono.duration", args: {from: "-133", to: "-27"}}`.
+  # Truth at authoring time (WAVE2 1.10, D-268): a check may declare `verify: {fn: "chrono.duration", args: {from: "-133", to: "-27"}}`.
   # Ruby calls the registered function and refuses the check (E-LESSON-VERIFY) when its `answer` differs from the value, or when an
   # errors[] entry carries a `code` that the function knows as a mutant (its typical wrong values, by name) and the entry's answer
   # differs from the mutant's value. Grading at run time is unchanged (Grading::Closed); the field is dropped from the served body (L1).

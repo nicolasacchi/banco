@@ -57,7 +57,7 @@ class PreferencesTest < ActionDispatch::IntegrationTest
     assert_equal 1, AppEvent.where(kind: "student_preference").count
   end
 
-  test "Ascolta is on until the student turns it off, the speed is normal until the student asks for slower, and the choice is kept (D-282)" do
+  test "Ascolta is on until the student turns it off, the speed is normal until the student asks for slower, and the choice is kept (D-283)" do
     assert_equal({ lesson_view: "cards", reduce_motion: false, listen: true, slower: false }, Diagnosis::Preferences.lesson(@rows[:student]))
     as_student "/diagnosis/preferences", method: :post, params: { slower: "true" }
     assert_equal({ lesson_view: "cards", reduce_motion: false, listen: true, slower: true }, Diagnosis::Preferences.lesson(@rows[:student]))

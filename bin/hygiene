@@ -18,7 +18,7 @@ fi
 # Forbidden terms (case-insensitive) are private, so they are not in this file or
 # anywhere in git. They come from HYGIENE_TERMS (a CI secret; whitespace or
 # newline separated) and from the untracked file prep/hygiene-terms (one per line).
-# Without either, the term check is skipped with a notice. Vendored third-party libraries (vendor/pages, D-289) are not ours to edit and are left out.
+# Without either, the term check is skipped with a notice. Vendored third-party libraries (vendor/pages, D-290) are not ours to edit and are left out.
 terms=()
 if [ -n "${HYGIENE_TERMS:-}" ]; then
   read -r -a from_env <<<"$(echo "$HYGIENE_TERMS" | tr '\n' ' ')"

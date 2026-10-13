@@ -47,7 +47,7 @@ module Lessons
       # The text of an imported reference text (the Costituzione, the codice civile), or nil when it is not imported.
       def reference_body(key) = @references.call(key.to_s)
 
-      # The page block's lookup (D-289): { revision_id:, problem:, strings: } or nil when the server has no pages.
+      # The page block's lookup (D-290): { revision_id:, problem:, strings: } or nil when the server has no pages.
       def page(key, revision) = @pages.call(key.to_s, revision)
 
       def error(sub, message, rule: nil) = add("E-LESSON-BLOCK", sub, message, rule: rule)

@@ -1,6 +1,6 @@
 require "test_helper"
 
-# The `pages` rule set of the scan (D-289, SPEC B7): vectors with their expected result.
+# The `pages` rule set of the scan (D-290, SPEC B7): vectors with their expected result.
 class PageScanTest < ActiveSupport::TestCase
   VECTORS = JSON.parse(File.read(Rails.root.join("test/fixtures/js_scan/pages.json")))
 

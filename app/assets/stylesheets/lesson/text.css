@@ -1,4 +1,4 @@
-/* lesson/text: the text layer of the languages (D-281, D-282). Linked on every lesson page (it is small): words of another language, code spans,
+/* lesson/text: the text layer of the languages (D-282, D-283). Linked on every lesson page (it is small): words of another language, code spans,
    glossary words and the list under a card, "Ascolta", the listen check, the voices of the settings page.
    Rules: colour only through the theme variables; no colour alone (the target ink also has the lang attribute and the speaker); every tap target at
    least 24 px (2.75rem for the main buttons); no italics; forced-colors and print blocks at the end. */

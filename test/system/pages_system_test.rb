@@ -3,7 +3,7 @@ require_relative "../support/pages_lesson_world"
 require_relative "../support/student_session"
 require_relative "../support/chrome_helper"
 
-# Free pages in Chrome (D-289, SPEC B4, B10): the page block of a lesson, loaded on a click into a sandboxed iframe on the pages origin,
+# Free pages in Chrome (D-290, SPEC B4, B10): the page block of a lesson, loaded on a click into a sandboxed iframe on the pages origin,
 # the watchdog that takes a broken page away, the switch, the refusal to be framed, and the browser matrix page. Screenshots go to
 # BANCO_SHOT_DIR (pages-<name>-<width>.png) for the look gate.
 class PagesSystemTest < ApplicationSystemTestCase

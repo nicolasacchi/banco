@@ -2,7 +2,7 @@ require "application_system_test_case"
 require_relative "../support/lesson2_page_world"
 require_relative "../support/student_session"
 
-# What "Ascolta" reads (D-282, WAVE2 4.3 and 5.4): the golden files of test/fixtures/lesson2/speech, one per family gallery and one for the text layer.
+# What "Ascolta" reads (D-283, WAVE2 4.3 and 5.4): the golden files of test/fixtures/lesson2/speech, one per family gallery and one for the text layer.
 # Each card of a gallery is drawn by the student's page in Chrome and lesson/speech.js `speechOf` is asked what it would say, in segments of one language
 # each. The lead reads the files (are the numbers, the formulas, the figures said the way a person would say them?) and the operator listens to two of
 # them on the student's device. The test fails when what is read changes, so a change is always seen; GOLDEN=1 writes the files again.

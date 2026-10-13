@@ -33,7 +33,7 @@ module Teacher
     def gate = @gate ||= Approval::TopicGate.mechanical(latest)
     def needs_reason? = Approval::TopicGate.findings_need_reason?(latest)
 
-    # The free pages the lesson revision pins (D-289): one "Ho provato ..." box each in the approval form.
+    # The free pages the lesson revision pins (D-290): one "Ho provato ..." box each in the approval form.
     def pages = @pages ||= latest ? Approval::TopicGate.page_revisions(latest) : []
     def intro_it = latest&.body&.dig("intro_it")
 

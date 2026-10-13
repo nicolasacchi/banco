@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-# The libraries of the free pages (D-289, SPEC C1), vendored under vendor/pages/NAME@VERSION/ from config/banco/pages_libs.yml.
+# The libraries of the free pages (D-290, SPEC C1), vendored under vendor/pages/NAME@VERSION/ from config/banco/pages_libs.yml.
 #   bin/vendor-pages          fetch the upstream tarballs (npm pack), check their sha256, copy the files, write SHA256SUMS
 #   bin/vendor-pages --check  exit 1 when a committed file differs from its SHA256SUMS or is missing (CI, offline)
 require "yaml"

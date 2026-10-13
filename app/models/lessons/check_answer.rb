@@ -122,7 +122,7 @@ module Lessons
       nil # the same answer arrived twice at once: the first one stands
     end
 
-    # An answer to a `listen` check given after S looked at the text is recorded as such (D-266): the ledger tells hearing from reading.
+    # An answer to a `listen` check given after S looked at the text is recorded as such (D-267): the ledger tells hearing from reading.
     def shown_text(check, text_shown)
       check["listen"].present? && text_shown ? { text_shown: true } : {}
     end

@@ -1,5 +1,5 @@
 module Teacher
-  # The browser matrix page (D-289, SPEC B10.8): math.pages-selftest, stored by the operator's console (bin/rails banco:pages_selftest),
+  # The browser matrix page (D-290, SPEC B10.8): math.pages-selftest, stored by the operator's console (bin/rails banco:pages_selftest),
   # shown inside the real iframe of a real page of the app, with the report it sends through the bridge. Read-only. The operator runs it
   # on Chrome, Firefox, Safari on iPad and iPhone and Chrome on Android, and writes the results in the RUNBOOK; the pages ship only
   # when every "must be blocked" row holds in every browser.

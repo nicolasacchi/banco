@@ -1,4 +1,4 @@
-// The `listen` option of a check (D-282, WAVE2 2.11, A8): the question is heard, not read. A speaker plays the English or Spanish text with the device's
+// The `listen` option of a check (D-283, WAVE2 2.11, A8): the question is heard, not read. A speaker plays the English or Spanish text with the device's
 // voice; the text itself stays behind "Mostra il testo" (served, but hidden), and an answer given after the text was shown is sent as text_shown
 // (the ledger keeps it, so what S did without the text can be told from what S did with it). A device with no voice for the language says so, and the
 // lesson works by reading: the same button shows the text.

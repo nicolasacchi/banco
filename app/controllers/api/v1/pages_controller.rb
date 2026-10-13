@@ -2,7 +2,7 @@ require "base64"
 
 module Api
   module V1
-    # Free pages (D-289, SPEC B9): list a subject's pages, open one as a folder, submit a revision, read its state and its
+    # Free pages (D-290, SPEC B9): list a subject's pages, open one as a folder, submit a revision, read its state and its
     # screenshots, the plain diff against the previous revision. Static validation is synchronous (no Chrome); the
     # validation in the server's Chrome runs in a job. The author works from the embedding card only (B8).
     class PagesController < Api::BaseController

@@ -18,7 +18,7 @@ module Validation
   #   source_section:  ->(source_key, number) { the "## " heading the line sits under | nil }
   #   reference_body:  ->(key) { text of an imported reference text | nil }
   #   topic:           ->(key) { true when the key is a topic of the subject's latest course map } (links of lesson/2)
-  #   page:            ->(key, revision) { {revision_id:, problem:, strings:} of a free page revision (an integer or "latest") } (the page block, D-289)
+  #   page:            ->(key, revision) { {revision_id:, problem:, strings:} of a free page revision (an integer or "latest") } (the page block, D-290)
   class Context
     attr_reader :subject
 

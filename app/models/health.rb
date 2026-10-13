@@ -46,7 +46,7 @@ module Health
       !OK_VALUES.include?(value)
     end
 
-    # Free pages (D-289): the switch, and a check that fails when a Cookie header reached the pages origin since the restart (a layer in
+    # Free pages (D-290): the switch, and a check that fails when a Cookie header reached the pages origin since the restart (a layer in
     # front of it, the Traefik strip, is broken).
     def pages
       seen = Banco::PagesApp.cookie_headers_seen

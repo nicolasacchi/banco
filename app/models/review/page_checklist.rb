@@ -1,5 +1,5 @@
 module Review
-  # The eleven points of the page review (D-289, SPEC B8); the numbers are the ids of banco.page_review/1 and
+  # The eleven points of the page review (D-290, SPEC B8); the numbers are the ids of banco.page_review/1 and
   # briefs/page-review.md has the same list in prose. The reviewer never receives the course sources.
   module PageChecklist
     POINTS = [

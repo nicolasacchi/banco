@@ -1,4 +1,4 @@
-# The screenshots of a page validation (D-289, SPEC B7): WebP files stored by content, storage/page_shots/<sha256>.webp
+# The screenshots of a page validation (D-290, SPEC B7): WebP files stored by content, storage/page_shots/<sha256>.webp
 # (BANCO_PAGE_SHOTS_DIR overrides, for tests; in production beside the databases, BANCO_DATA_DIR/page_shots, because the poster is what a
 # student sees before the click and must survive a redeploy). The seed-0 1280 ready screenshot is the poster. The purge follows the rule of
 # lesson shots (bin/purge-lesson-shots): files of validations of revisions nobody pins and that are not the latest.

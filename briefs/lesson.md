@@ -360,7 +360,7 @@ products, `cartesian` for lines and systems, `equation_parts` for anatomy; itali
   explanation under its title; add a `legend` block when a card is about the roles.
 - **Links**: `[testo](scheda:SLUG)` to a card of the same lesson (the card needs `id=SLUG`), `[testo](argomento:KEY)`
   to a topic of the subject's course map (`E-LESSON-LINK` when it does not exist).
-- **Words of another language** (D-281): `[[en:When I arrive, I will call you.]]`, `[[es:...]]` (and `[[la:...]]`) in any `_it` text, only in a
+- **Words of another language** (D-282): `[[en:When I arrive, I will call you.]]`, `[[es:...]]` (and `[[la:...]]`) in any `_it` text, only in a
   subject that teaches that language (`E-LESSON-LANG`: english `en`, spanish `es`; `la` in italian, history, law_economics, biology). Plain words, no markup
   inside; the Italian lint skips them and a target-language sentence has at most 12 words (`E-READ`). Words beyond the first 3000 of the language, the
   lesson's glossary and `teaches_en` / `teaches_es` are `W-LANG-LEVEL`. In an english or spanish lesson a colour role span is target-language text

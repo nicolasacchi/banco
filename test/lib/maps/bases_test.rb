@@ -336,7 +336,7 @@ class MapsBasesTest < ActiveSupport::TestCase
     assert_includes NAMES.keys & REGIONS.keys, "sicilia"
     assert base("italy")["areas"].any? { |a| a["id"] == "sicilia" }
     assert base("mediterraneo_antico")["areas"].any? { |a| a["id"] == "sicilia" }
-    assert_equal [ "sicilia" ], NAMES.keys & REGIONS.keys, "a new clash between geo/names and history/regions must be named in D-271"
+    assert_equal [ "sicilia" ], NAMES.keys & REGIONS.keys, "a new clash between geo/names and history/regions must be named in D-272"
     assert_empty NAMES.keys & PLACES.keys
     assert_empty PLACES.keys & REGIONS.keys
   end

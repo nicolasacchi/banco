@@ -1,4 +1,4 @@
-# Free pages, release 2 (D-289, SPEC B9): a page is its own content unit with revisions, like an item. All five tables are
+# Free pages, release 2 (D-290, SPEC B9): a page is its own content unit with revisions, like an item. All five tables are
 # append-only (triggers). The bytes of a file live on disk in storage/pages/<sha256>, written once, never rewritten; the
 # rows only name them. A validation row says which kit version it ran with: what was validated is what runs.
 class CreateFreePageTables < ActiveRecord::Migration[8.1]

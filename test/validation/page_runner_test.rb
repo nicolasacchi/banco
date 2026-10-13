@@ -3,7 +3,7 @@ require "support/chrome_helper"
 require "support/validation_servers"
 require "support/page_world"
 
-# The validation of a page revision in a real Chrome (D-289, SPEC B7): the sample passes on every seed; each kind of misbehaviour
+# The validation of a page revision in a real Chrome (D-290, SPEC B7): the sample passes on every seed; each kind of misbehaviour
 # gets its code. Skipped without BROWSER_PATH.
 class PageRunnerTest < ActiveSupport::TestCase
   include ChromeHelper

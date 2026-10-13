@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "banco.page_review/1",
-  "description": "A review of a page revision by an independent session (D-289, SPEC B8): the 11 points and the findings by file.",
+  "description": "A review of a page revision by an independent session (D-290, SPEC B8): the 11 points and the findings by file.",
   "type": "object",
   "additionalProperties": false,
   "required": [

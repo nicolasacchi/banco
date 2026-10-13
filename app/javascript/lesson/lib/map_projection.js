@@ -1,4 +1,4 @@
-// MapProjection: the JS twin of Maps::Geom (lib/maps/geom.rb), the projection of a banco-maps@1 base (T5, D-271).
+// MapProjection: the JS twin of Maps::Geom (lib/maps/geom.rb), the projection of a banco-maps@1 base (T5, D-272).
 // A base's `projection.type` is the authority and is one of equal_earth, lambert_azimuthal (with `pole`: "north" or "south") or
 // mercator; x = tx + scale * ex, y = ty - scale * ey. Both twins run test/fixtures/maps/projection_vectors.json (to 0.01).
 // No imports: pure, usable in the browser and under node --test.

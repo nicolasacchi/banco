@@ -1,4 +1,4 @@
-# Who touched a free page, by role (D-289, SPEC B8): the authors are the sessions that wrote a revision, the reviewers the
+# Who touched a free page, by role (D-290, SPEC B8): the authors are the sessions that wrote a revision, the reviewers the
 # sessions that filed a review. Same interface as LessonSessions, so Providers and the independence checks work on both.
 class PageSessions
   ROLES = %w[author reviewer].freeze

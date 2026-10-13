@@ -1,4 +1,4 @@
-# What the student did in a lesson/2 (A11): a batch of at most 20 events, card_seen, and the events of a free page (page_opened, page_event, page_failed; D-289). Idempotent on
+# What the student did in a lesson/2 (A11): a batch of at most 20 events, card_seen, and the events of a free page (page_opened, page_event, page_failed; D-290). Idempotent on
 # client_event_id; one card_seen per card per 10 minutes is kept (the others are accepted and dropped). Students only
 # (official and trial); guests and the teacher get 403 and no row; the teacher's preview posts nothing. Nothing here
 # counts for a skill state.
@@ -43,7 +43,7 @@ class LessonEventsController < ApplicationController
     page_payload(event, kind)&.then { |payload| { kind: kind, card: card, client_event_id: id, payload: payload } }
   end
 
-  # What a free page event carries (D-289): the block of the card, for page_event the kind the page named (no outcome) and at most
+  # What a free page event carries (D-290): the block of the card, for page_event the kind the page named (no outcome) and at most
   # 1 KB of its data, for page_failed the limit that tripped. Anything else is refused.
   def page_payload(event, kind)
     block = event["block"]

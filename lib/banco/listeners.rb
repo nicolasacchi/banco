@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Banco
-  # One Puma process serves four listeners (D-04, D-289). The names are WEB_PORT,
+  # One Puma process serves four listeners (D-04, D-290). The names are WEB_PORT,
   # API_PORT, HARNESS_PORT and PAGES_PORT (the free pages origin, release 2), never
   # PORT: PORT would let a platform default collapse the binds into one.
   module Listeners

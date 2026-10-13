@@ -141,7 +141,7 @@ validation:
   E-LESSON-OVERFLOW: { stage: chrome, severity: error, description: "A card is wider than its viewport (horizontal overflow) at one of the render check's viewports." }
   E-DIAGRAM-LAYOUT: { stage: chrome, severity: error, description: "A diagram's layout returned an error or two label boxes overlap: shorten the labels or reduce the marks." }
   E-DIAGRAM-SMALL-TEXT: { stage: chrome, severity: error, description: "A text or a diagram label is drawn under the student's base text size." }
-  # Wave 2 of the rich lessons (WAVE2-COMPONENTS V5, D-264..D-268; rules version 9). The checks are built by the tracks of W2-1;
+  # Wave 2 of the rich lessons (WAVE2-COMPONENTS V5, D-265..D-269; rules version 9). The checks are built by the tracks of W2-1;
   # each code has a bad fixture described in test/fixtures/lesson2/manifest.json under `pending` until its track writes it.
   E-LESSON-DATA: { stage: ruby, severity: error, description: "A reference to a vetted data table (config/banco/data) that names no row, or a value that disagrees with its table (a station, a size, an element, a verb)." }
   E-LESSON-VERIFY: { stage: ruby, severity: error, description: "A check's verify function disagrees with its answer, or a coded wrong answer equals no mutant of the function (program.* functions are checked at the render check)." }
@@ -180,7 +180,7 @@ validation:
   W-PRACTICE-CODE-SPARSE: { stage: ruby, severity: warning, description: "A catalogue code is carried by fewer than practice.min_instances_per_code instances of the item." }
   E-BLUEPRINT-PRACTICE-ITEM: { stage: blueprint, severity: error, description: "A blueprint pins a practice item." }
   E-REVIEW-CHECKLIST: { stage: review, severity: error, description: "A review of a practice item must have exactly 13 checklist points, a review of a lesson/1 revision exactly 8, a review of a lesson/2 revision exactly 11, any other review exactly 11." }
-  # Free pages, release 2 (D-289, SPEC B7): the static codes are raised at submit (Validation::PageChecks), the chrome ones by the
+  # Free pages, release 2 (D-290, SPEC B7): the static codes are raised at submit (Validation::PageChecks), the chrome ones by the
   # validation in the server's Chrome (Validation::PageRunner), E-LESSON-FREEPAGE by the lesson that embeds a page.
   E-PAGE-FILES: { stage: ruby, severity: error, description: "A page bundle has a file outside the allowlist (page.json, main.mjs, at most 8 more .mjs, one style.css, assets/*.svg|png|webp|jpg), no main.mjs, a path that is not plain, or a binary that is not what its extension says." }
   E-PAGE-SIZE: { stage: ruby, severity: error, description: "A page bundle is over a budget of the page rules: 1 MB raw or 300 KB gzip in all, 300 KB for an asset, 200 KB for a module." }

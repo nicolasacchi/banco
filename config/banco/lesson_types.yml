@@ -1,4 +1,4 @@
-# The availability registry of lesson/2 (D-264; WAVE2-COMPONENTS 1.2): every diagram type, layout or view, block, check
+# The availability registry of lesson/2 (D-265; WAVE2-COMPONENTS 1.2): every diagram type, layout or view, block, check
 # component and check option, with what state it is in. It replaces RELEASE and BUILT of lib/lessons/directives.rb.
 # bin/build-lesson-types generates app/javascript/lesson/diagrams/registry.js and app/javascript/lesson/checks/registry.js
 # from this file (bin/build-lesson-types --check in CI); Ruby reads it through Lessons::Types.

@@ -2,7 +2,7 @@
 #   WEB_PORT     3000  HTML for the student and the teacher; reached only by Traefik
 #   API_PORT     3100  agent API, published on 127.0.0.1 only; token auth
 #   HARNESS_PORT 3200  internal harness for Chrome; never published
-#   PAGES_PORT   3300  the free pages origin (release 2, D-289); reached only by Traefik on banco-edge, not published
+#   PAGES_PORT   3300  the free pages origin (release 2, D-290); reached only by Traefik on banco-edge, not published
 # The variables are deliberately not called PORT.
 require_relative "../lib/banco/listeners"
 

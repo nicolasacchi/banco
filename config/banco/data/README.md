@@ -1,4 +1,4 @@
-# Vetted data tables (D-269)
+# Vetted data tables (D-270)
 
 Facts of the world that a lesson shows (melting points, element symbols, climate normals, cell sizes, irregular verbs, Spanish
 forms, Italian place names, the gazetteer of the ancient Mediterranean) are not typed by the author of a lesson: the author names a

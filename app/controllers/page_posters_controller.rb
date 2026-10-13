@@ -1,4 +1,4 @@
-# The poster of a free page (SPEC B4, D-289): the validation screenshot of the page's first state, as WebP, by content address.
+# The poster of a free page (SPEC B4, D-290): the validation screenshot of the page's first state, as WebP, by content address.
 # For the student, the teacher and the guest (it is course material). Only a screenshot that a stored page validation names is
 # served, so this is not a file server.
 class PagePostersController < ApplicationController

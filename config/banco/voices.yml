@@ -1,4 +1,4 @@
-# The voices "Ascolta" may use (D-266; WAVE2 4.1): the names of device voices that the operator has heard on the student's own
+# The voices "Ascolta" may use (D-267; WAVE2 4.1): the names of device voices that the operator has heard on the student's own
 # device and accepted. A voice is used only if (1) it is local (voice.localService === true: nothing leaves the device; the network
 # voices of a browser are never used), (2) its language starts with it, en or es, and (3) its name is in this list. Until a language
 # has an accepted voice the student's pages show no speaker for it and the lessons work by reading (A8); the teacher's preview may

@@ -1,7 +1,7 @@
 require "test_helper"
 require "open3"
 
-# geo/stations (T6, WAVE2 1.9, D-269): the vetted climate normals 1991-2020 of the stations a climograph can name, and the second table
+# geo/stations (T6, WAVE2 1.9, D-270): the vetted climate normals 1991-2020 of the stations a climograph can name, and the second table
 # (geo/stations_expected: a summary of an independent computation) compared with what our code derives from them.
 class StationsTest < ActiveSupport::TestCase
   V = Lessons::VettedData

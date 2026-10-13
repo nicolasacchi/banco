@@ -1044,7 +1044,7 @@
     "options": {
       "roles": true
     },
-    "note": "D-265: a language span",
+    "note": "D-266: a language span",
     "blocks": [
       {
         "type": "p",
@@ -1071,7 +1071,7 @@
     "options": {
       "roles": true
     },
-    "note": "D-265: a Spanish span",
+    "note": "D-266: a Spanish span",
     "blocks": [
       {
         "type": "p",
@@ -1098,7 +1098,7 @@
     "options": {
       "roles": true
     },
-    "note": "D-265: a Latin span",
+    "note": "D-266: a Latin span",
     "blocks": [
       {
         "type": "p",
@@ -1125,7 +1125,7 @@
     "options": {
       "roles": true
     },
-    "note": "D-265: a code span is literal, with < > = $ allowed",
+    "note": "D-266: a code span is literal, with < > = $ allowed",
     "blocks": [
       {
         "type": "p",
@@ -1159,7 +1159,7 @@
     "options": {
       "roles": true
     },
-    "note": "D-265: a glossary word",
+    "note": "D-266: a glossary word",
     "blocks": [
       {
         "type": "p",
@@ -1186,7 +1186,7 @@
       "roles": true,
       "target": "en"
     },
-    "note": "D-265: in an english lesson a role span is English unless it says |it",
+    "note": "D-266: in an english lesson a role span is English unless it says |it",
     "blocks": [
       {
         "type": "p",
@@ -1230,7 +1230,7 @@
     "options": {
       "roles": true
     },
-    "note": "D-265: without a target a role span has no lang, |it adds it",
+    "note": "D-266: without a target a role span has no lang, |it adds it",
     "blocks": [
       {
         "type": "p",
@@ -1274,7 +1274,7 @@
       "roles": true,
       "target": "es"
     },
-    "note": "D-265",
+    "note": "D-266",
     "blocks": [
       {
         "type": "p",
@@ -1397,7 +1397,7 @@
     "options": {
       "roles": true
     },
-    "note": "D-281: the gap of a cloze is an underscore, allowed inside a language span",
+    "note": "D-282: the gap of a cloze is an underscore, allowed inside a language span",
     "blocks": [
       {
         "type": "p",

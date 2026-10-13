@@ -1,4 +1,4 @@
-# Gallery: the text layer and "Ascolta" (T2, D-281, D-282)
+# Gallery: the text layer and "Ascolta" (T2, D-282, D-283)
 
 Status: built. This gallery is not a lesson file: the text layer belongs to no figure family, so it is shown by system tests over two invented served
 lessons, `test/fixtures/lesson2/served/text.json` (english: spans, a role span of a language subject, `[[time|it:..]]`, code spans, glossary words, a

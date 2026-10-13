@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 
-// The browser matrix page (D-289, SPEC B10.8): the free page block, as the lesson page draws it, with a stub of the lesson's ctx; the page's
+// The browser matrix page (D-290, SPEC B10.8): the free page block, as the lesson page draws it, with a stub of the lesson's ctx; the page's
 // "done" event carries one character per row (rows.mjs of the fixture), shown here as a table the operator copies into the RUNBOOK.
 const ROWS = [
   ["module", "funziona"], ["kit", "funziona"], ["three", "funziona"], ["webgl", "funziona o testo"], ["texture", "funziona"], ["font", "funziona"], ["bridge", "funziona"],

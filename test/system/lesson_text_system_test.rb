@@ -2,7 +2,7 @@ require "application_system_test_case"
 require_relative "../support/lesson2_page_world"
 require_relative "../support/student_session"
 
-# T2, the text layer and "Ascolta" in Chrome (D-281, D-282, WAVE2 1.11 and 4): language spans with their speaker, role spans of a language subject,
+# T2, the text layer and "Ascolta" in Chrome (D-282, D-283, WAVE2 1.11 and 4): language spans with their speaker, role spans of a language subject,
 # code spans, the glossary (the popover and the list under the card), the card's "Ascolta" with a fake speechSynthesis, the listen check
 # (the text behind "Mostra il testo", text_shown sent), mhchem, the voices of the settings page, and the shots for the look gate (BANCO_SHOT_DIR,
 # text-*.png). The device is a stand-in with the voices of a Mac (Daniel, Alice, Monica, and a network voice that must never be used); the voices

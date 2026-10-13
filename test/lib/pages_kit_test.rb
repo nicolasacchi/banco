@@ -1,6 +1,6 @@
 require "test_helper"
 
-# The kit (D-289, SPEC B6): released directories never change, the lock says so, the generator is the harness's.
+# The kit (D-290, SPEC B6): released directories never change, the lock says so, the generator is the harness's.
 class PagesKitTest < ActiveSupport::TestCase
   test "the lock lists every file of every released kit directory and nothing changed" do
     assert_empty Pages::Kit.lock_problems

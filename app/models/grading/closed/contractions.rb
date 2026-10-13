@@ -1,6 +1,6 @@
 module Grading
   module Closed
-    # The `contractions: en` option of a normalized_text check (WAVE2 2.11, D-267): the contractions of the vetted table
+    # The `contractions: en` option of a normalized_text check (WAVE2 2.11, D-268): the contractions of the vetted table
     # english/contractions are expanded on both sides before the comparison, so "I'll go" and "I will go" are the same answer.
     #
     # A table row is {short, long: [readings], ambiguous?}. A short form is a whole word ("won't", "I'm") or a suffix that

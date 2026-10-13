@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Validation
-  # The `pages` rule set of the JavaScript scan (D-289, SPEC B7): a lint of the modules of a free page for E-PAGE-API and
+  # The `pages` rule set of the JavaScript scan (D-290, SPEC B7): a lint of the modules of a free page for E-PAGE-API and
   # E-PAGE-IMPORT. It reuses the lexer of JsScan (comments and strings blanked, a name after `.` is a property, not an
   # identifier). Pages need `window` and `document`, which the generator rule set bans, so this set works by allowlist on
   # the two globals and denylist on the rest. It is a tripwire and a reviewer's aid, NOT the boundary: what it misses still

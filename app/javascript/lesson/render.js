@@ -54,7 +54,7 @@ export function renderLesson(root, body, config) {
   const expand = !!config.expand
   let mounts = []
 
-  // "Ascolta" (D-282): the student's two switches, from the server; the buttons appear when the device has an accepted voice
+  // "Ascolta" (D-283): the student's two switches, from the server; the buttons appear when the device has an accepted voice
   setPreferences({ listen: config.listen !== false, slower: config.slower === true })
   bindEscape()
   const ctx = {
@@ -538,7 +538,7 @@ export function renderLesson(root, body, config) {
       flushTimer = setTimeout(flush, 800)
     }, config.seenAfterMs ?? 3000)
   }
-  // A free page's events (D-289): page_opened, page_event, page_failed. Recorded for the student, never for a skill state; the teacher's
+  // A free page's events (D-290): page_opened, page_event, page_failed. Recorded for the student, never for a skill state; the teacher's
   // preview posts nothing.
   ctx.pageEvent = (kind, detail) => {
     if (config.mode !== "student" || ctx.safe || !detail.card) return

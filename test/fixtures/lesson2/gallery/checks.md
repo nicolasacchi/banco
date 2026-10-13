@@ -1,6 +1,6 @@
 # Gallery: family `checks` (check components and options)
 
-Status: T1 built the first three (D-272). A gallery of this family is not a lesson file: the components are shown by a system test, because a select
+Status: T1 built the first three (D-273). A gallery of this family is not a lesson file: the components are shown by a system test, because a select
 needs a figure that offers targets and the only way to show it before one does is a probe figure of eight equal zones.
 
 ## Shown (look gate)

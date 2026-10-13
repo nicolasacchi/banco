@@ -2,7 +2,7 @@ require "test_helper"
 require_relative "../support/page_world"
 require_relative "../support/lesson2_fixtures"
 
-# The page block against the server's pages (D-289, SPEC B4): the pin must exist, belong to the lesson's subject and have passed
+# The page block against the server's pages (D-290, SPEC B4): the pin must exist, belong to the lesson's subject and have passed
 # validation; `latest` is stored as an integer; the student's body carries the view, never the code.
 class PagesLessonTest < ActiveSupport::TestCase
   include PageWorld

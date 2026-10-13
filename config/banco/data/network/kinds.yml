@@ -1,4 +1,4 @@
-# network/kinds (D-269): the kinds of arrow a `network` figure draws (WAVE2 2.1) and the objects an arrow carries.
+# network/kinds (D-270): the kinds of arrow a `network` figure draws (WAVE2 2.1) and the objects an arrow carries.
 # Not a fact of the world: our own vocabulary for relations between actors, one Italian verb phrase each, so that the figure and its
 # description say the same words. `icon` is a name of config/banco/icons.yml (any list: the sprite of the icon is found by name);
 # `arrow` is solid (a plain relation), dashed (a relation of trust or of a promise, that binds by other means than force) or double

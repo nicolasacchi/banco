@@ -5,7 +5,7 @@ require_relative "listener_tag"
 
 module Banco
   # Chooses the app by the LOCAL port of the accepted socket, exactly as ListenerTag does (never the Host header or
-  # request.port for the choice of app), before any Rails middleware runs (D-289, SPEC B3):
+  # request.port for the choice of app), before any Rails middleware runs (D-290, SPEC B3):
   #
   #   pages listener (PAGES_PORT)               -> the production pages app
   #   harness listener, Host: banco-pages-internal -> the validation pages app (the mode is bound at construction)

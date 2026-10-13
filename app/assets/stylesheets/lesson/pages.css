@@ -1,4 +1,4 @@
-/* lesson/pages: the free page block (release 2, D-289). Linked on a page only when the lesson holds a page block
+/* lesson/pages: the free page block (release 2, D-290). Linked on a page only when the lesson holds a page block
    (LessonPagesHelper#lesson2_family_stylesheets). Colours only through the theme variables; no colour alone; targets at least 44 px
    for the controls; a forced-colors block; print shows the poster and the caption, never the frame. */
 .free-page { margin: 0.4em 0 0.8em; padding: 0; border: 2px solid var(--rule); border-radius: 1.1em; background: var(--surface); overflow: hidden; }
