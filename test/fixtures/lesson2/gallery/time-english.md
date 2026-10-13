@@ -16,6 +16,7 @@ refs:
 scope: studied
 minutes: 20
 calculator: false
+teaches_en: [arrive]
 why_it: "I tempi dei verbi sono forme nel tempo. Una linea le fa vedere. Le frasi sono inventate."
 ---
 
