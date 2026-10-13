@@ -260,7 +260,7 @@ lesson2:
     register: {width: [1, 16], ring_bits: [3, 4], states: 6}
     column_calc: {width: [1, 16], multiplier_digits: 4}
     paradigm: {groups: [1, 3], verbs: 10}
-    word_parts: {words: [1, 4], parts: 4}
+    word_parts: {words: [1, 4], parts: 4, letters: 16, syllables: 8, meaning_words: 12}
     mirror: {rows: [1, 3], words_per_side: 12}
     document: {lines: 6, discounts: 4, costs: 4, blocks: 10, block_words_total: 150, endorsements: 4}
     formula: {formulas: [1, 3], atoms_drawn: 30, coefficient: [2, 20], subscript: [2, 99]}

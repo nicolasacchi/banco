@@ -173,15 +173,16 @@ class LessonTypesTest < ActiveSupport::TestCase
   end
 
   test "blocks, check components, layouts, views and check options held back are refused one by one" do
-    assert_match(/dialogue block is not available/, assert_raises(Lessons::Directives::Refused) { build("dialogue", nil, "title_it: x\n") }.message)
+    with_reserved(:block, "dialogue") { assert_match(/dialogue block is not available/, assert_raises(Lessons::Directives::Refused) { build("dialogue", nil, "title_it: x\n") }.message) }
     assert_match(/page block is not available/, assert_raises(Lessons::Directives::Refused) { build("page", nil, "key: x\n") }.message)
     assert_match(/check component amount_words/, assert_raises(Lessons::Directives::Refused) { build("check", "amount_words", "prompt_it: x\n") }.message)
     assert_match(/flow walk/, assert_raises(Lessons::Directives::Refused) { build("diagram", "flow", "walk: true\nnodes: []\n") }.message)
     assert_match(/check option contractions/, assert_raises(Lessons::Directives::Refused) { build("check", "normalized_text", "prompt_it: x\nanswer: y\ncontractions: en\n") }.message)
     assert_equal "choice", build("check", "choice", "prompt_it: x\nlisten: {text_en: hello}\n")[0]["component"], "listen is available (T2)"
     assert_match(/unknown block type "venn"/, assert_raises(Lessons::Directives::Refused) { build("venn", nil, "a: 1\n") }.message)
-    block, = build("dialogue", nil, "title_it: x\n", allow_reserved: true)
-    assert_equal "dialogue", block["type"]
+    block, = build("page", nil, "key: x\n", allow_reserved: true)
+    assert_equal "page", block["type"]
+    assert_equal "dialogue", build("dialogue", nil, "title_it: x\n")[0]["type"], "dialogue is available (T3)"
     assert_equal "flow", build("diagram", "flow", "layout: tree\n")[0]["diagram"]["type"]
     assert_equal "choice", build("check", "choice", "prompt_it: x\n")[0]["component"]
   end
@@ -190,7 +191,8 @@ class LessonTypesTest < ActiveSupport::TestCase
     message = assert_raises(Lessons::Directives::Refused) { build("venn", nil, "a: 1\n") }.message
     assert_includes message, "callout"
     assert_includes message, "try"
-    assert_not_includes message, "dialogue"
+    assert_not_includes message, "page"
+    assert_includes message, "dialogue"
     assert_includes message, "reveal"
   end
 

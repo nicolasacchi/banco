@@ -1,61 +1,1287 @@
 {
- "version": 1,
- "type": "word_parts",
- "status": "reserved",
- "batch": "w2-1",
- "track": "T3",
- "provisional": false,
- "description": "Skeleton of W2-0 for the track T3: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
- "vectors": [
-  {
-   "name": "word_parts-example-1",
-   "subject": "biology",
-   "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
-   "data": {
-    "type": "word_parts",
-    "alt_it": "La parola eucariote spezzata in due pezzi: eu, che vuol dire vero, e cariote, che vuol dire nucleo. Insieme: con un vero nucleo.",
-    "view": "decode",
-    "words": [
-     {
-      "form_it": "eu|cariote",
-      "parts_it": [
-       "vero, bene",
-       "nucleo"
-      ],
-      "meaning_it": "con un vero nucleo",
-      "syllables": "eu-ca-ri-o-te",
-      "stress": 4
-     }
-    ],
-    "arrows": []
-   }
-  },
-  {
-   "name": "word_parts-unknown-field",
-   "subject": "biology",
-   "schema": "invalid",
-   "semantic": "ok",
-   "data": {
-    "type": "word_parts",
-    "alt_it": "La parola eucariote spezzata in due pezzi: eu, che vuol dire vero, e cariote, che vuol dire nucleo. Insieme: con un vero nucleo.",
-    "view": "decode",
-    "words": [
-     {
-      "form_it": "eu|cariote",
-      "parts_it": [
-       "vero, bene",
-       "nucleo"
-      ],
-      "meaning_it": "con un vero nucleo",
-      "syllables": "eu-ca-ri-o-te",
-      "stress": 4
-     }
-    ],
-    "arrows": [],
-    "zzz_unknown_field": true
-   }
-  }
- ]
+  "version": 1,
+  "type": "word_parts",
+  "status": "available",
+  "batch": "w2-1",
+  "track": "T3",
+  "provisional": false,
+  "description": "The vectors of word_parts (T3), run both ways (schema, semantic, layout). The semantic column and its path are written by hand from the rules; 'printed' (what each state prints, describe included) and 'targets' (the stored ids a select check can name, in reading order) are what Ruby computes and the browser must agree with.",
+  "vectors": [
+    {
+      "name": "word_parts-decode-eucariote",
+      "subject": "biology",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "La parola eucariote spezzata in due pezzi: eu, che vuol dire vero, e cariote, che vuol dire nucleo. Insieme: con un vero nucleo.",
+        "view": "decode",
+        "words": [
+          {
+            "form_it": "eu|cariote",
+            "parts_it": [
+              "vero, bene",
+              "nucleo"
+            ],
+            "meaning_it": "con un vero nucleo"
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "eucariote",
+            "eu",
+            "cariote",
+            "vero, bene",
+            "nucleo",
+            "con un vero nucleo",
+            "La parola eucariote è fatta di 2 pezzi: eu vuol dire vero, bene; cariote vuol dire nucleo. Tutto insieme: con un vero nucleo."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "w1p1",
+            "w1p2"
+          ],
+          "syllables": []
+        }
+      }
+    },
+    {
+      "name": "word_parts-decode-three-pieces",
+      "subject": "biology",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "La parola microbiologia in tre pezzi: micro vuol dire piccolo, bio vuol dire vita, logia vuol dire studio.",
+        "view": "decode",
+        "words": [
+          {
+            "form_it": "micro|bio|logia",
+            "parts_it": [
+              "piccolo",
+              "vita",
+              "studio"
+            ],
+            "meaning_it": "lo studio delle cose piccole che vivono",
+            "label_it": "una parola lunga"
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "microbiologia",
+            "micro",
+            "bio",
+            "logia",
+            "piccolo",
+            "vita",
+            "studio",
+            "lo studio delle cose piccole che vivono",
+            "una parola lunga",
+            "La parola microbiologia è fatta di 3 pezzi: micro vuol dire piccolo; bio vuol dire vita; logia vuol dire studio. Tutto insieme: lo studio delle cose piccole che vivono. una parola lunga."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "w1p1",
+            "w1p2",
+            "w1p3"
+          ],
+          "syllables": []
+        }
+      }
+    },
+    {
+      "name": "word_parts-decode-states",
+      "subject": "biology",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Due parole fatte di pezzi: eucariote, con un vero nucleo, e procariote, prima del nucleo.",
+        "view": "decode",
+        "words": [
+          {
+            "form_it": "eu|cariote",
+            "parts_it": [
+              "vero, bene",
+              "nucleo"
+            ],
+            "meaning_it": "con un vero nucleo"
+          }
+        ],
+        "states": [
+          {},
+          {
+            "words": [
+              {
+                "form_it": "pro|cariote",
+                "parts_it": [
+                  "prima",
+                  "nucleo"
+                ],
+                "meaning_it": "prima del nucleo"
+              }
+            ],
+            "op_it": "Ora procariote"
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "eucariote",
+            "eu",
+            "cariote",
+            "vero, bene",
+            "nucleo",
+            "con un vero nucleo",
+            "La parola eucariote è fatta di 2 pezzi: eu vuol dire vero, bene; cariote vuol dire nucleo. Tutto insieme: con un vero nucleo."
+          ],
+          [
+            "procariote",
+            "pro",
+            "cariote",
+            "prima",
+            "nucleo",
+            "prima del nucleo",
+            "Ora procariote",
+            "La parola procariote è fatta di 2 pezzi: pro vuol dire prima; cariote vuol dire nucleo. Tutto insieme: prima del nucleo."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "w1p1",
+            "w1p2"
+          ],
+          "syllables": []
+        }
+      }
+    },
+    {
+      "name": "word_parts-syllables-spanish",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Le parole queremos e canción divise in sillabe, con la sillaba dove batte la voce più alta e un punto sopra.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "queremos"
+          },
+          {
+            "form_es": "canción"
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "queremos",
+            "que",
+            "re",
+            "mos",
+            "que-re-mos",
+            "canción",
+            "can",
+            "ción",
+            "can-ción",
+            "Parola 1: La parola queremos ha 3 sillabe: que, re, mos. La voce batte sulla sillaba numero 2: re. Parola 2: La parola canción ha 2 sillabe: can, ción. La voce batte sulla sillaba numero 2: ción."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "w1p1",
+            "w2p1"
+          ],
+          "syllables": [
+            "w1s1",
+            "w1s2",
+            "w1s3",
+            "w2s1",
+            "w2s2"
+          ]
+        }
+      }
+    },
+    {
+      "name": "word_parts-syllables-attached",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Dar con lo fa darlo: due sillabe, la voce batte su dar, niente tilde. Dar con se e lo fa dárselo: tre sillabe, la voce batte su dár, serve la tilde.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "dar+lo",
+            "label_it": "un pronome"
+          },
+          {
+            "form_es": "dár+se+lo",
+            "label_it": "due pronomi"
+          }
+        ],
+        "arrows": [
+          {
+            "from": 0,
+            "to": 1,
+            "label_it": "con se"
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "darlo",
+            "dar",
+            "lo",
+            "un pronome",
+            "dar-lo",
+            "radice",
+            "pezzo attaccato",
+            "dárselo",
+            "dár",
+            "se",
+            "due pronomi",
+            "dár-se-lo",
+            "con se",
+            "Parola 1: La parola darlo ha 2 sillabe: dar, lo. La voce batte sulla sillaba numero 1: dar. Pezzi: dar (radice), lo (pezzo attaccato). un pronome. Parola 2: La parola dárselo ha 3 sillabe: dár, se, lo. La voce batte sulla sillaba numero 1: dár. Pezzi: dár (radice), se (pezzo attaccato), lo (pezzo attaccato). due pronomi. Da parola 1 a parola 2: con se."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "w1p1",
+            "w1p2",
+            "w2p1",
+            "w2p2",
+            "w2p3"
+          ],
+          "syllables": [
+            "w1s1",
+            "w1s2",
+            "w2s1",
+            "w2s2",
+            "w2s3"
+          ]
+        }
+      }
+    },
+    {
+      "name": "word_parts-syllables-stem-change",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Puedo e podemos: la radice cambia dove batte la voce. In puedo la voce batte su pue, in podemos su de.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "p[ue]d|o",
+            "label_it": "yo"
+          },
+          {
+            "form_es": "pod|emos",
+            "label_it": "nosotros"
+          }
+        ],
+        "arrows": [
+          {
+            "from": 0,
+            "to": 1,
+            "label_it": "cambia persona"
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "puedo",
+            "pued",
+            "o",
+            "yo",
+            "pue",
+            "do",
+            "pue-do",
+            "radice",
+            "lettere che cambiano",
+            "desinenza",
+            "podemos",
+            "pod",
+            "emos",
+            "nosotros",
+            "po",
+            "de",
+            "mos",
+            "po-de-mos",
+            "cambia persona",
+            "Parola 1: La parola puedo ha 2 sillabe: pue, do. La voce batte sulla sillaba numero 1: pue. Pezzi: p (radice), ue (lettere che cambiano), d (radice), o (desinenza). yo. Parola 2: La parola podemos ha 3 sillabe: po, de, mos. La voce batte sulla sillaba numero 2: de. Pezzi: pod (radice), emos (desinenza). nosotros. Da parola 1 a parola 2: cambia persona."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "w1p1",
+            "w1p2",
+            "w2p1",
+            "w2p2"
+          ],
+          "syllables": [
+            "w1s1",
+            "w1s2",
+            "w2s1",
+            "w2s2",
+            "w2s3"
+          ]
+        }
+      }
+    },
+    {
+      "name": "word_parts-syllables-english",
+      "subject": "english",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Le parole happy e about divise in sillabe. In happy la voce batte sulla prima sillaba, in about sulla seconda.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_en": "hap|py",
+            "syllables": "hap-py",
+            "stress": 1
+          },
+          {
+            "form_en": "a|bout",
+            "syllables": "a-bout",
+            "stress": 2
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "happy",
+            "hap",
+            "py",
+            "hap-py",
+            "radice",
+            "desinenza",
+            "about",
+            "a",
+            "bout",
+            "a-bout",
+            "Parola 1: La parola happy ha 2 sillabe: hap, py. La voce batte sulla sillaba numero 1: hap. Pezzi: hap (radice), py (desinenza). Parola 2: La parola about ha 2 sillabe: a, bout. La voce batte sulla sillaba numero 2: bout. Pezzi: a (radice), bout (desinenza)."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "w1p1",
+            "w1p2",
+            "w2p1",
+            "w2p2"
+          ],
+          "syllables": [
+            "w1s1",
+            "w1s2",
+            "w2s1",
+            "w2s2"
+          ]
+        }
+      }
+    },
+    {
+      "name": "word_parts-syllables-latin",
+      "subject": "biology",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "La parola latina nucleus in tre sillabe: nu, cle, us. La voce batte sulla sillaba di mezzo.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_la": "nucleus",
+            "syllables": "nu-cle-us",
+            "stress": 2
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "nucleus",
+            "nu",
+            "cle",
+            "us",
+            "nu-cle-us",
+            "La parola nucleus ha 3 sillabe: nu, cle, us. La voce batte sulla sillaba numero 2: cle."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "w1p1"
+          ],
+          "syllables": [
+            "w1s1",
+            "w1s2",
+            "w1s3"
+          ]
+        }
+      }
+    },
+    {
+      "name": "word_parts-syllables-italian",
+      "subject": "italian",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "La parola microscopio in quattro sillabe: mi, cro, sco, pio. La voce batte sulla terza sillaba, sco.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_it": "micro|scopio",
+            "syllables": "mi-cro-sco-pio",
+            "stress": 3
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "microscopio",
+            "micro",
+            "scopio",
+            "mi",
+            "cro",
+            "sco",
+            "pio",
+            "mi-cro-sco-pio",
+            "radice",
+            "desinenza",
+            "La parola microscopio ha 4 sillabe: mi, cro, sco, pio. La voce batte sulla sillaba numero 3: sco. Pezzi: micro (radice), scopio (desinenza)."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "w1p1",
+            "w1p2"
+          ],
+          "syllables": [
+            "w1s1",
+            "w1s2",
+            "w1s3",
+            "w1s4"
+          ]
+        }
+      }
+    },
+    {
+      "name": "word_parts-states-three",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "La parola explicar, e poi explicárselo: la voce resta sulla stessa sillaba e la tilde segue la voce.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "explicar"
+          }
+        ],
+        "states": [
+          {},
+          {
+            "words": [
+              {
+                "form_es": "explicar+se"
+              }
+            ]
+          },
+          {
+            "words": [
+              {
+                "form_es": "explicár+se+lo"
+              }
+            ],
+            "op_it": "Con se e lo"
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "explicar",
+            "ex",
+            "pli",
+            "car",
+            "ex-pli-car",
+            "La parola explicar ha 3 sillabe: ex, pli, car. La voce batte sulla sillaba numero 3: car."
+          ],
+          [
+            "explicarse",
+            "explicar",
+            "se",
+            "ex",
+            "pli",
+            "car",
+            "ex-pli-car-se",
+            "radice",
+            "pezzo attaccato",
+            "La parola explicarse ha 4 sillabe: ex, pli, car, se. La voce batte sulla sillaba numero 3: car. Pezzi: explicar (radice), se (pezzo attaccato)."
+          ],
+          [
+            "explicárselo",
+            "explicár",
+            "se",
+            "lo",
+            "ex",
+            "pli",
+            "cár",
+            "ex-pli-cár-se-lo",
+            "radice",
+            "pezzo attaccato",
+            "Con se e lo",
+            "La parola explicárselo ha 5 sillabe: ex, pli, cár, se, lo. La voce batte sulla sillaba numero 3: cár. Pezzi: explicár (radice), se (pezzo attaccato), lo (pezzo attaccato)."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "w1p1"
+          ],
+          "syllables": [
+            "w1s1",
+            "w1s2",
+            "w1s3"
+          ]
+        }
+      }
+    },
+    {
+      "name": "word_parts-language-not-taught",
+      "subject": "english",
+      "schema": "valid",
+      "semantic": "E-LESSON-LANG",
+      "path": "/words/0/form_es",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "queremos"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-two-languages",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-LANG",
+      "path": "/words",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "queremos"
+          },
+          {
+            "form_en": "happy",
+            "syllables": "hap-py",
+            "stress": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-two-forms-in-a-word",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "queremos",
+            "form_la": "queremos"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-no-form",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "label_it": "senza parola"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-notation-refused",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/form_es",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "dar|"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-too-many-letters",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/form_es",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "esternocleidomastoideo"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-too-many-pieces",
+      "subject": "biology",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/form_it",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "decode",
+        "words": [
+          {
+            "form_it": "a|b|c|d|e",
+            "parts_it": [
+              "uno",
+              "due",
+              "tre",
+              "quattro"
+            ],
+            "meaning_it": "cinque pezzi"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-decode-without-parts",
+      "subject": "biology",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/parts_it",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "decode",
+        "words": [
+          {
+            "form_it": "eu|cariote",
+            "meaning_it": "con un vero nucleo"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-decode-parts-count",
+      "subject": "biology",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/parts_it",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "decode",
+        "words": [
+          {
+            "form_it": "eu|cariote",
+            "parts_it": [
+              "vero"
+            ],
+            "meaning_it": "con un vero nucleo"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-decode-without-meaning",
+      "subject": "biology",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/meaning_it",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "decode",
+        "words": [
+          {
+            "form_it": "eu|cariote",
+            "parts_it": [
+              "vero",
+              "nucleo"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-meaning-too-long",
+      "subject": "biology",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/meaning_it",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "decode",
+        "words": [
+          {
+            "form_it": "eu|cariote",
+            "parts_it": [
+              "vero",
+              "nucleo"
+            ],
+            "meaning_it": "una parola che vuol dire proprio tanto di quello che ha un vero nucleo dentro"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-parts-in-syllables-view",
+      "subject": "biology",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/parts_it",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_la": "nucleus",
+            "syllables": "nu-cle-us",
+            "stress": 2,
+            "parts_it": [
+              "nocciolo"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-history-fields-in-decode",
+      "subject": "biology",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/then_it",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "decode",
+        "words": [
+          {
+            "form_it": "eu|cariote",
+            "parts_it": [
+              "vero",
+              "nucleo"
+            ],
+            "meaning_it": "con un vero nucleo",
+            "then_it": "prima"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-syllables-do-not-join",
+      "subject": "english",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/syllables",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_en": "happy",
+            "syllables": "hap-pi",
+            "stress": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-syllables-missing",
+      "subject": "english",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/syllables",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_en": "happy"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-stress-missing",
+      "subject": "english",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/stress",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_en": "happy",
+            "syllables": "hap-py"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-stress-out-of-range",
+      "subject": "english",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/stress",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_en": "happy",
+            "syllables": "hap-py",
+            "stress": 3
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-spanish-syllables-written-wrong",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/syllables",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "queremos",
+            "syllables": "que-remos"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-spanish-stress-written-wrong",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/stress",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "queremos",
+            "stress": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-tilde-not-needed",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/form_es",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "fué"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-tilde-on-the-wrong-syllable",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/form_es",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "camára"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-esdrujula-without-tilde",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/form_es",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "dar+se+lo"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-attached-tilde-not-needed",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/form_es",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "dár+lo"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-attached-tilde-on-the-wrong-piece",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/form_es",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "dar+sé+lo"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-arrow-not-to-the-next",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/arrows/0",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "dar"
+          },
+          {
+            "form_es": "darlo"
+          },
+          {
+            "form_es": "dárselo"
+          }
+        ],
+        "arrows": [
+          {
+            "from": 0,
+            "to": 2
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-arrow-out-of-range",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/arrows/0",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "dar"
+          }
+        ],
+        "arrows": [
+          {
+            "from": 0,
+            "to": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-two-arrows-leave-a-word",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/arrows/1",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "dar"
+          },
+          {
+            "form_es": "darlo"
+          }
+        ],
+        "arrows": [
+          {
+            "from": 0,
+            "to": 1
+          },
+          {
+            "from": 0,
+            "to": 1,
+            "label_it": "ancora"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-states-change-the-word-count",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/states/1/words",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "dar"
+          }
+        ],
+        "states": [
+          {},
+          {
+            "words": [
+              {
+                "form_es": "dar"
+              },
+              {
+                "form_es": "darlo"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-states-change-the-language",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-LANG",
+      "path": "/states",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "dar"
+          }
+        ],
+        "states": [
+          {},
+          {
+            "words": [
+              {
+                "form_la": "dare",
+                "syllables": "da-re",
+                "stress": 1
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-unknown-field",
+      "subject": "spanish",
+      "schema": "invalid",
+      "semantic": "ok",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "queremos"
+          },
+          {
+            "form_es": "canción"
+          }
+        ],
+        "zzz_unknown_field": true
+      }
+    },
+    {
+      "name": "word_parts-unknown-view",
+      "subject": "spanish",
+      "schema": "invalid",
+      "semantic": "ok",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "sounds",
+        "words": [
+          {
+            "form_es": "queremos"
+          },
+          {
+            "form_es": "canción"
+          }
+        ]
+      }
+    },
+    {
+      "name": "word_parts-no-words",
+      "subject": "spanish",
+      "schema": "invalid",
+      "semantic": "ok",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": []
+      }
+    },
+    {
+      "name": "word_parts-five-words",
+      "subject": "spanish",
+      "schema": "invalid",
+      "semantic": "ok",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "a"
+          },
+          {
+            "form_es": "b"
+          },
+          {
+            "form_es": "c"
+          },
+          {
+            "form_es": "d"
+          },
+          {
+            "form_es": "e"
+          }
+        ]
+      }
+    }
+  ]
 }

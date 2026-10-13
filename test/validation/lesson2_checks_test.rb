@@ -104,7 +104,8 @@ class Lesson2ChecksTest < ActiveSupport::TestCase
     companions = { "bad/cards-two-summaries.md" => %w[E-LESSON-MAP], "bad/card-callout-words.md" => %w[E-READ], "bad/checks-too-few.md" => %w[W-LESSON-CHECKS-SPARSE],
                    "bad/visuals-thirteen.md" => %w[E-CARD-BLOCKS], "bad/front-kind-disagrees-with-key.md" => %w[E-LESSON-REFS], "bad/front-book-too-long.md" => %w[E-READ],
                    "bad/bold-too-much.md" => %w[E-READ],
-                   "bad/lang-level-word.md" => %w[E-LESSON-LANG], "bad/chem-symbol-unknown.md" => %w[E-LESSON-MARKUP] }
+                   "bad/lang-level-word.md" => %w[E-LESSON-LANG], "bad/chem-symbol-unknown.md" => %w[E-LESSON-MARKUP],
+                   "bad/dialogue-es-tilde-not-needed.md" => %w[E-LESSON-LANG], "bad/dialogue-apparatus-words.md" => %w[E-LESSON-LANG] }
     F::MANIFEST["bad"].each do |bad|
       next if bad["file"].nil? || bad["code"] == "E-LESSON-SCHEMA" || bad["pad_front_matter_bytes"]
 

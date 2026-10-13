@@ -820,6 +820,30 @@
    "line": null,
    "construct": "glossary",
    "note": "T2 (D-281): twelve glossary terms of 21 words listed under one card are 252 words open by default (at most 250)"
+  },
+  {
+   "file": "bad/dialogue-language-not-taught.md",
+   "base": "base.md",
+   "code": "E-LESSON-LANG",
+   "line": 68,
+   "construct": "block dialogue",
+   "note": "a dialogue in Spanish (text_es) in a lesson of a subject that does not teach it (T3, dialogue; the same code covers two target languages in one figure, test/validation/lesson_checks_wave2_test.rb)"
+  },
+  {
+   "file": "bad/dialogue-es-tilde-not-needed.md",
+   "base": "base.md",
+   "code": "W-ES-TILDE",
+   "line": 68,
+   "construct": "block dialogue",
+   "note": "a Spanish dialogue line with a tilde the stress rule does not need (fué); the subject is math only to keep the base, so E-LESSON-LANG comes with it"
+  },
+  {
+   "file": "bad/dialogue-apparatus-words.md",
+   "base": "base.md",
+   "code": "E-LESSON-APPARATUS-WORDS",
+   "line": null,
+   "construct": "block dialogue",
+   "note": "two dialogues of 12 lines of 12 words (288 words) open by default on top of the prose; the subject is math only to keep the base, so E-LESSON-LANG comes with it"
   }
  ],
  "pending": {
@@ -849,15 +873,6 @@
     "track": "T9",
     "base": "base.md",
     "change": "a program with a loop that never ends and no endless flag (render check)"
-   },
-   {
-    "code": "W-ES-TILDE",
-    "needs": [
-     "block:dialogue"
-    ],
-    "track": "T3",
-    "base": "base.md",
-    "change": "a Spanish word written with a tilde that the stress rule does not need"
    }
   ]
  }

@@ -69,9 +69,9 @@ diagrams:
   sheet: {family: computing, status: reserved, schema: none, batch: w2-3, track: T9, size: L, module: lesson/diagrams/computing/sheet}
 
   # ---- words and languages (T3)
-  word_parts: {family: words, status: reserved, schema: final, batch: w2-1, track: T3, size: M, module: lesson/diagrams/words/word_parts,
+  word_parts: {family: words, status: available, schema: final, batch: w2-1, track: T3, size: M, module: lesson/diagrams/words/word_parts,
     views: {view: {history: {status: draft, schema: draft, batch: w2-2}}}}
-  mirror: {family: words, status: reserved, schema: final, batch: w2-1, track: T3, size: M, module: lesson/diagrams/words/mirror}
+  mirror: {family: words, status: available, schema: final, batch: w2-1, track: T3, size: M, module: lesson/diagrams/words/mirror}
 
   # ---- documents (T8)
   document: {family: docs, status: available, schema: final, batch: w2-1, track: T8, size: M, module: lesson/diagrams/docs/document,
@@ -115,7 +115,7 @@ blocks:
     views: {kind: {written: {status: draft, schema: draft, batch: w2-2}, iconographic: {status: draft, schema: draft, batch: w2-2}, material: {status: draft, schema: draft, batch: w2-2}}}}
   reveal: {family: docs, status: available, schema: final, batch: w2-1, track: T8, module: lesson/blocks/reveal}
   oral: {family: docs, status: available, schema: final, batch: w2-1, track: T8, module: lesson/blocks/oral}
-  dialogue: {family: words, status: reserved, schema: final, batch: w2-1, track: T3, module: lesson/blocks/dialogue}
+  dialogue: {family: words, status: available, schema: final, batch: w2-1, track: T3, module: lesson/blocks/dialogue}
   image: {family: docs, status: draft, schema: draft, batch: w2-2, track: T8, module: lesson/blocks/image}
   page: {family: pages, status: reserved, schema: none, batch: r2, track: T11, module: lesson/blocks/page}
 

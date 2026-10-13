@@ -121,5 +121,50 @@
   "references": {
    "codice-di-prova": "Art. 1. Il venditore consegna la merce nel luogo e nel giorno indicati nel contratto. Se il compratore non ritira la merce entro cinque giorni dalla consegna, il venditore può depositarla a spese del compratore e avvisarlo subito.\nArt. 2. Il compratore paga il prezzo alla scadenza indicata nella fattura."
   }
+ },
+ "spanish": {
+  "subject": "spanish",
+  "skills": [
+   "spanish.gallery"
+  ],
+  "error_codes": [
+   "es_stress_first",
+   "es_tilde_missing"
+  ],
+  "source_lines": [
+   {
+    "source": "gallery-2026",
+    "line": 1,
+    "text": "parole"
+   }
+  ],
+  "topics": [
+   "ripasso.spanish.gallery-words"
+  ],
+  "lesson_files": [
+   "gallery/words.md"
+  ]
+ },
+ "english": {
+  "subject": "english",
+  "skills": [
+   "english.gallery"
+  ],
+  "error_codes": [
+   "en_stress_wrong"
+  ],
+  "source_lines": [
+   {
+    "source": "gallery-2026",
+    "line": 1,
+    "text": "words"
+   }
+  ],
+  "topics": [
+   "ripasso.english.gallery-words"
+  ],
+  "lesson_files": [
+   "gallery/words-english.md"
+  ]
  }
 }

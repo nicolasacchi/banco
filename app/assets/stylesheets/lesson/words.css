@@ -2,3 +2,100 @@
    Linked on a page only when the lesson uses one of these types (the page head reads the body), never by hand.
    Rules: colours only through the role classes (.role-x, .mk-x, .st-x, .fl-x, .tn-x) and the theme variables of
    lesson_roles.css; no colour alone (A4); a forced-colors block per type; print rules for P1 to P6; targets at least 24 px. */
+
+/* ---- shared: a plate behind a word laid over a line, the numbered plates, the arrow */
+.dg-word_parts .dg-plate, .dg-mirror .dg-plate { background: var(--surface); box-shadow: 0 0 0 4px var(--surface); border-radius: 4px; }
+.dg-word_parts .dg-arrowhead, .dg-mirror .dg-arrowhead { fill: var(--text); stroke: none; }
+.dg-wp-arrow { fill: none; stroke: var(--text); stroke-width: 3; stroke-linecap: round; }
+.dg-label.dg-wp-arrowlabel { font-weight: 700; color: var(--text); }
+
+/* ---- word_parts: pieces glued into one word, syllables under it, the strong one taller with a dot */
+.dg-wp-box { fill: var(--surface); stroke: var(--text); stroke-width: 2.5; }
+.dg-wp-a { fill: color-mix(in srgb, var(--primary) 12%, var(--surface)); }
+.dg-wp-b { fill: var(--surface); }
+.dg-wp-change { fill: var(--r-common-highlight-tint, #fff1a8); }
+.dg-wp-neutral { fill: var(--surface); stroke: var(--text); }
+.dg-wp-strong { fill: color-mix(in srgb, var(--primary) 14%, var(--surface)); stroke-width: 4; }
+.dg-wp-dot { fill: var(--text); stroke: none; }
+.dg-wp-ul { fill: none; stroke: var(--text); stroke-width: 5; stroke-linecap: butt; }
+.dg-wp-ul-ending { stroke-dasharray: 12 6; }
+.dg-wp-ul-attached { stroke-dasharray: 3 7; stroke-linecap: round; }
+.dg-wp-ul-change { stroke: none; }
+.dg-wp-note { fill: color-mix(in srgb, var(--primary) 8%, var(--surface)); stroke: var(--primary); stroke-width: 2; }
+.dg-label.dg-wp-text { color: var(--text); text-align: center; white-space: nowrap; }
+.dg-label.dg-wp-bold { font-weight: 800; }
+.dg-label.dg-wp-chip { font-weight: 700; color: var(--text); }
+.dg-label.dg-wp-meaning, .dg-label.dg-wp-notetext { color: var(--text); }
+.dg-label.dg-wp-caption, .dg-label.dg-wp-key { color: var(--muted); text-align: center; }
+.dg-label.dg-wp-key { text-align: left; }
+.dg-word_parts .dg-target-ic { color: var(--text); }
+
+@media (forced-colors: active) {
+  .dg-wp-box, .dg-wp-neutral { fill: Canvas; stroke: CanvasText; }
+  .dg-wp-change { fill: Highlight; }
+  .dg-wp-dot, .dg-word_parts .dg-arrowhead, .dg-mirror .dg-arrowhead { fill: CanvasText; }
+  .dg-wp-ul, .dg-wp-arrow { stroke: CanvasText; }
+  .dg-wp-note { fill: Canvas; stroke: CanvasText; }
+  .dg-word_parts .dg-plate, .dg-mirror .dg-plate { background: Canvas; box-shadow: 0 0 0 4px Canvas; }
+}
+
+/* ---- mirror: two lines of boxes, the links between them told apart by line and mark */
+.dg-mr-box { fill: var(--surface); stroke: var(--text); stroke-width: 2.5; }
+.dg-mr-neutral { fill: var(--surface); stroke: var(--text); }
+.dg-mr-link { fill: none; stroke: var(--text); stroke-width: 3; stroke-linecap: round; }
+.dg-mr-shift { stroke-dasharray: 10 7; }
+.dg-mr-false_friend { stroke-dasharray: 2 8; stroke-width: 4; }
+.dg-mr-mark { fill: var(--text); stroke: var(--surface); stroke-width: 2; }
+.dg-label.dg-mr-text { color: var(--text); text-align: center; }
+.dg-label.dg-mr-side, .dg-label.dg-mr-kind, .dg-label.dg-mr-key, .dg-label.dg-mr-none { color: var(--muted); }
+.dg-label.dg-mr-title { font-weight: 800; color: var(--text); }
+.dg-label.dg-mr-notepiece { font-weight: 700; color: var(--text); }
+.dg-label.dg-mr-note { color: var(--text); }
+.dg-mirror .dg-numplate { fill: var(--primary); stroke: none; }
+.dg-mirror .dg-numlabel, .dg-mirror .dg-label.dg-numlabel { color: var(--primary-text); font-weight: 700; text-align: center; }
+
+@media (forced-colors: active) {
+  .dg-mr-box, .dg-mr-neutral { fill: Canvas; stroke: CanvasText; }
+  .dg-mr-link { stroke: CanvasText; }
+  .dg-mr-mark { fill: CanvasText; stroke: Canvas; }
+  .dg-mirror .dg-numplate { fill: CanvasText; }
+}
+
+/* ---- dialogue: chat rows, the speaker's initial, an IT button that opens one gloss */
+.dialogue { border: 2px solid var(--line); border-radius: 14px; padding: 0.8em 0.9em 1em; background: var(--surface); }
+.dialogue-head { display: flex; align-items: center; gap: 0.5em; margin-bottom: 0.4em; }
+.dialogue-ic { width: 1.3em; height: 1.3em; color: var(--text); }
+.dialogue-bar { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0.2em 0 0.8em; }
+.dialogue-bar [hidden], .dialogue-say[hidden] { display: none; }
+.dialogue-bar button { min-height: 44px; }
+.dialogue-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.7em; }
+.dialogue-line { display: flex; align-items: flex-start; gap: 0.5em; max-width: 100%; }
+.dialogue-line.dialogue-side-b { flex-direction: row-reverse; }
+.dialogue-initial { flex: none; display: inline-grid; place-items: center; width: 2em; height: 2em; border-radius: 50%; border: 2px solid var(--text); font-weight: 800; background: var(--bg); color: var(--text); }
+.dialogue-side-b .dialogue-initial { border-radius: 8px; }
+.dialogue-bubble { min-width: 0; flex: 0 1 34em; background: var(--bg); border: 2px solid var(--line); border-radius: 4px 14px 14px 14px; padding: 0.4em 0.7em 0.5em; }
+.dialogue-side-b .dialogue-bubble { border-radius: 14px 4px 14px 14px; }
+.dialogue-name { display: block; font-size: 0.85em; font-weight: 700; color: var(--muted); }
+.dialogue-text { margin: 0.1em 0 0; font-weight: 600; overflow-wrap: anywhere; }
+.dialogue-text[hidden], .dialogue-hidden-text[hidden] { display: none; }
+.dialogue-hidden-text { margin: 0.1em 0 0; color: var(--muted); font-style: italic; }
+.dialogue-tools { display: flex; gap: 0.4em; margin-top: 0.3em; }
+.dialogue-it, .dialogue-say { min-width: 44px; min-height: 44px; border: 2px solid var(--text); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; font-weight: 800; cursor: pointer; }
+.dialogue-it[aria-expanded="true"] { background: var(--text); color: var(--surface); }
+.dialogue-say-ic { width: 1.2em; height: 1.2em; }
+.dialogue-gloss { margin: 0.4em 0 0; padding: 0.3em 0.6em; border-left: 4px solid var(--primary); background: color-mix(in srgb, var(--primary) 8%, var(--surface)); }
+.dialogue-gloss[hidden] { display: none; }
+.dialogue-line.is-reading .dialogue-bubble { border-color: var(--primary); border-width: 4px; }
+
+@media (max-width: 520px) { .dialogue-line.dialogue-side-b { flex-direction: row; } }
+@media (forced-colors: active) {
+  .dialogue, .dialogue-bubble, .dialogue-initial, .dialogue-it, .dialogue-say { border-color: CanvasText; background: Canvas; color: CanvasText; }
+  .dialogue-it[aria-expanded="true"] { background: Highlight; color: HighlightText; }
+}
+@media print {
+  .dialogue-bar, .dialogue-tools { display: none; }
+  /* the page hides [hidden] with !important: the glosses and the transcript are open on paper */
+  .l2 .dialogue-gloss[hidden], .l2 .dialogue-text[hidden] { display: block !important; }
+  .l2 .dialogue-hidden-text { display: none !important; }
+  .dialogue-bubble { break-inside: avoid; }
+}

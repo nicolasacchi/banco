@@ -38,7 +38,9 @@ module Lessons
       "table" => [ %w[n type caption_it header rows], {} ],
       # wave 2, the docs family (T8): teaching content, served whole (L8); the oral and the compare of a source are special below
       "source" => [ %w[n type kind title_it ref open author_it year about_year for_whom_it where_it translation original], { "parts" => %w[text_it plain_it marks], "guide" => %w[span_it note_it] } ],
-      "reveal" => [ %w[n type prompt_it answer_it year who_it situation_it real_it], { "options" => %w[id text_it then_it real] } ]
+      "reveal" => [ %w[n type prompt_it answer_it year who_it situation_it real_it], { "options" => %w[id text_it then_it real] } ],
+      # words (T3): the glosses are teaching content, served whole (L8), and read aloud only after the student opens them
+      "dialogue" => [ %w[n type title_it speakers transcript], { "lines" => %w[speaker text_en text_es gloss_it] } ]
     }.freeze
     SOURCE_COMPARE = %w[title_it author_it year about_year for_whom_it where_it translation original].freeze
     CASE_FIELDS = %w[title_it icon tone condition_it text_it example_it].freeze

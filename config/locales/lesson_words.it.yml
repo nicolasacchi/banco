@@ -1,4 +1,34 @@
 # Italian texts of the lesson/2 family words (paradigm, word_parts, mirror, dialogue): controls, live-region sentences, "Descrizione" fragments, how-to lines.
-# Keys are English; texts are Italian with high readability (short sentences, no hard words). The track fills it in.
+# Keys are English; texts are Italian with high readability (short sentences, no hard words).
+# `scene` is the twin of app/javascript/lesson/diagrams/words/texts.js (words_texts.test.mjs compares them); `dialogue` is read by the block.
 it:
-  lesson_words: {}
+  lesson_words:
+    scene:
+      together: "Tutto insieme"
+      strong_key: "Qui batte la voce"
+      mark_stem: "radice"
+      mark_ending: "desinenza"
+      mark_change: "lettere che cambiano"
+      mark_attached: "pezzo attaccato"
+      link_same: "uguale"
+      link_shift: "cambia"
+      link_false_friend: "falso amico"
+      link_none: "senza coppia"
+      italian_side: "Italiano"
+      english_side: "Inglese"
+      spanish_side: "Spagnolo"
+      pair_number: "Coppia"
+      note_label: "Nota"
+    dialogue:
+      gloss_open: "IT"
+      gloss_hide: "Nascondi"
+      gloss_open_label: "IT: mostra in italiano"
+      gloss_hide_label: "Nascondi l'italiano"
+      listen_all: "Ascolta tutto"
+      stop: "Ferma"
+      slower: "Più lento"
+      transcript_show: "Mostra il testo"
+      transcript_hide: "Nascondi il testo"
+      hidden_line: "Riga %{n} (testo nascosto)"
+      line_label: "Riga %{n}, %{name}"
+      speak_line: "Ascolta la riga"
