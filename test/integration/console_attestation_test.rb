@@ -73,7 +73,7 @@ class ConsoleAttestationTest < ActionDispatch::IntegrationTest
     assert_no_difference "Decision.count" do
       result = attest(kind: "approve_skill_graph", subject: "math")
       assert_not result.ok
-      assert_includes result.errors.first, "only for approve_topic"
+      assert_includes result.errors.first, "only for approve_topic and approve_blueprint"
     end
   end
 

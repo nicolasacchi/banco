@@ -102,7 +102,6 @@ it:
         release_ready: "Puoi aprire la diagnosi."
       missing:
         consent: "il consenso"
-        warmup: "la prova dei comandi"
       clear_of:
         one: "Di cui 1 con un parere chiaro."
         other: "Di cui %{count} con un parere chiaro."
@@ -127,8 +126,8 @@ it:
         one: "Ha provato 1 abilità."
         other: "Ha provato %{count} abilità."
       state_title: "Stato"
-      warmup_yes: "La prova dei comandi è fatta."
-      warmup_no: "La prova dei comandi non è fatta."
+      warmup_yes: "Prova dei comandi: fatta (facoltativa)."
+      warmup_no: "Prova dei comandi: non fatta (facoltativa)."
       approvals: "Materie approvate: %{done} su %{total}."
       refresh: "Aggiorna"
       new_tabs: "Apri in nuove schede"
@@ -401,6 +400,7 @@ it:
       none: "L'agente non ha ancora scritto il test di questa materia."
       summary: "Revisione %{seq}: %{skills} abilità, %{items} item."
       is_approved: "Questa revisione è approvata."
+      attested: "Approvato da console, senza aprire le domande in anteprima: «%{words}»"
       not_approved: "Questa revisione non è ancora approvata."
       approve: "Approva il test"
       play_all: "Prova tutto il test come S"

@@ -11,9 +11,9 @@
       <% unless d[:open] %>
         <p><%= t("today.entry.not_open") %></p>
       <% end %>
-      <% unless d[:warmup_done] %>
-        <p id="entry-warmup"><%= t("today.entry.warmup") %></p>
-        <p><a class="button<%= ' secondary' if d[:open] && d[:next_row] %>" href="/diagnosis/warmup"><%= t("diagnosis.warmup_link") %></a></p>
+      <% unless d[:open] %>
+        <p id="entry-warmup"><%= t(d[:warmup_done] ? "today.entry.warmup_again" : "today.entry.warmup") %></p>
+        <p><a class="button secondary" href="/diagnosis/warmup"><%= t("diagnosis.warmup_link") %></a></p>
       <% end %>
       <% if d[:open] %>
         <% if d[:all_done] %>
@@ -34,6 +34,8 @@
             </li>
           <% end %>
         </ul>
+        <p id="entry-warmup" class="optional"><%= t("today.entry.warmup_optional") %>
+          <a href="/diagnosis/warmup"><%= t("today.entry.warmup_optional_link") %></a></p>
       <% end %>
     </section>
   <% end %>

@@ -40,12 +40,31 @@ class StudentPagesTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
-  test "the warm-up page is open before the release and shut after it" do
+  test "the warm-up page is open before the release and after it, and repeatable; no sitting depends on it (D-261)" do
+    build_ui_subject
     as_student("/diagnosis/warmup")
     assert_response :success
     release_diagnosis!
     as_student("/diagnosis/warmup")
-    assert_redirected_to "/diagnosis"
+    assert_response :success
+    as_student("/diagnosis")
+    assert_select "a[href='/diagnosis/warmup']"
+    AppEvent.create!(kind: "warmup_completed", student: Student.find_by!(key: "student"))
+    as_student("/diagnosis/warmup")
+    assert_response :success
+    as_student("/diagnosis/warmup/tasks")
+    assert_response :success
+    assert_empty Diagnosis::Warmup.done_ids(Student.find_by!(key: "student")), "a new round starts"
+    as_student("/diagnosis/subjects/math", method: :post)
+    assert_response :redirect
+  end
+
+  test "a sitting starts after the release without any warm-up" do
+    build_ui_subject
+    release_diagnosis!
+    assert_not Diagnosis::Warmup.complete?(Student.find_by!(key: "student"))
+    as_student("/diagnosis/subjects/math", method: :post)
+    assert_response :redirect
   end
 
   test "after the release every subject has a state, and a dependency is named" do

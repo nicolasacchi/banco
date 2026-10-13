@@ -160,10 +160,13 @@ class DecisionRecorder
     latest = BlueprintRevision.where(subject: revision.subject).maximum(:seq)
     raise Invalid, "revision #{revision.id} is not the latest entry test of #{revision.subject.key}: approve the latest" unless revision.seq == latest
 
-    gate = Approval::BlueprintGate.check(revision)
+    attested = attestation
+    gate = Approval::BlueprintGate.check(revision, waive_preview: !attested.nil?)
     raise Invalid, gate.reasons unless gate.approvable
 
-    [ revision.subject, nil, { revision_id: revision.id, seq: revision.seq, graph_revision_id: revision.skill_graph_revision_id } ]
+    payload = { revision_id: revision.id, seq: revision.seq, graph_revision_id: revision.skill_graph_revision_id }
+    payload.merge!(attested: true, attest_it: attested, waived: Approval::BlueprintGate::WAIVED) if attested
+    [ revision.subject, nil, payload ]
   end
 
   # "Ho visto tutte le domande di questa prova": the teacher read every question of this very
@@ -276,7 +279,6 @@ class DecisionRecorder
     reasons = []
     reasons << "the consent is not recorded" unless Decision.exists?(kind: "record_consent")
     student = Student.find_by(key: "student")
-    reasons << "the warm-up is not completed" unless student && Diagnosis::Warmup.complete?(student)
     subjects = Subject.order(:position).to_a
     reasons << "there is no subject" if subjects.empty?
     subjects.each do |s|
@@ -356,8 +358,8 @@ class DecisionRecorder
     list.map { |v| v.to_s.strip }.reject(&:empty?).map { |v| v.match?(/\A\d+\z/) ? v.to_i : raise(Invalid, "pages_confirmed holds page revision ids") }
   end
 
-  # The operator's own words for a console approval that waives the page-opened requirement (D-260); nil without
-  # them. Only the console origin and only approve_topic: anywhere else the parameter is a refusal, never ignored
+  # The operator's own words for a console approval that waives the preview requirements (D-260); nil without
+  # them. Only the console origin and only approve_topic and approve_blueprint: anywhere else the parameter is a refusal, never ignored
   # silently into a normal approval (the web form cannot send it: the controller does not permit it).
   def attestation
     return nil unless @params.key?(:attest_it)

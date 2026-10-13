@@ -1,9 +1,8 @@
-# The warm-up, "prova dei comandi" (B-11): before the release, once; it does not
-# count and it never fails. After the release it is not offered again.
+# The warm-up, "prova dei comandi" (B-11, D-261): optional and always recallable, before and after the release,
+# for the official and the trial students; it does not count, it never fails and nothing waits for it.
 class WarmupController < ApplicationController
   include ActingStudent
 
-  before_action :before_release_only
   before_action { response.headers["Cache-Control"] = "no-store" }
 
   def show; end
@@ -19,11 +18,5 @@ class WarmupController < ApplicationController
 
   def complete
     render json: { completed: Diagnosis::Warmup.complete!(acting_student) }
-  end
-
-  private
-
-  def before_release_only
-    redirect_to "/diagnosis" if !trial_account? && Diagnosis::Release.open?
   end
 end

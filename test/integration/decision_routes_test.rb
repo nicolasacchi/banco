@@ -43,9 +43,8 @@ class DecisionRoutesTest < ActionDispatch::IntegrationTest
                      request_id: SecureRandom.uuid, teacher_login: "nik", groups: "banco-teacher", remote_addr: EDGE)
   end
 
-  # Release needs consent and the warm-up first, so its case is tried last.
+  # Release needs the consent and the approvals (not the warm-up, D-261), so its case is tried last.
   def prepare_release!
-    AppEvent.create!(kind: "warmup_completed", student: @student)
     approve_ui_subject!(@subject, @graph, @blueprint)
     decide("/teacher/consent", { acknowledged: true })
     assert_response :success

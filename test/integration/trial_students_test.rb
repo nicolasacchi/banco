@@ -184,7 +184,6 @@ class TrialStudentsTest < ActionDispatch::IntegrationTest
     build_ui_subject
     as(TRIAL, "/diagnosis")
     as(OFFICIAL, "/diagnosis")
-    AppEvent.create!(kind: "warmup_completed", student: official)
     cookies.delete(DecisionRecorder::DEVICE_COOKIE) # the official student's own computer would refuse the teacher
     decide("/teacher/consent", { acknowledged: true })
     decide("/teacher/release", {})

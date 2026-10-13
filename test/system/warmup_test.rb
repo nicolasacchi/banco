@@ -128,10 +128,10 @@ class WarmupTest < ApplicationSystemTestCase
     assert_equal first, task_text
   end
 
-  test "after the release the warm-up is no longer offered" do
+  test "after the release the warm-up is still reachable" do
     release_diagnosis!
     visit "/diagnosis/warmup"
-    assert_current_path "/diagnosis"
-    assert_text "Fai le materie nell'ordine indicato."
+    assert_current_path "/diagnosis/warmup"
+    assert_selector "[data-warmup-target=itemBox] .prompt p", wait: 20
   end
 end
