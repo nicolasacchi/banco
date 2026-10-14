@@ -59,9 +59,7 @@ jobs:
           test -z "$(git status --porcelain contract)" || { git status --porcelain contract; git diff contract; echo "contract/examples is out of date" >&2; exit 1; }
       - name: System tests (runner's Chrome)
         timeout-minutes: 300 # a green run of the suite takes up to about 260 minutes on the runner; a single test that hangs is stopped after 900 s by name (test/application_system_test_case.rb), this is the backstop
-        env:
-          TESTOPTS: "-v" # one line per test, so that a stuck run names the test it is in
-        run: bin/rails test:system
+        run: bin/rails test:system -v # one line per test with its time, so that a stuck or slow run names the test it is in
       - name: Production database prepare creates only the two databases
         timeout-minutes: 5
         run: |
