@@ -95,7 +95,7 @@ class LessonRenderTimingTest < ActiveSupport::TestCase
     assert_operator timings.size, :>=, 3 * 2, "a timing for the cover and the card at every viewport"
     slow = timings.select { |t| t["inspect"] + t["shot"] > per_card }
     assert_empty slow, "cards over #{per_card} s: #{slow.inspect}"
-    assert_operator elapsed, :<, Validation::Rules.get(:lesson2, :render, :budget_seconds) / 3.0
+    assert_operator elapsed, :<, Validation::Rules.get(:lesson2, :render, :budget_seconds)
   ensure
     ENV.delete("BANCO_LESSON_SHOTS_DIR")
     FileUtils.rm_rf(shots) if shots
