@@ -1,4 +1,5 @@
 ENV["RAILS_ENV"] ||= "test"
+$stdout.sync = true # a hung run must show the dots and names it reached (CI pipes the output)
 require_relative "../config/environment"
 require "rails/test_help"
 require "minitest/mock"

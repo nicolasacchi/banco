@@ -63,9 +63,21 @@ Capybara.default_max_wait_time = 10
 # bind the same port). Rails parallelizes a run of more than 50 tests; the system suite has outgrown that.
 ActiveSupport::TestCase.parallelize(workers: :number_of_processors, threshold: Float::INFINITY)
 
+# A system test that has not finished in this long is stopped and reported by name. The CI's system step is slow (up to about four hours,
+# the log shows nothing while it runs because the output is buffered), so a stuck Chrome looks like a slow run for hours; now it is one
+# failed test with its name.
+class SystemTestHang < Exception # not a StandardError, so that no rescue in a test or a helper swallows it
+end
+
 class ApplicationSystemTestCase < ActiveSupport::TestCase
   include Capybara::DSL
   include Capybara::Minitest::Assertions
+
+  TEST_TIMEOUT_SECONDS = Integer(ENV.fetch("BANCO_SYSTEM_TEST_TIMEOUT", "900"))
+
+  def run
+    Timeout.timeout(TEST_TIMEOUT_SECONDS, SystemTestHang, "#{self.class}##{name} took more than #{TEST_TIMEOUT_SECONDS} s: the browser or the server did not answer") { super }
+  end
 
   setup do
     skip "BROWSER_PATH is not set (no Chrome to drive)" if ENV["BROWSER_PATH"].to_s.empty?
