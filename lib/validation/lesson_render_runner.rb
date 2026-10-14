@@ -15,7 +15,7 @@ module Validation
   # database. Time: a budget per revision and per card-viewport (E-LESSON-RENDER "timeout"); infrastructure
   # trouble (Chrome gone, the host not answering) is raised, never a verdict.
   class LessonRenderRunner
-    Result = Struct.new(:status, :errors, :shots, :cards, :viewports, :elapsed, :chrome_version, :exceptions, keyword_init: true) do
+    Result = Struct.new(:status, :errors, :shots, :cards, :viewports, :elapsed, :chrome_version, :exceptions, :timings, keyword_init: true) do
       def passed? = status == "passed"
     end
 
@@ -41,6 +41,7 @@ module Validation
       @errors = []
       @shots = []
       @exceptions = []
+      @timings = []
       viewports = (@core + @extra).uniq
       viewports.each do |width, height, theme|
         if over_budget?
@@ -51,7 +52,7 @@ module Validation
         run_viewport(width, height, theme.to_s)
       end
       Result.new(status: @errors.empty? ? "passed" : "failed", errors: @errors, shots: @shots, cards: @cards.size, viewports: viewports.map { |w, h, t| "#{w}x#{h}-#{t}" },
-                 elapsed: (@clock.call - @started).round(1), chrome_version: @session.version, exceptions: @exceptions)
+                 elapsed: (@clock.call - @started).round(1), chrome_version: @session.version, exceptions: @exceptions, timings: @timings)
     end
 
     private
@@ -154,11 +155,18 @@ module Validation
           recover(page)
           return
         end
+      inspected = @clock.call
       answer["findings"].each { |f| add(f["code"], card["n"], viewport, f["message"], f["where"]) }
-      return if card["n"].zero?
+      return @timings << timing(card, viewport, started, inspected, inspected) if card["n"].zero?
 
       shot(page, card, viewport, width, answer["height"].to_i)
+      @timings << timing(card, viewport, started, inspected, @clock.call)
       add("E-LESSON-RENDER", card["n"], viewport, "timeout: the card took more than #{@per_card} s") if (@clock.call - started) > @per_card * 2
+    end
+
+    # Where the seconds of a card went (the page's own stepping, then the picture): a slow card is told apart from a slow Chrome.
+    def timing(card, viewport, started, inspected, finished)
+      { "card" => card["n"], "viewport" => viewport, "inspect" => (inspected - started).round(2), "shot" => (finished - inspected).round(2) }
     end
 
     # The whole page as the student has it at that width (the card, the bars, the map), WebP quality 80.

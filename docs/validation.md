@@ -140,7 +140,17 @@ result, `banco lesson shots REV --dir D` downloads the images, `/teacher/lesson-
 `bin/purge-lesson-shots` (weekly) deletes the files of renders older than 30 days whose revision is neither pinned by a topic
 revision nor the latest of its lesson; the rows stay. `Approval::TopicGate` gains the reason "the lesson revision has no render
 without errors" for lesson/2. A revision stored before the job existed: `bin/rails runner 'RenderLessonRevisionJob.perform_later(ID)'`.
-Tests: `test/validation/lesson_render_runner_test.rb` (Chrome), `test/integration/lesson_render_test.rb`.
+Tests: `test/validation/lesson_render_runner_test.rb` (Chrome), `test/validation/lesson_render_timing_test.rb` (a large timeline with a
+five-state zoom stays under the per-card seconds), `test/integration/lesson_render_test.rb`.
+
+Time and the sidecar (D-293 follow-up). The result keeps `timings`: for each card and viewport the seconds of the page's own stepping
+(`inspect`) and of the picture (`shot`), so a slow card is told apart from a slow Chrome. The picture is where the seconds go on a map
+card: with the sidecar's `--use-gl=angle --use-angle=swiftshader` the compositor rasterizes through SwiftShader on the CPU, and the stroked
+land paths of a map (two huge `vector-effect: non-scaling-stroke` paths) cost 25 to 48 s and 130 CPU seconds for one first picture
+(1.2 s and 1 CPU second without GPU rasterization), while the rest of the machine's frames stall behind it; the next card then misses its
+5 s. The history lesson (a map card, then a timeline card) timed out on card 2 for this reason, not because of the timeline. The sidecar
+therefore runs with `--disable-gpu-rasterization` beside the two SwiftShader flags (WebGL stays available for free pages; the compositor
+and the canvas are as before). A cold run of the whole history lesson: 34 s for four viewports with it, a timeout at the first card without.
 
 ## Tests
 
