@@ -89,4 +89,34 @@ class PageRunnerTest < ActiveSupport::TestCase
     assert_includes codes(result), "E-PAGE-MOTION"
     assert(result.warnings.any? { |w| w["code"] == "W-PAGE-IDLE-LOOP" })
   end
+
+  # The frame is sized by a message the page sends when its body changes; on a loaded host the message can come after the first screenshot.
+  # A frame that grows once, late, is layout settling (found on a loaded CI runner as a false E-PAGE-MOTION); one that never stops is motion.
+  LATE_GROWTH = <<~JS
+    import { banco } from "banco"
+    await banco.init()
+    const root = document.getElementById("app")
+    const note = document.createElement("p")
+    note.textContent = "Una pagina ferma che si allunga una volta, in ritardo."
+    root.append(note)
+    banco.ready()
+    window.setTimeout(() => {
+      const more = document.createElement("p")
+      more.style.cssText = "height:400px;margin:0"
+      more.textContent = "Altro testo"
+      root.append(more)
+      banco.resize()
+    }, 1700)
+  JS
+
+  test "a frame that grows once, late, is not motion" do
+    result = run_page(page_files { |f| f["main.mjs"] = LATE_GROWTH }, scan: false)
+    assert_not_includes codes(result), "E-PAGE-MOTION"
+  end
+
+  test "a frame that never stops growing is E-PAGE-MOTION" do
+    main = LATE_GROWTH.sub(/window\.setTimeout\(\(\) => \{.*\}, 1700\)/m, "let n = 0\nwindow.setInterval(() => { n += 1; const more = document.createElement(\"p\"); more.style.cssText = \"height:40px;margin:0\"; more.textContent = `riga ${n}`; root.append(more); banco.resize() }, 150)")
+    result = run_page(page_files { |f| f["main.mjs"] = main }, scan: false)
+    assert_includes codes(result), "E-PAGE-MOTION"
+  end
 end

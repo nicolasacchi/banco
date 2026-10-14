@@ -18,6 +18,9 @@ module Validation
 
     DEFINED_WAIT = 20
     LOAD_ATTEMPTS = 3
+    SETTLE_STABLE_MS = 500 # the frame height unchanged this long counts as settled
+    SETTLE_MAX_MS = 8000
+    MOTION_ATTEMPTS = 3
     KEYS = {
       "Tab" => { key: "Tab", code: "Tab", vk: 9 }, "Enter" => { key: "Enter", code: "Enter", vk: 13, text: "\r" }, "Space" => { key: " ", code: "Space", vk: 32, text: " " },
       "Home" => { key: "Home", code: "Home", vk: 36 }, "End" => { key: "End", code: "End", vk: 35 },
@@ -139,10 +142,22 @@ module Validation
       nil
     end
 
-    # Lets the first frames and the ResizeObserver settle.
+    # Lets the first frames, the fonts and the ResizeObserver settle: the frame keeps its height for SETTLE_STABLE_MS (the page reports
+    # its height by message and a loaded host can deliver one late), within SETTLE_MAX_MS.
     def settle(page)
       sleep 0.6
       page.evaluate("document.fonts ? document.fonts.ready.then(() => true) : true") rescue nil
+      deadline = @clock.call + SETTLE_MAX_MS / 1000.0
+      last = nil
+      stable_since = @clock.call
+      loop do
+        height = frame_height(page)
+        now = @clock.call
+        (last = height; stable_since = now) if height != last
+        break if now - stable_since >= SETTLE_STABLE_MS / 1000.0 || now >= deadline
+
+        sleep 0.1
+      end
     end
 
     # ---- what the host heard ---------------------------------------------------------------------------------------------
@@ -193,8 +208,7 @@ module Validation
       @shots << { "kind" => kind, "seed_index" => index, "width" => width, "height" => height, "viewport" => "#{width}x#{height}", "sha256" => @store.put(bytes), "bytes" => bytes.bytesize }.merge(extra.transform_keys(&:to_s))
     end
 
-    def png(page)
-      height = frame_height(page)
+    def png(page, height = frame_height(page))
       page.command("Page.captureScreenshot", format: "png", captureBeyondViewport: true, clip: { x: 0, y: 0, width: wide.first, height: height, scale: 1 })["data"]
     end
 
@@ -262,11 +276,22 @@ module Validation
       page = open(ctx, seed, wide, reduced: true)
       return unless wait_ready(page, index, "reduced")
 
-      settle(page)
-      shot(page, "reduced", index, wide.first)
-      first = png(page)
-      sleep 1.0
-      add("E-PAGE-MOTION", index, "reduced", "under reduced motion two screenshots one second apart differ") unless png(page) == first
+      shot_taken = false
+      MOTION_ATTEMPTS.times do |attempt|
+        settle(page)
+        shot(page, "reduced", index, wide.first) unless shot_taken
+        shot_taken = true
+        height = frame_height(page)
+        first = png(page, height)
+        sleep 1.0
+        # A frame that is still being resized (its height message came late) is layout settling, not motion: the pair is taken again from
+        # the new size. Pixels that change at a steady size, or a frame that never stops resizing, are motion.
+        later = frame_height(page)
+        next if attempt < MOTION_ATTEMPTS - 1 && later != height
+
+        add("E-PAGE-MOTION", index, "reduced", "under reduced motion two screenshots one second apart differ") unless later == height && png(page, height) == first
+        break
+      end
       collect(page, index, "reduced")
     end
 
