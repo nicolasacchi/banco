@@ -285,7 +285,7 @@ module Validation
         first = png(page, height)
         sleep 1.0
         # A frame that is still being resized (its height message came late) is layout settling, not motion: the pair is taken again from
-        # the new size. Pixels that change at a steady size, or a frame that never stops resizing, are motion.
+        # the new size (three tries; a frame still resizing at the last one is reported). Pixels that change at a steady size are motion.
         later = frame_height(page)
         next if attempt < MOTION_ATTEMPTS - 1 && later != height
 
