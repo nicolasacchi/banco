@@ -65,7 +65,7 @@ function figureFindings(figure, minPx, state, out) {
   // a node's text must clear the node's border (a text measured in another face than it is drawn in touches or crosses it)
   const nodeRects = [...figure.querySelectorAll(".dg-node")].map((n) => n.getBoundingClientRect())
   for (const { label, rect } of boxes) {
-    if (!label.classList.contains("dg-nodetext")) continue
+    if (!label.classList.contains("dg-nodetext") || label.querySelector(".katex")) continue // a formula holds its own hidden MathML twin: its text range is not what is drawn
     const cx = (rect.left + rect.right) / 2
     const cy = (rect.top + rect.bottom) / 2
     const node = nodeRects.find((r) => cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom)
