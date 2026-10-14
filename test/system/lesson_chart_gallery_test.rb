@@ -118,6 +118,8 @@ class LessonChartGallerySystemTest < ApplicationSystemTestCase
     go(7)
     assert_selector "#scheda-7 .dg-ctl", count: 2
     assert_selector "#scheda-7 .dg-ctl .dg-ctl-btn", count: 4
+    # the stepper rows fit the 390 px box (they were 368 px wide in a 302 px box)
+    assert_equal [], page.evaluate_script("[...document.querySelectorAll('#scheda-7 .dg-controls, #scheda-7 .dg-ctl, #scheda-7 .dg-ctl-row')].filter((n) => n.scrollWidth > n.clientWidth + 1 || n.getBoundingClientRect().right > document.querySelector('#scheda-7 .dg-controls').getBoundingClientRect().right + 1).map((n) => n.className)")
     assert_selector "#scheda-7 .dgs-line", text: /Presenti: 300/
     find("#scheda-7 .dg-ctl[aria-label='Presenti'] .dg-ctl-btn[aria-label='Presenti: Uno in più']").click
     assert_selector "#scheda-7 .dgs-line", text: /Presenti: 301/

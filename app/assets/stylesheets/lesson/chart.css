@@ -11,13 +11,14 @@
 .dg-values[hidden] { display: none; }
 .dg-values .dg-table { font-size: 0.95em; }
 .dg-source { margin: 0.3em 0 0; color: var(--muted); font-size: 0.9em; }
-.dg-ctl { display: flex; flex-direction: column; gap: 0.3em; flex-basis: 100%; margin: 0.2em 0; }
+.dg-ctl { display: flex; flex-direction: column; gap: 0.3em; flex-basis: 100%; min-width: 0; max-width: 100%; margin: 0.2em 0; }
 .dg-ctl-label { font-weight: 700; }
-.dg-ctl-row { display: flex; align-items: center; gap: 0.6em; }
+.dg-ctl-row { display: flex; align-items: center; gap: 0.6em; min-width: 0; max-width: 100%; }
 .dg-ctl-btn { flex: none; min-width: 2.6em; height: 2.6em; padding: 0; border-radius: 50%; font-size: 1.25em; line-height: 1; }
 .dg-ctl-value { flex: 1 1 auto; text-align: center; font-weight: 700; font-size: 1.25em; }
 .dg-range { flex: 1 1 6em; min-width: 5em; height: 2em; accent-color: var(--text); }
 .dg-rangevalue { flex: none; min-width: 2.6em; font-weight: 700; font-size: 1.25em; text-align: right; }
+@media (max-width: 30em) { .dg-ctl-row { gap: 0.35em; } .dg-ctl-btn { min-width: 2.1em; width: 2.1em; height: 2.1em; } .dg-rangevalue { min-width: 1.8em; } .dg-range { min-width: 3em; flex-basis: 3em; } }
 .dg-toggle[aria-pressed="true"], .dg-chip-button[aria-pressed="true"] { outline: 3px solid var(--text); outline-offset: 1px; }
 .dg-chips { display: flex; flex-wrap: wrap; gap: 0.4em; }
 

@@ -187,6 +187,7 @@ function build(data, ctx) {
     shape(ctx, "polygon", { points: [s1, h1, h2, s2], cls: `dg-beam${r.b.moving ? " dg-beam-move" : ""}` })
     shape(ctx, "path", { d: `M${h1[0].toFixed(1)} ${h1[1].toFixed(1)} A${R} ${R} 0 0 ${arcSweep(h1, h2, cx, cy)} ${h2[0].toFixed(1)} ${h2[1].toFixed(1)}`, cls: `dg-patch${r.b.moving ? " dg-patch-move" : ""}` })
     r.y = (s1[1] + s2[1]) / 2
+    r.sx = (s1[0] + s2[0]) / 2
   }
   // the latitude of each beam, at its left end, kept apart
   rows.sort((a, c) => a.y - c.y)
@@ -196,10 +197,18 @@ function build(data, ctx) {
     last = y
     placed.push({ r, y })
   }
+  // the stack of names is centred on its beams (not pushed all downward), and a thin leader joins each name to its beam
+  if (placed.length) {
+    const drift = placed.reduce((a, p) => a + (p.y - p.r.y), 0) / placed.length
+    const top = ctx.lineH / 2 + 2
+    const back = Math.min(drift, placed[0].y - top)
+    for (const p of placed) p.y -= Math.max(0, back)
+  }
   const shift = Math.max(0, placed.length ? placed[placed.length - 1].y + ctx.lineH / 2 - (height - 4) : 0)
   for (const { r, y } of placed) {
-    const text = G.latWord(r.b.lat) + (r.b.moving ? "" : "")
-    label(ctx, text, 4, y - shift, { anchor: "start", valign: "middle", cls: `dg-name${r.b.moving ? " dg-name-move" : ""}` })
+    const text = G.latWord(r.b.lat)
+    const l = label(ctx, text, 4, y - shift, { anchor: "start", valign: "middle", cls: `dg-name${r.b.moving ? " dg-name-move" : ""}` })
+    if (Math.abs(y - r.y) > 3) shape(ctx, "line", { x1: 4 + (l?.w ?? ctx.measure(text, ctx.fontPx).w) + 4, y1: y - shift, x2: Math.max(r.sx - 2, 4 + (l?.w ?? 0) + 8), y2: r.y, cls: "dg-leader" })
   }
   // the Sun overhead: a mark on the Earth where the rays are vertical
   const sp = hit(0)

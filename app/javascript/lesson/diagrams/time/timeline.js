@@ -57,7 +57,8 @@ export function controls(data) {
 
 export function describe(data, ctx = {}) {
   const eff = effectiveState(data, ctx.state ?? 0)
-  return data.scale === "years" ? years.describeYears(eff, ctx.controls) : tense.describeTense(eff)
+  const text = data.scale === "years" ? years.describeYears(eff, ctx.controls) : tense.describeTense(eff)
+  return text.replace(/\b([ac]\.C\.)\./g, "$1") // "a.C." already ends in a full stop: the sentence's own stop is not written twice
 }
 
 export function printed(data, state = 0) {

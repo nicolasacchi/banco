@@ -49,6 +49,7 @@
 /* the controls: a stepper (- value +) and a slider with its - and + (A2); the buttons are at least 44 px */
 .dg-ctrls { display: flex; flex-wrap: wrap; gap: 0.5em 1.2em; flex-basis: 100%; align-items: center; }
 .dg-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45em; }
+.dg-ctrls .dg-ctl { flex-direction: row; flex-basis: auto; margin: 0; } /* chart.css names its own rows .dg-ctl (a column): inside the maps strip the label, the two buttons and the value stay on a line */
 .dg-ctllabel { font-weight: 700; }
 .dg-ctlvalue { display: inline-block; min-width: 4.2em; text-align: center; font-weight: 700; font-size: 1.15em; }
 .dg-range { flex: 1 1 8em; min-width: 8em; max-width: 24em; height: 2.4em; accent-color: var(--primary); }

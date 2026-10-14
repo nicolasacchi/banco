@@ -84,6 +84,8 @@ function buildRow(sub, parsed, items, B, yRow, select) {
   // in select mode every piece gets a target of at least 24 px, so the pieces are spaced to keep the targets apart
   const put = (text, px, y, cls, role) => {
     const l = label(sub, text, x, y, { anchor: "start", px, cls, role })
+    // the piece is measured as drawn (bold, in its class): a symbol measured in the regular face ran into the subscript that follows it
+    l.w = Math.max(l.w, Math.ceil(sub.measure(text, px ?? F, undefined, cls).w))
     x += select ? Math.max(l.w, 28) + 8 : l.w
     return l
   }

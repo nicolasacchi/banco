@@ -62,7 +62,7 @@ class CourseSystemTest < ApplicationSystemTestCase
     assert_selector "#trial-notice"
     assert_selector "#suggestions li.topic", count: 1
     click_link TOPIC_TITLE
-    assert_selector "#draft-notice", text: "Bozza: il docente non l'ha ancora approvata."
+    assert_selector "#draft-notice", text: "Bozza in prova: il docente non l'ha ancora approvata. Puoi provarla lo stesso."
     assert_selector "#programme li", text: "Dal programma, riga 7"
     click_link "Leggi la lezione"
     assert_selector "h2", text: "Perché ti serve"

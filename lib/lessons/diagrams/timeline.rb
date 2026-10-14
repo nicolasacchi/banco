@@ -251,7 +251,8 @@ module Lessons
 
             parts << (s["show_value"] ? text("span_line", a: plain(a["label_it"]), b: plain(b["label_it"]), n: duration_text(Chrono.duration(a["at"], b["at"]))) : text("span_open", a: plain(a["label_it"]), b: plain(b["label_it"])))
           end
-          parts.join(" ")
+          # "a.C." already ends in a full stop: the sentence's own stop is not written twice (as the browser's describe)
+          parts.join(" ").gsub(/\b([ac]\.C\.)\./, '\\1')
         end
 
         def describe_tense(eff)

@@ -256,7 +256,7 @@ module Lessons
         out << "Si vedono: #{list_it(v['graticule'].map { |g| GRATICULE.fetch(g) })}." unless v["graticule"].empty?
         out << "In evidenza: #{list_it(v['highlight'].map { |h| h['name'] })}." unless v["highlight"].empty?
         if v["year"]
-          out << (v["since"].empty? ? "Nel #{year_word(v['year'])}." : "Nel #{year_word(v['year'])} in evidenza: #{list_it(v['since'].map { |h| h['name'] })}.")
+          out << (v["since"].empty? ? "Nel #{year_word(v['year'])}" : "Nel #{year_word(v['year'])} in evidenza: #{list_it(v['since'].map { |h| h['name'] })}.")
         end
         v["bands"].each { |b| out << "#{GF.capital(b['label'] || 'fascia')}, da #{lat_word(b['from'])} a #{lat_word(b['to'])}." }
         out << "Luoghi: #{list_it(v['places'].map { |p| p['name'] })}." unless v["places"].empty?

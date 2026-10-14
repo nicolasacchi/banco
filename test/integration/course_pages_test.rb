@@ -71,7 +71,7 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     build_student_world(approve: false, release: false)
     page(TRIAL, "/topics/#{TOPIC}")
     assert_response :success
-    assert_select "#draft-notice", "Bozza: il docente non l'ha ancora approvata."
+    assert_select "#draft-notice", "Bozza in prova: il docente non l'ha ancora approvata. Puoi provarla lo stesso."
     page(TRIAL, "/today")
     assert_select "#suggestions li.topic .topic-why", /Bozza/
     assert_select "#trial-notice", /Account di prova/

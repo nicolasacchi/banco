@@ -186,7 +186,7 @@ export function stackLabels(ctx, specs, y0, dir = 1) {
   // where a label goes on its own: centred over its mark; a label that would cover the connector of another one
   // (a mark further along) slides aside, still over its own mark; `covers` when it cannot
   const natural = (spec) => {
-    const probe = ctx.measure(spec.text, ctx.fontPx, spec.maxW)
+    const probe = ctx.measure(spec.text, ctx.fontPx, spec.maxW, spec.cls)
     const w = Math.min(Math.ceil(probe.w), ctx.width - 8)
     const h = Math.ceil(probe.h)
     let x = Math.max(4, Math.min(Math.round(spec.cx - w / 2), ctx.width - w - 4))

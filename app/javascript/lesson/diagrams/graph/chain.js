@@ -252,7 +252,10 @@ function build(data, ctx) {
         const cx = a.x + a.w / 2
         polyline(ctx, [[cx, a.y + a.h + 2], [cx, b.y - 3]], linkClass(l), key)
         arrowhead(ctx, { x: cx, y: b.y - 2, angle: 90 }, "dg-arrowhead dg-chain-head").key = `${key}:head`
-        wordLabel(wordOf(data, l), cx + 6 + Math.round(f * 2.2), (a.y + a.h + b.y) / 2, `${key}:word`)
+        // the word starts right of the arrow whatever its width: centred a fixed way off, a long word ("per questo") covered the shaft with its plate
+        const word = wordOf(data, l)
+        const ww = Math.min(Math.ceil(ctx.measure(word, f, Math.round(f * 7)).w), Math.round(f * 7))
+        wordLabel(word, cx + 10 + ww / 2, (a.y + a.h + b.y) / 2, `${key}:word`)
       }
     })
     // fan-in rails, nearest cause innermost

@@ -689,7 +689,7 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 [data-theme="dark"] .summary-points strong { color: var(--text); }
 @media (max-width: 600px) {
   .dg-controls .dg-prev, .dg-controls .dg-next { flex: 1 1 0; padding: 0.2em 0.3em; font-size: 0.9em; white-space: nowrap; }
-  .dg-controls .dg-counter { display: none; }
+  .dg-controls .dg-counter { flex: 1 0 100%; order: 3; text-align: center; margin: 0; }
   .l2-top-in { gap: 0.4em; }
 }
 

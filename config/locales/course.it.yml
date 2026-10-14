@@ -123,4 +123,4 @@ it:
     close: "Chiudi"
     error: "Non sono riuscito a inviarlo. Riprova."
   draft:
-    notice: "Bozza: il docente non l'ha ancora approvata."
+    notice: "Bozza in prova: il docente non l'ha ancora approvata. Puoi provarla lo stesso."

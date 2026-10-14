@@ -48,7 +48,7 @@ function figureFindings(figure, minPx, state, out) {
     return
   }
   const stage = figure.querySelector(".dg-stage")?.getBoundingClientRect()
-  const labels = [...figure.querySelectorAll(".dg-label")].filter((l) => l.textContent.trim() !== "" && l.getClientRects().length > 0) // a hidden label (the print views) has no box to judge
+  const labels = [...figure.querySelectorAll(".dg-label:not(.dg-measure)")].filter((l) => l.textContent.trim() !== "" && l.getClientRects().length > 0) // a hidden label (the print views) has no box to judge
   const boxes = labels.map((l) => ({ label: l, rect: rectOfText(l) }))
   for (const { label, rect } of boxes) {
     const px = parseFloat(getComputedStyle(label).fontSize)
@@ -61,6 +61,16 @@ function figureFindings(figure, minPx, state, out) {
     const r = target.getBoundingClientRect()
     if (r.width < 23.5 || r.height < 23.5)
       out.push({ code: "E-DIAGRAM-TARGET", message: `a select target is ${r.width.toFixed(0)} x ${r.height.toFixed(0)} px, under 24 x 24`, where: `${figure.dataset.type} figure, ${tag}` })
+  }
+  // a node's text must clear the node's border (a text measured in another face than it is drawn in touches or crosses it)
+  const nodeRects = [...figure.querySelectorAll(".dg-node")].map((n) => n.getBoundingClientRect())
+  for (const { label, rect } of boxes) {
+    if (!label.classList.contains("dg-nodetext")) continue
+    const cx = (rect.left + rect.right) / 2
+    const cy = (rect.top + rect.bottom) / 2
+    const node = nodeRects.find((r) => cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom)
+    if (node && (rect.left < node.left + 3 || rect.right > node.right - 3 || rect.top < node.top + 1 || rect.bottom > node.bottom - 1))
+      out.push({ code: "E-DIAGRAM-LAYOUT", message: `the text "${text(label)}" touches or crosses the border of its box`, where: `${figure.dataset.type} figure, ${tag}` })
   }
   for (let i = 0; i < boxes.length; i++) {
     for (let j = i + 1; j < boxes.length; j++) {
@@ -109,6 +119,9 @@ let api = null
 const ready = (async () => {
   try {
     await document.fonts?.ready
+    // a web font is fetched when text first wears it: the figures measure their labels in the DOM, so every face of the page is loaded
+    // before the first card is drawn, or a label is measured in the fallback face and drawn wider in the real one (its text then touches the box)
+    if (document.fonts) await Promise.allSettled([...document.fonts].map((face) => face.load()))
     await preloadFor(body)
     api = renderLesson(root, body, {
       mode: "render", expand: true, view: "scroll", reduceMotion: true, labels: config.labels, items: config.items, topic: body.key,

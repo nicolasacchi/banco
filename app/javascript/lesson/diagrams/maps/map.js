@@ -217,7 +217,7 @@ export function describe(data, ctx = {}) {
   out.push(v.polar ? "Il polo è al centro della carta." : "Il nord è in alto, l'ovest a sinistra e l'est a destra.")
   if (v.graticule.length) out.push(`Si vedono: ${listIt(v.graticule.map((g) => GRATICULE[g]))}.`)
   if (v.highlight.length) out.push(`In evidenza: ${listIt(v.highlight.map((h) => h.name))}.`)
-  if (v.year !== null) out.push(v.since.length === 0 ? `Nel ${G.yearWord(v.year)}.` : `Nel ${G.yearWord(v.year)} in evidenza: ${listIt(v.since.map((h) => h.name))}.`)
+  if (v.year !== null) out.push(v.since.length === 0 ? `Nel ${G.yearWord(v.year)}` : `Nel ${G.yearWord(v.year)} in evidenza: ${listIt(v.since.map((h) => h.name))}.`)
   for (const b of v.bands) out.push(`${G.capital(b.label ?? "fascia")}, da ${latW(b.from)} a ${latW(b.to)}.`)
   if (v.places.length) out.push(`Luoghi: ${listIt(v.places.map((p) => p.name))}.`)
   for (const p of v.points) out.push(`${p.label ?? "Un punto"}: ${latW(p.lat)}, ${lonW(p.lon)}.`)
