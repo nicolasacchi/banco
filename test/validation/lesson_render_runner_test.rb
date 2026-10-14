@@ -57,6 +57,16 @@ class LessonRenderRunnerTest < ActiveSupport::TestCase
 
   def codes(row) = row.result["errors"].map { |e| e["code"] }.uniq.sort
 
+  test "a select check on a map draws exactly the places it targets, not the first set the figure has" do
+    doc = JSON.parse(Rails.root.join("test/fixtures/diagrams/types/map.json").read)
+    vector = doc["vectors"].find { |v| v["name"] == "map-south-america-core" }
+    select = { "type" => "check", "component" => "select", "prompt_it" => "Tocca il luogo.", "targets" => "places", "pick" => "one",
+               "answer" => [ vector["targets"]["places"].first ], "diagram" => vector["data"] }
+    row = render(with_card(served("equations"), [ select ]))
+    assert_equal "passed", row.status, dump(row)
+    assert_not_includes codes(row), "E-DIAGRAM-TARGET", dump(row)
+  end
+
   test "a number line too dense for its labels is E-DIAGRAM-LAYOUT" do
     marks = (-5..5).map { |i| { "at" => i.to_s, "kind" => "dot", "role" => "known", "label_it" => "una etichetta davvero molto lunga #{i}" } }
     line = { "type" => "number_line", "alt_it" => "Retta dei numeri da meno cinque a cinque con molte etichette lunghe.", "min" => "-5", "max" => "5", "step" => "1", "labels" => "all", "marks" => marks }

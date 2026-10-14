@@ -20,7 +20,7 @@ const fill = (template, values) => String(template).replace(/%\{(\w+)\}/g, (_, k
 export function targetsOf(spec) {
   try {
     const mod = moduleFor(spec.diagram?.type)
-    return typeof mod?.targets === "function" ? mod.targets(spec.diagram, spec.targets) ?? [] : []
+    return typeof mod?.targets === "function" ? mod.targets(spec.diagram, spec.targets, { select: true }) ?? [] : []
   } catch (_error) {
     return []
   }
@@ -29,9 +29,10 @@ export function targetsOf(spec) {
 export function render(spec, ctx, _hooks) {
   const texts = ctx.t.checks
   const chosen = new Set()
-  const entries = targetsOf(spec)
-  const info = new Map(entries.map((t, i) => [`t${i + 1}`, t]))
-  const total = entries.length
+  // A map needs its base loaded before it can list a set, so the list is asked again until it is not empty (the figure is drawn after the load).
+  let known = targetsOf(spec)
+  const entries = () => (known.length ? known : (known = targetsOf(spec)))
+  const infoNow = () => new Map(entries().map((t, i) => [`t${i + 1}`, t]))
   const live = el("p", { class: "select-live", role: "status", "aria-live": "polite" })
   const root = el("div", { class: "answer select", "data-component": "select", "data-pick": spec.pick })
   const sorted = () => [...chosen].sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)))
@@ -40,7 +41,9 @@ export function render(spec, ctx, _hooks) {
   }
   const fallbackSync = []
   const selectApi = {
-    info, total, pick: spec.pick,
+    get info() { return infoNow() },
+    get total() { return entries().length },
+    pick: spec.pick,
     isOn: (id) => chosen.has(id),
     toggle: (id) => {
       if (chosen.has(id)) chosen.delete(id)
@@ -55,12 +58,13 @@ export function render(spec, ctx, _hooks) {
   }
   const figure = figureFor(spec.diagram, ctx, { mode: "select", select: selectApi, set: spec.targets })
   figure.node.classList.add("dg-select")
+  figure.node.selectTotal = () => selectApi.total
   const list = el("ul", { class: "select-fallback", hidden: "", "aria-label": texts.select_group })
   function showFallback() {
     if (!list.hidden || list.children.length) return
-    for (let i = 1; i <= total; i++) {
+    for (let i = 1; i <= selectApi.total; i++) {
       const id = `t${i}`
-      const b = button(targetLabel(texts.select_zone_short, i, total, info.get(id)?.neutral_it), { class: "span-chip", "aria-pressed": "false", "data-target": id }, () => selectApi.toggle(id))
+      const b = button(targetLabel(texts.select_zone_short, i, selectApi.total, selectApi.info.get(id)?.neutral_it), { class: "span-chip", "aria-pressed": "false", "data-target": id }, () => selectApi.toggle(id))
       fallbackSync.push(() => b.setAttribute("aria-pressed", String(chosen.has(id))))
       list.appendChild(el("li", {}, b))
     }

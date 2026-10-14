@@ -56,6 +56,13 @@ function figureFindings(figure, minPx, state, out) {
     if (stage && (rect.left < stage.left - 2 || rect.right > stage.right + 2))
       out.push({ code: "E-DIAGRAM-LAYOUT", message: `the label "${text(label)}" is drawn outside the figure`, where: `${figure.dataset.type} figure, ${tag}` })
   }
+  // a select figure draws exactly the targets of the check's own set (none drawn is as wrong as a different number)
+  if (typeof figure.selectTotal === "function") {
+    const expected = figure.selectTotal()
+    const drawn = figure.querySelectorAll(".dg-target").length
+    if (drawn === 0 || drawn !== expected)
+      out.push({ code: "E-DIAGRAM-TARGET", message: `the figure draws ${drawn} of the ${expected} targets of the check`, where: `${figure.dataset.type} figure, ${tag}` })
+  }
   // a select check's tap targets are at least 24 x 24 CSS px (WCAG 2.2 target size, A2)
   for (const target of figure.querySelectorAll(".dg-target")) {
     const r = target.getBoundingClientRect()

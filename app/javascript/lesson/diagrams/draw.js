@@ -191,7 +191,7 @@ export function mountDiagram(data, ctx, options = {}) {
   const question = el("p", { class: "dg-question", "aria-live": "polite" })
   const caption = data?.caption_it ? el("figcaption", { class: "dg-caption" }) : null
   if (caption) renderInlineRich(data.caption_it, caption, ctx)
-  const descText = el("p", { text: describe(data, { subject: ctx.subject, state: 0, mode: options.mode ?? "student" }) })
+  const descText = el("p", { text: describe(data, { subject: ctx.subject, state: 0, mode: options.mode ?? "student", set: options.set ?? null }) })
   const desc = el("details", { class: "dg-desc" }, el("summary", {}, icon("description"), document.createTextNode(` ${ctx.t.description}`)), descText)
   // the numbers under a chart ("Vedi i numeri", WAVE2 P2): opened by the student, always printed
   const valuesBox = el("details", { class: "dg-values", hidden: "" }) // hidden until a scene has numbers: an empty <details> would print the browser's English "Details"
@@ -265,7 +265,7 @@ export function mountDiagram(data, ctx, options = {}) {
   // What the voice reads for this figure (WAVE2 4.3, L10): the type's speechSegments, else its description, of the state shown now. The walker of
   // lesson/speech.js calls this instead of reading the drawing's labels.
   figure.speechSegments = () => {
-    const spoken = { subject: ctx.subject, state: state.i, mode, controls: state.controls, revealed: [] }
+    const spoken = { subject: ctx.subject, state: state.i, mode, set: options.set ?? null, controls: state.controls, revealed: [] }
     try {
       if (typeof mod?.speechSegments === "function") return mod.speechSegments(data, spoken)
       return defaultSegments(describe, data, spoken)
@@ -370,7 +370,7 @@ export function mountDiagram(data, ctx, options = {}) {
         }
       })
     }
-    descText.textContent = describe(data, { subject: ctx.subject, state: state.i, mode, controls: state.controls, revealed: [] })
+    descText.textContent = describe(data, { subject: ctx.subject, state: state.i, mode, set: options.set ?? null, controls: state.controls, revealed: [] })
     if (state.announce && scene.live) live.textContent = scene.live
     state.announce = false
     if (mod?.printViews && state.printWidth !== width) paintPrint(width, fontPx)

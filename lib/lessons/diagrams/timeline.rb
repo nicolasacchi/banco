@@ -181,10 +181,11 @@ module Lessons
 
         # ---- what the browser is told -------------------------------------------------------------------
 
-        def served(data, mode: :student)
+        def served(data, mode: :student, set: nil)
           return StudentBody.diagram_generic(data) unless mode == :select
 
-          out = { "type" => "timeline", "alt_it" => "Una linea con #{[ selectable(data).size, 1 ].max} punti da scegliere.", "scale" => data["scale"] }
+          count = set ? targets(data, set).size : selectable(data).size
+          out = { "type" => "timeline", "alt_it" => "Una linea con #{[ count, 1 ].max} punti da scegliere.", "scale" => data["scale"] }
           if data["scale"] == "years"
             out.merge!("from" => data["from"], "to" => data["to"])
             out["events"] = Array(data["events"]).map { |e| e.slice("id", "at").merge("label_it" => "·") }

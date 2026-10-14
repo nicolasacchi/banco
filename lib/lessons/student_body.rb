@@ -198,7 +198,10 @@ module Lessons
       mod = SelectTargets.module_of(check) or raise ArgumentError, "select check on an unknown diagram type"
       raise NotImplementedError, "#{check.dig('diagram', 'type')} has no select projection" unless mod.is_a?(Diagrams::Contract)
 
-      mod.served(check["diagram"], mode: :select)
+      # the check's own target set goes with the figure: a type that offers more than one set (map: areas, places, bands...)
+      # must serve and describe the set the check taps, not the first one it happens to have
+      takes_set = mod.method(:served).parameters.any? { |kind, name| kind == :keyrest || name == :set }
+      takes_set ? mod.served(check["diagram"], mode: :select, set: check["targets"]) : mod.served(check["diagram"], mode: :select)
     end
 
     # An example: the steps up to the first blank; for that step its reason and the blank. Without a blank it is

@@ -110,3 +110,18 @@ test("select mode loads no name table (L3)", async () => {
     regions: (await import("lesson/data/history-regions")).default.regions
   }))
 })
+
+test("a select map describes and draws the set of the check, not the first set it has (places beside areas)", async () => {
+  const doc = JSON.parse(readFileSync(new URL("test/fixtures/diagrams/types/map.json", root), "utf8"))
+  const v = doc.vectors.find((x) => x.name === "map-south-america-core")
+  for (const set of ["areas", "places"]) {
+    const served = v.served_select[set]
+    await mods.map.prepare(served, { mode: "select" })
+    const n = mods.map.targets(served, set, { select: true }).length
+    assert.equal(n, v.targets[set].length)
+    const words = { areas: "zone", places: "luoghi" }[set]
+    assert.match(mods.map.describe(served, { mode: "select", set }), new RegExp(`Ci sono ${n} ${words} da toccare`))
+    const scene = mods.map.layout(served, { width: 390, fontPx: 20, subject: v.subject, mode: "select", set })
+    assert.equal(scene.targets?.length ?? scene.shapes?.filter?.((s) => s.target).length ?? n, n)
+  }
+})
