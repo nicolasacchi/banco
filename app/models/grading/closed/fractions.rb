@@ -50,8 +50,9 @@ module Grading
 
         s = Numbers.clean(text)
         raise Numbers::Invalid, "empty" if s.empty?
+        s = Numbers.unwrap(s).sub(/\A([+-])#{SPACES}+/, '\1')
         raise Numbers::Invalid, "ambiguous_mixed_number" if s.match?(/\d#{SPACES}+\d/)
-        raise Numbers::Invalid, "unparseable" unless s.match?(/\A[+-]?\d+\z/)
+        raise Numbers::Invalid, "unreadable_fraction" unless s.match?(/\A[+-]?\d+\z/)
 
         s.to_i
       end

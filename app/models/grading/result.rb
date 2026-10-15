@@ -6,6 +6,8 @@ module Grading
     MESSAGES_IT = {
       "empty" => "Scrivi una risposta prima di continuare.",
       "unparseable" => "Non riesco a leggere la risposta. Controllala e riprova.",
+      "unreadable_number" => "Scrivi solo il numero, per esempio −3 oppure 2,5.",
+      "unreadable_fraction" => "Scrivi la frazione, per esempio −3/4.",
       "incomplete" => "Metti tutti i pezzi in ordine, poi controlla.",
       "spaces_in_code" => "Scrivi la risposta di seguito, senza spazi.",
       "use_comma" => "Per i decimali usa la virgola, per esempio 3,5.",

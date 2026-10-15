@@ -298,6 +298,19 @@ class StudentPagesTest < ActionDispatch::IntegrationTest
     assert_equal 1, AppEvent.where(kind: "invalid_input").count
   end
 
+  test "an unreadable number says what to write and the event keeps the code, not the text" do
+    rows = build_ui_subject(components: %w[number])
+    release_diagnosis!
+    run = Diagnosis::Conductor.run_for(rows[:student], rows[:subject])
+    step = Diagnosis::Conductor.new(run).step!
+    as_student("/diagnosis/answers", method: :post, body: { served_event_id: step.event.id, client_attempt_id: SecureRandom.uuid, raw: "n = m = 2", source: "text" })
+    assert_equal({ "status" => "invalid", "message_it" => "Scrivi solo il numero, per esempio −3 oppure 2,5." }, response.parsed_body)
+    assert_equal 0, Attempt.count
+    event = AppEvent.where(kind: "invalid_input").last
+    assert_includes event.payload_json, "unreadable_number"
+    assert_not_includes event.payload_json, "n = m"
+  end
+
   test "a grader that does not answer still records the answer and schedules the retry" do
     rows = build_ui_subject(components: %w[expression])
     release_diagnosis!

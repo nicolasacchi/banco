@@ -298,6 +298,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-292 | 2026-10-13 | wave 2 final fixes: seats.threshold, chem.count without a pick, bare atoms in molecule, span_select in English or Spanish, sentence neutral available, a served example never has one state, no empty details on a failed figure | decided |
 | D-293 | 2026-10-13 | render check of wave 2: a figure measured while hidden is never cached, the print views are not judged, the plate words are measured as drawn, the rendering waits no longer than needed | decided |
 | D-294 | 2026-10-15 | entry diagnosis: no daily cap; dependencies and each run's sitting budgets stay | decided |
+| D-295 | 2026-10-15 | number and fraction answers: a letter and "=" or one pair of parentheses are read, and an unreadable answer says what to write | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -3189,5 +3190,14 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Operator (2026-10-15):** asked whether to lift or raise the cap, answered "Togli il limite giornaliero".
 - **We do:** both caps are removed (constants, `DailyPlan`, `Availability`). Every subject whose dependencies are met (`depends_on_subjects`: the first sitting of each dependency is closed) is startable, whatever was done today. A subject waiting on a dependency says why ("Dopo la prima seduta di Matematica"); the "Domani" state is gone. Unchanged: the sitting budgets (30 and 25 minutes, the short-answer reserve, the automatic second sitting from the next calendar day). The list proposes the sittings in progress and the first subject to begin.
 - **Rules version:** `diagnosis/1` does not change. The caps never entered the engine, the grading or the derivation, only which subject the list lets the student open, so no run, event or result changes meaning and existing runs stay valid.
+- **Status:** decided
+- **Back-port:** none.
+
+## D-295 · 2026-10-15 · number and fraction answers: a letter and "=" or one pair of parentheses are read, and an unreadable answer says what to write
+
+- **Design ref:** E-03, `Grading::Closed::Numbers`, `Grading::Closed::Fractions`
+- **Found:** on a number item of the entry test, the student's answers were refused as unreadable nine times in one minute, and the student typed an arbitrary number to get past. Invalid inputs keep no text, so the typed forms are unknown, but the grader refused reasonable ones (`n = -2`, `(-2)`) with the generic "Non riesco a leggere la risposta".
+- **We do:** a number (and each fraction box) may carry one leading Latin letter and "=" (`n = -2`, `x=3`, `N = 2,5`) and one pair of parentheses around the whole value (`(-2)`, `( 2,5 )`, `n = (-2)`); they are stripped before the usual reading, so `normalized` and the typical-error matching see the bare value. Not read, as before: a second letter (`n = m = 2`), the letter after the value (`2 = n`), nested or unbalanced parentheses, a slash in a number box. The browser sends the text as typed and does not pre-validate, so only the server changed. Two new invalid codes with their own text: `unreadable_number` ("Scrivi solo il numero, per esempio −3 oppure 2,5.") and `unreadable_fraction` ("Scrivi la frazione, per esempio −3/4."), replacing `unparseable` for those two components only; `invalid_input` (and `practice_invalid_input`) keep recording the code and never the typed text. Empty answers, `use_comma`, `thousands_separator` and every other verdict are unchanged.
+- **Rules version:** none changes: `grader_version` of a grading is the git sha, which moves with this commit. No earlier verdict changes: only answers that were invalid become gradable.
 - **Status:** decided
 - **Back-port:** none.

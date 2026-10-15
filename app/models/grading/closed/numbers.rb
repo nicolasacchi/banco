@@ -26,6 +26,9 @@ module Grading
       THOUSANDS = /\A[+-]?[1-9]\d{0,2}(?:\.\d{3})+(?:,\d+)?\z/
       # The same with spaces (8 800, 1 600 000): groups of exactly three digits (D-103).
       THOUSANDS_SPACED = /\A[+-]?[1-9]\d{0,2}(?:#{SPACES}\d{3})+(?:,\d+)?\z/
+      # A harmless wrapper (D-295): one Latin letter and "=" at the start ("n = -2"), then one pair of
+      # parentheses around the whole value ("(-2)"). Either, or both; never repeated, never nested.
+      LETTER_PREFIX = /\A[A-Za-z]#{SPACES}*=#{SPACES}*/
       DECIMAL = /\A([+-])?(\d*)(?:([.,])(\d+))?\z/
       # a·10^n, a x 10^n, a×10^n, a*10^n, with ^{n} or a superscript exponent (form "scientific", D-093).
       SCIENTIFIC = /\A(.+?)#{SPACES}*[·⋅×x*]#{SPACES}*10#{SPACES}*\^#{SPACES}*\{?#{SPACES}*([+-]?)#{SPACES}*(\d+)#{SPACES}*\}?\z/i
@@ -116,6 +119,7 @@ module Grading
       def parse(text, allow_dot: false, unit: nil, thousands: false)
         s = strip_unit(clean(text), unit)
         raise Invalid, "empty" if s.empty?
+        s = unwrap(s)
         t = s.sub(/\A([+-])#{SPACES}+/, '\1')
         raise Invalid, "thousands_separator" if t.match?(THOUSANDS_SPACED)
         raise Invalid, "ambiguous_mixed_number" if s.match?(/\d#{SPACES}+[\d,.]/)
@@ -127,13 +131,24 @@ module Grading
         end
 
         m = DECIMAL.match(t)
-        raise Invalid, "unparseable" if m.nil? || (m[2].empty? && m[4].nil?)
-        raise Invalid, "unparseable" if m[2].empty? && m[3].nil?
+        raise Invalid, "unreadable_number" if m.nil? || (m[2].empty? && m[4].nil?)
+        raise Invalid, "unreadable_number" if m[2].empty? && m[3].nil?
         raise Invalid, "use_comma" if m[3] == "." && !allow_dot
 
         sign = m[1] == "-" ? -1 : 1
         integer = m[2].empty? ? "0" : m[2]
         sign * Rational("#{integer}#{".#{m[4]}" if m[4]}")
+      end
+
+      # "n = -2", "(-2)", "n = (-2)" -> "-2". Text that is left empty by the strip is unreadable.
+      def unwrap(s)
+        s = s.sub(LETTER_PREFIX, "")
+        if (m = /\A\((.*)\)\z/m.match(s)) && !m[1].match?(/[()]/)
+          s = m[1].gsub(/\A#{SPACES}+|#{SPACES}+\z/, "")
+        end
+        raise Invalid, "unreadable_number" if s.empty?
+
+        s
       end
 
       # Unicode look-alikes made plain, invisible characters dropped, edges trimmed.
