@@ -205,13 +205,17 @@ module Validation
 
     def shot(page, kind, index, width, extra = {})
       height = frame_height(page)
-      data = page.command("Page.captureScreenshot", format: "webp", quality: @rule["shot_quality"], captureBeyondViewport: true, clip: { x: 0, y: 0, width: width, height: height, scale: 1 })["data"]
+      data = page.command("Page.captureScreenshot", format: "webp", quality: @rule["shot_quality"], captureBeyondViewport: beyond?(width, height), clip: { x: 0, y: 0, width: width, height: height, scale: 1 })["data"]
       bytes = Base64.decode64(data)
       @shots << { "kind" => kind, "seed_index" => index, "width" => width, "height" => height, "viewport" => "#{width}x#{height}", "sha256" => @store.put(bytes), "bytes" => bytes.bytesize }.merge(extra.transform_keys(&:to_s))
     end
 
+    # captureBeyondViewport resizes the viewport for the capture and, on the runner's Chrome, now and then returns a blank frame for the frame
+    # of another origin (2 of 300 shots in a probe, none of 300 without it); a frame that fits the viewport is captured without it.
+    def beyond?(width, height) = height > (width == narrow.first ? narrow.last : wide.last)
+
     def png(page, height = frame_height(page))
-      page.command("Page.captureScreenshot", format: "png", captureBeyondViewport: true, clip: { x: 0, y: 0, width: wide.first, height: height, scale: 1 })["data"]
+      page.command("Page.captureScreenshot", format: "png", captureBeyondViewport: beyond?(wide.first, height), clip: { x: 0, y: 0, width: wide.first, height: height, scale: 1 })["data"]
     end
 
     def narrow_shot(page, index)
