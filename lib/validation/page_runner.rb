@@ -18,8 +18,8 @@ module Validation
 
     DEFINED_WAIT = 20
     LOAD_ATTEMPTS = 3
-    SETTLE_STABLE_MS = 500 # the frame height unchanged this long counts as settled
-    SETTLE_MAX_MS = 8000
+    SETTLE_STEP = 0.3
+    SETTLE_MAX_MS = 4000
     MOTION_ATTEMPTS = 3
     KEYS = {
       "Tab" => { key: "Tab", code: "Tab", vk: 9 }, "Enter" => { key: "Enter", code: "Enter", vk: 13, text: "\r" }, "Space" => { key: " ", code: "Space", vk: 32, text: " " },
@@ -142,21 +142,23 @@ module Validation
       nil
     end
 
-    # Lets the first frames, the fonts and the ResizeObserver settle: the frame keeps its height for SETTLE_STABLE_MS (the page reports
-    # its height by message and a loaded host can deliver one late), within SETTLE_MAX_MS.
+    # Lets the first frames, the fonts and the ResizeObserver settle, then waits for a painted, steady frame: two screenshots 0.3 s apart
+    # that are the same (and the same size), within SETTLE_MAX_MS. The frame is sized by a message of the page, which a loaded host can
+    # deliver late, and on a slow runner the frame can still be unpainted (white) well after ready; both once showed up as a false
+    # E-PAGE-MOTION, and a blank poster. A page that really moves never gets two equal screenshots; the wait ends at its limit and what
+    # follows (the motion check, the ready screenshot) judges the page as it is.
     def settle(page)
       sleep 0.6
       page.evaluate("document.fonts ? document.fonts.ready.then(() => true) : true") rescue nil
       deadline = @clock.call + SETTLE_MAX_MS / 1000.0
-      last = nil
-      stable_since = @clock.call
+      previous = nil
       loop do
         height = frame_height(page)
-        now = @clock.call
-        (last = height; stable_since = now) if height != last
-        break if now - stable_since >= SETTLE_STABLE_MS / 1000.0 || now >= deadline
+        current = [ height, png(page, height) ]
+        return if current == previous || @clock.call >= deadline
 
-        sleep 0.1
+        previous = current
+        sleep SETTLE_STEP
       end
     end
 
