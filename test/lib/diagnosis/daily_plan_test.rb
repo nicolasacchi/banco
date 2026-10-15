@@ -1,6 +1,6 @@
 require "test_helper"
 
-# B-12 and the operator's days decision: dependency gating and the daily caps.
+# B-12 and the operator's days decision: dependency gating; no daily cap (D-294).
 class DiagnosisDailyPlanTest < ActiveSupport::TestCase
   Plan = Diagnosis::DailyPlan
   TODAY = Date.new(2026, 11, 2)
@@ -27,31 +27,26 @@ class DiagnosisDailyPlanTest < ActiveSupport::TestCase
     assert_equal :to_do, states(subjects)["chemistry"]
   end
 
-  test "at most two subjects a day: a third waits for tomorrow" do
-    subjects = [ subject("math", status: "in_progress", dates: [ TODAY ], seconds: { TODAY => 1500 }),
-                 subject("english", status: "in_progress", dates: [ TODAY ], seconds: { TODAY => 1000 }),
-                 subject("italian") ]
-    s = states(subjects)
-    assert_equal :tomorrow, s["italian"]
-    assert_equal :to_do, s["math"] # the sitting in progress goes on
-  end
-
   test "a subject whose sitting ended today continues tomorrow" do
     subjects = [ subject("math", status: "continue_next_day", closed: 1, dates: [ TODAY ], seconds: { TODAY => 1800 }) ]
     assert_equal :continue_next_day, states(subjects)["math"]
   end
 
-  test "75 counted minutes a day is a ceiling that closes the day for new subjects" do
-    subjects = [ subject("math", status: "completed", closed: 2, dates: [ TODAY ], seconds: { TODAY => 76 * 60 }),
-                 subject("english") ]
-    assert_equal :tomorrow, states(subjects)["english"]
+  test "no daily cap: with two subjects and over 75 minutes done today every other open subject is still to do" do
+    subjects = [ subject("math", status: "continue_next_day", closed: 1, dates: [ TODAY ], seconds: { TODAY => 1800 }),
+                 subject("english", status: "completed", closed: 2, dates: [ TODAY ], seconds: { TODAY => 76 * 60 }),
+                 subject("italian"), subject("history"), subject("spanish") ]
+    s = states(subjects)
+    %w[italian history spanish].each { |k| assert_equal :to_do, s[k], k }
   end
 
-  test "two first sittings fit under the ceiling: 30 + 25 counted minutes leave the day open for the next one only by the two-subject cap" do
-    subjects = [ subject("math", status: "continue_next_day", closed: 1, dates: [ TODAY ], seconds: { TODAY => 1800 }),
-                 subject("english", status: "continue_next_day", closed: 1, dates: [ TODAY ], seconds: { TODAY => 1500 }),
-                 subject("italian") ]
-    assert_equal :tomorrow, states(subjects)["italian"]
+  test "dependencies still block when the day is full of other work" do
+    subjects = [ subject("math", status: "in_progress", dates: [ TODAY ], seconds: { TODAY => 1500 }),
+                 subject("english", status: "completed", closed: 2, dates: [ TODAY ], seconds: { TODAY => 4000 }),
+                 subject("chemistry", depends_on: %w[math]), subject("italian") ]
+    s = Plan.availability(subjects, TODAY)
+    assert_equal :after_dependency, s["chemistry"][:state]
+    assert_equal :to_do, s["italian"][:state]
   end
 
   test "completed subjects are done" do

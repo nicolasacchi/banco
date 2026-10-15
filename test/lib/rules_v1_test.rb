@@ -10,8 +10,8 @@ class RulesV1Test < ActiveSupport::TestCase
     assert_equal :credit, V1::ORTHOGRAPHY_SLIP
     assert_equal 2, V1::SITTINGS_PER_SUBJECT
     assert V1::AUTO_SECOND_SITTING
-    assert_equal 2, V1::DAILY_MAX_SUBJECTS
-    assert_equal 75, V1::DAILY_MAX_MINUTES
+    refute V1.const_defined?(:DAILY_MAX_SUBJECTS), "no daily cap (D-294)"
+    refute V1.const_defined?(:DAILY_MAX_MINUTES), "no daily cap (D-294)"
     assert_equal :yes, V1.calculator("math")
     assert_equal :yes, V1.calculator("business")
     assert_equal :yes, V1.calculator("chemistry")
@@ -28,11 +28,6 @@ class RulesV1Test < ActiveSupport::TestCase
     assert_equal 600, V1::ITEM_CAP_SECONDS
     assert_equal 1200, V1::TESTLET_CAP_SECONDS
     assert_equal 1800, V1::ABANDON_GAP_SECONDS
-  end
-
-  test "two first sittings fit in the daily safety ceiling" do
-    assert_operator V1.sitting_budget_minutes("math") + V1.sitting_budget_minutes("italian"), :<=, 55
-    assert_operator 55, :<=, V1::DAILY_MAX_MINUTES
   end
 
   test "evidence table: certain and uncertain verdicts" do
@@ -99,7 +94,7 @@ class RulesV1Test < ActiveSupport::TestCase
     note = File.read(Rails.root.join("docs/rules/diagnosis-1.md"))
     %w[NEAR_MISS WRONG_FORM_DECLARED ORTHOGRAPHY_SLIP ORTHOGRAPHY_ALLOWLIST EVIDENCE END_REASONS SITTING_BUDGET_MINUTES
        OPEN_RESERVE_MINUTES MAX_ITEMS_PER_SITTING SITTINGS_PER_SUBJECT AUTO_SECOND_SITTING ABANDON_GAP_SECONDS
-       DAILY_MAX_SUBJECTS DAILY_MAX_MINUTES CALCULATOR ITEM_CAP_SECONDS TESTLET_CAP_SECONDS MAX_SERVED_PER_SKILL].each do |const|
+       CALCULATOR ITEM_CAP_SECONDS TESTLET_CAP_SECONDS MAX_SERVED_PER_SKILL].each do |const|
       assert_includes note, const, "docs/rules/diagnosis-1.md should mention #{const}"
       assert V1.const_defined?(const), "Rules::V1::#{const} should exist"
     end

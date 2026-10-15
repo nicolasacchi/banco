@@ -156,7 +156,7 @@ interroga oltre il primo anello mancante.
 `teacher_close`. They are checked **between serves**. `MAX_ITEMS_PER_SITTING` is
 30 and ends a sitting with `item_cap`.
 
-## 6. Time: budget, sittings, short-answer reserve, daily caps (B-05, B-12, Q11)
+## 6. Time: budget, sittings, short-answer reserve (B-05, B-12, Q11)
 
 - No timer on screen. The counted time of an item is `min(answered_at - served_at -
   paused - hidden, ITEM_CAP_SECONDS)`, with `ITEM_CAP_SECONDS` = 600 (a testlet caps
@@ -178,17 +178,18 @@ interroga oltre il primo anello mancante.
   empty" and "budget minus `OPEN_RESERVE_MINUTES`". If a sitting ends before it was
   served and another sitting exists, it is the first item of that sitting. If the run
   closes without it, its skill is `not_assessed(time_budget)`.
-- **Daily caps** (default, changeable): at most `DAILY_MAX_SUBJECTS` = 2 subjects and
-  `DAILY_MAX_MINUTES` = 75 counted minutes a day, in dependency order, mathematics
-  first. Two first sittings use at most 55 minutes; the 75 is a safety ceiling.
+- **No daily cap** (D-294, operator: "Togli il limite giornaliero"): the day holds
+  as many subjects as the student wants. The earlier caps (2 subjects, 75 counted
+  minutes a day) are gone; what limits time is each run's own sitting budget above,
+  and a sitting that closed today leaves the rest of that subject for the next day.
 - The subject is final when the run closes; solutions appear only then. The
   warm-up is outside the budget and outside the log of runs.
 - **Dependencies** (`depends_on_subjects`): a subject can start when the first
   sitting of each dependency is closed.
 
 In breve: 30 minuti per matematica e 25 per le altre; la seconda seduta parte da
-sola se restano abilità da esplorare (fino a 60 o 50 minuti); al massimo 2 materie
-e 75 minuti al giorno.
+sola se restano abilità da esplorare (fino a 60 o 50 minuti); nessun limite
+giornaliero: ogni materia parte dopo la prima seduta delle sue dipendenze.
 
 ## 7. States and reasons (B-04)
 
@@ -367,10 +368,9 @@ How the fold reads the rules above:
   from the next calendar day; otherwise `close_run`. An `extend_diagnosis_run` after
   a run closed on `time_budget` or `item_cap` reopens it. A `close_diagnosis_run`
   closes it for good (`teacher_close`).
-- **Daily caps** are `Diagnosis::DailyPlan`, a pure function over the facts of each
-  subject: waiting for a dependency, continuing tomorrow, or full for today
-  (`DAILY_MAX_SUBJECTS`, `DAILY_MAX_MINUTES`), in dependency order with mathematics
-  first. Every sitting records `condition: unsupervised`.
+- **Availability** is `Diagnosis::DailyPlan`, a pure function over the facts of each
+  subject: waiting for a dependency, continuing tomorrow (a sitting closed today),
+  or startable, in dependency order with mathematics first. There is no daily cap. Every sitting records `condition: unsupervised`.
 
 In breve: il motore è una funzione pura sul registro; `simulate` lo fa girare su un
 alunno a copione senza scrivere nulla.

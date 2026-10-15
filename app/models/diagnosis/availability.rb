@@ -1,7 +1,7 @@
 module Diagnosis
   # The list of subjects on the student's Diagnosi screen: for each, its state in
   # words (B-11), whether it can be started now, and which ones the screen
-  # proposes. The rules (dependencies, the daily caps) are DailyPlan's; this reads
+  # proposes. The rules (dependencies; no daily cap, D-294) are DailyPlan's; this reads
   # the runs of the student and hands DailyPlan its facts.
   class Availability
     Row = Data.define(:subject, :label_key, :label_args, :startable, :suggested, :done, :status, :run_id)
@@ -17,17 +17,15 @@ module Diagnosis
       facts = subjects.map { |s| fact(s) }
       today = @clock.date(@clock.now)
       states = DailyPlan.availability(facts.map(&:daily), today)
-      slots = [ Rules::V1::DAILY_MAX_SUBJECTS - facts.count { |f| f.daily.sitting_dates.include?(today) }, 0 ].max
+      proposed = false
       by_key = facts.to_h { |f| [ f.daily.key, f ] }
       states.map do |key, availability|
         f = by_key.fetch(key)
         # A sitting that closed today leaves the rest of the subject for tomorrow.
         startable = availability[:state] == :to_do && f.daily.status != "completed" && !f.closed_today
-        suggested = false
-        if startable && (f.daily.status == "in_progress" || slots.positive?)
-          suggested = true
-          slots -= 1 unless f.daily.status == "in_progress"
-        end
+        # The screen proposes the sittings in progress and the first subject to begin.
+        suggested = startable && (f.daily.status == "in_progress" || !proposed)
+        proposed ||= suggested
         label_key, args = label(f, availability, by_key)
         Row.new(subject: f.subject, label_key: label_key, label_args: args, startable: startable, suggested: suggested,
                 done: f.daily.status == "completed", status: f.daily.status, run_id: f.run&.id)
@@ -78,7 +76,6 @@ module Diagnosis
       when :after_dependency
         names = availability[:waiting_for].map { |k| by_key[k]&.subject&.name_it || k }
         [ "diagnosis.states.after_dependency", { subjects: names.to_sentence(two_words_connector: " e ", last_word_connector: " e ") } ]
-      when :tomorrow then [ "diagnosis.states.tomorrow", {} ]
       when :continue_next_day then [ "diagnosis.states.continue_next_day", {} ]
       else
         key = { "in_progress" => "paused", "continue_next_day" => "continue_next_day", "to_redo" => "to_redo" }.fetch(fact.daily.status, "to_do")

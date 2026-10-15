@@ -39,8 +39,7 @@ it:
       save: "Salva"
     states:
       to_do: "Da fare"
-      after_dependency: "Prima fai %{subjects}"
-      tomorrow: "Domani"
+      after_dependency: "Dopo la prima seduta di %{subjects}"
       paused: "In pausa"
       continue_next_day: "Resta una parte da fare"
       done: "Fatto"

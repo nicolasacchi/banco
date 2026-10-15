@@ -75,7 +75,7 @@ class StudentPagesTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "p", "Fai le materie nell'ordine indicato."
     assert_select "li.subject[data-subject=math] .subject-state", "Da fare"
-    assert_select "li.subject[data-subject=chemistry] .subject-state", "Prima fai Matematica"
+    assert_select "li.subject[data-subject=chemistry] .subject-state", "Dopo la prima seduta di Matematica"
     assert_select "li.subject[data-subject=chemistry] form", 0
     as_student("/diagnosis/subjects/chemistry", method: :post)
     assert_response :forbidden, "a gated subject cannot be started by posting to it"
@@ -84,7 +84,7 @@ class StudentPagesTest < ActionDispatch::IntegrationTest
     assert_match %r{/diagnosis/runs/\d+\z}, response.location
   end
 
-  test "once the first sitting of the dependency is closed the next subject opens, and the daily cap says Domani" do
+  test "once the first sitting of the dependency is closed the next subject opens, and no daily cap holds the others back" do
     rows = build_ui_subject
     build_ui_subject(key: "chemistry", name: "Chimica", position: 2, components: %w[number], depends_on: [ "math" ])
     build_ui_subject(key: "english", name: "Inglese", position: 3, components: %w[number])
@@ -106,15 +106,15 @@ class StudentPagesTest < ActionDispatch::IntegrationTest
     assert_redirected_to "/diagnosis/runs/#{run.id}/results"
     as_student("/diagnosis/runs/#{run.id}/results")
     assert_response :success
-    # Mathematics is done today; one more subject fits in the day, a third waits.
+    # Mathematics is done today; every other subject whose dependencies are met is open.
     chemistry = Diagnosis::Conductor.run_for(rows[:student], Subject.find_by!(key: "chemistry"))
     Diagnosis::Conductor.new(chemistry).step!
     as_student("/diagnosis")
     # Done, but the short answer waits for the teacher.
     assert_select "li.subject[data-subject=math] .subject-state", "Fatto · in correzione"
     assert_select "li.subject[data-subject=chemistry] .subject-state", "In pausa"
-    assert_select "li.subject[data-subject=english] .subject-state", "Domani"
-    assert_select "li.subject[data-subject=history] .subject-state", "Domani"
+    assert_select "li.subject[data-subject=english] .subject-state", "Da fare"
+    assert_select "li.subject[data-subject=history] .subject-state", "Da fare"
   end
 
   test "a run of a subject that cannot start today answers wait and writes nothing" do

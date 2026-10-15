@@ -102,8 +102,8 @@ class SittingsController < ApplicationController
     @conductor = Diagnosis::Conductor.new(@run)
   end
 
-  # The student reaches a run only after the release; the daily caps are checked
-  # when a sitting is about to start (the subject list says "Domani").
+  # The student reaches a run only after the release; dependencies and the
+  # day's closed sitting are checked when a sitting is about to start.
   def require_open_diagnosis!
     return if preview?
     return head(:forbidden) unless diagnosis_open?
@@ -112,7 +112,7 @@ class SittingsController < ApplicationController
     row = Diagnosis::Availability.for(acting_student).find { |r| r.subject == @run.subject }
     return if row&.startable || row&.status == "in_progress"
 
-    # Not today (the day's caps, a dependency, a sitting that closed today): the
+    # Not now (a dependency, a sitting that closed today): the
     # page shows "Per oggi basta così", it is not an error.
     render json: { type: "wait" }
   end

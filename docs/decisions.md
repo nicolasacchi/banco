@@ -297,6 +297,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-291 | 2026-10-13 | wave 2 integration 2 (w2-int): T2, T3, T7, T4a and T11 merged; one finding for a language the subject does not teach; the gallery of the words in Spanish only | decided |
 | D-292 | 2026-10-13 | wave 2 final fixes: seats.threshold, chem.count without a pick, bare atoms in molecule, span_select in English or Spanish, sentence neutral available, a served example never has one state, no empty details on a failed figure | decided |
 | D-293 | 2026-10-13 | render check of wave 2: a figure measured while hidden is never cached, the print views are not judged, the plate words are measured as drawn, the rendering waits no longer than needed | decided |
+| D-294 | 2026-10-15 | entry diagnosis: no daily cap; dependencies and each run's sitting budgets stay | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -3178,5 +3179,15 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Found:** the production render of the history and geography drafts failed on every map and climograph. Cause one: `makeMeasure` (draw.js) cached `0 x 0` for every text it measured while the figure sat in a hidden card (the cards view shows one card; a map loads its base asynchronously and draws once at the fallback width 320). Layouts built on those zeros put "Est" at the right edge with width 0 (so the bold word ran out of the box), stacked callouts and labels, and gave the climograph's tick engine a pitch test against zero-width labels (every tick kept: the smear at 390 px). Cause two: the print views (`.dg-print`, hidden on screen) hold `.dg-label`s with no box; the check read them as "outside the figure" and "overlapping". Cause three: the stacked table's visually hidden `thead` cells were reported as overflowing a 30 px box. Cause four: the `chain` fan-in word ("solo prima") was measured in regular weight and drawn in bold.
 - **We do:** the measure never caches or trusts a zero box (`degenerate`), and the figure draws again when it shows (the resize observer also fires on `degenerate`); the render host judges only labels with a box, skips a clipped table head, waits at most 120 ms for the two animation frames (a throttled page no longer stalls a card) and 90 ms for the redraw debounce; `measure(text, px, maxW, cls)` takes the label's classes, used by `plateLabel` and the chain words, and a plate label is kept inside the figure. Tests: `lesson/test/render_fit.test.mjs` (every map vector at 320 to 1366 px, light and the 20 and 26 px sizes: labels inside, no overlap, the map scales to its box; every climograph vector: no overlap, tick labels few enough for the height), `test/validation/lesson_render_runner_test.rb` (the maps and chart galleries in Chrome: no layout error, no timeout, under half the revision budget).
 - **Not changed:** the print check of a summary card whose schema is a 12 node decision tree (`flow` line layout, about 940 px tall at A4 width) still takes two pages; that is the drafts' content, to be shortened or split by the author. The seats gallery card (two steppers side by side) overflows at 390 px; not touched.
+- **Status:** decided
+- **Back-port:** none.
+
+## D-294 · 2026-10-15 · entry diagnosis: no daily cap; dependencies and each run's sitting budgets stay
+
+- **Design ref:** B-12, Q11, the operator's days decision, `docs/rules/diagnosis-1.md` section 6
+- **Found:** the official student did not see all the entry tests: the daily caps (`DAILY_MAX_SUBJECTS` = 2, `DAILY_MAX_MINUTES` = 75) turned every further subject into "Domani".
+- **Operator (2026-10-15):** asked whether to lift or raise the cap, answered "Togli il limite giornaliero".
+- **We do:** both caps are removed (constants, `DailyPlan`, `Availability`). Every subject whose dependencies are met (`depends_on_subjects`: the first sitting of each dependency is closed) is startable, whatever was done today. A subject waiting on a dependency says why ("Dopo la prima seduta di Matematica"); the "Domani" state is gone. Unchanged: the sitting budgets (30 and 25 minutes, the short-answer reserve, the automatic second sitting from the next calendar day). The list proposes the sittings in progress and the first subject to begin.
+- **Rules version:** `diagnosis/1` does not change. The caps never entered the engine, the grading or the derivation, only which subject the list lets the student open, so no run, event or result changes meaning and existing runs stay valid.
 - **Status:** decided
 - **Back-port:** none.

@@ -109,8 +109,6 @@ module Diagnosis
       AUTO_SECOND_SITTING = true        # when skills remain to explore
       ABANDON_GAP_SECONDS = 1800        # an open item is logged item_abandoned
       KEEPALIVE_SECONDS = 600           # one request every 10 minutes while visible
-      DAILY_MAX_SUBJECTS = 2
-      DAILY_MAX_MINUTES = 75            # a safety ceiling; two first sittings use at most 55
 
       # ---- Calculator per subject (operator "calculator") ---------------------
       CALCULATOR = Hash.new(:no).merge("math" => :yes, "business" => :yes, "chemistry" => :yes).freeze
