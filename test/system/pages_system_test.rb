@@ -58,7 +58,7 @@ class PagesSystemTest < ApplicationSystemTestCase
     page.driver.resize(*size)
     visit "about:blank"
     visit "/topics/#{TOPIC}/lesson?n=#{SecureRandom.hex(3)}"
-    assert_selector "#lesson-root[data-ready='1']", wait: 20
+    wait_for_lesson_ready(wait: 20)
     page.execute_script("window.lessonApi.goTo(#{PagesLessonWorld::EXTRA_CARD}, { focus: true })")
     assert_selector ".free-page", wait: 10
   end

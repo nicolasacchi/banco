@@ -116,6 +116,26 @@ class ApplicationSystemTestCase < ActiveSupport::TestCase
 
   TEST_TIMEOUT_SECONDS = Integer(ENV.fetch("BANCO_SYSTEM_TEST_TIMEOUT", "300"))
 
+  # The lesson page is ready when its controller has drawn the cards (data-ready) and every figure on show has been drawn at the width it has now
+  # (draw.js: data-drawn, data-drawn-width; data-settling while a resize waits to be drawn). A late redraw after a resize or a lazy module load can
+  # no longer replace a node a test has just found.
+  FIGURES_SETTLED = <<~JS.freeze
+    (() => [...document.querySelectorAll("#lesson-root figure.dg")].filter((f) => f.offsetParent !== null && f.querySelector(".dg-stage")).every((f) => {
+      if (f.dataset.error) return true
+      const stage = f.querySelector(".dg-stage")
+      return f.dataset.drawn && !f.dataset.settling && Math.abs(Number(f.dataset.drawnWidth) - Math.floor(stage.clientWidth)) <= 1
+    }))()
+  JS
+
+  def wait_for_lesson_ready(wait: 20)
+    assert_selector "#lesson-root[data-ready='1']", wait: wait
+    deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + wait
+    until page.evaluate_script(FIGURES_SETTLED)
+      flunk "the figures of the lesson were not drawn and settled within #{wait} s" if Process.clock_gettime(Process::CLOCK_MONOTONIC) > deadline
+      sleep 0.05
+    end
+  end
+
   def run
     Timeout.timeout(TEST_TIMEOUT_SECONDS, SystemTestHang, "#{self.class}##{name} took more than #{TEST_TIMEOUT_SECONDS} s: the browser or the server did not answer") { super }
   end

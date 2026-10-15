@@ -290,6 +290,9 @@ export function mountDiagram(data, ctx, options = {}) {
     const width = Math.floor(stage.clientWidth || figure.clientWidth || options.width || 320)
     if (width < 10) return
     state.width = width
+    // the ready state of the figure (the system tests wait on it): how many times it was drawn and at which width; `settling` while a resize is waiting to be drawn
+    figure.dataset.drawn = String(Number(figure.dataset.drawn ?? 0) + 1)
+    figure.dataset.drawnWidth = String(width)
     if (!measurer.current) measurer.current = makeMeasure(stage, ctx)
     const fontPx = ctx.fontPx()
     measurer.current.degenerate = false
@@ -599,9 +602,11 @@ export function mountDiagram(data, ctx, options = {}) {
   let observer = null
   const schedule = () => {
     clearTimeout(timer)
+    figure.dataset.settling = "1"
     timer = setTimeout(() => {
       const width = Math.floor(stage.clientWidth)
       if (width && (Math.abs(width - state.width) > 1 || measurer.current?.degenerate)) draw()
+      delete figure.dataset.settling
     }, 60)
   }
   const mounted = () => {

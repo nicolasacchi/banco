@@ -47,7 +47,7 @@ class SpanSelectEnglishSystemTest < ApplicationSystemTestCase
       page.driver.resize(width, height)
       visit "about:blank"
       visit "/topics/#{TOPIC}/lesson?n=#{SecureRandom.hex(3)}#scheda-1"
-      assert_selector "#lesson-root[data-ready='1']", wait: 20
+      wait_for_lesson_ready(wait: 20)
       assert_selector "#scheda-1 .spans[lang='en']", wait: 10
       assert_equal "I will text you as soon as the film ends.", page.evaluate_script("document.querySelector('#scheda-1 .spans').textContent.replace(/\\s+/g, ' ').trim()")
       chips = page.evaluate_script("[...document.querySelectorAll('#scheda-1 .span-chip')].map((b) => b.textContent)")

@@ -39,7 +39,7 @@ class LessonEventsSystemTest < ApplicationSystemTestCase
   def open_lesson(fragment = "")
     visit "about:blank"
     visit "/topics/#{TOPIC}/lesson?n=#{SecureRandom.hex(3)}#{fragment}"
-    assert_selector "#lesson-root[data-ready='1']", wait: 20
+    wait_for_lesson_ready(wait: 20)
     assert_selector ".l2-cover, .l2-card", wait: 10
   end
 

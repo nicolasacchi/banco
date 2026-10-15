@@ -47,7 +47,7 @@ class FigureErrorSystemTest < ApplicationSystemTestCase
     lesson_body
     visit "about:blank"
     visit "/topics/#{TOPIC}/lesson?n=#{SecureRandom.hex(3)}#scheda-#{@card_n}"
-    assert_selector "#lesson-root[data-ready='1']", wait: 20
+    wait_for_lesson_ready(wait: 20)
     assert_selector "#scheda-#{@card_n} .dg-failed", wait: 10
     assert_equal [], page.evaluate_script("[...document.querySelectorAll('#scheda-#{@card_n} details')].filter((d) => getComputedStyle(d).display !== 'none' && !d.querySelector(':scope > summary')).map((d) => d.className)")
     assert_selector "#scheda-#{@card_n} .dg-desc summary", text: "Descrizione"

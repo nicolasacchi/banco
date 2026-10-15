@@ -55,7 +55,7 @@ class LessonChartGallerySystemTest < ApplicationSystemTestCase
     page.driver.resize(*size)
     visit "about:blank"
     visit "/topics/#{TOPIC}/lesson?n=#{SecureRandom.hex(3)}"
-    assert_selector "#lesson-root[data-ready='1']", wait: 30
+    wait_for_lesson_ready(wait: 30)
     assert_selector ".l2-cover, .l2-card", wait: 10
   end
 

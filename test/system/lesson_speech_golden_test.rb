@@ -65,7 +65,7 @@ class LessonSpeechGoldenSystemTest < ApplicationSystemTestCase
       page.driver.resize(1366, 900)
       visit "about:blank"
       visit "/topics/#{TOPIC}/lesson?n=#{SecureRandom.hex(3)}"
-      assert_selector "#lesson-root[data-ready='1']", wait: 30
+      wait_for_lesson_ready(wait: 30)
       read = @golden_body["cards"].to_h { |card| [ card["id"], read_card(card["n"]) ] }
       read.each { |id, segments| assert_not_empty segments, "#{name}/#{id} reads nothing" }
       path = GOLDEN.join("#{name}.json")
