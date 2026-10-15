@@ -11,6 +11,42 @@ require "capybara/cuprite"
 Ferrum::Mouse.send(:remove_const, :CLICK_WAIT)
 Ferrum::Mouse.const_set(:CLICK_WAIT, 0.0)
 
+# The same wait is made after every navigation (Page#go_to, so every `visit`), and it never ends on the runner's Chrome 154 and 155 either:
+# the first, initial main frame stays in the state :canceled and never reaches :stopped_loading, so Ferrum's "all frames idle" never
+# holds and each visit waited the whole 30 s command timeout before carrying on (then swallowed, as pending_connection_errors is off).
+# That was about 60 to 90 s per test and four hours for the system step (it is 9 minutes with the Playwright shell). The wait is switched
+# off here and replaced by the one it meant: the document of the main frame is complete (a probe on the runner showed it is, 0.1 s after
+# the call).
+Ferrum::Page.send(:remove_const, :GOTO_WAIT)
+Ferrum::Page.const_set(:GOTO_WAIT, 0.0)
+
+module VisitWaitsForDocument
+  DOCUMENT_WAIT_SECONDS = 30
+
+  def visit(*args)
+    result = super
+    wait_for_document
+    result
+  end
+
+  private
+
+  def wait_for_document
+    deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + DOCUMENT_WAIT_SECONDS
+    loop do
+      state = begin
+        page.evaluate("document.readyState")
+      rescue Ferrum::NoExecutionContextError, Ferrum::NodeNotFoundError, Ferrum::BrowserError
+        nil # the new document has no execution context yet
+      end
+      return if state == "complete" || Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
+
+      sleep 0.02
+    end
+  end
+end
+Capybara::Cuprite::Browser.prepend(VisitWaitsForDocument)
+
 # System tests drive a real Chrome through Cuprite. BROWSER_PATH points at the
 # Playwright headless shell locally and at the runner's Chrome in CI.
 #
