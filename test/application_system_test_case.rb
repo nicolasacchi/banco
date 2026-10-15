@@ -24,7 +24,13 @@ module VisitWaitsForDocument
   DOCUMENT_WAIT_SECONDS = 30
 
   def visit(*args)
-    result = super
+    result = begin
+      super
+    rescue Ferrum::StatusError => e
+      # An error status with an empty body (a 403 or a 404 of the app) is reported by Chrome as a failed navigation; the tests read the
+      # status (page.status_code) and the page, as they did while the wait above timed out before this check was reached.
+      raise unless e.message.include?("ERR_HTTP_RESPONSE_CODE_FAILURE")
+    end
     wait_for_document
     result
   end

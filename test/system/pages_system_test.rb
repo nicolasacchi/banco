@@ -63,10 +63,18 @@ class PagesSystemTest < ApplicationSystemTestCase
     assert_selector ".free-page", wait: 10
   end
 
-  # A frame that is still being created has no execution context yet: look again a few times before giving up.
+  # A frame that is still being created has no execution context yet: look again a few times before giving up. The runner's Chrome also
+  # leaves the initial main frame without any context for good (state :canceled): asking it for its url waits for one and, in two runs, never
+  # came back (the 900 s watchdog stopped this test), so a frame with no context is not asked, and each answer is bounded.
   def frame_for_pages
     5.times do
-      frame = page.driver.browser.page.frames.find { |f| f.url.to_s.start_with?(@origin) }
+      frame = page.driver.browser.page.frames.find do |f|
+        next false unless f.execution_id
+
+        Timeout.timeout(5) { f.url.to_s.start_with?(@origin) }
+      rescue Timeout::Error, Ferrum::NoExecutionContextError, Ferrum::NodeNotFoundError
+        false
+      end
       return frame if frame
     rescue Ferrum::NoExecutionContextError, Ferrum::NodeNotFoundError
       nil
