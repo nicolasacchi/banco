@@ -22,7 +22,7 @@ jobs:
 
   rails:
     runs-on: ubuntu-24.04
-    timeout-minutes: 330 # the whole job (a green run takes 100 to 260 minutes, most of it the system tests); each long step has its own, below. A hung run fails here, not after six hours.
+    timeout-minutes: 120 # the whole job (a green run takes about 45 minutes since the system tests no longer wait 30 s per visit; it took up to 260 before). A hung run fails here.
     env:
       RAILS_ENV: test
       BANCO_CHROME_NO_SANDBOX: "1"
@@ -58,7 +58,7 @@ jobs:
           UPDATE_CONTRACT=1 bin/rails test test/integration/work_api_test.rb test/integration/graph_blueprint_api_test.rb test/integration/grade_proposals_test.rb test/integration/diagnosis_report_test.rb test/integration/health_test.rb test/integration/independence_test.rb
           test -z "$(git status --porcelain contract)" || { git status --porcelain contract; git diff contract; echo "contract/examples is out of date" >&2; exit 1; }
       - name: System tests (runner's Chrome)
-        timeout-minutes: 300 # a green run of the suite takes up to about 260 minutes on the runner; a single test that hangs is stopped after 900 s by name (test/application_system_test_case.rb), this is the backstop
+        timeout-minutes: 60 # about 20 minutes when it is green; one test that hangs is stopped after 300 s by name (test/application_system_test_case.rb), this is the backstop
         run: bin/rails test:system -v # one line per test with its time, so that a stuck or slow run names the test it is in
       - name: Production database prepare creates only the two databases
         timeout-minutes: 5
