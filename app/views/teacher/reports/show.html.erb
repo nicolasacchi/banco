@@ -2,13 +2,12 @@
 <% row = @row %>
 <% blocker = decision_blocker %>
 <main class="page wide" data-report-status="<%= row[:status] %>">
-  <p><a href="<%= with_student("/teacher") %>"><%= t("teacher.back") %></a></p>
-  <h1><%= t("teacher.report.title", subject: @subject.name_it) %></h1>
+  <%= ui_page_header t("teacher.report.title", subject: @subject.name_it) %>
   <%= render "teacher/student_picker" %>
 
-  <section id="report-state">
-    <h2><%= t("teacher.report.state_title") %></h2>
-    <ul class="plain">
+  <section id="report-state" class="card">
+    <h2 class="card-title"><%= t("teacher.report.state_title") %></h2>
+    <ul class="plain facts">
       <li><strong><%= t("teacher.report.status.#{row[:status]}") %></strong></li>
       <li><%= t("teacher.report.graph_form.#{row[:graph_form]}") %></li>
       <li><%= t("teacher.report.entry_test", seq: row[:entry_test][:seq] || "-") %>
@@ -32,16 +31,16 @@
   </section>
 
   <% if row[:run].nil? %>
-    <p class="notice"><%= t("teacher.report.no_run") %></p>
+    <%= ui_notice :info, t("teacher.report.no_run") %>
   <% else %>
     <section id="report-sittings">
       <h2><%= t("teacher.report.sittings") %></h2>
       <%= ui_table_wrap(label: t("teacher.report.sittings")) do %>
-      <table class="data">
+      <table class="data stack">
         <thead><tr><th>#</th><th><%= t("teacher.report.started") %></th><th><%= t("teacher.report.counted") %></th><th><%= t("teacher.report.served") %></th><th><%= t("teacher.report.closed_by") %></th></tr></thead>
         <tbody>
           <% row[:sittings].each do |s| %>
-            <tr><td><%= s[:index] %></td><td><%= ui_time(s[:started_at]) %></td><td><%= t("teacher.report.minutes_short", count: s[:counted_minutes]) %></td><td><%= s[:served] %></td><td><%= s[:close_reason] || "-" %></td></tr>
+            <tr><td data-label="#"><%= s[:index] %></td><td data-label="<%= t("teacher.report.started") %>"><%= ui_time(s[:started_at]) %></td><td data-label="<%= t("teacher.report.counted") %>"><%= t("teacher.report.minutes_short", count: s[:counted_minutes]) %></td><td data-label="<%= t("teacher.report.served") %>"><%= s[:served] %></td><td data-label="<%= t("teacher.report.closed_by") %>"><%= s[:close_reason] || "-" %></td></tr>
           <% end %>
         </tbody>
       </table>
@@ -59,7 +58,8 @@
         <% else %><%= t("teacher.report.sheet.none") %><% end %></p>
       <% %w[demonstrated to_recover to_learn pending not_assessed].each do |group| %>
         <% list = row[:skills].select { |s| s[:group] == group } %>
-        <h3 data-group="<%= group %>"><%= t("teacher.report.group.#{group}") %> (<%= list.size %>)</h3>
+        <details class="disclosure report-group" <%= "open" if list.any? && %w[to_recover to_learn pending].include?(group) %>>
+        <summary><h3 data-group="<%= group %>"><%= t("teacher.report.group.#{group}") %> (<%= list.size %>)</h3></summary>
         <% if list.any? %>
           <ul class="plain">
             <% list.each do |s| %>
@@ -77,24 +77,25 @@
             <% end %>
           </ul>
         <% end %>
+        </details>
       <% end %>
       <% unless row[:checks].empty? %>
-        <p class="notice"><%= t("teacher.report.checks", count: row[:checks].size) %></p>
+        <%= ui_notice :nearly, t("teacher.report.checks", count: row[:checks].size) %>
       <% end %>
     </section>
 
     <section id="report-errors">
       <h2><%= t("teacher.report.errors") %></h2>
       <% if row[:errors_observed].empty? %>
-        <p><%= t("teacher.report.no_errors") %></p>
+        <p class="hint"><%= t("teacher.report.no_errors") %></p>
       <% else %>
         <%= ui_table_wrap(label: t("teacher.report.errors")) do %>
-        <table class="data">
+        <table class="data stack">
           <thead><tr><th><%= t("teacher.report.error_code") %></th><th><%= t("teacher.report.error_skill") %></th><th><%= t("teacher.report.error_count") %></th><th><%= t("teacher.report.error_examples") %></th></tr></thead>
           <tbody>
             <% row[:errors_observed].each do |e| %>
-              <tr data-code="<%= e[:code] %>"><td><strong><%= e[:code] %></strong></td><td><%= ref_for(e[:skill]) %></td><td><%= e[:count] %></td>
-                <td><% Array(e[:examples]).each do |text| %><q class="example"><%= text %></q> <% end %></td></tr>
+              <tr data-code="<%= e[:code] %>"><td data-label="<%= t("teacher.report.error_code") %>"><strong><%= e[:code] %></strong></td><td data-label="<%= t("teacher.report.error_skill") %>"><%= ref_for(e[:skill]) %></td><td data-label="<%= t("teacher.report.error_count") %>"><%= e[:count] %></td>
+                <td data-label="<%= t("teacher.report.error_examples") %>"><% Array(e[:examples]).each do |text| %><q class="example"><%= text %></q> <% end %></td></tr>
             <% end %>
           </tbody>
         </table>
@@ -141,25 +142,35 @@
     </section>
 
     <section id="report-controls">
-      <h2><%= t("teacher.report.controls") %></h2>
-      <% run_id = row[:run][:id] %>
-      <% { "void" => "void", "extend" => "extend", "close" => "close" }.each do |name, action| %>
-        <%= decision_form("/teacher/runs/#{run_id}/#{action}", id: "run-#{name}") do %>
-          <label class="hint" for="reason-<%= name %>"><%= t("teacher.report.control.#{name}") %></label>
-          <input id="reason-<%= name %>" class="answer-input wide" type="text" name="reason_it" placeholder="<%= t('teacher.report.reason_placeholder') %>" required>
-          <p><button type="submit" class="button secondary small" <%= "disabled" if blocker %>><%= t("teacher.report.control_button.#{name}") %></button></p>
+      <details class="disclosure report-actions">
+        <summary><%= t("teacher.report.controls") %></summary>
+        <% run_id = row[:run][:id] %>
+        <% { "void" => "void", "extend" => "extend", "close" => "close" }.each do |name, action| %>
+          <details class="action-row" id="action-<%= name %>">
+            <summary><%= t("teacher.report.control_button.#{name}") %></summary>
+            <%= decision_form("/teacher/runs/#{run_id}/#{action}", id: "run-#{name}") do %>
+              <label class="hint" for="reason-<%= name %>"><%= t("teacher.report.control.#{name}") %></label>
+              <input id="reason-<%= name %>" class="answer-input wide" type="text" name="reason_it" placeholder="<%= t('teacher.report.reason_placeholder') %>" required>
+              <div class="button-row"><button type="submit" class="button <%= name == "extend" ? "secondary" : "danger" %> small" <%= "disabled" if blocker %>><%= t("teacher.report.control_button.#{name}") %></button></div>
+            <% end %>
+          </details>
         <% end %>
-      <% end %>
-      <% if @revisions.any? %>
-        <h3><%= t("teacher.report.void_attempts_title") %></h3>
-        <% @revisions.each do |revision| %>
-          <%= decision_form("/teacher/item-revisions/#{revision.id}/void-attempts", id: "void-attempts-#{revision.id}") do %>
-            <label class="hint" for="reason-void-<%= revision.id %>"><%= ref_for(revision, popover: false) %> · <%= t("teacher.skill.revision", seq: revision.seq) %></label>
-            <input id="reason-void-<%= revision.id %>" class="answer-input wide" type="text" name="reason_it" placeholder="<%= t('teacher.report.reason_placeholder') %>" required>
-            <p><button type="submit" class="button secondary small" <%= "disabled" if blocker %>><%= t("teacher.report.control_button.void_attempts") %></button></p>
-          <% end %>
+        <% if @revisions.any? %>
+          <details class="action-row" id="action-void-attempts">
+            <summary><%= t("teacher.report.void_attempts_title") %></summary>
+            <% @revisions.each do |revision| %>
+              <details class="action-row nested">
+                <summary><%= ref_for(revision, popover: false) %> · <%= t("teacher.skill.revision", seq: revision.seq) %></summary>
+                <%= decision_form("/teacher/item-revisions/#{revision.id}/void-attempts", id: "void-attempts-#{revision.id}") do %>
+                  <label class="hint" for="reason-void-<%= revision.id %>"><%= t("teacher.report.control_button.void_attempts") %></label>
+                  <input id="reason-void-<%= revision.id %>" class="answer-input wide" type="text" name="reason_it" placeholder="<%= t('teacher.report.reason_placeholder') %>" required>
+                  <div class="button-row"><button type="submit" class="button danger small" <%= "disabled" if blocker %>><%= t("teacher.report.control_button.void_attempts") %></button></div>
+                <% end %>
+              </details>
+            <% end %>
+          </details>
         <% end %>
-      <% end %>
+      </details>
     </section>
   <% end %>
 </main>

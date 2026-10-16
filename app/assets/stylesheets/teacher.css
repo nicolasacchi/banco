@@ -243,3 +243,64 @@ ul.checks li[data-done="false"] .tick { color: var(--tone-nearly); }
   details.review-step > summary { padding: var(--space-3); }
   details.review-step > :not(summary) { margin-left: var(--space-3); margin-right: var(--space-3); }
 }
+
+/* The lesson box, the course path, practice, report, graph (D-308) ---------------------------------------------------------- */
+.l2-box-tools { display: flex; flex-wrap: wrap; align-items: stretch; gap: var(--space-2) var(--space-4); margin: var(--space-3) 0; }
+.l2-box-tools fieldset { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); margin: 0; padding: 0 var(--space-3) var(--space-1); border: var(--border-soft); border-radius: var(--radius-m); background: var(--surface); min-width: 0; }
+.l2-box-tools legend { font-size: var(--text-s); padding: 0 var(--space-1); margin: 0; }
+.l2-box-tools label { display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--tap); padding-right: var(--space-2); }
+.l2-box-tools > label { border: var(--border-soft); border-radius: var(--radius-m); background: var(--surface); padding: 0 var(--space-3); }
+.render-line { display: block; margin: var(--space-2) 0; padding: var(--space-2) var(--space-3); border: var(--border-soft); border-left: 0.35rem solid var(--tone-muted); border-radius: var(--radius-m); background: var(--surface); }
+.render-line[data-render-state="passed"] { border-left-color: var(--tone-success); }
+.render-line[data-render-state="failed"], .render-line[data-render-state="error"] { border-left-color: var(--tone-error); }
+.render-line ul { margin: var(--space-1) 0; }
+.l2-box { border-radius: var(--radius-l); border: var(--border-soft); }
+@media (max-width: 40rem) { .l2-box-tools fieldset { flex: 1 1 100%; } }
+
+.course-summary { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-2); align-items: center; }
+.path-filter { margin: 0 0 var(--space-3); }
+ol.path { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
+li.path-step { display: grid; grid-template-columns: 2.5rem minmax(0, 1fr); gap: 0 var(--space-3); margin: 0; padding: var(--space-3) var(--space-4); background: var(--surface); border: var(--border-soft); border-radius: var(--radius-m); box-shadow: var(--shadow-1); }
+li.path-step[data-badge="ready"], li.path-step[data-stage="awaiting_teacher"] { border: 2px solid var(--primary); }
+li.path-step .step-number { border: 0; background: var(--primary); color: var(--primary-text); min-width: 0; width: 2rem; height: 2rem; font-size: var(--text-s); }
+li.path-step h3 { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-size: var(--text-l); }
+li.path-step h3 a { display: inline-flex; align-items: center; min-height: var(--tap-small); }
+li.path-step .badge.pill { font-size: var(--text-s); font-weight: 700; padding: 0.1em 0.7em; border-radius: var(--radius-pill); border: 1.5px solid var(--tone-muted); background: var(--surface); }
+li.path-step[data-badge="ready"] .badge.pill { border-color: var(--tone-nearly); background: color-mix(in srgb, var(--tone-nearly) 12%, var(--surface)); }
+li.path-step[data-stage="approved"] .badge.pill { border-color: var(--tone-success); background: color-mix(in srgb, var(--tone-success) 12%, var(--surface)); }
+li.path-step p { margin: var(--space-1) 0; }
+li.path-step .step-counts { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); padding: 0; margin: var(--space-1) 0; }
+li.path-step .step-counts li { margin: 0; }
+li.path-step .step-action { margin-top: var(--space-2); }
+#course-release.card { margin-top: var(--space-5); }
+#course-release form { display: inline-block; margin: 0 var(--space-3) var(--space-2) 0; }
+@media (max-width: 40rem) { li.path-step { grid-template-columns: 1fr; } li.path-step .step-number { margin-bottom: var(--space-2); } }
+
+.topic-progress > h2 { font-size: var(--text-l); }
+.skill-progress .skill-head { justify-content: space-between; flex-wrap: nowrap; }
+.skill-progress .skill-head h3 { margin: 0; font-size: var(--text-m); }
+.skill-progress .skill-why { margin: var(--space-1) 0; }
+.skill-progress .typical { list-style: none; padding-left: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.skill-progress .typical li { margin: 0; border: var(--border-soft); border-radius: var(--radius-pill); padding: 0 var(--space-3); font-size: var(--text-s); }
+ol.trail { list-style: none; padding: 0; display: grid; gap: var(--space-3); }
+li.trail-step.card { margin: 0; }
+.trail-step p { margin: var(--space-1) 0; }
+
+#report-state ul.facts { list-style: none; padding-left: 0; display: grid; gap: var(--space-1); }
+#report-state ul.facts li { margin: 0; }
+.report-group > summary h3 { margin: 0; font-size: var(--text-m); }
+.report-group ul.plain { list-style: none; padding-left: 0; display: grid; gap: var(--space-2); }
+.report-group ul.plain li { margin: 0; padding: var(--space-2) var(--space-3); border: var(--border-soft); border-color: color-mix(in srgb, var(--line) 45%, transparent); border-radius: var(--radius-s); background: var(--surface); }
+details.report-actions > details.action-row { margin: 0 var(--space-4) var(--space-2); border: var(--border-soft); border-radius: var(--radius-m); background: var(--bg); }
+details.action-row > summary { display: flex; align-items: center; min-height: var(--tap); padding: 0 var(--space-3); }
+details.action-row > form, details.action-row > details { margin: 0 var(--space-3) var(--space-3); }
+details.action-row label { display: block; font-weight: 700; margin-bottom: var(--space-1); }
+details.action-row.nested { margin: 0 var(--space-3) var(--space-2); }
+table.data { width: 100%; }
+table.data th, table.data td { text-align: left; padding: var(--space-2) var(--space-3); border-bottom: var(--border-soft); border-color: color-mix(in srgb, var(--line) 45%, transparent); vertical-align: top; }
+
+article.skill { border: var(--border-soft); border-radius: var(--radius-m); padding: var(--space-3) var(--space-4); margin: 0 0 var(--space-3); background: var(--surface); scroll-margin-top: var(--space-4); }
+article.skill h3 { margin: 0 0 var(--space-1); font-size: var(--text-l); }
+article.skill p { margin: var(--space-1) 0; }
+article.skill .notice { margin: var(--space-2) 0; }
+article.skill:target { outline: 3px solid var(--focus); outline-offset: 2px; }

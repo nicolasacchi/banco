@@ -1,19 +1,20 @@
 <% content_for :title, t("teacher.graph.title", subject: @subject.name_it) %>
 <main class="page wide">
-  <p><a href="/teacher"><%= t("teacher.back") %></a></p>
-  <h1><%= t("teacher.graph.title", subject: @subject.name_it) %></h1>
+  <%= ui_page_header t("teacher.graph.title", subject: @subject.name_it) do %>
+    <% if @review.present? %><%= @review.approved_latest? ? ui_pill(t("teacher.dashboard.approved"), :success, icon: "circle-check") : ui_pill(t("teacher.dashboard.to_approve"), :nearly) %><% end %>
+  <% end %>
   <% if !@review.present? %>
-    <p class="notice"><%= t("teacher.graph.none") %></p>
+    <%= ui_empty t("teacher.graph.none") %>
   <% else %>
     <% review = @review %>
     <%= render "teacher/graphs/map", review: review, ctx: @map_ctx, rows: nil %>
 
-    <p id="graph-summary">
+    <p id="graph-summary" class="hint">
       <%= t("teacher.graph.summary", count: review.skills.size, seq: review.revision.seq, share: review.inferred_share) %>
       <%= review.approved_latest? ? t("teacher.graph.is_approved") + (SubjectStage.approved_from_console?(review.revision.subject, "approve_skill_graph") ? " #{t('teacher.from_console')}" : "") : (review.first_revision? ? t("teacher.graph.first_revision") : t("teacher.graph.newer_than_approved")) %>
     </p>
 
-    <section id="graph-approve" class="approve">
+    <section id="graph-approve" class="approve card action">
       <% blocker = decision_blocker %>
       <% allowed = !review.approved_latest? && blocker.nil? %>
       <%= decision_form("/teacher/skill-graph-revisions/#{review.revision.id}/approve") do %>
@@ -42,7 +43,7 @@
             <% end %>
           </ul>
         <% else %>
-          <p><%= t("teacher.graph.no_changes") %></p>
+          <p class="hint"><%= t("teacher.graph.no_changes") %></p>
         <% end %>
       </section>
     <% end %>
@@ -61,7 +62,7 @@
         <p><strong><%= scope_text(skill.scope) %></strong> · <%= t("teacher.graph.layer.#{skill.layer}") %>
           <% if skill.scope_reason_it %><br><%= skill.scope_reason_it %><% end %></p>
         <% skill.flags.each do |flag| %>
-          <p class="notice" data-flag="<%= flag %>"><%= t("teacher.graph.flags.#{flag}") %></p>
+          <p class="notice nearly" data-flag="<%= flag %>"><%= t("teacher.graph.flags.#{flag}") %></p>
         <% end %>
         <% if skill.prerequisites.any? || skill.composite_of.any? %>
           <p class="edges">
@@ -71,6 +72,12 @@
         <% else %>
           <p class="edges"><%= t("teacher.graph.no_prerequisites") %></p>
         <% end %>
+        <% if skill.inferred %>
+          <p class="notice" data-inferred="true"><%= t("teacher.graph.inferred") %></p>
+        <% end %>
+        <% if skill.deferred.any? || skill.refs.any? %>
+          <details class="disclosure skill-more">
+            <summary><%= t("teacher.graph.more") %></summary>
         <% if skill.deferred.any? %>
           <ul class="plain deferred">
             <% skill.deferred.each do |d| %>
@@ -89,11 +96,10 @@
             <% end %>
           </ul>
         <% end %>
-        <% if skill.inferred %>
-          <p class="notice" data-inferred="true"><%= t("teacher.graph.inferred") %></p>
+          </details>
         <% end %>
         <% if skill.errors.any? %>
-          <details>
+          <details class="disclosure">
             <summary><%= t("teacher.graph.errors", count: skill.errors.size) %></summary>
             <ul class="plain">
               <% skill.errors.each do |error| %>

@@ -311,6 +311,7 @@ it:
       closed: "Anteprima chiusa."
     graph:
       title: "Grafo delle abilità · %{subject}"
+      more: "Righe di programma e rimandi"
       none: "L'agente non ha ancora scritto il grafo di questa materia."
       summary:
         one: "Un'abilità, revisione %{seq}. Abilità che nessuna riga di programma dice dove sono state insegnate: %{share} su 100 (scuola media, argomenti non fatti in prima o righe non trovate). Controllale con più attenzione: sotto ciascuna c'è un riquadro che lo dice."
