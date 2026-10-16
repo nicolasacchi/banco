@@ -20,19 +20,32 @@ module Search
         lang = ::Lessons::Lang.target(subject.key) || "it"
         context = { key: item.key, subject: subject.key, revision_table: "item_revisions", revision_id: revision.id, status: revision.status,
                     skill: skill_of(body), lang: lang }
-        stem = Text.plain(body.dig("prompt", "stem_it") || Array(body["sub_items"]).first&.dig("prompt", "stem_it"))
+        first = body["prompt"] || Array(body["sub_items"]).first&.dig("prompt") || {}
+        stem = headline(body["passage_it"].presence || first["passage_it"].presence || first["stem_it"])
         item_doc = Doc.build(kind: "item", title: stem.presence || item.key, body: Text.join(item_text(body), body["component"], skill_of(body)), **context)
         [ item_doc ] + revision.instances.order(:id).map { |instance| instance_doc(item, revision, body, instance, context) }
       end
 
       def instance_doc(item, revision, body, instance, context)
         text = instance_text(body, JSON.parse(instance.display_json), item.subject)
-        title = Text.plain(text.first)
+        title = headline(instance_head(body, JSON.parse(instance.display_json), item.subject)).presence || Text.plain(text.first)
         if item.practice?
           Doc.build(kind: "practice_item", title: title, body: Text.join(text), anchor: instance.seed, unique: instance.id, **context)
         else
           Doc.build(kind: "item_instance", title: title, body: Text.join(text), anchor: instance.seed, unique: instance.id, **context)
         end
+      end
+
+      # The title of a hit is what tells one question from another: the case text, else the stem (not the generic prompt that
+      # every question of a kind shares), first sentence only.
+      def headline(text)
+        Text.plain(text).split(/(?<=[.?!:])\s+/).first.to_s.first(140)
+      end
+
+      def instance_head(body, display, subject)
+        part = ::Items::Part.new(subject: subject)
+        sub = body["kind"] == "testlet" ? nil : part.call(body, body["component"], display).stringify_keys
+        (body["kind"] == "testlet" ? body["passage_it"] : sub["passage_it"].presence || sub["stem_it"])
       end
 
       def skill_of(body) = body["skill"] || Array(body["sub_items"]).first&.dig("skill")

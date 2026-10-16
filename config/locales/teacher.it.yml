@@ -655,6 +655,7 @@ it:
       none: "L'agente non ha ancora scritto il test di questa materia."
       summary: "Revisione %{seq} del test: %{items} item, %{instances} esempi in tutto."
       readonly: "Qui leggi le domande come le vede S. I campi sono spenti e non si salva niente."
+      readonly_tag: "Sola lettura"
       show_answers: "Mostra risposte"
       print: "Stampa"
       skills: "Abilità"

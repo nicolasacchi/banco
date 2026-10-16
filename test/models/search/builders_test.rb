@@ -66,6 +66,13 @@ class SearchBuildersTest < ActiveSupport::TestCase
     assert_equal "staff", item.audience
   end
 
+  test "a question's title is its case text or stem, first sentence, not the prompt every question of a kind shares (D-308)" do
+    headline = ->(text) { Search::Builders::Items.headline(text) }
+    assert_equal "Una bilancia ha due piatti.", headline.call("Una bilancia ha due piatti. Quanto pesa il secondo?")
+    assert_equal "Quanto pesa il secondo?", headline.call("Quanto pesa il secondo?")
+    assert_equal "", headline.call(nil)
+  end
+
   test "every kind has one audience, fixed by the kind" do
     assert_equal Search::Doc::KINDS.sort, (Search::Doc::STUDENT_KINDS + Search::Doc::STAFF_KINDS + Search::Doc::TEACHER_KINDS).sort
     assert_equal "teacher", Search::Doc.build(kind: "student_answer", key: "k", title: "t", body: "b").audience

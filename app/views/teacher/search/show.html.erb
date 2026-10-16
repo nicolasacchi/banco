@@ -3,7 +3,7 @@
   <%= stylesheet_link_tag "search" %>
 <% end %>
 <main class="page wide search-page" id="teacher-search-page">
-  <h1><%= t("teacher.search.title") %></h1>
+  <%= ui_page_header t("teacher.search.title") %>
   <% unless reader_only? %>
     <nav class="search-tabs" aria-label="<%= t('teacher.search.title') %>">
       <%= link_to t("teacher.search.tab_content"), with_student("/teacher/search?q=#{ERB::Util.url_encode(@query)}"), class: "button #{'secondary' if @answers_tab} small", **(@answers_tab ? {} : { "aria-current": "page" }) %>
@@ -53,7 +53,7 @@
   <% elsif !@result.indexed %>
     <p class="notice" id="search-not-ready" role="status"><%= t("teacher.search.not_ready") %></p>
   <% elsif @result.hits.empty? %>
-    <p id="search-empty" role="status"><%= @like ? t("teacher.search.like_none") : t("teacher.search.empty") %></p>
+    <div id="search-empty" role="status"><%= ui_empty(@like ? t("teacher.search.like_none") : t("teacher.search.empty")) %></div>
   <% else %>
     <% if @like %>
       <h2 id="like-head"><%= t("teacher.search.like_head", title: @result.source.title, kind: search_kind_name(@result.source.kind)) %></h2>
@@ -72,9 +72,13 @@
             <% if hit.status.present? %> · <%= t("teacher.search.status_label", status: hit.status) %><% end %>
             <% if hit.kind == "student_answer" %> · <%= l(Time.zone.parse(hit.occurred_at), format: :short) %><% end %>
             <% if @like && hit.key == @result.source.key %> · <strong class="search-same"><%= t("teacher.search.like_same") %></strong><% end %></p>
-          <% if %w[skill item item_instance practice_item finding student_answer].include?(hit.kind) %>
+          <% if %w[item item_instance practice_item].include?(hit.kind) %>
+            <%# the case text or the stem is the title; the item's key is a small ref beside it (D-308) %>
+            <% if href %><a class="search-title" href="<%= href %>"><%= hit.title %></a><% else %><span class="search-title"><%= hit.title %></span><% end %>
+            <span class="search-meta"><%= ref_for(hit.key) %></span>
+          <% elsif %w[skill finding student_answer].include?(hit.kind) %>
             <span class="search-title"><%= ref_for(hit.key, href: (href unless hit.kind == "student_answer")) %></span>
-            <% if hit.kind != "skill" && hit.kind != "item" %> <span class="search-meta"><%= hit.title %></span><% end %>
+            <% if hit.kind != "skill" %> <span class="search-meta"><%= hit.title %></span><% end %>
           <% else %>
             <% if href %><a class="search-title" href="<%= href %>"><%= hit.title %></a><% else %><span class="search-title"><%= hit.title %></span><% end %>
             <span class="key">(<%= hit.key %>)</span>

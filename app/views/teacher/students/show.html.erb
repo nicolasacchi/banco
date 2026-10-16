@@ -1,17 +1,17 @@
 <% content_for :title, t("teacher.students.title") %>
 <main class="page wide" id="students-page">
-  <h1><%= t("teacher.students.title") %></h1>
+  <%= ui_page_header t("teacher.students.title") %>
   <% if @students.empty? %>
-    <p><%= t("teacher.students.none") %></p>
+    <%= ui_empty t("teacher.students.none") %>
   <% end %>
   <% @students.each do |student| %>
-    <section aria-labelledby="student-<%= student.key %>" data-student="<%= student.key %>">
-      <h2 id="student-<%= student.key %>"><%= student_label(student) %></h2>
-      <ul class="plain">
+    <section class="card" aria-labelledby="student-<%= student.key %>" data-student="<%= student.key %>">
+      <h2 id="student-<%= student.key %>" class="card-title"><%= student_label(student) %></h2>
+      <ul class="student-subjects">
         <% @subjects.each do |subject| %>
           <li><strong><%= subject.name_it %></strong>
-            <a href="<%= with_student_for(student, teacher_report_path(key: subject.key)) %>"><%= t("teacher.menu.report") %></a>
-            <a href="<%= with_student_for(student, teacher_practice_path(key: subject.key)) %>"><%= t("teacher.menu.practice") %></a></li>
+            <span class="button-row"><a class="button secondary small" href="<%= with_student_for(student, teacher_report_path(key: subject.key)) %>"><%= t("teacher.menu.report") %></a>
+            <a class="button secondary small" href="<%= with_student_for(student, teacher_practice_path(key: subject.key)) %>"><%= t("teacher.menu.practice") %></a></span></li>
         <% end %>
       </ul>
     </section>

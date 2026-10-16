@@ -169,3 +169,35 @@ details.item-data > .sample { border-top: var(--border-soft); border-top-color: 
 details.disclosure dl { margin: 0; }
 details.disclosure dt { font-weight: 700; margin-top: var(--space-3); }
 details.disclosure dd { margin: 0; overflow-wrap: anywhere; }
+
+/* Corrections, findings, students, search (D-308) ------------------------------------------------------------------------ */
+article.correction.card { border-top: var(--border-soft); padding-top: var(--space-4); margin-top: 0; margin-bottom: var(--space-4); }
+.correction h3 { margin-top: 0; font-size: var(--text-l); }
+.correction h4 { margin: var(--space-3) 0 var(--space-1); font-size: var(--text-m); }
+.correction .prompt { color: var(--muted); }
+.answer-quote { margin: var(--space-2) 0; padding: var(--space-3) var(--space-4); background: color-mix(in srgb, var(--line) 14%, var(--surface)); border-left: 0.35rem solid var(--line); border-radius: var(--radius-s); overflow-wrap: anywhere; }
+.correction .rubric { list-style: none; padding-left: 0; display: grid; gap: var(--space-2); }
+.correction .rubric li { margin: 0; padding: var(--space-2) var(--space-3); border: var(--border-soft); border-radius: var(--radius-s); border-color: color-mix(in srgb, var(--line) 50%, transparent); }
+.correction form.decide { margin-top: var(--space-3); }
+.correction form.decide label { display: block; font-weight: 700; margin-top: var(--space-2); }
+.correction .button-row { margin-top: var(--space-2); }
+.correction details form.decide input.small { width: 5rem; }
+.student-subjects { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.student-subjects li { margin: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); }
+.student-subjects .button-row { margin: 0; }
+#findings-list { margin-top: 0; }
+.search-tabs .button[aria-current="page"] { box-shadow: var(--shadow-1); }
+.search-hit { max-width: none; border-radius: var(--radius-m); }
+.search-hit .search-title { font-size: var(--text-l); }
+.search-hit .search-meta { display: block; }
+
+/* All the questions (D-308) --------------------------------------------------------------------------------------------- */
+.all-questions .toolbar { position: sticky; top: var(--tap); z-index: 5; background: var(--bg); padding: var(--space-2) 0; margin: 0 0 var(--space-3); border-bottom: var(--border-soft); }
+.chip-links { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-2); padding: 0; margin: 0 0 var(--space-4); }
+.chip-links li { margin: 0; }
+.chip-links a.tag { min-height: var(--tap-small); text-decoration: none; padding-inline: var(--space-3); }
+.chip-links a.tag:hover { border-color: var(--text); }
+.all-questions .badge { display: inline-flex; border: 1.5px solid var(--line); border-radius: var(--radius-pill); padding: 0.1em 0.7em; font-size: var(--text-s); margin-right: var(--space-2); }
+.all-questions .skill-group { scroll-margin-top: calc(var(--tap) * 2); }
+.all-questions .q-item h3 { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-size: var(--text-l); }
+.all-questions .q-render { margin-top: var(--space-2); }
