@@ -4,6 +4,7 @@
 # Bundler, Node, build output
 /.bundle/
 /vendor/bundle/
+/vendor/bundle
 /node_modules/
 /cli/bin/
 /bin/banco
