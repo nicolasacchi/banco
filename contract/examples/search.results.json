@@ -1,0 +1,161 @@
+{
+  "command": "search",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/search",
+    "query": "q=equazione"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "query": "equazione",
+      "semantic": false,
+      "indexed": true,
+      "results": [
+        {
+          "kind": "topic",
+          "subject": "math",
+          "key": "ripasso.math.demo",
+          "revision_id": 1,
+          "status": "draft",
+          "title": "Equazioni di primo grado",
+          "snippet": "Qui impari a risolvere le equazioni. Equazioni lineari intere",
+          "score": 1.017,
+          "ref": "topic:ripasso.math.demo"
+        },
+        {
+          "kind": "lesson_card",
+          "subject": "math",
+          "key": "ripasso.math.demo",
+          "revision_id": 2,
+          "status": "draft",
+          "title": "Equazioni di primo grado: risolvere · Perché ti serve",
+          "snippet": "Le equazioni servono in quasi ogni problema. Se le sai risolvere, i sistemi diventano facili.",
+          "score": 0.663,
+          "ref": "lesson_card:ripasso.math.demo"
+        },
+        {
+          "kind": "skill",
+          "subject": "math",
+          "key": "math.linear-equation-integer",
+          "revision_id": 3,
+          "status": "draft",
+          "title": "Equazioni lineari intere",
+          "snippet": "Sposta il termine senza cambiargli il segno.",
+          "score": 0.651,
+          "ref": "skill:math.linear-equation-integer"
+        },
+        {
+          "kind": "lesson_card",
+          "subject": "math",
+          "key": "ripasso.math.demo",
+          "revision_id": 2,
+          "status": "draft",
+          "title": "Equazioni di primo grado: risolvere · L'idea",
+          "snippet": "Una bozza con la parola bozzazz.",
+          "score": 0.575,
+          "ref": "lesson_card:ripasso.math.demo"
+        },
+        {
+          "kind": "lesson_card",
+          "subject": "math",
+          "key": "ripasso.math.demo",
+          "revision_id": 2,
+          "status": "draft",
+          "title": "Equazioni di primo grado: risolvere · Un esempio",
+          "snippet": "Risolviamo. Porta a destra. Dividi per.",
+          "score": 0.575,
+          "ref": "lesson_card:ripasso.math.demo"
+        },
+        {
+          "kind": "lesson_card",
+          "subject": "math",
+          "key": "ripasso.math.demo",
+          "revision_id": 2,
+          "status": "draft",
+          "title": "Equazioni di primo grado: risolvere · Sul libro",
+          "snippet": "Pagine del libro: le indica il docente.",
+          "score": 0.554,
+          "ref": "lesson_card:ripasso.math.demo"
+        },
+        {
+          "kind": "lesson_card",
+          "subject": "math",
+          "key": "ripasso.math.demo",
+          "revision_id": 2,
+          "status": "draft",
+          "title": "Equazioni di primo grado: risolvere · Prova tu",
+          "snippet": "Prendi un foglio. Risolvi e verifica:. Risolvi:.",
+          "score": 0.554,
+          "ref": "lesson_card:ripasso.math.demo"
+        },
+        {
+          "kind": "lesson_card",
+          "subject": "math",
+          "key": "lezione.math.orfana",
+          "revision_id": 1,
+          "status": "draft",
+          "title": "Equazioni di primo grado: risolvere · L'idea",
+          "snippet": "La lezione che nessun argomento mostra: orfanozz.",
+          "score": 0.554,
+          "ref": "lesson_card:lezione.math.orfana"
+        },
+        {
+          "kind": "lesson_card",
+          "subject": "math",
+          "key": "lezione.math.orfana",
+          "revision_id": 1,
+          "status": "draft",
+          "title": "Equazioni di primo grado: risolvere · Prova tu",
+          "snippet": "Prendi un foglio. Risolvi e verifica:. Risolvi:.",
+          "score": 0.554,
+          "ref": "lesson_card:lezione.math.orfana"
+        },
+        {
+          "kind": "lesson_card",
+          "subject": "math",
+          "key": "ripasso.math.demo",
+          "revision_id": 2,
+          "status": "draft",
+          "title": "Equazioni di primo grado: risolvere · Gli errori da evitare",
+          "snippet": "Spostare un termine senza cambiargli il segno. Dividere un solo lato. Dimenticare la verifica.",
+          "score": 0.415,
+          "ref": "lesson_card:ripasso.math.demo"
+        },
+        {
+          "kind": "lesson_card",
+          "subject": "math",
+          "key": "ripasso.math.demo",
+          "revision_id": 2,
+          "status": "draft",
+          "title": "Equazioni di primo grado: risolvere · In breve",
+          "snippet": "Un termine che cambia lato cambia segno. Si divide per il coefficiente. Si controlla il risultato.",
+          "score": 0.415,
+          "ref": "lesson_card:ripasso.math.demo"
+        },
+        {
+          "kind": "syllabus_line",
+          "subject": null,
+          "key": "seconda-test:1",
+          "revision_id": null,
+          "status": "pdf",
+          "title": "seconda-test, riga 1",
+          "snippet": "equazioni di primo grado",
+          "score": 0.713,
+          "ref": "syllabus_line:seconda-test:1#1"
+        },
+        {
+          "kind": "course",
+          "subject": "math",
+          "key": "course.math",
+          "revision_id": 3,
+          "status": "released",
+          "title": "Corso di Math",
+          "snippet": "Equazioni di primo grado Operazioni con i numeri interi Operazioni con le frazioni Equazioni lineari intere Percentuali Scomposizione in fattori Operazioni con i …",
+          "score": 0.609,
+          "ref": "course:course.math"
+        }
+      ]
+    }
+  }
+}

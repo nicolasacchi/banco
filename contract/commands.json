@@ -105,6 +105,15 @@
       "error_codes": ["E-AUTH", "E-NOT-FOUND"]
     },
     {
+      "name": "search",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/search",
+      "args": ["query"],
+      "flags": ["--subject", "--kind", "--status", "--limit", "--json"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-FILES"]
+    },
+    {
       "name": "work open",
       "local": false,
       "method": "GET",

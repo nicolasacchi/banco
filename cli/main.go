@@ -46,6 +46,7 @@ var commands = []command{
 	{name: "items list", run: runItemsList},
 	{name: "reference list", run: runReferenceList},
 	{name: "reference show", run: runReferenceShow},
+	{name: "search", run: runSearch},
 	{name: "work open", run: runWorkOpen},
 	{name: "work submit", run: runWorkSubmit},
 	{name: "work status", run: runWorkStatus},
