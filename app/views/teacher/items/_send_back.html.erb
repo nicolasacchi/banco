@@ -1,5 +1,3 @@
-<%# A guest cannot send back: no heading unless there is a history to read. %>
-<% if !reader_only? || card.send_backs.any? %><h3><%= t("teacher.skill.send_back") %></h3><% end %>
 <% card.send_backs.each do |sb| %>
   <p class="decided" data-sent-back="true"><strong><%= t("teacher.skill.sent_back") %></strong> <%= t("teacher.skill.reason.#{sb['reason_code']}") %>: <%= sb["comment_it"] %></p>
 <% end %>

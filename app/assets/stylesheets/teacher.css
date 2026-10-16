@@ -1,0 +1,171 @@
+/*
+ * The teacher's pages (D-308, docs/ui.md): the shared components of components.css, denser and sober. The shell (menu, breadcrumb,
+ * switcher), the Cruscotto and the decision and long pages. Tokens only; no raw sizes under 0.9 rem; nothing wider than the screen.
+ */
+body.teacher { font-size: 0.9rem; line-height: 1.5; }
+body.teacher h1 { font-size: var(--text-h2); }
+body.teacher h2 { font-size: var(--text-l); margin-top: var(--space-5); }
+body.teacher .page { padding-top: var(--space-4); }
+.t-notices { max-width: 96rem; margin: 0 auto; padding: 0 var(--space-4); }
+.t-notices .notice { margin-top: var(--space-3); }
+.t-notices .flash { margin-inline: 0; }
+
+/* The bar: banco, the menu, the crumbs ---------------------------------------------------------------------------------- */
+.t-bar { background: var(--surface); border-bottom: var(--border-soft); position: sticky; top: 0; z-index: 20; }
+.teacher-nav { max-width: 96rem; margin: 0 auto; padding: 0 var(--space-4); display: flex; align-items: center; gap: var(--space-3); }
+.t-bar-row { display: flex; align-items: center; gap: var(--space-3); }
+.t-brand { font-weight: 700; letter-spacing: 0.04em; color: var(--muted); }
+.t-menu-open { display: none; }
+.t-sheet { display: block; position: static; inset: auto; margin: 0; padding: 0; border: 0; background: transparent; color: inherit; width: auto; max-width: none; max-height: none; flex: 1; min-width: 0; overflow: visible; }
+.t-sheet-head { display: none; }
+.menu-list { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-1); list-style: none; margin: 0; padding: 0; }
+.menu-list > li { margin: 0; }
+.menu-list a, .menu-button {
+  font: inherit; font-weight: 700; display: inline-flex; align-items: center; box-sizing: border-box; min-height: var(--tap);
+  padding: 0 var(--space-3); border-radius: var(--radius-m); color: var(--text); text-decoration: none;
+}
+.menu-list a:hover, .menu-button:hover { background: var(--soft-primary); }
+.menu-button { background: none; border: 0; cursor: pointer; gap: var(--space-1); }
+.menu-button::after { content: ""; width: 0.45em; height: 0.45em; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); margin: -0.2em 0 0 0.3em; }
+.menu-list [aria-current] { background: var(--primary); color: var(--primary-text); }
+.menu-subjects { position: relative; }
+.menu-panel { background: var(--surface); border: var(--border-soft); border-radius: var(--radius-m); box-shadow: var(--shadow-2); padding: var(--space-2) var(--space-4); margin-top: var(--space-1); }
+.menu-panel[hidden] { display: none; }
+.menu-panel ul { list-style: none; padding: 0; margin: 0; }
+.menu-panel li { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-1); }
+.menu-panel li strong { flex: 0 0 100%; padding-top: var(--space-2); }
+.menu-panel li a { min-height: var(--tap-small); padding: 0 var(--space-2); }
+.menu-list [aria-current]:hover { background: var(--primary); }
+.access { margin: 0 0 0 auto; padding: 0 var(--space-2); color: var(--muted); font-size: var(--text-s); white-space: nowrap; }
+.menu-list { flex: 1; }
+@media (min-width: 48.01rem) {
+  .menu-panel { position: absolute; z-index: 30; min-width: 34rem; }
+  .menu-panel li strong { flex-basis: 8rem; padding-top: 0; }
+  .t-sheet { display: flex; align-items: center; }
+}
+@media (max-width: 48rem) {
+  .teacher-nav { justify-content: space-between; padding-block: var(--space-1); }
+  .t-menu-open { display: inline-flex; }
+  .t-sheet:not([open]) { display: none; }
+  .t-sheet[open] {
+    position: fixed; inset: auto 0 0 0; width: 100%; max-height: 90dvh; overflow: auto; flex: none; background: var(--bg); color: var(--text);
+    border-radius: var(--radius-l) var(--radius-l) 0 0; box-shadow: var(--shadow-2); padding: 0 var(--space-4) var(--space-4); box-sizing: border-box;
+  }
+  .t-sheet::backdrop { background: rgba(0, 0, 0, 0.45); }
+  .t-sheet-head { display: flex; justify-content: space-between; align-items: center; padding: var(--space-2) 0; border-bottom: var(--border-soft); margin-bottom: var(--space-2); }
+  .menu-list { display: grid; gap: var(--space-1); }
+  .menu-list a, .menu-button { width: 100%; }
+  .menu-panel { position: static; box-shadow: none; margin: 0 0 var(--space-2); }
+  .access { margin: var(--space-3) 0 0; white-space: normal; }
+}
+
+/* One back pattern: the breadcrumb on a desktop; on a phone only the way back (the nearest parent page). ------------------- */
+.crumbs-bar { max-width: 96rem; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 var(--space-4); padding: var(--space-1) var(--space-4) 0; }
+.crumbs ol { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-2); margin: 0; padding: 0; list-style: none; }
+.crumbs li { margin: 0; display: inline-flex; align-items: center; }
+.crumbs li + li::before { content: "\203A"; margin-right: var(--space-2); color: var(--muted); }
+.crumbs a { margin-block: 0; font-weight: 700; }
+.crumbs [aria-current] { font-weight: 700; color: var(--muted); }
+.subject-switch { position: relative; margin: 0; }
+.subject-switch summary { cursor: pointer; font-weight: 700; display: flex; align-items: center; min-height: var(--tap); padding: 0 var(--space-3); border: var(--border-soft); border-radius: var(--radius-pill); background: var(--surface); list-style: none; }
+.subject-switch summary::-webkit-details-marker { display: none; }
+.subject-switch summary::after { content: ""; width: 0.45em; height: 0.45em; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); margin: -0.2em 0 0 var(--space-2); }
+.subject-switch ul { position: absolute; right: 0; z-index: 25; min-width: 12rem; margin: var(--space-1) 0 0; padding: var(--space-2); list-style: none; background: var(--surface); border: var(--border-soft); border-radius: var(--radius-m); box-shadow: var(--shadow-2); }
+.subject-switch li { margin: 0; }
+.subject-switch a, .subject-switch li > span { display: flex; align-items: center; min-height: var(--tap-small); padding: 0 var(--space-2); }
+.subject-switch li > span { font-weight: 700; color: var(--muted); }
+@media (max-width: 48rem) {
+  .crumbs li { display: none; }
+  .crumbs li:has(a):nth-last-child(2) { display: inline-flex; }
+  .crumbs ol:not(:has(li:nth-last-child(2) a)) li:first-child { display: inline-flex; }
+  .crumbs li:nth-last-child(2)::before, .crumbs li:first-child::before { content: none; }
+  .crumbs li:has(a):nth-last-child(2) a::before, .crumbs ol:not(:has(li:nth-last-child(2) a)) li:first-child a::before { content: "\2039"; margin-right: var(--space-2); font-size: 1.4em; line-height: 1; }
+  .crumbs-bar { padding-inline: var(--space-3); }
+}
+@media print { .t-bar, .crumbs-bar { display: none; } }
+
+/* The Cruscotto (D-242, D-308): the numbers, the short list, one card per subject -------------------------------------------- */
+.student-picker { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-4); }
+.student-picker a, .student-picker strong { display: inline-flex; align-items: center; min-height: var(--tap-small); padding: 0 var(--space-3); border-radius: var(--radius-pill); border: var(--border-soft); background: var(--surface); text-decoration: none; }
+.student-picker strong { background: var(--primary); color: var(--primary-text); border-color: var(--primary); }
+.dash-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-4); }
+.dash-tools .hint { margin: 0; flex: 1 1 auto; }
+.dash-toggle { display: inline-flex; align-items: center; gap: var(--space-2); }
+.stat-strip { list-style: none; margin: 0 0 var(--space-4); padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: var(--space-3); }
+.stat { margin: 0; display: flex; align-items: baseline; gap: var(--space-2); padding: var(--space-3) var(--space-4); background: var(--surface); border: var(--border-soft); border-radius: var(--radius-m); box-shadow: var(--shadow-1); }
+.stat b { font-size: var(--text-h2); line-height: 1; }
+.stat.zero { box-shadow: none; color: var(--muted); }
+.stat.zero b { font-weight: 400; }
+.todo-list { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: grid; gap: var(--space-2); }
+.todo-list li { display: flex; align-items: center; gap: var(--space-3); margin: 0; padding: var(--space-2) var(--space-3); background: var(--surface); border: var(--border-soft); border-radius: var(--radius-m); }
+.todo-list li:first-child { border: 2px solid var(--primary); }
+.todo-list .todo-icon { width: 1.4rem; height: 1.4rem; color: var(--primary); }
+.todo-text { flex: 1; min-width: 0; }
+.todo-text a { display: inline; min-height: 0; font-weight: 700; }
+.todo-text .hint { display: inline; margin: 0 0 0 var(--space-2); }
+#todo-empty { margin: 0; }
+.cards.dash-subjects { grid-template-columns: repeat(auto-fit, minmax(min(26rem, 100%), 1fr)); }
+.dash-row { display: flex; flex-direction: column; gap: var(--space-3); list-style: none; }
+.dash-row .subject-head { justify-content: space-between; flex-wrap: nowrap; }
+.dash-row .card-title { font-size: var(--text-h2); }
+.dash-cells { display: grid; gap: var(--space-3); }
+.dash-cell { border-top: var(--border-soft); border-top-color: color-mix(in srgb, var(--line) 45%, transparent); padding-top: var(--space-2); min-width: 0; }
+.dash-cell p, .dash-cell ul { margin: var(--space-1) 0 0; }
+.dash-cell ul.plain { padding-left: 0; list-style: none; }
+.dash-cell li { margin-bottom: var(--space-1); }
+.cell-head { display: flex; align-items: center; gap: var(--space-2); }
+.cell-head h4 { margin: 0; font-size: var(--text-m); flex: 1; }
+.cell-head .ic { color: var(--muted); }
+.cell-head h4 a { display: inline-flex; align-items: center; min-height: var(--tap-small); }
+.dash-cell .meter { margin-top: var(--space-2); }
+.dash-students li { color: var(--text); }
+.card-foot { margin: var(--space-2) 0 0; }
+.just-updated { outline: 2px solid var(--primary); outline-offset: 2px; }
+.updated-badge { display: inline-block; margin-right: var(--space-2); padding: 0 var(--space-2); border: 2px solid var(--primary); border-radius: var(--radius-pill); font-weight: 700; }
+.state-list { list-style: none; padding-left: 0; display: grid; gap: var(--space-1); }
+.state-list li { margin: 0; }
+@media (max-width: 40rem) { .todo-list li { flex-wrap: wrap; } }
+.dash-subjects > li.subject { display: flex; flex-direction: column; margin: 0; padding: var(--space-4) var(--space-5); border: var(--border-soft); gap: var(--space-3); }
+.dash-subjects .subject-name { flex: 1 1 auto; min-width: 0; margin: 0; }
+.dash-subjects .subject-state { flex: none; }
+.card.action#todo { background: color-mix(in srgb, var(--primary) 6%, var(--surface)); }
+ul.cards.dash-subjects { list-style: none; padding: 0; margin: 0 0 var(--space-5); }
+
+/* Decision pages: the skill screen, findings first (D-308) ---------------------------------------------------------------- */
+.page-header .skill-nav { flex-wrap: wrap; }
+.item-cards { display: grid; gap: var(--space-5); }
+.item-card .item-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); }
+.item-card .item-head h2 { margin: 0; font-size: var(--text-l); }
+.item-tags { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.item-card .gate { margin: var(--space-3) 0; }
+.item-card h3 { margin-top: var(--space-4); }
+.item-card .item-actions { margin: var(--space-2) 0; }
+.finding { border: var(--border-soft); border-left: 0.35rem solid var(--line); border-radius: var(--radius-m); padding: var(--space-3) var(--space-4); margin: 0 0 var(--space-3); background: var(--surface); }
+.finding[data-severity="blocker"] { border-left-color: var(--tone-error); }
+.finding[data-severity="major"] { border-left-color: var(--tone-nearly); }
+.finding-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
+.finding-head .hint { margin: 0; display: inline; }
+.finding-quote { margin: var(--space-2) 0; padding: var(--space-2) var(--space-3); background: color-mix(in srgb, var(--line) 14%, var(--surface)); border-radius: var(--radius-s); overflow-wrap: anywhere; }
+.finding p { margin: var(--space-2) 0; }
+.finding .evidence, .finding .assessment, .finding .author-response { padding: var(--space-2) var(--space-3); border: var(--border-soft); border-radius: var(--radius-s); border-color: color-mix(in srgb, var(--line) 50%, transparent); }
+.finding form.decide { margin-top: var(--space-3); }
+.finding form.decide label { font-weight: 700; display: block; }
+.finding .button-row { margin: var(--space-2) 0 0; }
+details.item-data > .sample { border-top: var(--border-soft); border-top-color: color-mix(in srgb, var(--line) 45%, transparent); }
+.item-sendback form.decide label { display: block; margin-top: var(--space-2); font-weight: 700; }
+
+/* The test overview (D-308): the decision first, the skills as rows, settings and traces folded --------------------------- */
+.approve.card { margin: var(--space-4) 0; }
+.approve .button-row, .approve form.decide { margin: 0; }
+.approve > form, .approve > a, .approve > .inline { margin-right: var(--space-3); }
+#test-approve-why { margin-top: var(--space-3); }
+#test-approve-why p { margin: 0 0 var(--space-1); }
+.skill-list > li.subject { padding: var(--space-3) var(--space-4); border: var(--border-soft); margin: 0; }
+.skill-list .row-end { flex-wrap: wrap; justify-content: flex-end; }
+.skill-list .row-title { font-weight: 400; }
+#open-findings .row-list, #open-findings ul.plain { padding-left: 0; list-style: none; display: grid; gap: var(--space-2); }
+#open-findings ul.plain li { margin: 0; padding: var(--space-2) var(--space-3); border: var(--border-soft); border-radius: var(--radius-m); background: var(--surface); }
+#open-findings ul.plain a { display: inline-flex; align-items: center; min-height: var(--tap-small); }
+details.disclosure dl { margin: 0; }
+details.disclosure dt { font-weight: 700; margin-top: var(--space-3); }
+details.disclosure dd { margin: 0; overflow-wrap: anywhere; }

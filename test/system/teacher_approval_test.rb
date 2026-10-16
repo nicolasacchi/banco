@@ -59,6 +59,7 @@ class TeacherApprovalTest < ApplicationSystemTestCase
     # One screen per skill: items side by side, then the finding gets its disposition.
     click_link "Abilità number"
     assert_selector "article.item-card", count: 1
+    find("article.item-card summary", text: "Dati dell'esercizio").click # the raw data is folded under the findings (D-308)
     assert_selector "article.item-card .sample", count: 4
     assert_text "Chiave:"
     assert_selector "[data-finding='#{@finding.id}']"
@@ -81,6 +82,7 @@ class TeacherApprovalTest < ApplicationSystemTestCase
 
     # The other skill's screen (opening it is what the gate wants).
     visit "/teacher/subjects/math/test/skills/math.choice"
+    find("article.item-card summary", text: "Dati dell'esercizio").click
     assert_selector "article.item-card .sample", count: 4
 
     # The whole test as S.

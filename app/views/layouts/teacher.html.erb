@@ -16,12 +16,13 @@
   </head>
   <body class="student teacher" data-controller="broadcast<%= ' activity' if @unit && !reader_only? %>" data-broadcast-notify-value="<%= notice.present? %>" <% if @unit && !reader_only? %>data-activity-url-value="/teacher/activity" data-activity-unit-value="<%= @unit %>"<% end %>>
     <%= render "teacher/menu" %>
-    <p class="access hint" id="access-line"><%= access_line %></p>
     <%= render "teacher/crumbs" %>
-    <% if reader_only? %><p class="notice" id="read-only-notice" role="status"><strong><%= t("teacher.read_only") %></strong></p><% end %>
-    <% if notice %><p class="notice flash" role="status"><%= notice %></p><% end %>
-    <% if alert %><p class="notice flash alert" role="alert"><%= alert %></p><% end %>
-    <% if !reader_only? && decision_blocker %><p class="notice"><%= t("teacher.cannot_decide.#{decision_blocker}") %></p><% end %>
+    <div class="t-notices">
+      <% if reader_only? %><%= ui_notice :info, tag.strong(t("teacher.read_only")), html: { id: "read-only-notice" } %><% end %>
+      <% if notice %><%= ui_notice :success, notice, html: { class: "flash" } %><% end %>
+      <% if alert %><%= ui_notice :error, alert, html: { class: "flash alert" } %><% end %>
+      <% if !reader_only? && decision_blocker %><%= ui_notice :nearly, t("teacher.cannot_decide.#{decision_blocker}") %><% end %>
+    </div>
     <%= yield %>
     <%= yield :ref_popovers %>
   </body>

@@ -1,30 +1,45 @@
-<nav class="teacher-nav" id="teacher-menu" aria-label="<%= t('teacher.nav.label') %>" data-controller="menu" data-action="keydown->menu#key click@window->menu#outside focusout->menu#focusout">
-  <ul class="menu-list">
-    <li><%= link_to t("teacher.menu.home"), with_student("/teacher"), id: "menu-home", **menu_current(:home) %></li>
-    <li class="menu-subjects">
-      <button type="button" id="menu-subjects" class="menu-button" aria-expanded="false" aria-controls="menu-subjects-panel"
-              data-menu-target="button" data-action="menu#toggle" <%= 'aria-current="true"'.html_safe if menu_section == :subjects %>><%= t("teacher.menu.subjects") %></button>
-      <div id="menu-subjects-panel" class="menu-panel" role="group" aria-label="<%= t('teacher.menu.subjects') %>" data-menu-target="panel" hidden>
-        <ul class="plain">
-          <% menu_subjects.each do |subject| %>
-            <li data-menu-subject="<%= subject.key %>">
-              <strong><%= subject.name_it %></strong>
-              <a href="<%= teacher_graph_path(key: subject.key) %>"><%= t("teacher.menu.graph") %></a>
-              <a href="<%= teacher_test_path(key: subject.key) %>"><%= t("teacher.menu.test") %></a>
-              <% if blueprint_subject_ids.include?(subject.id) %><a href="<%= teacher_test_all_path(key: subject.key) %>"><%= t("teacher.menu.all") %></a><% end %>
-              <a href="<%= teacher_course_path(key: subject.key) %>"><%= t("teacher.menu.course") %></a>
-              <a href="<%= with_student(teacher_report_path(key: subject.key)) %>"><%= t("teacher.menu.report") %></a>
-            </li>
-          <% end %>
-        </ul>
+<%# One menu on every teacher page (D-308): a bar on a desktop, a sheet (dialog) behind "Menu" on a phone. The ids are the pages' handles. %>
+<header class="t-bar no-print">
+  <nav class="teacher-nav" id="teacher-menu" aria-label="<%= t('teacher.nav.label') %>" data-controller="menu" data-action="keydown->menu#key click@window->menu#outside focusout->menu#focusout">
+    <div class="t-bar-row">
+      <span class="t-brand">banco</span>
+      <button type="button" class="button secondary small t-menu-open" id="menu-open" aria-haspopup="dialog" data-action="menu#openSheet"><%= ui_icon("menu") %> <%= t("teacher.menu.open") %></button>
+      <% if reader_only? %><%= ui_pill(t("teacher.access.guest").capitalize, :muted, icon: "show") %><% end %>
+    </div>
+    <dialog class="t-sheet" id="menu-sheet" aria-label="<%= t('teacher.nav.label') %>" data-menu-target="sheet" data-action="click->menu#backdrop">
+      <div class="t-sheet-head">
+        <strong><%= t("teacher.menu.open") %></strong>
+        <button type="button" class="button text small" data-action="menu#closeSheet"><%= ui_icon("close") %> <%= t("teacher.menu.close") %></button>
       </div>
-    </li>
-    <li><%= link_to t("teacher.menu.search"), with_student("/teacher/search"), id: "menu-search", **menu_current(:search) %></li>
-    <li><%= link_to t("teacher.menu.findings"), with_student("/teacher/findings"), id: "menu-findings", **menu_current(:findings) %></li>
-    <li><%= link_to t("teacher.menu.corrections"), with_student("/teacher/corrections"), id: "menu-corrections", **menu_current(:corrections) %></li>
-    <li><%= link_to t("teacher.menu.comments"), "/teacher/comments", id: "menu-comments", **menu_current(:comments) %></li>
-    <li><%= link_to t("teacher.menu.students"), with_student("/teacher/students"), id: "menu-students", **menu_current(:students) %></li>
-    <% unless reader_only? %><li><%= link_to t("teacher.preview.title"), "/teacher/preview", id: "menu-preview", **menu_current(:preview) %></li><% end %>
-    <% if logout_url %><li><a id="logout-link" href="<%= logout_url %>"><%= t("teacher.logout") %></a></li><% end %>
-  </ul>
-</nav>
+      <ul class="menu-list">
+        <li><%= link_to t("teacher.menu.home"), with_student("/teacher"), id: "menu-home", **menu_current(:home) %></li>
+        <li class="menu-subjects">
+          <button type="button" id="menu-subjects" class="menu-button" aria-expanded="false" aria-controls="menu-subjects-panel"
+                  data-menu-target="button" data-action="menu#toggle" <%= 'aria-current="true"'.html_safe if menu_section == :subjects %>><%= t("teacher.menu.subjects") %></button>
+          <div id="menu-subjects-panel" class="menu-panel" role="group" aria-label="<%= t('teacher.menu.subjects') %>" data-menu-target="panel" hidden>
+            <ul class="plain">
+              <% menu_subjects.each do |subject| %>
+                <li data-menu-subject="<%= subject.key %>">
+                  <strong><%= subject.name_it %></strong>
+                  <a href="<%= teacher_graph_path(key: subject.key) %>"><%= t("teacher.menu.graph") %></a>
+                  <a href="<%= teacher_test_path(key: subject.key) %>"><%= t("teacher.menu.test") %></a>
+                  <% if blueprint_subject_ids.include?(subject.id) %><a href="<%= teacher_test_all_path(key: subject.key) %>"><%= t("teacher.menu.all") %></a><% end %>
+                  <a href="<%= teacher_course_path(key: subject.key) %>"><%= t("teacher.menu.course") %></a>
+                  <a href="<%= with_student(teacher_report_path(key: subject.key)) %>"><%= t("teacher.menu.report") %></a>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        </li>
+        <li><%= link_to t("teacher.menu.search"), with_student("/teacher/search"), id: "menu-search", **menu_current(:search) %></li>
+        <li><%= link_to t("teacher.menu.findings"), with_student("/teacher/findings"), id: "menu-findings", **menu_current(:findings) %></li>
+        <li><%= link_to t("teacher.menu.corrections"), with_student("/teacher/corrections"), id: "menu-corrections", **menu_current(:corrections) %></li>
+        <li><%= link_to t("teacher.menu.comments"), "/teacher/comments", id: "menu-comments", **menu_current(:comments) %></li>
+        <li><%= link_to t("teacher.menu.students"), with_student("/teacher/students"), id: "menu-students", **menu_current(:students) %></li>
+        <% unless reader_only? %><li><%= link_to t("teacher.preview.title"), "/teacher/preview", id: "menu-preview", **menu_current(:preview) %></li><% end %>
+        <% if logout_url %><li><a id="logout-link" href="<%= logout_url %>"><%= t("teacher.logout") %></a></li><% end %>
+      </ul>
+      <p class="access" id="access-line"><%= access_line %></p>
+    </dialog>
+  </nav>
+</header>

@@ -3,7 +3,21 @@ import { Controller } from "@hotwired/stimulus"
 // The Materie panel of the teacher's menu: Enter or Space on the button opens it, Esc closes it and
 // gives the focus back to the button, a click or a tab outside closes it. Nothing depends on hover.
 export default class extends Controller {
-  static targets = ["button", "panel"]
+  static targets = ["button", "panel", "sheet"]
+
+  // On a phone the whole menu is a sheet (a modal dialog); on a desktop it is the bar and the sheet is never opened.
+  openSheet() {
+    if (this.hasSheetTarget && !this.sheetTarget.open) this.sheetTarget.showModal()
+  }
+
+  closeSheet() {
+    if (this.hasSheetTarget && this.sheetTarget.open) this.sheetTarget.close()
+  }
+
+  // A click on the backdrop (the dialog itself, not its content) closes the sheet.
+  backdrop(event) {
+    if (event.target === this.sheetTarget) this.closeSheet()
+  }
 
   toggle() { this.isOpen ? this.close() : this.open() }
 

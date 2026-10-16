@@ -1,18 +1,54 @@
   <article class="card item-card" data-revision="<%= card.revision.id %>" data-item="<%= card.item.key %>">
-    <h2><%= ref_for(card.item) %> <span class="key"><%= t("teacher.skill.revision", seq: card.revision.seq) %></span></h2>
-    <p>
-      <%= t("teacher.skill.kind") %> <strong><%= component_name(card.body["component"] || card.body["kind"]) %></strong> ·
-      <%= t("teacher.skill.seconds", count: card.body["expected_seconds"].to_i) %> ·
-      <%= t("teacher.skill.mechanical") %> <strong><%= t("teacher.skill.validation.#{card.revision.status}") %></strong>
-    </p>
-    <p class="gate" data-approvable="<%= card.gate.approvable %>">
+    <header class="item-head">
+      <h2><%= ref_for(card.item) %> <span class="key"><%= t("teacher.skill.revision", seq: card.revision.seq) %></span></h2>
+      <div class="item-tags">
+        <%= ui_tag(component_name(card.body["component"] || card.body["kind"])) %>
+        <%= ui_tag(t("teacher.skill.seconds", count: card.body["expected_seconds"].to_i)) %>
+        <%= ui_pill(t("teacher.skill.validation.#{card.revision.status}"), card.revision.status.to_s == "passed" ? :success : :muted) %>
+      </div>
+    </header>
+    <div class="gate notice <%= card.gate.approvable ? 'success' : 'nearly' %>" data-approvable="<%= card.gate.approvable %>">
+      <%= ui_icon(card.gate.approvable ? "circle-check" : "triangle-alert") %>
+      <div class="notice-body">
       <% if card.gate.approvable %><strong><%= t("teacher.skill.ready") %></strong>
       <% else %><strong><%= t("teacher.skill.not_ready") %></strong> <%= safe_join(gate_sentences(card.gate.reasons), " ") %><% end %>
       <% if card.superseded %> <%= t("teacher.skill.superseded") %><% end %>
-    </p>
-    <p><% unless reader_only? %><a class="button secondary small" href="<%= teacher_item_play_path(revision_id: card.revision.id) %>" data-play="<%= card.revision.id %>"><%= t("teacher.skill.play") %></a><% end %>
-      <% if search_similar_enabled? %> <a class="button secondary small" href="<%= search_similar_path("item:#{card.item.key}") %>" data-similar="item:<%= card.item.key %>" title="<%= t("teacher.search.similar_title") %>"><%= t("teacher.search.similar") %></a><% end %></p>
+      </div>
+    </div>
+    <div class="button-row item-actions"><% unless reader_only? %><a class="button secondary small" href="<%= teacher_item_play_path(revision_id: card.revision.id) %>" data-play="<%= card.revision.id %>"><%= t("teacher.skill.play") %></a><% end %>
+      <% if search_similar_enabled? %> <a class="button secondary small" href="<%= search_similar_path("item:#{card.item.key}") %>" data-similar="item:<%= card.item.key %>" title="<%= t("teacher.search.similar_title") %>"><%= t("teacher.search.similar") %></a><% end %></div>
 
+    <% if card.findings.any? %>
+      <h3><%= t("teacher.skill.findings") %></h3>
+      <p class="hint" data-findings-intro><%= t("teacher.skill.findings_intro") %></p>
+      <% majors, minors = card.findings.partition { |e| e.finding.severity != "minor" } %>
+      <% majors.each do |entry| %><%= render "teacher/tests/finding", entry: entry, blocker: blocker %><% end %>
+      <% if minors.any? %>
+        <details class="minor-findings" id="minor-<%= card.revision.id %>" data-minor-findings="<%= minors.size %>">
+          <summary><%= t("teacher.skill.minor_summary", count: minors.size) %></summary>
+          <% minors.each do |entry| %><%= render "teacher/tests/finding", entry: entry, blocker: blocker %><% end %>
+        </details>
+      <% end %>
+    <% end %>
+
+    <h3><%= t("teacher.skill.review") %></h3>
+    <% if card.review %>
+      <% failed = card.review.select { |c| c["result"] == "fail" } %>
+      <p data-review="<%= failed.empty? ? 'clean' : 'fail' %>"><%= t("teacher.skill.review_summary", pass: card.review.count { |c| c["result"] != "fail" }, fail: failed.size) %></p>
+      <% failed.each do |c| %><p class="notice"><strong><%= Review::Checklist::ALL_POINTS[c["id"] - 1] %></strong>: <%= c["evidence"] %></p><% end %>
+    <% else %>
+      <p><%= t("teacher.skill.no_review") %></p>
+    <% end %>
+    <% if card.blind %>
+      <% mismatches = card.blind.reject { |r| %w[correct short_answer].include?(r["verdict"]) } %>
+      <p data-blind="<%= mismatches.empty? ? 'ok' : 'mismatch' %>"><%= t("teacher.skill.blind_summary", ok: card.blind.size - mismatches.size, total: card.blind.size) %>
+        <% if mismatches.any? %> <%= t("teacher.skill.blind_differs") %> <%= mismatches.map { |r| "#{r['instance']} (#{r['verdict']})" }.join(", ") %>.<% end %></p>
+    <% else %>
+      <p><%= t("teacher.skill.no_blind") %></p>
+    <% end %>
+
+    <details class="disclosure item-data" id="data-<%= card.revision.id %>">
+      <summary><%= t("teacher.skill.data") %></summary>
     <h3><%= t("teacher.skill.samples") %></h3>
     <% card.samples.each do |sample| %>
       <section class="sample" data-instance="<%= sample.id %>">
@@ -53,34 +89,13 @@
       <ul class="plain sources"><% card.sources.each do |s| %><li><%= s["kind"] %>: <%= s["ref"] %><% if s["fragment"] %> <q><%= s["fragment"] %></q><% end %></li><% end %></ul>
     <% end %>
 
-    <h3><%= t("teacher.skill.review") %></h3>
-    <% if card.review %>
-      <% failed = card.review.select { |c| c["result"] == "fail" } %>
-      <p data-review="<%= failed.empty? ? 'clean' : 'fail' %>"><%= t("teacher.skill.review_summary", pass: card.review.count { |c| c["result"] != "fail" }, fail: failed.size) %></p>
-      <% failed.each do |c| %><p class="notice"><strong><%= Review::Checklist::ALL_POINTS[c["id"] - 1] %></strong>: <%= c["evidence"] %></p><% end %>
-    <% else %>
-      <p><%= t("teacher.skill.no_review") %></p>
-    <% end %>
-    <% if card.blind %>
-      <% mismatches = card.blind.reject { |r| %w[correct short_answer].include?(r["verdict"]) } %>
-      <p data-blind="<%= mismatches.empty? ? 'ok' : 'mismatch' %>"><%= t("teacher.skill.blind_summary", ok: card.blind.size - mismatches.size, total: card.blind.size) %>
-        <% if mismatches.any? %> <%= t("teacher.skill.blind_differs") %> <%= mismatches.map { |r| "#{r['instance']} (#{r['verdict']})" }.join(", ") %>.<% end %></p>
-    <% else %>
-      <p><%= t("teacher.skill.no_blind") %></p>
-    <% end %>
+    </details>
 
-    <% if card.findings.any? %>
-      <h3><%= t("teacher.skill.findings") %></h3>
-      <p class="hint" data-findings-intro><%= t("teacher.skill.findings_intro") %></p>
-      <% majors, minors = card.findings.partition { |e| e.finding.severity != "minor" } %>
-      <% majors.each do |entry| %><%= render "teacher/tests/finding", entry: entry, blocker: blocker %><% end %>
-      <% if minors.any? %>
-        <details class="minor-findings" id="minor-<%= card.revision.id %>" data-minor-findings="<%= minors.size %>">
-          <summary><%= t("teacher.skill.minor_summary", count: minors.size) %></summary>
-          <% minors.each do |entry| %><%= render "teacher/tests/finding", entry: entry, blocker: blocker %><% end %>
-        </details>
-      <% end %>
+    <%# A guest cannot send back: no section unless there is a history to read. %>
+    <% if !reader_only? || card.send_backs.any? %>
+      <details class="disclosure item-sendback"<%= " open" if card.send_backs.any? %>>
+        <summary><%= t("teacher.skill.send_back") %></summary>
+        <%= render "teacher/items/send_back", card: card, blocker: blocker %>
+      </details>
     <% end %>
-
-    <%= render "teacher/items/send_back", card: card, blocker: blocker %>
   </article>

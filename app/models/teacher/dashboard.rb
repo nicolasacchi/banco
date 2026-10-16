@@ -41,6 +41,13 @@ module Teacher
       @todos ||= [ findings, graphs, tests_ready, tests_blocked, topics, corrections, release_line ].flatten
     end
 
+    # The numbers of what waits, for the strip above the list: findings to decide, answers to correct, topics to approve, new comments.
+    Counts = Data.define(:findings, :corrections, :topics, :comments)
+
+    def counts
+      @counts ||= Counts.new(rows.sum { |r| r.waiting.to_h[:findings].to_i }, home.corrections, rows.sum { |r| r.course&.awaiting.to_i }, Comments::Inbox.counts["sent"].to_i)
+    end
+
     # The cell of one student in one subject (D-217 student list).
     def cell(student, subject)
       cells[student.id].fetch(subject.id)

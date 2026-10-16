@@ -7,5 +7,8 @@
           when :topics, :corrections then t("teacher.dashboard.todo.#{todo.kind}", count: todo.count)
           else t("teacher.dashboard.todo.#{todo.kind}")
           end %>
-<% if name %><strong class="todo-subject"><%= name %></strong>: <% end %><%= todo.href ? dash_link(text, todo.href) : text %>
-<% if todo.extra %> <%= t("teacher.dashboard.clear_of", count: todo.extra) %><% if todo.extra_href %> <%= dash_link t("teacher.dashboard.follow"), todo.extra_href %><% end %><% end %>
+<% icon = { findings: "triangle-alert", graph: "map", test_ready: "list-checks", test_blocked: "lightbulb", topics: "book-open", corrections: "notebook-pen", release: "sparkles" }.fetch(todo.kind, "info") %>
+<%= ui_icon(icon, css: "todo-icon") %>
+<span class="todo-text"><% if name %><strong class="todo-subject"><%= name %></strong>: <% end %><%= todo.href ? dash_link(text, todo.href) : text %>
+<% if todo.extra %><span class="hint"><%= t("teacher.dashboard.clear_of", count: todo.extra) %></span><% end %></span>
+<% if todo.extra && todo.extra_href %><%= dash_link t("teacher.dashboard.follow"), todo.extra_href, class: "button secondary small" %><% end %>

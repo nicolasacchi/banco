@@ -1,19 +1,20 @@
 <% content_for :title, t("teacher.test.title", subject: @subject.name_it) %>
 <main class="page wide">
-  <p><a href="/teacher"><%= t("teacher.back") %></a></p>
-  <h1><%= t("teacher.test.title", subject: @subject.name_it) %></h1>
+  <%= ui_page_header t("teacher.test.title", subject: @subject.name_it) do %>
+    <% if @review.present? %><%= @review.approved_latest? ? ui_pill(t("teacher.dashboard.approved"), :success, icon: "circle-check") : ui_pill(t("teacher.dashboard.to_approve"), :nearly) %><% end %>
+  <% end %>
   <% if !@review.present? %>
-    <p class="notice"><%= t("teacher.test.none") %></p>
+    <%= ui_empty t("teacher.test.none") %>
   <% else %>
     <% review = @review %>
     <% gate = review.gate %>
-    <p id="test-summary">
+    <p id="test-summary" class="hint">
       <%= t("teacher.test.summary", seq: review.blueprint.seq, skills: review.skill_rows.size, items: review.pinned_count) %>
       <%= review.approved_latest? ? t("teacher.test.is_approved") + (SubjectStage.approved_from_console?(review.blueprint.subject, "approve_blueprint") ? " #{t('teacher.from_console')}" : "") : t("teacher.test.not_approved") %>
     </p>
     <% if review.approved_latest? && (words = SubjectStage.blueprint_attestation(review.blueprint.subject)) %><p class="hint" id="test-attested" data-attested><%= t("teacher.test.attested", words: words) %></p><% end %>
 
-    <section id="test-approve" class="approve" data-approvable="<%= gate.approvable %>">
+    <section id="test-approve" class="approve card action" data-approvable="<%= gate.approvable %>">
       <% blocker = decision_blocker %>
       <% allowed = gate.approvable && !review.approved_latest? && blocker.nil? %>
       <%= decision_form("/teacher/blueprint-revisions/#{review.blueprint.id}/approve") do %>
@@ -35,43 +36,6 @@
           <p><%= t("teacher.test.approve_hint") %></p>
         <% end %>
       </div>
-    </section>
-
-    <% settings = review.settings %>
-    <section id="test-settings">
-      <h2><%= t("teacher.test.settings.title") %></h2>
-      <dl>
-        <dt><%= t("teacher.test.settings.not_measured") %></dt><dd id="test-not-measured"><%= settings[:not_measured_it] %></dd>
-        <dt><%= t("teacher.test.settings.intro_note") %></dt><dd id="test-intro-note"><%= settings[:intro_note_it] %></dd>
-        <dt><%= t("teacher.test.settings.calculator") %></dt><dd><%= t("teacher.test.settings.calculator_#{settings[:calculator]}", default: settings[:calculator].to_s) %></dd>
-        <dt><%= t("teacher.test.settings.budget") %></dt><dd><%= t("teacher.test.settings.budget_value", minutes: settings[:budget]&.dig("sitting_minutes"), sittings: settings[:budget]&.dig("sittings")) %></dd>
-        <dt><%= t("teacher.test.settings.depends") %></dt><dd><%= settings[:depends_on_subjects].presence&.join(", ") || t("teacher.test.settings.none") %></dd>
-        <dt><%= t("teacher.test.settings.overrides") %></dt>
-        <dd id="test-overrides">
-          <% if settings[:kind_overrides].empty? %><%= t("teacher.test.settings.none") %>
-          <% else %><ul class="plain"><% settings[:kind_overrides].each do |o| %><li><%= ref_for(o["skill"]) %> → <%= t("teacher.refs.kind.#{o["kind"]}", default: o["kind"]) %>: <%= o["reason_it"] %></li><% end %></ul><% end %>
-        </dd>
-      </dl>
-    </section>
-
-    <% sheet = review.formula_sheet %>
-    <section id="test-formula-sheet" data-enabled="<%= sheet[:enabled] %>" data-controller="markup">
-      <h2><%= t("teacher.test.sheet.title") %></h2>
-      <% if sheet[:text] || sheet[:enabled] %>
-        <p class="hint"><%= t("teacher.test.sheet.intro") %></p>
-        <p><strong><%= sheet[:enabled] ? t("teacher.test.sheet.state_on") : t("teacher.test.sheet.state_off") %></strong></p>
-        <%= decision_form("/teacher/subjects/#{@subject.key}/formula-sheet", id: "formula-sheet-form") do %>
-          <%= hidden_field_tag :enabled, !sheet[:enabled], id: "formula-sheet-enabled" %>
-          <button type="submit" class="button secondary" <%= "disabled" if decision_blocker || (!sheet[:enabled] && !sheet[:offerable]) %>>
-            <%= sheet[:enabled] ? t("teacher.test.sheet.turn_off") : t("teacher.test.sheet.turn_on") %></button>
-        <% end %>
-        <% if sheet[:text] %>
-          <p><strong><%= t("teacher.test.sheet.text") %></strong></p>
-          <div class="sheet" id="formula-sheet-text" data-markup="inline"><%= sheet[:text] %></div>
-        <% end %>
-      <% else %>
-        <p><%= t("teacher.test.sheet.none") %></p>
-      <% end %>
     </section>
 
     <% open_list = review.open_finding_list %>
@@ -112,28 +76,71 @@
     </section>
 
     <h2><%= t("teacher.test.skills") %></h2>
-    <ul class="subjects skill-list">
+    <ul class="row-list skill-list">
       <% review.skill_rows.each do |row| %>
-        <li class="subject" data-skill="<%= row.skill %>">
-          <span class="subject-name"><%= ref_for(row.skill, href: skill_screen_path(@subject, row.skill)) %></span>
-          <span class="subject-state">
-            <%= t("teacher.test.role.#{row.role}") %> ·
-            <% if row.item_ids.any? %>
-              <%= t("teacher.test.items", count: row.item_ids.size) %>
-              <% if row.open_findings.positive? %> · <strong><%= t("teacher.test.open_findings", count: row.open_findings) %></strong><% end %>
-              <% unless row.worked %> · <%= t("teacher.test.not_reviewed") %><% end %>
-            <% else %>
-              <%= row.not_assessed_reason_it %>
-            <% end %>
-            <% if row.redo_reserve == false %> · <strong data-redo-reserve="false"><%= t("teacher.test.no_redo_reserve") %></strong><% end %>
-            <% if row.choice_only_reason_it.present? %> · <%= t("teacher.test.choice_only") %> <%= row.choice_only_reason_it %><% end %>
+        <li class="subject row" data-skill="<%= row.skill %>">
+          <div class="row-main">
+            <span class="subject-name row-title"><%= ref_for(row.skill, href: skill_screen_path(@subject, row.skill)) %></span>
+            <span class="subject-state row-meta">
+              <%= t("teacher.test.role.#{row.role}") %> ·
+              <% if row.item_ids.any? %>
+                <%= t("teacher.test.items", count: row.item_ids.size) %>
+              <% else %>
+                <%= row.not_assessed_reason_it %>
+              <% end %>
+              <% if row.choice_only_reason_it.present? %> · <%= t("teacher.test.choice_only") %> <%= row.choice_only_reason_it %><% end %>
+            </span>
+          </div>
+          <span class="row-end">
+            <% if row.item_ids.any? && row.open_findings.positive? %><strong class="pill error"><%= t("teacher.test.open_findings", count: row.open_findings) %></strong><% end %>
+            <% if row.item_ids.any? && !row.worked %><span class="pill nearly"><%= t("teacher.test.not_reviewed") %></span><% end %>
+            <% if row.redo_reserve == false %><strong class="pill nearly" data-redo-reserve="false"><%= t("teacher.test.no_redo_reserve") %></strong><% end %>
+            <% if row.item_ids.any? && row.open_findings.zero? && row.worked %><%= ui_pill(t("teacher.test.skill_clear"), :success, icon: "circle-check") %><% end %>
           </span>
         </li>
       <% end %>
     </ul>
 
-    <h2><%= t("teacher.test.traces") %></h2>
-    <p><%= t("teacher.test.traces_hint") %></p>
+    <% settings = review.settings %>
+    <details class="disclosure" id="test-settings">
+      <summary><%= t("teacher.test.settings.title") %></summary>
+      <dl>
+        <dt><%= t("teacher.test.settings.not_measured") %></dt><dd id="test-not-measured"><%= settings[:not_measured_it] %></dd>
+        <dt><%= t("teacher.test.settings.intro_note") %></dt><dd id="test-intro-note"><%= settings[:intro_note_it] %></dd>
+        <dt><%= t("teacher.test.settings.calculator") %></dt><dd><%= t("teacher.test.settings.calculator_#{settings[:calculator]}", default: settings[:calculator].to_s) %></dd>
+        <dt><%= t("teacher.test.settings.budget") %></dt><dd><%= t("teacher.test.settings.budget_value", minutes: settings[:budget]&.dig("sitting_minutes"), sittings: settings[:budget]&.dig("sittings")) %></dd>
+        <dt><%= t("teacher.test.settings.depends") %></dt><dd><%= settings[:depends_on_subjects].presence&.join(", ") || t("teacher.test.settings.none") %></dd>
+        <dt><%= t("teacher.test.settings.overrides") %></dt>
+        <dd id="test-overrides">
+          <% if settings[:kind_overrides].empty? %><%= t("teacher.test.settings.none") %>
+          <% else %><ul class="plain"><% settings[:kind_overrides].each do |o| %><li><%= ref_for(o["skill"]) %> → <%= t("teacher.refs.kind.#{o["kind"]}", default: o["kind"]) %>: <%= o["reason_it"] %></li><% end %></ul><% end %>
+        </dd>
+      </dl>
+    </details>
+
+    <% sheet = review.formula_sheet %>
+    <details class="disclosure" id="test-formula-sheet" data-enabled="<%= sheet[:enabled] %>" data-controller="markup">
+      <summary><%= t("teacher.test.sheet.title") %></summary>
+      <% if sheet[:text] || sheet[:enabled] %>
+        <p class="hint"><%= t("teacher.test.sheet.intro") %></p>
+        <p><strong><%= sheet[:enabled] ? t("teacher.test.sheet.state_on") : t("teacher.test.sheet.state_off") %></strong></p>
+        <%= decision_form("/teacher/subjects/#{@subject.key}/formula-sheet", id: "formula-sheet-form") do %>
+          <%= hidden_field_tag :enabled, !sheet[:enabled], id: "formula-sheet-enabled" %>
+          <button type="submit" class="button secondary" <%= "disabled" if decision_blocker || (!sheet[:enabled] && !sheet[:offerable]) %>>
+            <%= sheet[:enabled] ? t("teacher.test.sheet.turn_off") : t("teacher.test.sheet.turn_on") %></button>
+        <% end %>
+        <% if sheet[:text] %>
+          <p><strong><%= t("teacher.test.sheet.text") %></strong></p>
+          <div class="sheet" id="formula-sheet-text" data-markup="inline"><%= sheet[:text] %></div>
+        <% end %>
+      <% else %>
+        <p><%= t("teacher.test.sheet.none") %></p>
+      <% end %>
+    </details>
+
+    <details class="disclosure" id="test-traces-box">
+      <summary><%= t("teacher.test.traces") %></summary>
+      <p class="hint"><%= t("teacher.test.traces_hint") %></p>
     <%= ui_table_wrap(label: t("teacher.test.traces")) do %>
     <table class="data" id="test-traces">
       <thead><tr><th><%= t("teacher.test.trace.script") %></th><th><%= t("teacher.test.trace.end") %></th><th><%= t("teacher.test.trace.served") %></th><th><%= t("teacher.test.trace.minutes") %></th><th><%= t("teacher.test.trace.states") %></th></tr></thead>
@@ -154,5 +161,6 @@
       </tbody>
     </table>
     <% end %>
+    </details>
   <% end %>
 </main>

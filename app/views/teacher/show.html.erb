@@ -11,7 +11,9 @@
       data-dashboard-announce-text-value="<%= t('teacher.dashboard.announce', names: '{names}') %>"
       data-dashboard-announce-other-text-value="<%= t('teacher.dashboard.announce_other') %>"
       data-dashboard-failed-text-value="<%= t('teacher.dashboard.failed') %>">
-  <h1><%= t("teacher.dashboard.title") %></h1>
+  <%= ui_page_header t("teacher.dashboard.title") do %>
+    <% unless reader_only? %><a class="button secondary small" href="/teacher/preview" data-newtab><%= t("teacher.preview.title") %></a><% end %>
+  <% end %>
   <%= render "teacher/student_picker" %>
 
   <div class="dash-tools">
@@ -24,5 +26,4 @@
   <div id="dashboard-body" data-dashboard-target="body">
     <%= render "teacher/dashboard/body", dashboard: @dashboard %>
   </div>
-  <% unless reader_only? %><p><a class="button" href="/teacher/preview" data-newtab><%= t("teacher.preview.title") %></a></p><% end %>
 </main>
