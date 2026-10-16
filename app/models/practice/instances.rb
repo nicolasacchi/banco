@@ -25,7 +25,7 @@ module Practice
 
     # What a stored attempt was worth: Grade = the outcome, the evidence key, the error codes and the
     # form violations of its latest grading. Nil when it is not a try (no grading, "Non lo so", ...).
-    Grade = Data.define(:outcome, :key, :codes, :violations)
+    Grade = Data.define(:outcome, :key, :codes, :violations, :pair_note) # pair_note: the line of a nearly_correct matching (D-301)
 
     def grade(attempt, spec)
       grading = attempt.latest_grading or return nil
@@ -34,7 +34,8 @@ module Practice
       return nil unless Practice::Outcome.try?(key)
 
       Grade.new(outcome: Practice::Outcome.call(evidence_key: key, aided: attempt.aided), key: key, codes: codes,
-                violations: JSON.parse(grading.form_violations_json || "[]"))
+                violations: JSON.parse(grading.form_violations_json || "[]"),
+                pair_note: key == "nearly_correct" ? Grading::PairNote.line(spec.display, grading.normalized) : nil)
     end
 
     def low_guess?(instance)

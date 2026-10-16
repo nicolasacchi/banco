@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 22
+version: 23
 
 validation:
   # Skill graph (synchronous).
@@ -239,6 +239,7 @@ verdicts:
   dont_know: { evidence: D }
   wrong_form: { evidence: conditional, note: "W when the form is the item's skill; WRONG_FORM_DECLARED when declared; pending otherwise" }
   near_miss: { evidence: conditional, note: "NEAR_MISS" }
+  nearly_correct: { evidence: C, note: "a matching with all pairs right but one (D-301); normalized carries off_pair" }
   undetermined: { evidence: pending }
   invalid: { evidence: none, note: "not an attempt; Italian message; app_event invalid_input" }
 

@@ -13,7 +13,7 @@ module Grading
   # The raw answer of "Non lo so" / "Non l'ho ancora studiato" (decision D-030).
   DONT_KNOW_RAW = '{"dont_know":true}'.freeze
 
-  VERDICTS = %w[correct typical_error wrong dont_know wrong_form near_miss undetermined short_answer invalid].freeze
+  VERDICTS = %w[correct typical_error wrong dont_know wrong_form near_miss nearly_correct undetermined short_answer invalid].freeze
 
   class TransactionOpen < StandardError; end
 

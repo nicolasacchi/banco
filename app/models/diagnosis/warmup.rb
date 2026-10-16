@@ -38,7 +38,7 @@ module Diagnosis
 
     def closed_right?(task, raw)
       spec = Grading::Spec.from_hash(task.slice("component", "answer", "display"))
-      Grading.grade_spec(spec, raw, source: "text").verdict == "correct"
+      Grading.grade_spec(spec, raw, source: "text").verdict.in?(%w[correct nearly_correct])
     rescue StandardError
       false
     end

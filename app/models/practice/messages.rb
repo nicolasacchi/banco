@@ -55,8 +55,9 @@ module Practice
     end
 
     # An extra line with a credit: the accents note or the form message of a declared form skill.
-    def note(evidence_key, violations: [])
+    def note(evidence_key, violations: [], pair_note: nil)
       case evidence_key.to_s
+      when "nearly_correct" then pair_note
       when "orthography_slip" then I18n.t("practice.accents_note")
       when "wrong_form_declared" then form(violations)
       end

@@ -210,7 +210,7 @@ export function renderCheck(spec, ctx, loc, options = {}) {
     }
     tries = reply.try ?? tries + 1
     if (reply.verdict === "right") {
-      say("right", null, reply.explain_it)
+      say("right", reply.message_it, reply.explain_it)
       done = true
       lock(form)
       options.onDone?.(reply, tries)

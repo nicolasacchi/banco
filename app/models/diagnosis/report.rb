@@ -51,7 +51,7 @@ module Diagnosis
       base.merge(run: run_info, sittings: sittings, counted_minutes: (result[:counted_seconds] / 60.0).round, groups: groups,
                  skills: skills, errors_observed: errors_observed, unclassified: skills.select { |s| s[:unclassified] }.map { |s| s[:skill] },
                  pending: pending, signals: signals, checks: result[:checks], formula_sheet: sheet_summary)
-          .merge(@with_answers ? { refused_tries: refused_tries } : {})
+          .merge(@with_answers ? { refused_tries: refused_tries, nearly_correct: nearly_correct } : {})
     end
 
     private
@@ -219,6 +219,18 @@ module Diagnosis
         attempt = by_served[served_id]
         { skill: served[served_id].skill_key, answer: attempt && Diagnosis::AnswerText.call(attempt, served[served_id]),
           tries: Teacher::RefusedTries.collapse(list).map { |t| { text: t.text, count: t.count } } }
+      end
+    end
+
+    # The matchings counted right with one pair off (D-301): the skill, the line that says which pair, per attempt.
+    # Only with_answers: the line holds what the student paired.
+    def nearly_correct
+      attempts.filter_map do |attempt|
+        grading = attempt.gradings.max_by(&:seq)
+        next unless grading&.verdict == "nearly_correct"
+
+        display = JSON.parse(attempt.item_instance.display_json)
+        { skill: skill_of(attempt), attempt: attempt.id, note_it: Grading::PairNote.line(display, grading.normalized) }
       end
     end
 

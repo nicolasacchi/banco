@@ -304,6 +304,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-298 | 2026-10-16 | sitting feedback: the refused text is kept for the teacher, a pause after a refusal and the answer format at the second one, a pause suggested after two subjects in a day, a finished subject shows as finished | decided |
 | D-299 | 2026-10-16 | content search (S1): one derived lexical index, three doors (student, teacher and guests, agents), the student's searches never recorded, the teacher searches the student's answers; the semantic part follows in the next entry | decided |
 | D-300 | 2026-10-16 | content search (S2): an embedding client (`BANCO_EMBED_URL`, bge-m3), one vector per content document, hybrid ranking for the teacher's and the agents' doors only, "Simili" (`banco search --like`), the typo notice; never the student, never an answer | decided |
+| D-301 | 2026-10-16 | a matching with all pairs right but one counts as right, with a note for the teacher and the line of the pair for the student; not retroactive | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -3283,5 +3284,17 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Why:** one engine, a second list fused in the one place that orders results; the model sits behind a client that can be absent, so the search never depends on it; the student's door is protected by a missing code path and by tests, not by a promise.
 - **Cost:** the first embedding is slow; about 40 MB of vectors in the derived file (9,600 x (4 KB + 0.5 KB)); a hybrid query is the lexical one plus a cosine pass of 100 to 250 ms.
 - **Rules version:** none changes.
+- **Status:** decided
+- **Back-port:** none.
+
+## D-301 · 2026-10-16 · a matching with all pairs right but one counts as right, with a note
+
+- **Design ref:** X-03 (evidence), E-03 (`Grading::Closed`, matching), A8.2 (practice outcomes), A9 (lesson checks)
+- **Operator (2026-10-16):** a matching answer with all pairs right but one counts as right, with a note for the teacher. From now on; stored gradings are not regraded.
+- **Found:** the matching component was all-or-nothing (`right_pairs == key.size`, else wrong or a typical error). In one run of the entry test, ten matchings were counted wrong and six of them had five of six or three of four pairs right; the skill picture came out worse than what the student knows.
+- **We do (grader):** `Grading::Closed` matching gives the new verdict `nearly_correct` when the answer is not correct, hits no declared error (a declared error permutation keeps precedence and stays `typical_error`), the key has at least 3 pairs (`NEARLY_CORRECT_MIN_PAIRS`) and exactly one pair is wrong. So 3 of 4, 5 of 6 and 2 of 3 are `nearly_correct`; 2 of 4 and 4 of 6 stay `wrong`; a key of 2 pairs never. `normalized` carries `off_pair` (`left`, `given`, `key`, canonical ids). It is not `near_miss`: `NEAR_MISS = :pending` (a one-letter typo goes to the teacher) is untouched. Registered in `Grading::VERDICTS` and in `verdicts:` of `config/banco/error_codes.yml` (version 23). In a testlet, a sub item that is `nearly_correct` counts as right for the unit (all right is correct) and, in a mixture, as the other certain verdicts do (the unit goes to the teacher as undetermined).
+- **We do (diagnosis):** `Diagnosis::Rules::V1::EVIDENCE["nearly_correct"] = :C` with the observation `one_pair_off` in `OBSERVATIONS`; the fold records an observation `nearly_correct` about the skill; `Diagnosis::Report` (with answers) lists the attempts as `nearly_correct` and the report page shows «Quasi tutto giusto» with the pair; the student's end screen sorts it with the right answers and shows `Grading::PairNote` under the answer.
+- **We do (practice and lessons):** practice: `Practice::Outcome` reads `nearly_correct` as a credit key, so the try is `correct` (or `correct_aided`) and the serve state machine needs no new row; the feedback is «Corretto.» plus the note «Giusto, tranne una coppia: «A» va con «B», non con «C».» (`Grading::PairNote`, which reads the texts of the instance display). Lesson checks: the check is `right`, the reply carries the same line as `message_it` and the browser shows it under «Giusto».
+- **Rules version:** none changes. `EVIDENCE` gains a key for a verdict no stored grading carries, so no outcome of any past run changes its evidence: a run pinned at `diagnosis/1` derives the same states before and after (as for D-295 and D-296, where the grader changed and the version did not). `practice/1` is likewise unchanged for every stored try. Stored gradings are not regraded: the ledger is append-only and the rule holds from now on.
 - **Status:** decided
 - **Back-port:** none.

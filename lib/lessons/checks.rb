@@ -113,15 +113,17 @@ module Lessons
         display: { "options" => check["options"], "left" => check["left"], "right" => check["right"] }.compact
       )
       result = Grading::Closed.grade(spec, response, id_map: id_map.presence)
-      from_result(result, errors)
+      from_result(result, errors, spec.display)
     end
 
-    def from_result(result, errors)
+    def from_result(result, errors, display = {})
       return invalid(result.invalid_code, result.grader_version) if result.invalid?
 
       case result.verdict
       when "correct"
         Graded.new(verdict: "right", code: nil, message_it: nil, error_index: nil, normalized: result.normalized, grader_version: result.grader_version)
+      when "nearly_correct" # one pair off is right, with the note (D-301)
+        Graded.new(verdict: "right", code: nil, message_it: Grading::PairNote.line(display, result.normalized), error_index: nil, normalized: result.normalized, grader_version: result.grader_version)
       when "typical_error"
         index = result.error_codes.filter_map { |c| c[/\Ae(\d+)\z/, 1]&.to_i }.first
         entry = index && errors[index]

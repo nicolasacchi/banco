@@ -112,6 +112,17 @@
       </section>
     <% end %>
 
+    <% if row[:nearly_correct].present? %>
+      <section id="report-nearly-correct">
+        <h2><%= t("teacher.nearly_correct.title") %></h2>
+        <ul class="plain">
+          <% row[:nearly_correct].each do |r| %>
+            <li data-skill="<%= r[:skill] %>"><strong><%= ref_for(r[:skill]) %></strong> · <%= t("teacher.nearly_correct.line") %> <%= r[:note_it] %></li>
+          <% end %>
+        </ul>
+      </section>
+    <% end %>
+
     <section id="report-signals">
       <h2><%= t("teacher.report.signals") %></h2>
       <% sig = row[:signals] %>

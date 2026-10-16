@@ -37,9 +37,9 @@ module Grading
     end
 
     def unit_verdict(verdicts)
-      if verdicts.all?("correct") then "correct"
+      if verdicts.all? { |v| %w[correct nearly_correct].include?(v) } then "correct" # a matching one pair off is right (D-301)
       elsif verdicts.all?("dont_know") then "dont_know"
-      elsif (verdicts & %w[correct undetermined near_miss wrong_form]).empty? then "wrong"
+      elsif (verdicts & %w[correct nearly_correct undetermined near_miss wrong_form]).empty? then "wrong"
       else "undetermined"
       end
     end

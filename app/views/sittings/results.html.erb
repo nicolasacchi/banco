@@ -69,6 +69,7 @@
       <article class="solution" data-attempt="<%= s.attempt_id %>">
         <p data-markup="inline"><%= s.prompt %></p>
         <div><%= t("summary.your_answer") %>: <span data-markup="inline"><%= s.given %></span></div>
+        <% if s.note %><p data-note="nearly-correct"><%= s.note %></p><% end %>
         <% if s.steps.any? %>
           <h3><%= t("summary.solution") %></h3>
           <ol>

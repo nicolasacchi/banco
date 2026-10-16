@@ -241,6 +241,7 @@ module Diagnosis
     def note_observations(skill, source, evidence)
       return unless evidence == :C
 
+      @state.observations << { skill: skill, about: skill, kind: "nearly_correct" } if source[:verdict].to_s == "nearly_correct"
       if source[:orthography_slip] && source[:orthography_skill]
         @state.observations << { skill: source[:orthography_skill], about: skill, kind: "orthography_slip" }
       end

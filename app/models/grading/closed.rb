@@ -5,6 +5,8 @@ module Grading
   # No I/O, no database, no clock.
   module Closed
     GRADER = "closed".freeze
+    # A matching with all pairs right but one counts as right when the key has at least this many pairs (D-301).
+    NEARLY_CORRECT_MIN_PAIRS = 3
 
     class << self
       def grade(spec, value, id_map: nil)
@@ -100,8 +102,16 @@ module Grading
         return result("correct", normalized: normalized) if right_pairs == key.size
 
         hits = error_hit(spec, pairs) { |v, a| v.is_a?(Hash) && v.to_h { |l, r| [ l.to_s, r.to_s ] } == a }
-        verdict_for_errors(hits, normalized: normalized)
+        return verdict_for_errors(hits, normalized: normalized) if hits.any?
+        return result("wrong", normalized: normalized) unless nearly_correct?(right_pairs, key.size)
+
+        # All pairs right but one (D-301): right, with the pair that was off kept for the notes.
+        left = pairs.keys.find { |l| key[l] != pairs[l] }
+        off = { "left" => left, "given" => pairs[left], "key" => key[left] }
+        result("nearly_correct", normalized: { "pairs" => pairs.sort.to_h, "correct_pairs" => right_pairs, "off_pair" => off }.to_json)
       end
+
+      def nearly_correct?(right_pairs, size) = size >= NEARLY_CORRECT_MIN_PAIRS && right_pairs == size - 1
     end
   end
 end

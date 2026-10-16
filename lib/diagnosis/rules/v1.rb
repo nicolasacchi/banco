@@ -57,6 +57,7 @@ module Diagnosis
         "wrong_form_declared" => WRONG_FORM_DECLARED == :credit ? :C : :pending,
         "wrong_form_undeclared" => :pending,
         "orthography_slip" => ORTHOGRAPHY_SLIP == :credit ? :C : :pending,
+        "nearly_correct" => :C,               # a matching with all pairs right but one (D-301)
         "near_miss" => NEAR_MISS == :credit ? :C : :pending,
         "undetermined" => :pending,
         "float_method" => :pending,
@@ -68,7 +69,8 @@ module Diagnosis
       # Extra observations that go with a credit, naming the skill they are about.
       OBSERVATIONS = {
         "wrong_form_declared" => :tail_suspect_on_form_skill,
-        "orthography_slip" => :observation_on_orthography_skill
+        "orthography_slip" => :observation_on_orthography_skill,
+        "nearly_correct" => :one_pair_off
       }.freeze
 
       # ---- Per-skill sequencing (B-02) --------------------------------------

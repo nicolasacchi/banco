@@ -62,7 +62,7 @@ class ErrorCodesTest < ActiveSupport::TestCase
 
   test "the verdicts of the registry are the keys the evidence table starts from" do
     verdicts = REGISTRY["verdicts"].keys
-    assert_empty verdicts - %w[correct typical_error wrong dont_know wrong_form near_miss undetermined invalid]
+    assert_empty verdicts - %w[correct typical_error wrong dont_know wrong_form near_miss nearly_correct undetermined invalid]
     verdicts.each do |v|
       key = Diagnosis::Rules::V1.evidence_key(v)
       assert Diagnosis::Rules::V1::EVIDENCE.key?(key) || v == "wrong_form", v

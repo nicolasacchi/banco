@@ -5,7 +5,7 @@ module Diagnosis
   # is a grade: no score, no percentage, no alarm colour.
   class Summary
     Skill = Data.define(:key, :label, :text)
-    Solution = Data.define(:attempt_id, :prompt, :given, :steps, :final, :verdict)
+    Solution = Data.define(:attempt_id, :prompt, :given, :steps, :final, :verdict, :note)
 
     attr_reader :run
 
@@ -46,7 +46,7 @@ module Diagnosis
       return [] unless final?
 
       list = served.filter_map { |event, serve| solution_for(event, serve) }
-      list.sort_by.with_index { |s, i| [ s.verdict == "correct" ? 1 : 0, i ] }
+      list.sort_by.with_index { |s, i| [ %w[correct nearly_correct].include?(s.verdict) ? 1 : 0, i ] }
     end
 
     private
@@ -113,9 +113,11 @@ module Diagnosis
       instance = serve.item_instance
       body = JSON.parse(instance.item_revision.body_json)
       solution = instance.solution_json.present? ? JSON.parse(instance.solution_json) : {}
-      verdict = attempt.gradings.last&.verdict
+      grading = attempt.gradings.last
+      verdict = grading&.verdict
+      note = verdict == "nearly_correct" ? Grading::PairNote.line(JSON.parse(instance.display_json), grading.normalized) : nil # D-301
       Solution.new(attempt_id: attempt.id, prompt: prompt_text(body, instance), given: AnswerText.call(attempt, serve),
-                   steps: Array(solution["steps"]), final: solution["final"], verdict: verdict)
+                   steps: Array(solution["steps"]), final: solution["final"], verdict: verdict, note: note)
     end
 
     def prompt_text(body, instance)

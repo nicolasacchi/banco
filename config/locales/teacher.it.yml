@@ -693,6 +693,7 @@ it:
       verdict:
         undetermined: "non so dire"
         near_miss: "quasi giusta"
+        nearly_correct: "quasi tutto giusto: una coppia sbagliata"
         float: "numero con la virgola"
         wrong_form: "forma sbagliata"
       resolve_reason: "Motivo, in una riga"
@@ -700,6 +701,9 @@ it:
       right: "Giusta"
       wrong: "Sbagliata"
       dont_know: "Come «Non lo so»"
+    nearly_correct:
+      title: "Quasi tutto giusto"
+      line: "Contata giusta, ma una coppia è sbagliata."
     refused_tries:
       title: "Tentativi non letti"
       line: "Tentativi non letti:"

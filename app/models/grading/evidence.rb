@@ -61,6 +61,7 @@ module Grading
       case key
       when "wrong_form_declared" then spec.form_skill
       when "orthography_slip" then error_codes.filter_map { |c| V1::ORTHOGRAPHY_SKILLS[c] }.first
+      when "nearly_correct" then spec.skill
       end
     end
 

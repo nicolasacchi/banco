@@ -464,6 +464,14 @@ class DiagnosisEngineTest < ActiveSupport::TestCase
     assert_equal [], d.result[:suspects]
   end
 
+  test "nearly_correct: a matching one pair off counts C with an observation, near_miss still pends (D-301)" do
+    d = DiagnosisHelper::Driver.new(build_plan(skills: { A => {} }))
+    d.start
+    2.times { d.play("nearly_correct") }
+    assert_equal %w[demonstrated two_of_two], d.state(A)
+    assert_equal [ "nearly_correct" ], d.result[:observations].map { |o| o[:kind] }.uniq
+  end
+
   # ---- testlets -----------------------------------------------------------------
 
   test "testlet_counts_one_outcome_per_skill" do

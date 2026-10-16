@@ -41,6 +41,7 @@ grader and the rules would switch a mask off in silence.
 | Outcome | Evidence |
 | --- | --- |
 | correct (choice, ordering, matching by id; exact rationals; exact normalized text; expressions by an exact method) | **C** |
+| nearly_correct (D-301): a matching with at least 3 pairs in the key, all pairs right but one, and no declared error hit (a declared error permutation stays typical_error) | **C** with the observation `one_pair_off`; the grading keeps the pair that was off (`off_pair`). Not retroactive: stored gradings are not regraded |
 | typical_error(code) | **W**, with the code |
 | ORTHOGRAPHY_SLIP: the grader says typical_error with a code in `ORTHOGRAPHY_ALLOWLIST` (`es_accents`, `it_accents`, `it_apostrophe_accent`) and the item says `accent_policy: flag` (it does not measure accents). The grader has already ruled out a slip whose unaccented form is one of the item's `paradigm_forms`: that is another word, so wrong. With `accent_policy: strict` the item measures accents and the slip is **W** | `ORTHOGRAPHY_SLIP = :credit`: **C** on the item's skill plus an observation on the orthography skill, no descent |
 | wrong, certain | **W**, unclassified |

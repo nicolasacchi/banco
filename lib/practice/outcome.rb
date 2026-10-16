@@ -14,7 +14,7 @@ module Practice
       correct: :C, correct_aided: :C, typical_error: :W, unrecognised: :W, form: :W, near_miss: :N, undetermined: :N
     }.freeze
 
-    CREDIT_KEYS = %w[correct orthography_slip wrong_form_declared].freeze
+    CREDIT_KEYS = %w[correct orthography_slip wrong_form_declared nearly_correct].freeze
     UNDETERMINED_KEYS = %w[undetermined float_method wrong_form_undeclared].freeze
 
     class NotATry < ArgumentError; end
