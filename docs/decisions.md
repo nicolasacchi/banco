@@ -306,6 +306,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-300 | 2026-10-16 | content search (S2): an embedding client (`BANCO_EMBED_URL`, bge-m3), one vector per content document, hybrid ranking for the teacher's and the agents' doors only, "Simili" (`banco search --like`), the typo notice; never the student, never an answer | decided |
 | D-301 | 2026-10-16 | a matching with all pairs right but one counts as right, with a note for the teacher and the line of the pair for the student; not retroactive | decided |
 | D-302 | 2026-10-16 | the law and economics entry test may be choice only, lighter, with ten of its fifteen skills measured; the other five are learned in the course | decided |
+| D-303 | 2026-10-16 | embedding throughput: a document is embedded by its title and the start of its body (cap `BANCO_EMBED_MAX_CHARS`, 1,500, recorded with the model); the rebuild waits, retries and skips a slow batch instead of stopping, and prints progress | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -3306,5 +3307,18 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Operator (2026-10-16):** the student did not like the law entry test (30 questions in one sitting, many matchings, typed article numbers and dates); the operator asked for a multiple-choice test that is not heavy, to be taken again from the start. Asked that only ten of the fifteen skills can then be measured, the operator answered that ten are enough.
 - **We do:** a new revision of the law and economics blueprint with choice items only (four options each, the wrong ones being catalogued typical errors), no reading testlet and no short answer, one sitting of about 20 minutes (about 12 to 17 questions for a typical profile in `banco diagnosis simulate`). Ten skills are entries, each with `choice_only_reason_it`; the five skills a choice-only descent cannot reach under `descent_low_guess` (legal capacity, the legal relationship and goods, the distinctions of law, legal versus social norms, the characters of a norm) are declared not measured in `not_measured_it` and are learned in the course. Rule 3 of the blueprint brief stays the default for every other discursive subject; this entry is the operator's exception for law and economics. The run in progress on the previous revision is voided by the teacher once the new revision is approved, and the student takes the new test.
 - **Rules version:** none changes (`diagnosis/1`, validation rules version 9): no rule or threshold changed; a blueprint revision uses the existing schema.
+- **Status:** decided
+- **Back-port:** none.
+
+## D-303 · 2026-10-16 · embedding throughput: a capped input, and a rebuild that survives a slow batch
+
+- **Design ref:** D-300 (items 1 and 3).
+- **Seen:** the first full embedding in production crawled (30 to 60 documents a minute on 4 CPU cores); batches of 8 sometimes passed the 60 s timeout, the rebuild stopped at the first one, and the service went on computing the abandoned batch, so a retry at once timed out again. bge-m3 takes 8,192 tokens an input, so a long document cost far more than it adds to a semantic match.
+- **We do:**
+  1. **A cap.** `Embedder::Http#embed_documents` cuts each text (title, then the start of the body) to `BANCO_EMBED_MAX_CHARS` characters (default 1,500, between 50 and 2,000), on a word boundary. A question is never cut. The cap is recorded in the vector's `model` column (`BAAI/bge-m3 cap1500`), so a change of the cap makes every vector stale exactly as a change of model does. The stub keeps its behaviour.
+  2. **A slow batch does not stop the rebuild.** In `banco:search:rebuild` (not in the request path, not in `SearchIndexJob`, which keeps its stop on the first failure and its 20 minutes), a failed or timed-out batch waits `BANCO_EMBED_RETRY_WAIT` seconds (default 60, so the service drains the abandoned work), is retried up to `BANCO_EMBED_RETRIES` times (default 3), then skipped alone; the summary says how many batches (and documents) were skipped, and the next run embeds them. The task's document timeout is `BANCO_EMBED_DOCUMENT_TIMEOUT` (default 180 s); elsewhere it stays 60 s.
+  3. **Progress.** Every `BANCO_EMBED_PROGRESS_EVERY` batches (default 10) one line: `vectors: 1200 of 9700, 41/min, eta 3h05`.
+- **Cost:** the first rebuild after the deploy re-embeds every vector (the recorded model name changed).
+- **Rules version:** none changes.
 - **Status:** decided
 - **Back-port:** none.

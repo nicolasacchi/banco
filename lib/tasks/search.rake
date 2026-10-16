@@ -12,11 +12,24 @@ namespace :banco do
       counts.each { |group, c| puts format("%-11s +%d ~%d -%d =%d", group, c[:added], c[:changed], c[:removed], c[:kept]) }
       puts format("%d documents in %.1fs", Search::Index.count, Process.clock_gettime(Process::CLOCK_MONOTONIC) - started)
       # The vectors come after the lexical index and never stop it: a service that is down leaves them for the next run.
-      v = Search::Indexer.embed!
+      # A slow batch does not stop the rebuild: it waits (the service drains the abandoned work), retries, then skips (D-303).
+      embedder = Search::Embedder.current
+      embedder.document_timeout = Float(ENV["BANCO_EMBED_DOCUMENT_TIMEOUT"].presence || 180) if embedder.respond_to?(:document_timeout=)
+      progress = lambda do |embedded:, total:, skipped:, seconds:|
+        rate = seconds.positive? ? embedded / (seconds / 60.0) : 0
+        eta = rate.positive? ? ((total - embedded) / rate * 60).round : nil
+        puts format("vectors: %d of %d, %d/min, eta %s%s", embedded, total, rate.round, eta ? format("%dh%02d", eta / 3600, eta % 3600 / 60) : "-",
+                    skipped.positive? ? ", #{skipped} batches skipped" : "")
+        $stdout.flush
+      end
+      v = Search::Vectors.build!(embedder, retries: Integer(ENV["BANCO_EMBED_RETRIES"].presence || 3), retry_wait: Float(ENV["BANCO_EMBED_RETRY_WAIT"].presence || 60),
+                                           every: Integer(ENV["BANCO_EMBED_PROGRESS_EVERY"].presence || 10), progress: progress)
       if !v[:configured]
         puts "vectors: no embedder configured (BANCO_EMBED_URL unset): lexical search only"
       else
-        puts format("vectors: %d embedded in %.1fs, %d left%s", v[:embedded], v[:seconds], v[:pending], v[:down] ? " (the embedding service did not answer: run again)" : "")
+        puts format("vectors: %d embedded in %.1fs, %d left%s%s", v[:embedded], v[:seconds], v[:pending],
+                    v[:skipped].to_i.positive? ? ", #{v[:skipped]} batches skipped (#{v[:skipped_documents]} documents: run again)" : "",
+                    v[:down] ? " (the embedding service did not answer: run again)" : "")
       end
     end
 

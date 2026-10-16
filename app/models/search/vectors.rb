@@ -71,27 +71,45 @@ module Search
     # Embeds what is pending, BATCH documents a request, until none is left, the +deadline+ (seconds) passes or the service fails.
     # Never raises for a service that is down: the lexical index is whole without vectors. Returns
     # {embedded:, pending:, down:, seconds:}.
-    def build!(embedder = Embedder.current, deadline: nil)
+    def build!(embedder = Embedder.current, deadline: nil, retries: 0, retry_wait: 0, sleeper: Kernel.method(:sleep), every: nil, progress: nil)
       Schema.ensure!
       started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      return { embedded: 0, pending: 0, down: false, seconds: 0.0, configured: false } unless embedder
+      return { embedded: 0, pending: 0, down: false, seconds: 0.0, configured: false, skipped: 0 } unless embedder
 
       forget_stale(embedder)
       embedded = 0
+      skipped = 0
+      skipped_docs = 0
       down = false
       todo = pending(embedder)
-      todo.each_slice(BATCH) do |batch|
+      todo.each_slice(BATCH).with_index(1) do |batch, number|
         break if deadline && Process.clock_gettime(Process::CLOCK_MONOTONIC) - started > deadline
 
-        vectors = embedder.embed_documents(batch.map { |row| text_of(row) })
-        store(batch, vectors, embedder)
-        embedded += batch.size
-      rescue Embedder::Unavailable => e
-        Rails.logger.warn("search: the embedding service failed while indexing (#{e.message.first(120)}); #{todo.size - embedded} documents left for the next run")
-        down = true
-        break
+        attempts = 0
+        begin
+          vectors = embedder.embed_documents(batch.map { |row| text_of(row) })
+          store(batch, vectors, embedder)
+          embedded += batch.size
+        rescue Embedder::Unavailable => e
+          Rails.logger.warn("search: the embedding service failed while indexing (#{e.message.first(120)}); #{todo.size - embedded} documents left for the next run")
+          if retries.zero?
+            down = true
+            break
+          end
+          # The service may still be computing the abandoned batch: wait for it to drain, then ask again; a batch that stays
+          # unanswered is skipped (the next run picks it up) and the rebuild goes on.
+          if attempts < retries
+            attempts += 1
+            sleeper.call(retry_wait)
+            retry
+          end
+          skipped += 1
+          skipped_docs += batch.size
+        end
+        progress&.call(embedded: embedded, total: todo.size, skipped: skipped, seconds: Process.clock_gettime(Process::CLOCK_MONOTONIC) - started) if every && (number % every).zero?
       end
-      { embedded: embedded, pending: todo.size - embedded, down: down, seconds: Process.clock_gettime(Process::CLOCK_MONOTONIC) - started, configured: true }
+      { embedded: embedded, pending: todo.size - embedded, down: down, seconds: Process.clock_gettime(Process::CLOCK_MONOTONIC) - started, configured: true,
+        skipped: skipped, skipped_documents: skipped_docs }
     end
 
     def store(batch, vectors, embedder)

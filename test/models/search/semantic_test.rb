@@ -81,6 +81,54 @@ class SearchSemanticTest < ActiveSupport::TestCase
     end
   end
 
+  test "a document is sent as its start cut to the cap on a word boundary, a question is not cut" do
+    serve do |url, requests|
+      http = Search::Embedder::Http.new(url: url, max_chars: 60)
+      long = "uno due tre quattro cinque sei sette otto nove dieci undici dodici tredici"
+      http.embed_documents([ long, "corto" ])
+      http.embed_query(long)
+      docs, query = requests.map { |_, payload| payload["inputs"] }
+      assert_equal [ "uno due tre quattro cinque sei sette otto nove dieci undici", "corto" ], docs
+      assert_equal [ long ], query
+    end
+    assert_equal "uno due", Search::Embedder::Http.new(url: "http://x", max_chars: 50).cap("uno due #{'x' * 60}")
+  end
+
+  test "a change of the cap, like a change of model, makes the vectors stale" do
+    a = Search::Embedder::Http.new(url: "http://x", model: "m", max_chars: 1500)
+    b = Search::Embedder::Http.new(url: "http://x", model: "m", max_chars: 800)
+    refute_equal a.model, b.model
+    fake = ->(embedder) { embedder.define_singleton_method(:embed_documents) { |texts| texts.map { |t| Search::Embedder::Stub.new.vector(t) } }; embedder }
+    assert_equal DOCS.size, Search::Vectors.build!(fake.(a))[:embedded]
+    assert_equal 0, Search::Vectors.build!(fake.(a))[:embedded]
+    assert_equal DOCS.size, Search::Vectors.build!(fake.(b))[:embedded]
+  end
+
+  test "a failed batch waits, is retried, then skipped alone; the rebuild goes on and reports progress" do
+    Search::Index.replace_group("filler", Array.new(20) { |i| Search::Doc.build(kind: "skill", key: "filler.#{i}", title: "Riempitivo #{i}", body: "testo #{i}", subject: "math", unique: i) })
+    total = DOCS.size + 20
+    calls = Hash.new(0)
+    flaky = Search::Embedder::Stub.new
+    flaky.define_singleton_method(:embed_documents) do |texts|
+      calls[texts.first] += 1
+      raise Search::Embedder::Unavailable, "slow" if calls.size == 2 # the second batch never answers
+      super(texts)
+    end
+    sleeps = []
+    lines = []
+    result = Search::Vectors.build!(flaky, retries: 3, retry_wait: 60, sleeper: ->(n) { sleeps << n }, every: 1, progress: ->(**p) { lines << p })
+    assert_equal [ 60, 60, 60 ], sleeps
+    assert_equal 1, result[:skipped]
+    assert_equal 8, result[:skipped_documents]
+    assert_not result[:down]
+    assert_equal total - 8, result[:embedded]
+    assert_equal 8, result[:pending]
+    assert_equal 4, calls.values.max
+    assert_equal 4, lines.size
+    assert_equal({ embedded: 8, total: total, skipped: 0 }, lines.first.slice(:embedded, :total, :skipped))
+    assert_equal 1, lines.last[:skipped]
+  end
+
   test "a service that is down, answers badly or hangs up is Unavailable, never another error" do
     http = Search::Embedder::Http.new(url: "http://127.0.0.1:1")
     assert_raises(Search::Embedder::Unavailable) { http.embed_query("x") }
