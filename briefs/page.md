@@ -20,6 +20,8 @@ server validates it in Chrome on every one of the eight seeds (`banco page statu
 every picture). Another session, on another model, reviews it. You report; you never decide and never ask for a decision: stop at
 `awaiting_teacher`. The teacher tries the page and approves what it shows and teaches.
 
+Before you write, search what exists: `banco search "WORDS" --subject KEY` finds lessons by card, glossary terms, items, skills and findings, drafts included; a near duplicate of something that exists is a finding, so write something new or say why yours differs. To cite a reference text, find the article with `banco search "WORDS" --kind reference_article` and copy the quote from `banco reference show --key KEY`.
+
 ## The folder
 
 ```

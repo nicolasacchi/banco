@@ -16,6 +16,8 @@ Start with `banco status` and this brief. Work only through `banco`. Never ask f
 teacher approves topics and opens the course to the student in the browser; you stop at
 `awaiting_teacher`.
 
+Before you write, search what exists: `banco search "WORDS" --subject KEY` finds lessons by card, glossary terms, items, skills and findings, drafts included; a near duplicate of something that exists is a finding, so write something new or say why yours differs. To cite a reference text, find the article with `banco search "WORDS" --kind reference_article` and copy the quote from `banco reference show --key KEY`.
+
 ## The file
 
 ```json

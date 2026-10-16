@@ -20,6 +20,8 @@ course sources and must not read any; the page stands on its card. `banco page-r
 `--dry-run` first). Keep your files in a scratch directory that only you own: `mktemp -d "$TMPDIR/pr-SUBJECT-XXXXXX"`. You report; you
 never decide and never ask for a decision: the teacher tries the page and approves or sends back in the browser.
 
+Search for duplicates: `banco search "WORDS" --subject KEY` finds the lessons, items and findings that already exist, drafts included; a near copy of one of them is a finding. Check a cited reference text with `banco search "WORDS" --kind reference_article`.
+
 ## The eleven points
 
 1. Content correct: numbers and science; check some states by hand from the code.

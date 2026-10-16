@@ -21,6 +21,8 @@ Start with `banco status` and this brief. Work only through `banco`. Never ask f
 teacher approves the topic in the browser, you stop at `awaiting_teacher`. The old format
 (`banco.lesson/1`, eight sections) is in `banco brief show lesson-v1`; write new lessons in this one.
 
+Before you write, search what exists: `banco search "WORDS" --subject KEY` finds lessons by card, glossary terms, items, skills and findings, drafts included; a near duplicate of something that exists is a finding, so write something new or say why yours differs. To cite a reference text, find the article with `banco search "WORDS" --kind reference_article` and copy the quote from `banco reference show --key KEY`.
+
 ## The file
 
 `lesson.md`: UTF-8, LF, at most 96 KB (`E-LESSON-SIZE`). A front matter between two `---` lines

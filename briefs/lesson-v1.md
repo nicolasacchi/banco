@@ -20,6 +20,8 @@ templates. You never write HTML or code: the student's browser shows data only.
 Start with `banco status` and this brief. Work only through `banco`. Never ask for a decision: the
 teacher approves the topic in the browser, you stop at `awaiting_teacher`.
 
+Before you write, search what exists: `banco search "WORDS" --subject KEY` finds lessons by card, glossary terms, items, skills and findings, drafts included; a near duplicate of something that exists is a finding, so write something new or say why yours differs. To cite a reference text, find the article with `banco search "WORDS" --kind reference_article` and copy the quote from `banco reference show --key KEY`.
+
 ## The file
 
 `lesson.md`: UTF-8, LF, at most 64 KB. A front matter between two `---` lines (YAML, no aliases, no
