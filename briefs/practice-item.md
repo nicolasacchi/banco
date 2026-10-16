@@ -59,6 +59,7 @@ stop at `awaiting_teacher`.
 
 - A generated item keeps `generator.pool` of 24 clean seeds; a static practice item has at least 10
   instances (`E-PRACTICE-POOL`). Instances must differ in display and fingerprint.
+- Instances of one item must look different to the student: different cases or rows, not the same rows reshuffled (`W-INSTANCES-ALIKE`).
 - Per skill a topic needs at least 20 distinct instances over its 2 to 4 pinned items, 12 of them hard
   to guess (written answers, an ordering or matching of 4 or more): plan the items so that the pool
   reaches that. Write the first, level 1, item first.

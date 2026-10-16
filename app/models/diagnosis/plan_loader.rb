@@ -131,7 +131,7 @@ module Diagnosis
         Plan::Instance.new(flags: flags, id: inst.id, item: revision.id, skills: skills, component: component,
                            low_guess: low,
                            choice: choice, expected_seconds: body["expected_seconds"] || 60,
-                           fingerprint: inst.fingerprint, kind: kind)
+                           fingerprint: inst.fingerprint, kind: kind, texts: InstanceTexts.call(display))
       end
     end
 

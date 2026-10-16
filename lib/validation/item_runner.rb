@@ -180,6 +180,7 @@ module Validation
         ItemChecks.excluded_params(unit.body, inst, "#{unit.path}/instances/#{i}", @findings)
       end
       longest_correct(unit, list, checker)
+      instances_alike(unit, list)
       never_generated(unit, list)
       message_gives_key(unit, list)
       accept_item_level(unit, list)
@@ -298,6 +299,7 @@ module Validation
         return [] unless generated_ok
 
         longest_correct(unit, stored.map { |c| c.transform_keys(&:to_s) }, checker)
+        instances_alike(unit, stored.map { |c| c.transform_keys(&:to_s) })
         never_generated(unit, clean.map { |c| c.transform_keys(&:to_s) })
         Roundtrip.new(unit, subject: item["subject"], findings: @findings).call(stored.map { |c| c.transform_keys(&:to_s) }, label: "generated", tests: unit.body["tests"])
         verify_generated(unit, item, phase, gen, clean, stored)
@@ -465,6 +467,16 @@ module Validation
       return unless share > Rules.get(:pool, :longest_correct_ratio)
 
       @findings.add("W-LONGEST-CORRECT", "#{unit.path}/display/options", "the correct option is the longest in #{(share * 100).round}% of the instances")
+    end
+
+    # W-INSTANCES-ALIKE (D-297): instances of one item must not look like the same question.
+    def instances_alike(unit, list)
+      alike = AlikeInstances.pairs(unit.component, list)
+      return if alike.empty?
+
+      first = alike.first
+      @findings.add("W-INSTANCES-ALIKE", "#{unit.path}/instances",
+                    "#{alike.size} pair(s) of instances share more than #{(Rules.get(:pool, :alike_share) * 100).round}% of their rows (for example instances #{first[0]} and #{first[1]}): vary the cases or rows, do not reshuffle the same ones")
     end
 
     def never_generated(unit, list)

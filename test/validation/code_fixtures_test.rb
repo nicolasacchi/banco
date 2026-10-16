@@ -149,6 +149,7 @@ class CodeFixturesTest < ActiveSupport::TestCase
     },
     "E-OPTION-DUPLICATE" => -> { static_codes(F.choice_item("instances" => [ F.choice_instance("sette", %w[sette nove undici]), F.choice_instance("otto", %w[quattro sei dieci]) ])) },
     "E-ACCENT-DIRECTION" => -> { static_codes(F.choice_item("instances" => [ F.choice_instance("perché", %w[perchè nove undici]), F.choice_instance("otto", %w[quattro sei dieci]) ])) },
+    "W-INSTANCES-ALIKE" => -> { static_codes(matching_item([ 1, 2, 3, 4 ], [ 1, 2, 3, 4, 5 ])) },
     "E-MATCHING-SIZE" => -> { static_codes(matching_item([ 1, 2, 3 ], [ 1, 2, 3, 4 ])) },
     "E-MATCHING-RIGHT-MARKUP" => -> { static_codes(matching_item([ 1, 2, 3, 4 ], [ 1, 2, 3, 4, 5 ], right_text: "$x \\leq 2$")) },
     "W-ERROR-NOT-IN-GRAPH" => -> { static_codes(item("error_catalogue" => [ item["error_catalogue"].first.merge("code" => "brand_new_code") ])) },

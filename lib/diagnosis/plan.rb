@@ -15,8 +15,10 @@ module Diagnosis
     # One servable instance. skills has one entry, except a testlet (one per
     # sub-item). fingerprint is what "seen" is compared on.
     # flags: for a testlet {skill => {low_guess:, choice:}} from its sub items (D-096); nil otherwise.
-    Instance = Data.define(:id, :item, :skills, :component, :low_guess, :choice, :expected_seconds, :fingerprint, :kind, :flags) do
-      def initialize(flags: nil, **rest) = super(flags: flags, **rest)
+    # texts: what the student reads, normalized, as {strong: [...], weak: [...]} (D-297, see
+    # Diagnosis::Overlap); nil when the plan does not know it (a synthetic instance).
+    Instance = Data.define(:id, :item, :skills, :component, :low_guess, :choice, :expected_seconds, :fingerprint, :kind, :flags, :texts) do
+      def initialize(flags: nil, texts: nil, **rest) = super(flags: flags, texts: texts, **rest)
 
       # Whether the instance is hard to guess / a choice for this skill: a testlet
       # decides per skill, any other instance for all of its skills.

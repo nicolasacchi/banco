@@ -40,6 +40,7 @@ pool:
   min_low_guess_instances: 3
   longest_correct_ratio: 0.6  # W-LONGEST-CORRECT: share of instances where the key is the longest
   longest_correct_min_instances: 4
+  alike_share: 0.5            # W-INSTANCES-ALIKE: two instances sharing more than this share of their rows (D-297)
 
 readability:
   max_sentence_words: 25      # E-READ sentence_length

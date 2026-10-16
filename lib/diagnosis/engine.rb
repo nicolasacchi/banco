@@ -124,7 +124,8 @@ module Diagnosis
       end
     end
 
-    # The next [skill, instance] to serve, :no_fit when only a testlet that does
+    # The next [skill, instance] to serve (the instance of a repeated item is the one least
+    # alike the instances of it already served in the run, D-297), :no_fit when only a testlet that does
     # not fit is left, or nil when the frontier has nothing servable. Skills that
     # cannot go on are marked stalled in +state+ (a local copy of the fold).
     def choose(state, remaining)
@@ -149,7 +150,7 @@ module Diagnosis
           no_fit = true
           next
         end
-        return [ key, fitting.first ]
+        return [ key, Overlap.least_alike(fitting, state.serves.map(&:instance)) ]
       end
       no_fit ? :no_fit : nil
     end
