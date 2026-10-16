@@ -141,4 +141,68 @@ class SearchTeacherDoorTest < ActionDispatch::IntegrationTest
     search(TEACHER, "equazione")
     assert_select "#search-not-ready"
   end
+
+  test "when only the corrected words found something, the page says what it understood" do
+    search(TEACHER, "equazone")
+    assert_select "#search-did-you-mean", text: /Non ho trovato «equazone»\. Forse cercavi «equazion/
+    assert(css_select("#search-did-you-mean a").all? { |a| a["href"].start_with?("/teacher/search?q=equazion") })
+    search(TEACHER, "equazone", "&subject=math")
+    assert(css_select("#search-did-you-mean a").all? { |a| a["href"].end_with?("&subject=math") || a["href"].include?("subject=math") })
+    assert_predicate css_select("#search-did-you-mean a"), :any?
+    search(TEACHER, "equazione")
+    assert_select "#search-did-you-mean", count: 0
+  end
+
+  # ---- "Simili" (D-300) ----------------------------------------------------------------------------
+
+  def similar(headers, ref, extra = "")
+    on(:web, "/teacher/search?like=#{CGI.escape(ref)}#{extra}", headers: headers, remote_addr: EDGE)
+    response
+  end
+
+  def with_stub(&block)
+    Search::Embedder.using(Search::Embedder::Stub.new) do
+      Search::Indexer.embed!
+      block.call
+    end
+  end
+
+  test "Simili lists the neighbours of an object, the object left out and its other versions labelled" do
+    with_stub do
+      similar(TEACHER, "demo-item-1")
+      assert_response :success
+      assert_select "#like-head", text: /Simili a «.*» \(Domande\)/
+      assert_predicate hits, :any?
+      assert_select ".search-hit .search-same", text: "stessa cosa, altra versione"
+      assert(hits.none? { |h| h["data-kind"] == "item" && h["data-key"] == "demo-item-1" }, "the object itself is not its own neighbour")
+      assert(hits.any? { |h| h["data-key"] == "demo-item-2" })
+      similar(GUEST, "demo-item-1")
+      assert_response :success
+      assert_predicate hits, :any?
+    end
+  end
+
+  test "Simili says so when the service is not set up, and for an unknown object or one with no vector" do
+    similar(TEACHER, "demo-item-1")
+    assert_select "#like-off"
+    Search::Embedder.using(Search::Embedder::Stub.new) do
+      similar(TEACHER, "demo-item-1")
+      assert_select "#like-no-vector"
+    end
+    with_stub do
+      similar(TEACHER, "no-such-key")
+      assert_select "#like-unknown"
+    end
+  end
+
+  test "the student cannot reach Simili, and the answers tab never uses it" do
+    with_stub do
+      similar(OFFICIAL, "demo-item-1")
+      assert_response :forbidden
+      on(:web, "/teacher/search?tab=answers&q=#{ANSWER_WORD}&like=demo-item-1", headers: TEACHER, remote_addr: EDGE)
+      assert_response :success
+      assert_equal [ "student_answer" ], kinds
+      assert_select "#like-head", count: 0
+    end
+  end
 end

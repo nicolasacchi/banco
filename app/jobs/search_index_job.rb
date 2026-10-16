@@ -5,6 +5,8 @@ class SearchIndexJob < ApplicationJob
 
   # Waits a little so that a burst of writes (a submit, a batch of answers) is one rebuild, not many.
   DELAY = 20.seconds
+  # The first embedding of the whole corpus takes a while on a small CPU; a run stops after this and the next one goes on.
+  EMBED_DEADLINE = 20.minutes.to_i
 
   # Called by the models that change what is searchable (Searchable). It never raises: a write must not fail because the
   # search could not be told. Does nothing where config.x.search.index_on_write is off (the test environment).
@@ -19,5 +21,7 @@ class SearchIndexJob < ApplicationJob
   def perform(groups = nil)
     groups = groups.blank? || groups == [ "all" ] ? Search::Builders::GROUPS : groups
     Search::Indexer.reindex(groups & Search::Builders::GROUPS)
+    # After the lexical index, whole without them: embed what has no vector, for a while at most (the next run goes on).
+    Search::Indexer.embed!(deadline: EMBED_DEADLINE)
   end
 end

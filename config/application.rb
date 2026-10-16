@@ -55,6 +55,9 @@ module Banco
     config.cache_store = :memory_store
     # The content search index is kept fresh by SearchIndexJob after a write (Searchable); the tests turn it off and call the indexer.
     config.x.search.index_on_write = !Rails.env.test?
+    # The embedding service of the staff's and the agents' search (D-300): :http talks to BANCO_EMBED_URL (unset: no semantic ranking),
+    # :stub is the deterministic hash embedder for development and CI (BANCO_EMBED_STUB=1). Chosen here, never by looking at the network.
+    config.x.search.embedder = ENV["BANCO_EMBED_STUB"] == "1" ? :stub : :http
 
     # The ledger uses triggers, which schema.rb cannot represent (E-01); the
     # per-database schema_format is set in config/database.yml.

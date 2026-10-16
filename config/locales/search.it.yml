@@ -11,6 +11,7 @@ it:
     count:
       one: "Ho trovato un risultato."
       other: "Ho trovato %{count} risultati."
+    did_you_mean_html: "Non ho trovato «%{term}». Forse cercavi %{options}?"
     definition: "Che cosa vuol dire"
     kinds:
       topic: "Argomenti"

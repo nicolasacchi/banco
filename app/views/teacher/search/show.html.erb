@@ -42,15 +42,27 @@
 
   <% if @answers_tab %><p class="hint" id="answers-hint"><%= t("teacher.search.answers_hint", student: student_name(viewed_student)) %></p><% end %>
 
-  <% if @query.blank? %>
+  <% if @like_off %>
+    <p class="notice" id="like-off" role="status"><%= t("teacher.search.like_off") %></p>
+  <% elsif @like && @result.source.nil? %>
+    <p id="like-unknown" role="status"><%= t("teacher.search.like_unknown", ref: @like) %></p>
+  <% elsif @like && !@result.semantic %>
+    <p class="notice" id="like-no-vector" role="status"><%= t("teacher.search.like_no_vector") %></p>
+  <% elsif @query.blank? && !@like %>
     <p class="hint" id="search-hint"><%= t("teacher.search.hint") %></p>
   <% elsif !@result.indexed %>
     <p class="notice" id="search-not-ready" role="status"><%= t("teacher.search.not_ready") %></p>
   <% elsif @result.hits.empty? %>
-    <p id="search-empty" role="status"><%= t("teacher.search.empty") %></p>
+    <p id="search-empty" role="status"><%= @like ? t("teacher.search.like_none") : t("teacher.search.empty") %></p>
   <% else %>
+    <% if @like %>
+      <h2 id="like-head"><%= t("teacher.search.like_head", title: @result.source.title, kind: search_kind_name(@result.source.kind)) %></h2>
+    <% end %>
+    <% if (notice = search_did_you_mean(@result, "/teacher/search", "teacher.search.did_you_mean_html", extra: { subject: @subject_filter, kind: @kind, status: @status }.compact)) %>
+      <p class="notice" id="search-did-you-mean" role="status"><%= notice %></p>
+    <% end %>
     <p class="hint" id="search-count" role="status"><%= t("teacher.search.count", count: @result.hits.size) %>
-      <% if @result.variants.any? %><%= t("teacher.search.corrected", words: @result.variants.first(4).join(", ")) %><% end %></p>
+      <% if @result.variants.any? && !@result.only_corrected? %><%= t("teacher.search.corrected", words: @result.variants.first(4).join(", ")) %><% end %></p>
     <ul class="search-hits" id="search-hits">
       <% @result.hits.each do |hit| %>
         <% href = Search::Links.staff(hit) %>
@@ -58,7 +70,8 @@
         <li class="search-hit" data-kind="<%= hit.kind %>" data-key="<%= hit.key %>" style="<%= search_accent_style(hit.subject) %>">
           <p class="search-subject"><%= search_icon(hit.kind) %> <%= search_kind_name(hit.kind) %><% if hit.subject %> · <%= search_subject_name(hit.subject) %><% end %>
             <% if hit.status.present? %> · <%= t("teacher.search.status_label", status: hit.status) %><% end %>
-            <% if hit.kind == "student_answer" %> · <%= l(Time.zone.parse(hit.occurred_at), format: :short) %><% end %></p>
+            <% if hit.kind == "student_answer" %> · <%= l(Time.zone.parse(hit.occurred_at), format: :short) %><% end %>
+            <% if @like && hit.key == @result.source.key %> · <strong class="search-same"><%= t("teacher.search.like_same") %></strong><% end %></p>
           <% if %w[skill item item_instance practice_item finding student_answer].include?(hit.kind) %>
             <span class="search-title"><%= ref_for(hit.key, href: (href unless hit.kind == "student_answer")) %></span>
             <% if hit.kind != "skill" && hit.kind != "item" %> <span class="search-meta"><%= hit.title %></span><% end %>

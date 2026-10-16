@@ -1,4 +1,5 @@
 require "test_helper"
+require "rake"
 require_relative "../support/search_world"
 
 # Keeping the index fresh: SearchIndexJob rebuilds named groups, and the rows that change what is searchable enqueue it.
@@ -22,6 +23,43 @@ class SearchIndexJobTest < ActiveJob::TestCase
     assert_operator Search::Document.where(kind: "topic").count, :>, 0
     SearchIndexJob.perform_now(nil)
     SearchIndexJob.perform_now([ "nonsense" ])
+  end
+
+  test "after the lexical index the job embeds what has no vector; a service that is down leaves the index whole" do
+    build_search_world
+    SearchIndexJob.perform_now([ "all" ])
+    assert_equal 0, Search::Vectors.status[:with_vectors], "no embedder is configured in the test environment"
+    Search::Embedder.using(Search::Embedder::Stub.new) do
+      SearchIndexJob.perform_now([ "all" ])
+      status = Search::Vectors.status
+      assert_operator status[:eligible], :>, 0
+      assert_equal status[:eligible], status[:with_vectors]
+    end
+    Search::Index.write("DELETE FROM search_vectors")
+    down = Search::Embedder::Stub.new
+    down.define_singleton_method(:embed_documents) { |_| raise Search::Embedder::Unavailable, "down" }
+    Search::Embedder.using(down) do
+      assert_nothing_raised { SearchIndexJob.perform_now([ "all" ]) }
+      assert_operator Search::Document.count, :>, 0
+      assert_equal 0, Search::Vectors.status[:with_vectors]
+    end
+  end
+
+  test "the rebuild task builds the lexical index first and says how many documents have vectors" do
+    build_search_world
+    Rails.application.load_tasks unless Rake::Task.task_defined?("banco:search:rebuild")
+    out, = Search::Embedder.using(Search::Embedder::Stub.new) do
+      capture_io { Rake::Task["banco:search:rebuild"].tap(&:reenable).invoke }
+    end
+    assert_match(/vectors: \d+ embedded/, out)
+    out, = Search::Embedder.using(Search::Embedder::Stub.new) do
+      capture_io { Rake::Task["banco:search:status"].tap(&:reenable).invoke }
+    end
+    assert_match(/vectors: (\d+) of \1 documents have a current vector \(0 missing\); model stub-hash/, out)
+    out, = Search::Embedder.using(nil) do
+      capture_io { Rake::Task["banco:search:rebuild"].tap(&:reenable).invoke }
+    end
+    assert_match(/no embedder configured/, out)
   end
 
   test "the tests do not enqueue on write, production does" do

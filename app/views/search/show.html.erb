@@ -23,6 +23,9 @@
   <% elsif @result.hits.empty? %>
     <p id="search-empty" role="status"><%= t("search.empty") %></p>
   <% else %>
+    <% if (notice = search_did_you_mean(@result, "/search", "search.did_you_mean_html")) %>
+      <p class="notice" id="search-did-you-mean" role="status"><%= notice %></p>
+    <% end %>
     <p class="hint" id="search-count" role="status"><%= t("search.count", count: @result.hits.size) %></p>
     <% @groups.each do |kind, hits| %>
       <section class="search-group" data-kind="<%= kind %>" aria-labelledby="search-group-<%= kind %>">

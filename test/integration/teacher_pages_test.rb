@@ -35,6 +35,17 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "each item card has a Simili button when vectors can be used, and none otherwise" do
+    page "/teacher/subjects/math/test/skills/math.number"
+    assert_select "article.item-card a[data-similar]", count: 0
+    Search::Embedder.using(Search::Embedder::Stub.new) do
+      page "/teacher/subjects/math/test/skills/math.number"
+      key = @world[:revisions]["number"].item.key
+      assert_select "article.item-card[data-item='#{key}'] a[data-similar='item:#{key}']", text: "Simili"
+      assert_equal "/teacher/search?like=item%3A#{key}", css_select("article.item-card[data-item='#{key}'] a[data-similar]").first["href"]
+    end
+  end
+
   test "the play page goes back by a real link to the skill screen, never javascript:" do
     page "/teacher/items/#{@short.id}/play"
     assert_response :success

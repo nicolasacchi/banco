@@ -122,13 +122,41 @@ class SearchStudentDoorTest < ActionDispatch::IntegrationTest
   end
 
   test "the search never reaches an embedding client" do
-    tripwire = Module.new { def semantic_list(*) = raise("the student's door asked for a vector") }
-    Search::Engine.prepend(tripwire)
-    search(OFFICIAL, "equazione")
-    assert_predicate hits, :any?
-    assert_not Search::Scope::Student.for(@official).semantic?
-    assert_not Search::Scope::Student.new(@official).semantic?
-    assert_equal false, Search::Engine.new(scope: Search::Scope::Student.for(@official)).call("equazione").semantic
+    raising = Object.new
+    %i[embed_query embed_documents model dimension min_similarity].each { |m| raising.define_singleton_method(m) { |*| raise "the student's door asked the embedding client" } }
+    Search::Embedder.using(raising) do
+      search(OFFICIAL, "equazione")
+      assert_response :success
+      assert_predicate hits, :any?
+      assert_not Search::Scope::Student.for(@official).semantic?
+      assert_not Search::Scope::Student.new(@official).semantic?
+      assert_equal false, Search::Engine.new(scope: Search::Scope::Student.for(@official)).call("equazione").semantic
+    end
+  end
+
+  test "the search makes no HTTP call at all when the embedding service is set up" do
+    calls = []
+    trap = ->(*args, **) { calls << args.first(2) && raise("no network for the student") }
+    previous = ENV["BANCO_EMBED_URL"]
+    ENV["BANCO_EMBED_URL"] = "http://banco-embed:80"
+    Net::HTTP.stub(:start, trap) do
+      Net::HTTP.stub(:new, trap) do
+        assert Search::Embedder.configured?, "the service is configured, so the trap below is armed for the staff"
+        search(OFFICIAL, "equazione")
+        assert_response :success
+        assert_predicate hits, :any?
+        search(OFFICIAL, "equazone")
+        assert_predicate hits, :any?
+        assert_empty calls, "the student's door touched the network"
+        assert_equal false, Search::Engine.new(scope: Search::Scope::Student.for(@official)).call("equazione").semantic
+        assert_empty calls
+        Search::Engine.new(scope: Search::Scope::Agent.new).call("equazione")
+        assert_equal 1, calls.size, "the agents' door would have called the service: the trap works"
+      end
+    end
+  ensure
+    previous ? ENV["BANCO_EMBED_URL"] = previous : ENV.delete("BANCO_EMBED_URL")
+    Search::Embedder.reset!
   end
 
   test "the words are not in the request log" do
@@ -187,7 +215,16 @@ class SearchStudentDoorTest < ActionDispatch::IntegrationTest
     assert_predicate hits, :any?
     search(OFFICIAL, "equazioni")
     assert_predicate hits, :any?
+    assert_select "#search-did-you-mean", count: 0
     search(OFFICIAL, "perche")
     assert_predicate hits, :any?
+  end
+
+  test "when only the corrected words found something, the page says what it understood, with links that run the search" do
+    search(OFFICIAL, "equazone")
+    assert_select "#search-did-you-mean", text: /Non ho trovato «equazone»\. Forse cercavi «equazione»/
+    assert_includes css_select("#search-did-you-mean a").map { |a| a["href"] }, "/search?q=equazione"
+    search(OFFICIAL, "equazione")
+    assert_select "#search-did-you-mean", count: 0
   end
 end

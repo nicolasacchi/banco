@@ -110,7 +110,7 @@
       "method": "GET",
       "path": "/api/v1/search",
       "args": ["query"],
-      "flags": ["--subject", "--kind", "--status", "--limit", "--json"],
+      "flags": ["--subject", "--kind", "--status", "--like", "--limit", "--json"],
       "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-FILES"]
     },
     {

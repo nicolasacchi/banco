@@ -1,0 +1,31 @@
+{
+  "command": "search",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/search",
+    "query": "like=demo-item-1&limit=1"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "query": "demo-item-1",
+      "like": "item:demo-item-1",
+      "semantic": true,
+      "indexed": true,
+      "results": [
+        {
+          "kind": "item",
+          "subject": "math",
+          "key": "demo-item-2",
+          "revision_id": 1,
+          "status": "passed",
+          "title": "demo-item-2",
+          "snippet": "Che cosa guardi prima? Quale regola usi? Fai il primo passaggio. Hai sbagliato un segno. number math.linear-equation-integer",
+          "score": 0.95,
+          "ref": "item:demo-item-2",
+          "same_object": false
+        }
+      ]
+    }
+  }
+}

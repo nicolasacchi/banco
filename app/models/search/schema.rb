@@ -6,10 +6,11 @@ module Search
   #   search_fts        FTS5, unicode61 with remove_diacritics 2: title, body, stems (Snowball stems of both)
   #   search_trigram    FTS5 trigram, contentless: the typo fallback (folded title and body)
   #   search_meta       schema version, build times
+  #   search_vectors    one embedding per content document (D-300): float32 blobs, the model and dimension that made them
   module Schema
-    VERSION = 1
+    VERSION = 2
 
-    TABLES = %w[search_documents search_fts search_trigram search_meta].freeze
+    TABLES = %w[search_documents search_fts search_trigram search_meta search_vectors].freeze
 
     module_function
 
@@ -68,6 +69,16 @@ module Search
       connection.execute("CREATE VIRTUAL TABLE search_fts USING fts5(title, body, stems, tokenize = 'unicode61 remove_diacritics 2', prefix = '2 3')")
       connection.execute("CREATE VIRTUAL TABLE search_trigram USING fts5(text, tokenize = 'trigram', content = '', contentless_delete = 1)")
       connection.execute("CREATE TABLE search_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
+      connection.execute(<<~SQL)
+        CREATE TABLE search_vectors (
+          doc_id INTEGER PRIMARY KEY,
+          digest TEXT NOT NULL,
+          model TEXT NOT NULL,
+          dim INTEGER NOT NULL,
+          vec BLOB NOT NULL,
+          coarse BLOB NOT NULL
+        )
+      SQL
       connection.execute("PRAGMA user_version = #{VERSION}")
     end
   end

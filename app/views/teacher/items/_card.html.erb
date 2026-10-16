@@ -10,7 +10,8 @@
       <% else %><strong><%= t("teacher.skill.not_ready") %></strong> <%= safe_join(gate_sentences(card.gate.reasons), " ") %><% end %>
       <% if card.superseded %> <%= t("teacher.skill.superseded") %><% end %>
     </p>
-    <p><a class="button secondary small" href="<%= teacher_item_play_path(revision_id: card.revision.id) %>" data-play="<%= card.revision.id %>"><%= t("teacher.skill.play") %></a></p>
+    <p><a class="button secondary small" href="<%= teacher_item_play_path(revision_id: card.revision.id) %>" data-play="<%= card.revision.id %>"><%= t("teacher.skill.play") %></a>
+      <% if search_similar_enabled? %> <a class="button secondary small" href="<%= search_similar_path("item:#{card.item.key}") %>" data-similar="item:<%= card.item.key %>" title="<%= t("teacher.search.similar_title") %>"><%= t("teacher.search.similar") %></a><% end %></p>
 
     <h3><%= t("teacher.skill.samples") %></h3>
     <% card.samples.each do |sample| %>

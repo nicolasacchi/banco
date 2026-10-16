@@ -174,6 +174,17 @@ class LessonRenderTest < ActionDispatch::IntegrationTest
     assert_select "p", /immagine rimossa/
   end
 
+  test "the lesson box offers Simili for the lesson and each card when vectors can be used" do
+    open_topic_page!(headers: TEACHER)
+    assert_select "#similar-line", count: 0
+    Search::Embedder.using(Search::Embedder::Stub.new) do
+      open_topic_page!(headers: TEACHER)
+      key = @revision.lesson.key
+      assert_select "#similar-line a[data-similar='lesson_card:#{key}']"
+      assert_select "#similar-line a[data-similar='lesson_card:#{key}#scheda-3']", /Simili alla scheda 3/
+    end
+  end
+
   test "the topic page has one line: no error with the count, or the errors by card with a link that opens the box on it" do
     open_topic_page!(headers: TEACHER)
     assert_response :success

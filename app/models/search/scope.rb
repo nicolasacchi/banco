@@ -16,7 +16,8 @@ module Search
     def audiences = raise(NotImplementedError)
     def clause = raise(NotImplementedError)
 
-    # Whether the ranking may use vectors (S2): never for a student (firm rule 1: no model in the student's path).
+    # Whether the ranking may use vectors (D-300): never for a student (firm rule 1: no model in the student's path); the staff's
+    # and the agents' only when an embedder is configured.
     def semantic? = false
 
     # [sql, binds] shared by every scope: kinds and audience, so a scope can only narrow.
@@ -93,6 +94,9 @@ module Search
         @name = answers_for ? :teacher : :staff
         @answers_for = answers_for
       end
+
+      # The teacher's answers tab is lexical only: no student text goes to the model, not even as a question.
+      def semantic? = answers_for.nil? && Embedder.configured?
 
       def kinds = Doc::STUDENT_KINDS + Doc::STAFF_KINDS + (answers_for ? Doc::TEACHER_KINDS : [])
       def audiences = answers_for ? %w[student staff teacher] : %w[student staff]

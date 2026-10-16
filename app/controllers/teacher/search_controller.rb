@@ -16,6 +16,8 @@ module Teacher
       @status = params[:status].to_s.presence
       @scope = @answers_tab ? Search::Scope::Staff.new(answers_for: viewed_student&.key || "-") : Search::Scope::Staff.new
       kinds = @answers_tab ? [ "student_answer" ] : [ @kind ].compact
+      @like = params[:like].to_s.squish.first(200).presence unless @answers_tab
+      return show_like if @like
       return unless @query.present?
 
       @result = Search::Engine.new(scope: @scope).call(@query, subject: @subject_filter, kind: kinds, status: @status, limit: LIMIT)
@@ -26,5 +28,14 @@ module Teacher
     helper_method :kind_choices
 
     def kind_choices = Search::Doc::STUDENT_KINDS + Search::Doc::STAFF_KINDS
+
+    private
+
+    # "Simili" (D-300): the neighbours of an object, from the stored vectors. Without an embedding service the page says so.
+    def show_like
+      @result = Search::Engine.new(scope: @scope).like(@like, subject: @subject_filter, kind: [ @kind ].compact, status: @status, limit: LIMIT)
+    rescue Search::Engine::SemanticOff
+      @like_off = true
+    end
   end
 end

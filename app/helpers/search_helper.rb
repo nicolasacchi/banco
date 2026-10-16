@@ -24,4 +24,22 @@ module SearchHelper
   end
 
   def search_subject_name(subject) = (@search_subject_names ||= Subject.pluck(:key, :name_it).to_h)[subject]
+
+  # «Non ho trovato «costituzione». Forse cercavi «sostituzione»?» when the hits come only from the typo fallback: each corrected word is
+  # a link that runs the search with it. +path+ is the page ("/search"), +extra+ the filters to keep; +key+ the i18n key (..._html).
+  def search_did_you_mean(result, path, key, extra: {})
+    return unless result.only_corrected?
+
+    sentences = result.suggestions.group_by(&:first).first(2).map do |term, items|
+      links = items.map { |_, word, query| link_to("«#{word}»", "#{path}?#{extra.merge(q: query).to_query}", class: "search-correction") }
+      t(key, term: term, options: safe_join(links, " o "))
+    end
+    sentences.any? ? safe_join(sentences, " ") : nil
+  end
+
+  # The "Simili" button needs vectors: shown on the teacher's pages only when an embedding service is set up.
+  def search_similar_enabled? = Search::Embedder.configured?
+
+  # The teacher's search with the neighbours of an object (ref: Search::Links.address or a key).
+  def search_similar_path(ref) = "/teacher/search?#{{ like: ref }.to_query}"
 end

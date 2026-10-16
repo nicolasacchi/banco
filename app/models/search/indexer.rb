@@ -19,6 +19,11 @@ module Search
       reindex(groups)
     end
 
+    # The vectors of the content documents that have no current one (D-300). Separate from the rebuild so that an embedding service
+    # that is down never stops the lexical index: it is built first and the vectors are left for the next run. Returns Vectors.build!'s
+    # counts; does nothing, and says so, where no embedder is configured.
+    def embed!(deadline: nil) = Vectors.build!(Embedder.current, deadline: deadline)
+
     def reindex(groups)
       Schema.ensure!
       Array(groups).map(&:to_s).uniq.to_h { |group| [ group, Index.replace_group(group, Builders.docs(group)) ] }

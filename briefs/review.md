@@ -26,7 +26,7 @@ programme lines cited (by the skill, by the item's own sources, or both: see `ci
 line the item cites that the skill does not). `banco review submit REV --file review.json` sends the
 result. Never ask for a decision; the teacher disposes of every finding.
 
-Search for duplicates: `banco search "WORDS" --subject KEY` finds the lessons, items and findings that already exist, drafts included; a near copy of one of them is a finding. Check a cited reference text with `banco search "WORDS" --kind reference_article`.
+Search for duplicates: `banco search "WORDS" --subject KEY` finds the lessons, items and findings that already exist, drafts included; a near copy of one of them is a finding. Check a cited reference text with `banco search "WORDS" --kind reference_article`. Run `banco search --like KEY` (a key, or a ref such as `item:KEY`) on what you review: its nearest neighbours are the candidates for duplicates.
 
 ## The checklist (11 points, 13 for a practice item, in this order)
 

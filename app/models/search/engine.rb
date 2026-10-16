@@ -14,12 +14,16 @@ module Search
     BODY_WEIGHT = 2.0
     STEMS_WEIGHT = 0.7
     MAX_VARIANTS = 6
+    SEMANTIC_LIMIT = 50
+    KEY_ORDER = "CASE d.kind WHEN 'topic' THEN 0 WHEN 'item' THEN 1 WHEN 'skill' THEN 2 WHEN 'course' THEN 3 WHEN 'reference_article' THEN 4 ELSE 5 END"
     # bm25 saturates: a word repeated in a long body can tie with the same word in a short title. A title that holds the words
     # gets this much more, in proportion to the share of the words it holds.
     TITLE_BONUS = 3.0
     COLUMNS = "d.id, d.kind, d.subject, d.key, d.revision_table, d.revision_id, d.status, d.title, d.body, d.anchor, d.lang, d.topic_key, d.skill, d.student_key, d.occurred_at"
 
     class BadKind < StandardError; end
+    # A "Simili" asked of a scope or a setup with no vectors (the student's door, no embedding service).
+    class SemanticOff < StandardError; end
 
     Hit = Data.define(:id, :kind, :subject, :key, :revision_table, :revision_id, :status, :title, :body, :anchor, :lang, :topic_key, :skill,
                       :student_key, :occurred_at, :score, :match) do
@@ -28,7 +32,22 @@ module Search
 
       def snippet(terms, variants = []) = segments(terms, variants).map(&:first).join
     end
-    Result = Data.define(:query, :terms, :variants, :hits, :semantic, :indexed)
+    # corrections: {term => [corrected words]} (what the typo fallback tried); source: the document a "Simili" asked about, else nil.
+    Result = Data.define(:query, :terms, :variants, :hits, :semantic, :indexed, :corrections, :source) do
+      # True when the hits come from the typo fallback alone: the page then says what it understood instead.
+      def only_corrected? = hits.any? && hits.all? { |h| h.match == :typo }
+
+      # [[word, corrected query]] for each corrected word of a term that no hit holds as typed, at most +per+ words a term.
+      def suggestions(per: 3)
+        corrections.flat_map do |term, words|
+          words.first(per).map { |word| [ term, word, Engine.replace_term(query, term, word) ] }
+        end
+      end
+    end
+
+    def self.replace_term(query, term, word)
+      query.gsub(/(?<![\p{L}\p{N}])#{Regexp.escape(term)}(?![\p{L}\p{N}])/i, word)
+    end
 
     attr_reader :scope
 
@@ -45,14 +64,84 @@ module Search
 
       terms = Text.query_terms(query)
       filters = { subject: subject.presence, kinds: kinds.presence, status: status.presence }
-      return Result.new(query: query.to_s, terms: terms, variants: [], hits: [], semantic: false, indexed: Index.built?) if terms.empty?
+      return Result.new(query: query.to_s, terms: terms, variants: [], hits: [], semantic: false, indexed: Index.built?, corrections: {}, source: nil) if terms.empty?
 
-      lists, variants = candidates(query.to_s, terms, filters)
-      Result.new(query: query.to_s, terms: terms, variants: variants, hits: Ranker.fuse(lists, limit: limit), semantic: lists.key?(:semantic), indexed: Index.built?)
+      embedding = start_embedding(query.to_s)
+      lists, corrections = candidates(query.to_s, terms, filters, embedding: embedding)
+      Result.new(query: query.to_s, terms: terms, variants: corrections.values.flatten, hits: Ranker.fuse(lists, limit: limit), semantic: lists.key?(:semantic),
+                 indexed: Index.built?, corrections: corrections, source: nil)
     end
 
-    # The ordered lists the ranker merges: {key: [Hit], lexical: [Hit]}. S2 adds {semantic: [Hit]}.
-    def candidates(query, terms, filters)
+    # "Simili": the nearest neighbours of an object, from the vectors already stored (no call to the service). +ref+ is a key
+    # (math.powers-properties) or an address as Search::Links.address writes it (item:KEY#seed, lesson_card:KEY#scheda-2). The object
+    # itself is left out; other documents of the same key (the other instances of an item) are kept, for the reviewer to see them.
+    # Only for a scope that may use vectors; kinds default to the family of the object (questions with questions, cards with cards).
+    # Returns a Result with semantic false and no hits when the object has no vector (nothing indexed, service never configured).
+    def like(ref, subject: nil, kind: nil, status: nil, limit: 20)
+      Schema.ensure!
+      raise SemanticOff unless scope.semantic?
+
+      kinds = Array(kind).map(&:to_s).reject(&:empty?)
+      bad = kinds - scope.kinds
+      raise BadKind, bad.first unless bad.empty?
+
+      source = like_source(ref.to_s.strip)
+      empty = Result.new(query: ref.to_s, terms: [], variants: [], hits: [], semantic: false, indexed: Index.built?, corrections: {}, source: source)
+      return empty unless source
+
+      kinds = FAMILIES.fetch(source.kind, [ source.kind ]) & scope.kinds if kinds.empty?
+      row = select("SELECT v.vec FROM search_vectors v WHERE v.doc_id = ?", [ source.id ]).first
+      return empty unless row
+
+      filters = { subject: subject.presence, kinds: kinds.presence, status: status.presence }
+      hits = Semantic.nearest(self, Vectors.unpack(row["vec"]), model: Embedder.current.model, filters: filters, limit: limit, min: 0.0, exclude: source.id)
+      Result.new(query: ref.to_s, terms: [], variants: [], hits: hits, semantic: true, indexed: true, corrections: {}, source: source)
+    end
+
+    FAMILIES = { "item" => %w[item item_instance practice_item], "item_instance" => %w[item item_instance practice_item],
+                 "practice_item" => %w[item item_instance practice_item], "lesson_card" => %w[lesson_card glossary_term],
+                 "glossary_term" => %w[lesson_card glossary_term] }.freeze
+
+    # The document a reference names, among those this scope may see: [kind:]key[#anchor]; a bare key takes the first kind in key_hits' order.
+    def like_source(ref)
+      kind = nil
+      if (m = ref.match(/\A([a-z_]+):(.+)\z/)) && Doc::KINDS.include?(m[1])
+        kind = m[1]
+        ref = m[2]
+      end
+      key, anchor = ref.split("#", 2)
+      return nil if key.blank?
+
+      where, binds = where({})
+      sql = +"SELECT #{COLUMNS} FROM search_documents d WHERE d.key = ? COLLATE NOCASE AND #{where}"
+      binds = [ key, *binds ]
+      if kind
+        sql << " AND d.kind = ?"
+        binds << kind
+      end
+      sql << (anchor ? " AND d.anchor = ?" : "")
+      binds << anchor if anchor
+      sql << " ORDER BY #{KEY_ORDER}, (d.anchor IS NOT NULL), d.id LIMIT 1"
+      row = select(sql, binds).first
+      row && hit(row.merge("score" => 0.0), :key)
+    end
+
+    # The embedding of the question starts at once, beside the lexical queries: the service takes about 0.17 s. nil when the scope
+    # never uses vectors (the student's) or there is no service.
+    def start_embedding(query)
+      return nil unless scope.semantic?
+
+      Thread.new do
+        Embedder.query_vector(query)
+      rescue StandardError => e
+        Rails.logger.warn("search: embedding the question failed (#{e.class})")
+        nil
+      end
+    end
+
+    # The ordered lists the ranker merges: {key: [Hit], lexical: [Hit], (staff and agents, service answering) semantic: [Hit]}, and the
+    # corrections the typo fallback used.
+    def candidates(query, terms, filters, embedding: nil)
       content = Text.content_terms(terms)
       lexical = run(match_for(content, :and), filters, 100, :lexical, content)
       lexical += run(match_for(content, :or), filters, 100, :lexical, content) if lexical.size < MIN_HITS && content.size > 1
@@ -63,14 +152,20 @@ module Search
         lexical += run(match_for(content, :or, variants), filters, 100, :typo, content + variants.values.flatten) if lexical.size < MIN_HITS && variants.any? && content.size > 1
       end
       lists = { key: key_hits(query, filters), lexical: lexical.uniq(&:id) }
-      # S2: the staff's and the agents' scopes answer semantic? with true when the embedding service is set up; the student's never does.
-      lists[:semantic] = semantic_list(query, filters) if scope.semantic?
-      [ lists, variants.values.flatten ]
+      # The staff's and the agents' scopes answer semantic? with true when an embedder is configured; the student's never does.
+      semantic = scope.semantic? ? semantic_list(embedding, filters) : nil
+      lists[:semantic] = semantic if semantic
+      [ lists, variants ]
     end
 
-    # S2 implements this (embed the question, cosine over the vectors of the scope's documents); a nil answer (service down) leaves the
-    # search lexical.
-    def semantic_list(_query, _filters) = raise(NotImplementedError, "the semantic ranking is S2")
+    # The cosine list for a question embedded by +embedding+ (a Thread, see start_embedding): nil (the search stays lexical, the
+    # result says semantic false) when the service did not answer or nothing has a vector yet.
+    def semantic_list(embedding, filters)
+      vector = embedding&.value or return nil
+      embedder = Embedder.current or return nil
+      hits = Semantic.nearest(self, vector, model: embedder.model, filters: filters, limit: SEMANTIC_LIMIT, min: Embedder.min_similarity)
+      hits.empty? && !Vectors.any?(embedder) ? nil : hits
+    end
 
     # ---- queries ----------------------------------------------------------------------------------
 
@@ -136,7 +231,7 @@ module Search
       rows = select(<<~SQL, [ key, *binds ])
         SELECT #{COLUMNS}, 1000.0 AS score FROM search_documents d
         WHERE d.key = ? COLLATE NOCASE AND #{where}
-        ORDER BY CASE d.kind WHEN 'topic' THEN 0 WHEN 'item' THEN 1 WHEN 'skill' THEN 2 WHEN 'course' THEN 3 WHEN 'reference_article' THEN 4 ELSE 5 END,
+        ORDER BY #{KEY_ORDER},
                  (d.anchor IS NOT NULL), d.id LIMIT 20
       SQL
       rows.map { |r| hit(r, :key) }

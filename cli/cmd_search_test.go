@@ -14,6 +14,8 @@ func TestSearchSendsTheQueryAndTheFilters(t *testing.T) {
 		{[]string{"search", "equazioni di primo grado", "--subject", "math"}, map[string]string{"q": "equazioni di primo grado", "subject": "math"}},
 		{[]string{"search", "equazioni", "di", "primo", "grado", "--kind", "lesson_card,topic", "--limit", "5"}, map[string]string{"q": "equazioni di primo grado", "kind": "lesson_card,topic", "limit": "5"}},
 		{[]string{"search", "--kind", "reference_article", "articolo 3", "--status", "imported", "--json"}, map[string]string{"q": "articolo 3", "kind": "reference_article", "status": "imported"}},
+		{[]string{"search", "--like", "item_instance:math-frazioni-1#seed-a", "--limit", "10"}, map[string]string{"like": "item_instance:math-frazioni-1#seed-a", "limit": "10"}},
+		{[]string{"search", "--like", "math.powers-properties", "--kind", "item"}, map[string]string{"like": "math.powers-properties", "kind": "item"}},
 	}
 	for _, c := range cases {
 		srv, seen := sequenceServer(t, [2]string{"200", `{"query":"x","semantic":false,"results":[]}`})
@@ -46,6 +48,9 @@ func TestSearchUsageErrors(t *testing.T) {
 		{"search", "x", "--kind", "Lesson Card"},
 		{"search", "x", "--limit", "500"},
 		{"search", "x", "--limit", "-1"},
+		{"search", "x", "--like", "item:abc"},
+		{"search", "--like", "two words"},
+		{"search", "--like", "item:KEY;rm"},
 	} {
 		if r := runCLI(t, srv.URL, envToken("bnc_x"), args...); r.exit != ExitUsage {
 			t.Errorf("%v: exit %d, want usage", args, r.exit)

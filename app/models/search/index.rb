@@ -58,6 +58,7 @@ module Search
     def remove_row(id)
       write("DELETE FROM search_fts WHERE rowid = ?", id)
       write("DELETE FROM search_trigram WHERE rowid = ?", id)
+      write("DELETE FROM search_vectors WHERE doc_id = ?", id)
       write("DELETE FROM search_documents WHERE id = ?", id)
     end
 
@@ -67,6 +68,7 @@ module Search
       connection.transaction do
         connection.execute("DELETE FROM search_fts")
         connection.execute("DELETE FROM search_trigram")
+        connection.execute("DELETE FROM search_vectors")
         connection.execute("DELETE FROM search_documents")
         connection.execute("DELETE FROM search_meta")
       end
