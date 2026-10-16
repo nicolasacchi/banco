@@ -1,4 +1,6 @@
 class PracticeAttempt < ApplicationRecord
+  include Searchable
+
   SOURCES = %w[text mathlive button].freeze
 
   belongs_to :student

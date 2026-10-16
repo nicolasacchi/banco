@@ -5,9 +5,13 @@ require "rails/test_help"
 require "minitest/mock"
 require_relative "support/contract_examples"
 
+Search::Schema.ensure!
+
 module ActiveSupport
   class TestCase
     parallelize(workers: :number_of_processors)
+    # The search index file is outside the primary schema: create its tables once per process, before any test transaction opens.
+    parallelize_setup { |_worker| Search::Schema.ensure! }
 
     fixtures :all
 

@@ -2,6 +2,8 @@
 # a decision of the teacher (kind dispose_finding, payload {finding_id, disposition,
 # reason_it}); the latest one counts.
 class ReviewFinding < ApplicationRecord
+  include Searchable
+
   SEVERITIES = %w[blocker major minor].freeze
   DISPOSITIONS = %w[fix_requested dismissed].freeze
 

@@ -67,7 +67,7 @@ module Syllabus
       end
 
       preamble_end = preamble_length(lines)
-      SyllabusSource.transaction do
+      source = SyllabusSource.transaction do
         source = SyllabusSource.create!(key: key, line_count: stats.count, sha256: stats.sha256)
         now = Time.current
         rows = lines.each_with_index.map do |line, index|
@@ -79,6 +79,9 @@ module Syllabus
         SyllabusLine.insert_all!(rows)
         source
       end
+      # insert_all! runs no callbacks: tell the content search once (D-299).
+      SearchIndexJob.later(%w[syllabus])
+      source
     end
 
     # Number of leading lines that are transcriber preamble (0 when absent).

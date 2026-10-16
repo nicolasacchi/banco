@@ -1,6 +1,8 @@
 # Pins one lesson revision and, per skill, the practice item revisions (ids only). The
 # teacher approves topic revisions. The topic is its lesson.
 class TopicRevision < ApplicationRecord
+  include Searchable
+
   belongs_to :lesson
   belongs_to :course_revision
   belongs_to :lesson_revision

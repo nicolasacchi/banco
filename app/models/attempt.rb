@@ -1,4 +1,6 @@
 class Attempt < ApplicationRecord
+  include Searchable
+
   belongs_to :student
   belongs_to :served_event, class_name: "DiagnosisEvent", optional: true
   belongs_to :item_instance

@@ -1,4 +1,6 @@
 class ItemRevision < ApplicationRecord
+  include Searchable
+
   belongs_to :item
   belongs_to :author_session, class_name: "AgentSession", optional: true
   has_many :validations, class_name: "ItemValidation"

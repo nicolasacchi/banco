@@ -1,4 +1,6 @@
 class LessonRevision < ApplicationRecord
+  include Searchable
+
   belongs_to :lesson
   belongs_to :base_revision, class_name: "LessonRevision", optional: true
   belongs_to :author_session, class_name: "AgentSession", optional: true

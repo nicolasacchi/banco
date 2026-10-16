@@ -1,20 +1,32 @@
 # SQLite. In production the files live under BANCO_DATA_DIR (a bind mount owned
-# by the container user): primary (the ledger) and queue (Solid Queue). There is
-# no cache or cable database.
+# by the container user): primary (the ledger), queue (Solid Queue) and search (the
+# content search index: derived, disposable, rebuilt by bin/rails banco:search:rebuild;
+# its schema is in code, Search::Schema, so database_tasks is off). There is no cache
+# or cable database.
 default: &default
   adapter: sqlite3
   max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   timeout: 5000
 
 development:
-  <<: *default
-  database: storage/development.sqlite3
-  schema_format: sql
+  primary:
+    <<: *default
+    database: storage/development.sqlite3
+    schema_format: sql
+  search:
+    <<: *default
+    database: storage/development_search.sqlite3
+    database_tasks: false
 
 test:
-  <<: *default
-  database: storage/test<%= ENV["TEST_ENV_NUMBER"] %>.sqlite3
-  schema_format: sql
+  primary:
+    <<: *default
+    database: storage/test<%= ENV["TEST_ENV_NUMBER"] %>.sqlite3
+    schema_format: sql
+  search:
+    <<: *default
+    database: storage/test_search<%= ENV["TEST_ENV_NUMBER"] %>.sqlite3
+    database_tasks: false
 
 production:
   primary:
@@ -26,3 +38,7 @@ production:
     database: <%= ENV.fetch("BANCO_DATA_DIR", "/data/db") %>/production_queue.sqlite3
     migrations_paths: db/queue_migrate
     schema_format: ruby
+  search:
+    <<: *default
+    database: <%= ENV.fetch("BANCO_DATA_DIR", "/data/db") %>/production_search.sqlite3
+    database_tasks: false

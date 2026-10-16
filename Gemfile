@@ -18,6 +18,8 @@ gem "ferrum", "0.18.0"
 # Needed in production: item and graph submissions are validated against the
 # frozen schemas (E-SCHEMA).
 gem "json_schemer", "~> 2.4"
+# Snowball stemmers (libstemmer's own code: Italian, Spanish, English) for the content search (D-299).
+gem "ruby-stemmer", "~> 3.0", require: false
 
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 gem "bootsnap", require: false

@@ -53,6 +53,8 @@ module Banco
 
     # Single process, single node: an in-memory cache is enough (no Solid Cache).
     config.cache_store = :memory_store
+    # The content search index is kept fresh by SearchIndexJob after a write (Searchable); the tests turn it off and call the indexer.
+    config.x.search.index_on_write = !Rails.env.test?
 
     # The ledger uses triggers, which schema.rb cannot represent (E-01); the
     # per-database schema_format is set in config/database.yml.

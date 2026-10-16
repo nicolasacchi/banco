@@ -1,4 +1,6 @@
 class ItemValidation < ApplicationRecord
+  include Searchable
+
   belongs_to :item_revision
 
   WAITING_FOR_VERIFIER = %w[E-VERIFY-MISSING E-VERIFY-STALE].freeze

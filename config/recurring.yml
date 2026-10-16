@@ -1,0 +1,7 @@
+# Solid Queue recurring tasks (production). The content search index is kept fresh by SearchIndexJob after each write;
+# this is the safety net: a full rebuild every night (the index is derived, so a missed update repairs itself).
+production:
+  search_rebuild:
+    class: SearchIndexJob
+    args: [ [ "all" ] ]
+    schedule: every day at 3:30am
