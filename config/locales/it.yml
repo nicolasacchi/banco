@@ -7,6 +7,7 @@ it:
       label: "Menu"
       today: "Oggi"
       subjects: "Materie"
+      search: "Cerca"
       diagnosis: "Test d'ingresso"
       warmup: "Riscaldamento"
       settings: "Impostazioni"

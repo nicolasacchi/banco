@@ -34,6 +34,8 @@ Rails.application.routes.draw do
       concerns :sitting
     end
     get "settings" => "settings#show", format: false
+    # The student's content search (D-299): lexical, nothing stored, `q` out of the log.
+    get "search" => "search#show", format: false
     # The poster of a free page (D-290): the validation screenshot by content address, for every signed-in role.
     get "page-posters/:sha" => "page_posters#show", constraints: { sha: /[0-9a-f]{64}/ }, format: false
     # The course of Phase 1b (A9): Oggi, the subjects, a topic, its lesson and its practice. Students only, official
@@ -101,6 +103,7 @@ Rails.application.routes.draw do
       get "subjects/:key/practice" => "practice#show", constraints: key, as: :teacher_practice
       get "subjects/:key/practice/skills/:skill" => "practice#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9.\-]*/), as: :teacher_practice_skill
       get "corrections" => "corrections#show", as: :teacher_corrections
+      get "search" => "search#show", as: :teacher_search
       get "findings" => "findings#show", as: :teacher_findings
       get "students" => "students#show", as: :teacher_students
       get "dashboard/state" => "dashboard#state", as: :teacher_dashboard_state
@@ -146,6 +149,7 @@ Rails.application.routes.draw do
     get "api/v1/health" => "api/v1/health#show", format: false
     get "api/v1/status" => "api/v1/status#show", format: false
     get "api/v1/items" => "api/v1/items#index", format: false
+    get "api/v1/search" => "api/v1/search#show", format: false
     get "api/v1/references" => "api/v1/references#index", format: false
     get "api/v1/references/:key" => "api/v1/references#show", constraints: { key: /[a-z0-9][a-z0-9-]*/ }, format: false
     get "api/v1/syllabus/:source/lines" => "api/v1/syllabus#lines", constraints: { source: /[a-z0-9][a-z0-9-]*/ }, format: false

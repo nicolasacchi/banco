@@ -1,0 +1,81 @@
+<% content_for :title, t("teacher.search.title") %>
+<% content_for :head do %>
+  <%= stylesheet_link_tag "search" %>
+<% end %>
+<main class="page wide search-page" id="teacher-search-page">
+  <h1><%= t("teacher.search.title") %></h1>
+  <% unless reader_only? %>
+    <nav class="search-tabs" aria-label="<%= t('teacher.search.title') %>">
+      <%= link_to t("teacher.search.tab_content"), with_student("/teacher/search?q=#{ERB::Util.url_encode(@query)}"), class: "button #{'secondary' if @answers_tab} small", **(@answers_tab ? {} : { "aria-current": "page" }) %>
+      <%= link_to t("teacher.search.tab_answers", student: student_name(viewed_student)), with_student("/teacher/search?tab=answers&q=#{ERB::Util.url_encode(@query)}"),
+                  class: "button #{'secondary' unless @answers_tab} small", id: "search-tab-answers", **(@answers_tab ? { "aria-current": "page" } : {}) %>
+    </nav>
+  <% end %>
+  <form action="/teacher/search" method="get" role="search" class="search-form" id="teacher-search-form" autocomplete="off">
+    <% if @answers_tab %><input type="hidden" name="tab" value="answers"><% end %>
+    <% if viewed_student && !viewed_student.official? %><input type="hidden" name="student" value="<%= viewed_student.key %>"><% end %>
+    <label for="search-q" class="search-label"><%= t("teacher.search.label") %></label>
+    <div class="search-row">
+      <input type="search" id="search-q" name="q" value="<%= @query %>" maxlength="<%= Teacher::SearchController::MAX_QUERY %>" class="search-input"
+             placeholder="<%= t("teacher.search.placeholder") %>" autofocus>
+      <button type="submit" class="button"><%= t("teacher.search.submit") %></button>
+    </div>
+    <% unless @answers_tab %>
+      <div class="search-filters">
+        <label><%= t("teacher.search.subject") %>
+          <select name="subject"><option value=""><%= t("teacher.search.all") %></option>
+            <% menu_subjects.each do |subject| %><option value="<%= subject.key %>"<%= " selected" if @subject_filter == subject.key %>><%= subject.name_it %></option><% end %>
+          </select>
+        </label>
+        <label><%= t("teacher.search.kind") %>
+          <select name="kind"><option value=""><%= t("teacher.search.all") %></option>
+            <% kind_choices.each do |kind| %><option value="<%= kind %>"<%= " selected" if @kind == kind %>><%= search_kind_name(kind) %></option><% end %>
+          </select>
+        </label>
+        <label><%= t("teacher.search.status") %>
+          <input type="text" name="status" value="<%= @status %>" size="12" list="search-statuses">
+          <datalist id="search-statuses"><% %w[draft reviewed approved released passed failed validating blocker major minor].each do |s| %><option value="<%= s %>"><% end %></datalist>
+        </label>
+      </div>
+    <% end %>
+  </form>
+
+  <% if @answers_tab %><p class="hint" id="answers-hint"><%= t("teacher.search.answers_hint", student: student_name(viewed_student)) %></p><% end %>
+
+  <% if @query.blank? %>
+    <p class="hint" id="search-hint"><%= t("teacher.search.hint") %></p>
+  <% elsif !@result.indexed %>
+    <p class="notice" id="search-not-ready" role="status"><%= t("teacher.search.not_ready") %></p>
+  <% elsif @result.hits.empty? %>
+    <p id="search-empty" role="status"><%= t("teacher.search.empty") %></p>
+  <% else %>
+    <p class="hint" id="search-count" role="status"><%= t("teacher.search.count", count: @result.hits.size) %>
+      <% if @result.variants.any? %><%= t("teacher.search.corrected", words: @result.variants.first(4).join(", ")) %><% end %></p>
+    <ul class="search-hits" id="search-hits">
+      <% @result.hits.each do |hit| %>
+        <% href = Search::Links.staff(hit) %>
+        <% href = with_student("#{href}?student=#{viewed_student.key}") if hit.kind == "student_answer" && viewed_student && !viewed_student.official? %>
+        <li class="search-hit" data-kind="<%= hit.kind %>" data-key="<%= hit.key %>" style="<%= search_accent_style(hit.subject) %>">
+          <p class="search-subject"><%= search_icon(hit.kind) %> <%= search_kind_name(hit.kind) %><% if hit.subject %> · <%= search_subject_name(hit.subject) %><% end %>
+            <% if hit.status.present? %> · <%= t("teacher.search.status_label", status: hit.status) %><% end %>
+            <% if hit.kind == "student_answer" %> · <%= l(Time.zone.parse(hit.occurred_at), format: :short) %><% end %></p>
+          <% if %w[skill item item_instance practice_item finding student_answer].include?(hit.kind) %>
+            <span class="search-title"><%= ref_for(hit.key, href: (href unless hit.kind == "student_answer")) %></span>
+            <% if hit.kind != "skill" && hit.kind != "item" %> <span class="search-meta"><%= hit.title %></span><% end %>
+          <% else %>
+            <% if href %><a class="search-title" href="<%= href %>"><%= hit.title %></a><% else %><span class="search-title"><%= hit.title %></span><% end %>
+            <span class="key">(<%= hit.key %>)</span>
+          <% end %>
+          <% if hit.kind == "reference_article" %>
+            <details class="search-article"><summary><%= search_snippet(hit, @result) %></summary><p><%= hit.body %></p></details>
+          <% elsif hit.kind == "student_answer" %>
+            <blockquote class="search-answer"><%= hit.body %></blockquote>
+            <% if href %><a href="<%= href %>"><%= t("teacher.search.open") %></a><% end %>
+          <% else %>
+            <p class="search-snippet"><%= search_snippet(hit, @result) %></p>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</main>

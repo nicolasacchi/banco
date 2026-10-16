@@ -121,7 +121,7 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     assert_select "#resume", 0
     assert_select "li.topic[data-reason=course_next] .topic-why", "È il prossimo argomento del corso."
     assert_select "li.topic .topic-meta", /Ripasso di prima · 30 minuti/
-    assert_select "nav.student-menu a", 4
+    assert_select "nav.student-menu a", 5
     page(OFFICIAL, "/topics/#{TOPIC}/lesson")
     page(OFFICIAL, "/today")
     assert_select "#resume", "Riprendi: #{TOPIC_TITLE}"

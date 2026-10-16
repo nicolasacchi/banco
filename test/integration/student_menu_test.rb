@@ -127,7 +127,7 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     release_course!(@course)
     page(OFFICIAL, "/today")
     assert_select "#course-part li.topic[data-topic='#{TOPIC}']"
-    assert_equal [ "Oggi", "Materie", "Impostazioni" ], labels
+    assert_equal [ "Oggi", "Materie", "Cerca", "Impostazioni" ], labels
   end
 
   test "a trial student sees the course drafts and Materie" do

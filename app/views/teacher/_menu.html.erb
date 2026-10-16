@@ -19,6 +19,7 @@
         </ul>
       </div>
     </li>
+    <li><%= link_to t("teacher.menu.search"), with_student("/teacher/search"), id: "menu-search", **menu_current(:search) %></li>
     <li><%= link_to t("teacher.menu.findings"), with_student("/teacher/findings"), id: "menu-findings", **menu_current(:findings) %></li>
     <li><%= link_to t("teacher.menu.corrections"), with_student("/teacher/corrections"), id: "menu-corrections", **menu_current(:corrections) %></li>
     <li><%= link_to t("teacher.menu.students"), with_student("/teacher/students"), id: "menu-students", **menu_current(:students) %></li>
