@@ -1,0 +1,31 @@
+<% content_for :title, t("comments.title") %>
+<main class="page course" data-comment-anchor="page">
+  <h1><%= t("comments.title") %></h1>
+  <p><%= t("comments.intro") %></p>
+  <% if @comments.empty? %>
+    <p id="comments-empty"><%= t("comments.empty") %></p>
+  <% else %>
+    <ul class="comment-list" id="my-comments">
+      <% @comments.each do |comment| %>
+        <% new_reply = @unread.include?(comment) %>
+        <li class="comment-item" id="comment-<%= comment.id %>" data-state="<%= comment.state %>" data-comment-anchor="comment:<%= comment.id %>">
+          <h2>
+            <%= comment_place_it(comment) %>
+            <span class="comment-state" data-state="<%= comment.state %>"><%= t("comments.state.#{comment.state}") %></span>
+            <% if new_reply %><span class="menu-badge"><%= t("comments.new_reply") %></span><% end %>
+          </h2>
+          <p class="hint"><%= t("comments.reason.#{comment.reason}") %> · <%= comment.created_at.in_time_zone.strftime("%d/%m/%Y %H:%M") %><% if comment.trial %> · <%= t("comments.trial") %><% end %></p>
+          <% if comment.selected_text %><p><%= t("comments.quoted") %>: <q><%= comment.selected_text %></q></p><% end %>
+          <p><strong><%= t("comments.you_wrote") %>:</strong> <%= comment.text_it || t("comments.no_text") %></p>
+          <% comment.replies.each do |reply| %>
+            <blockquote class="comment-reply">
+              <p><strong><%= t("comments.teacher_replied") %>:</strong></p>
+              <%= simple_format(h(reply.text_it)) %>
+            </blockquote>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+  <p><a class="button secondary" href="/today"><%= t("comments.back") %></a></p>
+</main>

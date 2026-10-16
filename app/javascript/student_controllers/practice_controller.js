@@ -59,6 +59,8 @@ export default class extends Controller {
 
   async show(reply) {
     this.serveId = reply.serve_id
+    // "Commenta" (D-304): a comment on this exercise names the serve; the server checks it is this student's.
+    this.itemBoxTarget.dataset.commentServeId = String(reply.serve_id)
     this.itemFormat = reply.item?.answer_format_it
     this.itemBoxTarget.inert = false
     this.itemBoxTarget.textContent = ""

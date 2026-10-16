@@ -17,7 +17,7 @@ export async function render(part, ctx) {
   for (const [index, sub] of (part.sub_items || []).entries()) {
     const handleOfSub = await renderPart(sub, ctx)
     const give_up = el("input", { type: "checkbox", class: "give-up" })
-    const section = el("section", { class: "sub-item", "data-sub": sub.id },
+    const section = el("section", { class: "sub-item", "data-sub": sub.id, "data-comment-anchor": `part:${index + 1}` },
       el("h3", { text: ctx.t.question_of.replace("%{n}", String(index + 1)) }),
       handleOfSub.promptElement,
       handleOfSub.element,

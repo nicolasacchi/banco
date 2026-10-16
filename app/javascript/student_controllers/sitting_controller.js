@@ -74,6 +74,8 @@ export default class extends Controller {
     this.hideBlocked()
     this.workTarget.hidden = false
     this.current = reply
+    // "Commenta" (D-304): a comment on this question names the served event; the server checks it is this run's.
+    this.itemBoxTarget.dataset.commentServedEventId = String(reply.served_event_id)
     this.unknownButtonTarget.textContent = reply.not_studied_button ? this.texts.not_studied : this.texts.dont_know
     this.itemBoxTarget.textContent = ""
     try {

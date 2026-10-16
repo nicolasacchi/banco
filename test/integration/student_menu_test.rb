@@ -50,14 +50,14 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     assert_select "#entry-warmup"
     assert_select "#entry-test a.button[href='/diagnosis/warmup']"
     assert_select "#entry-test-title", "Riscaldamento"
-    assert_equal [ "Oggi", "Riscaldamento", "Impostazioni" ], labels
+    assert_equal [ "Oggi", "Riscaldamento", "I miei commenti", "Impostazioni" ], labels
     assert_select "#entry-test p", /i test si aprono|Il test non è ancora aperto/i
     warmup_done!(student("student"))
     page(OFFICIAL, "/today")
     assert_select "#entry-test[data-state=closed]"
     assert_select "#entry-warmup", /rifarla/
     assert_select "#entry-test a[href='/diagnosis/warmup']"
-    assert_equal [ "Oggi", "Impostazioni" ], labels
+    assert_equal [ "Oggi", "I miei commenti", "Impostazioni" ], labels
   end
 
   test "released: the warm-up is a small optional link under the subjects, for the official and the trial student, never the main button" do
@@ -78,7 +78,7 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     assert_select "#entry-subjects li.subject[data-subject=math][data-state=not_started] .subject-state", "Da fare"
     assert_select "#entry-next", "Comincia"
     assert_select "form[action='/diagnosis/subjects/math'] #entry-next"
-    assert_equal [ "Oggi", "Test d'ingresso", "Impostazioni" ], labels
+    assert_equal [ "Oggi", "Test d'ingresso", "I miei commenti", "Impostazioni" ], labels
   end
 
   test "in progress the button says Riprendi; all done lists the results and no button" do
@@ -127,7 +127,7 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     release_course!(@course)
     page(OFFICIAL, "/today")
     assert_select "#course-part li.topic[data-topic='#{TOPIC}']"
-    assert_equal [ "Oggi", "Materie", "Cerca", "Impostazioni" ], labels
+    assert_equal [ "Oggi", "Materie", "Cerca", "I miei commenti", "Impostazioni" ], labels
   end
 
   test "a trial student sees the course drafts and Materie" do

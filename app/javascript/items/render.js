@@ -26,6 +26,8 @@ export async function renderPart(part, ctx) {
   if (!template) throw new Error(`no template for component ${part.component}`)
   const result = await template(part, ctx)
   result.promptElement = renderPrompt(part, ctx)
+  // "Commenta" (D-304): the answer area is a place of its own (the prompt and the item are set where they are built).
+  if (!result.element.hasAttribute("data-comment-anchor")) result.element.setAttribute("data-comment-anchor", "answer")
   // What to do (steps) goes with the prompt, above the input; the form of the answer sits under the input (D-216).
   if (Array.isArray(part.steps_it) && part.steps_it.length > 0) result.promptElement.appendChild(renderSteps(part.steps_it, ctx))
   if (part.answer_format_it) {
@@ -38,7 +40,7 @@ export async function renderPart(part, ctx) {
 // inside its own section, so only the input part is placed here.
 export async function renderItem(item, ctx) {
   const result = await renderPart(item, ctx)
-  const box = el("div", { class: "item-body" })
+  const box = el("div", { class: "item-body", "data-comment-anchor": "item" })
   if (item.component !== "testlet") box.appendChild(result.promptElement)
   box.appendChild(result.element)
   return { ...result, element: box }

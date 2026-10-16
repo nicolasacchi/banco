@@ -61,6 +61,9 @@ Rails.application.routes.draw do
       post "practice/serves/:serve_id/hint" => "practice#hint", constraints: { serve_id: /\d+/ }
       post "practice/serves/:serve_id/solution" => "practice#solution", constraints: { serve_id: /\d+/ }
       post "questions" => "questions#create"
+      # Comments anywhere (D-304): the student writes a comment on any page and reads the answers. Students only.
+      get "comments" => "comments#index"
+      post "comments" => "comments#create"
     end
 
     # The teacher's decisions (D-08): the only writes of DecisionRecorder. POST only,
@@ -103,6 +106,11 @@ Rails.application.routes.draw do
       get "subjects/:key/practice" => "practice#show", constraints: key, as: :teacher_practice
       get "subjects/:key/practice/skills/:skill" => "practice#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9.\-]*/), as: :teacher_practice_skill
       get "corrections" => "corrections#show", as: :teacher_corrections
+      # The student's comments (D-304): the teacher reads and answers; a guest sees the counts only.
+      get "comments" => "comments#show", as: :teacher_comments
+      %w[reply read resolve reopen].each do |action|
+        post "comments/:comment_id/#{action}" => "comments##{action}", constraints: { comment_id: /\d+/ }, as: :"teacher_comment_#{action}"
+      end
       get "search" => "search#show", as: :teacher_search
       get "findings" => "findings#show", as: :teacher_findings
       get "students" => "students#show", as: :teacher_students

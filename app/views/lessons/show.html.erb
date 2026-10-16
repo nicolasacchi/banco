@@ -1,5 +1,5 @@
 <% content_for :title, @body["title_it"] %>
-<main class="page course lesson" data-controller="lesson"
+<main class="page course lesson" data-controller="lesson" data-comment-lesson-revision-id="<%= @revision.id %>"
       data-lesson-solution-base-value="/topics/<%= @topic.key %>/lesson/exercises"
       data-lesson-labels-value="<%= lesson_labels.to_json %>">
   <p><a href="/topics/<%= @topic.key %>"><%= t("lesson.back") %></a></p>

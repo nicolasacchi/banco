@@ -44,7 +44,7 @@ class StudentMenuSystemTest < ApplicationSystemTestCase
   test "the keyboard reaches every item, shows the focus and follows a link with Enter" do
     visit "/today"
     ids = page.evaluate_script("Array.from(document.querySelectorAll('nav.student-menu a')).map(function (a) { return a.id })")
-    assert_equal %w[menu-today menu-diagnosis menu-settings], ids
+    assert_equal %w[menu-today menu-diagnosis menu-comments menu-settings], ids
     seen = []
     ids.size.times do
       type_keys(:Tab)
@@ -53,7 +53,7 @@ class StudentMenuSystemTest < ApplicationSystemTestCase
     assert_equal ids, seen.first(ids.size)
     outline = page.evaluate_script("getComputedStyle(document.activeElement).outlineStyle")
     assert_not_equal "none", outline
-    type_keys(:Shift, :Tab) # back to the second item
+    2.times { type_keys(:Shift, :Tab) } # back to the second item
     type_keys(:Enter)
     assert_current_path "/diagnosis"
     assert_selector "nav.student-menu a[aria-current=page]", text: "Test d'ingresso"

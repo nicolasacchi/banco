@@ -15,6 +15,7 @@
        data-controller="lesson2"
        data-lesson2-topic-value="<%= @topic.key %>"
        data-lesson2-revision-id-value="<%= @revision.id %>"
+       data-comment-lesson-revision-id="<%= @revision.id %>"
        data-lesson2-urls-value="<%= lesson2_urls(@topic.key).to_json %>"
        data-lesson2-resume-value="<%= @resume[:card].to_i %>"
        data-lesson2-seen-value="<%= Array(@resume[:seen]).to_json %>"

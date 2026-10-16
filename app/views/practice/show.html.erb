@@ -15,8 +15,8 @@
   <p id="serve-reason" class="notice" data-practice-target="reason" hidden></p>
 
   <section data-practice-target="work" aria-label="<%= t("practice.exercise") %>" hidden>
-    <div class="item" data-practice-target="itemBox"></div>
-    <div id="hints" data-practice-target="hints" hidden>
+    <div class="item" data-practice-target="itemBox" data-comment-anchor="exercise"></div>
+    <div id="hints" data-practice-target="hints" data-comment-anchor="hints" hidden>
       <h2><%= t("practice.hints_title") %></h2>
       <ol data-practice-target="hintList"></ol>
     </div>
@@ -27,8 +27,8 @@
     </div>
   </section>
 
-  <div id="feedback" class="feedback" role="status" aria-live="polite" tabindex="-1" data-practice-target="feedback"></div>
-  <div id="solution" class="solution" data-practice-target="solutionBox" hidden></div>
+  <div id="feedback" class="feedback" data-comment-anchor="feedback" role="status" aria-live="polite" tabindex="-1" data-practice-target="feedback"></div>
+  <div id="solution" class="solution" data-comment-anchor="solution" data-practice-target="solutionBox" hidden></div>
   <div class="actions" id="next-actions" data-practice-target="nextActions" hidden></div>
   <%= render "course/question", topic: @topic.key, lesson_revision_id: @topic.lesson_revision.id, section: "practice" %>
 </main>

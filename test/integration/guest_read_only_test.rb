@@ -21,7 +21,7 @@ class GuestReadOnlyTest < ActionDispatch::IntegrationTest
     @values = {
       key: "math", subject: "math", skill: "math.number", revision_id: @short.id, finding_id: 1, grade_proposal_id: @proposal.id,
       attempt_id: @attempt.id, run_id: @run.id, item_revision_id: @short.id, sha256: "0" * 64,
-      page_revision_id: @page_revision.id, lesson_revision_id: @lesson_revision.id, id: @lesson_revision.id, card: 1, block: 1, step: 1, n: 1, part: 1, topic: TopicWorld::TOPIC_KEY
+      comment_id: 1, page_revision_id: @page_revision.id, lesson_revision_id: @lesson_revision.id, id: @lesson_revision.id, card: 1, block: 1, step: 1, n: 1, part: 1, topic: TopicWorld::TOPIC_KEY
     }
   end
 

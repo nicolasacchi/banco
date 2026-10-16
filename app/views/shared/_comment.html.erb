@@ -1,0 +1,47 @@
+<%# "Commenta" (D-304): the comment mode's banner and the box, on every student page (not in the teacher's preview).
+    comment_controller.js is the whole behaviour; the «Commenta» controls are the elements with data-comment-open. %>
+<div id="comment-root" data-controller="comment"
+     data-comment-url-value="/comments"
+     data-comment-events-url-value="<%= comment_events_url %>"
+     data-comment-page-path-value="<%= request.path %>"
+     data-comment-labels-value="<%= comment_labels.to_json %>">
+  <div class="comment-banner" id="comment-banner" role="region" aria-label="<%= t("comments.banner_title") %>" data-comment-target="banner" data-comment-ui hidden>
+    <p><strong><%= t("comments.banner_title") %>.</strong> <%= t("comments.banner_hint") %></p>
+    <p>
+      <button type="button" class="button small" id="comment-whole" data-action="comment#wholePage"><%= t("comments.whole_page") %></button>
+      <button type="button" class="button secondary small" id="comment-list" data-action="comment#chooseFromList"><%= t("comments.pick_list") %></button>
+      <button type="button" class="button secondary small" id="comment-end" data-action="comment#cancel"><%= t("comments.cancel") %></button>
+    </p>
+  </div>
+  <dialog class="comment-box" id="comment-box" aria-labelledby="comment-box-title" data-comment-target="dialog" data-comment-ui data-action="close->comment#boxClosed">
+    <form method="dialog" data-comment-target="form" data-action="submit->comment#send">
+      <h2 id="comment-box-title"><%= t("comments.box_title") %></h2>
+      <p class="hint" id="comment-clock-note" data-comment-target="clockNote" hidden><%= t("comments.clock_note") %></p>
+      <p>
+        <label for="comment-where"><%= t("comments.where") %></label>
+        <select id="comment-where" class="answer-input wide" data-comment-target="where"></select>
+      </p>
+      <p class="comment-selected" hidden>
+        <span><%= t("comments.selected") %>: <q data-comment-target="selected"></q></span>
+        <label class="option"><input type="checkbox" checked data-comment-target="includeSelected"> <span><%= t("comments.include_selected") %></span></label>
+      </p>
+      <fieldset class="options comment-reasons">
+        <legend><%= t("comments.reason_label") %></legend>
+        <% Comment::REASONS.each do |reason| %>
+          <label class="option"><input type="radio" name="comment-reason" value="<%= reason %>" data-comment-target="reason"> <span class="option-text"><%= t("comments.reasons.#{reason}") %></span></label>
+        <% end %>
+      </fieldset>
+      <p>
+        <label for="comment-text"><%= t("comments.text_label") %></label>
+        <textarea id="comment-text" class="answer-input wide" rows="3" maxlength="<%= Comment::TEXT_MAX %>" data-comment-target="text" data-action="input->comment#updateCount"></textarea>
+        <span class="hint" data-comment-target="count"></span>
+      </p>
+      <p role="status" aria-live="polite" class="status" data-comment-target="status"></p>
+      <p>
+        <button type="submit" class="button" id="comment-send"><%= t("comments.send") %></button>
+        <button type="button" class="button secondary" id="comment-cancel" data-action="comment#cancel"><%= t("comments.cancel") %></button>
+      </p>
+    </form>
+  </dialog>
+  <p class="sr-only" role="status" aria-live="polite" data-comment-live></p>
+</div>

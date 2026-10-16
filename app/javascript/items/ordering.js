@@ -8,11 +8,11 @@ import { renderInline } from "items/markup"
 export function render(part, ctx) {
   const list = el("ol", { class: "ordering", "aria-label": ctx.t.ordering_label })
   const live = el("p", { class: "sr-only", role: "status", "aria-live": "polite" })
-  const rows = (part.elements || []).map((element) => {
+  const rows = (part.elements || []).map((element, index) => {
     const text = renderInline(element.text, el("span", { class: "row-text" }))
     const up = el("button", { type: "button", class: "button secondary small", text: ctx.t.ordering_up })
     const down = el("button", { type: "button", class: "button secondary small", text: ctx.t.ordering_down })
-    const row = el("li", { class: "order-row", tabindex: "0", "data-id": element.id }, text, up, down)
+    const row = el("li", { class: "order-row", tabindex: "0", "data-id": element.id, "data-comment-anchor": `row:${index + 1}` }, text, up, down)
     up.addEventListener("click", () => move(row, -1, up))
     down.addEventListener("click", () => move(row, 1, down))
     row.addEventListener("keydown", (event) => {

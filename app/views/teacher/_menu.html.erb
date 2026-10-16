@@ -22,6 +22,7 @@
     <li><%= link_to t("teacher.menu.search"), with_student("/teacher/search"), id: "menu-search", **menu_current(:search) %></li>
     <li><%= link_to t("teacher.menu.findings"), with_student("/teacher/findings"), id: "menu-findings", **menu_current(:findings) %></li>
     <li><%= link_to t("teacher.menu.corrections"), with_student("/teacher/corrections"), id: "menu-corrections", **menu_current(:corrections) %></li>
+    <li><%= link_to t("teacher.menu.comments"), "/teacher/comments", id: "menu-comments", **menu_current(:comments) %></li>
     <li><%= link_to t("teacher.menu.students"), with_student("/teacher/students"), id: "menu-students", **menu_current(:students) %></li>
     <% unless reader_only? %><li><%= link_to t("teacher.preview.title"), "/teacher/preview", id: "menu-preview", **menu_current(:preview) %></li><% end %>
     <% if logout_url %><li><a id="logout-link" href="<%= logout_url %>"><%= t("teacher.logout") %></a></li><% end %>

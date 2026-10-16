@@ -148,7 +148,10 @@ export function renderLesson(root, body, config) {
     ? el("span", { class: "l2-chip", role: "note", title: chrome.notices.map((n) => n.text).join(" "), "aria-label": chrome.notices.map((n) => n.text).join(" ") }, icon("info"), el("span", { text: chrome.notices.map((n) => n.short).join(" · ") }))
     : null
   const menuButton = chrome.links.length ? ibtn("menu", t.menu, "l2-menubtn", () => openMenu(), { "aria-haspopup": "dialog" }) : null
-  const tools = el("div", { class: "l2-tools" }, mapButton, settingsButton)
+  // "Commenta" (D-304): the page of a lesson hides the student menu, so the control sits in the lesson's own bar. The comment
+  // mode (comment_controller.js) takes the click; the handler here is never the one that acts.
+  const commentButton = config.mode === "student" ? ibtn("pin", t.comment, "l2-commentbtn", () => {}, { "data-comment-open": "" }) : null
+  const tools = el("div", { class: "l2-tools" }, mapButton, settingsButton, commentButton)
   topbar.append(el("div", { class: "l2-top-in" }, brand, titles, counter, chip, tools, menuButton), barSegments)
   const shell = el("div", { class: "l2-shell" })
   const side = el("aside", { class: "l2-sidemap", "aria-label": t.map })
@@ -200,7 +203,7 @@ export function renderLesson(root, body, config) {
     const why = body.why_it && String(body.why_it).trim().length > firstSentence(body.why_it).length + 2
       ? el("details", { class: "why" }, el("summary", { text: `${t.more}: ${t.why_you_need}` }), el("div", { class: "why-body" }, renderRich(body.why_it, ctx)))
       : null
-    const article = el("article", { class: "l2-cover", id: "scheda-0", "aria-labelledby": "scheda-0-title" },
+    const article = el("article", { class: "l2-cover", id: "scheda-0", "data-comment-anchor": "cover", "aria-labelledby": "scheda-0-title" },
       el("p", { class: "kicker", text: t.cover_kicker.replace("%{kind}", t.kind[body.kind] ?? body.kind).replace("%{subject}", t.subject[body.subject] ?? body.subject).replace("%{minutes}", body.minutes).replace("%{cards}", core.length) }),
       el("h1", { id: "scheda-0-title", tabindex: "-1", text: body.title_it }),
       lead,

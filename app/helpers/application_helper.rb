@@ -54,6 +54,7 @@ module ApplicationHelper
     items << [ :subjects, t("student.menu.subjects"), "/subjects" ] if student_course_visible?
     items << [ :search, t("student.menu.search"), "/search" ] if student_course_visible?
     items << [ :diagnosis, t(diagnosis_open? ? "student.menu.diagnosis" : "student.menu.warmup"), "/diagnosis" ] if student_diagnosis_listed?
+    items << [ :comments, t("student.menu.comments"), "/comments" ]
     items << [ :settings, t("student.menu.settings"), "/settings" ]
     items << [ :logout, t("student.logout"), logout_url ] if logout_url
     items
@@ -67,6 +68,7 @@ module ApplicationHelper
     when "/search" then :search
     when %r{\A/diagnosis(/|\z)} then :diagnosis
     when "/settings" then :settings
+    when "/comments" then :comments
     end
   end
 

@@ -5,9 +5,9 @@ import { el } from "items/dom"
 import { renderInline, renderMarkup } from "items/markup"
 
 export function renderPrompt(part, ctx) {
-  const box = el("div", { class: "prompt" })
+  const box = el("div", { class: "prompt", "data-comment-anchor": "prompt" })
   if (part.passage_it) {
-    const passage = el("div", { class: "passage" })
+    const passage = el("div", { class: "passage", "data-comment-anchor": "passage" })
     passage.appendChild(renderMarkup(part.passage_it))
     box.appendChild(el("h2", { class: "passage-title", text: ctx.t.passage }))
     box.appendChild(passage)
@@ -25,7 +25,7 @@ export function renderPrompt(part, ctx) {
 }
 
 function quote(data) {
-  const block = el("blockquote", { class: "quote" })
+  const block = el("blockquote", { class: "quote", "data-comment-anchor": "quote" })
   block.appendChild(renderMarkup(data.text))
   block.appendChild(renderInline(data.ref, el("cite")))
   return block
@@ -44,12 +44,12 @@ function table(data) {
     body.appendChild(tr)
   }
   node.appendChild(body)
-  return el("div", { class: "table-wrap" }, node)
+  return el("div", { class: "table-wrap", "data-comment-anchor": "table" }, node)
 }
 
 function figure(data) {
-  if (!data.src) return el("p", { class: "figure-alt" }, data.alt_it || "")
-  return el("figure", {}, el("img", { src: data.src, alt: data.alt_it || "", class: "figure" }))
+  if (!data.src) return el("p", { class: "figure-alt", "data-comment-anchor": "figure" }, data.alt_it || "")
+  return el("figure", { "data-comment-anchor": "figure" }, el("img", { src: data.src, alt: data.alt_it || "", class: "figure" }))
 }
 
 // The steps of an item (steps_it): what to do, as a calm numbered list under a small title.

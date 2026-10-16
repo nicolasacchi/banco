@@ -53,6 +53,7 @@ it:
     more: "Per saperne di più"
     # settings
     settings: "Testo e colori"
+    comment: "Commenta"
     reduce_motion: "Riduci le animazioni"
     settings_labels:
       theme: "Colori"

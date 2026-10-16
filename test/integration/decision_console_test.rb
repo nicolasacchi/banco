@@ -245,7 +245,10 @@ class DecisionConsoleTest < ActionDispatch::IntegrationTest
 
   test "the console origin is structurally unreachable from the web and the API" do
     # decision.rb only reads the origin's ADDR and GROUP constants to label a stored row (Decision#console?).
-    allowed = %w[lib/tasks/decide.rake app/models/decision_console.rb app/models/decision_recorder.rb app/models/decision.rb]
+    # The comments console (D-304) is the same kind of door: Comments::Console builds the origin for a rake task, and Comments::Responder
+    # only tells it from a web request to label a row; no controller, view or route of the comments names it.
+    allowed = %w[lib/tasks/decide.rake app/models/decision_console.rb app/models/decision_recorder.rb app/models/decision.rb
+                 app/models/comments/console.rb app/models/comments/responder.rb]
     files = Dir[Rails.root.join("{app,lib}/**/*").to_s].select { |f| File.file?(f) }.map { |f| Pathname(f).relative_path_from(Rails.root).to_s }
     offenders = files.reject { |f| allowed.include?(f) }.select { |f| File.binread(f).force_encoding("UTF-8").scrub.match?(/DecisionConsole|DecisionRecorder::Console/) }
     assert_empty offenders

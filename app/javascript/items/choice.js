@@ -10,7 +10,7 @@ export function render(part, ctx) {
     const id = `${name}-${index}`
     const radio = el("input", { type: "radio", name, id, value: option.id })
     const text = renderInline(option.text, el("span", { class: "option-text" }))
-    return { radio, row: el("label", { for: id, class: "option" }, radio, el("span", { class: "option-key", "aria-hidden": "true", text: String(index + 1) }), text) }
+    return { radio, row: el("label", { for: id, class: "option", "data-comment-anchor": `option:${index + 1}` }, radio, el("span", { class: "option-key", "aria-hidden": "true", text: String(index + 1) }), text) }
   })
   const group = el("fieldset", { class: "answer options" }, el("legend", { class: "hint", text: ctx.t.choice_label }), radios.map((r) => r.row))
   group.addEventListener("keydown", (event) => {

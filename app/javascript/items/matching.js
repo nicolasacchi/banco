@@ -5,13 +5,13 @@ import { el, handle, uid } from "items/dom"
 import { renderInline } from "items/markup"
 
 export function render(part, ctx) {
-  const rows = (part.left || []).map((left) => {
+  const rows = (part.left || []).map((left, index) => {
     const id = uid("match")
     const select = el("select", { id, class: "answer-input", "data-left": left.id },
       el("option", { value: "", text: ctx.t.matching_blank }),
       (part.right || []).map((right) => el("option", { value: right.id, text: plain(right.text) })))
     const label = renderInline(left.text, el("label", { for: id, class: "match-left" }))
-    return { select, row: el("div", { class: "match-row" }, label, select) }
+    return { select, row: el("div", { class: "match-row", "data-comment-anchor": `row:${index + 1}` }, label, select) }
   })
   // Each answer is used at most once: an entry picked in one select is greyed out in the others.
   // A classification (reuse_right, D-092) lets several rows share an answer: nothing is greyed out.

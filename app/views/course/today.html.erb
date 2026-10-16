@@ -1,12 +1,15 @@
 <% content_for :title, t("today.title") %>
 <main class="page course">
   <h1><%= t("today.title") %></h1>
+  <% if comment_unread_count.positive? %>
+    <p class="notice" id="comment-replies" role="status"><strong><%= t("comments.today_line") %></strong> <a href="/comments"><%= t("comments.today_link") %></a></p>
+  <% end %>
   <% if @nothing %>
     <p class="notice" id="course-closed"><%= t("today.closed") %></p>
   <% end %>
   <% if @diagnosis %>
     <% d = @diagnosis %>
-    <section id="entry-test" aria-labelledby="entry-test-title" data-state="<%= d[:open] ? (d[:all_done] ? 'done' : 'open') : 'closed' %>">
+    <section id="entry-test" data-comment-anchor="entry_test" aria-labelledby="entry-test-title" data-state="<%= d[:open] ? (d[:all_done] ? 'done' : 'open') : 'closed' %>">
       <h2 id="entry-test-title"><%= t(@diagnosis[:open] ? "today.entry.title" : "today.entry.title_warmup") %></h2>
       <% unless d[:open] %>
         <p><%= t("today.entry.not_open") %></p>
@@ -19,10 +22,10 @@
         <% if d[:all_done] %>
           <p id="entry-all-done"><%= t("today.entry.all_done") %></p>
         <% end %>
-        <ul class="subjects" id="entry-subjects">
+        <ul class="subjects" id="entry-subjects" data-comment-anchor="subjects">
           <% d[:rows].each do |row| %>
             <% next_one = row.equal?(d[:next_row]) %>
-            <li class="subject<%= ' suggested' if next_one %>" data-subject="<%= row.subject.key %>" data-state="<%= row.status %>">
+            <li class="subject<%= ' suggested' if next_one %>" data-comment-anchor="subject:<%= row.subject.key %>" data-subject="<%= row.subject.key %>" data-state="<%= row.status %>">
               <span class="subject-name"><%= row.subject.name_it %></span>
               <span class="subject-state"><%= t(row.label_key, **row.label_args) %></span>
               <% if next_one %>
@@ -40,7 +43,7 @@
     </section>
   <% end %>
   <% if @course_open %>
-    <section id="course-part" aria-labelledby="course-part-title">
+    <section id="course-part" data-comment-anchor="course" aria-labelledby="course-part-title">
       <h2 id="course-part-title"><%= t("today.suggestions") %></h2>
       <% if @resume %>
         <p><a class="button" id="resume" href="<%= @resume_card ? "/topics/#{@resume[1].key}/lesson#scheda-#{@resume_card}" : "/topics/#{@resume[1].key}" %>"><%= t("today.resume", topic: @resume[1].title_it) %></a></p>
@@ -51,7 +54,7 @@
         <ul class="topics" id="suggestions">
           <% @suggestions.each do |row| %>
             <% topic = row[:topic]; s = row[:suggestion] %>
-            <li class="topic" data-topic="<%= topic.key %>" data-reason="<%= s.reason %>">
+            <li class="topic" data-comment-anchor="topic:<%= topic.key.tr('.', '_') %>" data-topic="<%= topic.key %>" data-reason="<%= s.reason %>">
               <a class="topic-title" href="/topics/<%= topic.key %>"><%= topic.title_it %></a>
               <span class="topic-meta"><%= row[:subject_view].subject.name_it %> · <%= t("topic.kind.#{topic.kind}") %> · <%= t("topic.minutes", n: topic.minutes) %></span>
               <% if s.skill %>

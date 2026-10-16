@@ -102,7 +102,7 @@ export function dropRepeatedStart(blocks) {
 export function renderCard(card, ctx, position) {
   const article = el("article", {
     class: `l2-card card-${card.role} card-${card.level}${card.tone ? ` card-tone-${card.tone}` : ""}`,
-    id: `scheda-${card.n}`, "data-n": card.n, "data-role": card.role, "data-card": card.id, "aria-labelledby": `scheda-${card.n}-title`
+    id: `scheda-${card.n}`, "data-comment-anchor": `card:${card.n}`, "data-n": card.n, "data-role": card.role, "data-card": card.id, "aria-labelledby": `scheda-${card.n}-title`
   })
   const heading = el("h2", { id: `scheda-${card.n}-title`, tabindex: "-1", text: card.title_it })
   article.appendChild(el("header", { class: "card-head" },
@@ -115,7 +115,7 @@ export function renderCard(card, ctx, position) {
   const body = el("div", { class: "card-body" })
   const types = card.blocks.map((b) => b.type)
   if (types.length === 2 && types.includes("text") && types.some((t) => VISUAL.has(t))) body.classList.add("is-split")
-  const renderBlock = (block) => renderOne(block, card, ctx, renderBlock)
+  const renderBlock = (block) => anchored(renderOne(block, card, ctx, renderBlock), block)
   let grid = null
   let group
   for (const block of dropRepeatedStart(visualFirst(card.blocks))) {
@@ -132,7 +132,7 @@ export function renderCard(card, ctx, position) {
         grid.appendChild(el("h3", { class: "mistakes-group", text: block.group_it }))
         group = block.group_it
       }
-      grid.appendChild(mistake(block, ctx, { group: block.group_it }))
+      grid.appendChild(anchored(mistake(block, ctx, { group: block.group_it }), block))
       continue
     }
     grid = null
@@ -151,6 +151,12 @@ export function renderCard(card, ctx, position) {
     if (q) article.appendChild(el("footer", { class: "card-foot", "data-nospeech": "" }, q))
   }
   return article
+}
+
+// "Commenta" (D-304): every block is a place a comment can name, "block:N" under its card.
+function anchored(node, block) {
+  if (node?.setAttribute && block.n !== undefined && !node.hasAttribute("data-comment-anchor")) node.setAttribute("data-comment-anchor", `block:${block.n}`)
+  return node
 }
 
 function renderOne(block, card, ctx, renderBlock) {
