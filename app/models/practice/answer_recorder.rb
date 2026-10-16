@@ -45,7 +45,7 @@ module Practice
       end
       key = result.invalid? ? nil : Grading::Evidence.key(verdict: result.verdict, spec: spec, error_codes: result.error_codes,
                                                           method: result.grading_method)
-      return refuse(serve, result, key) if result.invalid? || !Outcome.try?(key)
+      return refuse(serve, result, key, raw) if result.invalid? || !Outcome.try?(key)
 
       record(serve, client_id, raw, source, result, key)
     end
@@ -53,9 +53,11 @@ module Practice
     private
 
     # Invalid input is not a try (row 10): an app event and a message, nothing else.
-    def refuse(serve, result, key)
+    def refuse(serve, result, key, raw)
       code = result.invalid? ? result.invalid_code : key
-      AppEvent.create!(kind: "practice_invalid_input", student: @student, payload_json: { serve_id: serve.id, code: code }.to_json)
+      payload = { serve_id: serve.id, code: code }
+      payload[:text] = raw.first(Diagnosis::AnswerRecorder::REFUSED_TEXT_CHARS) if result.invalid? # D-298
+      AppEvent.create!(kind: "practice_invalid_input", student: @student, payload_json: payload.to_json)
       invalid(result.invalid? ? result.message_it : Grading::Result::MESSAGES_IT["unparseable"])
     end
 

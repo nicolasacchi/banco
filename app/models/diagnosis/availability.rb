@@ -48,8 +48,8 @@ module Diagnosis
 
       conductor = Conductor.new(run)
       state = conductor.state
-      # A run held open for pending answers has nothing left to ask: for the list it is done.
-      status = if state.closed || (!state.open_serve && conductor.holding?) then "completed"
+      # A run held open for pending answers, or one whose next move is to close, has nothing left to ask: for the list it is done (D-298).
+      status = if state.closed || (!state.open_serve && (conductor.holding? || conductor.finished?)) then "completed"
       elsif state.open_sitting then "in_progress"
       elsif state.sittings.any? then "continue_next_day"
       else "not_started"

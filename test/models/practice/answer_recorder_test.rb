@@ -120,7 +120,7 @@ class PracticeAnswerRecorderTest < ActiveSupport::TestCase
     assert_equal "Per i decimali usa la virgola, per esempio 3,5.", result.body[:message_it]
     assert_equal 0, PracticeAttempt.count
     event = AppEvent.where(kind: "practice_invalid_input").last
-    assert_equal({ "serve_id" => c.serve.id, "code" => "use_comma" }, JSON.parse(event.payload_json))
+    assert_equal({ "serve_id" => c.serve.id, "code" => "use_comma", "text" => "3.5" }, JSON.parse(event.payload_json))
     assert_equal :open, Practice::Loader.status_of(c.serve.reload, now: @clock.now).state
   end
 

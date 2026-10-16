@@ -13,6 +13,8 @@
     <a class="button secondary" href="<%= preview? ? '/teacher/preview' : '/diagnosis' %>"><%= t("summary.later") %></a>
   </p>
 
+  <% if @pause %><p class="notice" id="pause-suggestion"><%= t("summary.pause_suggestion") %></p><% end %>
+
   <section id="sai-gia-fare" data-group="known">
     <h2><%= t("summary.known") %></h2>
     <ul>

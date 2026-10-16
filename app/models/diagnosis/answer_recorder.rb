@@ -14,6 +14,8 @@ module Diagnosis
 
     SOURCES = %w[text mathlive button].freeze
     MAX_RAW_BYTES = 20_000
+    # What a refused answer keeps for the teacher (D-298): the typed text, cut here.
+    REFUSED_TEXT_CHARS = 200
 
     def initialize(student:, context:, clock: Clock.new)
       @student = student
@@ -45,7 +47,7 @@ module Diagnosis
       end
       if result&.invalid?
         AppEvent.create!(kind: "invalid_input", student: @student,
-                         payload_json: { served_event_id: event.id, code: result.invalid_code }.to_json)
+                         payload_json: { served_event_id: event.id, code: result.invalid_code, text: raw.first(REFUSED_TEXT_CHARS) }.to_json)
         return invalid(result.message_it)
       end
 

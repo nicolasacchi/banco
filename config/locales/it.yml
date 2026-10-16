@@ -25,6 +25,7 @@ it:
     warmup_optional: "Vuoi provare i comandi prima? È facoltativo."
     warmup_link: "Prova dei comandi"
     next_suggested: "Da fare adesso"
+    pause_suggestion: "Hai già fatto due prove oggi: fai una pausa prima della prossima. Puoi riprendere quando vuoi."
     preferences:
       title: "Come vuoi leggere"
       theme: "Colori"
@@ -197,6 +198,7 @@ it:
     line_recover: "Da riprendere: %{n}."
     line_learn: "Da imparare: %{n}."
     see: "Vedi risultati e soluzioni"
+    pause_suggestion: "Hai già fatto due prove oggi: fai una pausa prima della prossima. Puoi riprendere quando vuoi."
     later: "Più tardi"
     known: "Sai già fare"
     recover: "Da riprendere"

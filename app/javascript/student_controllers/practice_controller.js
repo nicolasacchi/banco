@@ -1,5 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { Outbox, PRACTICE_PREFIX, newId } from "items/outbox"
+import { Refusals } from "items/refusals"
+import { showRefusalNotice } from "items/refusal_notice"
 import { renderItem } from "items/render"
 import { renderInline } from "items/markup"
 
@@ -22,6 +24,7 @@ export default class extends Controller {
     })
     this.serveId = null
     this.handle = null
+    this.refusals = new Refusals()
     this.busy = false
     this.hintsTotal = 0
     this.hintsShown = 0
@@ -56,6 +59,7 @@ export default class extends Controller {
 
   async show(reply) {
     this.serveId = reply.serve_id
+    this.itemFormat = reply.item?.answer_format_it
     this.itemBoxTarget.inert = false
     this.itemBoxTarget.textContent = ""
     try {
@@ -102,7 +106,7 @@ export default class extends Controller {
   // ---- answering -----------------------------------------------------------------------------------
 
   async check() {
-    if (!this.handle || this.busy) return
+    if (!this.handle || this.busy || this.refusals.cooling(Date.now())) return
     if (this.handle.isEmpty()) return this.say(this.labels.empty)
     this.setControls(false)
     this.say(this.labels.saving)
@@ -124,9 +128,17 @@ export default class extends Controller {
 
   answered(reply) {
     if (reply.status === "invalid") {
-      this.say(reply.message_it)
-      this.setControls(true)
+      // D-298: inert for a moment, the focus stays in the box, the answer format from the second refusal of the serve
+      const serve = this.serveId
+      this.refusals.record(serve, Date.now())
+      if (this.refusals.showFormat(serve)) {
+        this.say("")
+        showRefusalNotice(this.handle, { message: reply.message_it, format: this.itemFormat })
+      } else {
+        this.say(reply.message_it)
+      }
       this.handle.focus()
+      setTimeout(() => { if (this.serveId === serve && this.handle) this.setControls(true) }, this.refusals.cooldownMs)
       return null
     }
     if (reply.status === "closed" || reply.status === "not_found") {

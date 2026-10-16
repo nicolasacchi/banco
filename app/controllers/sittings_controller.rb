@@ -77,6 +77,9 @@ class SittingsController < ApplicationController
   end
 
   def results
+    # A finished run still open (D-298): the close row is written now, as the page of the run would
+    @conductor.step! if @conductor.finished?
+    @pause = !preview? && Diagnosis::Pause.suggested?(acting_student)
     @summary = Diagnosis::Summary.new(@run)
     redirect_to("#{base_path}/runs/#{@run.id}") unless @summary.final? || @conductor.holding?
     @subject = @run.subject

@@ -4,6 +4,8 @@ import { Outbox, newId } from "items/outbox"
 import { renderItem } from "items/render"
 import { renderHelp } from "items/help"
 import { renderMarkup } from "items/markup"
+import { Refusals } from "items/refusals"
+import { showRefusalNotice } from "items/refusal_notice"
 
 // The one app page of a sitting (X-02, E-10): Turbo is not loaded. This controller
 // asks the server for each item as JSON (POST step), draws it with the templates in
@@ -19,6 +21,7 @@ export default class extends Controller {
     this.texts = this.textsValue
     this.outbox = new Outbox({ url: this.answerUrlValue, csrf: () => this.csrf() })
     this.current = null
+    this.refusals = new Refusals()
     this.active = false
     this.onVisibility = () => this.visibilityChanged()
     document.addEventListener("visibilitychange", this.onVisibility)
@@ -122,13 +125,13 @@ export default class extends Controller {
   }
 
   send() {
-    if (!this.handle) return
+    if (!this.handle || this.refusals.cooling(Date.now())) return
     if (this.handle.isEmpty()) return this.setStatus(this.texts.empty)
     this.submit(this.handle.raw(), this.handle.source())
   }
 
   dontKnow() {
-    if (!this.handle) return
+    if (!this.handle || this.refusals.cooling(Date.now())) return
     this.submit(DONT_KNOW, "button")
   }
 
@@ -142,15 +145,30 @@ export default class extends Controller {
     if (flushed.blocked) return this.showBlocked()
     const reply = flushed.results[entry.client_attempt_id]
     if (reply?.status === "invalid") {
-      this.setStatus(reply.message_it || this.texts.unreadable)
-      if (reply.message_it === this.texts.gone) return this.advance()
-      this.setButtons(true)
-      return null
+      const message = reply.message_it || this.texts.unreadable
+      if (reply.message_it === this.texts.gone) { this.setStatus(message); return this.advance() }
+      return this.refused(message)
     }
     this.setStatus(this.current.item.kind === "short_answer" ? this.texts.short_answer_saved : this.texts.saved)
     this.handle = null
     await new Promise((resolve) => setTimeout(resolve, 600))
     return this.advance()
+  }
+
+  // An answer the server could not read (D-298): the buttons stay inert for a moment, the focus stays in the box,
+  // and from the second refusal of the same item its answer format is shown above the box with the message.
+  refused(message) {
+    const item = this.current
+    const count = this.refusals.record(item.served_event_id, Date.now())
+    if (this.refusals.showFormat(item.served_event_id)) {
+      this.setStatus("")
+      showRefusalNotice(this.handle, { message, format: item.item.answer_format_it })
+    } else {
+      this.setStatus(message)
+    }
+    this.handle.focus()
+    setTimeout(() => { if (this.current === item && this.handle) this.setButtons(true) }, this.refusals.cooldownMs)
+    return count
   }
 
   // ---- blocked: session expired, network down ---------------------------------

@@ -664,6 +664,9 @@ it:
       right: "Giusta"
       wrong: "Sbagliata"
       dont_know: "Come «Non lo so»"
+    refused_tries:
+      title: "Tentativi non letti"
+      line: "Tentativi non letti:"
     report:
       title: "Rapporto · %{subject}"
       state_title: "Dove siamo"

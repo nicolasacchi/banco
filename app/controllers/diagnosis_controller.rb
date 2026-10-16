@@ -7,6 +7,7 @@ class DiagnosisController < ApplicationController
     @released = diagnosis_open?
     if @released
       @rows = Diagnosis::Availability.for(acting_student)
+      @pause = Diagnosis::Pause.suggested?(acting_student)
     else
       @warmup_done = Diagnosis::Warmup.complete?(acting_student)
     end

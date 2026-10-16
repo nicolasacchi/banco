@@ -1,0 +1,4 @@
+<% if tries.present? %>
+  <p class="refused-tries" data-refused-tries="<%= tries.sum(&:count) %>"><%= t("teacher.refused_tries.line") %>
+    <%= safe_join(tries.map { |x| safe_join([ tag.q(x.text, class: "example"), (x.count > 1 ? " ×#{x.count}" : "") ]) }, ", ") %></p>
+<% end %>

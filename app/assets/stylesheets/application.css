@@ -502,3 +502,8 @@ ul.checks li { padding: 0.25rem 0; }
 .voice-name { font-weight: 700; flex: 1 1 14rem; }
 .voice-status { color: var(--muted); }
 .voice-row [aria-pressed="true"] { background: var(--primary); color: var(--primary-text); }
+
+/* A refused answer shown twice: the message and the answer format above the input (D-298) */
+.refusal-notice { border: 2px solid var(--line); background: var(--surface); padding: 0.5rem 1rem; margin: 0.5rem 0; }
+.refusal-notice p { margin: 0.25rem 0; }
+.refusal-format { font-weight: bold; }

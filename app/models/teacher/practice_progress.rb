@@ -8,7 +8,7 @@ module Teacher
     SkillRow = Data.define(:skill, :label_it, :state, :why_it, :seed, :counts, :typical, :last_at, :minutes)
     Typical = Data.define(:code, :description_it, :count)
     Question = Data.define(:at, :topic, :section, :exercise, :text_it, :card, :card_label)
-    Step = Data.define(:at, :stem, :raw, :outcome, :codes, :aided, :hints, :solution_shown, :reason, :to_correct)
+    Step = Data.define(:at, :stem, :raw, :outcome, :codes, :aided, :hints, :solution_shown, :reason, :to_correct, :refused)
 
     attr_reader :subject, :student
 
@@ -94,12 +94,17 @@ module Teacher
       view = InstanceView.new(instance, JSON.parse(instance.item_revision.body_json), 1)
       hints = serve.events.select { |e| e.kind == "hint_shown" }
       solved = serve.events.find { |e| e.kind == "solution_shown" }
-      serve.attempts.sort_by(&:try_number).map do |attempt|
+      refused = RefusedTries.practice(student, [ serve.id ])[serve.id].to_a
+      attempts = serve.attempts.sort_by(&:try_number)
+      attempts.each_with_index.map do |attempt, i|
+        # the refused texts typed before this try and after the one before it; the last try also takes any left over (D-298)
+        before = i.zero? ? nil : attempts[i - 1].answered_at
+        mine = refused.select { |_, at| (before.nil? || at > before) && (at <= attempt.answered_at || i == attempts.size - 1) }
         grade = Practice::Instances.grade(attempt, spec)
         outcome = grade&.outcome || (attempt.latest_grading ? :not_a_try : :ungraded)
         Step.new(attempt.answered_at, view.stem, attempt.raw, outcome, grade&.codes || [], attempt.aided, hints.count { |e| e.at <= attempt.answered_at },
                  solved && solved.at <= attempt.answered_at ? JSON.parse(solved.payload_json || "{}")["reason"] : nil, serve.reason,
-                 outcome == :undetermined || outcome == :ungraded)
+                 outcome == :undetermined || outcome == :ungraded, RefusedTries.collapse(mine.map(&:first)))
       end
     end
 

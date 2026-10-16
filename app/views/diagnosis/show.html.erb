@@ -3,6 +3,7 @@
   <h1><%= t("diagnosis.title") %></h1>
   <% if @released %>
     <p><%= t("diagnosis.order_line") %></p>
+    <% if @pause %><p class="notice" id="pause-suggestion"><%= t("diagnosis.pause_suggestion") %></p><% end %>
     <ul class="subjects">
       <% @rows.each do |row| %>
         <li class="subject<%= ' suggested' if row.suggested %>" data-subject="<%= row.subject.key %>" data-state="<%= row.status %>">

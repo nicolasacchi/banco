@@ -178,6 +178,14 @@ module Diagnosis
       action.type == :wait && action.reason == :pending_answers
     end
 
+    # Open, but the engine's next move is to close the run (the frontier is empty, D-298): the subject is
+    # finished and only the close row is missing. Read-only; the row is written when the student opens the run.
+    def finished?
+      return false if closed?
+
+      Engine.next_action(plan, events, clock).type == :close_run
+    end
+
     # A sitting is open and has already served something: the student is coming back.
     def resuming? = state.open_sitting&.serve_seqs&.any? ? true : false
 

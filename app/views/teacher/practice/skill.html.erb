@@ -13,6 +13,7 @@
           <p><strong><%= teacher_time(step.at) %></strong> · <%= t("teacher.practice.reason.#{step.reason}") %></p>
           <p><%= step.stem %></p>
           <p><%= t("teacher.practice.answer") %> <code data-raw><%= step.raw %></code></p>
+          <%= render "teacher/refused_tries", tries: step.refused %>
           <p><strong data-outcome-label><%= t("teacher.practice.outcome.#{step.outcome}") %></strong>
             <% if step.codes.any? %> · <%= t("teacher.practice.code") %> <%= step.codes.join(", ") %><% end %>
             · <%= step.aided ? t("teacher.practice.aided") : t("teacher.practice.unaided") %>

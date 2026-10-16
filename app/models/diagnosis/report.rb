@@ -51,6 +51,7 @@ module Diagnosis
       base.merge(run: run_info, sittings: sittings, counted_minutes: (result[:counted_seconds] / 60.0).round, groups: groups,
                  skills: skills, errors_observed: errors_observed, unclassified: skills.select { |s| s[:unclassified] }.map { |s| s[:skill] },
                  pending: pending, signals: signals, checks: result[:checks], formula_sheet: sheet_summary)
+          .merge(@with_answers ? { refused_tries: refused_tries } : {})
     end
 
     private
@@ -66,7 +67,7 @@ module Diagnosis
       return "to_redo" if voided?
 
       state = conductor.state
-      return "completed" if state.closed || (!state.open_serve && conductor.holding?)
+      return "completed" if state.closed || (!state.open_serve && (conductor.holding? || conductor.finished?))
       return "paused" if state.open_sitting && paused?
       return "in_progress" if state.open_sitting
       return "continue_next_day" if state.sittings.any?
@@ -206,6 +207,19 @@ module Diagnosis
     def sheet_summary
       totals = sheet_by_skill.values.each_with_object({ attempts: 0, available: 0, opened: 0 }) { |c, sum| c.each { |k, v| sum[k] += v } }
       totals.merge(enabled: FormulaSheet.enabled?(@subject), marks: sheet_marks(totals))
+    end
+
+    # The texts refused as unreadable, per served item, with the answer finally accepted (D-298). Only
+    # with_answers: like the answers, the agent never gets them.
+    def refused_tries
+      served = ItemServed.where(diagnosis_event_id: @run.events.where(kind: "item_served").select(:id)).index_by(&:diagnosis_event_id)
+      texts = Teacher::RefusedTries.diagnosis(@student, served.keys)
+      by_served = attempts.index_by(&:served_event_id)
+      texts.map do |served_id, list|
+        attempt = by_served[served_id]
+        { skill: served[served_id].skill_key, answer: attempt && Diagnosis::AnswerText.call(attempt, served[served_id]),
+          tries: Teacher::RefusedTries.collapse(list).map { |t| { text: t.text, count: t.count } } }
+      end
     end
 
     # ---- attempts

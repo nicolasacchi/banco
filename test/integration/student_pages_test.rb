@@ -298,7 +298,7 @@ class StudentPagesTest < ActionDispatch::IntegrationTest
     assert_equal 1, AppEvent.where(kind: "invalid_input").count
   end
 
-  test "an unreadable number says what to write and the event keeps the code, not the text" do
+  test "an unreadable number says what to write and the event keeps the code and the typed text for the teacher (D-298)" do
     rows = build_ui_subject(components: %w[number])
     release_diagnosis!
     run = Diagnosis::Conductor.run_for(rows[:student], rows[:subject])
@@ -308,7 +308,7 @@ class StudentPagesTest < ActionDispatch::IntegrationTest
     assert_equal 0, Attempt.count
     event = AppEvent.where(kind: "invalid_input").last
     assert_includes event.payload_json, "unreadable_number"
-    assert_not_includes event.payload_json, "n = m"
+    assert_equal "n = m = 2", JSON.parse(event.payload_json)["text"]
   end
 
   test "a grader that does not answer still records the answer and schedules the retry" do

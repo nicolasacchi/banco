@@ -99,6 +99,19 @@
       <% if row[:unclassified].any? %><p><%= t("teacher.report.unclassified") %> <%= row[:unclassified].join(", ") %></p><% end %>
     </section>
 
+    <% if row[:refused_tries].present? %>
+      <section id="report-refused">
+        <h2><%= t("teacher.refused_tries.title") %></h2>
+        <ul class="plain">
+          <% row[:refused_tries].each do |r| %>
+            <li data-skill="<%= r[:skill] %>"><strong><%= ref_for(r[:skill]) %></strong>
+              <% if r[:answer] %> · <%= t("teacher.practice.answer") %> <code><%= r[:answer] %></code><% end %>
+              <%= render "teacher/refused_tries", tries: r[:tries].map { |x| Teacher::RefusedTries::Try.new(x[:text], x[:count]) } %></li>
+          <% end %>
+        </ul>
+      </section>
+    <% end %>
+
     <section id="report-signals">
       <h2><%= t("teacher.report.signals") %></h2>
       <% sig = row[:signals] %>
