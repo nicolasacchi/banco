@@ -304,3 +304,21 @@ article.skill h3 { margin: 0 0 var(--space-1); font-size: var(--text-l); }
 article.skill p { margin: var(--space-1) 0; }
 article.skill .notice { margin: var(--space-2) 0; }
 article.skill:target { outline: 3px solid var(--focus); outline-offset: 2px; }
+.dash-subjects > li.subject { align-items: stretch; }
+.dash-cells { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: var(--space-3) var(--space-5); }
+ul.state-list { list-style: none; padding-left: 0; }
+
+/* The lesson's square .badge must not leak into the teacher's pages: here a badge is a small rounded label. */
+body.teacher .badge { width: auto; height: auto; display: inline-flex; align-items: center; background: var(--surface); color: var(--text); box-shadow: none; border-radius: var(--radius-pill); border: 1.5px solid var(--line); padding: 0.1em 0.7em; }
+body.teacher li.path-step .badge.pill, body.teacher .review-step .badge.pill { color: var(--text); }
+body.teacher .row-end .pill, body.teacher .item-tags .pill { white-space: normal; }
+.skill-list > li.subject { flex-wrap: wrap; }
+.skill-list .row-end { flex: 1 1 100%; justify-content: flex-start; }
+@media (min-width: 40rem) { .skill-list .row-end { flex: 0 1 auto; justify-content: flex-end; } }
+.approve.card { display: flex; flex-wrap: wrap; align-items: stretch; gap: var(--space-2) var(--space-3); }
+.approve.card > * { margin: 0; }
+.approve.card > .hint, .approve.card > div, .approve.card > h2, .approve.card > p { flex: 1 1 100%; }
+.approve.card > form { display: flex; }
+article.skill, .gm-legend li, .gm-strip li { overflow-wrap: anywhere; min-width: 0; }
+.skill-detail { margin: var(--space-2) 0 0; }
+.skill-more ul { padding-left: var(--space-4); }

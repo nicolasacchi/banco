@@ -310,6 +310,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-304 | 2026-10-16 | comments anywhere (C1): the student comments on any page, the teacher answers; the clock stops in a sitting; no agent reads them | decided |
 | D-305 | 2026-10-16 | the look of comments (C1 polish): one «Commenta» pill with its own icon, a banner, a bottom sheet with five reason chips, a fading confirmation, calmer lists | decided |
 | D-306 | 2026-10-16 | the interface redesign, slices 1 and 2: one design system for the whole site, in the lessons' style | decided |
+| D-308 | 2026-10-17 | the interface redesign, slices 6 to 8: the teacher's pages as tools | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -3370,6 +3371,23 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
   3. **The unused `light` theme is removed** (it was never offered; `ReadabilityTest` now expects cream and dark only). A stored `light` would fall back to cream.
   4. **Quick wins:** link-buttons centred with equal heights (one `.button` rule for `a` and `button`); the overflows at 390 px (number field with a unit, search box, `.cards` minimum, the teacher's tables inside `.table-wrap`); targets of 44 px (`summary`, menu, breadcrumb and step links, reference links and "i", labels around radios and checkboxes, selects and inputs, "Non ho capito"); the end screen draws only the non-empty groups and says "non è un voto" first; a guest sees no "Prova come S" and no orphan "Rimanda all'agente"; the report's sittings show "2 nov 2026, 09:00"; 403 and 404 (and the static 400, 404, 422 and 500) are designed Italian pages with the same text for everyone; the settings radios are choice cards in the app's colours; the maths keyboard's tab colours follow the theme.
 - **Cost:** the old `.banner` and `.badge` shapes are replaced by the notice and the tag; pages that used the square outline now have rounded cards. A page that wants a new look uses the components; nothing else changes behaviour, routes, privacy or texts beyond the few above.
+- **Rules version:** none changes.
+- **Status:** decided
+- **Back-port:** none.
+
+## D-308 · 2026-10-17 · the interface redesign, slices 6 to 8: the teacher's pages as tools
+
+- **Design ref:** D-306 (tokens and components), D-241, D-242, D-243 (the teacher's path, dashboard and menu), D-218 (refs), D-305 (comments look, kept as it is).
+- **Operator (2026-10-16):** the lessons' style for the whole site, more sober on the teacher's side; the teacher's pages become tools, not long documents.
+- **We do:**
+  1. **Shell** (`teacher/_menu`, `teacher/_crumbs`, `teacher.css`): one bar on a desktop; on a phone a "Menu" button opens the same list as a bottom sheet (`<dialog>`, `menu_controller.js`: `openSheet`, `closeSheet`); the access line sits inside the menu, a guest has an "Ospite" pill; one back pattern: the breadcrumb, which on a phone shows only the way to the nearest parent page; the subject switcher stays. The "Torna a..." paragraphs of the subject pages are gone (three ways back became one); flash messages are notices with an icon.
+  2. **Cruscotto:** a strip of four numbers (findings, corrections, topics, new comments: `Teacher::Dashboard#counts`), "Da fare adesso" as a short list with an icon per kind and the first line outlined, one card per subject with the stage as a pill, a row each for graph, test, course (with a meter) and students, state pills, and one next-action button (approve the graph, decide the findings, approve the test, review the topics) beside "Rapporto". The polling, row keys, "aggiornato ora" marks and new-tab behaviour of D-242 are unchanged.
+  3. **Skill screen:** a header with the previous and next skill, the gate as a notice, the findings first (severity pill, the quote as a block, evidence), then the review summary, then "Dati dell'esercizio" (samples, typical errors, sources) and "Rimanda all'agente" folded; a guest has no send-back heading. **Test overview:** the approval card first, the open findings, the skills as rows with pills, settings, formula sheet and traces folded. **Corrections, all questions, findings, students:** cards, the student's words as a quote block, a "Sola lettura" tag per question, a chip index by skill.
+  4. **Search:** an item, an instance or a practice item shows its case text or stem (first sentence) as the title and the item as a small ref (`Search::Builders::Items.headline`; the API's `title` is the same, so the index is rebuilt on the next run).
+  5. **Long pages:** the topic review is a stepper of four collapsible steps (`details#step-*`, open while not done, a link of the stepper opens its step: `topic_review_controller#openStep`); the course path as step cards with pills; the report: tables in `ui_table_wrap` and stacked below 40 rem, dates formatted, skill groups as disclosures, and one "Che cosa puoi fare" menu with a row per action (each opens its form: the reason and a danger button) instead of a wall of forms; the graph page folds each skill's edges, programme lines and errors; the lesson box tools are compact groups; practice progress shows the state as a pill.
+  6. The lesson's square `.badge` no longer leaks into the teacher's pages (`body.teacher .badge`). No new icon, no new component in `components.css`: the page styles are `teacher.css`, documented in `docs/ui.md`.
+- **Tests changed (markup only):** `teacher_course_path_test` (`section#step-x` is now `details#step-x`), `teacher_approval_test` (opens "Dati dell'esercizio" before counting the samples).
+- **Cost:** raw data is one click away on the skill screen; a guest sees the same pages without dead controls.
 - **Rules version:** none changes.
 - **Status:** decided
 - **Back-port:** none.

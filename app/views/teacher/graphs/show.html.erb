@@ -64,6 +64,11 @@
         <% skill.flags.each do |flag| %>
           <p class="notice nearly" data-flag="<%= flag %>"><%= t("teacher.graph.flags.#{flag}") %></p>
         <% end %>
+        <% if skill.inferred %>
+          <p class="notice" data-inferred="true"><%= t("teacher.graph.inferred") %></p>
+        <% end %>
+        <details class="disclosure skill-detail">
+          <summary><%= t("teacher.graph.more") %></summary>
         <% if skill.prerequisites.any? || skill.composite_of.any? %>
           <p class="edges">
             <% if skill.prerequisites.any? %><%= t("teacher.graph.requires") %> <%= safe_join(skill.prerequisites.map { |k| ref_for(k, href: "#skill-#{k.parameterize}") }, ", ") %>.<% end %>
@@ -72,12 +77,8 @@
         <% else %>
           <p class="edges"><%= t("teacher.graph.no_prerequisites") %></p>
         <% end %>
-        <% if skill.inferred %>
-          <p class="notice" data-inferred="true"><%= t("teacher.graph.inferred") %></p>
-        <% end %>
         <% if skill.deferred.any? || skill.refs.any? %>
-          <details class="disclosure skill-more">
-            <summary><%= t("teacher.graph.more") %></summary>
+          <div class="skill-more">
         <% if skill.deferred.any? %>
           <ul class="plain deferred">
             <% skill.deferred.each do |d| %>
@@ -96,7 +97,7 @@
             <% end %>
           </ul>
         <% end %>
-          </details>
+          </div>
         <% end %>
         <% if skill.errors.any? %>
           <details class="disclosure">
@@ -109,6 +110,7 @@
             </ul>
           </details>
         <% end %>
+        </details>
       </article>
     <% end %>
 

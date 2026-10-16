@@ -139,3 +139,17 @@ everyone and the status code is unchanged. The static `public/{400,404,422,500}.
 Student shell, Oggi, practice and the sitting (slices 3 to 5) and the teacher's pages (6 to 8) compose these parts; a missing
 part is added here first (CSS, helper, this page), then used. Do not add page-specific copies of a button, card or notice.
 Check each page at 390 and 1280 px, in cream and dark, and at the largest text size.
+
+## The teacher's pages (D-308)
+
+Styles: `app/assets/stylesheets/teacher.css` (page layouts only; the parts are the components above). Patterns used on every teacher page:
+
+- **Shell:** `teacher/_menu` (bar; a "Menu" sheet on a phone), `teacher/_crumbs` (breadcrumb; on a phone the nearest parent as a back link) and the subject switcher. A page adds no back link of its own; a page without a breadcrumb passes `back:` to `ui_page_header`.
+- **Decision card:** `section.approve.card.action` holds the one approve button, the other actions beside it and the reason it is off. An approved thing is a `ui_pill` in the header, the button stays in the card (off).
+- **Stat strip and subject cards** (Cruscotto): `ul.stat-strip > li.stat`, `ul.cards.dash-subjects > li.subject.card` with `.cell-head` rows (icon, title link, `ui_pill`).
+- **Findings:** `.finding` with `.finding-head` (a severity pill), `.finding-quote`, then the form with a visible label and a `.button-row`.
+- **Folded data:** raw data and rare actions sit in `details.disclosure`; a step of a long page is `details.review-step.card` (open while not done).
+- **Rows with pills:** `li.row` with `.row-main` and `.row-end` for lists of skills; a pill says the state in words.
+- **Quote block:** `.answer-quote` for the student's words.
+- **Actions menu:** `details.report-actions > details.action-row`, one row per action, each opens its own form (a danger button).
+- The lesson's `.badge` is a square in a lesson; on a teacher page it is a rounded label (`body.teacher .badge`).
