@@ -13,7 +13,8 @@ module Diagnosis
     # day), :final (the run is closed).
     Step = Data.define(:type, :event, :reason)
 
-    PAUSE_EVENTS = %w[paused resumed hidden visible].freeze
+    PAIRS = [ %w[paused resumed], %w[hidden visible], %w[comment_opened comment_closed] ].freeze
+    PAUSE_EVENTS = %w[paused resumed hidden visible comment_opened comment_closed].freeze
     MAX_LOOPS = 12
 
     attr_reader :run, :clock
@@ -148,7 +149,7 @@ module Diagnosis
       kind = kind.to_s
       raise ArgumentError, "not a pause event: #{kind}" unless PAUSE_EVENTS.include?(kind)
 
-      pair = kind.in?(%w[paused resumed]) ? %w[paused resumed] : %w[hidden visible]
+      pair = PAIRS.find { |p| p.include?(kind) }
       last = run.events.where(kind: pair).order(:seq).last&.kind
       return false if (last || pair.last) == kind
 

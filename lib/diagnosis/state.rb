@@ -29,7 +29,7 @@ module Diagnosis
     Sitting = Struct.new(:index, :started_at, :closed_at, :close_reason, :serve_seqs, keyword_init: true)
 
     attr_reader :plan, :outcomes, :serves, :sittings, :frontier, :stalled, :origin, :observations, :suspect_log,
-                :served_count, :outstanding, :below, :visited, :pauses, :hiddens, :served_fingerprints
+                :served_count, :outstanding, :below, :visited, :pauses, :hiddens, :comment_stops, :served_fingerprints
     attr_accessor :closed, :end_reason, :extends, :short_serve, :short_state, :last_close_reason
 
     def initialize(plan)
@@ -49,6 +49,7 @@ module Diagnosis
       @visited = Set.new
       @pauses = []
       @hiddens = []
+      @comment_stops = []
       @served_fingerprints = Set.new
       @closed = false
       @end_reason = nil
@@ -104,15 +105,18 @@ module Diagnosis
       stop = serve.stop_at
       return 0 unless stop
 
-      TimeAccount.counted_seconds(serve.at, stop, @pauses + @hiddens, testlet: serve.instance.testlet?)
+      TimeAccount.counted_seconds(serve.at, stop, excluded_intervals, testlet: serve.instance.testlet?)
     end
 
     # Seconds an item has been open and counted so far, as of +now+: wall time minus
     # the pause and hidden intervals, not capped (the engine abandons an item after
     # ABANDON_GAP_SECONDS of counted time, not of wall clock).
     def open_counted_seconds(serve, now)
-      (now - serve.at) - TimeAccount.overlap_seconds(@pauses + @hiddens, serve.at, now)
+      (now - serve.at) - TimeAccount.overlap_seconds(excluded_intervals, serve.at, now)
     end
+
+    # The intervals that are not counted: pauses, hidden tabs and the time the comment box was open (D-304).
+    def excluded_intervals = @pauses + @hiddens + @comment_stops
 
     def counted_seconds_total = @sittings.sum { |s| sitting_counted_seconds(s) }
   end

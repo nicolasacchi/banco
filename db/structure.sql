@@ -561,7 +561,62 @@ CREATE TRIGGER page_reviews_no_update BEFORE UPDATE ON page_reviews
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER page_reviews_no_delete BEFORE DELETE ON page_reviews
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "comments" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "student_id" integer NOT NULL, "client_comment_id" varchar NOT NULL, "trial" boolean DEFAULT FALSE NOT NULL, "reason" varchar NOT NULL, "text_it" text, "page_path" varchar NOT NULL, "page_kind" varchar NOT NULL, "anchor" varchar, "selected_text" text, "subject_id" integer, "topic_revision_id" integer, "lesson_revision_id" integer, "card" integer, "practice_serve_id" integer, "diagnosis_run_id" integer, "served_event_id" integer, "item_instance_id" integer, "item_revision_id" integer, "blueprint_revision_id" integer, "viewport_width" integer, "viewport_height" integer, "theme" varchar, "text_size" varchar, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_91b6517bd0"
+FOREIGN KEY ("student_id")
+  REFERENCES "students" ("id")
+, CONSTRAINT "fk_rails_8fd86bf635"
+FOREIGN KEY ("subject_id")
+  REFERENCES "subjects" ("id")
+, CONSTRAINT "fk_rails_eea8f0bf8f"
+FOREIGN KEY ("topic_revision_id")
+  REFERENCES "topic_revisions" ("id")
+, CONSTRAINT "fk_rails_b1cfb7a675"
+FOREIGN KEY ("lesson_revision_id")
+  REFERENCES "lesson_revisions" ("id")
+, CONSTRAINT "fk_rails_654313d8cc"
+FOREIGN KEY ("practice_serve_id")
+  REFERENCES "practice_serves" ("id")
+, CONSTRAINT "fk_rails_969f39b66d"
+FOREIGN KEY ("diagnosis_run_id")
+  REFERENCES "diagnosis_runs" ("id")
+, CONSTRAINT "fk_rails_66815e2f6f"
+FOREIGN KEY ("item_instance_id")
+  REFERENCES "item_instances" ("id")
+, CONSTRAINT "fk_rails_0de8d68815"
+FOREIGN KEY ("item_revision_id")
+  REFERENCES "item_revisions" ("id")
+, CONSTRAINT "fk_rails_a75bd33006"
+FOREIGN KEY ("blueprint_revision_id")
+  REFERENCES "blueprint_revisions" ("id")
+, CONSTRAINT comments_reason CHECK (reason IN ('not_understood','error','not_working','like','other')), CONSTRAINT comments_page_kind CHECK (page_kind IN ('today','subjects','subject','topic','lesson','practice','diagnosis','warmup','sitting','results','settings','search','comments')), CONSTRAINT comments_text_length CHECK (text_it IS NULL OR length(text_it) BETWEEN 1 AND 500), CONSTRAINT comments_selected_length CHECK (selected_text IS NULL OR length(selected_text) BETWEEN 1 AND 300), CONSTRAINT comments_anchor_length CHECK (anchor IS NULL OR length(anchor) BETWEEN 1 AND 200));
+CREATE INDEX "index_comments_on_student_id" ON "comments" ("student_id") /*application='Banco'*/;
+CREATE INDEX "index_comments_on_subject_id" ON "comments" ("subject_id") /*application='Banco'*/;
+CREATE INDEX "index_comments_on_topic_revision_id" ON "comments" ("topic_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_comments_on_lesson_revision_id" ON "comments" ("lesson_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_comments_on_practice_serve_id" ON "comments" ("practice_serve_id") /*application='Banco'*/;
+CREATE INDEX "index_comments_on_diagnosis_run_id" ON "comments" ("diagnosis_run_id") /*application='Banco'*/;
+CREATE INDEX "index_comments_on_item_instance_id" ON "comments" ("item_instance_id") /*application='Banco'*/;
+CREATE INDEX "index_comments_on_item_revision_id" ON "comments" ("item_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_comments_on_blueprint_revision_id" ON "comments" ("blueprint_revision_id") /*application='Banco'*/;
+CREATE UNIQUE INDEX "index_comments_on_client_comment_id" ON "comments" ("client_comment_id") /*application='Banco'*/;
+CREATE INDEX "index_comments_on_student_id_and_id" ON "comments" ("student_id", "id") /*application='Banco'*/;
+CREATE TABLE "comment_events" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "comment_id" integer NOT NULL, "kind" varchar NOT NULL, "origin" varchar NOT NULL, "actor" varchar NOT NULL, "text_it" text, "remote_addr" varchar DEFAULT '' NOT NULL, "request_id" varchar, "payload_json" text DEFAULT '{}' NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_b32cfa76fe"
+FOREIGN KEY ("comment_id")
+  REFERENCES "comments" ("id")
+, CONSTRAINT comment_events_kind CHECK (kind IN ('reply','read','resolved','reopened','sent_back','reply_seen')), CONSTRAINT comment_events_origin CHECK (origin IN ('web','console','student')), CONSTRAINT comment_events_reply_text CHECK (kind <> 'reply' OR (text_it IS NOT NULL AND length(text_it) BETWEEN 1 AND 2000)), CONSTRAINT comment_events_seen_by_student CHECK ((kind = 'reply_seen') = (origin = 'student')));
+CREATE INDEX "index_comment_events_on_comment_id" ON "comment_events" ("comment_id") /*application='Banco'*/;
+CREATE INDEX "index_comment_events_on_comment_id_and_id" ON "comment_events" ("comment_id", "id") /*application='Banco'*/;
+CREATE UNIQUE INDEX "index_comment_events_on_request_id" ON "comment_events" ("request_id") WHERE request_id IS NOT NULL /*application='Banco'*/;
+CREATE TRIGGER comments_no_update BEFORE UPDATE ON comments
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER comments_no_delete BEFORE DELETE ON comments
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER comment_events_no_update BEFORE UPDATE ON comment_events
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER comment_events_no_delete BEFORE DELETE ON comment_events
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261016100001'),
 ('20261012100001'),
 ('20261010120001'),
 ('20261010100001'),

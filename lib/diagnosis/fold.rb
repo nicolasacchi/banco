@@ -12,7 +12,8 @@ module Diagnosis
   #   grading{...}                                a later grading (retry), same keys
   #   resolve_attempt{serve, skill?, verdict, ...}  teacher resolves one answer
   #   confirm_grade{serve, passed}                 teacher confirms the short answer
-  #   item_abandoned{serve}, paused, resumed, hidden, visible
+  #   item_abandoned{serve}, paused, resumed, hidden, visible, comment_opened, comment_closed
+  #     (the last two: the student's comment box was open, D-304; an interval that is not counted, like hidden)
   #   extend_diagnosis_run, close_diagnosis_run
   # Other kinds are ignored.
   class Fold
@@ -91,6 +92,8 @@ module Diagnosis
       when "resumed" then close_interval(@state.pauses, ev[:at])
       when "hidden" then @state.hiddens << [ ev[:at], nil ]
       when "visible" then close_interval(@state.hiddens, ev[:at])
+      when "comment_opened" then @state.comment_stops << [ ev[:at], nil ]
+      when "comment_closed" then close_interval(@state.comment_stops, ev[:at])
       end
       settle
     end
@@ -102,6 +105,7 @@ module Diagnosis
     def close_open_intervals(at)
       close_interval(@state.pauses, at)
       close_interval(@state.hiddens, at)
+      close_interval(@state.comment_stops, at)
     end
 
     def close_interval(list, at)
