@@ -796,3 +796,6 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
   .l2 .check { padding: 0.6em 0.6em 0.8em; }
   .l2 .check .option { padding: 0.5em 0.8em; font-size: 1.05em; }
 }
+
+/* "Commenta" (D-304) added a button to the top bar: on a phone the bar's buttons and gaps are a little tighter, so it still never overflows */
+@media (max-width: 420px) { .l2-top-in { gap: 0.3em; } .l2-tools { gap: 0.2em; } .l2-ibtn { min-width: 2.2em; padding: 0 0.3em; } }
