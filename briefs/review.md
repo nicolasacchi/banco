@@ -88,3 +88,5 @@ The author answers every blocker and major finding (`banco findings respond`): t
 Findings stay in the database, but anything written to a file in the repository is
 public: say "the student" and "the teacher", with no names, school, city or exam
 details.
+
+The direction of an accent (è/é, à/á…) is never tested and never makes an answer wrong (D-296); a missing accent and an apostrophe for an accent still count.

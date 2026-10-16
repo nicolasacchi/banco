@@ -49,8 +49,21 @@ module Grading
         options = Array(spec.display["options"]).map { |o| o["id"] }
         return invalid("unparseable") if options.any? && !options.include?(id)
         return result("correct", normalized: id) if id == spec.answer.to_s
+        return result("correct", normalized: id) if same_text_up_to_accent_direction?(spec, id)
 
         verdict_for_errors(error_hit(spec, id) { |v, a| v.to_s == a }, normalized: id)
+      end
+
+      # An option whose text equals the key option's text up to the direction of an accent (perchè / perché) is
+      # the key (D-296): the same folding and normalization as normalized_text.
+      def same_text_up_to_accent_direction?(spec, id)
+        texts = Array(spec.display["options"]).to_h { |o| [ o["id"].to_s, o["text"] ] }
+        chosen = texts[id]
+        key = texts[spec.answer.to_s]
+        return false unless chosen.is_a?(String) && key.is_a?(String)
+
+        fold = ->(t) { Text.fold_direction(Text.normalize(t, case_sensitive: spec.case_sensitive)) }
+        fold.(chosen) == fold.(key)
       end
 
       def ordering(spec, value, id_map)

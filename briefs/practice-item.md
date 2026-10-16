@@ -88,3 +88,5 @@ have passed, been reviewed and been solved blind, the topic file pins them (`ban
 The code and these briefs are public. Items live in the database, but anything you write into a file
 or a report the repository can see is public. No name of the student or of the household, no school,
 no city, no exam-session details, no programme text. Say "the student" and "the teacher".
+
+The direction of an accent (è/é, à/á…) is never tested and never makes an answer wrong (D-296); a missing accent and an apostrophe for an accent still count.

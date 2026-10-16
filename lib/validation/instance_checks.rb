@@ -46,6 +46,7 @@ module Validation
       problems.each { |p| f.add("E-GEN-SCHEMA", "#{label}/answer", p, rule: "answer_shape", seed: seed) }
       errors(inst, label, seed, f)
       accept_rules(inst, label, seed, f)
+      accent_direction_rules(display, answer, inst, label, seed, f) if problems.empty?
       choice_rules(display, answer, inst, label, seed, f) if @unit.component == "choice" && problems.empty?
       leaks(display, answer, inst, label, seed, f) if problems.empty?
       support_leaks(display, answer, inst, label, seed, f) if problems.empty?
@@ -171,6 +172,30 @@ module Validation
         next if coded[o["id"]] && @unit.catalogue_codes.include?(coded[o["id"]])
 
         f.add("E-DISTRACTOR-UNCODED", "#{label}/display/options/#{o['id']}", "the distractor #{o['id']} has no error code from the catalogue", option: o["id"], seed: seed)
+      end
+    end
+
+    # The direction of an accent is never tested (D-296): no two options that differ only by it, and no declared
+    # error value that is the key up to it (the grader would call the answer correct, so the code could never fire).
+    def accent_direction_rules(display, answer, inst, label, seed, f)
+      fold = ->(t) { Grading::Closed::Text.fold_direction(Grading::Closed::Text.normalize(Answers.plain(t).to_s)) }
+      case @unit.component
+      when "choice"
+        options = Array(display["options"])
+        options.combination(2).each do |a, b|
+          next if Answers.plain(a["text"]) == Answers.plain(b["text"]) || fold.(a["text"]) != fold.(b["text"])
+
+          f.add("E-ACCENT-DIRECTION", "#{label}/display/options", "options #{a['id']} and #{b['id']} differ only in the direction of an accent", seed: seed)
+        end
+      when "normalized_text"
+        return unless answer.is_a?(String)
+
+        keys = ([ answer ] + Array(inst["accept"])).map { |k| fold.(k) }
+        Array(inst["errors"]).each_with_index do |e, i|
+          next unless e["value"].is_a?(String) && keys.include?(fold.(e["value"]))
+
+          f.add("E-ACCENT-DIRECTION", "#{label}/errors/#{i}/value", "the error value is the key up to the direction of an accent, so it can never be hit", seed: seed)
+        end
       end
     end
 

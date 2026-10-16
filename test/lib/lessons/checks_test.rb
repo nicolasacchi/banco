@@ -65,6 +65,15 @@ class LessonsChecksTest < ActiveSupport::TestCase
     assert grade(check, 12).invalid?
   end
 
+  test "normalized_text: the direction of an accent is never wrong (D-296)" do
+    check = { "component" => "normalized_text", "prompt_it" => "Scrivi.", "answer" => "è" }
+    assert grade(check, "é", subject: "italian").right?
+    assert_equal "Controlla l'apostrofo e l'accento.", grade(check, "e'", subject: "italian").message_it
+    spanish = { "component" => "normalized_text", "prompt_it" => "Scrivi.", "answer" => "está" }
+    assert grade(spanish, "està", subject: "spanish").right?
+    assert grade(spanish, "esta", subject: "spanish").wrong?
+  end
+
   test "matching: pairs by shown ids, a classification may reuse a right item" do
     check = { "component" => "matching", "prompt_it" => "Abbina.", "reuse_right" => true,
               "left" => [ { "id" => "l1", "text_it" => "uno" }, { "id" => "l2", "text_it" => "due" }, { "id" => "l3", "text_it" => "tre" } ],

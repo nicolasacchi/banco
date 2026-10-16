@@ -64,6 +64,7 @@ validation:
   E-MATCHING-SIZE: { stage: ruby, severity: error, description: "A matching item has fewer than 4 pairs or a right column that is not n+1." }
   # Text.
   E-ACCENT-POLICY: { stage: ruby, severity: error, description: "accent_policy and the paradigm forms contradict each other." }
+  E-ACCENT-DIRECTION: { stage: ruby, severity: error, description: "A choice instance has two options that differ only in the direction of an accent (grave or acute), or a declared error value is the key up to that direction. The direction is never tested (D-296)." }
   E-PROVA-A-PARAMS: { stage: ruby, severity: error, description: "An item built on last year's exam structure reuses its numbers instead of new ones." }
   # Readability (Italian instructional text only).
   E-READ: { stage: ruby, severity: error, description: "A readability rule failed; the rule name is in the detail (see read_rules).", read_rules: [markup, emoji, all_caps, sentence_length, stem_length, bold_spans, bold_span_length] }

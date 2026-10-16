@@ -299,6 +299,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-293 | 2026-10-13 | render check of wave 2: a figure measured while hidden is never cached, the print views are not judged, the plate words are measured as drawn, the rendering waits no longer than needed | decided |
 | D-294 | 2026-10-15 | entry diagnosis: no daily cap; dependencies and each run's sitting budgets stay | decided |
 | D-295 | 2026-10-15 | number and fraction answers: a letter and "=" or one pair of parentheses are read, and an unreadable answer says what to write | decided |
+| D-296 | 2026-10-16 | the direction of an accent (grave or acute) never makes an answer wrong | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -3199,5 +3200,14 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Found:** on a number item of the entry test, the student's answers were refused as unreadable nine times in one minute, and the student typed an arbitrary number to get past. Invalid inputs keep no text, so the typed forms are unknown, but the grader refused reasonable ones (`n = -2`, `(-2)`) with the generic "Non riesco a leggere la risposta".
 - **We do:** a number (and each fraction box) may carry one leading Latin letter and "=" (`n = -2`, `x=3`, `N = 2,5`) and one pair of parentheses around the whole value (`(-2)`, `( 2,5 )`, `n = (-2)`); they are stripped before the usual reading, so `normalized` and the typical-error matching see the bare value. Not read, as before: a second letter (`n = m = 2`), the letter after the value (`2 = n`), nested or unbalanced parentheses, a slash in a number box. The browser sends the text as typed and does not pre-validate, so only the server changed. Two new invalid codes with their own text: `unreadable_number` ("Scrivi solo il numero, per esempio −3 oppure 2,5.") and `unreadable_fraction` ("Scrivi la frazione, per esempio −3/4."), replacing `unparseable` for those two components only; `invalid_input` (and `practice_invalid_input`) keep recording the code and never the typed text. Empty answers, `use_comma`, `thousands_separator` and every other verdict are unchanged.
 - **Rules version:** none changes: `grader_version` of a grading is the git sha, which moves with this commit. No earlier verdict changes: only answers that were invalid become gradable.
+- **Status:** decided
+- **Back-port:** none.
+
+## D-296 · 2026-10-16 · the direction of an accent (grave or acute) never makes an answer wrong
+
+- **Design ref:** E-03, `Grading::Closed::Text`, `Grading::Closed` (choice), `Validation::InstanceChecks`
+- **Operator (2026-10-16):** from now on we do not distinguish much between è and é. An Italian keyboard has à è é ì ò ù and no á í ó ú, and the real exams are handwritten, where the direction of the mark cannot be told apart. This holds in every subject, Spanish included.
+- **We do:** in `normalized_text`, an answer that equals an accepted answer once grave and acute are made one mark (NFD, U+0300 to U+0301, NFC, on both sides) is `correct`, whatever the item's `accent_policy`; `normalized` stays the student's normalized answer, and a declared error value that equals the key up to direction can no longer be hit. In `choice`, an option whose text equals the key option's text up to the same folding (after the text normalization) is `correct`; the grader reads the texts from the instance display, so the diagnosis item `italian-spelling-accent-choice` now takes the grave `perchè` for `perché`. Lesson checks and practice use these graders and needed no change; the browser never compares text for a verdict. Unchanged: a missing accent (`perche`, `e` for `è`: `it_accents`, `es_accents`), an apostrophe for an accent (`it_apostrophe_accent`), an accent on the wrong vowel or syllable, and the letters ñ and ü. Mechanical validation gains `E-ACCENT-DIRECTION` for new item revisions: a choice instance with two options equal up to direction, or a declared error value equal to the key up to direction. The authors' briefs carry one line saying so. What the lessons teach (the Spanish tilde is always acute) does not change.
+- **Rules version:** none changes: `grader_version` of a grading is the git sha, which moves with this commit. Stored gradings are not regraded: the ledger is append-only and the rule holds from now on. Stored item revisions are not re-validated; the grader rule covers them.
 - **Status:** decided
 - **Back-port:** none.

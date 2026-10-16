@@ -3,10 +3,15 @@ module Grading
     # The normalized_text component. The pipeline (A-01): NFC, trim, whitespace
     # collapse, apostrophe and quote unification, trailing punctuation stripped,
     # invisible characters (ZWSP, ZWNJ, ZWJ, word joiner, BOM, soft hyphen) removed,
-    # case folded unless the item is case sensitive. Accents are NOT folded in the
-    # comparison: an accent slip is its own finding, never "correct".
+    # case folded unless the item is case sensitive. The direction of an accent mark is
+    # never tested (D-296): grave and acute are made the same mark (NFD, U+0300 to
+    # U+0301, NFC) on both sides, so perchè for perché and està for está are correct,
+    # whatever the item's accent_policy. Missing accents are NOT folded in the
+    # comparison: an accent slip is its own finding, never "correct". The tilde of ñ
+    # and the diaeresis of ü are different letters and stay.
     #
-    # Findings, in order: exact match of an accepted answer (correct); a declared
+    # Findings, in order: exact match of an accepted answer, or one that differs only in
+    # the direction of an accent (correct); a declared
     # error value (typical_error with its code); an accent or apostrophe slip whose
     # unaccented form is not itself a paradigm form (typical_error with es_accents,
     # it_accents or it_apostrophe_accent; whether it earns credit is the evidence
@@ -36,6 +41,7 @@ module Grading
 
         accepted = ([ spec.answer ] + spec.accept).map { |t| normalize(t.to_s, case_sensitive: spec.case_sensitive) }
         return Closed.result("correct", normalized: answer) if accepted.include?(answer)
+        return Closed.result("correct", normalized: answer) if same_direction_as_any?(answer, accepted)
         return Closed.result("correct", normalized: answer) if spec.contractions == "en" && accepted.any? { |t| Contractions.same?(t, answer) }
         return Closed.invalid("spaces_in_code") if spaced_code?(answer, accepted)
 
@@ -79,6 +85,16 @@ module Grading
       # (20 KB held a worker for about 16 s).
       def strip_trailing_punctuation(text)
         text.reverse.sub(LEADING_RUN_OF_TRAILING, "").reverse.strip
+      end
+
+      # Grave and acute made one mark (D-296); every other mark (ñ, ü) is left alone.
+      def fold_direction(text)
+        text.unicode_normalize(:nfd).tr("\u0300", "\u0301").unicode_normalize(:nfc)
+      end
+
+      def same_direction_as_any?(answer, accepted)
+        folded = fold_direction(answer)
+        accepted.any? { |c| fold_direction(c) == folded }
       end
 
       def fold_accents(text)
