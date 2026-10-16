@@ -20,7 +20,7 @@ class CommentsController < ApplicationController
   # The student's own comments with their state and the teacher's replies. Showing them is what marks the replies as
   # seen (a reply_seen row of the student), so the badge goes away.
   def index
-    @comments = Comment.where(student: acting_student).includes(:events).order(id: :desc).to_a
+    @comments = Comment.where(student: acting_student).includes(:events, :subject).order(id: :desc).to_a
     @unread = @comments.select(&:unread_reply?)
     @unread.each do |comment|
       CommentEvent.create!(comment: comment, kind: "reply_seen", origin: "student", actor: acting_student.key, request_id: nil,

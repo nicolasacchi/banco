@@ -14,6 +14,15 @@ it:
         answered: "Con risposta: %{n}"
         closed: "Chiusi: %{n}"
         questions: "Domande «Ho una domanda»: %{n}"
+      tabs:
+        label: "Stato dei commenti"
+        all: "Tutti"
+        sent: "Nuovi"
+        read: "Letti"
+        answered: "Risposti"
+        closed: "Chiusi"
+        questions: "Domande"
+      reply_placeholder: "Scrivi una risposta breve e chiara."
       filters:
         label: "Filtri"
         state: "Stato"
@@ -24,6 +33,7 @@ it:
         type: "Tipo"
         all: "Tutti"
         apply: "Filtra"
+        clear: "Togli i filtri"
         official: "Studente ufficiale"
         trial: "Account di prova"
         comment: "Commenti"

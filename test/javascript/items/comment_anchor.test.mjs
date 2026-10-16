@@ -1,7 +1,7 @@
 // The comment mode's pure parts (D-304): the anchor path, the ids a node carries, the payload and its limits.
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import { anchorPath, buildComment, clip, listTargets, refsOf, REASONS, TEXT_MAX, validSegment } from "../../../app/javascript/items/comment_anchor.js"
+import { anchorPath, buildComment, clip, describeAnchor, listTargets, refsOf, REASONS, TEXT_MAX, validSegment } from "../../../app/javascript/items/comment_anchor.js"
 
 // a node with just what the module reads
 const node = (attrs = {}, parent = null, id = "", text = "") => ({
@@ -87,4 +87,16 @@ test("the list of targets starts with the whole page and follows the document", 
   const list = listTargets(doc, "Tutta la pagina")
   assert.deepEqual(list.map((t) => t.label), ["Tutta la pagina", "Prima scheda", "Seconda"])
   assert.deepEqual(list.map((t) => t.anchor), [null, "card:1", "card:2"])
+})
+
+test("an anchor path is said in words for the box (D-305)", () => {
+  const names = { card: "Scheda %{n}", block: "Blocco %{n}", option: "Risposta %{n}", question: "La domanda", menu: "Il menu" }
+  assert.equal(describeAnchor("card:3/block:2/option:1", names), "Scheda 3 · Blocco 2 · Risposta 1")
+  assert.equal(describeAnchor("question", names), "La domanda")
+  assert.equal(describeAnchor("card:1/block:2/row:9/option:3", names), "Scheda 1 · Blocco 2 · Risposta 3", "an unknown segment is left out")
+  assert.equal(describeAnchor("card:1/block:2/option:3/menu", { ...names, row: "Riga" }), "Blocco 2 · Risposta 3 · Il menu", "at most the last three words")
+  assert.equal(describeAnchor("card", names), null, "a template with a number needs the number")
+  assert.equal(describeAnchor("id:entry-test", names), null)
+  assert.equal(describeAnchor(null, names), null)
+  assert.equal(describeAnchor("menu", null), null)
 })

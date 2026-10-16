@@ -3,121 +3,158 @@
   <h1><%= t("teacher.comments.title") %></h1>
   <p><%= t("teacher.comments.intro") %></p>
 
-  <section id="comment-counts" aria-labelledby="comment-counts-title">
-    <h2 id="comment-counts-title"><%= t("teacher.comments.counts_title") %></h2>
-    <ul class="plain" id="comment-count-list">
-      <% Comment::STATES.each do |state| %>
-        <li data-state="<%= state %>"><%= t("teacher.comments.counts.#{state}", n: @counts[state]) %></li>
-      <% end %>
-      <li data-state="questions"><%= t("teacher.comments.counts.questions", n: @counts["questions"]) %></li>
-    </ul>
-  </section>
-
   <% if reader_only? %>
+    <section id="comment-counts" aria-labelledby="comment-counts-title">
+      <h2 id="comment-counts-title"><%= t("teacher.comments.counts_title") %></h2>
+      <ul class="comment-counts-guest" id="comment-count-list">
+        <% Comment::STATES.each do |state| %>
+          <li data-state="<%= state %>"><%= t("teacher.comments.counts.#{state}", n: @counts[state]) %></li>
+        <% end %>
+        <li data-state="questions"><%= t("teacher.comments.counts.questions", n: @counts["questions"]) %></li>
+      </ul>
+    </section>
     <p class="notice" id="comments-guest-note"><%= t("teacher.comments.guest_note") %></p>
   <% else %>
     <% f = @inbox.filters %>
-    <%= form_with url: teacher_comments_path, method: :get, id: "comment-filters", class: "filters" do %>
-      <fieldset>
-        <legend><%= t("teacher.comments.filters.label") %></legend>
-        <label><%= t("teacher.comments.filters.state") %>
-          <%= select_tag :state, options_for_select([ [ t("teacher.comments.filters.all"), "" ] ] + Comment::STATES.map { |s| [ t("teacher.comments.state.#{s}"), s ] }, f[:state]) %></label>
-        <label><%= t("teacher.comments.filters.reason") %>
-          <%= select_tag :reason, options_for_select([ [ t("teacher.comments.filters.all"), "" ] ] + Comment::REASONS.map { |r| [ t("teacher.comments.reason.#{r}"), r ] }, f[:reason]) %></label>
-        <label><%= t("teacher.comments.filters.kind") %>
-          <%= select_tag :kind, options_for_select([ [ t("teacher.comments.filters.all"), "" ] ] + Comment::PAGE_KINDS.map { |k| [ t("teacher.comments.page.#{k}"), k ] }, f[:kind]) %></label>
-        <label><%= t("teacher.comments.filters.subject") %>
-          <%= select_tag :subject, options_for_select([ [ t("teacher.comments.filters.all"), "" ] ] + @subjects.map { |s| [ s.name_it, s.key ] }, f[:subject]) %></label>
-        <label><%= t("teacher.comments.filters.who") %>
-          <%= select_tag :who, options_for_select([ [ t("teacher.comments.filters.all"), "" ], [ t("teacher.comments.filters.official"), "official" ], [ t("teacher.comments.filters.trial"), "trial" ] ], f[:who]) %></label>
-        <label><%= t("teacher.comments.filters.type") %>
-          <%= select_tag :type, options_for_select([ [ t("teacher.comments.filters.all"), "" ], [ t("teacher.comments.filters.comment"), "comment" ], [ t("teacher.comments.filters.question"), "question" ] ], f[:type]) %></label>
-        <%= submit_tag t("teacher.comments.filters.apply"), class: "button secondary small", name: nil %>
-      </fieldset>
-    <% end %>
+    <%# a link that sets (or, when already set, clears) one filter and keeps the others %>
+    <% link_to_filter = lambda do |key, value|
+         current = f.compact_blank
+         current = current[key].to_s == value.to_s ? current.except(key) : current.merge(key => value)
+         current = current.except(:type) if key == :state
+         current = current.except(:state) if key == :type
+         teacher_comments_path(current)
+       end %>
+    <nav aria-label="<%= t("teacher.comments.tabs.label") %>">
+      <ul class="comment-tabs" id="comment-tabs">
+        <% all_n = Comment::STATES.sum { |s| @counts[s] } %>
+        <% tabs = [ [ "all", t("teacher.comments.tabs.all"), all_n, teacher_comments_path(f.compact_blank.except(:state, :type)), f[:state].nil? && f[:type].nil? ] ] +
+                  Comment::STATES.map { |s| [ s, t("teacher.comments.tabs.#{s}"), @counts[s], teacher_comments_path(f.compact_blank.except(:type).merge(state: s)), f[:state] == s ] } +
+                  [ [ "questions", t("teacher.comments.tabs.questions"), @counts["questions"], teacher_comments_path(type: "question"), f[:type] == "question" ] ] %>
+        <% tabs.each do |key, label, n, href, current| %>
+          <li data-state="<%= key %>" data-tab="<%= key %>">
+            <a href="<%= href %>" <%= 'aria-current="page"'.html_safe if current %>><%= label %> <span class="comment-tab-n<%= ' zero' if n.zero? %>"><%= n %></span></a>
+          </li>
+        <% end %>
+      </ul>
+    </nav>
+
+    <form id="comment-filters" class="filters" aria-label="<%= t("teacher.comments.filters.label") %>">
+      <div class="comment-chiprow">
+        <span class="comment-chiprow-label"><%= t("teacher.comments.filters.reason") %></span>
+        <% Comment::REASONS.each do |r| %>
+          <a class="comment-fchip" href="<%= link_to_filter.call(:reason, r) %>" aria-current="<%= f[:reason] == r %>"><%= comment_icon("reason-#{r.dasherize}") %><%= t("teacher.comments.reason.#{r}") %></a>
+        <% end %>
+      </div>
+      <div class="comment-chiprow">
+        <span class="comment-chiprow-label"><%= t("teacher.comments.filters.subject") %></span>
+        <% @subjects.each do |s| %>
+          <a class="comment-fchip" href="<%= link_to_filter.call(:subject, s.key) %>" aria-current="<%= f[:subject] == s.key %>"><%= s.name_it %></a>
+        <% end %>
+      </div>
+      <div class="comment-chiprow">
+        <span class="comment-chiprow-label"><%= t("teacher.comments.filters.who") %></span>
+        <a class="comment-fchip" href="<%= link_to_filter.call(:who, "official") %>" aria-current="<%= f[:who] == "official" %>"><%= t("teacher.comments.filters.official") %></a>
+        <a class="comment-fchip" href="<%= link_to_filter.call(:who, "trial") %>" aria-current="<%= f[:who] == "trial" %>"><%= t("teacher.comments.filters.trial") %></a>
+        <% if f.values.any?(&:present?) %>
+          <a class="comment-fchip" id="comment-filters-clear" href="<%= teacher_comments_path %>"><%= comment_icon("close") %><%= t("teacher.comments.filters.clear") %></a>
+        <% end %>
+      </div>
+      <details class="comment-chiprow-more"<%= " open" if f[:kind] %>>
+        <summary><%= t("teacher.comments.filters.kind") %></summary>
+        <div class="comment-chiprow">
+          <% Comment::PAGE_KINDS.each do |k| %>
+            <a class="comment-fchip" href="<%= link_to_filter.call(:kind, k) %>" aria-current="<%= f[:kind] == k %>"><%= t("teacher.comments.page.#{k}") %></a>
+          <% end %>
+        </div>
+      </details>
+    </form>
     <% back = request.fullpath %>
 
     <% if @rows.empty? %>
-      <p id="comments-empty"><%= t("teacher.comments.empty") %></p>
+      <div class="comment-empty" id="comments-empty">
+        <%= comment_icon("check") %>
+        <p><strong><%= t("teacher.comments.empty") %></strong></p>
+      </div>
     <% else %>
-      <ul class="plain comment-inbox" id="comment-inbox">
+      <ul class="comment-inbox" id="comment-inbox">
         <% @rows.each do |row| %>
           <% if row.type == :comment %>
             <% comment = row.record %>
             <% place = Comments::Place.new(comment) %>
-            <li class="comment-row" id="comment-<%= comment.id %>" data-comment="<%= comment.id %>" data-state="<%= comment.state %>" data-reason="<%= comment.reason %>">
-              <h2>
-                <span class="comment-state" data-state="<%= comment.state %>"><%= t("teacher.comments.state.#{comment.state}") %></span>
-                <%= t("teacher.comments.reason.#{comment.reason}") %>
-              </h2>
-              <p class="hint">
-                <%= t("teacher.comments.student") %>: <%= student_name(comment.student) %><% if comment.trial %> (<%= t("teacher.comments.trial") %>)<% end %>
-                · <%= t("teacher.comments.when", at: comment.created_at.in_time_zone.strftime("%d/%m/%Y %H:%M")) %>
+            <li class="comment-row" id="comment-<%= comment.id %>" data-comment="<%= comment.id %>" data-state="<%= comment.state %>" data-reason="<%= comment.reason %>" style="<%= comment_accent_style(comment) %>">
+              <div class="comment-row-head">
+                <span class="comment-place-badge"><%= comment_place_icon(comment) %></span>
+                <span class="comment-state" data-state="<%= comment.state %>"><%= comment_state_icon(comment.state) %><%= t("teacher.comments.state.#{comment.state}") %></span>
+                <span class="comment-pill comment-reason" data-reason="<%= comment.reason %>"><%= comment_icon("reason-#{comment.reason.dasherize}") %><%= t("teacher.comments.reason.#{comment.reason}") %></span>
+                <span class="comment-who">
+                  <%= student_name(comment.student) %><% if comment.trial %> (<%= t("teacher.comments.trial") %>)<% end %>
+                  · <%= t("teacher.comments.when", at: comment.created_at.in_time_zone.strftime("%d/%m/%Y %H:%M")) %>
+                </span>
+              </div>
+              <p class="comment-place-line">
+                <strong><%= t("teacher.comments.page.#{comment.page_kind}") %><% if comment.subject %>, <%= comment.subject.name_it %><% end %></strong>
+                <% if (card = place.card) %><span><%= t("teacher.comments.card", n: card[0], title: card[1]) %></span><% elsif comment.card %><span><%= t("teacher.comments.card", n: comment.card, title: "") %></span><% end %>
+                <% if (block = place.block) %><span><%= t("teacher.comments.block", n: block[0], type: block[1]) %></span><% end %>
+                <% if place.page&.skill %><%= ref_for(place.page.skill) %><% end %>
+                <% if comment.item_revision %><%= ref_for(comment.item_revision) %><% end %>
+                <% if place.link %><a href="<%= place.link %>"><%= t("teacher.comments.open_place") %></a><% end %>
               </p>
-              <p>
-                <strong><%= t("teacher.comments.where") %>:</strong>
-                <%= t("teacher.comments.page.#{comment.page_kind}") %><% if comment.subject %>, <%= comment.subject.name_it %><% end %>
-                <% if (card = place.card) %> · <%= t("teacher.comments.card", n: card[0], title: card[1]) %><% elsif comment.card %> · <%= t("teacher.comments.card", n: comment.card, title: "") %><% end %>
-                <% if (block = place.block) %> · <%= t("teacher.comments.block", n: block[0], type: block[1]) %><% end %>
-                <% if place.link %> · <a href="<%= place.link %>"><%= t("teacher.comments.open_place") %></a><% end %>
+              <% if comment.selected_text %><p class="comment-quote"><%= t("teacher.comments.selected") %>: <q><%= comment.selected_text %></q></p><% end %>
+              <p class="comment-text"><%= comment.text_it || t("teacher.comments.no_text") %></p>
+              <p class="comment-meta">
+                <% if comment.anchor %><%= t("teacher.comments.element") %>: <code><%= comment.anchor %></code> · <% end %>
+                <%= t("teacher.comments.device", w: comment.viewport_width || "?", h: comment.viewport_height || "?", theme: comment.theme || "?", size: comment.text_size || "?") %>
               </p>
-              <% if comment.item_revision || place.page&.skill %>
-                <p>
-                  <% if place.page&.skill %><%= ref_for(place.page.skill) %><% end %>
-                  <% if comment.item_revision %> <%= ref_for(comment.item_revision) %><% end %>
-                </p>
-              <% end %>
-              <% if comment.anchor %><p class="hint"><%= t("teacher.comments.element") %>: <code><%= comment.anchor %></code></p><% end %>
-              <% if comment.selected_text %><p><%= t("teacher.comments.selected") %>: <q><%= comment.selected_text %></q></p><% end %>
-              <p><strong><%= t("teacher.comments.text") %>:</strong> <%= comment.text_it || t("teacher.comments.no_text") %></p>
-              <p class="hint"><%= t("teacher.comments.device", w: comment.viewport_width || "?", h: comment.viewport_height || "?", theme: comment.theme || "?", size: comment.text_size || "?") %></p>
               <% if comment.events.any? %>
                 <details open>
                   <summary><%= t("teacher.comments.history") %></summary>
-                  <ol class="plain comment-history">
+                  <ol class="comment-thread comment-history">
                     <% comment.events.each do |event| %>
                       <li data-event="<%= event.kind %>">
                         <strong><%= t("teacher.comments.history_event.#{event.kind}") %></strong>
                         <% unless event.origin == "student" %><%= t("teacher.comments.by", actor: event.actor) %><% end %><% if event.origin == "console" %> <%= t("teacher.comments.from_console") %><% end %>
                         · <%= event.created_at.in_time_zone.strftime("%d/%m/%Y %H:%M") %>
-                        <% if event.text_it %><br><%= simple_format(h(event.text_it)) %><% end %>
+                        <% if event.text_it %><%= simple_format(h(event.text_it)) %><% end %>
                       </li>
                     <% end %>
                   </ol>
                 </details>
               <% end %>
-              <div class="actions comment-actions">
-                <% if comment.state == "sent" %>
-                  <%= button_to t("teacher.comments.mark_read"), teacher_comment_read_path(comment_id: comment.id), params: { back: back }, class: "button secondary small", form: { class: "inline" } %>
-                <% end %>
-                <% if comment.state == "closed" %>
-                  <%= button_to t("teacher.comments.reopen"), teacher_comment_reopen_path(comment_id: comment.id), params: { back: back }, class: "button secondary small", form: { class: "inline" } %>
-                <% else %>
-                  <%= button_to t("teacher.comments.resolve"), teacher_comment_resolve_path(comment_id: comment.id), params: { back: back }, class: "button secondary small", form: { class: "inline" } %>
-                <% end %>
-              </div>
               <% unless comment.state == "closed" %>
                 <%= form_with url: teacher_comment_reply_path(comment_id: comment.id), method: :post, class: "comment-reply-form" do %>
                   <%= hidden_field_tag :back, back %>
                   <label for="reply-<%= comment.id %>"><%= t("teacher.comments.reply_label") %></label>
-                  <%= text_area_tag :text_it, nil, id: "reply-#{comment.id}", rows: 3, maxlength: CommentEvent::REPLY_MAX, class: "answer-input wide", required: true %>
-                  <%= submit_tag t("teacher.comments.send_reply"), class: "button small", name: nil %>
+                  <%= text_area_tag :text_it, nil, id: "reply-#{comment.id}", rows: 3, maxlength: CommentEvent::REPLY_MAX, class: "answer-input wide", required: true, placeholder: t("teacher.comments.reply_placeholder") %>
+                  <button type="submit" class="button small"><%= comment_icon("send") %><%= t("teacher.comments.send_reply") %></button>
                 <% end %>
               <% end %>
+              <div class="actions comment-actions">
+                <% if comment.state == "sent" %>
+                  <%= button_to teacher_comment_read_path(comment_id: comment.id), params: { back: back }, class: "button secondary small", form: { class: "inline" } do %><%= comment_icon("show") %><%= t("teacher.comments.mark_read") %><% end %>
+                <% end %>
+                <% if comment.state == "closed" %>
+                  <%= button_to teacher_comment_reopen_path(comment_id: comment.id), params: { back: back }, class: "button secondary small", form: { class: "inline" } do %><%= t("teacher.comments.reopen") %><% end %>
+                <% else %>
+                  <%= button_to teacher_comment_resolve_path(comment_id: comment.id), params: { back: back }, class: "button secondary small", form: { class: "inline" } do %><%= comment_icon("check") %><%= t("teacher.comments.resolve") %><% end %>
+                <% end %>
+              </div>
             </li>
           <% else %>
             <% question = row.record %>
             <li class="comment-row question-row" id="question-<%= question.id %>" data-question="<%= question.id %>">
-              <h2><%= t("teacher.comments.question_title") %></h2>
-              <p class="hint">
-                <%= t("teacher.comments.student") %>: <%= student_name(question.student) %>
-                · <%= t("teacher.comments.when", at: question.created_at.in_time_zone.strftime("%d/%m/%Y %H:%M")) %>
-                <% if question.section %> · <%= t("teacher.comments.question_section", section: question.section) %><% end %>
-                <% if question.exercise %> · <%= t("teacher.comments.question_exercise", n: question.exercise) %><% end %>
-                <% if question.card %> · <%= t("teacher.comments.card", n: question.card, title: "") %><% end %>
-              </p>
-              <p><strong><%= t("teacher.comments.text") %>:</strong> <%= question.text_it || t("teacher.comments.no_text") %></p>
-              <p class="hint"><%= t("teacher.comments.question_note") %></p>
+              <div class="comment-row-head">
+                <span class="comment-place-badge"><%= comment_icon("circle-help") %></span>
+                <strong><%= t("teacher.comments.question_title") %></strong>
+                <span class="comment-who">
+                  <%= student_name(question.student) %>
+                  · <%= t("teacher.comments.when", at: question.created_at.in_time_zone.strftime("%d/%m/%Y %H:%M")) %>
+                  <% if question.section %> · <%= t("teacher.comments.question_section", section: question.section) %><% end %>
+                  <% if question.exercise %> · <%= t("teacher.comments.question_exercise", n: question.exercise) %><% end %>
+                  <% if question.card %> · <%= t("teacher.comments.card", n: question.card, title: "") %><% end %>
+                </span>
+              </div>
+              <p class="comment-text"><%= question.text_it || t("teacher.comments.no_text") %></p>
+              <p class="comment-meta"><%= t("teacher.comments.question_note") %></p>
             </li>
           <% end %>
         <% end %>

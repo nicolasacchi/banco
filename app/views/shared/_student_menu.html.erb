@@ -3,7 +3,7 @@
   <nav class="student-menu" id="student-menu" aria-label="<%= t("student.menu.label") %>">
     <ul>
       <li><a id="sitting-leave" href="/today" data-sitting-leave><%= t("student.menu.pause_to_today") %></a></li>
-      <li><button type="button" class="button secondary small" id="comment-open-menu" data-comment-open><%= t("comments.button") %></button></li>
+      <li><button type="button" class="comment-open" id="comment-open-menu" data-comment-open><%= comment_icon("comment") %><span><%= t("comments.button") %></span></button></li>
     </ul>
   </nav>
 <% elsif mode == :full %>
@@ -13,7 +13,7 @@
       <% student_menu_items.each do |key, label, href| %>
         <li><a href="<%= href %>" id="<%= key == :logout ? 'logout-link' : "menu-#{key}" %>"<%= ' aria-current="page"'.html_safe if key == current %>><%= label %><% if key == :comments && comment_unread_count.positive? %> <span class="menu-badge" id="comments-badge" aria-label="<%= t("comments.menu_new", n: comment_unread_count) %>"><%= comment_unread_count %></span><% end %></a></li>
       <% end %>
-      <li><button type="button" class="button secondary small" id="comment-open-menu" data-comment-open><%= t("comments.button") %></button></li>
+      <li><button type="button" class="comment-open" id="comment-open-menu" data-comment-open><%= comment_icon("comment") %><span><%= t("comments.button") %></span></button></li>
     </ul>
   </nav>
 <% end %>

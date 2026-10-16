@@ -308,6 +308,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-302 | 2026-10-16 | the law and economics entry test may be choice only, lighter, with ten of its fifteen skills measured; the other five are learned in the course | decided |
 | D-303 | 2026-10-16 | embedding throughput: a document is embedded by its title and the start of its body (cap `BANCO_EMBED_MAX_CHARS`, 1,500, recorded with the model); the rebuild waits, retries and skips a slow batch instead of stopping, and prints progress | decided |
 | D-304 | 2026-10-16 | comments anywhere (C1): the student comments on any page, the teacher answers; the clock stops in a sitting; no agent reads them | decided |
+| D-305 | 2026-10-16 | the look of comments (C1 polish): one «Commenta» pill with its own icon, a banner, a bottom sheet with five reason chips, a fading confirmation, calmer lists | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -3338,6 +3339,23 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
   7. **Console.** `bin/rails banco:comments:list|show|reply|resolve|reopen|read` (`Comments::Console`, like D-260): reading needs no flag; writing is a dry run unless `CONFIRM=1`, needs `TEACHER=<login of BANCO_TEACHER_USERS>` and `BANCO_DECISIONS_ENABLED=1`, `TEXT_IT` (the operator's words, the teacher's reply) or `REASON_IT`, and is recorded with origin `console` (shown as "(da console)"). No route reaches it.
 - **C2 will add:** "Rimanda all'autore" (the existing `send_back_item` / `send_back_lesson` decisions, prefilled with the place, the teacher's own text, the decision linking the comment id; the only thing that ever reaches an author), the Cruscotto tile (with the questions), the teacher's lexical search over comments, the frozen preview of what the student saw (`items/frozen_slot.js`, the lesson card) on each comment, polish after the operator tries C1.
 - **Cost:** a student page has one more partial and one more script; the menu has one more item.
+- **Rules version:** none changes.
+- **Status:** decided
+- **Back-port:** none.
+
+## D-305 · 2026-10-16 · the look of comments (C1 polish): one «Commenta» pill with its own icon, a banner, a bottom sheet with five reason chips, a fading confirmation, calmer lists
+
+- **Design ref:** D-304 (every behaviour, rule and test of it stands), D-246 (icons), B-11 (readability: short words, big targets, no alarm colours).
+- **Operator (2026-10-16):** "Commenta" works but the interface must be more usable and more beautiful; the student has reading difficulties.
+- **We do (a design pass, no change of behaviour, rule or data):**
+  1. **The control**: a filled pill with the speech bubble and the word «Commenta» (new ui icon `comment`; the pin is no longer used for it), at the right end of the student menu on every page (full width on a phone, so it never overflows 390 px at the largest text), in the lesson's own bar as the same icon, and in a sitting also beside "Come si risponde" as an outlined pill so it is not mistaken for «Invia».
+  2. **The comment mode**: a banner "Tocca la parte di cui vuoi parlare" with «Tutta la pagina», «Scegli da un elenco» (the keyboard and screen reader way) and «Annulla»; every commentable part has a faint dotted outline, the part under the pointer (the innermost) a solid one with a light tint; Esc leaves the mode.
+  3. **The box**: a bottom sheet on a phone (up to 640 px), a card placed next to the chosen part on a wide screen (below it, above it, or centred when the part is tall); the place is echoed as a name ("Scheda 3 · Blocco 2", from the anchor path, `describeAnchor`) with a two-line excerpt of its words, and the part stays outlined behind the box; the five reasons are large chips (a real radio, an icon and a hue per reason, a thicker border and a filled dot when chosen, so colour is never the only sign); the text is optional with a placeholder and a counter; «Invia» (icon, primary) and «Annulla»; in a sitting a line "Il tempo del test è fermo." with a clock.
+  4. **The confirmation**: a pill "Inviato al docente" (or "Salvato. Lo mando quando torna la rete.") at the bottom of the page, it is the live region, and fades after 3.5 s; with reduced motion nothing slides or fades gradually.
+  5. **«I miei commenti»**: a card per comment (the place's icon on the subject colour, place in words, date, the state as a pill with an icon: Inviato, Letto, Risposto, Chiuso, the reason as a pill with its icon, the student's words, the teacher's reply as a bubble, a green outline and "Nuova" for an unread reply, a friendly empty state).
+  6. **The teacher's page**: tabs with counts (Tutti, Nuovi, Letti, Risposti, Chiusi, Domande), filters as chips (reason, subject, official or trial, "Dove" folded; "Togli i filtri"), each comment a card (the place with `ref_for`, the words, the history as a thread, an inline reply box, the actions). The URL filters are the same (`state`, `reason`, `kind`, `subject`, `who`, `type`); a guest still sees the counts only.
+  7. **Icons**: ui icons `comment`, `reason-not-understood|error|not-working|like|other`, `send`, `whole-page`, `pick`, `teacher-reply`, `clock-paused` (Lucide 1.54.0 `message-circle`, `circle-help`, `triangle-alert`, `wrench`, `heart`, `ellipsis`, `send`, `app-window`, `mouse-pointer-click`, `message-square`, `clock`; five new files vendored), `bin/build-icons` and `bin/build-palette` regenerated. Styles in `app/assets/stylesheets/comments.css` (the three themes, the three text sizes, the focus rings, 2.75 rem targets).
+- **Cost:** one stylesheet; the sprite grows by ten symbols.
 - **Rules version:** none changes.
 - **Status:** decided
 - **Back-port:** none.

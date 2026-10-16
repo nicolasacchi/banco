@@ -507,25 +507,3 @@ ul.checks li { padding: 0.25rem 0; }
 .refusal-notice { border: 2px solid var(--line); background: var(--surface); padding: 0.5rem 1rem; margin: 0.5rem 0; }
 .refusal-notice p { margin: 0.25rem 0; }
 .refusal-format { font-weight: bold; }
-
-/* Comments anywhere (D-304): the control in the menu, the comment mode's banner and box, "I miei commenti". */
-.student-menu button[data-comment-open] { min-height: 2.75rem; padding: 0.25rem 1rem; }
-.menu-badge { display: inline-block; min-width: 1.5rem; padding: 0 0.4rem; margin-left: 0.25rem; border: 2px solid currentColor; border-radius: 1rem; text-align: center; font-weight: 700; }
-.comment-banner { position: sticky; top: 0; z-index: 30; background: var(--surface); border-bottom: 3px solid var(--focus); padding: 0.5rem 1rem; }
-.comment-banner p { margin: 0.25rem auto; max-width: 70ch; }
-body.comment-mode [data-comment-anchor]:hover { outline: 3px dashed var(--focus); outline-offset: 2px; cursor: pointer; }
-body.comment-mode [data-comment-anchor] { cursor: pointer; }
-.comment-box { max-width: min(36rem, 96vw); width: 100%; padding: 1rem 1.25rem; border: 3px solid var(--line); background: var(--bg); color: var(--text); }
-.comment-box::backdrop { background: rgba(0, 0, 0, 0.45); }
-.comment-reasons .option { display: flex; align-items: center; gap: 0.5rem; min-height: 2.75rem; }
-.comment-reasons .option input { width: 1.5rem; height: 1.5rem; }
-.comment-selected q { font-weight: 700; }
-.comment-here { margin: 0.5rem 0; }
-.comment-list { list-style: none; padding: 0; }
-.comment-item { border: 2px solid var(--line); background: var(--surface); padding: 0.5rem 1rem; margin: 0.75rem 0; }
-.comment-item h2 { font-size: 1.1rem; margin: 0.25rem 0; }
-.comment-state { display: inline-block; padding: 0 0.5rem; border: 2px solid var(--line); margin-left: 0.5rem; font-weight: 700; }
-.comment-reply { border-left: 4px solid var(--primary); margin: 0.5rem 0; padding: 0.25rem 1rem; background: var(--bg); }
-.comment-row { border: 2px solid var(--line); background: var(--surface); padding: 0.5rem 1rem; margin: 0.75rem 0; }
-.comment-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.comment-history { margin: 0.25rem 0; }

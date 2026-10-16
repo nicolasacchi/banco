@@ -3,23 +3,33 @@
   <h1><%= t("comments.title") %></h1>
   <p><%= t("comments.intro") %></p>
   <% if @comments.empty? %>
-    <p id="comments-empty"><%= t("comments.empty") %></p>
+    <div class="comment-empty" id="comments-empty">
+      <%= comment_icon("comment") %>
+      <p><strong><%= t("comments.empty") %></strong></p>
+      <p><%= t("comments.empty_hint") %></p>
+    </div>
   <% else %>
     <ul class="comment-list" id="my-comments">
       <% @comments.each do |comment| %>
         <% new_reply = @unread.include?(comment) %>
-        <li class="comment-item" id="comment-<%= comment.id %>" data-state="<%= comment.state %>" data-comment-anchor="comment:<%= comment.id %>">
-          <h2>
-            <%= comment_place_it(comment) %>
-            <span class="comment-state" data-state="<%= comment.state %>"><%= t("comments.state.#{comment.state}") %></span>
+        <li class="comment-item" id="comment-<%= comment.id %>" data-state="<%= comment.state %>" <%= 'data-new="true"'.html_safe if new_reply %> style="<%= comment_accent_style(comment) %>" data-comment-anchor="comment:<%= comment.id %>">
+          <div class="comment-item-head">
+            <span class="comment-place-badge"><%= comment_place_icon(comment) %></span>
+            <div class="comment-item-title">
+              <h2><%= comment_place_it(comment) %></h2>
+              <p class="hint"><%= comment.created_at.in_time_zone.strftime("%d/%m/%Y %H:%M") %><% if comment.trial %> · <%= t("comments.trial") %><% end %></p>
+            </div>
+            <span class="comment-state" data-state="<%= comment.state %>"><%= comment_state_icon(comment.state) %><%= t("comments.state.#{comment.state}") %></span>
+          </div>
+          <p class="comment-tags">
+            <span class="comment-pill comment-reason" data-reason="<%= comment.reason %>"><%= comment_icon("reason-#{comment.reason.dasherize}") %><%= t("comments.reason.#{comment.reason}") %></span>
             <% if new_reply %><span class="menu-badge"><%= t("comments.new_reply") %></span><% end %>
-          </h2>
-          <p class="hint"><%= t("comments.reason.#{comment.reason}") %> · <%= comment.created_at.in_time_zone.strftime("%d/%m/%Y %H:%M") %><% if comment.trial %> · <%= t("comments.trial") %><% end %></p>
-          <% if comment.selected_text %><p><%= t("comments.quoted") %>: <q><%= comment.selected_text %></q></p><% end %>
-          <p><strong><%= t("comments.you_wrote") %>:</strong> <%= comment.text_it || t("comments.no_text") %></p>
+          </p>
+          <% if comment.selected_text %><p class="comment-quote"><%= t("comments.quoted") %>: <q><%= comment.selected_text %></q></p><% end %>
+          <p class="comment-mine<%= ' none' unless comment.text_it %>"><strong><%= t("comments.you_wrote") %>:</strong> <%= comment.text_it || t("comments.no_text") %></p>
           <% comment.replies.each do |reply| %>
             <blockquote class="comment-reply">
-              <p><strong><%= t("comments.teacher_replied") %>:</strong></p>
+              <p class="comment-reply-from"><%= comment_icon("teacher-reply") %><strong><%= t("comments.teacher_replied") %></strong></p>
               <%= simple_format(h(reply.text_it)) %>
             </blockquote>
           <% end %>

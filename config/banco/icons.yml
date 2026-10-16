@@ -47,6 +47,17 @@ ui:
   description: file-text          # "Descrizione" of a diagram
   show: eye
   pin: pin
+  comment: message-circle         # "Commenta" and a comment (D-305)
+  reason-not-understood: circle-help   # a comment's reason: "Non capisco"
+  reason-error: triangle-alert    # "C'è un errore"
+  reason-not-working: wrench      # "Non funziona"
+  reason-like: heart              # "Mi piace"
+  reason-other: ellipsis          # "Altro"
+  send: send                      # "Invia"
+  whole-page: app-window          # "Tutta la pagina"
+  pick: mouse-pointer-click       # the comment mode: tap the part
+  teacher-reply: message-square   # the teacher's reply
+  clock-paused: clock             # the clock of a sitting is stopped
   listen: volume-2                # "Ascolta"
   listen-stop: square             # stops the voice
   slower: turtle                  # "Più lento"

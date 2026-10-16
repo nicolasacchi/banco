@@ -57,7 +57,7 @@
         <div data-sitting-target="helpBody"></div>
       </details>
       <% unless preview? %>
-        <p class="comment-here"><button type="button" class="button secondary small" id="comment-open-sitting" data-comment-open><%= t("comments.button") %></button></p>
+        <p class="comment-here"><button type="button" class="comment-open secondary" id="comment-open-sitting" data-comment-open><%= comment_icon("comment") %><span><%= t("comments.button") %></span></button></p>
       <% end %>
       <section class="sheet" id="formula-sheet" data-sitting-target="sheet" aria-labelledby="formula-sheet-title" hidden>
         <h2 id="formula-sheet-title"><%= t("sitting.sheet.title") %></h2>

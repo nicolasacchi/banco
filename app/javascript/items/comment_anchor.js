@@ -66,8 +66,25 @@ export function buildComment({ id, reason, text, selected, anchor, refs, pagePat
 export function listTargets(doc, wholePageLabel) {
   const out = [{ node: null, label: wholePageLabel, anchor: null }]
   for (const node of doc.querySelectorAll("[data-comment-anchor]")) {
-    const label = clip(node.getAttribute("data-comment-label") || node.textContent, 50)
+    const heading = node.querySelector?.("h1, h2, h3, h4, .card-head")?.textContent
+    const label = clip(node.getAttribute("data-comment-label") || heading || node.textContent, 50)
     out.push({ node, label: label || node.getAttribute("data-comment-anchor"), anchor: anchorPath(node, null) })
   }
   return out
+}
+
+// The words for an anchor path, for the box ("Scheda 3 · Blocco 2 · Risposta 1"): names is the locale's `anchors` table
+// ("Scheda %{n}" for a segment with a value, plain text for one without). An unknown segment is left out; the last three
+// segments are kept. null when nothing of the path has a name.
+export function describeAnchor(anchor, names) {
+  if (!anchor || !names) return null
+  const words = []
+  for (const segment of anchor.split("/")) {
+    const [name, value] = segment.split(":")
+    const template = names[name]
+    if (typeof template !== "string") continue
+    const word = template.includes("%{n}") ? (value === undefined ? null : template.replace("%{n}", value)) : template
+    if (word && words[words.length - 1] !== word) words.push(word)
+  }
+  return words.length > 0 ? words.slice(-3).join(" · ") : null
 }
