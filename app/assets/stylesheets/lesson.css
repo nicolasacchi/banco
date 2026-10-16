@@ -19,7 +19,7 @@
 .l2 .ic { width: 1.15em; height: 1.15em; flex: none; vertical-align: -0.2em; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .l2 button, .l2 .button { font: inherit; }
 .l2 .button { min-height: 2.75em; display: inline-flex; align-items: center; justify-content: center; gap: 0.4em; text-decoration: none; border-radius: 0.7em; padding: 0.45em 1.1em; }
-.l2 .button.small { min-height: 2.4em; padding: 0.3em 0.8em; }
+.l2 .button.small { min-height: max(2.4em, 44px); padding: 0.3em 0.8em; }
 .l2 .hint { color: var(--muted); }
 
 
@@ -592,7 +592,7 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 .l2-box[data-theme="cream"] { --bg: #fbf3df; --text: #1c1a14; --muted: #4a4536; --line: #8a826a; --primary: #1d3b5c; --primary-text: #ffffff; --surface: #fffaf0; --focus: #0b3d91; color-scheme: light; }
 .l2-box[data-theme="dark"] { --bg: #1b1a17; --text: #f3ecdc; --muted: #d3cbb6; --line: #8c846e; --primary: #f0dfae; --primary-text: #1b1a17; --surface: #25231f; --focus: #9cc3ff; color-scheme: dark; }
 .l2-box-tools { display: flex; flex-wrap: wrap; gap: 0.6em 1.2em; align-items: center; margin: 0.6em 0; }
-.l2-box-tools fieldset { border: 0; padding: 0; margin: 0; display: flex; gap: 0.6em; align-items: center; }
+.l2-box-tools fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.2em 0.6em; align-items: center; }
 .l2-box-tools legend { float: left; margin-right: 0.5em; font-weight: 700; }
 
 /* weight for a reader with reading difficulties: prompts, step labels and the check button at a readable scale */
@@ -682,7 +682,7 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 
 /* "Non ho capito": a quiet text button at the foot of the card */
 .card-foot { margin-top: 0.8em; text-align: right; }
-.card-foot .question > .button { border-color: transparent; background: none; font-size: 0.85em; min-height: 0; padding: 0.2em 0.5em; text-decoration: underline; text-underline-offset: 0.2em; color: var(--muted); }
+.card-foot .question > .button { border-color: transparent; background: none; font-size: 0.85em; min-height: 2.6em; padding: 0.2em 0.5em; text-decoration: underline; text-underline-offset: 0.2em; color: var(--muted); }
 
 /* the summary: the key word of each tile is bold and in the primary colour */
 .summary-points strong { font-weight: 800; color: var(--primary); }

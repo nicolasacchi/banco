@@ -163,13 +163,15 @@
                 <% else %><p><%= t("teacher.skill.no_blind") %></p><% end %>
               </details>
               <p class="card-actions">
-                <a class="button secondary small" href="<%= teacher_item_play_path(revision_id: card.revision.id, topic: review.key) %>" data-play="<%= card.revision.id %>"><%= t("teacher.review.play") %></a>
+                <% unless reader_only? %><a class="button secondary small" href="<%= teacher_item_play_path(revision_id: card.revision.id, topic: review.key) %>" data-play="<%= card.revision.id %>"><%= t("teacher.review.play") %></a><% end %>
                 <% if writable && !review.approved_latest? %><button type="button" class="button secondary small" data-action="topic-review#seeExercise" data-seen-button <%= "hidden" if ex.seen %>><%= t("teacher.review.mark_seen") %></button><% end %>
               </p>
+              <% if !reader_only? || card.send_backs.any? %>
               <details class="more" data-more="send-back">
                 <summary><%= t("teacher.review.send_back_item") %></summary>
                 <%= render "teacher/items/send_back", card: card, blocker: blocker %>
               </details>
+              <% end %>
             </article>
           <% end %>
         </div>
@@ -256,8 +258,8 @@
           </div>
         <% end %>
 
-        <h3><%= t("teacher.review.send_back") %></h3>
-        <p class="hint"><%= t("teacher.review.send_back_hint") %></p>
+        <% unless reader_only? %><h3><%= t("teacher.review.send_back") %></h3>
+        <p class="hint"><%= t("teacher.review.send_back_hint") %></p><% end %>
         <%= decision_form("/teacher/lesson-revisions/#{review.lesson_revision.id}/send-back", id: "lesson-send-back-form") do %>
           <label class="hint" for="lesson-reason-code"><%= t("teacher.skill.reason_code") %></label>
           <select id="lesson-reason-code" name="reason_code" class="answer-input wide">

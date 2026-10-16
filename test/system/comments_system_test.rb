@@ -49,7 +49,8 @@ class CommentsSystemTest < ApplicationSystemTestCase
                  [ c.reason, c.page_kind, c.card, c.lesson_revision_id, c.text_it ]
     assert_match(%r{\Acard:#{card}(/|\z)}, c.anchor)
     assert_not_nil c.viewport_width
-    assert_equal "false", page.evaluate_script("document.body.classList.contains('comment-mode')").to_s
+    # The mode ends when the box has closed (after its closing transition): wait for it, do not race it.
+    wait_until { page.evaluate_script("document.body.classList.contains('comment-mode')") == false }
     assert_equal [], page.evaluate_script("Object.keys(localStorage).filter(function (k) { return k.indexOf('banco.coutbox.') === 0 })"), "the outbox is empty once sent"
   end
 

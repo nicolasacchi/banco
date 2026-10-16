@@ -46,7 +46,7 @@
   <p class="ref-links">
     <% if permalink %><a href="<%= teacher_ref_path(key: card.key) %>"><%= t("teacher.refs.open_card") %></a><% end %>
     <a href="/teacher/items/<%= card.revision.id %>"><%= t("teacher.refs.l.item_page") %></a>
-    <a href="<%= teacher_item_play_path(revision_id: card.revision.id) %>"><%= t("teacher.refs.l.play") %></a>
+    <% unless respond_to?(:reader_only?) && reader_only? %><a href="<%= teacher_item_play_path(revision_id: card.revision.id) %>"><%= t("teacher.refs.l.play") %></a><% end %>
     <% if card.pinned %><a href="<%= teacher_test_all_path(key: subject.key) %>#item-<%= card.revision.id %>"><%= t("teacher.refs.l.all_block") %></a><% end %>
     <% if card.skill_in_test %><a href="<%= skill_screen_path(subject, card.skill) %>"><%= t("teacher.refs.l.skill_screen") %></a><% end %>
     <% if card.corrections.positive? %><a href="/teacher/corrections"><%= t("teacher.refs.l.corrections", count: card.corrections) %></a><% end %>

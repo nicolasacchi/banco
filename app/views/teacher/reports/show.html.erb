@@ -36,14 +36,16 @@
   <% else %>
     <section id="report-sittings">
       <h2><%= t("teacher.report.sittings") %></h2>
+      <%= ui_table_wrap(label: t("teacher.report.sittings")) do %>
       <table class="data">
         <thead><tr><th>#</th><th><%= t("teacher.report.started") %></th><th><%= t("teacher.report.counted") %></th><th><%= t("teacher.report.served") %></th><th><%= t("teacher.report.closed_by") %></th></tr></thead>
         <tbody>
           <% row[:sittings].each do |s| %>
-            <tr><td><%= s[:index] %></td><td><%= s[:started_at] %></td><td><%= t("teacher.report.minutes_short", count: s[:counted_minutes]) %></td><td><%= s[:served] %></td><td><%= s[:close_reason] || "-" %></td></tr>
+            <tr><td><%= s[:index] %></td><td><%= ui_time(s[:started_at]) %></td><td><%= t("teacher.report.minutes_short", count: s[:counted_minutes]) %></td><td><%= s[:served] %></td><td><%= s[:close_reason] || "-" %></td></tr>
           <% end %>
         </tbody>
       </table>
+      <% end %>
     </section>
 
     <% if @map_ctx %><%= render "teacher/graphs/map", review: @map_ctx.review, ctx: @map_ctx, rows: @map_rows %><% end %>
@@ -86,6 +88,7 @@
       <% if row[:errors_observed].empty? %>
         <p><%= t("teacher.report.no_errors") %></p>
       <% else %>
+        <%= ui_table_wrap(label: t("teacher.report.errors")) do %>
         <table class="data">
           <thead><tr><th><%= t("teacher.report.error_code") %></th><th><%= t("teacher.report.error_skill") %></th><th><%= t("teacher.report.error_count") %></th><th><%= t("teacher.report.error_examples") %></th></tr></thead>
           <tbody>
@@ -95,6 +98,7 @@
             <% end %>
           </tbody>
         </table>
+        <% end %>
       <% end %>
       <% if row[:unclassified].any? %><p><%= t("teacher.report.unclassified") %> <%= row[:unclassified].join(", ") %></p><% end %>
     </section>

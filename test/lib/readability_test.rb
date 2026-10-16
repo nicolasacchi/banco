@@ -16,19 +16,19 @@ class ReadabilityTest < ActiveSupport::TestCase
     (hi + 0.05) / (lo + 0.05)
   end
 
-  # The variables of the three themes: the cream default, the dark one under
-  # :root[data-theme="dark"] and the light one under :root[data-theme="light"].
+  # The variables of the two themes: the cream default and the dark one under :root[data-theme="dark"]
+  # (the white "light" theme was never offered and is gone, D-306).
   def themes
     cream = CSS[/:root \{(.*?)\}/m, 1]
     dark = CSS[/:root\[data-theme="dark"\] \{(.*?)\}/m, 1]
-    light = CSS[/:root\[data-theme="light"\] \{(.*?)\}/m, 1]
-    { "cream" => cream, "dark" => dark, "light" => light }.transform_values do |block|
+    { "cream" => cream, "dark" => dark }.transform_values do |block|
       block.scan(/--([a-z-]+):\s*(#[0-9a-fA-F]{6})/).to_h
     end
   end
 
-  test "all three themes exist" do
-    assert_equal %w[cream dark light], themes.keys.sort
+  test "both themes exist and no light theme is left" do
+    assert_equal %w[cream dark], themes.keys.sort
+    refute_includes CSS, 'data-theme="light"'
     themes.each_value { |vars| assert_operator vars.size, :>=, 8 }
   end
 

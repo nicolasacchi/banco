@@ -10,9 +10,10 @@ efd01c80e734457ef8063ed1bc117dc60cceabc64d8a66acfe43e40f89f2960f  ./banco-sprite
 cd664b91f182a2e1b6dd531f5e51c35754ec76a6903ef9a2b2791d71dad908ea  ./banco-sprite-law_economics.svg
 029be8a54ed8054c60541b733d3a25386e4b65e0eefabb8c58e7bef18dfbf447  ./banco-sprite-math.svg
 36c4fff5d3597fd5c32d10b5fdfe9b35405163ce1825daec68053c4ebce83f5e  ./banco-sprite-spanish.svg
-3a4d3785407a2dba52969cdd49bee5019595e546d7a037a23641855a135e0c45  ./banco-sprite.svg
+d7fb9b6e48f7c391344fdd6bd1097a623bc9cb3508c603f11e684ecb39899c2d  ./banco-sprite.svg
 700e6ea86f0565ac5dbefe75a3ecebce674ee834caea4041f3d518f6de835107  ./icons/app-window.svg
 46b0509a1583e0166868ba030f6cb24532c9a92690595024f65bc3e484e74a39  ./icons/arrow-left-right.svg
+c26456702f6c893b6651c0e9b1da3a1ba62d0e44f4b529e790c56600f1aa4734  ./icons/arrow-left.svg
 ff6869bb92e8ead7581bb066b07ea1e9e62de94034f39e9a9670871419ea1c52  ./icons/arrow-right-left.svg
 4c48694ad2e9b6bf79aac3b0864720026980e20820abd46ebd9c0a6a59740c58  ./icons/arrow-right.svg
 efda7fcf49106f58e5d39e1c8846a31e781aa8a6776f6852c918e33dbf314293  ./icons/atom.svg
@@ -41,6 +42,7 @@ f38983978568f7f736170afb4afcb905aefe65930249fdced80ddd5d6b122b7d  ./icons/chart-
 a57c5c9b0516a4114236cb0ece0e53ed84b144fce50e1ff8b61e209869b17ad5  ./icons/chevron-left.svg
 fece1122c8afb1bf5420fbbebab8c06823d9104041047cc27b0a2dc0c5210f6b  ./icons/chevron-right.svg
 b3d731142bf4f29fbc4892b3fb7a35cec049c25f646f9a6937f1b27dc97ea2e7  ./icons/church.svg
+1c249776908aed049350da3a55f89e59febde9583aee2435389bdcddcc728df0  ./icons/circle-alert.svg
 e4e78fa7f2f56508aa4432e911578ef5f726527ce1d879c1f8b587db0a42e0e3  ./icons/circle-check.svg
 edb626b94da79c929e032874be0e198bd08a46da0b9d3255cf45cf6dd4204d8e  ./icons/circle-dot.svg
 95fffe0bb1cc626d4529e426e4aa2ad6fb7246da68e523a1fddc6e13f381d092  ./icons/circle-help.svg
@@ -88,6 +90,7 @@ c34c10f652bd7a79aa8d10498ff04a618e91280abac7ef2bd3250662f6171e3b  ./icons/hash.s
 1b36a8e6f6c81d1a6f0866019cb2f048bbf5410c99c9f6f3e9eb9a5c828cd261  ./icons/highlighter.svg
 74709ae25825d702e4e80f8b84241740e1a856d2028fc34957a1e79ac1af39e2  ./icons/hourglass.svg
 f2d52d416ee99774e95846d2e3c9623743d790d3c840eb1039352296004af1a9  ./icons/image.svg
+215b4db66da94b3fff4330f21fdc8d0935212d069885b98b0e9fda64ad159851  ./icons/inbox.svg
 2077faf89145f6428c05a38a6c856d524caab38b31141ae084702fbce3885b31  ./icons/infinity.svg
 cc1dd1dda0ecc62cd2ab3f92e75bf3d360e23c819273eb1b9ace00d3ceffcdd5  ./icons/info.svg
 1e97438fe14c6f2a3f48e3df617647c0261208b2f1e7a4bf1bf0e3e066a215f8  ./icons/key-round.svg
@@ -103,6 +106,7 @@ ee2539fda2106e2b2d343c9ab5e7753adf1e2f4e636bc041b44510d4bc7b9dc3  ./icons/link-2
 6b32b81697ddfaef4dcac642e3f9bd36ce090cdb32a8da086d54e1b5a459fb00  ./icons/link.svg
 8806e678cf64b4228da2b91eb69998344891cf2f2ff7b45e28e5ca10d8c49141  ./icons/list-checks.svg
 abf53aa4cadd3ce01f07c1b6cbb55003145e9ee17c9f999f50b8f79225bdc194  ./icons/list-ordered.svg
+334abce32e8da0ff8f385522a726ba44e5681561e35d0c9a36cbdc0a5b88e67e  ./icons/loader-circle.svg
 9cc54a58838cd07186c0d80c3f1033127551d62d31b4fc87d5d66dc93c4ebdc8  ./icons/lock.svg
 1cdff837a47df6bde70b81168e9e13c7008b8997e38a97d2cb6daab8e184ee43  ./icons/map-pin.svg
 89fc55e569e1602d86861e3d48cbcd7ce9cf5ea648f3214948feaac69167fb6d  ./icons/map.svg

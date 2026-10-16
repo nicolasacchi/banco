@@ -134,6 +134,7 @@
 
     <h2><%= t("teacher.test.traces") %></h2>
     <p><%= t("teacher.test.traces_hint") %></p>
+    <%= ui_table_wrap(label: t("teacher.test.traces")) do %>
     <table class="data" id="test-traces">
       <thead><tr><th><%= t("teacher.test.trace.script") %></th><th><%= t("teacher.test.trace.end") %></th><th><%= t("teacher.test.trace.served") %></th><th><%= t("teacher.test.trace.minutes") %></th><th><%= t("teacher.test.trace.states") %></th></tr></thead>
       <tbody>
@@ -152,5 +153,6 @@
         <% end %>
       </tbody>
     </table>
+    <% end %>
   <% end %>
 </main>

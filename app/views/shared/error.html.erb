@@ -1,0 +1,21 @@
+<%# A designed 403 or 404 (D-306). No menu and no data: it says the same to whoever lands here. Locals: status (:forbidden or :not_found). %>
+<!DOCTYPE html>
+<html lang="it" data-theme="cream" data-size="normal">
+  <head>
+    <title><%= t("errors.#{status}.title") %></title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <meta name="robots" content="noindex">
+    <link rel="icon" href="/icon.png" type="image/png">
+    <%= stylesheet_link_tag :app %>
+  </head>
+  <body class="student">
+    <main class="page error-page" id="error-page" data-status="<%= status %>">
+      <%= ui_icon(status == :forbidden ? "locked" : "not-found") %>
+      <h1><%= t("errors.#{status}.title") %></h1>
+      <p><%= t("errors.#{status}.body") %></p>
+      <div class="button-row"><a class="button" href="/"><%= t("errors.home") %></a></div>
+    </main>
+  </body>
+</html>

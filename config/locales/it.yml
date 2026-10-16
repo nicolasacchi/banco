@@ -1,4 +1,12 @@
 it:
+  errors:
+    home: "Torna all'inizio"
+    forbidden:
+      title: "Questa pagina non è per te"
+      body: "Con questo accesso non puoi aprirla. Se pensi sia un errore, scrivilo all'insegnante."
+    not_found:
+      title: "Questa pagina non c'è"
+      body: "L'indirizzo potrebbe essere sbagliato, o la pagina è stata spostata."
   student:
     not_configured: "Account non configurato: chiedi all'insegnante."
     trial_notice: "Account di prova: i risultati non contano."

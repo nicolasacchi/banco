@@ -62,6 +62,12 @@ ui:
   listen-stop: square             # stops the voice
   slower: turtle                  # "Più lento"
   glossary: book-a                # a glossary word
+  back: arrow-left                # the page header's back link
+  alert: circle-alert             # a notice that something went wrong
+  empty: inbox                    # an empty state
+  loading: loader-circle          # a loading state
+  locked: lock                    # a page the role may not open
+  not-found: compass              # a page that does not exist
 
 # Content icons by subject (at most 30 each). Subjects not listed here use `structural` only.
 subjects:

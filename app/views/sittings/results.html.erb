@@ -2,19 +2,21 @@
 <% groups = @summary.groups %>
 <main class="page" data-controller="markup results" data-results-flag-url-value="<%= base_path %>/runs/<%= @run.id %>/flags">
   <h1><%= t("summary.title", subject: @subject.name_it) %></h1>
+  <p class="closing"><%= t("summary.not_a_grade") %></p>
   <p><%= t("summary.worked", count: @summary.minutes) %></p>
   <ul class="plain">
     <li><%= t("summary.line_known", count: groups[:known].size) %></li>
     <li><%= t("summary.line_recover", n: groups[:recover].size) %></li>
     <li><%= t("summary.line_learn", n: groups[:learn].size) %></li>
   </ul>
-  <p>
+  <div class="button-row">
     <a class="button" href="#soluzioni"><%= t("summary.see") %></a>
     <a class="button secondary" href="<%= preview? ? '/teacher/preview' : '/diagnosis' %>"><%= t("summary.later") %></a>
-  </p>
+  </div>
 
   <% if @pause %><p class="notice" id="pause-suggestion"><%= t("summary.pause_suggestion") %></p><% end %>
 
+  <% if groups[:known].any? %>
   <section id="sai-gia-fare" data-group="known">
     <h2><%= t("summary.known") %></h2>
     <ul>
@@ -23,7 +25,9 @@
       <% end %>
     </ul>
   </section>
+  <% end %>
 
+  <% if groups[:recover].any? %>
   <section id="da-riprendere" data-group="recover">
     <h2><%= t("summary.recover") %></h2>
     <ul>
@@ -32,18 +36,19 @@
       <% end %>
     </ul>
   </section>
+  <% end %>
 
+  <% if groups[:learn].any? %>
   <section id="da-imparare" data-group="learn">
     <h2><%= t("summary.learn") %></h2>
-    <% if groups[:learn].any? %>
-      <p><%= t("summary.learn_note") %></p>
-      <ul>
-        <% groups[:learn].each do |s| %>
-          <li><strong><%= s.label %></strong></li>
-        <% end %>
-      </ul>
-    <% end %>
+    <p><%= t("summary.learn_note") %></p>
+    <ul>
+      <% groups[:learn].each do |s| %>
+        <li><strong><%= s.label %></strong></li>
+      <% end %>
+    </ul>
   </section>
+  <% end %>
 
   <% if groups[:checking].any? %>
     <section id="in-correzione" data-group="checking">
@@ -57,10 +62,12 @@
     </section>
   <% end %>
 
+  <% if groups[:not_asked].to_i.positive? %>
   <section id="non-chiesto" data-group="not_asked">
     <h2><%= t("summary.not_asked") %></h2>
     <p><%= t("summary.not_asked_count", n: groups[:not_asked]) %></p>
   </section>
+  <% end %>
 
   <section id="soluzioni">
     <h2><%= t("summary.solutions") %></h2>
@@ -89,5 +96,4 @@
     <% end %>
   </section>
 
-  <p class="closing"><%= t("summary.not_a_grade") %></p>
 </main>

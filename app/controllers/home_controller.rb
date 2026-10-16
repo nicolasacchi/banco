@@ -10,7 +10,7 @@ class HomeController < ApplicationController
     elsif identity&.reader?
       redirect_to "/teacher", status: :see_other
     else
-      render plain: "Not found", status: :not_found
+      render_error(:not_found)
     end
   end
 end

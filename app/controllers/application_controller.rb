@@ -19,13 +19,18 @@ class ApplicationController < ActionController::Base
 
   private
 
+  # A designed page for a refusal (D-306): the status stays 403 or 404, the body says the same to everyone.
+  def render_error(status)
+    render "shared/error", formats: [ :html ], layout: false, status: status, locals: { status: status }
+  end
+
   def require_teacher!
-    render plain: "Forbidden", status: :forbidden unless current_identity&.teacher?
+    render_error(:forbidden) unless current_identity&.teacher?
   end
 
   # Teacher or guest: the teacher's pages that only read.
   def require_reader!
-    render plain: "Forbidden", status: :forbidden unless current_identity&.reader?
+    render_error(:forbidden) unless current_identity&.reader?
   end
 
   def require_student!
@@ -34,7 +39,7 @@ class ApplicationController < ActionController::Base
     if current_identity&.unconfigured_student?
       render "shared/not_configured", layout: false, status: :forbidden
     else
-      render plain: "Forbidden", status: :forbidden
+      render_error(:forbidden)
     end
   end
 end

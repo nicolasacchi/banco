@@ -309,6 +309,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-303 | 2026-10-16 | embedding throughput: a document is embedded by its title and the start of its body (cap `BANCO_EMBED_MAX_CHARS`, 1,500, recorded with the model); the rebuild waits, retries and skips a slow batch instead of stopping, and prints progress | decided |
 | D-304 | 2026-10-16 | comments anywhere (C1): the student comments on any page, the teacher answers; the clock stops in a sitting; no agent reads them | decided |
 | D-305 | 2026-10-16 | the look of comments (C1 polish): one «Commenta» pill with its own icon, a banner, a bottom sheet with five reason chips, a fading confirmation, calmer lists | decided |
+| D-306 | 2026-10-16 | the interface redesign, slices 1 and 2: one design system for the whole site, in the lessons' style | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -3356,6 +3357,19 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
   6. **The teacher's page**: tabs with counts (Tutti, Nuovi, Letti, Risposti, Chiusi, Domande), filters as chips (reason, subject, official or trial, "Dove" folded; "Togli i filtri"), each comment a card (the place with `ref_for`, the words, the history as a thread, an inline reply box, the actions). The URL filters are the same (`state`, `reason`, `kind`, `subject`, `who`, `type`); a guest still sees the counts only.
   7. **Icons**: ui icons `comment`, `reason-not-understood|error|not-working|like|other`, `send`, `whole-page`, `pick`, `teacher-reply`, `clock-paused` (Lucide 1.54.0 `message-circle`, `circle-help`, `triangle-alert`, `wrench`, `heart`, `ellipsis`, `send`, `app-window`, `mouse-pointer-click`, `message-square`, `clock`; five new files vendored), `bin/build-icons` and `bin/build-palette` regenerated. Styles in `app/assets/stylesheets/comments.css` (the three themes, the three text sizes, the focus rings, 2.75 rem targets).
 - **Cost:** one stylesheet; the sprite grows by ten symbols.
+- **Status:** decided
+- **Back-port:** none.
+
+## D-306 · 2026-10-16 · the interface redesign, slices 1 and 2: one design system for the whole site, in the lessons' style
+
+- **Design ref:** B-11 (readability: 20 px, 7:1, no alarm colours), D-240 (the student's menu), D-246 and D-264 (palette roles and icons), D-304 (comments), the interface audit and proposal of 2026-10-16.
+- **Operator (2026-10-16):** the style of the lesson/2 pages is the reference and is extended to every page, the teacher's too (more sober); build directly, slice by slice, with before and after screenshots; after the base, the student pages and the teacher pages are redone in parallel.
+- **We do (slices 1 and 2):**
+  1. **Tokens in one place** (the top of `application.css`, next to the two themes): a spacing scale (`--space-1..8`), a type scale (`--text-s` to `--text-display`, nothing under 0.9 rem), radii, two shadows, the border, the tap size (`--tap` 2.75 rem, `--tap-small` 2.25 rem, both at least 44 px), the focus ring, motion (`--dur-1`, `--dur-2`, both 0 under `prefers-reduced-motion`) and five tones built from the lessons' palette roles (`--tone-info|success|nearly|error|hint`, never red and green for right and wrong). The lessons keep their own em scale inside `.l2`.
+  2. **Components** in `components.css`, helpers in `UiHelper`, documented in `docs/ui.md`: button (primary, secondary, text, danger, small, block; a row with equal heights), card, tag, state pill, list row clickable as a whole, notice with icon, dialog (a bottom sheet at 600 px or less), form fields and styled radios and checkboxes, page header, table wrapper (scrolls inside; a stacked mode), disclosure, empty and loading states, meter and dots, designed error pages. Six icons are added to the `ui` list of `icons.yml` (back, alert, empty, loading, locked, not-found), four of them new Lucide files of the vendored version.
+  3. **The unused `light` theme is removed** (it was never offered; `ReadabilityTest` now expects cream and dark only). A stored `light` would fall back to cream.
+  4. **Quick wins:** link-buttons centred with equal heights (one `.button` rule for `a` and `button`); the overflows at 390 px (number field with a unit, search box, `.cards` minimum, the teacher's tables inside `.table-wrap`); targets of 44 px (`summary`, menu, breadcrumb and step links, reference links and "i", labels around radios and checkboxes, selects and inputs, "Non ho capito"); the end screen draws only the non-empty groups and says "non è un voto" first; a guest sees no "Prova come S" and no orphan "Rimanda all'agente"; the report's sittings show "2 nov 2026, 09:00"; 403 and 404 (and the static 400, 404, 422 and 500) are designed Italian pages with the same text for everyone; the settings radios are choice cards in the app's colours; the maths keyboard's tab colours follow the theme.
+- **Cost:** the old `.banner` and `.badge` shapes are replaced by the notice and the tag; pages that used the square outline now have rounded cards. A page that wants a new look uses the components; nothing else changes behaviour, routes, privacy or texts beyond the few above.
 - **Rules version:** none changes.
 - **Status:** decided
 - **Back-port:** none.
