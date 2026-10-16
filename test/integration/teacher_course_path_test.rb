@@ -171,7 +171,7 @@ class TeacherCoursePathTest < ActionDispatch::IntegrationTest
     assert_select "#review-progress progress[max='4'][value='0']"
     %w[lesson exercises findings approve].each_with_index do |name, i|
       assert_select "#review-progress a[href='#step-#{name}']", /#{i + 1}/
-      assert_select "section#step-#{name}[data-step=#{name}]"
+      assert_select "details#step-#{name}[data-step=#{name}]"
     end
     assert_select "#step-lesson[data-done=false] [data-step-state]", "Da fare"
     assert_select "#step-exercises[data-done=false]"

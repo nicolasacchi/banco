@@ -1,10 +1,12 @@
 <% review = @review %>
 <% content_for :title, t("teacher.topic.title", title: review.entry ? review.entry["title_it"] : review.key) %>
 <main class="page wide review" data-controller="markup lesson-preview">
-  <p><a href="<%= teacher_course_path(key: @subject.key) %>"><%= t("teacher.topic.back", subject: @subject.name_it) %></a></p>
-  <h1><%= review.entry ? review.entry["title_it"] : review.key %> <span class="key">(<%= review.key %>)</span></h1>
+  <header class="page-header">
+    <h1><%= review.entry ? review.entry["title_it"] : review.key %> <span class="key">(<%= review.key %>)</span></h1>
+    <% if review.latest %><div class="page-actions"><%= review.approved_latest? ? ui_pill(t("teacher.topic.is_approved"), :success, icon: "circle-check") : ui_pill(t("teacher.topic.not_approved"), :nearly) %></div><% end %>
+  </header>
   <% if review.latest.nil? %>
-    <p class="notice" id="topic-missing"><%= t("teacher.topic.missing") %></p>
+    <%= ui_notice :info, t("teacher.topic.missing"), html: { id: "topic-missing" } %>
   <% else %>
     <% latest = review.latest %>
     <% lesson_body = review.lesson_body %>
@@ -13,7 +15,7 @@
     <% done = review.steps_done %>
     <% allowed = review.approvable? && blocker.nil? %>
     <% ready = allowed && done[:lesson] && done[:exercises] %>
-    <p id="topic-summary" data-approved="<%= review.approved_latest? %>">
+    <p id="topic-summary" class="hint" data-approved="<%= review.approved_latest? %>">
       <%= t("teacher.topic.summary", seq: latest.seq, lesson_seq: review.lesson_revision.seq) %>
       <strong><%= review.approved_latest? ? t("teacher.topic.is_approved") : (review.approved ? t("teacher.topic.approved_older", seq: review.approved.seq) : t("teacher.topic.not_approved")) %></strong>
     </p>
@@ -33,16 +35,16 @@
         <p class="progress-line"><strong><%= t("teacher.review.progress") %></strong>
           <span data-topic-review-target="count"><%= done.values.count(true) %></span> <%= t("teacher.review.of_four") %>
           <progress max="4" value="<%= done.values.count(true) %>" data-topic-review-target="bar" aria-label="<%= t('teacher.review.progress_label') %>"></progress>
-          <a class="button small" id="go-approve" href="#step-approve"><%= t("teacher.review.go_approve") %></a></p>
+          <a class="button small" id="go-approve" href="#step-approve" data-action="topic-review#openStep"><%= t("teacher.review.go_approve") %></a></p>
         <ol class="review-steps">
           <% %w[lesson exercises findings approve].each_with_index do |name, i| %>
-            <li><a href="#step-<%= name %>" data-nav-step="<%= name %>" data-done="<%= done[name.to_sym] %>"><span class="step-no"><%= i + 1 %></span> <%= t("teacher.review.step.#{name}") %></a></li>
+            <li><a href="#step-<%= name %>" data-nav-step="<%= name %>" data-done="<%= done[name.to_sym] %>" data-action="topic-review#openStep"><span class="step-dot"><%= i + 1 %></span> <%= t("teacher.review.step.#{name}") %></a></li>
           <% end %>
         </ol>
       </nav>
 
-      <section id="step-lesson" class="review-step" data-step="lesson" data-topic-review-target="step" data-done="<%= done[:lesson] %>">
-        <h2><span class="step-no">1</span> <%= t("teacher.review.step.lesson") %> <span class="badge" data-step-state><%= done[:lesson] ? t("teacher.review.done") : t("teacher.review.todo") %></span></h2>
+      <details id="step-lesson" class="review-step card" data-action="toggle->topic-review#opened" <%= "open" if !done[:lesson] %> data-step="lesson" data-topic-review-target="step" data-done="<%= done[:lesson] %>">
+        <summary class="step-summary"><h2><span class="step-dot">1</span> <%= t("teacher.review.step.lesson") %> <span class="badge pill" data-step-state><%= done[:lesson] ? t("teacher.review.done") : t("teacher.review.todo") %></span></h2></summary>
         <p class="hint"><%= t("teacher.review.lesson_intro") %></p>
         <div class="step-grid">
           <div class="lesson as-student" id="topic-lesson">
@@ -93,10 +95,10 @@
         <% if writable && !review.approved_latest? %>
           <p><button type="button" class="button" id="read-lesson" data-action="topic-review#readLesson" <%= "hidden" if done[:lesson] %>><%= t("teacher.review.read_lesson") %></button></p>
         <% end %>
-      </section>
+      </details>
 
-      <section id="step-exercises" class="review-step" data-step="exercises" data-topic-review-target="step" data-done="<%= done[:exercises] %>">
-        <h2><span class="step-no">2</span> <%= t("teacher.review.step.exercises") %> <span class="badge" data-step-state><%= done[:exercises] ? t("teacher.review.done") : t("teacher.review.todo") %></span></h2>
+      <details id="step-exercises" class="review-step card" data-action="toggle->topic-review#opened" <%= "open" if !done[:exercises] %> data-step="exercises" data-topic-review-target="step" data-done="<%= done[:exercises] %>">
+        <summary class="step-summary"><h2><span class="step-dot">2</span> <%= t("teacher.review.step.exercises") %> <span class="badge pill" data-step-state><%= done[:exercises] ? t("teacher.review.done") : t("teacher.review.todo") %></span></h2></summary>
         <p class="hint"><%= t("teacher.review.exercises_intro", count: Teacher::ItemCard::SAMPLES - 1, others: Teacher::ItemCard::SAMPLES - 1) %>
           <%= t("teacher.review.seen_count") %> <strong data-topic-review-target="seenBar"><%= review.exercises.count(&:seen) %>/<%= review.exercises.size %></strong></p>
         <div id="topic-practice" class="cards exercise-cards">
@@ -175,10 +177,10 @@
             </article>
           <% end %>
         </div>
-      </section>
+      </details>
 
-      <section id="step-findings" class="review-step" data-step="findings" data-topic-review-target="step" data-done="<%= done[:findings] %>">
-        <h2><span class="step-no">3</span> <%= t("teacher.review.step.findings") %> <span class="badge" data-step-state><%= done[:findings] ? t("teacher.review.done") : t("teacher.review.todo") %></span></h2>
+      <details id="step-findings" class="review-step card" data-action="toggle->topic-review#opened" open data-step="findings" data-topic-review-target="step" data-done="<%= done[:findings] %>">
+        <summary class="step-summary"><h2><span class="step-dot">3</span> <%= t("teacher.review.step.findings") %> <span class="badge pill" data-step-state><%= done[:findings] ? t("teacher.review.done") : t("teacher.review.todo") %></span></h2></summary>
         <p class="hint"><%= t("teacher.review.findings_intro") %></p>
         <% if review.findings_count.zero? %><p data-no-findings><%= t("teacher.review.no_findings") %></p><% end %>
         <% if review.lesson_findings.any? %>
@@ -207,10 +209,10 @@
             <p class="decided" data-sent-back="lesson"><strong><%= t("teacher.skill.sent_back") %></strong> <%= t("teacher.skill.reason.#{sb[:reason_code]}") %>: <%= sb[:comment_it] %></p>
           <% end %>
         <% end %>
-      </section>
+      </details>
 
-      <section id="step-approve" class="review-step approve" data-step="approve" data-topic-review-target="step" data-done="<%= done[:approve] %>" data-approvable="<%= review.gate.approvable %>">
-        <h2><span class="step-no">4</span> <%= t("teacher.review.step.approve") %> <span class="badge" data-step-state><%= done[:approve] ? t("teacher.review.done") : t("teacher.review.todo") %></span></h2>
+      <details id="step-approve" class="review-step card approve" data-action="toggle->topic-review#opened" open data-step="approve" data-topic-review-target="step" data-done="<%= done[:approve] %>" data-approvable="<%= review.gate.approvable %>">
+        <summary class="step-summary"><h2><span class="step-dot">4</span> <%= t("teacher.review.step.approve") %> <span class="badge pill" data-step-state><%= done[:approve] ? t("teacher.review.done") : t("teacher.review.todo") %></span></h2></summary>
         <ul class="plain checks" id="approve-checks">
           <% { read_lesson: done[:lesson], seen_exercises: done[:exercises], findings: done[:findings] }.each do |name, ok| %>
             <li data-check="<%= name %>" data-done="<%= ok %>"><span class="tick" aria-hidden="true"><%= ok ? "✓" : "○" %></span> <%= t("teacher.review.check.#{name}") %></li>
@@ -258,8 +260,10 @@
           </div>
         <% end %>
 
-        <% unless reader_only? %><h3><%= t("teacher.review.send_back") %></h3>
-        <p class="hint"><%= t("teacher.review.send_back_hint") %></p><% end %>
+        <% unless reader_only? %>
+        <details class="disclosure" id="lesson-send-back">
+          <summary><%= t("teacher.review.send_back") %></summary>
+          <p class="hint"><%= t("teacher.review.send_back_hint") %></p>
         <%= decision_form("/teacher/lesson-revisions/#{review.lesson_revision.id}/send-back", id: "lesson-send-back-form") do %>
           <label class="hint" for="lesson-reason-code"><%= t("teacher.skill.reason_code") %></label>
           <select id="lesson-reason-code" name="reason_code" class="answer-input wide">
@@ -267,9 +271,11 @@
           </select>
           <label class="hint" for="lesson-comment"><%= t("teacher.skill.comment") %></label>
           <input id="lesson-comment" class="answer-input wide" type="text" name="comment_it" maxlength="500" required>
-          <p><button type="submit" class="button secondary small" <%= "disabled" if blocker %>><%= t("teacher.topic.send_back_button") %></button></p>
+          <div class="button-row"><button type="submit" class="button secondary small" <%= "disabled" if blocker %>><%= t("teacher.topic.send_back_button") %></button></div>
         <% end %>
-      </section>
+        </details>
+        <% end %>
+      </details>
     </div>
   <% end %>
 </main>

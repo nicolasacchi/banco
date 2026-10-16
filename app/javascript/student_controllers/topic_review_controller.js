@@ -31,6 +31,12 @@ export default class extends Controller {
     this.drawVisible()
   }
 
+  // A link of the stepper opens the step it names (a collapsed step would hide where the link lands).
+  openStep(event) {
+    const target = document.getElementById(event.currentTarget.hash.slice(1))
+    if (target && target.tagName === "DETAILS") target.open = true
+  }
+
   async drawVisible() {
     for (const slot of this.slotTargets) {
       if (slot.dataset.drawn || slot.closest("details:not([open])")) continue

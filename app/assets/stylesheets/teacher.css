@@ -11,7 +11,7 @@ body.teacher .page { padding-top: var(--space-4); }
 .t-notices .flash { margin-inline: 0; }
 
 /* The bar: banco, the menu, the crumbs ---------------------------------------------------------------------------------- */
-.t-bar { background: var(--surface); border-bottom: var(--border-soft); position: sticky; top: 0; z-index: 20; }
+.t-bar { background: var(--surface); border-bottom: var(--border-soft); }
 .teacher-nav { max-width: 96rem; margin: 0 auto; padding: 0 var(--space-4); display: flex; align-items: center; gap: var(--space-3); }
 .t-bar-row { display: flex; align-items: center; gap: var(--space-3); }
 .t-brand { font-weight: 700; letter-spacing: 0.04em; color: var(--muted); }
@@ -192,7 +192,7 @@ article.correction.card { border-top: var(--border-soft); padding-top: var(--spa
 .search-hit .search-meta { display: block; }
 
 /* All the questions (D-308) --------------------------------------------------------------------------------------------- */
-.all-questions .toolbar { position: sticky; top: var(--tap); z-index: 5; background: var(--bg); padding: var(--space-2) 0; margin: 0 0 var(--space-3); border-bottom: var(--border-soft); }
+.all-questions .toolbar { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: var(--space-2) 0; margin: 0 0 var(--space-3); border-bottom: var(--border-soft); }
 .chip-links { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-2); padding: 0; margin: 0 0 var(--space-4); }
 .chip-links li { margin: 0; }
 .chip-links a.tag { min-height: var(--tap-small); text-decoration: none; padding-inline: var(--space-3); }
@@ -201,3 +201,45 @@ article.correction.card { border-top: var(--border-soft); padding-top: var(--spa
 .all-questions .skill-group { scroll-margin-top: calc(var(--tap) * 2); }
 .all-questions .q-item h3 { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-size: var(--text-l); }
 .all-questions .q-render { margin-top: var(--space-2); }
+
+/* The topic review: a stepper of four collapsible steps (D-241, D-308) ------------------------------------------------------ */
+.review-progress { padding: var(--space-2) 0 var(--space-2); }
+.review-progress .progress-line { margin: 0 0 var(--space-2); }
+.review-progress progress { width: 8rem; height: 0.55rem; accent-color: var(--primary); }
+.review-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); }
+.review-steps li { margin: 0; min-width: 0; }
+.review-steps a { display: flex; align-items: center; justify-content: center; gap: var(--space-2); width: 100%; box-sizing: border-box; min-height: var(--tap); padding: 0 var(--space-2); border: var(--border-soft); border-radius: var(--radius-m); background: var(--surface); text-decoration: none; text-align: center; }
+.review-steps a:hover { border-color: var(--text); }
+.review-steps a[data-done="true"] { border-color: var(--tone-success); background: color-mix(in srgb, var(--tone-success) 10%, var(--surface)); }
+.review-steps a[data-done="true"]::after { content: "\2713"; color: var(--tone-success); }
+.step-dot { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 1.7rem; height: 1.7rem; border-radius: 50%; background: var(--primary); color: var(--primary-text); font-weight: 700; font-size: var(--text-s); }
+details.review-step { padding: 0; margin: 0 0 var(--space-4); border-top: var(--border-soft); scroll-margin-top: 8rem; }
+details.review-step > summary { list-style: none; cursor: pointer; display: flex; align-items: center; min-height: var(--tap); padding: var(--space-3) var(--space-5); border-radius: var(--radius-l); }
+details.review-step > summary::-webkit-details-marker { display: none; }
+details.review-step > summary::after { content: ""; flex: none; margin-left: auto; width: 0.55em; height: 0.55em; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform var(--dur-1) var(--ease); }
+details.review-step[open] > summary::after { transform: rotate(-135deg); }
+details.review-step > :not(summary) { margin-left: var(--space-5); margin-right: var(--space-5); }
+details.review-step > :last-child { margin-bottom: var(--space-5); }
+details.review-step h2 { margin: 0; font-size: var(--text-l); display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.review-step .badge.pill { font-size: var(--text-s); font-weight: 700; padding: 0.1em 0.7em; border-radius: var(--radius-pill); border: 1.5px solid var(--tone-nearly); background: color-mix(in srgb, var(--tone-nearly) 12%, var(--surface)); }
+.review-step[data-done="true"] .badge.pill { border-color: var(--tone-success); background: color-mix(in srgb, var(--tone-success) 12%, var(--surface)); }
+.exercise-card .badge { display: inline-flex; border: 1.5px solid var(--line); border-radius: var(--radius-pill); padding: 0.1em 0.7em; font-size: var(--text-s); font-weight: 400; }
+.exercise-card[data-seen="true"] .badge { border-color: var(--tone-success); }
+.exercise-card h3 { margin-top: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-size: var(--text-l); }
+.exercise-meta { color: var(--muted); }
+.exercise-card .more { border: var(--border-soft); border-radius: var(--radius-m); padding: 0 var(--space-3); margin: var(--space-2) 0; background: var(--surface); }
+.exercise-card .more > summary { min-height: var(--tap); display: flex; align-items: center; }
+.exercise-card .card-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.lesson-review { border-radius: var(--radius-m); border: var(--border-soft); }
+.lesson.as-student .student-view { border-radius: var(--radius-m); border: var(--border-soft); }
+ul.checks { display: grid; gap: var(--space-1); }
+ul.checks li { margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius-s); background: var(--surface); border: var(--border-soft); border-color: color-mix(in srgb, var(--line) 40%, transparent); }
+ul.checks li[data-done="true"] .tick { color: var(--tone-success); }
+ul.checks li[data-done="false"] .tick { color: var(--tone-nearly); }
+#topic-approve-form label { display: inline-flex; align-items: center; }
+#topic-approve-form .button { margin-top: var(--space-3); }
+@media (max-width: 40rem) {
+  .review-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  details.review-step > summary { padding: var(--space-3); }
+  details.review-step > :not(summary) { margin-left: var(--space-3); margin-right: var(--space-3); }
+}
