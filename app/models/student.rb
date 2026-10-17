@@ -10,6 +10,21 @@ class Student < ApplicationRecord
 
   def official? = kind == "student" && key == OFFICIAL_KEY
 
+  # The teacher's preview student of the course and the entry test (D-309). A reset starts a new one (the ledger is
+  # append-only): its key is "preview.N", which no login can be mapped to (KEY_FORMAT has no dot).
+  def preview? = kind == "preview"
+
+  # The preview student in use: the latest of kind preview, made on first use.
+  def self.current_preview
+    where(kind: "preview").order(:id).last || create_with(kind: "preview").find_or_create_by!(key: PREVIEW_KEY)
+  end
+
+  # "Ricomincia da capo": a new preview student with no rows. The old one's rows stay (no UPDATE, no DELETE).
+  def self.reset_preview!
+    n = where(kind: "preview").count + 1
+    create!(key: "#{PREVIEW_KEY}.#{n}", kind: "preview")
+  end
+
   # The official student and the trial students (never the preview row), the official one first.
   def self.real # an Array
     where(kind: "student").order(:key).sort_by { |s| [ s.official? ? 0 : 1, s.key ] }

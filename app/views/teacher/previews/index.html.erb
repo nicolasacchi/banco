@@ -1,6 +1,6 @@
-<% content_for :title, t("teacher.preview.title") %>
+<% content_for :title, t("teacher.preview.test_title") %>
 <main class="page">
-  <h1><%= t("teacher.preview.title") %></h1>
+  <h1><%= t("teacher.preview.test_title") %></h1>
   <p><%= t("teacher.preview.intro") %></p>
   <ul class="subjects">
     <% @subjects.each do |subject| %>
@@ -10,4 +10,5 @@
       </li>
     <% end %>
   </ul>
+  <p><a class="button secondary" href="/teacher/preview"><%= t("teacher.preview.back_to_today") %></a></p>
 </main>

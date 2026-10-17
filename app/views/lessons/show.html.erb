@@ -1,12 +1,12 @@
 <% content_for :title, @body["title_it"] %>
 <main class="page course lesson" data-controller="lesson" data-comment-lesson-revision-id="<%= @revision.id %>"
-      data-lesson-solution-base-value="/topics/<%= @topic.key %>/lesson/exercises"
+      data-lesson-solution-base-value="<%= spath("/topics/#{@topic.key}/lesson/exercises") %>"
       data-lesson-labels-value="<%= lesson_labels.to_json %>">
-  <p><a href="/topics/<%= @topic.key %>"><%= t("lesson.back") %></a></p>
+  <p><a href="<%= spath("/topics/#{@topic.key}") %>"><%= t("lesson.back") %></a></p>
   <h1><%= @body["title_it"] %></h1>
   <p class="topic-meta"><%= t("topic.minutes", n: @body["minutes"]) %></p>
   <% if draft? %><p class="notice" id="draft-notice" role="status"><%= t("draft.notice") %></p><% end %>
 
   <%= render "lessons/body", body: @body, topic: @topic.key, revision_id: @revision.id %>
-  <p><a class="button" href="/topics/<%= @topic.key %>"><%= t("lesson.back") %></a></p>
+  <p><a class="button" href="<%= spath("/topics/#{@topic.key}") %>"><%= t("lesson.back") %></a></p>
 </main>

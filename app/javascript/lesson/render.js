@@ -150,7 +150,9 @@ export function renderLesson(root, body, config) {
   const menuButton = chrome.links.length ? ibtn("menu", t.menu, "l2-menubtn", () => openMenu(), { "aria-haspopup": "dialog" }) : null
   // "Commenta" (D-304): the page of a lesson hides the student menu, so the control sits in the lesson's own bar. The comment
   // mode (comment_controller.js) takes the click; the handler here is never the one that acts.
-  const commentButton = config.mode === "student" ? ibtn("comment", t.comment, "l2-commentbtn", () => {}, { "data-comment-open": "" }) : null
+  // No «Commenta» in the teacher's preview (D-309): its banner is on the page, and its comment box is not.
+  const inPreview = typeof document !== "undefined" && !!document.getElementById?.("preview-banner")
+  const commentButton = config.mode === "student" && !inPreview ? ibtn("comment", t.comment, "l2-commentbtn", () => {}, { "data-comment-open": "" }) : null
   const tools = el("div", { class: "l2-tools" }, mapButton, settingsButton, commentButton)
   topbar.append(el("div", { class: "l2-top-in" }, brand, titles, counter, chip, tools, menuButton), barSegments)
   const shell = el("div", { class: "l2-shell" })
@@ -341,7 +343,7 @@ export function renderLesson(root, body, config) {
       voiceRows.push(
         el("label", { class: "option" }, listen, el("span", { text: t.speech.switch })),
         el("label", { class: "option" }, slower, el("span", { text: t.speech.slower })),
-        config.mode === "student" ? el("p", {}, el("a", { href: "/settings#voci", text: t.speech.try_voices })) : null)
+        config.mode === "student" ? el("p", {}, el("a", { href: (config.urls?.settings || "/settings") + "#voci", text: t.speech.try_voices })) : null)
     }
     settingsDialog.append(
       el("h2", { text: t.settings }),

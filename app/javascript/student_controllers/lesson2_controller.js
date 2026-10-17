@@ -37,7 +37,7 @@ export default class extends Controller {
     try {
       const body = new URLSearchParams()
       for (const [k, v] of Object.entries(change)) body.set(k, String(v))
-      await fetch("/diagnosis/preferences", {
+      await fetch(this.urlsValue.preferences || "/diagnosis/preferences", {
         method: "POST", redirect: "manual", credentials: "same-origin",
         headers: { Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded", "X-CSRF-Token": document.querySelector("meta[name=csrf-token]")?.content || "" },
         body

@@ -11,9 +11,13 @@ module ApplicationHelper
   # Theme and size for <html>: the student's own choice on the student's pages, the
   # defaults everywhere else (the teacher's pages and the preview).
   def ui_preferences
-    student = respond_to?(:acting_student) && !preview? ? acting_student : nil
+    student = respond_to?(:acting_student) ? acting_student : nil
     Diagnosis::Preferences.for(student)
   end
+
+  # A student's page address, in the preview under /teacher/preview (D-309): spath("/topics/x") is "/topics/x" for S and
+  # "/teacher/preview/topics/x" for the teacher walking the site. Only for the student's own pages; never an outside address.
+  def spath(path) = "#{student_root}#{path}"
 
   # The texts that the student's JavaScript needs, one flat object (Italian texts
   # live in config/locales/it.yml, never in the scripts).
@@ -38,35 +42,37 @@ module ApplicationHelper
 
   def lesson_labels = I18n.t("lesson").slice(:error, :loading_solution, :solution_title, :show_solution)
 
-  # The student's menu (D-240). :none in the teacher's preview, :sitting (one item) while a diagnosis sitting is on
-  # the page, :full everywhere else.
+  # The student's menu (D-240). :sitting (one item) while a diagnosis sitting is on the page, :full everywhere else. The
+  # preview of a sitting keeps its own buttons (the banner and "Chiudi l'anteprima"), so it has no bar.
   def student_menu_mode
-    return :none if preview?
+    sitting = controller_name == "sittings" && action_name == "show"
+    return :none if preview? && sitting
 
-    controller_name == "sittings" && action_name == "show" ? :sitting : :full
+    sitting ? :sitting : :full
   end
 
   # [[key, label, href], ...] of the full menu: Materie only when the course is visible to this student, Test
   # d'ingresso when the diagnosis is open (a trial student: always) or the warm-up still waits (then the item reads Riscaldamento), Esci when the
   # operator has set a logout address.
   def student_menu_items
-    items = [ [ :today, t("student.menu.today"), "/today" ] ]
-    items << [ :subjects, t("student.menu.subjects"), "/subjects" ] if student_course_visible?
-    items << [ :search, t("student.menu.search"), "/search" ] if student_course_visible?
-    items << [ :diagnosis, t(diagnosis_open? ? "student.menu.diagnosis" : "student.menu.warmup"), "/diagnosis" ] if student_diagnosis_listed?
-    items << [ :comments, t("student.menu.comments"), "/comments" ]
-    items << [ :settings, t("student.menu.settings"), "/settings" ]
-    items << [ :logout, t("student.logout"), logout_url ] if logout_url
+    items = [ [ :today, t("student.menu.today"), spath("/today") ] ]
+    items << [ :subjects, t("student.menu.subjects"), spath("/subjects") ] if student_course_visible?
+    items << [ :search, t("student.menu.search"), spath("/search") ] if student_course_visible?
+    items << [ :diagnosis, t(diagnosis_open? ? "student.menu.diagnosis" : "student.menu.warmup"), preview? ? "#{student_root}/test" : "/diagnosis" ] if student_diagnosis_listed?
+    items << [ :comments, t("student.menu.comments"), "/comments" ] unless preview?
+    items << [ :settings, t("student.menu.settings"), spath("/settings") ]
+    items << [ :logout, t("student.logout"), logout_url ] if logout_url && !preview?
     items
   end
 
   # The menu entry of the page being shown, to mark with aria-current.
   def student_menu_current
-    case request.path
-    when "/today" then :today
+    path = request.path.delete_prefix(student_root)
+    case path
+    when "/today", "" then :today
     when %r{\A/(subjects|topics)(/|\z)} then :subjects
     when "/search" then :search
-    when %r{\A/diagnosis(/|\z)} then :diagnosis
+    when %r{\A/diagnosis(/|\z)}, %r{\A/(test|warmup|runs)(/|\z)} then :diagnosis
     when "/settings" then :settings
     when "/comments" then :comments
     end

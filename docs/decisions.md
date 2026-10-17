@@ -312,6 +312,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-306 | 2026-10-16 | the interface redesign, slices 1 and 2: one design system for the whole site, in the lessons' style | decided |
 | D-307 | 2026-10-17 | the interface redesign, slices 3 to 5: the student's pages (top bar and menu dialog, Oggi's «Ora» card, subject cards, topic steps, practice feedback, the sitting above the keyboard) | decided |
 | D-308 | 2026-10-17 | the interface redesign, slices 6 to 8: the teacher's pages as tools | decided |
+| D-309 | 2026-10-17 | the teacher enters as a student: the whole student's site under /teacher/preview, two views, a reset by a new preview student | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -3400,6 +3401,23 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
   6. The lesson's square `.badge` no longer leaks into the teacher's pages (`body.teacher .badge`). No new icon, no new component in `components.css`: the page styles are `teacher.css`, documented in `docs/ui.md`.
 - **Tests changed (markup only):** `teacher_course_path_test` (`section#step-x` is now `details#step-x`), `teacher_approval_test` (opens "Dati dell'esercizio" before counting the samples).
 - **Cost:** raw data is one click away on the skill screen; a guest sees the same pages without dead controls.
+- **Rules version:** none changes.
+- **Status:** decided
+- **Back-port:** none.
+
+## D-309 · 2026-10-17 · the teacher enters as a student: the whole student's site under /teacher/preview, two views, a reset by a new preview student
+
+- **Design ref:** D-217 (trial students), D-240 (the student's menu), D-304 (comments), D-306 and D-307 (the interface), firm rules 1, 2 and 4.
+- **Operator (2026-10-17):** a way for the teacher to enter as a trial student, not only for the tests but for the lessons too.
+- **We do:**
+  1. **Who acts.** Identity stays the teacher's (`EdgeTrust`). The pages of the course (Oggi, Materie, a subject, a topic, the lesson, practice, search, settings), the warm-up, the preferences and the entry test run as the student's own controllers under `/teacher/preview/...`: the route default `preview: true` (`ActingStudent#preview?`, from `path_parameters` only, never a parameter) makes the acting student the teacher's **preview student** (a `students` row of kind `preview`). Links and script addresses go through `spath` (`student_root`: `/teacher/preview` or nothing); a test fails if a preview page links to the student's own addresses. A guest, a student, a trial student or nobody get 403 on every preview address.
+  2. **Two views** (`Course::Catalog.for(student, view:)`, `Course::StudentView.new(student, view:)`, `Search::Scope::Student.for(student, view:)`): «Come lo vede S» (`official`, the default: released courses, approved topics) and «Con le bozze» (`drafts`: the latest map and topics, flagged «Bozza»). The view is kept in the teacher's session (`POST /teacher/preview/view`, CSRF; the back address is accepted only if it is a preview address), never in the address. The Oggi «Ora» card carries the draft tag too.
+  3. **Banner** (`shared/_preview_banner`, on every preview page): «Stai provando come studente · Vista: …», «Passa a: …», «Ricomincia da capo» (a `<details>` that asks first) and «Esci dalla prova» (to `/teacher`). The menu "Prova come studente" opens `/teacher/preview` (Oggi); the entry test list is `/teacher/preview/test`, reached from Oggi and the menu. No «Commenta» (bar or lesson), no «Non ho capito» (`urls.questions` is left out of the lesson's addresses), no logout item.
+  4. **Progress** is recorded on the preview student, append-only (lesson events, practice serves, tries, hints, solutions, preferences, warm-up, entry test runs in the context `teacher_preview`). The seeds of its practice come from its own entry-test runs, as for a trial student.
+  5. **Reset** = a new preview student (`Student.reset_preview!`, key `preview.N`; the first is `preview`). No UPDATE and no DELETE: the old rows stay, the loaders read the latest preview student, the triggers are unchanged. `preview.N` can never be a login's key (`Student::KEY_FORMAT` has no dot), so no student can act as one. `Approval::BlueprintGate#previewed?` reads the runs of every preview student: a reset does not take back that the teacher played the test.
+  6. **Isolation.** The preview student is of kind `preview`; everything that reads students reads kind `student` (`Student.real`, the Cruscotto, `ViewedStudent`, the reports, `Search::Builders::Answers`, the API controllers, the comments inbox, the teacher's lesson progress line). No comment, no question and no decision come from a preview page: there is no route (`/teacher/preview/comments`, `/questions` and every decision are 404), and `/comments`, `/questions` stay the students' (403 for the teacher). `LessonsController` seeds the shuffle by the acting student's key, so what the page shows and what the check grades agree after a reset.
+- **Tests:** `test/integration/teacher_as_student_test.rb` (the walk, the views, who may enter, nothing on S or a trial student, nothing in reports, Cruscotto, comments, search answers and the API, no decision or comment, the reset), `test/system/teacher_preview_test.rb` (Chrome: Oggi to a graded try in both views, the reset; `BANCO_SHOT_DIR` takes screenshots). Changed: `student_menu_test`, `search_student_door_test`, `student_pages_test`, `guest_read_only_test` (the preview has a menu now; the test list moved to `/teacher/preview/test`).
+- **Cost:** the preview student's practice and lesson rows grow the ledger a little; the view is per session, so two tabs share it.
 - **Rules version:** none changes.
 - **Status:** decided
 - **Back-port:** none.

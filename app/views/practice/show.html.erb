@@ -3,13 +3,13 @@
 <main class="page course practice" data-controller="practice"
       data-practice-topic-value="<%= @topic.key %>"
       data-practice-skill-value="<%= @skill %>"
-      data-practice-serve-url-value="/practice/serves"
-      data-practice-answer-url-value="/practice/answers"
-      data-practice-back-url-value="/topics/<%= @topic.key %>"
+      data-practice-serve-url-value="<%= spath("/practice/serves") %>"
+      data-practice-answer-url-value="<%= spath("/practice/answers") %>"
+      data-practice-back-url-value="<%= spath("/topics/#{@topic.key}") %>"
       data-practice-texts-value="<%= student_texts.to_json %>"
       data-practice-labels-value="<%= practice_labels.to_json %>">
   <header class="page-header">
-    <a class="back" href="/topics/<%= @topic.key %>"><%= ui_icon("back") %><%= t("practice.back") %></a>
+    <a class="back" href="<%= spath("/topics/#{@topic.key}") %>"><%= ui_icon("back") %><%= t("practice.back") %></a>
     <h1 id="skill-name"><%= @skill_label %></h1>
   </header>
   <% if draft? %><%= ui_notice :info, t("draft.notice"), html: { id: "draft-notice" } %><% end %>

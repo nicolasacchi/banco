@@ -11,7 +11,7 @@
   </ul>
   <div class="button-row">
     <a class="button" href="#soluzioni"><%= t("summary.see") %></a>
-    <a class="button secondary" href="<%= preview? ? '/teacher/preview' : '/diagnosis' %>"><%= t("summary.later") %></a>
+    <a class="button secondary" href="<%= preview? ? '/teacher/preview/test' : '/diagnosis' %>"><%= t("summary.later") %></a>
   </div>
 
   <% if @pause %><%= ui_notice :info, t("summary.pause_suggestion"), html: { id: "pause-suggestion" } %><% end %>

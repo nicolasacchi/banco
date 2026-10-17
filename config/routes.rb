@@ -33,14 +33,12 @@ Rails.application.routes.draw do
       post "warmup/complete" => "warmup#complete", as: :warmup_complete
       concerns :sitting
     end
-    get "settings" => "settings#show", format: false
-    # The student's content search (D-299): lexical, nothing stored, `q` out of the log.
-    get "search" => "search#show", format: false
     # The poster of a free page (D-290): the validation screenshot by content address, for every signed-in role.
     get "page-posters/:sha" => "page_posters#show", constraints: { sha: /[0-9a-f]{64}/ }, format: false
     # The course of Phase 1b (A9): Oggi, the subjects, a topic, its lesson and its practice. Students only, official
-    # and trial; the teacher and guests get 403. The official student sees nothing until release_course.
-    scope format: false do
+    # and trial; the teacher and guests get 403. The official student sees nothing until release_course. The same
+    # pages are the teacher's preview under /teacher/preview (D-309), where the route default says who is acting.
+    concern :course_pages do
       topic = { topic: /(ripasso|ponte|lezione)\.[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*/ }
       get "today" => "course#today"
       get "subjects" => "course#subjects"
@@ -60,6 +58,11 @@ Rails.application.routes.draw do
       post "practice/answers" => "practice#answer"
       post "practice/serves/:serve_id/hint" => "practice#hint", constraints: { serve_id: /\d+/ }
       post "practice/serves/:serve_id/solution" => "practice#solution", constraints: { serve_id: /\d+/ }
+      get "settings" => "settings#show"
+      get "search" => "search#show"
+    end
+    scope format: false do
+      concerns :course_pages
       post "questions" => "questions#create"
       # Comments anywhere (D-304): the student writes a comment on any page and reads the answers. Students only.
       get "comments" => "comments#index"
@@ -139,7 +142,19 @@ Rails.application.routes.draw do
     end
 
     scope "teacher/preview", as: :preview, defaults: { preview: true } do
-      get "/" => "teacher/previews#index", as: :index
+      # The teacher walks the student's site (D-309): Oggi at the root, the entry test list at /test, the same pages as S.
+      get "/" => "course#today", as: :index
+      get "test" => "teacher/previews#index", as: :test
+      post "view" => "teacher/previews#view", as: :view
+      post "reset" => "teacher/previews#reset", as: :reset
+      scope format: false do
+        concerns :course_pages
+      end
+      post "preferences" => "preferences#update", as: :preferences
+      get "warmup" => "warmup#show", as: :warmup
+      get "warmup/tasks" => "warmup#tasks", as: :warmup_tasks
+      post "warmup/answers" => "warmup#answer", as: :warmup_answers
+      post "warmup/complete" => "warmup#complete", as: :warmup_complete
       post "runs/:run_id/close" => "sittings#close", as: :run_close
       concerns :sitting
     end

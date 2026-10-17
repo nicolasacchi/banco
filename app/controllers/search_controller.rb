@@ -13,7 +13,7 @@ class SearchController < ApplicationController
 
   def show
     @query = params[:q].to_s.squish.first(MAX_QUERY)
-    @scope = Search::Scope::Student.for(acting_student)
+    @scope = Search::Scope::Student.for(acting_student, view: preview_view)
     @result = Search::Engine.new(scope: @scope).call(@query, limit: LIMIT) if @query.present?
     @groups = grouped(@result.hits) if @result
     response.headers["Referrer-Policy"] = "no-referrer"

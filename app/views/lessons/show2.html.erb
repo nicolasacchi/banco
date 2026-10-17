@@ -9,7 +9,7 @@
   <%= lesson_family_stylesheets(@student_body) %>
 <% end %>
 <main class="lesson2-page" id="lesson-page">
-  <p class="l2-back"><a href="/topics/<%= @topic.key %>"><%= t("lesson2.back_to_topic") %></a></p>
+  <p class="l2-back"><a href="<%= spath("/topics/#{@topic.key}") %>"><%= t("lesson2.back_to_topic") %></a></p>
   <% if draft? %><p class="notice" id="draft-notice" role="status"><%= t("draft.notice") %></p><% end %>
   <div id="lesson-root" class="l2"
        data-controller="lesson2"

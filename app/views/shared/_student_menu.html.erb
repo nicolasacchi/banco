@@ -4,8 +4,8 @@
 <% if mode == :sitting %>
   <header class="topbar sitting">
     <nav class="student-menu topbar-in" id="student-menu" aria-label="<%= t("student.menu.label") %>">
-      <a id="sitting-leave" class="topbar-leave" href="/today" data-sitting-leave><%= ui_icon("back") %><span><%= t("student.menu.pause_to_today") %></span></a>
-      <button type="button" class="comment-open" id="comment-open-menu" data-comment-open><%= comment_icon("comment") %><span><%= t("comments.button") %></span></button>
+      <a id="sitting-leave" class="topbar-leave" href="<%= spath("/today") %>" data-sitting-leave><%= ui_icon("back") %><span><%= t("student.menu.pause_to_today") %></span></a>
+      <% unless preview? %><button type="button" class="comment-open" id="comment-open-menu" data-comment-open><%= comment_icon("comment") %><span><%= t("comments.button") %></span></button><% end %>
     </nav>
   </header>
 <% elsif mode == :full %>
@@ -13,7 +13,7 @@
   <header class="topbar" data-comment-anchor="menu" data-controller="student-menu">
     <div class="topbar-in">
       <p class="topbar-title" id="topbar-title"><%= student_bar_title(current) %></p>
-      <button type="button" class="comment-open" id="comment-open-menu" data-comment-open><%= comment_icon("comment") %><span><%= t("comments.button") %></span></button>
+      <% unless preview? %><button type="button" class="comment-open" id="comment-open-menu" data-comment-open><%= comment_icon("comment") %><span><%= t("comments.button") %></span></button><% end %>
       <button type="button" class="button secondary small topbar-menu" id="student-menu-open" aria-haspopup="dialog" data-student-menu-target="opener" data-action="student-menu#open"><%= ui_icon("menu") %><span><%= t("student.menu.label") %></span><% if comment_unread_count.positive? %><span class="menu-dot" aria-hidden="true"></span><% end %></button>
     </div>
     <dialog class="dialog" id="student-menu-dialog" aria-labelledby="student-menu-title" data-student-menu-target="dialog" data-action="click->student-menu#backdrop">

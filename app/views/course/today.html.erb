@@ -13,7 +13,7 @@
         <div class="card">
           <p><%= t("today.entry.not_open") %></p>
           <p id="entry-warmup"><%= t(d[:warmup_done] ? "today.entry.warmup_again" : "today.entry.warmup") %></p>
-          <div class="button-row"><a class="button secondary" href="/diagnosis/warmup"><%= t("diagnosis.warmup_link") %></a></div>
+          <div class="button-row"><a class="button secondary" href="<%= base_path %>/warmup"><%= t("diagnosis.warmup_link") %></a></div>
         </div>
       <% end %>
       <% if d[:open] %>
@@ -35,15 +35,15 @@
               </div>
               <% if next_one %>
                 <%= button_to (%w[in_progress continue_next_day].include?(row.status) ? t("diagnosis.actions.resume") : t("diagnosis.actions.start")),
-                              "/diagnosis/subjects/#{row.subject.key}", class: "button", id: "entry-next", form: { class: "inline" } %>
+                              "#{base_path}/subjects/#{row.subject.key}", class: "button", id: "entry-next", form: { class: "inline" } %>
               <% elsif row.done && row.run_id %>
-                <a class="button secondary small" href="/diagnosis/runs/<%= row.run_id %>/results"><%= t("diagnosis.actions.results") %></a>
+                <a class="button secondary small" href="<%= base_path %>/runs/<%= row.run_id %>/results"><%= t("diagnosis.actions.results") %></a>
               <% end %>
             </li>
           <% end %>
         </ul>
         <p id="entry-warmup" class="optional"><%= t("today.entry.warmup_optional") %>
-          <a href="/diagnosis/warmup"><%= t("today.entry.warmup_optional_link") %></a></p>
+          <a href="<%= base_path %>/warmup"><%= t("today.entry.warmup_optional_link") %></a></p>
       <% end %>
     </section>
   <% end %>
@@ -61,9 +61,10 @@
             <div class="subject-text">
               <h3 class="now-title"><%= topic.title_it %></h3>
               <span class="topic-meta"><%= @resume[0].subject.name_it %> · <%= t("topic.minutes", n: topic.minutes) %></span>
+              <% unless topic.approved %><span class="topic-why" id="now-draft"><%= ui_tag(t("topic.draft"), icon: "info") %></span><% end %>
             </div>
           </div>
-          <a class="button" id="resume" href="<%= @resume_card ? "/topics/#{topic.key}/lesson#scheda-#{@resume_card}" : "/topics/#{topic.key}" %>"><%= t("today.resume") %></a>
+          <a class="button" id="resume" href="<%= @resume_card ? spath("/topics/#{topic.key}/lesson#scheda-#{@resume_card}") : spath("/topics/#{topic.key}") %>"><%= t("today.resume") %></a>
         </article>
       <% end %>
       <% if @suggestions.empty? %>
@@ -77,7 +78,7 @@
               <div class="subject-line">
                 <%= subject_chip(row[:subject_view].subject.key) %>
                 <div class="subject-text">
-                  <a class="topic-title" href="/topics/<%= topic.key %>"><%= topic.title_it %></a>
+                  <a class="topic-title" href="<%= spath("/topics/#{topic.key}") %>"><%= topic.title_it %></a>
                   <span class="topic-meta"><%= row[:subject_view].subject.name_it %> · <%= t("topic.kind.#{topic.kind}") %> · <%= t("topic.minutes", n: topic.minutes) %></span>
                 </div>
                 <%= ui_icon("next", css: "row-chev") unless big %>
@@ -88,7 +89,7 @@
                 <span class="topic-why"><%= t("today.reason.#{s.reason}") %></span>
               <% end %>
               <% unless topic.approved %><span class="topic-why"><%= ui_tag(t("topic.draft"), icon: "info") %> <%= t("draft.notice") %></span><% end %>
-              <% if big %><a class="button" href="/topics/<%= topic.key %>"><%= t("today.start") %></a><% end %>
+              <% if big %><a class="button" href="<%= spath("/topics/#{topic.key}") %>"><%= t("today.start") %></a><% end %>
             </li>
           <% end %>
         </ul>

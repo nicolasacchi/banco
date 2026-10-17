@@ -1,7 +1,7 @@
 <% content_for :title, @subject_view.subject.name_it %>
 <% key = @subject_view.subject.key %>
 <main class="page course" style="--subject: var(--accent-<%= key %>, var(--soft-primary))">
-  <%= ui_page_header(@subject_view.subject.name_it, back: [ t("subjects.title"), "/subjects" ]) %>
+  <%= ui_page_header(@subject_view.subject.name_it, back: [ t("subjects.title"), spath("/subjects") ]) %>
   <section class="card subject-summary" aria-label="<%= t("subjects.title") %>">
     <div class="subject-line">
       <%= subject_chip(key) %>
@@ -18,7 +18,7 @@
       <li class="topic row" data-topic="<%= topic.key %>" data-status="<%= status %>">
         <span class="topic-number" aria-hidden="true"><%= i + 1 %></span>
         <div class="row-main">
-          <a class="topic-title row-stretch" href="/topics/<%= topic.key %>"><%= topic.title_it %></a>
+          <a class="topic-title row-stretch" href="<%= spath("/topics/#{topic.key}") %>"><%= topic.title_it %></a>
           <span class="topic-meta"><%= t("topic.kind.#{topic.kind}") %> · <%= t("topic.minutes", n: topic.minutes) %></span>
           <% if before %><span class="topic-why"><%= t("topic.before", topic: before.title_it) %></span><% end %>
           <% unless topic.approved %><span class="topic-why"><%= ui_tag(t("topic.draft")) %> <%= t("draft.notice") %></span><% end %>

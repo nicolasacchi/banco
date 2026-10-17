@@ -26,6 +26,19 @@
 #student-menu-dialog .row-list { margin: 0; }
 #student-menu-dialog .row > .ic:first-child { color: var(--primary); width: 1.4rem; height: 1.4rem; }
 #student-menu-dialog .row:has(a[aria-current="page"]) { border: 2px solid var(--primary); background: var(--soft-primary); }
+/* The teacher's preview banner (D-309): above the top bar, calm, the actions wrap on a phone. */
+.preview-banner { background: var(--soft-primary); border-bottom: var(--border-soft); }
+.preview-banner-in { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); max-width: 80rem; margin: 0 auto; padding: var(--space-2) var(--space-4); }
+.preview-banner-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin: 0; flex: 1 1 16rem; }
+.preview-banner-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--space-2); }
+.preview-banner-actions form { margin: 0; }
+.preview-banner-actions > .button, .preview-banner-actions form .button, .preview-reset summary { min-height: var(--tap-small); box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; }
+@media (max-width: 40rem) { .preview-banner-line .sep { display: none; } .preview-banner-in { gap: var(--space-2); } }
+.preview-reset summary { list-style: none; cursor: pointer; }
+.preview-reset summary::-webkit-details-marker { display: none; }
+.preview-reset-body { margin-top: var(--space-2); padding: var(--space-3); background: var(--surface); border: var(--border-soft); border-radius: var(--radius-m); max-width: 26rem; }
+.preview-reset-body p { margin: 0 0 var(--space-2); }
+.preview-banner-note { flex-basis: 100%; margin: 0; font-weight: 700; }
 .trial-notice { margin: 0; border-radius: 0; border-width: 0 0 1px; text-align: center; padding: var(--space-1) var(--space-4); }
 
 /* A subject's chip (its palette colour and icon), a line with a chip and text. ------------------------------------------------- */

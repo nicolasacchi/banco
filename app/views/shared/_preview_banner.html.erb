@@ -1,0 +1,27 @@
+<%# The teacher's preview of the student's site (D-309): on every page, the way out, the view switch and the reset.
+    The view lives in the session; the switch and the reset are POSTs under /teacher/preview, and come back to this page. %>
+<% other = preview_view == :drafts ? "official" : "drafts" %>
+<% back = request.get? ? request.fullpath : "/teacher/preview" %>
+<aside class="preview-banner" id="preview-banner" aria-label="<%= t("teacher.preview.banner_label") %>">
+  <div class="preview-banner-in">
+    <p class="preview-banner-line">
+      <%= ui_icon("show") %>
+      <strong><%= t("teacher.preview.banner_label") %></strong>
+      <span class="sep" aria-hidden="true">·</span>
+      <span id="preview-view-name"><%= t("teacher.preview.view_label") %>: <%= t("teacher.preview.views.#{preview_view}") %></span>
+    </p>
+    <div class="preview-banner-actions">
+      <%= button_to t("teacher.preview.switch_to", view: t("teacher.preview.views.#{other}")), "/teacher/preview/view",
+                    params: { view: other, back: back }, class: "button secondary small", id: "preview-switch", form: { class: "inline" } %>
+      <details class="preview-reset" id="preview-reset">
+        <summary class="button secondary small"><%= t("teacher.preview.reset") %></summary>
+        <div class="preview-reset-body">
+          <p><%= t("teacher.preview.reset_ask") %></p>
+          <%= button_to t("teacher.preview.reset_confirm"), "/teacher/preview/reset", params: { back: back }, class: "button danger small", id: "preview-reset-confirm", form: { class: "inline" } %>
+        </div>
+      </details>
+      <a class="button small" id="preview-exit" href="/teacher"><%= t("teacher.preview.exit") %></a>
+    </div>
+    <% if flash[:notice] %><p class="preview-banner-note" role="status"><%= flash[:notice] %></p><% end %>
+  </div>
+</aside>

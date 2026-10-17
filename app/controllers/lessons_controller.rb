@@ -34,7 +34,7 @@ class LessonsController < ApplicationController
   # What the student's page may know of this revision: Lessons::StudentBody (a whitelist per block, the options
   # shuffled with the student's seed). It has no fallback on purpose: a stored body is never sent as it is.
   def student_body(revision)
-    Lessons::StudentBody.for(revision, seed: preview? ? "preview" : acting_student.key)
+    Lessons::StudentBody.for(revision, seed: acting_student.key)
   end
   private :student_body
 

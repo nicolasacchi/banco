@@ -36,7 +36,10 @@ module LessonPagesHelper
 
   # The addresses of the student's page: the check endpoint, the events batch, the solutions and the questions.
   def lesson2_urls(topic_key)
-    { check: "/topics/#{topic_key}/lesson/checks", events: "/topics/#{topic_key}/lesson/events",
-      solution: "/topics/#{topic_key}/lesson/exercises", questions: "/questions", practice: "/topics/#{topic_key}" }
+    urls = { check: spath("/topics/#{topic_key}/lesson/checks"), events: spath("/topics/#{topic_key}/lesson/events"),
+             solution: spath("/topics/#{topic_key}/lesson/exercises"), questions: "/questions", practice: spath("/topics/#{topic_key}"),
+             preferences: "#{base_path}/preferences", settings: spath("/settings") }
+    urls.delete(:questions) if preview? # no "Non ho capito" from the teacher's preview: the teacher reads those, never writes them (D-309)
+    urls
   end
 end

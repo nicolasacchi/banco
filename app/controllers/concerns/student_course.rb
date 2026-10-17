@@ -1,4 +1,4 @@
-# The student's course pages (A9): the acting student (official or trial; the teacher and guests get 403),
+# The student's course pages (A9): the acting student (official, trial or the teacher's preview student; a guest gets 403),
 # and what the catalog shows this student. A topic or a subject that is not visible is a 404 for this
 # student, whatever exists: the official student sees nothing until the teacher releases the course.
 module StudentCourse
@@ -9,7 +9,7 @@ module StudentCourse
     helper_method :course_view, :draft?
   end
 
-  def course_view = @course_view ||= Course::StudentView.new(acting_student)
+  def course_view = @course_view ||= Course::StudentView.new(acting_student, view: preview_view)
 
   # Not approved yet: only a trial student ever sees such a topic.
   def draft? = @topic && !@topic.approved

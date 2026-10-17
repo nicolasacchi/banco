@@ -4,13 +4,12 @@
       data-sitting-events-url-value="<%= base_path %>/runs/<%= @run.id %>/events"
       data-sitting-support-url-value="<%= base_path %>/runs/<%= @run.id %>/support"
       data-sitting-answer-url-value="<%= base_path %>/answers"
-      data-sitting-list-url-value="<%= preview? ? '/teacher/preview' : '/diagnosis' %>"
+      data-sitting-list-url-value="<%= preview? ? '/teacher/preview/test' : '/diagnosis' %>"
       data-sitting-subject-value="<%= @subject.name_it %>"
       data-sitting-resuming-value="<%= @resuming %>"
       data-sitting-texts-value="<%= student_texts.to_json %>"
       data-sitting-keepalive-seconds-value="<%= Diagnosis::Rules::V1::KEEPALIVE_SECONDS %>">
   <% if preview? %>
-    <p class="banner"><%= t("teacher.preview.banner") %></p>
     <%= button_to t("teacher.preview.close"), "/teacher/preview/runs/#{@run.id}/close", class: "button secondary", id: "preview-close", form: { class: "inline" } %>
   <% end %>
 
@@ -77,12 +76,12 @@
   <section data-sitting-target="over" hidden>
     <h1><%= t("sitting.more_to_do") %></h1>
     <p><%= t("sitting.more_to_do_text", subject: @subject.name_it) %></p>
-    <p class="start-row"><a class="button" href="<%= preview? ? '/teacher/preview' : '/diagnosis' %>"><%= t("sitting.back_to_list") %></a></p>
+    <p class="start-row"><a class="button" href="<%= preview? ? '/teacher/preview/test' : '/diagnosis' %>"><%= t("sitting.back_to_list") %></a></p>
   </section>
 
   <section data-sitting-target="wait" hidden>
     <h1><%= t("sitting.sitting_over") %></h1>
     <p><%= t("sitting.wait_tomorrow") %></p>
-    <p class="start-row"><a class="button" href="<%= preview? ? '/teacher/preview' : '/diagnosis' %>"><%= t("sitting.back_to_list") %></a></p>
+    <p class="start-row"><a class="button" href="<%= preview? ? '/teacher/preview/test' : '/diagnosis' %>"><%= t("sitting.back_to_list") %></a></p>
   </section>
 </main>

@@ -6,13 +6,13 @@
 <main class="page search-page" id="search-page">
   <h1><%= t("search.title") %></h1>
   <%# A plain GET form: no script. The browser's own clear control (type=search) and the "Cancella" link empty the box. %>
-  <form action="/search" method="get" role="search" class="search-form" id="search-form" autocomplete="off">
+  <form action="<%= spath("/search") %>" method="get" role="search" class="search-form" id="search-form" autocomplete="off">
     <label for="search-q" class="search-label"><%= t("search.label") %></label>
     <div class="search-row">
       <input type="search" id="search-q" name="q" value="<%= @query %>" maxlength="<%= SearchController::MAX_QUERY %>" class="search-input"
              placeholder="<%= t("search.placeholder") %>" autofocus enterkeyhint="search">
       <button type="submit" class="button"><%= t("search.submit") %></button>
-      <% if @query.present? %><a href="/search" class="button secondary" id="search-clear"><%= t("search.clear") %></a><% end %>
+      <% if @query.present? %><a href="<%= spath("/search") %>" class="button secondary" id="search-clear"><%= t("search.clear") %></a><% end %>
     </div>
   </form>
 
@@ -23,7 +23,7 @@
   <% elsif @result.hits.empty? %>
     <div id="search-empty" role="status"><%= ui_empty(t("search.empty"), icon: "nav-search") %></div>
   <% else %>
-    <% if (notice = search_did_you_mean(@result, "/search", "search.did_you_mean_html")) %>
+    <% if (notice = search_did_you_mean(@result, spath("/search"), "search.did_you_mean_html")) %>
       <%= ui_notice :hint, notice, html: { id: "search-did-you-mean" } %>
     <% end %>
     <p class="hint" id="search-count" role="status"><%= t("search.count", count: @result.hits.size) %></p>
@@ -32,7 +32,7 @@
         <h2 id="search-group-<%= kind %>"><%= search_icon(kind) %> <span><%= search_kind_name(kind) %></span></h2>
         <ul class="search-hits">
           <% hits.each do |hit| %>
-            <% href = Search::Links.student(hit, @scope.practice_targets) %>
+            <% href = Search::Links.student(hit, @scope.practice_targets, root: student_root) %>
             <li class="search-hit" data-subject="<%= hit.subject %>" style="<%= search_accent_style(hit.subject) %>">
               <p class="search-subject"><%= search_subject_name(hit.subject) %></p>
               <% if href %><a class="search-title" href="<%= href %>"><%= hit.title %></a><% else %><span class="search-title"><%= hit.title %></span><% end %>

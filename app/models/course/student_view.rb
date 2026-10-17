@@ -11,12 +11,14 @@ module Course
 
     attr_reader :student
 
-    def initialize(student, now: Time.current)
+    # view: :official or :drafts, for the teacher's preview student only (D-309); a real student has no view.
+    def initialize(student, now: Time.current, view: nil)
       @student = student
       @now = now
+      @view = view
     end
 
-    def catalog = @catalog ||= Catalog.for(@student)
+    def catalog = @catalog ||= Catalog.for(@student, view: @view)
 
     # The subjects with at least one visible topic.
     def subjects = catalog.select { |sv| sv.topics.any? }

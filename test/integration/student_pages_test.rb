@@ -151,7 +151,7 @@ class StudentPagesTest < ActionDispatch::IntegrationTest
 
   test "a preview run is the teacher's own: preview student, teacher_preview context, nothing in the student's log" do
     rows = build_ui_subject
-    as_teacher("/teacher/preview")
+    as_teacher("/teacher/preview/test")
     assert_response :success
     assert_select "button", /Prova Matematica/
     as_teacher("/teacher/preview/subjects/math", method: :post)

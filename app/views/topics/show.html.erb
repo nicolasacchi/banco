@@ -2,7 +2,7 @@
 <% skill_states = @topic.skills.map { |skill| course_view.state(skill) } %>
 <% done_count = skill_states.count { |s| Practice::Today::DONE.include?(s.state) } %>
 <main class="page course topic-page" style="--subject: var(--accent-<%= @subject_view.subject.key %>, var(--soft-primary))">
-  <%= ui_page_header(@topic.title_it, back: [ @subject_view.subject.name_it, "/subjects/#{@subject_view.subject.key}" ]) %>
+  <%= ui_page_header(@topic.title_it, back: [ @subject_view.subject.name_it, spath("/subjects/#{@subject_view.subject.key}") ]) %>
   <p class="topic-meta cluster">
     <%= subject_chip(@subject_view.subject.key) %>
     <span><%= t("topic.kind.#{@topic.kind}") %></span>
@@ -29,7 +29,7 @@
           <%= ui_pill(t("topic.lesson_unread"), :muted) %>
         <% end %>
       </div>
-      <a class="button<%= ' secondary' if @read %>" id="lesson-link" href="/topics/<%= @topic.key %>/lesson"><%= t("topic.lesson") %></a>
+      <a class="button<%= ' secondary' if @read %>" id="lesson-link" href="<%= spath("/topics/#{@topic.key}/lesson") %>"><%= t("topic.lesson") %></a>
     </li>
     <li class="topic-step card" id="step-practice" data-state="<%= done_count == skill_states.size && skill_states.any? ? 'done' : 'todo' %>">
       <div class="step-head">
@@ -50,7 +50,7 @@
             </div>
             <div class="skill-side">
               <span class="topic-meta"><%= ui_pill(Practice::Messages.state_it(state.state), skill_state_tone(state.state)) %></span>
-              <a class="button small" href="/topics/<%= @topic.key %>/practice/<%= skill %>"><%= t("topic.practise") %></a>
+              <a class="button small" href="<%= spath("/topics/#{@topic.key}/practice/#{skill}") %>"><%= t("topic.practise") %></a>
             </div>
           </li>
         <% end %>

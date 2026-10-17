@@ -11,7 +11,7 @@ class PreferencesController < ApplicationController
     if request.format.json?
       render json: chosen.merge(Diagnosis::Preferences.lesson(acting_student))
     else
-      redirect_to "/settings", status: :see_other, notice: I18n.t("settings.saved")
+      redirect_to "#{student_root}/settings", status: :see_other, notice: I18n.t("settings.saved")
     end
   end
 end

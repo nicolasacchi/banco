@@ -11,7 +11,7 @@
           <div class="subject-line">
             <%= subject_chip(sv.subject.key) %>
             <div class="subject-text">
-              <a class="subject-name row-stretch" href="/subjects/<%= sv.subject.key %>"><%= sv.subject.name_it %></a>
+              <a class="subject-name row-stretch" href="<%= spath("/subjects/#{sv.subject.key}") %>"><%= sv.subject.name_it %></a>
             </div>
             <%= ui_icon("next", css: "row-chev") %>
           </div>

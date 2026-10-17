@@ -201,16 +201,22 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     assert_includes labels, "Impostazioni"
   end
 
-  test "the teacher's preview has no student menu" do
+  test "the teacher's preview has the student's menu on the preview addresses, with no comments, and a sitting there has no bar" do
     build_ui_subject
     page(TEACHER, "/teacher/preview")
     assert_response :success
-    assert_select "nav.student-menu", 0
+    assert_select "nav.student-menu a#menu-today[href='/teacher/preview/today']"
+    assert_select "nav.student-menu a#menu-settings[href='/teacher/preview/settings']"
+    assert_select "#menu-comments", 0
+    assert_select "#logout-link", 0
+    assert_select "#comment-open-menu", 0
+    assert_select "#comment-root", 0
     subject = Subject.find_by!(key: "math")
     on(:web, "/teacher/preview/subjects/math", method: :post, headers: TEACHER, remote_addr: EDGE)
     page(TEACHER, URI(response.location).path)
     assert_response :success
     assert_select "nav.student-menu", 0
+    assert_select "#preview-banner"
     assert_select "#preview-close"
     assert_select "#leave-confirm", 0
     assert_equal "math", subject.key

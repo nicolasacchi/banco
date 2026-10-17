@@ -7,26 +7,31 @@ module Course
   #                     key the latest approve_topic whose topic revision's skills equal the map's
   #   trial student:    the latest map; the latest topic revision of each key if its skills equal the
   #                     map's (approved: false until the teacher approves that very revision)
-  #   preview:          nothing (the slice has no teacher preview of the course)
+  #   preview:          the teacher's preview student (D-309) reads one of two views: :official (as the official student
+  #                     sees it: released courses and approved topics) or :drafts (as a trial student: the latest, flagged)
   #
   #   Course::Catalog.for(student) # => [SubjectView]
+  #   Course::Catalog.for(preview_student, view: :drafts)
   module Catalog
     SubjectView = Data.define(:subject, :mode, :course_revision, :released, :topics, :skills_without_topic)
     TopicView = Data.define(:key, :kind, :title_it, :term, :minutes, :skills, :after, :topic_revision, :lesson_revision, :approved)
 
     module_function
 
-    def for(student)
-      return [] unless student && student.kind == "student"
+    VIEWS = %i[official drafts].freeze
 
+    def for(student, view: nil)
+      return [] unless student
+      return [] unless student.kind == "student" || (student.kind == "preview" && VIEWS.include?(view))
+
+      official = student.kind == "preview" ? view == :official : student.official?
       decisions = Decision.where(kind: %w[release_course approve_topic]).order(:id).to_a
-      Subject.order(:position).filter_map { |subject| subject_view(student, subject, decisions) }
+      Subject.order(:position).filter_map { |subject| subject_view(official, subject, decisions) }
     end
 
-    def subject_view(student, subject, decisions)
+    def subject_view(official, subject, decisions)
       release = latest_release(subject, decisions)
       released = release.present? && release["open"] == true
-      official = student.official?
       course = if official
         released ? CourseRevision.find_by(id: release["course_revision_id"]) : nil
       else

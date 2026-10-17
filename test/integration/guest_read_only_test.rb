@@ -21,7 +21,7 @@ class GuestReadOnlyTest < ActionDispatch::IntegrationTest
     @values = {
       key: "math", subject: "math", skill: "math.number", revision_id: @short.id, finding_id: 1, grade_proposal_id: @proposal.id,
       attempt_id: @attempt.id, run_id: @run.id, item_revision_id: @short.id, sha256: "0" * 64,
-      comment_id: 1, page_revision_id: @page_revision.id, lesson_revision_id: @lesson_revision.id, id: @lesson_revision.id, card: 1, block: 1, step: 1, n: 1, part: 1, topic: TopicWorld::TOPIC_KEY
+      comment_id: 1, page_revision_id: @page_revision.id, lesson_revision_id: @lesson_revision.id, id: @lesson_revision.id, card: 1, block: 1, step: 1, n: 1, part: 1, serve_id: 1, topic: TopicWorld::TOPIC_KEY
     }
   end
 
@@ -79,7 +79,7 @@ class GuestReadOnlyTest < ActionDispatch::IntegrationTest
   end
 
   test "the teacher is not refused on the same routes" do
-    teacher_routes.select { |verb, path| verb == "GET" && !path.include?("/preview/runs/") && !path.include?("/shots/") }.each do |_, path|
+    teacher_routes.select { |verb, path| verb == "GET" && !path.start_with?("/teacher/preview/") && !path.include?("/shots/") }.each do |_, path|
       on(:web, path, headers: TEACHER, remote_addr: EDGE)
       assert_response :success, "GET #{path}"
     end

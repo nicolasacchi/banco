@@ -5,14 +5,14 @@ module Search
 
     # A student's page: a lesson card opens the lesson at its card, a glossary term the card that teaches it (or the lesson), a topic
     # its page, an exercise the topic's practice page for its skill (the practice selector still chooses what is served: the link
-    # never carries an instance). +targets+: Scope::Student#practice_targets.
-    def student(hit, targets)
+    # never carries an instance). +targets+: Scope::Student#practice_targets; +root+ is "/teacher/preview" in the teacher's preview.
+    def student(hit, targets, root: "")
       case hit.kind
-      when "lesson_card", "glossary_term" then "/topics/#{hit.topic_key}/lesson#{"##{hit.anchor}" if hit.anchor.present?}"
-      when "topic" then "/topics/#{hit.key}"
+      when "lesson_card", "glossary_term" then "#{root}/topics/#{hit.topic_key}/lesson#{"##{hit.anchor}" if hit.anchor.present?}"
+      when "topic" then "#{root}/topics/#{hit.key}"
       when "practice_item"
         topic, skill = targets[hit.revision_id]
-        topic ? "/topics/#{topic}/practice/#{skill}" : nil
+        topic ? "#{root}/topics/#{topic}/practice/#{skill}" : nil
       end
     end
 

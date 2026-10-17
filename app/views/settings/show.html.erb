@@ -3,7 +3,7 @@
   <h1><%= t("settings.title") %></h1>
   <% if flash[:notice] %><%= ui_notice :success, flash[:notice], html: { id: "settings-saved" } %><% end %>
   <p><%= t("settings.intro") %></p>
-  <%= form_with url: "/diagnosis/preferences", method: :post, class: "preferences", id: "preferences" do %>
+  <%= form_with url: "#{base_path}/preferences", method: :post, class: "preferences", id: "preferences" do %>
     <div class="card">
     <fieldset class="options choice-list" data-comment-anchor="setting:theme">
       <legend><%= t("diagnosis.preferences.theme") %></legend>

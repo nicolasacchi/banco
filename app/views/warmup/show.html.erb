@@ -1,9 +1,9 @@
 <% content_for :title, t("warmup.title") %>
 <main class="page" data-controller="warmup"
-      data-warmup-tasks-url-value="/diagnosis/warmup/tasks"
-      data-warmup-answer-url-value="/diagnosis/warmup/answers"
-      data-warmup-complete-url-value="/diagnosis/warmup/complete"
-      data-warmup-list-url-value="/diagnosis"
+      data-warmup-tasks-url-value="<%= base_path %>/warmup/tasks"
+      data-warmup-answer-url-value="<%= base_path %>/warmup/answers"
+      data-warmup-complete-url-value="<%= base_path %>/warmup/complete"
+      data-warmup-list-url-value="<%= preview? ? "#{base_path}/test" : base_path %>"
       data-warmup-texts-value="<%= student_texts.to_json %>">
   <h1><%= t("warmup.title") %></h1>
   <p><%= t("warmup.intro") %></p>
@@ -21,6 +21,6 @@
   <section class="card" data-warmup-target="done" hidden>
     <h2 class="card-title"><%= ui_icon("circle-check") %> <%= t("warmup.done_title") %></h2>
     <p data-warmup-target="doneText"><%= t("warmup.done_text") %></p>
-    <div class="button-row"><a class="button" href="/diagnosis"><%= t("sitting.back_to_list") %></a></div>
+    <div class="button-row"><a class="button" href="<%= preview? ? "#{base_path}/test" : base_path %>"><%= t("sitting.back_to_list") %></a></div>
   </section>
 </main>

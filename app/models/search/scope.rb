@@ -34,8 +34,8 @@ module Search
       def clause = [ "0 = 1", [] ]
     end
 
-    # A student's door (D-299). The visible revisions are those of Course::StudentView.new(student): an official student has the
-    # approved topics of a released course, a trial student the latest topics of the latest map (D-217), a teacher's preview and a
+    # A student's door (D-299). The visible revisions are those of Course::StudentView.new(student, view: @course_view): an official student has the
+    # approved topics of a released course, a trial student the latest topics of the latest map (D-217), the teacher's preview student the same as one of the two (D-309), and a
     # teacher nothing. Kinds: lesson cards, glossary terms, topics and the practice items of those topics (the stem and options
     # Items::Part serves). A diagnosis item is never a practice item: only items of kind practice_item are indexed as such, and the
     # clause asks the primary database again for the kind of each pinned revision.
@@ -44,12 +44,13 @@ module Search
 
       attr_reader :student
 
-      def self.for(student)
-        student && student.kind == "student" ? new(student) : Nothing.new
+      def self.for(student, view: nil)
+        (student && student.kind == "student") || (student&.kind == "preview" && Course::Catalog::VIEWS.include?(view)) ? new(student, view: view) : Nothing.new
       end
 
-      def initialize(student)
+      def initialize(student, view: nil)
         @student = student
+        @course_view = view
         @name = :student
       end
 

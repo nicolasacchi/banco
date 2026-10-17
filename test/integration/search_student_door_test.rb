@@ -193,14 +193,11 @@ class SearchStudentDoorTest < ActionDispatch::IntegrationTest
     assert_equal "no-referrer", response.headers["Referrer-Policy"]
   end
 
-  test "the menu has Cerca, and the sitting and the teacher's preview do not" do
+  test "the menu has Cerca, and the sitting does not" do
     on(:web, "/subjects", headers: OFFICIAL, remote_addr: EDGE)
     assert_select "#menu-search[href='/search']", text: "Cerca"
     on(:web, "/search", headers: OFFICIAL, remote_addr: EDGE)
     assert_select "#menu-search[aria-current='page']"
-    on(:web, "/teacher/preview", headers: TEACHER, remote_addr: EDGE)
-    assert_select "#menu-search", count: 0
-    assert_select "#student-menu", count: 0
   end
 
   test "an empty box and a word nothing matches say so kindly" do

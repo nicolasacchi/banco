@@ -1,3 +1,4 @@
+<% unless preview? %>
 <% field = "q-#{SecureRandom.hex(4)}" %>
 <%# "Non ho capito": a button that opens one optional line. Locals: topic (key), lesson_revision_id, section, exercise. %>
 <div class="question" data-controller="question"
@@ -16,3 +17,4 @@
   </form>
   <p role="status" aria-live="polite" class="status" data-question-target="status"></p>
 </div>
+<% end %>

@@ -103,8 +103,7 @@ module Approval
     end
 
     def previewed?(revision)
-      student = Student.find_by(key: "preview") or return false
-      DiagnosisRun.where(student: student, blueprint_revision: revision).any? { |run| played_to_the_end?(run) }
+      DiagnosisRun.where(student: Student.where(kind: "preview"), blueprint_revision: revision).any? { |run| played_to_the_end?(run) }
     end
 
     # Closed by the engine. A preview closed by the teacher's button (run_closed teacher_close) was not played.
