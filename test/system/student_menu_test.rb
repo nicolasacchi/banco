@@ -150,10 +150,10 @@ class StudentMenuSystemTest < ApplicationSystemTestCase
     assert_current_path "/today"
   end
 
-  test "the teacher's preview shows no student menu and keeps Chiudi l'anteprima" do
+  test "the teacher's preview has the menu on its pages, no bar in a sitting, and keeps Chiudi l'anteprima" do
     sign_in_as :teacher
-    visit "/teacher/preview"
-    assert_no_selector "nav.student-menu"
+    visit "/teacher/preview/test"
+    assert_selector "#preview-banner"
     click_button "Prova Matematica"
     assert_no_selector "nav.student-menu"
     assert_selector "#preview-close"

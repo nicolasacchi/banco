@@ -90,7 +90,7 @@ class TeacherApprovalTest < ApplicationSystemTestCase
     assert_selector "#test-approve button[disabled]"
     assert_text "Gioca il test fino in fondo"
     click_button "Prova tutto il test come S"
-    assert_text "Anteprima del docente"
+    assert_text "Stai provando come studente"
     click_button "Comincia"
     answered = 0
     while answered < 12 && page.has_css?("[data-controller~=sitting][data-ready=true]", wait: 6)

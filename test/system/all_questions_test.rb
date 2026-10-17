@@ -62,7 +62,7 @@ class AllQuestionsSystemTest < ApplicationSystemTestCase
   test "Chiudi l'anteprima closes the preview run and returns to the test page" do
     visit "/teacher/subjects/math/test"
     click_button "Prova tutto il test come S"
-    assert_text "Anteprima del docente"
+    assert_text "Stai provando come studente"
     assert_selector "#preview-close", text: "Chiudi l'anteprima"
     run = DiagnosisRun.where(student: @world[:preview]).order(:id).last
     refute Diagnosis::Conductor.new(run).closed?
