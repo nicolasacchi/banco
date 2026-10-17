@@ -24,9 +24,6 @@
 .comment-open.secondary { background: transparent; color: var(--text); border-color: var(--line); }
 .comment-open.secondary:hover { filter: none; border-color: var(--text); }
 .comment-open:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
-.student-menu li:has(> .comment-open) { margin-left: auto; }
-.comment-here { margin: 0.75rem 0; }
-@media (max-width: 30rem) { .student-menu li:has(> .comment-open) { margin-left: 0; flex: 1 1 100%; } .student-menu .comment-open { width: 100%; } }
 
 /* ---- the comment mode: a banner and calm outlines ---- */
 .comment-banner { position: sticky; top: 0; z-index: 40; background: var(--surface); border-bottom: 3px solid var(--focus); box-shadow: 0 0.4rem 1rem -0.6rem rgba(0, 0, 0, 0.5); }

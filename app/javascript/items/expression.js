@@ -24,6 +24,12 @@ export function loadMathlive() {
     MathfieldElement.keypressSound = null
     MathfieldElement.plonkSound = null
     MathfieldElement.decimalSeparator = ","
+    // The page's sticky action bar (Invia, Non lo so) rides above the maths keyboard: its height is a CSS variable (D-307).
+    const keyboard = window.mathVirtualKeyboard
+    keyboard?.addEventListener?.("geometrychange", () => {
+      const height = keyboard.visible ? Math.round(keyboard.boundingRect.height) : 0
+      document.documentElement.style.setProperty("--keyboard-offset", `${height}px`)
+    })
     import(COMPUTE_ENGINE).then(({ ComputeEngine }) => {
       MathfieldElement.computeEngine = new ComputeEngine()
     }).catch(() => {})

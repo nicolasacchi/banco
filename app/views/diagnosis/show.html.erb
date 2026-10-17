@@ -1,33 +1,38 @@
 <% content_for :title, t("diagnosis.title") %>
-<main class="page">
+<main class="page course">
   <h1><%= t("diagnosis.title") %></h1>
   <% if @released %>
     <p><%= t("diagnosis.order_line") %></p>
-    <% if @pause %><p class="notice" id="pause-suggestion"><%= t("diagnosis.pause_suggestion") %></p><% end %>
-    <ul class="subjects">
+    <% if @pause %><%= ui_notice :info, t("diagnosis.pause_suggestion"), html: { id: "pause-suggestion" } %><% end %>
+    <ul class="subjects subject-list" id="subjects">
       <% @rows.each do |row| %>
-        <li class="subject<%= ' suggested' if row.suggested %>" data-subject="<%= row.subject.key %>" data-state="<%= row.status %>">
-          <span class="subject-name"><%= row.subject.name_it %></span>
-          <span class="subject-state"><%= t(row.label_key, **row.label_args) %></span>
+        <li class="subject<%= ' suggested' if row.suggested %>" data-subject="<%= row.subject.key %>" data-state="<%= row.status %>" style="--subject: var(--accent-<%= row.subject.key %>, var(--soft-primary))">
+          <div class="subject-line">
+            <%= subject_chip(row.subject.key) %>
+            <div class="subject-text">
+              <span class="subject-name"><%= row.subject.name_it %></span>
+              <span class="subject-state"><%= t(row.label_key, **row.label_args) %></span>
+            </div>
+          </div>
           <% if row.done %>
             <% if row.run_id %>
-              <a class="button secondary" href="/diagnosis/runs/<%= row.run_id %>/results"><%= t("diagnosis.actions.results") %></a>
+              <a class="button secondary small" href="/diagnosis/runs/<%= row.run_id %>/results"><%= t("diagnosis.actions.results") %></a>
             <% end %>
           <% elsif row.startable %>
             <%= button_to (%w[in_progress continue_next_day].include?(row.status) ? t("diagnosis.actions.resume") : t("diagnosis.actions.start")),
-                          "/diagnosis/subjects/#{row.subject.key}", class: "button", form: { class: "inline" } %>
+                          "/diagnosis/subjects/#{row.subject.key}", class: "button#{row.suggested ? '' : ' secondary'}", form: { class: "inline" } %>
           <% end %>
         </li>
       <% end %>
     </ul>
     <p class="optional"><%= t("diagnosis.warmup_optional") %> <a href="/diagnosis/warmup"><%= t("diagnosis.warmup_link") %></a></p>
   <% else %>
-    <p class="notice"><%= t("diagnosis.not_open") %></p>
+    <%= ui_notice :info, t("diagnosis.not_open") %>
     <% if @warmup_done %>
       <p><%= t("diagnosis.not_open_warmup_done") %></p>
     <% else %>
       <p><%= t("diagnosis.not_open_warmup") %></p>
     <% end %>
-    <p><a class="button" href="/diagnosis/warmup"><%= t("diagnosis.warmup_link") %></a></p>
+    <div class="button-row"><a class="button" href="/diagnosis/warmup"><%= t("diagnosis.warmup_link") %></a></div>
   <% end %>
 </main>

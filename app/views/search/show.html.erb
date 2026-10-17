@@ -17,19 +17,19 @@
   </form>
 
   <% if @query.blank? %>
-    <p class="hint" id="search-hint"><%= t("search.hint") %></p>
+    <p class="hint search-hint" id="search-hint"><%= ui_icon("nav-search") %><span><%= t("search.hint") %></span></p>
   <% elsif !@result.indexed %>
-    <p class="notice" id="search-not-ready" role="status"><%= t("search.not_ready") %></p>
+    <%= ui_notice :info, t("search.not_ready"), html: { id: "search-not-ready" } %>
   <% elsif @result.hits.empty? %>
-    <p id="search-empty" role="status"><%= t("search.empty") %></p>
+    <div id="search-empty" role="status"><%= ui_empty(t("search.empty"), icon: "nav-search") %></div>
   <% else %>
     <% if (notice = search_did_you_mean(@result, "/search", "search.did_you_mean_html")) %>
-      <p class="notice" id="search-did-you-mean" role="status"><%= notice %></p>
+      <%= ui_notice :hint, notice, html: { id: "search-did-you-mean" } %>
     <% end %>
     <p class="hint" id="search-count" role="status"><%= t("search.count", count: @result.hits.size) %></p>
     <% @groups.each do |kind, hits| %>
       <section class="search-group" data-kind="<%= kind %>" aria-labelledby="search-group-<%= kind %>">
-        <h2 id="search-group-<%= kind %>"><%= search_icon(kind) %> <%= search_kind_name(kind) %></h2>
+        <h2 id="search-group-<%= kind %>"><%= search_icon(kind) %> <span><%= search_kind_name(kind) %></span></h2>
         <ul class="search-hits">
           <% hits.each do |hit| %>
             <% href = Search::Links.student(hit, @scope.practice_targets) %>

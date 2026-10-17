@@ -33,7 +33,7 @@ class StudentPagesTest < ActionDispatch::IntegrationTest
     build_ui_subject
     as_student("/diagnosis")
     assert_response :success
-    assert_select "p.notice", "La diagnosi non è ancora aperta."
+    assert_select ".notice", "La diagnosi non è ancora aperta."
     assert_select "a[href='/diagnosis/warmup']", "Prova dei comandi"
     assert_select "li.subject", 0
     as_student("/diagnosis/subjects/math", method: :post)

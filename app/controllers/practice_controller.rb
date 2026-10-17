@@ -91,7 +91,7 @@ class PracticeController < ApplicationController
 
   def skill_block(key, state)
     { key: key, label_it: course_view.label(key), state: state.state, state_it: Practice::Messages.state_it(state.state),
-      why_it: Practice::Messages.why_it(state.why) }
+      why_it: Practice::Messages.why_it(state.why), clean: Practice::Messages.clean_count(state.why) }
   end
 
   def item_part(serve, instance)

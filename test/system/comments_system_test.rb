@@ -78,7 +78,7 @@ class CommentsSystemTest < ApplicationSystemTestCase
     click_button "Comincia"
     assert_selector "input[inputmode=decimal]", wait: 15
     run = DiagnosisRun.find_by!(student: rows[:student])
-    find("#comment-open-sitting").click
+    find("#comment-open-menu").click
     find("#comment-whole").click
     assert_selector "#comment-box[open]", wait: 10
     assert_selector "#comment-clock-note", visible: :visible

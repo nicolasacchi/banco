@@ -53,9 +53,11 @@ class SearchSystemTest < ApplicationSystemTestCase
 
   test "the menu offers the search and marks it on its page" do
     visit "/subjects"
+    find("#student-menu-open").click # the links are in the menu dialog (D-307)
     click_link "Cerca"
     assert_current_path "/search"
-    assert_selector "#menu-search[aria-current=page]"
     assert_selector "input[type=search]:focus"
+    find("#student-menu-open").click
+    assert_selector "#menu-search[aria-current=page]"
   end
 end

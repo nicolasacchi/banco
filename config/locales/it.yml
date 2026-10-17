@@ -20,6 +20,8 @@ it:
       warmup: "Riscaldamento"
       settings: "Impostazioni"
       pause_to_today: "Pausa: torna a Oggi"
+      close: "Chiudi"
+      bar_default: "Banco"
   settings:
     title: "Impostazioni"
     intro: "Scegli i colori e la grandezza del testo. Valgono su tutte le pagine."
@@ -77,6 +79,7 @@ it:
       no_help: "Durante il test non vedi se la risposta è giusta. Alla fine vedi tutto, con le soluzioni."
       nothing_else: "Niente libro, niente appunti, niente telefono."
     header: "%{subject} · Domanda %{number}"
+    header_count: "Domanda %{number}"
     pause: "Pausa"
     leave:
       unsent: "Hai scritto una risposta, ma non l'hai ancora inviata. Se esci, si perde."

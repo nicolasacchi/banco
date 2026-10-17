@@ -31,7 +31,7 @@
 body.student:has(.l2-top) { background-image: linear-gradient(rgba(38, 58, 92, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(38, 58, 92, 0.06) 1px, transparent 1px); background-size: 26px 26px; }
 [data-theme="dark"] body.student:has(.l2-top) { background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); }
 /* in a lesson the layout's own notices and menu fold into the bar (a chip and a "Menu" button) */
-body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) #trial-notice, body.student:has(.l2-top) #draft-notice, body.student:has(.l2-top) .l2-back { display: none; }
+body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) .topbar, body.student:has(.l2-top) #trial-notice, body.student:has(.l2-top) #draft-notice, body.student:has(.l2-top) .l2-back { display: none; }
 .lesson2-page { margin: 0 auto; padding: 0 1rem 5.5rem; max-width: 100rem; }
 .l2-top { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 92%, transparent); border-bottom: 1px solid var(--rule); backdrop-filter: blur(8px); margin: 0 -1rem 1rem; padding: 0.35em 1rem 0; }
 .l2-top-in { display: flex; align-items: center; gap: 0.6em; max-width: 80em; margin: 0 auto; }

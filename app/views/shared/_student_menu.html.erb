@@ -1,19 +1,39 @@
+<%# The student's top bar (D-240, D-307): one compact row on every page. A page with its own bar (the lesson) hides it.
+    Full: the section name, «Commenta» and «Menu», which opens the dialog with the links. Sitting: the way out and «Commenta». %>
 <% mode = student_menu_mode %>
 <% if mode == :sitting %>
-  <nav class="student-menu" id="student-menu" aria-label="<%= t("student.menu.label") %>">
-    <ul>
-      <li><a id="sitting-leave" href="/today" data-sitting-leave><%= t("student.menu.pause_to_today") %></a></li>
-      <li><button type="button" class="comment-open" id="comment-open-menu" data-comment-open><%= comment_icon("comment") %><span><%= t("comments.button") %></span></button></li>
-    </ul>
-  </nav>
+  <header class="topbar sitting">
+    <nav class="student-menu topbar-in" id="student-menu" aria-label="<%= t("student.menu.label") %>">
+      <a id="sitting-leave" class="topbar-leave" href="/today" data-sitting-leave><%= ui_icon("back") %><span><%= t("student.menu.pause_to_today") %></span></a>
+      <button type="button" class="comment-open" id="comment-open-menu" data-comment-open><%= comment_icon("comment") %><span><%= t("comments.button") %></span></button>
+    </nav>
+  </header>
 <% elsif mode == :full %>
   <% current = student_menu_current %>
-  <nav class="student-menu" id="student-menu" data-comment-anchor="menu" aria-label="<%= t("student.menu.label") %>">
-    <ul>
-      <% student_menu_items.each do |key, label, href| %>
-        <li><a href="<%= href %>" id="<%= key == :logout ? 'logout-link' : "menu-#{key}" %>"<%= ' aria-current="page"'.html_safe if key == current %>><%= label %><% if key == :comments && comment_unread_count.positive? %> <span class="menu-badge" id="comments-badge" aria-label="<%= t("comments.menu_new", n: comment_unread_count) %>"><%= comment_unread_count %></span><% end %></a></li>
-      <% end %>
-      <li><button type="button" class="comment-open" id="comment-open-menu" data-comment-open><%= comment_icon("comment") %><span><%= t("comments.button") %></span></button></li>
-    </ul>
-  </nav>
+  <header class="topbar" data-comment-anchor="menu" data-controller="student-menu">
+    <div class="topbar-in">
+      <p class="topbar-title" id="topbar-title"><%= student_bar_title(current) %></p>
+      <button type="button" class="comment-open" id="comment-open-menu" data-comment-open><%= comment_icon("comment") %><span><%= t("comments.button") %></span></button>
+      <button type="button" class="button secondary small topbar-menu" id="student-menu-open" aria-haspopup="dialog" data-student-menu-target="opener" data-action="student-menu#open"><%= ui_icon("menu") %><span><%= t("student.menu.label") %></span><% if comment_unread_count.positive? %><span class="menu-dot" aria-hidden="true"></span><% end %></button>
+    </div>
+    <dialog class="dialog" id="student-menu-dialog" aria-labelledby="student-menu-title" data-student-menu-target="dialog" data-action="click->student-menu#backdrop">
+      <div class="dialog-head">
+        <h2 id="student-menu-title"><%= t("student.menu.label") %></h2>
+        <button type="button" class="button secondary small" id="student-menu-close" data-action="student-menu#close"><%= t("student.menu.close") %></button>
+      </div>
+      <div class="dialog-body">
+        <nav class="student-menu" id="student-menu" aria-label="<%= t("student.menu.label") %>">
+          <ul class="row-list">
+            <% student_menu_items.each do |key, label, href| %>
+              <li class="row">
+                <%= ui_icon(student_menu_icon(key)) %>
+                <div class="row-main"><a class="row-stretch" href="<%= href %>" id="<%= key == :logout ? 'logout-link' : "menu-#{key}" %>"<%= ' aria-current="page"'.html_safe if key == current %>><%= label %><% if key == :comments && comment_unread_count.positive? %> <span class="menu-badge" id="comments-badge" aria-label="<%= t("comments.menu_new", n: comment_unread_count) %>"><%= comment_unread_count %></span><% end %></a></div>
+                <span class="row-end"><%= ui_icon("next", css: "row-chev") unless key == :logout %></span>
+              </li>
+            <% end %>
+          </ul>
+        </nav>
+      </div>
+    </dialog>
+  </header>
 <% end %>

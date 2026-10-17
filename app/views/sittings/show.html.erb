@@ -15,77 +15,74 @@
   <% end %>
 
   <% unless preview? %>
-    <div class="notice" id="leave-confirm" role="alert" data-sitting-target="leaveBox" hidden>
+    <div class="notice nearly" id="leave-confirm" role="alert" data-sitting-target="leaveBox" hidden>
       <p><%= t("sitting.leave.unsent") %></p>
-      <p>
+      <div class="button-row">
         <button type="button" class="button" id="leave-stay" data-action="sitting#stay"><%= t("sitting.leave.stay") %></button>
         <button type="button" class="button secondary" id="leave-go" data-action="sitting#leaveNow"><%= t("sitting.leave.go") %></button>
-      </p>
+      </div>
     </div>
   <% end %>
 
   <section data-sitting-target="intro">
     <h1><%= @second_part ? t("sitting.title_second", subject: @subject.name_it) : t("sitting.title", subject: @subject.name_it) %></h1>
     <% if @intro_note %><p id="intro-note"><%= @intro_note %></p><% end %>
-    <section id="how-it-works" aria-labelledby="how-it-works-title">
-      <h2 id="how-it-works-title"><%= t("sitting.intro.title") %></h2>
-      <ul class="plain">
-        <li><%= t("sitting.intro.not_a_grade") %></li>
-        <li><%= t("sitting.intro.adaptive") %></li>
-        <li><%= t("sitting.intro.duration", minutes: @minutes) %></li>
-        <li><%= t("sitting.intro.pause_html") %></li>
-        <li><%= t("sitting.intro.dont_know_html") %></li>
-        <li><%= @calculator ? t("sitting.intro.calculator_yes") : t("sitting.intro.calculator_no") %></li>
-        <li><%= t("sitting.intro.send_html") %></li>
-        <li><%= t("sitting.intro.help_html") %></li>
-        <% if @formula_sheet %><li id="intro-formula-sheet"><%= t("sitting.intro.formula_sheet_html") %></li><% end %>
-        <li><%= t("sitting.intro.no_help") %></li>
-        <li><%= t("sitting.intro.nothing_else") %></li>
+    <section id="how-it-works" class="card" aria-labelledby="how-it-works-title">
+      <h2 id="how-it-works-title" class="card-title"><%= t("sitting.intro.title") %></h2>
+      <ul class="check-list">
+        <li><%= ui_icon("check") %><span><%= t("sitting.intro.not_a_grade") %></span></li>
+        <li><%= ui_icon("check") %><span><%= t("sitting.intro.adaptive") %></span></li>
+        <li><%= ui_icon("check") %><span><%= t("sitting.intro.duration", minutes: @minutes) %></span></li>
+        <li><%= ui_icon("check") %><span><%= t("sitting.intro.pause_html") %></span></li>
+        <li><%= ui_icon("check") %><span><%= t("sitting.intro.dont_know_html") %></span></li>
+        <li><%= ui_icon("check") %><span><%= @calculator ? t("sitting.intro.calculator_yes") : t("sitting.intro.calculator_no") %></span></li>
+        <li><%= ui_icon("check") %><span><%= t("sitting.intro.send_html") %></span></li>
+        <li><%= ui_icon("check") %><span><%= t("sitting.intro.help_html") %></span></li>
+        <% if @formula_sheet %><li id="intro-formula-sheet"><%= ui_icon("check") %><span><%= t("sitting.intro.formula_sheet_html") %></span></li><% end %>
+        <li><%= ui_icon("check") %><span><%= t("sitting.intro.no_help") %></span></li>
+        <li><%= ui_icon("check") %><span><%= t("sitting.intro.nothing_else") %></span></li>
       </ul>
     </section>
-    <p><button type="button" class="button" data-action="sitting#begin"><%= @resuming ? t("diagnosis.actions.resume") : t("diagnosis.actions.start") %></button></p>
+    <p class="start-row"><button type="button" class="button" data-action="sitting#begin"><%= @resuming ? t("diagnosis.actions.resume") : t("diagnosis.actions.start") %></button></p>
   </section>
 
   <section data-sitting-target="stage" hidden>
-    <header class="bar">
+    <header class="bar sitting-head">
       <h1 data-sitting-target="heading"></h1>
     </header>
-    <div data-sitting-target="work">
+    <div class="card sitting-card" data-sitting-target="work">
       <div data-sitting-target="itemBox" class="item" data-comment-anchor="question"></div>
-      <details class="help" id="answer-help" data-sitting-target="help" data-action="toggle->sitting#helpToggled" data-comment-anchor="help">
+      <details class="help disclosure" id="answer-help" data-sitting-target="help" data-action="toggle->sitting#helpToggled" data-comment-anchor="help">
         <summary><%= t("sitting.help.title") %></summary>
         <div data-sitting-target="helpBody"></div>
       </details>
-      <% unless preview? %>
-        <p class="comment-here"><button type="button" class="comment-open secondary" id="comment-open-sitting" data-comment-open><%= comment_icon("comment") %><span><%= t("comments.button") %></span></button></p>
-      <% end %>
       <section class="sheet" id="formula-sheet" data-sitting-target="sheet" aria-labelledby="formula-sheet-title" hidden>
         <h2 id="formula-sheet-title"><%= t("sitting.sheet.title") %></h2>
         <div data-sitting-target="sheetBody"></div>
       </section>
-      <div class="actions">
+      <div class="actions button-row sticky-actions">
         <button type="button" class="button" data-sitting-target="sendButton" data-action="sitting#send"><%= t("sitting.send") %></button>
+        <button type="button" class="button secondary" data-sitting-target="unknownButton" data-action="sitting#dontKnow"><%= t("sitting.dont_know") %></button>
         <button type="button" class="button secondary" id="sheet-button" data-sitting-target="sheetButton" data-action="sitting#toggleSheet"
                 aria-expanded="false" aria-controls="formula-sheet" hidden><%= t("sitting.sheet.button") %></button>
-        <button type="button" class="button secondary apart" data-sitting-target="unknownButton" data-action="sitting#dontKnow"><%= t("sitting.dont_know") %></button>
       </div>
     </div>
     <p role="status" aria-live="polite" class="status" data-sitting-target="status"></p>
-    <div data-sitting-target="blocked" class="notice" hidden>
+    <div data-sitting-target="blocked" class="notice error" hidden>
       <p><%= t("sitting.blocked") %></p>
-      <p><button type="button" class="button" data-action="sitting#signIn"><%= t("sitting.sign_in_again") %></button></p>
+      <div class="button-row"><button type="button" class="button" data-action="sitting#signIn"><%= t("sitting.sign_in_again") %></button></div>
     </div>
   </section>
 
   <section data-sitting-target="over" hidden>
     <h1><%= t("sitting.more_to_do") %></h1>
     <p><%= t("sitting.more_to_do_text", subject: @subject.name_it) %></p>
-    <p><a class="button" href="<%= preview? ? '/teacher/preview' : '/diagnosis' %>"><%= t("sitting.back_to_list") %></a></p>
+    <p class="start-row"><a class="button" href="<%= preview? ? '/teacher/preview' : '/diagnosis' %>"><%= t("sitting.back_to_list") %></a></p>
   </section>
 
   <section data-sitting-target="wait" hidden>
     <h1><%= t("sitting.sitting_over") %></h1>
     <p><%= t("sitting.wait_tomorrow") %></p>
-    <p><a class="button" href="<%= preview? ? '/teacher/preview' : '/diagnosis' %>"><%= t("sitting.back_to_list") %></a></p>
+    <p class="start-row"><a class="button" href="<%= preview? ? '/teacher/preview' : '/diagnosis' %>"><%= t("sitting.back_to_list") %></a></p>
   </section>
 </main>

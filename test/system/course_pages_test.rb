@@ -212,6 +212,7 @@ class CourseSystemTest < ApplicationSystemTestCase
     assert_selector "#suggestions li.topic", count: 1
     assert_no_selector "#draft-notice"
     visit "/diagnosis"
+    find("#student-menu-open").click # the links are in the menu dialog (D-307)
     assert_selector "#menu-subjects", text: "Materie"
   end
 

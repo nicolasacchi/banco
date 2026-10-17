@@ -1,19 +1,33 @@
 <% content_for :title, @subject_view.subject.name_it %>
-<main class="page course">
-  <h1><%= @subject_view.subject.name_it %></h1>
-  <p class="counts"><%= t("subjects.counts", **course_view.counts(@subject_view)) %></p>
+<% key = @subject_view.subject.key %>
+<main class="page course" style="--subject: var(--accent-<%= key %>, var(--soft-primary))">
+  <%= ui_page_header(@subject_view.subject.name_it, back: [ t("subjects.title"), "/subjects" ]) %>
+  <section class="card subject-summary" aria-label="<%= t("subjects.title") %>">
+    <div class="subject-line">
+      <%= subject_chip(key) %>
+      <div class="subject-text"><%= render "course/progress", progress: subject_progress(course_view.counts(@subject_view)) %></div>
+    </div>
+  </section>
   <% if @without_topic.any? %>
-    <p id="without-topic"><%= t("subject.no_topic", skills: @without_topic.map { |s| course_view.label(s) }.join(", ")) %></p>
+    <%= ui_notice :info, t("subject.no_topic", skills: @without_topic.map { |s| course_view.label(s) }.join(", ")), html: { id: "without-topic" } %>
   <% end %>
   <h2><%= t("subject.topics") %></h2>
-  <ol class="topics" id="topics">
-    <% @subject_view.topics.each do |topic| %>
+  <ol class="topics topic-list" id="topics">
+    <% @subject_view.topics.each_with_index do |topic, i| %>
       <% status = course_view.status(topic); before = course_view.before(@subject_view, topic) %>
-      <li class="topic" data-topic="<%= topic.key %>" data-status="<%= status %>">
-        <a class="topic-title" href="/topics/<%= topic.key %>"><%= topic.title_it %></a>
-        <span class="topic-meta"><%= t("topic.kind.#{topic.kind}") %> · <%= t("topic.minutes", n: topic.minutes) %> · <%= t("topic.status.#{status}") %><%= " · #{t('topic.tag_recover')}" if course_view.recover_tag?(topic) %></span>
-        <% if before %><span class="topic-why"><%= t("topic.before", topic: before.title_it) %></span><% end %>
-        <% unless topic.approved %><span class="topic-why"><%= t("draft.notice") %></span><% end %>
+      <li class="topic row" data-topic="<%= topic.key %>" data-status="<%= status %>">
+        <span class="topic-number" aria-hidden="true"><%= i + 1 %></span>
+        <div class="row-main">
+          <a class="topic-title row-stretch" href="/topics/<%= topic.key %>"><%= topic.title_it %></a>
+          <span class="topic-meta"><%= t("topic.kind.#{topic.kind}") %> · <%= t("topic.minutes", n: topic.minutes) %></span>
+          <% if before %><span class="topic-why"><%= t("topic.before", topic: before.title_it) %></span><% end %>
+          <% unless topic.approved %><span class="topic-why"><%= ui_tag(t("topic.draft")) %> <%= t("draft.notice") %></span><% end %>
+        </div>
+        <span class="row-end">
+          <% if course_view.recover_tag?(topic) %><%= ui_pill(t("topic.tag_recover"), :nearly) %><% end %>
+          <%= ui_pill(t("topic.status.#{status}"), topic_status_tone(status)) %>
+          <%= ui_icon("next", css: "row-chev") %>
+        </span>
       </li>
     <% end %>
   </ol>

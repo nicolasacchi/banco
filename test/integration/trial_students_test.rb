@@ -57,7 +57,7 @@ class TrialStudentsTest < ActionDispatch::IntegrationTest
   test "the official student still sees a closed diagnosis, on the same data" do
     build_ui_subject(approve: false)
     as(OFFICIAL, "/diagnosis")
-    assert_select "p.notice", "La diagnosi non è ancora aperta."
+    assert_select ".notice", "La diagnosi non è ancora aperta."
     assert_select "#trial-notice", 0
     as(OFFICIAL, "/diagnosis/subjects/math", method: :post)
     assert_response :forbidden

@@ -29,9 +29,17 @@ class StudentMenuSystemTest < ApplicationSystemTestCase
 
   def menu_overflow = page.evaluate_script("document.documentElement.scrollWidth")
 
+  # D-307: the links are in a dialog behind the top bar's "Menu" button.
+  def open_menu
+    find("#student-menu-open").click
+    assert_selector "dialog#student-menu-dialog[open]"
+  end
+
   test "the bare address lands on Oggi with the menu and the current page marked" do
     visit "/"
     assert_current_path "/today"
+    assert_selector ".topbar-title", text: "Oggi"
+    open_menu
     within("nav.student-menu") do
       assert_selector "a[aria-current=page]", text: "Oggi"
       assert_link "Test d'ingresso"
@@ -45,19 +53,24 @@ class StudentMenuSystemTest < ApplicationSystemTestCase
     visit "/today"
     ids = page.evaluate_script("Array.from(document.querySelectorAll('nav.student-menu a')).map(function (a) { return a.id })")
     assert_equal %w[menu-today menu-diagnosis menu-comments menu-settings], ids
+    page.execute_script("document.getElementById('student-menu-open').focus()")
+    type_keys(:Enter) # the button opens the dialog; the browser puts the focus inside it
+    assert_selector "dialog#student-menu-dialog[open]"
     seen = []
-    ids.size.times do
+    ids.size.times do # the focus starts on the close button, then each link in order
       type_keys(:Tab)
       seen << page.evaluate_script("document.activeElement.id")
     end
-    assert_equal ids, seen.first(ids.size)
-    outline = page.evaluate_script("getComputedStyle(document.activeElement).outlineStyle")
+    assert_equal ids, seen, "every link is reached in order after the close button"
+    outline = page.evaluate_script("getComputedStyle(document.activeElement.closest('li')).outlineStyle") # the row shows the focus (D-307)
     assert_not_equal "none", outline
     2.times { type_keys(:Shift, :Tab) } # back to the second item
     type_keys(:Enter)
     assert_current_path "/diagnosis"
-    assert_selector "nav.student-menu a[aria-current=page]", text: "Test d'ingresso"
     assert_selector "h1", text: "Test d'ingresso"
+    assert_selector ".topbar-title", text: "Test d'ingresso"
+    open_menu
+    assert_selector "nav.student-menu a[aria-current=page]", text: "Test d'ingresso"
   end
 
   test "targets are large and the menu fits a phone at the largest size" do
@@ -67,9 +80,14 @@ class StudentMenuSystemTest < ApplicationSystemTestCase
     assert_selector "html[data-size=larger]"
     page.driver.resize(390, 844)
     visit "/today"
-    heights = page.evaluate_script("Array.from(document.querySelectorAll('nav.student-menu a')).map(function (a) { return a.getBoundingClientRect().height })")
+    assert_operator menu_overflow, :<=, 390, "no sideways scroll"
+    bar = page.evaluate_script("Array.from(document.querySelectorAll('.topbar-in button')).map(function (b) { var r = b.getBoundingClientRect(); return [r.height, r.left, r.right] })")
+    assert bar.all? { |h, l, r| h >= 44 && l >= 0 && r <= 390 }, "the bar's buttons are 44 px high and on screen: #{bar.inspect}"
+    open_menu
+    heights = page.evaluate_script("Array.from(document.querySelectorAll('nav.student-menu a')).map(function (a) { return a.parentElement.getBoundingClientRect().height })")
     assert heights.all? { |h| h >= 44 }, heights.inspect
     assert_operator menu_overflow, :<=, 390, "no sideways scroll"
+    find("#student-menu-close").click
     labels = page.evaluate_script("Array.from(document.querySelectorAll('nav.student-menu a')).map(function (a) { return a.scrollWidth <= a.clientWidth + 1 })")
     assert labels.all?, "every label is fully visible"
     shot "today-phone-larger"
@@ -148,7 +166,9 @@ class StudentMenuSystemTest < ApplicationSystemTestCase
     visit "/today"
     shot "today-phone-normal"
     visit "/settings"
+    open_menu
     assert_selector "nav.student-menu a[aria-current=page]", text: "Impostazioni"
+    find("#student-menu-close").click
     shot "settings-phone-normal"
   end
 end

@@ -2,14 +2,20 @@
 <main class="page course">
   <h1><%= t("subjects.title") %></h1>
   <% if @closed %>
-    <p class="notice" id="course-closed"><%= t("today.closed") %></p>
+    <%= ui_notice :info, t("today.closed"), html: { id: "course-closed" } %>
   <% else %>
-    <ul class="subjects">
+    <ul class="subjects subject-list cards" id="subjects">
       <% @subjects.each do |sv| %>
-        <% c = course_view.counts(sv) %>
-        <li class="subject" data-subject="<%= sv.subject.key %>">
-          <a class="subject-name" href="/subjects/<%= sv.subject.key %>"><%= sv.subject.name_it %></a>
-          <span class="subject-state"><%= t("subjects.counts", **c) %></span>
+        <% progress = subject_progress(course_view.counts(sv)) %>
+        <li class="subject card subject-card" data-subject="<%= sv.subject.key %>" style="--subject: var(--accent-<%= sv.subject.key %>, var(--soft-primary))">
+          <div class="subject-line">
+            <%= subject_chip(sv.subject.key) %>
+            <div class="subject-text">
+              <a class="subject-name row-stretch" href="/subjects/<%= sv.subject.key %>"><%= sv.subject.name_it %></a>
+            </div>
+            <%= ui_icon("next", css: "row-chev") %>
+          </div>
+          <%= render "course/progress", progress: progress %>
         </li>
       <% end %>
     </ul>

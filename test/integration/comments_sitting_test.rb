@@ -43,7 +43,7 @@ class CommentsSittingTest < ActionDispatch::IntegrationTest
     web(run_path)
     assert_response :success
     assert_select "#comment-root[data-comment-events-url-value='#{run_path}/events']"
-    assert_select "#comment-open-sitting[data-comment-open]"
+    assert_select "#comment-open-sitting", 0, "one «Commenta» in the bar, none beside the question (D-307)"
     assert_select "#comment-open-menu"
     assert_select "[data-sitting-target=itemBox][data-comment-anchor=question]"
   end

@@ -9,8 +9,14 @@ import { renderInline } from "items/markup"
 // templates in app/javascript/items/, and posts each answer through the practice outbox (banco.poutbox.). The
 // server grades and chooses every sentence; this controller only shows what it is told. The feedback sits in a
 // polite live region; every step works from the keyboard and the focus goes where the next step is.
+const SPRITE = "/vendor/lucide@1.54.0/banco-sprite.svg"
+// The tone of a feedback notice by the grader's outcome (D-307): never red and green; the words come from the server.
+const TONES = { correct: "success", correct_aided: "success", near_miss: "nearly", typical_error: "error", unrecognised: "error", form: "error", undetermined: "info" }
+const TONE_ICONS = { success: "circle-check", nearly: "triangle-alert", error: "alert", info: "info", hint: "wrong-hint" }
+const STATE_TONES = { demonstrated: "success", consolidated: "success", in_study: "info", to_recover: "nearly", to_review: "nearly", to_learn: "nearly", not_seen: "muted" }
+
 export default class extends Controller {
-  static targets = ["skillState", "reason", "work", "itemBox", "hints", "hintList", "controls", "check", "hintButton", "solutionButton",
+  static targets = ["skillState", "skillWhy", "dots", "reason", "work", "itemBox", "hints", "hintList", "controls", "check", "hintButton", "solutionButton",
                     "feedback", "solutionBox", "nextActions"]
   static values = { topic: String, skill: String, serveUrl: String, answerUrl: String, backUrl: String, texts: Object, labels: Object }
 
@@ -89,14 +95,23 @@ export default class extends Controller {
     return null
   }
 
+  // The state pill, the three dots (corrections without help, while the skill is "in studio") and the sentence of why.
   showSkill(skill) {
-    this.skillStateTarget.textContent = `${skill.state_it}. ${skill.why_it}`
+    this.skillStateTarget.textContent = skill.state_it
+    this.skillStateTarget.className = `pill ${STATE_TONES[skill.state] || "muted"}`
+    this.skillWhyTarget.textContent = skill.why_it
+    const clean = skill.clean
+    this.dotsTarget.hidden = clean === null || clean === undefined
+    if (!this.dotsTarget.hidden) {
+      this.dotsTarget.setAttribute("aria-label", this.labels.clean_of.replace("%{n}", clean))
+      Array.from(this.dotsTarget.children).forEach((dot, i) => dot.classList.toggle("on", i < clean))
+    }
   }
 
   showReason(reply) {
     const text = reply.reason_it
     this.reasonTarget.hidden = !text
-    this.reasonTarget.textContent = text || ""
+    this.reasonTarget.querySelector(".notice-body").textContent = text || ""
     this.reasonText = text
   }
 
@@ -149,16 +164,26 @@ export default class extends Controller {
       this.showActions(["next", "back"])
       return null
     }
-    const lines = [reply.message_it, reply.note_it].filter(Boolean)
+    const extra = []
     if (reply.skill) {
       this.showSkill(reply.skill)
-      if (reply.skill.changed) lines.push(this.labels.skill_now.replace("%{state}", reply.skill.state_it.toLowerCase()))
+      if (reply.skill.changed) extra.push(this.labels.skill_now.replace("%{state}", reply.skill.state_it.toLowerCase()))
     }
-    this.say(lines.join(" "))
+    this.sayOutcome(reply, extra)
     if (reply.hint) this.addHint(reply.hint.n, reply.hint.hint_it)
     if (reply.solution) this.showSolution(reply.solution)
     this.applyActions(reply.actions)
     return null
+  }
+
+  // The verdict as a notice: the tone follows the outcome; a right answer with a note (D-301's pair, the accents) is "nearly".
+  sayOutcome(reply, extra) {
+    const right = reply.outcome === "correct" || reply.outcome === "correct_aided"
+    let tone = TONES[reply.outcome] || "info"
+    if (right && reply.note_it) tone = "nearly"
+    const title = tone === "nearly" && !right ? this.labels.nearly : null
+    const note = [reply.note_it, ...extra].filter(Boolean).join(" ")
+    this.say(reply.message_it, { tone, title, note })
   }
 
   // ---- hints and solution --------------------------------------------------------------------------
@@ -312,8 +337,25 @@ export default class extends Controller {
     this.solutionButtonTarget.disabled = !enabled
   }
 
-  say(text) {
-    this.feedbackTarget.textContent = text || ""
+  // A plain status line (loading, saving, a refusal) or, with a tone, a notice: icon, an optional short title, the sentence
+  // and an optional note. The element stays the one polite live region of the page.
+  say(text, { tone = null, title = null, note = null } = {}) {
+    const box = this.feedbackTarget
+    box.textContent = ""
+    box.className = tone ? `feedback notice ${tone}` : "feedback"
+    if (!tone) {
+      box.textContent = text || ""
+      return
+    }
+    const holder = document.createElement("template")
+    holder.innerHTML = `<svg class="ic" aria-hidden="true" focusable="false"><use href="${SPRITE}#${TONE_ICONS[tone] || "info"}"></use></svg>`
+    const icon = holder.content.firstElementChild
+    const body = document.createElement("div")
+    body.className = "notice-body"
+    if (title) body.appendChild(Object.assign(document.createElement("span"), { className: "notice-title", textContent: title }))
+    if (text) body.appendChild(Object.assign(document.createElement("span"), { className: "feedback-text", textContent: text }))
+    if (note) body.appendChild(Object.assign(document.createElement("span"), { className: "feedback-note", textContent: ` ${note}` }))
+    box.append(icon, body)
   }
 
   // POST JSON; {status, body} with body null when the reply is not JSON, is a redirect or the network is down.

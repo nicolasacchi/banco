@@ -310,6 +310,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-304 | 2026-10-16 | comments anywhere (C1): the student comments on any page, the teacher answers; the clock stops in a sitting; no agent reads them | decided |
 | D-305 | 2026-10-16 | the look of comments (C1 polish): one «Commenta» pill with its own icon, a banner, a bottom sheet with five reason chips, a fading confirmation, calmer lists | decided |
 | D-306 | 2026-10-16 | the interface redesign, slices 1 and 2: one design system for the whole site, in the lessons' style | decided |
+| D-307 | 2026-10-17 | the interface redesign, slices 3 to 5: the student's pages (top bar and menu dialog, Oggi's «Ora» card, subject cards, topic steps, practice feedback, the sitting above the keyboard) | decided |
 | D-308 | 2026-10-17 | the interface redesign, slices 6 to 8: the teacher's pages as tools | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
@@ -3372,6 +3373,17 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
   4. **Quick wins:** link-buttons centred with equal heights (one `.button` rule for `a` and `button`); the overflows at 390 px (number field with a unit, search box, `.cards` minimum, the teacher's tables inside `.table-wrap`); targets of 44 px (`summary`, menu, breadcrumb and step links, reference links and "i", labels around radios and checkboxes, selects and inputs, "Non ho capito"); the end screen draws only the non-empty groups and says "non è un voto" first; a guest sees no "Prova come S" and no orphan "Rimanda all'agente"; the report's sittings show "2 nov 2026, 09:00"; 403 and 404 (and the static 400, 404, 422 and 500) are designed Italian pages with the same text for everyone; the settings radios are choice cards in the app's colours; the maths keyboard's tab colours follow the theme.
 - **Cost:** the old `.banner` and `.badge` shapes are replaced by the notice and the tag; pages that used the square outline now have rounded cards. A page that wants a new look uses the components; nothing else changes behaviour, routes, privacy or texts beyond the few above.
 - **Rules version:** none changes.
+- **Status:** decided
+- **Back-port:** none.
+
+## D-307 · 2026-10-17 · the interface redesign, slices 3 to 5: the student's pages in the lessons' style
+
+- **Design ref:** D-306 (tokens, components), D-240 (the student's menu), D-304 and D-305 (comments), D-216 (supports), D-301 (the pair note).
+- **Operator (2026-10-16):** the lessons' style for the whole site; the student side first, in slices.
+- **We do:** one compact top bar on every student page (section name, «Commenta», «Menu» opening a dialog with the links; a sitting keeps «Pausa: torna a Oggi» and «Commenta»); Oggi with one «Ora» card; Materie and a subject as cards with the subject's colour and icon and a visible progress in words; a topic as two steps (Lezione, Esercizi) with their state; practice as a lesson-like card with feedback as a notice with a tone (right, nearly right including the pair note, wrong, hint), the skill state as a pill with three dots; the sitting with question and answer in one card, «Invia» and «Non lo so» together and above the maths keyboard on a phone, «Come si risponde» as a 44 px bar; the end screen with «non è un voto» first and only non-empty groups; warm-up, search, settings and comments on the shared base.
+- **Texts:** «Riprendi: <topic>» is «Riprendi» (the card shows the topic); the counts sentence of Materie is a bar and pills («3 dimostrate», «2 in studio», «1 da vedere»); the second «Commenta» beside the question in a sitting is gone (the bar's stays).
+- **Payload:** the practice `skill` block gains `clean` (0 to 3 corrections without help while «in studio», else null). Nothing else in a reply changes.
+- **Cost:** tests that clicked a menu link now open the menu first; selectors of Oggi, Materie, the topic and the end screen follow the new markup.
 - **Status:** decided
 - **Back-port:** none.
 

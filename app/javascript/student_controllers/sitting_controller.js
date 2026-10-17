@@ -84,7 +84,10 @@ export default class extends Controller {
       console.error(error)
       return this.setStatus(this.texts.error_generic)
     }
-    this.headingTarget.textContent = this.texts.header.replace("%{subject}", reply.subject).replace("%{number}", reply.number)
+    // The subject, then the question number in a piece that never breaks (D-307); the text reads "Matematica · Domanda 7".
+    const subject = Object.assign(document.createElement("span"), { className: "sitting-subject", textContent: reply.subject })
+    const count = Object.assign(document.createElement("span"), { className: "sitting-count", textContent: this.texts.header_count.replace("%{number}", reply.number) })
+    this.headingTarget.replaceChildren(subject, " · ", count)
     this.itemBoxTarget.appendChild(this.handle.element)
     this.handle.mounted()
     this.showSupports(reply)

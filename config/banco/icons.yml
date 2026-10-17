@@ -68,6 +68,26 @@ ui:
   loading: loader-circle          # a loading state
   locked: lock                    # a page the role may not open
   not-found: compass              # a page that does not exist
+  # The student's shell (D-307): the menu, the subjects and the steps. Aliases of icons already vendored.
+  nav-today: sun                  # Oggi
+  nav-subjects: layers            # Materie
+  nav-search: search              # Cerca
+  nav-diagnosis: list-checks      # Test d'ingresso
+  nav-settings: type              # Impostazioni
+  step-lesson: book-open          # step 1 of a topic
+  step-practice: notebook-pen     # step 2 of a topic
+  clock-minutes: clock            # minutes of a topic
+  subject-math: calculator
+  subject-italian: pen-line
+  subject-chemistry: flask-conical
+  subject-biology: dna
+  subject-computer-science: code-xml
+  subject-business: briefcase
+  subject-english: languages
+  subject-spanish: megaphone
+  subject-geography: earth
+  subject-history: landmark
+  subject-law-economics: gavel
 
 # Content icons by subject (at most 30 each). Subjects not listed here use `structural` only.
 subjects:

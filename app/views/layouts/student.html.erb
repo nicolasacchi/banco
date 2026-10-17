@@ -17,8 +17,8 @@
     <%= javascript_importmap_tags "diagnosis", importmap: student_importmap %>
   </head>
   <body class="student">
-    <% if trial_account? %><p class="notice" id="trial-notice" role="status"><strong><%= t("student.trial_notice") %></strong></p><% end %>
     <%= render "shared/student_menu" %>
+    <% if trial_account? %><p class="notice info trial-notice" id="trial-notice" role="status"><strong><%= t("student.trial_notice") %></strong></p><% end %>
     <%= render "shared/comment" if comment_box? %>
     <%= yield %>
   </body>

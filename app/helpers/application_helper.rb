@@ -30,7 +30,7 @@ module ApplicationHelper
   def practice_labels
     t = I18n.t("practice")
     t.slice(:loading, :saving, :empty, :blocked, :error, :hint, :hint_n, :solution, :solution_title, :final, :skill_now, :try_this,
-            :try_this_reason, :after_solution, :next, :back, :closed, :not_counted, :reseen, :submit)
+            :try_this_reason, :after_solution, :next, :back, :closed, :not_counted, :reseen, :submit, :nearly, :clean_of)
   end
 
   # The texts of the "Non ho capito" control's script.

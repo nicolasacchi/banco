@@ -1,0 +1,9 @@
+<%# The progress of a subject (D-307): a bar of the skills shown, and the non-zero counts as words (Materie and a subject). %>
+<div class="subject-progress">
+  <% if progress[:total].zero? %>
+    <span class="subject-state"><%= t("subjects.none_yet") %></span>
+  <% else %>
+    <%= ui_meter(progress[:percent], t("subjects.meter", done: progress[:done], total: progress[:total])) %>
+    <span class="subject-state"><%= safe_join(progress[:pills], " ") %></span>
+  <% end %>
+</div>

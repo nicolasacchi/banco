@@ -65,6 +65,9 @@ module Practice
 
     def state_it(state) = I18n.t("states.#{state}")
 
+    # Corrections without help counted toward demonstration (0..3), only while the skill is "in studio"; nil otherwise.
+    def clean_count(why) = why[:code].to_s == "in_study" ? why[:n].to_i.clamp(0, 3) : nil
+
     # The "perché" sentence of a SkillState's why = {code:, ...}.
     def why_it(why)
       why = why.dup

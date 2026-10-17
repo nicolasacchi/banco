@@ -124,16 +124,19 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     assert_select "nav.student-menu a", 6
     page(OFFICIAL, "/topics/#{TOPIC}/lesson")
     page(OFFICIAL, "/today")
-    assert_select "#resume", "Riprendi: #{TOPIC_TITLE}"
+    assert_select "#resume", "Riprendi"
+    assert_select "#now-resume .now-title", TOPIC_TITLE
   end
 
   test "Materie and Materia: counts, status and tag" do
     build_student_world
     page(OFFICIAL, "/subjects")
-    assert_select "li.subject[data-subject=math] .subject-state", "0 abilità dimostrate, 0 in studio, 0 da riprendere, 1 non ancora viste."
+    assert_select "li.subject[data-subject=math] .subject-state .pill", "1 da vedere"
+    assert_select "li.subject[data-subject=math] [role=progressbar][aria-valuenow='0']"
     page(OFFICIAL, "/subjects/math")
     assert_select "li.topic[data-topic='#{TOPIC}'][data-status=todo]"
-    assert_select "li.topic .topic-meta", /Ripasso di prima · 30 minuti · Da fare/
+    assert_select "li.topic .topic-meta", /Ripasso di prima · 30 minuti/
+    assert_select "li.topic[data-topic='#{TOPIC}'] .pill", "Da fare"
     page(OFFICIAL, "/subjects/chemistry")
     assert_response :not_found
   end

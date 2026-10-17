@@ -1,0 +1,220 @@
+/*
+ * The student's pages (D-307, docs/ui.md): the top bar and its menu, Oggi, Materie, a subject, a topic, practice, the sitting, the
+ * end screen, the warm-up, search and settings. Built only from the tokens (application.css) and the shared components
+ * (components.css); this file holds what is specific to these pages. Class names here are used by no teacher page, so nothing
+ * in this file needs a scope prefix. The lesson/2 pages keep their own look (lesson.css) and hide the top bar.
+ */
+
+/* The top bar: the section name, «Commenta» and «Menu» in one row on every page. ------------------------------------------- */
+.topbar { position: sticky; top: 0; z-index: 30; background: var(--bg); border-bottom: var(--border-soft); }
+.topbar-in { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); max-width: 70ch; margin: 0 auto; padding: var(--space-2) var(--space-4); }
+.topbar-title { flex: 1 1 0; min-width: 0; margin: 0; font-weight: 700; font-size: var(--text-l); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar .comment-open, .topbar .topbar-menu { flex: none; min-height: var(--tap); box-sizing: border-box; border-radius: var(--radius-pill); gap: var(--space-2); }
+.topbar .topbar-menu { padding-inline: var(--space-4); position: relative; }
+.topbar .topbar-menu .ic { margin: 0; }
+.menu-dot { position: absolute; top: 0.3rem; right: 0.3rem; width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--tone-nearly); border: 2px solid var(--bg); }
+.topbar.sitting .topbar-in { justify-content: space-between; flex-wrap: nowrap; }
+.topbar-leave { display: inline-flex; align-items: center; gap: var(--space-2); flex: 1 1 0; min-width: 0; min-height: var(--tap); color: var(--text); font-weight: 700; text-decoration: none; line-height: 1.2; }
+.topbar-leave .ic { flex: none; }
+.topbar-leave:hover span { text-decoration: underline; }
+@media (max-width: 34rem) {
+  .topbar-title { display: none; }
+  .topbar-in { justify-content: space-between; gap: var(--space-1); padding-inline: var(--space-3); }
+  .topbar .comment-open, .topbar .topbar-menu { padding-inline: var(--space-3); gap: var(--space-1); }
+}
+/* The menu dialog: rows of the shared list, the current page marked. */
+#student-menu-dialog .row-list { margin: 0; }
+#student-menu-dialog .row > .ic:first-child { color: var(--primary); width: 1.4rem; height: 1.4rem; }
+#student-menu-dialog .row:has(a[aria-current="page"]) { border: 2px solid var(--primary); background: var(--soft-primary); }
+.trial-notice { margin: 0; border-radius: 0; border-width: 0 0 1px; text-align: center; padding: var(--space-1) var(--space-4); }
+
+/* A subject's chip (its palette colour and icon), a line with a chip and text. ------------------------------------------------- */
+.subject-chip {
+  flex: none; display: inline-grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: var(--radius-m); color: var(--text);
+  background: var(--subject, var(--soft-primary)); border: 1px solid color-mix(in srgb, var(--text) 20%, transparent);
+}
+.subject-chip .ic { width: 1.4rem; height: 1.4rem; }
+.subject-line { display: flex; align-items: center; gap: var(--space-3); flex: 1 1 14rem; min-width: 0; }
+.subject-text { flex: 1 1 0; min-width: 0; display: grid; gap: 0; }
+.subject-line > .row-chev { flex: none; color: var(--muted); }
+.page.course > .page-header + .card, .page.course > .topic-meta { margin-top: 0; }
+
+/* Subject and topic cards (Oggi, entry test rows, Materie, the test list). -------------------------------------------------------- */
+ul.subject-list, ul.topic-list, ol.topic-list { list-style: none; margin: 0 0 var(--space-5); padding: 0; display: grid; gap: var(--space-3); }
+ul.subject-list.cards { gap: var(--space-4); }
+ul.subject-list > li.subject, ul.topic-list > li.topic {
+  position: relative; box-sizing: border-box; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-4);
+  padding: var(--space-3) var(--space-4); background: var(--surface); border: var(--border-soft); border-left-width: 1px; border-radius: var(--radius-l);
+  box-shadow: var(--shadow-1); transition: border-color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
+}
+ul.subject-list > li.subject.suggested { padding-left: var(--space-4); }
+ul.subject-list.cards > li.subject { display: grid; align-items: start; gap: var(--space-3); padding: var(--space-4) var(--space-5); }
+ul.subject-list > li.subject:hover, ul.topic-list > li.topic:hover { border-color: var(--text); box-shadow: var(--shadow-2); }
+ul.subject-list > li.subject:has(a:focus-visible), ul.topic-list > li.topic:has(a:focus-visible) { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+ul.subject-list > li.subject:has(a:focus-visible) a:focus-visible, ul.topic-list > li.topic a:focus-visible { outline: none; }
+ul.topic-list > li.topic { flex-direction: row; }
+ul.topic-list > li.topic .subject-line { flex-basis: 100%; }
+ul.topic-list > li.topic .topic-why { flex-basis: 100%; }
+ul.topic-list > li.topic a.topic-title, ol.topic-list a.topic-title { font-size: var(--text-l); line-height: var(--leading-tight); text-decoration: none; }
+ul.topic-list > li.topic:hover a.topic-title, ol.topic-list > li.topic:hover a.topic-title { text-decoration: underline; text-underline-offset: 0.2em; }
+ul.topic-list > li.topic a.topic-title::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius-l); }
+ul.subject-list .subject-name { font-weight: 700; font-size: var(--text-l); flex: 0 1 auto; min-height: 0; }
+ul.subject-list.cards .subject-name { min-height: var(--tap); }
+ul.subject-list .subject-text .subject-state, .subject-list .subject-text .subject-name { display: block; }
+ul.subject-list.cards a.subject-name::after { border-radius: var(--radius-l); }
+/* The state of an entry-test row as a pill; the tone follows the row's state, the word is the one the server wrote. */
+ul.subject-list:not(.cards) .subject-state {
+  --tone: var(--tone-muted); justify-self: start; display: inline-flex; width: fit-content; font-size: var(--text-s); font-weight: 700; padding: 0.05em 0.7em;
+  border: 1.5px solid var(--tone); border-radius: var(--radius-pill); background: color-mix(in srgb, var(--tone) 12%, var(--surface)); margin-top: var(--space-1);
+}
+ul.subject-list > li[data-state="in_progress"] .subject-state, ul.subject-list > li[data-state="continue_next_day"] .subject-state, ul.subject-list > li[data-state="paused"] .subject-state { --tone: var(--tone-info); }
+ul.subject-list > li[data-state="done"] .subject-state, ul.subject-list > li[data-state="done_checking"] .subject-state { --tone: var(--tone-success); }
+ul.subject-list > li[data-state="to_redo"] .subject-state { --tone: var(--tone-nearly); }
+ul.subject-list form.inline { display: flex; margin: 0; }
+.subject-progress { display: grid; gap: var(--space-2); }
+.subject-state .pill { margin: 0 var(--space-1) var(--space-1) 0; }
+.subject-summary { margin-bottom: var(--space-4); }
+.subject-summary .subject-progress { flex: 1; }
+.today-block { margin-bottom: var(--space-5); }
+.today-block > h2 { margin-top: var(--space-5); }
+.today #entry-warmup.optional { margin-top: var(--space-3); }
+
+/* The «Ora» card: the one next thing, big, in the subject's colour. ----------------------------------------------------------- */
+.now-card, ul.subject-list > li.subject.now-card, ul.topic-list > li.topic.now-card {
+  display: grid; gap: var(--space-3); box-sizing: border-box; padding: var(--space-5); border: 2px solid var(--primary); border-radius: var(--radius-l);
+  background: color-mix(in srgb, var(--subject, var(--soft-primary)) 55%, var(--surface)); box-shadow: var(--shadow-2);
+}
+.now-card .now-pill { justify-self: start; }
+.now-card .subject-chip { width: 3.5rem; height: 3.5rem; }
+.now-card .subject-chip .ic { width: 1.8rem; height: 1.8rem; }
+.now-title { margin: 0; font-size: var(--text-h2); line-height: 1.25; }
+ul.topic-list > li.topic.now-card a.topic-title { font-size: var(--text-h2); }
+.now-card .button, .now-card form.inline .button { position: relative; z-index: 1; min-height: 3.25rem; font-size: var(--text-l); padding-inline: var(--space-6); }
+.now-card form.inline { display: block; margin: 0; }
+.now-card .button, .now-card form.inline, .now-card form.inline .button { justify-self: start; }
+@media (max-width: 40rem) { .now-card .button, .now-card form.inline, .now-card form.inline .button { width: 100%; justify-self: stretch; } }
+.now-card .topic-meta, .now-card .subject-state { color: var(--text); }
+
+/* A subject's page: the list of its topics as rows with a number and a state. --------------------------------------------------- */
+ol.topic-list > li.topic.row { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); padding: var(--space-3) var(--space-4); border: var(--border-soft); }
+ol.topic-list > li.topic.row .row-main { display: grid; gap: 0; flex: 1 1 11rem; }
+ol.topic-list > li.topic.row .row-end { flex-wrap: wrap; justify-content: flex-end; margin-left: auto; }
+.topic-number { flex: none; display: inline-grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 50%; background: var(--soft-primary); border: 2px solid var(--primary); font-weight: 700; }
+
+/* A topic: two steps, each a card with its state. ------------------------------------------------------------------------------- */
+ol.topic-steps { list-style: none; margin: var(--space-4) 0; padding: 0; display: grid; gap: var(--space-4); }
+.topic-step { margin: 0; }
+.topic-step[data-state="done"] { border-color: var(--tone-success); }
+.topic-step.card.action { background: color-mix(in srgb, var(--subject, var(--soft-primary)) 45%, var(--surface)); }
+.step-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin-bottom: var(--space-3); }
+.step-head .card-title { flex: 1 1 8rem; min-width: 0; display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-l); }
+.step-number { flex: none; display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--primary); color: var(--primary-text); font-weight: 700; }
+.topic-skills { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: grid; gap: 0; }
+ul.topic-skills > li.skill { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); padding: var(--space-3) 0; border-bottom: var(--border-soft); }
+ul.topic-skills > li.skill:last-child { border-bottom: 0; padding-bottom: 0; }
+.skill-main { flex: 1 1 12rem; min-width: 0; display: grid; }
+.skill-side { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
+li.skill .skill-side .button { margin: 0; align-self: center; }
+.course .skill-side .topic-meta { margin: 0; }
+@media (max-width: 30rem) { .course .button { width: auto; margin-bottom: 0; } .course .now-card .button { width: 100%; } }
+.topic-page .topic-meta.cluster { margin: 0 0 var(--space-4); }
+.question { margin: var(--space-4) 0; }
+.programme-box { color: var(--muted); font-size: var(--text-s); }
+.programme-box ul { margin: 0 0 var(--space-3); }
+
+/* Practice: the exercise as a lesson-like card, the skill's state, feedback as a notice, hints as a callout. ------------------------ */
+.skill-status { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin: 0 0 var(--space-3); }
+.skill-status .topic-why { flex: 1 1 14rem; }
+.paper-note { display: flex; align-items: flex-start; gap: var(--space-2); margin: 0 0 var(--space-4); color: var(--muted); }
+.paper-note .ic { margin-top: 0.2em; color: var(--primary); }
+.exercise-card { padding: var(--space-5); display: flex; flex-direction: column; }
+/* The verdict reads right under the answer: the card is a column whose order differs from the source only for the verdict. */
+.exercise-card > section[data-practice-target="work"] { display: contents; }
+.exercise-card .item { order: 1; }
+.exercise-card #feedback { order: 2; }
+.exercise-card #hints { order: 3; }
+.exercise-card [data-practice-target="controls"] { order: 4; }
+.exercise-card #solution { order: 5; }
+.exercise-card #next-actions { order: 6; }
+.exercise-card .item { margin-bottom: var(--space-4); }
+.exercise-card .prompt, .sitting-card .prompt { font-size: var(--text-l); }
+.exercise-card .actions { margin: var(--space-4) 0 0; }
+.practice .actions .button { margin: 0; }
+.feedback { min-height: 0; margin: var(--space-3) 0 0; font-weight: 400; }
+.feedback:empty { margin: 0; }
+.feedback.notice { margin: var(--space-4) 0 0; }
+.feedback-text { display: block; font-weight: 700; }
+.feedback-note { display: block; margin-top: var(--space-1); }
+#hints.notice { margin: var(--space-4) 0 0; }
+#hints h2 { font-size: var(--text-m); margin: 0; }
+#hints ol { margin: var(--space-1) 0 0; padding-left: 1.25rem; }
+.practice .solution { background: transparent; border: 0; border-top: var(--border-soft); border-radius: 0; margin-top: var(--space-4); padding: var(--space-3) 0 0; }
+.practice .solution h2 { font-size: var(--text-l); margin: 0 0 var(--space-2); }
+#next-actions { margin-top: var(--space-4); }
+#serve-reason.notice { margin-top: 0; }
+
+/* The sitting, the warm-up and the end screen. ---------------------------------------------------------------------------------- */
+.sitting-head { margin: 0 0 var(--space-3); }
+.sitting-count { white-space: nowrap; color: var(--muted); }
+.sitting-card { padding: var(--space-5); }
+.sitting-card .item { margin-bottom: var(--space-2); }
+.step-line { margin: 0 0 var(--space-3); }
+details.help.disclosure { border: var(--border-soft); padding: 0; margin: var(--space-4) 0 var(--space-3); }
+details.help.disclosure > div { padding-bottom: var(--space-1); }
+.sitting-card .sheet { border: var(--border-soft); border-radius: var(--radius-m); }
+.sitting-card .actions { margin: var(--space-4) 0 0; }
+.sitting-card .status { margin: var(--space-2) 0 0; }
+.start-row { margin-top: var(--space-4); }
+ul.check-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+ul.check-list > li { display: flex; align-items: flex-start; gap: var(--space-3); }
+ul.check-list > li > .ic { margin-top: 0.3rem; color: var(--tone-success); }
+ul.check-list > li > span { min-width: 0; }
+ul.check-list.summary-lines { margin: 0 0 var(--space-4); }
+.notice.closing { margin-top: 0; font-weight: 700; }
+.result-group { margin-bottom: var(--space-4); }
+.result-group .card-title { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-l); margin-bottom: var(--space-2); }
+ul.result-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+ul.result-list .row-meta { display: block; }
+ul.tag-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+ul.tag-list > li.tag { white-space: normal; font-size: var(--text-m); padding: 0.2em 0.8em; }
+.flag-row { margin: var(--space-3) 0 0; }
+article.solution.card { margin-top: var(--space-4); }
+/* On a phone the action bar stays on screen, above the maths keyboard when it is open (--keyboard-offset is its height, set by items/expression.js). */
+@media (max-width: 40rem) {
+  .sticky-actions, .sitting-card .sticky-actions, .exercise-card .sticky-actions {
+    position: sticky; bottom: var(--keyboard-offset, 0px); z-index: 5; background: var(--surface); border-top: var(--border-soft);
+    margin: var(--space-4) calc(-1 * var(--space-5)) calc(-1 * var(--space-5)); padding: var(--space-3) var(--space-5);
+    border-radius: 0 0 var(--radius-l) var(--radius-l);
+  }
+  .sticky-actions .button { flex: 1 1 auto; }
+}
+
+/* Search, settings and comments on the shared base. ----------------------------------------------------------------------------- */
+.search-input { min-height: var(--tap); border-radius: var(--radius-m); }
+.search-page .search-form { margin: 0 0 var(--space-5); }
+.search-hint { display: flex; align-items: flex-start; gap: var(--space-2); color: var(--muted); }
+.search-hint .ic { margin-top: 0.25em; }
+.search-group h2 { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-l); }
+.search-hits { gap: var(--space-3); }
+.search-hit {
+  position: relative; box-sizing: border-box; border: var(--border-soft); border-left: 0.5rem solid color-mix(in srgb, var(--search-accent) 65%, var(--text) 35%);
+  border-radius: var(--radius-l); box-shadow: var(--shadow-1); padding: var(--space-3) var(--space-4); max-width: none;
+}
+.search-hit:hover { border-color: var(--text); border-left-color: color-mix(in srgb, var(--search-accent) 65%, var(--text) 35%); }
+.search-hit:not(:has(details)) a.search-title::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius-l); }
+.search-hit:has(a.search-title:focus-visible) { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+.search-hit a.search-title:focus-visible { outline: none; }
+.search-subject { font-size: var(--text-s); }
+.search-definition summary { color: var(--text); font-weight: 700; }
+.preferences .card { margin-bottom: var(--space-4); }
+.preferences fieldset { margin: 0; }
+#voci h2 { margin-top: 0; }
+.comment-list .button { margin-top: var(--space-2); }
+
+/* At the largest text size on a phone (about 14 rem wide) the two bar buttons keep their words for a screen reader and show the icon only. */
+@media (max-width: 15rem) {
+  .topbar .comment-open > span:not(.menu-dot), .topbar .topbar-menu > span:not(.menu-dot) {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  .topbar .comment-open, .topbar .topbar-menu { min-width: var(--tap); padding-inline: var(--space-3); }
+}

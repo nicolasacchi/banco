@@ -70,6 +70,7 @@ class StudentJourneyTest < ApplicationSystemTestCase
   def walk_to_topic(who)
     visit "/today"
     assert_selector "#trial-notice" if who == :trial
+    find("#student-menu-open").click # the links are in the menu dialog (D-307)
     click_link "Materie"
     assert_selector "h1", text: "Materie"
     click_link "Math"

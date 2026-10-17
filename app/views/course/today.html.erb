@@ -1,38 +1,43 @@
 <% content_for :title, t("today.title") %>
-<main class="page course">
-  <h1><%= t("today.title") %></h1>
-  <% if comment_unread_count.positive? %>
-    <p class="notice" id="comment-replies" role="status"><strong><%= t("comments.today_line") %></strong> <a href="/comments"><%= t("comments.today_link") %></a></p>
-  <% end %>
-  <% if @nothing %>
-    <p class="notice" id="course-closed"><%= t("today.closed") %></p>
-  <% end %>
-  <% if @diagnosis %>
-    <% d = @diagnosis %>
-    <section id="entry-test" data-comment-anchor="entry_test" aria-labelledby="entry-test-title" data-state="<%= d[:open] ? (d[:all_done] ? 'done' : 'open') : 'closed' %>">
-      <h2 id="entry-test-title"><%= t(@diagnosis[:open] ? "today.entry.title" : "today.entry.title_warmup") %></h2>
+<%# Oggi (D-307): one «Ora» card, the single next thing, then the rest. Priority: the entry test when it is open and not done,
+    then the topic the student left, then the first suggestion. Ids and data attributes are the old ones. %>
+<% d = @diagnosis %>
+<% now = if d && d[:open] && !d[:all_done] && d[:next_row] then :entry
+         elsif @course_open && @resume then :resume
+         elsif @course_open && @suggestions.any? then :suggestion end %>
+<% entry_html = capture do %>
+  <% if d %>
+    <section id="entry-test" class="today-block" data-comment-anchor="entry_test" aria-labelledby="entry-test-title" data-state="<%= d[:open] ? (d[:all_done] ? 'done' : 'open') : 'closed' %>">
+      <h2 id="entry-test-title"><%= t(d[:open] ? "today.entry.title" : "today.entry.title_warmup") %></h2>
       <% unless d[:open] %>
-        <p><%= t("today.entry.not_open") %></p>
-      <% end %>
-      <% unless d[:open] %>
-        <p id="entry-warmup"><%= t(d[:warmup_done] ? "today.entry.warmup_again" : "today.entry.warmup") %></p>
-        <p><a class="button secondary" href="/diagnosis/warmup"><%= t("diagnosis.warmup_link") %></a></p>
+        <div class="card">
+          <p><%= t("today.entry.not_open") %></p>
+          <p id="entry-warmup"><%= t(d[:warmup_done] ? "today.entry.warmup_again" : "today.entry.warmup") %></p>
+          <div class="button-row"><a class="button secondary" href="/diagnosis/warmup"><%= t("diagnosis.warmup_link") %></a></div>
+        </div>
       <% end %>
       <% if d[:open] %>
         <% if d[:all_done] %>
-          <p id="entry-all-done"><%= t("today.entry.all_done") %></p>
+          <%= ui_notice :success, t("today.entry.all_done"), html: { id: "entry-all-done" } %>
         <% end %>
-        <ul class="subjects" id="entry-subjects" data-comment-anchor="subjects">
+        <ul class="subjects subject-list" id="entry-subjects" data-comment-anchor="subjects">
           <% d[:rows].each do |row| %>
             <% next_one = row.equal?(d[:next_row]) %>
-            <li class="subject<%= ' suggested' if next_one %>" data-comment-anchor="subject:<%= row.subject.key %>" data-subject="<%= row.subject.key %>" data-state="<%= row.status %>">
-              <span class="subject-name"><%= row.subject.name_it %></span>
-              <span class="subject-state"><%= t(row.label_key, **row.label_args) %></span>
+            <% big = next_one && now == :entry %>
+            <li class="subject<%= ' suggested' if next_one %><%= ' now-card' if big %>" data-comment-anchor="subject:<%= row.subject.key %>" data-subject="<%= row.subject.key %>" data-state="<%= row.status %>" style="--subject: var(--accent-<%= row.subject.key %>, var(--soft-primary))">
+              <% if big %><span class="pill info now-pill"><%= t("today.now") %></span><% end %>
+              <div class="subject-line">
+                <%= subject_chip(row.subject.key) %>
+                <div class="subject-text">
+                  <span class="subject-name"><%= row.subject.name_it %></span>
+                  <span class="subject-state"><%= t(row.label_key, **row.label_args) %></span>
+                </div>
+              </div>
               <% if next_one %>
                 <%= button_to (%w[in_progress continue_next_day].include?(row.status) ? t("diagnosis.actions.resume") : t("diagnosis.actions.start")),
                               "/diagnosis/subjects/#{row.subject.key}", class: "button", id: "entry-next", form: { class: "inline" } %>
               <% elsif row.done && row.run_id %>
-                <a class="button secondary" href="/diagnosis/runs/<%= row.run_id %>/results"><%= t("diagnosis.actions.results") %></a>
+                <a class="button secondary small" href="/diagnosis/runs/<%= row.run_id %>/results"><%= t("diagnosis.actions.results") %></a>
               <% end %>
             </li>
           <% end %>
@@ -42,31 +47,66 @@
       <% end %>
     </section>
   <% end %>
+<% end %>
+<% course_html = capture do %>
   <% if @course_open %>
-    <section id="course-part" data-comment-anchor="course" aria-labelledby="course-part-title">
+    <section id="course-part" class="today-block" data-comment-anchor="course" aria-labelledby="course-part-title">
       <h2 id="course-part-title"><%= t("today.suggestions") %></h2>
       <% if @resume %>
-        <p><a class="button" id="resume" href="<%= @resume_card ? "/topics/#{@resume[1].key}/lesson#scheda-#{@resume_card}" : "/topics/#{@resume[1].key}" %>"><%= t("today.resume", topic: @resume[1].title_it) %></a></p>
+        <% topic = @resume[1] %>
+        <article class="card action now-card" id="now-resume" style="--subject: var(--accent-<%= @resume[0].subject.key %>, var(--soft-primary))">
+          <span class="pill info now-pill"><%= t("today.now") %></span>
+          <div class="subject-line">
+            <%= subject_chip(@resume[0].subject.key) %>
+            <div class="subject-text">
+              <h3 class="now-title"><%= topic.title_it %></h3>
+              <span class="topic-meta"><%= @resume[0].subject.name_it %> · <%= t("topic.minutes", n: topic.minutes) %></span>
+            </div>
+          </div>
+          <a class="button" id="resume" href="<%= @resume_card ? "/topics/#{topic.key}/lesson#scheda-#{@resume_card}" : "/topics/#{topic.key}" %>"><%= t("today.resume") %></a>
+        </article>
       <% end %>
       <% if @suggestions.empty? %>
         <p><%= t("today.nothing") %></p>
       <% else %>
-        <ul class="topics" id="suggestions">
-          <% @suggestions.each do |row| %>
-            <% topic = row[:topic]; s = row[:suggestion] %>
-            <li class="topic" data-comment-anchor="topic:<%= topic.key.tr('.', '_') %>" data-topic="<%= topic.key %>" data-reason="<%= s.reason %>">
-              <a class="topic-title" href="/topics/<%= topic.key %>"><%= topic.title_it %></a>
-              <span class="topic-meta"><%= row[:subject_view].subject.name_it %> · <%= t("topic.kind.#{topic.kind}") %> · <%= t("topic.minutes", n: topic.minutes) %></span>
+        <ul class="topics topic-list" id="suggestions">
+          <% @suggestions.each_with_index do |row, i| %>
+            <% topic = row[:topic]; s = row[:suggestion]; big = now == :suggestion && i.zero? %>
+            <li class="topic<%= ' now-card' if big %>" data-comment-anchor="topic:<%= topic.key.tr('.', '_') %>" data-topic="<%= topic.key %>" data-reason="<%= s.reason %>" style="--subject: var(--accent-<%= row[:subject_view].subject.key %>, var(--soft-primary))">
+              <% if big %><span class="pill info now-pill"><%= t("today.now") %></span><% end %>
+              <div class="subject-line">
+                <%= subject_chip(row[:subject_view].subject.key) %>
+                <div class="subject-text">
+                  <a class="topic-title" href="/topics/<%= topic.key %>"><%= topic.title_it %></a>
+                  <span class="topic-meta"><%= row[:subject_view].subject.name_it %> · <%= t("topic.kind.#{topic.kind}") %> · <%= t("topic.minutes", n: topic.minutes) %></span>
+                </div>
+                <%= ui_icon("next", css: "row-chev") unless big %>
+              </div>
               <% if s.skill %>
                 <span class="topic-why"><%= t("today.reason.#{s.reason}", skill: course_view.label(s.skill)) %></span>
               <% else %>
                 <span class="topic-why"><%= t("today.reason.#{s.reason}") %></span>
               <% end %>
-              <% unless topic.approved %><span class="topic-why"><%= t("draft.notice") %></span><% end %>
+              <% unless topic.approved %><span class="topic-why"><%= ui_tag(t("topic.draft"), icon: "info") %> <%= t("draft.notice") %></span><% end %>
+              <% if big %><a class="button" href="/topics/<%= topic.key %>"><%= t("today.start") %></a><% end %>
             </li>
           <% end %>
         </ul>
       <% end %>
     </section>
+  <% end %>
+<% end %>
+<main class="page course today">
+  <h1><%= t("today.title") %></h1>
+  <% if comment_unread_count.positive? %>
+    <%= ui_notice :info, nil, html: { id: "comment-replies" } do %><strong><%= t("comments.today_line") %></strong> <a href="/comments"><%= t("comments.today_link") %></a><% end %>
+  <% end %>
+  <% if @nothing %>
+    <%= ui_notice :info, t("today.closed"), html: { id: "course-closed" } %>
+  <% end %>
+  <% if now == :entry %>
+    <%= entry_html %><%= course_html %>
+  <% else %>
+    <%= course_html %><%= entry_html %>
   <% end %>
 </main>
