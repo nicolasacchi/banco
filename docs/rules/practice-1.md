@@ -41,7 +41,7 @@ by code. No model is in the student's path. The practice ledger is separate from
 |---|---|---|---|
 | `correct` | C | `correct`, or `correct_aided` when the try is aided | `practice.correct` / `practice.correct_aided` |
 | `orthography_slip` | C | as correct, plus `practice.accents_note` | |
-| `nearly_correct` (D-301) | C | as correct, plus the line «Giusto, tranne una coppia: …» (`Grading::PairNote`) | |
+| `nearly_correct` (D-301; never a judge of two options nor one option for every row, D-314) | C | as correct, plus the line «Giusto, tranne una coppia: …» (`Grading::PairNote`) | |
 | `wrong_form_declared` | C | as correct, plus the form message | |
 | `typical_error` | W | `typical_error` (codes) | the catalogue `message_it` of the first code |
 | `wrong` | W | `unrecognised` | `practice.unrecognised` |
