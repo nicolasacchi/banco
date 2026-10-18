@@ -185,7 +185,14 @@
 .dg-cp.dg-cp-neutral.dg-cp-dot { fill: var(--text); stroke-width: 1; }
 .dg-cp.dg-cp-neutral.dg-cp-zonefill { fill: none; stroke: none; }
 .dg-cp.dg-cp-neutral.dg-cp-nucleolus { fill: var(--text); stroke: none; }
+.dg-cp.dg-cp-neutral.dg-cp-thread { stroke-width: 1.4; } /* the tangle of DNA under its target: lighter than the target's outline */
 .dg-czone { fill: transparent; stroke: none; }
+/* a select check's targets over a cell: a ring of the surface around each dashed outline, so it reads over the line work under it (D-312) */
+.dg-cell .dg-targets .dg-target { box-shadow: 0 0 0 2px var(--surface); }
+/* labels all and tap: every shape of a part reads that part when tapped; the pads are invisible strips along its thin lines (A3) */
+.dg-cell [data-hit-for] { cursor: pointer; }
+.dg-cp-pad { fill: none; stroke: none; pointer-events: fill; }
+.dg-cp-pad.dg-cp-pad-line { stroke-width: 16px; pointer-events: stroke; }
 .dg-ctitle { font-weight: 800; color: var(--text); text-align: center; }
 .dg-clabel { color: var(--text); font-weight: 700; line-height: 1.25; }
 .dg-clabel-lit { background: var(--r-common-highlight-tint, #fff1a8); border-radius: 0.2em; box-shadow: 0 0 0 0.15em var(--r-common-highlight-tint, #fff1a8); }
