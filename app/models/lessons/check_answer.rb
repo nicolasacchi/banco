@@ -140,7 +140,7 @@ module Lessons
     end
 
     # The blank step's do_it and the steps after it, up to the next blank (served as the page serves a first blank),
-    # the example's result when no blank is left, and the drawing's states from the blank on.
+    # the example's result when no blank is left, and the drawing's states of those steps with the drawing that has them.
     def rest_of_example(located)
       example = located.example
       index = located.step_index
@@ -158,8 +158,13 @@ module Lessons
       out = { steps: steps }
       out[:result_it] = example["result_it"] if example["result_it"] && !following
       if example["diagram"]
-        states = StudentBody.diagram(example["diagram"])["states"]
-        out[:states] = states.drop(index) if states
+        figure = StudentBody.diagram(example["diagram"])
+        if figure["states"]
+          # the states of the steps now open, from the blank to the step before the next blank (a state shows what its step did), and the
+          # figure with them, cut at the next blank as the page's figure was cut at this one: lesson/blocks/example.js swaps it in
+          out[:states] = following ? figure["states"][index...stop] : figure["states"].drop(index)
+          out[:diagram] = following ? StudentBody.cut_states(figure, stop) : figure
+        end
       end
       out
     end

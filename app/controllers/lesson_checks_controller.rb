@@ -1,7 +1,7 @@
 # The grading of an inline question of a lesson/2 (A9): POST /topics/:topic/lesson/checks/:card/:block[/:step]
 # (the blank of a faded example) or .../checks/:card/:block/ex/:n[/:part] (a check of an exercise of "Prova tu"),
 # with {response, try, client_event_id}. The answer is {verdict: right|wrong|invalid, message_it?, explain_it?, try,
-# steps?, result_it?, states?}. The server grades with the shared graders (Lessons::Checks) and records a
+# steps?, result_it?, states?, diagram?}. The server grades with the shared graders (Lessons::Checks) and records a
 # lesson_events row; it never writes to the practice ledger. response is student data: at most 200 characters,
 # filtered from the logs, shown to the teacher only.
 class LessonChecksController < ApplicationController

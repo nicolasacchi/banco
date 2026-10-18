@@ -221,7 +221,8 @@ export function mountDiagram(data, ctx, options = {}) {
   figure.append(alt, ...(top ? [top] : []), stage, side, valuesBox, legendHost, ...(caption ? [caption] : []), desc, printHost)
 
   let mod = moduleFor(type)
-  const total = mod || STATUS[type] ? stateCount(data) : 1
+  // the states of the figure: fixed, except for an example's linked figure, which the server completes after a blank (replaceData below)
+  let total = mod || STATUS[type] ? stateCount(data) : 1
   const state = { moves: new Map(), lastWidth: 0, i: 0, tryValue: data?.try && data?.type === "balance" ? Number(data.try.from) : undefined, width: 0, selected: null, controls: {}, announce: false, printWidth: 0 }
   // two kinds of controls: the toggles and plain steppers of controls.js (bits laid over the drawing, a strip under it), and the sliders and
   // steppers over a list of `values` of syncControls below. The first are `wanted`, built once the module is known.
@@ -253,7 +254,9 @@ export function mountDiagram(data, ctx, options = {}) {
     }
     wanted = declared(mod, data).filter(isStrip)
     strip = wanted.length ? buildStrip(wanted, controls, state.controls, ctx, press) : null
-    buildChips(declared(mod, data), controls, { state, ctx, redraw: () => { state.announce = true; draw() } })
+    // a select check's figure has no chips, as it has no value controls (syncControls): its served data may lack the options that turn them off
+    // (the select projection of `cell` drops `labels`), and a chip there would light, filter or grey candidates (L3)
+    if (mode !== "select") buildChips(declared(mod, data), controls, { state, ctx, redraw: () => { state.announce = true; draw() } })
   }
   const resetControls = () => {
     for (const c of wanted) delete state.controls[c.id]
@@ -491,7 +494,7 @@ export function mountDiagram(data, ctx, options = {}) {
   let next
   let counter
   const stepper = () => {
-    if (total <= 1) return
+    if (total <= 1 || !counter) return // a linked figure that got its states after the mount has no stepper (the example's steps drive it)
     counter.textContent = ctx.t.step_of.replace("%{n}", state.i + 1).replace("%{total}", total)
     prev.disabled = state.i === 0
     const nextLabel = data.states[state.i]?.next_label_it
@@ -628,12 +631,22 @@ export function mountDiagram(data, ctx, options = {}) {
   }
   return {
     element: figure,
-    total,
+    get total() { return total },
     mounted,
     relayout: draw,
     setState: (i) => {
       state.i = Math.max(0, Math.min(total - 1, i))
       resetControls()
+      draw()
+    },
+    // an example's linked figure after a blank: the server sends the figure again with the states of the steps now open (cut at the next
+    // blank as the page's first one was), and the example moves to them with setState
+    replaceData: (next) => {
+      if (!next || next.type !== type) return
+      data = next
+      total = mod || STATUS[type] ? stateCount(data) : 1
+      figure.dataset.states = String(total)
+      state.i = Math.min(state.i, total - 1)
       draw()
     },
     // the number in the boxes of a balance, set from outside (the shared stepper of the cases)
