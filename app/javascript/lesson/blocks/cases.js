@@ -23,7 +23,8 @@ export function render(block, ctx) {
     const info = c.tone ? roleOf(ctx.subject, c.tone) : null
     const iconName = c.icon ?? (info?.carrier === "icon" ? info.icon : null)
     if (iconName) head.appendChild(icon(iconName, "case-ic"))
-    renderInlineRich(c.title_it, head, ctx)
+    // one span beside the icon (the head is a flex box): words, a formula and a word of another language wrap as one line of text (D-310)
+    head.appendChild(renderInlineRich(c.title_it, el("span", { class: "case-title" }), ctx))
     const section = el("section", { class: `case ${tone}` })
     const text = el("div", { class: "case-info" }, head)
     if (c.condition_it) text.appendChild(renderInlineRich(c.condition_it, el("p", { class: "case-condition" }), ctx, { tiles: true }))
