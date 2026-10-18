@@ -9,7 +9,9 @@ module Validation
   # (lesson/render_host.js): exceptions and KaTeX errors (E-LESSON-RENDER), overflow (E-LESSON-OVERFLOW), labels that
   # overlap or sit outside their drawing and layouts that answered an error (E-DIAGRAM-LAYOUT), text under the
   # minimum (E-DIAGRAM-SMALL-TEXT). All errors: they depend on the author's data. Then it takes a WebP shot of each
-  # card (core cards at every viewport, extra cards at the first only) and hands the bytes to LessonShots.
+  # card (core cards at every viewport, extra cards at the first only) and hands the bytes to LessonShots. A card has
+  # further states (D-311): every other exercise of «Prova tu» shown in turn, and the card and each exercise with every
+  # closed disclosure open; each is measured like the card, and pictured as `shoot?` says.
   #
   # The caller holds the ChromeRunner session. Nothing here judges beyond the findings and does not write the
   # database. Time: a budget per revision and per card-viewport (E-LESSON-RENDER "timeout"); infrastructure
@@ -76,12 +78,23 @@ module Validation
           return
         end
         ready["exceptions"].each { |m| add("E-LESSON-RENDER", nil, viewport, "exception: #{m}") }
+        opened = []
         cards_for([ width, height, theme ]).each do |card|
           if over_budget?
             add("E-LESSON-RENDER", card["n"], viewport, "timeout: the render of the revision passed #{@budget} s")
             return
           end
-          inspect_card(page, card, viewport, width)
+          opened.concat(inspect_card(page, card, viewport, width))
+        end
+        # the opened states once every picture of the viewport is taken (D-311): a part that opens can make a short page scrollable for
+        # a moment, and Chrome then paints the fixed bars (their backdrop blur) of the pictures that follow a little differently from
+        # one run to the next, so an unchanged card would no longer cost nothing (D-255)
+        opened.each do |card, state|
+          if over_budget?
+            add("E-LESSON-RENDER", card["n"], viewport, "timeout: the render of the revision passed #{@budget} s", nil, state)
+            return
+          end
+          inspect_state(page, card, viewport, width, state)
         end
         check_print(page, viewport) if viewport == first_viewport
       end
@@ -145,32 +158,63 @@ module Validation
       nil
     end
 
+    OPENED = /open\z/
+
+    # A card at one viewport: the card as drawn, then each other exercise of «Prova tu» (D-311), each state with its own time limit.
+    # Answers the card's opened states ([card, state]: the card and each exercise with every closed part open), looked at later.
     def inspect_card(page, card, viewport, width)
+      answer = inspect_state(page, card, viewport, width, nil) or return []
+      opened, shown = Array(answer["states"]).partition { |state| state.match?(OPENED) }
+      shown.each do |state|
+        if over_budget?
+          add("E-LESSON-RENDER", card["n"], viewport, "timeout: the render of the revision passed #{@budget} s", nil, state)
+          return []
+        end
+        inspect_state(page, card, viewport, width, state)
+      end
+      opened.map { |state| [ card, state ] }
+    end
+
+    def inspect_state(page, card, viewport, width, state)
       started = @clock.call
       answer =
         begin
-          page.evaluate_async("window.bancoLessonRender.inspect(arguments[0]).then(arguments[1])", @per_card, card["n"])
+          page.evaluate_async("window.bancoLessonRender.inspect(arguments[0], arguments[1]).then(arguments[2])", @per_card, card["n"], state)
         rescue Ferrum::ScriptTimeoutError, Ferrum::TimeoutError
-          add("E-LESSON-RENDER", card["n"], viewport, "timeout: the card took more than #{@per_card} s")
+          add("E-LESSON-RENDER", card["n"], viewport, "timeout: the card took more than #{@per_card} s", nil, state)
           recover(page)
-          return
+          return nil
         end
       inspected = @clock.call
-      answer["findings"].each { |f| add(f["code"], card["n"], viewport, f["message"], f["where"]) }
-      return @timings << timing(card, viewport, started, inspected, inspected) if card["n"].zero?
+      fresh = answer["findings"].count { |f| add(f["code"], card["n"], viewport, f["message"], f["where"], state) }
+      shot(page, card, viewport, width, answer["height"].to_i, state) if shoot?(card, viewport, state, fresh)
+      @timings << timing(card, viewport, started, inspected, @clock.call, state)
+      add("E-LESSON-RENDER", card["n"], viewport, "timeout: the card took more than #{@per_card} s", nil, state) if (@clock.call - started) > @per_card * 2
+      answer
+    end
 
-      shot(page, card, viewport, width, answer["height"].to_i)
-      @timings << timing(card, viewport, started, inspected, @clock.call)
-      add("E-LESSON-RENDER", card["n"], viewport, "timeout: the card took more than #{@per_card} s") if (@clock.call - started) > @per_card * 2
+    # Which states are pictured (the store stays bounded): the card as drawn at every viewport it is drawn at (the cover never);
+    # another exercise of «Prova tu» at the first viewport the card is drawn at (the phone); any further state where it found
+    # something new, so that what was found can be seen. Otherwise the disclosures opened all at once are measured, not pictured.
+    def shoot?(card, viewport, state, fresh)
+      return false if card["n"].zero?
+      return true if state.nil? || fresh.positive?
+
+      state.match?(/\Aex\d+\z/) && viewport == first_viewport_of(card)
+    end
+
+    def first_viewport_of(card)
+      width, height, theme = (card["level"] == "core" ? @core : @extra).first
+      "#{width}x#{height}-#{theme}"
     end
 
     # Where the seconds of a card went (the page's own stepping, then the picture): a slow card is told apart from a slow Chrome.
-    def timing(card, viewport, started, inspected, finished)
-      { "card" => card["n"], "viewport" => viewport, "inspect" => (inspected - started).round(2), "shot" => (finished - inspected).round(2) }
+    def timing(card, viewport, started, inspected, finished, state = nil)
+      { "card" => card["n"], "state" => state, "viewport" => viewport, "inspect" => (inspected - started).round(2), "shot" => (finished - inspected).round(2) }.compact
     end
 
     # The whole page as the student has it at that width (the card, the bars, the map), WebP quality 80.
-    def shot(page, card, viewport, width, height)
+    def shot(page, card, viewport, width, height, state = nil)
       height = height.clamp(200, MAX_SHOT_HEIGHT)
       # The window is made as tall as the page for the picture: the fixed bar of the cards view then sits under the
       # card, as it does when the student has scrolled to the end, and nothing is cut.
@@ -178,16 +222,20 @@ module Validation
       data = page.command("Page.captureScreenshot", format: "webp", quality: 80, clip: { x: 0, y: 0, width: width, height: height, scale: 1 })["data"]
       page.command("Emulation.setDeviceMetricsOverride", width: width, height: viewport_height(viewport), deviceScaleFactor: 1, mobile: false)
       bytes = Base64.decode64(data)
-      @shots << { "card" => card["n"], "level" => card["level"], "viewport" => viewport, "sha256" => @store.put(bytes), "bytes" => bytes.bytesize,
-                  "width" => width, "height" => height }
+      @shots << { "card" => card["n"], "state" => state, "level" => card["level"], "viewport" => viewport, "sha256" => @store.put(bytes), "bytes" => bytes.bytesize,
+                  "width" => width, "height" => height }.compact
     end
 
     def viewport_height(viewport) = viewport[/\A\d+x(\d+)-/, 1].to_i
 
-    def add(code, card, viewport, message, where = nil)
-      return if @errors.any? { |e| e["code"] == code && e["card"] == card && e["viewport"] == viewport && e["message"] == message }
+    # One error, once: what a further state of the card repeats (the same message about the same thing) stays the first state's.
+    # Answers whether the error was new.
+    def add(code, card, viewport, message, where = nil, state = nil)
+      message = message.to_s.first(300)
+      return false if @errors.any? { |e| e["code"] == code && e["card"] == card && e["viewport"] == viewport && e["message"] == message && e["where"] == where }
 
-      @errors << { "code" => code, "card" => card, "viewport" => viewport, "message" => message.to_s.first(300), "where" => where }.compact
+      @errors << { "code" => code, "card" => card, "state" => state, "viewport" => viewport, "message" => message, "where" => where }.compact
+      true
     end
   end
 end

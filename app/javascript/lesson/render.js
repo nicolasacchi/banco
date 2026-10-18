@@ -64,6 +64,8 @@ export function renderLesson(root, body, config) {
       ? { speak: (text) => speak([{ lang, text }], { preview: config.mode === "preview", slower: preferences().slower }) } : null),
     glossary: new Map((body.glossary ?? []).map((g) => [g.term_it.toLowerCase(), g])),
     noSpeech: config.mode === "render" || typeof document === "undefined", // the render check runs without voices
+    // the render check (R4): everything open as in print, but what the student answers with is drawn as the student has it (D-311)
+    renderCheck: config.mode === "render",
     subject: body.subject, t, items: config.items ?? {}, topic: config.topic, revisionId: config.revisionId,
     safe: !!config.safe, preview: config.mode === "preview", get teacher() { return state.teacher },
     // config.expand (the render check, R4): every "more" open, every mistake turned, every step shown, as in safe mode

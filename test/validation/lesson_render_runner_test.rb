@@ -31,20 +31,23 @@ class LessonRenderRunnerTest < ActiveSupport::TestCase
     return unless ENV["BANCO_SHOT_DIR"]
 
     FileUtils.mkdir_p(ENV["BANCO_SHOT_DIR"])
-    row.shots.each { |s| File.binwrite(File.join(ENV["BANCO_SHOT_DIR"], "#{name}-#{s['viewport']}-card#{s['card']}.webp"), LessonShots.read(s["sha256"])) }
+    row.shots.each { |s| File.binwrite(File.join(ENV["BANCO_SHOT_DIR"], "#{name}-#{s['viewport']}-card#{s['card']}#{"-#{s['state']}" if s['state']}.webp"), LessonShots.read(s["sha256"])) }
   end
 
   def dump(row)
     row.result["errors"].map { |e| "#{e['code']} card #{e['card']} #{e['viewport']}: #{e['message']}" }.join("\n")
   end
 
-  test "a readable lesson passes at every viewport and stores one WebP per core card and viewport" do
+  test "a readable lesson passes at every viewport and stores one WebP per core card and viewport, and one per further exercise at 390" do
     row = render(served("equations"))
     keep_shots(row, "equations")
     assert_equal "passed", row.status, dump(row)
     core = served("equations")["cards"].count { |c| c["level"] == "core" }
     extra = served("equations")["cards"].count { |c| c["level"] == "extra" }
-    assert_equal core * 3 + extra, row.shots.size
+    assert_equal core * 3 + extra, row.shots.count { |s| s["state"].nil? }
+    # D-311: «Prova tu» has three exercises; the second and the third are pictured at the phone (the open states only when they find something)
+    try = served("equations")["cards"].find { |c| c["role"] == "try" }
+    assert_equal [ [ try["n"], "ex2", "390x844-cream" ], [ try["n"], "ex3", "390x844-cream" ] ], row.shots.select { |s| s["state"] }.map { |s| s.values_at("card", "state", "viewport") }
     row.shots.each do |shot|
       bytes = LessonShots.read(shot["sha256"])
       assert_equal "RIFF", bytes[0, 4]
