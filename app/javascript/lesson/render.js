@@ -8,7 +8,8 @@ import { newId } from "items/outbox"
 import { button, clear, el, icon } from "lesson/dom"
 import { iconOf, renderCard, rolesUsed } from "lesson/cards"
 import { sample } from "lesson/blocks/legend"
-import { renderInlineRich, renderRich } from "lesson/text"
+import { insideControl, renderInlineRich, renderRich, shortTitle } from "lesson/text"
+import { plain } from "lesson/diagrams/common"
 import { figureFor } from "lesson/blocks/diagram"
 import { firstUses } from "lesson/checks/howto"
 import { FAMILY, STATUS, preload } from "lesson/diagrams/registry"
@@ -114,8 +115,10 @@ export function renderLesson(root, body, config) {
     if (t.role_word[card.role]) bits.push(t.role_word[card.role])
     return bits.join(" · ")
   }
-  // A short name for the map and the Avanti button: the author's short_it, else the title up to its colon.
-  const shortOf = (card) => card.short_it || String(card.title_it).split(/:\s/)[0]
+  // A short name for the map and the Avanti button: the author's short_it, else the title up to its colon (never one inside a formula),
+  // drawn with its markup like the title (D-310); the live region says it in plain words.
+  const shortOf = (card) => card.short_it || shortTitle(card.title_it)
+  const titleSpan = (text, cls) => renderInlineRich(text, el("span", cls ? { class: cls } : {}), insideControl(ctx))
   const sequence = [0, ...order.map((c) => c.n)]
   // the roles each card introduces: the legend chip is on that card only; the map lists all of them
   const introduced = new Map()
@@ -225,7 +228,7 @@ export function renderLesson(root, body, config) {
     const wrap = el("div", { class: "cover-parts" })
     const makeList = (list) => {
       const ol = el("ol", { class: "cover-cards" })
-      for (const c of list) ol.appendChild(el("li", {}, button(el("span", { class: "map-line" }, icon(iconOf(c), "map-ic"), el("span", { text: shortOf(c) })), { class: "map-item" }, () => goTo(c.n, { focus: true }))))
+      for (const c of list) ol.appendChild(el("li", {}, button(el("span", { class: "map-line" }, icon(iconOf(c), "map-ic"), titleSpan(shortOf(c))), { class: "map-item" }, () => goTo(c.n, { focus: true }))))
       return ol
     }
     if (body.parts?.length) {
@@ -257,7 +260,7 @@ export function renderLesson(root, body, config) {
     const wrap = el("nav", { class: "map", "aria-label": t.map })
     wrap.appendChild(el("h2", { class: "map-title", text: t.map }))
     const item = (c, label) => {
-      const b = button(el("span", { class: "map-line" }, el("span", { class: "mn", "aria-hidden": "true", text: label }), icon(iconOf(c), "map-ic"), el("span", { class: "map-text", text: shortOf(c) }), icon("check", "mv")), { class: `map-item${seen.has(c.n) ? " seen" : ""}`, "data-n": c.n }, () => {
+      const b = button(el("span", { class: "map-line" }, el("span", { class: "mn", "aria-hidden": "true", text: label }), icon(iconOf(c), "map-ic"), titleSpan(shortOf(c), "map-text"), icon("check", "mv")), { class: `map-item${seen.has(c.n) ? " seen" : ""}`, "data-n": c.n }, () => {
         goTo(c.n, { focus: true })
         close?.()
       })
@@ -373,7 +376,7 @@ export function renderLesson(root, body, config) {
   // ---- navigation ----
   function announce(n) {
     const card = byN.get(n)
-    live.textContent = n === 0 ? `${t.cover}: ${body.title_it}` : `${positionOf(card).text}: ${card.title_it}`
+    live.textContent = n === 0 ? `${t.cover}: ${body.title_it}` : `${positionOf(card).text}: ${plain(card.title_it)}`
   }
   function refreshChrome() {
     const n = state.n
@@ -395,7 +398,7 @@ export function renderLesson(root, body, config) {
       else {
         // "Avanti: Esempio A": the word Avanti drops away on a phone so that the name fits on one line
         const [pre, post] = t.next.split("%{title}")
-        nextBtn.firstChild.replaceChildren(el("span", { class: "l2-next-label" }, el("span", { class: "l2-next-pre", text: pre.trimEnd() }), document.createTextNode(` ${shortOf(byN.get(nextN))}${post}`)), icon("next"))
+        nextBtn.firstChild.replaceChildren(el("span", { class: "l2-next-label" }, el("span", { class: "l2-next-pre", text: pre.trimEnd() }), document.createTextNode(" "), titleSpan(shortOf(byN.get(nextN))), document.createTextNode(post)), icon("next"))
       }
     }
     root.dataset.card = String(n)

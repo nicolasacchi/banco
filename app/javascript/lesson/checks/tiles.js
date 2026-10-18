@@ -7,34 +7,47 @@
 //
 // Tiles are buttons. Tap a tile of the bank: it goes to the end of the line. Tap a tile of the line: it goes back. A tile of the line moves
 // with the left and right arrows. "Svuota" empties the line. A tile of the bank that is in the line stays in its place as an empty outline,
-// so the bank does not jump while the student builds (no layout shift). Texts of the target language carry their lang.
+// so the bank does not jump while the student builds (no layout shift). Texts of the target language carry their lang; an Italian tile is
+// drawn with the inline markup of the lesson (a formula, bold), its button named by its plain text.
+// The fixed words are neutral ("La tua risposta", "Le tessere": the tiles may be facts, symbols or words); a check with `builds: sentence`
+// says "La tua frase", "Le parole" (D-310).
 // "Ascolta la frase": only when ctx.speaker(lang) gives a speaker, i.e. an accepted local voice exists (T2, "Ascolta"); never autoplays.
 import { handle } from "items/dom"
 import { button, el, uid } from "lesson/dom"
 import { createTiles } from "lesson/checks/sequence_model"
+import { insideControl, renderInlineRich } from "lesson/text"
+import { plain } from "lesson/diagrams/common"
 
 export const type = "tiles"
 
 export const textOf = (tile) => tile.text_en ?? tile.text_es ?? tile.text_it ?? ""
 export const langOf = (tile) => (tile.text_en != null ? "en" : tile.text_es != null ? "es" : null)
+// what a screen reader and the live region say of a tile: its words, never its markup
+export const nameOf = (tile) => (langOf(tile) ? textOf(tile) : plain(textOf(tile)).replace(/\*\*/g, ""))
+
+// The fixed words of a check: { line, bank, empty, used, placed } (pure: texts is ctx.t.checks).
+export function tilesTexts(spec, texts) {
+  const own = { line: texts.tiles_line, bank: texts.tiles_bank, empty: texts.tiles_empty, used: texts.tile_used, placed: texts.tile_placed }
+  return spec.builds === "sentence" ? { ...own, ...texts.tiles_sentence } : own
+}
 
 const fill = (template, values) => String(template).replace(/%\{(\w+)\}/g, (_, k) => values[k] ?? "")
 
-function tileLabel(tile) {
-  const span = el("span", { class: "tile-text", text: textOf(tile) })
+function tileLabel(tile, ctx) {
   const lang = langOf(tile)
-  if (lang) span.setAttribute("lang", lang)
-  return span
+  if (lang) return el("span", { class: "tile-text", lang, text: textOf(tile) })
+  return renderInlineRich(textOf(tile), el("span", { class: "tile-text" }), insideControl(ctx))
 }
 
 export function buildTiles(spec, ctx, options = {}) {
   const texts = ctx.t.checks
+  const words = tilesTexts(spec, texts)
   const byId = new Map(spec.tiles.map((t) => [t.id, t]))
   const model = createTiles(spec.tiles.map((t) => t.id))
   const name = uid("tiles")
-  const lineLabel = el("p", { class: "tiles-label", id: `${name}-line`, text: options.lineLabel ?? texts.tiles_line })
+  const lineLabel = el("p", { class: "tiles-label", id: `${name}-line`, text: options.lineLabel ?? words.line })
   const line = el("ol", { class: "tiles-line", "aria-labelledby": `${name}-line` })
-  const bankLabel = el("p", { class: "tiles-label", id: `${name}-bank`, text: texts.tiles_bank })
+  const bankLabel = el("p", { class: "tiles-label", id: `${name}-bank`, text: words.bank })
   const bank = el("div", { class: "tiles-bank", role: "group", "aria-labelledby": `${name}-bank` })
   const live = el("p", { class: "sr-only", role: "status", "aria-live": "polite" })
   const clearButton = button(texts.tiles_clear, { class: "button secondary small tiles-clear" }, () => {
@@ -49,7 +62,7 @@ export function buildTiles(spec, ctx, options = {}) {
 
   const bankButtons = () => [...bank.querySelectorAll("button")]
   const say = (text) => { live.textContent = text }
-  const sentence = () => model.line().map((id) => textOf(byId.get(id))).join(" ")
+  const sentence = () => model.line().map((id) => nameOf(byId.get(id))).join(" ")
 
   function speakerFor() {
     const langs = new Set(model.line().map((id) => langOf(byId.get(id))).filter(Boolean))
@@ -59,18 +72,18 @@ export function buildTiles(spec, ctx, options = {}) {
   function draw(focusId = null) {
     line.replaceChildren()
     const ids = model.line()
-    if (ids.length === 0) line.appendChild(el("li", { class: "tiles-empty", "aria-hidden": "true", text: texts.tiles_empty }))
+    if (ids.length === 0) line.appendChild(el("li", { class: "tiles-empty", "aria-hidden": "true", text: words.empty }))
     ids.forEach((id, i) => {
       const tile = byId.get(id)
       const b = el("button", {
         type: "button", class: "tile tile-built", "data-id": id,
-        "aria-label": fill(texts.tile_built, { text: textOf(tile), n: i + 1, total: ids.length })
-      }, tileLabel(tile))
+        "aria-label": fill(texts.tile_built, { text: nameOf(tile), n: i + 1, total: ids.length })
+      }, tileLabel(tile, ctx))
       b.addEventListener("click", () => {
         const at = model.line().indexOf(id)
         model.remove(id)
         draw()
-        say(fill(texts.tile_removed, { text: textOf(tile) }))
+        say(fill(texts.tile_removed, { text: nameOf(tile) }))
         options.onChange?.()
         const next = line.querySelectorAll("button.tile-built")[Math.min(at, model.line().length - 1)]
         ;(next ?? bank.querySelector(`button[data-id="${id}"]`))?.focus()
@@ -92,15 +105,15 @@ export function buildTiles(spec, ctx, options = {}) {
       const b = el("button", {
         type: "button", class: `tile tile-bank${used ? " is-used" : ""}`, "data-id": tile.id,
         "aria-disabled": used ? "true" : null, tabindex: used ? "-1" : null,
-        "aria-label": used ? fill(texts.tile_used, { text: textOf(tile) }) : null
-      }, tileLabel(tile))
+        "aria-label": used ? fill(words.used, { text: nameOf(tile) }) : null
+      }, tileLabel(tile, ctx))
       b.addEventListener("click", () => {
         if (model.has(tile.id)) return
         const order = spec.tiles.map((t) => t.id)
         const at = order.indexOf(tile.id)
         model.place(tile.id)
         draw()
-        say(fill(texts.tile_placed, { text: sentence() }))
+        say(fill(words.placed, { text: sentence() }))
         options.onChange?.()
         // the focus moves to the next tile still in the bank, else the one before it, else the button that empties the line
         const free = (id) => !model.has(id)

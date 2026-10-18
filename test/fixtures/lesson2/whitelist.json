@@ -541,6 +541,7 @@
     "component",
     "prompt_it",
     "answer_format_it",
+    "builds",
     "tiles"
    ],
    "drop": [

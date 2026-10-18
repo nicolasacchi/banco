@@ -20,6 +20,27 @@ export const KATEX = {
   trust: (context) => context.command === "\\htmlClass" && ROLE_CLASS.test(context.class ?? "")
 }
 
+// Text inside a control (a choice option, a chip, a tile, a table's stacked label): the same inline markup as running text (formulas in their
+// colours, roles, language spans, bold), with nothing that is itself a control: no speaker button, no glossary bubble, no link. A button or a
+// link inside a <label> would take the tap meant for the option (D-310).
+export const insideControl = (ctx) => ({ ...ctx, noSpeech: true, glossary: null, noLinks: true })
+
+// A language span of one short word ("-emos", "hablar") never breaks, not even at its hyphen; a phrase wraps as text does (D-310).
+export const ONE_WORD_MAX = 24
+export const oneWord = (text) => !/\s/.test(String(text).trim()) && String(text).trim().length <= ONE_WORD_MAX
+
+// A card title up to its first colon followed by a space ("Esempio A: ..." -> "Esempio A"), never a colon inside a formula. Pure.
+export function shortTitle(title) {
+  const s = String(title ?? "")
+  let math = false
+  for (let i = 0; i < s.length - 1; i++) {
+    if (s[i] === "\\") i += 1
+    else if (s[i] === "$") math = !math
+    else if (!math && s[i] === ":" && /\s/.test(s[i + 1])) return s.slice(0, i)
+  }
+  return s
+}
+
 export function roleOf(subject, name) {
   return palette.subjects[subject]?.[name] ?? palette.common[name] ?? null
 }
@@ -116,7 +137,7 @@ function inlineNodes(nodes, parent, ctx, display = false, tiles = false) {
     } else if (node.t === "math") parent.appendChild(renderMath(node.v, el("span", { class: "math" }), ctx, false, tiles && /=/.test(node.v)))
     else if (node.t === "lang") {
       // [[en:..]] [[es:..]] [[la:..]]: words of another language, in the target ink, with a speaker where the device has a voice (D-266)
-      const span = el("span", { class: `lang lang-${node.lang}`, lang: node.lang, text: node.v })
+      const span = el("span", { class: `lang lang-${node.lang}${oneWord(node.v) ? " lang-word" : ""}`, lang: node.lang, text: node.v })
       parent.appendChild(span)
       if (!ctx.safe && node.lang !== "la" && !ctx.noSpeech) parent.appendChild(speakerButton(ctx, { lang: node.lang, text: node.v, node: span }))
     } else if (node.t === "code") {
@@ -128,6 +149,10 @@ function inlineNodes(nodes, parent, ctx, display = false, tiles = false) {
       const span = el("span", { class: `role role-${node.role}${node.lang && node.lang !== "it" ? ` lang lang-${node.lang}` : ""}` })
       if (node.lang) span.setAttribute("lang", node.lang)
       if (info?.carrier === "icon" && info.icon) span.appendChild(icon(info.icon, "role-ic"))
+      inlineNodes(node.children, span, ctx)
+      parent.appendChild(span)
+    } else if (node.t === "link" && ctx.noLinks) {
+      const span = el("span")
       inlineNodes(node.children, span, ctx)
       parent.appendChild(span)
     } else if (node.t === "link") {

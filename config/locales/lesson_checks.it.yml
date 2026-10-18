@@ -8,7 +8,8 @@ it:
       howto:
         select_many: "Tocca le zone giuste, poi premi Controlla."
         select_one: "Tocca una zona, poi premi Controlla."
-        tiles: "Tocca le parole nell'ordine giusto. Per toglierne una, toccala di nuovo."
+        tiles: "Tocca le tessere nell'ordine giusto. Per toglierne una, toccala di nuovo."
+        tiles_sentence: "Tocca le parole nell'ordine giusto. Per toglierne una, toccala di nuovo."
         ordering: "Usa Su e Giù per mettere le voci in ordine, poi premi Controlla."
       # "Come si risponde": lines and a small example, closed until the student opens it
       help_title: "Come si risponde"
@@ -20,7 +21,15 @@ it:
             - "Per togliere la scelta, toccala di nuovo."
             - "Con la tastiera: Tab entra nel disegno, le frecce cambiano zona, Spazio sceglie."
           example: "Tocchi due zone. Sotto il disegno leggi «Selezionate: 2». Poi premi Controlla."
+        # tiles: the neutral words (the tiles may be words, facts, symbols: D-310); tiles_sentence: a check with `builds: sentence`
         tiles:
+          lines:
+            - "Tocca una tessera: va nella tua risposta."
+            - "Per toglierla, toccala nella tua risposta."
+            - "Con la tastiera: Invio sceglie una tessera, le frecce destra e sinistra la spostano."
+            - "Alcune tessere possono restare fuori."
+          example: "Tocchi tre tessere, una dopo l'altra: vanno nella tua risposta in quell'ordine. Poi premi Controlla."
+        tiles_sentence:
           lines:
             - "Tocca una parola: va nella tua frase."
             - "Per toglierla, toccala nella tua frase."
@@ -33,16 +42,22 @@ it:
             - "Premi Su per portare la voce più in alto."
             - "Con la tastiera: Alt con la freccia su o giù sposta la voce."
           example: "Premi Giù sulla prima voce: passa al secondo posto. Alla fine premi Controlla."
-      # tiles
-      tiles_line: "La tua frase"
-      tiles_bank: "Le parole"
-      tiles_empty: "Tocca le parole qui sotto."
+      # tiles: the neutral words, and those of a check that builds a sentence (`builds: sentence`, D-310)
+      tiles_line: "La tua risposta"
+      tiles_bank: "Le tessere"
+      tiles_empty: "Tocca le tessere qui sotto."
+      tile_used: "%{text}, già nella risposta."
+      tile_placed: "La tua risposta: %{text}."
+      tiles_sentence:
+        line: "La tua frase"
+        bank: "Le parole"
+        empty: "Tocca le parole qui sotto."
+        used: "%{text}, già nella frase."
+        placed: "La tua frase: %{text}."
       tiles_clear: "Svuota"
       tiles_cleared: "Hai tolto tutto."
       tiles_listen: "Ascolta la frase"
       tile_built: "%{text}, posto %{n} di %{total}. Toccala per toglierla. Con le frecce la sposti."
-      tile_used: "%{text}, già nella frase."
-      tile_placed: "La tua frase: %{text}."
       tile_removed: "Hai tolto: %{text}."
       tile_moved: "Ora è al posto %{n} di %{total}."
       # ordering

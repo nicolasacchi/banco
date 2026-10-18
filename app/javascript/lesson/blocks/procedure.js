@@ -8,7 +8,7 @@ export const tagInfo = (subject, tag) => palette.step_tags[subject]?.[tag] ?? { 
 
 export function render(block, ctx) {
   const box = el("section", { class: "block procedure" })
-  if (block.title_it) box.appendChild(el("h3", { class: "block-title", text: block.title_it }))
+  if (block.title_it) box.appendChild(renderInlineRich(block.title_it, el("h3", { class: "block-title" }), ctx)) // a formula in the title is drawn (D-310)
   const mnemonic = el("p", { class: "mnemonic", "aria-label": block.steps.map((s) => tagInfo(ctx.subject, s.tag).label_it).join(", ") })
   block.steps.forEach((s, i) => {
     if (i > 0) mnemonic.appendChild(el("span", { class: "mn-arrow", "aria-hidden": "true" }, icon("next")))
