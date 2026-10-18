@@ -421,6 +421,23 @@ class SearchSemanticTest < ActiveSupport::TestCase
     assert(result.hits.none? { |h| h.near == "lesson_card:ripasso.math.frazioni#scheda-2" })
   end
 
+  test "a lesson/1 lesson, whose sections share one address, counts every section" do
+    sections = [ [ "Prima parte", "Per sommare frazioni serve il denominatore comune." ], [ "Seconda parte", "Tre alla seconda è una potenza." ] ]
+    old = sections.each_with_index.map do |(title, body), i|
+      Search::Doc.build(kind: "lesson_card", key: "ripasso.math.vecchia", title: title, body: body, subject: "math", status: "draft", unique: "s#{i}")
+    end
+    other = Search::Doc.build(kind: "lesson_card", key: "ripasso.math.somme", title: "Sommare frazioni", body: "Frazioni e denominatore comune.", subject: "math",
+                              status: "draft", anchor: "scheda-1", unique: "o")
+    Search::Index.replace_group("references", old + [ other ])
+    build!
+    result = using { staff.like("lesson:ripasso.math.vecchia") }
+    assert_equal [ 2, 0 ], [ result.members, result.missing ]
+    near = result.hits.select { |h| h.score > 0.3 }.map(&:key)
+    assert_includes near, "ripasso.math.somme", "near the first section"
+    assert_includes near, "lezione.math.potenze", "near the second section"
+    assert_equal [ "lesson_card:ripasso.math.vecchia" ], result.hits.map(&:near).uniq
+  end
+
   test "Simili of a lesson asks no model: it reads the stored vectors" do
     add_lessons!
     build!

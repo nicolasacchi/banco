@@ -13,7 +13,7 @@ namespace :banco do
       puts format("%d documents in %.1fs", Search::Index.count, Process.clock_gettime(Process::CLOCK_MONOTONIC) - started)
       # The vectors come after the lexical index and never stop it: a service that is down leaves them for the next run.
       # A slow batch does not stop the rebuild: it waits (the service drains the abandoned work), retries, then skips (D-303).
-      # One embedder at a time (D-315): the task waits for a SearchEmbedJob to finish its share, and the jobs wait for the task.
+      # One embedder at a time (D-315): the task waits for a SearchEmbedJob to finish its share; a job that finds the task at work leaves it the work.
       embedder = Search::Embedder.current
       embedder.document_timeout = Float(ENV["BANCO_EMBED_DOCUMENT_TIMEOUT"].presence || 180) if embedder.respond_to?(:document_timeout=)
       lease_wait = Integer(ENV["BANCO_EMBED_LEASE_WAIT"].presence || 600)

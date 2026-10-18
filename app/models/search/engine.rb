@@ -103,7 +103,7 @@ module Search
       kinds = FAMILIES.fetch(source.kind, [ source.kind ]) & scope.kinds if kinds.empty?
       filters = { subject: subject.presence, kinds: kinds.presence, status: status.presence }
       address = members.to_h { |m| [ m.id, source.kind == LESSON ? Links.address(m) : nil ] }
-      queries = rows.to_h { |row| [ address[row["doc_id"]], Vectors.unpack(row["vec"]) ] }
+      queries = rows.map { |row| [ address[row["doc_id"]], Vectors.unpack(row["vec"]) ] }
       exclude = source.kind == LESSON ? lesson_document_ids(source) : [ source.id ]
       hits = Semantic.nearest_any(self, queries, model: embedder.model, filters: filters, limit: limit, min: 0.0, exclude: exclude)
       Result.new(hits: hits, semantic: true, indexed: true, **result)
