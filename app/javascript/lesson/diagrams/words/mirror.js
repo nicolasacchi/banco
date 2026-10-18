@@ -186,7 +186,9 @@ function build(data, ctx) {
   const pad = ctx.pad
   const lineH = ctx.lineH
   const marginX = 6
-  const padX = Math.max(6, Math.round(pad * 0.8))
+  const PAD_X = Math.max(6, Math.round(pad * 0.8))
+  const TIGHT_PAD = 4 // a narrow row whose longest word needs it (listRow)
+  let padX = PAD_X
   const icoW = Math.round(f * 1.1)
   const gap = 12
   let y = 8
@@ -299,19 +301,26 @@ function build(data, ctx) {
   // narrow: one numbered pair for each link; the pieces without a link follow, alone
   function listRow(row, i, key, lang, links) {
     const plate = Math.round(f * 0.8)
-    const arrowW = 34
-    const colW = Math.floor((W - 2 * marginX - 2 * plate - 10 - arrowW) / 2)
     const lx = marginX + 2 * plate + 10
-    const rx = lx + colW + arrowW
+    const columnFor = (arrow) => Math.floor((W - 2 * marginX - 2 * plate - 10 - arrow) / 2)
     const pairs = links.map(([a, b, kind]) => ({ a, b, kind }))
     row.pieces_it.forEach((_, p) => { if (!links.some((l) => l[0] === p)) pairs.push({ a: p, b: null, kind: "none" }) })
     row[key].forEach((_, p) => { if (!links.some((l) => l[1] === p)) pairs.push({ a: null, b: p, kind: "none" }) })
-    // a word wider than a whole column (a large text size on a phone): the two pieces of a pair go one under the other (D-310)
+    // a word that does not fit its column would cross its box (D-310): first the columns get a little wider (the link's room down to its
+    // mark, the boxes' side padding down to 4 px); a word wider still (a large text size on a phone) puts each pair one piece under the other
     const longest = (piece) => Math.max(0, ...show(piece).split(/\s+/).filter(Boolean).map((w) => ctx.measure(w, f).w))
-    if ([...row.pieces_it, ...row[key]].some((p) => longest(p) > colW - 2 * padX)) {
-      stackedPairs(row, i, key, lang, pairs, plate, lx)
-      return
+    const widest = Math.max(...[...row.pieces_it, ...row[key]].map(longest))
+    let arrowW = 34
+    if (widest > columnFor(arrowW) - 2 * padX) {
+      arrowW = 28
+      if (widest > columnFor(arrowW) - 2 * TIGHT_PAD) {
+        stackedPairs(row, i, key, lang, pairs, plate, lx)
+        return
+      }
+      padX = TIGHT_PAD
     }
+    const colW = columnFor(arrowW)
+    const rx = lx + colW + arrowW
     pairs.forEach((pr, n) => {
       const hs = [pr.a != null ? placement(row, "it", pr.a, row.pieces_it[pr.a], colW, true).h : 0, pr.b != null ? placement(row, lang, pr.b, row[key][pr.b], colW, true).h : 0]
       if (pr.kind === "none") hs.push(ctx.measure(TEXT.link_none, f, colW - 8).h)
@@ -335,6 +344,7 @@ function build(data, ctx) {
       }
       y += 8
     })
+    padX = PAD_X
   }
 
   // narrower still: each pair as the Italian piece, a short upright link with its mark and its word, the other piece; a piece without a
