@@ -111,6 +111,24 @@ class LessonsParser2Test < ActiveSupport::TestCase
     assert_equal [ "Uno.", "Due.", "Tre." ], parsed.body["cards"][0]["blocks"][1]["points_it"]
   end
 
+  test "a one-line math formula written in quotes loses the one matching pair around it, and nothing else (D-310)" do
+    {
+      "'(a^2)^3 = a^6'" => "(a^2)^3 = a^6",
+      "\"\\frac{a}{b} \\neq 0\"" => "\\frac{a}{b} \\neq 0",
+      "' x = 1 '" => "x = 1",
+      "f'(x) = 2x" => "f'(x) = 2x",
+      "'f''(x)'" => "f''(x)",
+      "'a\"" => "'a\"",
+      "x = 1" => "x = 1"
+    }.each do |written, tex|
+      parsed, findings = parse("## A {idea}\n\n::: math\n#{written}\n:::\n")
+      assert_empty findings.errors.map(&:to_h), written
+      assert_equal tex, parsed.body["cards"][0]["blocks"][0]["tex"], written
+    end
+    _, findings = parse("## A {idea}\n\n::: math\n''\n:::\n")
+    assert_includes findings.errors.map(&:code), "E-LESSON-BLOCK"
+  end
+
   test "a double-quoted YAML value with a backslash is refused; single quotes, block scalars and comments are not" do
     refused = ->(yaml) { Lessons::Directives.double_quoted_with_backslash(yaml) }
     assert refused.call('explain_it: "Con $x \neq 0$"')
