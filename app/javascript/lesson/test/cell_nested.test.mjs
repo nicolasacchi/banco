@@ -158,6 +158,19 @@ test("cell: two cells with different parts offer 'Solo le differenze'; on, it li
   assert.deepEqual(mods.cell.controls({ ...data, labels: "none" }), [], "a figure that names nothing (a select check's own) offers none")
 })
 
+test("cell: a cell's label stands for its kind in the description and on its tap buttons, so an example can ask which kind it is", () => {
+  const data = named("cell", "cell-compare-animal-plant")
+  const plain = { ...data, cells: data.cells.map(({ label_it, ...c }) => c) }
+  assert.match(mods.cell.describe(plain, {}), /La prima, una cellula animale: .*La seconda, una cellula vegetale: /)
+  assert.equal(lay(plain, { width: 738 }).hits.find((h) => h.id === "c1.nucleus").text, "nella cellula animale")
+  const asked = { ...data, cells: data.cells.map((c, i) => ({ ...c, label_it: i ? "Seconda cellula" : "Prima cellula" })) }
+  const said = mods.cell.describe(asked, {})
+  assert.match(said, /La prima, Prima cellula: .*La seconda, Seconda cellula: /)
+  assert.ok(!/animale|vegetale/.test(said), said)
+  for (const h of lay(asked, { width: 738 }).hits) assert.ok(!/animale|vegetale/.test(h.text), `${h.id}: ${h.text}`)
+  assert.equal(mods.cell.describe({ ...plain, cells: [plain.cells[0]] }, {}).split(".")[0], "Una cellula: una cellula animale")
+})
+
 test("cell: the water of the vacuole: low pulls the membrane away from the wall and shrinks the vacuole", () => {
   const data = named("cell", "cell-plant-water")
   const box = (scene, part) => {

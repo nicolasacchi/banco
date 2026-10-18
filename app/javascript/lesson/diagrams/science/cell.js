@@ -640,7 +640,7 @@ function build(data, ctx) {
     if (labels === "all" || labels === "tap") {
       for (const part of parts) {
         const [zx, zy] = g.zones[part]
-        hits.push({ key: `cell:${i}:${part}`, id: `c${i + 1}.${part}`, ...zoneBox(zx, zy, z), name: cap(nameOf(part)), text: KIND_IN[cell.kind], hint_it: TEXT.hit_hint, note_it: noteOf(eff, cell, part) ?? PARTS[part].job_it })
+        hits.push({ key: `cell:${i}:${part}`, id: `c${i + 1}.${part}`, ...zoneBox(zx, zy, z), name: cap(nameOf(part)), text: cell.label_it ?? KIND_IN[cell.kind], hint_it: TEXT.hit_hint, note_it: noteOf(eff, cell, part) ?? PARTS[part].job_it })
       }
     }
     bottom = Math.max(bottom, colBottom)
@@ -707,10 +707,9 @@ export function controls(data) {
   return [{ id: "compare", kind: "chips", multi: true, label_it: TEXT.compare, values: [{ value: "diff", label_it: TEXT.diff }] }]
 }
 
-function cellWords(cell) {
-  const kind = KIND_IT[cell.kind]
-  return cell.label_it ? `${cell.label_it} (${kind})` : kind
-}
+// A cell in words: the author's label when it has one, else its kind. A figure that asks which kind a cell is (an example's blank, "E la
+// seconda?") labels it "Seconda cellula": its description and its tap buttons must not answer for the student.
+const cellWords = (cell) => cell.label_it ?? KIND_IT[cell.kind]
 
 function describeState(data, i, ctx) {
   const eff = effectiveState(data, i)
@@ -727,7 +726,7 @@ function describeState(data, i, ctx) {
   const partsOf = (cell) => labelledParts(cell, data).map((p) => (named ? nameOf(p) : SHAPE_IT[p]))
   if (cells.length === 1) out.push(`Una cellula: ${cellWords(cells[0])}. ${named ? "Le sue parti" : "Le parti non hanno il nome; si vedono"}: ${listIt(partsOf(cells[0]))}.`)
   else {
-    out.push(`Due cellule una accanto all'altra. La prima è ${cellWords(cells[0])}: ${listIt(partsOf(cells[0]))}. La seconda è ${cellWords(cells[1])}: ${listIt(partsOf(cells[1]))}.`)
+    out.push(`Due cellule una accanto all'altra. La prima, ${cellWords(cells[0])}: ${listIt(partsOf(cells[0]))}. La seconda, ${cellWords(cells[1])}: ${listIt(partsOf(cells[1]))}.`)
   }
   const lit = comparing(eff, ctx ?? {}) ? differences(cells) : eff.highlight ?? []
   if (lit.length) out.push(named ? `${comparing(eff, ctx ?? {}) ? "Accese solo le differenze" : "Evidenziate"}: ${listIt(lit.map(nameOf))}.` : `Sono evidenziate ${lit.length === 1 ? "una parte" : `${lit.length} parti`}.`)
