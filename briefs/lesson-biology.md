@@ -110,6 +110,10 @@ states:
   step shows once the blank is answered.
 - **A select check** asks `targets: parts`; the ids are `c1.nucleoid`, `c2.wall` (cell 1 or 2, then the part). Its figure has `labels: none`, is drawn as a
   line drawing in one style, and its `alt_it` never names an answer (`E-CHECK-ANSWER-IN-ALT`): "un bordo doppio, dentro tanti puntini e un groviglio di filo".
+  There the wall and the membrane are two lines with a gap, the wall's target on the top edge and the membrane's on the bottom edge, so a check may
+  ask one against the other (and an error may say "è la parete, il bordo esterno").
+- **A tap** (`labels: all` or `tap`) works on any shape of a part (every chloroplast, anywhere on the wall), not only on its number: say "Tocca una
+  parte", never "tocca il numero".
 - Not yet: `true_scale` (the real size ratio waits for the vetted sizes `bio/sizes`), the red blood cell (`kind: red_blood`, `omit_shared`): say them in
   a sentence or a `more`.
 
@@ -134,7 +138,8 @@ states: [{focus: cell, op_it: "Una cellula"}, {focus: tissue, op_it: "Tante cell
 A select check asks `targets: levels` (ids are the level ids, `answer: ['organ']`): its figure shows the examples without the names. So ask for a level
 by its name ("Tocca il riquadro dell'organo": the student must know that the brain is an organ), or by an example the figure does not show (the boxes
 show the heart, the stem asks "Il fegato: tocca il suo livello"). Never quote in the stem the example printed in the answer's box: "Il cervello: tocca
-il suo livello" over a box that says "il cervello" tests the reading, not the level (no finding catches it: the reviewer does). Use `nested` for "is made
+il suo livello" over a box that says "il cervello" tests the reading, not the level (no finding catches it: the reviewer does). In a select check's
+figure no example may contain a level's name ("tessuto muscolare del cuore" names its box): write "tante cellule del cuore". Use `nested` for "is made
 of", a `concept_map` for "is a kind of", a `flow` for "then".
 
 ## Public repository

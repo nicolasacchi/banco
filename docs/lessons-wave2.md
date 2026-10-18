@@ -103,9 +103,12 @@ on the reply (`model_it`). The gallery lesson is `test/fixtures/lesson2/gallery/
 accepts a W2-2 type once that happens). `cell` reads the vetted table `bio/cell_parts` (kinds, parts, names, jobs, colours; `lesson/data/bio-cell_parts.js`
 in the browser): each kind is a fixed drawing in fractions of its width, each part has a fixed zone (tap target, number, leader end) far from the others,
 `labels: all` puts the names in two columns or, when they do not fit, a number on each part and one key for the figure; the select figure is a neutral
-line drawing with one zone per part (`c1.nucleoid`), and no part name reaches its DOM (the page's measuring probe is never handed a name). Its
+line drawing with one zone per part (`c1.nucleoid`), and no part name reaches its DOM (the page's measuring probe is never handed a name); there the
+wall's band stands a few px out from the membrane and their two targets keep each to its own band. With `labels: all` or `tap` every shape of a part
+(and an invisible pad along a thin one) forwards its tap to the part's button (`shapes[].hitFor`, wired by `draw.js` for any type's `hits`). Its
 colours are repeated in `lesson/science.css` and held equal to the table by `test/lib/cell_parts_data_test.rb`. `true_scale` is a draft view until
-`bio/sizes` exists, and `scale` stays a draft for the same reason. `nested` draws "is made of" as boxes inside boxes, the same picture at every width.
+`bio/sizes` exists, and `scale` stays a draft for the same reason. `nested` draws "is made of" as boxes inside boxes, the same picture at every width;
+its select figure reaches the page with positional ids and one neutral label on every level (`Nested.served`), so the source names no candidate either.
 The gallery is `test/fixtures/lesson2/gallery/science-biology.md` (`nested` also has a card in `graph.md`).
 
 ## The text layer and "Ascolta" (T2, D-282, D-283)
