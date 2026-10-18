@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 23
+version: 24
 
 validation:
   # Skill graph (synchronous).
@@ -63,6 +63,7 @@ validation:
   W-LONGEST-CORRECT: { stage: ruby, severity: warning, description: "The correct option is the longest in too many instances." }
   W-INSTANCES-ALIKE: { stage: ruby, severity: warning, description: "Two instances of one item share more than half of their rows: the left rows of a matching, the elements of an ordering, or the options of a choice with the same stem. A repeat must look like a different question (D-297)." }
   E-MATCHING-SIZE: { stage: ruby, severity: error, description: "A matching item has fewer than 4 pairs or a right column that is not n+1." }
+  W-MATCHING-JUDGE-ROWS: { stage: ruby, severity: warning, description: "A judge matching (a right column of two options: right or wrong, true or false) has an instance with fewer than 2 rows of one option in its key: one option for every row gets all rows right but one, so the instance measures little (the grader never counts it nearly correct). Give every instance at least 2 rows of each option (D-314)." }
   # Text.
   E-ACCENT-POLICY: { stage: ruby, severity: error, description: "accent_policy and the paradigm forms contradict each other." }
   E-ACCENT-DIRECTION: { stage: ruby, severity: error, description: "A choice instance has two options that differ only in the direction of an accent (grave or acute), or a declared error value is the key up to that direction. The direction is never tested (D-296)." }
@@ -239,7 +240,7 @@ verdicts:
   dont_know: { evidence: D }
   wrong_form: { evidence: conditional, note: "W when the form is the item's skill; WRONG_FORM_DECLARED when declared; pending otherwise" }
   near_miss: { evidence: conditional, note: "NEAR_MISS" }
-  nearly_correct: { evidence: C, note: "a matching with all pairs right but one (D-301); normalized carries off_pair" }
+  nearly_correct: { evidence: C, note: "a matching with all pairs right but one (D-301), never with a right column of two options nor an answer that gives one option to every row (D-314); normalized carries off_pair" }
   undetermined: { evidence: pending }
   invalid: { evidence: none, note: "not an attempt; Italian message; app_event invalid_input" }
 

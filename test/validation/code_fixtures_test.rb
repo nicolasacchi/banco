@@ -112,6 +112,18 @@ class CodeFixturesTest < ActiveSupport::TestCase
          "tests" => { "must_accept" => [], "must_reject" => [], "blank" => "invalid" })
   end
 
+  # A judge matching (D-093, D-314): six rows, two right options, the key's labels in row order.
+  def judge_item(labels)
+    display = { "stem_it" => "Giudica.", "reuse_right" => true, "left" => (1..6).map { |i| { "id" => "l#{i}", "text" => "frase #{i}" } },
+                "right" => [ { "id" => "r1", "text" => "giusta" }, { "id" => "r2", "text" => "sbagliata" } ] }
+    answer = labels.each_with_index.to_h { |r, i| [ "l#{i + 1}", r ] }
+    inst = { "display" => display, "answer" => answer, "errors" => [ { "code" => "swap", "value" => answer.transform_values { |r| r == "r1" ? "r2" : "r1" } } ],
+             "solution" => { "steps" => [ { "text_it" => "Giudica." } ], "final" => "fatto" } }
+    item("component" => "matching", "instances" => [ inst, inst.merge("display" => display.merge("stem_it" => "Giudica ancora.")) ],
+         "error_catalogue" => [ { "code" => "swap", "description_it" => "Scambio.", "message_it" => "Controlla.", "implicates" => [] } ],
+         "tests" => { "must_accept" => [], "must_reject" => [], "blank" => "invalid" })
+  end
+
   def expression_item(answers, error)
     insts = answers.each_with_index.map do |a, i|
       { "display" => { "stem_it" => "Semplifica l'espressione numero #{i}." }, "answer" => a, "errors" => [ { "code" => "slip", "value" => error } ],
@@ -151,6 +163,7 @@ class CodeFixturesTest < ActiveSupport::TestCase
     "E-ACCENT-DIRECTION" => -> { static_codes(F.choice_item("instances" => [ F.choice_instance("perché", %w[perchè nove undici]), F.choice_instance("otto", %w[quattro sei dieci]) ])) },
     "W-INSTANCES-ALIKE" => -> { static_codes(matching_item([ 1, 2, 3, 4 ], [ 1, 2, 3, 4, 5 ])) },
     "E-MATCHING-SIZE" => -> { static_codes(matching_item([ 1, 2, 3 ], [ 1, 2, 3, 4 ])) },
+    "W-MATCHING-JUDGE-ROWS" => -> { static_codes(judge_item(%w[r1 r1 r1 r1 r1 r2])) },
     "E-MATCHING-RIGHT-MARKUP" => -> { static_codes(matching_item([ 1, 2, 3, 4 ], [ 1, 2, 3, 4, 5 ], right_text: "$x \\leq 2$")) },
     "W-ERROR-NOT-IN-GRAPH" => -> { static_codes(item("error_catalogue" => [ item["error_catalogue"].first.merge("code" => "brand_new_code") ])) },
     "W-FORM-SKILL-CLOSURE" => -> { static_codes(item("form_skill" => "math.fractions-operations", "form" => [ "reduced" ])) },

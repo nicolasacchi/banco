@@ -13,6 +13,8 @@ module Validation
     MIN_CATEGORIES = 3
     # Two categories (physical or chemical, systematic or random) are allowed from 6 rows: 2^6 = 64 blind guesses (D-093).
     MIN_ROWS_TWO_CATEGORIES = 6
+    # A judge matching (two right options) has at least this many rows of each option in every instance (D-314).
+    JUDGE_MIN_ROWS = 2
 
     # label: where the instance is, in finding fields ("generated" or
     # "/instances/2"); seed is set for generated ones; files: the revision's files,
@@ -48,6 +50,7 @@ module Validation
       accept_rules(inst, label, seed, f)
       accent_direction_rules(display, answer, inst, label, seed, f) if problems.empty?
       choice_rules(display, answer, inst, label, seed, f) if @unit.component == "choice" && problems.empty?
+      judge_rows(display, answer, label, seed, f) if @unit.component == "matching" && problems.empty?
       leaks(display, answer, inst, label, seed, f) if problems.empty?
       support_leaks(display, answer, inst, label, seed, f) if problems.empty?
       ItemChecks.method_words(display, "#{label}/display", @unit.skill, f, seed: seed)
@@ -98,6 +101,24 @@ module Validation
 
           f.add("E-MATCHING-RIGHT-MARKUP", "#{label}/display/right/#{i}/text", "the right column is plain text (no $, no backslash, no **): write x \u2264 -2, not LaTeX", seed: seed)
         end
+      end
+    end
+
+    # W-MATCHING-JUDGE-ROWS (D-314): with two right options (right or wrong, true or false) an instance with a single
+    # odd row lets one option for every row get all rows right but one. The grader no longer calls that nearly
+    # correct; the instance should not offer it either.
+    def judge_rows(display, answer, label, seed, f)
+      right = Array(display["right"]).select { |o| o.is_a?(Hash) }
+      return unless right.size == 2
+
+      key = Answers.matching_raw(answer).first or return
+      right.each_with_index do |option, i|
+        n = key.values.count(option["id"].to_s)
+        next if n >= JUDGE_MIN_ROWS
+
+        f.add("W-MATCHING-JUDGE-ROWS", "#{label}/display/right/#{i}",
+              "a judge matching has #{n} row#{'s' unless n == 1} of #{option['text'].to_s[0, 30].inspect} in this instance: give every instance at least #{JUDGE_MIN_ROWS} rows of each option, so one option for every row is not all right but one",
+              rows: n, seed: seed)
       end
     end
 
