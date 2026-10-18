@@ -1,8 +1,9 @@
 ---
 # The renderer problems the maths author reported in wave 3 (D-310), one card each, invented content: formulas in the part and total labels
 # of a `bar_model`, formulas in the header cells of a `schema table`, a `math` block written in YAML quotes (single and double), a `number`
-# check with text before and after the box, a `choice` check whose options are formulas with colour roles, and a `cases` block whose title
-# holds a formula. test/validation/lesson_polish_gallery_test.rb draws it in Chrome at the viewports of lesson2.render and keeps no finding.
+# check with text before and after the box, a `choice` check whose options are formulas with colour roles, and a `cases` block whose titles
+# hold a formula, alone or inside a long sentence. test/validation/lesson_polish_gallery_test.rb draws it in Chrome at the viewports of
+# lesson2.render and keeps no finding.
 schema: banco.lesson/2
 key: ripasso.math.gallery-polish
 kind: ripasso
@@ -65,7 +66,7 @@ rows:
 
 ## Quale potenza {idea icon=multiply id=scelta}
 
-::: cases "Prodotto e potenza di $a^2$"
+::: cases "Prodotto, potenza e quoziente di $a^2$"
 cases:
   - title_it: '$a^2 \cdot a^3$'
     text_it: "Gli esponenti si sommano."
@@ -73,6 +74,9 @@ cases:
   - title_it: '$(a^2)^3$'
     text_it: "Gli esponenti si moltiplicano."
     example_it: '$a^{2 \cdot 3} = a^6$'
+  - title_it: 'Per $a^6 : a^2$ gli esponenti si sottraggono e resta la quarta potenza'
+    text_it: "Gli esponenti si sottraggono."
+    example_it: '$a^{6 - 2} = a^4$'
 :::
 
 ::: check choice
