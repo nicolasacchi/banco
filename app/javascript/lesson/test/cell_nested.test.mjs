@@ -210,6 +210,154 @@ test("cell: the select scene is a neutral line drawing whose description names n
   assert.equal(said, "Una cellula senza scritte: ci sono 11 parti da toccare.")
 })
 
+// The outline of a path as points about 1 px apart, one list per subpath: the absolute M L H V Q A Z that pathOf, capsule, roundRect and blob write.
+function samplePath(d) {
+  const tokens = d.match(/[MLHVQAZ]|-?\d*\.?\d+(?:e-?\d+)?/gi)
+  const subs = []
+  let pts = null
+  let [x, y] = [0, 0]
+  let i = 0
+  const num = () => Number(tokens[i++])
+  const line = (x2, y2) => {
+    const n = Math.max(1, Math.ceil(Math.hypot(x2 - x, y2 - y)))
+    for (let k = 1; k <= n; k++) pts.push([x + ((x2 - x) * k) / n, y + ((y2 - y) * k) / n])
+    ;[x, y] = [x2, y2]
+  }
+  while (i < tokens.length) {
+    const c = tokens[i++]
+    if (c === "M") {
+      ;[x, y] = [num(), num()]
+      pts = [[x, y]]
+      subs.push(pts)
+    } else if (c === "L") line(num(), num())
+    else if (c === "H") line(num(), y)
+    else if (c === "V") line(x, num())
+    else if (c === "Q") {
+      const [qx, qy, x2, y2] = [num(), num(), num(), num()]
+      for (let k = 1; k <= 24; k++) {
+        const t = k / 24
+        pts.push([(1 - t) ** 2 * x + 2 * (1 - t) * t * qx + t * t * x2, (1 - t) ** 2 * y + 2 * (1 - t) * t * qy + t * t * y2])
+      }
+      ;[x, y] = [x2, y2]
+    } else if (c === "A") {
+      // the arcs of a capsule: no rotation; the centre from the endpoints (SVG F.6.5)
+      let [rx, ry] = [num(), num()]
+      num()
+      const [large, sweep, x2, y2] = [num(), num(), num(), num()]
+      const [hx, hy] = [(x - x2) / 2, (y - y2) / 2]
+      const lambda = (hx * hx) / (rx * rx) + (hy * hy) / (ry * ry)
+      if (lambda > 1) [rx, ry] = [rx * Math.sqrt(lambda), ry * Math.sqrt(lambda)]
+      const sign = large === sweep ? -1 : 1
+      const coef = sign * Math.sqrt(Math.max(0, (rx * rx * ry * ry - rx * rx * hy * hy - ry * ry * hx * hx) / (rx * rx * hy * hy + ry * ry * hx * hx)))
+      const [cx, cy] = [(coef * rx * hy) / ry + (x + x2) / 2, (-coef * ry * hx) / rx + (y + y2) / 2]
+      const a0 = Math.atan2((y - cy) / ry, (x - cx) / rx)
+      let delta = Math.atan2((y2 - cy) / ry, (x2 - cx) / rx) - a0
+      if (sweep && delta <= 0) delta += 2 * Math.PI
+      if (!sweep && delta >= 0) delta -= 2 * Math.PI
+      const n = Math.max(8, Math.ceil(Math.abs(delta) * Math.max(rx, ry)))
+      for (let k = 1; k <= n; k++) pts.push([cx + rx * Math.cos(a0 + (delta * k) / n), cy + ry * Math.sin(a0 + (delta * k) / n)])
+      ;[x, y] = [x2, y2]
+    } else if (c === "Z") line(...pts[0])
+  }
+  return subs
+}
+
+const inside = (poly, [px, py]) => {
+  let odd = false
+  for (let a = 0, b = poly.length - 1; a < poly.length; b = a++) {
+    const [[xa, ya], [xb, yb]] = [poly[a], poly[b]]
+    if (ya > py !== yb > py && px < ((xb - xa) * (py - ya)) / (yb - ya) + xa) odd = !odd
+  }
+  return odd
+}
+
+test("cell: the samples of a path follow its outline (the test's own tool)", () => {
+  const [ring] = samplePath("M10 0 H30 A10 10 0 0 1 30 20 H10 A10 10 0 0 1 10 0 Z")
+  assert.ok(ring.every(([px, py]) => px >= -0.01 && px <= 40.01 && py >= -0.01 && py <= 20.01))
+  assert.ok(ring.some(([px]) => px > 39.9) && ring.some(([px]) => px < 0.1), "both ends of the capsule")
+  assert.ok(inside(ring, [20, 10]) && !inside(ring, [1, 1]))
+})
+
+test("cell: in a select figure the wall's target covers its band and never the membrane, the membrane's covers its line and never the band", () => {
+  // the button the page draws over a target (draw.js selectTargets: at least 28 x 28, centred on the target)
+  const button = (b) => {
+    const [w, h] = [Math.max(b.w, 28), Math.max(b.h, 28)]
+    return { x: b.x + b.w / 2 - w / 2, y: b.y + b.h / 2 - h / 2, w, h }
+  }
+  // a point within a box grown by the half-width of a neutral line (2 px)
+  const within = (b, [px, py]) => px >= b.x - 1 && px <= b.x + b.w + 1 && py >= b.y - 1 && py <= b.y + b.h + 1
+  const cases = vectors("cell").filter((v) => v.select_apart)
+  assert.ok(cases.some((v) => v.name === "cell-select-two-walls") && cases.length >= 9)
+  for (const v of cases) for (const width of WIDTHS) for (const fontPx of SIZES) {
+    const at = `${v.name} ${width}/${fontPx}`
+    const scene = lay(v.data, { width, fontPx, mode: "select", set: "parts" })
+    assert.equal(scene.error, undefined, at)
+    const ids = mods.cell.targetIds(v.data, "parts")
+    // the shapes of each cell, in the order of the cells: one membrane each, one band for each cell with a wall
+    const lines = scene.shapes.filter((s) => s.cls?.includes("dg-cp-edge")).map((s) => samplePath(s.d)[0])
+    const bands = scene.shapes.filter((s) => s.cls?.includes("dg-cp-band")).map((s) => samplePath(s.d))
+    const walled = v.data.cells.map((c, i) => v.data.cells.slice(0, i + 1).filter((x) => x.parts.includes("wall")).length - 1)
+    for (const [wallId, membraneId] of v.select_apart) {
+      const c = Number(wallId.slice(1, wallId.indexOf("."))) - 1
+      const [band, membrane] = [bands[walled[c]], lines[c]]
+      const wall = button(scene.targets[ids.indexOf(wallId)].bbox)
+      const mem = button(scene.targets[ids.indexOf(membraneId)].bbox)
+      assert.ok(!membrane.some((p) => within(wall, p)), `${at}: the wall's target reaches the membrane`)
+      assert.ok(band.flat().some((p) => within(wall, p)), `${at}: the wall's target is on its band`)
+      assert.ok(!band.flat().some((p) => within(mem, p)), `${at}: the membrane's target reaches the wall`)
+      assert.ok(membrane.some((p) => within(mem, p)), `${at}: the membrane's target is on its line`)
+      assert.ok(inside(band[1], [mem.x + mem.w / 2, mem.y + mem.h / 2]), `${at}: the membrane's target is inside the wall`)
+      assert.ok(!inside(band[1], [wall.x + wall.w / 2, wall.y + wall.h / 2]), `${at}: the wall's target reaches out of the cell`)
+      // the two bands are drawn apart: the gap between the wall's inner edge and the membrane is clear
+      const every = (list, n) => list.filter((_, k) => k % n === 0)
+      const gap = Math.min(...every(membrane, 3).map(([px, py]) => Math.min(...every(band[1], 2).map(([qx, qy]) => Math.hypot(px - qx, py - qy)))))
+      assert.ok(gap >= 4, `${at}: the membrane is ${gap.toFixed(1)} px from the wall`)
+    }
+  }
+})
+
+test("cell: in a select figure no ribosome's dot lies under another part's target, and the ribosomes' target keeps its cluster", () => {
+  for (const v of vectors("cell")) {
+    if (!v.targets) continue
+    const ids = v.targets.parts
+    for (const width of WIDTHS) for (const fontPx of SIZES) {
+      const scene = lay(v.data, { width, fontPx, mode: "select", set: "parts" })
+      const dots = scene.shapes.filter((s) => s.cls?.includes("dg-cp-dot"))
+      const touches = (b, s) => s.cx + s.r > b.x && s.cx - s.r < b.x + b.w && s.cy + s.r > b.y && s.cy - s.r < b.y + b.h
+      scene.targets.forEach((t, k) => {
+        const n = dots.filter((s) => touches(t.bbox, s)).length
+        if (ids[k].endsWith(".ribosomes")) assert.ok(n >= 2, `${v.name} ${width}/${fontPx}: the ribosomes' target has ${n} dots`)
+        else assert.equal(n, 0, `${v.name} ${width}/${fontPx}: a dot under ${ids[k]}`)
+      })
+    }
+  }
+})
+
+test("cell: all and tap: every shape of a part, and the pads along its thin lines, read that part's tap; a figure that names nothing has none", () => {
+  for (const name of ["cell-tap-notes", "cell-plant-full", "cell-animal-full", "cell-compare-animal-plant", "cell-bacterium-all", "cell-highlight-dna-eukaryote"]) {
+    const data = named("cell", name)
+    for (const width of [360, 738]) {
+      const scene = lay(data, { width })
+      const keys = new Set(scene.hits.map((h) => h.key))
+      const drawn = scene.shapes.filter((s) => /^dg-cp dg-cp-/.test(s.cls ?? ""))
+      assert.ok(drawn.every((s) => keys.has(s.hitFor)), `${name} ${width}: a shape that reads no part`)
+      for (const s of drawn) {
+        const part = s.cls.match(/^dg-cp dg-cp-(\w+)/)[1]
+        const [, cellIndex, hitPart] = s.hitFor.split(":")
+        assert.ok(hitPart === part || (part === "dna" && hitPart === "nucleus"), `${name}: a ${part} shape reads ${s.hitFor}`)
+        assert.ok(data.cells[Number(cellIndex)].parts.includes(hitPart) || hitPart === "dna", `${name}: ${s.hitFor} is a part of its cell`)
+      }
+      const pads = scene.shapes.filter((s) => s.cls?.startsWith("dg-cp-pad"))
+      for (const part of ["membrane", "ribosomes"]) assert.ok(pads.some((p) => p.hitFor.endsWith(`:${part}`)), `${name}: a pad for the ${part}`)
+      assert.ok(pads.every((p) => keys.has(p.hitFor)))
+    }
+  }
+  const none = lay(named("cell", "cell-labels-none"))
+  assert.ok(!none.shapes.some((s) => s.hitFor || s.cls?.startsWith("dg-cp-pad")), "labels none: nothing to tap")
+  const select = lay(named("cell", "cell-plant-full"), { mode: "select", set: "parts" })
+  assert.ok(!select.shapes.some((s) => s.hitFor || s.cls?.startsWith("dg-cp-pad")), "a select figure: no key of a part in the page")
+})
+
 test("cell: an arrow between two parts of one cell, with its label beside it or under the figure; never on a part's zone", () => {
   for (const width of WIDTHS) for (const fontPx of SIZES) {
     const scene = lay(named("cell", "cell-three-paths"), { width, fontPx })

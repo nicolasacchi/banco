@@ -3,9 +3,10 @@ require_relative "../support/lesson_events_world"
 require_relative "../support/student_session"
 
 # cell and nested on the student's page in Chrome (D-312): the numbers and the key, Avanti lighting the four shared parts, a tap that reads a part's job
-# or the author's note, "Solo le differenze", the water of the vacuole, the select checks over a cell's parts (one cell and two, never with chips) and
-# the levels (the page never names a candidate), an example that moves its linked cell and asks the kind of a cell only its label names, the focus
-# moving out through the levels, and reduced motion. The gallery test/fixtures/lesson2/gallery/science-biology.md is the lesson.
+# or the author's note (on any shape of the part, not only on its button), "Solo le differenze", the water of the vacuole, the select checks over a
+# cell's parts (one cell and two, never with chips; the wall's and the membrane's buttons each on its own band) and the levels (neither the drawing nor
+# the page source names a candidate), an example that moves its linked cell and asks the kind of a cell only its label names, the focus moving out
+# through the levels, and reduced motion. The gallery test/fixtures/lesson2/gallery/science-biology.md is the lesson.
 # Screenshots in BANCO_SHOT_DIR: the look gate, every card at 390 and 1280 px in the cream and the dark theme.
 class BiologyFiguresTest < ApplicationSystemTestCase
   include LessonEventsWorld
@@ -50,6 +51,37 @@ class BiologyFiguresTest < ApplicationSystemTestCase
     assert_selector "#scheda-#{n} .dg", wait: 10
   end
 
+  # Does the select button `target` of the card's figure cover a point of the shapes (`stroke`: their line only, as Chrome hit-tests it; else their
+  # fill too)? Every pixel of the button is tried.
+  def button_covers?(card, target, shapes, stroke: false)
+    page.evaluate_script(<<~JS)
+      (() => {
+        const fig = document.querySelector("#scheda-#{card} .dg")
+        const svg = fig.querySelector("svg.dg-svg")
+        const b = fig.querySelector(".dg-target[data-target='#{target}']").getBoundingClientRect()
+        const s = svg.getBoundingClientRect()
+        const nodes = [...svg.querySelectorAll("#{shapes}")]
+        if (nodes.length === 0) throw new Error("no #{shapes}")
+        for (let x = Math.floor(b.left); x <= b.right; x++) for (let y = Math.floor(b.top); y <= b.bottom; y++) {
+          const p = new DOMPoint(x - s.left, y - s.top)
+          if (nodes.some((n) => n.isPointInStroke(p) || (#{!stroke} && n.isPointInFill(p)))) return true
+        }
+        return false
+      })()
+    JS
+  end
+
+  # A real tap at a point of the page (CSS px from the window's top left).
+  def tap_at(x, y) = page.driver.browser.mouse.click(x: x, y: y)
+
+  # The figure's wall and membrane buttons (t1 and t2 in a cell whose first parts are wall and membrane) each keep to their own band.
+  def assert_wall_and_membrane_apart(card)
+    assert button_covers?(card, "t1", "path.dg-cp-band"), "card #{card}: the wall's button is on its band"
+    assert_not button_covers?(card, "t1", "path.dg-cp-edge", stroke: true), "card #{card}: the wall's button reaches the membrane"
+    assert button_covers?(card, "t2", "path.dg-cp-edge", stroke: true), "card #{card}: the membrane's button is on its line"
+    assert_not button_covers?(card, "t2", "path.dg-cp-band"), "card #{card}: the membrane's button reaches the wall"
+  end
+
   test "two cells with one key; Avanti lights the four shared parts and dims the rest; a tap reads a part's job or the author's note" do
     open_card(1)
     assert_selector "#scheda-1 .dg-cell .dg-ctitle", text: "Batterio"
@@ -89,6 +121,27 @@ class BiologyFiguresTest < ApplicationSystemTestCase
     assert_text "Tocca una parte per leggere il suo nome e che cosa fa."
     find("#scheda-4 .dg-hit[aria-label^='Cloroplasti']").click
     assert_selector "#scheda-4 .dg-question", text: "Cloroplasti: Nelle radici sotto terra i cloroplasti non ci sono."
+    # on a phone no outline shows the buttons: a tap on any shape of a part reads it. The first chloroplast drawn is far from the chloroplasts' button,
+    # and the top of the wall far from the wall's (on the left edge).
+    find("#scheda-4 .dg-hit[aria-label^='Ribosomi']").click
+    assert_selector "#scheda-4 .dg-question", text: "Ribosomi:"
+    page.execute_script("document.querySelector('#scheda-4 .dg').scrollIntoView({ block: 'center' })")
+    where = page.evaluate_script(<<~JS)
+      (() => {
+        const centre = (r) => [r.left + r.width / 2, r.top + r.height / 2]
+        const leaf = document.querySelector("#scheda-4 path.dg-cp-chloroplasts").getBoundingClientRect()
+        const button = document.querySelector("#scheda-4 .dg-hit[aria-label^='Cloroplasti']").getBoundingClientRect()
+        const wall = document.querySelector("#scheda-4 path.dg-cp-wall").getBoundingClientRect()
+        const wallButton = document.querySelector("#scheda-4 .dg-hit[aria-label^='Parete']").getBoundingClientRect()
+        return { leaf: centre(leaf), button: centre(button), size: button.width, wall: [wall.left + wall.width * 0.6, wall.top + 4], wallButton: centre(wallButton) }
+      })()
+    JS
+    assert_operator Math.hypot(where["leaf"][0] - where["button"][0], where["leaf"][1] - where["button"][1]), :>, 2 * where["size"], "a chloroplast away from the button"
+    tap_at(*where["leaf"])
+    assert_selector "#scheda-4 .dg-question", text: "Cloroplasti: Nelle radici sotto terra i cloroplasti non ci sono."
+    assert_operator Math.hypot(where["wall"][0] - where["wallButton"][0], where["wall"][1] - where["wallButton"][1]), :>, 2 * where["size"]
+    tap_at(*where["wall"])
+    assert_selector "#scheda-4 .dg-question", text: "Parete cellulare: Uno strato rigido fuori dalla membrana"
     open_card(5, size: [ 390, 844 ])
     width = -> { page.evaluate_script("document.querySelector('#scheda-5 .dg-cp-vacuole').getBBox().width") }
     full = width.call
@@ -104,6 +157,7 @@ class BiologyFiguresTest < ApplicationSystemTestCase
     PART_NAMES.each { |p| assert_no_match(/dg-cp-#{p}\b|:#{p}\b/, html, "the select figure names #{p}") }
     assert_no_match(/nucleoide|ribosomi|parete/i, html)
     assert_equal "zona 1 di 5, Parte 1 di 5", find("#scheda-7 .dg-target[data-target='t1']")["aria-label"]
+    assert_wall_and_membrane_apart(7)
     find("#scheda-7 .dg-target[data-target='t5']").click
     click_button "Controlla"
     assert_selector "#scheda-7 .verdict-wrong", wait: 5
@@ -111,8 +165,12 @@ class BiologyFiguresTest < ApplicationSystemTestCase
     find("#scheda-7 .dg-target[data-target='t4']").click
     click_button "Controlla"
     assert_selector "#scheda-7 .verdict-right", wait: 5
+    open_card(8, size: [ 390, 844 ])
+    assert_selector "#scheda-8 .dg-target", count: 8
+    assert_wall_and_membrane_apart(8)
     open_card(8)
     assert_selector "#scheda-8 .dg-target", count: 8
+    assert_wall_and_membrane_apart(8)
     %w[t1 t7 t8].each { |t| find("#scheda-8 .dg-target[data-target='#{t}']").click }
     click_button "Controlla"
     assert_selector "#scheda-8 .verdict-right", wait: 5
@@ -154,6 +212,9 @@ class BiologyFiguresTest < ApplicationSystemTestCase
       assert_no_text "Solo le differenze"
       html = find(".dg")["outerHTML"]
       PART_NAMES.each { |p| assert_no_match(/dg-cp-#{p}\b|:#{p}\b/, html, "the select figure names #{p}") }
+    end
+    assert_wall_and_membrane_apart(10)
+    within("#scheda-10") do
       find(".dg-target[data-target='t8']").click # the nucleus of the cheek cell alone
       click_button "Controlla"
       assert_selector ".verdict-wrong", wait: 5
@@ -178,6 +239,13 @@ class BiologyFiguresTest < ApplicationSystemTestCase
       assert_text "il cervello"
       assert_no_text "organo"
     end
+    # nor does the page source: the check's figure in the lesson's body (its stem names the level it asks for: "Tocca il riquadro dell'organo.")
+    body = JSON.parse(page.evaluate_script("document.getElementById('lesson-body').textContent"))
+    check = body["cards"].flat_map { |c| c["blocks"] }.find { |b| b["type"] == "check" && b["targets"] == "levels" }
+    figure = check.fetch("diagram").to_json
+    assert_no_match(/organo|organ/, figure)
+    assert_includes figure, "il cervello"
+    assert_no_match(/organ/, find("#scheda-12 .dg")["outerHTML"])
     find("#scheda-12 .dg-target[data-target='t4']").click
     click_button "Controlla"
     assert_selector "#scheda-12 .verdict-wrong", wait: 5

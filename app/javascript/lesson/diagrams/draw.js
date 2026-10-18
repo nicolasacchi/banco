@@ -380,6 +380,7 @@ export function mountDiagram(data, ctx, options = {}) {
     if (state.announce && scene.live) live.textContent = scene.live
     state.announce = false
     if (mod?.printViews && state.printWidth !== width) paintPrint(width, fontPx)
+    const hitButtons = new Map()
     for (const h of scene.hits ?? []) {
       const b = el("button", { type: "button", class: "dg-hit", "aria-pressed": state.selected === h.id ? "true" : "false", "aria-label": `${h.name}: ${h.text}${h.hint_it ? `. ${h.hint_it}` : h.question_it ? `. ${ctx.t.tap_for_question}` : ""}` })
       b.style.left = `${h.x}px`
@@ -393,6 +394,15 @@ export function mountDiagram(data, ctx, options = {}) {
         for (const other of labelsLayer.querySelectorAll(".dg-hit")) other.setAttribute("aria-pressed", String(other === b))
       })
       labelsLayer.appendChild(b)
+      hitButtons.set(h.key, b)
+    }
+    // a shape that stands for a hit (shapes[].hitFor is the hit's key: every shape of a cell's part, and its invisible pads) reads it when tapped,
+    // as the hit's own button does: the button is the keyboard's and the screen reader's way in, the shapes are the finger's
+    if (hitButtons.size) {
+      for (const node of stageSvg.querySelectorAll("[data-hit-for]")) {
+        const b = hitButtons.get(node.dataset.hitFor)
+        if (b) node.addEventListener("click", () => b.click())
+      }
     }
     if (mode === "select" && options.select) selectTargets()
     if (strip) {

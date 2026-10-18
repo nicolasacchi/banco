@@ -4,10 +4,12 @@
 // nucleus, an animal cell with a wall), and every cell has the four shared parts (membrane, cytoplasm, DNA, ribosomes).
 //
 // Labels: `all` names every part with a leader line (two side columns when they fit, else a number on each part and one key under the figure, the same
-// number for the same part in both cells), `tap` names a part only when it is tapped, `none` names nothing. A tap on a part (`all` and `tap`) says its
-// name and its job, or the author's note. Highlight lights parts (a halo and a thicker outline, the others dimmed: never colour alone), paths are arrows
-// between two parts of one cell, `fill` sets the water of the vacuole (low: the membrane pulls away from the wall). Two cells with different parts offer
-// "Solo le differenze". Select mode (L3): the cells as a line drawing in one neutral style, one zone per part, `c1.nucleoid` and so on, no names.
+// number for the same part in both cells), `tap` names a part only when it is tapped, `none` names nothing. A tap on a part (`all` and `tap`: on any of
+// its shapes or the invisible pads along its thin lines, which forward the tap to the part's button) says its name and its job, or the author's note.
+// Highlight lights parts (a halo and a thicker outline, the others dimmed: never colour alone), paths are arrows between two parts of one cell, `fill`
+// sets the water of the vacuole (low: the membrane pulls away from the wall). Two cells with different parts offer "Solo le differenze". Select mode
+// (L3): the cells as a line drawing in one neutral style, one zone per part as large as its button, `c1.nucleoid` and so on, no names; the wall's band
+// stands apart from the membrane and their two targets keep each to its own band; no ribosome's dot lies under another part's target.
 // The Ruby twin is Lessons::Diagrams::Cell (the same semantic checks in the same order, the same targets and printed strings); both run
 // test/fixtures/diagrams/types/cell.json.
 import schema from "lesson/diagram_schemas/cell"
@@ -261,14 +263,33 @@ const PLACES = {
 
 export const ZONES = Object.fromEntries(Object.entries(PLACES).map(([k, v]) => [k, v.zones]))
 
-function geometry(kind, x0, y0, w, cell, eff) {
+// A select figure (L3) draws the wall's band a gap away from the membrane, so the line drawing shows two lines, and their targets keep each to its own
+// band: the wall's on the top edge, above the gap (over the band and out of the cell: the figure keeps room above it), the membrane's on the bottom
+// edge, above the gap (over the line, inside the cell). `along` is where on its edge each target sits, as a fraction of the width: on the straight part
+// of the edge, away from the other targets (the bacterium's membrane target right of the nucleoid's even when the targets are 46 px wide).
+export const selectGap = (w) => Math.min(6, Math.max(5, Math.floor(w * 0.02)))
+const SELECT_EDGES = { bacterium: { wall: 0.3, membrane: 0.58 }, plant: { wall: 0.54, membrane: 0.61 } }
+// Where a select figure puts a target other than its zone: a plant cell's cytoplasm is a thin layer between the vacuole and the membrane, so its target
+// goes to the widest room of it, left of the vacuole, never against the membrane (where it would look like the membrane's).
+const SELECT_ZONES = { plant: { cytoplasm: [0.235, 0.505] } }
+// The tap pads of `all` and `tap` (A3): an invisible strip along a thin part, so a tap near the line counts (the membrane, the wall, the tail), and a
+// ring around each ribosome; a tap on any shape of a part reads that part, not only a tap on its zone.
+const padWidth = (w) => Math.max(8, Math.round(w * 0.03))
+
+// opts.select: the select figure (the band apart from the membrane, `edges` for the two targets, no pads); else `pads` for the taps.
+function geometry(kind, x0, y0, w, cell, eff, opts = {}) {
+  const select = !!opts.select
   const parts = new Set(cell.parts)
   const place = PLACES[kind]
-  const shapes = [] // [{ part, s }] in drawing order
+  const shapes = [] // [{ part, s, pad? }] in drawing order
   const ports = {}
+  const edges = {} // select: { wall: { mid, along }, membrane: ... }: a target spans [mid - Z, mid] upwards, Z wide along its edge, centred on along
   const add = (part, s) => shapes.push({ part, s })
+  const pad = (part, s) => select || shapes.push({ part, s, pad: true })
+  const pw = padWidth(w)
   const h = Math.round(w * ASPECT[kind])
-  const level = eff.fill?.vacuole ?? "high"
+  // a select figure has no states and no fill: the cell is drawn full of water whatever the stored figure says
+  const level = select ? "high" : eff.fill?.vacuole ?? "high"
   // the frame (the wall of a plant cell) at full size; the rest of a plant cell whose vacuole is low shrinks towards the middle: the membrane pulls away
   // from the wall (plasmolysis), and every part inside moves with it
   const k = kind === "plant" && level === "low" ? 0.84 : 1
@@ -276,12 +297,14 @@ function geometry(kind, x0, y0, w, cell, eff) {
   const P = (fx, fy) => [x0 + (centre[0] + (fx - centre[0]) * k) * w, y0 + (centre[1] + (fy - centre[1]) * k) * w]
   const s = (f) => f * w * k
   const zones = {}
-  for (const [part, [fx, fy]] of Object.entries(place.zones)) zones[part] = P(fx, fy)
+  for (const [part, [fx, fy]] of Object.entries({ ...place.zones, ...(select ? SELECT_ZONES[kind] : {}) })) zones[part] = P(fx, fy)
+  const dot = (cx, cy) => {
+    const r = Math.max(2.5, w * 0.009)
+    pad("ribosomes", { kind: "circle", cx, cy, r: Math.max(7, r * 2.5), cls: "dg-cp-pad" })
+    add("ribosomes", { kind: "circle", cx, cy, r, cls: "dg-cp-dot" })
+  }
   const dots = () => {
-    for (const [fx, fy] of place.dots) {
-      const [cx, cy] = P(fx, fy)
-      add("ribosomes", { kind: "circle", cx, cy, r: Math.max(2.5, w * 0.009), cls: "dg-cp-dot" })
-    }
+    for (const [fx, fy] of place.dots) dot(...P(fx, fy))
     ports.ribosomes = { cx: zones.ribosomes[0], cy: zones.ribosomes[1], rx: s(0.045), ry: s(0.045) }
   }
   if (kind === "bacterium") {
@@ -293,10 +316,22 @@ function geometry(kind, x0, y0, w, cell, eff) {
     const bw = w * 0.8
     const bh = w * 0.38
     const t = Math.max(5, Math.round(w * 0.028))
-    if (parts.has("wall")) add("wall", { kind: "path", d: `${capsule(bx, by, bw, bh)} ${capsule(bx + t, by + t, bw - 2 * t, bh - 2 * t)}`, cls: "dg-cp-band", fillRule: "evenodd" })
+    const ring = (d) => capsule(bx - d, by - d, bw + 2 * d, bh + 2 * d) // the outline of the body grown by d (shrunk when d < 0)
     const m = parts.has("wall") ? t : 0
-    add("cytoplasm", { kind: "path", d: capsule(bx + m, by + m, bw - 2 * m, bh - 2 * m), cls: "" })
-    add("membrane", { kind: "path", d: capsule(bx + m, by + m, bw - 2 * m, bh - 2 * m), cls: "dg-cp-ink dg-cp-edge" })
+    if (parts.has("wall")) {
+      // the band; a select figure moves it out by the gap (the room around the body allows it) so that it stands apart from the membrane
+      const gp = select ? selectGap(w) : 0
+      add("wall", { kind: "path", d: `${ring(gp)} ${ring(gp - t)}`, cls: "dg-cp-band", fillRule: "evenodd" })
+      pad("wall", { kind: "path", d: `${ring(Math.min(pw, Math.floor(w * 0.02)))} ${ring(0)}`, cls: "dg-cp-pad", fillRule: "evenodd" }) // inside the cell's box
+      if (select) {
+        edges.wall = { mid: by + t - gp / 2, along: x0 + (SELECT_EDGES.bacterium.wall + sx) * w }
+        edges.membrane = { mid: by + bh - t + gp / 2, along: x0 + (SELECT_EDGES.bacterium.membrane + sx) * w }
+      }
+    }
+    add("cytoplasm", { kind: "path", d: ring(-m), cls: "" })
+    add("membrane", { kind: "path", d: ring(-m), cls: "dg-cp-ink dg-cp-edge" })
+    // the strip of the membrane: inside it when a wall is outside it, on both sides when the membrane is the edge
+    pad("membrane", { kind: "path", d: `${ring(m ? -m : pw / 2)} ${ring(-m - (m ? pw : pw / 2))}`, cls: "dg-cp-pad", fillRule: "evenodd" })
     if (!parts.has("wall")) zones.membrane = [zones.membrane[0], zones.membrane[1] + t]
     if (flag) {
       const pts = []
@@ -304,34 +339,48 @@ function geometry(kind, x0, y0, w, cell, eff) {
       const len = w * 0.16
       for (let j = 0; j <= 40; j++) pts.push([fx0 + (j / 40) * len, fy0 + Math.sin((j / 40) * Math.PI * 3) * w * 0.035])
       add("flagellum", { kind: "path", d: pathOf(pts, false), cls: "dg-cp-ink dg-cp-tail" })
+      pad("flagellum", { kind: "path", d: pathOf(pts, false), cls: "dg-cp-pad dg-cp-pad-line" })
     }
     const [ncx, ncy] = zones.nucleoid
     add("nucleoid", { kind: "ellipse", cx: ncx, cy: ncy, rx: w * 0.13, ry: w * 0.085, cls: "dg-cp-zonefill" })
     add("nucleoid", { kind: "path", d: tangle(ncx, ncy, w * 0.12, w * 0.075, 7), cls: "dg-cp-ink dg-cp-thread" })
     ports.nucleoid = { cx: ncx, cy: ncy, rx: w * 0.13, ry: w * 0.085 }
     ports.dna = ports.nucleoid
-    for (const [fx, fy] of place.dots) {
-      const [cx, cy] = Q(fx, fy)
-      add("ribosomes", { kind: "circle", cx, cy, r: Math.max(2.5, w * 0.009), cls: "dg-cp-dot" })
-    }
+    for (const [fx, fy] of place.dots) dot(...Q(fx, fy))
     ports.ribosomes = { cx: zones.ribosomes[0], cy: zones.ribosomes[1], rx: w * 0.045, ry: w * 0.045 }
-    return { h, shapes, zones, ports, side: place.side }
+    return { h, shapes, zones, ports, edges, side: place.side }
   }
   if (kind === "animal") {
     const [cx, cy] = P(0.5, 0.4)
-    const outline = blob(cx, cy, s(0.46), s(0.36), [[0.025, 3, 0.4], [0.018, 5, 1.3], [0.01, 7, 2.1]])
+    const WOB = [[0.025, 3, 0.4], [0.018, 5, 1.3], [0.01, 7, 2.1]]
+    const outline = blob(cx, cy, s(0.46), s(0.36), WOB)
     add("cytoplasm", { kind: "path", d: outline, cls: "" })
     add("membrane", { kind: "path", d: outline, cls: "dg-cp-ink dg-cp-edge" })
+    pad("membrane", { kind: "path", d: `${blob(cx, cy, s(0.46) + pw / 2, s(0.36) + pw / 2, WOB)} ${blob(cx, cy, s(0.46) - pw / 2, s(0.36) - pw / 2, WOB)}`, cls: "dg-cp-pad", fillRule: "evenodd" })
   } else {
     const t = Math.max(6, Math.round(w * 0.032))
     const [bx, by] = [x0 + w * 0.02, y0 + w * 0.02]
     const bw = w * 0.96
     const bh = h - w * 0.04
-    if (parts.has("wall")) add("wall", { kind: "path", d: `${roundRect(bx, by, bw, bh, w * 0.05)} ${roundRect(bx + t, by + t, bw - 2 * t, bh - 2 * t, w * 0.035)}`, cls: "dg-cp-band", fillRule: "evenodd" })
+    const box = (d, r) => roundRect(bx - d, by - d, bw + 2 * d, bh + 2 * d, Math.max(1, r + d)) // the frame grown by d (shrunk when d < 0)
+    if (parts.has("wall")) {
+      // the band; a select figure moves its inner edge out by the gap and its outer edge by as much as the cell's box allows, so that it stands
+      // apart from the membrane
+      const gp = select ? selectGap(w) : 0
+      const out = select ? Math.min(gp, Math.floor(w * 0.02)) : 0
+      add("wall", { kind: "path", d: `${box(out, w * 0.05)} ${box(gp - t, w * 0.035 + t)}`, cls: "dg-cp-band", fillRule: "evenodd" })
+      pad("wall", { kind: "path", d: `${box(Math.min(pw, Math.floor(w * 0.02)), w * 0.05)} ${box(0, w * 0.05)}`, cls: "dg-cp-pad", fillRule: "evenodd" }) // inside the cell's box
+      if (select) {
+        edges.wall = { mid: by + t - gp / 2, along: x0 + SELECT_EDGES.plant.wall * w }
+        edges.membrane = { mid: by + bh - t + gp / 2, along: x0 + SELECT_EDGES.plant.membrane * w }
+      }
+    }
     const [ix, iy] = P(0.02 + t / w, 0.02 + t / w)
-    const inner = roundRect(ix, iy, (bw - 2 * t) * k, (bh - 2 * t) * k, w * (k < 1 ? 0.09 : 0.035))
+    const [iw, ih, ir] = [(bw - 2 * t) * k, (bh - 2 * t) * k, w * (k < 1 ? 0.09 : 0.035)]
+    const inner = roundRect(ix, iy, iw, ih, ir)
     add("cytoplasm", { kind: "path", d: inner, cls: "" })
     add("membrane", { kind: "path", d: inner, cls: "dg-cp-ink dg-cp-edge" })
+    pad("membrane", { kind: "path", d: `${inner} ${roundRect(ix + pw, iy + pw, iw - 2 * pw, ih - 2 * pw, Math.max(1, ir - pw))}`, cls: "dg-cp-pad", fillRule: "evenodd" })
     zones.wall = [x0 + w * place.zones.wall[0], y0 + w * place.zones.wall[1]] // the wall does not move
     zones.membrane = [zones.membrane[0], iy + (bh - 2 * t) * k]
     if (parts.has("vacuole")) {
@@ -354,6 +403,7 @@ function geometry(kind, x0, y0, w, cell, eff) {
   if (parts.has("er")) {
     const [ex, ey, ra, rb, a0, a1] = place.er
     const [cx, cy] = P(ex, ey)
+    pad("er", { kind: "path", d: sector(cx, cy, s(ra) - 2, s(rb + 0.016) + 2, a0, a1), cls: "dg-cp-pad" }) // the folds and the room between them
     for (let j = 0; j < 3; j++) add("er", { kind: "path", d: sector(cx, cy, s(ra + ((rb - ra) * j) / 2), s(ra + ((rb - ra) * j) / 2 + 0.016), a0, a1), cls: "" })
   }
   if (parts.has("nucleus")) {
@@ -374,16 +424,19 @@ function geometry(kind, x0, y0, w, cell, eff) {
   if (parts.has("golgi")) {
     const [gx, gy, radii, a0, a1] = place.golgi
     const [cx, cy] = P(gx, gy)
+    pad("golgi", { kind: "path", d: sector(cx, cy, s(radii[0]) - 2, s(radii[radii.length - 1] + 0.016) + 2, a0, a1), cls: "dg-cp-pad" })
     for (const r of radii) add("golgi", { kind: "path", d: sector(cx, cy, s(r), s(r + 0.016), a0, a1), cls: "" })
   }
   if (parts.has("vesicles")) {
     for (const [fx, fy] of place.ves) {
       const [cx, cy] = P(fx, fy)
-      add("vesicles", { kind: "circle", cx, cy, r: Math.max(3, s(0.018)), cls: "" })
+      const r = Math.max(3, s(0.018))
+      pad("vesicles", { kind: "circle", cx, cy, r: Math.max(7, r + 2), cls: "dg-cp-pad" })
+      add("vesicles", { kind: "circle", cx, cy, r, cls: "" })
     }
   }
   dots()
-  return { h, shapes, zones, ports, side: place.side }
+  return { h, shapes, zones, ports, edges, side: place.side }
 }
 
 // ---- layout -----------------------------------------------------------------------------------------------------------------------------
@@ -448,9 +501,19 @@ function noteOf(eff, cell, part) {
   return null
 }
 
+// The size of a zone as the text asks, or a little larger on a large drawing.
+const nominalZone = (F, cw) => Math.max(Math.round(F * 1.45), Math.round(cw * 0.085))
+// A select check's targets are buttons of at least 28 px on the page (draw.js selectTargets): the scene draws them that large, so that what the tests
+// measure is what the student taps.
+const SELECT_MIN = 28
+
+// The target of the wall or of the membrane of a select figure: Z wide along its edge, from the gap between the two bands upwards (the wall's on the
+// top edge: outwards; the membrane's on the bottom edge: inwards), so it never reaches the other band.
+const edgeBox = (e, Z) => ({ x: Math.round(e.along - Z / 2), y: Math.floor(e.mid - Z), w: Z, h: Z })
+
 // The size of the zones of a cell: as large as the text size asks, but never so large that two zones of the cell touch; at least 24 px (A3).
 function zoneSize(zones, F, W, cw) {
-  const nominal = Math.max(Math.round(F * 1.45), Math.round(cw * 0.085)) // as large as the text asks, or a little larger on a large drawing
+  const nominal = nominalZone(F, cw)
   // a zone on the very edge of the scene is pushed inside it: the room between zones is measured where they will be
   const pts = Object.values(zones).map(([x, y]) => [Math.max(nominal / 2, Math.min(W - nominal / 2, x)), Math.max(nominal / 2, y)])
   let room = Infinity
@@ -523,33 +586,47 @@ function build(data, ctx) {
     const top = beside ? 0 : y
     const avail = style === "sides" ? colW - sw.left - sw.right - 2 * leader - 8 : colW
     const cw = Math.max(Math.min(avail, maxCell), Math.min(avail, minCell))
+    const geo = (x0, y0) => geometry(cell.kind, x0, y0, cw, cell, eff, { select })
     const left = style === "sides" ? colX + sw.left + leader + 4 + Math.max(0, Math.floor((avail - cw) / 2)) : colX + Math.floor((colW - cw) / 2)
     let cy = top
     if (cell.label_it) {
       const t = say(ctx, cell.label_it, colX + colW / 2, cy, { anchor: "middle", cls: "dg-ctitle", maxW: colW - 8, key: select ? undefined : `cell:${i}:title` })
       cy += t.h + Math.round(F * 0.35)
     }
-    const g = geometry(cell.kind, left, cy, cw, cell, eff)
+    // a select figure keeps room above a wall for the wall's target, which reaches out of the cell's top edge (its targets are at most this large)
+    const wallEdge = geo(0, 0).edges.wall
+    if (wallEdge) cy += Math.max(0, Math.ceil(Math.max(SELECT_MIN, nominalZone(F, cw)) - wallEdge.mid))
+    const g = geo(left, cy)
     const drawnLit = (part) => lit.has(part) || (part === dnaHome(cell) && cell.kind === "bacterium" && lit.has("dna"))
     const anyLit = lit.size > 0 // a lit part anywhere dims the rest of the figure, a cell without it included
+    const parts = lists[i]
+    const tappable = labels === "all" || labels === "tap"
+    // all and tap: every shape of a part, and the invisible pads along its thin lines, read that part when tapped (draw.js forwards the tap to the
+    // part's button); the threads of a nucleus whose DNA has no label of its own read the nucleus
+    const hitOf = (part) => (tappable ? `cell:${i}:${parts.includes(part) ? part : "nucleus"}` : undefined)
+    const z = zoneSize(Object.fromEntries(parts.map((p) => [p, g.zones[p]])), F, W, cw)
+    // select: one neutral zone per part (no name anywhere), in the canonical order, each as large as its button on the page; the wall's and the
+    // membrane's of a walled cell keep to their own band (edgeBox)
+    const Z = Math.max(z, SELECT_MIN)
+    const boxes = select ? ORDER.filter((p) => cell.parts.includes(p)).map((part) => [part, g.edges[part] ? edgeBox(g.edges[part], Z) : zoneBox(...g.zones[part], Z)]) : []
+    // a ribosome's dot under another part's target is left out of a select figure: with a dot in it, that target would look like the ribosomes'
+    const underOther = (s) => boxes.some(([part, b]) => part !== "ribosomes" && s.cx + s.r + 2 > b.x && s.cx - s.r - 2 < b.x + b.w && s.cy + s.r + 2 > b.y && s.cy - s.r - 2 < b.y + b.h)
     // the shapes, part by part, with the halo of a lit part behind it
-    for (const { part, s } of g.shapes) {
+    for (const { part, s, pad } of g.shapes) {
+      if (pad) {
+        if (tappable) shape(ctx, s.kind, { ...s, hitFor: hitOf(part) })
+        continue
+      }
+      if (select && s.cls === "dg-cp-dot" && underOther(s)) continue
       const own = part === "dna" ? (drawnLit("dna") ? "is-lit" : anyLit ? "is-dim" : "") : drawnLit(part) ? "is-lit" : anyLit ? "is-dim" : ""
       const cls = select ? `dg-cp dg-cp-neutral ${s.cls}`.trim() : `dg-cp dg-cp-${part} ${s.cls} ${own}`.replace(/\s+/g, " ").trim()
-      if (!select && own === "is-lit" && haloed(part, s.cls)) shape(ctx, s.kind, { ...s, cls: `dg-cp-halo${s.cls === "dg-cp-dot" ? " dg-cp-halo-dot" : ""}` })
-      shape(ctx, s.kind, { ...s, cls })
+      if (!select && own === "is-lit" && haloed(part, s.cls)) shape(ctx, s.kind, { ...s, cls: `dg-cp-halo${s.cls === "dg-cp-dot" ? " dg-cp-halo-dot" : ""}`, hitFor: hitOf(part) })
+      shape(ctx, s.kind, { ...s, cls, hitFor: hitOf(part) })
     }
-    const parts = lists[i]
-    const z = zoneSize(Object.fromEntries(parts.map((p) => [p, g.zones[p]])), F, W, cw)
-    // select: one neutral zone per part (no name anywhere), in the canonical order
-    if (select) {
-      for (const part of ORDER.filter((p) => cell.parts.includes(p))) {
-        const [zx, zy] = g.zones[part]
-        const t = `t${targets.length + 1}`
-        const b = zoneBox(zx, zy, z)
-        shape(ctx, "rect", { ...b, r: 6, cls: "dg-czone", target: t })
-        targets.push({ target: t, bbox: b })
-      }
+    for (const [, b] of boxes) {
+      const t = `t${targets.length + 1}`
+      shape(ctx, "rect", { ...b, r: 6, cls: "dg-czone", target: t })
+      targets.push({ target: t, bbox: b })
     }
     // the names
     let colBottom = cy + g.h

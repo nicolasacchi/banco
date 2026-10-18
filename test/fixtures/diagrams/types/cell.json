@@ -5,7 +5,7 @@
  "batch": "w2-2",
  "track": "T7",
  "provisional": false,
- "description": "Vectors of T7 (WAVE2 V1, V2; D-312), invented content: 'schema' valid or invalid; 'semantic' ok or {code, path} of the first finding (Ruby Lessons::Diagrams::Cell and lesson/diagrams/science/cell.js give the same one); 'layout' ok at every width (290, 360, 738, 1250 px) and text size (18, 20, 26 px), in every state; 'printed' the strings of the first state (and 'printed_last' of the last), sorted, the same in Ruby and JS (L4); 'targets' the stored ids of the select set parts in reading order. The parts each kind may have are the vetted table bio/cell_parts.",
+ "description": "Vectors of T7 (WAVE2 V1, V2; D-312), invented content: 'schema' valid or invalid; 'semantic' ok or {code, path} of the first finding (Ruby Lessons::Diagrams::Cell and lesson/diagrams/science/cell.js give the same one); 'layout' ok at every width (290, 360, 738, 1250 px) and text size (18, 20, 26 px), in every state; 'printed' the strings of the first state (and 'printed_last' of the last), sorted, the same in Ruby and JS (L4); 'targets' the stored ids of the select set parts in reading order. The parts each kind may have are the vetted table bio/cell_parts. 'select_apart' the pairs [wall, membrane] of the select set whose targets keep off each other's band at every width and text size (the wall's covers its band and not the membrane, the membrane's its line and not the band).",
  "vectors": [
   {
    "name": "cell-example-1",
@@ -118,7 +118,13 @@
      "c2.ribosomes",
      "c2.mitochondria"
     ]
-   }
+   },
+   "select_apart": [
+    [
+     "c1.wall",
+     "c1.membrane"
+    ]
+   ]
   },
   {
    "name": "cell-unknown-field",
@@ -228,7 +234,13 @@
      "c1.ribosomes",
      "c1.flagellum"
     ]
-   }
+   },
+   "select_apart": [
+    [
+     "c1.wall",
+     "c1.membrane"
+    ]
+   ]
   },
   {
    "name": "cell-bacterium-no-wall",
@@ -405,7 +417,13 @@
      "c1.golgi",
      "c1.vesicles"
     ]
-   }
+   },
+   "select_apart": [
+    [
+     "c1.wall",
+     "c1.membrane"
+    ]
+   ]
   },
   {
    "name": "cell-plant-water",
@@ -497,7 +515,13 @@
      "c1.chloroplasts",
      "c1.vacuole"
     ]
-   }
+   },
+   "select_apart": [
+    [
+     "c1.wall",
+     "c1.membrane"
+    ]
+   ]
   },
   {
    "name": "cell-compare-animal-plant",
@@ -574,7 +598,13 @@
      "c2.chloroplasts",
      "c2.vacuole"
     ]
-   }
+   },
+   "select_apart": [
+    [
+     "c2.wall",
+     "c2.membrane"
+    ]
+   ]
   },
   {
    "name": "cell-tap-notes",
@@ -630,7 +660,13 @@
      "c1.nucleoid",
      "c1.ribosomes"
     ]
-   }
+   },
+   "select_apart": [
+    [
+     "c1.wall",
+     "c1.membrane"
+    ]
+   ]
   },
   {
    "name": "cell-labels-none",
@@ -664,7 +700,13 @@
      "c1.nucleoid",
      "c1.ribosomes"
     ]
-   }
+   },
+   "select_apart": [
+    [
+     "c1.wall",
+     "c1.membrane"
+    ]
+   ]
   },
   {
    "name": "cell-highlight-dna-eukaryote",
@@ -765,7 +807,13 @@
      "c2.ribosomes",
      "c2.mitochondria"
     ]
-   }
+   },
+   "select_apart": [
+    [
+     "c1.wall",
+     "c1.membrane"
+    ]
+   ]
   },
   {
    "name": "cell-path-from-dna",
@@ -953,7 +1001,76 @@
      "c1.golgi",
      "c1.vesicles"
     ]
-   }
+   },
+   "select_apart": [
+    [
+     "c1.wall",
+     "c1.membrane"
+    ]
+   ]
+  },
+  {
+   "name": "cell-select-two-walls",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Due cellule senza scritte: a sinistra una capsula con un bordo doppio, a destra un rettangolo con un bordo spesso.",
+    "labels": "none",
+    "cells": [
+     {
+      "kind": "bacterium",
+      "parts": [
+       "wall",
+       "membrane",
+       "cytoplasm",
+       "nucleoid",
+       "ribosomes"
+      ]
+     },
+     {
+      "kind": "plant",
+      "parts": [
+       "wall",
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "chloroplasts",
+       "vacuole"
+      ]
+     }
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [],
+   "targets": {
+    "parts": [
+     "c1.wall",
+     "c1.membrane",
+     "c1.cytoplasm",
+     "c1.nucleoid",
+     "c1.ribosomes",
+     "c2.wall",
+     "c2.membrane",
+     "c2.cytoplasm",
+     "c2.nucleus",
+     "c2.ribosomes",
+     "c2.chloroplasts",
+     "c2.vacuole"
+    ]
+   },
+   "select_apart": [
+    [
+     "c1.wall",
+     "c1.membrane"
+    ],
+    [
+     "c2.wall",
+     "c2.membrane"
+    ]
+   ]
   },
   {
    "name": "cell-bacterium-with-nucleus",
