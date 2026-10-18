@@ -12,7 +12,7 @@ module Api
         return refuse("E-NOT-FOUND", "shots", "revision #{@revision.id} has no render yet", "banco lesson status #{@revision.id}", 404) unless row
 
         shots = row.shots.map do |s|
-          s.slice("card", "level", "viewport", "sha256", "bytes", "width", "height").merge("available" => LessonShots.exist?(s["sha256"]),
+          s.slice("card", "state", "level", "viewport", "sha256", "bytes", "width", "height").merge("available" => LessonShots.exist?(s["sha256"]),
                                                                                          "path" => "/api/v1/lesson-revisions/#{@revision.id}/shots/#{s['sha256']}")
         end
         render json: { revision_id: @revision.id, lesson: @revision.lesson.key, render_id: row.id, status: row.status, errors: row.errors_list, shots: shots }

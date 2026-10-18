@@ -174,6 +174,27 @@ class LessonRenderTest < ActionDispatch::IntegrationTest
     assert_select "p", /immagine rimossa/
   end
 
+  test "the shots of a card's further states (D-311): the API names the state, the teacher's page says it after the card as drawn" do
+    shots = [
+      { "card" => 1, "state" => "ex2", "viewport" => "390x844-cream" }, { "card" => 1, "viewport" => "1280x800-cream" },
+      { "card" => 1, "viewport" => "390x844-cream" }, { "card" => 1, "state" => "ex2-open", "viewport" => "390x844-cream" },
+      { "card" => 1, "state" => "open", "viewport" => "390x844-cream" }
+    ].map do |s|
+      bytes = webp("#{s['state']} #{s['viewport']}")
+      s.merge("level" => "core", "sha256" => LessonShots.put(bytes), "bytes" => bytes.bytesize, "width" => s["viewport"].to_i, "height" => 900)
+    end
+    LessonRender.create!(lesson_revision: @revision, status: "passed", rules_version: "9", harness_version: Validation::Harness.lesson_version, chrome_version: "Test/1",
+                         attempt: 1, result_json: JSON.generate("errors" => [], "elapsed_seconds" => 3.2), shots_json: JSON.generate(shots))
+    api("/api/v1/lesson-revisions/#{@revision.id}/shots")
+    assert_response :ok
+    assert_equal [ "ex2", nil, nil, "ex2-open", "open" ], response.parsed_body["shots"].map { |s| s["state"] }
+    on(:web, "/teacher/lesson-revisions/#{@revision.id}/shots", headers: TEACHER, remote_addr: EDGE)
+    assert_response :success
+    captions = css_select("figcaption").map { |c| c.text.strip }
+    assert_equal [ "1280 px, chiaro", "390 px, chiaro", "Con le parti chiuse aperte · 390 px, chiaro", "Esercizio 2 · 390 px, chiaro",
+                   "Esercizio 2, con le parti chiuse aperte · 390 px, chiaro" ], captions
+  end
+
   test "the lesson box offers Simili for the lesson and each card when vectors can be used" do
     open_topic_page!(headers: TEACHER)
     assert_select "#similar-line", count: 0
@@ -256,5 +277,19 @@ class LessonRenderTest < ActionDispatch::IntegrationTest
     assert File.exist?(LessonShots.path(of_latest.shots.last["sha256"])), "the latest revision of its lesson stays"
     assert_equal 4, LessonRender.count, "the rows stay (the ledger)"
     assert_equal [ false, true ], doomed.shots.map { |s| LessonShots.exist?(s["sha256"]) }
+  end
+
+  test "the purge removes the pictures of a card's further states with the card's own (D-311)" do
+    lesson = Lesson.create!(subject: @subject, key: "ripasso.math.states-gone", kind: "ripasso")
+    md = "---\nkey: ripasso.math.states-gone\n---\n"
+    old, _latest = [ 1, 2 ].map { |seq| LessonRevision.create!(lesson: lesson, seq: seq, source_md: md, source_sha256: Digest::SHA256.hexdigest(md + seq.to_s), body_json: @revision.body_json, rules_version: "9", warnings_json: "[]") }
+    shots = [ nil, "ex2", "ex3", "open" ].map do |state|
+      bytes = webp("card 4 #{state}")
+      { "card" => 4, "state" => state, "level" => "core", "viewport" => "390x844-cream", "sha256" => LessonShots.put(bytes), "bytes" => bytes.bytesize, "width" => 390, "height" => 900 }.compact
+    end
+    LessonRender.create!(lesson_revision: old, status: "passed", rules_version: "9", harness_version: "x", chrome_version: "Test/1", attempt: 1,
+                         result_json: "{}", shots_json: JSON.generate(shots), created_at: 40.days.ago)
+    assert_equal shots.map { |s| s["sha256"] }.sort, LessonShots.purge[:deleted].sort
+    assert shots.none? { |s| LessonShots.exist?(s["sha256"]) }
   end
 end

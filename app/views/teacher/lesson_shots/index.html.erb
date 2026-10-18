@@ -12,6 +12,7 @@
           <% shots.each do |s| %>
             <% width, theme = s["viewport"].match(/\A(\d+)x\d+-(\w+)\z/).captures %>
             <% label = t("teacher.render.shots.viewport", width: width, theme: t("teacher.render.shots.theme_#{theme}")) %>
+            <% label = "#{LessonRenders.state_words(s['state']).upcase_first} · #{label}" if s["state"] %>
             <figure style="margin: 0; max-width: <%= width.to_i > 600 ? "48%" : "30%" %>">
               <% if LessonShots.exist?(s["sha256"]) %>
                 <a href="<%= teacher_lesson_shot_path(lesson_revision_id: @revision.id, sha256: s["sha256"]) %>"><img src="<%= teacher_lesson_shot_path(lesson_revision_id: @revision.id, sha256: s["sha256"]) %>" alt="<%= t("teacher.render.shots.alt", n: n, viewport: label) %>" loading="lazy" style="max-width: 100%; height: auto; border: 1px solid #888"></a>

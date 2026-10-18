@@ -294,6 +294,7 @@ func TestLessonShotsDownloadsEveryImage(t *testing.T) {
 			w.Header().Set("Content-Type", "application/json")
 			_, _ = w.Write([]byte(`{"revision_id":12,"status":"passed","errors":[],"shots":[` +
 				`{"card":1,"viewport":"390x844-cream","sha256":"` + sha + `","available":true,"path":"/api/v1/lesson-revisions/12/shots/` + sha + `"},` +
+				`{"card":1,"state":"ex2","viewport":"390x844-cream","sha256":"` + sha + `","available":true,"path":"/api/v1/lesson-revisions/12/shots/` + sha + `"},` +
 				`{"card":2,"viewport":"1280x800-dark","sha256":"` + gone + `","available":false,"path":"/api/v1/lesson-revisions/12/shots/` + gone + `"}]}`))
 		case "/api/v1/lesson-revisions/12/shots/" + sha:
 			w.Header().Set("Content-Type", "image/webp")
@@ -311,6 +312,13 @@ func TestLessonShotsDownloadsEveryImage(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join(dir, "card-01_390x844-cream.webp"))
 	if err != nil || string(data) != "RIFFxxxxWEBP" {
 		t.Fatalf("image not written: %v %q", err, data)
+	}
+	// another exercise of Prova tu (D-311): its own file, the state in the name and in the answer
+	if _, err := os.ReadFile(filepath.Join(dir, "card-01-ex2_390x844-cream.webp")); err != nil {
+		t.Fatalf("the state's image not written: %v", err)
+	}
+	if !strings.Contains(res.stdout, `"state":"ex2"`) {
+		t.Errorf("answer without the state: %s", res.stdout)
 	}
 	if !strings.Contains(res.stdout, `"removed_by_purge":1`) || !strings.Contains(res.stdout, `"status":"passed"`) {
 		t.Errorf("answer: %s", res.stdout)

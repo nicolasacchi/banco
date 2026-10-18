@@ -19,6 +19,9 @@ import (
 
 var lessonKeyRe = regexp.MustCompile(`^(ripasso|ponte|lezione)\.[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*$`)
 
+// the further states of a card in the render check's shots (D-311), part of a file name
+var shotStateRe = regexp.MustCompile(`^(ex[0-9]+|open|ex[0-9]+-open)$`)
+
 func runCourseOpen(e *env, a []string) error {
 	return runSubject(e, subjectCommands["course open"], a)
 }
@@ -188,7 +191,8 @@ func runLessonStatus(e *env, args []string) error {
 }
 
 // lesson shots REV --dir D: the screenshots of the render check (D-249, A12.2), one WebP per card and viewport, so that
-// a multimodal reviewer looks at every card. Files are named card-NN_WIDTHxHEIGHT-theme.webp (the cover is not shot).
+// a multimodal reviewer looks at every card. Files are named card-NN_WIDTHxHEIGHT-theme.webp (the cover is not shot); a further
+// state of a card (D-311: another exercise of «Prova tu», the closed parts opened) is card-NN-STATE_WIDTHxHEIGHT-theme.webp.
 func runLessonShots(e *env, args []string) error {
 	fs := flag.NewFlagSet("lesson shots", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
@@ -216,6 +220,7 @@ func runLessonShots(e *env, args []string) error {
 		Errors json.RawMessage `json:"errors"`
 		Shots  []struct {
 			Card      int    `json:"card"`
+			State     string `json:"state"`
 			Viewport  string `json:"viewport"`
 			Sha256    string `json:"sha256"`
 			Available bool   `json:"available"`
@@ -237,10 +242,19 @@ func runLessonShots(e *env, args []string) error {
 			return err
 		}
 		name := fmt.Sprintf("card-%02d_%s.webp", s.Card, s.Viewport)
+		file := map[string]any{"card": s.Card, "viewport": s.Viewport}
+		if s.State != "" {
+			if !shotStateRe.MatchString(s.State) {
+				return newErr(ExitServer, "E-HTTP", "state", "the server named a shot state "+strconv.Quote(s.State)+" that is not exN, open or exN-open", "banco health")
+			}
+			name = fmt.Sprintf("card-%02d-%s_%s.webp", s.Card, s.State, s.Viewport)
+			file["state"] = s.State
+		}
 		if err := writeFile(filepath.Join(target, name), data); err != nil {
 			return err
 		}
-		files = append(files, map[string]any{"card": s.Card, "viewport": s.Viewport, "file": filepath.Join(target, name)})
+		file["file"] = filepath.Join(target, name)
+		files = append(files, file)
 	}
 	out := map[string]any{
 		"revision": rev, "dir": target, "status": list.Status, "errors": list.Errors, "files": files, "removed_by_purge": missing,

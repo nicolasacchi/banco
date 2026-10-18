@@ -8,7 +8,7 @@ module Teacher
       @subject = @revision.lesson.subject
       @unit = "#{@subject.key}:topic"
       @render = LessonRender.verdict_for(@revision)
-      @shots = @render ? @render.shots.sort_by { |s| [ s["card"].to_i, s["viewport"] ] } : []
+      @shots = @render ? @render.shots.sort_by { |s| [ s["card"].to_i, LessonRenders.state_rank(s["state"]), s["viewport"] ] } : []
       @titles = (@revision.body["cards"] || []).to_h { |c| [ c["n"], c["title_it"] ] }
     end
 
