@@ -1,8 +1,9 @@
 <%# The teacher's preview of the student's site (D-309): on every page, the way out, the view switch and the reset.
     The view lives in the session; the switch and the reset are POSTs under /teacher/preview, and come back to this page.
-    One row at every width (D-315). From 40rem: the status, «Passa a», «Ricomincia da capo» and «Esci dalla prova». On a phone:
-    «In prova · VIEW», «Opzioni» (a disclosure that shows the switch and the reset as a panel under the row; student.css, :has) and
-    «Esci». A short word is always part of its control's accessible name (aria-label holds the whole action). %>
+    One row at every width (D-315), its form chosen by the banner's own width (student.css, container queries in em): wide, the
+    status, «Passa a», «Ricomincia da capo» and «Esci dalla prova»; in between, «In prova · VIEW» and the same three; on a phone,
+    «In prova» over the view, «Opzioni» (a disclosure that shows the switch and the reset as a panel under the row; :has) and «Esci»;
+    on the narrowest, «Opzioni» and «Esci» are their icons. A control's accessible name is always the whole action (aria-label). %>
 <% other = preview_view == :drafts ? "official" : "drafts" %>
 <% back = request.get? ? request.fullpath : "/teacher/preview" %>
 <aside class="preview-banner" id="preview-banner" aria-label="<%= t("teacher.preview.banner_label") %>">
@@ -14,7 +15,7 @@
       <span id="preview-view-name"><span class="preview-wide"><%= t("teacher.preview.view_label") %>: </span><%= t("teacher.preview.views.#{preview_view}") %></span>
     </p>
     <details class="preview-more" id="preview-more">
-      <summary class="button secondary small preview-act" aria-label="<%= t("teacher.preview.more_label") %>"><%= t("teacher.preview.more") %></summary>
+      <summary class="button secondary small preview-act" aria-label="<%= t("teacher.preview.more_label") %>"><%= ui_icon("more") %><span class="preview-word"><%= t("teacher.preview.more") %></span></summary>
     </details>
     <div class="preview-banner-actions" id="preview-actions">
       <%= button_to "/teacher/preview/view", params: { view: other, back: back }, class: "button secondary small preview-act", id: "preview-switch", form: { class: "inline" } do %>
@@ -28,7 +29,7 @@
         </div>
       </details>
     </div>
-    <a class="button small preview-act" id="preview-exit" href="/teacher" aria-label="<%= t("teacher.preview.exit") %>"><span class="preview-wide"><%= t("teacher.preview.exit") %></span><span class="preview-narrow"><%= t("teacher.preview.exit_short") %></span></a>
+    <a class="button small preview-act" id="preview-exit" href="/teacher" aria-label="<%= t("teacher.preview.exit") %>"><%= ui_icon("close") %><span class="preview-wide"><%= t("teacher.preview.exit") %></span><span class="preview-narrow"><%= t("teacher.preview.exit_short") %></span></a>
   </div>
   <% if flash[:notice] %><p class="preview-banner-note" role="status"><%= flash[:notice] %></p><% end %>
 </aside>

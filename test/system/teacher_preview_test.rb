@@ -65,18 +65,46 @@ class TeacherPreviewTest < ApplicationSystemTestCase
     page.driver.resize(1280, 900)
   end
 
-  def shot_at(name, width)
+  def shot_at(name, width, height)
     dir = ENV["BANCO_SHOT_DIR"].presence or return
     FileUtils.mkdir_p(dir)
-    page.driver.resize(width, width == 390 ? 844 : 900)
+    page.driver.resize(width, height)
     sleep 0.4
-    page.driver.save_screenshot(File.join(dir, "#{name}-#{width}.png"), full: true)
+    page.driver.save_screenshot(File.join(dir, "#{name}-#{width}x#{height}.png"))
   end
 
   def banner_height = page.evaluate_script("document.getElementById('preview-banner').getBoundingClientRect().height")
 
   # One row: the banner is no taller than its exit button and the padding around it (two rows would be twice the button).
   def one_row? = banner_height <= page.evaluate_script("document.getElementById('preview-exit').getBoundingClientRect().height") + 32
+
+  # The banner's forms by its own width (D-315, student.css; 1em is 20 px at the normal text size): the whole status from 63em, «In prova
+  # · VIEW» with the three actions from 50.5em, «Opzioni» and «Esci» below, and those two as icons under 17.5em. Desktops, a tablet held
+  # both ways, a phone held sideways, phones.
+  BANNER_SIZES = [ [ 1280, 900, :wide ], [ 1180, 820, :row ], [ 1024, 768, :row ], [ 900, 600, :menu ], [ 844, 390, :menu ], [ 768, 1024, :menu ],
+                   [ 641, 900, :menu ], [ 390, 844, :menu ], [ 320, 568, :icons ] ].freeze
+
+  def assert_banner_form(width, height, form, view:)
+    page.driver.resize(width, height)
+    at = "#{form} at #{width}x#{height}"
+    wide = form == :wide
+    assert_selector "#preview-banner .preview-banner-line strong", text: wide ? "Stai provando come studente" : "In prova", exact_text: true
+    assert_selector "#preview-view-name", text: wide ? "Vista: #{view}" : view, exact_text: true
+    if %i[wide row].include?(form)
+      assert_no_selector "#preview-more summary"
+      assert_selector "#preview-switch", text: "Passa a: #{view == "Con le bozze" ? "Come lo vede S" : "Con le bozze"}", exact_text: true
+      assert_selector "#preview-reset summary", text: "Ricomincia da capo"
+      assert_selector "#preview-exit", text: "Esci dalla prova", exact_text: true
+    else
+      assert_no_selector "#preview-switch"
+      assert_selector "#preview-more summary", text: form == :icons ? "" : "Opzioni", exact_text: true
+      assert_selector "#preview-exit", text: form == :icons ? "" : "Esci", exact_text: true
+    end
+    assert_equal "Opzioni della prova", find("#preview-more summary", visible: :all)["aria-label"]
+    assert_equal "Esci dalla prova", find("#preview-exit")["aria-label"]
+    assert one_row?, "one row: #{at} (#{banner_height} px)"
+    assert_operator page.evaluate_script("document.documentElement.scrollWidth"), :<=, width, "nothing wider than the screen: #{at}"
+  end
 
   def walk(draft:)
     visit ROOT
@@ -130,33 +158,33 @@ class TeacherPreviewTest < ApplicationSystemTestCase
     assert_equal 0, Comment.count
   end
 
-  test "the banner is one row at 1280 and on a phone, where «Opzioni» opens the switch and the reset and «Esci» stays (D-315)" do
+  test "the banner is one row at every width in the form that fits; on a phone «Opzioni» opens the switch and the reset (D-315)" do
     build_lesson2_world(name: "equations", approve: true, release: true)
     sign_in_as :teacher
     visit ROOT
     assert_selector "#preview-switch", text: "Passa a: Con le bozze"
-    assert_no_selector "#preview-more summary"
-    assert one_row?, "one row at 1280 (#{banner_height} px)"
+    BANNER_SIZES.each do |width, height, form|
+      assert_banner_form(width, height, form, view: "Come lo vede S")
+      shot_at("banner-#{form}", width, height)
+    end
+    page.driver.resize(1024, 768)
     find("#preview-reset summary").click
     assert_selector "#preview-reset-confirm", text: "Sì, ricomincia"
-    shot_at("banner-reset-open", 1280)
+    left, right = page.evaluate_script("(() => { const r = document.querySelector('.preview-reset-body').getBoundingClientRect(); return [r.left, r.right]; })()")
+    assert left >= 0 && right <= 1024, "the reset's question stays on the screen (#{left}..#{right})"
+    assert one_row?, "the question opens over the page, the row keeps its height (#{banner_height} px)"
+    shot_at("banner-reset-open", 1024, 768)
     page.driver.resize(390, 844)
-    assert_selector "#preview-more summary", text: "Opzioni"
-    assert_selector "#preview-exit", text: "Esci", exact_text: true
-    assert_no_selector "#preview-switch"
-    assert one_row?, "one row at 390 (#{banner_height} px)"
-    assert_operator page.evaluate_script("document.documentElement.scrollWidth"), :<=, 390, "nothing wider than the phone"
-    assert_equal "Esci dalla prova", find("#preview-exit")["aria-label"]
-    shot_at("banner-phone-closed", 390)
     find("#preview-more summary").click
     assert_selector "#preview-switch", text: "Passa a: Con le bozze"
     assert_selector "#preview-reset-confirm", text: "Sì, ricomincia"
     assert one_row?, "the panel opens over the page, the row keeps its height (#{banner_height} px)"
-    shot_at("banner-phone-menu", 390)
+    shot_at("banner-phone-menu", 390, 844)
     click_button "Passa a: Con le bozze"
     assert_selector "#preview-banner", text: "Con le bozze"
     assert_no_selector "#preview-switch"
-    assert_clean "the banner on a phone"
+    BANNER_SIZES.each { |width, height, form| assert_banner_form(width, height, form, view: "Con le bozze") }
+    assert_clean "the banner at every width"
   ensure
     page.driver.resize(1280, 900)
   end
