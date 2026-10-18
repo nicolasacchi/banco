@@ -108,10 +108,8 @@ class Lesson2TeacherBoxTest < ApplicationSystemTestCase
     find("#findings-line li[data-box-finding='L#{review.id}-1'] a[href='#lesson-finding-L#{review.id}-1']").click
     assert_selector "#lesson-finding-L#{review.id}-1 .author-response", text: "Secondo l'autore la lezione è giusta."
     assert_selector "#lesson-finding-L#{review.id}-2 [data-response=none]", text: "L'autore non ha ancora risposto."
-    if (dir = ENV["BANCO_SHOT_DIR"].presence)
-      sleep 0.3
-      page.driver.save_screenshot(File.join(dir, "teacher-lesson-findings-step.png"), selector: "#lesson-finding-L#{review.id}-1")
-    end
+    # The whole page: a shot of a scrolled viewport comes out blank in the headless shell.
+    page.driver.save_screenshot(File.join(dir, "teacher-lesson-findings-page.png"), full: true) if dir
   end
 
   # A 1 x 1 lossless WebP: the page of the pictures only needs files that exist.
