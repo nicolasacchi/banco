@@ -139,7 +139,7 @@ feedback and the oral's model answer (answers, from the server).
 
 | code | what |
 |---|---|
-| `E-LESSON-RENDER` | an exception, a formula KaTeX refuses, a card that does not draw, a time budget (90 s per revision, 5 s per card and viewport), "Stampa riassunto e schema" over one A4 page |
+| `E-LESSON-RENDER` | an exception, a formula KaTeX refuses, markup printed as text (`[[es:hablar]]`, `$a^3$`: a field drawn as plain text, D-310), a card that does not draw, a time budget (90 s per revision, 5 s per card and viewport), "Stampa riassunto e schema" over one A4 page |
 | `E-LESSON-OVERFLOW` | the page wider than the window, or something wider inside than its box |
 | `E-DIAGRAM-LAYOUT` | a layout that answered an error, two labels overlapping, a label outside its figure, a box's text crossing its border or a box's icon outside it or on its text |
 | `E-DIAGRAM-SMALL-TEXT` | a diagram label under `min_text_px` (a guard: the layout never draws one) |

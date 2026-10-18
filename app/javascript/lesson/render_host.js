@@ -12,13 +12,14 @@
 // closed disclosure opened at once (a closed <details>, the hidden text of a listening check, the glossary bubbles). inspect(n) answers
 // the card's further states in `states`; each inspect first undoes what the previous one changed, so the states never add up.
 //
-// Findings (all errors, they depend on the author's data): E-LESSON-RENDER (an exception, a KaTeX error),
+// Findings (all errors, they depend on the author's data): E-LESSON-RENDER (an exception, a KaTeX error, markup printed as text: D-310),
 // E-LESSON-OVERFLOW (something wider than its box or than the page), E-DIAGRAM-LAYOUT (a layout that answered an
 // error, two labels overlapping, a label outside the drawing, a box's text or icon outside its box), E-DIAGRAM-SMALL-TEXT
 // (a label under the minimum), E-DIAGRAM-TARGET (a select target under 24 x 24 px).
 // Nothing here is sent anywhere; the CSP of the host allows no connection.
 import { renderLesson } from "lesson/render"
 import { preloadFor } from "lesson/preload"
+import { rawMarkupIn } from "lesson/raw_markup"
 
 const errors = []
 const note = (message) => errors.push(String(message).slice(0, 300))
@@ -154,6 +155,12 @@ function katexFindings(card, out) {
   for (const bad of card.querySelectorAll(".katex-error")) {
     out.push({ code: "E-LESSON-RENDER", message: `KaTeX cannot draw "${text(bad)}": ${bad.getAttribute("title") || "parse error"}`, where: "formula" })
   }
+}
+
+// markup the student would read as written ("[[es:hablar]]", "$a^3$"): a field drawn as plain text (D-310)
+function markupFindings(card, out) {
+  const hit = rawMarkupIn(card)
+  if (hit) out.push({ code: "E-LESSON-RENDER", message: `markup printed as text: "${hit.text.slice(0, 60)}"`, where: text(hit.where) || "card" })
 }
 
 const config = JSON.parse(document.getElementById("lesson-config").textContent)
@@ -317,6 +324,7 @@ async function inspect(n, state = null) {
     }
     if (!state) {
       katexFindings(card, findings) // a formula is drawn (or refused) when the card is built, shown or not: once is enough
+      markupFindings(card, findings) // markup printed as text (D-310), likewise once
       states = statesOf(card)
     }
   } catch (error) {
