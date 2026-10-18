@@ -1,0 +1,21 @@
+<%# One finding of a lesson review (D-313): where it is, the quote, the problem, the fix, and the author's latest answer.
+    The answer decides nothing: the teacher approves the topic (with a reason for a blocker or major) or sends the lesson back.
+    Locals: entry (LessonFindings::Entry), review (Teacher::TopicReview). %>
+<% f = entry.finding %>
+<div class="finding" id="lesson-finding-<%= entry.id %>" data-lesson-finding="<%= entry.id %>" data-severity="<%= entry.severity %>">
+  <div class="finding-head">
+    <%= ui_pill(t("teacher.skill.severity.#{entry.severity}"), { "blocker" => :error, "major" => :nearly }.fetch(entry.severity, :muted), icon: (entry.severity == "minor" ? nil : "triangle-alert")) %>
+    <span class="hint" data-place><%= review.finding_place(entry) %></span>
+  </div>
+  <blockquote class="finding-quote"><q><%= f["quote"] %></q></blockquote>
+  <p class="finding-problem"><%= f["problem_it"] %></p>
+  <p class="finding-fix"><strong><%= t("teacher.skill.fix") %></strong> <%= f["fix_it"] %></p>
+  <% if (r = entry.response) %>
+    <p class="author-response" data-response="<%= r.stance %>">
+      <strong><%= t("teacher.skill.response") %></strong>
+      <%= r.stance == "fixed" ? t("teacher.topic.review.response_fixed", seq: r.lesson_revision.seq) : t("teacher.topic.review.response_lesson_right") %><br>
+      <%= r.note_it %></p>
+  <% elsif entry.severe? %>
+    <p class="hint" data-response="none"><%= t("teacher.topic.review.no_response") %></p>
+  <% end %>
+</div>

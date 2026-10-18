@@ -1,7 +1,8 @@
 <%# "Come lo vede lo studente" (A14): the student's renderer in a box whose width, theme and text size the teacher
     picks, live (cards, navigation, step reveal, checks graded by a teacher-only endpoint that records nothing,
     seed "preview"). "Modalità docente" opens every "more", shows answers and solutions from full.json.
-    Locals: revision (the lesson revision), topic (key). %>
+    Locals: revision (the lesson revision), topic (key); optional findings (LessonFindings entries), which need
+    review (Teacher::TopicReview, which names the cards). %>
 <% body = Lessons::StudentBody.for(revision, seed: "preview") %>
 <% content_for :head do %>
   <%= stylesheet_link_tag "lesson_roles" %>
@@ -66,6 +67,23 @@
             <%= page_revision.manifest["title_it"] %>:
             <%= t("teacher.pages.line.#{verdict&.status || 'pending'}", kit: verdict&.kit_version, reviews: page_revision.reviews.size) %>
             <% if verdict %><a href="<%= teacher_page_shots_path(page_revision_id: page_revision.id) %>"><%= t("teacher.pages.line.shots") %></a><% end %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+  <% findings = local_assigns.fetch(:findings, []) %>
+  <% if findings.any? %>
+    <%# D-313: the findings of the lesson review by card, each with whether the author answered; the full text is in the findings step. %>
+    <div class="render-line" id="findings-line" role="status">
+      <strong><%= t("teacher.topic.review.box_label") %>:</strong>
+      <ul class="plain">
+        <% findings.each do |entry| %>
+          <li data-box-finding="<%= entry.id %>" data-severity="<%= entry.severity %>" data-answered="<%= !entry.response.nil? %>">
+            <% if entry.card %><a href="#card-<%= entry.card %>" data-action="lesson2-preview#goto" data-card="<%= entry.card %>"><%= local_assigns.fetch(:review).finding_place(entry) %></a> ·<% end %>
+            <%= t("teacher.skill.severity.#{entry.severity}") %> ·
+            <%= entry.response ? t("teacher.topic.review.box_answered") : t("teacher.topic.review.box_open") %> ·
+            <a href="#lesson-finding-<%= entry.id %>"><%= t("teacher.topic.review.box_read") %></a>
           </li>
         <% end %>
       </ul>

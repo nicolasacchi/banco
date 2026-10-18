@@ -62,7 +62,7 @@
               <h3 class="lesson-title"><%= lesson_body["title_it"] %></h3>
               <p class="topic-meta"><%= t("topic.minutes", n: lesson_body["minutes"]) %></p>
               <% if lesson_body["schema"] == "banco.lesson/2" %>
-                <%= render "teacher/topics/lesson2_box", revision: review.lesson_revision, topic: review.key %>
+                <%= render "teacher/topics/lesson2_box", revision: review.lesson_revision, topic: review.key, findings: review.lesson_findings, review: review %>
               <% else %>
                 <%= render "lessons/body", body: lesson_body, topic: review.key %>
               <% end %>
@@ -84,6 +84,10 @@
                       <% if c["result"] == "fail" %><br><span class="hint"><%= c["evidence"] %></span><% end %></li>
                   <% end %>
                 </ul>
+                <% if (own = review.lesson_findings_of(row)).any? %>
+                  <p data-review-findings="<%= own.size %>" data-answered="<%= own.count(&:response) %>"><%= t("teacher.topic.review.findings_line", count: own.size, answered: own.count(&:response)) %>
+                    <a href="#lesson-findings"><%= t("teacher.topic.review.findings_link") %></a></p>
+                <% end %>
                 <% if row.recomputed.any? %>
                   <p><strong><%= t("teacher.topic.review.recomputed", count: row.recomputed.size) %></strong></p>
                   <ul class="plain recomputed"><% row.recomputed.each do |r| %><li><%= t("teacher.topic.review.where.#{r['where']}", default: r["where"]) %><% if r["n"] %> <%= r["n"] %><% end %>: <span data-markup="inline"><%= r["expression"] %></span> = <span data-markup="inline"><%= r["value"] %></span></li><% end %></ul>
@@ -184,13 +188,8 @@
         <p class="hint"><%= t("teacher.review.findings_intro") %></p>
         <% if review.findings_count.zero? %><p data-no-findings><%= t("teacher.review.no_findings") %></p><% end %>
         <% if review.lesson_findings.any? %>
-          <h3><%= t("teacher.review.lesson_findings") %></h3>
-          <% review.lesson_findings.each do |f| %>
-            <div class="finding" data-severity="<%= f['severity'] %>" data-lesson-finding>
-              <p><strong><%= t("teacher.skill.severity.#{f['severity']}") %></strong> · <%= t("teacher.topic.section.#{f['section']}", default: f["section"]) %><% if f["exercise"] %> · <%= t("teacher.topic.review.exercise", n: f["exercise"]) %><% end %><br>
-                <q><%= f["quote"] %></q><br><%= f["problem_it"] %><br><%= t("teacher.skill.fix") %> <%= f["fix_it"] %></p>
-            </div>
-          <% end %>
+          <h3 id="lesson-findings"><%= t("teacher.review.lesson_findings") %></h3>
+          <% review.lesson_findings.each do |entry| %><%= render "teacher/topics/lesson_finding", entry: entry, review: review %><% end %>
         <% end %>
         <% review.cards_with_findings.each do |card| %>
           <h3 data-findings-of="<%= card.revision.id %>"><%= ref_for(card.item) %> <span class="key"><%= t("teacher.skill.revision", seq: card.revision.seq) %></span></h3>
