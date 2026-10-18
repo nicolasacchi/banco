@@ -46,9 +46,9 @@ module LessonFindings
   end
 
   # The findings of one review as the agent API shows them inside the review: the id first, the reviewer's
-  # members, then the author's latest response.
+  # members as written, then the author's latest response when there is one.
   def api_findings(review, list = nil)
-    (list || entries([ review ])).map { |e| { "id" => e.id }.merge(e.finding).merge("response" => e.response&.to_h).compact }
+    (list || entries([ review ])).map { |e| { "id" => e.id }.merge(e.finding).merge(e.response ? { "response" => e.response.to_h } : {}) }
   end
 
   # What the teacher did about the lesson revision's findings: "sent_back" (send_back_lesson), "topic_approved"
