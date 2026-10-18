@@ -6,7 +6,7 @@ import assert from "node:assert/strict"
 import { test } from "node:test"
 
 const { rawMarkup } = await import("lesson/raw_markup")
-const { insideControl, oneWord, shortTitle } = await import("lesson/text")
+const { insideControl, oneWord, plainText, shortTitle } = await import("lesson/text")
 const { tilesTexts, nameOf } = await import("lesson/checks/tiles")
 const { howtoKey } = await import("lesson/checks/howto")
 const barModel = await import("lesson/diagrams/chart/bar_model")
@@ -68,6 +68,28 @@ test("tiles: a tile is named by its words, never by its markup", () => {
   assert.equal(nameOf({ id: "b", text_it: "[[highlight:Va]] in Spagna" }), "Va in Spagna")
   assert.equal(nameOf({ id: "c", text_it: "$3 \\cdot 4$ volte" }), "3 · 4 volte")
   assert.equal(nameOf({ id: "d", text_es: "Yo" }), "Yo")
+  assert.equal(nameOf({ id: "e", text_it: "[[time-mark|it:Poi]] parte" }), "Poi parte")
+})
+
+test("plain words of a text: what a screen reader is told of a mistakes group, a button, a region, never markup printed as text", () => {
+  const cases = [
+    ["La persona noi di [[es:vivir]]", "La persona noi di vivir"],
+    ["Con [[es:ser]] o con [[es:estar]]", "Con ser o con estar"],
+    ["**Segni** e [[en:signs]]", "Segni e signs"],
+    ["[[verb|it:essere]] e [[time-mark:ora]]", "essere e ora"],
+    ["Potenze di $a^2 \\cdot a^3$", "Potenze di a^2 · a^3"],
+    ["$\\role{unknown}{x}$ da trovare", "x da trovare"],
+    ["[[g:tilde]] e [la scheda](scheda:intro)", "tilde e la scheda"],
+    ["[[code:x = 1]] in Python", "x = 1 in Python"],
+    ["Dividere", "Dividere"],
+    ["", ""]
+  ]
+  for (const [text, words] of cases) {
+    assert.equal(plainText(text), words, text)
+    assert.equal(rawMarkup(plainText(text)), null, text)
+  }
+  assert.equal(plainText(null), "")
+  assert.equal(plainText("$\\htmlClass{x}{y}$"), "$\\htmlClass{x}{y}$", "a text the reader refuses is returned as written")
 })
 
 const BAR = {

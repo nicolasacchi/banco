@@ -8,8 +8,7 @@ import { newId } from "items/outbox"
 import { button, clear, el, icon } from "lesson/dom"
 import { iconOf, renderCard, rolesUsed } from "lesson/cards"
 import { sample } from "lesson/blocks/legend"
-import { insideControl, renderInlineRich, renderRich, shortTitle } from "lesson/text"
-import { plain } from "lesson/diagrams/common"
+import { insideControl, plainText, renderInlineRich, renderRich, shortTitle } from "lesson/text"
 import { figureFor } from "lesson/blocks/diagram"
 import { firstUses } from "lesson/checks/howto"
 import { FAMILY, STATUS, preload } from "lesson/diagrams/registry"
@@ -376,7 +375,7 @@ export function renderLesson(root, body, config) {
   // ---- navigation ----
   function announce(n) {
     const card = byN.get(n)
-    live.textContent = n === 0 ? `${t.cover}: ${body.title_it}` : `${positionOf(card).text}: ${plain(card.title_it)}`
+    live.textContent = n === 0 ? `${t.cover}: ${body.title_it}` : `${positionOf(card).text}: ${plainText(card.title_it)}`
   }
   function refreshChrome() {
     const n = state.n

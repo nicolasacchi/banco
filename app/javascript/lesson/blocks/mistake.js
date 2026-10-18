@@ -3,13 +3,14 @@
 // All open in print, in teacher mode and in safe mode; no flip animation under reduced motion (CSS). The turning is lesson/blocks/flip.
 import { el, icon } from "lesson/dom"
 import { flip } from "lesson/blocks/flip"
-import { renderInlineRich, renderRich } from "lesson/text"
+import { plainText, renderInlineRich, renderRich } from "lesson/text"
 
 export function render(block, ctx, options = {}) {
-  // the cross and "Sbagliato" tell what this side is; the group (Segni, Dividere, ...) is the heading above the cards (cards.js)
+  // the cross and "Sbagliato" tell what this side is; the group (Segni, Dividere, ...) is the heading above the cards (cards.js), drawn there
+  // with its markup; here, for the screen reader inside the card's button, it is said in plain words (D-310)
   const front = el("div", { class: "mistake-front" },
     el("p", { class: "mistake-tag mistake-wrong" }, icon("close", "mistake-ic"), el("strong", { text: ctx.t.wrong_side }),
-      options.group ? el("span", { class: "sr-only", text: ` (${options.group})` }) : null),
+      options.group ? el("span", { class: "sr-only", text: ` (${plainText(options.group)})` }) : null),
     renderInlineRich(block.wrong_it, el("p", { class: "mistake-text" }), ctx, { display: true, tiles: true }))
   const back = [
     el("p", { class: "mistake-tag mistake-right" }, icon("check", "mistake-ic"), el("strong", { text: ctx.t.right_side })),
