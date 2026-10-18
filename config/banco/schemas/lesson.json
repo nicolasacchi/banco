@@ -3157,6 +3157,12 @@
           },
           "minItems": 0,
           "maxItems": 6
+        },
+        "builds": {
+          "enum": [
+            "sentence"
+          ],
+          "description": "D-310: the tiles build a sentence, so the fixed words say \"La tua frase\" and \"Le parole\"; without it they are neutral (\"La tua risposta\", \"Le tessere\": facts, symbols, words)."
         }
       },
       "description": "check component tiles: build a sentence from tiles (WAVE2 2.11); distractors are the tiles outside the answer; graded as a sequence."

@@ -29,8 +29,12 @@ export function firstUses(body) {
   return first
 }
 
-// the key of the one-line text for a check: select has two (one tap or several)
-export const howtoKey = (spec) => (spec.component === "select" ? (spec.pick === "one" ? "select_one" : "select_many") : COMPONENTS.includes(spec.component) ? spec.component : null)
+// the key of the one-line text for a check: select has two (one tap or several), tiles two (neutral, or `builds: sentence`, D-310)
+export function howtoKey(spec) {
+  if (spec.component === "select") return spec.pick === "one" ? "select_one" : "select_many"
+  if (spec.component === "tiles") return spec.builds === "sentence" ? "tiles_sentence" : "tiles"
+  return COMPONENTS.includes(spec.component) ? spec.component : null
+}
 
 // [line | null, details | null]
 export function howtoNodes(spec, ctx, loc) {
@@ -38,7 +42,7 @@ export function howtoNodes(spec, ctx, loc) {
   const texts = ctx.t.checks
   if (!key || !texts) return [null, null]
   const line = ctx.firstUse?.get(spec.component) === locKey(loc) && texts.howto?.[key] ? el("p", { class: "hint howto", text: texts.howto[key] }) : null
-  const entry = texts.help?.[spec.component]
+  const entry = texts.help?.[key] ?? texts.help?.[spec.component]
   const more = entry
     ? el("details", { class: "howto-help" }, el("summary", { text: texts.help_title }), el("ul", { class: "plain" }, (entry.lines ?? []).map((l) => el("li", { text: l }))), entry.example ? el("p", { class: "howto-example" }, el("strong", { text: `${texts.help_example}: ` }), entry.example) : null)
     : null

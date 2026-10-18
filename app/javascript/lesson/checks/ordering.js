@@ -5,6 +5,7 @@ import { handle } from "items/dom"
 import { el, svg } from "lesson/dom"
 import { renderInlineRich } from "lesson/text"
 import { createOrdering } from "lesson/checks/sequence_model"
+import { plain } from "lesson/diagrams/common"
 
 export const type = "ordering"
 
@@ -38,7 +39,7 @@ export function buildOrdering(spec, ctx, options = {}) {
     const order = model.order()
     order.forEach((id, i) => {
       const item = byId.get(id)
-      const label = (key) => fill(texts[key], { text: item.text_it })
+      const label = (key) => fill(texts[key], { text: plain(item.text_it) }) // a button's name is plain text: no "[[es:" read aloud
       const up = el("button", { type: "button", class: "order-move order-up", "data-id": id, "aria-label": label("order_up"), disabled: i === 0 ? "" : null }, chevron(true))
       const down = el("button", { type: "button", class: "order-move order-down", "data-id": id, "aria-label": label("order_down"), disabled: i === order.length - 1 ? "" : null }, chevron(false))
       up.addEventListener("click", () => move(id, -1))

@@ -6,6 +6,8 @@
 /* words of another language: the subject's target ink, a little heavier, never underlined */
 .l2 .lang { color: var(--primary); font-weight: 650; letter-spacing: 0.01em; }
 .l2 .role.lang { color: inherit; }
+/* one short word ("-emos") never breaks at its hyphen (D-310) */
+.l2 .lang-word { white-space: nowrap; }
 
 /* a code span: the body font on a calm tint, never monospace (the reading difficulty of S), whole on one line when it fits */
 .l2 .code-span { font-family: inherit; font-weight: 650; font-size: 0.95em; padding: 0.06em 0.4em 0.1em; border-radius: 0.35em; white-space: pre-wrap;

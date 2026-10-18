@@ -44,11 +44,11 @@
     },
     {
       "lang": "it",
-      "text": "Imponibile"
+      "text": "Scrivi il numero. Per i decimali usa la virgola."
     },
     {
       "lang": "it",
-      "text": "Scrivi il numero. Per i decimali usa la virgola."
+      "text": "Imponibile"
     }
   ],
   "legge": [
@@ -146,11 +146,11 @@
     },
     {
       "lang": "it",
-      "text": "Totale"
+      "text": "Scrivi il numero. Per i decimali usa la virgola."
     },
     {
       "lang": "it",
-      "text": "Scrivi il numero. Per i decimali usa la virgola."
+      "text": "Totale"
     }
   ],
   "esempio": [

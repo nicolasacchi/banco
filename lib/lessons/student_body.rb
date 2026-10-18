@@ -23,7 +23,7 @@ module Lessons
       "matching" => %w[component prompt_it answer_format_it reuse_right listen],
       "span_select" => %w[component prompt_it answer_format_it text_it text_en text_es listen],
       "select" => %w[component prompt_it answer_format_it targets pick],
-      "tiles" => %w[component prompt_it answer_format_it],
+      "tiles" => %w[component prompt_it answer_format_it builds],
       "ordering" => %w[component prompt_it answer_format_it]
     }.freeze
     # Simple blocks: the fields served; nested lists: {field => the fields of each element}.

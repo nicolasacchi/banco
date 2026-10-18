@@ -22,7 +22,7 @@ import { render as text } from "lesson/blocks/text"
 import { render as tryBlock } from "lesson/blocks/try"
 import { questionControl } from "lesson/question"
 import { equationTex } from "lesson/diagrams/balance"
-import { roleOf, renderInlineRich } from "lesson/text"
+import { insideControl, roleOf, renderInlineRich } from "lesson/text"
 import { cardListen } from "lesson/speech_ui"
 
 // The names that [[name:..]] reserves for spans of their own (D-266): never colour roles.
@@ -104,7 +104,8 @@ export function renderCard(card, ctx, position) {
     class: `l2-card card-${card.role} card-${card.level}${card.tone ? ` card-tone-${card.tone}` : ""}`,
     id: `scheda-${card.n}`, "data-comment-anchor": `card:${card.n}`, "data-n": card.n, "data-role": card.role, "data-card": card.id, "aria-labelledby": `scheda-${card.n}-title`
   })
-  const heading = el("h2", { id: `scheda-${card.n}-title`, tabindex: "-1", text: card.title_it })
+  // a title may hold a formula (the parser accepts $...$ in a heading) or a word of another language: drawn, never printed as written (D-310)
+  const heading = renderInlineRich(card.title_it, el("h2", { id: `scheda-${card.n}-title`, tabindex: "-1" }), insideControl(ctx))
   article.appendChild(el("header", { class: "card-head" },
     el("span", { class: "badge", "aria-hidden": "true" }, icon(iconOf(card), "badge-ic")),
     el("div", { class: "card-titles" }, position.kicker ? el("p", { class: "kicker", "data-nospeech": "", text: position.kicker }) : null, heading),
@@ -129,7 +130,7 @@ export function renderCard(card, ctx, position) {
       }
       // the mistakes of one group sit under one heading: repeated kinds read as a set
       if (block.group_it && block.group_it !== group) {
-        grid.appendChild(el("h3", { class: "mistakes-group", text: block.group_it }))
+        grid.appendChild(renderInlineRich(block.group_it, el("h3", { class: "mistakes-group" }), insideControl(ctx)))
         group = block.group_it
       }
       grid.appendChild(anchored(mistake(block, ctx, { group: block.group_it }), block))
