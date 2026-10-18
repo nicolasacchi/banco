@@ -33,8 +33,9 @@ when they differ or one is missing, the teacher reads both notes and decides.
 
 ## What to read
 
-1. `banco findings list --subject KEY --all`: every finding of the subject, minor ones too, with
-   the author's response (`response`) and, after your own assessment, the opinions.
+1. `banco findings list --subject KEY --kind item --all`: every finding of the subject's items, minor
+   ones too, with the author's response (`response`) and, after your own assessment, the opinions. The
+   findings of lesson reviews (`kind: lesson`, id `L<review>-<n>`) have no third reviewer: leave them.
 2. `banco review open REVISION`: the item, every stored instance with its expected answer, the
    messages, the solution and the programme lines. Read the item as the student would meet it,
    then as the key sees it.

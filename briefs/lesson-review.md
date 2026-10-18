@@ -25,7 +25,8 @@ student's phone, and a label that overlaps or a picture that says something else
 files in a scratch directory that only you own: `mktemp -d "$TMPDIR/lr-SUBJECT-XXXXXX"`; never a fixed name,
 parallel sessions share `$TMPDIR`. `banco lesson-review submit REV --file review.json` sends the result (use
 `--dry-run` first). You report; you never decide and never ask for a decision: the teacher reads your review and
-approves or sends back in the browser.
+approves or sends back in the browser. The answer names each finding `L<review>-<n>`: the author answers the
+blocker and major ones by that id (`banco findings respond`), and the teacher reads both sides (D-313).
 
 Search for duplicates: `banco search "WORDS" --subject KEY` finds the lessons, items and findings that already exist, drafts included; a near copy of one of them is a finding. Check a cited reference text with `banco search "WORDS" --kind reference_article`.
 

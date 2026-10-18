@@ -141,7 +141,9 @@ skill out.
    An identical file replays the latest revision. `E-STALE-BASE` means someone submitted first: open again.
 4. A reviewer of another model reads it (`banco lesson-review open|submit`, see that brief). Read the
    result with `banco lesson status REV`: `reviews` and the teacher's `teacher_comments`. Answer by a
-   new revision that fixes what they say; a new revision needs its own review.
+   new revision that fixes what they say; a new revision needs its own review. Answer every blocker and
+   major finding by its id with `banco findings respond ID --file response.json`, as the lesson brief
+   says (`lesson_right` or `fixed`, D-313).
 5. The lesson belongs to a topic (`banco topic submit`, see the topic brief). The teacher reads the
    whole topic and approves it in the browser.
 

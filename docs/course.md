@@ -16,7 +16,9 @@ banco lesson submit DIR [--base N] [--dry-run]     key from the front matter; --
 banco lesson status REV
 banco lesson shots REV --dir DIR         downloads the render check's screenshots of a lesson/2 revision (one WebP per card and viewport)
 banco lesson-review open REV            (reviewer session) the lesson, programme lines, skills, 8 points
-banco lesson-review submit REV --file review.json [--dry-run]
+banco lesson-review submit REV --file review.json [--dry-run]     the answer names each finding L<review>-<n>
+banco findings list --lesson KEY|--topic KEY [--open] [--all]       the lesson findings (D-313); --kind item|lesson on a subject
+banco findings respond L<review>-<n> --file response.json [--dry-run]    (author session) lesson_right or fixed
 banco work ...                          practice items go through the item pipeline (kind practice_item)
 banco topic open|submit KEY [FILE] [--dry-run]       pins "latest" resolved to integers (echoed as stored)
 banco topics list --subject KEY         stage of every topic of the map
@@ -35,6 +37,17 @@ and `- ` lists, one nested level; math always between dollar signs (a bare `^`, 
 Lint: word count, bold ratio, sentence length, banned phrases, exercises count, finals, page numbers, the kind's
 scope and refs (`Validation::LessonChecks`). One review per revision by another session and another model;
 a new revision needs its own review.
+
+The findings of a lesson review stay inline in the review row (`lesson_reviews.findings_json`); the n-th one of
+review R is `L<R>-<n>` (`LessonFindings`, D-313). `banco findings list` shows them after the items' findings
+(`kind: lesson`, the lesson, the revision, `current`, `pinned` by the latest topic revision, the card and block or
+the section and exercise, the text, the teacher's `decision` on the lesson: `sent_back` or `topic_approved`, and
+the author's latest `response`); `--open` keeps those with no decision and no response on the current or pinned
+revision. The author answers with `banco findings respond ID` (`lesson_right` with a short proof, or `fixed` with a
+later revision of the same lesson; table `lesson_finding_responses`, append-only), under the rules of D-220: an
+author session that did not review the lesson, a readable note of at most 700 characters. The answer is shown to
+the teacher on the topic page (the review's line in step 1, the lesson box's list by card, each finding in step 3)
+and never decides: the teacher approves the topic (with a reason for a blocker or major) or sends the lesson back.
 
 ## Topic stages (`banco topics list`)
 
