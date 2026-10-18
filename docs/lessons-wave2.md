@@ -97,6 +97,17 @@ for a lesson that uses one of them. `Lessons::Money` computes every amount of an
 card is `lesson/blocks/flip.js`, shared by `mistake` and `reveal`. An `oral` is graded as an ordering by the check endpoint and its model answer rides
 on the reply (`model_it`). The gallery lesson is `test/fixtures/lesson2/gallery/docs-lesson.md`, rendered by `test/system/docs_family_test.rb`.
 
+## The biology figures (T7, T4b, D-312)
+
+`cell` and `nested` are the first W2-2 types made `available`: their look gate froze their draft schemas (`x-banco-draft` is gone; the registry test
+accepts a W2-2 type once that happens). `cell` reads the vetted table `bio/cell_parts` (kinds, parts, names, jobs, colours; `lesson/data/bio-cell_parts.js`
+in the browser): each kind is a fixed drawing in fractions of its width, each part has a fixed zone (tap target, number, leader end) far from the others,
+`labels: all` puts the names in two columns or, when they do not fit, a number on each part and one key for the figure; the select figure is a neutral
+line drawing with one zone per part (`c1.nucleoid`), and no part name reaches its DOM (the page's measuring probe is never handed a name). Its
+colours are repeated in `lesson/science.css` and held equal to the table by `test/lib/cell_parts_data_test.rb`. `true_scale` is a draft view until
+`bio/sizes` exists, and `scale` stays a draft for the same reason. `nested` draws "is made of" as boxes inside boxes, the same picture at every width.
+The gallery is `test/fixtures/lesson2/gallery/science-biology.md` (`nested` also has a card in `graph.md`).
+
 ## The text layer and "Ascolta" (T2, D-282, D-283)
 
 **Spans** (`Lessons::Markup`, `items/markup_parser.js`, the shared cases `test/fixtures/markup/v2.json`): `[[en:..]]`, `[[es:..]]`, `[[la:..]]` (plain words of another
