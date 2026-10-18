@@ -26,17 +26,23 @@
 #student-menu-dialog .row-list { margin: 0; }
 #student-menu-dialog .row > .ic:first-child { color: var(--primary); width: 1.4rem; height: 1.4rem; }
 #student-menu-dialog .row:has(a[aria-current="page"]) { border: 2px solid var(--primary); background: var(--soft-primary); }
-/* The teacher's preview banner (D-309, D-315): above the top bar, calm, one row at every width. From 40rem the words are whole and
-   the actions sit in the row. On a phone the words are short (.preview-narrow), «Opzioni» opens the switch and the reset as a panel
-   under the row (:has on the open disclosure) and «Esci» stays in the row. The reset's question opens under its button. */
-.preview-banner { background: var(--soft-primary); border-bottom: var(--border-soft); }
-.preview-banner-in { position: relative; z-index: 31; display: flex; align-items: center; gap: var(--space-2); max-width: 80rem; margin: 0 auto; padding: var(--space-2) var(--space-4); box-sizing: border-box; }
-.preview-banner-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); flex: 1 1 auto; min-width: 0; margin: 0 var(--space-2) 0 0; }
+/* The teacher's preview banner (D-309, D-315): above the top bar, calm, one row at every width. The banner is a size container, so
+   its form follows its own width in em (the student's text size moves the steps with the words; each step is the measured width
+   of the form above it plus a little): from 63em the whole status and the three actions; from 50.5em «In prova · VIEW» and the
+   three actions; below, «In prova» over the view, «Opzioni» (a panel under the row with the switch and the reset; :has on the open
+   disclosure) and «Esci»; under 17.5em «Opzioni» and «Esci» are their icons and the view may break. The status never shrinks under
+   its longest phrase (each is nowrap): it breaks between them, and a row that still has no room puts the actions on a second row,
+   never off the screen. The reset's question opens under its button. */
+.preview-banner { container: preview-banner / inline-size; position: relative; z-index: 31; background: var(--soft-primary); border-bottom: var(--border-soft); }
+.preview-banner-in { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); max-width: 80rem; margin: 0 auto; padding: var(--space-2) var(--space-4); box-sizing: border-box; }
+.preview-banner-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); flex: 1 1 0; margin: 0; }
+.preview-banner-line > * { white-space: nowrap; }
+.preview-banner-line .preview-wide, #preview-exit .preview-narrow { display: none; }
 .preview-banner-actions { display: flex; align-items: center; gap: var(--space-2); }
 .preview-banner-actions form { display: flex; margin: 0; }
 .preview-act { flex: none; min-height: var(--tap-small); box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); white-space: nowrap; }
 .preview-act .ic { display: none; }
-.preview-more, .preview-narrow { display: none; }
+.preview-more { display: none; }
 .preview-more, .preview-reset { margin: 0; }
 .preview-more > summary, .preview-reset > summary { list-style: none; cursor: pointer; }
 .preview-more > summary::-webkit-details-marker, .preview-reset > summary::-webkit-details-marker { display: none; }
@@ -45,15 +51,19 @@
   padding: var(--space-3); background: var(--surface); border: var(--border-soft); border-radius: var(--radius-m); box-shadow: var(--shadow-2); }
 .preview-reset-body p { margin: 0 0 var(--space-2); }
 .preview-banner-note { max-width: 80rem; box-sizing: border-box; margin: 0 auto; padding: 0 var(--space-4) var(--space-2); font-weight: 700; }
-@media (max-width: 40rem) {
-  .preview-wide { display: none; }
-  .preview-narrow { display: inline; }
+@container preview-banner (width >= 63em) {
+  .preview-banner-line .preview-wide { display: inline; }
+  .preview-banner-line .preview-narrow { display: none; }
+}
+@container preview-banner (width < 50.5em) {
+  #preview-exit .preview-wide { display: none; }
+  #preview-exit .preview-narrow { display: inline; }
   .preview-banner-in { gap: var(--space-1); padding: var(--space-1) var(--space-3); }
-  .preview-banner-line { gap: 0 var(--space-1); font-size: var(--text-s); line-height: 1.25; margin-right: var(--space-1); }
+  .preview-banner-line { gap: 0 var(--space-1); font-size: var(--text-s); line-height: 1.25; }
   .preview-banner-line .sep { display: none; }
   .preview-banner-line #preview-view-name { flex-basis: 100%; }
   .preview-act { gap: var(--space-1); padding-inline: var(--space-2); font-size: var(--text-s); }
-  .preview-act .ic { display: inline-block; }
+  .preview-banner-actions .preview-act .ic { display: inline-block; }
   .preview-more { display: block; flex: none; }
   .preview-banner-actions { display: none; position: absolute; top: calc(100% + var(--space-1)); right: var(--space-3); z-index: 1; box-sizing: border-box;
     width: min(20rem, calc(100vw - 2 * var(--space-3))); flex-direction: column; align-items: stretch; padding: var(--space-2);
@@ -63,6 +73,12 @@
   .preview-banner-actions form .button { flex: 1 1 auto; }
   .preview-reset-body { position: static; width: auto; margin-top: var(--space-2); box-shadow: none; }
   .preview-banner-note { padding-inline: var(--space-3); font-size: var(--text-s); }
+}
+@container preview-banner (width < 17.5em) {
+  #preview-more .ic, #preview-exit .ic { display: inline-block; width: 1.25rem; height: 1.25rem; }
+  #preview-more .preview-word, #preview-exit .preview-narrow { display: none; }
+  #preview-more > summary, #preview-exit { min-width: var(--tap-small); padding-inline: var(--space-1); }
+  .preview-banner-line #preview-view-name { white-space: normal; }
 }
 .trial-notice { margin: 0; border-radius: 0; border-width: 0 0 1px; text-align: center; padding: var(--space-1) var(--space-4); }
 
