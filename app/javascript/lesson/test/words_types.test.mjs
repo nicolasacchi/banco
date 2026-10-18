@@ -79,3 +79,40 @@ test("select mode: every candidate looks the same, carries a target, and shows n
     }
   }
 })
+
+// D-311: a mirror piece with an icon role once ran out of its box at 390 px (a word cannot wrap, and the room beside the icon was
+// narrower than the word). The narrow list puts the icon above such a word; text and icon stay inside the box and clear of each other.
+test("mirror, narrow: a word wider than the room beside its icon goes under the icon, inside its box", async () => {
+  const { estimate } = await import("lesson/diagrams/common")
+  const data = {
+    type: "mirror", alt_it: "Italiano sopra, spagnolo sotto: ci diventa nos, e la desinenza del verbo cambia.",
+    rows: [{
+      pieces_it: ["Ci", "laviamo", "svegliavamo"], pieces_es: ["Nos", "lavamos", "despertábamos"],
+      links: [[0, 0, "shift"], [1, 1, "shift"], [2, 2, "shift"]],
+      notes: [{ side: "es", piece: 0, note_it: "ci diventa nos" }, { side: "es", piece: 1, note_it: "cambia" }, { side: "es", piece: 2, note_it: "cambia" }],
+      roles: [1, 2].flatMap((piece) => [{ side: "it", piece, role: "verb" }, { side: "es", piece, role: "verb" }])
+    }]
+  }
+  let stacked = 0
+  for (const width of [300, 320, 390]) {
+    for (const fontPx of [18, 20, 26]) {
+      const scene = MODULES.mirror.layout(data, { width, fontPx, subject: "spanish" })
+      assert.ok(!scene.error, scene.error?.message)
+      for (const icon of scene.shapes.filter((s) => s.kind === "icon")) {
+        const key = icon.key.replace(/:icon$/, "")
+        const box = scene.shapes.find((s) => s.kind === "rect" && s.key === key)
+        const text = scene.labels.find((l) => l.key === `${key}:t`)
+        const where = `${width}/${fontPx} ${text.text_it}`
+        const word = estimate(text.text_it, fontPx).w
+        assert.ok(icon.x >= box.x && icon.x + icon.size <= box.x + box.w && icon.y >= box.y && icon.y + icon.size <= box.y + box.h, `${where}: icon inside`)
+        const under = icon.y + icon.size <= text.y
+        assert.ok(under || icon.x + icon.size <= text.x, `${where}: the icon beside or above the text, never on it`)
+        if (under) stacked++
+        // a word wider than the whole box cannot be helped by the layout: the render check says so (E-DIAGRAM-LAYOUT)
+        if (word <= box.w - 12) assert.ok(text.x >= box.x && text.x + word <= box.x + box.w, `${where}: text inside its box`)
+        assert.ok(text.y >= box.y && text.y + text.h <= box.y + box.h, `${where}: text inside its box, top to bottom`)
+      }
+    }
+  }
+  assert.ok(stacked > 0, "some narrow piece puts its icon above its word")
+})

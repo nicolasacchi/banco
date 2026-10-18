@@ -195,19 +195,29 @@ function build(data, ctx) {
   const roleOf = (row, side, k) => (row.roles ?? []).find((r) => r.side === side && r.piece === k)?.role
   const iconOf = (role) => (role ? roleInfo(palette, ctx.subject, role)?.icon : null)
 
+  // A piece's box. opts.stacked (the narrow list): the icon above the text, when a word of the text is wider than the room beside
+  // the icon (a word cannot wrap, and the measure of a wrapped text is never wider than its room: the word ran out of the box, D-311).
   function pieceBox(row, side, k, text, lang, x, top, w, key, opts = {}) {
     const role = select ? null : roleOf(row, side, k)
     const icon = iconOf(role)
-    const inner = opts.inner ?? w - 2 * padX - (icon ? icoW + 4 : 0)
+    const stacked = !!icon && !!opts.stacked
+    const beside = icon && !stacked ? icoW + 4 : 0
+    const inner = opts.inner ?? w - 2 * padX - beside
     const m = ctx.measure(show(text), f, opts.wrap ? inner : undefined)
-    const h = opts.h ?? m.h + 2 * pad
+    const content = m.h + (stacked ? icoW + 4 : 0)
+    const h = opts.h ?? content + 2 * pad
     const cls = select ? "dg-node dg-mr-box dg-mr-neutral" : `dg-node dg-mr-box${role ? ` st-${role}` : ""}${opts.cls ? ` ${opts.cls}` : ""}`
     shape(ctx, "rect", { x, y: top, w, h, r: 8, cls, key, ...(select ? { target: `t${++targetNo}` } : {}) })
-    const tx = x + padX + (icon ? icoW + 4 : 0)
-    if (icon) shape(ctx, "icon", { name: icon, x: x + padX, y: top + Math.round((h - icoW) / 2), size: icoW, cls: `role-${role}`, key: `${key}:icon` })
+    const tx = x + padX + beside
+    const ctop = top + Math.round((h - content) / 2)
+    if (icon) {
+      const at = stacked ? { x: x + Math.round((w - icoW) / 2), y: ctop } : { x: x + padX, y: top + Math.round((h - icoW) / 2) }
+      shape(ctx, "icon", { name: icon, ...at, size: icoW, cls: `role-${role}`, key: `${key}:icon` })
+    }
     const used = Math.min(m.w, inner)
     const cx = tx + (inner - used) / 2
-    label(ctx, show(text), cx, top + Math.round((h - m.h) / 2), { anchor: "start", maxW: opts.wrap ? inner : undefined, cls: `dg-mr-text${role ? ` role-${role}` : ""}`, role: role ?? undefined, key: `${key}:t`, lang })
+    // dg-nodetext: the render check holds the piece's text (and its icon) inside the piece's box (D-311)
+    label(ctx, show(text), cx, stacked ? ctop + icoW + 4 : top + Math.round((h - m.h) / 2), { anchor: "start", maxW: opts.wrap ? inner : undefined, cls: `dg-nodetext dg-mr-text${role ? ` role-${role}` : ""}`, role: role ?? undefined, key: `${key}:t`, lang })
     return { h, w, x, y: top }
   }
 
@@ -287,15 +297,25 @@ function build(data, ctx) {
     const pairs = links.map(([a, b, kind]) => ({ a, b, kind }))
     row.pieces_it.forEach((_, p) => { if (!links.some((l) => l[0] === p)) pairs.push({ a: p, b: null, kind: "none" }) })
     row[key].forEach((_, p) => { if (!links.some((l) => l[1] === p)) pairs.push({ a: null, b: p, kind: "none" }) })
+    // the text of a piece in its column: beside its icon, or under it when a word does not fit beside it ({ stacked, h } of the content)
+    const fitted = (side, k, text) => {
+      const icon = iconOf(roleOf(row, side, k))
+      const room = colW - 2 * padX - (icon ? icoW + 4 : 0)
+      const widest = Math.max(0, ...show(text).split(/\s+/).filter(Boolean).map((word) => ctx.measure(word, f).w))
+      const stacked = !!icon && widest > room
+      return { stacked, h: ctx.measure(show(text), f, stacked ? colW - 2 * padX : room).h + (stacked ? icoW + 4 : 0) }
+    }
     pairs.forEach((pr, n) => {
-      const hs = [pr.a != null ? ctx.measure(show(row.pieces_it[pr.a]), f, colW - 2 * padX - (iconOf(roleOf(row, "it", pr.a)) ? icoW + 4 : 0)).h : 0, pr.b != null ? ctx.measure(show(row[key][pr.b]), f, colW - 2 * padX - (iconOf(roleOf(row, lang, pr.b)) ? icoW + 4 : 0)).h : 0]
+      const a = pr.a != null ? fitted("it", pr.a, row.pieces_it[pr.a]) : null
+      const b = pr.b != null ? fitted(lang, pr.b, row[key][pr.b]) : null
+      const hs = [a?.h ?? 0, b?.h ?? 0]
       if (pr.kind === "none") hs.push(ctx.measure(TEXT.link_none, f, colW - 8).h)
       const h = Math.max(...hs, lineH) + 2 * pad
       const cy = y + h / 2
       shape(ctx, "circle", { cx: marginX + plate, cy, r: plate, cls: "dg-numplate", key: `r${i + 1}:n${n}` })
       label(ctx, String(n + 1), marginX + plate, cy - Math.ceil(f * 0.7), { anchor: "middle", cls: "dg-numlabel", key: `r${i + 1}:n${n}:t` })
-      if (pr.a != null) pieceBox(row, "it", pr.a, row.pieces_it[pr.a], undefined, lx, y, colW, `${idOf(i, "i", pr.a)}:${n}`, { h, wrap: true })
-      if (pr.b != null) pieceBox(row, lang, pr.b, row[key][pr.b], lang, rx, y, colW, `${idOf(i, "t", pr.b)}:${n}`, { h, wrap: true })
+      if (a) pieceBox(row, "it", pr.a, row.pieces_it[pr.a], undefined, lx, y, colW, `${idOf(i, "i", pr.a)}:${n}`, { h, wrap: true, stacked: a.stacked })
+      if (b) pieceBox(row, lang, pr.b, row[key][pr.b], lang, rx, y, colW, `${idOf(i, "t", pr.b)}:${n}`, { h, wrap: true, stacked: b.stacked })
       if (pr.kind !== "none") {
         shape(ctx, "line", { x1: lx + colW + 3, y1: cy, x2: rx - 3, y2: cy, cls: `dg-mr-link dg-mr-${pr.kind}`, key: `r${i + 1}:l${n}` })
         if (pr.kind === "shift") shape(ctx, "marker", { shape: "diamond", x: lx + colW + arrowW / 2 - 9, y: cy - 9, w: 18, h: 18, cls: "dg-mr-mark", key: `r${i + 1}:l${n}:m` })
