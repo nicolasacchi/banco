@@ -289,6 +289,48 @@
       }
     },
     {
+      "name": "bar_model-parts-formula-labels",
+      "subject": "math",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "note": "D-310: the part and total labels are drawn with their markup (a formula), as the bar's own label is",
+      "printed": [
+        [
+          "3",
+          "4",
+          "7"
+        ]
+      ],
+      "targets": {
+        "parts": 2
+      },
+      "data": {
+        "type": "bar_model",
+        "alt_it": "Una barra di 7 fattori uguali ad a: i primi 3 sono a alla terza, gli altri 4 sono a alla quarta. Insieme fanno a alla settima.",
+        "view": "parts",
+        "bars": [
+          {
+            "label_it": "$a^3 \\cdot a^4$",
+            "parts": [
+              {
+                "value": "3",
+                "label_it": "$a^3$"
+              },
+              {
+                "value": "4",
+                "label_it": "$a^4$"
+              }
+            ]
+          }
+        ],
+        "total": {
+          "value": "7",
+          "label_it": "fattori di $a^7$"
+        }
+      }
+    },
+    {
       "name": "bar_model-percent-vat-on-top",
       "subject": "business",
       "schema": "valid",
