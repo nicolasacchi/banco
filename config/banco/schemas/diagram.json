@@ -6958,7 +6958,6 @@
       },
       "x-banco-kind": "diagram",
       "x-banco-release": "w2-2",
-      "x-banco-draft": true,
       "x-banco-state-keys": [
         "focus"
       ],
@@ -6968,7 +6967,7 @@
       "x-banco-targets": [
         "levels"
       ],
-      "description": "Boxes inside boxes: 'is made of' (2.1). DRAFT until the graphs family's first look."
+      "description": "Boxes inside boxes: 'is made of' (2.1); levels from the inside out. Final since its look gate (D-312)."
     },
     "chart": {
       "type": "object",
@@ -8076,7 +8075,9 @@
           "maxItems": 6
         },
         "true_scale": {
-          "type": "boolean"
+          "type": "boolean",
+          "x-banco-draft": true,
+          "description": "Both cells at their real size ratio with a scale bar: held back until the vetted table bio/sizes exists (D-312)."
         },
         "highlight": {
           "type": "array",
@@ -8197,7 +8198,6 @@
       },
       "x-banco-kind": "diagram",
       "x-banco-release": "w2-2",
-      "x-banco-draft": true,
       "x-banco-state-keys": [
         "highlight",
         "paths",
@@ -8210,7 +8210,19 @@
         "parts"
       ],
       "x-banco-home-palette": "biology",
-      "description": "Cell kinds and parts from bio/cell_parts (2.8). DRAFT."
+      "description": "Cell kinds and parts from bio/cell_parts (2.8). Final since its look gate (D-312); held back: true_scale (it waits for bio/sizes), the red blood cell and omit_shared.",
+      "x-banco-draft-values": {
+        "true_scale": [
+          true
+        ],
+        "cells[].kind": [
+          "red_blood"
+        ],
+        "cells[].omit_shared": [
+          true,
+          false
+        ]
+      }
     },
     "program": {
       "type": "object",

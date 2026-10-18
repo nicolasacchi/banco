@@ -11,10 +11,10 @@
 #     card on a tap, the list by group below 600 px; select targets: cells (mode `select`). Cards 11 to 14.
 #   `strand` (diagram): a nucleotide, a strand and a double strand, horizontal or (on a phone) vertical, hidden bases, highlight with its count, the unzip,
 #     a tap on a base lights its partner; select targets: bases, backbone, rungs (mode `select`). Cards 15 to 19.
+# `cell` (w2-2, D-312) has its own gallery, a biology lesson: science-biology.md.
 # Still to come, in this file when each is built:
 #   `particles` (diagram; draft, schema draft, batch w2-2, track T7)
 #   `phase_changes` (diagram; draft, schema draft, batch w2-2, track T7)
-#   `cell` (diagram; draft, schema draft, batch w2-2, track T7)
 schema: banco.lesson/2
 key: ripasso.chemistry.gallery-science
 kind: ripasso

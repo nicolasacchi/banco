@@ -180,5 +180,19 @@
       "lang": "it",
       "text": "Un percorso con 3 tappe: Partenza, Controllo e Arrivo. Ora siamo qui: Partenza."
     }
+  ],
+  "scatole": [
+    {
+      "lang": "it",
+      "text": "Dal comune all'Unione europea"
+    },
+    {
+      "lang": "it",
+      "text": "Ogni riquadro sta dentro quello più grande: un comune fa parte di una provincia, una provincia di una regione."
+    },
+    {
+      "lang": "it",
+      "text": "Passo 1. Il comune. Riquadri uno dentro l'altro, dal più grande al più piccolo: Unione europea, Stato (l'Italia), regione, provincia e comune (un paese di montagna). Nel riquadro più piccolo, tratteggiato: quartieri; una parte del comune, non un ente in più. In evidenza: comune."
+    }
   ]
 }

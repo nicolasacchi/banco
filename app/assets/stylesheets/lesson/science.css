@@ -200,7 +200,7 @@
 .dg-cnum { font-weight: 800; color: var(--text); text-align: center; }
 .dg-cpath { fill: none; stroke: var(--text); stroke-width: 3; stroke-dasharray: 9 5; stroke-linecap: round; }
 .dg-cpathhead { fill: var(--text); }
-.dg-cpathtext { font-weight: 700; color: var(--text); background: var(--surface); border-radius: 0.3em; padding: 0 0.15em; }
+.dg-cpathtext { color: var(--text); background: var(--surface); border-radius: 0.3em; box-shadow: 0 0 0 0.15em var(--surface); }
 .dg-cell .dg-hit:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
   .dg-cp { transition: none; }

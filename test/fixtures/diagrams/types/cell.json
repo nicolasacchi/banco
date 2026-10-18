@@ -1,18 +1,16 @@
 {
  "version": 1,
  "type": "cell",
- "status": "draft",
+ "status": "available",
  "batch": "w2-2",
  "track": "T7",
- "provisional": true,
- "description": "Skeleton of W2-0 for the track T7: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "provisional": false,
+ "description": "Vectors of T7 (WAVE2 V1, V2; D-312), invented content: 'schema' valid or invalid; 'semantic' ok or {code, path} of the first finding (Ruby Lessons::Diagrams::Cell and lesson/diagrams/science/cell.js give the same one); 'layout' ok at every width (290, 360, 738, 1250 px) and text size (18, 20, 26 px), in every state; 'printed' the strings of the first state (and 'printed_last' of the last), sorted, the same in Ruby and JS (L4); 'targets' the stored ids of the select set parts in reading order. The parts each kind may have are the vetted table bio/cell_parts.",
  "vectors": [
   {
    "name": "cell-example-1",
    "subject": "biology",
    "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
    "data": {
     "type": "cell",
     "alt_it": "Due cellule affiancate: un batterio con il DNA nel citoplasma e una cellula animale con il nucleo e i mitocondri.",
@@ -65,13 +63,67 @@
       "op_it": "L'RNA esce"
      }
     ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Batterio",
+    "Contiene il DNA, chiuso da una membrana doppia.",
+    "Costruiscono le proteine.",
+    "DNA (nucleoide)",
+    "Il DNA sta nel citoplasma.",
+    "Il confine della cellula: decide che cosa entra e che cosa esce.",
+    "Il liquido denso che riempie la cellula: qui avvengono molte reazioni.",
+    "Le due cellule",
+    "Ricavano energia dal cibo: è la respirazione cellulare.",
+    "Tocca una parte per leggere che cosa fa.",
+    "Uno strato rigido fuori dalla membrana: protegge la cellula e le dà la forma.",
+    "citoplasma",
+    "membrana",
+    "mitocondri",
+    "nucleo",
+    "parete cellulare",
+    "ribosomi"
+   ],
+   "printed_last": [
+    "Batterio",
+    "Contiene il DNA, chiuso da una membrana doppia.",
+    "Costruiscono le proteine.",
+    "DNA (nucleoide)",
+    "Il DNA sta nel citoplasma.",
+    "Il confine della cellula: decide che cosa entra e che cosa esce.",
+    "Il liquido denso che riempie la cellula: qui avvengono molte reazioni.",
+    "L'RNA esce",
+    "Ricavano energia dal cibo: è la respirazione cellulare.",
+    "Tocca una parte per leggere che cosa fa.",
+    "Uno strato rigido fuori dalla membrana: protegge la cellula e le dà la forma.",
+    "citoplasma",
+    "copia di RNA",
+    "membrana",
+    "mitocondri",
+    "nucleo",
+    "parete cellulare",
+    "ribosomi"
+   ],
+   "targets": {
+    "parts": [
+     "c1.wall",
+     "c1.membrane",
+     "c1.cytoplasm",
+     "c1.nucleoid",
+     "c1.ribosomes",
+     "c2.membrane",
+     "c2.cytoplasm",
+     "c2.nucleus",
+     "c2.ribosomes",
+     "c2.mitochondria"
+    ]
    }
   },
   {
    "name": "cell-unknown-field",
    "subject": "biology",
    "schema": "invalid",
-   "semantic": "ok",
    "data": {
     "type": "cell",
     "alt_it": "Due cellule affiancate: un batterio con il DNA nel citoplasma e una cellula animale con il nucleo e i mitocondri.",
@@ -125,7 +177,1692 @@
      }
     ],
     "zzz_unknown_field": true
+   },
+   "semantic": "ok"
+  },
+  {
+   "name": "cell-bacterium-all",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Un batterio con la parete, la membrana, il DNA nel citoplasma, i ribosomi e il flagello.",
+    "cells": [
+     {
+      "kind": "bacterium",
+      "parts": [
+       "wall",
+       "membrane",
+       "cytoplasm",
+       "nucleoid",
+       "ribosomes",
+       "flagellum"
+      ]
+     }
+    ],
+    "labels": "all"
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Costruiscono le proteine.",
+    "DNA (nucleoide)",
+    "Il confine della cellula: decide che cosa entra e che cosa esce.",
+    "Il liquido denso che riempie la cellula: qui avvengono molte reazioni.",
+    "La zona del citoplasma dove sta il DNA: intorno non c'è una membrana.",
+    "Tocca una parte per leggere che cosa fa.",
+    "Una coda che gira e fa muovere la cellula.",
+    "Uno strato rigido fuori dalla membrana: protegge la cellula e le dà la forma.",
+    "citoplasma",
+    "flagello",
+    "membrana",
+    "parete cellulare",
+    "ribosomi"
+   ],
+   "targets": {
+    "parts": [
+     "c1.wall",
+     "c1.membrane",
+     "c1.cytoplasm",
+     "c1.nucleoid",
+     "c1.ribosomes",
+     "c1.flagellum"
+    ]
    }
+  },
+  {
+   "name": "cell-bacterium-no-wall",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Un batterio senza parete: la membrana, il citoplasma, il DNA e i ribosomi.",
+    "cells": [
+     {
+      "kind": "bacterium",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleoid",
+       "ribosomes"
+      ]
+     }
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Costruiscono le proteine.",
+    "DNA (nucleoide)",
+    "Il confine della cellula: decide che cosa entra e che cosa esce.",
+    "Il liquido denso che riempie la cellula: qui avvengono molte reazioni.",
+    "La zona del citoplasma dove sta il DNA: intorno non c'è una membrana.",
+    "Tocca una parte per leggere che cosa fa.",
+    "citoplasma",
+    "membrana",
+    "ribosomi"
+   ],
+   "targets": {
+    "parts": [
+     "c1.membrane",
+     "c1.cytoplasm",
+     "c1.nucleoid",
+     "c1.ribosomes"
+    ]
+   }
+  },
+  {
+   "name": "cell-animal-full",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale con il nucleo, i mitocondri, il reticolo, il Golgi e le vescicole.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria",
+       "er",
+       "golgi",
+       "vesicles"
+      ]
+     }
+    ],
+    "labels": "all",
+    "paths": [
+     {
+      "from": "nucleus",
+      "to": "ribosomes",
+      "label_it": "copia di RNA"
+     }
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Contiene il DNA, chiuso da una membrana doppia.",
+    "Costruiscono le proteine.",
+    "Il confine della cellula: decide che cosa entra e che cosa esce.",
+    "Il liquido denso che riempie la cellula: qui avvengono molte reazioni.",
+    "Piccole bolle che portano sostanze da una parte all'altra della cellula.",
+    "Ricavano energia dal cibo: è la respirazione cellulare.",
+    "Smista e impacchetta proteine e lipidi, poi li spedisce.",
+    "Tocca una parte per leggere che cosa fa.",
+    "Una rete di membrane: lavora le proteine e produce i lipidi.",
+    "apparato di Golgi",
+    "citoplasma",
+    "copia di RNA",
+    "membrana",
+    "mitocondri",
+    "nucleo",
+    "reticolo endoplasmatico",
+    "ribosomi",
+    "vescicole"
+   ],
+   "targets": {
+    "parts": [
+     "c1.membrane",
+     "c1.cytoplasm",
+     "c1.nucleus",
+     "c1.ribosomes",
+     "c1.mitochondria",
+     "c1.er",
+     "c1.golgi",
+     "c1.vesicles"
+    ]
+   }
+  },
+  {
+   "name": "cell-plant-full",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula vegetale con la parete, i cloroplasti, il grande vacuolo e tutti gli altri organuli.",
+    "cells": [
+     {
+      "kind": "plant",
+      "parts": [
+       "wall",
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria",
+       "chloroplasts",
+       "vacuole",
+       "er",
+       "golgi",
+       "vesicles"
+      ]
+     }
+    ],
+    "labels": "all"
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Contiene il DNA, chiuso da una membrana doppia.",
+    "Costruiscono le proteine.",
+    "Fanno la fotosintesi: con la luce producono zuccheri.",
+    "Il confine della cellula: decide che cosa entra e che cosa esce.",
+    "Il liquido denso che riempie la cellula: qui avvengono molte reazioni.",
+    "Piccole bolle che portano sostanze da una parte all'altra della cellula.",
+    "Ricavano energia dal cibo: è la respirazione cellulare.",
+    "Smista e impacchetta proteine e lipidi, poi li spedisce.",
+    "Tocca una parte per leggere che cosa fa.",
+    "Una grande sacca piena d'acqua: tiene tesa la cellula.",
+    "Una rete di membrane: lavora le proteine e produce i lipidi.",
+    "Uno strato rigido fuori dalla membrana: protegge la cellula e le dà la forma.",
+    "apparato di Golgi",
+    "citoplasma",
+    "cloroplasti",
+    "membrana",
+    "mitocondri",
+    "nucleo",
+    "parete cellulare",
+    "reticolo endoplasmatico",
+    "ribosomi",
+    "vacuolo",
+    "vescicole"
+   ],
+   "targets": {
+    "parts": [
+     "c1.wall",
+     "c1.membrane",
+     "c1.cytoplasm",
+     "c1.nucleus",
+     "c1.ribosomes",
+     "c1.mitochondria",
+     "c1.chloroplasts",
+     "c1.vacuole",
+     "c1.er",
+     "c1.golgi",
+     "c1.vesicles"
+    ]
+   }
+  },
+  {
+   "name": "cell-plant-water",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula vegetale: il vacuolo pieno d'acqua si svuota e la membrana si stacca dalla parete.",
+    "cells": [
+     {
+      "kind": "plant",
+      "parts": [
+       "wall",
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "chloroplasts",
+       "vacuole"
+      ]
+     }
+    ],
+    "states": [
+     {
+      "fill": {
+       "vacuole": "high"
+      },
+      "op_it": "Piena d'acqua"
+     },
+     {
+      "fill": {
+       "vacuole": "mid"
+      },
+      "op_it": "Meno acqua"
+     },
+     {
+      "fill": {
+       "vacuole": "low"
+      },
+      "op_it": "Quasi vuota"
+     }
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Contiene il DNA, chiuso da una membrana doppia.",
+    "Costruiscono le proteine.",
+    "Fanno la fotosintesi: con la luce producono zuccheri.",
+    "Il confine della cellula: decide che cosa entra e che cosa esce.",
+    "Il liquido denso che riempie la cellula: qui avvengono molte reazioni.",
+    "Piena d'acqua",
+    "Tocca una parte per leggere che cosa fa.",
+    "Una grande sacca piena d'acqua: tiene tesa la cellula.",
+    "Uno strato rigido fuori dalla membrana: protegge la cellula e le dà la forma.",
+    "citoplasma",
+    "cloroplasti",
+    "membrana",
+    "nucleo",
+    "parete cellulare",
+    "ribosomi",
+    "vacuolo"
+   ],
+   "printed_last": [
+    "Contiene il DNA, chiuso da una membrana doppia.",
+    "Costruiscono le proteine.",
+    "Fanno la fotosintesi: con la luce producono zuccheri.",
+    "Il confine della cellula: decide che cosa entra e che cosa esce.",
+    "Il liquido denso che riempie la cellula: qui avvengono molte reazioni.",
+    "Quasi vuota",
+    "Tocca una parte per leggere che cosa fa.",
+    "Una grande sacca piena d'acqua: tiene tesa la cellula.",
+    "Uno strato rigido fuori dalla membrana: protegge la cellula e le dà la forma.",
+    "citoplasma",
+    "cloroplasti",
+    "membrana",
+    "nucleo",
+    "parete cellulare",
+    "ribosomi",
+    "vacuolo"
+   ],
+   "targets": {
+    "parts": [
+     "c1.wall",
+     "c1.membrane",
+     "c1.cytoplasm",
+     "c1.nucleus",
+     "c1.ribosomes",
+     "c1.chloroplasts",
+     "c1.vacuole"
+    ]
+   }
+  },
+  {
+   "name": "cell-compare-animal-plant",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale e una cellula vegetale una accanto all'altra, con le loro parti.",
+    "cells": [
+     {
+      "kind": "animal",
+      "label_it": "Cellula animale",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     },
+     {
+      "kind": "plant",
+      "label_it": "Cellula vegetale",
+      "parts": [
+       "wall",
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria",
+       "chloroplasts",
+       "vacuole"
+      ]
+     }
+    ],
+    "labels": "all"
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Cellula animale",
+    "Cellula vegetale",
+    "Contiene il DNA, chiuso da una membrana doppia.",
+    "Costruiscono le proteine.",
+    "Fanno la fotosintesi: con la luce producono zuccheri.",
+    "Il confine della cellula: decide che cosa entra e che cosa esce.",
+    "Il liquido denso che riempie la cellula: qui avvengono molte reazioni.",
+    "Ricavano energia dal cibo: è la respirazione cellulare.",
+    "Tocca una parte per leggere che cosa fa.",
+    "Una grande sacca piena d'acqua: tiene tesa la cellula.",
+    "Uno strato rigido fuori dalla membrana: protegge la cellula e le dà la forma.",
+    "citoplasma",
+    "cloroplasti",
+    "membrana",
+    "mitocondri",
+    "nucleo",
+    "parete cellulare",
+    "ribosomi",
+    "vacuolo"
+   ],
+   "targets": {
+    "parts": [
+     "c1.membrane",
+     "c1.cytoplasm",
+     "c1.nucleus",
+     "c1.ribosomes",
+     "c1.mitochondria",
+     "c2.wall",
+     "c2.membrane",
+     "c2.cytoplasm",
+     "c2.nucleus",
+     "c2.ribosomes",
+     "c2.mitochondria",
+     "c2.chloroplasts",
+     "c2.vacuole"
+    ]
+   }
+  },
+  {
+   "name": "cell-tap-notes",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Un batterio: tocca una parte per leggere il suo nome e che cosa fa.",
+    "cells": [
+     {
+      "kind": "bacterium",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleoid",
+       "ribosomes",
+       "wall"
+      ]
+     }
+    ],
+    "labels": "tap",
+    "notes": [
+     {
+      "part": "dna",
+      "text_it": "Il DNA del batterio è un filo chiuso ad anello."
+     },
+     {
+      "part": "wall",
+      "text_it": "La parete del batterio non è di cellulosa."
+     }
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Costruiscono le proteine.",
+    "DNA (nucleoide)",
+    "Il DNA del batterio è un filo chiuso ad anello.",
+    "Il confine della cellula: decide che cosa entra e che cosa esce.",
+    "Il liquido denso che riempie la cellula: qui avvengono molte reazioni.",
+    "La parete del batterio non è di cellulosa.",
+    "Tocca una parte per leggere il suo nome e che cosa fa.",
+    "citoplasma",
+    "membrana",
+    "parete cellulare",
+    "ribosomi"
+   ],
+   "targets": {
+    "parts": [
+     "c1.wall",
+     "c1.membrane",
+     "c1.cytoplasm",
+     "c1.nucleoid",
+     "c1.ribosomes"
+    ]
+   }
+  },
+  {
+   "name": "cell-labels-none",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Un batterio senza scritte: un bordo doppio, dentro tanti puntini e un groviglio di filo.",
+    "cells": [
+     {
+      "kind": "bacterium",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleoid",
+       "ribosomes",
+       "wall"
+      ]
+     }
+    ],
+    "labels": "none"
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [],
+   "targets": {
+    "parts": [
+     "c1.wall",
+     "c1.membrane",
+     "c1.cytoplasm",
+     "c1.nucleoid",
+     "c1.ribosomes"
+    ]
+   }
+  },
+  {
+   "name": "cell-highlight-dna-eukaryote",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Un batterio e una cellula animale: si accendono il DNA, la membrana, il citoplasma e i ribosomi.",
+    "cells": [
+     {
+      "kind": "bacterium",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleoid",
+       "ribosomes",
+       "wall"
+      ]
+     },
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Le due cellule"
+     },
+     {
+      "highlight": [
+       "membrane",
+       "cytoplasm",
+       "dna",
+       "ribosomes"
+      ],
+      "op_it": "Le quattro parti di tutte e due"
+     }
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Contiene il DNA, chiuso da una membrana doppia.",
+    "Costruiscono le proteine.",
+    "DNA",
+    "DNA (nucleoide)",
+    "Il confine della cellula: decide che cosa entra e che cosa esce.",
+    "Il liquido denso che riempie la cellula: qui avvengono molte reazioni.",
+    "La zona del citoplasma dove sta il DNA: intorno non c'è una membrana.",
+    "Le due cellule",
+    "Le istruzioni della cellula, scritte in una molecola lunghissima.",
+    "Ricavano energia dal cibo: è la respirazione cellulare.",
+    "Tocca una parte per leggere che cosa fa.",
+    "Uno strato rigido fuori dalla membrana: protegge la cellula e le dà la forma.",
+    "citoplasma",
+    "membrana",
+    "mitocondri",
+    "nucleo",
+    "parete cellulare",
+    "ribosomi"
+   ],
+   "printed_last": [
+    "Contiene il DNA, chiuso da una membrana doppia.",
+    "Costruiscono le proteine.",
+    "DNA",
+    "DNA (nucleoide)",
+    "Il confine della cellula: decide che cosa entra e che cosa esce.",
+    "Il liquido denso che riempie la cellula: qui avvengono molte reazioni.",
+    "La zona del citoplasma dove sta il DNA: intorno non c'è una membrana.",
+    "Le istruzioni della cellula, scritte in una molecola lunghissima.",
+    "Le quattro parti di tutte e due",
+    "Ricavano energia dal cibo: è la respirazione cellulare.",
+    "Tocca una parte per leggere che cosa fa.",
+    "Uno strato rigido fuori dalla membrana: protegge la cellula e le dà la forma.",
+    "citoplasma",
+    "membrana",
+    "mitocondri",
+    "nucleo",
+    "parete cellulare",
+    "ribosomi"
+   ],
+   "targets": {
+    "parts": [
+     "c1.wall",
+     "c1.membrane",
+     "c1.cytoplasm",
+     "c1.nucleoid",
+     "c1.ribosomes",
+     "c2.membrane",
+     "c2.cytoplasm",
+     "c2.nucleus",
+     "c2.ribosomes",
+     "c2.mitochondria"
+    ]
+   }
+  },
+  {
+   "name": "cell-path-from-dna",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale: dal DNA nel nucleo una copia va verso i ribosomi.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria",
+       "er",
+       "golgi",
+       "vesicles"
+      ]
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Il DNA nel nucleo",
+      "highlight": [
+       "dna"
+      ]
+     },
+     {
+      "op_it": "Una copia esce",
+      "paths": [
+       {
+        "from": "dna",
+        "to": "ribosomes",
+        "label_it": "copia di RNA"
+       }
+      ]
+     }
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Contiene il DNA, chiuso da una membrana doppia.",
+    "Costruiscono le proteine.",
+    "DNA",
+    "Il DNA nel nucleo",
+    "Il confine della cellula: decide che cosa entra e che cosa esce.",
+    "Il liquido denso che riempie la cellula: qui avvengono molte reazioni.",
+    "Le istruzioni della cellula, scritte in una molecola lunghissima.",
+    "Piccole bolle che portano sostanze da una parte all'altra della cellula.",
+    "Ricavano energia dal cibo: è la respirazione cellulare.",
+    "Smista e impacchetta proteine e lipidi, poi li spedisce.",
+    "Tocca una parte per leggere che cosa fa.",
+    "Una rete di membrane: lavora le proteine e produce i lipidi.",
+    "apparato di Golgi",
+    "citoplasma",
+    "membrana",
+    "mitocondri",
+    "nucleo",
+    "reticolo endoplasmatico",
+    "ribosomi",
+    "vescicole"
+   ],
+   "printed_last": [
+    "Contiene il DNA, chiuso da una membrana doppia.",
+    "Costruiscono le proteine.",
+    "DNA",
+    "Il confine della cellula: decide che cosa entra e che cosa esce.",
+    "Il liquido denso che riempie la cellula: qui avvengono molte reazioni.",
+    "Le istruzioni della cellula, scritte in una molecola lunghissima.",
+    "Piccole bolle che portano sostanze da una parte all'altra della cellula.",
+    "Ricavano energia dal cibo: è la respirazione cellulare.",
+    "Smista e impacchetta proteine e lipidi, poi li spedisce.",
+    "Tocca una parte per leggere che cosa fa.",
+    "Una copia esce",
+    "Una rete di membrane: lavora le proteine e produce i lipidi.",
+    "apparato di Golgi",
+    "citoplasma",
+    "copia di RNA",
+    "membrana",
+    "mitocondri",
+    "nucleo",
+    "reticolo endoplasmatico",
+    "ribosomi",
+    "vescicole"
+   ],
+   "targets": {
+    "parts": [
+     "c1.membrane",
+     "c1.cytoplasm",
+     "c1.nucleus",
+     "c1.ribosomes",
+     "c1.mitochondria",
+     "c1.er",
+     "c1.golgi",
+     "c1.vesicles"
+    ]
+   }
+  },
+  {
+   "name": "cell-three-paths",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula vegetale con tre frecce tra i suoi organuli e la luce.",
+    "cells": [
+     {
+      "kind": "plant",
+      "parts": [
+       "wall",
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria",
+       "chloroplasts",
+       "vacuole",
+       "er",
+       "golgi",
+       "vesicles"
+      ]
+     }
+    ],
+    "paths": [
+     {
+      "from": "chloroplasts",
+      "to": "mitochondria",
+      "label_it": "zuccheri"
+     },
+     {
+      "from": "nucleus",
+      "to": "ribosomes",
+      "label_it": "istruzioni"
+     },
+     {
+      "from": "golgi",
+      "to": "membrane"
+     }
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Contiene il DNA, chiuso da una membrana doppia.",
+    "Costruiscono le proteine.",
+    "Fanno la fotosintesi: con la luce producono zuccheri.",
+    "Il confine della cellula: decide che cosa entra e che cosa esce.",
+    "Il liquido denso che riempie la cellula: qui avvengono molte reazioni.",
+    "Piccole bolle che portano sostanze da una parte all'altra della cellula.",
+    "Ricavano energia dal cibo: è la respirazione cellulare.",
+    "Smista e impacchetta proteine e lipidi, poi li spedisce.",
+    "Tocca una parte per leggere che cosa fa.",
+    "Una grande sacca piena d'acqua: tiene tesa la cellula.",
+    "Una rete di membrane: lavora le proteine e produce i lipidi.",
+    "Uno strato rigido fuori dalla membrana: protegge la cellula e le dà la forma.",
+    "apparato di Golgi",
+    "citoplasma",
+    "cloroplasti",
+    "istruzioni",
+    "membrana",
+    "mitocondri",
+    "nucleo",
+    "parete cellulare",
+    "reticolo endoplasmatico",
+    "ribosomi",
+    "vacuolo",
+    "vescicole",
+    "zuccheri"
+   ],
+   "targets": {
+    "parts": [
+     "c1.wall",
+     "c1.membrane",
+     "c1.cytoplasm",
+     "c1.nucleus",
+     "c1.ribosomes",
+     "c1.mitochondria",
+     "c1.chloroplasts",
+     "c1.vacuole",
+     "c1.er",
+     "c1.golgi",
+     "c1.vesicles"
+    ]
+   }
+  },
+  {
+   "name": "cell-bacterium-with-nucleus",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Un batterio disegnato con un nucleo, che non può avere.",
+    "cells": [
+     {
+      "kind": "bacterium",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes"
+      ]
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/cells/0/parts/2"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-bacterium-with-mitochondria",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Un batterio disegnato con i mitocondri, che non può avere.",
+    "cells": [
+     {
+      "kind": "bacterium",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleoid",
+       "ribosomes",
+       "wall",
+       "mitochondria"
+      ]
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/cells/0/parts/5"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-animal-with-wall",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale disegnata con la parete, che non ha.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria",
+       "wall"
+      ]
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/cells/0/parts/5"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-animal-with-chloroplasts",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale disegnata con i cloroplasti, che non ha.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria",
+       "chloroplasts"
+      ]
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/cells/0/parts/5"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-animal-with-vacuole",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale con il grande vacuolo, che non ha.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria",
+       "vacuole"
+      ]
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/cells/0/parts/5"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-plant-with-nucleoid",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula vegetale con il DNA sciolto nel citoplasma.",
+    "cells": [
+     {
+      "kind": "plant",
+      "parts": [
+       "wall",
+       "membrane",
+       "cytoplasm",
+       "nucleoid",
+       "ribosomes"
+      ]
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/cells/0/parts/3"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-plant-with-flagellum",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula vegetale con un flagello, che la figura non disegna.",
+    "cells": [
+     {
+      "kind": "plant",
+      "parts": [
+       "wall",
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria",
+       "chloroplasts",
+       "vacuole",
+       "flagellum"
+      ]
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/cells/0/parts/8"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-dna-listed",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale con il DNA scritto come una parte.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "dna",
+       "ribosomes"
+      ]
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/cells/0/parts/3"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-unknown-part",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale con una parte che la figura non conosce.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria",
+       "lysosomes"
+      ]
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/cells/0/parts/5"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-part-twice",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale con la membrana scritta due volte.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "membrane"
+      ]
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/cells/0/parts/4"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-missing-ribosomes",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale senza ribosomi, che ogni cellula ha.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus"
+      ]
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/cells/0/parts"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-missing-dna",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Un batterio senza il DNA, che ogni cellula ha.",
+    "cells": [
+     {
+      "kind": "bacterium",
+      "parts": [
+       "wall",
+       "membrane",
+       "cytoplasm",
+       "ribosomes"
+      ]
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/cells/0/parts"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-second-cell-wrong",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Un batterio giusto e una cellula animale con la parete.",
+    "cells": [
+     {
+      "kind": "bacterium",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleoid",
+       "ribosomes",
+       "wall"
+      ]
+     },
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria",
+       "wall"
+      ]
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/cells/1/parts/5"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-red-blood",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Un globulo rosso senza nucleo e senza ribosomi, disegnato da solo.",
+    "cells": [
+     {
+      "kind": "red_blood",
+      "parts": [
+       "membrane",
+       "cytoplasm"
+      ],
+      "omit_shared": true
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/cells/0/kind"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-omit-shared",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale che dice di non avere le parti comuni.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus"
+      ],
+      "omit_shared": true
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/cells/0/omit_shared"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-label-too-long",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale con un titolo di troppe parole.",
+    "cells": [
+     {
+      "kind": "animal",
+      "label_it": "una cellula della guancia vista al microscopio",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/cells/0/label_it"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-true-scale",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Due cellule alla loro vera grandezza, con una barra in micrometri.",
+    "cells": [
+     {
+      "kind": "bacterium",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleoid",
+       "ribosomes",
+       "wall"
+      ]
+     },
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     }
+    ],
+    "true_scale": true
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/true_scale"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-notes-without-labels",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Un batterio senza scritte con una nota che nessuno può leggere.",
+    "cells": [
+     {
+      "kind": "bacterium",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleoid",
+       "ribosomes",
+       "wall"
+      ]
+     }
+    ],
+    "labels": "none",
+    "notes": [
+     {
+      "part": "wall",
+      "text_it": "Una nota."
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/notes"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-note-on-missing-part",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale con una nota sui cloroplasti, che non ha.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     }
+    ],
+    "notes": [
+     {
+      "part": "chloroplasts",
+      "text_it": "Una nota."
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/notes/0/part"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-two-notes",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale con due note sulla stessa parte.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     }
+    ],
+    "notes": [
+     {
+      "part": "nucleus",
+      "text_it": "Una."
+     },
+     {
+      "part": "nucleus",
+      "text_it": "Due."
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/notes/1/part"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-highlight-missing",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale che accende i cloroplasti, che non ha.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     }
+    ],
+    "highlight": [
+     "membrane",
+     "chloroplasts"
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/highlight/1"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-state-highlight-missing",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale che in un passo accende la parete, che non ha.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     }
+    ],
+    "states": [
+     {
+      "op_it": "Uno"
+     },
+     {
+      "highlight": [
+       "wall"
+      ],
+      "op_it": "Due"
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/states/1/highlight/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-path-unknown-from",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale con una freccia che parte dal vacuolo, che non ha.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     }
+    ],
+    "paths": [
+     {
+      "from": "vacuole",
+      "to": "nucleus"
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/paths/0/from"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-path-unknown-to",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale con una freccia che arriva al Golgi, che non c'è.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     }
+    ],
+    "paths": [
+     {
+      "from": "nucleus",
+      "to": "golgi"
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/paths/0/to"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-path-to-itself",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale con una freccia dal nucleo al nucleo.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     }
+    ],
+    "paths": [
+     {
+      "from": "nucleus",
+      "to": "nucleus"
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/paths/0/to"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-path-across-cells",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Un batterio e una cellula animale con una freccia tra le due cellule.",
+    "cells": [
+     {
+      "kind": "bacterium",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleoid",
+       "ribosomes",
+       "wall"
+      ]
+     },
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     }
+    ],
+    "paths": [
+     {
+      "from": "nucleoid",
+      "to": "mitochondria"
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/paths/0"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-path-label-too-long",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale con una freccia dal nucleo ai ribosomi.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     }
+    ],
+    "paths": [
+     {
+      "from": "nucleus",
+      "to": "ribosomes",
+      "label_it": "una copia di RNA che porta le istruzioni"
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/paths/0/label_it"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-fill-not-vacuole",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula vegetale con un livello sul nucleo, che non lo ha.",
+    "cells": [
+     {
+      "kind": "plant",
+      "parts": [
+       "wall",
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria",
+       "chloroplasts",
+       "vacuole"
+      ]
+     }
+    ],
+    "fill": {
+     "nucleus": "low"
+    }
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/fill/nucleus"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-fill-without-vacuole",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Una cellula animale con il livello del vacuolo, che non ha.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     }
+    ],
+    "fill": {
+     "vacuole": "low"
+    }
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/fill/vacuole"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "cell-three-cells",
+   "subject": "biology",
+   "schema": "invalid",
+   "data": {
+    "type": "cell",
+    "alt_it": "Tre cellule una accanto all'altra, una più del massimo.",
+    "cells": [
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     },
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     },
+     {
+      "kind": "animal",
+      "parts": [
+       "membrane",
+       "cytoplasm",
+       "nucleus",
+       "ribosomes",
+       "mitochondria"
+      ]
+     }
+    ]
+   },
+   "semantic": "ok"
   }
  ]
 }

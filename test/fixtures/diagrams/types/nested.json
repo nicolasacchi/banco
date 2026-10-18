@@ -1,18 +1,16 @@
 {
  "version": 1,
  "type": "nested",
- "status": "draft",
+ "status": "available",
  "batch": "w2-2",
  "track": "T4b",
- "provisional": true,
- "description": "Skeleton of W2-0 for the track T4b: one case the schema accepts (the plan's example, invented content) and one it refuses. The track adds the cases of its semantic checks ('semantic': 'ok' or {code, path}), of layout() at 320, 390, 768 and 1280 px and fontPx 18, 20, 26 ('layout': 'ok' or 'error'), of hidden values and of the select targets, and then turns 'pending' into the verdicts (WAVE2 V1, V2).",
+ "provisional": false,
+ "description": "Vectors of T4b (WAVE2 V1, V2; D-312), invented content: 'schema' valid or invalid; 'semantic' ok or {code, path} of the first finding (Ruby Lessons::Diagrams::Nested and lesson/diagrams/graph/nested.js give the same one); 'layout' ok at every width (290, 360, 738, 1250 px) and text size (18, 20, 26 px), in every state; 'printed' the strings of the first state (and 'printed_last' of the last), sorted, the same in Ruby and JS (L4); 'targets' the stored ids of the select set levels in reading order (the outermost level first).",
  "vectors": [
   {
    "name": "nested-example-1",
    "subject": "biology",
    "schema": "valid",
-   "semantic": "pending",
-   "layout": "pending",
    "data": {
     "type": "nested",
     "alt_it": "Scatole una dentro l'altra: la cellula nel tessuto, il tessuto nell'organo, l'organo nell'apparato, l'apparato nell'organismo.",
@@ -45,13 +43,39 @@
       "op_it": "Tante cellule"
      }
     ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Una cellula",
+    "cellula",
+    "cellula muscolare",
+    "organo",
+    "organuli",
+    "stanno dentro la cellula",
+    "tessuto"
+   ],
+   "printed_last": [
+    "Tante cellule",
+    "cellula",
+    "cellula muscolare",
+    "organo",
+    "organuli",
+    "stanno dentro la cellula",
+    "tessuto"
+   ],
+   "targets": {
+    "levels": [
+     "organ",
+     "tissue",
+     "cell"
+    ]
    }
   },
   {
    "name": "nested-unknown-field",
    "subject": "biology",
    "schema": "invalid",
-   "semantic": "ok",
    "data": {
     "type": "nested",
     "alt_it": "Scatole una dentro l'altra: la cellula nel tessuto, il tessuto nell'organo, l'organo nell'apparato, l'apparato nell'organismo.",
@@ -85,7 +109,514 @@
      }
     ],
     "zzz_unknown_field": true
+   },
+   "semantic": "ok"
+  },
+  {
+   "name": "nested-body-levels",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "nested",
+    "alt_it": "Cinque riquadri uno dentro l'altro: cellula, tessuto, organo, apparato e corpo umano, con gli organuli dentro la cellula.",
+    "levels": [
+     {
+      "id": "cell",
+      "label_it": "cellula",
+      "example_it": "cellula muscolare del cuore"
+     },
+     {
+      "id": "tissue",
+      "label_it": "tessuto",
+      "example_it": "tessuto muscolare del cuore"
+     },
+     {
+      "id": "organ",
+      "label_it": "organo",
+      "example_it": "cuore"
+     },
+     {
+      "id": "system",
+      "label_it": "apparato",
+      "example_it": "apparato circolatorio"
+     },
+     {
+      "id": "organism",
+      "label_it": "organismo",
+      "example_it": "corpo umano"
+     }
+    ],
+    "inside": {
+     "label_it": "organuli",
+     "note_it": "stanno dentro la cellula: non sono un livello del corpo"
+    },
+    "states": [
+     {
+      "focus": "cell",
+      "op_it": "Una cellula"
+     },
+     {
+      "focus": "tissue",
+      "op_it": "Tante cellule simili"
+     },
+     {
+      "focus": "organ",
+      "op_it": "Più tessuti insieme"
+     },
+     {
+      "focus": "system",
+      "op_it": "Più organi, un solo compito"
+     },
+     {
+      "focus": "organism",
+      "op_it": "Il vivente intero"
+     }
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Una cellula",
+    "apparato",
+    "apparato circolatorio",
+    "cellula",
+    "cellula muscolare del cuore",
+    "corpo umano",
+    "cuore",
+    "organismo",
+    "organo",
+    "organuli",
+    "stanno dentro la cellula: non sono un livello del corpo",
+    "tessuto",
+    "tessuto muscolare del cuore"
+   ],
+   "printed_last": [
+    "Il vivente intero",
+    "apparato",
+    "apparato circolatorio",
+    "cellula",
+    "cellula muscolare del cuore",
+    "corpo umano",
+    "cuore",
+    "organismo",
+    "organo",
+    "organuli",
+    "stanno dentro la cellula: non sono un livello del corpo",
+    "tessuto",
+    "tessuto muscolare del cuore"
+   ],
+   "targets": {
+    "levels": [
+     "organism",
+     "system",
+     "organ",
+     "tissue",
+     "cell"
+    ]
    }
+  },
+  {
+   "name": "nested-six-levels",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "nested",
+    "alt_it": "Sei riquadri uno dentro l'altro, dal quartiere fino all'Unione europea.",
+    "levels": [
+     {
+      "id": "a",
+      "label_it": "quartiere"
+     },
+     {
+      "id": "b",
+      "label_it": "comune"
+     },
+     {
+      "id": "c",
+      "label_it": "provincia"
+     },
+     {
+      "id": "d",
+      "label_it": "regione"
+     },
+     {
+      "id": "e",
+      "label_it": "Stato"
+     },
+     {
+      "id": "f",
+      "label_it": "Unione europea"
+     }
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "Stato",
+    "Unione europea",
+    "comune",
+    "provincia",
+    "quartiere",
+    "regione"
+   ],
+   "targets": {
+    "levels": [
+     "f",
+     "e",
+     "d",
+     "c",
+     "b",
+     "a"
+    ]
+   }
+  },
+  {
+   "name": "nested-focus-without-states",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "nested",
+    "alt_it": "Tre riquadri uno dentro l'altro con l'organo in evidenza.",
+    "levels": [
+     {
+      "id": "cell",
+      "label_it": "cellula",
+      "example_it": "cellula muscolare del cuore"
+     },
+     {
+      "id": "tissue",
+      "label_it": "tessuto",
+      "example_it": "tessuto muscolare del cuore"
+     },
+     {
+      "id": "organ",
+      "label_it": "organo",
+      "example_it": "cuore"
+     }
+    ],
+    "focus": "organ"
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "cellula",
+    "cellula muscolare del cuore",
+    "cuore",
+    "organo",
+    "tessuto",
+    "tessuto muscolare del cuore"
+   ],
+   "targets": {
+    "levels": [
+     "organ",
+     "tissue",
+     "cell"
+    ]
+   }
+  },
+  {
+   "name": "nested-ecology",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "nested",
+    "alt_it": "Quattro riquadri uno dentro l'altro: organismo, popolazione, comunità ed ecosistema di uno stagno.",
+    "levels": [
+     {
+      "id": "organism",
+      "label_it": "organismo",
+      "example_it": "una rana"
+     },
+     {
+      "id": "population",
+      "label_it": "popolazione",
+      "example_it": "le rane dello stagno"
+     },
+     {
+      "id": "community",
+      "label_it": "comunità",
+      "example_it": "rane, pesci, alghe e insetti"
+     },
+     {
+      "id": "ecosystem",
+      "label_it": "ecosistema",
+      "example_it": "lo stagno con l'acqua e il fango"
+     }
+    ]
+   },
+   "semantic": "ok",
+   "layout": "ok",
+   "printed": [
+    "comunità",
+    "ecosistema",
+    "le rane dello stagno",
+    "lo stagno con l'acqua e il fango",
+    "organismo",
+    "popolazione",
+    "rane, pesci, alghe e insetti",
+    "una rana"
+   ],
+   "targets": {
+    "levels": [
+     "ecosystem",
+     "community",
+     "population",
+     "organism"
+    ]
+   }
+  },
+  {
+   "name": "nested-id-twice",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "nested",
+    "alt_it": "Tre riquadri, due con lo stesso nome interno.",
+    "levels": [
+     {
+      "id": "a",
+      "label_it": "uno"
+     },
+     {
+      "id": "a",
+      "label_it": "due"
+     },
+     {
+      "id": "c",
+      "label_it": "tre"
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/levels/1/id"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "nested-label-too-long",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "nested",
+    "alt_it": "Tre riquadri, uno con un nome troppo lungo.",
+    "levels": [
+     {
+      "id": "a",
+      "label_it": "il livello più piccolo di tutti quanti"
+     },
+     {
+      "id": "b",
+      "label_it": "due"
+     },
+     {
+      "id": "c",
+      "label_it": "tre"
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/levels/0/label_it"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "nested-same-label",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "nested",
+    "alt_it": "Tre riquadri, due con lo stesso nome scritto.",
+    "levels": [
+     {
+      "id": "a",
+      "label_it": "tessuto"
+     },
+     {
+      "id": "b",
+      "label_it": "organo"
+     },
+     {
+      "id": "c",
+      "label_it": "Tessuto"
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/levels/2/label_it"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "nested-inside-label-too-long",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "nested",
+    "alt_it": "Tre riquadri con un riquadro tratteggiato dal nome troppo lungo.",
+    "levels": [
+     {
+      "id": "cell",
+      "label_it": "cellula",
+      "example_it": "cellula muscolare del cuore"
+     },
+     {
+      "id": "tissue",
+      "label_it": "tessuto",
+      "example_it": "tessuto muscolare del cuore"
+     },
+     {
+      "id": "organ",
+      "label_it": "organo",
+      "example_it": "cuore"
+     }
+    ],
+    "inside": {
+     "label_it": "le parti piccole che stanno dentro la cellula"
+    }
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/inside/label_it"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "nested-focus-unknown",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "nested",
+    "alt_it": "Tre riquadri con un livello in evidenza che non esiste.",
+    "levels": [
+     {
+      "id": "cell",
+      "label_it": "cellula",
+      "example_it": "cellula muscolare del cuore"
+     },
+     {
+      "id": "tissue",
+      "label_it": "tessuto",
+      "example_it": "tessuto muscolare del cuore"
+     },
+     {
+      "id": "organ",
+      "label_it": "organo",
+      "example_it": "cuore"
+     }
+    ],
+    "focus": "system"
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/focus"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "nested-state-focus-unknown",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "nested",
+    "alt_it": "Tre riquadri: nel secondo passo un livello che non esiste.",
+    "levels": [
+     {
+      "id": "cell",
+      "label_it": "cellula",
+      "example_it": "cellula muscolare del cuore"
+     },
+     {
+      "id": "tissue",
+      "label_it": "tessuto",
+      "example_it": "tessuto muscolare del cuore"
+     },
+     {
+      "id": "organ",
+      "label_it": "organo",
+      "example_it": "cuore"
+     }
+    ],
+    "states": [
+     {
+      "focus": "cell",
+      "op_it": "Uno"
+     },
+     {
+      "focus": "planet",
+      "op_it": "Due"
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/states/1/focus"
+   },
+   "layout": "error"
+  },
+  {
+   "name": "nested-two-levels",
+   "subject": "biology",
+   "schema": "invalid",
+   "data": {
+    "type": "nested",
+    "alt_it": "Solo due riquadri, uno meno del minimo.",
+    "levels": [
+     {
+      "id": "cell",
+      "label_it": "cellula",
+      "example_it": "cellula muscolare del cuore"
+     },
+     {
+      "id": "tissue",
+      "label_it": "tessuto",
+      "example_it": "tessuto muscolare del cuore"
+     }
+    ]
+   },
+   "semantic": "ok"
+  },
+  {
+   "name": "nested-seven-levels",
+   "subject": "biology",
+   "schema": "invalid",
+   "data": {
+    "type": "nested",
+    "alt_it": "Sette riquadri, uno più del massimo.",
+    "levels": [
+     {
+      "id": "l0",
+      "label_it": "livello 0"
+     },
+     {
+      "id": "l1",
+      "label_it": "livello 1"
+     },
+     {
+      "id": "l2",
+      "label_it": "livello 2"
+     },
+     {
+      "id": "l3",
+      "label_it": "livello 3"
+     },
+     {
+      "id": "l4",
+      "label_it": "livello 4"
+     },
+     {
+      "id": "l5",
+      "label_it": "livello 5"
+     },
+     {
+      "id": "l6",
+      "label_it": "livello 6"
+     }
+    ]
+   },
+   "semantic": "ok"
   }
  ]
 }

@@ -699,7 +699,7 @@
    "line": 33,
    "construct": "diagram",
    "allow_reserved": true,
-   "note": "a diagram cell (a W2-2 draft), run with lesson submit --dry-run --allow-reserved"
+   "note": "a diagram scale (a W2-2 draft: it waits for bio/sizes, D-312), run with lesson submit --dry-run --allow-reserved"
   },
   {
    "file": "bad/block-later-release.md",

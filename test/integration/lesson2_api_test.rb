@@ -72,7 +72,7 @@ class Lesson2ApiTest < ActionDispatch::IntegrationTest
   end
 
   test "the reserved dry run reports W-TYPE-DRAFT for a draft piece" do
-    md = md2 { |t| t.sub("::: diagram balance\n", "::: diagram cell\nalt_it: Una cellula animale con il nucleo e la membrana, disegnata per provare.\ncells:\n  - {kind: animal, parts: [nucleus, membrane]}\n:::\n\n::: diagram balance\n") }
+    md = md2 { |t| t.sub("::: diagram balance\n", "::: diagram scale\nalt_it: Due oggetti su una scala a potenze di dieci, disegnati per provare.\nobjects:\n  - {id: hair, label_it: capello, size: '70', unit: um}\n  - {id: bact, label_it: batterio, size: '2', unit: um}\n:::\n\n::: diagram balance\n") }
     submit(md, dry: true, reserved: true)
     assert_response :ok, json.inspect
     assert_includes json["warnings"].map { |w| w["code"] }, "W-TYPE-DRAFT"

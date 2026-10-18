@@ -26,12 +26,12 @@ class LessonGraphGalleryTest < ActiveSupport::TestCase
     assert_empty findings.errors.map(&:to_h)
     assert_equal "law_economics", body["subject"]
     shown = diagrams(body)
-    assert_equal %w[chain flow network], shown.map { |_, d| d["type"] }.uniq.sort
+    assert_equal %w[chain flow nested network], shown.map { |_, d| d["type"] }.uniq.sort
     assert_equal %w[fan grid hub pair row triangle], shown.select { |_, d| d["type"] == "network" }.map { |_, d| d["layout"] }.uniq.sort
     assert_equal %w[fan line ring], shown.select { |_, d| d["type"] == "chain" }.map { |_, d| d["layout"] }.uniq.sort
     assert_equal [ "line" ], shown.select { |_, d| d["type"] == "flow" }.map { |_, d| d["layout"] }.uniq
     shown.each { |id, d| assert_empty Lessons::Diagrams.check(d, subject: "law_economics").map(&:to_h), id }
-    assert_equal 13, shown.size
+    assert_equal 14, shown.size
   end
 
   test "Chrome draws every card at every viewport with no finding" do
