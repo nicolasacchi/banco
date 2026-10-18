@@ -49,7 +49,12 @@ it:
       like_none: "Nessuna cosa simile trovata."
       like_unknown: "Non trovo questa cosa nell'indice: %{ref}."
       like_off: "La ricerca per somiglianza non è attiva: manca il servizio che calcola le somiglianze."
-      like_no_vector: "Questa cosa non ha ancora le somiglianze calcolate: riprova dopo la prossima ricostruzione dell'indice."
+      like_no_vector: "Le somiglianze di questa cosa non sono ancora calcolate: arrivano di solito pochi minuti dopo l'invio (testi in coda: %{waiting}). Riprova tra poco."
+      like_partial:
+        one: "Una scheda su %{members} non ha ancora le somiglianze calcolate: i simili qui sotto sono quelli delle altre (testi in coda: %{waiting})."
+        other: "%{count} schede su %{members} non hanno ancora le somiglianze calcolate: i simili qui sotto sono quelli delle altre (testi in coda: %{waiting})."
+      like_near: "vicina alla scheda %{n}"
+      like_near_cover: "vicina all'inizio della lezione"
       open: "Apri"
       article: "Leggi il testo"
       answers_forbidden: "Le risposte dello studente le vede solo il docente."

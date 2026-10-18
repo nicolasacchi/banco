@@ -47,7 +47,7 @@
   <% elsif @like && @result.source.nil? %>
     <p id="like-unknown" role="status"><%= t("teacher.search.like_unknown", ref: @like) %></p>
   <% elsif @like && !@result.semantic %>
-    <p class="notice" id="like-no-vector" role="status"><%= t("teacher.search.like_no_vector") %></p>
+    <p class="notice" id="like-no-vector" role="status"><%= t("teacher.search.like_no_vector", waiting: @waiting.to_i) %></p>
   <% elsif @query.blank? && !@like %>
     <p class="hint" id="search-hint"><%= t("teacher.search.hint") %></p>
   <% elsif !@result.indexed %>
@@ -57,6 +57,9 @@
   <% else %>
     <% if @like %>
       <h2 id="like-head"><%= t("teacher.search.like_head", title: @result.source.title, kind: search_kind_name(@result.source.kind)) %></h2>
+      <% if @result.missing.positive? %>
+        <p class="notice" id="like-partial" role="status"><%= t("teacher.search.like_partial", count: @result.missing, members: @result.members, waiting: @waiting.to_i) %></p>
+      <% end %>
     <% end %>
     <% if (notice = search_did_you_mean(@result, "/teacher/search", "teacher.search.did_you_mean_html", extra: { subject: @subject_filter, kind: @kind, status: @status }.compact)) %>
       <p class="notice" id="search-did-you-mean" role="status"><%= notice %></p>
@@ -71,7 +74,8 @@
           <p class="search-subject"><%= search_icon(hit.kind) %> <%= search_kind_name(hit.kind) %><% if hit.subject %> · <%= search_subject_name(hit.subject) %><% end %>
             <% if hit.status.present? %> · <%= t("teacher.search.status_label", status: hit.status) %><% end %>
             <% if hit.kind == "student_answer" %> · <%= l(Time.zone.parse(hit.occurred_at), format: :short) %><% end %>
-            <% if @like && hit.key == @result.source.key %> · <strong class="search-same"><%= t("teacher.search.like_same") %></strong><% end %></p>
+            <% if @like && hit.key == @result.source.key %> · <strong class="search-same"><%= t("teacher.search.like_same") %></strong><% end %>
+            <% if hit.near %> · <span class="search-near" data-near="<%= hit.near %>"><%= search_near_label(hit.near) %></span><% end %></p>
           <% if %w[item item_instance practice_item].include?(hit.kind) %>
             <%# the case text or the stem is the title; the item's key is a small ref beside it (D-308) %>
             <% if href %><a class="search-title" href="<%= href %>"><%= hit.title %></a><% else %><span class="search-title"><%= hit.title %></span><% end %>

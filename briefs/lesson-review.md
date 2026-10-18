@@ -29,7 +29,7 @@ parallel sessions share `$TMPDIR`. `banco lesson-review submit REV --file review
 approves or sends back in the browser. The answer names each finding `L<review>-<n>`: the author answers the
 blocker and major ones by that id (`banco findings respond`), and the teacher reads both sides (D-313).
 
-Search for duplicates: `banco search "WORDS" --subject KEY` finds the lessons, items and findings that already exist, drafts included; a near copy of one of them is a finding. Check a cited reference text with `banco search "WORDS" --kind reference_article`.
+Search for duplicates: `banco search "WORDS" --subject KEY` finds the lessons, items and findings that already exist, drafts included; a near copy of one of them is a finding. Check a cited reference text with `banco search "WORDS" --kind reference_article`. Run `banco search --like lesson:KEY` on the lesson you review (each neighbour says which of its cards it is near) and `banco search --like lesson_card:KEY#N` on a card that looks familiar: the nearest neighbours are the candidates for duplicates.
 
 ## The file (lesson/2)
 

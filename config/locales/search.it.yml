@@ -26,6 +26,7 @@ it:
       reference_article: "Testi di riferimento"
       syllabus_line: "Righe del programma"
       student_answer: "Risposte dello studente"
+      lesson: "Lezioni"
     sections:
       why_it: "Perché ti serve"
       idea_it: "L'idea"

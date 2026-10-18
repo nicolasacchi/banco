@@ -26,7 +26,7 @@ class SearchSemanticTest < ActiveSupport::TestCase
 
   def using(client = @stub, &block) = Search::Embedder.using(client, &block)
 
-  def build! = Search::Vectors.build!(@stub)
+  def build!(**options) = Search::Vectors.build!(@stub, **options)
 
   def staff = Search::Engine.new(scope: Search::Scope::Staff.new)
 
@@ -305,6 +305,129 @@ class SearchSemanticTest < ActiveSupport::TestCase
     build!
     result = using { staff.like("math-frazioni-1", kind: "skill", subject: "math") }
     assert_equal [ "math.powers-properties" ], result.hits.map(&:key)
+  end
+
+  # ---- new and changed documents (D-315) ------------------------------------------------------------
+
+  def docs_with(status: "draft", revision: nil, texts: {})
+    DOCS.each_with_index.map do |(kind, key, title, body, subject, anchor), i|
+      Search::Doc.build(kind: kind, key: key, title: title, body: texts.fetch(i, body), subject: subject, status: status, anchor: anchor, unique: i,
+                        revision_id: revision)
+    end
+  end
+
+  def vector_of(id) = Search::Vectors.unpack(Search::Index.rows("SELECT vec FROM search_vectors WHERE doc_id = ?", id).dig(0, 0))
+
+  def id_of(title) = Search::Index.rows("SELECT id FROM search_documents WHERE title = ? ORDER BY id DESC", title).dig(0, 0)
+
+  test "a change of status keeps every vector: the text sent to the model is the same" do
+    build!
+    counts = Search::Index.replace_group("lessons", docs_with(status: "reviewed"))
+    assert_equal DOCS.size, counts[:changed]
+    assert_equal DOCS.size, counts[:reused]
+    assert_equal 0, build![:embedded]
+    assert_equal 0, Search::Vectors.status(@stub)[:missing]
+  end
+
+  test "a new revision's unchanged documents take the old ones' vectors; only a new text waits for the model" do
+    build!
+    counts = Search::Index.replace_group("lessons", docs_with(revision: 2, texts: { 1 => "Una potenza è un prodotto di fattori uguali." }))
+    assert_equal({ added: DOCS.size, removed: DOCS.size, reused: DOCS.size - 1 }, counts.slice(:added, :removed, :reused))
+    assert_equal 1, Search::Vectors.waiting(@stub)
+    assert_equal [ id_of("Le potenze") ], Search::Vectors.pending(@stub).map(&:first)
+    assert_equal 1, build![:embedded]
+    assert_in_delta 1.0, Search::Semantic.dot(vector_of(id_of("Le auto elettriche")), @stub.vector("Le auto elettriche\n#{DOCS[0][3]}")), 1e-6
+  end
+
+  test "a vector goes with its text: a document never takes the vector of a donor whose own text changed in the same build" do
+    build!
+    # instance seed-a takes the text of seed-b (so it is given seed-b's vector); a new instance has seed-a's old text (its donor is seed-a)
+    a, b = DOCS[3], DOCS[4]
+    docs = docs_with.each_with_index.map { |d, i| i == 3 ? d.with(title: b[2], body: b[3]) : d }
+    newcomer = Search::Doc.build(kind: "item_instance", key: a[1], title: a[2], body: a[3], subject: "math", status: "draft", anchor: "seed-c", unique: "new")
+    counts = Search::Index.replace_group("lessons", docs + [ newcomer ])
+    assert_equal 2, counts[:reused]
+    rows = Search::Index.rows("SELECT d.id, d.title, d.body FROM search_documents d JOIN search_vectors v ON v.doc_id = d.id AND v.digest = d.digest WHERE d.grp = 'lessons'")
+    assert_equal DOCS.size + 1, rows.size
+    rows.each { |id, title, body| assert_in_delta 1.0, Search::Semantic.dot(vector_of(id), @stub.vector("#{title}\n#{body}")), 1e-6, title }
+    assert_equal 0, Search::Vectors.waiting(@stub)
+  end
+
+  test "what waits for a vector is embedded newest first, a limited share at a time" do
+    first = build!(limit: 3)
+    assert_equal 3, first[:embedded]
+    newest = Search::Index.rows("SELECT id FROM search_documents d WHERE #{Search::Vectors.eligible_sql} ORDER BY id DESC LIMIT 3").flatten
+    assert_equal newest.sort, Search::Index.rows("SELECT doc_id FROM search_vectors ORDER BY doc_id").flatten
+  end
+
+  # ---- Simili of a lesson (D-315) ---------------------------------------------------------------------
+
+  LESSON_A = [ [ nil, "Le frazioni", "Che cosa impari: sommare frazioni." ],
+               [ "scheda-1", "Il denominatore comune", "Per sommare due frazioni trova il denominatore comune." ],
+               [ "scheda-2", "Le potenze di dieci", "Dieci alla terza fa mille: una potenza di dieci." ] ].freeze
+
+  def add_lessons!
+    a = LESSON_A.each_with_index.map do |(anchor, title, body), i|
+      Search::Doc.build(kind: "lesson_card", key: "ripasso.math.frazioni", title: title, body: body, subject: "math", status: "draft", anchor: anchor, unique: "a#{i}",
+                        topic_key: "ripasso.math.frazioni")
+    end
+    a << Search::Doc.build(kind: "glossary_term", key: "ripasso.math.frazioni", title: "denominatore", body: "Il numero sotto la linea di frazione.", subject: "math",
+                           status: "draft", anchor: "scheda-1", unique: "g")
+    b = [ Search::Doc.build(kind: "lesson_card", key: "ripasso.math.somme", title: "Sommare frazioni", body: "Due frazioni si sommano col denominatore comune.",
+                            subject: "math", status: "draft", anchor: "scheda-4", unique: "b") ]
+    Search::Index.replace_group("references", a + b)
+  end
+
+  test "lesson:KEY gives the neighbours of the whole lesson, each with the card it is nearest to, and none of the lesson's own" do
+    add_lessons!
+    build!
+    result = using { staff.like("lesson:ripasso.math.frazioni") }
+    assert result.semantic
+    assert_equal "lesson", result.source.kind
+    assert_equal "lesson:ripasso.math.frazioni", Search::Links.address(result.source)
+    assert_equal "Le frazioni", result.source.title
+    assert_equal [ 3, 0 ], [ result.members, result.missing ]
+    assert(result.hits.none? { |h| h.key == "ripasso.math.frazioni" }, "the lesson's cards and glossary terms are not its neighbours")
+    somme = result.hits.find { |h| h.key == "ripasso.math.somme" }
+    assert somme
+    assert_equal "lesson_card:ripasso.math.frazioni#scheda-1", somme.near
+    assert_equal "lesson_card:ripasso.math.frazioni#scheda-2", result.hits.find { |h| h.key == "lezione.math.potenze" }.near
+    assert_equal [ "lesson_card" ], result.hits.map(&:kind).uniq, "cards with cards (the only glossary term is the lesson's own)"
+  end
+
+  test "a card is lesson_card:KEY#N or lesson:KEY#N as well as its address; the other cards are its neighbours" do
+    add_lessons!
+    build!
+    [ "lesson_card:ripasso.math.frazioni#scheda-1", "lesson_card:ripasso.math.frazioni#1", "lesson:ripasso.math.frazioni#1" ].each do |ref|
+      result = using { staff.like(ref) }
+      assert_equal [ "lesson_card", "scheda-1" ], [ result.source.kind, result.source.anchor ], ref
+      assert_includes result.hits.first(2).map(&:key), "ripasso.math.somme", ref
+      assert(result.hits.all? { |h| h.near.nil? }, ref)
+    end
+    assert(using { staff.like("lesson_card:ripasso.math.frazioni#1") }.hits.any? { |h| h.key == "ripasso.math.frazioni" && h.anchor == "scheda-2" })
+    assert_nil using { staff.like("lesson:ripasso.math.frazioni#9") }.source
+    assert_nil using { staff.like("lesson:no.such.lesson") }.source
+  end
+
+  test "a lesson whose cards are not all embedded yet says how many wait; with none, it has no neighbours yet" do
+    add_lessons!
+    result = using { staff.like("lesson:ripasso.math.frazioni") }
+    assert_equal [ false, 3, 3 ], [ result.semantic, result.members, result.missing ]
+    assert_empty result.hits
+    build!
+    Search::Index.write("DELETE FROM search_vectors WHERE doc_id = ?", id_of("Le potenze di dieci"))
+    result = using { staff.like("lesson:ripasso.math.frazioni") }
+    assert_equal [ true, 3, 1 ], [ result.semantic, result.members, result.missing ]
+    assert(result.hits.none? { |h| h.near == "lesson_card:ripasso.math.frazioni#scheda-2" })
+  end
+
+  test "Simili of a lesson asks no model: it reads the stored vectors" do
+    add_lessons!
+    build!
+    spy = Search::Embedder::Stub.new
+    spy.define_singleton_method(:embed_query) { |_| raise "a model was asked" }
+    spy.define_singleton_method(:embed_documents) { |_| raise "a model was asked" }
+    assert_predicate using(spy) { staff.like("lesson:ripasso.math.frazioni") }.hits, :any?
   end
 
   # ---- the cost -----------------------------------------------------------------------------------

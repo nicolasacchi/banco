@@ -20,7 +20,7 @@
     <details class="similar-line" id="similar-line">
       <summary><%= t("teacher.search.similar") %></summary>
       <ul class="plain">
-        <li><a href="<%= search_similar_path("lesson_card:#{revision.lesson.key}") %>" data-similar="lesson_card:<%= revision.lesson.key %>"><%= t("teacher.search.similar_lesson") %></a></li>
+        <li><a href="<%= search_similar_path("lesson:#{revision.lesson.key}") %>" data-similar="lesson:<%= revision.lesson.key %>"><%= t("teacher.search.similar_lesson") %></a></li>
         <% Array(body["cards"]).each do |card| %>
           <li><a href="<%= search_similar_path("lesson_card:#{revision.lesson.key}#scheda-#{card['n']}") %>" data-similar="lesson_card:<%= revision.lesson.key %>#scheda-<%= card['n'] %>"><%= t("teacher.search.similar_card", n: card["n"], title: card["title_it"]) %></a></li>
         <% end %>

@@ -201,7 +201,8 @@ class LessonRenderTest < ActionDispatch::IntegrationTest
     Search::Embedder.using(Search::Embedder::Stub.new) do
       open_topic_page!(headers: TEACHER)
       key = @revision.lesson.key
-      assert_select "#similar-line a[data-similar='lesson_card:#{key}']"
+      assert_select "#similar-line a[data-similar='lesson:#{key}']", /Simili alla lezione/
+      assert_equal "/teacher/search?like=lesson%3A#{CGI.escape(key)}", css_select("#similar-line a[data-similar='lesson:#{key}']").first["href"]
       assert_select "#similar-line a[data-similar='lesson_card:#{key}#scheda-3']", /Simili alla scheda 3/
     end
   end
