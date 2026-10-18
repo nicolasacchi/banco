@@ -426,8 +426,10 @@ looks like a transcription error, do not guess: report it to the teacher and lea
    file replays the latest revision. `E-STALE-BASE` means someone submitted first: open again.
 4. After a stored revision, the server draws every card in its own browser and checks it (`lesson status REV`
    shows the result: an exception, a label too long for its diagram, text under the student's size, a card
-   wider than a phone). Fix the data, not the checker. `banco lesson shots REV --dir D` downloads the
-   screenshots: look at your own cards at 390 pixels wide (a phone) before you ask for a review.
+   wider than a phone). Fix the data, not the checker. Every exercise of «Prova tu» and every closed part (a
+   «Mostra il testo», a «Descrizione») is drawn and checked too; an error says its `state` (`ex3` is exercise 3).
+   `banco lesson shots REV --dir D` downloads the screenshots (one more per exercise, `card-NN-ex3_...`): look
+   at your own cards at 390 pixels wide (a phone) before you ask for a review.
 5. A reviewer of another model reads it (`banco lesson-review open|submit`, see that brief). Read the result with
    `banco lesson status REV`. Answer by a new revision that fixes what they say; a new revision needs its own
    review.

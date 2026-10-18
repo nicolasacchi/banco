@@ -119,7 +119,7 @@ frame, holding no token and no secret. `Math.random`, `Date`, `performance.now` 
 the staged files of a dry run, valid for 10 minutes. `BANCO_HARNESS_URL` says where
 Chrome reaches the listener (`http://banco-harness:3200` in production).
 
-## The render check of a lesson/2 revision (D-249, D-255)
+## The render check of a lesson/2 revision (D-249, D-255, D-311)
 
 A stored banco.lesson/2 revision is drawn in the server's Chrome by `RenderLessonRevisionJob` (queue `chrome`, priority 10:
 item validation goes first). The harness listener serves `/h/<lrev-token>/lesson-render.html` (the student's CSS, importmap and
@@ -128,11 +128,20 @@ modules, the student's projection of the body, a CSP with no connection); `lesso
 (390 x 844 and 1280 x 800 cream, 1280 dark for core cards; extra cards at 390 cream), and appends one `lesson_renders` row:
 `passed`, `failed` (errors below) or `error` (Chrome did not answer; never a pass).
 
+Each card is looked at in every state the student can reach (D-311): the card as drawn (the first exercise of «Prova tu» shown),
+then `exN` (exercise N shown instead: the pager shows one at a time), `open` (every closed part of the card opened at once: a
+closed `<details>`, «Mostra il testo» of a listening check; the glossary bubbles one at a time) and `exN-open`. Each state is
+measured like the card and has its own 5 s; an error and a shot carry `state` (none for the card as drawn). The opened states of
+a viewport run after its last picture (an opened part can make a short page scrollable, and the fixed bars of the next pictures were
+then painted differently from run to run). Pictures: the card as drawn at every viewport, another exercise at the first viewport
+(the phone), and any further state where it found something. The oral is drawn with the student's form. Not drawn: solutions,
+feedback and the oral's model answer (answers, from the server).
+
 | code | what |
 |---|---|
 | `E-LESSON-RENDER` | an exception, a formula KaTeX refuses, a card that does not draw, a time budget (90 s per revision, 5 s per card and viewport), "Stampa riassunto e schema" over one A4 page |
 | `E-LESSON-OVERFLOW` | the page wider than the window, or something wider inside than its box |
-| `E-DIAGRAM-LAYOUT` | a layout that answered an error, two labels overlapping, a label outside its figure |
+| `E-DIAGRAM-LAYOUT` | a layout that answered an error, two labels overlapping, a label outside its figure, a box's text crossing its border or a box's icon outside it or on its text |
 | `E-DIAGRAM-SMALL-TEXT` | a diagram label under `min_text_px` (a guard: the layout never draws one) |
 
 Screenshots are WebP, quality 80, stored by content in `storage/lesson_shots/<sha256>.webp`. `banco lesson status REV` shows the
@@ -140,8 +149,9 @@ result, `banco lesson shots REV --dir D` downloads the images, `/teacher/lesson-
 `bin/purge-lesson-shots` (weekly) deletes the files of renders older than 30 days whose revision is neither pinned by a topic
 revision nor the latest of its lesson; the rows stay. `Approval::TopicGate` gains the reason "the lesson revision has no render
 without errors" for lesson/2. A revision stored before the job existed: `bin/rails runner 'RenderLessonRevisionJob.perform_later(ID)'`.
-Tests: `test/validation/lesson_render_runner_test.rb` (Chrome), `test/validation/lesson_render_timing_test.rb` (a large timeline with a
-five-state zoom stays under the per-card seconds), `test/integration/lesson_render_test.rb`.
+Tests: `test/validation/lesson_render_runner_test.rb` (Chrome), `test/validation/lesson_render_states_test.rb` (Chrome: every exercise,
+the closed parts, the glossary bubble, the mirror piece, the oral's form), `test/validation/lesson_render_timing_test.rb` (a large
+timeline with a five-state zoom stays under the per-card seconds), `test/integration/lesson_render_test.rb`.
 
 Time and the sidecar (D-293 follow-up). The result keeps `timings`: for each card and viewport the seconds of the page's own stepping
 (`inspect`) and of the picture (`shot`), so a slow card is told apart from a slow Chrome. The picture is where the seconds go on a map
