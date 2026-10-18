@@ -109,8 +109,26 @@ module Teacher
       Exercise.new(card, block.skill, block.label_it, card.body["level"].to_i, purpose, samples, seen_ids.include?(card.revision.id))
     end
 
-    # Every finding to read: the lesson reviews' and each item's (with the third reviewer's opinions).
-    def lesson_findings = reviews.flat_map(&:findings)
+    # Every finding to read: the lesson reviews' (each with its id and the author's latest response, D-313) and
+    # each item's (with the third reviewer's opinions).
+    def lesson_findings = @lesson_findings ||= LessonFindings.entries(reviews.map(&:review))
+
+    # The findings of one lesson review (a ReviewRow), for the summary in the lesson step.
+    def lesson_findings_of(row) = lesson_findings.select { |e| e.review.id == row.review.id }
+
+    # Where a lesson finding is, in the teacher's words: the card (lesson/2: "Copertina", "Scheda 3: title", the block)
+    # or the section and the exercise (lesson/1).
+    def finding_place(entry)
+      if entry.card
+        card = entry.card.zero? ? nil : Array(lesson_body&.dig("cards"))[entry.card - 1]
+        place = entry.card.zero? ? I18n.t("teacher.render.cover") : I18n.t("teacher.render.card_link", n: entry.card, title: card&.dig("title_it").to_s)
+        entry.block ? "#{place} · #{I18n.t('teacher.topic.review.block', n: entry.block)}" : place
+      else
+        place = I18n.t("teacher.topic.section.#{entry.section}", default: entry.section.to_s)
+        entry.exercise ? "#{place} · #{I18n.t('teacher.topic.review.exercise', n: entry.exercise)}" : place
+      end
+    end
+
     def item_cards = skill_blocks.flat_map(&:cards)
     def cards_with_findings = item_cards.select { |c| c.findings.any? }
     def findings_count = lesson_findings.size + item_cards.sum { |c| c.findings.size }

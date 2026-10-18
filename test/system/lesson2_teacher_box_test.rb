@@ -86,6 +86,34 @@ class Lesson2TeacherBoxTest < ApplicationSystemTestCase
     end
   end
 
+  test "the findings line of the box opens the box on a finding's card, and its other link reads the finding with the author's answer (D-313)" do
+    review = review_lesson!(@topic.lesson_revision, findings: [
+      { severity: "major", card: 3, block: 1, quote: "peso", problem_it: "Il passaggio non si vede.", fix_it: "Mostra il peso tolto." },
+      { severity: "blocker", card: 2, quote: "bilancia", problem_it: "Il conto è sbagliato.", fix_it: "Rifai il conto." }
+    ], session: AgentSession.create!(label: "r2", role: "reviewer", agent: "omp", model: "gpt-5.4"))
+    author = AgentSession.create!(label: "a", role: "author", agent: "claude-code", model: "claude-opus-5-5")
+    LessonFindingResponse.create!(lesson_review: review, finding_n: 1, agent_session: author, stance: "lesson_right", note_it: "Il peso tolto è nella figura della scheda.")
+    page.driver.resize(1280, 1000)
+    visit "/teacher/subjects/math/topics/#{TopicWorld::TOPIC_KEY}"
+    assert_selector ".l2-box [data-ready='1']", wait: 20
+    assert_selector "#findings-line li[data-box-finding]", count: 2
+    assert_selector "#findings-line li[data-answered=true]", text: "l'autore ha risposto"
+    if (dir = ENV["BANCO_SHOT_DIR"].presence)
+      FileUtils.mkdir_p(dir)
+      sleep 0.6
+      page.driver.save_screenshot(File.join(dir, "teacher-lesson-findings-line.png"), selector: "#findings-line")
+    end
+    find("#findings-line a[data-card='3']").click
+    assert_selector ".l2-box .l2-counter", text: "Scheda 3 di 11"
+    find("#findings-line li[data-box-finding='L#{review.id}-1'] a[href='#lesson-finding-L#{review.id}-1']").click
+    assert_selector "#lesson-finding-L#{review.id}-1 .author-response", text: "Secondo l'autore la lezione è giusta."
+    assert_selector "#lesson-finding-L#{review.id}-2 [data-response=none]", text: "L'autore non ha ancora risposto."
+    if (dir = ENV["BANCO_SHOT_DIR"].presence)
+      sleep 0.3
+      page.driver.save_screenshot(File.join(dir, "teacher-lesson-findings-step.png"), selector: "#lesson-finding-L#{review.id}-1")
+    end
+  end
+
   # A 1 x 1 lossless WebP: the page of the pictures only needs files that exist.
   PIXEL = Base64.decode64("UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==")
 

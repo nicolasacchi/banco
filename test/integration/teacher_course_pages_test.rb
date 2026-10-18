@@ -83,6 +83,32 @@ class TeacherCoursePagesTest < ActionDispatch::IntegrationTest
     assert_select "#topic-approve-why", /Per ora non puoi approvare|Leggi tutta la pagina/
   end
 
+  test "a lesson finding shows where it is, its id and the author's answer (D-313); the answer decides nothing" do
+    finding = { severity: "major", section: "solutions", exercise: 1, quote: "x = 3", problem_it: "Manca un passaggio.", fix_it: "Aggiungilo." }
+    review = review_lesson!(@lesson_revision, findings: [ finding, finding.merge(severity: "minor", problem_it: "Frase lunga.") ],
+                            session: AgentSession.create!(label: "second", role: "reviewer", agent: "omp", model: "gpt-5.4"))
+    author = AgentSession.create!(label: "a", role: "author", agent: "claude-code", model: "claude-opus-5-5")
+    newer = lesson_revision_with_body!(TopicWorld::TOPIC_KEY, "math.number")
+    LessonFindingResponse.create!(lesson_review: review, finding_n: 1, agent_session: author, stance: "fixed", lesson_revision: newer, note_it: "Ho aggiunto il passaggio.")
+    decisions = Decision.count
+    on(:web, "/teacher/subjects/math/topics/#{TopicWorld::TOPIC_KEY}", headers: TEACHER, remote_addr: EDGE)
+    assert_response :success
+    assert_select "#step-findings #lesson-finding-L#{review.id}-1[data-severity=major]" do
+      assert_select "[data-place]", "Soluzione · esercizio 1"
+      assert_select ".finding-problem", "Manca un passaggio."
+      assert_select ".author-response[data-response=fixed]", /L'autore l'ha corretta nella revisione 2\.\s*Ho aggiunto il passaggio\./
+    end
+    assert_select "#lesson-finding-L#{review.id}-2[data-severity=minor] [data-response]", 0
+    assert_select "#topic-review [data-lesson-review='#{review.id}'] [data-review-findings='2'][data-answered='1']", /Rilievi: 2\. Risposte dell'autore: 1\./ do
+      assert_select "a[href='#lesson-findings']"
+    end
+    # The approval still asks for a reason: an answer is the author's word, never a decision.
+    assert_select "#topic-approve-form input[name=lesson_findings_reason_it]"
+    assert_equal decisions, Decision.count
+    on(:web, "/teacher/subjects/math/topics/#{TopicWorld::TOPIC_KEY}", headers: GUEST, remote_addr: EDGE)
+    assert_select ".author-response[data-response=fixed]", /Ho aggiunto il passaggio/
+  end
+
   test "the practice page shows states, counts, typical errors, the trial student choice and the questions" do
     serve_and_try(@official, 0, raw: "2", verdict: "correct")
     serve_and_try(@official, 1, raw: "4", verdict: "typical_error", codes: [ "slip" ], at: Time.utc(2026, 11, 3, 8, 0))
