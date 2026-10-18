@@ -103,7 +103,11 @@ states:
 - **`highlight`** lights parts (a halo, a thicker outline, the rest dimmed). **`paths`** are arrows between two parts of one cell, at most 3 per state,
   label at most 6 words ("copia di RNA"). **`fill: {vacuole: low|mid|high}`** is the water of a plant cell: `low` shrinks the vacuole and pulls the
   membrane away from the wall.
-- Two cells with different parts get a button **"Solo le differenze"** (it lights what one cell has and the other has not); a figure with `labels: none` has none.
+- Two cells with different parts get a button **"Solo le differenze"** (it lights what one cell has and the other has not); a figure with `labels: none`, a select check's included, has none.
+- **`label_it`** of a cell is what the description and the screen reader say for it; without one they say its kind ("una cellula animale"). To
+  ask which kind a cell is (an `example` with a linked `cell` whose blank asks "E la seconda cellula?"), label it "Seconda cellula" and let the
+  `alt_it` say what is seen ("solo un bordo sottile"), not the kind. An example's linked `cell` has one state per step; the state of a blank's
+  step shows once the blank is answered.
 - **A select check** asks `targets: parts`; the ids are `c1.nucleoid`, `c2.wall` (cell 1 or 2, then the part). Its figure has `labels: none`, is drawn as a
   line drawing in one style, and its `alt_it` never names an answer (`E-CHECK-ANSWER-IN-ALT`): "un bordo doppio, dentro tanti puntini e un groviglio di filo".
 - Not yet: `true_scale` (the real size ratio waits for the vetted sizes `bio/sizes`), the red blood cell (`kind: red_blood`, `omit_shared`): say them in
@@ -120,13 +124,18 @@ levels:                # from the inside out, 3 to 6; ids unique, names at most 
   - {id: cell, label_it: "cellula", example_it: "cellula muscolare del cuore"}
   - {id: tissue, label_it: "tessuto", example_it: "tessuto muscolare del cuore"}
   - {id: organ, label_it: "organo", example_it: "cuore"}
+  - {id: system, label_it: "apparato", example_it: "apparato circolatorio"}
+  - {id: organism, label_it: "organismo", example_it: "corpo umano"}
 inside: {label_it: "organuli", note_it: "stanno dentro la cellula: non sono un livello del corpo"}
 states: [{focus: cell, op_it: "Una cellula"}, {focus: tissue, op_it: "Tante cellule simili"}]
 :::
 ```
 
-A select check asks `targets: levels` (ids are the level ids): its figure shows the examples without the names, so "Il cuore: tocca il suo livello" tests
-the level and not the reading. Use `nested` for "is made of", a `concept_map` for "is a kind of", a `flow` for "then".
+A select check asks `targets: levels` (ids are the level ids, `answer: ['organ']`): its figure shows the examples without the names. So ask for a level
+by its name ("Tocca il riquadro dell'organo": the student must know that the brain is an organ), or by an example the figure does not show (the boxes
+show the heart, the stem asks "Il fegato: tocca il suo livello"). Never quote in the stem the example printed in the answer's box: "Il cervello: tocca
+il suo livello" over a box that says "il cervello" tests the reading, not the level (no finding catches it: the reviewer does). Use `nested` for "is made
+of", a `concept_map` for "is a kind of", a `flow` for "then".
 
 ## Public repository
 

@@ -33,7 +33,7 @@ class BiologyGalleryTest < ActiveSupport::TestCase
 
   test "the select checks of the gallery are clean: targets, answers, the alt text that names nothing, the candidates alike" do
     checks = body["cards"].flat_map { |c| c["blocks"].select { |b| b["type"] == "check" && b["component"] == "select" } }
-    assert_equal 3, checks.size
+    assert_equal 4, checks.size
     checks.each do |check|
       findings = Validation::Findings.new
       ctx = Lessons::Blocks::Context.new(subject: "biology", findings: findings)
@@ -41,6 +41,8 @@ class BiologyGalleryTest < ActiveSupport::TestCase
       assert_empty findings.map { |f| "#{f.code} #{f.field}: #{f.message}" }, check["prompt_it"]
     end
     assert_equal "c1.nucleoid", Lessons::SelectTargets.id_map(checks[0])["t4"]
+    assert_equal %w[c1.wall c1.membrane c1.cytoplasm c1.nucleoid c1.ribosomes c2.membrane c2.cytoplasm c2.nucleus c2.ribosomes c2.mitochondria],
+                 Lessons::SelectTargets.id_map(checks[2]).values, "two cells: the first one's parts, then the second's"
   end
 
   test "the gallery passes the render check at every viewport and its shots can be kept for the eye" do

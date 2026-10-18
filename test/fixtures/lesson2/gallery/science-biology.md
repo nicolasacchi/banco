@@ -4,8 +4,10 @@
 # names and jobs are the vetted table bio/cell_parts.
 #   `cell`: a bacterium and an animal cell with the four shared parts lit (card 1), the comparison of an animal and a plant cell with "Solo le
 #     differenze" (2), an animal cell with every organelle and the RNA's arrow from the nucleus (3), a plant cell named on a tap with notes (4), the
-#     water of the vacuole (5), a bacterium with its tail (6); select over its parts, one and many (7, 8).
-#   `nested`: the levels of the body with the organelles inside the cell and a focus that moves out (9); select over the levels (10).
+#     water of the vacuole (5), a bacterium with its tail (6); select over its parts, one and many (7, 8); an example whose steps move a linked
+#     figure and whose blank asks the kind of a cell the figure labels only "Seconda cellula" (9); select over two cells, with no chips (10).
+#   `nested`: the levels of the body with the organelles inside the cell and a focus that moves out (11); select over the levels (12: the stem names
+#     the level, the boxes show only the examples, so the student must know that the brain is an organ).
 schema: banco.lesson/2
 key: ripasso.biology.gallery-science
 kind: ripasso
@@ -145,6 +147,70 @@ errors:
 explain_it: "Parete, cloroplasti e grande vacuolo sono solo della cellula vegetale."
 :::
 
+## Foglia o guancia? {example icon=pencil-ruler id=esempio}
+
+::: example
+problem_it: "Al microscopio vedi due cellule. La prima ha parete, cloroplasti e un grande vacuolo. La seconda ha solo la membrana intorno. Di chi sono?"
+diagram:
+  type: cell
+  alt_it: "Due cellule una accanto all'altra. La prima ha un bordo spesso, dei fagioli verdi e una grande sacca. La seconda ha solo un bordo sottile. Tutte e due hanno un cerchio grande dentro."
+  labels: all
+  cells:
+    - {kind: plant, label_it: "Prima cellula", parts: [wall, membrane, cytoplasm, nucleus, ribosomes, mitochondria, chloroplasts, vacuole]}
+    - {kind: animal, label_it: "Seconda cellula", parts: [membrane, cytoplasm, nucleus, ribosomes, mitochondria]}
+  states:
+    - {op_it: "Il nucleo", highlight: [nucleus]}
+    - {op_it: "Parete e cloroplasti", highlight: [wall, chloroplasts]}
+    - {op_it: "Intorno solo la membrana", highlight: [membrane]}
+    - {op_it: "I mitocondri", highlight: [mitochondria]}
+steps:
+  - tag: observe
+    do_it: "Tutte e due hanno il nucleo: sono eucariote."
+    why_it: "Un batterio non ha il nucleo."
+  - tag: classify
+    do_it: "La prima ha parete e cloroplasti: è vegetale, per esempio di una foglia."
+    why_it: "Parete e cloroplasti ci sono solo nella cellula vegetale."
+  - tag: classify
+    do_it: "La seconda è animale, per esempio della guancia."
+    why_it: "Ha il nucleo, ma non la parete."
+    blank:
+      component: choice
+      prompt_it: "E la seconda cellula?"
+      options:
+        - {id: a, text_it: "animale, per esempio della guancia"}
+        - {id: b, text_it: "un batterio"}
+        - {id: c, text_it: "vegetale, di una radice"}
+      answer: a
+      errors:
+        - {answer: b, message_it: "Ha il nucleo: non è un batterio."}
+        - {answer: c, message_it: "Senza parete non è vegetale: la parete ce l'hanno anche le radici."}
+      explain_it: "Ha il nucleo e non ha la parete: è una cellula animale."
+  - tag: compare
+    do_it: "Tutte e due hanno i mitocondri."
+    why_it: "Respirano tutte e due: anche le piante."
+result_it: "La prima è di una foglia, la seconda della guancia."
+:::
+
+## Il DNA di tutte e due {idea icon=dna id=due-dna}
+
+::: check select
+prompt_it: "Tocca il DNA di tutte e due le cellule."
+diagram:
+  type: cell
+  alt_it: "Due cellule senza scritte: a sinistra una piccola a forma di capsula, a destra una più grande e tondeggiante con un cerchio grande dentro."
+  labels: none
+  cells:
+    - {kind: bacterium, label_it: "Batterio", parts: [wall, membrane, cytoplasm, nucleoid, ribosomes]}
+    - {kind: animal, label_it: "Cellula della guancia", parts: [membrane, cytoplasm, nucleus, ribosomes, mitochondria]}
+targets: parts
+pick: many
+answer: ['c1.nucleoid', 'c2.nucleus']
+errors:
+  - {answer: ['c2.nucleus'], message_it: "Anche il batterio ha il DNA: è il groviglio nel citoplasma, senza un nucleo intorno."}
+  - {answer: ['c1.ribosomes', 'c2.nucleus'], message_it: "Nel batterio i puntini sono i ribosomi: il DNA è il groviglio in mezzo."}
+explain_it: "Ogni cellula ha il DNA: nel batterio sta nel citoplasma, nella cellula della guancia dentro il nucleo."
+:::
+
 # Dalla cellula all'organismo
 
 ## Dalla cellula all'organismo {idea icon=layers id=livelli}
@@ -171,7 +237,7 @@ states:
 ## A che livello sta {idea icon=boxes id=trova-livello}
 
 ::: check select
-prompt_it: "Il cervello: tocca il riquadro del suo livello."
+prompt_it: "Tocca il riquadro dell'organo."
 diagram:
   type: nested
   alt_it: "Cinque riquadri uno dentro l'altro, senza i nomi dei livelli: ognuno ha il suo esempio."
@@ -185,6 +251,7 @@ targets: levels
 pick: one
 answer: ['organ']
 errors:
-  - {answer: ['tissue'], message_it: "Un tessuto è fatto di cellule simili; il cervello è fatto di più tessuti."}
-explain_it: "Il cervello è un organo: è fatto di più tessuti."
+  - {answer: ['tissue'], message_it: "Tante cellule nervose vicine sono un tessuto. Un organo è fatto di più tessuti, come il cervello."}
+  - {answer: ['system'], message_it: "Il sistema nervoso è un apparato: più organi che lavorano insieme. Uno di quegli organi è il cervello."}
+explain_it: "L'organo è il cervello: è fatto di più tessuti."
 :::
