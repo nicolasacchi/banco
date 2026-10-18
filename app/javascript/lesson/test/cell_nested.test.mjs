@@ -252,3 +252,20 @@ test("nested: the select scene keeps the examples, drops the names, the focus an
   assert.deepEqual(mods.nested.targets(data, "levels").map((t) => t.key), ["organism", "system", "organ", "tissue", "cell"])
   assert.match(mods.nested.describe(data, { mode: "select" }), /^Riquadri uno dentro l'altro, senza i nomi: ci sono 5 riquadri da toccare\./)
 })
+
+test("nested: the page's select figure (positional ids, one neutral label: the server's projection) is drawn in select mode alone", () => {
+  const cases = vectors("nested").filter((v) => v.select_layout === "ok")
+  assert.deepEqual(cases.map((v) => v.name), ["nested-select-served"])
+  for (const v of cases) {
+    assert.ok(lay(v.data).error, "as a figure of the lesson two levels with one name are refused")
+    for (const width of WIDTHS) for (const fontPx of SIZES) {
+      const scene = lay(v.data, { width, fontPx, mode: "select", set: "levels" })
+      assert.equal(scene.error, undefined, `${v.name} ${width}/${fontPx}: ${JSON.stringify(scene.error)}`)
+      assert.equal(scene.targets.length, v.data.levels.length)
+      assert.ok(!texts(scene).includes("·"), "the neutral label is never drawn")
+      assert.deepEqual(texts(scene), [...v.data.levels].reverse().map((l) => l.example_it), "the examples, outermost first")
+    }
+    assert.deepEqual(mods.nested.targets(v.data, "levels").map((t) => t.neutral_it), ["Riquadro 1 di 5", "Riquadro 2 di 5", "Riquadro 3 di 5", "Riquadro 4 di 5", "Riquadro 5 di 5"])
+    assert.match(mods.nested.describe(v.data, { mode: "select" }), /Gli esempi, dal più grande al più piccolo: corpo umano, apparato circolatorio/)
+  }
+})

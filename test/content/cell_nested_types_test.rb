@@ -77,6 +77,24 @@ class CellNestedTypesTest < ActiveSupport::TestCase
     end
   end
 
+  # Every string of a served figure (keys and values), the way the page source has them.
+  def strings_of(x) = x.is_a?(Hash) ? x.flat_map { |k, v| [ k.to_s ] + strings_of(v) } : x.is_a?(Array) ? x.flat_map { |v| strings_of(v) } : x.is_a?(String) ? [ x ] : []
+
+  test "L3 in the page source: no string of a served select figure is a stored id or the name of a target" do
+    FILES.each do |type, doc|
+      doc["vectors"].select { |v| v["targets"] }.each do |v|
+        v["targets"].each_key do |set|
+          served = Lessons::StudentBody.select_figure({ "diagram" => v["data"], "targets" => set })
+          strings = strings_of(served).map { |s| s.strip.downcase }
+          ids = mod(type).targets(v["data"], set).map(&:downcase)
+          names = mod(type).target_names(v["data"], set).values.map { |n| n.strip.downcase }
+          assert_empty strings & ids, "#{type}/#{v['name']}: the served select figure carries a stored id"
+          assert_empty strings & names, "#{type}/#{v['name']}: the served select figure carries a target's name"
+        end
+      end
+    end
+  end
+
   # ---- cell ---------------------------------------------------------------------------------------------------------------------------
 
   test "cell: the kinds of the schema are the kinds of the table, the red blood cell held back" do
@@ -139,5 +157,23 @@ class CellNestedTypesTest < ActiveSupport::TestCase
     assert_equal 1, mod("nested").select_signatures(data.merge("focus" => "organ"), "levels").values.uniq.size
     assert_includes mod("nested").printed(data, 0), "stanno dentro la cellula: non sono un livello del corpo"
     assert_equal "Il vivente intero", (mod("nested").printed(data, 4) - mod("nested").printed(data, 0)).first
+  end
+
+  test "nested: the served select figure has positional ids and one neutral label; the examples stay; the grading still maps tN to stored ids" do
+    data = vector("nested", "nested-body-levels")
+    out = mod("nested").served(data, mode: :select)
+    assert_equal %w[l5 l4 l3 l2 l1], out["levels"].map { |l| l["id"] }, "stored inside out (the browser reverses), l1 the outermost: the target t1"
+    assert_equal [ "·" ], out["levels"].map { |l| l["label_it"] }.uniq
+    assert_equal data["levels"].map { |l| l["example_it"] }, out["levels"].map { |l| l["example_it"] }
+    assert_empty Banco::Schemas.validate("diagram", out).map(&:to_h), "the served figure is a valid nested figure"
+    assert_equal vector("nested", "nested-select-served"), out, "the vector the browser draws in select mode is this projection"
+    # the gallery's check (card 12): the stem names the level it asks for; the figure in the page source never says "organo" nor the id "organ"
+    body = Lessons::Parser2.call(Rails.root.join("test/fixtures/lesson2/gallery/science-biology.md").read, Validation::Findings.new).body
+    check = body["cards"].flat_map { |c| c["blocks"] }.find { |b| b["type"] == "check" && b["targets"] == "levels" }
+    served = Lessons::StudentBody.check(check, "biology", 1)
+    assert_not served.key?("answer")
+    assert_no_match(/organ/, served["diagram"].to_json)
+    assert_includes served["diagram"].to_json, "il cervello"
+    assert_equal "organ", Lessons::SelectTargets.id_map(check)["t3"], "the third box from the outside is the organ, as the stored check says"
   end
 end

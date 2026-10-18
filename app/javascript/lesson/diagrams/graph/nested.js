@@ -3,6 +3,7 @@
 // innermost level (the organelles inside a cell: not a level). A state's `focus` lights one level (a thicker outline and a tint, its name marked: never
 // colour alone). The same picture at every width: on a phone the boxes are nested with smaller margins, so it reads as an indented outline with frames.
 // Select mode (L3): the names are gone, the examples stay, each level's header is a neutral zone; the stored ids are the level ids, outermost first.
+// The page gets that figure with positional ids and one neutral label on every level (the server's projection): its source names nothing either.
 // The Ruby twin is Lessons::Diagrams::Nested (the same checks in the same order); both run test/fixtures/diagrams/types/nested.json.
 import schema from "lesson/diagram_schemas/nested"
 import { effectiveState, finish, label, listIt, shape, stateCount, words } from "lesson/diagrams/common"
@@ -15,13 +16,15 @@ const LABEL_WORDS = 6
 
 // ---- semantics (the same checks, in the same order, as Lessons::Diagrams::Nested) ----------------------------------------------------------
 
-function staticProblem(data) {
+// A select check's figure comes with one neutral label on every level (Lessons::Diagrams::Nested.served): its names are never drawn, so two levels
+// with one name are refused only in the other modes (the stored figure passed the same check on the server).
+function staticProblem(data, select = false) {
   const levels = data.levels
   for (let i = 0; i < levels.length; i++) {
     const lv = levels[i]
     if (levels.findIndex((x) => x.id === lv.id) !== i) return { path: `/levels/${i}/id`, message: `the id ${lv.id} is used twice` }
     if (words(lv.label_it) > LABEL_WORDS) return { path: `/levels/${i}/label_it`, message: `a label has ${words(lv.label_it)} words (at most ${LABEL_WORDS})` }
-    if (levels.findIndex((x) => x.label_it.trim().toLowerCase() === lv.label_it.trim().toLowerCase()) !== i) return { path: `/levels/${i}/label_it`, message: `two levels are called ${lv.label_it}` }
+    if (!select && levels.findIndex((x) => x.label_it.trim().toLowerCase() === lv.label_it.trim().toLowerCase()) !== i) return { path: `/levels/${i}/label_it`, message: `two levels are called ${lv.label_it}` }
   }
   if (data.inside && words(data.inside.label_it) > LABEL_WORDS) return { path: "/inside/label_it", message: `a label has ${words(data.inside.label_it)} words (at most ${LABEL_WORDS})` }
   return null
@@ -32,8 +35,8 @@ function stateProblem(eff, path, data) {
   return null
 }
 
-export function semantic(data) {
-  const top = staticProblem(data)
+export function semantic(data, ctx) {
+  const top = staticProblem(data, ctx?.mode === "select")
   if (top) return top
   const count = stateCount(data)
   for (let i = 0; i < count; i++) {
