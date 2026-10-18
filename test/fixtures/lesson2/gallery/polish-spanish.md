@@ -1,7 +1,8 @@
 ---
 # The renderer problems the Spanish author reported in wave 3 (D-310), one card each, invented content: markup in the header cells of a
 # `table` (also when the rows stack at 390 px) and a long caption, markup in the titles of `cases`, a `mirror` whose pieces carry an icon
-# role, markup in the options of a `choice` check, an `ordering` check with long sentences, and a `tiles` check that orders facts.
+# role, markup in the options of a `choice` check, an `ordering` check with long sentences, a `tiles` check that orders facts, and mistakes
+# whose group title holds a word of Spanish.
 # test/validation/lesson_polish_gallery_test.rb draws it in Chrome at the viewports of lesson2.render and keeps no finding at all.
 schema: banco.lesson/2
 key: ripasso.spanish.gallery-polish
@@ -31,10 +32,13 @@ rows:
   - ["noi", "[[es:hablamos]]", "[[es:comemos]]", "[[es:vivimos]]"]
 :::
 
-## Due coniugazioni {idea icon=puzzle id=casi}
+## Tre coniugazioni {idea icon=puzzle id=casi}
 
-::: cases "Le desinenze di [[es:comer]] e [[es:vivir]]"
+::: cases "Le desinenze di [[es:hablar]], [[es:comer]] e [[es:vivir]]"
 cases:
+  - title_it: "Con [[es:hablar]] la persona noi ha sempre la stessa desinenza"
+    text_it: "Con noi la desinenza è [[es:-amos]]."
+    example_it: "[[es:hablamos]]"
   - title_it: "-er: [[es:comer]]"
     text_it: "Con noi la desinenza è [[es:-emos]]."
     example_it: "[[es:comemos]]"
@@ -116,4 +120,22 @@ tiles:
   - {id: d, text_es: "te"}
 answer: [a, b, c]
 explain_it: "[[es:Yo me lavo.]]"
+:::
+
+## Errori da evitare {mistakes}
+
+::: mistake
+group_it: "La persona noi di [[es:vivir]]"
+wrong_it: "[[es:Nosotros vivemos en Madrid.]]"
+right_it: "[[es:Nosotros vivimos en Madrid.]]"
+why_it: "I verbi in -ir hanno la i: [[es:vivimos]]."
+code: es_ir_vowel
+:::
+
+::: mistake
+group_it: "La persona noi di [[es:vivir]]"
+wrong_it: "[[es:Nosotros vivamos aquí.]]"
+right_it: "[[es:Nosotros vivimos aquí.]]"
+why_it: "Con noi il presente di [[es:vivir]] è [[es:vivimos]]."
+code: es_ir_ending
 :::

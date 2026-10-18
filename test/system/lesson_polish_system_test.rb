@@ -5,8 +5,9 @@ require_relative "../support/student_session"
 # The renderer problems the authors reported in wave 3 (D-310), in the student's page: the galleries test/fixtures/lesson2/gallery/polish-spanish.md
 # and polish-math.md, parsed and stored as an author's lesson would be (the page projects them with Lessons::StudentBody). On a phone and on a
 # desktop: the column names of a stacked table carry their markup and the caption is the table's width, cases titles and choice options draw
-# their markup with no control inside an option, an ordering with long sentences fits and still moves by button and key, tiles say neutral
-# words unless they build a sentence, a typed answer stays on the line of its formula. BANCO_SHOT_DIR keeps screenshots.
+# their markup with no control inside an option, a cases title and a mistakes group that mix words and markup read as one line of text, an
+# ordering with long sentences fits and still moves by button and key, tiles say neutral words unless they build a sentence, a typed answer
+# stays on the line of its formula. BANCO_SHOT_DIR keeps screenshots.
 class LessonPolishSystemTest < ApplicationSystemTestCase
   include Lesson2PageWorld
   include StudentSession
@@ -65,6 +66,35 @@ class LessonPolishSystemTest < ApplicationSystemTestCase
   # every text of the card as it shows, without the formulas KaTeX drew (their MathML holds the TeX), the closed description and the measure probe
   def card_text(n) = js("(() => { const c = document.querySelector('#scheda-#{n}').cloneNode(true); c.querySelectorAll('.katex, .dg-desc, .dg-measure').forEach((k) => k.remove()); return c.textContent })()")
 
+  # A title drawn with markup inside a flex head (a case's head beside its icon, a mistakes group's heading) is one line of text, not one
+  # column per piece: the head holds one title span besides its icon, and in the title the first two pieces (words, then a word of another
+  # language or a formula) sit on one line, a space apart, with the next piece starting on that line or below it, never above.
+  def assert_titles_flow(n, head, title)
+    report = js(<<~JS)
+      [...document.querySelectorAll('#scheda-#{n} #{head}')].map((h) => {
+        const others = [...h.childNodes].filter((c) => !(c.nodeType === 1 && c.matches('svg, .ic')) && !(c.nodeType === 3 && !c.nodeValue.trim()))
+        const t = h.querySelector('#{title}')
+        const pieces = t ? [...t.childNodes].filter((c) => (c.nodeType === 3 ? c.nodeValue.trim() : !c.matches('button'))) : []
+        const boxes = (p) => { if (p.nodeType === 1) return p.getClientRects(); const r = document.createRange(); r.selectNodeContents(p); return r.getClientRects() }
+        const rects = pieces.map((p) => [...boxes(p)].filter((x) => x.width > 0))
+        const em = parseFloat(getComputedStyle(h).fontSize)
+        let flows = true
+        if (rects.length >= 2) {
+          const a = rects[0][rects[0].length - 1], b = rects[1][0]
+          flows = a.top < b.bottom && b.top < a.bottom && b.left - a.right >= -1 && b.left - a.right < 0.45 * em
+          if (rects.length >= 3) flows = flows && rects[2][0].top >= b.top - 1
+        }
+        return { text: h.textContent.trim(), single: others.length === 1 && others[0] === t, pieces: pieces.length, flows }
+      })
+    JS
+    assert_not_empty report, "#{head} on card #{n}"
+    report.each do |r|
+      assert r["single"], "one title span in the head: #{r.inspect}"
+      assert r["flows"], "the title reads as one line of text: #{r.inspect}"
+    end
+    report
+  end
+
   test "spanish on a phone: stacked column names, a full-width caption, cases titles, a mirror inside its boxes, options with their words" do
     open_gallery("polish-spanish", [ 390, 844 ])
     go 1
@@ -79,8 +109,8 @@ class LessonPolishSystemTest < ApplicationSystemTestCase
 
     go 2
     assert_selector "#scheda-2 .block-title .lang[lang=es]", text: "comer"
-    assert_selector "#scheda-2 .case-head .lang[lang=es]", text: "comer"
-    assert_selector "#scheda-2 .case-head .lang[lang=es]", text: "vivir"
+    assert_selector "#scheda-2 .case-head .case-title .lang[lang=es]", text: "comer"
+    assert_selector "#scheda-2 .case-head .case-title .lang[lang=es]", text: "vivir"
     assert_no_match(/\[\[/, card_text(2))
 
     go 3
@@ -99,6 +129,25 @@ class LessonPolishSystemTest < ApplicationSystemTestCase
     assert_no_selector "#scheda-3 .option button, #scheda-3 .option a"
     assert_no_match(/\[\[/, card_text(3))
     shot("spanish-mirror-390")
+  end
+
+  test "spanish on a phone and on a desktop: a cases title and a mistakes group with a Spanish word read as one line of text" do
+    [ [ 390, 844 ], [ 1280, 900 ] ].each do |size|
+      open_gallery("polish-spanish", size, build: size.first == 390)
+      go 2
+      titles = assert_titles_flow(2, ".case-head", ".case-title")
+      assert_equal [ 3, 2, 2 ], titles.map { |t| t["pieces"] }, titles.inspect # the long title is words, a Spanish word, words
+      shot("spanish-cases-#{size.first}")
+
+      go 6
+      groups = assert_titles_flow(6, ".mistakes-group", ".mistakes-group-title")
+      assert_equal [ "La persona noi di vivir" ], groups.map { |g| g["text"] }
+      assert_selector "#scheda-6 .mistakes-group .lang[lang=es]", text: "vivir"
+      # inside each card's button the group is said in plain words: no markup printed as text, anywhere on the card
+      assert_equal [ " (La persona noi di vivir)" ] * 2, js("[...document.querySelectorAll('#scheda-6 .mistake-wrong .sr-only')].map((s) => s.textContent)")
+      assert_no_match(/\[\[/, card_text(6))
+      shot("spanish-mistakes-#{size.first}")
+    end
   end
 
   test "spanish on a phone: a long ordering fits and moves by button and by key; tiles say neutral words unless they build a sentence" do
@@ -150,7 +199,9 @@ class LessonPolishSystemTest < ApplicationSystemTestCase
 
       go 3
       assert_selector "#scheda-3 .block-title .katex"
-      assert_selector "#scheda-3 .case-head .katex", count: 2
+      assert_selector "#scheda-3 .case-head .case-title .katex", count: 3
+      titles = assert_titles_flow(3, ".case-head", ".case-title")
+      assert_equal [ 1, 1, 3 ], titles.map { |t| t["pieces"] }, titles.inspect # the long title is words, a formula, words
       assert_selector "#scheda-3 .option .option-text .katex", count: 3
       assert_no_match(/\$|\\role/, card_text(3))
       shot("math-cases-#{size.first}")
