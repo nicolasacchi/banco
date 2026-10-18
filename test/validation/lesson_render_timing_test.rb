@@ -95,7 +95,9 @@ class LessonRenderTimingTest < ActiveSupport::TestCase
     assert_operator timings.size, :>=, 3 * 2, "a timing for the cover and the card at every viewport"
     slow = timings.select { |t| t["inspect"] + t["shot"] > per_card }
     assert_empty slow, "cards over #{per_card} s: #{slow.inspect}"
-    assert_operator elapsed, :<, Validation::Rules.get(:lesson2, :render, :budget_seconds)
+    # the budget is the render's own time (the runner's clock starts once it holds the shared Chrome lock): with the other gallery render checks
+    # running in parallel workers, the wall clock also counts the wait for that lock, which is other tests' time
+    assert_operator row.result["elapsed_seconds"], :<, Validation::Rules.get(:lesson2, :render, :budget_seconds), "the render took #{row.result['elapsed_seconds']} s (#{elapsed.round} s with the wait for the lock)"
   ensure
     ENV.delete("BANCO_LESSON_SHOTS_DIR")
     FileUtils.rm_rf(shots) if shots
