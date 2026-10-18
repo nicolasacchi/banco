@@ -56,7 +56,11 @@ class TeacherAsStudentTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "#preview-banner", /Stai provando come studente/
     assert_select "#preview-banner", /Vista: Come lo vede S/
-    assert_select "#preview-exit[href='/teacher']"
+    assert_select "#preview-exit[href='/teacher'][aria-label='Esci dalla prova']", /Esci/
+    # the phone's one row (D-315): «Opzioni» discloses the switch and the reset; each control's name is the whole action
+    assert_select "#preview-more summary[aria-label='Opzioni della prova']", "Opzioni"
+    assert_select "#preview-actions form[action='#{ROOT}/view'] button#preview-switch", /Passa a: Con le bozze/
+    assert_select "#preview-actions #preview-reset summary", /Ricomincia da capo/
     assert_select "#suggestions li.topic[data-topic='#{TOPIC}'] a.topic-title[href='#{ROOT}/topics/#{TOPIC}']"
     assert_select "nav.student-menu a#menu-subjects[href='#{ROOT}/subjects']"
     page(TEACHER, "#{ROOT}/subjects")
