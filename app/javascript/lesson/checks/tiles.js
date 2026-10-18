@@ -15,15 +15,14 @@
 import { handle } from "items/dom"
 import { button, el, uid } from "lesson/dom"
 import { createTiles } from "lesson/checks/sequence_model"
-import { insideControl, renderInlineRich } from "lesson/text"
-import { plain } from "lesson/diagrams/common"
+import { insideControl, plainText, renderInlineRich } from "lesson/text"
 
 export const type = "tiles"
 
 export const textOf = (tile) => tile.text_en ?? tile.text_es ?? tile.text_it ?? ""
 export const langOf = (tile) => (tile.text_en != null ? "en" : tile.text_es != null ? "es" : null)
 // what a screen reader and the live region say of a tile: its words, never its markup
-export const nameOf = (tile) => (langOf(tile) ? textOf(tile) : plain(textOf(tile)).replace(/\*\*/g, ""))
+export const nameOf = (tile) => (langOf(tile) ? textOf(tile) : plainText(textOf(tile)))
 
 // The fixed words of a check: { line, bank, empty, used, placed } (pure: texts is ctx.t.checks).
 export function tilesTexts(spec, texts) {
