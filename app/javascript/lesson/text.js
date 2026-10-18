@@ -8,6 +8,7 @@ import { el, icon } from "lesson/dom"
 import { colourTokens, displayPieces, displayTex } from "lesson/eq"
 import { speakerButton } from "lesson/speech_ui"
 import { targetOf } from "lesson/lang"
+import { plain } from "lesson/diagrams/common"
 
 const ROLE_CLASS = /^role-[a-z]+([_-][a-z]+)*$/
 const NOT_EQUAL = "\\html@mathml{\\mathrel{\\text{\\char\"2260}}}{\\mathrel{\\char`≠}}"
@@ -28,6 +29,28 @@ export const insideControl = (ctx) => ({ ...ctx, noSpeech: true, glossary: null,
 // A language span of one short word ("-emos", "hablar") never breaks, not even at its hyphen; a phrase wraps as text does (D-310).
 export const ONE_WORD_MAX = 24
 export const oneWord = (text) => !/\s/.test(String(text).trim()) && String(text).trim().length <= ONE_WORD_MAX
+
+// The words of an inline text with its markup taken away (a span's words, a role's text, a link's text, bold as its words, a formula as
+// diagrams/common's plain() reads it: "$a^2 \cdot b$" is "a^2 · b"), for what is said and never drawn: a button's or a region's name, a
+// screen reader's line (D-310). The same reader as the page's, so a role with a hyphen or "|it" loses its brackets too. A text the reader
+// refuses is returned as written. Pure.
+export function plainText(text) {
+  let blocks
+  try {
+    blocks = parse(String(text ?? ""), { lists: "v2", roles: true })
+  } catch (error) {
+    if (!(error instanceof Refused)) throw error
+    return String(text ?? "")
+  }
+  const words = (nodes) => nodes.map((node) => {
+    if (node.t === "text") return node.v
+    if (node.t === "math") return plain(node.v)
+    if (node.t === "lang" || node.t === "code") return node.v
+    if (node.t === "gloss") return node.term
+    return node.children ? words(node.children) : ""
+  }).join("")
+  return blocks.map((block) => (block.type === "p" ? words(block.children) : block.items.map((item) => words(item.children)).join(" "))).join(" ")
+}
 
 // A card title up to its first colon followed by a space ("Esempio A: ..." -> "Esempio A"), never a colon inside a formula. Pure.
 export function shortTitle(title) {

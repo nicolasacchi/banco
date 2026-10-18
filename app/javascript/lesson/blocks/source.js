@@ -4,8 +4,7 @@
 // a quotation: each part's text was checked as an exact piece of the imported reference (E-QUOTE-REF). The historical half (kinds written,
 // iconographic, material) is W2-2.
 import { button, el, icon } from "lesson/dom"
-import { insideControl, renderInlineRich, roleOf } from "lesson/text"
-import { plain } from "lesson/diagrams/common"
+import { insideControl, plainText as plainWords, renderInlineRich, roleOf } from "lesson/text"
 
 // The quotation as nodes: the marked pieces wrapped in their role (first occurrence each, never overlapping), the rest as text.
 export function quotationNodes(text, marks, ctx) {
@@ -41,7 +40,7 @@ function guideList(block, ctx) {
 }
 
 export function render(block, ctx) {
-  const root = el("section", { class: "block source", "data-kind": block.kind, "aria-label": block.title_it ? plain(block.title_it) : null })
+  const root = el("section", { class: "block source", "data-kind": block.kind, "aria-label": block.title_it ? plainWords(block.title_it) : null })
   const hasPlain = block.parts.every((p) => p.plain_it)
   let view = hasPlain && block.open !== "original" ? "plain" : "original"
   root.dataset.view = view
