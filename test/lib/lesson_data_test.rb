@@ -10,8 +10,8 @@ class LessonDataTest < ActiveSupport::TestCase
   # the second table of the stations.
   T5_EXTRA = %w[history/places_expected history/regions].freeze
   T6_EXTRA = %w[geo/stations_expected].freeze
-  # T7 adds the second tables of chem/elements and chem/molecules (the second source of chem/terms is it.wikipedia, in its test).
-  T7_EXTRA = %w[chem/elements_expected chem/molecules_expected].freeze
+  # T7 adds the second tables of chem/elements, chem/molecules and bio/cell_parts (the second source of chem/terms is it.wikipedia, in its test).
+  T7_EXTRA = %w[chem/elements_expected chem/molecules_expected bio/cell_parts_expected].freeze
 
   test "the 15 tables of the plan have a schema, each a valid JSON Schema that names its track and says a second table is compared" do
     assert_equal (TABLES + T5_EXTRA + T6_EXTRA + T7_EXTRA).sort, Lessons::VettedData.names
