@@ -2,7 +2,8 @@
 # Gallery of the family `graph` (WAVE2 2.1, T4b), a lesson/2 file with invented content. It shows `network` (pair, hub with kind chips,
 # fan, triangle, row, grid; states with badges, holds, hide and the crowd; the note on a node), `chain` (line, fan, ring; "Togli una
 # causa"; a return arc; a link that is not causal; states that show), and the line layout of `flow` (the token, the second lane, the
-# returns). `nested` (draft, W2-2) is not drawn yet. The select mode is drawn by the figure tests until the `select` check lands (T1).
+# returns), and `nested` (boxes inside boxes with an inside box and a focus that moves out; D-312: its select mode is in the biology gallery,
+# science-biology.md). The select mode of the others is drawn by the figure tests.
 # test/validation/lesson_graph_gallery_test.rb renders it with Chrome at the viewports of lesson2.render and keeps no finding at all.
 schema: banco.lesson/2
 key: ripasso.law_economics.gallery-graph
@@ -320,5 +321,25 @@ nodes:
 - {id: b, kind: step, text_it: Controllo, icon: shield}
 - {id: c, kind: end, text_it: Arrivo, icon: key-round}
 token: a
+:::
+
+
+## Dal comune all'Unione europea {idea icon=building-2 id=scatole}
+
+Ogni riquadro sta dentro quello più grande: un **comune** fa parte di una provincia, una provincia di una regione.
+
+::: diagram nested
+alt_it: 'Cinque riquadri uno dentro l''altro: il comune nella provincia, la provincia nella regione, la regione nello Stato, lo Stato nell''Unione europea.'
+levels:
+- {id: town, label_it: comune, example_it: un paese di montagna}
+- {id: province, label_it: provincia}
+- {id: region, label_it: regione}
+- {id: state, label_it: Stato, example_it: l'Italia}
+- {id: union, label_it: Unione europea}
+inside: {label_it: quartieri, note_it: 'una parte del comune, non un ente in più'}
+states:
+- {focus: town, op_it: Il comune}
+- {focus: region, op_it: Più province}
+- {focus: union, op_it: Tanti Stati insieme}
 :::
 

@@ -1174,7 +1174,6 @@
      "focus",
      "states"
     ],
-    "provisional": true,
     "targets": [
      "levels"
     ]
@@ -1310,7 +1309,6 @@
      "fill",
      "states"
     ],
-    "provisional": true,
     "targets": [
      "parts"
     ],

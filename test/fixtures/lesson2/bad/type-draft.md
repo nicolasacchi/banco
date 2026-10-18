@@ -30,39 +30,15 @@ x_value: '2'
 try: {from: 0, to: 5}
 :::
 
-::: diagram cell
-alt_it: 'Due cellule affiancate: un batterio con il DNA nel citoplasma e una cellula
-  animale con il nucleo e i mitocondri.'
-labels: all
-cells:
-- kind: bacterium
-  label_it: Batterio
-  parts:
-  - membrane
-  - cytoplasm
-  - nucleoid
-  - ribosomes
-  - wall
-- kind: animal
-  parts:
-  - membrane
-  - cytoplasm
-  - nucleus
-  - ribosomes
-  - mitochondria
-notes:
-- part: nucleoid
-  text_it: Il DNA sta nel citoplasma.
-true_scale: false
+::: diagram scale
+alt_it: 'Una scala a potenze di dieci con lo spessore di un capello e un batterio, e il rapporto tra i due calcolato.'
+objects:
+- {id: hair, label_it: spessore di un capello, size: '70', unit: um}
+- {id: bact, label_it: batterio, size: '2', unit: um}
+pair: [hair, bact]
 states:
-- op_it: Le due cellule
-- highlight:
-  - membrane
-  paths:
-  - from: nucleus
-    to: ribosomes
-    label_it: copia di RNA
-  op_it: L'RNA esce
+- {focus: bact, op_it: Ingrandisci}
+- {focus: hair, op_it: Esci}
 :::
 
 ::: check choice

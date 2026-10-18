@@ -37,9 +37,10 @@ class LessonTypesTest < ActiveSupport::TestCase
       assert_equal "draft", e["schema"], name if e["status"] == "draft"
       next if e["family"] == "core"
 
-      # a track makes its piece available in the commit of its look gate: a W2-1 type with a schema, its vectors without a pending column
+      # a track makes its piece available in the commit of its look gate: a W2-1 type, or a W2-2 type whose draft schema the look gate froze
+      # (cell and nested, D-312), its vectors without a pending column
       if e["status"] == "available"
-        assert_equal "w2-1", e["batch"], name
+        assert_includes %w[w2-1 w2-2], e["batch"], name
         vectors = JSON.parse(Rails.root.join("test/fixtures/diagrams/types/#{name}.json").read)["vectors"]
         assert(vectors.none? { |v| v["semantic"] == "pending" || v["layout"] == "pending" }, "#{name}: pending columns")
       end
@@ -125,7 +126,8 @@ class LessonTypesTest < ActiveSupport::TestCase
   test "Lessons::Types: status, usable, held-back views and options" do
     assert_equal "available", Lessons::Types.status(:diagram, "balance")
     assert_equal "reserved", Lessons::Types.status(:diagram, "calendar")
-    assert_equal "draft", Lessons::Types.status(:diagram, "cell")
+    assert_equal "draft", Lessons::Types.status(:diagram, "particles")
+    assert_equal "available", Lessons::Types.status(:diagram, "cell"), "cell is available since its look gate (D-312)"
     assert_equal "available", Lessons::Types.status(:check, "choice")
     assert_nil Lessons::Types.status(:diagram, "venn")
     assert Lessons::Types.usable?(:diagram, "balance")
@@ -167,8 +169,9 @@ class LessonTypesTest < ActiveSupport::TestCase
       assert_equal "network", block["diagram"]["type"]
       assert_equal "diagram", block["type"]
     end
-    error = assert_raises(Lessons::Directives::Refused) { build("diagram", "cell", "alt_it: x\n") }
+    error = assert_raises(Lessons::Directives::Refused) { build("diagram", "particles", "alt_it: x\n") }
     assert_match(/draft schema/, error.message)
+    assert_match(/cell true_scale/, assert_raises(Lessons::Directives::Refused) { build("diagram", "cell", "alt_it: x\ntrue_scale: true\n") }.message, "held back until bio/sizes")
     assert_equal "network", build("diagram", "network", "alt_it: x\nlayout: pair\n")[0]["diagram"]["type"], "network is available (T4b)"
   end
 

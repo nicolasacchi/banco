@@ -77,3 +77,24 @@
   .dg-plate { background: #fff; box-shadow: 0 0 0 4px #fff; }
   .dg-net-badgebox, .dg-chain-event { fill: #fff; }
 }
+
+/* ---- nested: boxes inside boxes ("is made of", D-312). Neutral tints that alternate by depth; the focused level has a thick outline, a tint and its
+   name marked, never colour alone. Select mode: no names, each header a neutral zone. */
+.dg-nbox { stroke: var(--line); stroke-width: 2; transition: stroke-width 250ms ease; }
+.dg-nbox-0 { fill: var(--surface); }
+.dg-nbox-1 { fill: color-mix(in srgb, var(--text) 5%, var(--surface)); }
+.dg-nbox.is-focus { stroke: var(--text); stroke-width: 4.5; fill: color-mix(in srgb, var(--r-common-highlight-tint, #fff1a8) 70%, var(--surface)); }
+.dg-label.dg-nname { font-weight: 800; color: var(--text); }
+.dg-label.dg-nname-focus { text-decoration: underline; text-decoration-thickness: 0.12em; text-underline-offset: 0.18em; }
+.dg-label.dg-nexample { color: var(--muted); }
+.dg-ninside { fill: none; stroke: var(--text); stroke-width: 2; stroke-dasharray: 7 5; }
+.dg-label.dg-ninside-name { font-weight: 700; color: var(--text); }
+.dg-label.dg-ninside-note { color: var(--muted); }
+.dg-nzone { fill: transparent; stroke: none; }
+@media (prefers-reduced-motion: reduce) {
+  .dg-nbox { transition: none; }
+}
+@media (forced-colors: active) {
+  .dg-nbox, .dg-ninside { fill: Canvas; stroke: CanvasText; }
+  .dg-nbox.is-focus { stroke: Highlight; }
+}
