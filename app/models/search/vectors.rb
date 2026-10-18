@@ -10,7 +10,7 @@ module Search
   # A document's vector is current when its digest equals the document's and its model and dimension are the embedder's. A document
   # that changed is re-inserted by Search::Index: its vector is kept when the text sent to the model is the same (a change of status,
   # D-315) and dropped otherwise, so the next build embeds it. A new document whose text is that of a document of the same object (an
-  # unchanged instance or card of a new revision) gets that document's vector (Vectors.donors and Vectors.adopt, from Search::Index).
+  # unchanged instance or card of a new revision) gets that document's vector (donors, snapshot, give and redate, from Search::Index).
   #
   # Cosine without a numeric library: a vector of 1024 floats against 9,600 documents is 10 million multiplications, about a second
   # in Ruby. So every vector also has a coarse form (COARSE signed sums of the dimensions, a sparse random projection, normalized
@@ -71,14 +71,8 @@ module Search
       Index.rows(sql, *pending_binds(embedder))
     end
 
-    # How many eligible documents wait for a vector of this embedder; +ids+: only among these documents.
-    def waiting(embedder, ids: nil)
-      return 0 if embedder.nil? || ids&.empty?
-
-      sql = +"SELECT COUNT(*) FROM #{pending_from(embedder)}"
-      sql << " AND d.id IN (#{ids.map { |i| Integer(i) }.join(', ')})" if ids
-      Index.rows(sql, *pending_binds(embedder)).dig(0, 0).to_i
-    end
+    # How many eligible documents wait for a vector of this embedder (what "Simili" says of an object that has none yet).
+    def waiting(embedder) = embedder ? Index.rows("SELECT COUNT(*) FROM #{pending_from(embedder)}", *pending_binds(embedder)).dig(0, 0).to_i : 0
 
     def pending?(embedder) = embedder ? Index.rows("SELECT 1 FROM #{pending_from(embedder)} LIMIT 1", *pending_binds(embedder)).any? : false
 

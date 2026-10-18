@@ -14,13 +14,13 @@ module Search
 
     # [Hit] by cosine (the score), best first, each at least +min+. +exclude+: a document id, or ids, left out (the object of a "Simili").
     def nearest(engine, vector, model:, filters:, limit:, min:, exclude: nil)
-      nearest_any(engine, { nil => vector }, model: model, filters: filters, limit: limit, min: min, exclude: exclude)
+      nearest_any(engine, [ [ nil, vector ] ], model: model, filters: filters, limit: limit, min: min, exclude: exclude)
     end
 
-    # The same for several vectors at once (the cards of a lesson, D-315): +queries+ is {label => vector}; a document's score is its
-    # cosine with the nearest of them, and its hit's `near` the label of that one. One pass over the documents whatever their number.
+    # The same for several vectors at once (the cards of a lesson, D-315): +queries+ is [[label, vector]] (two may share a label); a
+    # document's score is its cosine with the nearest of them, and its hit's `near` the label of that one. One pass over the documents.
     def nearest_any(engine, queries, model:, filters:, limit:, min:, exclude: nil)
-      vectors = queries.values
+      vectors = queries.map(&:last)
       where, binds = engine.where(filters)
       where = "#{where} AND #{Vectors.eligible_sql}"
       ids = Array(exclude).compact

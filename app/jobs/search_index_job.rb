@@ -19,6 +19,7 @@ class SearchIndexJob < ApplicationJob
   end
 
   def perform(groups = nil)
+    Search::Schema.ensure!
     groups = groups.blank? || groups == [ "all" ] ? Search::Builders::GROUPS : groups
     stale = (groups & Search::Builders::GROUPS).reject { |group| covered?(group) }
     Search::Indexer.reindex(stale) if stale.any?
