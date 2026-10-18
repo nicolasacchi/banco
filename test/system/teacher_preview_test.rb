@@ -65,6 +65,19 @@ class TeacherPreviewTest < ApplicationSystemTestCase
     page.driver.resize(1280, 900)
   end
 
+  def shot_at(name, width)
+    dir = ENV["BANCO_SHOT_DIR"].presence or return
+    FileUtils.mkdir_p(dir)
+    page.driver.resize(width, width == 390 ? 844 : 900)
+    sleep 0.4
+    page.driver.save_screenshot(File.join(dir, "#{name}-#{width}.png"), full: true)
+  end
+
+  def banner_height = page.evaluate_script("document.getElementById('preview-banner').getBoundingClientRect().height")
+
+  # One row: the banner is no taller than its exit button and the padding around it (two rows would be twice the button).
+  def one_row? = banner_height <= page.evaluate_script("document.getElementById('preview-exit').getBoundingClientRect().height") + 32
+
   def walk(draft:)
     visit ROOT
     assert_selector "#preview-banner", text: "Stai provando come studente"
@@ -115,6 +128,37 @@ class TeacherPreviewTest < ApplicationSystemTestCase
     assert_equal [ preview_student.id ], PracticeServe.pluck(:student_id).uniq
     assert_empty LessonEvent.where.not(student_id: preview_student.id)
     assert_equal 0, Comment.count
+  end
+
+  test "the banner is one row at 1280 and on a phone, where «Opzioni» opens the switch and the reset and «Esci» stays (D-315)" do
+    build_lesson2_world(name: "equations", approve: true, release: true)
+    sign_in_as :teacher
+    visit ROOT
+    assert_selector "#preview-switch", text: "Passa a: Con le bozze"
+    assert_no_selector "#preview-more summary"
+    assert one_row?, "one row at 1280 (#{banner_height} px)"
+    find("#preview-reset summary").click
+    assert_selector "#preview-reset-confirm", text: "Sì, ricomincia"
+    shot_at("banner-reset-open", 1280)
+    page.driver.resize(390, 844)
+    assert_selector "#preview-more summary", text: "Opzioni"
+    assert_selector "#preview-exit", text: "Esci", exact_text: true
+    assert_no_selector "#preview-switch"
+    assert one_row?, "one row at 390 (#{banner_height} px)"
+    assert_operator page.evaluate_script("document.documentElement.scrollWidth"), :<=, 390, "nothing wider than the phone"
+    assert_equal "Esci dalla prova", find("#preview-exit")["aria-label"]
+    shot_at("banner-phone-closed", 390)
+    find("#preview-more summary").click
+    assert_selector "#preview-switch", text: "Passa a: Con le bozze"
+    assert_selector "#preview-reset-confirm", text: "Sì, ricomincia"
+    assert one_row?, "the panel opens over the page, the row keeps its height (#{banner_height} px)"
+    shot_at("banner-phone-menu", 390)
+    click_button "Passa a: Con le bozze"
+    assert_selector "#preview-banner", text: "Con le bozze"
+    assert_no_selector "#preview-switch"
+    assert_clean "the banner on a phone"
+  ensure
+    page.driver.resize(1280, 900)
   end
 
   test "the drafts view shows the unreleased course flagged; the official view shows nothing of it; the reset starts again" do

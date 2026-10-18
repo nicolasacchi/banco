@@ -313,6 +313,7 @@ it:
       back_to_today: "Torna a Oggi"
       intro: "Giochi il test come lo vedrebbe S. Le risposte restano separate da quelle di S."
       banner_label: "Stai provando come studente"
+      banner_short: "In prova"
       view_label: "Vista"
       views:
         official: "Come lo vede S"
@@ -323,6 +324,9 @@ it:
       reset_confirm: "Sì, ricomincia"
       reset_done: "Ricominci da capo: nessun progresso di prova."
       exit: "Esci dalla prova"
+      exit_short: "Esci"
+      more: "Opzioni"
+      more_label: "Opzioni della prova"
       start: "Prova %{subject}"
       banner: "Anteprima del docente. Non entra nel registro di S."
       close: "Chiudi l'anteprima"
