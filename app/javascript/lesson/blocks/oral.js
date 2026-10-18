@@ -66,7 +66,10 @@ export function render(block, ctx, loc = {}) {
   const root = el("section", { class: "block oral", "aria-label": ctx.t.docs.oral_title })
   root.appendChild(el("p", { class: "oral-tag" }, icon("circle-help", "oral-ic"), el("strong", { text: ctx.t.docs.oral_title })))
   root.appendChild(renderInlineRich(block.question_it, el("p", { class: "oral-question" }), ctx))
-  if (ctx.safe || ctx.openAll) {
+  // print, the teacher's view and safe mode list the outline; the render check draws the student's form instead, so that the
+  // outline's tiles are measured at the phone's width as the student has them (D-311)
+  const drawForm = !ctx.safe && (!ctx.openAll || ctx.renderCheck)
+  if (!drawForm) {
     const list = el("ul", { class: "oral-outline-plain" })
     for (const o of block.outline) list.appendChild(renderInlineRich(o.text_it, el("li"), ctx))
     root.append(el("p", { class: "hint", text: ctx.t.docs.oral_outline_label }), list)
@@ -81,7 +84,7 @@ export function render(block, ctx, loc = {}) {
   if (ctx.openAll && !ctx.safe) showModel(ctx.full?.spec(loc)?.model_it)
   const feedback = el("div", { class: "feedback", "aria-live": "polite", role: "status" })
   const pillRows = [pills(ctx.t.docs.oral_connectives, block.connectives, "oral-connectives"), pills(ctx.t.docs.oral_terms, block.terms, "oral-terms")]
-  if (!ctx.safe && !ctx.openAll) {
+  if (drawForm) {
     root.appendChild(el("p", { class: "hint", text: ctx.t.docs.oral_help }))
     const form = el("form", { class: "oral-form", novalidate: "" })
     const fallback = outlineList(block.outline, ctx)

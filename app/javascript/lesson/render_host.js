@@ -4,12 +4,18 @@
 //
 //   ready                      Promise { ok, error?, cards: [{ n, level }], exceptions }  (renderAll() done)
 //   printSummary()             Promise { ok, n? }  the page set up as "Stampa riassunto e schema" prints it
-//   inspect(n, options)        Promise { n, findings: [{ code, message, where }], height }  for card n (0 is the cover),
-//                              after stepping every figure of the card through its states
+//   inspect(n, state)          Promise { n, state, findings: [{ code, message, where }], height, states }  for card n (0 is the cover)
+//                              in one of its states, after stepping every figure shown in that state through its states
+//
+// The states of a card (D-311): null is the card as drawn (the first exercise of each «Prova tu» shown); "ex<N>" is the card with
+// exercise N of its «Prova tu» shown instead (the pager shows one exercise at a time); "open" and "ex<N>-open" are the same with every
+// closed disclosure opened at once (a closed <details>, the hidden text of a listening check, the glossary bubbles). inspect(n) answers
+// the card's further states in `states`; each inspect first undoes what the previous one changed, so the states never add up.
 //
 // Findings (all errors, they depend on the author's data): E-LESSON-RENDER (an exception, a KaTeX error),
 // E-LESSON-OVERFLOW (something wider than its box or than the page), E-DIAGRAM-LAYOUT (a layout that answered an
-// error, two labels overlapping, a label outside the drawing), E-DIAGRAM-SMALL-TEXT (a label under the minimum), E-DIAGRAM-TARGET (a select target under 24 x 24 px).
+// error, two labels overlapping, a label outside the drawing, a box's text or icon outside its box), E-DIAGRAM-SMALL-TEXT
+// (a label under the minimum), E-DIAGRAM-TARGET (a select target under 24 x 24 px).
 // Nothing here is sent anywhere; the CSP of the host allows no connection.
 import { renderLesson } from "lesson/render"
 import { preloadFor } from "lesson/preload"
@@ -25,7 +31,13 @@ const frames = () => new Promise((resolve) => {
   const timer = setTimeout(resolve, 120)
   requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(timer); resolve() }))
 })
+// the frames, then the figures' redraw debounce (60 ms in draw.js)
+const settle = async () => {
+  await frames()
+  await new Promise((resolve) => setTimeout(resolve, 90))
+}
 const text = (node) => (node.textContent || "").replace(/\s+/g, " ").trim().slice(0, 60)
+const shown = (node) => node.getClientRects().length > 0 // nothing under display: none (a hidden exercise, a closed card) has a box
 
 function rectOfText(node) {
   const range = document.createRange()
@@ -38,6 +50,18 @@ function overlap(a, b) {
   const w = Math.min(a.right, b.right) - Math.max(a.left, b.left)
   const h = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top)
   return w > 2 && h > 2
+}
+
+// The box a label is the text of: the shape whose key the label's key extends (`K:t`, `K:label`), else the node under its centre.
+function boxOf(figure, label, rect, nodes) {
+  const key = label.dataset.key?.replace(/:(t|label)$/, "")
+  if (key && key !== label.dataset.key) {
+    const keyed = figure.querySelector(`.dg-node[data-key="${CSS.escape(key)}"]`)
+    if (keyed) return { node: keyed, rect: keyed.getBoundingClientRect() }
+  }
+  const cx = (rect.left + rect.right) / 2
+  const cy = (rect.top + rect.bottom) / 2
+  return nodes.find(({ rect: r }) => cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom) ?? null
 }
 
 function figureFindings(figure, minPx, state, out) {
@@ -69,15 +93,25 @@ function figureFindings(figure, minPx, state, out) {
     if (r.width < 23.5 || r.height < 23.5)
       out.push({ code: "E-DIAGRAM-TARGET", message: `a select target is ${r.width.toFixed(0)} x ${r.height.toFixed(0)} px, under 24 x 24`, where: `${figure.dataset.type} figure, ${tag}` })
   }
-  // a node's text must clear the node's border (a text measured in another face than it is drawn in touches or crosses it)
-  const nodeRects = [...figure.querySelectorAll(".dg-node")].map((n) => n.getBoundingClientRect())
+  // a box's text must clear the box's border (a text measured in another face than it is drawn in touches or crosses it; a word wider
+  // than the box runs out of it), and the box's icon must sit inside it, clear of the text (a mirror piece with a role, D-311)
+  const nodes = [...figure.querySelectorAll(".dg-node")].map((n) => ({ node: n, rect: n.getBoundingClientRect() }))
   for (const { label, rect } of boxes) {
     if (!label.classList.contains("dg-nodetext") || label.querySelector(".katex")) continue // a formula holds its own hidden MathML twin: its text range is not what is drawn
-    const cx = (rect.left + rect.right) / 2
-    const cy = (rect.top + rect.bottom) / 2
-    const node = nodeRects.find((r) => cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom)
-    if (node && (rect.left < node.left + 3 || rect.right > node.right - 3 || rect.top < node.top + 1 || rect.bottom > node.bottom - 1))
+    const box = boxOf(figure, label, rect, nodes)
+    if (!box) continue
+    const r = box.rect
+    if (rect.left < r.left + 3 || rect.right > r.right - 3 || rect.top < r.top + 1 || rect.bottom > r.bottom - 1)
       out.push({ code: "E-DIAGRAM-LAYOUT", message: `the text "${text(label)}" touches or crosses the border of its box`, where: `${figure.dataset.type} figure, ${tag}` })
+    const key = box.node.dataset.key
+    const iconNode = key ? figure.querySelector(`[data-key="${CSS.escape(`${key}:icon`)}"]`) : null
+    if (iconNode && shown(iconNode)) {
+      const ir = iconNode.getBoundingClientRect()
+      if (ir.left < r.left - 1 || ir.right > r.right + 1 || ir.top < r.top - 1 || ir.bottom > r.bottom + 1)
+        out.push({ code: "E-DIAGRAM-LAYOUT", message: `the icon of the box "${text(label)}" is drawn outside its box`, where: `${figure.dataset.type} figure, ${tag}` })
+      else if (overlap(ir, rect))
+        out.push({ code: "E-DIAGRAM-LAYOUT", message: `the text "${text(label)}" runs over the icon of its box`, where: `${figure.dataset.type} figure, ${tag}` })
+    }
   }
   for (let i = 0; i < boxes.length; i++) {
     for (let j = i + 1; j < boxes.length; j++) {
@@ -90,6 +124,8 @@ function figureFindings(figure, minPx, state, out) {
     if (px < minPx - 0.01) out.push({ code: "E-DIAGRAM-SMALL-TEXT", message: `a drawing text is at ${px.toFixed(1)} px, under ${minPx} px`, where: `${figure.dataset.type} figure, ${tag}` })
   }
 }
+
+const OVERFLOW_CULPRITS = 4
 
 // Something that scrolls or is clipped sideways inside the card, or the page wider than the window.
 function overflowFindings(card, out) {
@@ -104,9 +140,10 @@ function overflowFindings(card, out) {
     if (node.clientWidth < 3 || node.closest(".dg-labels")) continue // a label's own box is exact to within rounding: figureFindings reads the labels
     if (node.scrollWidth > node.clientWidth + 3 && getComputedStyle(node).display !== "inline") wide.push(node)
   }
-  // the innermost one says where the width comes from: a card that clips its content is wide because of what is in it
-  const culprit = wide.find((node) => !wide.some((other) => other !== node && node.contains(other)))
-  if (culprit) {
+  // the innermost ones say where the width comes from: a card that clips its content is wide because of what is in it. Each one apart
+  // (a few at most), so that a second state of the card that adds its own is not hidden behind the first.
+  const culprits = wide.filter((node) => !wide.some((other) => other !== node && node.contains(other))).slice(0, OVERFLOW_CULPRITS)
+  for (const culprit of culprits) {
     out.push({ code: "E-LESSON-OVERFLOW", message: `${culprit.tagName.toLowerCase()}${culprit.className && typeof culprit.className === "string" ? `.${culprit.className.trim().split(/\s+/)[0]}` : ""} is ${culprit.scrollWidth} px wide in a ${culprit.clientWidth} px box`, where: text(culprit) || "card" })
   }
 }
@@ -144,29 +181,142 @@ const ready = (async () => {
   }
 })()
 
-async function inspect(n) {
+// ---- the states of a card ----
+
+// What the last state changed, undone before the next one is set up.
+const undo = []
+const restore = () => {
+  for (const fn of undo.splice(0).reverse()) {
+    try {
+      fn()
+    } catch (_error) {
+      // a part that is gone (the card was drawn again) has nothing left to close
+    }
+  }
+}
+
+// The exercises of the card's «Prova tu» blocks: { li, n, index, dots } (the pager's number chips are what the student taps).
+function exercisesOf(card) {
+  return [...card.querySelectorAll(".block.try")].flatMap((block) => {
+    const dots = [...block.querySelectorAll(".try-dot")]
+    return [...block.querySelectorAll(".exercises > .exercise")].map((li, index) => ({ li, n: li.dataset.n, index, dots }))
+  })
+}
+
+function showExercise(ex) {
+  ex.dots[ex.index]?.click()
+  document.activeElement?.blur?.()
+  undo.push(() => {
+    ex.dots[0]?.click()
+    document.activeElement?.blur?.()
+  })
+}
+
+// The closed disclosures of a part of the page, each with its way to open and to close: a closed <details> (not one hidden on
+// purpose) and "Mostra il testo" of a listening check. Only what is on screen (a disclosure inside a closed one is found once the
+// outer one is open). The glossary bubbles are looked at one at a time (glossFindings).
+const LISTEN = ".listen-show[aria-expanded='false']"
+const GLOSS = ".gloss-btn[aria-expanded='false']"
+function closedParts(scope) {
+  const parts = []
+  for (const details of scope.querySelectorAll("details:not([open])")) {
+    if (!details.hidden && shown(details)) parts.push({ open: () => { details.open = true }, close: () => { details.open = false } })
+  }
+  for (const b of scope.querySelectorAll(LISTEN)) {
+    if (shown(b)) parts.push({ open: () => b.click(), close: () => { if (b.getAttribute("aria-expanded") === "true") b.click() } })
+  }
+  return parts
+}
+const glossButtons = (scope) => [...scope.querySelectorAll(GLOSS)].filter(shown)
+const hasClosedParts = (scope) => [...scope.querySelectorAll("details:not([open])")].some((d) => !d.hidden) || scope.querySelector(`${LISTEN}, ${GLOSS}`) !== null
+
+function openParts(scope) {
+  for (let pass = 0; pass < 3; pass++) {
+    const parts = closedParts(scope)
+    if (parts.length === 0) break
+    for (const part of parts) {
+      part.open()
+      undo.push(part.close)
+    }
+  }
+}
+
+// A glossary bubble opens over the text under its word (position: absolute), so it is wider than its paragraph by design: what
+// counts is that it stays inside its card and the window (render.js places it so) and that nothing in it is wider than the bubble.
+function glossFindings(scope, out) {
+  for (const b of glossButtons(scope)) {
+    b.click()
+    const pop = b.parentElement.querySelector(".gloss-pop")
+    if (pop && !pop.hidden) {
+      const term = text(b.parentElement.querySelector(".gloss-word") ?? b.parentElement)
+      const r = pop.getBoundingClientRect()
+      const box = (pop.closest(".card-body, .l2-card") ?? document.documentElement).getBoundingClientRect()
+      if (r.left < Math.max(0, box.left) - 1 || r.right > Math.min(window.innerWidth, box.right) + 1)
+        out.push({ code: "E-LESSON-OVERFLOW", message: `the glossary bubble of "${term}" leaves its card`, where: term })
+      overflowFindings(pop, out)
+    }
+    b.click()
+  }
+}
+
+// The further states of a card, in the order the runner asks for them.
+function statesOf(card) {
+  const states = []
+  if (closedParts(card).length > 0 || glossButtons(card).length > 0) states.push("open")
+  for (const ex of exercisesOf(card)) {
+    if (ex.index === 0) continue
+    states.push(`ex${ex.n}`)
+    if (hasClosedParts(ex.li)) states.push(`ex${ex.n}-open`)
+  }
+  return states
+}
+
+const STATE = /^ex(\d+)(-open)?$|^open$/
+
+async function inspect(n, state = null) {
   const findings = []
+  let states = []
   try {
+    restore()
     api.goTo(n, { focus: false })
     await frames()
     const card = root.querySelector(`#scheda-${n}`)
-    if (!card) return { n, findings: [{ code: "E-LESSON-RENDER", message: `card ${n} was not drawn`, where: "card" }], height: 0 }
-    const figures = api.figures().filter((f) => card.contains(f.element))
-    if (figures.length === 0) overflowFindings(card, findings)
-    const settle = async () => {
-      await frames()
-      await new Promise((resolve) => setTimeout(resolve, 90))
+    if (!card) return { n, state, findings: [{ code: "E-LESSON-RENDER", message: `card ${n} was not drawn`, where: "card" }], height: 0, states }
+    const match = state ? String(state).match(STATE) : null
+    if (state && !match) throw new Error(`unknown state ${state}`)
+    let scope = card
+    if (match?.[1]) {
+      const ex = exercisesOf(card).find((e) => e.n === match[1])
+      if (!ex) throw new Error(`card ${n} has no exercise ${match[1]}`)
+      showExercise(ex)
+      scope = ex.li
+      await frames() // what lays itself out when shown (a resize observer) has done so
+      // a figure of a hidden exercise waited at width 0: drawn now at the width it has
+      for (const figure of api.figures()) if (scope.contains(figure.element)) figure.relayout?.()
     }
-    for (const figure of figures) {
-      const total = figure.total ?? 1
-      for (let i = 0; i < total; i++) {
-        if (total > 1) figure.setState(i)
-        await settle()
-        figureFindings(figure.element, minPx, i, findings)
-        overflowFindings(card, findings)
+    if (state === "open" || match?.[2]) {
+      // a disclosure lays out at once (nothing in one is a figure that waits for a redraw): measured as soon as it is open
+      openParts(scope)
+      overflowFindings(card, findings)
+      glossFindings(scope, findings)
+    } else {
+      // only the figures the student has on screen in this state: one in a hidden exercise is drawn in that exercise's state
+      const figures = api.figures().filter((f) => scope.contains(f.element) && shown(f.element))
+      if (figures.length === 0) overflowFindings(card, findings)
+      for (const figure of figures) {
+        const total = figure.total ?? 1
+        for (let i = 0; i < total; i++) {
+          if (total > 1) figure.setState(i)
+          await settle()
+          figureFindings(figure.element, minPx, i, findings)
+          overflowFindings(card, findings)
+        }
       }
     }
-    katexFindings(card, findings)
+    if (!state) {
+      katexFindings(card, findings) // a formula is drawn (or refused) when the card is built, shown or not: once is enough
+      states = statesOf(card)
+    }
   } catch (error) {
     findings.push({ code: "E-LESSON-RENDER", message: `exception: ${String(error?.message ?? error).slice(0, 200)}`, where: "card" })
   }
@@ -178,12 +328,13 @@ async function inspect(n) {
     seen.add(key)
     return true
   })
-  return { n, findings: unique, height: document.documentElement.scrollHeight }
+  return { n, state, findings: unique, height: document.documentElement.scrollHeight, states }
 }
 
 // "Stampa riassunto e schema" (A10): the summary card alone, as render.js prints it; the server's Chrome then counts the
 // pages of the PDF (it runs under print media, set by the caller).
 async function printSummary() {
+  restore()
   const summary = body.cards.find((c) => c.role === "summary" && c.level === "core")
   if (!summary) return { ok: true, skipped: true }
   api.goTo(summary.n, { focus: false })

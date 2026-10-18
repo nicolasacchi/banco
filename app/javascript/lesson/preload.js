@@ -26,6 +26,7 @@ export function usedBy(body) {
       case "example": diagram(b.diagram); (b.steps ?? []).forEach((s) => check(s.blank)); break
       case "try": (b.exercises ?? []).forEach((e) => { diagram(e.diagram); check(e.check); (e.checks ?? []).forEach(check) }); break
       case "more": (b.blocks ?? []).forEach(block); break
+      case "oral": components.add("ordering"); break // the outline is put in order with the ordering component (lesson/blocks/oral.js)
       default: break
     }
   }

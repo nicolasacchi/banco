@@ -90,6 +90,11 @@ test("preload: the diagram types and the components a body uses, a select check'
   assert.deepEqual([...components].sort(), ["choice", "number", "ordering", "select", "tiles"])
 })
 
+test("preload: an oral loads the ordering component its outline is put in order with (D-311)", () => {
+  const oral = { cards: [{ n: 1, blocks: [{ type: "oral", question_it: "Spiega.", outline: [{ id: "e1", text_it: "Uno" }, { id: "e2", text_it: "Due" }] }] }] }
+  assert.deepEqual([...usedBy(oral).components], ["ordering"])
+})
+
 test("teacher: tiles read as the built sentence, an ordering as its items joined by arrows, a select by the names of its targets", () => {
   const tiles = { component: "tiles", tiles: [{ id: "a", text_en: "If" }, { id: "b", text_en: "it" }, { id: "c", text_en: "rains" }] }
   assert.equal(sequenceText(tiles, ["a", "b", "c"]), "If it rains")
