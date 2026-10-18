@@ -372,12 +372,16 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) .topbar, body
 .dg-table caption { text-align: left; font-weight: 700; padding: 0.3em 0; }
 .dg-table th, .dg-table td { border: 1px solid var(--rule); padding: 0.4em 0.7em; text-align: left; vertical-align: top; }
 .dg-table thead th { background: var(--soft); }
+/* the column's name at the start of a stacked cell (blocks/table.js): drawn from the header with its markup, shown only when the rows stack */
+.dg-table .cell-label { display: none; font-weight: 700; }
 @media (max-width: 600px) {
   .dg-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .dg-table, .dg-table tbody, .dg-table tr, .dg-table th, .dg-table td { display: block; width: 100%; }
+  /* a caption in a table that is no longer a table would shrink to its longest word: it is the full width, as a line above the rows (D-310) */
+  .dg-table caption { display: block; width: 100%; }
   .dg-table tr { border: 1px solid var(--rule); border-radius: 0.8em; margin: 0.5em 0; padding: 0.3em 0; }
   .dg-table th, .dg-table td { border: 0; padding: 0.2em 0.8em; }
-  .dg-table td::before { content: attr(data-label) ": "; font-weight: 700; }
+  .dg-table .cell-label { display: inline; }
 }
 
 /* more */
@@ -790,6 +794,10 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 .l2 .check { padding: 0.8em 0.9em 0.9em; }
 .l2 .check > .answer, .l2 .check > .check-row:not(.is-line) { flex: 1 0 100%; width: 100%; min-width: 0; box-sizing: border-box; }
 .l2 .check .check-row:not(.is-line) > .answer { width: 100%; }
+/* text before and after the box (D-310): the box is as wide as itself, so the formula, the box and the rest read as one line where it fits */
+.l2 .check .check-row.is-around > .answer { width: auto; flex: 0 1 auto; min-width: 0; }
+.l2 .check .check-row.is-around .answer-input { max-width: 100%; }
+.l2 .check > label.hint { margin: 0.3em 0 0; }
 .l2 .check .options { width: 100%; margin: 0.3em 0; min-width: 0; }
 .l2 .check .options > legend { padding: 0; }
 @media (max-width: 600px) {

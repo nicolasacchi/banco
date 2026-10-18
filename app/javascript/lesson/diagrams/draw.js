@@ -9,6 +9,7 @@ import { FAMILY, HOME_PALETTE, STATUS, describe, layout, load, moduleFor, stateC
 import { tryValues, equationTex } from "lesson/diagrams/balance"
 import { buildChips, buildStrip, buildValueControls, declared, overlay } from "lesson/diagrams/controls"
 import { renderInlineRich, renderMath, renderRich } from "lesson/text"
+import { tableNode } from "lesson/blocks/table"
 import { defaultSegments } from "lesson/diagrams/contract"
 import { nearest, targetLabel } from "lesson/checks/select_model"
 import { controlNode, decorateTarget, defsNode, legendNode, padHit, patternRef, wireTargets } from "lesson/diagrams/scene_extras"
@@ -649,25 +650,6 @@ export function mountDiagram(data, ctx, options = {}) {
       clearTimeout(timer)
     }
   }
-}
-
-function tableNode(table, ctx) {
-  const t = el("table", { class: "dg-table" })
-  const head = el("tr")
-  table.header.forEach((h) => head.appendChild(renderInlineRich(h, el("th", { scope: "col" }), ctx)))
-  t.appendChild(el("thead", {}, head))
-  const body = el("tbody")
-  table.rows.forEach((row) => {
-    const tr = el("tr")
-    row.forEach((cell, i) => {
-      const td = renderInlineRich(cell, el(i === 0 ? "th" : "td", i === 0 ? { scope: "row" } : {}), ctx)
-      td.setAttribute("data-label", table.header[i].replace(/\$/g, ""))
-      tr.appendChild(td)
-    })
-    body.appendChild(tr)
-  })
-  t.appendChild(body)
-  return t
 }
 
 export { renderRich, N }

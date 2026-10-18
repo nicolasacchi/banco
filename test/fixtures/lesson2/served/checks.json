@@ -81,6 +81,7 @@
      "n": 2,
      "type": "check",
      "component": "tiles",
+     "builds": "sentence",
      "prompt_it": "Costruisci la frase: «Se piove, resto a casa».",
      "tiles": [
       {

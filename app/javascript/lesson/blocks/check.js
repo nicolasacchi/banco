@@ -10,7 +10,7 @@ import { render as fractionT } from "items/fraction"
 import { render as choiceT } from "items/choice"
 import { render as textT } from "items/normalized_text"
 import { button, el, icon, uid } from "lesson/dom"
-import { renderInlineRich, renderRich } from "lesson/text"
+import { insideControl, renderInlineRich, renderRich } from "lesson/text"
 import { checkNotes } from "lesson/teacher_notes"
 import { moduleFor as checkModule } from "lesson/checks/registry"
 import { howtoNodes } from "lesson/checks/howto"
@@ -25,7 +25,7 @@ function matchingInput(spec, ctx) {
     spec.right.forEach((cat, j) => {
       const id = `${name}-${i}-${j}`
       const radio = el("input", { type: "radio", name: `${name}-${i}`, id, value: cat.id, class: "chip-input" })
-      group.appendChild(el("span", { class: "chip" }, radio, renderInlineRich(cat.text_it, el("label", { for: id, class: "chip-label" }), ctx)))
+      group.appendChild(el("span", { class: "chip" }, radio, renderInlineRich(cat.text_it, el("label", { for: id, class: "chip-label" }), insideControl(ctx))))
     })
     return { item, group, row: el("div", { class: "match-row" }, renderInlineRich(item.text_it, el("p", { class: "match-item", id: `${name}-l${i}` }), ctx), group) }
   })
@@ -51,7 +51,7 @@ function spanInput(spec, ctx) {
     if (at > 0) box.appendChild(document.createTextNode(rest.slice(0, at)))
     const b = el("button", { type: "button", class: "span-chip", "aria-pressed": "false", "data-span": span.id })
     if (lang) b.appendChild(document.createTextNode(span[key]))
-    else renderInlineRich(span[key], b, ctx)
+    else renderInlineRich(span[key], b, insideControl(ctx))
     b.addEventListener("click", () => {
       if (chosen.has(span.id)) chosen.delete(span.id)
       else chosen.add(span.id)
@@ -110,7 +110,8 @@ const isLine = (spec) => (spec.component === "fraction" && !spec.mixed) || spec.
 function input(spec, ctx, options = {}) {
   const part = { ...spec, unit: spec.unit, mixed: spec.mixed }
   switch (spec.component) {
-    case "choice": return choiceT({ ...part, options: spec.options.map((o) => ({ id: o.id, text: o.text_it })) }, { t: ctx.items })
+    // the options are drawn with the lesson's inline markup, as the prompt is (a word of another language, a formula in its colours: D-310)
+    case "choice": return choiceT({ ...part, options: spec.options.map((o) => ({ id: o.id, text: o.text_it })) }, { t: ctx.items, inline: (text, node) => renderInlineRich(text, node, insideControl(ctx)) })
     case "number": return numberT(part, { t: ctx.items })
     case "fraction": return options.inline && !spec.mixed ? fractionLineInput(spec, ctx) : fractionT(part, { t: ctx.items })
     case "normalized_text": return spec.input === "bits" && spec.input_width ? bitsInput(spec, ctx) : textT(part, { t: ctx.items })
@@ -135,7 +136,11 @@ export function renderCheck(spec, ctx, loc, options = {}) {
   const prompt = el("div", { class: `check-prompt${line && options.quietPrompt && spec.input_before ? " sr-only" : ""}` })
   prompt.appendChild(renderRich(spec.prompt_it, ctx))
   const handleInput = input(spec, ctx, options)
-  const row = el("div", { class: `check-row${line ? " is-line" : ""}` })
+  // text before and after the box: the three stay together, as the sentence they make, and the box's hint ("Scrivi il numero...") goes on
+  // its own line above them, still the box's label (D-310: on a phone it sat between the formula and the box)
+  const around = !line && Boolean(spec.input_before || spec.input_after)
+  const row = el("div", { class: `check-row${line ? " is-line" : ""}${around ? " is-around" : ""}` })
+  const hint = around ? handleInput.element.querySelector(":scope > label.hint") : null
   if (spec.input_before) row.appendChild(renderInlineRich(spec.input_before, el("span", { class: "check-before" }), ctx))
   row.appendChild(handleInput.element)
   if (line) {
@@ -151,7 +156,7 @@ export function renderCheck(spec, ctx, loc, options = {}) {
     row.appendChild(submit)
     form.append(prompt, row, feedback)
     if (spec.component === "fraction" && !spec.answer_format_it) form.insertBefore(el("p", { class: "hint line-hint", text: ctx.t.fraction_line_hint }), feedback)
-  } else form.append(prompt, row, el("p", { class: "check-actions" }, submit), feedback)
+  } else form.append(prompt, ...(hint ? [hint] : []), row, el("p", { class: "check-actions" }, submit), feedback)
 
   // the fixed how-to line of a new component on its first use in the lesson, and its closed "Come si risponde" (A9)
   const [howto, help] = howtoNodes(spec, ctx, loc)

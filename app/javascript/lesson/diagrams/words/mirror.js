@@ -195,19 +195,37 @@ function build(data, ctx) {
   const roleOf = (row, side, k) => (row.roles ?? []).find((r) => r.side === side && r.piece === k)?.role
   const iconOf = (role) => (role ? roleInfo(palette, ctx.subject, role)?.icon : null)
 
-  function pieceBox(row, side, k, text, lang, x, top, w, key, opts = {}) {
+  // Where a piece's icon and text go in a box w wide. Beside each other; but when the box wraps its text (a phone) and one word of the text
+  // is wider than the room beside the icon, the icon goes above the text, which then has the box's whole width (a word never wraps: it
+  // would cross the box, D-310). h is the height of the content, without the padding.
+  function placement(row, side, k, text, w, wrap) {
     const role = select ? null : roleOf(row, side, k)
     const icon = iconOf(role)
-    const inner = opts.inner ?? w - 2 * padX - (icon ? icoW + 4 : 0)
-    const m = ctx.measure(show(text), f, opts.wrap ? inner : undefined)
-    const h = opts.h ?? m.h + 2 * pad
+    const full = w - 2 * padX
+    const beside = full - (icon ? icoW + 4 : 0)
+    const word = Math.max(0, ...show(text).split(/\s+/).filter(Boolean).map((part) => ctx.measure(part, f).w))
+    const above = Boolean(icon && wrap && word > beside)
+    const inner = above ? full : beside
+    const m = ctx.measure(show(text), f, wrap ? inner : undefined)
+    return { role, icon, above, inner, m, h: m.h + (above ? icoW + 4 : 0) }
+  }
+
+  function pieceBox(row, side, k, text, lang, x, top, w, key, opts = {}) {
+    const { role, icon, above, inner, m, h: content } = placement(row, side, k, text, w, opts.wrap)
+    const h = opts.h ?? content + 2 * pad
     const cls = select ? "dg-node dg-mr-box dg-mr-neutral" : `dg-node dg-mr-box${role ? ` st-${role}` : ""}${opts.cls ? ` ${opts.cls}` : ""}`
     shape(ctx, "rect", { x, y: top, w, h, r: 8, cls, key, ...(select ? { target: `t${++targetNo}` } : {}) })
+    const used = Math.min(m.w, inner)
+    const textOpts = { anchor: "start", maxW: opts.wrap ? inner : undefined, cls: `dg-mr-text${role ? ` role-${role}` : ""}`, role: role ?? undefined, key: `${key}:t`, lang }
+    if (above) {
+      const y0 = top + Math.round((h - content) / 2)
+      shape(ctx, "icon", { name: icon, x: Math.round(x + padX + (inner - icoW) / 2), y: y0, size: icoW, cls: `role-${role}`, key: `${key}:icon` })
+      label(ctx, show(text), x + padX + (inner - used) / 2, y0 + icoW + 4, textOpts)
+      return { h, w, x, y: top }
+    }
     const tx = x + padX + (icon ? icoW + 4 : 0)
     if (icon) shape(ctx, "icon", { name: icon, x: x + padX, y: top + Math.round((h - icoW) / 2), size: icoW, cls: `role-${role}`, key: `${key}:icon` })
-    const used = Math.min(m.w, inner)
-    const cx = tx + (inner - used) / 2
-    label(ctx, show(text), cx, top + Math.round((h - m.h) / 2), { anchor: "start", maxW: opts.wrap ? inner : undefined, cls: `dg-mr-text${role ? ` role-${role}` : ""}`, role: role ?? undefined, key: `${key}:t`, lang })
+    label(ctx, show(text), tx + (inner - used) / 2, top + Math.round((h - m.h) / 2), textOpts)
     return { h, w, x, y: top }
   }
 
@@ -287,8 +305,14 @@ function build(data, ctx) {
     const pairs = links.map(([a, b, kind]) => ({ a, b, kind }))
     row.pieces_it.forEach((_, p) => { if (!links.some((l) => l[0] === p)) pairs.push({ a: p, b: null, kind: "none" }) })
     row[key].forEach((_, p) => { if (!links.some((l) => l[1] === p)) pairs.push({ a: null, b: p, kind: "none" }) })
+    // a word wider than a whole column (a large text size on a phone): the two pieces of a pair go one under the other (D-310)
+    const longest = (piece) => Math.max(0, ...show(piece).split(/\s+/).filter(Boolean).map((w) => ctx.measure(w, f).w))
+    if ([...row.pieces_it, ...row[key]].some((p) => longest(p) > colW - 2 * padX)) {
+      stackedPairs(row, i, key, lang, pairs, plate, lx)
+      return
+    }
     pairs.forEach((pr, n) => {
-      const hs = [pr.a != null ? ctx.measure(show(row.pieces_it[pr.a]), f, colW - 2 * padX - (iconOf(roleOf(row, "it", pr.a)) ? icoW + 4 : 0)).h : 0, pr.b != null ? ctx.measure(show(row[key][pr.b]), f, colW - 2 * padX - (iconOf(roleOf(row, lang, pr.b)) ? icoW + 4 : 0)).h : 0]
+      const hs = [pr.a != null ? placement(row, "it", pr.a, row.pieces_it[pr.a], colW, true).h : 0, pr.b != null ? placement(row, lang, pr.b, row[key][pr.b], colW, true).h : 0]
       if (pr.kind === "none") hs.push(ctx.measure(TEXT.link_none, f, colW - 8).h)
       const h = Math.max(...hs, lineH) + 2 * pad
       const cy = y + h / 2
@@ -309,6 +333,32 @@ function build(data, ctx) {
         y += l.h
       }
       y += 8
+    })
+  }
+
+  // narrower still: each pair as the Italian piece, a short upright link with its mark and its word, the other piece; a piece without a
+  // link says so under it. The pair's number sits at its left, in the middle.
+  function stackedPairs(row, i, key, lang, pairs, plate, lx) {
+    const boxW = W - lx - marginX
+    const linkX = lx + 22
+    const linkH = Math.max(30, lineH + 6)
+    pairs.forEach((pr, n) => {
+      const top = y
+      if (pr.a != null) y += pieceBox(row, "it", pr.a, row.pieces_it[pr.a], undefined, lx, y, boxW, `${idOf(i, "i", pr.a)}:${n}`, { wrap: true }).h
+      if (pr.kind !== "none") {
+        shape(ctx, "line", { x1: linkX, y1: y + 3, x2: linkX, y2: y + linkH - 3, cls: `dg-mr-link dg-mr-${pr.kind}`, key: `r${i + 1}:l${n}` })
+        const my = y + linkH / 2
+        if (pr.kind === "shift") shape(ctx, "marker", { shape: "diamond", x: linkX - 9, y: my - 9, w: 18, h: 18, cls: "dg-mr-mark", key: `r${i + 1}:l${n}:m` })
+        if (pr.kind === "false_friend") shape(ctx, "marker", { shape: "triangle", x: linkX - 10, y: my - 10, w: 20, h: 20, cls: "dg-mr-mark", key: `r${i + 1}:l${n}:m` })
+        label(ctx, kindWord(pr.kind), linkX + 20, y + Math.round((linkH - lineH) / 2), { anchor: "start", maxW: boxW - 42, cls: "dg-mr-kind", key: `r${i + 1}:k${n}` })
+        y += linkH
+      }
+      if (pr.b != null) y += pieceBox(row, lang, pr.b, row[key][pr.b], lang, lx, y, boxW, `${idOf(i, "t", pr.b)}:${n}`, { wrap: true }).h
+      if (pr.kind === "none") y += 4 + label(ctx, TEXT.link_none, lx + 4, y + 4, { anchor: "start", maxW: boxW - 8, cls: "dg-mr-none", key: `r${i + 1}:none${n}` }).h
+      const cy = (top + y) / 2
+      shape(ctx, "circle", { cx: marginX + plate, cy, r: plate, cls: "dg-numplate", key: `r${i + 1}:n${n}` })
+      label(ctx, String(n + 1), marginX + plate, cy - Math.ceil(f * 0.7), { anchor: "middle", cls: "dg-numlabel", key: `r${i + 1}:n${n}:t` })
+      y += 14
     })
   }
 

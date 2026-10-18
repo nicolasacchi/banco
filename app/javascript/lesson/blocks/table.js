@@ -1,23 +1,35 @@
-// table: an HTML table; rows stack under 600 px (the cell's data-label is shown by the CSS).
+// table: an HTML table; rows stack under 600 px. A stacked cell starts with its column's name, drawn from the header cell with the same inline
+// markup (a formula, a word of another language: D-310), hidden on a wide screen and from the voice and the screen reader (the head says it).
 import { el } from "lesson/dom"
-import { renderInlineRich } from "lesson/text"
+import { insideControl, renderInlineRich } from "lesson/text"
 
-export function render(block, ctx) {
-  const table = el("table", { class: "dg-table" })
-  if (block.caption_it) table.appendChild(renderInlineRich(block.caption_it, el("caption"), ctx))
+// { caption_it?, header, rows } -> <table class="dg-table">; draw.js uses it for the `table` figure (A8) too.
+export function tableNode(table, ctx) {
+  const node = el("table", { class: "dg-table" })
+  if (table.caption_it) node.appendChild(renderInlineRich(table.caption_it, el("caption"), ctx))
   const head = el("tr")
-  block.header.forEach((h) => head.appendChild(renderInlineRich(h, el("th", { scope: "col" }), ctx)))
-  table.appendChild(el("thead", {}, head))
+  table.header.forEach((h) => head.appendChild(renderInlineRich(h, el("th", { scope: "col" }), ctx)))
+  node.appendChild(el("thead", {}, head))
   const body = el("tbody")
-  for (const row of block.rows) {
+  for (const row of table.rows) {
     const tr = el("tr")
     row.forEach((cell, i) => {
-      const td = renderInlineRich(cell, el(i === 0 ? "th" : "td", i === 0 ? { scope: "row" } : {}), ctx)
-      td.setAttribute("data-label", block.header[i].replace(/\$/g, ""))
-      tr.appendChild(td)
+      if (i === 0) {
+        tr.appendChild(renderInlineRich(cell, el("th", { scope: "row" }), ctx))
+        return
+      }
+      const td = el("td")
+      const label = renderInlineRich(table.header[i] ?? "", el("span", { class: "cell-label", "aria-hidden": "true" }), insideControl(ctx))
+      label.appendChild(document.createTextNode(": "))
+      td.appendChild(label)
+      tr.appendChild(renderInlineRich(cell, td, ctx))
     })
     body.appendChild(tr)
   }
-  table.appendChild(body)
-  return el("div", { class: "block block-table" }, table)
+  node.appendChild(body)
+  return node
+}
+
+export function render(block, ctx) {
+  return el("div", { class: "block block-table" }, tableNode(block, ctx))
 }

@@ -8,7 +8,8 @@ import { tryModel } from "lesson/try_model"
 
 export function render(block, ctx) {
   const box = el("section", { class: `block cases cases-${block.cases.length}` })
-  if (block.title_it) box.appendChild(el("h3", { class: "block-title", text: block.title_it }))
+  // the titles hold the same inline markup as the text (a formula, a word of another language: D-310)
+  if (block.title_it) box.appendChild(renderInlineRich(block.title_it, el("h3", { class: "block-title" }), ctx))
   const apis = []
   // one stepper for the card when it has two or more balances and any of them offers a number to try (the range of the first
   // that does); then every balance is compact (no stepper or readout of its own, on any screen) and listens to it.
@@ -22,7 +23,7 @@ export function render(block, ctx) {
     const info = c.tone ? roleOf(ctx.subject, c.tone) : null
     const iconName = c.icon ?? (info?.carrier === "icon" ? info.icon : null)
     if (iconName) head.appendChild(icon(iconName, "case-ic"))
-    head.appendChild(document.createTextNode(c.title_it))
+    renderInlineRich(c.title_it, head, ctx)
     const section = el("section", { class: `case ${tone}` })
     const text = el("div", { class: "case-info" }, head)
     if (c.condition_it) text.appendChild(renderInlineRich(c.condition_it, el("p", { class: "case-condition" }), ctx, { tiles: true }))

@@ -28,6 +28,16 @@
 .order-move { display: inline-grid; place-items: center; width: 2.6em; height: 2.6em; padding: 0; font: inherit; border: 2px solid var(--text); border-radius: 0.6em; background: var(--surface); color: var(--text); cursor: pointer; }
 .order-move:disabled { opacity: 0.35; cursor: default; }
 .order-chevron { width: 1.3em; height: 1.3em; }
+.order-text { overflow-wrap: break-word; }
+/* a narrow list (a phone, a large text size: D-310): the place and the text share the first row, Su and Giù go under the text on the right,
+   so the text has nearly the item's whole width. The buttons and the keys stay the same; only where they sit changes. */
+.answer.ordering { container: ordering / inline-size; }
+@container ordering (max-width: 30em) {
+  .order-item { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "pos text text" ". . moves"; align-items: start; gap: 0.3em 0.6em; padding: 0.5em 0.6em; }
+  .order-pos { grid-area: pos; margin-top: 0.1em; }
+  .order-text { grid-area: text; }
+  .order-moves { grid-area: moves; }
+}
 
 /* ---- select: the figure with its tap zones ---- */
 .select { display: grid; gap: 0.4em; margin: 0.3em 0; }

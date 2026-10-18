@@ -152,7 +152,8 @@ function partsBuild(eff, ctx, select) {
   let y = 6
   if (total && !select) {
     const x1 = x0 + N.toNumber(total) * scale
-    const text = `${eff.total.label_it ? `${plain(eff.total.label_it)}: ` : ""}${formatValue(total)}`
+    // a label is drawn with its markup, as the bar's own label is (a formula: D-310); the descriptions use plain()
+    const text = `${eff.total.label_it ? `${eff.total.label_it}: ` : ""}${formatValue(total)}`
     const h = label(ctx, text, (x0 + x1) / 2, y, { cls: "dgq-total" }).h
     shape(ctx, "path", { d: `M${x0},${y + h + 16} V${y + h + 8} H${x1} V${y + h + 16}`, cls: "dgq-brace" })
     y += h + 24
@@ -179,7 +180,8 @@ function partsBuild(eff, ctx, select) {
         const inside = hidden ? "?" : formatValue(N.parse(part.value))
         const fits = ctx.measure(inside, f).w + 8 <= w
         if (fits) label(ctx, inside, x + w / 2, y + (barH - ctx.lineH) / 2, { cls: "dgq-value", role: part.role })
-        below.push({ text: fits ? plain(part.label_it) : `${plain(part.label_it)}: ${inside}`, cx: x + w / 2, cls: "dgq-name", role: part.role, connectFrom: y + barH, maxW: Math.max(90, Math.min(200, w + 60)) })
+        const name = part.label_it ?? ""
+        below.push({ text: fits ? name : name ? `${name}: ${inside}` : inside, cx: x + w / 2, cls: "dgq-name", role: part.role, connectFrom: y + barH, maxW: Math.max(90, Math.min(200, w + 60)) })
       }
       x += w
     })
@@ -229,7 +231,7 @@ function percentBuild(eff, ctx, select, extra) {
       shape(ctx, "line", { x1: x, y1: rowTop - 6, x2: x, y2: rowTop + barH + 6, cls: `dgq-tick${t.role && !select ? ` st-${t.role}` : ""}` })
       if (t.role && !select) shape(ctx, "circle", { cx: x, cy: rowTop + barH / 2, r: 6, cls: `mk-${t.role}` })
       if (!select) aboveSpecs.push({ text: t.plain ? t.value : shownValue(t.value, unit), cx: x, cls: "dgq-euro", role: t.role, connectFrom: rowTop - 6 })
-      belowSpecs.push({ text: select || !t.name ? t.pctText : `${t.pctText} ${plain(t.name)}`, cx: x, cls: "dgq-pct", role: select ? undefined : t.role, connectFrom: rowTop + barH + 6 })
+      belowSpecs.push({ text: select || !t.name ? t.pctText : `${t.pctText} ${t.name}`, cx: x, cls: "dgq-pct", role: select ? undefined : t.role, connectFrom: rowTop + barH + 6 })
       if (select && t.target) targets.push(shape(ctx, "rect", { x: x - 14, y: rowTop - 8, w: 28, h: barH + 16, r: 0, cls: "dgq-target", target: `t${targets.length + 1}` }))
     }
     if (aboveSpecs.length) {

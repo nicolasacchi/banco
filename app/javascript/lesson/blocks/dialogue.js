@@ -5,7 +5,8 @@
 // Glosses are teaching content, served whole (L8): the closed ones are `hidden`, so neither a screen reader nor "Ascolta" meets them before they
 // are opened (L10). In print, in the teacher's view and in safe mode everything is open.
 import { button, el, icon, uid } from "lesson/dom"
-import { renderInlineRich } from "lesson/text"
+import { insideControl, renderInlineRich } from "lesson/text"
+import { plain } from "lesson/diagrams/common"
 import * as speech from "lesson/speech"
 
 export const type = "dialogue"
@@ -44,13 +45,13 @@ export function render(block, ctx) {
   const lang = langOf(block)
   const open = !!ctx.openAll
   const speakers = new Map(block.speakers.map((s, i) => [s.id, { ...s, side: i % 2 === 0 ? "a" : "b", n: i + 1 }]))
-  const root = el("section", { class: "block dialogue", "aria-label": block.title_it, "data-lang": lang })
-  root.appendChild(el("header", { class: "dialogue-head" }, icon("languages", "dialogue-ic"), el("strong", { class: "dialogue-title", text: block.title_it })))
+  const root = el("section", { class: "block dialogue", "aria-label": block.title_it ? plain(block.title_it) : null, "data-lang": lang })
+  root.appendChild(el("header", { class: "dialogue-head" }, icon("languages", "dialogue-ic"), renderInlineRich(block.title_it ?? "", el("strong", { class: "dialogue-title" }), insideControl(ctx))))
   const voice = !open && hasVoice(lang)
   let transcript = open || !voice ? "shown" : block.transcript ?? "shown"
   let slower = false
   let playing = null
-  const bar = el("div", { class: "dialogue-bar", role: "group", "aria-label": block.title_it })
+  const bar = el("div", { class: "dialogue-bar", role: "group", "aria-label": block.title_it ? plain(block.title_it) : null })
   const listen = button(t.listen_all, { class: "button secondary small dialogue-listen", "aria-pressed": "false" })
   const slow = button(t.slower, { class: "button secondary small dialogue-slow", "aria-pressed": "false" })
   const toggle = button(transcript === "shown" ? t.transcript_hide : t.transcript_show, { class: "button secondary small dialogue-transcript", "aria-pressed": String(transcript === "shown") })
