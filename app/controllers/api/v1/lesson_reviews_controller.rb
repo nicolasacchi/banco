@@ -1,8 +1,8 @@
 module Api
   module V1
     # The review of a lesson revision (A5): one by an independent session, banco.lesson_review/1. Findings stay
-    # inline in the review; what the teacher does with them is the approval of the topic in the browser. Nothing
-    # here approves anything.
+    # inline in the review, each named L<review>-<n> (D-313) so the author can answer it; what the teacher does
+    # with them is the approval of the topic in the browser. Nothing here approves anything.
     class LessonReviewsController < Api::BaseController
       include IndependentRoles
 
@@ -51,8 +51,10 @@ module Api
         review = LessonReview.create!(lesson_revision: @revision, agent_session: session, checklist_json: JSON.generate(doc["checklist"]),
                                       recomputed_json: JSON.generate(doc["recomputed"]), findings_json: JSON.generate(doc["findings"]),
                                       brief_sha256: Brief.find("lesson-review")&.sha256)
-        render json: { review_id: review.id, revision_id: @revision.id, findings: doc["findings"], counts: doc["findings"].map { |f| f["severity"] }.tally,
-                       next: "stop here: the teacher reads the review and approves the topic in the browser (banco status)" }, status: :created
+        # Each finding with its id (D-313): the author answers the blocker and major ones with banco findings respond ID.
+        render json: { review_id: review.id, revision_id: @revision.id, findings: LessonFindings.api_findings(review), counts: doc["findings"].map { |f| f["severity"] }.tally,
+                       next: "stop here: the author answers the findings (banco findings respond ID), the teacher reads the review and approves the topic in the browser (banco status)" },
+               status: :created
       rescue ActiveRecord::RecordNotUnique
         refuse("E-SESSION-NOT-INDEPENDENT", "X-Banco-Session", "session #{session.id} has already reviewed revision #{@revision.id}", next_session, 422)
       end

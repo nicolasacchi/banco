@@ -11,6 +11,7 @@
       "rows": [
         {
           "finding_id": 1,
+          "kind": "item",
           "item": "fa-1",
           "item_kind": "diagnosis_item",
           "revision_id": 1,
@@ -23,6 +24,7 @@
         },
         {
           "finding_id": 2,
+          "kind": "item",
           "item": "fa-1",
           "item_kind": "diagnosis_item",
           "revision_id": 1,
@@ -35,7 +37,7 @@
           "fix_it": "Controlla."
         }
       ],
-      "next": "answer each open row: banco findings respond FINDING_ID --file response.json (banco brief show diagnosis-item)"
+      "next": "answer each open row: banco findings respond FINDING_ID --file response.json (an item: banco brief show diagnosis-item; a lesson: banco brief show lesson)"
     }
   }
 }

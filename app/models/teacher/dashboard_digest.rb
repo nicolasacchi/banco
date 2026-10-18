@@ -6,7 +6,7 @@ module Teacher
   module DashboardDigest
     TABLES = %w[decisions item_revisions item_validations item_reviews blind_solves review_findings finding_responses
                 finding_assessments grade_proposals blueprint_revisions skill_graph_revisions course_revisions topic_revisions
-                lesson_revisions lesson_reviews diagnosis_runs diagnosis_events attempts attempt_gradings practice_serves
+                lesson_revisions lesson_reviews lesson_finding_responses diagnosis_runs diagnosis_events attempts attempt_gradings practice_serves
                 practice_attempts practice_gradings practice_events student_questions students].freeze
     APP_EVENTS_WHERE = "kind <> '#{Minutes::KIND}'".freeze
 

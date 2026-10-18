@@ -1,0 +1,26 @@
+{
+  "command": "findings respond",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/findings/L1-1/responses",
+    "body": {
+      "response": {
+        "stance": "lesson_right",
+        "note_it": "La lezione è giusta. La bilancia è solo un esempio."
+      }
+    }
+  },
+  "response": {
+    "status": 201,
+    "body": {
+      "id": 1,
+      "finding_id": "L1-1",
+      "stance": "lesson_right",
+      "note_it": "La lezione è giusta. La bilancia è solo un esempio.",
+      "kind": "lesson",
+      "lesson": "ripasso.math.demo",
+      "decision": null,
+      "next": "stop here: only the teacher decides, when she approves the topic or sends the lesson back, in the browser (banco status)"
+    }
+  }
+}

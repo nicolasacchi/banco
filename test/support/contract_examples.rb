@@ -10,6 +10,7 @@ module ContractExamples
   DIR = Rails.root.join("contract/examples")
   ID_KEYS = /(\A|_)(id|base|revision)\z|_ids?\z/
   TIME = /\A\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d/
+  LESSON_FINDING = /\AL(\d+)-(\d+)\z/
 
   module_function
 
@@ -52,7 +53,9 @@ module ContractExamples
         node
       end
     when String
-      if node.match?(/\A\h{64}\z/) then "<sha256>"
+      # A lesson finding id (D-313) holds the id of its lesson review: L<review>-<n>.
+      if key.to_s.match?(ID_KEYS) && (m = node.match(LESSON_FINDING)) then "L#{ids[m[1].to_i] ||= ids.size + 1}-#{m[2]}"
+      elsif node.match?(/\A\h{64}\z/) then "<sha256>"
       elsif node.match?(TIME) then "<time>"
       elsif key.to_s == "chrome_version" then "<chrome-version>"
       elsif key.to_s == "grader_version" then "<grader-version>"

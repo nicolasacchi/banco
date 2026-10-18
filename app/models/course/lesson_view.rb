@@ -1,14 +1,17 @@
 module Course
-  # Lesson rows as the agent API shows them (A4): reviews with their results and findings, the teacher's
-  # send-back comments, the state of the latest revision.
+  # Lesson rows as the agent API shows them (A4): reviews with their results and findings (each with its id and
+  # the author's latest response, D-313), the teacher's send-back comments, the state of the latest revision.
   module LessonView
     module_function
 
     def reviews(revision)
-      revision.reviews.includes(:agent_session).order(:id).map do |review|
+      reviews = revision.reviews.includes(:agent_session).order(:id).to_a
+      entries = LessonFindings.entries(reviews).group_by { |e| e.review.id }
+      reviews.map do |review|
         tally = review.checklist.map { |c| c["result"] }.tally
         { review_id: review.id, session_id: review.agent_session_id, model: review.agent_session.model,
-          results: { pass: tally["pass"].to_i, fail: tally["fail"].to_i, na: tally["na"].to_i }, findings: review.findings }
+          results: { pass: tally["pass"].to_i, fail: tally["fail"].to_i, na: tally["na"].to_i },
+          findings: LessonFindings.api_findings(review, entries.fetch(review.id, [])) }
       end
     end
 
