@@ -15,7 +15,7 @@
       <span id="preview-view-name"><span class="preview-wide"><%= t("teacher.preview.view_label") %>: </span><%= t("teacher.preview.views.#{preview_view}") %></span>
     </p>
     <details class="preview-more" id="preview-more">
-      <summary class="button secondary small preview-act" aria-label="<%= t("teacher.preview.more_label") %>"><%= ui_icon("more") %><span class="preview-word"><%= t("teacher.preview.more") %></span></summary>
+      <summary class="button secondary small preview-act" aria-label="<%= t("teacher.preview.more_label") %>"><%= ui_icon("more-options") %><span class="preview-word"><%= t("teacher.preview.more") %></span></summary>
     </details>
     <div class="preview-banner-actions" id="preview-actions">
       <%= button_to "/teacher/preview/view", params: { view: other, back: back }, class: "button secondary small preview-act", id: "preview-switch", form: { class: "inline" } do %>

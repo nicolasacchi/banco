@@ -69,7 +69,7 @@ ui:
   locked: lock                    # a page the role may not open
   not-found: compass              # a page that does not exist
   view-switch: arrow-left-right   # the preview banner's «Passa a» (D-315)
-  more: ellipsis                  # the preview banner's «Opzioni» on a narrow phone (D-315)
+  more-options: ellipsis          # the preview banner's «Opzioni» on a narrow phone (D-315)
   # The student's shell (D-307): the menu, the subjects and the steps. Aliases of icons already vendored.
   nav-today: sun                  # Oggi
   nav-subjects: layers            # Materie
