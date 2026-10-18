@@ -455,6 +455,98 @@
       }
     },
     {
+      "name": "mirror-icon-role-long-word",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "note": "D-310: on a phone a piece whose word is wider than the room beside its role icon draws the icon above the word",
+      "data": {
+        "type": "mirror",
+        "alt_it": "La frase italiana ci laviamo le mani sopra la spagnola nos lavamos las manos: i verbi si corrispondono, l'articolo cambia.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Ci",
+              "laviamo",
+              "le mani"
+            ],
+            "pieces_es": [
+              "Nos",
+              "lavamos",
+              "las manos"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "same"
+              ],
+              [
+                1,
+                1,
+                "same"
+              ],
+              [
+                2,
+                2,
+                "shift"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 2,
+                "note_it": "l'articolo è las"
+              }
+            ],
+            "roles": [
+              {
+                "side": "it",
+                "piece": 1,
+                "role": "verb"
+              },
+              {
+                "side": "es",
+                "piece": 1,
+                "role": "verb"
+              }
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "Ci",
+            "laviamo",
+            "le mani",
+            "Nos",
+            "lavamos",
+            "las manos",
+            "Ci laviamo le mani",
+            "Nos lavamos las manos",
+            "Italiano",
+            "Spagnolo",
+            "l'articolo è las",
+            "uguale",
+            "cambia",
+            "Italiano: Ci laviamo le mani. Spagnolo: Nos lavamos las manos. Ci e Nos: uguale. laviamo e lavamos: uguale. le mani e las manos: cambia. Nota su las manos: l'articolo è las."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "r1i1",
+            "r1i2",
+            "r1i3",
+            "r1t1",
+            "r1t2",
+            "r1t3"
+          ]
+        }
+      }
+    },
+    {
       "name": "mirror-target-both",
       "subject": "spanish",
       "schema": "valid",
