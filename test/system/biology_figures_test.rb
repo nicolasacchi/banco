@@ -3,8 +3,9 @@ require_relative "../support/lesson_events_world"
 require_relative "../support/student_session"
 
 # cell and nested on the student's page in Chrome (D-312): the numbers and the key, Avanti lighting the four shared parts, a tap that reads a part's job
-# or the author's note, "Solo le differenze", the water of the vacuole, the select checks over a cell's parts and the levels (the page never names a
-# candidate), the focus moving out through the levels, and reduced motion. The gallery test/fixtures/lesson2/gallery/science-biology.md is the lesson.
+# or the author's note, "Solo le differenze", the water of the vacuole, the select checks over a cell's parts (one cell and two, never with chips) and
+# the levels (the page never names a candidate), an example that moves its linked cell and asks the kind of a cell only its label names, the focus
+# moving out through the levels, and reduced motion. The gallery test/fixtures/lesson2/gallery/science-biology.md is the lesson.
 # Screenshots in BANCO_SHOT_DIR: the look gate, every card at 390 and 1280 px in the cream and the dark theme.
 class BiologyFiguresTest < ApplicationSystemTestCase
   include LessonEventsWorld
@@ -117,26 +118,72 @@ class BiologyFiguresTest < ApplicationSystemTestCase
     assert_selector "#scheda-8 .verdict-right", wait: 5
   end
 
-  test "nested: the focus moves out level by level; select over the levels keeps the examples and hides the names" do
+  test "an example moves its linked cell step by step, its blank asks the kind of a cell the figure never names, and the answer opens the next states" do
     open_card(9, size: [ 390, 844 ])
-    assert_selector "#scheda-9 .dg-nbox", count: 5
-    assert_selector "#scheda-9 .dg-nbox.is-focus", count: 1
-    assert_selector "#scheda-9 .dg-nname-focus", text: "cellula"
+    within("#scheda-9") do
+      assert_no_button "Passo avanti" # the steps drive the figure
+      click_button "Mostra il primo passo"
+      assert_selector ".dg-op", text: "Il nucleo"
+      assert_selector ".dg-cp-nucleus.is-lit", minimum: 2
+      click_button "Mostra tutto"
+      assert_selector ".step-blank", visible: :visible
+      assert_selector ".dg-op", text: "Parete e cloroplasti" # the state of the blank's step waits for its answer
+      find(".dg-desc summary").click
+      assert_text "La seconda, Seconda cellula:"
+      assert_no_match(/animale|vegetale/, find(".dg-desc p").text, "the description does not answer the blank")
+      all(".dg-hit", visible: :all).each { |b| assert_no_match(/animale|vegetale/, b["aria-label"]) }
+      find("label.option", text: "un batterio").click
+      click_button "Controlla"
+      assert_selector ".verdict-wrong", wait: 5
+      assert_text "Ha il nucleo: non è un batterio."
+      find("label.option", text: "animale, per esempio della guancia").click
+      click_button "Controlla"
+      assert_selector ".verdict-right", wait: 5
+      assert_selector ".dg-op", text: "Intorno solo la membrana" # the server's figure has the states of the steps now open
+      click_button "Mostra il passo successivo"
+      assert_selector ".dg-op", text: "I mitocondri"
+      assert_selector ".example-result", text: "La prima è di una foglia"
+    end
+  end
+
+  test "select over two cells: the first cell's parts then the second's, no chips, the answer graded" do
+    open_card(10, size: [ 390, 844 ])
+    within("#scheda-10") do
+      assert_selector ".dg-target", count: 10
+      assert_no_selector ".dg-chipbtn" # two cells that differ: the comparison is never offered in a select check
+      assert_no_text "Solo le differenze"
+      html = find(".dg")["outerHTML"]
+      PART_NAMES.each { |p| assert_no_match(/dg-cp-#{p}\b|:#{p}\b/, html, "the select figure names #{p}") }
+      find(".dg-target[data-target='t8']").click # the nucleus of the cheek cell alone
+      click_button "Controlla"
+      assert_selector ".verdict-wrong", wait: 5
+      assert_text "Anche il batterio ha il DNA"
+      find(".dg-target[data-target='t4']").click # and the nucleoid of the bacterium
+      click_button "Controlla"
+      assert_selector ".verdict-right", wait: 5
+    end
+  end
+
+  test "nested: the focus moves out level by level; select over the levels keeps the examples and hides the names" do
+    open_card(11, size: [ 390, 844 ])
+    assert_selector "#scheda-11 .dg-nbox", count: 5
+    assert_selector "#scheda-11 .dg-nbox.is-focus", count: 1
+    assert_selector "#scheda-11 .dg-nname-focus", text: "cellula"
     click_button "Passo avanti"
-    assert_selector "#scheda-9 .dg-nname-focus", text: "tessuto"
-    assert_selector "#scheda-9 .dg-ninside-name", text: "organuli"
-    open_card(10)
-    assert_selector "#scheda-10 .dg-target", count: 5
-    within("#scheda-10 .dg") do
+    assert_selector "#scheda-11 .dg-nname-focus", text: "tessuto"
+    assert_selector "#scheda-11 .dg-ninside-name", text: "organuli"
+    open_card(12)
+    assert_selector "#scheda-12 .dg-target", count: 5
+    within("#scheda-12 .dg") do
       assert_text "il cervello"
       assert_no_text "organo"
     end
-    find("#scheda-10 .dg-target[data-target='t4']").click
+    find("#scheda-12 .dg-target[data-target='t4']").click
     click_button "Controlla"
-    assert_selector "#scheda-10 .verdict-wrong", wait: 5
-    find("#scheda-10 .dg-target[data-target='t3']").click
+    assert_selector "#scheda-12 .verdict-wrong", wait: 5
+    find("#scheda-12 .dg-target[data-target='t3']").click
     click_button "Controlla"
-    assert_selector "#scheda-10 .verdict-right", wait: 5
+    assert_selector "#scheda-12 .verdict-right", wait: 5
   end
 
   test "reduced motion: the arrow of a state appears without the fade, the parts without a transition" do
@@ -152,10 +199,11 @@ class BiologyFiguresTest < ApplicationSystemTestCase
   test "screenshots for the look gate: every card at 390 and 1280 px, cream and dark, with no overflow" do
     [ [ 390, 844 ], [ 1280, 900 ] ].each do |w, h|
       %w[cream dark].each do |theme|
-        (1..10).each do |n|
+        (1..12).each do |n|
           open_card(n, size: [ w, h ])
           page.execute_script("document.documentElement.dataset.theme = '#{theme}'")
-          if [ 1, 3, 5, 9 ].include?(n) # the figures with states: the last one
+          find("#scheda-9 button", text: "Mostra tutto").click if n == 9 # the example's steps up to its blank
+          if [ 1, 3, 5, 11 ].include?(n) # the figures with states: the last one
             count = page.evaluate_script("Number(document.querySelector('#scheda-#{n} .dg').dataset.states)") - 1
             count.times { find("#scheda-#{n} button", text: "Passo avanti").click }
           end
