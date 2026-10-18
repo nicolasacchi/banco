@@ -159,7 +159,7 @@ Release 1 blocks (the fields are in the schema; `banco lesson submit --dry-run` 
 |---|---|---|
 | text | paragraphs and lists | markup |
 | `callout tip\|warning\|remember\|rule ["Titolo"]` | a box with an icon and a fixed label | markup, 40 words |
-| `math` | a formula, large | one LaTeX formula, or `lines: [{tex, note_it?}]` (2 to 4: a chain of transformations; mark what changes with `\role{highlight}{...}`) |
+| `math` | a formula, large | one LaTeX formula, no quotes needed (one matching pair of quotes around it is dropped, D-310), or `lines: [{tex, note_it?}]` (2 to 4: a chain of transformations; mark what changes with `\role{highlight}{...}`) |
 | `procedure ["Titolo"]` | numbered steps, each with its verb | `steps: [{tag, text_it, example_tex?}]` (2 to 6) |
 | `cases ["Titolo"]` | 2 to 4 side-by-side cases | `cases: [{title_it, icon?, tone?, condition_it?, text_it, example_it?, diagram?}]` |
 | `legend` | colour, icon and label of each role, with the question it answers | `roles: [{role, note_it?, question_it?}]` (2 to 8) |
@@ -299,6 +299,9 @@ fields are those of a practice item of the same component, plus:
 - A step `blank` inside an `example` is a check (`choice`, `number`, `fraction`, `normalized_text`) that hides the
   rest of the example until it is answered: put one faded step in at least one example, and put nothing before
   it that gives it away.
+- Options, chips, `tiles` and `ordering` items draw the same inline markup as the prompt (`[[es:vivimos]]`, `$x^{12}$`, bold):
+  write them as you write the text. `tiles`: the page says «La tua risposta» and «Le tessere», which fit words, facts and
+  symbols; add `builds: sentence` when the tiles build a sentence, and it says «La tua frase» and «Le parole» (D-310).
 - Right is "Sì.", wrong is "Non ancora." with your hint, both in ink: there is no green, no red, no score. The
   lesson's checks never count for the skill states.
 
@@ -357,6 +360,10 @@ products, `cartesian` for lines and systems, `equation_parts` for anatomy; itali
 
 - Blocks are separated by a blank line; lists `1. ` and `- ` with one nested level (as in version 1).
 - Inline: `**bold**`, `$latex$`, `\$` for a literal dollar sign.
+- Where it is drawn (D-310): the texts of the blocks, the titles of cards, `cases`, `callout`, `procedure`, `more`, `dialogue`,
+  `source` and of a mistakes group, table header cells and cells, figure labels, options, chips and tiles. The lesson's `title_it`
+  and every `alt_it` are plain text. The render check reports markup that reaches the page as written (`E-LESSON-RENDER`,
+  "markup printed as text").
 - **Colour roles**: `[[role:text]]` in text (for example `[[subject:Il treno]] [[predicate:è arrivato]]`) and
   `\role{unknown}{x}` in a formula. The role must be in the palette of the lesson's subject (`E-LESSON-ROLE`). Use
   the same role for the same thing in text, formulas and diagrams on every card. At most 3 roles whose carrier is an
