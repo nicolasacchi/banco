@@ -5,7 +5,7 @@
  "batch": "w2-2",
  "track": "T4b",
  "provisional": false,
- "description": "Vectors of T4b (WAVE2 V1, V2; D-312), invented content: 'schema' valid or invalid; 'semantic' ok or {code, path} of the first finding (Ruby Lessons::Diagrams::Nested and lesson/diagrams/graph/nested.js give the same one); 'layout' ok at every width (290, 360, 738, 1250 px) and text size (18, 20, 26 px), in every state; 'printed' the strings of the first state (and 'printed_last' of the last), sorted, the same in Ruby and JS (L4); 'targets' the stored ids of the select set levels in reading order (the outermost level first).",
+ "description": "Vectors of T4b (WAVE2 V1, V2; D-312), invented content: 'schema' valid or invalid; 'semantic' ok or {code, path} of the first finding (Ruby Lessons::Diagrams::Nested and lesson/diagrams/graph/nested.js give the same one); 'layout' ok at every width (290, 360, 738, 1250 px) and text size (18, 20, 26 px), in every state; 'printed' the strings of the first state (and 'printed_last' of the last), sorted, the same in Ruby and JS (L4); 'targets' the stored ids of the select set levels in reading order (the outermost level first). 'select_layout' ok: the case is the page's form of a select figure (Lessons::Diagrams::Nested.served, positional ids and one neutral label), drawn in select mode alone.",
  "vectors": [
   {
    "name": "nested-example-1",
@@ -364,6 +364,48 @@
      "organism"
     ]
    }
+  },
+  {
+   "name": "nested-select-served",
+   "subject": "biology",
+   "schema": "valid",
+   "data": {
+    "type": "nested",
+    "alt_it": "Cinque riquadri uno dentro l'altro: cellula, tessuto, organo, apparato e corpo umano, con gli organuli dentro la cellula.",
+    "levels": [
+     {
+      "id": "l5",
+      "label_it": "·",
+      "example_it": "cellula muscolare del cuore"
+     },
+     {
+      "id": "l4",
+      "label_it": "·",
+      "example_it": "tessuto muscolare del cuore"
+     },
+     {
+      "id": "l3",
+      "label_it": "·",
+      "example_it": "cuore"
+     },
+     {
+      "id": "l2",
+      "label_it": "·",
+      "example_it": "apparato circolatorio"
+     },
+     {
+      "id": "l1",
+      "label_it": "·",
+      "example_it": "corpo umano"
+     }
+    ]
+   },
+   "semantic": {
+    "code": "E-LESSON-DIAGRAM",
+    "path": "/levels/1/label_it"
+   },
+   "layout": "error",
+   "select_layout": "ok"
   },
   {
    "name": "nested-id-twice",
