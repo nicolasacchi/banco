@@ -86,11 +86,20 @@ class LessonsChecksTest < ActiveSupport::TestCase
     assert grade(check, right, map).right?
     typical = right.merge(shown.call("l1") => shown.call("r2"))
     assert_equal "Il primo è di A.", grade(check, typical, map).message_it
-    one_off = grade(check, right.merge(shown.call("l2") => shown.call("r2")), map) # 2 of 3 pairs: right, with the note (D-301)
-    assert one_off.right?
-    assert_equal "Giusto, tranne una coppia: «due» va con «A», non con «B».", one_off.message_it
+    # 2 of 3 pairs with two right options (a judge) is wrong (D-314)
+    assert grade(check, right.merge(shown.call("l2") => shown.call("r2")), map).wrong?
     assert grade(check, right.merge(shown.call("l2") => shown.call("r2"), shown.call("l3") => shown.call("r1")), map).wrong?
     assert grade(check, right.except(shown.call("l3")), map).invalid?
+
+    # with three right options, 2 of 3 pairs is right, with the note (D-301)
+    three = check.merge("right" => check["right"] + [ { "id" => "r3", "text_it" => "C" } ])
+    map3 = Lessons::Checks.id_map(three, "lesson|s|1|2|3")
+    shown3 = ->(stored) { map3.key(stored) }
+    right3 = { shown3.call("l1") => shown3.call("r1"), shown3.call("l2") => shown3.call("r1"), shown3.call("l3") => shown3.call("r2") }
+    one_off = grade(three, right3.merge(shown3.call("l2") => shown3.call("r3")), map3)
+    assert one_off.right?
+    assert_equal "Giusto, tranne una coppia: «due» va con «A», non con «C».", one_off.message_it
+    assert grade(three, right3.merge(shown3.call("l3") => shown3.call("r1")), map3).wrong?, "one option for every row (D-314)"
   end
 
   test "span_select: a set of shown span ids, in any order" do
