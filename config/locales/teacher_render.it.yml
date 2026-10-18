@@ -22,12 +22,16 @@ it:
         E-DIAGRAM-TARGET: "le zone da toccare sono troppo piccole"
       shots:
         title: "Immagini della lezione, revisione %{seq}"
-        intro: "Ogni scheda come la vede lo studente, a tre misure. Le immagini senza risposte: sono quelle del controllo grafico."
+        intro: "Ogni scheda come la vede lo studente, a tre misure. Ogni esercizio di «Prova tu» anche da solo, sul telefono. Le immagini senza risposte: sono quelle del controllo grafico."
         none: "Non ci sono ancora immagini per questa revisione."
         removed: "immagine rimossa"
         viewport: "%{width} px, %{theme}"
         theme_cream: "chiaro"
         theme_dark: "scuro"
         alt: "Scheda %{n}, %{viewport}"
+        # the further states of a card (D-311): another exercise of Prova tu, the parts that open (Descrizione, Mostra il testo) opened
+        state_ex: "esercizio %{n}"
+        state_open: "con le parti chiuse aperte"
+        state_ex_open: "esercizio %{n}, con le parti chiuse aperte"
         back: "Torna all'argomento"
         extra: "approfondimento"

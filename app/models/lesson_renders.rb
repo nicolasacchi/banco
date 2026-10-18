@@ -1,7 +1,30 @@
 # What the rest of the app reads of the render check (D-249, A12): the API's status, the topic gate's reason, the
 # teacher's one line. The rows themselves are LessonRender (append-only).
 module LessonRenders
+  # The further states of a card the render check draws (D-311): "exN" (exercise N of «Prova tu» shown), "open" and "exN-open"
+  # (every closed part opened). A shot or an error without a state is the card as drawn.
+  STATE = /\A(?:ex(\d+))?(-?open)?\z/
+
   module_function
+
+  # Where a state's pictures go on the teacher's page: the card as drawn, the card opened, then each exercise and its opened state.
+  def state_rank(state)
+    return [ 0, 0 ] if state.nil?
+
+    n, open = state.to_s.match(STATE)&.captures
+    [ 1, (n.to_i * 2) + (open ? 1 : 0) ]
+  end
+
+  # The state in the teacher's words, or nil for the card as drawn.
+  def state_words(state)
+    return nil if state.nil?
+
+    n, open = state.to_s.match(STATE)&.captures
+    return state.to_s unless n || open
+
+    key = n ? (open ? "state_ex_open" : "state_ex") : "state_open"
+    I18n.t("teacher.render.shots.#{key}", n: n)
+  end
 
   # The gate's reason for a lesson/2 revision, or nil when its latest render has no error (and nil for lesson/1).
   # The words matter: Teacher::TopicReview groups them by "render check", Teacher::Wording turns them into Italian.
