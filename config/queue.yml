@@ -1,11 +1,13 @@
 # Two lanes: ordinary jobs on 3 threads, Chrome work on exactly 1 thread (one
-# Chrome at a time, behind the ChromeRunner lock).
+# Chrome at a time, behind the ChromeRunner lock). The first lane also takes the
+# search embeddings (SearchEmbedJob, D-315), only when no ordinary job waits: the
+# queues are polled in the order given. One embedder runs at a time (Search::Lease).
 default: &default
   dispatchers:
     - polling_interval: 1
       batch_size: 500
   workers:
-    - queues: default
+    - queues: [ default, search ]
       threads: 3
       processes: 1
       polling_interval: 1

@@ -31,9 +31,11 @@ module Teacher
 
     private
 
-    # "Simili" (D-300): the neighbours of an object, from the stored vectors. Without an embedding service the page says so.
+    # "Simili" (D-300): the neighbours of an object, from the stored vectors (lesson:KEY for a whole lesson, D-315). Without an embedding
+    # service the page says so; an object whose vectors are not all computed yet says how many texts wait for one.
     def show_like
       @result = Search::Engine.new(scope: @scope).like(@like, subject: @subject_filter, kind: [ @kind ].compact, status: @status, limit: LIMIT)
+      @waiting = Search::Vectors.waiting(Search::Embedder.current) if @result.missing.positive?
     rescue Search::Engine::SemanticOff
       @like_off = true
     end

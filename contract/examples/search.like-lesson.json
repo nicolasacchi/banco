@@ -1,0 +1,58 @@
+{
+  "command": "search",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/search",
+    "query": "like=lesson%3Aripasso.math.equazioni-due&limit=3"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "query": "lesson:ripasso.math.equazioni-due",
+      "like": "lesson:ripasso.math.equazioni-due",
+      "semantic": true,
+      "indexed": true,
+      "results": [
+        {
+          "kind": "lesson_card",
+          "subject": "math",
+          "key": "ripasso.math.equazioni-copia",
+          "revision_id": 1,
+          "status": "draft",
+          "title": "Il numero davanti alla x si toglie dividendo",
+          "snippet": "Dividi tutti e due i membri per lo stesso numero, diverso da 0. Risolvi. Scrivi il risultato come frazione.",
+          "score": 1.0,
+          "ref": "lesson_card:ripasso.math.equazioni-copia#scheda-4",
+          "same_object": false,
+          "near": "lesson_card:ripasso.math.equazioni-due#scheda-4"
+        },
+        {
+          "kind": "lesson_card",
+          "subject": "math",
+          "key": "ripasso.math.equazioni-copia",
+          "revision_id": 1,
+          "status": "draft",
+          "title": "I pezzi di un'equazione",
+          "snippet": "Un'equazione ha due membri, uno a sinistra e uno a destra del segno. In mezzo c'è l'uguale. Il numero nascosto ciò che cambia in questo passo Che cosa vuol dire …",
+          "score": 1.0,
+          "ref": "lesson_card:ripasso.math.equazioni-copia#scheda-1",
+          "same_object": false,
+          "near": "lesson_card:ripasso.math.equazioni-due#scheda-1"
+        },
+        {
+          "kind": "lesson_card",
+          "subject": "math",
+          "key": "ripasso.math.equazioni-copia",
+          "revision_id": 1,
+          "status": "draft",
+          "title": "Togli lo stesso peso dai due piatti",
+          "snippet": "Primo principio Primo principio Puoi togliere lo stesso numero da tutti e due i piatti. il cambia membro e cambia segno Togli 3 da tutti e due i membri di. Quanto …",
+          "score": 1.0,
+          "ref": "lesson_card:ripasso.math.equazioni-copia#scheda-3",
+          "same_object": false,
+          "near": "lesson_card:ripasso.math.equazioni-due#scheda-3"
+        }
+      ]
+    }
+  }
+}

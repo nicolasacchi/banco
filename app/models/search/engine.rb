@@ -25,15 +25,21 @@ module Search
     # A "Simili" asked of a scope or a setup with no vectors (the student's door, no embedding service).
     class SemanticOff < StandardError; end
 
+    # near: in a "Simili" of a whole lesson, the address of the lesson's card this hit is nearest to (Search::Links.address), else nil.
     Hit = Data.define(:id, :kind, :subject, :key, :revision_table, :revision_id, :status, :title, :body, :anchor, :lang, :topic_key, :skill,
-                      :student_key, :occurred_at, :score, :match) do
+                      :student_key, :occurred_at, :score, :match, :near) do
+      def initialize(near: nil, **fields) = super
+
       # [[text, matched]]: the passage of the body around the first matched word.
       def segments(terms, variants = []) = Text.snippet(body.presence || title, terms, variants: variants)
 
       def snippet(terms, variants = []) = segments(terms, variants).map(&:first).join
     end
-    # corrections: {term => [corrected words]} (what the typo fallback tried); source: the document a "Simili" asked about, else nil.
-    Result = Data.define(:query, :terms, :variants, :hits, :semantic, :indexed, :corrections, :source) do
+    # corrections: {term => [corrected words]} (what the typo fallback tried); source: the document a "Simili" asked about, else nil
+    # (for a whole lesson, a hit of kind "lesson"); members: how many documents the source stands for (a lesson: its cards), missing: how
+    # many of them have no vector yet (D-315).
+    Result = Data.define(:query, :terms, :variants, :hits, :semantic, :indexed, :corrections, :source, :members, :missing) do
+      def initialize(members: 0, missing: 0, **fields) = super
       # True when the hits come from the typo fallback alone: the page then says what it understood instead.
       def only_corrected? = hits.any? && hits.all? { |h| h.match == :typo }
 
@@ -73,10 +79,12 @@ module Search
     end
 
     # "Simili": the nearest neighbours of an object, from the vectors already stored (no call to the service). +ref+ is a key
-    # (math.powers-properties) or an address as Search::Links.address writes it (item:KEY#seed, lesson_card:KEY#scheda-2). The object
-    # itself is left out; other documents of the same key (the other instances of an item) are kept, for the reviewer to see them.
+    # (math.powers-properties) or an address as Search::Links.address writes it (item:KEY#seed, lesson_card:KEY#scheda-2; a card also as
+    # lesson_card:KEY#2), or lesson:KEY for a whole lesson (D-315). The object itself is left out; other documents of the same key (the
+    # other instances of an item, the other cards of a lesson) are kept, for the reviewer to see them. A whole lesson is its cards: a
+    # document's score is its cosine with the nearest of them (Hit#near says which), and every document of the lesson is left out.
     # Only for a scope that may use vectors; kinds default to the family of the object (questions with questions, cards with cards).
-    # Returns a Result with semantic false and no hits when the object has no vector (nothing indexed, service never configured).
+    # Returns a Result with semantic false and no hits when the object has no vector yet (Result#missing says how many lack one).
     def like(ref, subject: nil, kind: nil, status: nil, limit: 20)
       Schema.ensure!
       raise SemanticOff unless scope.semantic?
@@ -85,33 +93,47 @@ module Search
       bad = kinds - scope.kinds
       raise BadKind, bad.first unless bad.empty?
 
-      source = like_source(ref.to_s.strip)
-      empty = Result.new(query: ref.to_s, terms: [], variants: [], hits: [], semantic: false, indexed: Index.built?, corrections: {}, source: source)
-      return empty unless source
+      source, members = like_source(ref.to_s.strip)
+      embedder = Embedder.current
+      rows = members.empty? ? [] : select("SELECT v.doc_id, v.vec FROM search_vectors v JOIN search_documents d ON d.id = v.doc_id AND v.digest = d.digest " \
+                                          "WHERE v.model = ? AND v.doc_id IN (#{members.map { |m| Integer(m.id) }.join(', ')})", [ embedder.model ])
+      result = { query: ref.to_s, terms: [], variants: [], corrections: {}, source: source, members: members.size, missing: members.size - rows.size }
+      return Result.new(hits: [], semantic: false, indexed: Index.built?, **result) if rows.empty?
 
       kinds = FAMILIES.fetch(source.kind, [ source.kind ]) & scope.kinds if kinds.empty?
-      row = select("SELECT v.vec FROM search_vectors v WHERE v.doc_id = ?", [ source.id ]).first
-      return empty unless row
-
       filters = { subject: subject.presence, kinds: kinds.presence, status: status.presence }
-      hits = Semantic.nearest(self, Vectors.unpack(row["vec"]), model: Embedder.current.model, filters: filters, limit: limit, min: 0.0, exclude: source.id)
-      Result.new(query: ref.to_s, terms: [], variants: [], hits: hits, semantic: true, indexed: true, corrections: {}, source: source)
+      address = members.to_h { |m| [ m.id, source.kind == LESSON ? Links.address(m) : nil ] }
+      queries = rows.to_h { |row| [ address[row["doc_id"]], Vectors.unpack(row["vec"]) ] }
+      exclude = source.kind == LESSON ? lesson_document_ids(source) : [ source.id ]
+      hits = Semantic.nearest_any(self, queries, model: embedder.model, filters: filters, limit: limit, min: 0.0, exclude: exclude)
+      Result.new(hits: hits, semantic: true, indexed: true, **result)
     end
+
+    # The kind of the source of a "Simili" of a whole lesson (not a kind of document: a lesson is its cards).
+    LESSON = "lesson".freeze
 
     FAMILIES = { "item" => %w[item item_instance practice_item], "item_instance" => %w[item item_instance practice_item],
                  "practice_item" => %w[item item_instance practice_item], "lesson_card" => %w[lesson_card glossary_term],
-                 "glossary_term" => %w[lesson_card glossary_term] }.freeze
+                 "glossary_term" => %w[lesson_card glossary_term], LESSON => %w[lesson_card glossary_term] }.freeze
 
-    # The document a reference names, among those this scope may see: [kind:]key[#anchor]; a bare key takes the first kind in key_hits' order.
+    # [source, members]: the document a reference names, among those this scope may see, and the documents whose vectors stand for it
+    # (itself; for lesson:KEY the cards of the lesson). [kind:]key[#anchor]; a bare key takes the first kind in key_hits' order; the anchor
+    # of a card may be its number (lesson_card:KEY#2 and lesson:KEY#2 are lesson_card:KEY#scheda-2). [nil, []] when nothing matches.
     def like_source(ref)
       kind = nil
-      if (m = ref.match(/\A([a-z_]+):(.+)\z/)) && Doc::KINDS.include?(m[1])
+      if (m = ref.match(/\A([a-z_]+):(.+)\z/)) && (Doc::KINDS.include?(m[1]) || m[1] == LESSON)
         kind = m[1]
         ref = m[2]
       end
       key, anchor = ref.split("#", 2)
-      return nil if key.blank?
+      return [ nil, [] ] if key.blank?
 
+      anchor = "scheda-#{anchor}" if anchor&.match?(/\A\d+\z/) && [ "lesson_card", LESSON ].include?(kind)
+      if kind == LESSON
+        return lesson_source(key) if anchor.blank?
+
+        kind = "lesson_card"
+      end
       where, binds = where({})
       sql = +"SELECT #{COLUMNS} FROM search_documents d WHERE d.key = ? COLLATE NOCASE AND #{where}"
       binds = [ key, *binds ]
@@ -123,7 +145,26 @@ module Search
       binds << anchor if anchor
       sql << " ORDER BY #{KEY_ORDER}, (d.anchor IS NOT NULL), d.id LIMIT 1"
       row = select(sql, binds).first
-      row && hit(row.merge("score" => 0.0), :key)
+      source = row && hit(row.merge("score" => 0.0), :key)
+      [ source, [ source ].compact ]
+    end
+
+    # A whole lesson: its cards in the revision this scope sees (the staff's and the agents': the latest), the cover first. The source is
+    # the cover as a hit of kind "lesson" with no anchor, so Links.address writes lesson:KEY.
+    def lesson_source(key)
+      where, binds = where({})
+      rows = select("SELECT #{COLUMNS} FROM search_documents d WHERE d.key = ? COLLATE NOCASE AND d.kind = 'lesson_card' AND #{where} " \
+                    "ORDER BY d.revision_id DESC, (d.anchor IS NOT NULL), d.id", [ key, *binds ])
+      return [ nil, [] ] if rows.empty?
+
+      cards = rows.select { |r| r["revision_id"] == rows.first["revision_id"] }.map { |r| hit(r.merge("score" => 0.0), :key) }
+      [ cards.first.with(kind: LESSON, anchor: nil), cards ]
+    end
+
+    # Every document of the source lesson's revision (its cards and its glossary terms): none is a neighbour of the lesson itself.
+    def lesson_document_ids(source)
+      select("SELECT d.id FROM search_documents d WHERE d.key = ? COLLATE NOCASE AND d.kind IN ('lesson_card', 'glossary_term') AND d.revision_id IS ?",
+             [ source.key, source.revision_id ]).map { |r| r["id"] }
     end
 
     # The embedding of the question starts at once, beside the lexical queries: the service takes about 0.17 s. nil when the scope

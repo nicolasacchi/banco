@@ -16,6 +16,8 @@ func TestSearchSendsTheQueryAndTheFilters(t *testing.T) {
 		{[]string{"search", "--kind", "reference_article", "articolo 3", "--status", "imported", "--json"}, map[string]string{"q": "articolo 3", "kind": "reference_article", "status": "imported"}},
 		{[]string{"search", "--like", "item_instance:math-frazioni-1#seed-a", "--limit", "10"}, map[string]string{"like": "item_instance:math-frazioni-1#seed-a", "limit": "10"}},
 		{[]string{"search", "--like", "math.powers-properties", "--kind", "item"}, map[string]string{"like": "math.powers-properties", "kind": "item"}},
+		{[]string{"search", "--like", "lesson:ripasso.math.equations"}, map[string]string{"like": "lesson:ripasso.math.equations"}},
+		{[]string{"search", "--like", "lesson_card:ripasso.math.equations#2"}, map[string]string{"like": "lesson_card:ripasso.math.equations#2"}},
 	}
 	for _, c := range cases {
 		srv, seen := sequenceServer(t, [2]string{"200", `{"query":"x","semantic":false,"results":[]}`})

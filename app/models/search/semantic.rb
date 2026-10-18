@@ -12,32 +12,45 @@ module Search
 
     module_function
 
-    # [Hit] by cosine (the score), best first, each at least +min+. +exclude+: a document id left out (the object of a "Simili").
+    # [Hit] by cosine (the score), best first, each at least +min+. +exclude+: a document id, or ids, left out (the object of a "Simili").
     def nearest(engine, vector, model:, filters:, limit:, min:, exclude: nil)
+      nearest_any(engine, { nil => vector }, model: model, filters: filters, limit: limit, min: min, exclude: exclude)
+    end
+
+    # The same for several vectors at once (the cards of a lesson, D-315): +queries+ is {label => vector}; a document's score is its
+    # cosine with the nearest of them, and its hit's `near` the label of that one. One pass over the documents whatever their number.
+    def nearest_any(engine, queries, model:, filters:, limit:, min:, exclude: nil)
+      vectors = queries.values
       where, binds = engine.where(filters)
       where = "#{where} AND #{Vectors.eligible_sql}"
-      if exclude
-        where += " AND d.id <> ?"
-        binds += [ exclude ]
-      end
+      ids = Array(exclude).compact
+      where += " AND d.id NOT IN (#{ids.map { |i| Integer(i) }.join(', ')})" if ids.any?
       rows = engine.select("SELECT v.doc_id, v.coarse FROM search_vectors v JOIN search_documents d ON d.id = v.doc_id WHERE v.model = ? AND v.dim = ? AND #{where}",
-                           [ model, vector.size, *binds ])
+                           [ model, vectors.first.size, *binds ])
       return [] if rows.empty?
 
-      ids = candidates(rows, vector)
+      ids = candidates(rows, vectors)
       exact = engine.select("SELECT #{Engine::COLUMNS}, v.vec AS vec FROM search_vectors v JOIN search_documents d ON d.id = v.doc_id WHERE d.id IN (#{ids.map { |i| Integer(i) }.join(', ')})", [])
-      scored = exact.map { |row| [ dot(vector, Vectors.unpack(row["vec"])), row ] }.select { |score, _| score >= min }
-      scored.sort_by { |score, row| [ -score, row["id"] ] }.first(limit).map do |score, row|
-        engine.hit(row.except("vec").merge("score" => score), :semantic)
+      scored = exact.map do |row|
+        vec = Vectors.unpack(row["vec"])
+        score, label = queries.map { |name, query| [ dot(query, vec), name ] }.max_by(&:first)
+        [ score, label, row ]
+      end
+      scored.select { |score, _, _| score >= min }.sort_by { |score, _, row| [ -score, row["id"] ] }.first(limit).map do |score, label, row|
+        engine.hit(row.except("vec").merge("score" => score, "near" => label), :semantic)
       end
     end
 
-    # The ids of the rows whose coarse form is nearest to the question's.
-    def candidates(rows, vector)
-      return rows.map { |r| r["doc_id"] } if vector.size <= Vectors::COARSE || rows.size <= CANDIDATES
+    # The ids of the rows whose coarse form is nearest to one of the questions'.
+    def candidates(rows, vectors)
+      vectors = [ vectors ] unless vectors.first.is_a?(Array)
+      return rows.map { |r| r["doc_id"] } if vectors.first.size <= Vectors::COARSE || rows.size <= CANDIDATES
 
-      query = Vectors.coarse(vector)
-      rows.max_by(CANDIDATES) { |row| dot(query, Vectors.unpack(row["coarse"])) }.map { |r| r["doc_id"] }
+      queries = vectors.map { |v| Vectors.coarse(v) }
+      rows.max_by(CANDIDATES) do |row|
+        coarse = Vectors.unpack(row["coarse"])
+        queries.map { |q| dot(q, coarse) }.max
+      end.map { |r| r["doc_id"] }
     end
 
     def dot(a, b)

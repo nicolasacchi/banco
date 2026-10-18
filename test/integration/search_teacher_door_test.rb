@@ -195,6 +195,31 @@ class SearchTeacherDoorTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "Simili of a whole lesson (the lesson box's link): the cards of other lessons, each saying which card it is near (D-315)" do
+    add_lesson2!("ripasso.math.equazioni-due")
+    add_lesson2!("ripasso.math.equazioni-copia")
+    Search::Indexer.reindex(%w[lessons])
+    Search::Embedder.using(Search::Embedder::Stub.new) do
+      similar(TEACHER, "lesson:ripasso.math.equazioni-due")
+      assert_select "#like-no-vector", /testi in coda: \d+/
+      Search::Indexer.embed!
+      similar(TEACHER, "lesson:ripasso.math.equazioni-due")
+      assert_response :success
+      assert_select "#like-head", text: /Simili a «.+» \(Lezioni\)/
+      assert_select "#like-partial", count: 0
+      assert(hits.none? { |h| h["data-key"] == "ripasso.math.equazioni-due" }, "the lesson's own cards are not its neighbours")
+      assert_select ".search-hit[data-key='ripasso.math.equazioni-copia'] .search-near[data-near='lesson_card:ripasso.math.equazioni-due#scheda-2']", text: "vicina alla scheda 2"
+      card = Search::Document.find_by!(key: "ripasso.math.equazioni-due", kind: "lesson_card", anchor: "scheda-2")
+      Search::Index.write("DELETE FROM search_vectors WHERE doc_id = ?", card.id)
+      similar(TEACHER, "lesson:ripasso.math.equazioni-due")
+      assert_select "#like-partial", /\AUna scheda su \d+ non ha ancora le somiglianze calcolate/
+      assert_select ".search-near[data-near$='#scheda-2']", count: 0
+      similar(TEACHER, "lesson_card:ripasso.math.equazioni-due#3")
+      assert_select "#like-head", text: /\(Nelle lezioni\)/
+      assert_select ".search-near", count: 0
+    end
+  end
+
   test "the student cannot reach Simili, and the answers tab never uses it" do
     with_stub do
       similar(OFFICIAL, "demo-item-1")

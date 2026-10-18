@@ -214,6 +214,73 @@ class SearchApiTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # ---- lessons as objects of "Simili" (D-315) ------------------------------------------------------
+
+  LESSON = "ripasso.math.equazioni-due".freeze
+  COPY = "ripasso.math.equazioni-copia".freeze
+
+  def add_lesson_pair!
+    add_lesson2!(LESSON)
+    add_lesson2!(COPY)
+    Search::Indexer.reindex(%w[lessons])
+  end
+
+  test "like takes lesson:KEY for a whole lesson: the cards of other lessons, each with the card it is nearest to" do
+    add_lesson_pair!
+    with_stub do
+      api_like("lesson:#{LESSON}")
+      assert_response :success
+      assert_equal "lesson:#{LESSON}", json["like"]
+      assert_equal true, json["semantic"]
+      assert_equal %w[indexed like query results semantic], json.keys.sort, "every card has a vector: no note"
+      assert_predicate json["results"], :any?
+      assert(json["results"].none? { |r| r["key"] == LESSON }, "the lesson's own cards and terms are left out")
+      json["results"].each { |row| assert_equal (ROW_KEYS + %w[same_object near]).sort, row.keys.sort }
+      copy = json["results"].select { |r| r["key"] == COPY && r["ref"].include?("#scheda-") }
+      assert_predicate copy, :any?
+      copy.each { |r| assert_equal r["ref"].sub(COPY, LESSON), r["near"], "a copied card is nearest to its original" }
+      api_like("lesson:#{LESSON}", limit: 3)
+      ContractExamples.record(self, "search", "like-lesson", request: request, response: response)
+    end
+  end
+
+  test "a lesson card is lesson_card:KEY#N as well as lesson_card:KEY#scheda-N" do
+    add_lesson_pair!
+    with_stub do
+      %W[lesson_card:#{LESSON}#scheda-2 lesson_card:#{LESSON}#2 lesson:#{LESSON}#2].each do |ref|
+        api_like(ref)
+        assert_response :success
+        assert_equal "lesson_card:#{LESSON}#scheda-2", json["like"], ref
+        assert_equal "lesson_card:#{COPY}#scheda-2", json["results"].first["ref"], ref
+        assert_in_delta 1.0, json["results"].first["score"], 0.001
+      end
+      api_like("lesson:no.such.lesson")
+      assert_response :not_found
+      assert_match(/lesson:KEY/, json["next"])
+    end
+  end
+
+  test "a lesson not yet embedded says how many documents wait; one partly embedded says how many of its cards" do
+    add_lesson_pair!
+    Search::Embedder.using(Search::Embedder::Stub.new) do
+      api_like("lesson:#{LESSON}")
+      assert_response :success
+      assert_equal false, json["semantic"]
+      assert_empty json["results"]
+      assert_operator json["waiting"], :>, 0
+      assert_match(/no vectors yet for this object: \d+ documents of the index wait for a vector; a new or changed document gets one within minutes/, json["note"])
+      Search::Indexer.embed!
+      card = Search::Document.find_by!(key: LESSON, kind: "lesson_card", anchor: "scheda-3")
+      Search::Index.write("DELETE FROM search_vectors WHERE doc_id = ?", card.id)
+      api_like("lesson:#{LESSON}")
+      assert_equal true, json["semantic"]
+      assert_equal 1, json["waiting"]
+      cards = Search::Document.where(key: LESSON, kind: "lesson_card").count
+      assert_match(/\A1 of the #{cards} cards of this lesson have no vector yet/, json["note"])
+      assert(json["results"].none? { |r| r["near"] == "lesson_card:#{LESSON}#scheda-3" })
+    end
+  end
+
   def api_like(ref, extra = {})
     on(:api, "/api/v1/search?#{{ like: ref }.merge(extra).to_query}", headers: { "Authorization" => "Bearer #{@token}" })
     response

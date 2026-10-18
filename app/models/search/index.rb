@@ -16,35 +16,48 @@ module Search
 
     def rows(sql, *binds) = connection.select_rows(Record.sanitize_sql_array([ sql, *binds ]))
 
-    # docs: [Search::Doc]. Returns {added:, changed:, removed:, kept:}.
-    def replace_group(group, docs)
+    # docs: [Search::Doc]. Returns {added:, changed:, removed:, kept:, reused:}; reused counts the written rows that kept or were given
+    # a vector because the text sent to the model is the same as before (D-315), so only a new text waits for the embedder.
+    # +read_at+: when the builder began reading the primary database (Search::Indexer), kept as `read_GROUP` for SearchIndexJob.
+    def replace_group(group, docs, read_at: nil)
       Schema.ensure!
       docs = docs.uniq(&:doc_key)
-      counts = { added: 0, changed: 0, removed: 0, kept: 0 }
+      counts = { added: 0, changed: 0, removed: 0, kept: 0, reused: 0 }
       connection.transaction do
         existing = rows("SELECT doc_key, id, digest FROM search_documents WHERE grp = ?", group).to_h { |k, id, d| [ k, [ id, d ] ] }
+        writes = docs.reject { |doc| existing[doc.doc_key]&.last == doc.digest }
+        # Read before anything is written: the donor of each text, and (in memory) the vectors other rows take from a donor, since a
+        # donor whose own text changes loses its vector in this loop.
+        donors = Vectors.donors(group, writes.map(&:key))
+        donor_of = writes.to_h { |doc| [ doc.doc_key, donors[Vectors.text_key(doc.title, doc.body)] ] }
+        given = Vectors.snapshot(writes.filter_map { |doc| donor_of[doc.doc_key] unless donor_of[doc.doc_key] == existing[doc.doc_key]&.first })
         docs.each do |doc|
           id, digest = existing.delete(doc.doc_key)
+          donor = donor_of[doc.doc_key]
           if id.nil?
-            insert(group, doc)
+            id = insert(group, doc)
             counts[:added] += 1
           elsif digest != doc.digest
-            remove_row(id)
+            remove_row(id, keep_vector: donor == id)
             insert(group, doc, id: id)
             counts[:changed] += 1
           else
             counts[:kept] += 1
+            next
           end
+          counts[:reused] += 1 if donor == id ? Vectors.redate(id, doc.digest) : Vectors.give(id, doc.digest, given[donor])
         end
         existing.each_value do |id, _|
           remove_row(id)
           counts[:removed] += 1
         end
         set_meta("built_#{group}", Time.current.utc.iso8601)
+        set_meta("read_#{group}", read_at.utc.iso8601(6)) if read_at
       end
       counts
     end
 
+    # Returns the row's id.
     def insert(group, doc, id: nil)
       values = [ doc.doc_key, group, doc.kind, doc.audience, doc.subject, doc.key, doc.revision_table, doc.revision_id, doc.status, doc.title,
                  doc.body, doc.anchor, doc.lang, doc.topic_key, doc.skill, doc.student_key, doc.occurred_at, doc.digest ]
@@ -53,12 +66,14 @@ module Search
       text = "#{doc.title}\n#{doc.body}"
       write("INSERT INTO search_fts (rowid, title, body, stems) VALUES (?, ?, ?, ?)", id, doc.title, doc.body, Text.stem_column(text, doc.stem_langs))
       write("INSERT INTO search_trigram (rowid, text) VALUES (?, ?)", id, Text.fold(text).squish.first(TRIGRAM_MAX))
+      id
     end
 
-    def remove_row(id)
+    # +keep_vector+: the row is written again at once with the same text (Vectors.redate then sets the new digest on its vector).
+    def remove_row(id, keep_vector: false)
       write("DELETE FROM search_fts WHERE rowid = ?", id)
       write("DELETE FROM search_trigram WHERE rowid = ?", id)
-      write("DELETE FROM search_vectors WHERE doc_id = ?", id)
+      write("DELETE FROM search_vectors WHERE doc_id = ?", id) unless keep_vector
       write("DELETE FROM search_documents WHERE id = ?", id)
     end
 

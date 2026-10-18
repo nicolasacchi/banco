@@ -3,12 +3,14 @@ module Search
   # dimension that made them. Never a student_answer and never a document of the teacher's audience: those kinds are not
   # eligible, so no student text goes to the embedding model.
   #
-  #   Search::Vectors.build!(embedder)   # embeds what has no current vector (new, changed, or made by another model); in the index
-  #                                      # job and the rebuild task, never in a request
+  #   Search::Vectors.build!(embedder)   # embeds what has no current vector (new, changed, or made by another model), newest first; in
+  #                                      # SearchEmbedJob and the rebuild task (through Search::Indexer.embed!), never in a request
   #   Search::Vectors.status             # {eligible:, with_vectors:, missing:, model:}
   #
   # A document's vector is current when its digest equals the document's and its model and dimension are the embedder's. A document
-  # that changed is re-inserted by Search::Index (which drops its vector), so the next build embeds it.
+  # that changed is re-inserted by Search::Index: its vector is kept when the text sent to the model is the same (a change of status,
+  # D-315) and dropped otherwise, so the next build embeds it. A new document whose text is that of a document of the same object (an
+  # unchanged instance or card of a new revision) gets that document's vector (Vectors.donors and Vectors.adopt, from Search::Index).
   #
   # Cosine without a numeric library: a vector of 1024 floats against 9,600 documents is 10 million multiplications, about a second
   # in Ruby. So every vector also has a coarse form (COARSE signed sums of the dimensions, a sparse random projection, normalized
@@ -56,22 +58,91 @@ module Search
 
     def text_of(row) = "#{row[1]}\n#{row[2]}".first(EMBED_CHARS)
 
+    # What a vector depends on besides the model: the text sent for the document. Two documents with the same text key share a vector.
+    def text_key(title, body) = Digest::SHA256.hexdigest(text_of([ nil, title, body ]))
+
     def eligible_sql = "d.kind IN (#{ELIGIBLE_KINDS.map { |k| "'#{k}'" }.join(', ')}) AND d.audience <> 'teacher'"
 
-    # [[id, title, body, digest]]: eligible documents with no current vector.
+    # [[id, title, body, digest]]: eligible documents with no current vector, the newest first (D-315: what an author has just submitted
+    # does not wait behind older documents; a new revision's documents are new rows, so they have the highest ids).
     def pending(embedder, limit: nil)
-      sql = +"SELECT d.id, d.title, d.body, d.digest FROM search_documents d LEFT JOIN search_vectors v ON v.doc_id = d.id " \
-             "WHERE #{eligible_sql} AND (v.doc_id IS NULL OR v.digest <> d.digest OR v.model <> ?#{' OR v.dim <> ?' if embedder.dimension}) ORDER BY d.id"
-      binds = [ embedder.model ]
-      binds << embedder.dimension if embedder.dimension
+      sql = +"SELECT d.id, d.title, d.body, d.digest FROM #{pending_from(embedder)} ORDER BY d.id DESC"
       sql << " LIMIT #{Integer(limit)}" if limit
-      Index.rows(sql, *binds)
+      Index.rows(sql, *pending_binds(embedder))
     end
 
-    # Embeds what is pending, BATCH documents a request, until none is left, the +deadline+ (seconds) passes or the service fails.
-    # Never raises for a service that is down: the lexical index is whole without vectors. Returns
-    # {embedded:, pending:, down:, seconds:}.
-    def build!(embedder = Embedder.current, deadline: nil, retries: 0, retry_wait: 0, sleeper: Kernel.method(:sleep), every: nil, progress: nil)
+    # How many eligible documents wait for a vector of this embedder; +ids+: only among these documents.
+    def waiting(embedder, ids: nil)
+      return 0 if embedder.nil? || ids&.empty?
+
+      sql = +"SELECT COUNT(*) FROM #{pending_from(embedder)}"
+      sql << " AND d.id IN (#{ids.map { |i| Integer(i) }.join(', ')})" if ids
+      Index.rows(sql, *pending_binds(embedder)).dig(0, 0).to_i
+    end
+
+    def pending?(embedder) = embedder ? Index.rows("SELECT 1 FROM #{pending_from(embedder)} LIMIT 1", *pending_binds(embedder)).any? : false
+
+    def pending_from(embedder)
+      "search_documents d LEFT JOIN search_vectors v ON v.doc_id = d.id WHERE #{eligible_sql} " \
+        "AND (v.doc_id IS NULL OR v.digest <> d.digest OR v.model <> ?#{' OR v.dim <> ?' if embedder.dimension})"
+    end
+
+    def pending_binds(embedder) = [ embedder.model, *([ embedder.dimension ] if embedder.dimension) ]
+
+    # Seconds a lease lasts between two renewals (Search::Lease): one request at the embedder's timeout, the wait before a retry, a margin.
+    def lease_ttl(embedder, retry_wait: 0)
+      timeout = embedder.respond_to?(:document_timeout) ? embedder.document_timeout.to_f : 60.0
+      (timeout + retry_wait.to_f + 60).ceil
+    end
+
+    # {text key => doc id}: the documents of +group+ with one of +keys+ whose vector is current, read by Search::Index before it rewrites
+    # the group (the donors). Only the documents of the same objects (an item's other revision, a lesson whose status changed); all of the
+    # group when there are many keys (a builder that changed every row).
+    def donors(group, keys)
+      keys = keys.compact.uniq
+      return {} if keys.empty?
+
+      sql = +"SELECT d.id, d.title, d.body FROM search_documents d JOIN search_vectors v ON v.doc_id = d.id AND v.digest = d.digest WHERE d.grp = ? AND #{eligible_sql}"
+      binds = [ group ]
+      if keys.size <= 500
+        sql << " AND d.key IN (#{keys.map { '?' }.join(', ')})"
+        binds.concat(keys)
+      end
+      Index.rows(sql, *binds).each_with_object({}) { |(id, title, body), out| out[text_key(title, body)] ||= id }
+    end
+
+    # {doc id => [model, dim, vec, coarse]}: the vectors of these documents, read into memory before Search::Index rewrites a group.
+    def snapshot(ids)
+      ids = ids.compact.uniq
+      return {} if ids.empty?
+
+      Index.rows("SELECT doc_id, model, dim, vec, coarse FROM search_vectors WHERE doc_id IN (#{ids.map { |i| Integer(i) }.join(', ')})")
+           .to_h { |doc_id, *vector| [ doc_id, vector ] }
+    end
+
+    # Gives document +id+ (just written with +digest+) a vector read by snapshot. True when it did (nil: the donor had none).
+    def give(id, digest, vector)
+      return false unless vector
+
+      model, dim, vec, coarse = vector
+      Index.write("INSERT INTO search_vectors (doc_id, digest, model, dim, vec, coarse) VALUES (?, ?, ?, ?, ?, ?) " \
+                  "ON CONFLICT(doc_id) DO UPDATE SET digest = excluded.digest, model = excluded.model, dim = excluded.dim, vec = excluded.vec, coarse = excluded.coarse",
+                  id, digest, model, dim, blob(vec), blob(coarse))
+      true
+    end
+
+    # The vector a rewritten row kept (same text) now belongs to its new digest. True when there was one.
+    def redate(id, digest)
+      Index.write("UPDATE search_vectors SET digest = ? WHERE doc_id = ?", digest, id)
+      connection.select_value("SELECT changes()").to_i.positive?
+    end
+
+    # Embeds what is pending, newest first, BATCH documents a request, until none is left (or the +limit+ documents taken are done), the
+    # +deadline+ (seconds) passes, the service fails or the +lease+ (Search::Lease, renewed before each request) is lost. Never raises for
+    # a service that is down: the lexical index is whole without vectors. Returns {embedded:, pending:, down:, seconds:, lost:, ...};
+    # pending counts what was taken and not embedded.
+    def build!(embedder = Embedder.current, deadline: nil, limit: nil, lease: nil, retries: 0, retry_wait: 0, sleeper: Kernel.method(:sleep), every: nil,
+               progress: nil)
       Schema.ensure!
       started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       return { embedded: 0, pending: 0, down: false, seconds: 0.0, configured: false, skipped: 0 } unless embedder
@@ -81,12 +152,18 @@ module Search
       skipped = 0
       skipped_docs = 0
       down = false
-      todo = pending(embedder)
+      lost = false
+      ttl = lease_ttl(embedder, retry_wait: retry_wait)
+      todo = pending(embedder, limit: limit)
       todo.each_slice(BATCH).with_index(1) do |batch, number|
         break if deadline && Process.clock_gettime(Process::CLOCK_MONOTONIC) - started > deadline
 
         attempts = 0
         begin
+          if lease && !lease.renew(ttl)
+            lost = true
+            break
+          end
           vectors = embedder.embed_documents(batch.map { |row| text_of(row) })
           store(batch, vectors, embedder)
           embedded += batch.size
@@ -109,7 +186,7 @@ module Search
         progress&.call(embedded: embedded, total: todo.size, skipped: skipped, seconds: Process.clock_gettime(Process::CLOCK_MONOTONIC) - started) if every && (number % every).zero?
       end
       { embedded: embedded, pending: todo.size - embedded, down: down, seconds: Process.clock_gettime(Process::CLOCK_MONOTONIC) - started, configured: true,
-        skipped: skipped, skipped_documents: skipped_docs }
+        skipped: skipped, skipped_documents: skipped_docs, lost: lost }
     end
 
     def store(batch, vectors, embedder)

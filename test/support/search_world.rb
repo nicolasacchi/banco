@@ -109,6 +109,15 @@ module SearchWorld
                     source: "text", answered_at: Time.current)
   end
 
+  # A banco.lesson/2 revision (the served fixture "equations") under +key+: one cover and one card per card of the fixture.
+  def add_lesson2!(key)
+    lesson = Lesson.find_by(key: key) || Lesson.create!(subject: @subject, key: key, kind: "ripasso")
+    md = "---\nkey: #{key}\n---\n"
+    body = JSON.parse(Rails.root.join("test/fixtures/lesson2/served/equations.json").read).merge("key" => key, "skills" => [ SKILL ])
+    LessonRevision.create!(lesson: lesson, seq: (lesson.revisions.maximum(:seq) || 0) + 1, source_md: md, source_sha256: Digest::SHA256.hexdigest(md),
+                           body_json: JSON.generate(body), rules_version: Validation::Rules.version.to_s, warnings_json: "[]")
+  end
+
   def rebuild_search! = Search::Indexer.rebuild!
 
   def staff_search(query, **options) = Search::Engine.new(scope: Search::Scope::Staff.new).call(query, **options)

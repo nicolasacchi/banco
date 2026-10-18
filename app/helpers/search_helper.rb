@@ -40,6 +40,12 @@ module SearchHelper
   # The "Simili" button needs vectors: shown on the teacher's pages only when an embedding service is set up.
   def search_similar_enabled? = Search::Embedder.configured?
 
-  # The teacher's search with the neighbours of an object (ref: Search::Links.address or a key).
+  # The teacher's search with the neighbours of an object (ref: Search::Links.address or a key; lesson:KEY for a whole lesson).
   def search_similar_path(ref) = "/teacher/search?#{{ like: ref }.to_query}"
+
+  # In the neighbours of a whole lesson, which of its cards a hit is nearest to (Engine::Hit#near: lesson_card:KEY#scheda-N, or the cover).
+  def search_near_label(near)
+    n = near.to_s[/#scheda-(\d+)\z/, 1]
+    n ? t("teacher.search.like_near", n: n) : t("teacher.search.like_near_cover")
+  end
 end

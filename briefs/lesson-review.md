@@ -27,7 +27,7 @@ parallel sessions share `$TMPDIR`. `banco lesson-review submit REV --file review
 `--dry-run` first). You report; you never decide and never ask for a decision: the teacher reads your review and
 approves or sends back in the browser.
 
-Search for duplicates: `banco search "WORDS" --subject KEY` finds the lessons, items and findings that already exist, drafts included; a near copy of one of them is a finding. Check a cited reference text with `banco search "WORDS" --kind reference_article`.
+Search for duplicates: `banco search "WORDS" --subject KEY` finds the lessons, items and findings that already exist, drafts included; a near copy of one of them is a finding. Check a cited reference text with `banco search "WORDS" --kind reference_article`. Run `banco search --like lesson:KEY` on the lesson you review (each neighbour says which of its cards it is near) and `banco search --like lesson_card:KEY#N` on a card that looks familiar: the nearest neighbours are the candidates for duplicates.
 
 ## The file (lesson/2)
 

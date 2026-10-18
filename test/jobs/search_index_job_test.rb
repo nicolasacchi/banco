@@ -25,23 +25,49 @@ class SearchIndexJobTest < ActiveJob::TestCase
     SearchIndexJob.perform_now([ "nonsense" ])
   end
 
-  test "after the lexical index the job embeds what has no vector; a service that is down leaves the index whole" do
+  test "the job builds the lexical index alone and leaves the vectors to SearchEmbedJob (D-315)" do
     build_search_world
-    SearchIndexJob.perform_now([ "all" ])
-    assert_equal 0, Search::Vectors.status[:with_vectors], "no embedder is configured in the test environment"
-    Search::Embedder.using(Search::Embedder::Stub.new) do
-      SearchIndexJob.perform_now([ "all" ])
-      status = Search::Vectors.status
-      assert_operator status[:eligible], :>, 0
-      assert_equal status[:eligible], status[:with_vectors]
+    with_index_on_write do
+      assert_no_enqueued_jobs(only: SearchEmbedJob) { SearchIndexJob.perform_now([ "all" ]) }
+      assert_equal 0, Search::Vectors.status[:with_vectors], "no embedder is configured in the test environment"
+      embedder_calls = 0
+      spy = Search::Embedder::Stub.new
+      spy.define_singleton_method(:embed_documents) { |texts| (embedder_calls += 1) && super(texts) }
+      Search::Embedder.using(spy) do
+        assert_enqueued_with(job: SearchEmbedJob) { SearchIndexJob.perform_now([ "all" ]) }
+        assert_equal 0, embedder_calls, "the index job never asks the embedding service"
+        assert_equal 0, Search::Vectors.status[:with_vectors]
+        perform_enqueued_jobs(only: SearchEmbedJob)
+        status = Search::Vectors.status
+        assert_operator status[:eligible], :>, 0
+        assert_equal status[:eligible], status[:with_vectors]
+        clear_enqueued_jobs
+        assert_no_enqueued_jobs(only: SearchEmbedJob) { SearchIndexJob.perform_now([ "all" ]) }
+      end
     end
-    Search::Index.write("DELETE FROM search_vectors")
-    down = Search::Embedder::Stub.new
-    down.define_singleton_method(:embed_documents) { |_| raise Search::Embedder::Unavailable, "down" }
-    Search::Embedder.using(down) do
-      assert_nothing_raised { SearchIndexJob.perform_now([ "all" ]) }
-      assert_operator Search::Document.count, :>, 0
-      assert_equal 0, Search::Vectors.status[:with_vectors]
+  end
+
+  test "a burst of writes is one rebuild: a job whose groups were read after it was enqueued skips them" do
+    with_index_on_write do
+      build_course
+      clear_enqueued_jobs
+      make_lesson("ripasso.math.uno")
+      make_lesson("ripasso.math.due")
+      assert_enqueued_jobs 2, only: SearchIndexJob
+      reads = Hash.new(0)
+      counting = lambda do |group|
+        reads[group] += 1
+        Search::Builders.const_get(group.camelize).call
+      end
+      Search::Builders.stub(:docs, counting) { perform_enqueued_jobs(only: SearchIndexJob) }
+      assert_equal({ "lessons" => 1, "topics" => 1 }, reads, "the second job found both groups read after its write")
+      first_read = Search::Indexer.read_at("lessons")
+      make_lesson("ripasso.math.tre")
+      Search::Builders.stub(:docs, counting) { perform_enqueued_jobs(only: SearchIndexJob) }
+      assert_equal({ "lessons" => 2, "topics" => 2 }, reads, "a write after the last read is rebuilt")
+      assert_operator Search::Indexer.read_at("lessons"), :>, first_read
+      Search::Builders.stub(:docs, counting) { SearchIndexJob.perform_now(%w[lessons]) }
+      assert_equal 3, reads["lessons"], "a job run by hand always rebuilds"
     end
   end
 
