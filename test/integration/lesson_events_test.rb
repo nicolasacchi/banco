@@ -240,6 +240,29 @@ class LessonEventsTest < ActionDispatch::IntegrationTest
     assert_equal example["result_it"], final["result_it"]
   end
 
+  test "a blank of an example with a linked figure sends the figure again with the states of the steps now open, cut at the next blank" do
+    card, block, = find_block { |_, b| b["type"] == "example" }
+    body = stored_body
+    example = body["cards"].find { |c| c["n"] == card }["blocks"].find { |b| b["n"] == block }
+    example["steps"][0]["blank"] = { "component" => "number", "prompt_it" => "Quanto fa 1 + 1?", "answer" => "2", "explain_it" => "Uno e uno." }
+    example["diagram"] = { "type" => "cell", "alt_it" => "Una cellula animale.", "labels" => "all",
+                           "cells" => [ { "kind" => "animal", "parts" => %w[membrane cytoplasm nucleus ribosomes mitochondria] } ],
+                           "states" => [ { "op_it" => "Il nucleo", "highlight" => [ "nucleus" ] }, { "op_it" => "La membrana", "highlight" => [ "membrane" ] },
+                                         { "op_it" => "I ribosomi", "highlight" => [ "ribosomes" ] } ] }
+    pin_body(body)
+    page_figure = Lessons::StudentBody.example(example, "math", "seed")["diagram"]
+    assert_not page_figure.key?("states"), "a blank at the first step: the page's figure has no state yet"
+    first = post_json(OFFICIAL, check_url(card, block, "/1"), { response: "2", try: 1, client_event_id: cid })
+    assert_equal "right", first["verdict"]
+    assert_equal [ "Il nucleo", "La membrana" ], first["states"].map { |s| s["op_it"] }, "the states of steps 1 and 2: not the one of the next blank"
+    assert_equal [ "Il nucleo", "La membrana" ], first.dig("diagram", "states").map { |s| s["op_it"] }
+    assert_equal %w[membrane cytoplasm nucleus ribosomes mitochondria], first.dig("diagram", "cells", 0, "parts")
+    last = post_json(OFFICIAL, check_url(card, block, "/3"), { response: example["steps"][2]["blank"]["answer"], try: 1, client_event_id: cid })
+    assert_equal "right", last["verdict"]
+    assert_equal [ "I ribosomi" ], last["states"].map { |s| s["op_it"] }
+    assert_equal [ "Il nucleo", "La membrana", "I ribosomi" ], last.dig("diagram", "states").map { |s| s["op_it"] }, "no blank left: the whole figure"
+  end
+
   test "the exercise checks of 'Prova tu' are graded, one or several per exercise" do
     card, block, try = find_block { |_, b| b["type"] == "try" }
     exercise = try["exercises"].find { |e| e["check"] }

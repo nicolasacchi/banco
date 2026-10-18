@@ -82,6 +82,8 @@ export function render(block, ctx, loc) {
       list.appendChild(li)
     })
     if (reply.result_it) resultText = reply.result_it
+    // the linked figure: the server's figure has the states of the steps now open (until now it stopped before the blank)
+    if (reply.diagram && figure?.replaceData) figure.replaceData(reply.diagram)
     // the revealed steps after the blank stay hidden until asked, except the blank step itself
     for (let k = index + 1; k < rows.length; k++) rows[k].hidden = true
     shown = index + 1
