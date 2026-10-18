@@ -615,7 +615,25 @@ CREATE TRIGGER comment_events_no_update BEFORE UPDATE ON comment_events
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER comment_events_no_delete BEFORE DELETE ON comment_events
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "lesson_finding_responses" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "lesson_review_id" integer NOT NULL, "finding_n" integer NOT NULL, "agent_session_id" integer NOT NULL, "stance" varchar NOT NULL, "lesson_revision_id" integer, "note_it" text NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_07ffd4ed4a"
+FOREIGN KEY ("lesson_review_id")
+  REFERENCES "lesson_reviews" ("id")
+, CONSTRAINT "fk_rails_bbf755bcd6"
+FOREIGN KEY ("agent_session_id")
+  REFERENCES "agent_sessions" ("id")
+, CONSTRAINT "fk_rails_5362d1022f"
+FOREIGN KEY ("lesson_revision_id")
+  REFERENCES "lesson_revisions" ("id")
+, CONSTRAINT lesson_finding_responses_n CHECK (finding_n BETWEEN 1 AND 30), CONSTRAINT lesson_finding_responses_stance CHECK (stance IN ('lesson_right','fixed')), CONSTRAINT lesson_finding_responses_revision CHECK ((stance = 'fixed') = (lesson_revision_id IS NOT NULL)), CONSTRAINT lesson_finding_responses_note_length CHECK (length(note_it) BETWEEN 1 AND 700));
+CREATE INDEX "index_lesson_finding_responses_on_agent_session_id" ON "lesson_finding_responses" ("agent_session_id");
+CREATE INDEX "index_lesson_finding_responses_on_lesson_revision_id" ON "lesson_finding_responses" ("lesson_revision_id");
+CREATE INDEX "idx_on_lesson_review_id_finding_n_e45c2278eb" ON "lesson_finding_responses" ("lesson_review_id", "finding_n");
+CREATE TRIGGER lesson_finding_responses_no_update BEFORE UPDATE ON lesson_finding_responses
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER lesson_finding_responses_no_delete BEFORE DELETE ON lesson_finding_responses
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261018120001'),
 ('20261016100001'),
 ('20261012100001'),
 ('20261010120001'),

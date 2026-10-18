@@ -1,0 +1,49 @@
+{
+  "command": "findings list",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/subjects/math/findings",
+    "query": "kind=lesson"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "subject": "math",
+      "rows": [
+        {
+          "finding_id": "L1-1",
+          "kind": "lesson",
+          "lesson": "ripasso.math.demo",
+          "review_id": 1,
+          "revision_id": 1,
+          "seq": 1,
+          "current": true,
+          "pinned": false,
+          "severity": "major",
+          "card": 3,
+          "block": 2,
+          "quote": "bilancia",
+          "problem_it": "Problema major.",
+          "fix_it": "Correggi la frase."
+        },
+        {
+          "finding_id": "L1-3",
+          "kind": "lesson",
+          "lesson": "ripasso.math.demo",
+          "review_id": 1,
+          "revision_id": 1,
+          "seq": 1,
+          "current": true,
+          "pinned": false,
+          "severity": "blocker",
+          "section": "solutions",
+          "exercise": 2,
+          "quote": "bilancia",
+          "problem_it": "Problema blocker.",
+          "fix_it": "Correggi la frase."
+        }
+      ],
+      "next": "answer each open row: banco findings respond FINDING_ID --file response.json (an item: banco brief show diagnosis-item; a lesson: banco brief show lesson)"
+    }
+  }
+}

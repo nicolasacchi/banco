@@ -193,8 +193,9 @@ Rails.application.routes.draw do
     get "api/v1/submissions/pending" => "api/v1/grades#pending", format: false
     post "api/v1/attempts/:attempt/grade-proposals" => "api/v1/grades#propose", constraints: { attempt: /\d+/ }, format: false
 
-    # The author answers the findings (D-220); the teacher alone decides about them.
-    post "api/v1/findings/:finding/responses" => "api/v1/findings#respond", constraints: { finding: /\d+/ }, format: false
+    # The author answers the findings (D-220), an item's (a number) or a lesson review's (L<review>-<n>, D-313);
+    # the teacher alone decides about them.
+    post "api/v1/findings/:finding/responses" => "api/v1/findings#respond", constraints: { finding: /\d+|L\d+-\d+/ }, format: false
     # The third reviewer reads a finding and says who is right (D-222); this too decides nothing.
     post "api/v1/findings/:finding/assessments" => "api/v1/findings#assess", constraints: { finding: /\d+/ }, format: false
 

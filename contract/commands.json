@@ -236,7 +236,7 @@
       "method": "GET",
       "path": "/api/v1/subjects/:subject/findings",
       "args": [],
-      "flags": ["--subject", "--open", "--all"],
+      "flags": ["--subject", "--open", "--all", "--kind", "--lesson", "--topic"],
       "error_codes": ["E-AUTH", "E-NOT-FOUND"]
     },
     {

@@ -68,6 +68,8 @@ module LedgerRows
     rows["lesson_revisions"] = lesson_revision
     rows["lesson_reviews"] = LessonReview.create!(lesson_revision: lesson_revision, agent_session: session, checklist_json: "[]",
                                                   recomputed_json: "[]", findings_json: "[]")
+    rows["lesson_finding_responses"] = LessonFindingResponse.create!(lesson_review: rows["lesson_reviews"], finding_n: 1, agent_session: session, stance: "lesson_right",
+                                                                     note_it: "La lezione è giusta.")
     rows["lesson_renders"] = LessonRender.create!(lesson_revision: lesson_revision, status: "passed", rules_version: "8", harness_version: "h" * 8, attempt: 1,
                                                   result_json: "{}", shots_json: "[]")
     page = Page.create!(key: "math.ledger-page", subject: rows["subjects"])

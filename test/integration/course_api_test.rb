@@ -293,6 +293,26 @@ class CourseApiTest < ActionDispatch::IntegrationTest
     assert_equal({ "pass" => 8, "fail" => 0, "na" => 0 }, json["reviews"].first["results"])
   end
 
+  test "a lesson review's findings carry ids (D-313): the author answers one, lesson open and status show the answer" do
+    world
+    major = { "severity" => "major", "section" => "idea", "quote" => "Una equazione è come una bilancia in equilibrio.", "problem_it" => "L'immagine da sola non basta.",
+              "fix_it" => "Aggiungi un esempio con i numeri." }
+    review_lesson(@lesson_revision, review_doc(@lesson_revision, findings: [ major ]))
+    assert_response :created, json.inspect
+    id = "L#{json['review_id']}-1"
+    assert_equal [ id ], json["findings"].map { |f| f["id"] }
+    assert_equal major, json["findings"].first.except("id")
+    # The lesson's own author answers: an author session holds no other role on the lesson.
+    api("/api/v1/findings/#{id}/responses", method: :post, body: { response: { stance: "lesson_right", note_it: "L'esempio con i numeri è nella sezione dopo." } }, as: @author)
+    assert_response :created, json.inspect
+    api("/api/v1/lessons/ripasso.math.demo-equations")
+    assert_equal [ id, "lesson_right" ], json["reviews"].first["findings"].first.then { |f| [ f["id"], f.dig("response", "stance") ] }
+    api("/api/v1/lesson-revisions/#{@lesson_revision.id}")
+    assert_equal "L'esempio con i numeri è nella sezione dopo.", json["reviews"].first["findings"].first.dig("response", "note_it")
+    api("/api/v1/subjects/math/findings?lesson=ripasso.math.demo-equations&open=1")
+    assert_empty json["rows"]
+  end
+
   test "lesson and topic submit need an author session, also in a dry run" do
     world
     doc = topic_doc({ SKILL => [ [ "math-p-demo-1", nil ], [ "math-p-demo-2", nil ] ] })
