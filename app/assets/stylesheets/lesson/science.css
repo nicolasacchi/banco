@@ -115,3 +115,108 @@
   .dg-backbone, .dg-rung, .dg-shl, .dg-slit { stroke: CanvasText; }
   .dg-sbase, .dg-phosphate, .dg-sugar { fill: Canvas; stroke: CanvasText; }
 }
+
+/* ---- cell: the fixed colours of the parts (bio/cell_parts, D-312). Graphics only, never text; each outline 3:1 or more against the surface, the cytoplasm
+   and its own fill (test/lib/cell_parts_data_test.rb holds these blocks equal to the table). The shape and the name carry the part; colour reinforces. ---- */
+:root, .l2-box[data-theme="cream"] {
+  --cp-wall-fill: #e3ebc4; --cp-wall-line: #56701a;
+  --cp-membrane-fill: #e8f2ec; --cp-membrane-line: #8c5a12;
+  --cp-cytoplasm-fill: #e8f2ec; --cp-cytoplasm-line: #8c5a12;
+  --cp-nucleoid-fill: #efe6fa; --cp-nucleoid-line: #6b3fa6;
+  --cp-nucleus-fill: #e7dcf6; --cp-nucleus-line: #6b3fa6;
+  --cp-dna-fill: #efe6fa; --cp-dna-line: #6b3fa6;
+  --cp-ribosomes-fill: #a3304f; --cp-ribosomes-line: #8a2442;
+  --cp-mitochondria-fill: #fbdcc6; --cp-mitochondria-line: #ad4612;
+  --cp-chloroplasts-fill: #cde8c0; --cp-chloroplasts-line: #2b7330;
+  --cp-vacuole-fill: #d8e9fa; --cp-vacuole-line: #2a5ca6;
+  --cp-er-fill: #d5edef; --cp-er-line: #1f6c7a;
+  --cp-golgi-fill: #f4e8bf; --cp-golgi-line: #7c6000;
+  --cp-vesicles-fill: #f4e8bf; --cp-vesicles-line: #7c6000;
+  --cp-flagellum-fill: #e8e2d4; --cp-flagellum-line: #5a5344;
+}
+:root[data-theme="dark"], .l2-box[data-theme="dark"] {
+  --cp-wall-fill: #394026; --cp-wall-line: #c2d67a;
+  --cp-membrane-fill: #2e3934; --cp-membrane-line: #e2a95c;
+  --cp-cytoplasm-fill: #2e3934; --cp-cytoplasm-line: #e2a95c;
+  --cp-nucleoid-fill: #352f40; --cp-nucleoid-line: #c9a8f2;
+  --cp-nucleus-fill: #3a3049; --cp-nucleus-line: #c9a8f2;
+  --cp-dna-fill: #352f40; --cp-dna-line: #c9a8f2;
+  --cp-ribosomes-fill: #f291ad; --cp-ribosomes-line: #f6aec3;
+  --cp-mitochondria-fill: #4a3327; --cp-mitochondria-line: #f3a477;
+  --cp-chloroplasts-fill: #2c4530; --cp-chloroplasts-line: #93d38d;
+  --cp-vacuole-fill: #26364b; --cp-vacuole-line: #94bbf0;
+  --cp-er-fill: #223c40; --cp-er-line: #80cad4;
+  --cp-golgi-fill: #423b21; --cp-golgi-line: #e1c75e;
+  --cp-vesicles-fill: #423b21; --cp-vesicles-line: #e1c75e;
+  --cp-flagellum-fill: #3a372f; --cp-flagellum-line: #d3cbb6;
+}
+.dg-cell .dg-svg { margin: 0 auto; }
+.dg-cp { stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; transition: opacity 250ms ease; }
+.dg-cp-wall { fill: var(--cp-wall-fill); stroke: var(--cp-wall-line); }
+.dg-cp-membrane { fill: none; stroke: var(--cp-membrane-line); }
+.dg-cp-cytoplasm { fill: var(--cp-cytoplasm-fill); stroke: none; }
+.dg-cp-nucleoid { fill: var(--cp-nucleoid-fill); stroke: var(--cp-nucleoid-line); }
+.dg-cp-nucleus { fill: var(--cp-nucleus-fill); stroke: var(--cp-nucleus-line); }
+.dg-cp-dna { fill: none; stroke: var(--cp-dna-line); }
+.dg-cp-ribosomes { fill: var(--cp-ribosomes-fill); stroke: var(--cp-ribosomes-line); stroke-width: 1; }
+.dg-cp-mitochondria { fill: var(--cp-mitochondria-fill); stroke: var(--cp-mitochondria-line); }
+.dg-cp-chloroplasts { fill: var(--cp-chloroplasts-fill); stroke: var(--cp-chloroplasts-line); }
+.dg-cp-vacuole { fill: var(--cp-vacuole-fill); stroke: var(--cp-vacuole-line); }
+.dg-cp-er { fill: var(--cp-er-fill); stroke: var(--cp-er-line); stroke-width: 2; }
+.dg-cp-golgi { fill: var(--cp-golgi-fill); stroke: var(--cp-golgi-line); stroke-width: 2; }
+.dg-cp-vesicles { fill: var(--cp-vesicles-fill); stroke: var(--cp-vesicles-line); stroke-width: 2; }
+.dg-cp-flagellum { fill: none; stroke: var(--cp-flagellum-line); stroke-width: 3; }
+.dg-cp.dg-cp-ink { fill: none; }
+.dg-cp.dg-cp-edge { stroke-width: 3.5; }
+.dg-cp.dg-cp-thin { stroke-width: 1.2; }
+.dg-cp.dg-cp-thread { stroke-width: 2.2; }
+.dg-cp.dg-cp-zonefill { stroke: none; }
+.dg-cp.dg-cp-nucleolus { fill: var(--cp-nucleus-line); stroke: none; }
+.dg-cp.is-dim { opacity: 0.3; }
+.dg-cp.is-lit { stroke-width: 4; }
+.dg-cp.is-lit.dg-cp-edge, .dg-cp.is-lit.dg-cp-tail { stroke-width: 5; }
+.dg-cp.is-lit.dg-cp-dot { stroke-width: 1.5; }
+.dg-cp-cytoplasm.is-lit { fill: color-mix(in srgb, var(--r-common-highlight-tint, #fff1a8) 55%, var(--cp-cytoplasm-fill)); }
+.dg-cp-halo { fill: none; stroke: var(--r-common-highlight-tint, #fff1a8); stroke-width: 11; stroke-linejoin: round; stroke-linecap: round; }
+.dg-cp-halo.dg-cp-halo-dot { stroke-width: 6; }
+/* select mode (L3): every part in one neutral line style, no part name in a class */
+.dg-cp.dg-cp-neutral { fill: color-mix(in srgb, var(--text) 5%, var(--surface)); stroke: var(--text); stroke-width: 2; }
+.dg-cp.dg-cp-neutral.dg-cp-ink { fill: none; }
+.dg-cp.dg-cp-neutral.dg-cp-dot { fill: var(--text); stroke-width: 1; }
+.dg-cp.dg-cp-neutral.dg-cp-zonefill { fill: none; stroke: none; }
+.dg-cp.dg-cp-neutral.dg-cp-nucleolus { fill: var(--text); stroke: none; }
+.dg-czone { fill: transparent; stroke: none; }
+.dg-ctitle { font-weight: 800; color: var(--text); text-align: center; }
+.dg-clabel { color: var(--text); font-weight: 700; line-height: 1.25; }
+.dg-clabel-lit { background: var(--r-common-highlight-tint, #fff1a8); border-radius: 0.2em; box-shadow: 0 0 0 0.15em var(--r-common-highlight-tint, #fff1a8); }
+.dg-clabel-dim { color: var(--muted); font-weight: 400; }
+.dg-ckey { color: var(--text); }
+.dg-cleader { stroke: var(--text); stroke-width: 1.6; }
+.dg-cleader.is-lit { stroke-width: 2.6; }
+.dg-cleader-dot { fill: var(--text); stroke: var(--surface); stroke-width: 1.5; }
+.dg-cbadge { fill: var(--surface); stroke: var(--text); stroke-width: 2; }
+.dg-cbadge.is-lit { fill: var(--r-common-highlight-tint, #fff1a8); stroke-width: 3.5; }
+.dg-cbadge.is-dim { opacity: 0.55; }
+.dg-cnum { font-weight: 800; color: var(--text); text-align: center; }
+.dg-cpath { fill: none; stroke: var(--text); stroke-width: 3; stroke-dasharray: 9 5; stroke-linecap: round; }
+.dg-cpathhead { fill: var(--text); }
+.dg-cpathtext { font-weight: 700; color: var(--text); background: var(--surface); border-radius: 0.3em; padding: 0 0.15em; }
+.dg-cell .dg-hit:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .dg-cp { transition: none; }
+}
+@media (forced-colors: active) {
+  .dg-cp, .dg-cp.dg-cp-neutral { fill: Canvas; stroke: CanvasText; }
+  .dg-cp.dg-cp-ink, .dg-cp.dg-cp-zonefill { fill: none; }
+  .dg-cp.dg-cp-dot, .dg-cp.dg-cp-nucleolus { fill: CanvasText; }
+  .dg-cp.is-dim { opacity: 1; stroke: GrayText; }
+  .dg-cp-halo { stroke: Highlight; }
+  .dg-cleader, .dg-cpath { stroke: CanvasText; }
+  .dg-cpathhead, .dg-cleader-dot { fill: CanvasText; }
+  .dg-cbadge { fill: Canvas; stroke: CanvasText; }
+  .dg-cbadge.is-lit { stroke: Highlight; }
+  .dg-clabel-lit { background: Highlight; color: HighlightText; forced-color-adjust: none; }
+}
+@media print {
+  .dg-cp.is-dim { opacity: 0.45; }
+}

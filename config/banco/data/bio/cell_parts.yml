@@ -1,0 +1,100 @@
+# bio/cell_parts: the parts each cell kind may show in the `cell` figure, their Italian name, a one-line job and fixed graphics (W2-D08, WAVE2 1.9;
+# T7, D-312). Read by `cell` (Ruby Lessons::Diagrams::Cell, JS lesson/diagrams/science/cell.js through lesson/data/bio-cell_parts.js).
+#
+# Sources (each fact of the table comes from them; nothing from memory):
+#   kinds   OpenStax, Biology 2e (Clark, Douglas, Choi; CC BY 4.0), 4.2 Prokaryotic Cells ("All cells share four common components: a plasma
+#           membrane, cytoplasm, DNA, ribosomes"; "Prokaryotic DNA is in the cell's central part: the nucleoid"; "Most bacteria have a
+#           peptidoglycan cell wall"; "Some prokaryotes have flagella") and 4.5, Table 4.1 Components of Prokaryotic and Eukaryotic Cells
+#           (present in prokaryotes, animal cells, plant cells); 4.3 for the large central vacuole of plant cells. Accessed 2026-10-18.
+#   names   Vocabolario Treccani on line, "nucleoide" ("zona compatta del citoplasma dei procarioti in cui risiede il DNA"); it.wikipedia
+#           "Organulo" and "Procarioti" for the Italian names of the organelles. Accessed 2026-10-18.
+#   jobs    the Function column of the same Table 4.1, said in plain Italian for the student.
+# The second table is bio/cell_parts_expected (another route: it.wikipedia and Treccani, the presence per kind and the word of each name);
+# test/lib/cell_parts_data_test.rb compares the two and checks the colours. Changed only by a D entry.
+#
+# What a kind lists is what the figure may draw for it: a part that is not listed is refused (a bacterium with a nucleus, an animal cell with a
+# wall). Every kind has the four shared parts (membrane, cytoplasm, DNA in a nucleoid or a nucleus, ribosomes). The figure draws the typical
+# cell: the flagellum of a sperm cell, the lysosomes, the centrosome, the peroxisomes, the cytoskeleton and the nucleolus are not drawn.
+# `vacuole` is the large central vacuole of a plant cell (animal cells have small vesicles and vacuoles: `vesicles`). `dna` is listed by no
+# kind: it is drawn inside the nucleoid or the nucleus, and a figure's highlight, paths and notes may name it.
+#
+# Colours: fixed graphics, not palette roles and never used for text. Each outline is at 3:1 or more against the surface of its theme, the
+# cytoplasm and the part's own fill; the ribosomes' fill against the cytoplasm too (test/lib/cell_parts_data_test.rb). The shape and the name
+# carry the identity of a part; colour only reinforces it (A4). app/assets/stylesheets/lesson/science.css repeats them (the test holds it equal).
+version: 1
+source: 'OpenStax Biology 2e (CC BY 4.0) 4.2, 4.3 and 4.5 Table 4.1; Vocabolario Treccani "nucleoide"; it.wikipedia "Organulo" and "Procarioti"; accessed 2026-10-18'
+kinds:
+  bacterium: [wall, membrane, cytoplasm, nucleoid, ribosomes, flagellum]
+  animal: [membrane, cytoplasm, nucleus, ribosomes, mitochondria, er, golgi, vesicles]
+  plant: [wall, membrane, cytoplasm, nucleus, ribosomes, mitochondria, chloroplasts, vacuole, er, golgi, vesicles]
+parts:
+  wall:
+    name_it: parete cellulare
+    job_it: "Uno strato rigido fuori dalla membrana: protegge la cellula e le dà la forma."
+    fill: {cream: '#e3ebc4', dark: '#394026'}
+    outline: {cream: '#56701a', dark: '#c2d67a'}
+  membrane:
+    name_it: membrana
+    job_it: "Il confine della cellula: decide che cosa entra e che cosa esce."
+    fill: {cream: '#e8f2ec', dark: '#2e3934'}
+    outline: {cream: '#8c5a12', dark: '#e2a95c'}
+  cytoplasm:
+    name_it: citoplasma
+    job_it: "Il liquido denso che riempie la cellula: qui avvengono molte reazioni."
+    fill: {cream: '#e8f2ec', dark: '#2e3934'}
+    outline: {cream: '#8c5a12', dark: '#e2a95c'}
+  nucleoid:
+    name_it: DNA (nucleoide)
+    job_it: "La zona del citoplasma dove sta il DNA: intorno non c'è una membrana."
+    fill: {cream: '#efe6fa', dark: '#352f40'}
+    outline: {cream: '#6b3fa6', dark: '#c9a8f2'}
+  nucleus:
+    name_it: nucleo
+    job_it: "Contiene il DNA, chiuso da una membrana doppia."
+    fill: {cream: '#e7dcf6', dark: '#3a3049'}
+    outline: {cream: '#6b3fa6', dark: '#c9a8f2'}
+  dna:
+    name_it: DNA
+    job_it: "Le istruzioni della cellula, scritte in una molecola lunghissima."
+    fill: {cream: '#efe6fa', dark: '#352f40'}
+    outline: {cream: '#6b3fa6', dark: '#c9a8f2'}
+  ribosomes:
+    name_it: ribosomi
+    job_it: "Costruiscono le proteine."
+    fill: {cream: '#a3304f', dark: '#f291ad'}
+    outline: {cream: '#8a2442', dark: '#f6aec3'}
+  mitochondria:
+    name_it: mitocondri
+    job_it: "Ricavano energia dal cibo: è la respirazione cellulare."
+    fill: {cream: '#fbdcc6', dark: '#4a3327'}
+    outline: {cream: '#ad4612', dark: '#f3a477'}
+  chloroplasts:
+    name_it: cloroplasti
+    job_it: "Fanno la fotosintesi: con la luce producono zuccheri."
+    fill: {cream: '#cde8c0', dark: '#2c4530'}
+    outline: {cream: '#2b7330', dark: '#93d38d'}
+  vacuole:
+    name_it: vacuolo
+    job_it: "Una grande sacca piena d'acqua: tiene tesa la cellula."
+    fill: {cream: '#d8e9fa', dark: '#26364b'}
+    outline: {cream: '#2a5ca6', dark: '#94bbf0'}
+  er:
+    name_it: reticolo endoplasmatico
+    job_it: "Una rete di membrane: lavora le proteine e produce i lipidi."
+    fill: {cream: '#d5edef', dark: '#223c40'}
+    outline: {cream: '#1f6c7a', dark: '#80cad4'}
+  golgi:
+    name_it: apparato di Golgi
+    job_it: "Smista e impacchetta proteine e lipidi, poi li spedisce."
+    fill: {cream: '#f4e8bf', dark: '#423b21'}
+    outline: {cream: '#7c6000', dark: '#e1c75e'}
+  vesicles:
+    name_it: vescicole
+    job_it: "Piccole bolle che portano sostanze da una parte all'altra della cellula."
+    fill: {cream: '#f4e8bf', dark: '#423b21'}
+    outline: {cream: '#7c6000', dark: '#e1c75e'}
+  flagellum:
+    name_it: flagello
+    job_it: "Una coda che gira e fa muovere la cellula."
+    fill: {cream: '#e8e2d4', dark: '#3a372f'}
+    outline: {cream: '#5a5344', dark: '#d3cbb6'}

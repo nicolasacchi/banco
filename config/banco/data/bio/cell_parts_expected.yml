@@ -1,0 +1,68 @@
+# bio/cell_parts_expected: the second table of bio/cell_parts (WAVE2 1.9; T7, D-312). The same facts by another route, the Italian pages instead of
+# OpenStax: it.wikipedia "Procarioti" (section "La cellula dei procarioti" and "Struttura"), it.wikipedia "Organulo" (the lists of the typical animal
+# and plant cell), it.wikipedia "Vescicola (biologia)" and the Vocabolario Treccani "nucleoide", all accessed 2026-10-18.
+#   present  always: the page says the cell has it; some: the page says most or some have it (a figure may draw it); never: the page says the cell lacks
+#            it (a figure must refuse it). test/lib/cell_parts_data_test.rb: an `always` part is in the kind of bio/cell_parts, a `never` part is not,
+#            a `some` part may be either way.
+#   words    the stem of the Italian name as these pages write it ("vescicol" for vescicola and vescicole): the name in bio/cell_parts contains it.
+# Typed separately from bio/cell_parts (another route), by the same session: a model of another family still reviews both (D-312).
+version: 1
+source: 'it.wikipedia Procarioti, Organulo, Vescicola (biologia); Vocabolario Treccani nucleoide; accessed 2026-10-18'
+kinds:
+  bacterium:
+    membrane: {present: always, source: 'Procarioti: "a ridosso della membrana citoplasmatica o plasmalemma"'}
+    cytoplasm: {present: always, source: 'Procarioti: "All''interno del plasmalemma è localizzato il citoplasma"'}
+    nucleoid: {present: always, source: 'Procarioti: "Il materiale genetico è disperso nel nucleoide"; Treccani nucleoide'}
+    ribosomes: {present: always, source: 'Procarioti, Struttura: plasmidi, ribosomi nel citoplasma'}
+    wall: {present: some, source: 'Procarioti: "La maggior parte dei procarioti è provvista di una parete"'}
+    flagellum: {present: some, source: 'Procarioti: "dalla cellula possono sporgere strutture quali flagelli e pili"'}
+    nucleus: {present: never, source: 'Procarioti: "le cellule procariote sono prive di membrana nucleare"'}
+    mitochondria: {present: never, source: 'Procarioti: "mancano ... dei mitocondri"'}
+    chloroplasts: {present: never, source: 'Procarioti: "mancano ... dei cloroplasti"'}
+    vacuole: {present: never, source: 'Procarioti: "mancano ... vacuoli"'}
+    er: {present: never, source: 'Procarioti: "mancano ... il reticolo endoplasmatico"'}
+    golgi: {present: never, source: 'Procarioti: "mancano ... l''apparato di Golgi"'}
+    vesicles: {present: never, source: 'Procarioti: "non abbiano strutture interne limitate da membrane"'}
+  animal:
+    membrane: {present: always, source: 'Organulo: membrana plasmatica nella cellula animale tipica'}
+    cytoplasm: {present: always, source: 'Organulo: gli organuli, con il citosol, formano il citoplasma'}
+    nucleus: {present: always, source: 'Organulo: nucleo nella cellula animale tipica'}
+    ribosomes: {present: always, source: 'Organulo: ribosomi nella cellula animale tipica'}
+    mitochondria: {present: always, source: 'Organulo: mitocondri nella cellula animale tipica'}
+    er: {present: always, source: 'Organulo: il reticolo endoplasmatico "è presente in tutte le cellule eucariote"'}
+    golgi: {present: always, source: 'Organulo: apparato di Golgi nella cellula animale tipica'}
+    vesicles: {present: always, source: 'Vescicola (biologia): si generano per gemmazione dalla membrana dell''apparato del Golgi'}
+    flagellum: {present: some, source: 'Organulo: flagelli "(solo nei gameti)"'}
+    wall: {present: never, source: 'Organulo: la parete cellulare solo nella lista della cellula vegetale'}
+    chloroplasts: {present: never, source: 'Organulo: "Nelle piante verdi, i cloroplasti"'}
+    vacuole: {present: never, source: 'Organulo: il vacuolo "presente sia nelle cellule vegetali che in quelle di funghi"'}
+    nucleoid: {present: never, source: 'Treccani nucleoide: "zona compatta del citoplasma dei procarioti"'}
+  plant:
+    wall: {present: always, source: 'Organulo: parete cellulare nella cellula vegetale tipica'}
+    membrane: {present: always, source: 'Organulo: membrana plasmatica nella cellula vegetale tipica'}
+    cytoplasm: {present: always, source: 'Organulo: gli organuli, con il citosol, formano il citoplasma'}
+    nucleus: {present: always, source: 'Organulo: nucleo nella cellula vegetale tipica'}
+    ribosomes: {present: always, source: 'Organulo: ribosomi nella cellula vegetale tipica'}
+    mitochondria: {present: always, source: 'Organulo: mitocondri nella cellula vegetale tipica'}
+    chloroplasts: {present: always, source: 'Organulo: plastidi e cloroplasti nella cellula vegetale tipica'}
+    vacuole: {present: always, source: 'Organulo: vacuoli nella cellula vegetale tipica'}
+    er: {present: always, source: 'Organulo: il reticolo endoplasmatico "è presente in tutte le cellule eucariote"'}
+    golgi: {present: always, source: 'Organulo: apparato di Golgi nella cellula vegetale tipica'}
+    vesicles: {present: always, source: 'Vescicola (biologia): si generano per gemmazione dalla membrana dell''apparato del Golgi'}
+    flagellum: {present: some, source: 'Organulo: flagelli "(solo nei gameti)"'}
+    nucleoid: {present: never, source: 'Treccani nucleoide: "zona compatta del citoplasma dei procarioti"'}
+words:
+  wall: parete
+  membrane: membrana
+  cytoplasm: citoplasma
+  nucleoid: nucleoide
+  nucleus: nucleo
+  dna: DNA
+  ribosomes: ribosomi
+  mitochondria: mitocondri
+  chloroplasts: cloroplasti
+  vacuole: vacuolo
+  er: reticolo endoplasmatico
+  golgi: Golgi
+  vesicles: vescicol
+  flagellum: flagell

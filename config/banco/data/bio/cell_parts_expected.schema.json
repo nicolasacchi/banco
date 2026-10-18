@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:banco:data:bio-cell_parts-expected",
+  "title": "bio/cell_parts_expected: the second table for bio/cell_parts",
+  "description": "A separate extraction of the same facts by another route (the Italian pages: it.wikipedia Procarioti, Organulo, Vescicola; Treccani nucleoide): whether each kind has each part (always, some, never) with its source, and the stem of each part's Italian name; compared by the unit test with bio/cell_parts; T7 (WAVE2 1.9, D-312).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "source",
+    "kinds",
+    "words"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "source": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 300
+    },
+    "kinds": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[a-z_]+$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "minProperties": 3,
+        "propertyNames": {
+          "pattern": "^[a-z_]+$"
+        },
+        "additionalProperties": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "present",
+            "source"
+          ],
+          "properties": {
+            "present": {
+              "enum": [
+                "always",
+                "some",
+                "never"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 200
+            }
+          }
+        }
+      }
+    },
+    "words": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[a-z_]+$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 40
+      }
+    }
+  }
+}
