@@ -21,7 +21,8 @@ lesson, or that already reviewed this revision, is refused (`E-SESSION-NOT-INDEP
 cites, the skills with their typical errors, the checklist, the render result with the URLs of the
 screenshots, and this brief. `banco lessons list --subject KEY` shows the revision ids. **For a lesson/2
 revision, look at every card's screenshot at 390 pixels first** (`banco lesson shots REV --dir D`): that is the
-student's phone, and a label that overlaps or a picture that says something else shows only there. Keep your
+student's phone, and a label that overlaps or a picture that says something else shows only there. Each exercise of
+«Prova tu» after the first has its own picture (`card-NN-ex2_390x844-cream.webp`, and so on). Keep your
 files in a scratch directory that only you own: `mktemp -d "$TMPDIR/lr-SUBJECT-XXXXXX"`; never a fixed name,
 parallel sessions share `$TMPDIR`. `banco lesson-review submit REV --file review.json` sends the result (use
 `--dry-run` first). You report; you never decide and never ask for a decision: the teacher reads your review and
