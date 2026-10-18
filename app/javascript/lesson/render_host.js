@@ -7,12 +7,14 @@
 //   inspect(n, options)        Promise { n, findings: [{ code, message, where }], height }  for card n (0 is the cover),
 //                              after stepping every figure of the card through its states
 //
-// Findings (all errors, they depend on the author's data): E-LESSON-RENDER (an exception, a KaTeX error),
+// Findings (all errors, they depend on the author's data): E-LESSON-RENDER (an exception, a KaTeX error, markup printed as text: D-310),
 // E-LESSON-OVERFLOW (something wider than its box or than the page), E-DIAGRAM-LAYOUT (a layout that answered an
-// error, two labels overlapping, a label outside the drawing), E-DIAGRAM-SMALL-TEXT (a label under the minimum), E-DIAGRAM-TARGET (a select target under 24 x 24 px).
+// error, two labels overlapping, a label outside the drawing, a node's or a mirror piece's text across its box), E-DIAGRAM-SMALL-TEXT (a label
+// under the minimum), E-DIAGRAM-TARGET (a select target under 24 x 24 px).
 // Nothing here is sent anywhere; the CSP of the host allows no connection.
 import { renderLesson } from "lesson/render"
 import { preloadFor } from "lesson/preload"
+import { rawMarkupIn } from "lesson/raw_markup"
 
 const errors = []
 const note = (message) => errors.push(String(message).slice(0, 300))
@@ -69,10 +71,11 @@ function figureFindings(figure, minPx, state, out) {
     if (r.width < 23.5 || r.height < 23.5)
       out.push({ code: "E-DIAGRAM-TARGET", message: `a select target is ${r.width.toFixed(0)} x ${r.height.toFixed(0)} px, under 24 x 24`, where: `${figure.dataset.type} figure, ${tag}` })
   }
-  // a node's text must clear the node's border (a text measured in another face than it is drawn in touches or crosses it)
+  // a node's text must clear the node's border (a text measured in another face than it is drawn in touches or crosses it); a mirror piece
+  // is a node too (a word wider than the room beside its icon crossed the box, D-310)
   const nodeRects = [...figure.querySelectorAll(".dg-node")].map((n) => n.getBoundingClientRect())
   for (const { label, rect } of boxes) {
-    if (!label.classList.contains("dg-nodetext") || label.querySelector(".katex")) continue // a formula holds its own hidden MathML twin: its text range is not what is drawn
+    if (!(label.classList.contains("dg-nodetext") || label.classList.contains("dg-mr-text")) || label.querySelector(".katex")) continue // a formula holds its own hidden MathML twin: its text range is not what is drawn
     const cx = (rect.left + rect.right) / 2
     const cy = (rect.top + rect.bottom) / 2
     const node = nodeRects.find((r) => cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom)
@@ -115,6 +118,12 @@ function katexFindings(card, out) {
   for (const bad of card.querySelectorAll(".katex-error")) {
     out.push({ code: "E-LESSON-RENDER", message: `KaTeX cannot draw "${text(bad)}": ${bad.getAttribute("title") || "parse error"}`, where: "formula" })
   }
+}
+
+// markup the student would read as written ("[[es:hablar]]", "$a^3$"): a field drawn as plain text (D-310)
+function markupFindings(card, out) {
+  const hit = rawMarkupIn(card)
+  if (hit) out.push({ code: "E-LESSON-RENDER", message: `markup printed as text: "${hit.text.slice(0, 60)}"`, where: text(hit.where) || "card" })
 }
 
 const config = JSON.parse(document.getElementById("lesson-config").textContent)
@@ -167,6 +176,7 @@ async function inspect(n) {
       }
     }
     katexFindings(card, findings)
+    markupFindings(card, findings)
   } catch (error) {
     findings.push({ code: "E-LESSON-RENDER", message: `exception: ${String(error?.message ?? error).slice(0, 200)}`, where: "card" })
   }

@@ -130,9 +130,9 @@ modules, the student's projection of the body, a CSP with no connection); `lesso
 
 | code | what |
 |---|---|
-| `E-LESSON-RENDER` | an exception, a formula KaTeX refuses, a card that does not draw, a time budget (90 s per revision, 5 s per card and viewport), "Stampa riassunto e schema" over one A4 page |
+| `E-LESSON-RENDER` | an exception, a formula KaTeX refuses, markup printed as text (`[[es:hablar]]`, `$a^3$`: a field drawn as plain text, D-310), a card that does not draw, a time budget (90 s per revision, 5 s per card and viewport), "Stampa riassunto e schema" over one A4 page |
 | `E-LESSON-OVERFLOW` | the page wider than the window, or something wider inside than its box |
-| `E-DIAGRAM-LAYOUT` | a layout that answered an error, two labels overlapping, a label outside its figure |
+| `E-DIAGRAM-LAYOUT` | a layout that answered an error, two labels overlapping, a label outside its figure, the text of a node or of a mirror piece touching or crossing its box (D-310) |
 | `E-DIAGRAM-SMALL-TEXT` | a diagram label under `min_text_px` (a guard: the layout never draws one) |
 
 Screenshots are WebP, quality 80, stored by content in `storage/lesson_shots/<sha256>.webp`. `banco lesson status REV` shows the
