@@ -16,6 +16,7 @@
 .tile:focus-visible, .order-move:focus-visible, .dg-target:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .tile-built { background: var(--soft-primary, var(--surface)); border-width: 3px; }
 .tile-bank.is-used { border-style: dashed; color: transparent; background: transparent; cursor: default; }
+.tile-bank.is-used .tile-text { visibility: hidden; } /* a formula or a coloured word inside keeps its own colour: the outline alone stays */
 .tile-bank.is-used:hover { border-color: var(--text); }
 .tiles-actions { margin: 0; display: flex; flex-wrap: wrap; gap: 0.5em; }
 
@@ -63,6 +64,7 @@
 @media (forced-colors: active) {
   .tile, .order-move, .order-item, .tiles-line { border-color: ButtonText; background: ButtonFace; color: ButtonText; }
   .tile-bank.is-used { color: GrayText; border-color: GrayText; border-style: dashed; }
+  .tile-bank.is-used .tile-text { visibility: visible; }
   .tile-built, .dg-target.is-on { border-color: Highlight; border-width: 4px; }
   .dg-target { border-color: ButtonText; color: ButtonText; }
   .dg-target .dg-target-ic { background: Highlight; color: HighlightText; forced-color-adjust: none; }
