@@ -130,7 +130,8 @@ export function renderCard(card, ctx, position) {
       }
       // the mistakes of one group sit under one heading: repeated kinds read as a set
       if (block.group_it && block.group_it !== group) {
-        grid.appendChild(renderInlineRich(block.group_it, el("h3", { class: "mistakes-group" }), insideControl(ctx)))
+        // one span in the heading (a flex box): words, a formula and a word of another language wrap as one line of text (D-310)
+        grid.appendChild(el("h3", { class: "mistakes-group" }, renderInlineRich(block.group_it, el("span", { class: "mistakes-group-title" }), insideControl(ctx))))
         group = block.group_it
       }
       grid.appendChild(anchored(mistake(block, ctx, { group: block.group_it }), block))
