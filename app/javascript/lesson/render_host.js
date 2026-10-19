@@ -128,7 +128,7 @@ function figureFindings(figure, minPx, state, out) {
 const OVERFLOW_CULPRITS = 4
 
 // Something that scrolls or is clipped sideways inside the card, or the page wider than the window.
-function overflowFindings(card, out) {
+function overflowFindings(card, out, scope = card) {
   const doc = document.documentElement
   if (doc.scrollWidth > window.innerWidth + 1)
     out.push({ code: "E-LESSON-OVERFLOW", message: `the page is ${doc.scrollWidth} px wide in a ${window.innerWidth} px window`, where: "page" })
@@ -142,7 +142,9 @@ function overflowFindings(card, out) {
   }
   // the innermost ones say where the width comes from: a card that clips its content is wide because of what is in it. Each one apart
   // (a few at most), so that a second state of the card that adds its own is not hidden behind the first.
-  const culprits = wide.filter((node) => !wide.some((other) => other !== node && node.contains(other))).slice(0, OVERFLOW_CULPRITS)
+  const inner = wide.filter((node) => !wide.some((other) => other !== node && node.contains(other)))
+  // in a state's own scope first, so that the culprits of the rest of the card do not use up the cap
+  const culprits = [...inner.filter((n) => scope.contains(n)), ...inner.filter((n) => !scope.contains(n))].slice(0, OVERFLOW_CULPRITS)
   for (const culprit of culprits) {
     out.push({ code: "E-LESSON-OVERFLOW", message: `${culprit.tagName.toLowerCase()}${culprit.className && typeof culprit.className === "string" ? `.${culprit.className.trim().split(/\s+/)[0]}` : ""} is ${culprit.scrollWidth} px wide in a ${culprit.clientWidth} px box`, where: text(culprit) || "card" })
   }
@@ -297,19 +299,19 @@ async function inspect(n, state = null) {
     if (state === "open" || match?.[2]) {
       // a disclosure lays out at once (nothing in one is a figure that waits for a redraw): measured as soon as it is open
       openParts(scope)
-      overflowFindings(card, findings)
+      overflowFindings(card, findings, scope)
       glossFindings(scope, findings)
     } else {
       // only the figures the student has on screen in this state: one in a hidden exercise is drawn in that exercise's state
       const figures = api.figures().filter((f) => scope.contains(f.element) && shown(f.element))
-      if (figures.length === 0) overflowFindings(card, findings)
+      if (figures.length === 0) overflowFindings(card, findings, scope)
       for (const figure of figures) {
         const total = figure.total ?? 1
         for (let i = 0; i < total; i++) {
           if (total > 1) figure.setState(i)
           await settle()
           figureFindings(figure.element, minPx, i, findings)
-          overflowFindings(card, findings)
+          overflowFindings(card, findings, scope)
         }
       }
     }
@@ -323,7 +325,7 @@ async function inspect(n, state = null) {
   for (const message of errors.splice(0)) findings.push({ code: "E-LESSON-RENDER", message: `exception: ${message}`, where: "card" })
   const seen = new Set()
   const unique = findings.filter((f) => {
-    const key = `${f.code}|${f.message}`
+    const key = `${f.code}|${f.message}|${f.where}`
     if (seen.has(key)) return false
     seen.add(key)
     return true
