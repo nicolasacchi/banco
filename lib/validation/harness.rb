@@ -30,6 +30,7 @@ module Validation
                  "connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
     LESSON_HOST = File.expand_path("../../app/views/harness/lesson_render.html.erb", __dir__)
     LESSON_SCRIPT = File.expand_path("../../app/javascript/lesson/render_host.js", __dir__)
+    LESSON_RAW_MARKUP = File.expand_path("../../app/javascript/lesson/raw_markup.js", __dir__)
 
     # No connection of any kind, no image, no frame, only the page's own scripts.
     CSP = "default-src 'none'; script-src 'self'; connect-src 'none'; img-src 'none'; base-uri 'none'; form-action 'none'"
@@ -56,7 +57,7 @@ module Validation
 
     # sha256 of what makes a lesson render differ: the host template and script, and the numbers of the check (A-07).
     def lesson_version
-      Digest::SHA256.hexdigest([ File.read(LESSON_HOST), File.read(LESSON_SCRIPT), JSON.generate(Rules.get(:lesson2, :render)) ].join("\n"))
+      Digest::SHA256.hexdigest([ File.read(LESSON_HOST), File.read(LESSON_SCRIPT), File.read(LESSON_RAW_MARKUP), JSON.generate(Rules.get(:lesson2, :render)) ].join("\n"))
     end
 
     def lesson_page_url(token, theme: "cream")

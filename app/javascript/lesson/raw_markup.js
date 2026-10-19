@@ -4,6 +4,10 @@
 const SPAN = /\[\[[a-z]+(?:[_-][a-z]+)*(?:\|it)?:[^\]]*\]\]/
 const FORMULA = /(?<!\\)\$([^$\n]{1,80})(?<!\\)\$/g
 
+// The text nodes the inline reader made (text.js adds each one): what the parser left as text is text, even with a literal dollar in it
+// ("scrivi \$A_1 oppure \$B" is drawn as $A_1 oppure $B), so the DOM walk leaves them out.
+export const parsedText = new WeakSet()
+
 // The first piece of raw markup in a string, or null. Pure.
 export function rawMarkup(text) {
   const s = String(text ?? "")
@@ -17,7 +21,7 @@ export function rawMarkup(text) {
 // MathML) and code (a code span shows its characters as they are): { text, where } or null.
 export function rawMarkupIn(root) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-    acceptNode: (node) => (node.parentElement?.closest(".katex, code, .code-span, script, style, template") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT)
+    acceptNode: (node) => (parsedText.has(node) || node.parentElement?.closest(".katex, code, .code-span, script, style, template") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT)
   })
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     const hit = rawMarkup(node.nodeValue)

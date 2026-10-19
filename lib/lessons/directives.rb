@@ -155,7 +155,7 @@ module Lessons
       else
         raise Refused.new(line, "math is one formula on one line (use lines: for a chain)") if stripped.include?("\n")
 
-        tex = unquote(stripped)
+        tex = unquote(stripped, line)
         raise Refused.new(line, "math is one formula or a lines: list") if tex.empty?
 
         { "type" => "math", "tex" => tex }
@@ -165,10 +165,13 @@ module Lessons
     # A one-line formula written in quotes, as the YAML of the other blocks is ('...' or "..."), loses the one matching pair around it
     # (D-310): KaTeX cannot draw a quote, and the author meant the formula. What is inside is kept as written: no YAML escape is read, so a
     # backslash stays a backslash and '' stays two primes.
-    def unquote(text)
+    def unquote(text, line)
       return text unless text.length >= 2 && [ "'", '"' ].include?(text[0]) && text[-1] == text[0]
 
-      text[1..-2].strip
+      inside = text[1..-2]
+      raise Refused.new(line, "a quoted formula holds no #{text[0]} inside (YAML doubles it): write the formula without quotes") if inside.include?(text[0])
+
+      inside.strip
     end
 
     # YAML.safe_load (no aliases, no custom tags), a mapping, and no double-quoted scalar with a backslash.
