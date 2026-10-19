@@ -178,6 +178,13 @@ test("raw markup in the rendered DOM: a literal dollar the parser drew as text i
     assert.equal(rawMarkupIn({}).text, "[[es:hablar]]")
     nodes.pop()
     assert.equal(rawMarkupIn({}), null)
+    // a span the parser left as text is still raw markup, even in a parsed node
+    for (const left of ["[[es:]]", "[[highlight:x]]"]) {
+      const node = textNode(left)
+      parsedText.add(node)
+      nodes.splice(0, nodes.length, drawn, node)
+      assert.equal(rawMarkupIn({}).text, left)
+    }
   } finally {
     delete globalThis.document
     delete globalThis.NodeFilter

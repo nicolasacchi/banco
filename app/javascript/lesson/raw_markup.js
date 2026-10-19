@@ -5,14 +5,16 @@ const SPAN = /\[\[[a-z]+(?:[_-][a-z]+)*(?:\|it)?:[^\]]*\]\]/
 const FORMULA = /(?<!\\)\$([^$\n]{1,80})(?<!\\)\$/g
 
 // The text nodes the inline reader made (text.js adds each one): what the parser left as text is text, even with a literal dollar in it
-// ("scrivi \$A_1 oppure \$B" is drawn as $A_1 oppure $B), so the DOM walk leaves them out.
+// ("scrivi \$A_1 oppure \$B" is drawn as $A_1 oppure $B), so the DOM walk skips the formula test for them. A span the parser left as text (an empty or malformed one, a reserved name, a nested one) is still found.
 export const parsedText = new WeakSet()
 
 // The first piece of raw markup in a string, or null. Pure.
-export function rawMarkup(text) {
+// With { formula: false } only a span counts.
+export function rawMarkup(text, { formula = true } = {}) {
   const s = String(text ?? "")
   const span = s.match(SPAN)
   if (span) return span[0]
+  if (!formula) return null
   for (const m of s.matchAll(FORMULA)) if (/[\\^_{}]/.test(m[1])) return m[0]
   return null
 }
@@ -21,10 +23,10 @@ export function rawMarkup(text) {
 // MathML) and code (a code span shows its characters as they are): { text, where } or null.
 export function rawMarkupIn(root) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-    acceptNode: (node) => (parsedText.has(node) || node.parentElement?.closest(".katex, code, .code-span, script, style, template") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT)
+    acceptNode: (node) => (node.parentElement?.closest(".katex, code, .code-span, script, style, template") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT)
   })
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-    const hit = rawMarkup(node.nodeValue)
+    const hit = rawMarkup(node.nodeValue, { formula: !parsedText.has(node) })
     if (hit) return { text: hit, where: node.parentElement }
   }
   return null
