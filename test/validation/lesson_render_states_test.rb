@@ -110,7 +110,7 @@ class LessonRenderStatesTest < ActiveSupport::TestCase
     # the first exercise is the card as drawn, and it is clean; the second draws its number line, the third its tiles
     assert_empty errors.select { |e| e["state"].nil? && e["card"] == try_card }, dump(row)
     assert errors.any? { |e| e["state"] == "ex2" && e["code"] == "E-DIAGRAM-LAYOUT" && e["viewport"] == PHONE }, dump(row)
-    assert errors.any? { |e| e["state"] == "ex3" && e["code"] == "E-LESSON-OVERFLOW" && e["viewport"] == PHONE && e["where"].to_s.include?("Superca") }, dump(row)
+    assert errors.any? { |e| e["state"] == "ex3" && e["code"] == "E-LESSON-OVERFLOW" && e["viewport"] == PHONE && e["where"].to_s.include?("Le tessere") }, dump(row)
     assert_empty errors.select { |e| e["state"] == "ex4" }, dump(row)
     # the card at every viewport; each further exercise at the phone, and also wherever it found something
     shots = row.shots.select { |s| s["card"] == try_card }
@@ -234,12 +234,15 @@ class LessonRenderStatesTest < ActiveSupport::TestCase
   end
 
   test "a mirror piece whose text runs out of its box at 390 px is E-DIAGRAM-LAYOUT; short pieces with the same roles pass" do
-    # the Italian piece runs into the gap of the link, inside the figure: no label is outside it and none overlaps another
-    row = render_md("spanish", mirror_md("svegliavamo", "vemos"))
+    # a word wider than the whole box (a word never wraps): D-310 puts the two pieces of a pair one under the other and a word that wide
+    # still crosses its box (and leaves the figure: the author shortens the piece)
+    row = render_md("spanish", mirror_md("svegliavamoooooooooooooooooooooooooooooo", "vemos"))
     mine = row.result["errors"].select { |e| e["message"].include?("svegliavamo") }
     assert mine.any? { |e| e["code"] == "E-DIAGRAM-LAYOUT" && e["viewport"] == PHONE && e["message"].match?(/touches or crosses the border of its box/) }, dump(row)
-    assert_empty mine.select { |e| e["message"].match?(/outside the figure|overlap/) }, dump(row)
     row = render_md("spanish", mirror_md("vediamo", "vemos"))
+    assert_empty row.result["errors"].select { |e| e["code"] == "E-DIAGRAM-LAYOUT" }, dump(row)
+    # a long word the old list let cross its box now fits: the icon above the text, or the pair one under the other (D-310, D-311)
+    row = render_md("spanish", mirror_md("svegliavamo", "vemos"))
     assert_empty row.result["errors"].select { |e| e["code"] == "E-DIAGRAM-LAYOUT" }, dump(row)
   end
 
