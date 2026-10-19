@@ -48,10 +48,12 @@ module Search
       end
     end
 
-    # When the last build of +group+ began reading the primary database (nil before the first).
+    # When the last build of +group+ began reading the primary database (nil before the first, and nil when the stored time is
+    # in the future: the clock stepped back after the build, so the value cannot vouch for anything).
     def read_at(group)
       value = Index.meta("read_#{group}")
-      value && Time.iso8601(value)
+      time = value && Time.iso8601(value)
+      time unless time && time > Time.current
     rescue ArgumentError
       nil
     end
