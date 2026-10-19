@@ -71,6 +71,19 @@ class SearchIndexJobTest < ActiveJob::TestCase
     end
   end
 
+  test "a read time in the future (clock stepped back) is ignored, so the job rebuilds" do
+    build_search_world
+    Search::Index.set_meta("read_lessons", 1.day.from_now.utc.iso8601(6))
+    assert_nil Search::Indexer.read_at("lessons")
+    reads = 0
+    counting = lambda do |group|
+      reads += 1
+      Search::Builders.const_get(group.camelize).call
+    end
+    Search::Builders.stub(:docs, counting) { SearchIndexJob.perform_now(%w[lessons]) }
+    assert_equal 1, reads
+  end
+
   test "the rebuild task builds the lexical index first and says how many documents have vectors" do
     build_search_world
     Rails.application.load_tasks unless Rake::Task.task_defined?("banco:search:rebuild")
