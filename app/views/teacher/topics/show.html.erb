@@ -85,7 +85,8 @@
                   <% end %>
                 </ul>
                 <% if (own = review.lesson_findings_of(row)).any? %>
-                  <p data-review-findings="<%= own.size %>" data-answered="<%= own.count(&:response) %>"><%= t("teacher.topic.review.findings_line", count: own.size, answered: own.count(&:response)) %>
+                  <% severe = own.select(&:severe?) %>
+                  <p data-review-findings="<%= own.size %>" data-severe="<%= severe.size %>" data-answered="<%= severe.count(&:response) %>"><%= t("teacher.topic.review.findings_line", count: own.size, severe: severe.size, answered: severe.count(&:response)) %>
                     <a href="#lesson-findings"><%= t("teacher.topic.review.findings_link") %></a></p>
                 <% end %>
                 <% if row.recomputed.any? %>

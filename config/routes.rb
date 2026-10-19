@@ -197,7 +197,7 @@ Rails.application.routes.draw do
     # the teacher alone decides about them.
     post "api/v1/findings/:finding/responses" => "api/v1/findings#respond", constraints: { finding: /\d+|L\d+-\d+/ }, format: false
     # The third reviewer reads a finding and says who is right (D-222); this too decides nothing.
-    post "api/v1/findings/:finding/assessments" => "api/v1/findings#assess", constraints: { finding: /\d+/ }, format: false
+    post "api/v1/findings/:finding/assessments" => "api/v1/findings#assess", constraints: { finding: /\d+|L\d+-\d+/ }, format: false
 
     # The graph and the entry test of a subject.
     subject = { subject: /[a-z_]+/ }

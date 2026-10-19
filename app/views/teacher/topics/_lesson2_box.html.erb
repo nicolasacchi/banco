@@ -82,7 +82,7 @@
           <li data-box-finding="<%= entry.id %>" data-severity="<%= entry.severity %>" data-answered="<%= !entry.response.nil? %>">
             <% if entry.card %><a href="#card-<%= entry.card %>" data-action="lesson2-preview#goto" data-card="<%= entry.card %>"><%= local_assigns.fetch(:review).finding_place(entry) %></a> ·<% end %>
             <%= t("teacher.skill.severity.#{entry.severity}") %> ·
-            <%= entry.response ? t("teacher.topic.review.box_answered") : t("teacher.topic.review.box_open") %> ·
+            <% if entry.severe? %><%= entry.response ? t("teacher.topic.review.box_answered") : t("teacher.topic.review.box_open") %> ·<% end %>
             <a href="#lesson-finding-<%= entry.id %>"><%= t("teacher.topic.review.box_read") %></a>
           </li>
         <% end %>

@@ -48,7 +48,7 @@ module Api
         rows.concat(item_rows(subject, all: all, open: open, topic: topic.presence)) if kind != "lesson" && lesson.blank?
         rows.concat(lesson_rows(subject, keys: [ lesson, topic ].compact_blank.map(&:key).uniq, all: all, open: open)) if kind != "item"
         render json: { subject: subject.key, rows: rows,
-                       next: "answer each open row: banco findings respond FINDING_ID --file response.json (an item: banco brief show diagnosis-item; a lesson: banco brief show lesson)" }
+                       next: "answer each open row: banco findings respond FINDING_ID --file response.json (an item: banco brief show diagnosis-item; a lesson: banco brief show lesson for lesson/2, banco brief show lesson-v1 for lesson/1)" }
       end
 
       # POST /api/v1/findings/:id/responses {response: {stance, revision_id?, note_it}}
@@ -80,6 +80,11 @@ module Api
 
       # POST /api/v1/findings/:id/assessments {assessment: {verdict, note_it}}
       def assess
+        if LessonFindings::ID.match?(params[:finding].to_s)
+          return refuse("E-NOT-FOUND", "finding", "#{params[:finding].to_s.first(24)} is a lesson finding: the third reviewer assesses item findings only",
+                        "banco findings list --subject SUBJECT --all --kind item", 422)
+        end
+
         finding = ReviewFinding.find_by(id: params[:finding])
         return refuse("E-NOT-FOUND", "finding", "no finding #{params[:finding].to_s.first(20).inspect}", "banco findings list --subject SUBJECT --all", 404) unless finding
 
@@ -108,7 +113,8 @@ module Api
       def item_rows(subject, all:, open:, topic: nil)
         scope = all ? ReviewFinding.all : ReviewFinding.must_be_disposed
         scope = scope.joins(item_revision: :item).where(items: { subject_id: subject.id })
-        scope = scope.where(item_revisions: { item_id: topic_item_ids(topic) }) if topic
+        topic_revision_ids = topic ? topic_pinned_revision_ids(topic) : []
+        scope = scope.where(item_revisions: { item_id: ItemRevision.where(id: topic_revision_ids).select(:item_id) }) if topic
         findings = scope.includes(item_revision: :item).order(:id).to_a
         dispositions = ReviewFinding.dispositions
         responses = FindingResponse.latest_for(findings.map(&:id))
@@ -116,6 +122,7 @@ module Api
         viewer = viewer_session
         latest = Item.where(subject: subject).includes(:revisions).to_h { |i| [ i.id, i.revisions.map(&:seq).max ] }
         pinned = BlueprintRevision.where(subject: subject).order(:seq).last&.pinned_item_revision_ids.to_a
+        pinned |= topic_revision_ids
         rows = findings.map do |f|
           rev = f.item_revision
           { finding_id: f.id, kind: "item", item: rev.item.key, item_kind: rev.item.kind, revision_id: rev.id, seq: rev.seq, current: rev.seq == latest[rev.item_id],
@@ -134,10 +141,11 @@ module Api
         open ? rows.select { |r| r[:decision].nil? && r[:response].nil? && (r[:current] || r[:pinned]) } : rows
       end
 
-      # The items whose revisions the latest revision of the topic pins (none when it has no revision yet).
-      def topic_item_ids(lesson)
+      # The item revisions the latest revision of the topic pins (none when it has no revision yet). The topic page shows
+      # them and its gate needs them disposed, even when a newer revision of the item exists.
+      def topic_pinned_revision_ids(lesson)
         revision = lesson.topic_revisions.max_by(&:seq) or return []
-        ItemRevision.where(id: Approval::TopicGate.item_revision_ids(revision)).distinct.pluck(:item_id)
+        Approval::TopicGate.item_revision_ids(revision).to_a
       end
 
       # The lesson named by params[name] (lesson or topic: the topic is its lesson): "" when the parameter is

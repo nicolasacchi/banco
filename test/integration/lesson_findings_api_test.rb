@@ -201,6 +201,25 @@ class LessonFindingsApiTest < ActionDispatch::IntegrationTest
     assert_equal "sent_back", json["decision"]
   end
 
+  test "a lesson finding id sent to the assess endpoint is a JSON refusal, not an HTML 404" do
+    api("/api/v1/findings/#{@major}/assessments", method: :post, body: { assessment: { verdict: "finding_right", note_it: "Si." } }, as: session!(:arbiter))
+    assert_response :unprocessable_entity
+    assert_equal "E-NOT-FOUND", json["code"]
+    assert_match(/lesson finding/, json["message"])
+  end
+
+  test "topic with open keeps a pinned item revision that a newer revision of the item supersedes" do
+    pinned = make_practice_item("lf-old", "math.number")
+    review = ItemReview.create!(item_revision: pinned, agent_session: @reviewer, checklist_json: "[]")
+    ReviewFinding.create!(item_revision: pinned, source: "review", item_review: review, severity: "major", field: "stem", quote: "x", problem_it: "Ambiguo.", fix_it: "Chiarisci.")
+    make_topic(@rev1, { "math.number" => [ pinned ] })
+    ItemRevision.create!(item: pinned.item, seq: 2, body_json: pinned.body_json, file_sessions_json: "{}")
+
+    assert_equal 1, list("topic=#{KEY}&kind=item").size
+    assert_equal [ "lf-old" ], list("topic=#{KEY}&kind=item&open=1").map { |r| r["item"] }
+    assert_empty list("kind=item&open=1")
+  end
+
   test "the list and the answers carry nothing of the student" do
     student = Student.create!(key: "prova-7", kind: "student")
     topic = make_topic(@rev1, { "math.number" => [] })
