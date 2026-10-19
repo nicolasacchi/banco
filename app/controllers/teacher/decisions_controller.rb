@@ -44,7 +44,7 @@ module Teacher
 
     # "Segui il parere su questi M" (D-222): one dispose_finding decision per listed finding, each
     # through DecisionRecorder with every guard, in the teacher's own request. A pair "finding:verdict"
-    # is the line the teacher saw. A finding decided meanwhile, one whose two opinions are no longer
+    # is the line the teacher saw. A finding decided meanwhile, one whose opinion is no longer
     # clear or no longer say that, a minor one, and one of another subject are skipped and reported.
     def follow_opinions
       subject = Subject.find_by(key: params[:subject].to_s) or return render(plain: "Not Found", status: :not_found)

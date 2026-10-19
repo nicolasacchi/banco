@@ -14,6 +14,7 @@ module LedgerRows
     rows["reference_texts"] = ReferenceText.create!(key: "ref", title: "t", source_url: "https://example.org", sha256: "0" * 64, body: "b")
     session = AgentSession.create!(label: "s", role: "author")
     rows["agent_sessions"] = session
+    rows["agent_session_corrections"] = AgentSessionCorrection.create!(agent_session: session, model: "claude-opus-5-5", reason: "ledger test", request_id: "ledger-correction-1", created_at: now)
     token = ApiToken.create!(public_id: "abcd1234", secret_sha256: "d" * 64, role: "agent_claude", label: "l")
     rows["api_tokens"] = token
     rows["api_token_revocations"] = ApiTokenRevocation.create!(api_token: token, reason: "test")

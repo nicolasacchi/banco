@@ -133,7 +133,7 @@ class TeacherDashboardTest < ActionDispatch::IntegrationTest
     assert_select "li[data-todo=corrections] a[href='/teacher/corrections']", /correzion/
 
     finding = blocker_finding
-    assess_both!(finding, "finding_right")
+    assess_with_old_second!(finding, "finding_right")
     page("/teacher/dashboard/fragment")
     assert_equal %w[findings topics corrections], css_select("#todo-list li").map { |li| li["data-todo"] }, "the finding comes first and blocks the test, which has no line of its own"
     assert_select "li[data-todo=findings]", /#{Regexp.escape(@subject.name_it)}: Un rilievo da decidere\./

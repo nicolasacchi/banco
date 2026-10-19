@@ -25,7 +25,7 @@ module Pages
     def gate_reason(revision, key:)
       verdict = revision.passed_validation
       return "the page #{key} (revision #{revision.id}) has not passed validation in Chrome" unless verdict
-      return "the page #{key} (revision #{revision.id}) has no review by an independent session" if revision.reviews.empty?
+      return "the page #{key} (revision #{revision.id}) has no review by an independent session" if revision.counting_reviews.empty?
 
       blockers = revision.reviews.max_by(&:id).findings.count { |f| f["severity"] == "blocker" }
       blockers.positive? ? "the page #{key} (revision #{revision.id}) has #{blockers} blocker finding(s) in its latest review" : nil

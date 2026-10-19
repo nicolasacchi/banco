@@ -10,7 +10,7 @@ module Api
     # the teacher approves the topic or sends the lesson back, in the browser.
     #
     # The third reviewer, the arbiter (D-222), reads a finding with the item and the author's answer and
-    # says who is right. Two opinions count, the first and the second (two models), and the second must
+    # says who is right. One opinion counts, from one model (D-316 dropped the second opinion), and it must
     # be written independently: an arbiter session does not see the assessments of a finding before it has
     # written its own. An assessment never writes a decision: the teacher decides, in the browser.
     class FindingsController < Api::BaseController
@@ -104,7 +104,7 @@ module Api
         return render json: { dry_run: true, status: "passed", codes: [] } if dry_run?
 
         row = FindingAssessment.create!(review_finding: finding, agent_session: session, verdict: doc["verdict"], note_it: doc["note_it"].strip)
-        render json: row.to_h.merge(next: "stop here: the teacher decides, in the browser; the second opinion is another model's job"), status: :created
+        render json: row.to_h.merge(next: "stop here: the teacher decides, in the browser"), status: :created
       end
 
       private
@@ -301,7 +301,7 @@ module Api
         session if session && (session.token_id.nil? || session.token_id == @token.id)
       end
 
-      # The opinion on a finding as the viewer may read it (D-222). The second opinion is written
+      # The opinion on a finding as the viewer may read it (D-222). The opinion is written
       # independently, so the assessments go only to a valid session of this token that is not an
       # arbiter still to assess this finding: the author, a reviewer or operator session, or an arbiter that
       # has assessed it itself. Without a valid session, or for an arbiter that has not assessed it, only
@@ -310,7 +310,7 @@ module Api
         return nil unless opinion.any?
         return { hidden: true, count: opinion.given.size } if viewer.nil? || (viewer.role == "arbiter" && opinion.given.none? { |a| a.agent_session_id == viewer.id })
 
-        { state: opinion.state, verdict: opinion.verdict, first: opinion.first&.to_h, second: opinion.second&.to_h }.compact
+        { state: opinion.state, verdict: opinion.verdict, first: opinion.first&.to_h, history: opinion.history.map(&:to_h).presence }.compact
       end
     end
   end

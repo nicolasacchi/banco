@@ -76,7 +76,7 @@
             <% end %>
             <% review.reviews.each do |row| %>
               <div data-lesson-review="<%= row.review.id %>">
-                <p><%= t("teacher.topic.review.summary", model: row.model, pass: row.results["pass"].to_i, fail: row.results["fail"].to_i, na: row.results["na"].to_i) %></p>
+                <p data-review-model><%= not_independent_pill(row.independent) %> <%= t("teacher.topic.review.summary", model: session_model_text(row.session), pass: row.results["pass"].to_i, fail: row.results["fail"].to_i, na: row.results["na"].to_i) %></p>
                 <ul class="plain checklist" data-checklist>
                   <% row.checklist.each do |c| %>
                     <li data-point="<%= c['id'] %>" data-result="<%= c['result'] %>"><span class="tick" aria-hidden="true"><%= { "pass" => "✓", "fail" => "✗" }.fetch(c["result"], "–") %></span>
@@ -162,11 +162,13 @@
                 <% if card.review %>
                   <% failed = card.review.select { |c| c["result"] == "fail" } %>
                   <p data-review="<%= failed.empty? ? 'clean' : 'fail' %>"><%= t("teacher.skill.review_summary", pass: card.review.count { |c| c["result"] != "fail" }, fail: failed.size) %></p>
+                  <p class="hint" data-review-by><%= provenance_line(card.review_by, t("teacher.provenance.what.review")) %></p>
                   <% failed.each do |c| %><p class="notice"><strong><%= Review::Checklist::ALL_POINTS[c["id"] - 1] %></strong>: <%= c["evidence"] %></p><% end %>
                 <% else %><p><%= t("teacher.skill.no_review") %></p><% end %>
                 <% if card.blind %>
                   <% mismatches = card.blind.reject { |r| %w[correct short_answer].include?(r["verdict"]) } %>
                   <p data-blind="<%= mismatches.empty? ? 'ok' : 'mismatch' %>"><%= t("teacher.skill.blind_summary", ok: card.blind.size - mismatches.size, total: card.blind.size) %></p>
+                  <p class="hint" data-blind-by><%= provenance_line(card.blind_by, t("teacher.provenance.what.blind")) %></p>
                 <% else %><p><%= t("teacher.skill.no_blind") %></p><% end %>
               </details>
               <p class="card-actions">

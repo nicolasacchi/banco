@@ -1,0 +1,11 @@
+it:
+  teacher:
+    provenance:
+      by: "%{what}: sessione %{id}, modello %{model}."
+      corrected: "%{model} (dichiarato: %{declared}, corretto dall'operatore: %{reason})"
+      not_independent: "non indipendente"
+      not_independent_hint: "Questa sessione gira sullo stesso modello di chi ha scritto: non conta per nessun controllo. I rilievi restano."
+      what:
+        review: "Revisione"
+        blind: "Prova alla cieca"
+      pages_not_independent: "%{count} non indipendenti, non contano"

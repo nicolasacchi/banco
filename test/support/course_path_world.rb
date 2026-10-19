@@ -72,7 +72,7 @@ module CoursePathWorld
     finding = ReviewFinding.create!(item_revision: revision, source: "review", item_review: review, severity: severity, field: "stem", quote: "x",
                                     problem_it: "L'enunciato si presta a due letture.", fix_it: "Riscrivi l'enunciato.")
     opinions.each_with_index do |verdict, i|
-      assess!(finding, verdict, session: arbiter_session(i.zero? ? ArbiterRows::FIRST_MODEL : ArbiterRows::SECOND_MODEL))
+      assess!(finding, verdict, session: arbiter_session(i.zero? ? ArbiterRows::FIRST_MODEL : ArbiterRows::OLD_SECOND_MODEL))
     end
     finding
   end

@@ -7,6 +7,9 @@ class PageRevision < ApplicationRecord
   has_many :validations, class_name: "PageValidation"
   has_many :reviews, class_name: "PageReview"
 
+  # The reviews that count (D-316): the session ran on another TRUE model than every author of the page.
+  def counting_reviews = Providers.counting(reviews.includes(agent_session: :corrections), page)
+
   def manifest = JSON.parse(manifest_json)
   def warnings = JSON.parse(warnings_json)
 

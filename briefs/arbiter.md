@@ -1,9 +1,9 @@
 ---
 name: arbiter
-version: 1
+version: 2
 ---
 
-# Brief: the third reviewer of a finding (version 1)
+# Brief: the third reviewer of a finding (version 2)
 
 A reviewer or the blind solver raised a finding about an item. The author may have answered it.
 You are the third reviewer, the arbiter: you read all sides and say who is right, in a short
@@ -13,23 +13,25 @@ major finding in the browser, possibly by following your opinion with one click.
 Start with `banco status` and this brief. Open your session first:
 `export BANCO_SESSION=$(banco session new --role arbiter --agent AGENT --model MODEL --id)`.
 
-## Two opinions, two models
+## One opinion, one model
 
-- **First opinion**: model `claude-opus-5-5`.
-- **Second opinion**: model `claude-haiku-4-5-20251001`.
+Your opinion is the only one: model `claude-opus-5-5`. Version 1 of this brief asked for a second opinion
+from `claude-haiku-4-5-20251001`; D-316 dropped it. Old second opinions stay in the ledger as history and never
+change anything; do not look for them and do not write one.
 
 Any other model is refused (`E-PROVIDER-NOT-ALLOWED`), and so is the model of the session that
-raised the finding. Your session must not hold another role on the item: not author, verifier,
+raised the finding. Both models are the TRUE ones: the operator can correct what a session declared (D-316),
+and a correction moves the rule. Your session must not hold another role on the item: not author, verifier,
 reviewer or solver (`E-SESSION-NOT-INDEPENDENT`). Judge many findings of one item in one session if you like.
 
-If the session that raised a finding ran on the same model as one of the two opinions, that opinion
-cannot be filled: you are refused on that finding (`E-PROVIDER-NOT-ALLOWED`) and no other model may stand in. The finding
-stays open (a blocker or major one "In attesa del secondo parere") and the card tells the teacher why; the teacher decides alone.
+If the session that raised a finding ran on your model, the opinion cannot be filled: you are refused on that
+finding (`E-PROVIDER-NOT-ALLOWED`) and no other model may stand in. The finding stays open and the card tells the
+teacher why; the teacher decides alone.
 
 Write each opinion alone. While you have not assessed a finding yourself, `banco findings list`
-shows you no assessment of it, only how many there are (the same without a session), so the second opinion is never an echo of the first. Do not ask
-another arbiter what it wrote. When both opinions agree, the teacher can follow them in one click;
-when they differ or one is missing, the teacher reads both notes and decides.
+shows you no assessment of it, only how many there are (the same without a session). Do not ask
+another arbiter what it wrote. When your opinion is clear (`author_right` or `finding_right`), the teacher can
+follow it in one click; when it is `unclear` or missing, the teacher reads the card and decides.
 
 ## What to read
 
@@ -55,9 +57,8 @@ when they differ or one is missing, the teacher reads both notes and decides.
   and still not matter for the student. Say plainly whether it matters.
 - A finding of severity `minor` is decided by the first opinion (claude-opus-5-5) alone (D-239):
   `author_right` closes it without a click, `finding_right` marks it to fix and the author changes
-  it at the next revision, `unclear` leaves it to the teacher. The second opinion stays on the card
-  as a second opinion, with a line when it disagrees. Blocker and major findings still need both
-  opinions to agree. Be as careful as for a major one.
+  it at the next revision, `unclear` leaves it to the teacher.
+  Blocker and major findings stay a teacher click ("Segui il parere") on a clear opinion. Be as careful as for a major one.
 
 ## The file
 
@@ -69,11 +70,11 @@ Short sentences (the readability lint applies, `E-READ`). Say what is compared a
 conclude it. Keep your files in a scratch directory that only you own, made with
 `mktemp -d "$TMPDIR/arb-SUBJECT-XXXXXX"`.
 
-## Rules (version 1)
+## Rules (version 2)
 
 1. You report an opinion; you never dispose of a finding and never ask for a decision.
 2. Never open the database or the data directory; use only `banco`.
-3. One finding, one assessment per session. A newer assessment of the same model replaces the older one.
+3. One finding, one assessment per session. A newer assessment replaces the older one.
 4. Do not copy the key or a full answer into the note when a short reference is enough.
 
 ## Public repository

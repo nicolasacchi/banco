@@ -38,8 +38,8 @@ module Course
     end
 
     def lessons(subject)
-      latest = Lesson.where(subject: subject).includes(revisions: :reviews).filter_map(&:latest_revision)
-      { total: latest.size, unreviewed: latest.count { |r| r.reviews.empty? }, sent_back: latest.count { |r| Decisions.lesson_sent_back?(r) } }
+      latest = Lesson.where(subject: subject).includes(revisions: { reviews: { agent_session: :corrections } }).filter_map(&:latest_revision)
+      { total: latest.size, unreviewed: latest.count { |r| r.counting_reviews.empty? }, sent_back: latest.count { |r| Decisions.lesson_sent_back?(r) } }
     end
 
     def practice_items(subject)

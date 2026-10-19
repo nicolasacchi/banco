@@ -61,7 +61,7 @@ module Teacher
     # The cards of one skill: every pinned item revision, side by side.
     def cards(skill)
       row = skill_row(skill) or return []
-      revisions = ItemRevision.where(id: row.item_ids).includes(:item, :instances, { findings: :blind_solve }, :reviews, :blind_solves, :validations).index_by(&:id)
+      revisions = ItemRevision.where(id: row.item_ids).includes(:item, :instances, { findings: :blind_solve }, { reviews: { agent_session: :corrections } }, { blind_solves: { agent_session: :corrections } }, :validations).index_by(&:id)
       dispositions = ReviewFinding.dispositions
       back = SendBacks.by_revision(row.item_ids)
       row.item_ids.filter_map { |id| revisions[id] }.map { |rev| ItemCard.build(rev, dispositions, back) }
@@ -100,7 +100,7 @@ module Teacher
       end
     end
 
-    # The open findings whose two opinions agree on a side (author_right or finding_right): the
+    # The open findings whose opinion takes a side (author_right or finding_right): the
     # teacher may follow them in one click. Waiting, split and unclear opinions stay out (D-222).
     def clear_open_list = open_finding_list.select { |o| o.opinion.clear? }
 

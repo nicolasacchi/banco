@@ -2,7 +2,7 @@ require "test_helper"
 require_relative "../support/arbiter_rows"
 
 # D-222: the arbiter's opinions are append-only and check their own shape; the effective opinion
-# of a finding is the latest assessment of each of the two models.
+# of a finding is the latest counting assessment of the first model; an old second opinion is history.
 class FindingAssessmentTest < ActiveSupport::TestCase
   include ArbiterRows
 
@@ -12,7 +12,7 @@ class FindingAssessmentTest < ActiveSupport::TestCase
     @revision = ItemRevision.create!(item: item, seq: 1, body_json: "{}", file_sessions_json: "{}")
     @finding = ReviewFinding.create!(item_revision: @revision, source: "review", severity: "major", field: "f", quote: "q", problem_it: "p", fix_it: "f")
     @first = arbiter_session(FIRST_MODEL)
-    @second = arbiter_session(SECOND_MODEL)
+    @second = arbiter_session(OLD_SECOND_MODEL)
   end
 
   def build(**attrs) = FindingAssessment.new({ review_finding: @finding, agent_session: @first, verdict: "author_right", note_it: "La chiave è giusta." }.merge(attrs))
@@ -40,18 +40,20 @@ class FindingAssessmentTest < ActiveSupport::TestCase
 
   test "the slot comes from the model of the session, nil for any other model" do
     assert_equal :first, build.tap(&:save!).slot
-    assert_equal :second, build(agent_session: @second).tap(&:save!).slot
+    assert_nil build(agent_session: @second).tap(&:save!).slot, "the second opinion model has no slot since D-316"
     assert_nil build(agent_session: AgentSession.create!(label: "t", role: "arbiter", agent: "t", model: "other")).slot
-    assert_equal :second, Providers.opinion_slot("Anthropic/CLAUDE-HAIKU-4-5-20251001")
+    assert_nil Providers.opinion_slot("Anthropic/CLAUDE-HAIKU-4-5-20251001")
+    assert_equal :first, Providers.opinion_slot("Anthropic/CLAUDE-OPUS-5-5")
   end
 
-  test "opinions_for keeps the latest assessment of each model and is one entry per finding" do
+  test "opinions_for keeps the latest assessment of the first model and is one entry per finding" do
     other = ReviewFinding.create!(item_revision: @revision, source: "review", severity: "minor", field: "f", quote: "q", problem_it: "p", fix_it: "f")
     build(verdict: "unclear").save!
     latest_first = build(verdict: "finding_right").tap(&:save!)
     second = build(agent_session: @second, verdict: "finding_right").tap(&:save!)
     opinions = FindingAssessment.opinions_for([ @finding.id, other.id ])
-    assert_equal [ latest_first, second ], opinions[@finding.id].given
+    assert_equal [ latest_first ], opinions[@finding.id].given
+    assert_equal [ second ], opinions[@finding.id].history
     assert_equal :clear, opinions[@finding.id].state
     assert_equal :none, opinions[other.id].state
     assert_equal :clear, @finding.opinion.state

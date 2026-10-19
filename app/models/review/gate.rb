@@ -11,6 +11,9 @@ module Review
   # There is no agent verdict and no waiver: the agents report and the teacher
   # decides (firm rule 2). A fix request means the revision is to be replaced, so it
   # keeps the gate shut.
+  #
+  # A review or a blind solve counts only when its session ran on another TRUE model than every author of the item
+  # (D-316, Providers.independent?, read each time with AgentSession#model, which a correction can change).
   module Gate
     Result = Struct.new(:approvable, :reasons, :open_findings, keyword_init: true) do
       def to_h = { approvable: approvable, reasons: reasons, open_findings: open_findings }
@@ -23,8 +26,9 @@ module Review
     def check(revision)
       reasons = []
       reasons << "validation has not passed" unless revision.status == "passed"
-      reasons << "no expert review on this revision" unless revision.reviews.exists?
-      reasons << "no blind solve on this revision" unless revision.blind_solves.exists?
+      reasons << review_reason(revision.reviews, revision.counting_reviews, "expert review")
+      reasons << review_reason(revision.blind_solves, revision.counting_blind_solves, "blind solve")
+      reasons.compact!
       dispositions = ReviewFinding.dispositions
       must = revision.findings.must_be_disposed.order(:id).to_a
       open = must.reject { |f| dispositions.key?(f.id) }
@@ -35,7 +39,16 @@ module Review
       Result.new(approvable: reasons.empty?, reasons: reasons, open_findings: open.map(&:id))
     end
 
-    # The agent's side is done for a revision: a review and a blind solve exist.
-    def worked?(revision) = revision.reviews.exists? && revision.blind_solves.exists?
+    # The agent's side is done for a revision: a review and a blind solve exist that count (D-316: independent
+    # by the true model of the session).
+    def worked?(revision) = revision.counting_reviews.any? && revision.counting_blind_solves.any?
+
+    # nil when a row counts. The words matter: Teacher::Wording turns them into Italian.
+    def review_reason(all, counting, what)
+      return nil if counting.any?
+      return "no #{what} on this revision" unless all.exists?
+
+      "no independent #{what} on this revision: the session that filed it runs on the same model as an author of the item"
+    end
   end
 end

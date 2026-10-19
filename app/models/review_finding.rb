@@ -28,18 +28,16 @@ class ReviewFinding < ApplicationRecord
 
   def latest_response = responses.max_by(&:id)
 
-  def opinion = FindingOpinion.new(assessments.to_a)
+  def opinion = FindingOpinion.new(assessments.includes(agent_session: :corrections).to_a)
 
-  # True when an opinion slot is still empty and its model is the one that raised this finding: the arbiter
-  # on that model is refused (E-PROVIDER-NOT-ALLOWED), so the slot stays empty (D-222).
+  # True when the opinion is still empty and the arbiter's model is the one that raised this finding: the arbiter
+  # on that model is refused (E-PROVIDER-NOT-ALLOWED), so the opinion stays empty (D-222). Read with the true
+  # models (D-316).
   def opinion_slot_blocked?(op = opinion)
-    raiser = AgentSession.find_by(id: raised_by_session_id)
-    return false unless raiser
+    return false unless op.first.nil?
 
-    # A minor finding needs only the first opinion (D-239); the others need both.
-    slots = severity == "minor" ? { first: op.first } : { first: op.first, second: op.second }
-    missing = slots.select { |_, a| a.nil? }.keys
-    missing.any? { |slot| Providers.slot_model(slot) == Providers.model_key(raiser.model) }
+    raiser = AgentSession.find_by(id: raised_by_session_id)
+    !raiser.nil? && Providers.model_key(raiser.model) == Providers.first_opinion_model
   end
 
   # The agent session that raised the finding: the reviewer or the blind solver.

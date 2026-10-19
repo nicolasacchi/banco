@@ -28,18 +28,18 @@
   <% op = entry.opinion %>
   <% if op.any? %>
     <div class="opinions" data-opinion-state="<%= op.state %>"<% if op.verdict %> data-opinion-verdict="<%= op.verdict %>"<% end %>>
-      <% if f.severity == "minor" %>
-        <% if op.second_disagrees? %><p class="hint" data-second-disagrees><%= t("teacher.skill.second_disagrees", verdict: t("teacher.skill.verdict.#{op.second.verdict}")) %></p><% end %>
-      <% else %>
-      <p><strong><%= t("teacher.skill.opinion.#{op.state == :waiting && op.first.nil? ? :waiting_first : op.state}") %>.</strong><% if op.clear? %> <%= t("teacher.skill.verdict_clear.#{op.verdict}") %><% end %></p>
+      <% if f.severity != "minor" %>
+      <p><strong><%= t("teacher.skill.opinion.#{op.state}") %>.</strong><% if op.clear? %> <%= t("teacher.skill.verdict_clear.#{op.verdict}") %><% end %></p>
       <% end %>
-      <% { first: op.first, second: op.second }.each do |slot, a| %>
-        <% next unless a %>
-        <p class="assessment" data-opinion="<%= slot %>" data-assessment="<%= a.verdict %>">
-          <strong><%= t("teacher.skill.opinion.#{slot}") %></strong> <%= t("teacher.skill.verdict.#{a.verdict}") %>.<br>
-          <%= a.note_it %></p>
-      <% end %>
+      <p class="assessment" data-opinion="first" data-assessment="<%= op.first.verdict %>">
+        <strong><%= t("teacher.skill.opinion.first") %></strong> <%= t("teacher.skill.verdict.#{op.first.verdict}") %>.<br>
+        <%= op.first.note_it %></p>
     </div>
+  <% end %>
+  <% op.history.each do |a| %>
+    <p class="assessment history hint" data-opinion-history="<%= a.ignored_reason %>" data-assessment="<%= a.verdict %>">
+      <strong><%= t("teacher.skill.opinion.history_#{a.ignored_reason}") %></strong> <%= t("teacher.skill.verdict.#{a.verdict}") %>.<br>
+      <%= a.note_it %></p>
   <% end %>
   <% if !entry.disposition && f.opinion_slot_blocked?(op) %>
     <p class="hint" data-opinion-blocked><%= t("teacher.skill.blocked_slot") %></p>

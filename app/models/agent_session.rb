@@ -9,12 +9,26 @@ class AgentSession < ApplicationRecord
   ID = /\A[1-9]\d{0,17}\z/
 
   validates :role, inclusion: { in: ROLES }
+  has_many :corrections, class_name: "AgentSessionCorrection"
+
   validates :agent, :model, presence: true, on: :create, if: -> { agent_declared? }
 
-  # The model family of config/banco/providers.yml.
+  # What the session declared (banco session new --model), never changed.
+  def declared_model = self[:model]
+
+  # The latest correction (D-316), or nil.
+  def correction = corrections.loaded? ? corrections.max_by(&:id) : corrections.order(:id).last
+
+  def corrected? = !correction.nil?
+
+  # The TRUE model: the model of the latest correction, else the declared one. Every reader of a session's model
+  # uses this one (independence, the arbiter, the teacher's pages); declared_model is only for showing the difference.
+  def model = correction&.model || declared_model
+
+  # The model family of config/banco/providers.yml, of the true model.
   def family = Providers.family(model)
 
-  def to_h = { id: id, role: role, agent: agent, model: model, family: family }
+  def to_h = { id: id, role: role, agent: agent, model: model, family: family }.merge(corrected? ? { declared_model: declared_model } : {})
 
   private
 

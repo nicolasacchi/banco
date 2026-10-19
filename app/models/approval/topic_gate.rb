@@ -4,7 +4,7 @@ module Approval
   #   1. the topic is in the subject's latest course map with the same skills,
   #   2. nothing pinned is stale: the lesson revision is the newest of its lesson and each item
   #      revision is the newest passed revision of its item,
-  #   3. the lesson revision has a review by an independent session and the teacher did not send it back,
+  #   3. the lesson revision has a review by an independent session (D-316: read with the true model) and the teacher did not send it back,
   #   3b. a lesson/2 revision has a render check without errors (D-249: its cards were drawn in Chrome and read),
   #   4. every pinned item revision passes Review::Gate,
   #   5. the teacher opened the topic review page of this very revision (app_event teacher_viewed_topic),
@@ -63,7 +63,7 @@ module Approval
       reasons << "the pinned lesson revision #{lesson_pin[:pinned]} is not the newest revision of its lesson (#{lesson_pin[:latest]})" if lesson_pin[:pinned] != lesson_pin[:latest]
       stale.each { |pin| reasons << "item revision #{pin[:pinned]} is no longer the newest passed revision of its item: #{pin[:newest_passed]} replaced it" }
       lesson_revision = revision.lesson_revision
-      reasons << "the lesson revision has no review by an independent session" unless lesson_revision.reviews.exists?
+      reasons << "the lesson revision has no review by an independent session" unless lesson_revision.counting_reviews.any?
       reasons << "the teacher sent the lesson revision back" if Course::Decisions.lesson_sent_back?(lesson_revision)
       render_reason = LessonRenders.gate_reason(lesson_revision)
       reasons << render_reason if render_reason

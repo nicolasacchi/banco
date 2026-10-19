@@ -6,6 +6,9 @@ class LessonRevision < ApplicationRecord
   belongs_to :author_session, class_name: "AgentSession", optional: true
   has_many :reviews, class_name: "LessonReview"
 
+  # The reviews that count (D-316): the session ran on another TRUE model than every author of the lesson.
+  def counting_reviews = Providers.counting(reviews.includes(agent_session: :corrections), lesson)
+
   def body = JSON.parse(body_json)
   def warnings = JSON.parse(warnings_json)
 

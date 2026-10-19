@@ -65,7 +65,9 @@
           <% page_revision = pin[:revision]; verdict = page_revision.latest_validation %>
           <li data-page="<%= page_revision.page.key %>" data-state="<%= verdict&.status || 'pending' %>">
             <%= page_revision.manifest["title_it"] %>:
-            <%= t("teacher.pages.line.#{verdict&.status || 'pending'}", kit: verdict&.kit_version, reviews: page_revision.reviews.size) %>
+            <%= t("teacher.pages.line.#{verdict&.status || 'pending'}", kit: verdict&.kit_version, reviews: page_revision.counting_reviews.size) %>
+            <% extra = page_revision.reviews.size - page_revision.counting_reviews.size %>
+            <% if extra.positive? %><%= not_independent_pill(false) %> <span class="hint"><%= t("teacher.provenance.pages_not_independent", count: extra) %></span><% end %>
             <% if verdict %><a href="<%= teacher_page_shots_path(page_revision_id: page_revision.id) %>"><%= t("teacher.pages.line.shots") %></a><% end %>
           </li>
         <% end %>

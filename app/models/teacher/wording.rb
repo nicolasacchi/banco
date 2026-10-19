@@ -19,6 +19,8 @@ module Teacher
       [ /\Avalidation has not passed\z/, ->(_names, *) { "Il controllo meccanico non è passato." } ],
       [ /\Ano expert review on this revision\z/, ->(_names, *) { "Manca la revisione dell'esperto." } ],
       [ /\Ano blind solve on this revision\z/, ->(_names, *) { "Manca la prova alla cieca." } ],
+      [ /\Ano independent expert review on this revision/, ->(_names, *) { "La revisione dell'esperto non è indipendente: è dello stesso modello di chi ha scritto la domanda." } ],
+      [ /\Ano independent blind solve on this revision/, ->(_names, *) { "La prova alla cieca non è indipendente: è dello stesso modello di chi ha scritto la domanda." } ],
       [ /\A(\d+) blocker or major finding\(s\) without the teacher's disposition\z/, ->(_names, n) { "#{n} rilievi gravi senza una tua decisione." } ],
       [ /\A(\d+) finding\(s\) the teacher asked to fix: a new revision is needed\z/, ->(_names, n) { "Hai chiesto una correzione (#{n}): serve una revisione nuova." } ],
       [ /\Athe teacher sent this revision back: a new revision is needed\z/, ->(_names, *) { "Hai rimandato questa revisione: serve una revisione nuova." } ],

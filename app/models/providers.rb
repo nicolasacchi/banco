@@ -28,17 +28,36 @@ module Providers
 
   def families = config.fetch("families").keys
 
-  # The normalized model that gives the :first or :second opinion.
-  def slot_model(slot) = model_key(rule("arbiter")["#{slot}_opinion_model"])
+  # The normalized model that gives the first (and, since D-316, the only) opinion.
+  def first_opinion_model = model_key(rule("arbiter")["first_opinion_model"])
 
-  # :first or :second for an arbiter model (the opinion it gives), nil for any other model.
-  def opinion_slot(model)
-    rule = rule("arbiter")
-    key = model_key(model)
-    return :first if key == model_key(rule["first_opinion_model"])
-    return :second if key == model_key(rule["second_opinion_model"])
+  # :first for the arbiter's model, nil for any other model. The second opinion was dropped (D-316): an old
+  # assessment of the second model has no slot and only shows as history.
+  def opinion_slot(model) = model_key(model) == first_opinion_model ? :first : nil
 
-    nil
+  # Independence read at the time of reading (D-316), with the TRUE model of every session (AgentSession#model):
+  # a session is independent of +authors+ (AgentSession rows) when none of them runs on its model. The write-time
+  # refusal below is the same rule, applied once; this one is applied again each time a gate counts a review or a solve.
+  def independent?(session, authors)
+    mine = model_key(session.model)
+    return true if mine.empty? # a session that declared no model (old rows, fixtures) is not held against anyone
+
+    authors.none? { |a| model_key(a.model) == mine }
+  end
+
+  # The review or solve rows (ItemReview, BlindSolve, LessonReview, PageReview) that count, among +rows+ on +thing+
+  # (an Item, a Lesson or a Page): the ones whose session is independent of every author of the thing.
+  def counting(rows, thing)
+    rows = rows.to_a
+    return rows if rows.empty?
+
+    authors = ItemSessions.for(thing).sessions("author")
+    rows.select { |row| independent?(row.agent_session, authors) }
+  end
+
+  # True when the arbiter session runs on another model than the session that raised the finding (D-316: derived at read time).
+  def different_from_raiser?(arbiter_session, raiser_session)
+    raiser_session.nil? || model_key(raiser_session.model) != model_key(arbiter_session.model)
   end
 
   # nil when the session may act in its role on +item+ (nil: not item-specific),

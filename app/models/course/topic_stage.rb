@@ -51,7 +51,7 @@ module Course
       out << "the pinned lesson revision is not the newest (#{lesson_pin[:pinned]}, newest #{lesson_pin[:latest]})" if lesson_pin[:pinned] != lesson_pin[:latest]
       out << "#{stale.size} pinned item revision(s) are not the newest passed revision of their item" if stale.any?
       lesson_revision = revision.lesson_revision
-      out << "the lesson revision has no review by an independent session" unless lesson_revision.reviews.exists?
+      out << "the lesson revision has no review by an independent session" unless lesson_revision.counting_reviews.any?
       out << "the teacher sent the lesson revision back" if Decisions.lesson_sent_back?(lesson_revision)
       item_revisions = ItemRevision.where(id: revision.body["practice"].flat_map { |p| p["items"].map { |i| i["revision"] } }).includes(:validations, :reviews, :blind_solves)
       out << "#{item_revisions.count { |r| r.status != 'passed' }} pinned item revision(s) have not passed validation" if item_revisions.any? { |r| r.status != "passed" }

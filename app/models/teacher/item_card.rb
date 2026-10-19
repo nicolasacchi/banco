@@ -5,7 +5,9 @@ module Teacher
   module ItemCard
     SAMPLES = 4
 
-    Card = Data.define(:revision, :item, :body, :samples, :catalogue, :sources, :gate, :review, :blind, :findings, :send_backs, :superseded)
+    Card = Data.define(:revision, :item, :body, :samples, :catalogue, :sources, :gate, :review, :blind, :findings, :send_backs, :superseded, :review_by, :blind_by)
+    # Who filed the latest review or blind solve, on which TRUE model (D-316), and whether it counts.
+    Provenance = Data.define(:session, :independent)
     # opinion: the third reviewer's FindingOpinion (D-222). closure: for a minor finding without a decision,
     # what the third reviewer's agreeing opinions make of it, :closed or :to_fix, else nil (a derived state, no decision row).
     Finding = Data.define(:finding, :disposition, :new_revision_expected, :evidence, :response, :opinion, :closure)
@@ -16,7 +18,7 @@ module Teacher
     module_function
 
     # Revisions loaded with what the card reads (one query each, not one per card).
-    def load(ids) = ItemRevision.where(id: ids).includes(:item, :instances, { findings: :blind_solve }, :reviews, :blind_solves, :validations).index_by(&:id)
+    def load(ids) = ItemRevision.where(id: ids).includes(:item, :instances, { findings: :blind_solve }, { reviews: { agent_session: :corrections } }, { blind_solves: { agent_session: :corrections } }, :validations).index_by(&:id)
 
     def build(rev, dispositions, back)
       item_body = JSON.parse(rev.body_json)
@@ -33,7 +35,8 @@ module Teacher
         Finding.new(f, disposition, disposition == "fix_requested" && !later, evidence_of(f, rev, item_body), responses[f.id], opinions[f.id], closure)
       end
       Card.new(rev, rev.item, item_body, samples, catalogue_of(item_body), Array(item_body["sources"]), Review::Gate.check(rev),
-               review && JSON.parse(review.checklist_json), blind && JSON.parse(blind.results_json), findings, back[rev.id] || [], later)
+               review && JSON.parse(review.checklist_json), blind && JSON.parse(blind.results_json), findings, back[rev.id] || [], later,
+               review && Provenance.new(review.agent_session, review.independent?), blind && Provenance.new(blind.agent_session, blind.independent?))
     end
 
     # Only a blind-solve finding about an instance has evidence; a review finding quotes the item itself.

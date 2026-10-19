@@ -5,7 +5,7 @@ class BriefTest < ActiveSupport::TestCase
   SUBJECT_BRIEFS = %w[biology business chemistry computer_science english geography history law_economics spanish].freeze
   NAMES = (%w[arbiter blueprint course diagnosis-item grade lesson lesson-review lesson-v1 page page-review practice-item review skill-graph solve topic] +
            SUBJECT_BRIEFS.map { |s| "lesson-#{s.tr('_', '-')}" }).sort.freeze
-  VERSION_2 = %w[diagnosis-item review lesson lesson-review].freeze # D-227: practice items, review points 12-13; D-245: lesson/2 and its review
+  VERSION_2 = %w[arbiter diagnosis-item review lesson lesson-review].freeze # D-227: practice items, review points 12-13; D-245: lesson/2 and its review; D-316: the arbiter without a second opinion
 
   test "the briefs exist (version 1, or 2 for the Phase 1b and rich-lesson deltas) with a body" do
     assert_equal NAMES, Brief.names

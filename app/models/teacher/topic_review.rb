@@ -12,7 +12,7 @@ module Teacher
     CHECK_GROUPS = { map: /not in the latest course map/, versions: /pinned lesson revision|no longer the newest passed/,
                      lesson: /no review by an independent|sent the lesson revision back/, exercises: /is not approvable/, viewed: /was not opened/, render: /render check/,
                      pages: /\Athe page \S+ \(revision \d+\) (has not passed|has no review|has \d+ blocker)/ }.freeze
-    ReviewRow = Data.define(:review, :model, :results, :checklist, :recomputed, :findings)
+    ReviewRow = Data.define(:review, :session, :independent, :results, :checklist, :recomputed, :findings)
 
     attr_reader :subject, :lesson, :key
 
@@ -47,8 +47,8 @@ module Teacher
     def lesson_sent_back? = Course::Decisions.lesson_sent_back?(lesson_revision)
 
     def reviews
-      @reviews ||= lesson_revision.reviews.includes(:agent_session).order(:id).map do |r|
-        ReviewRow.new(r, r.agent_session.model, r.checklist.map { |c| c["result"] }.tally, r.checklist, r.recomputed, r.findings)
+      @reviews ||= lesson_revision.reviews.includes(agent_session: :corrections).order(:id).map do |r|
+        ReviewRow.new(r, r.agent_session, r.independent?, r.checklist.map { |c| c["result"] }.tally, r.checklist, r.recomputed, r.findings)
       end
     end
 

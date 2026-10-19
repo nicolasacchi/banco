@@ -5,11 +5,11 @@ module Course
     module_function
 
     def reviews(revision)
-      reviews = revision.reviews.includes(:agent_session).order(:id).to_a
+      reviews = revision.reviews.includes(agent_session: :corrections).order(:id).to_a
       entries = LessonFindings.entries(reviews).group_by { |e| e.review.id }
       reviews.map do |review|
         tally = review.checklist.map { |c| c["result"] }.tally
-        { review_id: review.id, session_id: review.agent_session_id, model: review.agent_session.model,
+        { review_id: review.id, session_id: review.agent_session_id, model: review.agent_session.model, independent: review.independent?,
           results: { pass: tally["pass"].to_i, fail: tally["fail"].to_i, na: tally["na"].to_i },
           findings: LessonFindings.api_findings(review, entries.fetch(review.id, [])) }
       end

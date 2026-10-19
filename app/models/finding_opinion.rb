@@ -1,35 +1,32 @@
-# What the third reviewer thinks of one finding, derived from its assessments (D-222). The first
-# opinion (model claude-opus-5-5) and the second opinion (model claude-haiku-4-5-20251001) are
-# the latest assessment of each model. The state:
+# What the third reviewer thinks of one finding, derived from its assessments (D-222, D-316). Only the first
+# opinion (model claude-opus-5-5) counts: the latest assessment that counts is the effective one. The state:
 #
-#   none      nobody has assessed it yet
-#   waiting   one of the two opinions is missing ("In attesa del secondo parere")
-#   clear     both are there and say the same: author_right or finding_right ("Concordi")
-#   unclear   both are there and both say unclear
-#   split     both are there and differ ("Pareri discordanti")
+#   none      nobody has given a counting opinion yet
+#   clear     the opinion says author_right or finding_right ("Chiaro")
+#   unclear   the opinion says unclear
 #
-# Nothing here decides anything. A blocker or major finding with a clear opinion can be followed
-# by the teacher with one click. A minor finding is closed (first opinion author_right) or marked
-# to fix (first opinion finding_right) as a derived state, never as a row in decisions (D-239: the
-# first opinion alone decides, the second is shown as a second opinion); a teacher's decision on
-# the finding always wins (Teacher::TestReview).
+# D-316 dropped the second opinion (claude-haiku-4-5-20251001). Old second opinions stay in the ledger and show as
+# history (#history); they never change a state. An assessment by a session whose true model equals the true model of
+# the session that raised the finding does not count either (different_model_from_raiser, read time).
+#
+# Nothing here decides anything. A blocker or major finding with a clear opinion can be followed by the teacher with
+# one click. A minor finding is closed (author_right) or marked to fix (finding_right) as a derived state, never as a
+# row in decisions (D-239); a teacher's decision on the finding always wins (Teacher::TestReview).
 class FindingOpinion
-  attr_reader :first, :second
+  attr_reader :first, :history
 
   def initialize(assessments)
-    @first = assessments.select { |a| a.slot == :first }.max_by(&:id)
-    @second = assessments.select { |a| a.slot == :second }.max_by(&:id)
+    counting, history = assessments.partition(&:counts?)
+    @history = history.sort_by(&:id)
+    @first = counting.max_by(&:id)
   end
 
-  def any? = !(first.nil? && second.nil?)
+  def any? = !first.nil?
 
   def state
     return :none unless any?
-    return :waiting if first.nil? || second.nil?
-    return :split if first.verdict != second.verdict
-    return :unclear if first.verdict == "unclear"
 
-    :clear
+    first.verdict == "unclear" ? :unclear : :clear
   end
 
   def clear? = state == :clear
@@ -40,16 +37,15 @@ class FindingOpinion
   # The disposition that following a clear opinion records, or nil.
   def disposition = FindingAssessment::FOLLOW[verdict]
 
-  # What a minor finding comes to without the teacher (D-239): the first opinion alone decides.
-  # :closed (the author is right), :to_fix (the finding is right) or nil (unclear or no first
-  # opinion: the teacher still has it). The second opinion never changes it.
+  # What a minor finding comes to without the teacher (D-239): :closed (the author is right), :to_fix (the finding is
+  # right) or nil (unclear or no counting opinion: the teacher still has it).
   def minor_outcome
     { "author_right" => :closed, "finding_right" => :to_fix }[first&.verdict]
   end
 
-  # True when both opinions are there and the second does not say what the first says.
-  def second_disagrees? = !first.nil? && !second.nil? && first.verdict != second.verdict
+  # The counting opinion, as a list.
+  def given = [ first ].compact
 
-  # The opinions in reading order, each with its slot.
-  def given = [ first, second ].compact
+  # Every assessment in the ledger, the ones that count and the history.
+  def all = (given + history).sort_by(&:id)
 end

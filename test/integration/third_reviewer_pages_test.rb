@@ -35,40 +35,41 @@ class ThirdReviewerPagesTest < ActionDispatch::IntegrationTest
     assert_select "#finding-#{odd.id} button[value=fix_requested]", "Va sistemato: chiedi la correzione"
   end
 
-  test "two agreeing opinions are shown as clear, both notes labelled, with Segui il parere prefilled" do
+  test "the opinion is shown as clear with its note and Segui il parere prefilled; an old second opinion is history (D-316)" do
     f = finding!
     assess!(f, "author_right", session: arbiter_session(ArbiterRows::FIRST_MODEL), note: "Il testo è chiaro: una sola lettura.")
-    assess!(f, "author_right", session: arbiter_session(ArbiterRows::SECOND_MODEL), note: "Non vedo ambiguità.")
+    assess!(f, "finding_right", session: arbiter_session(ArbiterRows::OLD_SECOND_MODEL), note: "Non vedo ambiguità.")
     page SKILL_PAGE
-    assert_select "#finding-#{f.id} .opinions[data-opinion-state=clear][data-opinion-verdict=author_right]", /Concordi: terzo revisore e secondo parere/
-    assert_select "#finding-#{f.id} [data-opinion=first]", /Terzo revisore, primo parere:.*ha ragione l'autore.*una sola lettura/m
-    assert_select "#finding-#{f.id} [data-opinion=second]", /Secondo parere:.*Non vedo ambiguità/m
+    assert_select "#finding-#{f.id} .opinions[data-opinion-state=clear][data-opinion-verdict=author_right]", /Parere chiaro del terzo revisore/
+    assert_select "#finding-#{f.id} [data-opinion=first]", /Parere del terzo revisore:.*ha ragione l'autore.*una sola lettura/m
+    assert_select "#finding-#{f.id} [data-opinion=second]", 0
+    assert_select "#finding-#{f.id} [data-opinion-history=second_opinion]", /Secondo parere, non più richiesto \(D-316\).*Non vedo ambiguità/m
     assert_select "#finding-#{f.id} button[data-follow=author_right]", "Segui il parere"
     assert_select "#finding-#{f.id} input[name=reason_it][value='Seguo il parere del terzo revisore.']"
     assert_select "#finding-#{f.id} input[name=disposition][value=dismissed]"
     assert_equal 0, decisions.count
   end
 
-  test "a lone opinion waits, a split is flagged, neither can be followed" do
-    waiting = finding!
-    split = finding!(problem: "Altro.")
-    assess!(waiting, "finding_right", session: arbiter_session(ArbiterRows::FIRST_MODEL))
-    assess!(split, "author_right", session: arbiter_session(ArbiterRows::FIRST_MODEL))
-    assess!(split, "finding_right", session: arbiter_session(ArbiterRows::SECOND_MODEL))
+  test "no opinion yet, an unclear one and an old second opinion alone cannot be followed" do
+    none = finding!
+    unclear = finding!(problem: "Altro.")
+    history_only = finding!(problem: "Terzo.")
+    assess!(unclear, "unclear", session: arbiter_session(ArbiterRows::FIRST_MODEL))
+    assess!(history_only, "author_right", session: arbiter_session(ArbiterRows::OLD_SECOND_MODEL))
     page SKILL_PAGE
-    assert_select "#finding-#{waiting.id} .opinions[data-opinion-state=waiting]", /In attesa del secondo parere/
-    assert_select "#finding-#{split.id} .opinions[data-opinion-state=split]", /Pareri discordanti/
-    assert_select "#finding-#{split.id} [data-opinion=first][data-assessment=author_right]"
-    assert_select "#finding-#{split.id} [data-opinion=second][data-assessment=finding_right]"
+    assert_select "#finding-#{none.id} .opinions", 0
+    assert_select "#finding-#{unclear.id} .opinions[data-opinion-state=unclear]", /non è sicuro/
+    assert_select "#finding-#{history_only.id} .opinions", 0
+    assert_select "#finding-#{history_only.id} [data-opinion-history=second_opinion]"
     assert_select "[data-follow]", 0
     page "/teacher/subjects/math/test"
-    assert_select "#open-findings h2", "Rilievi da decidere: 2, di cui nessuno con un parere chiaro."
+    assert_select "#open-findings h2", "Rilievi da decidere: 3, di cui nessuno con un parere chiaro."
     assert_select "#follow-opinions-form", 0
   end
 
   test "following one clear opinion records the usual decision with every guard" do
     f = finding!
-    assess_both!(f, "finding_right")
+    assess_with_old_second!(f, "finding_right")
     page SKILL_PAGE
     assert_select "#finding-#{f.id} button[data-follow=finding_right]"
     assert_select "#finding-#{f.id} input[name=disposition][value=fix_requested]"
@@ -82,17 +83,17 @@ class ThirdReviewerPagesTest < ActionDispatch::IntegrationTest
 
   test "the single follow form carries the verdict and refuses when the opinion changed, was decided, or the revision is not in use" do
     f = finding!
-    assess_both!(f, "author_right")
+    assess_with_old_second!(f, "author_right")
     page SKILL_PAGE
     assert_select "#finding-#{f.id} input[name=follow_verdict][value=author_right]"
-    assess!(f, "finding_right", session: arbiter_session(ArbiterRows::SECOND_MODEL))
+    assess!(f, "finding_right", session: arbiter_session(ArbiterRows::FIRST_MODEL))
     decide("/teacher/findings/#{f.id}/disposition", { disposition: "dismissed", follow_verdict: "author_right", reason_it: "Seguo il parere del terzo revisore." })
     assert_response :unprocessable_entity
     assert_match(/non è più chiaro/, json.to_s)
     assert_equal 0, decisions.count
 
     g = finding!(problem: "Due.")
-    assess_both!(g, "author_right")
+    assess_with_old_second!(g, "author_right")
     decide("/teacher/findings/#{g.id}/disposition", { disposition: "dismissed", follow_verdict: "author_right", reason_it: "Seguo il parere del terzo revisore." })
     assert_response :success
     assert_equal 1, decisions.count
@@ -107,7 +108,7 @@ class ThirdReviewerPagesTest < ActionDispatch::IntegrationTest
     ItemRevision.create!(item: item, seq: 2, body_json: @revision.body_json, file_sessions_json: "{}")
     assert_not_includes BlueprintRevision.where(subject: @subject).order(:seq).last.pinned_item_revision_ids, old.id
     f = ReviewFinding.create!(item_revision: old, source: "review", severity: "major", field: "stem", quote: "x", problem_it: "Ambiguo.", fix_it: "Chiarisci.")
-    assess_both!(f, "author_right")
+    assess_with_old_second!(f, "author_right")
     decide("/teacher/findings/#{f.id}/disposition", { disposition: "dismissed", follow_verdict: "author_right", reason_it: "Seguo il parere." })
     assert_response :unprocessable_entity
     assert_match(/non è più in uso/, json.to_s)
@@ -117,13 +118,14 @@ class ThirdReviewerPagesTest < ActionDispatch::IntegrationTest
     assert_equal 0, decisions.count
   end
 
-  test "the card says why an opinion cannot come when the raiser used that model" do
-    review = ItemReview.create!(item_revision: @revision, agent_session: arbiter_session(ArbiterRows::SECOND_MODEL, role: "reviewer"), checklist_json: "[]")
+  test "the card says why an opinion cannot come when the raiser used the arbiter's model" do
+    review = ItemReview.create!(item_revision: @revision, agent_session: arbiter_session(ArbiterRows::FIRST_MODEL, role: "reviewer"), checklist_json: "[]")
     f = ReviewFinding.create!(item_revision: @revision, source: "review", item_review: review, severity: "major", field: "stem", quote: "x", problem_it: "Ambiguo.", fix_it: "Chiarisci.")
-    assess!(f, "author_right", session: arbiter_session(ArbiterRows::FIRST_MODEL))
     page SKILL_PAGE
     assert_select "#finding-#{f.id} [data-opinion-blocked]", /non può arrivare.*stesso modello/
     other = finding!(problem: "Altro.")
+    page SKILL_PAGE
+    assert_select "#finding-#{other.id} [data-opinion-blocked]", 0
     assess!(other, "author_right", session: arbiter_session(ArbiterRows::FIRST_MODEL))
     page SKILL_PAGE
     assert_select "#finding-#{other.id} [data-opinion-blocked]", 0
@@ -133,8 +135,8 @@ class ThirdReviewerPagesTest < ActionDispatch::IntegrationTest
     a = finding!
     b = finding!(problem: "Due.")
     finding!(problem: "Tre.")
-    assess_both!(a, "author_right")
-    assess_both!(b, "finding_right")
+    assess_with_old_second!(a, "author_right")
+    assess_with_old_second!(b, "finding_right")
     page "/teacher/subjects/math/test"
     assert_select "#open-findings h2", "Rilievi da decidere: 3, di cui 2 con un parere chiaro."
     assert_select "#clear-list li[data-clear-finding]", 2
@@ -150,12 +152,12 @@ class ThirdReviewerPagesTest < ActionDispatch::IntegrationTest
     decided = finding!(problem: "Tre.")
     changed = finding!(problem: "Quattro.")
     minor = finding!(severity: "minor", problem: "Lieve.")
-    [ a, decided, changed, minor ].each { |f| assess_both!(f, "author_right") }
-    assess_both!(b, "finding_right")
+    [ a, decided, changed, minor ].each { |f| assess_with_old_second!(f, "author_right") }
+    assess_with_old_second!(b, "finding_right")
     pairs = [ a, b, decided, changed, minor ].map { |f| "#{f.id}:#{f.opinion.verdict}" }
     Decision.create!(kind: "dispose_finding", subject: @subject, payload_json: { finding_id: decided.id, disposition: "fix_requested", reason_it: "Già." }.to_json,
                      request_id: SecureRandom.uuid, teacher_login: "nik", groups: "banco-teacher", remote_addr: EDGE)
-    assess!(changed, "finding_right", session: arbiter_session(ArbiterRows::SECOND_MODEL))
+    assess!(changed, "finding_right", session: arbiter_session(ArbiterRows::FIRST_MODEL))
     pairs << "#{a.id + 10_000}:author_right" << "garbage"
     decide("/teacher/subjects/math/follow-opinions", { pairs: pairs })
     assert_response :success, response.body
@@ -176,7 +178,7 @@ class ThirdReviewerPagesTest < ActionDispatch::IntegrationTest
 
   test "the bulk route refuses a missing token, a student and a guest, and writes nothing" do
     a = finding!
-    assess_both!(a, "author_right")
+    assess_with_old_second!(a, "author_right")
     body = { pairs: [ "#{a.id}:author_right" ] }
     decide("/teacher/subjects/math/follow-opinions", body, csrf: false)
     assert_response :forbidden
@@ -194,12 +196,12 @@ class ThirdReviewerPagesTest < ActionDispatch::IntegrationTest
     assert_select "[data-finding] form", 0
   end
 
-  test "a minor finding with two agreeing opinions is closed or to fix as a derived state, in a collapsed list, never counted" do
+  test "a minor finding with a clear opinion is closed or to fix as a derived state, in a collapsed list, never counted" do
     closed = finding!(severity: "minor", problem: "Lieve uno.")
     to_fix = finding!(severity: "minor", problem: "Lieve due.")
     open_minor = finding!(severity: "minor", problem: "Lieve tre.")
-    assess_both!(closed, "author_right")
-    assess_both!(to_fix, "finding_right")
+    assess_with_old_second!(closed, "author_right")
+    assess_with_old_second!(to_fix, "finding_right")
     assess!(open_minor, "unclear", session: arbiter_session(ArbiterRows::FIRST_MODEL))
     before = Decision.count
     page SKILL_PAGE
@@ -216,51 +218,64 @@ class ThirdReviewerPagesTest < ActionDispatch::IntegrationTest
     assert_empty Teacher::TestReview.new(@subject).open_finding_list
   end
 
-  test "Opus alone decides a minor finding; Haiku's disagreement is a line on the card" do
+  test "Opus alone decides a minor finding; an old second opinion is a history line that changes nothing (D-316)" do
     closed = finding!(severity: "minor", problem: "Lieve uno.")
     to_fix = finding!(severity: "minor", problem: "Lieve due.")
     unclear = finding!(severity: "minor", problem: "Lieve tre.")
     missing = finding!(severity: "minor", problem: "Lieve quattro.")
-    assess_both!(closed, "author_right", "finding_right")
-    assess_both!(to_fix, "finding_right", "author_right")
-    assess_both!(unclear, "unclear", "finding_right")
-    assess!(missing, "finding_right", session: arbiter_session(ArbiterRows::SECOND_MODEL))
+    assess_with_old_second!(closed, "author_right", "finding_right")
+    assess_with_old_second!(to_fix, "finding_right", "author_right")
+    assess_with_old_second!(unclear, "unclear", "finding_right")
+    assess!(missing, "finding_right", session: arbiter_session(ArbiterRows::OLD_SECOND_MODEL))
     before = Decision.count
     page SKILL_PAGE
     assert_select "#finding-#{closed.id} .closure[data-closure=closed]", "Chiuso dal terzo revisore"
-    assert_select "#finding-#{closed.id} [data-second-disagrees]", /Il secondo parere non è d'accordo/
-    assert_select "#finding-#{closed.id} [data-opinion=second]"
+    assert_select "#finding-#{closed.id} [data-opinion-history=second_opinion]", /non più richiesto/
+    assert_select "#finding-#{closed.id} [data-opinion=second]", 0
     assert_select "#finding-#{to_fix.id} .closure[data-closure=to_fix]", "Da sistemare: lo dice il terzo revisore"
-    assert_select "#finding-#{to_fix.id} [data-second-disagrees]"
     assert_select "#finding-#{unclear.id} .closure", 0
     assert_select "#finding-#{unclear.id} form button[value=dismissed]"
     assert_select "#finding-#{missing.id} .closure", 0
     assert_select "#finding-#{missing.id} form button[value=dismissed]"
-    assert_select "details.minor-findings", text: /In attesa del secondo parere/, count: 0
     assert_equal before, Decision.count
+  end
+
+  test "an opinion by a session whose true model equals the raiser's true model is history, not a closure; the minor goes back to the teacher (D-316)" do
+    reviewer = AgentSession.create!(label: "r", role: "reviewer", agent: "t", model: "claude-sonnet-5-5")
+    review = ItemReview.create!(item_revision: @revision, agent_session: reviewer, checklist_json: "[]")
+    f = ReviewFinding.create!(item_revision: @revision, source: "review", item_review: review, severity: "minor", field: "stem", quote: "x", problem_it: "Lieve.", fix_it: "Cambia.")
+    assess!(f, "author_right", session: arbiter_session(ArbiterRows::FIRST_MODEL))
+    page SKILL_PAGE
+    assert_select "#finding-#{f.id} .closure[data-closure=closed]"
+    AgentSessionCorrection.create!(agent_session: reviewer, model: ArbiterRows::FIRST_MODEL, reason: "the reviewer ran on Opus", request_id: "tr-1")
+    page SKILL_PAGE
+    assert_select "#finding-#{f.id} .closure", 0
+    assert_select "#finding-#{f.id} [data-opinion-history=same_model_as_raiser]", /stesso modello di chi ha segnalato/
+    assert_select "#finding-#{f.id} form button[value=dismissed]"
+    assert_select "#finding-#{f.id} [data-opinion-blocked]"
   end
 
   test "a minor finding whose first slot is blocked stays open with the reason" do
     review = ItemReview.create!(item_revision: @revision, agent_session: arbiter_session(ArbiterRows::FIRST_MODEL, role: "reviewer"), checklist_json: "[]")
     f = ReviewFinding.create!(item_revision: @revision, source: "review", item_review: review, severity: "minor", field: "stem", quote: "x", problem_it: "Lieve.", fix_it: "Cambia.")
-    assess!(f, "finding_right", session: arbiter_session(ArbiterRows::SECOND_MODEL))
     page SKILL_PAGE
     assert_select "#finding-#{f.id} [data-opinion-blocked]"
     assert_select "#finding-#{f.id} .closure", 0
   end
 
-  test "a minor finding raised by Haiku is not blocked once Opus has spoken" do
-    review = ItemReview.create!(item_revision: @revision, agent_session: arbiter_session(ArbiterRows::SECOND_MODEL, role: "reviewer"), checklist_json: "[]")
+  test "a minor finding raised by an old Haiku session is not blocked: Opus can speak" do
+    review = ItemReview.create!(item_revision: @revision, agent_session: arbiter_session(ArbiterRows::OLD_SECOND_MODEL, role: "reviewer"), checklist_json: "[]")
     f = ReviewFinding.create!(item_revision: @revision, source: "review", item_review: review, severity: "minor", field: "stem", quote: "x", problem_it: "Lieve.", fix_it: "Cambia.")
-    assess!(f, "author_right", session: arbiter_session(ArbiterRows::FIRST_MODEL))
     page SKILL_PAGE
     assert_select "#finding-#{f.id} [data-opinion-blocked]", 0
+    assess!(f, "author_right", session: arbiter_session(ArbiterRows::FIRST_MODEL))
+    page SKILL_PAGE
     assert_select "#finding-#{f.id} .closure[data-closure=closed]"
   end
 
   test "a teacher decision on a minor finding wins over the opinions" do
     f = finding!(severity: "minor")
-    assess_both!(f, "author_right")
+    assess_with_old_second!(f, "author_right")
     decide("/teacher/findings/#{f.id}/disposition", { disposition: "fix_requested", reason_it: "No, va sistemato." })
     assert_response :success
     page SKILL_PAGE
@@ -272,7 +287,7 @@ class ThirdReviewerPagesTest < ActionDispatch::IntegrationTest
     f = finding!
     gate = -> { [ Review::Gate.check(@revision).to_h, Approval::BlueprintGate.check(@blueprint).to_h ] }
     before = gate.call
-    assess_both!(f, "author_right")
+    assess_with_old_second!(f, "author_right")
     assert_equal before, gate.call
     assert_nil f.reload.disposition
   end

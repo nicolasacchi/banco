@@ -208,13 +208,27 @@ class FindingsApiTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_equal "E-PROVIDER-NOT-ALLOWED", json["code"]
     assert_match(/raised the finding/, json["message"])
-    assess(raised, judgement, as: arbiter_session(ArbiterRows::SECOND_MODEL))
-    assert_response :created, json.inspect
+    # The second opinion model is no longer allowed at all (D-316).
+    assess(raised, judgement, as: arbiter_session(ArbiterRows::OLD_SECOND_MODEL))
+    assert_response :unprocessable_entity
+    assert_equal "E-PROVIDER-NOT-ALLOWED", json["code"]
+    assert_match(/claude-opus-5-5/, json["message"])
+    assert_equal 0, FindingAssessment.count
     # An author of the item on the very model of the arbiter: no rule about it.
-    author_model = arbiter_session(ArbiterRows::SECOND_MODEL, role: "author")
+    author_model = arbiter_session(ArbiterRows::FIRST_MODEL, role: "author")
     ItemRevision.create!(item: @item, seq: @item.revisions.maximum(:seq) + 1, body_json: @rev1.body_json, file_sessions_json: "{}", author_session_id: author_model.id)
-    assess(@blind_finding, judgement, as: arbiter_session(ArbiterRows::SECOND_MODEL))
+    assess(@blind_finding, judgement, as: arbiter_session(ArbiterRows::FIRST_MODEL))
     assert_response :created, json.inspect
+  end
+
+  test "the arbiter's rule is read with the true model of the raiser (D-316)" do
+    raiser = arbiter_session("claude-sonnet-5-5", role: "reviewer")
+    review = ItemReview.create!(item_revision: @rev1, agent_session: raiser, checklist_json: "[]")
+    raised = ReviewFinding.create!(item_revision: @rev1, source: "review", item_review: review, severity: "major", field: "stem", quote: "x", problem_it: "Altro.", fix_it: "Ok.")
+    AgentSessionCorrection.create!(agent_session: raiser, model: ArbiterRows::FIRST_MODEL, reason: "the reviewer ran on Opus", request_id: "api-1")
+    assess(raised, judgement, as: arbiter_session(ArbiterRows::FIRST_MODEL))
+    assert_response :unprocessable_entity
+    assert_equal "E-PROVIDER-NOT-ALLOWED", json["code"]
   end
 
   test "an arbiter session that holds another role on the item is refused, many findings in one session are fine" do
@@ -258,16 +272,16 @@ class FindingsApiTest < ActionDispatch::IntegrationTest
 
   test "an arbiter sees the other opinions of a finding only after assessing it; the list has minor findings with all=1" do
     one = arbiter_session(ArbiterRows::FIRST_MODEL)
-    two = arbiter_session(ArbiterRows::SECOND_MODEL)
+    two = arbiter_session(ArbiterRows::FIRST_MODEL)
     assess(@blind_finding, judgement("finding_right"), as: one)
     row = ->(as) { api("/api/v1/subjects/math/findings", as: as); json["rows"].find { |r| r["finding_id"] == @blind_finding.id } }
-    assert_equal "waiting", row.call(one)["opinion"]["state"], "an arbiter that assessed it reads what there is"
+    assert_equal "clear", row.call(one)["opinion"]["state"], "an arbiter that assessed it reads what there is"
     hidden = row.call(two)["opinion"]
     assert_equal [ true, 1 ], hidden.values_at("hidden", "count"), "the second opinion is written blind"
     assert_nil hidden["first"]
-    assert_equal true, row.call(arbiter_session(ArbiterRows::SECOND_MODEL))["opinion"]["hidden"]
-    assert_equal "waiting", row.call(@author)["opinion"]["state"], "the author reads what there is"
-    assert_equal "waiting", row.call(@reviewer)["opinion"]["state"]
+    assert_equal true, row.call(arbiter_session(ArbiterRows::FIRST_MODEL))["opinion"]["hidden"]
+    assert_equal "clear", row.call(@author)["opinion"]["state"], "the author reads what there is"
+    assert_equal "clear", row.call(@reviewer)["opinion"]["state"]
     assert_equal [ true, 1 ], row.call(nil)["opinion"].values_at("hidden", "count"), "no session: a count only"
     assert_nil row.call(nil)["opinion"]["first"]
     ApiToken.issue!(role: "agent_claude", label: "other")
@@ -278,7 +292,8 @@ class FindingsApiTest < ActionDispatch::IntegrationTest
     assert_response :created
     seen = row.call(two)["opinion"]
     assert_equal [ "clear", "finding_right" ], seen.values_at("state", "verdict")
-    assert_equal [ ArbiterRows::FIRST_MODEL, ArbiterRows::SECOND_MODEL ], [ seen["first"]["model"], seen["second"]["model"] ]
+    assert_equal ArbiterRows::FIRST_MODEL, seen["first"]["model"]
+    assert_nil seen["second"], "there is no second opinion since D-316"
     api("/api/v1/subjects/math/findings", as: one)
     assert_equal [ @review_finding.id, @blind_finding.id ], json["rows"].map { |r| r["finding_id"] }
     api("/api/v1/subjects/math/findings?all=1", as: one)

@@ -632,7 +632,19 @@ CREATE TRIGGER lesson_finding_responses_no_update BEFORE UPDATE ON lesson_findin
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER lesson_finding_responses_no_delete BEFORE DELETE ON lesson_finding_responses
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "agent_session_corrections" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "agent_session_id" integer NOT NULL, "model" varchar NOT NULL, "reason" text NOT NULL, "os_user" varchar DEFAULT '' NOT NULL, "groups" varchar DEFAULT 'console' NOT NULL, "remote_addr" varchar DEFAULT 'console' NOT NULL, "user_agent" varchar DEFAULT '' NOT NULL, "request_path" varchar DEFAULT '' NOT NULL, "request_id" varchar NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_a71ada31fe"
+FOREIGN KEY ("agent_session_id")
+  REFERENCES "agent_sessions" ("id")
+, CONSTRAINT agent_session_corrections_model CHECK (length(trim(model)) > 0), CONSTRAINT agent_session_corrections_reason CHECK (length(trim(reason)) BETWEEN 3 AND 1000));
+CREATE INDEX "index_agent_session_corrections_on_agent_session_id" ON "agent_session_corrections" ("agent_session_id") /*application='Banco'*/;
+CREATE INDEX "index_agent_session_corrections_on_agent_session_id_and_id" ON "agent_session_corrections" ("agent_session_id", "id") /*application='Banco'*/;
+CREATE UNIQUE INDEX "index_agent_session_corrections_on_request_id" ON "agent_session_corrections" ("request_id") /*application='Banco'*/;
+CREATE TRIGGER agent_session_corrections_no_update BEFORE UPDATE ON agent_session_corrections
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER agent_session_corrections_no_delete BEFORE DELETE ON agent_session_corrections
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261019100001'),
 ('20261018120001'),
 ('20261016100001'),
 ('20261012100001'),

@@ -35,6 +35,7 @@
     <% if card.review %>
       <% failed = card.review.select { |c| c["result"] == "fail" } %>
       <p data-review="<%= failed.empty? ? 'clean' : 'fail' %>"><%= t("teacher.skill.review_summary", pass: card.review.count { |c| c["result"] != "fail" }, fail: failed.size) %></p>
+      <p class="hint" data-review-by><%= provenance_line(card.review_by, t("teacher.provenance.what.review")) %></p>
       <% failed.each do |c| %><p class="notice"><strong><%= Review::Checklist::ALL_POINTS[c["id"] - 1] %></strong>: <%= c["evidence"] %></p><% end %>
     <% else %>
       <p><%= t("teacher.skill.no_review") %></p>
@@ -43,6 +44,7 @@
       <% mismatches = card.blind.reject { |r| %w[correct short_answer].include?(r["verdict"]) } %>
       <p data-blind="<%= mismatches.empty? ? 'ok' : 'mismatch' %>"><%= t("teacher.skill.blind_summary", ok: card.blind.size - mismatches.size, total: card.blind.size) %>
         <% if mismatches.any? %> <%= t("teacher.skill.blind_differs") %> <%= mismatches.map { |r| "#{r['instance']} (#{r['verdict']})" }.join(", ") %>.<% end %></p>
+      <p class="hint" data-blind-by><%= provenance_line(card.blind_by, t("teacher.provenance.what.blind")) %></p>
     <% else %>
       <p><%= t("teacher.skill.no_blind") %></p>
     <% end %>
