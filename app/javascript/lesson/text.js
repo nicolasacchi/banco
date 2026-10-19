@@ -9,6 +9,7 @@ import { colourTokens, displayPieces, displayTex } from "lesson/eq"
 import { speakerButton } from "lesson/speech_ui"
 import { targetOf } from "lesson/lang"
 import { plain } from "lesson/diagrams/common"
+import { parsedText } from "lesson/raw_markup"
 
 const ROLE_CLASS = /^role-[a-z]+([_-][a-z]+)*$/
 const NOT_EQUAL = "\\html@mathml{\\mathrel{\\text{\\char\"2260}}}{\\mathrel{\\char`≠}}"
@@ -152,8 +153,11 @@ function inlineNodes(nodes, parent, ctx, display = false, tiles = false) {
       parent.appendChild(renderMath(node.v, el("span", { class: "math" }), ctx, true))
       continue
     }
-    if (node.t === "text") parent.appendChild(document.createTextNode(node.v))
-    else if (node.t === "bold") {
+    if (node.t === "text") {
+      const text = document.createTextNode(node.v)
+      parsedText.add(text)
+      parent.appendChild(text)
+    } else if (node.t === "bold") {
       const strong = el("strong")
       inlineNodes(node.children, strong, ctx)
       parent.appendChild(strong)

@@ -14,14 +14,13 @@ export function tableNode(table, ctx) {
   for (const row of table.rows) {
     const tr = el("tr")
     row.forEach((cell, i) => {
-      if (i === 0) {
-        tr.appendChild(renderInlineRich(cell, el("th", { scope: "row" }), ctx))
-        return
+      // the row header carries its column's name too when rows stack (an empty corner header has none)
+      const td = el(i === 0 ? "th" : "td", i === 0 ? { scope: "row" } : {})
+      if (i > 0 || String(table.header[0] ?? "").trim() !== "") {
+        const label = renderInlineRich(table.header[i] ?? "", el("span", { class: "cell-label", "aria-hidden": "true" }), insideControl(ctx))
+        label.appendChild(document.createTextNode(": "))
+        td.appendChild(label)
       }
-      const td = el("td")
-      const label = renderInlineRich(table.header[i] ?? "", el("span", { class: "cell-label", "aria-hidden": "true" }), insideControl(ctx))
-      label.appendChild(document.createTextNode(": "))
-      td.appendChild(label)
       tr.appendChild(renderInlineRich(cell, td, ctx))
     })
     body.appendChild(tr)

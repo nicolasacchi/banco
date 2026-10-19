@@ -194,7 +194,10 @@ class LessonPolishSystemTest < ApplicationSystemTestCase
       assert_selector "#scheda-2 .block-math .katex", count: 2
       assert_no_selector "#scheda-2 .katex-error"
       assert_no_match(/\$|\^|'|"/, card_text(2))
-      assert_selector("#scheda-2 .dg-table td .cell-label .katex", minimum: 4) if size.first == 390
+      if size.first == 390
+        assert_selector "#scheda-2 .dg-table td .cell-label .katex", minimum: 4
+        assert_selector "#scheda-2 .dg-table tbody th .cell-label .katex", count: 2 # the row header names its column too when rows stack
+      end
       shot("math-table-#{size.first}")
 
       go 3
@@ -205,6 +208,11 @@ class LessonPolishSystemTest < ApplicationSystemTestCase
       assert_selector "#scheda-3 .option .option-text .katex", count: 3
       assert_no_match(/\$|\\role/, card_text(3))
       shot("math-cases-#{size.first}")
+
+      # literal dollars are text: the render check does not take "$A_1 ... $B" for a formula that failed to draw
+      go 4
+      assert_text "$A_1 oppure $B"
+      assert_no_selector "#scheda-4 .katex"
     end
   end
 end
