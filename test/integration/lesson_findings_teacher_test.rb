@@ -51,6 +51,8 @@ class LessonFindingsTeacherTest < ActionDispatch::IntegrationTest
     end
     assert_select "#findings-line li[data-box-finding='#{@id.call(2)}'] a[data-card='0']", "Copertina"
     assert_select "#findings-line li[data-box-finding='#{@id.call(3)}'][data-answered=false]", /senza risposta/
+    # A minor finding expects no answer: the box does not say it lacks one.
+    assert_select "#findings-line li[data-box-finding='#{@id.call(2)}']", { text: /senza risposta|risposto/, count: 0 }
   end
 
   test "the findings step shows each finding with its place and the author's answer, or that there is none" do
@@ -60,7 +62,7 @@ class LessonFindingsTeacherTest < ActionDispatch::IntegrationTest
       assert_select ".author-response[data-response=lesson_right]", /Secondo l'autore la lezione è giusta\.\s*Il peso tolto è nella figura della scheda\./
     end
     assert_select "#lesson-finding-#{@id.call(3)} [data-response=none]", "L'autore non ha ancora risposto."
-    assert_select "#topic-review [data-review-findings='3'][data-answered='1']"
+    assert_select "#topic-review [data-review-findings='3'][data-severe='2'][data-answered='1']"
     # The guest reads the same answers; the approval still asks the teacher for a reason.
     open_topic_page!(headers: GUEST)
     assert_response :success

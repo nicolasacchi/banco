@@ -43,7 +43,7 @@
           "fix_it": "Correggi la frase."
         }
       ],
-      "next": "answer each open row: banco findings respond FINDING_ID --file response.json (an item: banco brief show diagnosis-item; a lesson: banco brief show lesson)"
+      "next": "answer each open row: banco findings respond FINDING_ID --file response.json (an item: banco brief show diagnosis-item; a lesson: banco brief show lesson for lesson/2, banco brief show lesson-v1 for lesson/1)"
     }
   }
 }

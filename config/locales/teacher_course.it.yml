@@ -127,7 +127,7 @@ it:
         response_lesson_right: "Secondo l'autore la lezione è giusta."
         response_fixed: "L'autore l'ha corretta nella revisione %{seq}."
         no_response: "L'autore non ha ancora risposto."
-        findings_line: "Rilievi: %{count}. Risposte dell'autore: %{answered}."
+        findings_line: "Rilievi: %{count}, gravi: %{severe}. Risposte dell'autore ai gravi: %{answered}."
         findings_link: "Leggi i rilievi"
         box_label: "Rilievi della revisione"
         box_answered: "l'autore ha risposto"

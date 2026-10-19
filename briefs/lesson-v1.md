@@ -142,8 +142,12 @@ skill out.
 4. A reviewer of another model reads it (`banco lesson-review open|submit`, see that brief). Read the
    result with `banco lesson status REV`: `reviews` and the teacher's `teacher_comments`. Answer by a
    new revision that fixes what they say; a new revision needs its own review. Answer every blocker and
-   major finding by its id with `banco findings respond ID --file response.json`, as the lesson brief
-   says (`lesson_right` or `fixed`, D-313).
+   major finding by its id (`banco findings list --lesson KEY --open`, ids `L<review>-<n>`) with
+   `banco findings respond ID --file response.json` (use `--dry-run` first), D-313. One of two answers:
+   `{"stance": "lesson_right", "note_it": "..."}` (the lesson is right; the note is a short proof the teacher can
+   check) or `{"stance": "fixed", "revision_id": N, "note_it": "..."}` (a later revision of the same lesson fixes it;
+   the note says what changed). The note is Italian, at most 700 characters, short sentences. Use an author
+   session that did not review the lesson. Your answer never closes the finding: the teacher decides.
 5. The lesson belongs to a topic (`banco topic submit`, see the topic brief). The teacher reads the
    whole topic and approves it in the browser.
 

@@ -99,7 +99,7 @@ class TeacherCoursePagesTest < ActionDispatch::IntegrationTest
       assert_select ".author-response[data-response=fixed]", /L'autore l'ha corretta nella revisione 2\.\s*Ho aggiunto il passaggio\./
     end
     assert_select "#lesson-finding-L#{review.id}-2[data-severity=minor] [data-response]", 0
-    assert_select "#topic-review [data-lesson-review='#{review.id}'] [data-review-findings='2'][data-answered='1']", /Rilievi: 2\. Risposte dell'autore: 1\./ do
+    assert_select "#topic-review [data-lesson-review='#{review.id}'] [data-review-findings='2'][data-severe='1'][data-answered='1']", /Rilievi: 2, gravi: 1\. Risposte dell'autore ai gravi: 1\./ do
       assert_select "a[href='#lesson-findings']"
     end
     # The approval still asks for a reason: an answer is the author's word, never a decision.
