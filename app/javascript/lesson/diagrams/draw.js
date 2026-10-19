@@ -657,6 +657,7 @@ export function mountDiagram(data, ctx, options = {}) {
       total = mod || STATUS[type] ? stateCount(data) : 1
       figure.dataset.states = String(total)
       state.i = Math.min(state.i, total - 1)
+      state.printWidth = 0 // the print views follow the completed states
       draw()
     },
     // the number in the boxes of a balance, set from outside (the shared stepper of the cases)
