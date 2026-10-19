@@ -117,7 +117,6 @@ class LessonsParser2Test < ActiveSupport::TestCase
       "\"\\frac{a}{b} \\neq 0\"" => "\\frac{a}{b} \\neq 0",
       "' x = 1 '" => "x = 1",
       "f'(x) = 2x" => "f'(x) = 2x",
-      "'f''(x)'" => "f''(x)",
       "'a\"" => "'a\"",
       "x = 1" => "x = 1"
     }.each do |written, tex|
@@ -127,6 +126,11 @@ class LessonsParser2Test < ActiveSupport::TestCase
     end
     _, findings = parse("## A {idea}\n\n::: math\n''\n:::\n")
     assert_includes findings.errors.map(&:code), "E-LESSON-BLOCK"
+    # the same quote inside would be a YAML-doubled one ('f''(x)' is f'(x)): refuse rather than show f''(x)
+    [ "'f''(x)'", "\"a\"b\"" ].each do |written|
+      _, findings = parse("## A {idea}\n\n::: math\n#{written}\n:::\n")
+      assert_includes findings.errors.map(&:code), "E-LESSON-BLOCK", written
+    end
   end
 
   test "a double-quoted YAML value with a backslash is refused; single quotes, block scalars and comments are not" do

@@ -157,3 +157,29 @@ test("mirror on a phone: a word wider than the room beside its role icon puts th
   const text = wide.labels.find((l) => l.key === "r1t2:t")
   assert.ok(ic.x + ic.size <= text.x, "beside the word on a wide screen")
 })
+
+test("raw markup in the rendered DOM: a literal dollar the parser drew as text is not a formula, a field drawn as plain text is (D-310)", async () => {
+  const { rawMarkupIn, parsedText } = await import("lesson/raw_markup")
+  const parent = { closest: () => null }
+  const textNode = (nodeValue) => ({ nodeValue, parentElement: parent })
+  const drawn = textNode("scrivi $A_1 oppure $B") // what the inline reader drew from "\\$A_1 oppure \\$B"
+  const plain = textNode("fattori di $a^7$ e [[es:hablar]]") // a field set with textContent
+  const nodes = [drawn, plain]
+  globalThis.NodeFilter = { SHOW_TEXT: 4, FILTER_ACCEPT: 1, FILTER_REJECT: 2 }
+  globalThis.document = {
+    createTreeWalker: (_root, _what, filter) => {
+      let i = -1
+      return { nextNode() { while (++i < nodes.length) if (filter.acceptNode(nodes[i]) === 1) return nodes[i]; return null } }
+    }
+  }
+  try {
+    assert.equal(rawMarkupIn({}).text, "$A_1 oppure $") // not yet known as parsed text: found
+    parsedText.add(drawn)
+    assert.equal(rawMarkupIn({}).text, "[[es:hablar]]")
+    nodes.pop()
+    assert.equal(rawMarkupIn({}), null)
+  } finally {
+    delete globalThis.document
+    delete globalThis.NodeFilter
+  }
+})

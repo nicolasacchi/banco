@@ -90,3 +90,7 @@ errors:
   - {answer: a, code: power_of_power_adds, message_it: "Hai sommato gli esponenti: qui si moltiplicano."}
 explain_it: '$(x^4)^3 = x^{4 \cdot 3} = x^{12}$.'
 :::
+
+## Il simbolo del dollaro {idea icon=plus id=dollaro}
+
+Per scrivere un dollaro nel testo: \$A_1 oppure \$B, come un prezzo o un nome di cella. Non è una formula.
