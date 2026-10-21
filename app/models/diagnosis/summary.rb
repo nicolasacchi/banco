@@ -5,7 +5,22 @@ module Diagnosis
   # is a grade: no score, no percentage, no alarm colour.
   class Summary
     Skill = Data.define(:key, :label, :text)
-    Solution = Data.define(:attempt_id, :prompt, :given, :steps, :final, :verdict, :note)
+    Solution = Data.define(:attempt_id, :prompt, :given, :steps, :final, :verdict, :note) do
+      # How the answer went, in the five words of the results page (D-318). Anything the machine did not settle
+      # (short answers, undetermined, a form the teacher decides) is the teacher's to look at.
+      def outcome
+        case verdict.to_s
+        when "correct" then :right
+        when "nearly_correct" then :nearly
+        when "wrong", "typical_error", "wrong_form_skill" then :wrong
+        when "dont_know" then :dont_know
+        else :pending
+        end
+      end
+
+      # «Penso che la mia risposta fosse giusta» only where the machine called it wrong.
+      def flaggable? = outcome == :wrong
+    end
 
     attr_reader :run
 
@@ -46,7 +61,7 @@ module Diagnosis
       return [] unless final?
 
       list = served.filter_map { |event, serve| solution_for(event, serve) }
-      list.sort_by.with_index { |s, i| [ %w[correct nearly_correct].include?(s.verdict) ? 1 : 0, i ] }
+      list.sort_by.with_index { |s, i| [ %i[right nearly].include?(s.outcome) ? 1 : 0, i ] }
     end
 
     private

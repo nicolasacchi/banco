@@ -74,6 +74,9 @@
     <p><%= t("summary.solutions_first") %></p>
     <% @summary.solutions.each do |s| %>
       <article class="solution card" data-attempt="<%= s.attempt_id %>">
+        <% tone, icon = { right: [ :success, "circle-check" ], nearly: [ :nearly, "triangle-alert" ], wrong: [ :hint, "wrong-hint" ],
+                          dont_know: [ :muted, "circle-help" ], pending: [ :info, "clock-minutes" ] }.fetch(s.outcome) %>
+        <p class="solution-outcome" data-outcome="<%= s.outcome %>"><%= ui_pill(t("summary.outcome.#{s.outcome}"), tone, icon: icon) %></p>
         <p data-markup="inline"><%= s.prompt %></p>
         <div><%= t("summary.your_answer") %>: <span data-markup="inline"><%= s.given %></span></div>
         <% if s.note %><p data-note="nearly-correct"><%= s.note %></p><% end %>
@@ -88,10 +91,12 @@
         <% if s.final %>
           <p><%= t("summary.final") %>: <strong data-markup="inline"><%= s.final %></strong></p>
         <% end %>
+        <% if s.flaggable? %>
         <p class="flag-row">
           <button type="button" class="button secondary small" data-action="results#flag" data-attempt-id="<%= s.attempt_id %>"><%= t("summary.flag") %></button>
           <span class="flagged" hidden><%= t("summary.flagged") %></span>
         </p>
+        <% end %>
       </article>
     <% end %>
   </section>

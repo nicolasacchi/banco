@@ -273,6 +273,39 @@ class StudentPagesTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "each solution says how the answer went and only a wrong one offers «Penso che la mia risposta fosse giusta» (D-318)" do
+    rows = build_ui_subject(components: %w[number])
+    release_diagnosis!
+    run = Diagnosis::Conductor.run_for(rows[:student], rows[:subject])
+    conductor = Diagnosis::Conductor.new(run)
+    recorder = Diagnosis::AnswerRecorder.new(student: rows[:student], context: "diagnosis")
+    5.times do
+      step = conductor.step!
+      break unless step.type == :item
+
+      recorder.call(served_event_id: step.event.id, client_attempt_id: SecureRandom.uuid, raw: "6", source: "text")
+    end
+    verdicts = %w[correct nearly_correct wrong dont_know short_answer typical_error]
+    labels = { "correct" => "Giusta", "nearly_correct" => "Quasi giusta", "wrong" => "Da rivedere", "typical_error" => "Da rivedere",
+               "dont_know" => "Non lo sapevi", "short_answer" => "La guarda il docente" }
+    chosen = Attempt.order(:id).each_with_index.to_h do |attempt, i|
+      verdict = verdicts[i % verdicts.size]
+      AttemptGrading.create!(attempt: attempt, seq: attempt.gradings.maximum(:seq).to_i + 1, verdict: verdict, grader: "closed", grader_version: "t", source: "sync")
+      [ attempt.id, verdict ]
+    end
+    as_student("/diagnosis/runs/#{run.id}/results")
+    assert_response :success
+    assert_select "article.solution", chosen.size
+    chosen.each do |id, verdict|
+      assert_select "article.solution[data-attempt='#{id}'] .solution-outcome .pill", text: labels.fetch(verdict)
+      assert_select "article.solution[data-attempt='#{id}'] .solution-outcome .pill svg.ic"
+      assert_select "article.solution[data-attempt='#{id}'] .flag-row", count: %w[wrong typical_error].include?(verdict) ? 1 : 0
+    end
+    # the wrong ones come first
+    firsts = css_select("article.solution").first(chosen.values.count { |v| v != "correct" && v != "nearly_correct" })
+    assert(firsts.none? { |a| %w[correct nearly_correct].include?(chosen[a["data-attempt"].to_i]) })
+  end
+
   test "an unknown answer, a repeated client id with a different serve and a huge raw are handled" do
     rows = build_ui_subject
     release_diagnosis!
