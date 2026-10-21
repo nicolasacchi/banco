@@ -320,6 +320,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-314 | 2026-10-18 | a matching one pair off is not nearly correct with a right column of two options or one option for every row; W-MATCHING-JUDGE-ROWS for new items | decided |
 | D-315 | 2026-10-18 | content search: a new or changed document gets its vector within minutes (the index job is lexical only; one embedder at a time, newest first, short runs that go on by themselves; an unchanged text keeps its vector); lessons and cards in "Simili" (`lesson:KEY`, `lesson_card:KEY#N`); the preview banner is one row at every width, in the form that fits | decided |
 | D-316 | 2026-10-19 | the true model of a session: an append-only correction line written from the console, independence derived at read time with the true model, and the arbiter's second opinion dropped | decided |
+| D-318 | 2026-10-21 | the results page says right or wrong on every solution (Giusta, Quasi giusta, Da rivedere, Non lo sapevi, La guarda il docente) and the flag shows only on a wrong one; a hint under the math field when words are typed in it | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -3562,6 +3563,22 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
   6. **Not done here:** the sessions 772 to 820 are not corrected by this change; the operator runs the task (dry run first). No gate, rule version or threshold changes.
 - **Tests:** `test/integration/agent_session_correction_test.rb` (the table and its triggers, the readers, each gate, the page says «non indipendente», other sessions untouched, the dry run, CONFIRM, the refusals, no route), `test/models/finding_opinion_test.rb`, `finding_assessment_test.rb`, `test/integration/third_reviewer_pages_test.rb`, `findings_api_test.rb`, `teacher_course_pages_test.rb`, `test/models/append_only_test.rb`.
 - **Cost:** a gate reads the sessions of the item's authors each time (a few small queries per revision).
+- **Rules version:** none changes.
+- **Status:** decided
+- **Back-port:** none.
+
+## D-318 · 2026-10-21 · results that say right or wrong, and a hint in the math field for typed words
+
+- **Design ref:** B-11 (the end screen), E-04 (the expression field), D-298 (refused answers), D-306 and D-307 (house components), firm rule 1 (no model in the student's path).
+- **Background:** in the entry test S lost much time to refused answers: on an exponent item 0.03125 refused three times and then sent as 003125; on a root item ten minutes writing words in the math field (37 refusals, two comments «non funziona»); on a fraction item −29 over 3x five times; on a percentage 45%, «45percento», 45x100. On the results page S pressed «Penso che la mia risposta fosse giusta» on five answers, two of which were already right, because the page did not say which answers were right.
+- **Operator (2026-10-21):** «Risultati più chiari, Avviso nel campo di math, Accetta il %, anche accettiamo tutto poi lo controlliamo da qui».
+- **We do:**
+  1. **Results say how it went.** Each solution card carries a pill with an icon and the word: «Giusta» (correct), «Quasi giusta» (nearly_correct, with its existing note), «Da rivedere» (wrong, typical_error, wrong_form_skill), «Non lo sapevi» (dont_know), «La guarda il docente» (everything the machine does not settle: short_answer, undetermined, near_miss, wrong_form_declared and the like). `Diagnosis::Summary::Solution#outcome` makes the five words from the verdict. The order is unchanged (not right first). The teacher's preview shows the same page.
+  2. **The flag only where it helps.** «Penso che la mia risposta fosse giusta» shows only on «Da rivedere» (`Solution#flaggable?`). Not on right, nearly right, «Non lo sapevi» (S said so) or pending cards (the teacher looks at them anyway).
+  3. **A hint in the math field.** `items/expression_words.js` decides from the field's LaTeX whether words were typed: `\operatorname`, `\text`, `\mathrm` and the like are flattened and a run of three or more letters that is not a known function name (sin, cos, log, mcm...) nor made only of the item's own letters (those in the `$..$` of its texts) counts. `items/expression.js` then shows, under the field and without blocking anything, «Qui va solo l'espressione, senza parole: la lettera resta nella risposta, per esempio 24a³. Se pensi che non si possa fare, premi «Non lo so».» (a fixed example, never the item's answer; `items.expression_words_hint`). It goes when the words go. The sitting and the practice page share the template.
+  4. **Not done here:** accepting «%» and «accepting everything and checking it from the teacher's page» are separate changes (grading), not in this branch.
+- **Tests:** `test/javascript/items/expression_words.test.mjs`, `test/integration/student_pages_test.rb` (each verdict's label, the flag only on a wrong one), `test/system/results_and_hints_test.rb` (the results at 390 px, the hint in the sitting).
+- **Cost:** none on the server; the hint runs on each keystroke in the field (a few regular expressions).
 - **Rules version:** none changes.
 - **Status:** decided
 - **Back-port:** none.
