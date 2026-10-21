@@ -37,14 +37,15 @@ class DiagnosisWarmupTest < ActiveSupport::TestCase
       assert W.right?(task, right_answer(task)), "#{task['id']} should accept its right answer"
       refute W.right?(task, ""), "#{task['id']} should not accept an empty answer"
     end
-    refute W.right?(W.task("number"), "0.75"), "a dot is not the decimal comma"
+    assert W.right?(W.task("number"), "0.75"), "a dot that cannot group thousands is read as the comma (D-317)"
+    refute W.right?(W.task("number"), "0,7,5")
     refute W.right?(W.task("accents"), "piu")
     assert W.right?(W.task("ed_power"), "x^2 + 3x")
     assert W.right?(W.task("ed_square"), '\left(a+b\right)^2')
   end
 
   test "a wrong answer says retry, a right one moves on, and nothing counts in a diagnosis" do
-    assert_equal "retry", W.answer!(@student, "number", "0.75")
+    assert_equal "retry", W.answer!(@student, "number", "0,7,5")
     assert_equal "right", W.answer!(@student, "number", "0,75")
     assert_equal [ "number" ], W.done_ids(@student)
     assert_equal 0, Attempt.count

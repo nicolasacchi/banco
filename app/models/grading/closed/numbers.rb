@@ -117,7 +117,7 @@ module Grading
       # ambiguous_mixed_number, unparseable. +thousands+ (the `thousands: true` option of a lesson check, WAVE2 2.11): a dot that
       # groups exactly three digits before the decimal comma is a separator, so 1.115,00 is 1115; spaces still ask for a retype.
       def parse(text, allow_dot: false, unit: nil, thousands: false)
-        s = strip_unit(clean(text), unit)
+        s = strip_percent(strip_unit(clean(text), unit))
         raise Invalid, "empty" if s.empty?
         s = unwrap(s)
         t = s.sub(/\A([+-])#{SPACES}+/, '\1')
@@ -133,11 +133,20 @@ module Grading
         m = DECIMAL.match(t)
         raise Invalid, "unreadable_number" if m.nil? || (m[2].empty? && m[4].nil?)
         raise Invalid, "unreadable_number" if m[2].empty? && m[3].nil?
-        raise Invalid, "use_comma" if m[3] == "." && !allow_dot
+        # A dot that cannot group thousands (0.03125, 5865.2, 12.5) is a decimal comma typed
+        # with the wrong key (D-317); 1.250 was refused above as ambiguous and still is.
 
         sign = m[1] == "-" ? -1 : 1
         integer = m[2].empty? ? "0" : m[2]
         sign * Rational("#{integer}#{".#{m[4]}" if m[4]}")
+      end
+
+      # A trailing % or "percento" (with or without a space) is dropped: 45% is 45 (D-317).
+      PERCENT = /#{SPACES}*(?:%|per#{SPACES}*cento)\z/i
+
+      def strip_percent(s)
+        stripped = s.sub(PERCENT, "")
+        stripped.empty? ? s : stripped
       end
 
       # "n = -2", "(-2)", "n = (-2)" -> "-2". Text that is left empty by the strip is unreadable.

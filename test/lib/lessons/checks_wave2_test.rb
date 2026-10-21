@@ -117,8 +117,8 @@ class LessonsChecksWave2Test < ActiveSupport::TestCase
     assert grade(on, "1115").right?
     assert grade(NUMBER, "1.115").invalid?, "without the option a dot is still refused"
     assert_equal "thousands_separator", grade(NUMBER, "1.115").code
-    assert grade(on, "1.5").invalid?, "a dot decimal is not a thousands dot"
-    assert grade(on, "11.15").invalid?
+    assert_not grade(on, "1.5").right?, "a dot decimal is not a thousands dot: it is read as the comma (D-317)"
+    assert_not grade(on, "11.15").right?
     assert grade(on, "1 115").invalid?
     assert grade(on.merge("answer" => "1115,5"), "1.115,5").right?
   end

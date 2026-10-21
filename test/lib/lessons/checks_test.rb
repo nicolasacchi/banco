@@ -22,10 +22,12 @@ class LessonsChecksTest < ActiveSupport::TestCase
     plain = grade(NUMBER, "11")
     assert plain.wrong?
     assert_nil plain.message_it
-    bad = grade(NUMBER, "3.5")
+    bad = grade(NUMBER, "3,5,5")
     assert bad.invalid?
-    assert_equal "use_comma", bad.code
-    assert_match(/virgola/, bad.message_it)
+    assert_equal "unreadable_number", bad.code
+    assert_match(/solo il numero/, bad.message_it)
+    assert_not grade(NUMBER, "3.5").invalid? # a dot that cannot group thousands is read as the comma (D-317)
+    assert_not grade(NUMBER, "11%").invalid?
     assert grade(NUMBER, "").invalid?
   end
 

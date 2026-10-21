@@ -37,7 +37,7 @@ class NumberWrappersTest < ActiveSupport::TestCase
   end
 
   test "every other rule still applies inside the wrapper" do
-    assert_equal "use_comma", number("n = 2.5", answer: "2,5").invalid_code
+    assert_equal "correct", number("n = 2.5", answer: "2,5").verdict
     assert_equal "thousands_separator", number("(5.300)", answer: 5300).invalid_code
     assert_equal "correct", number("n = 5.300", answer: 5300, thousands: true).verdict
     assert_equal "correct", number("n = 2,5·10^3", answer: 2500, form: [ "scientific" ]).verdict

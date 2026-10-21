@@ -511,7 +511,7 @@ class IndependenceTest < ActionDispatch::IntegrationTest
     revision = passed_revision
     path = "/api/v1/revisions/#{revision.id}/solve"
     doc = ->(answers) { { solve: { schema: "banco.solve/1", schema_version: 1, revision: revision.id.to_s, answers: answers } } }
-    api(path, method: :post, as: @solver, body: doc.([ { instance: 1, answer: "7" }, { instance: 2, answer: "0.5" }, { instance: 3, answer: "16" } ]))
+    api(path, method: :post, as: @solver, body: doc.([ { instance: 1, answer: "7" }, { instance: 2, answer: "0,5,5" }, { instance: 3, answer: "16" } ]))
     assert_equal "E-FILES", json["code"]
     assert_equal "answers/2", json["field"]
     api(path, method: :post, as: @solver, body: doc.([ { instance: 1, answer: "7" } ]))

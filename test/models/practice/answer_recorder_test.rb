@@ -115,13 +115,20 @@ class PracticeAnswerRecorderTest < ActiveSupport::TestCase
 
   test "an answer the checker calls invalid is not a try: an app event, the grader's message, nothing stored" do
     c = serve!
-    result = answer!(c, "3.5")
+    result = answer!(c, "3,5,5")
     assert_equal "invalid", result.body[:status]
-    assert_equal "Per i decimali usa la virgola, per esempio 3,5.", result.body[:message_it]
+    assert_equal "Scrivi solo il numero, per esempio −3 oppure 2,5.", result.body[:message_it]
     assert_equal 0, PracticeAttempt.count
     event = AppEvent.where(kind: "practice_invalid_input").last
-    assert_equal({ "serve_id" => c.serve.id, "code" => "use_comma", "text" => "3.5" }, JSON.parse(event.payload_json))
+    assert_equal({ "serve_id" => c.serve.id, "code" => "unreadable_number", "text" => "3,5,5" }, JSON.parse(event.payload_json))
     assert_equal :open, Practice::Loader.status_of(c.serve.reload, now: @clock.now).state
+  end
+
+  test "the slips of D-317 are read in practice: a trailing percent and a dot decimal" do
+    c = serve!
+    assert_equal "correct", body(answer!(c, "#{correct_raw(c)}%"))[:outcome]
+    c2 = serve!
+    assert_equal "correct", body(answer!(c2, "#{correct_raw(c2)}.0"))[:outcome]
   end
 
   test "Non lo so is not a practice try" do
