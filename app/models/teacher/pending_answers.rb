@@ -5,7 +5,7 @@ module Teacher
   # key, what S typed and the attempt id to pass to banco:decide KIND=resolve_attempt.
   # Read-only. The same rows as the corrections page; no route, no API and no CLI command reach it.
   class PendingAnswers
-    Entry = Data.define(:attempt_id, :run_id, :subject_key, :item_key, :stem, :key, :given, :kind, :note)
+    Entry = Data.define(:attempt_id, :run_id, :subject_key, :item_key, :stem, :key, :given, :kind, :note, :proposal_id)
 
     def self.call(student: Student.official, subject: nil) = new(student, subject).entries
 
@@ -24,7 +24,12 @@ module Teacher
     # The text of one entry, one block per answer.
     def self.lines(entry)
       cmd = if entry.kind == "short_answer"
-        "bin/rails banco:decide KIND=confirm_grade (the grade proposal of attempt #{entry.attempt_id}, on the corrections page)"
+        if entry.proposal_id
+          %(bin/rails banco:decide KIND=confirm_grade TEACHER=<login> PARAMS='{"grade_proposal_id":#{entry.proposal_id}}'  ) +
+            %((to edit the scores add "scores":{"POINT_ID":N,...} and REASON="..."; KIND=reject_grade takes REASON="..."))
+        else
+          "no grade proposal yet: wait for the agent's proposal, then confirm it here or on the corrections page"
+        end
       else
         %(bin/rails banco:decide KIND=resolve_attempt TEACHER=<login> REASON="..." PARAMS='{"attempt_id":#{entry.attempt_id},"verdict":"correct|wrong|dont_know"}')
       end
@@ -41,11 +46,11 @@ module Teacher
 
     def verdict_entry(v)
       Entry.new(v.attempt.id, run_of(v.attempt), v.subject.key, v.item_key, v.prompt, v.key, v.given, "verdict",
-                v.unreadable ? "unreadable by the program#{" (#{v.unreadable_note})" if v.unreadable_note}" : v.verdict)
+                v.unreadable ? "unreadable by the program#{" (#{v.unreadable_note})" if v.unreadable_note}" : v.verdict, nil)
     end
 
     def short_entry(s)
-      Entry.new(s.attempt.id, run_of(s.attempt), s.subject.key, s.item_key, s.prompt, s.model_answer_it, s.attempt.raw, "short_answer", "short answer")
+      Entry.new(s.attempt.id, run_of(s.attempt), s.subject.key, s.item_key, s.prompt, s.model_answer_it, s.attempt.raw, "short_answer", "short answer", s.proposal&.id)
     end
   end
 end

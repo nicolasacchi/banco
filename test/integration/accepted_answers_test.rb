@@ -137,6 +137,12 @@ class AcceptedAnswersTest < ActionDispatch::IntegrationTest
     assert_includes pending_task("SUBJECT" => "math", "STUDENT" => "student"), UNREADABLE
   end
 
+  test "a short answer line prints the grade proposal to confirm, or says none is there yet" do
+    entry = Teacher::PendingAnswers::Entry.new(7, 1, "history", "k", "stem", "model", "typed", "short_answer", "short answer", 42)
+    assert_includes Teacher::PendingAnswers.lines(entry).last, %(KIND=confirm_grade TEACHER=<login> PARAMS='{"grade_proposal_id":42}')
+    assert_includes Teacher::PendingAnswers.lines(entry.with(proposal_id: nil)).last, "no grade proposal yet"
+  end
+
   test "no API route, controller or CLI command names the pending list" do
     assert_not_includes Rails.root.join("contract/commands.json").read, "answers:pending"
     assert_empty Dir[Rails.root.join("app/controllers/api/**/*.rb")].select { |f| File.read(f).match?(/PendingAnswers/) }
