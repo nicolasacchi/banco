@@ -8,6 +8,7 @@
 // mf.expression.
 import { el, handle, uid } from "items/dom"
 import { renderMath } from "items/markup"
+import { hasTypedWords, itemLetters } from "items/expression_words"
 
 const VENDOR = "/vendor/mathlive@0.111.0"
 const COMPUTE_ENGINE = "/vendor/compute-engine@0.146.0/compute-engine.js"
@@ -39,7 +40,7 @@ export function loadMathlive() {
 }
 
 export async function render(part, ctx) {
-  return part.input === "text" ? textInput(ctx) : mathInput(ctx)
+  return part.input === "text" ? textInput(ctx) : mathInput(part, ctx)
 }
 
 function echoBox(ctx) {
@@ -48,14 +49,31 @@ function echoBox(ctx) {
   return { box, show: (latex) => { math.textContent = ""; if (latex.trim() !== "") renderMath(latex, math) } }
 }
 
-async function mathInput(ctx) {
+async function mathInput(part, ctx) {
   await loadMathlive()
   const field = document.createElement("math-field")
   field.className = "math-input"
   field.setAttribute("aria-label", ctx.t.expression_label)
   const echo = echoBox(ctx)
-  field.addEventListener("input", () => echo.show(field.value))
-  const wrapper = el("div", { class: "answer" }, el("p", { class: "hint", text: ctx.t.expression_label }), field, echo.box)
+  // Words typed in the field (D-318): one quiet line under it, never a block; it goes when the words go.
+  const own = itemLetters(part)
+  const wordsHint = el("div", { class: "words-hint", "aria-live": "polite" })
+  const checkWords = () => {
+    const show = hasTypedWords(field.value, own)
+    if (show && !wordsHint.firstChild) wordsHint.appendChild(el("p", { class: "hint", text: ctx.t.expression_words_hint }))
+    else if (!show) wordsHint.textContent = ""
+  }
+  // MathLive sends "input" for the first key only in some builds (seen with 0.111 and typed keys): keyup and the virtual keyboard follow the value too.
+  let shown = null
+  const refresh = () => {
+    if (field.value === shown) return
+    shown = field.value
+    checkWords()
+    echo.show(shown)
+  }
+  for (const type of [ "input", "keyup", "change" ]) field.addEventListener(type, refresh)
+  field.addEventListener("pointerup", () => setTimeout(refresh, 0))
+  const wrapper = el("div", { class: "answer" }, el("p", { class: "hint", text: ctx.t.expression_label }), field, wordsHint, echo.box)
   return handle(wrapper, {
     raw: () => field.value,
     isEmpty: () => field.value.trim() === "",

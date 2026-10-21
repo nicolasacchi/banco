@@ -476,4 +476,6 @@ ul.checks li { padding: 0.25rem 0; }
 /* A refused answer shown twice: the message and the answer format above the input (D-298) */
 .refusal-notice { border: 2px solid var(--line); background: var(--surface); padding: 0.5rem 1rem; margin: 0.5rem 0; }
 .refusal-notice p { margin: 0.25rem 0; }
+.words-hint:empty { display: none; }
+.words-hint p { margin: 0.35rem 0; font-size: 0.95rem; border-left: 4px solid var(--tone-hint, var(--line)); padding-left: 0.6rem; }
 .refusal-format { font-weight: bold; }
