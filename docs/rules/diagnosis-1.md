@@ -53,7 +53,10 @@ grader and the rules would switch a mask off in silence.
 | undetermined, or the float method | pending |
 | short answer | pending until `confirm_grade` |
 | ungraded (grader stopped or slow) | **not an outcome yet**: it counts as soon as a retry appends a grading with a certain verdict; after the last failed retry it goes to the teacher as `verdict_pending` |
-| invalid (blank, unreadable, ambiguous exponent, ambiguous mixed number or digits separated by a space, dot decimal where not allowed, empty box) | not an attempt: Italian message, `app_event invalid_input` |
+| invalid: a blank or an incomplete answer (no part written), or over the size limit | not an attempt: Italian message, `app_event invalid_input` (blank and incomplete only) |
+| invalid: any other unreadable answer (letters in a number, ambiguous exponent or mixed number, digits separated by a space, a thousands dot ...) in the diagnosis (D-317) | an attempt as typed with the grading `undetermined` (error codes `invalid_answer` and the grader's code): pending, a teacher's `resolve_attempt` settles it; `app_event invalid_input` is still written. The table is unchanged: it is the `undetermined` row. In practice and lesson checks it is still refused. |
+
+A dot that cannot group thousands (0.03125, 5865.2, 12.5) is read as the decimal comma and a trailing `%` or `percento` is dropped (D-317); `1.250` stays ambiguous.
 
 The three named constants `NEAR_MISS`, `WRONG_FORM_DECLARED` and
 `ORTHOGRAPHY_SLIP` each take `:credit` or `:pending`. Their defaults are the

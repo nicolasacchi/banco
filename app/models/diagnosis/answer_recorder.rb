@@ -16,6 +16,8 @@ module Diagnosis
     MAX_RAW_BYTES = 20_000
     # What a refused answer keeps for the teacher (D-298): the typed text, cut here.
     REFUSED_TEXT_CHARS = 200
+    # The grader's invalid codes that mean "nothing answered": still refused (D-317).
+    STILL_REFUSED = %w[empty incomplete].freeze
 
     def initialize(student:, context:, clock: Clock.new)
       @student = student
@@ -45,20 +47,33 @@ module Diagnosis
       rescue Grading::Expression::Unavailable
         result = nil # no verdict is written; GradePendingJob retries (A-01)
       end
+      saved_unreadable = false
       if result&.invalid?
         AppEvent.create!(kind: "invalid_input", student: @student,
                          payload_json: { served_event_id: event.id, code: result.invalid_code, text: raw.first(REFUSED_TEXT_CHARS) }.to_json)
-        return invalid(result.message_it)
+        # Nothing answered (an empty part, an incomplete order) is still refused; any other
+        # answer the grader cannot read is kept as typed and waits for the teacher (D-317).
+        return invalid(result.message_it) if STILL_REFUSED.include?(result.invalid_code)
+
+        result = unreadable(result)
+        saved_unreadable = true
       end
 
       attempt = append(event, instance, client_id, raw, source, result)
       Grading::Recorder.schedule_retry(attempt) if result.nil?
-      recorded
+      saved_unreadable ? Outcome.new("recorded", I18n.t("sitting.unreadable_saved")) : recorded
     rescue ActiveRecord::RecordNotUnique
       recorded # the same answer arrived twice at once
     end
 
     private
+
+    # D-317: verdict undetermined (evidence :pending, a short answer's twin), the marker
+    # invalid_answer first and the grader's invalid code second in error_codes.
+    def unreadable(result)
+      Grading::Result.new(verdict: "undetermined", grader: result.grader,
+                          error_codes: [ Grading::Recorder::INVALID_ANSWER_CODE, result.invalid_code ], reason: result.invalid_code)
+    end
 
     def append(event, instance, client_id, raw, source, result)
       Attempt.transaction do

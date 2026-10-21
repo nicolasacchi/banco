@@ -154,7 +154,8 @@ export default class extends Controller {
       if (reply.message_it === this.texts.gone) { this.setStatus(message); return this.advance() }
       return this.refused(message)
     }
-    this.setStatus(this.current.item.kind === "short_answer" ? this.texts.short_answer_saved : this.texts.saved)
+    // An answer the program could not read is kept for the teacher (D-317): the server says so in a neutral line.
+    this.setStatus(reply?.message_it || (this.current.item.kind === "short_answer" ? this.texts.short_answer_saved : this.texts.saved))
     this.handle = null
     await new Promise((resolve) => setTimeout(resolve, 600))
     return this.advance()

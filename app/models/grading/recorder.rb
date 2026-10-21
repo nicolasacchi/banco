@@ -37,7 +37,7 @@ module Grading
       # The attempt exists already (the first grading could not run) and the student
       # was told it was recorded: an answer the checker now calls invalid settles
       # as a terminal row for the teacher, never as silence.
-      append(attempt, Result.new(verdict: "undetermined", grader: result.grader, error_codes: [ INVALID_ANSWER_CODE ], reason: result.invalid_code),
+      append(attempt, Result.new(verdict: "undetermined", grader: result.grader, error_codes: [ INVALID_ANSWER_CODE, result.invalid_code ], reason: result.invalid_code),
              source: source)
     end
 

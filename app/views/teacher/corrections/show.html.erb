@@ -62,8 +62,13 @@
       <p class="prompt"><%= entry.prompt %></p>
       <p><strong><%= t("teacher.corrections.given") %></strong> <span data-given><%= entry.given %></span></p>
       <p><strong><%= t("teacher.corrections.key") %></strong> <%= entry.key %></p>
-      <p><%= t("teacher.corrections.grader_said") %> <strong><%= t("teacher.corrections.verdict.#{entry.verdict}", default: entry.verdict) %></strong>
-        <% if entry.near_miss %> (<%= t("teacher.corrections.near_miss_hint") %>)<% end %></p>
+      <% if entry.unreadable %>
+        <p data-unreadable><%= t("teacher.corrections.grader_said") %> <strong><%= t("teacher.corrections.unreadable") %></strong>
+          <% if entry.unreadable_note %> (<%= entry.unreadable_note %>)<% end %></p>
+      <% else %>
+        <p><%= t("teacher.corrections.grader_said") %> <strong><%= t("teacher.corrections.verdict.#{entry.verdict}", default: entry.verdict) %></strong>
+          <% if entry.near_miss %> (<%= t("teacher.corrections.near_miss_hint") %>)<% end %></p>
+      <% end %>
       <%= decision_form("/teacher/attempts/#{entry.attempt.id}/resolve") do %>
         <label class="hint" for="verdict-reason-<%= entry.attempt.id %>"><%= t("teacher.corrections.resolve_reason") %></label>
         <input id="verdict-reason-<%= entry.attempt.id %>" class="answer-input wide" type="text" name="reason_it" value="<%= t('teacher.corrections.default_reason') %>" required>

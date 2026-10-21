@@ -4,12 +4,15 @@ module Teacher
   #   short answers   each with the grader's proposal and the student's text, the quotes
   #                   of the proposal marked in it: confirm, edit or reject
   #   verdicts        answers the grader cannot settle (undetermined, floating point,
-  #                   a one-letter slip that counts for nothing until you say so): resolve
+  #                   a one-letter slip that counts for nothing until you say so, an answer the
+  #                   program could not read, D-317): resolve
   #
   # Read-only; the buttons post decisions (confirm_grade, reject_grade, resolve_attempt).
   class Corrections
     ShortAnswer = Data.define(:attempt, :item_key, :subject, :prompt, :segments, :rubric, :proposal, :points, :model_answer_it, :status)
-    Verdict = Data.define(:attempt, :item_key, :subject, :skill, :prompt, :given, :key, :verdict, :error_codes, :near_miss)
+    Verdict = Data.define(:attempt, :item_key, :subject, :skill, :prompt, :given, :key, :verdict, :error_codes, :near_miss, :unreadable, :unreadable_note)
+    # The code that marks an answer the program could not read (D-317), set by Grading::Recorder.
+    UNREADABLE = Grading::Recorder::INVALID_ANSWER_CODE
 
     def self.call(student: Student.official) = new(student)
 
@@ -108,8 +111,11 @@ module Teacher
       served = served_of(attempt)
       body = JSON.parse(revision.body_json)
       given = served ? Diagnosis::AnswerText.call(attempt, served) : attempt.raw
+      codes = JSON.parse(grading.error_codes_json || "[]")
+      unreadable = codes.include?(UNREADABLE)
       Verdict.new(attempt, revision.item.key, revision.item.subject, spec.skill, prompt_of(body, attempt.item_instance), given,
-                  InstanceView.new(attempt.item_instance, body, 1).key, grading.verdict, JSON.parse(grading.error_codes_json || "[]"), grading.verdict == "near_miss")
+                  InstanceView.new(attempt.item_instance, body, 1).key, grading.verdict, codes, grading.verdict == "near_miss",
+                  unreadable, unreadable ? Grading::Result::MESSAGES_IT[(codes - [ UNREADABLE ]).first] : nil)
     end
   end
 end

@@ -85,7 +85,7 @@ class GradePendingJobTest < ActiveSupport::TestCase
     GradePendingJob.perform_now(attempt.id)
     row = attempt.gradings.reload.sole
     assert_equal "undetermined", row.verdict
-    assert_equal [ "invalid_answer" ], JSON.parse(row.error_codes_json)
+    assert_equal [ "invalid_answer", "ambiguous_mixed_number" ], JSON.parse(row.error_codes_json)
     assert_equal :pending, Grading.evidence(row, @instance)
     assert_not Grading::Recorder.pending?(attempt)
   end

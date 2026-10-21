@@ -733,6 +733,7 @@ it:
       key: "Chiave:"
       grader_said: "Il correttore ha detto:"
       near_miss_hint: "una lettera sbagliata"
+      unreadable: "Risposta non leggibile dal programma"
       verdict:
         undetermined: "non so dire"
         near_miss: "quasi giusta"

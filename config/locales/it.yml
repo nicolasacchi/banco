@@ -90,6 +90,7 @@ it:
     dont_know: "Non lo so"
     not_studied: "Non l'ho ancora studiato"
     saved: "Risposta salvata"
+    unreadable_saved: "Risposta salvata. La guarderà il docente."
     loading: "Carico la domanda."
     saving: "Salvo la risposta."
     blocked: "La tua risposta è salvata su questo computer. Accedi di nuovo e continua."

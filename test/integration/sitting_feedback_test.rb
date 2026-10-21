@@ -33,36 +33,31 @@ class SittingFeedbackTest < ActionDispatch::IntegrationTest
 
   # ---- the refused text, for the teacher only
 
-  test "refused texts are kept, shown to the teacher under the accepted answer, deduplicated, and never given to the agent" do
+  test "an unreadable text is saved for the teacher (D-317), its event is kept, and neither reaches the agent" do
     rows = build_ui_subject(components: %w[number])
     release_diagnosis!
     run = Diagnosis::Conductor.run_for(rows[:student], rows[:subject])
     step = Diagnosis::Conductor.new(run).step!
-    %w[1-12 art.\ 54 1-12].each { |text| answer(step, text) }
+    answer(step, "art. 54")
+    assert_equal({ "status" => "recorded", "message_it" => "Risposta salvata. La guarderà il docente." }, response.parsed_body)
+    answer(step, "") # empty: refused, no event
     assert_equal "invalid", response.parsed_body["status"]
-    answer(step, "") # empty: no event
-    answer(step, "99")
-    assert_equal "recorded", response.parsed_body["status"]
     events = AppEvent.where(kind: "invalid_input").order(:id)
-    assert_equal 3, events.count
-    assert_equal %w[1-12 art.\ 54 1-12], events.map { |e| JSON.parse(e.payload_json)["text"] }
+    assert_equal [ "art. 54" ], events.map { |e| JSON.parse(e.payload_json)["text"] }
+    attempt = Attempt.sole
+    assert_equal "art. 54", attempt.raw
+    grading = attempt.gradings.sole
+    assert_equal "undetermined", grading.verdict
+    assert_equal %w[invalid_answer unreadable_number], JSON.parse(grading.error_codes_json)
 
     as_teacher("/teacher/subjects/math/report")
     assert_response :success
-    assert_select "#report-refused li[data-skill='math.number']" do
-      assert_select "code", "99"
-      assert_select "p.refused-tries", /Tentativi non letti:/
-      assert_select "p.refused-tries q", 2
-      assert_select "p.refused-tries q", "1-12"
-      assert_select "p.refused-tries", /×2/
-    end
 
     token = ApiToken.issue!(role: "agent_claude", label: "refused")
     on(:api, "/api/v1/diagnosis/report?subject=math", headers: { "Authorization" => "Bearer #{token}" })
     assert_response :ok
     assert_not response.parsed_body["subjects"].sole.key?("refused_tries")
     assert_not_includes response.body, "art. 54"
-    assert_not_includes response.body, "1-12"
   end
 
   test "the refused text is cut to a sensible length" do
@@ -70,6 +65,7 @@ class SittingFeedbackTest < ActionDispatch::IntegrationTest
     release_diagnosis!
     step = Diagnosis::Conductor.new(Diagnosis::Conductor.run_for(rows[:student], rows[:subject])).step!
     answer(step, "x" * 5000)
+    assert_equal "recorded", response.parsed_body["status"]
     assert_equal Diagnosis::AnswerRecorder::REFUSED_TEXT_CHARS, JSON.parse(AppEvent.where(kind: "invalid_input").last.payload_json)["text"].size
   end
 
@@ -85,15 +81,15 @@ class SittingFeedbackTest < ActionDispatch::IntegrationTest
   test "the practice trail shows the refused tries under the answer" do
     build_practice_world
     c = serve!
-    answer!(c, "3.5")
-    answer!(c, "3.5")
+    answer!(c, "3,5,5")
+    answer!(c, "3,5,5")
     answer!(c, "x y")
     answer!(c, correct_raw(c))
     event = AppEvent.where(kind: "practice_invalid_input").last
     assert_equal "x y", JSON.parse(event.payload_json)["text"]
     steps = Teacher::PracticeProgress.new(@topic.lesson.subject, @student).trail(@skill)
     tries = steps.flat_map(&:refused)
-    assert_equal [ [ "3.5", 2 ], [ "x y", 1 ] ], tries.map { |t| [ t.text, t.count ] }
+    assert_equal [ [ "3,5,5", 2 ], [ "x y", 1 ] ], tries.map { |t| [ t.text, t.count ] }
   end
 
   # ---- a finished subject is finished in the list
