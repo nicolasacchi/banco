@@ -14,7 +14,7 @@ gem "solid_queue", "~> 1.7"
 gem "rails-i18n"
 
 # Headless Chrome client for validation, dry-run and previews (E-01).
-gem "ferrum", "0.18.0"
+gem "ferrum", "0.19.1"
 # Needed in production: item and graph submissions are validated against the
 # frozen schemas (E-SCHEMA).
 gem "json_schemer", "~> 2.4"
