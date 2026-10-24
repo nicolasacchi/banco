@@ -322,6 +322,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-316 | 2026-10-19 | the true model of a session: an append-only correction line written from the console, independence derived at read time with the true model, and the arbiter's second opinion dropped | decided |
 | D-317 | 2026-10-21 | the entry test accepts every non-empty answer (an unreadable one is kept as typed, undetermined, for the teacher), a dot decimal and a trailing % are read everywhere, and the operator lists what waits with `banco:answers:pending` | decided |
 | D-318 | 2026-10-21 | the results page says right or wrong on every solution (Giusta, Quasi giusta, Da rivedere, Non lo sapevi, La guarda il docente) and the flag shows only on a wrong one; a hint under the math field when words are typed in it | decided |
+| D-319 | 2026-10-24 | a tap on a zone of a map selects it in a `select` check: the zones now carry their target name inside the map's scaled group, a zone takes the tap itself and its button is the keyboard's way in; `targets: places` is covered by a test | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -3599,5 +3600,21 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Tests:** `test/javascript/items/expression_words.test.mjs`, `test/integration/student_pages_test.rb` (each verdict's label, the flag only on a wrong one), `test/system/results_and_hints_test.rb` (the results at 390 px, the hint in the sitting).
 - **Cost:** none on the server; the hint runs on each keystroke in the field (a few regular expressions).
 - **Rules version:** none changes.
+- **Status:** decided
+- **Back-port:** none.
+
+## D-319 · 2026-10-24 · a tap on a map zone selects it (the `select` check over a map)
+
+- **Design ref:** wave-2 T1 (D-273, the `select` check), T5 (D-276, the maps family), D-312 (select targets of the cell).
+- **Background:** on the teacher's pages, in the history lesson `ponte.history.republic-to-empire` (revision 82), the check «In quale zona sta Cartagine? Tocca la zona sulla carta.» (`::: check select`, map `mediterraneo_antico`, `targets: areas`, `candidates` of four zones) could not be answered by touching the map: the operator had to use the list. The author had already moved from `targets: places` to `targets: areas` after review 41 (the places were not drawn).
+- **Cause:** `draw.js` named a select target (`data-target="tN"`) only on the shapes it adds at the top of the figure. A map draws its zones inside a scaled group (`dg-mapgroup`), so the four zones were drawn but carried no target: `selectTargets()` found none, called `onNoTargets` and the page showed only its fallback list («zona 1 di 4, al centro»), the «list alternative». The places (circles outside the group) and the pads were top-level and worked, which is why the cell and the probe figures never showed it. Even with the name, the buttons took their box from `getBBox()`, which is in the group's own units (a map's 1000-wide viewBox), not in stage pixels, and a zone's bounding box would have covered its neighbours. Same on every page that draws a lesson/2 check (the student's lesson, the teacher's box on the topic page, `/teacher/preview`): one renderer.
+- **We do:**
+  1. `shapeNode` names the target on the shape at any depth (`app/javascript/lesson/diagrams/draw.js`).
+  2. The boxes of the buttons are read with `getBoundingClientRect()` against the stage, so they follow a group's transform.
+  3. A target inside a group (an irregular zone) is tapped on the shape itself: its click, and the click on its invisible pad (a small zone), press its button. The button of such a shape stays the keyboard's and the screen reader's way in (`dg-target-shape`: no pointer events, no dashed box, a focus ring). A chosen zone takes `is-selected` (`maps.css`, with a forced-colours rule). A top-level target (a place, a band, a line) keeps its button as the tap target.
+  4. The list alternative is unchanged (it is still shown when a figure draws no target, and in safe mode).
+- **`targets: places`:** the server already serves the set the check names (`StudentBody.select_figure` passes `set:`), so the review-41 bug is not present in this tree; a system test now taps places over `mediterraneo_antico` (cartagine, roma, atene, alessandria) and grades them. Authors may use `targets: places`.
+- **Tests:** `test/system/map_select_system_test.rb` (Chrome: the student's lesson, `/teacher/preview` and the teacher's box, at 390 px with touch events and 1280 px with the mouse; every target of an `areas` check with candidates and of a `places` check is tapped at a point the page really hits (`elementFromPoint`), a pick selects only itself, a wrong and a right answer are graded), fixture `test/fixtures/lesson2/map_select.md`. Screenshots before and after in `~/tmp/ui-shots/map-select-fix/`.
+- **Cost:** none on the server; no rules version changes; lessons with `targets: areas` need no edit.
 - **Status:** decided
 - **Back-port:** none.

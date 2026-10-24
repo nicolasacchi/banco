@@ -62,6 +62,8 @@ function shapeNode(s, env = null) {
   // the chart family's patterns (T6): a fixed set of <pattern> defs per figure (patternDefs), filled in over the shape's own class
   if (s.pattern && s.pattern !== "solid" && s.kind !== "path" && env?.patId) for (const n of nodes) n.style.fill = `url(#${env.patId}-${s.pattern})`
   if (s.target && nodes[0] && !env?.selectHandled) decorateTarget(nodes[0], s)
+  // a select check names its targets on the shape wherever it sits: a map draws its zones inside a scaled group, not at the top (D-319)
+  else if (s.target && nodes[0]) nodes[0].dataset.target = s.target
   if (s.hitFor && nodes[0]) padHit(nodes[0], s.hitFor)
   return nodes
 }
@@ -440,20 +442,29 @@ export function mountDiagram(data, ctx, options = {}) {
   const selectTargets = () => {
     const sel = options.select
     const texts = ctx.t.checks
-    const found = [...stageSvg.querySelectorAll("[data-target]")].map((node) => ({ id: node.dataset.target, box: node.getBBox() }))
+    // the box of each target in the stage's own pixels: getBoundingClientRect follows the transforms of a group (a map's zones sit in a
+    // scaled one), getBBox would give the shape's local units (D-319)
+    const origin = stage.getBoundingClientRect()
+    const found = [...stageSvg.querySelectorAll("[data-target]")].map((node) => {
+      const r = node.getBoundingClientRect()
+      return { id: node.dataset.target, node, box: { x: r.left - origin.left, y: r.top - origin.top, width: r.width, height: r.height } }
+    })
     found.sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)))
     if (found.length === 0) {
       sel.onNoTargets?.()
       return
     }
     const layer = el("div", { class: "dg-targets", role: "group", "aria-label": texts.select_group })
-    const buttons = found.map(({ id: tid, box }) => {
+    const buttons = found.map(({ id: tid, node, box }) => {
       const w = Math.max(box.width, 28)
       const h = Math.max(box.height, 28)
       const b = el("button", {
         type: "button", class: "dg-target", "data-target": tid, "data-n": tid.slice(1), "aria-pressed": "false", tabindex: "-1",
         "aria-label": targetLabel(texts.select_zone, tid.slice(1), sel.total ?? found.length, sel.info?.get(tid)?.neutral_it)
       }, icon("check", "dg-target-ic"))
+      // an irregular shape (a zone of a map) is tapped on the shape itself: its box would cover its neighbours, so the button is only the
+      // keyboard's and the screen reader's way in and lets the finger through (the shape's own click toggles, below)
+      if (node.parentNode !== stageSvg) b.classList.add("dg-target-shape")
       b.style.left = `${box.x + box.width / 2 - w / 2}px`
       b.style.top = `${box.y + box.height / 2 - h / 2}px`
       b.style.width = `${w}px`
@@ -466,6 +477,7 @@ export function mountDiagram(data, ctx, options = {}) {
         b.setAttribute("aria-pressed", String(on))
         b.classList.toggle("is-on", on)
       }
+      for (const { id: tid, node } of found) node.classList.toggle("is-selected", sel.isOn(tid))
     }
     const boxes = found.map(({ box }) => ({ x: box.x, y: box.y, w: box.width, h: box.height }))
     let current = Math.max(0, buttons.findIndex((b) => sel.isOn(b.dataset.target)))
@@ -495,6 +507,10 @@ export function mountDiagram(data, ctx, options = {}) {
       })
       layer.appendChild(b)
     })
+    // the finger or the mouse on the shape (or on its invisible pad) is a click on its button
+    const buttonOf = new Map(buttons.map((b) => [b.dataset.target, b]))
+    for (const { id: tid, node } of found) if (node.parentNode !== stageSvg) node.addEventListener("click", () => buttonOf.get(tid).click())
+    for (const pad of stageSvg.querySelectorAll("[data-hit-for]")) pad.addEventListener("click", () => buttonOf.get(pad.dataset.hitFor)?.click())
     sync()
     labelsLayer.appendChild(layer)
   }

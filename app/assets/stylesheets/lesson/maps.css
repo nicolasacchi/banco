@@ -128,3 +128,13 @@
   .dg-callout { color: Canvas; }
   .dg-name, .dg-readout-label { text-shadow: none; }
 }
+
+/* a select check over a map: the zone itself takes the tap; its button is only the keyboard's way in (D-319) */
+.dg-cand.is-selected { fill: color-mix(in srgb, var(--primary) 70%, var(--surface)); stroke: var(--text); stroke-width: 4px; stroke-dasharray: none; }
+.dg-cand-line.is-selected { fill: none; stroke: color-mix(in srgb, var(--primary) 45%, transparent); stroke-width: 26px; }
+.dg-target.dg-target-shape { pointer-events: none; border-color: transparent; background: transparent; }
+.dg-target.dg-target-shape .dg-target-ic { display: none; }
+.dg-target.dg-target-shape:focus-visible { border-color: var(--focus); }
+@media (forced-colors: active) {
+  .dg-cand.is-selected { fill: Highlight; stroke: HighlightText; }
+}
