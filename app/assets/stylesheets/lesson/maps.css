@@ -134,7 +134,19 @@
 .dg-cand-line.is-selected { fill: none; stroke: color-mix(in srgb, var(--primary) 45%, transparent); stroke-width: 26px; }
 .dg-target.dg-target-shape { pointer-events: none; border-color: transparent; background: transparent; }
 .dg-target.dg-target-shape .dg-target-ic { display: none; }
-.dg-target.dg-target-shape:focus-visible { border-color: var(--focus); }
+.dg-target.dg-target-shape:focus-visible { outline: none; }
+.dg-cand.is-focus { stroke: var(--focus); stroke-width: 5px; paint-order: stroke; }
+.dg-cand-line.is-focus { stroke: color-mix(in srgb, var(--focus) 55%, transparent); }
 @media (forced-colors: active) {
   .dg-cand.is-selected { fill: Highlight; stroke: HighlightText; }
+  .dg-cand.is-focus, .dg-cand-line.is-focus { stroke: Highlight; }
+}
+
+/* print (P3): numbered targets, none chosen; the zone's button number would sit at its box's corner, the drawn number stays */
+@media print {
+  .dg-target.dg-target-shape::after { display: none; }
+  .dg-cand.is-selected { fill: color-mix(in srgb, var(--primary) 30%, var(--surface)); stroke: var(--text); stroke-width: 2px; }
+  .dg-cand-line.is-selected { fill: none; stroke: transparent; stroke-width: 26px; }
+  .dg-cand.is-focus { stroke: var(--text); stroke-width: 2px; }
+  .dg-cand-line.is-focus { stroke: transparent; }
 }

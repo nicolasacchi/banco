@@ -73,3 +73,43 @@ explain_it: "Cartagine sta sulla costa dell'Africa del Nord."
 ## Ancora luoghi {idea short="Ancora" icon=map}
 
 Il testo di una scheda senza domande.
+
+## Fasce {idea short="Fasce" icon=map}
+
+Una domanda sulle fasce.
+
+::: check select
+prompt_it: "Quale fascia sta più a sud? Tocca la fascia sulla carta."
+diagram:
+  type: map
+  base: europe
+  alt_it: "Carta del Mediterraneo senza nomi: tre fasce si possono toccare."
+  bands:
+    - {from_lat: '36', to_lat: '42'}
+    - {from_lat: '44', to_lat: '50'}
+    - {from_lat: '52', to_lat: '58'}
+targets: bands
+pick: one
+answer: ["lat:36:42"]
+explain_it: "La fascia più a sud è quella tra 36 e 42 gradi."
+:::
+
+## Linee {idea short="Linee" icon=map}
+
+Una domanda sulle linee.
+
+::: check select
+prompt_it: "Quale linea sta più a est? Tocca la linea sulla carta."
+diagram:
+  type: map
+  base: europe
+  alt_it: "Carta del Mediterraneo senza nomi: tre linee si possono toccare."
+  lines:
+    - {kind: meridian, lon: '0'}
+    - {kind: meridian, lon: '12'}
+    - {kind: meridian, lon: '30'}
+targets: lines
+pick: one
+answer: ["meridian:30"]
+explain_it: "La linea più a est è quella dei 30 gradi."
+:::

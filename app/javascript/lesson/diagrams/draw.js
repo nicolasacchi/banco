@@ -494,6 +494,12 @@ export function mountDiagram(data, ctx, options = {}) {
         sel.toggle(b.dataset.target)
         sync()
       })
+      // the ring goes round the zone, not round its box: the zone's own stroke shows the keyboard's place (maps.css .is-focus)
+      if (b.classList.contains("dg-target-shape")) {
+        const zone = found[i].node
+        b.addEventListener("focus", () => zone.classList.toggle("is-focus", b.matches(":focus-visible")))
+        b.addEventListener("blur", () => zone.classList.remove("is-focus"))
+      }
       b.addEventListener("keydown", (event) => {
         if (event.altKey || event.ctrlKey || event.metaKey) return
         const dir = { ArrowLeft: "left", ArrowRight: "right", ArrowUp: "up", ArrowDown: "down" }[event.key]

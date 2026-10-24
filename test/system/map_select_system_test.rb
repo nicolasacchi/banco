@@ -13,7 +13,8 @@ module MapSelectSupport
   SHOT_DIR = ENV["BANCO_SHOT_DIR"].presence
   SIZES = { "390 touch" => [ 390, 844, :touch ], "1280 mouse" => [ 1280, 900, :mouse ] }.freeze
   # card number => [set, the stored id of the right answer, a wrong one]
-  CARDS = { 1 => [ "areas", "africa-proconsolare", "egitto" ], 3 => [ "places", "cartagine", "roma" ] }.freeze
+  CARDS = { 1 => [ "areas", "africa-proconsolare", "egitto" ], 3 => [ "places", "cartagine", "roma" ],
+            5 => [ "bands", "lat:36:42", "lat:44:50" ], 6 => [ "lines", "meridian:30", "meridian:0" ] }.freeze
 
   def parsed_body
     findings = Validation::Findings.new
@@ -87,7 +88,7 @@ module MapSelectSupport
     assert_selector "#{scope} svg [data-target]", minimum: 2, wait: 20
     assert_no_selector "#{scope} .select-fallback:not([hidden])"
     keys = page.evaluate_script("[...document.querySelectorAll(#{"#{scope} svg [data-target]".to_json})].map((n) => n.dataset.target)")
-    assert_equal 4, keys.size, "#{set}: the four targets are drawn"
+    assert_equal(set == "areas" || set == "places" ? 4 : 3, keys.size, "#{set}: its targets are drawn")
     keys.each do |key|
       tap_at(hit_point(scope, key), mode)
       assert_selector "#{scope} .dg-target[data-target='#{key}'][aria-pressed='true']", wait: 5
@@ -150,7 +151,62 @@ class MapSelectStudentTest < ApplicationSystemTestCase
   end
 end
 
-class MapSelectPreviewTest < ApplicationSystemTestCase
+class MapSelectFocusPrintTest < ApplicationSystemTestCase
+  include Lesson2PageWorld
+  include StudentSession
+  include MapSelectSupport
+
+  TRIAL_HEADERS = { "Remote-User" => "trial-x", "Remote-Groups" => "banco-student" }.freeze
+
+  setup do
+    @saved_users = ENV["BANCO_STUDENT_USERS"]
+    ENV["BANCO_STUDENT_USERS"] = "trial-x=prova-1"
+  end
+
+  teardown do
+    begin
+      page.driver.browser.page.command("Emulation.setEmulatedMedia", media: "")
+      page.driver.resize(1280, 900)
+    rescue StandardError
+      nil
+    end
+    sign_out_env
+    @saved_users ? ENV["BANCO_STUDENT_USERS"] = @saved_users : ENV.delete("BANCO_STUDENT_USERS")
+  end
+
+  def lesson_body = parsed_body.merge("key" => TOPIC)
+
+  test "the keyboard's place is the zone itself, and a map's targets print numbered and unchosen" do
+    build_student_world(approve: false, release: false)
+    sign_in_as :student
+    page.driver.headers = TRIAL_HEADERS
+    page.driver.resize(1280, 900)
+    visit "about:blank"
+    visit "/topics/#{TOPIC}/lesson?n=#{SecureRandom.hex(3)}"
+    wait_for_lesson_ready(wait: 20)
+    page.execute_script("window.lessonApi.goTo(1, { focus: true })")
+    scope = "#scheda-1"
+    assert_selector "#{scope} .dg-target-shape", count: 4, wait: 20
+    # the arrows move the focus; the focused zone, and only it, takes is-focus, and its button draws no ring round the box
+    page.execute_script("document.querySelector('#{scope} .dg-target-shape[tabindex=\"0\"]').focus()")
+    page.driver.browser.page.command("Input.dispatchKeyEvent", type: "rawKeyDown", key: "ArrowRight", code: "ArrowRight", windowsVirtualKeyCode: 39)
+    page.driver.browser.page.command("Input.dispatchKeyEvent", type: "keyUp", key: "ArrowRight", code: "ArrowRight", windowsVirtualKeyCode: 39)
+    assert_selector "#{scope} svg .dg-cand.is-focus", count: 1, wait: 5
+    assert_equal "none", page.evaluate_script("getComputedStyle(document.querySelector('#{scope} .dg-target-shape:focus')).outlineStyle")
+    focus_stroke = page.evaluate_script("getComputedStyle(document.querySelector('#{scope} svg .is-focus')).stroke")
+    refute_equal page.evaluate_script("getComputedStyle(document.querySelector('#{scope} svg .dg-cand:not(.is-focus)')).stroke"), focus_stroke
+    page.driver.browser.page.command("Input.dispatchKeyEvent", type: "keyDown", key: " ", code: "Space", text: " ", windowsVirtualKeyCode: 32)
+    page.driver.browser.page.command("Input.dispatchKeyEvent", type: "keyUp", key: " ", code: "Space", windowsVirtualKeyCode: 32)
+    assert_selector "#{scope} svg .dg-cand.is-selected", count: 1
+    # print: the chosen zone is drawn like the others, and no button number sits at a zone's box
+    page.driver.browser.page.command("Emulation.setEmulatedMedia", media: "print")
+    style = "(sel) => { const c = getComputedStyle(document.querySelector(sel)); return [c.fill, c.stroke, c.strokeWidth].join('|') }"
+    assert_equal page.evaluate_script("(#{style})('#{scope} svg .dg-cand:not(.is-selected):not(.is-focus)')"), page.evaluate_script("(#{style})('#{scope} svg .dg-cand.is-selected')")
+    assert_equal "none", page.evaluate_script("getComputedStyle(document.querySelector('#{scope} .dg-target-shape'), '::after').display")
+  end
+end
+
+class MapSelectPreviewTest< ApplicationSystemTestCase
   include Lesson2PageWorld
   include StudentSession
   include MapSelectSupport
@@ -226,10 +282,13 @@ class MapSelectTeacherBoxTest < ApplicationSystemTestCase
       assert_selector ".l2-box [data-ready='1']", wait: 20
       find(".l2-box .l2-start").click
       assert_selector ".l2-box #scheda-1", wait: 10
-      exercise_card(".l2-box", 1, mode, "box-#{name.tr(' ', '-')}")
-      2.times { click_button(class: "l2-next") }
-      assert_selector ".l2-box #scheda-3", wait: 10
-      exercise_card(".l2-box", 3, mode, "box-#{name.tr(' ', '-')}")
+      shown = 1
+      CARDS.each_key do |card|
+        (card - shown).times { click_button(class: "l2-next") }
+        shown = card
+        assert_selector ".l2-box #scheda-#{card}", wait: 10
+        exercise_card(".l2-box", card, mode, "box-#{name.tr(' ', '-')}")
+      end
     end
   end
 end
