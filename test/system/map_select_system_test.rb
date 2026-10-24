@@ -69,12 +69,15 @@ module MapSelectSupport
     end
   end
 
-  def shot(name)
+  # A shot of the card by selector: a viewport shot of a page scrolled far down (the teacher's topic page is long) came out as bare cream.
+  def shot(name, scope)
     return unless SHOT_DIR
 
     FileUtils.mkdir_p(SHOT_DIR)
     sleep 0.5
-    page.driver.save_screenshot(File.join(SHOT_DIR, "#{name}.png"))
+    r = page.evaluate_script("(() => { const r = document.querySelector(#{scope.strip.to_json}).getBoundingClientRect(); return { x: r.left + scrollX, y: r.top + scrollY, width: r.width, height: r.height } })()")
+    data = page.driver.browser.page.command("Page.captureScreenshot", format: "png", captureBeyondViewport: true, clip: r.merge("scale" => 1))["data"]
+    File.binwrite(File.join(SHOT_DIR, "#{name}.png"), Base64.decode64(data))
   end
 
   # Taps every target of the card's figure (each selects only itself), then a wrong and a right answer are graded.
@@ -91,7 +94,7 @@ module MapSelectSupport
       assert_equal [ key ], page.evaluate_script("[...document.querySelectorAll(#{"#{scope} [aria-pressed='true'][data-target]".to_json})].map((n) => n.dataset.target)").uniq, "#{set}: pick one keeps one"
       assert_selector "#{scope} svg .is-selected[data-target='#{key}']"
     end
-    shot "#{label}-#{set}-picked"
+    shot "#{label}-#{set}-picked", scope
     wrong_key = target_key(card, wrong)
     # pick one: a tap on the target already chosen unchooses it, so it is tapped only when the loop did not leave it chosen
     tap_at(hit_point(scope, wrong_key), mode) unless page.has_css?("#{scope} .dg-target[data-target='#{wrong_key}'][aria-pressed='true']", wait: 0)
@@ -101,7 +104,7 @@ module MapSelectSupport
     tap_at(hit_point(scope, target_key(card, right)), mode)
     find("#{scope} button", text: "Controlla").click
     assert_selector "#{scope} .verdict-right", wait: 10
-    shot "#{label}-#{set}-right"
+    shot "#{label}-#{set}-right", scope
   end
 end
 
