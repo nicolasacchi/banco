@@ -16,7 +16,7 @@ module Items
   module Figures
     EXTRA = [
       [ /<!DOCTYPE|<!ENTITY/i, "a DOCTYPE or entity" ],
-      [ /(?:javascript|vbscript|data)\s*:/i, "a script or data address" ],
+      [ /=\s*["']\s*(?:javascript|vbscript|data)\s*:/i, "a script or data address" ],
       [ /<\s*(?:iframe|embed|object|audio|video|canvas|animate|set|handler|listener)\b/i, "an embedding or scripting element" ],
       [ /<\s*(?:use|image|a|feImage|link|style)\b[^>]*href\s*=\s*["']\s*(?!#)/i, "an outside reference" ]
     ].freeze
@@ -33,7 +33,13 @@ module Items
       sha = Digest::SHA256.hexdigest(text)
       store(sha, text)
       sha
+    rescue SystemCallError, IOError => e
+      Rails.logger.warn("Items::Figures: #{asset} not stored (#{e.class}: #{e.message}); the alt text is shown")
+      nil
     end
+
+    # Whether a stored copy exists under this digest.
+    def stored?(sha) = ItemAssetsController.directory.join("#{sha}.svg").file?
 
     # Why an SVG may not be stored, or nil.
     def problem(text)

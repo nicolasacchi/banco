@@ -42,9 +42,34 @@ class ItemsFiguresTest < ActiveSupport::TestCase
   test "an explicit sha256 is honoured and nothing is written" do
     revision = make_practice_item("fig-2", "math.eq", instances: 1)
     sha = "ab" * 32
+    File.write(File.join(@dir, "#{sha}.svg"), SVG)
     out = part_for(revision, "stem_it" => "x", "figure" => { "sha256" => sha, "alt_it" => "A" })
     assert_equal "/assets/items/#{sha}.svg", out[:figure][:src]
-    assert_empty Dir.children(@dir)
+  end
+
+  test "an explicit sha256 with no file falls back to the asset, then to the alt text" do
+    sha = "cd" * 32
+    revision = make_practice_item("fig-2b", "math.eq", instances: 1, figure_svg: SVG)
+    out = part_for(revision, "figure" => { "sha256" => sha, "asset" => "assets/fig.svg", "alt_it" => "A" })
+    assert_equal "/assets/items/#{Digest::SHA256.hexdigest(SVG)}.svg", out[:figure][:src]
+    bare = make_practice_item("fig-2c", "math.eq", instances: 1)
+    assert_equal({ alt_it: "A" }, part_for(bare, "figure" => { "sha256" => sha, "alt_it" => "A" })[:figure])
+  end
+
+  test "an unwritable assets directory gives the alt text, not an error" do
+    File.write(File.join(@dir, "blocker"), "x")
+    Rails.application.config.x.item_assets_dir = File.join(@dir, "blocker", "sub")
+    revision = make_practice_item("fig-5", "math.eq", instances: 1, figure_svg: SVG)
+    assert_equal({ alt_it: "Una linea." }, part_for(revision, figure_display)[:figure])
+  end
+
+  test "a label that says Data: keeps its picture, a javascript: attribute does not" do
+    ok = '<svg xmlns="http://www.w3.org/2000/svg"><text x="1" y="9">Data: 5</text></svg>'
+    revision = make_practice_item("fig-6", "math.eq", instances: 1, figure_svg: ok)
+    assert part_for(revision, figure_display)[:figure][:src]
+    bad = '<svg xmlns="http://www.w3.org/2000/svg"><a xlink:href=" javascript:alert(1)"><text>x</text></a></svg>'
+    revision = make_practice_item("fig-7", "math.eq", instances: 1, figure_svg: bad)
+    assert_nil part_for(revision, figure_display)[:figure][:src]
   end
 
   test "a display without a figure is unchanged" do

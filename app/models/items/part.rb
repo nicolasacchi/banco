@@ -47,7 +47,8 @@ module Items
       return nil unless figure.is_a?(Hash)
 
       sha = figure["sha256"].to_s
-      sha = Items::Figures.digest_for(figure["asset"], files).to_s unless SHA256.match?(sha)
+      sha = "" unless SHA256.match?(sha) && Items::Figures.stored?(sha)
+      sha = Items::Figures.digest_for(figure["asset"], files).to_s if sha.empty?
       out = { alt_it: figure["alt_it"] }
       out[:src] = "/assets/items/#{sha}.svg" if SHA256.match?(sha)
       out

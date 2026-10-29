@@ -87,10 +87,16 @@ class DiagnosisItemPresenterTest < ActiveSupport::TestCase
 
   test "a figure is only an image from its digest, and only when the digest is valid" do
     sha = Digest::SHA256.hexdigest("<svg/>")
+    dir = Dir.mktmpdir
+    Rails.application.config.x.item_assets_dir = dir
+    File.write(File.join(dir, "#{sha}.svg"), "<svg/>")
     presenter = Diagnosis::ItemPresenter.allocate
     assert_equal({ alt_it: "Un disegno", src: "/assets/items/#{sha}.svg" }, presenter.send(:figure, { "sha256" => sha, "alt_it" => "Un disegno", "asset" => "assets/a.svg" }))
     assert_equal({ alt_it: "Un disegno" }, presenter.send(:figure, { "sha256" => "../../etc/passwd", "alt_it" => "Un disegno" }))
     assert_equal({ alt_it: "x" }, presenter.send(:figure, { "alt_it" => "x", "asset" => "assets/a.svg" }))
     assert_nil presenter.send(:figure, nil)
+  ensure
+    Rails.application.config.x.item_assets_dir = nil
+    FileUtils.rm_rf(dir) if dir
   end
 end

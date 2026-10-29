@@ -23,8 +23,14 @@ class ItemsPartTest < ActiveSupport::TestCase
 
   test "a figure is only an image from its digest" do
     sha = Digest::SHA256.hexdigest("<svg/>")
+    dir = Dir.mktmpdir
+    Rails.application.config.x.item_assets_dir = dir
+    File.write(File.join(dir, "#{sha}.svg"), "<svg/>")
     assert_equal({ alt_it: "d", src: "/assets/items/#{sha}.svg" }, part.figure({ "sha256" => sha, "alt_it" => "d" }))
     assert_equal({ alt_it: "d" }, part.figure({ "sha256" => "../x", "alt_it" => "d" }))
     assert_nil part.figure("nope")
+  ensure
+    Rails.application.config.x.item_assets_dir = nil
+    FileUtils.rm_rf(dir) if dir
   end
 end
