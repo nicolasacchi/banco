@@ -325,6 +325,8 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-319 | 2026-10-24 | a tap on a zone of a map selects it in a `select` check: the zones now carry their target name inside the map's scaled group, a zone takes the tap itself and its button is the keyboard's way in; `targets: places` is covered by a test | decided |
 | D-321 | 2026-10-29 | an item's figure (an asset of the revision) now reaches the student: `Items::Part` resolves the digest at draw time and `Items::Figures` stores a copy under it, refusing a dirty SVG; the ledger is not rewritten | implemented |
 
+| D-320 | 2026-10-29 | the blind solver and the reviewer see the figures of an item as PNG files (`banco solve open` and `banco review open` write them), nothing more than the drawing; the solve brief says to look at them and never to answer «Non lo so» for a missing figure | decided |
+
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
 - **Design ref:** Operator answer to the review panel's questions
@@ -3631,3 +3633,17 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Status:** implemented
 - **Back-port:** X-02, A-03 (the digest is made by the app at draw time, not stored by M5).
 - **Tests:** `test/models/items/figures_test.rb` (digest, written once, explicit sha, no figure, missing asset, dirty SVGs), `test/integration/item_figures_test.rb` (practice and sitting payloads, the image served), `test/system/item_figures_system_test.rb` (Chrome at 390 and 1280 px; shots in `~/tmp/ui-shots/item-figures/`).
+
+## D-320 · 2026-10-29 · the blind solver and the reviewer see the figures of an item
+
+- **Design ref:** A-05 (the blind solve and the expert review), M6 (D-133, D-169: they see the item as the student does).
+- **Background:** found in the chemistry wave (2026-10-29). An item whose instances show a figure (a heating curve, a graph to read: an SVG asset of the item) reached the blind solver as the figure's relative asset name and its `alt_it` only, and the solve brief said to work from what is displayed. The solvers answered «Non lo so» on every instance (36 automatic major findings on three items); the reviewer could only check the keys against the stored data points.
+- **We do:**
+  1. `Review::Figures` finds the figures of the displays the agent reads (the item's prompt, an instance's own, a testlet sub item's) and gives each distinct asset one file, `figure-1.png`, `figure-2.png`, ... in order of first appearance, with the instances that show it. `Review::FigureImage` draws the SVG in the server's Chrome (the one door, `ChromeRunner`, under its lock) as an `<img>` of a data URL, 1000 px wide on white, and keeps the pixels as a PNG; cached in `storage/item_figures/<sha256 of the SVG>.png` (`BANCO_ITEM_FIGURES_DIR`).
+  2. `GET /api/v1/revisions/:revision/solve` and `/review` carry `figures` (`name`, `alt_it`, `instances`, `width`, `height`, `sha256`, `png_base64`; `[]` when no instance shows a figure; `missing: true` for an asset the revision does not hold). In the solver's display a figure is only `{alt_it, file}` (no asset name); the reviewer's keeps its own members and gains `file`. Chrome that cannot draw answers 503 `E-CHROME-UNAVAILABLE` and nothing is opened: an agent that never saw the picture would only guess.
+  3. `banco solve open REV` and `banco review open REV` write the files in `banco-figures/REV/` (`--dir DIR`), print `figures` with each file's `path` instead of the picture, and `figures_dir`; an answer with no figure is printed as it came. Stdlib only; the names are checked (`figure-N.png`).
+  4. Briefs: `solve` version 2 (look at every figure file before answering; never `dont_know` for a missing or unreadable figure, stop and report it) and `review` version 3 (look at every figure file and check the drawing against the key; a missing figure is a finding).
+- **Still nothing a student does not see:** the PNG is what Chrome paints. The SVG's `<title>`, `<desc>`, metadata, comments, `data-*` attributes and any value that is not drawn cannot be in it, and the SVG text itself is never sent; the PNG holds only image chunks (the test lists them). The solver still gets no key, solution, hints or stored data.
+- **Cost:** a Chrome run on the first open of a figure (cached by content afterwards); a response with the figures inline (about 15 to 60 KB of base64 per figure).
+- **Status:** decided
+- **Back-port:** none.

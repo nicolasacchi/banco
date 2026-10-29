@@ -21,6 +21,16 @@ module IndependentRoles
     false
   end
 
+  # The PNG files of the figures the instances show (D-320: the solver and the reviewer see the item as the
+  # student does). Chrome that cannot draw them is a 503 and nothing is opened: an agent that never saw the
+  # picture would only guess. Call after the instances have been listed.
+  def figure_files_or_refuse(text, step:)
+    text.figure_files
+  rescue Review::FigureImage::Unavailable => e
+    refuse("E-CHROME-UNAVAILABLE", "figures", "the figures of the item could not be drawn: #{e.message.first(160)}", "retry in 30 s: banco #{step} open REV", 503)
+    nil
+  end
+
   # The step's own open command on the latest revision (D-207: a superseded revision is not worked).
   def latest?(revision, item, step:)
     return true if revision.id == item.latest_revision.id

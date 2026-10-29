@@ -5,13 +5,13 @@ class BriefTest < ActiveSupport::TestCase
   SUBJECT_BRIEFS = %w[biology business chemistry computer_science english geography history law_economics spanish].freeze
   NAMES = (%w[arbiter blueprint course diagnosis-item grade lesson lesson-review lesson-v1 page page-review practice-item review skill-graph solve topic] +
            SUBJECT_BRIEFS.map { |s| "lesson-#{s.tr('_', '-')}" }).sort.freeze
-  VERSION_2 = %w[arbiter diagnosis-item review lesson lesson-review].freeze # D-227: practice items, review points 12-13; D-245: lesson/2 and its review; D-316: the arbiter without a second opinion
+  VERSION_2 = %w[arbiter diagnosis-item lesson lesson-review solve].freeze # D-227: practice items, review points 12-13; D-245: lesson/2 and its review; D-316: the arbiter without a second opinion; D-320: solve looks at the figures
 
   test "the briefs exist (version 1, or 2 for the Phase 1b and rich-lesson deltas) with a body" do
     assert_equal NAMES, Brief.names
     NAMES.each do |name|
       brief = Brief.find(name)
-      assert_equal VERSION_2.include?(name) ? 2 : 1, brief.version, name
+      assert_equal({ "review" => 3 }.fetch(name) { VERSION_2.include?(name) ? 2 : 1 }, brief.version, name)
       assert_equal name, brief.name
       assert_operator brief.body.size, :>, 800, name
     end
@@ -198,6 +198,14 @@ class BriefTest < ActiveSupport::TestCase
     assert_includes body, "exactly **8 points**"
     assert_includes body, "look at every card's screenshot at 390 pixels"
     assert_includes body, "11. Free pages"
+  end
+
+  test "the solve and review briefs send the agent to the figure files and never to dont_know for a missing figure (D-320)" do
+    solve = Brief.find("solve").body.squish
+    assert_includes solve, "Look at every figure file before you answer"
+    assert_includes solve, "Never answer `dont_know` because a figure is missing"
+    assert_includes solve, "banco-figures/REV/"
+    assert_includes Brief.find("review").body.squish, "Look at every figure file"
   end
 
   test "the practice-item brief states the pool and hint rules of the rules file" do

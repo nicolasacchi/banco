@@ -14,8 +14,10 @@ module Api
         session = require_session("solver", item: @item, next_step: next_session) or return
         return unless independent_role?(session, @item, "solver") && latest?(@revision, @item, step: "solve")
 
+        instances = @text.solver_instances
+        figures = figure_files_or_refuse(@text, step: "solve") or return
         render json: { revision_id: @revision.id, item: @item.key, subject: @item.subject.key, seq: @revision.seq, component: component,
-                       sub_items: sub_items, instances: @text.solver_instances, brief: brief_row("solve"),
+                       sub_items: sub_items, instances: instances, figures: figures, brief: brief_row("solve"),
                        file_root: file_root,
                        next: "write banco.solve/1 (banco brief show solve) and run banco solve submit #{@revision.id} --file answers.json" }
       end

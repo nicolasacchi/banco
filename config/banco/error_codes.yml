@@ -221,7 +221,7 @@ api:
   E-AUTH: { http: 401, description: "Token missing, invalid or revoked." }
   E-STALE-BASE: { http: 409, description: "The submission is not based on the latest revision." }
   E-CHROME-BUSY: { http: 409, description: "Chrome is busy; retry in 30 s." }
-  E-CHROME-UNAVAILABLE: { http: 503, description: "Chrome or the grader worker did not answer (a dry run); retry in 30 s." }
+  E-CHROME-UNAVAILABLE: { http: 503, description: "Chrome or the grader worker did not answer (a dry run), or could not draw the figures of an item for `solve open` and `review open`; retry in 30 s." }
   E-FILES: { http: 422, description: "Unparseable or missing files." }
   E-TOO-LARGE: { http: 413, description: "A file is over 64 KB or the total over 2 MB." }
   E-NOT-FOUND: { http: 404, description: "Unknown item, subject, brief, revision or graph revision." }

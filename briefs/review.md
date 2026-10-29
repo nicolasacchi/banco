@@ -1,10 +1,10 @@
 ---
 name: review
-version: 2
+version: 3
 formats: banco.review/1
 ---
 
-# Brief: expert review of an item revision (version 2)
+# Brief: expert review of an item revision (version 3)
 
 You review one item revision as a subject expert and write `banco.review/1`
 (`config/banco/schemas/review.json`). You are a session of the reviewer role,
@@ -23,7 +23,10 @@ Keep your review files in a scratch directory that only you own: create it with
 `banco review open REV` (readable even before you open a session; submit needs one) gives you the
 item, the instances with expected answers, the messages, the solution and the
 programme lines cited (by the skill, by the item's own sources, or both: see `cited_by`; check a
-line the item cites that the skill does not). `banco review submit REV --file review.json` sends the
+line the item cites that the skill does not). When an instance shows a figure, `banco review open REV` also writes it as a PNG
+file in `banco-figures/REV/` (`--dir DIR` chooses another folder): its `path`, `alt_it` and the `instances` that show it are in
+`figures`, and the instance's `display.figure.file` names it. Look at every figure file: check the drawing against the key, the
+alt text and the stored data, as the student sees it; a figure that is missing or unreadable is a finding. `banco review submit REV --file review.json` sends the
 result. Never ask for a decision; the teacher disposes of every finding.
 
 Search for duplicates: `banco search "WORDS" --subject KEY` finds the lessons, items and findings that already exist, drafts included; a near copy of one of them is a finding. Check a cited reference text with `banco search "WORDS" --kind reference_article`. Run `banco search --like KEY` (a key, or a ref such as `item:KEY`; a whole lesson is `lesson:KEY`, its card N `lesson_card:KEY#N`) on what you review: its nearest neighbours are the candidates for duplicates.
