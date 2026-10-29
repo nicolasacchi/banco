@@ -16,8 +16,11 @@ module Review
     # Another run holds Chrome: a clean 409 with retry advice.
     class Busy < Unavailable; end
 
-    LOCK_WAIT = 60 # s waited for Chrome's lock, once per open
-    DRAW_BUDGET = 60 # s for all the figures of one open, drawn in one Chrome session
+    # One deadline for the whole open: the lock is waited for at most LOCK_WAIT s in all, and the drawing adds at
+    # most DRAW_SLACK s. The lock is held for one figure at a time (a short session each) and released between
+    # them, so a validation dry run or a render never waits behind a whole item's figures. BANCO_FIGURES_LOCK_WAIT
+    # lengthens the wait (the tests, which share Chrome with other processes).
+    DRAW_SLACK = 30
 
     class << self
       # PNGs for several SVG texts (same order): cached ones are read, bad cache files are redrawn, every
@@ -27,26 +30,32 @@ module Review
         todo = images.each_index.select { |i| images[i].nil? }
         return images if todo.empty?
 
-        deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + DRAW_BUDGET
+        deadline = now + lock_wait + DRAW_SLACK
         drawn = {}
-        begin
-          Validation::ChromeRunner.session(wait: LOCK_WAIT) do |session|
-            todo.map { |i| svgs[i] }.uniq.each do |svg|
-              raise Unavailable, "drawing the figures took more than #{DRAW_BUDGET} s" if Process.clock_gettime(Process::CLOCK_MONOTONIC) > deadline
+        todo.map { |i| svgs[i] }.uniq.each do |svg|
+          remaining = deadline - now
+          raise Unavailable, "drawing the figures took more than #{lock_wait + DRAW_SLACK} s" if remaining <= 0
 
-              drawn[svg] = draw(session, svg)
-            end
-          end
-        rescue Validation::ChromeRunner::Busy => e
-          raise Busy, e.message
-        rescue Validation::ChromeRunner::Error => e
-          raise Unavailable, e.message
+          drawn[svg] = draw_alone(svg, [ remaining - 1, 1 ].max.floor)
         end
         svgs.each_with_index.map do |svg, i|
           bytes = drawn[svg]
           store(path_of(svg), bytes) if bytes && images[i].nil?
           images[i] || image_of(svg, bytes)
         end
+      end
+
+      def lock_wait = ENV["BANCO_FIGURES_LOCK_WAIT"].to_i.positive? ? ENV["BANCO_FIGURES_LOCK_WAIT"].to_i : 60
+
+      def now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+      # One figure in its own Chrome session, so the lock is let go straight after.
+      def draw_alone(svg, wait)
+        Validation::ChromeRunner.session(wait: wait) { |session| draw(session, svg) }
+      rescue Validation::ChromeRunner::Busy => e
+        raise Busy, e.message
+      rescue Validation::ChromeRunner::Error => e
+        raise Unavailable, e.message
       end
 
       def png(svg) = png_all([ svg ]).first

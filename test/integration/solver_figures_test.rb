@@ -30,11 +30,15 @@ class SolverFiguresTest < ActionDispatch::IntegrationTest
     @cache = Dir.mktmpdir
     @saved_env = ENV["BANCO_ITEM_FIGURES_DIR"]
     ENV["BANCO_ITEM_FIGURES_DIR"] = @cache
+    # other tests (other processes) use the same Chrome: wait for its lock rather than answer busy
+    @saved_wait = ENV["BANCO_FIGURES_LOCK_WAIT"]
+    ENV["BANCO_FIGURES_LOCK_WAIT"] = "600"
   end
 
   teardown do
     Rails.application.config.x.item_assets_dir = nil
     ENV["BANCO_ITEM_FIGURES_DIR"] = @saved_env
+    ENV["BANCO_FIGURES_LOCK_WAIT"] = @saved_wait
     FileUtils.rm_rf([ @assets, @cache ])
   end
 
