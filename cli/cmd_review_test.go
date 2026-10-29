@@ -255,9 +255,33 @@ func TestSolveOpenWritesTheFigures(t *testing.T) {
 		`{"name":"figure-2.png","alt_it":"Manca","instances":[1],"missing":true}]}`
 	srv, seen := sequenceServer(t, [2]string{"200", body})
 	dir := filepath.Join(t.TempDir(), "figs")
+	// stale files and a symlink of an earlier open are removed, never followed
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	victim := filepath.Join(t.TempDir(), "victim")
+	if err := os.WriteFile(victim, []byte("keep"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(victim, filepath.Join(dir, "figure-1.png")); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "figure-9.png"), []byte("stale"), 0o600); err != nil {
+		t.Fatal(err)
+	}
 	r := runWithSession(t, srv.URL, "5", "solve", "open", "7", "--dir", dir)
-	if r.exit != ExitOK {
+	// a figure the student is shown no picture for: the answer is printed, the exit is not zero
+	if r.exit != ExitValidation || !strings.Contains(r.stderr, "E-FIGURE-MISSING") || !strings.Contains(r.stdout, `"warnings"`) {
 		t.Fatalf("exit %d stdout %q stderr %q", r.exit, r.stdout, r.stderr)
+	}
+	if b, _ := os.ReadFile(victim); string(b) != "keep" {
+		t.Fatalf("the symlink target was written: %q", b)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "figure-9.png")); err == nil {
+		t.Fatal("a stale figure file was left")
+	}
+	if st, err := os.Stat(filepath.Join(dir, "figure-1.png")); err != nil || st.Mode().Perm() != 0o600 {
+		t.Fatalf("mode %v %v", st, err)
 	}
 	if (*seen)[0].method != "GET" || (*seen)[0].path != "/api/v1/revisions/7/solve" {
 		t.Fatalf("request %+v", (*seen)[0])

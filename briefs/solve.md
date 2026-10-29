@@ -38,7 +38,7 @@ drawing), and read values from the drawing as a student would. The pictures are 
 more: no key, no data table behind them.
 
 Never answer `dont_know` because a figure is missing or unreadable: stop, do not submit, and report it to the lead
-(the figure is `missing: true`, a file did not come, or the picture is cut or unreadable). `dont_know` is for a
+(the figure is `missing: true`: `banco solve open` still prints the item, with a `warnings` line, but exits with `E-FIGURE-MISSING`; or a file did not come, or the picture is cut or unreadable). `dont_know` is for a
 question you cannot answer with the whole item in front of you.
 
 ## Format

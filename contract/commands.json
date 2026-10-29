@@ -201,7 +201,7 @@
       "path": "/api/v1/revisions/:revision/review",
       "args": ["revision"],
       "flags": ["--json", "--dir"],
-      "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT", "E-CHROME-UNAVAILABLE"]
+      "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT", "E-CHROME-BUSY", "E-CHROME-UNAVAILABLE"]
     },
     {
       "name": "review submit",
@@ -219,7 +219,7 @@
       "path": "/api/v1/revisions/:revision/solve",
       "args": ["revision"],
       "flags": ["--json", "--dir"],
-      "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT", "E-CHROME-UNAVAILABLE"]
+      "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED", "E-SESSION-NOT-INDEPENDENT", "E-CHROME-BUSY", "E-CHROME-UNAVAILABLE"]
     },
     {
       "name": "solve submit",
