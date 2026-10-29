@@ -9,8 +9,11 @@ module Items
     ACCENT_SETS = { "spanish" => "es", "italian" => "it" }.freeze
     SHA256 = /\A[0-9a-f]{64}\z/
 
-    def initialize(subject:, expression_input: "mathlive")
+    # +revision+ (an ItemRevision) is where a figure's asset is read from; without it only a display
+    # that carries its own sha256 shows a picture.
+    def initialize(subject:, expression_input: "mathlive", revision: nil)
       @subject = subject
+      @revision = revision
       @expression_input = expression_input
     end
 
@@ -37,15 +40,21 @@ module Items
       out.compact
     end
 
-    # Only a figure that the validation stored by digest can be shown, and only as
-    # an image from /assets/items/<sha256>.svg.
+    # A figure is shown only as an image from /assets/items/<sha256>.svg. A display's own sha256 is
+    # honoured; otherwise its asset is read from the revision's files and stored under its digest
+    # (Items::Figures, D-321). A figure that cannot be shown keeps its alt text only.
     def figure(figure)
       return nil unless figure.is_a?(Hash)
 
       sha = figure["sha256"].to_s
+      sha = Items::Figures.digest_for(figure["asset"], files).to_s unless SHA256.match?(sha)
       out = { alt_it: figure["alt_it"] }
       out[:src] = "/assets/items/#{sha}.svg" if SHA256.match?(sha)
       out
     end
+
+    private
+
+    def files = @files ||= @revision ? @revision.other_files : {}
   end
 end

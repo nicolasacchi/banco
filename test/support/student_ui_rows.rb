@@ -8,7 +8,7 @@ module StudentUiRows
 
   # Builds the subject, its graph, items and blueprint. Returns a Hash:
   # {subject:, student:, preview:, blueprint:, revisions: {component => revision}}.
-  def build_ui_subject(key: "math", name: "Matematica", components: COMPONENTS, depends_on: [], position: 1, sitting_minutes: 30, approve: true, formula_sheet: nil)
+  def build_ui_subject(key: "math", name: "Matematica", components: COMPONENTS, depends_on: [], position: 1, sitting_minutes: 30, approve: true, formula_sheet: nil, figure_svg: nil)
     session = AgentSession.find_or_create_by!(label: "ui-author", role: "author")
     subject = Subject.find_or_create_by!(key: key) { |s| s.name_it = name; s.position = position }
     student = Student.find_or_create_by!(key: "student") { |s| s.kind = "student" }
@@ -20,7 +20,7 @@ module StudentUiRows
                    skills: skills.map { |k| { key: k, label_it: "Abilità #{k.split('.').last}", layer: "core", scope: "studied",
                                               prerequisites: [], refs: [], errors: [] } } }.to_json
     )
-    revisions = components.to_h { |c| [ c, build_ui_revision(subject, session, c, skill_key(key, c)) ] }
+    revisions = components.to_h { |c| [ c, build_ui_revision(subject, session, c, skill_key(key, c), figure_svg: (c == "choice" ? figure_svg : nil)) ] }
     # A testlet counts one outcome per passage, so the second outcome of its skill
     # has to come from another item (B-02): the pool has a second testlet.
     extra = components.include?("testlet") ? { "testlet" => build_ui_revision(subject, session, "testlet", skill_key(key, "testlet")) } : {}
@@ -54,7 +54,7 @@ module StudentUiRows
                      remote_addr: "127.0.0.1")
   end
 
-  def build_ui_revision(subject, session, component, skill)
+  def build_ui_revision(subject, session, component, skill, figure_svg: nil)
     kind = { "testlet" => "testlet", "short_answer" => "short_answer" }.fetch(component, "diagnosis_item")
     body = { schema: "banco.item/1", schema_version: 1, kind: kind, subject: subject.key, skill: skill, component: component,
              expected_seconds: 60 }
@@ -79,9 +79,10 @@ module StudentUiRows
     end
     item = Item.create!(subject: subject, key: "ui-#{component}-#{SecureRandom.hex(3)}", kind: kind)
     revision = ItemRevision.create!(item: item, seq: 1, body_json: body.to_json, author_session: session,
-                                    file_sessions_json: "{}", brief_sha256: "0" * 64)
+                                    file_sessions_json: "{}", brief_sha256: "0" * 64,
+                                    files_json: figure_svg && JSON.generate("assets/fig.svg" => figure_svg))
     ItemValidation.create!(item_revision: revision, seq: 1, status: "passed")
-    INSTANCES.times { |i| build_ui_instance(revision, component, i) }
+    INSTANCES.times { |i| build_ui_instance(revision, component, i, figure: !figure_svg.nil?) }
     revision
   end
 
@@ -103,8 +104,9 @@ module StudentUiRows
     }.fetch(component, "Domanda.")
   end
 
-  def build_ui_instance(revision, component, i)
+  def build_ui_instance(revision, component, i, figure: false)
     spec = ui_instance_spec(component, i)
+    spec[:display][:figure] = { asset: "assets/fig.svg", alt_it: "Un triangolo con i lati #{i}." } if figure
     ItemInstance.create!(
       item_revision: revision, seed: i + 1, display_json: spec[:display].to_json, answer_json: spec[:answer].to_json,
       errors_json: spec[:errors].to_json, solution_json: spec[:solution]&.to_json,

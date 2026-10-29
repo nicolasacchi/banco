@@ -166,7 +166,8 @@ li.subject.suggested { border-left: 6px solid var(--primary); padding-left: 0.75
 .table-wrap { overflow-x: auto; margin-bottom: 1rem; }
 table.data { border-collapse: collapse; }
 table.data th, table.data td { border: 1px solid var(--line); padding: 0.25rem 0.75rem; text-align: left; }
-img.figure { max-width: 100%; height: auto; background: #fff; }
+.prompt figure { margin: 0 0 1rem; }
+img.figure { display: block; max-width: 100%; max-height: min(26rem, 60vh); width: auto; height: auto; margin: 0 auto; background: #fff; border-radius: 4px; }
 
 fieldset.options { border: 0; padding: 0; margin: 0; }
 .option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.5rem 0.25rem; cursor: pointer; }

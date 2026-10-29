@@ -21,7 +21,7 @@ module StudentCourseWorld
     "summary_it" => "- Un termine che cambia lato cambia segno.\n- Si divide per il coefficiente.\n- Si controlla il risultato."
   }.freeze
 
-  def build_student_world(approve: true, release: true)
+  def build_student_world(approve: true, release: true, figure_svg: nil)
     build_course
     @skill = SKILL
     @topic_key = TOPIC
@@ -29,7 +29,7 @@ module StudentCourseWorld
     @lesson = Lesson.create!(subject: @subject, key: TOPIC, kind: "ripasso")
     @lesson_revision = LessonRevision.create!(lesson: @lesson, seq: 1, source_md: "---\n", source_sha256: "0" * 64, rules_version: Validation::Rules.version.to_s,
                                               warnings_json: "[]", body_json: JSON.generate(lesson_body))
-    @revisions = Array.new(2) { |i| make_practice_item("demo-item-#{i + 1}", SKILL, instances: 12) }
+    @revisions = Array.new(2) { |i| make_practice_item("demo-item-#{i + 1}", SKILL, instances: 12, figure_svg: figure_svg) }
     @topic_revision = TopicRevision.create!(lesson: @lesson, seq: 1, course_revision: @course, lesson_revision: @lesson_revision,
                                             body_json: JSON.generate(schema: "banco.topic/1", key: TOPIC, intro_it: "Qui impari a risolvere le equazioni.",
                                                                      practice: [ { skill: SKILL, items: @revisions.map { |r| { item: r.item.key, revision: r.id } } } ]))

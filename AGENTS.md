@@ -96,7 +96,7 @@ only), `HARNESS_PORT` 3200 (internal). Never `PORT`.
   run, end-of-subject screen) and the teacher's `/teacher/preview`. `Diagnosis::Conductor` runs a run for
   the web (engine action to event, item_served with `Diagnosis::Rekey`'s shuffle), `AnswerRecorder`
   records an answer (grade first, then one short transaction), `ItemPresenter` is all the browser is
-  told, `Availability`/`Summary`/`Warmup` are the list, the end screen and the warm-up. The warm-up is optional and always recallable, before and after the release; the release does not need it (D-261). The browser side
+  told (a figure named by `asset` gets its digest and a stored copy at draw time, `Items::Figures`, D-321), `Availability`/`Summary`/`Warmup` are the list, the end screen and the warm-up. The warm-up is optional and always recallable, before and after the release; the release does not need it (D-261). The browser side
   is `app/javascript/items/` (one template per component, markup, outbox) and
   `app/javascript/student_controllers/`, on their own importmap (`config/importmap.student.rb`, no
   Turbo); MathLive, KaTeX and Compute Engine are served from `public/vendor/<name>@<version>/`.

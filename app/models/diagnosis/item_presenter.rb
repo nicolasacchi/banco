@@ -59,6 +59,7 @@ module Diagnosis
 
     def figure(figure) = parts.figure(figure)
 
-    def parts = @parts ||= Items::Part.new(subject: @subject, expression_input: @expression_input)
+    def parts = @parts ||= Items::Part.new(subject: @subject, expression_input: @expression_input,
+                                           revision: @served&.item_instance&.item_revision)
   end
 end
