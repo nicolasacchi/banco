@@ -36,9 +36,10 @@
           }
         }
       ],
+      "figures": [],
       "brief": {
         "name": "solve",
-        "version": 1,
+        "version": 2,
         "sha256": "<sha256>"
       },
       "file_root": {

@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"io"
 	"net/url"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 )
@@ -91,6 +93,7 @@ func runRevision(e *env, c revisionCommand, args []string) error {
 	fs.SetOutput(io.Discard)
 	file := fs.String("file", "", "the JSON file to send")
 	dry := fs.Bool("dry-run", false, "check and store nothing")
+	dir := fs.String("dir", "", "open: where the figures of the item are written as PNG files (default banco-figures/REV)")
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
 	if err != nil {
@@ -105,7 +108,23 @@ func runRevision(e *env, c revisionCommand, args []string) error {
 		if *file != "" || *dry {
 			return newErr(ExitUsage, "E-USAGE", "args", c.name+" reads: --file and --dry-run are for submit", c.next)
 		}
+		if *dir == "" {
+			*dir = filepath.Join("banco-figures", pos[0])
+		}
+		out, err := e.client().doWith(c.name, "GET", path, nil, nil)
+		if err != nil {
+			return err
+		}
+		out, err = saveFigures(out, *dir, c.next)
+		if err != nil {
+			return err
+		}
+		_, err = e.stdout.Write(append(out, '\n'))
+		return err
 	} else {
+		if *dir != "" {
+			return newErr(ExitUsage, "E-USAGE", "args", c.name+" takes no --dir: it is for open", c.next)
+		}
 		payload, err = fileBody(*file, c.member, c.next)
 		if err != nil {
 			return err
@@ -193,4 +212,53 @@ func runGradePropose(e *env, args []string) error {
 		return err
 	}
 	return send(e, "grade propose", "POST", "/api/v1/attempts/"+url.PathEscape(pos[0])+"/grade-proposals", payload, *dry)
+}
+
+var figureNameRe = regexp.MustCompile(`^figure-[1-9][0-9]{0,2}\.png$`)
+
+// saveFigures writes the figures of an opened item (solve open, review open) into dir as PNG files and
+// returns the answer with each figure's picture replaced by its path (figures_dir says the folder). An
+// answer with no figure is returned as it came. The item is read as the student sees it: look at every
+// file before answering (D-320).
+func saveFigures(body []byte, dir, next string) ([]byte, error) {
+	var doc map[string]json.RawMessage
+	if json.Unmarshal(body, &doc) != nil {
+		return body, nil
+	}
+	var figures []map[string]any
+	if raw, ok := doc["figures"]; !ok || json.Unmarshal(raw, &figures) != nil || len(figures) == 0 {
+		return body, nil
+	}
+	abs, err := filepath.Abs(dir)
+	if err != nil {
+		return nil, newErr(ExitUsage, "E-USAGE", "dir", "cannot use "+dir+": "+err.Error(), next)
+	}
+	if err := os.MkdirAll(abs, 0o755); err != nil {
+		return nil, newErr(ExitUsage, "E-USAGE", "dir", "cannot create "+dir+": "+err.Error(), next)
+	}
+	for _, f := range figures {
+		encoded, _ := f["png_base64"].(string)
+		delete(f, "png_base64")
+		if encoded == "" {
+			continue // an asset the server does not hold: it says missing: true
+		}
+		name, _ := f["name"].(string)
+		if !figureNameRe.MatchString(name) {
+			return nil, newErr(ExitServer, "E-HTTP", "figures", "the server sent a figure with an unusable name", "banco health")
+		}
+		data, err := base64.StdEncoding.DecodeString(encoded)
+		if err != nil || len(data) == 0 {
+			return nil, newErr(ExitServer, "E-HTTP", "figures", "the server sent a figure that is not a picture ("+name+")", "retry: "+next)
+		}
+		target := filepath.Join(abs, name)
+		if err := os.WriteFile(target, data, 0o644); err != nil {
+			return nil, newErr(ExitUsage, "E-USAGE", "dir", "cannot write "+target+": "+err.Error(), next)
+		}
+		f["path"] = target
+	}
+	list, _ := json.Marshal(figures)
+	doc["figures"] = list
+	folder, _ := json.Marshal(abs)
+	doc["figures_dir"] = folder
+	return json.Marshal(doc)
 }

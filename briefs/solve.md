@@ -1,10 +1,10 @@
 ---
 name: solve
-version: 1
+version: 2
 formats: banco.solve/1
 ---
 
-# Brief: blind solve (version 1)
+# Brief: blind solve (version 2)
 
 You solve the instances of one item revision exactly as the student sees them,
 and write `banco.solve/1` (`config/banco/schemas/solve.json`). The server grades
@@ -15,7 +15,8 @@ Start with `banco status` and this brief. Open your session first:
 `export BANCO_SESSION=$(banco session new --role solver --agent AGENT --model MODEL --id)` (AGENT is the name of the agent you are, MODEL the model you run);
 the model must be a different model than every author of the item (the family may be the same) (`E-PROVIDER-NOT-ALLOWED`) and the
 session new to the item (`E-SESSION-NOT-INDEPENDENT`). `banco solve open REV` gives you the instances in display form (stems, tables,
-options, elements). `banco solve submit REV --file answers.json` sends the answers.
+options, elements) and writes every figure the item shows as a PNG file (see Figures below).
+`banco solve submit REV --file answers.json` sends the answers.
 If your shell does not keep variables between calls, write the session id to a file in your work folder and export it again before each `banco` call (`E-SESSION` otherwise).
 Never ask for a decision.
 
@@ -26,6 +27,19 @@ a wrong shape, a missing or doubled instance and an answer the grader cannot rea
 a dot, an empty string), so fix those first. It also prints a mismatch count; do not change an
 answer because of that count, since the solve is blind and a disagreement is for the teacher to
 judge. Read each answer once more against the display before you submit.
+
+## Figures
+
+An item may show a drawing (a graph, a curve, a diagram). `banco solve open REV` writes each one as a PNG file in
+`banco-figures/REV/` (`--dir DIR` chooses another folder) and prints `figures`: for each file its `path`, its `alt_it`
+(the text a student reads when the picture does not load) and the `instances` that show it; an instance's `display.figure` names
+its file (`file`). **Look at every figure file before you answer** (open the PNG as an image; the alt text is not the
+drawing), and read values from the drawing as a student would. The pictures are the drawings and nothing
+more: no key, no data table behind them.
+
+Never answer `dont_know` because a figure is missing or unreadable: stop, do not submit, and report it to the lead
+(the figure is `missing: true`, a file did not come, or the picture is cut or unreadable). `dont_know` is for a
+question you cannot answer with the whole item in front of you.
 
 ## Format
 
@@ -57,7 +71,7 @@ string) and `answers`. Nothing else is allowed. A minimal file:
 }
 ```
 
-## Rules (version 1)
+## Rules (version 2)
 
 1. Solve as a competent student of the stated level would: no tricks, no use of the
    position or length of options, no guessing from the style of the item.
@@ -68,7 +82,7 @@ string) and `answers`. Nothing else is allowed. A minimal file:
 4. Use the Italian decimal comma. Do not add explanations to the file; the format
    forbids extra fields.
 5. You are a different model family from the author and a different session from
-   the author, the verifier and the reviewer. Work only from the display text.
+   the author, the verifier and the reviewer. Work only from the display text and its figure files.
 6. Never invent a source or a citation for an answer.
 7. Every answer that differs from the key becomes a blocker finding. The teacher sees the key and your raw answer side by side, and the author answers the finding (`banco findings respond`). Write your answer exactly as a student would type it.
 

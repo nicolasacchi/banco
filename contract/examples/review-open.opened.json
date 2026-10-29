@@ -182,6 +182,7 @@
           }
         }
       ],
+      "figures": [],
       "programme_lines": [
         {
           "source": "prima-test",
@@ -248,7 +249,7 @@
       ],
       "brief": {
         "name": "review",
-        "version": 2,
+        "version": 3,
         "sha256": "<sha256>"
       },
       "next": "write banco.review/1 (banco brief show review) and run banco review submit 1 --file review.json"

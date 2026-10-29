@@ -35,7 +35,7 @@ module Review
     # {instance, display, answer, errors, solution} for the reviewer.
     def review_instances
       instances.each_with_index.map do |row, i|
-        { instance: i + 1, display: with_passage(JSON.parse(row.display_json)), answer: JSON.parse(row.answer_json),
+        { instance: i + 1, display: figures.mark(with_passage(JSON.parse(row.display_json)), i + 1, keep: true), answer: JSON.parse(row.answer_json),
           errors: row.errors_json.present? ? JSON.parse(row.errors_json) : nil,
           solution: row.solution_json.present? ? JSON.parse(row.solution_json) : nil,
           accept: row.accept_json.present? ? JSON.parse(row.accept_json) : nil,
@@ -45,8 +45,14 @@ module Review
 
     # {instance, display} for the blind solver: nothing that holds the key.
     def solver_instances
-      instances.each_with_index.map { |row, i| { instance: i + 1, display: with_passage(JSON.parse(row.display_json)) } }
+      instances.each_with_index.map { |row, i| { instance: i + 1, display: figures.mark(with_passage(JSON.parse(row.display_json)), i + 1) } }
     end
+
+    # The figures of the instances read so far (call review_instances or solver_instances first), each as a PNG of the
+    # drawing alone (D-320); [] when no instance shows one.
+    def figure_files = figures.files
+
+    def figures = @figures ||= Figures.new(revision.other_files)
 
     # What the student reads beyond the stored display: the item's own passage and
     # its prompt (stem, table, quote, figure; an ordering's direction lives there).

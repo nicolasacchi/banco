@@ -2,10 +2,13 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -239,5 +242,67 @@ func TestFindingsListOpenFlagAndUsage(t *testing.T) {
 		if r := runWithSession(t, srv.URL, "31", args...); r.exit != ExitUsage {
 			t.Errorf("%v: exit %d, want usage", args, r.exit)
 		}
+	}
+}
+
+// solve open and review open write the figures of the item as PNG files and print their paths instead of the
+// pictures (D-320).
+func TestSolveOpenWritesTheFigures(t *testing.T) {
+	png := []byte("\x89PNG\r\n\x1a\nnot really a picture")
+	enc := base64.StdEncoding.EncodeToString(png)
+	body := `{"revision_id":7,"instances":[{"instance":1,"display":{"figure":{"alt_it":"Curva","file":"figure-1.png"}}}],` +
+		`"figures":[{"name":"figure-1.png","alt_it":"Curva","instances":[1],"width":1000,"height":600,"png_base64":"` + enc + `"},` +
+		`{"name":"figure-2.png","alt_it":"Manca","instances":[1],"missing":true}]}`
+	srv, seen := sequenceServer(t, [2]string{"200", body})
+	dir := filepath.Join(t.TempDir(), "figs")
+	r := runWithSession(t, srv.URL, "5", "solve", "open", "7", "--dir", dir)
+	if r.exit != ExitOK {
+		t.Fatalf("exit %d stdout %q stderr %q", r.exit, r.stdout, r.stderr)
+	}
+	if (*seen)[0].method != "GET" || (*seen)[0].path != "/api/v1/revisions/7/solve" {
+		t.Fatalf("request %+v", (*seen)[0])
+	}
+	got, err := os.ReadFile(filepath.Join(dir, "figure-1.png"))
+	if err != nil || !bytes.Equal(got, png) {
+		t.Fatalf("file: %v %q", err, got)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "figure-2.png")); err == nil {
+		t.Fatal("a missing figure must not be written")
+	}
+	var out struct {
+		FiguresDir string           `json:"figures_dir"`
+		Figures    []map[string]any `json:"figures"`
+	}
+	if err := json.Unmarshal([]byte(r.stdout), &out); err != nil {
+		t.Fatalf("stdout %q: %v", r.stdout, err)
+	}
+	if out.FiguresDir == "" || len(out.Figures) != 2 || out.Figures[0]["path"] != filepath.Join(out.FiguresDir, "figure-1.png") || out.Figures[0]["alt_it"] != "Curva" {
+		t.Fatalf("figures %+v", out)
+	}
+	if _, ok := out.Figures[0]["png_base64"]; ok || strings.Contains(r.stdout, enc) {
+		t.Fatalf("the picture must not be printed: %q", r.stdout)
+	}
+	if out.Figures[1]["missing"] != true || out.Figures[1]["path"] != nil {
+		t.Fatalf("missing figure %+v", out.Figures[1])
+	}
+}
+
+func TestOpenWithoutFiguresIsPrintedAsItCame(t *testing.T) {
+	srv, _ := sequenceServer(t, [2]string{"200", `{"revision_id":7,"instances":[],"figures":[]}`})
+	r := runWithSession(t, srv.URL, "5", "review", "open", "7")
+	if r.exit != ExitOK || strings.TrimSpace(r.stdout) != `{"revision_id":7,"instances":[],"figures":[]}` {
+		t.Fatalf("exit %d stdout %q stderr %q", r.exit, r.stdout, r.stderr)
+	}
+}
+
+func TestOpenRefusesUnsafeFigureNamesAndDirOnSubmit(t *testing.T) {
+	srv, _ := sequenceServer(t, [2]string{"200", `{"figures":[{"name":"../x.png","png_base64":"AAAA"}]}`})
+	r := runWithSession(t, srv.URL, "5", "solve", "open", "7", "--dir", t.TempDir())
+	if r.exit == ExitOK {
+		t.Fatalf("a figure named ../x.png was accepted: %q", r.stdout)
+	}
+	r = runWithSession(t, srv.URL, "5", "solve", "submit", "7", "--dir", t.TempDir(), "--file", "x.json")
+	if r.exit != ExitUsage {
+		t.Fatalf("exit %d stderr %q", r.exit, r.stderr)
 	}
 }

@@ -27,9 +27,11 @@ module Api
         current = latest.id == @revision.id
         next_step = current ? "write banco.review/1 (banco brief show review) and run banco review submit #{@revision.id} --file review.json" :
                               "superseded: a review of this revision cannot be filed; run banco review open #{latest.id}"
+        instances = @text.review_instances
+        figures = figure_files_or_refuse(@text, step: "review") or return
         render json: { revision_id: @revision.id, item: @item.key, subject: @item.subject.key, seq: @revision.seq, status: @revision.status,
                        current: current, superseded_by: current ? nil : latest.id,
-                       item_json: JSON.parse(@revision.body_json), instances: @text.review_instances, programme_lines: @text.programme_lines,
+                       item_json: JSON.parse(@revision.body_json), instances: instances, figures: figures, programme_lines: @text.programme_lines,
                        checklist: Review::Checklist.all(practice: @item.practice?), brief: brief_row("review"),
                        next: next_step }
       end
