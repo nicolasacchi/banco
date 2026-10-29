@@ -25,6 +25,17 @@ class SolverFiguresTest < ActionDispatch::IntegrationTest
     @token = ApiToken.issue!(role: "agent_claude", label: "figures test")
     @solver = AgentSession.create!(label: "t", role: "solver", agent: "test", model: "kimi-k3")
     @reviewer = AgentSession.create!(label: "t", role: "reviewer", agent: "test", model: "gpt-5.2")
+    @assets = Dir.mktmpdir
+    Rails.application.config.x.item_assets_dir = @assets
+    @cache = Dir.mktmpdir
+    @saved_env = ENV["BANCO_ITEM_FIGURES_DIR"]
+    ENV["BANCO_ITEM_FIGURES_DIR"] = @cache
+  end
+
+  teardown do
+    Rails.application.config.x.item_assets_dir = nil
+    ENV["BANCO_ITEM_FIGURES_DIR"] = @saved_env
+    FileUtils.rm_rf([ @assets, @cache ])
   end
 
   def api(path, as:)
@@ -131,11 +142,78 @@ class SolverFiguresTest < ActionDispatch::IntegrationTest
     assert_nil json["figures"][0]["png_base64"]
 
     revision = figured_revision
-    boom = ->(_svg) { raise Review::FigureImage::Unavailable, "no Chrome" }
-    Review::FigureImage.stub(:png, boom) do
+    boom = ->(_svgs) { raise Review::FigureImage::Unavailable, "no Chrome" }
+    Review::FigureImage.stub(:png_all, boom) do
       api("/api/v1/revisions/#{revision.id}/solve", as: @solver)
     end
     assert_response :service_unavailable
     assert_equal "E-CHROME-UNAVAILABLE", json["code"]
+  end
+
+  test "the solver sees what the student gets: a refused asset is missing, a digest with no asset uses the stored file, a bare figure is its alt text" do
+    chrome!
+    Dir.mktmpdir do |dir|
+      with_env("BANCO_ITEM_FIGURES_DIR" => dir) do
+        revision = figured_revision(files: { "assets/curve.svg" => SVG, "assets/other.svg" => "<svg xmlns='http://www.w3.org/2000/svg'><script>1</script></svg>" })
+        stored = Items::Figures.digest_for("assets/curve.svg", revision.other_files)
+        ItemInstance.create!(item_revision: revision, seed: 950, display_json: { stem_it: "Per digest", figure: { sha256: stored, alt_it: "Per digest" } }.to_json,
+                             answer_json: "1".to_json, errors_json: "[]", fingerprint: SecureRandom.hex(32))
+        ItemInstance.create!(item_revision: revision, seed: 951, display_json: { stem_it: "Solo testo", figure: { alt_it: "Solo testo" } }.to_json,
+                             answer_json: "1".to_json, errors_json: "[]", fingerprint: SecureRandom.hex(32))
+        api("/api/v1/revisions/#{revision.id}/solve", as: @solver)
+        assert_response :ok
+        assert_equal [ nil, true ], json["figures"].map { |f| f["missing"] }, "the script-carrying asset is refused for the student, so it is missing here"
+        assert_equal [ 1, 2, 4 ], json["figures"][0]["instances"]
+        assert_equal [ 3 ], json["figures"][1]["instances"]
+        assert_equal({ "alt_it" => "Solo testo" }, json["instances"][4]["display"]["figure"])
+      end
+    end
+  end
+
+  test "a second open is served from the cache; a damaged cache file is drawn again" do
+    chrome!
+    Dir.mktmpdir do |dir|
+      with_env("BANCO_ITEM_FIGURES_DIR" => dir) do
+        revision = figured_revision
+        api("/api/v1/revisions/#{revision.id}/solve", as: @solver)
+        first = json["figures"].map { |f| f["png_base64"] }
+        boom = ->(*) { raise Validation::ChromeRunner::Unavailable, "must not be called" }
+        Validation::ChromeRunner.stub(:session, boom) do
+          api("/api/v1/revisions/#{revision.id}/solve", as: @solver)
+          assert_response :ok
+          assert_equal first, json["figures"].map { |f| f["png_base64"] }
+        end
+        assert_equal "700", format("%o", File.stat(dir).mode & 0o777)
+        file = Dir.children(dir).first
+        assert_equal "600", format("%o", File.stat(File.join(dir, file)).mode & 0o777)
+        File.binwrite(File.join(dir, file), "truncated")
+        api("/api/v1/revisions/#{revision.id}/solve", as: @solver)
+        assert_response :ok
+        assert_equal first, json["figures"].map { |f| f["png_base64"] }
+      end
+    end
+  end
+
+  test "a figure of a testlet's sub item is a file too" do
+    body = item_body("short-answer").merge("kind" => "testlet", "sub_items" => [ { "id" => "a", "prompt" => { "stem_it" => "A", "figure" => { "asset" => "assets/curve.svg", "alt_it" => "Curva" } } } ])
+    revision = figured_revision
+    revision.instances.each { |i| i }
+    sub = ItemRevision.new(revision.attributes.except("id").merge("body_json" => body.to_json, "seq" => 2))
+    sub.save!
+    ItemInstance.create!(item_revision: sub, seed: 1, display_json: { sub_items: [ { id: "a", display: { stem_it: "x" } } ] }.to_json, answer_json: "{}", errors_json: "[]", fingerprint: SecureRandom.hex(32))
+    text = Review::ItemText.new(sub)
+    shown = text.solver_instances.first[:display]
+    assert_equal({ "alt_it" => "Curva", "file" => "figure-1.png" }, shown["sub_items"][0]["display"]["figure"])
+    assert_equal [ "figure-1.png" ], text.figures.instance_variable_get(:@entries).values.map(&:name)
+  end
+
+  test "a busy Chrome is a 409 E-CHROME-BUSY with retry advice" do
+    revision = figured_revision
+    Validation::ChromeRunner.stub(:session, ->(*) { raise Validation::ChromeRunner::Busy, "Chrome is busy" }) do
+      api("/api/v1/revisions/#{revision.id}/solve", as: @solver)
+    end
+    assert_response :conflict
+    assert_equal "E-CHROME-BUSY", json["code"]
+    assert_match(/retry in 30 s/, json["next"])
   end
 end

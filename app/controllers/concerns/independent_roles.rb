@@ -26,6 +26,9 @@ module IndependentRoles
   # picture would only guess. Call after the instances have been listed.
   def figure_files_or_refuse(text, step:)
     text.figure_files
+  rescue Review::FigureImage::Busy => e
+    refuse("E-CHROME-BUSY", "figures", "Chrome is busy drawing the figures: #{e.message.first(120)}", "retry in 30 s: banco #{step} open REV", 409)
+    nil
   rescue Review::FigureImage::Unavailable => e
     refuse("E-CHROME-UNAVAILABLE", "figures", "the figures of the item could not be drawn: #{e.message.first(160)}", "retry in 30 s: banco #{step} open REV", 503)
     nil

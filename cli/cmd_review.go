@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 // Independence, expert review, blind solve and the agent side of short answers
@@ -115,12 +116,17 @@ func runRevision(e *env, c revisionCommand, args []string) error {
 		if err != nil {
 			return err
 		}
-		out, err = saveFigures(out, *dir, c.next)
+		out, missing, err := saveFigures(out, *dir, c.next)
 		if err != nil {
 			return err
 		}
-		_, err = e.stdout.Write(append(out, '\n'))
-		return err
+		if _, err = e.stdout.Write(append(out, '\n')); err != nil {
+			return err
+		}
+		if len(missing) > 0 {
+			return newErr(ExitValidation, "E-FIGURE-MISSING", "figures", "the student is shown no picture for "+strings.Join(missing, ", ")+"; the item was opened but must not be answered from its alt text", "report it to the lead; do not submit "+c.name[:strings.Index(c.name, " ")]+" for this revision")
+		}
+		return nil
 	} else {
 		if *dir != "" {
 			return newErr(ExitUsage, "E-USAGE", "args", c.name+" takes no --dir: it is for open", c.next)
@@ -220,39 +226,56 @@ var figureNameRe = regexp.MustCompile(`^figure-[1-9][0-9]{0,2}\.png$`)
 // returns the answer with each figure's picture replaced by its path (figures_dir says the folder). An
 // answer with no figure is returned as it came. The item is read as the student sees it: look at every
 // file before answering (D-320).
-func saveFigures(body []byte, dir, next string) ([]byte, error) {
+func saveFigures(body []byte, dir, next string) ([]byte, []string, error) {
 	var doc map[string]json.RawMessage
 	if json.Unmarshal(body, &doc) != nil {
-		return body, nil
+		return body, nil, nil
 	}
 	var figures []map[string]any
 	if raw, ok := doc["figures"]; !ok || json.Unmarshal(raw, &figures) != nil || len(figures) == 0 {
-		return body, nil
+		return body, nil, nil
 	}
 	abs, err := filepath.Abs(dir)
 	if err != nil {
-		return nil, newErr(ExitUsage, "E-USAGE", "dir", "cannot use "+dir+": "+err.Error(), next)
+		return nil, nil, newErr(ExitUsage, "E-USAGE", "dir", "cannot use "+dir+": "+err.Error(), next)
 	}
-	if err := os.MkdirAll(abs, 0o755); err != nil {
-		return nil, newErr(ExitUsage, "E-USAGE", "dir", "cannot create "+dir+": "+err.Error(), next)
+	if err := os.MkdirAll(abs, 0o700); err != nil {
+		return nil, nil, newErr(ExitUsage, "E-USAGE", "dir", "cannot create "+dir+": "+err.Error(), next)
 	}
+	// figures of an earlier open of another state of the item must not be looked at by mistake; a symlink is removed, never followed
+	old, _ := filepath.Glob(filepath.Join(abs, "figure-*.png"))
+	for _, f := range old {
+		if err := os.Remove(f); err != nil {
+			return nil, nil, newErr(ExitUsage, "E-USAGE", "dir", "cannot clear "+f+": "+err.Error(), next)
+		}
+	}
+	var missing []string
 	for _, f := range figures {
 		encoded, _ := f["png_base64"].(string)
 		delete(f, "png_base64")
-		if encoded == "" {
-			continue // an asset the server does not hold: it says missing: true
-		}
 		name, _ := f["name"].(string)
+		if encoded == "" {
+			missing = append(missing, name)
+			f["missing"] = true
+			continue
+		}
 		if !figureNameRe.MatchString(name) {
-			return nil, newErr(ExitServer, "E-HTTP", "figures", "the server sent a figure with an unusable name", "banco health")
+			return nil, nil, newErr(ExitServer, "E-HTTP", "figures", "the server sent a figure with an unusable name", "banco health")
 		}
 		data, err := base64.StdEncoding.DecodeString(encoded)
 		if err != nil || len(data) == 0 {
-			return nil, newErr(ExitServer, "E-HTTP", "figures", "the server sent a figure that is not a picture ("+name+")", "retry: "+next)
+			return nil, nil, newErr(ExitServer, "E-HTTP", "figures", "the server sent a figure that is not a picture ("+name+")", "retry: "+next)
 		}
 		target := filepath.Join(abs, name)
-		if err := os.WriteFile(target, data, 0o644); err != nil {
-			return nil, newErr(ExitUsage, "E-USAGE", "dir", "cannot write "+target+": "+err.Error(), next)
+		out, err := os.OpenFile(target, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+		if err == nil {
+			_, err = out.Write(data)
+			if cerr := out.Close(); err == nil {
+				err = cerr
+			}
+		}
+		if err != nil {
+			return nil, nil, newErr(ExitUsage, "E-USAGE", "dir", "cannot write "+target+": "+err.Error(), next)
 		}
 		f["path"] = target
 	}
@@ -260,5 +283,10 @@ func saveFigures(body []byte, dir, next string) ([]byte, error) {
 	doc["figures"] = list
 	folder, _ := json.Marshal(abs)
 	doc["figures_dir"] = folder
-	return json.Marshal(doc)
+	if len(missing) > 0 {
+		w, _ := json.Marshal("no picture for " + strings.Join(missing, ", ") + ": the student is shown none; report it, do not answer from the alt text")
+		doc["warnings"] = w
+	}
+	out, err := json.Marshal(doc)
+	return out, missing, err
 }
