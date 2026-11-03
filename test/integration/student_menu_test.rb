@@ -92,7 +92,7 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     assert_select "#entry-warmup.optional"
     assert_select "#entry-subjects li.subject[data-state=in_progress]"
     assert_select "#entry-next", "Riprendi"
-    play_run(official, rows[:subject])
+    play_run(official, rows[:subject], clock: Diagnosis::FakeClock.new(Time.current))
     page(OFFICIAL, "/today")
     assert_select "#entry-test[data-state=done]"
     assert_select "#entry-all-done"
@@ -195,7 +195,7 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     assert_select "button[data-action='sitting#pause']", 0
     assert_select "[data-sitting-target=pauseButton]", 0
     assert_select "button", text: "Pausa", count: 0
-    play_run(official, rows[:subject])
+    play_run(official, rows[:subject], clock: Diagnosis::FakeClock.new(Time.current))
     page(OFFICIAL, "/diagnosis/runs/#{run.id}/results")
     assert_includes labels, "Oggi"
     assert_includes labels, "Impostazioni"
