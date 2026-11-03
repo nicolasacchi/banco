@@ -21,7 +21,7 @@ module Api
         current = latest.id == @revision.id
         # A lesson/2: the render check's result and where its pictures are (A13): the reviewer looks at every card.
         shots = @revision.lesson2? ? { render: LessonRenders.summary(@revision).merge(shots_url: "/api/v1/lesson-revisions/#{@revision.id}/shots") } : {}
-        render json: { revision_id: @revision.id, lesson: @lesson.key, seq: @revision.seq, superseded: !current, lesson_md: @revision.source_md,
+        render json: { revision_id: @revision.id, lesson: @lesson.key, seq: @revision.seq, superseded: !current, lesson_md: @revision.source_md, warnings: @revision.warnings,
                        body: @revision.body, programme_lines: programme_lines, skills: skills(@revision.body["skills"]),
                        uses: skills(@revision.body["uses"]).map { |s| s.slice(:key, :label_it) },
                        checklist: Review::LessonChecklist.for(@revision), brief: brief_row("lesson-review"), **shots,

@@ -74,7 +74,9 @@
       "dry_run": true,
       "status": "passed",
       "codes": [],
-      "warnings": []
+      "warnings": [],
+      "warnings_count": 0,
+      "summary": "passed"
     }
   }
 }

@@ -109,8 +109,8 @@ module Api
         warnings = outcome.findings.warnings.map(&:to_h)
         notes = outcome.hygiene_checked ? [] : [ "the private hygiene list is not on this server: that check was skipped" ]
         if dry_run?
-          return render json: { dry_run: true, status: "passed", codes: [], warnings: warnings, bundle_sha256: outcome.bundle_sha256, transfer_kb: (Pages::Libs.transfer_bytes(outcome.manifest["libs"]) + outcome.infos.sum(&:bytes)) / 1024,
-                                notes: notes }
+          return render_dry_run_passed(warnings, bundle_sha256: outcome.bundle_sha256, transfer_kb: (Pages::Libs.transfer_bytes(outcome.manifest["libs"]) + outcome.infos.sum(&:bytes)) / 1024,
+                                notes: notes)
         end
 
         store(key, subject, outcome, warnings, author, latest, notes)

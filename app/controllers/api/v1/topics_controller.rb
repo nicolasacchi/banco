@@ -53,7 +53,7 @@ module Api
         author = require_session("author") or return
 
         warnings = result.findings.warnings.map(&:to_h)
-        return render json: { dry_run: true, status: "passed", codes: [], warnings: warnings, stored: result.stored } if dry_run?
+        return render_dry_run_passed(warnings, stored: result.stored) if dry_run?
 
         store(subject, result, warnings, author)
       end

@@ -95,7 +95,7 @@ module Api
         return unless base_ok?(body["base"], lesson, latest, key)
 
         warnings = outcome.findings.warnings.map(&:to_h)
-        return render json: { dry_run: true, status: "passed", codes: [], warnings: warnings } if dry_run?
+        return render_dry_run_passed(warnings) if dry_run?
 
         store(key, subject, source, outcome.body, warnings, author, body["base"])
       end

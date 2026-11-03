@@ -31,7 +31,7 @@ module Api
         return if refuse_findings(findings, "fix the graph and run banco skill-graph submit --subject #{@subject.key} FILE --dry-run again", dry_run: dry_run?)
 
         warnings = findings.warnings.map(&:to_h)
-        return render json: { dry_run: true, status: "passed", codes: [], warnings: warnings } if dry_run?
+        return render_dry_run_passed(warnings) if dry_run?
 
         ok, author = optional_author_session
         return unless ok
