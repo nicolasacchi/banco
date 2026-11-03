@@ -1,10 +1,10 @@
 ---
 name: solve
-version: 2
+version: 3
 formats: banco.solve/1
 ---
 
-# Brief: blind solve (version 2)
+# Brief: blind solve (version 3)
 
 You solve the instances of one item revision exactly as the student sees them,
 and write `banco.solve/1` (`config/banco/schemas/solve.json`). The server grades
@@ -71,10 +71,13 @@ string) and `answers`. Nothing else is allowed. A minimal file:
 }
 ```
 
-## Rules (version 2)
+## Rules (version 3)
 
-1. Solve as a competent student of the stated level would: no tricks, no use of the
-   position or length of options, no guessing from the style of the item.
+1. Read and solve every instance yourself, one by one, as the student would. Never answer with a script or a keyword rule (a rule that
+   looks for a word inside the text matches it inside another word, and the false blockers it raises cost the teacher a decision each).
+   A tool may add up numbers you have already set up by hand; it never reads the text for you. Solve as a competent student of the stated level would: no tricks, no use of the
+   position or length of options (the server reshuffles options, elements and matching columns at every serve, so the order you see is
+   not the stored one and says nothing), no guessing from the style of the item.
 2. If an instance has two defensible answers, or none, answer what you think best
    and say it to the teacher in your report: that is exactly what the blind solve
    exists to find.

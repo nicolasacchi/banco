@@ -1,6 +1,6 @@
 ---
 name: lesson-business
-version: 1
+version: 2
 formats: banco.lesson/2
 ---
 
@@ -68,6 +68,8 @@ Only `available` pieces can be used; `banco lesson submit --dry-run` says what i
 - Checks ask for meaning (which row, which base, who signs, inside or outside the fence); computing checks use calculator-friendly numbers.
 - Real life first: the cheque a seller of a used car wants, the receipt from the bar; never invented market data.
 - Invented names only on documents; no page number.
+- Every error of a calculation (the rate applied to the wrong base) has its own code, a message that names the base and an error value that a student would really get.
+- Documents and amounts use invented names and look like real ones; the item says whether the answer is a number, an amount in euro or a percentage.
 
 ## Public repository
 

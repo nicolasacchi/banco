@@ -1,6 +1,6 @@
 ---
 name: lesson-geography
-version: 1
+version: 2
 formats: banco.lesson/2
 ---
 
@@ -70,6 +70,9 @@ Only `available` pieces can be used; `banco lesson submit --dry-run` says what i
 - A check never asks what the visible layer prints (no arid hatch on a "tocca i mesi aridi").
 - No mining in sector checks until the book's convention is known.
 - The forest is not "the lungs of the world" in the oxygen sense: the lesson says what it does.
+- A percentage, a rate and a density are three different questions: the item says which quantity it asks and the answer format (unit, decimal comma).
+- Borderline or disputed cases (a convention the book may not share) are left out of checks and items.
+- Maps are figures first: ask with choice, matching, ordering or a select over the map; a quantity from the reference carries its year.
 
 ## Public repository
 

@@ -1,10 +1,10 @@
 ---
 name: lesson
-version: 2
+version: 3
 formats: banco.lesson/2
 ---
 
-# Brief: lessons (version 2, `banco.lesson/2`)
+# Brief: lessons (version 3, `banco.lesson/2`)
 
 You write one topic of the course for one student: a lesson made of short cards, one idea each, with
 a picture or a diagram on every idea, small questions to answer on the page, worked examples that
@@ -423,6 +423,36 @@ in exact arithmetic. A diagram must say what the text says. A rule of language o
 usage with its common exceptions; every "sempre", "mai", "solo" is checked against a counterexample before you
 write it. A fact that depends on the textbook is written neutrally or left out. If a programme line is unclear or
 looks like a transcription error, do not guess: report it to the teacher and leave the skill out.
+
+## Rules every author applies from the first draft
+
+The first courses taught these rules; the reviewer checks them. They hold for every subject; the subject briefs add their own.
+
+- **One rule, stated once.** A rule is worded the same in the lesson, the checks, the items, the messages and the hints, and never
+  contradicts another rule of the course. Read the approved topics of the same course first and keep their house style and conventions.
+- **The lesson and its exercises are different texts.** The practice items of the topic and the entry test must not copy the
+  worked examples or the exercises of «Prova tu» (`banco search --like lesson:KEY` shows the near neighbours); write the examples
+  of the lesson with their own numbers, cases and names.
+- **Cause and effect never rest on the direction of "perché".** Show cause and effect apart (two boxes, an arrow) or ask which fact is the
+  cause; a check must not measure how a subordinate clause reads. A cause is "tra le cause", never the whole story.
+- **Chains stand alone.** Every step of a procedure, a timeline or an ordering is understood without its neighbours ("Questi", "Poi",
+  "Dieci anni dopo" only make sense next to another step), and no two steps say almost the same thing.
+- **Hedge what has exceptions.** A tradition or a legend is "secondo la tradizione"; a rule with exceptions is a tendency or names them;
+  an approximate date or size is "circa". A harmless absolute that is true in the case at hand is allowed.
+- **Never invent a source or a quotation.** Quote only the imported reference texts (`banco search --kind reference_article`) or a short
+  passage you are certain of, in plain Italian and marked "(adattato)"; otherwise describe the source (what it is, who wrote it, when,
+  what it can and cannot prove) without quoting. No page, line or chapter you have not seen.
+- **Hints and checks guide, they never give.** A check's hint says what to look at or which rule applies; it names neither the answer nor
+  a row, a pair or a position, and it never eliminates the wrong options one by one. The `errors` messages of a check are true for every
+  instance of the check and never contain its answer. A typed answer lists every correct form (numeral and word, with and without the
+  article), or the prompt pins the form.
+- **Say the answer format.** A check that wants a number or a short text says the unit, the decimal comma and how many words, in the lesson
+  as well as in the prompt.
+- **Positions do not matter.** The server reshuffles options, tiles, ordering elements and matching columns at every serve; do not
+  rotate the key's position, and do not spend effort on it.
+- **Readable at a phone.** Figures, labels and tiles are checked at 390 pixels (the render check, and the screenshots you look at); a
+  long sentence is an ordering of tiles, not of lines; markup inside a choice option is not rendered, so plain text only.
+- **Short, one idea per card, a visual on every card, the hard words in the glossary.** Colour roles keep ONE meaning across the lesson.
 
 ## The cycle
 

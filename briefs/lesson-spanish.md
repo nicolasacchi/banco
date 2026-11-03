@@ -1,6 +1,6 @@
 ---
 name: lesson-spanish
-version: 1
+version: 2
 formats: banco.lesson/2
 ---
 
@@ -66,6 +66,8 @@ Only `available` pieces can be used; `banco lesson submit --dry-run` says what i
 - Same meaning, same colour as in Italian: `verb` and `od` are the Italian predicate and object.
 - Name the traps of Italian where they are (`trap`, the `mirror` notes): a false friend is said once, with its reason.
 - Nothing depends on audio: "Ascolta" is optional and its text is always available.
+- Every verb form is written by hand and checked again against the verb table; accept lists take the accepted spellings of the form and no wrong stress.
+- Sentences and examples vary in pattern, not only in the names; the tilde is tested as presence and place of the stress, its direction (acute versus grave) is never tested.
 
 ## The words figures (`word_parts`, `mirror`, `dialogue`)
 

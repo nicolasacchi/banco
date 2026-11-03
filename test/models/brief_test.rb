@@ -6,12 +6,16 @@ class BriefTest < ActiveSupport::TestCase
   NAMES = (%w[arbiter blueprint course diagnosis-item grade lesson lesson-review lesson-v1 page page-review practice-item review skill-graph solve topic] +
            SUBJECT_BRIEFS.map { |s| "lesson-#{s.tr('_', '-')}" }).sort.freeze
   VERSION_2 = %w[arbiter diagnosis-item lesson lesson-review solve].freeze # D-227: practice items, review points 12-13; D-245: lesson/2 and its review; D-316: the arbiter without a second opinion; D-320: solve looks at the figures
+  # D-322: the consolidated authoring rules bump these; the subject addenda and practice-item go to 2, the rest one above their earlier version
+  VERSIONS = { "review" => 4, "diagnosis-item" => 3, "lesson" => 3, "lesson-review" => 3, "solve" => 3, "arbiter" => 3, "practice-item" => 2 }.merge(
+    SUBJECT_BRIEFS.to_h { |s| [ "lesson-#{s.tr('_', '-')}", 2 ] }
+  ).freeze
 
   test "the briefs exist (version 1, or 2 for the Phase 1b and rich-lesson deltas) with a body" do
     assert_equal NAMES, Brief.names
     NAMES.each do |name|
       brief = Brief.find(name)
-      assert_equal({ "review" => 3 }.fetch(name) { VERSION_2.include?(name) ? 2 : 1 }, brief.version, name)
+      assert_equal VERSIONS.fetch(name) { VERSION_2.include?(name) ? 2 : 1 }, brief.version, name
       assert_equal name, brief.name
       assert_operator brief.body.size, :>, 800, name
     end
@@ -215,5 +219,23 @@ class BriefTest < ActiveSupport::TestCase
     assert_match(/write 3/i, body)
     assert_includes Brief.find("review").body, "12. Hints"
     assert_includes Brief.find("review").body, "13. Messages and solution"
+  end
+
+  test "the consolidated authoring rules are in the briefs (D-322)" do
+    practice = Brief.find("practice-item").body.squish
+    assert_includes practice, "Rules every author applies from the first draft"
+    assert_includes practice, "The server reshuffles the options of a choice, the elements of an ordering and both columns of a matching at every serve"
+    assert_includes practice, "vary the split of the labels across the instances, never the same split in every instance, and give every instance at least 2 rows of each label it uses"
+    assert_includes Brief.find("diagnosis-item").body.squish, "vary the split of the labels across the instances, never the same split in every instance, and give every instance at least 2 rows of each label it uses"
+    %w[practice-item diagnosis-item review solve arbiter lesson].each do |name|
+      assert_match(/reshuffles/, Brief.find(name).body, "#{name} says positions do not matter")
+    end
+    assert_includes Brief.find("solve").body.squish, "Never answer with a script or a keyword rule"
+    %w[review lesson-review].each do |name|
+      body = Brief.find(name).body.squish
+      assert_includes body, "A re-review covers the changes", name
+      assert_includes body, "A minor finding says what the student would see or do wrong", name
+      assert_includes body, "Notes, not findings", name
+    end
   end
 end

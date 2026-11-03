@@ -1,6 +1,6 @@
 ---
 name: lesson-biology
-version: 1
+version: 2
 formats: banco.lesson/2
 ---
 
@@ -66,6 +66,8 @@ Only `available` pieces can be used; `banco lesson submit --dry-run` says what i
 - A mnemonic shape (the pentagon of the sugar, the tabs of the bases) is said to be a mnemonic: "le forme aiutano a ricordare".
 - At most one `more` for the exceptions (the red blood cell, root cells).
 - The pair colours (`pair_at`, `pair_cg`) are a rule of pairing, not the identity of a base: the letter says the base.
+- Facts about structures and processes come from a source; no borderline or disputed cases presented as settled. A process with several causes says so.
+- The drawing and the text say the same thing; a figure of an organelle or a molecule is the engine's, never a hand-made picture.
 
 ## The `word_parts` figure
 
