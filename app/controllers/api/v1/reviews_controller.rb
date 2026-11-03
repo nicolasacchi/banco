@@ -31,7 +31,7 @@ module Api
         figures = figure_files_or_refuse(@text, step: "review") or return
         render json: { revision_id: @revision.id, item: @item.key, subject: @item.subject.key, seq: @revision.seq, status: @revision.status,
                        current: current, superseded_by: current ? nil : latest.id,
-                       item_json: JSON.parse(@revision.body_json), instances: instances, figures: figures, programme_lines: @text.programme_lines,
+                       item_json: JSON.parse(@revision.body_json), instances: instances, figures: figures, warnings: @revision.validation_warnings, programme_lines: @text.programme_lines,
                        checklist: Review::Checklist.all(practice: @item.practice?), brief: brief_row("review"),
                        next: next_step }
       end

@@ -86,10 +86,10 @@ module Api
         result = Validation::DryRun.call(submission.subject, submission.files, verify_inherited: submission.verify_inherited?)
         findings = result.findings.map(&:to_h)
         if result.passed?
-          render json: { dry_run: true, status: "passed", codes: [], warnings: result.findings.warnings.map(&:to_h), instances: result.instances.size, details: result.details }
+          render_dry_run_passed(result.findings.warnings.map(&:to_h), instances: result.instances.size, details: result.details)
         elsif waiting_for_verifier?(result)
           # Nothing the author can fix: a verifier writes verify.mjs next (D-161).
-          render json: { dry_run: true, status: "awaiting_verifier", codes: result.codes, warnings: result.findings.warnings.map(&:to_h),
+          render json: { dry_run: true, status: "awaiting_verifier", codes: result.codes, warnings: result.findings.warnings.map(&:to_h), warnings_count: result.findings.warnings.size,
                          next: "submit for real: a verifier then runs banco work open ITEM --role verifier", instances: result.instances.size, details: result.details }
         else
           first = result.findings.errors.first

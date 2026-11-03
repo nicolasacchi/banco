@@ -68,6 +68,9 @@ class Lesson2ApiTest < ActionDispatch::IntegrationTest
     assert_response :ok, json.inspect
     assert_equal true, json["dry_run"]
     assert_includes json["warnings"].map { |w| w["code"] }, "W-TYPE-RESERVED"
+    assert_equal "passed", json["status"]
+    assert_equal json["warnings"].size, json["warnings_count"]
+    assert_equal "passed with #{json['warnings_count']} #{json['warnings_count'] == 1 ? 'warning' : 'warnings'}", json["summary"]
     assert_equal 0, LessonRevision.count
   end
 

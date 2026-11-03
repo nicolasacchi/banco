@@ -37,7 +37,9 @@
             "word": "sempre"
           }
         }
-      ]
+      ],
+      "warnings_count": 2,
+      "summary": "passed with 2 warnings"
     }
   }
 }

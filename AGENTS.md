@@ -90,7 +90,7 @@ only), `HARNESS_PORT` 3200 (internal). Never `PORT`.
   `BANCO_SESSION` as `X-Banco-Session`), `ItemSessions` (who wrote or reviewed what),
   `config/banco/providers.yml` with `Providers` (model families per role), `Review::` (`ItemText`,
   `Intake`, `Checklist`, `Gate`, `GradeCheck`), the tables `item_reviews`, `blind_solves`,
-  `review_findings`, `grade_proposals`. The agents report; dispositions and confirmations are
+  `review_findings`, `grade_proposals`. `review open` carries the revision's validation warnings, `solve open` never (D-323). The agents report; dispositions and confirmations are
   teacher decisions (M9). The solver and the reviewer see an item's figures as PNG files (`Review::Figures`, `Review::FigureImage`; `banco solve open|review open --dir`, D-320): the drawing only.
 - The student's pages (M10): `/diagnosis` (list, warm-up at `/diagnosis/warmup`, one sitting page per
   run, end-of-subject screen) and the teacher's `/teacher/preview`. `Diagnosis::Conductor` runs a run for

@@ -447,6 +447,25 @@ class IndependenceTest < ActionDispatch::IntegrationTest
 
   # ---- the blind solve ------------------------------------------------------------------------
 
+  test "review open and the arbiter's read carry the validation warnings of the revision; solve open never does (D-323)" do
+    revision = passed_revision
+    findings = [ { code: "W-STEPS-METHOD", severity: "warning", field: "item.steps_it", message: "a step names the method" },
+                 { code: "E-SOMETHING", severity: "error", field: "item", message: "not a warning" } ]
+    ItemValidation.create!(item_revision: revision, seq: 99, status: "passed", codes_json: "[]", findings_json: JSON.generate(findings))
+    api("/api/v1/revisions/#{revision.id}/review", as: @reviewer)
+    assert_response :ok
+    assert_equal [ { "code" => "W-STEPS-METHOD", "severity" => "warning", "field" => "item.steps_it", "message" => "a step names the method" } ], json["warnings"]
+    arbiter = session!(:arbiter, "claude-opus-5-5")
+    api("/api/v1/revisions/#{revision.id}/review", as: arbiter)
+    assert_response :ok
+    assert_equal [ "W-STEPS-METHOD" ], json["warnings"].map { |w| w["code"] }
+    api("/api/v1/revisions/#{revision.id}/solve", as: @solver)
+    assert_response :ok
+    assert_not_includes json.keys, "warnings"
+    assert_not_includes response.body, "W-STEPS-METHOD"
+    assert_not_includes response.body, "not a warning"
+  end
+
   test "solve open shows the instances as the student sees them: no key, no errors, no solution" do
     revision = passed_revision
     api("/api/v1/revisions/#{revision.id}/solve", as: @solver)

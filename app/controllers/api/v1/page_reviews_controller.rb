@@ -17,7 +17,7 @@ module Api
 
         latest = @page.latest_revision
         current = latest.id == @revision.id
-        render json: { revision_id: @revision.id, page: @page.key, seq: @revision.seq, superseded: !current, manifest: @revision.manifest, files: Review::PageIntake.texts_of(@revision),
+        render json: { revision_id: @revision.id, page: @page.key, seq: @revision.seq, superseded: !current, manifest: @revision.manifest, files: Review::PageIntake.texts_of(@revision), warnings: @revision.warnings,
                        binary_files: @revision.files.reject { |f| f.path.match?(/\.(mjs|css|svg)\z/) }.map { |f| { path: f.path, bytes: f.bytes } },
                        card: Pages::Card.for(@page.key, @page.subject), validation: Pages::Validations.summary(@revision).merge(shots_url: "/api/v1/page-revisions/#{@revision.id}/shots"),
                        diff: Pages::Diff.between(@revision), checklist: Review::PageChecklist.all, brief: brief_row("page-review"),

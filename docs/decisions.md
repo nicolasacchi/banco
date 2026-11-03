@@ -326,6 +326,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-320 | 2026-10-29 | the blind solver and the reviewer see the figures of an item as PNG files (`banco solve open` and `banco review open` write them), nothing more than the drawing; the solve brief says to look at them and never to answer «Non lo so» for a missing figure | decided |
 
 | D-321 | 2026-10-29 | an item's figure (an asset of the revision) now reaches the student: `Items::Part` resolves the digest at draw time and `Items::Figures` stores a copy under it, refusing a dirty SVG; the ledger is not rewritten | implemented |
+| D-323 | 2026-11-03 | a dry run that passed with warnings says so (`warnings_count`, `summary`: «passed with N warnings»; `status` stays `passed`); `banco review open`, `banco lesson-review open` and `banco page-review open` carry the validation warnings of the revision (the arbiter reads an item through `review open`); `banco solve open` never does | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -3648,3 +3649,14 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Status:** implemented
 - **Back-port:** X-02, A-03 (the digest is made by the app at draw time, not stored by M5).
 - **Tests:** `test/models/items/figures_test.rb` (digest, written once, explicit sha, no figure, missing asset, dirty SVGs), `test/integration/item_figures_test.rb` (practice and sitting payloads, the image served), `test/system/item_figures_system_test.rb` (Chrome at 390 and 1280 px; shots in `~/tmp/ui-shots/item-figures/`).
+
+## D-323 · 2026-11-03 · a dry run says when it passed with warnings; reviewers see the warnings of what they review
+
+- **Design ref:** A-05, E-05; the content-flow analyses of 2026-11-03.
+- **Background:** the October content production showed two gaps. A dry run that found warnings answered `"status": "passed"` and the warnings sat in a list nobody was forced to read; and the reviewers and the arbiter judged a revision without the warnings validation had raised on it, so a defect the machine had already flagged was found again by hand, or missed.
+- **We do:** (1) Every passing dry run (`work`, `lesson`, `topic`, `page`, `course`, `skill-graph`, `blueprint` submit) answers with `warnings_count` and `summary` («passed» or «passed with N warnings») next to the unchanged `status: "passed"`, `codes` and `warnings`; the CLI prints the answer as it is. What passes or fails does not change, and the fields are additions: existing callers keep working. An `awaiting_verifier` answer carries `warnings_count` too. (2) `GET /api/v1/revisions/:revision/review`, `/lesson-revisions/:revision/review` and `/page-revisions/:revision/review` carry `warnings` (code, severity, field, message, detail) of the revision: for an item, the warnings of its latest validation (`ItemRevision#validation_warnings`); for a lesson or a page, the ones stored with the revision. The third reviewer reads an item through the same `review open`, so it sees them. (3) `GET /api/v1/revisions/:revision/solve` is unchanged: the blind solver sees what the student sees, no warning.
+- **Why:** warnings are the machine's cheap observations; the reviewer should start from them and spend its judgement elsewhere. The solver must stay blind, so the field is simply not in its answer.
+- **Cost:** none on the server beyond one JSON parse per review open. No rules version changes.
+- **Status:** implemented
+- **Back-port:** none.
+- **Tests:** `test/integration/independence_test.rb` (reviewer and arbiter have the warnings, the solver's answer has none), `lesson2_api_test.rb` and `work_api_test.rb` (the dry-run fields), `course_api_test.rb` (lesson review), the regenerated `contract/examples`.

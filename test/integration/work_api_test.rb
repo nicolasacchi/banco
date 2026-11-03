@@ -202,6 +202,8 @@ class WorkApiTest < ActionDispatch::IntegrationTest
     assert_response :ok
     assert_equal true, json["dry_run"]
     assert_equal "passed", json["status"]
+    assert_equal 0, json["warnings_count"]
+    assert_equal "passed", json["summary"]
     record_example "work submit", "dry-run-passed"
     assert_equal 3, json["instances"]
     assert_equal before, counts.call

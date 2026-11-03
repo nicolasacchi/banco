@@ -21,6 +21,14 @@ module Api
 
     # Answers 422 with the first error code at the top and every finding below, when
     # there is any error. Returns true when it answered.
+    # The answer of a dry run that passed (D-323). `status` stays "passed" (what passes or fails is
+    # unchanged); `warnings_count` and `summary` say plainly when it passed with warnings.
+    def render_dry_run_passed(warnings, **extra)
+      count = warnings.size
+      summary = count.zero? ? "passed" : "passed with #{count} #{count == 1 ? 'warning' : 'warnings'}"
+      render json: { dry_run: true, status: "passed", codes: [], warnings: warnings, warnings_count: count, summary: summary, **extra }
+    end
+
     def refuse_findings(findings, next_step, **extra)
       first = findings.errors.first or return false
 

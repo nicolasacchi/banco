@@ -34,6 +34,14 @@ class ItemRevision < ApplicationRecord
 
   def latest_validation = validations.max_by(&:seq)
 
+  # The warnings (not the errors) of the latest validation, as stored: code, severity, field, message (D-323).
+  def validation_warnings
+    raw = latest_validation&.findings_json
+    return [] if raw.blank?
+
+    JSON.parse(raw).select { |f| f["severity"] == "warning" }.map { |f| f.slice("code", "severity", "field", "message", "detail") }
+  end
+
   # passed, failed, error, or validating while no verdict row exists.
   def status = latest_validation&.status || "validating"
 end
