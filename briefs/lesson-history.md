@@ -1,6 +1,6 @@
 ---
 name: lesson-history
-version: 1
+version: 2
 formats: banco.lesson/2
 ---
 
@@ -69,6 +69,12 @@ Only `available` pieces can be used; `banco lesson submit --dry-run` says what i
 - Classification conventions vary (is a statue an iconographic or a material source?): checks use only unambiguous cases.
 - Counterfactuals are always marked as hypotheses (`reveal` with options, "Togli una causa"); a check never asks "what would have happened".
 - Maps: ids only, simplifications said in the caption. Images only if the operator allows them, with author, licence and link.
+- Dates as the approved chronology topic writes them (a.C. / d.C., no year 0, centuries in Roman numerals where the approved topics do); "circa" for approximate dates; traditions and legends hedged ("secondo la tradizione").
+- Sources: never invent a quotation. Quote only short, well-known passages you are certain of, in plain Italian marked "(adattato)"; otherwise describe the source (what it is, who wrote it, when, why it is useful). Name the kind of source (scritta, materiale, iscrizione, moneta) and what it can and cannot prove.
+- Religion is taught as history: what people believed and did and what changed, in neutral wording, with no judgement of any faith.
+- Causes are several and weighted: "tra le cause", never one cause presented as the whole story. A cause-and-effect check never rests on the direction of "perché": show cause and effect apart or ask which fact is the cause.
+- Every step of a chain or an ordering stands alone ("Questi", "Poi", "Dieci anni dopo" are never a step's only subject or time), and two steps never say almost the same thing.
+- Maps come from the vetted tables and the ancient-world base; a select check over a map works on every page.
 
 ## Public repository
 

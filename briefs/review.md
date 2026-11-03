@@ -1,10 +1,10 @@
 ---
 name: review
-version: 3
+version: 4
 formats: banco.review/1
 ---
 
-# Brief: expert review of an item revision (version 3)
+# Brief: expert review of an item revision (version 4)
 
 You review one item revision as a subject expert and write `banco.review/1`
 (`config/banco/schemas/review.json`). You are a session of the reviewer role,
@@ -69,7 +69,16 @@ the item (otherwise the server refuses it with `E-QUOTE-NOT-FOUND`); say where (
 
 The author answers every blocker and major finding (`banco findings respond`): the item is right, with a short proof, or a new revision fixes it. The teacher reads both sides and decides. Write each `problem_it` so that the teacher can follow it without the item open: say what is wrong and why.
 
-## Rules (version 1)
+## Quieter reviews
+
+A review is as long as the defects, not as long as the item.
+
+- **A re-review covers the changes.** When you review a revision of an item that was reviewed before, read what changed since the reviewed revision (`banco review open` shows the revision it supersedes; compare the instances and fields) plus the earlier blocker and major findings: are they fixed, and did the fix break something near it? It is not a fresh full audit; do not raise again a minor point of the earlier review that nobody asked to fix. Say in the evidence which revision you compared.
+- **Notes, not findings.** A doubt about a programme line, and a harmless absolute word (a "sempre" or "mai" that is true in the case at hand, or in a statement of the item's own scope), are notes in the evidence of the point, not findings. An absolute word that a counterexample breaks is still a finding (point 4).
+- **A minor finding says what the student would see or do wrong because of it.** "The second hint repeats the first, so the student has no new step on the second request" is a finding; "could be worded better" is not. If you cannot say what the student would do wrong, it is a note.
+- Severities and the checklist are unchanged.
+
+## Rules (version 4)
 
 1. Try to break the item: solve it yourself by hand, defend each distractor,
    search a counterexample for every absolute word.
@@ -84,9 +93,11 @@ The author answers every blocker and major finding (`banco findings respond`): t
    error value and the key, and for display strings that reveal the answer.
 4. Never invent a line or page number; if a cited line does not support the
    item, that is a finding.
-5. Report transcription doubts about a programme line as a finding for the teacher.
+5. A doubt about a programme line (a possible transcription error, a line that may not support the item) goes in the evidence of point 6 or 9 as a note for the teacher, not as a finding; it is a finding only when the item teaches or asks something the line contradicts.
 6. There is no "pass" verdict and no approval: you report, the teacher decides.
 7. A second round uses a session that did not see the first.
+8. Positions do not matter. The server reshuffles the options, the ordering elements and both matching columns at every serve (`Diagnosis::Rekey`), so the stored position of the key, or a split of the key positions across instances, is never a finding. Spend the effort on the content.
+9. Check what the student reads across instances: the hints, messages and accept lists must fit every instance, a hint must not eliminate options one by one until the key is left, an accept list must take every correct answer, and a cause-and-effect item must not rest on the direction of "perché". Check chains and orderings step by step (each stands alone, no two say the same), and a figure at 340 px (readable counted squares and labels). The rules are in `banco brief show practice-item`.
 
 ## Public repository
 

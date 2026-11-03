@@ -1,10 +1,10 @@
 ---
 name: diagnosis-item
-version: 2
+version: 3
 formats: banco.item/1
 ---
 
-# Brief: diagnosis items (version 2)
+# Brief: diagnosis items (version 3)
 
 You write items for the entry diagnosis of one student: closed questions that
 show, skill by skill, what the student already does well, what to revisit and
@@ -61,6 +61,8 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
   least 2 items, 3 of them hard to guess, unless the skill declares
   `redo_reserve: false`.
 - Instances of one item must look different to the student: different cases or rows, not the same rows reshuffled (`W-INSTANCES-ALIKE` warns when two instances share more than half of their matching rows, ordering elements, or choice options under the same stem).
+- Positions are not your concern: the server reshuffles the options of a choice, the elements of an ordering and both columns of a matching at every serve (`Diagnosis::Rekey`), so the stored order says nothing to the student. Do not rotate or balance the position of the key, and do not report it. The content still matters: the key is not the only option worded differently or the only longer one, and every instance of an item offers the same full set of labels or options.
+- Across instances also vary the sentence pattern, not only the names and numbers, and the number of distinct keys. Cause and effect never rests on the direction of "perché" (show the two facts apart, or ask which is the cause); the steps of a chain or an ordering each stand alone and no two say almost the same thing; a statement with exceptions is hedged ("di solito", "secondo la tradizione", "tra le cause"); no near copy of another item or of a lesson exercise (`banco search --like KEY`). The practice brief (`banco brief show practice-item`) lists these rules with the hint, message, accept-list, figure and answer-format rules that apply to practice items.
 - Run `banco work submit DIR --dry-run` until it exits 0, then submit. For a new generator item the dry run exits 0 with `status: awaiting_verifier` (`E-VERIFY-MISSING`): the files are clean, submit for real and a verifier writes verify.mjs.
 - The cycle: `banco work open ITEM` (or a new folder named after the item key; `work open` writes `$TMPDIR/banco-work/ITEM` (outside the repo; a verifier gets `ITEM.verifier`, never the author's folder, and `work open` refuses a folder of the other role) unless you pass `--dir`, and reopening a folder deletes files the opened revision does not have; the CLI warns when a `--dir` is inside a git work tree),
   edit, `banco work submit DIR --dry-run`, `banco work submit DIR`, `banco work
@@ -172,7 +174,7 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
     spellings of its own key (`"accept": ["x = 0"]` on the instance whose key is `0`; for English, a key `did not go` with `"accept": ["didn't go"]`); the
     item's `accept` applies to every instance (`W-ACCEPT-ITEM-LEVEL` warns when an item-level entry is not within one edit of every key: move it to the instance). The item's `tests` (`must_accept`, `must_reject`) run on the first
     stored instance only (the first clean seed: seed 1 unless seed 1 throws or is rejected, in which case the next one), so write them for that instance's
-    key; an instance's own `tests` run on that instance (use them for any other seed). A `matching` key is by default a one-to-one pairing: each of the n left entries gets a different one of the n+1 right entries (one is left over); a key that repeats a right id is rejected (reported as `E-GEN-SCHEMA` on the answer, also for a static item). A `matching` that classifies cases (4 or more rows and 3 or more categories, or 6 or more rows and 2 categories; always fewer categories than rows) sets `display.reuse_right: true` on every instance: the key may repeat a category; the right column is then the categories alone (no spare). With 2 categories (a right/wrong judge) give every instance at least 2 rows of each category (`W-MATCHING-JUDGE-ROWS`): one category for every row must not be all right but one. A dropdown cloze page (one form per sentence, a form may be needed twice) is the same shape: set `reuse_right: true`, list each form once in the right column, with fewer forms than sentences. The right column of a `matching` is plain text (no `$`, no backslash:
+    key; an instance's own `tests` run on that instance (use them for any other seed). A `matching` key is by default a one-to-one pairing: each of the n left entries gets a different one of the n+1 right entries (one is left over); a key that repeats a right id is rejected (reported as `E-GEN-SCHEMA` on the answer, also for a static item). A `matching` that classifies cases (4 or more rows and 3 or more categories, or 6 or more rows and 2 categories; always fewer categories than rows) sets `display.reuse_right: true` on every instance: the key may repeat a category; the right column is then the categories alone (no spare). With 2 categories (a right/wrong judge) vary the split of the labels across the instances, never the same split in every instance, and give every instance at least 2 rows of each label it uses (`W-MATCHING-JUDGE-ROWS`): one label for every row must not be all right but one, and an identical split (always 2-2-2) lets a student count the last row. A dropdown cloze page (one form per sentence, a form may be needed twice) is the same shape: set `reuse_right: true`, list each form once in the right column, with fewer forms than sentences. The right column of a `matching` is plain text (no `$`, no backslash:
     `E-MATCHING-RIGHT-MARKUP`). A `form_skill` should be a prerequisite of the item's skill
     (`W-FORM-SKILL-CLOSURE` otherwise: credit, but no tail suspect).
 13. **Calculating subjects.** Numeric items are generators. A numeric answer

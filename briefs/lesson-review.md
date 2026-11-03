@@ -1,10 +1,10 @@
 ---
 name: lesson-review
-version: 2
+version: 3
 formats: banco.lesson_review/1
 ---
 
-# Brief: review of a lesson revision (version 2)
+# Brief: review of a lesson revision (version 3)
 
 You review one lesson revision as a subject expert and write `banco.lesson_review/1`
 (`config/banco/schemas/lesson_review.json`). You are a session of the reviewer role, independent from
@@ -117,6 +117,13 @@ and why. When the teacher approves a topic whose latest review has a blocker or 
 teacher must write a reason: be precise.
 
 
+## Quieter reviews
+
+- **A re-review covers the changes.** For a revision of a lesson that was reviewed before, read the cards that changed since the reviewed revision plus the earlier blocker and major findings (are they fixed, did the fix break something near it?). It is not a fresh full audit of the whole lesson, and an earlier minor point nobody asked to fix is not raised again. Say in the evidence which revision you compared.
+- **Notes, not findings.** A doubt about a programme line and a harmless absolute word (true in the case at hand) are notes in the evidence of the point. An absolute word that a counterexample breaks is a finding (point 3).
+- **A minor finding says what the student would see or do wrong because of it.** If you cannot say that, it is a note.
+- The severities and the checklist are unchanged.
+
 ## Rules
 
 1. Try to break the lesson: redo every calculation by hand or with exact arithmetic, defend every
@@ -124,9 +131,10 @@ teacher must write a reason: be precise.
 2. A bare "all verified" is refused. Every `pass` says what you did, in its own words
    (`E-REVIEW-EMPTY`, as for item reviews: no stock phrases, no two points with the same text).
 3. Never invent a line or page number. If a cited line does not support the lesson, that is a finding.
-4. Report transcription doubts about a programme line as a finding for the teacher.
+4. A doubt about a programme line (a possible transcription error) is a note in the evidence of point 6, not a finding; it is a finding only when the lesson teaches something the line contradicts.
 5. There is no "pass" verdict and no approval: you report, the teacher decides.
 6. A second round uses a session that did not see the first.
+7. Check the lesson against its exercises. The practice items of the topic (`banco search --like lesson:KEY`) must not copy the lesson's exercises or worked examples, and a rule stated in the lesson must be the one the items, messages and hints use. A cause-and-effect statement or check must not rest on the direction of "perché"; a chain or an ordering must have steps that stand alone; sources and quotations are never invented (a quotation is from the imported references or adapted and marked as such; otherwise the source is described); a statement with exceptions is hedged; the answer format of a check is said; a figure is readable at 390 pixels.
 
 ## Public repository
 

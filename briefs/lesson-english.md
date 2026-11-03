@@ -1,6 +1,6 @@
 ---
 name: lesson-english
-version: 1
+version: 2
 formats: banco.lesson/2
 ---
 
@@ -65,6 +65,8 @@ Only `available` pieces can be used; `banco lesson submit --dry-run` says what i
 - British English by default (en-GB); contractions are accepted on both sides of a typed answer.
 - Same meaning, same colour as in Italian: `subject`, `verb`, `object`, `agent`, `time` are the Italian roles.
 - Nothing depends on audio: "Ascolta" is optional and its text is always available.
+- Accept lists of English items take every correct form: the contraction and its full form, with and without the optional word, the common synonym, the British and American spelling where the prompt does not pin one; a correct but less common answer is accepted, not a finding.
+- Sentences and examples vary in pattern, not only in the names.
 
 ## The words figures (`word_parts`, `mirror`, `dialogue`)
 

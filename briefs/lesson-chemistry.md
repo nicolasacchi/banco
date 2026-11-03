@@ -1,6 +1,6 @@
 ---
 name: lesson-chemistry
-version: 1
+version: 2
 formats: banco.lesson/2
 ---
 
@@ -70,6 +70,8 @@ Only `available` pieces can be used; `banco lesson submit --dry-run` says what i
 - Only the seven names of the changes of state in `chem/terms`.
 - A pictogram row, never an invented description of what the student would see in a laboratory.
 - Warm and cool colours (`heat_in`, `heat_out`) are a convention of heat, not of right and wrong.
+- Invented substances in a lesson or an item are marked as invented and do not contradict a real property the student may have met (a boiling stop drawn shorter than a melting stop, or a gas slope slower than the liquid's, are the kind of slip to avoid).
+- A table or curve the student reads is drawn readably at a phone width.
 
 ## Public repository
 

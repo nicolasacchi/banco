@@ -1,6 +1,6 @@
 ---
 name: lesson-law-economics
-version: 1
+version: 2
 formats: banco.lesson/2
 ---
 
@@ -61,6 +61,9 @@ Only `available` pieces can be used; `banco lesson submit --dry-run` says what i
 - The same role for the same organ on every card and lesson: Parlamento is always `legislative`.
 - A check never asks a number the readout of a `seats` figure shows; the range of `try` stops short of the answer.
 - Real cases are invented ones: invented names only.
+- Cases and people vary in every instance of an item, and so do the sentence patterns: a set of questions that differ only in the norm named is one question repeated.
+- Quote only the imported reference texts (`banco search --kind reference_article`); the plain text is the lesson's, the quotation is exact.
+- Nullity and annullability, duty and obligation, validity and signature are the classic confusions: an item about them states the case in full and has one defensible answer.
 
 ## Public repository
 
