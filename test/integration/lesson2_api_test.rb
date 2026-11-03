@@ -187,6 +187,17 @@ class Lesson2ApiTest < ActionDispatch::IntegrationTest
     api("/api/v1/lesson-revisions/#{doc['revision']}/review", method: :post, body: { review: doc }, as: reviewer, dry: dry)
   end
 
+  test "lesson-review open carries the validation warnings of the revision under review (D-323)" do
+    revision = stored_revision
+    warnings = [ { "code" => "W-TYPE-DRAFT", "severity" => "warning", "field" => "cards.1", "message" => "a draft piece" } ]
+    warned = LessonRevision.create!(revision.attributes.except("id", "created_at", "updated_at").merge("seq" => revision.seq + 1, "warnings_json" => JSON.generate(warnings)))
+    reviewer = AgentSession.create!(label: "r", role: "reviewer", agent: "test", model: "gpt-5.2")
+    api("/api/v1/lesson-revisions/#{warned.id}/review", as: reviewer)
+    assert_response :ok, json.inspect
+    assert_equal warned.warnings, json["warnings"]
+    assert_not_empty json["warnings"]
+  end
+
   test "the review of a lesson/2 revision opens with eleven points and wants eleven" do
     revision = stored_revision
     reviewer = AgentSession.create!(label: "r", role: "reviewer", agent: "test", model: "gpt-5.2")

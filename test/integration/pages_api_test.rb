@@ -190,6 +190,16 @@ class PagesApiTest < ActionDispatch::IntegrationTest
     assert_equal "E-SESSION-NOT-INDEPENDENT", json["code"]
   end
 
+  test "page-review open carries the validation warnings of the revision under review (D-323)" do
+    submit
+    rev = PageRevision.last
+    warnings = [ { "code" => "W-PAGE-SAMPLE", "severity" => "warning", "field" => "page.json", "message" => "a sample warning" } ]
+    warned = PageRevision.create!(rev.attributes.except("id", "created_at", "updated_at").merge("seq" => rev.seq + 1, "bundle_sha256" => "f" * 64, "warnings_json" => JSON.generate(warnings)))
+    api("/api/v1/page-revisions/#{warned.id}/review", as: @reviewer)
+    assert_response :ok, json.inspect
+    assert_equal warnings, json["warnings"]
+  end
+
   test "a reviewer of the same model family as an author is refused; so is the author's own session" do
     submit
     rev = PageRevision.last
