@@ -19,8 +19,6 @@ module Api
       render json: { code: code, field: field, message: message, next: next_step }.merge(extra), status: status
     end
 
-    # Answers 422 with the first error code at the top and every finding below, when
-    # there is any error. Returns true when it answered.
     # The answer of a dry run that passed (D-323). `status` stays "passed" (what passes or fails is
     # unchanged); `warnings_count` and `summary` say plainly when it passed with warnings.
     def render_dry_run_passed(warnings, **extra)
@@ -29,6 +27,8 @@ module Api
       render json: { dry_run: true, status: "passed", codes: [], warnings: warnings, warnings_count: count, summary: summary, **extra }
     end
 
+    # Answers 422 with the first error code at the top and every finding below, when
+    # there is any error. Returns true when it answered.
     def refuse_findings(findings, next_step, **extra)
       first = findings.errors.first or return false
 

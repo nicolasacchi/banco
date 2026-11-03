@@ -115,6 +115,9 @@ class CourseApiTest < ActionDispatch::IntegrationTest
     assert_equal "course", json.dig("brief", "name")
     submit_course(dry: true)
     assert_response :ok
+    assert_equal "passed", json["status"]
+    assert_equal json["warnings"].size, json["warnings_count"]
+    assert_equal "passed", json["summary"] if json["warnings_count"].zero?
     record_example "course submit", "dry-run-passed"
     assert_equal 0, CourseRevision.count
     submit_course
