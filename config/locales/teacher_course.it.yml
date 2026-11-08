@@ -51,6 +51,7 @@ it:
         ripasso: "Ripasso di prima"
         ponte: "Base che serve"
         lezione: "Programma di seconda"
+        extra: "Fuori programma"
       minutes:
         one: "1 minuto"
         other: "%{count} minuti"
@@ -93,6 +94,7 @@ it:
         middle_school: "delle medie"
         not_in_prima: "non fatto in prima"
         seconda: "di seconda"
+        extra: "fuori programma (già fatto secondo il programma ufficiale)"
       uses: "La lezione richiama anche:"
       section:
         why: "Perché ti serve"

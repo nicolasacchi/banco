@@ -29,6 +29,7 @@ it:
       ripasso: "Ripasso"
       ponte: "Ponte"
       lezione: "Lezione"
+      extra: "Fuori programma"
     subject:
       math: "matematica"
       italian: "italiano"

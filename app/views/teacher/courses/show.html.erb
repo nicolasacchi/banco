@@ -29,46 +29,23 @@
         <% if @only_ready %><a class="button secondary small" id="path-filter" data-active="true" href="<%= teacher_course_path(key: @subject.key) %>"><%= t("teacher.path.filter_off") %></a>
         <% else %><a class="button secondary small" id="path-filter" data-active="false" href="<%= teacher_course_path(key: @subject.key, only: "ready") %>"><%= t("teacher.path.filter_ready") %></a><% end %>
       </p>
-      <% shown = review.steps.select { |st| !@only_ready || st.ready? } %>
-      <% if shown.empty? %><%= ui_notice :info, t("teacher.path.none_ready"), html: { id: "path-empty" } %><% end %>
+      <% shown = review.programme_steps.select { |st| !@only_ready || st.ready? } %>
+      <% shown_extra = review.extra_steps.select { |st| !@only_ready || st.ready? } %>
+      <% if shown.empty? && shown_extra.empty? %><%= ui_notice :info, t("teacher.path.none_ready"), html: { id: "path-empty" } %><% end %>
       <ol class="path">
-        <% shown.each do |step| %>
-          <% entry = step.entry %>
-          <li class="topic path-step" data-topic="<%= entry["key"] %>" data-stage="<%= step.row.stage %>" data-badge="<%= step.badge %>">
-            <span class="step-number step-dot" aria-hidden="true"><%= step.number %></span>
-            <div class="step-body">
-              <h3>
-                <% if step.lesson? %><a href="<%= teacher_topic_path(key: @subject.key, topic: entry["key"]) %>"><%= entry["title_it"] %></a><% else %><%= entry["title_it"] %><% end %>
-                <span class="badge pill" data-stage-label data-badge-name="<%= step.badge %>"><%= t("teacher.path.badge.#{step.badge}") %></span>
-              </h3>
-              <p class="hint step-kind"><%= t("teacher.path.kind.#{entry['kind']}") %> · <%= t("teacher.course.minutes", count: entry["minutes"]) %>
-                <% if entry["term"] %> · <%= t("teacher.course.term", n: entry["term"]) %><% end %></p>
-              <p class="step-skills"><%= t("teacher.path.skills") %> <%= safe_join(entry["skills"].map { |k| ref_for(k) }, ", ") %></p>
-              <% if step.row.stage == "approved" && (words = Course::Decisions.attestation(entry["key"])) %><p class="hint step-attested" data-attested><%= t("teacher.topic.attested", words: words) %></p><% end %>
-              <% if step.missing_it %><p class="step-missing" data-missing><%= step.missing_it %></p><% end %>
-              <% if step.lesson? %>
-                <ul class="plain step-counts" data-counts>
-                  <li data-count="lesson"><%= t("teacher.path.lesson_yes") %></li>
-                  <li data-count="exercises"><%= t("teacher.path.exercises", count: step.exercises) %></li>
-                  <li data-count="findings" data-open="<%= step.open_findings %>"><%= t("teacher.path.findings", count: step.open_findings) %></li>
-                </ul>
-              <% else %>
-                <p class="hint" data-count="lesson"><%= t("teacher.path.lesson_no") %></p>
-              <% end %>
-              <% step.progress.each do |pr| %>
-                <p class="hint step-progress" data-progress="<%= pr.student.key %>"><%= t("teacher.path.progress", who: student_label(pr.student), tries: t("teacher.path.tries", count: pr.tries), skills: t("teacher.path.skills_shown", count: pr.done, total: pr.total)) %></p>
-              <% end %>
-              <% if step.ready? %>
-                <p class="step-action"><a class="button" data-review-button href="<%= teacher_topic_path(key: @subject.key, topic: entry["key"]) %>"><%= t("teacher.path.review") %></a></p>
-              <% elsif step.lesson? %>
-                <p class="step-action"><a class="button secondary small" data-look-button href="<%= teacher_topic_path(key: @subject.key, topic: entry["key"]) %>"><%= t("teacher.path.look") %></a>
-                  <span class="hint" data-look-hint><%= t("teacher.path.look_hint.#{step.badge}") %></span></p>
-              <% end %>
-            </div>
-          </li>
-        <% end %>
+        <% shown.each do |step| %><%= render "teacher/courses/step", step: step %><% end %>
       </ol>
     </section>
+
+    <% if shown_extra.any? %>
+      <section id="course-extra-topics">
+        <h2><%= t("teacher.path.extra_title") %></h2>
+        <p class="hint"><%= t("teacher.path.extra_intro") %></p>
+        <ol class="path">
+          <% shown_extra.each do |step| %><%= render "teacher/courses/step", step: step %><% end %>
+        </ol>
+      </section>
+    <% end %>
 
     <section id="course-release" class="card" data-open="<%= review.open? %>" data-releasable="<%= review.releasable? %>">
       <h2 class="card-title"><%= t("teacher.path.release.title") %></h2>

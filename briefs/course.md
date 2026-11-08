@@ -48,6 +48,9 @@ current map with `banco course open --subject KEY`. An identical file replays th
 - At least one `taught_in` ref on the current year's source (`seconda-2025-26`). The fragment is an
   exact substring of the imported line: take it from `banco syllabus lines --source S --from N --to M`
   (rows with `citable: true`). Never cite a transcriber line, never invent a line or a quotation.
+  A skill of an `extra` topic (below) may instead cite the official programme (`ufficiale-2026-27`) as
+  `taught_in`, checked the same way; a skill whose only `taught_in` refs are on that source is held only
+  by an `extra` topic (`E-COURSE-EXTRA-SKILL`).
 - At least one typical `errors[]` entry per skill: a snake_case `code`, what the student does wrong
   (`description_it`), and the skills the mistake implicates. These codes are what practice items reuse.
 - The union of graph prerequisites and map prerequisites has no cycle (`E-GRAPH-CYCLE`).
@@ -57,7 +60,7 @@ current map with `banco course open --subject KEY`. An identical file replays th
 ## Topics
 
 - `topics[]` order is the **recommended** course order, not the order you write them in.
-- A topic key is `(ripasso|ponte|lezione).SUBJECT.slug`; the prefix equals `kind`, the subject equals
+- A topic key is `(ripasso|ponte|lezione|extra).SUBJECT.slug`; the prefix equals `kind`, the subject equals
   the map's subject; keys are unique. Its `skills` (1 to 4) are skills of this subject, in the graph or
   in this map, and each skill is in **at most one** topic. `after` names other topics of the map and has
   no cycle (`E-COURSE-TOPIC`). A topic placed before one of its `after` topics, or before the topic that
@@ -65,6 +68,11 @@ current map with `banco course open --subject KEY`. An identical file replays th
 - `term` 1, 2, 3 or `null`; `minutes` 10 to 90.
 - Put only topics whose skills exist: ripassi and ponti on graph skills at once; a `lezione` when its
   new skills are in the same revision. Later waves come as later revisions of the map.
+- `extra` (D-324): **outside the programme**. A topic the official programme (`ufficiale-2026-27`) gives as
+  already done and the current year's programme does not have: the student chose to do it. For the student it
+  is optional: listed apart under «Fuori programma (facoltativo)», never suggested by Oggi, never counted. Put
+  extra topics after the programme's; their skills are new map skills citing the official programme, or graph
+  skills that no other topic holds. The teacher approves and releases them like any other topic.
 - The key is also the key of the lesson (`banco lesson open KEY`) and of the topic file.
 
 ## Staleness

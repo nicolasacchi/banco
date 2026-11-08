@@ -24,6 +24,8 @@ module Teacher
 
     def present? = !lesson.nil?
     def entry = @entry ||= Approval::TopicGate.map_entry(subject, key)
+    # Outside the programme (D-324): the kind is the key's prefix.
+    def extra? = key.start_with?("extra.")
     def latest = @latest ||= lesson && lesson.topic_revisions.max_by(&:seq)
     def approved_id = @approved_id ||= Course::Decisions.approved_topic_revision_id(key)
     def approved = approved_id && TopicRevision.find_by(id: approved_id)

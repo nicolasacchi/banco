@@ -22,6 +22,8 @@ module Validation
     # A dotted abbreviation (a.C., d.C., m.c.m.) is one word, not one per letter (D-155).
     DOTTED = /(?<![\p{L}\p{N}])\p{L}(?:\.\p{L})+\.?/
     ROMAN = /\A[IVXLCDM]+\z/
+    # An acronym alone between parentheses, after the words it stands for: «prodotto interno lordo (PIL)» (D-324).
+    PAREN_ACRONYM = /\(\s*\p{Lu}{3,}\s*\)/
 
     module_function
 
@@ -104,8 +106,9 @@ module Validation
 
     def caps(plain, field, findings)
       allowed = Rules.list(:readability, :caps_allowlist)
-      # A spreadsheet function name (SOMMA(, CONTA.SE) is a name, not shouting (D-095).
-      word = plain.scan(/\p{L}+(?![(\p{L}]|\.\p{L})/).find do |w|
+      # A spreadsheet function name (SOMMA(, CONTA.SE) is a name, not shouting (D-095); so is an acronym that stands
+      # alone inside parentheses (D-324). Outside parentheses only the allowlist passes.
+      word = plain.gsub(PAREN_ACRONYM, " ").scan(/\p{L}+(?![(\p{L}]|\.\p{L})/).find do |w|
         w.length >= 3 && w == w.upcase && w != w.downcase && !allowed.include?(w) && !w.match?(ROMAN)
       end
       findings.add("E-READ", field, "an ALL-CAPS word (#{word})", rule: "all_caps", word: word) if word

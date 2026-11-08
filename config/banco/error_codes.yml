@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 24
+version: 25
 
 validation:
   # Skill graph (synchronous).
@@ -167,13 +167,14 @@ validation:
   W-MISTAKE-CODE: { stage: ruby, severity: warning, description: "A mistake or check error code that is not in the skills' error catalogue." }
   E-COURSE-SKILL-DUPLICATE: { stage: ruby, severity: error, description: "A course skill key is in the graph it is validated against, or twice in the map." }
   E-COURSE-TOPIC: { stage: ruby, severity: error, description: "The key, kind and subject disagree, duplicate topic, a skill in two topics or of another subject, unknown topic in after, a cycle in after." }
+  E-COURSE-EXTRA-SKILL: { stage: ruby, severity: error, description: "A course skill whose only taught_in refs are on course.extra_source (outside the programme, D-324) is held by a topic that is not of kind extra." }
   W-COURSE-ORDER: { stage: ruby, severity: warning, description: "A topic before one of its after topics, or before the topic holding a direct prerequisite of its skills." }
   W-COURSE-GRAPH-STALE: { stage: ruby, severity: warning, description: "A newer graph revision exists than the one the map was validated against." }
   E-TOPIC-UNKNOWN: { stage: ruby, severity: error, description: "The key is not a topic of the subject's latest course map." }
   E-TOPIC-PIN: { stage: ruby, severity: error, description: "The lesson with the topic key or a pinned revision does not exist, or a pinned revision is not a revision of the named lesson or item." }
   E-TOPIC-SKILLS: { stage: ruby, severity: error, description: "Practice skills differ from the map topic's skills, a skill twice, an item pinned twice, or the pinned lesson's skills differ from the topic's." }
   E-TOPIC-ITEM-KIND: { stage: ruby, severity: error, description: "A pinned item is not a practice_item, or its skill is not the entry's skill." }
-  E-TOPIC-POOL: { stage: ruby, severity: error, description: "Per skill: no level-1 item, fewer than practice.topic_min_instances_per_skill distinct fingerprints, or fewer than practice.topic_min_low_guess_instances_per_skill low-guess ones." }
+  E-TOPIC-POOL: { stage: ruby, severity: error, description: "Per skill: no level-1 item, fewer than practice.topic_min_instances_per_skill distinct fingerprints, or fewer than practice.topic_min_low_guess_instances_per_skill low-guess ones (for an extra topic, D-324: practice.extra_topic_min_instances_per_skill and practice.extra_topic_min_low_guess_instances_per_skill)." }
   W-TOPIC-INSTANCE-IN-LESSON: { stage: ruby, severity: warning, description: "A pinned instance display equals (normalized) a lesson exercise or worked-example line." }
   W-PRACTICE-DIAGNOSIS-OVERLAP: { stage: ruby, severity: warning, description: "A pinned instance has the fingerprint of a diagnosis instance of the same skill." }
   E-HINTS: { stage: ruby, severity: error, description: "A practice instance has no effective hints, or hints on a non-practice item." }

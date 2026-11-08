@@ -6,6 +6,9 @@ it:
       filter_ready: "Solo quelli pronti per te"
       filter_off: "Mostra tutti gli argomenti"
       none_ready: "Nessun argomento è pronto per te."
+      extra_title: "Fuori programma"
+      extra_intro: "Argomenti che il programma ufficiale dà già per fatti e che il programma di seconda non ha. Per lo studente sono facoltativi: non entrano nei suggerimenti di Oggi né nei conteggi. Si approvano come gli altri."
+      extra_badge: "Fuori programma"
       summary:
         ready:
           one: "1 argomento pronto per te"
@@ -29,6 +32,7 @@ it:
         ripasso: "Ripasso di prima"
         ponte: "Ponte"
         lezione: "Argomento di seconda"
+        extra: "Argomento facoltativo"
       skills: "Allena:"
       lesson_yes: "Lezione scritta"
       lesson_no: "Lezione: non ancora scritta"

@@ -71,6 +71,25 @@ The agent stops at `awaiting_teacher`. The teacher reads and decides in the brow
 
 Decisions (POST, web listener, teacher only): `approve_topic` (`confirm_seen=1`, and `lesson_findings_reason_it` when the lesson review has a blocker or major finding), `send_back_lesson` (`reason_code`, `comment_it`), `release_course` (`open=1|0`). The gate is `Approval::TopicGate`; its reasons are worded in Italian by `Teacher::Wording`.
 
+## Topics outside the programme (D-324)
+
+A topic of kind `extra` (key `extra.SUBJECT.slug`) is something the official programme (`course.extra_source`,
+`ufficiale-2026-27`, imported with `bin/rails banco:syllabus:import SOURCE=ufficiale-2026-27 FILE=-`) gives as already
+done and the current year's programme (`seconda-2025-26`) does not have; the student wanted to do it.
+
+- Map: a course skill cites `taught_in` on the seconda source or on the official one; a skill whose only `taught_in`
+  refs are on the official one is held only by an extra topic (`E-COURSE-EXTRA-SKILL`). An extra topic may also hold
+  graph skills that no other topic holds. Citations are checked as any other (exact fragment of a citable line).
+- Lesson: `kind: extra`, `scope: extra`, a `taught_in` ref on the official programme (`E-LESSON-REFS`); a short recap.
+- Topic: `E-TOPIC-POOL` asks per skill 10 distinct instances, 6 hard to guess and one level 1 item
+  (`practice.extra_topic_*`); the rest of the gate is unchanged.
+- Student: Materia lists them after the programme's topics under «Fuori programma (facoltativo)», each with a
+  «Fuori programma» badge (`Course::StudentView#extra_topics`). Oggi never suggests nor resumes them, the counts of
+  Materie and Materia leave them out, and their skills are never named as "senza argomento"; their practice runs
+  when the student opens the topic and is graded and recorded like any other.
+- Teacher: the course path lists them in their own section «Fuori programma» (`Teacher::CourseReview#extra_steps`),
+  the topic page shows the badge; approval and release are the same as for any topic.
+
 
 ## Lesson format 2 (rich lessons, D-244..D-251)
 

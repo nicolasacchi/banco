@@ -2,9 +2,11 @@
 <% content_for :title, t("teacher.topic.title", title: review.entry ? review.entry["title_it"] : review.key) %>
 <main class="page wide review" data-controller="markup lesson-preview">
   <header class="page-header">
-    <h1><%= review.entry ? review.entry["title_it"] : review.key %> <span class="key">(<%= review.key %>)</span></h1>
+    <h1><%= review.entry ? review.entry["title_it"] : review.key %> <span class="key">(<%= review.key %>)</span>
+      <% if review.extra? %><span class="badge pill" id="topic-extra-badge" data-extra-badge><%= t("teacher.path.extra_badge") %></span><% end %></h1>
     <% if review.latest %><div class="page-actions"><%= review.approved_latest? ? ui_pill(t("teacher.topic.is_approved"), :success, icon: "circle-check") : ui_pill(t("teacher.topic.not_approved"), :nearly) %></div><% end %>
   </header>
+  <% if review.extra? %><p class="hint" id="topic-extra-note"><%= t("teacher.path.extra_intro") %></p><% end %>
   <% if review.latest.nil? %>
     <%= ui_notice :info, t("teacher.topic.missing"), html: { id: "topic-missing" } %>
   <% else %>

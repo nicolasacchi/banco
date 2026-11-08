@@ -14,7 +14,10 @@ module Course
   #   Course::Catalog.for(preview_student, view: :drafts)
   module Catalog
     SubjectView = Data.define(:subject, :mode, :course_revision, :released, :topics, :skills_without_topic)
-    TopicView = Data.define(:key, :kind, :title_it, :term, :minutes, :skills, :after, :topic_revision, :lesson_revision, :approved)
+    TopicView = Data.define(:key, :kind, :title_it, :term, :minutes, :skills, :after, :topic_revision, :lesson_revision, :approved) do
+      # Outside the programme (D-324): optional, listed apart, never suggested by Oggi nor counted.
+      def extra? = kind == "extra"
+    end
 
     module_function
 
@@ -77,11 +80,12 @@ module Course
     def skills_of(topic_revision) = topic_revision.body["practice"].map { |p| p["skill"] }.sort
 
     # The graph and map skills of the subject that no visible topic holds (the pages name those that
-    # the diagnosis found to recover or learn).
+    # the diagnosis found to recover or learn). The skills of the map's extra topics are optional, never named (D-324).
     def skills_without_topic(course, topics)
       graph = JSON.parse(course.skill_graph_revision.body_json)["skills"].map { |s| s["key"] }
       all = graph + course.body["skills"].map { |s| s["key"] }
-      all.uniq - topics.flat_map(&:skills)
+      optional = course.body["topics"].select { |t| t["kind"] == "extra" }.flat_map { |t| t["skills"] }
+      all.uniq - topics.flat_map(&:skills) - optional
     end
   end
 end

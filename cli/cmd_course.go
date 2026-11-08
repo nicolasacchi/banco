@@ -17,7 +17,7 @@ import (
 // the practice progress. None of these commands decides anything: the teacher approves topics and
 // opens the course in the browser (firm rule 2). The contract lists all twelve.
 
-var lessonKeyRe = regexp.MustCompile(`^(ripasso|ponte|lezione)\.[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*$`)
+var lessonKeyRe = regexp.MustCompile(`^(ripasso|ponte|lezione|extra)\.[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*$`)
 
 // the further states of a card in the render check's shots (D-311), part of a file name
 var shotStateRe = regexp.MustCompile(`^(ex[0-9]+|open|ex[0-9]+-open)$`)

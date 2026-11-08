@@ -35,7 +35,8 @@ module Lessons
     RESERVED_SPANS = (LANG_SPANS + %w[it code g]).freeze
     CODE_MAX = 40
     TERM = /\A[\p{L}][\p{L} '’-]*\z/
-    LINK_TARGET = /\A[a-z0-9.-]+\z/
+    # A card slug or a topic key; the underscore is in subject keys such as computer_science (D-324).
+    LINK_TARGET = /\A[a-z0-9._-]+\z/
     LINK_KINDS = %w[scheda argomento].freeze
     # Commands that would let an agent reach KaTeX's trust functions or redefine the macro (A5).
     FORBIDDEN_TEX = /\\(htmlClass|htmlId|htmlStyle|htmlData|href|url|includegraphics|def|gdef|edef|xdef|newcommand|renewcommand|providecommand|let|futurelet|global|class|cssId|raw|include|input)(?![A-Za-z])/
@@ -327,7 +328,7 @@ module Lessons
       kind, id = target.split(":", 2)
       raise Refused.new(line, "a link other than scheda: or argomento:") unless LINK_KINDS.include?(kind) && !id.nil?
       raise Refused.new(line, "a link without a target") if id.empty?
-      raise Refused.new(line, "a link target that is not lowercase letters, digits, dots and hyphens") unless id.match?(LINK_TARGET)
+      raise Refused.new(line, "a link target that is not lowercase letters, digits, dots, hyphens and underscores") unless id.match?(LINK_TARGET)
       raise Refused.new(line, "a link without text") if label.strip.empty?
 
       { "t" => "link", "kind" => kind, "target" => id, "children" => inline(label, line, roles: true, target: lang) }

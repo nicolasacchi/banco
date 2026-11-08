@@ -296,12 +296,6 @@ CREATE TRIGGER finding_assessments_no_update BEFORE UPDATE ON finding_assessment
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER finding_assessments_no_delete BEFORE DELETE ON finding_assessments
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
-CREATE TABLE "lessons" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "subject_id" integer NOT NULL, "key" varchar NOT NULL, "kind" varchar NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_ffc4753ede"
-FOREIGN KEY ("subject_id")
-  REFERENCES "subjects" ("id")
-, CONSTRAINT lessons_kind CHECK (kind IN ('ripasso','ponte','lezione')));
-CREATE INDEX "index_lessons_on_subject_id" ON "lessons" ("subject_id");
-CREATE UNIQUE INDEX "index_lessons_on_key" ON "lessons" ("key");
 CREATE TABLE "lesson_revisions" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "lesson_id" integer NOT NULL, "seq" integer NOT NULL, "base_revision_id" integer, "source_md" text NOT NULL, "source_sha256" varchar NOT NULL, "body_json" text NOT NULL, "rules_version" varchar NOT NULL, "warnings_json" text NOT NULL, "author_session_id" integer, "brief_sha256" varchar, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_9a9f6c634e"
 FOREIGN KEY ("lesson_id")
   REFERENCES "lessons" ("id")
@@ -358,10 +352,6 @@ CREATE INDEX "index_topic_revisions_on_course_revision_id" ON "topic_revisions" 
 CREATE INDEX "index_topic_revisions_on_lesson_revision_id" ON "topic_revisions" ("lesson_revision_id");
 CREATE INDEX "index_topic_revisions_on_author_session_id" ON "topic_revisions" ("author_session_id");
 CREATE UNIQUE INDEX "index_topic_revisions_on_lesson_id_and_seq" ON "topic_revisions" ("lesson_id", "seq");
-CREATE TRIGGER lessons_no_update BEFORE UPDATE ON lessons
-BEGIN SELECT RAISE(ABORT, 'append-only'); END;
-CREATE TRIGGER lessons_no_delete BEFORE DELETE ON lessons
-BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER lesson_revisions_no_update BEFORE UPDATE ON lesson_revisions
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER lesson_revisions_no_delete BEFORE DELETE ON lesson_revisions
@@ -643,7 +633,18 @@ CREATE TRIGGER agent_session_corrections_no_update BEFORE UPDATE ON agent_sessio
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER agent_session_corrections_no_delete BEFORE DELETE ON agent_session_corrections
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "lessons" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "subject_id" integer NOT NULL, "key" varchar NOT NULL, "kind" varchar NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_ffc4753ede"
+FOREIGN KEY ("subject_id")
+  REFERENCES "subjects" ("id")
+, CONSTRAINT lessons_kind CHECK (kind IN ('ripasso','ponte','lezione','extra')));
+CREATE INDEX "index_lessons_on_subject_id" ON "lessons" ("subject_id");
+CREATE UNIQUE INDEX "index_lessons_on_key" ON "lessons" ("key");
+CREATE TRIGGER lessons_no_update BEFORE UPDATE ON lessons
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER lessons_no_delete BEFORE DELETE ON lessons
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261108100001'),
 ('20261019100001'),
 ('20261018120001'),
 ('20261016100001'),

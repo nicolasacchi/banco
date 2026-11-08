@@ -2,7 +2,7 @@ module Comments
   # Which student page a comment was written on, from its path alone (no query, no host): the kind of page and the
   # ids its address carries. Nothing else about a place is believed until Intake has checked it.
   module Pages
-    TOPIC = /(?:ripasso|ponte|lezione)\.[a-z_]+\.[a-z0-9]+(?:-[a-z0-9]+)*/
+    TOPIC = /(?:ripasso|ponte|lezione|extra)\.[a-z_]+\.[a-z0-9]+(?:-[a-z0-9]+)*/
     SKILL = /[a-z_]+\.[a-z0-9]+(?:-[a-z0-9]+)*/
     Page = Data.define(:kind, :topic, :skill, :run_id, :subject_key)
 

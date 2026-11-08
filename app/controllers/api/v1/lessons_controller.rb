@@ -66,7 +66,7 @@ module Api
       def submit
         body = parse_json_body or return
         key = body["lesson"].to_s
-        unless key.match?(/\A(ripasso|ponte|lezione)\.[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*\z/) && key.size <= 120
+        unless key.match?(/\A(ripasso|ponte|lezione|extra)\.[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*\z/) && key.size <= 120
           return refuse("E-FILES", "lesson", "lesson is a key such as ripasso.math.linear-equations-integer", "banco lesson submit DIR", 422)
         end
         files = body["files"]

@@ -27,7 +27,7 @@ module Validation
       lesson, lesson_revision = lesson_pin(doc, key, entry, findings)
       practice_skills(doc, entry, findings)
       resolved = pins(doc, subject, findings)
-      pool(resolved, findings)
+      pool(resolved, findings, extra: entry["kind"] == "extra")
       instances_vs_lesson(resolved, lesson_revision, findings) if lesson_revision
       overlap(resolved, subject, findings)
       return Result.new(findings: findings) if findings.any_error? || lesson.nil?
@@ -115,10 +115,12 @@ module Validation
       revision
     end
 
-    # Per skill: a level 1 item, enough distinct fingerprints, enough hard-to-guess ones.
-    def pool(resolved, findings)
-      min = Rules.get(:practice, :topic_min_instances_per_skill)
-      low = Rules.get(:practice, :topic_min_low_guess_instances_per_skill)
+    # Per skill: a level 1 item, enough distinct fingerprints, enough hard-to-guess ones. An extra topic (outside the
+    # programme, D-324) has optional exercises and its own, smaller numbers.
+    def pool(resolved, findings, extra: false)
+      prefix = extra ? "extra_topic" : "topic"
+      min = Rules.get(:practice, :"#{prefix}_min_instances_per_skill")
+      low = Rules.get(:practice, :"#{prefix}_min_low_guess_instances_per_skill")
       resolved.each_with_index do |entry, i|
         next if entry[:pins].empty?
 

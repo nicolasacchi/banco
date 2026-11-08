@@ -59,7 +59,7 @@ finals_it: ['x = 3', 'x = 0', null, 'x = 3']
 
 Front matter fields:
 
-- `key`: `(ripasso|ponte|lezione).SUBJECT.slug`, the same as the topic key in the course map. The
+- `key`: `(ripasso|ponte|lezione|extra).SUBJECT.slug`, the same as the topic key in the course map. The
   `kind` and `subject` fields must agree with it (`E-LESSON-PARSE`).
 - `skills` (1 to 4): the skills the student **practises** in this topic. They must be the skills of
   the topic in the course map. `uses` (up to 6): other skills the lesson recalls; only the teacher
@@ -73,7 +73,8 @@ Front matter fields:
   least one `needed_by` ref on the current year and one `taught_in` ref on the previous year. `ponte`:
   scope `middle_school` or `not_in_prima`; at least one `needed_by` ref on the current year; previous
   year refs only as `taught_in`. `lezione`: scope `seconda`; at least one `taught_in` ref on the
-  current year.
+  current year. `extra` (outside the programme, D-324): scope `extra`; at least one `taught_in` ref on the
+  official programme (`ufficiale-2026-27`).
 - `minutes` 10 to 60: the study time including the exercises. `calculator`: true or false.
 - `finals_it`: one entry per exercise of Prova tu, in order: the short final answer (LaTeX allowed,
   `$` optional), or `null` for an open exercise.

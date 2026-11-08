@@ -11,7 +11,9 @@
 # v8: banco.lesson/2 (D-245): block lesson2 and lesson.accept_schema1. No existing number changes.
 # v9: wave 2 of the rich lessons (D-265..D-269): apparatus and target-language budgets, the reachable cap, the page budgets and
 # lesson2.types, the per-type caps of the 26 new diagram types. No existing number changes.
-version: 9
+# v10: topics outside the programme (D-324): course.extra_source and the extra_topic pool numbers; an acronym alone in
+# parentheses («prodotto interno lordo (PIL)») passes the ALL-CAPS rule; ISO, RAW, LED, GPS, UTC, GIS, UNESCO join caps_allowlist.
+version: 10
 
 generator:
   seeds: 200                  # seeds 1..200 are run, in two fresh contexts
@@ -51,8 +53,8 @@ readability:
   min_gulpease: 50            # W-GULPEASE (texts of at least min_gulpease_words words)
   min_gulpease_words: 25
   passage_min_gulpease: 40    # W-PASSAGE-READABILITY
-  # ALL-CAPS words of 3 or more letters are errors except these acronyms.
-  caps_allowlist: [IVA, PIL, DNA, RNA, ATP, USA, UE, ONU, NATO, SPQR, HTML, CSS, CPU, RAM, ROM, URL, PDF, IBAN, SMS, OK, EUR, MCD, MCM, ISBN, MM, CM, KG, ATM, DDT, ASCII, RGB, USB, SSD, HDD, LAN, WAN, BIOS, CSV]
+  # ALL-CAPS words of 3 or more letters are errors except these acronyms and one alone in parentheses: «(PIL)» (D-324).
+  caps_allowlist: [IVA, PIL, DNA, RNA, ATP, USA, UE, ONU, NATO, SPQR, HTML, CSS, CPU, RAM, ROM, URL, PDF, IBAN, SMS, OK, EUR, MCD, MCM, ISBN, MM, CM, KG, ATM, DDT, ASCII, RGB, USB, SSD, HDD, LAN, WAN, BIOS, CSV, ISO, RAW, LED, GPS, UTC, GIS, UNESCO]
   banned_phrases:             # E-PHRASE: exam-gaming, self-certification, personalisation
     - la risposta che cercano
     - cosa scrivere
@@ -149,6 +151,9 @@ coverage:
 # Phase 1b, course content (A2.1, A3.2). Lessons, course maps and topics are synchronous (no Chrome).
 course:
   seconda_source: seconda-2025-26   # the source a course skill and a lesson cite as taught_in / needed_by
+  # D-324 (v10): the official programme. A course skill may cite it instead of seconda_source; such a skill is held only by
+  # an extra topic (E-COURSE-EXTRA-SKILL), and an extra lesson cites it as taught_in.
+  extra_source: ufficiale-2026-27
 
 lesson:
   max_bytes: 65536
@@ -314,4 +319,6 @@ practice:                     # practice items (A2.4) and topics (A2.3)
   min_static_instances: 10                  # E-PRACTICE-POOL
   topic_min_instances_per_skill: 20         # E-TOPIC-POOL: distinct fingerprints
   topic_min_low_guess_instances_per_skill: 12
+  extra_topic_min_instances_per_skill: 10   # E-TOPIC-POOL for an extra topic (D-324): its exercises are optional
+  extra_topic_min_low_guess_instances_per_skill: 6
   min_instances_per_code: 3                 # W-PRACTICE-CODE-SPARSE

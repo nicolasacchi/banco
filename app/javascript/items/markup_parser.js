@@ -79,7 +79,7 @@ const LANG_SPANS = ["en", "es", "la"]
 const RESERVED_SPANS = [...LANG_SPANS, "it", "code", "g"]
 const CODE_MAX = 40
 const TERM = /^\p{L}[\p{L} '’-]*$/u
-const LINK = /^\[([^\]\[]+)\]\((scheda|argomento):([a-z0-9.-]*)\)/
+const LINK = /^\[([^\]\[]+)\]\((scheda|argomento):([a-z0-9._-]*)\)/
 
 export function checkTex(tex) {
   const hit = tex.match(FORBIDDEN_TEX)

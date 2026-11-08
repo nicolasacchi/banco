@@ -61,20 +61,27 @@ module Course
 
     # ---- topics ----------------------------------------------------------------------------------
 
+    # The topics of the programme, in course order, and those outside it (D-324): optional, listed after them under
+    # «Fuori programma (facoltativo)», never suggested by Oggi and never in a count.
+    def programme_topics(sv) = sv.topics.reject(&:extra?)
+    def extra_topics(sv) = sv.topics.select(&:extra?)
+
     def status(topic) = Practice::Today.status(topic, states, started: started_keys.include?(topic.key))
 
     def recover_tag?(topic) = Practice::Today.recover_tag?(topic, states)
 
     def lesson_read?(topic) = opened_keys.include?(topic.key)
 
-    # "Prima conviene fare": the first visible `after` topic that is not done.
+    # "Prima conviene fare": the first visible `after` topic that is not done. A programme topic never sends the
+    # student to an extra one.
     def before(sv, topic)
-      Practice::Today.before(topic, sv.topics.to_h { |t| [ t.key, t ] }, states)
+      visible = topic.extra? ? sv.topics : programme_topics(sv)
+      Practice::Today.before(topic, visible.to_h { |t| [ t.key, t ] }, states)
     end
 
-    # The counts of the "Materie" page, over the skills of the visible topics of the subject.
+    # The counts of the "Materie" page, over the skills of the visible topics of the programme of the subject.
     def counts(sv)
-      skills = sv.topics.flat_map(&:skills).uniq
+      skills = programme_topics(sv).flat_map(&:skills).uniq
       tally = skills.map { |s| states[s]&.state || "not_seen" }.tally
       { demonstrated: tally["demonstrated"].to_i + tally["consolidated"].to_i, in_study: tally["in_study"].to_i,
         to_recover: tally["to_recover"].to_i + tally["to_review"].to_i, not_seen: tally["not_seen"].to_i + tally["to_learn"].to_i }
@@ -87,8 +94,12 @@ module Course
 
     # ---- Oggi ------------------------------------------------------------------------------------
 
+    # Oggi reads the topics of the programme only: an extra topic is never suggested nor resumed there (D-324).
     def today
-      @today ||= Practice::Today.call(catalog: subjects, states: states, graph_order: graph_order, last_topic: last_topic)
+      @today ||= begin
+        programme = subjects.map { |sv| sv.with(topics: programme_topics(sv)) }.select { |sv| sv.topics.any? }
+        Practice::Today.call(catalog: programme, states: states, graph_order: graph_order, last_topic: last_topic)
+      end
     end
 
     def last_topic

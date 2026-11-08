@@ -86,6 +86,11 @@ module Validation
       when "lezione"
         findings.add("E-LESSON-REFS", "/front_matter/scope", "a lezione has scope seconda, not #{fm['scope'].inspect}", rule: "scope") unless fm["scope"] == "seconda"
         add.call("needs a taught_in ref on #{seconda}") unless has.call(seconda, "taught_in")
+      when "extra"
+        # Outside the programme (D-324): what the official programme says the student already did; no seconda ref needed.
+        extra = Rules.get(:course, :extra_source)
+        findings.add("E-LESSON-REFS", "/front_matter/scope", "an extra lesson has scope extra, not #{fm['scope'].inspect}", rule: "scope") unless fm["scope"] == "extra"
+        findings.add("E-LESSON-REFS", "/front_matter/refs", "an extra lesson needs a taught_in ref on #{extra}", rule: "refs-extra") unless has.call(extra, "taught_in")
       end
     end
 

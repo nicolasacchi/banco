@@ -40,10 +40,12 @@ module LessonMd
     "---\n#{yaml}---\n\n#{body}#{extra}"
   end
 
-  # Skills and sources of the invented course of these tests.
+  # Skills and sources of the invented course of these tests. ufficiale-2026-27 is the official programme of the
+  # extra topics (D-324).
   def context(subject: "math", skills: %w[math.demo-equation math.demo-signed-numbers])
     lines = { [ "seconda-2025-26", 1 ] => "sistemi lineari: metodo di sostituzione", [ "seconda-2025-26", 2 ] => "equazioni di primo grado numeriche intere",
-              [ "prima-2025-26", 1 ] => "equazioni di primo grado", [ "prima-2025-26", 2 ] => "PAGINA 2" }
+              [ "prima-2025-26", 1 ] => "equazioni di primo grado", [ "prima-2025-26", 2 ] => "PAGINA 2",
+              [ "ufficiale-2026-27", 1 ] => "disequazioni di primo grado intere" }
     Validation::Context.new(subject: subject, skill: ->(k) { skills.include?(k) ? { "key" => k, "errors" => [] } : nil },
                             source_line: ->(s, n) { (t = lines[[ s, n ]]) && { text: t, origin: n == 2 && s == "prima-2025-26" ? "transcript" : "pdf" } })
   end

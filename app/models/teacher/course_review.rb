@@ -11,6 +11,8 @@ module Teacher
       def entry = row.entry
       def lesson? = !row.latest.nil?
       def ready? = %w[ready newer].include?(badge)
+      # Outside the programme (D-324): listed apart under «Fuori programma», approved and released as any other.
+      def extra? = entry["kind"] == "extra"
     end
     Progress = Data.define(:student, :tries, :done, :total)
 
@@ -52,19 +54,26 @@ module Teacher
       end
     end
 
-    # The path: the topics in map order as numbered steps (D-241).
+    # The path: the topics in map order as numbered steps (D-241). The extra topics (D-324) are numbered apart, after
+    # those of the programme.
     def steps
       @steps ||= begin
         ids = topics.filter_map { |r| r.latest && Approval::TopicGate.item_revision_ids(r.latest) }.flatten
         open_ids = ReviewFinding.must_be_disposed.where(item_revision_id: ids).pluck(:id, :item_revision_id)
         disposed = ReviewFinding.dispositions
         open_by_item = open_ids.reject { |id, _| disposed.key?(id) }.map(&:last).tally
-        topics.each_with_index.map do |row, i|
-          item_ids = row.latest ? Approval::TopicGate.item_revision_ids(row.latest) : []
-          Step.new(i + 1, row, badge_of(row), missing_line(row), item_ids.size, item_ids.sum { |id| open_by_item[id].to_i }, progress_of(row))
+        programme, extra = topics.partition { |row| row.entry["kind"] != "extra" }
+        [ programme, extra ].flat_map do |rows|
+          rows.each_with_index.map do |row, i|
+            item_ids = row.latest ? Approval::TopicGate.item_revision_ids(row.latest) : []
+            Step.new(i + 1, row, badge_of(row), missing_line(row), item_ids.size, item_ids.sum { |id| open_by_item[id].to_i }, progress_of(row))
+          end
         end
       end
     end
+
+    def programme_steps = steps.reject(&:extra?)
+    def extra_steps = steps.select(&:extra?)
 
     def ready_count = steps.count(&:ready?)
 

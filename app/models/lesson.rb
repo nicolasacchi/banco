@@ -1,7 +1,8 @@
 # A lesson is the text of a topic and the topic's identity: its key is the topic key
-# (ripasso|ponte|lezione).<subject>.<slug>. Immutable revisions hang off it (A7).
+# (ripasso|ponte|lezione|extra).<subject>.<slug>. Immutable revisions hang off it (A7).
+# An extra topic is outside the programme («Fuori programma», D-324): optional for the student.
 class Lesson < ApplicationRecord
-  KINDS = %w[ripasso ponte lezione].freeze
+  KINDS = %w[ripasso ponte lezione extra].freeze
 
   belongs_to :subject
   has_many :revisions, class_name: "LessonRevision"

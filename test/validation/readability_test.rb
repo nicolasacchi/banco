@@ -111,6 +111,17 @@ class ReadabilityTest < ActiveSupport::TestCase
     assert_equal %w[all_caps], rules("Basta. ECCO. Poi vai.")
   end
 
+  test "an acronym alone in parentheses is accepted, the same acronym bare is still refused (D-324)" do
+    assert_equal [], rules("Il sistema di posizionamento globale (GPSX) dà la posizione.")
+    assert_equal [], rules("Il centro storico è protetto (UNESCOX) da anni.")
+    assert_equal %w[all_caps], rules("Il GPSX dà la posizione.")
+    assert_equal %w[all_caps], rules("Il sistema (GPSX satellitare) dà la posizione.")
+  end
+
+  test "photography, maps and heritage acronyms are allowed bare (D-324)" do
+    assert_equal [], rules("Scatta a ISO 100 in RAW sotto un LED. Il GPS e il GIS usano l'ora UTC. Il sito è UNESCO.")
+  end
+
   test "bold spans: at most 3 spans of at most 4 words" do
     assert_equal %w[bold_spans], rules("**a** e **b** e **c** e **d**.")
     assert_equal %w[bold_span_length], rules("Una **frase con cinque parole qui** sola.")

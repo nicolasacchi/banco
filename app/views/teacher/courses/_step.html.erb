@@ -1,0 +1,35 @@
+<%# One step of the subject's path (D-241). An extra topic (D-324) carries the «Fuori programma» badge. %>
+<% entry = step.entry %>
+<li class="topic path-step" data-topic="<%= entry["key"] %>" data-stage="<%= step.row.stage %>" data-badge="<%= step.badge %>"<% if step.extra? %> data-extra="true"<% end %>>
+  <span class="step-number step-dot" aria-hidden="true"><%= step.number %></span>
+  <div class="step-body">
+    <h3>
+      <% if step.lesson? %><a href="<%= teacher_topic_path(key: @subject.key, topic: entry["key"]) %>"><%= entry["title_it"] %></a><% else %><%= entry["title_it"] %><% end %>
+      <span class="badge pill" data-stage-label data-badge-name="<%= step.badge %>"><%= t("teacher.path.badge.#{step.badge}") %></span>
+      <% if step.extra? %><span class="badge pill" data-extra-badge><%= t("teacher.path.extra_badge") %></span><% end %>
+    </h3>
+    <p class="hint step-kind"><%= t("teacher.path.kind.#{entry['kind']}") %> · <%= t("teacher.course.minutes", count: entry["minutes"]) %>
+      <% if entry["term"] %> · <%= t("teacher.course.term", n: entry["term"]) %><% end %></p>
+    <p class="step-skills"><%= t("teacher.path.skills") %> <%= safe_join(entry["skills"].map { |k| ref_for(k) }, ", ") %></p>
+    <% if step.row.stage == "approved" && (words = Course::Decisions.attestation(entry["key"])) %><p class="hint step-attested" data-attested><%= t("teacher.topic.attested", words: words) %></p><% end %>
+    <% if step.missing_it %><p class="step-missing" data-missing><%= step.missing_it %></p><% end %>
+    <% if step.lesson? %>
+      <ul class="plain step-counts" data-counts>
+        <li data-count="lesson"><%= t("teacher.path.lesson_yes") %></li>
+        <li data-count="exercises"><%= t("teacher.path.exercises", count: step.exercises) %></li>
+        <li data-count="findings" data-open="<%= step.open_findings %>"><%= t("teacher.path.findings", count: step.open_findings) %></li>
+      </ul>
+    <% else %>
+      <p class="hint" data-count="lesson"><%= t("teacher.path.lesson_no") %></p>
+    <% end %>
+    <% step.progress.each do |pr| %>
+      <p class="hint step-progress" data-progress="<%= pr.student.key %>"><%= t("teacher.path.progress", who: student_label(pr.student), tries: t("teacher.path.tries", count: pr.tries), skills: t("teacher.path.skills_shown", count: pr.done, total: pr.total)) %></p>
+    <% end %>
+    <% if step.ready? %>
+      <p class="step-action"><a class="button" data-review-button href="<%= teacher_topic_path(key: @subject.key, topic: entry["key"]) %>"><%= t("teacher.path.review") %></a></p>
+    <% elsif step.lesson? %>
+      <p class="step-action"><a class="button secondary small" data-look-button href="<%= teacher_topic_path(key: @subject.key, topic: entry["key"]) %>"><%= t("teacher.path.look") %></a>
+        <span class="hint" data-look-hint><%= t("teacher.path.look_hint.#{step.badge}") %></span></p>
+    <% end %>
+  </div>
+</li>

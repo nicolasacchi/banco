@@ -6,6 +6,7 @@
   <p class="topic-meta cluster">
     <%= subject_chip(@subject_view.subject.key) %>
     <span><%= t("topic.kind.#{@topic.kind}") %></span>
+    <% if @topic.extra? %><span id="extra-badge"><%= ui_pill(t("topic.extra_badge"), :muted) %></span><% end %>
     <%= ui_tag(t("topic.minutes", n: @topic.minutes), icon: "clock-minutes") %>
   </p>
   <% if draft? %><%= ui_notice :info, t("draft.notice"), html: { id: "draft-notice" } %><% end %>

@@ -39,6 +39,11 @@ stop at `awaiting_teacher`.
 - `diagnosis_item`, `short_answer` and `testlet` items must not carry `level` or `hints_it`.
 - A practice item is never pinned by a blueprint (`E-BLUEPRINT-PRACTICE-ITEM`), and a topic pins only
   practice items.
+- A typed answer (`normalized_text`) whose words have a common acronym accepts both: the full words and
+  the acronym, one as the answer and the other in `accept` (accepted «prodotto interno lordo» and «PIL»).
+  Case is folded unless the item says `case_sensitive: true`, so «pil» and «Pil» pass too; a dotted form
+  («P.I.L.») is another string: add it to `accept` when a student may type it. In the texts, put the
+  acronym in parentheses after the words when it matters: «prodotto interno lordo (PIL)» (D-324).
 
 ## Messages and solutions: what the student reads
 
@@ -63,7 +68,8 @@ stop at `awaiting_teacher`.
 - A `matching` with 2 categories (a right/wrong judge) has at least 2 rows of each category in every instance (`W-MATCHING-JUDGE-ROWS`).
 - Per skill a topic needs at least 20 distinct instances over its 2 to 4 pinned items, 12 of them hard
   to guess (written answers, an ordering or matching of 4 or more): plan the items so that the pool
-  reaches that. Write the first, level 1, item first.
+  reaches that. Write the first, level 1, item first. An `extra` topic (outside the programme, D-324:
+  optional exercises) needs 10 distinct instances per skill, 6 of them hard to guess.
 - Do not copy the lesson's exercises or worked examples (`W-TOPIC-INSTANCE-IN-LESSON`) and do not reuse
   the instances of the diagnosis items of the skill (`W-PRACTICE-DIAGNOSIS-OVERLAP`).
 

@@ -65,7 +65,7 @@
     "lesson_key": {
       "type": "string",
       "maxLength": 120,
-      "pattern": "^(ripasso|ponte|lezione)\\.(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+      "pattern": "^(ripasso|ponte|lezione|extra)\\.(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
     },
     "ref": {
       "type": "object",
@@ -203,7 +203,8 @@
           "enum": [
             "ripasso",
             "ponte",
-            "lezione"
+            "lezione",
+            "extra"
           ]
         },
         "title_it": {

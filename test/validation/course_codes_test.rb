@@ -54,9 +54,16 @@ class CourseCodesTest < ActiveSupport::TestCase
       "practice" => [ { "skill" => skill, "items" => items.map { |i| { "item" => i, "revision" => "latest" } } } ] }.merge(over)
   end
 
+  # A skill taught only in the official programme (D-324).
+  def extra_skill
+    course_skill("key" => "math.demo-inequalities", "prerequisites" => [],
+                 "refs" => [ { "source" => "ufficiale-2026-27", "line" => 1, "fragment" => "disequazioni di primo grado", "role" => "taught_in" } ])
+  end
+
   CASES = {
     "E-COURSE-SKILL-DUPLICATE" => ->(t) { t.course_codes(t.course_doc(skills: [ t.course_skill("key" => SKILL) ], topics: [ t.topic_entry ])) },
     "E-COURSE-TOPIC" => ->(t) { t.course_codes(t.course_doc(topics: [ t.topic_entry, t.topic_entry("skills" => [ SKILL ], "key" => "lezione.math.demo-systems", "kind" => "lezione") ])) },
+    "E-COURSE-EXTRA-SKILL" => ->(t) { t.course_codes(t.course_doc(skills: [ t.extra_skill ], topics: [ t.topic_entry, t.topic_entry("key" => "lezione.math.demo-inequalities", "kind" => "lezione", "skills" => [ "math.demo-inequalities" ]) ])) },
     "W-COURSE-ORDER" => ->(t) { t.course_codes(t.course_doc(topics: [ t.topic_entry("after" => [ "lezione.math.demo-systems" ]), t.topic_entry("key" => "lezione.math.demo-systems", "kind" => "lezione", "skills" => [ NEW_SKILL ]) ])) },
     "W-COURSE-GRAPH-STALE" => ->(t) {
       revision = CourseRevision.last
@@ -86,6 +93,11 @@ class CourseCodesTest < ActiveSupport::TestCase
   test "the good course map and the good topic have no error" do
     assert_not_includes course_codes(course_doc), "E-COURSE-TOPIC"
     assert_empty Validation::CourseChecks.call(course_doc, subject: "math", graph: ValidationFixtures::GRAPH, context: LessonMd.context).errors
+  end
+
+  test "a skill taught only in the official programme is fine in an extra topic (D-324)" do
+    doc = course_doc(skills: [ extra_skill ], topics: [ topic_entry, topic_entry("key" => "extra.math.demo-inequalities", "kind" => "extra", "skills" => [ "math.demo-inequalities" ]) ])
+    assert_empty Validation::CourseChecks.call(doc, subject: "math", graph: ValidationFixtures::GRAPH, context: LessonMd.context).errors
   end
 
   CASES.each do |code, run|

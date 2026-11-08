@@ -715,6 +715,54 @@
     ]
   },
   {
+    "input": "Rivedi [i bit](argomento:lezione.computer_science.bits) e [la fotografia](argomento:extra.law_economics.photo-rights).",
+    "options": {
+      "roles": true
+    },
+    "note": "a topic key whose subject has an underscore, and an extra topic (D-324)",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Rivedi "
+          },
+          {
+            "t": "link",
+            "kind": "argomento",
+            "target": "lezione.computer_science.bits",
+            "children": [
+              {
+                "t": "text",
+                "v": "i bit"
+              }
+            ]
+          },
+          {
+            "t": "text",
+            "v": " e "
+          },
+          {
+            "t": "link",
+            "kind": "argomento",
+            "target": "extra.law_economics.photo-rights",
+            "children": [
+              {
+                "t": "text",
+                "v": "la fotografia"
+              }
+            ]
+          },
+          {
+            "t": "text",
+            "v": "."
+          }
+        ]
+      }
+    ]
+  },
+  {
     "input": "- [[subject:Marco]] legge\n- [[predicate:legge]] ancora",
     "options": {
       "roles": true
@@ -1027,7 +1075,7 @@
       "roles": true
     },
     "note": "",
-    "error": "a link target that is not lowercase letters, digits, dots and hyphens",
+    "error": "a link target that is not lowercase letters, digits, dots, hyphens and underscores",
     "line": 1
   },
   {
@@ -1036,7 +1084,7 @@
       "roles": true
     },
     "note": "",
-    "error": "a link target that is not lowercase letters, digits, dots and hyphens",
+    "error": "a link target that is not lowercase letters, digits, dots, hyphens and underscores",
     "line": 1
   },
   {

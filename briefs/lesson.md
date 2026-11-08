@@ -11,7 +11,9 @@ a picture or a diagram on every idea, small questions to answer on the page, wor
 open one step at a time, and a summary with a schema. The student has reading difficulties: every
 line you write must be easy to read, and no card is a wall of text. Kinds: `ripasso` (a topic of the
 previous year that the current year needs), `ponte` (a prerequisite the previous year did not teach),
-`lezione` (content of the current year). A lesson is a Markdown file, `lesson.md`; the server parses
+`lezione` (content of the current year), `extra` (outside the programme, D-324: a topic the official
+programme gives as already done that the current year's programme does not have; the student chose to do
+it and it stays optional). A lesson is a Markdown file, `lesson.md`; the server parses
 it into the data format `banco.lesson/2` (`config/banco/schemas/lesson.json`) and draws it with its
 own templates. You write data and text, never HTML or code: the student's browser shows what our
 templates draw from your data. The cover (title, picture, goals, the list of cards, the buttons) is
@@ -78,6 +80,10 @@ Front matter fields:
 - `key`, `kind`, `subject`, `skills`, `uses`, `refs`, `scope`, `minutes`, `calculator`: exactly as in
   version 1 (`E-LESSON-PARSE`, `E-SKILL-UNKNOWN`, `E-LESSON-REFS`). The fragment of a ref is an exact
   substring of the imported line: take it from `banco syllabus lines`, never from memory.
+- An `extra` lesson (key `extra.SUBJECT.slug`): `kind: extra`, `scope: extra`, at least one `taught_in` ref on
+  the official programme (`ufficiale-2026-27`); no ref on the current year's programme is needed. Write a short
+  recap: the core ideas, near the smallest number of cards and checks the rules allow, no extra cards. Its
+  exercises are optional for the student: they are graded as usual but never suggested by Oggi.
 - `goals_it`: 1 to 3 lines of at most 12 words, each starting with a verb in bold.
 - `why_it`: 2 to 4 sentences (`W-LESSON-WHY`): which later topic this lesson serves, said simply.
   It is shown on the cover under "Vuoi saperne di più?". There is no "why" card.
@@ -292,7 +298,10 @@ fields are those of a practice item of the same component, plus:
 - `number` and `fraction`: the answer is exact, decimal comma (`number`: an integer or `2,5`; a fraction such as `5/2` is a `fraction` answer, the student cannot type it in a `number` box); `input_before` and `input_after` put the box
   inside its formula (`$x =$` then the box). `matching`: with `reuse_right: true` it is a classification (a row per
   item, the categories as chips). `span_select`: the sentence split into `spans: [{id: s1, text_it}]`, the answer
-  is a list of span ids.
+  is a list of span ids. `normalized_text`: when the words of the answer have a common acronym, accept both, one as
+  `answer` and the other in `accept` (accepted «prodotto interno lordo» and «PIL»; case is folded, so «pil» passes too;
+  a dotted «P.I.L.» only if listed). In the text, put the acronym in parentheses after the words when it matters:
+  «prodotto interno lordo (PIL)» (D-324).
 - The answer is among the options, the answer is not in its own prompt, no error equals the answer
   (`E-LESSON-CHECK`, `W-CHECK-ANSWER-IN-PROMPT`). A check may ask the student to reason on a picture, never to
   copy the answer from it. At least one check after each idea worth checking.

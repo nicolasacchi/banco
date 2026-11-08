@@ -264,7 +264,7 @@
       "path": "/api/v1/subjects/:subject/course",
       "args": ["file"],
       "flags": ["--subject", "--dry-run"],
-      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-SCHEMA", "E-SOURCE", "E-SKILL-UNKNOWN", "E-GRAPH-CYCLE", "E-COURSE-SKILL-DUPLICATE", "E-COURSE-TOPIC", "E-READ", "E-PHRASE", "E-SESSION", "E-SESSION-ROLE"]
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-SCHEMA", "E-SOURCE", "E-SKILL-UNKNOWN", "E-GRAPH-CYCLE", "E-COURSE-SKILL-DUPLICATE", "E-COURSE-TOPIC", "E-COURSE-EXTRA-SKILL", "E-READ", "E-PHRASE", "E-SESSION", "E-SESSION-ROLE"]
     },
     {
       "name": "lessons list",

@@ -48,7 +48,10 @@ state with `banco topics list --subject KEY` and `banco topic open KEY`.
   and belong to the named lesson or item (`E-TOPIC-PIN`); an item revision that has not passed is
   `E-ITEM-NOT-PASSED`.
 - Pool (`E-TOPIC-POOL`), per skill: at least one level 1 item, at least 20 distinct instances
-  (distinct fingerprints) and at least 12 hard to guess.
+  (distinct fingerprints) and at least 12 hard to guess. An `extra` topic (outside the programme,
+  D-324: its exercises are optional for the student) needs at least 10 distinct instances and 6 hard
+  to guess, still with one level 1 item; everything else (lesson review, item reviews, blind solves,
+  the teacher's approval) is the same.
 - Warnings: `W-TOPIC-INSTANCE-IN-LESSON` (a practice instance equals a lesson exercise or example: the
   student would meet it twice), `W-PRACTICE-DIAGNOSIS-OVERLAP` (same fingerprint as a diagnosis
   instance of the skill), `W-STALE-PIN` (a newer passed revision exists).

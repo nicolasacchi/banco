@@ -67,7 +67,7 @@ module Lessons
     def key_consistent(front, lines, findings)
       key = front["key"].to_s
       kind, subject, = key.split(".", 3)
-      return unless key.match?(/\A(ripasso|ponte|lezione)\.[a-z_]+\./)
+      return unless key.match?(/\A(ripasso|ponte|lezione|extra)\.[a-z_]+\./)
 
       findings.add("E-LESSON-PARSE", "/front_matter/kind", "kind is #{front['kind'].inspect} but the key #{key} starts with #{kind}", rule: "kind", line: front_line(lines, "kind")) if front["kind"] != kind
       findings.add("E-LESSON-PARSE", "/front_matter/subject", "subject is #{front['subject'].inspect} but the key #{key} is for #{subject}", rule: "subject", line: front_line(lines, "subject")) if front["subject"] != subject

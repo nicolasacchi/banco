@@ -60,11 +60,15 @@ it:
   subject:
     topics: "Gli argomenti"
     no_topic: "Da riprendere, ancora senza argomento: %{skills}."
+    extra_topics: "Fuori programma (facoltativo)"
+    extra_intro: "Argomenti in più, fuori dal programma. Li apri quando vuoi: gli esercizi sono facoltativi."
   topic:
     kind:
       ripasso: "Ripasso di prima"
       ponte: "Base che serve"
       lezione: "Programma di seconda"
+      extra: "Argomento facoltativo"
+    extra_badge: "Fuori programma"
     status:
       todo: "Da fare"
       in_progress: "In corso"

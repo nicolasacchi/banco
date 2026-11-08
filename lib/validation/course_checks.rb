@@ -2,8 +2,9 @@
 
 module Validation
   # The synchronous checks of a course map (banco.course/1, A2.2): schema, the seconda skills beside the graph
-  # (one key namespace), citations of the seconda programme, an acyclic union with the graph, and the ordered
-  # topics. The map is validated against the subject's latest graph (+graph+, a parsed banco.skill_graph/1).
+  # (one key namespace), citations of the seconda programme (or of the official one for a skill of an extra topic,
+  # D-324), an acyclic union with the graph, and the ordered topics. The map is validated against the subject's
+  # latest graph (+graph+, a parsed banco.skill_graph/1).
   # Nothing is written.
   module CourseChecks
     module_function
@@ -42,15 +43,27 @@ module Validation
       end
     end
 
-    # Every course skill is taught in the seconda programme (a taught_in ref on that source), and every citation is exact.
+    # Every course skill is taught in the seconda programme or, for a topic outside it (D-324), in the official one: a
+    # taught_in ref on either source. Every citation is exact.
     def citations(skills, context, findings)
       seconda = Rules.get(:course, :seconda_source)
+      extra = Rules.get(:course, :extra_source)
       skills.each_with_index do |s, i|
         s["refs"].each_with_index { |ref, j| GraphChecks.citation(ref, "/skills/#{i}/refs/#{j}", context, findings) }
-        next if s["refs"].any? { |r| r["source"] == seconda && r["role"] == "taught_in" }
+        next if s["refs"].any? { |r| [ seconda, extra ].include?(r["source"]) && r["role"] == "taught_in" }
 
-        findings.add("E-SOURCE", "/skills/#{i}/refs", "#{s['key']} needs a taught_in ref on #{seconda}", rule: "taught_in", skill: s["key"])
+        findings.add("E-SOURCE", "/skills/#{i}/refs", "#{s['key']} needs a taught_in ref on #{seconda} (or on #{extra} for a skill of an extra topic)", rule: "taught_in", skill: s["key"])
       end
+    end
+
+    # The course skills taught only in the official programme: taught_in refs, none on the seconda source (D-324).
+    def extra_only(skills)
+      seconda = Rules.get(:course, :seconda_source)
+      extra = Rules.get(:course, :extra_source)
+      skills.select do |s|
+        taught = s["refs"].select { |r| r["role"] == "taught_in" }.map { |r| r["source"] }
+        taught.include?(extra) && !taught.include?(seconda)
+      end.to_set { |s| s["key"] }
     end
 
     # Prerequisites, composite parts and implicated skills: the map, the graph, or an approved graph of another subject.
@@ -78,6 +91,7 @@ module Validation
     def topics(doc, subject, skills, graph_index, findings)
       topics = doc["topics"]
       known = skills.to_set { |s| s["key"] } | graph_index.keys
+      extra_skills = extra_only(skills)
       keys = topics.map { |t| t["key"] }
       owner = {}
       topics.each_with_index do |t, i|
@@ -96,6 +110,10 @@ module Validation
             bad.call("#{sk} is already in #{owner[sk]}: a skill is in at most one topic", "twice-#{sk}")
           end
           owner[sk] ||= t["key"]
+          if extra_skills.include?(sk) && t["kind"] != "extra"
+            findings.add("E-COURSE-EXTRA-SKILL", "#{field}/skills", "#{t['key']}: #{sk} is taught only in #{Rules.get(:course, :extra_source)} (outside the programme): only an extra topic may hold it",
+                         rule: "#{t['key']}-#{sk}", skill: sk)
+          end
         end
         t["after"].each do |a|
           bad.call("after names #{a}, which is not a topic of this map", "after-#{a}") unless keys.include?(a)

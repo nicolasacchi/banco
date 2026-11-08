@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   # A topic key is its lesson's key (A1): kind, subject, slug.
-  topic_key = /(ripasso|ponte|lezione)\.[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*/
+  topic_key = /(ripasso|ponte|lezione|extra)\.[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*/
   web = Banco::ListenerConstraint.new(:web)
   api = Banco::ListenerConstraint.new(:api)
 
@@ -39,7 +39,7 @@ Rails.application.routes.draw do
     # and trial; the teacher and guests get 403. The official student sees nothing until release_course. The same
     # pages are the teacher's preview under /teacher/preview (D-309), where the route default says who is acting.
     concern :course_pages do
-      topic = { topic: /(ripasso|ponte|lezione)\.[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*/ }
+      topic = { topic: /(ripasso|ponte|lezione|extra)\.[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*/ }
       get "today" => "course#today"
       get "subjects" => "course#subjects"
       get "subjects/:key" => "course#subject", constraints: { key: /[a-z_]+/ }
@@ -214,7 +214,7 @@ Rails.application.routes.draw do
     get "api/v1/subjects/:subject/lessons" => "api/v1/lessons#index", constraints: subject, format: false
     get "api/v1/subjects/:subject/topics" => "api/v1/topics#index", constraints: subject, format: false
     get "api/v1/subjects/:subject/practice/progress" => "api/v1/practice_progress#show", constraints: subject, format: false
-    lesson = { lesson: /(ripasso|ponte|lezione)\.[a-z_]+\.[a-z0-9-]+/ }
+    lesson = { lesson: /(ripasso|ponte|lezione|extra)\.[a-z_]+\.[a-z0-9-]+/ }
     post "api/v1/lessons/submit" => "api/v1/lessons#submit", format: false
     get "api/v1/lessons/:lesson" => "api/v1/lessons#open", constraints: lesson, format: false
     get "api/v1/lesson-revisions/:revision" => "api/v1/lessons#status", constraints: revision, format: false
