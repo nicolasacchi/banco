@@ -109,7 +109,7 @@ class LessonTypesTest < ActiveSupport::TestCase
     caps = Validation::Rules.get(:lesson2, :types).keys
     expected = DIAGRAMS.select { |_, e| e["family"] != "core" && e["schema"] != "none" }.keys + %w[flow_line source reveal oral dialogue image]
     assert_equal expected.sort, caps.sort
-    assert_equal 9, Validation::Rules.version
+    assert_equal 10, Validation::Rules.version
   end
 
   # Every key of lesson2.types is a diagram type, a block, or TYPE_VALUE of a view the registry lists (flow_line is flow layout: line): a cap for

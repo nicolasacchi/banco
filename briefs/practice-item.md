@@ -40,10 +40,15 @@ stop at `awaiting_teacher`.
 - A practice item is never pinned by a blueprint (`E-BLUEPRINT-PRACTICE-ITEM`), and a topic pins only
   practice items.
 - A typed answer (`normalized_text`) whose words have a common acronym accepts both: the full words and
-  the acronym, one as the answer and the other in `accept` (accepted «prodotto interno lordo» and «PIL»).
-  Case is folded unless the item says `case_sensitive: true`, so «pil» and «Pil» pass too; a dotted form
+  the acronym, one as the instance's key and the other in that instance's `accept` (accepted «prodotto
+  interno lordo» and «PIL»; an item-level `accept` far from the keys is `W-ACCEPT-ITEM-LEVEL`). Case is
+  folded unless the item says `case_sensitive: true`, so «pil» and «Pil» pass too; a dotted form
   («P.I.L.») is another string: add it to `accept` when a student may type it. In the texts, put the
   acronym in parentheses after the words when it matters: «prodotto interno lordo (PIL)» (D-324).
+- An item of an `extra` topic (outside the programme, D-324) cites the official programme as a
+  programme line: `{"kind": "seconda_line", "ref": "ufficiale-2026-27:N", "fragment": "..."}`, checked
+  like any programme line (`E-SOURCE`: the line exists, is citable, holds the exact fragment) and shown
+  to the reviewer among the programme lines. Do not fall back to `inferred` for it.
 
 ## Messages and solutions: what the student reads
 

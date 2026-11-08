@@ -100,6 +100,17 @@ class CourseCodesTest < ActiveSupport::TestCase
     assert_empty Validation::CourseChecks.call(doc, subject: "math", graph: ValidationFixtures::GRAPH, context: LessonMd.context).errors
   end
 
+  test "an item's seconda_line source may cite the official programme, checked the same way (D-324)" do
+    check = lambda do |fragment|
+      findings = Validation::Findings.new
+      item = { "sources" => [ { "kind" => "seconda_line", "ref" => "ufficiale-2026-27:1", "fragment" => fragment } ] }
+      Validation::ItemChecks.sources(item, LessonMd.context, findings)
+      findings.map(&:code)
+    end
+    assert_empty check.call("disequazioni di primo grado")
+    assert_equal [ "E-SOURCE" ], check.call("non è nella riga")
+  end
+
   CASES.each do |code, run|
     test "#{code} has a bad fixture" do
       assert_includes run.call(self), code
