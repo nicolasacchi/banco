@@ -102,12 +102,12 @@ Rails.application.routes.draw do
       get "subjects/:key/graph" => "graphs#show", constraints: key, as: :teacher_graph
       get "subjects/:key/test" => "tests#show", constraints: key, as: :teacher_test
       get "subjects/:key/test/all" => "tests#all", constraints: key, as: :teacher_test_all
-      get "subjects/:key/test/skills/:skill" => "tests#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9.\-]*/), as: :teacher_test_skill
+      get "subjects/:key/test/skills/:skill" => "tests#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9._\-]*/), as: :teacher_test_skill
       get "subjects/:key/report" => "reports#show", constraints: key, as: :teacher_report
       get "subjects/:key/course" => "courses#show", constraints: key, as: :teacher_course
       get "subjects/:key/topics/:topic" => "topics#show", constraints: key.merge(topic: topic_key), as: :teacher_topic
       get "subjects/:key/practice" => "practice#show", constraints: key, as: :teacher_practice
-      get "subjects/:key/practice/skills/:skill" => "practice#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9.\-]*/), as: :teacher_practice_skill
+      get "subjects/:key/practice/skills/:skill" => "practice#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9._\-]*/), as: :teacher_practice_skill
       get "corrections" => "corrections#show", as: :teacher_corrections
       # The student's comments (D-304): the teacher reads and answers; a guest sees the counts only.
       get "comments" => "comments#show", as: :teacher_comments

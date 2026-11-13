@@ -35,6 +35,13 @@ class TeacherPagesTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "the skill screens take a subject key with an underscore (law_economics, computer_science)" do
+    assert_equal "/teacher/subjects/law_economics/test/skills/law_economics.norm-legal-vs-social",
+                 teacher_test_skill_path(key: "law_economics", skill: "law_economics.norm-legal-vs-social")
+    assert_equal "/teacher/subjects/computer_science/practice/skills/computer_science.positional-notation",
+                 teacher_practice_skill_path(key: "computer_science", skill: "computer_science.positional-notation")
+  end
+
   test "each item card has a Simili button when vectors can be used, and none otherwise" do
     page "/teacher/subjects/math/test/skills/math.number"
     assert_select "article.item-card a[data-similar]", count: 0
