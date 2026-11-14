@@ -74,6 +74,7 @@ module Practice
       code = why.delete(:code)
       why[:date] = why[:date].strftime("%d/%m/%Y") if why[:date].respond_to?(:strftime)
       why[:previous] = state_it(why[:previous]).downcase if why[:previous]
+      why[:count] = why[:d] if code.to_s == "in_study" # "in 1 giorno", "in 0 giorni"
       I18n.t("why.#{code}", **why)
     end
 
