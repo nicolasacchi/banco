@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { Outbox, PRACTICE_PREFIX, newId } from "items/outbox"
+import { practiceUrls } from "items/practice_urls"
 import { Refusals } from "items/refusals"
 import { showRefusalNotice } from "items/refusal_notice"
 import { renderItem } from "items/render"
@@ -18,13 +19,14 @@ const STATE_TONES = { demonstrated: "success", consolidated: "success", in_study
 export default class extends Controller {
   static targets = ["skillState", "skillWhy", "dots", "reason", "work", "itemBox", "hints", "hintList", "controls", "check", "hintButton", "solutionButton",
                     "feedback", "solutionBox", "nextActions"]
-  static values = { topic: String, skill: String, serveUrl: String, answerUrl: String, backUrl: String, texts: Object, labels: Object }
+  static values = { topic: String, skill: String, baseUrl: String, backUrl: String, texts: Object, labels: Object }
 
   connect() {
     this.labels = this.labelsValue
     this.texts = this.textsValue
+    this.urls = practiceUrls(this.baseUrlValue)
     this.outbox = new Outbox({
-      url: this.answerUrlValue, csrf: () => this.csrf(), prefix: PRACTICE_PREFIX,
+      url: this.urls.answer, csrf: () => this.csrf(), prefix: PRACTICE_PREFIX,
       fields: ["serve_id", "client_attempt_id", "raw", "source"], statuses: ["graded", "invalid", "closed", "not_found"],
       httpStatuses: [200, 404, 409]
     })
@@ -57,7 +59,7 @@ export default class extends Controller {
     this.nextActionsTarget.textContent = ""
     this.solutionBoxTarget.hidden = true
     this.solutionBoxTarget.textContent = ""
-    const { body } = await this.post(this.serveUrlValue, { topic: this.topicValue, skill: this.skillValue, follow })
+    const { body } = await this.post(this.urls.serve, { topic: this.topicValue, skill: this.skillValue, follow })
     if (!body || body.type !== "item") return this.say(this.labels.error)
     await this.show(body)
     return null
@@ -192,7 +194,7 @@ export default class extends Controller {
     if (!this.serveId || this.busy) return
     const n = this.hintsShown + 1
     this.setControls(false)
-    const { status, body } = await this.post(`/practice/serves/${this.serveId}/hint`, { n })
+    const { status, body } = await this.post(this.urls.hint(this.serveId), { n })
     if (status === 200 && body?.hint_it) {
       this.addHint(body.n, body.hint_it)
       this.hintListTarget.lastElementChild?.focus?.()
@@ -210,7 +212,7 @@ export default class extends Controller {
   async solution() {
     if (!this.serveId || this.busy) return
     this.setControls(false)
-    const { status, body } = await this.post(`/practice/serves/${this.serveId}/solution`, {})
+    const { status, body } = await this.post(this.urls.solution(this.serveId), {})
     if (status === 200 && body?.solution) {
       this.say("")
       this.showSolution(body.solution)

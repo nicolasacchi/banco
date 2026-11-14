@@ -191,7 +191,7 @@ function inlineNodes(nodes, parent, ctx, display = false, tiles = false) {
       } else if (ctx.unavailableTopics?.includes(node.target)) {
         parent.appendChild(el("span", { class: "unavailable" }, ...[...a.childNodes], ` (${ctx.t.topic_unavailable})`))
         continue
-      } else a.setAttribute("href", `/topics/${node.target}`)
+      } else a.setAttribute("href", ctx.topicHref(node.target))
       parent.appendChild(a)
     }
   }

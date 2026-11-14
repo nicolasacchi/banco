@@ -34,11 +34,12 @@ module LessonPagesHelper
   # The item templates' texts that the checks reuse (number, fraction, choice, text), and the accents label.
   def lesson2_item_texts = I18n.t("items").merge(accents_label: I18n.t("accents.label")).deep_stringify_keys
 
-  # The addresses of the student's page: the check endpoint, the events batch, the solutions and the questions.
+  # The addresses of the student's page: the check endpoint, the events batch, the solutions, the questions, the topic pages
+  # that a lesson link opens, the preferences and the settings. All from spath, so the preview keeps to /teacher/preview.
   def lesson2_urls(topic_key)
     urls = { check: spath("/topics/#{topic_key}/lesson/checks"), events: spath("/topics/#{topic_key}/lesson/events"),
              solution: spath("/topics/#{topic_key}/lesson/exercises"), questions: "/questions", practice: spath("/topics/#{topic_key}"),
-             preferences: "#{base_path}/preferences", settings: spath("/settings") }
+             topics: spath("/topics"), preferences: "#{base_path}/preferences", settings: spath("/settings") }
     urls.delete(:questions) if preview? # no "Non ho capito" from the teacher's preview: the teacher reads those, never writes them (D-309)
     urls
   end

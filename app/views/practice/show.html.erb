@@ -3,8 +3,7 @@
 <main class="page course practice" data-controller="practice"
       data-practice-topic-value="<%= @topic.key %>"
       data-practice-skill-value="<%= @skill %>"
-      data-practice-serve-url-value="<%= spath("/practice/serves") %>"
-      data-practice-answer-url-value="<%= spath("/practice/answers") %>"
+      data-practice-base-url-value="<%= spath("/practice") %>"
       data-practice-back-url-value="<%= spath("/topics/#{@topic.key}") %>"
       data-practice-texts-value="<%= student_texts.to_json %>"
       data-practice-labels-value="<%= practice_labels.to_json %>">

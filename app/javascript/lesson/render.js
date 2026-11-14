@@ -4,6 +4,8 @@
 //   body    the projection the page receives (Lessons::StudentBody): no answer in it
 //   config  { mode: "student" | "preview" | "render", expand, teacher, safe, topic, revisionId, urls, resume, view, reduceMotion,
 //             labels (t), items (the item templates' texts), seen, unavailableTopics, full, savePreferences, listen, slower }
+//   urls    { check, events, solution, questions, practice, preferences, settings, topics }: the page's own addresses, which in the
+//           teacher's preview carry /teacher/preview (D-309); topics is the front of a topic page ("/topics" when absent)
 import { newId } from "items/outbox"
 import { button, clear, el, icon } from "lesson/dom"
 import { iconOf, renderCard, rolesUsed } from "lesson/cards"
@@ -73,6 +75,7 @@ export function renderLesson(root, body, config) {
     get openAll() { return state.teacher || ctx.safe || expand },
     get showAll() { return ctx.safe || expand },
     unavailableTopics: config.unavailableTopics ?? [],
+    topicHref: (key) => `${config.urls?.topics ?? "/topics"}/${key}`,
     firstUse: firstUses(body), // where the fixed how-to line of each new check component is printed (A9)
     cardNumber: (slug) => idToN.get(slug),
     fontPx: () => parseFloat(getComputedStyle(root).fontSize) || 20,

@@ -84,7 +84,7 @@ class TeacherAsStudentTest < ActionDispatch::IntegrationTest
     assert_equal %w[graded correct], @answer.values_at("status", "outcome")
     page(TEACHER, "#{ROOT}/topics/#{TOPIC}/practice/#{SKILL}")
     assert_response :success
-    assert_select "[data-practice-serve-url-value='#{ROOT}/practice/serves']"
+    assert_select "[data-practice-base-url-value='#{ROOT}/practice']"
     assert_select "[data-practice-back-url-value='#{ROOT}/topics/#{TOPIC}']"
     page(TEACHER, "#{ROOT}/settings")
     assert_select "form#preferences[action='#{ROOT}/preferences']"
@@ -100,6 +100,55 @@ class TeacherAsStudentTest < ActionDispatch::IntegrationTest
     assert_equal 1, PracticeAttempt.where(student: preview).count
     assert_equal 2, LessonEvent.where(student: preview).count, "one card seen and one check answered"
     assert_equal({ theme: "dark", size: "large" }, Diagnosis::Preferences.for(preview))
+  end
+
+  # The base the practice page gives its script, and the lesson page's addresses: what the script posts to, read as it reads them.
+  def practice_base(headers, root) = (page(headers, "#{root}/topics/#{TOPIC}/practice/#{SKILL}") && css_select("[data-practice-base-url-value]").first["data-practice-base-url-value"])
+
+  def lesson_urls(headers, root) = (page(headers, "#{root}/topics/#{TOPIC}/lesson") && JSON.parse(css_select("[data-lesson2-urls-value]").first["data-lesson2-urls-value"]))
+
+  test "the addresses a preview page hands to its script are the preview's, and S's page keeps its own" do
+    build_student_world
+    assert_equal "#{ROOT}/practice", practice_base(TEACHER, ROOT)
+    assert_select "[data-practice-back-url-value='#{ROOT}/topics/#{TOPIC}']"
+    urls = lesson_urls(TEACHER, ROOT)
+    assert_equal %w[check events solution practice topics preferences settings].sort, urls.keys.sort
+    assert urls.values.all? { |u| u.start_with?("#{ROOT}/") }, urls.inspect
+    assert_equal "#{ROOT}/topics", urls["topics"]
+    assert_equal "#{ROOT}/topics/#{TOPIC}/lesson/exercises", urls["solution"]
+    assert_equal "/practice", practice_base(OFFICIAL, "")
+    assert_select "[data-question-url-value='/questions']"
+    own = lesson_urls(OFFICIAL, "")
+    assert_equal "/questions", own["questions"]
+    assert_equal "/topics", own["topics"]
+    assert_equal "/topics/#{TOPIC}/lesson/exercises", own["solution"]
+    assert own.values.none? { |u| u.include?("/teacher") }, own.inspect
+  end
+
+  test "from the preview page, the hint and the solution of a practice try and the solution of a lesson exercise reach the preview, and the student's addresses stay closed to the teacher" do
+    build_student_world
+    base = practice_base(TEACHER, ROOT)
+    serve = post_json(TEACHER, "#{base}/serves", { topic: TOPIC, skill: SKILL })
+    id = serve["serve_id"]
+    answer = post_json(TEACHER, "#{base}/answers", { serve_id: id, client_attempt_id: SecureRandom.uuid, raw: "99999", source: "text" })
+    assert_equal "unrecognised", answer["outcome"]
+    hint = post_json(TEACHER, "#{base}/serves/#{id}/hint", { n: 2 })
+    assert_response :success
+    assert hint["hint_it"].present?
+    solution = post_json(TEACHER, "#{base}/serves/#{id}/solution")
+    assert_response :success
+    assert solution["solution"].present?
+    assert_equal [ preview_student.id ], PracticeServe.pluck(:student_id).uniq
+    post_json(TEACHER, "/practice/serves/#{id}/hint", { n: 2 })
+    assert_response :forbidden
+    post_json(TEACHER, "/practice/serves/#{id}/solution")
+    assert_response :forbidden
+    exercise = find_block { |_, b| b["type"] == "try" }[2]["exercises"].first["n"]
+    reply = post_json(TEACHER, "#{lesson_urls(TEACHER, ROOT)['solution']}/#{exercise}/solution")
+    assert_response :success
+    assert_equal exercise, reply["n"]
+    post_json(TEACHER, "/topics/#{TOPIC}/lesson/exercises/#{exercise}/solution")
+    assert_response :forbidden
   end
 
   test "no link, form or script address on a preview page leaves for the student's own pages" do
