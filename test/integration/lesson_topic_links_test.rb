@@ -1,25 +1,15 @@
 require "test_helper"
 require_relative "../support/multi_user"
-require_relative "../support/lesson_events_world"
+require_relative "../support/lesson_links_world"
 
 # A link to another topic inside a lesson's text (argomento:KEY): S opens it when her course has the topic, and when it does not (not
 # approved, not released) the page draws the words with «(non ancora disponibile)» instead of an address that answers 404. The same page
 # is the teacher's preview, whose view says which topics are open (official: as S sees them; drafts: the unapproved ones too).
 class LessonTopicLinksTest < ActionDispatch::IntegrationTest
   include MultiUser
-  include LessonEventsWorld
-
-  OPEN_LINK = "[le equazioni](argomento:#{TOPIC})".freeze
-  CLOSED_KEY = "ripasso.math.non-aperto".freeze
-  CLOSED_LINK = "[le potenze](argomento:#{CLOSED_KEY})".freeze
+  include LessonLinksWorld
 
   def page(headers, path) = on(:web, path, headers: headers, remote_addr: EDGE)
-
-  # demo.md with one sentence of card 1 that links to an open topic and to one that S's course does not have.
-  def lesson_body
-    md = File.read(Rails.root.join("test/fixtures/lesson2/demo.md")).sub("Una **soluzione** è il numero", "Ripassa #{OPEN_LINK} e #{CLOSED_LINK}. Una **soluzione** è il numero")
-    @linked_lesson2 ||= Lessons::Parser2.call(md, Validation::Findings.new).body.merge("key" => TOPIC)
-  end
 
   def unavailable(headers, path)
     page(headers, path)
