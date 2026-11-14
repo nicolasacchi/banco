@@ -163,7 +163,7 @@ class ExtraTopicsStudentTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "#topics li[data-topic=?]", TOPIC
     assert_select "#topics li[data-topic=?]", EXTRA, 0
-    assert_select "#extra-topics-section h2", "Fuori programma (facoltativo)"
+    assert_select "#extra-topics-section h2", "Facoltativi · fuori programma"
     assert_select "#extra-topics li[data-topic=?][data-extra=true] [data-extra-badge]", EXTRA, text: "Fuori programma"
     assert_operator response.body.index("id=\"topics\""), :<, response.body.index("id=\"extra-topics\"")
     page("/topics/#{EXTRA}")
@@ -176,7 +176,8 @@ class ExtraTopicsStudentTest < ActionDispatch::IntegrationTest
     sv = view.subject("math")
     assert_equal [ TOPIC ], view.programme_topics(sv).map(&:key)
     assert_equal [ EXTRA ], view.extra_topics(sv).map(&:key)
-    assert_equal 1, view.counts(sv).values.sum
+    assert_equal [ 1, 0 ], [ view.progress(sv).programme.total, view.progress(sv).programme.done ]
+    assert_equal [ 1, 0 ], [ view.progress(sv).extra.total, view.progress(sv).extra.done ]
     assert_not_includes view.skills_without_topic(sv), EXTRA_SKILL
   end
 

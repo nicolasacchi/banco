@@ -5,6 +5,7 @@ module Course
   #   view = Course::StudentView.new(student)
   #   view.subjects            # visible subjects only (Catalog::SubjectView with topics)
   #   view.find_topic(key)     # => [SubjectView, TopicView] or nil when the topic is not visible to this student
+  #   view.progress(sv)        # => Progress(programme:, extra:), each a Tally(total, done, in_progress; missing)
   #   view.today               # => {resume:, suggestions: [Practice::Today::Suggestion]}
   class StudentView
     DONE = Practice::Today::DONE
@@ -79,12 +80,28 @@ module Course
       Practice::Today.before(topic, visible.to_h { |t| [ t.key, t ] }, states)
     end
 
-    # The counts of the "Materie" page, over the skills of the visible topics of the programme of the subject.
-    def counts(sv)
-      skills = programme_topics(sv).flat_map(&:skills).uniq
-      tally = skills.map { |s| states[s]&.state || "not_seen" }.tally
-      { demonstrated: tally["demonstrated"].to_i + tally["consolidated"].to_i, in_study: tally["in_study"].to_i,
-        to_recover: tally["to_recover"].to_i + tally["to_review"].to_i, not_seen: tally["not_seen"].to_i + tally["to_learn"].to_i }
+    # The progress of a subject in topics (D-326): how many of its programme topics are done (mandatory) and how many of
+    # its extra topics (optional). Done = Practice::Today.done?; in progress = started and not done; missing = not done.
+    # One pass over the statuses already computed; Oggi, Materie and Materia read these and never count on their own.
+    Tally = Data.define(:total, :done, :in_progress) do
+      def missing = total - done
+      def none? = total.zero?
+      # Floor, so a bar never shows 100 % while one topic is missing.
+      def percent = total.zero? ? 0 : (100 * done / total)
+      def +(other) = Tally.new(total + other.total, done + other.done, in_progress + other.in_progress)
+    end
+    Progress = Data.define(:programme, :extra) do
+      def +(other) = Progress.new(programme + other.programme, extra + other.extra)
+    end
+
+    def progress(sv)
+      @progress ||= {}
+      @progress[sv.subject.key] ||= Progress.new(tally(programme_topics(sv)), tally(extra_topics(sv)))
+    end
+
+    # The same, summed over every visible subject (Oggi's «Il tuo percorso»).
+    def overall_progress
+      subjects.map { |sv| progress(sv) }.reduce(Progress.new(Tally.new(0, 0, 0), Tally.new(0, 0, 0)), :+)
     end
 
     # Skills the diagnosis found to recover or learn that no visible topic holds.
@@ -114,6 +131,11 @@ module Course
     end
 
     private
+
+    def tally(topics)
+      by_status = topics.map { |topic| status(topic) }.tally
+      Tally.new(topics.size, by_status[:done].to_i, by_status[:in_progress].to_i)
+    end
 
     def graph_skills(sv)
       graph = JSON.parse(sv.course_revision.skill_graph_revision.body_json)["skills"]

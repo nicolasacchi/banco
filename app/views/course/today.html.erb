@@ -97,6 +97,26 @@
     </section>
   <% end %>
 <% end %>
+<% path_html = capture do %>
+  <% if @course_open %>
+    <% all = course_view.overall_progress %>
+    <section id="my-path" class="today-block" aria-labelledby="my-path-title">
+      <h2 id="my-path-title"><%= t("progress.today.title") %></h2>
+      <div class="card path-card">
+        <ul class="progress-lines">
+          <li class="progress-line" data-line="required">
+            <span class="progress-text"><%= t("progress.today.required", done: all.programme.done, total: all.programme.total) %></span>
+            <%= ui_meter(all.programme.percent, t("progress.meter", done: all.programme.done, total: all.programme.total)) %>
+          </li>
+          <% unless all.extra.none? %>
+            <li class="progress-line" data-line="optional"><span class="progress-text"><%= t("progress.today.optional", count: all.extra.done) %></span></li>
+          <% end %>
+        </ul>
+        <div class="button-row"><a class="button secondary" id="my-path-link" href="<%= spath("/subjects") %>"><%= t("progress.today.link") %></a></div>
+      </div>
+    </section>
+  <% end %>
+<% end %>
 <main class="page course today">
   <h1><%= t("today.title") %></h1>
   <% if comment_unread_count.positive? %>
@@ -106,8 +126,8 @@
     <%= ui_notice :info, t("today.closed"), html: { id: "course-closed" } %>
   <% end %>
   <% if now == :entry %>
-    <%= entry_html %><%= course_html %>
+    <%= entry_html %><%= path_html %><%= course_html %>
   <% else %>
-    <%= course_html %><%= entry_html %>
+    <%= course_html %><%= entry_html %><%= path_html %>
   <% end %>
 </main>

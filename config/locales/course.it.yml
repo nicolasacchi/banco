@@ -44,23 +44,39 @@ it:
     to_review: "Un errore senza aiuto il %{date}: servono 2 corrette per tornare %{previous}."
   subjects:
     title: "Materie"
-    counts: "%{demonstrated} abilità dimostrate, %{in_study} in studio, %{to_recover} da riprendere, %{not_seen} non ancora viste."
-    progress:
-      demonstrated:
-        one: "%{count} dimostrata"
-        other: "%{count} dimostrate"
-      in_study: "%{count} in studio"
-      to_recover: "%{count} da riprendere"
-      not_seen:
-        one: "%{count} da vedere"
-        other: "%{count} da vedere"
-    meter: "Abilità dimostrate: %{done} su %{total}"
-    none_yet: "Non hai ancora cominciato."
     all: "Tutte le materie"
+  # Where S is (D-326): mandatory topics (the programme) and optional ones (fuori programma), done out of all, and the state of the entry test.
+  progress:
+    required:
+      one: "Obbligatori: %{count} fatto su %{total}"
+      other: "Obbligatori: %{count} fatti su %{total}"
+    required_none: "Obbligatori: nessuno"
+    optional:
+      one: "Facoltativi: %{count} fatto su %{total}"
+      other: "Facoltativi: %{count} fatti su %{total}"
+    done_of:
+      one: "%{count} fatto su %{total}"
+      other: "%{count} fatti su %{total}"
+    meter: "Argomenti obbligatori fatti: %{done} su %{total}"
+    entry_label: "Test d'ingresso"
+    entry:
+      done: "fatto"
+      unfinished: "da finire"
+      todo: "da fare"
+    entry_results: "Vedi i risultati"
+    filter_label: "Quali argomenti vedere"
+    filter_all: "Tutti"
+    filter_missing: "Solo quello che manca"
+    nothing_missing: "Qui non manca niente. Bravo."
+    today:
+      title: "Il tuo percorso"
+      required: "Argomenti obbligatori fatti: %{done} su %{total}"
+      optional: "Facoltativi fatti: %{count}"
+      link: "Vedi le materie"
   subject:
-    topics: "Gli argomenti"
+    topics: "Obbligatori · programma"
     no_topic: "Da riprendere, ancora senza argomento: %{skills}."
-    extra_topics: "Fuori programma (facoltativo)"
+    extra_topics: "Facoltativi · fuori programma"
     extra_intro: "Argomenti in più, fuori dal programma. Li apri quando vuoi: gli esercizi sono facoltativi."
   topic:
     kind:

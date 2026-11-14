@@ -9,6 +9,8 @@ module StudentUiHelper
   STATE_TONES = { "demonstrated" => :success, "consolidated" => :success, "in_study" => :info, "to_recover" => :nearly, "to_review" => :nearly,
                   "to_learn" => :nearly, "not_seen" => :muted }.freeze
   TOPIC_TONES = { "todo" => :muted, "in_progress" => :info, "done" => :success }.freeze
+  # Done has a check, in progress a pencil, to do none: three looks, never colour alone (D-326).
+  TOPIC_ICONS = { "done" => "circle-check", "in_progress" => "step-practice" }.freeze
 
   def student_menu_icon(key) = MENU_ICONS.fetch(key, "info")
 
@@ -31,13 +33,5 @@ module StudentUiHelper
 
   def topic_status_tone(status) = TOPIC_TONES.fetch(status.to_s, :muted)
 
-  # The progress of a subject for a card: the share of skills shown and the non-zero counts as words.
-  def subject_progress(counts)
-    total = counts.values.sum
-    parts = [ [ :demonstrated, :success ], [ :in_study, :info ], [ :to_recover, :nearly ], [ :not_seen, :muted ] ].filter_map do |key, tone|
-      n = counts[key]
-      ui_pill(t("subjects.progress.#{key}", count: n), tone) if n.positive?
-    end
-    { total: total, done: counts[:demonstrated], percent: total.zero? ? 0 : (100.0 * counts[:demonstrated] / total).round, pills: parts }
-  end
+  def topic_status_icon(status) = TOPIC_ICONS[status.to_s]
 end
