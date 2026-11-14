@@ -158,7 +158,7 @@ class ExtraTopicsStudentTest < ActionDispatch::IntegrationTest
     response.parsed_body
   end
 
-  test "Materia lists the extra topic after the programme, under «Fuori programma (facoltativo)», with its badge" do
+  test "Materia lists the extra topic after the programme, under «Facoltativi · fuori programma», with its badge" do
     page("/subjects/math")
     assert_response :success
     assert_select "#topics li[data-topic=?]", TOPIC

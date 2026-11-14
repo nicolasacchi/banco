@@ -137,6 +137,7 @@ ul.subject-list form.inline { display: flex; margin: 0; }
 .entry-results { display: inline-flex; align-items: center; min-height: var(--tap); }
 .subject-summary { margin-bottom: var(--space-4); }
 .subject-summary .progress-lines { flex: 1; }
+@media (max-width: 34rem) { .subject-summary .subject-chip { display: none; } }
 .path-card .button-row { margin-bottom: 0; }
 .topic-filter { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-4) 0 var(--space-2); }
 .section-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); margin: var(--space-5) 0 var(--space-2); }

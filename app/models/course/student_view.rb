@@ -63,7 +63,7 @@ module Course
     # ---- topics ----------------------------------------------------------------------------------
 
     # The topics of the programme, in course order, and those outside it (D-324): optional, listed after them under
-    # «Fuori programma (facoltativo)», never suggested by Oggi and never in a count.
+    # «Facoltativi · fuori programma», never suggested by Oggi and counted apart from the programme (D-326).
     def programme_topics(sv) = sv.topics.reject(&:extra?)
     def extra_topics(sv) = sv.topics.select(&:extra?)
 
