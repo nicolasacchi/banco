@@ -44,8 +44,8 @@ class ToolchainTest < ActiveSupport::TestCase
     pinned = dockerfile[/^ARG GO_VERSION=(\S+)$/, 1]
     assert pinned&.start_with?("#{go_mod}."), "ARG GO_VERSION=#{pinned.inspect} is not a #{go_mod}.x release"
     assert_match(/^FROM docker\.io\/library\/golang:\$\{GO_VERSION\} AS cli$/, dockerfile)
-    assert_match(%r{^RUN GIT_SHA=\$\{GIT_SHA\} DIST_DIR=/dist bin/build-cli-dist$}, dockerfile)
-    assert_match(%r{^COPY --chown=\$\{APP_UID\}:\$\{APP_GID\} --from=cli /dist /rails/dist$}, dockerfile)
+    assert_match(%r{^RUN GIT_SHA=\$\{GIT_SHA\} DIST_DIR=/dist bin/build-cli-dist && chmod 0755 /dist && chmod 0444 /dist/\*$}, dockerfile)
+    assert_match(%r{^COPY --from=cli /dist /rails/dist$}, dockerfile, "dist/ stays root-owned: the app user cannot rewrite it")
     ignored = ROOT.join(".dockerignore").read.lines.map(&:strip)
     assert_includes ignored, "/dist"
     %w[bot api decisions].each { |doc| assert_includes ignored, "!/docs/#{doc}.md" }

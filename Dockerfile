@@ -14,7 +14,7 @@ FROM docker.io/library/node:${NODE_VERSION}-slim AS node
 
 # The CLI's release build (D-328, D-330): the six binaries, SHA256SUMS and build.json, served to the bot by
 # GET /api/v1/updates and /api/v1/cli/:file so that `banco self-update` can replace itself. The image has no .git:
-# GIT_SHA stamps the version.
+# GIT_SHA stamps the version; the production build passes --build-arg GIT_SHA=$(git rev-parse HEAD).
 FROM docker.io/library/golang:${GO_VERSION} AS cli
 WORKDIR /src
 COPY go.mod ./
@@ -22,7 +22,7 @@ COPY cli/ cli/
 COPY contract/ contract/
 COPY bin/build-cli-dist bin/build-cli-dist
 ARG GIT_SHA=unknown
-RUN GIT_SHA=${GIT_SHA} DIST_DIR=/dist bin/build-cli-dist
+RUN GIT_SHA=${GIT_SHA} DIST_DIR=/dist bin/build-cli-dist && chmod 0755 /dist && chmod 0444 /dist/*
 
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
@@ -89,7 +89,8 @@ RUN node --version
 
 COPY --chown=${APP_UID}:${APP_GID} --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --chown=${APP_UID}:${APP_GID} --from=build /rails /rails
-COPY --chown=${APP_UID}:${APP_GID} --from=cli /dist /rails/dist
+# Root-owned and read-only: the app user serves the release build and cannot rewrite a binary or SHA256SUMS.
+COPY --from=cli /dist /rails/dist
 RUN mkdir -p /rails/tmp /rails/log /rails/storage && chown -R ${APP_UID}:${APP_GID} /rails/tmp /rails/log /rails/storage
 
 USER ${APP_UID}:${APP_GID}
