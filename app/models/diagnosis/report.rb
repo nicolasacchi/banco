@@ -67,7 +67,7 @@ module Diagnosis
       return "to_redo" if voided?
 
       state = conductor.state
-      return "completed" if state.closed || (!state.open_serve && (conductor.holding? || conductor.finished?))
+      return "completed" if conductor.completed?
       return "paused" if state.open_sitting && paused?
       return "in_progress" if state.open_sitting
       return "continue_next_day" if state.sittings.any?

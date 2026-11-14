@@ -124,12 +124,18 @@ zone. Tests cover the 2026-10-25 change to winter time.
 
 ## 6. Seeds and voids
 
-The seed comes from the student's latest non-voided closed diagnosis run in the subject (trial students use
-their own runs):
+The seed comes from the student's latest non-voided diagnosis run in the subject that is **complete** (trial
+students use their own runs). Complete is the sense of the list of tests (`Diagnosis::Conductor#completed?`, D-298,
+D-325): the run is closed, or no item is open and the engine either holds the run for pending answers or has nothing
+left to ask, so that only the `run_closed` row is missing. A finished test that S never opened again seeds the course
+as a closed one does; a pending skill (an answer waiting for the teacher) is not seeded. In breve: ogni test finito
+conta, anche se non è stato chiuso.
+
+The seed of each skill:
 
 | Diagnosis state (kind) | Seed | Why the student reads |
 |---|---|---|
-| demonstrated | `demonstrated`, `demonstrated_at` = run close | "Dimostrata nella diagnosi del %{date}." |
+| demonstrated | `demonstrated`, `demonstrated_at` = the last event of the run (its close; the last item served when only the close row is missing) | "Dimostrata nella diagnosi del %{date}." |
 | to_recover (recover) | `to_recover` | "Nella diagnosi: da riprendere." |
 | to_recover (learn) | `to_learn` | "Nella diagnosi: da imparare." |
 | not_assessed, reason `below_demonstrated` | `demonstrated` (implied), same date | "Non serviva verificarla: hai dimostrato un'abilità che la usa." |

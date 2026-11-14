@@ -1,6 +1,7 @@
 module Practice
-  # Seeds from the entry diagnosis (A8.6): the student's latest closed, non-voided run in the subject,
-  # derived by the diagnosis engine unchanged. Trial students use their own runs (D-217).
+  # Seeds from the entry diagnosis (A8.6): the student's latest non-voided run in the subject that is complete
+  # (`Diagnosis::Conductor#completed?`, the sense in which the list of tests says «Fatto»: closed, or nothing left to
+  # ask and only the close row missing), derived by the diagnosis engine unchanged. Trial students use their own runs (D-217).
   #
   #   Practice::Seeder.call(student, subject)   # => {skill => Practice::Seed}
   class Seeder
@@ -12,7 +13,7 @@ module Practice
     end
 
     def seeds
-      run = closed_run or return {}
+      run = completed_run or return {}
       conductor = Diagnosis::Conductor.new(run)
       result = Diagnosis::Derivation.result(conductor.plan, conductor.events)
       at = run.events.maximum(:at) || run.created_at
@@ -21,9 +22,9 @@ module Practice
 
     private
 
-    def closed_run
+    def completed_run
       runs = DiagnosisRun.where(student: @student, subject: @subject).order(sequence: :desc).to_a
-      runs.reject { |r| Diagnosis::EventLoader.voided?(r) }.find { |r| Diagnosis::Conductor.new(r).closed? }
+      runs.reject { |r| Diagnosis::EventLoader.voided?(r) }.find { |r| Diagnosis::Conductor.new(r).completed? }
     end
 
     def seed(row, at, run)

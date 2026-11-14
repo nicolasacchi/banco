@@ -6,12 +6,15 @@ require_relative "student_ui_rows"
 module FinishedRun
   include StudentUiRows
 
-  # Returns the run. answers: {component => raw}, anything else is "Non lo so".
-  def play_run(student, subject, answers: { "number" => "99", "short_answer" => "Una risposta breve." }, clock: Diagnosis::FakeClock.new)
+  # Returns the run. answers: {component => raw}, anything else is "Non lo so". close: false stops as soon as the
+  # engine's next move is to close the run: nothing is left to ask and only the run_closed row is missing (D-298).
+  def play_run(student, subject, answers: { "number" => "99", "short_answer" => "Una risposta breve." }, clock: Diagnosis::FakeClock.new, close: true)
     run = Diagnosis::Conductor.run_for(student, subject)
     conductor = Diagnosis::Conductor.new(run, clock: clock)
     recorder = Diagnosis::AnswerRecorder.new(student: student, context: "diagnosis", clock: clock)
     40.times do
+      break if !close && conductor.finished?
+
       step = conductor.step!
       break unless step.type == :item
 

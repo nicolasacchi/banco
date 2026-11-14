@@ -206,3 +206,43 @@ class PracticeSeederTest < ActiveSupport::TestCase
     assert_equal [ "to_recover", :seed_to_recover ], [ state.state, state.why[:code] ]
   end
 end
+
+# S finished the test but never opened it again, so the run has no run_closed row: the engine's next move is
+# to close it (D-298) and the list already says «Fatto». The course must start from that result (D-325).
+class PracticeSeederFinishedRunTest < ActiveSupport::TestCase
+  include FinishedRun
+
+  setup do
+    @world = build_ui_subject(components: %w[number fraction choice])
+    @subject = @world[:subject]
+    @student = @world[:student]
+    @run = play_run(@student, @subject, close: false)
+  end
+
+  def seed_facts = Practice::Seeder.call(@student, @subject).transform_values { |s| [ s.state, s.implied, s.run_id ] }
+
+  test "the run is finished and not closed: the frontier is empty and no run_closed row exists" do
+    conductor = Diagnosis::Conductor.new(@run)
+    assert_empty @run.events.where(kind: "run_closed")
+    assert_not conductor.closed?
+    assert conductor.finished?
+    assert conductor.completed?
+    assert Diagnosis::Availability.for(@student).find { |r| r.subject == @subject }.done
+  end
+
+  test "its result seeds the course, the same as after the close row is written" do
+    before = seed_facts
+    assert_not_empty before
+    assert_equal [ @run.id ], before.values.map(&:last).uniq
+
+    assert_equal :final, Diagnosis::Conductor.new(@run).step!.type
+    assert_equal 1, @run.events.where(kind: "run_closed").count
+    assert_equal before, seed_facts
+  end
+
+  test "a voided finished run seeds nothing" do
+    Decision.create!(kind: "void_diagnosis_run", subject: @subject, student: @student, payload_json: JSON.generate(run_id: @run.id, reason_it: "x"),
+                     request_id: "vr-open", teacher_login: "teacher", remote_addr: "127.0.0.1")
+    assert_empty seed_facts
+  end
+end
