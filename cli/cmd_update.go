@@ -110,9 +110,11 @@ func runDocsShow(e *env, args []string) error {
 }
 
 // runSelfUpdate compares this CLI with the server's release build and, unless --check, replaces its own executable with
-// the build for this platform after checking its sha256. The new file is written next to the executable and renamed
-// over it, so the old one stays whole until the new one is complete; on Windows, where a running program cannot be
-// replaced, it is written as banco.new.exe beside it.
+// the build for this platform. The download streams into a temporary file next to the executable, its size and sha256
+// checked against the server's list as it is written, and is renamed over the executable only when both match, so the
+// old one stays whole until the new one is complete; on Windows, where a running program cannot be replaced, it is
+// staged as banco.new.exe beside it. The sha256 comes from the same server: it catches a broken download, not a
+// compromised server.
 func runSelfUpdate(e *env, args []string) error {
 	fs := flag.NewFlagSet("self-update", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
@@ -165,33 +167,45 @@ func runSelfUpdate(e *env, args []string) error {
 			fmt.Sprintf("this CLI is out of date and the server publishes no release build %s", name),
 			"ask the operator to rebuild the image (bin/build-cli-dist runs in its Dockerfile)")
 	}
-	data, err := c.do("self-update", "GET", "/api/v1/cli/"+url.PathEscape(name))
-	if err != nil {
-		return err
-	}
-	sum := sha256.Sum256(data)
-	if got := hex.EncodeToString(sum[:]); got != file.SHA256 || int64(len(data)) != file.Size {
-		return newErr(ExitServer, "E-SELF-UPDATE", "sha256",
-			fmt.Sprintf("the download of %s has sha256 %s and %d bytes, the server lists %s and %d bytes: nothing was replaced", name, got, len(data), file.SHA256, file.Size),
-			"retry banco self-update; if it fails again, tell the operator")
+	const next = "retry banco self-update; if it fails again, tell the operator"
+	if file.Size <= 0 || file.Size > maxBinarySize {
+		return newErr(ExitServer, "E-SELF-UPDATE", "size",
+			fmt.Sprintf("the server lists %s with %d bytes, outside 1 byte to %d MB: nothing was downloaded", name, file.Size, maxBinarySize>>20), next)
 	}
 	exe, err := executablePath(e)
 	if err != nil {
 		return newErr(ExitServer, "E-SELF-UPDATE", "executable", "cannot find this program's file: "+err.Error()+"; nothing was replaced", "install the release by hand (docs/api.md «Staying current»)")
 	}
-	target, err := installBinary(exe, data, runtime.GOOS)
+	resp, err := c.open("self-update", "GET", "/api/v1/cli/"+url.PathEscape(name), nil, nil)
 	if err != nil {
-		return newErr(ExitServer, "E-SELF-UPDATE", "executable", "cannot write the new program next to "+exe+": "+err.Error()+"; nothing was replaced", "make that directory writable, or install the release by hand (docs/api.md «Staying current»)")
+		return err
 	}
-	report["updated"] = true
+	defer resp.Body.Close()
+	target, err := installBinary(exe, resp.Body, *file, runtime.GOOS)
+	if err != nil {
+		return err
+	}
+	finishReport(report, target, exe, runtime.GOOS)
+	return json.NewEncoder(e.stdout).Encode(report)
+}
+
+// finishReport says what an install did: updated (the program was replaced) or, on Windows, staged (banco.new.exe waits
+// beside the program, which is not replaced yet).
+func finishReport(report map[string]any, target, exe, goos string) {
 	report["update_available"] = false
 	report["path"] = target
 	report["next"] = "banco changes --since <the last decision you read>, then banco docs show bot"
-	if runtime.GOOS == "windows" {
+	if goos == "windows" {
+		report["staged"] = true
+		report["updated"] = false
 		report["note"] = "Windows cannot replace a running program: the new one is " + target + "; when this command has ended, replace " + exe + " with it"
+		return
 	}
-	return json.NewEncoder(e.stdout).Encode(report)
+	report["updated"] = true
 }
+
+// maxBinarySize caps a release binary: a listed size above it is refused before any download.
+const maxBinarySize = 100 << 20
 
 // fetchUpdates reads GET /api/v1/updates (path may carry ?since=).
 func fetchUpdates(c *client, command, path string) (updates, error) {
@@ -228,10 +242,19 @@ func executablePath(e *env) (string, error) {
 	return filepath.EvalSymlinks(exe)
 }
 
-// installBinary writes data to a temporary file in the directory of exe, makes it executable and renames it over exe
-// (on Windows: over banco.new.exe beside it). A failure leaves exe untouched and removes the temporary file. It returns
-// the path written.
-func installBinary(exe string, data []byte, goos string) (string, error) {
+// installBinary streams src (at most file.Size+1 bytes) into a temporary file in the directory of exe, checking its size
+// and sha256 against file as it goes; when both match it gives the file the mode of exe and renames it over exe (on
+// Windows: over banco.new.exe beside it). Any failure removes the temporary file and leaves exe untouched. It returns
+// the path written, or an E-SELF-UPDATE error.
+func installBinary(exe string, src io.Reader, file cliFile, goos string) (string, error) {
+	writeErr := func(err error) error {
+		return newErr(ExitServer, "E-SELF-UPDATE", "executable", "cannot write the new program next to "+exe+": "+err.Error()+"; nothing was replaced",
+			"make that directory writable, or install the release by hand (docs/api.md «Staying current»)")
+	}
+	info, err := os.Stat(exe)
+	if err != nil {
+		return "", writeErr(err)
+	}
 	dir := filepath.Dir(exe)
 	target := exe
 	if goos == "windows" {
@@ -239,7 +262,7 @@ func installBinary(exe string, data []byte, goos string) (string, error) {
 	}
 	tmp, err := os.CreateTemp(dir, ".banco-update-*")
 	if err != nil {
-		return "", err
+		return "", writeErr(err)
 	}
 	done := false
 	defer func() {
@@ -248,20 +271,27 @@ func installBinary(exe string, data []byte, goos string) (string, error) {
 			os.Remove(tmp.Name())
 		}
 	}()
-	if _, err := tmp.Write(data); err != nil {
-		return "", err
+	hash := sha256.New()
+	n, err := io.Copy(io.MultiWriter(tmp, hash), io.LimitReader(src, file.Size+1))
+	if err != nil {
+		return "", newErr(ExitServer, "E-SELF-UPDATE", "download", "the download of "+file.Name+" failed: "+err.Error()+"; nothing was replaced", "retry banco self-update")
+	}
+	if got := hex.EncodeToString(hash.Sum(nil)); n != file.Size || got != file.SHA256 {
+		return "", newErr(ExitServer, "E-SELF-UPDATE", "sha256",
+			fmt.Sprintf("the download of %s has sha256 %s and %d bytes (read up to %d), the server lists %s and %d bytes: nothing was replaced", file.Name, got, n, file.Size+1, file.SHA256, file.Size),
+			"retry banco self-update; if it fails again, tell the operator")
+	}
+	if err := tmp.Chmod(info.Mode().Perm()); err != nil {
+		return "", writeErr(err)
 	}
 	if err := tmp.Sync(); err != nil {
-		return "", err
+		return "", writeErr(err)
 	}
 	if err := tmp.Close(); err != nil {
-		return "", err
-	}
-	if err := os.Chmod(tmp.Name(), 0o755); err != nil {
-		return "", err
+		return "", writeErr(err)
 	}
 	if err := os.Rename(tmp.Name(), target); err != nil {
-		return "", err
+		return "", writeErr(err)
 	}
 	done = true
 	return target, nil
