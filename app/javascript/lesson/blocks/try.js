@@ -13,9 +13,9 @@ import { exerciseNotes } from "lesson/teacher_notes"
 function solutionNode(reply, ctx) {
   const box = el("div", { class: "solution" })
   box.appendChild(el("h4", { class: "solution-title", text: ctx.t.solution_title }))
-  if (Array.isArray(reply.solution_steps)) {
+  if (Array.isArray(reply.steps)) {
     const list = el("ol", { class: "example-steps solution-steps" })
-    reply.solution_steps.forEach((step, i) => {
+    reply.steps.forEach((step, i) => {
       const info = step.tag ? tagInfo(ctx.subject, step.tag) : null
       list.appendChild(el("li", { class: "example-step" },
         el("p", { class: "step-tag" }, info ? icon(info.icon, "step-ic") : null, el("strong", { text: info ? info.label_it : `${ctx.t.step} ${i + 1}` })),
@@ -24,7 +24,6 @@ function solutionNode(reply, ctx) {
     })
     box.appendChild(list)
   } else if (reply.solution_it) box.appendChild(el("div", { class: "solution-text" }, renderRich(reply.solution_it, ctx)))
-  if (reply.final_it) box.appendChild(el("p", { class: "solution-final" }, el("strong", { text: `${ctx.t.final}: ` }), renderInlineRich(reply.final_it, el("span"), ctx)))
   return box
 }
 
