@@ -24,7 +24,7 @@ class PracticeAnswerRecorderTest < ActiveSupport::TestCase
     assert_equal [ "math.linear-equation-integer", "in_study" ], [ b[:skill][:key], b[:skill][:state] ]
     assert_equal "In studio", b[:skill][:state_it]
     assert b[:skill][:changed]
-    assert_equal "Corrette senza aiuto: 1 su 3, in 1 giorni su 2.", b[:skill][:why_it]
+    assert_equal "Corrette senza aiuto: 1 su 3, in 1 giorno su 2.", b[:skill][:why_it]
   end
 
   test "the rows: attempt, grading on the practice table, solution event, aided false" do

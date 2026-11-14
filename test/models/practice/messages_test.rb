@@ -46,7 +46,7 @@ class PracticeMessagesTest < ActiveSupport::TestCase
   end
 
   test "the sentences of the spec" do
-    assert_equal "Corrette senza aiuto: 3 su 3, in 1 giorni su 2.", Practice::Messages.why_it(code: :in_study, n: 3, d: 1)
+    assert_equal "Corrette senza aiuto: 3 su 3, in 1 giorno su 2.", Practice::Messages.why_it(code: :in_study, n: 3, d: 1)
     assert_equal "Dimostrata il 13/10/2026: corrette senza aiuto in 2 giorni diversi.", Practice::Messages.why_it(code: :demonstrated, date: Date.new(2026, 10, 13), days: 2)
     assert_equal "Un errore senza aiuto il 02/11/2026: servono 2 corrette per tornare consolidata.",
                  Practice::Messages.why_it(code: :to_review, date: Date.new(2026, 11, 2), previous: "consolidated")

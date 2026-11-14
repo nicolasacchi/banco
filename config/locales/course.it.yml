@@ -38,7 +38,9 @@ it:
     seed_implied: "Non serviva verificarla: hai dimostrato un'abilità che la usa."
     seed_to_recover: "Nella diagnosi: da riprendere."
     seed_to_learn: "Nella diagnosi: da imparare."
-    in_study: "Corrette senza aiuto: %{n} su 3, in %{d} giorni su 2."
+    in_study:
+      one: "Corrette senza aiuto: %{n} su 3, in %{d} giorno su 2."
+      other: "Corrette senza aiuto: %{n} su 3, in %{d} giorni su 2."
     demonstrated: "Dimostrata il %{date}: corrette senza aiuto in %{days} giorni diversi."
     consolidated: "Consolidata il %{date}: l'hai rifatta giusta dopo più di due settimane."
     to_review: "Un errore senza aiuto il %{date}: servono 2 corrette per tornare %{previous}."
@@ -153,6 +155,7 @@ it:
     hints_title: "Aiuti"
     right: "Giusto"
     nearly: "Quasi giusto"
+    earlier: "La risposta di prima"
     right_note: "Giusto, con una nota"
     clean_of: "Senza aiuto: %{n} su 3"
     leave: "Esci"
