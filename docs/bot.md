@@ -25,8 +25,8 @@ Every answer is JSON. An error is `{code, field, message, next}`; `next` is the 
 
 | What | Command |
 |---|---|
-| The school programme, line by line | `banco syllabus lines --source ufficiale-2026-27 --from 1 --to 100` |
-| The programmes of the years before | `--source prima-2025-26`, `--source seconda-2025-26` |
+| The exam programme (the reference of the course maps), line by line | `banco syllabus lines --source seconda-2025-26 --from 1 --to 100` |
+| The list of the class the student follows (only to see what the class does), the first year's programme | `--source ufficiale-2026-27`, `--source prima-2025-26` |
 | Every topic of a subject, in the course's order | `banco topics list --subject SUBJECT` (subject keys: `banco status`) |
 | A topic: its intro, its pinned lesson and items | `banco topic open TOPIC_KEY` |
 | Every lesson of a subject, with its revisions and reviews | `banco lessons list --subject SUBJECT` |
@@ -82,6 +82,14 @@ banco token                          # the token's role and expiry
   after a whole lifetime without use, or when the operator revokes it.
 - `banco self-update` checks the download against the sha256 the same server lists: that catches a broken download, not a
   compromised server. On Windows it only stages `banco.new.exe` (`staged: true`): replace `banco.exe` with it after the command ends.
+- A `banco` built before D-330 has no `self-update` and answers `E-CONTRACT` to everything: download the current build once by
+  hand, then it updates itself:
+
+  ```bash
+  curl -fsS -D headers.txt -H "Authorization: Bearer $BANCO_TOKEN" -o banco https://api.banco.scc.im/api/v1/cli/banco-linux-amd64
+  grep -i x-banco-sha256 headers.txt; sha256sum banco    # the two sums must be equal
+  chmod +x banco                                         # the names: banco-{linux,darwin}-{amd64,arm64}, banco-windows-{amd64,arm64}.exe
+  ```
 
 ## Rules
 
