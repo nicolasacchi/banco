@@ -8,8 +8,11 @@ module Api
   class BaseController < ActionController::API
     class_attribute :teacher_writes, instance_accessor: false, default: false
 
-    before_action :set_contract_header
+    # Nothing of the API is cached: answers carry the student's words and the teacher's views (D-327).
+    before_action :set_no_store
     before_action :authenticate!
+    # The contract digest goes to a caller that holds a token; a wrong token gets 401 and nothing else.
+    before_action :set_contract_header
     before_action :enforce_token_scope!
 
     private
@@ -26,9 +29,15 @@ module Api
       false
     end
 
-    # bot_read never writes; teacher writes only through a controller with teacher_writes; a teacher token whose login is
-    # no longer in BANCO_TEACHER_USERS is refused even to read (the operator removes a teacher from the list to cut the token).
+    # A request that came through the edge proxy (Traefik, api.banco.scc.im) is the Internet's: only the public roles
+    # (bot_read, teacher) may use it, so a leaked content-agent token does nothing from outside. The local agents reach
+    # the listener on loopback and are not affected. bot_read never writes; teacher writes only through a controller with
+    # teacher_writes; a teacher token whose login is no longer in BANCO_TEACHER_USERS is refused even to read (the operator
+    # removes a teacher from the list to cut the token).
     def enforce_token_scope!
+      if !reader? && Banco::EdgeProxy.include?(request.remote_addr)
+        return refuse("E-AUTH", "authorization", "a #{@token.role} token cannot be used through the public host", "use a bot_read or teacher token here; content agents use the local listener", 403, reason: "not_public_role")
+      end
       return unless reader?
 
       unless teacher_login_listed?
@@ -130,6 +139,10 @@ module Api
 
     def set_contract_header
       response.set_header("X-Banco-Contract", Contract.digest)
+    end
+
+    def set_no_store
+      response.set_header("Cache-Control", "no-store")
     end
   end
 end

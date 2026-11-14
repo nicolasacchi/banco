@@ -14,7 +14,7 @@ Phase 1a: the entry diagnosis.
    decision from the host console (`bin/rails banco:decide`), never over HTTP: D-260. Exception (D-327): a bot with
    a `teacher` token may record a teacher decision over the API (`POST /api/v1/decisions`, `banco decide`) and act
    on the student's comments, through the same recorder, gates and `BANCO_DECISIONS_ENABLED` flag as the console,
-   with origin `api` in every row; no other token role decides (a content agent's token, `bot_read`, `ci`).
+   with origin `api` in every row, never `record_consent` nor `release_diagnosis` (`DecisionRecorder::Api::KINDS`); no other token role decides (a content agent's token, `bot_read`, `ci`).
 3. Agent-written code runs only in browsers: the server's Chrome at validation and
    the render check, and approved free pages in the student's and the teacher's
    browsers, in a sandboxed frame on `pages.banco.scc.im` (D-262). Rails and the

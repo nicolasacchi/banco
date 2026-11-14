@@ -216,8 +216,6 @@ class PublicApiRolesTest < ActionDispatch::IntegrationTest
     row = ApiToken.find_by!(public_id: public_id(out.strip))
     assert_equal [ "teacher", "nik" ], [ row.role, row.teacher_login ]
     assert_in_delta 7.days.from_now.to_f, row.expires_at.to_f, 60
-    out = run_task("banco:token:issue", "ROLE" => "agent_claude", "EXPIRES_DAYS" => "0", "TEACHER" => nil, "LABEL" => nil)
-    assert_nil ApiToken.find_by!(public_id: public_id(out.strip)).expires_at
   end
 
   test "banco:token:issue refuses a teacher token without a listed teacher, a bad expiry and a bot that never expires" do
@@ -225,8 +223,9 @@ class PublicApiRolesTest < ActionDispatch::IntegrationTest
       { "ROLE" => "teacher", "TEACHER" => nil } => "TEACHER=",
       { "ROLE" => "teacher", "TEACHER" => "mallory" } => "not in BANCO_TEACHER_USERS",
       { "ROLE" => "bot_read", "TEACHER" => "nik" } => "role teacher only",
-      { "ROLE" => "bot_read", "EXPIRES_DAYS" => "0", "TEACHER" => nil } => "must expire",
-      { "ROLE" => "bot_read", "EXPIRES_DAYS" => "soon", "TEACHER" => nil } => "whole number"
+      { "ROLE" => "bot_read", "EXPIRES_DAYS" => "0", "TEACHER" => nil } => "at least 1",
+      { "ROLE" => "agent_claude", "EXPIRES_DAYS" => "0", "TEACHER" => nil } => "at least 1",
+      { "ROLE" => "bot_read", "EXPIRES_DAYS" => "soon", "TEACHER" => nil } => "at least 1"
     }.each do |env, message|
       Rails.application.load_tasks unless Rake::Task.task_defined?("banco:token:issue")
       task = Rake::Task["banco:token:issue"]

@@ -23,6 +23,8 @@ class ApiToken < ApplicationRecord
   validates :role, inclusion: { in: ROLES }
   validates :teacher_login, presence: true, if: -> { role == "teacher" }
   validates :teacher_login, absence: true, unless: -> { role == "teacher" }
+  # The public roles always expire (the database says the same: api_tokens_reader_expiry).
+  validates :expires_at, presence: true, if: -> { READERS.include?(role) }
 
   # Creates a token and returns it as a string. The only time the secret exists. expires_at: nil is a token that never
   # expires (banco:token:issue sets one: 90 days by default); teacher_login: the teacher a role teacher token acts as.

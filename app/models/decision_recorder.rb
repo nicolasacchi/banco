@@ -87,17 +87,24 @@ class DecisionRecorder
   class Api
     GROUP = "api".freeze
 
-    attr_reader :login, :token_id, :remote_addr, :path, :request_id
+    # The kinds a teacher token may record (D-327). Not record_consent (the parent's consent for a minor) and not
+    # release_diagnosis (it opens the entry test to the student): those stay with the browser and the console.
+    KINDS = %w[approve_skill_graph approve_blueprint confirm_test_reviewed dispose_finding confirm_grade reject_grade resolve_attempt
+               void_diagnosis_run void_revision_attempts extend_diagnosis_run close_diagnosis_run kind_override send_back_item
+               set_formula_sheet approve_topic send_back_lesson release_course].freeze
 
-    def initialize(login:, token_id:, remote_addr:, path:)
+    attr_reader :login, :token_id, :remote_addr, :path, :request_id, :user_agent
+
+    # request_id and user_agent are the request's own (so a row matches the Rails and the edge logs); without them a fresh
+    # uuid and a label that names the token.
+    def initialize(login:, token_id:, remote_addr:, path:, request_id: nil, user_agent: nil)
       @login = login.to_s.strip
       @token_id = token_id.to_s
       @remote_addr = remote_addr.to_s.first(60)
       @path = path.to_s
-      @request_id = SecureRandom.uuid
+      @request_id = request_id.presence || SecureRandom.uuid
+      @user_agent = user_agent.presence || "banco api token #{@token_id}"
     end
-
-    def user_agent = "banco api token #{token_id}"
     def groups = [ GROUP ]
     def get_header(name) = name == "HTTP_REMOTE_USER" ? login : nil
   end
@@ -147,6 +154,8 @@ class DecisionRecorder
 
   def call
     raise Invalid, "unknown decision kind #{@kind.inspect}" unless KINDS.include?(@kind)
+    raise Refused, :kind_not_allowed if @request.is_a?(Api) && !Api::KINDS.include?(@kind)
+
     reason = self.class.refusal(@request)
     raise Refused, reason if reason
 

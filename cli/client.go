@@ -84,6 +84,10 @@ func (c *client) doWith(command, method, path string, payload []byte, headers ma
 		return nil, newErr(ExitServer, "E-RATE-LIMIT", "", "the edge limits requests to an average of 10 per second (burst 30) per client IP", "wait 10 s, then send the request again")
 	}
 	got := resp.Header.Get("X-Banco-Contract")
+	// The server sends the contract digest only to a caller that holds a good token: a refused token is its own error.
+	if got == "" && resp.StatusCode == http.StatusUnauthorized {
+		return nil, errorFromBody(resp.StatusCode, body)
+	}
 	if got == "" {
 		// No contract header: not a banco server answering (restarting, proxy error page).
 		return nil, newErr(ExitServer, "E-NETWORK", "", fmt.Sprintf("the server did not answer as banco (HTTP %d, no contract header); it may be restarting", resp.StatusCode), "retry in 60 s, then banco health")
@@ -140,6 +144,10 @@ func normalizeBaseURL(raw string) (string, error) {
 	}
 	if u.User != nil || u.RawQuery != "" || u.Fragment != "" {
 		return fail("BANCO_URL is the address of the server: no user, query or fragment")
+	}
+	// The Bearer token must never cross a network in clear (D-327): http is for the loopback listener only.
+	if host := u.Hostname(); u.Scheme == "http" && host != "localhost" && !net.ParseIP(host).IsLoopback() {
+		return fail("BANCO_URL uses http:// for " + host + ": the token would travel in clear; use https://, or http:// only for localhost and 127.0.0.1")
 	}
 	return u.Scheme + "://" + u.Host + strings.TrimRight(u.EscapedPath(), "/"), nil
 }

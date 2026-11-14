@@ -7,7 +7,8 @@ module TeacherApi
   # A DecisionRecorder::Api for this request: the teacher login stored on the token (which must still be in
   # BANCO_TEACHER_USERS, checked by the recorder), the token's public id, the address and the route for the audit row.
   def teacher_origin
-    DecisionRecorder::Api.new(login: @token.teacher_login, token_id: @token.id, remote_addr: client_address, path: "#{request.method} #{request.path}")
+    DecisionRecorder::Api.new(login: @token.teacher_login, token_id: @token.id, remote_addr: client_address, path: "#{request.method} #{request.path}",
+                                  request_id: request.request_id, user_agent: request.user_agent.to_s.first(300))
   end
 
   # The address of the client as the edge proxy saw it, for the audit trail only: identity is the token. It never

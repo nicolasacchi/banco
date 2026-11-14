@@ -72,9 +72,15 @@ class DecisionConsole
     params[:reason_it] = @reason if @reason
     params.delete(:attest_it)
     params[:attest_it] = @attest_it.to_s.strip unless @attest_it.nil?
-    if @subject_key
+    revision_kind = APPROVALS.key?(@kind) || @kind == "confirm_test_reviewed"
+    if @origin.is_a?(DecisionRecorder::Api)
+      # Over the API the bot approves the revision it read, never "the latest at the time of the POST" (D-327): a newer
+      # revision submitted in between would be approved unseen.
+      raise DecisionRecorder::Invalid, "revision_id is required over the API: name the revision you read (params {\"revision_id\": N})" if revision_kind && params[:revision_id].blank? && @revision.blank?
+      params[:subject] ||= @subject_key if @subject_key
+    elsif @subject_key
       params[:subject] ||= @subject_key
-      params[:revision_id] ||= latest_revision_id if APPROVALS.key?(@kind) || @kind == "confirm_test_reviewed"
+      params[:revision_id] ||= latest_revision_id if revision_kind
     end
     params[:revision_id] = @revision if @revision
     params

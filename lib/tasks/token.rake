@@ -4,7 +4,7 @@ namespace :banco do
     # The operator runs it in the container and stores the output in the password
     # manager (vault Banco, item banco-agent-<kind>, field token).
     #
-    # A token expires after EXPIRES_DAYS days (default 90, D-327; 0 = never, content-agent roles only). The public API's
+    # A token expires after EXPIRES_DAYS days (default 90, D-327); a token that never expires is not issued. The public API's
     # roles are bot_read (reads only) and teacher (reads, decisions and comment actions as TEACHER=<login>, a login of
     # BANCO_TEACHER_USERS, checked again at every use).
     desc "Issue a token and print it once: ROLE=agent_claude|agent_omp|ci|bot_read|teacher [LABEL=text] [EXPIRES_DAYS=90] [TEACHER=login (role teacher)]"
@@ -12,14 +12,13 @@ namespace :banco do
       role = ENV["ROLE"].presence or abort "ROLE=#{ApiToken::ROLES.join('|')} is required"
       abort "unknown ROLE #{role}" unless ApiToken::ROLES.include?(role)
       days = ENV.fetch("EXPIRES_DAYS", "90")
-      abort "EXPIRES_DAYS is a whole number of days (0 = never)" unless days.match?(/\A\d{1,5}\z/)
+      abort "EXPIRES_DAYS is a whole number of days, at least 1 (a token always expires)" unless days.match?(/\A[1-9]\d{0,4}\z/)
       days = days.to_i
-      abort "a #{role} token must expire: EXPIRES_DAYS is at least 1" if days.zero? && ApiToken.reader?(role)
       teacher = ENV["TEACHER"].presence
       abort "TEACHER=<login from BANCO_TEACHER_USERS> is required for a teacher token" if role == "teacher" && teacher.nil?
       abort "TEACHER is for role teacher only" if teacher && role != "teacher"
       abort "TEACHER #{teacher.first(40).inspect} is not in BANCO_TEACHER_USERS" if teacher && !Banco::EdgeProxy.teacher_users.include?(teacher)
-      $stdout.puts ApiToken.issue!(role: role, label: ENV.fetch("LABEL", role), expires_at: (days.days.from_now unless days.zero?), teacher_login: teacher)
+      $stdout.puts ApiToken.issue!(role: role, label: ENV.fetch("LABEL", role), expires_at: days.days.from_now, teacher_login: teacher)
     end
 
     desc "List the tokens (never the secret): public id, role, label, teacher, expires_at, revoked"

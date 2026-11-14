@@ -3,7 +3,7 @@ require_relative "../support/multi_user"
 require_relative "../support/student_course_world"
 require_relative "../support/student_ui_rows"
 
-# D-328: what the student sees of their progress, over the API, for every token role that may read. The answer is compared with
+# D-328: what the student sees of their progress, over the API, for the token roles that read (bot_read, teacher). The answer is compared with
 # the student's own pages (Materia and the diagnosis list) for the same world; invented content only.
 class StudentProgressApiTest < ActionDispatch::IntegrationTest
   include MultiUser
@@ -12,7 +12,8 @@ class StudentProgressApiTest < ActionDispatch::IntegrationTest
 
   EXTRA = "extra.math.demo-percentages".freeze
   EXTRA_SKILL = "math.percentages".freeze
-  READ_ROLES = %w[bot_read teacher agent_claude agent_omp ci].freeze
+  READ_ROLES = %w[bot_read teacher].freeze
+  CONTENT_ROLES = %w[agent_claude agent_omp ci].freeze
 
   setup do
     build_student_world(release: false)
@@ -31,11 +32,11 @@ class StudentProgressApiTest < ActionDispatch::IntegrationTest
                                                                   practice: [ { skill: EXTRA_SKILL, items: items.map { |r| { item: r.item.key, revision: r.id } } } ]))
     approve_topic!(@extra_topic)
     release_course!(course)
-    # Every role reads the same; a teacher token acts as a login on the teacher list (MultiUser lists "nik"), and none needs a session.
-    @tokens = READ_ROLES.to_h { |role| [ role, ApiToken.issue!(role: role, label: "progress #{role}", expires_at: 30.days.from_now, teacher_login: ("nik" if role == "teacher")) ] }
+    # Both reading roles read the same (the content roles are refused, D-327); a teacher token acts as a login on the teacher list (MultiUser lists "nik"), and none needs a session.
+    @tokens = (READ_ROLES + CONTENT_ROLES).to_h { |role| [ role, ApiToken.issue!(role: role, label: "progress #{role}", expires_at: 30.days.from_now, teacher_login: ("nik" if role == "teacher")) ] }
   end
 
-  def api(path, token: @tokens.fetch("agent_claude")) = on(:api, path, headers: token ? { "Authorization" => "Bearer #{token}" } : {})
+  def api(path, token: @tokens.fetch("bot_read")) = on(:api, path, headers: token ? { "Authorization" => "Bearer #{token}" } : {})
 
   def json = response.parsed_body
 
@@ -45,12 +46,20 @@ class StudentProgressApiTest < ActionDispatch::IntegrationTest
     api("/api/v1/students/student/progress", token: nil)
     assert_response :unauthorized
     assert_equal "E-AUTH", json["code"]
-    bodies = @tokens.map do |role, token|
+    bodies = @tokens.slice(*READ_ROLES).map do |role, token|
       api("/api/v1/students/student/progress", token: token)
       assert_response :success, role
       response.body
     end
     assert_equal 1, bodies.uniq.size
+  end
+
+  test "a content agent's token is refused: the student's progress is not content (D-327)" do
+    CONTENT_ROLES.each do |role|
+      api("/api/v1/students/student/progress", token: @tokens.fetch(role))
+      assert_response :forbidden, role
+      assert_equal "token_role", json["reason"]
+    end
   end
 
   test "the topics and their status are the ones of Materia, the extra topic apart" do

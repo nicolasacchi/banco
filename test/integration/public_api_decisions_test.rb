@@ -15,34 +15,34 @@ class PublicApiDecisionsTest < ActionDispatch::IntegrationTest
     @agent = issue_token("agent_claude")
   end
 
-  def decide(kind, token: @teacher, params: nil, confirm: nil, reason: nil, attest: nil, **extra)
+  def decide(kind, token: @teacher, params: nil, confirm: nil, reason: nil, attest: nil, headers: {}, **extra)
     body = { kind: kind }
     body[:params] = params if params
     body[:confirm] = confirm unless confirm.nil?
     body[:reason_it] = reason if reason
     body[:attest_it] = attest if attest
-    api_as(token, "/api/v1/decisions", method: :post, body: body.merge(extra))
+    api_as(token, "/api/v1/decisions", method: :post, body: body.merge(extra), headers: headers)
   end
 
   # ---- the dry run
 
   test "without confirm it is a dry run: the payload and no row" do
     assert_no_difference "Decision.count" do
-      decide("approve_skill_graph", params: { subject: "math" })
+      decide("approve_skill_graph", params: { revision_id: @graph.id })
     end
     assert_response :success
     assert_equal [ false, true, true, [] ], json.values_at("recorded", "dry_run", "allowed", "reasons")
     assert_equal @graph.id, json["payload"]["revision_id"]
     assert_equal [ "api", public_id(@teacher) ], json["payload"].values_at("via", "token")
     assert_nil SubjectStage.approved_graph(@subject)
-    decide("approve_skill_graph", params: { subject: "math" }, confirm: false)
+    decide("approve_skill_graph", params: { revision_id: @graph.id }, confirm: false)
     assert_response :success
     assert_equal 0, Decision.count
   end
 
   test "the dry-run header wins over confirm: true" do
     assert_no_difference "Decision.count" do
-      api_as(@teacher, "/api/v1/decisions", method: :post, body: { kind: "approve_skill_graph", params: { subject: "math" }, confirm: true }, headers: { "X-Banco-Dry-Run" => "1" })
+      api_as(@teacher, "/api/v1/decisions", method: :post, body: { kind: "approve_skill_graph", params: { revision_id: @graph.id }, confirm: true }, headers: { "X-Banco-Dry-Run" => "1" })
     end
     assert_response :success
     assert_equal false, json["recorded"]
@@ -51,7 +51,7 @@ class PublicApiDecisionsTest < ActionDispatch::IntegrationTest
   test "a dry run of a decision the gate refuses says why and writes nothing" do
     approve_graph_row!
     assert_no_difference "Decision.count" do
-      decide("approve_skill_graph", params: { subject: "math" })
+      decide("approve_skill_graph", params: { revision_id: @graph.id })
     end
     assert_response :unprocessable_entity
     assert_equal "E-DECISION-INVALID", json["code"]
@@ -62,15 +62,16 @@ class PublicApiDecisionsTest < ActionDispatch::IntegrationTest
 
   test "confirm records exactly one decision with via api, the token and the teacher" do
     assert_difference "Decision.count", 1 do
-      decide("approve_skill_graph", params: { subject: "math" }, confirm: true, reason: "Approvato dal docente.", remote_addr: "ignored")
+      decide("approve_skill_graph", params: { revision_id: @graph.id }, confirm: true, reason: "Approvato dal docente.", remote_addr: "ignored",
+                                                        headers: { "User-Agent" => "public-api-test/1", "X-Request-Id" => "req-abc-123" })
     end
     assert_response :created
     d = Decision.order(:id).last
     assert_equal [ "approve_skill_graph", @subject, "nik", "api" ], [ d.kind, d.subject, d.teacher_login, d.groups ]
     assert_equal "127.0.0.1", d.remote_addr
-    assert_equal "banco api token #{public_id(@teacher)}", d.user_agent
+    assert_equal "public-api-test/1", d.user_agent # the caller's own, never a label
     assert_equal "POST /api/v1/decisions", d.request_path
-    assert_match(/\A\h{8}-\h{4}-\h{4}-\h{4}-\h{12}\z/, d.request_id)
+    assert_equal "req-abc-123", d.request_id # the request's own, so a row matches the logs
     assert d.api?
     assert_not d.console?
     payload = JSON.parse(d.payload_json)
@@ -85,7 +86,7 @@ class PublicApiDecisionsTest < ActionDispatch::IntegrationTest
   test "the client address the edge proxy saw is the row's address" do
     ENV["BANCO_EDGE_PROXY"] = "#{EDGE}/32"
     decide_via_proxy = ->(forwarded) {
-      api_as(@teacher, "/api/v1/decisions", method: :post, body: { kind: "approve_skill_graph", params: { subject: "math" }, confirm: true },
+      api_as(@teacher, "/api/v1/decisions", method: :post, body: { kind: "approve_skill_graph", params: { revision_id: @graph.id }, confirm: true },
                                             headers: { "X-Forwarded-For" => forwarded }, remote_addr: EDGE)
     }
     decide_via_proxy.call("203.0.113.9")
@@ -96,10 +97,10 @@ class PublicApiDecisionsTest < ActionDispatch::IntegrationTest
   end
 
   test "the same decision twice: the second is refused by the gate" do
-    decide("approve_skill_graph", params: { subject: "math" }, confirm: true)
+    decide("approve_skill_graph", params: { revision_id: @graph.id }, confirm: true)
     assert_response :created
     assert_no_difference "Decision.count" do
-      decide("approve_skill_graph", params: { subject: "math" }, confirm: true)
+      decide("approve_skill_graph", params: { revision_id: @graph.id }, confirm: true)
     end
     assert_response :unprocessable_entity
     assert_equal "E-DECISION-INVALID", json["code"]
@@ -124,7 +125,7 @@ class PublicApiDecisionsTest < ActionDispatch::IntegrationTest
     ENV["BANCO_DECISIONS_ENABLED"] = "0"
     [ nil, true ].each do |confirm|
       assert_no_difference "Decision.count" do
-        decide("approve_skill_graph", params: { subject: "math" }, confirm: confirm)
+        decide("approve_skill_graph", params: { revision_id: @graph.id }, confirm: confirm)
       end
       assert_response :forbidden
       assert_equal [ "E-TEACHER-REFUSED", "disabled" ], json.values_at("code", "reason")
@@ -134,7 +135,7 @@ class PublicApiDecisionsTest < ActionDispatch::IntegrationTest
   test "a teacher who left the list is refused" do
     ENV["BANCO_TEACHER_USERS"] = "someone-else"
     assert_no_difference "Decision.count" do
-      decide("approve_skill_graph", params: { subject: "math" }, confirm: true)
+      decide("approve_skill_graph", params: { revision_id: @graph.id }, confirm: true)
     end
     assert_response :forbidden
     assert_equal "teacher_not_listed", json["reason"]
@@ -142,11 +143,11 @@ class PublicApiDecisionsTest < ActionDispatch::IntegrationTest
 
   test "bot_read and the content agents never decide" do
     assert_no_difference "Decision.count" do
-      decide("approve_skill_graph", params: { subject: "math" }, confirm: true, token: @bot)
+      decide("approve_skill_graph", params: { revision_id: @graph.id }, confirm: true, token: @bot)
       assert_equal "read_only_token", json["reason"]
-      decide("approve_skill_graph", params: { subject: "math" }, confirm: true, token: @agent)
+      decide("approve_skill_graph", params: { revision_id: @graph.id }, confirm: true, token: @agent)
       assert_equal "token_role", json["reason"]
-      decide("approve_skill_graph", params: { subject: "math" }, token: @bot) # not even a dry run
+      decide("approve_skill_graph", params: { revision_id: @graph.id }, token: @bot) # not even a dry run
       assert_response :forbidden
     end
   end
@@ -155,7 +156,7 @@ class PublicApiDecisionsTest < ActionDispatch::IntegrationTest
     decide("approve_everything", confirm: true)
     assert_response :unprocessable_entity
     assert_equal "E-DECISION-INVALID", json["code"]
-    decide("approve_skill_graph", params: { subject: "nonexistent" }, confirm: true)
+    decide("approve_skill_graph", params: { revision_id: 999_999 }, confirm: true)
     assert_response :not_found
     assert_equal "E-NOT-FOUND", json["code"]
     api_as(@teacher, "/api/v1/decisions", method: :post, body: { params: {} })
@@ -172,10 +173,10 @@ class PublicApiDecisionsTest < ActionDispatch::IntegrationTest
   end
 
   test "attest_it is refused for a kind that takes none, and must be words" do
-    decide("approve_skill_graph", params: { subject: "math" }, attest: "Parole.", confirm: true)
+    decide("approve_skill_graph", params: { revision_id: @graph.id }, attest: "Parole.", confirm: true)
     assert_response :unprocessable_entity
     assert_includes json["reasons"].first, "attest_it is accepted only for approve_topic and approve_blueprint"
-    decide("approve_blueprint", params: { subject: "math" }, attest: "  ")
+    decide("approve_blueprint", params: { revision_id: @blueprint.id }, attest: "  ")
     assert_response :unprocessable_entity
     assert_includes json["reasons"].first, "attest_it must hold"
     assert_equal 0, Decision.count
@@ -185,17 +186,17 @@ class PublicApiDecisionsTest < ActionDispatch::IntegrationTest
 
   test "the list shows what was recorded, with its origin, oldest first, from the id given" do
     approve_graph_row!
-    decide("approve_skill_graph", params: { subject: "other" }, confirm: true) # not recorded
+    decide("approve_skill_graph", params: { revision_id: 999_999 }, confirm: true) # not recorded
     api_as(@bot, "/api/v1/decisions")
     assert_response :success
     assert_equal [ "approve_skill_graph" ], json["decisions"].map { |d| d["kind"] }
     first = json["decisions"].first
     assert_equal [ "math", "web", "nik" ], first.values_at("subject", "via", "teacher")
     assert first["created_at"].present?
-    decide("approve_blueprint", params: { subject: "math" }, confirm: true) # refused: the gate wants a lot
+    decide("approve_blueprint", params: { revision_id: @blueprint.id }, confirm: true) # refused: the gate wants a lot
     start = Decision.maximum(:id)
     Decision.create!(kind: "record_consent", payload_json: { via: "console" }.to_json, request_id: SecureRandom.uuid, teacher_login: "nik", groups: "console", remote_addr: "console")
-    decide("approve_skill_graph", params: { subject: "math" }, confirm: true) # already approved by the row above
+    decide("approve_skill_graph", params: { revision_id: @graph.id }, confirm: true) # already approved by the row above
     api_as(@teacher, "/api/v1/decisions?since=#{first['id']}")
     assert_equal [ "record_consent" ], json["decisions"].map { |d| d["kind"] }
     assert_equal "console", json["decisions"].first["via"]
@@ -204,7 +205,7 @@ class PublicApiDecisionsTest < ActionDispatch::IntegrationTest
   end
 
   test "an API decision is in the list with via api, the token and the payload" do
-    decide("approve_skill_graph", params: { subject: "math" }, confirm: true)
+    decide("approve_skill_graph", params: { revision_id: @graph.id }, confirm: true)
     api_as(@bot, "/api/v1/decisions?since=0")
     row = json["decisions"].sole
     assert_equal [ "approve_skill_graph", "math", "api", public_id(@teacher), "nik" ], row.values_at("kind", "subject", "via", "token", "teacher")
@@ -227,7 +228,7 @@ class PublicApiDecisionsTest < ActionDispatch::IntegrationTest
   end
 
   test "a reconcile run takes an API decision for a decision with provenance" do
-    decide("approve_skill_graph", params: { subject: "math" }, confirm: true)
+    decide("approve_skill_graph", params: { revision_id: @graph.id }, confirm: true)
     result = DecisionReconciliation.call(since: 1.hour.ago)
     assert_empty(result.items.select { |i| i[:type] == "decision_without_provenance" })
   end

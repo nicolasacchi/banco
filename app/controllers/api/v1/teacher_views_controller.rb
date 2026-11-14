@@ -1,10 +1,12 @@
 module Api
   module V1
-    # The teacher's pages as JSON (D-328), read-only, for every token role: the home dashboard, a subject's course path, one
+    # The teacher's pages as JSON (D-328), read-only, for the tokens that read (bot_read, teacher; a content agent's token is 403, since these pages hold the third
+    # reviewer's opinions and the student's progress): the home dashboard, a subject's course path, one
     # topic, the entry test. They answer with the facts of Teacher::Home|Dashboard, CourseReview, TopicReview and TestReview
     # (Teacher::ApiView); opening a page for the teacher records "read" events, and these never do, so a read here can never
-    # stand in for the teacher reading (the gate of approve_topic still asks for the page in the browser, or the console's attestation).
+    # stand in for the teacher reading (the gate of approve_topic still asks for the page in the browser, or the attestation: console or teacher token).
     class TeacherViewsController < Api::BaseController
+      before_action { require_token_roles("bot_read", "teacher") }
       before_action :load_subject, except: :home
 
       # GET /api/v1/teacher/home?student=KEY

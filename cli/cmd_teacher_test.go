@@ -126,7 +126,7 @@ func TestBaseURLForms(t *testing.T) {
 			t.Errorf("%q: got %q, %v; want %q", in, got, err, want)
 		}
 	}
-	for _, in := range []string{"ftp://api.banco.scc.im", "https://", "https://u:p@api.banco.scc.im", "https://api.banco.scc.im?x=1", "https://api.banco.scc.im#f", "http://exa mple.test"} {
+	for _, in := range []string{"ftp://api.banco.scc.im", "https://", "https://u:p@api.banco.scc.im", "https://api.banco.scc.im?x=1", "https://api.banco.scc.im#f", "http://exa mple.test", "http://api.banco.scc.im", "http://203.0.113.9:3100", "http://banco:3100", "http://localhost.evil.example"} {
 		if _, err := normalizeBaseURL(in); err == nil {
 			t.Errorf("%q must be refused", in)
 		} else if ce, ok := err.(*CLIError); !ok || ce.Code != "E-URL" || ce.exit != ExitUsage {
@@ -147,4 +147,16 @@ func TestRefusedBaseURLIsReportedByTheFirstRequest(t *testing.T) {
 	if ce, ok := err.(*CLIError); !ok || ce.Code != "E-URL" {
 		t.Fatalf("%v", err)
 	}
+}
+
+// D-327: a refused token is a 401 without the contract digest (the server gives the digest to a good token only); the CLI reports
+// the authentication error, not "the server did not answer as banco".
+func TestAnUnauthorizedAnswerWithoutTheDigestIsAnAuthError(t *testing.T) {
+	srv := fakeServer(401, `{"code":"E-AUTH","field":"authorization","message":"token missing, invalid, expired or revoked","next":"banco schema"}`, "")
+	defer srv.Close()
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "status")
+	if r.exit != ExitAuth {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	assertErrJSON(t, r.stderr, "E-AUTH")
 }

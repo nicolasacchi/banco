@@ -8,7 +8,13 @@ the API never does. The content agents' commands (`banco work`, `review`, `solve
 ## Base URL and authentication
 
 - Base URL: `https://api.banco.scc.im`. HTTPS only; the TLS and the rate limit are the edge's (Traefik), not the app's. `BANCO_URL` may also be a bare host
-  (`api.banco.scc.im`, taken as https), with no trailing slash needed.
+  (`api.banco.scc.im`, taken as https), with no trailing slash needed. The CLI refuses `http://` for any host but `localhost` and the
+  loopback addresses (`E-URL`): the token must not cross a network in clear.
+- The public host answers the two public roles only. A request that comes through the edge with a content-agent token
+  (`agent_claude`, `agent_omp`, `ci`) is `403 E-AUTH`, reason `not_public_role`; the content agents use the local listener (`http://127.0.0.1:3100`).
+  The host names are checked per listener: `api.banco.scc.im` (`BANCO_API_HOST`) is served on the API listener only, and `banco.scc.im` never on it.
+- Every answer is `Cache-Control: no-store`; the contract digest header is sent to a caller with a good token only (a refused token is a bare 401).
+- A request body over 10 MB is refused before it is read.
 - Header: `Authorization: Bearer bnc_<public id>_<secret>`. The token is printed once when the operator issues it
   (`bin/rails banco:token:issue`); only its sha256 is stored, so a lost token is replaced, never recovered.
 - The CLI reads the token from `BANCO_TOKEN` (otherwise from the password manager) and the host from `BANCO_URL`:
@@ -30,7 +36,7 @@ banco status                                # any read works with either role
 |---|---|---|
 | `bot_read` | every GET of the API | nothing: any other method is `403 E-AUTH`, reason `read_only_token` |
 | `teacher` | everything `bot_read` reads | teacher decisions and comment actions, as the login stored on the token; never content |
-| `agent_claude`, `agent_omp`, `ci` | the content agents' reads and the teacher views (D-328) | the content agents' writes (items, lessons, reviews, …); **not** decisions, comments or pending answers |
+| `agent_claude`, `agent_omp`, `ci` | the content agents' reads, on the local listener only; **not** the teacher views (D-328), decisions, comments or pending answers | the content agents' writes (items, lessons, reviews, …); **not** decisions, comments or pending answers |
 
 - A `bot_read` or `teacher` token needs **no session** (`X-Banco-Session`, `BANCO_SESSION`) to read; a session only attributes
   a content agent's writes. It also sees the commands a content agent may use only inside a session (`review open`, `solve open`,
@@ -44,8 +50,8 @@ banco status                                # any read works with either role
 
 ## Expiry and revocation
 
-- A token expires: `banco:token:issue` gives 90 days unless `EXPIRES_DAYS=n` says otherwise (`bot_read` and `teacher` tokens
-  always expire). An expired token, a revoked token and a wrong token are all `401 E-AUTH`, "token missing, invalid, expired or revoked".
+- A token expires: `banco:token:issue` gives 90 days unless `EXPIRES_DAYS=n` (at least 1) says otherwise: no token is issued without an expiry,
+  and a `bot_read` or `teacher` token without one is invalid. An expired token, a revoked token and a wrong token are all `401 E-AUTH`, "token missing, invalid, expired or revoked".
   Ask the operator for a new token; the CLI cannot tell expired from wrong, on purpose.
 - The operator lists tokens with `bin/rails banco:token:list` (public id, role, label, teacher, expiry, state) and revokes one
   with `bin/rails banco:token:revoke ID=<public id>`.
@@ -86,7 +92,14 @@ The row records the teacher login, `groups: api`, the client address, the token'
 - `--reason` is `reason_it`, the teacher's reason, in Italian, required by the kinds that ask for one. A kind that takes no reason keeps
   the words as `api_reason` in the payload.
 - `--attest` is `attest_it`: the words that waive only the "review opened in the app" requirement of `approve_topic` and
-  `approve_blueprint` (D-260). Every other requirement of the gate holds. It is accepted from this API and the operator's console, not from the browser.
+  `approve_blueprint` (D-260). Every other requirement of the gate holds. It is accepted from the operator's console **and from a
+  teacher token over this API** (the operator's decision, D-327), not from the browser. **Risk, named:** a leaked or misled teacher token
+  can approve a topic or a test nobody opened; the words are recorded in the payload and shown on the teacher's pages, and the flag
+  `BANCO_DECISIONS_ENABLED=0` switches every API decision off at once.
+- The kinds the API records are the list above **without `record_consent` and `release_diagnosis`**: the parent's consent and the opening of
+  the entry test stay with the browser and the console (`403 E-TEACHER-REFUSED`, reason `kind_not_allowed`, a dry run too).
+- An approval of a graph or a test (`approve_skill_graph`, `approve_blueprint`, `confirm_test_reviewed`) needs `"revision_id": N` in
+  `--params`: over the API a subject alone is not "the latest revision", so the bot approves what it read, never something submitted in between.
 
 Dry run (nothing written):
 
@@ -198,10 +211,11 @@ A short answer without a grade proposal has no `decide` yet: a grader's proposal
 ## Teacher views
 
 The bot reads what the teacher reads in the browser, and what the student sees, without a browser (D-328). Five read-only
-endpoints, answered to every token role (`bot_read`, `teacher`, the content agents, `ci`); each has a CLI command. Nothing
+endpoints, answered to the tokens that read (`bot_read`, `teacher`; a content agent's token is `403`, reason `token_role`, because these pages
+hold the third reviewer's opinions and the student's progress); each has a CLI command. Nothing
 here writes: reading a page through the API never records that the teacher read it (`teacher_viewed_topic`,
 `teacher_saw_exercise`), so the approval gate's «page opened» and «exercises seen» conditions are still the teacher's, in the
-browser (or the operator's attestation at the console).
+browser (or the attestation: from the console, or from a teacher token over the API, D-327).
 
 ```bash
 export BANCO_URL=https://api.banco.scc.im          # a bare host (api.banco.scc.im) is https too; no trailing slash needed
@@ -427,7 +441,7 @@ A topic or test read (`banco teacher topic`, `banco teacher test`) runs the page
 - It never returns a token's secret, a password or a file of the server; the operator's console tasks (`banco:token:*`, `banco:decide`,
   `banco:correct_session`, `banco:search:rebuild`) stay on the host.
 - The content agents' tokens never decide, never read comments or pending answers, and never act as the teacher.
-- The teacher views (`banco teacher ...`, `banco progress`) never write: reading a page through the API records no `teacher_viewed_topic` or `teacher_saw_exercise` event, so the approval gate's «page opened» and «exercises seen» conditions stay the teacher's, in the browser (or the operator's attestation); they show no student's name (keys only) and no student's answer.
+- The teacher views (`banco teacher ...`, `banco progress`) never write: reading a page through the API records no `teacher_viewed_topic` or `teacher_saw_exercise` event, so the approval gate's «page opened» and «exercises seen» conditions stay the teacher's, in the browser (or the attestation, from the console or a teacher token over the API); they show no student's name (keys only) and no student's answer.
 
 ## The release build of the CLI
 

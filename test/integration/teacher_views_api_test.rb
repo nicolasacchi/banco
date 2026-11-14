@@ -10,16 +10,17 @@ class TeacherViewsApiTest < ActionDispatch::IntegrationTest
   include MultiUser
   include CoursePathWorld
 
-  READ_ROLES = %w[bot_read teacher agent_claude agent_omp ci].freeze
+  READ_ROLES = %w[bot_read teacher].freeze
+  CONTENT_ROLES = %w[agent_claude agent_omp ci].freeze
 
   setup do
     build_course_path_world
     @major = path_finding!(@ready_items.first)
-    # Every role reads the same; a teacher token acts as a login on the teacher list (MultiUser lists "nik"), and none needs a session.
-    @tokens = READ_ROLES.to_h { |role| [ role, ApiToken.issue!(role: role, label: "views #{role}", expires_at: 30.days.from_now, teacher_login: ("nik" if role == "teacher")) ] }
+    # Both reading roles read the same (the content roles are refused, D-327); a teacher token acts as a login on the teacher list (MultiUser lists "nik"), and none needs a session.
+    @tokens = (READ_ROLES + CONTENT_ROLES).to_h { |role| [ role, ApiToken.issue!(role: role, label: "views #{role}", expires_at: 30.days.from_now, teacher_login: ("nik" if role == "teacher")) ] }
   end
 
-  def api(path, token: @tokens.fetch("agent_claude"))
+  def api(path, token: @tokens.fetch("bot_read"))
     headers = token ? { "Authorization" => "Bearer #{token}" } : {}
     on(:api, path, headers: headers)
   end
@@ -45,9 +46,19 @@ class TeacherViewsApiTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "a content agent's token is refused: these pages hold the third reviewer's opinions and the student's progress (D-327)" do
+    ENDPOINTS.each do |path|
+      CONTENT_ROLES.each do |role|
+        api(path, token: @tokens.fetch(role))
+        assert_response :forbidden, "#{role} #{path}"
+        assert_equal [ "E-AUTH", "token_role" ], json.values_at("code", "reason")
+      end
+    end
+  end
+
   test "every role that may read gets the same answer" do
     ENDPOINTS.each do |path|
-      bodies = @tokens.map do |role, token|
+      bodies = @tokens.slice(*READ_ROLES).map do |role, token|
         api(path, token: token)
         assert_response :success, "#{role} #{path}"
         response.body
