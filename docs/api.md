@@ -55,11 +55,13 @@ banco status                                # any read works with either role
 - A token expires: `banco:token:issue` gives 90 days unless `EXPIRES_DAYS=n` (at least 1) says otherwise: no token is issued without an expiry,
   and a `bot_read` or `teacher` token without one is invalid. An expired token, a revoked token and a wrong token are all `401 E-AUTH`, "token missing, invalid, expired or revoked".
   Ask the operator for a new token; the CLI cannot tell expired from wrong, on purpose.
-- A `bot_read` or `teacher` token **renews itself on use** (D-330): `EXPIRES_DAYS` is its lifetime, and a request that the server
-  accepts moves the expiry to now plus that lifetime when less than the lifetime minus one day is left (half the lifetime for a
-  one-day token), so at most about once a day. A token used at least once per lifetime never expires; one left idle for a whole
-  lifetime expires, and an expired or revoked token is never renewed. A refused request (a wrong method, a teacher no longer on
-  the list) renews nothing. The content agents' tokens keep the expiry they were issued with. `banco token` shows the current expiry.
+- A `bot_read` or `teacher` token **renews itself on use** (D-330): `EXPIRES_DAYS` is its lifetime, and any request that passes
+  authentication and the scope checks (the edge's roles, the teacher list, the method) moves the expiry to now plus that lifetime
+  when less than the lifetime minus one day is left (half the lifetime for a one-day token), so at most about once a day; it renews
+  even when the command then answers `404` or `422`. A token used at least once per lifetime never expires; one left idle for a whole
+  lifetime expires, and an expired or revoked token is never renewed. A request refused by those checks (a wrong method, a teacher
+  no longer on the list) renews nothing; a renewal that fails (the database busy) is logged and the request goes on. The content
+  agents' tokens keep the expiry they were issued with. `banco token` shows the current expiry.
 - The operator lists tokens with `bin/rails banco:token:list` (public id, role, label, teacher, effective expiry, state) and revokes one
   with `bin/rails banco:token:revoke ID=<public id>`. Revocation is the way to stop a token that is still in use.
 
@@ -426,7 +428,8 @@ official student sees no subject before the teacher releases its course.
 | 422 | `E-FILES` | a malformed body, an unknown value of a filter, `confirm` that is not a boolean |
 | (CLI) | `E-URL` | `BANCO_URL` is not `http(s)://host[:port][/prefix]` or a bare host; exit 2, nothing sent |
 | (CLI) | `E-CONTRACT` | the CLI's embedded contract differs from the server's (exit 6); `next` is `banco self-update` |
-| (CLI) | `E-SELF-UPDATE` | `banco self-update` downloaded a file whose sha256 or size differs from the server's list, or could not write beside the program (exit 6); nothing was replaced |
+| (CLI) | `E-SELF-UPDATE` | `banco self-update`: the server lists a binary over 100 MB, the download's sha256 or size differs from the server's list, or the program's directory cannot be written (exit 6); nothing was replaced |
+| (CLI) | `E-NETWORK` | also: the server answered with a redirect; the CLI follows no redirect, so the token never goes to another address |
 
 The registry of every code is `config/banco/error_codes.yml`. Exit code 4 is any 401 or 403, 3 any 404 or 422.
 
@@ -458,9 +461,10 @@ A topic or test read (`banco teacher topic`, `banco teacher test`) runs the page
 `bin/build-cli-dist` (POSIX sh, needs Go) tests the CLI and cross-compiles it for linux, darwin and windows on amd64 and arm64 into
 `dist/` (git-ignored) with `dist/SHA256SUMS` and `dist/build.json` (`{version, built_at}`); the version is stamped from git (`banco version` prints
 `cli_version` as `<base>+<commit>`, with `.dirty` if `cli/` or `contract/` had uncommitted changes), or from `GIT_SHA` where there is no
-`.git`. The production image builds it in its `cli` stage (the Go of `go.mod`) and carries it at `/rails/dist`, so the server publishes
-the build of its own commit. The first time, copy the file for the bot's platform, check it with `sha256sum -c SHA256SUMS`, make it
-executable and put it on the `PATH` as `banco`; afterwards `banco self-update` keeps it current.
+`.git`. The production image builds it in its `cli` stage (the Go of `go.mod`; the production build passes
+`--build-arg GIT_SHA=$(git rev-parse HEAD)`) and carries it at `/rails/dist`, owned by root and read-only (the app user cannot rewrite
+a binary or `SHA256SUMS`), so the server publishes the build of its own commit. The first time, copy the file for the bot's platform,
+check it with `sha256sum -c SHA256SUMS`, make it executable and put it on the `PATH` as `banco`; afterwards `banco self-update` keeps it current.
 
 ## Staying current
 
@@ -498,15 +502,18 @@ first, all of them without `since`; `since` that is not `D-` and a number is `42
 
 ### `banco self-update [--check]`
 
-Reads `/updates` and compares the server's CLI `version` and `contract_digest` with its own. When they differ it downloads
-`GET /api/v1/cli/banco-<os>-<arch>[.exe]` (only a name listed in `dist/SHA256SUMS` is served, with its sha256 in `X-Banco-Sha256`;
-anything else is `404 E-NOT-FOUND`), checks the sha256 and the size against the list (`E-SELF-UPDATE` and nothing replaced when they
-differ), writes it to a temporary file beside its own executable, makes it executable (0755) and renames it over itself: the old
-program stays whole until the new one is complete. On Windows, which cannot replace a running program, it writes `banco.new.exe`
-beside it and says so: replace `banco.exe` with it after the command ends. It prints `{cli_version, server_cli_version, contract_sha256,
-server_contract_sha256, server_commit, file, file_available, update_available, updated, path?, next?}`. `--check` only reports. The
-same HTTPS rule holds: `http://` is refused off loopback. An out-of-date CLI on a server without a build for its platform is
-`E-NOT-FOUND` (exit 3).
+Reads `/updates` and compares the server's CLI `version` and `contract_digest` with its own (equal or not: commits are not ordered).
+When they differ it downloads `GET /api/v1/cli/banco-<os>-<arch>[.exe]` (only a name listed in `dist/SHA256SUMS` that is a regular
+file inside `dist/`, never a symlink, is served, with its sha256 in `X-Banco-Sha256`; anything else is `404 E-NOT-FOUND`). A listed size
+over 100 MB is refused before the download. The download streams into a temporary file beside the CLI's own executable, read to at most
+the listed size plus one byte, its size and sha256 checked against the list as it is written (`E-SELF-UPDATE` and nothing replaced when
+they differ); the file gets the mode of the old program and is renamed over it: the old program stays whole until the new one is
+complete. On Windows, which cannot replace a running program, it is staged as `banco.new.exe` beside it (`staged: true`,
+`updated: false`): replace `banco.exe` with it after the command ends. It prints `{cli_version, server_cli_version, contract_sha256,
+server_contract_sha256, server_commit, file, file_available, update_available, updated, staged?, path?, next?}`. `--check` only reports.
+The same HTTPS rule holds: `http://` is refused off loopback, and no redirect is followed. An out-of-date CLI on a server without a build
+for its platform is `E-NOT-FOUND` (exit 3). The sha256 comes from the same server as the binary: it catches a broken download, not a
+compromised server.
 
 ### The loop
 

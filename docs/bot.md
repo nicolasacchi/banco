@@ -78,8 +78,10 @@ banco token                          # the token's role and expiry
 
 - Any command that answers `E-CONTRACT` means the server changed: run `banco self-update`, then `banco changes` and `banco docs show bot`.
 - Keep the last decision number and the last `server_commit` seen; a new commit is a reason to run `banco self-update`.
-- The token renews itself while the bot uses it (any read, at least once in its lifetime). It expires only after a whole lifetime
-  without use, or when the operator revokes it.
+- The token renews itself while the bot uses it (any request the server accepts, at least once in its lifetime). It expires only
+  after a whole lifetime without use, or when the operator revokes it.
+- `banco self-update` checks the download against the sha256 the same server lists: that catches a broken download, not a
+  compromised server. On Windows it only stages `banco.new.exe` (`staged: true`): replace `banco.exe` with it after the command ends.
 
 ## Rules
 
