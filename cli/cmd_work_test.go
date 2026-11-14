@@ -394,8 +394,14 @@ func TestStatusReadsTheStatus(t *testing.T) {
 	}
 }
 
+// D-327: the one exception to firm rule 2 is the teacher token's `decide` (and its list, `decisions`); the server
+// refuses it to every other token role.
 func TestNoCommandApproves(t *testing.T) {
+	teacherCommands := map[string]bool{"decide": true, "decisions": true}
 	for _, c := range commands {
+		if teacherCommands[c.name] {
+			continue
+		}
 		for _, word := range []string{"approve", "decision", "release", "confirm", "dispose"} {
 			if strings.Contains(c.name, word) {
 				t.Errorf("%q: no command takes a decision", c.name)

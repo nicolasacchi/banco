@@ -60,7 +60,7 @@ class DecisionConsoleTest < ActionDispatch::IntegrationTest
     assert_equal "console", payload["via"]
     assert_equal "Operator approves.", payload["console_reason"]
     assert_equal @graph, SubjectStage.approved_graph(@subject)
-    assert SubjectStage.approved_from_console?(@subject, "approve_skill_graph")
+    assert_equal "console", SubjectStage.approval_origin(@subject, "approve_skill_graph")
   end
 
   test "approving an already approved graph is refused" do
@@ -135,16 +135,18 @@ class DecisionConsoleTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "(da console)"
   end
 
-  test "no route of any listener maps to the console task and the agent API still cannot decide" do
+  # D-327: the API route that decides exists (POST /api/v1/decisions) and answers a teacher token only; no route maps to the console task.
+  test "no route of any listener maps to the console task and only a teacher token can decide over the API" do
     Rails.application.routes.routes.each do |route|
       target = "#{route.defaults[:controller]}##{route.defaults[:action]}"
       assert_no_match(/console|banco:decide/i, "#{route.path.spec} #{target}")
     end
     assert_no_difference "Decision.count" do
-      on(:api, "/api/v1/decisions", method: :post, headers: { "Content-Type" => "application/json" }, params: { kind: "approve_skill_graph", revision_id: @graph.id }.to_json)
+      on(:api, "/api/v1/decisions", method: :post, headers: { "Content-Type" => "application/json" }, params: { kind: "approve_skill_graph", revision_id: @graph.id, confirm: true }.to_json)
     end
-    assert_includes [ 401, 404 ], response.status
-    assert_not File.read(Rails.root.join("contract/commands.json")).match?(/decide|decision/i), "the CLI contract has no decision command"
+    assert_equal 401, response.status
+    decide_commands = JSON.parse(File.read(Rails.root.join("contract/commands.json")))["commands"].map { |c| c["name"] }.grep(/decision|decide|approve|confirm|release/)
+    assert_equal %w[decide decisions], decide_commands, "the CLI's decision commands are the teacher token's (D-327)"
   end
 
   test "the rake task is a dry run by default and records with CONFIRM=1" do
@@ -232,27 +234,38 @@ class DecisionConsoleTest < ActionDispatch::IntegrationTest
     %w[KIND TEACHER SUBJECT CONFIRM PARAMS].each { |k| saved&.key?(k) ? ENV[k] = saved[k] : ENV.delete(k) }
   end
 
-  test "the agent token gets 404, not just 401, on a would-be decision route" do
+  test "a content agent token cannot decide over the API, and the would-be routes of the console era are 404" do
     token = ApiToken.issue!(role: "agent_claude", label: "console test")
     headers = { "Authorization" => "Bearer #{token}", "Content-Type" => "application/json" }
-    [ "/api/v1/decisions", "/api/v1/teacher/decisions/approve_skill_graph", "/teacher/decisions/approve_skill_graph" ].each do |path|
+    [ "/api/v1/teacher/decisions/approve_skill_graph", "/teacher/decisions/approve_skill_graph" ].each do |path|
       assert_no_difference "Decision.count" do
         on(:api, path, method: :post, headers: headers, params: { revision_id: @graph.id }.to_json)
       end
       assert_equal 404, response.status, path
     end
+    assert_no_difference "Decision.count" do
+      on(:api, "/api/v1/decisions", method: :post, headers: headers, params: { kind: "approve_skill_graph", params: { subject: "math" }, confirm: true }.to_json)
+    end
+    assert_equal 403, response.status
+    assert_equal "token_role", response.parsed_body["reason"]
   end
 
   test "the console origin is structurally unreachable from the web and the API" do
     # decision.rb only reads the origin's ADDR and GROUP constants to label a stored row (Decision#console?).
     # The comments console (D-304) is the same kind of door: Comments::Console builds the origin for a rake task, and Comments::Responder
     # only tells it from a web request to label a row; no controller, view or route of the comments names it.
+    # D-327: the API's door is DecisionsController and CommentsController (with the TeacherApi concern), which pass a DecisionRecorder::Api
+    # as the origin; they never build or name the console origin.
     allowed = %w[lib/tasks/decide.rake app/models/decision_console.rb app/models/decision_recorder.rb app/models/decision.rb
-                 app/models/comments/console.rb app/models/comments/responder.rb]
+                 app/models/comments/console.rb app/models/comments/responder.rb
+                 app/controllers/api/v1/decisions_controller.rb app/controllers/concerns/teacher_api.rb]
     files = Dir[Rails.root.join("{app,lib}/**/*").to_s].select { |f| File.file?(f) }.map { |f| Pathname(f).relative_path_from(Rails.root).to_s }
     offenders = files.reject { |f| allowed.include?(f) }.select { |f| File.binread(f).force_encoding("UTF-8").scrub.match?(/DecisionConsole|DecisionRecorder::Console/) }
     assert_empty offenders
-    Dir[Rails.root.join("app/controllers/api/v1/**/*.rb").to_s].each do |f|
+    Dir[Rails.root.join("app/controllers/{api/v1/**/*,concerns/teacher_api}.rb").to_s].each do |f|
+      assert_no_match(/DecisionRecorder::Console|Console\.new/, File.read(f), f)
+      next if allowed.include?(Pathname(f).relative_path_from(Rails.root).to_s)
+
       assert_no_match(/DecisionRecorder|DecisionConsole/, File.read(f), f)
     end
   end

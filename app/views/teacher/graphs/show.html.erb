@@ -11,7 +11,7 @@
 
     <p id="graph-summary" class="hint">
       <%= t("teacher.graph.summary", count: review.skills.size, seq: review.revision.seq, share: review.inferred_share) %>
-      <%= review.approved_latest? ? t("teacher.graph.is_approved") + (SubjectStage.approved_from_console?(review.revision.subject, "approve_skill_graph") ? " #{t('teacher.from_console')}" : "") : (review.first_revision? ? t("teacher.graph.first_revision") : t("teacher.graph.newer_than_approved")) %>
+      <%= review.approved_latest? ? t("teacher.graph.is_approved") + ((origin = SubjectStage.approval_origin(review.revision.subject, "approve_skill_graph")) ? " #{t("teacher.from_#{origin}")}" : "") : (review.first_revision? ? t("teacher.graph.first_revision") : t("teacher.graph.newer_than_approved")) %>
     </p>
 
     <section id="graph-approve" class="approve card action">

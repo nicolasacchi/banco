@@ -1,7 +1,7 @@
 namespace :banco do
   namespace :answers do
-    # What waits for the teacher, from the host console (D-317). Read-only; no route, no API, no CLI command: the
-    # agents never read a student's answers.
+    # What waits for the teacher, from the host console (D-317). Read-only. Since D-327 the same rows are
+    # GET /api/v1/answers/pending for a bot_read or teacher token; a content agent's token never reads them.
     #
     #   bin/rails banco:answers:pending [STUDENT=student] [SUBJECT=math]
     desc "List the answers waiting for the teacher (undetermined and short answers): [STUDENT=key] [SUBJECT=key]"

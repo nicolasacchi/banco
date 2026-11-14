@@ -19,8 +19,13 @@ class SubjectStage
 
     def approved_blueprint(subject) = approved(subject, "approve_blueprint", BlueprintRevision)
 
-    # True when the decision that approved this kind last was recorded from the console (D-260).
-    def approved_from_console?(subject, kind) = Decision.where(subject: subject, kind: kind).order(:id).last&.console? == true
+    # "console" or "api" when the decision that approved this kind last was recorded outside the browser (D-260, D-327), else nil.
+    def approval_origin(subject, kind)
+      last = Decision.where(subject: subject, kind: kind).order(:id).last
+      return "console" if last&.console?
+
+      "api" if last&.api?
+    end
 
     # The operator's words when the latest approve_blueprint of the subject was a console approval that waived the
     # preview requirements (D-260), else nil.

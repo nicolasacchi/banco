@@ -70,6 +70,11 @@ func (c *client) doWith(command, method, path string, payload []byte, headers ma
 		return nil, newErr(ExitServer, "E-NETWORK", "", err.Error(), "")
 	}
 
+	// The public edge's rate limit (Traefik, D-327: average 10 requests per second, burst 30 per client IP) answers 429
+	// itself, without the contract header.
+	if resp.StatusCode == http.StatusTooManyRequests {
+		return nil, newErr(ExitServer, "E-RATE-LIMIT", "", "the edge limits requests to an average of 10 per second (burst 30) per client IP", "wait 10 s, then send the request again")
+	}
 	got := resp.Header.Get("X-Banco-Contract")
 	if got == "" {
 		// No contract header: not a banco server answering (restarting, proxy error page).
