@@ -1,34 +1,59 @@
 <% content_for :title, @subject_view.subject.name_it %>
 <% key = @subject_view.subject.key %>
+<%# Materia (D-326): the summary, the filter, then the mandatory topics (the programme) and the optional ones. The numbers are the
+    topic's place in its whole section, also when «Solo quello che manca» hides the done ones. %>
+<% programme = course_view.programme_topics(@subject_view); extra = course_view.extra_topics(@subject_view)
+   progress = course_view.progress(@subject_view); missing_only = only_missing? %>
 <main class="page course" style="--subject: var(--accent-<%= key %>, var(--soft-primary))">
   <%= ui_page_header(@subject_view.subject.name_it, back: [ t("subjects.title"), spath("/subjects") ]) %>
-  <section class="card subject-summary" aria-label="<%= t("subjects.title") %>">
+  <section class="card subject-summary" id="subject-summary" aria-label="<%= @subject_view.subject.name_it %>">
     <div class="subject-line">
       <%= subject_chip(key) %>
-      <div class="subject-text"><%= render "course/progress", progress: subject_progress(course_view.counts(@subject_view)) %></div>
+      <div class="subject-text"><%= render "course/summary", subject_view: @subject_view, results: true %></div>
     </div>
   </section>
   <% if @without_topic.any? %>
     <%= ui_notice :info, t("subject.no_topic", skills: @without_topic.map { |s| course_view.label(s) }.join(", ")), html: { id: "without-topic" } %>
   <% end %>
-  <% programme = course_view.programme_topics(@subject_view); extra = course_view.extra_topics(@subject_view) %>
+  <nav class="topic-filter" id="topic-filter" aria-label="<%= t("progress.filter_label") %>">
+    <a class="button small <%= missing_only ? "secondary" : "" %>" href="<%= spath("/subjects/#{key}") %>"<%= ' aria-current="true"'.html_safe unless missing_only %>><%= t("progress.filter_all") %></a>
+    <a class="button small <%= missing_only ? "" : "secondary" %>" href="<%= spath("/subjects/#{key}?show=missing") %>"<%= ' aria-current="true"'.html_safe if missing_only %>><%= t("progress.filter_missing") %></a>
+  </nav>
   <% if programme.any? %>
-    <h2><%= t("subject.topics") %></h2>
-    <ol class="topics topic-list" id="topics">
-      <% programme.each_with_index do |topic, i| %>
-        <%= render "course/topic_row", topic: topic, number: i + 1, subject_view: @subject_view %>
+    <section id="programme-section" aria-labelledby="programme-title">
+      <div class="section-head">
+        <h2 id="programme-title"><%= t("subject.topics") %></h2>
+        <span class="tag section-count" data-section-count><%= t("progress.done_of", count: progress.programme.done, total: progress.programme.total) %></span>
+      </div>
+      <% shown = programme.each_with_index.reject { |topic, _| missing_only && course_view.status(topic) == :done } %>
+      <% if shown.empty? %>
+        <p class="nothing-missing" id="programme-nothing-missing"><%= t("progress.nothing_missing") %></p>
+      <% else %>
+        <ol class="topics topic-list" id="topics">
+          <% shown.each do |topic, i| %>
+            <%= render "course/topic_row", topic: topic, number: i + 1, subject_view: @subject_view %>
+          <% end %>
+        </ol>
       <% end %>
-    </ol>
+    </section>
   <% end %>
   <% if extra.any? %>
     <section id="extra-topics-section" aria-labelledby="extra-topics-title">
-      <h2 id="extra-topics-title"><%= t("subject.extra_topics") %></h2>
+      <div class="section-head">
+        <h2 id="extra-topics-title"><%= t("subject.extra_topics") %></h2>
+        <span class="tag section-count" data-section-count><%= t("progress.done_of", count: progress.extra.done, total: progress.extra.total) %></span>
+      </div>
       <p class="hint"><%= t("subject.extra_intro") %></p>
-      <ol class="topics topic-list" id="extra-topics">
-        <% extra.each_with_index do |topic, i| %>
-          <%= render "course/topic_row", topic: topic, number: i + 1, subject_view: @subject_view %>
-        <% end %>
-      </ol>
+      <% shown = extra.each_with_index.reject { |topic, _| missing_only && course_view.status(topic) == :done } %>
+      <% if shown.empty? %>
+        <p class="nothing-missing" id="extra-nothing-missing"><%= t("progress.nothing_missing") %></p>
+      <% else %>
+        <ol class="topics topic-list" id="extra-topics">
+          <% shown.each do |topic, i| %>
+            <%= render "course/topic_row", topic: topic, number: i + 1, subject_view: @subject_view %>
+          <% end %>
+        </ol>
+      <% end %>
     </section>
   <% end %>
 </main>

@@ -150,7 +150,8 @@ No shared component was added to `components.css`.
   «Pausa: torna a Oggi» and «Commenta». A page with its own bar (lesson/2) hides it. Below 34 rem the title is hidden; below 15 rem
   (largest text on a phone) the two buttons show the icon only and keep their words for a screen reader.
 - **Subject chip and card**: `subject_chip(key)` (palette accent and icon of the subject, `--subject`), `.subject-line`, `.subject-card`;
-  `subject_progress` gives a meter of skills shown and the non-zero counts as pills.
+  `course/_summary` (`.progress-lines`) gives the three lines of a subject (mandatory topics done with a meter, optional ones done, the entry
+  test in three words), on Materie, on Materia and, summed, on Oggi (D-326). A topic row has three looks by `data-status` (`topic_status_icon`).
 - **«Ora» card** (`.now-card`): the single next thing on Oggi (entry test, then the topic left, then the first suggestion), one primary button.
 - **Topic**: `ol.topic-steps` of two `.topic-step` cards (1 Lezione, 2 Esercizi) with a state pill each.
 - **Practice**: the exercise is `.exercise-card`; `#feedback` becomes `.notice` with the outcome's tone (`success`, `nearly`, `error`, `info`);

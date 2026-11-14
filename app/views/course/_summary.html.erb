@@ -1,0 +1,28 @@
+<%# Where S is in a subject (D-326), the same three lines on Materie and on Materia: mandatory topics done out of the programme (with a
+    bar), optional ones done (only when the subject has any), the entry test in three words. results: link «Vedi i risultati» (Materia only;
+    on a Materie card the whole card is the link). %>
+<% progress = course_view.progress(subject_view); required = progress.programme; optional = progress.extra
+   entry = entry_test_for(subject_view.subject.key) %>
+<ul class="progress-lines">
+  <li class="progress-line" data-line="required">
+    <% if required.none? %>
+      <span class="progress-text"><%= t("progress.required_none") %></span>
+    <% else %>
+      <span class="progress-text"><%= t("progress.required", count: required.done, total: required.total) %></span>
+      <%= ui_meter(required.percent, t("progress.meter", done: required.done, total: required.total)) %>
+    <% end %>
+  </li>
+  <% unless optional.none? %>
+    <li class="progress-line" data-line="optional">
+      <span class="progress-text"><%= t("progress.optional", count: optional.done, total: optional.total) %></span>
+    </li>
+  <% end %>
+  <% if entry %>
+    <li class="progress-line" data-line="entry" data-state="<%= entry[:state] %>">
+      <span class="progress-text"><%= t("progress.entry_label") %>: <span class="entry-state"><%= t("progress.entry.#{entry[:state]}") %></span></span>
+      <% if results && entry[:state] == :done && entry[:run_id] %>
+        <a class="entry-results" href="<%= base_path %>/runs/<%= entry[:run_id] %>/results"><%= t("progress.entry_results") %></a>
+      <% end %>
+    </li>
+  <% end %>
+</ul>

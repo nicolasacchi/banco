@@ -1,4 +1,4 @@
-<%# One topic of a Materia: number, title, kind and minutes, why to wait, draft, tags and status. An extra topic (D-324) carries the «Fuori programma» badge. %>
+<%# One topic of a Materia: number, title, kind and minutes, why to wait, draft, tags and status (Fatto, In corso and Da fare look different: D-326). An extra topic (D-324) carries the «Fuori programma» badge. %>
 <% status = course_view.status(topic); before = course_view.before(subject_view, topic) %>
 <li class="topic row" data-topic="<%= topic.key %>" data-status="<%= status %>"<% if topic.extra? %> data-extra="true"<% end %>>
   <span class="topic-number" aria-hidden="true"><%= number %></span>
@@ -11,7 +11,7 @@
   <span class="row-end">
     <% if topic.extra? %><span data-extra-badge><%= ui_pill(t("topic.extra_badge"), :muted) %></span><% end %>
     <% if course_view.recover_tag?(topic) %><%= ui_pill(t("topic.tag_recover"), :nearly) %><% end %>
-    <%= ui_pill(t("topic.status.#{status}"), topic_status_tone(status)) %>
+    <%= ui_pill(t("topic.status.#{status}"), topic_status_tone(status), icon: topic_status_icon(status)) %>
     <%= ui_icon("next", css: "row-chev") %>
   </span>
 </li>

@@ -6,7 +6,6 @@
   <% else %>
     <ul class="subjects subject-list cards" id="subjects">
       <% @subjects.each do |sv| %>
-        <% progress = subject_progress(course_view.counts(sv)) %>
         <li class="subject card subject-card" data-subject="<%= sv.subject.key %>" style="--subject: var(--accent-<%= sv.subject.key %>, var(--soft-primary))">
           <div class="subject-line">
             <%= subject_chip(sv.subject.key) %>
@@ -15,7 +14,7 @@
             </div>
             <%= ui_icon("next", css: "row-chev") %>
           </div>
-          <%= render "course/progress", progress: progress %>
+          <%= render "course/summary", subject_view: sv, results: false %>
         </li>
       <% end %>
     </ul>

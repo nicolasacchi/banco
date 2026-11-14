@@ -131,14 +131,126 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
   test "Materie and Materia: counts, status and tag" do
     build_student_world
     page(OFFICIAL, "/subjects")
-    assert_select "li.subject[data-subject=math] .subject-state .pill", "1 da vedere"
+    assert_select "li.subject[data-subject=math] .progress-line[data-line=required] .progress-text", "Obbligatori: 0 fatti su 1"
     assert_select "li.subject[data-subject=math] [role=progressbar][aria-valuenow='0']"
+    assert_select "li.subject[data-subject=math] .progress-line[data-line=optional]", 0
+    assert_select "li.subject[data-subject=math] .progress-line[data-line=entry]", 0, "the tests are not open: no line about them"
     page(OFFICIAL, "/subjects/math")
     assert_select "li.topic[data-topic='#{TOPIC}'][data-status=todo]"
     assert_select "li.topic .topic-meta", /Ripasso di prima · 30 minuti/
     assert_select "li.topic[data-topic='#{TOPIC}'] .pill", "Da fare"
     page(OFFICIAL, "/subjects/chemistry")
     assert_response :not_found
+  end
+
+  # The entry test as Availability says it, one row for the subject of the world.
+  def entry_rows(done:, status:, run_id: nil)
+    [ Diagnosis::Availability::Row.new(subject: @subject, label_key: "diagnosis.states.to_do", label_args: {}, startable: !done, suggested: false,
+                                       done: done, status: status, run_id: run_id) ]
+  end
+
+  # The tests are open for S (the teacher's release); the preview student has them open anyway.
+  def with_entry(rows, &block)
+    decide!("release_diagnosis", {}, student: nil) unless Decision.exists?(kind: "release_diagnosis")
+    Diagnosis::Availability.stub(:for, rows, &block)
+  end
+
+  test "Materie: per subject the mandatory topics done, the optional ones done and the entry test, no skill chips" do
+    build_progress_world
+    with_entry(entry_rows(done: true, status: "completed", run_id: 77)) { page(OFFICIAL, "/subjects") }
+    assert_response :success
+    assert_select "li.subject[data-subject=math]" do
+      assert_select ".progress-line[data-line=required] .progress-text", "Obbligatori: 1 fatto su 3"
+      assert_select "[role=progressbar][aria-valuenow='33']"
+      assert_select ".progress-line[data-line=optional] .progress-text", "Facoltativi: 1 fatto su 2"
+      assert_select ".progress-line[data-line=entry]", "Test d'ingresso: fatto"
+      assert_select ".subject-state", 0
+    end
+    assert_no_match(/dimostrat|da vedere|da riprendere/, css_select("li.subject[data-subject=math]").text)
+    with_entry(entry_rows(done: false, status: "continue_next_day")) { page(OFFICIAL, "/subjects") }
+    assert_select ".progress-line[data-line=entry]", "Test d'ingresso: da finire"
+    with_entry(entry_rows(done: false, status: "not_started")) { page(OFFICIAL, "/subjects") }
+    assert_select ".progress-line[data-line=entry]", "Test d'ingresso: da fare"
+  end
+
+  test "Materia: the summary, the mandatory and the optional section with their counts, the three looks of a topic" do
+    build_progress_world
+    with_entry(entry_rows(done: true, status: "completed", run_id: 77)) { page(OFFICIAL, "/subjects/math") }
+    assert_response :success
+    assert_select "#subject-summary" do
+      assert_select ".progress-line[data-line=required] .progress-text", "Obbligatori: 1 fatto su 3"
+      assert_select ".progress-line[data-line=optional] .progress-text", "Facoltativi: 1 fatto su 2"
+      assert_select ".progress-line[data-line=entry]", /Test d'ingresso: fatto/
+      assert_select ".progress-line[data-line=entry] a[href='/diagnosis/runs/77/results']", "Vedi i risultati"
+    end
+    assert_select "#programme-title", "Obbligatori · programma"
+    assert_select "#programme-section [data-section-count]", "1 fatto su 3"
+    assert_select "#extra-topics-title", "Facoltativi · fuori programma"
+    assert_select "#extra-topics-section [data-section-count]", "1 fatto su 2"
+    assert_select "#topics li.topic", 3
+    assert_select "#topics li[data-topic=?][data-status=done] .pill.success", TOPIC, text: "Fatto"
+    assert_select "#topics li[data-topic=?][data-status=in_progress] .pill.info", PROGRESS_STARTED, text: "In corso"
+    assert_select "#topics li[data-topic=?][data-status=todo] .pill.muted", PROGRESS_TODO, text: "Da fare"
+    assert_select "#extra-topics li[data-extra=true]", 2
+    assert_select "#extra-topics li[data-topic=?][data-status=done]", PROGRESS_EXTRA_DONE
+    assert_select "#topic-filter a[aria-current=true]", "Tutti"
+    assert_select "#topic-filter a[href=?]", "/subjects/math?show=missing", text: "Solo quello che manca"
+    with_entry(entry_rows(done: false, status: "in_progress")) { page(OFFICIAL, "/subjects/math") }
+    assert_select "#subject-summary .progress-line[data-line=entry]", "Test d'ingresso: da finire"
+    assert_select "#subject-summary .entry-results", 0
+  end
+
+  test "Materia: «Solo quello che manca» hides the done topics of both sections and keeps the counts and the numbers" do
+    build_progress_world
+    page(OFFICIAL, "/subjects/math?show=missing")
+    assert_response :success
+    assert_select "#topic-filter a[aria-current=true]", "Solo quello che manca"
+    assert_select "#topic-filter a[href='/subjects/math']", "Tutti"
+    assert_equal [ PROGRESS_STARTED, PROGRESS_TODO ], css_select("#topics li.topic").map { |li| li["data-topic"] }
+    assert_equal %w[2 3], css_select("#topics .topic-number").map(&:text), "a topic keeps its place in the programme"
+    assert_equal [ PROGRESS_EXTRA_TODO ], css_select("#extra-topics li.topic").map { |li| li["data-topic"] }
+    assert_select "#programme-section [data-section-count]", "1 fatto su 3"
+    assert_select "#subject-summary .progress-line[data-line=required] .progress-text", "Obbligatori: 1 fatto su 3"
+  end
+
+  test "Materia: when nothing is missing the filter says so" do
+    build_progress_world
+    [ [ PROGRESS_STARTED, 2 ], [ PROGRESS_TODO, 3 ] ].each { |key, n| play_topic!(@progress_topics.fetch(key), "math.#{key.split('.').last}", n) }
+    play_topic!(@progress_topics.fetch(PROGRESS_EXTRA_TODO), "math.#{PROGRESS_EXTRA_TODO.split('.').last}", 3)
+    page(OFFICIAL, "/subjects/math?show=missing")
+    assert_select "#programme-nothing-missing", "Qui non manca niente. Bravo."
+    assert_select "#extra-nothing-missing", "Qui non manca niente. Bravo."
+    assert_select "#topics", 0
+    assert_select "#subject-summary .progress-line[data-line=required] .progress-text", "Obbligatori: 3 fatti su 3"
+  end
+
+  test "Oggi: «Il tuo percorso» counts the mandatory topics done and the optional ones, and suggests only the programme" do
+    build_progress_world
+    page(OFFICIAL, "/today")
+    assert_response :success
+    assert_select "#my-path h2", "Il tuo percorso"
+    assert_select "#my-path .progress-line[data-line=required] .progress-text", "Argomenti obbligatori fatti: 1 su 3"
+    assert_select "#my-path .progress-line[data-line=optional] .progress-text", "Facoltativi fatti: 1"
+    assert_select "#my-path a[href='/subjects']", "Vedi le materie"
+    assert_select "#course-part [data-topic=?]", PROGRESS_EXTRA_TODO, 0
+  end
+
+  test "the teacher's preview shows the same pages, on the preview addresses" do
+    build_progress_world
+    with_entry(entry_rows(done: false, status: "not_started")) do
+      page(TEACHER, "/teacher/preview/subjects")
+      assert_select "li.subject[data-subject=math] .progress-line[data-line=required] .progress-text", "Obbligatori: 0 fatti su 3"
+      assert_select "li.subject[data-subject=math] .progress-line[data-line=optional] .progress-text", "Facoltativi: 0 fatti su 2"
+      assert_select "li.subject[data-subject=math] .progress-line[data-line=entry]", "Test d'ingresso: da fare"
+      page(TEACHER, "/teacher/preview/subjects/math?show=missing")
+    end
+    assert_response :success
+    assert_select "#topic-filter a[href='/teacher/preview/subjects/math']", "Tutti"
+    assert_select "#programme-title", "Obbligatori · programma"
+    assert_select "#topics li.topic", 3
+    page(TEACHER, "/teacher/preview/today")
+    assert_select "#my-path .progress-line[data-line=required] .progress-text", "Argomenti obbligatori fatti: 0 su 3"
+    assert_select "#my-path a[href='/teacher/preview/subjects']", "Vedi le materie"
   end
 
   test "Argomento: the programme line, the intro, the lesson link and the skill" do

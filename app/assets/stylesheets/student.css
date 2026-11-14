@@ -125,10 +125,25 @@ ul.subject-list > li[data-state="in_progress"] .subject-state, ul.subject-list >
 ul.subject-list > li[data-state="done"] .subject-state, ul.subject-list > li[data-state="done_checking"] .subject-state { --tone: var(--tone-success); }
 ul.subject-list > li[data-state="to_redo"] .subject-state { --tone: var(--tone-nearly); }
 ul.subject-list form.inline { display: flex; margin: 0; }
-.subject-progress { display: grid; gap: var(--space-2); }
-.subject-state .pill { margin: 0 var(--space-1) var(--space-1) 0; }
+/* Where S is (D-326): the three lines of a subject (mandatory done out of all with a bar, optional done, the entry test) and Oggi's «Il tuo percorso». */
+.progress-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); min-width: 0; }
+.progress-line { display: grid; gap: var(--space-1); justify-items: start; }
+.progress-line .meter { width: 100%; }
+.progress-line[data-line="required"] .progress-text { font-weight: 700; font-size: var(--text-l); }
+.progress-line[data-line="entry"] { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); }
+.entry-state { --tone: var(--tone-muted); font-weight: 700; border-bottom: 3px solid var(--tone); }
+.progress-line[data-state="done"] .entry-state { --tone: var(--tone-success); }
+.progress-line[data-state="unfinished"] .entry-state { --tone: var(--tone-info); }
+.entry-results { display: inline-flex; align-items: center; min-height: var(--tap); }
 .subject-summary { margin-bottom: var(--space-4); }
-.subject-summary .subject-progress { flex: 1; }
+.subject-summary .progress-lines { flex: 1; }
+@media (max-width: 34rem) { .subject-summary .subject-chip { display: none; } }
+.path-card .button-row { margin-bottom: 0; }
+.topic-filter { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-4) 0 var(--space-2); }
+.section-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); margin: var(--space-5) 0 var(--space-2); }
+.section-head > h2 { margin: 0; }
+.section-count { font-weight: 700; }
+.nothing-missing { margin: var(--space-3) 0 var(--space-5); font-weight: 700; }
 .today-block { margin-bottom: var(--space-5); }
 .today-block > h2 { margin-top: var(--space-5); }
 .today #entry-warmup.optional { margin-top: var(--space-3); }
@@ -154,6 +169,13 @@ ol.topic-list > li.topic.row { display: flex; flex-direction: row; flex-wrap: wr
 ol.topic-list > li.topic.row .row-main { display: grid; gap: 0; flex: 1 1 11rem; }
 ol.topic-list > li.topic.row .row-end { flex-wrap: wrap; justify-content: flex-end; margin-left: auto; }
 .topic-number { flex: none; display: inline-grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 50%; background: var(--soft-primary); border: 2px solid var(--primary); font-weight: 700; }
+/* Three looks for a topic (D-326): done has a green-teal side, a filled number and a check in its pill; in progress a blue side; to do is plain. */
+ol.topic-list > li.topic.row { border-left-width: 0.35rem; border-left-color: var(--line); }
+ol.topic-list > li.topic.row[data-status="done"] { border-left-color: var(--tone-success); background: color-mix(in srgb, var(--tone-success) 8%, var(--surface)); }
+ol.topic-list > li.topic.row[data-status="in_progress"] { border-left-color: var(--tone-info); }
+.topic.row[data-status="done"] .topic-number { background: var(--tone-success); border-color: var(--tone-success); color: var(--surface); }
+.topic.row[data-status="in_progress"] .topic-number { border-color: var(--tone-info); }
+.topic.row[data-status="todo"] .topic-number { background: transparent; border-style: dashed; border-color: var(--muted); color: var(--muted); }
 
 /* A topic: two steps, each a card with its state. ------------------------------------------------------------------------------- */
 ol.topic-steps { list-style: none; margin: var(--space-4) 0; padding: 0; display: grid; gap: var(--space-4); }
