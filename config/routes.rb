@@ -257,6 +257,13 @@ Rails.application.routes.draw do
       post "api/v1/comments/:id/#{action}" => "api/v1/comments##{action}", constraints: comment, format: false
     end
     get "api/v1/answers/pending" => "api/v1/answers#pending", format: false
+
+    # Staying current (D-330), any token role: the token itself (never its secret), what changed in the software, the two
+    # docs the bot lives by and the CLI's release build of this image. Doc and binary names come from allowlists.
+    get "api/v1/token" => "api/v1/tokens#show", format: false
+    get "api/v1/updates" => "api/v1/updates#show", format: false
+    get "api/v1/docs/:name" => "api/v1/updates#doc", constraints: { name: /[a-z]+/ }, format: false
+    get "api/v1/cli/:file" => "api/v1/updates#cli", constraints: { file: /banco-[a-z0-9]+-[a-z0-9]+(?:\.exe)?/ }, format: false
   end
 
   # Harness listener: the page and the files Chrome loads to run an agent's
