@@ -45,9 +45,18 @@ export default class extends Controller {
 
   async start() {
     this.say(this.labels.loading)
-    // An answer left in the outbox by an earlier page goes out first, on its own.
-    if (this.outbox.size > 0) await this.outbox.flush()
+    // An answer left in the outbox by an earlier page goes out first, on its own; the page was away, so its verdict is told
+    // once the exercise is on the screen.
+    const left = this.outbox.size > 0 ? Object.values((await this.outbox.flush()).results).filter((reply) => reply?.status === "graded").pop() : null
     await this.serve(null)
+    if (left && !this.workTarget.hidden) this.sayEarlier(left)
+  }
+
+  // The verdict of the answer the last page left behind, above the exercise now served: the notice with a title of its own.
+  sayEarlier(reply) {
+    const right = reply.outcome === "correct" || reply.outcome === "correct_aided"
+    const tone = right && reply.note_it ? "nearly" : (TONES[reply.outcome] || "info")
+    this.say(reply.message_it, { tone, title: this.labels.earlier, note: reply.note_it })
   }
 
   // ---- serving -------------------------------------------------------------------------------------
@@ -292,6 +301,7 @@ export default class extends Controller {
 
   // The exercise is over: its input and helps are put away.
   close() {
+    this.busy = false
     this.itemBoxTarget.inert = true
     this.controlsTarget.hidden = true
     this.hintButtonTarget.hidden = true

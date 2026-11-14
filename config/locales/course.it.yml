@@ -155,6 +155,7 @@ it:
     hints_title: "Aiuti"
     right: "Giusto"
     nearly: "Quasi giusto"
+    earlier: "La risposta di prima"
     right_note: "Giusto, con una nota"
     clean_of: "Senza aiuto: %{n} su 3"
     leave: "Esci"
