@@ -70,6 +70,22 @@ class PublicApiRolesTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # The reads that need no id: none of them asks a reader for a session or refuses it. Every one that has an id is a test of its own.
+  test "every parameterless GET of the API answers a bot_read token without asking for a session" do
+    paths = Rails.application.routes.routes.filter_map do |route|
+      spec = route.path.spec.to_s.sub("(.:format)", "")
+      spec if route.verb == "GET" && spec.start_with?("/api/v1/") && spec.exclude?(":")
+    end
+    assert_includes paths, "/api/v1/submissions/pending"
+    assert_includes paths, "/api/v1/answers/pending"
+    assert_includes paths, "/api/v1/decisions"
+    paths.each do |path|
+      api_as(@bot, path)
+      assert_not_includes [ 401, 403 ], response.status, path
+      assert_not_includes %w[E-SESSION E-SESSION-ROLE E-AUTH], response.parsed_body.try(:[], "code"), "#{path}: #{response.body.first(200)}"
+    end
+  end
+
   # ---- the content agents' tokens are not the teacher's
 
   test "a content agent token cannot decide, read decisions, comments or the pending answers" do
