@@ -1,10 +1,13 @@
 #!/bin/sh
-# Release build of the banco CLI: linux, darwin and windows, amd64 and arm64, into dist/ with SHA256SUMS.
-# The version is stamped from git: <base>+<short commit>, with ".dirty" when cli/ or contract/ has uncommitted changes.
+# Release build of the banco CLI: linux, darwin and windows, amd64 and arm64, into dist/ with SHA256SUMS and build.json
+# ({version, built_at}: what GET /api/v1/updates reports, D-330).
+# The version is stamped from git: <base>+<short commit>, with ".dirty" when cli/ or contract/ has uncommitted changes;
+# where there is no .git (the Dockerfile's cli stage) GIT_SHA=<commit> gives the commit.
 # Each binary embeds contract/commands.json, so it only talks to a server of the same contract (X-Banco-Contract).
 #
-#   bin/build-cli-dist            # dist/banco-<os>-<arch>[.exe] and dist/SHA256SUMS
+#   bin/build-cli-dist            # dist/banco-<os>-<arch>[.exe], dist/SHA256SUMS and dist/build.json
 #   DIST_DIR=/tmp/out bin/build-cli-dist
+#   GIT_SHA=0123abcd... DIST_DIR=/dist bin/build-cli-dist   # the image's build
 #
 # On the bot's machine: check the sum, make it executable, then
 #   export BANCO_URL=https://api.banco.scc.im BANCO_TOKEN=bnc_...; banco version; banco teacher home
@@ -15,9 +18,13 @@ out="${DIST_DIR:-dist}"
 
 base=$(sed -n 's/^var version = "\([^"]*\)".*/\1/p' cli/main.go)
 [ -n "$base" ] || { echo "build-cli-dist: no 'var version' in cli/main.go" >&2; exit 1; }
-rev=$(git rev-parse --short=12 HEAD 2>/dev/null || echo unknown)
-if [ "$rev" != unknown ] && [ -n "$(git status --porcelain -- cli contract go.mod 2>/dev/null)" ]; then
-  rev="$rev.dirty"
+if [ -n "${GIT_SHA:-}" ] && [ "$GIT_SHA" != unknown ]; then
+  rev=$(printf '%.12s' "$GIT_SHA")
+else
+  rev=$(git rev-parse --short=12 HEAD 2>/dev/null || echo unknown)
+  if [ "$rev" != unknown ] && [ -n "$(git status --porcelain -- cli contract go.mod 2>/dev/null)" ]; then
+    rev="$rev.dirty"
+  fi
 fi
 version="$base+$rev"
 
@@ -40,5 +47,6 @@ if command -v sha256sum >/dev/null 2>&1; then
 else
   (cd "$out" && shasum -a 256 banco-* > SHA256SUMS)
 fi
+printf '{"version":"%s","built_at":"%s"}\n' "$version" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$out/build.json"
 echo "version $version"
 echo "checksums in $out/SHA256SUMS"

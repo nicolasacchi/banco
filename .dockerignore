@@ -45,7 +45,6 @@
 # Ignore Docker-related files
 /.dockerignore
 /Dockerfile*
-/cli
 /docs
 /vendor/bundle
 /.playwright-mcp
@@ -53,6 +52,12 @@
 # The schema fixtures are the production boot check (Banco::Schemas.validate_fixture_pair).
 !/test/fixtures/content
 *.md
+# cli/ stays in the context for the Dockerfile's cli stage (the build stage removes it). A local dist/ never enters:
+# the image's dist/ is built by that stage. The bot's two docs and the decisions index are served by the API (D-330).
+/dist
+!/docs/bot.md
+!/docs/api.md
+!/docs/decisions.md
 
 # Private working material: never in the build context nor in the image
 # (the repository is public). briefs/ is served by the API and stays in.

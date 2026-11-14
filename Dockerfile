@@ -6,9 +6,23 @@
 # checks that this ARG matches it.
 ARG RUBY_VERSION=3.4.10
 ARG NODE_VERSION=26.7.0
+# The Go of go.mod (go 1.27); test/lib/toolchain_test.rb checks that they agree.
+ARG GO_VERSION=1.27.4
 
 # Node binary for the expression grader worker only (no npm, no Chrome here).
 FROM docker.io/library/node:${NODE_VERSION}-slim AS node
+
+# The CLI's release build (D-328, D-330): the six binaries, SHA256SUMS and build.json, served to the bot by
+# GET /api/v1/updates and /api/v1/cli/:file so that `banco self-update` can replace itself. The image has no .git:
+# GIT_SHA stamps the version.
+FROM docker.io/library/golang:${GO_VERSION} AS cli
+WORKDIR /src
+COPY go.mod ./
+COPY cli/ cli/
+COPY contract/ contract/
+COPY bin/build-cli-dist bin/build-cli-dist
+ARG GIT_SHA=unknown
+RUN GIT_SHA=${GIT_SHA} DIST_DIR=/dist bin/build-cli-dist
 
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
@@ -47,6 +61,8 @@ RUN bundle install && \
     bundle exec bootsnap precompile -j 1 --gemfile
 
 COPY . .
+# cli/ is in the build context for the cli stage only.
+RUN rm -rf cli
 
 RUN bundle exec bootsnap precompile -j 1 app/ lib/
 
@@ -73,6 +89,7 @@ RUN node --version
 
 COPY --chown=${APP_UID}:${APP_GID} --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --chown=${APP_UID}:${APP_GID} --from=build /rails /rails
+COPY --chown=${APP_UID}:${APP_GID} --from=cli /dist /rails/dist
 RUN mkdir -p /rails/tmp /rails/log /rails/storage && chown -R ${APP_UID}:${APP_GID} /rails/tmp /rails/log /rails/storage
 
 USER ${APP_UID}:${APP_GID}
