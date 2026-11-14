@@ -35,7 +35,7 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
         if (right && m[4] !== undefined) reply.result_it = "Impossibile.";
         return json(reply);
       }
-      if (u.includes("/solution")) { window.__calls.push({ url: u }); return json({ n: 1, solution_steps: [{ tag: "move", do_it: "$3x = 9$", why_it: "Sposta il $-7$." }], final_it: "$x = 3$" }); }
+      if (u.includes("/solution")) { window.__calls.push({ url: u }); return json({ n: 1, steps: [{ tag: "move", do_it: "$3x = 9$", why_it: "Sposta il $-7$." }, { do_it: "$x = 3$", why_it: "Dividi per $3$." }] }); }
       if (u.includes("/lesson/events")) { window.__calls.push({ url: u, body: JSON.parse(opts.body) }); return json({ ok: true }); }
       return realFetch(url, opts);
     };
@@ -418,7 +418,8 @@ class Lesson2PageSystemTest < ApplicationSystemTestCase
     assert_selector ".exercise.is-current .verdict-right"
     click_button "Mostra la soluzione"
     assert_selector ".solution-steps", text: "Sposta il"
-    assert_selector ".solution-final", text: /3/
+    assert_selector ".solution-steps li", count: 2
+    assert_selector ".solution-steps", text: "Dividi per"
     click_button "Esercizio dopo"
     assert_selector ".try-counter", text: "Esercizio 2 di 3"
     # an answer that may be a fraction is typed on one line with the helper keys, not in stacked boxes

@@ -172,6 +172,7 @@ export function renderCheck(spec, ctx, loc, options = {}) {
   }
 
   let tries = 0
+  // the event id of an answer whose reply was lost: the same answer sent again keeps it (the server answers for the row it has), another answer has its own
   let pending = null
   let done = false
   const say = (kind, text, explain) => {
@@ -195,10 +196,11 @@ export function renderCheck(spec, ctx, loc, options = {}) {
     submit.disabled = true
     const label = submit.textContent
     submit.textContent = ctx.t.checking
-    pending ||= newId()
+    const response = handleInput.raw()
+    if (pending?.response !== response) pending = { id: newId(), response }
     let reply = null
     try {
-      reply = await ctx.postCheck(loc, { response: handleInput.raw(), try: tries + 1, client_event_id: pending, ...(listen?.shown() ? { text_shown: true } : {}) })
+      reply = await ctx.postCheck(loc, { response, try: tries + 1, client_event_id: pending.id, ...(listen?.shown() ? { text_shown: true } : {}) })
     } catch (_error) {
       reply = null
     }

@@ -93,7 +93,7 @@ export function render(block, ctx, loc = {}) {
     const actions = el("p", { class: "check-actions" }, submit)
     form.append(slot, actions, feedback)
     let tries = 0
-    let pending = null
+    let pending = null // { id, key }: the event id of an answer whose reply was lost; the same answer sent again keeps it, another answer has its own
     let done = false
     const say = (kind, text) => {
       feedback.replaceChildren(el("p", { class: `verdict verdict-${kind}` }, icon(kind === "right" ? "circle-check" : "wrong-hint", "verdict-ic"), el("strong", { text: kind === "right" ? ctx.t.right : kind === "wrong" ? ctx.t.wrong : ctx.t.invalid })))
@@ -103,10 +103,11 @@ export function render(block, ctx, loc = {}) {
     const answer = async (response) => {
       if (done) return
       submit.disabled = true
-      pending ||= newId()
+      const key = JSON.stringify(response)
+      if (pending?.key !== key) pending = { id: newId(), key }
       let reply = null
       try {
-        reply = await ctx.postCheck(loc, { response, try: tries + 1, client_event_id: pending })
+        reply = await ctx.postCheck(loc, { response, try: tries + 1, client_event_id: pending.id })
       } catch (_error) {
         reply = null
       }

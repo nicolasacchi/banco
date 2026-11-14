@@ -43,4 +43,11 @@ module LessonPagesHelper
     urls.delete(:questions) if preview? # no "Non ho capito" from the teacher's preview: the teacher reads those, never writes them (D-309)
     urls
   end
+
+  # The topics the lesson's links name that this student's course does not open (not approved, not released, not in the programme): their
+  # links are drawn as «(non ancora disponibile)», not as an address that answers 404 (lesson/text.js, `unavailableTopics`).
+  def lesson2_unavailable_topics(student_body)
+    targets = student_body.to_json.scan(/\]\(argomento:([a-z0-9._-]+)\)/).flatten.uniq
+    targets.reject { |key| course_view.find_topic(key) }
+  end
 end
