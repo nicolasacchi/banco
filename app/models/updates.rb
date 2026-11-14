@@ -54,24 +54,34 @@ module Updates
     { name: name.to_s, sha256: Digest::SHA256.hexdigest(text), text: text }
   end
 
-  # The binaries of the release build: the lines of dist/SHA256SUMS whose file is there; empty without dist/ (development).
+  # The binaries of the release build: the lines of dist/SHA256SUMS whose file is a regular file (not a symlink) right
+  # inside dist/; empty without dist/ (development).
   def cli_files
     sums = dist.join("SHA256SUMS")
     return [] unless sums.file?
 
+    root = dist.realpath
     sums.each_line.filter_map do |line|
       m = SUMS_LINE.match(line.chomp) or next
       path = dist.join(m[2])
-      next unless path.file?
+      next unless regular_inside?(path, root)
 
       CliFile.new(name: m[2], os: m[3], arch: m[4], sha256: m[1].downcase, size: path.size)
     end
   end
 
+  # A regular file, not a symlink, whose real path is directly inside root.
+  def regular_inside?(path, root)
+    path.lstat.file? && path.realpath.dirname == root
+  rescue SystemCallError
+    false
+  end
+
   # [file, path] of a listed binary, or nil. The path is built from the listed name only.
   def cli_file(name)
     file = cli_files.find { |f| f.name == name.to_s } or return nil
-    [ file, dist.join(file.name) ]
+    path = dist.join(file.name)
+    regular_inside?(path, dist.realpath) ? [ file, path ] : nil
   end
 
   # dist/build.json written by bin/build-cli-dist: {version, built_at}; {} when absent or unreadable.

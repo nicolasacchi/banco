@@ -36,17 +36,22 @@ class PublicApiUpdatesTest < ActionDispatch::IntegrationTest
   end
 
   # A release build in the scratch directory: two listed binaries, one listed but missing, one present but not listed,
-  # a line that names a path, and build.json.
+  # a line that names a path, a listed symlink to a file outside dist/, a listed directory, and build.json.
   def build_dist
     dist = @scratch.join("dist")
     dist.mkpath
     files = { "banco-linux-amd64" => "linux program", "banco-windows-arm64.exe" => "windows program", "banco-darwin-amd64" => "not listed" }
     files.each { |name, body| dist.join(name).write(body) }
+    @scratch.join("outside").write("outside program")
+    File.symlink(@scratch.join("outside"), dist.join("banco-darwin-arm64"))
+    dist.join("banco-windows-amd64.exe").mkpath
     sums = [ "#{Digest::SHA256.hexdigest('linux program')}  banco-linux-amd64",
              "#{Digest::SHA256.hexdigest('windows program')} *banco-windows-arm64.exe",
              "#{'0' * 64}  banco-linux-arm64",
              "#{'1' * 64}  ../build.json",
-             "#{'2' * 64}  SHA256SUMS" ]
+             "#{'2' * 64}  SHA256SUMS",
+             "#{Digest::SHA256.hexdigest('outside program')}  banco-darwin-arm64",
+             "#{'3' * 64}  banco-windows-amd64.exe" ]
     dist.join("SHA256SUMS").write(sums.join("\n") + "\n")
     dist.join("build.json").write(%({"version":"0.1.0+abcdef123456","built_at":"2026-11-14T10:00:00Z"}\n))
     Updates.dist_dir = dist
@@ -148,6 +153,25 @@ class PublicApiUpdatesTest < ActionDispatch::IntegrationTest
     renewal = renewals(token).last
     assert_raises(ActiveRecord::StatementInvalid) { renewal.update_column(:expires_at, 1.year.from_now) }
     assert_raises(ActiveRecord::StatementInvalid) { renewal.delete }
+  end
+
+  test "a renewal that fails is logged and the request goes on" do
+    token = issue_token("bot_read", expires_at: 2.days.from_now)
+    row = ApiToken.lookup(public_id(token))
+    calls = 0
+    failing = row.merge(renew: lambda { |_now|
+      calls += 1
+      raise ActiveRecord::StatementInvalid, "database is locked"
+    })
+    Banco::TokenAuth.lookup = ->(id) { id == public_id(token) ? failing : nil }
+    api_as(token, "/api/v1/status")
+    assert_response :success
+    api_as(token, "/api/v1/updates")
+    assert_response :success
+    assert_equal 2, calls
+    assert_equal 0, ApiTokenRenewal.count
+  ensure
+    Banco::TokenAuth.reset!
   end
 
   test "banco:token:list and expired? read the effective expiry" do
@@ -273,13 +297,14 @@ class PublicApiUpdatesTest < ActionDispatch::IntegrationTest
     api_as(token, "/api/v1/cli/banco-windows-arm64.exe")
     assert_equal "windows program", response.body
 
-    # present but not listed, listed but missing, and every way out of the directory
+    # present but not listed, listed but missing, a listed symlink and directory, and every way out of the directory
     [ "/api/v1/cli/banco-darwin-amd64", "/api/v1/cli/banco-linux-arm64", "/api/v1/cli/SHA256SUMS", "/api/v1/cli/build.json",
+      "/api/v1/cli/banco-darwin-arm64", "/api/v1/cli/banco-windows-amd64.exe",
       "/api/v1/cli/..%2Fbuild.json", "/api/v1/cli/../dist/SHA256SUMS", "/api/v1/cli/banco-linux-amd64%2F..%2F..%2FGemfile",
       "/api/v1/cli/%2Fetc%2Fpasswd", "/api/v1/cli/banco-..-amd64", "/api/v1/cli/banco-linux-amd64.exe" ].each do |path|
       api_as(token, path)
       assert_response :not_found, path
-      [ "linux program", "windows program", "not listed" ].each { |body| assert_not_includes response.body, body, path }
+      [ "linux program", "windows program", "not listed", "outside program" ].each { |body| assert_not_includes response.body, body, path }
     end
   end
 

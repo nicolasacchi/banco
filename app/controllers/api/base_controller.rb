@@ -19,7 +19,13 @@ module Api
 
     private
 
-    def renew_token! = @token.renew!
+    # A renewal that fails (the database busy or locked) is logged and the request goes on: the token is still valid, and
+    # the next request renews it.
+    def renew_token!
+      @token.renew!
+    rescue ActiveRecord::ActiveRecordError => e
+      Rails.logger.warn("token #{@token.id}: renewal failed (#{e.class}: #{e.message.first(200)}); the request goes on")
+    end
 
     # A token of the public API's reading roles (bot_read, teacher): it needs no session to read, since a session only
     # attributes writes (D-327), and it sees every opinion and every answer the teacher's pages show.
