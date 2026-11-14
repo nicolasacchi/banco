@@ -14,7 +14,7 @@ module Diagnosis
     end
 
     def rows
-      facts = subjects.map { |s| fact(s) }
+      facts = blueprints.map { |s, b| fact(s, b) }
       today = @clock.date(@clock.now)
       states = DailyPlan.availability(facts.map(&:daily), today)
       proposed = false
@@ -36,12 +36,13 @@ module Diagnosis
 
     private
 
-    def subjects
-      Subject.order(:position).select { |s| Conductor.blueprint_for(@student, s) }
+    # The subjects that have a blueprint for this student, with it, looked up once.
+    def blueprints
+      Subject.order(:position).filter_map { |s| (b = Conductor.blueprint_for(@student, s)) && [ s, b ] }
     end
 
-    def fact(subject)
-      depends = JSON.parse(Conductor.blueprint_for(@student, subject).body_json).fetch("depends_on_subjects", [])
+    def fact(subject, blueprint)
+      depends = JSON.parse(blueprint.body_json).fetch("depends_on_subjects", [])
       run = DiagnosisRun.where(student: @student, subject: subject).order(:sequence).last
       return Fact.new(subject, daily(subject, depends, "not_started"), nil, false, false) unless run
       return Fact.new(subject, daily(subject, depends, "to_redo"), run, false, false) if EventLoader.voided?(run)
@@ -49,7 +50,7 @@ module Diagnosis
       conductor = Conductor.new(run)
       state = conductor.state
       # A run held open for pending answers, or one whose next move is to close, has nothing left to ask: for the list it is done (D-298).
-      status = if state.closed || (!state.open_serve && (conductor.holding? || conductor.finished?)) then "completed"
+      status = if conductor.completed? then "completed"
       elsif state.open_sitting then "in_progress"
       elsif state.sittings.any? then "continue_next_day"
       else "not_started"
@@ -59,7 +60,7 @@ module Diagnosis
       daily = DailyPlan::Subject.new(key: subject.key, depends_on: depends, status: status,
                                      sittings_closed: status == "completed" ? [ state.sittings.count(&:closed_at), 1 ].max : state.sittings.count(&:closed_at), sitting_dates: dates,
                                      counted_seconds_by_date: seconds)
-      checking = status == "completed" && Derivation.result(conductor.plan(reuse: false), conductor.events)[:skills].any? { |r| r[:state] == "pending" }
+      checking = status == "completed" && PlanLoader.light_skills(run).any? { |r| r[:state] == "pending" }
       last = state.sittings.last
       closed_today = status == "continue_next_day" && last&.closed_at && @clock.date(last.closed_at) == @clock.date(@clock.now)
       Fact.new(subject, daily, run, checking, closed_today ? true : false)

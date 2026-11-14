@@ -108,8 +108,14 @@ module Diagnosis
 
     def events = EventLoader.for_run(run)
 
-    # What the log says, folded with the light plan.
-    def state = Engine.fold(plan(reuse: false), events)
+    # What the log says, folded with the light plan. Folded again only when the log has changed (the loader hands back the same list while it stands still).
+    def state
+      log = events
+      return @state if @state && @state_log.equal?(log)
+
+      @state_log = log
+      @state = Engine.fold(plan(reuse: false), log)
+    end
 
     # Moves the run on until there is something to show.
     def step!
@@ -185,6 +191,18 @@ module Diagnosis
       return false if closed?
 
       Engine.next_action(plan, events, clock).type == :close_run
+    end
+
+    # The subject asks nothing more of the student (D-298): the run is closed, or no item is open and the engine
+    # has nothing left to ask, so it is held for pending answers (holding?) or its next move is to close the
+    # run (finished?). The one definition shared by the list of subjects (Availability), the report and the
+    # practice seeds (Practice::Seeder), so that they cannot drift.
+    def completed?
+      return true if closed?
+      return false if state.open_serve
+
+      action = Engine.next_action(plan, events, clock)
+      action.type == :close_run || (action.type == :wait && action.reason == :pending_answers)
     end
 
     # A sitting is open and has already served something: the student is coming back.

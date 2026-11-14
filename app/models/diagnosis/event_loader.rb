@@ -11,11 +11,15 @@ module Diagnosis
   class EventLoader
     RANK = { event: 0, attempt: 1, grading: 2, decision: 3 }.freeze
 
-    def self.for_run(run) = new(run).events
+    # Read once while the ledger stands still (Reads); the list is shared, never changed by a caller.
+    def self.for_run(run) = Reads.fetch(:events, run.id) { new(run).events.freeze }
 
-    def self.voided?(run)
-      Decision.where(kind: "void_diagnosis_run", student_id: run.student_id).any? do |d|
-        JSON.parse(d.payload_json)["run_id"] == run.id
+    def self.voided?(run) = voided_run_ids(run.student_id).include?(run.id)
+
+    # The ids of the student's runs the teacher voided.
+    def self.voided_run_ids(student_id)
+      Reads.fetch(:voided_runs, student_id) do
+        Decision.where(kind: "void_diagnosis_run", student_id: student_id).filter_map { |d| JSON.parse(d.payload_json)["run_id"] }.to_set
       end
     end
 
@@ -103,9 +107,10 @@ module Diagnosis
       fields.compact
     end
 
-    def retry_state(attempt)
-      exhausted = AppEvent.where(kind: "grade_retries_exhausted").any? { |e| JSON.parse(e.payload_json || "{}")["attempt_id"] == attempt.id }
-      exhausted ? "exhausted" : "running"
+    def retry_state(attempt) = exhausted_attempt_ids.include?(attempt.id) ? "exhausted" : "running"
+
+    def exhausted_attempt_ids
+      @exhausted_attempt_ids ||= AppEvent.where(kind: "grade_retries_exhausted").filter_map { |e| JSON.parse(e.payload_json || "{}")["attempt_id"] }.to_set
     end
 
     def decision_events

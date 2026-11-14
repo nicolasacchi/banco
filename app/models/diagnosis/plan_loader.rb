@@ -7,7 +7,17 @@ module Diagnosis
     # results of the student's runs in other subjects (reused, B-03) and every
     # fingerprint seen in the student's other runs (redo never repeats one).
     def self.for_run(run, reuse: true)
-      new(run.blueprint_revision, student: run.student, seed_salt: run.seed_salt, run: run, reuse: reuse).plan
+      Reads.fetch(:plan, run.id, reuse) do
+        new(run.blueprint_revision, student: run.student, seed_salt: run.seed_salt, run: run, reuse: reuse).plan
+      end
+    end
+
+    # The rows of Derivation.result for a run read alone: its light plan (no other subject reused) and its events.
+    # What the student's other runs are reused as (external_states) and what the list calls «checking».
+    def self.light_skills(run)
+      Reads.fetch(:light_skills, run.id) do
+        Derivation.result(for_run(run, reuse: false), EventLoader.for_run(run)).fetch(:skills).freeze
+      end
     end
 
     # The plan of a blueprint revision, for `banco diagnosis simulate --subject`
@@ -54,7 +64,8 @@ module Diagnosis
       blueprint = with_kind_overrides(@document || JSON.parse(@revision.body_json))
       graph = JSON.parse((@graph_revision || @revision.skill_graph_revision).body_json)
       graph = merge_foreign_skills(blueprint, graph)
-      built = instances(blueprint)
+      # A stored blueprint revision's instances are the same for its light and its reuse plan, and for every run pinned to it.
+      built = @revision ? Reads.fetch(:instances, @revision.id) { instances(blueprint).freeze } : instances(blueprint)
       built, missing = add_synthetic(blueprint, built) if @document
       [ Plan.build(blueprint: blueprint, graph: graph, instances: built,
                    external: @reuse ? external_states : {}, seen: @reuse ? seen_fingerprints : [], seed_salt: @seed_salt),
@@ -95,32 +106,42 @@ module Diagnosis
       mine = @revision ? @revision.subject.key : @document["subject"]
       wanted = (blueprint["entries"].map { |e| e["skill"] } + graph["skills"].flat_map { |s| s["prerequisites"] || [] })
                .map { |k| k.split(".").first }.uniq - [ mine ]
-      extra = wanted.flat_map do |key|
+      extra = wanted.flat_map { |key| foreign_skills(key) }
+      graph.merge("skills" => graph["skills"] + extra.reject { |s| graph["skills"].any? { |m| m["key"] == s["key"] } })
+    end
+
+    # The skills of the latest graph of another subject; parsed once while the graphs stand still.
+    def foreign_skills(key)
+      Reads.fetch(:foreign_skills, key) do
         subject = Subject.find_by(key: key)
         rev = subject && SkillGraphRevision.where(subject: subject).order(:seq).last
         rev ? JSON.parse(rev.body_json)["skills"] : []
       end
-      graph.merge("skills" => graph["skills"] + extra.reject { |s| graph["skills"].any? { |m| m["key"] == s["key"] } })
     end
 
     # Only what the blueprint pins is served (D-034): the items of the starting
     # skills and the items of the descent pool. A skill the descent reaches with
     # no pinned item ends not_assessed(no_unseen_items); nothing reaches the
     # student that the teacher did not approve with the blueprint, and an item
-    # whose latest validation did not pass is never served (M9a).
+    # whose latest validation did not pass is never served (M9a). Loaded in bulk:
+    # one read of the revisions with their verdicts, one of the instances.
     def instances(blueprint)
-      ids = blueprint["entries"].flat_map { |e| e["items"] } + Array(blueprint["descent"]).flat_map { |d| Array(d["items"]) }
-      ids.uniq.filter_map { |id| ItemRevision.find_by(id: id) }.select { |rev| rev.status == "passed" }.flat_map { |rev| revision_instances(rev) }
+      ids = (blueprint["entries"].flat_map { |e| e["items"] } + Array(blueprint["descent"]).flat_map { |d| Array(d["items"]) }).uniq
+      revisions = ItemRevision.where(id: ids).includes(:validations).index_by(&:id)
+      passed = ids.filter_map { |id| revisions[id.to_i] }.select { |rev| rev.status == "passed" }
+      stored = ItemInstance.where(item_revision_id: passed.map(&:id)).select(:id, :item_revision_id, :display_json, :fingerprint)
+                           .order(:id).group_by(&:item_revision_id)
+      passed.flat_map { |rev| revision_instances(rev, stored.fetch(rev.id, [])) }
     end
 
-    def revision_instances(revision)
+    def revision_instances(revision, stored = revision.instances.order(:id))
       body = JSON.parse(revision.body_json)
       kind = body["kind"] || "diagnosis_item"
       component = body["component"] || "number"
       # A testlet's one attempt is attributed to its first skill (D-047), so only that
       # skill is charged the serve (D-098); E-TESTLET-SKILLS keeps all sub items on it.
       skills = kind == "testlet" ? [ Array(body["sub_items"]).first&.dig("skill") ] : [ body["skill"] ]
-      revision.instances.order(:id).map do |inst|
+      stored.map do |inst|
         display = JSON.parse(inst.display_json)
         flags = kind == "testlet" ? Rules::V1.testlet_flags(body, display) : nil
         low, choice = if flags
@@ -131,7 +152,7 @@ module Diagnosis
         Plan::Instance.new(flags: flags, id: inst.id, item: revision.id, skills: skills, component: component,
                            low_guess: low,
                            choice: choice, expected_seconds: body["expected_seconds"] || 60,
-                           fingerprint: inst.fingerprint, kind: kind, texts: InstanceTexts.call(display))
+                           fingerprint: inst.fingerprint, kind: kind, texts: InstanceTexts::Lazy.new(display))
       end
     end
 
@@ -149,13 +170,12 @@ module Diagnosis
     def external_states
       return {} unless @student
 
-      voided = voided_run_ids
+      voided = EventLoader.voided_run_ids(@student.id)
       out = {}
-      DiagnosisRun.where(student: @student).where.not(subject: @revision.subject).order(:created_at, :id).each do |other|
-        next if voided.include?(other.id)
+      student_runs.each do |other|
+        next if other.subject_id == @revision.subject_id || voided.include?(other.id)
 
-        other_plan = PlanLoader.for_run(other, reuse: false)
-        Derivation.result(other_plan, EventLoader.for_run(other)).fetch(:skills).each do |row|
+        PlanLoader.light_skills(other).each do |row|
           next unless %w[demonstrated to_recover].include?(row[:state]) && row[:source] == "run"
 
           out[row[:skill]] = { "state" => row[:state], "reason" => row[:reason] }
@@ -164,11 +184,8 @@ module Diagnosis
       out
     end
 
-    def voided_run_ids
-      Decision.where(kind: "void_diagnosis_run", student_id: @student.id).filter_map do |d|
-        JSON.parse(d.payload_json)["run_id"]
-      end
-    end
+    # The student's runs, oldest first.
+    def student_runs = Reads.fetch(:runs, @student.id) { DiagnosisRun.where(student: @student).order(:created_at, :id).to_a }
 
     def seen_fingerprints
       return [] unless @student

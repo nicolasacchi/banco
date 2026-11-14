@@ -26,5 +26,22 @@ module Diagnosis
     end
 
     def norm(text) = text.is_a?(String) ? Grading::Closed::Text.normalize(text) : ""
+
+    # The texts of a display, worked out on first use. Normalizing them is most of the time it takes to load a plan,
+    # and only the choice between two instances of an item (Overlap) reads them: a page that only derives states never does.
+    # Reads like the hash `call` returns.
+    class Lazy
+      def initialize(display)
+        @display = display
+      end
+
+      def value = @value ||= InstanceTexts.call(@display)
+      def [](key) = value[key]
+      def to_h = value
+      def ==(other) = other.respond_to?(:to_h) && value == other.to_h
+      alias_method :eql?, :==
+      def hash = value.hash
+      def inspect = value.inspect
+    end
   end
 end
