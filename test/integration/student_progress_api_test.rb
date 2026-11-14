@@ -61,8 +61,11 @@ class StudentProgressApiTest < ActionDispatch::IntegrationTest
     assert_equal rows.select(&:last).map { |key, status, _| [ key, status ] }, subject["extra_topics"].map { |t| [ t["key"], t["status"] ] }
     assert_equal [ [ TOPIC, "todo" ] ], subject["topics"].map { |t| [ t["key"], t["status"] ] }
     assert_equal [ [ EXTRA, "todo" ] ], subject["extra_topics"].map { |t| [ t["key"], t["status"] ] }
-    assert_equal({ "done" => 0, "in_progress" => 0, "todo" => 1, "total" => 1 }, subject["topic_counts"], "the extra topic is in no count")
-    assert_equal 1, subject["skill_counts"].values.sum
+    assert_equal({ "total" => 1, "done" => 0, "in_progress" => 0, "missing" => 1, "percent" => 0 }, subject["programme"])
+    assert_equal({ "total" => 1, "done" => 0, "in_progress" => 0, "missing" => 1, "percent" => 0 }, subject["extra"])
+    assert_equal subject["programme"], json["overall"]["programme"], "one subject: the overall is its programme"
+    assert_equal subject["extra"], json["overall"]["extra"]
+    assert_nil subject["entry_test"], "no entry test for this subject in the list"
     assert_equal true, subject["released"]
     assert_equal "student", json.dig("student", "key")
     assert_equal true, json.dig("student", "official")
@@ -79,7 +82,8 @@ class StudentProgressApiTest < ActionDispatch::IntegrationTest
     subject = json["subjects"].first
     assert_equal "in_progress", subject["topics"].first["status"]
     assert_equal true, subject["topics"].first["lesson_read"]
-    assert_equal({ "done" => 0, "in_progress" => 1, "todo" => 0, "total" => 1 }, subject["topic_counts"])
+    assert_equal({ "total" => 1, "done" => 0, "in_progress" => 1, "missing" => 1, "percent" => 0 }, subject["programme"])
+    assert_equal subject["programme"], json["overall"]["programme"]
     assert_equal "todo", subject["extra_topics"].first["status"]
   end
 

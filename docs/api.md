@@ -161,20 +161,22 @@ traces (all right, all wrong).
 ### `banco progress`
 
 What the student sees, for the official student or `--student KEY`: per subject with a visible course the topics of the programme
-and the extra topics (each `done`, `in_progress` or `todo`, the same word as on Materia), the counts, the state of each skill, and the
-entry test of every subject in the student's list (the Diagnosi page).
+and the extra topics (each `done`, `in_progress` or `todo`, the same word as on Materia), the progress tallies Materie and Materia show
+(`Course::StudentView#progress`), the state of each skill, and the entry test of every subject in the student's list (the Diagnosi page).
 
 ```json
 {
   "student": { "key": "student", "official": true },
+  "overall": { "programme": { "total": 19, "done": 4, "in_progress": 1, "missing": 15, "percent": 21 }, "extra": { "total": 7, "done": 0, "in_progress": 0, "missing": 7, "percent": 0 } },
   "subjects": [
     {
       "key": "geography", "name_it": "Geografia", "released": true, "mode": "official", "course_revision_id": 36,
       "topics": [ { "key": "ponte.geography.world-map-coordinates", "kind": "ponte", "title_it": "...", "term": 1, "minutes": 30, "skills": ["..."], "after": [],
                     "status": "in_progress", "lesson_read": true, "to_recover": false, "approved": true } ],
       "extra_topics": [ { "key": "extra.geography.europe", "status": "todo" } ],
-      "topic_counts": { "done": 0, "in_progress": 1, "todo": 18, "total": 19 },
-      "skill_counts": { "demonstrated": 0, "in_study": 1, "to_recover": 0, "not_seen": 22 },
+      "programme": { "total": 19, "done": 4, "in_progress": 1, "missing": 15, "percent": 21 },
+      "extra": { "total": 7, "done": 0, "in_progress": 0, "missing": 7, "percent": 0 },
+      "entry_test": { "subject": "geography", "name_it": "Geografia", "status": "completed", "done": true, "startable": false, "suggested": false, "label_it": "Fatto", "run_id": 412 },
       "skills": [ { "key": "geography.coordinates-hemispheres", "label_it": "...", "state": "in_study", "since": "2026-11-12T09:00:00Z" } ],
       "skills_without_topic": []
     }
@@ -184,9 +186,11 @@ entry test of every subject in the student's list (the Diagnosi page).
 }
 ```
 
-`topic_counts` and `skill_counts` read the programme only: an extra topic is optional and counts nowhere. `skill_counts` and
-`state` follow the practice rules (`demonstrated` and `consolidated` count as demonstrated; `to_recover` and `to_review` as to recover;
-`not_seen` and `to_learn` as not seen). `closed_subjects` are the subjects whose course the teacher withdrew after opening it. The
+`programme` counts the topics of the programme (mandatory) and `extra` the extra ones (optional), as Materie and Materia show them: `done`
+is every skill of the topic demonstrated, `in_progress` a topic started and not done, `missing` every topic not done (so it includes
+the ones in progress), `percent` is `done` over `total`, rounded down. `overall` sums the visible subjects (Oggi's «Il tuo percorso»).
+`entry_test` is the subject's row of `entry_tests` (`null` when the subject has no test in the student's list); `skills[].state` follows the
+practice rules (`not_seen` when nothing is known). `closed_subjects` are the subjects whose course the teacher withdrew after opening it. The
 official student sees no subject before the teacher releases its course.
 
 ### Errors
