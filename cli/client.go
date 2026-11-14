@@ -27,9 +27,14 @@ type client struct {
 	urlErr error
 }
 
+// contractExempt are the commands that work when the CLI's contract differs from the server's (D-330): they are how
+// an out-of-date CLI learns what changed and replaces itself, so they must never be refused for being out of date.
+var contractExempt = map[string]bool{"token": true, "changes": true, "docs show": true, "self-update": true}
+
 // do performs one authenticated request and returns the body of a 2xx answer.
 // Every response must carry X-Banco-Contract equal to the embedded contract's
-// digest, otherwise the CLI and the server disagree and the CLI refuses to go on.
+// digest, otherwise the CLI and the server disagree and the CLI refuses to go on
+// (except for the commands of contractExempt).
 func (c *client) do(command, method, path string) ([]byte, error) {
 	return c.doBody(command, method, path, nil)
 }
@@ -92,10 +97,10 @@ func (c *client) doWith(command, method, path string, payload []byte, headers ma
 		// No contract header: not a banco server answering (restarting, proxy error page).
 		return nil, newErr(ExitServer, "E-NETWORK", "", fmt.Sprintf("the server did not answer as banco (HTTP %d, no contract header); it may be restarting", resp.StatusCode), "retry in 60 s, then banco health")
 	}
-	if got != contract.Digest() {
+	if got != contract.Digest() && !contractExempt[command] {
 		return nil, newErr(ExitServer, "E-CONTRACT", "X-Banco-Contract",
 			fmt.Sprintf("server contract %q differs from this CLI's %q", got, contract.Digest()),
-			"go build -o bin/banco ./cli")
+			"banco self-update")
 	}
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return nil, errorFromBody(resp.StatusCode, body)

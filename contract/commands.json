@@ -583,6 +583,40 @@
       "args": [],
       "flags": ["--subject", "--student"],
       "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "token",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/token",
+      "args": [],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "changes",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/updates",
+      "args": [],
+      "flags": ["--since"],
+      "error_codes": ["E-AUTH", "E-FILES"]
+    },
+    {
+      "name": "docs show",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/docs/:name",
+      "args": ["name"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "self-update",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/updates",
+      "args": [],
+      "flags": ["--check"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
     }
   ]
 }

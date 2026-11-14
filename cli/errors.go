@@ -83,7 +83,7 @@ func (e *CLIError) explainAuth(status int) {
 	}
 	switch {
 	case status == 401:
-		e.Message = "the server refused the token: it is wrong, expired (tokens last 90 days by default) or revoked"
+		e.Message = "the server refused the token: it is wrong, expired (a bot_read or teacher token renews itself on use and expires only after its lifetime, 90 days by default, without a request) or revoked"
 		e.Next = "ask the operator for a new token (bin/rails banco:token:issue), then set BANCO_TOKEN"
 	case status == 403 && e.Reason == "read_only_token":
 		e.Message = "this token is read-only (role bot_read): it can read everything and write nothing"

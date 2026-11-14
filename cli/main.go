@@ -25,6 +25,8 @@ type env struct {
 	stdout, stderr io.Writer
 	getenv         func(string) string
 	client         func() *client
+	// executable is the path self-update replaces; nil means os.Executable (tests set a scratch file).
+	executable func() (string, error)
 }
 
 // command is one row of the dispatch table. The table must match
@@ -100,6 +102,10 @@ var commands = []command{
 	{name: "comments reopen", run: runCommentsReopen},
 	{name: "comments read", run: runCommentsRead},
 	{name: "answers pending", run: runAnswersPending},
+	{name: "token", run: runToken},
+	{name: "changes", run: runChanges},
+	{name: "docs show", run: runDocsShow},
+	{name: "self-update", run: runSelfUpdate},
 }
 
 func run(args []string, stdout, stderr io.Writer, getenv func(string) string) int {

@@ -166,7 +166,7 @@ func TestNonJSONErrorBody(t *testing.T) {
 	assertErrJSON(t, r.stderr, "E-HTTP-502")
 }
 
-func TestContractMismatchExitsSixWithBuildHint(t *testing.T) {
+func TestContractMismatchExitsSixWithSelfUpdateHint(t *testing.T) {
 	for _, header := range []string{"deadbeef"} {
 		srv := fakeServer(200, "{}", header)
 		r := runCLI(t, srv.URL, envToken("bnc_x"), "schema")
@@ -175,7 +175,7 @@ func TestContractMismatchExitsSixWithBuildHint(t *testing.T) {
 			t.Fatalf("header %q: exit %d", header, r.exit)
 		}
 		e := assertErrJSON(t, r.stderr, "E-CONTRACT")
-		if e.Next != "go build -o bin/banco ./cli" {
+		if e.Next != "banco self-update" {
 			t.Errorf("next = %q", e.Next)
 		}
 	}
@@ -189,8 +189,8 @@ func TestMissingContractHeaderIsNetworkNotContract(t *testing.T) {
 		t.Fatalf("exit %d", r.exit)
 	}
 	e := assertErrJSON(t, r.stderr, "E-NETWORK")
-	if e.Next == "go build -o bin/banco ./cli" {
-		t.Errorf("next must not suggest a rebuild: %q", e.Next)
+	if e.Next == "banco self-update" {
+		t.Errorf("next must not suggest an update: %q", e.Next)
 	}
 }
 
