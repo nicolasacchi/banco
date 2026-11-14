@@ -18,6 +18,7 @@ module LedgerRows
     token = ApiToken.create!(public_id: "abcd1234", secret_sha256: "d" * 64, role: "agent_claude", label: "l")
     rows["api_tokens"] = token
     rows["api_token_revocations"] = ApiTokenRevocation.create!(api_token: token, reason: "test")
+    rows["api_token_renewals"] = ApiTokenRenewal.create!(api_token: token, expires_at: now + 1.day, created_at: now)
     graph = SkillGraphRevision.create!(subject: rows["subjects"], seq: 1, body_json: JSON_BODY, author_session: session)
     rows["skill_graph_revisions"] = graph
     item = Item.create!(subject: rows["subjects"], key: "item-1", kind: "choice")

@@ -643,7 +643,17 @@ CREATE TRIGGER comment_events_no_update BEFORE UPDATE ON comment_events
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER comment_events_no_delete BEFORE DELETE ON comment_events
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "api_token_renewals" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "api_token_id" integer NOT NULL, "expires_at" datetime(6) NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_77ed753f58"
+FOREIGN KEY ("api_token_id")
+  REFERENCES "api_tokens" ("id")
+, CONSTRAINT api_token_renewals_forward CHECK (expires_at > created_at));
+CREATE INDEX "index_api_token_renewals_on_api_token_id_and_expires_at" ON "api_token_renewals" ("api_token_id", "expires_at");
+CREATE TRIGGER api_token_renewals_no_update BEFORE UPDATE ON api_token_renewals
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER api_token_renewals_no_delete BEFORE DELETE ON api_token_renewals
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261114120001'),
 ('20261114100001'),
 ('20261108100001'),
 ('20261019100001'),

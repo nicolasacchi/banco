@@ -14,8 +14,12 @@ module Api
     # The contract digest goes to a caller that holds a token; a wrong token gets 401 and nothing else.
     before_action :set_contract_header
     before_action :enforce_token_scope!
+    # A public token renews itself on use (D-330): only a request that passed the checks above renews it.
+    before_action :renew_token!
 
     private
+
+    def renew_token! = @token.renew!
 
     # A token of the public API's reading roles (bot_read, teacher): it needs no session to read, since a session only
     # attributes writes (D-327), and it sees every opinion and every answer the teacher's pages show.
