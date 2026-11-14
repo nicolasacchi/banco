@@ -10,7 +10,7 @@
     <% gate = review.gate %>
     <p id="test-summary" class="hint">
       <%= t("teacher.test.summary", seq: review.blueprint.seq, skills: review.skill_rows.size, items: review.pinned_count) %>
-      <%= review.approved_latest? ? t("teacher.test.is_approved") + (SubjectStage.approved_from_console?(review.blueprint.subject, "approve_blueprint") ? " #{t('teacher.from_console')}" : "") : t("teacher.test.not_approved") %>
+      <%= review.approved_latest? ? t("teacher.test.is_approved") + ((origin = SubjectStage.approval_origin(review.blueprint.subject, "approve_blueprint")) ? " #{t("teacher.from_#{origin}")}" : "") : t("teacher.test.not_approved") %>
     </p>
     <% if review.approved_latest? && (words = SubjectStage.blueprint_attestation(review.blueprint.subject)) %><p class="hint" id="test-attested" data-attested><%= t("teacher.test.attested", words: words) %></p><% end %>
 

@@ -31,7 +31,8 @@ class StudentProgressApiTest < ActionDispatch::IntegrationTest
                                                                   practice: [ { skill: EXTRA_SKILL, items: items.map { |r| { item: r.item.key, revision: r.id } } } ]))
     approve_topic!(@extra_topic)
     release_course!(course)
-    @tokens = (READ_ROLES & ApiToken::ROLES).to_h { |role| [ role, ApiToken.issue!(role: role, label: "progress #{role}") ] }
+    # Every role reads the same; a teacher token acts as a login on the teacher list (MultiUser lists "nik"), and none needs a session.
+    @tokens = READ_ROLES.to_h { |role| [ role, ApiToken.issue!(role: role, label: "progress #{role}", expires_at: 30.days.from_now, teacher_login: ("nik" if role == "teacher")) ] }
   end
 
   def api(path, token: @tokens.fetch("agent_claude")) = on(:api, path, headers: token ? { "Authorization" => "Bearer #{token}" } : {})

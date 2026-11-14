@@ -40,7 +40,7 @@ class DecisionReconciliation
   def provenance_orphans
     Decision.where("created_at >= ?", @since).order(:id).filter_map do |d|
       missing = %w[teacher_login request_id remote_addr].select { |f| d[f].to_s.strip.empty? }
-      missing << "group" unless d.console? || d.groups.split(",").include?(EdgeTrust::TEACHER_GROUP)
+      missing << "group" unless d.console? || d.api? || d.groups.split(",").include?(EdgeTrust::TEACHER_GROUP)
       missing << "kind" unless DecisionRecorder::KINDS.include?(d.kind)
       missing << "payload" unless JSON.parse(d.payload_json).is_a?(Hash)
       { type: "decision_without_provenance", decision_id: d.id, kind: d.kind, missing: missing } if missing.any?

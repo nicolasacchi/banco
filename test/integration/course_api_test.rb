@@ -267,6 +267,21 @@ class CourseApiTest < ActionDispatch::IntegrationTest
 
   # ---- lesson review ------------------------------------------------------------------------------
 
+  # D-327: a bot_read or teacher token reads the review page without a session, and writes nothing.
+  test "lesson review: a bot_read token opens the page without a session and cannot submit a review" do
+    world
+    bot = ApiToken.issue!(role: "bot_read", label: "course read", expires_at: 1.day.from_now)
+    headers = { "Authorization" => "Bearer #{bot}" }
+    on(:api, "/api/v1/lesson-revisions/#{@lesson_revision.id}/review", headers: headers)
+    assert_response :ok, json.inspect
+    assert_equal 8, json["checklist"].size
+    assert_no_difference "LessonReview.count" do
+      on(:api, "/api/v1/lesson-revisions/#{@lesson_revision.id}/review", method: :post, headers: headers, params: { review: review_doc(@lesson_revision) }, as: :json)
+    end
+    assert_response :forbidden
+    assert_equal "read_only_token", json["reason"]
+  end
+
   test "lesson review: open, dry run, submit; one review per session; the author cannot review" do
     world
     api("/api/v1/lesson-revisions/#{@lesson_revision.id}/review", as: @reviewer)

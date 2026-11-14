@@ -190,17 +190,11 @@ CREATE TRIGGER app_events_no_update BEFORE UPDATE ON app_events
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER app_events_no_delete BEFORE DELETE ON app_events
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
-CREATE TABLE "api_tokens" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "public_id" varchar NOT NULL, "secret_sha256" varchar NOT NULL, "role" varchar NOT NULL, "label" varchar NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT api_tokens_public_id_length CHECK (length(public_id) = 8), CONSTRAINT api_tokens_sha256_length CHECK (length(secret_sha256) = 64), CONSTRAINT api_tokens_role CHECK (role IN ('agent_claude','agent_omp','ci')));
-CREATE UNIQUE INDEX "index_api_tokens_on_public_id" ON "api_tokens" ("public_id");
 CREATE TABLE "api_token_revocations" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "api_token_id" integer NOT NULL, "reason" varchar, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_b9e431c1e1"
 FOREIGN KEY ("api_token_id")
   REFERENCES "api_tokens" ("id")
 );
 CREATE UNIQUE INDEX "index_api_token_revocations_on_api_token_id" ON "api_token_revocations" ("api_token_id");
-CREATE TRIGGER api_tokens_no_update BEFORE UPDATE ON api_tokens
-BEGIN SELECT RAISE(ABORT, 'append-only'); END;
-CREATE TRIGGER api_tokens_no_delete BEFORE DELETE ON api_tokens
-BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER api_token_revocations_no_update BEFORE UPDATE ON api_token_revocations
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER api_token_revocations_no_delete BEFORE DELETE ON api_token_revocations
@@ -590,20 +584,9 @@ CREATE INDEX "index_comments_on_item_revision_id" ON "comments" ("item_revision_
 CREATE INDEX "index_comments_on_blueprint_revision_id" ON "comments" ("blueprint_revision_id") /*application='Banco'*/;
 CREATE UNIQUE INDEX "index_comments_on_client_comment_id" ON "comments" ("client_comment_id") /*application='Banco'*/;
 CREATE INDEX "index_comments_on_student_id_and_id" ON "comments" ("student_id", "id") /*application='Banco'*/;
-CREATE TABLE "comment_events" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "comment_id" integer NOT NULL, "kind" varchar NOT NULL, "origin" varchar NOT NULL, "actor" varchar NOT NULL, "text_it" text, "remote_addr" varchar DEFAULT '' NOT NULL, "request_id" varchar, "payload_json" text DEFAULT '{}' NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_b32cfa76fe"
-FOREIGN KEY ("comment_id")
-  REFERENCES "comments" ("id")
-, CONSTRAINT comment_events_kind CHECK (kind IN ('reply','read','resolved','reopened','sent_back','reply_seen')), CONSTRAINT comment_events_origin CHECK (origin IN ('web','console','student')), CONSTRAINT comment_events_reply_text CHECK (kind <> 'reply' OR (text_it IS NOT NULL AND length(text_it) BETWEEN 1 AND 2000)), CONSTRAINT comment_events_seen_by_student CHECK ((kind = 'reply_seen') = (origin = 'student')));
-CREATE INDEX "index_comment_events_on_comment_id" ON "comment_events" ("comment_id") /*application='Banco'*/;
-CREATE INDEX "index_comment_events_on_comment_id_and_id" ON "comment_events" ("comment_id", "id") /*application='Banco'*/;
-CREATE UNIQUE INDEX "index_comment_events_on_request_id" ON "comment_events" ("request_id") WHERE request_id IS NOT NULL /*application='Banco'*/;
 CREATE TRIGGER comments_no_update BEFORE UPDATE ON comments
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER comments_no_delete BEFORE DELETE ON comments
-BEGIN SELECT RAISE(ABORT, 'append-only'); END;
-CREATE TRIGGER comment_events_no_update BEFORE UPDATE ON comment_events
-BEGIN SELECT RAISE(ABORT, 'append-only'); END;
-CREATE TRIGGER comment_events_no_delete BEFORE DELETE ON comment_events
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TABLE "lesson_finding_responses" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "lesson_review_id" integer NOT NULL, "finding_n" integer NOT NULL, "agent_session_id" integer NOT NULL, "stance" varchar NOT NULL, "lesson_revision_id" integer, "note_it" text NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_07ffd4ed4a"
 FOREIGN KEY ("lesson_review_id")
@@ -643,7 +626,25 @@ CREATE TRIGGER lessons_no_update BEFORE UPDATE ON lessons
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER lessons_no_delete BEFORE DELETE ON lessons
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "api_tokens" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "public_id" varchar NOT NULL, "secret_sha256" varchar NOT NULL, "role" varchar NOT NULL, "label" varchar NOT NULL, "created_at" datetime(6) NOT NULL, "expires_at" datetime(6), "teacher_login" varchar, CONSTRAINT api_tokens_public_id_length CHECK (length(public_id) = 8), CONSTRAINT api_tokens_sha256_length CHECK (length(secret_sha256) = 64), CONSTRAINT api_tokens_role CHECK (role IN ('agent_claude','agent_omp','ci','bot_read','teacher')), CONSTRAINT api_tokens_teacher_login CHECK (role <> 'teacher' OR (teacher_login IS NOT NULL AND length(teacher_login) > 0)));
+CREATE UNIQUE INDEX "index_api_tokens_on_public_id" ON "api_tokens" ("public_id") /*application='Banco'*/;
+CREATE TABLE "comment_events" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "comment_id" integer NOT NULL, "kind" varchar NOT NULL, "origin" varchar NOT NULL, "actor" varchar NOT NULL, "text_it" text, "remote_addr" varchar DEFAULT '' NOT NULL, "request_id" varchar, "payload_json" text DEFAULT '{}' NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_b32cfa76fe"
+FOREIGN KEY ("comment_id")
+  REFERENCES "comments" ("id")
+, CONSTRAINT comment_events_kind CHECK (kind IN ('reply','read','resolved','reopened','sent_back','reply_seen')), CONSTRAINT comment_events_reply_text CHECK (kind <> 'reply' OR (text_it IS NOT NULL AND length(text_it) BETWEEN 1 AND 2000)), CONSTRAINT comment_events_seen_by_student CHECK ((kind = 'reply_seen') = (origin = 'student')), CONSTRAINT comment_events_origin CHECK (origin IN ('web','console','api','student')));
+CREATE INDEX "index_comment_events_on_comment_id" ON "comment_events" ("comment_id") /*application='Banco'*/;
+CREATE INDEX "index_comment_events_on_comment_id_and_id" ON "comment_events" ("comment_id", "id") /*application='Banco'*/;
+CREATE UNIQUE INDEX "index_comment_events_on_request_id" ON "comment_events" ("request_id") WHERE request_id IS NOT NULL /*application='Banco'*/;
+CREATE TRIGGER api_tokens_no_update BEFORE UPDATE ON api_tokens
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER api_tokens_no_delete BEFORE DELETE ON api_tokens
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER comment_events_no_update BEFORE UPDATE ON comment_events
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER comment_events_no_delete BEFORE DELETE ON comment_events
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261114100001'),
 ('20261108100001'),
 ('20261019100001'),
 ('20261018120001'),

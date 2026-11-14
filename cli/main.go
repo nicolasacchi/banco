@@ -91,6 +91,15 @@ var commands = []command{
 	{name: "teacher topic", run: runTeacherTopic},
 	{name: "teacher test", run: runTeacherTest},
 	{name: "progress", run: runProgress},
+	{name: "decide", run: runDecide},
+	{name: "decisions", run: runDecisions},
+	{name: "comments list", run: runCommentsList},
+	{name: "comments show", run: runCommentsShow},
+	{name: "comments reply", run: runCommentsReply},
+	{name: "comments resolve", run: runCommentsResolve},
+	{name: "comments reopen", run: runCommentsReopen},
+	{name: "comments read", run: runCommentsRead},
+	{name: "answers pending", run: runAnswersPending},
 }
 
 func run(args []string, stdout, stderr io.Writer, getenv func(string) string) int {

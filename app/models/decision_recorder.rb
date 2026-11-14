@@ -7,8 +7,11 @@
 #   - a valid CSRF token (the controller verifies it and marks the request), and
 #   - no banco_device cookie (the student's computer is read-only for /teacher).
 #
-# The one other origin is DecisionRecorder::Console, the operator's host console (bin/rails banco:decide,
-# D-260), which replaces the listener, proxy, CSRF and device checks by host-shell access.
+# The two other origins are DecisionRecorder::Console, the operator's host console (bin/rails banco:decide,
+# D-260), and DecisionRecorder::Api, a request on the API listener with a teacher token (POST /api/v1/decisions,
+# D-327, the public API's change of firm rule 2). Both replace the listener, proxy, CSRF and device checks (the
+# console by host-shell access, the API by the token and its expiry); both need the flag and a teacher of
+# BANCO_TEACHER_USERS, and every business guard of the kind runs.
 #
 # The row keeps who, from where, with what and when: decision kind, subject and
 # student, teacher login, groups, request id, remote address, user agent, path,
@@ -77,6 +80,28 @@ class DecisionRecorder
     def get_header(name) = name == "HTTP_REMOTE_USER" ? login : nil
   end
 
+  # The origin of a decision recorded over the API with a teacher token (D-327): the login is the token's teacher, who
+  # must be in BANCO_TEACHER_USERS and BANCO_DECISIONS_ENABLED must be on, exactly as for the console. The row says
+  # who (the login), from where (the client address the edge proxy saw), with what (the token's public id) and through
+  # what (groups "api"); the payload says via: "api" and the token.
+  class Api
+    GROUP = "api".freeze
+
+    attr_reader :login, :token_id, :remote_addr, :path, :request_id
+
+    def initialize(login:, token_id:, remote_addr:, path:)
+      @login = login.to_s.strip
+      @token_id = token_id.to_s
+      @remote_addr = remote_addr.to_s.first(60)
+      @path = path.to_s
+      @request_id = SecureRandom.uuid
+    end
+
+    def user_agent = "banco api token #{token_id}"
+    def groups = [ GROUP ]
+    def get_header(name) = name == "HTTP_REMOTE_USER" ? login : nil
+  end
+
   class << self
     # request_id: a decision of its own inside a request that records several (the id of the request
     # is unique per decision row); the default is the request's id.
@@ -86,7 +111,7 @@ class DecisionRecorder
 
     # nil when the request may decide, otherwise the reason (a symbol).
     def refusal(request)
-      return console_refusal(request) if request.is_a?(Console)
+      return origin_refusal(request) if synthetic?(request)
       return :disabled unless ENV["BANCO_DECISIONS_ENABLED"] == "1"
       return :wrong_listener unless request.env[Banco::ListenerTag::TAG_KEY] == :web
       return :untrusted_peer unless Banco::EdgeProxy.include?(request.remote_addr)
@@ -100,14 +125,17 @@ class DecisionRecorder
       nil
     end
 
-    def console_refusal(origin)
+    def origin_refusal(origin)
       return :disabled unless ENV["BANCO_DECISIONS_ENABLED"] == "1"
       return :no_teacher unless !origin.login.empty? && !origin.login.include?(",") && Banco::EdgeProxy.teacher_users.include?(origin.login)
 
       nil
     end
 
-    def groups_of(request) = request.is_a?(Console) ? request.groups : request.get_header("HTTP_REMOTE_GROUPS").to_s.split(",").map(&:strip).reject(&:empty?)
+    # The origins that stand in for a web request: the host console and the API.
+    def synthetic?(request) = request.is_a?(Console) || request.is_a?(Api)
+
+    def groups_of(request) = synthetic?(request) ? request.groups : request.get_header("HTTP_REMOTE_GROUPS").to_s.split(",").map(&:strip).reject(&:empty?)
   end
 
   def initialize(request, kind, params, request_id = nil)
@@ -124,7 +152,7 @@ class DecisionRecorder
 
     Decision.transaction do
       subject, student, payload = send(@kind)
-      payload = console_payload(payload) if @request.is_a?(Console)
+      payload = origin_payload(payload) if self.class.synthetic?(@request)
       Decision.create!(
         kind: @kind, subject: subject, student: student, payload_json: JSON.generate(payload),
         request_id: @request_id.presence || @request.request_id.presence || SecureRandom.uuid,
@@ -137,11 +165,14 @@ class DecisionRecorder
 
   private
 
-  # A console decision says so in its payload; a kind that takes no reason keeps the operator's words as console_reason.
-  def console_payload(payload)
-    payload = payload.merge(via: "console")
+  # A console or API decision says so in its payload (the API one also names the token); a kind that takes no reason
+  # keeps the operator's words as console_reason (the API: api_reason).
+  def origin_payload(payload)
+    api = @request.is_a?(Api)
+    payload = payload.merge(via: api ? "api" : "console")
+    payload[:token] = @request.token_id if api
     note = @params[:reason_it].to_s.strip
-    payload[:console_reason] = note.first(1000) if note.present? && !payload.key?(:reason_it)
+    payload[api ? :api_reason : :console_reason] = note.first(1000) if note.present? && !payload.key?(:reason_it)
     payload
   end
 
@@ -358,12 +389,12 @@ class DecisionRecorder
     list.map { |v| v.to_s.strip }.reject(&:empty?).map { |v| v.match?(/\A\d+\z/) ? v.to_i : raise(Invalid, "pages_confirmed holds page revision ids") }
   end
 
-  # The operator's own words for a console approval that waives the preview requirements (D-260); nil without
-  # them. Only the console origin and only approve_topic and approve_blueprint: anywhere else the parameter is a refusal, never ignored
+  # The words of a console or API approval that waives the preview requirements (D-260, D-327); nil without
+  # them. Only those two origins and only approve_topic and approve_blueprint: anywhere else the parameter is a refusal, never ignored
   # silently into a normal approval (the web form cannot send it: the controller does not permit it).
   def attestation
     return nil unless @params.key?(:attest_it)
-    raise Invalid, "attest_it is accepted only from the console" unless @request.is_a?(Console)
+    raise Invalid, "attest_it is accepted only from the console or the API" unless self.class.synthetic?(@request)
 
     words = @params[:attest_it].to_s.strip
     raise Invalid, "attest_it must hold the operator's own words (1..1000 characters)" unless (1..1000).cover?(words.length)

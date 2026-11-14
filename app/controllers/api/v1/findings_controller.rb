@@ -308,7 +308,7 @@ module Api
       # the count of the opinions given is shown.
       def visible_opinion(opinion, viewer)
         return nil unless opinion.any?
-        return { hidden: true, count: opinion.given.size } if viewer.nil? || (viewer.role == "arbiter" && opinion.given.none? { |a| a.agent_session_id == viewer.id })
+        return { hidden: true, count: opinion.given.size } if !reader? && (viewer.nil? || (viewer.role == "arbiter" && opinion.given.none? { |a| a.agent_session_id == viewer.id }))
 
         { state: opinion.state, verdict: opinion.verdict, first: opinion.first&.to_h, history: opinion.history.map(&:to_h).presence }.compact
       end

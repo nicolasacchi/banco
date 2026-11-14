@@ -244,6 +244,19 @@ Rails.application.routes.draw do
     get "api/v1/teacher/subjects/:key/topics/:topic" => "api/v1/teacher_views#topic", constraints: view_subject.merge(topic: topic_key), format: false
     get "api/v1/teacher/subjects/:key/test" => "api/v1/teacher_views#test", constraints: view_subject, format: false
     get "api/v1/students/:key/progress" => "api/v1/progress#show", constraints: { key: /[a-z0-9-]+/ }, format: false
+
+    # The public API (D-327): the teacher's decisions and the student's comments and pending answers, for the tokens of
+    # the roles bot_read (reads) and teacher (reads, decisions, comment actions). Every write is a dry run unless the
+    # body says confirm: true.
+    get "api/v1/decisions" => "api/v1/decisions#index", format: false
+    post "api/v1/decisions" => "api/v1/decisions#create", format: false
+    get "api/v1/comments" => "api/v1/comments#index", format: false
+    comment = { id: /\d+/ }
+    get "api/v1/comments/:id" => "api/v1/comments#show", constraints: comment, format: false
+    %w[reply resolve reopen read].each do |action|
+      post "api/v1/comments/:id/#{action}" => "api/v1/comments##{action}", constraints: comment, format: false
+    end
+    get "api/v1/answers/pending" => "api/v1/answers#pending", format: false
   end
 
   # Harness listener: the page and the files Chrome loads to run an agent's

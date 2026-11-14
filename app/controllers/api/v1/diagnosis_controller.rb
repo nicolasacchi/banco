@@ -92,8 +92,9 @@ module Api
         plan
       end
 
-      def refuse(code, field, message, next_step)
-        render json: { code: code, field: field, message: message, next: next_step }, status: :unprocessable_entity
+      # The base refuse (422 by default here), which answers nil so that `or return` stops the action.
+      def refuse(code, field, message, next_step, status = 422, **extra)
+        super
         nil
       end
     end

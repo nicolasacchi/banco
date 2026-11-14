@@ -2,6 +2,7 @@ it:
   teacher:
     title: "Area del docente"
     from_console: "(da console)"
+    from_api: "(da API)"
     access:
       line: "Accesso: %{login} · %{role}"
       teacher: "insegnante"

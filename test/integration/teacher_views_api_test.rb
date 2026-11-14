@@ -15,8 +15,8 @@ class TeacherViewsApiTest < ActionDispatch::IntegrationTest
   setup do
     build_course_path_world
     @major = path_finding!(@ready_items.first)
-    # bot_read and teacher exist once the public API roles are in (D-327); every other role reads the same.
-    @tokens = (READ_ROLES & ApiToken::ROLES).to_h { |role| [ role, ApiToken.issue!(role: role, label: "views #{role}") ] }
+    # Every role reads the same; a teacher token acts as a login on the teacher list (MultiUser lists "nik"), and none needs a session.
+    @tokens = READ_ROLES.to_h { |role| [ role, ApiToken.issue!(role: role, label: "views #{role}", expires_at: 30.days.from_now, teacher_login: ("nik" if role == "teacher")) ] }
   end
 
   def api(path, token: @tokens.fetch("agent_claude"))

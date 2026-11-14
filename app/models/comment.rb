@@ -1,6 +1,6 @@
 # What the student says about a place in the app (D-304). One append-only row; the state is derived from the
-# events (CommentEvent). Read by the student (their own), the teacher's page and the console, never by the API and
-# never by an agent (a minor's words).
+# events (CommentEvent). Read by the student (their own), the teacher's page and the console and, since D-327, over the
+# API by a bot_read or teacher token (Api::V1::CommentsController); never by a content agent's token (a minor's words).
 class Comment < ApplicationRecord
   REASONS = %w[not_understood error not_working like other].freeze
   PAGE_KINDS = %w[today subjects subject topic lesson practice diagnosis warmup sitting results settings search comments].freeze

@@ -11,8 +11,10 @@ module Api
 
       # GET /api/v1/revisions/:revision/solve
       def open
-        session = require_session("solver", item: @item, next_step: next_session) or return
-        return unless independent_role?(session, @item, "solver") && latest?(@revision, @item, step: "solve")
+        unless reader? # D-327: a bot_read or teacher token reads the solver's view without a session
+          session = require_session("solver", item: @item, next_step: next_session) or return
+          return unless independent_role?(session, @item, "solver") && latest?(@revision, @item, step: "solve")
+        end
 
         instances = @text.solver_instances
         figures = figure_files_or_refuse(@text, step: "solve") or return

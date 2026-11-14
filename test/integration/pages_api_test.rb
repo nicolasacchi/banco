@@ -169,6 +169,24 @@ class PagesApiTest < ActionDispatch::IntegrationTest
       checklist: (1..11).map { |i| { id: i, result: "pass", evidence: "Ho controllato il punto numero #{i} sul codice e sulle immagini." } }, findings: [] }.merge(over)
   end
 
+  # D-327: a bot_read token reads the review page without a session, and writes nothing.
+  test "the review page: a bot_read token opens it without a session and cannot submit a review" do
+    submit
+    rev = PageRevision.last
+    bot = ApiToken.issue!(role: "bot_read", label: "pages read", expires_at: 1.day.from_now)
+    headers = { "Authorization" => "Bearer #{bot}" }
+    on(:api, "/api/v1/page-revisions/#{rev.id}/review", headers: headers)
+    assert_response :ok, json.inspect
+    assert_equal 11, json["checklist"].size
+    assert_no_difference "PageReview.count" do
+      on(:api, "/api/v1/page-revisions/#{rev.id}/review", method: :post, headers: headers, params: { review: review_doc(rev) }, as: :json)
+    end
+    assert_response :forbidden
+    assert_equal "read_only_token", json["reason"]
+    api("/api/v1/page-revisions/#{rev.id}/review")
+    assert_equal "E-SESSION", json["code"]
+  end
+
   test "the review: an independent session on another family files eleven points and findings quoted from a file" do
     submit
     rev = PageRevision.last

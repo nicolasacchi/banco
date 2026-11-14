@@ -12,7 +12,9 @@ module Api
       def open
         # Reading needs no session (D-158): the session matters when a review is stored. A header
         # that is sent is still checked, so an error message in the variable is not taken for none.
-        if request.headers["X-Banco-Session"].to_s.strip.empty?
+        if reader?
+          # D-327: a bot_read or teacher token reads the page without a session; nothing is stored on a read.
+        elsif request.headers["X-Banco-Session"].to_s.strip.empty?
           return refuse("E-AUTH", "authorization", "this token cannot review", "banco schema", 403) unless ApiToken.session_roles(@token.role).include?("reviewer")
         elsif author_read?
           # D-211: the author reads the page of a revision (the item it wrote); the findings are in `work open`.
