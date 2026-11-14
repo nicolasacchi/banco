@@ -129,7 +129,7 @@ only), `HARNESS_PORT` 3200 (internal). Never `PORT`.
   `PracticeController`, `QuestionsController` with the concern `StudentCourse`; read model `Course::StudentView`; `Items::Part` (shared with
   `Diagnosis::ItemPresenter`); `student_controllers/{practice,lesson,question}_controller.js`; the practice outbox prefix `banco.poutbox.`.
   Views `app/views/{course,topics,lessons,practice}`; texts `config/locales/course.it.yml`. Tests: `test/integration/course_pages_test.rb`,
-  `test/system/course_pages_test.rb`, `test/support/student_course_world.rb`.
+  `test/system/course_pages_test.rb`, `test/system/practice_flow_test.rb` (every button of the practice page, for a trial student and for the preview, on every kind of exercise), `test/support/student_course_world.rb`.
 - The course (Phase 1b, `docs/course.md`): `Lessons::Parser` and `Lessons::Markup` (lesson.md and markup v2, `lib/lessons/`),
   `Validation::LessonChecks|CourseChecks|TopicChecks`, `Review::LessonIntake`, `LessonSessions`, `Course::State|TopicStage|Status|Decisions`,
   the API controllers `Courses|Lessons|LessonReviews|Topics|PracticeProgress`; `banco course|lessons|lesson|lesson-review|topics|topic|practice`.
