@@ -13,8 +13,8 @@ import (
 )
 
 // version is the CLI build version; the contract version is read from the
-// embedded contract.
-const version = "0.1.0"
+// embedded contract. bin/build-cli-dist stamps it from git (-X main.version=).
+var version = "0.1.0"
 
 func main() {
 	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr, os.Getenv))
@@ -86,6 +86,11 @@ var commands = []command{
 	{name: "findings assess", run: runFindingsAssess},
 	{name: "submissions", run: runSubmissions},
 	{name: "grade propose", run: runGradePropose},
+	{name: "teacher home", run: runTeacherHome},
+	{name: "teacher course", run: runTeacherCourse},
+	{name: "teacher topic", run: runTeacherTopic},
+	{name: "teacher test", run: runTeacherTest},
+	{name: "progress", run: runProgress},
 }
 
 func run(args []string, stdout, stderr io.Writer, getenv func(string) string) int {

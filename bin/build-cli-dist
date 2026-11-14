@@ -1,0 +1,44 @@
+#!/bin/sh
+# Release build of the banco CLI: linux, darwin and windows, amd64 and arm64, into dist/ with SHA256SUMS.
+# The version is stamped from git: <base>+<short commit>, with ".dirty" when cli/ or contract/ has uncommitted changes.
+# Each binary embeds contract/commands.json, so it only talks to a server of the same contract (X-Banco-Contract).
+#
+#   bin/build-cli-dist            # dist/banco-<os>-<arch>[.exe] and dist/SHA256SUMS
+#   DIST_DIR=/tmp/out bin/build-cli-dist
+#
+# On the bot's machine: check the sum, make it executable, then
+#   export BANCO_URL=https://api.banco.scc.im BANCO_TOKEN=bnc_...; banco version; banco teacher home
+set -eu
+
+cd "$(dirname "$0")/.."
+out="${DIST_DIR:-dist}"
+
+base=$(sed -n 's/^var version = "\([^"]*\)".*/\1/p' cli/main.go)
+[ -n "$base" ] || { echo "build-cli-dist: no 'var version' in cli/main.go" >&2; exit 1; }
+rev=$(git rev-parse --short=12 HEAD 2>/dev/null || echo unknown)
+if [ "$rev" != unknown ] && [ -n "$(git status --porcelain -- cli contract go.mod 2>/dev/null)" ]; then
+  rev="$rev.dirty"
+fi
+version="$base+$rev"
+
+(cd cli && go test ./... >/dev/null) || { echo "build-cli-dist: the CLI tests fail; nothing built" >&2; exit 1; }
+
+rm -rf "$out"
+mkdir -p "$out"
+for target in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
+  os=${target%/*}
+  arch=${target#*/}
+  ext=""
+  [ "$os" = windows ] && ext=".exe"
+  name="banco-$os-$arch$ext"
+  CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -trimpath -buildvcs=false -ldflags "-s -w -X main.version=$version" -o "$out/$name" ./cli
+  echo "built $out/$name"
+done
+
+if command -v sha256sum >/dev/null 2>&1; then
+  (cd "$out" && sha256sum banco-* > SHA256SUMS)
+else
+  (cd "$out" && shasum -a 256 banco-* > SHA256SUMS)
+fi
+echo "version $version"
+echo "checksums in $out/SHA256SUMS"

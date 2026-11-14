@@ -459,6 +459,50 @@
       "args": ["attempt"],
       "flags": ["--file", "--dry-run"],
       "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-GRADE-POINT", "E-GRADE-QUOTE", "E-QUOTE-NOT-FOUND", "E-GRADER-IS-AUTHOR", "E-PROPOSAL-EXISTS", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED"]
+    },
+    {
+      "name": "teacher home",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/teacher/home",
+      "args": [],
+      "flags": ["--student"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "teacher course",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/teacher/subjects/:subject/course",
+      "args": ["subject"],
+      "flags": ["--only-ready"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "teacher topic",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/teacher/subjects/:subject/topics/:topic",
+      "args": ["subject", "topic"],
+      "flags": ["--lesson"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "teacher test",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/teacher/subjects/:subject/test",
+      "args": ["subject"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "progress",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/students/:student/progress",
+      "args": [],
+      "flags": ["--student"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
     }
   ]
 }

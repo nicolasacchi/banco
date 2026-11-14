@@ -4,7 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"banco/contract"
@@ -20,6 +23,8 @@ type client struct {
 	// session is the id of the working session (banco session new), sent as
 	// X-Banco-Session on every request; the server asks for it where it matters.
 	session string
+	// urlErr is the refusal of BANCO_URL, reported by the first request.
+	urlErr error
 }
 
 // do performs one authenticated request and returns the body of a 2xx answer.
@@ -36,6 +41,9 @@ func (c *client) doBody(command, method, path string, payload []byte) ([]byte, e
 
 // doWith is doBody with extra request headers (X-Banco-Dry-Run).
 func (c *client) doWith(command, method, path string, payload []byte, headers map[string]string) ([]byte, error) {
+	if c.urlErr != nil {
+		return nil, c.urlErr
+	}
 	token, err := c.tokens.token(command)
 	if err != nil {
 		return nil, err
@@ -87,9 +95,46 @@ func (c *client) doWith(command, method, path string, payload []byte, headers ma
 }
 
 func newClient(getenv func(string) string) *client {
-	base := getenv("BANCO_URL")
-	if base == "" {
-		base = defaultURL
+	base, urlErr := normalizeBaseURL(getenv("BANCO_URL"))
+	return &client{baseURL: base, http: &http.Client{Timeout: 300 * time.Second}, tokens: defaultTokenSource(), session: getenv("BANCO_SESSION"), urlErr: urlErr}
+}
+
+// normalizeBaseURL reads BANCO_URL: http or https, a host with an optional port and an optional path prefix, no
+// trailing slash. A bare host ("api.banco.scc.im") is https; a loopback address without a scheme is http.
+func normalizeBaseURL(raw string) (string, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return defaultURL, nil
 	}
-	return &client{baseURL: base, http: &http.Client{Timeout: 300 * time.Second}, tokens: defaultTokenSource(), session: getenv("BANCO_SESSION")}
+	fail := func(message string) (string, error) {
+		return defaultURL, newErr(ExitUsage, "E-URL", "BANCO_URL", message, "set BANCO_URL to the API address, for example https://api.banco.scc.im")
+	}
+	if !strings.Contains(raw, "://") {
+		scheme := "https"
+		host := raw
+		if i := strings.IndexAny(host, "/?#"); i >= 0 {
+			host = host[:i]
+		}
+		if h, _, err := net.SplitHostPort(host); err == nil {
+			host = h
+		}
+		if host = strings.Trim(host, "[]"); host == "localhost" || net.ParseIP(host).IsLoopback() {
+			scheme = "http"
+		}
+		raw = scheme + "://" + raw
+	}
+	u, err := url.Parse(raw)
+	if err != nil {
+		return fail(err.Error())
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return fail("BANCO_URL must start with http:// or https://, not " + u.Scheme + "://")
+	}
+	if u.Hostname() == "" {
+		return fail("BANCO_URL has no host")
+	}
+	if u.User != nil || u.RawQuery != "" || u.Fragment != "" {
+		return fail("BANCO_URL is the address of the server: no user, query or fragment")
+	}
+	return u.Scheme + "://" + u.Host + strings.TrimRight(u.EscapedPath(), "/"), nil
 }

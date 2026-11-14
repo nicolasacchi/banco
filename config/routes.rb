@@ -235,6 +235,15 @@ Rails.application.routes.draw do
     post "api/v1/page-revisions/:revision/review" => "api/v1/page_reviews#submit", constraints: revision, format: false
     get "api/v1/topics/:topic" => "api/v1/topics#open", constraints: { topic: lesson[:lesson] }, format: false
     post "api/v1/topics/:topic" => "api/v1/topics#submit", constraints: { topic: lesson[:lesson] }, format: false
+
+    # The teacher's pages and the student's progress as JSON (D-328): read-only, every token role. Built on the read models of the
+    # pages (Teacher::ApiView, Course::StudentProgress); they record no "read" event.
+    view_subject = { key: /[a-z_]+/ }
+    get "api/v1/teacher/home" => "api/v1/teacher_views#home", format: false
+    get "api/v1/teacher/subjects/:key/course" => "api/v1/teacher_views#course", constraints: view_subject, format: false
+    get "api/v1/teacher/subjects/:key/topics/:topic" => "api/v1/teacher_views#topic", constraints: view_subject.merge(topic: topic_key), format: false
+    get "api/v1/teacher/subjects/:key/test" => "api/v1/teacher_views#test", constraints: view_subject, format: false
+    get "api/v1/students/:key/progress" => "api/v1/progress#show", constraints: { key: /[a-z0-9-]+/ }, format: false
   end
 
   # Harness listener: the page and the files Chrome loads to run an agent's
