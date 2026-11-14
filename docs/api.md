@@ -3,7 +3,8 @@
 This is the manual of the **public API** (D-327) for a bot that drives banco with the `banco` command and has no shell on the
 server. It covers the host, the token, the roles, every command the bot's two roles use, the errors, the rate limit and what
 the API never does. The content agents' commands (`banco work`, `review`, `solve`, `lesson`, …) are in `briefs/` and
-`banco help`; they need an agent token and are not repeated here.
+`banco help`; they need an agent token and are not repeated here. The bot's start page (what to read, what to write, its rules) is
+`docs/bot.md`.
 
 ## Base URL and authentication
 
@@ -426,8 +427,9 @@ The CLI turns the 401 into «the token is wrong, expired (tokens last 90 days by
 
 ## Rate limit
 
-The edge (Traefik) limits each client IP to an average of **10 requests per second with a burst of 30**; above it the edge answers `429`
-before the app sees the request; the CLI reports it as `E-RATE-LIMIT` (exit 6) and does not retry: wait 10 seconds and send again. The app has no rate limit of its own, and no IP allowlist.
+The edge (Traefik) limits each client IP to an average of **10 requests per second with a burst of 30**, and to **3 requests in flight**
+at once; above either it answers `429` before the app sees the request; the CLI reports it as `E-RATE-LIMIT` (exit 6) and does not retry:
+wait 10 seconds and send again. The edge also refuses a body over 10 MB. The app has no rate limit of its own, and no IP allowlist.
 
 A topic or test read (`banco teacher topic`, `banco teacher test`) runs the page's own work, a few seconds in the worst case: read it once and keep the answer, do not poll it.
 
