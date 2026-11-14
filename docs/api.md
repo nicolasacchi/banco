@@ -27,7 +27,8 @@ banco status                                # any read works with either role
 ```
 
 - Every answer carries `X-Banco-Contract`, the digest of `contract/commands.json`. The CLI refuses a server whose digest
-  differs from its own (`E-CONTRACT`): rebuild the CLI (`go build -o bin/banco ./cli`). `banco schema` prints the contract.
+  differs from its own (`E-CONTRACT`, `next`: `banco self-update`): update the CLI from the server («Staying current»). `banco schema`
+  prints the contract.
 - Every error is `{code, field, message, next}` (JSON on stderr in the CLI); some add `reason` or `reasons`. Exit codes:
   0 ok, 2 usage, 3 validation (HTTP 400, 404, 413, 422), 4 authentication or permission (401, 403), 5 conflict (409), 6 server or network.
 
@@ -54,8 +55,13 @@ banco status                                # any read works with either role
 - A token expires: `banco:token:issue` gives 90 days unless `EXPIRES_DAYS=n` (at least 1) says otherwise: no token is issued without an expiry,
   and a `bot_read` or `teacher` token without one is invalid. An expired token, a revoked token and a wrong token are all `401 E-AUTH`, "token missing, invalid, expired or revoked".
   Ask the operator for a new token; the CLI cannot tell expired from wrong, on purpose.
-- The operator lists tokens with `bin/rails banco:token:list` (public id, role, label, teacher, expiry, state) and revokes one
-  with `bin/rails banco:token:revoke ID=<public id>`.
+- A `bot_read` or `teacher` token **renews itself on use** (D-330): `EXPIRES_DAYS` is its lifetime, and a request that the server
+  accepts moves the expiry to now plus that lifetime when less than the lifetime minus one day is left (half the lifetime for a
+  one-day token), so at most about once a day. A token used at least once per lifetime never expires; one left idle for a whole
+  lifetime expires, and an expired or revoked token is never renewed. A refused request (a wrong method, a teacher no longer on
+  the list) renews nothing. The content agents' tokens keep the expiry they were issued with. `banco token` shows the current expiry.
+- The operator lists tokens with `bin/rails banco:token:list` (public id, role, label, teacher, effective expiry, state) and revokes one
+  with `bin/rails banco:token:revoke ID=<public id>`. Revocation is the way to stop a token that is still in use.
 
 ```bash
 bin/rails banco:token:issue ROLE=bot_read LABEL="bot, read" EXPIRES_DAYS=60
@@ -419,11 +425,12 @@ official student sees no subject before the teacher releases its course.
 | 422 | `E-COMMENT-INVALID` | the comment is not in a state for the action, an empty or over-long reply |
 | 422 | `E-FILES` | a malformed body, an unknown value of a filter, `confirm` that is not a boolean |
 | (CLI) | `E-URL` | `BANCO_URL` is not `http(s)://host[:port][/prefix]` or a bare host; exit 2, nothing sent |
-| (CLI) | `E-CONTRACT` | the CLI's embedded contract differs from the server's (exit 6): take the release build that matches the server |
+| (CLI) | `E-CONTRACT` | the CLI's embedded contract differs from the server's (exit 6); `next` is `banco self-update` |
+| (CLI) | `E-SELF-UPDATE` | `banco self-update` downloaded a file whose sha256 or size differs from the server's list, or could not write beside the program (exit 6); nothing was replaced |
 
 The registry of every code is `config/banco/error_codes.yml`. Exit code 4 is any 401 or 403, 3 any 404 or 422.
 
-The CLI turns the 401 into «the token is wrong, expired (tokens last 90 days by default) or revoked» and names where to get a new one.
+The CLI turns the 401 into «the token is wrong, expired or revoked» (with the renewal rule) and names where to get a new one.
 
 ## Rate limit
 
@@ -440,7 +447,8 @@ A topic or test read (`banco teacher topic`, `banco teacher test`) runs the page
 - It never records a decision without the flag `BANCO_DECISIONS_ENABLED=1`, without the token's teacher on `BANCO_TEACHER_USERS`, or past a gate:
   `confirm: true` does not skip a requirement, and a dry run writes nothing.
 - It never updates or deletes a row: the ledger is append-only, a correction is a new row.
-- It never returns a token's secret, a password or a file of the server; the operator's console tasks (`banco:token:*`, `banco:decide`,
+- It never returns a token's secret, a password or a file of the server, except the bot's two docs (`docs/bot.md`, `docs/api.md`) and the
+  CLI's release build of the image, each from a fixed list (D-330); the operator's console tasks (`banco:token:*`, `banco:decide`,
   `banco:correct_session`, `banco:search:rebuild`) stay on the host.
 - The content agents' tokens never decide, never read comments or pending answers, and never act as the teacher.
 - The teacher views (`banco teacher ...`, `banco progress`) never write: reading a page through the API records no `teacher_viewed_topic` or `teacher_saw_exercise` event, so the approval gate's «page opened» and «exercises seen» conditions stay the teacher's, in the browser (or the attestation, from the console or a teacher token over the API); they show no student's name (keys only) and no student's answer.
@@ -448,6 +456,63 @@ A topic or test read (`banco teacher topic`, `banco teacher test`) runs the page
 ## The release build of the CLI
 
 `bin/build-cli-dist` (POSIX sh, needs Go) tests the CLI and cross-compiles it for linux, darwin and windows on amd64 and arm64 into
-`dist/` (git-ignored) with `dist/SHA256SUMS`; the version is stamped from git (`banco version` prints
-`cli_version` as `<base>+<commit>`, with `.dirty` if `cli/` or `contract/` had uncommitted changes). Copy the file for the bot's
-platform, check it with `sha256sum -c SHA256SUMS`, make it executable and put it on the `PATH` as `banco`.
+`dist/` (git-ignored) with `dist/SHA256SUMS` and `dist/build.json` (`{version, built_at}`); the version is stamped from git (`banco version` prints
+`cli_version` as `<base>+<commit>`, with `.dirty` if `cli/` or `contract/` had uncommitted changes), or from `GIT_SHA` where there is no
+`.git`. The production image builds it in its `cli` stage (the Go of `go.mod`) and carries it at `/rails/dist`, so the server publishes
+the build of its own commit. The first time, copy the file for the bot's platform, check it with `sha256sum -c SHA256SUMS`, make it
+executable and put it on the `PATH` as `banco`; afterwards `banco self-update` keeps it current.
+
+## Staying current
+
+The bot updates itself (D-330). Four commands help, and all four work even when the CLI's contract differs from the server's
+(they are exempt from the `E-CONTRACT` refusal; every other command still refuses). Any token role may use them; through the
+edge, as everywhere, only `bot_read` and `teacher`. Every answer is `Cache-Control: no-store`.
+
+### `banco token`
+
+`GET /api/v1/token`: the token of `BANCO_TOKEN` as the registry knows it, never its secret:
+`{public_id, role, teacher, label, created_at, expires_at, renews_on_use, lifetime_days, revoked: false}`. `expires_at` is the
+effective expiry (renewals included, see «Expiry and revocation»); a revoked or expired token gets the usual `401`.
+
+### `banco changes [--since D-NNN]`
+
+`GET /api/v1/updates[?since=D-NNN]` answers
+
+```json
+{"server": {"commit": "<BANCO_GIT_SHA>", "built_at": "2026-11-14T10:00:00Z"},
+ "contract_digest": "<the X-Banco-Contract digest>",
+ "cli": {"version": "0.1.0+<commit>", "files": [{"name": "banco-linux-amd64", "os": "linux", "arch": "amd64", "sha256": "…", "size": 9000000}]},
+ "docs": [{"name": "bot", "sha256": "…"}, {"name": "api", "sha256": "…"}],
+ "changes": [{"number": "D-330", "date": "2026-11-14", "title": "…", "status": "implemented"}]}
+```
+
+`changes` are the rows of the index of `docs/decisions.md` (every change of design or of the operator's answers) after `since`, oldest
+first, all of them without `since`; `since` that is not `D-` and a number is `422 E-FILES`. `cli` comes from the image's `dist/`
+(`version` and `built_at` are `null` and `files` empty where there is no release build, as in development). The command prints
+`{since, server_commit, changes}`.
+
+### `banco docs show bot|api`
+
+`GET /api/v1/docs/:name`, `name` `bot` (`docs/bot.md`) or `api` (`docs/api.md`) and nothing else (`404 E-NOT-FOUND`):
+`{name, sha256, text}`, the doc of the running server. Compare `sha256` with the one `/updates` lists to know whether it changed.
+
+### `banco self-update [--check]`
+
+Reads `/updates` and compares the server's CLI `version` and `contract_digest` with its own. When they differ it downloads
+`GET /api/v1/cli/banco-<os>-<arch>[.exe]` (only a name listed in `dist/SHA256SUMS` is served, with its sha256 in `X-Banco-Sha256`;
+anything else is `404 E-NOT-FOUND`), checks the sha256 and the size against the list (`E-SELF-UPDATE` and nothing replaced when they
+differ), writes it to a temporary file beside its own executable, makes it executable (0755) and renames it over itself: the old
+program stays whole until the new one is complete. On Windows, which cannot replace a running program, it writes `banco.new.exe`
+beside it and says so: replace `banco.exe` with it after the command ends. It prints `{cli_version, server_cli_version, contract_sha256,
+server_contract_sha256, server_commit, file, file_available, update_available, updated, path?, next?}`. `--check` only reports. The
+same HTTPS rule holds: `http://` is refused off loopback. An out-of-date CLI on a server without a build for its platform is
+`E-NOT-FOUND` (exit 3).
+
+### The loop
+
+1. At start, run `banco self-update --check`; when `update_available` is true, run `banco self-update`.
+2. Run `banco self-update` too whenever a command answers `E-CONTRACT`, or `server.commit` of `/updates` differs from the last one
+   the bot saw.
+3. After an update, run `banco changes --since <the last decision the bot read>` and read every new row; then re-read
+   `banco docs show bot` (and `banco docs show api` when its `sha256` changed). Keep the last decision number and commit seen.
+4. Use the token at least once per lifetime (any read) and it never expires; if a `401` comes anyway, ask the operator for a new token.
