@@ -97,6 +97,26 @@ for a lesson that uses one of them. `Lessons::Money` computes every amount of an
 card is `lesson/blocks/flip.js`, shared by `mistake` and `reveal`. An `oral` is graded as an ordering by the check endpoint and its model answer rides
 on the reply (`model_it`). The gallery lesson is `test/fixtures/lesson2/gallery/docs-lesson.md`, rendered by `test/system/docs_family_test.rb`.
 
+## The `code` block (release 2, D-329)
+
+A whole program in a monospaced box, for S to copy and try on the Mac: `{lang: vb, title_it?, text, input_it?, output?, note_it?}`
+(`b_code` in `config/banco/schemas/lesson.json`; the author's guide is the section "The `code` block" of `briefs/lesson.md`). It is core (no family
+stylesheet: its rules are the end of `lesson.css`) and `available` in `lesson_types.yml` (batch `r2`). Ruby: `Lessons::Blocks::Code` refuses a
+`lang` other than `vb` (`E-LESSON-CODE-LANG`), a program over `lesson2.types.code.lines` lines (60) or a line over `line_chars` (90), an output
+over `output_lines` (30), typed lines over `input_lines` (12) of `input_chars` (40), or an empty program (`E-LESSON-CODE-SIZE`), and a tab in the
+program, the output or a typed line (`E-LESSON-CODE-TAB`). The schema keeps the limits loose so that each gets its own code. The block is never
+graded and is served whole (`StudentBody::BLOCKS`, `whitelist.json`): it holds no answer, an author keeps the answer of a check of the same card out
+of its `output`. **What the word counts count:** `Lessons::Blocks.prose` lists the strings that count as prose (the 500 words of core prose, the 90 of
+a card, the depth and apparatus budgets); a `code` block has no branch there, so its program, typed lines, output, title and note are outside every
+count. Its `title_it` and `note_it` are markup and are read by the language lint (`E-READ`). The browser: `lesson/blocks/code.js` draws a `<pre>`
+with `white-space: pre` and `overflow-x: auto` (a long line scrolls inside the box, which takes focus), a «Copia» button that writes `block.text`
+to `navigator.clipboard` and shows «Copiato» for 2,5 s (when the clipboard is refused the program is selected and the message says to press Cmd and
+C), «Scrivi:» with the lines as keys and «Sullo schermo vedi:» with the output. «Ascolta» says that a program of N lines is there and does not read
+it (`data-speech-text`, `data-nospeech`). No highlighting: the palette of computer science has no role left for keywords (eight is the maximum).
+The render check skips the sideways scroll of the box (`overflowFindings` ignores `.code-box` and `.code-screen`) and still reports a page wider
+than the window. Gallery: `test/fixtures/lesson2/gallery/code.md`, drawn by `test/validation/code_gallery_test.rb` and
+`test/system/lesson_code_block_test.rb`; the renderer's own tests are `app/javascript/lesson/test/code.test.mjs`.
+
 ## The biology figures (T7, T4b, D-312)
 
 `cell` and `nested` are the first W2-2 types made `available`: their look gate froze their draft schemas (`x-banco-draft` is gone; the registry test

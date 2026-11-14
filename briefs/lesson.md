@@ -125,6 +125,7 @@ Limits (`config/banco/validation_rules.yml`, block `lesson2`):
   example steps, card titles; each `$...$` counts as one word), at most 90 words per core card and 40
   per callout (`E-CARD-WORDS`), 1 to 6 blocks per card (`E-CARD-BLOCKS`). Depth (`more` blocks and extra
   cards) at most 1000 words, one `more` at most 150 (`E-LESSON-EXTRA-WORDS`).
+  A `code` block is outside all of these counts: its program, typed lines, output, title and note are not prose.
 - 2 to 8 checks outside the `try` card, step blanks included, at most 3 blanks, at most 2 more in extra
   cards (`E-LESSON-CHECKS`); do not leave 3 idea or example cards in a row without a check
   (`W-LESSON-CHECKS-SPARSE`). On the `try` card at most 3 checks per exercise and 12 in all.
@@ -188,6 +189,49 @@ Not available yet (`E-LESSON-BLOCK`, "not available yet"): any block, diagram ty
 or check option that the registry `config/banco/lesson_types.yml` does not list as `available`. The subjects other
 than math and italian have an addendum with their roles, verbs, icons and pieces: `banco brief show lesson-SUBJECT`
 (for example `lesson-biology`; the subject key with hyphens).
+
+## The `code` block: a whole program to copy and try
+
+A program S can copy and run (D-329). It is for the subjects that teach programming (today: `computer_science`, Visual Basic). It is not a
+visual: an idea card still needs its diagram. It is never graded and holds no answer, so it is served whole: never put the answer of a check of
+the same card in its `output` (a number check asking what the program prints is answered by reading the box).
+
+```
+::: code
+lang: vb
+title_it: "La torre controlla la quota"
+text: |
+  Module Program
+      Sub Main()
+          Console.Write("Quota in piedi: ")
+          Dim quota As Integer = CInt(Console.ReadLine())
+          Console.WriteLine("Quota: " & quota & " piedi")
+      End Sub
+  End Module
+input_it:
+  - "35000"
+output: |
+  Quota in piedi: 35000
+  Quota: 35000 piedi
+note_it: "Scrivi 35000 e premi Invio."
+:::
+```
+
+| Field | What |
+|---|---|
+| `lang` | `vb` and nothing else (`E-LESSON-CODE-LANG`) |
+| `text` | the whole program, in a YAML `|` block: newlines and indentation are kept, and the box never wraps. At most 60 lines of 90 characters, no tab: indent with four spaces (`E-LESSON-CODE-SIZE`, `E-LESSON-CODE-TAB`) |
+| `title_it?` | a short name; without it the box says "Programma". Markup, one line |
+| `input_it?` | what S types while the program runs, one entry per line, in order (the page adds «Dopo ogni riga premi Invio»). At most 12 entries of 40 characters |
+| `output?` | the screen at the end of the run, in a YAML `|` block, at most 30 lines of 90 characters, no tab |
+| `note_it?` | one short sentence under the box (markup, at most 200 characters) |
+
+The page draws a monospaced box with a «Copia» button (it copies `text` exactly; the button then says «Copiato»), then «Scrivi:» with the input
+lines, then «Sullo schermo vedi:» with the output. A line longer than the phone scrolls sideways inside the box. Write the program as the
+school's programme writes it (`Module Program`, `Sub Main()`, `CInt(Console.ReadLine())`), and give the numbers S types and the lines the screen
+shows from a real run: a decimal is printed with the comma on an Italian Mac. Nothing in `text`, `input_it` or `output` is markup: write `$` and
+`[[` freely. The words around the program (the card's text, `title_it`, `note_it`) are markup and keep the reading rules (`E-READ`).
+The block goes in a card of the lesson, not in a `more` block.
 
 ## The docs family: `document`, `source`, `reveal`, `oral`
 

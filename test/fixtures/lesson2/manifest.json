@@ -892,6 +892,30 @@
    "line": 63,
    "construct": "diagram formula",
    "note": "a formula whose symbol is not an element (formulas: ['Xx2']); the same code is raised for CL2, where the capital L is no symbol"
+  },
+  {
+   "file": "bad/code-lang.md",
+   "base": "base.md",
+   "code": "E-LESSON-CODE-LANG",
+   "line": 46,
+   "construct": "block code",
+   "note": "a code block whose lang is c: only vb is drawn (D-329)"
+  },
+  {
+   "file": "bad/code-size.md",
+   "base": "base.md",
+   "code": "E-LESSON-CODE-SIZE",
+   "line": 47,
+   "construct": "block code",
+   "note": "a program of 61 lines (at most 60); the same code covers a line of more than 90 characters, an output of more than 30 lines and typed lines (test/lib/lessons/code_test.rb)"
+  },
+  {
+   "file": "bad/code-tab.md",
+   "base": "base.md",
+   "code": "E-LESSON-CODE-TAB",
+   "line": 47,
+   "construct": "block code",
+   "note": "a program indented with tabs: four spaces keep the box and the copy the same everywhere"
   }
  ],
  "pending": {

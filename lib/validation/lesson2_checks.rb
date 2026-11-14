@@ -270,6 +270,7 @@ module Validation
           when "source", "reveal", "oral" then Lessons::Blocks::Docs.check(block, @ctx)
           when "dialogue" then Lessons::Blocks::Dialogue.check(block, @ctx)
           when "page" then Lessons::Blocks::FreePage.check(block, @ctx, card: card, body: @body)
+          when "code" then Lessons::Blocks::Code.check(block, @ctx)
           else Lessons::Blocks::Simple.check(block, @ctx)
           end
         end

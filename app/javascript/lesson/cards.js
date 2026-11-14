@@ -3,6 +3,7 @@
 import { el, icon } from "lesson/dom"
 import { renderCheck } from "lesson/blocks/check"
 import { render as callout } from "lesson/blocks/callout"
+import { render as code } from "lesson/blocks/code"
 import { render as cases } from "lesson/blocks/cases"
 import { render as diagram } from "lesson/blocks/diagram"
 import { render as example } from "lesson/blocks/example"
@@ -176,6 +177,7 @@ function renderOne(block, card, ctx, renderBlock) {
     case "reveal": return reveal(block, ctx)
     case "dialogue": return dialogue(block, ctx)
     case "oral": return oral(block, ctx, loc)
+    case "code": return code(block, ctx)
     case "page": return freePage(block, ctx, loc)
     case "table": return table(block, ctx)
     case "diagram":

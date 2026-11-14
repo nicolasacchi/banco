@@ -1941,7 +1941,8 @@
             "oral",
             "dialogue",
             "image",
-            "page"
+            "page",
+            "code"
           ]
         }
       },
@@ -2259,6 +2260,21 @@
           },
           "then": {
             "$ref": "#/$defs/b_page"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "code"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/b_code"
           }
         }
       ]
@@ -3942,6 +3958,68 @@
         }
       },
       "description": "A free page (release 2, D-290): a sandboxed interactive scene on its own origin, embedded in an extra card beside a still visual. Served: the poster, the caption, the page's own texts and a button; the iframe loads only on a click. Never counted for a skill state."
+    },
+    "b_code": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "type",
+        "lang",
+        "text"
+      ],
+      "properties": {
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "type": {
+          "const": "code"
+        },
+        "lang": {
+          "type": "string",
+          "maxLength": 20,
+          "description": "The language of the program: `vb` (Visual Basic) and nothing else for now (E-LESSON-CODE-LANG). The schema leaves the value open so that a wrong one gets its own code."
+        },
+        "title_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20000,
+          "description": "The whole program, newlines and indentation kept (a YAML `|` block). At most 60 lines of 90 characters, no tab (four spaces), as lesson2.types.code says (E-LESSON-CODE-SIZE, E-LESSON-CODE-TAB). The button «Copia» copies exactly this."
+        },
+        "input_it": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "minItems": 1,
+          "maxItems": 60,
+          "description": "What S types while the program runs, one entry per line, in order. At most 12 entries of 40 characters."
+        },
+        "output": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20000,
+          "description": "The screen as it looks at the end of the run, newlines kept (a YAML `|` block). At most 30 lines of 90 characters, no tab."
+        },
+        "note_it": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "description": "A whole program in a monospaced box (release 2, D-329): indentation kept, scrolls sideways on a phone and never wraps, a button «Copia» that copies the text exactly, then «Scrivi:» with the input lines and «Sullo schermo vedi:» with the expected output. Never graded, outside the word counts, served whole."
     }
   },
   "unevaluatedProperties": false

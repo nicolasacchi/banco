@@ -25,7 +25,9 @@ module Lessons
       end
     end
 
-    # The strings of a block that count as prose of the card (A3 table): not checks, not the try card, not a more.
+    # The strings of a block that count as prose of the card (A3 table): not checks, not the try card, not a more, and not a `code` block
+    # (D-329: its program, its typed lines, its output, its title and its note are outside every word count: the 500 words of core prose, the 90 of a
+    # card, the apparatus budget and the depth budget count the words S reads to learn, and a listing is a thing to copy).
     def prose(block)
       case block["type"]
       when "text", "callout" then [ block["text_it"] ]
@@ -122,6 +124,10 @@ module Lessons
       when "dialogue"
         add.call("title_it", block["title_it"])
         block["lines"].to_a.each_with_index { |l, i| add.call("lines/#{i}/gloss_it", l["gloss_it"]) }
+      when "code"
+        # only the words around the program are markup; the program, what is typed and the output are plain characters, never read as markup
+        add.call("title_it", block["title_it"])
+        add.call("note_it", block["note_it"])
       when "oral"
         add.call("question_it", block["question_it"])
         block["outline"].to_a.each_with_index { |o, i| add.call("outline/#{i}/text_it", o["text_it"]) }

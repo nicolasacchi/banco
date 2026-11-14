@@ -42,7 +42,9 @@ module Lessons
       # words (T3): the glosses are teaching content, served whole (L8), and read aloud only after the student opens them
       "dialogue" => [ %w[n type title_it speakers transcript], { "lines" => %w[speaker text_en text_es gloss_it] } ],
       # release 2 (D-290): a free page pin; `for` adds the server's `view` (poster, texts, shell address) from the page revision
-      "page" => [ %w[n type page revision caption_it], {} ]
+      "page" => [ %w[n type page revision caption_it], {} ],
+      # release 2 (D-329): a whole program for S to copy; it is never graded and holds no answer, so every field is served
+      "code" => [ %w[n type lang title_it text input_it output note_it], {} ]
     }.freeze
     SOURCE_COMPARE = %w[title_it author_it year about_year for_whom_it where_it translation original].freeze
     CASE_FIELDS = %w[title_it icon tone condition_it text_it example_it].freeze

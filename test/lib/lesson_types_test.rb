@@ -105,9 +105,9 @@ class LessonTypesTest < ActiveSupport::TestCase
     assert_equal Validation::Rules.get(:lesson2, :reachable_cap), Lessons::Diagrams::Contract::REACHABLE_CAP
   end
 
-  test "lesson2.types has the caps of every type with a schema in wave 2 (flow as flow_line) and of the five new blocks" do
+  test "lesson2.types has the caps of every type with a schema in wave 2 (flow as flow_line) and of the six new blocks" do
     caps = Validation::Rules.get(:lesson2, :types).keys
-    expected = DIAGRAMS.select { |_, e| e["family"] != "core" && e["schema"] != "none" }.keys + %w[flow_line source reveal oral dialogue image]
+    expected = DIAGRAMS.select { |_, e| e["family"] != "core" && e["schema"] != "none" }.keys + %w[flow_line source reveal oral dialogue image code]
     assert_equal expected.sort, caps.sort
     assert_equal 10, Validation::Rules.version
   end

@@ -809,3 +809,35 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 
 /* "Commenta" (D-304) added a button to the top bar: on a phone the bar's buttons and gaps are a little tighter, so it still never overflows */
 @media (max-width: 420px) { .l2-top-in { gap: 0.3em; } .l2-tools { gap: 0.2em; } .l2-ibtn { min-width: 2.2em; padding: 0 0.3em; } }
+
+/* code (D-329): a whole program in a monospaced box. Every space and newline is kept and a line never wraps: a long line scrolls sideways inside the
+   box, which takes the keyboard focus so that it can be scrolled. The copy button, what S types and what the screen shows come under it. */
+.block-code { margin: 0.9em 0; min-width: 0; }
+.block-code .code-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.3em 0.8em; margin: 0 0 0.4em; }
+.block-code .code-title { margin: 0; font-weight: 800; min-width: 0; }
+.block-code .code-copy { flex: none; }
+.block-code .code-copy.is-copied { background: var(--soft-primary); border-color: var(--text); font-weight: 800; }
+.block-code .code-status { flex: 1 0 100%; min-height: 0; margin: 0; font-size: 0.9em; font-weight: 700; color: var(--muted); }
+.block-code .code-status:empty { display: none; }
+.block-code .code-box, .block-code .code-screen { display: block; margin: 0; padding: 0.7em 0.9em; max-width: 100%; box-sizing: border-box; overflow-x: auto; overflow-y: hidden;
+  white-space: pre; word-wrap: normal; overflow-wrap: normal; tab-size: 4; -moz-tab-size: 4; text-align: left; border-radius: 0.8em; border: 2px solid var(--rule);
+  font-family: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, "DejaVu Sans Mono", monospace; font-size: 1em; line-height: 1.5; color: var(--text); font-variant-ligatures: none; }
+.block-code .code-box { background: var(--soft); }
+.block-code .code-screen { background: var(--surface); border-style: dashed; }
+.block-code .code-box code, .block-code .code-screen code { font: inherit; background: none; padding: 0; border: 0; white-space: inherit; }
+.block-code .code-box:focus-visible, .block-code .code-screen:focus-visible { outline: 3px solid var(--focus, var(--text)); outline-offset: 2px; }
+.block-code .code-io { margin: 0.8em 0 0; }
+.block-code .code-label { margin: 0 0 0.3em; }
+.block-code .code-typed { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4em 0.6em; }
+.block-code .code-key { display: inline-block; max-width: 100%; box-sizing: border-box; padding: 0.15em 0.6em; border: 2px solid var(--rule); border-bottom-width: 4px; border-radius: 0.5em; background: var(--surface); color: var(--text);
+  font-family: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, "DejaVu Sans Mono", monospace; font-size: 1em; white-space: pre-wrap; overflow-wrap: anywhere; vertical-align: middle; }
+.block-code .code-hint { margin: 0.35em 0 0; font-size: 0.9em; color: var(--muted); }
+.block-code .code-note { margin: 0.7em 0 0; }
+.block-code .code-note p { margin: 0.2em 0; }
+@media (forced-colors: active) {
+  .block-code .code-box, .block-code .code-screen, .block-code .code-key { border: 2px solid CanvasText; background: Canvas; color: CanvasText; }
+}
+@media print {
+  .block-code .code-copy, .block-code .code-status, .block-code .code-hint { display: none !important; }
+  .block-code .code-box, .block-code .code-screen { white-space: pre-wrap; overflow: visible; background: #fff; color: #000; border-color: #000; font-size: 10pt; }
+}

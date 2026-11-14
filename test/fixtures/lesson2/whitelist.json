@@ -300,6 +300,23 @@
    ],
    "note": "free page (D-290): the server adds `view` (title, instructions, alt, fallback, poster address, transfer size, shell address) from the page revision, never the code of the page"
   },
+  "code": {
+   "def": "b_code",
+   "serve": [
+    "n",
+    "type",
+    "lang",
+    "title_it",
+    "text",
+    "input_it",
+    "output",
+    "note_it"
+   ],
+   "drop": [
+    "line"
+   ],
+   "note": "a program to copy and try (D-329): never graded, holds no answer, served whole"
+  },
   "reveal": {
    "def": "b_reveal",
    "serve": [

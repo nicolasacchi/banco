@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 25
+version: 26
 
 validation:
   # Skill graph (synchronous).
@@ -162,6 +162,9 @@ validation:
   W-ES-TILDE: { stage: ruby, severity: warning, description: "A Spanish word written with a tilde that the stress rule does not need, or without the tilde it needs." }
   E-LESSON-LANG: { stage: ruby, severity: error, description: "A target-language key (_en, _es, _la) in a subject that does not teach that language, two target languages in one figure, or Italian text that the lint can tell in a _en or _es key." }
   W-LANG-LEVEL: { stage: ruby, severity: warning, description: "A target-language word outside the first 3000 words, the lesson's glossary and its teaches_en or teaches_es list; the reviewer judges." }
+  E-LESSON-CODE-LANG: { stage: ruby, severity: error, description: "A code block whose lang is not one the release draws: only vb (Visual Basic) for now (D-329)." }
+  E-LESSON-CODE-SIZE: { stage: ruby, severity: error, description: "A code block that is empty, or whose program (text) has more than lesson2.types.code.lines lines or a line over line_chars characters, whose output has more than output_lines lines or a line over line_chars, or whose input_it has more than input_lines entries or an entry over input_chars characters (D-329)." }
+  E-LESSON-CODE-TAB: { stage: ruby, severity: error, description: "A tab character in the text or the output of a code block: indent with four spaces, so that the box and the copy keep the layout (D-329)." }
   W-LESSON-CHECKS-SPARSE: { stage: ruby, severity: warning, description: "Three idea or example cards in a row with no check or step blank." }
   W-CHECK-ANSWER-IN-PROMPT: { stage: ruby, severity: warning, description: "A check's answer text appears in its own prompt." }
   W-MISTAKE-CODE: { stage: ruby, severity: warning, description: "A mistake or check error code that is not in the skills' error catalogue." }
