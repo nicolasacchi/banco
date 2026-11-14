@@ -143,9 +143,11 @@ class AcceptedAnswersTest < ActionDispatch::IntegrationTest
     assert_includes Teacher::PendingAnswers.lines(entry.with(proposal_id: nil)).last, "no grade proposal yet"
   end
 
-  test "no API route, controller or CLI command names the pending list" do
+  # D-327: the pending list is also an API read, for the tokens that read, through one controller; the CLI's command is `answers pending`.
+  test "only the answers controller of the API names the pending list, and no CLI source names the console task" do
     assert_not_includes Rails.root.join("contract/commands.json").read, "answers:pending"
-    assert_empty Dir[Rails.root.join("app/controllers/api/**/*.rb")].select { |f| File.read(f).match?(/PendingAnswers/) }
+    named = Dir[Rails.root.join("app/controllers/api/**/*.rb")].select { |f| File.read(f).match?(/PendingAnswers/) }
+    assert_equal [ "app/controllers/api/v1/answers_controller.rb" ], named.map { |f| f.delete_prefix("#{Rails.root}/") }
     assert_empty Dir[Rails.root.join("cli/**/*.go")].reject { |f| f.end_with?("_test.go") }.select { |f| File.read(f).match?(/PendingAnswers|answers:pending/) }
   end
 end

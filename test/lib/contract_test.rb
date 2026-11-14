@@ -20,9 +20,11 @@ class ContractTest < ActiveSupport::TestCase
     end
   end
 
-  test "no command takes a decision" do
+  # D-327: the teacher token's `decide` and its list `decisions` are the only commands that name a decision; the server
+  # answers them to a teacher token (and the list to bot_read), never to a content agent's.
+  test "no command takes a decision but the teacher token's decide and decisions" do
     names = Contract.parsed["commands"].map { |c| c["name"] }
-    assert_empty names.grep(/decision|approve|confirm|release/)
+    assert_equal %w[decide decisions], names.grep(/decision|decide|approve|confirm|release/)
   end
 
   test "digest changes with the file content" do

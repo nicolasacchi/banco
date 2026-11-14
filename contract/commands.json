@@ -459,6 +459,130 @@
       "args": ["attempt"],
       "flags": ["--file", "--dry-run"],
       "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-GRADE-POINT", "E-GRADE-QUOTE", "E-QUOTE-NOT-FOUND", "E-GRADER-IS-AUTHOR", "E-PROPOSAL-EXISTS", "E-SESSION", "E-SESSION-ROLE", "E-PROVIDER-NOT-ALLOWED"]
+    },
+    {
+      "name": "teacher home",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/teacher/home",
+      "args": [],
+      "flags": ["--student"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "teacher course",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/teacher/subjects/:subject/course",
+      "args": ["subject"],
+      "flags": ["--only-ready"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "teacher topic",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/teacher/subjects/:subject/topics/:topic",
+      "args": ["subject", "topic"],
+      "flags": ["--lesson"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "teacher test",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/teacher/subjects/:subject/test",
+      "args": ["subject"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "progress",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/students/:student/progress",
+      "args": [],
+      "flags": ["--student"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "decide",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/decisions",
+      "args": ["kind"],
+      "flags": ["--params", "--params-file", "--reason", "--attest", "--confirm"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-TEACHER-REFUSED", "E-DECISION-INVALID"]
+    },
+    {
+      "name": "decisions",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/decisions",
+      "args": [],
+      "flags": ["--since", "--limit", "--kind"],
+      "error_codes": ["E-AUTH", "E-FILES"]
+    },
+    {
+      "name": "comments list",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/comments",
+      "args": [],
+      "flags": ["--state", "--subject", "--who", "--reason", "--kind", "--limit"],
+      "error_codes": ["E-AUTH", "E-FILES"]
+    },
+    {
+      "name": "comments show",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/comments/:id",
+      "args": ["id"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "comments reply",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/comments/:id/reply",
+      "args": ["id"],
+      "flags": ["--text", "--confirm"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-TEACHER-REFUSED", "E-COMMENT-INVALID"]
+    },
+    {
+      "name": "comments resolve",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/comments/:id/resolve",
+      "args": ["id"],
+      "flags": ["--reason", "--confirm"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-TEACHER-REFUSED", "E-COMMENT-INVALID"]
+    },
+    {
+      "name": "comments reopen",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/comments/:id/reopen",
+      "args": ["id"],
+      "flags": ["--reason", "--confirm"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-TEACHER-REFUSED", "E-COMMENT-INVALID"]
+    },
+    {
+      "name": "comments read",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/comments/:id/read",
+      "args": ["id"],
+      "flags": ["--confirm"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-TEACHER-REFUSED", "E-COMMENT-INVALID"]
+    },
+    {
+      "name": "answers pending",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/answers/pending",
+      "args": [],
+      "flags": ["--subject", "--student"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
     }
   ]
 }

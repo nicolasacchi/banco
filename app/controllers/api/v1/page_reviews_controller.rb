@@ -10,7 +10,7 @@ module Api
 
       # GET /api/v1/page-revisions/:revision/review
       def open
-        unless author_read?
+        unless reader? || author_read? # D-327: a bot_read or teacher token reads without a session
           session = require_session("reviewer", item: @page, next_step: next_session) or return
           return unless reviewer_ok?(session)
         end

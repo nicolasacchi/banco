@@ -35,6 +35,18 @@ module Health
       )
     end
 
+    # The report for a caller that is not the operator's agent (a bot_read or teacher token, or a request through the public
+    # edge, D-327): the same facts, but a part that failed says only "error" (or "unreachable"), never the exception's class or
+    # message (disk paths, addresses, queue internals).
+    def redact(value)
+      case value
+      when Hash then value.to_h { |key, inner| [ key, key.to_s == "error" ? "error" : redact(inner) ] }
+      when Array then value.map { |inner| redact(inner) }
+      when String then value.match?(/\A(error|unreachable)\b/) ? value[/\A\w+/] : value
+      else value
+      end
+    end
+
     private
 
     OK_VALUES = %w[ok busy not_applicable not_configured skipped blocked].freeze

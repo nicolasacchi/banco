@@ -1,10 +1,10 @@
 module Comments
   # The only writer of the teacher's side of a comment (D-304): a reply, "read", "resolved", "reopened" (and in C2
   # "sent_back") as one append-only comment_events row. A reply is the teacher's own words, from the browser or from
-  # the operator's console; never a guest, a student, the preview, an agent or the API. The guards are the
-  # decisions' guards, by the same function (DecisionRecorder.refusal): BANCO_DECISIONS_ENABLED, the web listener, a
+  # the operator's console or, with a teacher token, the API (D-327); never a guest, a student, the preview or a content
+  # agent. The guards are the decisions' guards, by the same function (DecisionRecorder.refusal): BANCO_DECISIONS_ENABLED, the web listener, a
   # peer of the edge proxy, a Remote-User of BANCO_TEACHER_USERS in the teacher group, a valid CSRF token and a
-  # computer that is not the student's; or the console origin (BANCO_TEACHER_USERS login, flag on).
+  # computer that is not the student's; or the console or API origin (BANCO_TEACHER_USERS login, flag on).
   #
   #   Comments::Responder.call(request: request, comment_id: 3, kind: "reply", text_it: "Guarda la scheda 2.")
   #
@@ -30,7 +30,7 @@ module Comments
       CommentEvent.transaction do
         comment = Comment.includes(:events).find_by(id: Integer(@comment_id.to_s, exception: false)) or raise DecisionRecorder::Missing, "no comment #{@comment_id.to_s.first(20).inspect}"
         validate!(comment)
-        CommentEvent.create!(comment: comment, kind: @kind, origin: console? ? "console" : "web", actor: @request.get_header("HTTP_REMOTE_USER").to_s.strip,
+        CommentEvent.create!(comment: comment, kind: @kind, origin: origin, actor: @request.get_header("HTTP_REMOTE_USER").to_s.strip,
                              text_it: @kind == "reply" ? @text : nil, remote_addr: @request.remote_addr.to_s.first(60),
                              request_id: @request_id.presence || @request.request_id.presence || SecureRandom.uuid,
                              payload_json: JSON.generate(payload), created_at: Time.current)
@@ -39,9 +39,21 @@ module Comments
 
     private
 
-    def console? = @request.is_a?(DecisionRecorder::Console)
+    # The CHECK of comment_events.origin: web, console or api.
+    def origin
+      case @request
+      when DecisionRecorder::Console then "console"
+      when DecisionRecorder::Api then "api"
+      else "web"
+      end
+    end
 
-    def payload = @reason.empty? ? {} : { "reason_it" => @reason.first(1000) }
+    # The reason, and for the API the token that acted.
+    def payload
+      doc = @reason.empty? ? {} : { "reason_it" => @reason.first(1000) }
+      doc["token"] = @request.token_id if @request.is_a?(DecisionRecorder::Api)
+      doc
+    end
 
     def validate!(comment)
       state = comment.state

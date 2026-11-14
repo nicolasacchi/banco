@@ -65,6 +65,8 @@ module Banco
     # One Puma serves three listeners; the tag comes from the accepted socket's
     # local port (D-04). It must be the first middleware.
     config.middleware.insert_before 0, Banco::ListenerTag, allow_test_seam: Rails.env.test?
+    # Each public host belongs to one listener (D-327): api.banco.scc.im only on the API, banco.scc.im never on it.
+    config.middleware.insert_after Banco::ListenerTag, Banco::Hosts::ListenerHosts
 
     # Only the edge proxy is a trusted proxy (D-02); remote_ip is never used for
     # authorization, this only stops Rails from trusting private ranges.

@@ -1,6 +1,6 @@
 namespace :banco do
-  # The operator's console path to the student's comments (D-304). Never reachable over HTTP; the agents have no way to
-  # read a comment. Reading needs no flag; writing is a dry run unless CONFIRM=1, needs BANCO_DECISIONS_ENABLED=1 and
+  # The operator's console path to the student's comments (D-304). Never reachable over HTTP from here; the same actions
+  # are the API's, for a teacher token (D-327), and a content agent has no way to read a comment. Reading needs no flag; writing is a dry run unless CONFIRM=1, needs BANCO_DECISIONS_ENABLED=1 and
   # TEACHER=<login from BANCO_TEACHER_USERS>, and is recorded with origin "console".
   #
   #   bin/rails banco:comments:list [STATE=sent|read|answered|closed] [REASON=..] [KIND=lesson|..] [SUBJECT=key] [WHO=official|trial] [TYPE=comment|question]

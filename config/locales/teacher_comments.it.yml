@@ -86,6 +86,7 @@ it:
         reply_seen: "Risposta letta dallo studente"
       by: "da %{actor}"
       from_console: "(da console)"
+      from_api: "(da API)"
       reply: "Rispondi"
       reply_label: "La tua risposta, per lo studente"
       send_reply: "Invia la risposta"

@@ -112,7 +112,7 @@
                     <% comment.events.each do |event| %>
                       <li data-event="<%= event.kind %>">
                         <strong><%= t("teacher.comments.history_event.#{event.kind}") %></strong>
-                        <% unless event.origin == "student" %><%= t("teacher.comments.by", actor: event.actor) %><% end %><% if event.origin == "console" %> <%= t("teacher.comments.from_console") %><% end %>
+                        <% unless event.origin == "student" %><%= t("teacher.comments.by", actor: event.actor) %><% end %><% if %w[console api].include?(event.origin) %> <%= t("teacher.comments.from_#{event.origin}") %><% end %>
                         · <%= event.created_at.in_time_zone.strftime("%d/%m/%Y %H:%M") %>
                         <% if event.text_it %><%= simple_format(h(event.text_it)) %><% end %>
                       </li>

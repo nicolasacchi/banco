@@ -3,7 +3,8 @@ module Teacher
   # (bin/rails banco:answers:pending, D-317): undetermined answers (an unreadable one, a grader that
   # could not decide) and short answers, each with the run, the item, the stem of the instance, the
   # key, what S typed and the attempt id to pass to banco:decide KIND=resolve_attempt.
-  # Read-only. The same rows as the corrections page; no route, no API and no CLI command reach it.
+  # Read-only. The same rows as the corrections page; the operator's console list and, since D-327, the API's
+  # GET /api/v1/answers/pending (a bot_read or teacher token), never a content agent's.
   class PendingAnswers
     Entry = Data.define(:attempt_id, :run_id, :subject_key, :item_key, :stem, :key, :given, :kind, :note, :proposal_id)
 

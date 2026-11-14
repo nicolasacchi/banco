@@ -25,6 +25,7 @@ type CLIError struct {
 	Field    string            `json:"field"`
 	Message  string            `json:"message"`
 	Next     string            `json:"next"`
+	Reason   string            `json:"reason,omitempty"`
 	Codes    []string          `json:"codes,omitempty"`
 	Findings []json.RawMessage `json:"findings,omitempty"`
 	DryRun   bool              `json:"dry_run,omitempty"`
@@ -70,5 +71,22 @@ func errorFromBody(status int, body []byte) *CLIError {
 		e = CLIError{Code: fmt.Sprintf("E-HTTP-%d", status), Message: fmt.Sprintf("server answered %d", status)}
 	}
 	e.exit = exitForStatus(status)
+	e.explainAuth(status)
 	return &e
+}
+
+// explainAuth says in words why the token was refused (D-327): the server answers a wrong, an expired and a revoked
+// token alike (401 E-AUTH), and a read-only token that writes with 403 E-AUTH, reason read_only_token.
+func (e *CLIError) explainAuth(status int) {
+	if e.Code != "E-AUTH" {
+		return
+	}
+	switch {
+	case status == 401:
+		e.Message = "the server refused the token: it is wrong, expired (tokens last 90 days by default) or revoked"
+		e.Next = "ask the operator for a new token (bin/rails banco:token:issue), then set BANCO_TOKEN"
+	case status == 403 && e.Reason == "read_only_token":
+		e.Message = "this token is read-only (role bot_read): it can read everything and write nothing"
+		e.Next = "use a token with a writing role for this command, or read with banco teacher home | course | topic | test, banco progress"
+	}
 }

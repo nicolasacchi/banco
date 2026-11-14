@@ -33,7 +33,8 @@ class CommentTest < ActiveSupport::TestCase
     assert_raises(ActiveRecord::StatementInvalid) { make(text_it: "") }
     assert_raises(ActiveRecord::StatementInvalid) { make(selected_text: "x" * 301) }
     assert_raises(ActiveRecord::StatementInvalid) { event("sneaky") }
-    assert_raises(ActiveRecord::StatementInvalid) { event("read", origin: "api") }
+    assert_raises(ActiveRecord::StatementInvalid) { event("read", origin: "telepathy") }
+    assert_nothing_raised { event("read", origin: "api") } # D-327
     assert_raises(ActiveRecord::StatementInvalid) { event("reply") }
     assert_raises(ActiveRecord::StatementInvalid) { event("reply", text_it: "x" * 2001) }
     assert_raises(ActiveRecord::StatementInvalid) { event("reply_seen", origin: "web") }

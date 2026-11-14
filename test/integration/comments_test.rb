@@ -415,18 +415,20 @@ class CommentsTest < ActionDispatch::IntegrationTest
     %w[ID TEACHER TEXT_IT CONFIRM].each { |k| saved&.key?(k) ? ENV[k] = saved[k] : ENV.delete(k) }
   end
 
-  # ---- the agents never read a comment -------------------------------------------------------------------
+  # ---- the agents never read a comment; the tokens of D-327 do ---------------------------------------------
 
-  test "no API route, controller or schema command names a comment or a reply" do
+  # D-327 supersedes D-304's "no API route reads a comment": the one door is Api::V1::CommentsController, for the tokens that
+  # read (bot_read) and the teacher's (replies, read, resolve, reopen). Nothing else in the API names a comment.
+  test "the API names a comment only in the comments controller of D-327, and the contract only in its six commands" do
     api_routes = Rails.application.routes.routes.select { |r| r.path.spec.to_s.start_with?("/api/") }
     assert_not_empty api_routes
-    api_routes.each do |route|
-      target = "#{route.defaults[:controller]}##{route.defaults[:action]}"
-      assert_no_match(/comment|repl(y|ies)|reply_seen/i, "#{route.path.spec} #{target}")
-    end
+    named = api_routes.select { |route| "#{route.path.spec} #{route.defaults[:controller]}##{route.defaults[:action]}".match?(/comment|repl(y|ies)|reply_seen/i) }
+    assert_not_empty named
+    assert_equal [ "api/v1/comments" ], named.map { |r| r.defaults[:controller] }.uniq
     offenders = Dir[Rails.root.join("app/controllers/api/**/*.rb").to_s].select { |f| File.read(f).match?(/\bComments?\b|CommentEvent|Comments::|comment_events/) }
-    assert_empty offenders.map { |f| f.delete_prefix("#{Rails.root}/") }
-    assert_not Rails.root.join("contract/commands.json").read.match?(/"comments?"|comment_events|reply_seen/), "the CLI contract has no command for comments"
+    assert_equal [ "app/controllers/api/v1/comments_controller.rb" ], offenders.map { |f| f.delete_prefix("#{Rails.root}/") }
+    commands = JSON.parse(Rails.root.join("contract/commands.json").read)["commands"].map { |c| c["name"] }.grep(/comment/)
+    assert_equal [ "comments list", "comments read", "comments reopen", "comments reply", "comments resolve", "comments show" ], commands.sort
   end
 
   test "an agent token reads nothing of a comment from any parameterless API read" do
@@ -443,9 +445,11 @@ class CommentsTest < ActionDispatch::IntegrationTest
       assert_not_includes response.body, MARKER, path
     end
     on(:api, "/api/v1/comments", headers: { "Authorization" => "Bearer #{token}" })
-    assert_response :not_found
+    assert_response :forbidden
+    assert_equal "token_role", response.parsed_body["reason"]
+    assert_not_includes response.body, MARKER
     on(:api, "/api/v1/comments", method: :post, headers: { "Authorization" => "Bearer #{token}", "Content-Type" => "application/json" }, params: { text_it: "x" }.to_json)
-    assert_response :not_found
+    assert_response :not_found # no route creates a comment: the student writes them
   end
 
   test "the student-facing comment code has no model in its path" do

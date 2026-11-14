@@ -34,7 +34,7 @@ class ListenerTest < ActionDispatch::IntegrationTest
     on(:api, "/api/v1/schema")
     assert_response :unauthorized
     assert_equal "E-AUTH", response.parsed_body["code"]
-    assert_equal Contract.digest, response.headers["X-Banco-Contract"]
+    assert_nil response.headers["X-Banco-Contract"] # D-327: the digest goes to a caller with a good token only
   end
 
   test "api schema with an unknown token is 401" do

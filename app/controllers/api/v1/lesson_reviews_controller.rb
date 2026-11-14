@@ -10,7 +10,9 @@ module Api
 
       # GET /api/v1/lesson-revisions/:revision/review
       def open
-        if request.headers["X-Banco-Session"].to_s.strip.empty?
+        if reader?
+          # D-327: a bot_read or teacher token reads the page without a session; nothing is stored on a read.
+        elsif request.headers["X-Banco-Session"].to_s.strip.empty?
           return refuse("E-AUTH", "authorization", "this token cannot review", "banco schema", 403) unless ApiToken.session_roles(@token.role).include?("reviewer")
         elsif !author_read?
           session = require_session("reviewer", item: @lesson, next_step: next_session) or return

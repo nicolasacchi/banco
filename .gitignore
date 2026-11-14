@@ -8,6 +8,7 @@
 /node_modules/
 /cli/bin/
 /bin/banco
+/dist/
 
 # Rails runtime
 /log/*

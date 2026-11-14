@@ -13,7 +13,8 @@ module Api
       # The official student's answers by default (D-219); a trial student's with ?student=KEY, every
       # real student's with ?student=all. Each row says whose it is.
       def pending
-        require_session("grader", next_step: "banco session new --role grader --agent NAME --model MODEL") or return
+        # D-327: a bot_read or teacher token reads without a session; every other token needs a grader session.
+        reader? || require_session("grader", next_step: "banco session new --role grader --agent NAME --model MODEL") or return
 
         scope = Attempt.where(context: "diagnosis")
         key = params[:student].to_s

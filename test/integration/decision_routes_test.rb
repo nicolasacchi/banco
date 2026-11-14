@@ -194,10 +194,20 @@ class DecisionRoutesTest < ActionDispatch::IntegrationTest
     assert_equal 1, Decision.where(kind: "record_consent").count
   end
 
-  test "no API route maps to a decision" do
+  # D-327: the exceptions to "no API route maps to a decision" are the teacher token's decisions controller (its index, the audit
+  # list readable by bot_read too, and its create, a teacher token only, through DecisionConsole and DecisionRecorder) and the comments
+  # controller, whose reply/resolve/reopen/read are comment events of a teacher token (`resolve` is a comment action there, never a
+  # decision row). Any other route that maps to a decision, or any route of the teacher's web controllers, is still refused.
+  D327_DECISION_ROUTES = [ [ "/api/v1/decisions", "api/v1/decisions", "index" ], [ "/api/v1/decisions", "api/v1/decisions", "create" ] ].freeze
+
+  test "no API route maps to a decision but the two of D-327" do
     api_routes = Rails.application.routes.routes.select { |r| r.path.spec.to_s.start_with?("/api/") }
     assert_not_empty api_routes
-    api_routes.each do |route|
+    allowed = api_routes.select do |r|
+      D327_DECISION_ROUTES.include?([ r.path.spec.to_s.sub("(.:format)", ""), r.defaults[:controller], r.defaults[:action] ]) || r.defaults[:controller] == "api/v1/comments"
+    end
+    assert_equal 2 + 6, allowed.size # decisions index and create; comments list, show, reply, resolve, reopen, read
+    (api_routes - allowed).each do |route|
       target = "#{route.defaults[:controller]}##{route.defaults[:action]}"
       assert_no_match(/decision/i, target, route.path.spec.to_s)
       assert_no_match(%r{\A/api/v1/(.*/)?(decisions?|approve|release|consent|dispose|confirm|resolve|void|extend|close)\b}, route.path.spec.to_s.sub("(.:format)", ""))
@@ -209,7 +219,9 @@ class DecisionRoutesTest < ActionDispatch::IntegrationTest
     offenders = Dir[Rails.root.join("{app,lib,bin,config,db}/**/*.{rb,rake}").to_s].select do |file|
       next false if file.end_with?("app/models/decision_recorder.rb")
 
-      File.read(file).match?(/Decision\.(create|new|insert|upsert|find_or_create)|decisions\.(create|build)|INSERT INTO "?decisions/i)
+      # Decision.create and the like are the constant's class methods, case-sensitive: a lowercase `decision.created_at` is a read of a row.
+      text = File.read(file)
+      text.match?(/\bDecision\.(create|new|insert|upsert|find_or_create)|\bdecisions\.(create|build)/) || text.match?(/INSERT INTO "?decisions/i)
     end
     assert_empty offenders.map { |f| f.delete_prefix("#{Rails.root}/") }
   end

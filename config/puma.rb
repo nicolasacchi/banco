@@ -19,3 +19,7 @@ plugin :tmp_restart
 plugin :solid_queue if ENV["SOLID_QUEUE_IN_PUMA"]
 
 pidfile ENV["PIDFILE"] if ENV["PIDFILE"]
+
+# No body over 10 MB is read, before any token is looked at (D-327: the API listener is public). The largest real submit is a page
+# bundle (3 MB, Api::V1::PagesController::MAX_BODY; an item's files are at most 2 MB).
+http_content_length_limit 10 * 1024 * 1024

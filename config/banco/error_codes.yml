@@ -222,7 +222,7 @@ validation:
 
 # Refusals that store nothing (only for non-revisions), and the API's own codes.
 api:
-  E-AUTH: { http: 401, description: "Token missing, invalid or revoked." }
+  E-AUTH: { http: 401, description: "Token missing, invalid, expired or revoked (401); or a token that may not do this (403, with a reason: read_only_token for a bot_read token that writes, token_role for a command of another role, teacher_token_no_content for a teacher token that writes content, teacher_not_listed when the token's teacher left BANCO_TEACHER_USERS)." }
   E-STALE-BASE: { http: 409, description: "The submission is not based on the latest revision." }
   E-CHROME-BUSY: { http: 409, description: "Chrome is busy; retry in 30 s." }
   E-CHROME-UNAVAILABLE: { http: 503, description: "Chrome or the grader worker did not answer (a dry run), or could not draw the figures of an item for `solve open` and `review open`; retry in 30 s." }
@@ -234,6 +234,9 @@ api:
   E-BLUEPRINT-UNKNOWN: { http: 404, description: "The subject has no blueprint revision." }
   E-SESSION: { http: 422, description: "A command that needs a session sent no X-Banco-Session, or the session does not exist (banco session new)." }
   E-SESSION-ROLE: { http: 422, description: "The session has another role than the command needs." }
+  E-TEACHER-REFUSED: { http: 403, description: "The decisions' guards refused a teacher token's decision or comment action (D-327): reason disabled (BANCO_DECISIONS_ENABLED is not 1) or no_teacher (the token's login is not in BANCO_TEACHER_USERS). Nothing was written, a dry run included." }
+  E-DECISION-INVALID: { http: 422, description: "The decision is not possible now (the gate's reasons, in `reasons`), or 409 when the same request was already recorded. A dry run shows it too; nothing was written." }
+  E-COMMENT-INVALID: { http: 422, description: "The comment action is not possible now (an empty reply, a closed comment to reply to, a comment already read or closed, ...); the reasons are in `reasons`." }
   E-PROPOSAL-EXISTS: { http: 409, description: "The attempt already has a grade proposal the teacher has neither confirmed nor rejected." }
 
 # What the grader says about one answer (attempt_gradings.verdict).
