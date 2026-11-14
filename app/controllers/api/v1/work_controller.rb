@@ -19,7 +19,8 @@ module Api
         role = params[:role].presence || (current_session_role || "author")
         return refuse("E-FILES", "role", "role is author or verifier", "banco work open ITEM --role verifier", 422) unless %w[author verifier].include?(role)
 
-        if role == "verifier" || current_session_role
+        # A bot_read or teacher token reads either view without a session: a session only attributes writes (D-327).
+        if !reader? && (role == "verifier" || current_session_role)
           session = require_session(role, next_step: "banco session new --role #{role} --agent NAME --model MODEL") or return
           held = ItemSessions.new(item).conflicts(session.id, role)
           return refuse("E-SESSION-NOT-INDEPENDENT", "X-Banco-Session", "session #{session.id} already acted as #{held.join(' and ')} on #{item.key}", "banco session new --role #{role} --agent NAME --model MODEL", 422) if held.any?
