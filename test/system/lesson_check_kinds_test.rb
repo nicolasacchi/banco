@@ -58,6 +58,21 @@ class LessonCheckKindsTest < ApplicationSystemTestCase
     nil
   end
 
+  # The next answer to a check reaches the server, and the browser never gets the reply (a connection that drops).
+  def lose_the_next_reply
+    page.execute_script(<<~JS)
+      (() => {
+        const real = window.fetch.bind(window)
+        let lost = false
+        window.fetch = async (url, options) => {
+          const response = await real(url, options)
+          if (!lost && /\\/lesson\\/checks\\//.test(String(url))) { lost = true; throw new TypeError("network lost") }
+          return response
+        }
+      })()
+    JS
+  end
+
   def card_of(component) = stored_body["cards"].find { |c| c["blocks"].any? { |b| b["component"] == component } }["n"]
 
   def go(card)
@@ -103,14 +118,16 @@ class LessonCheckKindsTest < ApplicationSystemTestCase
     wait_for_lesson_ready(wait: 30)
     student = kind == :preview ? Student.where(kind: "preview").order(:id).last : Student.find_by!(key: "prova-1")
 
-    # a word written: the hint of the typical error, then the right word and its explanation
+    # a word written: the first answer reaches the server but its reply is lost on the way (the page says it cannot check); the word typed next
+    # is graded as typed, not as the lost one; the hint of the typical error, then the right word and its explanation
     card = card_of("normalized_text")
     go card
+    lose_the_next_reply
     within("#scheda-#{card}") do
       find("input[type=text]").set("nome")
       click_button "Controlla"
-      assert_selector ".verdict-wrong", text: "Non ancora."
-      assert_selector ".feedback", text: "Il nome dice chi o che cosa"
+      assert_selector ".verdict-invalid"
+      assert_selector ".feedback", text: "Non riesco a controllare ora"
       find("input[type=text]").set("verbo")
       click_button "Controlla"
       assert_selector ".verdict-right", text: "Sì."
@@ -121,7 +138,11 @@ class LessonCheckKindsTest < ApplicationSystemTestCase
     # tiles: the words in the wrong order, then in the right one
     card = card_of("tiles")
     go card
+    # (a reply lost here: the same answer sent again is answered for the row the server already has, with no second try)
+    lose_the_next_reply
     tap_tiles(card, %w[legge Marco un libro])
+    check!("#scheda-#{card}")
+    assert_selector "#scheda-#{card} .feedback", text: "Non riesco a controllare ora"
     check!("#scheda-#{card}")
     assert_selector "#scheda-#{card} .verdict-wrong"
     assert_selector "#scheda-#{card} .feedback", text: "Il soggetto va prima del verbo"
