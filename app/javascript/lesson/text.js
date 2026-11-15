@@ -4,6 +4,7 @@
 import katex from "katex"
 import palette from "lesson/palette"
 import { parse, Refused } from "items/markup_parser"
+import { glueFormulas } from "items/formula_punct"
 import { el, icon } from "lesson/dom"
 import { colourTokens, displayPieces, displayTex } from "lesson/eq"
 import { speakerButton } from "lesson/speech_ui"
@@ -147,8 +148,8 @@ function glossWord(term, ctx) {
   return el("span", { class: "gloss" }, word, button, pop)
 }
 
-function inlineNodes(nodes, parent, ctx, display = false, tiles = false) {
-  for (const node of nodes) {
+function inlineNodes(nodes, parent, ctx, display = false, tiles = false, glued = false) {
+  for (const node of display || glued ? nodes : glueFormulas(nodes)) {
     if (node.t === "math" && display) {
       parent.appendChild(renderMath(node.v, el("span", { class: "math" }), ctx, true))
       continue
@@ -161,6 +162,11 @@ function inlineNodes(nodes, parent, ctx, display = false, tiles = false) {
       const strong = el("strong")
       inlineNodes(node.children, strong, ctx)
       parent.appendChild(strong)
+    } else if (node.t === "nowrap") {
+      // a formula with the mark next to it, kept on one line (D-335); the voice reads the words it had
+      const span = el("span", { class: "nowrap" })
+      inlineNodes(node.children, span, ctx, false, tiles, true)
+      parent.appendChild(span)
     } else if (node.t === "math") parent.appendChild(renderMath(node.v, el("span", { class: "math" }), ctx, false, tiles && /=/.test(node.v)))
     else if (node.t === "lang") {
       // [[en:..]] [[es:..]] [[la:..]]: words of another language, in the target ink, with a speaker where the device has a voice (D-266)

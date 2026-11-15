@@ -3,6 +3,7 @@
 // Formulas go through KaTeX with trust: false (no \href, \url, \includegraphics).
 import katex from "katex"
 import { parse } from "items/markup_parser"
+import { glueFormulas } from "items/formula_punct"
 
 const OPTIONS = { trust: false, strict: "ignore", output: "htmlAndMathml" }
 
@@ -52,14 +53,20 @@ export function renderMath(latex, target) {
   return target
 }
 
-function inlineNodes(nodes, parent) {
-  for (const node of nodes) {
+function inlineNodes(nodes, parent, glued = false) {
+  for (const node of glued ? nodes : glueFormulas(nodes)) {
     if (node.t === "text") {
       parent.appendChild(document.createTextNode(node.v))
     } else if (node.t === "bold") {
       const strong = document.createElement("strong")
       inlineNodes(node.children, strong)
       parent.appendChild(strong)
+    } else if (node.t === "nowrap") {
+      // a formula with the mark next to it, kept on one line (D-335)
+      const span = document.createElement("span")
+      span.className = "nowrap"
+      inlineNodes(node.children, span, true)
+      parent.appendChild(span)
     } else if (node.t === "math") {
       const span = document.createElement("span")
       span.className = "math"
