@@ -116,19 +116,40 @@ function build(data, ctx) {
   const num = (s) => N.toNumber(N.parse(s))
 
   shape(ctx, "rect", { x: left, y: top, w: pw, h: ph, r: 0, cls: "dg-plot" })
-  const xs = Math.max(1, niceStep(xhi - xlo, Math.max(2, Math.floor(pw / (f * 2.4)))))
-  const ys = Math.max(1, niceStep(yhi - ylo, Math.max(2, Math.floor(ph / (f * 1.9)))))
-  const startX = Math.ceil(xlo / xs) * xs
-  for (let v = startX; v <= xhi + 1e-9; v += xs) {
-    if (data.grid && v > xlo && v < xhi) shape(ctx, "line", { x1: X(v), y1: top, x2: X(v), y2: top + ph, cls: "dg-grid" })
-    const l = label(ctx, N.format(N.parse(String(Math.round(v)))), X(v), top + ph + 4, { cls: "dg-tick-label" })
-    l.x = Math.max(0, Math.min(l.x, W - l.w))
+  // a tick label at the edge of the frame is nudged inside it (its box ends at the frame edge, never straddles it), so the step is
+  // the first nice one from the slots' count on whose nudged labels stand clear of each other
+  const tickText = (v) => N.format(N.parse(String(Math.round(v))))
+  const ticksOf = (lo, hi, step) => {
+    const out = []
+    for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(v)
+    return out
   }
-  const startY = Math.ceil(ylo / ys) * ys
-  for (let v = startY; v <= yhi + 1e-9; v += ys) {
+  const xBox = (v) => {
+    const w = Math.ceil(ctx.measure(tickText(v), f).w)
+    return { a: Math.max(left, Math.min(Math.round(X(v) - w / 2), left + pw - w)), size: w }
+  }
+  const yBox = (v) => {
+    const h = Math.ceil(ctx.measure(tickText(v), f).h)
+    return { a: Math.max(top, Math.min(Math.round(Y(v) - h / 2), top + ph - h)), size: h }
+  }
+  const apart = (boxes, gap) => boxes.every((b, i) => i === 0 || b.a - (boxes[i - 1].a + boxes[i - 1].size) >= gap)
+  const stepFor = (lo, hi, slots, boxOf, gap, ascending) => {
+    const first = niceStep(hi - lo, slots)
+    const steps = [1, 2, 5, 10, 20, 50, 100].filter((s) => s >= first)
+    const fits = (s) => { const boxes = ticksOf(lo, hi, s).map(boxOf); return apart(ascending ? boxes : boxes.reverse(), gap) }
+    return Math.max(1, steps.find(fits) ?? 100)
+  }
+  const xs = stepFor(xlo, xhi, Math.max(2, Math.floor(pw / (f * 2.4))), xBox, Math.round(f / 4), true)
+  const ys = stepFor(ylo, yhi, Math.max(2, Math.floor(ph / (f * 1.9))), yBox, 2, false)
+  for (const v of ticksOf(xlo, xhi, xs)) {
+    if (data.grid && v > xlo && v < xhi) shape(ctx, "line", { x1: X(v), y1: top, x2: X(v), y2: top + ph, cls: "dg-grid" })
+    const l = label(ctx, tickText(v), X(v), top + ph + 4, { cls: "dg-tick-label" })
+    l.x = xBox(v).a
+  }
+  for (const v of ticksOf(ylo, yhi, ys)) {
     if (data.grid && v > ylo && v < yhi) shape(ctx, "line", { x1: left, y1: Y(v), x2: left + pw, y2: Y(v), cls: "dg-grid" })
-    const l = label(ctx, N.format(N.parse(String(Math.round(v)))), left - 6, Y(v), { anchor: "end", valign: "middle", cls: "dg-tick-label" })
-    l.y = Math.min(l.y, top + ph + 2 - l.h)
+    const l = label(ctx, tickText(v), left - 6, Y(v), { anchor: "end", valign: "middle", cls: "dg-tick-label" })
+    l.y = yBox(v).a
   }
   // what a label must not sit on: the axes, the lines and the segments
   const drawn = []

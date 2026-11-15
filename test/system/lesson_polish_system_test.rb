@@ -219,4 +219,46 @@ class LessonPolishSystemTest < ApplicationSystemTestCase
       assert_no_selector "#scheda-4 .katex"
     end
   end
+
+  # D-335: the number under a gridline is centred on it (to 2 px), whatever its real width, and the label of a tick at the frame's edge ends at it
+  test "cartesian axes on a phone and on a desktop: each x label is centred on its gridline and the last one ends inside the frame" do
+    [ [ 390, 844 ], [ 1280, 900 ] ].each do |size|
+      open_gallery("polish-axes", size, build: size.first == 390)
+      [ 1, 2 ].each do |n|
+        go n
+        assert_selector "#scheda-#{n} .dg-label.dg-tick-label", minimum: 4
+        report = js(<<~JS)
+          (() => {
+            const fig = document.querySelector('#scheda-#{n}')
+            const frame = fig.querySelector('.dg-plot').getBoundingClientRect()
+            const grid = [...fig.querySelectorAll('.dg-grid')].map((g) => g.getBoundingClientRect()).filter((r) => r.width < 1).map((r) => r.left + r.width / 2).sort((a, b) => a - b)
+            const labels = [...fig.querySelectorAll('.dg-label.dg-tick-label')].map((l) => ({ text: l.textContent, r: l.getBoundingClientRect() }))
+            const xs = labels.filter((l) => l.r.top >= frame.bottom).sort((a, b) => a.r.left - b.r.left)
+            return { frame: [frame.left, frame.right], grid, xs: xs.map((l) => [l.text, l.r.left, l.r.right]) }
+          })()
+        JS
+        xs = report["xs"]
+        frame = report["frame"]
+        assert_operator xs.size, :>=, 3, report.inspect
+        # every label is centred on the gridline of its number, to 2 px, but the first and the last one of the axis: a tick at the frame's edge
+        # has its label nudged inside, against the frame (the measure may be a pixel or two wider than the drawn digits)
+        xs.each_with_index do |(text, left, right), i|
+          assert_operator left, :>=, frame[0] - 0.5, "#{size.first}px card #{n}: #{text} starts inside the frame (#{report.inspect})"
+          assert_operator right, :<=, frame[1] + 0.5, "#{size.first}px card #{n}: #{text} ends inside the frame (#{report.inspect})"
+          off = report["grid"].map { |g| (g - (left + right) / 2).abs }.min
+          next if off <= 2
+
+          against = i.zero? ? left - frame[0] : frame[1] - right
+          assert_operator against, :<=, 3, "#{size.first}px card #{n}: the label #{text} is #{off} px from its gridline and not against the frame (#{report.inspect})" if i.zero? || i == xs.size - 1
+          assert_operator off, :<=, 2, "#{size.first}px card #{n}: the label #{text} is #{off} px from its gridline (#{report.inspect})" unless i.zero? || i == xs.size - 1
+        end
+        # the window of card 1 ends at 4: its last label sits against the frame
+        if n == 1
+          assert_equal "4", xs.last[0]
+          assert_in_delta frame[1], xs.last[2], 3, "#{size.first}px: the label 4 ends at the frame (#{report.inspect})"
+        end
+        shot("axes-#{n}-#{size.first}")
+      end
+    end
+  end
 end
