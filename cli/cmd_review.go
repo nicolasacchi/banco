@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"io"
@@ -94,7 +96,7 @@ func runRevision(e *env, c revisionCommand, args []string) error {
 	fs.SetOutput(io.Discard)
 	file := fs.String("file", "", "the JSON file to send")
 	dry := fs.Bool("dry-run", false, "check and store nothing")
-	dir := fs.String("dir", "", "open: where the figures of the item are written as PNG files (default banco-figures/REV)")
+	dir := fs.String("dir", "", "open: where the figures of the item are written as PNG files (default banco-figures); the files of revision REV go to DIR/REV/, so several revisions share one DIR")
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
 	if err != nil {
@@ -110,13 +112,13 @@ func runRevision(e *env, c revisionCommand, args []string) error {
 			return newErr(ExitUsage, "E-USAGE", "args", c.name+" reads: --file and --dry-run are for submit", c.next)
 		}
 		if *dir == "" {
-			*dir = filepath.Join("banco-figures", pos[0])
+			*dir = "banco-figures"
 		}
 		out, err := e.client().doWith(c.name, "GET", path, nil, nil)
 		if err != nil {
 			return err
 		}
-		out, missing, err := saveFigures(out, *dir, c.next)
+		out, missing, err := saveFigures(out, *dir, pos[0], c.next)
 		if err != nil {
 			return err
 		}
@@ -222,11 +224,13 @@ func runGradePropose(e *env, args []string) error {
 
 var figureNameRe = regexp.MustCompile(`^figure-[1-9][0-9]{0,2}\.png$`)
 
-// saveFigures writes the figures of an opened item (solve open, review open) into dir as PNG files and
-// returns the answer with each figure's picture replaced by its path (figures_dir says the folder). An
+// saveFigures writes the figures of an opened item (solve open, review open) as PNG files into dir/REV (one
+// folder per revision, so opening several revisions into one dir keeps every set) and returns the answer with
+// each figure's picture replaced by its path (figures_dir says the folder) and its sha256, which is the
+// checksum of that file; the server's digest of the source drawing is kept as source_sha256. An
 // answer with no figure is returned as it came. The item is read as the student sees it: look at every
 // file before answering (D-320).
-func saveFigures(body []byte, dir, next string) ([]byte, []string, error) {
+func saveFigures(body []byte, dir, rev, next string) ([]byte, []string, error) {
 	var doc map[string]json.RawMessage
 	if json.Unmarshal(body, &doc) != nil {
 		return body, nil, nil
@@ -235,14 +239,14 @@ func saveFigures(body []byte, dir, next string) ([]byte, []string, error) {
 	if raw, ok := doc["figures"]; !ok || json.Unmarshal(raw, &figures) != nil || len(figures) == 0 {
 		return body, nil, nil
 	}
-	abs, err := filepath.Abs(dir)
+	abs, err := filepath.Abs(filepath.Join(dir, rev))
 	if err != nil {
 		return nil, nil, newErr(ExitUsage, "E-USAGE", "dir", "cannot use "+dir+": "+err.Error(), next)
 	}
 	if err := os.MkdirAll(abs, 0o700); err != nil {
 		return nil, nil, newErr(ExitUsage, "E-USAGE", "dir", "cannot create "+dir+": "+err.Error(), next)
 	}
-	// figures of an earlier open of another state of the item must not be looked at by mistake; a symlink is removed, never followed
+	// figures of an earlier open of this revision (another state of the item) must not be looked at by mistake; a symlink is removed, never followed
 	old, _ := filepath.Glob(filepath.Join(abs, "figure-*.png"))
 	for _, f := range old {
 		if err := os.Remove(f); err != nil {
@@ -278,6 +282,11 @@ func saveFigures(body []byte, dir, next string) ([]byte, []string, error) {
 			return nil, nil, newErr(ExitUsage, "E-USAGE", "dir", "cannot write "+target+": "+err.Error(), next)
 		}
 		f["path"] = target
+		if src, ok := f["sha256"]; ok {
+			f["source_sha256"] = src
+		}
+		sum := sha256.Sum256(data)
+		f["sha256"] = hex.EncodeToString(sum[:])
 	}
 	list, _ := json.Marshal(figures)
 	doc["figures"] = list

@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -251,11 +253,19 @@ func TestSolveOpenWritesTheFigures(t *testing.T) {
 	png := []byte("\x89PNG\r\n\x1a\nnot really a picture")
 	enc := base64.StdEncoding.EncodeToString(png)
 	body := `{"revision_id":7,"instances":[{"instance":1,"display":{"figure":{"alt_it":"Curva","file":"figure-1.png"}}}],` +
-		`"figures":[{"name":"figure-1.png","alt_it":"Curva","instances":[1],"width":1000,"height":600,"png_base64":"` + enc + `"},` +
+		`"figures":[{"name":"figure-1.png","alt_it":"Curva","instances":[1],"width":1000,"height":600,"sha256":"` + strings.Repeat("a", 64) + `","png_base64":"` + enc + `"},` +
 		`{"name":"figure-2.png","alt_it":"Manca","instances":[1],"missing":true}]}`
 	srv, seen := sequenceServer(t, [2]string{"200", body})
-	dir := filepath.Join(t.TempDir(), "figs")
-	// stale files and a symlink of an earlier open are removed, never followed
+	parent := filepath.Join(t.TempDir(), "figs")
+	dir := filepath.Join(parent, "7")
+	// another revision's figures in the same --dir stay; stale files and a symlink of an earlier open of this one are removed, never followed
+	other := filepath.Join(parent, "8")
+	if err := os.MkdirAll(other, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(other, "figure-1.png"), []byte("eight"), 0o600); err != nil {
+		t.Fatal(err)
+	}
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
@@ -269,7 +279,7 @@ func TestSolveOpenWritesTheFigures(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "figure-9.png"), []byte("stale"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	r := runWithSession(t, srv.URL, "5", "solve", "open", "7", "--dir", dir)
+	r := runWithSession(t, srv.URL, "5", "solve", "open", "7", "--dir", parent)
 	// a figure the student is shown no picture for: the answer is printed, the exit is not zero
 	if r.exit != ExitValidation || !strings.Contains(r.stderr, "E-FIGURE-MISSING") || !strings.Contains(r.stdout, `"warnings"`) {
 		t.Fatalf("exit %d stdout %q stderr %q", r.exit, r.stdout, r.stderr)
@@ -290,6 +300,9 @@ func TestSolveOpenWritesTheFigures(t *testing.T) {
 	if err != nil || !bytes.Equal(got, png) {
 		t.Fatalf("file: %v %q", err, got)
 	}
+	if b, _ := os.ReadFile(filepath.Join(other, "figure-1.png")); string(b) != "eight" {
+		t.Fatalf("another revision's figure was touched: %q", b)
+	}
 	if _, err := os.Stat(filepath.Join(dir, "figure-2.png")); err == nil {
 		t.Fatal("a missing figure must not be written")
 	}
@@ -299,6 +312,13 @@ func TestSolveOpenWritesTheFigures(t *testing.T) {
 	}
 	if err := json.Unmarshal([]byte(r.stdout), &out); err != nil {
 		t.Fatalf("stdout %q: %v", r.stdout, err)
+	}
+	sum := sha256.Sum256(png)
+	if out.FiguresDir != dir {
+		t.Fatalf("figures_dir %q, want %q", out.FiguresDir, dir)
+	}
+	if out.Figures[0]["sha256"] != hex.EncodeToString(sum[:]) || out.Figures[0]["source_sha256"] != strings.Repeat("a", 64) {
+		t.Fatalf("checksums %+v", out.Figures[0])
 	}
 	if out.FiguresDir == "" || len(out.Figures) != 2 || out.Figures[0]["path"] != filepath.Join(out.FiguresDir, "figure-1.png") || out.Figures[0]["alt_it"] != "Curva" {
 		t.Fatalf("figures %+v", out)

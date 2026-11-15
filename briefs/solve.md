@@ -31,7 +31,7 @@ judge. Read each answer once more against the display before you submit.
 ## Figures
 
 An item may show a drawing (a graph, a curve, a diagram). `banco solve open REV` writes each one as a PNG file in
-`banco-figures/REV/` (`--dir DIR` chooses another folder) and prints `figures`: for each file its `path`, its `alt_it`
+`banco-figures/REV/` (`--dir DIR` chooses another parent folder: the files go to `DIR/REV/`, so several revisions can share it) and prints `figures`: for each file its `path`, its `alt_it`
 (the text a student reads when the picture does not load) and the `instances` that show it; an instance's `display.figure` names
 its file (`file`). **Look at every figure file before you answer** (open the PNG as an image; the alt text is not the
 drawing), and read values from the drawing as a student would. The pictures are the drawings and nothing

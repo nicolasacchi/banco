@@ -24,7 +24,7 @@ Keep your review files in a scratch directory that only you own: create it with
 item, the instances with expected answers, the messages, the solution and the
 programme lines cited (by the skill, by the item's own sources, or both: see `cited_by`; check a
 line the item cites that the skill does not). When an instance shows a figure, `banco review open REV` also writes it as a PNG
-file in `banco-figures/REV/` (`--dir DIR` chooses another folder): its `path`, `alt_it` and the `instances` that show it are in
+file in `banco-figures/REV/` (`--dir DIR` chooses another parent folder: the files go to `DIR/REV/`, so several revisions can share it): its `path`, `alt_it` and the `instances` that show it are in
 `figures`, and the instance's `display.figure.file` names it. Look at every figure file: check the drawing against the key, the
 alt text and the stored data, as the student sees it; a figure that is missing or unreadable is a finding (`banco review open` then prints a `warnings` line and exits with `E-FIGURE-MISSING`, after printing the item). `banco review submit REV --file review.json` sends the
 result. Never ask for a decision; the teacher disposes of every finding.
