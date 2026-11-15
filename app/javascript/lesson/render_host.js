@@ -191,20 +191,32 @@ const root = document.getElementById("lesson-root")
 const minPx = config.minPx ?? 18
 let api = null
 
+// What the page waits for before its first card is drawn (the faces of the fonts, the modules and assets of the figures, every figure's own
+// promise) comes from the harness listener, which answers as its few threads allow. None of it is waited for without a bound: the whole of
+// `ready` has READY_LIMIT_MS (under the runner's READY_WAIT; `?ready_ms=` of the page's address asks for a shorter one: the test of this wait),
+// and a wait that runs out answers by name ("waited more than 24 s for the figures") instead of leaving the server's Chrome to give up on a page
+// that "did not answer" (D-335).
+const READY_LIMIT_MS = Math.min(Number(new URLSearchParams(location.search).get("ready_ms")) || 24000, 24000)
+const readyBy = performance.now() + READY_LIMIT_MS
+const waitFor = (what, promise) => new Promise((resolve, reject) => {
+  const timer = setTimeout(() => reject(new Error(`waited more than ${READY_LIMIT_MS / 1000} s for ${what}`)), Math.max(0, readyBy - performance.now()))
+  Promise.resolve(promise).then(resolve, reject).finally(() => clearTimeout(timer))
+})
+
 const ready = (async () => {
   try {
-    await document.fonts?.ready
+    await waitFor("the fonts", document.fonts?.ready)
     // a web font is fetched when text first wears it: the figures measure their labels in the DOM, so every face of the page is loaded
     // before the first card is drawn, or a label is measured in the fallback face and drawn wider in the real one (its text then touches the box)
-    if (document.fonts) await Promise.allSettled([...document.fonts].map((face) => face.load()))
-    await preloadFor(body)
+    if (document.fonts) await waitFor("the fonts", Promise.allSettled([...document.fonts].map((face) => face.load())))
+    await waitFor("the modules of the figures and checks", preloadFor(body))
     api = renderLesson(root, body, {
       mode: "render", expand: true, view: "scroll", reduceMotion: true, labels: config.labels, items: config.items, topic: body.key,
       revisionId: 0, urls: { check: "", solution: "", practice: "#" }, savePreferences: () => {}
     })
     api.renderAll()
     // a figure of a wave 2 type draws once its module and assets (a map's base) are loaded, however long a busy machine takes to serve them
-    await Promise.all(api.figures().map((figure) => figure.settled))
+    await waitFor("the figures", Promise.all(api.figures().map((figure) => figure.settled)))
     await iconsDrawn() // every card is shown in this view: every sprite is asked for now, before the first shot
     await frames()
     api.setView("cards", false)

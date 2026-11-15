@@ -25,7 +25,7 @@ module Validation
       end
       append(status: result.status, chrome_version: result.chrome_version, shots: result.shots,
              result: { "errors" => result.errors, "cards" => result.cards, "viewports" => result.viewports, "elapsed_seconds" => result.elapsed,
-                       "exceptions" => result.exceptions, "timings" => result.timings, "render_attempts" => renders })
+                       "exceptions" => result.exceptions, "timings" => result.timings, "loads" => result.loads, "render_attempts" => renders })
     end
 
     def record_error(error)

@@ -17,7 +17,7 @@ module Validation
   # database. Time: a budget per revision and per card-viewport (E-LESSON-RENDER "timeout"); infrastructure
   # trouble (Chrome gone, the host not answering) is raised, never a verdict.
   class LessonRenderRunner
-    Result = Struct.new(:status, :errors, :shots, :cards, :viewports, :elapsed, :chrome_version, :exceptions, :timings, keyword_init: true) do
+    Result = Struct.new(:status, :errors, :shots, :cards, :viewports, :elapsed, :chrome_version, :exceptions, :timings, :loads, keyword_init: true) do
       def passed? = status == "passed"
 
       # Failed only because time ran out (the budget of the revision, a card or the print check), never because of what the author wrote:
@@ -50,17 +50,23 @@ module Validation
       @shots = []
       @exceptions = []
       @timings = []
+      @loads = []
       viewports = (@core + @extra).uniq
-      viewports.each do |width, height, theme|
-        if over_budget?
-          add("E-LESSON-RENDER", nil, "#{width}x#{height}-#{theme}", "timeout: the render of the revision passed #{@budget} s before this viewport")
-          break
-        end
+      # One browser context for every viewport: its HTTP cache then serves the page's files (the CSS, the fonts, the sprite, the modules: some
+      # hundred requests to the harness listener, which shares its few threads with the API) to the second and third viewport, which ask the
+      # listener for the page alone (D-335). A context per viewport made each of the three loads wait in the same queue.
+      @session.context do |ctx|
+        viewports.each do |width, height, theme|
+          if over_budget?
+            add("E-LESSON-RENDER", nil, "#{width}x#{height}-#{theme}", "timeout: the render of the revision passed #{@budget} s before this viewport")
+            break
+          end
 
-        run_viewport(width, height, theme.to_s)
+          run_viewport(ctx, width, height, theme.to_s)
+        end
       end
       Result.new(status: @errors.empty? ? "passed" : "failed", errors: @errors, shots: @shots, cards: @cards.size, viewports: viewports.map { |w, h, t| "#{w}x#{h}-#{t}" },
-                 elapsed: (@clock.call - @started).round(1), chrome_version: @session.version, exceptions: @exceptions, timings: @timings)
+                 elapsed: (@clock.call - @started).round(1), chrome_version: @session.version, exceptions: @exceptions, timings: @timings, loads: @loads)
     end
 
     private
@@ -74,36 +80,40 @@ module Validation
       [ { "n" => 0, "level" => "cover" } ] + @cards.select { |c| c["level"] == "core" || extra }
     end
 
-    def run_viewport(width, height, theme)
+    def run_viewport(ctx, width, height, theme)
       viewport = "#{width}x#{height}-#{theme}"
-      @session.context do |ctx|
-        page = open(ctx, width, height, theme)
-        ready = wait_ready(page)
-        unless ready && ready["ok"]
-          add("E-LESSON-RENDER", nil, viewport, "the lesson did not draw: #{ready ? ready['error'] : 'the page did not answer'}")
+      loading = @clock.call
+      page = open(ctx, width, height, theme)
+      opened_at = @clock.call
+      ready = wait_ready(page)
+      @loads << { "viewport" => viewport, "open" => (opened_at - loading).round(2), "ready" => (@clock.call - opened_at).round(2) }
+      unless ready && ready["ok"]
+        add("E-LESSON-RENDER", nil, viewport, "the lesson did not draw: #{ready ? ready['error'] : 'the page did not answer'}")
+        return
+      end
+      ready["exceptions"].each { |m| add("E-LESSON-RENDER", nil, viewport, "exception: #{m}") }
+      opened = []
+      cards_for([ width, height, theme ]).each do |card|
+        if over_budget?
+          add("E-LESSON-RENDER", card["n"], viewport, "timeout: the render of the revision passed #{@budget} s")
           return
         end
-        ready["exceptions"].each { |m| add("E-LESSON-RENDER", nil, viewport, "exception: #{m}") }
-        opened = []
-        cards_for([ width, height, theme ]).each do |card|
-          if over_budget?
-            add("E-LESSON-RENDER", card["n"], viewport, "timeout: the render of the revision passed #{@budget} s")
-            return
-          end
-          opened.concat(inspect_card(page, card, viewport, width))
-        end
-        # the opened states once every picture of the viewport is taken (D-311): a part that opens can make a short page scrollable for
-        # a moment, and Chrome then paints the fixed bars (their backdrop blur) of the pictures that follow a little differently from
-        # one run to the next, so an unchanged card would no longer cost nothing (D-255)
-        opened.each do |card, state|
-          if over_budget?
-            add("E-LESSON-RENDER", card["n"], viewport, "timeout: the render of the revision passed #{@budget} s", nil, state)
-            return
-          end
-          inspect_state(page, card, viewport, width, state)
-        end
-        check_print(page, viewport) if viewport == first_viewport
+        opened.concat(inspect_card(page, card, viewport, width))
       end
+      # the opened states once every picture of the viewport is taken (D-311): a part that opens can make a short page scrollable for
+      # a moment, and Chrome then paints the fixed bars (their backdrop blur) of the pictures that follow a little differently from
+      # one run to the next, so an unchanged card would no longer cost nothing (D-255)
+      opened.each do |card, state|
+        if over_budget?
+          add("E-LESSON-RENDER", card["n"], viewport, "timeout: the render of the revision passed #{@budget} s", nil, state)
+          return
+        end
+        inspect_state(page, card, viewport, width, state)
+      end
+      check_print(page, viewport) if viewport == first_viewport
+    ensure
+      # the viewport's page goes before the next one opens: the context (and its cache) stays, the page's memory does not
+      (page.close rescue nil) if page
     end
 
     def first_viewport

@@ -1,6 +1,9 @@
 <%# The render host of a lesson/2 revision (R4, A12): what Chrome loads to draw every card. Same CSS, same importmap,
     same modules as the student's page; the body is the student's projection (no answer in it). Nothing here
-    connects anywhere (the CSP of Validation::Harness::LESSON_CSP). lesson/render_host.js exposes window.bancoLessonRender. %>
+    connects anywhere (the CSP of Validation::Harness::LESSON_CSP). lesson/render_host.js exposes window.bancoLessonRender.
+    The importmap is inline and nothing is preloaded (D-335): `javascript_importmap_tags` would modulepreload every
+    pin of the student's map (the Stimulus controllers and the item templates, 170 files) that this page never imports,
+    and the harness listener shares its few Puma threads with the API, so each file was a wait in a queue. %>
 <!DOCTYPE html>
 <html lang="it" data-theme="<%= @theme %>" data-size="normal">
   <head>
@@ -14,7 +17,8 @@
     <%= stylesheet_link_tag "lesson/checks" %>
     <%= stylesheet_link_tag "lesson/text" %>
     <%= lesson_family_stylesheets(@body) %>
-    <%= javascript_importmap_tags "lesson/render_host", importmap: student_importmap %>
+    <%= javascript_inline_importmap_tag(student_importmap.to_json(resolver: self)) %>
+    <%= javascript_import_module_tag "lesson/render_host" %>
   </head>
   <body class="student">
     <main class="lesson2-page" id="lesson-page">

@@ -162,6 +162,12 @@ land paths of a map (two huge `vector-effect: non-scaling-stroke` paths) cost 25
 therefore runs with `--disable-gpu-rasterization` beside the two SwiftShader flags (WebGL stays available for free pages; the compositor
 and the canvas are as before). A cold run of the whole history lesson: 34 s for four viewports with it, a timeout at the first card without.
 
+The seconds outside the cards (D-335, item 23). The viewports of one render share one browser context, so only the first loads the page's files
+(some hundred requests to the harness listener, whose Puma threads the API shares; the host page preloads no module it does not import); the
+second and third take them from the cache. The host bounds what `ready` waits for (24 s in all, `?ready_ms=` for less) and names it in the error;
+the result's `loads` has, per viewport, `open` (the page's load) and `ready` (the host's readiness), apart from the `timings` of the cards: a render
+whose cards are fast and whose total is not is told by them.
+
 ## Tests
 
 `bin/rails test test/validation/` (every `E-` and `W-` code has a fixture in
