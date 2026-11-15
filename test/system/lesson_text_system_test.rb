@@ -257,6 +257,49 @@ class LessonTextSystemTest < ApplicationSystemTestCase
     shot "forced-colors-390"
   end
 
+  # D-335: a mark that follows a formula (a full stop, «?)», a comma) is drawn with it in one span.nowrap, so it never starts a line. The text
+  # layer draws sentences that end in a formula (and one with a bracket before it) in boxes from 170 to 360 px wide, in the page's own styles;
+  # a mark that is the first thing on its line is a failure, and so is a box that the wrapper makes wider than it was.
+  PUNCT_SWEEP = <<~'JS'.freeze
+    const done = arguments[0];
+    import('lesson/text').then(({ renderRich }) => {
+      const texts = ['Il risultato e $x=\\frac{1}{2}$.', 'Quindi il perimetro misura $2p=14$?)', 'Calcola ($3+4$), poi $a$.', 'Il valore di $a + b + c = d + e + f + g + h = 12345$.', 'La reazione $\\ce{2H2 + O2 -> 2H2O}$, completa.']
+      const ctx = { subject: 'math', t: {}, safe: true, noSpeech: true }
+      const host = document.querySelector('.l2')
+      const bad = []
+      let wrapped = 0
+      for (let w = 170; w <= 360; w += 1) for (const [i, text] of texts.entries()) {
+        const box = document.createElement('div')
+        box.style.cssText = 'width:' + w + 'px;position:absolute;left:0;top:0;visibility:hidden'
+        box.appendChild(renderRich(text, ctx))
+        box.querySelector('p').style.margin = '0'
+        host.appendChild(box)
+        wrapped += box.querySelectorAll('.nowrap').length
+        const walker = document.createTreeWalker(box, NodeFilter.SHOW_TEXT)
+        for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+          if (!/^[.,;:!?)]/.test(n.nodeValue) || n.parentElement.closest('.katex')) continue
+          const r = document.createRange(); r.setStart(n, 0); r.setEnd(n, 1)
+          if (r.getBoundingClientRect().left <= box.getBoundingClientRect().left + 1) bad.push('alone:' + i + ':' + w)
+        }
+        // a formula wider than the box (the \ce one at the narrowest widths) scrolls or overflows as it always did; the wrapper adds nothing to it
+        const grown = box.scrollWidth
+        box.querySelectorAll('.nowrap').forEach((e) => { e.className = 'plain' })
+        if (grown > box.scrollWidth + 1) bad.push('overflow:' + i + ':' + w + ':' + grown + ' vs ' + box.scrollWidth)
+        host.removeChild(box)
+      }
+      done({ bad, wrapped })
+    }).catch((e) => done({ error: String(e) }));
+  JS
+
+  test "a mark after a formula never starts a line on a phone, and the wrapper keeps the page from overflowing" do
+    open_lesson(size: [ 390, 844 ])
+    result = page.evaluate_async_script(PUNCT_SWEEP)
+    assert_nil result["error"]
+    assert_operator result["wrapped"], :>, 900, "the marks are drawn with their formulas"
+    assert_empty result["bad"], "a lone mark or an overflow: #{result['bad'].first(10).inspect}"
+    assert_operator page.evaluate_script("document.documentElement.scrollWidth"), :<=, 391
+  end
+
   test "P6 print: no speaker, no button, no bubble; the list of words under the card and the text of a heard check are on the paper" do
     open_lesson(accept: true)
     page.driver.browser.page.command("Emulation.setEmulatedMedia", media: "print")

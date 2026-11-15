@@ -279,6 +279,12 @@ li.skill .button { align-self: flex-start; margin-top: 0.5rem; }
 :is(.markup, .prompt, .option-text, .match-left, .row-text, .do-steps, [data-markup]) .math:not(.l2 *) {
   display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle;
 }
+/* A formula and the mark next to it (a full stop, «?», a closing bracket; an opening one before it) never part at a line end (D-335,
+   items/formula_punct.js draws them in one span.nowrap). The formula keeps its own way of fitting: in an item it is the scrolling box above,
+   which keeps room for the mark (3em) and breaks inside as before; in a lesson (lesson.css) it is an inline-block that breaks between its
+   parts when it is wider than the line. An inline-block is one unit for the line breaker, which is why nowrap then holds it with the mark. */
+.nowrap { white-space: nowrap; }
+:is(.markup, .prompt, .option-text, .match-left, .row-text, .do-steps, [data-markup]) .nowrap > .math:not(.l2 *) { max-width: calc(100% - 3em); white-space: normal; }
 /* the flex items that hold such a formula may shrink under its width (min-width auto would keep them as wide as the formula) */
 .option-text, .match-left, .row-text { min-width: 0; }
 ol.exercises { padding-left: 1.5rem; }

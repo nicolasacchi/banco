@@ -184,6 +184,10 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) .topbar, body
 .l2 .eq-chain { display: inline; line-height: 1.9; }
 .l2 .eq-chain .katex { display: inline-block; }
 .l2 .eq-arrow { margin: 0 0.15em; }
+/* a formula with the mark next to it (span.nowrap, D-335): an inline-block that breaks inside only when it is wider than the line, so that the
+   mark cannot be left alone at the start of the next line; a chain of equations breaks between its pieces as before */
+.l2 .nowrap .math:not(.eq-chain) .katex-html { display: inline-block; white-space: normal; max-width: calc(100% - 3em); }
+.l2 .nowrap .eq-chain { white-space: normal; }
 .l2 .eqd, .l2 .step-do .math, .l2 .example-problem .math { font-weight: 700; }
 .l2 .role-unknown { color: var(--r-math-unknown-fg); font-weight: 800; }
 .l2 .role-known { color: var(--r-math-known-fg); font-weight: 800; }
