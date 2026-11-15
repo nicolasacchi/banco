@@ -111,27 +111,26 @@ func runItemShots(e *env, args []string) error {
 		interval = time.Duration(ms) * time.Millisecond
 	}
 
-	// the render that counts: the latest one, or, forced, the one the request makes (a verdict row after the request's own)
+	// the render that counts: the latest one, or the one this request enqueues (a verdict row after the request's own). The CLI always asks: the server
+	// alone knows whether a verdict is outdated (drawn under another harness version) and enqueues at most one job.
 	after := 0
 	list, err := e.itemShots(rev)
 	if err != nil {
 		return err
 	}
 	requested := map[string]any{"requested": false}
-	if *force || !list.done() {
-		req, rerr := requestItemShots(e, rev, *force)
-		switch {
-		case rerr == nil:
-			requested = map[string]any{"requested": true, "enqueued": req["enqueued"], "status": req["status"]}
-			if id, ok := req["render_id"].(float64); ok && *force {
-				after = int(id)
-			}
-		case list.Status == "queued" && !*force:
-			// a render is already pending and this token cannot ask for another (bot_read, teacher): it only waits for it
-			requested["error"] = rerr.Error()
-		default:
-			return rerr
+	req, rerr := requestItemShots(e, rev, *force)
+	switch {
+	case rerr == nil:
+		requested = map[string]any{"requested": true, "enqueued": req["enqueued"], "status": req["status"]}
+		if id, ok := req["render_id"].(float64); ok && (*force || req["enqueued"] == true) {
+			after = int(id)
 		}
+	case !*force && (list.done() || list.Status == "queued"):
+		// this token cannot ask (bot_read, teacher): it reads the verdict there is, or waits for the pending render
+		requested["error"] = rerr.Error()
+	default:
+		return rerr
 	}
 	if *wait {
 		deadline := time.Now().Add(time.Duration(*timeout) * time.Second)

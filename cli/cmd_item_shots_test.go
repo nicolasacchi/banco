@@ -68,9 +68,12 @@ func (s *itemShotsServer) handler(w http.ResponseWriter, req *http.Request) {
 	case req.URL.Path == "/api/v1/item-revisions/12/shots" && req.Method == "POST":
 		s.posts = append(s.posts, req.URL.RawQuery)
 		w.WriteHeader(s.postCode)
-		if s.postCode == 202 {
+		switch s.postCode {
+		case 202:
 			_, _ = w.Write([]byte(`{"enqueued":true,"status":"queued","render_id":7}`))
-		} else {
+		case 200:
+			_, _ = w.Write([]byte(`{"enqueued":false,"status":"failed","render_id":8,"why_not":"drawn under the current harness"}`))
+		default:
 			_, _ = w.Write([]byte(`{"code":"E-AUTH","field":"authorization","message":"a bot_read token only reads","next":"x"}`))
 		}
 	case req.URL.Path == "/api/v1/item-revisions/12/shots":
@@ -80,7 +83,7 @@ func (s *itemShotsServer) handler(w http.ResponseWriter, req *http.Request) {
 		if status == "queued" || len(s.posts) > 0 {
 			id = 7
 		}
-		if status == "passed" || status == "failed" {
+		if status == "passed" || status == "failed" || status == "error" {
 			id = 8
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -107,8 +110,9 @@ func newItemShotsServer(t *testing.T, postCode int, statuses ...string) (*httpte
 	return srv, s
 }
 
-func TestItemShotsWritesEveryInstanceWithoutRequestingWhatIsDrawn(t *testing.T) {
-	srv, s := newItemShotsServer(t, 202, "failed")
+func TestItemShotsAsksAndWritesEveryInstanceOfWhatIsDrawn(t *testing.T) {
+	// the CLI always asks: the server alone knows whether a verdict is outdated; here it is current, so nothing is enqueued
+	srv, s := newItemShotsServer(t, 200, "failed")
 	dir := filepath.Join(t.TempDir(), "figs")
 	// the files of an earlier fetch of this revision go; another revision's stay
 	write(t, dir, "12/instance-09_390x844.webp", "old")
@@ -117,8 +121,8 @@ func TestItemShotsWritesEveryInstanceWithoutRequestingWhatIsDrawn(t *testing.T) 
 	if res.exit != 0 {
 		t.Fatalf("item shots: exit %d, stderr %s", res.exit, res.stderr)
 	}
-	if len(s.posts) != 0 {
-		t.Errorf("a revision that has been drawn is not asked for again: %v", s.posts)
+	if len(s.posts) != 1 || s.posts[0] != "" {
+		t.Errorf("one request, not forced: %v", s.posts)
 	}
 	for _, name := range []string{"instance-01_390x844.webp", "instance-02_390x844.webp"} {
 		if data, err := os.ReadFile(filepath.Join(dir, "12", name)); err != nil || string(data) != "RIFFxxxxWEBP" {
@@ -166,6 +170,22 @@ func TestItemShotsRequestsTheRenderAndWaitsForIt(t *testing.T) {
 	}
 	if !strings.Contains(res.stdout, `"requested":true`) || !strings.Contains(res.stdout, `"enqueued":true`) {
 		t.Errorf("answer: %s", res.stdout)
+	}
+}
+
+func TestItemShotsAnOutdatedVerdictIsDrawnAgainAndWaitedFor(t *testing.T) {
+	// the list shows a verdict, but the server enqueues a new render (the verdict was drawn under another harness): the CLI waits for the new one
+	srv, s := newItemShotsServer(t, 202, "failed", "queued", "passed")
+	dir := t.TempDir()
+	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", dir, "--wait", "--timeout", "5")
+	if res.exit != 0 {
+		t.Fatalf("exit %d, stderr %s", res.exit, res.stderr)
+	}
+	if len(s.posts) != 1 || s.posts[0] != "" {
+		t.Errorf("one request, not forced: %v", s.posts)
+	}
+	if !strings.Contains(res.stdout, `"status":"passed"`) {
+		t.Errorf("the new verdict, not the outdated one: %s", res.stdout)
 	}
 }
 
