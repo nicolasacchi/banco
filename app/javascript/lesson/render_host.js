@@ -37,6 +37,26 @@ const settle = async () => {
   await frames()
   await new Promise((resolve) => setTimeout(resolve, 90))
 }
+// An icon is a <use> of an external sprite that Chrome fetches when the icon is first drawn and paints once the file is there: a shot taken
+// before that shows an empty square (a busy machine, a cold disk, and always the first viewport, which meets the sprite first). A <use> with no
+// box of its own has not drawn its symbol yet; the host waits until every icon on screen has (at most ICON_WAIT_MS; a symbol the sprite does not
+// have never draws, so each such icon is waited for once, never again).
+const ICON_WAIT_MS = 8000
+const undrawn = new Set()
+const blankIcons = () => [...document.querySelectorAll("svg use")].filter((use) => {
+  if (undrawn.has(use.getAttribute("href")) || use.ownerSVGElement?.getClientRects().length === 0) return false
+  const box = use.getBBox()
+  return !(box.width > 0 && box.height > 0)
+})
+async function iconsDrawn() {
+  const deadline = performance.now() + ICON_WAIT_MS
+  let blank = blankIcons()
+  while (blank.length > 0 && performance.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 40))
+    blank = blankIcons()
+  }
+  for (const use of blank) undrawn.add(use.getAttribute("href"))
+}
 const text = (node) => (node.textContent || "").replace(/\s+/g, " ").trim().slice(0, 60)
 const shown = (node) => node.getClientRects().length > 0 // nothing under display: none (a hidden exercise, a closed card) has a box
 
@@ -184,6 +204,7 @@ const ready = (async () => {
     api.renderAll()
     // a figure of a wave 2 type draws once its module and assets (a map's base) are loaded, however long a busy machine takes to serve them
     await Promise.all(api.figures().map((figure) => figure.settled))
+    await iconsDrawn() // every card is shown in this view: every sprite is asked for now, before the first shot
     await frames()
     api.setView("cards", false)
     await frames()
@@ -292,6 +313,7 @@ async function inspect(n, state = null) {
     restore()
     api.goTo(n, { focus: false })
     await frames()
+    await iconsDrawn()
     const card = root.querySelector(`#scheda-${n}`)
     if (!card) return { n, state, findings: [{ code: "E-LESSON-RENDER", message: `card ${n} was not drawn`, where: "card" }], height: 0, states }
     const match = state ? String(state).match(STATE) : null
