@@ -57,6 +57,7 @@ module Validation
       ItemChecks.method_words(display, "#{label}/display", @unit.skill, f, seed: seed)
       component_fit(answer, inst, label, seed, f)
       steps(inst, label, seed, f) if problems.empty?
+      stored_order(display, inst, label, seed, f) if problems.empty? && STORED_ORDER_COMPONENTS.include?(@unit.component)
       hint_rules(display, answer, inst, label, seed, f) if problems.empty?
       quote_and_figure(display, label, seed, f)
       if generated
@@ -422,6 +423,62 @@ module Validation
       return unless inconsistent
 
       f.add("E-STEP-INCONSISTENT", "#{label}/solution/final", "the solution ends on something other than the key", seed: seed)
+    end
+
+    # ---- the solution points at the stored order (W-SOLUTION-STORED-ORDER) ----------------
+
+    # The options of a choice, the rows of a matching and the steps of an ordering are shuffled for every student
+    # (Diagnosis::Rekey, practice instances, items/matching.js): a solution, final or hint that says «dall'alto»,
+    # «la prima frase», «l'opzione b» or names l1, r2, e3 reads a list that is not on the student's screen.
+    STORED_ORDER_COMPONENTS = %w[choice matching ordering].freeze
+    ORDINAL = "prima|seconda|terza|quarta|quinta|penultima|ultima"
+    ROW_NOUN = "frase|opzione|riga|risposta|alternativa"
+    # A place word counts only near a word for a row of the list (never «a destra» of a figure or a column).
+    LIST_NOUN = "rig(?:a|he)|elenco|lista|opzion[ei]|frasi?|voci?|risposta|risposte|elementi|elemento|passi|passo"
+    PLACE = "in alto|in basso|a sinistra|a destra"
+    # «la prima guerra mondiale» is quiet: only «prima» followed by a word for a row, and not of a passage («la prima frase del testo»).
+    STORED_ORDER_POSITION = Regexp.union(
+      /\bdall'alto\b/, /\bdal basso\b/,
+      /\bnell'ordine\s+(?:delle\s+(?:righe|opzioni|frasi|risposte)|dell'elenco)\b/,
+      /\bnell'ordine\s+in\s+cui\s+(?:ti\s+)?(?:sono\s+)?(?:elencat|mostrat|presentat|scritt)\w*/,
+      /\b(?:#{ORDINAL})\s+(?:#{ROW_NOUN})\b(?!\s+(?:del|dello|della|dei|nel|nella)\s+(?:testo|brano|passo|paragrafo|citazione|poesia|lettera|versi?|strofa|canto|periodo))/,
+      /\b(?:#{LIST_NOUN})\b[^.;:!?]{0,25}\b(?:#{PLACE})\b/, /\b(?:#{PLACE})\b[^.;:!?]{0,25}\b(?:#{LIST_NOUN})\b/,
+      /\b(?:opzione|risposta|alternativa|scelta|lettera)\s+[a-e](?=\s*[).,;:!?»"']|\s*\z)/
+    )
+
+    def stored_order(display, inst, label, seed, f)
+      solution = inst["solution"].is_a?(Hash) ? inst["solution"] : {}
+      ids = stored_order_ids(display)
+      texts = Array(solution["steps"]).each_with_index.filter_map { |s, i| [ "#{label}/solution/steps/#{i}/text_it", s["text_it"] ] if s.is_a?(Hash) }
+      texts << [ "#{label}/solution/final", solution["final"] ]
+      hints = inst["hints_it"] ? [ label, inst["hints_it"] ] : [ @unit.path, @unit.body["hints_it"] ]
+      Array(hints.last).each_with_index { |h, i| texts << [ "#{hints.first}/hints_it/#{i}", h ] }
+      texts.each do |field, text|
+        next unless text.is_a?(String)
+
+        found = stored_order_phrase(text, ids) or next
+        f.add("W-SOLUTION-STORED-ORDER", field,
+              "the text points at the stored order (#{found.inspect}): the options, rows and steps are shuffled for every student, so name the option by its text, never by its place, letter or id",
+              seed: seed)
+      end
+    end
+
+    def stored_order_ids(display)
+      %w[options left right elements].flat_map { |k| Array(display[k]).filter_map { |o| o["id"].to_s if o.is_a?(Hash) } }
+    end
+
+    def stored_order_phrase(text, ids)
+      plain = text.gsub(/\$[^$]*\$/, " ")
+      lower = plain.unicode_normalize(:nfkc).downcase.tr("\u2019", "'")
+      return lower[STORED_ORDER_POSITION] if lower.match?(STORED_ORDER_POSITION)
+
+      # An id with a digit (o1, l1, r2, e3) is a token of its own, written as it is stored; a lone letter only as «a)».
+      ids.each do |id|
+        pattern = id.match?(/\d/) ? /(?<![[:alnum:]_])#{Regexp.escape(id)}(?![[:alnum:]_])/ : (/(?:\A|\s)#{Regexp.escape(id)}\)/ if id.size == 1)
+        hit = pattern && plain[pattern]
+        return hit.strip if hit
+      end
+      nil
     end
 
     # ---- hints of a practice instance (A2.4) ---------------------------------------

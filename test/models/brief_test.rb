@@ -208,6 +208,16 @@ class BriefTest < ActiveSupport::TestCase
     assert_includes Brief.find("review").body.squish, "Look at every figure file"
   end
 
+  test "the item briefs that teach solutions warn that options, rows and steps are shuffled (W-SOLUTION-STORED-ORDER, D-335)" do
+    %w[practice-item diagnosis-item].each do |name|
+      body = Brief.find(name).body
+      assert_includes body, "W-SOLUTION-STORED-ORDER", name
+      assert_includes body.squish, "shuffled for every student", name
+    end
+    Validation::Findings # Validation::Codes lives in findings.rb
+    assert Validation::Codes.known?("W-SOLUTION-STORED-ORDER")
+  end
+
   test "the practice-item brief states the pool and hint rules of the rules file" do
     body = Brief.find("practice-item").body.squish
     assert_includes body, "at least #{Validation::Rules.get(:practice, :min_static_instances)} instances"

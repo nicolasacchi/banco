@@ -327,6 +327,10 @@ class CodeFixturesTest < ActiveSupport::TestCase
       static_codes(F.practice_item({ "hints_it" => [ "Guarda il termine noto.", "Il risultato e 11." ] }))
     },
     "W-HINT-OPTION" => -> { static_codes(F.choice_item.merge("kind" => "practice_item", "level" => 1, "hints_it" => [ "Pensa alla regola.", "La risposta giusta e sette." ])) },
+    "W-SOLUTION-STORED-ORDER" => lambda {
+      bad = F.choice_instance("sette", %w[tredici nove undici]).tap { |i| i["solution"]["steps"] = [ { "text_it" => "Dall'alto, la prima opzione non va bene." } ] }
+      static_codes(F.choice_item("instances" => [ bad, F.choice_instance("otto", %w[quattro sei dieci]) ]))
+    },
     "E-PRACTICE-POOL" => -> { static_codes(F.practice_item({}, count: 9)) },
     "W-PRACTICE-CODE-SPARSE" => lambda {
       item = F.practice_item

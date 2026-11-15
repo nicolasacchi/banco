@@ -66,6 +66,7 @@ stop at `awaiting_teacher`.
   `final`). Each step says what is done and why, in short sentences, and the last step ends at the
   key. A step is correct on its own: the reviewer checks them one by one.
 - The solution is shown after the attempt, never before; it may state the key, the hints may not.
+- In a `choice`, `matching` or `ordering` item the options, rows and steps are shuffled for every student: a step, final or hint never says «dall'alto», «nell'ordine delle righe», «la prima frase», «l'opzione b» or names `l1`, `r2`, `e3`; name the option by its text (`W-SOLUTION-STORED-ORDER`, a warning).
 
 ## Pools
 
