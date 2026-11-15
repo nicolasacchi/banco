@@ -683,7 +683,18 @@ CREATE TRIGGER view_link_revocations_no_update BEFORE UPDATE ON view_link_revoca
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER view_link_revocations_no_delete BEFORE DELETE ON view_link_revocations
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "item_renders" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "item_revision_id" integer NOT NULL, "status" varchar NOT NULL, "rules_version" varchar, "harness_version" varchar NOT NULL, "chrome_version" varchar, "attempt" integer, "result_json" text NOT NULL, "shots_json" text NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_b71a5928d1"
+FOREIGN KEY ("item_revision_id")
+  REFERENCES "item_revisions" ("id")
+, CONSTRAINT item_renders_status CHECK (status IN ('queued','passed','failed','error')));
+CREATE INDEX "index_item_renders_on_item_revision_id" ON "item_renders" ("item_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_item_renders_on_item_revision_id_and_id" ON "item_renders" ("item_revision_id", "id") /*application='Banco'*/;
+CREATE TRIGGER item_renders_no_update BEFORE UPDATE ON item_renders
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER item_renders_no_delete BEFORE DELETE ON item_renders
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261115120001'),
 ('20261115100001'),
 ('20261114120001'),
 ('20261114100001'),

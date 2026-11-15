@@ -5,13 +5,13 @@ class BriefTest < ActiveSupport::TestCase
   SUBJECT_BRIEFS = %w[biology business chemistry computer_science english geography history law_economics spanish].freeze
   NAMES = (%w[arbiter blueprint course diagnosis-item grade lesson lesson-review lesson-v1 page page-review practice-item review skill-graph solve topic] +
            SUBJECT_BRIEFS.map { |s| "lesson-#{s.tr('_', '-')}" }).sort.freeze
-  VERSION_2 = %w[arbiter diagnosis-item lesson lesson-review solve].freeze # D-227: practice items, review points 12-13; D-245: lesson/2 and its review; D-316: the arbiter without a second opinion; D-320: solve looks at the figures
+  VERSION_2 = %w[arbiter diagnosis-item lesson lesson-review].freeze # D-227: practice items, review points 12-13; D-245: lesson/2 and its review; D-316: the arbiter without a second opinion; solve is 3 and review 4 (D-320: the figures; D-336: the pictures of the instances)
 
   test "the briefs exist (version 1, or 2 for the Phase 1b and rich-lesson deltas) with a body" do
     assert_equal NAMES, Brief.names
     NAMES.each do |name|
       brief = Brief.find(name)
-      assert_equal({ "review" => 3 }.fetch(name) { VERSION_2.include?(name) ? 2 : 1 }, brief.version, name)
+      assert_equal({ "review" => 4, "solve" => 3 }.fetch(name) { VERSION_2.include?(name) ? 2 : 1 }, brief.version, name)
       assert_equal name, brief.name
       assert_operator brief.body.size, :>, 800, name
     end
@@ -51,6 +51,17 @@ class BriefTest < ActiveSupport::TestCase
     assert_match(/testlet.*object from each sub item id/m, body)
     assert_match(/short_answer.*plain string/m, body)
     assert_match(/never produces a mismatch.*sample answer/m, body)
+  end
+
+  test "the review and solve briefs tell the agent to look at the pictures of the instances first (D-336)" do
+    %w[review solve].each do |name|
+      body = Brief.find(name).body.squish
+      assert_match(/banco item shots REV --dir DIR --wait/, body, name)
+      assert_match(/instance-NN_390x844\.webp/, body, name)
+      assert_match(/shown_order/, body, name)
+    end
+    assert_match(/Look at the pictures of the instances first/, Brief.find("review").body)
+    assert_match(/Look at the picture of an instance before you answer it/, Brief.find("solve").body.squish)
   end
 
   test "the solve brief says one submit per session and what --dry-run is for" do

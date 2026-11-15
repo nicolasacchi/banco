@@ -71,6 +71,7 @@ var commands = []command{
 	{name: "lesson submit", run: runLessonSubmit},
 	{name: "lesson status", run: runLessonStatus},
 	{name: "lesson shots", run: runLessonShots},
+	{name: "item shots", run: runItemShots},
 	{name: "lesson-review open", run: runLessonReviewOpen},
 	{name: "lesson-review submit", run: runLessonReviewSubmit},
 	{name: "pages list", run: runPagesList},

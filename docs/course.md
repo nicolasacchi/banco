@@ -15,6 +15,7 @@ banco lesson open KEY [--dir DIR]       writes DIR/lesson.md and DIR/.base
 banco lesson submit DIR [--base N] [--dry-run]     key from the front matter; --dry-run stores nothing
 banco lesson status REV
 banco lesson shots REV --dir DIR         downloads the render check's screenshots of a lesson/2 revision (one WebP per card and viewport, one more per further exercise of «Prova tu», D-311)
+banco item shots REV [--dir DIR] [--wait]   the 390 px pictures of every instance of an item revision as the student sees it (D-336); review open and solve open request them
 banco lesson-review open REV            (reviewer session) the lesson, programme lines, skills, 8 points
 banco lesson-review submit REV --file review.json [--dry-run]     the answer names each finding L<review>-<n>
 banco findings list --lesson KEY|--topic KEY [--open] [--all]       the lesson findings (D-313); --kind item|lesson on a subject

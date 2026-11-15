@@ -311,6 +311,15 @@
       "error_codes": ["E-AUTH", "E-NOT-FOUND"]
     },
     {
+      "name": "item shots",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/item-revisions/:revision/shots",
+      "args": ["revision"],
+      "flags": ["--dir", "--wait", "--force", "--timeout"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-ITEM-NOT-PASSED", "E-CHROME-UNAVAILABLE"]
+    },
+    {
       "name": "lesson-review open",
       "local": false,
       "method": "GET",

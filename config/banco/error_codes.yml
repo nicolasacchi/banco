@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 32
+version: 33
 
 validation:
   # Skill graph (synchronous).
@@ -188,6 +188,8 @@ validation:
   E-HINT-KEY: { stage: ruby, severity: error, description: "A hint carries the instance key (A2.4 rule)." }
   W-HINT-OPTION: { stage: ruby, severity: warning, description: "A choice hint names the key option." }
   W-SOLUTION-STORED-ORDER: { stage: ruby, severity: warning, description: "A solution step, final or hint of a choice, matching or ordering instance points at the stored order (dall'alto, nell'ordine delle righe, la prima frase, in basso) or names an option, row or step by its id or letter (l1, r2, e3, a), opzione b). The options, rows and steps are shuffled for every student, so the student reads a list that is not on the screen: name the option by its text (D-335)." }
+  E-ITEM-RENDER: { stage: chrome, severity: error, description: "The item shots (D-336): an instance did not draw as the student's phone draws it (an exception or a console error, a formula KaTeX refused, markup printed as text, a figure that did not draw, or a timeout). An aid for the reviewer, in the shots' errors; never a reason to refuse an item." }
+  E-ITEM-OVERFLOW: { stage: chrome, severity: error, description: "The item shots (D-336): an instance is wider than the 390 px window, something is wider than its box, or a long formula scrolls sideways inside its box. An aid for the reviewer, in the shots' errors; never a reason to refuse an item." }
   W-SENTENCE-COMMA-VARIANTS: { stage: ruby, severity: warning, description: "A normalized_text instance whose answer is a sentence (it holds a space and ends in a full stop, an exclamation or a question mark) has a comma or a semicolon in its key and no accept entry (the instance's or the item's) is the same sentence with fewer of them. The grader keeps the commas and semicolons inside a text, so a correct sentence written without the comma, or with it elsewhere, is graded wrong. Add the variants to accept (D-335)." }
   E-PRACTICE-POOL: { stage: ruby, severity: error, description: "A static practice item has fewer than practice.min_static_instances instances." }
   W-PRACTICE-CODE-SPARSE: { stage: ruby, severity: warning, description: "A catalogue code is carried by fewer than practice.min_instances_per_code instances of the item." }

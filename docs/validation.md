@@ -168,6 +168,24 @@ second and third take them from the cache. The host bounds what `ready` waits fo
 the result's `loads` has, per viewport, `open` (the page's load) and `ready` (the host's readiness), apart from the `timings` of the cards: a render
 whose cards are fast and whose total is not is told by them.
 
+## The shots of an item as the student sees it on a phone (D-336)
+
+On demand, never part of a verdict. `POST /api/v1/item-revisions/ID/shots` (a content role; `banco item shots REV --dir DIR --wait`) enqueues
+`RenderItemRevisionJob` once (queue `chrome`, priority 10); `Validation::ItemRenderRunner` opens the harness listener's
+`/h/<irev-token>/item-render.html?n=N` (`HarnessController#item`, `items/render_host.js`) for each stored instance in one browser
+context at 390 x 844, cream, device scale 1, and takes a WebP of the whole page (never under 844 px tall). The page is the student's own: the same CSS, importmap,
+templates, MathLive, KaTeX and figures (`Items::Figures`), inside the practice page's card (a `practice_item`) or the sitting's, unanswered, with what
+`Diagnosis::ItemPresenter` tells the browser and nothing else (no key, error value, hint or solution). Choices, matching rows and ordering steps are
+shuffled with the fixed seed `item-shots|REVISION|N`; each shot's metadata says the `seed` and the `shown_order` (stored ids in the order
+drawn), so a number in the picture maps to the stored id. The host measures each instance and the runner records its findings (all aids, never a
+gate): `E-ITEM-OVERFLOW` (the page wider than the window, something wider than its box, a long formula that scrolls sideways) and `E-ITEM-RENDER` (an exception or
+console error, a KaTeX error, markup printed as text, a figure that did not draw, a timeout). Numbers: the `item_render` block of
+`validation_rules.yml` (150 s per revision, 12 s per instance, 40 instances, 30 minutes before a lost request is asked again). The rows are
+`item_renders` (append-only: `queued`, then `passed`, `failed` or `error`); the pictures live in the lesson shots' store
+(`storage/lesson_shots/<sha256>.webp`) and `bin/purge-lesson-shots` removes those of an old, unpinned, superseded item revision too. `banco review open` and
+`banco solve open` request the shots and print `item_shots.fetch`; the briefs `review` (4) and `solve` (3) say to look at them first. Tests:
+`test/validation/item_render_runner_test.rb` (Chrome), `test/integration/item_shots_api_test.rb`.
+
 ## Tests
 
 `bin/rails test test/validation/` (every `E-` and `W-` code has a fixture in

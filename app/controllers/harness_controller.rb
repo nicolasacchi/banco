@@ -39,6 +39,40 @@ class HarnessController < ActionController::API
     send_data html, type: "text/html; charset=utf-8", disposition: "inline"
   end
 
+  # GET /h/:token/item-render.html?n=N&theme=cream|dark: the render host of one instance of an item revision (token kind irev, D-336). The page is
+  # the student's own (the same CSS, importmap and templates) with the practice or sitting frame around the item, unanswered; the item is what
+  # Diagnosis::ItemPresenter tells the browser (Items::ShotPresentation), shuffled with a fixed seed: no key, no hint, no solution.
+  def item
+    kind, id = Validation::Harness.verify(params[:token])
+    return head :not_found unless kind == "irev"
+
+    revision = ItemRevision.find_by(id: id)
+    number = Integer(params[:n].to_s, 10, exception: false)
+    instance = revision && Items::ShotPresentation.instance(revision, number)
+    return head :not_found unless instance
+
+    shown = Items::ShotPresentation.call(revision, instance, number)
+    html = ApplicationController.render(template: "harness/item_render", layout: false,
+                                        assigns: { theme: params[:theme].to_s == "dark" ? "dark" : "cream", frame: shown[:frame], hints: shown[:hints],
+                                                   item: shown[:item], config: { number: number, texts: Object.new.extend(ApplicationHelper).student_texts } })
+    hashes = html.scan(%r{<script(?![^>]*\bsrc=)(?![^>]*application/json)[^>]*>(.*?)</script>}m).map { |(code)| "'sha256-#{Base64.strict_encode64(Digest::SHA256.digest(code))}'" }
+    response.set_header("Content-Security-Policy", format(Validation::Harness::ITEM_CSP, hashes: hashes.join(" ")))
+    send_data html, type: "text/html; charset=utf-8", disposition: "inline"
+  end
+
+  # GET /assets/items/:sha256.svg: an item's figure, as the student's <img> asks for it (Items::Figures, D-321). Content-addressed and the same bytes
+  # and headers as the web listener's (ItemAssetsController), on the internal listener and without a token: the render host's <img src> cannot carry one.
+  def item_asset
+    sha = params[:sha256].to_s
+    return head(:not_found) unless ItemAssetsController::SHA256.match?(sha)
+
+    path = ItemAssetsController.directory.glob("*.svg").find { |file| file.basename.to_s == "#{sha}.svg" } # the request's text never builds a path
+    return head(:not_found) unless path&.file?
+
+    response.set_header("Content-Security-Policy", ItemAssetsController::HEADERS_CSP)
+    send_file path, type: "image/svg+xml", disposition: "inline"
+  end
+
   # GET /h/:token/page-host.html and page-host.mjs: the host page of a free page validation (token kind prev). Our page and our script;
   # the frame source is fixed here from the stored revision (the validation mount of the pages app, with the kit asked for).
   def page_host

@@ -1,0 +1,51 @@
+<%# The render host of one instance of an item revision (D-336): what Chrome loads to draw it as the student's phone does. Same CSS, same importmap and
+    same templates as the student's pages; the item is Diagnosis::ItemPresenter's projection (no key, no hint, no solution) in the frame of the page
+    the student meets it in (the practice page for a practice item, the sitting page for the entry test's), unanswered, buttons as they stand before
+    an answer. Nothing here connects anywhere (Validation::Harness::ITEM_CSP). items/render_host.js exposes window.bancoItemRender. The importmap is
+    inline and nothing is preloaded (as the lesson host, D-335). %>
+<!DOCTYPE html>
+<html lang="it" data-theme="<%= @theme %>" data-size="normal">
+  <head>
+    <title>render</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= stylesheet_link_tag :app %>
+    <link rel="stylesheet" href="/vendor/katex@0.19.0/katex.min.css">
+    <%= javascript_inline_importmap_tag(student_importmap.to_json(resolver: self)) %>
+    <%= javascript_import_module_tag "items/render_host" %>
+  </head>
+  <body class="student">
+    <% if @frame == "practice" %>
+      <main class="page course practice">
+        <div class="card exercise-card">
+          <section aria-label="<%= t("practice.exercise") %>">
+            <div class="item" id="item-box" data-comment-anchor="exercise"></div>
+            <div class="actions button-row sticky-actions">
+              <button type="button" class="button" id="check"><%= t("practice.submit") %></button>
+              <% if @hints.positive? %><button type="button" class="button secondary" id="hint-button"><%= t("practice.hint", n: 1, total: @hints) %></button><% end %>
+              <button type="button" class="button text" id="solution-button"><%= t("practice.solution") %></button>
+            </div>
+          </section>
+        </div>
+      </main>
+    <% else %>
+      <main class="page">
+        <section>
+          <header class="bar sitting-head"><h1><%= t("sitting.header", subject: "Materia", number: 1) %></h1></header>
+          <div class="card sitting-card">
+            <div class="item" id="item-box" data-comment-anchor="question"></div>
+            <details class="help disclosure" id="answer-help" data-comment-anchor="help">
+              <summary><%= t("sitting.help.title") %></summary>
+            </details>
+            <div class="actions button-row sticky-actions">
+              <button type="button" class="button"><%= t("sitting.send") %></button>
+              <button type="button" class="button secondary"><%= t("sitting.dont_know") %></button>
+            </div>
+          </div>
+        </section>
+      </main>
+    <% end %>
+    <script type="application/json" id="item-presentation"><%= json_escape(@item.to_json).html_safe %></script>
+    <script type="application/json" id="item-config"><%= json_escape(@config.to_json).html_safe %></script>
+  </body>
+</html>

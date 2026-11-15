@@ -1,10 +1,10 @@
 ---
 name: review
-version: 3
+version: 4
 formats: banco.review/1
 ---
 
-# Brief: expert review of an item revision (version 3)
+# Brief: expert review of an item revision (version 4)
 
 You review one item revision as a subject expert and write `banco.review/1`
 (`config/banco/schemas/review.json`). You are a session of the reviewer role,
@@ -28,6 +28,14 @@ file in `banco-figures/REV/` (`--dir DIR` chooses another parent folder: the fil
 `figures`, and the instance's `display.figure.file` names it. Look at every figure file: check the drawing against the key, the
 alt text and the stored data, as the student sees it; a figure that is missing or unreadable is a finding (`banco review open` then prints a `warnings` line and exits with `E-FIGURE-MISSING`, after printing the item). `banco review submit REV --file review.json` sends the
 result. Never ask for a decision; the teacher disposes of every finding.
+
+**Look at the pictures of the instances first.** `banco review open REV` asks the server to draw every instance as the student sees it on a 390 px
+phone and prints `item_shots.fetch`, the command that brings the pictures: `banco item shots REV --dir DIR --wait` writes
+`DIR/REV/instance-NN_390x844.webp`, one whole-page picture per instance (NN is the instance number), with the findings of the drawing (`errors`: a
+page wider than the phone, a box that clips its text, a formula that did not draw, markup printed as text, a figure that did not load). Open each file as an image before you
+read the keys: an item that overflows, cuts a formula or hides its question on a phone is a finding (point 11 if it is the reading load or the interface, else the point
+the defect belongs to), quoted from the item text that causes it. A choice, a matching and an ordering are drawn shuffled with a fixed seed: the number on an option, a row or a
+step is its position in `shown_order` (printed with each file), the ids of the item are the stored ones. The pictures never show the key. If they cannot be had, say so in your report.
 
 Search for duplicates: `banco search "WORDS" --subject KEY` finds the lessons, items and findings that already exist, drafts included; a near copy of one of them is a finding. Check a cited reference text with `banco search "WORDS" --kind reference_article`. Run `banco search --like KEY` (a key, or a ref such as `item:KEY`; a whole lesson is `lesson:KEY`, its card N `lesson_card:KEY#N`) on what you review: its nearest neighbours are the candidates for duplicates.
 

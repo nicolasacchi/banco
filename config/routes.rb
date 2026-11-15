@@ -213,6 +213,10 @@ Rails.application.routes.draw do
     post "api/v1/revisions/:revision/review" => "api/v1/reviews#submit", constraints: revision, format: false
     get "api/v1/revisions/:revision/solve" => "api/v1/solves#open", constraints: revision, format: false
     post "api/v1/revisions/:revision/solve" => "api/v1/solves#submit", constraints: revision, format: false
+    # The shots of an item revision at 390 px (D-336): requested on demand by a content role, read by every role.
+    get "api/v1/item-revisions/:revision/shots" => "api/v1/item_shots#index", constraints: revision, format: false
+    post "api/v1/item-revisions/:revision/shots" => "api/v1/item_shots#create", constraints: revision, format: false
+    get "api/v1/item-revisions/:revision/shots/:sha" => "api/v1/item_shots#show", constraints: revision.merge(sha: /[0-9a-f]{64}/), format: false
     get "api/v1/submissions/pending" => "api/v1/grades#pending", format: false
     post "api/v1/attempts/:attempt/grade-proposals" => "api/v1/grades#propose", constraints: { attempt: /\d+/ }, format: false
 
@@ -309,6 +313,8 @@ Rails.application.routes.draw do
   constraints(harness) do
     get "h/:token/:file" => "harness#show", constraints: { token: /[A-Za-z0-9_.-]+/, file: /harness\.html|runner\.mjs|generator\.mjs|verify\.mjs/ }, format: false
     get "h/:token/lesson-render.html" => "harness#lesson", constraints: { token: /[A-Za-z0-9_.-]+/ }, format: false
+    get "h/:token/item-render.html" => "harness#item", constraints: { token: /[A-Za-z0-9_.-]+/ }, format: false
+    get "assets/items/:sha256.svg" => "harness#item_asset", constraints: { sha256: /[0-9a-f]{64}/ }, format: false
     get "h/:token/:file" => "harness#page_host", constraints: { token: /[A-Za-z0-9_.-]+/, file: /page-host\.html|page-host\.mjs/ }, format: false
     get "lib/:file" => "harness#lib", constraints: { file: /rng\.mjs|fmt\.mjs/ }, format: false
   end

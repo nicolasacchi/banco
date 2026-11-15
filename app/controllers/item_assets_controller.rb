@@ -5,6 +5,7 @@
 # opened directly.
 class ItemAssetsController < ApplicationController
   SHA256 = /\A[0-9a-f]{64}\z/
+  HEADERS_CSP = "default-src 'none'; style-src 'unsafe-inline'; sandbox"
 
   def show
     return head(:forbidden) unless current_identity
@@ -17,7 +18,7 @@ class ItemAssetsController < ApplicationController
     return head(:not_found) unless path&.file?
 
     response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["Content-Security-Policy"] = "default-src 'none'; style-src 'unsafe-inline'; sandbox"
+    response.headers["Content-Security-Policy"] = HEADERS_CSP
     response.headers["Cache-Control"] = "private, max-age=31536000, immutable"
     send_file path, type: "image/svg+xml", disposition: "inline"
   end

@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
-# Deletes the screenshot files of lesson renders nobody needs any more (D-249, A12): the revision is not pinned by a
-# topic revision, is not the latest of its lesson, and the render is older than 30 days. The lesson_renders rows stay
-# (the ledger); a missing file shows as "immagine rimossa". Weekly, from the RUNBOOK.
+# Deletes the screenshot files of lesson renders and of item shots nobody needs any more (D-249, A12, D-336): the lesson revision is not pinned by a
+# topic revision (an item revision: by a blueprint or topic revision), is not the latest of its lesson (item), and the render is older than 30 days.
+# The lesson_renders and item_renders rows stay (the ledger); a missing file shows as "immagine rimossa". Weekly, from the RUNBOOK.
 #   bin/purge-lesson-shots [--days N] [--dry-run]
 require "optparse"
 days = 30

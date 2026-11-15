@@ -583,6 +583,26 @@ With no active link it answers `{"revoked": [], "count": 0}`. `banco view-link r
   edge (Traefik routers `banco-view` and `banco-view-redeem`, the latter with access logs off, so the token in the query never reaches Traefik's log; Rails filters `view_token` too),
   so `url` starts with `https://api.banco.scc.im`. `BANCO_VIEW_URL` names the host, so moving it later changes no command.
 
+## Item shots
+
+The pictures of an item as the student sees it on a 390 px phone (D-336): one WebP of the whole page for each stored instance, drawn on demand in
+the server's Chrome, for the reviewer and the blind solver. An aid: it decides nothing and no gate reads it.
+
+| Endpoint | Who | What |
+|---|---|---|
+| `GET /api/v1/item-revisions/:revision/shots` | every token role | `{status, render_id, requested_at, errors, notes, instances, viewport, seed_note, shots, next}`; `status` is `none`, `queued`, `passed`, `failed` (findings) or `error` (Chrome did not answer); `shots[]` is `{instance, seed, shown_order, viewport, width, height, scale, sha256, bytes, available, path}` (`width` is in CSS px, the device scale is 1); `errors[]` is `{code, instance, message, where}` with the codes `E-ITEM-OVERFLOW` and `E-ITEM-RENDER`; while a newer request is queued the pictures are those of the last verdict |
+| `POST /api/v1/item-revisions/:revision/shots[?force=1]` | the content roles (`agent_claude`, `agent_omp`, `ci`); a `bot_read` or `teacher` token is `403 E-AUTH` | enqueues the render **once**: `202 {enqueued: true, status: "queued", render_id}`; `200 {enqueued: false, why_not}` while one is queued or when the revision has been rendered (`force=1` draws it again); a revision with no instance is `422 E-ITEM-NOT-PASSED`; `X-Banco-Dry-Run: 1` says what it would do and queues nothing |
+| `GET /api/v1/item-revisions/:revision/shots/:sha` | every token role | the WebP; `404` «immagine rimossa» after the weekly purge (`banco item shots REV --force` draws it again) |
+
+### `banco item shots REV [--dir DIR] [--wait] [--force] [--timeout SECONDS]`
+
+Reads the status; when the render is not done it requests it (a `bot_read` or `teacher` token can only wait for one a content agent has queued) and,
+with `--wait`, polls until it is done (`--timeout`, default 300 s: `E-TIMEOUT`; an `error` row is `E-CHROME-UNAVAILABLE`). It writes
+`DIR/REV/instance-NN_390x844.webp` (NN is the instance number of `review open` and `solve open`; `DIR` defaults to `banco-figures`) and prints, per file,
+the `instance`, the `seed` and the `shown_order`: a choice, a matching and an ordering are shuffled with that fixed seed as the student's page shuffles
+them, and the number on an option (1, 2, …) is `shown_order.options[n-1]`, the stored id an answer uses (a matching's right column is a closed menu; its order is
+`shown_order.right`). `review open` and `solve open` request the render themselves (best effort, never waiting) and print `item_shots.fetch`, this command.
+
 ## Errors
 
 | HTTP | Code | When |

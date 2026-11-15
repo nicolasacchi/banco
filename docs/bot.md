@@ -36,6 +36,7 @@ teachers and bots did lately (D-333, D-334). `banco next` alone says, for each s
 | The whole text of a lesson (writes `lesson.md` into the directory) | `banco lesson open TOPIC_KEY --dir DIR` |
 | Every exercise of a subject | `banco items list --subject SUBJECT --current` |
 | One exercise whole: stem, instances, key, hints, solution | `banco review open REVISION_ID --json` (the id from `items list`) |
+| An exercise as the student sees it on a phone (one picture per instance, 390 px) | `banco item shots REVISION_ID --dir DIR --wait` (`review open` asks for them too) |
 | The course map and the skill graph | `banco course open --subject SUBJECT`, `banco skill-graph open --subject SUBJECT` |
 | The teacher's pages | `banco teacher home`, `banco teacher course SUBJECT`, `banco teacher topic SUBJECT TOPIC_KEY --lesson`, `banco teacher test SUBJECT` |
 | Where the student is | `banco progress --student student`, `banco practice progress --subject SUBJECT --student student` |

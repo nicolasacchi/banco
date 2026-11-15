@@ -32,6 +32,12 @@ module Validation
     LESSON_SCRIPT = File.expand_path("../../app/javascript/lesson/render_host.js", __dir__)
     LESSON_RAW_MARKUP = File.expand_path("../../app/javascript/lesson/raw_markup.js", __dir__)
 
+    # The render host of an item revision (D-336, token kind irev): the same CSP as the lesson's (the student's own CSS, importmap and templates,
+    # no connection of any kind), the template and the script of its own.
+    ITEM_CSP = LESSON_CSP
+    ITEM_HOST = File.expand_path("../../app/views/harness/item_render.html.erb", __dir__)
+    ITEM_SCRIPT = File.expand_path("../../app/javascript/items/render_host.js", __dir__)
+
     # No connection of any kind, no image, no frame, only the page's own scripts.
     CSP = "default-src 'none'; script-src 'self'; connect-src 'none'; img-src 'none'; base-uri 'none'; form-action 'none'"
 
@@ -62,6 +68,16 @@ module Validation
 
     def lesson_page_url(token, theme: "cream")
       "#{base_url}/h/#{token}/lesson-render.html?theme=#{theme}"
+    end
+
+    # sha256 of what makes an item render differ: the host template and script, the markup finder it shares with the lesson's, and the numbers of the shots.
+    def item_version
+      Digest::SHA256.hexdigest([ File.read(ITEM_HOST), File.read(ITEM_SCRIPT), File.read(LESSON_RAW_MARKUP), JSON.generate(Rules.get(:item_render)) ].join("\n"))
+    end
+
+    # Instance n of the item revision behind the token, in the cream theme (the student's default) unless asked.
+    def item_page_url(token, number, theme: "cream")
+      "#{base_url}/h/#{token}/item-render.html?n=#{Integer(number)}&theme=#{theme}"
     end
 
     # The host page of a free page validation (D-290, SPEC B7): token kind prev (a page revision).
@@ -104,7 +120,7 @@ module Validation
       return nil unless ActiveSupport::SecurityUtils.secure_compare(sign(message), signature)
 
       kind, id, expires = message.split(":", 3)
-      return nil unless %w[rev stage lrev prev].include?(kind) && expires.to_i >= now
+      return nil unless %w[rev stage lrev prev irev].include?(kind) && expires.to_i >= now
 
       [ kind, id ]
     rescue ArgumentError
@@ -118,7 +134,7 @@ module Validation
     # The text of generator.mjs or verify.mjs behind a token, or nil.
     def source(payload, name)
       kind, id = payload
-      return nil unless %w[rev stage].include?(kind) # a lesson render token (lrev) names a lesson revision, not an item's files
+      return nil unless %w[rev stage].include?(kind) # a render token (lrev, irev) names a lesson or an item revision's pictures, not its files
 
       files = kind == "stage" ? Staging.fetch(id) : stored_files(id)
       files && files[name]

@@ -108,9 +108,12 @@ func TestReviewSolveGradeCommandsSendTheSessionAndTheirBody(t *testing.T) {
 		var gotSession, gotDry, gotMethod, gotPath string
 		var gotBody map[string]any
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			gotSession, gotDry, gotMethod, gotPath = r.Header.Get("X-Banco-Session"), r.Header.Get("X-Banco-Dry-Run"), r.Method, r.URL.Path
 			raw, _ := io.ReadAll(r.Body)
-			_ = json.Unmarshal(raw, &gotBody)
+			// an open also asks for the item shots (D-336): that request is its own test, here the first one counts
+			if gotPath == "" {
+				gotSession, gotDry, gotMethod, gotPath = r.Header.Get("X-Banco-Session"), r.Header.Get("X-Banco-Dry-Run"), r.Method, r.URL.Path
+				_ = json.Unmarshal(raw, &gotBody)
+			}
 			w.Header().Set("X-Banco-Contract", contract.Digest())
 			_, _ = w.Write([]byte(`{"ok":true}`))
 		}))
@@ -334,7 +337,37 @@ func TestSolveOpenWritesTheFigures(t *testing.T) {
 func TestOpenWithoutFiguresIsPrintedAsItCame(t *testing.T) {
 	srv, _ := sequenceServer(t, [2]string{"200", `{"revision_id":7,"instances":[],"figures":[]}`})
 	r := runWithSession(t, srv.URL, "5", "review", "open", "7")
-	if r.exit != ExitOK || strings.TrimSpace(r.stdout) != `{"revision_id":7,"instances":[],"figures":[]}` {
+	var out map[string]any
+	if err := json.Unmarshal([]byte(r.stdout), &out); err != nil || r.exit != ExitOK || out["revision_id"] != float64(7) || len(out["figures"].([]any)) != 0 {
+		t.Fatalf("exit %d stdout %q stderr %q", r.exit, r.stdout, r.stderr)
+	}
+}
+
+// review open and solve open ask for the item shots and print the command that fetches them, and never fail for them (D-336).
+func TestOpenRequestsTheItemShotsAndPrintsTheFetchCommand(t *testing.T) {
+	srv, seen := sequenceServer(t, [2]string{"200", `{"revision_id":7,"instances":[],"figures":[]}`}, [2]string{"202", `{"enqueued":true,"status":"queued","render_id":3}`})
+	dir := t.TempDir()
+	r := runWithSession(t, srv.URL, "5", "review", "open", "7", "--dir", dir)
+	if r.exit != ExitOK {
+		t.Fatalf("exit %d stderr %q", r.exit, r.stderr)
+	}
+	if len(*seen) != 2 || (*seen)[1].method != "POST" || (*seen)[1].path != "/api/v1/item-revisions/7/shots" || (*seen)[1].query != "" {
+		t.Fatalf("requests %+v", *seen)
+	}
+	var out struct {
+		ItemShots map[string]any `json:"item_shots"`
+	}
+	if err := json.Unmarshal([]byte(r.stdout), &out); err != nil {
+		t.Fatalf("stdout %q: %v", r.stdout, err)
+	}
+	if out.ItemShots["requested"] != true || out.ItemShots["enqueued"] != true || out.ItemShots["status"] != "queued" || out.ItemShots["fetch"] != "banco item shots 7 --dir "+dir+" --wait" {
+		t.Fatalf("item_shots %+v", out.ItemShots)
+	}
+
+	// a token that cannot request (403) or a revision with nothing to draw (422): the open still succeeds and the command is printed
+	srv2, _ := sequenceServer(t, [2]string{"200", `{"revision_id":8,"instances":[],"figures":[]}`}, [2]string{"403", `{"code":"E-AUTH","field":"authorization","message":"a bot_read token only reads","next":"x"}`})
+	r = runWithSession(t, srv2.URL, "5", "solve", "open", "8")
+	if r.exit != ExitOK || !strings.Contains(r.stdout, `"requested":false`) || !strings.Contains(r.stdout, `banco item shots 8 --dir banco-figures --wait`) {
 		t.Fatalf("exit %d stdout %q stderr %q", r.exit, r.stdout, r.stderr)
 	}
 }

@@ -122,6 +122,8 @@ func runRevision(e *env, c revisionCommand, args []string) error {
 		if err != nil {
 			return err
 		}
+		// the shots of the instances as the student sees them (D-336): requested now, fetched by the command printed; the open never waits for them
+		out = withItemShots(out, itemShotsHint(e, pos[0], *dir))
 		if _, err = e.stdout.Write(append(out, '\n')); err != nil {
 			return err
 		}

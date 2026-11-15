@@ -323,3 +323,13 @@ practice:                     # practice items (A2.4) and topics (A2.3)
   extra_topic_min_instances_per_skill: 10   # E-TOPIC-POOL for an extra topic (D-324): its exercises are optional
   extra_topic_min_low_guess_instances_per_skill: 6
   min_instances_per_code: 3                 # W-PRACTICE-CODE-SPARSE
+
+# The shots of an item revision as the student sees it on a phone (D-336), on demand, never part of a verdict: an aid for the reviewer and the
+# blind solver. No existing number changes and no validation reads it, so the version above does not move.
+item_render:
+  viewport: [390, 844, cream]
+  max_instances: 40           # instances drawn (in the order of their ids; the solver's and the reviewer's numbers); a longer pool is drawn to here and says so
+  budget_seconds: 150         # one revision (a timeout is findings, the shots already taken stay)
+  instance_seconds: 12        # one instance: the page drawn, measured and pictured
+  queued_stale_minutes: 30    # a `queued` row without a later row for this long is a lost job: a new request enqueues again
+  max_shot_height: 9000       # a taller instance is pictured to here and reported

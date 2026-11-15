@@ -1,6 +1,6 @@
-# The screenshots of the lesson render check (D-249, A12): WebP files stored by content, so an unchanged card in a
-# new revision costs nothing. storage/lesson_shots/<sha256>.webp (BANCO_LESSON_SHOTS_DIR overrides, for tests).
-# bin/purge-lesson-shots deletes the files of renders that nobody needs any more; the lesson_renders rows stay.
+# The screenshots of the lesson render check (D-249, A12) and of the item shots (D-336): WebP files stored by content, so an unchanged
+# card in a new revision costs nothing. storage/lesson_shots/<sha256>.webp (BANCO_LESSON_SHOTS_DIR overrides, for tests).
+# bin/purge-lesson-shots deletes the files of renders that nobody needs any more; the lesson_renders and item_renders rows stay.
 module LessonShots
   KEEP_DAYS = 30
   SHA = /\A[0-9a-f]{64}\z/
@@ -38,9 +38,10 @@ module LessonShots
 
   def exist?(sha) = sha.to_s.match?(SHA) && File.exist?(path(sha))
 
-  # Which files the purge may delete: those named only by renders of a revision that no topic revision pins, that is
-  # not the latest of its lesson, and that are older than +days+. A file also named by a render that is kept stays.
-  # Returns { deleted: [sha...], kept: n, bytes: n }; dry_run deletes nothing.
+  # Which files the purge may delete: those named only by renders of a lesson revision that no topic revision pins, that is
+  # not the latest of its lesson, and that are older than +days+, and those named only by shots of an item revision that no
+  # blueprint or topic revision pins, that is not the latest of its item, and that are older than +days+. A file also named by a
+  # render that is kept stays. Returns { deleted: [sha...], kept: n, bytes: n }; dry_run deletes nothing.
   def purge(days: KEEP_DAYS, now: Time.current, dry_run: false)
     pinned = TopicRevision.distinct.pluck(:lesson_revision_id).to_set
     latest = LessonRevision.where(id: LessonRevision.group(:lesson_id).select("MAX(id)")).pluck(:id).to_set
@@ -48,6 +49,12 @@ module LessonShots
     drop = Set.new
     LessonRender.find_each do |render|
       protected_row = pinned.include?(render.lesson_revision_id) || latest.include?(render.lesson_revision_id) || render.created_at > now - days.days
+      (protected_row ? keep : drop).merge(render.shots.map { |s| s["sha256"] })
+    end
+    items_pinned = item_revisions_pinned
+    items_latest = ItemRevision.where(id: ItemRevision.group(:item_id).select("MAX(id)")).pluck(:id).to_set
+    ItemRender.find_each do |render|
+      protected_row = items_pinned.include?(render.item_revision_id) || items_latest.include?(render.item_revision_id) || render.created_at > now - days.days
       (protected_row ? keep : drop).merge(render.shots.map { |s| s["sha256"] })
     end
     deleted = []
@@ -61,5 +68,13 @@ module LessonShots
       deleted << sha
     end
     { deleted: deleted, kept: keep.size, bytes: bytes, dry_run: dry_run }
+  end
+
+  # The item revisions that a student's page can still draw: pinned by a blueprint revision (the entry test) or a topic revision (practice).
+  def item_revisions_pinned
+    pinned = Set.new
+    BlueprintRevision.find_each { |b| pinned.merge(b.pinned_item_revision_ids) }
+    TopicRevision.find_each { |t| pinned.merge(Array(t.body["practice"]).flat_map { |p| Array(p["items"]).map { |i| i["revision"].to_i } }) }
+    pinned
   end
 end

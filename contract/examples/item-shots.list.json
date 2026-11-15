@@ -1,0 +1,83 @@
+{
+  "command": "item shots",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/item-revisions/1/shots"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "revision_id": 1,
+      "item": "shots-1",
+      "status": "failed",
+      "instances": 3,
+      "render_id": 1,
+      "requested_at": "<time>",
+      "shots_from": 1,
+      "viewport": "390x844-cream",
+      "instances_drawn": 2,
+      "instances_total": 2,
+      "elapsed_seconds": 4.2,
+      "errors": [
+        {
+          "code": "E-ITEM-OVERFLOW",
+          "instance": 2,
+          "message": "the page is 900 px wide in a 390 px window",
+          "where": "page"
+        }
+      ],
+      "notes": [
+        {
+          "code": "E-ITEM-RENDER",
+          "message": "the item has 90 instances: the first 40 are pictured",
+          "where": "instances",
+          "level": "note"
+        }
+      ],
+      "seed_note": "The choices of a choice item, the rows of a matching and the steps of an ordering are shown shuffled with a fixed seed (the shot's `seed`), as the student's page shuffles them; `shown_order` lists the stored ids in the order drawn, so the position n of a picture (the number on an option) is shown_order[column][n-1]. `width` is in CSS px (the device scale is 1).",
+      "shots": [
+        {
+          "instance": 1,
+          "seed": "item-shots|1|1",
+          "shown_order": {
+            "options": [
+              "o3",
+              "o1",
+              "o4",
+              "o2"
+            ]
+          },
+          "viewport": "390x844-cream",
+          "width": 390,
+          "height": 701,
+          "scale": 1,
+          "sha256": "<sha256>",
+          "bytes": 22,
+          "available": true,
+          "path": "/api/v1/item-revisions/1/shots/38f536fbbb4801f716e62ba39bda7077b3824336a9830c52b2c6ddc0b01a9e83"
+        },
+        {
+          "instance": 2,
+          "seed": "item-shots|1|2",
+          "shown_order": {
+            "options": [
+              "o3",
+              "o1",
+              "o4",
+              "o2"
+            ]
+          },
+          "viewport": "390x844-cream",
+          "width": 390,
+          "height": 702,
+          "scale": 1,
+          "sha256": "<sha256>",
+          "bytes": 22,
+          "available": true,
+          "path": "/api/v1/item-revisions/1/shots/628aa64c98d0c4df0fef5711eb64d78524de08c2c27c5f6fa188e1486d39235b"
+        }
+      ],
+      "next": "look at every picture, instance by instance (390 px is the phone): banco item shots 1 --dir DIR"
+    }
+  }
+}

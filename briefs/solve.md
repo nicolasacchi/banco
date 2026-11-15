@@ -1,10 +1,10 @@
 ---
 name: solve
-version: 2
+version: 3
 formats: banco.solve/1
 ---
 
-# Brief: blind solve (version 2)
+# Brief: blind solve (version 3)
 
 You solve the instances of one item revision exactly as the student sees them,
 and write `banco.solve/1` (`config/banco/schemas/solve.json`). The server grades
@@ -27,6 +27,18 @@ a wrong shape, a missing or doubled instance and an answer the grader cannot rea
 a dot, an empty string), so fix those first. It also prints a mismatch count; do not change an
 answer because of that count, since the solve is blind and a disagreement is for the teacher to
 judge. Read each answer once more against the display before you submit.
+
+## Pictures of the instances (look at them first)
+
+`banco solve open REV` asks the server to draw every instance as the student sees it on a 390 px phone and prints `item_shots.fetch`, the
+command that brings the pictures: `banco item shots REV --dir DIR --wait` writes `DIR/REV/instance-NN_390x844.webp`, one whole-page picture per
+instance (NN is the instance number of your `instances`). **Look at the picture of an instance before you answer it** (open the WebP as an image):
+it shows what the student sees, the shape of the answer box and the way a table, a formula or an option is laid out, which the text of
+`solve open` does not. A choice, a matching and an ordering are drawn shuffled with a fixed seed, as the student's page shuffles them: the number
+on an option, a row or a step is its position in `shown_order` (printed with each file: `shown_order.options[n-1]` is the stored id of option n),
+and the stored ids are what your `answers.json` uses. If the pictures are not ready, `--wait` waits for them (a minute or two at most); if they
+cannot be had, answer from the text and say so in your report. Something broken in a picture (text cut at the edge, a formula that did not draw,
+an option you cannot tell from another) is for the lead: report it, do not guess.
 
 ## Figures
 
