@@ -7,7 +7,7 @@
 //   initial  the value before the first press (a stepper's range may start below it)
 //   less_it, more_it  the words on a stepper's two buttons (default "−" and "+")
 import { button, el } from "lesson/dom"
-import { renderInlineRich } from "lesson/text"
+import { renderInlineRich, unglued } from "lesson/text"
 import { checkControls } from "lesson/diagrams/contract"
 
 // The controls a module declares for a figure; [] for a module without or with an illegal list.
@@ -118,7 +118,7 @@ export function buildChips(list, host, { state, ctx, redraw }) {
         redraw()
       })
       chip.dataset.value = v.value
-      renderInlineRich(v.label_it, chip, ctx)
+      renderInlineRich(v.label_it, chip, unglued(ctx))
       return chip
     })
     group.append(heading, ...chips)

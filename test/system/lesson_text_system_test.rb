@@ -300,6 +300,44 @@ class LessonTextSystemTest < ApplicationSystemTestCase
     assert_operator page.evaluate_script("document.documentElement.scrollWidth"), :<=, 391
   end
 
+  # D-335: the diagram layout measures its labels, so a formula and its mark are not glued there: a flow node «$\\Delta < 0$?» with a «sì» edge
+  # was measured wider than it was drawn and the layout refused it (E-DIAGRAM-LAYOUT, two labels overlap).
+  FLOW_MOUNT = <<~'JS'.freeze
+    const done = arguments[0];
+    (async () => {
+      const { mountDiagram } = await import('lesson/diagrams/draw')
+      const { load } = await import('lesson/diagrams/registry')
+      await load('flow')
+      const ctx = { subject: 'math', t: { description: 'Descrizione' }, fontPx: () => 20, reduced: () => false, mount: (fn) => setTimeout(fn, 0), track: () => {} }
+      const out = []
+      for (const label of ['$\\Delta < 0$?', '$b = c = 0$?', 'Il discriminante $\\Delta < 0$?', 'Vale $x$.']) for (let width = 200; width <= 760; width += 80) {
+        const data = { type: 'flow', alt_it: 'Schema: una domanda con due risposte.',
+          nodes: [{ id: 'q', kind: 'decision', text_it: label }, { id: 's', kind: 'end', text_it: 'Due soluzioni' }, { id: 'n', kind: 'end', text_it: 'Nessuna soluzione' }],
+          edges: [['q', 's', 'sì'], ['q', 'n', 'no']] }
+        const holder = document.createElement('div')
+        holder.className = 'l2'
+        holder.style.cssText = 'width:' + width + 'px;position:absolute;left:0;top:0'
+        document.body.appendChild(holder)
+        const api = mountDiagram(data, ctx, {})
+        holder.appendChild(api.element)
+        ctx.mount(api.mounted)
+        await new Promise((resolve) => setTimeout(resolve, 150))
+        out.push({ label, width, error: api.element.dataset.error || null, glued: api.element.querySelectorAll('.nowrap').length })
+        document.body.removeChild(holder)
+      }
+      done(out)
+    })().catch((e) => done([{ error: String(e && e.stack || e) }]));
+  JS
+
+  test "a diagram label that ends in a formula and a mark is laid out with no overlap, and is not glued" do
+    open_lesson(size: [ 390, 844 ])
+    results = page.evaluate_async_script(FLOW_MOUNT)
+    assert_equal 32, results.size, results.inspect
+    errors = results.filter_map { |r| "#{r['label']} at #{r['width']}: #{r['error']}" if r["error"] }
+    assert_empty errors
+    assert_equal [ 0 ], results.map { |r| r["glued"] }.uniq, "a diagram label is not glued"
+  end
+
   test "P6 print: no speaker, no button, no bubble; the list of words under the card and the text of a heard check are on the paper" do
     open_lesson(accept: true)
     page.driver.browser.page.command("Emulation.setEmulatedMedia", media: "print")

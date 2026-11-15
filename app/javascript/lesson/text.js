@@ -23,6 +23,10 @@ export const KATEX = {
   trust: (context) => context.command === "\\htmlClass" && ROLE_CLASS.test(context.class ?? "")
 }
 
+// Text that a diagram lays out (a label, a node, an edge label, what the layout measures): the formula and its mark are not glued, since a
+// span.nowrap changes the width a label is measured and wrapped at, and the layout then finds labels that overlap (D-335).
+export const unglued = (ctx) => (ctx.noGlue ? ctx : { ...ctx, noGlue: true })
+
 // Text inside a control (a choice option, a chip, a tile, a table's stacked label): the same inline markup as running text (formulas in their
 // colours, roles, language spans, bold), with nothing that is itself a control: no speaker button, no glossary bubble, no link. A button or a
 // link inside a <label> would take the tap meant for the option (D-310).
@@ -149,7 +153,7 @@ function glossWord(term, ctx) {
 }
 
 function inlineNodes(nodes, parent, ctx, display = false, tiles = false, glued = false) {
-  for (const node of display || glued ? nodes : glueFormulas(nodes)) {
+  for (const node of display || glued || ctx.noGlue ? nodes : glueFormulas(nodes)) {
     if (node.t === "math" && display) {
       parent.appendChild(renderMath(node.v, el("span", { class: "math" }), ctx, true))
       continue

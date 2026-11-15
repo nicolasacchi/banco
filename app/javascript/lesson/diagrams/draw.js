@@ -8,7 +8,7 @@ import { button, clear, el, icon, spriteHref, svg, uid } from "lesson/dom"
 import { FAMILY, HOME_PALETTE, STATUS, describe, layout, load, moduleFor, stateCount } from "lesson/diagrams/registry"
 import { tryValues, equationTex } from "lesson/diagrams/balance"
 import { buildChips, buildStrip, buildValueControls, declared, overlay } from "lesson/diagrams/controls"
-import { renderInlineRich, renderMath, renderRich } from "lesson/text"
+import { renderInlineRich, renderMath, renderRich, unglued } from "lesson/text"
 import { tableNode } from "lesson/blocks/table"
 import { defaultSegments } from "lesson/diagrams/contract"
 import { nearest, targetLabel } from "lesson/checks/select_model"
@@ -124,7 +124,7 @@ export function makeMeasure(host, ctx) {
     probe.style.maxWidth = maxW ? `${maxW}px` : "none"
     probe.style.whiteSpace = maxW ? "normal" : "nowrap"
     probe.style.width = maxW ? `${maxW}px` : "auto"
-    renderInlineRich(text, probe, ctx)
+    renderInlineRich(text, probe, unglued(ctx))
     const rect = probe.getBoundingClientRect()
     const result = { w: Math.ceil(rect.width), h: Math.ceil(rect.height) }
     // a hidden host (a card not shown, display: none) measures every text as 0 x 0: never cached, and the figure draws again when it shows
@@ -374,7 +374,7 @@ export function mountDiagram(data, ctx, options = {}) {
         if (l.anchor !== "start") node.style.translate = l.anchor === "end" ? "-100% 0" : "-50% 0"
       }
       node.style.fontSize = `${l.px}px`
-      renderInlineRich(l.text_it, node, ctx)
+      renderInlineRich(l.text_it, node, unglued(ctx))
       if (l.key) node.dataset.key = l.key
       if (l.lang) node.setAttribute("lang", l.lang)
       labelsLayer.appendChild(node)
@@ -428,7 +428,7 @@ export function mountDiagram(data, ctx, options = {}) {
     renderValues(scene)
     op.textContent = ""
     const eff = total > 1 ? (data.states[state.i] ?? {}) : {}
-    if (eff.op_it) renderInlineRich(eff.op_it, op, ctx)
+    if (eff.op_it) renderInlineRich(eff.op_it, op, unglued(ctx))
     if (top) {
       eqLine.replaceChildren(renderMath(equationTex(data, state.i), el("span", { class: "dg-eqtex" }), ctx, true))
       pill.textContent = total > 1 ? ctx.t.balance_of.replace("%{n}", state.i + 1).replace("%{total}", total) : ctx.t.balance_one
@@ -629,7 +629,7 @@ export function mountDiagram(data, ctx, options = {}) {
         node.style.top = `${l.y}px`
         node.style.width = `${l.w + (l.wrap ? 0 : 2)}px`
         node.style.fontSize = `${l.px}px`
-        renderInlineRich(l.text_it, node, ctx)
+        renderInlineRich(l.text_it, node, unglued(ctx))
         texts.appendChild(node)
       }
       const cap = view.caption_it ?? data.states?.[view.state]?.op_it
