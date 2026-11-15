@@ -19,6 +19,12 @@ module Validation
   class LessonRenderRunner
     Result = Struct.new(:status, :errors, :shots, :cards, :viewports, :elapsed, :chrome_version, :exceptions, :timings, keyword_init: true) do
       def passed? = status == "passed"
+
+      # Failed only because time ran out (the budget of the revision, a card or the print check), never because of what the author wrote:
+      # the same lesson can pass when Chrome is less busy, so it is drawn once more before the verdict (LessonRenderCheck).
+      def timeout_only?
+        status == "failed" && errors.any? && errors.all? { |e| e["code"] == "E-LESSON-RENDER" && e["message"].to_s.start_with?("timeout:") }
+      end
     end
 
     DEFINED_WAIT = 20

@@ -48,6 +48,7 @@ module Validation
       problems.each { |p| f.add("E-GEN-SCHEMA", "#{label}/answer", p, rule: "answer_shape", seed: seed) }
       errors(inst, label, seed, f)
       accept_rules(inst, label, seed, f)
+      accept_is_error(inst, label, seed, f)
       accent_direction_rules(display, answer, inst, label, seed, f) if problems.empty?
       choice_rules(display, answer, inst, label, seed, f) if @unit.component == "choice" && problems.empty?
       judge_rows(display, answer, label, seed, f) if @unit.component == "matching" && problems.empty?
@@ -178,6 +179,22 @@ module Validation
         next unless Answers.punctuation_only?(text)
 
         f.add("E-SCHEMA", "#{label}/accept/#{i}", "an accepted text that is only punctuation normalizes to nothing: no answer could match it", seed: seed)
+      end
+    end
+
+    # The grader tries the key and the accept lists (the item's and the instance's) before the errors: an accepted text that is also a
+    # declared error value is graded right, so the error never fires. Compared as the grader reads them (Grading::Closed::Text.same_answer?).
+    def accept_is_error(inst, label, seed, f)
+      return unless @unit.component == "normalized_text"
+
+      case_sensitive = @unit.body["case_sensitive"] == true
+      (Array(@unit.accept) + Array(inst["accept"])).uniq.each do |text|
+        Array(inst["errors"]).each_with_index do |e, i|
+          next unless e.is_a?(Hash) && e["value"].is_a?(String) && text.is_a?(String)
+          next unless Grading::Closed::Text.same_answer?(text, e["value"], case_sensitive: case_sensitive)
+
+          f.add("E-ACCEPT-IS-ERROR", "#{label}/errors/#{i}/value", "the error value #{e['value'].inspect} is also an accepted text: the grader checks accept first, so this wrong answer would be graded right", seed: seed)
+        end
       end
     end
 

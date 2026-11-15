@@ -66,6 +66,21 @@ module Lessons
         check["errors"].to_a.each_with_index do |e, i|
           ctx.add("E-LESSON-CHECK", "errors/#{i}/answer", "an error answer equals the right answer") if norm.call(e["answer"]) == norm.call(check["answer"])
         end
+        accept_is_error(check, ctx)
+      end
+
+      # The grader tries the answer and the accept list before the errors: an accepted text that is also a declared error answer is graded
+      # right, and the error never fires (the same normalisation as the grader's: Grading::Closed::Text.same_answer?).
+      def accept_is_error(check, ctx)
+        check["accept"].to_a.each_with_index do |text, i|
+          next unless text.is_a?(String)
+
+          check["errors"].to_a.each_with_index do |e, j|
+            next unless e["answer"].is_a?(String) && Grading::Closed::Text.same_answer?(text, e["answer"], contractions: check["contractions"])
+
+            ctx.add("E-ACCEPT-IS-ERROR", "accept/#{i}", "the accepted text #{text.inspect} is also the error answer errors/#{j} (#{e['answer'].inspect}): the grader checks accept first, so that wrong answer would be graded right")
+          end
+        end
       end
 
       # input: bits (T9): the switches of a register. They need the binary profile with its width; the right answer is exactly that many bits;

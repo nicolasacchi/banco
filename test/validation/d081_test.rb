@@ -38,6 +38,21 @@ class D081Test < ActiveSupport::TestCase
     assert_not_equal "correct", Grading.grade_spec(Validation::Units.spec_for(unit, "math", second), "x uguale zero").verdict
   end
 
+  test "E-ACCEPT-IS-ERROR: an accepted text that is also a declared error value (as the grader reads them) is refused; another accept is quiet" do
+    same = text_item([ text_instance("zero", "indeterminata", "Risolvi la prima.", accept: [ "Indeterminata." ]),
+                       text_instance("impossibile", "mai", "Risolvi la seconda.") ])
+    hit = run_item(same).findings.select { |f| f.code == "E-ACCEPT-IS-ERROR" }
+    assert_equal 1, hit.size, "case and final punctuation are the grader's own normalisation"
+    assert_equal "/instances/0/errors/0/value", hit.first.field
+
+    item_level = text_item([ text_instance("zero", "indeterminata", "Risolvi la prima."), text_instance("impossibile", "mai", "Risolvi la seconda.") ], "accept" => [ "indeterminata" ])
+    assert_includes codes(run_item(item_level)), "E-ACCEPT-IS-ERROR", "the item-level accept list is tried first as well"
+
+    quiet = text_item([ text_instance("zero", "indeterminata", "Risolvi la prima.", accept: [ "x uguale zero" ]),
+                        text_instance("impossibile", "mai", "Risolvi la seconda.") ])
+    assert_not_includes codes(run_item(quiet)), "E-ACCEPT-IS-ERROR"
+  end
+
   test "an instance accept list on a component other than normalized_text is refused" do
     inst = F.number_instance(2, 9).merge("accept" => [ "sette" ])
     result = run_item(F.static_item("instances" => [ inst, F.number_instance(4, 13) ]))

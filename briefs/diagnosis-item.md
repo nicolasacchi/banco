@@ -99,6 +99,8 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
   and gets no W-ANSWER-IN-STEM. A key outside the quotes still does.
 - `accept` may also sit on one instance (D-081): other spellings of that instance's
   key only, so another instance's key is never accepted.
+  A text in `accept` (the item's or the instance's) is never also the `value` of one of that instance's `errors`: the grader
+  tries `accept` first, so that wrong answer would be marked right (`E-ACCEPT-IS-ERROR`).
 
 ## The writing rules (version 1)
 

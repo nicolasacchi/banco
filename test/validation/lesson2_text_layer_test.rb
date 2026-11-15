@@ -86,6 +86,20 @@ class Lesson2TextLayerTest < ActiveSupport::TestCase
     assert_equal 1, codes(leak, "W-CHECK-ANSWER-IN-PROMPT").size
   end
 
+  test "E-ACCEPT-IS-ERROR: a text check whose accept holds one of its error answers (as the grader reads them) is refused; another accept is quiet" do
+    check = lambda do |accept|
+      { "n" => 7, "type" => "check", "line" => 50, "component" => "normalized_text", "prompt_it" => "Completa: Non siamo usciti perché ___ (piove).", "answer" => "pioveva",
+        "accept" => accept, "errors" => [ { "code" => "it_accents", "answer" => "No salimos como llovía", "message_it" => "Qui serve l'imperfetto." } ] }
+    end
+    hit = run_checks("english") { |b| b["cards"][1]["blocks"] << check.call([ "no salimos como llovía." ]) }
+    found = codes(hit, "E-ACCEPT-IS-ERROR")
+    assert_equal 1, found.size
+    assert_match(%r{accept/0}, found.first.field)
+    assert_match(/errors\/0/, found.first.message)
+    quiet = run_checks("english") { |b| b["cards"][1]["blocks"] << check.call([ "stava piovendo" ]) }
+    assert_empty codes(quiet, "E-ACCEPT-IS-ERROR")
+  end
+
   test "a glossary word must be in the glossary, a term is listed once, and the definitions shown under a card count as apparatus" do
     glossary = [ { "term_it" => "promulgazione", "def_it" => "Il capo dello Stato firma la legge e la rende valida." } ]
     ok = run_checks("math") { |b| b["glossary"] = glossary; text_card(b, "La [[g:promulgazione]] chiude l'iter.") }

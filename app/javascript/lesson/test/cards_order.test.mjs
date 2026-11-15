@@ -4,7 +4,7 @@ import "./setup.mjs"
 import assert from "node:assert/strict"
 import { test } from "node:test"
 
-const { visualFirst } = await import("lesson/cards")
+const { visualFirst, isSplit } = await import("lesson/cards")
 const { splitProblem } = await import("lesson/blocks/example")
 const { layout } = await import("lesson/diagrams/registry")
 
@@ -16,6 +16,18 @@ test("a callout before the first figure comes after it; other orders stay", () =
   assert.deepEqual(visualFirst([text, diagram, callout]), [text, diagram, callout])
   assert.deepEqual(visualFirst([text, callout, diagram]), [text, callout, diagram])
   assert.deepEqual(visualFirst([callout, text]), [callout, text])
+})
+
+test("a card of one text and one figure is split (the figure drawn first); with a check or a second text it is not", () => {
+  const text = { type: "text" }
+  const diagram = { type: "diagram" }
+  const check = { type: "check" }
+  assert.equal(isSplit([text, diagram]), true)
+  assert.equal(isSplit([diagram, text]), true)
+  assert.equal(isSplit([text, { type: "schema" }]), true)
+  assert.equal(isSplit([text, diagram, check]), false)
+  assert.equal(isSplit([text, text]), false)
+  assert.equal(isSplit([diagram, check]), false)
 })
 
 test("the problem of an example: the lead word and the equation", () => {

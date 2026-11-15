@@ -161,6 +161,11 @@ class CodeFixturesTest < ActiveSupport::TestCase
     },
     "E-OPTION-DUPLICATE" => -> { static_codes(F.choice_item("instances" => [ F.choice_instance("sette", %w[sette nove undici]), F.choice_instance("otto", %w[quattro sei dieci]) ])) },
     "E-ACCENT-DIRECTION" => -> { static_codes(F.choice_item("instances" => [ F.choice_instance("perché", %w[perchè nove undici]), F.choice_instance("otto", %w[quattro sei dieci]) ])) },
+    "E-ACCEPT-IS-ERROR" => lambda {
+      inst = ->(key, wrong, accept) { { "display" => { "stem_it" => "Scrivi #{key}." }, "errors" => [ { "code" => "sign_error", "value" => wrong } ], "answer" => key, "accept" => accept, "solution" => { "steps" => [ { "text_it" => "Isola l'incognita." } ], "final" => "fatto" } } }
+      static_codes(item("component" => "normalized_text", "instances" => [ inst.("zero", "mai", [ "Mai" ]), inst.("uno", "no", [ "primo" ]) ],
+                        "tests" => { "must_accept" => [ "zero" ], "must_reject" => [ "nessuno" ], "blank" => "invalid" }))
+    },
     "W-INSTANCES-ALIKE" => -> { static_codes(matching_item([ 1, 2, 3, 4 ], [ 1, 2, 3, 4, 5 ])) },
     "E-MATCHING-SIZE" => -> { static_codes(matching_item([ 1, 2, 3 ], [ 1, 2, 3, 4 ])) },
     "W-MATCHING-JUDGE-ROWS" => -> { static_codes(judge_item(%w[r1 r1 r1 r1 r1 r2])) },
@@ -332,6 +337,23 @@ class CodeFixturesTest < ActiveSupport::TestCase
     "E-BLUEPRINT-PRACTICE-ITEM" => lambda {
       practice = ->(id) { Validation::BlueprintChecks::ItemInfo.new(id: id, skills: [ BP_ITEMS.fetch(id) ], passed: true, kind: "practice_item", instances: (1..4).map { |i| { fingerprint: "#{id}-#{i}", low_guess: true } }) }
       blueprint_codes(items: ->(id) { BP_ITEMS.key?(id) ? (id == "r1a" ? practice.call(id) : bp_info(id)) : nil })
+    },
+    "W-MATH-LAST-NOTE" => lambda {
+      findings = Validation::Findings.new
+      ctx = Lessons::Blocks::Context.new(subject: "math", findings: findings)
+      math = { "n" => 2, "type" => "math", "lines" => [ { "tex" => "a = b" }, { "tex" => "a + c = b + c", "note_it" => "aggiungi c" }, { "tex" => "x = y", "note_it" => "perché le due parti restano uguali" } ] }
+      ctx.at("/cards/2/blocks/1", 7) { Lessons::Blocks::Simple.check(math, ctx) }
+      findings.map(&:code).uniq
+    },
+    "W-BLANK-STEP-DATUM" => lambda {
+      found = []
+      out = Struct.new(:found) { def at(*, **) = yield; def add(code, *) = found << code; def path = "/cards/0/blocks/1" }.new(found)
+      blank = { "component" => "number", "prompt_it" => "Che numero compare in C3?", "answer" => "5", "errors" => [], "explain_it" => "40 diviso 8 fa 5." }
+      steps = [ { "do_it" => "Leggi il codice in C3.", "why_it" => "Dice che c'è una divisione per zero." },
+                { "do_it" => "Scrivi 8 in B3.", "why_it" => "Ora il divisore non è zero.", "blank" => blank } ]
+      example = { "type" => "example", "n" => 2, "problem_it" => "In C3 compare un errore.", "steps" => steps, "result_it" => "Fatto." }
+      Lessons::Blocks::Example.blank_data({ "n" => 1, "title_it" => "Esempio", "blocks" => [ example ] }, "/cards/0", out)
+      found.uniq
     },
     "W-CALCULATOR" => lambda {
       business = item("subject" => "business", "skill" => "business.invoice")

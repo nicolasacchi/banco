@@ -45,6 +45,8 @@ stop at `awaiting_teacher`.
   folded unless the item says `case_sensitive: true`, so «pil» and «Pil» pass too; a dotted form
   («P.I.L.») is another string: add it to `accept` when a student may type it. In the texts, put the
   acronym in parentheses after the words when it matters: «prodotto interno lordo (PIL)» (D-324).
+  A text in `accept` is never also the `value` of one of the instance's `errors` (`E-ACCEPT-IS-ERROR`: the grader tries
+  `accept` first, so that wrong answer would be marked right).
 - An item of an `extra` topic (outside the programme, D-324) cites the official programme as a
   programme line: `{"kind": "seconda_line", "ref": "ufficiale-2026-27:N", "fragment": "..."}`, checked
   like any programme line (`E-SOURCE`: the line exists, is citable, holds the exact fragment) and shown

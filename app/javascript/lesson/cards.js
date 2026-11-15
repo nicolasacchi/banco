@@ -88,6 +88,13 @@ export function visualFirst(blocks) {
   return [blocks[first], ...lead, ...blocks.slice(first + 1)]
 }
 
+// A card of exactly one text block and one figure draws the figure first (lesson.css: .card-body.is-split > .block-diagram { order: -1 }),
+// at every width, whatever the order written; the brief tells the author to write the text so that it reads after the picture.
+export function isSplit(blocks) {
+  const types = blocks.map((b) => b.type)
+  return types.length === 2 && types.includes("text") && types.some((t) => VISUAL.has(t))
+}
+
 // A chain of equations that starts from the equation the balance above it already shows does not say it twice: the
 // balance is its first line (the chain keeps at least two lines).
 export function dropRepeatedStart(blocks) {
@@ -115,8 +122,7 @@ export function renderCard(card, ctx, position) {
   const roles = position.newRoles ?? rolesUsed(card)
   const hasLegend = card.blocks.some((b) => b.type === "legend")
   const body = el("div", { class: "card-body" })
-  const types = card.blocks.map((b) => b.type)
-  if (types.length === 2 && types.includes("text") && types.some((t) => VISUAL.has(t))) body.classList.add("is-split")
+  if (isSplit(card.blocks)) body.classList.add("is-split")
   const renderBlock = (block) => anchored(renderOne(block, card, ctx, renderBlock), block)
   let grid = null
   let group

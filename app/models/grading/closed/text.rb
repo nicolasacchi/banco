@@ -92,6 +92,15 @@ module Grading
         text.unicode_normalize(:nfd).tr("\u0300", "\u0301").unicode_normalize(:nfc)
       end
 
+      # Would the grader read two written texts as one answer? Its own comparison, whichever the order of the tests: the normalisation,
+      # then the direction of an accent, then (contractions "en") the same contraction. Used to see that an accepted text and a declared
+      # error value are the same answer (the accept list is tried first, so the error could never fire).
+      def same_answer?(a, b, case_sensitive: false, contractions: nil)
+        x = normalize(a.to_s, case_sensitive: case_sensitive)
+        y = normalize(b.to_s, case_sensitive: case_sensitive)
+        x == y || fold_direction(x) == fold_direction(y) || (contractions == "en" && Contractions.same?(x, y))
+      end
+
       def same_direction_as_any?(answer, accepted)
         folded = fold_direction(answer)
         accepted.any? { |c| fold_direction(c) == folded }

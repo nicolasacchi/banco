@@ -11,14 +11,21 @@ module Validation
       @attempt = attempt
     end
 
+    # A render that failed only on its time limits is drawn once more, in the same job, before `failed` is recorded: under load the
+    # limit, not the lesson, was at fault, and a resubmission would only queue another job behind the single Chrome (A12.2).
+    # `render_attempts` in the result says how many times it was drawn.
     def call
       token = Harness.issue("lrev", @revision.id)
-      result = ChromeRunner.session(wait: [ Rules.get(:lesson2, :render, :budget_seconds) * 10, LOCK_WAIT_SECONDS ].max) do |session|
-        LessonRenderRunner.new(session, body: @revision.body, token: token).call
+      result = draw(token)
+      renders = 1
+      if result.timeout_only?
+        Rails.logger.warn("lesson render of revision #{@revision.id} failed on its time limits only (#{result.elapsed} s); drawing it once more")
+        result = draw(token)
+        renders = 2
       end
       append(status: result.status, chrome_version: result.chrome_version, shots: result.shots,
              result: { "errors" => result.errors, "cards" => result.cards, "viewports" => result.viewports, "elapsed_seconds" => result.elapsed,
-                       "exceptions" => result.exceptions, "timings" => result.timings })
+                       "exceptions" => result.exceptions, "timings" => result.timings, "render_attempts" => renders })
     end
 
     def record_error(error)
@@ -26,6 +33,12 @@ module Validation
     end
 
     private
+
+    def draw(token)
+      ChromeRunner.session(wait: [ Rules.get(:lesson2, :render, :budget_seconds) * 10, LOCK_WAIT_SECONDS ].max) do |session|
+        LessonRenderRunner.new(session, body: @revision.body, token: token).call
+      end
+    end
 
     def append(status:, chrome_version:, shots:, result:)
       LessonRender.create!(lesson_revision: @revision, status: status, rules_version: Rules.version.to_s, harness_version: Harness.lesson_version,

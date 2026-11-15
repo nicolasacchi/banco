@@ -244,6 +244,47 @@ class LessonRenderTest < ActionDispatch::IntegrationTest
     assert_nil LessonRender.verdict_for(other)
   end
 
+  # The render check with the runner replaced: each call answers the next of the given results.
+  def render_with_results(revision, *results)
+    runner = Object.new
+    queue = results.dup
+    runner.define_singleton_method(:call) { queue.shift }
+    runs = []
+    session = ->(**, &block) { runs << :session; block.call(nil) }
+    Validation::ChromeRunner.stub(:session, session) do
+      Validation::LessonRenderRunner.stub(:new, ->(*, **) { runner }) do
+        Validation::LessonRenderCheck.new(revision).call
+      end
+    end
+    runs.size
+  end
+
+  def render_result(status, errors = [])
+    Validation::LessonRenderRunner::Result.new(status: status, errors: errors, shots: [], cards: 3, viewports: [ "390x844-cream" ], elapsed: 95.0,
+                                               chrome_version: "Test/1", exceptions: [], timings: [])
+  end
+
+  TIMEOUT = { "code" => "E-LESSON-RENDER", "card" => 4, "viewport" => "390x844-cream", "message" => "timeout: the render of the revision passed 90 s" }.freeze
+  CONTENT = { "code" => "E-LESSON-OVERFLOW", "card" => 2, "viewport" => "390x844-cream", "message" => "the card is wider than the screen" }.freeze
+
+  test "a render that fails only on its time limits is drawn once more in the same job, and the verdict says it was drawn twice" do
+    assert_equal 2, render_with_results(@revision, render_result("failed", [ TIMEOUT ]), render_result("passed"))
+    row = LessonRender.where(lesson_revision_id: @revision.id).sole
+    assert_equal "passed", row.status
+    assert_equal 2, row.result["render_attempts"]
+  end
+
+  test "a render that times out twice is failed after two draws, and a content error or a pass is drawn once" do
+    assert_equal 2, render_with_results(@revision, render_result("failed", [ TIMEOUT ]), render_result("failed", [ TIMEOUT ]))
+    twice = LessonRender.where(lesson_revision_id: @revision.id).order(:id).last
+    assert_equal "failed", twice.status
+    assert_equal 2, twice.result["render_attempts"]
+
+    assert_equal 1, render_with_results(@revision, render_result("failed", [ TIMEOUT, CONTENT ]))
+    assert_equal 1, LessonRender.where(lesson_revision_id: @revision.id).order(:id).last.result["render_attempts"], "a content error is not a time problem"
+    assert_equal 1, render_with_results(@revision, render_result("passed"))
+  end
+
   test "an unknown revision and a lesson/1 revision are ignored" do
     assert_nothing_raised { RenderLessonRevisionJob.perform_now(0) }
   end

@@ -118,6 +118,9 @@ at least 2 cards; `E-LESSON-PARTS`). A level-2 heading starts a **card** and end
   diagram type draws the idea truthfully, fold the idea into an `example` card or draw a `flow`: never draw
   something false. An `example` card needs an `example` block, a `mistakes` card 3 to 8 `mistake` blocks, a
   `try` card one `try` block, the `summary` card one `summary` and one `schema` (`E-LESSON-MAP`).
+- A card with exactly one text block and one figure (`diagram` or `schema`) draws the figure first, at every width: write the
+  text so that it reads after the picture (never "ecco qui sotto"). With any other mix of blocks the order is the order you wrote,
+  except that a callout written before the first figure is drawn after it.
 
 Limits (`config/banco/validation_rules.yml`, block `lesson2`):
 
@@ -346,6 +349,9 @@ fields are those of a practice item of the same component, plus:
   `answer` and the other in `accept` (accepted «prodotto interno lordo» and «PIL»; case is folded, so «pil» passes too;
   a dotted «P.I.L.» only if listed). In the text, put the acronym in parentheses after the words when it matters:
   «prodotto interno lordo (PIL)» (D-324).
+  A text in `accept` is never also an `answer` of an entry of `errors`: the grader tries `accept` first, so that wrong
+  answer would be marked right (`E-ACCEPT-IS-ERROR`; the comparison ignores case, spaces, final punctuation and the
+  direction of an accent, as the grader does).
 - The answer is among the options, the answer is not in its own prompt, no error equals the answer
   (`E-LESSON-CHECK`, `W-CHECK-ANSWER-IN-PROMPT`). A check may ask the student to reason on a picture, never to
   copy the answer from it. At least one check after each idea worth checking.
