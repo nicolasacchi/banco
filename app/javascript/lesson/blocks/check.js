@@ -5,6 +5,7 @@
 // fraction, normalized_text (the item templates), matching (rows of chips) and span_select.
 import { newId } from "items/outbox"
 import { handle } from "items/dom"
+import { barKey, helperKeys, minusKey } from "items/helper_keys"
 import { render as numberT } from "items/number"
 import { render as fractionT } from "items/fraction"
 import { render as choiceT } from "items/choice"
@@ -82,27 +83,14 @@ function fractionLineInput(spec, ctx) {
     id, type: "text", inputmode: "text", autocomplete: "off", autocapitalize: "off", spellcheck: "false",
     class: "answer-input line-input", "aria-label": ctx.items.number_label
   })
-  return handle(el("div", { class: "answer answer-line" }, field), {
+  // the helper keys of the one line: the sign and the bar of a fraction, where a phone keyboard may not show them (the number's own
+  // keys are drawn by items/number)
+  const keys = helperKeys([minusKey(() => field, ctx.items), barKey(() => field, ctx.items)], ctx.items)
+  return handle(el("div", { class: "answer answer-line" }, el("div", { class: "field" }, field, keys)), {
     raw: () => JSON.stringify(fractionLineValue(field.value)),
     isEmpty: () => field.value.trim() === "",
     focus: () => field.focus()
   })
-}
-
-// The helper keys of a typed answer: they put the sign (and the bar of a fraction, the comma of a decimal) at the caret,
-// where a phone keyboard may not show them.
-function helperKeys(field, keys, ctx) {
-  const row = el("span", { class: "helper-keys", role: "group", "aria-label": ctx.t.helper_keys })
-  for (const [label, value, name] of keys) {
-    row.appendChild(button(label, { class: "helper-key", "aria-label": name }, () => {
-      const from = field.selectionStart ?? field.value.length
-      const to = field.selectionEnd ?? field.value.length
-      field.value = field.value.slice(0, from) + value + field.value.slice(to)
-      field.focus()
-      field.setSelectionRange(from + value.length, from + value.length)
-    }))
-  }
-  return row
 }
 
 const isLine = (spec) => (spec.component === "fraction" && !spec.mixed) || spec.component === "number"
@@ -143,11 +131,6 @@ export function renderCheck(spec, ctx, loc, options = {}) {
   const hint = around ? handleInput.element.querySelector(":scope > label.hint") : null
   if (spec.input_before) row.appendChild(renderInlineRich(spec.input_before, el("span", { class: "check-before" }), ctx))
   row.appendChild(handleInput.element)
-  if (line) {
-    const field = handleInput.element.querySelector("input")
-    const asFraction = spec.component === "fraction"
-    row.appendChild(helperKeys(field, asFraction ? [["\u2212", "-", ctx.t.key_minus], ["/", "/", ctx.t.key_bar]] : [["\u2212", "-", ctx.t.key_minus], [",", ",", ctx.t.key_comma]], ctx))
-  }
   if (spec.input_after) row.appendChild(renderInlineRich(spec.input_after, el("span", { class: "check-after" }), ctx))
   if (spec.answer_format_it) form.appendChild(el("p", { class: "hint", text: spec.answer_format_it }))
   const submit = button(ctx.t.check_button, { class: `button small${line ? " check-go" : ""}`, type: "submit" })

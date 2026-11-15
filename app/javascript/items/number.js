@@ -1,6 +1,8 @@
 // number: one text box. The decimal comma is the only separator; the server reads
-// the text exactly (E-03). The unit, when the item has one, is a suffix on screen.
+// the text exactly (E-03). The unit, when the item has one, is a suffix on screen. The keys «−» and «,» sit after the box:
+// the phone's decimal pad has no minus.
 import { el, handle, uid } from "items/dom"
+import { commaKey, helperKeys, minusKey } from "items/helper_keys"
 
 export function render(part, ctx) {
   const id = uid("number")
@@ -8,7 +10,9 @@ export function render(part, ctx) {
     id, type: "text", inputmode: part.scientific ? "text" : "decimal", autocomplete: "off", autocapitalize: "off", spellcheck: "false",
     class: "answer-input", "aria-label": part.scientific ? ctx.t.number_scientific_label : ctx.t.number_label
   })
-  const row = el("div", { class: "field" }, input, part.unit ? el("span", { class: "unit", text: part.unit }) : null)
+  const field = () => input
+  const keys = helperKeys([minusKey(field, ctx.t), commaKey(field, ctx.t)], ctx.t)
+  const row = el("div", { class: "field" }, input, keys, part.unit ? el("span", { class: "unit", text: part.unit }) : null)
   const wrapper = el("div", { class: "answer" }, el("label", { for: id, class: "hint", text: part.scientific ? ctx.t.number_scientific_label : ctx.t.number_label }), row)
   return handle(wrapper, {
     raw: () => input.value.trim(),

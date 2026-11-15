@@ -723,10 +723,14 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 .try .exercise .check { border: 0; padding: 0; background: none; display: block; }
 .try .check-row.is-line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5em 0.6em; margin: 0; padding: 0.6em 0.8em; border: 2px solid var(--rule); border-radius: 1em; background: var(--surface); }
 .check-row.is-line .check-before { font-size: 1.25em; font-weight: 800; }
-.check-row.is-line .answer-line { flex: 1 1 6em; min-width: 5em; max-width: 12em; margin: 0; }
+.check-row.is-line .answer-line { flex: 1 1 6em; min-width: 5em; max-width: 16em; margin: 0; }
+/* the box and its keys stay on one line: the input takes what the keys leave */
+.check-row.is-line > .answer:not(.answer-line) { flex: 1 1 100%; min-width: 0; }
+.check-row.is-line > .answer:not(.answer-line) > .hint { white-space: normal; }
+.check-row.is-line .field { flex-wrap: nowrap; align-items: center; }
+.check-row.is-line .field .answer-input { width: auto; flex: 1 1 4em; min-width: 3em; max-width: 14em; }
 .check-row.is-line .line-input, .check-row.is-line .answer-input { width: 100%; min-height: 2.8em; font-size: 1.1em; text-align: left; }
-.helper-keys { display: inline-flex; gap: 0.35em; }
-.l2 .helper-key { min-width: 2.6em; height: 2.6em; padding: 0; border: 2px solid var(--rule); border-radius: 0.7em; background: var(--paper); color: var(--text); font: inherit; font-size: 1.15em; font-weight: 800; cursor: pointer; }
+.l2 .helper-key { min-width: 2.6em; min-height: 0; height: 2.6em; padding: 0; border: 2px solid var(--rule); border-radius: 0.7em; background: var(--paper); color: var(--text); font: inherit; font-size: 1.15em; font-weight: 800; cursor: pointer; }
 .check-row.is-line .check-go { min-height: 3.2em; padding: 0.4em 1.6em; font-size: 1.15em; font-weight: 800; margin-left: auto; }
 .check .line-hint { margin: 0.4em 0 0; color: var(--muted); }
 .try .check-row.is-line .field, .try .check-row.is-line .answer { margin: 0; }
@@ -735,8 +739,9 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
   .try-nav { gap: 0.25em; }
   .try-dots { gap: 0.25em; flex: 1 1 auto; }
   .try-intro { font-size: 0.92em; color: var(--muted); }
-  .l2 .helper-key { min-width: 2.2em; height: 2.4em; font-size: 1.05em; }
+  .l2 .helper-key { min-width: 2.2em; min-height: 0; height: 2.4em; font-size: 1.05em; }
   .check-row.is-line .answer-line { flex: 1 1 4em; min-width: 4em; }
+  .check-row.is-line .field { gap: 0.35em; }
   .l2 .try-dot { min-width: 0; height: 2.4em; border-radius: 0.6em; font-size: 0.95em; }
   .l2 .try-arrow { width: 2.2em; height: 2.4em; }
   .check-row.is-line .check-go { flex: 1 1 100%; margin-left: 0; }
