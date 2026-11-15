@@ -70,9 +70,14 @@ module Validation
       "#{base_url}/h/#{token}/lesson-render.html?theme=#{theme}"
     end
 
-    # sha256 of what makes an item render differ: the host template and script, the markup finder it shares with the lesson's, and the numbers of the shots.
+    # What the student's item page is made of besides the host: its templates and the stylesheets of the app.
+    ITEM_SOURCES = [ File.expand_path("../../app/javascript/items/*.js", __dir__), File.expand_path("../../app/assets/stylesheets/*.css", __dir__) ].freeze
+
+    # sha256 of what makes an item render differ: the host template and script, the student's item templates and CSS, the markup finder the host shares with the
+    # lesson's, and the numbers of the shots. A verdict made under another version needs a new render (Items::ShotRequest).
     def item_version
-      Digest::SHA256.hexdigest([ File.read(ITEM_HOST), File.read(ITEM_SCRIPT), File.read(LESSON_RAW_MARKUP), JSON.generate(Rules.get(:item_render)) ].join("\n"))
+      sources = ITEM_SOURCES.flat_map { |glob| Dir[glob].sort }.map { |f| "#{File.basename(f)}\n#{File.read(f)}" }
+      Digest::SHA256.hexdigest([ File.read(ITEM_HOST), File.read(ITEM_SCRIPT), File.read(LESSON_RAW_MARKUP), JSON.generate(Rules.get(:item_render)), *sources ].join("\n"))
     end
 
     # Instance n of the item revision behind the token, in the cream theme (the student's default) unless asked.

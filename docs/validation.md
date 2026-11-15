@@ -171,7 +171,7 @@ whose cards are fast and whose total is not is told by them.
 ## The shots of an item as the student sees it on a phone (D-336)
 
 On demand, never part of a verdict. `POST /api/v1/item-revisions/ID/shots` (a content role; `banco item shots REV --dir DIR --wait`) enqueues
-`RenderItemRevisionJob` once (queue `chrome`, priority 10); `Validation::ItemRenderRunner` opens the harness listener's
+`RenderItemRevisionJob` once (queue `chrome`, priority 20: after item validation, the lesson render and the page validations); `Validation::ItemRenderRunner` opens the harness listener's
 `/h/<irev-token>/item-render.html?n=N` (`HarnessController#item`, `items/render_host.js`) for each stored instance in one browser
 context at 390 x 844, cream, device scale 1, and takes a WebP of the whole page (never under 844 px tall). The page is the student's own: the same CSS, importmap,
 templates, MathLive, KaTeX and figures (`Items::Figures`), inside the practice page's card (a `practice_item`) or the sitting's, unanswered, with what

@@ -7,6 +7,8 @@ pin "@hotwired/stimulus", to: "stimulus.min.js"
 pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
 pin_all_from "app/javascript/student_controllers", under: "student_controllers"
 pin_all_from "app/javascript/items", under: "items"
+# The render host of the item shots (D-336) is loaded by the harness page only: no student or teacher page preloads it.
+pin "items/render_host", preload: false
 pin "mathlive", to: "/vendor/mathlive@0.111.0/mathlive.min.mjs", preload: false
 pin "katex", to: "/vendor/katex@0.19.0/katex.mjs", preload: false
 # \ce{} and \pu{} (D-282): KaTeX's own contrib/mhchem, a macro package that imports ../katex.mjs (the same module as "katex"). Chemistry and biology lessons only.

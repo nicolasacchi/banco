@@ -54,7 +54,8 @@ class GuestReadOnlyTest < ActionDispatch::IntegrationTest
       if verb == "GET"
         on(:web, path, headers: GUEST, remote_addr: EDGE)
         # a stored image needs a stored render: the sample value of a sha256 names none
-        expected = path.start_with?("/teacher/preview") ? :forbidden : path.include?("/shots/") ? :not_found : :success
+        # D-334: the who-did-what page is the teachers' (a guest is refused)
+        expected = path.start_with?("/teacher/preview") || path == "/teacher/activity" ? :forbidden : path.include?("/shots/") ? :not_found : :success
         assert_response expected, "GET #{path}"
       else
         on(:web, path, method: verb.downcase.to_sym, headers: GUEST.merge("X-CSRF-Token" => token, "Content-Type" => "application/json", "Accept" => "application/json"),

@@ -14,12 +14,11 @@ module Validation
     # A render that failed only on its time limits is drawn once more, in the same job, before `failed` is recorded: under load the limit, not the item,
     # was at fault. `render_attempts` in the result says how many times it was drawn.
     def call
-      token = Harness.issue("irev", @revision.id)
-      result = draw(token)
+      result = draw
       renders = 1
       if result.timeout_only?
         Rails.logger.warn("item render of revision #{@revision.id} failed on its time limits only (#{result.elapsed} s); drawing it once more")
-        result = draw(token)
+        result = draw
         renders = 2
       end
       append(status: result.status, chrome_version: result.chrome_version, shots: result.shots,
@@ -33,10 +32,11 @@ module Validation
 
     private
 
-    def draw(token)
+    # The token (ten minutes) is issued once Chrome is ours: the wait for its lock can be long.
+    def draw
       budget = Rules.get(:item_render, :budget_seconds)
       ChromeRunner.session(wait: [ budget * 10, LOCK_WAIT_SECONDS ].max) do |session|
-        ItemRenderRunner.new(session, revision: @revision, token: token).call
+        ItemRenderRunner.new(session, revision: @revision, token: Harness.issue("irev", @revision.id)).call
       end
     end
 

@@ -151,6 +151,11 @@ class ItemShotsApiTest < ActionDispatch::IntegrationTest
     assert_no_enqueued_jobs only: RenderItemRevisionJob do
       post_shots(@agent)
     end
+    # not even a forced one while a request is pending
+    assert_no_enqueued_jobs only: RenderItemRevisionJob do
+      post_shots(@agent, "?force=1")
+    end
+    assert_equal false, json["enqueued"]
     # a job lost for longer than the stale time is asked again
     travel_to 2.hours.from_now do
       assert_enqueued_jobs 1, only: RenderItemRevisionJob do
@@ -166,6 +171,16 @@ class ItemShotsApiTest < ActionDispatch::IntegrationTest
     end
     api_as(@agent, shots_path(other))
     assert_equal "queued", json["status"]
+  end
+
+  test "a verdict made by an older host is asked for again without force" do
+    row = verdict!
+    stale = ItemRender.create!(item_revision: @revision, status: "passed", harness_version: "an-older-host", result_json: "{}", shots_json: "[]")
+    assert_operator stale.id, :>, row.id
+    assert_enqueued_jobs 1, only: RenderItemRevisionJob do
+      post_shots(@agent)
+    end
+    assert_response :accepted
   end
 
   test "two requests in one go enqueue one job" do
@@ -189,8 +204,9 @@ class ItemShotsApiTest < ActionDispatch::IntegrationTest
     end
     assert_equal 0, ItemRender.count
     [ "agent_omp", "ci" ].each do |role|
-      post_shots(issue_token(role), "?force=1")
-      assert_response :accepted, role
+      post_shots(issue_token(role))
+      assert_response :success, role # the first enqueues (202), the next finds it queued (200): never a refusal
+      assert_equal "queued", json["status"], role
     end
   end
 
@@ -221,8 +237,9 @@ class ItemShotsApiTest < ActionDispatch::IntegrationTest
   test "the job is on the chrome queue below item validation, and draws unless a verdict has been appended since its request" do
     job = RenderItemRevisionJob.new
     assert_equal "chrome", job.queue_name
-    assert_equal 10, job.priority
+    assert_equal 20, job.priority
     assert_operator job.priority, :>, ValidateItemRevisionJob.new.priority.to_i
+    assert_operator job.priority, :>, RenderLessonRevisionJob.new.priority, "a shot waits for the lesson renders that gate approval"
     drew = []
     fake = Struct.new(:calls) { def call = calls << true }.new(drew)
     queued = ItemRender.create!(item_revision: @revision, status: "queued", harness_version: "x", result_json: "{}", shots_json: "[]")
@@ -233,6 +250,18 @@ class ItemShotsApiTest < ActionDispatch::IntegrationTest
     forced = ItemRender.create!(item_revision: @revision, status: "queued", harness_version: "x", result_json: JSON.generate("force" => true), shots_json: "[]")
     Validation::ItemRenderCheck.stub(:new, ->(*) { fake }) { RenderItemRevisionJob.perform_now(@revision.id, forced.id) }
     assert_equal [ true, true ], drew, "a forced request draws again a revision that has a verdict"
+  end
+
+  test "a crash in the check is written as an error row, and the job raises" do
+    queued = ItemRender.create!(item_revision: @revision, status: "queued", harness_version: "x", result_json: "{}", shots_json: "[]")
+    check = Object.new
+    def check.call = raise("boom")
+    recorded = []
+    check.define_singleton_method(:record_error) { |e| recorded << e.message }
+    Validation::ItemRenderCheck.stub(:new, ->(*) { check }) do
+      assert_raises(RuntimeError) { RenderItemRevisionJob.perform_now(@revision.id, queued.id) }
+    end
+    assert_equal [ "boom" ], recorded
   end
 
   # ---- the render host (harness listener) ----

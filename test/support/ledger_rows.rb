@@ -34,6 +34,8 @@ module LedgerRows
     instance = ItemInstance.create!(item_revision: revision, seed: 1, display_json: JSON_BODY,
                                     answer_json: JSON_BODY, fingerprint: "f" * 64)
     rows["item_instances"] = instance
+    rows["item_renders"] = ItemRender.create!(item_revision: revision, status: "passed", rules_version: "10", harness_version: "h" * 8, attempt: 1, result_json: JSON_BODY,
+                                              shots_json: "[]", created_at: now)
     review = ItemReview.create!(item_revision: revision, agent_session: session, checklist_json: "[]")
     rows["item_reviews"] = review
     solve = BlindSolve.create!(item_revision: revision, agent_session: session, answers_json: "[]", results_json: "[]")
