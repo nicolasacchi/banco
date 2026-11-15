@@ -3,6 +3,7 @@
 // <img> from /assets/items/<sha256>.svg (X-02).
 import { el } from "items/dom"
 import { renderInline, renderMarkup } from "items/markup"
+import { softBreaks } from "items/soft_breaks"
 
 export function renderPrompt(part, ctx) {
   const box = el("div", { class: "prompt", "data-comment-anchor": "prompt" })
@@ -35,12 +36,12 @@ function table(data) {
   const node = el("table", { class: "data" })
   if (data.caption_it) node.appendChild(renderInline(data.caption_it, el("caption")))
   const head = el("tr")
-  for (const cell of data.header || []) head.appendChild(renderInline(String(cell), el("th", { scope: "col" })))
+  for (const cell of data.header || []) head.appendChild(softBreaks(renderInline(String(cell), el("th", { scope: "col" }))))
   node.appendChild(el("thead", {}, head))
   const body = el("tbody")
   for (const row of data.rows || []) {
     const tr = el("tr")
-    for (const cell of row) tr.appendChild(renderInline(String(cell), el("td")))
+    for (const cell of row) tr.appendChild(softBreaks(renderInline(String(cell), el("td"))))
     body.appendChild(tr)
   }
   node.appendChild(body)

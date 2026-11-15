@@ -213,6 +213,53 @@ class ItemRenderRunnerTest < ActiveSupport::TestCase
     facts["header"].select { |h| h["text"] == "N." }.each { |h| assert_equal 1, h["lines"], "the short header N. is on one line" }
   end
 
+  # D-335 (item 35): a program line is one word, so with `break-word` alone its column grew past the card and half of it hid behind a sideways scroll. A
+  # <wbr> after a dot, a bracket or a comma (and before = and &) in a long word is a break point the table's width respects: the line breaks at a dot.
+  test "a three-line program in a table at 390 px: no sideways scroll, no break inside a name, the text unchanged" do
+    table = { caption_it: "Il programma di una riga per volta", header: [ "N.", "Istruzione" ],
+              rows: [ [ "1", "[[code:CInt(Console.ReadLine())]]" ], [ "2", "[[code:Console.WriteLine(\"Livello \" & x)]]" ], [ "3", "[[code:livello = quota \\ 100]]" ] ] }
+    revision = revision_with("choice", body: { kind: "practice_item", prompt: { stem_it: "Che cosa fa il programma?", table: table } },
+                                       instances: [ [ { options: (1..4).map { |n| { id: "o#{n}", text: "Risposta #{n}" } } }, "o1", [] ] ])
+    row = draw(revision)
+    assert_equal "passed", row.status, "the table does not scroll sideways: #{dump(row)}"
+    assert_empty row.result["errors"], dump(row)
+    facts = Validation::ChromeRunner.session do |session|
+      session.context do |ctx|
+        page = open_host(ctx, revision)
+        page.evaluate(<<~JS)
+          (() => {
+            const wrap = document.querySelector(".table-wrap")
+            const split = []
+            for (const code of document.querySelectorAll("td .code-span")) {
+              const walker = document.createTreeWalker(code, NodeFilter.SHOW_TEXT)
+              for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+                for (const m of node.nodeValue.matchAll(/[A-Za-z]{3,}/g)) {
+                  const range = document.createRange()
+                  range.setStart(node, m.index)
+                  range.setEnd(node, m.index + m[0].length)
+                  if (new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size > 1) split.push(m[0])
+                }
+              }
+            }
+            const header = document.querySelector("th")
+            const range = document.createRange()
+            range.selectNodeContents(header)
+            return {
+              scrolls: wrap.scrollWidth > wrap.clientWidth + 1, split,
+              texts: [...document.querySelectorAll("td .code-span")].map((c) => c.textContent),
+              wbrs: document.querySelectorAll("td wbr").length, header: header.textContent, headerLines: new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size
+            }
+          })()
+        JS
+      end
+    end
+    assert_equal false, facts["scrolls"]
+    assert_empty facts["split"], "a name is broken across two lines: #{facts['split']}"
+    assert_equal [ "CInt(Console.ReadLine())", "Console.WriteLine(\"Livello \" & x)", "livello = quota \\ 100" ], facts["texts"], "the text, and so its copy, is as written"
+    assert_operator facts["wbrs"], :>=, 4
+    assert_equal [ "N.", 1 ], [ facts["header"], facts["headerLines"] ]
+  end
+
   test "an instance that runs out of the phone's width is reported, the others are not, and every instance is still pictured" do
     long = (1..40).map { |n| "x_{#{n}}" }.join("+")
     options = (1..4).map { |n| { id: "o#{n}", text: "Risposta #{n}" } }
