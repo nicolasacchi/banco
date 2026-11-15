@@ -191,7 +191,7 @@ func runLessonStatus(e *env, args []string) error {
 }
 
 // lesson shots REV --dir D: the screenshots of the render check (D-249, A12.2), one WebP per card and viewport, so that
-// a multimodal reviewer looks at every card. Files are named card-NN_WIDTHxHEIGHT-theme.webp (the cover is not shot); a further
+// a multimodal reviewer looks at every card. Files are named card-NN_WIDTHxHEIGHT-theme.webp (card-00 is the cover, with the lesson's hero figure); a further
 // state of a card (D-311: another exercise of «Prova tu», the closed parts opened) is card-NN-STATE_WIDTHxHEIGHT-theme.webp.
 func runLessonShots(e *env, args []string) error {
 	fs := flag.NewFlagSet("lesson shots", flag.ContinueOnError)

@@ -38,13 +38,13 @@ class LessonRenderRunnerTest < ActiveSupport::TestCase
     row.result["errors"].map { |e| "#{e['code']} card #{e['card']} #{e['viewport']}: #{e['message']}" }.join("\n")
   end
 
-  test "a readable lesson passes at every viewport and stores one WebP per core card and viewport, and one per further exercise at 390" do
+  test "a readable lesson passes at every viewport and stores one WebP per core card and viewport (the cover too), and one per further exercise at 390" do
     row = render(served("equations"))
     keep_shots(row, "equations")
     assert_equal "passed", row.status, dump(row)
     core = served("equations")["cards"].count { |c| c["level"] == "core" }
     extra = served("equations")["cards"].count { |c| c["level"] == "extra" }
-    assert_equal core * 3 + extra, row.shots.count { |s| s["state"].nil? }
+    assert_equal (core + 1) * 3 + extra, row.shots.count { |s| s["state"].nil? }
     # D-311: «Prova tu» has three exercises; the second and the third are pictured at the phone (the open states only when they find something)
     try = served("equations")["cards"].find { |c| c["role"] == "try" }
     assert_equal [ [ try["n"], "ex2", "390x844-cream" ], [ try["n"], "ex3", "390x844-cream" ] ], row.shots.select { |s| s["state"] }.map { |s| s.values_at("card", "state", "viewport") }

@@ -29,6 +29,7 @@ it:
         theme_cream: "chiaro"
         theme_dark: "scuro"
         alt: "Scheda %{n}, %{viewport}"
+        alt_cover: "Copertina, %{viewport}"
         # the further states of a card (D-311): another exercise of Prova tu, the parts that open (Descrizione, Mostra il testo) opened
         state_ex: "esercizio %{n}"
         state_open: "con le parti chiuse aperte"

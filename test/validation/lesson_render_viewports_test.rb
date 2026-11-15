@@ -105,6 +105,14 @@ class LessonRenderViewportsTest < ActiveSupport::TestCase
     assert_equal "passed", row.status, row.result["errors"].map { |e| "#{e['code']} card #{e['card']} #{e['viewport']}: #{e['message']}" }.join("\n")
     assert_equal %w[390x844-cream 1280x800-cream 1280x800-dark], row.result["viewports"]
     assert_equal row.result["viewports"], row.shots.map { |s| s["viewport"] }.uniq, "a picture at every viewport, the dark one too"
+    # the cover carries the hero figure: pictured at every viewport, the phone first, its file in the store (D-335)
+    covers = row.shots.select { |s| s["card"] == 0 }
+    assert_equal row.result["viewports"], covers.map { |s| s["viewport"] }, "the cover pictured at every viewport"
+    assert_equal [ "cover" ], covers.map { |s| s["level"] }.uniq
+    phone = covers.find { |s| s["viewport"] == "390x844-cream" }
+    assert_equal 390, phone["width"]
+    assert File.exist?(LessonShots.path(phone["sha256"])), "the phone cover's image is stored"
+    assert_equal "WEBP", LessonShots.read(phone["sha256"])[8, 4]
     budget = Validation::Rules.get(:lesson2, :render, :budget_seconds)
     assert_operator row.result["elapsed_seconds"], :<, budget / 3.0, "the render took #{row.result['elapsed_seconds']} s"
     # where the seconds before the first card went is in the result, per viewport (open: the page's load; ready: the host's own wait)

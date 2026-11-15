@@ -7,7 +7,7 @@
   <% else %>
     <% @shots.group_by { |s| s["card"] }.each do |n, shots| %>
       <section class="shots-card" id="card-<%= n %>">
-        <h2><%= t("teacher.render.card_link", n: n, title: @titles[n]) %></h2>
+        <h2><%= n.zero? ? t("teacher.render.cover") : t("teacher.render.card_link", n: n, title: @titles[n]) %></h2>
         <div class="shots-row" style="display: flex; flex-wrap: wrap; gap: 1em; align-items: flex-start">
           <% shots.each do |s| %>
             <% width, theme = s["viewport"].match(/\A(\d+)x\d+-(\w+)\z/).captures %>
@@ -15,7 +15,7 @@
             <% label = "#{LessonRenders.state_words(s['state']).upcase_first} · #{label}" if s["state"] %>
             <figure style="margin: 0; max-width: <%= width.to_i > 600 ? "48%" : "30%" %>">
               <% if LessonShots.exist?(s["sha256"]) %>
-                <a href="<%= teacher_lesson_shot_path(lesson_revision_id: @revision.id, sha256: s["sha256"]) %>"><img src="<%= teacher_lesson_shot_path(lesson_revision_id: @revision.id, sha256: s["sha256"]) %>" alt="<%= t("teacher.render.shots.alt", n: n, viewport: label) %>" loading="lazy" style="max-width: 100%; height: auto; border: 1px solid #888"></a>
+                <a href="<%= teacher_lesson_shot_path(lesson_revision_id: @revision.id, sha256: s["sha256"]) %>"><img src="<%= teacher_lesson_shot_path(lesson_revision_id: @revision.id, sha256: s["sha256"]) %>" alt="<%= n.zero? ? t("teacher.render.shots.alt_cover", viewport: label) : t("teacher.render.shots.alt", n: n, viewport: label) %>" loading="lazy" style="max-width: 100%; height: auto; border: 1px solid #888"></a>
               <% else %>
                 <p class="hint"><%= t("teacher.render.shots.removed") %></p>
               <% end %>

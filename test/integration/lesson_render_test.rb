@@ -195,6 +195,17 @@ class LessonRenderTest < ActionDispatch::IntegrationTest
                    "Esercizio 2, con le parti chiuse aperte · 390 px, chiaro" ], captions
   end
 
+  test "the cover's shot (card 0, D-335): the API lists it, the teacher's page puts it first under «Copertina»" do
+    render_row!(cards: { 1 => "390x844-cream", 0 => "390x844-cream" })
+    api("/api/v1/lesson-revisions/#{@revision.id}/shots")
+    assert_response :ok
+    assert_includes response.parsed_body["shots"].map { |s| s["card"] }, 0
+    on(:web, "/teacher/lesson-revisions/#{@revision.id}/shots", headers: TEACHER, remote_addr: EDGE)
+    assert_response :success
+    assert_equal [ "Copertina", "Scheda 1: #{@revision.body['cards'].first['title_it']}" ], css_select("h2").map { |h| h.text.strip }
+    assert_select "section#card-0 img[alt=?]", "Copertina, 390 px, chiaro"
+  end
+
   test "the lesson box offers Simili for the lesson and each card when vectors can be used" do
     open_topic_page!(headers: TEACHER)
     assert_select "#similar-line", count: 0

@@ -9,7 +9,7 @@ module Validation
   # (lesson/render_host.js): exceptions and KaTeX errors (E-LESSON-RENDER), overflow (E-LESSON-OVERFLOW), labels that
   # overlap or sit outside their drawing and layouts that answered an error (E-DIAGRAM-LAYOUT), text under the
   # minimum (E-DIAGRAM-SMALL-TEXT). All errors: they depend on the author's data. Then it takes a WebP shot of each
-  # card (core cards at every viewport, extra cards at the first only) and hands the bytes to LessonShots. A card has
+  # card (the cover and the core cards at every viewport, extra cards at the first only) and hands the bytes to LessonShots. A card has
   # further states (D-311): every other exercise of «Prova tu» shown in turn, and the card and each exercise with every
   # closed disclosure open; each is measured like the card, and pictured as `shoot?` says.
   #
@@ -73,7 +73,7 @@ module Validation
 
     def over_budget? = (@clock.call - @started) > @budget
 
-    # The cards drawn at this viewport: the cover (looked at, not shot), the core cards, the extra cards when the
+    # The cards drawn at this viewport: the cover, the core cards, the extra cards when the
     # viewport is listed for them.
     def cards_for(viewport)
       extra = @extra.any? { |w, h, t| [ w, h, t.to_s ] == viewport }
@@ -209,18 +209,18 @@ module Validation
       answer
     end
 
-    # Which states are pictured (the store stays bounded): the card as drawn at every viewport it is drawn at (the cover never);
+    # Which states are pictured (the store stays bounded): the card as drawn at every viewport it is drawn at (the cover too, D-335: it
+    # carries the lesson's hero figure and is drawn at every viewport, as a core card is);
     # another exercise of «Prova tu» at the first viewport the card is drawn at (the phone); any further state where it found
     # something new, so that what was found can be seen. Otherwise the disclosures opened all at once are measured, not pictured.
     def shoot?(card, viewport, state, fresh)
-      return false if card["n"].zero?
       return true if state.nil? || fresh.positive?
 
       state.match?(/\Aex\d+\z/) && viewport == first_viewport_of(card)
     end
 
     def first_viewport_of(card)
-      width, height, theme = (card["level"] == "core" ? @core : @extra).first
+      width, height, theme = (card["level"] == "extra" ? @extra : @core).first
       "#{width}x#{height}-#{theme}"
     end
 

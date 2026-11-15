@@ -133,7 +133,7 @@ then `exN` (exercise N shown instead: the pager shows one at a time), `open` (ev
 closed `<details>`, «Mostra il testo» of a listening check; the glossary bubbles one at a time) and `exN-open`. Each state is
 measured like the card and has its own 5 s; an error and a shot carry `state` (none for the card as drawn). The opened states of
 a viewport run after its last picture (an opened part can make a short page scrollable, and the fixed bars of the next pictures were
-then painted differently from run to run). Pictures: the card as drawn at every viewport, another exercise at the first viewport
+then painted differently from run to run). Pictures: the card as drawn at every viewport (the cover, with the lesson's hero figure, too: card 0, D-335), another exercise at the first viewport
 (the phone), and any further state where it found something. The oral is drawn with the student's form. Not drawn: solutions,
 feedback and the oral's model answer (answers, from the server).
 
