@@ -1466,5 +1466,76 @@
         ]
       }
     ]
+  },
+  {
+    "input": "3. Parola finale",
+    "note": "D-335: an ordered list keeps the number of its first line (a table cell «3. Parola finale» shows 3)",
+    "blocks": [
+      {
+        "type": "ol",
+        "start": 3,
+        "items": [
+          {
+            "children": [
+              {
+                "t": "text",
+                "v": "Parola finale"
+              }
+            ],
+            "sub": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "2. Sinalefe\n3. Dieresi",
+    "note": "D-335: the later numbers follow the browser's count from start",
+    "blocks": [
+      {
+        "type": "ol",
+        "start": 2,
+        "items": [
+          {
+            "children": [
+              {
+                "t": "text",
+                "v": "Sinalefe"
+              }
+            ],
+            "sub": []
+          },
+          {
+            "children": [
+              {
+                "t": "text",
+                "v": "Dieresi"
+              }
+            ],
+            "sub": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "1. Sillabe",
+    "note": "D-335: a list that starts at 1 has no start",
+    "blocks": [
+      {
+        "type": "ol",
+        "items": [
+          {
+            "children": [
+              {
+                "t": "text",
+                "v": "Sillabe"
+              }
+            ],
+            "sub": []
+          }
+        ]
+      }
+    ]
   }
 ]

@@ -50,4 +50,11 @@ class LessonsMarkupTest < ActiveSupport::TestCase
     assert_equal [ 3, 4 ], block.items.map { |i| i[:n] }
     assert_equal "3. tre\n4. quattro", block.source
   end
+
+  test "an ordered list keeps its first number as start, only when it is not 1 (D-335)" do
+    assert_equal 3, Lessons::Markup.parse("3. Parola finale").first["start"]
+    assert_equal 2, Lessons::Markup.parse("2. due\n3. tre").first["start"]
+    assert_not Lessons::Markup.parse("1. Sillabe").first.key?("start")
+    assert_not Lessons::Markup.parse("- punto").first.key?("start")
+  end
 end

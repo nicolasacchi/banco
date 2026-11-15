@@ -25,9 +25,10 @@ export function parse(text, options = {}) {
 }
 
 // Markup v2, for lessons only: also "- " lists and one nested level ("  - ", 2 to 4 spaces).
-// Blocks: {type: "p", children} or {type: "ol" | "ul", items: [{children, sub: [[node]]}]}.
+// Blocks: {type: "p", children} or {type: "ol" | "ul", items: [{children, sub: [[node]]}]}; an "ol" whose first
+// number is not 1 also has start: n (a cell «2. Sinalefe» shows 2, D-335).
 // The server refuses what is not valid (Lessons::Markup); this reader is lenient.
-const ORDERED_V2 = /^\d+\.\s+(.*)$/
+const ORDERED_V2 = /^(\d+)\.\s+(.*)$/
 const BULLET_V2 = /^-\s+(.*)$/
 const SUB_V2 = /^ {2,4}-\s+(.*)$/
 
@@ -55,7 +56,7 @@ function blockV2(lines, options) {
   const items = []
   for (const line of lines) {
     let m
-    if ((m = line.match(marker))) items.push({ text: m[1].trim(), subs: [] })
+    if ((m = line.match(marker))) items.push({ text: m[m.length - 1].trim(), subs: [] })
     else if ((m = line.match(SUB_V2)) && items.length > 0) items[items.length - 1].subs.push(m[1].trim())
     else if (items.length > 0) {
       const last = items[items.length - 1]
@@ -63,7 +64,10 @@ function blockV2(lines, options) {
       else last.text += ` ${line.trim()}`
     }
   }
-  return { type, items: items.map((i) => ({ children: inline(i.text, options), sub: i.subs.map((s) => inline(s, options)) })) }
+  const block = { type, items: items.map((i) => ({ children: inline(i.text, options), sub: i.subs.map((s) => inline(s, options)) })) }
+  const start = type === "ol" ? Number(first.match(ORDERED_V2)[1]) : 1
+  if (start !== 1) block.start = start
+  return block
 }
 
 // Lessons only (options.roles, A5): colour role spans [[role:text]] -> {t: "role", role, children}, links

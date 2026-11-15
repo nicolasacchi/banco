@@ -206,6 +206,7 @@ function build(blocks, fragment, ctx, tiles = false) {
       fragment.appendChild(p)
     } else {
       const list = el(block.type)
+      if (block.start) list.setAttribute("start", String(block.start))
       for (const item of block.items) {
         const li = el("li")
         inlineNodes(item.children, li, ctx, false, tiles)

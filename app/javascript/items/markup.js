@@ -75,6 +75,7 @@ export function renderMarkup(text, options = {}) {
   for (const block of parse(text, options)) {
     if (options.lists === "v2" && block.type !== "p") {
       const list = document.createElement(block.type)
+      if (block.start) list.setAttribute("start", String(block.start))
       for (const item of block.items) {
         const li = document.createElement("li")
         inlineNodes(item.children, li)

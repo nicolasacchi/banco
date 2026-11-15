@@ -11,7 +11,7 @@ module Lessons
   #
   # Blocks (the shape of the browser parser, string keys so that a JSON compare works):
   #   {"type"=>"p",  "children"=>[node]}
-  #   {"type"=>"ol"|"ul", "items"=>[{"children"=>[node], "sub"=>[[node]]}]}
+  #   {"type"=>"ol"|"ul", "items"=>[{"children"=>[node], "sub"=>[[node]]}]}   (+ "start"=>n on an "ol" whose first number is not 1)
   # Nodes: {"t"=>"text","v"=>s} | {"t"=>"bold","children"=>[node]} | {"t"=>"math","v"=>latex}
   #
   # With roles: true (banco.lesson/2, A5) two constructs more: a colour role span [[role:text]]
@@ -66,7 +66,10 @@ module Lessons
         { "type" => "p", "children" => inline(block.text, block.line, roles: roles, target: target) }
       else
         items = block.items.map { |i| { "children" => inline(i[:text], i[:line], roles: roles, target: target), "sub" => i[:subs].map { |s| inline(s, i[:line], roles: roles, target: target) } } }
-        { "type" => block.type.to_s, "items" => items }
+        json = { "type" => block.type.to_s, "items" => items }
+        # An ordered list keeps the number of its first line (D-335): "start" only when it is not 1.
+        json["start"] = block.items.first[:n] if block.type == :ol && block.items.first[:n] != 1
+        json
       end
     end
 
