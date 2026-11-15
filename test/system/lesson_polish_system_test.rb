@@ -196,11 +196,21 @@ class LessonPolishSystemTest < ApplicationSystemTestCase
       assert_no_match(/\$|\^|'|"/, card_text(2))
       if size.first == 390
         # a narrow table keeps its grid on a phone (D-331): the head is a row above the cells, each row on one line, no cell labels
-        assert_selector "#scheda-2 table.dg-table.dg-keep"
-        assert_no_selector "#scheda-2 .dg-table .cell-label", visible: true
-        tops = js("[...document.querySelectorAll('#scheda-2 .dg-table tbody tr:first-child > *')].map((c) => Math.round(c.getBoundingClientRect().top))")
+        assert_selector "#scheda-2 .block-diagram table.dg-table.dg-keep"
+        assert_no_selector "#scheda-2 .block-diagram .dg-table .cell-label", visible: true
+        tops = js("[...document.querySelectorAll('#scheda-2 .block-diagram .dg-table tbody tr:first-child > *')].map((c) => Math.round(c.getBoundingClientRect().top))")
         assert_equal 1, tops.uniq.size, "the row stays on one line (#{tops.inspect})"
-        assert_operator js("document.querySelector('#scheda-2 .dg-table thead').getBoundingClientRect().height"), :>, 10
+        assert_operator js("document.querySelector('#scheda-2 .block-diagram .dg-table thead').getBoundingClientRect().height"), :>, 10
+        # a table of signs (short cells, a long header) keeps its columns too (D-335), in a box that may scroll sideways: the page never does
+        sign = "#scheda-2 .block-table.dg-scroll table.dg-table.dg-keep"
+        assert_selector sign
+        assert_no_selector "#scheda-2 .block-table .cell-label", visible: true
+        grid = js("(() => { const t = document.querySelector('#{sign}'); const rows = [...t.querySelectorAll('tr')].map((r) => [...r.children].map((c) => Math.round(c.getBoundingClientRect().top))); const lefts = [...t.querySelector('tbody tr').children].map((c) => Math.round(c.getBoundingClientRect().left)); return { rows, lefts, head: t.querySelector('thead').getBoundingClientRect().height, page: document.documentElement.scrollWidth, window: window.innerWidth } })()")
+        assert_equal 4, grid["lefts"].uniq.size, "four columns side by side (#{grid.inspect})"
+        assert_equal 4, grid["rows"].size, "the head and three rows"
+        assert(grid["rows"].all? { |tops| tops.uniq.size == 1 }, "each row of the grid is one line of cells (#{grid.inspect})")
+        assert_operator grid["head"], :>, 10
+        assert_operator grid["page"], :<=, grid["window"], "the page does not scroll sideways (#{grid.inspect})"
       end
       shot("math-table-#{size.first}")
 

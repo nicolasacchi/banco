@@ -158,6 +158,7 @@ function overflowFindings(card, out, scope = card) {
   for (const node of nodes) {
     if (node.closest(".sr-only") || node.namespaceURI !== "http://www.w3.org/1999/xhtml") continue
     if (node.closest(".code-box, .code-screen")) continue // a program is a box that scrolls sideways on purpose (D-329): the page itself must not
+    if (node.matches(".dg-scroll")) continue // a kept table's box scrolls sideways on purpose (D-335): the page itself must not
     if (node.closest("thead")?.clientWidth <= 2) continue // a stacked table's head is visually hidden (1 px, clipped): its cells overflow nothing the student sees
     if (node.clientWidth < 3 || node.closest(".dg-labels")) continue // a label's own box is exact to within rounding: figureFindings reads the labels
     if (node.scrollWidth > node.clientWidth + 3 && getComputedStyle(node).display !== "inline") wide.push(node)
