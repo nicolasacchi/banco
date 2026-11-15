@@ -44,6 +44,16 @@ class ItemRenderRunnerTest < ActiveSupport::TestCase
 
   def dump(row) = row.result["errors"].map { |e| "#{e['code']} instance #{e['instance']}: #{e['message']} (#{e['where']})" }.join("\n")
 
+  # The host page of instance 1 of a revision, loaded in the context and ready: the module script of the host can run after the load event, so the test
+  # waits for its global as the runner does and says what the page showed when it never comes.
+  def open_host(ctx, revision, number = 1)
+    page = ctx.create_page
+    page.go_to(Validation::Harness.item_page_url(Validation::Harness.issue("irev", revision.id), number))
+    assert Validation::ItemRenderRunner.wait_defined(page, 20), "the host did not define bancoItemRender: #{Validation::ItemRenderRunner.describe(page)}"
+    assert page.evaluate_async("window.bancoItemRender.ready.then(arguments[0])", 20)["ok"]
+    page
+  end
+
   # [width, height] of a WebP file, from its first chunk (lossy, lossless or extended).
   def webp_size(bytes)
     assert_equal "RIFF", bytes[0, 4]
@@ -104,9 +114,7 @@ class ItemRenderRunnerTest < ActiveSupport::TestCase
     # the figure drew: the page's <img> has its size
     drawn = Validation::ChromeRunner.session do |session|
       session.context do |ctx|
-        page = ctx.create_page
-        page.go_to(Validation::Harness.item_page_url(Validation::Harness.issue("irev", figured.id), 1))
-        assert page.evaluate_async("window.bancoItemRender.ready.then(arguments[0])", 20)["ok"]
+        page = open_host(ctx, figured)
         page.evaluate("[...document.querySelectorAll('.item img')].map((i) => i.naturalWidth)")
       end
     end
@@ -122,9 +130,7 @@ class ItemRenderRunnerTest < ActiveSupport::TestCase
     pages = [ practice, sitting, expression ].map do |revision|
       Validation::ChromeRunner.session do |session|
         session.context do |ctx|
-          page = ctx.create_page
-          page.go_to(Validation::Harness.item_page_url(Validation::Harness.issue("irev", revision.id), 1))
-          assert page.evaluate_async("window.bancoItemRender.ready.then(arguments[0])", 20)["ok"]
+          page = open_host(ctx, revision)
           { html: page.evaluate("document.documentElement.outerHTML"), text: page.evaluate("document.body.innerText"),
             fields: page.evaluate("document.querySelectorAll('math-field').length"), checked: page.evaluate("document.querySelectorAll('input:checked').length") }
         end

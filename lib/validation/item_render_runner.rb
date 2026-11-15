@@ -81,7 +81,7 @@ module Validation
         page.go_to(url)
         break if defined_in?(page)
 
-        raise ChromeRunner::Unavailable, "the item render host did not define bancoItemRender" if attempt == LOAD_ATTEMPTS - 1
+        raise ChromeRunner::Unavailable, "the item render host did not define bancoItemRender: #{self.class.describe(page)}" if attempt == LOAD_ATTEMPTS - 1
       end
       loaded = @clock.call
       answer = begin
@@ -97,14 +97,30 @@ module Validation
       @timings << { "instance" => number, "draw" => (loaded - started).round(2), "ready" => (@clock.call - loaded).round(2) }
     end
 
-    def defined_in?(page)
-      deadline = @clock.call + DEFINED_WAIT
+    def defined_in?(page) = self.class.wait_defined(page, DEFINED_WAIT, @clock)
+
+    # Waits (the module script of the host runs after the load event when its files are slow) until the host's global exists.
+    def self.wait_defined(page, seconds, clock = -> { Process.clock_gettime(Process::CLOCK_MONOTONIC) })
+      deadline = clock.call + seconds
       loop do
         return true if page.evaluate("typeof window.bancoItemRender !== 'undefined'")
-        return false if @clock.call >= deadline
+        return false if clock.call >= deadline
 
         sleep 0.25
       end
+    end
+
+    # What the page showed, for the error of a host that never defined its global: the address, the title, the start of the text, the scripts it
+    # holds and the errors its console and its loads gave (the host's own listeners are not there yet, so the page is asked for what it has).
+    def self.describe(page)
+      info = page.evaluate(<<~JS)
+        JSON.stringify({ url: location.href.replace(/\\/h\\/[^/]+\\//, "/h/TOKEN/"), title: document.title, text: (document.body?.innerText || "").slice(0, 120),
+                         scripts: [...document.scripts].map((s) => s.src || "inline").slice(0, 5),
+                         failed: performance.getEntriesByType("resource").filter((e) => e.responseStatus >= 400 || (e.transferSize === 0 && e.decodedBodySize === 0 && e.duration > 0 && e.initiatorType === "script")).map((e) => e.name).slice(0, 5) })
+      JS
+      info.to_s.first(600)
+    rescue StandardError => e
+      "(the page could not be asked: #{e.class})"
     end
 
     # The whole instance, WebP quality 80 at device scale 1 (width = CSS px). The window is made as tall as the page; a layout that moves with the
