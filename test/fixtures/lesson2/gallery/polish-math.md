@@ -1,6 +1,6 @@
 ---
 # The renderer problems the maths author reported in wave 3 (D-310), one card each, invented content: formulas in the part and total labels
-# of a `bar_model`, formulas in the header cells of a `schema table`, a `math` block written in YAML quotes (single and double), a `number`
+# of a `bar_model`, formulas in the header cells of a `schema table`, a table of signs (short cells, a long header: it keeps its columns on a phone, D-335), a `math` block written in YAML quotes (single and double), a `number`
 # check with text before and after the box, a `choice` check whose options are formulas with colour roles, and a `cases` block whose titles
 # hold a formula, alone or inside a long sentence. test/validation/lesson_polish_gallery_test.rb draws it in Chrome at the viewports of
 # lesson2.render and keeps no finding.
@@ -54,6 +54,15 @@ header: ['$n$', '$n^2$', '$n^3$']
 rows:
   - ['2', '4', '8']
   - ['3', '9', '27']
+:::
+
+::: table
+caption_it: "Il segno dei fattori e del quoziente: la colonna dice dove la frazione è positiva"
+header: ["Fattore", "x < −4", "−4 < x < 2", "x > 2"]
+rows:
+  - ["x + 4", "−", "+", "+"]
+  - ["x − 2", "−", "−", "+"]
+  - ["quoziente", "+", "−", "+"]
 :::
 
 ::: math

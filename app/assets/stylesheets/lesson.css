@@ -378,6 +378,8 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) .topbar, body
 /* a narrow table (.dg-keep, keepsGrid in blocks/table.js) stays a grid on a phone, with its head and without the cell labels; a wider one stacks (D-331).
    The rules name the <table>: the figure of type table also carries the class dg-table. */
 @media (max-width: 600px) {
+  /* a kept grid scrolls sideways inside its own box when its columns do not fit the card (D-335); render_host does not count that as overflow */
+  .block-table.dg-scroll { overflow-x: auto; max-width: 100%; }
   table.dg-table:not(.dg-keep) thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   table.dg-table:not(.dg-keep), table.dg-table:not(.dg-keep) tbody, table.dg-table:not(.dg-keep) tr, table.dg-table:not(.dg-keep) th, table.dg-table:not(.dg-keep) td { display: block; width: 100%; }
   /* a caption in a table that is no longer a table would shrink to its longest word: it is the full width, as a line above the rows (D-310) */
