@@ -817,6 +817,13 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 /* text before and after the box (D-310): the box is as wide as itself, so the formula, the box and the rest read as one line where it fits */
 .l2 .check .check-row.is-around > .answer { width: auto; flex: 0 1 auto; min-width: 0; }
 .l2 .check .check-row.is-around .answer-input { max-width: 100%; }
+/* the helper keys (D-335) sit after the box on that same line: the box is narrower and gives way, the keys do not wrap under it */
+.l2 .check .check-row.is-around .field { flex-wrap: nowrap; align-items: center; gap: 0.35em; }
+.l2 .check .check-row.is-around .field .answer-input { width: 5em; flex: 0 1 5em; min-width: 3em; }
+@media (max-width: 600px) {
+  .l2 .check .check-row.is-around .field .answer-input { width: 4em; flex-basis: 4em; }
+  .l2 .check .check-row.is-around .helper-key { min-width: 2em; height: 2.2em; font-size: 1em; }
+}
 .l2 .check > label.hint { margin: 0.3em 0 0; }
 .l2 .check .options { width: 100%; margin: 0.3em 0; min-width: 0; }
 .l2 .check .options > legend { padding: 0; }
