@@ -190,7 +190,7 @@ function drawBlock(sub, block, eff, o) {
     const kinds = []
     for (const p of placed) {
       const kind = p.kind === "subscript" && p.ofGroup ? "group" : p.kind
-      if (!kinds.some((k) => k.kind === kind)) kinds.push({ kind, sample: kind === "group" ? `(${parsed.groups.find((g) => g.group).group.map((a) => `${a.symbol}${a.count > 1 ? a.count : ""}`).join("")})` : p.l.text_it })
+      if (!kinds.some((k) => k.kind === kind)) kinds.push({ kind, sample: kind === "group" ? Chem.subscripted(`(${parsed.groups.find((g) => g.group).group.map((a) => `${a.symbol}${a.count > 1 ? a.count : ""}`).join("")})`) : p.l.text_it })
     }
     const sampleW = Math.max(...kinds.map((k) => sub.measure(k.sample, F).w)) + 18
     for (const k of kinds) {

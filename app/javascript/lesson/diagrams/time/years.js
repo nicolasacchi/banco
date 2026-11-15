@@ -8,8 +8,10 @@ import { fill, TEXT } from "lesson/diagrams/time/texts"
 export const CAPS = { label_words: 6, note_words: 25, ticks: 40 }
 const STEPS = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000]
 
-export const yearLabel = (y) => `${Math.abs(Number(y))} ${Number(y) < 0 ? TEXT.era_bc : TEXT.era_ad}`
-export const eventYearLabel = (e) => (e.approx ? `${TEXT.about} ${yearLabel(e.at)}` : yearLabel(e.at))
+// «a.C.» always; «d.C.» only when the axis has a year before Christ (its first year is negative), so a modern axis prints «1969», not «1969 d.C.».
+export const modernAxis = (eff) => Number(eff?.from) >= 0
+export const yearLabel = (y, eff) => (Number(y) < 0 ? `${Math.abs(Number(y))} ${TEXT.era_bc}` : modernAxis(eff) ? String(Number(y)) : `${Number(y)} ${TEXT.era_ad}`)
+export const eventYearLabel = (e, eff) => (e.approx ? `${TEXT.about} ${yearLabel(e.at, eff)}` : yearLabel(e.at, eff))
 export const durationText = (n) => `${Math.abs(n)} ${Math.abs(n) === 1 ? TEXT.year_one : TEXT.year_many}`
 // A label of the neutral select form ("·") is told as a point.
 const nameOf = (text) => (plain(text) === "·" ? TEXT.neutral_point : plain(text))
@@ -100,12 +102,12 @@ export function stateChecks(eff, path, map, dia) {
 const sortedEvents = (eff) => [...(eff.events ?? [])].sort((a, b) => position(a.at) - position(b.at))
 
 export function describeYears(eff, controls = {}) {
-  const parts = [fill(TEXT.years_intro, { from: yearLabel(eff.from), to: yearLabel(eff.to) })]
+  const parts = [fill(TEXT.years_intro, { from: yearLabel(eff.from, eff), to: yearLabel(eff.to, eff) })]
   if (eff.centuries) parts.push(fill(TEXT.centuries_line, { list: listIt(centuries(eff.from, eff.to).map((c) => c.text)) }))
   if ((eff.lanes ?? []).length > 1) for (const l of eff.lanes) parts.push(fill(TEXT.lane_line, { label: plain(l.label_it) }))
-  for (const p of eff.periods ?? []) parts.push(fill(TEXT.period_line, { label: nameOf(p.label_it), from: yearLabel(p.from), to: yearLabel(p.to) }))
+  for (const p of eff.periods ?? []) parts.push(fill(TEXT.period_line, { label: nameOf(p.label_it), from: yearLabel(p.from, eff), to: yearLabel(p.to, eff) }))
   const events = sortedEvents(eff)
-  for (const e of events) parts.push(fill(TEXT.event_line, { year: eventYearLabel(e), label: nameOf(e.label_it) }))
+  for (const e of events) parts.push(fill(TEXT.event_line, { year: eventYearLabel(e, eff), label: nameOf(e.label_it) }))
   for (const s of eff.spans ?? []) {
     const a = events.find((e) => e.id === s.from)
     const b = events.find((e) => e.id === s.to)
@@ -127,11 +129,11 @@ export function measured(eff, controls = {}) {
 export function printedYears(eff) {
   const out = []
   const events = eff.events ?? []
-  for (const e of events) out.push(e.label_it, e.note_it, eventYearLabel(e), signed(e.at))
+  for (const e of events) out.push(e.label_it, e.note_it, eventYearLabel(e, eff), signed(e.at))
   for (const p of eff.periods ?? []) out.push(p.label_it)
   for (const l of eff.lanes ?? []) out.push(l.label_it)
   if (eff.centuries) out.push(...centuries(eff.from, eff.to).map((c) => c.text))
-  if (eff.every) for (const y of ticks(eff.from, eff.to, eff.every)) out.push(yearLabel(y), signed(y))
+  if (eff.every) for (const y of ticks(eff.from, eff.to, eff.every)) out.push(yearLabel(y, eff), signed(y))
   for (const s of eff.spans ?? []) {
     if (!s.show_value) continue
     const a = events.find((e) => e.id === s.from)
@@ -232,7 +234,7 @@ export function buildYears(data, ctx, eff) {
   const select = ctx.mode === "select"
   const set = ctx.set ?? ctx.targetSet
   const r = Math.round(f * 0.55)
-  const tickW = Math.ceil(Math.max(...[eff.from, eff.to, "-888", "888"].map((y) => ctx.measure(yearLabel(y), f).w)))
+  const tickW = Math.ceil(Math.max(...[eff.from, eff.to, "-888", "888"].map((y) => ctx.measure(yearLabel(y, eff), f).w)))
   const mx = Math.max(16, Math.round(f * 0.9))
   const x0 = mx
   const x1 = W - mx
@@ -308,7 +310,7 @@ export function buildYears(data, ctx, eff) {
     }
     const mine = events.filter((e) => (lane.id ? e.lane === lane.id : true))
     const specs = select ? [] : mine.map((e) => ({
-      text: `${eventYearLabel(e)}: ${plain(e.label_it)}`, cx: xOf(e.at), cls: `dg-tl-evlabel dg-tl-plate${e.role ? ` role-${e.role}` : ""}`, role: e.role, maxW: maxLabelW, key: `ev:${e.id}:label`, connectFrom: 0
+      text: `${eventYearLabel(e, eff)}: ${plain(e.label_it)}`, cx: xOf(e.at), cls: `dg-tl-evlabel dg-tl-plate${e.role ? ` role-${e.role}` : ""}`, role: e.role, maxW: maxLabelW, key: `ev:${e.id}:label`, connectFrom: 0
     }))
     const lines = Math.max(1, ...specs.map((sp) => Math.round(ctx.measure(sp.text, f, sp.maxW).h / lineH)))
     for (const sp of specs) sp.lines = lines
@@ -356,7 +358,7 @@ export function buildYears(data, ctx, eff) {
     shape(ctx, "line", { x1: ex, y1: tickTop - 8, x2: ex, y2: tickTop + 18, cls: "dg-tl-era", key: "era" })
   }
   plan.labelled.forEach((yr, j) => {
-    const text = yearLabel(yr)
+    const text = yearLabel(yr, eff)
     const w = Math.ceil(ctx.measure(text, f).w)
     label(ctx, text, tickLeft(ctx, xOf(yr), w), tickTop + 14 + (j % plan.rows) * lineH, { anchor: "start", cls: "dg-tl-ticklabel", key: `tick:${yr}:label` })
   })

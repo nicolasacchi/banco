@@ -62,6 +62,21 @@ class TimeTypesTest < ActiveSupport::TestCase
     assert_equal %w[from to periods events spans], served["states"][1].keys & %w[from to periods events spans]
   end
 
+  test "the era d.C. is written only on an axis that has a year before Christ; a.C. always (D-335)" do
+    modern = { "scale" => "years", "from" => "1960", "to" => "1990", "every" => 10,
+               "events" => [ { "id" => "a", "at" => "1969", "label_it" => "Fatto prima" }, { "id" => "b", "at" => "1977", "label_it" => "Fatto dopo" } ] }
+    printed = T.printed(modern, 0)
+    assert_includes printed, "1969"
+    assert printed.none? { |s| s.include?("d.C.") }, printed.inspect
+    assert_includes T.describe(modern), "dal 1960 al 1990"
+    assert_equal "27 a.C.", T.year_label("-27", { "from" => "1960" })
+    assert_equal "1969", T.year_label("1969", { "from" => "1960" })
+    assert_equal "1969 d.C.", T.year_label("1969", { "from" => "-50" })
+    assert_equal "14 d.C.", T.year_label("14")
+    two = good.find { |v| v["name"] == "timeline-two-eras" }["data"]
+    assert_includes T.printed(two, 0), "14 d.C."
+  end
+
   test "centuries, ticks and durations come from Chrono and agree with the axis" do
     assert_equal [ "II secolo a.C.", "I secolo a.C." ], T.centuries("-146", "-27")
     assert_equal [ "I secolo a.C.", "I secolo d.C." ], T.centuries("-50", "50")

@@ -1,5 +1,6 @@
 // A narrow lesson table keeps its grid on a phone (D-331): keepsGrid estimates the width from each column's longest cell, header included,
-// as plain text without its markup (9 px a character, 26 px a cell), and keeps a table of at most 5 columns and at most 280 px. The CSS
+// as plain text without its markup (9 px a character, 26 px a cell), and keeps a table of at most 5 columns and at most 310 px (D-335: the
+// box of a card is 312 px at 390 px). The CSS
 // (lesson.css, .dg-table:not(.dg-keep)) stacks only the others; render_host's E-LESSON-OVERFLOW still catches a misestimate. A compact table
 // (every cell after a row's first at most 3 characters: a table of signs) keeps its grid up to 7 columns whatever the estimate (D-335), in a
 // box that scrolls sideways (.dg-scroll).
@@ -25,13 +26,13 @@ test("wide tables still stack: four columns of sentences, eight columns even of 
 })
 
 test("a cell counts its words without their markup: [[en:chemist's]] is 9 characters", () => {
-  // beside a column of 16 characters (16 × 9 + 26 = 170 px) a 9-character column (107 px) makes 277 px, kept; beside 17 (179 px), 286 px,
+  // beside a column of 19 characters (19 × 9 + 26 = 197 px) a 9-character column (107 px) makes 304 px, kept; beside 20 (206 px), 313 px,
   // stacked: 8 characters would keep both, 10 neither
   const span = "[[en:chemist's]]"
-  assert.equal(keepsGrid({ header: [span, "a".repeat(16)], rows: [] }), true)
-  assert.equal(keepsGrid({ header: [span, "a".repeat(17)], rows: [] }), false)
+  assert.equal(keepsGrid({ header: [span, "a".repeat(19)], rows: [] }), true)
+  assert.equal(keepsGrid({ header: [span, "a".repeat(20)], rows: [] }), false)
   // a row's cell counts as the header's does
-  assert.equal(keepsGrid({ header: ["x", "a".repeat(16)], rows: [[span, "b"]] }), true)
+  assert.equal(keepsGrid({ header: ["x", "a".repeat(19)], rows: [[span, "b"]] }), true)
   // a formula counts its text, bold its words: 1 + 3 + 2 characters, 141 px
   assert.equal(keepsGrid({ header: ["$x$", "**TT**", "x"], rows: [["**Tt**", "$x^2$", "tt"]] }), true)
 })
@@ -61,4 +62,25 @@ test("a compact table has its limits: 8 columns, a 4-character cell, no rows, a 
   assert.equal(keepsGrid({ header: ["Fattore molto lungo", "x < −4", "−4 < x < 2", "x > 2"], rows: [["quoziente", "positivo", "−", "+"]] }), false)
   const sentence = (n) => `La frase numero ${n} è lunga quaranta carat`
   assert.equal(keepsGrid({ header: ["A", "B", "C", "D"], rows: [[1, 2, 3, 4].map(sentence)] }), false)
+})
+
+const city = (name, shift, sales) => [name, shift, String(sales)]
+const SALES = {
+  header: ["Città", "Turno", "Vendite"],
+  rows: [
+    city("Milano", "mattina", 1250), city("Torino", "sera", 980), city("Bologna", "mattina", 1710), city("Campobasso", "sera", 640),
+    city("Firenze", "mattina", 1320), city("Napoli", "sera", 2045), city("Genova", "mattina", 875), city("Palermo", "sera", 1560),
+  ],
+}
+
+test("a 3-column table of a city, a shift and a number keeps its grid at 390 px (D-335)", () => {
+  // 10 + 7 + 7 characters: 116 + 89 + 89 = 294 px estimated, inside the 312 px box (280 px stacked it before)
+  assert.equal(keepsGrid(SALES), true)
+})
+
+test("a 3-column table that really does not fit still stacks", () => {
+  // «Reggio Calabria» is 15 characters: 161 + 89 + 89 = 339 px
+  assert.equal(keepsGrid({ ...SALES, rows: [...SALES.rows, city("Reggio Calabria", "sera", 410)] }), false)
+  // a third column headed «Vendite settimanali» (19 characters): 80 + 89 + 197 = 366 px
+  assert.equal(keepsGrid({ header: ["Città", "Turno", "Vendite settimanali"], rows: [["Milano", "mattina", "1250"]] }), false)
 })

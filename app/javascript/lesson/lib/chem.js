@@ -145,6 +145,14 @@ export function base(formula) {
   return String(formula).replace(/^\d+ ?/, "").replace(/\((s|l|g|aq)\)$/, "")
 }
 
+// A formula (or a bracket group such as "(C2H4)") written as lesson markup with its subscripts lowered, "$(\mathrm{C}_{2}\mathrm{H}_{4})$": the
+// way the figure's own formula shows them, for the text a figure writes about a formula (the key's sample of a group). Its plain text is the
+// formula as typed (lesson/diagrams/common plain), so what a figure measures and what it reads aloud do not change.
+export function subscripted(text) {
+  const s = String(text)
+  return /\d/.test(s) ? `$${s.replace(/[A-Z][a-z]*/g, "\\mathrm{$&}").replace(/\d+/g, "_{$&}")}$` : s
+}
+
 // The first symbol-shaped word of the text (a capital and its lowercase letters) that is not an element: "Xx2" gives "Xx"; null when every
 // such word is an element (the formula may still be badly shaped).
 export function unknownSymbol(formula) {

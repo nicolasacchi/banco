@@ -180,6 +180,9 @@ module Lessons
       when "tiles" then out["tiles"] = Checks.rekey(c, seed).display["elements"]
       when "ordering" then out["items"] = Checks.rekey(c, seed).display["elements"]
       when "select" then out["diagram"] = select_figure(c)
+      when "number"
+        # a whole-number key (and every accepted form whole): the box does not tell about decimals. A boolean about the key's kind, never the key.
+        out["integer"] = true if whole?(c["answer"]) && Array(c["accept"]).all? { |v| whole?(v) }
       when "normalized_text"
         accents = Items::Part::ACCENT_SETS[subject]
         out["accents"] = accents if accents
@@ -193,6 +196,8 @@ module Lessons
       end
       out
     end
+
+    def whole?(value) = value.to_s.strip.match?(/\A[-\u2212]?\d+\z/)
 
     # The figure of a select check as the student sees it: the type's own "select" projection (targets in reading order, every
     # candidate in one neutral style, no label that names one: L3). A type that cannot give it is never served as if it could.
