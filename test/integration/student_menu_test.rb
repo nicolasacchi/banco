@@ -92,7 +92,7 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     assert_select "#entry-warmup.optional"
     assert_select "#entry-subjects li.subject[data-state=in_progress]"
     assert_select "#entry-next", "Riprendi"
-    play_run(official, rows[:subject])
+    play_run(official, rows[:subject], clock: Diagnosis::FakeClock.new(Time.current))
     page(OFFICIAL, "/today")
     assert_select "#entry-test[data-state=done]"
     assert_select "#entry-all-done"
