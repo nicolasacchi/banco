@@ -437,6 +437,9 @@
     "verify",
     "reachable_ok_it",
     "thousands"
+   ],
+   "computed": [
+    "integer: true when the answer and every accepted form are whole numbers (D-335); the box then does not tell about decimals. A fact about the key's kind, not the key"
    ]
   },
   "fraction": {

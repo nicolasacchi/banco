@@ -22,12 +22,16 @@ module Lessons
 
         # ---- years ------------------------------------------------------------------------------------
 
-        def year_label(year)
+        # "a.C." always; "d.C." only when the axis has a year before Christ (its first year is negative), so a modern axis prints "1969", not
+        # "1969 d.C." (the browser's yearLabel does the same).
+        def year_label(year, eff = nil)
           y = Chrono.year(year)
-          "#{y.abs} #{text(y.negative? ? 'era_bc' : 'era_ad')}"
+          return "#{-y} #{text('era_bc')}" if y.negative?
+
+          eff && eff["from"] && Chrono.year(eff["from"]) >= 0 ? y.to_s : "#{y} #{text('era_ad')}"
         end
 
-        def event_year_label(event) = event["approx"] ? "#{text('about')} #{year_label(event['at'])}" : year_label(event["at"])
+        def event_year_label(event, eff = nil) = event["approx"] ? "#{text('about')} #{year_label(event['at'], eff)}" : year_label(event["at"], eff)
 
         def duration_text(n)
           n = n.abs
@@ -239,12 +243,12 @@ module Lessons
         end
 
         def describe_years(eff)
-          parts = [ text("years_intro", from: year_label(eff["from"]), to: year_label(eff["to"])) ]
+          parts = [ text("years_intro", from: year_label(eff["from"], eff), to: year_label(eff["to"], eff)) ]
           parts << text("centuries_line", list: list_it(centuries(eff["from"], eff["to"]))) if eff["centuries"]
           Array(eff["lanes"]).each { |l| parts << text("lane_line", label: plain(l["label_it"])) } if Array(eff["lanes"]).size > 1
-          Array(eff["periods"]).each { |p| parts << text("period_line", label: name_of(p["label_it"]), from: year_label(p["from"]), to: year_label(p["to"])) }
+          Array(eff["periods"]).each { |p| parts << text("period_line", label: name_of(p["label_it"]), from: year_label(p["from"], eff), to: year_label(p["to"], eff)) }
           events = sorted_events(eff)
-          events.each { |e| parts << text("event_line", year: event_year_label(e), label: name_of(e["label_it"])) }
+          events.each { |e| parts << text("event_line", year: event_year_label(e, eff), label: name_of(e["label_it"])) }
           Array(eff["spans"]).each do |s|
             a = events.find { |e| e["id"] == s["from"] }
             b = events.find { |e| e["id"] == s["to"] }
@@ -286,12 +290,12 @@ module Lessons
         def printed_years(eff)
           out = []
           events = Array(eff["events"])
-          events.each { |e| out.push(e["label_it"], e["note_it"], event_year_label(e), signed(e["at"])) }
+          events.each { |e| out.push(e["label_it"], e["note_it"], event_year_label(e, eff), signed(e["at"])) }
           Array(eff["periods"]).each { |p| out << p["label_it"] }
           Array(eff["lanes"]).each { |l| out << l["label_it"] }
           out.concat(centuries(eff["from"], eff["to"])) if eff["centuries"]
           if eff["every"]
-            ticks(eff["from"], eff["to"], eff["every"]).each { |y| out.push(year_label(y), signed(y)) }
+            ticks(eff["from"], eff["to"], eff["every"]).each { |y| out.push(year_label(y, eff), signed(y)) }
           end
           Array(eff["spans"]).each do |s|
             next unless s["show_value"]

@@ -60,7 +60,7 @@ class LessonsStudentBodyTest < ActiveSupport::TestCase
         assert_empty b.keys - allowed - %w[blocks], "#{file} #{b['type']}: #{(b.keys - allowed).inspect}"
       end
       served["cards"].flat_map { |c| c["blocks"] }.select { |b| b["type"] == "check" }.each do |b|
-        allowed = WHITELIST["checks"].fetch(b["component"])["serve"] + %w[n type options left right spans accents]
+        allowed = WHITELIST["checks"].fetch(b["component"])["serve"] + %w[n type options left right spans accents integer]
         assert_empty b.keys - allowed, "#{file} check #{b['component']}"
       end
     end
@@ -154,6 +154,19 @@ class LessonsStudentBodyTest < ActiveSupport::TestCase
     check = { "type" => "check", "n" => 1, "component" => "normalized_text", "prompt_it" => "Scrivi il verbo.", "answer" => "è" }
     assert_equal "it", Lessons::StudentBody.block(check, "italian", "s")["accents"]
     assert_nil Lessons::StudentBody.block(check, "math", "s")["accents"]
+  end
+
+  test "a number check is served with integer: true when the key and every accepted form are whole, and never with the key (D-335)" do
+    number = ->(extra) { { "type" => "check", "n" => 1, "component" => "number", "prompt_it" => "Quante sillabe?" }.merge(extra) }
+    serve = ->(extra) { Lessons::StudentBody.block(number.call(extra), "italian", "s") }
+    assert_equal true, serve.call("answer" => "7")["integer"]
+    assert_equal true, serve.call("answer" => "-12")["integer"]
+    assert_nil serve.call("answer" => "2,5")["integer"], "a decimal key keeps the decimal help"
+    assert_nil serve.call("answer" => "7", "accept" => [ "8", "9,5" ])["integer"], "an accepted decimal does too"
+    assert_equal true, serve.call("answer" => "7", "accept" => [ "8" ])["integer"]
+    served = serve.call("answer" => "7", "accept" => [ "8" ])
+    assert_equal %w[component integer n prompt_it type], served.keys.sort
+    assert_not_includes JSON.generate(served), "\"7\""
   end
 
   # -- the shuffle ------------------------------------------------------------------------------------------------
