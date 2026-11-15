@@ -374,4 +374,25 @@ class LessonTextSystemTest < ApplicationSystemTestCase
     go 3
     shot "cloze-390"
   end
+
+  test "D-335 a language span in the filled first box of a flow keeps the box's own ink, in every theme" do
+    open_lesson("text_flow", size: [ 1280, 900 ])
+    go 1
+    assert_selector "#scheda-1 .dg-start", wait: 20
+    assert_selector "#scheda-1 .dg-starttext .lang-en[lang='en']", text: "Have you ever been to London?"
+    probe = <<~JS
+      (() => {
+        const span = document.querySelector("#scheda-1 .dg-starttext .lang-en")
+        return { span: getComputedStyle(span).color, text: getComputedStyle(span.closest(".dg-starttext")).color, fill: getComputedStyle(document.querySelector("#scheda-1 .dg-start")).fill, weight: getComputedStyle(span).fontWeight }
+      })()
+    JS
+    %w[cream dark].each do |theme|
+      page.execute_script("document.documentElement.dataset.theme = '#{theme}'")
+      got = page.evaluate_script(probe)
+      assert_equal got["text"], got["span"], "#{theme}: the span takes the box's ink"
+      assert_not_equal got["fill"], got["span"], "#{theme}: the span is not the colour of the fill"
+      assert_operator got["weight"].to_i, :>=, 650, "#{theme}: the span keeps its weight"
+    end
+    page.execute_script("document.documentElement.dataset.theme = 'cream'")
+  end
 end

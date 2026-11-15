@@ -1,0 +1,71 @@
+{
+ "schema": "banco.lesson/2",
+ "schema_version": 2,
+ "key": "ripasso.english.demo-flow",
+ "kind": "ripasso",
+ "subject": "english",
+ "title_it": "Have you ever been? Il present perfect",
+ "goals_it": [
+  "**Scegliere** la risposta a una domanda con ever"
+ ],
+ "why_it": "Il primo riquadro di uno schema è pieno. Il testo inglese lì dentro si legge come ogni altro.",
+ "skills": [
+  "english.demo-when"
+ ],
+ "uses": [],
+ "refs": [],
+ "scope": "studied",
+ "minutes": 15,
+ "calculator": false,
+ "cards": [
+  {
+   "n": 1,
+   "id": "ever",
+   "role": "idea",
+   "level": "core",
+   "title_it": "Una domanda con ever",
+   "icon": "lightbulb",
+   "blocks": [
+    {
+     "type": "schema",
+     "schema": {
+      "type": "flow",
+      "alt_it": "Dalla domanda Have you ever been to London?: se sei stato a Londra dici Yes, I have; altrimenti No, I haven't.",
+      "nodes": [
+       {
+        "id": "s",
+        "kind": "step",
+        "text_it": "[[en:Have you ever been to London?]]"
+       },
+       {
+        "id": "q",
+        "kind": "decision",
+        "text_it": "Ci sei stato?"
+       },
+       {
+        "id": "y",
+        "kind": "end",
+        "text_it": "[[en:Yes, I have.]]"
+       },
+       {
+        "id": "n",
+        "kind": "end",
+        "text_it": "[[en:No, I haven't.]]"
+       }
+      ],
+      "edges": [
+       ["s", "q"],
+       ["q", "y", "sì"],
+       ["q", "n", "no"]
+      ]
+     },
+     "n": 1
+    }
+   ]
+  }
+ ],
+ "words": {
+  "core": 40,
+  "extra": 0
+ }
+}
