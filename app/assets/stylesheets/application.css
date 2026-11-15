@@ -166,6 +166,15 @@ li.subject.suggested { border-left: 6px solid var(--primary); padding-left: 0.75
 .table-wrap { overflow-x: auto; margin-bottom: 1rem; }
 table.data { border-collapse: collapse; }
 table.data th, table.data td { border: 1px solid var(--line); padding: 0.25rem 0.75rem; text-align: left; }
+/* A word breaks inside itself only when it alone is wider than the room it has: `anywhere` (the .markup default below) lets the table's columns shrink to
+   one letter, so «CInt(Console.ReadLine())» broke as «ReadLi / ne()» and the header «N.» as «N / .» at 390 px (D-335). `break-word` keeps each column as
+   wide as its longest word; a table wider than the card scrolls inside .table-wrap, as it was designed to. Only an item's prompt: the teacher's tables
+   have no .table-wrap and keep breaking anywhere. */
+.prompt table.data th, .prompt table.data td { overflow-wrap: break-word; word-break: normal; }
+/* A program line in an item (the stem, an option, a table cell): [[code:..]], drawn as a lesson draws it (lesson/text.css): the body font on a calm tint, never
+   monospace, whole when it fits and broken at its spaces when it does not. */
+.code-span { font-family: inherit; font-weight: 650; font-size: 0.95em; padding: 0.06em 0.4em 0.1em; border-radius: 0.35em; white-space: pre-wrap; overflow-wrap: break-word;
+  background: color-mix(in srgb, var(--text) 9%, var(--surface)); border: 1px solid color-mix(in srgb, var(--text) 22%, var(--surface)); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 .prompt figure { margin: 0 0 1rem; }
 img.figure { display: block; max-width: 100%; max-height: min(26rem, 60vh); width: auto; height: auto; margin: 0 auto; background: #fff; border-radius: 4px; }
 

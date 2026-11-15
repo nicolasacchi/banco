@@ -69,3 +69,20 @@ test("escaped dollars in spreadsheet references show as plain text", () => {
   assert.deepEqual(inline("=A2*\\$B\\$1"), [{ t: "text", v: "=A2*$B$1" }])
   assert.deepEqual(inline("=SUM(\\$A\\$1:\\$A\\$5)"), [{ t: "text", v: "=SUM($A$1:$A$5)" }])
 })
+
+// D-335: an item draws [[code:..]] as a lesson does (a program line in a stem, an option or a table cell); the other spans stay text there.
+test("[[code:..]] is a program line, literal, in an item", () => {
+  assert.deepEqual(inline("scrivi [[code:CInt(Console.ReadLine())]] ora"), [
+    { t: "text", v: "scrivi " }, { t: "code", v: "CInt(Console.ReadLine())" }, { t: "text", v: " ora" }
+  ])
+  assert.deepEqual(inline("[[code:quota \\ 100]]"), [{ t: "code", v: "quota \\ 100" }])
+  assert.deepEqual(inline("[[code:a * **b** $c$]]"), [{ t: "code", v: "a * **b** $c$" }], "nothing inside a code span is markup")
+})
+
+test("a code span that is empty, unclosed or longer than 40 characters stays text; another span stays text too", () => {
+  assert.deepEqual(inline("[[code:]]"), [{ t: "text", v: "[[code:]]" }])
+  assert.deepEqual(inline("[[code:x = 1"), [{ t: "text", v: "[[code:x = 1" }])
+  const long = "x".repeat(41)
+  assert.deepEqual(inline(`[[code:${long}]]`), [{ t: "text", v: `[[code:${long}]]` }])
+  assert.deepEqual(inline("[[es:hablar]]"), [{ t: "text", v: "[[es:hablar]]" }])
+})

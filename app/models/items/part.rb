@@ -17,8 +17,9 @@ module Items
       @expression_input = expression_input
     end
 
-    # +body+ is the revision or one sub item; +display+ the shown (re-keyed) display.
-    def call(body, component, display)
+    # +body+ is the revision or one sub item; +display+ the shown (re-keyed) display. +answer+ and +accept+ (the key and the accepted forms of this
+    # instance) are read for one fact only, whether the answer is always a whole number (`integer`, D-335); they are never served.
+    def call(body, component, display, answer: nil, accept: [])
       prompt = body["prompt"] || {}
       out = {
         component: component,
@@ -32,6 +33,8 @@ module Items
       out[:reuse_right] = true if display["reuse_right"] == true
       out[:unit] = display["unit"] || body["unit"] if display["unit"] || body["unit"]
       out[:scientific] = true if component == "number" && Array(body["form"]).include?("scientific")
+      # a whole-number key (and every accepted form whole): the box does not tell about decimals. A boolean about the key's kind, never the key.
+      out[:integer] = true if component == "number" && !out[:scientific] && whole?(answer) && Array(accept).all? { |v| whole?(v) }
       out[:mixed] = true if component == "fraction" && Array(body["form"]).include?("mixed")
       out[:answer_format_it] = display["answer_format_it"] || body["answer_format_it"]
       out[:steps_it] = display["steps_it"] || body["steps_it"]
@@ -54,7 +57,15 @@ module Items
       out
     end
 
+    # A key that is a whole number as the grader reads one: digits with an optional minus (the ASCII hyphen or U+2212).
+    def self.whole?(value) = value.is_a?(String) || value.is_a?(Integer) ? value.to_s.strip.match?(/\A[-\u2212]?\d+\z/) : false
+
+    # The forms an instance's number key is also accepted in: the item's own and the instance's.
+    def self.accepted(body, instance_accept) = Array(body["accept"]) + Array(instance_accept)
+
     private
+
+    def whole?(value) = self.class.whole?(value)
 
     def files = @files ||= @revision ? @revision.other_files : {}
   end

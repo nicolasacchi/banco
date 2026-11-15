@@ -388,7 +388,7 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
   test "the item part is the one the diagnosis shows: Items::Part keys only" do
     build_student_world
     item = serve_for(OFFICIAL)["item"]
-    allowed = %w[component passage_it stem_it instance_stem_it table quote figure options elements left right reuse_right unit scientific mixed
+    allowed = %w[component passage_it stem_it instance_stem_it table quote figure options elements left right reuse_right unit scientific integer mixed
                  answer_format_it steps_it accents input]
     assert_empty item.keys - allowed
   end

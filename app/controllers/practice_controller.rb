@@ -100,7 +100,8 @@ class PracticeController < ApplicationController
     shown_order = serve.shown_order_json ? JSON.parse(serve.shown_order_json) : {}
     display = Diagnosis::Rekey.replay(display: stored, component: body["component"], shown_order: shown_order)
     Items::Part.new(subject: instance.item_revision.item.subject, expression_input: expression_input,
-                    revision: instance.item_revision).call(body, body["component"], display)
+                    revision: instance.item_revision).call(body, body["component"], display, answer: JSON.parse(instance.answer_json),
+                                                           accept: Items::Part.accepted(body, instance.accept_json.present? ? JSON.parse(instance.accept_json) : []))
   end
 
   def expression_input

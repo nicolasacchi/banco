@@ -67,6 +67,11 @@ function inlineNodes(nodes, parent, glued = false) {
       span.className = "nowrap"
       inlineNodes(node.children, span, true)
       parent.appendChild(span)
+    } else if (node.t === "code") {
+      const code = document.createElement("code")
+      code.className = "code-span"
+      code.textContent = node.v
+      parent.appendChild(code)
     } else if (node.t === "math") {
       const span = document.createElement("span")
       span.className = "math"

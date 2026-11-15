@@ -30,7 +30,8 @@ class DiagnosisItemPresenterTest < ActiveSupport::TestCase
     assert_equal "Calcola e scrivi il risultato.", item[:stem_it]
     assert_equal "cm", item[:unit]
     assert_match(/\A\$\d\+4\$\z/, item[:instance_stem_it])
-    assert_equal %i[answer_format_it component instance_stem_it kind stem_it steps_it unit], item.keys.sort
+    assert_equal true, item[:integer], "the key is a whole number: the box says nothing of decimals (D-335)"
+    assert_equal %i[answer_format_it component instance_stem_it integer kind steps_it stem_it unit].sort, item.keys.sort
     assert_equal "Scrivi solo il numero, per esempio 12.", item[:answer_format_it]
   end
 

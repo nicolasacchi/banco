@@ -3,6 +3,7 @@
 //
 //   **bold**            a keyword
 //   $latex$             a formula, rendered by KaTeX with trust: false (\$ is a dollar)
+//   [[code:x = 1]]      a program line, literal, up to the first "]]" and 40 characters (as in lessons, D-335)
 //   blank line          a new paragraph
 //   1. 2. 3. lines      a numbered list (every line of the block starts with "n. ")
 //
@@ -100,7 +101,7 @@ export function checkTex(tex) {
   }
 }
 
-// Inline nodes: {t: "text", v}, {t: "bold", children}, {t: "math", v}.
+// Inline nodes: {t: "text", v}, {t: "bold", children}, {t: "math", v}, {t: "code", v}.
 export function inline(text, options = {}) {
   const roles = options.roles === true
   const nodes = []
@@ -169,6 +170,12 @@ export function inline(text, options = {}) {
         buffer += ch
         i += 1
       }
+    } else if (!roles && ch === "[" && text.startsWith("[[code:", i) && codeSpan(text, i)) {
+      // items (no roles): a code span is the one span they know, drawn as the lessons draw it (the same limits as the lesson reader's)
+      const span = codeSpan(text, i)
+      flush()
+      nodes.push({ t: "code", v: span.body })
+      i = span.end + 2
     } else if (roles && ch === "[" && LINK.test(text.slice(i))) {
       const m = text.slice(i).match(LINK)
       flush()
@@ -181,6 +188,14 @@ export function inline(text, options = {}) {
   }
   flush()
   return nodes
+}
+
+// { body, end } of the [[code:..]] span that starts at +at+, or null when it is not closed, empty or longer than CODE_MAX.
+function codeSpan(text, at) {
+  const start = at + "[[code:".length
+  const end = text.indexOf("]]", start)
+  const body = end > start ? text.slice(start, end) : ""
+  return end > start && body.trim() !== "" && body.length <= CODE_MAX ? { body, end } : null
 }
 
 // Index of the next unescaped "$" at or after +from+, or -1.

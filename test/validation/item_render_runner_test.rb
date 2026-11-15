@@ -48,6 +48,7 @@ class ItemRenderRunnerTest < ActiveSupport::TestCase
   # waits for its global as the runner does and says what the page showed when it never comes.
   def open_host(ctx, revision, number = 1)
     page = ctx.create_page
+    page.command("Emulation.setDeviceMetricsOverride", width: 390, height: 844, deviceScaleFactor: 1, mobile: false) # the phone, as the runner has it
     page.go_to(Validation::Harness.item_page_url(Validation::Harness.issue("irev", revision.id), number))
     assert Validation::ItemRenderRunner.wait_defined(page, 20), "the host did not define bancoItemRender: #{Validation::ItemRenderRunner.describe(page)}"
     assert page.evaluate_async("window.bancoItemRender.ready.then(arguments[0])", 20)["ok"]
@@ -163,6 +164,53 @@ class ItemRenderRunnerTest < ActiveSupport::TestCase
       assert_empty row.result["errors"], dump(row)
       assert_equal 2, row.shots.size
     end
+  end
+
+  # D-335 (items 29 and 30): the help line of a number says nothing of decimals when the key is whole; a program line in a table cell is a code span, and a
+  # word that fits its cell is never broken at 390 px (`overflow-wrap: break-word`, not `anywhere`).
+  test "a whole-number item says no word of decimals, and a decimal one still does" do
+    whole = revision_with("number", body: { kind: "practice_item" }, instances: [ [ { stem_it: "$3+4$" }, "7", [] ] ])
+    decimal = revision_with("number", body: { kind: "practice_item" }, instances: [ [ { stem_it: "$3+4$" }, "7,5", [] ] ])
+    accepted = revision_with("number", body: { kind: "practice_item", accept: [ "7,0" ] }, instances: [ [ { stem_it: "$3+4$" }, "7", [] ] ])
+    texts = [ whole, decimal, accepted ].map do |revision|
+      Validation::ChromeRunner.session { |session| session.context { |ctx| open_host(ctx, revision).evaluate("document.body.innerText") } }
+    end
+    assert_includes texts[0], "Scrivi il numero intero."
+    refute_includes texts[0], "decimali"
+    assert_includes texts[1], "Per i decimali usa la virgola."
+    assert_includes texts[2], "Per i decimali usa la virgola.", "an accepted decimal form is a decimal answer"
+  end
+
+  test "a table with a code column at 390 px: program lines in the code span, no word that fits is broken, the short header stays on one line" do
+    table = { header: [ "N.", "Codice", "Cosa fa" ],
+              rows: [ [ "1", "[[code:CInt(x)]]", "Legge un dato per x" ], [ "2", "[[code:x \\ 100]]", "Fa x per 100" ], [ "3", "[[code:Write(x)]]", "Dà x al video" ] ] }
+    revision = revision_with("choice", body: { prompt: { stem_it: "Quale riga legge un intero? Usa [[code:CInt(x)]] come esempio.", table: table } },
+                                       instances: [ [ { options: (1..4).map { |n| { id: "o#{n}", text: "Riga [[code:x = #{n}]]" } } }, "o1", [] ] ])
+    row = draw(revision)
+    assert_equal "passed", row.status, dump(row)
+    assert_empty row.result["errors"], dump(row)
+    facts = Validation::ChromeRunner.session do |session|
+      session.context do |ctx|
+        page = open_host(ctx, revision)
+        page.evaluate(<<~JS)
+          (() => {
+            const lines = (node) => new Set([...node.getClientRects()].map((r) => Math.round(r.top))).size
+            return {
+              codes: [...document.querySelectorAll(".code-span")].map((c) => ({ text: c.textContent, lines: lines(c), font: getComputedStyle(c).fontFamily })),
+              raw: document.body.innerText.includes("[[code:"),
+              header: [...document.querySelectorAll("th")].map((th) => { const range = document.createRange(); range.selectNodeContents(th); return { text: th.textContent, lines: lines(range) } }),
+              wrap: getComputedStyle(document.querySelector("td")).overflowWrap
+            }
+          })()
+        JS
+      end
+    end
+    assert_equal false, facts["raw"], "a code span is drawn, not printed as it was written"
+    texts = facts["codes"].map { |c| c["text"] }
+    assert_equal [ "CInt(x)", "CInt(x)", "x \\ 100", "Write(x)", "x = 1", "x = 2", "x = 3", "x = 4" ].sort, texts.sort
+    facts["codes"].each { |c| assert_equal 1, c["lines"], "#{c['text']} is on one line at 390 px" }
+    assert_equal "break-word", facts["wrap"]
+    facts["header"].select { |h| h["text"] == "N." }.each { |h| assert_equal 1, h["lines"], "the short header N. is on one line" }
   end
 
   test "an instance that runs out of the phone's width is reported, the others are not, and every instance is still pictured" do

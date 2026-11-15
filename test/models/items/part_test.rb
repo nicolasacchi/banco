@@ -33,4 +33,23 @@ class ItemsPartTest < ActiveSupport::TestCase
     Rails.application.config.x.item_assets_dir = nil
     FileUtils.rm_rf(dir) if dir
   end
+
+  # D-335 (item 29): a number whose key and accepted forms are all whole is served `integer: true`, a fact about the key's kind and never the key.
+  test "a number part is integer when the key and every accepted form are whole numbers, and only then" do
+    body = { "component" => "number", "prompt" => { "stem_it" => "Quanto?" } }
+    integer = ->(answer, accept = [], b = body) { part.call(b, "number", {}, answer: answer, accept: accept)[:integer] }
+    assert_equal true, integer.call("12")
+    assert_equal true, integer.call(12)
+    assert_equal true, integer.call("-3")
+    assert_equal true, integer.call("\u22123", %w[4 5])
+    assert_nil integer.call("1,5")
+    assert_nil integer.call("12", %w[12,0])
+    assert_nil integer.call("12", Items::Part.accepted(body.merge("accept" => [ "12,5" ]), []))
+    assert_nil integer.call("0.5")
+    assert_nil integer.call(nil), "no key given (a caller that does not know it): nothing is said"
+    assert_nil integer.call("12", [], body.merge("form" => [ "scientific" ])), "a scientific form has its own line"
+    assert_nil part.call(body, "fraction", {}, answer: "12")[:integer]
+    assert_nil part.call(body, "number", {})[:integer]
+    refute_includes part.call(body, "number", {}, answer: "12").to_json, "\"12\""
+  end
 end

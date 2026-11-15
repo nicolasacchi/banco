@@ -41,7 +41,8 @@ module Diagnosis
         testlet_payload(body, stored, shown_order)
       else
         component = body["kind"] == "short_answer" ? "short_answer" : body["component"]
-        part(body, component, Rekey.replay(display: stored, component: component, shown_order: shown_order))
+        part(body, component, Rekey.replay(display: stored, component: component, shown_order: shown_order),
+             answer: JSON.parse(@served.item_instance.answer_json), accept: Items::Part.accepted(body, own_accept))
           .merge(kind: body["kind"] == "short_answer" ? "short_answer" : "diagnosis_item")
       end
     end
@@ -50,12 +51,15 @@ module Diagnosis
       subs = Array(body["sub_items"]).map do |sub|
         display = Array(stored["sub_items"]).find { |s| s["id"] == sub["id"] }&.fetch("display", {}) || {}
         shown = Rekey.replay(display: display, component: sub["component"], shown_order: shown_order[sub["id"]] || {})
-        part(sub, sub["component"], shown).merge(id: sub["id"])
+        answers = JSON.parse(@served.item_instance.answer_json)
+        part(sub, sub["component"], shown, answer: answers.is_a?(Hash) ? answers[sub["id"]] : nil, accept: Items::Part.accepted(sub, nil)).merge(id: sub["id"])
       end
       { kind: "testlet", component: "testlet", passage_it: body["passage_it"], sub_items: subs }
     end
 
-    def part(body, component, display) = parts.call(body, component, display)
+    def part(body, component, display, answer: nil, accept: []) = parts.call(body, component, display, answer: answer, accept: accept)
+
+    def own_accept = (raw = @served.item_instance.accept_json).present? ? JSON.parse(raw) : []
 
     def figure(figure) = parts.figure(figure)
 
