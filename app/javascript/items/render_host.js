@@ -52,6 +52,20 @@ const height = () => Math.max(document.documentElement.scrollHeight, document.bo
 
 const OVERFLOW_CULPRITS = 4
 
+// What is really cut or pushes the page, not a layout that is meant to bleed (the action bar's negative margins reach the card's edges, so the box
+// of its parent holds 30 px more than it shows: nothing is lost there). Three things count, as the lesson render check reads them:
+//  - the page wider than the window;
+//  - a box that clips or scrolls (overflow-x hidden, clip, auto or scroll) whose content is wider than it: a long formula that scrolls sideways, a
+//    box that cuts its text;
+//  - something drawn outside the window (its own box crosses the left or right edge) that no such box holds: the culprit of a wide page.
+const clips = (style) => style.overflowX !== "visible"
+function clipperOf(node) {
+  for (let up = node.parentElement; up && up !== document.body && up !== document.documentElement; up = up.parentElement) {
+    if (clips(getComputedStyle(up))) return up
+  }
+  return null
+}
+
 function overflowFindings(out) {
   const doc = document.documentElement
   if (doc.scrollWidth > window.innerWidth + 1)
@@ -60,19 +74,25 @@ function overflowFindings(out) {
   for (const node of document.body.querySelectorAll("*")) {
     if (node.closest(".sr-only") || node.namespaceURI !== "http://www.w3.org/1999/xhtml") continue
     if (node.clientWidth < 3 || node.closest(".katex-mathml")) continue
-    if (node.scrollWidth > node.clientWidth + 3 && getComputedStyle(node).display !== "inline") wide.push(node)
-  }
-  // the innermost ones say where the width comes from: a box that clips its content is wide because of what is in it
-  const inner = wide.filter((node) => !wide.some((other) => other !== node && node.contains(other)))
-  for (const node of inner.slice(0, OVERFLOW_CULPRITS)) {
     const style = getComputedStyle(node)
-    const scrolls = style.overflowX === "auto" || style.overflowX === "scroll"
+    if (clips(style) && node.scrollWidth > node.clientWidth + 3) {
+      wide.push({ node, scrolls: style.overflowX === "auto" || style.overflowX === "scroll" })
+      continue
+    }
+    if (clips(style) || clipperOf(node)) continue // a box that holds it clips or scrolls it: that box is the finding, not this
+    const rect = node.getBoundingClientRect()
+    if (rect.width > 0 && (rect.right > window.innerWidth + 1 || rect.left < -1) && getComputedStyle(node).display !== "inline")
+      wide.push({ node, scrolls: false, outside: true })
+  }
+  // the innermost ones say where the width comes from
+  const inner = wide.filter(({ node }) => !wide.some((other) => other.node !== node && node.contains(other.node)))
+  for (const { node, scrolls, outside } of inner.slice(0, OVERFLOW_CULPRITS)) {
     const where = text(node) || describe(node)
-    out.push({
-      code: "E-ITEM-OVERFLOW", where,
-      message: scrolls ? `${describe(node)} scrolls sideways: ${node.scrollWidth} px of content in a ${node.clientWidth} px box`
-        : `${describe(node)} is ${node.scrollWidth} px wide in a ${node.clientWidth} px box`
-    })
+    let message
+    if (outside) message = `${describe(node)} is drawn outside the window (${Math.round(node.getBoundingClientRect().left)} to ${Math.round(node.getBoundingClientRect().right)} px of ${window.innerWidth})`
+    else if (scrolls) message = `${describe(node)} scrolls sideways: ${node.scrollWidth} px of content in a ${node.clientWidth} px box`
+    else message = `${describe(node)} cuts its content: ${node.scrollWidth} px of content in a ${node.clientWidth} px box`
+    out.push({ code: "E-ITEM-OVERFLOW", message, where })
   }
 }
 

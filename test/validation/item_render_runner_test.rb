@@ -152,6 +152,19 @@ class ItemRenderRunnerTest < ActiveSupport::TestCase
     [ KEY, "7391", WRONG, "adds_wrong", "Parti da", "Quasi" ].each { |secret| refute_includes served, secret }
   end
 
+  test "practice items laid out as in production give no finding: the action bar bleeds to the card's edges on purpose" do
+    options = (1..4).map { |n| { id: "o#{n}", text: "Risposta #{n}" } }
+    hints = { kind: "practice_item", hints_it: [ "Primo aiuto.", "Secondo aiuto." ] }
+    number = revision_with("number", body: hints.merge(unit: "cm"), instances: [ [ { stem_it: "$3+4$" }, "7", [] ], [ { stem_it: "Quanto fa $12+30$?" }, "42", [] ] ])
+    choice = revision_with("choice", body: hints, instances: [ [ { options: options }, "o1", [] ], [ { options: options, stem_it: "Quale è giusta?" }, "o2", [] ] ])
+    [ number, choice ].each do |revision|
+      row = draw(revision)
+      assert_equal "passed", row.status, dump(row)
+      assert_empty row.result["errors"], dump(row)
+      assert_equal 2, row.shots.size
+    end
+  end
+
   test "an instance that runs out of the phone's width is reported, the others are not, and every instance is still pictured" do
     long = (1..40).map { |n| "x_{#{n}}" }.join("+")
     options = (1..4).map { |n| { id: "o#{n}", text: "Risposta #{n}" } }

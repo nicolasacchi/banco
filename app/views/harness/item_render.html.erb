@@ -18,9 +18,9 @@
     <% if @frame == "practice" %>
       <main class="page course practice">
         <div class="card exercise-card">
-          <section aria-label="<%= t("practice.exercise") %>">
+          <section aria-label="<%= t("practice.exercise") %>" data-practice-target="work">
             <div class="item" id="item-box" data-comment-anchor="exercise"></div>
-            <div class="actions button-row sticky-actions">
+            <div class="actions button-row sticky-actions" data-practice-target="controls">
               <button type="button" class="button" id="check"><%= t("practice.submit") %></button>
               <% if @hints.positive? %><button type="button" class="button secondary" id="hint-button"><%= t("practice.hint", n: 1, total: @hints) %></button><% end %>
               <button type="button" class="button text" id="solution-button"><%= t("practice.solution") %></button>
