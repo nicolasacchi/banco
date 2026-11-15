@@ -39,7 +39,7 @@
         <% line[:cards].each do |entry| %>
           <li>
             <% if entry[:n] && entry[:n] > 0 %>
-              <a href="#card-<%= entry[:n] %>" data-action="lesson2-preview#goto" data-card="<%= entry[:n] %>"><%= t("teacher.render.card_link", n: entry[:n], title: entry[:title_it]) %></a>
+              <a href="#card-<%= entry[:n] %>" data-action="lesson2-preview#goto" data-card="<%= entry[:n] %>"><span data-markup="inline"><%= t("teacher.render.card_link", n: entry[:n], title: entry[:title_it]) %></span></a>
             <% elsif entry[:n] == 0 %>
               <a href="#card-0" data-action="lesson2-preview#goto" data-card="0"><%= t("teacher.render.cover") %></a>
             <% else %>
@@ -82,7 +82,7 @@
       <ul class="plain">
         <% findings.each do |entry| %>
           <li data-box-finding="<%= entry.id %>" data-severity="<%= entry.severity %>" data-answered="<%= !entry.response.nil? %>">
-            <% if entry.card %><a href="#card-<%= entry.card %>" data-action="lesson2-preview#goto" data-card="<%= entry.card %>"><%= local_assigns.fetch(:review).finding_place(entry) %></a> ·<% end %>
+            <% if entry.card %><a href="#card-<%= entry.card %>" data-action="lesson2-preview#goto" data-card="<%= entry.card %>"><span data-markup="inline"><%= local_assigns.fetch(:review).finding_place(entry) %></span></a> ·<% end %>
             <%= t("teacher.skill.severity.#{entry.severity}") %> ·
             <% if entry.severe? %><%= entry.response ? t("teacher.topic.review.box_answered") : t("teacher.topic.review.box_open") %> ·<% end %>
             <a href="#lesson-finding-<%= entry.id %>"><%= t("teacher.topic.review.box_read") %></a>

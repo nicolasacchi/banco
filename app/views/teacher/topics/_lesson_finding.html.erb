@@ -5,7 +5,7 @@
 <div class="finding" id="lesson-finding-<%= entry.id %>" data-lesson-finding="<%= entry.id %>" data-severity="<%= entry.severity %>">
   <div class="finding-head">
     <%= ui_pill(t("teacher.skill.severity.#{entry.severity}"), { "blocker" => :error, "major" => :nearly }.fetch(entry.severity, :muted), icon: (entry.severity == "minor" ? nil : "triangle-alert")) %>
-    <span class="hint" data-place><%= review.finding_place(entry) %></span>
+    <span class="hint" data-place data-markup="inline"><%= review.finding_place(entry) %></span>
   </div>
   <blockquote class="finding-quote"><q><%= f["quote"] %></q></blockquote>
   <p class="finding-problem"><%= f["problem_it"] %></p>
