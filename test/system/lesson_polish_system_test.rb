@@ -195,8 +195,12 @@ class LessonPolishSystemTest < ApplicationSystemTestCase
       assert_no_selector "#scheda-2 .katex-error"
       assert_no_match(/\$|\^|'|"/, card_text(2))
       if size.first == 390
-        assert_selector "#scheda-2 .dg-table td .cell-label .katex", minimum: 4
-        assert_selector "#scheda-2 .dg-table tbody th .cell-label .katex", count: 2 # the row header names its column too when rows stack
+        # a narrow table keeps its grid on a phone (D-331): the head is a row above the cells, each row on one line, no cell labels
+        assert_selector "#scheda-2 table.dg-table.dg-keep"
+        assert_no_selector "#scheda-2 .dg-table .cell-label", visible: true
+        tops = js("[...document.querySelectorAll('#scheda-2 .dg-table tbody tr:first-child > *')].map((c) => Math.round(c.getBoundingClientRect().top))")
+        assert_equal 1, tops.uniq.size, "the row stays on one line (#{tops.inspect})"
+        assert_operator js("document.querySelector('#scheda-2 .dg-table thead').getBoundingClientRect().height"), :>, 10
       end
       shot("math-table-#{size.first}")
 

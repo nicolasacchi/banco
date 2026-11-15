@@ -375,14 +375,16 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) .topbar, body
 .dg-table thead th { background: var(--soft); }
 /* the column's name at the start of a stacked cell (blocks/table.js): drawn from the header with its markup, shown only when the rows stack */
 .dg-table .cell-label { display: none; font-weight: 700; }
+/* a narrow table (.dg-keep, keepsGrid in blocks/table.js) stays a grid on a phone, with its head and without the cell labels; a wider one stacks (D-331).
+   The rules name the <table>: the figure of type table also carries the class dg-table. */
 @media (max-width: 600px) {
-  .dg-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .dg-table, .dg-table tbody, .dg-table tr, .dg-table th, .dg-table td { display: block; width: 100%; }
+  table.dg-table:not(.dg-keep) thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  table.dg-table:not(.dg-keep), table.dg-table:not(.dg-keep) tbody, table.dg-table:not(.dg-keep) tr, table.dg-table:not(.dg-keep) th, table.dg-table:not(.dg-keep) td { display: block; width: 100%; }
   /* a caption in a table that is no longer a table would shrink to its longest word: it is the full width, as a line above the rows (D-310) */
-  .dg-table caption { display: block; width: 100%; }
-  .dg-table tr { border: 1px solid var(--rule); border-radius: 0.8em; margin: 0.5em 0; padding: 0.3em 0; }
-  .dg-table th, .dg-table td { border: 0; padding: 0.2em 0.8em; }
-  .dg-table .cell-label { display: inline; }
+  table.dg-table:not(.dg-keep) caption { display: block; width: 100%; }
+  table.dg-table:not(.dg-keep) tr { border: 1px solid var(--rule); border-radius: 0.8em; margin: 0.5em 0; padding: 0.3em 0; }
+  table.dg-table:not(.dg-keep) th, table.dg-table:not(.dg-keep) td { border: 0; padding: 0.2em 0.8em; }
+  table.dg-table:not(.dg-keep) .cell-label { display: inline; }
 }
 
 /* more */
