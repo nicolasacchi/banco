@@ -166,6 +166,12 @@ class CodeFixturesTest < ActiveSupport::TestCase
       static_codes(item("component" => "normalized_text", "instances" => [ inst.("zero", "mai", [ "Mai" ]), inst.("uno", "no", [ "primo" ]) ],
                         "tests" => { "must_accept" => [ "zero" ], "must_reject" => [ "nessuno" ], "blank" => "invalid" }))
     },
+    "W-SENTENCE-COMMA-VARIANTS" => lambda {
+      inst = ->(key, wrong) { { "display" => { "stem_it" => "Scrivi la frase." }, "errors" => [ { "code" => "sign_error", "value" => wrong } ], "answer" => key, "solution" => { "steps" => [ { "text_it" => "Isola l'incognita." } ], "final" => "fatto" } } }
+      static_codes(item("component" => "normalized_text", "instances" => [ inst.("No salimos, ya que llovía.", "No salimos ya"), inst.("Sí, es verdad.", "No es") ],
+                        "tests" => { "must_accept" => [ "No salimos, ya que llovía." ], "must_reject" => [ "mai" ], "blank" => "invalid" }))
+    },
+    "W-MATH-SPACE-PUNCT" => -> { static_codes(item("instances" => [ F.number_instance(2, 9, stem: "Risolvi $x+2=9\\;$."), F.number_instance(4, 13) ])) },
     "W-INSTANCES-ALIKE" => -> { static_codes(matching_item([ 1, 2, 3, 4 ], [ 1, 2, 3, 4, 5 ])) },
     "E-MATCHING-SIZE" => -> { static_codes(matching_item([ 1, 2, 3 ], [ 1, 2, 3, 4 ])) },
     "W-MATCHING-JUDGE-ROWS" => -> { static_codes(judge_item(%w[r1 r1 r1 r1 r1 r2])) },

@@ -444,6 +444,7 @@ products, `cartesian` for lines and systems, `equation_parts` for anatomy; itali
   with a small book icon that opens the definition; the card lists its words under it ("Parole di questa scheda", counted in the 250 apparatus words).
 - **Chemistry** (chemistry and biology only): `$\ce{2H2 + O2 -> 2H2O}$` and `$\pu{25 kJ/mol}$`; every symbol in `\ce{}` or `\mathrm{}` is an element symbol,
   case-exact (`E-CHEM-SYMBOL`).
+- **A mark after a formula**: end the formula where the maths ends and put the full stop, comma or `?` right after the closing `$`: `$C_3H_6$.`, never `$C_3H_6\;$.` (a spacing command `\;`, `\,`, `\:`, `\ ` or `\quad` at the end of a formula before a mark shows a gap before the mark: `W-MATH-SPACE-PUNCT`). The page already keeps the mark glued to the formula.
 - **Ascolta**: the card has a button that reads it aloud with the device's voice (only voices the operator accepted); nothing in the lesson may depend on
   it. A check can be heard: `listen: {text_en: "I will call you when I get home."}` on a `choice`, `matching` or `span_select` (the text stays behind
   "Mostra il testo").

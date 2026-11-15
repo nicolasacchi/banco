@@ -47,6 +47,7 @@ stop at `awaiting_teacher`.
   acronym in parentheses after the words when it matters: «prodotto interno lordo (PIL)» (D-324).
   A text in `accept` is never also the `value` of one of the instance's `errors` (`E-ACCEPT-IS-ERROR`: the grader tries
   `accept` first, so that wrong answer would be marked right).
+  A key that is a sentence with a comma or a semicolon needs an `accept` entry with the same sentence without it: the grader compares commas (`W-SENTENCE-COMMA-VARIANTS`, a warning).
 - An item of an `extra` topic (outside the programme, D-324) cites the official programme as a
   programme line: `{"kind": "seconda_line", "ref": "ufficiale-2026-27:N", "fragment": "..."}`, checked
   like any programme line (`E-SOURCE`: the line exists, is citable, holds the exact fragment) and shown
@@ -67,6 +68,7 @@ stop at `awaiting_teacher`.
   key. A step is correct on its own: the reviewer checks them one by one.
 - The solution is shown after the attempt, never before; it may state the key, the hints may not.
 - In a `choice`, `matching` or `ordering` item the options, rows and steps are shuffled for every student: a step, final or hint never says «dall'alto», «nell'ordine delle righe», «la prima frase», «l'opzione b» or names `l1`, `r2`, `e3`; name the option by its text (`W-SOLUTION-STORED-ORDER`, a warning).
+- A formula never ends in a spacing command (`\;`, `\,`, `\quad`) right before a mark: `$C_3H_6$.`, not `$C_3H_6\;$.` (`W-MATH-SPACE-PUNCT`, a warning).
 
 ## Pools
 

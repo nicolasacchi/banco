@@ -58,6 +58,8 @@ module Validation
       component_fit(answer, inst, label, seed, f)
       steps(inst, label, seed, f) if problems.empty?
       stored_order(display, inst, label, seed, f) if problems.empty? && STORED_ORDER_COMPONENTS.include?(@unit.component)
+      formula_space(display, inst, label, seed, f)
+      sentence_commas(inst, label, seed, f) if problems.empty? && @unit.component == "normalized_text"
       hint_rules(display, answer, inst, label, seed, f) if problems.empty?
       quote_and_figure(display, label, seed, f)
       if generated
@@ -479,6 +481,40 @@ module Validation
         return hit.strip if hit
       end
       nil
+    end
+
+    # ---- a mark after a formula, commas of a sentence key (W-MATH-SPACE-PUNCT, W-SENTENCE-COMMA-VARIANTS) -------------------
+
+    # The texts of the display, the solution and the instance's hints, each with its path: a formula there that ends in a spacing command
+    # right before a mark shows a gap before the mark (the page glues the mark itself).
+    def formula_space(display, inst, label, seed, f)
+      texts = Canonical.strings(display, "#{label}/display") + Canonical.strings(inst["solution"], "#{label}/solution") + Canonical.strings(inst["hints_it"], "#{label}/hints_it")
+      texts.each do |field, text|
+        FormulaSpace.spaced(text).each do |tex|
+          f.add("W-MATH-SPACE-PUNCT", field, FormulaSpace.message(tex, field), seed: seed)
+        end
+      end
+    end
+
+    # The grader keeps commas and semicolons inside a text (only the trailing marks are stripped, Grading::Closed::Text.normalize), so the
+    # key «No salimos, ya que llovía.» marks «No salimos ya que llovía.» wrong. A sentence key with one needs an accept entry that is the
+    # same sentence with fewer of them (the instance's accept or the item's), or the student who writes it as it reads is graded wrong.
+    SENTENCE_END = /[.!?]\z/
+    COMMA_MARKS = /[,;]/
+
+    def sentence_commas(inst, label, seed, f)
+      key = inst["answer"]
+      return unless key.is_a?(String) && key.strip.match?(SENTENCE_END) && key.strip.include?(" ") && key.match?(COMMA_MARKS)
+
+      case_sensitive = @unit.body["case_sensitive"] == true
+      read = ->(t) { Grading::Closed::Text.normalize(t.to_s, case_sensitive: case_sensitive) }
+      bare = ->(t) { read.(read.(t).gsub(COMMA_MARKS, "")) }
+      marks = ->(t) { read.(t).scan(COMMA_MARKS).size }
+      return if (Array(@unit.accept) + Array(inst["accept"])).any? { |a| a.is_a?(String) && bare.(a) == bare.(key) && marks.(a) < marks.(key) }
+
+      f.add("W-SENTENCE-COMMA-VARIANTS", "#{label}/answer",
+            "#{label}: the key #{key.strip[0, 60].inspect} has a comma or semicolon and the grader compares them, so the same sentence with the comma left out or elsewhere is graded wrong: add the sentence without it to accept (the instance's or the item's)",
+            seed: seed)
     end
 
     # ---- hints of a practice instance (A2.4) ---------------------------------------

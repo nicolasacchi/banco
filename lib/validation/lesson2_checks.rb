@@ -366,9 +366,17 @@ module Validation
           end
           Lessons::Markup.links_used(text, line_offset: line).each { |kind, target, at| link(field, kind, target, at) }
           spans(field, text, line)
+          formula_space(field, text, line)
           lint(field, blocks)
         rescue Lessons::Markup::Refused => e
           add("E-LESSON-MARKUP", field, "line #{e.line}: #{e.construct}", line: e.line, rule: "markup-#{field}", construct: e.construct)
+        end
+      end
+
+      # W-MATH-SPACE-PUNCT (D-335): a formula that ends in a spacing command right before a mark shows a gap before the mark.
+      def formula_space(field, text, line)
+        Validation::FormulaSpace.spaced(text).each_with_index do |tex, k|
+          add("W-MATH-SPACE-PUNCT", field, Validation::FormulaSpace.message(tex, "line #{line}"), line: line, rule: "math-space-punct-#{field}-#{k}")
         end
       end
 

@@ -101,6 +101,7 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
   key only, so another instance's key is never accepted.
   A text in `accept` (the item's or the instance's) is never also the `value` of one of that instance's `errors`: the grader
   tries `accept` first, so that wrong answer would be marked right (`E-ACCEPT-IS-ERROR`).
+  A `normalized_text` key that is a sentence with a comma or a semicolon («No salimos, ya que llovía.») needs an `accept` entry (the instance's or the item's) with the same sentence with the comma left out: the grader compares commas, so the student who omits it is marked wrong (`W-SENTENCE-COMMA-VARIANTS`, a warning).
 
 ## The writing rules (version 1)
 
@@ -127,6 +128,7 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
    figure alt, SVG text; in a testlet, also the passage: a key option of 20 or
    more characters found word for word in `passage_it` is `E-SOLUTION-IN-DISPLAY`).
    Options, rows and steps are shuffled for every student, so a solution step or final never says «dall'alto», «nell'ordine delle righe», «la prima frase», «l'opzione b» or names `l1`, `r2`, `e3`: name the option by its text (`W-SOLUTION-STORED-ORDER`, a warning).
+   A formula never ends in a spacing command (`\;`, `\,`, `\quad`) right before a mark: `$C_3H_6$.`, not `$C_3H_6\;$.` (`W-MATH-SPACE-PUNCT`, a warning).
 6. **Readability** (plain language for readers who need it). Italian sentences of
    at most 25 words; the instruction (stem) at most 60 words; bold only on key
    words, at most 3 spans of at most 4 words; no ALL-CAPS words, no italics, no
