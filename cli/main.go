@@ -105,8 +105,13 @@ var commands = []command{
 	{name: "view-link new", run: runViewLinkNew},
 	{name: "view-link list", run: runViewLinkList},
 	{name: "view-link revoke", run: runViewLinkRevoke},
+	{name: "view-link revoke-all", run: runViewLinkRevokeAll},
+	{name: "next", run: runNext},
+	{name: "digest", run: runDigest},
+	{name: "activity", run: runActivity},
 	{name: "token", run: runToken},
 	{name: "changes", run: runChanges},
+	{name: "changes show", run: runChangesShow},
 	{name: "docs show", run: runDocsShow},
 	{name: "self-update", run: runSelfUpdate},
 }

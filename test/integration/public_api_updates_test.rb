@@ -166,7 +166,7 @@ class PublicApiUpdatesTest < ActionDispatch::IntegrationTest
     Banco::TokenAuth.lookup = ->(id) { id == public_id(token) ? failing : nil }
     api_as(token, "/api/v1/status")
     assert_response :success
-    api_as(token, "/api/v1/updates")
+    api_as(token, "/api/v1/token")
     assert_response :success
     assert_equal 2, calls
     assert_equal 0, ApiTokenRenewal.count
@@ -192,18 +192,50 @@ class PublicApiUpdatesTest < ActionDispatch::IntegrationTest
   # ---- GET /api/v1/token
 
   test "GET /api/v1/token shows the token without its secret" do
+    freeze_time # a token issued for 30 days has exactly 30 days left
     token = issue_token("teacher", expires_at: 30.days.from_now)
     api_as(token, "/api/v1/token")
     assert_response :success
     assert_equal({ "public_id" => public_id(token), "role" => "teacher", "teacher" => TEACHER_LOGIN, "label" => "public api test teacher",
                    "created_at" => row(token).created_at.utc.iso8601, "expires_at" => row(token).expires_at.utc.iso8601,
+                   "expires_in_days" => 30, "expiring_soon" => false,
                    "renews_on_use" => true, "lifetime_days" => 30, "revoked" => false }, json)
     assert_not_includes response.body, Banco::TokenAuth::FORMAT.match(token)[2]
     assert_not_includes response.body, row(token).secret_sha256
     assert_equal "no-store", response.headers["Cache-Control"]
 
     api_as(issue_token("agent_omp", expires_at: 10.days.from_now), "/api/v1/token")
-    assert_equal [ "agent_omp", nil, false, 10 ], json.values_at("role", "teacher", "renews_on_use", "lifetime_days")
+    assert_equal [ "agent_omp", nil, false, 10, false ], json.values_at("role", "teacher", "renews_on_use", "lifetime_days", "expiring_soon")
+  end
+
+  # D-333: the bot warns its user when a token has fewer than 7 days left.
+  test "GET /api/v1/token counts whole days to the effective expiry and flags fewer than 7 days; a renewal moves both" do
+    freeze_time
+    token = issue_token("bot_read", expires_at: 7.days.from_now) # a 7-day lifetime renews once less than 6 days are left
+    api_as(token, "/api/v1/token")
+    assert_equal [ 7, false ], json.values_at("expires_in_days", "expiring_soon"), "exactly 7 days is not soon"
+
+    travel 1.minute
+    api_as(token, "/api/v1/token")
+    assert_equal [ 6, true ], json.values_at("expires_in_days", "expiring_soon"), "7 days minus a minute is soon, in whole days 6"
+    assert_empty renewals(token)
+
+    travel 1.day # under 6 days left: this request renews the token, and the answer shows the renewed expiry
+    api_as(token, "/api/v1/token")
+    assert_equal 1, renewals(token).size
+    assert_equal [ 7, false ], json.values_at("expires_in_days", "expiring_soon")
+    assert_equal row(token).effective_expires_at.utc.iso8601, json["expires_at"]
+    assert_not_equal row(token).expires_at.utc.iso8601, json["expires_at"]
+
+    soon = issue_token("teacher", expires_at: 12.hours.from_now)
+    api_as(soon, "/api/v1/token")
+    assert_equal [ 0, true ], json.values_at("expires_in_days", "expiring_soon"), "under a day: 0 days, soon"
+  end
+
+  test "GET /api/v1/token of a token that never expires has no days and is never soon" do
+    api_as(issue_token("agent_claude", expires_at: nil), "/api/v1/token")
+    assert_response :success
+    assert_equal [ nil, nil, false ], json.values_at("expires_at", "expires_in_days", "expiring_soon")
   end
 
   # ---- GET /api/v1/updates
@@ -258,6 +290,128 @@ class PublicApiUpdatesTest < ActionDispatch::IntegrationTest
       { "name" => "banco-linux-amd64", "os" => "linux", "arch" => "amd64", "sha256" => Digest::SHA256.hexdigest("linux program"), "size" => 13 },
       { "name" => "banco-windows-arm64.exe", "os" => "windows", "arch" => "arm64", "sha256" => Digest::SHA256.hexdigest("windows program"), "size" => 15 }
     ], json.dig("cli", "files")
+  end
+
+  # ---- GET /api/v1/updates/decisions/:number
+
+  # The sections of docs/decisions.md, keyed by number: "## D-NNN · …" up to the next "## D-" heading or the end.
+  def decision_sections
+    Rails.root.join("docs/decisions.md").read.split(/^(?=## D-\d)/).drop(1).index_by { |s| s[/\A## D-(\d+)/, 1].to_i }
+  end
+
+  test "GET /api/v1/updates/decisions/D-332 answers the index row and the whole section, up to the next heading" do
+    api_as(issue_token("bot_read"), "/api/v1/updates/decisions/D-332")
+    assert_response :success
+    assert_equal %w[date number status text title], json.keys.sort
+    assert_equal [ "D-332", "2026-11-15", "implemented" ], json.values_at("number", "date", "status")
+    assert_equal Updates.changes.find { |c| c[:number] == "D-332" }[:title], json["title"]
+    assert_operator json["text"], :start_with?, "## D-332 · 2026-11-15 · view links: a temporary URL opens the teacher's pages read-only, without login\n"
+    assert_equal decision_sections.fetch(332).rstrip, json["text"]
+    assert_not_includes json["text"], "## D-333"
+    assert_not_includes json["text"], "## D-331"
+    assert_match(/^- \*\*Tests:\*\* `test\/integration\/view_links_api_test\.rb`/, json["text"])
+    assert_no_match(/\n\z/, json["text"])
+
+    api_as(issue_token("teacher"), "/api/v1/updates/decisions/332")
+    assert_response :success
+    assert_equal "D-332", json["number"], "the bare number works too"
+  end
+
+  test "GET /api/v1/updates/decisions/:number: the last section ends at the end of the file" do
+    sections = decision_sections
+    last = sections.keys.max
+    api_as(nil, "/api/v1/updates/decisions/D-#{last}")
+    assert_response :success
+    assert_equal sections.fetch(last).rstrip, json["text"]
+    assert_equal Rails.root.join("docs/decisions.md").read.rstrip.lines.last.chomp, json["text"].lines.last.chomp
+  end
+
+  test "GET /api/v1/updates/decisions/:number: an early decision is read from its own heading" do
+    api_as(nil, "/api/v1/updates/decisions/D-001")
+    assert_response :success
+    assert_equal "D-001", json["number"]
+    assert_operator json["text"], :start_with?, "## D-001 · "
+    assert_not_includes json["text"], "## D-002"
+  end
+
+  test "GET /api/v1/updates/decisions/:number: an unknown or malformed number is 404 E-NOT-FOUND on the field number" do
+    %w[D-999999 999999 D-0 abc D-33x DD-332 d-332 -332].each do |number|
+      api_as(nil, "/api/v1/updates/decisions/#{number}")
+      assert_response :not_found, number
+      assert_equal [ "E-NOT-FOUND", "number" ], json.values_at("code", "field"), number
+    end
+    [ "/api/v1/updates/decisions/D-332.md", "/api/v1/updates/decisions/D-332%2F..%2F..%2FGemfile", "/api/v1/updates/decisions/" ].each do |path|
+      api_as(nil, path)
+      assert_response :not_found, path
+      assert_not_includes response.body, "## D-332", path
+    end
+  end
+
+  # ---- no token (D-333)
+
+  PUBLIC_PATHS = %w[/api/v1/updates /api/v1/updates/decisions/D-332 /api/v1/docs/bot /api/v1/docs/api /api/v1/cli/banco-linux-amd64].freeze
+
+  test "updates, decisions, docs and cli answer 200 without an Authorization header, as with a token" do
+    build_dist
+    token = issue_token("bot_read")
+    PUBLIC_PATHS.each do |path|
+      api_as(token, path)
+      with_token = [ response.status, response.body ]
+      api_as(nil, path)
+      assert_response :success, path
+      assert_equal with_token, [ response.status, response.body ], path
+      assert_equal Contract.digest, response.headers["X-Banco-Contract"], path
+      assert_equal "no-store", response.headers["Cache-Control"], path
+    end
+    api_as(nil, "/api/v1/cli/banco-linux-amd64")
+    assert_equal "linux program", response.body
+    assert_equal Digest::SHA256.hexdigest("linux program"), response.headers["X-Banco-Sha256"]
+    api_as(nil, "/api/v1/docs/bot")
+    assert_equal Rails.root.join("docs/bot.md").read, json["text"]
+  end
+
+  test "the public actions never look the token up, and the other actions still need one" do
+    build_dist
+    lookups = 0
+    Banco::TokenAuth.lookup = lambda { |_id|
+      lookups += 1
+      nil
+    }
+    PUBLIC_PATHS.each { |path| api_as(issue_token("bot_read"), path) }
+    assert_equal 0, lookups
+    api_as(issue_token("bot_read"), "/api/v1/token")
+    assert_response :unauthorized
+    assert_equal 1, lookups
+    api_as(nil, "/api/v1/status")
+    assert_response :unauthorized
+    api_as(nil, "/api/v1/token")
+    assert_response :unauthorized
+    assert_nil response.headers["X-Banco-Contract"]
+  ensure
+    Banco::TokenAuth.reset!
+  end
+
+  test "a revoked, expired, unlisted or malformed token header is ignored by the public actions, and nothing is renewed" do
+    build_dist
+    revoked = issue_token("teacher", expires_at: 30.days.from_now)
+    ApiTokenRevocation.create!(api_token: row(revoked), reason: "test")
+    expired = issue_token("bot_read", expires_at: 1.day.from_now)
+    unlisted = issue_token("teacher", expires_at: 30.days.from_now)
+    ENV["BANCO_TEACHER_USERS"] = "someone-else"
+    live = issue_token("bot_read", expires_at: 3.days.from_now)
+    travel 2.days # the live token has less than its lifetime minus a day left: any other request would renew it
+    PUBLIC_PATHS.each do |path|
+      [ revoked, expired, unlisted, live, "garbage", "bnc_abcdefgh_#{'a' * 43}" ].each do |header_token|
+        api_as(header_token, path)
+        assert_response :success, "#{path} with #{header_token.first(12)}"
+      end
+      api_as(nil, path, headers: { "Authorization" => "Basic dXNlcjpwYXNz" })
+      assert_response :success, "#{path} with Basic"
+    end
+    assert_equal 0, ApiTokenRenewal.count, "a public action renews nothing"
+    api_as(live, "/api/v1/status")
+    assert_response :success
+    assert_equal 1, ApiTokenRenewal.count, "another action still renews it"
   end
 
   # ---- GET /api/v1/docs/:name
@@ -316,30 +470,34 @@ class PublicApiUpdatesTest < ActionDispatch::IntegrationTest
 
   # ---- the edge
 
-  test "through the edge only the public roles reach the new routes; no token is 401" do
+  test "through the edge only the public roles reach the token route; no token is 401; the public actions need no token" do
     build_dist
-    paths = %w[/api/v1/token /api/v1/updates /api/v1/docs/bot /api/v1/cli/banco-linux-amd64]
     %w[bot_read teacher].each do |role|
       token = issue_token(role)
-      paths.each do |path|
+      ([ "/api/v1/token" ] + PUBLIC_PATHS).each do |path|
         api_as(token, path, remote_addr: EDGE)
         assert_response :success, "#{role} #{path}"
       end
     end
     %w[agent_claude agent_omp ci].each do |role|
       token = issue_token(role)
-      paths.each do |path|
+      api_as(token, "/api/v1/token", remote_addr: EDGE)
+      assert_response :forbidden, "#{role} /api/v1/token"
+      assert_equal [ "E-AUTH", "not_public_role" ], json.values_at("code", "reason")
+      api_as(token, "/api/v1/token") # the local listener still serves it
+      assert_response :success, "#{role} /api/v1/token locally"
+      PUBLIC_PATHS.each do |path| # their token is not even read
         api_as(token, path, remote_addr: EDGE)
-        assert_response :forbidden, "#{role} #{path}"
-        assert_equal [ "E-AUTH", "not_public_role" ], json.values_at("code", "reason")
-        api_as(token, path) # the local listener still serves it
-        assert_response :success, "#{role} #{path} locally"
+        assert_response :success, "#{role} #{path}"
       end
     end
-    paths.each do |path|
+    api_as(nil, "/api/v1/token", remote_addr: EDGE)
+    assert_response :unauthorized
+    assert_nil response.headers["X-Banco-Contract"]
+    PUBLIC_PATHS.each do |path|
       api_as(nil, path, remote_addr: EDGE)
-      assert_response :unauthorized, path
-      assert_nil response.headers["X-Banco-Contract"]
+      assert_response :success, path
+      assert_equal Contract.digest, response.headers["X-Banco-Contract"], path
     end
   end
 end

@@ -96,16 +96,27 @@ names.each do |name, defs|
   end
   out << ".role-#{name} { #{rules.join(' ')} }\n" unless rules.empty?
 end
+# A role with a mark paints diagrams with it. A role that has only a tint (highlight, carrier tint) has no mark colour,
+# but a diagram may still name it on a segment, a line, a point or a box: it is drawn as a marker pen, never dropped.
+# Strokes take the tint darkened toward the text colour (the bare tint is too pale for a line on the surface in the
+# light theme), a point is filled with the tint and outlined in the text colour.
+tint_only = ->(defs) { defs.none? { |r| r["mark"] } && defs.any? { |r| r["tint"] } }
 out << "\n/* Marks of diagrams: shape and stroke. */\n"
 names.each do |name, defs|
-  next unless defs.any? { |r| r["mark"] }
-
-  out << ".mk-#{name} { fill: var(--role-#{name}-mark); stroke: var(--role-#{name}-mark); color: var(--role-#{name}-fg); }\n"
+  if defs.any? { |r| r["mark"] }
+    out << ".mk-#{name} { fill: var(--role-#{name}-mark); stroke: var(--role-#{name}-mark); color: var(--role-#{name}-fg); }\n"
+  elsif tint_only.call(defs)
+    out << ".mk-#{name} { fill: var(--role-#{name}-tint); stroke: var(--text); }\n"
+  end
 end
 out << "\n/* Fills of shapes: tint areas and the strokes of outlines. */\n"
 names.each do |name, defs|
   out << ".fl-#{name} { fill: var(--role-#{name}-tint); }\n" if defs.any? { |r| r["tint"] }
-  out << ".st-#{name} { stroke: var(--role-#{name}-mark); fill: none; }\n" if defs.any? { |r| r["mark"] }
+  if defs.any? { |r| r["mark"] }
+    out << ".st-#{name} { stroke: var(--role-#{name}-mark); fill: none; }\n"
+  elsif tint_only.call(defs)
+    out << ".st-#{name} { stroke: color-mix(in srgb, var(--role-#{name}-tint) 55%, var(--text)); stroke-width: 8; stroke-linecap: round; fill: none; }\n"
+  end
 end
 out << "\n/* Tints for areas (the two members of an equation, a card's tone). */\n"
 names.each do |name, defs|

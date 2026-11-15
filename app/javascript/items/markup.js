@@ -4,9 +4,48 @@
 import katex from "katex"
 import { parse } from "items/markup_parser"
 
+const OPTIONS = { trust: false, strict: "ignore", output: "htmlAndMathml" }
+
+// \ce{} and \pu{} (D-282) are macros of KaTeX's contrib/mhchem, which only the pages that draw chemistry need. Loaded once, on the
+// first formula that uses them (or by a caller that knows it will, through ensureChem()).
+let chemLoading = null
+export function ensureChem() {
+  chemLoading ??= import("katex/mhchem").catch((error) => { chemLoading = null; throw error })
+  return chemLoading
+}
+
+// Targets whose \ce formula waits for mhchem: target -> latex. A target that is drawn again meanwhile (an expression preview that
+// changes) leaves the map, so the late draw never overwrites newer content.
+const waiting = new WeakMap()
+
+function draw(latex, target, throwOnError) {
+  katex.render(latex, target, { ...OPTIONS, throwOnError })
+}
+
+function undefinedChem(error) {
+  return error instanceof katex.ParseError && /Undefined control sequence: \\(ce|pu)\b/.test(error.message)
+}
+
+// Synchronous, like every caller: a formula that needs mhchem before it is loaded shows as plain text for the moment (never as an
+// error), and is drawn once mhchem arrives. If mhchem fails to load it stays plain text.
 export function renderMath(latex, target) {
+  waiting.delete(target)
   try {
-    katex.render(latex, target, { trust: false, throwOnError: false, strict: "ignore", output: "htmlAndMathml" })
+    try {
+      draw(latex, target, true)
+    } catch (error) {
+      if (undefinedChem(error)) {
+        target.textContent = latex
+        waiting.set(target, latex)
+        ensureChem().then(() => {
+          if (waiting.get(target) !== latex) return
+          waiting.delete(target)
+          renderMath(latex, target)
+        }, () => {})
+        return target
+      }
+      draw(latex, target, false)
+    }
   } catch (_error) {
     target.textContent = latex
   }

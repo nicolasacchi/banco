@@ -2,7 +2,7 @@
 // rational coefficients), points and segments. A point that names lines in `on_lines` lies exactly on each
 // of them (checked with exact rationals). Tick labels thin out; point and line labels go next to their mark.
 import * as N from "lesson/num"
-import { effectiveState, finish, label, listIt, labelNear, plain, shape, stateCount } from "lesson/diagrams/common"
+import { effectiveState, finish, label, listIt, labelNear, plain, roleInfo, shape, stateCount } from "lesson/diagrams/common"
 import { run } from "lesson/diagrams/run"
 
 export const states = stateCount
@@ -89,6 +89,11 @@ function niceStep(span, slots) {
   return 100
 }
 
+// A role whose carrier is a tint (`highlight`) has a background colour but no mark colour. The palette still gives it
+// `.st-`/`.mk-` classes (a pale marker stroke, bin/build-palette), but a pale stroke is weak on the plot, so here it is
+// drawn as a marker pen: a wide tint band (`dg-halo`, `fl-ROLE`) under the mark, which keeps the ink colour.
+const tinted = (ctx, role) => !!role && roleInfo(ctx.palette, ctx.subject, role)?.carrier === "tint"
+
 function build(data, ctx) {
   const eff = effectiveState(data, ctx.state)
   const W = ctx.width
@@ -168,16 +173,22 @@ function build(data, ctx) {
       ;[p1, p2] = [pts[0], pts[pts.length - 1]]
     }
     const role = l.role ?? "muted"
-    shape(ctx, "line", { x1: X(p1[0]), y1: Y(p1[1]), x2: X(p2[0]), y2: Y(p2[1]), cls: `dg-line st-${role}` })
+    const band = tinted(ctx, role)
+    if (band) shape(ctx, "line", { x1: X(p1[0]), y1: Y(p1[1]), x2: X(p2[0]), y2: Y(p2[1]), cls: "dg-halo" })
+    shape(ctx, "line", { x1: X(p1[0]), y1: Y(p1[1]), x2: X(p2[0]), y2: Y(p2[1]), cls: `dg-line ${band ? "dg-ink" : `st-${role}`}` })
     drawn.push({ x1: X(p1[0]), y1: Y(p1[1]), x2: X(p2[0]), y2: Y(p2[1]) })
     ends.push({ l, at: [X(p2[0]), Y(p2[1])], role })
   }
+  const segment = (s, cls) => shape(ctx, "line", { x1: X(num(s.from[0])), y1: Y(num(s.from[1])), x2: X(num(s.to[0])), y2: Y(num(s.to[1])), cls })
+  for (const s of eff.segments ?? []) if (tinted(ctx, s.role)) segment(s, "dg-halo")
   for (const s of eff.segments ?? []) {
-    shape(ctx, "line", { x1: X(num(s.from[0])), y1: Y(num(s.from[1])), x2: X(num(s.to[0])), y2: Y(num(s.to[1])), cls: `dg-segment st-${s.role ?? "muted"}` })
+    segment(s, `dg-segment ${tinted(ctx, s.role) ? "dg-ink" : `st-${s.role ?? "muted"}`}`)
     drawn.push({ x1: X(num(s.from[0])), y1: Y(num(s.from[1])), x2: X(num(s.to[0])), y2: Y(num(s.to[1])) })
   }
   for (const p of eff.points ?? []) {
-    shape(ctx, "circle", { cx: X(num(p.x)), cy: Y(num(p.y)), r: 7, cls: `mk-${p.role ?? "muted"} dg-point` })
+    const band = tinted(ctx, p.role)
+    if (band) shape(ctx, "circle", { cx: X(num(p.x)), cy: Y(num(p.y)), r: 13, cls: `fl-${p.role} dg-halo-dot` })
+    shape(ctx, "circle", { cx: X(num(p.x)), cy: Y(num(p.y)), r: 7, cls: `${band ? "dg-ink" : `mk-${p.role ?? "muted"}`} dg-point` })
   }
   // labels next to their marks (inside the plot, not over another label)
   for (const p of eff.points ?? []) {

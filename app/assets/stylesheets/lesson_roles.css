@@ -844,6 +844,7 @@
 .role-norm { color: var(--role-norm-fg); }
 
 /* Marks of diagrams: shape and stroke. */
+.mk-highlight { fill: var(--role-highlight-tint); stroke: var(--text); }
 .mk-correct { fill: var(--role-correct-mark); stroke: var(--role-correct-mark); color: var(--role-correct-fg); }
 .mk-wrong { fill: var(--role-wrong-mark); stroke: var(--role-wrong-mark); color: var(--role-wrong-fg); }
 .mk-muted { fill: var(--role-muted-mark); stroke: var(--role-muted-mark); color: var(--role-muted-fg); }
@@ -925,6 +926,7 @@
 
 /* Fills of shapes: tint areas and the strokes of outlines. */
 .fl-highlight { fill: var(--role-highlight-tint); }
+.st-highlight { stroke: color-mix(in srgb, var(--role-highlight-tint) 55%, var(--text)); stroke-width: 8; stroke-linecap: round; fill: none; }
 .st-correct { stroke: var(--role-correct-mark); fill: none; }
 .st-wrong { stroke: var(--role-wrong-mark); fill: none; }
 .st-muted { stroke: var(--role-muted-mark); fill: none; }

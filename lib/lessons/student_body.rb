@@ -223,6 +223,7 @@ module Lessons
         item
       end.compact
       out["steps"] = steps
+      out["steps_total"] = b["steps"].size # the page's counter «passo N di M» counts every step, the ones after the blank included
       out["result_it"] = b["result_it"] if b["result_it"] && cut.nil?
       if b["diagram"]
         d = diagram(b["diagram"])

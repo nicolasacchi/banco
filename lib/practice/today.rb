@@ -14,10 +14,14 @@ module Practice
     Suggestion = Data.define(:topic_key, :reason, :skill)
 
     DONE = %w[demonstrated consolidated].freeze
+    # The states «Da riprendere» tags on a topic (`banco next` lists the same skills, D-333).
+    RECOVER = %w[to_recover to_review].freeze
 
     module_function
 
-    def call(catalog:, states:, graph_order:, last_topic:)
+    # limit: how many suggestions to keep (Oggi's SUGGESTIONS_MAX); nil keeps the whole ranked list, whose first per subject is
+    # the topic Oggi proposes for that subject (D-333, `banco next`).
+    def call(catalog:, states:, graph_order:, last_topic:, limit: V1::SUGGESTIONS_MAX)
       views = catalog.flat_map { |sv| sv.topics.each_with_index.map { |t, i| [ sv, t, i ] } }
       visible = views.to_h { |sv, t, i| [ t.key, [ sv, t, i ] ] }
       resume = last_topic if last_topic && visible.key?(last_topic) && !done?(visible.fetch(last_topic)[1], states)
@@ -38,7 +42,7 @@ module Practice
       end
       rest = open_views.reject { |_, t, _| taken.include?(t.key) }.map { |sv, t, i| [ sv, t, i, nil ] }
       add(suggestions, taken, rest, :course_next, graph_order, by_graph: false)
-      { resume: resume, suggestions: suggestions.first(V1::SUGGESTIONS_MAX) }
+      { resume: resume, suggestions: limit ? suggestions.first(limit) : suggestions }
     end
 
     def add(suggestions, taken, rows, reason, graph_order, by_graph:)
@@ -74,7 +78,7 @@ module Practice
 
     # The tag "Da riprendere" on a topic: a skill is to_recover or to_review.
     def recover_tag?(topic, states)
-      topic.skills.any? { |s| %w[to_recover to_review].include?(states[s]&.state) }
+      topic.skills.any? { |s| RECOVER.include?(states[s]&.state) }
     end
 
     # "Prima conviene fare": the first `after` topic that is visible and not done (A8.8). visible: {key => topic}.

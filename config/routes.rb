@@ -25,6 +25,8 @@ Rails.application.routes.draw do
       get "subjects/:key/practice" => "practice#show", constraints: key, as: :teacher_practice
       get "subjects/:key/practice/skills/:skill" => "practice#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9._\-]*/), as: :teacher_practice_skill
       get "corrections" => "corrections#show", as: :teacher_corrections
+      # Who did what (D-334): the teachers' and bots' actions, read-only.
+      get "activity" => "activity#show", as: :teacher_activity
       # The student's comments (D-304): the teacher reads and answers; a guest sees the counts only.
       get "comments" => "comments#show", as: :teacher_comments
       get "search" => "search#show", as: :teacher_search
@@ -265,6 +267,9 @@ Rails.application.routes.draw do
     get "api/v1/teacher/subjects/:key/topics/:topic" => "api/v1/teacher_views#topic", constraints: view_subject.merge(topic: topic_key), format: false
     get "api/v1/teacher/subjects/:key/test" => "api/v1/teacher_views#test", constraints: view_subject, format: false
     get "api/v1/students/:key/progress" => "api/v1/progress#show", constraints: { key: /[a-z0-9-]+/ }, format: false
+    # What the student does next, per subject (D-333), and the whole picture in one read: the pages' own read models again, nothing written.
+    get "api/v1/students/:key/next" => "api/v1/progress#upcoming", constraints: { key: /[a-z0-9-]+/ }, format: false
+    get "api/v1/digest" => "api/v1/digest#show", format: false
 
     # The public API (D-327): the teacher's decisions and the student's comments and pending answers, for the tokens of
     # the roles bot_read (reads) and teacher (reads, decisions, comment actions). Every write is a dry run unless the
@@ -278,11 +283,15 @@ Rails.application.routes.draw do
       post "api/v1/comments/:id/#{action}" => "api/v1/comments##{action}", constraints: comment, format: false
     end
     get "api/v1/answers/pending" => "api/v1/answers#pending", format: false
+    # Who did what (D-334): the feed of the teachers' and bots' actions, for bot_read and teacher tokens.
+    get "api/v1/activity" => "api/v1/activity#show", format: false
 
-    # Staying current (D-330), any token role: the token itself (never its secret), what changed in the software, the two
-    # docs the bot lives by and the CLI's release build of this image. Doc and binary names come from allowlists.
+    # Staying current (D-330): the token itself (never its secret; any token role), what changed in the software, the two docs
+    # the bot lives by and the CLI's release build of this image. Doc and binary names come from allowlists. The last four
+    # (updates, one decision's text, docs, cli) need no token at all (D-333): the public repo's content, no student data.
     get "api/v1/token" => "api/v1/tokens#show", format: false
     get "api/v1/updates" => "api/v1/updates#show", format: false
+    get "api/v1/updates/decisions/:number" => "api/v1/updates#entry", constraints: { number: /[A-Za-z0-9-]+/ }, format: false
     get "api/v1/docs/:name" => "api/v1/updates#doc", constraints: { name: /[a-z]+/ }, format: false
     get "api/v1/cli/:file" => "api/v1/updates#cli", constraints: { file: /banco-[a-z0-9]+-[a-z0-9]+(?:\.exe)?/ }, format: false
 
@@ -291,6 +300,7 @@ Rails.application.routes.draw do
     post "api/v1/view-links" => "api/v1/view_links#create", format: false
     get "api/v1/view-links" => "api/v1/view_links#index", format: false
     post "api/v1/view-links/:id/revoke" => "api/v1/view_links#revoke", constraints: { id: /\d+/ }, format: false
+    post "api/v1/view-links/revoke-all" => "api/v1/view_links#revoke_all", format: false
   end
 
   # Harness listener: the page and the files Chrome loads to run an agent's

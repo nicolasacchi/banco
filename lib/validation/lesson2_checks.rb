@@ -228,6 +228,7 @@ module Validation
         role_contract(card, base, line, extra)
         blocks.each_with_index { |b, j| block_checks(b, "#{base}/blocks/#{j}", card) }
         Lessons::Blocks::Truth.card(card, base, @ctx)
+        Lessons::Blocks::Example.blank_data(card, base, @ctx)
         icon_roles(card, base, line)
       end
 

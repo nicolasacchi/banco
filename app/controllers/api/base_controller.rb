@@ -19,6 +19,13 @@ module Api
     # A public token renews itself on use (D-330): only a request that passed the checks above renews it.
     before_action :renew_token!
 
+    # The actions that answer without a token (D-333): the public repo's content (docs, the decisions index, the CLI build),
+    # nothing of the student's. They never read Authorization, so a wrong, expired or revoked header changes nothing, check no
+    # role and renew nothing; the other callbacks (no-store, the contract header) still run. Every other action needs a token.
+    def self.public_actions(*actions)
+      skip_before_action :authenticate!, :enforce_token_scope!, :renew_token!, only: actions
+    end
+
     private
 
     # A renewal that fails (the database busy or locked) is logged and the request goes on: the token is still valid, and

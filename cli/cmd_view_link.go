@@ -70,16 +70,45 @@ func runViewLinkList(e *env, args []string) error {
 }
 
 // runViewLinkRevoke ends a view link at once (POST /api/v1/view-links/:id/revoke); the id comes from view-link list.
+// With --all (and no id) it ends every active link of this token (D-333, POST /api/v1/view-links/revoke-all). Exactly
+// one of the two is given.
 func runViewLinkRevoke(e *env, args []string) error {
 	fs := flag.NewFlagSet("view-link revoke", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	all := fs.Bool("all", false, "revoke every active link of this token instead of one")
+	fs.Bool("json", false, "JSON output (the default)")
+	pos, err := parseFlags(fs, args)
+	if err != nil {
+		return err
+	}
+	if *all {
+		if len(pos) != 0 {
+			return newErr(ExitUsage, "E-USAGE", "all", "give a view link id or --all, not both", "banco view-link revoke --all")
+		}
+		return sendRevokeAll(e)
+	}
+	if len(pos) != 1 || !idRe.MatchString(pos[0]) {
+		return newErr(ExitUsage, "E-USAGE", "id", "view-link revoke takes one view link id (a number), see banco view-link list, or --all", "banco view-link revoke 7")
+	}
+	return send(e, "view-link revoke", "POST", "/api/v1/view-links/"+pos[0]+"/revoke", []byte("{}"), false)
+}
+
+// runViewLinkRevokeAll is `view-link revoke --all` under its own contract entry (the contract gives one path per
+// command): it ends every active view link of this token.
+func runViewLinkRevokeAll(e *env, args []string) error {
+	fs := flag.NewFlagSet("view-link revoke-all", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
 	if err != nil {
 		return err
 	}
-	if len(pos) != 1 || !idRe.MatchString(pos[0]) {
-		return newErr(ExitUsage, "E-USAGE", "id", "view-link revoke takes one view link id (a number), see banco view-link list", "banco view-link revoke 7")
+	if len(pos) != 0 {
+		return newErr(ExitUsage, "E-USAGE", "args", "view-link revoke-all takes no argument", "banco view-link revoke --all")
 	}
-	return send(e, "view-link revoke", "POST", "/api/v1/view-links/"+pos[0]+"/revoke", []byte("{}"), false)
+	return sendRevokeAll(e)
+}
+
+func sendRevokeAll(e *env) error {
+	return send(e, "view-link revoke-all", "POST", "/api/v1/view-links/revoke-all", []byte("{}"), false)
 }

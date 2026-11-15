@@ -23,6 +23,8 @@ func TestViewLinkCommandsAreInTheContract(t *testing.T) {
 		"view-link new":    {"POST", "/api/v1/view-links"},
 		"view-link list":   {"GET", "/api/v1/view-links"},
 		"view-link revoke": {"POST", "/api/v1/view-links/:id/revoke"},
+		// D-333: `view-link revoke --all` is this entry (the contract gives one path per command).
+		"view-link revoke-all": {"POST", "/api/v1/view-links/revoke-all"},
 	}
 	for name, w := range want {
 		cmd, ok := byName[name]
@@ -40,8 +42,11 @@ func TestViewLinkCommandsAreInTheContract(t *testing.T) {
 	if got := byName["view-link new"]; strings.Join(got.Flags, " ") != "--path --minutes" || hasFlag(got, "--confirm") {
 		t.Errorf("view-link new flags %v: --path and --minutes, no --confirm", got.Flags)
 	}
-	if got := byName["view-link revoke"]; strings.Join(got.Args, " ") != "id" {
-		t.Errorf("view-link revoke args %v", got.Args)
+	if got := byName["view-link revoke"]; strings.Join(got.Args, " ") != "id" || strings.Join(got.Flags, " ") != "--all" {
+		t.Errorf("view-link revoke args %v flags %v", got.Args, got.Flags)
+	}
+	if got := byName["view-link revoke-all"]; len(got.Args) != 0 || len(got.Flags) != 0 {
+		t.Errorf("view-link revoke-all takes nothing: args %v flags %v", got.Args, got.Flags)
 	}
 	for _, code := range []string{"E-VIEW-DISABLED", "E-VIEW-PATH", "E-VIEW-LIMIT"} {
 		if !contains(byName["view-link new"].ErrorCodes, code) {
@@ -112,6 +117,53 @@ func TestViewLinkRevokePostsToTheLink(t *testing.T) {
 	}
 	if strings.TrimSpace(r.stdout) != answer {
 		t.Errorf("stdout %q", r.stdout)
+	}
+}
+
+// D-333: --all ends every active link of the token, through POST /api/v1/view-links/revoke-all; so does the command
+// view-link revoke-all of the contract.
+func TestViewLinkRevokeAllPostsOnce(t *testing.T) {
+	const answer = `{"revoked":[7,9],"count":2}`
+	for _, args := range [][]string{{"view-link", "revoke", "--all"}, {"view-link", "revoke-all"}} {
+		r, seen := runTeacher(t, [][2]string{{"200", answer}}, args...)
+		if r.exit != ExitOK || len(seen) != 1 {
+			t.Fatalf("%v: exit %d: %s", args, r.exit, r.stderr)
+		}
+		got := seen[0]
+		if got.method != "POST" || got.path != "/api/v1/view-links/revoke-all" || got.query != "" || got.dry != "" || len(got.body) != 0 {
+			t.Errorf("%v: request %+v", args, got)
+		}
+		if strings.TrimSpace(r.stdout) != answer {
+			t.Errorf("%v: stdout %q", args, r.stdout)
+		}
+	}
+}
+
+// Exactly one of an id and --all: both, or neither, is a usage error and nothing is sent.
+func TestViewLinkRevokeNeedsExactlyOneOfIDAndAll(t *testing.T) {
+	srv, seen := sequenceServer(t, [2]string{"200", `{}`})
+	for _, args := range [][]string{
+		{"view-link", "revoke", "7", "--all"},
+		{"view-link", "revoke", "--all", "7"},
+		{"view-link", "revoke"},
+		{"view-link", "revoke", "--json"},
+		{"view-link", "revoke-all", "7"},
+		{"view-link", "revoke-all", "--all"},
+	} {
+		r := runCLI(t, srv.URL, envToken("bnc_x"), args...)
+		if r.exit != ExitUsage {
+			t.Errorf("%v: exit %d, want %d (%s)", args, r.exit, ExitUsage, r.stderr)
+			continue
+		}
+		assertErrJSON(t, r.stderr, "E-USAGE")
+	}
+	if len(*seen) != 0 {
+		t.Errorf("a usage error must not reach the server: %+v", *seen)
+	}
+	// The one-id form is unchanged: an id and no --all still goes to the link.
+	r, got := runTeacher(t, [][2]string{{"200", `{"id":7,"revoked":true}`}}, "view-link", "revoke", "7")
+	if r.exit != ExitOK || len(got) != 1 || got[0].path != "/api/v1/view-links/7/revoke" {
+		t.Errorf("exit %d, requests %+v", r.exit, got)
 	}
 }
 
@@ -195,7 +247,7 @@ func TestViewLinkHelpNamesTheGroup(t *testing.T) {
 	if r.exit != ExitOK {
 		t.Fatalf("exit %d: %s", r.exit, r.stderr)
 	}
-	for _, name := range []string{"view-link new", "view-link list", "view-link revoke"} {
+	for _, name := range []string{"view-link new", "view-link list", "view-link revoke", "view-link revoke-all"} {
 		if !strings.Contains(r.stdout, `"`+name+`"`) {
 			t.Errorf("help lacks %q: %s", name, r.stdout)
 		}

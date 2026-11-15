@@ -238,6 +238,10 @@ export function normalizeInput(input, source = 'mathlive') {
   if (source === 'text') {
     if (/\d\s*,\s+\d|\d\s+,\s*\d/.test(s)) throw new InputError('ambiguous_comma');
     s = s.replace(/\*/g, '\\cdot ');
+    // The standalone word `pi` is the constant (items say "per π scrivi pi"; MathLive does this itself on typing).
+    // Case-sensitive, like sqrt/rad. Not inside a longer word (pipe, spin) and not after a backslash (\pi, \epsilon...):
+    // `p*i` or `pi` glued to other letters (`pir`) still reads as the variables p and i.
+    s = s.replace(/(?<![a-zA-Z\\])pi(?![a-zA-Z])/g, '\\pi ');
     // ^(...) -> ^{...}
     for (let i = s.indexOf('^'); i >= 0; i = s.indexOf('^', i + 1)) {
       let j = i + 1; while (s[j] === ' ') j++;

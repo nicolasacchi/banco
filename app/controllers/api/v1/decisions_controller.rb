@@ -30,7 +30,8 @@ module Api
         rows = scope.includes(:subject, :student).limit(limit + 1).to_a
         more = rows.size > limit
         rows = rows.first(limit)
-        render json: { decisions: rows.map { |d| row(d) }, more: more, next_since: (rows.last&.id || since),
+        labels = Activity.token_labels(rows.map { |d| JSON.parse(d.payload_json)["token"] })
+        render json: { decisions: rows.map { |d| row(d, labels) }, more: more, next_since: (rows.last&.id || since),
                        next: "banco decisions --since #{rows.last&.id || since}" }
       end
 
@@ -64,10 +65,13 @@ module Api
 
       private
 
-      def row(decision)
+      # Who recorded it (D-334): teacher (the login), via (web, console or api) and, for an api row, token (its public id) and
+      # token_label. labels: public id => label, when the caller has already looked up a page of rows.
+      def row(decision, labels = nil)
         payload = JSON.parse(decision.payload_json)
+        labels ||= Activity.token_labels([ payload["token"] ])
         { id: decision.id, kind: decision.kind, subject: decision.subject&.key, student: decision.student&.key, payload: payload, via: decision.via,
-          teacher: decision.teacher_login, token: payload["token"], created_at: decision.created_at.utc.iso8601 }.compact
+          teacher: decision.teacher_login, token: payload["token"], token_label: labels[payload["token"]], created_at: decision.created_at.utc.iso8601 }.compact
       end
 
       def integer_param(name, default)

@@ -352,6 +352,9 @@ fields are those of a practice item of the same component, plus:
 - A step `blank` inside an `example` is a check (`choice`, `number`, `fraction`, `normalized_text`) that hides the
   rest of the example until it is answered: put one faded step in at least one example, and put nothing before
   it that gives it away.
+  The page does not show the `do_it` of a blank step before the answer, only its `why_it` and the question: a number or
+  a cell reference that the `do_it` gives («Scrivi 8 in B3.») must also be said by an earlier step, the problem, the card
+  or the `prompt_it`, or the student cannot answer (`W-BLANK-STEP-DATUM`).
 - Options, chips, `tiles` and `ordering` items draw the same inline markup as the prompt (`[[es:vivimos]]`, `$x^{12}$`, bold):
   write them as you write the text. `tiles`: the page says «La tua risposta» and «Le tessere», which fit words, facts and
   symbols; add `builds: sentence` when the tiles build a sentence, and it says «La tua frase» and «Le parole» (D-310).

@@ -48,10 +48,12 @@ module Comments
       end
     end
 
-    # The reason, and for the API the token that acted.
+    # The reason, for the API the token that acted, for the console the host OS user (as a decision keeps it in its
+    # user_agent: D-334).
     def payload
       doc = @reason.empty? ? {} : { "reason_it" => @reason.first(1000) }
       doc["token"] = @request.token_id if @request.is_a?(DecisionRecorder::Api)
+      doc["os_user"] = @request.os_user if @request.is_a?(DecisionRecorder::Console) && @request.os_user.present?
       doc
     end
 

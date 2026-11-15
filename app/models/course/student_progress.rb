@@ -5,9 +5,10 @@ module Course
   # Course::StudentView (what the course pages read) and Diagnosis::Availability (the list of the diagnosis); no query of
   # its own, nothing written.
   class StudentProgress
-    def initialize(student, now: Time.current)
+    # view: a StudentView already built for this student (the digest builds one and shares it, D-333).
+    def initialize(student, now: Time.current, view: nil)
       @student = student
-      @view = StudentView.new(student, now: now)
+      @view = view || StudentView.new(student, now: now)
     end
 
     def as_json(*)

@@ -81,7 +81,8 @@ class ViewLinksApiTest < ActionDispatch::IntegrationTest
   end
 
   test "the content agents' tokens refuse every view link command with 403 token_role" do
-    [ [ :post, "/api/v1/view-links", {} ], [ :get, "/api/v1/view-links", nil ], [ :post, "/api/v1/view-links/1/revoke", {} ] ].each do |method, path, body|
+    [ [ :post, "/api/v1/view-links", {} ], [ :get, "/api/v1/view-links", nil ], [ :post, "/api/v1/view-links/1/revoke", {} ],
+      [ :post, "/api/v1/view-links/revoke-all", {} ] ].each do |method, path, body|
       api_as(@agent, path, method: method, body: body)
       assert_response :forbidden, path
       assert_equal [ "E-AUTH", "token_role" ], json.values_at("code", "reason"), path
@@ -259,5 +260,91 @@ class ViewLinksApiTest < ActionDispatch::IntegrationTest
     assert_response :not_found
     assert_equal 0, ViewLinkRevocation.count
     assert_predicate ViewLink.find(id), :active?
+  end
+
+  # ---- revoke-all (D-333)
+
+  def revoke_all(token, **options) = api_as(token, "/api/v1/view-links/revoke-all", method: :post, **options)
+
+  test "revoke-all ends every open link of this token only: not the revoked, not the expired, not another token's" do
+    create_link(@bot, { minutes: 120 })
+    first = json["id"]
+    create_link(@bot, { minutes: 120 })
+    second = json["id"]
+    raw_second = json["url"].delete_prefix(PREFIX)
+    create_link(@bot, { minutes: 5 })
+    expired = json["id"]
+    create_link(@bot, { minutes: 120 })
+    last = json["id"]
+    create_link(@teacher, { minutes: 120 })
+    others = json["id"]
+    api_as(@bot, "/api/v1/view-links/#{second}/revoke", method: :post)
+    revoked_before = ViewLinkRevocation.find_by!(view_link_id: second)
+    travel 10.minutes # the 5-minute link has expired
+
+    revoke_all(@bot)
+    assert_response :success, json.inspect
+    assert_equal({ "revoked" => [ first, last ], "count" => 2 }, json)
+    assert_equal "no-store", response.headers["Cache-Control"]
+    [ first, last ].each { |id| assert_equal registry(@bot), ViewLinkRevocation.find_by!(view_link_id: id).api_token }
+    assert_equal revoked_before.attributes, ViewLinkRevocation.find_by!(view_link_id: second).attributes, "an earlier revocation is not touched"
+    assert_nil ViewLinkRevocation.find_by(view_link_id: expired), "an expired link needs none"
+    assert_nil ViewLinkRevocation.find_by(view_link_id: others), "another token's link is not touched"
+    assert_predicate ViewLink.find(others), :active?
+    assert_equal 3, ViewLinkRevocation.count
+    [ first, last ].each { |id| assert_not ViewLink.find(id).active? }
+    assert_nil ViewLinks.redeem(raw_second)
+
+    revoke_all(@bot) # idempotent: nothing is open any more
+    assert_response :success
+    assert_equal({ "revoked" => [], "count" => 0 }, json)
+    assert_equal 3, ViewLinkRevocation.count
+
+    api_as(@bot, "/api/v1/view-links")
+    assert_equal [ false ], json["links"].map { |l| l["active"] }.uniq, "the list shows every link of the token as not active"
+  end
+
+  test "revoke-all with no link at all answers an empty list and writes nothing" do
+    [ @bot, @teacher ].each do |token|
+      revoke_all(token)
+      assert_response :success
+      assert_equal({ "revoked" => [], "count" => 0 }, json)
+    end
+    assert_equal [ 0, 0, 0 ], counts
+  end
+
+  test "revoke-all frees the limit, works through the edge for the public roles and with the feature off" do
+    ViewLinks::LIMIT.times { create_link(@bot, { minutes: 5 }) }
+    create_link(@bot)
+    assert_response :too_many_requests
+    ENV["BANCO_VIEW_LINKS_ENABLED"] = nil # a link that the flag stopped is still ended for good
+    revoke_all(@bot, remote_addr: EDGE)
+    assert_response :success, json.inspect
+    assert_equal ViewLinks::LIMIT, json["count"]
+    ENV["BANCO_VIEW_LINKS_ENABLED"] = "1"
+    assert_equal 0, ViewLink.all.count(&:active?)
+    create_link(@bot)
+    assert_response :created
+
+    create_link(@teacher)
+    revoke_all(@teacher, remote_addr: EDGE)
+    assert_equal 1, json["count"]
+    revoke_all(@agent, remote_addr: EDGE)
+    assert_response :forbidden
+    assert_equal [ "E-AUTH", "not_public_role" ], json.values_at("code", "reason")
+  end
+
+  test "revoke-all needs a token, a listed teacher and a reader role" do
+    create_link(@teacher)
+    revoke_all(nil)
+    assert_response :unauthorized
+    revoke_all(@agent)
+    assert_response :forbidden
+    assert_equal "token_role", json["reason"]
+    ENV["BANCO_TEACHER_USERS"] = "someone-else"
+    revoke_all(@teacher)
+    assert_response :forbidden
+    assert_equal "teacher_not_listed", json["reason"]
+    assert_equal 0, ViewLinkRevocation.count
   end
 end

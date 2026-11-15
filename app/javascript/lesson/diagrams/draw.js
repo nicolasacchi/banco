@@ -292,7 +292,12 @@ export function mountDiagram(data, ctx, options = {}) {
     figure.dataset.error = `${error.code ?? ""} ${error.path ?? ""} ${error.message ?? ""}`.trim()
   }
 
+  // true from mount until the module and the assets of a wave 2 type (a map's base) are loaded: every draw() in between (a relayout of
+  // the card, a resize, a state change) would find nothing to draw from, so it waits for `start` below, which draws with what is current.
+  // A load that fails keeps it true: the error stays on screen and is not overwritten by a layout that cannot work.
+  let assetsPending = false
   const draw = () => {
+    if (assetsPending) return
     const width = Math.floor(stage.clientWidth || figure.clientWidth || options.width || 320)
     if (width < 10) return
     state.width = width
@@ -645,8 +650,10 @@ export function mountDiagram(data, ctx, options = {}) {
       delete figure.dataset.settling
     }, 60)
   }
+  let settled = Promise.resolve()
   const mounted = () => {
     const start = () => {
+      assetsPending = false
       draw()
       if (typeof ResizeObserver !== "undefined") {
         observer = new ResizeObserver(schedule)
@@ -655,15 +662,18 @@ export function mountDiagram(data, ctx, options = {}) {
     }
     if (mod && !mod.prepare) return start() // the core types: drawn at once, as before
     // a wave 2 type loads its module on demand and, if it says so, its assets (a map's base) before the first layout
+    assetsPending = true
     const ready = Promise.resolve(mod ?? load(type)).then((m) => {
       mod = m
       setupStrip()
       return m?.prepare?.(data, { mode })
     })
-    ready.then(start, (error) => showError({ code: "E-DIAGRAM-LAYOUT", path: "", message: `could not load the ${type} figure: ${error?.message ?? error}` }))
+    settled = ready.then(start, (error) => showError({ code: "E-DIAGRAM-LAYOUT", path: "", message: `could not load the ${type} figure: ${error?.message ?? error}` }))
   }
   return {
     element: figure,
+    // resolves when the figure has been drawn for the first time (or has shown why it cannot be): the render check waits on it
+    get settled() { return settled },
     get total() { return total },
     mounted,
     relayout: draw,

@@ -12,7 +12,7 @@ test("words typed through MathLive's shortcuts or as a run of letters trigger th
 })
 
 test("expressions do not trigger it", () => {
-  for (const latex of ["24a^3", "\\sqrt{x}", "\\sin x", "2ab", "", "\\frac{-29}{3x}", "\\operatorname{lcm}(a,b)", "\\sin\\left(x\\right)", "x^{2}+3x", "\\cos x \\tan y", "2^{-5}"]) {
+  for (const latex of ["24a^3", "\\sqrt{x}", "\\sin x", "2ab", "", "\\frac{-29}{3x}", "\\operatorname{lcm}(a,b)", "\\sin\\left(x\\right)", "x^{2}+3x", "\\cos x \\tan y", "2^{-5}", "14pi", "4\\pi+8", "pi*r^2"]) {
     assert.equal(hasTypedWords(latex), false, latex)
   }
 })

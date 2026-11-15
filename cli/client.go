@@ -29,7 +29,12 @@ type client struct {
 
 // contractExempt are the commands that work when the CLI's contract differs from the server's (D-330): they are how
 // an out-of-date CLI learns what changed and replaces itself, so they must never be refused for being out of date.
-var contractExempt = map[string]bool{"token": true, "changes": true, "docs show": true, "self-update": true}
+var contractExempt = map[string]bool{"token": true, "changes": true, "changes show": true, "docs show": true, "self-update": true}
+
+// tokenless are the commands that need no token and send none (D-333): they read the public repo's content (the decisions
+// index, the two docs, the CLI release build), never a student's data, and the server answers them without looking at
+// Authorization. A machine with no token can still learn what changed and update its CLI.
+var tokenless = map[string]bool{"changes": true, "changes show": true, "docs show": true, "self-update": true}
 
 // do performs one authenticated request and returns the body of a 2xx answer.
 // Every response must carry X-Banco-Contract equal to the embedded contract's
@@ -62,15 +67,18 @@ func (c *client) doWith(command, method, path string, payload []byte, headers ma
 // would otherwise follow it, and forward the Authorization header to the same host on another scheme or port).
 func refuseRedirect(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
 
-// open performs one authenticated request and checks the answer (redirect, rate limit, contract header, status). On a
-// 2xx it returns the response with its body still open for the caller to read and close; otherwise an error.
+// open performs one request (authenticated, except for the commands of tokenless) and checks the answer (redirect, rate
+// limit, contract header, status). On a 2xx it returns the response with its body still open for the caller to read and close; otherwise an error.
 func (c *client) open(command, method, path string, payload []byte, headers map[string]string) (*http.Response, error) {
 	if c.urlErr != nil {
 		return nil, c.urlErr
 	}
-	token, err := c.tokens.token(command)
-	if err != nil {
-		return nil, err
+	token := ""
+	if !tokenless[command] {
+		var err error
+		if token, err = c.tokens.token(command); err != nil {
+			return nil, err
+		}
 	}
 	var reader io.Reader
 	if payload != nil {
@@ -80,7 +88,9 @@ func (c *client) open(command, method, path string, payload []byte, headers map[
 	if err != nil {
 		return nil, newErr(ExitUsage, "E-URL", "BANCO_URL", err.Error(), "check BANCO_URL")
 	}
-	req.Header.Set("Authorization", "Bearer "+token)
+	if !tokenless[command] {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
 	req.Header.Set("Accept", "application/json")
 	if payload != nil {
 		req.Header.Set("Content-Type", "application/json")

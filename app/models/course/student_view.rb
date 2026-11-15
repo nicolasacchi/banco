@@ -113,10 +113,28 @@ module Course
 
     # Oggi reads the topics of the programme only: an extra topic is never suggested nor resumed there (D-324).
     def today
-      @today ||= begin
-        programme = subjects.map { |sv| sv.with(topics: programme_topics(sv)) }.select { |sv| sv.topics.any? }
-        Practice::Today.call(catalog: programme, states: states, graph_order: graph_order, last_topic: last_topic)
-      end
+      @today ||= Practice::Today.call(**today_input)
+    end
+
+    # What Oggi proposes first for a subject (D-333, `banco next`): the topic the student left, when it is of this subject, else
+    # the first of the whole ranked suggestions that is (Oggi keeps the first SUGGESTIONS_MAX of the same list, rounds robin over
+    # the subjects). nil when every programme topic of the subject is done. reason: :resume or Practice::Today's.
+    NextTopic = Data.define(:topic, :reason, :skill)
+
+    def next_topic(sv)
+      topics = programme_topics(sv).to_h { |t| [ t.key, t ] }
+      resume = ranked_today[:resume]
+      return NextTopic.new(topic: topics.fetch(resume), reason: :resume, skill: nil) if topics.key?(resume)
+
+      pick = ranked_today[:suggestions].find { |s| topics.key?(s.topic_key) } or return nil
+      NextTopic.new(topic: topics.fetch(pick.topic_key), reason: pick.reason, skill: pick.skill)
+    end
+
+    # The skills of a subject the pages call «Da riprendere» (Practice::Today::RECOVER) on a programme topic, as [skill, topic key],
+    # then those the diagnosis found to recover or learn that no topic holds (the line «Da riprendere, ancora senza argomento»), as [skill, nil].
+    def skills_to_recover(sv)
+      held = programme_topics(sv).flat_map { |t| t.skills.select { |s| Practice::Today::RECOVER.include?(states[s]&.state) }.map { |s| [ s, t.key ] } }
+      held.uniq(&:first) + skills_without_topic(sv).map { |s| [ s, nil ] }
     end
 
     def last_topic
@@ -131,6 +149,14 @@ module Course
     end
 
     private
+
+    def today_input
+      programme = subjects.map { |sv| sv.with(topics: programme_topics(sv)) }.select { |sv| sv.topics.any? }
+      { catalog: programme, states: states, graph_order: graph_order, last_topic: last_topic }
+    end
+
+    # The whole ranked list of Oggi, not cut at SUGGESTIONS_MAX.
+    def ranked_today = @ranked_today ||= Practice::Today.call(**today_input, limit: nil)
 
     def tally(topics)
       by_status = topics.map { |topic| status(topic) }.tally

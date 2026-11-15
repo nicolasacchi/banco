@@ -2,12 +2,16 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -430,5 +434,234 @@ func TestRedirectsAreNeverFollowed(t *testing.T) {
 	assertErrJSON(t, r.stderr, "E-NETWORK")
 	if elsewhere.Load() != 0 {
 		t.Errorf("a redirect was followed %d times", elsewhere.Load())
+	}
+}
+
+// D-333: changes, changes show, docs show and self-update work with no token and send none.
+
+// authRequest is what a server saw of one request, with its Authorization header.
+type authRequest struct{ method, path, query, auth string }
+
+// authServer answers every request with (status, body) and the contract header, and records what came in.
+func authServer(t *testing.T, status int, body string) (*httptest.Server, *[]authRequest) {
+	t.Helper()
+	var seen []authRequest
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		seen = append(seen, authRequest{r.Method, r.URL.Path, r.URL.RawQuery, r.Header.Get("Authorization")})
+		w.Header().Set("X-Banco-Contract", contract.Digest())
+		w.WriteHeader(status)
+		w.Write([]byte(body))
+	}))
+	t.Cleanup(srv.Close)
+	return srv, &seen
+}
+
+// noTokenAnywhere is a token source with neither BANCO_TOKEN nor a working pass-cli: any command that asks it fails
+// with E-TOKEN.
+func noTokenAnywhere() tokenSource {
+	return tokenSource{
+		getenv: func(string) string { return "" },
+		run: func(context.Context, []string, string, ...string) ([]byte, error) {
+			return nil, errors.New("no pass-cli")
+		},
+	}
+}
+
+// runCLINoToken is runCLIExe on a machine with no token.
+func runCLINoToken(t *testing.T, baseURL, exe string, args ...string) result {
+	t.Helper()
+	var out, errb bytes.Buffer
+	e := &env{stdout: &out, stderr: &errb, getenv: func(string) string { return "" },
+		executable: func() (string, error) { return exe, nil }}
+	e.client = func() *client {
+		return &client{baseURL: baseURL, http: &http.Client{Timeout: 5 * time.Second}, tokens: noTokenAnywhere()}
+	}
+	code := runWith(args, e)
+	return result{code, out.String(), errb.String()}
+}
+
+func TestTokenlessCommandsSendNoAuthorizationAndNeedNoToken(t *testing.T) {
+	const decision = `{"number":"D-332","date":"2026-11-15","title":"t","status":"implemented","text":"## D-332 · t\n\nbody\n"}`
+	cases := []struct {
+		args  []string
+		body  string
+		path  string
+		query string
+	}{
+		{[]string{"changes"}, `{"server":{"commit":"c"},"changes":[]}`, "/api/v1/updates", ""},
+		{[]string{"changes", "--since", "D-330"}, `{"server":{"commit":"c"},"changes":[]}`, "/api/v1/updates", "since=D-330"},
+		{[]string{"changes", "show", "D-332"}, decision, "/api/v1/updates/decisions/D-332", ""},
+		{[]string{"changes", "show", "332"}, decision, "/api/v1/updates/decisions/D-332", ""},
+		{[]string{"changes", "show", "D-332", "--text"}, decision, "/api/v1/updates/decisions/D-332", ""},
+		{[]string{"docs", "show", "bot"}, `{"name":"bot","sha256":"x","text":"# bot"}`, "/api/v1/docs/bot", ""},
+		{[]string{"self-update", "--check"}, `{"server":{"commit":"c"},"contract_digest":"x","cli":{"version":null,"files":[]},"docs":[],"changes":[]}`, "/api/v1/updates", ""},
+	}
+	for _, c := range cases {
+		srv, seen := authServer(t, 200, c.body)
+		r := runCLINoToken(t, srv.URL, fakeExe(t), c.args...)
+		if r.exit != ExitOK {
+			t.Errorf("%v: exit %d: %s", c.args, r.exit, r.stderr)
+			continue
+		}
+		if len(*seen) != 1 {
+			t.Errorf("%v: %d requests", c.args, len(*seen))
+			continue
+		}
+		got := (*seen)[0]
+		if got.method != "GET" || got.path != c.path || got.query != c.query || got.auth != "" {
+			t.Errorf("%v: request %+v (no Authorization header expected)", c.args, got)
+		}
+	}
+}
+
+// With a token in the environment the tokenless commands still send none; the commands that read student data do.
+func TestTokenlessCommandsIgnoreAnExistingToken(t *testing.T) {
+	srv, seen := authServer(t, 200, `{"server":{"commit":"c"},"changes":[]}`)
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "changes")
+	if r.exit != ExitOK || len(*seen) != 1 || (*seen)[0].auth != "" {
+		t.Errorf("changes: exit %d, requests %+v", r.exit, *seen)
+	}
+	for _, args := range [][]string{{"token"}, {"teacher", "home"}, {"next"}} {
+		srv, seen := authServer(t, 200, `{"ok":true}`)
+		r := runCLI(t, srv.URL, envToken("bnc_x"), args...)
+		if r.exit != ExitOK || len(*seen) != 1 || (*seen)[0].auth != "Bearer bnc_x" {
+			t.Errorf("%v: exit %d, requests %+v (the token must be sent)", args, r.exit, *seen)
+		}
+	}
+}
+
+// The commands that need a token still fail on a machine with none, before any request.
+func TestOtherCommandsStillNeedAToken(t *testing.T) {
+	srv, seen := authServer(t, 200, `{}`)
+	for _, args := range [][]string{{"token"}, {"teacher", "home"}, {"digest"}, {"activity"}, {"view-link", "revoke", "--all"}} {
+		r := runCLINoToken(t, srv.URL, fakeExe(t), args...)
+		if r.exit != ExitAuth {
+			t.Errorf("%v: exit %d, want %d: %s", args, r.exit, ExitAuth, r.stderr)
+			continue
+		}
+		assertErrJSON(t, r.stderr, "E-TOKEN")
+	}
+	if len(*seen) != 0 {
+		t.Errorf("requests %+v", *seen)
+	}
+}
+
+// A whole self-update (the list and the download) on a machine with no token: neither request carries Authorization.
+func TestSelfUpdateWorksWithNoTokenAndSendsNone(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("on Windows the update is written beside the program")
+	}
+	newBinary := []byte("new program v3")
+	backend, downloads := updateServer(t, contract.Digest(), "9.9.9+new", newBinary, newBinary)
+	target, _ := url.Parse(backend.URL)
+	var auths []string
+	proxy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		auths = append(auths, r.Method+" "+r.URL.Path+" "+r.Header.Get("Authorization"))
+		httputil.NewSingleHostReverseProxy(target).ServeHTTP(w, r)
+	}))
+	defer proxy.Close()
+	exe := fakeExe(t)
+	r := runCLINoToken(t, proxy.URL, exe, "self-update")
+	if r.exit != ExitOK {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	if got, _ := os.ReadFile(exe); !bytes.Equal(got, newBinary) || downloads.Load() != 1 {
+		t.Fatalf("executable %q, downloads %d", got, downloads.Load())
+	}
+	name := releaseName(runtime.GOOS, runtime.GOARCH)
+	want := []string{"GET /api/v1/updates ", "GET /api/v1/cli/" + name + " "}
+	if fmt.Sprint(auths) != fmt.Sprint(want) {
+		t.Errorf("requests %q, want %q (an empty Authorization)", auths, want)
+	}
+}
+
+func TestChangesShowPrintsTheJSONOrOnlyTheText(t *testing.T) {
+	const decision = `{"number":"D-332","date":"2026-11-15","title":"View links","status":"implemented","text":"## D-332 · View links\n\nThe body."}`
+	srv, _ := authServer(t, 200, decision)
+	r := runCLINoToken(t, srv.URL, fakeExe(t), "changes", "show", "D-332")
+	if r.exit != ExitOK || strings.TrimSpace(r.stdout) != decision {
+		t.Errorf("json: exit %d, stdout %q, stderr %s", r.exit, r.stdout, r.stderr)
+	}
+	r = runCLINoToken(t, srv.URL, fakeExe(t), "changes", "show", "--text", "332")
+	if r.exit != ExitOK || r.stdout != "## D-332 · View links\n\nThe body.\n" {
+		t.Errorf("text: exit %d, stdout %q, stderr %s", r.exit, r.stdout, r.stderr)
+	}
+}
+
+func TestChangesShowUnknownNumberIsNotFound(t *testing.T) {
+	srv, _ := authServer(t, 404, `{"code":"E-NOT-FOUND","field":"number","message":"no decision D-999","next":"banco changes"}`)
+	r := runCLINoToken(t, srv.URL, fakeExe(t), "changes", "show", "D-999")
+	if r.exit != ExitValidation {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	if e := assertErrJSON(t, r.stderr, "E-NOT-FOUND"); e.Field != "number" {
+		t.Errorf("field %q", e.Field)
+	}
+}
+
+func TestChangesShowUsageErrorsSendNothing(t *testing.T) {
+	srv, seen := authServer(t, 200, `{}`)
+	for _, args := range [][]string{{"changes", "show"}, {"changes", "show", "D-1"}, {"changes", "show", "abc"}, {"changes", "show", "../x"},
+		{"changes", "show", "D-332", "D-333"}, {"changes", "show", "D-D-332"}} {
+		r := runCLINoToken(t, srv.URL, fakeExe(t), args...)
+		if r.exit != ExitUsage {
+			t.Errorf("%v: exit %d", args, r.exit)
+			continue
+		}
+		if e := assertErrJSON(t, r.stderr, "E-USAGE"); e.Field != "number" {
+			t.Errorf("%v: field %q", args, e.Field)
+		}
+	}
+	if len(*seen) != 0 {
+		t.Errorf("requests %+v", *seen)
+	}
+}
+
+// changes show stays usable when the server's contract differs (it is how a stale CLI catches up).
+func TestChangesShowIsExemptFromContractDrift(t *testing.T) {
+	srv := fakeServer(200, `{"number":"D-332","text":"t"}`, "deadbeef")
+	defer srv.Close()
+	r := runCLINoToken(t, srv.URL, fakeExe(t), "changes", "show", "D-332")
+	if r.exit != ExitOK {
+		t.Errorf("exit %d: %s", r.exit, r.stderr)
+	}
+}
+
+// D-333: banco token warns on stderr when the token expires in under 7 days; stdout stays the server's JSON.
+func TestTokenWarnsOnStderrWhenExpiringSoon(t *testing.T) {
+	cases := []struct {
+		name, body, warning string
+	}{
+		{"expiring", `{"role":"teacher","expires_at":"2026-11-18T09:30:00Z","renews_on_use":false,"expires_in_days":3,"expiring_soon":true}`,
+			"warning: this token expires in 3 days (2026-11-18); ask the operator for a new one\n"},
+		{"expiring and renewing", `{"role":"bot_read","expires_at":"2026-11-20T09:30:00Z","renews_on_use":true,"expires_in_days":5,"expiring_soon":true}`,
+			"warning: this token expires in 5 days (2026-11-20); using it renews it\n"},
+		{"not expiring", `{"role":"teacher","expires_at":"2027-02-01T09:30:00Z","renews_on_use":false,"expires_in_days":78,"expiring_soon":false}`, ""},
+		{"an older server's answer", `{"role":"teacher","expires_at":"2026-11-16T09:30:00Z","renews_on_use":false}`, ""},
+	}
+	for _, c := range cases {
+		srv, seen := sequenceServer(t, [2]string{"200", c.body})
+		r := runCLI(t, srv.URL, envToken("bnc_x"), "token")
+		if r.exit != ExitOK {
+			t.Fatalf("%s: exit %d: %s", c.name, r.exit, r.stderr)
+		}
+		if r.stderr != c.warning {
+			t.Errorf("%s: stderr %q, want %q", c.name, r.stderr, c.warning)
+		}
+		if strings.TrimSpace(r.stdout) != c.body {
+			t.Errorf("%s: stdout %q", c.name, r.stdout)
+		}
+		if len(*seen) != 1 || (*seen)[0].method != "GET" || (*seen)[0].path != "/api/v1/token" {
+			t.Errorf("%s: requests %+v", c.name, *seen)
+		}
+	}
+}
+
+// A refused token prints no warning, only the error.
+func TestTokenErrorPrintsNoWarning(t *testing.T) {
+	srv, _ := sequenceServer(t, [2]string{"401", `{"code":"E-AUTH","field":"authorization","message":"m","next":"n"}`})
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "token")
+	if r.exit != ExitAuth || r.stdout != "" || strings.Contains(r.stderr, "warning:") {
+		t.Errorf("exit %d, stdout %q, stderr %q", r.exit, r.stdout, r.stderr)
 	}
 }

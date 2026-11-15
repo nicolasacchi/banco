@@ -457,6 +457,11 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 .dg-line { stroke-width: 4; fill: none; stroke-linecap: round; }
 .dg-segment { stroke-width: 4; fill: none; }
 .dg-point { stroke: var(--surface); stroke-width: 2; }
+/* a tint-only role (highlight) on a line, segment or point: ink on a marker-pen band */
+.dg-halo { stroke: var(--role-highlight-tint); stroke-width: 15; stroke-linecap: round; fill: none; }
+.dg-halo-dot { stroke: none; }
+.dg-line.dg-ink, .dg-segment.dg-ink { stroke: var(--text); fill: none; }
+.dg-point.dg-ink { fill: var(--text); }
 .dg-cell { fill: var(--surface); stroke: var(--line); stroke-width: 2; }
 .dg-cell-empty { fill: none; stroke-dasharray: 5 5; stroke: var(--muted); }
 .dg-node { fill: var(--surface); stroke-width: 3; }

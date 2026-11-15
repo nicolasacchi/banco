@@ -182,6 +182,8 @@ const ready = (async () => {
       revisionId: 0, urls: { check: "", solution: "", practice: "#" }, savePreferences: () => {}
     })
     api.renderAll()
+    // a figure of a wave 2 type draws once its module and assets (a map's base) are loaded, however long a busy machine takes to serve them
+    await Promise.all(api.figures().map((figure) => figure.settled))
     await frames()
     api.setView("cards", false)
     await frames()

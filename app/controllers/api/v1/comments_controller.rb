@@ -35,9 +35,7 @@ module Api
         limit = params[:limit].presence ? Integer(params[:limit].to_s, 10, exception: false) : LIMIT
         return refuse("E-FILES", "limit", "limit is a whole number", "banco comments list --limit 50", 422) unless limit&.positive?
 
-        inbox = Comments::Inbox.new(subject: params[:subject], who: params[:who], reason: params[:reason], kind: params[:kind], type: "comment", state: (state if Comment::STATES.include?(state)))
-        rows = inbox.comments
-        rows = rows.reject { |c| c.state == "closed" } if state == "open"
+        rows = Comments::ApiRows.list(state: state, subject: params[:subject], who: params[:who], reason: params[:reason], kind: params[:kind])
         render json: { notice: NOTICE, state: state, total: rows.size, comments: rows.first(limit.clamp(1, MAX_LIMIT)).map { |c| summary(c) },
                        next: "banco comments show ID" }
       end
@@ -93,13 +91,10 @@ module Api
         end
       end
 
-      def summary(comment)
-        { id: comment.id, state: comment.state, reason: comment.reason, student: comment.student.key, trial: comment.trial, page_kind: comment.page_kind,
-          page_path: comment.page_path, subject: comment.subject&.key, text_it: comment.text_it, replies: comment.replies.size,
-          unread_reply: comment.unread_reply?, created_at: stamp(comment.created_at) }.compact
-      end
+      def summary(comment) = Comments::ApiRows.summary(comment)
 
       def detail(comment)
+        labels = Activity.token_labels(comment.events.map { |e| JSON.parse(e.payload_json)["token"] })
         place = Comments::Place.new(comment)
         summary(comment).merge(
           anchor: comment.anchor, selected_text: comment.selected_text, card: comment.card, topic: place.topic_key,
@@ -108,14 +103,17 @@ module Api
                   item_instance_id: comment.item_instance_id, practice_serve_id: comment.practice_serve_id, diagnosis_run_id: comment.diagnosis_run_id,
                   served_event_id: comment.served_event_id, blueprint_revision_id: comment.blueprint_revision_id }.compact,
           screen: { width: comment.viewport_width, height: comment.viewport_height, theme: comment.theme, text_size: comment.text_size }.compact,
-          events: comment.events.map { |e| event_row(e) }
+          events: comment.events.map { |e| event_row(e, labels) }
         ).compact
       end
 
-      def event_row(event)
+      # Who did it (D-334): actor (the login), origin (web, console, api or student) and, for an api event, token (its public id)
+      # and token_label. labels: public id => label, when the caller has already looked up the comment's events.
+      def event_row(event, labels = nil)
         payload = JSON.parse(event.payload_json)
+        labels ||= Activity.token_labels([ payload["token"] ])
         { id: event.id, kind: event.kind, origin: event.origin, actor: event.actor, text_it: event.text_it, reason_it: payload["reason_it"],
-          token: payload["token"], created_at: stamp(event.created_at) }.compact
+          token: payload["token"], token_label: labels[payload["token"]], created_at: stamp(event.created_at) }.compact
       end
 
       def stamp(time) = time.utc.iso8601

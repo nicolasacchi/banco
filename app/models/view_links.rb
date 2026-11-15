@@ -85,6 +85,18 @@ module ViewLinks
     ViewLinkRevocation.find_by!(view_link_id: link.id)
   end
 
+  # Appends the revocation by the ApiToken for every link of this token that is not revoked and not expired (D-333), and
+  # returns their ids, oldest first; none: []. Only this token's links. The kill switch is not asked: a link made
+  # unusable by the flag is still ended for good, so turning the flag on again does not bring it back.
+  def revoke_all!(token, now = Time.current)
+    ViewLink.transaction do
+      links = ViewLink.where(api_token_id: token.id).where("expires_at > ?", now)
+                      .where.not(id: ViewLinkRevocation.select(:view_link_id)).order(:id).to_a
+      links.each { |link| revoke!(link, by: token) }
+      links.map(&:id)
+    end
+  end
+
   # The token's newest LIST_LIMIT links, newest first, with their revocations loaded.
   def for_token(token) = ViewLink.where(api_token_id: token.id).includes(:revocation).order(created_at: :desc, id: :desc).limit(LIST_LIMIT)
 

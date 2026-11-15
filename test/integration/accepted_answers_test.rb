@@ -144,10 +144,11 @@ class AcceptedAnswersTest < ActionDispatch::IntegrationTest
   end
 
   # D-327: the pending list is also an API read, for the tokens that read, through one controller; the CLI's command is `answers pending`.
-  test "only the answers controller of the API names the pending list, and no CLI source names the console task" do
+  # D-333: the one-call digest (`banco digest`) also carries its count and latest rows, so the digest controller names it too.
+  test "only the answers and digest controllers of the API name the pending list, and no CLI source names the console task" do
     assert_not_includes Rails.root.join("contract/commands.json").read, "answers:pending"
     named = Dir[Rails.root.join("app/controllers/api/**/*.rb")].select { |f| File.read(f).match?(/PendingAnswers/) }
-    assert_equal [ "app/controllers/api/v1/answers_controller.rb" ], named.map { |f| f.delete_prefix("#{Rails.root}/") }
+    assert_equal [ "app/controllers/api/v1/answers_controller.rb", "app/controllers/api/v1/digest_controller.rb" ], named.map { |f| f.delete_prefix("#{Rails.root}/") }.sort
     assert_empty Dir[Rails.root.join("cli/**/*.go")].reject { |f| f.end_with?("_test.go") }.select { |f| File.read(f).match?(/PendingAnswers|answers:pending/) }
   end
 end

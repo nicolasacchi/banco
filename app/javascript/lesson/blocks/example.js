@@ -109,7 +109,7 @@ export function render(block, ctx, loc) {
       row.classList.toggle("is-new", i === shown - 1 && wasHidden && !row.hidden && !isGhost)
     })
     next.firstChild.textContent = shown === 0 ? ctx.t.first_step : ctx.t.next_step_example
-    count.textContent = ctx.t.steps_count.replace("%{n}", Math.min(shown, steps.length)).replace("%{total}", steps.length)
+    count.textContent = ctx.t.steps_count.replace("%{n}", Math.min(shown, steps.length)).replace("%{total}", Math.max(block.steps_total ?? 0, steps.length))
     const gate = steps.findIndex((s) => s.blank && !s.do_it)
     const waiting = gate >= 0 && shown > gate
     const complete = shown >= steps.length && gate < 0

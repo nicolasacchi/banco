@@ -45,6 +45,13 @@ module Api
         render json: { id: link.id, revoked: true, revoked_at: revocation.created_at.utc.iso8601 }
       end
 
+      # POST /api/v1/view-links/revoke-all (D-333): revokes every link of this token that is still open; another token's links
+      # are not touched. Idempotent: a second call finds none and answers an empty list.
+      def revoke_all
+        ids = ViewLinks.revoke_all!(registry_token)
+        render json: { revoked: ids, count: ids.size }
+      end
+
       private
 
       # The registry row of the request's token (the request passed authentication, so it exists).

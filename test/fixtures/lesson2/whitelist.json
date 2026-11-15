@@ -207,6 +207,10 @@
     "result_it",
     "line"
    ],
+   "computed": [
+    "steps_total"
+   ],
+   "note": "steps_total (D-335) is the example's whole number of steps, a count the server adds for the counter «passo N di M»; no schema declares it",
    "cut": "steps up to and excluding the first step with a blank; for that step its why_it and the blank, served like a check; nothing after it. An example without a blank is served whole, result_it included. The check endpoint returns the blank step's do_it and the remaining steps after a right answer or the second try (A9).",
    "nested": {
     "steps": {

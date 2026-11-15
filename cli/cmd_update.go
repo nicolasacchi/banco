@@ -12,13 +12,15 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"strings"
 
 	"banco/contract"
 )
 
 // Staying current (D-330): the token as the server knows it, what changed in the software, the two docs the bot lives by,
-// and the CLI's own update from the server's release build. These four commands work when the CLI's contract differs from
-// the server's (contractExempt): they are how an out-of-date CLI catches up.
+// and the CLI's own update from the server's release build. These commands work when the CLI's contract differs from
+// the server's (contractExempt): they are how an out-of-date CLI catches up. All but token also work with no token at all
+// (tokenless, D-333): they show the public repo's content, never a student's data.
 
 // updates is the answer of GET /api/v1/updates.
 type updates struct {
@@ -47,7 +49,8 @@ type cliFile struct {
 var decisionNumberRe = regexp.MustCompile(`^D-[0-9]{3,}$`)
 
 // runToken prints the token of BANCO_TOKEN as the server knows it (GET /api/v1/token): role, teacher, effective expiry,
-// whether it renews on use and its lifetime. Never the secret.
+// whether it renews on use and its lifetime. Never the secret. When the server says the token expires within 7 days
+// (expiring_soon, D-333) one warning line follows on stderr; stdout stays the server's JSON alone.
 func runToken(e *env, args []string) error {
 	fs := flag.NewFlagSet("token", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
@@ -59,7 +62,32 @@ func runToken(e *env, args []string) error {
 	if len(pos) != 0 {
 		return newErr(ExitUsage, "E-USAGE", "args", "token takes no argument", "banco token")
 	}
-	return send(e, "token", "GET", "/api/v1/token", nil, false)
+	body, err := e.client().do("token", "GET", "/api/v1/token")
+	if err != nil {
+		return err
+	}
+	if _, err := e.stdout.Write(append(body, '\n')); err != nil {
+		return err
+	}
+	var t struct {
+		ExpiringSoon  *bool   `json:"expiring_soon"`
+		ExpiresInDays *int    `json:"expires_in_days"`
+		ExpiresAt     *string `json:"expires_at"`
+		RenewsOnUse   bool    `json:"renews_on_use"`
+	}
+	// An answer that is not the expected object was printed as it came; the warning is an extra, never a failure.
+	if json.Unmarshal(body, &t) == nil && t.ExpiringSoon != nil && *t.ExpiringSoon && t.ExpiresInDays != nil {
+		date := ""
+		if t.ExpiresAt != nil {
+			date = strings.SplitN(*t.ExpiresAt, "T", 2)[0]
+		}
+		action := "ask the operator for a new one"
+		if t.RenewsOnUse {
+			action = "using it renews it"
+		}
+		fmt.Fprintf(e.stderr, "warning: this token expires in %d days (%s); %s\n", *t.ExpiresInDays, date, action)
+	}
+	return nil
 }
 
 // runChanges prints the decisions recorded after --since (all without it), oldest first, with the server's commit.
@@ -92,6 +120,50 @@ func runChanges(e *env, args []string) error {
 		out["since"] = *since
 	}
 	return json.NewEncoder(e.stdout).Encode(out)
+}
+
+// runChangesShow prints the whole text of one decision (GET /api/v1/updates/decisions/:number): {number, date, title,
+// status, text}; --text prints only the markdown. NUMBER is D-332 or 332, sent as D-332.
+func runChangesShow(e *env, args []string) error {
+	fs := flag.NewFlagSet("changes show", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	text := fs.Bool("text", false, "print only the decision's markdown text")
+	fs.Bool("json", false, "JSON output (the default)")
+	pos, err := parseFlags(fs, args)
+	if err != nil {
+		return err
+	}
+	const next = "banco changes show D-332"
+	if len(pos) != 1 {
+		return newErr(ExitUsage, "E-USAGE", "number", "changes show takes one decision number, such as D-332 or 332", next)
+	}
+	number := pos[0]
+	if !strings.HasPrefix(number, "D-") {
+		number = "D-" + number
+	}
+	if !decisionNumberRe.MatchString(number) {
+		return newErr(ExitUsage, "E-USAGE", "number", "the decision number looks like D-332 or 332", next)
+	}
+	path := "/api/v1/updates/decisions/" + number
+	if !*text {
+		return send(e, "changes show", "GET", path, nil, false)
+	}
+	body, err := e.client().do("changes show", "GET", path)
+	if err != nil {
+		return err
+	}
+	var d struct {
+		Text *string `json:"text"`
+	}
+	if err := json.Unmarshal(body, &d); err != nil || d.Text == nil {
+		return newErr(ExitServer, "E-NETWORK", "", "the server's answer has no decision text", "retry in 60 s, then banco health")
+	}
+	out := *d.Text
+	if !strings.HasSuffix(out, "\n") {
+		out += "\n"
+	}
+	_, err = io.WriteString(e.stdout, out)
+	return err
 }
 
 // runDocsShow prints one of the docs the bot lives by (GET /api/v1/docs/:name): {name, sha256, text}.

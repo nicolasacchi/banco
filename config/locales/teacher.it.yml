@@ -70,6 +70,7 @@ it:
       findings: "Rilievi"
       corrections: "Correzioni"
       students: "Studenti"
+      activity: "Chi ha fatto che cosa"
       graph: "Grafo"
       test: "Test"
       all: "Tutte le domande"

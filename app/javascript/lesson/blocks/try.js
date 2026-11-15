@@ -46,7 +46,7 @@ export function render(block, ctx, loc) {
       const part = checks.length > 1 ? k + 1 : undefined
       const wrap = el("div", { class: "exercise-check" })
       if (checks.length > 1) wrap.appendChild(el("p", { class: "part-label", text: `${String.fromCharCode(97 + k)})` }))
-      wrap.appendChild(renderCheck(spec, ctx, { ...loc, ex: ex.n, part }, { inline: true, quietPrompt: checks.length === 1 }).element)
+      wrap.appendChild(renderCheck(spec, ctx, { ...loc, ex: ex.n, part }, { inline: true }).element)
       li.appendChild(wrap)
     })
     const out = el("div", { class: "exercise-solution", "aria-live": "polite" })

@@ -23,6 +23,7 @@ it:
       to_learn: "Nella diagnosi è risultata da imparare: %{skill}."
       to_review: "La sapevi, ora vacilla: %{skill}."
       course_next: "È il prossimo argomento del corso."
+      resume: "L'avevi lasciato a metà: riprendi da qui."
     closed: "Per ora qui non c'è niente da fare. Intanto studia sul libro secondo l'orario."
   states:
     not_seen: "Non ancora vista"

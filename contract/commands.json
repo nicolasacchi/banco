@@ -585,6 +585,33 @@
       "error_codes": ["E-AUTH", "E-NOT-FOUND"]
     },
     {
+      "name": "next",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/students/:student/next",
+      "args": [],
+      "flags": ["--student", "--subject"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "digest",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/digest",
+      "args": [],
+      "flags": ["--student"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "activity",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/activity",
+      "args": [],
+      "flags": ["--since", "--actor", "--limit"],
+      "error_codes": ["E-AUTH", "E-FILES"]
+    },
+    {
       "name": "view-link new",
       "local": false,
       "method": "POST",
@@ -607,7 +634,16 @@
       "method": "POST",
       "path": "/api/v1/view-links/:id/revoke",
       "args": ["id"],
+      "flags": ["--all"],
       "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "view-link revoke-all",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/view-links/revoke-all",
+      "args": [],
+      "error_codes": ["E-AUTH"]
     },
     {
       "name": "token",
@@ -624,7 +660,16 @@
       "path": "/api/v1/updates",
       "args": [],
       "flags": ["--since"],
-      "error_codes": ["E-AUTH", "E-FILES"]
+      "error_codes": ["E-FILES"]
+    },
+    {
+      "name": "changes show",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/updates/decisions/:number",
+      "args": ["number"],
+      "flags": ["--text"],
+      "error_codes": ["E-NOT-FOUND"]
     },
     {
       "name": "docs show",
@@ -632,7 +677,7 @@
       "method": "GET",
       "path": "/api/v1/docs/:name",
       "args": ["name"],
-      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+      "error_codes": ["E-NOT-FOUND"]
     },
     {
       "name": "self-update",
@@ -641,7 +686,7 @@
       "path": "/api/v1/updates",
       "args": [],
       "flags": ["--check"],
-      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+      "error_codes": ["E-NOT-FOUND"]
     }
   ]
 }

@@ -56,7 +56,7 @@ class LessonsStudentBodyTest < ActiveSupport::TestCase
       served = project(body(file, file.include?("italian") ? "italian" : "math"))
       served["cards"].flat_map { |c| c["blocks"] }.each do |b|
         row = WHITELIST["blocks"][b["type"]] or next
-        allowed = row["serve"] + Array(row["serve_when_no_blank"])
+        allowed = row["serve"] + Array(row["serve_when_no_blank"]) + Array(row["computed"]) # computed: what the server adds (steps_total, D-335)
         assert_empty b.keys - allowed - %w[blocks], "#{file} #{b['type']}: #{(b.keys - allowed).inspect}"
       end
       served["cards"].flat_map { |c| c["blocks"] }.select { |b| b["type"] == "check" }.each do |b|

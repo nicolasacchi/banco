@@ -198,6 +198,11 @@ class DecisionRoutesTest < ActionDispatch::IntegrationTest
   # list readable by bot_read too, and its create, a teacher token only, through DecisionConsole and DecisionRecorder) and the comments
   # controller, whose reply/resolve/reopen/read are comment events of a teacher token (`resolve` is a comment action there, never a
   # decision row). Any other route that maps to a decision, or any route of the teacher's web controllers, is still refused.
+  #
+  # D-333: `GET /api/v1/updates/decisions/:number` is a public read of the text of docs/decisions.md (the project's own decision log, no
+  # Decision row, no student data). Its URL names the log, so the path guard skips exactly that route; its action is `updates#entry`
+  # and the target guard (no route maps to an action or controller matching /decision/) still applies to it.
+  D333_LOG_ROUTE = [ "/api/v1/updates/decisions/:number", "api/v1/updates", "entry" ].freeze
   D327_DECISION_ROUTES = [ [ "/api/v1/decisions", "api/v1/decisions", "index" ], [ "/api/v1/decisions", "api/v1/decisions", "create" ] ].freeze
 
   test "no API route maps to a decision but the two of D-327" do
@@ -210,7 +215,10 @@ class DecisionRoutesTest < ActionDispatch::IntegrationTest
     (api_routes - allowed).each do |route|
       target = "#{route.defaults[:controller]}##{route.defaults[:action]}"
       assert_no_match(/decision/i, target, route.path.spec.to_s)
-      assert_no_match(%r{\A/api/v1/(.*/)?(decisions?|approve|release|consent|dispose|confirm|resolve|void|extend|close)\b}, route.path.spec.to_s.sub("(.:format)", ""))
+      path = route.path.spec.to_s.sub("(.:format)", "")
+      next if [ path, route.defaults[:controller], route.defaults[:action] ] == D333_LOG_ROUTE
+
+      assert_no_match(%r{\A/api/v1/(.*/)?(decisions?|approve|release|consent|dispose|confirm|resolve|void|extend|close)\b}, path)
       assert_not route.defaults[:controller].to_s.start_with?("teacher"), route.path.spec.to_s
     end
   end

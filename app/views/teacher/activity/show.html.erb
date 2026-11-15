@@ -1,0 +1,25 @@
+<% content_for :title, t("teacher.activity.title") %>
+<main class="page wide" id="activity-page">
+  <%= ui_page_header t("teacher.activity.title"), back: [ t("teacher.menu.home"), with_student("/teacher") ], sub: t("teacher.activity.intro") %>
+  <% if @rows.empty? %>
+    <div id="activity-empty"><%= ui_empty t("teacher.activity.empty") %></div>
+  <% else %>
+    <%= ui_table_wrap(label: t("teacher.activity.table")) do %>
+      <table class="data stack" id="activity-table">
+        <thead><tr><th><%= t("teacher.activity.when") %></th><th><%= t("teacher.activity.who") %></th><th><%= t("teacher.activity.how") %></th><th><%= t("teacher.activity.what") %></th></tr></thead>
+        <tbody>
+          <% @rows.each do |row| %>
+            <% actor = row["actor"] %>
+            <% how = actor["via"] == "api" && actor["token"] ? t("teacher.activity.via.bot", label: actor["token"]["label"]) : t("teacher.activity.via.#{actor['via']}") %>
+            <tr data-kind="<%= row['kind'] %>" data-actor="<%= actor['login'] %>" data-via="<%= actor['via'] %>">
+              <td data-label="<%= t("teacher.activity.when") %>"><%= ui_time(row["at"]) %></td>
+              <td data-label="<%= t("teacher.activity.who") %>"><strong><%= actor["login"] %></strong></td>
+              <td data-label="<%= t("teacher.activity.how") %>"><%= how %></td>
+              <td data-label="<%= t("teacher.activity.what") %>"><%= row["summary_it"] %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+  <% end %>
+</main>

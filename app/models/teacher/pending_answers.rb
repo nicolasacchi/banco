@@ -22,6 +22,25 @@ module Teacher
       list.sort_by(&:attempt_id)
     end
 
+    # One entry as GET /api/v1/answers/pending lists it (and the digest repeats it, D-333): the facts and the decision that settles it.
+    def self.api_row(entry)
+      { attempt_id: entry.attempt_id, run_id: entry.run_id, subject: entry.subject_key, item: entry.item_key, kind: entry.kind, note: entry.note,
+        stem: entry.stem.to_s.squish.first(300), key: entry.key, typed: entry.given.to_s.squish.first(300), grade_proposal_id: entry.proposal_id,
+        decide: api_decide(entry) }.compact
+    end
+
+    # The decisions that settle the answer, as `banco decide` takes them; none for a short answer without a proposal yet.
+    def self.api_decide(entry)
+      if entry.kind == "short_answer"
+        return nil unless entry.proposal_id
+
+        { confirm: { kind: "confirm_grade", params: { grade_proposal_id: entry.proposal_id } },
+          reject: { kind: "reject_grade", params: { grade_proposal_id: entry.proposal_id }, reason_it: "required" } }
+      else
+        { resolve: { kind: "resolve_attempt", params: { attempt_id: entry.attempt_id, verdict: "correct|wrong|dont_know" }, reason_it: "required" } }
+      end
+    end
+
     # The text of one entry, one block per answer.
     def self.lines(entry)
       cmd = if entry.kind == "short_answer"

@@ -374,9 +374,10 @@ class CommentsTest < ActionDispatch::IntegrationTest
     e = CommentEvent.last
     assert_equal [ "reply", "console", "nik", "console" ], [ e.kind, e.origin, e.actor, e.remote_addr ]
     assert_equal "answered", Comment.last.state
-    result = console("resolve", reason: "Detto a voce.", confirm: true)
+    result = console("resolve", reason: "Detto a voce.", os_user: "nikpc", confirm: true)
     assert result.ok
-    assert_equal({ "reason_it" => "Detto a voce." }, JSON.parse(CommentEvent.last.payload_json))
+    # D-334: a console event keeps the host account that ran it (os_user), as a decision keeps it in its user_agent.
+    assert_equal({ "reason_it" => "Detto a voce.", "os_user" => "nikpc" }, JSON.parse(CommentEvent.last.payload_json))
     assert_equal "closed", Comment.last.state
     assert_equal "answered", (console("reopen", confirm: true); Comment.last.state)
   end
@@ -418,7 +419,8 @@ class CommentsTest < ActionDispatch::IntegrationTest
   # ---- the agents never read a comment; the tokens of D-327 do ---------------------------------------------
 
   # D-327 supersedes D-304's "no API route reads a comment": the one door is Api::V1::CommentsController, for the tokens that
-  # read (bot_read) and the teacher's (replies, read, resolve, reopen). Nothing else in the API names a comment.
+  # read (bot_read) and the teacher's (replies, read, resolve, reopen). Nothing else in the API names a comment, but D-333's digest
+  # controller, which carries the open comments' count and latest rows (through Comments::ApiRows) in its one-call answer.
   test "the API names a comment only in the comments controller of D-327, and the contract only in its six commands" do
     api_routes = Rails.application.routes.routes.select { |r| r.path.spec.to_s.start_with?("/api/") }
     assert_not_empty api_routes
@@ -426,7 +428,7 @@ class CommentsTest < ActionDispatch::IntegrationTest
     assert_not_empty named
     assert_equal [ "api/v1/comments" ], named.map { |r| r.defaults[:controller] }.uniq
     offenders = Dir[Rails.root.join("app/controllers/api/**/*.rb").to_s].select { |f| File.read(f).match?(/\bComments?\b|CommentEvent|Comments::|comment_events/) }
-    assert_equal [ "app/controllers/api/v1/comments_controller.rb" ], offenders.map { |f| f.delete_prefix("#{Rails.root}/") }
+    assert_equal [ "app/controllers/api/v1/comments_controller.rb", "app/controllers/api/v1/digest_controller.rb" ], offenders.map { |f| f.delete_prefix("#{Rails.root}/") }.sort
     commands = JSON.parse(Rails.root.join("contract/commands.json").read)["commands"].map { |c| c["name"] }.grep(/comment/)
     assert_equal [ "comments list", "comments read", "comments reopen", "comments reply", "comments resolve", "comments show" ], commands.sort
   end

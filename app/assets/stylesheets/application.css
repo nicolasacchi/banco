@@ -271,7 +271,16 @@ li.skill .button { align-self: flex-start; margin-top: 0.5rem; }
 .markup p, .markup ul, .markup ol { margin-bottom: 0.75rem; }
 .markup ul ul { margin-bottom: 0; }
 .markup { overflow-wrap: anywhere; }
-.markup .katex-display, .markup .math { max-width: 100%; overflow-x: auto; }
+.markup .katex-display { max-width: 100%; overflow-x: auto; }
+/* A long formula (a \ce{} equation of 300-550 px) scrolls inside its card instead of overflowing it. span.math is inline, so max-width and
+   overflow only work as an inline-block (its baseline becomes its bottom edge, hence vertical-align: middle). Every place item markup is
+   drawn: the prompt, the options, matching and ordering rows, the steps, text that the server put in the page (data-markup), and the v1
+   lesson body (.markup). Not the lesson renderer (.l2): it handles its own overflow (.block-math, .problem-eq). */
+:is(.markup, .prompt, .option-text, .match-left, .row-text, .do-steps, [data-markup]) .math:not(.l2 *) {
+  display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle;
+}
+/* the flex items that hold such a formula may shrink under its width (min-width auto would keep them as wide as the formula) */
+.option-text, .match-left, .row-text { min-width: 0; }
 ol.exercises { padding-left: 1.5rem; }
 li.exercise { margin-bottom: 1.5rem; }
 .exercise-solution { background: var(--surface); padding: 0.25rem 0.75rem; margin: 0.5rem 0; }

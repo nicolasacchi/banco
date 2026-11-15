@@ -130,10 +130,10 @@ function input(spec, ctx, options = {}) {
 // options: { onDone(reply, tries) } called with the final reply of a right answer or the second wrong one.
 export function renderCheck(spec, ctx, loc, options = {}) {
   const form = el("form", { class: "check", novalidate: "" })
-  // options.inline (the exercises): a typed answer is one line, "x = [  ] [-] [/] [Controlla]", with the helper keys;
-  // options.quietPrompt: the prompt stays for the screen reader only when the line says it ("x =")
+  // options.inline (the exercises): a typed answer is one line, "x = [  ] [-] [/] [Controlla]", with the helper keys.
+  // The prompt is always drawn: it is the request ("Calcola il perimetro"), the text around the box only labels the box.
   const line = !!options.inline && isLine(spec)
-  const prompt = el("div", { class: `check-prompt${line && options.quietPrompt && spec.input_before ? " sr-only" : ""}` })
+  const prompt = el("div", { class: "check-prompt" })
   prompt.appendChild(renderRich(spec.prompt_it, ctx))
   const handleInput = input(spec, ctx, options)
   // text before and after the box: the three stay together, as the sentence they make, and the box's hint ("Scrivi il numero...") goes on
