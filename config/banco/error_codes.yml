@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 28
+version: 29
 
 validation:
   # Skill graph (synchronous).
@@ -150,6 +150,7 @@ validation:
   E-LESSON-VERIFY: { stage: ruby, severity: error, description: "A check's verify function disagrees with its answer, or a coded wrong answer equals no mutant of the function (program.* functions are checked at the render check)." }
   E-CHECK-ANSWER-IN-ALT: { stage: ruby, severity: error, description: "The alt_it or caption_it of a select check's own figure names a target that is the answer." }
   W-CHECK-ANSWER-IN-DIAGRAM: { stage: ruby, severity: warning, description: "A text-answer check whose answer equals a string that a figure of the same card prints in any of its states, describe() included." }
+  W-MATH-LAST-NOTE: { stage: ruby, severity: warning, description: "The last line of a math block has a note_it: the page draws the note of a line between it and the next line (how to go from one to the other), so the note of the last line is never shown. Put the reason of a line on the line before it." }
   W-BLANK-STEP-DATUM: { stage: ruby, severity: warning, description: "The do_it of an example's blank step (never shown before the answer) gives in words a number or a cell reference (not in a formula) that nothing visible before the question shows: the student cannot know it. Put it in an earlier step or in the question." }
   E-CHECK-ANSWER-BY-SIMULATION: { stage: ruby, severity: error, description: "A check whose answer equals an output an interactive figure of the same card can show inside its declared ranges; the only way past is reachable_ok_it on the check." }
   E-DIAGRAM-REACHABLE-CAP: { stage: ruby, severity: error, description: "A figure on a card with a check can show more than 500 values within its declared ranges: narrow the ranges or move the check." }

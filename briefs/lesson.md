@@ -166,7 +166,7 @@ Release 1 blocks (the fields are in the schema; `banco lesson submit --dry-run` 
 |---|---|---|
 | text | paragraphs and lists | markup |
 | `callout tip\|warning\|remember\|rule ["Titolo"]` | a box with an icon and a fixed label | markup, 40 words |
-| `math` | a formula, large | one LaTeX formula, no quotes needed (one matching pair of quotes around it is dropped, D-310), or `lines: [{tex, note_it?}]` (2 to 4: a chain of transformations; mark what changes with `\role{highlight}{...}`) |
+| `math` | a formula, large | one LaTeX formula, no quotes needed (one matching pair of quotes around it is dropped, D-310), or `lines: [{tex, note_it?}]` (2 to 4: a chain of transformations; mark what changes with `\role{highlight}{...}`). The `note_it` of a line is drawn between it and the next line and says how to get there (\"togli 3 da tutti e due\" goes on the line that is left); the last line takes no note (`W-MATH-LAST-NOTE`) |
 | `procedure ["Titolo"]` | numbered steps, each with its verb | `steps: [{tag, text_it, example_tex?}]` (2 to 6) |
 | `cases ["Titolo"]` | 2 to 4 side-by-side cases | `cases: [{title_it, icon?, tone?, condition_it?, text_it, example_it?, diagram?}]` |
 | `legend` | colour, icon and label of each role, with the question it answers | `roles: [{role, note_it?, question_it?}]` (2 to 8) |

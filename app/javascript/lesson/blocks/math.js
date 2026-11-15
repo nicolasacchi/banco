@@ -1,4 +1,5 @@
 // math: one display formula, or a chain of transformations (2 to 4 lines) with the note between the lines.
+// The note of line i says how to go from line i to line i+1, so the last line has no place for one (W-MATH-LAST-NOTE warns the author).
 import { el, icon } from "lesson/dom"
 import { renderInlineRich, renderMath } from "lesson/text"
 

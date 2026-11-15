@@ -187,7 +187,7 @@ class BriefTest < ActiveSupport::TestCase
     Validation::Findings # Validation::Codes lives in findings.rb
     assert_empty codes - Validation::Codes.all.keys - %w[E-STALE-BASE], "codes the registry does not know" # E-STALE-BASE is an API code
     %w[E-LESSON-CARD E-LESSON-CARDS E-CARD-NO-VISUAL E-CARD-WORDS E-CARD-BLOCKS E-CARD-ROLES E-LESSON-BLOCK E-LESSON-CHECKS
-       E-LESSON-VISUALS E-LESSON-DIAGRAM E-LESSON-ALT E-LESSON-ROLE E-LESSON-ICON E-LESSON-LINK E-LESSON-MARKUP E-LESSON-MAP].each do |code|
+       E-LESSON-VISUALS E-LESSON-DIAGRAM E-LESSON-ALT E-LESSON-ROLE E-LESSON-ICON E-LESSON-LINK E-LESSON-MARKUP E-LESSON-MAP W-MATH-LAST-NOTE].each do |code|
       assert_includes codes, code
     end
   end

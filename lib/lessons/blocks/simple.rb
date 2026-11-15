@@ -35,6 +35,17 @@ module Lessons
         rescue Markup::Refused => e
           ctx.add("E-LESSON-MARKUP", sub, e.construct, rule: "tex-#{sub}")
         end
+        last_note(block, ctx)
+      end
+
+      # The page draws the note of a line between that line and the next (how to go from one to the other), so the note of the last line
+      # has no place and is never shown. Authors read note_it as "why this line" and put it one line too low.
+      def last_note(block, ctx)
+        lines = block["lines"].to_a
+        return if lines.empty? || lines.last["note_it"].to_s.strip.empty?
+
+        ctx.add("W-MATH-LAST-NOTE", "lines/#{lines.size - 1}/note_it",
+                "the note of the last line is never shown: a line's note says how to go from this line to the next one, so write the reason of a line on the line before it")
       end
 
       def procedure(block, ctx)
