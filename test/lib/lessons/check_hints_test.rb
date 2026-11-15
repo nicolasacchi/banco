@@ -7,7 +7,8 @@ class CheckHintsTest < ActiveSupport::TestCase
 
   test "the hints and helper keys of a typed answer contain no digits" do
     texts = I18n.t("lesson2", locale: :it)
-    flat = flatten(texts)
+    # the keys themselves are the item templates' own (items/helper_keys.js), shared with the lesson checks
+    flat = flatten(texts).merge(flatten(I18n.t("items", locale: :it)))
     KEYS.each do |key|
       value = flat[key]
       assert value, "missing text #{key}"

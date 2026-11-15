@@ -58,6 +58,7 @@ class ItemRenderTest < ApplicationSystemTestCase
       component = detect_component
       seen << component
       check_matching_exclusion if component == "matching"
+      check_minus_key if %w[number fraction].include?(component)
       number = give_up + 1
       if component == "short_answer"
         assert_selector ".item-body .passage", text: "Un breve testo da riassumere."
@@ -67,6 +68,19 @@ class ItemRenderTest < ApplicationSystemTestCase
     assert_equal %w[number fraction choice ordering matching normalized_text expression testlet short_answer], seen
     outside = requested_urls.reject { |u| u.start_with?(origin) || u.start_with?("data:") || u.start_with?("about:") }
     assert_empty outside, "requests outside the app origin"
+  end
+
+  # D-335: a phone's decimal and numeric pads have no minus, so the number and the fraction draw one «−» key; it writes at the
+  # caret of the box and the box keeps the focus.
+  def check_minus_key
+    assert_selector "[data-sitting-target=itemBox] .answer .helper-key[aria-label='Meno']", count: 1
+    box = page.find("[data-sitting-target=itemBox] .answer input.answer-input", match: :first)
+    box.set("5")
+    box.send_keys(:home)
+    page.find("[data-sitting-target=itemBox] .answer .helper-key[aria-label='Meno']").click
+    assert_equal "-5", box.value
+    assert page.evaluate_script("document.activeElement === document.querySelector('[data-sitting-target=itemBox] .answer input.answer-input')")
+    box.set("")
   end
 
   # D-086: an entry chosen in one select is disabled in the others, and free again once cleared.

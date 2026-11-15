@@ -147,6 +147,9 @@ dialog.dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
   box-sizing: border-box; max-width: 100%; min-width: 0; min-height: var(--tap); padding: var(--space-2) var(--space-3);
   font: inherit; color: var(--text); background: var(--surface); border: var(--border); border-radius: var(--radius-m);
 }
+/* The helper keys of a typed answer (items/helper_keys.js): «−» and «,» (and «/» in a lesson) at the caret, where a phone keyboard has none. */
+.helper-keys { display: inline-flex; gap: var(--space-2); flex: none; align-self: center; }
+.helper-key { min-width: var(--tap); min-height: var(--tap); padding: 0; border: var(--border); border-radius: var(--radius-m); background: var(--surface); color: var(--text); font: inherit; font-size: 1.15rem; font-weight: 800; cursor: pointer; }
 :where(textarea) { min-height: 6rem; }
 :where(select) { padding-right: var(--space-2); }
 .input:focus-visible, .answer-input:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }

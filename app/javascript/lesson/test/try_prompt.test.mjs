@@ -75,9 +75,9 @@ function withDom(fn) {
 
 const t = {
   exercise: "Esercizio", on_notebook: "sul quaderno", exercises: "Esercizi", exercise_of: "Esercizio %{n} di %{total}", prev_exercise: "Precedente", next_exercise: "Successivo",
-  show_solution: "Mostra la soluzione", check_button: "Controlla", helper_keys: "Tasti", key_minus: "meno", key_bar: "barra", key_comma: "virgola", fraction_line_hint: "Scrivi 3 o 5/2"
+  show_solution: "Mostra la soluzione", check_button: "Controlla", fraction_line_hint: "Scrivi 3 o 5/2"
 }
-const ctx = { subject: "math", t, items: { number_label: "Scrivi il numero" }, safe: false, pager: true }
+const ctx = { subject: "math", t, items: { number_label: "Scrivi il numero", helper_keys: "Tasti", key_minus: "meno", key_bar: "barra", key_comma: "virgola" }, safe: false, pager: true }
 
 const exercise = (check) => ({ n: 1, text_it: "Il triangolo $ABC$ ha i vertici $A(0; 0)$, $B(6; 0)$ e $C(6; 8)$.", check })
 const prompts = (root) => root.byClass("check-prompt")
@@ -112,5 +112,17 @@ test("a number check with text before and after the box shows its request, the b
     const names = row.children.map((c) => c.className.split(" ")[0])
     assert.ok(names.indexOf("check-before") < names.indexOf("answer") && names.indexOf("answer") < names.indexOf("check-after"), names.join(" "))
     assert.match(spoken(row.byClass("check-after")[0]), /cm/)
+  })
+})
+
+// D-335: the helper keys of a typed answer are drawn once, by the shared items/helper_keys module (a number's own, the fraction line's «−» and «/»).
+test("a number check and a one-line fraction check draw one row of helper keys", async () => {
+  await withDom(() => {
+    const keys = (component) => {
+      const root = render({ type: "try", exercises: [exercise({ component, prompt_it: "Quanto vale?", answer: "3" })] }, ctx, { card: 10, block: 1 })
+      return { rows: root.byClass("helper-keys").length, labels: root.byClass("helper-key").map((k) => k.textContent) }
+    }
+    assert.deepEqual(keys("number"), { rows: 1, labels: ["\u2212", ","] })
+    assert.deepEqual(keys("fraction"), { rows: 1, labels: ["\u2212", "/"] })
   })
 })
