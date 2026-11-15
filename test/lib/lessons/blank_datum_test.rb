@@ -59,7 +59,27 @@ class BlankDatumTest < ActiveSupport::TestCase
     assert_empty findings(card(example(STEPS + [ { "do_it" => "Scrivi 8 in B3.", "why_it" => "Ora il divisore non è zero." } ])))
     found = findings(card(example(STEPS + [ { "do_it" => "Copia la formula in D7 e scrivi 2,5.", "why_it" => "Serve.", "blank" => blank } ])))
     assert_equal 1, found.size
-    assert_match(/D7, 2\.5/, found.first[2])
+    assert_match(/D7, 2,5/, found.first[2], "named as written")
     assert_empty findings(card(example(STEPS + [ { "do_it" => "Scrivi 2,5 in D7.", "why_it" => "Serve.", "blank" => blank("prompt_it" => "D7 vale 2.5: che numero compare in C3?") } ])))
+  end
+
+  # Revision 1187 (balance-sheet): the step shows the result the blank asks, written with Italian thousands dots, the answer without them.
+  test "the answer written without thousands dots is the do_it's 150.000: one value, quiet" do
+    step = { "do_it" => "Somma: 30.000 + 50.000 + 70.000 = 150.000 €", "why_it" => "A fine anno si sommano le registrazioni.",
+             "blank" => blank("prompt_it" => "Quanto sono i ricavi di vendita dell'anno?", "answer" => "150000", "thousands" => true) }
+    given = { "do_it" => "Documenti: tre fatture da 30.000, 50.000 e 70.000 €", "why_it" => "Sono la prova delle vendite." }
+    assert_empty findings(card(example([ given, step ])))
+    assert_empty findings(card(example([ given, step.merge("blank" => blank("answer" => "150.000")) ]))), "the answer written with the dots too"
+    assert_empty findings(card(example([ given, step.merge("blank" => blank("answer" => "1", "accept" => [ "150000", "150.000,00" ])) ]))), "an accepted form"
+    assert_empty findings(card(example([ given, step.merge("do_it" => "Totale = 66.000,00 €", "blank" => blank("answer" => "66000")) ]))), "a decimal part of zeros is the same value"
+  end
+
+  test "thousands dots do not hide a real datum: 150.000 given only in the do_it, answer elsewhere, still fires" do
+    step = { "do_it" => "Scrivi 150.000 € in cassa.", "why_it" => "Serve.", "blank" => blank("answer" => "5") }
+    found = findings(card(example([ step ])))
+    assert_equal 1, found.size
+    assert_match(/gives 150\.000, which/, found.first[2])
+    assert_empty findings(card(example([ { "do_it" => "Hai 150000 euro.", "why_it" => "Serve." }, step ]))), "said earlier without the dots: the same value"
+    assert_equal 1, findings(card(example([ { "do_it" => "Hai 150 euro.", "why_it" => "Serve." }, step ]))).size, "150 is not 150.000"
   end
 end
