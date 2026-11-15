@@ -115,8 +115,8 @@ func (c *client) open(command, method, path string, payload []byte, headers map[
 		return nil, newErr(ExitServer, "E-NETWORK", "", fmt.Sprintf("the server answered with a redirect (HTTP %d to %q); the CLI follows none, so the token goes nowhere else", resp.StatusCode, resp.Header.Get("Location")), "set BANCO_URL to the API address itself, for example https://api.banco.scc.im")
 	}
 	// The public edge's rate limit (Traefik, D-327: average 10 requests per second, burst 30 per client IP) answers 429
-	// itself, without the contract header.
-	if resp.StatusCode == http.StatusTooManyRequests {
+	// itself, without the contract header; banco's own 429 (E-VIEW-LIMIT, D-332) carries it and passes through below.
+	if resp.StatusCode == http.StatusTooManyRequests && resp.Header.Get("X-Banco-Contract") == "" {
 		return nil, newErr(ExitServer, "E-RATE-LIMIT", "", "the edge limits requests to an average of 10 per second (burst 30) per client IP", "wait 10 s, then send the request again")
 	}
 	// The server sends the contract digest only to a caller that holds a good token: a refused token is its own error.

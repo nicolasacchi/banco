@@ -652,7 +652,39 @@ CREATE TRIGGER api_token_renewals_no_update BEFORE UPDATE ON api_token_renewals
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER api_token_renewals_no_delete BEFORE DELETE ON api_token_renewals
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "view_links" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "api_token_id" integer NOT NULL, "token_digest" varchar NOT NULL, "path" varchar NOT NULL, "expires_at" datetime(6) NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_61bc1db54b"
+FOREIGN KEY ("api_token_id")
+  REFERENCES "api_tokens" ("id")
+, CONSTRAINT view_links_forward CHECK (expires_at > created_at));
+CREATE INDEX "index_view_links_on_api_token_id" ON "view_links" ("api_token_id");
+CREATE UNIQUE INDEX "index_view_links_on_token_digest" ON "view_links" ("token_digest");
+CREATE TRIGGER view_links_no_update BEFORE UPDATE ON view_links
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER view_links_no_delete BEFORE DELETE ON view_links
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "view_link_redemptions" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "view_link_id" integer NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_791719f934"
+FOREIGN KEY ("view_link_id")
+  REFERENCES "view_links" ("id")
+);
+CREATE INDEX "index_view_link_redemptions_on_view_link_id" ON "view_link_redemptions" ("view_link_id");
+CREATE TRIGGER view_link_redemptions_no_update BEFORE UPDATE ON view_link_redemptions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER view_link_redemptions_no_delete BEFORE DELETE ON view_link_redemptions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "view_link_revocations" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "view_link_id" integer NOT NULL, "api_token_id" integer, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_11d540bc55"
+FOREIGN KEY ("view_link_id")
+  REFERENCES "view_links" ("id")
+, CONSTRAINT "fk_rails_745face38d"
+FOREIGN KEY ("api_token_id")
+  REFERENCES "api_tokens" ("id")
+);
+CREATE UNIQUE INDEX "index_view_link_revocations_on_view_link_id" ON "view_link_revocations" ("view_link_id");
+CREATE TRIGGER view_link_revocations_no_update BEFORE UPDATE ON view_link_revocations
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER view_link_revocations_no_delete BEFORE DELETE ON view_link_revocations
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261115100001'),
 ('20261114120001'),
 ('20261114100001'),
 ('20261108100001'),

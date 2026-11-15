@@ -1,4 +1,4 @@
-<%# A designed 403 or 404 (D-306). No menu and no data: it says the same to whoever lands here. Locals: status (:forbidden or :not_found). %>
+<%# A designed 403 or 404 (D-306). No menu and no data: it says the same to whoever lands here. Locals: status (:forbidden, :not_found or, for a view link that no longer opens, :gone). %>
 <!DOCTYPE html>
 <html lang="it" data-theme="cream" data-size="normal">
   <head>
@@ -15,7 +15,8 @@
       <%= ui_icon(status == :forbidden ? "locked" : "not-found") %>
       <h1><%= t("errors.#{status}.title") %></h1>
       <p><%= t("errors.#{status}.body") %></p>
-      <div class="button-row"><a class="button" href="/"><%= t("errors.home") %></a></div>
+      <%# On the view listener "/" is no page: there is nowhere to go back to (D-332). %>
+      <% unless request.env[Banco::ListenerTag::TAG_KEY] == :view %><div class="button-row"><a class="button" href="/"><%= t("errors.home") %></a></div><% end %>
     </main>
   </body>
 </html>

@@ -71,8 +71,8 @@ class ListenerTest < ActionDispatch::IntegrationTest
       def local_address = Addrinfo.tcp("127.0.0.1", port)
     end
     tag = Banco::ListenerTag.new(->(env) { [ 200, {}, [ env["banco.listener"].inspect ] ] })
-    with_env("WEB_PORT" => "3000", "API_PORT" => "3100", "HARNESS_PORT" => "3200", "PAGES_PORT" => "3300") do
-      { 3000 => ":web", 3100 => ":api", 3200 => ":harness", 3300 => ":pages", 4000 => "nil" }.each do |port, expected|
+    with_env("WEB_PORT" => "3000", "API_PORT" => "3100", "HARNESS_PORT" => "3200", "PAGES_PORT" => "3300", "VIEW_PORT" => "3400") do
+      { 3000 => ":web", 3100 => ":api", 3200 => ":harness", 3300 => ":pages", 3400 => ":view", 4000 => "nil" }.each do |port, expected|
         env = Rack::MockRequest.env_for("http://localhost:3000/up", "puma.socket" => socket.new(port))
         assert_equal expected, tag.call(env).last.first, "local port #{port}"
       end
@@ -87,7 +87,51 @@ class ListenerTest < ActionDispatch::IntegrationTest
 
   test "the ports must differ" do
     assert_raises(ArgumentError) { Banco::Listeners.assert_distinct!("WEB_PORT" => "3000", "API_PORT" => "3000") }
-    assert_equal({ web: 3000, api: 3100, harness: 3200, pages: 3300 }, Banco::Listeners.assert_distinct!({}))
+    assert_equal({ web: 3000, api: 3100, harness: 3200, pages: 3300, view: 3400 }, Banco::Listeners.assert_distinct!({}))
+  end
+
+  # D-332: five listeners, five distinct ports, VIEW_PORT among them (never PORT).
+  test "the view listener has its own port, VIEW_PORT, distinct from the other four" do
+    ports = Banco::Listeners.ports({})
+    assert_equal 5, ports.values.uniq.size
+    assert_equal 3400, ports.fetch(:view)
+    assert_equal "VIEW_PORT", Banco::Listeners::ENV_KEYS.fetch(:view)
+    assert_equal 3999, Banco::Listeners.ports("VIEW_PORT" => "3999").fetch(:view)
+    assert_equal :view, Banco::Listeners.name_for_port(3400, {})
+    error = assert_raises(ArgumentError) { Banco::Listeners.assert_distinct!("VIEW_PORT" => "3000") }
+    assert_includes error.message, "VIEW_PORT"
+    assert_raises(ArgumentError) { Banco::Listeners.assert_distinct!("VIEW_PORT" => "3300") }
+  end
+
+  test "a route constraint takes several listener names" do
+    both = Banco::ListenerConstraint.new(:web, :view)
+    request = ->(listener) { Struct.new(:env).new({ Banco::ListenerTag::TAG_KEY => listener }) }
+    assert both.matches?(request.call(:web))
+    assert both.matches?(request.call(:view))
+    %i[api harness pages].each { |listener| assert_not both.matches?(request.call(listener)), listener }
+    assert_not both.matches?(request.call(nil))
+    assert Banco::ListenerConstraint.new(:web).matches?(request.call(:web))
+    assert_not Banco::ListenerConstraint.new(:web).matches?(request.call(:view))
+  end
+
+  test "the listener switch sends the view listener to Rails" do
+    rails = ->(_env) { [ 200, {}, [ "rails" ] ] }
+    other = ->(_env) { [ 200, {}, [ "other" ] ] }
+    switch = Banco::ListenerSwitch.new(rails, production: other, validation: other, allow_test_seam: true)
+    assert_equal "rails", switch.call(Rack::MockRequest.env_for("/v", "banco.test_listener" => "view")).last.first
+  end
+
+  test "the teacher's GET pages are 404 on the api and harness listeners, and the student's pages are web only" do
+    %w[/teacher /teacher/subjects/math/course /teacher/corrections].each do |path|
+      %i[api harness].each do |listener|
+        on(listener, path)
+        assert_response :not_found, "#{path} on #{listener}"
+      end
+    end
+    %w[/today /diagnosis /teacher/preview /subjects /up /].each do |path|
+      on(:view, path, remote_addr: ListenerHelpers::EDGE_IP)
+      assert_response :not_found, "#{path} on view"
+    end
   end
 
   test "unknown paths are 404 on every listener" do

@@ -42,7 +42,7 @@ class ErrorCodesTest < ActiveSupport::TestCase
 
   test "API codes carry an HTTP status" do
     REGISTRY["api"].each_value { |meta| assert_kind_of Integer, meta["http"] }
-    assert_equal [ 401, 409, 409, 503, 422, 413, 404, 404, 422, 404, 422, 422, 403, 422, 422, 409 ], REGISTRY["api"].values.map { |m| m["http"] }
+    assert_equal [ 401, 409, 409, 503, 422, 413, 404, 404, 422, 404, 422, 422, 403, 422, 422, 409, 503, 422, 429 ], REGISTRY["api"].values.map { |m| m["http"] }
   end
 
   test "every orthography code of Rules::V1 is a code the grader emits" do

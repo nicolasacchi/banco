@@ -4,9 +4,11 @@ module Api
   #
   # Token roles (D-327): the content agents (agent_claude, agent_omp, ci) read and write content under their sessions;
   # bot_read only reads (any non-GET answers 403 E-AUTH, reason read_only_token); teacher reads the same and writes only
-  # where a controller says teacher_writes (decisions and comment actions), never content.
+  # where a controller says teacher_writes (decisions and comment actions), never content. A controller with reader_grants
+  # (view links, D-332) is the one place bot_read and teacher may POST: the write only grants reading, no wider than the token's own.
   class BaseController < ActionController::API
     class_attribute :teacher_writes, instance_accessor: false, default: false
+    class_attribute :reader_grants, instance_accessor: false, default: false
 
     # Nothing of the API is cached: answers carry the student's words and the teacher's views (D-327).
     before_action :set_no_store
@@ -53,7 +55,7 @@ module Api
       unless teacher_login_listed?
         return refuse("E-AUTH", "authorization", "the teacher of this token is no longer on the teacher list", "ask the operator for a new token", 403, reason: "teacher_not_listed")
       end
-      return if request.get? || request.head?
+      return if request.get? || request.head? || self.class.reader_grants
 
       if @token.role == "bot_read"
         refuse("E-AUTH", "authorization", "a bot_read token only reads: #{request.method} is refused", "use a teacher token to decide or answer a comment", 403, reason: "read_only_token")

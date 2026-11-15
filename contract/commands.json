@@ -585,6 +585,31 @@
       "error_codes": ["E-AUTH", "E-NOT-FOUND"]
     },
     {
+      "name": "view-link new",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/view-links",
+      "args": [],
+      "flags": ["--path", "--minutes"],
+      "error_codes": ["E-AUTH", "E-VIEW-DISABLED", "E-VIEW-PATH", "E-VIEW-LIMIT"]
+    },
+    {
+      "name": "view-link list",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/view-links",
+      "args": [],
+      "error_codes": ["E-AUTH"]
+    },
+    {
+      "name": "view-link revoke",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/view-links/:id/revoke",
+      "args": ["id"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
       "name": "token",
       "local": false,
       "method": "GET",

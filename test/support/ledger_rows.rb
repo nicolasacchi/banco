@@ -19,6 +19,10 @@ module LedgerRows
     rows["api_tokens"] = token
     rows["api_token_revocations"] = ApiTokenRevocation.create!(api_token: token, reason: "test")
     rows["api_token_renewals"] = ApiTokenRenewal.create!(api_token: token, expires_at: now + 1.day, created_at: now)
+    link = ViewLink.create!(api_token: token, token_digest: "c" * 64, path: "/teacher", expires_at: now + 1.hour, created_at: now)
+    rows["view_links"] = link
+    rows["view_link_redemptions"] = ViewLinkRedemption.create!(view_link: link, created_at: now)
+    rows["view_link_revocations"] = ViewLinkRevocation.create!(view_link: link, api_token: token, created_at: now)
     graph = SkillGraphRevision.create!(subject: rows["subjects"], seq: 1, body_json: JSON_BODY, author_session: session)
     rows["skill_graph_revisions"] = graph
     item = Item.create!(subject: rows["subjects"], key: "item-1", kind: "choice")

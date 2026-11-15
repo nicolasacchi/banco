@@ -9,7 +9,8 @@ module Banco
   #
   #   pages listener (PAGES_PORT)               -> the production pages app
   #   harness listener, Host: banco-pages-internal -> the validation pages app (the mode is bound at construction)
-  #   anything else                             -> Rails
+  #   anything else                             -> Rails (web, api, harness and view, D-332: the view listener is Rails
+  #                                                with its own routes and guards, so the default branch is the right one)
   #
   # The Host header only picks between the two mounts of the internal harness listener, where the peer is Chrome inside
   # banco-internal; on the public side nothing depends on it. In the test environment the seam env["banco.test_listener"]

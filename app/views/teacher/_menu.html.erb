@@ -37,7 +37,7 @@
         <li><%= link_to t("teacher.menu.comments"), "/teacher/comments", id: "menu-comments", **menu_current(:comments) %></li>
         <li><%= link_to t("teacher.menu.students"), with_student("/teacher/students"), id: "menu-students", **menu_current(:students) %></li>
         <% unless reader_only? %><li><%= link_to t("teacher.preview.title"), "/teacher/preview", id: "menu-preview", **menu_current(:preview) %></li><% end %>
-        <% if logout_url %><li><a id="logout-link" href="<%= logout_url %>"><%= t("teacher.logout") %></a></li><% end %>
+        <% if logout_url && !view_session? %><li><a id="logout-link" href="<%= logout_url %>"><%= t("teacher.logout") %></a></li><% end %>
       </ul>
       <p class="access" id="access-line"><%= access_line %></p>
     </dialog>

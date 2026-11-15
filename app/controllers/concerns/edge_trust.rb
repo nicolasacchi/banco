@@ -8,6 +8,11 @@
 # request.remote_ip is never used: it trusts a forged X-Forwarded-For. The
 # headers are read raw with get_header so a client header can never shadow them
 # through another Rack key.
+#
+# On the view listener (D-332) the headers are never read, whatever the peer: the only identity there is a view
+# link's, from an encrypted cookie set when the link was redeemed and checked against the ledger on every request
+# (expiry, revocation, BANCO_VIEW_LINKS_ENABLED). It is a guest and nothing more, so a router that forwards
+# Remote-User to that port cannot turn into teacher access.
 module EdgeTrust
   extend ActiveSupport::Concern
 
@@ -18,12 +23,19 @@ module EdgeTrust
   # Three roles (D-217): the teacher acts, the guest only reads, the student answers. A login in the
   # teacher list with the teacher group is a teacher whatever else it carries; a guest is in the guest
   # group, in BANCO_GUEST_USERS and not a teacher.
-  Identity = Struct.new(:login, :groups, keyword_init: true) do
+  VIEW_COOKIE = :banco_view
+
+  # view_link is set only for the identity of a view link (D-332): a guest, never a teacher or a student.
+  Identity = Struct.new(:login, :groups, :view_link, keyword_init: true) do
+    def view_link? = !view_link.nil?
+
     def teacher?
       groups.include?(TEACHER_GROUP) && Banco::EdgeProxy.teacher_users.include?(login)
     end
 
     def guest?
+      return true if view_link?
+
       groups.include?(GUEST_GROUP) && Banco::EdgeProxy.guest_users.include?(login) && !teacher?
     end
 
@@ -64,6 +76,11 @@ module EdgeTrust
     request.env[Banco::ListenerTag::TAG_KEY] == :web && Banco::EdgeProxy.include?(request.remote_addr)
   end
 
+  # The request arrived on the view listener (view links, D-332), by the local port of the socket.
+  def view_listener?
+    request.env[Banco::ListenerTag::TAG_KEY] == :view
+  end
+
   # nil when the request does not come from the trusted edge or carries no
   # Remote-User. A Remote-User containing a comma means the header was
   # duplicated on its way: 400.
@@ -76,6 +93,7 @@ module EdgeTrust
   private
 
   def build_identity
+    return build_view_identity if view_listener?
     return nil unless edge_trusted?
 
     login = request.get_header("HTTP_REMOTE_USER").to_s.strip
@@ -84,5 +102,15 @@ module EdgeTrust
 
     groups = request.get_header("HTTP_REMOTE_GROUPS").to_s.split(",").map(&:strip).reject(&:empty?)
     Identity.new(login: login, groups: groups)
+  end
+
+  # The view link in the cookie, if it is still active; nil otherwise (no cookie, forged, expired, revoked, flag off).
+  def build_view_identity
+    return nil unless Banco::EdgeProxy.include?(request.remote_addr) && ViewLinks.enabled?
+
+    cookie = cookies.encrypted[VIEW_COOKIE]
+    id = cookie["id"] if cookie.is_a?(Hash)
+    link = ViewLinks.active(id) if id.is_a?(Integer)
+    link && Identity.new(login: "view-link-#{link.id}", groups: [], view_link: link)
   end
 end

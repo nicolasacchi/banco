@@ -89,6 +89,53 @@ class HostsTest < ActiveSupport::TestCase
     assert_equal 200, listener_status(:api, "api.staging.banco.test", env: env)
   end
 
+  # ---- D-332: the view listener shares the API's host and never answers to the web host
+
+  test "the host of BANCO_VIEW_URL is allowed; unset or malformed, there is none" do
+    env = { "BANCO_VIEW_URL" => "https://View.Staging.Banco.Test/" }
+    assert_equal "view.staging.banco.test", Banco::Hosts.view_host(env)
+    assert_includes Banco::Hosts.allowed(env), "view.staging.banco.test"
+    assert_equal 200, status_for("view.staging.banco.test", env: env)
+    assert_nil Banco::Hosts.view_host({})
+    assert_nil Banco::Hosts.view_host("BANCO_VIEW_URL" => "not a url")
+    assert_equal Banco::Hosts.allowed({}), Banco::Hosts.allowed("BANCO_VIEW_URL" => "")
+  end
+
+  test "the API host is accepted on the view listener when it is the view host, the web host is refused there" do
+    env = { "BANCO_VIEW_URL" => "https://api.banco.scc.im" }
+    assert_equal 200, listener_status(:view, "api.banco.scc.im", path: "/v", env: env)
+    assert_equal 200, listener_status(:view, "API.banco.scc.im:443", path: "/v", env: env)
+    assert_equal 403, listener_status(:view, "banco.scc.im", path: "/v", env: env)
+    assert_equal 403, listener_status(:view, "BANCO.scc.im:443", path: "/v", env: env)
+    assert_equal 403, listener_status(:view, "api.banco.scc.im", path: "/v", forwarded: "banco.scc.im", env: env)
+    assert_equal 200, listener_status(:view, "api.banco.scc.im", path: "/up", env: env)
+    assert_equal 200, listener_status(:view, "banco.scc.im", path: "/up", env: env)
+    assert_equal 403, listener_status(:view, "api.banco.scc.im", path: "/v"), "no view host: the API host stays the API's"
+  end
+
+  test "the API host stays off the web listener with the view listener in place" do
+    assert_equal 403, listener_status(:web, "api.banco.scc.im", path: "/today")
+    assert_equal 403, listener_status(:web, "api.banco.scc.im", path: "/today", env: { "BANCO_VIEW_URL" => "https://api.banco.scc.im" })
+  end
+
+  test "a view host of its own belongs to the view listener only" do
+    env = { "BANCO_VIEW_URL" => "https://view.staging.banco.test" }
+    assert_equal 200, listener_status(:view, "view.staging.banco.test", path: "/v", env: env)
+    %i[web api harness pages].each { |listener| assert_equal 403, listener_status(listener, "view.staging.banco.test", path: "/v", env: env), listener }
+    assert_equal 403, listener_status(:view, "api.banco.scc.im", path: "/v", env: env), "a distinct view host leaves the API host to the API listener"
+    assert_equal 200, listener_status(:api, "api.banco.scc.im", env: env)
+  end
+
+  test "a BANCO_VIEW_URL that names the web host is no view host, so the web listener keeps its own name" do
+    env = { "BANCO_VIEW_URL" => "https://banco.scc.im" }
+    assert_nil Banco::Hosts.view_host(env)
+    assert_nil Banco::Hosts.view_host("BANCO_VIEW_URL" => "https://BANCO.scc.im.:443/")
+    assert_equal Banco::Hosts.allowed({}), Banco::Hosts.allowed(env)
+    assert_equal 200, listener_status(:web, "banco.scc.im", path: "/today", env: env)
+    assert_equal 403, listener_status(:view, "banco.scc.im", path: "/v", env: env)
+    assert_equal 403, listener_status(:api, "banco.scc.im", env: env)
+  end
+
   test "the middleware is installed in the application, after the listener tag" do
     names = Rails.application.middleware.map(&:name)
     assert_equal names.index("Banco::ListenerTag") + 1, names.index("Banco::Hosts::ListenerHosts")

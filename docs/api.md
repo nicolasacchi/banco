@@ -36,7 +36,7 @@ banco status                                # any read works with either role
 
 | Role | Reads | Writes |
 |---|---|---|
-| `bot_read` | every GET of the API | nothing: any other method is `403 E-AUTH`, reason `read_only_token` |
+| `bot_read` | every GET of the API | nothing: any other method is `403 E-AUTH`, reason `read_only_token`; the one exception is a write that only grants reading, `POST /api/v1/view-links` and its revoke (D-332, «View links») |
 | `teacher` | everything `bot_read` reads | teacher decisions and comment actions, as the login stored on the token; never content |
 | `agent_claude`, `agent_omp`, `ci` | the content agents' reads, on the local listener only; **not** the teacher views (D-328), decisions, comments or pending answers | the content agents' writes (items, lessons, reviews, …); **not** decisions, comments or pending answers |
 
@@ -413,6 +413,90 @@ the ones in progress), `percent` is `done` over `total`, rounded down. `overall`
 practice rules (`not_seen` when nothing is known). `closed_subjects` are the subjects whose course the teacher withdrew after opening it. The
 official student sees no subject before the teacher releases its course.
 
+## View links
+
+A view link (D-332) is a temporary URL that opens the teacher's pages in a browser, **read-only and without a login**: the bot
+gives the user the URL, the user clicks it. It is a bearer capability for the **guest** role (D-217) and nothing wider: it reads
+every teacher page, it writes nothing, it never previews, never decides, and never opens the student's pages. It lives on its own
+listener, where the edge's login headers (`Remote-User`, `Remote-Groups`) are never read, so no misconfiguration of the edge can turn
+a link into the teacher; the session is an encrypted cookie set when the link is opened and checked against the ledger on every request.
+The pages are the browser's HTML (the layout and figures that `banco teacher ...` does not give), not JSON.
+
+Three endpoints, for the tokens that read (`bot_read`, `teacher`; a content agent's token is `403 E-AUTH`, reason `token_role`). A
+`bot_read` token may POST here although it is read-only elsewhere: the write only grants reading, no wider than the token reads over the API,
+and decides nothing. It is **not a dry run**: the link is made at once, there is nothing to confirm. CLI: `banco view-link new|list|revoke`.
+
+| Command | Request |
+|---|---|
+| `banco view-link new [--path P] [--minutes N]` | `POST /api/v1/view-links` |
+| `banco view-link list` | `GET /api/v1/view-links` |
+| `banco view-link revoke ID` | `POST /api/v1/view-links/:id/revoke` |
+
+### `banco view-link new [--path PATH] [--minutes N]`
+
+`POST /api/v1/view-links` with the body `{"path": "/teacher/subjects/math/course", "minutes": 60}`; both members are optional.
+
+- `path`: where the user lands, a path of the teacher's pages (`/teacher` by default; a query string is allowed). At most 300 characters; letters, digits
+  and `. _ ~ -` between slashes; never `/teacher/preview` or below. A path outside `/teacher` is refused.
+- `minutes`: how long the link lives, an integer from 5 to 1440 (60 by default). It cannot be extended: make a new link.
+- At most 20 active links per token.
+
+```bash
+banco view-link new --path /teacher/subjects/math/course --minutes 60
+```
+
+```json
+{"id": 7, "url": "https://api.banco.scc.im/v?view_token=…", "path": "/teacher/subjects/math/course",
+ "expires_at": "2026-11-15T12:00:00Z", "minutes": 60}
+```
+
+`url` is shown **once**: the server keeps only the SHA-256 of the token, so a lost URL is replaced by a new link, never recovered. It is a
+credential: whoever holds it reads the teacher's pages until it expires or is revoked. Errors: `503 E-VIEW-DISABLED` (field `view_links`:
+the feature is off, see below), `422 E-VIEW-PATH` (field `path` or `minutes`), `429 E-VIEW-LIMIT` (field `view_links`: 20 active links; revoke one or wait).
+
+### `banco view-link list`
+
+`GET /api/v1/view-links`: this token's newest 100 links (another token's are never listed), newest first, without the url:
+
+```json
+{"links": [{"id": 7, "path": "/teacher/subjects/math/course", "created_at": "2026-11-15T11:00:00Z", "expires_at": "2026-11-15T12:00:00Z",
+            "active": true, "revoked": false, "redemptions": 2}]}
+```
+
+`active` is «not revoked, not expired, feature on»; `redemptions` counts how many times the link was opened.
+
+### `banco view-link revoke ID`
+
+`POST /api/v1/view-links/:id/revoke` ends the link and the session of every browser that opened it, from its next request:
+
+```json
+{"id": 7, "revoked": true, "revoked_at": "2026-11-15T11:30:00Z"}
+```
+
+Revoking a revoked link answers the same row. A link of another token, or none, is `404 E-NOT-FOUND`.
+
+### What the link does, and the security model
+
+- **Opening it.** `GET <url>` (`/v?view_token=…`) sets a host-only, `httponly` cookie that expires with the link and answers `303` to the link's `path`,
+  with `Referrer-Policy: no-referrer` and `Cache-Control: no-store`. The link may be opened more than once until it expires. A `HEAD` on `/v` redeems nothing
+  (link unfurlers); a `GET` does. A link that is unknown, expired, revoked, or of a switched-off feature is the same `410` page («Il link è scaduto o non è valido. Chiedi un link nuovo.»): the caller cannot tell them apart.
+- **Not a scope.** `path` is only the landing page: the link opens the **whole** read-only teacher site, every page a guest reads, including the corrections and
+  reports with the student's typed answers. Treat the url as a credential for all of it.
+- **Read-only.** The view listener answers `GET` and `HEAD` only: anything else is `403`. A view session cannot decide, comment or reply, open
+  `/teacher/preview` or a student's page, or record that the teacher read a page (`teacher_viewed_topic`, `teacher_saw_exercise`): the only row it writes is the
+  redemption of the link. Rule 2 stands: a view link never decides.
+- **Fail closed.** On the view listener the app never reads `Remote-User` or `Remote-Groups`; identity comes only from the cookie, checked
+  against the ledger at every request (not revoked, not expired, feature on, minting token valid). A request not sent by the edge proxy is `404`.
+- **Short life.** 5 to 1440 minutes; revocation is a new row, nothing is updated or deleted (the ledger: `view_links`, `view_link_redemptions`,
+  `view_link_revocations`). The URL's token is not stored, and the log filters `view_token`. A link dies with the token that minted it: revoking the token, its
+  effective expiry (D-330), or removing a `teacher` token's teacher from `BANCO_TEACHER_USERS` ends its links and their open sessions at the next request.
+- **The switch.** The feature needs `BANCO_VIEW_LINKS_ENABLED=1` and `BANCO_VIEW_URL` (the https origin of the links, never the web host `banco.scc.im`: that turns the feature off) on the server: without them
+  `banco view-link new` is `503 E-VIEW-DISABLED`, and with the flag turned off **every open view session ends at once** (the view listener answers `404` to everything).
+  Both are the operator's.
+- **The host.** There is no separate DNS name yet: the non-`/api/` paths of `api.banco.scc.im` go to the view listener (`VIEW_PORT`, 3400) through the
+  edge (Traefik routers `banco-view` and `banco-view-redeem`, the latter with access logs off, so the token in the query never reaches Traefik's log; Rails filters `view_token` too),
+  so `url` starts with `https://api.banco.scc.im`. `BANCO_VIEW_URL` names the host, so moving it later changes no command.
+
 ## Errors
 
 | HTTP | Code | When |
@@ -426,6 +510,9 @@ official student sees no subject before the teacher releases its course.
 | 422 | `E-DECISION-INVALID` | the gate says no; `reasons` lists why |
 | 422 | `E-COMMENT-INVALID` | the comment is not in a state for the action, an empty or over-long reply |
 | 422 | `E-FILES` | a malformed body, an unknown value of a filter, `confirm` that is not a boolean |
+| 422 | `E-VIEW-PATH` | `banco view-link new`: the `path` is not a teacher path (or is the preview), or `minutes` is not an integer from 5 to 1440; `field` says which |
+| 429 | `E-VIEW-LIMIT` | `banco view-link new`: the token already has 20 active links |
+| 503 | `E-VIEW-DISABLED` | `banco view-link new`: view links are off (`BANCO_VIEW_LINKS_ENABLED` is not `1` or `BANCO_VIEW_URL` is not set) |
 | (CLI) | `E-URL` | `BANCO_URL` is not `http(s)://host[:port][/prefix]` or a bare host; exit 2, nothing sent |
 | (CLI) | `E-CONTRACT` | the CLI's embedded contract differs from the server's (exit 6); `next` is `banco self-update` |
 | (CLI) | `E-SELF-UPDATE` | `banco self-update`: the server lists a binary over 100 MB, the download's sha256 or size differs from the server's list, or the program's directory cannot be written (exit 6); nothing was replaced |
@@ -446,7 +533,7 @@ A topic or test read (`banco teacher topic`, `banco teacher test`) runs the page
 ## What the API never does
 
 - It never lets the student write, answer, start or void anything: no route creates a comment, an answer or a run for a student.
-- A `bot_read` token never writes; a `teacher` token never writes content (items, lessons, pages, reviews, sessions).
+- A `bot_read` token never writes, except to grant reading (a view link, D-332); a `teacher` token never writes content (items, lessons, pages, reviews, sessions).
 - It never records a decision without the flag `BANCO_DECISIONS_ENABLED=1`, without the token's teacher on `BANCO_TEACHER_USERS`, or past a gate:
   `confirm: true` does not skip a requirement, and a dry run writes nothing.
 - It never updates or deletes a row: the ledger is append-only, a correction is a new row.
@@ -455,6 +542,7 @@ A topic or test read (`banco teacher topic`, `banco teacher test`) runs the page
   `banco:correct_session`, `banco:search:rebuild`) stay on the host.
 - The content agents' tokens never decide, never read comments or pending answers, and never act as the teacher.
 - The teacher views (`banco teacher ...`, `banco progress`) never write: reading a page through the API records no `teacher_viewed_topic` or `teacher_saw_exercise` event, so the approval gate's «page opened» and «exercises seen» conditions stay the teacher's, in the browser (or the attestation, from the console or a teacher token over the API); they show no student's name (keys only) and no student's answer.
+- A view link (`banco view-link`, D-332) never decides, never writes and never opens the student's pages or the preview; it shows no more than the guest role reads. The url is shown once, at creation, and is never stored or listed.
 
 ## The release build of the CLI
 

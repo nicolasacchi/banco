@@ -3,13 +3,67 @@ Rails.application.routes.draw do
   topic_key = /(ripasso|ponte|lezione|extra)\.[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*/
   web = Banco::ListenerConstraint.new(:web)
   api = Banco::ListenerConstraint.new(:api)
+  # D-332: the teacher's pages that only read (GET) answer on the web listener and on the view listener (view links);
+  # every POST and every student or preview route stays web-only.
+  web_or_view = Banco::ListenerConstraint.new(:web, :view)
+  view_only = Banco::ListenerConstraint.new(:view)
+
+  # The teacher's reading pages, for the teacher and the guest on web and for a view link on view (D-332). The same
+  # paths and route names as before the view listener existed; their POSTs are in the web block below.
+  constraints(web_or_view) do
+    get "teacher" => "teacher#show"
+    get "teacher/items/:revision_id" => "teacher/items#show", constraints: { revision_id: /\d+/ }, format: false
+    scope "teacher", module: "teacher", format: false do
+      key = { key: /[a-z_]+/ }
+      get "subjects/:key/graph" => "graphs#show", constraints: key, as: :teacher_graph
+      get "subjects/:key/test" => "tests#show", constraints: key, as: :teacher_test
+      get "subjects/:key/test/all" => "tests#all", constraints: key, as: :teacher_test_all
+      get "subjects/:key/test/skills/:skill" => "tests#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9._\-]*/), as: :teacher_test_skill
+      get "subjects/:key/report" => "reports#show", constraints: key, as: :teacher_report
+      get "subjects/:key/course" => "courses#show", constraints: key, as: :teacher_course
+      get "subjects/:key/topics/:topic" => "topics#show", constraints: key.merge(topic: topic_key), as: :teacher_topic
+      get "subjects/:key/practice" => "practice#show", constraints: key, as: :teacher_practice
+      get "subjects/:key/practice/skills/:skill" => "practice#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9._\-]*/), as: :teacher_practice_skill
+      get "corrections" => "corrections#show", as: :teacher_corrections
+      # The student's comments (D-304): the teacher reads and answers; a guest sees the counts only.
+      get "comments" => "comments#show", as: :teacher_comments
+      get "search" => "search#show", as: :teacher_search
+      get "findings" => "findings#show", as: :teacher_findings
+      get "students" => "students#show", as: :teacher_students
+      get "dashboard/state" => "dashboard#state", as: :teacher_dashboard_state
+      get "dashboard/fragment" => "dashboard#fragment", as: :teacher_dashboard_fragment
+      get "refs/:key" => "refs#show", constraints: { key: /[a-z0-9][a-z0-9._-]*/ }, as: :teacher_ref
+      # Free pages (D-290): the screenshots of a page validation and the browser matrix page.
+      get "page-revisions/:page_revision_id/shots" => "page_shots#index", constraints: { page_revision_id: /\d+/ }, as: :teacher_page_shots
+      get "page-revisions/:page_revision_id/shots/:sha256" => "page_shots#show", constraints: { page_revision_id: /\d+/, sha256: /[0-9a-f]{64}/ }, as: :teacher_page_shot
+      get "pages/selftest" => "pages#selftest", as: :teacher_pages_selftest
+      get "lesson-revisions/:lesson_revision_id/shots" => "lesson_shots#index", constraints: { lesson_revision_id: /\d+/ }, as: :teacher_lesson_shots
+      get "lesson-revisions/:lesson_revision_id/shots/:sha256" => "lesson_shots#show", constraints: { lesson_revision_id: /\d+/, sha256: /[0-9a-f]{64}/ }, as: :teacher_lesson_shot
+      get "items/:revision_id/play" => "item_plays#show", constraints: { revision_id: /\d+/ }, as: :teacher_item_play
+      get "items/:revision_id/play/data" => "item_plays#data", constraints: { revision_id: /\d+/ }, as: :teacher_item_play_data
+      # The box of a lesson/2 (R3, A14): the full body. Nothing is recorded.
+      get "lesson-revisions/:id/full.json" => "lesson_revisions#full", constraints: { id: /\d+/ }, format: false
+    end
+    # The poster of a free page (D-290): the validation screenshot by content address, for every signed-in role.
+    get "page-posters/:sha" => "page_posters#show", constraints: { sha: /[0-9a-f]{64}/ }, format: false
+    # Figures drawn by agents: images only, named by their digest.
+    get "assets/items/:sha256.svg" => "item_assets#show", constraints: { sha256: /[0-9a-f]{64}/ }, format: false
+  end
+
+  # View listener (D-332): a view link's redemption, the only page that needs no session, and a plain refusal of every
+  # method but GET and HEAD (a POST would otherwise fall to the 404 of the unmatched paths; it is a 403 here). A callable
+  # `constraints:` on a route replaces the block's constraint, so the refusal checks the listener itself.
+  view_write = ->(request) { view_only.matches?(request) && !(request.get? || request.head?) }
+  constraints(view_only) do
+    get "v" => "view_links#redeem", format: false
+  end
+  match "*path", to: "view_links#refuse", via: :all, format: false, constraints: view_write
 
   # Web listener: the student and the teacher, behind Traefik and Authelia.
   constraints(web) do
     get "up" => "rails/health#show", as: :rails_health_check
     # The front door (D-240): a student goes to Oggi, the teacher and a guest to /teacher, anyone else gets the 404.
     get "/" => "home#show", format: false
-    get "teacher" => "teacher#show"
 
     # One test, played by the student (/diagnosis) or by the teacher as the
     # student (/teacher/preview, route default preview: true, never a parameter).
@@ -33,8 +87,6 @@ Rails.application.routes.draw do
       post "warmup/complete" => "warmup#complete", as: :warmup_complete
       concerns :sitting
     end
-    # The poster of a free page (D-290): the validation screenshot by content address, for every signed-in role.
-    get "page-posters/:sha" => "page_posters#show", constraints: { sha: /[0-9a-f]{64}/ }, format: false
     # The course of Phase 1b (A9): Oggi, the subjects, a topic, its lesson and its practice. Students only, official
     # and trial; the teacher and guests get 403. The official student sees nothing until release_course. The same
     # pages are the teacher's preview under /teacher/preview (D-309), where the route default says who is acting.
@@ -71,7 +123,6 @@ Rails.application.routes.draw do
 
     # The teacher's decisions (D-08): the only writes of DecisionRecorder. POST only,
     # ids in the path, everything else in the body.
-    get "teacher/items/:revision_id" => "teacher/items#show", constraints: { revision_id: /\d+/ }, format: false
     scope "teacher", controller: "teacher/decisions", format: false do
       id = /\d+/
       post "skill-graph-revisions/:revision_id/approve", action: :approve_skill_graph, constraints: { revision_id: id }
@@ -96,43 +147,16 @@ Rails.application.routes.draw do
       post "consent", action: :consent
     end
 
-    # The teacher's pages (read-only) and the heartbeat of their minutes.
+    # The heartbeat of the teacher's minutes and the POSTs of the lesson box and the comments; the teacher's GET pages are
+    # in the web_or_view block at the top (D-332).
     scope "teacher", module: "teacher", format: false do
-      key = { key: /[a-z_]+/ }
-      get "subjects/:key/graph" => "graphs#show", constraints: key, as: :teacher_graph
-      get "subjects/:key/test" => "tests#show", constraints: key, as: :teacher_test
-      get "subjects/:key/test/all" => "tests#all", constraints: key, as: :teacher_test_all
-      get "subjects/:key/test/skills/:skill" => "tests#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9._\-]*/), as: :teacher_test_skill
-      get "subjects/:key/report" => "reports#show", constraints: key, as: :teacher_report
-      get "subjects/:key/course" => "courses#show", constraints: key, as: :teacher_course
-      get "subjects/:key/topics/:topic" => "topics#show", constraints: key.merge(topic: topic_key), as: :teacher_topic
-      get "subjects/:key/practice" => "practice#show", constraints: key, as: :teacher_practice
-      get "subjects/:key/practice/skills/:skill" => "practice#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9._\-]*/), as: :teacher_practice_skill
-      get "corrections" => "corrections#show", as: :teacher_corrections
-      # The student's comments (D-304): the teacher reads and answers; a guest sees the counts only.
-      get "comments" => "comments#show", as: :teacher_comments
       %w[reply read resolve reopen].each do |action|
         post "comments/:comment_id/#{action}" => "comments##{action}", constraints: { comment_id: /\d+/ }, as: :"teacher_comment_#{action}"
       end
-      get "search" => "search#show", as: :teacher_search
-      get "findings" => "findings#show", as: :teacher_findings
-      get "students" => "students#show", as: :teacher_students
-      get "dashboard/state" => "dashboard#state", as: :teacher_dashboard_state
-      get "dashboard/fragment" => "dashboard#fragment", as: :teacher_dashboard_fragment
-      get "refs/:key" => "refs#show", constraints: { key: /[a-z0-9][a-z0-9._-]*/ }, as: :teacher_ref
-      # Free pages (D-290): the screenshots of a page validation and the browser matrix page.
-      get "page-revisions/:page_revision_id/shots" => "page_shots#index", constraints: { page_revision_id: /\d+/ }, as: :teacher_page_shots
-      get "page-revisions/:page_revision_id/shots/:sha256" => "page_shots#show", constraints: { page_revision_id: /\d+/, sha256: /[0-9a-f]{64}/ }, as: :teacher_page_shot
-      get "pages/selftest" => "pages#selftest", as: :teacher_pages_selftest
-      get "lesson-revisions/:lesson_revision_id/shots" => "lesson_shots#index", constraints: { lesson_revision_id: /\d+/ }, as: :teacher_lesson_shots
-      get "lesson-revisions/:lesson_revision_id/shots/:sha256" => "lesson_shots#show", constraints: { lesson_revision_id: /\d+/, sha256: /[0-9a-f]{64}/ }, as: :teacher_lesson_shot
-      get "items/:revision_id/play" => "item_plays#show", constraints: { revision_id: /\d+/ }, as: :teacher_item_play
-      get "items/:revision_id/play/data" => "item_plays#data", constraints: { revision_id: /\d+/ }, as: :teacher_item_play_data
       post "activity" => "activity#create"
-      # The box of a lesson/2 (R3, A14): the full body, a check graded with the seed "preview", a solution. Nothing is recorded.
+      # The box of a lesson/2 (R3, A14): a check graded with the seed "preview", a solution. Nothing is recorded.
       lr = { id: /\d+/ }
       n = /\d+/
-      get "lesson-revisions/:id/full.json" => "lesson_revisions#full", constraints: lr, format: false
       post "lesson-revisions/:id/checks/:card/:block" => "lesson_revisions#check", constraints: lr.merge(card: n, block: n)
       post "lesson-revisions/:id/checks/:card/:block/:step" => "lesson_revisions#check", constraints: lr.merge(card: n, block: n, step: n)
       post "lesson-revisions/:id/checks/:card/:block/ex/:n" => "lesson_revisions#check", constraints: lr.merge(card: n, block: n, n: n)
@@ -158,9 +182,6 @@ Rails.application.routes.draw do
       post "runs/:run_id/close" => "sittings#close", as: :run_close
       concerns :sitting
     end
-
-    # Figures drawn by agents: images only, named by their digest.
-    get "assets/items/:sha256.svg" => "item_assets#show", constraints: { sha256: /[0-9a-f]{64}/ }, format: false
   end
 
   # API listener: agent token only.
@@ -264,6 +285,12 @@ Rails.application.routes.draw do
     get "api/v1/updates" => "api/v1/updates#show", format: false
     get "api/v1/docs/:name" => "api/v1/updates#doc", constraints: { name: /[a-z]+/ }, format: false
     get "api/v1/cli/:file" => "api/v1/updates#cli", constraints: { file: /banco-[a-z0-9]+-[a-z0-9]+(?:\.exe)?/ }, format: false
+
+    # View links (D-332): a bot_read or teacher token creates, lists and revokes the temporary URLs that open the teacher's pages
+    # read-only on the view listener. The one POST a bot_read token may send (Api::BaseController.reader_grants).
+    post "api/v1/view-links" => "api/v1/view_links#create", format: false
+    get "api/v1/view-links" => "api/v1/view_links#index", format: false
+    post "api/v1/view-links/:id/revoke" => "api/v1/view_links#revoke", constraints: { id: /\d+/ }, format: false
   end
 
   # Harness listener: the page and the files Chrome loads to run an agent's

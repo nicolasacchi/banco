@@ -1,0 +1,5 @@
+it:
+  errors:
+    gone:
+      title: "Il link non è più valido"
+      body: "Il link è scaduto o non è valido. Chiedi un link nuovo."

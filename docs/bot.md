@@ -64,6 +64,29 @@ banco comments resolve ID --reason "…" --confirm      # also: reopen, read
 - An approval of a graph or a test takes `"revision_id": N`: the revision the bot read, never «the latest».
 - The student's pending answers are closed with `banco decide resolve_attempt` (`docs/api.md` «Answers that wait for the teacher»).
 
+## Giving the user a link to the pages
+
+When the user wants to look at a page themselves (the course, a topic, the entry test), give them a **view link** (D-332) instead of
+describing it: a temporary URL that opens the teacher's pages in the browser, read-only, with no login.
+
+```bash
+banco view-link new --path /teacher/subjects/math/course --minutes 60
+banco view-link list                 # this token's links: id, path, expires_at, active, redemptions
+banco view-link revoke ID            # ends the link and every browser that opened it
+```
+
+- Send the user **only the `url`** from the answer, nothing else of it, and only to the user who asked: never to a group or a third party. It is shown once and
+  the server keeps no copy: if it is lost, make a new link. Do not write it in a comment, a reason or a log: anyone who has it reads the teacher's pages until it expires.
+- It **expires**: `--minutes` is 5 to 1440 (60 by default); ask for the time the user needs, not more. Revoke it when the user is done or the
+  url went to the wrong place. A user whose link says it expired gets a new one.
+- `--path` is only the page the user lands on (`/teacher`, `/teacher/subjects/KEY/course`, `/teacher/subjects/KEY/topics/TOPIC`, …), **not a limit**: the link opens
+  the **whole** read-only teacher site, including the corrections and reports with the student's typed answers. The student's pages and the preview are not available.
+- The link shows the teacher's pages **read-only**: it never decides, never answers, never records that a page was read. Decisions stay with
+  `banco decide` or the teacher in the browser; a link is only for looking.
+- `E-VIEW-DISABLED` means the operator has switched the feature off: say so, do not retry. `E-VIEW-LIMIT` (20 active links): revoke one you no longer need.
+- A chat app that unfurls the url with a GET redeems the link and may show the page title in its preview (a `HEAD` redeems nothing): send the url where previews
+  are off, or accept that. A link also dies with your token: if the token is revoked or expires, so do its links.
+
 ## Staying current
 
 The bot keeps itself current (D-330; the whole loop is `docs/api.md` «Staying current»):
