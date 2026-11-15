@@ -6,6 +6,11 @@
 /* words of another language: the subject's target ink, a little heavier, never underlined */
 .l2 .lang { color: var(--primary); font-weight: 650; letter-spacing: 0.01em; }
 .l2 .role.lang { color: inherit; }
+/* text on a solid fill keeps the fill's own ink (D-335): the first box of a flow (the accent), a pressed chip (the accent) and a chosen category
+   chip or span chip (the text colour) are filled, so a language or role span inside them takes neither its own colour nor its tint, whatever the
+   theme: the fill and its ink are a pair; weight and the lang attribute stay the marks of the span */
+.l2 .dg-starttext :is(.lang, .role), .l2 .dg-chipbtn[aria-pressed="true"] :is(.lang, .role), .l2 .chip-input:checked + .chip-label :is(.lang, .role),
+.l2 .span-chip[aria-pressed="true"] :is(.lang, .role) { color: inherit; background: none; box-shadow: none; }
 /* one short word ("-emos") never breaks at its hyphen (D-310) */
 .l2 .lang-word { white-space: nowrap; }
 
