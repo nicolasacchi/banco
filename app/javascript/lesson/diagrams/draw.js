@@ -362,9 +362,17 @@ export function mountDiagram(data, ctx, options = {}) {
     }
     for (const l of scene.labels) {
       const node = el("div", { class: `dg-label ${l.cls} dg-a-${l.anchor}${l.wrap ? " dg-wrap" : ""}` })
-      node.style.left = `${l.x}px`
       node.style.top = `${l.y}px`
-      node.style.width = `${l.w + (l.wrap ? 0 : 2)}px`
+      if (l.wrap) { // a multi-line label is a box of the measured width: its lines break inside it
+        node.style.left = `${l.x}px`
+        node.style.width = `${l.w}px`
+      } else {
+        // a one-line label hangs from its anchor point, whatever its real width (a font that arrives after the measure, a larger text size):
+        // the text grows from the anchor, never to the right of a box that was measured too narrow
+        node.style.left = `${l.anchor === "start" ? l.x : l.anchor === "end" ? l.x + l.w : l.x + l.w / 2}px`
+        // the `translate` property, not `transform`: the move animation of a keyed label (animate) owns `transform`
+        if (l.anchor !== "start") node.style.translate = l.anchor === "end" ? "-100% 0" : "-50% 0"
+      }
       node.style.fontSize = `${l.px}px`
       renderInlineRich(l.text_it, node, ctx)
       if (l.key) node.dataset.key = l.key
