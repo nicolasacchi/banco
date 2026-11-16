@@ -12,7 +12,7 @@ class PracticeSelectorTest < ActiveSupport::TestCase
     choice = serve!
     assert_equal [ "next", true ], [ choice.reason, choice.created ]
     assert_equal @revisions.first.id, choice.instance.item_revision_id
-    assert_equal [ "practice/1", @skill, @student.id, @clock.now ], choice.serve.then { |s| [ s.rules_version, s.skill_key, s.student_id, s.created_at ] }
+    assert_equal [ "practice/2", @skill, @student.id, @clock.now ], choice.serve.then { |s| [ s.rules_version, s.skill_key, s.student_id, s.created_at ] }
     assert_kind_of Integer, choice.serve.seed
     assert_nil choice.parent_serve_id
     assert_nil choice.error_code
@@ -38,12 +38,21 @@ class PracticeSelectorTest < ActiveSupport::TestCase
     assert_equal first.serve.id, serve!.serve.id
   end
 
-  test "a closed serve gives a new one, and an abandoned serve too (24 hours)" do
+  test "a closed serve gives a new one, and an abandoned serve too (14 days)" do
     first = serve!
-    advance(24 * 3600 + 1)
+    advance(14 * 24 * 3600)
+    assert_equal first.serve.id, serve!.serve.id, "still open at 336 hours"
+    advance(1)
     second = serve!
     assert_not_equal first.serve.id, second.serve.id
     assert second.created
+  end
+
+  test "a serve left open for a day is still the one the page resumes" do
+    first = serve!
+    advance(24 * 3600 + 1)
+    again = serve!
+    assert_equal [ first.serve.id, false ], [ again.serve.id, again.created ]
   end
 
   test "an answered serve gives the next instance; no fingerprint repeats until the pool is gone" do
@@ -226,5 +235,202 @@ class PracticeSelectorTest < ActiveSupport::TestCase
     assert_equal %w[o1 o2 o3 o4], map.keys.sort
     assert_equal %w[o1 o2 o3 o4], map.values.sort
     assert_equal map.keys.sort, JSON.parse(c.serve.shown_order_json).fetch("options").size.times.map { |i| "o#{i + 1}" }
+  end
+
+  # ---- practice/2: one open serve per item, pick an item, advance, resume ----
+
+  def item_key(n) = @revisions[n].item.key
+  def item_of(choice) = choice.instance.item_revision.item_id
+
+  test "a pinned item is picked by its key: a new serve of that item when it has no open serve" do
+    first = serve!
+    picked = serve!(item: item_key(1))
+    assert_equal [ true, "next", @revisions.second.item_id ], [ picked.created, picked.reason, item_of(picked) ]
+    assert_not_equal first.serve.id, picked.serve.id
+    expected = @revisions.second.instances.min_by { |i| Digest::SHA256.hexdigest("#{@student.id}:#{i.fingerprint}") }
+    assert_equal expected.id, picked.instance.id, "the first unseen of the item"
+    assert_equal 2, PracticeServe.where(student: @student).count
+  end
+
+  test "picking an item that has an open serve returns that serve, as often as asked" do
+    first = serve!
+    advance
+    other = serve!(item: item_key(1))
+    2.times do
+      again = serve!(item: item_key(0))
+      assert_equal [ first.serve.id, false ], [ again.serve.id, again.created ]
+    end
+    assert_equal other.serve.id, serve!(item: item_key(1)).serve.id
+    assert_equal 2, PracticeServe.count
+  end
+
+  test "picking a done item serves a new instance of it (a redo)" do
+    first = serve!
+    answer!(first, correct_raw(first))
+    redo_choice = serve!(item: item_key(0))
+    assert_equal [ true, "next", @revisions.first.item_id ], [ redo_choice.created, redo_choice.reason, item_of(redo_choice) ]
+    assert_not_equal first.instance.fingerprint, redo_choice.instance.fingerprint
+  end
+
+  test "picking an item with no unseen instance re-serves the instance whose last serve is the oldest, reason reseen" do
+    served = Array.new(12) do
+      c = serve!(item: item_key(0))
+      answer!(c, wrong_raw)
+      answer!(c, wrong_raw)
+      c
+    end
+    assert_equal 12, served.map { |c| c.instance.fingerprint }.uniq.size
+    again = serve!(item: item_key(0))
+    assert_equal [ true, "reseen", served.first.instance.id, @revisions.first.item_id ], [ again.created, again.reason, again.instance.id, item_of(again) ]
+  end
+
+  test "an item that is not pinned on the skill, or does not exist, is NotPinned and writes nothing" do
+    stranger = make_practice_item("math-stranger-1", @skill, instances: 3)
+    assert_raises(Practice::Selector::NotPinned) { serve!(item: stranger.item.key) }
+    assert_raises(Practice::Selector::NotPinned) { serve!(item: "no-such-item") }
+    assert_raises(Practice::Selector::NotPinned) { serve!(item: "") }
+    assert_equal 0, PracticeServe.count
+  end
+
+  test "a pinned item is found by key in the topic revision the student sees, not in an older one" do
+    old_topic = @topic
+    old_keys = @revisions.map { |r| r.item.key }
+    pin_items(1, 3)
+    assert_raises(Practice::Selector::NotPinned) { serve!(item: old_keys.first) }
+    assert_equal old_keys.first, serve!(item: old_keys.first, topic: old_topic).instance.item_revision.item.key
+  end
+
+  test "advance gives the next item that has no open serve; the skipped serve stays open" do
+    first = serve!
+    advance
+    second = serve!(advance: true)
+    assert_equal [ true, "next", @revisions.second.item_id ], [ second.created, second.reason, item_of(second) ]
+    assert_not_equal first.serve.id, second.serve.id
+    status = Practice::Loader.status_of(first.serve.reload, now: @clock.now)
+    assert_equal :open, status.state, "Salta does not close the serve"
+    assert_equal 2, PracticeServe.where(student: @student).count
+  end
+
+  test "advance when every item has an open serve returns the open serve touched least recently" do
+    first = serve!
+    advance
+    second = serve!(advance: true)
+    advance
+    assert_equal first.serve.id, serve!(advance: true).serve.id
+    assert_equal 2, PracticeServe.count
+    answer!(first, wrong_raw) # a try on the first: now the second is the least recently touched
+    assert_equal second.serve.id, serve!(advance: true).serve.id
+    advance
+    answer!(second, wrong_raw)
+    assert_equal first.serve.id, serve!(advance: true).serve.id
+  end
+
+  test "a draft touches a serve like a try does" do
+    skip "no PracticeDraft model" unless defined?(PracticeDraft)
+    first = serve!
+    advance
+    second = serve!(advance: true)
+    advance
+    assert_equal first.serve.id, serve!(advance: true).serve.id # least recently touched
+    PracticeDraft.create!(student_id: @student.id, practice_serve_id: first.serve.id, raw: "12", created_at: @clock.now)
+    assert_equal second.serve.id, serve!(advance: true).serve.id
+    assert_equal first.serve.id, serve!.serve.id, "the first load resumes the one touched last"
+  end
+
+  test "the first load resumes the open serve touched most recently; with none open it is the next exercise" do
+    first = serve!
+    advance
+    second = serve!(item: item_key(1))
+    assert_equal [ second.serve.id, false ], [ serve!.serve.id, serve!.created ]
+    advance
+    answer!(first, wrong_raw)
+    assert_equal first.serve.id, serve!.serve.id
+    advance
+    answer!(second, wrong_raw)
+    assert_equal second.serve.id, serve!.serve.id
+    # a fresh student has nothing open: rule 4, the first pinned item
+    fresh = serve!(student: practice_student("trial-fresh"))
+    assert_equal [ true, "next", @revisions.first.item_id ], [ fresh.created, fresh.reason, item_of(fresh) ]
+  end
+
+  test "a serve that is closed or abandoned is not resumed" do
+    first = serve!
+    answer!(first, correct_raw(first))
+    second = serve!
+    assert_not_equal first.serve.id, second.serve.id
+    advance(15 * 24 * 3600)
+    third = serve!
+    assert_not_equal second.serve.id, third.serve.id
+    assert third.created
+  end
+
+  test "a serve is superseded by a newer serve of the item (practice/1 data): the older is not resumed" do
+    one, two = @revisions.first.instances.order(:id).first(2)
+    old = make_serve(@student, @topic, one, skill_key: @skill, at: @clock.now - 1000)
+    newer = make_serve(@student, @topic, two, skill_key: @skill, at: @clock.now - 500)
+    assert_equal :abandoned, Practice::Loader.status_of(old, now: @clock.now).state
+    assert_equal newer.id, serve!(item: item_key(0)).serve.id
+    assert_equal newer.id, serve!.serve.id
+    assert_equal 2, PracticeServe.count
+    assert_equal @revisions.second.item_id, item_of(serve!(advance: true))
+  end
+
+  test "a follow skips the candidates of an item that has an open serve" do
+    first = typical_serve! # item 1, closed wrong with code "slip"
+    advance
+    reopened = serve!(item: item_key(0))
+    assert reopened.created
+    choice = serve!(follow: { serve_id: first.serve.id, kind: "prova_questo" })
+    assert_equal [ "prova_questo", "slip", first.serve.id, @revisions.second.item_id, true ],
+                 [ choice.reason, choice.error_code, choice.parent_serve_id, item_of(choice), choice.created ]
+    # asked again (two tabs, a retry): the serve that follow made is open, so it comes back
+    again = serve!(follow: { serve_id: first.serve.id, kind: "prova_questo" })
+    assert_equal [ choice.serve.id, false ], [ again.serve.id, again.created ]
+    assert_not_equal reopened.serve.id, again.serve.id
+  end
+
+  test "a follow with every item open returns the open serve of the followed item" do
+    first = typical_serve!
+    advance
+    reopened = serve!(item: item_key(0))
+    serve!(item: item_key(1))
+    again = serve!(follow: { serve_id: first.serve.id, kind: "prova_questo" })
+    assert_equal [ reopened.serve.id, false ], [ again.serve.id, again.created ]
+    assert_equal 3, PracticeServe.count
+  end
+
+  test "after the solution an open item is skipped: the next item, reason next, parent set" do
+    first = typical_serve!
+    actions.solution(serve_id: first.serve.id)
+    advance
+    serve!(item: item_key(0))
+    choice = serve!(follow: { serve_id: first.serve.id, kind: "after_solution" })
+    assert_equal [ "next", first.serve.id, @revisions.second.item_id ], [ choice.reason, choice.parent_serve_id, item_of(choice) ]
+  end
+
+  # ---- choose, pure ----
+
+  def candidates
+    [ Practice::Selector::Candidate.new(1, 1, 10, "a", []), Practice::Selector::Candidate.new(2, 1, 10, "b", []),
+      Practice::Selector::Candidate.new(3, 2, 20, "c", []) ]
+  end
+
+  def choose(**options)
+    Practice::Selector.choose(**{ pool: candidates, student_id: 4, seen: Set.new, last_serve: {}, item_last_serve: {}, credit_by_item: {} }.merge(options))
+  end
+
+  test "choose leaves out the items that have an open serve, and says nothing when no candidate is left" do
+    assert_equal 2, choose(open_item_ids: Set[1]).candidate.item_id
+    assert_equal 1, choose(open_item_ids: Set[2]).candidate.item_id
+    assert_nil choose(open_item_ids: Set[1, 2])
+  end
+
+  test "choose with pick_item_id serves that item and no other: unseen first, then the oldest instance, reseen" do
+    assert_equal 2, choose(pick_item_id: 2).candidate.item_id
+    assert_equal "next", choose(pick_item_id: 2).reason
+    all_seen = { seen: Set["a", "b", "c"], last_serve: { "a" => 9, "b" => 5, "c" => 1 } }
+    pick = choose(pick_item_id: 1, **all_seen)
+    assert_equal [ "reseen", "b" ], [ pick.reason, pick.candidate.fingerprint ]
+    assert_nil choose(pick_item_id: 99)
   end
 end

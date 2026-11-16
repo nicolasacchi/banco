@@ -40,6 +40,30 @@ class PreferencesTest < ActionDispatch::IntegrationTest
     assert_select "input[name=size][value=larger][checked]"
   end
 
+  test "each of the five sizes can be chosen and is kept, smallest first on the settings page" do
+    assert_equal %w[smallest small normal large larger], Diagnosis::Preferences::SIZES
+    as_student "/settings"
+    assert_select "input[name=size]" do |inputs|
+      assert_equal %w[smallest small normal large larger], inputs.map { |i| i["value"] }
+    end
+    assert_select "label", text: "Molto piccolo"
+    assert_select "label", text: "Piccolo"
+    %w[smallest small].each do |size|
+      as_student "/diagnosis/preferences", method: :post, params: { theme: "cream", size: size }
+      as_student "/settings"
+      assert_select "html[data-size=#{size}]"
+      assert_select "input[name=size][value=#{size}][checked]"
+      assert_equal size, Diagnosis::Preferences.for(@rows[:student])[:size]
+    end
+  end
+
+  test "the lesson dialog texts list the five sizes, smallest first, and a size chosen there is kept" do
+    assert_equal({ "smallest" => "Più piccolo", "small" => "Piccolo", "normal" => "Normale", "large" => "Grande", "larger" => "Più grande" }, I18n.t("lesson2.sizes").transform_keys(&:to_s))
+    assert_equal %w[smallest small normal large larger], I18n.t("lesson2.sizes").keys.map(&:to_s)
+    as_student "/diagnosis/preferences", method: :post, params: { size: "smallest" }
+    assert_equal "smallest", Diagnosis::Preferences.for(@rows[:student])[:size]
+  end
+
   test "an unknown value is ignored and the old choice stays; saying the same again writes nothing" do
     as_student "/diagnosis/preferences", method: :post, params: { theme: "dark", size: "large" }
     as_student "/diagnosis/preferences", method: :post, params: { theme: "neon", size: "huge" }

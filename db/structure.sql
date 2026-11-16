@@ -693,7 +693,22 @@ CREATE TRIGGER item_renders_no_update BEFORE UPDATE ON item_renders
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER item_renders_no_delete BEFORE DELETE ON item_renders
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "practice_drafts" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "student_id" integer NOT NULL, "practice_serve_id" integer NOT NULL, "raw" text NOT NULL, "source" varchar, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_96198c2765"
+FOREIGN KEY ("student_id")
+  REFERENCES "students" ("id")
+, CONSTRAINT "fk_rails_bb8e27b85f"
+FOREIGN KEY ("practice_serve_id")
+  REFERENCES "practice_serves" ("id")
+);
+CREATE INDEX "index_practice_drafts_on_student_id" ON "practice_drafts" ("student_id") /*application='Banco'*/;
+CREATE INDEX "index_practice_drafts_on_practice_serve_id" ON "practice_drafts" ("practice_serve_id") /*application='Banco'*/;
+CREATE INDEX "index_practice_drafts_on_practice_serve_id_and_id" ON "practice_drafts" ("practice_serve_id", "id") /*application='Banco'*/;
+CREATE TRIGGER practice_drafts_no_update BEFORE UPDATE ON practice_drafts
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER practice_drafts_no_delete BEFORE DELETE ON practice_drafts
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261116100000'),
 ('20261115120001'),
 ('20261115100001'),
 ('20261114120001'),

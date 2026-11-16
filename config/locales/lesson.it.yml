@@ -64,6 +64,8 @@ it:
       cream: "Crema"
       dark: "Scuro"
     sizes:
+      smallest: "Più piccolo"
+      small: "Piccolo"
       normal: "Normale"
       large: "Grande"
       larger: "Più grande"

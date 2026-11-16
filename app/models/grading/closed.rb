@@ -95,7 +95,9 @@ module Grading
         key = spec.answer.to_h { |l, r| [ l.to_s, r.to_s ] }
         pairs = value.to_h { |l, r| [ map_id(l, id_map), r.to_s.empty? ? "" : map_id(r, id_map) ] }
         return invalid("unparseable") unless pairs.keys.sort == key.keys.sort
-        return invalid("empty") if pairs.values.any?(&:empty?)
+        # Nothing chosen at all is "empty"; some rows left blank is its own refusal, so the student is told to fill the rest.
+        return invalid("empty") if pairs.values.all?(&:empty?)
+        return invalid("incomplete_rows") if pairs.values.any?(&:empty?)
 
         rights = Array(spec.display["right"]).map { |o| o["id"] }
         return invalid("unparseable") if rights.any? && !(pairs.values - rights).empty?

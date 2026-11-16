@@ -173,6 +173,7 @@ export default class extends Controller {
       this.setStatus(message)
     }
     this.handle.focus()
+    this.handle.showMissing?.()
     setTimeout(() => { if (this.current === item && this.handle) this.setButtons(true) }, this.refusals.cooldownMs)
     return count
   }

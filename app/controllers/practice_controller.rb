@@ -17,13 +17,15 @@ class PracticeController < ApplicationController
     @state = course_view.state(@skill)
   end
 
-  # POST /practice/serves {topic, skill, follow}
+  # POST /practice/serves {topic, skill, follow, item, advance}: item is an item key (that exercise), advance is «Avanti» and «Salta» (the next
+  # exercise, the open ones kept open); with neither, the exercise to resume (D-337).
   def serve
     _, topic = course_view.find_topic(params[:topic])
     skill = params[:skill].to_s
     return json_not_found unless topic && topic.skills.include?(skill)
 
-    choice = Practice::Selector.next(student: acting_student, topic_revision: topic.topic_revision, skill: skill, follow: follow_param, now: Time.current)
+    choice = Practice::Selector.next(student: acting_student, topic_revision: topic.topic_revision, skill: skill, follow: follow_param,
+                                     item: item_param, advance: ActiveModel::Type::Boolean.new.cast(params[:advance]), now: Time.current)
     render json: serve_body(choice.serve, topic)
   rescue Practice::Selector::BadFollow
     render json: { status: "bad_follow" }, status: :unprocessable_entity
@@ -39,6 +41,33 @@ class PracticeController < ApplicationController
       serve_id: params[:serve_id], client_attempt_id: params[:client_attempt_id], raw: params[:raw], source: params[:source]
     )
     render json: result.body, status: result.http
+  end
+
+  # POST /practice/serves/:serve_id/draft {raw, source}: what the student has typed, saved as a row. Only an open serve of the student's own.
+  def draft
+    return json_not_found unless own_visible_serve?(params[:serve_id])
+
+    raw = params[:raw]
+    source = params[:source]
+    return render(json: { status: "bad_draft" }, status: :unprocessable_entity) unless raw.is_a?(String) && (source.nil? || source.is_a?(String))
+
+    PracticeDraft.transaction do
+      serve = PracticeServe.includes(:events, attempts: :gradings, item_instance: { item_revision: :item }).find(params[:serve_id].to_i)
+      next render(json: { status: "closed" }, status: :conflict) unless Practice::Loader.status_of(serve, now: Time.current).state == :open
+      next render(json: { status: "too_long" }, status: :unprocessable_entity) if raw.length > PracticeDraft::MAX_RAW
+      next render(json: { status: "unchanged" }) if raw == (PracticeDraft.current_for(serve)&.raw || "")
+
+      PracticeDraft.create!(student: acting_student, practice_serve: serve, raw: raw, source: source.presence&.first(PracticeDraft::MAX_SOURCE))
+      render json: { status: "saved" }
+    end
+  end
+
+  # GET /practice/exercises?topic=KEY: the topic's exercises with what each one is for this student (Practice::Exercises).
+  def exercises
+    subject_view, topic = course_view.find_topic(params[:topic])
+    return json_not_found unless topic
+
+    render json: Practice::Exercises.call(topic: topic, subject: subject_view.subject, student: acting_student, view: course_view, root: student_root)
   end
 
   # POST /practice/serves/:serve_id/hint {n}
@@ -58,6 +87,8 @@ class PracticeController < ApplicationController
   end
 
   private
+
+  def item_param = params[:item].is_a?(String) ? params[:item].presence : nil
 
   def follow_param
     raw = params[:follow]
@@ -85,8 +116,24 @@ class PracticeController < ApplicationController
       status: status.state.to_s, next_try_number: status.next_try_number,
       skill: skill_block(serve.skill_key, state),
       hints: { total: hints.size, shown: hints.first(status.hints_shown).each_with_index.map { |text, i| { n: i + 1, hint_it: text } } },
-      item: item_part(serve, instance)
+      item: item_part(serve, instance),
+      draft: draft_block(serve), exercise: exercise_block(serve, topic)
     }
+  end
+
+  # What the student typed in this serve and has not answered yet; nil when there is nothing (or a try came after it).
+  def draft_block(serve)
+    row = PracticeDraft.current_for(serve)
+    row && row.raw != "" ? { raw: row.raw, source: row.source } : nil
+  end
+
+  # The place of the serve's exercise in its skill: the item key and its 1-based position in the pin order of the topic the student sees (n is
+  # nil when the item is no longer pinned there: an open serve of an older revision).
+  def exercise_block(serve, topic)
+    key = serve.item_instance.item_revision.item.key
+    pins = topic.topic_revision.body["practice"].find { |p| p["skill"] == serve.skill_key }&.dig("items") || []
+    position = pins.index { |pin| pin["item"] == key }
+    { skill: serve.skill_key, item: key, n: position && position + 1 }
   end
 
   def skill_block(key, state)

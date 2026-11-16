@@ -44,6 +44,10 @@ class Lesson2TeacherBoxTest < ApplicationSystemTestCase
     assert_equal 390, page.evaluate_script("document.querySelector('.l2-box').getBoundingClientRect().width").round
     choose "Scuro"
     assert_equal "dark", find(".l2-box")["data-theme"]
+    choose "Più piccolo"
+    assert_selector ".l2-box[data-size=smallest]"
+    choose "Piccolo"
+    assert_selector ".l2-box[data-size=small]"
     choose "Più grande"
     assert_selector ".l2-box[data-size=larger]"
     # nothing leaves the box: no event and no question address is in its configuration

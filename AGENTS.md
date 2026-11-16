@@ -79,11 +79,12 @@ only), `HARNESS_PORT` 3200 (internal), `VIEW_PORT` 3400 (view links, GET only). 
 - `lib/diagnosis/`: the pure engine (no database): `Plan`, `Fold`, `Engine`,
   `Derivation`, `Simulator`; `app/models/diagnosis/`: the loaders that read rows
   for it. `banco diagnosis simulate` is a dry run of the same engine.
-- The practice engine (Phase 1b S2, D-235, rules `practice/1` in `docs/rules/practice-1.md` and `lib/practice/rules/v1.rb`):
+- The practice engine (Phase 1b S2, D-235, rules `practice/2` in `docs/rules/practice-2.md` and `lib/practice/rules/v2.rb`):
   `lib/practice/` (`Outcome`, `ServeState` with its transition table, `Fold` for the skill states, `Selector`, `Today`,
   `GraphOrder`), `app/models/practice/` (`Loader`, `Seeder`, `AnswerRecorder`, `Actions`, `Messages`, `Payload`, `Instances`) and
   `Course::Catalog` (what each student sees). Own ledger tables `practice_*`; `Grading` is shared. Tests: `test/lib/practice`,
   `test/models/practice` (`PROP_RUNS=300` for the properties).
+- Practice navigation (D-337): at most one open serve per item (`practice/2`, `Practice::Selector.next(item:, advance:)`), `practice_drafts` (append-only; `POST /practice/serves/:serve_id/draft`, the serve body's `draft` and `exercise`), `Practice::Exercises` (`GET /practice/exercises?topic=`, the list with done, to do, left, skipped; no key, no instance's text), the page's sidebar and «Salta»/«Rifai». Tests: `test/integration/practice_navigation_test.rb`. The text sizes are D-338.
 - `lib/validation/`, `app/models/validation/`: mechanical validation (A-06) of items,
   graphs and blueprints; thresholds in `config/banco/validation_rules.yml`; agent
   code runs only in Chrome (`ChromeRunner`, the harness in `lib/harness/` served on

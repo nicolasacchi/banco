@@ -151,4 +151,36 @@ class AcceptedAnswersTest < ActionDispatch::IntegrationTest
     assert_equal [ "app/controllers/api/v1/answers_controller.rb", "app/controllers/api/v1/digest_controller.rb" ], named.map { |f| f.delete_prefix("#{Rails.root}/") }.sort
     assert_empty Dir[Rails.root.join("cli/**/*.go")].reject { |f| f.end_with?("_test.go") }.select { |f| File.read(f).match?(/PendingAnswers|answers:pending/) }
   end
+
+  # A matching with some rows empty is refused with a message of its own and writes no attempt; every row empty is "empty".
+  def matching_raw(step, chosen)
+    map = JSON.parse(ItemServed.find_by!(diagnosis_event_id: step.event.id).id_map_json)
+    shown = ->(real) { map.key(real) || real }
+    JSON.generate(chosen.to_h { |left, right| [ shown.(left), right.empty? ? "" : shown.(right) ] })
+  end
+
+  test "a matching with some rows empty is refused as incomplete_rows and writes no attempt" do
+    rows = build_ui_subject(components: %w[matching])
+    step = first_step(rows)
+    raw = matching_raw(step, "l1" => "", "l2" => "r2", "l3" => "r3", "l4" => "r4")
+    outcome = record(step, raw, student: rows[:student])
+    assert_equal [ "invalid", Grading::Result::MESSAGES_IT["incomplete_rows"] ], [ outcome.status, outcome.message_it ]
+    assert_equal "Manca una risposta: scegli una risposta per ogni riga, poi controlla.", outcome.message_it
+    assert_equal 0, Attempt.count
+    event = AppEvent.where(kind: "invalid_input").sole
+    assert_equal "incomplete_rows", JSON.parse(event.payload_json)["code"]
+  end
+
+  test "a matching with every row empty keeps the plain empty message and writes no attempt" do
+    rows = build_ui_subject(components: %w[matching])
+    step = first_step(rows)
+    raw = matching_raw(step, "l1" => "", "l2" => "", "l3" => "", "l4" => "")
+    outcome = record(step, raw, student: rows[:student])
+    assert_equal [ "invalid", Grading::Result::MESSAGES_IT["empty"] ], [ outcome.status, outcome.message_it ]
+    assert_equal 0, Attempt.count
+  end
+
+  test "the codes still refused in the diagnosis include the matching's incomplete rows" do
+    assert_includes Diagnosis::AnswerRecorder::STILL_REFUSED, "incomplete_rows"
+  end
 end

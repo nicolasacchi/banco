@@ -4,16 +4,19 @@ require "digest"
 
 module Practice
   # Serving (A8.7). choose is the pure rule; next reads the student's rows, applies it and appends the
-  # serve in ONE transaction (SQLite BEGIN IMMEDIATE, the Rails default), so two tabs, an outbox retry
-  # or a reload get the same open serve and no instance is burnt twice (A8.4).
+  # serve in ONE transaction (SQLite BEGIN IMMEDIATE, the Rails default) that re-reads the open serves, so
+  # two tabs, an outbox retry or a reload get the same open serve and no instance is burnt twice (A8.4).
+  # There is at most one open serve per student, skill and pinned item (practice/2, docs/rules/practice-2.md).
   #
-  #   Practice::Selector.next(student:, topic_revision:, skill:, follow: nil, now:)
+  #   Practice::Selector.next(student:, topic_revision:, skill:, follow: nil, item: nil, advance: false, now:)
   #     # => Choice(instance, reason, parent_serve_id, error_code, serve, created)
   #
-  # follow: {serve_id:, kind: "prova_questo" | "after_solution"}. Raises BadFollow (HTTP 422
-  # bad_follow) and NotPinned (HTTP 404) as the spec says.
+  # item: an item KEY: that item's open serve, else a new instance of it. follow: {serve_id:, kind:
+  # "prova_questo" | "after_solution"}. advance: the next exercise that is not open («Avanti», «Salta»).
+  # None of them: the open serve touched most recently (the first load of the page), else the next exercise.
+  # Raises BadFollow (HTTP 422 bad_follow) and NotPinned (HTTP 404) as the spec says.
   module Selector
-    V1 = Rules::V1
+    V2 = Rules::V2
 
     Candidate = Data.define(:instance_id, :item_id, :item_revision_id, :fingerprint, :error_codes)
     Pick = Data.define(:candidate, :reason, :error_code, :parent_serve_id)
@@ -29,9 +32,12 @@ module Practice
 
     # pool: [Candidate] in pin order, then instance id. seen: Set of fingerprints served before.
     # last_serve: {fingerprint => id of the latest serve}; item_last_serve: {item_id => same};
-    # credit_by_item: {item_id => C_unaided tries}; follow: Follow or nil. Returns a Pick, or nil when the
-    # pool is empty.
-    def choose(pool:, student_id:, seen:, last_serve:, item_last_serve:, credit_by_item:, follow: nil)
+    # credit_by_item: {item_id => C_unaided tries}; follow: Follow or nil; open_item_ids: Set of the item ids
+    # that have an open serve (their candidates are left out); pick_item_id: serve this item and no other
+    # (the open serve check is the caller's). Returns a Pick, or nil when no candidate is left.
+    def choose(pool:, student_id:, seen:, last_serve:, item_last_serve:, credit_by_item:, follow: nil, open_item_ids: Set.new, pick_item_id: nil)
+      pool = pool.select { |c| c.item_id == pick_item_id } if pick_item_id
+      pool = pool.reject { |c| open_item_ids.include?(c.item_id) } unless pick_item_id
       return nil if pool.empty?
 
       unseen = pool.reject { |c| seen.include?(c.fingerprint) }.sort_by { |c| order_key(student_id, c) }
@@ -56,7 +62,7 @@ module Practice
     # served least recently), then the following pinned items with an unseen instance.
     def next_unseen(pool, unseen, item_last_serve, credit_by_item)
       items = pool.map(&:item_id).uniq
-      current = items.find { |i| credit_by_item.fetch(i, 0) < V1::ADVANCE_AFTER_CORRECT_UNAIDED } ||
+      current = items.find { |i| credit_by_item.fetch(i, 0) < V2::ADVANCE_AFTER_CORRECT_UNAIDED } ||
                 items.min_by.with_index { |i, pos| [ item_last_serve.fetch(i, 0), pos ] }
       rotated = items.rotate(items.index(current))
       rotated.each do |item|
@@ -70,20 +76,58 @@ module Practice
 
     # ---- the serve, in one transaction ---------------------------------------------------------------
 
-    def next(student:, topic_revision:, skill:, follow: nil, now: Time.current)
+    def next(student:, topic_revision:, skill:, follow: nil, item: nil, advance: false, now: Time.current)
       practice = topic_revision.body["practice"].find { |p| p["skill"] == skill } or raise NotPinned, skill
       subject = Subject.find_by!(key: skill.split(".").first)
+      revisions = practice["items"].map { |pin| ItemRevision.find(pin["revision"]) }
+      item_id = pinned_item_id(item, revisions, skill)
       PracticeServe.transaction do
         input = Loader.for(student, subject: subject, skill: skill, seeds: false, now: now)
         followed = validate_follow(input, follow)
-        open = input.serves.reverse.find { |s| s.status.state == :open }
-        if open
-          serve = PracticeServe.find(open.id)
-          Choice.new(serve.item_instance, serve.reason, serve.parent_serve_id, serve.error_code, serve, false)
+        open = open_serves(input, revisions.map(&:item_id).to_set)
+        touched = touched_at(student, input, open)
+        by_item = open.group_by(&:item_id).transform_values { |rows| rows.max_by(&:id) }
+        if item_id
+          resume(by_item[item_id]) || create_serve(student, topic_revision, skill, revisions, input, nil, now, pick_item_id: item_id) || raise(NotPinned, skill)
+        elsif followed || advance
+          # a follow already answered (two tabs, a retry) gives its serve again while that serve is open
+          child = followed && open.select { |s| s.parent_serve_id == followed.serve_id }.max_by(&:id)
+          resume(child) || create_serve(student, topic_revision, skill, revisions, input, followed, now, open_item_ids: by_item.keys.to_set) ||
+            resume(by_item[followed&.item_id] || open.min_by { |s| [ touched[s.id], s.id ] }) || raise(NotPinned, skill)
         else
-          create_serve(student, topic_revision, skill, practice, input, followed, now)
+          resume(open.max_by { |s| [ touched[s.id], s.id ] }) || create_serve(student, topic_revision, skill, revisions, input, nil, now) || raise(NotPinned, skill)
         end
       end
+    end
+
+    # The id of the item with that key when it is pinned on the skill; nil without a key; else NotPinned.
+    def pinned_item_id(key, revisions, skill)
+      return nil unless key
+
+      id = Item.find_by(key: key.to_s)&.id
+      raise NotPinned, skill unless id && revisions.any? { |r| r.item_id == id }
+
+      id
+    end
+
+    # The open serves of the skill on pinned items, as ServeRows.
+    def open_serves(input, pinned_item_ids)
+      input.serves.select { |s| s.status.state == :open && pinned_item_ids.include?(s.item_id) }
+    end
+
+    # {serve id => the latest of its creation, its last try and its last draft}.
+    def touched_at(student, input, open)
+      drafts = defined?(PracticeDraft) ? PracticeDraft.where(student_id: student.id, practice_serve_id: open.map(&:id)).group(:practice_serve_id).maximum(:created_at) : {}
+      last_try = input.tries.group_by(&:serve_id).transform_values { |tries| tries.map(&:at).max }
+      open.to_h { |s| [ s.id, [ s.at, last_try[s.id], drafts[s.id] ].compact.max ] }
+    end
+
+    # The Choice of an open serve as it is, or nil without one.
+    def resume(row)
+      return nil unless row
+
+      serve = PracticeServe.find(row.id)
+      Choice.new(serve.item_instance, serve.reason, serve.parent_serve_id, serve.error_code, serve, false)
     end
 
     # A follow must name a serve of this student and skill that allows it (its actions say so): an open
@@ -107,20 +151,19 @@ module Practice
       Follow.new(serve_id: row.id, kind: kind, item_id: row.item_id, item_revision_id: row.item_revision_id, error_code: code)
     end
 
-    def create_serve(student, topic_revision, skill, practice, input, followed, now)
-      pool = pool_for(practice)
-      pick = choose(pool: pool, student_id: student.id, follow: followed,
+    # The new serve, or nil when choose has no candidate (every pinned item open, or the item has no instance).
+    def create_serve(student, topic_revision, skill, revisions, input, followed, now, open_item_ids: Set.new, pick_item_id: nil)
+      pick = choose(pool: pool_for(revisions), student_id: student.id, follow: followed, open_item_ids: open_item_ids, pick_item_id: pick_item_id,
                     seen: input.serves.map(&:fingerprint).to_set,
                     last_serve: last_by(input.serves, :fingerprint), item_last_serve: last_by(input.serves, :item_id),
-                    credit_by_item: input.tries.select { |t| t.evidence == :C && !t.aided && !t.reseen }.group_by(&:item_id).transform_values(&:size)) or
-        raise NotPinned, skill
+                    credit_by_item: input.tries.select { |t| t.evidence == :C && !t.aided && !t.reseen }.group_by(&:item_id).transform_values(&:size)) or return nil
       instance = ItemInstance.includes(:item_revision).find(pick.candidate.instance_id)
       seed = Digest::SHA256.hexdigest("#{student.id}:#{instance.id}:#{input.serves.size}")[0, 8].to_i(16)
       rekeyed = Diagnosis::Conductor.rekey(instance, JSON.parse(instance.item_revision.body_json), "#{seed}|#{instance.id}")
       serve = PracticeServe.create!(student: student, topic_revision: topic_revision, item_instance: instance, skill_key: skill, reason: pick.reason,
                                     parent_serve_id: pick.parent_serve_id, error_code: pick.error_code, seed: seed,
                                     shown_order_json: rekeyed.shown_order.to_json, id_map_json: rekeyed.id_map.to_json,
-                                    rules_version: V1::RULES_VERSION, created_at: now)
+                                    rules_version: V2::RULES_VERSION, created_at: now)
       Choice.new(instance, pick.reason, pick.parent_serve_id, pick.error_code, serve, true)
     end
 
@@ -129,9 +172,8 @@ module Practice
     end
 
     # Candidates of the pinned item revisions of a skill, in pin order then instance id.
-    def pool_for(practice)
-      practice["items"].flat_map do |pin|
-        revision = ItemRevision.find(pin["revision"])
+    def pool_for(revisions)
+      revisions.flat_map do |revision|
         revision.instances.order(:id).map do |i|
           codes = i.errors_json.present? ? JSON.parse(i.errors_json).map { |e| e["code"] } : []
           Candidate.new(instance_id: i.id, item_id: revision.item_id, item_revision_id: revision.id, fingerprint: i.fingerprint, error_codes: codes)

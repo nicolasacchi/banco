@@ -27,8 +27,8 @@ module PracticeWorld
 
   def advance(seconds = 60) = @clock.advance(seconds)
 
-  def serve!(student: @student, topic: @topic, skill: @skill, follow: nil)
-    Practice::Selector.next(student: student, topic_revision: topic, skill: skill, follow: follow, now: @clock.now)
+  def serve!(student: @student, topic: @topic, skill: @skill, follow: nil, item: nil, advance: false)
+    Practice::Selector.next(student: student, topic_revision: topic, skill: skill, follow: follow, item: item, advance: advance, now: @clock.now)
   end
 
   def recorder(student: @student) = Practice::AnswerRecorder.new(student: student, clock: @clock)

@@ -24,9 +24,22 @@
     <%= ui_icon("info") %><div class="notice-body"></div>
   </div>
 
+  <div class="practice-layout">
+  <%# The list of the topic's exercises (D-337): drawn by the script from GET exercises?topic=. Open on a wide screen, closed on a phone. %>
+  <aside class="exercise-list" id="exercise-list" aria-labelledby="exercise-list-title" data-practice-target="list" hidden>
+    <details class="disclosure exercise-panel" data-practice-target="listPanel">
+      <summary>
+        <span class="exercise-list-title" id="exercise-list-title"><%= t("practice.exercises") %></span>
+        <span class="exercise-list-count" data-practice-target="listCount"></span>
+      </summary>
+      <div class="exercise-groups" data-practice-target="listBody"></div>
+    </details>
+  </aside>
+
+  <div class="practice-main">
   <div class="card exercise-card">
     <section data-practice-target="work" aria-label="<%= t("practice.exercise") %>" hidden>
-      <div class="item" data-practice-target="itemBox" data-comment-anchor="exercise"></div>
+      <div class="item" data-practice-target="itemBox" data-comment-anchor="exercise" data-action="item-change->practice#changed"></div>
       <div id="hints" class="notice hint" data-practice-target="hints" data-comment-anchor="hints" hidden>
         <%= ui_icon("wrong-hint") %>
         <div class="notice-body">
@@ -38,6 +51,7 @@
         <button type="button" class="button" id="check" data-practice-target="check" data-action="practice#check"><%= t("practice.submit") %></button>
         <button type="button" class="button secondary" id="hint-button" data-practice-target="hintButton" data-action="practice#hint" hidden></button>
         <button type="button" class="button text" id="solution-button" data-practice-target="solutionButton" data-action="practice#solution"><%= t("practice.solution") %></button>
+        <button type="button" class="button text" id="skip-button" data-practice-target="skip" data-action="practice#skip"><%= t("practice.skip") %></button>
       </div>
     </section>
 
@@ -46,4 +60,6 @@
     <div class="actions button-row" id="next-actions" data-practice-target="nextActions" hidden></div>
   </div>
   <%= render "course/question", topic: @topic.key, lesson_revision_id: @topic.lesson_revision.id, section: "practice" %>
+  </div>
+  </div>
 </main>

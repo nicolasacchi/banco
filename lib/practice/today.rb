@@ -9,7 +9,7 @@ module Practice
   #   graph_order: {skill => position} (Practice::GraphOrder)
   #   last_topic: key of the topic of the student's latest serve or lesson_opened, or nil
   module Today
-    V1 = Rules::V1
+    V2 = Rules::V2
 
     Suggestion = Data.define(:topic_key, :reason, :skill)
 
@@ -21,7 +21,7 @@ module Practice
 
     # limit: how many suggestions to keep (Oggi's SUGGESTIONS_MAX); nil keeps the whole ranked list, whose first per subject is
     # the topic Oggi proposes for that subject (D-333, `banco next`).
-    def call(catalog:, states:, graph_order:, last_topic:, limit: V1::SUGGESTIONS_MAX)
+    def call(catalog:, states:, graph_order:, last_topic:, limit: V2::SUGGESTIONS_MAX)
       views = catalog.flat_map { |sv| sv.topics.each_with_index.map { |t, i| [ sv, t, i ] } }
       visible = views.to_h { |sv, t, i| [ t.key, [ sv, t, i ] ] }
       resume = last_topic if last_topic && visible.key?(last_topic) && !done?(visible.fetch(last_topic)[1], states)

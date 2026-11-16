@@ -8,7 +8,7 @@ module PracticeEngineHelper
              revision: 1, codes: [], reseen: false, at: nil, seconds: 30)
     @engine_serial = (@engine_serial || 0) + 1
     at ||= T0 + day * 86_400 + hours * 3600
-    Practice::Try.new(skill: skill, at: at, day: at.in_time_zone(Practice::Rules::V1::ZONE).to_date, serve_id: serve || @engine_serial,
+    Practice::Try.new(skill: skill, at: at, day: at.in_time_zone(Practice::Rules::V2::ZONE).to_date, serve_id: serve || @engine_serial,
                       fingerprint: fp || "fp#{@engine_serial}", item_id: item_id, item_revision_id: revision, low_guess: low,
                       try_number: try_number, aided: aided || reseen, reseen: reseen, evidence: Practice::Outcome.evidence(outcome),
                       outcome: outcome, error_codes: codes, seconds: seconds)
@@ -39,9 +39,9 @@ module PracticeEngineHelper
     Practice::ServeEvent.new(kind: kind, n: n, reason: reason, auto: auto, at: T0)
   end
 
-  def serve_status(outcomes = [], events: [], hints_total: 3, now: T0 + 60, reason: "next")
+  def serve_status(outcomes = [], events: [], hints_total: 3, now: T0 + 60, reason: "next", superseded: false)
     tries = outcomes.each_with_index.map { |o, i| StubTry.new(i + 1, o) }
-    Practice::ServeState.call(serve: stub_serve(reason: reason), tries: tries, events: events, hints_total: hints_total, now: now)
+    Practice::ServeState.call(serve: stub_serve(reason: reason), tries: tries, events: events, hints_total: hints_total, now: now, superseded: superseded)
   end
 
   # A serve being played: applies events the way the recorder does (writes what the step names),

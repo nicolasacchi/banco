@@ -14,11 +14,22 @@ const SPRITE = "/vendor/lucide@1.54.0/banco-sprite.svg"
 // The tone of a feedback notice by the grader's outcome (D-307): never red and green; the words come from the server.
 const TONES = { correct: "success", correct_aided: "success", near_miss: "nearly", typical_error: "error", unrecognised: "error", form: "error", undetermined: "info" }
 const TONE_ICONS = { success: "circle-check", nearly: "triangle-alert", error: "alert", info: "info", hint: "wrong-hint" }
+// The statuses of an exercise in the list (D-337): an icon from the sprite, a tone and the word, so colour is never alone.
+const ENTRY_STATUS = {
+  todo: { icon: "step-practice", tone: "muted" },
+  done: { icon: "circle-check", tone: "success" },
+  tried: { icon: "restart", tone: "nearly" },
+  left: { icon: "clock-paused", tone: "info" },
+  skipped: { icon: "next", tone: "muted" },
+  now: { icon: "pin", tone: "info" }
+}
+const DRAFT_WAIT_MS = 1500
+const DRAFT_TIMEOUT_MS = 4000
 const STATE_TONES = { demonstrated: "success", consolidated: "success", in_study: "info", to_recover: "nearly", to_review: "nearly", to_learn: "nearly", not_seen: "muted" }
 
 export default class extends Controller {
   static targets = ["skillState", "skillWhy", "dots", "reason", "work", "itemBox", "hints", "hintList", "controls", "check", "hintButton", "solutionButton",
-                    "feedback", "solutionBox", "nextActions"]
+                    "feedback", "solutionBox", "nextActions", "skip", "list", "listPanel", "listCount", "listBody"]
   static values = { topic: String, skill: String, baseUrl: String, backUrl: String, texts: Object, labels: Object }
 
   connect() {
@@ -36,7 +47,39 @@ export default class extends Controller {
     this.busy = false
     this.hintsTotal = 0
     this.hintsShown = 0
+    this.serving = false
+    // The half-typed answer (D-337): `drafting` while the open exercise may take a draft; `lastSaved` is what the server holds
+    // (null after a try: the tried answer then goes up as a newer draft).
+    this.drafting = false
+    this.lastSaved = ""
+    this.draftTimer = null
+    this.draftChain = Promise.resolve()
+    this.listSeq = 0
+    this.leaveSave = () => { this.saveDraft({ keepalive: true }) }
+    this.hiddenSave = () => { if (document.visibilityState === "hidden") this.saveDraft({ keepalive: true }) }
+    window.addEventListener("pagehide", this.leaveSave)
+    document.addEventListener("visibilitychange", this.hiddenSave)
+    // The list is open when the page has two columns and closed on a phone: student.css decides (a container query in rem, so it
+    // follows the text size) and the layout's own display says which one is on.
+    this.wideLayout = () => window.getComputedStyle(this.listTarget.parentElement).display === "grid"
+    this.wasWide = null
+    this.sizeList = () => {
+      const wide = this.wideLayout()
+      if (wide === this.wasWide) return
+      this.wasWide = wide
+      this.listPanelTarget.open = wide
+    }
+    this.sizeList()
+    this.resizer = new ResizeObserver(this.sizeList)
+    this.resizer.observe(this.element)
     this.start()
+  }
+
+  disconnect() {
+    clearTimeout(this.draftTimer)
+    window.removeEventListener("pagehide", this.leaveSave)
+    document.removeEventListener("visibilitychange", this.hiddenSave)
+    this.resizer?.disconnect()
   }
 
   csrf() {
@@ -48,7 +91,14 @@ export default class extends Controller {
     // An answer left in the outbox by an earlier page goes out first, on its own; the page was away, so its verdict is told
     // once the exercise is on the screen.
     const left = this.outbox.size > 0 ? Object.values((await this.outbox.flush()).results).filter((reply) => reply?.status === "graded").pop() : null
-    await this.serve(null)
+    // `?item=KEY` (a link from the list of another skill) opens that exercise once; a reload then resumes the last one.
+    const url = new URL(window.location.href)
+    const item = url.searchParams.get("item")
+    await this.serve(item ? { item } : {})
+    if (item) {
+      url.searchParams.delete("item")
+      window.history.replaceState(window.history.state, "", url)
+    }
     if (left && !this.workTarget.hidden) this.sayEarlier(left)
   }
 
@@ -61,14 +111,28 @@ export default class extends Controller {
 
   // ---- serving -------------------------------------------------------------------------------------
 
-  async serve(follow) {
+  // `extra` is what the request adds to {topic, skill}: {item}, {advance: true} or {follow}; nothing resumes the last exercise.
+  // The half-typed answer of the exercise being left goes up first.
+  async serve(extra = {}) {
+    if (this.serving) return null
+    this.serving = true
+    try {
+      await this.saveDraft()
+      return await this.serveNow(extra)
+    } finally {
+      this.serving = false
+    }
+  }
+
+  async serveNow(extra) {
+    this.drafting = false
     this.say(this.labels.loading)
     this.workTarget.hidden = true
     this.nextActionsTarget.hidden = true
     this.nextActionsTarget.textContent = ""
     this.solutionBoxTarget.hidden = true
     this.solutionBoxTarget.textContent = ""
-    const { body } = await this.post(this.urls.serve, { topic: this.topicValue, skill: this.skillValue, follow })
+    const { body } = await this.post(this.urls.serve, { topic: this.topicValue, skill: this.skillValue, ...extra })
     if (!body || body.type !== "item") return this.say(this.labels.error)
     await this.show(body)
     return null
@@ -103,7 +167,24 @@ export default class extends Controller {
     this.setControls(true)
     this.say("")
     this.handle.focus()
+    this.drafting = true
+    this.lastSaved = ""
+    this.restoreDraft(reply.draft)
+    this.refreshList()
     return null
+  }
+
+  // What the student had typed on this exercise, put back with a word about it.
+  restoreDraft(draft) {
+    if (!draft || typeof draft.raw !== "string" || draft.raw === "") return
+    try {
+      this.handle.restore(draft.raw)
+    } catch (error) {
+      console.error(error)
+      return
+    }
+    this.lastSaved = draft.raw
+    this.say(this.labels.draft_restored)
   }
 
   // The state pill, the three dots (corrections without help, while the skill is "in studio") and the sentence of why.
@@ -138,10 +219,15 @@ export default class extends Controller {
     if (this.handle.isEmpty()) return this.say(this.labels.empty)
     this.setControls(false)
     this.say(this.labels.saving)
+    clearTimeout(this.draftTimer)
     const entry = this.outbox.add({ serve_id: this.serveId, client_attempt_id: newId(), raw: this.handle.raw(), source: this.handle.source() })
     const reply = await this.deliver(entry)
-    if (!reply) return this.serve(null)
-    return this.answered(reply)
+    if (!reply) return this.serve({ advance: true })
+    // The try is on the server: what stays in the box goes up as a newer draft when the student leaves it.
+    this.lastSaved = null
+    this.answered(reply)
+    this.refreshList()
+    return null
   }
 
   // Sends the queue until the server has the answer; waits and retries when it cannot be reached.
@@ -166,6 +252,8 @@ export default class extends Controller {
         this.say(reply.message_it)
       }
       this.handle.focus()
+      // A matching with a row left empty marks the row (the other templates have nothing to mark).
+      this.handle.showMissing?.()
       setTimeout(() => { if (this.serveId === serve && this.handle) this.setControls(true) }, this.refusals.cooldownMs)
       return null
     }
@@ -226,6 +314,7 @@ export default class extends Controller {
       this.say("")
       this.showSolution(body.solution)
       this.applyActions(body.actions)
+      this.refreshList()
     } else if (status === 409) {
       this.close()
       this.say(body?.message_it || this.labels.closed)
@@ -302,6 +391,8 @@ export default class extends Controller {
   // The exercise is over: its input and helps are put away.
   close() {
     this.busy = false
+    this.drafting = false
+    clearTimeout(this.draftTimer)
     this.itemBoxTarget.inert = true
     this.controlsTarget.hidden = true
     this.hintButtonTarget.hidden = true
@@ -319,13 +410,13 @@ export default class extends Controller {
       box.appendChild(b)
       return b
     }
-    const follow = (kind) => () => this.serve({ serve_id: this.serveId, kind })
+    const follow = (kind) => () => this.serve({ follow: { serve_id: this.serveId, kind } })
     let first = null
     const keep = (b) => { first ||= b }
     for (const action of actions) {
       if (action === "prova_questo") keep(make(this.labels.try_this, follow("prova_questo"), true))
       else if (action === "after_solution") keep(make(this.labels.after_solution, follow("after_solution"), true))
-      else if (action === "next") keep(make(this.labels.next, () => this.serve(null), !actions.includes("prova_questo") && !actions.includes("after_solution")))
+      else if (action === "next") keep(make(this.labels.next, () => this.serve({ advance: true }), !actions.includes("prova_questo") && !actions.includes("after_solution")))
       else if (action === "show_solution") keep(make(this.labels.solution, () => this.solution(), false))
     }
     if (actions.includes("back")) {
@@ -340,6 +431,164 @@ export default class extends Controller {
     first?.focus()
   }
 
+  // ---- skipping and the half-typed answer (D-337) --------------------------------------------------
+
+  // «Salta»: the draft is saved, the exercise stays open on the server, the next one is served.
+  skip() {
+    if (!this.serveId || this.busy) return null
+    return this.serve({ advance: true })
+  }
+
+  // Any change of the answer (the items send a bubbling item-change): saved after a pause.
+  changed() {
+    if (!this.drafting) return
+    clearTimeout(this.draftTimer)
+    this.draftTimer = setTimeout(() => this.saveDraft(), DRAFT_WAIT_MS)
+  }
+
+  // Sends the draft when it differs from what the server holds. A page that is going away sends it with keepalive and cannot wait.
+  saveDraft({ keepalive = false } = {}) {
+    clearTimeout(this.draftTimer)
+    if (!this.drafting || !this.handle || !this.serveId) return Promise.resolve()
+    const raw = this.handle.draft()
+    if (typeof raw !== "string" || raw === this.lastSaved || (this.lastSaved === null && raw === "")) return Promise.resolve()
+    const serve = this.serveId
+    const payload = { raw, source: this.handle.source() }
+    const send = async () => {
+      const { status, body } = await this.post(this.urls.draft(serve), payload, keepalive ? { keepalive: true } : { timeout: DRAFT_TIMEOUT_MS })
+      if (serve !== this.serveId) return
+      if (status === 200 && (body?.status === "saved" || body?.status === "unchanged")) this.lastSaved = raw
+      else if (status === 409) this.drafting = false
+    }
+    if (keepalive) {
+      send()
+      return Promise.resolve()
+    }
+    this.draftChain = this.draftChain.then(send, send)
+    return this.draftChain
+  }
+
+  // ---- the list of exercises -----------------------------------------------------------------------
+
+  // Fetched again after every serve, answer, solution and skip; a failed or late reply leaves the list as it is.
+  async refreshList() {
+    const seq = ++this.listSeq
+    let body
+    try {
+      const response = await fetch(this.urls.exercises(this.topicValue), { credentials: "same-origin", headers: { Accept: "application/json" } })
+      if (!response.ok) return
+      body = await response.json()
+    } catch (_error) {
+      return
+    }
+    if (seq !== this.listSeq || !Array.isArray(body?.skills)) return
+    this.drawList(body.skills)
+  }
+
+  drawList(skills) {
+    const body = this.listBodyTarget
+    const focused = body.contains(document.activeElement) ? document.activeElement.closest("li")?.dataset : null
+    body.textContent = ""
+    let total = 0
+    let done = 0
+    for (const skill of skills) {
+      const exercises = skill.exercises || []
+      if (exercises.length === 0) continue
+      const group = document.createElement("section")
+      group.className = "exercise-group"
+      if (skills.length > 1) {
+        const heading = document.createElement("h3")
+        heading.className = "exercise-skill"
+        heading.textContent = skill.label_it
+        group.appendChild(heading)
+      }
+      const list = document.createElement("ol")
+      list.className = "exercise-entries"
+      for (const exercise of exercises) {
+        total += 1
+        if (exercise.status === "done") done += 1
+        list.appendChild(this.entry(skill, exercise))
+      }
+      group.appendChild(list)
+      body.appendChild(group)
+    }
+    this.listTarget.hidden = total === 0
+    const count = done === 1 ? this.labels.exercises_count_one : this.labels.exercises_count
+    this.listCountTarget.textContent = count.replace("%{done}", done).replace("%{total}", total)
+    if (focused) {
+      const again = Array.from(body.querySelectorAll("li")).find((li) => li.dataset.skill === focused.skill && li.dataset.item === focused.item)
+      again?.querySelector(".exercise-link")?.focus()
+    }
+  }
+
+  // One exercise: a button on this skill, a link to the page of another; the status as an icon and a word.
+  entry(skill, exercise) {
+    const same = skill.key === this.skillValue
+    const current = same && exercise.open_serve_id != null && exercise.open_serve_id === this.serveId
+    const status = current ? "now" : (ENTRY_STATUS[exercise.status] ? exercise.status : "todo")
+    const look = ENTRY_STATUS[status]
+    const li = document.createElement("li")
+    li.className = "exercise-entry"
+    li.dataset.skill = skill.key
+    li.dataset.item = exercise.item
+    li.dataset.status = exercise.status
+    let link
+    if (same) {
+      link = document.createElement("button")
+      link.type = "button"
+    } else {
+      link = document.createElement("a")
+      const query = new URLSearchParams({ item: exercise.item })
+      link.href = `${skill.url}${skill.url.includes("?") ? "&" : "?"}${query}`
+    }
+    link.className = "exercise-link"
+    if (current) link.setAttribute("aria-current", "true")
+    const text = document.createElement("span")
+    text.className = "exercise-text"
+    const name = document.createElement("span")
+    name.className = "exercise-n"
+    name.textContent = this.labels.exercise_n.replace("%{n}", exercise.n)
+    text.appendChild(name)
+    if (exercise.title_it) {
+      const title = document.createElement("span")
+      title.className = "exercise-title"
+      renderInline(exercise.title_it, title)
+      text.appendChild(title)
+    }
+    const pill = document.createElement("span")
+    pill.className = `pill exercise-status ${look.tone}`
+    pill.innerHTML = `<svg class="ic" aria-hidden="true" focusable="false"><use href="${SPRITE}#${look.icon}"></use></svg>`
+    pill.appendChild(document.createTextNode(status === "now" ? this.labels.now : this.labels[`status_${status}`]))
+    link.append(text, pill)
+    if (!current && (exercise.status === "done" || exercise.status === "tried")) {
+      const redo = document.createElement("span")
+      redo.className = "exercise-act"
+      redo.textContent = this.labels.redo
+      link.appendChild(redo)
+    }
+    link.addEventListener("click", (event) => this.pick(event, link, same, exercise, current))
+    li.appendChild(link)
+    return li
+  }
+
+  // A click in the list. On this skill: the exercise opens here (the draft of the one being left goes up first). On another
+  // skill: the link goes to its page, after the draft is saved; a click with a modifier keeps the browser's own way.
+  pick(event, link, same, exercise, current) {
+    if (same) {
+      if (current || this.serving || this.busy) return
+      if (!this.wideLayout()) this.listPanelTarget.open = false
+      this.serve({ item: exercise.item })
+      return
+    }
+    if (event.defaultPrevented || event.button !== 0) return
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      this.saveDraft({ keepalive: true })
+      return
+    }
+    event.preventDefault()
+    this.saveDraft().then(() => { window.location.assign(link.href) })
+  }
+
   // ---- helpers -------------------------------------------------------------------------------------
 
   setControls(enabled) {
@@ -347,6 +596,7 @@ export default class extends Controller {
     this.checkTarget.disabled = !enabled
     this.hintButtonTarget.disabled = !enabled
     this.solutionButtonTarget.disabled = !enabled
+    this.skipTarget.disabled = !enabled
   }
 
   // A plain status line (loading, saving, a refusal) or, with a tone, a notice: icon, an optional short title, the sentence
@@ -371,12 +621,13 @@ export default class extends Controller {
   }
 
   // POST JSON; {status, body} with body null when the reply is not JSON, is a redirect or the network is down.
-  async post(url, payload) {
+  async post(url, payload, { keepalive = false, timeout = null } = {}) {
     try {
       const response = await fetch(url, {
-        method: "POST", redirect: "manual", credentials: "same-origin",
+        method: "POST", redirect: "manual", credentials: "same-origin", keepalive,
         headers: { "Content-Type": "application/json", Accept: "application/json", "X-CSRF-Token": this.csrf() },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        ...(timeout ? { signal: AbortSignal.timeout(timeout) } : {})
       })
       if (response.type === "opaqueredirect") return { status: 0, body: null }
       if (!(response.headers.get("content-type") || "").includes("json")) return { status: response.status, body: null }

@@ -81,7 +81,7 @@ class PracticeActionsTest < ActiveSupport::TestCase
 
   test "row 15: on an abandoned serve the solution is 409" do
     c = serve!
-    advance(25 * 3600)
+    advance(Practice::Rules::V2::OPEN_SERVE_HOURS * 3600 + 1)
     assert_equal 409, actions.solution(serve_id: c.serve.id).http
     assert_equal 409, actions.hint(serve_id: c.serve.id, n: 1).http
   end

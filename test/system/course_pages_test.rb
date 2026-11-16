@@ -174,7 +174,9 @@ class CourseSystemTest < ApplicationSystemTestCase
     serve = serve_row
     focused = page.evaluate_script("document.activeElement.getAttribute('inputmode')")
     assert_equal "decimal", focused, "the input has the focus when the exercise appears"
-    type_keys(*answer_of(serve).chars, :Tab)
+    # the helper keys of the box (D-335: the minus and the comma) are buttons reached by Tab before «Controlla»
+    keys = all(".item-body .helper-key").size
+    type_keys(*answer_of(serve).chars, *Array.new(keys + 1, :Tab))
     assert_equal "check", page.evaluate_script("document.activeElement.id")
     type_keys(:Enter)
     assert_selector "#feedback", text: "Corretto."
@@ -184,7 +186,7 @@ class CourseSystemTest < ApplicationSystemTestCase
     assert_not_equal serve.id, serve_row.id
     assert_equal "decimal", page.evaluate_script("document.activeElement.getAttribute('inputmode')")
     # the hint button and the solution are reachable by Tab, in order
-    type_keys(:Tab, :Tab)
+    type_keys(*Array.new(all(".item-body .helper-key").size + 2, :Tab))
     assert_equal "hint-button", page.evaluate_script("document.activeElement.id")
     type_keys(:Enter)
     assert_selector "#hints li", text: "Che cosa guardi prima?"

@@ -51,13 +51,14 @@ class ReadabilityTest < ActiveSupport::TestCase
     refute_match(/font-style:\s*italic/, CSS)
     refute_match(/text-transform:\s*(uppercase|capitalize)/, CSS)
     assert_match(/sans-serif/, CSS)
-    CSS.scan(/font-size:\s*([\d.]+)(px|rem)/) { |size, unit| assert_operator size.to_f * (unit == "rem" ? 20 : 1), :>=, 18, "font-size #{size}#{unit}" }
+    # the student's own choice of a smaller root size (html[data-size=smallest|small]) is the one allowed exception
+    CSS.gsub(/html\[data-size="(?:smallest|small)"\] \{ font-size: \d+px; \}/, "").scan(/font-size:\s*([\d.]+)(px|rem)/) { |size, unit| assert_operator size.to_f * (unit == "rem" ? 20 : 1), :>=, 18, "font-size #{size}#{unit}" }
   end
 
-  test "the three text sizes are all at least 18 px" do
-    sizes = CSS.scan(/html(?:\[data-size="\w+"\])? \{ font-size: (\d+)px; \}/).flatten.map(&:to_i)
-    assert_equal 3, sizes.size
-    assert_equal [ 20, 24, 28 ], sizes
+  test "the five text sizes: 16, 18, 20 (the default), 24 and 28 px, one per size the student can choose" do
+    sizes = CSS.scan(/html(?:\[data-size="(\w+)"\])? \{ font-size: (\d+)px; \}/).to_h { |name, px| [ name || "normal", px.to_i ] }
+    assert_equal({ "smallest" => 16, "small" => 18, "normal" => 20, "large" => 24, "larger" => 28 }, sizes)
+    assert_equal Diagnosis::Preferences::SIZES.sort, sizes.keys.sort
   end
 
   test "no alarm colours: the stylesheet has no red" do

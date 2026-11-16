@@ -4,7 +4,7 @@
 // optional "w" (decision D-030). One key «−» sits after the boxes (the phone's numeric pad has no minus): it writes into the
 // numerator or, in a mixed number, the whole box, whichever had the focus last (the numerator at first). A denominator
 // is never negative.
-import { el, handle, uid } from "items/dom"
+import { announceChange, el, handle, parseDraft, uid } from "items/dom"
 import { helperKeys, minusKey } from "items/helper_keys"
 
 function box(label, id) {
@@ -33,18 +33,32 @@ export function render(part, ctx) {
     stack, keys)
   const wrapper = el("div", { class: "answer" }, row)
 
+  for (const box of [whole, numerator, denominator]) box?.addEventListener("input", () => announceChange(wrapper))
+  keys.addEventListener("click", () => announceChange(wrapper))
+
   const boxes = () => ({ n: numerator.value.trim(), d: denominator.value.trim(), w: whole ? whole.value.trim() : "" })
+  const raw = () => {
+    const b = boxes()
+    const out = { n: b.n, d: b.d }
+    if (whole && b.w !== "") out.w = b.w
+    return JSON.stringify(out)
+  }
+  const isEmpty = () => {
+    const b = boxes()
+    return b.n === "" && b.d === "" && b.w === ""
+  }
   return handle(wrapper, {
-    raw: () => {
-      const b = boxes()
-      const out = { n: b.n, d: b.d }
-      if (whole && b.w !== "") out.w = b.w
-      return JSON.stringify(out)
-    },
-    isEmpty: () => {
-      const b = boxes()
-      return b.n === "" && b.d === "" && b.w === ""
-    },
-    focus: () => (whole || numerator).focus()
+    raw,
+    isEmpty,
+    focus: () => (whole || numerator).focus(),
+    // The draft is the raw answer while any box is filled: a numerator alone is a draft, never a sendable answer.
+    draft: () => (isEmpty() ? "" : raw()),
+    restore: (draft) => {
+      const parts = parseDraft(draft)
+      if (!parts) return
+      for (const [box, key] of [[whole, "w"], [numerator, "n"], [denominator, "d"]]) {
+        if (box && typeof parts[key] === "string") box.value = parts[key]
+      }
+    }
   })
 }

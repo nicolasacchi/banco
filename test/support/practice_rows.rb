@@ -8,7 +8,7 @@ module PracticeRows
   # reason next by default; prova_questo and after_solution need parent: and (prova_questo) error_code:.
   def make_serve(student, topic_revision, instance, skill_key:, reason: "next", parent: nil, error_code: nil, seed: 1, at: Time.current)
     PracticeServe.create!(student: student, topic_revision: topic_revision, item_instance: instance, skill_key: skill_key, reason: reason,
-                          parent_serve: parent, error_code: error_code, seed: seed, rules_version: "practice/1", created_at: at)
+                          parent_serve: parent, error_code: error_code, seed: seed, rules_version: "practice/2", created_at: at)
   end
 
   # One try with its first grading (verdict correct|wrong|dont_know|..., error_codes: ["slip"]).

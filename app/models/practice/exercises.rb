@@ -1,0 +1,137 @@
+module Practice
+  # The list of the exercises of a topic for one student (D-337): what the practice page draws as a sidebar. Per skill of the topic, the items
+  # pinned on the topic revision this student sees, in pin order, each with its status from the student's serves. Read-only.
+  #
+  #   status, in this order: "left" when the open serve has a try or a non-empty draft; "done" when any serve of the item closed correct;
+  #           "tried" when any closed or abandoned serve has a try or a shown solution; "skipped" when there is an open serve (nothing typed);
+  #           else "todo". open_serve_id is set whenever the item has an open serve, so a click resumes it.
+  #
+  # The list never holds a key to an answer, an error value or the text of an instance: only the item's key (the page asks for that exercise
+  # with it), its place and a title, the first sentence of the prompt's stem (the same for every instance).
+  class Exercises
+    TITLE_MAX = 90
+    ELLIPSIS = "…".freeze
+    STOPS = %w[. ? !].freeze
+
+    # topic: Course::Catalog::TopicView; view: Course::StudentView (labels and skill states); subject: the topic's Subject; root: the front of
+    # the student's addresses ("" for S, "/teacher/preview" in the preview), so the links stay where the student is.
+    def self.call(topic:, subject:, student:, view:, root:, now: Time.current) = new(topic, subject, student, view, root, now).call
+
+    # The first sentence of a stem, at most TITLE_MAX characters, lesson markup kept whole (a `$…$` or `[[…]]` is never cut nor ended inside).
+    # "" when there is no text.
+    def self.title_of(stem)
+      text = stem.to_s.squish
+      return "" if text.empty?
+
+      inside = inside_flags(text)
+      stop = text.each_char.each_with_index.find { |c, i| STOPS.include?(c) && !inside[i] && (i == text.length - 1 || text[i + 1] == " ") }&.last
+      sentence = stop ? text[0..stop] : text
+      return sentence if sentence.length <= TITLE_MAX
+
+      cut_at_word(sentence, inside)
+    end
+
+    # true for every character from the opener to the closer of a `$…$` or a `[[…]]` (both ends included).
+    def self.inside_flags(text)
+      flags = Array.new(text.length, false)
+      i = 0
+      while i < text.length
+        if text[i] == "\\"
+          i += 2
+        elsif text[i] == "$"
+          j = i + 1
+          j += text[j] == "\\" ? 2 : 1 while j < text.length && text[j] != "$"
+          if j < text.length
+            (i..j).each { |k| flags[k] = true }
+            i = j + 1
+          else
+            i += 1
+          end
+        elsif text[i, 2] == "[["
+          close = text.index("]]", i + 2)
+          if close
+            (i..close + 1).each { |k| flags[k] = true }
+            i = close + 2
+          else
+            i += 2
+          end
+        else
+          i += 1
+        end
+      end
+      flags
+    end
+
+    # At most TITLE_MAX characters with the ellipsis: cut at the last space outside the markup; else before the markup that crosses the limit.
+    def self.cut_at_word(sentence, inside)
+      limit = TITLE_MAX - ELLIPSIS.length
+      space = (1..limit).to_a.reverse.find { |i| sentence[i] == " " && !inside[i] }
+      opener = (1...limit).to_a.reverse.find { |i| inside[i] && !inside[i - 1] } if inside[limit]
+      cut = space || opener || limit
+      sentence[0, cut].sub(/[\s,;:]+\z/, "") + ELLIPSIS
+    end
+
+    def initialize(topic, subject, student, view, root, now)
+      @topic = topic
+      @subject = subject
+      @student = student
+      @view = view
+      @root = root
+      @now = now
+    end
+
+    def call
+      practice = @topic.topic_revision.body["practice"]
+      { topic: @topic.key, skills: @topic.skills.filter_map { |skill| (pins = practice.find { |p| p["skill"] == skill }) && skill_block(skill, pins["items"]) } }
+    end
+
+    private
+
+    def skill_block(skill, pins)
+      state = @view.state(skill)
+      rows = Loader.for(@student, subject: @subject, skill: skill, seeds: false, now: @now).serves
+      revisions = ItemRevision.where(id: pins.map { |p| p["revision"] }).index_by(&:id)
+      facts = Facts.new(rows, drafts_for(rows))
+      { key: skill, label_it: @view.label(skill), state: state&.state, state_it: Messages.state_it(state&.state),
+        url: "#{@root}/topics/#{@topic.key}/practice/#{skill}",
+        exercises: pins.each_with_index.map { |pin, i| exercise(pin, i + 1, revisions[pin["revision"]], facts) } }
+    end
+
+    def exercise(pin, n, revision, facts)
+      mine = facts.of_item(revision.item_id)
+      open = facts.open_serve(revision.item_id)
+      { item: pin["item"], n: n, title_it: self.class.title_of(JSON.parse(revision.body_json).dig("prompt", "stem_it")),
+        status: status(mine, open, facts), open_serve_id: open&.id,
+        done: mine.count { |r| r.status.closed_by == :correct }, tried: mine.count { |r| facts.tries(r.id).positive? } }
+    end
+
+    def status(mine, open, facts)
+      return "left" if open && (facts.tries(open.id).positive? || facts.draft?(open.id))
+      return "done" if mine.any? { |r| r.status.closed_by == :correct }
+      return "tried" if mine.any? { |r| facts.tries(r.id).positive? || r.status.solution_sent }
+
+      open ? "skipped" : "todo"
+    end
+
+    def drafts_for(rows) = PracticeDraft.texts_for(rows.map(&:id))
+
+    # The serves of one skill grouped by item, the tries counted by serve and the serves with a draft.
+    class Facts
+      def initialize(rows, drafts)
+        @by_item = rows.group_by(&:item_id)
+        @drafts = drafts
+        @tries = rows.empty? ? {} : PracticeAttempt.where(practice_serve_id: rows.map(&:id)).group(:practice_serve_id).count
+      end
+
+      def of_item(item_id) = @by_item.fetch(item_id, [])
+      def tries(serve_id) = @tries.fetch(serve_id, 0)
+      def draft?(serve_id) = @drafts.key?(serve_id)
+
+      # An item's only possible open serve is its latest one: a newer serve of the same item supersedes it (practice/2).
+      def open_serve(item_id)
+        latest = of_item(item_id).max_by(&:id)
+        latest if latest&.status&.state == :open
+      end
+    end
+  end
+end

@@ -2,10 +2,12 @@
 
 module Practice
   # The serve state machine (A8.3), pure. A serve's state is derived from its tries, its hint and
-  # solution events and the clock; nothing is stored. call derives the Status; step says what an
+  # solution events and the clock; nothing is stored. An open serve is abandoned when it is older than
+  # OPEN_SERVE_HOURS or superseded (the caller says a newer serve of the same student on the same item exists).
+  # call derives the Status; step says what an
   # event does to it (table rows 1-15), so the recorder only writes what the step names.
   module ServeState
-    V1 = Rules::V1
+    V2 = Rules::V2
 
     Status = Data.define(:state, :closed_by, :w, :near_misses, :hints_shown, :solution_sent, :next_try_number, :actions)
 
@@ -19,7 +21,7 @@ module Practice
 
     module_function
 
-    def call(serve:, tries:, events:, hints_total:, now:)
+    def call(serve:, tries:, events:, hints_total:, now:, superseded: false)
       tries = tries.sort_by(&:try_number)
       w = near = 0
       closed_by = nil
@@ -33,10 +35,10 @@ module Practice
           closed_by = :wrong
         when :unrecognised, :form
           w += 1
-          closed_by = :wrong if w >= V1::MAX_WRONG_TRIES
+          closed_by = :wrong if w >= V2::MAX_WRONG_TRIES
         when :near_miss
           near += 1
-          closed_by = :near_miss if near > V1::MAX_NEAR_MISS_RETRIES
+          closed_by = :near_miss if near > V2::MAX_NEAR_MISS_RETRIES
         when :undetermined then closed_by = :undetermined
         else raise ArgumentError, "unknown outcome #{t.outcome.inspect}"
         end
@@ -45,7 +47,7 @@ module Practice
       closed_by ||= :solution if solutions.any? { |e| e.reason.to_s == "requested" }
       hints = events.select { |e| e.kind.to_s == "hint_shown" }.map(&:n).uniq.size
       state = if closed_by then :closed
-      elsif now - serve_time(serve) > V1::OPEN_SERVE_HOURS * 3600 then :abandoned
+      elsif superseded || now - serve_time(serve) > V2::OPEN_SERVE_HOURS * 3600 then :abandoned
       else :open
       end
       Status.new(state: state, closed_by: closed_by, w: w, near_misses: near, hints_shown: [ hints, hints_total.to_i ].min,
@@ -115,7 +117,7 @@ module Practice
 
     # Rows 3, 4, 6.
     def wrong_step(status, outcome, hints_total)
-      return result(:accept, closes_as: :wrong, solution_reason: "after_last_try") if status.w >= V1::MAX_WRONG_TRIES - 1
+      return result(:accept, closes_as: :wrong, solution_reason: "after_last_try") if status.w >= V2::MAX_WRONG_TRIES - 1
 
       auto = outcome == :unrecognised && status.hints_shown < hints_total
       result(:accept, auto_hint: auto, hint_n: auto ? status.hints_shown + 1 : nil)

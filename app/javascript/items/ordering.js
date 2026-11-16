@@ -2,7 +2,7 @@
 // that has the focus (E-03: keyboard first, no drag). The rows arrive in a server
 // shuffle that is never the key or its reverse, with ids in shown order (X-01).
 // The raw answer is JSON text: the shown ids in the order the student chose.
-import { el, handle } from "items/dom"
+import { announceChange, el, handle } from "items/dom"
 import { renderInline } from "items/markup"
 
 export function render(part, ctx) {
@@ -31,13 +31,28 @@ export function render(part, ctx) {
     if (delta < 0) list.insertBefore(row, target)
     else list.insertBefore(target, row)
     focusTarget.focus()
+    announceChange(wrapper)
     live.textContent = `${row.querySelector(".row-text").textContent}: ${Array.from(list.children).indexOf(row) + 1}`
   }
 
   const wrapper = el("div", { class: "answer" }, el("p", { class: "hint", text: ctx.t.ordering_label }), list, live)
+  const ids = () => Array.from(list.children).map((row) => row.getAttribute("data-id"))
+  // The shown order is where the student starts: until a step moves, nothing is typed ("" is the draft).
+  const initial = ids()
+  const sameOrder = (a, b) => a.length === b.length && a.every((id, i) => id === b[i])
+  const place = (order) => order.forEach((id) => list.appendChild(rows.find((row) => row.getAttribute("data-id") === id)))
   return handle(wrapper, {
-    raw: () => JSON.stringify(Array.from(list.children).map((row) => row.getAttribute("data-id"))),
+    raw: () => JSON.stringify(ids()),
     isEmpty: () => false,
-    focus: () => rows[0]?.focus()
+    focus: () => rows[0]?.focus(),
+    draft: () => (sameOrder(ids(), initial) ? "" : JSON.stringify(ids())),
+    // "" puts the shown order back; a list that is not exactly the ids of this item is ignored.
+    restore: (draft) => {
+      if (draft === "") return place(initial)
+      let order
+      try { order = JSON.parse(draft) } catch { return }
+      if (!Array.isArray(order) || !sameOrder([...order].map(String).sort(), [...initial].sort())) return
+      place(order.map(String))
+    }
   })
 }

@@ -146,9 +146,9 @@ class PracticeAnswerRecorderTest < ActiveSupport::TestCase
     assert_equal 1, PracticeAttempt.count
   end
 
-  test "409 when the serve is abandoned (24 hours)" do
+  test "409 when the serve is abandoned (14 days)" do
     c = serve!
-    advance(24 * 3600 + 1)
+    advance(Practice::Rules::V2::OPEN_SERVE_HOURS * 3600 + 1)
     assert_equal 409, recorder.call(serve_id: c.serve.id, client_attempt_id: "late-answer-1", raw: correct_raw(c), source: "text").http
   end
 

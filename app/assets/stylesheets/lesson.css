@@ -605,6 +605,8 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 .l2-box .l2-mapbtn { display: inline-flex; }
 .l2-box .l2-shell { display: block; }
 .l2-box .lesson2-page { padding: 0; }
+.l2-box[data-size="smallest"] .l2 { font-size: 0.8rem; }
+.l2-box[data-size="small"] .l2 { font-size: 0.9rem; }
 .l2-box[data-size="large"] .l2 { font-size: 1.2rem; }
 .l2-box[data-size="larger"] .l2 { font-size: 1.4rem; }
 .l2-box[data-theme="cream"] { --bg: #fbf3df; --text: #1c1a14; --muted: #4a4536; --line: #8a826a; --primary: #1d3b5c; --primary-text: #ffffff; --surface: #fffaf0; --focus: #0b3d91; color-scheme: light; }

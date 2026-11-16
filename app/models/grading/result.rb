@@ -9,6 +9,7 @@ module Grading
       "unreadable_number" => "Scrivi solo il numero, per esempio −3 oppure 2,5.",
       "unreadable_fraction" => "Scrivi la frazione, per esempio −3/4.",
       "incomplete" => "Metti tutti i pezzi in ordine, poi controlla.",
+      "incomplete_rows" => "Manca una risposta: scegli una risposta per ogni riga, poi controlla.",
       "spaces_in_code" => "Scrivi la risposta di seguito, senza spazi.",
       "use_comma" => "Per i decimali usa la virgola, per esempio 3,5.",
       "thousands_separator" => "Scrivi il numero senza punti né spazi tra le cifre, per esempio 5300,00.",

@@ -45,6 +45,8 @@ it:
         dark: "Scuro"
       size: "Grandezza del testo"
       sizes:
+        smallest: "Molto piccolo"
+        small: "Piccolo"
         normal: "Normale"
         large: "Grande"
         larger: "Molto grande"

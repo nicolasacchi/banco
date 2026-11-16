@@ -6,7 +6,7 @@ module Practice
   #   input = Practice::Loader.for(student, subject: subject)
   #   Practice::Fold.call(seeds: input.seeds, tries: input.tries, serves: input.serves)
   class Loader
-    V1 = Rules::V1
+    V2 = Rules::V2
 
     Input = Data.define(:seeds, :tries, :serves, :voided_item_revision_ids)
 
@@ -14,7 +14,8 @@ module Practice
     # not need them and they are the costly part).
     def self.for(student, subject:, now: Time.current, skill: nil, seeds: true) = new(student, subject, now, skill, seeds).input
 
-    # The ServeState::Status of one serve now, from its rows.
+    # The ServeState::Status of one serve now, from its rows (a serve is abandoned when older than
+    # OPEN_SERVE_HOURS or superseded by a newer serve of the same student on the same item).
     def self.status_of(serve, now: Time.current) = new(nil, nil, now).send(:status_for, serve)
 
     def initialize(student, subject, now, skill = nil, seeds = true)
@@ -62,18 +63,36 @@ module Practice
           previous = attempt.answered_at
           grade = Instances.grade(attempt, spec) or next
 
-          Try.new(skill: serve.skill_key, at: attempt.answered_at, day: attempt.answered_at.in_time_zone(V1::ZONE).to_date, serve_id: serve.id,
+          Try.new(skill: serve.skill_key, at: attempt.answered_at, day: attempt.answered_at.in_time_zone(V2::ZONE).to_date, serve_id: serve.id,
                   fingerprint: instance.fingerprint, item_id: instance.item_revision.item_id, item_revision_id: instance.item_revision_id,
                   low_guess: low, try_number: attempt.try_number, aided: attempt.aided || serve.reason == "reseen", reseen: serve.reason == "reseen",
                   evidence: Outcome.evidence(grade.outcome), outcome: grade.outcome, error_codes: grade.codes,
-                  seconds: (attempt.answered_at - started).to_i.clamp(0, V1::TIME_CAP_SECONDS))
+                  seconds: (attempt.answered_at - started).to_i.clamp(0, V2::TIME_CAP_SECONDS))
         end
       end
     end
 
     def status_for(serve)
       ServeState.call(serve: serve, tries: serve_tries(serve).map { |t| ServeTry.new(t.try_number, t.outcome) },
-                      events: serve.events.sort_by(&:id).map { |e| serve_event(e) }, hints_total: Instances.hints(serve.item_instance).size, now: @now)
+                      events: serve.events.sort_by(&:id).map { |e| serve_event(e) }, hints_total: Instances.hints(serve.item_instance).size, now: @now,
+                      superseded: superseded?(serve))
+    end
+
+    # A newer serve of the same student on the same item (any revision) exists. The loader of a student reads
+    # the newest serve of every item at once; one serve alone asks the database.
+    def superseded?(serve)
+      item_id = serve.item_instance.item_revision.item_id
+      newest = @student ? latest_by_item[item_id] : newest_serve_id(serve.student_id, [ item_id ])[item_id]
+      newest.to_i > serve.id
+    end
+
+    def latest_by_item
+      @latest_by_item ||= newest_serve_id(@student.id, serves.map { |s| s.item_instance.item_revision.item_id }.uniq)
+    end
+
+    def newest_serve_id(student_id, item_ids)
+      PracticeServe.where(student_id: student_id).joins(item_instance: :item_revision)
+                   .where(item_revisions: { item_id: item_ids }).group("item_revisions.item_id").maximum(:id)
     end
 
     def serve_row(serve)

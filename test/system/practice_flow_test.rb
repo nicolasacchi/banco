@@ -7,7 +7,9 @@ require_relative "../support/student_session"
 # (D-309): serve -> a wrong answer -> «Controlla» says so and offers a hint -> «Mostra un aiuto» -> the right answer -> the solution ->
 # «Un altro esercizio»; serve -> «Mostrami la soluzione»; a typical error closes the exercise and its «Mostrami la soluzione» still works;
 # an empty answer is told and not sent; an answer left in the outbox by a page that went away is told by the next one. One skill for
-# each kind of exercise the course practises. Any JavaScript error, console error or CSP violation fails the test.
+# each kind of exercise the course practises. Then the list of the topic's exercises (D-337): the statuses, «Salta» keeping the typed
+# answer, the autosave and a reload that resumes the last exercise, another entry, «Rifai», a link to another skill, the phone's panel.
+# Any JavaScript error, console error or CSP violation fails the test.
 class PracticeFlowTest < ApplicationSystemTestCase
   include StudentCourseWorld
   include StudentUiRows
@@ -18,6 +20,9 @@ class PracticeFlowTest < ApplicationSystemTestCase
   HINTS = [ "Che cosa guardi prima?", "Quale regola usi?", "Fai il primo passaggio." ].freeze
   # The kinds of exercise practised in the course, each on a skill of its own (the number one is the world's).
   KINDS = %w[number fraction choice ordering matching normalized_text expression].freeze
+  # The number skill of the list tests has three pinned items; every other skill has one.
+  NUMBER_KEYS = %w[flow-number flow-number-2 flow-number-3].freeze
+  MISSING_ROW = "Manca una risposta: scegli una risposta per ogni riga, poi controlla.".freeze
   UNRECOGNISED = "Questa risposta non corrisponde a un errore che conosco. Ecco un aiuto: riprova.".freeze
 
   WATCH = <<~JS.freeze
@@ -56,25 +61,26 @@ class PracticeFlowTest < ApplicationSystemTestCase
 
   def skill_of(kind) = kind == "number" ? SKILL : "math.flow-#{kind.tr('_', '-')}"
 
-  def build_flow_world(approve: true, release: true)
+  def build_flow_world(approve: true, release: true, number_items: 1)
     build_course
     skills = KINDS.map { |kind| skill_of(kind) }
     @course = build_course_map(skills: [], topics: [ { key: TOPIC, kind: "ripasso", title_it: TOPIC_TITLE, skills: skills, minutes: 30, term: 1, after: [] } ])
     @lesson = Lesson.create!(subject: @subject, key: TOPIC, kind: "ripasso")
     @lesson_revision = LessonRevision.create!(lesson: @lesson, seq: 1, source_md: "---\n", source_sha256: "0" * 64, rules_version: Validation::Rules.version.to_s,
                                               warnings_json: "[]", body_json: JSON.generate(lesson_body.merge(skills: skills)))
-    revisions = KINDS.to_h { |kind| [ kind, make_flow_item(kind) ] }
+    revisions = KINDS.to_h { |kind| [ kind, [ make_flow_item(kind) ] ] }
+    (2..number_items).each { |n| revisions["number"] << make_flow_item("number", n) }
     @topic_revision = TopicRevision.create!(lesson: @lesson, seq: 1, course_revision: @course, lesson_revision: @lesson_revision,
                                             body_json: JSON.generate(schema: "banco.topic/1", key: TOPIC, intro_it: "Qui impari a risolvere le equazioni.",
-                                                                     practice: KINDS.map { |kind| { skill: skill_of(kind), items: [ { item: revisions[kind].item.key, revision: revisions[kind].id } ] } }))
+                                                                     practice: KINDS.map { |kind| { skill: skill_of(kind), items: revisions[kind].map { |r| { item: r.item.key, revision: r.id } } } }))
     @official = practice_student("student")
     @trial = practice_student("prova-1")
     approve_topic!(@topic_revision) if approve
     release_course!(@course) if release
   end
 
-  def make_flow_item(kind)
-    item = Item.create!(subject: @subject, key: "flow-#{kind.tr('_', '-')}", kind: "practice_item")
+  def make_flow_item(kind, n = 1)
+    item = Item.create!(subject: @subject, key: n == 1 ? "flow-#{kind.tr('_', '-')}" : "flow-#{kind.tr('_', '-')}-#{n}", kind: "practice_item")
     body = { schema: "banco.item/1", schema_version: 1, kind: "practice_item", subject: "math", skill: skill_of(kind), component: kind, level: 1, expected_seconds: 60,
              prompt: { stem_it: ui_stem(kind) }, hints_it: HINTS,
              error_catalogue: [ { code: "adds_wrong", message_it: "Hai sbagliato un segno." }, { code: "odd_pick", message_it: "Hai scelto un numero dispari." } ] }
@@ -84,7 +90,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
     6.times do |i|
       spec = ui_instance_spec(kind, i)
       ItemInstance.create!(item_revision: revision, seed: i + 1, display_json: spec[:display].to_json, answer_json: spec[:answer].to_json, errors_json: spec[:errors].to_json,
-                           hints_json: JSON.generate(HINTS), solution_json: spec[:solution].to_json, fingerprint: Digest::SHA256.hexdigest("flow-#{kind}-#{i}"))
+                           hints_json: JSON.generate(HINTS), solution_json: spec[:solution].to_json, fingerprint: Digest::SHA256.hexdigest("flow-#{kind}-#{n}-#{i}"))
     end
     revision
   end
@@ -310,9 +316,142 @@ class PracticeFlowTest < ApplicationSystemTestCase
     open_practice("matching")
     all(".match-row").first.find("select").all("option").find { |o| o.value.present? }.select_option
     click_button "Controlla"
-    assert_selector "#feedback", text: "Scrivi una risposta prima di continuare."
+    assert_selector "#feedback", text: MISSING_ROW
+    assert_selector "[aria-invalid='true']"
     assert_equal 0, PracticeAttempt.count
     assert_clean "the empty answers"
+  end
+
+  # A matching with the first row left empty is refused with the sentence that says what is missing, and the empty row is marked.
+  def walk_matching_missing_row
+    serve = open_practice("matching")
+    display = display_of(serve)
+    key = key_of(serve)
+    rows = all(".match-row")
+    assert_operator rows.size, :>=, 2
+    rows.drop(1).each do |row|
+      left_id = display["left"].find { |l| l["text"] == row.find("label").text }["id"]
+      row.find("select").select(stored_text(display, key[left_id]))
+    end
+    click_button "Controlla"
+    assert_selector "#feedback", text: MISSING_ROW
+    assert_selector "[aria-invalid='true']", count: 1
+    first_row = all(".match-row").first
+    assert first_row.matches_css?("[aria-invalid='true']") || first_row.has_css?("[aria-invalid='true']"), "the empty first row is marked"
+    assert_equal 0, PracticeAttempt.count
+    assert_clean "the matching with an empty row"
+  end
+
+  # ---- the list of exercises, «Salta», the half-typed answer (D-337) ------------------------------------
+
+  def item_key_of(serve) = serve.item_instance.item_revision.item.key
+  def entry_selector(key) = "#exercise-list .exercise-entry[data-item='#{key}']"
+  def answer_box = find("input[inputmode=decimal]")
+  def draft_of(serve) = PracticeDraft.where(practice_serve_id: serve.id).order(:id).last&.raw
+  def no_sideways_scroll? = page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
+
+  # The list shows every status; «Salta» keeps the typed answer and the exercise open; the entry says «Lasciato a metà» or «Saltato»;
+  # a click on an entry opens it with its answer back; the autosave is on the server and a reload resumes the exercise; a done
+  # exercise is redone from «Rifai» on a new instance.
+  def walk_navigation
+    first = open_practice("number")
+    first_key = item_key_of(first)
+    assert_includes NUMBER_KEYS, first_key
+    assert_selector "#exercise-list summary", text: "Esercizi"
+    assert_selector "#exercise-list .exercise-list-count", text: "0 fatti su #{KINDS.size + 2}"
+    assert_selector "#exercise-list .exercise-entry", count: KINDS.size + 2
+    assert_selector "#exercise-list .exercise-group", count: KINDS.size
+    assert_selector "#{entry_selector(first_key)} .exercise-link[aria-current]"
+    assert_selector "#{entry_selector(first_key)} .exercise-status", text: "Adesso"
+    (NUMBER_KEYS - [ first_key ]).each { |key| assert_selector "#{entry_selector(key)} .exercise-status", text: "Da fare" }
+    assert_selector "#exercise-list button.exercise-link", count: 3
+    assert_selector "#exercise-list a.exercise-link[href*='item=flow-fraction']"
+
+    # «Salta» with an answer typed: saved, the exercise stays open, the next one comes
+    answer_box.set("123")
+    find("#skip-button").click
+    second = next_serve_after(first)
+    second_key = item_key_of(second)
+    assert_includes NUMBER_KEYS - [ first_key ], second_key
+    assert_selector "#{entry_selector(first_key)} .exercise-status", text: "Lasciato a metà"
+    assert_selector "#{entry_selector(second_key)} .exercise-status", text: "Adesso"
+    assert_equal "123", draft_of(first)
+    assert_equal 0, first.attempts.count
+
+    # «Salta» with nothing typed: «Saltato»
+    find("#skip-button").click
+    third = next_serve_after(second)
+    third_key = item_key_of(third)
+    assert_selector "#{entry_selector(second_key)} .exercise-status", text: "Saltato"
+    assert_equal NUMBER_KEYS.sort, [ first_key, second_key, third_key ].sort
+
+    # a click on an entry opens that exercise, its answer back
+    find("#{entry_selector(first_key)} .exercise-link").click
+    reopened = next_serve_after(third)
+    assert_equal first.id, reopened.id
+    wait_until { answer_box.value == "123" }
+    assert_text "Ho ripreso quello che avevi scritto."
+    assert_selector "#{entry_selector(third_key)} .exercise-status", text: "Saltato"
+
+    # the autosave, then a reload resumes this exercise with the answer
+    answer_box.set("456")
+    wait_until(10) { draft_of(first) == "456" }
+    visit current_url
+    assert_selector "#check:not([disabled])", wait: 30
+    assert_equal first.id, served.id
+    wait_until { answer_box.value == "456" }
+    assert_text "Ho ripreso quello che avevi scritto."
+
+    # a right answer: «Fatto» and «Rifai», which opens a new instance of the same exercise
+    answer_right(first)
+    click_button "Controlla"
+    assert_selector "#feedback", text: "Corretto."
+    assert_selector "#{entry_selector(first_key)} .exercise-status", text: "Fatto"
+    assert_selector "#{entry_selector(first_key)} .exercise-act", text: "Rifai"
+    assert_selector "#exercise-list .exercise-list-count", text: "1 fatto su #{KINDS.size + 2}"
+    find("#{entry_selector(first_key)} .exercise-link").click
+    again = next_serve_after(first)
+    assert_equal first_key, item_key_of(again)
+    assert_not_equal first.item_instance_id, again.item_instance_id
+    assert_selector "#{entry_selector(first_key)} .exercise-status", text: "Adesso"
+    assert_clean "the list and «Salta»"
+  end
+
+  # An entry of another skill is a link: the draft of the exercise being left is saved, the page of that skill opens that exercise.
+  def walk_other_skill
+    serve = open_practice("number")
+    answer_box.set("77")
+    find("#exercise-list a.exercise-link[href*='item=flow-fraction']").click
+    wait_until(15) { draft_of(serve) == "77" }
+    wait_until(15) { page.current_path.end_with?("/practice/#{skill_of('fraction')}") }
+    assert_selector "#check:not([disabled])", wait: 30
+    assert page.current_path.start_with?(@base), "the link stays under #{@base.inspect}"
+    fraction = served
+    assert_equal "flow-fraction", item_key_of(fraction)
+    assert_equal "fraction", kind_of_serve(fraction)
+    assert_no_match(/item=/, page.current_url, "the address keeps no item after the first load")
+    assert_selector "#{entry_selector('flow-fraction')} .exercise-status", text: "Adesso"
+    assert_clean "the link to another skill"
+  end
+
+  # On a 390 px phone the list is a panel above the exercise, closed; it opens, nothing scrolls sideways, an entry opens its exercise.
+  def walk_phone
+    page.driver.resize(390, 844)
+    serve = open_practice("number")
+    assert_equal false, page.evaluate_script("document.querySelector('#exercise-list details').open")
+    assert_selector "#exercise-list summary", text: "Esercizi"
+    assert_selector "#exercise-list .exercise-list-count", text: "0 fatti su #{KINDS.size + 2}"
+    assert no_sideways_scroll?, "no sideways scroll with the list closed"
+    find("#exercise-list summary").click
+    assert_selector "#exercise-list .exercise-entry", count: KINDS.size + 2
+    assert no_sideways_scroll?, "no sideways scroll with the list open"
+    other = (NUMBER_KEYS - [ item_key_of(serve) ]).first
+    find("#{entry_selector(other)} .exercise-link").click
+    fresh = next_serve_after(serve)
+    assert_equal other, item_key_of(fresh)
+    assert_equal false, page.evaluate_script("document.querySelector('#exercise-list details').open")
+    assert no_sideways_scroll?, "no sideways scroll after an entry"
+    assert_clean "the phone"
   end
 
   # The answer was written with no network: it waits in the outbox, the page is reloaded, the next page sends it and tells its verdict.
@@ -396,6 +535,57 @@ class PracticeFlowTest < ApplicationSystemTestCase
     build_flow_world
     as_teacher_in_preview
     walk_outbox
+  end
+
+  test "a trial student: an empty row of a matching is told and marked" do
+    build_flow_world
+    as_student
+    walk_matching_missing_row
+  end
+
+  test "the teacher in the preview: an empty row of a matching is told and marked" do
+    build_flow_world
+    as_teacher_in_preview
+    walk_matching_missing_row
+  end
+
+  test "a trial student: the list shows the statuses, Salta keeps the answer, a reload resumes, an entry opens, Rifai redoes" do
+    build_flow_world(number_items: 3)
+    as_student
+    walk_navigation
+    assert_equal [ acting_student.id ], PracticeServe.pluck(:student_id).uniq
+  end
+
+  test "the teacher in the preview: the list shows the statuses, Salta keeps the answer, a reload resumes, an entry opens, Rifai redoes" do
+    build_flow_world(number_items: 3)
+    as_teacher_in_preview
+    walk_navigation
+    assert_equal [ acting_student.id ], PracticeServe.pluck(:student_id).uniq
+    assert_equal "preview", acting_student.kind
+  end
+
+  test "a trial student: an entry of another skill saves the draft and opens that skill" do
+    build_flow_world(number_items: 3)
+    as_student
+    walk_other_skill
+  end
+
+  test "the teacher in the preview: an entry of another skill stays in the preview" do
+    build_flow_world(number_items: 3)
+    as_teacher_in_preview
+    walk_other_skill
+  end
+
+  test "a trial student on a 390 px phone: the list is a closed panel, no sideways scroll" do
+    build_flow_world(number_items: 3)
+    as_student
+    walk_phone
+  end
+
+  test "the teacher in the preview on a 390 px phone: the list is a closed panel, no sideways scroll" do
+    build_flow_world(number_items: 3)
+    as_teacher_in_preview
+    walk_phone
   end
 
   test "the teacher in the preview with the drafts: wrong, hint, right, solution" do

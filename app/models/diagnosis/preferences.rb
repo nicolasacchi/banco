@@ -6,7 +6,7 @@ module Diagnosis
   # markup in rem, so it follows. `for` answers theme and size only (every old caller); `lesson` the other two.
   module Preferences
     THEMES = %w[cream dark].freeze
-    SIZES = %w[normal large larger].freeze
+    SIZES = %w[smallest small normal large larger].freeze
     LESSON_VIEWS = %w[cards scroll].freeze
     DEFAULT = { theme: "cream", size: "normal" }.freeze
     LESSON_DEFAULT = { lesson_view: "cards", reduce_motion: false, listen: true, slower: false }.freeze

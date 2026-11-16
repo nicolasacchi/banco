@@ -216,6 +216,9 @@ li.skill .skill-side .button { margin: 0; align-self: center; }
 .exercise-card .prompt, .sitting-card .prompt { font-size: var(--text-l); }
 .exercise-card .actions { margin: var(--space-4) 0 0; }
 .practice .actions .button { margin: 0; }
+/* «Mostrami la soluzione» and «Salta» are the two text actions: the same quiet style, never a filled block. */
+.exercise-card .actions .button.text { background: transparent; border-color: transparent; color: var(--text); }
+.exercise-card .actions .button.text:hover { background: var(--soft-primary); }
 .feedback { min-height: 0; margin: var(--space-3) 0 0; font-weight: 400; }
 .feedback:empty { margin: 0; }
 .feedback.notice { margin: var(--space-4) 0 0; }
@@ -228,6 +231,54 @@ li.skill .skill-side .button { margin: 0; align-self: center; }
 .practice .solution h2 { font-size: var(--text-l); margin: 0 0 var(--space-2); }
 #next-actions { margin-top: var(--space-4); }
 #serve-reason.notice { margin-top: 0; }
+
+/* Practice, the list of exercises (D-337): a panel above the exercise on a phone, closed; a column on the left from 46 rem of page
+   width (a container query: rem is the root's size, so the column keeps its share when the student's text is larger). The list
+   scrolls on its own when it is long. Every entry says its status with an icon and a word. */
+.page.course.practice { container: practice / inline-size; max-width: 64rem; }
+.exercise-list { min-width: 0; margin: 0 0 var(--space-4); }
+.exercise-panel { margin: 0; }
+.exercise-panel .exercise-list-title { flex: 1 1 auto; min-width: 0; font-weight: 700; }
+.exercise-panel .exercise-list-count { flex: none; }
+.exercise-groups { display: grid; gap: var(--space-3); padding-top: var(--space-1); }
+.exercise-skill { margin: 0 0 var(--space-1); font-size: var(--text-m); }
+ol.exercise-entries { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.exercise-entry { min-width: 0; }
+.exercise-link {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); width: 100%; min-width: 0; min-height: var(--tap); box-sizing: border-box;
+  padding: var(--space-2) var(--space-3); font: inherit; text-align: left; text-decoration: none; color: var(--text); background: var(--surface);
+  border: var(--border-soft); border-radius: var(--radius-m); cursor: pointer;
+}
+.exercise-link:hover { border-color: var(--text); }
+.exercise-link:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+.exercise-link[aria-current] { border: 2px solid var(--primary); background: var(--soft-primary); padding: calc(var(--space-2) - 1px) calc(var(--space-3) - 1px); }
+.exercise-text { flex: 1 1 7rem; min-width: 0; display: grid; overflow-wrap: anywhere; }
+.exercise-n { font-weight: 700; }
+.exercise-title { font-size: var(--text-s); }
+.exercise-entry .pill { white-space: normal; flex: none; }
+.exercise-act { flex: none; font-size: var(--text-s); font-weight: 700; text-decoration: underline; text-underline-offset: 0.2em; }
+@container practice (min-width: 46rem) {
+  .practice-layout { display: grid; grid-template-columns: clamp(13rem, 28%, 19rem) minmax(0, 1fr); gap: var(--space-5); align-items: start; }
+  .exercise-list {
+    position: sticky; top: calc(var(--tap) + var(--space-5)); margin: 0; overflow-y: auto; overscroll-behavior: contain;
+    max-height: calc(100vh - var(--tap) - var(--space-7)); max-height: calc(100dvh - var(--tap) - var(--space-7));
+  }
+}
+.practice-main { min-width: 0; }
+
+/* What is missing in an answer (a matching row left empty, a part of a testlet with no answer): a refusal marks it with the class
+   `missing` (and aria-invalid on the select) until it is answered. A thick dashed side and the word «Manca» say it with shape and text,
+   in the warning tone, which has its own value in the cream and the dark theme. Used by the sitting and the practice page. */
+.match-row.missing, section.missing {
+  --tone: var(--tone-nearly); box-sizing: border-box; padding: var(--space-2) var(--space-3); border: 2px dashed var(--tone); border-left-width: 0.4rem;
+  border-radius: var(--radius-m); background: color-mix(in srgb, var(--tone) 12%, var(--surface));
+}
+.match-row.missing::after, section.missing::before {
+  content: "Manca"; flex: none; font-size: var(--text-s); font-weight: 700; color: var(--text); border: 1.5px solid var(--tone);
+  border-radius: var(--radius-pill); padding: 0.05em 0.7em; background: var(--surface);
+}
+section.missing::before { display: inline-block; margin-bottom: var(--space-2); }
+.item select[aria-invalid="true"] { border: 2px dashed var(--tone-nearly); }
 
 /* The sitting, the warm-up and the end screen. ---------------------------------------------------------------------------------- */
 .sitting-head { margin: 0 0 var(--space-3); }
@@ -263,6 +314,12 @@ article.solution.card { margin-top: var(--space-4); }
     border-radius: 0 0 var(--radius-l) var(--radius-l);
   }
   .sticky-actions .button { flex: 1 1 auto; }
+  /* On a phone the bar is three rows at most: «Controlla», the hint, then the two text actions side by side (the DOM order stays). */
+  .exercise-card .sticky-actions #check, .exercise-card .sticky-actions #hint-button { flex: 1 1 100%; width: auto; }
+  .exercise-card .sticky-actions .button.text { flex: 1 1 calc(50% - var(--space-2)); width: auto; min-width: 0; padding-inline: var(--space-2); }
+  .exercise-card .sticky-actions { gap: var(--space-1) var(--space-2); }
+  /* The bar covers the bottom of the screen: the box that takes the focus is scrolled above it, not under it. */
+  html:has(.exercise-card .sticky-actions), html:has(.sitting-card .sticky-actions) { scroll-padding-bottom: 15rem; }
 }
 
 /* Search, settings and comments on the shared base. ----------------------------------------------------------------------------- */

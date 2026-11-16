@@ -1,7 +1,7 @@
 require "test_helper"
 require_relative "../../support/practice_engine_helper"
 
-# The skill states of practice/1 (A8.5, A8.6): an exhaustive table of short histories.
+# The skill states of practice/2 (A8.5, A8.6): an exhaustive table of short histories.
 class PracticeFoldTest < ActiveSupport::TestCase
   include PracticeEngineHelper
 

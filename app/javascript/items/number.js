@@ -1,7 +1,7 @@
 // number: one text box. The decimal comma is the only separator; the server reads
 // the text exactly (E-03). The unit, when the item has one, is a suffix on screen. The keys «−» and «,» sit after the box:
 // the phone's decimal pad has no minus.
-import { el, handle, uid } from "items/dom"
+import { announceChange, el, handle, uid } from "items/dom"
 import { commaKey, helperKeys, minusKey } from "items/helper_keys"
 
 // The help line of the box: a whole-number check (`integer`, set by Lessons::StudentBody when the key and every accepted value are whole) says
@@ -18,9 +18,15 @@ export function render(part, ctx) {
   const keys = helperKeys([minusKey(field, ctx.t), commaKey(field, ctx.t)], ctx.t)
   const row = el("div", { class: "field" }, input, keys, part.unit ? el("span", { class: "unit", text: part.unit }) : null)
   const wrapper = el("div", { class: "answer" }, el("label", { for: id, class: "hint", text: labelOf(part, ctx.t) }), row)
+  // The helper keys write into the box without an input event.
+  input.addEventListener("input", () => announceChange(wrapper))
+  keys.addEventListener("click", () => announceChange(wrapper))
   return handle(wrapper, {
     raw: () => input.value.trim(),
     isEmpty: () => input.value.trim() === "",
-    focus: () => input.focus()
+    focus: () => input.focus(),
+    draft: () => (input.value.trim() === "" ? "" : input.value),
+    // A draft of another component (JSON text) is not a number.
+    restore: (draft) => { if (typeof draft === "string" && !/^\s*[{[]/.test(draft)) input.value = draft }
   })
 }

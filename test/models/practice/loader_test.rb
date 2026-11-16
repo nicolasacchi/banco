@@ -74,10 +74,39 @@ class PracticeLoaderTest < ActiveSupport::TestCase
     assert_equal [ serve.id, @instance.fingerprint, 1, true, :closed, :solution, "next" ], [ row.id, row.fingerprint, row.hints_shown, row.solution_requested, row.status.state, row.status.closed_by, row.reason ]
   end
 
-  test "an abandoned serve is reported by the status at the loader's now" do
+  test "an abandoned serve is reported by the status at the loader's now (14 days)" do
     serve_with
     assert_equal :open, load_input(now: @serve_at + 3600).serves.first.status.state
-    assert_equal :abandoned, load_input(now: @serve_at + 25 * 3600).serves.first.status.state
+    assert_equal :open, load_input(now: @serve_at + Practice::Rules::V2::OPEN_SERVE_HOURS * 3600).serves.first.status.state
+    assert_equal :abandoned, load_input(now: @serve_at + Practice::Rules::V2::OPEN_SERVE_HOURS * 3600 + 1).serves.first.status.state
+  end
+
+  test "a serve is superseded by a newer serve of the same student on the same item, any revision" do
+    old = serve_with
+    other_item = serve_with(instance: @revisions.second.instances.order(:id).first, at: @serve_at + 30)
+    assert_equal %i[open open], load_input.serves.map { |r| r.status.state }
+    # a second revision of the first item, served later
+    item = @revisions.first.item
+    revision2 = ItemRevision.create!(item: item, seq: 2, body_json: @revisions.first.body_json, file_sessions_json: "{}")
+    inst2 = ItemInstance.create!(@instance.attributes.except("id").merge("item_revision_id" => revision2.id, "fingerprint" => "rev2-fp"))
+    newer = serve_with(instance: inst2, at: @serve_at + 60)
+    by_id = load_input.serves.to_h { |r| [ r.id, r.status.state ] }
+    assert_equal({ old.id => :abandoned, other_item.id => :open, newer.id => :open }, by_id)
+    assert_equal :abandoned, Practice::Loader.status_of(old, now: @serve_at + 3600).state
+    assert_equal :open, Practice::Loader.status_of(newer, now: @serve_at + 3600).state
+  end
+
+  test "another student's newer serve on the same item supersedes nothing" do
+    mine = serve_with
+    serve_with(student: practice_student("trial-s"), at: @serve_at + 60, instance: @revisions.first.instances.order(:id).second)
+    assert_equal :open, Practice::Loader.status_of(mine, now: @serve_at + 3600).state
+  end
+
+  test "a closed serve stays closed when a newer serve of the item exists" do
+    old = serve_with
+    make_try(old, at: @serve_at + 10)
+    serve_with(at: @serve_at + 60, instance: @revisions.first.instances.order(:id).second)
+    assert_equal :closed, Practice::Loader.status_of(old, now: @serve_at + 3600).state
   end
 
   test "only the student's serves of the subject are read" do
@@ -160,7 +189,7 @@ class PracticeSeederTest < ActiveSupport::TestCase
     seeds = Practice::Seeder.call(@student, @subject)
     assert_not_empty seeds
     assert(seeds.keys.all? { |k| k.start_with?("math.") })
-    assert(seeds.values.all? { |s| Practice::Rules::V1::STATES.include?(s.state) && s.run_id == @run.id })
+    assert(seeds.values.all? { |s| Practice::Rules::V2::STATES.include?(s.state) && s.run_id == @run.id })
   end
 
   test "A8.6: the five rows of the seed table" do
@@ -176,7 +205,7 @@ class PracticeSeederTest < ActiveSupport::TestCase
   test "the seed time is the run's last event, in the Rome zone" do
     seeds = seeds_with(rows([ "math.a", "demonstrated" ]))
     assert_equal @run.events.maximum(:at), seeds["math.a"].at
-    assert_equal Practice::Rules::V1::ZONE, seeds["math.a"].at.time_zone.tzinfo.name
+    assert_equal Practice::Rules::V2::ZONE, seeds["math.a"].at.time_zone.tzinfo.name
   end
 
   test "a voided run gives no seeds; an open newer run leaves the closed one in use" do

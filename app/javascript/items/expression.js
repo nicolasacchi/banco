@@ -6,7 +6,7 @@
 // on. With smartSuperscript a two-digit exponent cannot be typed, so items do not
 // use one (E-EXPONENT-MULTIDIGIT). The server reads mf.value (LaTeX), never
 // mf.expression.
-import { el, handle, uid } from "items/dom"
+import { announceChange, el, handle, uid } from "items/dom"
 import { renderMath } from "items/markup"
 import { hasTypedWords, itemLetters } from "items/expression_words"
 
@@ -64,21 +64,34 @@ async function mathInput(part, ctx) {
     else if (!show) wordsHint.textContent = ""
   }
   // MathLive sends "input" for the first key only in some builds (seen with 0.111 and typed keys): keyup and the virtual keyboard follow the value too.
+  // `announced` is the value the page last heard of (item-change): a keyup that changes nothing says nothing; a restore is silent.
   let shown = null
+  let announced = ""
+  const wrapper = el("div", { class: "answer" }, el("p", { class: "hint", text: ctx.t.expression_label }), field, wordsHint, echo.box)
   const refresh = () => {
     if (field.value === shown) return
     shown = field.value
     checkWords()
     echo.show(shown)
+    if (shown !== announced) {
+      announced = shown
+      announceChange(wrapper)
+    }
   }
   for (const type of [ "input", "keyup", "change" ]) field.addEventListener(type, refresh)
   field.addEventListener("pointerup", () => setTimeout(refresh, 0))
-  const wrapper = el("div", { class: "answer" }, el("p", { class: "hint", text: ctx.t.expression_label }), field, wordsHint, echo.box)
   return handle(wrapper, {
     raw: () => field.value,
     isEmpty: () => field.value.trim() === "",
     source: "mathlive",
     focus: () => field.focus(),
+    draft: () => (field.value.trim() === "" ? "" : field.value),
+    restore: (draft) => {
+      if (typeof draft !== "string") return
+      field.value = draft
+      announced = field.value
+      refresh()
+    },
     mounted: () => {
       // Needs the field in the document: the Italian configuration (E-04).
       field.mathVirtualKeyboardPolicy = "manual"
@@ -92,14 +105,20 @@ function textInput(ctx) {
   const id = uid("expr")
   const input = el("input", { id, type: "text", autocomplete: "off", autocapitalize: "off", spellcheck: "false", class: "answer-input wide" })
   const echo = echoBox(ctx)
-  input.addEventListener("input", () => echo.show(input.value))
   const wrapper = el("div", { class: "answer" },
     el("label", { for: id, class: "hint", text: ctx.t.expression_label }),
     el("p", { class: "hint", text: ctx.t.expression_text_hint }), input, echo.box)
+  input.addEventListener("input", () => { echo.show(input.value); announceChange(wrapper) })
   return handle(wrapper, {
     raw: () => input.value.trim(),
     isEmpty: () => input.value.trim() === "",
     source: "text",
-    focus: () => input.focus()
+    focus: () => input.focus(),
+    draft: () => (input.value.trim() === "" ? "" : input.value),
+    restore: (draft) => {
+      if (typeof draft !== "string") return
+      input.value = draft
+      echo.show(input.value)
+    }
   })
 }

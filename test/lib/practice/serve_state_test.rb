@@ -1,7 +1,7 @@
 require "test_helper"
 require_relative "../../support/practice_engine_helper"
 
-# The serve state machine of practice/1 (A8.3): every row of the table, every (state, event) pair
+# The serve state machine of practice/2 (A8.3): every row of the table, every (state, event) pair
 # that is not in it, and the bound of three stored tries.
 class PracticeServeStateTest < ActiveSupport::TestCase
   include PracticeEngineHelper
@@ -182,13 +182,31 @@ class PracticeServeStateTest < ActiveSupport::TestCase
     end
   end
 
-  test "row 15: an open serve older than 24 hours is abandoned and refuses everything" do
-    old = serve_status([], now: T0 + 24 * 3600 + 1)
+  test "row 15: an open serve older than 14 days (336 hours) is abandoned and refuses everything" do
+    window = Practice::Rules::V2::OPEN_SERVE_HOURS * 3600
+    assert_equal 14 * 24 * 3600, window
+    old = serve_status([], now: T0 + window + 1)
     assert_equal [ :abandoned, nil, [] ], [ old.state, old.closed_by, old.actions ]
-    assert_equal :open, serve_status([], now: T0 + 24 * 3600).state
+    assert_equal :open, serve_status([], now: T0 + window).state
+    assert_equal :open, serve_status([], now: T0 + 25 * 3600).state, "a day-old serve is still open"
     %i[correct unrecognised].each { |o| assert_equal :closed, Practice::ServeState.step(old, :answer, outcome: o, hints_total: 3).result }
     assert_equal :closed, Practice::ServeState.step(old, :hint, hint_n: 1, hints_total: 3).result
     assert_equal :closed, Practice::ServeState.step(old, :solution_request).result
+  end
+
+  test "row 15: a serve superseded by a newer serve of the item is abandoned at any age, and refuses everything" do
+    fresh = serve_status([], now: T0 + 60, superseded: true)
+    assert_equal [ :abandoned, nil, [] ], [ fresh.state, fresh.closed_by, fresh.actions ]
+    assert_nil fresh.next_try_number
+    assert_equal :open, serve_status([], now: T0 + 60, superseded: false).state
+    %i[correct unrecognised].each { |o| assert_equal :closed, Practice::ServeState.step(fresh, :answer, outcome: o, hints_total: 3).result }
+    assert_equal :closed, Practice::ServeState.step(fresh, :hint, hint_n: 1, hints_total: 3).result
+    assert_equal :closed, Practice::ServeState.step(fresh, :solution_request).result
+  end
+
+  test "a closed serve is closed, not abandoned, even when superseded" do
+    st = serve_status([ :correct ], now: T0 + 60, superseded: true)
+    assert_equal [ :closed, :correct ], [ st.state, st.closed_by ]
   end
 
   test "a closed serve stays closed whatever the clock says" do
@@ -219,7 +237,7 @@ class PracticeServeStateTest < ActiveSupport::TestCase
     longest = 0
     walk = lambda do |p, depth|
       longest = [ longest, p.outcomes.size ].max
-      assert_operator p.outcomes.size, :<=, Practice::Rules::V1::MAX_TRIES
+      assert_operator p.outcomes.size, :<=, Practice::Rules::V2::MAX_TRIES
       next if p.status.state != :open
 
       outcomes.each do |o|

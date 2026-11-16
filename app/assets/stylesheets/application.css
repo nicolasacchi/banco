@@ -2,7 +2,7 @@
  * The student's pages (B-11, E-10). High readability for every reader: a sans-serif face at 20 px (never under 18), line height 1.6,
  * text aligned left, lines of at most 70 characters, no italics, no capitals for
  * emphasis, bold only on keywords, no alarm colours. Themes of contrast at
- * least 7:1: cream (the default), light and dark, by the student's choice; three text sizes.
+ * least 7:1: cream (the default), light and dark, by the student's choice; five text sizes.
  */
 /* Atkinson Hyperlegible, SIL Open Font License 1.1 (public/vendor/atkinson-hyperlegible@5.3.0/LICENSE). */
 @font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 400; font-display: swap;
@@ -75,6 +75,8 @@
 }
 
 html { font-size: 20px; }
+html[data-size="smallest"] { font-size: 16px; }
+html[data-size="small"] { font-size: 18px; }
 html[data-size="large"] { font-size: 24px; }
 html[data-size="larger"] { font-size: 28px; }
 

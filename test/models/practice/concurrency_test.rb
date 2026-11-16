@@ -66,6 +66,26 @@ class PracticeConcurrencyTest < ActiveSupport::TestCase
     assert_equal 4, PracticeServe.distinct.count(:item_instance_id)
   end
 
+  test "two picks of the same item at once give one serve; the other item's serve is a different one" do
+    key = @revisions.second.item.key
+    results = together(2) { |_| serve!(item: key) }
+    assert_equal 1, results.map { |r| r.serve.id }.uniq.size
+    assert_equal 1, results.count(&:created)
+    assert_equal 1, PracticeServe.count
+    assert_equal @revisions.second.item_id, results.first.instance.item_revision.item_id
+    other = serve!(item: @revisions.first.item.key)
+    assert_not_equal results.first.serve.id, other.serve.id
+    assert_equal 2, PracticeServe.count
+  end
+
+  test "many picks of two items at once leave one open serve per item" do
+    keys = @revisions.map { |r| r.item.key }
+    results = together { |n| serve!(item: keys[n % 2]) }
+    assert_equal 2, results.map { |r| r.serve.id }.uniq.size
+    assert_equal 2, results.count(&:created)
+    assert_equal 2, PracticeServe.count
+  end
+
   test "concurrent Prova questo requests create one serve" do
     first = serve!
     answer!(first, slip_raw(first))

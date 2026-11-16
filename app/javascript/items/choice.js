@@ -2,7 +2,7 @@
 // 5 pick an option; "Non lo so" is outside the options (E-03). The options and
 // their ids arrive already shuffled and re-keyed by the server (X-01). An option is drawn with the markup of the item's own text
 // (items/markup); a lesson check hands ctx.inline, its own inline renderer, so that its options read like its prompt (D-310).
-import { el, handle, uid } from "items/dom"
+import { announceChange, el, handle, uid } from "items/dom"
 import { renderInline } from "items/markup"
 
 export function render(part, ctx) {
@@ -22,12 +22,22 @@ export function render(part, ctx) {
       radios[index].radio.checked = true
       radios[index].radio.focus()
       event.preventDefault()
+      announceChange(group)
     }
   })
+  radios.forEach(({ radio }) => radio.addEventListener("change", () => announceChange(group)))
   const chosen = () => radios.find((r) => r.radio.checked)?.radio.value || ""
   return handle(group, {
     raw: chosen,
     isEmpty: () => chosen() === "",
-    focus: () => (radios.find((r) => r.radio.checked) || radios[0])?.radio.focus()
+    focus: () => (radios.find((r) => r.radio.checked) || radios[0])?.radio.focus(),
+    draft: chosen,
+    // "" clears the choice; an id that is not an option of this item is ignored.
+    restore: (draft) => {
+      if (typeof draft !== "string") return
+      const found = radios.find((r) => r.radio.value === draft)
+      if (found) found.radio.checked = true
+      else if (draft === "") radios.forEach((r) => { r.radio.checked = false })
+    }
   })
 }
