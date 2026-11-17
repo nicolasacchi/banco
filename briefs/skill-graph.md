@@ -26,10 +26,11 @@ Before you write, search what exists: `banco search "WORDS" --subject KEY` finds
   chemistry, biology, business, law_economics, physical_education. Short inventory prefixes map as
   mat=math, it=italian, hist=history, geo=geography, eng=english, es=spanish,
   inf=computer_science, che=chemistry, bio=biology, eca=business, dir=law_economics.
-  `physical_education` (Scienze motorie, theory only, D-344) has no entry test, no lines in the
-  prior-year programme and none in the seconda programme: its skills are `not_in_prima` or
-  `middle_school`, `needed_by` refs are on the official programme (`ufficiale-2026-27`, the section
-  «Scienze motorie e sportive»), there is no `coverage` check and no `excluded[]`. Read
+  `physical_education` (Scienze motorie, theory only, D-344) has no entry test and no lines in the
+  seconda programme; the prior-year programme (`prima-2025-26`, lines 187-191) has a short section, so a
+  base skill it names is `studied` with its `taught_in` ref there, any other is `not_in_prima` or
+  `middle_school`. `needed_by` refs are on the official programme (`ufficiale-2026-27`, the section
+  «Scienze motorie e sportive»); there is no `coverage` check and no `excluded[]`. Read
   `banco brief show lesson-physical-education` for what to teach.
 - `layer`: `core` (needed by several topics of the next year), `sec`, `opt`.
 - `scope`: `studied`, `integration_studied` (star), `in_progress` (star-empty or
