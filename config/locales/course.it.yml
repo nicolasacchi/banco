@@ -139,12 +139,13 @@ it:
       exercises:
         one: "Ti manca un esercizio giusto senza aiuto."
         other: "Ti mancano %{count} esercizi giusti senza aiuto."
+      # Hard to guess (DEMONSTRATE_MIN_LOW_GUESS): a written answer, an ordering or a matching of 4 rows or more; never «longer».
       long:
-        one: "Ti manca un esercizio più lungo giusto senza aiuto."
-        other: "Ti mancano %{count} esercizi più lunghi giusti senza aiuto."
+        one: "Ti manca un esercizio giusto senza aiuto di quelli da scrivere, abbinare o mettere in ordine."
+        other: "Ti mancano %{count} esercizi giusti senza aiuto di quelli da scrivere, abbinare o mettere in ordine."
       long_among:
-        one: "Uno deve essere più lungo."
-        other: "%{count} devono essere più lunghi."
+        one: "Uno deve essere da scrivere, abbinare o mettere in ordine."
+        other: "%{count} devono essere da scrivere, abbinare o mettere in ordine."
       day: "Ti manca un altro giorno: torna domani e fanne uno giusto senza aiuto."
     submit: "Controlla"
     hint: "Mostra un aiuto (%{n} di %{total})"

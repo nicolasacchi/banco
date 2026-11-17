@@ -79,11 +79,12 @@ class CloseHintTest < ActionDispatch::IntegrationTest
 
   test "the sentences of what is missing, skill by skill" do
     missing = ->(why) { Practice::Messages.missing_it(why) }
-    assert_equal "Ti mancano 3 esercizi giusti senza aiuto. 2 devono essere più lunghi.", missing.({ code: :not_seen })
-    assert_equal "Ti mancano 2 esercizi giusti senza aiuto. 2 devono essere più lunghi. #{ANOTHER_DAY}", missing.({ code: :in_study, n: 1, d: 1, low: 0 })
-    assert_equal "Ti mancano 2 esercizi giusti senza aiuto. Uno deve essere più lungo.", missing.({ code: :in_study, n: 1, d: 0, low: 1 })
-    assert_equal "Ti manca un esercizio più lungo giusto senza aiuto.", missing.({ code: :in_study, n: 3, d: 2, low: 1 })
-    assert_equal "Ti mancano 2 esercizi più lunghi giusti senza aiuto.", missing.({ code: :in_study, n: 3, d: 2, low: 0 })
+    assert_equal "Ti mancano 3 esercizi giusti senza aiuto. 2 devono essere da scrivere, abbinare o mettere in ordine.", missing.({ code: :not_seen })
+    assert_equal "Ti mancano 2 esercizi giusti senza aiuto. 2 devono essere da scrivere, abbinare o mettere in ordine. #{ANOTHER_DAY}",
+                 missing.({ code: :in_study, n: 1, d: 1, low: 0 })
+    assert_equal "Ti mancano 2 esercizi giusti senza aiuto. Uno deve essere da scrivere, abbinare o mettere in ordine.", missing.({ code: :in_study, n: 1, d: 0, low: 1 })
+    assert_equal "Ti manca un esercizio giusto senza aiuto di quelli da scrivere, abbinare o mettere in ordine.", missing.({ code: :in_study, n: 3, d: 2, low: 1 })
+    assert_equal "Ti mancano 2 esercizi giusti senza aiuto di quelli da scrivere, abbinare o mettere in ordine.", missing.({ code: :in_study, n: 3, d: 2, low: 0 })
     assert_equal ANOTHER_DAY, missing.({ code: :in_study, n: 3, d: 1, low: 2 })
     [ { code: :demonstrated, days: 2 }, { code: :consolidated }, { code: :to_review, previous: "consolidated" } ].each do |why|
       assert_nil missing.(why), why.inspect
