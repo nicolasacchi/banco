@@ -30,18 +30,19 @@ it:
       ponte: "Ponte"
       lezione: "Lezione"
       extra: "Fuori programma"
+    # the school's names for three subjects, lower case (config/locales/subjects.it.yml, D-343)
     subject:
       math: "matematica"
       italian: "italiano"
       english: "inglese"
       spanish: "spagnolo"
       history: "storia"
-      geography: "geografia"
+      geography: "geografia economica"
       law_economics: "diritto ed economia"
       business: "economia aziendale"
       computer_science: "informatica"
-      biology: "biologia"
-      chemistry: "chimica"
+      biology: "scienze integrate – biologia"
+      chemistry: "scienze integrate – chimica"
     role_word:
       example: "esempio svolto"
       mistakes: "errori da evitare"

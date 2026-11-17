@@ -109,6 +109,15 @@ class StudentProgressApiTest < ActionDispatch::IntegrationTest
     assert_equal [ true ], json["entry_tests"].map { |e| e["startable"] }
   end
 
+  test "the entry test of geography is named as at the student's school (D-343), on the page and over the API" do
+    build_ui_subject(key: "geography", name: "Geografia", position: 2)
+    release_diagnosis!
+    page("/diagnosis")
+    assert_select "li[data-subject=geography] .subject-name", "Geografia economica"
+    api("/api/v1/students/student/progress")
+    assert_equal [ "Geografia economica" ], json["entry_tests"].map { |e| e["name_it"] }
+  end
+
   test "a trial student has own progress; an unknown key is E-NOT-FOUND; the preview student is not a student" do
     api("/api/v1/students/prova-1/progress")
     assert_response :success

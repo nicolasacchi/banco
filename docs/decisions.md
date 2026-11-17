@@ -345,6 +345,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-340 | 2026-11-17 | the topic page, the practice page and Oggi say what is still needed to close a topic (3 exercises right without help, 2 days, 2 hard to guess): the rule once, what each skill lacks, one line in Oggi's «Riprendi» card; the rule and the fold's numbers are unchanged (`why` of a skill in study gains `low`) | implemented |
 | D-341 | 2026-11-17 | a skill is demonstrated on one day: 3 distinct exercises right without help, 2 of them hard to guess, are enough even on the same day (rules `practice/4`: the «2 different days» condition is gone); the texts and D-340's day line go with it; states are re-derived, old serves keep `practice/3` | implemented |
 | D-342 | 2026-11-17 | the student answers the teacher's reply: a comment is a thread (her text, the teacher's replies, her follow-ups «Rispondi»); new event `student_reply` (origin student, 1..500 characters); a follow-up makes the comment new or read again, also after resolved | implemented |
+| D-343 | 2026-11-17 | the subjects' names at the student's school (chemistry «Scienze integrate – Chimica», biology «Scienze integrate – Biologia», geography «Geografia economica») come from `config/locales/subjects.it.yml` through `Subject#name_it`, the append-only column keeps the seed name; «Impostazioni» has the gear (`settings`), no longer the «T» | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -4013,3 +4014,17 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Why:** a reply from the teacher left the student with no way to say that she still did not understand, or to say thanks, except by writing a new comment out of context.
 - **Status:** implemented.
 - **Tests:** `test/models/comment_test.rb` (the CHECKs of the new kind, the state after a follow-up, after resolved and a follow-up, the thread, `unread_reply?`), `test/integration/comments_test.rb` (the student's post and its refusals, the thread on both pages, the teacher's actions on such a comment, the API row and the console).
+
+## D-343 · 2026-11-17 · the subjects' names at the student's school; the settings gear
+
+- **Design ref:** D-023 (every table append-only: `subjects` rejects UPDATE), D-307 (the student's shell and its icons), D-246 (the icon list `config/banco/icons.yml`).
+- **The student's words (2026-11-17, passed on by the operator, who approved all three changes):** three subjects have other names at her school, the Istituto Paritario G. Marconi, where she takes the exam; the «Impostazioni» menu item shows a «T» instead of the classic gear; and the English lesson title «Numerabili e non numerabili: some, any, much, many e gli altri» is not appropriate.
+- **We do:**
+  1. **The names of the school's programme:** chemistry is «Scienze integrate – Chimica», biology «Scienze integrate – Biologia», geography «Geografia economica». The other eight keep their names.
+  2. **Why a locale:** `subjects` is append-only (triggers block UPDATE and DELETE), so `subjects.name_it` stays the seed name of `db/seeds.rb` and cannot be corrected in place. The display names are texts in git, `config/locales/subjects.it.yml` (`it.subjects.display_name_it.<key>`, the key ends in `_it` because it holds Italian text); `Subject#name_it` returns the locale text when there is one, else the column. Every page, API reply and search text reads the name through the method: the pages, the teacher's views and menus, the course, progress, status and diagnosis payloads, the search builders; `SearchHelper#search_subject_name` no longer plucks the column. The lesson page's lower-case subject names (`lesson2.subject.*` in `config/locales/lesson.it.yml`, «Lezione di …») follow the same three names.
+  3. **Long names wrap:** «Scienze integrate – Chimica» is longer than any old name. The subject lists (Oggi, Materie, the entry tests) let it wrap (`overflow-wrap`), the teacher's subject switcher is as wide as its longest name up to 20 rem or the screen, and the comments' subject filter chips grow in height; nothing is cut with an ellipsis.
+  4. **The gear:** `nav-settings` points to the Lucide `settings` (the gear) instead of `type`; `settings.svg` is vendored under `public/vendor/lucide@1.54.0/icons/` (lucide-static 1.54.0) and the sprite is rebuilt with `bin/build-icons`. `text-settings` («Testo e colori», the text size and colour panel) stays on `type`.
+- **Not done:** no data migration and no change of the seeds (they are the base names); the English lesson title is a content change, not made by this entry.
+- **Why:** the student reads the names of her school on her exam programme, and a «T» for settings is not what she looks for; the ledger stays append-only.
+- **Status:** implemented.
+- **Tests:** `test/models/subject_test.rb` (the school's name for the three subjects, the column for the others, the search helper), `test/integration/course_pages_test.rb` (Materie, Materia and Oggi print the name of `Subject#name_it`), `test/integration/student_progress_api_test.rb` (the entry test of geography, on the page and over the API).

@@ -5,6 +5,8 @@
 require "digest"
 require "yaml"
 
+# The base names. Three are shown with the name the student's school gives them, from config/locales/subjects.it.yml
+# (Subject#name_it, D-343): the table is append-only, so the seed name stays here.
 subjects = [
   [ "math", "Matematica" ],
   [ "italian", "Italiano" ],
