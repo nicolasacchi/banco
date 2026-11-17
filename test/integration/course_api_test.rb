@@ -538,7 +538,23 @@ class CourseApiTest < ActionDispatch::IntegrationTest
     assert_equal true, json["trial"]
   end
 
-  test "practice progress is the practice/4 fold: a demonstrated skill reads the same as in the student's state" do
+  test "practice progress says when the student had seen every exercise of a skill, and null before" do
+    world
+    submit_topic(topic_doc({ SKILL => [ [ "math-p-demo-1", nil ], [ "math-p-demo-2", nil ] ] }))
+    student = practice_student("student")
+    api("/api/v1/subjects/math/practice/progress")
+    assert_response :ok
+    assert(json["skills"].all? { |row| row.key?("pool_exhausted_at") && row["pool_exhausted_at"].nil? })
+    at = Time.utc(2026, 11, 17, 9, 30, 0)
+    PracticePoolExhaustion.create!(student: student, topic_revision: TopicRevision.last, skill_key: SKILL, created_at: at)
+    api("/api/v1/subjects/math/practice/progress")
+    assert_equal "2026-11-17T09:30:00Z", json["skills"].find { |row| row["skill"] == SKILL }["pool_exhausted_at"]
+    practice_student("trial-1")
+    api("/api/v1/subjects/math/practice/progress?student=trial-1")
+    assert_nil json["skills"].find { |row| row["skill"] == SKILL }["pool_exhausted_at"], "another student's row is not this one's"
+  end
+
+  test "practice progress is the practice/5 fold: a demonstrated skill reads the same as in the student's state" do
     world
     submit_topic(topic_doc({ SKILL => [ [ "math-p-demo-1", nil ], [ "math-p-demo-2", nil ] ] }))
     student = practice_student("student")
@@ -551,7 +567,7 @@ class CourseApiTest < ActionDispatch::IntegrationTest
     end
     api("/api/v1/subjects/math/practice/progress")
     assert_response :ok
-    assert_equal "practice/4", json["rules_version"]
+    assert_equal "practice/5", json["rules_version"]
     row = json["skills"].find { |s| s["skill"] == SKILL }
     expected = Teacher::PracticeProgress.new(Subject.find_by!(key: "math"), student).states[SKILL]
     assert_equal "demonstrated", expected.state

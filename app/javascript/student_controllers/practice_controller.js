@@ -19,9 +19,9 @@ const TONE_ICONS = { success: "circle-check", nearly: "triangle-alert", error: "
 const ENTRY_STATUS = {
   todo: { icon: "step-practice", tone: "muted" },
   done: { icon: "circle-check", tone: "success" },
-  tried: { icon: "restart", tone: "nearly" },
-  left: { icon: "clock-paused", tone: "info" },
-  retry: { icon: "notebook-pen", tone: "nearly" },
+  finished: { icon: "circle-check", tone: "muted" },
+  finished_solution: { icon: "circle-check", tone: "muted" },
+  unfinished: { icon: "notebook-pen", tone: "nearly" },
   skipped: { icon: "next", tone: "muted" },
   now: { icon: "pin", tone: "info" }
 }
@@ -136,8 +136,22 @@ export default class extends Controller {
     this.solutionBoxTarget.hidden = true
     this.solutionBoxTarget.textContent = ""
     const { body } = await this.post(this.urls.serve, { topic: this.topicValue, skill: this.skillValue, ...extra })
+    if (body?.type === "exhausted") return this.showExhausted(body)
     if (!body || body.type !== "item") return this.say(this.labels.error)
     await this.show(body)
+    return null
+  }
+
+  // D-348: every exercise of the skill was seen and none is open, so none is served on its own. The page says it; the list of exercises
+  // (a click redoes one) and the way back stay.
+  showExhausted(reply) {
+    this.serveId = null
+    this.handle = null
+    this.showSkill(reply.skill)
+    this.showReason({})
+    this.say(reply.message_it, { tone: "info", note: reply.note_it })
+    this.showActions(["back"])
+    this.refreshList()
     return null
   }
 
@@ -624,7 +638,7 @@ export default class extends Controller {
     pill.innerHTML = `<svg class="ic" aria-hidden="true" focusable="false"><use href="${SPRITE}#${look.icon}"></use></svg>`
     pill.appendChild(document.createTextNode(status === "now" ? this.labels.now : this.labels[`status_${status}`]))
     link.append(text, pill)
-    if (!current && (exercise.status === "done" || exercise.status === "tried")) {
+    if (!current && (exercise.status === "done" || exercise.status === "finished" || exercise.status === "finished_solution")) {
       const redo = document.createElement("span")
       redo.className = "exercise-act"
       redo.textContent = this.labels.redo

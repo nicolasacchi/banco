@@ -19,7 +19,7 @@ it:
     suggestions: "Per oggi"
     later: "Dopo"
     reason:
-      to_recover: "Nella diagnosi è risultata da riprendere: %{skill}."
+      to_recover: "Dal test è risultata da ripassare: %{skill}."
       to_learn: "Nella diagnosi è risultata da imparare: %{skill}."
       to_review: "La sapevi, ora vacilla: %{skill}."
       course_next: "È il prossimo argomento del corso."
@@ -32,7 +32,7 @@ it:
         other: "Per chiuderlo: in %{skill} fai ancora %{count} esercizi giusti senza aiuto."
   states:
     not_seen: "Non ancora vista"
-    to_recover: "Da riprendere"
+    to_recover: "Dal test: da ripassare"
     to_learn: "Da imparare"
     in_study: "In studio"
     demonstrated: "Dimostrata"
@@ -42,7 +42,7 @@ it:
     not_seen: "Non l'hai ancora provata."
     seed_demonstrated: "Dimostrata nella diagnosi del %{date}."
     seed_implied: "Non serviva verificarla: hai dimostrato un'abilità che la usa."
-    seed_to_recover: "Nella diagnosi: da riprendere."
+    seed_to_recover: "Dal test d'ingresso: da ripassare."
     seed_to_learn: "Nella diagnosi: da imparare."
     in_study: "Corrette senza aiuto: %{n} su 3."
     demonstrated: "Dimostrata il %{date}: 3 esercizi giusti senza aiuto."
@@ -90,7 +90,7 @@ it:
       link: "Vedi le materie"
   subject:
     topics: "Obbligatori · programma"
-    no_topic: "Da riprendere, ancora senza argomento: %{skills}."
+    no_topic: "Dal test: da ripassare, ancora senza argomento: %{skills}."
     extra_topics: "Facoltativi · fuori programma"
     extra_intro: "Argomenti in più, fuori dal programma. Li apri quando vuoi: gli esercizi sono facoltativi."
   topic:
@@ -106,7 +106,12 @@ it:
       done: "Fatto"
     before: "Prima conviene fare: %{topic}"
     programme: "Dal programma, riga %{line}: «%{fragment}»"
-    tag_recover: "Da riprendere"
+    tag_recover: "Dal test: da ripassare"
+    tag_review: "Da ripassare"
+    # The first time a tag shows on a page (D-348): what it means, in one line.
+    recover_note:
+      to_recover: "Vuol dire che nel test d'ingresso questa parte non era sicura: si chiude con gli esercizi."
+      to_review: "Vuol dire che l'avevi capita, ma di recente hai sbagliato: si chiude con gli esercizi."
     minutes: "%{n} minuti"
     lesson: "Leggi la lezione"
     lesson_read: "Lezione letta"
@@ -180,6 +185,11 @@ it:
     back: "Torna all'argomento"
     not_counted: "Questo esercizio non conta per dimostrare l'abilità."
     reseen: "Questo esercizio l'hai già visto: non conta per dimostrare l'abilità."
+    # D-348: the exercise is of the same kind as the one before (the rule keeps the student on an item until n are right without help).
+    same_item: "Ti propongo un esercizio simile: per passare al prossimo ne servono %{n} giusti."
+    # D-348: every exercise of the skill was seen, none is open: nothing is served on its own and the teacher is told (practice_pool_exhaustions).
+    exhausted: "Hai visto tutti gli esercizi di questa abilità. Ne stiamo preparando altri."
+    exhausted_note: "Puoi rifare un esercizio dalla lista: non conta per dimostrare l'abilità."
     closed: "Questo esercizio è chiuso: scegline un altro."
     loading: "Un momento."
     saving: "Controllo la risposta."
@@ -206,9 +216,9 @@ it:
     exercise_n: "Esercizio %{n}"
     status_todo: "Da fare"
     status_done: "Fatto"
-    status_tried: "Da rifare"
-    status_left: "Lasciato a metà"
-    status_retry: "Da riprovare"
+    status_finished: "Finito"
+    status_finished_solution: "Finito: con la soluzione"
+    status_unfinished: "Da finire"
     status_skipped: "Saltato"
     now: "Adesso"
     redo: "Rifai"

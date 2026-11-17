@@ -71,7 +71,7 @@ class PracticePropertiesTest < ActiveSupport::TestCase
     each_case do |i, rng|
       tries = history(rng)
       s = fold(tries)
-      assert_includes Practice::Rules::V4::STATES, s.state, "seed #{i}"
+      assert_includes Practice::Rules::V5::STATES, s.state, "seed #{i}"
       assert s.demonstrated_at, "seed #{i}: #{s.state} without demonstrated_at" if %w[demonstrated consolidated].include?(s.state)
       assert s.consolidated_at, "seed #{i}: consolidated without consolidated_at" if s.state == "consolidated"
       assert_equal "not_seen", s.state, "seed #{i}" if tries.empty?
@@ -125,7 +125,7 @@ class PracticePropertiesTest < ActiveSupport::TestCase
 
   Candidate = Practice::Selector::Candidate
 
-  test "choose never repeats a fingerprint while an unseen one exists, and is stable" do
+  test "choose never repeats a fingerprint on its own and is stable; a chosen item is redone with its oldest" do
     each_case do |i, rng|
       pool = Array.new(rng.rand(1..14)) { |n| Candidate.new(n + 1, 1 + n % 3, 10 + n % 3, "fp#{n}", rng.rand < 0.3 ? [ "c" ] : []) }
       seen = Set.new
@@ -144,8 +144,11 @@ class PracticePropertiesTest < ActiveSupport::TestCase
         credit[pick.candidate.item_id] += 1 if rng.rand < 0.5
       end
       pick = Practice::Selector.choose(pool: pool, student_id: 4, seen: seen, last_serve: last, item_last_serve: {}, credit_by_item: credit)
-      assert_equal "reseen", pick.reason, "seed #{i}"
-      assert_equal last.min_by { |_, v| v }.last, last[pick.candidate.fingerprint], "seed #{i}: the oldest is re-seen"
+      assert_nil pick, "seed #{i}: a seen instance is never served on its own (D-348)"
+      assert Practice::Selector.exhausted?(pool: pool, seen: seen), "seed #{i}"
+      redo_pick = Practice::Selector.choose(pool: pool, student_id: 4, seen: seen, last_serve: last, item_last_serve: {}, credit_by_item: credit, pick_item_id: pool.first.item_id)
+      assert_equal "reseen", redo_pick.reason, "seed #{i}"
+      assert_equal pool.select { |c| c.item_id == pool.first.item_id }.map { |c| last[c.fingerprint] }.min, last[redo_pick.candidate.fingerprint], "seed #{i}: the oldest of the item is re-seen"
     end
   end
 end

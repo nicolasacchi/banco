@@ -506,7 +506,7 @@ and the extra topics (each `done`, `in_progress` or `todo`, the same word as on 
       "programme": { "total": 19, "done": 4, "in_progress": 1, "missing": 15, "percent": 21 },
       "extra": { "total": 7, "done": 0, "in_progress": 0, "missing": 7, "percent": 0 },
       "entry_test": { "subject": "geography", "name_it": "Geografia economica", "status": "completed", "done": true, "startable": false, "suggested": false, "label_it": "Fatto", "run_id": 412 },
-      "skills": [ { "key": "geography.coordinates-hemispheres", "label_it": "...", "state": "in_study", "since": "2026-11-12T09:00:00Z" } ],
+      "skills": [ { "key": "geography.coordinates-hemispheres", "label_it": "...", "state": "in_study", "since": "2026-11-12T09:00:00Z", "pool_exhausted_at": null } ],
       "skills_without_topic": []
     }
   ],
@@ -519,7 +519,7 @@ and the extra topics (each `done`, `in_progress` or `todo`, the same word as on 
 is every skill of the topic demonstrated, `in_progress` a topic started and not done, `missing` every topic not done (so it includes
 the ones in progress), `percent` is `done` over `total`, rounded down. `overall` sums the visible subjects (Oggi's «Il tuo percorso»).
 `entry_test` is the subject's row of `entry_tests` (`null` when the subject has no test in the student's list); `skills[].state` follows the
-practice rules (`not_seen` when nothing is known). `closed_subjects` are the subjects whose course the teacher withdrew after opening it. The
+practice rules (`not_seen` when nothing is known); `skills[].pool_exhausted_at` is the first time the student had seen every exercise of the skill and none was served on its own (D-348; `null` otherwise, and the same field is in `banco practice progress`). `closed_subjects` are the subjects whose course the teacher withdrew after opening it. The
 official student sees no subject before the teacher releases its course.
 
 ## Next and digest
@@ -542,7 +542,7 @@ propose, the skills to recover and how much is done. Programme topics only, neve
 
 `next` is Oggi's own pick for the subject (the topic the student left, else the first of Oggi's ranked suggestions) and `why_it` is Oggi's reason in its own words; it is `null`, with no skills,
 when the teacher withdrew the subject's course (then `done_it` says it is closed). `taught_in` is `null` when no topic teaches the skill. `skills_to_recover` are the skills the pages
-call «Da riprendere». An unknown student is `404 E-NOT-FOUND`.
+call «Dal test: da ripassare». An unknown student is `404 E-NOT-FOUND`.
 
 ### `banco digest [--student KEY]`
 

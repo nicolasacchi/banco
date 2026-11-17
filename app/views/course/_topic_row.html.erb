@@ -11,10 +11,12 @@
     <span class="topic-meta"><% if number.nil? %><span class="topic-subject" data-subject-name><%= subject_view.subject.name_it %></span> · <% end %><%= t("topic.kind.#{topic.kind}") %> · <%= t("topic.minutes", n: topic.minutes) %></span>
     <% if before %><span class="topic-why"><%= t("topic.before", topic: before.title_it) %></span><% end %>
     <% unless topic.approved %><span class="topic-why"><%= ui_tag(t("topic.draft")) %> <%= t("draft.notice") %></span><% end %>
+    <% recover = course_view.recover_kind(topic) %>
+    <%= recover_note_once(recover) %>
   </div>
   <span class="row-end">
     <% if topic.extra? %><span data-extra-badge><%= ui_pill(t("topic.extra_badge"), :muted) %></span><% end %>
-    <% if course_view.recover_tag?(topic) %><%= ui_pill(t("topic.tag_recover"), :nearly) %><% end %>
+    <% if recover %><%= ui_pill(t("topic.tag_#{recover == 'to_recover' ? 'recover' : 'review'}"), :nearly) %><% end %>
     <%= ui_pill(t("topic.status.#{status}"), topic_status_tone(status), icon: topic_status_icon(status)) %>
     <%= ui_icon("next", css: "row-chev") %>
   </span>

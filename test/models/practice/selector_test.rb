@@ -12,7 +12,7 @@ class PracticeSelectorTest < ActiveSupport::TestCase
     choice = serve!
     assert_equal [ "next", true ], [ choice.reason, choice.created ]
     assert_equal @revisions.first.id, choice.instance.item_revision_id
-    assert_equal [ "practice/4", @skill, @student.id, @clock.now ], choice.serve.then { |s| [ s.rules_version, s.skill_key, s.student_id, s.created_at ] }
+    assert_equal [ "practice/5", @skill, @student.id, @clock.now ], choice.serve.then { |s| [ s.rules_version, s.skill_key, s.student_id, s.created_at ] }
     assert_kind_of Integer, choice.serve.seed
     assert_nil choice.parent_serve_id
     assert_nil choice.error_code
@@ -65,18 +65,76 @@ class PracticeSelectorTest < ActiveSupport::TestCase
       answer!(choice, other_wrong_raw)
     end
     assert_equal 24, seen.uniq.size
-    twenty_fifth = serve!
-    assert_equal "reseen", twenty_fifth.reason
-    assert_includes seen, twenty_fifth.instance.fingerprint
+    assert_equal Practice::Selector::EXHAUSTED, serve!, "no unseen instance is left: nothing is served on its own (D-348)"
+    assert_equal 24, PracticeServe.where(student: @student).count
   end
 
-  test "reseen picks the instance whose last serve is the oldest" do
+  def exhaust_pool!
+    24.times do
+      choice = serve!
+      answer!(choice, correct_raw(choice))
+    end
+  end
+
+  test "no unseen instance left: none is served on its own, whatever asked, and the fact is recorded once per student, topic revision and skill" do
+    exhaust_pool!
+    assert_equal 0, PracticePoolExhaustion.count
+    assert_equal Practice::Selector::EXHAUSTED, serve!(advance: true)
+    row = PracticePoolExhaustion.sole
+    assert_equal [ @student.id, @topic.id, @skill, @clock.now ], [ row.student_id, row.topic_revision_id, row.skill_key, row.created_at ]
+    advance
+    assert_equal Practice::Selector::EXHAUSTED, serve!
+    assert_equal Practice::Selector::EXHAUSTED, serve!(advance: true)
+    assert_equal [ 1, 24 ], [ PracticePoolExhaustion.count, PracticeServe.where(student: @student).count ], "a second ask adds no row and no serve"
+    assert_equal row.created_at, PracticePoolExhaustion.sole.created_at
+    other = practice_student("trial-pool")
+    assert_equal "next", serve!(student: other).reason
+    assert_equal 1, PracticePoolExhaustion.count, "another student is not exhausted"
+  end
+
+  test "a new topic revision of the skill records its own row" do
+    exhaust_pool!
+    assert_equal Practice::Selector::EXHAUSTED, serve!
+    pin_items(1, 1)
+    assert_equal "next", serve!.reason, "the new pinned item has an unseen instance"
+    assert_equal 1, PracticePoolExhaustion.count
+  end
+
+  test "after the solution of the last unseen instance nothing is served and the fact is recorded" do
+    pin_items(1, 1)
+    first = serve!
+    answer!(first, wrong_raw)
+    answer!(first, other_wrong_raw)
+    assert_equal Practice::Selector::EXHAUSTED, serve!(follow: { serve_id: first.serve.id, kind: "after_solution" })
+    assert_equal [ @student.id, @topic.id ], PracticePoolExhaustion.sole.then { |r| [ r.student_id, r.topic_revision_id ] }
+  end
+
+  test "an open serve is resumed when no instance is unseen, and the fact is still recorded" do
+    pin_items(2, 1)
+    first = serve!
+    second = serve!(advance: true)
+    assert_not_equal first.serve.id, second.serve.id
+    again = serve!(advance: true)
+    assert_equal [ false, first.serve.id ], [ again.created, again.serve.id ], "the open serve touched least recently"
+    assert_equal 1, PracticePoolExhaustion.count
+  end
+
+  test "choosing the item redoes it with reason reseen and records nothing" do
+    pin_items(1, 1)
+    first = serve!
+    answer!(first, correct_raw(first))
+    again = serve!(item: item_key(0))
+    assert_equal [ true, "reseen", first.instance.id ], [ again.created, again.reason, again.instance.id ]
+    assert_equal 0, PracticePoolExhaustion.count
+  end
+
+  test "reseen on a chosen item picks the instance whose last serve is the oldest" do
     24.times do
       choice = serve!
       answer!(choice, correct_raw(choice))
     end
     oldest = PracticeServe.order(:id).first
-    assert_equal oldest.item_instance_id, serve!.instance.id
+    assert_equal oldest.item_instance_id, serve!(item: item_key(0)).instance.id
   end
 
   test "after two correct unaided answers on an item the next item is served" do
@@ -432,5 +490,15 @@ class PracticeSelectorTest < ActiveSupport::TestCase
     pick = choose(pick_item_id: 1, **all_seen)
     assert_equal [ "reseen", "b" ], [ pick.reason, pick.candidate.fingerprint ]
     assert_nil choose(pick_item_id: 99)
+  end
+
+  test "choose never picks a seen instance on its own: nil, and exhausted? says every instance was seen" do
+    all_seen = { seen: Set["a", "b", "c"], last_serve: { "a" => 9, "b" => 5, "c" => 1 } }
+    assert_nil choose(**all_seen)
+    assert Practice::Selector.exhausted?(pool: candidates, seen: all_seen[:seen])
+    assert_not Practice::Selector.exhausted?(pool: candidates, seen: Set["a", "b"])
+    assert_not Practice::Selector.exhausted?(pool: [], seen: Set.new)
+    assert_nil choose(open_item_ids: Set[2], seen: Set["a", "b"]), "the item left out has an unseen instance: nil, but not exhausted"
+    assert_not Practice::Selector.exhausted?(pool: candidates, seen: Set["a", "b"])
   end
 end

@@ -32,6 +32,7 @@
               · <%= minutes_text(row.minutes) %>
               · <%= row.last_at ? t("teacher.practice.last", at: teacher_time(row.last_at)) : t("teacher.practice.never") %>
             </p>
+            <% if row.pool_exhausted_at %><p class="hint pool-exhausted" data-pool-exhausted><%= t("teacher.practice.pool_exhausted", at: teacher_time(row.pool_exhausted_at)) %></p><% end %>
             <% if row.seed %><p class="hint"><%= t("teacher.practice.seed", state: t("states.#{row.seed.state}")) %></p><% end %>
             <% if row.typical.any? %>
               <ul class="plain typical">

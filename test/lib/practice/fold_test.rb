@@ -19,7 +19,7 @@ class PracticeFoldTest < ActiveSupport::TestCase
     end
   end
 
-  test "practice/4: three distinct right unaided on the same day, two of them low guess, are demonstrated at the third try" do
+  test "practice/5: three distinct right unaided on the same day, two of them low guess, are demonstrated at the third try" do
     tries = [ try_at(hours: 0, low: true), try_at(hours: 1, low: false), try_at(hours: 2, low: true) ]
     s = fold(tries)
     assert_equal "demonstrated", s.state
@@ -28,7 +28,7 @@ class PracticeFoldTest < ActiveSupport::TestCase
     assert_equal "in_study", state_of(tries.first(2))
   end
 
-  test "practice/4: three right unaided with only one low-guess fingerprint are still in_study, with no day in the why" do
+  test "practice/5: three right unaided with only one low-guess fingerprint are still in_study, with no day in the why" do
     tries = [ try_at(hours: 0, low: true), try_at(hours: 1, low: false), try_at(hours: 2, low: false) ]
     s = fold(tries)
     assert_equal "in_study", s.state

@@ -728,7 +728,22 @@ CREATE TRIGGER comment_events_no_update BEFORE UPDATE ON comment_events
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER comment_events_no_delete BEFORE DELETE ON comment_events
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "practice_pool_exhaustions" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "student_id" integer NOT NULL, "topic_revision_id" integer NOT NULL, "skill_key" varchar NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_40fe24fd2a"
+FOREIGN KEY ("student_id")
+  REFERENCES "students" ("id")
+, CONSTRAINT "fk_rails_c7a6266c8a"
+FOREIGN KEY ("topic_revision_id")
+  REFERENCES "topic_revisions" ("id")
+);
+CREATE INDEX "index_practice_pool_exhaustions_on_student_id" ON "practice_pool_exhaustions" ("student_id");
+CREATE INDEX "index_practice_pool_exhaustions_on_topic_revision_id" ON "practice_pool_exhaustions" ("topic_revision_id");
+CREATE UNIQUE INDEX "index_practice_pool_exhaustions_on_student_revision_skill" ON "practice_pool_exhaustions" ("student_id", "topic_revision_id", "skill_key");
+CREATE TRIGGER practice_pool_exhaustions_no_update BEFORE UPDATE ON practice_pool_exhaustions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER practice_pool_exhaustions_no_delete BEFORE DELETE ON practice_pool_exhaustions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261117130000'),
 ('20261117120000'),
 ('20261117110000'),
 ('20261117100000'),

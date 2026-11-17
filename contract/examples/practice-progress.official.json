@@ -10,7 +10,7 @@
       "subject": "math",
       "student": "student",
       "trial": false,
-      "rules_version": "practice/4",
+      "rules_version": "practice/5",
       "topics": [
         {
           "topic": "ripasso.math.demo-equations",
@@ -46,7 +46,8 @@
             "abandoned": 0,
             "seconds": 0
           },
-          "typical": {}
+          "typical": {},
+          "pool_exhausted_at": null
         },
         {
           "skill": "math.linear-system-substitution",
@@ -70,7 +71,8 @@
             "abandoned": 0,
             "seconds": 0
           },
-          "typical": {}
+          "typical": {},
+          "pool_exhausted_at": null
         }
       ],
       "to_recover_without_topic": []

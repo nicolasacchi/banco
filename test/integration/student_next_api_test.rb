@@ -5,7 +5,7 @@ require_relative "../support/student_ui_rows"
 
 # D-333: what the student does next, per subject, over the API (`banco next`), for the token roles that read. No rule of its own: the topic
 # is the one Oggi shows first for the subject (the page is read in the same test and the two are compared), «skills to recover» are the
-# states the pages call «Da riprendere». Invented content only (the progress world of D-326).
+# states the pages call «Dal test: da ripassare». Invented content only (the progress world of D-326).
 class StudentNextApiTest < ActionDispatch::IntegrationTest
   include MultiUser
   include StudentCourseWorld

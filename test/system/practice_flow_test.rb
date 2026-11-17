@@ -300,7 +300,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
     click_button "Prova un esercizio simile"
     fresh = next_serve_after(serve)
     assert_equal [ "after_solution", serve.id ], [ fresh.reason, fresh.parent_serve_id ]
-    assert_selector "#serve-reason", text: "Prova un esercizio simile"
+    assert_selector "#serve-reason", text: "Ti propongo un esercizio simile: per passare al prossimo ne servono 2 giusti." # the same item again (D-348)
     assert_clean "the solution"
   end
 
@@ -364,7 +364,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
   def draft_of(serve) = PracticeDraft.where(practice_serve_id: serve.id).order(:id).last&.raw
   def no_sideways_scroll? = page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
 
-  # The list shows every status; «Salta» keeps the typed answer and the exercise open; the entry says «Lasciato a metà» or «Saltato»;
+  # The list shows every status; «Salta» keeps the typed answer and the exercise open; the entry says «Da finire» or «Saltato»;
   # a click on an entry opens it with its answer back; the autosave is on the server and a reload resumes the exercise; a done
   # exercise is redone from «Rifai» on a new instance.
   def walk_navigation
@@ -387,7 +387,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
     second = next_serve_after(first)
     second_key = item_key_of(second)
     assert_includes NUMBER_KEYS - [ first_key ], second_key
-    assert_selector "#{entry_selector(first_key)} .exercise-status", text: "Lasciato a metà"
+    assert_selector "#{entry_selector(first_key)} .exercise-status", text: "Da finire"
     assert_selector "#{entry_selector(second_key)} .exercise-status", text: "Adesso"
     assert_equal "123", draft_of(first)
     assert_equal 0, first.attempts.count
@@ -608,7 +608,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
     assert_clean "the sentence and the typo"
   end
 
-  # An exercise answered once and left with «Salta» is «Da riprovare» in the list, not «Lasciato a metà».
+  # An exercise answered once and left with «Salta» is «Da finire» in the list.
   def walk_retry_status
     first = open_practice("number")
     first_key = item_key_of(first)
@@ -617,8 +617,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
     assert_selector "#feedback", text: UNRECOGNISED
     find("#skip-button").click
     next_serve_after(first)
-    assert_selector "#{entry_selector(first_key)} .exercise-status", text: "Da riprovare"
-    assert_no_selector "#{entry_selector(first_key)} .exercise-status", text: "Lasciato a metà"
+    assert_selector "#{entry_selector(first_key)} .exercise-status", text: "Da finire"
     assert_clean "the retry status"
   end
 
@@ -798,16 +797,42 @@ class PracticeFlowTest < ApplicationSystemTestCase
     walk_sentence_and_typo
   end
 
-  test "a trial student: a wrong answer then «Salta» leaves the entry «Da riprovare»" do
+  test "a trial student: a wrong answer then «Salta» leaves the entry «Da finire»" do
     build_flow_world(number_items: 3)
     as_student
     walk_retry_status
   end
 
-  test "the teacher in the preview: a wrong answer then «Salta» leaves the entry «Da riprovare»" do
+  test "the teacher in the preview: a wrong answer then «Salta» leaves the entry «Da finire»" do
     build_flow_world(number_items: 3)
     as_teacher_in_preview
     walk_retry_status
+  end
+
+  # D-348: every instance of the skill was served and none is open: the page says so, nothing is served, one row is recorded, the list still
+  # shows the exercise as done and «Rifai» (a click) opens a redo that does not count.
+  test "a trial student who has seen every exercise of the skill is told so, and the list still redoes one" do
+    build_flow_world
+    student = practice_student("prova-1")
+    revision = @topic_revision.body["practice"].find { |p| p["skill"] == SKILL }["items"].first["revision"].then { |id| ItemRevision.find(id) }
+    revision.instances.order(:id).each_with_index do |instance, i|
+      serve = make_serve(student, @topic_revision, instance, skill_key: SKILL, at: (10 - i).minutes.ago)
+      make_try(serve, raw: JSON.parse(instance.answer_json).to_s, verdict: "correct", at: (10 - i).minutes.ago + 30.seconds)
+    end
+    as_student
+    visit "/topics/#{TOPIC}/practice/#{SKILL}"
+    assert_selector "#feedback", text: "Hai visto tutti gli esercizi di questa abilità. Ne stiamo preparando altri.", wait: 30
+    assert_selector "#next-actions a", text: "Torna all'argomento"
+    assert_no_selector "#check", visible: :visible
+    key = revision.item.key
+    assert_selector "#{entry_selector(key)} .exercise-status", text: "Fatto"
+    assert_equal 1, PracticePoolExhaustion.where(student: student, skill_key: SKILL).count
+    assert_equal revision.instances.count, PracticeServe.where(student: student).count, "nothing was served"
+    find("#{entry_selector(key)} .exercise-link").click
+    assert_selector "#check:not([disabled])", wait: 30
+    assert_selector "#serve-reason", text: "Questo esercizio l'hai già visto"
+    assert_equal 1, PracticePoolExhaustion.where(student: student, skill_key: SKILL).count
+    assert_clean "the pool that ran out"
   end
 
   test "a trial student on a 390 px phone: «Fai controllare» does not scroll sideways" do

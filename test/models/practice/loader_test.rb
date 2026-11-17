@@ -199,8 +199,8 @@ class PracticeLoaderTest < ActiveSupport::TestCase
   test "an abandoned serve is reported by the status at the loader's now (14 days)" do
     serve_with
     assert_equal :open, load_input(now: @serve_at + 3600).serves.first.status.state
-    assert_equal :open, load_input(now: @serve_at + Practice::Rules::V4::OPEN_SERVE_HOURS * 3600).serves.first.status.state
-    assert_equal :abandoned, load_input(now: @serve_at + Practice::Rules::V4::OPEN_SERVE_HOURS * 3600 + 1).serves.first.status.state
+    assert_equal :open, load_input(now: @serve_at + Practice::Rules::V5::OPEN_SERVE_HOURS * 3600).serves.first.status.state
+    assert_equal :abandoned, load_input(now: @serve_at + Practice::Rules::V5::OPEN_SERVE_HOURS * 3600 + 1).serves.first.status.state
   end
 
   test "a serve is superseded by a newer serve of the same student on the same item, any revision" do
@@ -311,7 +311,7 @@ class PracticeSeederTest < ActiveSupport::TestCase
     seeds = Practice::Seeder.call(@student, @subject)
     assert_not_empty seeds
     assert(seeds.keys.all? { |k| k.start_with?("math.") })
-    assert(seeds.values.all? { |s| Practice::Rules::V4::STATES.include?(s.state) && s.run_id == @run.id })
+    assert(seeds.values.all? { |s| Practice::Rules::V5::STATES.include?(s.state) && s.run_id == @run.id })
   end
 
   test "A8.6: the five rows of the seed table" do
@@ -327,7 +327,7 @@ class PracticeSeederTest < ActiveSupport::TestCase
   test "the seed time is the run's last event, in the Rome zone" do
     seeds = seeds_with(rows([ "math.a", "demonstrated" ]))
     assert_equal @run.events.maximum(:at), seeds["math.a"].at
-    assert_equal Practice::Rules::V4::ZONE, seeds["math.a"].at.time_zone.tzinfo.name
+    assert_equal Practice::Rules::V5::ZONE, seeds["math.a"].at.time_zone.tzinfo.name
   end
 
   test "a voided run gives no seeds; an open newer run leaves the closed one in use" do

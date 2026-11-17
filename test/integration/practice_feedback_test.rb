@@ -3,7 +3,7 @@ require_relative "../support/multi_user"
 require_relative "../support/practice_text_world"
 
 # D-339 over the real endpoints, for the student and for the teacher's preview: a whole sentence around a `___` blank, the same answer twice,
-# the plainer messages, «ci sei quasi», «Fai controllare» (the contest, its comment and its solution) and the list's «Da riprovare».
+# the plainer messages, «ci sei quasi», «Fai controllare» (the contest, its comment and its solution) and the list's «Da finire».
 class PracticeFeedbackTest < ActionDispatch::IntegrationTest
   include MultiUser
   include PracticeTextWorld
@@ -249,17 +249,17 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
 
   # ---- the list ------------------------------------------------------------------------------------------
 
-  test "the list says «retry» for an open serve with a try, «left» for a draft alone, «skipped» for neither" do
+  test "the list says «unfinished» for an open serve with a try or a draft, «skipped» for neither" do
     serve = serve_for(OFFICIAL, SENTENCE)
     assert_equal "skipped", statuses(OFFICIAL)[SENTENCE]
     post_json(OFFICIAL, "/practice/serves/#{serve['serve_id']}/draft", { raw: "pla", source: "text" })
-    assert_equal "left", statuses(OFFICIAL)[SENTENCE]
+    assert_equal "unfinished", statuses(OFFICIAL)[SENTENCE]
     answer_for(OFFICIAL, serve, "play")
-    assert_equal "retry", statuses(OFFICIAL)[SENTENCE]
+    assert_equal "unfinished", statuses(OFFICIAL)[SENTENCE]
     assert_equal "todo", statuses(OFFICIAL)[WORD]
   end
 
-  test "an open serve with nothing typed on a done exercise keeps «done»; with a try it is «retry»" do
+  test "an open serve with nothing typed on a done exercise keeps «done»; with a try it is «unfinished»" do
     serve = serve_for(OFFICIAL, SENTENCE)
     answer_for(OFFICIAL, serve, "don't eat")
     assert_equal "done", statuses(OFFICIAL)[SENTENCE]
@@ -267,18 +267,19 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
     refute_equal serve["serve_id"], again["serve_id"]
     assert_equal "done", statuses(OFFICIAL)[SENTENCE]
     answer_for(OFFICIAL, again, "play")
-    assert_equal "retry", statuses(OFFICIAL)[SENTENCE]
+    assert_equal "unfinished", statuses(OFFICIAL)[SENTENCE]
   end
 
-  test "the preview's list says «retry» too, for the preview student" do
+  test "the preview's list says «unfinished» too, for the preview student" do
     serve = serve_for(TEACHER, SENTENCE, root: PREVIEW)
     answer_for(TEACHER, serve, "play", root: PREVIEW)
-    assert_equal "retry", statuses(TEACHER, root: PREVIEW)[SENTENCE]
+    assert_equal "unfinished", statuses(TEACHER, root: PREVIEW)[SENTENCE]
     assert_equal "todo", statuses(OFFICIAL)[SENTENCE], "the official student's list is not the preview's"
   end
 
   test "the labels are in the locale" do
-    assert_equal "Da riprovare", I18n.t("practice.status_retry")
+    assert_equal [ "Da finire", "Finito", "Finito: con la soluzione", "Fatto", "Saltato", "Da fare" ],
+                 %w[unfinished finished finished_solution done skipped todo].map { |status| I18n.t("practice.status_#{status}") }
     assert_equal "Fai controllare", I18n.t("practice.contest_button")
     assert_equal "Pensi che la tua risposta sia giusta? Premi «Fai controllare»: la vede il docente.", I18n.t("practice.contest_note")
   end

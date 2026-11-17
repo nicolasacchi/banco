@@ -1,11 +1,11 @@
 module Teacher
   # One student's practice trail in one subject, for the teacher (A10, D-217): per topic its status, per skill the
-  # derived state with its why, counts, typical errors and time, the skills to recover that no topic holds, the
+  # derived state with its why, counts, typical errors and time, when the student ran out of unseen exercises (D-348), the skills to recover that no topic holds, the
   # questions the student asked, and the trail of every try of a skill. Read-only. Official and trial students
   # are alike; a trial student's rows never touch the official one's.
   class PracticeProgress
     TopicRow = Data.define(:topic, :stage, :status, :skills)
-    SkillRow = Data.define(:skill, :label_it, :state, :why_it, :seed, :counts, :typical, :last_at, :minutes)
+    SkillRow = Data.define(:skill, :label_it, :state, :why_it, :seed, :counts, :typical, :last_at, :minutes, :pool_exhausted_at)
     Typical = Data.define(:code, :description_it, :count)
     Question = Data.define(:at, :topic, :section, :exercise, :text_it, :card, :card_label)
     Step = Data.define(:at, :stem, :raw, :outcome, :codes, :aided, :hints, :solution_shown, :reason, :to_correct, :refused)
@@ -38,11 +38,15 @@ module Teacher
       end
     end
 
+    # {skill => the first time the student ran out of unseen exercises on it} (D-348, practice_pool_exhaustions); a skill never exhausted has none.
+    def exhausted = @exhausted ||= PracticePoolExhaustion.first_by_skill(student, skill_keys)
+
     def skill_row(key)
       state = states[key]
       tries = input.tries.select { |t| t.skill == key }
       SkillRow.new(key, labels[key] || key, state.state, Practice::Messages.why_it(state.why), state.seed, state.counts, typical_of(state.counts[:typical]),
-                   tries.map(&:at).max || input.serves.select { |s| s.skill == key }.map(&:at).max, (state.counts[:seconds].to_f / 60).round)
+                   tries.map(&:at).max || input.serves.select { |s| s.skill == key }.map(&:at).max, (state.counts[:seconds].to_f / 60).round,
+                   exhausted[key])
     end
 
     # Skills the diagnosis found to recover or learn that no topic of the map practices.

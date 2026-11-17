@@ -90,6 +90,7 @@
               <% else %>
                 <span class="topic-why"><%= t("today.reason.#{s.reason}") %></span>
               <% end %>
+              <%= recover_note_once("to_recover") if s.reason.to_s == "to_recover" %>
               <% unless topic.approved %><span class="topic-why"><%= ui_tag(t("topic.draft"), icon: "info") %> <%= t("draft.notice") %></span><% end %>
               <% if big %><a class="button" href="<%= spath("/topics/#{topic.key}") %>"><%= t("today.start") %></a><% end %>
             </li>
