@@ -24,7 +24,7 @@ it:
       bar_default: "Banco"
   settings:
     title: "Impostazioni"
-    intro: "Scegli i colori e la grandezza del testo. Valgono su tutte le pagine."
+    intro: "Scegli i colori e la grandezza di testi e immagini. Valgono su tutte le pagine."
     saved: "Fatto. Ho salvato la scelta."
   diagnosis:
     title: "Test d'ingresso"
@@ -42,9 +42,14 @@ it:
       theme: "Colori"
       themes:
         cream: "Crema"
+        light: "Chiaro"
         dark: "Scuro"
-      size: "Grandezza del testo"
+        auto: "Automatico"
+      theme_hint: "Automatico usa i colori del tuo dispositivo: Crema se è chiaro, Scuro se è scuro."
+      size: "Grandezza di testi e immagini"
+      size_hint: "Cambia tutta la pagina: testi, pulsanti, immagini e spazi."
       sizes:
+        minimum: "Minimo"
         smallest: "Molto piccolo"
         small: "Piccolo"
         normal: "Normale"

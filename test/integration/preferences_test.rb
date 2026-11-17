@@ -40,15 +40,16 @@ class PreferencesTest < ActionDispatch::IntegrationTest
     assert_select "input[name=size][value=larger][checked]"
   end
 
-  test "each of the five sizes can be chosen and is kept, smallest first on the settings page" do
-    assert_equal %w[smallest small normal large larger], Diagnosis::Preferences::SIZES
+  test "each of the six sizes can be chosen and is kept, smallest first on the settings page" do
+    assert_equal %w[minimum smallest small normal large larger], Diagnosis::Preferences::SIZES
     as_student "/settings"
     assert_select "input[name=size]" do |inputs|
-      assert_equal %w[smallest small normal large larger], inputs.map { |i| i["value"] }
+      assert_equal %w[minimum smallest small normal large larger], inputs.map { |i| i["value"] }
     end
+    assert_select "label", text: "Minimo"
     assert_select "label", text: "Molto piccolo"
     assert_select "label", text: "Piccolo"
-    %w[smallest small].each do |size|
+    %w[minimum smallest small].each do |size|
       as_student "/diagnosis/preferences", method: :post, params: { theme: "cream", size: size }
       as_student "/settings"
       assert_select "html[data-size=#{size}]"
@@ -57,11 +58,29 @@ class PreferencesTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "the lesson dialog texts list the five sizes, smallest first, and a size chosen there is kept" do
-    assert_equal({ "smallest" => "Più piccolo", "small" => "Piccolo", "normal" => "Normale", "large" => "Grande", "larger" => "Più grande" }, I18n.t("lesson2.sizes").transform_keys(&:to_s))
-    assert_equal %w[smallest small normal large larger], I18n.t("lesson2.sizes").keys.map(&:to_s)
-    as_student "/diagnosis/preferences", method: :post, params: { size: "smallest" }
-    assert_equal "smallest", Diagnosis::Preferences.for(@rows[:student])[:size]
+  test "the lesson dialog texts list the six sizes, smallest first, and the four themes, and a size chosen there is kept" do
+    assert_equal({ "minimum" => "Minimo", "smallest" => "Più piccolo", "small" => "Piccolo", "normal" => "Normale", "large" => "Grande", "larger" => "Più grande" }, I18n.t("lesson2.sizes").transform_keys(&:to_s))
+    assert_equal %w[minimum smallest small normal large larger], I18n.t("lesson2.sizes").keys.map(&:to_s)
+    assert_equal({ "cream" => "Crema", "light" => "Chiaro", "dark" => "Scuro", "auto" => "Automatico" }, I18n.t("lesson2.themes").transform_keys(&:to_s))
+    as_student "/diagnosis/preferences", method: :post, params: { size: "minimum" }
+    assert_equal "minimum", Diagnosis::Preferences.for(@rows[:student])[:size]
+  end
+
+  test "the four themes are offered and kept; auto is on <html> as the choice with cream until the page's script follows the device (D-350)" do
+    assert_equal %w[cream light dark auto], Diagnosis::Preferences::THEMES
+    as_student "/settings"
+    assert_select "input[name=theme]" do |inputs|
+      assert_equal %w[cream light dark auto], inputs.map { |i| i["value"] }
+    end
+    %w[Crema Chiaro Scuro Automatico].each { |label| assert_select "label", text: label }
+    { "light" => "light", "dark" => "dark", "auto" => "cream" }.each do |theme, shown|
+      as_student "/diagnosis/preferences", method: :post, params: { theme: theme }
+      assert_equal theme, Diagnosis::Preferences.for(@rows[:student])[:theme]
+      as_student "/settings"
+      assert_select "html[data-theme=#{shown}][data-theme-choice=#{theme}]"
+      assert_select "input[name=theme][value=#{theme}][checked]"
+    end
+    assert_select "script[nonce]", text: /prefers-color-scheme/
   end
 
   test "an unknown value is ignored and the old choice stays; saying the same again writes nothing" do

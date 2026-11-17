@@ -19,7 +19,7 @@
 .l2 .ic { width: 1.15em; height: 1.15em; flex: none; vertical-align: -0.2em; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .l2 button, .l2 .button { font: inherit; }
 .l2 .button { min-height: 2.75em; display: inline-flex; align-items: center; justify-content: center; gap: 0.4em; text-decoration: none; border-radius: 0.7em; padding: 0.45em 1.1em; }
-.l2 .button.small { min-height: max(2.4em, 44px); padding: 0.3em 0.8em; }
+.l2 .button.small { min-height: 2.4em; padding: 0.3em 0.8em; }
 .l2 .hint { color: var(--muted); }
 
 
@@ -28,7 +28,7 @@
   --x: var(--r-math-unknown-fg); --xfill: var(--r-math-unknown-mark); --num: var(--r-math-known-fg); --brass: #c79a38; --brass-dark: #8a6119; --metal: #1d3b5c;
   --soft-primary: color-mix(in srgb, var(--primary) 13%, var(--surface)); --paper: color-mix(in srgb, var(--surface) 55%, var(--bg)); --card-shadow: 0 1px 0 rgba(60, 45, 10, 0.05), 0 0.7em 1.7em -0.8em rgba(60, 45, 10, 0.3); }
 [data-theme="dark"] .l2, .l2-box[data-theme="dark"] .l2 { --metal: #8fb0d9; --card-shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 0.9em 2em -0.9em rgba(0, 0, 0, 0.7); }
-body.student:has(.l2-top) { background-image: linear-gradient(rgba(38, 58, 92, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(38, 58, 92, 0.06) 1px, transparent 1px); background-size: 26px 26px; }
+body.student:has(.l2-top) { background-image: linear-gradient(rgba(38, 58, 92, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(38, 58, 92, 0.06) 1px, transparent 1px); background-size: 1.3rem 1.3rem; }
 [data-theme="dark"] body.student:has(.l2-top) { background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); }
 /* in a lesson the layout's own notices and menu fold into the bar (a chip and a "Menu" button) */
 body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) .topbar, body.student:has(.l2-top) #trial-notice, body.student:has(.l2-top) #draft-notice, body.student:has(.l2-top) .l2-back { display: none; }
@@ -605,10 +605,12 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 .l2-box .l2-mapbtn { display: inline-flex; }
 .l2-box .l2-shell { display: block; }
 .l2-box .lesson2-page { padding: 0; }
+.l2-box[data-size="minimum"] .l2 { font-size: 0.7rem; }
 .l2-box[data-size="smallest"] .l2 { font-size: 0.8rem; }
 .l2-box[data-size="small"] .l2 { font-size: 0.9rem; }
 .l2-box[data-size="large"] .l2 { font-size: 1.2rem; }
 .l2-box[data-size="larger"] .l2 { font-size: 1.4rem; }
+.l2-box[data-theme="light"] { --bg: #ffffff; --text: #161616; --muted: #3f3f3f; --line: #767676; --primary: #1d3b5c; --primary-text: #ffffff; --surface: #f5f5f3; --focus: #0b3d91; color-scheme: light; }
 .l2-box[data-theme="cream"] { --bg: #fbf3df; --text: #1c1a14; --muted: #4a4536; --line: #8a826a; --primary: #1d3b5c; --primary-text: #ffffff; --surface: #fffaf0; --focus: #0b3d91; color-scheme: light; }
 .l2-box[data-theme="dark"] { --bg: #1b1a17; --text: #f3ecdc; --muted: #d3cbb6; --line: #8c846e; --primary: #f0dfae; --primary-text: #1b1a17; --surface: #25231f; --focus: #9cc3ff; color-scheme: dark; }
 .l2-box-tools { display: flex; flex-wrap: wrap; gap: 0.6em 1.2em; align-items: center; margin: 0.6em 0; }
@@ -867,4 +869,21 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 @media print {
   .block-code .code-copy, .block-code .code-status, .block-code .code-hint { display: none !important; }
   .block-code .code-box, .block-code .code-screen { white-space: pre-wrap; overflow: visible; background: #fff; color: #000; border-color: #000; font-size: 10pt; }
+}
+
+/* A touch screen (D-350): every target of a lesson is 44 CSS px at least at any size, also the smallest (14 px at the root, where 2.4 em is 34 px).
+   With a mouse the em sizes above stand, and they follow the size the student chose. A size set by min-height keeps max(that, 44px); a size set
+   by width and height takes a floor, which wins over a max-width that is smaller. */
+@media (pointer: coarse) {
+  .l2 .button { min-height: max(2.75em, 44px); }
+  .l2 .button.small { min-height: max(2.4em, 44px); }
+  .l2-ibtn { min-height: max(2.4em, 44px); min-width: max(2.4em, 44px); }
+  .l2 .try-dot, .l2 .try-arrow, .l2 .helper-key, .l2 .check .check-row.is-around .helper-key { min-width: 44px; min-height: 44px; }
+  .l2 .dg-chipbtn, .l2 .chip-label { min-height: max(2.4em, 44px); }
+  .l2 .check .option { min-height: max(3em, 44px); }
+  .l2 .tile { min-height: max(2.6em, 44px); min-width: max(2.6em, 44px); }
+  .l2 .select-fallback .span-chip { min-height: max(2.6em, 44px); }
+  .l2 .check .answer-input, .l2 .question .answer-input { min-height: max(2.5em, 44px); }
+  .l2 .card-listen .button, .l2 .card-listen .speak-slower { min-height: max(2.75rem, 44px); }
+  .l2 summary { padding-block: 12px; }
 }

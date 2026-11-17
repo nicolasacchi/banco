@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { applyTheme } from "lesson/theme"
 
 // The teacher's box (A14): the student's renderer, live, in a container whose width, theme and text size the
 // teacher picks. Nothing is recorded: no events, no questions. Checks go to a teacher-only endpoint (seed
@@ -47,7 +48,7 @@ export default class extends Controller {
   }
 
   theme(event) {
-    this.boxTarget.dataset.theme = event.target.value
+    applyTheme(this.boxTarget, event.target.value)
     this.api?.relayout()
   }
 

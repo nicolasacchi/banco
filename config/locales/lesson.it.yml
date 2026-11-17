@@ -60,12 +60,15 @@ it:
     reduce_motion: "Riduci le animazioni"
     settings_labels:
       theme: "Colori"
-      size: "Grandezza del testo"
+      size: "Grandezza di testi e immagini"
       view: "Come vedi le schede"
     themes:
       cream: "Crema"
+      light: "Chiaro"
       dark: "Scuro"
+      auto: "Automatico"
     sizes:
+      minimum: "Minimo"
       smallest: "Più piccolo"
       small: "Piccolo"
       normal: "Normale"

@@ -7,6 +7,7 @@
 //   urls    { check, events, solution, questions, practice, preferences, settings, topics }: the page's own addresses, which in the
 //           teacher's preview carry /teacher/preview (D-309); topics is the front of a topic page ("/topics" when absent)
 import { newId } from "items/outbox"
+import { applyTheme } from "lesson/theme"
 import { button, clear, el, icon } from "lesson/dom"
 import { iconOf, renderCard, rolesUsed } from "lesson/cards"
 import { sample } from "lesson/blocks/legend"
@@ -328,7 +329,7 @@ export function renderLesson(root, body, config) {
   function openSettings() {
     clear(settingsDialog)
     const scope = root.closest("[data-theme]") ?? document.documentElement
-    const current = { theme: scope.dataset.theme || "cream", size: scope.dataset.size || "normal" }
+    const current = { theme: scope.dataset.themeChoice || scope.dataset.theme || "cream", size: scope.dataset.size || "normal" }
     const radios = (name, options, value, onChange) => {
       const set = el("fieldset", { class: "options" }, el("legend", { text: t.settings_labels[name] }))
       for (const [val, label] of Object.entries(options)) {
@@ -364,7 +365,7 @@ export function renderLesson(root, body, config) {
   }
   function applyPreference(change) {
     const scope = root.closest("[data-theme]") ?? document.documentElement
-    if (change.theme) scope.dataset.theme = change.theme
+    if (change.theme) applyTheme(scope, change.theme)
     if (change.size) scope.dataset.size = change.size
     for (const api of trackers) api.relayout()
     config.savePreferences?.(change)
