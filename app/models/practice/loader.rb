@@ -6,7 +6,7 @@ module Practice
   #   input = Practice::Loader.for(student, subject: subject)
   #   Practice::Fold.call(seeds: input.seeds, tries: input.tries, serves: input.serves)
   class Loader
-    V2 = Rules::V2
+    V3 = Rules::V3
 
     Input = Data.define(:seeds, :tries, :serves, :voided_item_revision_ids)
 
@@ -45,6 +45,15 @@ module Practice
       @serves ||= scope.includes(:events, item_instance: { item_revision: :item }, attempts: :gradings).order(:id).to_a
     end
 
+    # The attempts that the student sent to the teacher (PracticeContest, practice/3): for a student's loader those of all
+    # its serves, read once; a lone serve (status_of) asks for its own.
+    def contested_ids(serve)
+      return Set.new unless defined?(PracticeContest)
+      return PracticeContest.where(practice_serve_id: serve.id).pluck(:practice_attempt_id).to_set unless @student
+
+      @contested_ids ||= PracticeContest.where(practice_serve_id: serves.map(&:id)).pluck(:practice_attempt_id).to_set
+    end
+
     def voided_revisions
       Decision.where(kind: "void_revision_attempts", student_id: @student.id)
               .filter_map { |d| JSON.parse(d.payload_json)["item_revision_id"] }.to_set
@@ -61,19 +70,19 @@ module Practice
         serve.attempts.sort_by(&:try_number).filter_map do |attempt|
           started = previous
           previous = attempt.answered_at
-          grade = Instances.grade(attempt, spec) or next
+          grade = Instances.grade(attempt, spec, contested_ids: contested_ids(serve)) or next
 
-          Try.new(skill: serve.skill_key, at: attempt.answered_at, day: attempt.answered_at.in_time_zone(V2::ZONE).to_date, serve_id: serve.id,
+          Try.new(skill: serve.skill_key, at: attempt.answered_at, day: attempt.answered_at.in_time_zone(V3::ZONE).to_date, serve_id: serve.id,
                   fingerprint: instance.fingerprint, item_id: instance.item_revision.item_id, item_revision_id: instance.item_revision_id,
                   low_guess: low, try_number: attempt.try_number, aided: attempt.aided || serve.reason == "reseen", reseen: serve.reason == "reseen",
-                  evidence: Outcome.evidence(grade.outcome), outcome: grade.outcome, error_codes: grade.codes,
-                  seconds: (attempt.answered_at - started).to_i.clamp(0, V2::TIME_CAP_SECONDS))
+                  evidence: Outcome.evidence(grade.outcome), outcome: grade.outcome, error_codes: grade.codes, contested: grade.contested,
+                  seconds: (attempt.answered_at - started).to_i.clamp(0, V3::TIME_CAP_SECONDS))
         end
       end
     end
 
     def status_for(serve)
-      ServeState.call(serve: serve, tries: serve_tries(serve).map { |t| ServeTry.new(t.try_number, t.outcome) },
+      ServeState.call(serve: serve, tries: serve_tries(serve).map { |t| ServeTry.new(t.try_number, t.outcome, t.contested) },
                       events: serve.events.sort_by(&:id).map { |e| serve_event(e) }, hints_total: Instances.hints(serve.item_instance).size, now: @now,
                       superseded: superseded?(serve))
     end

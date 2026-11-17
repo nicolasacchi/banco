@@ -224,6 +224,11 @@ li.skill .skill-side .button { margin: 0; align-self: center; }
 .feedback.notice { margin: var(--space-4) 0 0; }
 .feedback-text { display: block; font-weight: 700; }
 .feedback-note { display: block; margin-top: var(--space-1); }
+/* «Fai controllare» (D-339): a line smaller than the message and a quiet text button under it; the colours are the page's own, so
+   cream and dark both read; the line wraps, nothing scrolls sideways. */
+.contest { margin-top: var(--space-3); min-width: 0; }
+.contest-note { margin: 0; font-size: 0.85em; font-weight: 400; color: var(--muted); overflow-wrap: anywhere; }
+.practice .contest .button { width: auto; margin: var(--space-1) 0 0; max-width: 100%; }
 #hints.notice { margin: var(--space-4) 0 0; }
 #hints h2 { font-size: var(--text-m); margin: 0; }
 #hints ol { margin: var(--space-1) 0 0; padding-left: 1.25rem; }

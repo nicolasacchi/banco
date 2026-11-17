@@ -2,9 +2,10 @@ module Practice
   # The list of the exercises of a topic for one student (D-337): what the practice page draws as a sidebar. Per skill of the topic, the items
   # pinned on the topic revision this student sees, in pin order, each with its status from the student's serves. Read-only.
   #
-  #   status, in this order: "left" when the open serve has a try or a non-empty draft; "done" when any serve of the item closed correct;
-  #           "tried" when any closed or abandoned serve has a try or a shown solution; "skipped" when there is an open serve (nothing typed);
-  #           else "todo". open_serve_id is set whenever the item has an open serve, so a click resumes it.
+  #   status, in this order: "retry" when the open serve has a try (she answered and can try again, D-339); "left" when the open serve has no try
+  #           but a non-empty draft; "done" when any serve of the item closed correct; "tried" when any closed or abandoned serve has a try or a
+  #           shown solution; "skipped" when there is an open serve (no try, nothing typed); else "todo".
+  #           open_serve_id is set whenever the item has an open serve, so a click resumes it.
   #
   # The list never holds a key to an answer, an error value or the text of an instance: only the item's key (the page asks for that exercise
   # with it), its place and a title, the first sentence of the prompt's stem (the same for every instance).
@@ -106,7 +107,8 @@ module Practice
     end
 
     def status(mine, open, facts)
-      return "left" if open && (facts.tries(open.id).positive? || facts.draft?(open.id))
+      return "retry" if open && facts.tries(open.id).positive?
+      return "left" if open && facts.draft?(open.id)
       return "done" if mine.any? { |r| r.status.closed_by == :correct }
       return "tried" if mine.any? { |r| facts.tries(r.id).positive? || r.status.solution_sent }
 
@@ -127,7 +129,7 @@ module Practice
       def tries(serve_id) = @tries.fetch(serve_id, 0)
       def draft?(serve_id) = @drafts.key?(serve_id)
 
-      # An item's only possible open serve is its latest one: a newer serve of the same item supersedes it (practice/2).
+      # An item's only possible open serve is its latest one: a newer serve of the same item supersedes it (practice/3).
       def open_serve(item_id)
         latest = of_item(item_id).max_by(&:id)
         latest if latest&.status&.state == :open

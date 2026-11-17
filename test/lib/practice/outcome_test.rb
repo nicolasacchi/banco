@@ -23,6 +23,36 @@ class PracticeOutcomeTest < ActiveSupport::TestCase
     end
   end
 
+  test "practice/3: a wrong text answer with near set is a near miss (N), aided or not" do
+    %i[typo one_word].each do |near|
+      assert_equal :near_miss, Practice::Outcome.call(evidence_key: "wrong", aided: false, near: near), near.to_s
+      assert_equal :near_miss, Practice::Outcome.call(evidence_key: "wrong", aided: true, near: near), near.to_s
+    end
+    assert_equal :unrecognised, Practice::Outcome.call(evidence_key: "wrong", aided: false, near: nil)
+    assert_equal :unrecognised, Practice::Outcome.call(evidence_key: "wrong", aided: false)
+    assert_equal :N, Practice::Outcome.evidence(:near_miss)
+  end
+
+  test "practice/3: near changes nothing on any other evidence key" do
+    TABLE.each_key do |key|
+      next if key == "wrong"
+
+      assert_equal Practice::Outcome.call(evidence_key: key, aided: false), Practice::Outcome.call(evidence_key: key, aided: false, near: :typo), key
+      assert_equal Practice::Outcome.call(evidence_key: key, aided: true), Practice::Outcome.call(evidence_key: key, aided: true, near: :one_word), key
+    end
+  end
+
+  test "practice/3: contested is an outcome of N evidence that no evidence key gives" do
+    assert_includes Practice::Outcome::OUTCOMES, :contested
+    assert_equal :N, Practice::Outcome.evidence(:contested)
+    assert_equal :N, Practice::Outcome.evidence("contested")
+    produced = Diagnosis::Rules::V1::EVIDENCE.keys.select { |k| Practice::Outcome.try?(k) }.flat_map do |k|
+      [ Practice::Outcome.call(evidence_key: k, aided: false), Practice::Outcome.call(evidence_key: k, aided: true, near: :typo) ]
+    end
+    assert_not_includes produced, :contested
+    assert_equal Practice::Outcome::OUTCOMES.sort, Practice::Outcome::EVIDENCE.keys.sort
+  end
+
   test "the evidence class agrees with the diagnosis table for every key it covers" do
     TABLE.each do |key, (unaided, _aided, evidence)|
       diagnosis = Diagnosis::Rules::V1::EVIDENCE.fetch(key)

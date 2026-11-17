@@ -9,6 +9,7 @@ export function practiceUrls(base) {
     hint: (serveId) => `${root}/serves/${serveId}/hint`,
     solution: (serveId) => `${root}/serves/${serveId}/solution`,
     draft: (serveId) => `${root}/serves/${serveId}/draft`,
+    contest: (serveId) => `${root}/serves/${serveId}/contest`,
     exercises: (topic) => `${root}/exercises?topic=${encodeURIComponent(topic)}`
   }
 }

@@ -10,6 +10,7 @@ test("S's page posts to /practice", () => {
   assert.equal(urls.hint(75), "/practice/serves/75/hint")
   assert.equal(urls.solution(75), "/practice/serves/75/solution")
   assert.equal(urls.draft(75), "/practice/serves/75/draft")
+  assert.equal(urls.contest(75), "/practice/serves/75/contest")
   assert.equal(urls.exercises("math.equations"), "/practice/exercises?topic=math.equations")
 })
 
@@ -20,13 +21,15 @@ test("the teacher's preview page posts every action under /teacher/preview, hint
   assert.equal(urls.hint(75), "/teacher/preview/practice/serves/75/hint")
   assert.equal(urls.solution(75), "/teacher/preview/practice/serves/75/solution")
   assert.equal(urls.draft(75), "/teacher/preview/practice/serves/75/draft")
+  assert.equal(urls.contest(75), "/teacher/preview/practice/serves/75/contest")
   assert.equal(urls.exercises("math.equations"), "/teacher/preview/practice/exercises?topic=math.equations")
-  for (const url of [urls.serve, urls.answer, urls.hint(1), urls.solution(1), urls.draft(1), urls.exercises("t")]) assert.ok(url.startsWith("/teacher/preview/"), url)
+  for (const url of [urls.serve, urls.answer, urls.hint(1), urls.solution(1), urls.draft(1), urls.contest(1), urls.exercises("t")]) assert.ok(url.startsWith("/teacher/preview/"), url)
 })
 
 test("a trailing slash on the base does not double", () => {
   assert.equal(practiceUrls("/practice/").hint(2), "/practice/serves/2/hint")
   assert.equal(practiceUrls("/practice/").draft(2), "/practice/serves/2/draft")
+  assert.equal(practiceUrls("/practice/").contest(2), "/practice/serves/2/contest")
   assert.equal(practiceUrls("/practice/").exercises("a"), "/practice/exercises?topic=a")
 })
 

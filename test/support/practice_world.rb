@@ -39,6 +39,8 @@ module PracticeWorld
   def correct_raw(serve) = JSON.parse(instance_of(serve).answer_json).to_s
   def slip_raw(serve) = JSON.parse(instance_of(serve).errors_json).first.fetch("value").to_s
   def wrong_raw = "99999"
+  # A second wrong answer, unlike wrong_raw: the same answer twice on one serve is refused (same_answer), not a try.
+  def other_wrong_raw = "88888"
 
   # Answers a serve (a PracticeServe or a Choice) and moves the clock on a minute.
   def answer!(serve, raw, student: @student, id: nil)

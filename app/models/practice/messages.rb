@@ -37,18 +37,31 @@ module Practice
     # The sentence of an answer's outcome. typical: the catalogue message of the first error code
     # (nil when the item has none). closing: the serve ends with this answer after a wrong try, so a
     # non-typical failure says "second_wrong" (rows 6 and 8 of the state machine).
-    def feedback(outcome, typical: nil, violations: [], closing: false, hint: true)
-    unrecognised = I18n.t(hint ? "practice.unrecognised" : "practice.unrecognised_no_hint")
+    # near: :typo or :one_word (Grading::NearText.kind, practice/3) words a near miss; nil is the grader's own near miss (a spelling policy).
+    def feedback(outcome, typical: nil, violations: [], closing: false, hint: true, near: nil)
+      unrecognised = I18n.t(hint ? "practice.unrecognised" : "practice.unrecognised_no_hint")
       case outcome.to_sym
       when :correct then I18n.t("practice.correct")
       when :correct_aided then I18n.t("practice.correct_aided")
       when :typical_error then typical.presence || unrecognised
       when :unrecognised then closing ? I18n.t("practice.second_wrong") : unrecognised
       when :form then closing ? I18n.t("practice.second_wrong") : form(violations)
-      when :near_miss then closing ? I18n.t("practice.second_wrong") : I18n.t("practice.near_miss")
+      when :near_miss then closing ? I18n.t("practice.second_wrong") : near_miss(near)
+      when :contested then I18n.t("practice.contested")
       when :undetermined then I18n.t("practice.undetermined")
       end
     end
+
+    def near_miss(near)
+      case near&.to_sym
+      when :typo then I18n.t("practice.near_typo")
+      when :one_word then I18n.t("practice.near_one_word")
+      else I18n.t("practice.near_miss")
+      end
+    end
+
+    # The note under a right answer written as a whole sentence around the blank: only the words in place of ___ were asked.
+    def full_sentence_note(part) = I18n.t("practice.full_sentence_note", part: part)
 
     def form(violations)
       FORM_IT[Array(violations).first] || I18n.t("practice.form")

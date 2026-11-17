@@ -120,7 +120,7 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
   test "a draft written on an abandoned serve is refused as closed" do
     build_nav_world
     id = serve_for(OFFICIAL)["serve_id"]
-    travel_to(Time.current + (Practice::Rules::V2::OPEN_SERVE_HOURS + 1).hours) do
+    travel_to(Time.current + (Practice::Rules::V3::OPEN_SERVE_HOURS + 1).hours) do
       assert_equal({ "status" => "closed" }, draft_for(OFFICIAL, id, "7"))
       assert_response :conflict
     end
@@ -255,10 +255,10 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     assert_equal "12", reopened["draft"]["raw"]
     assert_equal first_key, reopened["exercise"]["item"]
 
-    # a wrong try on the second: left, one try; its solution closes it: tried
+    # a wrong try on the second: retry (answered once, can try again; D-339), one try; its solution closes it: tried
     assert_equal "unrecognised", answer_for(OFFICIAL, second, "99999")["outcome"]
     left = list_for(OFFICIAL)
-    assert_equal "left", entries(left)[second_key]["status"]
+    assert_equal "retry", entries(left)[second_key]["status"]
     assert_equal 1, entries(left)[second_key]["tried"]
     post_json(OFFICIAL, "/practice/serves/#{second['serve_id']}/solution")
     assert_response :success

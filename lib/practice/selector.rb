@@ -6,7 +6,7 @@ module Practice
   # Serving (A8.7). choose is the pure rule; next reads the student's rows, applies it and appends the
   # serve in ONE transaction (SQLite BEGIN IMMEDIATE, the Rails default) that re-reads the open serves, so
   # two tabs, an outbox retry or a reload get the same open serve and no instance is burnt twice (A8.4).
-  # There is at most one open serve per student, skill and pinned item (practice/2, docs/rules/practice-2.md).
+  # There is at most one open serve per student, skill and pinned item (practice/3, docs/rules/practice-3.md).
   #
   #   Practice::Selector.next(student:, topic_revision:, skill:, follow: nil, item: nil, advance: false, now:)
   #     # => Choice(instance, reason, parent_serve_id, error_code, serve, created)
@@ -16,7 +16,7 @@ module Practice
   # None of them: the open serve touched most recently (the first load of the page), else the next exercise.
   # Raises BadFollow (HTTP 422 bad_follow) and NotPinned (HTTP 404) as the spec says.
   module Selector
-    V2 = Rules::V2
+    V3 = Rules::V3
 
     Candidate = Data.define(:instance_id, :item_id, :item_revision_id, :fingerprint, :error_codes)
     Pick = Data.define(:candidate, :reason, :error_code, :parent_serve_id)
@@ -62,7 +62,7 @@ module Practice
     # served least recently), then the following pinned items with an unseen instance.
     def next_unseen(pool, unseen, item_last_serve, credit_by_item)
       items = pool.map(&:item_id).uniq
-      current = items.find { |i| credit_by_item.fetch(i, 0) < V2::ADVANCE_AFTER_CORRECT_UNAIDED } ||
+      current = items.find { |i| credit_by_item.fetch(i, 0) < V3::ADVANCE_AFTER_CORRECT_UNAIDED } ||
                 items.min_by.with_index { |i, pos| [ item_last_serve.fetch(i, 0), pos ] }
       rotated = items.rotate(items.index(current))
       rotated.each do |item|
@@ -163,7 +163,7 @@ module Practice
       serve = PracticeServe.create!(student: student, topic_revision: topic_revision, item_instance: instance, skill_key: skill, reason: pick.reason,
                                     parent_serve_id: pick.parent_serve_id, error_code: pick.error_code, seed: seed,
                                     shown_order_json: rekeyed.shown_order.to_json, id_map_json: rekeyed.id_map.to_json,
-                                    rules_version: V2::RULES_VERSION, created_at: now)
+                                    rules_version: V3::RULES_VERSION, created_at: now)
       Choice.new(instance, pick.reason, pick.parent_serve_id, pick.error_code, serve, true)
     end
 

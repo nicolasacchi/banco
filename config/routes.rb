@@ -112,6 +112,7 @@ Rails.application.routes.draw do
       post "practice/answers" => "practice#answer"
       post "practice/serves/:serve_id/hint" => "practice#hint", constraints: { serve_id: /\d+/ }
       post "practice/serves/:serve_id/solution" => "practice#solution", constraints: { serve_id: /\d+/ }
+      post "practice/serves/:serve_id/contest" => "practice#contest", constraints: { serve_id: /\d+/ }
       post "practice/serves/:serve_id/draft" => "practice#draft", constraints: { serve_id: /\d+/ }
       get "practice/exercises" => "practice#exercises"
       get "settings" => "settings#show"

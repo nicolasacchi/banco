@@ -20,6 +20,7 @@ const ENTRY_STATUS = {
   done: { icon: "circle-check", tone: "success" },
   tried: { icon: "restart", tone: "nearly" },
   left: { icon: "clock-paused", tone: "info" },
+  retry: { icon: "notebook-pen", tone: "nearly" },
   skipped: { icon: "next", tone: "muted" },
   now: { icon: "pin", tone: "info" }
 }
@@ -48,6 +49,7 @@ export default class extends Controller {
     this.hintsTotal = 0
     this.hintsShown = 0
     this.serving = false
+    this.contesting = false
     // The half-typed answer (D-337): `drafting` while the open exercise may take a draft; `lastSaved` is what the server holds
     // (null after a try: the tried answer then goes up as a newer draft).
     this.drafting = false
@@ -217,6 +219,8 @@ export default class extends Controller {
   async check() {
     if (!this.handle || this.busy || this.refusals.cooling(Date.now())) return
     if (this.handle.isEmpty()) return this.say(this.labels.empty)
+    // «Fai controllare» may be showing: the "saving" line below wipes it, so remember it for a refusal (see `answered`).
+    const hadContest = !!this.feedbackTarget.querySelector("#contest-button")
     this.setControls(false)
     this.say(this.labels.saving)
     clearTimeout(this.draftTimer)
@@ -225,7 +229,7 @@ export default class extends Controller {
     if (!reply) return this.serve({ advance: true })
     // The try is on the server: what stays in the box goes up as a newer draft when the student leaves it.
     this.lastSaved = null
-    this.answered(reply)
+    this.answered(reply, hadContest)
     this.refreshList()
     return null
   }
@@ -240,10 +244,12 @@ export default class extends Controller {
     }
   }
 
-  answered(reply) {
+  answered(reply, hadContest = false) {
     if (reply.status === "invalid") {
       // D-298: inert for a moment, the focus stays in the box, the answer format from the second refusal of the serve
       const serve = this.serveId
+      // A refusal is not a verdict: «Fai controllare» stays if it was showing (the server's message points at it).
+      const keepContest = hadContest
       this.refusals.record(serve, Date.now())
       if (this.refusals.showFormat(serve)) {
         this.say("")
@@ -251,6 +257,7 @@ export default class extends Controller {
       } else {
         this.say(reply.message_it)
       }
+      this.offerContest(keepContest ? ["contest"] : reply.actions)
       this.handle.focus()
       // A matching with a row left empty marks the row (the other templates have nothing to mark).
       this.handle.showMissing?.()
@@ -270,6 +277,7 @@ export default class extends Controller {
     }
     this.sayOutcome(reply, extra)
     if (reply.hint) this.addHint(reply.hint.n, reply.hint.hint_it)
+    this.offerContest(reply.actions)
     if (reply.solution) this.showSolution(reply.solution)
     this.applyActions(reply.actions)
     return null
@@ -313,6 +321,7 @@ export default class extends Controller {
     if (status === 200 && body?.solution) {
       this.say("")
       this.showSolution(body.solution)
+      this.offerContest(body.actions)
       this.applyActions(body.actions)
       this.refreshList()
     } else if (status === 409) {
@@ -322,6 +331,58 @@ export default class extends Controller {
     } else {
       this.say(this.labels.error)
       this.setControls(true)
+    }
+  }
+
+  // ---- «Fai controllare» ---------------------------------------------------------------------------
+
+  // Under the feedback: a smaller line and a text button, when the server says this answer may go to the teacher. They live
+  // inside the feedback element, so the next `say` takes them away; a refusal puts them back when they were showing (see `answered`).
+  offerContest(actions) {
+    if (!Array.isArray(actions) || !actions.includes("contest")) return
+    const inside = this.feedbackTarget.querySelector(".notice-body") || this.feedbackTarget
+    const box = document.createElement("div")
+    box.className = "contest"
+    const note = document.createElement("p")
+    note.className = "contest-note"
+    note.textContent = this.labels.contest_note
+    const button = document.createElement("button")
+    button.type = "button"
+    button.id = "contest-button"
+    button.className = "button text small contest-button"
+    button.textContent = this.labels.contest_button
+    button.addEventListener("click", () => this.contest(button))
+    box.append(note, button)
+    inside.appendChild(box)
+  }
+
+  // The answer goes to the teacher: the exercise is closed, the solution and the way on are shown, the list is drawn again.
+  async contest(button) {
+    if (!this.serveId || this.contesting) return
+    const serve = this.serveId
+    this.contesting = true
+    button.disabled = true
+    this.setControls(false)
+    try {
+      const { status, body } = await this.post(this.urls.contest(serve), {})
+      if (serve !== this.serveId) return
+      if (status === 200 && body?.status === "contested") {
+        this.close()
+        this.say(body.message_it, { tone: "info" })
+        if (body.solution) this.showSolution(body.solution)
+        this.showActions(body.actions || ["next", "back"])
+        this.refreshList()
+      } else if (status === 409) {
+        this.close()
+        this.say(this.labels.closed)
+        this.showActions(["next", "back"])
+      } else {
+        this.setControls(true)
+        this.say(this.labels.error)
+        this.offerContest(["contest"])
+      }
+    } finally {
+      this.contesting = false
     }
   }
 

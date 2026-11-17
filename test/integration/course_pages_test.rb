@@ -437,7 +437,7 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     assert_equal "unrecognised", answer["outcome"]
     assert_equal({ "n" => 1, "total" => 3, "hint_it" => "Che cosa guardi prima?" }, answer["hint"])
     assert_nil answer["solution"]
-    assert_equal %w[retry show_solution], answer["actions"]
+    assert_equal %w[retry show_solution contest], answer["actions"]
     assert_not_includes answer.to_json, "Quale regola usi?"
     reload = serve_for(OFFICIAL)
     assert_equal id, reload["serve_id"]

@@ -5,9 +5,10 @@ module Practice
   # solution events and the clock; nothing is stored. An open serve is abandoned when it is older than
   # OPEN_SERVE_HOURS or superseded (the caller says a newer serve of the same student on the same item exists).
   # call derives the Status; step says what an
-  # event does to it (table rows 1-15), so the recorder only writes what the step names.
+  # event does to it (table rows 1-18), so the recorder only writes what the step names. A contest («Fai controllare»,
+  # practice/3) is the student sending the latest try to the teacher: the try is contested, the serve closes.
   module ServeState
-    V2 = Rules::V2
+    V3 = Rules::V3
 
     Status = Data.define(:state, :closed_by, :w, :near_misses, :hints_shown, :solution_sent, :next_try_number, :actions)
 
@@ -16,8 +17,10 @@ module Practice
     # the solution_shown reason to write. auto_hint: write the next hint with auto true (hint_n).
     Step = Data.define(:result, :closes_as, :solution_reason, :auto_hint, :hint_n)
 
-    EVENTS = %i[answer hint solution_request].freeze
-    ANSWER_OUTCOMES = (Outcome::OUTCOMES + [ :invalid ]).freeze
+    EVENTS = %i[answer hint solution_request contest].freeze
+    # A contested try is the student's act on a stored try, never the outcome of an answer.
+    ANSWER_OUTCOMES = (Outcome::OUTCOMES - [ :contested ] + [ :invalid ]).freeze
+    CONTESTABLE = %i[unrecognised form].freeze
 
     module_function
 
@@ -28,17 +31,18 @@ module Practice
       tries.each do |t|
         break if closed_by
 
-        case t.outcome.to_sym
+        case contested?(t) ? :contested : t.outcome.to_sym
+        when :contested then closed_by = :contested
         when :correct, :correct_aided then closed_by = :correct
         when :typical_error
           w += 1
           closed_by = :wrong
         when :unrecognised, :form
           w += 1
-          closed_by = :wrong if w >= V2::MAX_WRONG_TRIES
+          closed_by = :wrong if w >= V3::MAX_WRONG_TRIES
         when :near_miss
           near += 1
-          closed_by = :near_miss if near > V2::MAX_NEAR_MISS_RETRIES
+          closed_by = :near_miss if near > V3::MAX_NEAR_MISS_RETRIES
         when :undetermined then closed_by = :undetermined
         else raise ArgumentError, "unknown outcome #{t.outcome.inspect}"
         end
@@ -47,13 +51,15 @@ module Practice
       closed_by ||= :solution if solutions.any? { |e| e.reason.to_s == "requested" }
       hints = events.select { |e| e.kind.to_s == "hint_shown" }.map(&:n).uniq.size
       state = if closed_by then :closed
-      elsif superseded || now - serve_time(serve) > V2::OPEN_SERVE_HOURS * 3600 then :abandoned
+      elsif superseded || now - serve_time(serve) > V3::OPEN_SERVE_HOURS * 3600 then :abandoned
       else :open
       end
       Status.new(state: state, closed_by: closed_by, w: w, near_misses: near, hints_shown: [ hints, hints_total.to_i ].min,
                  solution_sent: solutions.any?, next_try_number: state == :open ? tries.size + 1 : nil,
                  actions: actions(state, closed_by, tries.last, solutions))
     end
+
+    def contested?(try) = try.contested || try.outcome.to_sym == :contested
 
     def serve_time(serve) = serve.respond_to?(:at) ? serve.at : serve.created_at
 
@@ -62,10 +68,22 @@ module Practice
 
     def actions(state, closed_by, last, solutions)
       return [] if state == :abandoned
-      return open_actions(last) if state == :open
 
+      base = state == :open ? open_actions(last) : closed_actions(closed_by, last, solutions)
+      contest_allowed?(state, closed_by, last) ? base + %i[contest] : base
+    end
+
+    # Row 16: a contest is allowed on the latest try when it is unrecognised or form and not contested yet, on an open
+    # serve (after try 1) or on one closed `wrong` (after try 2).
+    def contest_allowed?(state, closed_by, last)
+      return false unless last && !contested?(last) && CONTESTABLE.include?(last.outcome.to_sym)
+
+      state == :open || (state == :closed && closed_by == :wrong)
+    end
+
+    def closed_actions(closed_by, last, solutions)
       case closed_by
-      when :correct, :undetermined then %i[next back]
+      when :correct, :undetermined, :contested then %i[next back]
       when :near_miss then %i[after_solution next back]
       when :solution then %i[after_solution back]
       when :wrong then wrong_actions(last, solutions)
@@ -95,6 +113,7 @@ module Practice
       case event
       when :answer then answer_step(status, outcome, hints_total)
       when :hint then hint_step(status, hint_n, hints_total)
+      when :contest then contest_step(status)
       else solution_step(status)
       end
     end
@@ -117,7 +136,7 @@ module Practice
 
     # Rows 3, 4, 6.
     def wrong_step(status, outcome, hints_total)
-      return result(:accept, closes_as: :wrong, solution_reason: "after_last_try") if status.w >= V2::MAX_WRONG_TRIES - 1
+      return result(:accept, closes_as: :wrong, solution_reason: "after_last_try") if status.w >= V3::MAX_WRONG_TRIES - 1
 
       auto = outcome == :unrecognised && status.hints_shown < hints_total
       result(:accept, auto_hint: auto, hint_n: auto ? status.hints_shown + 1 : nil)
@@ -144,6 +163,14 @@ module Practice
         end
       else result(:closed)
       end
+    end
+
+    # Rows 16, 17: a contest when `contest` is among the actions; again on a serve already closed `contested` it is
+    # a noop (the same answer); anything else is closed (HTTP 409 not_contestable).
+    def contest_step(status)
+      return result(:accept, closes_as: :contested, solution_reason: status.solution_sent ? nil : "after_contest") if status.actions.include?(:contest)
+
+      status.closed_by == :contested ? result(:noop) : result(:closed)
     end
 
     def result(kind, closes_as: nil, solution_reason: nil, auto_hint: false, hint_n: nil)

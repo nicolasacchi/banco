@@ -31,6 +31,12 @@ class GradingVectorsTest < ActiveSupport::TestCase
       assert_equal expect["method"], result.grading_method if expect["method"]
       assert_equal expect["normalized"], result.normalized if expect["normalized"]
       assert_equal expect["inverted_pairs"], JSON.parse(result.normalized)["inverted_pairs"] if expect.key?("inverted_pairs")
+      if expect.key?("observation")
+        expect["observation"] ? assert_equal(expect["observation"], result.observation, "#{vector['id']}: observation") : assert_nil(result.observation, "#{vector['id']}: observation")
+      end
+      if expect.key?("answer_part")
+        expect["answer_part"] ? assert_equal(expect["answer_part"], result.answer_part, "#{vector['id']}: answer_part") : assert_nil(result.answer_part, "#{vector['id']}: answer_part")
+      end
       assert result.message_it.present? if result.invalid?
     end
   end

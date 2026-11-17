@@ -86,6 +86,14 @@ class PracticeController < ApplicationController
     render json: result.body, status: result.http
   end
 
+  # POST /practice/serves/:serve_id/contest: «Fai controllare» (D-339), the latest wrong try goes to the teacher with a comment; the solution comes back.
+  def contest
+    return json_not_found unless own_visible_serve?(params[:serve_id])
+
+    result = Practice::Contest.new(student: acting_student, course_view: course_view).call(serve_id: params[:serve_id])
+    render json: result.body, status: result.http
+  end
+
   private
 
   def item_param = params[:item].is_a?(String) ? params[:item].presence : nil

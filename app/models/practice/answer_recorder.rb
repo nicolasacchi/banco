@@ -26,7 +26,7 @@ module Practice
       return invalid(Grading::Result::MESSAGES_IT["empty"]) if raw.strip.empty?
       return invalid(Grading::Result::MESSAGES_IT["unparseable"]) if raw.bytesize > MAX_RAW_BYTES
 
-      serve = PracticeServe.find_by(id: serve_id, student_id: @student.id) or return not_found
+      serve = PracticeServe.includes(:events, attempts: :gradings, item_instance: { item_revision: :item }).find_by(id: serve_id, student_id: @student.id) or return not_found
       existing = PracticeAttempt.find_by(client_attempt_id: client_id)
       return existing.practice_serve_id == serve.id && existing.student_id == @student.id ? stored(serve, existing) : not_found if existing
       unless Loader.status_of(serve, now: @clock.now).state == :open
@@ -38,6 +38,7 @@ module Practice
       source = SOURCES.include?(source.to_s) ? source.to_s : "text"
       instance = serve.item_instance
       spec = Grading::Spec.from_instance(instance)
+      return same_answer(serve) if repeated?(serve, spec, raw) # D-339: not a try, nothing stored
       begin
         result = Grading.grade(instance, raw, source: source, id_map: serve.id_map_json.present? ? JSON.parse(serve.id_map_json) : nil)
       rescue Grading::Expression::Unavailable
@@ -66,6 +67,7 @@ module Practice
       begin
         attempts += 1
         attempt = write(serve, client_id, raw, source, result, key)
+        return same_answer(PracticeServe.includes(:events, attempts: :gradings, item_instance: { item_revision: :item }).find(serve.id)) if attempt == :same
         # no longer open: a twin of this very answer may have closed it a moment ago
         attempt ||= PracticeAttempt.find_by(client_attempt_id: client_id, student_id: @student.id, practice_serve_id: serve.id)
         return closed unless attempt
@@ -80,7 +82,7 @@ module Practice
       end
     end
 
-    # One short transaction. Nil when the serve is no longer open.
+    # One short transaction. Nil when the serve is no longer open; :same when an identical answer was stored since the check in call.
     def write(serve, client_id, raw, source, result, key)
       now = @clock.now
       PracticeAttempt.transaction do
@@ -88,9 +90,13 @@ module Practice
         status = Loader.status_of(serve, now: now)
         next nil unless status.state == :open
 
+        spec = Grading::Spec.from_instance(serve.item_instance)
+        next :same if repeated?(serve, spec, raw)
+
         hints_total = Instances.hints(serve.item_instance).size
         aided = ServeState.aided?(reason: serve.reason, w: status.w, hints_shown: status.hints_shown)
-        outcome = Outcome.call(evidence_key: key, aided: aided)
+        near = Instances.near_kind(spec, key, result.normalized.presence || raw) # the loader derives it the same way from the stored row
+        outcome = Outcome.call(evidence_key: key, aided: aided, near: near)
         step = ServeState.step(status, :answer, outcome: outcome, hints_total: hints_total)
         attempt = PracticeAttempt.create!(student: @student, practice_serve: serve, try_number: serve.attempts.map(&:try_number).max.to_i + 1,
                                           client_attempt_id: client_id, raw: raw, source: source, hints_before: status.hints_shown,
@@ -107,6 +113,23 @@ module Practice
                             payload_json: payload.to_json, at: now, created_at: now)
     end
 
+    # The same answer as a try this serve already has: the raw stripped and its spaces collapsed, a text answer as the grader normalizes it.
+    def repeated?(serve, spec, raw)
+      mine = answer_key(spec, raw)
+      serve.attempts.any? { |a| answer_key(spec, a.raw) == mine }
+    end
+
+    def answer_key(spec, raw)
+      text = raw.to_s.gsub(/[[:space:]]+/, " ").strip
+      spec.component == "normalized_text" ? Grading::Closed::Text.normalize(text, case_sensitive: spec.case_sensitive) : text
+    end
+
+    # Refused, not a try: the message offers «Fai controllare» only while a contest is allowed on the serve now.
+    def same_answer(serve)
+      allowed = Loader.status_of(serve, now: @clock.now).actions.include?(:contest)
+      invalid(I18n.t(allowed ? "practice.same_answer" : "practice.same_answer_plain"))
+    end
+
     # The answer of A9.3 rebuilt from rows: what this attempt did, the same on the first reply and on a repeat.
     def stored(serve, attempt)
       serve = PracticeServe.includes(:events, attempts: :gradings, item_instance: { item_revision: :item }).find(serve.id)
@@ -116,14 +139,15 @@ module Practice
       upto = serve.attempts.sort_by(&:try_number).select { |a| a.try_number <= attempt.try_number }
       grades = upto.to_h { |a| [ a.id, Instances.grade(a, spec) ] }
       grade = grades.fetch(attempt.id) or return Result.new(200, { status: "invalid", message_it: Grading::Result::MESSAGES_IT["unparseable"] })
-      tries = ->(list) { list.filter_map { |a| g = grades[a.id] and ServeTry.new(a.try_number, g.outcome) } }
+      tries = ->(list) { list.filter_map { |a| g = grades[a.id] and ServeTry.new(a.try_number, as_answered(g, a)) } }
       events = serve.events.sort_by(&:id).map { |e| serve_event(e) }
       hints_total = Instances.hints(instance).size
       at = attempt.answered_at
       before = ServeState.call(serve: serve, tries: tries.(upto[0...-1]), events: events.select { |e| e.at < at }, hints_total: hints_total, now: at)
       after = ServeState.call(serve: serve, tries: tries.(upto), events: events.select { |e| e.at <= at }, hints_total: hints_total, now: at)
       made = events.select { |e| e.at == at }
-      body = graded_body(instance, grade, attempt, before, after, made)
+      body = graded_body(instance, spec, grade, attempt, before, after, made)
+      body[:attempt_id] = attempt.id
       body[:skill] = skill_block(serve, attempt)
       body[:actions] = Payload.actions(after)
       body[:hint] = (h = made.find { |e| e.kind == "hint_shown" && e.auto }) ? Payload.hint(instance, h.n) : nil
@@ -131,8 +155,13 @@ module Practice
       Result.new(200, body)
     end
 
-    def graded_body(instance, grade, attempt, before, after, made)
-      outcome = grade.outcome
+    # The outcome the try had when it was answered: a contest comes later and changes the try's outcome for the engine, not this reply.
+    def as_answered(grade, attempt)
+      grade.contested ? Outcome.call(evidence_key: grade.key, aided: attempt.aided, near: grade.near) : grade.outcome
+    end
+
+    def graded_body(instance, spec, grade, attempt, before, after, made)
+      outcome = as_answered(grade, attempt)
       closing = case outcome
       when :unrecognised, :form then before.w >= 1
       when :near_miss then after.closed_by == :near_miss
@@ -141,9 +170,22 @@ module Practice
       code = grade.codes.first
       { status: "graded", outcome: outcome.to_s, try_number: attempt.try_number,
         message_it: Messages.feedback(outcome, typical: code && Instances.message_for(instance, code), violations: grade.violations, closing: closing,
-                                    hint: made.any? { |e| e.kind == "hint_shown" && e.auto }),
-        note_it: %i[correct correct_aided].include?(outcome) ? Messages.note(grade.key, violations: grade.violations, pair_note: grade.pair_note) : nil,
+                                    hint: made.any? { |e| e.kind == "hint_shown" && e.auto }, near: grade.near),
+        note_it: %i[correct correct_aided].include?(outcome) ? note(spec, grade, attempt.raw) : nil,
         error_code: outcome == :typical_error ? code : nil }
+    end
+
+    # The credit's own note, then (D-339) the full-sentence one: the whole sentence was written where only the words for the blank were asked.
+    def note(spec, grade, raw)
+      part = full_sentence_part(spec, raw)
+      [ Messages.note(grade.key, violations: grade.violations, pair_note: grade.pair_note), part && Messages.full_sentence_note(part) ].compact.join(" ").presence
+    end
+
+    # The words written between the frame of the stem's `___` blank, as typed; nil when the answer is not a whole sentence (the grader's own rule).
+    def full_sentence_part(spec, raw)
+      return nil unless spec.component == "normalized_text" && !(spec.profile.is_a?(Hash) && spec.profile["name"] == "binary")
+
+      Grading::Frame.from_stem(spec.display["stem_it"])&.part(raw)
     end
 
     # The skill's state and "perché" after this try, and whether this try changed the state.

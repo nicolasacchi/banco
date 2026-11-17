@@ -18,14 +18,19 @@ module Grading
       "zero_denominator" => "Il denominatore non può essere zero.",
       "number_too_large" => "Il numero è troppo grande o troppo piccolo: scrivilo in un altro modo.",
       "negative_denominator" => "Il denominatore non può essere negativo: scrivi il segno davanti al numeratore.",
-      "signed_fraction_part" => "In un numero misto il segno va solo nella parte intera."
+      "signed_fraction_part" => "In un numero misto il segno va solo nella parte intera.",
+      "blank_copied" => "Al posto di ___ scrivi le parole che mancano.",
+      "not_in_frame" => "Scrivi solo le parole che vanno al posto di ___."
     }.freeze
 
+    # observation and answer_part are NOT stored columns (to_attributes stays columns only): "full_sentence" says the
+    # student wrote the whole sentence around a `___` blank (D-339) and answer_part is the words she wrote in place of
+    # the blank, as typed; the stored `normalized` is then the normalized part, which is what was graded.
     attr_reader :verdict, :error_codes, :form_violations, :normalized, :grading_method, :grader,
-                :checker_version, :ce_version, :invalid_code, :reason
+                :checker_version, :ce_version, :invalid_code, :reason, :observation, :answer_part
 
     def initialize(verdict:, grader:, error_codes: [], form_violations: [], normalized: nil, grading_method: nil,
-                   checker_version: nil, ce_version: nil, invalid_code: nil, reason: nil)
+                   checker_version: nil, ce_version: nil, invalid_code: nil, reason: nil, observation: nil, answer_part: nil)
       @verdict = verdict
       @grader = grader
       @error_codes = error_codes
@@ -36,6 +41,8 @@ module Grading
       @ce_version = ce_version
       @invalid_code = invalid_code
       @reason = reason
+      @observation = observation
+      @answer_part = answer_part
     end
 
     def self.invalid(code, grader:, reason: nil)
@@ -65,8 +72,17 @@ module Grading
       }
     end
 
+    # The same result for a whole sentence written around a blank: +part+ is what she wrote in place of the blank.
+    def full_sentence(part)
+      dup.tap do |copy|
+        copy.instance_variable_set(:@observation, "full_sentence")
+        copy.instance_variable_set(:@answer_part, part)
+      end
+    end
+
     def ==(other)
-      other.is_a?(Result) && to_attributes == other.to_attributes && invalid_code == other.invalid_code
+      other.is_a?(Result) && to_attributes == other.to_attributes && invalid_code == other.invalid_code &&
+        observation == other.observation && answer_part == other.answer_part
     end
   end
 end

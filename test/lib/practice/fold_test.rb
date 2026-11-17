@@ -1,7 +1,7 @@
 require "test_helper"
 require_relative "../../support/practice_engine_helper"
 
-# The skill states of practice/2 (A8.5, A8.6): an exhaustive table of short histories.
+# The skill states of practice/3 (A8.5, A8.6): an exhaustive table of short histories.
 class PracticeFoldTest < ActiveSupport::TestCase
   include PracticeEngineHelper
 
@@ -61,6 +61,35 @@ class PracticeFoldTest < ActiveSupport::TestCase
     assert_equal "in_study", s.state
     assert_equal 0, s.counts[:wrong]
     assert_equal({ near_miss: 1, undetermined: 1 }, s.counts.slice(:near_miss, :undetermined))
+  end
+
+  test "practice/3: a contested try counts neither way: no W, no credit, no to_review, not a near miss either" do
+    s = fold([ try_at(outcome: :unrecognised, serve: 1), try_at(outcome: :contested, serve: 1, try_number: 2) ])
+    assert_equal "in_study", s.state
+    assert_equal 1, s.counts[:wrong] # the first try alone
+    assert_equal [ 2, 0, 0, 0 ], s.counts.values_at(:tries, :correct_unaided, :near_miss, :undetermined)
+    only = fold([ try_at(outcome: :contested) ])
+    assert_equal [ "in_study", 0, 0 ], [ only.state, only.counts[:wrong], only.counts[:unrecognised] ]
+    assert_equal :N, Practice::Outcome.evidence(:contested)
+    assert_equal :N, try_at(outcome: :contested).evidence
+    assert try_at(outcome: :contested).contested
+    assert_not try_at(outcome: :unrecognised).contested
+  end
+
+  test "practice/3: a contested try does not send a demonstrated or consolidated skill to to_review, and is no credit" do
+    base = demonstrating_tries
+    assert_equal "demonstrated", state_of(base + [ try_at(day: 5, outcome: :contested) ])
+    # the same try as an unaided wrong one would have
+    assert_equal "to_review", state_of(base + [ try_at(day: 5, outcome: :unrecognised) ])
+    # and a contested try is not a C_unaided: it does not demonstrate
+    assert_equal "in_study", state_of([ try_at(day: 0), try_at(day: 1), try_at(day: 2, outcome: :contested) ])
+  end
+
+  test "practice/3: a near try (a typo or one word off) is N: no wrong, not to_review" do
+    base = demonstrating_tries
+    assert_equal "demonstrated", state_of(base + [ try_at(day: 5, outcome: :near_miss) ])
+    s = fold([ try_at(outcome: :near_miss), try_at(outcome: :near_miss, try_number: 2) ])
+    assert_equal [ 0, 2 ], [ s.counts[:wrong], s.counts[:near_miss] ]
   end
 
   test "the days are Rome calendar days: 2026-10-25 has 25 hours" do

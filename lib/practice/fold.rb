@@ -12,7 +12,7 @@ module Practice
   # serves with no try (a fingerprint counts as served from its first serve); skills: names skills to
   # report as not_seen when nothing is known of them.
   module Fold
-    V2 = Rules::V2
+    V3 = Rules::V3
     DAY = 86_400
 
     Machine = Struct.new(:state, :previous, :since, :demonstrated_at, :demonstrated_day, :consolidated_at, :consolidated_day,
@@ -66,8 +66,8 @@ module Practice
 
       m.fingerprints[try.fingerprint] ||= try.low_guess
       m.days << try.day
-      return unless m.fingerprints.size >= V2::DEMONSTRATE_CORRECT_UNAIDED && m.days.size >= V2::DEMONSTRATE_DISTINCT_DAYS &&
-                    m.fingerprints.values.count(true) >= V2::DEMONSTRATE_MIN_LOW_GUESS
+      return unless m.fingerprints.size >= V3::DEMONSTRATE_CORRECT_UNAIDED && m.days.size >= V3::DEMONSTRATE_DISTINCT_DAYS &&
+                    m.fingerprints.values.count(true) >= V3::DEMONSTRATE_MIN_LOW_GUESS
 
       m.state = "demonstrated"
       m.since = m.demonstrated_at = try.at
@@ -75,7 +75,7 @@ module Practice
     end
 
     def demonstrated(m, try, credit, aided, first_serve)
-      if credit && first_serve[try.fingerprint] == try.serve_id && try.at - m.demonstrated_at >= V2::CONSOLIDATE_AFTER_DAYS * DAY
+      if credit && first_serve[try.fingerprint] == try.serve_id && try.at - m.demonstrated_at >= V3::CONSOLIDATE_AFTER_DAYS * DAY
         m.state = "consolidated"
         m.since = m.consolidated_at = try.at
         m.consolidated_day = try.day
@@ -96,7 +96,7 @@ module Practice
       return unless credit
 
       m.review_fingerprints << try.fingerprint
-      return if m.review_fingerprints.size < V2::REVIEW_BACK_CORRECT
+      return if m.review_fingerprints.size < V3::REVIEW_BACK_CORRECT
 
       m.state = m.previous
       m.since = try.at
@@ -107,7 +107,7 @@ module Practice
       c = { serves: (tries.map(&:serve_id) + serves.map(&:id)).uniq.size, tries: tries.size,
             correct_unaided: 0, correct_aided: 0, wrong: 0, typical: Hash.new(0), unrecognised: 0, near_miss: 0, undetermined: 0,
             hints: serves.sum(&:hints_shown), solutions_requested: serves.count(&:solution_requested),
-            abandoned: serves.count { |s| s.status.state == :abandoned }, seconds: tries.sum { |t| [ t.seconds.to_i, V2::TIME_CAP_SECONDS ].min } }
+            abandoned: serves.count { |s| s.status.state == :abandoned }, seconds: tries.sum { |t| [ t.seconds.to_i, V3::TIME_CAP_SECONDS ].min } }
       tries.each do |t|
         c[:wrong] += 1 if t.evidence == :W
         case t.outcome
@@ -127,7 +127,7 @@ module Practice
     def why(m, seed)
       case m.state
       when "in_study"
-        { code: :in_study, n: [ m.fingerprints.size, V2::DEMONSTRATE_CORRECT_UNAIDED ].min, d: [ m.days.size, V2::DEMONSTRATE_DISTINCT_DAYS ].min }
+        { code: :in_study, n: [ m.fingerprints.size, V3::DEMONSTRATE_CORRECT_UNAIDED ].min, d: [ m.days.size, V3::DEMONSTRATE_DISTINCT_DAYS ].min }
       when "demonstrated"
         if m.fingerprints.empty? && seed&.state.to_s == "demonstrated"
           { code: seed.implied ? :seed_implied : :seed_demonstrated, date: m.demonstrated_day }

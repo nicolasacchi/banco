@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "about": "Vectors of Grading::NearText.kind (D-339): the answer, the candidates (the key and the accepted forms), case_sensitive (default false) and the expected kind: typo, one_word or null. All content is synthetic.",
+  "cases": [
+    {"id": "typo-long-word-two-edits", "answer": "neiborhood", "candidates": ["neighborhood"], "expect": "typo"},
+    {"id": "typo-long-word-one-edit", "answer": "neighbourhood", "candidates": ["neighborhood"], "expect": "typo"},
+    {"id": "typo-one-letter-missing", "answer": "libary", "candidates": ["library"], "expect": "typo"},
+    {"id": "typo-transposition-is-one-edit", "answer": "recieve", "candidates": ["receive"], "expect": "typo"},
+    {"id": "typo-apostrophe-left-out-in-a-sentence", "answer": "My school doesnt have a library", "candidates": ["My school doesn't have a library"], "expect": "typo"},
+    {"id": "typo-against-the-second-candidate", "answer": "libary", "candidates": ["book", "library"], "expect": "typo"},
+    {"id": "typo-trailing-punctuation-ignored", "answer": "Libary.", "candidates": ["library"], "expect": "typo"},
+    {"id": "typo-seven-letters-two-edits-is-too-far", "answer": "lbrry", "candidates": ["library"], "expect": null},
+    {"id": "typo-two-words-differ", "answer": "Mi school", "candidates": ["My schoool"], "expect": null},
+    {"id": "grammar-is-for-are", "answer": "is", "candidates": ["are"], "expect": null},
+    {"id": "grammar-are-for-is", "answer": "are", "candidates": ["is"], "expect": null},
+    {"id": "grammar-substitution-in-a-sentence", "answer": "He are tall", "candidates": ["He is tall"], "expect": null},
+    {"id": "short-word-am-an", "answer": "am", "candidates": ["an"], "expect": null},
+    {"id": "short-word-an-am", "answer": "an", "candidates": ["am"], "expect": null},
+    {"id": "short-word-in-a-sentence", "answer": "My cousins is", "candidates": ["My cousins are"], "expect": null},
+    {"id": "one-word-missing", "answer": "Has Tom", "candidates": ["Has Tom got"], "expect": "one_word"},
+    {"id": "one-word-missing-first", "answer": "Tom got", "candidates": ["Has Tom got"], "expect": "one_word"},
+    {"id": "one-word-added", "answer": "Has Tom a got", "candidates": ["Has Tom got"], "expect": "one_word"},
+    {"id": "one-word-missing-punctuation-ignored", "answer": "Has Tom?", "candidates": ["Has Tom got"], "expect": "one_word"},
+    {"id": "one-word-against-an-accepted-form", "answer": "Has Tom", "candidates": ["Has he got", "Has Tom got"], "expect": "one_word"},
+    {"id": "one-word-two-missing-is-not-near", "answer": "Has", "candidates": ["Has Tom got"], "expect": null},
+    {"id": "one-word-case-ignored-by-default", "answer": "has tom", "candidates": ["Has Tom got"], "expect": "one_word"},
+    {"id": "one-word-case-counts-when-asked", "answer": "has tom", "candidates": ["Has Tom got"], "case_sensitive": true, "expect": null},
+    {"id": "equal-is-not-near", "answer": "Has Tom got", "candidates": ["Has Tom got"], "expect": null},
+    {"id": "empty-answer", "answer": "  ", "candidates": ["Has Tom got"], "expect": null},
+    {"id": "no-candidates", "answer": "Has Tom", "candidates": [], "expect": null}
+  ]
+}

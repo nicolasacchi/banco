@@ -53,10 +53,10 @@ class PracticeAnswerRecorderTest < ActiveSupport::TestCase
   test "row 3: a wrong answer gives the unrecognised message, the first hint (auto) and a retry" do
     c = serve!
     b = body(answer!(c, wrong_raw))
-    assert_equal [ "unrecognised", "Questa risposta non corrisponde a un errore che conosco. Ecco un aiuto: riprova." ], [ b[:outcome], b[:message_it] ]
+    assert_equal [ "unrecognised", "Non è ancora giusta. Leggi l'aiuto e riprova." ], [ b[:outcome], b[:message_it] ]
     assert_equal({ n: 1, total: 3, hint_it: "Che cosa guardi prima?" }, b[:hint])
     assert_nil b[:solution]
-    assert_equal %w[retry show_solution], b[:actions]
+    assert_equal %w[retry show_solution contest], b[:actions]
     assert_equal({ "n" => 1, "auto" => true }, JSON.parse(c.serve.events.first.payload_json))
   end
 
@@ -74,11 +74,11 @@ class PracticeAnswerRecorderTest < ActiveSupport::TestCase
   test "row 6: a second wrong answer closes the serve with the solution and the second_wrong message" do
     c = serve!
     answer!(c, wrong_raw)
-    b = body(answer!(c, wrong_raw))
+    b = body(answer!(c, other_wrong_raw))
     assert_equal [ "unrecognised", "Non è ancora giusta. Guarda la soluzione, poi prova un esercizio simile." ], [ b[:outcome], b[:message_it] ]
     assert b[:solution]
     assert_nil b[:hint]
-    assert_equal %w[after_solution back], b[:actions]
+    assert_equal %w[after_solution back contest], b[:actions]
   end
 
   test "row 6 with a typical error as the second try keeps the catalogue message and offers Prova questo" do
@@ -148,7 +148,7 @@ class PracticeAnswerRecorderTest < ActiveSupport::TestCase
 
   test "409 when the serve is abandoned (14 days)" do
     c = serve!
-    advance(Practice::Rules::V2::OPEN_SERVE_HOURS * 3600 + 1)
+    advance(Practice::Rules::V3::OPEN_SERVE_HOURS * 3600 + 1)
     assert_equal 409, recorder.call(serve_id: c.serve.id, client_attempt_id: "late-answer-1", raw: correct_raw(c), source: "text").http
   end
 
@@ -264,7 +264,7 @@ class PracticeAnswerRecorderTest < ActiveSupport::TestCase
     assert_equal [ "near_miss", %w[retry] ], [ one[:outcome], one[:actions] ]
     assert_equal "Controlla come l'hai scritta: forse c'è un errore di battitura.", one[:message_it]
     assert_nil one[:solution]
-    two = answer!(c, "giardnio").body
+    two = answer!(c, "giardinoo").body
     assert_equal [ "near_miss", %w[after_solution next back] ], [ two[:outcome], two[:actions] ]
     assert two[:solution]
     assert_equal "Non è ancora giusta. Guarda la soluzione, poi prova un esercizio simile.", two[:message_it]

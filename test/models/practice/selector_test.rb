@@ -12,7 +12,7 @@ class PracticeSelectorTest < ActiveSupport::TestCase
     choice = serve!
     assert_equal [ "next", true ], [ choice.reason, choice.created ]
     assert_equal @revisions.first.id, choice.instance.item_revision_id
-    assert_equal [ "practice/2", @skill, @student.id, @clock.now ], choice.serve.then { |s| [ s.rules_version, s.skill_key, s.student_id, s.created_at ] }
+    assert_equal [ "practice/3", @skill, @student.id, @clock.now ], choice.serve.then { |s| [ s.rules_version, s.skill_key, s.student_id, s.created_at ] }
     assert_kind_of Integer, choice.serve.seed
     assert_nil choice.parent_serve_id
     assert_nil choice.error_code
@@ -62,7 +62,7 @@ class PracticeSelectorTest < ActiveSupport::TestCase
       assert_equal "next", choice.reason
       seen << choice.instance.fingerprint
       answer!(choice, wrong_raw) # wrong, then closed by a second wrong below
-      answer!(choice, wrong_raw)
+      answer!(choice, other_wrong_raw)
     end
     assert_equal 24, seen.uniq.size
     twenty_fifth = serve!
@@ -107,7 +107,7 @@ class PracticeSelectorTest < ActiveSupport::TestCase
 
   test "when an item has no unseen instance the next pinned item is used" do
     pin_items(2, 2)
-    seen = Array.new(3) { c = serve!; answer!(c, wrong_raw); answer!(c, wrong_raw); c.instance.item_revision_id }
+    seen = Array.new(3) { c = serve!; answer!(c, wrong_raw); answer!(c, other_wrong_raw); c.instance.item_revision_id }
     assert_equal [ @revisions.first.id, @revisions.first.id, @revisions.second.id ], seen
   end
 
@@ -178,7 +178,7 @@ class PracticeSelectorTest < ActiveSupport::TestCase
     pin_items(2, 1)
     first = serve!
     answer!(first, wrong_raw)
-    answer!(first, wrong_raw) # closed, solution sent
+    answer!(first, other_wrong_raw) # closed, solution sent
     choice = serve!(follow: { serve_id: first.serve.id, kind: "after_solution" })
     assert_equal [ "next", first.serve.id, @revisions.second.id ], [ choice.reason, choice.parent_serve_id, choice.instance.item_revision_id ]
   end
@@ -210,7 +210,7 @@ class PracticeSelectorTest < ActiveSupport::TestCase
   test "Prova questo is refused after a wrong that was not typical" do
     c = serve!
     answer!(c, wrong_raw)
-    answer!(c, wrong_raw)
+    answer!(c, other_wrong_raw)
     assert_raises(Practice::Selector::BadFollow) { serve!(follow: { serve_id: c.serve.id, kind: "prova_questo" }) }
     choice = serve!(follow: { serve_id: c.serve.id, kind: "after_solution" })
     assert_equal "after_solution", choice.reason
@@ -237,7 +237,7 @@ class PracticeSelectorTest < ActiveSupport::TestCase
     assert_equal map.keys.sort, JSON.parse(c.serve.shown_order_json).fetch("options").size.times.map { |i| "o#{i + 1}" }
   end
 
-  # ---- practice/2: one open serve per item, pick an item, advance, resume ----
+  # ---- practice/3: one open serve per item, pick an item, advance, resume ----
 
   def item_key(n) = @revisions[n].item.key
   def item_of(choice) = choice.instance.item_revision.item_id
@@ -276,7 +276,7 @@ class PracticeSelectorTest < ActiveSupport::TestCase
     served = Array.new(12) do
       c = serve!(item: item_key(0))
       answer!(c, wrong_raw)
-      answer!(c, wrong_raw)
+      answer!(c, other_wrong_raw)
       c
     end
     assert_equal 12, served.map { |c| c.instance.fingerprint }.uniq.size

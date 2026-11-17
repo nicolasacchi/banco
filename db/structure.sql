@@ -707,7 +707,29 @@ CREATE TRIGGER practice_drafts_no_update BEFORE UPDATE ON practice_drafts
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER practice_drafts_no_delete BEFORE DELETE ON practice_drafts
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "practice_contests" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "student_id" integer NOT NULL, "practice_serve_id" integer NOT NULL, "practice_attempt_id" integer NOT NULL, "comment_id" integer, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_491c0d334f"
+FOREIGN KEY ("student_id")
+  REFERENCES "students" ("id")
+, CONSTRAINT "fk_rails_01a1447e86"
+FOREIGN KEY ("practice_serve_id")
+  REFERENCES "practice_serves" ("id")
+, CONSTRAINT "fk_rails_860ffce831"
+FOREIGN KEY ("practice_attempt_id")
+  REFERENCES "practice_attempts" ("id")
+, CONSTRAINT "fk_rails_45e3ee521e"
+FOREIGN KEY ("comment_id")
+  REFERENCES "comments" ("id")
+);
+CREATE INDEX "index_practice_contests_on_student_id" ON "practice_contests" ("student_id") /*application='Banco'*/;
+CREATE INDEX "index_practice_contests_on_practice_serve_id" ON "practice_contests" ("practice_serve_id") /*application='Banco'*/;
+CREATE UNIQUE INDEX "index_practice_contests_on_practice_attempt_id" ON "practice_contests" ("practice_attempt_id") /*application='Banco'*/;
+CREATE INDEX "index_practice_contests_on_comment_id" ON "practice_contests" ("comment_id") /*application='Banco'*/;
+CREATE TRIGGER practice_contests_no_update BEFORE UPDATE ON practice_contests
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER practice_contests_no_delete BEFORE DELETE ON practice_contests
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261117100000'),
 ('20261116100000'),
 ('20261115120001'),
 ('20261115100001'),

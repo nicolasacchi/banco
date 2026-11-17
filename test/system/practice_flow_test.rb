@@ -23,7 +23,13 @@ class PracticeFlowTest < ApplicationSystemTestCase
   # The number skill of the list tests has three pinned items; every other skill has one.
   NUMBER_KEYS = %w[flow-number flow-number-2 flow-number-3].freeze
   MISSING_ROW = "Manca una risposta: scegli una risposta per ogni riga, poi controlla.".freeze
-  UNRECOGNISED = "Questa risposta non corrisponde a un errore che conosco. Ecco un aiuto: riprova.".freeze
+  UNRECOGNISED = "Non è ancora giusta. Leggi l'aiuto e riprova.".freeze
+  # The skill with a sentence around a blank (D-339): the key «never eat» goes in the place of ___.
+  SENTENCE_STEM = "Negativa: My parents ___ meat.".freeze
+  SENTENCE_KEY = "never eat".freeze
+  CONTESTED = "Ho mandato la tua risposta al docente: ti risponde in «I miei commenti». Intanto ecco la soluzione: confrontala con la tua.".freeze
+  SAME_ANSWER = "È la stessa risposta di prima. Cambia qualcosa, oppure premi «Fai controllare».".freeze
+  CONTEST_NOTE = "Pensi che la tua risposta sia giusta? Premi «Fai controllare»: la vede il docente.".freeze
 
   WATCH = <<~JS.freeze
     (() => {
@@ -61,18 +67,19 @@ class PracticeFlowTest < ApplicationSystemTestCase
 
   def skill_of(kind) = kind == "number" ? SKILL : "math.flow-#{kind.tr('_', '-')}"
 
-  def build_flow_world(approve: true, release: true, number_items: 1)
+  def build_flow_world(approve: true, release: true, number_items: 1, sentence: false)
     build_course
-    skills = KINDS.map { |kind| skill_of(kind) }
+    kinds = sentence ? KINDS + [ "sentence" ] : KINDS
+    skills = kinds.map { |kind| skill_of(kind) }
     @course = build_course_map(skills: [], topics: [ { key: TOPIC, kind: "ripasso", title_it: TOPIC_TITLE, skills: skills, minutes: 30, term: 1, after: [] } ])
     @lesson = Lesson.create!(subject: @subject, key: TOPIC, kind: "ripasso")
     @lesson_revision = LessonRevision.create!(lesson: @lesson, seq: 1, source_md: "---\n", source_sha256: "0" * 64, rules_version: Validation::Rules.version.to_s,
                                               warnings_json: "[]", body_json: JSON.generate(lesson_body.merge(skills: skills)))
-    revisions = KINDS.to_h { |kind| [ kind, [ make_flow_item(kind) ] ] }
+    revisions = kinds.to_h { |kind| [ kind, [ make_flow_item(kind) ] ] }
     (2..number_items).each { |n| revisions["number"] << make_flow_item("number", n) }
     @topic_revision = TopicRevision.create!(lesson: @lesson, seq: 1, course_revision: @course, lesson_revision: @lesson_revision,
                                             body_json: JSON.generate(schema: "banco.topic/1", key: TOPIC, intro_it: "Qui impari a risolvere le equazioni.",
-                                                                     practice: KINDS.map { |kind| { skill: skill_of(kind), items: revisions[kind].map { |r| { item: r.item.key, revision: r.id } } } }))
+                                                                     practice: kinds.map { |kind| { skill: skill_of(kind), items: revisions[kind].map { |r| { item: r.item.key, revision: r.id } } } }))
     @official = practice_student("student")
     @trial = practice_student("prova-1")
     approve_topic!(@topic_revision) if approve
@@ -81,18 +88,25 @@ class PracticeFlowTest < ApplicationSystemTestCase
 
   def make_flow_item(kind, n = 1)
     item = Item.create!(subject: @subject, key: n == 1 ? "flow-#{kind.tr('_', '-')}" : "flow-#{kind.tr('_', '-')}-#{n}", kind: "practice_item")
-    body = { schema: "banco.item/1", schema_version: 1, kind: "practice_item", subject: "math", skill: skill_of(kind), component: kind, level: 1, expected_seconds: 60,
-             prompt: { stem_it: ui_stem(kind) }, hints_it: HINTS,
+    component = kind == "sentence" ? "normalized_text" : kind
+    stem = kind == "sentence" ? SENTENCE_STEM : ui_stem(kind)
+    body = { schema: "banco.item/1", schema_version: 1, kind: "practice_item", subject: "math", skill: skill_of(kind), component: component, level: 1, expected_seconds: 60,
+             prompt: { stem_it: stem }, hints_it: HINTS,
              error_catalogue: [ { code: "adds_wrong", message_it: "Hai sbagliato un segno." }, { code: "odd_pick", message_it: "Hai scelto un numero dispari." } ] }
     body[:form] = [ "lowest_terms" ] if kind == "fraction"
     revision = ItemRevision.create!(item: item, seq: 1, body_json: JSON.generate(body), file_sessions_json: "{}")
     ItemValidation.create!(item_revision: revision, seq: 1, status: "passed", codes_json: "[]")
     6.times do |i|
-      spec = ui_instance_spec(kind, i)
+      spec = kind == "sentence" ? sentence_spec : ui_instance_spec(kind, i)
       ItemInstance.create!(item_revision: revision, seed: i + 1, display_json: spec[:display].to_json, answer_json: spec[:answer].to_json, errors_json: spec[:errors].to_json,
                            hints_json: JSON.generate(HINTS), solution_json: spec[:solution].to_json, fingerprint: Digest::SHA256.hexdigest("flow-#{kind}-#{n}-#{i}"))
     end
     revision
+  end
+
+  # An instance whose stem holds the frame: the answer is the words in the place of ___.
+  def sentence_spec
+    { display: { stem_it: SENTENCE_STEM }, answer: SENTENCE_KEY, errors: [], solution: { steps: [ { text_it: "Si fa il conto." } ], final: "My parents never eat meat." } }
   end
 
   # ---- the actors ---------------------------------------------------------------------------------------
@@ -473,6 +487,153 @@ class PracticeFlowTest < ApplicationSystemTestCase
     assert_clean "the outbox"
   end
 
+  # ---- «Fai controllare», the same answer, a whole sentence, «Ci sei quasi» (D-339) ---------------------
+
+  def sentence_box = find("input[type=text][lang]")
+  def tries_of(serve) = serve.attempts.order(:try_number)
+
+  def type_and_check(text)
+    sentence_box.set(text)
+    click_button "Controlla"
+  end
+
+  # The line under the message is smaller than the message; the button is there.
+  def assert_contest_offered
+    assert_selector "#feedback .contest-note", text: CONTEST_NOTE
+    assert_selector "#feedback #contest-button", text: "Fai controllare"
+    sizes = page.evaluate_script("[document.querySelector('#feedback .feedback-text'), document.querySelector('#feedback .contest-note')].map(function (e) { return parseFloat(getComputedStyle(e).fontSize) })")
+    assert_operator sizes[1], :<, sizes[0], "the contest line is smaller than the message"
+  end
+
+  def assert_contest_written(serve, raw)
+    contests = PracticeContest.where(practice_serve_id: serve.id)
+    assert_equal 1, contests.count
+    assert_equal acting_student.id, contests.first.student_id
+    if @base == PREVIEW
+      assert_equal 0, Comment.count, "the preview writes no comment"
+    else
+      wait_until { Comment.count == 1 }
+      visit "/comments"
+      assert_selector ".comment-item .comment-mine", text: "La mia risposta, secondo me giusta: «#{raw}»"
+    end
+  end
+
+  # A wrong typed answer offers «Fai controllare»; the click writes the contest, shows the solution and the message, closes the exercise.
+  def walk_contest
+    serve = open_practice("sentence")
+    type_and_check("xyz")
+    assert_selector "#feedback", text: UNRECOGNISED
+    assert_contest_offered
+    assert_selector "#hint-button", text: "Mostra un aiuto (2 di 3)"
+    assert_equal 0, PracticeContest.count
+    find("#contest-button").click
+    assert_selector "#feedback", text: CONTESTED
+    assert_selector "#solution h2", text: "Soluzione"
+    assert_selector "#solution li", text: "Si fa il conto."
+    assert_selector "#next-actions button", text: "Un altro esercizio"
+    assert_selector "#next-actions a", text: "Torna all'argomento"
+    assert_no_selector "#contest-button"
+    assert_no_selector "#check", visible: :visible
+    assert_equal [ "xyz" ], tries_of(serve).map(&:raw)
+    assert_contest_written(serve, "xyz")
+    assert_clean "the contest"
+  end
+
+  # After the second wrong try the exercise is closed with its solution, and the contest is still offered on the latest answer.
+  def walk_contest_after_second_try
+    serve = open_practice("sentence")
+    type_and_check("xyz")
+    assert_contest_offered
+    sentence_box.set("abc")
+    assert_selector "#check:not([disabled])"
+    click_button "Controlla"
+    assert_selector "#next-actions button", text: "Prova un esercizio simile"
+    assert_selector "#solution h2", text: "Soluzione"
+    assert_contest_offered
+    assert_equal 2, serve.attempts.count
+    find("#contest-button").click
+    assert_selector "#feedback", text: CONTESTED
+    assert_no_selector "#contest-button"
+    assert_selector "#next-actions button", text: "Un altro esercizio"
+    assert_contest_written(serve, "abc")
+    assert_clean "the contest after the second try"
+  end
+
+  # The same answer twice is refused and is not a try; the contest stays offered; going on to another exercise takes it away.
+  def walk_same_answer
+    serve = open_practice("sentence")
+    type_and_check("xyz")
+    assert_contest_offered
+    assert_selector "#check:not([disabled])"
+    click_button "Controlla"
+    assert_selector "#feedback", text: SAME_ANSWER
+    assert_equal 1, serve.attempts.count, "the same answer is not a second try"
+    assert_selector "#feedback #contest-button"
+    assert_selector "#check:not([disabled])", wait: 30
+    sentence_box.set("xyz  ")
+    click_button "Controlla"
+    assert_selector ".refusal-notice", text: SAME_ANSWER
+    assert_equal 1, serve.attempts.count
+    assert_selector "#check:not([disabled])", wait: 30
+    find("#skip-button").click
+    assert_no_selector "#contest-button"
+    assert_no_text CONTEST_NOTE
+    assert_selector "#check:not([disabled])", wait: 30
+    assert_equal 0, PracticeContest.count
+    assert_clean "the same answer"
+  end
+
+  # A whole sentence around the blank is right, with a note; a typo is «Ci sei quasi» and offers no contest.
+  def walk_sentence_and_typo
+    serve = open_practice("sentence")
+    assert_selector "[data-practice-target=itemBox]", text: "My parents ___ meat."
+    type_and_check("My parents never eat meat.")
+    assert_selector "#feedback", text: "Bastava scrivere solo le parole che mancano: never eat."
+    assert_selector "#solution h2", text: "Soluzione"
+    assert_selector "#next-actions button", text: "Un altro esercizio"
+    assert_no_selector "#contest-button"
+    assert_equal [ "correct" ], serve.reload.attempts.map { |a| a.gradings.first.verdict }
+    assert_equal "My parents never eat meat.", serve.attempts.first.raw
+    click_button "Un altro esercizio"
+    fresh = next_serve_after(serve)
+    type_and_check("nevar eat")
+    assert_selector "#feedback", text: "Ci sei quasi: controlla come l'hai scritta, forse c'è un errore di battitura."
+    assert_no_selector "#contest-button"
+    assert_equal [ "wrong" ], fresh.attempts.map { |a| a.gradings.first.verdict }
+    assert_selector "#check:not([disabled])"
+    sentence_box.set(SENTENCE_KEY)
+    click_button "Controlla"
+    assert_selector "#feedback", text: "Corretto"
+    assert_equal 2, fresh.attempts.count
+    assert_clean "the sentence and the typo"
+  end
+
+  # An exercise answered once and left with «Salta» is «Da riprovare» in the list, not «Lasciato a metà».
+  def walk_retry_status
+    first = open_practice("number")
+    first_key = item_key_of(first)
+    answer_wrong(first)
+    click_button "Controlla"
+    assert_selector "#feedback", text: UNRECOGNISED
+    find("#skip-button").click
+    next_serve_after(first)
+    assert_selector "#{entry_selector(first_key)} .exercise-status", text: "Da riprovare"
+    assert_no_selector "#{entry_selector(first_key)} .exercise-status", text: "Lasciato a metà"
+    assert_clean "the retry status"
+  end
+
+  def walk_contest_phone
+    page.driver.resize(390, 844)
+    open_practice("sentence")
+    type_and_check("xyz")
+    assert_contest_offered
+    assert no_sideways_scroll?, "no sideways scroll with the contest offered"
+    find("#contest-button").click
+    assert_selector "#feedback", text: CONTESTED
+    assert no_sideways_scroll?, "no sideways scroll after the contest"
+    assert_clean "the contest on a phone"
+  end
+
   # ---- the tests ----------------------------------------------------------------------------------------
 
   test "a trial student: wrong, hint, right, next, on every kind of exercise" do
@@ -586,6 +747,73 @@ class PracticeFlowTest < ApplicationSystemTestCase
     build_flow_world(number_items: 3)
     as_teacher_in_preview
     walk_phone
+  end
+
+  test "a trial student: a wrong answer offers «Fai controllare» and the click sends it to the teacher" do
+    build_flow_world(sentence: true)
+    as_student
+    walk_contest
+  end
+
+  test "the teacher in the preview: «Fai controllare» writes the contest and no comment" do
+    build_flow_world(sentence: true)
+    as_teacher_in_preview
+    walk_contest
+    assert_equal "preview", acting_student.kind
+  end
+
+  test "a trial student: after the second wrong try «Fai controllare» is still offered" do
+    build_flow_world(sentence: true)
+    as_student
+    walk_contest_after_second_try
+  end
+
+  test "the teacher in the preview: after the second wrong try «Fai controllare» is still offered" do
+    build_flow_world(sentence: true)
+    as_teacher_in_preview
+    walk_contest_after_second_try
+  end
+
+  test "a trial student: the same answer twice is refused and is not a try" do
+    build_flow_world(sentence: true)
+    as_student
+    walk_same_answer
+  end
+
+  test "the teacher in the preview: the same answer twice is refused and is not a try" do
+    build_flow_world(sentence: true)
+    as_teacher_in_preview
+    walk_same_answer
+  end
+
+  test "a trial student: a whole sentence around the blank is right with a note, a typo is «Ci sei quasi»" do
+    build_flow_world(sentence: true)
+    as_student
+    walk_sentence_and_typo
+  end
+
+  test "the teacher in the preview: a whole sentence around the blank is right with a note, a typo is «Ci sei quasi»" do
+    build_flow_world(sentence: true)
+    as_teacher_in_preview
+    walk_sentence_and_typo
+  end
+
+  test "a trial student: a wrong answer then «Salta» leaves the entry «Da riprovare»" do
+    build_flow_world(number_items: 3)
+    as_student
+    walk_retry_status
+  end
+
+  test "the teacher in the preview: a wrong answer then «Salta» leaves the entry «Da riprovare»" do
+    build_flow_world(number_items: 3)
+    as_teacher_in_preview
+    walk_retry_status
+  end
+
+  test "a trial student on a 390 px phone: «Fai controllare» does not scroll sideways" do
+    build_flow_world(sentence: true)
+    as_student
+    walk_contest_phone
   end
 
   test "the teacher in the preview with the drafts: wrong, hint, right, solution" do

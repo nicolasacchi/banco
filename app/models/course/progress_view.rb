@@ -1,9 +1,9 @@
 module Course
   # The JSON of `banco practice progress` (A4): per skill of the subject's topics, the derived state, its counts and
-  # the typical errors, for one student. No student text (D-064). The state is the fold of practice/2 (Practice::Fold
+  # the typical errors, for one student. No student text (D-064). The state is the fold of practice/3 (Practice::Fold
   # over Practice::Loader, as the student's pages and the teacher's page).
   module ProgressView
-    RULES = Practice::Rules::V2::RULES_VERSION
+    RULES = Practice::Rules::V3::RULES_VERSION
 
     module_function
 

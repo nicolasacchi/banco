@@ -289,5 +289,7 @@ grader_codes:
   invalid_answer: { description: "undetermined row: a retried answer that the checker found invalid; the teacher reads it (D-069)." }
   negative_denominator: { description: "invalid: a negative denominator (the sign goes in front of the numerator)." }
   signed_fraction_part: { description: "invalid: a mixed number whose fractional part is negative (the sign belongs to the whole part)." }
+  blank_copied: { description: "invalid: the answer holds the ___ of the sentence as it is; the student is told to write the missing words in its place (D-339)." }
+  not_in_frame: { description: "invalid: a long answer that repeats the sentence's words around the blank without fitting it; the student is told to write only the words for the blank (D-339)." }
   leading_zeros: { description: "A binary answer with the right value but without the required leading zeros (wrong_form)." }
   grader_unavailable: { description: "The expression worker did not answer after the last retry; the attempt is verdict_pending for the teacher." }

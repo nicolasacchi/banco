@@ -19,7 +19,7 @@ module Grading
         when "matching" then matching(spec, value, id_map)
         when "number" then Numbers.grade(spec, value)
         when "fraction" then Fractions.grade(spec, value)
-        when "normalized_text" then Text.grade(spec, value)
+        when "normalized_text" then normalized_text(spec, value)
         else raise ArgumentError, "Grading::Closed does not grade #{spec.component.inspect}"
         end
       end
@@ -29,6 +29,37 @@ module Grading
       end
 
       def invalid(code) = Result.invalid(code, grader: GRADER)
+
+      # normalized_text. When the instance's stem holds exactly one `___` the student may write the whole sentence
+      # (D-339): what she wrote between the frame's words is graded exactly as if she had typed only that; the result says
+      # so (observation full_sentence, answer_part) and its normalized is the normalized part. The blank typed as it is, or
+      # a long answer that repeats the frame without fitting it, is refused (blank_copied, not_in_frame): never an attempt.
+      def normalized_text(spec, value)
+        frame = value.is_a?(String) && !binary?(spec) ? Frame.from_stem(spec.display["stem_it"]) : nil
+        return Text.grade(spec, value) unless frame
+        return invalid("blank_copied") if value.match?(Frame::BLANK)
+
+        # An item whose key is itself a whole sentence keeps it: what the student typed is right as it stands.
+        plain = Text.grade(spec, value)
+        return plain if plain.verdict == "correct"
+
+        part = frame.part(value)
+        if part
+          graded = Text.grade(spec, part)
+          return graded.invalid? ? graded : graded.full_sentence(part)
+        end
+        return invalid("not_in_frame") if longer_than_a_blank_answer?(spec, frame, value)
+
+        plain
+      end
+
+      def binary?(spec) = spec.profile.is_a?(Hash) && spec.profile["name"] == "binary"
+
+      # More words than the longest accepted answer plus one, and at least two of the frame's own words in it.
+      def longer_than_a_blank_answer?(spec, frame, value)
+        longest = ([ spec.answer ] + spec.accept).map { |t| Frame.words(t).size }.max
+        Frame.words(value).size > longest + 1 && frame.shared_words(value) >= 2
+      end
 
       # The first error value of the catalogue that equals the answer (by +same+).
       def error_hit(spec, answer_value)

@@ -66,6 +66,128 @@ class PracticeLoaderTest < ActiveSupport::TestCase
     assert_equal [ 45, 600 ], load_input.tries.map(&:seconds)
   end
 
+  # ---- practice/3: near (Grading::NearText) and contested (PracticeContest) ----
+
+  KEY = "she goes to school".freeze
+
+  # One instance of a normalized_text item whose key is KEY; accept: the instance's own accepted forms.
+  def text_instance(accept: [])
+    revision = make_practice_item("text-#{Item.count}", @skill, instances: 0, component: "normalized_text")
+    ItemInstance.create!(item_revision: revision, seed: 1, display_json: JSON.generate(stem_it: "Mary ___ to school."), answer_json: JSON.generate(KEY),
+                         accept_json: accept.empty? ? nil : JSON.generate(accept), errors_json: JSON.generate([]), hints_json: JSON.generate([ "Un aiuto." ]),
+                         solution_json: JSON.generate(steps: [], final: KEY), fingerprint: Digest::SHA256.hexdigest("text-#{revision.id}"))
+  end
+
+  # A text try with the grading's normalized (what the grader graded: the part of a whole sentence, else the normalized answer).
+  def text_try(serve, raw:, normalized: nil, verdict: "wrong", try_number: 1, at: @serve_at + 30 * try_number)
+    attempt = PracticeAttempt.create!(student: serve.student, practice_serve: serve, try_number: try_number, client_attempt_id: "pt-#{SecureRandom.hex(6)}", raw: raw,
+                                      source: "text", hints_before: 0, aided: false, answered_at: at, created_at: at)
+    PracticeGrading.create!(practice_attempt: attempt, seq: 1, verdict: verdict, error_codes_json: "[]", normalized: normalized, method: "exact",
+                            grader: "closed", grader_version: "test", source: "sync", created_at: at)
+    attempt
+  end
+
+  def loaded_try(serve) = load_input.tries.find { |t| t.serve_id == serve.id }
+
+  def contest!(attempt, at: @serve_at + 90)
+    PracticeContest.create!(student: attempt.student, practice_serve: attempt.practice_serve, practice_attempt: attempt, created_at: at)
+  end
+
+  test "near is derived for a stored typo: a wrong text answer one letter off the key is a near miss (N)" do
+    serve = serve_with(instance: text_instance)
+    text_try(serve, raw: "She goes to schol")
+    t = loaded_try(serve)
+    assert_equal [ :near_miss, :N, false ], [ t.outcome, t.evidence, t.contested ]
+    assert_equal :open, load_input.serves.first.status.state
+    assert_equal %i[retry], load_input.serves.first.status.actions # a near miss: one retry, no contest
+  end
+
+  test "near is derived for one missing or one added word, never for a substitution" do
+    { "she goes school" => :near_miss, "she goes to the school" => :near_miss, "she go to school" => :unrecognised, "he goes to school" => :unrecognised,
+      "she goes to the big school" => :unrecognised, "completely different" => :unrecognised }.each do |raw, outcome|
+      serve = serve_with(instance: text_instance)
+      text_try(serve, raw: raw)
+      assert_equal outcome, loaded_try(serve).outcome, raw
+    end
+  end
+
+  test "near reads the grading's normalized when it is stored, else the raw" do
+    serve = serve_with(instance: text_instance)
+    text_try(serve, raw: "Mary: she goes to schol, I think", normalized: "she goes to schol") # a whole sentence: the part was graded
+    assert_equal :near_miss, loaded_try(serve).outcome
+    other = serve_with(instance: text_instance)
+    text_try(other, raw: "she goes to schol", normalized: "she goes to the zoo")
+    assert_equal :unrecognised, loaded_try(other).outcome
+  end
+
+  test "near compares with the key and with the accepted forms of the instance and of the item" do
+    serve = serve_with(instance: text_instance(accept: [ "he goes to school" ]))
+    text_try(serve, raw: "he goes to schol")
+    assert_equal :near_miss, loaded_try(serve).outcome
+  end
+
+  test "near is only for a plain wrong on a normalized_text item: a number, a declared error or a correct answer keep their outcome" do
+    number = serve_with
+    make_try(number, verdict: "wrong", raw: "3")
+    assert_equal :unrecognised, loaded_try(number).outcome
+    typical = serve_with(instance: text_instance)
+    text_try(typical, raw: "she goes to schol", verdict: "typical_error")
+    assert_equal :typical_error, loaded_try(typical).outcome
+    right = serve_with(instance: text_instance)
+    text_try(right, raw: KEY, verdict: "correct")
+    assert_equal :correct, loaded_try(right).outcome
+  end
+
+  test "the same stored rows give the same near, whatever the loader (a student's, or one serve's status)" do
+    serve = serve_with(instance: text_instance)
+    text_try(serve, raw: "she goes to schol")
+    assert_equal load_input.serves.first.status, Practice::Loader.status_of(serve.reload, now: @serve_at + 3600)
+  end
+
+  test "a try with a contest row is contested (N); the serve closes contested and offers next and back" do
+    serve = serve_with(instance: text_instance)
+    attempt = text_try(serve, raw: "she goes at school")
+    before = load_input.serves.first.status
+    assert_equal [ :open, %i[retry show_solution contest] ], [ before.state, before.actions ]
+    contest!(attempt)
+    t = loaded_try(serve)
+    assert_equal [ :contested, :N, true ], [ t.outcome, t.evidence, t.contested ]
+    st = load_input.serves.first.status
+    assert_equal [ :closed, :contested, %i[next back], 0 ], [ st.state, st.closed_by, st.actions, st.w ]
+  end
+
+  test "a contest on the second try of a serve closed wrong: the first stays wrong, the second is N" do
+    serve = serve_with(instance: text_instance)
+    text_try(serve, raw: "she goes at school")
+    second = text_try(serve, raw: "she goes in school", try_number: 2)
+    before = load_input.serves.first.status
+    assert_equal [ :closed, :wrong, %i[show_solution back contest] ], [ before.state, before.closed_by, before.actions ]
+    contest!(second)
+    tries = load_input.tries.sort_by(&:try_number)
+    assert_equal [ [ :unrecognised, :W, false ], [ :contested, :N, true ] ], tries.map { |t| [ t.outcome, t.evidence, t.contested ] }
+    st = load_input.serves.first.status
+    assert_equal [ :closed, :contested, %i[next back], 1 ], [ st.state, st.closed_by, st.actions, st.w ]
+    assert_equal st, Practice::Loader.status_of(serve.reload, now: @serve_at + 3600)
+  end
+
+  test "a contest is read for the student's own serves only" do
+    mine = serve_with(instance: text_instance)
+    contest!(text_try(mine, raw: "she goes at school"))
+    other = practice_student("other")
+    theirs = serve_with(student: other, instance: text_instance)
+    text_try(theirs, raw: "she goes at school")
+    assert_equal :unrecognised, load_input(student: other).tries.first.outcome
+    assert_equal :contested, load_input.tries.first.outcome
+  end
+
+  test "a contested try does not count as wrong in the fold of the loaded input" do
+    serve = serve_with(instance: text_instance)
+    contest!(text_try(serve, raw: "she goes at school"))
+    input = load_input
+    state = Practice::Fold.call(seeds: input.seeds, tries: input.tries, serves: input.serves).fetch(@skill)
+    assert_equal [ 0, 1, "in_study" ], [ state.counts[:wrong], state.counts[:tries], state.state ]
+  end
+
   test "serve rows: status, hints, solution requested, fingerprint, parent" do
     serve = serve_with
     make_practice_event(@student, "hint_shown", serve: serve, payload: { n: 1, auto: false }, at: @serve_at + 5)
@@ -77,8 +199,8 @@ class PracticeLoaderTest < ActiveSupport::TestCase
   test "an abandoned serve is reported by the status at the loader's now (14 days)" do
     serve_with
     assert_equal :open, load_input(now: @serve_at + 3600).serves.first.status.state
-    assert_equal :open, load_input(now: @serve_at + Practice::Rules::V2::OPEN_SERVE_HOURS * 3600).serves.first.status.state
-    assert_equal :abandoned, load_input(now: @serve_at + Practice::Rules::V2::OPEN_SERVE_HOURS * 3600 + 1).serves.first.status.state
+    assert_equal :open, load_input(now: @serve_at + Practice::Rules::V3::OPEN_SERVE_HOURS * 3600).serves.first.status.state
+    assert_equal :abandoned, load_input(now: @serve_at + Practice::Rules::V3::OPEN_SERVE_HOURS * 3600 + 1).serves.first.status.state
   end
 
   test "a serve is superseded by a newer serve of the same student on the same item, any revision" do
@@ -189,7 +311,7 @@ class PracticeSeederTest < ActiveSupport::TestCase
     seeds = Practice::Seeder.call(@student, @subject)
     assert_not_empty seeds
     assert(seeds.keys.all? { |k| k.start_with?("math.") })
-    assert(seeds.values.all? { |s| Practice::Rules::V2::STATES.include?(s.state) && s.run_id == @run.id })
+    assert(seeds.values.all? { |s| Practice::Rules::V3::STATES.include?(s.state) && s.run_id == @run.id })
   end
 
   test "A8.6: the five rows of the seed table" do
@@ -205,7 +327,7 @@ class PracticeSeederTest < ActiveSupport::TestCase
   test "the seed time is the run's last event, in the Rome zone" do
     seeds = seeds_with(rows([ "math.a", "demonstrated" ]))
     assert_equal @run.events.maximum(:at), seeds["math.a"].at
-    assert_equal Practice::Rules::V2::ZONE, seeds["math.a"].at.time_zone.tzinfo.name
+    assert_equal Practice::Rules::V3::ZONE, seeds["math.a"].at.time_zone.tzinfo.name
   end
 
   test "a voided run gives no seeds; an open newer run leaves the closed one in use" do

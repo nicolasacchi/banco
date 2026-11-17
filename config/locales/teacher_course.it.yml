@@ -210,6 +210,7 @@ it:
         unrecognised: "Errore non riconosciuto"
         form: "Forma sbagliata"
         near_miss: "Quasi giusta"
+        contested: "Mandata al docente"
         undetermined: "Non decisa"
         not_a_try: "Non conta come tentativo"
         ungraded: "Non ancora corretta"

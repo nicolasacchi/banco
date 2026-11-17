@@ -25,17 +25,38 @@ module Practice
 
     # What a stored attempt was worth: Grade = the outcome, the evidence key, the error codes and the
     # form violations of its latest grading. Nil when it is not a try (no grading, "Non lo so", ...).
-    Grade = Data.define(:outcome, :key, :codes, :violations, :pair_note) # pair_note: the line of a nearly_correct matching (D-301)
+    # near: nil | :typo | :one_word, set on a plain wrong text answer one typo or one word from an accepted one (outcome
+    # near_miss). contested: the student sent the try to the teacher (a PracticeContest row; outcome :contested).
+    Grade = Data.define(:outcome, :key, :codes, :violations, :pair_note, :near, :contested) # pair_note: the line of a nearly_correct matching (D-301)
 
-    def grade(attempt, spec)
+    # contested_ids: the attempt ids that have a contest row, when the caller already read them (the loader reads
+    # them once for all its serves); nil asks the database.
+    def grade(attempt, spec, contested_ids: nil)
       grading = attempt.latest_grading or return nil
       codes = JSON.parse(grading.error_codes_json || "[]")
       key = Grading::Evidence.key(verdict: grading.verdict, spec: spec, error_codes: codes, method: grading[:method])
       return nil unless Practice::Outcome.try?(key)
 
-      Grade.new(outcome: Practice::Outcome.call(evidence_key: key, aided: attempt.aided), key: key, codes: codes,
-                violations: JSON.parse(grading.form_violations_json || "[]"),
-                pair_note: key == "nearly_correct" ? Grading::PairNote.line(spec.display, grading.normalized) : nil)
+      near = near_kind(spec, key, grading.normalized.presence || attempt.raw)
+      contested = contested?(attempt, contested_ids)
+      outcome = contested ? :contested : Practice::Outcome.call(evidence_key: key, aided: attempt.aided, near: near)
+      Grade.new(outcome: outcome, key: key, codes: codes, violations: JSON.parse(grading.form_violations_json || "[]"),
+                pair_note: key == "nearly_correct" ? Grading::PairNote.line(spec.display, grading.normalized) : nil,
+                near: near, contested: contested)
+    end
+
+    # Practice::Outcome's `near` for one answer: only a `wrong` text answer, compared with the key and the accepted
+    # forms of the instance (deterministic, so old tries are re-derived the same way).
+    def near_kind(spec, key, text)
+      return nil unless key == "wrong" && spec.component == "normalized_text"
+
+      Grading::NearText.kind(text.to_s, ([ spec.answer ] + spec.accept).map(&:to_s), case_sensitive: false)
+    end
+
+    def contested?(attempt, contested_ids = nil)
+      return false unless defined?(PracticeContest)
+
+      contested_ids ? contested_ids.include?(attempt.id) : PracticeContest.exists?(practice_attempt_id: attempt.id)
     end
 
     def low_guess?(instance)

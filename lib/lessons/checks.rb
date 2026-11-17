@@ -110,7 +110,9 @@ module Lessons
         errors: errors.each_with_index.map { |e, i| { "code" => "e#{i}", "value" => e["answer"] } },
         accept: check["accept"], unit: check["unit"], form: form,
         profile: check["profile"], thousands: check["thousands"], contractions: check["contractions"],
-        display: { "options" => check["options"], "left" => check["left"], "right" => check["right"] }.compact
+        # a written word may be answered with the whole sentence around the check's `___` (D-339): the frame is its prompt
+        display: { "options" => check["options"], "left" => check["left"], "right" => check["right"],
+                   "stem_it" => (check["prompt_it"] if check["component"] == "normalized_text") }.compact
       )
       result = Grading::Closed.grade(spec, response, id_map: id_map.presence)
       from_result(result, errors, spec.display)

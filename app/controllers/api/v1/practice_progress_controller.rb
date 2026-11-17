@@ -2,7 +2,7 @@ module Api
   module V1
     # What the practice trail says per skill (A4): the derived state of each skill of the subject's topics for
     # the official student, or a trial student with ?student=KEY. No student text (D-064): never raw answers.
-    # The state is the practice/2 fold (Practice::Fold over Practice::Loader), the same as the student's pages.
+    # The state is the practice/3 fold (Practice::Fold over Practice::Loader), the same as the student's pages.
     class PracticeProgressController < Api::BaseController
       include SubjectScoped
 

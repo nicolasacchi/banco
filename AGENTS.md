@@ -79,12 +79,13 @@ only), `HARNESS_PORT` 3200 (internal), `VIEW_PORT` 3400 (view links, GET only). 
 - `lib/diagnosis/`: the pure engine (no database): `Plan`, `Fold`, `Engine`,
   `Derivation`, `Simulator`; `app/models/diagnosis/`: the loaders that read rows
   for it. `banco diagnosis simulate` is a dry run of the same engine.
-- The practice engine (Phase 1b S2, D-235, rules `practice/2` in `docs/rules/practice-2.md` and `lib/practice/rules/v2.rb`):
+- The practice engine (Phase 1b S2, D-235, rules `practice/3` in `docs/rules/practice-3.md` and `lib/practice/rules/v3.rb`; `practice-2.md` stays as the record):
   `lib/practice/` (`Outcome`, `ServeState` with its transition table, `Fold` for the skill states, `Selector`, `Today`,
-  `GraphOrder`), `app/models/practice/` (`Loader`, `Seeder`, `AnswerRecorder`, `Actions`, `Messages`, `Payload`, `Instances`) and
+  `GraphOrder`), `app/models/practice/` (`Loader`, `Seeder`, `AnswerRecorder`, `Actions`, `Contest`, `Messages`, `Payload`, `Instances`) and
   `Course::Catalog` (what each student sees). Own ledger tables `practice_*`; `Grading` is shared. Tests: `test/lib/practice`,
   `test/models/practice` (`PROP_RUNS=300` for the properties).
-- Practice navigation (D-337): at most one open serve per item (`practice/2`, `Practice::Selector.next(item:, advance:)`), `practice_drafts` (append-only; `POST /practice/serves/:serve_id/draft`, the serve body's `draft` and `exercise`), `Practice::Exercises` (`GET /practice/exercises?topic=`, the list with done, to do, left, skipped; no key, no instance's text), the page's sidebar and «Salta»/«Rifai». Tests: `test/integration/practice_navigation_test.rb`. The text sizes are D-338.
+- Practice navigation (D-337): at most one open serve per item (`practice/3`, `Practice::Selector.next(item:, advance:)`), `practice_drafts` (append-only; `POST /practice/serves/:serve_id/draft`, the serve body's `draft` and `exercise`), `Practice::Exercises` (`GET /practice/exercises?topic=`, the list with retry, left, done, tried, skipped and to do; no key, no instance's text), the page's sidebar and «Salta»/«Rifai». Tests: `test/integration/practice_navigation_test.rb`. The text sizes are D-338.
+- Practice feedback (D-339, `practice/3`): a whole sentence around a `___` blank is graded on the words in its place (`Grading::Frame`, observation `full_sentence`), `Grading::NearText` («ci sei quasi»: one typo, one word more or less), a repeated identical answer is refused (not a try), «Fai controllare» (`POST /practice/serves/:serve_id/contest`, `Practice::Contest`, append-only `practice_contests`: the latest wrong try becomes `contested`, a comment for the teacher, the solution comes back; no comment in the preview). Tests: `test/integration/practice_feedback_test.rb`, `test/models/practice/contest_test.rb`.
 - `lib/validation/`, `app/models/validation/`: mechanical validation (A-06) of items,
   graphs and blueprints; thresholds in `config/banco/validation_rules.yml`; agent
   code runs only in Chrome (`ChromeRunner`, the harness in `lib/harness/` served on

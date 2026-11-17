@@ -129,7 +129,7 @@ class CourseSystemTest < ApplicationSystemTestCase
     assert_equal [ "prova_questo", "slip", second.id ], [ third.reason, third.error_code, third.parent_serve_id ]
     # unrecognised: the first hint comes with the message, then a retry
     type_answer "99999"
-    assert_selector "#feedback", text: "Questa risposta non corrisponde a un errore che conosco"
+    assert_selector "#feedback", text: "Non è ancora giusta. Leggi l'aiuto e riprova."
     assert_selector "#hints li", text: "Che cosa guardi prima?"
     assert_selector "#hint-button", text: "Mostra un aiuto (2 di 3)"
     click_button "Mostra un aiuto (2 di 3)"

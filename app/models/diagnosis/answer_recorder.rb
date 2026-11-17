@@ -16,9 +16,10 @@ module Diagnosis
     MAX_RAW_BYTES = 20_000
     # What a refused answer keeps for the teacher (D-298): the typed text, cut here.
     REFUSED_TEXT_CHARS = 200
-    # The grader's invalid codes that mean "nothing answered" or "a part left blank" (an empty part, an incomplete order,
-    # a matching with a row empty): still refused (D-317).
-    STILL_REFUSED = %w[empty incomplete incomplete_rows].freeze
+    # The grader's invalid codes that mean "nothing answered", "a part left blank" (an empty part, an incomplete order,
+    # a matching with a row empty) or "the sentence's ___ copied or a sentence that does not fit it" (D-339): still
+    # refused (D-317).
+    STILL_REFUSED = %w[empty incomplete incomplete_rows blank_copied not_in_frame].freeze
 
     def initialize(student:, context:, clock: Clock.new)
       @student = student
