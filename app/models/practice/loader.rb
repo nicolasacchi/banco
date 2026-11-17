@@ -41,7 +41,9 @@ module Practice
 
     def serves
       scope = PracticeServe.where(student: @student)
-      scope = @skill ? scope.where(skill_key: @skill) : scope.where("skill_key LIKE ?", "#{PracticeServe.sanitize_sql_like(@subject.key)}.%")
+      # ESCAPE: SQLite's LIKE has no default escape character, so without it "law\_economics.%" matched nothing and a subject
+      # with an underscore in its key (law_economics, computer_science) never folded its skills.
+      scope = @skill ? scope.where(skill_key: @skill) : scope.where("skill_key LIKE ? ESCAPE '\\'", "#{PracticeServe.sanitize_sql_like(@subject.key)}.%")
       @serves ||= scope.includes(:events, item_instance: { item_revision: :item }, attempts: :gradings).order(:id).to_a
     end
 

@@ -1,4 +1,4 @@
-# Oggi, Materie and one Materia (A9.1, A9.2). Read-only pages.
+# Oggi, Materie, one Materia and Educazione civica (A9.1, A9.2, D-345). Read-only pages.
 class CourseController < ApplicationController
   include StudentCourse
 
@@ -22,6 +22,13 @@ class CourseController < ApplicationController
   def subjects
     @subjects = course_view.subjects
     @closed = @subjects.empty?
+    @civics = Course::Civics.new(course_view)
+  end
+
+  # Educazione civica (D-345): topics of other subjects by the three nuclei; a 404 when this student sees none of them.
+  def civics
+    @civics = Course::Civics.new(course_view)
+    head(:not_found) unless @civics.any?
   end
 
   def subject

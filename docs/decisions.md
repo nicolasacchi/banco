@@ -346,6 +346,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-341 | 2026-11-17 | a skill is demonstrated on one day: 3 distinct exercises right without help, 2 of them hard to guess, are enough even on the same day (rules `practice/4`: the «2 different days» condition is gone); the texts and D-340's day line go with it; states are re-derived, old serves keep `practice/3` | implemented |
 | D-342 | 2026-11-17 | the student answers the teacher's reply: a comment is a thread (her text, the teacher's replies, her follow-ups «Rispondi»); new event `student_reply` (origin student, 1..500 characters); a follow-up makes the comment new or read again, also after resolved | implemented |
 | D-343 | 2026-11-17 | the subjects' names at the student's school (chemistry «Scienze integrate – Chimica», biology «Scienze integrate – Biologia», geography «Geografia economica») come from `config/locales/subjects.it.yml` through `Subject#name_it`, the append-only column keeps the seed name; «Impostazioni» has the gear (`settings`), no longer the «T» | implemented |
+| D-345 | 2026-11-17 | Educazione civica as a view in Materie (option A): three nuclei of the 2024 Linee guida (Costituzione; Sviluppo economico e sostenibilità; Cittadinanza digitale) gathering existing topics of other subjects, from `config/banco/civics.yml` through `Course::Civics`; card «Educazione civica» in Materie and page `/civics`; optional, no new content, never counted in a subject's progress nor suggested by Oggi | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -4028,3 +4029,20 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Why:** the student reads the names of her school on her exam programme, and a «T» for settings is not what she looks for; the ledger stays append-only.
 - **Status:** implemented.
 - **Tests:** `test/models/subject_test.rb` (the school's name for the three subjects, the column for the others, the search helper), `test/integration/course_pages_test.rb` (Materie, Materia and Oggi print the name of `Subject#name_it`), `test/integration/student_progress_api_test.rb` (the entry test of geography, on the page and over the API).
+
+## D-345 · 2026-11-17 · Educazione civica: a view in Materie over topics of other subjects
+
+- **Design ref:** D-324 (extra topics: optional, apart, never suggested by Oggi), D-326 (progress in topics: mandatory and optional), D-309 (the preview under `/teacher/preview`, `spath`), D-343 (the subjects' names).
+- **The student's words (2026-11-17, passed on by the operator):** «Manca educazione civica tra le materie».
+- **Law:** L. 92/2019 makes Educazione civica a transversal teaching, not a subject with its own marks; the Linee guida of DM 183/2024 name three nuclei: Costituzione; Sviluppo economico e sostenibilità; Cittadinanza digitale.
+- **Options:** A, a view that gathers topics that already exist; B, a thirteenth subject with its own content. The operator chose **A**: optional but visible, no content change.
+- **We do:**
+  1. **The list in git, `config/banco/civics.yml`:** the three nuclei (`key`, `title_it`, a one-line `intro_it`) and, in page order, the lesson keys of the topics each gathers (law_economics, geography, business, biology, computer_science, italian). A key is a lesson key of any kind; the file is the only place that says what belongs to a nucleus, and adding a topic is a line there.
+  2. **The read model `Course::Civics`:** built only from `Course::StudentView` of the acting student (official, trial, or the preview with its view): each nucleus keeps the topics this student can see, a key she cannot see is skipped silently, a nucleus with none is not drawn. Each entry carries its `SubjectView`, its `TopicView` (kind programme or extra) and the status the subject page shows (`StudentView#status`). No query of its own on the ledger.
+  3. **Materie:** after the subjects, a card «Educazione civica» marked «Facoltativo · in più materie», with a one-line explanation and «N argomenti», linking to the page. Not a subject: no progress lines, no bar; the topics keep counting once, in their own subject (D-326). Shown only when at least one topic is visible.
+  4. **The page `GET /civics`** (and `/teacher/preview/civics`, route in the `course_pages` concern, `spath`): «Educazione civica», the intro «Non è una materia a sé: sono argomenti di altre materie. Sono facoltativi qui; quelli del programma li trovi anche nella loro materia.», one section per nucleus, the rows of the Materia (`course/_topic_row`, without the number: the chip and the name of the subject instead) linking to the existing topic page. 404 when this student sees no topic of the list; 403 for the teacher and a guest as on the other student pages. The menu stays as it is (Materie is current on this page).
+  5. **Oggi:** unchanged. It never suggests, resumes or counts through this view.
+- **Not done:** no content, no exercises, no mark or test of Educazione civica, nothing becomes mandatory; no new menu item; the nuclei have no progress of their own.
+- **Why:** the student looked for Educazione civica among the subjects and did not find it; the topics are there, scattered. The law makes it transversal, so a view over them says the truth and adds no new burden.
+- **Status:** implemented.
+- **Tests:** `test/integration/civics_view_test.rb` (the card, the page by nucleus with subject and status, an invisible topic skipped, a draft only for the trial student, progress and Oggi unchanged, the preview path and its view, the refusals, and the keys of `civics.yml` well formed and unique).

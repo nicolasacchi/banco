@@ -97,6 +97,7 @@ Rails.application.routes.draw do
       get "today" => "course#today"
       get "subjects" => "course#subjects"
       get "subjects/:key" => "course#subject", constraints: { key: /[a-z_]+/ }
+      get "civics" => "course#civics"
       get "topics/:topic" => "topics#show", constraints: topic
       get "topics/:topic/lesson" => "lessons#show", constraints: topic
       post "topics/:topic/lesson/exercises/:n/solution" => "lessons#solution", constraints: topic.merge(n: /\d+/)

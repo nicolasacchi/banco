@@ -17,6 +17,24 @@
           <%= render "course/summary", subject_view: sv, results: false %>
         </li>
       <% end %>
+      <%# Educazione civica (D-345): a view over topics of other subjects, optional, never counted in a subject's progress nor in Oggi. %>
+      <% if @civics.any? %>
+        <li class="subject card subject-card civics-card" id="civics-card" data-civics="true" style="--subject: var(--accent-civics, var(--soft-primary))">
+          <div class="subject-line">
+            <%= subject_chip("civics") %>
+            <div class="subject-text">
+              <a class="subject-name row-stretch" href="<%= spath("/civics") %>"><%= t("civics.title") %></a>
+            </div>
+            <%= ui_icon("next", css: "row-chev") %>
+          </div>
+          <ul class="progress-lines">
+            <li class="progress-line" data-line="civics">
+              <span class="progress-text"><%= ui_pill(t("civics.badge"), :muted) %> <%= t("civics.card_line") %></span>
+              <span class="progress-text" data-civics-count><%= t("civics.count", count: @civics.topic_count) %></span>
+            </li>
+          </ul>
+        </li>
+      <% end %>
     </ul>
   <% end %>
 </main>

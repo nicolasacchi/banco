@@ -1,0 +1,21 @@
+<% content_for :title, t("civics.title") %>
+<%# Educazione civica (D-345): the topics of other subjects the student can see, by the three nuclei. The rows are the Materia's rows
+    (status, kind, «Fuori programma»), each with the chip and the name of its subject; no progress of its own. %>
+<main class="page course" id="civics-page">
+  <%= ui_page_header(t("civics.title"), back: [ t("subjects.title"), spath("/subjects") ]) %>
+  <p class="hint" id="civics-intro"><%= t("civics.intro") %></p>
+  <% @civics.nuclei.each do |nucleus| %>
+    <section id="civics-<%= nucleus.key %>" class="civics-nucleus" data-nucleus="<%= nucleus.key %>" aria-labelledby="civics-<%= nucleus.key %>-title">
+      <div class="section-head">
+        <h2 id="civics-<%= nucleus.key %>-title"><%= nucleus.title_it %></h2>
+        <span class="tag section-count"><%= t("civics.count", count: nucleus.entries.size) %></span>
+      </div>
+      <p class="hint"><%= nucleus.intro_it %></p>
+      <ol class="topics topic-list">
+        <% nucleus.entries.each do |entry| %>
+          <%= render "course/topic_row", topic: entry.topic, number: nil, subject_view: entry.subject_view %>
+        <% end %>
+      </ol>
+    </section>
+  <% end %>
+</main>
