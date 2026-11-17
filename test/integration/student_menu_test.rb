@@ -175,7 +175,7 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     release_diagnosis!
     page(OFFICIAL, "/settings")
     assert_select "form[action='/diagnosis/preferences'] input[name=theme]", 2
-    assert_select "form[action='/diagnosis/preferences'] input[name=size]", 3
+    assert_select "form[action='/diagnosis/preferences'] input[name=size]", 5
     page(OFFICIAL, "/diagnosis")
     assert_select "input[name=theme]", 0
     page(TEACHER, "/settings")

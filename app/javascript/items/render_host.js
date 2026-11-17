@@ -72,7 +72,7 @@ function overflowFindings(out) {
     out.push({ code: "E-ITEM-OVERFLOW", message: `the page is ${doc.scrollWidth} px wide in a ${window.innerWidth} px window`, where: "page" })
   const wide = []
   for (const node of document.body.querySelectorAll("*")) {
-    if (node.closest(".sr-only") || node.namespaceURI !== "http://www.w3.org/1999/xhtml") continue
+    if (node.closest(".sr-only") || node.namespaceURI !== document.documentElement.namespaceURI) continue // SVG and MathML inside are not boxes
     if (node.clientWidth < 3 || node.closest(".katex-mathml")) continue
     const style = getComputedStyle(node)
     if (clips(style) && node.scrollWidth > node.clientWidth + 3) {
