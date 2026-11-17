@@ -1,8 +1,11 @@
 module Api
   module V1
     # GET /api/v1/search?q=WORDS[&subject=KEY][&kind=KIND[,KIND]][&status=S][&limit=N]: the content search for the agents (D-299).
-    # Drafts included, every subject; never anything a student typed (the kind student_answer is not a kind of this door) and
-    # never an answer key. Read only. `semantic` says whether the ranking used vectors (D-300): false whenever the embedding service
+    # Drafts included, every subject; never an answer key. Never anything a student typed either (the kind student_answer is not a kind of
+    # this door), except for a `teacher` token (D-346): kind=student_answer, with student=KEY (default: the official student), searches that
+    # student's answers as the teacher console's answers tab does (lexical only, no model); a row of it has student, at and, for a practice try or an
+    # entry-test answer, attempt (its ref: banco attempts show REF). Without kind=student_answer a teacher token's search is the content search, as for every token.
+    # Read only. `semantic` says whether the ranking used vectors (D-300): false whenever the embedding service
     # is not configured or does not answer, and then the answer is the lexical one.
     #
     #   { query:, semantic:, indexed:, results: [{ kind:, subject:, key:, revision_id:, status:, title:, snippet:, score:, ref: }] }
@@ -30,14 +33,30 @@ module Api
 
         kinds = params[:kind].to_s.split(",").map(&:strip).reject(&:empty?)
         limit = [ [ params[:limit].to_i, 1 ].max, MAX_LIMIT ].min if params[:limit].present?
-        result = Search::Engine.new(scope: Search::Scope::Agent.new).call(query, subject: subject, kind: kinds, status: params[:status].to_s.presence, limit: limit || DEFAULT_LIMIT)
+        scope = scope_for(kinds) or return
+        result = Search::Engine.new(scope: scope).call(query, subject: subject, kind: kinds, status: params[:status].to_s.presence, limit: limit || DEFAULT_LIMIT)
         render json: { query: result.query, semantic: result.semantic, indexed: result.indexed, results: result.hits.map { |hit| row(hit, result) } }
       rescue Search::Engine::BadKind => e
-        refuse("E-NOT-FOUND", "kind", "no kind #{e.message.first(40).inspect} for agents; kinds: #{Search::Scope::Agent.new.kinds.join(', ')}",
+        refuse("E-NOT-FOUND", "kind", "no kind #{e.message.first(40).inspect} for agents; kinds: #{visible_kinds.join(', ')}",
                "banco search \"equazioni\" --kind lesson_card", 404)
       end
 
       private
+
+      # The agents' scope; a teacher token that asks for kind=student_answer gets the teacher console's answers of one student (D-346). nil after answering 404.
+      def scope_for(kinds)
+        return Search::Scope::Agent.new unless @token.role == "teacher" && kinds.include?("student_answer")
+
+        key = params[:student].to_s.presence || Student::OFFICIAL_KEY
+        student = Student::KEY_FORMAT.match?(key) ? Student.find_by(key: key, kind: "student") : nil
+        return Search::Scope::Agent.new(answers_for: student.key) if student
+
+        refuse("E-NOT-FOUND", "student", "no student #{key.first(40).inspect}", "banco search \"words\" --kind student_answer --student student", 404)
+        nil
+      end
+
+      # The kinds this token may ask for: the content kinds, and for a teacher token student_answer.
+      def visible_kinds = Search::Scope::Agent.new(answers_for: (@token.role == "teacher" ? "-" : nil)).kinds
 
       def like
         ref = params[:like].to_s.squish.first(200)
@@ -86,8 +105,17 @@ module Api
       end
 
       def row(hit, result)
-        { kind: hit.kind, subject: hit.subject, key: hit.key, revision_id: hit.revision_id, status: hit.status, title: hit.title,
-          snippet: hit.snippet(result.terms, result.variants), score: hit.score.round(3), ref: Search::Links.address(hit) }
+        out = { kind: hit.kind, subject: hit.subject, key: hit.key, revision_id: hit.revision_id, status: hit.status, title: hit.title,
+                snippet: hit.snippet(result.terms, result.variants), score: hit.score.round(3), ref: Search::Links.address(hit) }
+        hit.kind == "student_answer" ? out.merge(answer_row(hit)) : out
+      end
+
+      # The student's answer of a hit (a teacher token only ever sees one): whose, when and, for a practice try (anchor pN) or an entry-test answer
+      # (anchor aN), the ref `banco attempts show` takes. A refused text (anchor eN) is no attempt.
+      def answer_row(hit)
+        kind = { "p" => "practice", "a" => "diagnosis" }[hit.anchor.to_s[0]]
+        number = hit.anchor.to_s[/\A[pa](\d+)\z/, 1]
+        { student: hit.student_key, at: hit.occurred_at, attempt: kind && number && "#{kind}-#{number}" }.compact
       end
     end
   end

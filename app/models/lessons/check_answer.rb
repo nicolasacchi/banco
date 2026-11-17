@@ -47,6 +47,10 @@ module Lessons
       Reply.new(200, reply(graded, check, located, try))
     end
 
+    # The check a locator names and the seed of its shuffle, as the student's page had them (nil when this revision has no such check): the
+    # teacher's read of a recorded answer (D-346). Located: check, seed, example, step_index.
+    def located(locator) = locate(locator)
+
     private
 
     # ---- where the check is ------------------------------------------------------------------------

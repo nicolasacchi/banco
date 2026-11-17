@@ -8,7 +8,7 @@ module Search
   #
   #   Scope::Student  a student's door: the revisions the catalog (Course::Catalog) shows this student, the kinds a student page shows
   #   Scope::Staff    the teacher's and the guests' door; the teacher's may include the student's answers
-  #   Scope::Agent    the agents' door (API): content only, never anything a student typed
+  #   Scope::Agent    the agents' door (API): content only, never anything a student typed; a teacher token's may add one student's answers (D-346)
   class Scope
     attr_reader :name
 
@@ -114,10 +114,12 @@ module Search
       end
     end
 
-    # The agents' door: the content of the courses and the references, drafts included; nothing a student typed.
+    # The agents' door: the content of the courses and the references, drafts included; nothing a student typed. The one exception is
+    # the teacher bot (D-346): Api::V1::SearchController gives a `teacher` token answers_for, the key of one student, and that door then
+    # also holds the student's answers, with the visibility of the teacher console's answers tab (lexical only, one student, never a model).
     class Agent < Staff
-      def initialize
-        super(answers_for: nil)
+      def initialize(answers_for: nil)
+        super(answers_for: answers_for)
         @name = :agent
       end
     end
