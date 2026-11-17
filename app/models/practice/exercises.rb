@@ -2,7 +2,7 @@ module Practice
   # The list of the exercises of a topic for one student (D-337): what the practice page draws as a sidebar. Per skill of the topic, the items
   # pinned on the topic revision this student sees, in pin order, each with its status from the student's serves. Read-only.
   #
-  #   status, in this order: "unfinished" when the open serve has a try or a non-empty draft (she answered or typed and can go on, D-339);
+  #   status, in this order: "unfinished" when the open serve has a try or a non-empty draft (the student answered or typed and can go on, D-339);
   #           "done" when any serve of the item closed correct; "finished_solution" when a serve with a try or a shown solution closed or was
   #           abandoned without a correct answer and a solution was shown; "finished" when such a serve closed or was abandoned and none showed
   #           a solution (D-348: an exercise closed with the solution is finished, not to redo); "skipped" when there is an open serve (no try,

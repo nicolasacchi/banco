@@ -13,6 +13,8 @@ it:
       warmup_optional: "Vuoi provare i comandi prima?"
       warmup_optional_link: "Riscaldamento, facoltativo"
       all_done: "Hai fatto tutte le materie. Bravo."
+      done_line: "Già fatte: %{subjects}."
+      done_results: "Vedi i risultati"
     resume: "Riprendi"
     now: "Ora"
     start: "Comincia"

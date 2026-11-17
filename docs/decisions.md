@@ -353,6 +353,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-348 | 2026-11-17 | the exercise list says «Fatto», «Finito», «Finito: con la soluzione», «Da finire»; the page says when the exercise is a similar one of the same item; no seen exercise is served on its own when the pool runs out (rules `practice/5`: the message, `practice_pool_exhaustions`, `pool_exhausted_at` for the teacher); «Da riprendere» becomes «Dal test: da ripassare» with one line of explanation | implemented |
 | D-349 | 2026-11-17 | «I miei commenti» redone like Gmail and WhatsApp: `/comments` is a mailbox (one row per conversation, newest first, the last message with «Tu:»/«Docente:», relative time, bold and a dot for an unseen teacher message, tabs Tutti / Risposte nuove / In attesa / Chiusi with counts; the list marks nothing seen) and `/comments/:id` a chat (bubbles, day separators, composer at the bottom, optimistic send with an outbox, `reply_seen` when it opens, two panes from 1000 px); the answer time «Il docente risponde entro un giorno.» is `reply_within_hours` in `config/banco/comments.yml`, the teacher's inbox shows the wait and «In ritardo»; `POST /comments/:id/reply` answers JSON | implemented |
 | D-350 | 2026-11-17 | the student's pages scale as a whole: the size is the root size, every length is rem, six sizes (new «Minimo», 14 px), touch targets keep 44 px, a desktop window gets a tighter default and grids of cards, themes Crema, Chiaro (white), Scuro and Automatico (follows the device) | implemented |
+| D-351 | 2026-11-17 | Oggi's «Test d'ingresso» lists only the subjects still to do; the finished ones are one line («Già fatte: …» and «Vedi i risultati» to `/diagnosis`), which keeps every subject; the teacher's pages, the API and the «Ora» card do not change | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -4147,3 +4148,13 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Why:** the student said the pages were too big and not even; the fix is one rule (everything follows the size) and one default for a desktop, not a size for each page. His phone is unchanged.
 - **Status:** implemented.
 - **Tests:** `test/system/preferences_test.rb` (the choices, the ratio 2 of a button and a card between 14 and 28 px, Automatico by day and by night, Chiaro white, the desktop's tighter tokens with a mouse and the phone's untouched ones, a button of 44 px with a finger at 14 px), `test/integration/preferences_test.rb` (six sizes, four themes, `data-theme-choice`, the script), `test/lib/readability_test.rb` (the three palettes' contrast, six root sizes, the touch floor, no px lengths).
+
+## D-351 · 2026-11-17 · Oggi lists only the entry-test subjects still to do
+
+- **Design ref:** D-307 (Oggi and the «Ora» card), D-240 (the student's home), B-11 (the subject list and its states).
+- **The student's words (comment 12, 2026-11-17):** «Se sono già stati fatti possono anche essere rimossi, no?», about the «Test d'ingresso» block of Oggi, which listed every subject with «Fatto» and «Vedi risultati» on the finished ones.
+- **We do:** on Oggi, `#entry-subjects` has only the rows that are not done (`today.html.erb`, from `Diagnosis::Availability`; the `subject:KEY` comment anchors, `data-state` and `#entry-next` stay on the remaining rows). When at least one subject is done, one line under the list, `#entry-done`: «Già fatte: Italiano, Inglese e Informatica.» and the link «Vedi i risultati» to the page that lists them all (`/diagnosis`, `/teacher/preview/test` in the preview). With every subject done there is no list: the notice `#entry-all-done` and the line stay.
+- **Not done / must not change:** `/diagnosis` keeps every subject, finished ones with their results link; no change to the teacher's pages, to the API (`Course::StudentProgress` entry tests) or to the «Ora» card's choice.
+- **Why:** a finished subject is nothing left to do; on a page that says what to do today it was noise, and the results are one link away.
+- **Status:** implemented.
+- **Tests:** `test/integration/student_menu_test.rb` («D-351: a finished subject leaves Oggi's list…», and «in progress the button says Riprendi; all done leaves no list…»).
