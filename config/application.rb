@@ -31,6 +31,7 @@ require_relative "../lib/banco/lesson2_switch"
 require_relative "../lib/banco/append_only"
 require_relative "../lib/banco/schemas"
 require_relative "../lib/banco/hosts"
+require_relative "../lib/banco/sprites"
 
 module Banco
   class Application < Rails::Application

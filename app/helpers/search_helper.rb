@@ -13,7 +13,7 @@ module SearchHelper
   # An icon of the structural/ui sprite (bin/build-icons), decorative: the label next to it carries the meaning.
   def search_icon(kind)
     name = KIND_ICONS.fetch(kind, "info")
-    tag.svg(tag.use(nil, href: "/vendor/lucide@1.54.0/banco-sprite.svg##{name}"), class: "search-icon", "aria-hidden": "true", focusable: "false")
+    tag.svg(tag.use(nil, href: Banco::Sprites.icon_href(name)), class: "search-icon", "aria-hidden": "true", focusable: "false")
   end
 
   def search_kind_name(kind) = t("search.kinds.#{kind}")

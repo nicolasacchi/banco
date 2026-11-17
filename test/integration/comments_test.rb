@@ -568,7 +568,8 @@ class CommentsTest < ActionDispatch::IntegrationTest
 
   # D-327 supersedes D-304's "no API route reads a comment": the one door is Api::V1::CommentsController, for the tokens that
   # read (bot_read) and the teacher's (replies, read, resolve, reopen). Nothing else in the API names a comment, but D-333's digest
-  # controller, which carries the open comments' count and latest rows (through Comments::ApiRows) in its one-call answer.
+  # controller, which carries the open comments' count and latest rows (through Comments::ApiRows) in its one-call answer, and D-346's
+  # attempts controller (teacher token only), which resolves `comment=ID` to the answers behind a comment.
   test "the API names a comment only in the comments controller of D-327, and the contract only in its six commands" do
     api_routes = Rails.application.routes.routes.select { |r| r.path.spec.to_s.start_with?("/api/") }
     assert_not_empty api_routes
@@ -576,7 +577,8 @@ class CommentsTest < ActionDispatch::IntegrationTest
     assert_not_empty named
     assert_equal [ "api/v1/comments" ], named.map { |r| r.defaults[:controller] }.uniq
     offenders = Dir[Rails.root.join("app/controllers/api/**/*.rb").to_s].select { |f| File.read(f).match?(/\bComments?\b|CommentEvent|Comments::|comment_events/) }
-    assert_equal [ "app/controllers/api/v1/comments_controller.rb", "app/controllers/api/v1/digest_controller.rb" ], offenders.map { |f| f.delete_prefix("#{Rails.root}/") }.sort
+    assert_equal [ "app/controllers/api/v1/attempts_controller.rb", "app/controllers/api/v1/comments_controller.rb", "app/controllers/api/v1/digest_controller.rb" ],
+                 offenders.map { |f| f.delete_prefix("#{Rails.root}/") }.sort
     commands = JSON.parse(Rails.root.join("contract/commands.json").read)["commands"].map { |c| c["name"] }.grep(/comment/)
     assert_equal [ "comments list", "comments read", "comments reopen", "comments reply", "comments resolve", "comments show" ], commands.sort
   end

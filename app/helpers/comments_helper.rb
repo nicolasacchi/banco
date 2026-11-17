@@ -5,7 +5,7 @@ module CommentsHelper
 
   # A decorative icon of the ui sprite (bin/build-icons, config/banco/icons.yml): the word next to it carries the meaning.
   def comment_icon(name)
-    tag.svg(tag.use(nil, href: "/vendor/lucide@1.54.0/banco-sprite.svg##{name}"), class: "comment-icon", "aria-hidden": "true", focusable: "false")
+    tag.svg(tag.use(nil, href: Banco::Sprites.icon_href(name)), class: "comment-icon", "aria-hidden": "true", focusable: "false")
   end
 
   # The icon of a page kind in "I miei commenti" and on the teacher's cards (all in the structural sprite).

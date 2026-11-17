@@ -2,15 +2,14 @@
 // writes can become HTML. SVG is built with createElementNS and classes only.
 import { el } from "items/dom"
 import palette from "lesson/palette"
+import { MAIN_SPRITE, spriteUrl } from "lesson/sprite"
 
 export { el }
 export const SVG_NS = "http://www.w3.org/2000/svg"
-export const SPRITE_DIR = "/vendor/lucide@1.54.0/"
-export const SPRITE = `${SPRITE_DIR}banco-sprite.svg`
 
 // The sprite holding an icon (bin/build-icons: banco-sprite.svg for the structural and ui icons, banco-sprite-SUBJECT.svg for
-// a subject's own): "/vendor/lucide@1.54.0/banco-sprite-biology.svg#dna".
-export const spriteHref = (name) => `${SPRITE_DIR}${palette.icons.sprites[name] ?? "banco-sprite.svg"}#${name}`
+// a subject's own), with the sprite's version (D-347): "/vendor/lucide@1.54.0/banco-sprite-biology.svg?v=2fd0dc18b94c#dna".
+export const spriteHref = (name) => `${spriteUrl(palette.icons.sprites[name] ?? MAIN_SPRITE)}#${name}`
 
 export function svg(tag, attributes = {}) {
   const node = document.createElementNS(SVG_NS, tag)
