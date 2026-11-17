@@ -3,7 +3,7 @@
 module StudentUiHelper
   MENU_ICONS = { today: "nav-today", subjects: "nav-subjects", search: "nav-search", diagnosis: "nav-diagnosis", comments: "comment",
                  settings: "nav-settings", logout: "back" }.freeze
-  SUBJECT_ICONS = %w[math italian chemistry biology computer_science business english spanish geography history law_economics].freeze
+  SUBJECT_ICONS = %w[math italian chemistry biology computer_science business english spanish geography history law_economics physical_education].freeze
 
   # The tone of a skill's state: never red and green. Done is teal, in study blue, to recover or review brass.
   STATE_TONES = { "demonstrated" => :success, "consolidated" => :success, "in_study" => :info, "to_recover" => :nearly, "to_review" => :nearly,

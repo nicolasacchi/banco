@@ -106,10 +106,14 @@ class SubjectStage
       latest.display_status
     end
 
+    # A subject with no entry test (D-344) needs no blueprint: its graph is the whole of its cycle (approved with the graph, and
+    # only the teacher is left once the graph is in).
     def stage(subject, graph, blueprint, approved_g, approved_b, items)
-      return "approved" if approved_g && approved_b
+      tested = subject.entry_test?
+      return "approved" if approved_g && (approved_b || !tested)
       return "validating" if items.values.any? { |s| %w[validating error].include?(s) }
-      return "drafting" unless graph && blueprint
+      return "drafting" unless graph && (blueprint || !tested)
+      return "awaiting_teacher" unless blueprint
       return "drafting" if pinned_not_passed?(blueprint)
 
       review_done?(subject, blueprint) ? "awaiting_teacher" : "in_review"

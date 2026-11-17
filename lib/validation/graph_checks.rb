@@ -25,7 +25,7 @@ module Validation
       scope(skills, findings)
       scope_markers(skills, context, findings)
       other_subject_refs(skills, context, findings)
-      needed_by(skills, index, findings)
+      needed_by(skills, index, subject, findings)
       readability(skills, findings)
       findings
     end
@@ -252,9 +252,11 @@ module Validation
     end
 
     # A skill needs a next-year line that requires it, directly or through a skill
-    # that depends on it (transitively).
-    def needed_by(skills, index, findings)
-      needed = skills.select { |s| Array(s["refs"]).any? { |r| r["role"] == "needed_by" && seconda_ref?(r) } }.map { |s| s["key"] }
+    # that depends on it (transitively). For a subject the seconda source does not
+    # cover (D-344) the next year's lines are those of the official programme.
+    def needed_by(skills, index, subject, findings)
+      official = Rules.official_programme_subject?(subject) ? Rules.get(:course, :extra_source) : nil
+      needed = skills.select { |s| Array(s["refs"]).any? { |r| r["role"] == "needed_by" && (seconda_ref?(r) || r["source"] == official) } }.map { |s| s["key"] }
       reach = Set.new
       stack = needed.dup
       until stack.empty?

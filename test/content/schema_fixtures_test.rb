@@ -138,7 +138,8 @@ class SchemaFixturesTest < ActiveSupport::TestCase
     assert_match Diagnosis::Rules::V1::SKILL_KEY_PATTERN, "math.linear-equation-integer"
     assert_no_match Diagnosis::Rules::V1::SKILL_KEY_PATTERN, "mat-linear-equation"
     assert_no_match Diagnosis::Rules::V1::SKILL_KEY_PATTERN, "math.Linear"
-    assert_equal Diagnosis::Rules::V1::SUBJECTS.sort,
+    # the subjects with an entry test (Rules::V1) plus those without one (D-344): every subject an item may name
+    assert_equal (Diagnosis::Rules::V1::SUBJECTS + Subject::WITHOUT_ENTRY_TEST).sort,
                  JSON.parse(File.read(Rails.root.join("config/banco/schemas/item.json"))).dig("properties", "subject", "enum").sort
   end
 end

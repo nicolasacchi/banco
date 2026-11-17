@@ -3,7 +3,7 @@ module SearchHelper
   KIND_ICONS = { "lesson_card" => "book-open", "glossary_term" => "book-a", "topic" => "compass", "practice_item" => "notebook-pen",
                  "item" => "circle-help", "item_instance" => "circle-help", "course" => "map", "skill" => "list-checks", "finding" => "triangle-alert",
                  "reference_article" => "book-open", "syllabus_line" => "list-checks", "student_answer" => "pencil-ruler" }.freeze
-  SUBJECTS = %w[math italian chemistry biology computer_science business english spanish geography history law_economics].freeze
+  SUBJECTS = %w[math italian chemistry biology computer_science business english spanish geography history law_economics physical_education].freeze
 
   # The snippet of a hit, the words that matched in <mark>. Everything else is escaped text.
   def search_snippet(hit, result)

@@ -51,6 +51,10 @@ current map with `banco course open --subject KEY`. An identical file replays th
   A skill of an `extra` topic (below) may instead cite the official programme (`ufficiale-2026-27`) as
   `taught_in`, checked the same way; a skill whose only `taught_in` refs are on that source is held only
   by an `extra` topic (`E-COURSE-EXTRA-SKILL`).
+  For `physical_education` (D-344) the official programme **is** the current year's programme: its skills cite
+  `ufficiale-2026-27` as `taught_in`, are held by `ripasso`, `ponte` or `lezione` topics like any other
+  (no `E-COURSE-EXTRA-SKILL`), and the lessons of those topics cite it too (`taught_in` for a `lezione`,
+  `needed_by` for a `ripasso` or a `ponte`; a `ripasso` needs no ref on the previous year's programme).
 - At least one typical `errors[]` entry per skill: a snake_case `code`, what the student does wrong
   (`description_it`), and the skills the mistake implicates. These codes are what practice items reuse.
 - The union of graph prerequisites and map prerequisites has no cycle (`E-GRAPH-CYCLE`).

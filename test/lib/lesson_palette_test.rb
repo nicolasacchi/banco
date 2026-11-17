@@ -14,8 +14,8 @@ class LessonPaletteTest < ActiveSupport::TestCase
   LIGHT = { bg: "#ffffff", surface: "#f5f5f5", text: "#111111" }.freeze
   SHAPES = %w[box weight circle square triangle diamond ring star pentagon].freeze
   CARRIERS = %w[glyph position icon tint band].freeze
-  # the eleven subjects of the file (version 2): math and italian of release 1, the nine of wave 2
-  SUBJECTS = %w[math italian english spanish history geography law_economics business biology chemistry computer_science].freeze
+  # the twelve subjects of the file (version 2): math and italian of release 1, the nine of wave 2, scienze motorie (D-344)
+  SUBJECTS = %w[math italian english spanish history geography law_economics business biology chemistry computer_science physical_education].freeze
 
   # a subject's own roles with `same_as` resolved (Lessons::Palette)
   def roles(subject) = Lessons::Palette.subject_roles(subject)

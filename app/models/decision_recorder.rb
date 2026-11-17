@@ -312,14 +312,14 @@ class DecisionRecorder
     [ revision.item.subject, student, { item_revision_id: revision.id, reason_it: reason! } ]
   end
 
-  # All 11 subjects together (operator Q1): no subject may be left out.
+  # All the subjects that have an entry test together (operator Q1): none may be left out (physical_education has none, D-344).
   def release_diagnosis
     raise Invalid, "the diagnosis is already open" if Diagnosis::Release.open?
 
     reasons = []
     reasons << "the consent is not recorded" unless Decision.exists?(kind: "record_consent")
     student = Student.find_by(key: "student")
-    subjects = Subject.order(:position).to_a
+    subjects = Subject.with_entry_test.order(:position).to_a
     reasons << "there is no subject" if subjects.empty?
     subjects.each do |s|
       reasons << "#{s.key}: graph and entry test are not both approved" unless SubjectStage.approved_graph(s) && SubjectStage.approved_blueprint(s)

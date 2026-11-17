@@ -166,7 +166,7 @@ only), `HARNESS_PORT` 3200 (internal), `VIEW_PORT` 3400 (view links, GET only). 
 - Rich lessons, wave 2 (W2-0 contracts, D-262 to D-271, `docs/lessons-wave2.md`): `config/banco/lesson_types.yml` says what authors may use (`Lessons::Types`,
   `status` available, reserved or draft; `bin/build-lesson-types` makes `lesson/diagrams/registry.js`, `lesson/checks/registry.js`, `lesson/voices.js`); the
   component contract v2 is `lesson/diagrams/contract.js` and `Lessons::Diagrams::Contract` (stubs of the 29 types under `lesson/diagrams/FAMILY/` and
-  `lib/lessons/diagrams/`); palette v2 (eleven subjects, `same_as`, `data-palette`), `config/banco/voices.yml`, the vetted tables of `config/banco/data/`
+  `lib/lessons/diagrams/`); palette v2 (twelve subjects, `same_as`, `data-palette`; the twelfth, `physical_education`, is theory only with no entry test, D-344), `config/banco/voices.yml`, the vetted tables of `config/banco/data/`
   (`Lessons::VettedData`), the libraries of `lib/lessons/{chrono,dates,num_words,money,chem,words,verbs,bits,program_grammar,sheet}.rb` with their JS twins
   in `lesson/lib/`, the caps `lesson2.types` (rules version 9) and the subject briefs `briefs/lesson-SUBJECT.md`. A track makes its piece `available` in
   the commit of its look gate.

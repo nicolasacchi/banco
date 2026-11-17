@@ -4,7 +4,7 @@
     <% if @review.present? %><%= @review.approved_latest? ? ui_pill(t("teacher.dashboard.approved"), :success, icon: "circle-check") : ui_pill(t("teacher.dashboard.to_approve"), :nearly) %><% end %>
   <% end %>
   <% if !@review.present? %>
-    <%= ui_empty t("teacher.test.none") %>
+    <%= ui_empty t(@subject.entry_test? ? "teacher.test.none" : "teacher.test.no_entry_test") %>
   <% else %>
     <% review = @review %>
     <% gate = review.gate %>

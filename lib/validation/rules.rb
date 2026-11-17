@@ -23,6 +23,15 @@ module Validation
         path.map(&:to_s).reduce(effective) { |node, key| node.fetch(key) }
       end
 
+      # D-344: subjects the seconda source does not cover (course.official_programme_subjects); for them the official
+      # programme (course.extra_source) is the current year's programme.
+      def official_programme_subject?(subject) = list(:course, :official_programme_subjects).include?(subject.to_s)
+
+      # The source a topic of +subject+ cites as its programme: seconda_source, or extra_source for those subjects.
+      def programme_source(subject)
+        get(:course, official_programme_subject?(subject) ? :extra_source : :seconda_source)
+      end
+
       def list(*path) = Array(get(*path))
 
       # Replaces values for the duration of the block (deep merge on the file's

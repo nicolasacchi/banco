@@ -23,9 +23,14 @@ Before you write, search what exists: `banco search "WORDS" --subject KEY` finds
   composite_of?[], refs[], errors[]}`.
 - Key: `<subject>.<kebab-slug>`, for example `math.linear-equation-integer`. Subject
   keys: math, italian, history, geography, english, spanish, computer_science,
-  chemistry, biology, business, law_economics. Short inventory prefixes map as
+  chemistry, biology, business, law_economics, physical_education. Short inventory prefixes map as
   mat=math, it=italian, hist=history, geo=geography, eng=english, es=spanish,
   inf=computer_science, che=chemistry, bio=biology, eca=business, dir=law_economics.
+  `physical_education` (Scienze motorie, theory only, D-344) has no entry test, no lines in the
+  prior-year programme and none in the seconda programme: its skills are `not_in_prima` or
+  `middle_school`, `needed_by` refs are on the official programme (`ufficiale-2026-27`, the section
+  «Scienze motorie e sportive»), there is no `coverage` check and no `excluded[]`. Read
+  `banco brief show lesson-physical-education` for what to teach.
 - `layer`: `core` (needed by several topics of the next year), `sec`, `opt`.
 - `scope`: `studied`, `integration_studied` (star), `in_progress` (star-empty or
   both), `middle_school` (from the lower school; carries `scope_reason_it`),

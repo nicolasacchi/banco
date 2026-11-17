@@ -21,7 +21,8 @@
         "business",
         "computer_science",
         "biology",
-        "chemistry"
+        "chemistry",
+        "physical_education"
       ]
     },
     "graph_revision_id": {
@@ -37,7 +38,7 @@
         "properties": {
           "skill": {
             "type": "string",
-            "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+            "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry|physical_education)\\.[a-z0-9]+(-[a-z0-9]+)*$"
           },
           "guest_of_subject": {
             "enum": [
@@ -51,7 +52,8 @@
               "business",
               "computer_science",
               "biology",
-              "chemistry"
+              "chemistry",
+              "physical_education"
             ]
           },
           "items": {
@@ -90,7 +92,7 @@
         "properties": {
           "skill": {
             "type": "string",
-            "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+            "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry|physical_education)\\.[a-z0-9]+(-[a-z0-9]+)*$"
           },
           "items": {
             "type": "array",
@@ -161,7 +163,8 @@
           "business",
           "computer_science",
           "biology",
-          "chemistry"
+          "chemistry",
+          "physical_education"
         ]
       },
       "uniqueItems": true
@@ -195,7 +198,7 @@
         "properties": {
           "skill": {
             "type": "string",
-            "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+            "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry|physical_education)\\.[a-z0-9]+(-[a-z0-9]+)*$"
           },
           "kind": {
             "enum": [

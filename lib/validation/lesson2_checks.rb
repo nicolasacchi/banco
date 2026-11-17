@@ -43,7 +43,7 @@ module Validation
         findings.add("E-SCHEMA", "/front_matter/uses", "#{both.join(', ')} is in skills: uses names other skills", rule: "uses_in_skills")
       end
       LessonChecks.skills_known(fm, subject, context, findings)
-      LessonChecks.refs(fm, context, findings)
+      LessonChecks.refs(fm, subject, context, findings)
     end
 
     # A finding about a front matter member names the line of that member.

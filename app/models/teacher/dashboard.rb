@@ -29,7 +29,7 @@ module Teacher
 
     def release
       @release ||= begin
-        subjects = Subject.order(:position).to_a
+        subjects = Subject.with_entry_test.order(:position).to_a
         official = Student.official
         Release.new(subjects.count { |s| SubjectStage.approved_graph(s) && SubjectStage.approved_blueprint(s) }, subjects.size,
                     home.consent_recorded?, !official.nil? && Diagnosis::Warmup.complete?(official), home.released?)

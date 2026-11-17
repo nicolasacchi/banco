@@ -2,7 +2,7 @@ require "test_helper"
 
 # C-03: the authoring briefs are versioned files in git.
 class BriefTest < ActiveSupport::TestCase
-  SUBJECT_BRIEFS = %w[biology business chemistry computer_science english geography history law_economics spanish].freeze
+  SUBJECT_BRIEFS = %w[biology business chemistry computer_science english geography history law_economics physical_education spanish].freeze
   NAMES = (%w[arbiter blueprint course diagnosis-item grade lesson lesson-review lesson-v1 page page-review practice-item review skill-graph solve topic] +
            SUBJECT_BRIEFS.map { |s| "lesson-#{s.tr('_', '-')}" }).sort.freeze
   VERSION_2 = %w[arbiter diagnosis-item lesson lesson-review].freeze # D-227: practice items, review points 12-13; D-245: lesson/2 and its review; D-316: the arbiter without a second opinion; solve is 3 and review 4 (D-320: the figures; D-336: the pictures of the instances)

@@ -55,12 +55,12 @@
   "$defs": {
     "skill_key": {
       "type": "string",
-      "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+      "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry|physical_education)\\.[a-z0-9]+(-[a-z0-9]+)*$"
     },
     "lesson_key": {
       "type": "string",
       "maxLength": 120,
-      "pattern": "^(ripasso|ponte|lezione|extra)\\.(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+      "pattern": "^(ripasso|ponte|lezione|extra)\\.(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry|physical_education)\\.[a-z0-9]+(-[a-z0-9]+)*$"
     },
     "ref": {
       "type": "object",
@@ -136,7 +136,8 @@
             "business",
             "computer_science",
             "biology",
-            "chemistry"
+            "chemistry",
+            "physical_education"
           ]
         },
         "title_it": {
@@ -318,7 +319,8 @@
             "business",
             "computer_science",
             "biology",
-            "chemistry"
+            "chemistry",
+            "physical_education"
           ]
         },
         "title_it": {
@@ -2543,7 +2545,8 @@
             "business",
             "computer_science",
             "biology",
-            "chemistry"
+            "chemistry",
+            "physical_education"
           ]
         },
         "title_it": {
@@ -2746,7 +2749,8 @@
             "business",
             "computer_science",
             "biology",
-            "chemistry"
+            "chemistry",
+            "physical_education"
           ]
         },
         "title_it": {

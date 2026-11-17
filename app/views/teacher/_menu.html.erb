@@ -22,7 +22,7 @@
                 <li data-menu-subject="<%= subject.key %>">
                   <strong><%= subject.name_it %></strong>
                   <a href="<%= teacher_graph_path(key: subject.key) %>"><%= t("teacher.menu.graph") %></a>
-                  <a href="<%= teacher_test_path(key: subject.key) %>"><%= t("teacher.menu.test") %></a>
+                  <% if subject.entry_test? %><a href="<%= teacher_test_path(key: subject.key) %>"><%= t("teacher.menu.test") %></a><% end %>
                   <% if blueprint_subject_ids.include?(subject.id) %><a href="<%= teacher_test_all_path(key: subject.key) %>"><%= t("teacher.menu.all") %></a><% end %>
                   <a href="<%= teacher_course_path(key: subject.key) %>"><%= t("teacher.menu.course") %></a>
                   <a href="<%= with_student(teacher_report_path(key: subject.key)) %>"><%= t("teacher.menu.report") %></a>

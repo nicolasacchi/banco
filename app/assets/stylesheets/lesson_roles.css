@@ -176,6 +176,7 @@
   --accent-geography: #e8f0d1;
   --accent-history: #eae3d7;
   --accent-law_economics: #e2d4ed;
+  --accent-physical_education: #f7d0c9;
   --role-highlight-tint: var(--r-common-highlight-tint);
   --role-highlight-bg: var(--r-common-highlight-tint); --role-highlight-pad: 0 0.15em; --role-highlight-radius: 0.2em;
   --role-correct-fg: var(--r-common-correct-fg);
@@ -361,6 +362,7 @@
   --accent-geography: #424c24;
   --accent-history: #443b2c;
   --accent-law_economics: #3b2848;
+  --accent-physical_education: #4d2621;
   --role-highlight-tint: var(--r-common-highlight-tint);
   --role-highlight-bg: var(--r-common-highlight-tint); --role-highlight-pad: 0 0.15em; --role-highlight-radius: 0.2em;
   --role-correct-fg: var(--r-common-correct-fg);
@@ -548,6 +550,7 @@
     --accent-geography: #e8f0d1;
     --accent-history: #eae3d7;
     --accent-law_economics: #e2d4ed;
+    --accent-physical_education: #f7d0c9;
     --role-highlight-tint: var(--r-common-highlight-tint);
     --role-highlight-bg: var(--r-common-highlight-tint); --role-highlight-pad: 0 0.15em; --role-highlight-radius: 0.2em;
     --role-correct-fg: var(--r-common-correct-fg);
@@ -760,6 +763,14 @@
   --role-guarantee-mark: var(--r-law_economics-guarantee-mark);
   --role-norm-fg: var(--r-law_economics-norm-fg);
   --role-norm-mark: var(--r-law_economics-norm-mark);
+}
+[data-palette="physical_education"] {
+  --role-cause-fg: var(--r-italian-cause-fg);
+  --role-cause-mark: var(--r-italian-cause-mark);
+  --role-purpose-fg: var(--r-italian-purpose-fg);
+  --role-purpose-mark: var(--r-italian-purpose-mark);
+  --role-time-fg: var(--r-italian-time-fg);
+  --role-time-mark: var(--r-italian-time-mark);
 }
 
 /* Text and formulas: colour, and a tint where the place says the role. */
@@ -1031,6 +1042,7 @@
 .l2[data-subject="geography"] { --band: var(--accent-geography); }
 .l2[data-subject="history"] { --band: var(--accent-history); }
 .l2[data-subject="law_economics"] { --band: var(--accent-law_economics); }
+.l2[data-subject="physical_education"] { --band: var(--accent-physical_education); }
 .card-tone-highlight { --band: var(--role-highlight-tint); }
 .card-tone-left { --band: var(--role-left-tint); }
 .card-tone-right { --band: var(--role-right-tint); }
