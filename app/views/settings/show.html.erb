@@ -11,6 +11,7 @@
         <label class="option choice"><%= radio_button_tag "theme", theme, @preferences[:theme] == theme %> <span><%= t("diagnosis.preferences.themes.#{theme}") %></span></label>
       <% end %>
     </fieldset>
+    <p class="field-help"><%= t("diagnosis.preferences.theme_hint") %></p>
     </div>
     <div class="card">
     <fieldset class="options choice-list" data-comment-anchor="setting:size">
@@ -19,6 +20,7 @@
         <label class="option choice"><%= radio_button_tag "size", size, @preferences[:size] == size %> <span><%= t("diagnosis.preferences.sizes.#{size}") %></span></label>
       <% end %>
     </fieldset>
+    <p class="field-help"><%= t("diagnosis.preferences.size_hint") %></p>
     </div>
     <div class="button-row"><button type="submit" class="button"><%= t("diagnosis.preferences.save") %></button></div>
   <% end %>

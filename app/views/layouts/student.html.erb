@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <% prefs = ui_preferences %>
-<html lang="it" data-theme="<%= prefs[:theme] %>" data-size="<%= prefs[:size] %>">
+<html lang="it" data-theme="<%= ui_theme(prefs) %>" data-theme-choice="<%= prefs[:theme] %>" data-size="<%= prefs[:size] %>">
   <head>
     <title><%= content_for(:title) || t("diagnosis.title") %></title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
+    <%= render "shared/theme_script" %>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <link rel="icon" href="/icon.png" type="image/png">

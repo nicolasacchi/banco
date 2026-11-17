@@ -1,0 +1,41 @@
+/*
+ * The student's pages on a desktop window, and the settings page (D-350). Loaded after student.css (propshaft sorts the files by name),
+ * so a rule here wins over the same selector there.
+ *
+ * Everything is in rem, so the size the student chooses (14 to 28 px at the root) scales the whole page. This file adds the density of a
+ * desktop: from 1000 px of window width, with a mouse (pointer: fine), the spacing, the headings and the targets are a fifth tighter,
+ * the page is a little wider (52 rem) and the lists of cards (Oggi, Materie, the topics of a subject, the steps of a topic) become a grid of narrower
+ * cards instead of one long column. A phone, a tablet with a finger and a narrow window keep the layout of student.css. The teacher's
+ * pages (body.teacher) keep theirs: every rule here is under body.student.
+ */
+
+/* The settings page: the choices of colours and of size side by side when there is room, one under the other on a phone. */
+.preferences { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(17rem, 100%), 1fr)); gap: 0 var(--space-4); align-items: start; }
+.preferences .button-row { grid-column: 1 / -1; }
+
+@media (min-width: 1000px) and (pointer: fine) {
+  body.student {
+    --space-1: 0.2rem; --space-2: 0.4rem; --space-3: 0.6rem; --space-4: 0.8rem; --space-5: 1.2rem; --space-6: 1.6rem; --space-7: 2.4rem; --space-8: 3.2rem;
+    --text-l: 1.1rem; --text-h2: 1.3rem; --text-h1: 1.6rem; --text-display: 2rem;
+    --radius-m: 0.6rem; --radius-l: 1rem;
+    --tap: 2.4rem; --tap-small: 2rem;
+    --page-w: 52rem;
+  }
+  /* A list of cards is a grid of cards 21 rem wide at least; the one next thing (the «Ora» card) stays across the whole width. */
+  body.student ul.topic-list, body.student ol.topic-list, body.student ul.subject-list {
+    grid-template-columns: repeat(auto-fill, minmax(min(21rem, 100%), 1fr)); align-items: stretch;
+  }
+  body.student ul.subject-list.cards { grid-template-columns: repeat(auto-fill, minmax(min(17rem, 100%), 1fr)); align-items: start; }
+  body.student .now-card, body.student ul.subject-list > li.subject.now-card, body.student ul.topic-list > li.topic.now-card { grid-column: 1 / -1; }
+  body.student ol.topic-steps { grid-template-columns: repeat(auto-fit, minmax(min(24rem, 100%), 1fr)); align-items: start; }
+  /* The shapes that were set in rem of their own follow the tighter scale. */
+  body.student .subject-chip { width: 2.4rem; height: 2.4rem; }
+  body.student .subject-chip .ic { width: 1.25rem; height: 1.25rem; }
+  body.student .now-card .subject-chip { width: 3rem; height: 3rem; }
+  body.student .now-card .subject-chip .ic { width: 1.5rem; height: 1.5rem; }
+  body.student .now-card .button, body.student .now-card form.inline .button { min-height: 2.8rem; padding-inline: var(--space-5); }
+  body.student .topic-number { width: 2rem; height: 2rem; }
+  body.student .ic.big, body.student .empty .ic { width: 2rem; height: 2rem; }
+  body.student .button { padding-inline: var(--space-4); }
+  body.student .page { padding-block: var(--space-5) var(--space-7); }
+}

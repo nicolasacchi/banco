@@ -2,7 +2,8 @@
  * The student's pages (B-11, E-10). High readability for every reader: a sans-serif face at 20 px (never under 18), line height 1.6,
  * text aligned left, lines of at most 70 characters, no italics, no capitals for
  * emphasis, bold only on keywords, no alarm colours. Themes of contrast at
- * least 7:1: cream (the default), light and dark, by the student's choice; five text sizes.
+ * least 7:1: cream (the default), light (white), dark and auto (the device's own: cream by day, dark by night), by the student's
+ * choice; six text sizes, 14 to 28 px at the root, and every length below is in rem, so a size scales the whole page (D-350).
  */
 /* Atkinson Hyperlegible, SIL Open Font License 1.1 (public/vendor/atkinson-hyperlegible@5.3.0/LICENSE). */
 @font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 400; font-display: swap;
@@ -32,8 +33,14 @@
   color-scheme: light;
 }
 
-/* The student's own choice, kept on the server: cream (the default) or dark. The white "light" theme was never offered
-   and is gone (D-306); any other stored theme falls back to cream. */
+/* The student's own choice, kept on the server: cream (the default), light, dark or auto (D-350). The layout puts on <html> the
+   theme in force as data-theme (cream, light or dark) and the choice as data-theme-choice; for auto a script in the head
+   (shared/_theme_script) sets data-theme from prefers-color-scheme before the first paint and again when the device changes.
+   Cream is the base above; light is white with neutral greys (the same contrast: text 17:1, muted 10:1, button 11:1). */
+:root[data-theme="light"] {
+  --bg: #ffffff; --text: #161616; --muted: #3f3f3f; --line: #767676; --primary: #1d3b5c; --primary-text: #ffffff;
+  --surface: #f5f5f3; --focus: #0b3d91; --tone-nearly: #8a6119; --shadow-rgb: 20, 20, 20; color-scheme: light;
+}
 :root[data-theme="dark"] {
   --bg: #1b1a17; --text: #f3ecdc; --muted: #d3cbb6; --line: #8c846e; --primary: #f0dfae; --primary-text: #1b1a17;
   --surface: #25231f; --focus: #9cc3ff; --tone-nearly: #e0b862; --shadow-rgb: 0, 0, 0; color-scheme: dark;
@@ -42,9 +49,11 @@
 /* Design tokens (D-306, docs/ui.md). One place for every page; the themes above only change colours.
    Components live in components.css and read these, never raw values. The lessons' own scale (.l2, em) stays inside .l2. */
 :root {
-  /* spacing, a 5 px step at the 20 px base */
+  /* spacing, a 5 px step at the 20 px base. A page is built of these and of rem only, so a smaller size makes the gaps, the cards,
+     the buttons and the icons smaller in the same proportion as the text. A desktop window takes tighter values (student_scale.css). */
   --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-5: 1.5rem; --space-6: 2rem; --space-7: 3rem; --space-8: 4rem;
-  /* type: nothing under 0.9rem (18 px) */
+  --page-w: 70ch;
+  /* type: nothing under 0.9rem (18 px at the base size) */
   --text-s: 0.9rem; --text-m: 1rem; --text-l: 1.15rem; --text-h2: 1.4rem; --text-h1: 1.75rem; --text-display: 2.25rem;
   --leading-tight: 1.3; --leading-body: 1.6;
   /* shape and depth */
@@ -53,7 +62,7 @@
   --shadow-2: 0 1px 0 rgba(var(--shadow-rgb), 0.06), 0 0.7rem 1.7rem -0.8rem rgba(var(--shadow-rgb), 0.38);
   --border: 2px solid var(--line);
   --border-soft: 1px solid var(--line);
-  /* targets and focus */
+  /* targets and focus: 2.75 rem (55 px at the base size), and never under 44 px where a finger touches (pointer: coarse, below) */
   --tap: 2.75rem; --tap-small: 2.25rem;
   --focus-ring: 3px solid var(--focus); --focus-offset: 2px;
   /* motion: both are 0 under prefers-reduced-motion (below) */
@@ -68,13 +77,19 @@
   --tone-hint: var(--r-math-unknown-fg, #592d86);
   --tone-muted: var(--muted);
 }
+/* A touch screen: a target keeps 44 CSS px at every size, also the smallest; a mouse may have smaller ones. */
+@media (pointer: coarse) {
+  :root { --tap: max(2.75rem, 44px); --tap-small: max(2.25rem, 44px); }
+}
 @media (prefers-reduced-motion: reduce) {
   :root { --dur-1: 0ms; --dur-2: 0ms; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
 
+/* The text size the student chooses is the root size; everything else is in rem (or em of it), so it scales the whole page. */
 html { font-size: 20px; }
+html[data-size="minimum"] { font-size: 14px; }
 html[data-size="smallest"] { font-size: 16px; }
 html[data-size="small"] { font-size: 18px; }
 html[data-size="large"] { font-size: 24px; }
@@ -96,9 +111,9 @@ body.student {
 .student strong, .student b { font-weight: 700; }
 
 .page {
-  max-width: 70ch;
+  max-width: var(--page-w);
   margin: 0 auto;
-  padding: 1.5rem 1rem 4rem;
+  padding: var(--space-5) var(--space-4) var(--space-8);
 }
 
 h1 { font-size: var(--text-h1); line-height: var(--leading-tight); margin: 0 0 var(--space-4); }

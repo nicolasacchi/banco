@@ -31,7 +31,21 @@ inside `.l2`; do not use its classes outside a lesson.
 | Targets and focus | `--tap` 2.75 rem, `--tap-small` 2.25 rem, `--focus-ring`, `--focus-offset` |
 | Motion | `--dur-1` 120 ms, `--dur-2` 240 ms, `--ease` |
 
-The text size the student chooses changes the root size (20, 24, 28 px), so everything in rem scales with it.
+The size the student chooses is the root size: Minimo 14 px, Molto piccolo 16, Piccolo 18, Normale 20 (the default), Grande 24, Molto grande 28
+(`html[data-size]`). Every length of a page is in rem (or em of it), never px (a border or a hairline aside), so a size scales the text, the
+gaps, the cards, the buttons and the icons together (D-350). Media queries stay in px or rem of the browser (the window, not the size).
+
+Targets: `--tap` and `--tap-small` are 2.75 and 2.25 rem; on a touch screen (`pointer: coarse`) they are `max(that, 44px)`, so a finger always has
+44 CSS px, also at 14 px. A lesson does the same in the last block of `lesson.css`. With a mouse a target follows the size.
+
+A desktop (a window of 1000 px or more, `pointer: fine`) is tighter on the student's pages: `student_scale.css` redefines the spacing, headings,
+radii and targets under `body.student` (a fifth smaller), makes the page 52 rem wide (`--page-w`, 70 ch elsewhere) and lays lists of cards in a grid
+(Oggi, Materie, the topics of a subject, the steps of a topic). A phone, a narrow window and the teacher's pages keep the single column.
+
+Themes: `cream` (the default), `light` (white, neutral), `dark` and `auto`. `<html>` has `data-theme` (cream, light or dark: what is shown) and
+`data-theme-choice` (what the student picked). For `auto` the head of the layout runs `shared/_theme_script` before the first paint: cream when the
+device is light, dark when it is dark, and again when the device changes; the lesson's own dialog does the same with `lesson/theme.js`. Colour in CSS
+comes from the variables of the palette, never from a theme name; the lesson roles of `light` are the cream ones (they have more contrast on white).
 
 ## Components
 

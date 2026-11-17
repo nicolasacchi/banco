@@ -15,6 +15,10 @@ module ApplicationHelper
     Diagnosis::Preferences.for(student)
   end
 
+  # The theme in force for data-theme: the choice, except for "auto" (the device's own), which the page's first script
+  # settles from prefers-color-scheme (D-350); cream until then and wherever scripts do not run.
+  def ui_theme(prefs) = prefs[:theme] == "auto" ? "cream" : prefs[:theme]
+
   # A student's page address, in the preview under /teacher/preview (D-309): spath("/topics/x") is "/topics/x" for S and
   # "/teacher/preview/topics/x" for the teacher walking the site. Only for the student's own pages; never an outside address.
   def spath(path) = "#{student_root}#{path}"
