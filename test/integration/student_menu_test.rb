@@ -81,7 +81,7 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     assert_equal [ "Oggi", "Test d'ingresso", "I miei commenti", "Impostazioni" ], labels
   end
 
-  test "in progress the button says Riprendi; all done lists the results and no button" do
+  test "in progress the button says Riprendi; all done leaves no list, a line with the results link and no button" do
     rows = build_ui_subject
     release_diagnosis!
     official = student("student")
@@ -97,7 +97,30 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     assert_select "#entry-test[data-state=done]"
     assert_select "#entry-all-done"
     assert_select "#entry-next", 0
-    assert_select "#entry-subjects a[href='/diagnosis/runs/#{run.id}/results']"
+    assert_select "#entry-subjects li", 0
+    assert_select "#entry-done", /Già fatte: Matematica\./
+    assert_select "#entry-done a[href='/diagnosis']", "Vedi i risultati"
+  end
+
+  test "D-351: a finished subject leaves Oggi's list; one line names it and links to the results list" do
+    rows = build_ui_subject
+    build_ui_subject(key: "history", name: "Storia", components: %w[choice], position: 2)
+    release_diagnosis!
+    official = student("student")
+    warmup_done!(official)
+    play_run(official, rows[:subject], clock: Diagnosis::FakeClock.new(Time.current))
+    page(OFFICIAL, "/today")
+    assert_select "#entry-test[data-state=open]"
+    assert_select "#entry-subjects li.subject", 1
+    assert_select "#entry-subjects li[data-subject=history][data-comment-anchor='subject:history']"
+    assert_select "#entry-subjects li[data-subject=math]", 0
+    assert_select "#entry-subjects #entry-next"
+    assert_select "#entry-done", /Già fatte: Matematica\./
+    assert_select "#entry-done a[href='/diagnosis']", "Vedi i risultati"
+    assert_select "#entry-all-done", 0
+    page(OFFICIAL, "/diagnosis")
+    assert_select "li.subject[data-subject=math]"
+    assert_select "li.subject[data-subject=history]"
   end
 
   test "a trial student has the entry test without any release" do

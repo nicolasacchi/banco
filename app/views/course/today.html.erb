@@ -20,8 +20,11 @@
         <% if d[:all_done] %>
           <%= ui_notice :success, t("today.entry.all_done"), html: { id: "entry-all-done" } %>
         <% end %>
+        <%# D-351: a finished subject leaves the list here; one line names them and links to the results list (/diagnosis keeps all). %>
+        <% remaining, finished = d[:rows].partition { |row| !row.done } %>
+        <% if remaining.any? %>
         <ul class="subjects subject-list" id="entry-subjects" data-comment-anchor="subjects">
-          <% d[:rows].each do |row| %>
+          <% remaining.each do |row| %>
             <% next_one = row.equal?(d[:next_row]) %>
             <% big = next_one && now == :entry %>
             <li class="subject<%= ' suggested' if next_one %><%= ' now-card' if big %>" data-comment-anchor="subject:<%= row.subject.key %>" data-subject="<%= row.subject.key %>" data-state="<%= row.status %>" style="--subject: var(--accent-<%= row.subject.key %>, var(--soft-primary))">
@@ -36,12 +39,15 @@
               <% if next_one %>
                 <%= button_to (%w[in_progress continue_next_day].include?(row.status) ? t("diagnosis.actions.resume") : t("diagnosis.actions.start")),
                               "#{base_path}/subjects/#{row.subject.key}", class: "button", id: "entry-next", form: { class: "inline" } %>
-              <% elsif row.done && row.run_id %>
-                <a class="button secondary small" href="<%= base_path %>/runs/<%= row.run_id %>/results"><%= t("diagnosis.actions.results") %></a>
               <% end %>
             </li>
           <% end %>
         </ul>
+        <% end %>
+        <% if finished.any? %>
+          <p id="entry-done" class="optional"><%= t("today.entry.done_line", subjects: finished.map { |row| row.subject.name_it }.to_sentence(two_words_connector: " e ", last_word_connector: " e ")) %>
+            <a href="<%= preview? ? "#{student_root}/test" : base_path %>"><%= t("today.entry.done_results") %></a></p>
+        <% end %>
         <p id="entry-warmup" class="optional"><%= t("today.entry.warmup_optional") %>
           <a href="<%= base_path %>/warmup"><%= t("today.entry.warmup_optional_link") %></a></p>
       <% end %>
