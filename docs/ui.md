@@ -40,7 +40,7 @@ Each block: the classes, when to use it, one example.
 ### Icons
 `<%= ui_icon("circle-check") %>` draws a Lucide icon from `banco-sprite.svg` (decorative, `aria-hidden`; the words next to it
 carry the meaning). `css: "big"` makes it 2.5 rem. The names are the keys of `icons.yml` (`structural` and `ui`). A new icon
-is a line in `icons.yml` (its Lucide file copied under `public/vendor/lucide@1.54.0/icons/`) and `bin/build-icons`.
+is a line in `icons.yml` (its Lucide file copied under `public/vendor/lucide@1.54.0/icons/`) and `bin/build-icons`. Every sprite address carries `?v=` and the first 12 hex digits of the file's SHA-256 (`Banco::Sprites`, D-347), because `public/` is cached for a year.
 The `ui` names for pages: `back alert empty loading locked not-found check close info prev next expand menu`.
 
 ### Button

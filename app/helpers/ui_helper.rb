@@ -2,13 +2,12 @@
 # The CSS is app/assets/stylesheets/components.css on the tokens of application.css. Icons come from the Lucide sprite
 # (config/banco/icons.yml, bin/build-icons); a new icon is a change of that file.
 module UiHelper
-  SPRITE = "/vendor/lucide@1.54.0/banco-sprite.svg".freeze
   # The tones of a notice or a pill and the icon each starts with. Never red and green for right and wrong.
   NOTICE_ICONS = { info: "info", success: "circle-check", nearly: "triangle-alert", error: "alert", hint: "wrong-hint" }.freeze
 
   # A decorative icon of the sprite: the words next to it carry the meaning, so it is hidden from a screen reader.
   def ui_icon(name, css: nil)
-    tag.svg(tag.use(nil, href: "#{SPRITE}##{name}"), class: [ "ic", css ].compact.join(" "), "aria-hidden": "true", focusable: "false")
+    tag.svg(tag.use(nil, href: Banco::Sprites.icon_href(name)), class: [ "ic", css ].compact.join(" "), "aria-hidden": "true", focusable: "false")
   end
 
   # <div class="notice KIND"> icon + body. Errors are announced at once (role alert), the rest politely (role status).

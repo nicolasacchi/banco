@@ -5,12 +5,13 @@ import { Refusals } from "items/refusals"
 import { showRefusalNotice } from "items/refusal_notice"
 import { renderItem } from "items/render"
 import { renderInline } from "items/markup"
+import { spriteUrl } from "lesson/sprite"
 
 // The practice page (A9): one page, no Turbo. It asks the server for a serve as JSON, draws the item with the
 // templates in app/javascript/items/, and posts each answer through the practice outbox (banco.poutbox.). The
 // server grades and chooses every sentence; this controller only shows what it is told. The feedback sits in a
 // polite live region; every step works from the keyboard and the focus goes where the next step is.
-const SPRITE = "/vendor/lucide@1.54.0/banco-sprite.svg"
+const SPRITE = spriteUrl()
 // The tone of a feedback notice by the grader's outcome (D-307): never red and green; the words come from the server.
 const TONES = { correct: "success", correct_aided: "success", near_miss: "nearly", typical_error: "error", unrecognised: "error", form: "error", undetermined: "info" }
 const TONE_ICONS = { success: "circle-check", nearly: "triangle-alert", error: "alert", info: "info", hint: "wrong-hint" }
