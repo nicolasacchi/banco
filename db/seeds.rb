@@ -18,7 +18,8 @@ subjects = [
   [ "business", "Economia aziendale" ],
   [ "computer_science", "Informatica" ],
   [ "biology", "Biologia" ],
-  [ "chemistry", "Chimica" ]
+  [ "chemistry", "Chimica" ],
+  [ "physical_education", "Scienze motorie" ] # D-344: theory only, no entry test; the migration AddPhysicalEducationSubject inserts the same row
 ].freeze
 
 subjects.each_with_index do |(key, name_it), index|

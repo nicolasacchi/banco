@@ -33,8 +33,8 @@ class LessonIconsTest < ActiveSupport::TestCase
     pairs.group_by(&:first).each { |ours, group| assert_equal 1, group.map(&:last).uniq.size, "#{ours} points at two files" }
   end
 
-  test "the subjects with icons are the eleven of the palette, and the ui list is not the agent's" do
-    assert_equal %w[biology business chemistry computer_science english geography history italian law_economics math spanish], ICONS["subjects"].keys.sort
+  test "the subjects with icons are the twelve of the palette, and the ui list is not the agent's" do
+    assert_equal %w[biology business chemistry computer_science english geography history italian law_economics math physical_education spanish], ICONS["subjects"].keys.sort
     assert_equal Lessons::Palette.subjects.sort, ICONS["subjects"].keys.sort
     assert_operator ICONS["ui"].size, :>, 10
   end

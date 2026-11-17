@@ -56,8 +56,11 @@ module Validation
       end
     end
 
-    # The course skills taught only in the official programme: taught_in refs, none on the seconda source (D-324).
-    def extra_only(skills)
+    # The course skills taught only in the official programme: taught_in refs, none on the seconda source (D-324). A subject the
+    # seconda source does not cover (D-344) has none: the official programme is its programme.
+    def extra_only(skills, subject)
+      return Set.new if Rules.official_programme_subject?(subject)
+
       seconda = Rules.get(:course, :seconda_source)
       extra = Rules.get(:course, :extra_source)
       skills.select do |s|
@@ -91,7 +94,7 @@ module Validation
     def topics(doc, subject, skills, graph_index, findings)
       topics = doc["topics"]
       known = skills.to_set { |s| s["key"] } | graph_index.keys
-      extra_skills = extra_only(skills)
+      extra_skills = extra_only(skills, subject)
       keys = topics.map { |t| t["key"] }
       owner = {}
       topics.each_with_index do |t, i|

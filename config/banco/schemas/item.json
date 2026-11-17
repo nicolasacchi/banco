@@ -37,12 +37,13 @@
         "business",
         "computer_science",
         "biology",
-        "chemistry"
+        "chemistry",
+        "physical_education"
       ]
     },
     "skill": {
       "type": "string",
-      "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+      "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry|physical_education)\\.[a-z0-9]+(-[a-z0-9]+)*$"
     },
     "component": {
       "enum": [
@@ -96,7 +97,7 @@
     },
     "form_skill": {
       "type": "string",
-      "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+      "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry|physical_education)\\.[a-z0-9]+(-[a-z0-9]+)*$"
     },
     "calculation": {
       "type": "boolean"
@@ -727,7 +728,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+            "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry|physical_education)\\.[a-z0-9]+(-[a-z0-9]+)*$"
           },
           "uniqueItems": true
         }
@@ -899,7 +900,7 @@
         },
         "skill": {
           "type": "string",
-          "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+          "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry|physical_education)\\.[a-z0-9]+(-[a-z0-9]+)*$"
         },
         "component": {
           "enum": [
@@ -952,7 +953,7 @@
         },
         "form_skill": {
           "type": "string",
-          "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry)\\.[a-z0-9]+(-[a-z0-9]+)*$"
+          "pattern": "^(math|italian|english|spanish|history|geography|law_economics|business|computer_science|biology|chemistry|physical_education)\\.[a-z0-9]+(-[a-z0-9]+)*$"
         },
         "calculation": {
           "type": "boolean"

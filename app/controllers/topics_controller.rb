@@ -13,9 +13,10 @@ class TopicsController < ApplicationController
 
   private
 
-  # The seconda lines the lesson cites (what the teacher's programme says), in the order of the lesson.
+  # The programme lines the lesson cites (what the teacher's programme says), in the order of the lesson: the seconda source, or the
+  # official programme for a subject the seconda source does not cover (D-344).
   def programme_refs(body)
-    seconda = Validation::Rules.get(:course, :seconda_source)
-    Array(body["refs"]).select { |r| r["source"] == seconda }.uniq { |r| [ r["line"], r["fragment"] ] }
+    source = Validation::Rules.programme_source(@subject_view.subject.key)
+    Array(body["refs"]).select { |r| r["source"] == source }.uniq { |r| [ r["line"], r["fragment"] ] }
   end
 end

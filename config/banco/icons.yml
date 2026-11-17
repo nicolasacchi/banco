@@ -90,6 +90,7 @@ ui:
   subject-geography: earth
   subject-history: landmark
   subject-law-economics: gavel
+  subject-physical-education: dumbbell
 
 # Content icons by subject (at most 30 each). Subjects not listed here use `structural` only.
 subjects:
@@ -386,3 +387,13 @@ subjects:
     user: user
     arrow-left-right: arrow-left-right
     calculator: calculator
+  physical_education:
+    dumbbell: dumbbell
+    heart-pulse: heart-pulse
+    milestone: milestone          # cause
+    target: target                # purpose
+    clock: clock                  # time
+    tag: tag
+    boxes: boxes
+    list-ordered: list-ordered
+    git-compare: git-compare

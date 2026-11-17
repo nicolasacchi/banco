@@ -35,7 +35,7 @@ module Validation
         findings.add("E-SCHEMA", "/front_matter/uses", "#{both.join(', ')} is in skills: uses names other skills", rule: "uses_in_skills")
       end
       skills_known(fm, subject, context, findings)
-      refs(fm, context, findings)
+      refs(fm, subject, context, findings)
       sections(parsed, findings)
       exercises(parsed, findings)
       readability(parsed, findings)
@@ -64,13 +64,15 @@ module Validation
       end
     end
 
-    # The kind's scope and refs (E-LESSON-REFS) and the citations (E-SOURCE).
-    def refs(fm, context, findings)
+    # The kind's scope and refs (E-LESSON-REFS) and the citations (E-SOURCE). The programme source is seconda_source, or the
+    # official programme for a subject the seconda source does not cover (D-344: it has no prima lines either, so no ripasso prima ref).
+    def refs(fm, subject, context, findings)
       list = fm["refs"]
       return unless list.is_a?(Array) && list.all?(Hash)
 
       list.each_with_index { |ref, j| GraphChecks.citation(ref, "/front_matter/refs/#{j}", context, findings) if ref["source"] && ref["line"] && ref["fragment"] }
-      seconda = Rules.get(:course, :seconda_source)
+      seconda = Rules.programme_source(subject)
+      official = Rules.official_programme_subject?(subject)
       prima = Rules.get(:coverage, :prima_source)
       has = ->(source, role) { list.any? { |r| r["source"] == source && r["role"] == role } }
       add = ->(why) { findings.add("E-LESSON-REFS", "/front_matter/refs", "a #{fm['kind']} lesson #{why}", rule: "refs-#{fm['kind']}") }
@@ -78,7 +80,7 @@ module Validation
       when "ripasso"
         findings.add("E-LESSON-REFS", "/front_matter/scope", "a ripasso has scope studied, integration_studied or in_progress, not #{fm['scope'].inspect}", rule: "scope") unless %w[studied integration_studied in_progress].include?(fm["scope"])
         add.call("needs a needed_by ref on #{seconda}") unless has.call(seconda, "needed_by")
-        findings.add("E-LESSON-REFS", "/front_matter/refs", "a ripasso needs a taught_in ref on #{prima}", rule: "refs-ripasso-prima") unless has.call(prima, "taught_in")
+        findings.add("E-LESSON-REFS", "/front_matter/refs", "a ripasso needs a taught_in ref on #{prima}", rule: "refs-ripasso-prima") unless official || has.call(prima, "taught_in")
       when "ponte"
         findings.add("E-LESSON-REFS", "/front_matter/scope", "a ponte has scope middle_school or not_in_prima, not #{fm['scope'].inspect}", rule: "scope") unless %w[middle_school not_in_prima].include?(fm["scope"])
         add.call("needs a needed_by ref on #{seconda}") unless has.call(seconda, "needed_by")

@@ -28,7 +28,7 @@ module Diagnosis
 
     # student: the student whose run is reported; the official one by default (D-217).
     def self.call(subject: nil, with_answers: false, student: Student.official)
-      subjects = subject ? Array(subject) : Subject.order(:position).to_a
+      subjects = subject ? Array(subject) : Subject.with_entry_test.order(:position).to_a
       {
         schema: SCHEMA, rules_version: Rules::V1::RULES_VERSION, engine_version: Engine::VERSION,
         sitting_condition: SITTING_CONDITION, released: Release.open?,

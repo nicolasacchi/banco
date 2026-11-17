@@ -156,6 +156,7 @@ it:
       course: "Corso"
       students: "Studenti"
       not_written: "Da scrivere."
+      no_entry_test: "Nessun test d'ingresso."
       to_approve: "Da approvare"
       approved: "Approvato"
       no_course: "Nessuna mappa del corso."
@@ -479,6 +480,7 @@ it:
     test:
       title: "Test d'ingresso · %{subject}"
       none: "L'agente non ha ancora scritto il test di questa materia."
+      no_entry_test: "Questa materia non ha un test d'ingresso: ha solo teoria ed esercizi."
       summary: "Revisione %{seq}: %{skills} abilità, %{items} item."
       is_approved: "Questa revisione è approvata."
       attested: "Approvato da console, senza aprire le domande in anteprima: «%{words}»"

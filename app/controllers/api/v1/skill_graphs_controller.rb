@@ -53,6 +53,11 @@ module Api
 
       # GET /api/v1/subjects/:subject/skill-graph/coverage
       def coverage
+        # D-344: a subject the previous year's programme does not cover (physical_education) has no range to check.
+        unless Validation::Rules.get(:coverage, :ranges).key?(@subject.key)
+          return refuse("E-NOT-FOUND", "subject", "#{@subject.key} has no lines in the previous year's programme: its graph has no coverage check", "banco skill-graph open --subject #{@subject.key}", 404)
+        end
+
         data = SkillGraphCoverage.call(@subject)
         return refuse("E-NOT-FOUND", "subject", "#{@subject.key} has no skill graph yet", "banco skill-graph submit --subject #{@subject.key} FILE", 404) unless data
 

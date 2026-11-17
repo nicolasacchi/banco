@@ -13,7 +13,9 @@
 # lesson2.types, the per-type caps of the 26 new diagram types. No existing number changes.
 # v10: topics outside the programme (D-324): course.extra_source and the extra_topic pool numbers; an acronym alone in
 # parentheses («prodotto interno lordo (PIL)») passes the ALL-CAPS rule; ISO, RAW, LED, GPS, UTC, GIS, UNESCO join caps_allowlist.
-version: 10
+# v11: course.official_programme_subjects (D-344): for a subject the seconda source does not cover (physical_education) the official
+# programme is its programme: its course skills, lessons and graph cite course.extra_source where the others cite seconda_source.
+version: 11
 
 generator:
   seeds: 200                  # seeds 1..200 are run, in two fresh contexts
@@ -154,6 +156,9 @@ course:
   # D-324 (v10): the official programme. A course skill may cite it instead of seconda_source; such a skill is held only by
   # an extra topic (E-COURSE-EXTRA-SKILL), and an extra lesson cites it as taught_in.
   extra_source: ufficiale-2026-27
+  # D-344 (v11): subjects the seconda source does not cover: for them the official programme is the current year's programme, so a
+  # taught_in / needed_by ref on extra_source is the programme ref (no E-COURSE-EXTRA-SKILL, no extra topic needed).
+  official_programme_subjects: [physical_education]
 
 lesson:
   max_bytes: 65536

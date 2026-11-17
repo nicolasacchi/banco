@@ -3,9 +3,9 @@ require "test_helper"
 class ProdSeedsTest < ActiveSupport::TestCase
   SEEDS = Rails.root.join("db/seeds.rb")
   SUBJECT_KEYS = %w[math italian english spanish history geography law_economics business
-                    computer_science biology chemistry].freeze
+                    computer_science biology chemistry physical_education].freeze
 
-  test "seeds create the eleven subjects with English keys, the two students and the Constitution" do
+  test "seeds create the twelve subjects with English keys, the two students and the Constitution" do
     load SEEDS
     assert_equal SUBJECT_KEYS.sort, Subject.pluck(:key).sort
     assert_equal %w[preview student], Student.pluck(:key).sort

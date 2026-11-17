@@ -729,6 +729,7 @@ BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER comment_events_no_delete BEFORE DELETE ON comment_events
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261117120000'),
 ('20261117110000'),
 ('20261117100000'),
 ('20261116100000'),

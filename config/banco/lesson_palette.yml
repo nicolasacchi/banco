@@ -259,6 +259,15 @@ law_economics:
     norm: {label_it: "norma", carrier: icon, icon: scroll-text, shape: ring, question_it: "Qual è la regola?",
       fg: {cream: "#204a49", dark: "#64bdba"}, mark: {cream: "#204a49", dark: "#449f9c"}}
 
+# Theory only, schematic (D-344): the roles are the ones of the other subjects that fit (the reason, the aim, the time), so the
+# colours, icons and shapes are already checked together.
+physical_education:
+  accent: {label_it: "colore della materia", carrier: band, tint: {cream: "#f7d0c9", dark: "#4d2621"}}
+  roles:
+    cause: {same_as: italian.cause, label_it: "perché"}
+    purpose: {same_as: italian.purpose, label_it: "a che serve", question_it: "A che cosa serve?"}
+    time: {same_as: italian.time, label_it: "quando", question_it: "Quando si fa?"}
+
 # The verbs of procedures, example steps and solution steps (the `tag` of a step): our word and our icon.
 # The icon is one of the subject's list in config/banco/icons.yml.
 step_tags:
@@ -380,3 +389,8 @@ step_tags:
     apply: {label_it: "Confronta", icon: arrow-left-right}
     outcome: {label_it: "Concludi", icon: gavel}
     count: {label_it: "Conta i voti", icon: calculator}
+  physical_education:
+    name: {label_it: "Dai il nome", icon: tag}
+    classify: {label_it: "Metti nel gruppo", icon: boxes}
+    order: {label_it: "Metti in ordine", icon: list-ordered}
+    compare: {label_it: "Confronta", icon: git-compare}

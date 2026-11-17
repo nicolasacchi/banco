@@ -60,7 +60,7 @@ An unbuilt function throws `NotBuilt` (`lesson/lib/not_built.js`, `Lessons::X::N
 
 ## Palette v2
 
-`config/banco/lesson_palette.yml` (version 2) has the eleven subjects. The CSS variables are scoped by subject
+`config/banco/lesson_palette.yml` (version 2) has the twelve subjects (the twelfth, scienze motorie, D-344). The CSS variables are scoped by subject
 (`--r-SUBJECT-ROLE-(fg|mark|tint)`); the role classes (`.role-x`, `.mk-x`, `.st-x`, `.fl-x`, `.tn-x`, `.card-tone-x`) read generic
 `--role-x-*` variables that each `[data-palette="SUBJECT"]` element maps to its own subject's, so the nearest palette decides: the
 lesson's root carries its subject, a figure of a type with a home palette (`balance`, `cell`, `formula`, `register`...) carries its
