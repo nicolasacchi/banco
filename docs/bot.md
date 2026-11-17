@@ -41,7 +41,7 @@ teachers and bots did lately (D-333, D-334). `banco next` alone says, for each s
 | The teacher's pages | `banco teacher home`, `banco teacher course SUBJECT`, `banco teacher topic SUBJECT TOPIC_KEY --lesson`, `banco teacher test SUBJECT` |
 | Where the student is | `banco progress --student student`, `banco practice progress --subject SUBJECT --student student` |
 | The entry test's report | `banco diagnosis report --subject SUBJECT --student student` |
-| The student's comments, with her follow-ups to your replies (`student_reply` events) | `banco comments list`, `banco comments show ID` |
+| The student's comments, with his follow-ups to your replies (`student_reply` events) | `banco comments list`, `banco comments show ID` |
 | Answers that wait for the teacher | `banco answers pending` |
 | What the student answered, try by try: practice, the entry test, the checks in the lessons (a `teacher` token only) | `banco attempts [--kind practice\|diagnosis\|lesson] [--since DATE] [--outcome O]`, `banco attempts show REF` |
 | The answers behind a student's comment, and the row its anchor points at | `banco attempts --comment ID`, then `banco attempts show REF --comment ID` |
