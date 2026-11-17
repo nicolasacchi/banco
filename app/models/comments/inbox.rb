@@ -43,10 +43,11 @@ module Comments
       list.sort_by { |r| -r.at.to_f }
     end
 
-    # Counts by state, for the page head and for a guest: { "sent" => n, ..., questions: n }.
+    # Counts by state, for the page head and for a guest: { "sent" => n, ..., "questions" => n, "late" => n } (late: waiting
+    # for the teacher longer than the promised answer time, D-349; they are also counted in their state).
     def self.counts
       comments = Comment.includes(:events).to_a
-      Comment::STATES.to_h { |s| [ s, comments.count { |c| c.state == s } ] }.merge("questions" => StudentQuestion.count)
+      Comment::STATES.to_h { |s| [ s, comments.count { |c| c.state == s } ] }.merge("questions" => StudentQuestion.count, "late" => comments.count(&:late?))
     end
   end
 end

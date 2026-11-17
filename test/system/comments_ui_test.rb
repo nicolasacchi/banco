@@ -98,7 +98,7 @@ class CommentsUiTest < ApplicationSystemTestCase
     page.driver.resize(1280, 900)
   end
 
-  test "I miei commenti shows the reason, the state and the teacher's reply as a bubble" do
+  test "I miei commenti lists the conversation with its state and opens the teacher's reply as a bubble" do
     build_student_world(approve: true, release: true)
     visit "/today"
     find("#comment-open-menu").click
@@ -110,9 +110,11 @@ class CommentsUiTest < ApplicationSystemTestCase
     comment = Comment.last
     CommentEvent.create!(comment: comment, kind: "reply", origin: "web", actor: "nik", request_id: nil, remote_addr: "", payload_json: "{}", text_it: "Grazie, bene così.", created_at: Time.current)
     visit "/comments"
-    assert_selector ".comment-item[data-new]", wait: 10
-    assert_selector ".comment-item .comment-reason", text: "Mi piace"
-    assert_selector ".comment-state", text: "Risposto"
-    assert_selector "blockquote.comment-reply", text: "Grazie, bene così."
+    assert_selector ".cm-row[data-unread=true]", wait: 10
+    assert_selector ".cm-row .comment-state", text: "Risposto"
+    assert_selector ".cm-row .cm-preview", text: "Docente: Grazie, bene così."
+    find(".cm-row-link").click
+    assert_selector ".cm-msg[data-from=teacher] .cm-bubble", text: "Grazie, bene così.", wait: 10
+    assert_selector ".cm-msg[data-from=student] .comment-reason", text: "Mi piace"
   end
 end

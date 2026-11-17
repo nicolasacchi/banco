@@ -514,7 +514,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
     else
       wait_until { Comment.count == 1 }
       visit "/comments"
-      assert_selector ".comment-item .comment-mine", text: "La mia risposta, secondo me giusta: «#{raw}»"
+      assert_selector ".cm-row .cm-preview", text: "La mia risposta, secondo me giusta: «#{raw}»"
     end
   end
 

@@ -1,0 +1,46 @@
+<%# The list of conversations (D-349), like a mailbox: one row per comment, the newest activity first, tabs with their counts.
+    Local: inbox (Comments::StudentInbox), current (the open comment or nil), heading (h1 on the list page, h2 beside a conversation). %>
+<% counts = inbox.counts %>
+<section class="cm-list-pane" id="comment-list-pane" aria-labelledby="cm-list-title">
+  <<%= heading %> id="cm-list-title" class="cm-list-title"><%= t("comments.title") %></<%= heading %>>
+  <p class="cm-window" id="reply-window"><%= Comments::ReplyWindow.line_it %></p>
+  <nav class="cm-tabs" id="comment-tabs" aria-label="<%= t("comments.inbox.tabs_label") %>">
+    <% Comments::StudentInbox::TABS.each do |tab| %>
+      <a class="cm-tab" href="<%= comments_path(comment_tab_query(tab)) %>" data-tab="<%= tab %>" <%= 'aria-current="page"'.html_safe if inbox.tab == tab %>>
+        <%= t("comments.inbox.tabs.#{tab}") %> <span class="cm-tab-n<%= ' zero' if counts[tab].zero? %>"><%= counts[tab] %></span>
+      </a>
+    <% end %>
+  </nav>
+  <% rows = inbox.rows %>
+  <% if rows.empty? %>
+    <div class="comment-empty" id="comments-empty" data-tab="<%= inbox.tab %>">
+      <%= comment_icon("empty") %>
+      <p><strong><%= t("comments.inbox.empty.#{inbox.tab}") %></strong></p>
+      <% if inbox.tab == "all" %><p><%= t("comments.empty_hint") %></p><% end %>
+    </div>
+  <% else %>
+    <ul class="cm-rows" id="my-comments">
+      <% rows.each do |row| %>
+        <% comment = row.comment %>
+        <% who, text = comment_preview(row) %>
+        <li class="cm-row" id="comment-<%= comment.id %>" data-comment="<%= comment.id %>" data-state="<%= row.state %>" data-unread="<%= row.unread %>" style="<%= comment_accent_style(comment) %>">
+          <a class="cm-row-link" href="<%= comment_path(comment, comment_tab_query(inbox.tab)) %>" <%= 'aria-current="page"'.html_safe if current&.id == comment.id %>>
+            <span class="comment-place-badge"><%= comment_place_icon(comment) %></span>
+            <span class="cm-row-main">
+              <span class="cm-row-top">
+                <span class="cm-row-title"><%= comment_place_it(comment) %></span>
+                <time class="cm-row-time" datetime="<%= row.at.iso8601 %>"><%= comment_when(row.at) %></time>
+              </span>
+              <span class="cm-row-bottom">
+                <span class="cm-preview"><span class="cm-who"><%= who %></span> <%= text %></span>
+                <% if row.unread %><span class="cm-dot" role="img" aria-label="<%= t("comments.inbox.unread") %>"></span><% end %>
+                <span class="comment-state" data-state="<%= row.state %>"><%= comment_state_icon(row.state) %><%= t("comments.state.#{row.state}") %></span>
+              </span>
+            </span>
+          </a>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+  <div class="button-row cm-today"><a class="button secondary" href="/today"><%= t("comments.back") %></a></div>
+</section>

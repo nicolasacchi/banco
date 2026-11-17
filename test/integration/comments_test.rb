@@ -190,10 +190,11 @@ class CommentsTest < ActionDispatch::IntegrationTest
     on(:web, "/comments", headers: TRIAL, remote_addr: EDGE)
     assert_includes response.body, "Della prova segreta"
     assert_not_includes response.body, MARKER
+    on(:web, "/comments/#{Comment.where(student: @trial).last.id}", headers: TRIAL, remote_addr: EDGE)
     assert_includes response.body, "Account di prova"
   end
 
-  test "a reply shows in I miei commenti and in Oggi with a badge, and reading it clears them" do
+  test "a reply shows as a badge and in Oggi; the list does not mark it seen, opening its conversation does" do
     send_comment(OFFICIAL, text_it: "Non capisco")
     comment = Comment.last
     teacher_post("reply", comment, { text_it: "Guarda la scheda 2." })
@@ -202,13 +203,20 @@ class CommentsTest < ActionDispatch::IntegrationTest
     assert_select "#comment-replies", /Il docente ti ha risposto/
     assert_select "#comments-badge", "1"
     on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE)
-    assert_select ".comment-reply", /Guarda la scheda 2\./
-    assert_select ".comment-state", "Risposto"
-    assert_select "#comments-badge", 0, "the page that shows the reply has marked it seen"
+    assert_select "#comment-#{comment.id}[data-unread=true] .cm-dot", 1
+    assert_select "#comment-#{comment.id} .cm-preview", /Docente: Guarda la scheda 2\./
+    assert_select "#comment-#{comment.id} .comment-state", "Risposto"
+    assert_select "#comments-badge", "1", "the list shows the reply, it does not mark it seen"
+    assert_equal "reply", comment.events.reload.last.kind
+    on(:web, "/comments/#{comment.id}", headers: OFFICIAL, remote_addr: EDGE)
+    assert_select ".cm-msg[data-from=teacher] .cm-bubble", /Guarda la scheda 2\./
+    assert_select "#comments-badge", 0, "the conversation that shows the reply has marked it seen"
     assert_equal "reply_seen", comment.events.reload.last.kind
     on(:web, "/today", headers: OFFICIAL, remote_addr: EDGE)
     assert_select "#comment-replies", 0
     assert_select "#comments-badge", 0
+    on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE)
+    assert_select "#comment-#{comment.id}[data-unread=false] .cm-dot", 0
     # another student never has the badge
     on(:web, "/today", headers: TRIAL, remote_addr: EDGE)
     assert_select "#comments-badge", 0
@@ -361,6 +369,11 @@ class CommentsTest < ActionDispatch::IntegrationTest
 
   # ---- the student answers the teacher's reply (D-342) -------------------------------------------------
 
+  # A comment written straight into the table, with the time given (the late ones of the teacher's inbox need an old row).
+  def plain_comment(student: @official, at: Time.current, reason: "like", text: nil)
+    Comment.create!(student: student, client_comment_id: cid, reason: reason, text_it: text, page_kind: "today", page_path: "/today", created_at: at)
+  end
+
   def answered_comment(text: "Non capisco", reply: "Guarda la scheda 2.", headers: OFFICIAL)
     send_comment(headers, text_it: text)
     comment = Comment.where(student: headers == TRIAL ? @trial : @official).order(:id).last
@@ -369,7 +382,7 @@ class CommentsTest < ActionDispatch::IntegrationTest
   end
 
   def student_reply(comment, text, headers: OFFICIAL, client_reply_id: "r-" + SecureRandom.hex(8), token: nil, listener: :web, path: nil)
-    token ||= token_for(headers, "/today") # /comments would mark the replies as seen
+    token ||= token_for(headers, "/today")
     on(listener, path || "/comments/#{comment.id}/reply", method: :post, headers: headers.merge("X-CSRF-Token" => token),
                                                          params: { text_it: text, client_reply_id: client_reply_id }, remote_addr: EDGE)
   end
@@ -379,50 +392,213 @@ class CommentsTest < ActionDispatch::IntegrationTest
     assert_equal "answered", comment.state
     id = "r-" + SecureRandom.hex(8)
     2.times { student_reply(comment, "Non ho capito l'esempio.", client_reply_id: id) }
-    assert_redirected_to "/comments#comment-#{comment.id}"
+    assert_redirected_to "/comments/#{comment.id}"
     event = comment.events.reload.last
     assert_equal [ "student_reply", "student", @official.key, "Non ho capito l'esempio." ], [ event.kind, event.origin, event.actor, event.text_it ]
     assert_equal 1, comment.events.where(kind: "student_reply").count
     assert_equal "sent", comment.reload.state
-    on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE) # follow_redirect! would drop the edge headers
+    on(:web, "/comments/#{comment.id}", headers: OFFICIAL, remote_addr: EDGE) # follow_redirect! would drop the edge headers
     assert_select "#reply-sent", /Inviato: il docente lo vedrà\./
   end
 
-  test "the thread is drawn in order with the labels, and the form is under a comment with a teacher reply" do
+  test "the conversation draws the thread in order as bubbles with the time, and the composer is there only after a teacher reply" do
     comment = answered_comment(text: "Prima #{MARKER}", reply: "Risposta uno")
     student_reply(comment, "Seguito due")
     teacher_post("reply", comment, { text_it: "Risposta tre" })
-    on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE)
-    assert_select "#comment-#{comment.id} [data-from]", 4
-    froms = css_select("#comment-#{comment.id} [data-from]").map { |n| [ n["data-from"], n.text.squish ] }
-    assert_equal %w[student teacher student teacher], froms.map(&:first)
-    assert_match(/Hai scritto: Prima/, froms[0][1])
-    assert_match(/Il docente ha risposto Risposta uno/, froms[1][1])
-    assert_match(/Hai scritto: Seguito due/, froms[2][1])
-    assert_match(/Il docente ha risposto Risposta tre/, froms[3][1])
-    assert_select "#comment-#{comment.id} form.comment-reply-form[action='/comments/#{comment.id}/reply']" do
-      assert_select "label", "Rispondi"
+    on(:web, "/comments/#{comment.id}", headers: OFFICIAL, remote_addr: EDGE)
+    assert_response :success
+    assert_select ".cm-msg", 4
+    msgs = css_select(".cm-msg").map { |n| [ n["data-from"], n.css(".cm-text").text.squish ] }
+    assert_equal [ [ "student", "Prima #{MARKER}" ], [ "teacher", "Risposta uno" ], [ "student", "Seguito due" ], [ "teacher", "Risposta tre" ] ], msgs
+    assert_select ".cm-msg .cm-time time", 4
+    assert_select ".cm-bubble .comment-reason", 1
+    assert_select ".cm-msg[data-from=student] .comment-reason", /Non capisco/
+    assert_select ".cm-day", 1
+    assert_select ".cm-day", /Oggi/
+    assert_select "#reply-window, .cm-window", /Il docente risponde entro un giorno\./
+    assert_select "form.cm-composer[action='/comments/#{comment.id}/reply']" do
       assert_select "textarea[maxlength='500'][name=text_it]"
       assert_select "button", "Invia"
     end
+    assert_select "#conversation[data-controller=comment-thread][data-comment-thread-url-value='/comments/#{comment.id}/reply']"
+    assert_select "#comment-back[href='/comments']"
     send_comment(OFFICIAL, text_it: "Senza risposta")
-    on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE)
-    assert_select "form.comment-reply-form", 1
+    bare = Comment.where(student: @official).order(:id).last
+    on(:web, "/comments/#{bare.id}", headers: OFFICIAL, remote_addr: EDGE)
+    assert_select "form.cm-composer", 0
+    assert_select "#comment-waiting", /In attesa della risposta del docente\./
+    assert_select ".cm-msg", 1
+  end
+
+  test "the conversation quotes the place and links back to it only when the page is still there" do
+    send_comment(OFFICIAL, text_it: "Qui", page_path: lesson_path, anchor: "card:2/block:1")
+    comment = Comment.where(student: @official).last
+    on(:web, "/comments/#{comment.id}", headers: OFFICIAL, remote_addr: EDGE)
+    assert_select "#comment-place-link[href^='#{lesson_path}']"
+    send_comment(OFFICIAL, text_it: "Nel test", page_path: "/comments", anchor: "page", refs: {})
+    on(:web, "/comments/#{Comment.where(student: @official).order(:id).last.id}", headers: OFFICIAL, remote_addr: EDGE)
+    assert_select "#comment-place-link", 0
+    assert_select "h1", /I miei commenti/
   end
 
   test "a follow-up is refused without a teacher reply, empty, too long, or with no id; the page says so and writes nothing" do
     send_comment
     bare = Comment.last
     student_reply(bare, "Posso scrivere?")
-    assert_redirected_to "/comments#comment-#{bare.id}"
+    assert_redirected_to "/comments/#{bare.id}"
     assert_equal 0, bare.events.count
-    on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE)
+    on(:web, "/comments/#{bare.id}", headers: OFFICIAL, remote_addr: EDGE)
     assert_select "#reply-error"
     answered = answered_comment
     [ "   ", "x" * 501 ].each { |text| student_reply(answered, text) }
     student_reply(answered, "Ok", client_reply_id: "no")
     assert_equal 1, answered.events.reload.count
     assert_equal "answered", answered.reload.state
+  end
+
+  test "the script's reply is JSON: recorded once for a repeat, invalid with the error, missing for another student's comment" do
+    comment = answered_comment
+    id = "r-" + SecureRandom.hex(8)
+    token = token_for(OFFICIAL, "/today")
+    reply_json = lambda do |target, body, headers = OFFICIAL|
+      on(:web, "/comments/#{target.id}/reply", method: :post, headers: headers.merge(JSON_HEADERS, "X-CSRF-Token" => token), params: body.to_json, remote_addr: EDGE)
+      response.parsed_body
+    end
+    2.times do
+      answer = reply_json.call(comment, { text_it: "Non ho capito.", client_reply_id: id })
+      assert_response :success
+      assert_equal "recorded", answer["status"]
+    end
+    assert_equal 1, comment.events.reload.where(kind: "student_reply").count
+    assert_equal "sent", comment.reload.state
+    answer = reply_json.call(comment, { text_it: "x" * 501, client_reply_id: "r-" + SecureRandom.hex(8) })
+    assert_equal [ "invalid", "text_it" ], answer.values_at("status", "error")
+    answer = reply_json.call(comment, { text_it: "Ok", client_reply_id: "no" })
+    assert_equal "invalid", answer["status"]
+    bare = plain_comment
+    answer = reply_json.call(bare, { text_it: "Posso?", client_reply_id: "r-" + SecureRandom.hex(8) })
+    assert_equal [ "invalid", "no_teacher_reply" ], answer.values_at("status", "error")
+    other = Comment.where(student: @trial).first || begin
+      send_comment(TRIAL, text_it: "Altro")
+      Comment.where(student: @trial).last
+    end
+    answer = reply_json.call(other, { text_it: "Intruso", client_reply_id: "r-" + SecureRandom.hex(8) })
+    assert_response :not_found
+    assert_equal "missing", answer["status"]
+    assert_equal 0, other.events.reload.count
+    assert_equal 2, comment.events.reload.count { |e| %w[reply student_reply].include?(e.kind) }
+  end
+
+  test "the list is one row per conversation, the newest activity first, with the last message and who wrote it" do
+    old = answered_comment(text: "Vecchio", reply: "Risposta al vecchio")
+    send_comment(OFFICIAL, text_it: "Nuovo")
+    fresh = Comment.where(student: @official).order(:id).last
+    on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE)
+    ids = css_select(".cm-row").map { |n| n["data-comment"].to_i }
+    assert_equal [ fresh.id, old.id ], ids
+    assert_select "#comment-#{fresh.id} .cm-preview", /Tu: Nuovo/
+    assert_select "#comment-#{old.id} .cm-preview", /Docente: Risposta al vecchio/
+    assert_select "#comment-#{fresh.id} .cm-row-time", /oggi \d\d:\d\d/
+    assert_select "#reply-window", /Il docente risponde entro un giorno\./
+    student_reply(old, "Grazie mille")
+    on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE)
+    assert_equal [ old.id, fresh.id ], css_select(".cm-row").map { |n| n["data-comment"].to_i }, "a follow-up brings the conversation back to the top"
+    assert_select "#comment-#{old.id} .cm-preview", /Tu: Grazie mille/
+  end
+
+  test "the tabs count and filter: all, new replies (unseen teacher messages only), waiting for the teacher, closed" do
+    seen = answered_comment(text: "Uno", reply: "Risposta uno")
+    on(:web, "/comments/#{seen.id}", headers: OFFICIAL, remote_addr: EDGE) # opening it: seen
+    unseen = answered_comment(text: "Due", reply: "Risposta due")
+    waiting = plain_comment
+    closed = answered_comment(text: "Tre", reply: "Risposta tre")
+    teacher_post("resolve", closed)
+    on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE)
+    counts = css_select("#comment-tabs [data-tab]").to_h { |n| [ n["data-tab"], n.css(".cm-tab-n").text.to_i ] }
+    assert_equal({ "all" => 4, "new" => 2, "waiting" => 1, "closed" => 1 }, counts)
+    assert_select "#comment-#{seen.id}[data-unread=false]"
+    assert_select "#comment-#{unseen.id}[data-unread=true]"
+    assert_select "#comment-#{waiting.id}[data-unread=false]", 1
+    {
+      "new" => [ closed.id, unseen.id ], "waiting" => [ waiting.id ], "closed" => [ closed.id ], "all" => [ closed.id, waiting.id, unseen.id, seen.id ]
+    }.each do |tab, expected|
+      on(:web, "/comments?tab=#{tab}", headers: OFFICIAL, remote_addr: EDGE)
+      assert_equal expected.sort, css_select(".cm-row").map { |n| n["data-comment"].to_i }.sort, tab
+      assert_select "#comment-tabs [data-tab=#{tab}][aria-current=page]"
+    end
+    assert_select "#comments-empty", 0
+    # a student who has nothing: the empty state of each tab
+    %w[all new waiting closed].each do |tab|
+      on(:web, "/comments?tab=#{tab}", headers: TRIAL, remote_addr: EDGE)
+      assert_select "#comments-empty[data-tab=#{tab}]", 1
+    end
+    on(:web, "/comments?tab=nonsense", headers: OFFICIAL, remote_addr: EDGE)
+    assert_select "#comment-tabs [data-tab=all][aria-current=page]"
+  end
+
+  test "opening the list marks nothing seen; opening a conversation records reply_seen once and only for an unseen reply" do
+    comment = answered_comment
+    2.times { on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE) }
+    assert_equal %w[reply], comment.events.reload.map(&:kind)
+    2.times { on(:web, "/comments/#{comment.id}", headers: OFFICIAL, remote_addr: EDGE) }
+    assert_equal %w[reply reply_seen], comment.events.reload.map(&:kind)
+    assert_not comment.unread_reply?
+    teacher_post("reply", comment, { text_it: "Ancora una cosa." })
+    assert comment.reload.unread_reply?
+    on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE)
+    assert_select "#comment-#{comment.id}[data-unread=true]", 1
+    on(:web, "/comments/#{comment.id}", headers: OFFICIAL, remote_addr: EDGE)
+    assert_equal %w[reply reply_seen reply reply_seen], comment.events.reload.map(&:kind)
+  end
+
+  test "a conversation of another student, an unknown one, the teacher, a guest, an unmapped login and the preview are refused" do
+    comment = answered_comment
+    on(:web, "/comments/#{comment.id}", headers: TRIAL, remote_addr: EDGE)
+    assert_response :not_found
+    on(:web, "/comments/9999999", headers: OFFICIAL, remote_addr: EDGE)
+    assert_response :not_found
+    [ TEACHER, GUEST, UNMAPPED, {} ].each do |who|
+      on(:web, "/comments/#{comment.id}", headers: who, remote_addr: EDGE)
+      assert_includes [ 401, 403 ], response.status, who.inspect
+      assert_not_includes response.body, "Guarda la scheda 2", who.inspect
+    end
+    on(:web, "/teacher/preview/comments/#{comment.id}", headers: TEACHER, remote_addr: EDGE)
+    assert_response :not_found
+    %i[api harness].each do |listener|
+      on(listener, "/comments/#{comment.id}")
+      assert_response :not_found, listener.to_s
+    end
+    assert_equal %w[reply], comment.events.reload.map(&:kind), "refused visits mark nothing seen"
+  end
+
+  test "the teacher's inbox says how long each comment has waited, marks those over the limit and counts them" do
+    fresh = answered_comment(text: "Risposto", reply: "Fatto")
+    waiting = plain_comment(at: 3.hours.ago)
+    late = plain_comment(at: 30.hours.ago, reason: "error")
+    on(:web, "/teacher/comments", headers: TEACHER, remote_addr: EDGE)
+    assert_select "#comment-late-count[data-late='1']", /In ritardo: 1/
+    assert_select "#comment-late-count", /Si risponde entro un giorno\./
+    assert_select "#comment-#{late.id} [data-late=true]", /In ritardo/
+    assert_select "#comment-#{late.id} .comment-waited", /In attesa da 30 ore/
+    assert_select "#comment-#{waiting.id} .comment-waited", /In attesa da 3 ore/
+    assert_select "#comment-#{waiting.id} [data-late=true]", 0
+    assert_select "#comment-#{fresh.id} .comment-waited", 0
+    teacher_post("reply", late, { text_it: "Scusa il ritardo." })
+    on(:web, "/teacher/comments", headers: TEACHER, remote_addr: EDGE)
+    assert_select "#comment-late-count[data-late='0']"
+    assert_equal 0, Comments::Inbox.counts["late"]
+    on(:web, "/teacher/comments", headers: GUEST, remote_addr: EDGE)
+    assert_select "#comment-count-list [data-state=late]"
+  end
+
+  test "the answer time is in one config file" do
+    assert_equal 24, Comments::ReplyWindow.hours
+    assert_equal "Il docente risponde entro un giorno.", Comments::ReplyWindow.line_it
+    assert_equal "un'ora", Comments::ReplyWindow.span_it(3600)
+    assert_equal "6 ore", Comments::ReplyWindow.span_it(6 * 3600)
+    assert_equal "2 giorni", Comments::ReplyWindow.span_it(48 * 3600)
+    assert_equal "meno di un'ora", Comments::ReplyWindow.waited_it(10.minutes.ago)
+    assert_equal "2 giorni", Comments::ReplyWindow.waited_it(50.hours.ago)
   end
 
   test "a follow-up on a closed comment reopens it for the teacher, who can read, reply or close it as usual" do

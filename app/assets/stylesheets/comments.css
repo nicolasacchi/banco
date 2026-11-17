@@ -120,17 +120,7 @@ body.comment-mode [data-comment-ui] [data-comment-anchor] { outline: none; }
 
 /* ---- «I miei commenti» ---- */
 .menu-badge { display: inline-block; min-width: 1.5rem; padding: 0 0.4rem; margin-left: 0.25rem; border: 2px solid currentColor; border-radius: 1rem; text-align: center; font-weight: 700; }
-.comment-list { list-style: none; padding: 0; margin: 1rem 0; display: grid; gap: 1rem; }
-.comment-item {
-  --comment-accent: var(--line); display: grid; gap: 0.6rem; padding: 0.9rem 1rem; border: 2px solid var(--line); border-left: 0.6rem solid var(--comment-accent);
-  border-radius: 0.9rem; background: var(--surface); max-width: 70ch;
-}
-.comment-item[data-new] { border-color: var(--cs-answered); border-left-color: var(--cs-answered); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cs-answered) 30%, transparent); }
-.comment-item-head { display: flex; align-items: center; gap: 0.75rem; }
 .comment-place-badge { display: inline-grid; place-items: center; flex: none; width: 2.6rem; height: 2.6rem; border-radius: 0.8rem; background: var(--comment-badge, var(--bg)); color: var(--text); border: 2px solid var(--line); }
-.comment-item-title { flex: 1; min-width: 0; }
-.comment-item-title h2 { margin: 0; font-size: 1.1rem; line-height: 1.3; overflow-wrap: anywhere; }
-.comment-item-title .hint { margin: 0; font-size: 0.9rem; }
 .comment-state, .comment-pill {
   display: inline-flex; align-items: center; gap: 0.35rem; flex: none; padding: 0.1rem 0.7rem; margin: 0; border: 2px solid var(--pill, var(--line)); border-radius: 2rem; font-weight: 700; font-size: 0.9rem;
   background: color-mix(in srgb, var(--pill, var(--line)) 14%, var(--surface)); color: var(--text);
@@ -146,20 +136,111 @@ body.comment-mode [data-comment-ui] [data-comment-anchor] { outline: none; }
 .comment-reason[data-reason="not_working"] { --pill: var(--ch-not_working); }
 .comment-reason[data-reason="like"] { --pill: var(--ch-like); }
 .comment-reason .comment-icon { width: 1.1em; height: 1.1em; color: var(--pill); }
-.comment-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin: 0; }
 .comment-quote { margin: 0; padding: 0.3rem 0.8rem; border-left: 3px solid var(--line); color: var(--muted); }
-.comment-mine { margin: 0; padding: 0.6rem 0.9rem; border-radius: 1rem 1rem 1rem 0.2rem; background: var(--bg); border: 2px solid var(--line); overflow-wrap: anywhere; }
-.comment-mine.none { color: var(--muted); }
-.comment-reply {
-  position: relative; margin: 0 0 0 1.5rem; padding: 0.6rem 0.9rem; border-radius: 1rem 1rem 0.2rem 1rem; border: 2px solid var(--cs-answered);
-  background: color-mix(in srgb, var(--cs-answered) 14%, var(--surface)); overflow-wrap: anywhere;
-}
-.comment-reply p { margin: 0.2rem 0; }
-.comment-reply-from { display: flex; align-items: center; gap: 0.4rem; font-weight: 700; }
-.comment-reply-from .comment-icon { color: var(--cs-answered); }
 .comment-empty { display: grid; justify-items: start; gap: 0.5rem; max-width: 70ch; padding: 1.2rem; border: 2px dashed var(--line); border-radius: 1rem; background: var(--surface); }
 .comment-empty .comment-icon { width: 2.6rem; height: 2.6rem; color: var(--primary); }
 .comment-empty p { margin: 0; }
+
+/* ---- «I miei commenti» (D-349): the list like a mailbox and the conversation like a chat. Single pane on a phone (the list, or
+   the conversation with a back arrow), two panes from 1000 px (62.5rem). The conversation fills the screen: its messages scroll,
+   the composer stays at the bottom. ---- */
+.page.cm-page { max-width: 72rem; padding: 0.75rem 1rem 1rem; }
+.cm-shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.cm-shell[data-view="list"] .cm-thread-pane { display: none; }
+.cm-shell[data-view="thread"] { height: max(calc(100dvh - 5.5rem), 22rem); }
+.cm-shell[data-view="thread"] .cm-list-pane { display: none; }
+.cm-list-pane { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.cm-list-title { margin: 0 0 0.25rem; font-size: var(--text-h1, 1.75rem); line-height: 1.2; }
+.cm-window { margin: 0 0 0.75rem; color: var(--muted); font-size: 0.95rem; }
+.cm-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.75rem; }
+.cm-tab {
+  display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.75rem; padding: 0.2rem 0.9rem; box-sizing: border-box;
+  border: 2px solid var(--line); border-radius: 2rem; color: var(--text); text-decoration: none; background: transparent;
+}
+.cm-tab:hover { border-color: var(--text); }
+.cm-tab:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.cm-tab[aria-current="page"] { background: var(--primary); border-color: var(--primary); color: var(--primary-text); font-weight: 700; }
+.cm-tab-n { display: inline-block; min-width: 1.5rem; padding: 0 0.35rem; text-align: center; font-weight: 700; font-size: 0.85rem; border: 2px solid currentColor; border-radius: 1rem; }
+.cm-tab[data-tab="new"] .cm-tab-n:not(.zero) { background: var(--cs-answered); border-color: var(--cs-answered); color: var(--bg); }
+.cm-rows { list-style: none; margin: 0 0 1rem; padding: 0; min-height: 0; border-top: 1px solid var(--line); }
+.cm-row { margin: 0; border-bottom: 1px solid var(--line); }
+.cm-row-link { display: flex; align-items: center; gap: 0.75rem; min-height: 4rem; padding: 0.6rem 0.5rem; box-sizing: border-box; border-left: 0.35rem solid transparent; color: var(--text); text-decoration: none; }
+.cm-row-link:hover { background: var(--surface); }
+.cm-row-link:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
+.cm-row-link[aria-current="page"] { background: color-mix(in srgb, var(--primary) 13%, var(--surface)); border-left-color: var(--primary); }
+.cm-row-main { display: grid; flex: 1; gap: 0.15rem; min-width: 0; }
+.cm-row-top, .cm-row-bottom { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.cm-row-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cm-row-time { flex: none; color: var(--muted); font-size: 0.85rem; }
+.cm-preview { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+.cm-who { font-weight: 700; }
+.cm-row[data-unread="true"] .cm-row-title, .cm-row[data-unread="true"] .cm-preview, .cm-row[data-unread="true"] .cm-row-time { color: var(--text); font-weight: 700; }
+.cm-dot { flex: none; width: 0.7rem; height: 0.7rem; border-radius: 50%; background: var(--cs-answered); }
+.cm-row .comment-state { padding: 0 0.5rem; font-size: 0.8rem; }
+.cm-today { margin-top: auto; }
+.cm-thread-pane {
+  display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden;
+  border: 2px solid var(--line); border-radius: 1.2rem; background: var(--surface);
+}
+.cm-thread-none { display: none; align-items: center; justify-content: center; gap: 0.5rem; color: var(--muted); text-align: center; }
+.cm-thread-none .comment-icon { width: 2.6rem; height: 2.6rem; }
+.cm-thread-head { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.75rem; border-bottom: 2px solid var(--line); background: var(--bg); }
+.cm-back { display: inline-grid; place-items: center; flex: none; width: 2.75rem; height: 2.75rem; border: 2px solid var(--line); border-radius: 50%; color: var(--text); }
+.cm-back:hover { border-color: var(--text); }
+.cm-back:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.cm-back .comment-icon { width: 1.4rem; height: 1.4rem; }
+.cm-thread-title { flex: 1 1 0; min-width: 0; }
+.cm-thread-title h1 { margin: 0; font-size: 1.1rem; line-height: 1.25; overflow-wrap: break-word; }
+.cm-thread-title .cm-window { margin: 0.1rem 0 0.3rem; font-size: 0.85rem; line-height: 1.3; }
+.cm-thread-title .comment-state { font-size: 0.8rem; padding: 0 0.5rem; }
+.cm-quote { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 1rem; padding: 0.5rem 0.9rem; border-bottom: 1px solid var(--line); font-size: 0.95rem; }
+.cm-quote p { margin: 0; color: var(--muted); overflow-wrap: anywhere; }
+.cm-place-link { display: inline-flex; align-items: center; min-height: 2.75rem; font-weight: 700; }
+.cm-messages { display: flex; flex: 1; flex-direction: column; gap: 0.6rem; min-height: 0; padding: 0.9rem 0.75rem; overflow-y: auto; }
+.cm-day { align-self: center; margin: 0.3rem 0; }
+.cm-day span { display: inline-block; padding: 0.1rem 0.8rem; border: 1px solid var(--line); border-radius: 2rem; background: var(--bg); color: var(--muted); font-size: 0.85rem; font-weight: 700; }
+.cm-msg { display: flex; flex-direction: column; gap: 0.15rem; max-width: min(85%, 34rem); }
+.cm-msg[data-from="student"] { align-self: flex-end; align-items: flex-end; }
+.cm-msg[data-from="teacher"] { align-self: flex-start; align-items: flex-start; }
+.cm-bubble { padding: 0.55rem 0.85rem; border: 2px solid var(--line); overflow-wrap: anywhere; }
+.cm-msg[data-from="student"] .cm-bubble { border-color: var(--primary); border-radius: 1rem 1rem 0.2rem 1rem; background: color-mix(in srgb, var(--primary) 14%, var(--surface)); }
+.cm-msg[data-from="teacher"] .cm-bubble { border-color: var(--cs-answered); border-radius: 1rem 1rem 1rem 0.2rem; background: color-mix(in srgb, var(--cs-answered) 14%, var(--surface)); }
+.cm-text { margin: 0; white-space: pre-wrap; }
+.cm-bubble .comment-pill + .cm-text { margin-top: 0.35rem; }
+.cm-time { margin: 0; color: var(--muted); font-size: 0.8rem; }
+.cm-msg[data-pending] .cm-bubble { border-style: dashed; opacity: 0.8; }
+.cm-msg[data-pending="failed"] .cm-bubble { border-color: var(--cs-sent); }
+.cm-retry { min-height: 2.75rem; padding: 0 0.25rem; border: 0; background: none; color: var(--text); font: inherit; font-size: 0.85rem; font-weight: 700; text-decoration: underline; cursor: pointer; }
+.cm-retry:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.cm-composer { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.4rem 0.5rem; align-items: end; padding: 0.6rem 0.75rem; border-top: 2px solid var(--line); background: var(--bg); }
+.cm-input {
+  box-sizing: border-box; width: 100%; min-height: 2.75rem; max-height: 9rem; padding: 0.55rem 0.9rem; overflow-y: auto; resize: none;
+  border: 2px solid var(--line); border-radius: 1.4rem; background: var(--surface); color: var(--text); font: inherit; line-height: 1.4;
+}
+.cm-input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.cm-send { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.75rem; border-radius: 1.4rem; }
+/* A phone: the header keeps the back arrow and the title (the place's icon is dropped), «Invia» is a round icon so the field has the width. */
+@media (max-width: 62.49rem) {
+  .cm-thread-head .comment-place-badge { display: none; }
+  .cm-composer { grid-template-columns: minmax(0, 1fr) 2.75rem; }
+  .cm-input { min-width: 0; }
+  .cm-send { width: 2.75rem; padding: 0; border-radius: 50%; }
+  .cm-send-label { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+}
+.cm-count, .cm-error { grid-column: 1 / -1; margin: 0; }
+.cm-count { justify-self: end; color: var(--muted); font-size: 0.85rem; }
+.cm-count[hidden], .cm-error:empty { display: none; }
+.cm-error { font-weight: 700; }
+.cm-waiting { display: flex; align-items: center; gap: 0.6rem; margin: 0; padding: 0.8rem 0.9rem; border-top: 2px solid var(--line); background: var(--bg); font-weight: 700; }
+.cm-waiting .comment-icon { color: var(--cs-sent); width: 1.4rem; height: 1.4rem; }
+.cm-thread-pane > .notice { margin: 0.5rem 0.75rem 0; }
+@media (min-width: 62.5rem) {
+  .cm-shell { grid-template-columns: minmax(19rem, 25rem) minmax(0, 1fr); height: max(calc(100dvh - 5.5rem), 24rem); }
+  .cm-shell[data-view] .cm-list-pane, .cm-shell[data-view] .cm-thread-pane { display: flex; }
+  .cm-rows { flex: 1; overflow-y: auto; }
+  .cm-back { display: none; }
+}
+@media (prefers-reduced-motion: no-preference) { .cm-messages { scroll-behavior: smooth; } }
 
 /* ---- the teacher's inbox ---- */
 .comment-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; list-style: none; margin: 1rem 0 0.5rem; padding: 0; border-bottom: 2px solid var(--line); }
@@ -204,6 +285,12 @@ body.comment-mode [data-comment-ui] [data-comment-anchor] { outline: none; }
 .comment-history { margin: 0.25rem 0; }
 .comment-counts-guest { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; padding: 0; }
 .comment-counts-guest li { margin: 0; padding: 0.3rem 0.9rem; border: 2px solid var(--line); border-radius: 2rem; background: var(--surface); }
+.comment-late-note { margin: 0.5rem 0; font-weight: 700; }
+.comment-late-note span { font-weight: 400; color: var(--muted); }
+.comment-late-note[data-late]:not([data-late="0"]) { color: var(--cs-sent); }
+.comment-waited { color: var(--muted); font-size: 0.9rem; }
+.comment-late { --pill: var(--cs-sent); }
+.comment-late .comment-icon { width: 1.1em; height: 1.1em; color: var(--pill); }
 
 @media print { .comment-banner, .comment-box, .comment-toast, .comment-open { display: none !important; } }
 

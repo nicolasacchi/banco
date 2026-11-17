@@ -1,0 +1,3 @@
+# The answer time the student is told about «I miei commenti» (D-349) and the limit after which the teacher's inbox
+# marks a conversation «In ritardo». The one place of the number: the texts and the late mark read it from here.
+reply_within_hours: 24

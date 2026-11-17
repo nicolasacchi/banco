@@ -1,54 +1,10 @@
 <% content_for :title, t("comments.title") %>
-<main class="page course" data-comment-anchor="page">
-  <h1><%= t("comments.title") %></h1>
-  <p><%= t("comments.intro") %></p>
-  <% if flash[:notice] %><%= ui_notice :success, flash[:notice], html: { id: "reply-sent" } %><% end %>
-  <% if flash[:alert] %><%= ui_notice :error, flash[:alert], html: { id: "reply-error" } %><% end %>
-  <% if @comments.empty? %>
-    <div class="comment-empty" id="comments-empty">
+<main class="page course cm-page" data-comment-anchor="page">
+  <div class="cm-shell" data-view="list">
+    <%= render "comments/list", inbox: @inbox, current: nil, heading: "h1" %>
+    <section class="cm-thread-pane cm-thread-none" aria-hidden="true">
       <%= comment_icon("comment") %>
-      <p><strong><%= t("comments.empty") %></strong></p>
-      <p><%= t("comments.empty_hint") %></p>
-    </div>
-  <% else %>
-    <ul class="comment-list" id="my-comments">
-      <% @comments.each do |comment| %>
-        <% new_reply = @unread.include?(comment) %>
-        <li class="comment-item" id="comment-<%= comment.id %>" data-state="<%= comment.state %>" <%= 'data-new="true"'.html_safe if new_reply %> style="<%= comment_accent_style(comment) %>" data-comment-anchor="comment:<%= comment.id %>">
-          <div class="comment-item-head">
-            <span class="comment-place-badge"><%= comment_place_icon(comment) %></span>
-            <div class="comment-item-title">
-              <h2><%= comment_place_it(comment) %></h2>
-              <p class="hint"><%= comment.created_at.in_time_zone.strftime("%d/%m/%Y %H:%M") %><% if comment.trial %> · <%= t("comments.trial") %><% end %></p>
-            </div>
-            <span class="comment-state" data-state="<%= comment.state %>"><%= comment_state_icon(comment.state) %><%= t("comments.state.#{comment.state}") %></span>
-          </div>
-          <p class="comment-tags">
-            <span class="comment-pill comment-reason" data-reason="<%= comment.reason %>"><%= comment_icon("reason-#{comment.reason.dasherize}") %><%= t("comments.reason.#{comment.reason}") %></span>
-            <% if new_reply %><span class="menu-badge"><%= t("comments.new_reply") %></span><% end %>
-          </p>
-          <% if comment.selected_text %><p class="comment-quote"><%= t("comments.quoted") %>: <q><%= comment.selected_text %></q></p><% end %>
-          <% comment.thread.each do |message| %>
-            <% if message.from == :teacher %>
-              <blockquote class="comment-reply" data-from="teacher">
-                <p class="comment-reply-from"><%= comment_icon("teacher-reply") %><strong><%= t("comments.teacher_replied") %></strong></p>
-                <%= simple_format(h(message.text_it)) %>
-              </blockquote>
-            <% else %>
-              <div class="comment-mine<%= ' none' unless message.text_it %>" data-from="student"><strong><%= t("comments.you_wrote") %>:</strong> <%= message.text_it ? simple_format(h(message.text_it)) : t("comments.no_text") %></div>
-            <% end %>
-          <% end %>
-          <% if comment.replies.any? %>
-            <%= form_with url: comment_reply_path(id: comment.id), method: :post, class: "comment-reply-form", id: "reply-form-#{comment.id}" do %>
-              <%= hidden_field_tag :client_reply_id, "r-#{SecureRandom.hex(8)}", id: "reply-id-#{comment.id}" %>
-              <label for="reply-<%= comment.id %>"><%= t("comments.reply_label") %></label>
-              <%= text_area_tag :text_it, nil, id: "reply-#{comment.id}", rows: 3, maxlength: Comment::TEXT_MAX, required: true, class: "answer-input wide" %>
-              <button type="submit" class="button small"><%= comment_icon("send") %><%= t("comments.reply_send") %></button>
-            <% end %>
-          <% end %>
-        </li>
-      <% end %>
-    </ul>
-  <% end %>
-  <div class="button-row"><a class="button secondary" href="/today"><%= t("comments.back") %></a></div>
+      <p><%= t("comments.thread.pick") %></p>
+    </section>
+  </div>
 </main>
