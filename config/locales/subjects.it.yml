@@ -1,0 +1,9 @@
+# The names of three subjects at the student's school, [the school], where she takes the exam (D-343).
+# `subjects` is append-only (triggers block UPDATE), so `subjects.name_it` stays the seed name and Subject#name_it reads
+# this table first. A key that is not here shows the column.
+it:
+  subjects:
+    display_name_it:
+      chemistry: "Scienze integrate – Chimica"
+      biology: "Scienze integrate – Biologia"
+      geography: "Geografia economica"

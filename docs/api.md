@@ -270,7 +270,7 @@ what each student did there) and the state of the release.
   ],
   "subjects": [
     {
-      "key": "geography", "name_it": "Geografia", "stage": "approved", "has_graph": true, "has_blueprint": true,
+      "key": "geography", "name_it": "Geografia economica", "stage": "approved", "has_graph": true, "has_blueprint": true,
       "items": { "total": 26, "passed": 26, "sent_back": 0 }, "waiting": [], "blocked_it": null, "clear_findings": 0, "minutes": 12,
       "course": { "approved": 25, "total": 26, "open": true, "awaiting": 1, "in_review": 0, "missing": 0 },
       "students": [ { "student": "student", "official": true, "diagnosis_it": "Fatto", "last_activity_at": "2026-11-13T17:02:11Z", "practised_skills": 3 } ]
@@ -291,7 +291,7 @@ apart, the release state, the warnings and the new skills of the map. `--only-re
 
 ```json
 {
-  "subject": { "key": "geography", "name_it": "Geografia" }, "present": true, "revision": { "id": 36, "seq": 5 },
+  "subject": { "key": "geography", "name_it": "Geografia economica" }, "present": true, "revision": { "id": 36, "seq": 5 },
   "open": true, "released_revision_id": 36, "released_latest": true,
   "counts": { "in_map": 26, "approved": 25, "awaiting": 1, "missing": 0, "ready": 1 },
   "notes_it": ["Ordine consigliato: ..."], "warnings": [],
@@ -325,7 +325,7 @@ and comes only with `--lesson` (`lesson.body`, the same lesson `banco lesson ope
 
 ```json
 {
-  "subject": { "key": "geography", "name_it": "Geografia" }, "key": "ponte.geography.world-map-coordinates", "present": true, "extra": false, "title_it": "Orientarsi nel mondo",
+  "subject": { "key": "geography", "name_it": "Geografia economica" }, "key": "ponte.geography.world-map-coordinates", "present": true, "extra": false, "title_it": "Orientarsi nel mondo",
   "latest": { "id": 448, "seq": 6, "intro_it": "..." },
   "approved": { "latest": false, "revision_id": null, "seq": null }, "attested_it": null,
   "map_entry": { "key": "...", "kind": "ponte", "skills": ["..."], "minutes": 30, "term": 1, "after": [] },
@@ -372,7 +372,7 @@ traces (all right, all wrong).
 
 ```json
 {
-  "subject": { "key": "geography", "name_it": "Geografia" }, "present": true,
+  "subject": { "key": "geography", "name_it": "Geografia economica" }, "present": true,
   "blueprint": { "id": 45, "seq": 5, "pinned_items": 26 }, "approved": false,
   "approval": { "approvable": true, "reasons": [], "reasons_it": [] }, "attested_it": null,
   "skills": [ { "skill": "geography.coordinates-hemispheres", "label_it": "...", "role": "entry", "items": [ { "item": "...", "revision_id": 901, "seq": 2, "gate": {}, "findings": [] } ],
@@ -397,13 +397,13 @@ and the extra topics (each `done`, `in_progress` or `todo`, the same word as on 
   "overall": { "programme": { "total": 19, "done": 4, "in_progress": 1, "missing": 15, "percent": 21 }, "extra": { "total": 7, "done": 0, "in_progress": 0, "missing": 7, "percent": 0 } },
   "subjects": [
     {
-      "key": "geography", "name_it": "Geografia", "released": true, "mode": "official", "course_revision_id": 36,
+      "key": "geography", "name_it": "Geografia economica", "released": true, "mode": "official", "course_revision_id": 36,
       "topics": [ { "key": "ponte.geography.world-map-coordinates", "kind": "ponte", "title_it": "...", "term": 1, "minutes": 30, "skills": ["..."], "after": [],
                     "status": "in_progress", "lesson_read": true, "to_recover": false, "approved": true } ],
       "extra_topics": [ { "key": "extra.geography.europe", "status": "todo" } ],
       "programme": { "total": 19, "done": 4, "in_progress": 1, "missing": 15, "percent": 21 },
       "extra": { "total": 7, "done": 0, "in_progress": 0, "missing": 7, "percent": 0 },
-      "entry_test": { "subject": "geography", "name_it": "Geografia", "status": "completed", "done": true, "startable": false, "suggested": false, "label_it": "Fatto", "run_id": 412 },
+      "entry_test": { "subject": "geography", "name_it": "Geografia economica", "status": "completed", "done": true, "startable": false, "suggested": false, "label_it": "Fatto", "run_id": 412 },
       "skills": [ { "key": "geography.coordinates-hemispheres", "label_it": "...", "state": "in_study", "since": "2026-11-12T09:00:00Z" } ],
       "skills_without_topic": []
     }

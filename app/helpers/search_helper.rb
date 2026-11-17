@@ -23,7 +23,7 @@ module SearchHelper
     SUBJECTS.include?(subject) ? "--search-accent: var(--accent-#{subject})" : nil
   end
 
-  def search_subject_name(subject) = (@search_subject_names ||= Subject.pluck(:key, :name_it).to_h)[subject]
+  def search_subject_name(subject) = (@search_subject_names ||= Subject.all.to_h { |s| [ s.key, s.name_it ] })[subject]
 
   # «Non ho trovato «costituzione». Forse cercavi «sostituzione»?» when the hits come only from the typo fallback: each corrected word is
   # a link that runs the search with it. +path+ is the page ("/search"), +extra+ the filters to keep; +key+ the i18n key (..._html).

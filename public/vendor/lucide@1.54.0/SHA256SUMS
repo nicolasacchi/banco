@@ -10,7 +10,7 @@ efd01c80e734457ef8063ed1bc117dc60cceabc64d8a66acfe43e40f89f2960f  ./banco-sprite
 cd664b91f182a2e1b6dd531f5e51c35754ec76a6903ef9a2b2791d71dad908ea  ./banco-sprite-law_economics.svg
 029be8a54ed8054c60541b733d3a25386e4b65e0eefabb8c58e7bef18dfbf447  ./banco-sprite-math.svg
 36c4fff5d3597fd5c32d10b5fdfe9b35405163ce1825daec68053c4ebce83f5e  ./banco-sprite-spanish.svg
-59ded1cc5e67826ae1b8c249701e8f046db92f1765ed51a34158c2b63d9f2c84  ./banco-sprite.svg
+2540c3748d559b5410fff5e95c0fd045044a3eb9cde3fd3a4d91ab58ab64e3f4  ./banco-sprite.svg
 700e6ea86f0565ac5dbefe75a3ecebce674ee834caea4041f3d518f6de835107  ./icons/app-window.svg
 46b0509a1583e0166868ba030f6cb24532c9a92690595024f65bc3e484e74a39  ./icons/arrow-left-right.svg
 c26456702f6c893b6651c0e9b1da3a1ba62d0e44f4b529e790c56600f1aa4734  ./icons/arrow-left.svg
@@ -159,6 +159,7 @@ d3670b050861fc82fe24c93c0422caa2aa78e08e4304351e002a85db0fb1cf55  ./icons/scan-e
 65c5e472dd2d00ac5d839142d05fd80df7536fe7816cd1dcee3b28a92f1b8fcc  ./icons/scroll-text.svg
 9f9aa68d889ad150b25f72be17c3058c924d0ee6d8ca2e081866f7ddef99a054  ./icons/search.svg
 c3c0d7adbf01bbf5ccc73e3635a0b687319c464bfdee656bb53937027feb8340  ./icons/send.svg
+cf4b3002bff5846e113f9a169a3b8892f42aa7798808367a1d3eeae710726a6f  ./icons/settings.svg
 485422fa9315cf779474a89143bc8304db9d84c6f75f7fdd5e65aa5dc8785b93  ./icons/sheet.svg
 0f5e349e358ac7630407857e5a856e0c485d72390df65f0d8c7e87eb5778304b  ./icons/shield.svg
 060770cb7ef585e964ea80ad5e5f0104f14411da201751c8bd88bf9aa49c7502  ./icons/ship.svg

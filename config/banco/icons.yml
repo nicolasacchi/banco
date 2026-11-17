@@ -75,7 +75,7 @@ ui:
   nav-subjects: layers            # Materie
   nav-search: search              # Cerca
   nav-diagnosis: list-checks      # Test d'ingresso
-  nav-settings: type              # Impostazioni
+  nav-settings: settings          # Impostazioni (the gear)
   step-lesson: book-open          # step 1 of a topic
   step-practice: notebook-pen     # step 2 of a topic
   clock-minutes: clock            # minutes of a topic
