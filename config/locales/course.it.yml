@@ -51,6 +51,15 @@ it:
   subjects:
     title: "Materie"
     all: "Tutte le materie"
+  # Educazione civica (D-345): a view over topics of other subjects, by the nuclei of the Linee guida.
+  civics:
+    title: "Educazione civica"
+    badge: "Facoltativo · in più materie"
+    card_line: "Argomenti di altre materie, per temi."
+    count:
+      one: "%{count} argomento"
+      other: "%{count} argomenti"
+    intro: "Non è una materia a sé: sono argomenti di altre materie. Sono facoltativi qui; quelli del programma li trovi anche nella loro materia."
   # Where S is (D-326): mandatory topics (the programme) and optional ones (fuori programma), done out of all, and the state of the entry test.
   progress:
     required:

@@ -72,7 +72,7 @@ module ApplicationHelper
     path = request.path.delete_prefix(student_root)
     case path
     when "/today", "" then :today
-    when %r{\A/(subjects|topics)(/|\z)} then :subjects
+    when %r{\A/(subjects|topics|civics)(/|\z)} then :subjects
     when "/search" then :search
     when %r{\A/diagnosis(/|\z)}, %r{\A/(test|warmup|runs)(/|\z)} then :diagnosis
     when "/settings" then :settings

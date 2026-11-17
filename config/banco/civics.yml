@@ -1,0 +1,37 @@
+# Educazione civica (D-345): the three nuclei of the 2024 Linee guida (DM 183/2024, L. 92/2019), each a list of topics that
+# already exist in other subjects. Not a subject and no content of its own: Course::Civics reads this list through what
+# Course::StudentView shows the student, and skips a key she cannot see. A key is a lesson key (kind.subject.slug); the order
+# is the order on the page. Texts are for the student: short sentences.
+nuclei:
+  - key: constitution
+    title_it: "Costituzione"
+    intro_it: "Le regole della Repubblica: i principi, i diritti e doveri, le istituzioni, l'Unione europea."
+    topics:
+      - ripasso.law_economics.constitution-origins-structure
+      - ripasso.law_economics.constitution-fundamental-principles
+      - lezione.law_economics.rights-duties
+      - lezione.law_economics.parliament-lawmaking
+      - lezione.law_economics.government-president
+      - lezione.law_economics.judiciary-constitutional-court
+      - lezione.law_economics.european-union
+      - extra.geography.europe
+      - extra.law_economics.legality-citizenship
+      - extra.law_economics.manners-work
+  - key: sustainability
+    title_it: "Sviluppo economico e sostenibilità"
+    intro_it: "Risorse, ambiente, patrimonio, salute e denaro: come si vive e si produce senza consumare il futuro."
+    topics:
+      - ripasso.geography.resources-environment
+      - extra.geography.heritage-sustainability
+      - extra.business.financial-literacy
+      - extra.biology.health-safety
+      - extra.biology.earth-phenomena
+  - key: digital
+    title_it: "Cittadinanza digitale"
+    intro_it: "Stare in rete in sicurezza: dati, diritti, rispetto degli altri, fonti."
+    topics:
+      - extra.computer_science.online-safety
+      - extra.computer_science.privacy-copyright
+      - extra.computer_science.cyberbullying
+      - extra.computer_science.sources-communication
+      - lezione.italian.digital-ai-oral-writing
