@@ -13,7 +13,7 @@ class FrameTest < ActiveSupport::TestCase
     Grading::Closed.grade(spec, given)
   end
 
-  test "the frame is the line with the blank, after the last arrow, without a one or two word label" do
+  test "the frame is the line with the blank, after the last arrow, without the label before the last colon" do
     f = frame(SCHOOL)
     assert_equal %w[my school], f.prefix
     assert_equal %w[a library], f.suffix
@@ -26,8 +26,9 @@ class FrameTest < ActiveSupport::TestCase
     assert_equal %w[are you], f.prefix
     assert_empty f.suffix
 
-    f = frame("Traduci la frase: My parents ___ meat.") # a label of three words stays in the sentence
-    assert_equal %w[traduci la frase my parents], f.prefix
+    f = frame("Cambia il soggetto con Lucy: Lucy ___ her best.") # an instruction of any length before the colon is not the sentence
+    assert_equal %w[lucy], f.prefix
+    assert_equal %w[her best], f.suffix
   end
 
   test "a blank-first sentence has only a suffix" do

@@ -1,8 +1,8 @@
 module Grading
   # The sentence a `___` blank sits in (D-339), read from the instance display's stem_it. Pure: no database, no clock.
   #
-  # The frame is the line of the stem that holds the blank, after the last → on that line, without a leading label of one
-  # or two words and a colon («Negativa: My parents ___ meat.» is «My parents ___ meat.»). The prefix is the words before
+  # The frame is the line of the stem that holds the blank, after the last → on that line, without the label before the
+  # last colon that comes ahead of the blank («Negativa con will: She ___ the test.» is «She ___ the test.»). The prefix is the words before
   # the blank, the suffix the words after it. A bracketed cue right after the blank («___ (get)») is not a word of the
   # sentence. Words compare case-insensitively, without the punctuation around them, with the apostrophes made one mark
   # and the direction of an accent ignored (D-296).
@@ -11,7 +11,8 @@ module Grading
   #   frame.part("My school doesn't have a library")  # => "doesn't have"
   class Frame
     BLANK = /_{3,}/
-    LABEL = /\A[[:space:]]*\p{L}+(?:[[:space:]]+\p{L}+)?[[:space:]]*:[[:space:]]*/
+    # A label ends at a colon followed by a space: everything up to the last such colon before the blank is the instruction.
+    LABEL_END = /:[[:space:]]/
     CUE = /(?<=_)[[:space:]]*\([^)]*\)/
     EDGE_PUNCTUATION = /\A[^\p{L}\p{N}]+|[^\p{L}\p{N}]+\z/
     # A word one letter off a word of the frame still counts as the frame's word (a plural, a typo) from this length.
@@ -27,7 +28,9 @@ module Grading
         text = plain(stem)
         return nil unless text.scan(BLANK).size == 1
 
-        line = text.lines.find { |l| l.match?(BLANK) }.split("→").last.to_s.sub(LABEL, "")
+        line = text.lines.find { |l| l.match?(BLANK) }.split("→").last.to_s
+        cut = line[0...(line =~ BLANK)].rindex(LABEL_END)
+        line = line[(cut + 1)..] if cut
         line = line.sub(CUE, "")
         before, after = line.split(BLANK, 2)
         frame = new(words(before), words(after))

@@ -90,7 +90,7 @@ class NearlyCorrectTest < ActiveSupport::TestCase
     grading = Struct.new(:verdict, :error_codes_json, :form_violations_json, :normalized, :method) do
       def [](name) = public_send(name)
     end.new("nearly_correct", "[]", "[]", result.normalized, nil)
-    attempt = Struct.new(:latest_grading, :aided).new(grading, false)
+    attempt = Struct.new(:latest_grading, :aided, :id).new(grading, false, nil)
     spec = Grading::Spec.new(component: "matching", subject: "history", answer: key(4), display: DISPLAY)
     got = Practice::Instances.grade(attempt, spec)
     assert_equal [ :correct, "nearly_correct" ], [ got.outcome, got.key ]
