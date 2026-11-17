@@ -20,11 +20,13 @@ var searchKindRe = regexp.MustCompile(`^[a-z_]+(,[a-z_]+)*$`)
 // item:KEY#seed; lesson:KEY for a whole lesson, lesson_card:KEY#N for its card N), the object itself left out; run it on what you
 // wrote to find near-duplicates. It needs the embedding service; without it the answer says "semantic": false. A document submitted
 // minutes ago may have no vector yet: the answer then says how many documents wait ("waiting") and a "note".
+// --kind student_answer (a teacher token only, D-346) searches what the student typed: practice tries and entry-test answers of one student.
 func runSearch(e *env, args []string) error {
 	fs := flag.NewFlagSet("search", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	subject := fs.String("subject", "", "only this subject, for example math")
-	kind := fs.String("kind", "", "only this kind (or kinds, comma separated): lesson_card, glossary_term, topic, practice_item, item, item_instance, course, skill, finding, reference_article, syllabus_line")
+	kind := fs.String("kind", "", "only this kind (or kinds, comma separated): lesson_card, glossary_term, topic, practice_item, item, item_instance, course, skill, finding, reference_article, syllabus_line; student_answer for a teacher token only")
+	student := fs.String("student", "", "with --kind student_answer (a teacher token): whose answers, a student key (default: the official student)")
 	status := fs.String("status", "", "only documents in this status, for example approved")
 	like := fs.String("like", "", "the objects most like this one: a key or a ref (item:KEY, item_instance:KEY#seed, lesson:KEY for a whole lesson, lesson_card:KEY#2 for its card 2); no QUERY")
 	limit := fs.Int("limit", 0, "at most this many results (default 20, at most 50)")
@@ -50,6 +52,9 @@ func runSearch(e *env, args []string) error {
 	if *kind != "" && !searchKindRe.MatchString(*kind) {
 		return newErr(ExitUsage, "E-USAGE", "kind", "--kind is a kind or kinds separated by commas, for example lesson_card,glossary_term", next)
 	}
+	if *student != "" && !studentKeyRe.MatchString(*student) {
+		return newErr(ExitUsage, "E-USAGE", "student", "--student is a student key such as trial-1", next)
+	}
 	if *limit < 0 || *limit > 50 {
 		return newErr(ExitUsage, "E-USAGE", "limit", "--limit is between 1 and 50", next)
 	}
@@ -67,6 +72,9 @@ func runSearch(e *env, args []string) error {
 	}
 	if *status != "" {
 		values.Set("status", *status)
+	}
+	if *student != "" {
+		values.Set("student", *student)
 	}
 	if *limit > 0 {
 		values.Set("limit", strconv.Itoa(*limit))

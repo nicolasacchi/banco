@@ -1,9 +1,12 @@
 require "test_helper"
 require_relative "../support/search_world"
+require_relative "../support/public_api_tokens"
 
-# The agents' search over the API (D-299): content and references, drafts included; never anything a student typed.
+# The agents' search over the API (D-299): content and references, drafts included; never anything a student typed, except for a teacher
+# token that asks for kind=student_answer (D-346).
 class SearchApiTest < ActionDispatch::IntegrationTest
   include SearchWorld
+  include PublicApiTokens
 
   ROW_KEYS = %w[kind subject key revision_id status title snippet score ref].freeze
 
@@ -62,6 +65,71 @@ class SearchApiTest < ActionDispatch::IntegrationTest
     assert_response :not_found
     api(ANSWER_WORD, student: "student", tab: "answers")
     assert_empty json["results"]
+  end
+
+  def search_as(token, query, extra = {})
+    api_as(token, "/api/v1/search?#{{ q: query }.merge(extra).to_query}")
+    response
+  end
+
+  # ---- the teacher bot reads the student's answers (D-346) ----
+
+  test "a teacher token finds the student's answers with kind=student_answer; bot_read and every other token still get E-NOT-FOUND for that kind" do
+    [ issue_token("bot_read"), issue_token("ci"), issue_token("agent_omp"), @token ].each do |token|
+      search_as(token, ANSWER_WORD, kind: "student_answer")
+      assert_response :not_found
+      assert_equal [ "E-NOT-FOUND", "kind" ], json.values_at("code", "field")
+      search_as(token, ANSWER_WORD, kind: "lesson_card,student_answer")
+      assert_response :not_found
+      search_as(token, ANSWER_WORD, kind: "student_answer", student: "student")
+      assert_response :not_found
+      assert_not_includes response.body, ANSWER_WORD
+    end
+    assert_not_includes Search::Scope::Agent.new.kinds, "student_answer"
+    assert_includes Search::Scope::Agent.new(answers_for: "student").kinds, "student_answer"
+    assert_not Search::Scope::Agent.new(answers_for: "student").semantic?, "no student text goes to the model"
+  end
+
+  test "the teacher's answers are the teacher console's: one student, practice tries, entry-test answers and refused texts, with the attempt to open" do
+    teacher = issue_token("teacher")
+    search_as(teacher, ANSWER_WORD, kind: "student_answer")
+    assert_response :success
+    row = json["results"].sole
+    assert_equal (ROW_KEYS + %w[student at attempt]).sort, row.keys.sort
+    assert_equal [ "student_answer", "student" ], row.values_at("kind", "student")
+    assert_equal "practice-#{PracticeAttempt.find_by!(raw: ANSWER_WORD).id}", row["attempt"]
+    assert_equal "student_answer:#{row['key']}#p#{PracticeAttempt.find_by!(raw: ANSWER_WORD).id}", row["ref"]
+    assert_includes row["snippet"], ANSWER_WORD
+    search_as(teacher, DIAGNOSIS_ANSWER_WORD, kind: "student_answer")
+    assert_equal "diagnosis-#{Attempt.find_by!(raw: DIAGNOSIS_ANSWER_WORD).id}", json["results"].sole["attempt"]
+    search_as(teacher, REFUSED_WORD, kind: "student_answer")
+    assert_nil json["results"].sole["attempt"], "a refused text is no attempt"
+    search_as(teacher, TRIAL_ANSWER_WORD, kind: "student_answer")
+    assert_empty json["results"], "the official student's answers by default"
+    search_as(teacher, TRIAL_ANSWER_WORD, kind: "student_answer", student: "prova-1")
+    assert_equal "prova-1", json["results"].sole["student"]
+    search_as(teacher, ANSWER_WORD, kind: "student_answer", student: "prova-1")
+    assert_empty json["results"]
+    search_as(teacher, ANSWER_WORD, kind: "student_answer", student: "nobody")
+    assert_response :not_found
+    assert_equal "student", json["field"]
+  end
+
+  test "a teacher token's search without kind=student_answer is the content search: no answer is mixed in" do
+    teacher = issue_token("teacher")
+    [ ANSWER_WORD, TRIAL_ANSWER_WORD, REFUSED_WORD, DIAGNOSIS_ANSWER_WORD ].each do |word|
+      search_as(teacher, word)
+      assert_response :success
+      assert_empty json["results"], word
+    end
+    search_as(teacher, "equazione")
+    assert_predicate json["results"], :any?
+    json["results"].each { |r| assert_equal ROW_KEYS.sort, r.keys.sort }
+    search_as(teacher, ANSWER_WORD, kind: "lesson_card,student_answer")
+    assert_equal [ "student_answer" ], json["results"].map { |r| r["kind"] }.uniq
+    search_as(teacher, "equazione", kind: "bogus")
+    assert_response :not_found
+    assert_includes json["message"], "student_answer"
   end
 
   test "no answer key and no solution is a result, and no row carries a body" do

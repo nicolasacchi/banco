@@ -110,7 +110,7 @@
       "method": "GET",
       "path": "/api/v1/search",
       "args": ["query"],
-      "flags": ["--subject", "--kind", "--status", "--like", "--limit", "--json"],
+      "flags": ["--subject", "--kind", "--status", "--like", "--limit", "--student", "--json"],
       "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-FILES"]
     },
     {
@@ -591,6 +591,24 @@
       "path": "/api/v1/answers/pending",
       "args": [],
       "flags": ["--subject", "--student"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "attempts",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/students/:student/attempts",
+      "args": [],
+      "flags": ["--student", "--kind", "--subject", "--topic", "--skill", "--item", "--since", "--until", "--outcome", "--serve", "--comment", "--limit", "--after"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND"]
+    },
+    {
+      "name": "attempts show",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/students/:student/attempts/:id",
+      "args": ["id"],
+      "flags": ["--student", "--comment"],
       "error_codes": ["E-AUTH", "E-NOT-FOUND"]
     },
     {

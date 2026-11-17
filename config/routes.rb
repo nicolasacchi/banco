@@ -278,6 +278,9 @@ Rails.application.routes.draw do
     get "api/v1/students/:key/progress" => "api/v1/progress#show", constraints: { key: /[a-z0-9-]+/ }, format: false
     # What the student does next, per subject (D-333), and the whole picture in one read: the pages' own read models again, nothing written.
     get "api/v1/students/:key/next" => "api/v1/progress#upcoming", constraints: { key: /[a-z0-9-]+/ }, format: false
+    # The student's answers (D-346): practice tries, entry-test answers and the checks in lessons; teacher token only, read-only. The list with filters, one answer by ref (practice-12, diagnosis-7, lesson-31) with the exercise as the student saw it.
+    get "api/v1/students/:student/attempts" => "api/v1/attempts#index", constraints: { student: /[a-z0-9-]+/ }, format: false
+    get "api/v1/students/:student/attempts/:id" => "api/v1/attempts#show", constraints: { student: /[a-z0-9-]+/, id: /(?:(?:practice|diagnosis|lesson)-)?\d+/ }, format: false
     get "api/v1/digest" => "api/v1/digest#show", format: false
 
     # The public API (D-327): the teacher's decisions and the student's comments and pending answers, for the tokens of
