@@ -76,7 +76,7 @@ module ApplicationHelper
     when "/search" then :search
     when %r{\A/diagnosis(/|\z)}, %r{\A/(test|warmup|runs)(/|\z)} then :diagnosis
     when "/settings" then :settings
-    when "/comments" then :comments
+    when %r{\A/comments(/\d+)?\z} then :comments
     end
   end
 

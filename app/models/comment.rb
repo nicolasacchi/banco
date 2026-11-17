@@ -51,6 +51,20 @@ class Comment < ApplicationRecord
   # follow-up on an old comment comes back to the top).
   def last_student_message_at = thread.reverse.find { |m| m.from == :student }.at
 
+  # The last word of the conversation and when anything last happened in it (the student's inbox sorts on it, D-349).
+  def last_message = thread.last
+
+  def last_activity_at = last_message.at
+
+  # The teacher has the move (D-349): the student has the last word and nothing has closed the comment (state sent or read).
+  def waiting_for_teacher? = %w[sent read].include?(state)
+
+  # Since when the comment waits for the teacher: the student's last message; nil when it does not wait.
+  def waiting_since = waiting_for_teacher? ? last_student_message_at : nil
+
+  # Waiting longer than the promised answer time (config/banco/comments.yml).
+  def late? = Comments::ReplyWindow.late?(waiting_since)
+
   def replies = events.select { |e| e.kind == "reply" }
 
   def student_replies = events.select { |e| e.kind == "student_reply" }

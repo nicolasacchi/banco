@@ -1,0 +1,8 @@
+<% comment = @comment %>
+<% content_for :title, comment_place_it(comment) %>
+<main class="page course cm-page" data-comment-anchor="page">
+  <div class="cm-shell" data-view="thread">
+    <%= render "comments/list", inbox: @inbox, current: comment, heading: "h2" %>
+    <%= render "comments/thread", comment: comment, inbox: @inbox %>
+  </div>
+</main>

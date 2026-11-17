@@ -49,4 +49,57 @@ module CommentsHelper
     parts << t("comments.card", n: comment.card) if comment.card
     parts.join(": ").sub(/: (scheda)/, ", \\1")
   end
+
+  # ---- the inbox and the conversation (D-349) ----
+
+  # «15:40», in the school's zone.
+  def comment_clock(time) = time.in_time_zone.strftime("%H:%M")
+
+  # The time of a row of the inbox: «oggi 15:40», «ieri», «12 nov» (with the year when it is not this one).
+  def comment_when(time)
+    day = time.in_time_zone.to_date
+    today = Time.zone.today
+    return t("comments.when.today", time: comment_clock(time)) if day == today
+    return t("comments.when.yesterday") if day == today - 1
+
+    I18n.l(day, format: day.year == today.year ? "%-d %b" : "%-d %b %Y")
+  end
+
+  # The separator between the days of a conversation: «Oggi», «Ieri», «12 novembre».
+  def comment_day_label(day)
+    today = Time.zone.today
+    return t("comments.thread.today") if day == today
+    return t("comments.thread.yesterday") if day == today - 1
+
+    I18n.l(day, format: day.year == today.year ? "%-d %B" : "%-d %B %Y")
+  end
+
+  # [who, text] of the last message of a row: «Tu:» / «Docente:» and the words; a first message without words says its reason.
+  def comment_preview(row)
+    last = row.last
+    who = t(last.from == :teacher ? "comments.inbox.teacher" : "comments.inbox.you")
+    text = last.text_it.presence || (last.event.nil? ? t("comments.reason.#{row.comment.reason}") : "")
+    [ who, text.squish ]
+  end
+
+  # Where the comment was written, as an address of the student's pages, when that page is still there for this student:
+  # the course pages need the topic or the subject to be visible. Nil for a test, a run or the comments themselves.
+  def comment_place_link(comment)
+    page = Comments::Pages.parse(comment.page_path) or return nil
+    case page.kind
+    when "today", "settings", "search" then comment.page_path
+    when "subjects" then comment.page_path if course_view.subjects.any?
+    when "subject" then comment.page_path if course_view.subject(page.subject_key)
+    when "topic", "practice" then comment.page_path if course_view.find_topic(page.topic)
+    when "lesson" then (comment.card ? "#{comment.page_path}#scheda-#{comment.card}" : comment.page_path) if course_view.find_topic(page.topic)
+    end
+  end
+
+  # The texts of the conversation's script (config/locales/comments.it.yml).
+  def comment_thread_labels
+    I18n.t("comments.thread").slice(:sending, :failed, :error, :today).merge(reply_error: I18n.t("comments.reply_error"), state_sent: I18n.t("comments.state.sent"))
+  end
+
+  # The query of a link inside «I miei commenti»: the tab is kept (the default one is left out).
+  def comment_tab_query(tab) = tab.to_s == "all" ? {} : { tab: tab }
 end

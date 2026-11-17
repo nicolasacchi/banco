@@ -11,6 +11,7 @@
           <li data-state="<%= state %>"><%= t("teacher.comments.counts.#{state}", n: @counts[state]) %></li>
         <% end %>
         <li data-state="questions"><%= t("teacher.comments.counts.questions", n: @counts["questions"]) %></li>
+        <li data-state="late"><%= t("teacher.comments.late_count", n: @counts["late"]) %></li>
       </ul>
     </section>
     <p class="notice" id="comments-guest-note"><%= t("teacher.comments.guest_note") %></p>
@@ -37,6 +38,7 @@
         <% end %>
       </ul>
     </nav>
+    <p class="comment-late-note" id="comment-late-count" data-late="<%= @counts["late"] %>"><%= t("teacher.comments.late_count", n: @counts["late"]) %> <span><%= t("teacher.comments.limit_line", span: Comments::ReplyWindow.span_it(Comments::ReplyWindow.limit.to_i)) %></span></p>
 
     <form id="comment-filters" class="filters" aria-label="<%= t("teacher.comments.filters.label") %>">
       <div class="comment-chiprow">
@@ -85,6 +87,10 @@
               <div class="comment-row-head">
                 <span class="comment-place-badge"><%= comment_place_icon(comment) %></span>
                 <span class="comment-state" data-state="<%= comment.state %>"><%= comment_state_icon(comment.state) %><%= t("teacher.comments.state.#{comment.state}") %></span>
+                <% if (since = comment.waiting_since) %>
+                  <span class="comment-waited" data-waiting="true"><%= t("teacher.comments.waiting", span: Comments::ReplyWindow.waited_it(since)) %></span>
+                  <% if comment.late? %><span class="comment-pill comment-late" data-late="true"><%= comment_icon("alert") %><%= t("teacher.comments.late") %></span><% end %>
+                <% end %>
                 <span class="comment-pill comment-reason" data-reason="<%= comment.reason %>"><%= comment_icon("reason-#{comment.reason.dasherize}") %><%= t("teacher.comments.reason.#{comment.reason}") %></span>
                 <span class="comment-who">
                   <%= student_name(comment.student) %><% if comment.trial %> (<%= t("teacher.comments.trial") %>)<% end %>

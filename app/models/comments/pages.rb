@@ -8,7 +8,7 @@ module Comments
 
     PATTERNS = [
       [ %r{\A/today\z}, "today" ], [ %r{\A/subjects\z}, "subjects" ], [ %r{\A/settings\z}, "settings" ],
-      [ %r{\A/search\z}, "search" ], [ %r{\A/comments\z}, "comments" ], [ %r{\A/diagnosis\z}, "diagnosis" ],
+      [ %r{\A/search\z}, "search" ], [ %r{\A/comments(?:/[1-9]\d{0,17})?\z}, "comments" ], [ %r{\A/diagnosis\z}, "diagnosis" ],
       [ %r{\A/diagnosis/warmup\z}, "warmup" ],
       [ %r{\A/subjects/(?<subject_key>[a-z_]+)\z}, "subject" ],
       [ %r{\A/topics/(?<topic>#{TOPIC})\z}, "topic" ],

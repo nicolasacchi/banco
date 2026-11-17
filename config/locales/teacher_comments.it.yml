@@ -7,6 +7,10 @@ it:
       title: "Commenti dello studente"
       intro: "Quello che lo studente scrive in ogni pagina. Rispondi qui: la risposta compare nei suoi commenti e in Oggi."
       guest_note: "Sei in sola lettura: vedi solo i numeri, non i testi."
+      late_count: "In ritardo: %{n}"
+      limit_line: "Si risponde entro %{span}."
+      late: "In ritardo"
+      waiting: "In attesa da %{span}"
       counts_title: "Quanti commenti"
       counts:
         sent: "Nuovi: %{n}"

@@ -1,0 +1,60 @@
+<%# One conversation (D-349), like a chat: the place quoted at the top, the messages as bubbles (the student's on the right, the
+    teacher's on the left) with the time under each and a separator for each day, the composer at the bottom. The script
+    (comment_thread_controller.js) sends with fetch and shows the bubble at once; without script the form posts and the page is
+    drawn again. A comment without a teacher reply has no composer (D-342): it says it waits. Local: comment, inbox. %>
+<% link = comment_place_link(comment) %>
+<% thread = comment.thread %>
+<section class="cm-thread-pane" id="conversation" data-controller="comment-thread" data-comment-anchor="comment:<%= comment.id %>"
+         data-comment-thread-url-value="<%= comment_reply_path(id: comment.id) %>" data-comment-thread-comment-id-value="<%= comment.id %>"
+         data-comment-thread-max-value="<%= Comment::TEXT_MAX %>" data-comment-thread-labels-value="<%= comment_thread_labels.to_json %>"
+         aria-labelledby="cm-thread-title" data-comment="<%= comment.id %>" data-state="<%= comment.state %>" style="<%= comment_accent_style(comment) %>">
+  <header class="cm-thread-head">
+    <a class="cm-back" id="comment-back" href="<%= comments_path(comment_tab_query(inbox.tab)) %>" aria-label="<%= t("comments.thread.back") %>"><%= comment_icon("back") %></a>
+    <span class="comment-place-badge"><%= comment_place_icon(comment) %></span>
+    <div class="cm-thread-title">
+      <h1 id="cm-thread-title"><%= comment_place_it(comment) %></h1>
+      <p class="cm-window"><%= Comments::ReplyWindow.line_it %></p>
+      <span class="comment-state" data-state="<%= comment.state %>" data-comment-thread-target="chip"><%= comment_state_icon(comment.state) %><span data-comment-thread-target="chipLabel"><%= t("comments.state.#{comment.state}") %></span></span>
+    </div>
+  </header>
+  <% if link || comment.selected_text || comment.trial %>
+    <div class="cm-quote" id="comment-place">
+      <% if comment.selected_text %><p class="cm-quote-text"><%= t("comments.quoted") %>: <q><%= comment.selected_text %></q></p><% end %>
+      <% if comment.trial %><p class="cm-quote-note"><%= t("comments.trial") %></p><% end %>
+      <% if link %><a class="cm-place-link" id="comment-place-link" href="<%= link %>"><%= t("comments.thread.open_place") %></a><% end %>
+    </div>
+  <% end %>
+  <% if flash[:notice] %><%= ui_notice :success, flash[:notice], html: { id: "reply-sent" } %><% end %>
+  <% if flash[:alert] %><%= ui_notice :error, flash[:alert], html: { id: "reply-error" } %><% end %>
+  <div class="cm-messages" id="comment-messages" role="log" aria-live="polite" data-comment-thread-target="messages">
+    <% previous_day = nil %>
+    <% thread.each do |message| %>
+      <% day = message.at.in_time_zone.to_date %>
+      <% if day != previous_day %>
+        <div class="cm-day" role="separator" data-day="<%= day.iso8601 %>"><span><%= comment_day_label(day) %></span></div>
+        <% previous_day = day %>
+      <% end %>
+      <div class="cm-msg" data-from="<%= message.from %>"<%= %( data-event="#{message.event.id}").html_safe if message.event %>>
+        <div class="cm-bubble">
+          <% if message.event.nil? %><span class="comment-pill comment-reason" data-reason="<%= comment.reason %>"><%= comment_icon("reason-#{comment.reason.dasherize}") %><%= t("comments.reason.#{comment.reason}") %></span><% end %>
+          <% if message.text_it.present? %><p class="cm-text"><%= message.text_it %></p><% end %>
+        </div>
+        <p class="cm-time"><%= message.from == :teacher ? "#{t("comments.inbox.teacher_name")} · " : "" %><time datetime="<%= message.at.iso8601 %>"><%= comment_clock(message.at) %></time></p>
+      </div>
+    <% end %>
+    <div data-comment-thread-target="end"></div>
+  </div>
+  <% if comment.replies.any? %>
+    <%= form_with url: comment_reply_path(id: comment.id), method: :post, class: "cm-composer", id: "reply-form-#{comment.id}", data: { comment_thread_target: "form", action: "submit->comment-thread#send" } do %>
+      <%= hidden_field_tag :client_reply_id, "r-#{SecureRandom.hex(8)}", id: "reply-id-#{comment.id}" %>
+      <label class="sr-only" for="reply-<%= comment.id %>"><%= t("comments.thread.composer") %></label>
+      <%= text_area_tag :text_it, nil, id: "reply-#{comment.id}", rows: 1, maxlength: Comment::TEXT_MAX, required: true, placeholder: t("comments.thread.composer"), class: "cm-input",
+                                      data: { comment_thread_target: "text", action: "input->comment-thread#grow keydown->comment-thread#key" } %>
+      <button type="submit" class="button cm-send" id="reply-send"><%= comment_icon("send") %><span class="cm-send-label"><%= t("comments.reply_send") %></span></button>
+      <p class="cm-count" data-comment-thread-target="count" hidden></p>
+      <p class="cm-error" id="reply-js-error" role="alert" data-comment-thread-target="error"></p>
+    <% end %>
+  <% else %>
+    <p class="cm-waiting" id="comment-waiting"><%= comment_icon("clock-minutes") %><span><%= t("comments.thread.waiting") %></span></p>
+  <% end %>
+</section>

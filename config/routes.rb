@@ -124,6 +124,7 @@ Rails.application.routes.draw do
       post "questions" => "questions#create"
       # Comments anywhere (D-304): the student writes a comment on any page and reads the answers. Students only.
       get "comments" => "comments#index"
+      get "comments/:id" => "comments#show", constraints: { id: /\d+/ }, as: :comment
       post "comments" => "comments#create"
       post "comments/:id/reply" => "comments#reply", constraints: { id: /\d+/ }, as: :comment_reply
     end
