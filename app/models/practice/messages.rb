@@ -90,7 +90,7 @@ module Practice
       I18n.t("why.#{code}", **why)
     end
 
-    # What a skill still needs to be demonstrated (practice/4 section 5: 3 distinct exercises right without help, 2 of them hard
+    # What a skill still needs to be demonstrated (practice/5 section 5: 3 distinct exercises right without help, 2 of them hard
     # to guess), read from the fold's why: {exercises:, long:, more_long:} or nil when nothing is missing.
     #   exercises: new right exercises needed (the larger of the 3 in all and the 2 hard to guess); long: how many of them hard to guess;
     #   more_long: true when the hard ones are asked on top of the plain count.
@@ -101,8 +101,8 @@ module Practice
       when "not_seen", "seed_to_recover", "seed_to_learn" then done = low = 0
       else return nil
       end
-      need = [ Rules::V4::DEMONSTRATE_CORRECT_UNAIDED - done, 0 ].max
-      need_long = [ Rules::V4::DEMONSTRATE_MIN_LOW_GUESS - low, 0 ].max
+      need = [ Rules::V5::DEMONSTRATE_CORRECT_UNAIDED - done, 0 ].max
+      need_long = [ Rules::V5::DEMONSTRATE_MIN_LOW_GUESS - low, 0 ].max
       return nil if need.zero? && need_long.zero?
 
       { exercises: [ need, need_long ].max, long: need_long, more_long: need.positive? && need_long.positive? }
@@ -124,6 +124,9 @@ module Practice
       label, gap = gaps.min_by { |_, g| g[:exercises] }
       I18n.t("today.close_line.exercises", skill: label, count: gap[:exercises]) if gap
     end
+
+    # The page's line when the served exercise is the same item as the one before (Practice::Repeat, D-348).
+    def same_item_it = I18n.t("practice.same_item", n: Rules::V5::ADVANCE_AFTER_CORRECT_UNAIDED)
 
     def reason_it(reason)
       case reason.to_s

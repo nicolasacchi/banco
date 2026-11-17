@@ -26,7 +26,9 @@ class PracticeController < ApplicationController
 
     choice = Practice::Selector.next(student: acting_student, topic_revision: topic.topic_revision, skill: skill, follow: follow_param,
                                      item: item_param, advance: ActiveModel::Type::Boolean.new.cast(params[:advance]), now: Time.current)
-    render json: serve_body(choice.serve, topic)
+    return render(json: exhausted_body(skill)) if choice == Practice::Selector::EXHAUSTED
+
+    render json: serve_body(choice.serve, topic, chosen: item_param.present?)
   rescue Practice::Selector::BadFollow
     render json: { status: "bad_follow" }, status: :unprocessable_entity
   rescue Practice::Selector::NotPinned
@@ -112,21 +114,35 @@ class PracticeController < ApplicationController
     course_view.subjects.any? { |sv| sv.topics.any? { |t| t.topic_revision.id == serve.topic_revision_id } }
   end
 
-  # A9.3: the open serve as the browser sees it.
-  def serve_body(serve, topic)
+  # D-348: no exercise of the skill is unseen and none is open: nothing is served and the page says so (the fact is recorded by the selector).
+  def exhausted_body(skill)
+    { type: "exhausted", message_it: I18n.t("practice.exhausted"), note_it: I18n.t("practice.exhausted_note"),
+      skill: skill_block(skill, course_view.state(skill)) }
+  end
+
+  # A9.3: the open serve as the browser sees it. chosen: the student picked this exercise from the list (no line saying it is a similar one).
+  def serve_body(serve, topic, chosen: false)
     serve = PracticeServe.includes(:events, attempts: :gradings, item_instance: { item_revision: :item }).find(serve.id)
     status = Practice::Loader.status_of(serve, now: Time.current)
     instance = serve.item_instance
     hints = Practice::Instances.hints(instance)
     state = course_view.state(serve.skill_key)
     {
-      type: "item", serve_id: serve.id, reason: serve.reason, reason_it: Practice::Messages.reason_it(serve.reason),
+      type: "item", serve_id: serve.id, reason: serve.reason, reason_it: reason_it(serve, chosen),
       status: status.state.to_s, next_try_number: status.next_try_number,
       skill: skill_block(serve.skill_key, state),
       hints: { total: hints.size, shown: hints.first(status.hints_shown).each_with_index.map { |text, i| { n: i + 1, hint_it: text } } },
       item: item_part(serve, instance),
       draft: draft_block(serve), exercise: exercise_block(serve, topic)
     }
+  end
+
+  # The line above the exercise: why it was given. The same item as the serve before (the rule keeps the student on it until it has the right
+  # tries it needs) says so in its own words, unless the student chose it (D-348).
+  def reason_it(serve, chosen)
+    return Practice::Messages.same_item_it if !chosen && %w[next after_solution].include?(serve.reason) && Practice::Repeat.call(serve)
+
+    Practice::Messages.reason_it(serve.reason)
   end
 
   # What the student typed in this serve and has not answered yet; nil when there is nothing (or a try came after it).

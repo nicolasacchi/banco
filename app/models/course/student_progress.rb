@@ -42,11 +42,14 @@ module Course
 
     def tally_json(tally) = { total: tally.total, done: tally.done, in_progress: tally.in_progress, missing: tally.missing, percent: tally.percent }
 
-    # The state of every skill of the visible topics of the subject (programme and extra), in the order of the topics.
+    # The state of every skill of the visible topics of the subject (programme and extra), in the order of the topics; pool_exhausted_at is when the
+    # student first saw every exercise of the skill and none was served on its own (D-348), nil otherwise.
     def skills_of(sv)
-      sv.topics.flat_map(&:skills).uniq.map do |key|
+      keys = sv.topics.flat_map(&:skills).uniq
+      exhausted = PracticePoolExhaustion.first_by_skill(@student, keys)
+      keys.map do |key|
         state = @view.state(key)
-        { key: key, label_it: @view.label(key), state: state&.state || "not_seen", since: state&.since&.utc&.iso8601 }
+        { key: key, label_it: @view.label(key), state: state&.state || "not_seen", since: state&.since&.utc&.iso8601, pool_exhausted_at: exhausted[key]&.utc&.iso8601 }
       end
     end
 

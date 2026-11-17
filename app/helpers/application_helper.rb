@@ -39,8 +39,17 @@ module ApplicationHelper
     t = I18n.t("practice")
     t.slice(:loading, :saving, :empty, :blocked, :error, :hint, :hint_n, :solution, :solution_title, :final, :skill_now, :try_this,
             :try_this_reason, :after_solution, :next, :back, :closed, :not_counted, :reseen, :submit, :nearly, :earlier, :clean_of,
-            :skip, :exercises, :exercises_count, :exercises_count_one, :exercise_n, :status_todo, :status_done, :status_tried,
-            :status_left, :status_retry, :status_skipped, :now, :redo, :draft_restored, :contest_note, :contest_button)
+            :skip, :exercises, :exercises_count, :exercises_count_one, :exercise_n, :status_todo, :status_done, :status_finished,
+            :status_finished_solution, :status_unfinished, :status_skipped, :now, :redo, :draft_restored, :contest_note, :contest_button)
+  end
+
+  # What a state tag means (D-348), said once per page and kind: the first tag of a page carries the line, the others do not. kind: "to_recover" or
+  # "to_review" (Practice::Today.recover_kind); nil or a kind already said gives nil.
+  def recover_note_once(kind)
+    return nil unless %w[to_recover to_review].include?(kind)
+
+    @recover_notes_said ||= Set.new
+    tag.span(t("topic.recover_note.#{kind}"), class: "topic-why recover-note", data: { recover_note: kind }) if @recover_notes_said.add?(kind)
   end
 
   # The texts of the "Non ho capito" control's script.

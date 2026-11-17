@@ -9,19 +9,19 @@ module Practice
   #   graph_order: {skill => position} (Practice::GraphOrder)
   #   last_topic: key of the topic of the student's latest serve or lesson_opened, or nil
   module Today
-    V4 = Rules::V4
+    V5 = Rules::V5
 
     Suggestion = Data.define(:topic_key, :reason, :skill)
 
     DONE = %w[demonstrated consolidated].freeze
-    # The states «Da riprendere» tags on a topic (`banco next` lists the same skills, D-333).
+    # The states the tag on a topic marks (`banco next` lists the same skills, D-333), to_recover first.
     RECOVER = %w[to_recover to_review].freeze
 
     module_function
 
     # limit: how many suggestions to keep (Oggi's SUGGESTIONS_MAX); nil keeps the whole ranked list, whose first per subject is
     # the topic Oggi proposes for that subject (D-333, `banco next`).
-    def call(catalog:, states:, graph_order:, last_topic:, limit: V4::SUGGESTIONS_MAX)
+    def call(catalog:, states:, graph_order:, last_topic:, limit: V5::SUGGESTIONS_MAX)
       views = catalog.flat_map { |sv| sv.topics.each_with_index.map { |t, i| [ sv, t, i ] } }
       visible = views.to_h { |sv, t, i| [ t.key, [ sv, t, i ] ] }
       resume = last_topic if last_topic && visible.key?(last_topic) && !done?(visible.fetch(last_topic)[1], states)
@@ -76,9 +76,14 @@ module Practice
       started ? :in_progress : :todo
     end
 
-    # The tag "Da riprendere" on a topic: a skill is to_recover or to_review.
-    def recover_tag?(topic, states)
-      topic.skills.any? { |s| RECOVER.include?(states[s]&.state) }
+    # The tag on a topic (the student reads «Dal test: da ripassare» for a to_recover skill, «Da ripassare» for a to_review one, D-348): a skill is
+    # to_recover or to_review.
+    def recover_tag?(topic, states) = !recover_kind(topic, states).nil?
+
+    # "to_recover" when a skill of the topic is, else "to_review" when one is, else nil: which tag, and which line explains it.
+    def recover_kind(topic, states)
+      kinds = topic.skills.map { |s| states[s]&.state }
+      RECOVER.find { |kind| kinds.include?(kind) }
     end
 
     # "Prima conviene fare": the first `after` topic that is visible and not done (A8.8). visible: {key => topic}.

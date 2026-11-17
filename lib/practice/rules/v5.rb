@@ -2,12 +2,12 @@
 
 module Practice
   module Rules
-    # Rules of the guided practice, version 4 (docs/rules/practice-4.md is the prose; this file holds the
+    # Rules of the guided practice, version 5 (docs/rules/practice-5.md is the prose; this file holds the
     # numbers, and a test fails when the two drift apart). Every serve records RULES_VERSION. A change of
     # any constant is a new version and a D- entry; every state is derived, so nothing is rewritten.
     # No I/O, no Rails.
-    module V4
-      RULES_VERSION = "practice/4"
+    module V5
+      RULES_VERSION = "practice/5"
       DEMONSTRATE_CORRECT_UNAIDED = 3   # distinct fingerprints
       DEMONSTRATE_MIN_LOW_GUESS = 2     # of those fingerprints; low guess as Diagnosis::Rules::V1.low_guess?
       CONSOLIDATE_AFTER_DAYS = 14

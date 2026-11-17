@@ -51,6 +51,7 @@
               <span class="topic-why"><%= Practice::Messages.why_it(state.why) %></span>
               <% missing = Practice::Messages.missing_it(state.why) %>
               <% if missing %><span class="topic-why topic-missing"><%= missing %></span><% end %>
+              <%= recover_note_once(state.state) %>
             </div>
             <div class="skill-side">
               <span class="topic-meta"><%= ui_pill(Practice::Messages.state_it(state.state), skill_state_tone(state.state)) %></span>

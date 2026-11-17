@@ -102,6 +102,7 @@ module LedgerRows
     rows["practice_events"] = PracticeEvent.create!(student: rows["students"], kind: "hint_shown", practice_serve: serve, payload_json: '{"n":1,"auto":false}', at: now)
     rows["practice_drafts"] = PracticeDraft.create!(student: rows["students"], practice_serve: serve, raw: "4", source: "text")
     rows["practice_contests"] = PracticeContest.create!(student: rows["students"], practice_serve: serve, practice_attempt: attempt)
+    rows["practice_pool_exhaustions"] = PracticePoolExhaustion.create!(student: rows["students"], topic_revision: topic, skill_key: "math.number", created_at: now)
     rows["lesson_events"] = LessonEvent.create!(student: rows["students"], topic_revision: rows["topic_revisions"], lesson_revision: rows["lesson_revisions"], kind: "card_seen",
                                                 card: 1, payload_json: "{}", at: now, created_at: now)
     rows["student_questions"] = StudentQuestion.create!(student: rows["students"], client_question_id: "q-1", text_it: "Non ho capito.")

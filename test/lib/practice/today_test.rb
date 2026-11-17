@@ -105,6 +105,16 @@ class PracticeTodayTest < ActiveSupport::TestCase
     assert_not Practice::Today.recover_tag?(t, { "math.a" => state("math.a", "to_learn") })
   end
 
+  test "the tag's kind: to_recover (the entry test) before to_review, none otherwise (D-348)" do
+    t = topic("t1", "math.a", "math.b")
+    kind = ->(a, b) { Practice::Today.recover_kind(t, { "math.a" => state("math.a", a), "math.b" => state("math.b", b) }) }
+    assert_equal "to_recover", kind.("to_review", "to_recover")
+    assert_equal "to_recover", kind.("to_recover", "demonstrated")
+    assert_equal "to_review", kind.("demonstrated", "to_review")
+    assert_nil kind.("to_learn", "in_study")
+    assert_nil Practice::Today.recover_kind(t, {})
+  end
+
   test "Prima conviene fare names the first after-topic that is visible and not done" do
     t1 = topic("t1", "math.a")
     t2 = topic("t2", "math.b")

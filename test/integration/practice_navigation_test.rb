@@ -25,14 +25,14 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     @pinned_keys = @pinned.map { |r| r.item.key }
   end
 
-  def make_titled_item(key, stem)
+  def make_titled_item(key, stem, instances: 8)
     item = Item.create!(subject: @subject, key: key, kind: "practice_item")
     body = { schema: "banco.item/1", schema_version: 1, kind: "practice_item", subject: @subject.key, skill: SKILL, component: "number", level: 1,
              expected_seconds: 60, hints_it: [ "Che cosa guardi prima?" ], error_catalogue: [ { code: "slip", message_it: "Hai sbagliato un segno." } ],
              prompt: { stem_it: stem } }
     revision = ItemRevision.create!(item: item, seq: 1, body_json: JSON.generate(body), file_sessions_json: "{}")
     ItemValidation.create!(item_revision: revision, seq: 1, status: "passed", codes_json: "[]")
-    8.times do |i|
+    instances.times do |i|
       ItemInstance.create!(item_revision: revision, seed: i + 1, display_json: JSON.generate(stem_it: "Istanza riservata #{key} numero #{i}"),
                            answer_json: JSON.generate((i + 2).to_s), errors_json: JSON.generate([ { code: "slip", value: (i + 3).to_s } ]),
                            hints_json: JSON.generate([ "Che cosa guardi prima?" ]), solution_json: JSON.generate(steps: [ { text_it: "Passo.", math: "$x$" } ], final: "$x$"),
@@ -120,7 +120,7 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
   test "a draft written on an abandoned serve is refused as closed" do
     build_nav_world
     id = serve_for(OFFICIAL)["serve_id"]
-    travel_to(Time.current + (Practice::Rules::V4::OPEN_SERVE_HOURS + 1).hours) do
+    travel_to(Time.current + (Practice::Rules::V5::OPEN_SERVE_HOURS + 1).hours) do
       assert_equal({ "status" => "closed" }, draft_for(OFFICIAL, id, "7"))
       assert_response :conflict
     end
@@ -222,7 +222,7 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     assert list["skills"].first["exercises"].all? { |e| e.keys.sort == LIST_KEYS }
   end
 
-  test "the statuses go todo, skipped, left, done, and a solution after a try makes an exercise tried" do
+  test "the statuses go todo, skipped, unfinished, done, and a solution after a try makes an exercise finished with the solution" do
     build_nav_world
     assert_equal [ "todo" ], status_by_item(list_for(OFFICIAL)).values.uniq
 
@@ -245,7 +245,7 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     # typed something and left: the draft, not a try
     draft_for(OFFICIAL, first["serve_id"], "12")
     after_draft = list_for(OFFICIAL)
-    assert_equal [ "left", "skipped" ], status_by_item(after_draft).values_at(first_key, second_key)
+    assert_equal [ "unfinished", "skipped" ], status_by_item(after_draft).values_at(first_key, second_key)
     assert_equal 0, entries(after_draft)[first_key]["tried"], "a draft is not a try"
     assert_equal 0, PracticeAttempt.count
 
@@ -255,15 +255,15 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     assert_equal "12", reopened["draft"]["raw"]
     assert_equal first_key, reopened["exercise"]["item"]
 
-    # a wrong try on the second: retry (answered once, can try again; D-339), one try; its solution closes it: tried
+    # a wrong try on the second: unfinished (answered once, can try again; D-339), one try; its solution closes it: finished with the solution (D-348)
     assert_equal "unrecognised", answer_for(OFFICIAL, second, "99999")["outcome"]
     left = list_for(OFFICIAL)
-    assert_equal "retry", entries(left)[second_key]["status"]
+    assert_equal "unfinished", entries(left)[second_key]["status"]
     assert_equal 1, entries(left)[second_key]["tried"]
     post_json(OFFICIAL, "/practice/serves/#{second['serve_id']}/solution")
     assert_response :success
     tried = list_for(OFFICIAL)
-    assert_equal "tried", entries(tried)[second_key]["status"]
+    assert_equal "finished_solution", entries(tried)[second_key]["status"]
     assert_nil entries(tried)[second_key]["open_serve_id"]
     assert_equal [ 0, 1 ], entries(tried)[second_key].values_at("done", "tried")
 
@@ -295,7 +295,7 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     assert_equal 1, entry["done"]
     assert_equal "done", entry["status"], "an open serve with nothing typed does not hide the done"
     draft_for(OFFICIAL, redo_serve["serve_id"], "12")
-    assert_equal "left", entries(list_for(OFFICIAL))[key]["status"], "typed in the redo: left"
+    assert_equal "unfinished", entries(list_for(OFFICIAL))[key]["status"], "typed in the redo: unfinished"
 
     # a click on an exercise with no open serve opens a new one of that exercise; one that is not pinned is a 404
     other = (@pinned_keys - [ key ]).first
@@ -352,7 +352,7 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
 
     assert_equal({ "status" => "saved" }, draft_for(TEACHER, serve["serve_id"], "12", root: PREVIEW))
     assert_equal({ "status" => "unchanged" }, draft_for(TEACHER, serve["serve_id"], "12", root: PREVIEW))
-    assert_equal "left", entries(list_for(TEACHER, root: PREVIEW))[item_key_of(serve)]["status"]
+    assert_equal "unfinished", entries(list_for(TEACHER, root: PREVIEW))[item_key_of(serve)]["status"]
     assert_equal "12", serve_for(TEACHER, root: PREVIEW)["draft"]["raw"]
     second = serve_for(TEACHER, root: PREVIEW, advance: true)
     assert_not_equal serve["serve_id"], second["serve_id"]
@@ -411,6 +411,118 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     cut = title.(inside)
     assert_operator cut.length, :<=, 90
     assert_equal 0, cut.count("$") % 2, "a formula that crosses the limit is left out"
+  end
+
+  # ---- the labels, the same exercise again, the pool that runs out (D-348) ------------------------------------
+
+  SAME_ITEM_IT = "Ti propongo un esercizio simile: per passare al prossimo ne servono 2 giusti.".freeze
+  EXHAUSTED_IT = "Hai visto tutti gli esercizi di questa abilità. Ne stiamo preparando altri.".freeze
+
+  # The world of the student's pages with an approved topic revision that pins one item of `instances` instances only.
+  def build_small_world(instances: 2)
+    build_student_world
+    @small = make_titled_item("demo-small-1", "Risolvi $x + 1 = 3$.", instances: instances)
+    approve_topic!(make_topic(@lesson_revision, { SKILL => [ @small ] }, course: @course))
+  end
+
+  def slip_raw_of(serve) = JSON.parse(PracticeServe.find(serve["serve_id"]).item_instance.errors_json).first["value"]
+
+  test "an exercise closed without a right answer is «finished», with the solution shown «finished_solution», then «done» after a right one" do
+    build_nav_world
+    serve = serve_for(OFFICIAL)
+    key = item_key_of(serve)
+    assert_equal "typical_error", answer_for(OFFICIAL, serve, slip_raw_of(serve))["outcome"], "a typical error closes the serve"
+    assert_equal "finished", entries(list_for(OFFICIAL))[key]["status"], "closed, no solution shown"
+    post_json(OFFICIAL, "/practice/serves/#{serve['serve_id']}/solution")
+    assert_response :success
+    assert_equal "finished_solution", entries(list_for(OFFICIAL))[key]["status"], "closed with the solution"
+    again = serve_for(OFFICIAL, item: key)
+    assert_equal "correct", answer_for(OFFICIAL, again, right_raw(again))["outcome"]
+    assert_equal "done", entries(list_for(OFFICIAL))[key]["status"]
+  end
+
+  test "an exercise answered and closed with the solution is not «unfinished»: only an open serve with a try or a draft is" do
+    build_nav_world
+    serve = serve_for(OFFICIAL)
+    key = item_key_of(serve)
+    answer_for(OFFICIAL, serve, "99999")
+    assert_equal "unfinished", entries(list_for(OFFICIAL))[key]["status"]
+    post_json(OFFICIAL, "/practice/serves/#{serve['serve_id']}/solution")
+    assert_equal "finished_solution", entries(list_for(OFFICIAL))[key]["status"]
+  end
+
+  test "the same exercise again says so on the page, once the item repeats, and not for a chosen exercise" do
+    build_nav_world
+    first = serve_for(OFFICIAL)
+    assert_nil first["reason_it"], "the first serve of the skill has no serve before it"
+    assert_equal "correct", answer_for(OFFICIAL, first, right_raw(first))["outcome"]
+    second = serve_for(OFFICIAL, advance: true)
+    assert_equal item_key_of(first), item_key_of(second), "the rule keeps the student on the item until 2 are right without help"
+    assert_equal SAME_ITEM_IT, second["reason_it"]
+    assert_equal 2, Practice::Rules::V5::ADVANCE_AFTER_CORRECT_UNAIDED, "the line's number is the rule's"
+    assert_equal SAME_ITEM_IT, serve_for(OFFICIAL)["reason_it"], "a reload resumes the open serve and says it again"
+    assert_equal "correct", answer_for(OFFICIAL, second, right_raw(second))["outcome"]
+    third = serve_for(OFFICIAL, advance: true)
+    assert_not_equal item_key_of(second), item_key_of(third), "two right without help: the next item"
+    assert_nil third["reason_it"], "a different item: no line"
+    assert_equal "correct", answer_for(OFFICIAL, third, right_raw(third))["outcome"]
+    chosen = serve_for(OFFICIAL, item: item_key_of(third))
+    assert_equal item_key_of(third), item_key_of(chosen)
+    assert_nil chosen["reason_it"], "an exercise the student chose is not offered as «simile»"
+  end
+
+  test "after the solution the same item again carries the line in place of «Prova un esercizio simile»" do
+    build_nav_world
+    first = serve_for(OFFICIAL)
+    answer_for(OFFICIAL, first, "99999")
+    reply = answer_for(OFFICIAL, first, "88888")
+    assert_includes reply["actions"], "after_solution"
+    follow = serve_for(OFFICIAL, follow: { serve_id: first["serve_id"], kind: "after_solution" })
+    assert_equal "after_solution", follow["reason"]
+    assert_equal item_key_of(first), item_key_of(follow)
+    assert_equal SAME_ITEM_IT, follow["reason_it"]
+  end
+
+  test "no unseen exercise left: nothing is served, the page says so, one row is recorded and a click or «Rifai» still works" do
+    build_small_world(instances: 2)
+    2.times do
+      serve = serve_for(OFFICIAL, advance: true)
+      assert_equal "item", serve["type"]
+      assert_equal "correct", answer_for(OFFICIAL, serve, right_raw(serve))["outcome"]
+    end
+    assert_equal 0, PracticePoolExhaustion.count
+    reply = serve_for(OFFICIAL, advance: true)
+    assert_response :success
+    assert_equal [ "exhausted", EXHAUSTED_IT ], reply.values_at("type", "message_it")
+    assert reply["skill"].present?
+    assert_nil reply["serve_id"]
+    assert_equal 2, PracticeServe.where(student: @official).count, "nothing was served"
+    row = PracticePoolExhaustion.sole
+    assert_equal [ @official.id, SKILL ], [ row.student_id, row.skill_key ]
+    assert_equal "exhausted", serve_for(OFFICIAL)["type"], "the first load of the page says the same"
+    assert_equal 1, PracticePoolExhaustion.count, "once per student, topic revision and skill"
+
+    key = @small.item.key
+    assert_equal [ "done" ], status_by_item(list_for(OFFICIAL)).values
+    redo_serve = serve_for(OFFICIAL, item: key)
+    assert_equal [ "item", "reseen" ], redo_serve.values_at("type", "reason"), "a chosen exercise is redone, as before"
+    assert_equal 1, PracticePoolExhaustion.count
+  end
+
+  test "the teacher reads the exhaustion on the practice page and in the practice progress API" do
+    build_small_world(instances: 1)
+    serve = serve_for(OFFICIAL, advance: true)
+    assert_equal "correct", answer_for(OFFICIAL, serve, right_raw(serve))["outcome"]
+    on(:web, "/teacher/subjects/math/practice", headers: TEACHER, remote_addr: EDGE)
+    assert_response :success
+    assert_select "[data-pool-exhausted]", 0
+    assert_nil Course::ProgressView.call(@subject, @official)[:skills].find { |row| row[:skill] == SKILL }[:pool_exhausted_at]
+
+    assert_equal "exhausted", serve_for(OFFICIAL, advance: true)["type"]
+    at = PracticePoolExhaustion.sole.created_at
+    on(:web, "/teacher/subjects/math/practice", headers: TEACHER, remote_addr: EDGE)
+    assert_select "article[data-skill='#{SKILL}'] [data-pool-exhausted]", /Esercizi finiti il #{Regexp.escape(at.in_time_zone('Europe/Rome').strftime('%d/%m/%Y %H:%M'))}/
+    assert_equal at.utc.iso8601, Course::ProgressView.call(@subject, @official)[:skills].find { |row| row[:skill] == SKILL }[:pool_exhausted_at]
   end
 
   test "the new table is append-only" do

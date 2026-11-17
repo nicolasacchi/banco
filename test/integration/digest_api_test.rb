@@ -82,6 +82,15 @@ class DigestApiTest < ActionDispatch::IntegrationTest
     assert_operator digest["activity"].size, :>, 0, "the world holds decisions"
   end
 
+  test "a skill whose exercises the student has all seen carries pool_exhausted_at, in the digest as in the progress endpoint (D-348)" do
+    skill_of = ->(digest) { digest["progress"]["subjects"].find { |s| s["key"] == "math" }["skills"].find { |s| s["key"] == SKILL } }
+    assert_nil skill_of.(get_json("/api/v1/digest")).fetch("pool_exhausted_at", :missing)
+    PracticePoolExhaustion.create!(student: @official, topic_revision: @topic_revision, skill_key: SKILL, created_at: Time.utc(2026, 11, 17, 9, 30))
+    digest = get_json("/api/v1/digest")
+    assert_equal "2026-11-17T09:30:00Z", skill_of.(digest)["pool_exhausted_at"]
+    assert_equal get_json("/api/v1/students/student/progress"), digest["progress"]
+  end
+
   test "student defaults to the official one, and another key is its own digest" do
     assert_equal get_json("/api/v1/digest?student=student").except("generated_at"), get_json("/api/v1/digest").except("generated_at")
     trial = get_json("/api/v1/digest?student=prova-1")

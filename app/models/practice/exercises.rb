@@ -2,10 +2,11 @@ module Practice
   # The list of the exercises of a topic for one student (D-337): what the practice page draws as a sidebar. Per skill of the topic, the items
   # pinned on the topic revision this student sees, in pin order, each with its status from the student's serves. Read-only.
   #
-  #   status, in this order: "retry" when the open serve has a try (she answered and can try again, D-339); "left" when the open serve has no try
-  #           but a non-empty draft; "done" when any serve of the item closed correct; "tried" when any closed or abandoned serve has a try or a
-  #           shown solution; "skipped" when there is an open serve (no try, nothing typed); else "todo".
-  #           open_serve_id is set whenever the item has an open serve, so a click resumes it.
+  #   status, in this order: "unfinished" when the open serve has a try or a non-empty draft (she answered or typed and can go on, D-339);
+  #           "done" when any serve of the item closed correct; "finished_solution" when a serve with a try or a shown solution closed or was
+  #           abandoned without a correct answer and a solution was shown; "finished" when such a serve closed or was abandoned and none showed
+  #           a solution (D-348: an exercise closed with the solution is finished, not to redo); "skipped" when there is an open serve (no try,
+  #           nothing typed); else "todo". open_serve_id is set whenever the item has an open serve, so a click resumes it.
   #
   # The list never holds a key to an answer, an error value or the text of an instance: only the item's key (the page asks for that exercise
   # with it), its place and a title, the first sentence of the prompt's stem (the same for every instance).
@@ -107,10 +108,11 @@ module Practice
     end
 
     def status(mine, open, facts)
-      return "retry" if open && facts.tries(open.id).positive?
-      return "left" if open && facts.draft?(open.id)
+      return "unfinished" if open && (facts.tries(open.id).positive? || facts.draft?(open.id))
       return "done" if mine.any? { |r| r.status.closed_by == :correct }
-      return "tried" if mine.any? { |r| facts.tries(r.id).positive? || r.status.solution_sent }
+
+      ended = mine.select { |r| r.status.state != :open && (facts.tries(r.id).positive? || r.status.solution_sent) }
+      return (ended.any? { |r| r.status.solution_sent } ? "finished_solution" : "finished") if ended.any?
 
       open ? "skipped" : "todo"
     end

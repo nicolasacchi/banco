@@ -176,6 +176,7 @@ it:
       last: "ultima attività %{at}"
       never: "mai provata"
       seed: "Dalla diagnosi: %{state}."
+      pool_exhausted: "Esercizi finiti il %{at}: lo studente ha visto tutti gli esercizi di questa abilità. Servono esercizi nuovi."
       without_topic: "Da riprendere, ancora senza argomento"
       card_core: "Scheda %{n} «%{title}»"
       card_extra: "Approfondimento %{n} «%{title}»"

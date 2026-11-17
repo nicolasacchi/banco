@@ -1,6 +1,6 @@
 module Course
   # Everything the student's course pages read (A9): what the catalog shows this student, the derived state
-  # of each skill (practice/4), the status of each topic, Oggi. Read-only; each page builds one and asks.
+  # of each skill (practice/5), the status of each topic, Oggi. Read-only; each page builds one and asks.
   #
   #   view = Course::StudentView.new(student)
   #   view.subjects            # visible subjects only (Catalog::SubjectView with topics)
@@ -70,6 +70,7 @@ module Course
     def status(topic) = Practice::Today.status(topic, states, started: started_keys.include?(topic.key))
 
     def recover_tag?(topic) = Practice::Today.recover_tag?(topic, states)
+    def recover_kind(topic) = Practice::Today.recover_kind(topic, states)
 
     def lesson_read?(topic) = opened_keys.include?(topic.key)
 
@@ -130,8 +131,8 @@ module Course
       NextTopic.new(topic: topics.fetch(pick.topic_key), reason: pick.reason, skill: pick.skill)
     end
 
-    # The skills of a subject the pages call «Da riprendere» (Practice::Today::RECOVER) on a programme topic, as [skill, topic key],
-    # then those the diagnosis found to recover or learn that no topic holds (the line «Da riprendere, ancora senza argomento»), as [skill, nil].
+    # The skills of a subject the pages call «Dal test: da ripassare» (Practice::Today::RECOVER) on a programme topic, as [skill, topic key],
+    # then those the diagnosis found to recover or learn that no topic holds (the line «Dal test: da ripassare, ancora senza argomento»), as [skill, nil].
     def skills_to_recover(sv)
       held = programme_topics(sv).flat_map { |t| t.skills.select { |s| Practice::Today::RECOVER.include?(states[s]&.state) }.map { |s| [ s, t.key ] } }
       held.uniq(&:first) + skills_without_topic(sv).map { |s| [ s, nil ] }
