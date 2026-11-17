@@ -1,6 +1,7 @@
 module Comments
   # The teacher's inbox (D-304): comments and the student's older "Ho una domanda" rows (student_questions, read-only
-  # here) in one list, newest first, with filters. A guest gets the counts only (`counts`), never a row.
+  # here) in one list, newest first (a comment by the student's latest message, D-342), with filters. A guest gets the
+  # counts only (`counts`), never a row.
   class Inbox
     Row = Struct.new(:type, :record, :at, :state, keyword_init: true)
 
@@ -37,7 +38,7 @@ module Comments
     end
 
     def rows
-      list = filters[:type] == "question" ? [] : comments.map { |c| Row.new(type: :comment, record: c, at: c.created_at, state: c.state) }
+      list = filters[:type] == "question" ? [] : comments.map { |c| Row.new(type: :comment, record: c, at: c.last_student_message_at, state: c.state) }
       list += questions.map { |q| Row.new(type: :question, record: q, at: q.created_at, state: nil) }
       list.sort_by { |r| -r.at.to_f }
     end

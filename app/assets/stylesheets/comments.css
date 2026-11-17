@@ -191,6 +191,7 @@ body.comment-mode [data-comment-ui] [data-comment-anchor] { outline: none; }
 .comment-thread { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
 .comment-thread li { margin: 0; padding: 0.4rem 0.8rem; border-radius: 0.8rem; border: 1px solid var(--line); background: var(--bg); font-size: 0.95rem; }
 .comment-thread li[data-event="reply"] { border: 2px solid var(--cs-answered); background: color-mix(in srgb, var(--cs-answered) 14%, var(--surface)); margin-left: 1.5rem; }
+.comment-thread li[data-event="student_reply"] { border: 2px solid var(--line); margin-right: 1.5rem; }
 .comment-thread li[data-event="reply_seen"] { color: var(--muted); }
 .comment-thread p { margin: 0.2rem 0 0; }
 .comment-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }

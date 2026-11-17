@@ -2,6 +2,8 @@
 <main class="page course" data-comment-anchor="page">
   <h1><%= t("comments.title") %></h1>
   <p><%= t("comments.intro") %></p>
+  <% if flash[:notice] %><%= ui_notice :success, flash[:notice], html: { id: "reply-sent" } %><% end %>
+  <% if flash[:alert] %><%= ui_notice :error, flash[:alert], html: { id: "reply-error" } %><% end %>
   <% if @comments.empty? %>
     <div class="comment-empty" id="comments-empty">
       <%= comment_icon("comment") %>
@@ -26,12 +28,23 @@
             <% if new_reply %><span class="menu-badge"><%= t("comments.new_reply") %></span><% end %>
           </p>
           <% if comment.selected_text %><p class="comment-quote"><%= t("comments.quoted") %>: <q><%= comment.selected_text %></q></p><% end %>
-          <p class="comment-mine<%= ' none' unless comment.text_it %>"><strong><%= t("comments.you_wrote") %>:</strong> <%= comment.text_it || t("comments.no_text") %></p>
-          <% comment.replies.each do |reply| %>
-            <blockquote class="comment-reply">
-              <p class="comment-reply-from"><%= comment_icon("teacher-reply") %><strong><%= t("comments.teacher_replied") %></strong></p>
-              <%= simple_format(h(reply.text_it)) %>
-            </blockquote>
+          <% comment.thread.each do |message| %>
+            <% if message.from == :teacher %>
+              <blockquote class="comment-reply" data-from="teacher">
+                <p class="comment-reply-from"><%= comment_icon("teacher-reply") %><strong><%= t("comments.teacher_replied") %></strong></p>
+                <%= simple_format(h(message.text_it)) %>
+              </blockquote>
+            <% else %>
+              <div class="comment-mine<%= ' none' unless message.text_it %>" data-from="student"><strong><%= t("comments.you_wrote") %>:</strong> <%= message.text_it ? simple_format(h(message.text_it)) : t("comments.no_text") %></div>
+            <% end %>
+          <% end %>
+          <% if comment.replies.any? %>
+            <%= form_with url: comment_reply_path(id: comment.id), method: :post, class: "comment-reply-form", id: "reply-form-#{comment.id}" do %>
+              <%= hidden_field_tag :client_reply_id, "r-#{SecureRandom.hex(8)}", id: "reply-id-#{comment.id}" %>
+              <label for="reply-<%= comment.id %>"><%= t("comments.reply_label") %></label>
+              <%= text_area_tag :text_it, nil, id: "reply-#{comment.id}", rows: 3, maxlength: Comment::TEXT_MAX, required: true, class: "answer-input wide" %>
+              <button type="submit" class="button small"><%= comment_icon("send") %><%= t("comments.reply_send") %></button>
+            <% end %>
           <% end %>
         </li>
       <% end %>

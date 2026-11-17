@@ -84,6 +84,7 @@ it:
         reopened: "Riaperto"
         sent_back: "Rimandato all'autore"
         reply_seen: "Risposta letta dallo studente"
+        student_reply: "Lo studente ha risposto"
       by: "da %{actor}"
       from_console: "(da console)"
       from_api: "(da API)"

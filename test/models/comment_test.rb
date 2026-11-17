@@ -12,7 +12,7 @@ class CommentTest < ActiveSupport::TestCase
   end
 
   def event(kind, comment: @comment, **attrs)
-    origin = kind == "reply_seen" ? "student" : "web"
+    origin = %w[reply_seen student_reply].include?(kind) ? "student" : "web"
     CommentEvent.create!({ comment: comment, kind: kind, origin: origin, actor: origin == "student" ? "student" : "nik", created_at: Time.current }.merge(attrs))
   end
 
@@ -39,6 +39,12 @@ class CommentTest < ActiveSupport::TestCase
     assert_raises(ActiveRecord::StatementInvalid) { event("reply", text_it: "x" * 2001) }
     assert_raises(ActiveRecord::StatementInvalid) { event("reply_seen", origin: "web") }
     assert_raises(ActiveRecord::StatementInvalid) { event("read", origin: "student") }
+    assert_raises(ActiveRecord::StatementInvalid) { event("student_reply", origin: "web", text_it: "Grazie.") } # D-342
+    assert_raises(ActiveRecord::StatementInvalid) { event("student_reply", origin: "api", text_it: "Grazie.") }
+    assert_raises(ActiveRecord::StatementInvalid) { event("student_reply") }
+    assert_raises(ActiveRecord::StatementInvalid) { event("student_reply", text_it: "") }
+    assert_raises(ActiveRecord::StatementInvalid) { event("student_reply", text_it: "x" * 501) }
+    assert_nothing_raised { event("student_reply", text_it: "x" * 500) }
     assert_nothing_raised { make(text_it: "x" * 500, selected_text: "y" * 300) }
   end
 
@@ -74,5 +80,58 @@ class CommentTest < ActiveSupport::TestCase
     other = Student.create!(key: "prova-1", kind: "student", created_at: Time.current)
     event("reply", text_it: "Uno.")
     assert_equal 0, Comment.unread_reply_count(other)
+  end
+
+  # ---- D-342: the student answers the teacher's reply
+
+  test "a follow-up after a reply waits for the teacher again: sent, then read, then answered by the next reply" do
+    event("reply", text_it: "Guarda la scheda 2.")
+    assert_equal "answered", @comment.reload.state
+    event("student_reply", text_it: "Non ho capito l'esempio.")
+    assert_equal "sent", @comment.reload.state
+    event("read")
+    assert_equal "read", @comment.reload.state
+    event("reply", text_it: "Te lo spiego meglio.")
+    assert_equal "answered", @comment.reload.state
+    event("student_reply", text_it: "Ora sì.")
+    event("student_reply", text_it: "Grazie.")
+    assert_equal "sent", @comment.reload.state
+  end
+
+  test "a follow-up after resolved reopens the comment; resolved after the follow-up closes it again" do
+    event("reply", text_it: "Ecco.")
+    event("resolved")
+    assert_equal "closed", @comment.reload.state
+    event("student_reply", text_it: "Ma non ho capito.")
+    assert_equal "sent", @comment.reload.state
+    event("read")
+    assert_equal "read", @comment.reload.state
+    event("resolved")
+    assert_equal "closed", @comment.reload.state
+    event("reopened")
+    assert_equal "read", @comment.reload.state, "back to where the last message and the read put it"
+  end
+
+  test "the thread is the comment, the replies and the follow-ups in id order, and nothing else" do
+    event("read")
+    event("reply", text_it: "Uno.")
+    event("reply_seen")
+    event("student_reply", text_it: "Due.")
+    event("resolved")
+    thread = @comment.reload.thread
+    assert_equal [ :student, :teacher, :student ], thread.map(&:from)
+    assert_equal [ @comment.text_it, "Uno.", "Due." ], thread.map(&:text_it)
+    assert_equal [ nil, "reply", "student_reply" ], thread.map { |m| m.event&.kind }
+    assert_equal 1, @comment.student_replies.size
+  end
+
+  test "a follow-up is not a reply the student has to see: unread_reply? is about the teacher's replies" do
+    event("reply", text_it: "Uno.")
+    event("reply_seen")
+    event("student_reply", text_it: "Grazie.")
+    assert_not @comment.reload.unread_reply?
+    event("reply", text_it: "Prego.")
+    assert @comment.reload.unread_reply?
+    assert_equal 1, Comment.unread_reply_count(@student)
   end
 end

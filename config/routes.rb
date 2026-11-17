@@ -124,6 +124,7 @@ Rails.application.routes.draw do
       # Comments anywhere (D-304): the student writes a comment on any page and reads the answers. Students only.
       get "comments" => "comments#index"
       post "comments" => "comments#create"
+      post "comments/:id/reply" => "comments#reply", constraints: { id: /\d+/ }, as: :comment_reply
     end
 
     # The teacher's decisions (D-08): the only writes of DecisionRecorder. POST only,

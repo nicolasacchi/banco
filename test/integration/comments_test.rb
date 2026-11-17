@@ -359,6 +359,154 @@ class CommentsTest < ActionDispatch::IntegrationTest
     assert_equal before, snapshot
   end
 
+  # ---- the student answers the teacher's reply (D-342) -------------------------------------------------
+
+  def answered_comment(text: "Non capisco", reply: "Guarda la scheda 2.", headers: OFFICIAL)
+    send_comment(headers, text_it: text)
+    comment = Comment.where(student: headers == TRIAL ? @trial : @official).order(:id).last
+    teacher_post("reply", comment, { text_it: reply })
+    comment.reload
+  end
+
+  def student_reply(comment, text, headers: OFFICIAL, client_reply_id: "r-" + SecureRandom.hex(8), token: nil, listener: :web, path: nil)
+    token ||= token_for(headers, "/today") # /comments would mark the replies as seen
+    on(listener, path || "/comments/#{comment.id}/reply", method: :post, headers: headers.merge("X-CSRF-Token" => token),
+                                                         params: { text_it: text, client_reply_id: client_reply_id }, remote_addr: EDGE)
+  end
+
+  test "the student answers the teacher's reply: one student_reply event, the comment is new again, a repeat is recorded once" do
+    comment = answered_comment
+    assert_equal "answered", comment.state
+    id = "r-" + SecureRandom.hex(8)
+    2.times { student_reply(comment, "Non ho capito l'esempio.", client_reply_id: id) }
+    assert_redirected_to "/comments#comment-#{comment.id}"
+    event = comment.events.reload.last
+    assert_equal [ "student_reply", "student", @official.key, "Non ho capito l'esempio." ], [ event.kind, event.origin, event.actor, event.text_it ]
+    assert_equal 1, comment.events.where(kind: "student_reply").count
+    assert_equal "sent", comment.reload.state
+    on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE) # follow_redirect! would drop the edge headers
+    assert_select "#reply-sent", /Inviato: il docente lo vedrà\./
+  end
+
+  test "the thread is drawn in order with the labels, and the form is under a comment with a teacher reply" do
+    comment = answered_comment(text: "Prima #{MARKER}", reply: "Risposta uno")
+    student_reply(comment, "Seguito due")
+    teacher_post("reply", comment, { text_it: "Risposta tre" })
+    on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE)
+    assert_select "#comment-#{comment.id} [data-from]", 4
+    froms = css_select("#comment-#{comment.id} [data-from]").map { |n| [ n["data-from"], n.text.squish ] }
+    assert_equal %w[student teacher student teacher], froms.map(&:first)
+    assert_match(/Hai scritto: Prima/, froms[0][1])
+    assert_match(/Il docente ha risposto Risposta uno/, froms[1][1])
+    assert_match(/Hai scritto: Seguito due/, froms[2][1])
+    assert_match(/Il docente ha risposto Risposta tre/, froms[3][1])
+    assert_select "#comment-#{comment.id} form.comment-reply-form[action='/comments/#{comment.id}/reply']" do
+      assert_select "label", "Rispondi"
+      assert_select "textarea[maxlength='500'][name=text_it]"
+      assert_select "button", "Invia"
+    end
+    send_comment(OFFICIAL, text_it: "Senza risposta")
+    on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE)
+    assert_select "form.comment-reply-form", 1
+  end
+
+  test "a follow-up is refused without a teacher reply, empty, too long, or with no id; the page says so and writes nothing" do
+    send_comment
+    bare = Comment.last
+    student_reply(bare, "Posso scrivere?")
+    assert_redirected_to "/comments#comment-#{bare.id}"
+    assert_equal 0, bare.events.count
+    on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE)
+    assert_select "#reply-error"
+    answered = answered_comment
+    [ "   ", "x" * 501 ].each { |text| student_reply(answered, text) }
+    student_reply(answered, "Ok", client_reply_id: "no")
+    assert_equal 1, answered.events.reload.count
+    assert_equal "answered", answered.reload.state
+  end
+
+  test "a follow-up on a closed comment reopens it for the teacher, who can read, reply or close it as usual" do
+    comment = answered_comment
+    teacher_post("resolve", comment)
+    assert_equal "closed", comment.reload.state
+    student_reply(comment, "Ma ho ancora un dubbio.")
+    assert_equal "sent", comment.reload.state
+    teacher_post("read", comment)
+    assert_equal "read", comment.reload.state
+    teacher_post("reply", comment, { text_it: "Dimmi pure." })
+    assert_equal "answered", comment.reload.state
+    student_reply(comment, "Grazie.")
+    teacher_post("resolve", comment)
+    assert_equal "closed", comment.reload.state
+  end
+
+  test "only the student's own comment takes a follow-up; the teacher, a guest, an unmapped login, the preview and the other listeners are refused" do
+    comment = answered_comment
+    before = comment.events.count
+    student_reply(comment, "Di un altro", headers: TRIAL)
+    assert_response :not_found
+    [ TEACHER, GUEST, UNMAPPED, {} ].each do |who|
+      token = who.empty? ? "x" : token_for(who, "/teacher")
+      student_reply(comment, "No", headers: who, token: token)
+      assert_includes [ 403, 404, 422 ], response.status, who.inspect
+      assert_not_equal 302, response.status, who.inspect
+    end
+    student_reply(comment, "No", path: "/teacher/preview/comments/#{comment.id}/reply", headers: TEACHER)
+    assert_response :not_found
+    %i[api harness].each do |listener|
+      student_reply(comment, "No", listener: listener)
+      assert_response :not_found, listener.to_s
+    end
+    on(:web, "/comments/#{comment.id}/reply", method: :post, headers: OFFICIAL, params: { text_it: "Senza token", client_reply_id: "r-" + SecureRandom.hex(8) }, remote_addr: EDGE)
+    assert_not_equal 303, response.status
+    assert_equal before, comment.events.reload.count
+    student_reply(comment, "Mio")
+    assert_equal before + 1, comment.events.reload.count
+  end
+
+  test "the teacher's page shows the thread with the follow-ups, counts the comment as new, filters it so and lists it first" do
+    comment = answered_comment(text: "Domanda", reply: "Prima risposta")
+    send_comment(OFFICIAL, text_it: "Un commento più recente")
+    student_reply(comment, "Seguito #{MARKER}")
+    on(:web, "/teacher/comments", headers: TEACHER, remote_addr: EDGE)
+    assert_equal comment.id.to_s, css_select("[data-comment]").first["id"].to_s.delete_prefix("comment-"), "a follow-up brings the old comment to the top"
+    assert_select "#comment-#{comment.id}[data-state=sent]"
+    assert_select "#comment-#{comment.id} [data-event=reply]", /Prima risposta/
+    assert_select "#comment-#{comment.id} [data-event=student_reply]", /Lo studente ha risposto.*Seguito/m
+    events = css_select("#comment-#{comment.id} [data-event]").map { |n| n["data-event"] }
+    assert_equal %w[reply student_reply], events
+    assert_select "[data-tab=sent] .comment-tab-n", "2"
+    assert_select "[data-tab=answered] .comment-tab-n", "0"
+    on(:web, "/teacher/comments?state=sent", headers: TEACHER, remote_addr: EDGE)
+    assert_select "[data-comment]", 2
+    on(:web, "/teacher/comments?state=answered", headers: TEACHER, remote_addr: EDGE)
+    assert_select "[data-comment]", 0
+    teacher_post("read", comment)
+    on(:web, "/teacher/comments?state=read", headers: TEACHER, remote_addr: EDGE)
+    assert_select "[data-comment]", 1
+    on(:web, "/teacher/comments", headers: GUEST, remote_addr: EDGE)
+    assert_not_includes response.body, MARKER
+  end
+
+  test "the API and the console show the follow-up as an event of origin student" do
+    comment = answered_comment(reply: "Risposta")
+    student_reply(comment, "Seguito #{MARKER}")
+    token = ApiToken.issue!(role: "bot_read", label: "thread test", expires_at: 30.days.from_now)
+    on(:api, "/api/v1/comments/#{comment.id}", headers: { "Authorization" => "Bearer #{token}" })
+    assert_response :success
+    api_event = response.parsed_body["comment"]["events"].last
+    assert_equal [ "student_reply", "student", @official.key, "Seguito #{MARKER}" ], api_event.values_at("kind", "origin", "actor", "text_it")
+    assert api_event["created_at"].present?
+    assert_equal "sent", response.parsed_body["comment"]["state"]
+    Rake::Task.clear
+    Rails.application.load_tasks
+    ENV["ID"] = comment.id.to_s
+    out, = capture_io { Rake::Task["banco:comments:show"].reenable; Rake::Task["banco:comments:show"].invoke }
+    assert_match(/student_reply\s+student\s+#{@official.key}\s+Seguito/, out)
+  ensure
+    ENV.delete("ID")
+  end
+
   # ---- the console -------------------------------------------------------------------------------------
 
   def console(action, **args) = Comments::Console.call(action: action, id: Comment.last.id, teacher: "nik", **args)
