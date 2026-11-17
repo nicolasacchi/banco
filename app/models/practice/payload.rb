@@ -18,7 +18,7 @@ module Practice
 
     def skill(key, states_before, states_after)
       after = states_after[key]
-      { key: key, state: after.state, state_it: Messages.state_it(after.state), why_it: Messages.why_it(after.why),
+      { key: key, state: after.state, state_it: Messages.state_it(after.state), why_it: Messages.why_it(after.why), missing_it: Messages.missing_it(after.why),
         changed: states_before[key]&.state != after.state, clean: Messages.clean_count(after.why) }
     end
 

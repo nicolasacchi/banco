@@ -25,6 +25,12 @@ it:
       course_next: "È il prossimo argomento del corso."
       resume: "L'avevi lasciato a metà: riprendi da qui."
     closed: "Per ora qui non c'è niente da fare. Intanto studia sul libro secondo l'orario."
+    # Oggi, «Riprendi» card: one line, the most useful thing missing to close the topic (D-340).
+    close_line:
+      exercises:
+        one: "Per chiuderlo: in %{skill} fai ancora un esercizio giusto senza aiuto."
+        other: "Per chiuderlo: in %{skill} fai ancora %{count} esercizi giusti senza aiuto."
+      day: "Per chiuderlo: torna domani e rifai un esercizio senza aiuto."
   states:
     not_seen: "Non ancora vista"
     to_recover: "Da riprendere"
@@ -127,6 +133,19 @@ it:
     show_solution: "Mostra la soluzione"
   practice:
     paper: "Il procedimento sul foglio, qui solo il risultato."
+    close_rule: "Per chiudere l'argomento: in ogni abilità, 3 esercizi giusti senza aiuto, in 2 giorni diversi."
+    # What a skill not yet demonstrated still needs (D-340), from the fold's why.
+    missing:
+      exercises:
+        one: "Ti manca un esercizio giusto senza aiuto."
+        other: "Ti mancano %{count} esercizi giusti senza aiuto."
+      long:
+        one: "Ti manca un esercizio più lungo giusto senza aiuto."
+        other: "Ti mancano %{count} esercizi più lunghi giusti senza aiuto."
+      long_among:
+        one: "Uno deve essere più lungo."
+        other: "%{count} devono essere più lunghi."
+      day: "Ti manca un altro giorno: torna domani e fanne uno giusto senza aiuto."
     submit: "Controlla"
     hint: "Mostra un aiuto (%{n} di %{total})"
     solution: "Mostrami la soluzione"

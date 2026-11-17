@@ -23,7 +23,7 @@ class PracticeFoldTest < ActiveSupport::TestCase
     tries = [ try_at(hours: 0), try_at(hours: 1), try_at(hours: 2) ]
     s = fold(tries)
     assert_equal "in_study", s.state
-    assert_equal({ code: :in_study, n: 3, d: 1 }, s.why)
+    assert_equal({ code: :in_study, n: 3, d: 1, low: 2 }, s.why)
   end
 
   test "three on two days with two low-guess fingerprints are demonstrated, at the third try" do

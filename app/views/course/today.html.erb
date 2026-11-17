@@ -62,6 +62,8 @@
               <h3 class="now-title"><%= topic.title_it %></h3>
               <span class="topic-meta"><%= @resume[0].subject.name_it %> · <%= t("topic.minutes", n: topic.minutes) %></span>
               <% unless topic.approved %><span class="topic-why" id="now-draft"><%= ui_tag(t("topic.draft"), icon: "info") %></span><% end %>
+              <% close_line = Practice::Messages.close_line(topic.skills.map { |skill| [ course_view.label(skill), course_view.state(skill).why ] }) %>
+              <% if close_line %><span class="topic-why" id="now-close"><%= close_line %></span><% end %>
             </div>
           </div>
           <a class="button" id="resume" href="<%= @resume_card ? spath("/topics/#{topic.key}/lesson#scheda-#{@resume_card}") : spath("/topics/#{topic.key}") %>"><%= t("today.resume") %></a>

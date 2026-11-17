@@ -40,6 +40,7 @@
           <%= ui_pill(t("topic.practice_progress", done: done_count, total: skill_states.size), done_count == skill_states.size ? :success : (done_count.positive? ? :info : :muted)) %>
         <% end %>
       </div>
+      <p id="close-rule"><%= t("practice.close_rule") %></p>
       <p class="muted"><%= t("topic.step_practice_hint") %></p>
       <ul class="skills topic-skills" id="skills" aria-label="<%= t("topic.skills") %>">
         <% @topic.skills.each do |skill| %>
@@ -48,6 +49,8 @@
             <div class="skill-main">
               <span class="skill-name"><%= course_view.label(skill) %></span>
               <span class="topic-why"><%= Practice::Messages.why_it(state.why) %></span>
+              <% missing = Practice::Messages.missing_it(state.why) %>
+              <% if missing %><span class="topic-why topic-missing"><%= missing %></span><% end %>
             </div>
             <div class="skill-side">
               <span class="topic-meta"><%= ui_pill(Practice::Messages.state_it(state.state), skill_state_tone(state.state)) %></span>

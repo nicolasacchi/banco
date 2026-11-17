@@ -29,7 +29,7 @@ const DRAFT_TIMEOUT_MS = 4000
 const STATE_TONES = { demonstrated: "success", consolidated: "success", in_study: "info", to_recover: "nearly", to_review: "nearly", to_learn: "nearly", not_seen: "muted" }
 
 export default class extends Controller {
-  static targets = ["skillState", "skillWhy", "dots", "reason", "work", "itemBox", "hints", "hintList", "controls", "check", "hintButton", "solutionButton",
+  static targets = ["skillState", "skillWhy", "skillMissing", "dots", "reason", "work", "itemBox", "hints", "hintList", "controls", "check", "hintButton", "solutionButton",
                     "feedback", "solutionBox", "nextActions", "skip", "list", "listPanel", "listCount", "listBody"]
   static values = { topic: String, skill: String, baseUrl: String, backUrl: String, texts: Object, labels: Object }
 
@@ -194,6 +194,8 @@ export default class extends Controller {
     this.skillStateTarget.textContent = skill.state_it
     this.skillStateTarget.className = `pill ${STATE_TONES[skill.state] || "muted"}`
     this.skillWhyTarget.textContent = skill.why_it
+    this.skillMissingTarget.textContent = skill.missing_it || ""
+    this.skillMissingTarget.hidden = !skill.missing_it
     const clean = skill.clean
     this.dotsTarget.hidden = clean === null || clean === undefined
     if (!this.dotsTarget.hidden) {

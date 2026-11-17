@@ -18,6 +18,8 @@
       <% 3.times do |i| %><span class="<%= 'on' if clean.to_i > i %>"></span><% end %>
     </span>
     <span class="topic-why" id="skill-why" data-practice-target="skillWhy"><%= Practice::Messages.why_it(@state.why) %></span>
+    <% missing = Practice::Messages.missing_it(@state.why) %>
+    <span class="topic-why topic-missing" id="skill-missing" data-practice-target="skillMissing"<%= ' hidden'.html_safe unless missing %>><%= missing %></span>
   </div>
   <p class="paper-note"><%= ui_icon("step-practice") %><span><%= t("practice.paper") %></span></p>
   <div id="serve-reason" class="notice info" role="status" data-practice-target="reason" hidden>

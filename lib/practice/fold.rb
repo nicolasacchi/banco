@@ -127,7 +127,8 @@ module Practice
     def why(m, seed)
       case m.state
       when "in_study"
-        { code: :in_study, n: [ m.fingerprints.size, V3::DEMONSTRATE_CORRECT_UNAIDED ].min, d: [ m.days.size, V3::DEMONSTRATE_DISTINCT_DAYS ].min }
+        { code: :in_study, n: [ m.fingerprints.size, V3::DEMONSTRATE_CORRECT_UNAIDED ].min, d: [ m.days.size, V3::DEMONSTRATE_DISTINCT_DAYS ].min,
+          low: [ m.fingerprints.values.count(true), V3::DEMONSTRATE_MIN_LOW_GUESS ].min }
       when "demonstrated"
         if m.fingerprints.empty? && seed&.state.to_s == "demonstrated"
           { code: seed.implied ? :seed_implied : :seed_demonstrated, date: m.demonstrated_day }
