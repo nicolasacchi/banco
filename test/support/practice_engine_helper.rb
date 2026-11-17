@@ -8,7 +8,7 @@ module PracticeEngineHelper
              revision: 1, codes: [], reseen: false, at: nil, seconds: 30, contested: false)
     @engine_serial = (@engine_serial || 0) + 1
     at ||= T0 + day * 86_400 + hours * 3600
-    Practice::Try.new(skill: skill, at: at, day: at.in_time_zone(Practice::Rules::V3::ZONE).to_date, serve_id: serve || @engine_serial,
+    Practice::Try.new(skill: skill, at: at, day: at.in_time_zone(Practice::Rules::V4::ZONE).to_date, serve_id: serve || @engine_serial,
                       fingerprint: fp || "fp#{@engine_serial}", item_id: item_id, item_revision_id: revision, low_guess: low,
                       try_number: try_number, aided: aided || reseen, reseen: reseen, evidence: Practice::Outcome.evidence(outcome),
                       outcome: outcome, error_codes: codes, seconds: seconds, contested: contested || outcome == :contested)
@@ -24,7 +24,7 @@ module PracticeEngineHelper
 
   def state_of(tries, seed: nil) = fold(tries, seed: seed).state
 
-  # Three correct unaided answers on two days, two of them low guess: demonstrated on the third.
+  # Three correct unaided answers (the third a day later), two of them low guess: demonstrated on the third.
   def demonstrating_tries(start_day: 0)
     [ try_at(day: start_day, low: true), try_at(day: start_day, hours: 1, low: true), try_at(day: start_day + 1, low: false) ]
   end

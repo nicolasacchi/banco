@@ -19,11 +19,20 @@ class PracticeFoldTest < ActiveSupport::TestCase
     end
   end
 
-  test "three correct unaided answers on one day stay in_study" do
-    tries = [ try_at(hours: 0), try_at(hours: 1), try_at(hours: 2) ]
+  test "practice/4: three distinct right unaided on the same day, two of them low guess, are demonstrated at the third try" do
+    tries = [ try_at(hours: 0, low: true), try_at(hours: 1, low: false), try_at(hours: 2, low: true) ]
+    s = fold(tries)
+    assert_equal "demonstrated", s.state
+    assert_equal tries.last.at, s.demonstrated_at
+    assert_equal({ code: :demonstrated, date: tries.last.day }, s.why)
+    assert_equal "in_study", state_of(tries.first(2))
+  end
+
+  test "practice/4: three right unaided with only one low-guess fingerprint are still in_study, with no day in the why" do
+    tries = [ try_at(hours: 0, low: true), try_at(hours: 1, low: false), try_at(hours: 2, low: false) ]
     s = fold(tries)
     assert_equal "in_study", s.state
-    assert_equal({ code: :in_study, n: 3, d: 1, low: 2 }, s.why)
+    assert_equal({ code: :in_study, n: 3, low: 1 }, s.why)
   end
 
   test "three on two days with two low-guess fingerprints are demonstrated, at the third try" do
@@ -32,7 +41,6 @@ class PracticeFoldTest < ActiveSupport::TestCase
     assert_equal "demonstrated", s.state
     assert_equal tries.last.at, s.demonstrated_at
     assert_equal :demonstrated, s.why[:code]
-    assert_equal 2, s.why[:days]
   end
 
   test "choice-only answers (no low-guess fingerprint) are never enough" do
@@ -101,10 +109,9 @@ class PracticeFoldTest < ActiveSupport::TestCase
     c = try_at(at: Time.utc(2026, 10, 25, 23, 30))
     assert_equal Date.new(2026, 10, 26), c.day
     assert_equal Date.new(2026, 10, 25), b.day
-    # 00:30 UTC on the 25th and 23:30 UTC on the 25th are two days, so two correct tries there plus a third demonstrate.
+    # the day of the demonstrating try is the Rome date (the why's date)
     d = try_at(at: Time.utc(2026, 10, 25, 12, 0), low: true)
-    assert_equal "demonstrated", state_of([ b.with(low_guess: true), d, c.with(low_guess: false) ])
-    assert_equal "in_study", state_of([ b.with(low_guess: true), d.with(fingerprint: "x"), try_at(at: Time.utc(2026, 10, 25, 20, 0), low: false) ])
+    assert_equal Date.new(2026, 10, 26), fold([ b.with(low_guess: true), d, c.with(low_guess: false) ]).why[:date]
   end
 
   test "demonstrated consolidates at a correct unaided try on a fresh fingerprint 14 days later" do

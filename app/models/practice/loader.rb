@@ -6,7 +6,7 @@ module Practice
   #   input = Practice::Loader.for(student, subject: subject)
   #   Practice::Fold.call(seeds: input.seeds, tries: input.tries, serves: input.serves)
   class Loader
-    V3 = Rules::V3
+    V4 = Rules::V4
 
     Input = Data.define(:seeds, :tries, :serves, :voided_item_revision_ids)
 
@@ -72,11 +72,11 @@ module Practice
           previous = attempt.answered_at
           grade = Instances.grade(attempt, spec, contested_ids: contested_ids(serve)) or next
 
-          Try.new(skill: serve.skill_key, at: attempt.answered_at, day: attempt.answered_at.in_time_zone(V3::ZONE).to_date, serve_id: serve.id,
+          Try.new(skill: serve.skill_key, at: attempt.answered_at, day: attempt.answered_at.in_time_zone(V4::ZONE).to_date, serve_id: serve.id,
                   fingerprint: instance.fingerprint, item_id: instance.item_revision.item_id, item_revision_id: instance.item_revision_id,
                   low_guess: low, try_number: attempt.try_number, aided: attempt.aided || serve.reason == "reseen", reseen: serve.reason == "reseen",
                   evidence: Outcome.evidence(grade.outcome), outcome: grade.outcome, error_codes: grade.codes, contested: grade.contested,
-                  seconds: (attempt.answered_at - started).to_i.clamp(0, V3::TIME_CAP_SECONDS))
+                  seconds: (attempt.answered_at - started).to_i.clamp(0, V4::TIME_CAP_SECONDS))
         end
       end
     end

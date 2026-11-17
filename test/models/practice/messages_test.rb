@@ -46,12 +46,12 @@ class PracticeMessagesTest < ActiveSupport::TestCase
   end
 
   test "the sentences of the spec" do
-    assert_equal "Corrette senza aiuto: 3 su 3, in 1 giorno su 2.", Practice::Messages.why_it(code: :in_study, n: 3, d: 1)
-    assert_equal "Dimostrata il 13/10/2026: corrette senza aiuto in 2 giorni diversi.", Practice::Messages.why_it(code: :demonstrated, date: Date.new(2026, 10, 13), days: 2)
+    assert_equal "Corrette senza aiuto: 2 su 3.", Practice::Messages.why_it(code: :in_study, n: 2, low: 1)
+    assert_equal "Dimostrata il 13/10/2026: 3 esercizi giusti senza aiuto.", Practice::Messages.why_it(code: :demonstrated, date: Date.new(2026, 10, 13))
     assert_equal "Un errore senza aiuto il 02/11/2026: servono 2 corrette per tornare consolidata.",
                  Practice::Messages.why_it(code: :to_review, date: Date.new(2026, 11, 2), previous: "consolidated")
     assert_equal "Dimostrata nella diagnosi del 02/11/2026.", Practice::Messages.why_it(code: :seed_demonstrated, date: Date.new(2026, 11, 2))
-    assert_equal %w[Non\ ancora\ vista Da\ riprendere Da\ imparare In\ studio Dimostrata Consolidata Da\ ripassare], Practice::Rules::V3::STATES.map { |s| Practice::Messages.state_it(s) }
+    assert_equal %w[Non\ ancora\ vista Da\ riprendere Da\ imparare In\ studio Dimostrata Consolidata Da\ ripassare], Practice::Rules::V4::STATES.map { |s| Practice::Messages.state_it(s) }
   end
 
   test "the locale texts keep the reading rules: no italics, no emphasis, no emoji" do

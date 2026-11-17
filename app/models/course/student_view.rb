@@ -1,6 +1,6 @@
 module Course
   # Everything the student's course pages read (A9): what the catalog shows this student, the derived state
-  # of each skill (practice/3), the status of each topic, Oggi. Read-only; each page builds one and asks.
+  # of each skill (practice/4), the status of each topic, Oggi. Read-only; each page builds one and asks.
   #
   #   view = Course::StudentView.new(student)
   #   view.subjects            # visible subjects only (Catalog::SubjectView with topics)

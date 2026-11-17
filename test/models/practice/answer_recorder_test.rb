@@ -24,7 +24,7 @@ class PracticeAnswerRecorderTest < ActiveSupport::TestCase
     assert_equal [ "math.linear-equation-integer", "in_study" ], [ b[:skill][:key], b[:skill][:state] ]
     assert_equal "In studio", b[:skill][:state_it]
     assert b[:skill][:changed]
-    assert_equal "Corrette senza aiuto: 1 su 3, in 1 giorno su 2.", b[:skill][:why_it]
+    assert_equal "Corrette senza aiuto: 1 su 3.", b[:skill][:why_it]
   end
 
   test "the rows: attempt, grading on the practice table, solution event, aided false" do
@@ -148,7 +148,7 @@ class PracticeAnswerRecorderTest < ActiveSupport::TestCase
 
   test "409 when the serve is abandoned (14 days)" do
     c = serve!
-    advance(Practice::Rules::V3::OPEN_SERVE_HOURS * 3600 + 1)
+    advance(Practice::Rules::V4::OPEN_SERVE_HOURS * 3600 + 1)
     assert_equal 409, recorder.call(serve_id: c.serve.id, client_attempt_id: "late-answer-1", raw: correct_raw(c), source: "text").http
   end
 
@@ -278,13 +278,12 @@ class PracticeAnswerRecorderTest < ActiveSupport::TestCase
     refute_includes json, correct_raw(c) if correct_raw(c).size > 2
   end
 
-  test "state changes are reported: demonstrated after the third day" do
+  test "state changes are reported: demonstrated at the third right answer, on the same day" do
     states = []
-    3.times do |n|
+    3.times do
       c = serve!
       b = answer!(c, correct_raw(c)).body
       states << [ b[:skill][:state], b[:skill][:changed] ]
-      advance(86_400) if n >= 0
     end
     assert_equal [ [ "in_study", true ], [ "in_study", false ] ], states.first(2)
     assert_equal [ "demonstrated", true ], states.last

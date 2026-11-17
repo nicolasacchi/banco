@@ -1,10 +1,10 @@
 require "test_helper"
 
-# docs/rules/practice-3.md and lib/practice/rules/v3.rb must say the same (the register is the prose,
+# docs/rules/practice-4.md and lib/practice/rules/v4.rb must say the same (the register is the prose,
 # the module the numbers).
 class PracticeRulesTest < ActiveSupport::TestCase
-  DOC = Rails.root.join("docs/rules/practice-3.md").read
-  V3 = Practice::Rules::V3
+  DOC = Rails.root.join("docs/rules/practice-4.md").read
+  V4 = Practice::Rules::V4
 
   def documented
     DOC[/## 1\. Constants\n(.*?)\n## 2/m, 1].lines.filter_map do |line|
@@ -15,10 +15,10 @@ class PracticeRulesTest < ActiveSupport::TestCase
 
   test "every documented constant exists with the documented value, and the reverse" do
     doc = documented
-    constants = V3.constants.map(&:to_s)
+    constants = V4.constants.map(&:to_s)
     assert_equal constants.sort, doc.keys.sort
     doc.each do |name, text|
-      value = V3.const_get(name)
+      value = V4.const_get(name)
       expected = case value
       when Array then value.join(" ")
       else value.to_s
@@ -28,12 +28,12 @@ class PracticeRulesTest < ActiveSupport::TestCase
   end
 
   test "the version names the rules" do
-    assert_equal "practice/3", V3::RULES_VERSION
-    assert_equal V3::MAX_WRONG_TRIES + V3::MAX_NEAR_MISS_RETRIES, V3::MAX_TRIES
+    assert_equal "practice/4", V4::RULES_VERSION
+    assert_equal V4::MAX_WRONG_TRIES + V4::MAX_NEAR_MISS_RETRIES, V4::MAX_TRIES
   end
 
   test "an exercise left half done is kept two weeks" do
-    assert_equal 14 * 24, V3::OPEN_SERVE_HOURS
+    assert_equal 14 * 24, V4::OPEN_SERVE_HOURS
   end
 
   test "the document keeps what version 2 changed: superseded serves, the item and advance cases, resume" do
@@ -53,8 +53,8 @@ class PracticeRulesTest < ActiveSupport::TestCase
   end
 
   test "the states are the seven of the register" do
-    assert_equal 7, V3::STATES.size
-    assert_equal V3::STATES.sort, I18n.t("states").keys.map(&:to_s).sort
+    assert_equal 7, V4::STATES.size
+    assert_equal V4::STATES.sort, I18n.t("states").keys.map(&:to_s).sort
   end
 
   test "the serve actions of the document are the actions the machine produces" do

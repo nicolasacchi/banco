@@ -30,7 +30,6 @@ it:
       exercises:
         one: "Per chiuderlo: in %{skill} fai ancora un esercizio giusto senza aiuto."
         other: "Per chiuderlo: in %{skill} fai ancora %{count} esercizi giusti senza aiuto."
-      day: "Per chiuderlo: torna domani e rifai un esercizio senza aiuto."
   states:
     not_seen: "Non ancora vista"
     to_recover: "Da riprendere"
@@ -45,10 +44,8 @@ it:
     seed_implied: "Non serviva verificarla: hai dimostrato un'abilità che la usa."
     seed_to_recover: "Nella diagnosi: da riprendere."
     seed_to_learn: "Nella diagnosi: da imparare."
-    in_study:
-      one: "Corrette senza aiuto: %{n} su 3, in %{d} giorno su 2."
-      other: "Corrette senza aiuto: %{n} su 3, in %{d} giorni su 2."
-    demonstrated: "Dimostrata il %{date}: corrette senza aiuto in %{days} giorni diversi."
+    in_study: "Corrette senza aiuto: %{n} su 3."
+    demonstrated: "Dimostrata il %{date}: 3 esercizi giusti senza aiuto."
     consolidated: "Consolidata il %{date}: l'hai rifatta giusta dopo più di due settimane."
     to_review: "Un errore senza aiuto il %{date}: servono 2 corrette per tornare %{previous}."
   subjects:
@@ -133,7 +130,7 @@ it:
     show_solution: "Mostra la soluzione"
   practice:
     paper: "Il procedimento sul foglio, qui solo il risultato."
-    close_rule: "Per chiudere l'argomento: in ogni abilità, 3 esercizi giusti senza aiuto, in 2 giorni diversi."
+    close_rule: "Per chiudere l'argomento: in ogni abilità, 3 esercizi giusti senza aiuto, almeno 2 da scrivere, abbinare o mettere in ordine."
     # What a skill not yet demonstrated still needs (D-340), from the fold's why.
     missing:
       exercises:
@@ -146,7 +143,6 @@ it:
       long_among:
         one: "Uno deve essere da scrivere, abbinare o mettere in ordine."
         other: "%{count} devono essere da scrivere, abbinare o mettere in ordine."
-      day: "Ti manca un altro giorno: torna domani e fanne uno giusto senza aiuto."
     submit: "Controlla"
     hint: "Mostra un aiuto (%{n} di %{total})"
     solution: "Mostrami la soluzione"

@@ -79,7 +79,7 @@ only), `HARNESS_PORT` 3200 (internal), `VIEW_PORT` 3400 (view links, GET only). 
 - `lib/diagnosis/`: the pure engine (no database): `Plan`, `Fold`, `Engine`,
   `Derivation`, `Simulator`; `app/models/diagnosis/`: the loaders that read rows
   for it. `banco diagnosis simulate` is a dry run of the same engine.
-- The practice engine (Phase 1b S2, D-235, rules `practice/3` in `docs/rules/practice-3.md` and `lib/practice/rules/v3.rb`; `practice-2.md` stays as the record):
+- The practice engine (Phase 1b S2, D-235, rules `practice/4` in `docs/rules/practice-4.md` and `lib/practice/rules/v4.rb`; `practice-1.md` to `practice-3.md` stay as the record):
   `lib/practice/` (`Outcome`, `ServeState` with its transition table, `Fold` for the skill states, `Selector`, `Today`,
   `GraphOrder`), `app/models/practice/` (`Loader`, `Seeder`, `AnswerRecorder`, `Actions`, `Contest`, `Messages`, `Payload`, `Instances`) and
   `Course::Catalog` (what each student sees). Own ledger tables `practice_*`; `Grading` is shared. Tests: `test/lib/practice`,

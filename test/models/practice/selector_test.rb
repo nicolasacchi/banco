@@ -12,7 +12,7 @@ class PracticeSelectorTest < ActiveSupport::TestCase
     choice = serve!
     assert_equal [ "next", true ], [ choice.reason, choice.created ]
     assert_equal @revisions.first.id, choice.instance.item_revision_id
-    assert_equal [ "practice/3", @skill, @student.id, @clock.now ], choice.serve.then { |s| [ s.rules_version, s.skill_key, s.student_id, s.created_at ] }
+    assert_equal [ "practice/4", @skill, @student.id, @clock.now ], choice.serve.then { |s| [ s.rules_version, s.skill_key, s.student_id, s.created_at ] }
     assert_kind_of Integer, choice.serve.seed
     assert_nil choice.parent_serve_id
     assert_nil choice.error_code

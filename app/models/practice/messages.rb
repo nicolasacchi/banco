@@ -87,50 +87,42 @@ module Practice
       code = why.delete(:code)
       why[:date] = why[:date].strftime("%d/%m/%Y") if why[:date].respond_to?(:strftime)
       why[:previous] = state_it(why[:previous]).downcase if why[:previous]
-      why[:count] = why[:d] if code.to_s == "in_study" # "in 1 giorno", "in 0 giorni"
       I18n.t("why.#{code}", **why)
     end
 
-    # What a skill still needs to be demonstrated (practice/3 section 5: 3 distinct exercises right without help, on 2 days, 2 of them hard
-    # to guess), read from the fold's why: {exercises:, long:, day:, more_long:} or nil when nothing is missing.
+    # What a skill still needs to be demonstrated (practice/4 section 5: 3 distinct exercises right without help, 2 of them hard
+    # to guess), read from the fold's why: {exercises:, long:, more_long:} or nil when nothing is missing.
     #   exercises: new right exercises needed (the larger of the 3 in all and the 2 hard to guess); long: how many of them hard to guess;
-    #   more_long: true when the hard ones are asked on top of the plain count; day: a second day is missing (one day done).
+    #   more_long: true when the hard ones are asked on top of the plain count.
     # A skill not begun, or only seeded to recover or to learn, lacks everything; demonstrated, consolidated and «da ripassare» lack nothing here.
     def missing(why)
       case why[:code].to_s
-      when "in_study" then done, low, days = why[:n].to_i, why[:low].to_i, why[:d].to_i
-      when "not_seen", "seed_to_recover", "seed_to_learn" then done = low = days = 0
+      when "in_study" then done, low = why[:n].to_i, why[:low].to_i
+      when "not_seen", "seed_to_recover", "seed_to_learn" then done = low = 0
       else return nil
       end
-      need = [ Rules::V3::DEMONSTRATE_CORRECT_UNAIDED - done, 0 ].max
-      need_long = [ Rules::V3::DEMONSTRATE_MIN_LOW_GUESS - low, 0 ].max
-      day = days.positive? && days < Rules::V3::DEMONSTRATE_DISTINCT_DAYS
-      return nil if need.zero? && need_long.zero? && !day
+      need = [ Rules::V4::DEMONSTRATE_CORRECT_UNAIDED - done, 0 ].max
+      need_long = [ Rules::V4::DEMONSTRATE_MIN_LOW_GUESS - low, 0 ].max
+      return nil if need.zero? && need_long.zero?
 
-      { exercises: [ need, need_long ].max, long: need_long, more_long: need.positive? && need_long.positive?, day: day }
+      { exercises: [ need, need_long ].max, long: need_long, more_long: need.positive? && need_long.positive? }
     end
 
     # The sentences of what is missing, as one text; nil when nothing is missing.
     def missing_it(why)
       gap = missing(why) or return nil
-      lines = []
-      if gap[:exercises].positive?
-        only_long = gap[:long].positive? && !gap[:more_long] # the count is met; only the hard ones are lacking
-        lines << I18n.t(only_long ? "practice.missing.long" : "practice.missing.exercises", count: gap[:exercises])
-        lines << I18n.t("practice.missing.long_among", count: gap[:long]) if gap[:more_long]
-      end
-      lines << I18n.t("practice.missing.day") if gap[:day]
+      only_long = gap[:long].positive? && !gap[:more_long] # the count is met; only the hard ones are lacking
+      lines = [ I18n.t(only_long ? "practice.missing.long" : "practice.missing.exercises", count: gap[:exercises]) ]
+      lines << I18n.t("practice.missing.long_among", count: gap[:long]) if gap[:more_long]
       lines.join(" ")
     end
 
     # The one line of Oggi's «Riprendi» card for a topic: the most useful thing missing across its skills. entries: [[skill label, why], ...].
-    # Exercises still to do come first (the skill nearest to done), a second day only when no skill lacks exercises; nil when nothing is missing.
+    # The skill nearest to done comes first; nil when nothing is missing.
     def close_line(entries)
       gaps = entries.filter_map { |label, why| (gap = missing(why)) && [ label, gap ] }
-      label, gap = gaps.select { |_, g| g[:exercises].positive? }.min_by { |_, g| g[:exercises] }
-      return I18n.t("today.close_line.exercises", skill: label, count: gap[:exercises]) if gap
-
-      I18n.t("today.close_line.day") if gaps.any?
+      label, gap = gaps.min_by { |_, g| g[:exercises] }
+      I18n.t("today.close_line.exercises", skill: label, count: gap[:exercises]) if gap
     end
 
     def reason_it(reason)

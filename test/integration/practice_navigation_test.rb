@@ -120,7 +120,7 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
   test "a draft written on an abandoned serve is refused as closed" do
     build_nav_world
     id = serve_for(OFFICIAL)["serve_id"]
-    travel_to(Time.current + (Practice::Rules::V3::OPEN_SERVE_HOURS + 1).hours) do
+    travel_to(Time.current + (Practice::Rules::V4::OPEN_SERVE_HOURS + 1).hours) do
       assert_equal({ "status" => "closed" }, draft_for(OFFICIAL, id, "7"))
       assert_response :conflict
     end

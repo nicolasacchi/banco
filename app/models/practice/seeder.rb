@@ -33,7 +33,7 @@ module Practice
       when "to_recover" then [ row[:kind] == "learn" ? "to_learn" : "to_recover", false ]
       when "not_assessed" then row[:reason] == "below_demonstrated" ? [ "demonstrated", true ] : nil
       end
-      state && Practice::Seed.new(skill: row[:skill], state: state, at: at.in_time_zone(Rules::V3::ZONE), run_id: run.id, implied: implied)
+      state && Practice::Seed.new(skill: row[:skill], state: state, at: at.in_time_zone(Rules::V4::ZONE), run_id: run.id, implied: implied)
     end
   end
 end

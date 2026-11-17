@@ -10,7 +10,7 @@
       "subject": "math",
       "student": "student",
       "trial": false,
-      "rules_version": "practice/3",
+      "rules_version": "practice/4",
       "topics": [
         {
           "topic": "ripasso.math.demo-equations",

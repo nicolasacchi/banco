@@ -71,7 +71,7 @@ class PracticePropertiesTest < ActiveSupport::TestCase
     each_case do |i, rng|
       tries = history(rng)
       s = fold(tries)
-      assert_includes Practice::Rules::V3::STATES, s.state, "seed #{i}"
+      assert_includes Practice::Rules::V4::STATES, s.state, "seed #{i}"
       assert s.demonstrated_at, "seed #{i}: #{s.state} without demonstrated_at" if %w[demonstrated consolidated].include?(s.state)
       assert s.consolidated_at, "seed #{i}: consolidated without consolidated_at" if s.state == "consolidated"
       assert_equal "not_seen", s.state, "seed #{i}" if tries.empty?
@@ -86,7 +86,7 @@ class PracticePropertiesTest < ActiveSupport::TestCase
     end
   end
 
-  test "demonstrating needs three fingerprints, two days and two low-guess ones: dropping the low-guess flags removes the state" do
+  test "demonstrating needs three fingerprints and two low-guess ones: dropping the low-guess flags removes the state" do
     each_case do |i, rng|
       tries = history(rng)
       flat = fold(tries.map { |t| t.with(low_guess: false) }).state
