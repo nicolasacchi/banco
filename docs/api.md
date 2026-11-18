@@ -298,7 +298,7 @@ banco attempts --comment 17
   through the same code as the student's page: `Diagnosis::Rekey.replay`, `Items::Part`; for the entry test `Diagnosis::ItemPresenter`), with the shown ids `o1…` (options),
   `e1…` (elements to order), `l1…`/`r1…` (the two columns of a matching). `shown_order` lists the **stored** ids in the order they were shown, per column, and `id_map` maps each shown
   id to the stored one, so the key and the error values, which are in stored ids, read against the answer. Also the serve's `reason` (`next`, `prova_questo`, `after_solution`,
-  `reseen`), its parent, its `at`; for the entry test the `run_id`, `sitting` and `reason`.
+  `reseen`), its parent, its `at`; `reminders` (D-358) when the page showed a «Ricorda: …» line with this serve (`code`, `source` `item` or `graph`, `at`); for the entry test the `run_id`, `sitting` and `reason`.
 - **`instance`**: the stored instance as the teacher reads it: the `stem`, the `key` (stored) and `key_words`, the `accept`ed forms, `answer_words` (the answer in the words
   of the shown display: «Produrre automobili», «tre → due → uno»), `errors` (the instance's declared errors with their values), `error_catalogue` (the item's), `matched_errors`
   (the grader's codes with the catalogue's text) and, for a practice try, `hints` (with `shown_before` for this try) and `hints_total`.
