@@ -51,6 +51,10 @@ module Banco
     config.time_zone = "Rome"
     config.i18n.default_locale = :it
     config.i18n.available_locales = %i[it en]
+    # A key the English files do not have shows the Italian text, in every environment: the figures' vocabulary of the lessons stays
+    # Italian on purpose (D-356), and a missed key never shows «translation missing» to the student. test/lib/locale_parity_test.rb
+    # is what keeps the student's texts complete.
+    config.i18n.fallbacks = [ :it ]
 
     # Single process, single node: an in-memory cache is enough (no Solid Cache).
     config.cache_store = :memory_store

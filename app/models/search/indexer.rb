@@ -40,11 +40,14 @@ module Search
 
     # +groups+ are read and written one after the other; each records when its read began (`read_GROUP`), which lets SearchIndexJob skip
     # a group that a later read has already brought up to date.
+    # The index is Italian whatever the language of the request that enqueued the job (D-356: a job carries the locale of its enqueuer).
     def reindex(groups)
-      Schema.ensure!
-      Array(groups).map(&:to_s).uniq.to_h do |group|
-        read_at = Time.current
-        [ group, Index.replace_group(group, Builders.docs(group), read_at: read_at) ]
+      I18n.with_locale(I18n.default_locale) do
+        Schema.ensure!
+        Array(groups).map(&:to_s).uniq.to_h do |group|
+          read_at = Time.current
+          [ group, Index.replace_group(group, Builders.docs(group), read_at: read_at) ]
+        end
       end
     end
 

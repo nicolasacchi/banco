@@ -1,0 +1,58 @@
+# What the grader and the practice engine say to the student about an answer (A8.2, A9.4): the sentences chosen by code, never
+# generated (firm rule 1). The item's own messages (its error catalogue, hints, solutions) are course content and stay in the item.
+# The English twin is grading.en.yml (D-356).
+it:
+  grading:
+    # An answer that is not an attempt (Grading::Result#message_it): nothing is stored.
+    messages:
+      empty: "Scrivi una risposta prima di continuare."
+      unparseable: "Non riesco a leggere la risposta. Controllala e riprova."
+      unreadable_number: "Scrivi solo il numero, per esempio −3 oppure 2,5."
+      unreadable_fraction: "Scrivi la frazione, per esempio −3/4."
+      incomplete: "Metti tutti i pezzi in ordine, poi controlla."
+      incomplete_rows: "Manca una risposta: scegli una risposta per ogni riga, poi controlla."
+      spaces_in_code: "Scrivi la risposta di seguito, senza spazi."
+      use_comma: "Per i decimali usa la virgola, per esempio 3,5."
+      thousands_separator: "Scrivi il numero senza punti né spazi tra le cifre, per esempio 5300,00."
+      ambiguous_exponent: "Non si capisce l'esponente. Scrivi ^ e poi le cifre dell'esponente."
+      ambiguous_mixed_number: "Non si capisce il numero. Scrivi un numero misto come frazione, oppure con le caselle separate."
+      zero_denominator: "Il denominatore non può essere zero."
+      number_too_large: "Il numero è troppo grande o troppo piccolo: scrivilo in un altro modo."
+      negative_denominator: "Il denominatore non può essere negativo: scrivi il segno davanti al numeratore."
+      signed_fraction_part: "In un numero misto il segno va solo nella parte intera."
+      blank_copied: "Al posto di ___ scrivi le parole che mancano."
+      not_in_frame: "Scrivi solo le parole che vanno al posto di ___."
+    # The checker's form violations (and the fraction ones) as a sentence for the student (Practice::Messages.form).
+    form:
+      lowest_terms: "La frazione si può ancora semplificare: riducila ai minimi termini."
+      not_lowest_terms: "La frazione si può ancora semplificare: riducila ai minimi termini."
+      improper: "Scrivi la frazione come numero misto, come chiede la consegna."
+      mixed: "Scrivi la frazione senza parte intera, come chiede la consegna."
+      denominator_one: "Se il denominatore è 1, scrivi solo il numeratore."
+      sign_in_denominator: "Il segno va davanti alla frazione, non al denominatore."
+      not_rationalized: "Il denominatore non deve contenere radici: razionalizza."
+      radicand_not_reduced: "Puoi ancora portare qualcosa fuori dalla radice."
+      factor_not_extracted: "Puoi ancora portare un fattore fuori dalla radice."
+      radicand_not_multiplied: "Moltiplica i numeri sotto la stessa radice."
+      roots_not_multiplied: "Riunisci le radici in una sola."
+      like_radicals_not_combined: "Somma i radicali simili."
+      like_terms_not_combined: "Somma i termini simili."
+      coefficients_not_multiplied: "Moltiplica i coefficienti numerici."
+      common_factor_not_cancelled: "C'è ancora un fattore comune da semplificare."
+      not_fully_factored: "La scomposizione non è completa: si può scomporre ancora."
+      common_factor_not_extracted: "Raccogli prima il fattore comune."
+      not_expanded: "Svolgi i prodotti e scrivi il risultato senza parentesi."
+      monomial_not_reduced: "Il monomio si può ancora ridurre."
+      zero_term: "Togli i termini uguali a zero."
+      trivial_root: "La radice si può calcolare: scrivi il numero."
+      nested_root: "Riduci le radici dentro altre radici."
+      fraction_under_root: "Non lasciare una frazione sotto la radice."
+      scientific_notation: "Scrivi il numero in notazione scientifica."
+      leading_zeros: "Scrivi anche gli zeri iniziali richiesti."
+    # A matching that is right but for one pair (D-301); the words in «» are the item's own.
+    pair_note: "Giusto, tranne una coppia: «%{left}» va con «%{key}», non con «%{given}»."
+    # The hint of a lesson check for a slip of the writing (Lessons::Checks): the accents of Italian, of Spanish, the apostrophe.
+    slips:
+      it_accents: "Controlla gli accenti."
+      es_accents: "Controlla los acentos."
+      it_apostrophe_accent: "Controlla l'apostrofo e l'accento."

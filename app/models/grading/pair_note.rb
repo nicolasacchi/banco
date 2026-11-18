@@ -4,10 +4,8 @@ module Grading
   # the ids from the grading's normalized (its "off_pair"). Without a text the id is said.
   #
   #   Grading::PairNote.line(display, normalized_json)
-  #   # => "Giusto, tranne una coppia: «Tizio» va con «Caio», non con «Sempronio»."
+  #   # => "Giusto, tranne una coppia: «Tizio» va con «Caio», non con «Sempronio»." (config/locales/grading.*.yml: the page's language)
   module PairNote
-    LINE_IT = "Giusto, tranne una coppia: «%{left}» va con «%{key}», non con «%{given}».".freeze
-
     module_function
 
     # The off pair of a nearly_correct grading's normalized (a JSON string or a hash), or nil.
@@ -22,8 +20,8 @@ module Grading
       off = off_pair(normalized) or return nil
 
       display = display.to_h.transform_keys(&:to_s)
-      format(LINE_IT, left: text(display["left"], off["left"]), key: text(display["right"], off["key"]),
-                      given: text(display["right"], off["given"]))
+      I18n.t("grading.pair_note", left: text(display["left"], off["left"]), key: text(display["right"], off["key"]),
+                                  given: text(display["right"], off["given"]))
     end
 
     def text(options, id)

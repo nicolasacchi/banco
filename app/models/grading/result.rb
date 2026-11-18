@@ -1,27 +1,11 @@
 module Grading
   # The grader's word on one answer. invalid is not an attempt: it carries a code
-  # of config/banco/error_codes.yml (grader_codes) and an Italian message for the
+  # of config/banco/error_codes.yml (grader_codes) and a message for the
   # student, and nothing is stored.
   class Result
-    MESSAGES_IT = {
-      "empty" => "Scrivi una risposta prima di continuare.",
-      "unparseable" => "Non riesco a leggere la risposta. Controllala e riprova.",
-      "unreadable_number" => "Scrivi solo il numero, per esempio −3 oppure 2,5.",
-      "unreadable_fraction" => "Scrivi la frazione, per esempio −3/4.",
-      "incomplete" => "Metti tutti i pezzi in ordine, poi controlla.",
-      "incomplete_rows" => "Manca una risposta: scegli una risposta per ogni riga, poi controlla.",
-      "spaces_in_code" => "Scrivi la risposta di seguito, senza spazi.",
-      "use_comma" => "Per i decimali usa la virgola, per esempio 3,5.",
-      "thousands_separator" => "Scrivi il numero senza punti né spazi tra le cifre, per esempio 5300,00.",
-      "ambiguous_exponent" => "Non si capisce l'esponente. Scrivi ^ e poi le cifre dell'esponente.",
-      "ambiguous_mixed_number" => "Non si capisce il numero. Scrivi un numero misto come frazione, oppure con le caselle separate.",
-      "zero_denominator" => "Il denominatore non può essere zero.",
-      "number_too_large" => "Il numero è troppo grande o troppo piccolo: scrivilo in un altro modo.",
-      "negative_denominator" => "Il denominatore non può essere negativo: scrivi il segno davanti al numeratore.",
-      "signed_fraction_part" => "In un numero misto il segno va solo nella parte intera.",
-      "blank_copied" => "Al posto di ___ scrivi le parole che mancano.",
-      "not_in_frame" => "Scrivi solo le parole che vanno al posto di ___."
-    }.freeze
+    # The sentence for an answer that cannot be read (config/locales/grading.*.yml, D-356): in the language of the page that asks, Italian
+    # for the teacher; a code with no sentence says «unparseable».
+    def self.message(code) = I18n.t("grading.messages.#{code}", default: :"grading.messages.unparseable")
 
     # observation and answer_part are NOT stored columns (to_attributes stays columns only): "full_sentence" says the
     # student wrote the whole sentence around a `___` blank (D-339) and answer_part is the words she wrote in place of
@@ -51,7 +35,7 @@ module Grading
 
     def invalid? = verdict == "invalid"
 
-    def message_it = invalid? ? MESSAGES_IT.fetch(invalid_code, MESSAGES_IT["unparseable"]) : nil
+    def message_it = invalid? ? self.class.message(invalid_code) : nil
 
     # grader_version of the row: git sha, plus the checker version for expressions.
     def grader_version

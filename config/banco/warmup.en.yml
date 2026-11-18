@@ -1,0 +1,44 @@
+# The English words of the warm-up (D-356): the prompt of each task of warmup.yml, and the words of the matching task, by task id.
+# Answers, ids and accepted forms live only in warmup.yml; a task id with no entry here is shown in Italian. The numbers stay
+# written with the comma, as the exam asks.
+tasks:
+  choice:
+    prompt_it: "Choose an answer. What is 2 + 2?"
+  number:
+    prompt_it: "Write the number zero comma seventy-five. Decimals are written with a comma."
+  number_negative:
+    prompt_it: "Write minus five. The minus sign goes in front of the number."
+  fraction:
+    prompt_it: "Write the fraction three quarters in the two boxes."
+  fraction_negative:
+    prompt_it: "Write minus three quarters in the two boxes. The minus sign goes in the numerator."
+  ordering:
+    prompt_it: "Put the numbers in order, from the smallest to the biggest. Use Up and Down, or Alt with the arrows."
+  matching:
+    prompt_it: "Match each number to its word."
+    right:
+      r1: "four"
+      r2: "two"
+      r3: "five"
+      r4: "one"
+      r5: "three"
+  accents:
+    prompt_it: "Write the word più. For the letter with the accent use the buttons under the box."
+  dont_know:
+    prompt_it: "If you don't know an answer, press I don't know. Try it now."
+  pause:
+    prompt_it: "Press Pause. Then press Resume."
+  ed_fraction:
+    prompt_it: "Write three quarters with the bar. Press 3, then the bar /, then 4. Then press the right arrow."
+  ed_power:
+    prompt_it: "Write x squared plus 3x. Press x, then ^, then 2, then the right arrow, then +3x."
+  ed_product:
+    prompt_it: "Write 3a squared times b. Press 3, a, ^, 2, the right arrow, then b."
+  ed_square:
+    prompt_it: "Write a plus b in brackets, squared. Press (, a, +, b, ), then ^ and 2."
+  ed_root:
+    prompt_it: "Write the square root of 8. Write rad and then 8."
+  ed_decimal:
+    prompt_it: "Write zero comma seventy-five. Use the comma."
+  ed_division:
+    prompt_it: "Write twelve divided by four with the colon. Press 12, then :, then 4."

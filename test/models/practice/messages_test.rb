@@ -9,13 +9,13 @@ class PracticeMessagesTest < ActiveSupport::TestCase
     source = Rails.root.join("app/javascript/grader/checker.mjs").read
     codes = source.scan(/v\.add\('([a-z_]+)'\)/).flatten.uniq
     assert_operator codes.size, :>=, 10
-    assert_empty codes - Practice::Messages::FORM_IT.keys
+    assert_empty codes.reject { |code| I18n.exists?("grading.form.#{code}", :it) }
   end
 
   test "the form message falls back to practice.form for an unknown violation" do
     assert_equal I18n.t("practice.form"), Practice::Messages.form([ "mystery" ])
     assert_equal I18n.t("practice.form"), Practice::Messages.form([])
-    assert_equal Practice::Messages::FORM_IT["not_lowest_terms"], Practice::Messages.form([ "not_lowest_terms", "zero_term" ])
+    assert_equal I18n.t("grading.form.not_lowest_terms"), Practice::Messages.form([ "not_lowest_terms", "zero_term" ])
   end
 
   test "every outcome has a message, and a closing failure says second_wrong" do
@@ -31,7 +31,7 @@ class PracticeMessagesTest < ActiveSupport::TestCase
 
   test "notes: accents and a declared form" do
     assert_equal I18n.t("practice.accents_note"), Practice::Messages.note("orthography_slip")
-    assert_equal Practice::Messages::FORM_IT["not_lowest_terms"], Practice::Messages.note("wrong_form_declared", violations: [ "not_lowest_terms" ])
+    assert_equal I18n.t("grading.form.not_lowest_terms"), Practice::Messages.note("wrong_form_declared", violations: [ "not_lowest_terms" ])
     assert_nil Practice::Messages.note("correct")
   end
 

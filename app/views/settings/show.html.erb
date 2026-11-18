@@ -24,6 +24,17 @@
     </fieldset>
     <p class="field-help"><%= t("diagnosis.preferences.size_hint") %></p>
     </div>
+    <% unless preview? %>
+    <div class="card">
+    <fieldset class="options choice-list" data-comment-anchor="setting:language">
+      <legend><%= t("diagnosis.preferences.language") %></legend>
+      <% Diagnosis::Preferences::LANGUAGES.each do |language| %>
+        <label class="option choice"><%= radio_button_tag "language", language, @preferences[:language] == language, data: { action: "change->settings#choose" } %> <span lang="<%= language %>"><%= t("diagnosis.preferences.languages.#{language}") %></span></label>
+      <% end %>
+    </fieldset>
+    <p class="field-help"><%= t("diagnosis.preferences.language_hint") %></p>
+    </div>
+    <% end %>
     <div class="button-row"><button type="submit" class="button"><%= t("diagnosis.preferences.save") %></button> <span class="field-help" id="settings-status" role="status" data-settings-target="status"></span></div>
   <% end %>
   <%# the voices of this device, one sentence each (D-283): the operator listens here once, on the student's own device %>

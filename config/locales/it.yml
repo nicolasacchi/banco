@@ -58,6 +58,11 @@ it:
         normal: "Normale"
         large: "Grande"
         larger: "Molto grande"
+      language: "Lingua dell'app"
+      languages:
+        it: "Italiano"
+        en: "English"
+      language_hint: "Cambia la lingua di menu, pulsanti e messaggi. Le lezioni e gli esercizi restano in italiano."
       save: "Salva"
     states:
       to_do: "Da fare"

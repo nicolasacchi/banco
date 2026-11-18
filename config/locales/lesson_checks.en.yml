@@ -1,0 +1,81 @@
+# English texts of the check components of lesson/2 (select, tiles, ordering; WAVE2 2.11, A9): controls, live-region sentences, the fixed
+# how-to line of a component's first use in a lesson, and its "How to answer" entry. Short sentences, plain words. Read through
+# lesson2_texts as t.checks (the lesson page) and never written by an author.
+en:
+  lesson2:
+    checks:
+      # the one line printed on the first use of a component in a lesson (A9)
+      howto:
+        select_many: "Tap the right areas, then press Check."
+        select_one: "Tap an area, then press Check."
+        tiles: "Tap the tiles in the right order. To remove one, tap it again."
+        tiles_sentence: "Tap the words in the right order. To remove one, tap it again."
+        ordering: "Use Up and Down to put the items in order, then press Check."
+      # "How to answer": lines and a small example, closed until the student opens it
+      help_title: "How to answer"
+      help_example: "Example"
+      help:
+        select:
+          lines:
+            - "Tap an area of the picture to choose it."
+            - "To undo your choice, tap it again."
+            - "With the keyboard: Tab goes into the picture, the arrows change area, Space chooses."
+          example: "You tap two areas. Under the picture you read “Selected: 2”. Then you press Check."
+        # tiles: the neutral words (the tiles may be words, facts, symbols: D-310); tiles_sentence: a check with `builds: sentence`
+        tiles:
+          lines:
+            - "Tap a tile: it goes into your answer."
+            - "To remove it, tap it in your answer."
+            - "With the keyboard: Enter chooses a tile, the right and left arrows move it."
+            - "Some tiles may be left out."
+          example: "You tap three tiles, one after the other: they go into your answer in that order. Then you press Check."
+        tiles_sentence:
+          lines:
+            - "Tap a word: it goes into your sentence."
+            - "To remove it, tap it in your sentence."
+            - "With the keyboard: Enter chooses a word, the right and left arrows move it."
+            - "Some words are not needed."
+          example: "You tap “If”, “it”, “rains”: the sentence becomes “If it rains”. Then you press Check."
+        ordering:
+          lines:
+            - "Each item has two buttons: Up and Down."
+            - "Press Up to move the item higher."
+            - "With the keyboard: Alt with the up or down arrow moves the item."
+          example: "You press Down on the first item: it moves to second place. At the end you press Check."
+      # tiles: the neutral words, and those of a check that builds a sentence (`builds: sentence`, D-310)
+      tiles_line: "Your answer"
+      tiles_bank: "The tiles"
+      tiles_empty: "Tap the tiles below."
+      tile_used: "%{text}, already in the answer."
+      tile_placed: "Your answer: %{text}."
+      tiles_sentence:
+        line: "Your sentence"
+        bank: "The words"
+        empty: "Tap the words below."
+        used: "%{text}, already in the sentence."
+        placed: "Your sentence: %{text}."
+      tiles_clear: "Clear"
+      tiles_cleared: "You removed everything."
+      tiles_listen: "Listen to the sentence"
+      tile_built: "%{text}, place %{n} of %{total}. Tap it to remove it. Use the arrows to move it."
+      tile_removed: "You removed: %{text}."
+      tile_moved: "Now it is in place %{n} of %{total}."
+      # ordering
+      order_list: "The items to put in order"
+      order_up: "Move up: %{text}"
+      order_down: "Move down: %{text}"
+      order_moved: "Now it is in place %{n} of %{total}."
+      # select
+      select_group: "Areas to tap"
+      select_zone: "area %{n} of %{total}"
+      select_zone_short: "area %{n} of %{total}"
+      select_count: "Selected: %{n}"
+      select_print: "Write the numbers: ____"
+      select_none: "No area selected."
+      select_none_one: "Tap the right area."
+      # the teacher's view
+      teacher_built: "Built sentence"
+      teacher_list: "List"
+      teacher_zones: "Areas"
+      teacher_pick_one: "one area only"
+      teacher_pick_many: "all the areas shown"

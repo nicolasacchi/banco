@@ -11,6 +11,7 @@ module ActingStudent
 
   included do
     layout "student"
+    around_action :with_student_locale
     before_action :require_actor!
     # D-355: a page of the student is never served from the browser's history copy. The arrow back asks the server again, so Oggi, the topic
     # or the list shows what he has just done and the theme he has just chosen, and no page comes back frozen halfway through its own script.
@@ -52,6 +53,18 @@ module ActingStudent
   end
 
   private
+
+  # The student's pages speak the student's language (D-356): Italian or English, from his preference. The teacher's preview, the
+  # teacher and a refused request stay Italian. Around everything, so the views, the JSON messages and the redirects' flash all follow it.
+  def with_student_locale(&)
+    I18n.with_locale(student_locale, &)
+  end
+
+  def student_locale
+    return I18n.default_locale if preview? || !current_identity&.student?
+
+    Diagnosis::Preferences.language(acting_student).to_sym
+  end
 
   # The student's computer is marked with a signed cookie, so that /teacher decisions
   # are refused from it (D-08). The student's pages are the only place that sets it.

@@ -23,8 +23,8 @@ module Practice
     def call(serve_id:, client_attempt_id:, raw:, source:)
       client_id = client_attempt_id.to_s
       return not_found unless raw.is_a?(String) && client_id.match?(ID_FORMAT)
-      return invalid(Grading::Result::MESSAGES_IT["empty"]) if raw.strip.empty?
-      return invalid(Grading::Result::MESSAGES_IT["unparseable"]) if raw.bytesize > MAX_RAW_BYTES
+      return invalid(Grading::Result.message("empty")) if raw.strip.empty?
+      return invalid(Grading::Result.message("unparseable")) if raw.bytesize > MAX_RAW_BYTES
 
       serve = PracticeServe.includes(:events, attempts: :gradings, item_instance: { item_revision: :item }).find_by(id: serve_id, student_id: @student.id) or return not_found
       existing = PracticeAttempt.find_by(client_attempt_id: client_id)
@@ -59,7 +59,7 @@ module Practice
       payload = { serve_id: serve.id, code: code }
       payload[:text] = raw.first(Diagnosis::AnswerRecorder::REFUSED_TEXT_CHARS) if result.invalid? # D-298
       AppEvent.create!(kind: "practice_invalid_input", student: @student, payload_json: payload.to_json)
-      invalid(result.invalid? ? result.message_it : Grading::Result::MESSAGES_IT["unparseable"])
+      invalid(result.invalid? ? result.message_it : Grading::Result.message("unparseable"))
     end
 
     def record(serve, client_id, raw, source, result, key)
@@ -139,7 +139,7 @@ module Practice
       spec = Grading::Spec.from_instance(instance)
       upto = serve.attempts.sort_by(&:try_number).select { |a| a.try_number <= attempt.try_number }
       grades = upto.to_h { |a| [ a.id, Instances.grade(a, spec) ] }
-      grade = grades.fetch(attempt.id) or return Result.new(200, { status: "invalid", message_it: Grading::Result::MESSAGES_IT["unparseable"] })
+      grade = grades.fetch(attempt.id) or return Result.new(200, { status: "invalid", message_it: Grading::Result.message("unparseable") })
       tries = ->(list) { list.filter_map { |a| g = grades[a.id] and ServeTry.new(a.try_number, as_answered(g, a)) } }
       events = serve.events.sort_by(&:id).map { |e| serve_event(e) }
       hints_total = Instances.hints(instance).size

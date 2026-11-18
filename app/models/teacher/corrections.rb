@@ -115,7 +115,7 @@ module Teacher
       unreadable = codes.include?(UNREADABLE)
       Verdict.new(attempt, revision.item.key, revision.item.subject, spec.skill, prompt_of(body, attempt.item_instance), given,
                   InstanceView.new(attempt.item_instance, body, 1).key, grading.verdict, codes, grading.verdict == "near_miss",
-                  unreadable, unreadable ? Grading::Result::MESSAGES_IT[(codes - [ UNREADABLE ]).first] : nil)
+                  unreadable, unreadable ? ((code = (codes - [ UNREADABLE ]).first) && Grading::Result.message(code)) : nil)
     end
   end
 end
