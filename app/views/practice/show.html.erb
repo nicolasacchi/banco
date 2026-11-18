@@ -41,6 +41,7 @@
   <div class="practice-main">
   <div class="card exercise-card">
     <section data-practice-target="work" aria-label="<%= t("practice.exercise") %>" hidden>
+      <p class="reminder" id="reminder" data-practice-target="reminder" hidden></p>
       <div class="item" data-practice-target="itemBox" data-comment-anchor="exercise" data-action="item-change->practice#changed"></div>
       <div id="hints" class="notice hint" data-practice-target="hints" data-comment-anchor="hints" hidden>
         <%= ui_icon("wrong-hint") %>

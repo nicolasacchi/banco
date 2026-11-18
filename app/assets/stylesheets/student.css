@@ -206,6 +206,8 @@ li.skill .skill-side .button { margin: 0; align-self: center; }
 .exercise-card { padding: var(--space-5); display: flex; flex-direction: column; }
 /* The verdict reads right under the answer: the card is a column whose order differs from the source only for the verdict. */
 .exercise-card > section[data-practice-target="work"] { display: contents; }
+.exercise-card .reminder { order: 0; margin: 0 0 var(--space-3); color: var(--muted); font-size: var(--text-s); }
+.exercise-card .reminder-label { font-weight: 600; }
 .exercise-card .item { order: 1; }
 .exercise-card #feedback { order: 2; }
 .exercise-card #hints { order: 3; }

@@ -128,7 +128,7 @@ class PracticeController < ApplicationController
     hints = Practice::Instances.hints(instance)
     state = course_view.state(serve.skill_key)
     {
-      type: "item", serve_id: serve.id, reason: serve.reason, reason_it: reason_it(serve, chosen),
+      type: "item", serve_id: serve.id, reason: serve.reason, reason_it: reason_it(serve, chosen), reminder_it: reminder_it(serve),
       status: status.state.to_s, next_try_number: status.next_try_number,
       skill: skill_block(serve.skill_key, state),
       hints: { total: hints.size, shown: hints.first(status.hints_shown).each_with_index.map { |text, i| { n: i + 1, hint_it: text } } },
@@ -143,6 +143,12 @@ class PracticeController < ApplicationController
     return Practice::Messages.same_item_it if !chosen && %w[next after_solution].include?(serve.reason) && Practice::Repeat.call(serve)
 
     Practice::Messages.reason_it(serve.reason)
+  end
+
+  # D-358: «Ricorda: …», the item's own message for the typical error this student made lately in the skill, when this exercise declares it; nil
+  # otherwise. Not a hint (no counter, no try, no state); recorded as an app event (Practice::Reminder). Only the sentence leaves the server.
+  def reminder_it(serve)
+    Practice::Reminder.call(serve, student: acting_student, description: ->(code) { course_view.error_description(serve.skill_key, code) })&.text_it
   end
 
   # What the student typed in this serve and has not answered yet; nil when there is nothing (or a try came after it).
