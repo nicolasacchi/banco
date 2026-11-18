@@ -67,7 +67,7 @@ it:
       title: "Chi vede i dati"
       items:
         - "Il docente e gli altri docenti autorizzati."
-        - "Gli ospiti, in sola lettura: entrano con due passaggi di verifica e non possono cambiare niente."
+        - "Gli ospiti, in sola lettura: non possono cambiare niente."
         - "L'assistente di intelligenza artificiale del docente. Può leggere risposte e commenti con un accesso di sola lettura, per aiutare il docente. Il fornitore è %{ai_provider}."
       after:
         - "Gli assistenti che scrivono le lezioni non vedono mai i dati di chi studia."
@@ -137,7 +137,6 @@ it:
       title: "Come fai l'accesso"
       paragraphs:
         - "Scrivi il nome utente e la password: basta questo passaggio."
-        - "Chi è docente od ospite fa anche un secondo passaggio di verifica."
     session:
       title: "Quanto dura l'accesso"
       items:

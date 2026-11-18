@@ -170,7 +170,8 @@ class PrivacyAccountTest < ActionDispatch::IntegrationTest
     assert_select "#account-lockout", /5 volte in 2 minuti, l'accesso si blocca per 1 ora/
     assert_select "#account-how", /banco non ha password/
     assert_select "#account-how", /soltanto il tuo nome utente/
-    assert_select "#account-login", /secondo passaggio/
+    assert_select "#account-login", /basta questo passaggio/
+    assert_select "#account-login", { text: /secondo passaggio/, count: 0 }
     assert_select "#account-reset ol li", 5
     assert_select "#account-reset", /Reset password/
     assert_select "#account-reset", /scrivi un commento/
