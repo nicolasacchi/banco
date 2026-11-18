@@ -71,6 +71,10 @@ Rails.application.routes.draw do
 
     # Privacy notice and account page (D-357): for the student, the teacher and a guest; read-only, web listener only.
     get "privacy" => "privacy#show", format: false
+    # The student's own data as one zip (D-360, GDPR art. 15 and 20): his rows only, the student alone; the teacher takes the same file
+    # of a student by key (teacher only, never a guest, never the preview: its key has a dot).
+    get "privacy/data" => "privacy#data", format: false
+    get "teacher/students/:key/data" => "teacher/student_data#show", constraints: { key: /[a-z0-9-]+/ }, format: false, as: :teacher_student_data
     get "account" => "account#show", format: false
 
     # One test, played by the student (/diagnosis) or by the teacher as the

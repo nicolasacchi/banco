@@ -96,6 +96,9 @@ en:
         - "portability: to get the data in a format that can be read and moved."
       after:
         - "To use a right: %{contact}."
+    download:
+      text: "You can download your data: everything banco holds about you, in one file. Nothing changes and you do not need to ask."
+      link: "Download my data"
     garante: "If you think the data are not handled well, you can complain to the Italian data protection authority (Garante per la protezione dei dati personali):"
     cookies:
       title: "Cookies and data in the browser"
