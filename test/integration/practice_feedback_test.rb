@@ -3,7 +3,7 @@ require_relative "../support/multi_user"
 require_relative "../support/practice_text_world"
 
 # D-339 over the real endpoints, for the student and for the teacher's preview: a whole sentence around a `___` blank, the same answer twice,
-# the plainer messages, «ci sei quasi», «Fai controllare» (the contest, its comment and its solution) and the list's «Da finire».
+# the plainer messages, «ci sei quasi», «Fai controllare» (the contest, its comment and its solution) and the list's statuses (D-353).
 class PracticeFeedbackTest < ActionDispatch::IntegrationTest
   include MultiUser
   include PracticeTextWorld
@@ -107,23 +107,38 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
 
   # ---- the same answer -----------------------------------------------------------------------------------
 
-  test "the same answer is refused with «Fai controllare» while a contest is allowed, and no try is stored" do
+  test "the same answer is refused with status same_answer (HTTP 200) and no try, the contest still offered while it is allowed" do
     serve = serve_for(OFFICIAL, SENTENCE)
     first = answer_for(OFFICIAL, serve, "play")
     assert_equal 1, first["try_number"]
     same = answer_for(OFFICIAL, serve, "  play ")
-    assert_equal [ "invalid", "È la stessa risposta di prima. Cambia qualcosa, oppure premi «Fai controllare»." ], same.values_at("status", "message_it")
+    assert_response :success
+    assert_equal [ "same_answer", "È la stessa risposta di prima: cambiala, oppure chiedi un aiuto." ], same.values_at("status", "message_it")
+    assert_includes same["actions"], "contest"
     assert_equal 1, tries(serve)
+    assert_equal 0, PracticeAttempt.where(practice_serve_id: serve["serve_id"]).where.not(try_number: 1).count
     assert_equal %w[retry show_solution contest], first["actions"]
     other = answer_for(OFFICIAL, serve, "sleep")
+    assert_response :success
     assert_equal 2, other["try_number"]
   end
 
-  test "the same answer is refused with the plain text when there is nothing to contest, a text answer compared as the grader reads it" do
+  test "the same answer is refused with one text whatever the serve, a text answer compared as the grader reads it" do
     serve = serve_for(OFFICIAL, WORD)
     assert_equal "near_miss", answer_for(OFFICIAL, serve, "neighbourhod")["outcome"]
     same = answer_for(OFFICIAL, serve, "Neighbourhod ")
-    assert_equal [ "invalid", "È la stessa risposta di prima. Cambia qualcosa e riprova." ], same.values_at("status", "message_it")
+    assert_response :success
+    assert_equal [ "same_answer", "È la stessa risposta di prima: cambiala, oppure chiedi un aiuto." ], same.values_at("status", "message_it")
+    assert_not_includes same["actions"], "contest"
+    assert_equal 1, tries(serve)
+  end
+
+  test "a whole sentence and its words alone are the same answer: the grader reads the same words in the blank" do
+    serve = serve_for(OFFICIAL, SENTENCE)
+    assert_equal "unrecognised", answer_for(OFFICIAL, serve, WHOLE_WRONG)["outcome"]
+    same = answer_for(OFFICIAL, serve, "do not eat")
+    assert_response :success
+    assert_equal "same_answer", same["status"]
     assert_equal 1, tries(serve)
   end
 
@@ -249,17 +264,17 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
 
   # ---- the list ------------------------------------------------------------------------------------------
 
-  test "the list says «unfinished» for an open serve with a try or a draft, «skipped» for neither" do
+  test "the list says «unfinished» for an open serve with a draft and no try, «finished» once he answered, «skipped» for neither" do
     serve = serve_for(OFFICIAL, SENTENCE)
     assert_equal "skipped", statuses(OFFICIAL)[SENTENCE]
     post_json(OFFICIAL, "/practice/serves/#{serve['serve_id']}/draft", { raw: "pla", source: "text" })
     assert_equal "unfinished", statuses(OFFICIAL)[SENTENCE]
     answer_for(OFFICIAL, serve, "play")
-    assert_equal "unfinished", statuses(OFFICIAL)[SENTENCE]
+    assert_equal "finished", statuses(OFFICIAL)[SENTENCE]
     assert_equal "todo", statuses(OFFICIAL)[WORD]
   end
 
-  test "an open serve with nothing typed on a done exercise keeps «done»; with a try it is «unfinished»" do
+  test "an open serve with nothing typed on a done exercise keeps «done»; with a try it is «done» still (a right one counts)" do
     serve = serve_for(OFFICIAL, SENTENCE)
     answer_for(OFFICIAL, serve, "don't eat")
     assert_equal "done", statuses(OFFICIAL)[SENTENCE]
@@ -267,13 +282,13 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
     refute_equal serve["serve_id"], again["serve_id"]
     assert_equal "done", statuses(OFFICIAL)[SENTENCE]
     answer_for(OFFICIAL, again, "play")
-    assert_equal "unfinished", statuses(OFFICIAL)[SENTENCE]
+    assert_equal "done", statuses(OFFICIAL)[SENTENCE]
   end
 
-  test "the preview's list says «unfinished» too, for the preview student" do
+  test "the preview's list says «finished» too, for the preview student" do
     serve = serve_for(TEACHER, SENTENCE, root: PREVIEW)
     answer_for(TEACHER, serve, "play", root: PREVIEW)
-    assert_equal "unfinished", statuses(TEACHER, root: PREVIEW)[SENTENCE]
+    assert_equal "finished", statuses(TEACHER, root: PREVIEW)[SENTENCE]
     assert_equal "todo", statuses(OFFICIAL)[SENTENCE], "the official student's list is not the preview's"
   end
 
