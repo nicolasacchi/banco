@@ -65,7 +65,7 @@ en:
       title: "Who sees the data"
       items:
         - "The teacher and any other authorised teachers."
-        - "Guests, read only: they sign in with two verification steps and cannot change anything."
+        - "Guests, read only: they cannot change anything."
         - "The teacher's artificial intelligence assistant. It can read answers and comments through a read-only access, to help the teacher. The provider is %{ai_provider}."
       after:
         - "The assistants that write the lessons never see the data of the people who study."
@@ -135,7 +135,6 @@ en:
       title: "How you sign in"
       paragraphs:
         - "Type your login name and your password: that one step is enough."
-        - "Teachers and guests also do a second verification step."
     session:
       title: "How long you stay signed in"
       items:
