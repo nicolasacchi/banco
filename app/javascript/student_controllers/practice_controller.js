@@ -31,7 +31,7 @@ const DRAFT_TIMEOUT_MS = 4000
 const STATE_TONES = { demonstrated: "success", consolidated: "success", in_study: "info", to_recover: "nearly", to_review: "nearly", to_learn: "nearly", not_seen: "muted" }
 
 export default class extends Controller {
-  static targets = ["skillState", "skillWhy", "skillMissing", "dots", "reason", "work", "itemBox", "hints", "hintList", "controls", "check", "hintButton", "solutionButton",
+  static targets = ["skillState", "skillWhy", "skillMissing", "dots", "reason", "reminder", "work", "itemBox", "hints", "hintList", "controls", "check", "hintButton", "solutionButton",
                     "feedback", "solutionBox", "nextActions", "skip", "list", "listPanel", "listCount", "listBody"]
   static values = { topic: String, skill: String, baseUrl: String, backUrl: String, texts: Object, labels: Object }
 
@@ -176,6 +176,7 @@ export default class extends Controller {
     this.handle.mounted()
     this.showSkill(reply.skill)
     this.showReason(reply)
+    this.showReminder(reply)
     this.hintsTotal = reply.hints.total
     this.hintsShown = 0
     this.hintListTarget.textContent = ""
@@ -228,6 +229,19 @@ export default class extends Controller {
     this.reasonTarget.hidden = !text
     this.reasonTarget.querySelector(".notice-body").textContent = text || ""
     this.reasonText = text
+  }
+
+  // D-358: «Ricorda: …», one quiet line above the answer when the server sent one (the item's own message for a typical error made lately).
+  // Not a hint: it is not counted and not listed with the hints.
+  showReminder(reply) {
+    const text = reply.reminder_it
+    this.reminderTarget.hidden = !text
+    this.reminderTarget.textContent = ""
+    if (!text) return
+    const label = document.createElement("span")
+    label.className = "reminder-label"
+    label.textContent = this.labels.reminder_label
+    this.reminderTarget.append(label, ` ${text}`)
   }
 
   setQuestionServe() {

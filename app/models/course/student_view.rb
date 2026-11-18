@@ -54,6 +54,16 @@ module Course
       labels[skill] || skill
     end
 
+    # The skill graph's description of one of the skill's typical errors (nil when it has none), for the reminder's fallback (D-358).
+    def error_description(skill, code)
+      subjects.each do |sv|
+        found = graph_skills(sv).find { |s| s["key"] == skill && Array(s["errors"]).any? }
+        entry = found && Array(found["errors"]).find { |e| e["code"] == code }
+        return entry["description_it"] if entry
+      end
+      nil
+    end
+
     def labels
       @labels ||= subjects.each_with_object({}) do |sv, all|
         graph_skills(sv).each { |s| all[s["key"]] = s["label_it"] }
