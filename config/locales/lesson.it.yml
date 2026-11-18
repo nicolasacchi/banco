@@ -41,8 +41,8 @@ it:
       law_economics: "diritto ed economia"
       business: "economia aziendale"
       computer_science: "informatica"
-      biology: "scienze integrate – biologia"
-      chemistry: "scienze integrate – chimica"
+      biology: "scienze integrate biologia"
+      chemistry: "scienze integrate chimica"
       physical_education: "scienze motorie"
     role_word:
       example: "esempio svolto"

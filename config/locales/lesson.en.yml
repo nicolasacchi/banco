@@ -41,8 +41,8 @@ en:
       law_economics: "law and economics"
       business: "business studies"
       computer_science: "computer science"
-      biology: "integrated science – biology"
-      chemistry: "integrated science – chemistry"
+      biology: "integrated science biology"
+      chemistry: "integrated science chemistry"
       physical_education: "physical education"
     role_word:
       example: "worked example"
