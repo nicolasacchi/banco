@@ -9,6 +9,10 @@ module Comments
     PATTERNS = [
       [ %r{\A/today\z}, "today" ], [ %r{\A/subjects\z}, "subjects" ], [ %r{\A/settings\z}, "settings" ],
       [ %r{\A/search\z}, "search" ], [ %r{\A/privacy\z}, "privacy" ], [ %r{\A/account\z}, "account" ], [ %r{\A/comments(?:/[1-9]\d{0,17})?\z}, "comments" ], [ %r{\A/diagnosis\z}, "diagnosis" ],
+      [ %r{\A/civics\z}, "civics" ],
+      # The student's own 404 (D-361): the box on that page names the address it could not open after the prefix, so the teacher
+      # reads what was asked for; the address is only ever shown as text.
+      [ %r{\A/not-found(?:/\S{0,150})?\z}, "not_found" ],
       [ %r{\A/diagnosis/warmup\z}, "warmup" ],
       [ %r{\A/subjects/(?<subject_key>[a-z_]+)\z}, "subject" ],
       [ %r{\A/topics/(?<topic>#{TOPIC})\z}, "topic" ],

@@ -60,7 +60,7 @@ it:
     reply_send: "Invia"
     reply_sent: "Inviato: il docente lo vedrà."
     reply_error:
-      text_it: "Scrivi da 1 a 500 caratteri."
+      text_it: "Scrivi da 1 a 2000 caratteri."
       no_teacher_reply: "Puoi rispondere dopo la risposta del docente."
       other: "Non riesco a inviare la risposta. Riprova."
     reply_within:
@@ -132,6 +132,8 @@ it:
       comments: "I miei commenti"
       privacy: "Privacy"
       account: "Account e password"
+      civics: "Educazione civica"
+      not_found: "Una pagina che non c'è"
     card: "scheda %{n}"
     today_line: "Il docente ti ha risposto."
     today_link: "Leggi le risposte"

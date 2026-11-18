@@ -8,7 +8,7 @@ import { Outbox, newId } from "items/outbox"
 // is kept (also after a reload: the outbox is read again). An answer "invalid" gives the text back to the composer with the
 // reason. The server records each client_reply_id once, so a resend is safe. Nothing here reads a grade or an answer.
 const PHONE = "(hover: none) and (pointer: coarse)"
-const SHOW_COUNT_FROM = 400
+const SHOW_COUNT_FROM = 1600
 const SCHOOL_ZONE = "Europe/Rome"
 
 export default class extends Controller {

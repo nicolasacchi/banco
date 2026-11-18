@@ -2,6 +2,11 @@ en:
   student:
     not_configured: "Account not set up: ask the teacher."
     trial_notice: "Trial account: results do not count."
+    not_found:
+      title: "This page is not there"
+      body: "The address may be wrong, or the page has moved."
+      hint: "If you like, tap Comment and tell the teacher."
+      home: "Back to Today"
     logout: "Log out"
     menu:
       label: "Menu"

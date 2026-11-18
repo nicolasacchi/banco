@@ -55,7 +55,7 @@ class CommentsUiTest < ApplicationSystemTestCase
     assert_equal "not_working", page.evaluate_script("document.querySelector('.comment-chip input:checked').value")
     assert_selector ".comment-chip:has(input:checked)", count: 1
     fill_in "comment-text", with: "Il pulsante non risponde."
-    assert_text "25 di 500"
+    assert_text "25 di 2000"
     find("#comment-send").click
     assert_no_selector "#comment-box[open]", wait: 10
     assert_selector "#comment-toast.show", text: "Inviato al docente", wait: 10

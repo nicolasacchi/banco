@@ -57,7 +57,7 @@ test("the ids come from the node or an ancestor, then from the document, and onl
   assert.deepEqual(refsOf(node({ "data-comment-lesson-revision-id": "12" })), { lesson_revision_id: 12 })
 })
 
-test("the payload carries the five reasons, an optional text of at most 500 characters and 300 of selected text", () => {
+test("the payload carries the five reasons, an optional text of at most 2000 characters and 300 of selected text", () => {
   assert.deepEqual(REASONS, ["not_understood", "error", "not_working", "like", "other"])
   const base = { id: "abcdefgh1", reason: "like", text: "  bello   così \n ", selected: "x".repeat(400), anchor: "card:1", refs: { serve_id: 2 }, pagePath: "/today",
                  viewport: { width: 390, height: 800 }, theme: "cream", size: "normal" }
@@ -68,6 +68,8 @@ test("the payload carries the five reasons, an optional text of at most 500 char
   assert.deepEqual(payload.refs, { serve_id: 2 })
   assert.equal(payload.viewport_width, 390)
   assert.equal(buildComment({ ...base, text: "" }).text_it, null)
+  assert.equal(TEXT_MAX, 2000)
+  assert.equal(buildComment({ ...base, text: "y".repeat(1500) }).text_it.length, 1500)
   assert.equal(buildComment({ ...base, text: "y".repeat(TEXT_MAX) }).text_it.length, TEXT_MAX)
   assert.deepEqual(buildComment({ ...base, text: "y".repeat(TEXT_MAX + 1) }), { error: "text" })
   assert.deepEqual(buildComment({ ...base, reason: "angry" }), { error: "reason" })

@@ -1,0 +1,11 @@
+<%# The student's own 404 (D-361): a page of his that is not there, in his layout, with the menu and «Commenta». The box files a comment
+    under "/not-found" plus the address (Comments::Pages), so the teacher reads what was asked for. Nothing else is said about the place. %>
+<% content_for :title, t("student.not_found.title") %>
+<% content_for :comment_page_path, "/not-found#{request.path.first(150)}" %>
+<main class="page error-page" id="error-page" data-status="not_found" data-comment-anchor="page">
+  <%= ui_icon("not-found") %>
+  <h1><%= t("student.not_found.title") %></h1>
+  <p><%= t("student.not_found.body") %></p>
+  <% unless preview? %><p id="not-found-hint" class="hint"><%= t("student.not_found.hint") %></p><% end %>
+  <div class="button-row"><a class="button" href="<%= spath("/today") %>"><%= t("student.not_found.home") %></a></div>
+</main>

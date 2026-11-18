@@ -28,11 +28,11 @@ class CourseController < ApplicationController
   # Educazione civica (D-345): topics of other subjects by the three nuclei; a 404 when this student sees none of them.
   def civics
     @civics = Course::Civics.new(course_view)
-    head(:not_found) unless @civics.any?
+    page_not_found unless @civics.any?
   end
 
   def subject
-    @subject_view = course_view.subject(params[:key]) or return head(:not_found)
+    @subject_view = course_view.subject(params[:key]) or return page_not_found
 
     @without_topic = course_view.skills_without_topic(@subject_view)
   end

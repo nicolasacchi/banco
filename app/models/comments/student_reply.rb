@@ -1,6 +1,6 @@
 module Comments
   # The one writer of the student's follow-up to the teacher's reply (D-342): a `student_reply` row of comment_events,
-  # origin student, the student's own words (1..500 characters). Only on the student's own comment and only once the
+  # origin student, the student's own words (1..2000 characters, Comment::TEXT_MAX). Only on the student's own comment and only once the
   # comment has a teacher reply. Idempotent on client_reply_id (the form's hidden id, a repeat of the same one by the
   # same student is recorded once; the id is the event's request_id, one per student). It changes no grade, no
   # attempt and nothing of the practice ledger; the comment's state is derived again from its events (Comment#state).

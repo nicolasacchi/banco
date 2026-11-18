@@ -5,7 +5,7 @@
 // for this student (Comments::Intake). Nodes are read through getAttribute, parentElement and id only.
 
 export const REASONS = ["not_understood", "error", "not_working", "like", "other"]
-export const TEXT_MAX = 500
+export const TEXT_MAX = 2000
 export const SELECTED_MAX = 300
 export const MAX_SEGMENTS = 8
 export const REF_ATTRIBUTES = {

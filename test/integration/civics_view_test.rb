@@ -85,6 +85,17 @@ class CivicsViewTest < ActionDispatch::IntegrationTest
     assert_select "nav.student-menu a[aria-current=page]", "Materie"
   end
 
+  test "the page takes a comment (D-361): the control is there and the comment is filed under civics" do
+    build_civics_world
+    page(OFFICIAL, "/civics")
+    assert_response :success
+    assert_select "#comment-root[data-comment-page-path-value='/civics']", 1
+    assert_select "[data-comment-open]", minimum: 1
+    params = ActionController::Parameters.new(client_comment_id: "c-#{SecureRandom.hex(8)}", reason: "like", text_it: "Mi piace.", page_path: "/civics", anchor: "page")
+    result = Comments::Intake.call(student: @official, course_view: Course::StudentView.new(@official), params: params)
+    assert_equal [ :recorded, "civics", "/civics" ], [ result.status, result.comment&.page_kind, result.comment&.page_path ], result.error.to_s
+  end
+
   test "the card and the page are not there for a student who sees none of the topics" do
     build_student_world
     page(OFFICIAL, "/subjects")
