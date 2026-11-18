@@ -67,6 +67,10 @@ Rails.application.routes.draw do
     # The front door (D-240): a student goes to Oggi, the teacher and a guest to /teacher, anyone else gets the 404.
     get "/" => "home#show", format: false
 
+    # Privacy notice and account page (D-357): for the student, the teacher and a guest; read-only, web listener only.
+    get "privacy" => "privacy#show", format: false
+    get "account" => "account#show", format: false
+
     # One test, played by the student (/diagnosis) or by the teacher as the
     # student (/teacher/preview, route default preview: true, never a parameter).
     concern :sitting do

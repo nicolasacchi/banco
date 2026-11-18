@@ -1,0 +1,16 @@
+<% content_for :title, t("privacy.title") %>
+<%# The privacy notice, GDPR article 13 (D-357). The operator's own words come from the environment (Privacy::Notice). %>
+<main class="page" id="privacy-page">
+  <%= ui_page_header t("privacy.title"), sub: t("privacy.version") %>
+  <p id="privacy-intro"><%= t("privacy.intro") %></p>
+  <% PrivacyHelper::PRIVACY_SECTIONS.each do |key| %>
+    <% if key == :rights %>
+      <%= render "privacy/section", scope: "privacy", key: key, values: @values do %>
+        <p><%= t("privacy.garante") %> <%= link_to Privacy::Notice::GARANTE_URL.delete_prefix("https://"), Privacy::Notice::GARANTE_URL, rel: "noopener", id: "garante-link" %></p>
+      <% end %>
+    <% else %>
+      <%= render "privacy/section", scope: "privacy", key: key, values: @values %>
+    <% end %>
+  <% end %>
+  <p id="privacy-account-link"><%= t("privacy.see_account") %> <%= link_to t("privacy.account_link"), "/account" %></p>
+</main>

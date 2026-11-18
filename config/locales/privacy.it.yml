@@ -1,0 +1,168 @@
+# The privacy notice (GET /privacy) and the account page (GET /account), D-357. Italian text for the student, short sentences, second
+# person, gender-neutral. The operator's own values (controller, contact, hosting, AI provider, retention) are %{...} filled from
+# the environment (Privacy::Notice); the portal's numbers from config/banco/account.yml (Privacy::Portal). No percent sign in a text.
+it:
+  student:
+    menu:
+      account: "Account e password"
+      privacy: "Privacy"
+  teacher:
+    menu:
+      privacy: "Privacy"
+  privacy:
+    title: "Privacy: come usiamo i tuoi dati"
+    version: "Versione del 18 novembre 2026"
+    intro: "Questa pagina dice, con parole semplici, quali dati di banco raccogliamo, perché li usiamo e che diritti hai. È l'informativa prevista dall'articolo 13 del regolamento europeo sulla protezione dei dati (GDPR)."
+    settings_links:
+      account: "Account e password"
+      privacy: "Privacy"
+    defaults:
+      controller: "il docente che gestisce banco"
+      contact: "scrivi un commento da qualsiasi pagina"
+      hosting: "un server gestito dal docente"
+      retention: "per la durata del percorso di preparazione all'esame; alla fine, o prima su richiesta, i dati vengono cancellati"
+    controller:
+      title: "Chi è il titolare"
+      paragraphs:
+        - "Il titolare del trattamento è %{controller}."
+        - "Per mettersi in contatto con il titolare: %{contact}."
+    purposes:
+      title: "Perché usiamo i dati"
+      paragraphs:
+        - "Usiamo i dati solo per questi scopi:"
+      items:
+        - "il test d'ingresso: capire da dove si parte in ogni materia;"
+        - "il percorso: lezioni ed esercizi scelti in base a quello che sai già;"
+        - "gli esercizi: correggere subito e decidere che cosa ripassare;"
+        - "i commenti: leggere e rispondere a quello che scrivi;"
+        - "il seguito del docente: vedere come procede la preparazione e decidere i passi successivi."
+      after:
+        - "Non li usiamo per nient'altro."
+    basis:
+      title: "Su che cosa ci basiamo"
+      paragraphs:
+        - "La base è il consenso. Il docente lo registra in banco e resta scritto con la data."
+        - "Se sei minorenne, il consenso è dato insieme ai tuoi genitori o a chi ne fa le veci."
+        - "Puoi ritirare il consenso quando vuoi: scrivi un commento. Il ritiro non cambia quello che è già stato fatto."
+    data:
+      title: "Quali dati trattiamo"
+      items:
+        - "Il nome utente che ci arriva dal portale di accesso. La password non arriva mai a banco."
+        - "Le risposte a test ed esercizi, con l'ora e il tempo impiegato, gli aiuti e le soluzioni che hai aperto."
+        - "Gli eventi delle lezioni e degli esercizi: quali schede apri, quando, le prove che fai."
+        - "I commenti e le risposte del docente, con il contesto della pagina: quale pagina, le parole che hai selezionato, la grandezza dello schermo e il tema scelto."
+        - "Le preferenze: colori e grandezza dei testi."
+        - "Il cookie del dispositivo (vedi più sotto)."
+        - "L'indirizzo di rete (IP) della richiesta, salvato con le richieste che riguardano i commenti."
+        - "I registri del server (log): indirizzo di rete, pagina, orario ed esito di ogni richiesta. Non contengono il testo delle tue risposte e dei tuoi commenti."
+    not_done:
+      title: "Che cosa non facciamo"
+      items:
+        - "Nessuna pubblicità."
+        - "Nessuna analisi statistica e nessun tracciamento, nostri o di altri."
+        - "Nessun carattere (font) e nessuna libreria da siti esterni: tutto arriva da banco."
+        - "Nessuna chat e nessuna intelligenza artificiale che ti parla: gli esercizi sono corretti da regole fisse del programma."
+        - "Non vendiamo e non cediamo i dati."
+    who:
+      title: "Chi vede i dati"
+      items:
+        - "Il docente e gli altri docenti autorizzati."
+        - "Gli ospiti, in sola lettura: entrano con due passaggi di verifica e non possono cambiare niente."
+        - "L'assistente di intelligenza artificiale del docente. Può leggere risposte e commenti con un accesso di sola lettura, per aiutare il docente. Il fornitore è %{ai_provider}."
+      after:
+        - "Gli assistenti che scrivono le lezioni non vedono mai i dati di chi studia."
+    where:
+      title: "Dove stanno i dati"
+      paragraphs:
+        - "I dati stanno su %{hosting}."
+        - "Le copie di sicurezza restano sullo stesso posto: non vanno a servizi esterni."
+    retention:
+      title: "Per quanto tempo"
+      paragraphs:
+        - "I dati restano %{retention}."
+    append_only:
+      title: "Lo storico non si cambia"
+      paragraphs:
+        - "In banco i dati si aggiungono, non si modificano. Ogni risposta e ogni commento restano com'erano, così lo storico è onesto."
+        - "Una correzione è una riga nuova. Se chiedi la cancellazione, si cancellano tutte le righe insieme."
+    rights:
+      title: "I tuoi diritti"
+      paragraphs:
+        - "Puoi chiedere:"
+      items:
+        - "l'accesso: sapere quali dati abbiamo e averne una copia;"
+        - "la rettifica: far correggere un dato sbagliato (la correzione è una riga nuova);"
+        - "la cancellazione: far cancellare i dati;"
+        - "la limitazione: far sospendere l'uso dei dati;"
+        - "l'opposizione: dire che non vuoi più che i dati siano usati per uno scopo;"
+        - "la portabilità: avere i dati in un formato che si può leggere e trasferire."
+      after:
+        - "Per esercitare un diritto: %{contact}."
+    garante: "Se pensi che i dati non siano trattati bene, puoi fare reclamo al Garante per la protezione dei dati personali:"
+    cookies:
+      title: "Cookie e dati nel browser"
+      paragraphs:
+        - "Usiamo solo cookie tecnici: servono a far funzionare il sito. Per questo non c'è nessun banner da accettare."
+      items:
+        - "Il cookie di sessione del portale di accesso: ti tiene dentro."
+        - "Il cookie di sessione di banco."
+        - "Il cookie del dispositivo: segna che questo dispositivo è di chi studia."
+        - "Le risposte che scrivi restano nel browser finché non sono state inviate; poi vengono tolte."
+    see_account: "Per l'accesso e la password:"
+    account_link: "Account e password"
+  account:
+    title: "Account e password"
+    intro: "Qui trovi come si entra in banco e come si cambia la password."
+    see_privacy: "Per sapere come usiamo i tuoi dati:"
+    privacy_link: "Privacy"
+    portal_at: "Il portale di accesso è a questo indirizzo:"
+    portal_unknown: "Il portale è la pagina in cui scrivi nome utente e password quando apri banco."
+    reset_open: "Apri il portale"
+    units:
+      hours:
+        one: "%{count} ora"
+        other: "%{count} ore"
+      minutes:
+        one: "%{count} minuto"
+        other: "%{count} minuti"
+      months:
+        one: "%{count} mese"
+        other: "%{count} mesi"
+    how:
+      title: "Come si entra"
+      paragraphs:
+        - "banco non ha password. Davanti a banco c'è un portale di accesso (Authelia)."
+        - "Il portale controlla chi sei e passa a banco soltanto il tuo nome utente. La password resta al portale: banco non la vede mai."
+    login:
+      title: "Come fai l'accesso"
+      paragraphs:
+        - "Scrivi il nome utente e la password: basta questo passaggio."
+        - "Chi è docente od ospite fa anche un secondo passaggio di verifica."
+    session:
+      title: "Quanto dura l'accesso"
+      items:
+        - "Resti dentro al massimo %{session}."
+        - "Dopo %{inactivity} senza usare banco, il portale ti chiede di nuovo la password."
+        - "Se scegli «Ricordami», resti dentro fino a %{remember}."
+    lockout:
+      title: "Se sbagli la password"
+      paragraphs:
+        - "Se sbagli la password %{wrong_passwords} volte in %{window}, l'accesso si blocca per %{ban}. Aspetta e poi riprova."
+    reset:
+      title: "Cambiare o recuperare la password"
+      steps:
+        - "Apri il portale di accesso."
+        - "Scegli «Reset password»."
+        - "Ti arriva un'email all'indirizzo che il docente ha registrato."
+        - "Apri subito il link dell'email: dura poco."
+        - "Scegli la nuova password."
+      after:
+        - "Se l'email non arriva, controlla anche la posta indesiderata. Se non c'è nemmeno lì, scrivi un commento."
+    logout:
+      title: "Uscire"
+      paragraphs:
+        - "Quando finisci, usa «Esci». Lo trovi nel menu e qui sotto."
+    care:
+      title: "Con la password, attenzione"
+      paragraphs:
+        - "Non condividere mai la tua password: nemmeno con chi ti sembra di fiducia."

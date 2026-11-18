@@ -52,7 +52,7 @@ class StudentMenuSystemTest < ApplicationSystemTestCase
   test "the keyboard reaches every item, shows the focus and follows a link with Enter" do
     visit "/today"
     ids = page.evaluate_script("Array.from(document.querySelectorAll('nav.student-menu a')).map(function (a) { return a.id })")
-    assert_equal %w[menu-today menu-diagnosis menu-comments menu-settings], ids
+    assert_equal %w[menu-today menu-diagnosis menu-comments menu-settings menu-account menu-privacy], ids
     page.execute_script("document.getElementById('student-menu-open').focus()")
     type_keys(:Enter) # the button opens the dialog; the browser puts the focus inside it
     assert_selector "dialog#student-menu-dialog[open]"
@@ -64,7 +64,7 @@ class StudentMenuSystemTest < ApplicationSystemTestCase
     assert_equal ids, seen, "every link is reached in order after the close button"
     outline = page.evaluate_script("getComputedStyle(document.activeElement.closest('li')).outlineStyle") # the row shows the focus (D-307)
     assert_not_equal "none", outline
-    2.times { type_keys(:Shift, :Tab) } # back to the second item
+    (ids.size - 2).times { type_keys(:Shift, :Tab) } # back to the second item
     type_keys(:Enter)
     assert_current_path "/diagnosis"
     assert_selector "h1", text: "Test d'ingresso"

@@ -128,6 +128,8 @@ it:
       settings: "Impostazioni"
       search: "Cerca"
       comments: "I miei commenti"
+      privacy: "Privacy"
+      account: "Account e password"
     card: "scheda %{n}"
     today_line: "Il docente ti ha risposto."
     today_link: "Leggi le risposte"

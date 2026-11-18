@@ -1,0 +1,166 @@
+# English text of the privacy notice and the account page (D-357); the same keys as privacy.it.yml.
+en:
+  student:
+    menu:
+      account: "Account and password"
+      privacy: "Privacy"
+  teacher:
+    menu:
+      privacy: "Privacy"
+  privacy:
+    title: "Privacy: how we use your data"
+    version: "Version of 18 November 2026"
+    intro: "This page says, in plain words, which data banco collects, why we use it and what rights you have. It is the notice required by article 13 of the European data protection regulation (GDPR)."
+    settings_links:
+      account: "Account and password"
+      privacy: "Privacy"
+    defaults:
+      controller: "the teacher who runs banco"
+      contact: "write a comment from any page"
+      hosting: "a server run by the teacher"
+      retention: "for the length of the exam preparation; at the end, or earlier on request, the data are deleted"
+    controller:
+      title: "Who is responsible"
+      paragraphs:
+        - "The data controller is %{controller}."
+        - "To get in touch with the controller: %{contact}."
+    purposes:
+      title: "Why we use the data"
+      paragraphs:
+        - "We use the data only for these purposes:"
+      items:
+        - "the entry test: to see where to start in each subject;"
+        - "the course: lessons and exercises chosen on what you already know;"
+        - "the exercises: to correct at once and to decide what to review;"
+        - "the comments: to read and answer what you write;"
+        - "the teacher's follow-up: to see how the preparation is going and decide the next steps."
+      after:
+        - "We use them for nothing else."
+    basis:
+      title: "Our legal basis"
+      paragraphs:
+        - "The basis is consent. The teacher records it in banco and it stays written, with its date."
+        - "If you are a minor, consent is given together with your parents or whoever has parental responsibility."
+        - "You can withdraw consent at any time: write a comment. Withdrawing does not change what was already done."
+    data:
+      title: "Which data we process"
+      items:
+        - "The login name that reaches us from the access portal. The password never reaches banco."
+        - "Your answers to tests and exercises, with the time and how long you took, the hints and the solutions you opened."
+        - "The events of lessons and exercises: which cards you open, when, the tries you make."
+        - "Comments and the teacher's replies, with the context of the page: which page, the words you selected, the screen size and the theme."
+        - "Your preferences: colours and text size."
+        - "The device cookie (see below)."
+        - "The network address (IP) of the request, saved with the requests that concern comments."
+        - "The server logs: network address, page, time and result of every request. They do not contain the text of your answers and comments."
+    not_done:
+      title: "What we do not do"
+      items:
+        - "No advertising."
+        - "No analytics and no tracking, ours or anyone else's."
+        - "No fonts and no libraries from outside sites: everything comes from banco."
+        - "No chat and no artificial intelligence talking to you: the exercises are corrected by fixed rules of the program."
+        - "We do not sell or hand over the data."
+    who:
+      title: "Who sees the data"
+      items:
+        - "The teacher and any other authorised teachers."
+        - "Guests, read only: they sign in with two verification steps and cannot change anything."
+        - "The teacher's artificial intelligence assistant. It can read answers and comments through a read-only access, to help the teacher. The provider is %{ai_provider}."
+      after:
+        - "The assistants that write the lessons never see the data of the people who study."
+    where:
+      title: "Where the data are"
+      paragraphs:
+        - "The data are on %{hosting}."
+        - "Backups stay in the same place: they do not go to outside services."
+    retention:
+      title: "For how long"
+      paragraphs:
+        - "The data are kept %{retention}."
+    append_only:
+      title: "The history is not edited"
+      paragraphs:
+        - "In banco, data are added, not changed. Every answer and every comment stays as it was, so the history is honest."
+        - "A correction is a new row. If you ask for deletion, all the rows are deleted together."
+    rights:
+      title: "Your rights"
+      paragraphs:
+        - "You can ask for:"
+      items:
+        - "access: to know which data we have and get a copy;"
+        - "rectification: to have a wrong item corrected (the correction is a new row);"
+        - "erasure: to have the data deleted;"
+        - "restriction: to have the use of the data paused;"
+        - "objection: to say you no longer want the data used for a purpose;"
+        - "portability: to get the data in a format that can be read and moved."
+      after:
+        - "To use a right: %{contact}."
+    garante: "If you think the data are not handled well, you can complain to the Italian data protection authority (Garante per la protezione dei dati personali):"
+    cookies:
+      title: "Cookies and data in the browser"
+      paragraphs:
+        - "We use only technical cookies: they make the site work. So there is no banner to accept."
+      items:
+        - "The access portal's session cookie: it keeps you signed in."
+        - "banco's session cookie."
+        - "The device cookie: it marks this device as belonging to the person who studies."
+        - "The answers you write stay in the browser until they are sent; then they are removed."
+    see_account: "For signing in and the password:"
+    account_link: "Account and password"
+  account:
+    title: "Account and password"
+    intro: "Here you find how to sign in to banco and how to change the password."
+    see_privacy: "To know how we use your data:"
+    privacy_link: "Privacy"
+    portal_at: "The access portal is at this address:"
+    portal_unknown: "The portal is the page where you type your login name and password when you open banco."
+    reset_open: "Open the portal"
+    units:
+      hours:
+        one: "%{count} hour"
+        other: "%{count} hours"
+      minutes:
+        one: "%{count} minute"
+        other: "%{count} minutes"
+      months:
+        one: "%{count} month"
+        other: "%{count} months"
+    how:
+      title: "How you get in"
+      paragraphs:
+        - "banco has no passwords. In front of banco there is an access portal (Authelia)."
+        - "The portal checks who you are and passes only your login name to banco. The password stays with the portal: banco never sees it."
+    login:
+      title: "How you sign in"
+      paragraphs:
+        - "Type your login name and your password: that one step is enough."
+        - "Teachers and guests also do a second verification step."
+    session:
+      title: "How long you stay signed in"
+      items:
+        - "You stay signed in for at most %{session}."
+        - "After %{inactivity} without using banco, the portal asks for the password again."
+        - "If you choose «Remember me», you stay signed in for up to %{remember}."
+    lockout:
+      title: "If you get the password wrong"
+      paragraphs:
+        - "If you get the password wrong %{wrong_passwords} times within %{window}, sign-in is blocked for %{ban}. Wait, then try again."
+    reset:
+      title: "Change or recover the password"
+      steps:
+        - "Open the access portal."
+        - "Choose «Reset password»."
+        - "An email arrives at the address the teacher registered."
+        - "Open the link in the email soon: it does not last long."
+        - "Choose the new password."
+      after:
+        - "If the email does not arrive, check the spam folder too. If it is not there either, write a comment."
+    logout:
+      title: "Signing out"
+      paragraphs:
+        - "When you finish, use «Sign out». You find it in the menu and below."
+    care:
+      title: "Take care of the password"
+      paragraphs:
+        - "Never share your password: not even with someone who seems trustworthy."
