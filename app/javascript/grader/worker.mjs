@@ -21,7 +21,7 @@ const compiled = new Map();
 const CACHE_MAX = 500;
 
 function specKey(spec) {
-  return JSON.stringify([spec.expected, spec.form || [], spec.errors || [], spec.unknown || null, spec.domain || {}, spec.mode || 'exact']);
+  return JSON.stringify([spec.expected, spec.form || [], spec.errors || [], spec.unknown || null, spec.domain || {}, spec.mode || 'exact', spec.stems || []]);
 }
 
 function compile(spec) {

@@ -793,6 +793,51 @@ function solEq(a, b, opts) {
 }
 function hasRel(n) { let f = false; walk(n, (y) => { if (y.t === 'rel') f = true; }); return f; }
 
+// ---------------------------------------------------------------- answers written in full (D-362)
+// «x = 37/5», «√(625a⁶ − 49a⁶) = 24a³», «3+2 = 5 = 5»: an answer with `=` at its top level is its members. The last member is the
+// answer and is graded as if it stood alone; the left side must be the unknown letter, the expression the item shows (compared as a
+// normalised tree, not by value), or, in a chain, a member equal to the key. Anything else is never accepted here.
+
+// The members of a text split at its top-level `=` (not inside brackets, not the `=` of <=, >=, !=, :=, ==); null when there is
+// none, a member is empty or the brackets do not close.
+export function splitEquals(text) {
+  if (typeof text !== 'string' || !text.includes('=')) return null;
+  const parts = [];
+  let depth = 0, start = 0;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '(' || c === '{' || c === '[') depth++;
+    else if (c === ')' || c === '}' || c === ']') { depth--; if (depth < 0) return null; }
+    else if (c === '=' && depth === 0) {
+      if ('<>!:='.includes(text[i - 1] || ' ') || text[i + 1] === '=') continue;
+      parts.push(text.slice(start, i));
+      start = i + 1;
+    }
+  }
+  if (depth !== 0 || !parts.length) return null;
+  parts.push(text.slice(start));
+  const members = parts.map((p) => p.trim());
+  return members.every(Boolean) ? members : null;
+}
+
+// A tree as a string, the same for the same tree whatever the brackets, the spacing or the way a product was typed.
+function canon(n) {
+  const s = strip(n);
+  switch (s.t) {
+    case 'num': return `${s.q.n}/${s.q.d}`;
+    case 'sym': return s.name;
+    case 'pi': return 'pi';
+    case 'add': return `+(${s.args.map(canon).join(',')})`;
+    case 'mul': return `*(${s.args.map(canon).join(',')})`;
+    case 'neg': return `-(${canon(s.arg)})`;
+    case 'div': return `/(${canon(s.num)},${canon(s.den)})`;
+    case 'pow': return `^(${canon(s.base)},${canon(s.exp)})`;
+    case 'root': return `r${s.idx}(${canon(s.arg)})`;
+    case 'abs': return `|(${canon(s.arg)})`;
+    default: return `?${s.t}`;
+  }
+}
+
 // ---------------------------------------------------------------- public factory
 export function createChecker({ ComputeEngine }) {
   const ce = new ComputeEngine();
@@ -813,7 +858,7 @@ export function createChecker({ ComputeEngine }) {
   }
 
   function compile(spec) {
-    const { expected, form = [], errors = [], domain = {}, unknown = null, seed = 0x5eed, mode = 'exact', source = 'mathlive' } = spec;
+    const { expected, form = [], errors = [], domain = {}, unknown = null, seed = 0x5eed, mode = 'exact', source = 'mathlive', stems = [] } = spec;
     const opts = { domain, seed, mode };
     const problems = [];
     const exp = parse(expected, source);
@@ -857,10 +902,59 @@ export function createChecker({ ComputeEngine }) {
       return { verdict: 'wrong', method: r.method };
     }
     // Every result carries the normalized LaTeX that was graded (stored with the grading).
-    function check(answer, aopts = {}) {
+    function checkOne(answer, aopts = {}) {
       const r = checkRaw(answer, aopts);
       const p = parse(answer, aopts.source || source);
       return p.ok ? { ...r, normalized: p.latex } : r;
+    }
+
+    // The expressions the item shows (its stems' math, as LaTeX), as trees: the left side an answer written in full may repeat.
+    // An equation or a relation shown is not an expression: its left side is never taken for one.
+    const shown = new Set();
+    for (const s of stems) {
+      const p = parse(s, 'text');
+      if (p.ok && !hasRel(p.ast) && strip(p.ast).t !== 'eq') shown.add(canon(p.ast));
+    }
+    const keyIsNumber = freeVars(exp.ast).size === 0;
+    const sameAs = (a, b) => valueEquivalent(a, b, opts);
+    const unequal = (r, normalized) => (r.equal === null
+      ? { verdict: 'undetermined', reason: r.reason, method: r.method }
+      : { verdict: 'wrong', method: r.method, normalized });
+
+    // «x = 37/5», «√(…) = 24a³», «a = b = c»: null when this is not an answer written in full (the checker then reads the text as it
+    // always did); otherwise the verdict of the last member, if the left side is accepted and, in a chain, every member equals the key.
+    function checkWritten(members, aopts) {
+      const src = aopts.source || source;
+      const parsed = members.map((m) => parse(m, src));
+      const bad = parsed.find((p) => !p.ok);
+      if (bad) return { verdict: 'invalid', code: bad.code, detail: bad.detail };
+      if (parsed.some((p) => hasRel(p.ast))) return null;
+      const chain = members.length > 2;
+      if (strips) {
+        // A solution or an isolated letter already reads `x = value`; a chain is that, if the steps in between equal the value.
+        if (!chain) return null;
+        const value = parsed[parsed.length - 1].ast;
+        for (const p of parsed.slice(1, -1)) {
+          const r = sameAs(p.ast, value);
+          if (r.equal !== true) return unequal(r, undefined);
+        }
+        return checkOne(`${members[0]}=${members[members.length - 1]}`, aopts);
+      }
+      const head = strip(parsed[0].ast);
+      const leftOk = (head.t === 'sym' && (unknown ? head.name === unknown : keyIsNumber)) || shown.has(canon(head));
+      if (!leftOk && !chain) return null;
+      const last = checkOne(members[members.length - 1], aopts);
+      if (last.verdict !== 'correct' && last.verdict !== 'wrong_form') return last;
+      for (const p of leftOk ? parsed.slice(1, -1) : parsed.slice(0, -1)) {
+        const r = sameAs(p.ast, exp.ast);
+        if (r.equal !== true) return unequal(r, last.normalized);
+      }
+      return last;
+    }
+
+    function check(answer, aopts = {}) {
+      const members = splitEquals(answer);
+      return (members && checkWritten(members, aopts)) || checkOne(answer, aopts);
     }
     return { problems, check, expected: exp };
   }

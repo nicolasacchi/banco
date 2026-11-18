@@ -11,6 +11,16 @@ export const readCorpus = () =>
   readFileSync(new URL('corpus.jsonl', fixtures), 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
 export const readVectors = () => JSON.parse(readFileSync(new URL('vectors.json', fixtures), 'utf8'));
 
+// What the student is shown (the item's stem, the instance's): the math between `$` signs, or a stem that is only arithmetic.
+// The Ruby side is Grading::Spec#stem_expressions, which sends the same list to the worker.
+export function stemsOf(item) {
+  const texts = [item.prompt?.stem_it, item.display?.stem_it].filter((t) => typeof t === 'string');
+  const found = texts.flatMap((t) => (t.includes('$')
+    ? [...t.matchAll(/\$([^$]+)\$/g)].map((m) => m[1])
+    : /^(?=.*\d)[\d\s+\-−*·×÷:/().,^√²³]+$/.test(t.trim()) ? [t] : []));
+  return [...new Set(found.map((t) => t.trim()).filter(Boolean))];
+}
+
 // Item spec of the vectors file (banco.item/1 field names) -> checker.compile spec.
 export function specFromVector(item) {
   const answer = item.answer;
@@ -21,5 +31,6 @@ export function specFromVector(item) {
     errors: (item.errors || []).map((e) => ({ code: e.code, latex: typeof e.value === 'string' ? e.value : e.value.latex })),
     unknown: (typeof answer === 'object' && answer.unknown) || null,
     domain: (typeof answer === 'object' && answer.domain) || {},
+    stems: stemsOf(item),
   };
 }

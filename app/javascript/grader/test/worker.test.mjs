@@ -36,6 +36,12 @@ test('worker announces readiness, answers checks and survives bad input', async 
   const right = await w.call({ id: 8, op: 'check', item, answer: '2\\sqrt{2}' });
   assert.equal(right.result.verdict, 'correct');
 
+  // The shown expression is part of the compiled item: the same key with and without it are two items (D-362).
+  const shown = { expected: '24a^3', stems: ['\\sqrt{625a^6-49a^6}'] };
+  const written = '√(625a⁶ − 49a⁶) = 24a³';
+  assert.equal((await w.call({ id: 11, op: 'check', item: shown, answer: written, source: 'text' })).result.verdict, 'correct');
+  assert.equal((await w.call({ id: 12, op: 'check', item: { expected: '24a^3' }, answer: written, source: 'text' })).result.verdict, 'undetermined');
+
   w.child.stdin.write('not json\n');
   assert.deepEqual(await w.next(), { id: null, ok: false, error: 'bad_json' });
   const unknown = await w.call({ id: 9, op: 'nope' });
