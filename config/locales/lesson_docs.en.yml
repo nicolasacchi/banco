@@ -1,0 +1,42 @@
+# English twin of lesson_docs.it.yml (D-364): the controls and sentences of the lesson/2 family docs (reveal, crossroads, source, oral). The same keys, the same %{names}.
+# What a diagram of this family draws itself (the rows of an invoice) stays in the figure's own Italian vocabulary (D-356).
+en:
+  lesson_docs:
+    # the flip card of a reveal (a mistake keeps its own texts in lesson2)
+    flip_hint: "Tap to flip"
+    reveal_think: "Think about it"
+    reveal_turn: "Tap to see the answer"
+    reveal_answer: "Answer"
+    # the crossroads
+    cross_title: "What do you do?"
+    cross_choose: "Choose a road"
+    cross_then: "What happens next"
+    cross_real_button: "What really happened"
+    cross_real_title: "What really happened"
+    cross_real_tag: "It went like this"
+    cross_pick_first: "First choose a road."
+    cross_others: "The other roads are guesses: nobody knows how it would have gone."
+    # a source
+    source_switch_label: "How you want to read"
+    source_plain: "In simple words"
+    source_original: "Text of the law"
+    source_comma: "Paragraph %{n}"
+    source_guide: "Read with me"
+    # the oral rehearsal
+    oral_title: "Question for the oral exam"
+    oral_help: "Put the outline of the answer in order, then press Check."
+    oral_outline_label: "The outline, to put in order"
+    oral_up: "Move up"
+    oral_down: "Move down"
+    oral_moved: "It is now at place %{n} of %{total}."
+    oral_connectives: "Words to link"
+    oral_terms: "Words to use"
+    oral_model: "Model answer"
+    oral_say: "Now say it yourself, out loud"
+    oral_private: "Optional. Nobody is listening and we record nothing."
+    oral_self_title: "To check yourself"
+    oral_self:
+      - "I said the parts in the right order."
+      - "I used the linking words."
+      - "I used the words of the lesson."
+      - "I answered the question itself."

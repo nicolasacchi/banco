@@ -32,7 +32,7 @@ module SearchHelper
 
     sentences = result.suggestions.group_by(&:first).first(2).map do |term, items|
       links = items.map { |_, word, query| link_to("«#{word}»", "#{path}?#{extra.merge(q: query).to_query}", class: "search-correction") }
-      t(key, term: term, options: safe_join(links, " o "))
+      t(key, term: term, options: safe_join(links, " #{t("search.or_word")} "))
     end
     sentences.any? ? safe_join(sentences, " ") : nil
   end

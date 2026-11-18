@@ -56,6 +56,7 @@ export async function render(part, ctx) {
           if (entry.handle.showMissing(focusIt) > 0) marked += 1
         } else if (entry.handle.isEmpty()) {
           entry.section.classList.add("missing")
+          entry.section.dataset.missing = ctx.t.missing
           entry.section.setAttribute("aria-invalid", "true")
           marked += 1
           if (focusIt) {

@@ -42,6 +42,7 @@ export function render(part, ctx) {
       const missing = rows.filter(({ select }) => select.value === "")
       for (const { select, row } of missing) {
         row.classList.add("missing")
+        row.dataset.missing = ctx.t.missing
         select.setAttribute("aria-invalid", "true")
       }
       if (focusFirst && missing.length > 0) {

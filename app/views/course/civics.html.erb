@@ -7,10 +7,10 @@
   <% @civics.nuclei.each do |nucleus| %>
     <section id="civics-<%= nucleus.key %>" class="civics-nucleus" data-nucleus="<%= nucleus.key %>" aria-labelledby="civics-<%= nucleus.key %>-title">
       <div class="section-head">
-        <h2 id="civics-<%= nucleus.key %>-title"><%= nucleus.title_it %></h2>
+        <h2 id="civics-<%= nucleus.key %>-title"><%= nucleus.title %></h2>
         <span class="tag section-count"><%= t("civics.count", count: nucleus.entries.size) %></span>
       </div>
-      <p class="hint"><%= nucleus.intro_it %></p>
+      <p class="hint"><%= nucleus.intro %></p>
       <ol class="topics topic-list">
         <% nucleus.entries.each do |entry| %>
           <%= render "course/topic_row", topic: entry.topic, number: nil, subject_view: entry.subject_view %>

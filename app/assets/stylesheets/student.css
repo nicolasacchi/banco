@@ -125,7 +125,7 @@ ul.subject-list > li[data-state="in_progress"] .subject-state, ul.subject-list >
 ul.subject-list > li[data-state="done"] .subject-state, ul.subject-list > li[data-state="done_checking"] .subject-state { --tone: var(--tone-success); }
 ul.subject-list > li[data-state="to_redo"] .subject-state { --tone: var(--tone-nearly); }
 ul.subject-list form.inline { display: flex; margin: 0; }
-/* Where S is (D-326): the three lines of a subject (mandatory done out of all with a bar, optional done, the entry test) and Oggi's «Il tuo percorso». */
+/* Where S is (D-326): the three lines of a subject (mandatory done out of all with a bar, optional done, the entry test) and Oggi's «I tuoi progressi». */
 .progress-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); min-width: 0; }
 .progress-line { display: grid; gap: var(--space-1); justify-items: start; }
 .progress-line .meter { width: 100%; }
@@ -278,14 +278,14 @@ details.exercise-done > ol.exercise-entries { margin: 0; padding: 0 var(--space-
 .practice-main { min-width: 0; }
 
 /* What is missing in an answer (a matching row left empty, a part of a testlet with no answer): a refusal marks it with the class
-   `missing` (and aria-invalid on the select) until it is answered. A thick dashed side and the word «Manca» say it with shape and text,
+   `missing` (and aria-invalid on the select) until it is answered. A thick dashed side and the word «Manca» (`data-missing`, from `items.missing`) say it with shape and text,
    in the warning tone, which has its own value in the cream and the dark theme. Used by the sitting and the practice page. */
 .match-row.missing, section.missing {
   --tone: var(--tone-nearly); box-sizing: border-box; padding: var(--space-2) var(--space-3); border: 2px dashed var(--tone); border-left-width: 0.4rem;
   border-radius: var(--radius-m); background: color-mix(in srgb, var(--tone) 12%, var(--surface));
 }
 .match-row.missing::after, section.missing::before {
-  content: "Manca"; flex: none; font-size: var(--text-s); font-weight: 700; color: var(--text); border: 1.5px solid var(--tone);
+  content: attr(data-missing); flex: none; font-size: var(--text-s); font-weight: 700; color: var(--text); border: 1.5px solid var(--tone);
   border-radius: var(--radius-pill); padding: 0.05em 0.7em; background: var(--surface);
 }
 section.missing::before { display: inline-block; margin-bottom: var(--space-2); }

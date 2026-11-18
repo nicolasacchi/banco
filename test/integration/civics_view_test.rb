@@ -228,15 +228,30 @@ class CivicsViewTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
+  test "in English the nuclei's titles and intros are English too, from the locale files (D-364)" do
+    build_civics_world
+    Diagnosis::Preferences.record(Student.find_by!(key: "student"), language: "en")
+    page(OFFICIAL, "/civics")
+    assert_response :success
+    assert_select "h1", "Civics"
+    assert_select "section[data-nucleus=constitution] h2", "Constitution"
+    assert_select "section[data-nucleus=constitution] > p.hint", "The rules of the Republic: the principles, rights and duties, the institutions, the European Union."
+    assert_select "section[data-nucleus=digital] h2", "Digital citizenship"
+    assert_select "section[data-nucleus=digital] > p.hint", "Staying safe online: data, rights, respect for others, sources."
+  end
+
   # ---- the list in git --------------------------------------------------------------------------------
 
   test "civics.yml: three nuclei, each with texts and topics, every key a well-formed lesson key, none twice" do
     nuclei = Course::Civics.config
     assert_equal %w[constitution sustainability digital], nuclei.map { |n| n.fetch("key") }
-    assert_equal [ "Costituzione", "Sviluppo economico e sostenibilità", "Cittadinanza digitale" ], nuclei.map { |n| n.fetch("title_it") }
     nuclei.each do |nucleus|
-      assert nucleus["intro_it"].to_s.strip.present?, "#{nucleus['key']} has a one-line intro"
-      assert_not_includes nucleus["intro_it"], "\n"
+      %i[it en].each do |locale|
+        assert I18n.t("civics.nuclei.#{nucleus['key']}.title", locale: locale, raise: true).to_s.strip.present?, "#{nucleus['key']} has a title in #{locale}"
+        intro = I18n.t("civics.nuclei.#{nucleus['key']}.intro", locale: locale, raise: true)
+        assert intro.to_s.strip.present?, "#{nucleus['key']} has a one-line intro in #{locale}"
+        assert_not_includes intro, "\n"
+      end
       assert nucleus["topics"].is_a?(Array) && nucleus["topics"].any?, "#{nucleus['key']} has topics"
     end
     keys = nuclei.flat_map { |n| n.fetch("topics") }

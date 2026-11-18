@@ -62,6 +62,16 @@ it:
       one: "%{count} argomento"
       other: "%{count} argomenti"
     intro: "Educazione civica è obbligatoria. I suoi argomenti sono dentro le altre materie: qui li trovi raccolti."
+    nuclei:
+      constitution:
+        title: "Costituzione"
+        intro: "Le regole della Repubblica: i principi, i diritti e doveri, le istituzioni, l'Unione europea."
+      sustainability:
+        title: "Sviluppo economico e sostenibilità"
+        intro: "Risorse, ambiente, patrimonio, salute e denaro: come si vive e si produce senza consumare il futuro."
+      digital:
+        title: "Cittadinanza digitale"
+        intro: "Stare in rete in sicurezza: dati, diritti, rispetto degli altri, fonti."
   # Where S is (D-326): mandatory topics (the programme) and optional ones (fuori programma), done out of all, and the state of the entry test.
   progress:
     required:
@@ -86,7 +96,7 @@ it:
     filter_missing: "Solo quello che manca"
     nothing_missing: "Qui non manca niente. Bravo."
     today:
-      title: "Il tuo percorso"
+      title: "I tuoi progressi"
       required: "Argomenti obbligatori fatti: %{done} su %{total}"
       optional: "Facoltativi fatti: %{count}"
       link: "Vedi le materie"
