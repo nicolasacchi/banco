@@ -6,7 +6,9 @@ require_relative "../support/student_session"
 # code spans, the glossary (the popover and the list under the card), the card's "Ascolta" with a fake speechSynthesis, the listen check
 # (the text behind "Mostra il testo", text_shown sent), mhchem, the voices of the settings page, and the shots for the look gate (BANCO_SHOT_DIR,
 # text-*.png). The device is a stand-in with the voices of a Mac (Daniel, Alice, Monica, and a network voice that must never be used); the voices
-# the operator accepts are put in by the test, as voices.yml will on the day.
+# the operator accepts are put in by the test, as voices.yml will on the day. The server's clips (D-359) are played by a stand-in <audio> that records
+# what it was given (window.__clips) and lets the test end or fail a clip; a test says `server: true` to have the server voices (the page's own
+# voices.server), and by default they are off, so that the tests of the device voices stay about the device voices.
 class LessonTextSystemTest < ApplicationSystemTestCase
   include Lesson2PageWorld
   include StudentSession
@@ -47,6 +49,30 @@ class LessonTextSystemTest < ApplicationSystemTestCase
     };
   JS
 
+  # the <audio> that plays the clips: records the source and the rate when a clip starts; window.__clipFail makes every clip fail to load
+  AUDIO = <<~JS.freeze
+    (() => {
+      window.__clips = []
+      class FakeAudio {
+        constructor() { this.paused = true; this.playbackRate = 1; this.src = "" }
+        play() {
+          window.__clips.push({ src: this.src, rate: this.playbackRate })
+          window.__audio = this
+          this.paused = false
+          if (window.__clipFail) setTimeout(() => this.onerror && this.onerror(), 0)
+          return Promise.resolve()
+        }
+        pause() { this.paused = true }
+        removeAttribute(name) { if (name === "src") this.src = "" }
+      }
+      window.Audio = FakeAudio
+    })();
+  JS
+
+  SERVER = YAML.load_file(Rails.root.join("config/banco/voices.yml")).fetch("server").freeze
+
+  SERVER_OFF = "import('lesson/voices').then((v) => { v.default.server = null; return import('lesson/speech_device') }).then((m) => { m.configure({}); arguments[0](true) })".freeze
+
   ACCEPT = "import('lesson/speech_device').then((m) => { m.configure({ accepted: { it: ['Alice'], en: ['Daniel', 'Google UK English Female'], es: ['Monica'] } }); arguments[0](true) })".freeze
 
   setup do
@@ -68,9 +94,10 @@ class LessonTextSystemTest < ApplicationSystemTestCase
 
   def device!
     page.driver.browser.page.command("Page.addScriptToEvaluateOnNewDocument", source: DEVICE)
+    page.driver.browser.page.command("Page.addScriptToEvaluateOnNewDocument", source: AUDIO)
   end
 
-  def open_lesson(name = "text", size: [ 1366, 900 ], accept: false)
+  def open_lesson(name = "text", size: [ 1366, 900 ], accept: false, server: false)
     build_lesson2_world(name: name, approve: false, release: false)
     sign_in_as :student
     page.driver.headers = TRIAL_HEADERS
@@ -81,10 +108,18 @@ class LessonTextSystemTest < ApplicationSystemTestCase
     wait_for_lesson_ready(wait: 20)
     page.execute_script(MOCK)
     assert_selector ".l2-cover, .l2-card", wait: 10
+    server_off! unless server
     accept! if accept
   end
 
   def accept! = page.evaluate_async_script(ACCEPT)
+  def server_off! = page.evaluate_async_script(SERVER_OFF)
+  def clips = page.evaluate_script("window.__clips")
+  def end_clip = page.execute_script("window.__audio.onended()")
+  def fail_clips! = page.execute_script("window.__clipFail = true")
+  def wait_for_clips(n) = Timeout.timeout(5) { sleep 0.05 until clips.size >= n }
+  def clip_url(voice, text) = "#{SERVER['clip_path']}/#{Digest::SHA256.hexdigest("#{SERVER['engine']}|#{voice}|#{text}")}.#{SERVER['format']}"
+  def server_voice(lang, n = 1) = SERVER["voices"].fetch(lang).then { |list| list[(n - 1) % list.size] }
   def go(n) = page.execute_script("window.lessonApi.goTo(#{n}, { focus: true })")
   def spoken = page.evaluate_script("window.__spoken")
   def end_utterance = page.execute_script("window.__utterance.onend()")
@@ -134,7 +169,7 @@ class LessonTextSystemTest < ApplicationSystemTestCase
     assert_operator page.evaluate_script("window.__cancels"), :>=, 1
   end
 
-  test "a network voice is never used, even when it is on the accepted list" do
+  test "a network voice is never used, even when it is on the accepted list (the server voices off here: with them on, the speaker shows for its clip)" do
     open_lesson
     page.evaluate_async_script("import('lesson/speech_device').then((m) => { m.configure({ accepted: { it: ['Alice'], en: ['Google UK English Female'], es: [] } }); arguments[0](true) })")
     go 1
@@ -368,13 +403,103 @@ class LessonTextSystemTest < ApplicationSystemTestCase
     assert_equal true, page.evaluate_script("window.__calls.filter((c) => c.url.includes('checks')).pop().body.text_shown")
   end
 
-  test "on a device with no accepted voice the listen check says so and still works by reading" do
+  test "with no server voice and no accepted device voice the listen check says so and still works by reading" do
     open_lesson
     go 2
     assert_no_selector "#scheda-2 .listen-play", visible: :visible
     assert_selector "#scheda-2 .listen-note", text: "Mostra il testo e leggilo."
     find("#scheda-2 .listen-show").click
     assert_selector "#scheda-2 .listen-text", visible: :visible
+  end
+
+  test "with server voices a speaker shows for English with no accepted device voice, fetches nothing before the tap, and plays the clip at the card's rate" do
+    open_lesson(server: true)
+    go 1
+    assert_selector "#scheda-1 .card-body .block .speak-inline", count: 1, wait: 5
+    assert_selector "#scheda-1 .card-listen .speak-card"
+    assert_equal [], clips, "nothing is loaded until a speaker is pressed"
+    find("#scheda-1 .card-body .block .speak-inline").click
+    assert_equal [ { "src" => clip_url(server_voice("en"), "When I arrive, I will call you."), "rate" => 1 } ], clips
+    assert_equal [], spoken, "the device's voice is not used when the clip plays"
+    assert_selector "#scheda-1 .block .speak-inline[aria-pressed='true']"
+    assert_selector "#scheda-1 .block .lang-en.speaking"
+    end_clip
+    assert_selector "#scheda-1 .block .speak-inline[aria-pressed='false']"
+    find("#scheda-1 .speak-slower").click
+    find("#scheda-1 .card-body .block .speak-inline").click
+    assert_equal 0.75, clips.last["rate"], "English slowed is 0.75"
+    find("#scheda-1 .card-body .block .speak-inline").click # a second tap stops it
+    assert_equal true, page.evaluate_script("window.__audio.paused")
+    assert_selector "#scheda-1 .block .speak-inline[aria-pressed='false']"
+  end
+
+  test "the card's Ascolta plays the clip of each visible segment in order, and the key of the page is the key of Ruby" do
+    open_lesson(server: true)
+    go 1
+    segments = page.evaluate_async_script("import('lesson/speech').then((m) => arguments[0](m.speechOf(document.querySelector('#scheda-1')).map((s) => ({ lang: s.lang, text: s.text, voice: s.voice || 1 }))))")
+    assert_operator segments.size, :>=, 3
+    find("#scheda-1 .speak-card").click
+    segments.size.times do |i|
+      wait_for_clips(i + 1)
+      end_clip
+    end
+    assert_equal segments.map { |s| clip_url(server_voice(s["lang"], s["voice"]), s["text"]) }, clips.map { |c| c["src"] }
+    assert_selector "#scheda-1 .speak-card[aria-pressed='false']", wait: 5
+    assert_equal [], spoken
+  end
+
+  test "a clip that is missing is said by the accepted device voice, and with none the segment is skipped; a network voice is never used" do
+    open_lesson(server: true, accept: true)
+    fail_clips!
+    go 1
+    find("#scheda-1 .card-body .block .speak-inline").click
+    Timeout.timeout(5) { sleep 0.05 until spoken.size >= 1 }
+    assert_equal [ { "text" => "When I arrive, I will call you.", "voice" => "Daniel", "lang" => "en-GB", "rate" => 1 } ], spoken
+    end_utterance
+    assert_selector "#scheda-1 .block .speak-inline[aria-pressed='false']"
+    # only the network voice is accepted: the clip fails and nothing is said at all
+    page.evaluate_async_script("import('lesson/speech_device').then((m) => { m.configure({ accepted: { it: [], en: ['Google UK English Female'], es: [] } }); arguments[0](true) })")
+    find("#scheda-1 .card-body .block .speak-inline").click
+    wait_for_clips(2)
+    assert_selector "#scheda-1 .block .speak-inline[aria-pressed='false']", wait: 5
+    assert_equal 1, spoken.size, "the network voice said nothing"
+  end
+
+  test "the listen check plays its clip with the first English voice; with no server voice and no accepted device voice it says so" do
+    open_lesson(server: true)
+    go 2
+    assert_selector "#scheda-2 .listen-play", visible: :visible, wait: 5
+    assert_no_selector "#scheda-2 .listen-note", visible: :visible
+    find("#scheda-2 .listen-play").click
+    assert_equal [ { "src" => clip_url(server_voice("en"), "I will call you when I get home."), "rate" => 1 } ], clips
+    assert_equal [], spoken
+    end_clip
+    page.evaluate_async_script("import('lesson/voices').then((v) => { v.default.server = { ...v.default.server, voices: { it: [], en: [], es: [] } }; return import('lesson/speech_device') }).then((m) => { m.configure({}); arguments[0](true) })")
+    assert_no_selector "#scheda-2 .listen-play", visible: :visible, wait: 5
+    assert_selector "#scheda-2 .listen-note", text: "Mostra il testo e leggilo."
+  end
+
+  test "Prova le voci also offers each server voice with its sample clip, and a missing clip says so instead of using the device voice" do
+    build_lesson2_world(name: "text", approve: false, release: false)
+    sign_in_as :student
+    page.driver.headers = TRIAL_HEADERS
+    device!
+    visit "about:blank"
+    visit "/settings"
+    assert_selector "#voci .voice-server", count: 5, wait: 10
+    assert_equal SERVER["voices"].values.flatten, all("#voci .voice-server .voice-name").map(&:text)
+    assert_equal [], clips
+    find("#voci .voice-server", text: SERVER["voices"]["en"][1]).click_button "Prova"
+    assert_equal [ { "src" => clip_url(SERVER["voices"]["en"][1], "Hello, this is my voice."), "rate" => 1 } ], clips
+    end_clip
+    find("#voci .voice-server", text: SERVER["voices"]["it"][0]).click_button "Prova"
+    assert_equal clip_url(SERVER["voices"]["it"][0], "Ciao, questa è la mia voce."), clips.last["src"]
+    end_clip
+    fail_clips!
+    row = find("#voci .voice-server", text: SERVER["voices"]["es"][1])
+    row.click_button "Prova"
+    assert_selector "#voci .voice-server .voice-status", text: "non è ancora pronta", wait: 5
+    assert_equal [], spoken
   end
 
   test "a cloze keeps its cue in the prompt and an English word in the prompt reads as English" do
@@ -403,6 +528,8 @@ class LessonTextSystemTest < ApplicationSystemTestCase
     visit "about:blank"
     visit "/settings"
     assert_selector "#voci h2", text: "Prova le voci"
+    assert_selector "#voci .voice-row", minimum: 4, wait: 10
+    server_off! # this case is about the device's voices: the server's are in the next one
     assert_selector "#voci .voice-row", count: 4, wait: 10 # the network voice is not offered
     assert_no_selector "#voci .voice-name", text: "Google UK English Female"
     row = find("#voci .voice-row", text: "Daniel")

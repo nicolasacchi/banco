@@ -121,6 +121,8 @@ class SearchEmbedJobTest < ActiveJob::TestCase
   test "the job's queue comes after the ordinary jobs in the worker, which runs them in order" do
     assert_equal "search", SearchEmbedJob.new.queue_name
     workers = YAML.safe_load_file(Rails.root.join("config/queue.yml"), aliases: true).dig("production", "workers")
-    assert_equal [ %w[default search] ], workers.map { |w| Array(w["queues"]) }.select { |q| q.include?("search") }
+    # the queues are polled in the order given: the search embeddings, then the spoken clips (SpeakLessonRevisionJob, D-359), after the ordinary jobs
+    assert_equal [ %w[default search speech] ], workers.map { |w| Array(w["queues"]) }.select { |q| q.include?("search") }
+    assert_equal "speech", SpeakLessonRevisionJob.new.queue_name
   end
 end
