@@ -76,7 +76,7 @@ module Diagnosis
       when :done then [ fact.checking ? "diagnosis.states.done_checking" : "diagnosis.states.done", {} ]
       when :after_dependency
         names = availability[:waiting_for].map { |k| by_key[k]&.subject&.name_it || k }
-        [ "diagnosis.states.after_dependency", { subjects: names.to_sentence(two_words_connector: " e ", last_word_connector: " e ") } ]
+        [ "diagnosis.states.after_dependency", { subjects: names.to_sentence } ]
       when :continue_next_day then [ "diagnosis.states.continue_next_day", {} ]
       else
         key = { "in_progress" => "paused", "continue_next_day" => "continue_next_day", "to_redo" => "to_redo" }.fetch(fact.daily.status, "to_do")

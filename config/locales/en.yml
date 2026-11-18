@@ -1,31 +1,281 @@
-# Files in the config/locales directory are used for internationalization and
-# are automatically loaded by Rails. If you want to use locales other than
-# English, add the necessary files in this directory.
-#
-# To use the locales, use `I18n.t`:
-#
-#     I18n.t "hello"
-#
-# In views, this is aliased to just `t`:
-#
-#     <%= t("hello") %>
-#
-# To use a different locale, set it with `I18n.locale`:
-#
-#     I18n.locale = :es
-#
-# This would use the information in config/locales/es.yml.
-#
-# To learn more about the API, please read the Rails Internationalization guide
-# at https://guides.rubyonrails.org/i18n.html.
-#
-# Be aware that YAML interprets the following case-insensitive strings as
-# booleans: `true`, `false`, `on`, `off`, `yes`, `no`. Therefore, these strings
-# must be quoted to be interpreted as strings. For example:
-#
-#     en:
-#       "yes": yup
-#       enabled: "ON"
-
 en:
-  hello: "Hello world"
+  student:
+    not_configured: "Account not set up: ask the teacher."
+    trial_notice: "Trial account: results do not count."
+    logout: "Log out"
+    menu:
+      label: "Menu"
+      today: "Today"
+      subjects: "Subjects"
+      search: "Search"
+      diagnosis: "Entry test"
+      warmup: "Warm-up"
+      settings: "Settings"
+      pause_to_today: "Pause: back to Today"
+      close: "Close"
+      bar_default: "Banco"
+  settings:
+    title: "Settings"
+    intro: "Choose the colours and the size of text and images. They apply to every page."
+    saved: "Done. I saved your choice."
+    saved_now: "Saved"
+    not_saved: "I could not save. Press Save."
+  diagnosis:
+    title: "Entry test"
+    placeholder: "The entry test will be here."
+    order_line: "Do the subjects in the order shown."
+    not_open: "The entry test is not open yet."
+    not_open_warmup: "Meanwhile, if you like, you can try the controls: it is optional."
+    not_open_warmup_done: "You have already tried the controls. If you like, you can do it again; the tests open when the teacher opens them."
+    warmup_optional: "Do you want to try the controls first? It is optional."
+    warmup_link: "Try the controls"
+    next_suggested: "To do now"
+    pause_suggestion: "You have already done two tests today: take a pause before the next one. You can resume whenever you like."
+    preferences:
+      title: "How you like to read"
+      theme: "Colours"
+      themes:
+        cream: "Cream"
+        light: "Light"
+        dark: "Dark"
+        auto: "Automatic"
+      theme_hint: "Automatic uses the colours of your device: Cream if it is light, Dark if it is dark."
+      size: "Size of text and images"
+      size_hint: "Changes the whole page: text, buttons, images and spacing."
+      sizes:
+        minimum: "Minimum"
+        tiny: "Tiniest"
+        smallest: "Very small"
+        small: "Small"
+        normal: "Normal"
+        large: "Large"
+        larger: "Very large"
+      language: "App language"
+      languages:
+        it: "Italiano"
+        en: "English"
+      language_hint: "Changes the language of menus, buttons and messages. Lessons and exercises stay in Italian."
+      save: "Save"
+    states:
+      to_do: "To do"
+      after_dependency: "After the first sitting of %{subjects}"
+      paused: "Paused"
+      continue_next_day: "One part left to do"
+      done: "Done"
+      done_checking: "Done · being checked"
+      to_redo: "To redo (the teacher cancelled the test)"
+    actions:
+      start: "Start"
+      resume: "Resume"
+      results: "See results"
+  sitting:
+    title: "Entry test · %{subject}"
+    title_second: "Entry test · %{subject} · second part"
+    intro:
+      title: "How it works"
+      not_a_grade: "It is not a grade: it helps us see where to start."
+      adaptive: "The questions change depending on your answers. So your test can be different from someone else's."
+      duration: "It takes about %{minutes} minutes. There is no timer: take your time. The test stops by itself. If there are more questions, you do them another day."
+      pause_html: "You can stop whenever you like: press <strong>Pause: back to Today</strong> in the menu. Time spent in pause does not count."
+      dont_know_html: "If you don't know the answer, press <strong>I don't know</strong>. If you haven't studied the topic yet, press <strong>I haven't studied it yet</strong>. Both are fine. They are not mistakes."
+      calculator_no: "Do the calculations on paper, without a calculator: write the question number and keep the sheets."
+      calculator_yes: "Do the calculations on paper: you can use a calculator. Write the question number and keep the sheets."
+      send_html: "When you have written your answer, press <strong>Send</strong>. After sending you cannot change it."
+      help_html: "Under the question you find <strong>How to answer</strong>. It explains how to write the answer. You can open it whenever you like."
+      formula_sheet_html: "In this test you have the <strong>Formula sheet</strong>. You open it with the Formula sheet button. It is not available in the exam: the teacher can see when you use it."
+      no_help: "During the test you don't see whether your answer is right. At the end you see everything, with the solutions."
+      nothing_else: "No book, no notes, no phone."
+    header: "%{subject} · Question %{number}"
+    header_count: "Question %{number}"
+    pause: "Pause"
+    leave:
+      unsent: "You wrote an answer, but you haven't sent it yet. If you leave, it is lost."
+      stay: "Stay here"
+      go: "Leave without sending"
+    resume: "Resume"
+    send: "Send"
+    dont_know: "I don't know"
+    not_studied: "I haven't studied it yet"
+    saved: "Answer saved"
+    unreadable_saved: "Answer saved. The teacher will look at it."
+    loading: "Loading the question."
+    saving: "Saving the answer."
+    blocked: "Your answer is saved on this computer. Sign in again and carry on."
+    sign_in_again: "Sign in again"
+    unreadable: "I can't read the answer: check how you wrote it."
+    gone: "This question is no longer open."
+    empty: "Write an answer before you continue."
+    short_answer_saved: "Your answer has arrived. You will see it marked, with the full answer, once the teacher has looked at it."
+    sitting_over: "That's enough for today. The rest tomorrow."
+    more_to_do: "There is one more part"
+    more_to_do_text: "That's enough for today. You do the rest of %{subject} tomorrow, in a second part."
+    back_to_list: "Back to subjects"
+    wait_tomorrow: "That's enough for today. You can resume tomorrow."
+    error_generic: "Something went wrong. Try again in a moment."
+    answer_label: "Your answer"
+    sheet:
+      button: "Formula sheet"
+      title: "Formula sheet"
+    help:
+      title: "How to answer"
+      common:
+        - "When you have finished, press Send."
+        - "If you don't know, press I don't know."
+      number:
+        - "Write only the number."
+        - "For decimals use a comma, for example 0,75."
+        - "For a negative number put the minus sign in front, for example -5."
+      number_unit:
+        - "The unit of measure is already written next to the box. Don't write it."
+      fraction:
+        - "Write the numerator in the box above and the denominator in the box below."
+        - "For a negative fraction put the minus sign in the numerator, for example -3 above and 4 below."
+      fraction_mixed:
+        - "If there is a whole part, write it in its own box."
+      expression:
+        - "Write in the field with the keyboard. Below you see how your formula was read."
+        - "A fraction: press 3, then the slash /, then 4. Then press the right arrow."
+        - "A power: press x, then ^, then 2. Then press the right arrow to leave the exponent."
+        - "A product: press 3, a, ^, 2, the right arrow, then b."
+        - "A bracket: press (, a, +, b, ), then ^ and 2."
+        - "A root: write rad and then the number."
+        - "A decimal: use a comma. A division: use the colon, for example 12:4."
+      choice:
+        - "Choose one answer only."
+        - "You can click the option, or press its number on the keyboard."
+        - "Use the arrows to move between the options."
+      ordering:
+        - "Put the lines in the right order."
+        - "With the mouse, press Up or Down on a line."
+        - "With the keyboard, go to a line with Tab, then press Alt with the up or down arrow."
+      matching:
+        - "For each item choose an answer from the menu."
+        - "Each answer is used once only. One answer is left over."
+      matching_reuse:
+        - "In this question one answer can be used for more than one item."
+      normalized_text:
+        - "Write the answer in the box, with a few words."
+        - "Check that you have written all the letters."
+      normalized_text_accents:
+        - "For a letter with an accent use the buttons under the box."
+      tiles:
+        - "Tap a word: it goes into your sentence."
+        - "To remove it, tap it in your sentence."
+        - "Some words are not needed."
+      select:
+        - "Tap an area of the picture to choose it."
+        - "To undo the choice, tap it again."
+        - "With the keyboard: Tab goes into the picture, the arrows change area, Space chooses."
+      short_answer:
+        - "Write the answer in your own words."
+        - "Use short, complete sentences."
+        - "The teacher reads it. You will see it marked later."
+      testlet:
+        - "Read the passage first."
+        - "Then answer each question."
+        - "For each question write the answer, or tick I don't know."
+        - "Press Send only once, at the end."
+      component_names:
+        number: "Questions with a number"
+        fraction: "Questions with a fraction"
+        expression: "Questions with a formula"
+        choice: "Multiple-choice questions"
+        ordering: "Questions to put in order"
+        matching: "Questions to match"
+        normalized_text: "Questions with one word"
+        tiles: "Questions with words to put in a row"
+        select: "Questions to tap on the picture"
+  items:
+    number_scientific_label: "Write the number in scientific notation, for example 3,2 x 10^5 (x to multiply, ^ for the exponent). For decimals use a comma."
+    number_label: "Write the number. For decimals use a comma."
+    number_integer_label: "Write the whole number."
+    fraction_numerator: "Numerator"
+    fraction_denominator: "Denominator"
+    fraction_whole: "Whole part"
+    helper_keys: "Keys for writing"
+    key_minus: "Minus"
+    key_comma: "Comma"
+    key_bar: "Fraction bar"
+    choice_label: "Choose an answer"
+    ordering_label: "Put in order. Use Up and Down, or Alt with the arrows."
+    ordering_up: "Up"
+    ordering_down: "Down"
+    matching_label: "Match each item to an answer. Use each answer once only: one is left over."
+    matching_reuse_label: "For each item choose an answer. The same answer can be used for more than one item."
+    matching_blank: "Choose"
+    text_label: "Write the answer"
+    long_text_label: "Write the answer in your own words"
+    expression_label: "Write the expression"
+    expression_echo: "You wrote:"
+    expression_words_hint: "Only the expression goes here, without words: the letter stays in the answer, for example 24a³. If you think it can't be done, press «I don't know»."
+    expression_text_hint: "Write with the keyboard: for example x^2+3x or 3/4."
+    passage: "Passage"
+    question_of: "Question %{n}"
+    steps_title: "What to do"
+  summary:
+    title: "You have finished %{subject}."
+    worked:
+      zero: "You worked for less than a minute."
+      one: "You worked for %{count} minute."
+      other: "You worked for %{count} minutes."
+    line_known:
+      one: "You already know how to do %{count} thing."
+      other: "You already know how to do %{count} things."
+    line_recover: "To review: %{n}."
+    line_learn: "To learn: %{n}."
+    see: "See results and solutions"
+    pause_suggestion: "You have already done two tests today: take a pause before the next one. You can resume whenever you like."
+    later: "Later"
+    known: "You already know how to do"
+    recover: "To review"
+    learn: "To learn"
+    learn_note: "It was not in your earlier programme, or you were still studying it: we will learn it now."
+    checking: "Being checked"
+    checking_note: "The teacher is looking at these answers."
+    not_asked: "We didn't ask you"
+    not_asked_count: "Questions not asked: %{n}"
+    solutions: "Solutions"
+    solutions_first: "First the wrong answers and the \"I don't know\" ones."
+    your_answer: "Your answer"
+    dont_know_answer: "You answered: I don't know"
+    solution: "Solution"
+    final: "Result"
+    outcome:
+      right: "Right"
+      nearly: "Nearly right"
+      wrong: "To look at again"
+      dont_know: "You didn't know"
+      pending: "The teacher will look at it"
+    flag: "I think my answer was right"
+    flagged: "The teacher will see it."
+    not_a_grade: "This is not a grade. From tomorrow the plan starts from here."
+    reasons:
+      two_of_two: "You got two questions out of two right."
+      two_of_two_choice: "You got two questions out of two right."
+      two_of_three: "You got two questions out of three right."
+      short_answer_above_threshold: "Your written answer was good."
+      below_demonstrated: "It shows from what you already know how to do."
+      dont_know: "You said you don't know it."
+      two_wrong: "Two answers were not right."
+      mixed: "Some answers were right, others were not."
+      short_answer_below_threshold: "Something was missing from the written answer."
+    no_message: "We will go over it together."
+  warmup:
+    title: "Try the controls"
+    intro: "Here you try the controls of the test. It doesn't count and it is not a grade. If you get it wrong, try again."
+    step: "Task %{n} of %{total}"
+    send: "Send"
+    dont_know: "I don't know"
+    right: "Good."
+    retry: "Try again."
+    skip: "Let's move on."
+    next: "Next"
+    done_title: "You have finished the controls practice."
+    done_text: "You can go back to Today. The tests open when the teacher opens them."
+    done_again: "Do the practice again"
+    editor_tip: "Write with the keyboard. Press the right arrow to leave a fraction or an exponent."
+    pause_task: "Press Pause. Then press Resume."
+    paused: "You are paused."
+    fallback_note: "For expressions we will use a text field, with a preview of how it reads."
+  accents:
+    label: "Letters with an accent"

@@ -1,0 +1,17 @@
+# English names of the 12 subjects. The key is called display_name_it because Subject#name_it reads it;
+# the English UI reads the same table (it is looked up by the current locale).
+en:
+  subjects:
+    display_name_it:
+      math: "Mathematics"
+      italian: "Italian"
+      english: "English"
+      spanish: "Spanish"
+      history: "History"
+      geography: "Economic geography"
+      law_economics: "Law and economics"
+      business: "Business studies"
+      computer_science: "Computer science"
+      biology: "Integrated science Biology"
+      chemistry: "Integrated science Chemistry"
+      physical_education: "Physical education"

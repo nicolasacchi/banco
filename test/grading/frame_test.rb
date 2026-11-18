@@ -176,7 +176,7 @@ class FrameTest < ActiveSupport::TestCase
     copied = Lessons::Checks.grade(check, "When I ___ home, I will call you.", nil, subject: "english")
     assert_predicate copied, :invalid?
     assert_equal "blank_copied", copied.code
-    assert_equal Grading::Result::MESSAGES_IT["blank_copied"], copied.message_it
+    assert_equal Grading::Result.message("blank_copied"), copied.message_it
   end
 
   # ---- D-352: what the student was shown, and the whole sentence compared with the key's -----------------------------
@@ -251,7 +251,7 @@ class FrameTest < ActiveSupport::TestCase
     codes = YAML.load_file(Rails.root.join("config/banco/error_codes.yml")).fetch("grader_codes")
     %w[blank_copied not_in_frame].each do |code|
       assert codes.key?(code), code
-      assert Grading::Result::MESSAGES_IT.key?(code), code
+      assert I18n.exists?("grading.messages.#{code}", :it), code
     end
   end
 end

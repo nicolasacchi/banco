@@ -46,8 +46,8 @@ module CommentsHelper
     page = Comments::Pages.parse(comment.page_path)
     topic = page&.topic && course_view.find_topic(page.topic)&.last
     parts << topic.title_it if topic
-    parts << t("comments.card", n: comment.card) if comment.card
-    parts.join(": ").sub(/: (scheda)/, ", \\1")
+    place = parts.join(": ")
+    comment.card ? "#{place}, #{t('comments.card', n: comment.card)}" : place
   end
 
   # ---- the inbox and the conversation (D-349) ----

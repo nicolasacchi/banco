@@ -1,0 +1,42 @@
+# Texts of the text layer of the lesson page (T2, D-282, D-283): "Listen", the glossary, the code span. Short sentences, plain words.
+en:
+  lesson2:
+    speech:
+      listen: "Listen"
+      stop: "Stop"
+      slower: "Slower"
+      listen_text: "Listen to this sentence"
+      listen_text_in: "Listen in %{language}: %{text}"
+      unapproved: "voice not approved yet"
+      listen_check: "A sentence to listen to"
+      listen_sentence: "Listen to the sentence"
+      show_text: "Show the text"
+      hide_text: "Hide the text"
+      no_voice: "This device has no voice for this language. Show the text and read it."
+      switch: "Listen with the device's voice"
+      try_voices: "Try the voices"
+      languages:
+        it: "Italian"
+        en: "English"
+        es: "Spanish"
+        la: "Latin"
+    gloss:
+      what: "What it means"
+      card_title: "Words on this card"
+      close: "Close"
+    voices:
+      title: "Try the voices"
+      intro: "This device reads the lessons with its voices. Listen to each voice: if you like it, tell the teacher."
+      none: "This device has no voices to try."
+      try: "Try"
+      stop: "Stop"
+      accepted: "chosen"
+      not_accepted: "not chosen yet"
+      language_it: "Italian"
+      language_en: "English"
+      language_es: "Spanish"
+      # the sample sentences are spoken by each voice in its own language: not translated
+      sentences:
+        it: "Ciao, questa è la mia voce. Leggo una frase molto semplice."
+        en: "Hello, this is my voice. When I arrive, I will call you."
+        es: "Hola, esta es mi voz. Cuando llegue, te llamaré."

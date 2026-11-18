@@ -19,7 +19,7 @@ module Lessons
       def wrong? = verdict == "wrong"
       def invalid? = verdict == "invalid"
     end
-    SLIPS_IT = { "it_accents" => "Controlla gli accenti.", "es_accents" => "Controlla los acentos.", "it_apostrophe_accent" => "Controlla l'apostrofo e l'accento." }.freeze
+    SLIPS = %w[it_accents es_accents it_apostrophe_accent].freeze # their hints are grading.slips.* (the page's language, D-356)
 
     module_function
 
@@ -98,7 +98,7 @@ module Lessons
     end
 
     def invalid(code, version = grader_version)
-      Graded.new(verdict: "invalid", code: code, message_it: Grading::Result::MESSAGES_IT.fetch(code, Grading::Result::MESSAGES_IT["unparseable"]), error_index: nil, normalized: nil, grader_version: version)
+      Graded.new(verdict: "invalid", code: code, message_it: Grading::Result.message(code), error_index: nil, normalized: nil, grader_version: version)
     end
 
     # ---- the shared graders ----------------------------------------------------------------------
@@ -129,8 +129,8 @@ module Lessons
       when "typical_error"
         index = result.error_codes.filter_map { |c| c[/\Ae(\d+)\z/, 1]&.to_i }.first
         entry = index && errors[index]
-        slip = result.error_codes.find { |c| SLIPS_IT.key?(c) }
-        Graded.new(verdict: "wrong", code: entry&.[]("code") || slip, message_it: entry&.[]("message_it") || SLIPS_IT[slip], error_index: index, normalized: result.normalized, grader_version: result.grader_version)
+        slip = result.error_codes.find { |c| SLIPS.include?(c) }
+        Graded.new(verdict: "wrong", code: entry&.[]("code") || slip, message_it: entry&.[]("message_it") || (slip && I18n.t("grading.slips.#{slip}")), error_index: index, normalized: result.normalized, grader_version: result.grader_version)
       else
         Graded.new(verdict: "wrong", code: nil, message_it: nil, error_index: nil, normalized: result.normalized, grader_version: result.grader_version)
       end

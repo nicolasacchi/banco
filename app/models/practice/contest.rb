@@ -66,7 +66,7 @@ module Practice
       raw = attempt.raw.to_s.gsub(/[[:space:]]+/, " ").strip.first(RAW_CHARS)
       result = Comments::Intake.call(
         student: @student, course_view: @view,
-        params: { client_comment_id: "contest-#{attempt.id}", reason: "error", text_it: I18n.t("practice.contest_comment", raw: raw),
+        params: { client_comment_id: "contest-#{attempt.id}", reason: "error", text_it: I18n.t("practice.contest_comment", raw: raw, locale: :it), # the teacher reads it: Italian, whatever the student's page speaks (D-356)
                   page_path: "/topics/#{serve.topic_revision.lesson.key}/practice/#{serve.skill_key}", anchor: COMMENT_ANCHOR,
                   refs: { "serve_id" => serve.id } }
       )

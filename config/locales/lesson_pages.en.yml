@@ -1,0 +1,9 @@
+# English texts of the free page block (release 2, D-290): the card's button and its status lines. Short sentences, easy words.
+en:
+  lesson_pages:
+    open: "Open the interactive part (about %{kb} KB)"
+    again: "Try again"
+    loading: "Loading the interactive part..."
+    failed: "The interactive part didn't start."
+    fullscreen: "Full screen"
+    hint: "If it doesn't start, read the text above: it says the same things."

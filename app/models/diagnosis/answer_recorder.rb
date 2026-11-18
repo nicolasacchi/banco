@@ -30,8 +30,8 @@ module Diagnosis
     def call(served_event_id:, client_attempt_id:, raw:, source:)
       client_id = client_attempt_id.to_s
       return gone unless raw.is_a?(String) && client_id.match?(/\A[A-Za-z0-9_-]{8,64}\z/)
-      return invalid(Grading::Result::MESSAGES_IT["empty"]) if raw.strip.empty?
-      return invalid(Grading::Result::MESSAGES_IT["unparseable"]) if raw.bytesize > MAX_RAW_BYTES
+      return invalid(Grading::Result.message("empty")) if raw.strip.empty?
+      return invalid(Grading::Result.message("unparseable")) if raw.bytesize > MAX_RAW_BYTES
       return recorded if Attempt.exists?(client_attempt_id: client_id)
 
       event = DiagnosisEvent.joins(:diagnosis_run)

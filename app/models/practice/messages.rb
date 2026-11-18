@@ -1,37 +1,8 @@
 module Practice
-  # The Italian sentences the student reads from the practice engine (A8.2, A9.4). Every sentence is an
-  # approved stored text chosen by code (firm rule 1): the locale file, the item's error catalogue and
-  # FORM_IT. Nothing is generated.
+  # The sentences the student reads from the practice engine (A8.2, A9.4), in the language of his page (D-356). Every sentence is an
+  # approved stored text chosen by code (firm rule 1): the locale files (course.*.yml, grading.*.yml) and the item's error
+  # catalogue, which is course content and stays Italian. Nothing is generated.
   module Messages
-    # The checker's form violations (and the fraction ones) as a sentence for the student.
-    FORM_IT = {
-      "lowest_terms" => "La frazione si può ancora semplificare: riducila ai minimi termini.",
-      "not_lowest_terms" => "La frazione si può ancora semplificare: riducila ai minimi termini.",
-      "improper" => "Scrivi la frazione come numero misto, come chiede la consegna.",
-      "mixed" => "Scrivi la frazione senza parte intera, come chiede la consegna.",
-      "denominator_one" => "Se il denominatore è 1, scrivi solo il numeratore.",
-      "sign_in_denominator" => "Il segno va davanti alla frazione, non al denominatore.",
-      "not_rationalized" => "Il denominatore non deve contenere radici: razionalizza.",
-      "radicand_not_reduced" => "Puoi ancora portare qualcosa fuori dalla radice.",
-      "factor_not_extracted" => "Puoi ancora portare un fattore fuori dalla radice.",
-      "radicand_not_multiplied" => "Moltiplica i numeri sotto la stessa radice.",
-      "roots_not_multiplied" => "Riunisci le radici in una sola.",
-      "like_radicals_not_combined" => "Somma i radicali simili.",
-      "like_terms_not_combined" => "Somma i termini simili.",
-      "coefficients_not_multiplied" => "Moltiplica i coefficienti numerici.",
-      "common_factor_not_cancelled" => "C'è ancora un fattore comune da semplificare.",
-      "not_fully_factored" => "La scomposizione non è completa: si può scomporre ancora.",
-      "common_factor_not_extracted" => "Raccogli prima il fattore comune.",
-      "not_expanded" => "Svolgi i prodotti e scrivi il risultato senza parentesi.",
-      "monomial_not_reduced" => "Il monomio si può ancora ridurre.",
-      "zero_term" => "Togli i termini uguali a zero.",
-      "trivial_root" => "La radice si può calcolare: scrivi il numero.",
-      "nested_root" => "Riduci le radici dentro altre radici.",
-      "fraction_under_root" => "Non lasciare una frazione sotto la radice.",
-      "scientific_notation" => "Scrivi il numero in notazione scientifica.",
-      "leading_zeros" => "Scrivi anche gli zeri iniziali richiesti."
-    }.freeze
-
     module_function
 
     # The sentence of an answer's outcome. typical: the catalogue message of the first error code
@@ -63,8 +34,10 @@ module Practice
     # The note under a right answer written as a whole sentence around the blank: only the words in place of ___ were asked.
     def full_sentence_note(part) = I18n.t("practice.full_sentence_note", part: part)
 
+    # The checker's form violations (and the fraction ones) as a sentence (grading.form.*); the generic one for a violation without its own.
     def form(violations)
-      FORM_IT[Array(violations).first] || I18n.t("practice.form")
+      violation = Array(violations).first
+      violation ? I18n.t("grading.form.#{violation}", default: :"practice.form") : I18n.t("practice.form")
     end
 
     # An extra line with a credit: the accents note or the form message of a declared form skill.

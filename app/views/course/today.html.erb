@@ -45,7 +45,7 @@
         </ul>
         <% end %>
         <% if finished.any? %>
-          <p id="entry-done" class="optional"><%= t("today.entry.done_line", subjects: finished.map { |row| row.subject.name_it }.to_sentence(two_words_connector: " e ", last_word_connector: " e ")) %>
+          <p id="entry-done" class="optional"><%= t("today.entry.done_line", subjects: finished.map { |row| row.subject.name_it }.to_sentence) %>
             <a href="<%= preview? ? "#{student_root}/test" : base_path %>"><%= t("today.entry.done_results") %></a></p>
         <% end %>
         <p id="entry-warmup" class="optional"><%= t("today.entry.warmup_optional") %>

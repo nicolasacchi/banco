@@ -164,7 +164,7 @@ class AcceptedAnswersTest < ActionDispatch::IntegrationTest
     step = first_step(rows)
     raw = matching_raw(step, "l1" => "", "l2" => "r2", "l3" => "r3", "l4" => "r4")
     outcome = record(step, raw, student: rows[:student])
-    assert_equal [ "invalid", Grading::Result::MESSAGES_IT["incomplete_rows"] ], [ outcome.status, outcome.message_it ]
+    assert_equal [ "invalid", Grading::Result.message("incomplete_rows") ], [ outcome.status, outcome.message_it ]
     assert_equal "Manca una risposta: scegli una risposta per ogni riga, poi controlla.", outcome.message_it
     assert_equal 0, Attempt.count
     event = AppEvent.where(kind: "invalid_input").sole
@@ -176,7 +176,7 @@ class AcceptedAnswersTest < ActionDispatch::IntegrationTest
     step = first_step(rows)
     raw = matching_raw(step, "l1" => "", "l2" => "", "l3" => "", "l4" => "")
     outcome = record(step, raw, student: rows[:student])
-    assert_equal [ "invalid", Grading::Result::MESSAGES_IT["empty"] ], [ outcome.status, outcome.message_it ]
+    assert_equal [ "invalid", Grading::Result.message("empty") ], [ outcome.status, outcome.message_it ]
     assert_equal 0, Attempt.count
   end
 

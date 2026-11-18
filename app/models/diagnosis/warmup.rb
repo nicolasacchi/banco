@@ -9,6 +9,7 @@ module Diagnosis
   # items get a plain text field with a rendered echo (E-04, B-11).
   module Warmup
     CONFIG_PATH = Rails.root.join("config/banco/warmup.yml").freeze
+    TEXTS_PATH = "config/banco/warmup.%s.yml".freeze # the words of another language (D-356), by task id
     MAX_EDITOR_TRIES = 3
 
     module_function
@@ -19,11 +20,34 @@ module Diagnosis
 
     def task(id) = tasks.find { |t| t["id"] == id.to_s }
 
-    # What the browser gets: no answers and no accept lists.
+    # What the browser gets: no answers and no accept lists. In the language of the page: the prompt, and the words of a matching,
+    # come from warmup.LOCALE.yml when it names the task; anything else is the Italian of warmup.yml.
     def public_tasks
+      words = words_in(I18n.locale)
       tasks.map do |t|
-        t.slice("id", "component", "prompt_it", "display", "accents", "editor")
+        task = t.slice("id", "component", "prompt_it", "display", "accents", "editor")
+        words_of = words[t["id"]]
+        next task unless words_of
+
+        task["prompt_it"] = words_of["prompt_it"] if words_of["prompt_it"]
+        task["display"] = retexted(task["display"], words_of["right"]) if words_of["right"]
+        task
       end
+    end
+
+    # { task id => {"prompt_it" =>, "right" => {id => text}} } of a language other than the default; {} when it has no file.
+    def words_in(locale)
+      return {} if locale.to_s == I18n.default_locale.to_s
+
+      @words ||= {}
+      @words[locale.to_sym] ||= begin
+        path = Rails.root.join(format(TEXTS_PATH, locale))
+        path.exist? ? YAML.safe_load_file(path, aliases: false).fetch("tasks").freeze : {}
+      end
+    end
+
+    def retexted(display, right)
+      display.merge("right" => display["right"].map { |option| right.key?(option["id"]) ? option.merge("text" => right[option["id"]]) : option })
     end
 
     # right, or false. raw is in the encodings of D-030.
