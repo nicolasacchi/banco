@@ -23,7 +23,7 @@ namespace :banco do
       path = File.directory?(out) ? File.join(out, export.filename) : out
       abort "#{path} exists: choose another OUT" if File.exist?(path)
       File.binwrite(path, export.zip)
-      Privacy::StudentExport.record!(student, by: "console", login: DecisionRecorder::Console.default_os_user)
+      Privacy::StudentExport.record!(student, by: "console", login: Etc.getpwuid(Process.euid)&.name.to_s)
       puts "wrote #{path} (#{File.size(path)} bytes, #{export.counts.values.sum} rows, student #{student.key})"
     end
   end
