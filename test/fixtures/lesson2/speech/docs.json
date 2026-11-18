@@ -44,7 +44,7 @@
     },
     {
       "lang": "it",
-      "text": "Scrivi il numero. Per i decimali usa la virgola."
+      "text": "Scrivi il numero intero."
     },
     {
       "lang": "it",
@@ -168,7 +168,7 @@
     },
     {
       "lang": "it",
-      "text": "passo 0 di 2"
+      "text": "passo 0 di 3"
     }
   ],
   "orale": [
@@ -267,6 +267,10 @@
     {
       "lang": "it",
       "text": "Imponibile 640,00 euro, IVA 22 per cento. Quanto è l'IVA?"
+    },
+    {
+      "lang": "it",
+      "text": "Quanto è l'IVA?"
     },
     {
       "lang": "it",
