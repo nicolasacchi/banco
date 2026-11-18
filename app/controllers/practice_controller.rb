@@ -10,7 +10,7 @@ class PracticeController < ApplicationController
   # GET /topics/:topic/practice/:skill
   def show
     @skill = params[:skill].to_s
-    return head(:not_found) unless @topic.skills.include?(@skill)
+    return page_not_found unless @topic.skills.include?(@skill)
 
     @skill_label = course_view.label(@skill)
     @state = course_view.state(@skill)

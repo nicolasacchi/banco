@@ -11,7 +11,7 @@ module CommentsHelper
   # The icon of a page kind in "I miei commenti" and on the teacher's cards (all in the structural sprite).
   PLACE_ICONS = { "today" => "compass", "subjects" => "map", "subject" => "map", "topic" => "compass", "lesson" => "book-open", "practice" => "notebook-pen",
                   "diagnosis" => "list-checks", "warmup" => "list-checks", "sitting" => "circle-help", "results" => "list-checks", "settings" => "text-settings",
-                  "search" => "info", "comments" => "comment", "privacy" => "info", "account" => "info" }.freeze
+                  "search" => "info", "comments" => "comment", "privacy" => "info", "account" => "info", "civics" => "map", "not_found" => "info" }.freeze
 
   STATE_ICONS = { "sent" => "send", "read" => "show", "answered" => "teacher-reply", "closed" => "check" }.freeze
 
@@ -35,9 +35,13 @@ module CommentsHelper
     @_comment_unread ||= Comment.unread_reply_count(acting_student)
   end
 
+  # The address the box files the comment under: the page's own, or the one the page names (the student's 404 says
+  # "/not-found" + the address it could not open, D-361: the page path of a place that is not there is no page).
+  def comment_page_path = content_for(:comment_page_path).presence || request.path
+
   # In a sitting the counted time stops while the box is open: the run's events address.
   def comment_events_url
-    controller_name == "sittings" && action_name == "show" ? "#{base_path}/runs/#{@run.id}/events" : ""
+    controller_name == "sittings" && action_name == "show" && @run ? "#{base_path}/runs/#{@run.id}/events" : ""
   end
 
   # "Lezione: Le frazioni, scheda 3" for the student's list.
@@ -89,6 +93,7 @@ module CommentsHelper
     case page.kind
     when "today", "settings", "search", "privacy", "account" then comment.page_path
     when "subjects" then comment.page_path if course_view.subjects.any?
+    when "civics" then comment.page_path if Course::Civics.new(course_view).any?
     when "subject" then comment.page_path if course_view.subject(page.subject_key)
     when "topic", "practice" then comment.page_path if course_view.find_topic(page.topic)
     when "lesson" then (comment.card ? "#{comment.page_path}#scheda-#{comment.card}" : comment.page_path) if course_view.find_topic(page.topic)

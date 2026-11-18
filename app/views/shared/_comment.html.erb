@@ -3,7 +3,7 @@
 <div id="comment-root" data-controller="comment"
      data-comment-url-value="/comments"
      data-comment-events-url-value="<%= comment_events_url %>"
-     data-comment-page-path-value="<%= request.path %>"
+     data-comment-page-path-value="<%= comment_page_path %>"
      data-comment-labels-value="<%= comment_labels.to_json %>">
   <div class="comment-banner" id="comment-banner" role="region" aria-label="<%= t("comments.banner_title") %>" data-comment-target="banner" data-comment-ui hidden>
     <div class="comment-banner-in">

@@ -60,7 +60,7 @@ en:
     reply_send: "Send"
     reply_sent: "Sent: the teacher will see it."
     reply_error:
-      text_it: "Write from 1 to 500 characters."
+      text_it: "Write from 1 to 2000 characters."
       no_teacher_reply: "You can reply after the teacher's answer."
       other: "I can't send the reply. Try again."
     reply_within:
@@ -120,6 +120,8 @@ en:
       today: "Today"
       privacy: "Privacy"
       account: "Account and password"
+      civics: "Civic education"
+      not_found: "A page that is not there"
       subjects: "Subjects"
       subject: "Subject"
       topic: "Topic"

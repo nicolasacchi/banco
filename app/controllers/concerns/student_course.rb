@@ -19,7 +19,7 @@ module StudentCourse
   # Sets @subject_view and @topic from params[:topic]; 404 when this student cannot see it.
   def load_topic
     @subject_view, @topic = course_view.find_topic(params[:topic])
-    head(:not_found) unless @topic
+    page_not_found unless @topic
   end
 
   # The JSON endpoints refuse once the subject is no longer visible (a withdrawn release): the same answer.

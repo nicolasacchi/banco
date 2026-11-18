@@ -99,7 +99,7 @@ class SittingsController < ApplicationController
   private
 
   def load_run
-    @run = DiagnosisRun.find_by(id: params[:run_id], student: acting_student) or return head(:not_found)
+    @run = DiagnosisRun.find_by(id: params[:run_id], student: acting_student) or return page_not_found
 
     @conductor = Diagnosis::Conductor.new(@run)
   end

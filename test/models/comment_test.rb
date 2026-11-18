@@ -29,7 +29,7 @@ class CommentTest < ActiveSupport::TestCase
   test "the CHECKs refuse an unknown reason, kind, page kind, origin, over-long text and a reply without text" do
     assert_raises(ActiveRecord::StatementInvalid) { make(reason: "angry") }
     assert_raises(ActiveRecord::StatementInvalid) { make(page_kind: "elsewhere") }
-    assert_raises(ActiveRecord::StatementInvalid) { make(text_it: "x" * 501) }
+    assert_raises(ActiveRecord::StatementInvalid) { make(text_it: "x" * 2001) }
     assert_raises(ActiveRecord::StatementInvalid) { make(text_it: "") }
     assert_raises(ActiveRecord::StatementInvalid) { make(selected_text: "x" * 301) }
     assert_raises(ActiveRecord::StatementInvalid) { event("sneaky") }
@@ -43,9 +43,32 @@ class CommentTest < ActiveSupport::TestCase
     assert_raises(ActiveRecord::StatementInvalid) { event("student_reply", origin: "api", text_it: "Grazie.") }
     assert_raises(ActiveRecord::StatementInvalid) { event("student_reply") }
     assert_raises(ActiveRecord::StatementInvalid) { event("student_reply", text_it: "") }
-    assert_raises(ActiveRecord::StatementInvalid) { event("student_reply", text_it: "x" * 501) }
-    assert_nothing_raised { event("student_reply", text_it: "x" * 500) }
-    assert_nothing_raised { make(text_it: "x" * 500, selected_text: "y" * 300) }
+    assert_raises(ActiveRecord::StatementInvalid) { event("student_reply", text_it: "x" * 2001) }
+    assert_nothing_raised { event("student_reply", text_it: "x" * 1500) } # D-361: 2000, was 500
+    assert_nothing_raised { event("student_reply", text_it: "x" * 2000) }
+    assert_nothing_raised { make(text_it: "x" * 1500, selected_text: "y" * 300) }
+    assert_nothing_raised { make(text_it: "x" * 2000) }
+    assert_nothing_raised { make(page_kind: "civics") }
+    assert_nothing_raised { make(page_kind: "not_found", page_path: "/not-found/topics/x") }
+  end
+
+  test "the longest text of a comment and of a follow-up is 2000 (D-361)" do
+    assert_equal 2000, Comment::TEXT_MAX
+  end
+
+  test "Intake and StudentReply take 1500 and 2000 characters and refuse 2001 (D-361)" do
+    view = Course::StudentView.new(@student)
+    params = ->(text) { ActionController::Parameters.new(client_comment_id: "c-#{SecureRandom.hex(8)}", reason: "other", text_it: text, page_path: "/today") }
+    [ 1500, 2000 ].each do |n|
+      result = Comments::Intake.call(student: @student, course_view: view, params: params.("x" * n))
+      assert_equal [ :recorded, n ], [ result.status, result.comment.text_it.length ]
+    end
+    result = Comments::Intake.call(student: @student, course_view: view, params: params.("x" * 2001))
+    assert_equal [ :invalid, "text_it" ], [ result.status, result.error ]
+    event("reply", text_it: "Ecco.")
+    reply = ->(text) { Comments::StudentReply.call(student: @student, comment_id: @comment.id, text_it: text, client_reply_id: "r-#{SecureRandom.hex(8)}") }
+    [ 1500, 2000 ].each { |n| assert_equal [ :recorded, n ], reply.("y" * n).then { |r| [ r.status, r.event.text_it.length ] } }
+    assert_equal [ :invalid, "text_it" ], reply.("y" * 2001).then { |r| [ r.status, r.error ] }
   end
 
   test "client_comment_id is unique" do

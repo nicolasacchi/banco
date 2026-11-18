@@ -4,7 +4,7 @@ import { anchorPath, buildComment, clip, describeAnchor, listTargets, refsOf, SE
 
 // "Commenta" on every student page (D-304). A tap on a «Commenta» control (any element with data-comment-open)
 // starts the comment mode: the page's commentable elements are outlined and a tap picks one (or "Tutta la pagina",
-// or the list in the box, for keyboard and screen reader). The box takes a reason and an optional text of up to 500
+// or the list in the box, for keyboard and screen reader). The box takes a reason and an optional text of up to 2000
 // characters. In a sitting (data-comment-events-url) the counted time stops while the box is open: comment_opened
 // and comment_closed are posted to the run's events, and the fold leaves that interval out. A comment is written to
 // a local outbox first (banco.coutbox.) and sent when the network allows. Nothing here reads a grade or an answer.

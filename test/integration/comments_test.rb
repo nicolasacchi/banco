@@ -96,7 +96,7 @@ class CommentsTest < ActionDispatch::IntegrationTest
       { anchor: "card:2/" + "block:1/" * 9 },
       { reason: "angry" },
       { reason: nil },
-      { text_it: "x" * 501 },
+      { text_it: "x" * 2001 },
       { page_path: "/teacher/comments" },
       { page_path: "/topics/ripasso.math.nonesiste/lesson", refs: {} },
       { page_path: lesson_path, refs: { served_event_id: 1 } },
@@ -234,6 +234,62 @@ class CommentsTest < ActionDispatch::IntegrationTest
     end
     on(:web, lesson_path, headers: OFFICIAL, remote_addr: EDGE)
     assert_select "#lesson-root[data-comment-lesson-revision-id='#{@lesson_revision.id}']"
+  end
+
+  test "a comment of 1500 or 2000 characters is recorded and 2001 is refused; the box and the composer say 2000 (D-361)" do
+    [ 1500, 2000 ].each { |n| assert_equal "recorded", send_comment(OFFICIAL, text_it: "x" * n)["status"], n.to_s }
+    assert_equal [ 1500, 2000 ], Comment.order(:id).map { |c| c.text_it.length }
+    answer = send_comment(OFFICIAL, text_it: "x" * 2001)
+    assert_equal [ "invalid", "text_it" ], answer.values_at("status", "error")
+    assert_equal 2, Comment.count
+    on(:web, "/today", headers: OFFICIAL, remote_addr: EDGE)
+    assert_select "textarea#comment-text[maxlength='2000']"
+  end
+
+  test "a follow-up of 1500 or 2000 characters is recorded and 2001 is refused" do
+    comment = answered_comment
+    [ 1500, 2000 ].each { |n| student_reply(comment, "y" * n) }
+    assert_equal [ 1500, 2000 ], comment.events.reload.select { |e| e.kind == "student_reply" }.map { |e| e.text_it.length }
+    student_reply(comment, "y" * 2001)
+    assert_equal 2, comment.events.reload.count { |e| e.kind == "student_reply" }
+    on(:web, "/comments/#{comment.id}", headers: OFFICIAL, remote_addr: EDGE)
+    assert_select "#conversation[data-comment-thread-max-value='2000']"
+  end
+
+  # ---- D-361: a comment from every page ----------------------------------------------------------------
+
+  test "the comment control is also on privacy, account, the conversation and the student's own 404, and the box files a 404 under what was asked" do
+    answered = answered_comment
+    [ "/privacy", "/account", "/comments/#{answered.id}", "/civics" ].each do |path|
+      on(:web, path, headers: OFFICIAL, remote_addr: EDGE)
+      assert_select "#comment-root[data-controller=comment]", 1, path
+      assert_select "[data-comment-open]", { minimum: 1 }, path
+    end
+    { "/subjects/nonesiste" => "/not-found/subjects/nonesiste", "/topics/ripasso.math.nonesiste" => "/not-found/topics/ripasso.math.nonesiste",
+      "/topics/ripasso.math.nonesiste/lesson" => "/not-found/topics/ripasso.math.nonesiste/lesson", "/topics/#{TOPIC}/practice/math.nonesiste" => "/not-found/topics/#{TOPIC}/practice/math.nonesiste",
+      "/comments/9999999" => "/not-found/comments/9999999" }.each do |path, filed|
+      on(:web, path, headers: OFFICIAL, remote_addr: EDGE)
+      assert_response :not_found, path
+      assert_select "#error-page[data-status=not_found]", 1, path
+      assert_select "#comment-root[data-comment-page-path-value='#{filed}']", 1, path
+      assert_select "[data-comment-open]", { minimum: 1 }, path
+      assert_select "#student-menu-open", 1
+      answer = send_comment(OFFICIAL, page_path: filed, anchor: "page", refs: {}, text_it: "Non si apre.")
+      assert_equal "recorded", answer["status"], path
+      assert_equal [ "not_found", filed ], Comment.order(:id).last.then { |c| [ c.page_kind, c.page_path ] }
+    end
+    # a request that is no page (a POST) is still the bare 404
+    on(:web, "/topics/ripasso.math.nonesiste/lesson/exercises/1/solution", method: :post, headers: OFFICIAL.merge("X-CSRF-Token" => token_for(OFFICIAL)), remote_addr: EDGE)
+    assert_response :not_found
+    assert_no_match(/comment-root/, response.body)
+  end
+
+  test "a comment on the civics page is filed under civics, and an address with a space or a query is no page" do
+    assert_equal "recorded", send_comment(OFFICIAL, page_path: "/civics", anchor: nil, refs: {})["status"]
+    assert_equal [ "civics", "/civics" ], Comment.last.then { |c| [ c.page_kind, c.page_path ] }
+    [ "/not-found/a b", "/not-found?x=1", "/not-foundx", "/civics/x" ].each do |path|
+      assert_equal "invalid", send_comment(OFFICIAL, page_path: path, anchor: nil, refs: {})["status"], path
+    end
   end
 
   # ---- the teacher's page and actions ---------------------------------------------------------------------
@@ -417,7 +473,7 @@ class CommentsTest < ActionDispatch::IntegrationTest
     assert_select ".cm-day", /Oggi/
     assert_select "#reply-window, .cm-window", /Di solito il docente risponde entro 24 ore\./
     assert_select "form.cm-composer[action='/comments/#{comment.id}/reply']" do
-      assert_select "textarea[maxlength='500'][name=text_it]"
+      assert_select "textarea[maxlength='2000'][name=text_it]"
       assert_select "button", "Invia"
     end
     assert_select "#conversation[data-controller=comment-thread][data-comment-thread-url-value='/comments/#{comment.id}/reply']"
@@ -450,7 +506,7 @@ class CommentsTest < ActionDispatch::IntegrationTest
     on(:web, "/comments/#{bare.id}", headers: OFFICIAL, remote_addr: EDGE)
     assert_select "#reply-error"
     answered = answered_comment
-    [ "   ", "x" * 501 ].each { |text| student_reply(answered, text) }
+    [ "   ", "x" * 2001 ].each { |text| student_reply(answered, text) }
     student_reply(answered, "Ok", client_reply_id: "no")
     assert_equal 1, answered.events.reload.count
     assert_equal "answered", answered.reload.state
@@ -471,7 +527,7 @@ class CommentsTest < ActionDispatch::IntegrationTest
     end
     assert_equal 1, comment.events.reload.where(kind: "student_reply").count
     assert_equal "sent", comment.reload.state
-    answer = reply_json.call(comment, { text_it: "x" * 501, client_reply_id: "r-" + SecureRandom.hex(8) })
+    answer = reply_json.call(comment, { text_it: "x" * 2001, client_reply_id: "r-" + SecureRandom.hex(8) })
     assert_equal [ "invalid", "text_it" ], answer.values_at("status", "error")
     answer = reply_json.call(comment, { text_it: "Ok", client_reply_id: "no" })
     assert_equal "invalid", answer["status"]

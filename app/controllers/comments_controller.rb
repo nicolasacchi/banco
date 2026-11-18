@@ -47,7 +47,7 @@ class CommentsController < ApplicationController
   # One conversation. Opening it is what marks the teacher's replies as seen (a reply_seen row of the student), so the
   # badge and the dot go away. Another student's comment is a 404.
   def show
-    @comment = Comment.where(student: acting_student).includes(:events, :subject).find_by(id: params[:id]) or return head(:not_found)
+    @comment = Comment.where(student: acting_student).includes(:events, :subject).find_by(id: params[:id]) or return page_not_found
     if @comment.unread_reply?
       CommentEvent.create!(comment: @comment, kind: "reply_seen", origin: "student", actor: acting_student.key, request_id: nil,
                            remote_addr: "", payload_json: "{}", created_at: Time.current)

@@ -10,6 +10,11 @@ it:
   student:
     not_configured: "Account non configurato: chiedi all'insegnante."
     trial_notice: "Account di prova: i risultati non contano."
+    not_found:
+      title: "Questa pagina non c'è"
+      body: "L'indirizzo potrebbe essere sbagliato, o la pagina è stata spostata."
+      hint: "Se vuoi, tocca Commenta e dillo al docente."
+      home: "Torna a Oggi"
     logout: "Esci"
     menu:
       label: "Menu"

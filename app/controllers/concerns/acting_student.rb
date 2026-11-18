@@ -73,6 +73,15 @@ module ActingStudent
     cookies.signed.permanent[DecisionRecorder::DEVICE_COOKIE] = { value: "student", httponly: true, same_site: :lax, secure: request.ssl? }
   end
 
+  # A page of the student's that is not there (a topic or subject he cannot see, a comment that is not his, a run that is not his): the
+  # designed 404 in the student's layout, with the menu and «Commenta» (D-361), so he can tell the teacher. A request that is no page
+  # (a POST, a script's fetch) gets the bare 404.
+  def page_not_found
+    return head(:not_found) unless request.get?
+
+    render "shared/student_not_found", formats: [ :html ], status: :not_found
+  end
+
   def require_actor!
     preview? ? require_teacher! : require_student!
   end
