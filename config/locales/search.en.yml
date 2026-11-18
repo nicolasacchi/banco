@@ -12,6 +12,7 @@ en:
       one: "I found one result."
       other: "I found %{count} results."
     did_you_mean_html: "I didn't find «%{term}». Did you mean %{options}?"
+    or_word: "or"
     definition: "What it means"
     kinds:
       topic: "Topics"

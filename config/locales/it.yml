@@ -216,6 +216,7 @@ it:
     matching_label: "Abbina ogni voce a una risposta. Usa ogni risposta una volta sola: una avanza."
     matching_reuse_label: "Per ogni voce scegli una risposta. La stessa risposta può servire per più voci."
     matching_blank: "Scegli"
+    missing: "Manca"
     text_label: "Scrivi la risposta"
     long_text_label: "Scrivi la risposta con parole tue"
     expression_label: "Scrivi l'espressione"

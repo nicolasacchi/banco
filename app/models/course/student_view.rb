@@ -110,7 +110,7 @@ module Course
       @progress[sv.subject.key] ||= Progress.new(tally(programme_topics(sv)), tally(extra_topics(sv)))
     end
 
-    # The same, summed over every visible subject (Oggi's «Il tuo percorso»).
+    # The same, summed over every visible subject (Oggi's «I tuoi progressi»).
     def overall_progress
       subjects.map { |sv| progress(sv) }.reduce(Progress.new(Tally.new(0, 0, 0), Tally.new(0, 0, 0)), :+)
     end

@@ -106,12 +106,13 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) .topbar, body
 .l2 { --pad: clamp(1em, 3.6vw, 2.2em); }
 .l2[data-motion="full"] .l2-card, .l2[data-motion="full"] .l2-cover { animation: l2-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
 @keyframes l2-in { from { opacity: 0; transform: translateY(0.5em); } to { opacity: 1; transform: none; } }
-.card-head { display: flex; align-items: center; gap: 0.9em; margin: 0 0 0.8em; padding: 1.1em 0 0; background: none; border: 0; }
+/* The head wraps: on a phone the title (with «Ascolta», D-359) takes a line of at least 12em and the buttons go below it, instead of squeezing the title into a column narrower than its longest word (D-364). */
+.card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9em; margin: 0 0 0.8em; padding: 1.1em 0 0; background: none; border: 0; }
 .badge { width: 3em; height: 3em; border-radius: 0.9em; background: var(--primary); color: var(--primary-text); border: 0; display: grid; place-items: center; flex: none; box-shadow: inset 0 -0.18em 0 rgba(0, 0, 0, 0.18); }
 .badge .ic { width: 1.7em; height: 1.7em; }
-.card-titles { min-width: 0; }
+.card-titles { min-width: 0; flex: 1 1 12em; }
 .kicker { margin: 0; font-size: 0.8em; font-weight: 800; color: var(--muted); }
-.l2-card h2 { margin: 0; font-size: clamp(1.4em, 3.4vw, 1.8em); line-height: 1.12; letter-spacing: -0.01em; font-weight: 800; }
+.l2-card h2 { margin: 0; font-size: clamp(1.4em, 3.4vw, 1.8em); line-height: 1.12; letter-spacing: -0.01em; font-weight: 800; overflow-wrap: break-word; }
 .l2-card h3, .l2-cover h2, .l2-cover h3 { margin: 0.8em 0 0.3em; font-size: 1.1em; line-height: 1.3; font-weight: 800; }
 .card-legend { display: flex; flex-wrap: wrap; gap: 0.3em 0.9em; align-items: center; margin: 0 0 0.6em; padding: 0.25em 0.8em; background: var(--soft-primary); border-radius: 999px; font-size: 0.8em; width: fit-content; max-width: 100%; }
 .card-legend.map-legend { border-radius: 0.8em; font-size: 0.85em; margin-left: 0.4em; }

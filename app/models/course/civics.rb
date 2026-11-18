@@ -7,17 +7,18 @@ module Course
   #   civics = Course::Civics.new(course_view)
   #   civics.any?            # at least one topic is visible: the card and the page exist
   #   civics.topic_count     # => N argomenti
-  #   civics.nuclei          # => [Nucleus(key:, title_it:, intro_it:, entries: [Entry])] with at least one entry each
+  #   civics.nuclei          # => [Nucleus(key:, title:, intro:, entries: [Entry])] with at least one entry each
   class Civics
     CONFIG = Rails.root.join("config/banco/civics.yml")
 
-    Nucleus = Data.define(:key, :title_it, :intro_it, :entries)
+    # title and intro are the student's words in the language of the page (course.*.yml, civics.nuclei.KEY, D-364).
+    Nucleus = Data.define(:key, :title, :intro, :entries)
     # subject_view: Catalog::SubjectView; topic: Catalog::TopicView; status: :todo, :in_progress or :done.
     Entry = Data.define(:subject_view, :topic, :status) do
       def extra? = topic.extra?
     end
 
-    # The nuclei as written in git: [{ "key", "title_it", "intro_it", "topics" => [lesson keys] }].
+    # The nuclei as written in git: [{ "key", "topics" => [lesson keys] }].
     def self.config = @config ||= YAML.safe_load_file(CONFIG, aliases: false).fetch("nuclei").freeze
 
     def initialize(view)
@@ -32,7 +33,8 @@ module Course
         end
         next if entries.empty?
 
-        Nucleus.new(key: nucleus.fetch("key"), title_it: nucleus.fetch("title_it"), intro_it: nucleus.fetch("intro_it"), entries: entries)
+        key = nucleus.fetch("key")
+        Nucleus.new(key: key, title: I18n.t("civics.nuclei.#{key}.title"), intro: I18n.t("civics.nuclei.#{key}.intro"), entries: entries)
       end
     end
 

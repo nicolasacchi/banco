@@ -62,6 +62,16 @@ en:
       one: "%{count} topic"
       other: "%{count} topics"
     intro: "Civics is required. Its topics are inside the other subjects: here you find them gathered."
+    nuclei:
+      constitution:
+        title: "Constitution"
+        intro: "The rules of the Republic: the principles, rights and duties, the institutions, the European Union."
+      sustainability:
+        title: "Economic development and sustainability"
+        intro: "Resources, environment, heritage, health and money: how to live and produce without using up the future."
+      digital:
+        title: "Digital citizenship"
+        intro: "Staying safe online: data, rights, respect for others, sources."
   # Where S is (D-326): required topics (the programme) and optional ones (outside the programme), done out of all, and the state of the entry test.
   progress:
     required:
@@ -86,7 +96,7 @@ en:
     filter_missing: "Only what is missing"
     nothing_missing: "Nothing is missing here. Well done."
     today:
-      title: "Your path"
+      title: "Your progress"
       required: "Required topics done: %{done} out of %{total}"
       optional: "Optional done: %{count}"
       link: "See the subjects"

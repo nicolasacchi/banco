@@ -2,7 +2,7 @@ require "test_helper"
 
 # D-356: the student's interface is also English. Every student-facing Italian locale file has an English twin with the same keys (and the
 # same %{names}), so a key added on one side and forgotten on the other fails here, not on the student's screen. What stays Italian on
-# purpose has no twin: the figures' vocabulary (lesson_chart, lesson_time, lesson_words, lesson_graph, lesson_docs, lesson_maps,
+# purpose has no twin: the figures' vocabulary (lesson_chart, lesson_time, lesson_words, lesson_graph, lesson_maps,
 # lesson_science, lesson_computing), the error pages, and everything of the teacher.
 class LocaleParityTest < ActiveSupport::TestCase
   LOCALES = Rails.root.join("config/locales")
@@ -14,6 +14,7 @@ class LocaleParityTest < ActiveSupport::TestCase
     "comments.it.yml" => { en: "comments.en.yml" },
     "search.it.yml" => { en: "search.en.yml" },
     "lesson_pages.it.yml" => { en: "lesson_pages.en.yml" },
+    "lesson_docs.it.yml" => { en: "lesson_docs.en.yml" },
     "lesson.it.yml" => { en: "lesson.en.yml" },
     "lesson_text.it.yml" => { en: "lesson_text.en.yml" },
     "lesson_checks.it.yml" => { en: "lesson_checks.en.yml" },

@@ -238,11 +238,11 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     assert_select "#subject-summary .progress-line[data-line=required] .progress-text", "Obbligatori: 3 fatti su 3"
   end
 
-  test "Oggi: «Il tuo percorso» counts the mandatory topics done and the optional ones, and suggests only the programme" do
+  test "Oggi: «I tuoi progressi» counts the mandatory topics done and the optional ones, and suggests only the programme" do
     build_progress_world
     page(OFFICIAL, "/today")
     assert_response :success
-    assert_select "#my-path h2", "Il tuo percorso"
+    assert_select "#my-path h2", "I tuoi progressi"
     assert_select "#my-path .progress-line[data-line=required] .progress-text", "Argomenti obbligatori fatti: 1 su 3"
     assert_select "#my-path .progress-line[data-line=optional] .progress-text", "Facoltativi fatti: 1"
     assert_select "#my-path a[href='/subjects']", "Vedi le materie"

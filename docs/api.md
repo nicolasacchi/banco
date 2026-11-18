@@ -521,7 +521,7 @@ and the extra topics (each `done`, `in_progress` or `todo`, the same word as on 
 
 `programme` counts the topics of the programme (mandatory) and `extra` the extra ones (optional), as Materie and Materia show them: `done`
 is every skill of the topic demonstrated, `in_progress` a topic started and not done, `missing` every topic not done (so it includes
-the ones in progress), `percent` is `done` over `total`, rounded down. `overall` sums the visible subjects (Oggi's «Il tuo percorso»).
+the ones in progress), `percent` is `done` over `total`, rounded down. `overall` sums the visible subjects (Oggi's «I tuoi progressi»).
 `entry_test` is the subject's row of `entry_tests` (`null` when the subject has no test in the student's list); `skills[].state` follows the
 practice rules (`not_seen` when nothing is known); `skills[].pool_exhausted_at` is the first time the student had seen every exercise of the skill and none was served on its own (D-348; `null` otherwise, and the same field is in `banco practice progress`). `closed_subjects` are the subjects whose course the teacher withdrew after opening it. The
 official student sees no subject before the teacher releases its course.
