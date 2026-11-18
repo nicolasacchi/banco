@@ -178,6 +178,8 @@ en:
     same_answer: "It is the same answer as before: change it, or ask for a hint."
     near_typo: "Nearly there: check how you wrote it, there may be a typo."
     near_one_word: "Nearly there: one word is missing, or there is one too many."
+    # D-363: after a try that is not right on an item with rows, how many were right (never which)
+    rows_right: "Right: %{right} of %{total}."
     full_sentence_note: "It was enough to write only the missing words: %{part}."
     try_this: "Try this"
     try_this_reason: "A similar exercise, for the same mistake."

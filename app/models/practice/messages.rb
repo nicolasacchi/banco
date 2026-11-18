@@ -23,6 +23,15 @@ module Practice
       end
     end
 
+    # The line after a try that is not right on an item with rows (D-363): how many rows were right, never which. rows: [right, total] or nil.
+    # nil when the try is right, was sent to the teacher or could not be judged, or when every row is right.
+    def rows_line(outcome, rows)
+      return nil unless rows && %i[typical_error unrecognised form near_miss].include?(outcome.to_sym)
+
+      right, total = rows
+      I18n.t("practice.rows_right", right: right, total: total) if right < total
+    end
+
     def near_miss(near)
       case near&.to_sym
       when :typo then I18n.t("practice.near_typo")

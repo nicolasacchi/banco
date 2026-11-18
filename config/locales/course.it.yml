@@ -178,6 +178,8 @@ it:
     same_answer: "È la stessa risposta di prima: cambiala, oppure chiedi un aiuto."
     near_typo: "Ci sei quasi: controlla come l'hai scritta, forse c'è un errore di battitura."
     near_one_word: "Ci sei quasi: manca una parola, oppure ce n'è una in più."
+    # D-363: after a try that is not right on an item with rows, how many were right (never which)
+    rows_right: "Giuste: %{right} su %{total}."
     full_sentence_note: "Bastava scrivere solo le parole che mancano: %{part}."
     # D-358: the line above an exercise that declares a typical error the student made lately; the item's own message follows.
     reminder_label: "Ricorda:"
