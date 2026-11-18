@@ -2,7 +2,7 @@
 module TeacherMenuHelper
   SUBJECT_CONTROLLERS = %w[graphs tests courses topics reports item_plays items].freeze
 
-  # The section of the menu this page belongs to: home, subjects, search, findings, corrections, comments, students, activity (D-334), preview or nil.
+  # The section of the menu this page belongs to: home, subjects, search, findings, corrections, comments, students, activity (D-334), preview, privacy (D-357) or nil.
   def menu_section
     case controller_name
     when "teacher" then :home
@@ -14,6 +14,7 @@ module TeacherMenuHelper
     when "students", "practice" then :students
     when "activity" then :activity
     when "previews" then :preview
+    when "privacy" then :privacy
     end
   end
 

@@ -1,0 +1,10 @@
+# What the account page (GET /account, D-357) tells about the access portal's rules. These numbers MIRROR the portal's own
+# settings (Authelia: session expiration, inactivity, remember_me and the regulation block); banco does not read the portal and
+# changing a number here changes nothing there. When the operator changes the portal, change this file in the same step.
+session_hours: 12          # a session ends after this many hours
+inactivity_hours: 1        # asks again after this long without activity
+remember_months: 1         # «Ricordami» keeps the session this long
+lockout:
+  wrong_passwords: 5       # this many wrong passwords ...
+  within_minutes: 2        # ... within this many minutes ...
+  ban_hours: 1             # ... block the login for this many hours

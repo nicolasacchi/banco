@@ -38,6 +38,7 @@
         <li><%= link_to t("teacher.menu.students"), with_student("/teacher/students"), id: "menu-students", **menu_current(:students) %></li>
         <% unless reader_only? %><li><%= link_to t("teacher.menu.activity"), "/teacher/activity", id: "menu-activity", **menu_current(:activity) %></li><% end %>
         <% unless reader_only? %><li><%= link_to t("teacher.preview.title"), "/teacher/preview", id: "menu-preview", **menu_current(:preview) %></li><% end %>
+        <% unless view_session? %><li><%= link_to t("teacher.menu.privacy"), "/privacy", id: "menu-privacy", **menu_current(:privacy) %></li><% end %>
         <% if logout_url && !view_session? %><li><a id="logout-link" href="<%= logout_url %>"><%= t("teacher.logout") %></a></li><% end %>
       </ul>
       <p class="access" id="access-line"><%= access_line %></p>

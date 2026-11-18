@@ -67,6 +67,8 @@ it:
         settings: "Impostazioni"
         search: "Cerca"
         comments: "I miei commenti"
+        privacy: "Privacy"
+        account: "Account e password"
       empty: "Nessun commento con questi filtri."
       trial: "account di prova"
       student: "Studente"

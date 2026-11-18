@@ -76,6 +76,8 @@ module ApplicationHelper
     items << [ :diagnosis, t(diagnosis_open? ? "student.menu.diagnosis" : "student.menu.warmup"), preview? ? "#{student_root}/test" : "/diagnosis" ] if student_diagnosis_listed?
     items << [ :comments, t("student.menu.comments"), "/comments" ] unless preview?
     items << [ :settings, t("student.menu.settings"), spath("/settings") ]
+    items << [ :account, t("student.menu.account"), "/account" ] unless preview?
+    items << [ :privacy, t("student.menu.privacy"), "/privacy" ] unless preview?
     items << [ :logout, t("student.logout"), logout_url ] if logout_url && !preview?
     items
   end
@@ -89,6 +91,8 @@ module ApplicationHelper
     when "/search" then :search
     when %r{\A/diagnosis(/|\z)}, %r{\A/(test|warmup|runs)(/|\z)} then :diagnosis
     when "/settings" then :settings
+    when "/account" then :account
+    when "/privacy" then :privacy
     when %r{\A/comments(/\d+)?\z} then :comments
     end
   end

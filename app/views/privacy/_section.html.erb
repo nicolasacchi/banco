@@ -1,0 +1,10 @@
+<%# One section of an information page (D-357): a card with its title, then paragraphs, a bulleted list and numbered steps when it has them. Locals: scope, key, values, extra (a block's name, optional). %>
+<% section = info_section(scope, key, values) %>
+<section class="card info-section" id="<%= scope %>-<%= key %>" data-section="<%= key %>" aria-labelledby="<%= scope %>-<%= key %>-title">
+  <h2 id="<%= scope %>-<%= key %>-title" class="card-title"><%= section[:title] %></h2>
+  <% Array(section[:paragraphs]).each do |text| %><p><%= text %></p><% end %>
+  <% if section[:items].present? %><ul><% section[:items].each do |text| %><li><%= text %></li><% end %></ul><% end %>
+  <% if section[:steps].present? %><ol><% section[:steps].each do |text| %><li><%= text %></li><% end %></ol><% end %>
+  <% Array(section[:after]).each do |text| %><p><%= text %></p><% end %>
+  <%= yield if block_given? %>
+</section>

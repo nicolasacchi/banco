@@ -1,0 +1,22 @@
+<% content_for :title, t("account.title") %>
+<%# Account and password (D-357): how signing in works. The portal's numbers are config/banco/account.yml. %>
+<main class="page" id="account-page">
+  <%= ui_page_header t("account.title") %>
+  <p id="account-intro"><%= t("account.intro") %></p>
+  <% PrivacyHelper::ACCOUNT_SECTIONS.each do |key| %>
+    <%= render "privacy/section", scope: "account", key: key, values: @phrases do %>
+      <% if key == :how %>
+        <% if @portal_url %>
+          <p id="portal-address"><%= t("account.portal_at") %> <%= link_to @portal_url, @portal_url, rel: "noopener", id: "portal-link" %></p>
+        <% else %>
+          <p id="portal-address"><%= t("account.portal_unknown") %></p>
+        <% end %>
+      <% elsif key == :reset && @portal_url %>
+        <p><%= link_to t("account.reset_open"), @portal_url, rel: "noopener", class: "button secondary", id: "portal-reset-link" %></p>
+      <% elsif key == :logout && logout_url && !view_session? %>
+        <p><%= link_to t("student.logout"), logout_url, class: "button secondary", id: "account-logout-link" %></p>
+      <% end %>
+    <% end %>
+  <% end %>
+  <p id="account-privacy-link"><%= t("account.see_privacy") %> <%= link_to t("account.privacy_link"), "/privacy" %></p>
+</main>

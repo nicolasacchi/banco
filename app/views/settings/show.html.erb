@@ -30,4 +30,6 @@
     <p><%= t("lesson2.voices.intro") %></p>
     <div data-voices-target="list"></div>
   </section>
+  <%# D-357: one line to the two information pages; the form above is not touched. %>
+  <p class="hint" id="settings-info-links"><%= link_to t("privacy.settings_links.account"), "/account" %> · <%= link_to t("privacy.settings_links.privacy"), "/privacy" %></p>
 </main>

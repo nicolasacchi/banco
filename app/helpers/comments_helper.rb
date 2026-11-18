@@ -11,7 +11,7 @@ module CommentsHelper
   # The icon of a page kind in "I miei commenti" and on the teacher's cards (all in the structural sprite).
   PLACE_ICONS = { "today" => "compass", "subjects" => "map", "subject" => "map", "topic" => "compass", "lesson" => "book-open", "practice" => "notebook-pen",
                   "diagnosis" => "list-checks", "warmup" => "list-checks", "sitting" => "circle-help", "results" => "list-checks", "settings" => "text-settings",
-                  "search" => "info", "comments" => "comment" }.freeze
+                  "search" => "info", "comments" => "comment", "privacy" => "info", "account" => "info" }.freeze
 
   STATE_ICONS = { "sent" => "send", "read" => "show", "answered" => "teacher-reply", "closed" => "check" }.freeze
 
@@ -87,7 +87,7 @@ module CommentsHelper
   def comment_place_link(comment)
     page = Comments::Pages.parse(comment.page_path) or return nil
     case page.kind
-    when "today", "settings", "search" then comment.page_path
+    when "today", "settings", "search", "privacy", "account" then comment.page_path
     when "subjects" then comment.page_path if course_view.subjects.any?
     when "subject" then comment.page_path if course_view.subject(page.subject_key)
     when "topic", "practice" then comment.page_path if course_view.find_topic(page.topic)
