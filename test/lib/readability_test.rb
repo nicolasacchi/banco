@@ -2,7 +2,7 @@ require "test_helper"
 
 # B-11: high readability. The themes keep a contrast of at least 7:1 for text and
 # buttons; the base type is 20 px with a 1.6 line height; nothing italic or capital.
-# D-350: four themes (cream, light, dark, auto) and six sizes, 14 to 28 px.
+# D-350: four themes (cream, light, dark, auto) and seven sizes, 12 to 28 px.
 class ReadabilityTest < ActiveSupport::TestCase
   CSS = Rails.root.join("app/assets/stylesheets/application.css").read
 
@@ -55,13 +55,13 @@ class ReadabilityTest < ActiveSupport::TestCase
     refute_match(/font-style:\s*italic/, CSS)
     refute_match(/text-transform:\s*(uppercase|capitalize)/, CSS)
     assert_match(/sans-serif/, CSS)
-    # the student's own choice of a smaller root size (html[data-size=smallest|small]) is the one allowed exception
-    CSS.gsub(/html\[data-size="(?:minimum|smallest|small)"\] \{ font-size: \d+px; \}/, "").scan(/font-size:\s*([\d.]+)(px|rem)/) { |size, unit| assert_operator size.to_f * (unit == "rem" ? 20 : 1), :>=, 18, "font-size #{size}#{unit}" }
+    # the student's own choice of a smaller root size (html[data-size=minimum|tiny|smallest|small]) is the one allowed exception
+    CSS.gsub(/html\[data-size="(?:minimum|tiny|smallest|small)"\] \{ font-size: \d+px; \}/, "").scan(/font-size:\s*([\d.]+)(px|rem)/) { |size, unit| assert_operator size.to_f * (unit == "rem" ? 20 : 1), :>=, 18, "font-size #{size}#{unit}" }
   end
 
-  test "the six text sizes: 14, 16, 18, 20 (the default), 24 and 28 px, one per size the student can choose" do
+  test "the seven text sizes: 12, 14, 16, 18, 20 (the default), 24 and 28 px, one per size the student can choose (D-354)" do
     sizes = CSS.scan(/html(?:\[data-size="(\w+)"\])? \{ font-size: (\d+)px; \}/).to_h { |name, px| [ name || "normal", px.to_i ] }
-    assert_equal({ "minimum" => 14, "smallest" => 16, "small" => 18, "normal" => 20, "large" => 24, "larger" => 28 }, sizes)
+    assert_equal({ "minimum" => 12, "tiny" => 14, "smallest" => 16, "small" => 18, "normal" => 20, "large" => 24, "larger" => 28 }, sizes)
     assert_equal Diagnosis::Preferences::SIZES.sort, sizes.keys.sort
   end
 

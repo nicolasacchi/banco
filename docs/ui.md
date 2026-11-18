@@ -31,12 +31,12 @@ inside `.l2`; do not use its classes outside a lesson.
 | Targets and focus | `--tap` 2.75 rem, `--tap-small` 2.25 rem, `--focus-ring`, `--focus-offset` |
 | Motion | `--dur-1` 120 ms, `--dur-2` 240 ms, `--ease` |
 
-The size the student chooses is the root size: Minimo 14 px, Molto piccolo 16, Piccolo 18, Normale 20 (the default), Grande 24, Molto grande 28
+The size the student chooses is the root size: Minimo 12 px, Piccolissimo 14, Molto piccolo 16, Piccolo 18, Normale 20 (the default), Grande 24, Molto grande 28
 (`html[data-size]`). Every length of a page is in rem (or em of it), never px (a border or a hairline aside), so a size scales the text, the
 gaps, the cards, the buttons and the icons together (D-350). Media queries stay in px or rem of the browser (the window, not the size).
 
 Targets: `--tap` and `--tap-small` are 2.75 and 2.25 rem; on a touch screen (`pointer: coarse`) they are `max(that, 44px)`, so a finger always has
-44 CSS px, also at 14 px. A lesson does the same in the last block of `lesson.css`. With a mouse a target follows the size.
+44 CSS px, also at 12 px. A lesson does the same in the last block of `lesson.css`. With a mouse a target follows the size.
 
 A desktop (a window of 1000 px or more, `pointer: fine`) is tighter on the student's pages: `student_scale.css` redefines the spacing, headings,
 radii and targets under `body.student` (a fifth smaller), makes the page 52 rem wide (`--page-w`, 70 ch elsewhere) and lays lists of cards in a grid

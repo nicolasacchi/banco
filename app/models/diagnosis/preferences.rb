@@ -5,11 +5,11 @@ module Diagnosis
   # same pages. The layout puts theme and size on <html> as data-theme and data-size; the item renderer is plain
   # markup in rem, so it follows. `for` answers theme and size only (every old caller); `lesson` the other two.
   # Themes (D-350): cream (the default), light (white, neutral), dark, and auto, which follows the device
-  # (prefers-color-scheme: light shows cream, dark shows dark). Sizes are the root font size, 14 to 28 px, and every
+  # (prefers-color-scheme: light shows cream, dark shows dark). Sizes are the root font size, 12 to 28 px (D-354), and every
   # length of the pages is in rem, so a size scales the whole page, not only the text.
   module Preferences
     THEMES = %w[cream light dark auto].freeze
-    SIZES = %w[minimum smallest small normal large larger].freeze
+    SIZES = %w[minimum tiny smallest small normal large larger].freeze
     LESSON_VIEWS = %w[cards scroll].freeze
     DEFAULT = { theme: "cream", size: "normal" }.freeze
     LESSON_DEFAULT = { lesson_view: "cards", reduce_motion: false, listen: true, slower: false }.freeze

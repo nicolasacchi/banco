@@ -112,7 +112,7 @@ ul.topic-list > li.topic .topic-why { flex-basis: 100%; }
 ul.topic-list > li.topic a.topic-title, ol.topic-list a.topic-title { font-size: var(--text-l); line-height: var(--leading-tight); text-decoration: none; }
 ul.topic-list > li.topic:hover a.topic-title, ol.topic-list > li.topic:hover a.topic-title { text-decoration: underline; text-underline-offset: 0.2em; }
 ul.topic-list > li.topic a.topic-title::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius-l); }
-ul.subject-list .subject-name { font-weight: 700; font-size: var(--text-l); flex: 0 1 auto; min-height: 0; overflow-wrap: break-word; }  /* a long name ("Scienze integrate – Chimica", D-343) wraps */
+ul.subject-list .subject-name { font-weight: 700; font-size: var(--text-l); flex: 0 1 auto; min-height: 0; overflow-wrap: break-word; }  /* a long name ("Scienze integrate Chimica", D-343) wraps */
 ul.subject-list.cards .subject-name { min-height: var(--tap); }
 ul.subject-list .subject-text .subject-state, .subject-list .subject-text .subject-name { display: block; }
 ul.subject-list.cards a.subject-name::after { border-radius: var(--radius-l); }

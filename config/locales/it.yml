@@ -26,6 +26,8 @@ it:
     title: "Impostazioni"
     intro: "Scegli i colori e la grandezza di testi e immagini. Valgono su tutte le pagine."
     saved: "Fatto. Ho salvato la scelta."
+    saved_now: "Salvato"
+    not_saved: "Non sono riuscito a salvare. Premi Salva."
   diagnosis:
     title: "Test d'ingresso"
     placeholder: "La diagnosi d'ingresso sarà qui."
@@ -50,6 +52,7 @@ it:
       size_hint: "Cambia tutta la pagina: testi, pulsanti, immagini e spazi."
       sizes:
         minimum: "Minimo"
+        tiny: "Piccolissimo"
         smallest: "Molto piccolo"
         small: "Piccolo"
         normal: "Normale"

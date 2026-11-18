@@ -3,7 +3,7 @@ require_relative "../support/multi_user"
 require_relative "../support/student_course_world"
 
 # Educazione civica (D-345): a view in Materie over topics of other subjects, by the three nuclei of config/banco/civics.yml.
-# Optional but visible: built only from what the student's course view shows, no progress of its own, never in Oggi.
+# Mandatory (D-354) and visible: built only from what the student's course view shows, no progress of its own, never in Oggi.
 class CivicsViewTest < ActionDispatch::IntegrationTest
   include MultiUser
   include StudentCourseWorld
@@ -68,12 +68,13 @@ class CivicsViewTest < ActionDispatch::IntegrationTest
 
   # ---- the card ---------------------------------------------------------------------------------------
 
-  test "Materie shows the Educazione civica card after the subjects, optional, with the number of visible topics" do
+  test "Materie shows the Educazione civica card after the subjects, mandatory, with the number of visible topics" do
     build_civics_world
     page(OFFICIAL, "/subjects")
     assert_response :success
     assert_select "#civics-card a.subject-name[href='/civics']", "Educazione civica"
-    assert_select "#civics-card .pill", "Facoltativo · in più materie"
+    assert_select "#civics-card .pill", "Obbligatoria · in più materie"
+    assert_no_match(/facoltativ/i, css_select("#civics-card").text, "D-354: the card never says optional")
     assert_select "#civics-card [data-civics-count]", "4 argomenti", "two of law, one of geography, one of computer science; the draft and the missing lesson are not visible"
     assert_equal "civics-card", css_select("ul#subjects > li").last["id"], "after the subjects"
     assert_select "#civics-card .progress-line[data-line=required]", 0
@@ -109,7 +110,8 @@ class CivicsViewTest < ActionDispatch::IntegrationTest
     page(OFFICIAL, "/civics")
     assert_response :success
     assert_select "h1", "Educazione civica"
-    assert_select "#civics-intro", /Non è una materia a sé: sono argomenti di altre materie/
+    assert_select "#civics-intro", "Educazione civica è obbligatoria. I suoi argomenti sono dentro le altre materie: qui li trovi raccolti."
+    assert_no_match(/facoltativ/i, css_select("#civics-intro, h1, .page-header").map(&:text).join(" "), "D-354: Educazione civica is mandatory, nothing in its heading or intro says optional")
     assert_select "a.back[href='/subjects']", /Materie/
     assert_equal %w[constitution digital], nucleus_keys, "the nucleus with no visible topic is not drawn"
     assert_equal [ DONE_TOPIC, TODO_TOPIC, EXTRA_TOPIC ], keys_in("constitution"), "in the order of civics.yml"

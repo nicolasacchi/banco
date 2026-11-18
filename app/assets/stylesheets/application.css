@@ -3,7 +3,7 @@
  * text aligned left, lines of at most 70 characters, no italics, no capitals for
  * emphasis, bold only on keywords, no alarm colours. Themes of contrast at
  * least 7:1: cream (the default), light (white), dark and auto (the device's own: cream by day, dark by night), by the student's
- * choice; six text sizes, 14 to 28 px at the root, and every length below is in rem, so a size scales the whole page (D-350).
+ * choice; seven text sizes, 12 to 28 px at the root, and every length below is in rem, so a size scales the whole page (D-350).
  */
 /* Atkinson Hyperlegible, SIL Open Font License 1.1 (public/vendor/atkinson-hyperlegible@5.3.0/LICENSE). */
 @font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 400; font-display: swap;
@@ -89,7 +89,8 @@
 
 /* The text size the student chooses is the root size; everything else is in rem (or em of it), so it scales the whole page. */
 html { font-size: 20px; }
-html[data-size="minimum"] { font-size: 14px; }
+html[data-size="minimum"] { font-size: 12px; }
+html[data-size="tiny"] { font-size: 14px; }
 html[data-size="smallest"] { font-size: 16px; }
 html[data-size="small"] { font-size: 18px; }
 html[data-size="large"] { font-size: 24px; }

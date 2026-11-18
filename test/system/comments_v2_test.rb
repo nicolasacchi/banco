@@ -46,7 +46,7 @@ class CommentsV2Test < ApplicationSystemTestCase
   test "open the inbox, open a conversation, send with Enter and see the bubble; Shift+Enter is a new line" do
     comment = answered_comment
     visit "/comments"
-    assert_selector "#reply-window", text: "Il docente risponde entro un giorno.", wait: 10
+    assert_selector "#reply-window", text: "Di solito il docente risponde entro 24 ore.", wait: 10
     assert_selector "#comment-tabs [data-tab=new] .cm-tab-n", text: "1"
     assert_selector "#comment-#{comment.id}[data-unread=true] .cm-dot"
     assert_equal %w[reply], comment.events.reload.map(&:kind), "the list marks nothing seen"

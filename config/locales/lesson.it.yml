@@ -69,6 +69,7 @@ it:
       auto: "Automatico"
     sizes:
       minimum: "Minimo"
+      tiny: "Piccolissimo"
       smallest: "Più piccolo"
       small: "Piccolo"
       normal: "Normale"

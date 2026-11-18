@@ -415,7 +415,7 @@ class CommentsTest < ActionDispatch::IntegrationTest
     assert_select ".cm-msg[data-from=student] .comment-reason", /Non capisco/
     assert_select ".cm-day", 1
     assert_select ".cm-day", /Oggi/
-    assert_select "#reply-window, .cm-window", /Il docente risponde entro un giorno\./
+    assert_select "#reply-window, .cm-window", /Di solito il docente risponde entro 24 ore\./
     assert_select "form.cm-composer[action='/comments/#{comment.id}/reply']" do
       assert_select "textarea[maxlength='500'][name=text_it]"
       assert_select "button", "Invia"
@@ -499,7 +499,7 @@ class CommentsTest < ActionDispatch::IntegrationTest
     assert_select "#comment-#{fresh.id} .cm-preview", /Tu: Nuovo/
     assert_select "#comment-#{old.id} .cm-preview", /Docente: Risposta al vecchio/
     assert_select "#comment-#{fresh.id} .cm-row-time", /oggi \d\d:\d\d/
-    assert_select "#reply-window", /Il docente risponde entro un giorno\./
+    assert_select "#reply-window", /Di solito il docente risponde entro 24 ore\./
     student_reply(old, "Grazie mille")
     on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE)
     assert_equal [ old.id, fresh.id ], css_select(".cm-row").map { |n| n["data-comment"].to_i }, "a follow-up brings the conversation back to the top"
@@ -593,7 +593,7 @@ class CommentsTest < ActionDispatch::IntegrationTest
 
   test "the answer time is in one config file" do
     assert_equal 24, Comments::ReplyWindow.hours
-    assert_equal "Il docente risponde entro un giorno.", Comments::ReplyWindow.line_it
+    assert_equal "Di solito il docente risponde entro 24 ore.", Comments::ReplyWindow.line_it
     assert_equal "un'ora", Comments::ReplyWindow.span_it(3600)
     assert_equal "6 ore", Comments::ReplyWindow.span_it(6 * 3600)
     assert_equal "2 giorni", Comments::ReplyWindow.span_it(48 * 3600)

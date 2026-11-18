@@ -63,7 +63,9 @@ it:
       text_it: "Scrivi da 1 a 500 caratteri."
       no_teacher_reply: "Puoi rispondere dopo la risposta del docente."
       other: "Non riesco a inviare la risposta. Riprova."
-    reply_within: "Il docente risponde entro %{span}."
+    reply_within:
+      one: "Di solito il docente risponde entro un'ora."
+      other: "Di solito il docente risponde entro %{count} ore."
     span:
       days:
         one: "un giorno"
