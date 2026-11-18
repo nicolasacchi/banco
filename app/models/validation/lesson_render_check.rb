@@ -1,6 +1,7 @@
 module Validation
   # Renders one stored lesson/2 revision in the server's Chrome and appends what it found as a lesson_renders row
-  # (D-249). Outside any transaction while Chrome works; one insert after. Infrastructure trouble is raised, and the
+  # (D-249). It also keeps the segments the lesson says aloud (D-359, lesson/speech_segments.js), which the clips are made from.
+  # Outside any transaction while Chrome works; one insert after. Infrastructure trouble is raised, and the
   # job records it as an `error` row (never a pass) and retries.
   class LessonRenderCheck
     # The wait for the shared Chrome lock never depends on the revision budget (a budget of 0 in a test must not mean "no wait").
@@ -23,13 +24,13 @@ module Validation
         result = draw(token)
         renders = 2
       end
-      append(status: result.status, chrome_version: result.chrome_version, shots: result.shots,
+      append(status: result.status, chrome_version: result.chrome_version, shots: result.shots, segments: result.segments,
              result: { "errors" => result.errors, "cards" => result.cards, "viewports" => result.viewports, "elapsed_seconds" => result.elapsed,
                        "exceptions" => result.exceptions, "timings" => result.timings, "loads" => result.loads, "render_attempts" => renders })
     end
 
     def record_error(error)
-      append(status: "error", chrome_version: nil, shots: [], result: { "errors" => [], "message" => "#{error.class}: #{error.message}".first(300) })
+      append(status: "error", chrome_version: nil, shots: [], segments: nil, result: { "errors" => [], "message" => "#{error.class}: #{error.message}".first(300) })
     end
 
     private
@@ -40,9 +41,10 @@ module Validation
       end
     end
 
-    def append(status:, chrome_version:, shots:, result:)
+    def append(status:, chrome_version:, shots:, segments:, result:)
       LessonRender.create!(lesson_revision: @revision, status: status, rules_version: Rules.version.to_s, harness_version: Harness.lesson_version,
-                           chrome_version: chrome_version, attempt: @attempt, result_json: JSON.generate(result), shots_json: JSON.generate(shots))
+                           chrome_version: chrome_version, attempt: @attempt, result_json: JSON.generate(result), shots_json: JSON.generate(shots),
+                           segments_json: segments && JSON.generate(segments))
     end
   end
 end

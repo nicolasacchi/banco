@@ -1,0 +1,40 @@
+{
+  "engine": "kokoro-82m-v1.0",
+  "vectors": [
+    {
+      "voice": "im_nicola",
+      "text": "Ciao, questa è la mia voce.",
+      "key": "c07f5f62fe5de7610e8f4d3e1074bfd07aeaf86c4c414c22c6f9f5510384a44c"
+    },
+    {
+      "voice": "af_bella",
+      "text": "Hello, this is my voice.",
+      "key": "cae4abdec1c36333db4e714230270fec3ebe625408bd1e548518b2dc6f912c66"
+    },
+    {
+      "voice": "em_alex",
+      "text": "¿Cuándo llegas, Niño? Sí — «mañana».",
+      "key": "db67df025b5bd69ed8e2dcf53bca8994ae1b2d63ff9090ce70e1af72d908e538"
+    },
+    {
+      "voice": "af_heart",
+      "text": "She said, \"I don't know\" — and left.",
+      "key": "ea7339bf0c16c8723ecd53dec6a61622f0ef71e4ca50711a2157e7080fdfeed7"
+    },
+    {
+      "voice": "ef_dora",
+      "text": "Hola, esta es mi voz.",
+      "key": "1c8101c9c15ba25309567f0ed12ddd4583ad1212a5b01bf48991f3e1004780a2"
+    },
+    {
+      "voice": "im_nicola",
+      "text": "L'età di Perché: «più» o \"meno\"? Già.",
+      "key": "e579321ed7c56783052ebf4e95a92e3aa7d577586d5cf74c5993d052f52febd9"
+    },
+    {
+      "voice": "af_heart",
+      "text": "Hello, this is my voice.",
+      "key": "38258d9dc997c053de0340840c1163168f70fc4c96b648e70e6da242180cdda6"
+    }
+  ]
+}

@@ -56,6 +56,13 @@
       <%= t("teacher.render.pending") %>
     <% end %>
   </div>
+  <% audio = Speech::Plan.coverage(revision) %>
+  <% if audio && audio[:total].positive? %>
+    <div class="render-line" id="audio-line" data-render-state="<%= audio[:ready] == audio[:total] ? "passed" : "pending" %>" role="status">
+      <strong><%= t("teacher.render.audio.label") %>:</strong>
+      <%= t("teacher.render.audio.ready", ready: audio[:ready], count: audio[:total]) %>
+    </div>
+  <% end %>
   <% pins = Pages::Pins.of_lesson(revision).select { |pin| pin[:revision] } %>
   <% if pins.any? %>
     <div class="render-line" id="pages-line" role="status">

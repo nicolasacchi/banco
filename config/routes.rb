@@ -48,6 +48,8 @@ Rails.application.routes.draw do
     end
     # The poster of a free page (D-290): the validation screenshot by content address, for every signed-in role.
     get "page-posters/:sha" => "page_posters#show", constraints: { sha: /[0-9a-f]{64}/ }, format: false
+    # The spoken clips of the lessons (D-359), named by the key of their recipe; any other name is the controller's 404.
+    get "speech/clips/:key.mp3" => "speech_clips#show", constraints: { key: %r{[^/.]+} }, format: false
     # Figures drawn by agents: images only, named by their digest.
     get "assets/items/:sha256.svg" => "item_assets#show", constraints: { sha256: /[0-9a-f]{64}/ }, format: false
   end

@@ -11,6 +11,12 @@ it:
         one: "1 errore."
         other: "%{count} errori."
       card_link: "Scheda %{n}: %{title}"
+      # D-359: the clips of the server's voices for the revision's «Ascolta»
+      audio:
+        label: "Audio"
+        ready:
+          one: "%{ready} di %{count} frase pronta"
+          other: "%{ready} di %{count} frasi pronte"
       cover: "Copertina"
       whole: "Tutta la lezione"
       page: "Vedi le immagini"

@@ -6,6 +6,8 @@ class LessonRender < ApplicationRecord
 
   def result = JSON.parse(result_json)
   def shots = JSON.parse(shots_json)
+  # The segments the host found the lesson saying aloud ([{"lang", "text", "voice"}], D-359), or nil on a row made before they were collected.
+  def segments = segments_json && JSON.parse(segments_json)
   def errors_list = Array(result["errors"])
   def passed? = status == "passed"
 
