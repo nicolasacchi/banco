@@ -59,6 +59,7 @@ class ItemRenderTest < ApplicationSystemTestCase
       seen << component
       check_matching_exclusion if component == "matching"
       check_minus_key if %w[number fraction].include?(component)
+      check_options_stacked if component == "choice"
       number = give_up + 1
       if component == "short_answer"
         assert_selector ".item-body .passage", text: "Un breve testo da riassumere."
@@ -81,6 +82,15 @@ class ItemRenderTest < ApplicationSystemTestCase
     assert_equal "-5", box.value
     assert page.evaluate_script("document.activeElement === document.querySelector('[data-sitting-target=itemBox] .answer input.answer-input')")
     box.set("")
+  end
+
+  # A choice draws one option per line, whatever their length: a short option never sits beside another, so each radio is next to its
+  # own words only (the generic radio label of components.css is inline).
+  def check_options_stacked
+    tops = page.evaluate_script("Array.from(document.querySelectorAll('[data-sitting-target=itemBox] fieldset.options > label.option')).map(function (l) { return Math.round(l.getBoundingClientRect().top); })")
+    assert_operator tops.size, :>=, 2
+    assert_equal tops.size, tops.uniq.size, "two options share a line: #{tops}"
+    assert_equal tops, tops.sort, "the options are not one under the other: #{tops}"
   end
 
   # D-086: an entry chosen in one select is disabled in the others, and free again once cleared.

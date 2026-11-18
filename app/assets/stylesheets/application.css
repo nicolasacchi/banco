@@ -197,6 +197,9 @@ img.figure { display: block; max-width: 100%; max-height: min(26rem, 60vh); widt
 
 fieldset.options { border: 0; padding: 0; margin: 0; }
 .option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.5rem 0.25rem; cursor: pointer; }
+/* An item's choice: one option per line, so a radio sits beside its own words only. Stronger than the inline radio label of
+   components.css (label:has(> input[type=radio])), which put short options side by side since D-306. */
+fieldset.answer.options > label.option { display: flex; }
 .option input { width: 1.4rem; height: 1.4rem; margin-top: 0.25rem; flex: none; }
 .option-key { color: var(--muted); min-width: 1rem; }
 .fraction { display: inline-flex; flex-direction: column; align-items: center; }
