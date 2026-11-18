@@ -32,6 +32,8 @@ it:
       stop: "Ferma"
       accepted: "scelta"
       not_accepted: "non ancora scelta"
+      server_voice: "voce del programma"
+      server_missing: "Questa voce non è ancora pronta."
       language_it: "Italiano"
       language_en: "Inglese"
       language_es: "Spagnolo"

@@ -1,14 +1,18 @@
 // The device side of "Ascolta" (D-283): which voices the device has, whether a speaker may be shown, the student's two switches, and the sentences
 // of "Prova le voci". The frozen contract (gate, walker, player) is lesson/speech.js.
 import { GATE, voiceFor } from "lesson/speech"
-import { state, device, notify, voicesList } from "lesson/speech_state"
+import voices from "lesson/voices"
+import { state, device, notify, voicesList, canPlayClips } from "lesson/speech_state"
+import { serverVoice } from "lesson/speech_clips"
 
 export { voicesList }
 
 
-// configure({ accepted, synth }): tests, and the settings page (which tries every local voice). synth: an object like speechSynthesis.
-export function configure({ accepted, synth } = {}) {
+// configure({ accepted, synth, audio }): tests, and the settings page (which tries every local voice). synth: an object like speechSynthesis;
+// audio: the <audio> (or an object like it) that plays the server clips.
+export function configure({ accepted, synth, audio } = {}) {
   if (accepted) state.accepted = accepted
+  if (audio !== undefined) state.audio = audio
   if (synth !== undefined) {
     state.watching?.synth?.removeEventListener?.("voiceschanged", state.watching.fn)
     state.watching = null
@@ -25,9 +29,10 @@ export function setPreferences({ listen, slower } = {}) {
 }
 export const preferences = () => ({ listen: state.listen, slower: state.slower })
 
-// Whether a speaker may be shown for +lang+: the switch is on and the gate lets a voice through.
+// Whether a speaker may be shown for +lang+: the switch is on and the language has server voices (their clips play where the browser has Audio),
+// or the gate lets a device voice through. A missing clip is met when it is pressed, not here: it falls back to the accepted device voice, or skips.
 export function hasVoice(lang, { preview = false } = {}) {
-  return state.listen && voiceFor(lang, voicesList(), { preview }) !== null
+  return state.listen && ((canPlayClips() && serverVoice(lang) !== null) || voiceFor(lang, voicesList(), { preview }) !== null)
 }
 
 // Called when the voice list or a switch changes (voiceschanged arrives late on Safari). Returns the function that stops listening.
@@ -60,4 +65,17 @@ export function localVoices(available = voicesList()) {
     .map((v) => ({ voice: v, name: v.name, lang: v.lang, language: GATE.languages.find((l) => String(v.lang ?? "").toLowerCase().replace("_", "-").startsWith(l)) }))
     .filter((v) => v.language)
     .map((v) => ({ ...v, accepted: (state.accepted[v.language] ?? []).includes(v.name) }))
+}
+
+// The samples of "Prova le voci" for the server voices: one per voice, its first sentence of +sentences+ (lesson2.voices.sentences). A sample is a
+// segment like any other ({ lang, text, voice: the place of the voice in its language's list }), so its clip is generated and found like any other.
+// -> [{ lang, name, text, voice }] in the order of the languages and of the voices.
+export function serverSamples(sentences, config = voices.server) {
+  const out = []
+  for (const lang of GATE.languages) {
+    const sentence = String(sentences?.[lang] ?? "")
+    const text = sentence.match(/^.*?[.!?](?=\s|$)/s)?.[0] ?? sentence
+    ;(config?.voices?.[lang] ?? []).forEach((name, i) => { if (text) out.push({ lang, name, text, voice: i + 1 }) })
+  }
+  return out
 }

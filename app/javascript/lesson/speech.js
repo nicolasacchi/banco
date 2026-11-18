@@ -1,13 +1,15 @@
-// "Ascolta": the device's own voice (WAVE2 section 4; contract frozen in W2-0, built by T2, D-283). The Web Speech API's speechSynthesis with a
-// voice of the device: no network, nothing generated, no recognition, no recording of the student (firm rule 1, D-267).
-// A voice is used only if it is local, speaks it, en or es, and is in config/banco/voices.yml (the voices the operator heard on the student's
-// device and accepted). "Ascolta" never autoplays; it stops on card change, on Escape, when focus leaves the card and when another speaker
+// "Ascolta" (WAVE2 section 4; contract frozen in W2-0, built by T2, D-283). The voices are the server's clips, generated ahead of time from the
+// teacher-approved text of the lesson and played by an <audio> (D-359), and, where a clip is missing, a voice of the device through the Web
+// Speech API's speechSynthesis: no network voice of the browser, nothing generated at the student's request, no recognition, no recording of the
+// student (firm rule 1, D-267). A device voice is used only if it is local, speaks it, en or es, and is in config/banco/voices.yml (the voices the
+// operator heard on the student's device and accepted). "Ascolta" never autoplays and fetches nothing before a tap; it stops on card change, on Escape, when focus leaves the card and when another speaker
 // starts (A10). Speech is built from the VISIBLE state of the card (4.3): a value not yet on screen is never read aloud.
 //
 // This file is the core: the gate, the walker of a rendered card and the player. The buttons are lesson/speech_ui.js; how a formula, a chemical
 // formula, a code span and a string of bits sound is lesson/speech_math.js. Nothing here touches the document at import time, so Node can load it.
 import voices from "lesson/voices"
-import { state, device, voicesList } from "lesson/speech_state"
+import { state, device, voicesList, audio, canPlayClips } from "lesson/speech_state"
+import { clipFor } from "lesson/speech_clips"
 import { texToSpeech, codeToSpeech, plainToSpeech, bitsToSpeech } from "lesson/speech_math"
 
 export const GATE = Object.freeze({ localService: true, languages: ["it", "en", "es"] })
@@ -109,7 +111,7 @@ export function speechOf(root) {
     const own = langOf(node, lang)
     if (typeof node.speechSegments === "function") {
       flush()
-      for (const seg of node.speechSegments() ?? []) if (seg?.text) out.push({ lang: seg.lang ?? "it", text: String(seg.text).replace(/\s+/g, " ").trim(), node })
+      for (const seg of node.speechSegments() ?? []) if (seg?.text) out.push({ lang: seg.lang ?? "it", text: String(seg.text).replace(/\s+/g, " ").trim(), node, ...(seg.voice ? { voice: seg.voice } : {}) })
       return
     }
     const cls = classes(node)
@@ -155,16 +157,22 @@ export function speechOf(root) {
 
 // ---- the player ---------------------------------------------------------------------------------------------------------------------------
 
-// speak(segments, { rate, slower, voice, preview, onSegment, onBoundary, onEnd }) -> { stop() } : plays the segments one after the other, switching
-//   voice at each lang. A segment whose language has no accepted voice is skipped. Stops what was playing before (one speaker at a time).
+// speak(segments, { rate, slower, voice, preview, device, onSegment, onBoundary, onEnd }) -> { stop() } : plays the segments one after the other.
+//   A segment { lang, text, voice } is played with its server clip (lesson/speech_clips.js: the voice of its language for the speaker number
+//   `voice`, 1 when none) in the one <audio>, at the rate of the card ("Più lento"). When the clip is missing or cannot be played, the accepted
+//   device voice of the language says it, if there is one (D-267), else the segment is skipped. A language with no server voice (Latin) goes to the
+//   device voice or is skipped. With the option +voice+ (a device voice: "Prova le voci") the device says everything; with `device: false` a missing clip is skipped, never
+//   said by the device ("Prova le voci" tries the server voice itself). Stops what was playing before
+//   (one speaker at a time). Nothing is fetched before the call: the clip of a segment is asked for when its turn comes.
 //   onSegment(index, segment) when one starts; onBoundary(segment, charIndex, charLength) at each word where the device says it;
 //   onEnd({ stopped }) once, when the last one ended or stop() was called.
-export function speak(segments, { rate, slower, voice, preview = false, onSegment, onBoundary, onEnd } = {}) {
+export function speak(segments, { rate, slower, voice, preview = false, device: useDevice = true, onSegment, onBoundary, onEnd } = {}) {
   stopAll()
   const synth = device()
   const queue = (segments ?? []).filter((s) => s?.text && String(s.text).trim())
   let done = false
   let index = 0
+  let releaseClip = null
   const handle = {
     stopped: false,
     stop() {
@@ -176,31 +184,81 @@ export function speak(segments, { rate, slower, voice, preview = false, onSegmen
   const finish = (stopped) => {
     if (done) return
     done = true
+    releaseClip?.()
     if (state.current === handle) state.current = null
     if (stopped) { try { synth?.cancel?.() } catch (_error) { /* nothing to cancel */ } }
     onEnd?.({ stopped })
   }
   state.current = handle
   const Utterance = globalThis.SpeechSynthesisUtterance
-  const next = () => {
-    if (done || handle.stopped) return
-    let chosen = null
-    while (index < queue.length && !(chosen = voice ?? voiceFor(queue[index].lang, voicesList(), { preview }))) index += 1
-    if (index >= queue.length || !synth || !Utterance) {
-      finish(false)
-      return
-    }
-    const segment = queue[index]
+  const rateOf = (segment) => rate ?? rateFor(segment.lang, slower ?? state.slower)
+  const advance = () => { index += 1; next() }
+  // the device voice that may say a segment, or null (the gate of D-267)
+  const deviceVoiceOf = (segment) => (!useDevice || !synth || !Utterance ? null : (voice ?? voiceFor(segment.lang, voicesList(), { preview })))
+  const utter = (segment, chosen) => {
     const utterance = new Utterance(segment.text)
     utterance.voice = chosen
     utterance.lang = chosen.lang
-    utterance.rate = rate ?? rateFor(segment.lang, slower ?? state.slower)
+    utterance.rate = rateOf(segment)
     utterance.onstart = () => onSegment?.(index, segment)
     utterance.onboundary = (event) => onBoundary?.(segment, event.charIndex, event.charLength)
-    utterance.onend = () => { index += 1; next() }
+    utterance.onend = advance
     utterance.onerror = () => finish(false)
     handle.utterance = utterance // kept: a browser may collect an utterance that nobody holds before it ends
     synth.speak(utterance)
+  }
+  const fallback = (segment) => {
+    const chosen = deviceVoiceOf(segment)
+    if (chosen) utter(segment, chosen)
+    else advance()
+  }
+  // plays the clip in the shared <audio>; called inside the tap for the first segment (Safari), the later ones follow `ended`
+  const playClip = (segment, clip) => {
+    const player = audio()
+    let settled = false
+    const detach = () => { player.onended = null; player.onerror = null; player.onplaying = null }
+    const settle = () => {
+      if (settled || done) return false
+      settled = true
+      detach()
+      return true
+    }
+    const failed = () => {
+      if (!settle()) return
+      try { player.pause() } catch (_error) { /* nothing is playing */ }
+      fallback(segment)
+    }
+    releaseClip = () => {
+      detach()
+      try { player.pause() } catch (_error) { /* nothing is playing */ }
+      player.removeAttribute?.("src") // the next clip loads on its own; this one stops fetching
+      releaseClip = null
+    }
+    player.onended = () => { if (settle()) advance() }
+    player.onerror = failed
+    player.onplaying = () => { if (!settled && !done) onSegment?.(index, segment) }
+    const speed = rateOf(segment)
+    player.defaultPlaybackRate = speed // loading a source puts the rate back to this one
+    player.src = clip.url
+    player.playbackRate = speed
+    try {
+      player.play()?.catch?.(() => failed())
+    } catch (_error) {
+      failed()
+    }
+  }
+  function next() {
+    if (done || handle.stopped) return
+    releaseClip = null // the clip that just ended or failed stays in the <audio> until the next one replaces it
+    while (index < queue.length) {
+      const segment = queue[index]
+      const clip = voice || !canPlayClips() ? null : clipFor(segment)
+      if (clip) { playClip(segment, clip); return }
+      const chosen = deviceVoiceOf(segment)
+      if (chosen) { utter(segment, chosen); return }
+      index += 1
+    }
+    finish(false)
   }
   next()
   return handle
