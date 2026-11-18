@@ -14,6 +14,11 @@
             <a class="button secondary small" href="<%= with_student_for(student, teacher_practice_path(key: subject.key)) %>"><%= t("teacher.menu.practice") %></a></span></li>
         <% end %>
       </ul>
+      <%# D-360: the student's data as one zip. The teacher only: a guest sees the page but not the link. %>
+      <% if current_identity&.teacher? %>
+        <p class="student-data"><a class="button secondary small" href="<%= teacher_student_data_path(key: student.key) %>"><%= t("teacher.students.data") %></a>
+          <span class="muted"><%= t("teacher.students.data_note") %></span></p>
+      <% end %>
     </section>
   <% end %>
 </main>

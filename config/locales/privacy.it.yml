@@ -98,6 +98,9 @@ it:
         - "la portabilità: avere i dati in un formato che si può leggere e trasferire."
       after:
         - "Per esercitare un diritto: %{contact}."
+    download:
+      text: "Puoi scaricare i tuoi dati: tutto quello che banco ha su di te, in un solo file. Non cambia niente e non serve chiedere."
+      link: "Scarica i miei dati"
     garante: "Se pensi che i dati non siano trattati bene, puoi fare reclamo al Garante per la protezione dei dati personali:"
     cookies:
       title: "Cookie e dati nel browser"

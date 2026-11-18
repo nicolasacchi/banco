@@ -7,6 +7,10 @@
     <% if key == :rights %>
       <%= render "privacy/section", scope: "privacy", key: key, values: @values do %>
         <p><%= t("privacy.garante") %> <%= link_to Privacy::Notice::GARANTE_URL.delete_prefix("https://"), Privacy::Notice::GARANTE_URL, rel: "noopener", id: "garante-link" %></p>
+        <%# D-360: the student's own zip; the teacher and a guest have no data of their own here. %>
+        <% if current_identity&.student? %>
+          <p id="privacy-data-download"><%= t("privacy.download.text") %> <%= link_to t("privacy.download.link"), "/privacy/data", id: "data-download-link" %></p>
+        <% end %>
       <% end %>
     <% else %>
       <%= render "privacy/section", scope: "privacy", key: key, values: @values %>
