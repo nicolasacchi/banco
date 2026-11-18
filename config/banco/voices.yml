@@ -18,3 +18,14 @@ preference:
   it: ["it-IT", "it"]
 # Speech rates: normal 1.0, "Più lento" 0.8, English 0.75 and Spanish 0.7 when slowed.
 rates: {normal: 1.0, slower: 0.8, slower_en: 0.75, slower_es: 0.7}
+# The server voices (D-359): clips made ahead of time with Kokoro-82M (Apache-2.0, kokoro-onnx, on the CPU of the server) from the sentences a
+# lesson says, never at the student's request and never from anything but the teacher-approved text; stored by content and served as MP3 from
+# `clip_path`. A language lists its voices in order: in a dialogue each speaker has a voice (speaker 1 the first, speaker 2 the second, then
+# alternating), everything else uses the first. A language with no voice here (la) has no clip. The key of a clip is the SHA-256 of
+# "<engine>|<voice name>|<text>" (Speech::Key in Ruby, lesson/speech_clips.js in the browser; test/fixtures/speech/keys.json holds the vectors):
+# changing the engine or a voice name makes every clip new. The browser plays a clip when it exists, else an accepted device voice, else skips.
+server:
+  engine: "kokoro-82m-v1.0"
+  voices: {it: [im_nicola], en: [af_heart, af_bella], es: [ef_dora, em_alex]}
+  clip_path: "/speech/clips"
+  format: mp3

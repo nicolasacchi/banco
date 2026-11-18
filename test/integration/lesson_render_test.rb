@@ -234,6 +234,71 @@ class LessonRenderTest < ActionDispatch::IntegrationTest
     assert_select "#approve-checks [data-check=render][data-done=false]"
   end
 
+  # ---- the audio (D-359) ----
+
+  def segments_row!(segments, revision: @revision)
+    LessonRender.create!(lesson_revision: revision, status: "passed", harness_version: Validation::Harness.lesson_version, result_json: "{}", shots_json: "[]",
+                         segments_json: JSON.generate(segments))
+  end
+
+  test "the lesson box says how many of the revision's phrases have their clip, and nothing while the segments are not known" do
+    open_topic_page!(headers: TEACHER)
+    assert_select "#audio-line", count: 0
+    render_row! # a render from before the segments were collected
+    open_topic_page!(headers: TEACHER)
+    assert_select "#audio-line", count: 0
+    segments_row!([ { "lang" => "en", "text" => "Hello.", "voice" => 1 }, { "lang" => "en", "text" => "Hi there.", "voice" => 2 },
+                    { "lang" => "it", "text" => "Ciao.", "voice" => 1 }, { "lang" => "la", "text" => "Rosa.", "voice" => 1 } ])
+    open_topic_page!(headers: TEACHER)
+    assert_select "#audio-line", /Audio:\s*0 di 3 frasi pronte/
+    assert_select "#audio-line[data-render-state=pending]"
+    stub = Speech::Client::Stub.new
+    Dir.mktmpdir do |dir|
+      ENV["BANCO_SPEECH_CLIPS_DIR"] = dir
+      Speech::Client.using(stub) { SpeakLessonRevisionJob.perform_now(@revision.id) }
+      open_topic_page!(headers: TEACHER)
+      assert_select "#audio-line[data-render-state=passed]", /Audio:\s*3 di 3 frasi pronte/
+    ensure
+      ENV.delete("BANCO_SPEECH_CLIPS_DIR")
+    end
+    segments_row!([ { "lang" => "it", "text" => "Una sola frase." } ])
+    Speech::Client.using(stub) { open_topic_page!(headers: TEACHER) }
+    assert_select "#audio-line", /Audio:\s*0 di 1 frase pronta/
+  end
+
+  test "a render that passes hands the revision to the clips job when there is a TTS service, a failed one does not, and the segments are stored with the row" do
+    segments = [ { "lang" => "en", "text" => "Hello.", "voice" => 1 } ]
+    passed = ->(revision, attempt: 1) { Struct.new(:revision) { define_method(:call) { LessonRender.create!(lesson_revision: revision, status: "passed", harness_version: "x", result_json: "{}", shots_json: "[]", segments_json: JSON.generate(segments)) } }.new(revision) }
+    Speech::Client.using(Speech::Client::Stub.new) do
+      Validation::LessonRenderCheck.stub(:new, passed) do
+        assert_enqueued_with(job: SpeakLessonRevisionJob, args: [ @revision.id ]) { RenderLessonRevisionJob.perform_now(@revision.id) }
+      end
+    end
+    assert_equal segments, LessonRender.verdict_for(@revision).segments
+    other = lesson_revision_with_body!("ripasso.math.other", "math.number")
+    failed = ->(revision, attempt: 1) { Struct.new(:revision) { define_method(:call) { LessonRender.create!(lesson_revision: revision, status: "failed", harness_version: "x", result_json: "{}", shots_json: "[]") } }.new(revision) }
+    Speech::Client.using(Speech::Client::Stub.new) do
+      Validation::LessonRenderCheck.stub(:new, failed) do
+        assert_no_enqueued_jobs(only: SpeakLessonRevisionJob) { RenderLessonRevisionJob.perform_now(other.id) }
+      end
+    end
+    Speech::Client.using(nil) do
+      Validation::LessonRenderCheck.stub(:new, passed) do
+        yet_another = lesson_revision_with_body!("ripasso.math.third", "math.number")
+        assert_no_enqueued_jobs(only: SpeakLessonRevisionJob) { RenderLessonRevisionJob.perform_now(yet_another.id) }
+      end
+    end
+  end
+
+  test "the check stores the segments the runner collected with the verdict, and an error row has none" do
+    result = render_result("passed")
+    result.segments = [ { "lang" => "en", "text" => "Hello.", "voice" => 1 } ]
+    render_with_results(@revision, result)
+    assert_equal [ { "lang" => "en", "text" => "Hello.", "voice" => 1 } ], LessonRender.where(lesson_revision_id: @revision.id).sole.segments
+    Validation::LessonRenderCheck.new(@revision).record_error(Validation::ChromeRunner::Unavailable.new("no chrome"))
+    assert_nil LessonRender.where(lesson_revision_id: @revision.id).order(:id).last.segments
+  end
+
   # ---- the job ----
 
   test "the job appends one verdict, does nothing twice, and Chrome trouble is an error row per attempt and never a pass" do

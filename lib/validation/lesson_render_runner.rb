@@ -17,7 +17,7 @@ module Validation
   # database. Time: a budget per revision and per card-viewport (E-LESSON-RENDER "timeout"); infrastructure
   # trouble (Chrome gone, the host not answering) is raised, never a verdict.
   class LessonRenderRunner
-    Result = Struct.new(:status, :errors, :shots, :cards, :viewports, :elapsed, :chrome_version, :exceptions, :timings, :loads, keyword_init: true) do
+    Result = Struct.new(:status, :errors, :shots, :cards, :viewports, :elapsed, :chrome_version, :exceptions, :timings, :loads, :segments, keyword_init: true) do
       def passed? = status == "passed"
 
       # Failed only because time ran out (the budget of the revision, a card or the print check), never because of what the author wrote:
@@ -51,6 +51,7 @@ module Validation
       @exceptions = []
       @timings = []
       @loads = []
+      @segments = {}
       viewports = (@core + @extra).uniq
       # One browser context for every viewport: its HTTP cache then serves the page's files (the CSS, the fonts, the sprite, the modules: some
       # hundred requests to the harness listener, which shares its few threads with the API) to the second and third viewport, which ask the
@@ -66,7 +67,7 @@ module Validation
         end
       end
       Result.new(status: @errors.empty? ? "passed" : "failed", errors: @errors, shots: @shots, cards: @cards.size, viewports: viewports.map { |w, h, t| "#{w}x#{h}-#{t}" },
-                 elapsed: (@clock.call - @started).round(1), chrome_version: @session.version, exceptions: @exceptions, timings: @timings, loads: @loads)
+                 elapsed: (@clock.call - @started).round(1), chrome_version: @session.version, exceptions: @exceptions, timings: @timings, loads: @loads, segments: @segments.values)
     end
 
     private
@@ -202,6 +203,7 @@ module Validation
           return nil
         end
       inspected = @clock.call
+      Array(answer["segments"]).each { |s| @segments[[ s["lang"], s["voice"], s["text"] ]] ||= s.slice("lang", "text", "voice") }
       fresh = answer["findings"].count { |f| add(f["code"], card["n"], viewport, f["message"], f["where"], state) }
       shot(page, card, viewport, width, answer["height"].to_i, state) if shoot?(card, viewport, state, fresh)
       @timings << timing(card, viewport, started, inspected, @clock.call, state)

@@ -77,3 +77,46 @@ cd services/tts && python3 -m unittest test_server
 
 They cover request validation, voice/language mismatch, the HTTP handler, the one-at-a-time lock, the log line
 (no text) and the checksum refusal. The ffmpeg encoder test runs only where numpy and ffmpeg are present.
+
+## Rails: the clips of the lessons (D-359)
+
+How banco uses the service above. «Ascolta» plays a file made ahead of time; nothing is synthesised when the student asks (firm rule 1: the text is
+what the teacher approved, made once, stored by content).
+
+**The voices** (`config/banco/voices.yml`, block `server:`, copied by `bin/build-lesson-types` into the generated `lesson/voices.js` as `voices.server`):
+engine `kokoro-82m-v1.0`; Italian `im_nicola`; English `af_heart`, `af_bella`; Spanish `ef_dora`, `em_alex`; `clip_path: /speech/clips`, `format: mp3`.
+A segment is `{lang, text, voice}` (`voice` the speaker number, 1 when none). Its server voice is `voices[lang][(voice - 1) % list.size]`: in a dialogue
+speaker 1 has the first voice, speaker 2 the second, then they alternate; everything else uses the first. Latin (`la`) has no server voice and no clip.
+
+**The key** of a clip is the lowercase hex SHA-256 of the UTF-8 string `"<engine>|<voice name>|<text>"` (`Speech::Key`; `lesson/speech_clips.js`
+in the browser). `test/fixtures/speech/keys.json` holds vectors (accents, quotes, «», an em dash) that both sides test. Changing the engine, a voice
+name or a character of the text makes a new key, so the old clip is simply not asked for any more. URL: `/speech/clips/<key>.mp3`.
+
+**Where the segments come from.** The render check (`RenderLessonRevisionJob`, D-249) draws every card in every state in the server's Chrome; its host
+(`lesson/render_host.js`, `lesson/speech_segments.js`) collects what each speak path would say: `speechOf` of each card in each state (every figure
+state, every exercise of «Prova tu», the opened parts), the dialogues' `segmentsOf` (with the speakers' voices), the speaker beside each `[[en:..]]` /
+`[[es:..]]` word and the text of each `listen` check. They are stored with the verdict (`lesson_renders.segments_json`, written with the row).
+The check draws the lesson as the student's projection with the fixed seed `preview`: a sentence built from a student's own numbers has no clip, and
+the browser then falls back to an accepted device voice (D-267) or skips it. A tiles check's «Ascolta la frase» says the sentence the student built:
+no clip either.
+
+**Making them.** A render that passes enqueues `SpeakLessonRevisionJob` (queue `speech`, behind the ordinary jobs; `config/queue.yml`). For each
+segment of a language with server voices (`Speech::Plan`): the clip is skipped when its file exists, else `POST /synthesize` through `Speech::Client`
+(`BANCO_TTS_URL`, e.g. `http://banco-tts:8000`), the MP3 is stored at `storage/speech_clips/<key[0,2]>/<key>.mp3` (`BANCO_SPEECH_CLIPS_DIR`
+overrides) and an append-only `speech_clips` row is added (key, engine, voice, lang, bytes, duration_ms, created_at). One clip failing does not stop the
+others; a service that is down ends the run after three failures in a row and the job is tried again (5, 10, 15 … minutes, six attempts), the clips
+already made being skipped; a clip the service refuses (400) is logged and left. Text longer than the service's 1000 characters has no clip. The service
+refuses a voice that does not speak the language (`lang` must match the voice) and takes `speed` from 0.5 to 2.0 (banco asks for 1.0: «Più lento» is the
+browser's `playbackRate`). Without `BANCO_TTS_URL` nothing is made and the log says so. `BANCO_TTS_STUB=1` (development, CI) uses a deterministic stand-in.
+
+**Serving.** `GET /speech/clips/:key.mp3` on the web listener (student, preview, teacher, guest) and the view listener: a 64-hex key only, `audio/mpeg`,
+`Cache-Control: public, max-age=31536000, immutable`, byte ranges (Safari asks for them), 404 when the file is missing, nothing recorded
+(`SpeechClipsController`).
+
+**Backfill.** `bin/rails banco:speech:backfill` lists, for the lesson revisions the official student sees now (`Course::Catalog`) and the approved ones,
+what each needs: clips to make, nothing, or a new render check to collect the segments (revisions drawn before D-359). `CONFIRM=1` enqueues the jobs and
+the samples of «Prova le voci» (the first sentence of `lesson2.voices.sentences.<lang>`, one clip per server voice, `SpeakSamplesJob`).
+
+**The teacher** sees one line in the lesson box of the topic page: «Audio: N di M frasi pronte».
+
+**Storage.** `storage/speech_clips` is derived and may be deleted: the backfill makes the files again (the `speech_clips` rows stay and are not repeated).

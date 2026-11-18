@@ -6,7 +6,7 @@
 #                                                type of a wave 2 family behind a lazy loader, even when available, the
 #                                                status of each, the home palettes, and the layouts and views held back
 #   app/javascript/lesson/checks/registry.js     the check components (lesson/checks/*) and options, the same way
-#   app/javascript/lesson/voices.js              the accepted voices of config/banco/voices.yml (the voice gate of "Ascolta")
+#   app/javascript/lesson/voices.js              the accepted voices of config/banco/voices.yml (the voice gate of "Ascolta") and its server voices (D-359)
 # The Ruby side reads the YAML directly (Lessons::Types), so there is nothing to generate for it.
 #   bin/build-lesson-types           write the files
 #   bin/build-lesson-types --check   exit 1 when the committed files differ from the build, or a module is missing (CI)
@@ -129,7 +129,7 @@ creg << <<~JS
 JS
 
 voices = YAML.safe_load_file(File.join(root, "config/banco/voices.yml"))
-vjs = "#{header}export default #{JSON.generate(voices.slice('accepted', 'preference', 'rates'))}\n"
+vjs = "#{header}export default #{JSON.generate(voices.slice('accepted', 'preference', 'rates', 'server'))}\n"
 
 outputs = { "app/javascript/lesson/diagrams/registry.js" => reg, "app/javascript/lesson/checks/registry.js" => creg, "app/javascript/lesson/voices.js" => vjs }
 abort "build-lesson-types: modules missing: #{missing.uniq.join(', ')}" unless missing.empty?

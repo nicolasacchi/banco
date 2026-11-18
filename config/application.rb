@@ -63,6 +63,9 @@ module Banco
     # The embedding service of the staff's and the agents' search (D-300): :http talks to BANCO_EMBED_URL (unset: no semantic ranking),
     # :stub is the deterministic hash embedder for development and CI (BANCO_EMBED_STUB=1). Chosen here, never by looking at the network.
     config.x.search.embedder = ENV["BANCO_EMBED_STUB"] == "1" ? :stub : :http
+    # The TTS service that makes the lessons' spoken clips ahead of time (D-359): :http talks to BANCO_TTS_URL (unset: no clips are made),
+    # :stub is the deterministic stand-in for development and CI (BANCO_TTS_STUB=1).
+    config.x.speech.client = ENV["BANCO_TTS_STUB"] == "1" ? :stub : :http
 
     # The ledger uses triggers, which schema.rb cannot represent (E-01); the
     # per-database schema_format is set in config/database.yml.

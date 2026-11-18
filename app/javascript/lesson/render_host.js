@@ -20,6 +20,7 @@
 import { renderLesson } from "lesson/render"
 import { preloadFor } from "lesson/preload"
 import { rawMarkupIn } from "lesson/raw_markup"
+import { fixedIn, heardIn } from "lesson/speech_segments"
 
 const errors = []
 const note = (message) => errors.push(String(message).slice(0, 300))
@@ -289,9 +290,10 @@ function openParts(scope) {
 
 // A glossary bubble opens over the text under its word (position: absolute), so it is wider than its paragraph by design: what
 // counts is that it stays inside its card and the window (render.js places it so) and that nothing in it is wider than the bubble.
-function glossFindings(scope, out) {
+function glossFindings(scope, out, heard = () => {}) {
   for (const b of glossButtons(scope)) {
     b.click()
+    heard() // «Ascolta» reads an opened bubble after its word (D-359)
     const pop = b.parentElement.querySelector(".gloss-pop")
     if (pop && !pop.hidden) {
       const term = text(b.parentElement.querySelector(".gloss-word") ?? b.parentElement)
@@ -321,6 +323,8 @@ const STATE = /^ex(\d+)(-open)?$|^open$/
 
 async function inspect(n, state = null) {
   const findings = []
+  // what the card says aloud in this state (D-359): the segments of «Ascolta», one set per state and per state of each figure
+  const segments = []
   let states = []
   try {
     restore()
@@ -328,7 +332,8 @@ async function inspect(n, state = null) {
     await frames()
     await iconsDrawn()
     const card = root.querySelector(`#scheda-${n}`)
-    if (!card) return { n, state, findings: [{ code: "E-LESSON-RENDER", message: `card ${n} was not drawn`, where: "card" }], height: 0, states }
+    if (!card) return { n, state, findings: [{ code: "E-LESSON-RENDER", message: `card ${n} was not drawn`, where: "card" }], height: 0, states, segments }
+    const hear = () => segments.push(...heardIn(card))
     const match = state ? String(state).match(STATE) : null
     if (state && !match) throw new Error(`unknown state ${state}`)
     let scope = card
@@ -344,17 +349,22 @@ async function inspect(n, state = null) {
     if (state === "open" || match?.[2]) {
       // a disclosure lays out at once (nothing in one is a figure that waits for a redraw): measured as soon as it is open
       openParts(scope)
+      hear()
       overflowFindings(card, findings, scope)
-      glossFindings(scope, findings)
+      glossFindings(scope, findings, hear)
     } else {
       // only the figures the student has on screen in this state: one in a hidden exercise is drawn in that exercise's state
       const figures = api.figures().filter((f) => scope.contains(f.element) && shown(f.element))
-      if (figures.length === 0) overflowFindings(card, findings, scope)
+      if (figures.length === 0) {
+        hear()
+        overflowFindings(card, findings, scope)
+      }
       for (const figure of figures) {
         const total = figure.total ?? 1
         for (let i = 0; i < total; i++) {
           if (total > 1) figure.setState(i)
           await settle()
+          hear()
           figureFindings(figure.element, minPx, i, findings)
           overflowFindings(card, findings, scope)
         }
@@ -363,6 +373,7 @@ async function inspect(n, state = null) {
     if (!state) {
       katexFindings(card, findings) // a formula is drawn (or refused) when the card is built, shown or not: once is enough
       markupFindings(card, findings) // markup printed as text (D-310), likewise once
+      segments.push(...fixedIn(body.cards.find((c) => c.n === n) ?? null, card)) // dialogues, listening checks and speakers: they do not depend on the state
       states = statesOf(card)
     }
   } catch (error) {
@@ -376,7 +387,17 @@ async function inspect(n, state = null) {
     seen.add(key)
     return true
   })
-  return { n, state, findings: unique, height: document.documentElement.scrollHeight, states }
+  return { n, state, findings: unique, height: document.documentElement.scrollHeight, states, segments: uniqueSegments(segments) }
+}
+
+const uniqueSegments = (list) => {
+  const seen = new Set()
+  return list.filter((s) => {
+    const key = JSON.stringify([s.lang, s.voice, s.text])
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 }
 
 // "Stampa riassunto e schema" (A10): the summary card alone, as render.js prints it; the server's Chrome then counts the

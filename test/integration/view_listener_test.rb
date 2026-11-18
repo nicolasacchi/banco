@@ -294,6 +294,24 @@ class ViewListenerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "the spoken clips of the lessons (D-359) are served to a view session, and need one" do
+    Dir.mktmpdir do |dir|
+      ENV["BANCO_SPEECH_CLIPS_DIR"] = dir
+      key = Speech::Key.for("im_nicola", "Ciao.")
+      Speech::Clips.put(key, "ID3clip")
+      view_get("/speech/clips/#{key}.mp3")
+      assert_response :forbidden
+      open_session!
+      view_get("/speech/clips/#{key}.mp3")
+      assert_response :success
+      assert_equal "audio/mpeg", response.media_type
+      view_get("/speech/clips/#{'0' * 64}.mp3")
+      assert_response :not_found
+    ensure
+      ENV.delete("BANCO_SPEECH_CLIPS_DIR")
+    end
+  end
+
   test "the web host is refused on the view listener, the API host is served" do
     _, raw = new_link
     on(:view, "/v?view_token=#{raw}", headers: { "Host" => "banco.scc.im" }, remote_addr: EDGE)
