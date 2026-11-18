@@ -112,7 +112,7 @@ export default class extends Controller {
   sayEarlier(reply) {
     const right = reply.outcome === "correct" || reply.outcome === "correct_aided"
     const tone = right && reply.note_it ? "nearly" : (TONES[reply.outcome] || "info")
-    this.say(reply.message_it, { tone, title: this.labels.earlier, note: reply.note_it })
+    this.say(reply.message_it, { tone, title: this.labels.earlier, note: [reply.note_it, reply.count_it].filter(Boolean).join(" ") })
   }
 
   // ---- serving -------------------------------------------------------------------------------------
@@ -334,7 +334,7 @@ export default class extends Controller {
     let tone = TONES[reply.outcome] || "info"
     if (right && reply.note_it) tone = "nearly"
     const title = tone === "nearly" && !right ? this.labels.nearly : null
-    const note = [reply.note_it, ...extra].filter(Boolean).join(" ")
+    const note = [reply.note_it, reply.count_it, ...extra].filter(Boolean).join(" ") // count_it (D-363): «Giuste: N su M.» after a try that is not right
     this.say(reply.message_it, { tone, title, note })
   }
 

@@ -173,6 +173,7 @@ module Practice
         message_it: Messages.feedback(outcome, typical: code && Instances.message_for(instance, code), violations: grade.violations, closing: closing,
                                     hint: made.any? { |e| e.kind == "hint_shown" && e.auto }, near: grade.near),
         note_it: %i[correct correct_aided].include?(outcome) ? note(spec, grade, attempt.raw) : nil,
+        count_it: Messages.rows_line(outcome, grade.rows),
         error_code: outcome == :typical_error ? code : nil }
     end
 
