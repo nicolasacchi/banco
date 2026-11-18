@@ -117,6 +117,15 @@ class StudentExportTest < ActiveSupport::TestCase
     assert_equal({ "student_reply" => OWN_ADDR }, events.select { |e| e.key?("remote_addr") }.to_h { |e| [ e["kind"], e["remote_addr"] ] })
   end
 
+  test "his ratings of exercises and lessons are in the file with the readable names, and not another student's (D-365)" do
+    assert_includes Privacy::StudentExport.table_names, "ratings"
+    rating = json("ratings.json").sole
+    assert_equal [ student.id, "item", "item-1", 4, "Mi è piaciuto." ], rating.values_at("student_id", "target_kind", "target_key", "stars", "text_it")
+    assert_equal [ "item-1", 1, "math", "ripasso.math.demo" ], rating.values_at("item_key", "item_revision", "subject_key", "lesson_key")
+    assert_equal [ 1 ], json("ratings.json", other).map { |r| r["stars"] }
+    assert_includes archive.fetch("README.txt"), "- ratings.json: le stelle e i commenti"
+  end
+
   # ---- what is not in the file ----------------------------------------------------------------------------
 
   test "nothing of another student is in any file" do

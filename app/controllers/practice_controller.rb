@@ -132,7 +132,7 @@ class PracticeController < ApplicationController
       skill: skill_block(serve.skill_key, state),
       hints: { total: hints.size, shown: hints.first(status.hints_shown).each_with_index.map { |text, i| { n: i + 1, hint_it: text } } },
       item: item_part(serve, instance),
-      draft: draft_block(serve), exercise: exercise_block(serve, topic)
+      draft: draft_block(serve), exercise: exercise_block(serve, topic), rating: rating_block(serve)
     }
   end
 
@@ -148,6 +148,12 @@ class PracticeController < ApplicationController
   # otherwise. Not a hint (no counter, no try, no state); recorded as an app event (Practice::Reminder). Only the sentence leaves the server.
   def reminder_it(serve)
     Practice::Reminder.call(serve, student: acting_student, description: ->(code) { course_view.error_description(serve.skill_key, code) })&.text_it
+  end
+
+  # His latest rating of this exercise (D-365), for the box that opens when it is over; nil when he has given none.
+  def rating_block(serve)
+    rating = Rating.latest_for(acting_student, "item", serve.item_instance.item_revision.item.key)
+    rating && { stars: rating.stars, text_it: rating.text_it }
   end
 
   # What the student typed in this serve and has not answered yet; nil when there is nothing (or a try came after it).

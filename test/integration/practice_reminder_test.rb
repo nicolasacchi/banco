@@ -133,7 +133,7 @@ class PracticeReminderTest < ActionDispatch::IntegrationTest
     assert_equal SIBLING_MESSAGE, serve["reminder_it"]
     [ "don't drink", "doesn't drink", "does_eat", "doesn't eat" ].each { |secret| refute_includes response.body, secret }
     refute_match(/hai sbagliato/i, serve["reminder_it"])
-    assert_equal %w[draft exercise hints item reason reason_it reminder_it serve_id skill status type next_try_number].sort, serve.keys.sort
+    assert_equal %w[draft exercise hints item rating reason reason_it reminder_it serve_id skill status type next_try_number].sort, serve.keys.sort
   end
 
   test "it is recorded once per serve and code, with the code, however many times the page is opened" do

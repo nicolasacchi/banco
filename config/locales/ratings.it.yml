@@ -1,0 +1,23 @@
+# «Ti è piaciuto?» (D-365): le stelle e il commento dello studente su un esercizio o su una lezione. Il gemello inglese è ratings.en.yml.
+it:
+  rating:
+    ask:
+      item: "Ti è piaciuto questo esercizio?"
+      lesson: "Ti è piaciuta questa lezione?"
+    optional: "Se vuoi."
+    stars_legend: "Da 1 a 5 stelle"
+    star:
+      one: "1 stella"
+      other: "%{count} stelle"
+    clear: "Togli le stelle"
+    comment_label: "Vuoi aggiungere un commento?"
+    chars: "%{n} di %{max}"
+    send: "Invia"
+    sending: "Sto inviando…"
+    cancel: "Annulla"
+    empty: "Scegli le stelle o scrivi un commento."
+    error: "Non è partito. Riprova."
+    invalid: "Non posso salvarlo adesso."
+    thanks: "Grazie!"
+    you_sent: "Hai dato:"
+    change: "Cambia"

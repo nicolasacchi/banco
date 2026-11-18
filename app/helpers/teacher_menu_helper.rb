@@ -11,6 +11,7 @@ module TeacherMenuHelper
     when "search" then :search
     when "corrections" then :corrections
     when "comments" then :comments
+    when "ratings" then :ratings
     when "students", "practice" then :students
     when "activity" then :activity
     when "previews" then :preview

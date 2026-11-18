@@ -135,6 +135,7 @@ export default class extends Controller {
     this.say(this.labels.loading)
     this.workTarget.hidden = true
     this.nextActionsTarget.hidden = true
+    this.hideRating()
     this.nextActionsTarget.textContent = ""
     this.solutionBoxTarget.hidden = true
     this.solutionBoxTarget.textContent = ""
@@ -149,6 +150,7 @@ export default class extends Controller {
   // (a click redoes one) and the way back stay.
   showExhausted(reply) {
     this.serveId = null
+    this.hideRating()
     this.handle = null
     this.showSkill(reply.skill)
     this.showReason({})
@@ -160,6 +162,8 @@ export default class extends Controller {
 
   async show(reply) {
     this.serveId = reply.serve_id
+    this.ratingCurrent = reply.rating ?? null // his latest rating of this exercise, for the box that opens when it is over (D-365)
+    this.hideRating()
     this.itemKey = reply.exercise?.item ?? null // the exercise on the page keeps its place in the list when it is answered and closed
     // "Commenta" (D-304): a comment on this exercise names the serve; the server checks it is this student's.
     this.itemBoxTarget.dataset.commentServeId = String(reply.serve_id)
@@ -502,6 +506,25 @@ export default class extends Controller {
     this.itemBoxTarget.inert = true
     this.controlsTarget.hidden = true
     this.hintButtonTarget.hidden = true
+    this.showRating()
+  }
+
+  // «Ti è piaciuto questo esercizio?» (D-365): the box under the exercise opens once it is over (right, solution shown, tries used up, sent
+  // to the teacher) and goes away with the exercise. Opened once per serve: a second close of the same serve (a contest after the
+  // verdict) leaves it as the student has it. The server checks again that the serve is his and over. Not on the preview's page.
+  ratingBox() { return this.element.querySelector("#rating-box") }
+
+  hideRating() {
+    const box = this.ratingBox()
+    if (box) box.hidden = true
+  }
+
+  showRating() {
+    const box = this.ratingBox()
+    if (!box || !box.hidden || !this.serveId) return
+    box.dataset.ratingCurrentValue = JSON.stringify(this.ratingCurrent || {})
+    box.dataset.ratingServeValue = String(this.serveId)
+    box.hidden = false
   }
 
   showActions(actions) {

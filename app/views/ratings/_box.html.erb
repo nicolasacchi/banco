@@ -1,0 +1,41 @@
+<%# «Ti è piaciuto?» (D-365): five stars as radio inputs with labels, an optional comment, «Invia», then «Grazie!» and what he sent with «Cambia».
+    rating_controller.js is the whole behaviour. Locals: kind ("item": the practice page, hidden until the exercise is over; "lesson": the end of a lesson),
+    dom (a unique id prefix), hidden, data (the Stimulus values that name the target: topic and lesson revision for a lesson), current (the student's
+    latest rating of it, {} when none). Never drawn in the teacher's preview or the entry test (rating_box?). %>
+<% data = local_assigns.fetch(:data, {}) %>
+<section class="rating-box" id="<%= dom %>" aria-labelledby="<%= dom %>-ask" data-controller="rating"
+         data-rating-url-value="/ratings" data-rating-kind-value="<%= kind %>"
+         <% data.each do |name, value| %>data-rating-<%= name.to_s.dasherize %>-value="<%= value %>" <% end %>
+         data-rating-current-value="<%= local_assigns.fetch(:current, {}).to_json %>" data-rating-labels-value="<%= rating_labels.to_json %>"<%= " hidden" if local_assigns[:hidden] %>>
+  <h3 class="rating-ask" id="<%= dom %>-ask"><%= t("rating.ask.#{kind}") %> <span class="rating-optional"><%= t("rating.optional") %></span></h3>
+  <form class="rating-form" data-rating-target="form" data-action="submit->rating#send" novalidate>
+    <fieldset class="rating-stars">
+      <legend class="sr-only"><%= t("rating.stars_legend") %></legend>
+      <div class="rating-star-row">
+        <% (1..5).each do |n| %>
+          <span class="rating-star" data-rating-target="starBox">
+            <input type="radio" name="<%= dom %>-stars" id="<%= dom %>-star-<%= n %>" value="<%= n %>" data-rating-target="star" data-action="change->rating#picked">
+            <label for="<%= dom %>-star-<%= n %>"><span class="rating-glyph" aria-hidden="true" data-rating-target="glyph">☆</span><span class="sr-only"><%= t("rating.star", count: n) %></span></label>
+          </span>
+        <% end %>
+        <button type="button" class="button text small rating-clear" data-rating-target="clear" data-action="rating#clear" hidden><%= t("rating.clear") %></button>
+      </div>
+    </fieldset>
+    <div class="rating-write">
+      <label for="<%= dom %>-text"><%= t("rating.comment_label") %></label>
+      <textarea id="<%= dom %>-text" class="answer-input wide" rows="3" maxlength="<%= Rating::TEXT_MAX %>" data-rating-target="text" data-action="input->rating#count"></textarea>
+      <span class="rating-count" data-rating-target="counter"></span>
+    </div>
+    <p class="rating-status" role="status" data-rating-target="status"></p>
+    <div class="button-row rating-actions">
+      <button type="submit" class="button" data-rating-target="send"><%= t("rating.send") %></button>
+      <button type="button" class="button secondary" data-rating-target="cancel" data-action="rating#cancel" hidden><%= t("rating.cancel") %></button>
+    </div>
+  </form>
+  <div class="rating-done" data-rating-target="done" hidden>
+    <p class="rating-thanks" role="status" tabindex="-1" data-rating-target="thanks"></p>
+    <p class="rating-sent"><span><%= t("rating.you_sent") %></span> <span class="rating-sent-stars" role="img" data-rating-target="sentStars" hidden></span></p>
+    <p class="rating-sent-text" data-rating-target="sentText" hidden></p>
+    <button type="button" class="button secondary small rating-change" data-rating-target="change" data-action="rating#change"><%= t("rating.change") %></button>
+  </div>
+</section>

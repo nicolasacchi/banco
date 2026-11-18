@@ -8,5 +8,7 @@
   <% if draft? %><p class="notice" id="draft-notice" role="status"><%= t("draft.notice") %></p><% end %>
 
   <%= render "lessons/body", body: @body, topic: @topic.key, revision_id: @revision.id %>
+  <%# «Ti è piaciuta questa lezione?» (D-365): the end of the page, for the revision he is reading. %>
+  <% if rating_box? %><%= render "ratings/box", kind: "lesson", dom: "rating-box", data: { topic: @topic.key, lesson_revision: @revision.id }, current: rating_current("lesson", @topic.key) %><% end %>
   <p><a class="button" href="<%= spath("/topics/#{@topic.key}") %>"><%= t("lesson.back") %></a></p>
 </main>

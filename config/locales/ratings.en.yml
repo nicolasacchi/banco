@@ -1,0 +1,23 @@
+# «Ti è piaciuto?» (D-365): the Italian file's English twin (D-356).
+en:
+  rating:
+    ask:
+      item: "Did you like this exercise?"
+      lesson: "Did you like this lesson?"
+    optional: "Only if you want to."
+    stars_legend: "From 1 to 5 stars"
+    star:
+      one: "1 star"
+      other: "%{count} stars"
+    clear: "Clear the stars"
+    comment_label: "Would you like to add a comment?"
+    chars: "%{n} of %{max}"
+    send: "Send"
+    sending: "Sending…"
+    cancel: "Cancel"
+    empty: "Pick some stars or write a comment."
+    error: "It did not go. Try again."
+    invalid: "I cannot save it right now."
+    thanks: "Thank you!"
+    you_sent: "You gave:"
+    change: "Change"

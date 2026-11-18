@@ -31,4 +31,6 @@
     <noscript><p class="notice"><%= t("lesson2.no_script") %></p></noscript>
   </div>
   <script type="application/json" id="lesson-body"><%= json_escape(@student_body.to_json).html_safe %></script>
+  <%# «Ti è piaciuta questa lezione?» (D-365): lesson/render.js puts a copy at the end of the last card; the controller wakes up when it is there. %>
+  <% if rating_box? %><template id="rating-template"><%= render "ratings/box", kind: "lesson", dom: "rating-box", data: { topic: @topic.key, lesson_revision: @revision.id }, current: rating_current("lesson", @topic.key) %></template><% end %>
 </main>

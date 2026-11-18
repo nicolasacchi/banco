@@ -585,6 +585,15 @@
       "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-TEACHER-REFUSED", "E-COMMENT-INVALID"]
     },
     {
+      "name": "ratings list",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/ratings",
+      "args": [],
+      "flags": ["--subject", "--topic", "--kind", "--target", "--since", "--student", "--limit"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND"]
+    },
+    {
       "name": "answers pending",
       "local": false,
       "method": "GET",

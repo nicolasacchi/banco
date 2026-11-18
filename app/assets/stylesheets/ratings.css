@@ -1,0 +1,45 @@
+/*
+ * «Ti è piaciuto?» (D-365): the student's box under an exercise and at the end of a lesson, and the teacher's page of ratings.
+ * Lengths are rem, so the root size of D-354 scales the box; the stars keep 44 px at every size (max(--tap, 44px)) and shrink only down to it, so
+ * five of them fit a 390 px phone even at the biggest text. A star is a real radio input behind its label; the chosen ones are drawn as a filled
+ * star and the others as an empty one (the shape says it, never colour alone).
+ */
+.rating-box {
+  margin-top: var(--space-5); padding: var(--space-4); box-sizing: border-box; max-width: 100%;
+  border: var(--border-soft) solid var(--line); border-radius: var(--radius-m); background: var(--surface); color: var(--text);
+}
+.rating-box[hidden], .rating-box [hidden] { display: none; }
+.rating-ask { margin: 0 0 var(--space-2); font-size: var(--text-l); line-height: var(--leading-tight); }
+.rating-optional { font-size: var(--text-s); font-weight: 400; color: var(--muted); }
+.rating-stars { min-width: 0; margin: 0; padding: 0; border: 0; }
+.rating-star-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); }
+.rating-star { position: relative; display: block; flex: 0 1 max(var(--tap), 44px); min-width: 44px; }
+/* the radio input stays in the page (focus, arrows, screen reader) but is not drawn and takes no click: the label is the 44 px target */
+.rating-star input { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: 0; opacity: 0; pointer-events: none; }
+.rating-star label {
+  display: grid; place-items: center; box-sizing: border-box; min-height: max(var(--tap), 44px); cursor: pointer;
+  border-radius: var(--radius-s); color: var(--muted); font-size: min(1.8rem, 10vw); line-height: 1;
+}
+.rating-star.on label { color: var(--tone-nearly); }
+.rating-star input:focus-visible + label { outline: 3px solid var(--focus); outline-offset: 2px; }
+.rating-clear { flex: none; }
+.rating-write { display: grid; gap: var(--space-1); margin-top: var(--space-3); }
+.rating-write label { font-weight: 700; }
+.rating-write textarea { min-height: 4.5rem; resize: vertical; }
+.rating-count { justify-self: end; font-size: var(--text-s); color: var(--muted); }
+.rating-status { margin: var(--space-2) 0 0; font-weight: 700; }
+.rating-status:empty { display: none; }
+.rating-actions { margin-top: var(--space-3); }
+.rating-thanks { margin: 0 0 var(--space-2); font-weight: 700; font-size: var(--text-l); }
+.rating-thanks:focus { outline: none; }
+.rating-sent { margin: 0 0 var(--space-1); }
+.rating-sent-stars { margin-left: var(--space-1); color: var(--tone-nearly); letter-spacing: 0.1em; font-size: 1.3rem; }
+.rating-sent-text { margin: 0 0 var(--space-3); white-space: pre-wrap; overflow-wrap: anywhere; }
+.rating-change { margin-top: var(--space-1); }
+
+/* The teacher's page ------------------------------------------------------------ */
+.rating-line { white-space: nowrap; }
+.ratings-filters { display: flex; flex-wrap: wrap; align-items: end; gap: var(--space-3); margin: var(--space-3) 0; }
+.ratings-filters label { display: grid; gap: var(--space-1); font-weight: 700; }
+.rating-stars-it { color: var(--tone-nearly); letter-spacing: 0.1em; white-space: nowrap; }
+.rating-text-it { white-space: pre-wrap; overflow-wrap: anywhere; }
