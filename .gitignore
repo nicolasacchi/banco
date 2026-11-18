@@ -31,3 +31,6 @@
 # Tool state
 /.playwright-mcp/
 /.claude/
+
+# Python caches (services/tts)
+__pycache__/
