@@ -92,6 +92,8 @@ module Teacher
 
     private
 
+    def resolutions = @resolutions ||= Practice::Resolutions.for_student(student.id)
+
     def steps_of(serve)
       instance = serve.item_instance
       spec = Grading::Spec.from_instance(instance)
@@ -104,7 +106,7 @@ module Teacher
         # the refused texts typed before this try and after the one before it; the last try also takes any left over (D-298)
         before = i.zero? ? nil : attempts[i - 1].answered_at
         mine = refused.select { |_, at| (before.nil? || at > before) && (at <= attempt.answered_at || i == attempts.size - 1) }
-        grade = Practice::Instances.grade(attempt, spec)
+        grade = Practice::Instances.grade(attempt, spec, resolution: resolutions[attempt.id]) # the teacher's resolution of a try wins (D-352)
         outcome = grade&.outcome || (attempt.latest_grading ? :not_a_try : :ungraded)
         Step.new(attempt.answered_at, view.stem, attempt.raw, outcome, grade&.codes || [], attempt.aided, hints.count { |e| e.at <= attempt.answered_at },
                  solved && solved.at <= attempt.answered_at ? JSON.parse(solved.payload_json || "{}")["reason"] : nil, serve.reason,

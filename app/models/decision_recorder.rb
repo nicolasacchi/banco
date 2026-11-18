@@ -274,15 +274,74 @@ class DecisionRecorder
     [ run.subject, run.student, { grade_proposal_id: proposal.id, attempt_id: proposal.attempt_id, reason_it: reason! } ]
   end
 
+  # The teacher settles one answer: an uncertain answer of a diagnosis run, or (D-352) a practice try, which then counts as the verdict
+  # says (Practice::Resolutions). attempt_id is a number, or a ref «practice-12» / «diagnosis-5» (the attempts API's refs); attempt_kind
+  # "practice" or "diagnosis" says which table a bare number is in.
   def resolve_attempt
-    attempt = find(Attempt, :attempt_id)
-    run = student_run_of!(attempt)
-    verdict = @params[:verdict].to_s
-    raise Invalid, "verdict is one of #{RESOLVE_VERDICTS.join(', ')}" unless RESOLVE_VERDICTS.include?(verdict)
+    kind, id = attempt_target
+    return resolve_practice_attempt(id) if kind == :practice
 
+    attempt = Attempt.find_by(id: id) or raise Missing, "no Attempt #{id}"
+    run = student_run_of!(attempt)
+    verdict = resolve_verdict!
     payload = { attempt_id: attempt.id, verdict: verdict, reason_it: reason! }
     payload[:error_code] = @params[:error_code].to_s if @params[:error_code].present?
     [ run.subject, run.student, payload ]
+  end
+
+  ATTEMPT_REF = /\A(practice|diagnosis)-([1-9]\d{0,14})\z/
+
+  # [:practice | :diagnosis, id]. A bare number is a diagnosis attempt, as it always was, unless only a practice try has that id; when both
+  # have it, the browser (which has no button for a practice try) means the diagnosis attempt and the console and the API must say which.
+  def attempt_target
+    raw = @params[:attempt_id].to_s.strip
+    if (ref = ATTEMPT_REF.match(raw))
+      return [ ref[1].to_sym, ref[2].to_i ]
+    end
+
+    id = Integer(raw, exception: false)
+    raise Missing, "no Attempt #{raw.first(20).inspect}" unless id
+
+    kind = @params[:attempt_kind].to_s
+    raise Invalid, "attempt_kind is practice or diagnosis" unless kind.empty? || %w[practice diagnosis].include?(kind)
+    return [ kind.to_sym, id ] unless kind.empty?
+
+    diagnosis = Attempt.exists?(id: id)
+    practice = PracticeAttempt.exists?(id: id)
+    return [ :practice, id ] if practice && !diagnosis
+    raise Invalid, "attempt #{id} is both a diagnosis answer and a practice try: write attempt_id as \"practice-#{id}\" or \"diagnosis-#{id}\"" if practice && self.class.synthetic?(@request)
+
+    [ :diagnosis, id ]
+  end
+
+  def resolve_verdict!
+    verdict = @params[:verdict].to_s
+    raise Invalid, "verdict is one of #{RESOLVE_VERDICTS.join(', ')}" unless RESOLVE_VERDICTS.include?(verdict)
+
+    verdict
+  end
+
+  # A practice try of the student (a trial student's too, never the preview's): subject and student are the serve's. The payload says
+  # attempt_kind practice, so no reader of diagnosis resolutions takes it for an attempt of a run. The verdict must be one a practice
+  # try can have (correct, typical_error, wrong, wrong_form, near_miss, nearly_correct, undetermined), and the try must be a try.
+  def resolve_practice_attempt(id)
+    attempt = PracticeAttempt.find_by(id: id) or raise Missing, "no PracticeAttempt #{id}"
+    student = attempt.student
+    raise Invalid, "practice try #{id} is not a student's" unless student.kind == "student"
+
+    serve = attempt.practice_serve
+    spec = Grading::Spec.from_instance(serve.item_instance)
+    raise Invalid, "practice try #{id} is not a graded try (no grading, or an answer that was refused or «Non lo so»)" unless Practice::Instances.grade(attempt, spec)
+
+    verdict = resolve_verdict!
+    code = @params[:error_code].to_s.presence
+    key = Grading::Evidence.key(verdict: verdict, spec: spec, error_codes: Array(code), method: nil)
+    raise Invalid, "a practice try cannot be resolved as #{verdict}" unless Practice::Outcome.try?(key)
+
+    payload = { attempt_id: attempt.id, attempt_kind: Practice::Resolutions::KIND, practice_serve_id: serve.id, try_number: attempt.try_number,
+                verdict: verdict, reason_it: reason! }
+    payload[:error_code] = code if code
+    [ serve.item_instance.item_revision.item.subject, student, payload ]
   end
 
   def void_diagnosis_run

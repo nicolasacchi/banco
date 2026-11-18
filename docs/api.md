@@ -100,7 +100,9 @@ The row records the teacher login, `groups: api`, the client address, the token'
   `{"subject":"math"}` (approvals of a graph or test take the subject's latest revision, or `{"revision_id":N}`),
   `{"revision_id":N}` (`approve_topic`), `{"finding_id":N,"disposition":"..."}` (`dispose_finding`),
   `{"grade_proposal_id":N}` (`confirm_grade`, `reject_grade`; `scores` edits a grade), `{"attempt_id":N,"verdict":"correct"}`
-  (`resolve_attempt`), `{"subject":"math","open":1}` (`release_course`), `{"item_revision_id":N,"reason_code":"...","comment_it":"..."}`
+  (`resolve_attempt`: `attempt_id` is a diagnosis answer's number, or a ref `"practice-12"` / `"diagnosis-5"` as `banco attempts` names them; a bare number
+  that is both a diagnosis answer and a practice try is refused, write the ref; a practice try marked `correct` closes its serve right and the tries after it stop counting, D-352),
+  `{"subject":"math","open":1}` (`release_course`), `{"item_revision_id":N,"reason_code":"...","comment_it":"..."}`
   (`send_back_item`). A dry run tells what is missing.
 - `--reason` is `reason_it`, the teacher's reason, in Italian, required by the kinds that ask for one. A kind that takes no reason keeps
   the words as `api_reason` in the payload.
@@ -258,7 +260,9 @@ An attempt on an item revision that has since been replaced is listed too: `revi
 solution on this serve), `seconds` (from the serve, or the try before, to this one; capped at 600 as the engine caps it). `outcome` is the practice engine's
 (`Practice::Instances.grade`, the one the pages and the skill states use): `correct`, `correct_aided`, `typical_error`, `unrecognised`, `form`,
 `near_miss`, `undetermined`, `contested` (the student sent it to the teacher with «Fai controllare», D-339: `outcome_before_contest` says what it was) and, for
-a stored text that is not a try, `not_a_try` or `ungraded`.
+a stored text that is not a try, `not_a_try` or `ungraded`. A try the teacher resolved with `resolve_attempt` (D-352) shows the outcome he gave, `outcome_before_resolution`
+and `resolution` (`verdict`, `reason_it`, `error_code?`, `at`, `decision_id`); a try after the one that closed its serve (only an earlier try resolved right can cause it)
+has `counted: false`: it no longer counts for the serve or the skill.
 
 **Entry test** (`kind: diagnosis`): `id` (the attempt), `at`, `subject`, `skill`, `item`, `revision_id`, `superseded`, `item_instance_id`, `run_id`, `sitting`
 (the number of the sitting in the run), `served_event_id`, `answer`, `source`, `outcome` (the stored verdict: `correct`, `typical_error`, `wrong`, `dont_know`,

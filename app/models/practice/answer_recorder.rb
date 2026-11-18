@@ -185,7 +185,7 @@ module Practice
     def full_sentence_part(spec, raw)
       return nil unless spec.component == "normalized_text" && !(spec.profile.is_a?(Hash) && spec.profile["name"] == "binary")
 
-      Grading::Frame.from_stem(spec.display["stem_it"])&.part(raw)
+      Grading::Frame.for_spec(spec)&.part(raw)
     end
 
     # The skill's state and "perché" after this try, and whether this try changed the state.
