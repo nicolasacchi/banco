@@ -5,7 +5,6 @@
 class PracticeController < ApplicationController
   include StudentCourse
 
-  before_action :no_store, except: :show
   before_action :load_topic, only: :show
 
   # GET /topics/:topic/practice/:skill

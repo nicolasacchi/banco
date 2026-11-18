@@ -12,6 +12,10 @@ module ActingStudent
   included do
     layout "student"
     before_action :require_actor!
+    # D-355: a page of the student is never served from the browser's history copy. The arrow back asks the server again, so Oggi, the topic
+    # or the list shows what he has just done and the theme he has just chosen, and no page comes back frozen halfway through its own script.
+    # Do not declare `before_action :no_store` again in a controller: Rails replaces the callback of the same name, conditions and all.
+    before_action :no_store
     before_action :mark_student_device, unless: -> { preview? || trial_account? }
     helper_method :preview?, :base_path, :acting_student, :diagnosis_open?, :student_root, :preview_view
   end

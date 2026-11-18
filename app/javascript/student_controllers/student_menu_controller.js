@@ -5,6 +5,16 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["opener", "dialog"]
 
+  // The arrow back may bring this page out of the browser's cache with the menu still open (the student left through a link in it): it comes back closed (D-355).
+  connect() {
+    this.onShow = (event) => { if (event.persisted) this.close() }
+    window.addEventListener("pageshow", this.onShow)
+  }
+
+  disconnect() {
+    window.removeEventListener("pageshow", this.onShow)
+  }
+
   open() {
     if (!this.dialogTarget.open) this.dialogTarget.showModal()
   }

@@ -6,9 +6,8 @@ class LessonsController < ApplicationController
   include FramesPagesOrigin
 
   before_action :load_topic
-  # The page of a lesson/2 depends on the student (the shuffle, preferences, progress) and on BANCO_LESSON2_ENABLED:
-  # it is never kept by the browser.
-  before_action :no_store, only: %i[show solution]
+  # Never kept by the browser: the page of a lesson/2 depends on the student and on BANCO_LESSON2_ENABLED (`no_store` is in ActingStudent;
+  # a second `before_action :no_store` here would replace it, with its conditions, D-355).
 
   SECTIONS = %w[why_it idea_it example_it mistakes_it].freeze
   OPENED_THROTTLE = 5.minutes

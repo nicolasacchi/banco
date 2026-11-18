@@ -7,7 +7,6 @@ class SittingsController < ApplicationController
 
   before_action :load_run, except: :create
   before_action :require_open_diagnosis!, except: :create
-  before_action :no_store, only: %i[step events flag support]
 
   # Starts or resumes the student's run in a subject and goes to its page.
   def create

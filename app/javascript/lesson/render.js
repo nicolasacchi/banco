@@ -381,6 +381,8 @@ export function renderLesson(root, body, config) {
     const card = byN.get(n)
     live.textContent = n === 0 ? `${t.cover}: ${body.title_it}` : `${positionOf(card).text}: ${plainText(card.title_it)}`
   }
+  let historyReady = false // set once the first card is drawn
+  let fromHistory = false // true while the arrow back or forward is being followed
   function refreshChrome() {
     const n = state.n
     const card = byN.get(n)
@@ -407,8 +409,13 @@ export function renderLesson(root, body, config) {
     root.dataset.card = String(n)
     refreshMap()
     if (location && config.mode === "student") {
+      const hash = `#scheda-${n}`
       try {
-        history.replaceState(null, "", `#scheda-${n}`)
+        // D-355: a card the student opens in the cards view is a step of the browser's history, so the arrow back goes to the card before
+        // (and, from the cover, out of the lesson). The first draw, a move made by the arrow itself (onHash) and the long column only
+        // keep the address up to date.
+        if (state.view === "cards" && historyReady && !fromHistory && location.hash !== hash) history.pushState(null, "", hash)
+        else history.replaceState(null, "", hash)
       } catch (_error) { /* a sandboxed frame */ }
     }
   }
@@ -603,7 +610,13 @@ export function renderLesson(root, body, config) {
   }
   const onHash = () => {
     const n = fromHash()
-    if (n !== null && n !== state.n) goTo(n, { focus: true })
+    if (n === null || n === state.n) return
+    fromHistory = true
+    try {
+      goTo(n, { focus: true })
+    } finally {
+      fromHistory = false
+    }
   }
   if (config.mode === "student") window.addEventListener("hashchange", onHash)
   const start = config.mode === "student" ? fromHash() : (config.startCard ?? null)
@@ -615,6 +628,7 @@ export function renderLesson(root, body, config) {
     if (start) stage.querySelector(`#scheda-${state.n}`)?.scrollIntoView?.()
   } else goTo(start && byN.has(start) ? start : 0, { focus: false })
   announce(state.n)
+  historyReady = true
 
   return {
     goTo, renderAll, setView, setReduceMotion,
