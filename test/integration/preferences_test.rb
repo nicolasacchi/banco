@@ -40,16 +40,18 @@ class PreferencesTest < ActionDispatch::IntegrationTest
     assert_select "input[name=size][value=larger][checked]"
   end
 
-  test "each of the six sizes can be chosen and is kept, smallest first on the settings page" do
-    assert_equal %w[minimum smallest small normal large larger], Diagnosis::Preferences::SIZES
+  test "each of the seven sizes can be chosen and is kept, smallest first on the settings page" do
+    assert_equal %w[minimum tiny smallest small normal large larger], Diagnosis::Preferences::SIZES
     as_student "/settings"
     assert_select "input[name=size]" do |inputs|
-      assert_equal %w[minimum smallest small normal large larger], inputs.map { |i| i["value"] }
+      assert_equal %w[minimum tiny smallest small normal large larger], inputs.map { |i| i["value"] }
     end
+    assert_equal [ "Minimo", "Piccolissimo", "Molto piccolo", "Piccolo", "Normale", "Grande", "Molto grande" ], css_select("fieldset[data-comment-anchor='setting:size'] label span").map(&:text), "D-354: Minimo (12 px) then Piccolissimo (14 px), so «Minimo» no longer looks like «Molto piccolo»"
     assert_select "label", text: "Minimo"
+    assert_select "label", text: "Piccolissimo"
     assert_select "label", text: "Molto piccolo"
     assert_select "label", text: "Piccolo"
-    %w[minimum smallest small].each do |size|
+    %w[minimum tiny smallest small].each do |size|
       as_student "/diagnosis/preferences", method: :post, params: { theme: "cream", size: size }
       as_student "/settings"
       assert_select "html[data-size=#{size}]"
@@ -58,9 +60,9 @@ class PreferencesTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "the lesson dialog texts list the six sizes, smallest first, and the four themes, and a size chosen there is kept" do
-    assert_equal({ "minimum" => "Minimo", "smallest" => "Più piccolo", "small" => "Piccolo", "normal" => "Normale", "large" => "Grande", "larger" => "Più grande" }, I18n.t("lesson2.sizes").transform_keys(&:to_s))
-    assert_equal %w[minimum smallest small normal large larger], I18n.t("lesson2.sizes").keys.map(&:to_s)
+  test "the lesson dialog texts list the seven sizes, smallest first, and the four themes, and a size chosen there is kept" do
+    assert_equal({ "minimum" => "Minimo", "tiny" => "Piccolissimo", "smallest" => "Più piccolo", "small" => "Piccolo", "normal" => "Normale", "large" => "Grande", "larger" => "Più grande" }, I18n.t("lesson2.sizes").transform_keys(&:to_s))
+    assert_equal %w[minimum tiny smallest small normal large larger], I18n.t("lesson2.sizes").keys.map(&:to_s)
     assert_equal({ "cream" => "Crema", "light" => "Chiaro", "dark" => "Scuro", "auto" => "Automatico" }, I18n.t("lesson2.themes").transform_keys(&:to_s))
     as_student "/diagnosis/preferences", method: :post, params: { size: "minimum" }
     assert_equal "minimum", Diagnosis::Preferences.for(@rows[:student])[:size]
@@ -81,6 +83,33 @@ class PreferencesTest < ActionDispatch::IntegrationTest
       assert_select "input[name=theme][value=#{theme}][checked]"
     end
     assert_select "script[nonce]", text: /prefers-color-scheme/
+  end
+
+  test "a choice on the settings page is posted as it is made: the form carries the endpoint, every radio its action, and «Salva» stays for no script (D-354)" do
+    as_student "/settings"
+    assert_select "form#preferences[data-controller=settings][data-settings-url-value='/diagnosis/preferences'][data-settings-saved-value=Salvato]"
+    assert_select "input[name=theme][data-action='change->settings#choose']", 4
+    assert_select "input[name=size][data-action='change->settings#choose']", 7
+    assert_select "form#preferences button[type=submit]", "Salva"
+    assert_select "#settings-status[role=status][data-settings-target=status]"
+    as_student "/diagnosis/preferences", method: :post, params: { size: "tiny" }
+    assert_redirected_to "/settings", "the form without a script still saves and goes back"
+    as_student "/settings"
+    assert_select "html[data-size=tiny]"
+    assert_select "input[name=size][value=tiny][checked]"
+  end
+
+  test "the script's request is JSON and answers the choice now in force; in the preview it goes to the preview's endpoint" do
+    on(:web, "/diagnosis/preferences", method: :post, headers: STUDENT.merge("Accept" => "application/json"), params: { size: "minimum" }, remote_addr: EDGE)
+    assert_response :success
+    assert_equal "minimum", response.parsed_body["size"]
+    assert_equal "minimum", Diagnosis::Preferences.for(@rows[:student])[:size]
+    on(:web, "/teacher/preview/settings", headers: TEACHER, remote_addr: EDGE)
+    assert_select "form#preferences[data-settings-url-value='/teacher/preview/preferences']"
+    on(:web, "/teacher/preview/preferences", method: :post, headers: TEACHER.merge("Accept" => "application/json"), params: { size: "tiny", theme: "dark" }, remote_addr: EDGE)
+    assert_response :success
+    assert_equal({ "theme" => "dark", "size" => "tiny" }, response.parsed_body.slice("theme", "size"))
+    assert_equal "minimum", Diagnosis::Preferences.for(@rows[:student])[:size], "the preview's choice is not the student's"
   end
 
   test "an unknown value is ignored and the old choice stays; saying the same again writes nothing" do

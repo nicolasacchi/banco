@@ -21,8 +21,8 @@ module Comments
       I18n.t("comments.span.hours", count: total_hours)
     end
 
-    # The sentence of both pages: «Il docente risponde entro un giorno.»
-    def line_it = I18n.t("comments.reply_within", span: span_it(limit.to_i))
+    # The sentence of both pages (D-354): «Di solito il docente risponde entro 24 ore.», always in hours.
+    def line_it = I18n.t("comments.reply_within", count: hours)
 
     # How long a conversation has waited, for the teacher: «meno di un'ora», «5 ore», «2 giorni».
     def waited_it(waiting_since, now = Time.current)

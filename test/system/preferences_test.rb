@@ -25,7 +25,7 @@ class PreferencesSystemTest < ApplicationSystemTestCase
     choose "Scuro"
     choose "Molto grande"
     click_button "Salva"
-    assert_selector "#settings-saved"
+    assert_selector "#settings-status", text: "Salvato"
     assert_selector "html[data-theme=dark][data-size=larger]"
     assert_equal "28px", style("html", "fontSize")
     assert_not_equal cream, style("body", "backgroundColor")
@@ -64,18 +64,18 @@ class PreferencesSystemTest < ApplicationSystemTestCase
     visit "/settings"
     choose label
     click_button "Salva"
-    assert_selector "#settings-saved"
+    assert_selector "#settings-status", text: "Salvato"
   end
 
-  test "the settings offer six sizes, smallest first, and four themes" do
+  test "the settings offer seven sizes, smallest first, and four themes" do
     visit "/settings"
-    assert_equal %w[minimum smallest small normal large larger], all("input[name=size]").map(&:value)
+    assert_equal %w[minimum tiny smallest small normal large larger], all("input[name=size]").map(&:value)
     assert_equal %w[cream light dark auto], all("input[name=theme]").map(&:value)
     %w[Minimo Chiaro Automatico].each { |label| assert_selector "label", text: label }
   end
 
   test "the root size scales a button and a card, not only the text (D-350)" do
-    choose_size "Minimo"
+    choose_size "Piccolissimo"
     assert_equal "14px", style("html", "fontSize")
     small = { button: box(".button-row .button"), card: box(".preferences .card"), padding: style(".preferences .card", "paddingTop") }
     choose_size "Molto grande"
@@ -92,7 +92,7 @@ class PreferencesSystemTest < ApplicationSystemTestCase
     visit "/settings"
     choose "Automatico"
     click_button "Salva"
-    assert_selector "#settings-saved"
+    assert_selector "#settings-status", text: "Salvato"
     assert_selector "html[data-theme-choice=auto]"
     emulate_scheme("light")
     assert_selector "html[data-theme=cream]"
@@ -104,6 +104,60 @@ class PreferencesSystemTest < ApplicationSystemTestCase
     assert_selector "input[name=theme][value=auto][checked]"
     emulate_scheme("light")
     assert_selector "html[data-theme=cream]"
+  ensure
+    emulate_scheme("light")
+  end
+
+  # D-354: no «Salva». The click changes <html> and the root size at once, the server has it when the line says «Salvato», and a reload keeps it.
+  test "clicking Minimo changes the page and is saved without pressing Salva; Piccolissimo is 14 px, one step above" do
+    visit "/settings"
+    assert_equal "20px", style("html", "fontSize")
+    choose "Minimo"
+    assert_selector "html[data-size=minimum]"
+    assert_equal "12px", style("html", "fontSize")
+    assert_selector "#settings-status", text: "Salvato"
+    assert_equal "minimum", Diagnosis::Preferences.for(@rows[:student])[:size], "saved on the server"
+    visit "/settings"
+    assert_selector "html[data-size=minimum]"
+    assert_selector "input[name=size][value=minimum][checked]"
+    assert_equal "12px", style("html", "fontSize")
+    choose "Piccolissimo"
+    assert_selector "#settings-status", text: "Salvato"
+    assert_equal "14px", style("html", "fontSize")
+    visit "/settings"
+    assert_selector "html[data-size=tiny]"
+    assert_equal "14px", style("html", "fontSize")
+  end
+
+  test "«Salva» with scripts saves and stays on the page, so the history has no second Impostazioni (D-354)" do
+    visit "/settings"
+    choose "Grande"
+    click_button "Salva"
+    assert_selector "#settings-status", text: "Salvato"
+    assert_equal "/settings", page.current_path
+    assert_equal "large", Diagnosis::Preferences.for(@rows[:student])[:size]
+  end
+
+  test "clicking a colour changes the page and is saved without pressing Salva; Automatico resolves as the layout does" do
+    visit "/settings"
+    cream = style("body", "backgroundColor")
+    choose "Scuro"
+    assert_selector "html[data-theme=dark][data-theme-choice=dark]"
+    assert_not_equal cream, style("body", "backgroundColor")
+    assert_selector "#settings-status", text: "Salvato"
+    visit "/settings"
+    assert_selector "html[data-theme=dark]"
+    emulate_scheme("dark")
+    choose "Automatico"
+    assert_selector "html[data-theme=dark][data-theme-choice=auto]"
+    assert_selector "#settings-status", text: "Salvato"
+    emulate_scheme("light")
+    assert_selector "html[data-theme=cream][data-theme-choice=auto]"
+    choose "Chiaro"
+    assert_selector "html[data-theme=light]"
+    assert_selector "#settings-status", text: "Salvato"
+    visit "/settings"
+    assert_selector "html[data-theme=light][data-theme-choice=light]"
   ensure
     emulate_scheme("light")
   end
@@ -125,10 +179,10 @@ class PreferencesSystemTest < ApplicationSystemTestCase
     assert_equal "1rem", page.evaluate_script("getComputedStyle(document.body).getPropertyValue('--space-4').trim()")
   end
 
-  test "with a finger a button is 44 CSS px high at the smallest size" do
+  test "with a finger a button is 44 CSS px high at the smallest size (12 px)" do
     with_pointer(touch: true, size: [ 390, 844 ])
     choose_size "Minimo"
-    assert_equal "14px", style("html", "fontSize")
+    assert_equal "12px", style("html", "fontSize")
     assert_operator box(".button-row .button")[1], :>=, 44
     assert_operator box("label.choice")[1], :>=, 44
     visit "/settings"

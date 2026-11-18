@@ -3,7 +3,7 @@ require "test_helper"
 # D-343: three subjects have another name at the student's school. The table is append-only, so the column keeps the seed name and
 # Subject#name_it reads the locale (config/locales/subjects.it.yml) first.
 class SubjectTest < ActiveSupport::TestCase
-  SCHOOL_NAMES = { "chemistry" => "Scienze integrate – Chimica", "biology" => "Scienze integrate – Biologia", "geography" => "Geografia economica" }.freeze
+  SCHOOL_NAMES = { "chemistry" => "Scienze integrate Chimica", "biology" => "Scienze integrate Biologia", "geography" => "Geografia economica" }.freeze
   SEED_NAMES = { "math" => "Matematica", "italian" => "Italiano", "english" => "Inglese", "spanish" => "Spagnolo", "history" => "Storia",
                  "law_economics" => "Diritto ed economia", "business" => "Economia aziendale", "computer_science" => "Informatica",
                  "chemistry" => "Chimica", "biology" => "Biologia", "geography" => "Geografia" }.freeze

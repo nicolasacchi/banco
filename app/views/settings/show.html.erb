@@ -3,12 +3,14 @@
   <h1><%= t("settings.title") %></h1>
   <% if flash[:notice] %><%= ui_notice :success, flash[:notice], html: { id: "settings-saved" } %><% end %>
   <p><%= t("settings.intro") %></p>
-  <%= form_with url: "#{base_path}/preferences", method: :post, class: "preferences", id: "preferences" do %>
+  <%# D-354: a choice applies and is saved at once (settings_controller.js posts it to the same endpoint); «Salva» stays for a browser without scripts. %>
+  <%= form_with url: "#{base_path}/preferences", method: :post, class: "preferences", id: "preferences",
+        data: { controller: "settings", action: "submit->settings#submit", settings_url_value: "#{base_path}/preferences", settings_saved_value: t("settings.saved_now"), settings_failed_value: t("settings.not_saved") } do %>
     <div class="card">
     <fieldset class="options choice-list" data-comment-anchor="setting:theme">
       <legend><%= t("diagnosis.preferences.theme") %></legend>
       <% Diagnosis::Preferences::THEMES.each do |theme| %>
-        <label class="option choice"><%= radio_button_tag "theme", theme, @preferences[:theme] == theme %> <span><%= t("diagnosis.preferences.themes.#{theme}") %></span></label>
+        <label class="option choice"><%= radio_button_tag "theme", theme, @preferences[:theme] == theme, data: { action: "change->settings#choose" } %> <span><%= t("diagnosis.preferences.themes.#{theme}") %></span></label>
       <% end %>
     </fieldset>
     <p class="field-help"><%= t("diagnosis.preferences.theme_hint") %></p>
@@ -17,12 +19,12 @@
     <fieldset class="options choice-list" data-comment-anchor="setting:size">
       <legend><%= t("diagnosis.preferences.size") %></legend>
       <% Diagnosis::Preferences::SIZES.each do |size| %>
-        <label class="option choice"><%= radio_button_tag "size", size, @preferences[:size] == size %> <span><%= t("diagnosis.preferences.sizes.#{size}") %></span></label>
+        <label class="option choice"><%= radio_button_tag "size", size, @preferences[:size] == size, data: { action: "change->settings#choose" } %> <span><%= t("diagnosis.preferences.sizes.#{size}") %></span></label>
       <% end %>
     </fieldset>
     <p class="field-help"><%= t("diagnosis.preferences.size_hint") %></p>
     </div>
-    <div class="button-row"><button type="submit" class="button"><%= t("diagnosis.preferences.save") %></button></div>
+    <div class="button-row"><button type="submit" class="button"><%= t("diagnosis.preferences.save") %></button> <span class="field-help" id="settings-status" role="status" data-settings-target="status"></span></div>
   <% end %>
   <%# the voices of this device, one sentence each (D-283): the operator listens here once, on the student's own device %>
   <section id="voci" class="voices card" data-comment-anchor="setting:voices" data-controller="voices" data-voices-labels-value="<%= t("lesson2.voices").to_json %>">
