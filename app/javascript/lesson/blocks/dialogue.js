@@ -1,12 +1,13 @@
 // dialogue (WAVE2 2.6, T3): a scripted exchange in the target language, one speaker's line after another, chat-like. Every line has its own "IT"
 // button that opens its Italian gloss in place (one tap, one line: never a block of glosses). "Ascolta tutto" reads the exchange with a voice for
 // each speaker and marks the line being read; a tap on the speaker button of a line reads that line; "Più lento" slows the voices. All of it needs a
-// voice the operator accepted on the device (the voice gate of lesson/speech): with none, the transcript is open and the card works by reading.
+// voice (a server voice, or one the operator accepted on the device: the gate of lesson/speech_device): with none, the transcript is open and the card works by reading.
 // Glosses are teaching content, served whole (L8): the closed ones are `hidden`, so neither a screen reader nor "Ascolta" meets them before they
 // are opened (L10). In print, in the teacher's view and in safe mode everything is open.
 import { button, el, icon, uid } from "lesson/dom"
 import { insideControl, plainText, renderInlineRich } from "lesson/text"
 import * as speech from "lesson/speech"
+import { hasVoice as gate, onChange } from "lesson/speech_device"
 
 export const type = "dialogue"
 
@@ -21,11 +22,10 @@ export function segmentsOf(block, speakers = new Map(block.speakers.map((s, i) =
   return block.lines.map((line) => ({ lang: LANGS[textKeyOf(line)], text: textOf(line), voice: speakers.get(line.speaker)?.voice ?? 1 }))
 }
 
-// Whether a voice for this language may be used on this device (accepted, local): none when there is no speech synthesis at all.
+// Whether a voice for this language may be used on this device: a server voice (its clips play in an <audio>) or an accepted local voice of the device.
 function hasVoice(lang) {
   try {
-    const synth = typeof speechSynthesis !== "undefined" ? speechSynthesis : null
-    return !!(synth && speech.voiceFor(lang, synth.getVoices()))
+    return gate(lang)
   } catch (_error) {
     return false
   }
@@ -134,10 +134,14 @@ export function render(block, ctx) {
     transcript = transcript === "shown" ? "hidden" : "shown"
     paint()
   })
-  // the voices of a device can arrive after the page: show the controls when one turns up
-  if (!open && !voice && typeof speechSynthesis !== "undefined" && speechSynthesis.addEventListener) {
-    speechSynthesis.addEventListener("voiceschanged", () => {
+  // the voices of a device can arrive after the page, and the student's switch can be turned on: show the controls when one turns up
+  if (!open && !voice) {
+    let seen = false
+    const stopWatching = onChange(() => {
+      if (root.isConnected) seen = true
+      else if (seen) { stopWatching(); return }
       if (!hasVoice(lang)) return
+      stopWatching()
       for (const b of [listen, slow, toggle]) b.hidden = false
       root.querySelectorAll(".dialogue-say").forEach((b) => { b.hidden = false })
       transcript = block.transcript ?? "shown"

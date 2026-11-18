@@ -18,6 +18,7 @@ import { FAMILY, STATUS, preload } from "lesson/diagrams/registry"
 import { stopAll } from "lesson/speech"
 import { speak } from "lesson/speech"
 import { hasVoice, setPreferences, preferences } from "lesson/speech_device"
+import { canPlayClips } from "lesson/speech_state"
 import { bindEscape } from "lesson/speech_ui"
 
 const csrf = () => document.querySelector("meta[name=csrf-token]")?.content || ""
@@ -62,7 +63,7 @@ export function renderLesson(root, body, config) {
   bindEscape()
   const ctx = {
     savePreferences: (change) => config.savePreferences?.(change),
-    // a speaker for a language, or null where the device has no accepted voice for it (the tiles' "Ascolta la frase" asks): { speak(text) }
+    // a speaker for a language, or null where there is no server voice and the device has no accepted voice for it (the tiles' "Ascolta la frase" asks): { speak(text) }
     speaker: (lang) => (!(config.mode === "render" || typeof document === "undefined") && hasVoice(lang, { preview: config.mode === "preview" })
       ? { speak: (text) => speak([{ lang, text }], { preview: config.mode === "preview", slower: preferences().slower }) } : null),
     glossary: new Map((body.glossary ?? []).map((g) => [g.term_it.toLowerCase(), g])),
@@ -343,7 +344,7 @@ export function renderLesson(root, body, config) {
     motion.addEventListener("change", () => setReduceMotion(motion.checked, true))
     // the voice: the switch and the speed (the speed is also on the card), and the way to the page where the voices are tried
     const voiceRows = []
-    if (!ctx.noSpeech && typeof speechSynthesis !== "undefined") {
+    if (!ctx.noSpeech && (typeof speechSynthesis !== "undefined" || canPlayClips())) {
       const listen = el("input", { type: "checkbox", checked: preferences().listen })
       listen.addEventListener("change", () => { setPreferences({ listen: listen.checked }); config.savePreferences?.({ listen: listen.checked }) })
       const slower = el("input", { type: "checkbox", checked: preferences().slower })

@@ -4,6 +4,8 @@ import "./setup.mjs"
 import assert from "node:assert/strict"
 import { test } from "node:test"
 
+const voices = (await import("lesson/voices")).default
+delete voices.server // these tests are about the device's voices; the server's clips are in speech_clips.test.mjs
 const speech = { ...(await import("lesson/speech")), ...(await import("lesson/speech_device")) }
 const { texToSpeech, chemToSpeech, codeToSpeech, bitsToSpeech, plainToSpeech } = await import("lesson/speech_math")
 
