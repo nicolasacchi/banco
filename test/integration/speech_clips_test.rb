@@ -27,7 +27,7 @@ class SpeechClipsTest < ActionDispatch::IntegrationTest
       clip(who)
       assert_response :success, who.inspect
       assert_equal "audio/mpeg", response.media_type
-      assert_equal "public, max-age=31536000, immutable", response.headers["Cache-Control"]
+      assert_equal %w[immutable max-age=31536000 public], response.headers["Cache-Control"].split(/,\s*/).sort
       assert_equal "bytes", response.headers["Accept-Ranges"]
       assert_equal "nosniff", response.headers["X-Content-Type-Options"]
       assert_equal BYTES, response.body.b

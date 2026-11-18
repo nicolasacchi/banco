@@ -30,30 +30,39 @@ module MapSelectSupport
 
   def target_key(card, stored_id) = Lessons::SelectTargets.id_map(check_of(card)).key(stored_id)
 
-  # A point of the target's own shape that the page hits: a viewport coordinate pair, or nil.
+  # A point of the target's own shape that the page hits: a viewport coordinate pair, or nil. +nth+ (0 to 4) picks among the points that are hit, spread
+  # over the shape: Chrome's touch hit test is fuzzier than elementFromPoint, so a tap at the edge of a band can land on the sea beside it.
   FIND = <<~JS.freeze
-    (scope, key) => {
+    (scope, key, nth) => {
       const node = document.querySelector(scope + ' svg [data-target="' + key + '"]')
       if (!node) return null
       node.scrollIntoView({ block: "center", inline: "center" })
       const r = node.getBoundingClientRect()
       const pads = [...document.querySelectorAll(scope + ' svg [data-hit-for="' + key + '"]')]
       const button = document.querySelector(scope + ' .dg-targets [data-target="' + key + '"]')
-      let best = null
-      for (let i = 1; i < 60 && !best; i++) for (let j = 1; j < 60 && !best; j++) {
+      const hits = []
+      for (let i = 1; i < 60; i++) for (let j = 1; j < 60; j++) {
         const x = r.left + (r.width * i) / 60, y = r.top + (r.height * j) / 60
         if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) continue
         const hit = document.elementFromPoint(x, y)
-        if (hit === node || pads.includes(hit) || (button && (hit === button || button.contains(hit)))) best = [x, y]
+        if (hit === node || pads.includes(hit) || (button && (hit === button || button.contains(hit)))) hits.push([x, y])
       }
-      return best
+      return hits[Math.floor((nth * hits.length) / 5)] || null
     }
   JS
 
-  def hit_point(scope, key)
-    point = page.evaluate_script("(#{FIND})(#{scope.to_json}, #{key.to_json})")
+  def hit_point(scope, key, nth = 0)
+    point = page.evaluate_script("(#{FIND})(#{scope.to_json}, #{key.to_json}, #{nth})")
     assert point, "#{scope}: no point of #{key} is hit by the page"
     point
+  end
+
+  # taps the target and, if the touch landed beside it, taps another point of it (up to 5 points): the target is then the chosen one
+  def tap_target(scope, key, mode)
+    5.times do |nth|
+      tap_at(hit_point(scope, key, nth), mode)
+      return if page.has_css?("#{scope} .dg-target[data-target='#{key}'][aria-pressed='true']", wait: 1)
+    end
   end
 
   def tap_at(point, mode)
@@ -90,7 +99,7 @@ module MapSelectSupport
     keys = page.evaluate_script("[...document.querySelectorAll(#{"#{scope} svg [data-target]".to_json})].map((n) => n.dataset.target)")
     assert_equal(set == "areas" || set == "places" ? 4 : 3, keys.size, "#{set}: its targets are drawn")
     keys.each do |key|
-      tap_at(hit_point(scope, key), mode)
+      tap_target(scope, key, mode)
       assert_selector "#{scope} .dg-target[data-target='#{key}'][aria-pressed='true']", wait: 5
       assert_equal [ key ], page.evaluate_script("[...document.querySelectorAll(#{"#{scope} [aria-pressed='true'][data-target]".to_json})].map((n) => n.dataset.target)").uniq, "#{set}: pick one keeps one"
       assert_selector "#{scope} svg .is-selected[data-target='#{key}']"
@@ -98,11 +107,11 @@ module MapSelectSupport
     shot "#{label}-#{set}-picked", scope
     wrong_key = target_key(card, wrong)
     # pick one: a tap on the target already chosen unchooses it, so it is tapped only when the loop did not leave it chosen
-    tap_at(hit_point(scope, wrong_key), mode) unless page.has_css?("#{scope} .dg-target[data-target='#{wrong_key}'][aria-pressed='true']", wait: 0)
+    tap_target(scope, wrong_key, mode) unless page.has_css?("#{scope} .dg-target[data-target='#{wrong_key}'][aria-pressed='true']", wait: 0)
     assert_selector "#{scope} .dg-target[data-target='#{wrong_key}'][aria-pressed='true']"
     find("#{scope} button", text: "Controlla").click
     assert_selector "#{scope} .verdict-wrong", wait: 10
-    tap_at(hit_point(scope, target_key(card, right)), mode)
+    tap_target(scope, target_key(card, right), mode)
     find("#{scope} button", text: "Controlla").click
     assert_selector "#{scope} .verdict-right", wait: 10
     shot "#{label}-#{set}-right", scope

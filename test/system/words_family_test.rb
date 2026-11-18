@@ -43,6 +43,10 @@ class WordsFamilySystemTest < ApplicationSystemTestCase
   end
 
   def go(n) = page.execute_script("window.lessonApi.goTo(#{n}, { focus: true })")
+
+  # the server's voices (D-359) are off: what these cases are about is a device with no voice at all (the speech layer is then told, as a late voice list would)
+  SERVER_OFF = "import('lesson/voices').then((v) => { v.default.server = null; return import('lesson/speech_device') }).then((m) => { m.configure({}); arguments[0](true) })".freeze
+  def server_off! = page.evaluate_async_script(SERVER_OFF)
   def shot(name) = page.driver.save_screenshot(File.join(SHOT_DIR, "words-#{name}.png"), full: true)
 
   def no_overflow!(where)
@@ -117,8 +121,9 @@ class WordsFamilySystemTest < ApplicationSystemTestCase
     no_overflow!("mirror list")
   end
 
-  test "the dialogue: no accepted voice, so the transcript is open and there is no listen button; a gloss opens one line at a time" do
+  test "the dialogue: no voice at all, so the transcript is open and there is no listen button; a gloss opens one line at a time" do
     open_gallery
+    server_off!
     go(12)
     assert_selector "#scheda-12 .dialogue-line", count: 4
     assert_no_selector "#scheda-12 .dialogue-listen", visible: :visible
@@ -144,12 +149,24 @@ class WordsFamilySystemTest < ApplicationSystemTestCase
     assert_equal "BUTTON", page.evaluate_script("document.querySelector('#scheda-12 .dialogue-it').tagName")
   end
 
-  test "the English dialogue starts with a hidden transcript but, with no accepted voice, the text is there" do
+  test "the English dialogue starts with a hidden transcript but, with no voice at all, the text is there" do
     open_gallery(:english)
+    server_off!
     go(3)
     assert_selector "#scheda-3 .dialogue-text", text: "Are you coming to the lake on Saturday?", visible: :visible
     assert_selector "#scheda-3 .dialogue-text[lang=en]", count: 3
     assert_no_selector "#scheda-3 .dialogue-transcript", visible: :visible
+  end
+
+  test "with server voices the dialogue has its listen buttons and the English transcript starts hidden; nothing is played until a button is pressed" do
+    open_gallery(:english)
+    go(3)
+    assert_selector "#scheda-3 .dialogue-listen", text: "Ascolta tutto", visible: :visible, wait: 5
+    assert_selector "#scheda-3 .dialogue-say", count: 3, visible: :visible
+    assert_selector "#scheda-3 .dialogue-transcript", visible: :visible
+    assert_selector "#scheda-3 .dialogue-text", count: 3, visible: :hidden
+    assert_no_selector "#scheda-3 .dialogue-text", visible: :visible
+    assert_equal false, page.evaluate_script("document.querySelector('#scheda-3 audio') !== null"), "no <audio> was put in the page by the dialogue"
   end
 
   test "print: the glosses and the transcript are open, the buttons are not printed; a figure prints its first state" do
