@@ -28,7 +28,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
   SENTENCE_STEM = "Negativa: My parents ___ meat.".freeze
   SENTENCE_KEY = "never eat".freeze
   CONTESTED = "Ho mandato la tua risposta al docente: ti risponde in «I miei commenti». Intanto ecco la soluzione: confrontala con la tua.".freeze
-  SAME_ANSWER = "È la stessa risposta di prima. Cambia qualcosa, oppure premi «Fai controllare».".freeze
+  SAME_ANSWER = "È la stessa risposta di prima: cambiala, oppure chiedi un aiuto.".freeze
   CONTEST_NOTE = "Pensi che la tua risposta sia giusta? Premi «Fai controllare»: la vede il docente.".freeze
 
   WATCH = <<~JS.freeze
@@ -559,7 +559,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
     assert_clean "the contest after the second try"
   end
 
-  # The same answer twice is refused and is not a try; the contest stays offered; going on to another exercise takes it away.
+  # The same answer twice is refused (D-353) and is not a try, in the page and not as a verdict; the contest stays offered; going on to another exercise takes it away.
   def walk_same_answer
     serve = open_practice("sentence")
     type_and_check("xyz")
@@ -572,8 +572,9 @@ class PracticeFlowTest < ApplicationSystemTestCase
     assert_selector "#check:not([disabled])", wait: 30
     sentence_box.set("xyz  ")
     click_button "Controlla"
-    assert_selector ".refusal-notice", text: SAME_ANSWER
+    assert_selector "#feedback", text: SAME_ANSWER
     assert_equal 1, serve.attempts.count
+    assert_equal 0, page.evaluate_script("Object.keys(localStorage).filter((k) => k.startsWith('banco.poutbox.')).length"), "the outbox let the refused answer go"
     assert_selector "#check:not([disabled])", wait: 30
     find("#skip-button").click
     assert_no_selector "#contest-button"
@@ -608,7 +609,11 @@ class PracticeFlowTest < ApplicationSystemTestCase
     assert_clean "the sentence and the typo"
   end
 
-  # An exercise answered once and left with «Salta» is «Da finire» in the list.
+  # The entries of the number skill that come first, before «Già fatti».
+  def number_front = "#exercise-list .exercise-group > ol.exercise-entries > .exercise-entry[data-skill='#{skill_of('number')}']"
+
+  # An exercise answered once and left with «Salta» is «Finito» (D-353): it goes into the closed «Già fatti (1)» at the end of the list, still clickable;
+  # the ones still to do stay first.
   def walk_retry_status
     first = open_practice("number")
     first_key = item_key_of(first)
@@ -617,8 +622,43 @@ class PracticeFlowTest < ApplicationSystemTestCase
     assert_selector "#feedback", text: UNRECOGNISED
     find("#skip-button").click
     next_serve_after(first)
-    assert_selector "#{entry_selector(first_key)} .exercise-status", text: "Da finire"
+    assert_selector "#exercise-list details.exercise-done summary", text: "Già fatti (1)"
+    assert_selector "#{number_front}", count: 2
+    assert_no_selector "#exercise-list .exercise-group > ol.exercise-entries > .exercise-entry[data-item='#{first_key}']"
+    find("#exercise-list details.exercise-done summary").click
+    assert_selector "#{entry_selector(first_key)} .exercise-status", text: "Finito"
+    assert_selector "#{entry_selector(first_key)} .exercise-act", text: "Rifai"
     assert_clean "the retry status"
+  end
+
+  # «Già fatti (N)»: a right answer, then another exercise: the done one leaves the front of the list into a closed group at the end, still
+  # clickable; the exercises to do stay first, in order; the exercise open on the page is never in the group.
+  def walk_done_group
+    first = open_practice("number")
+    first_key = item_key_of(first)
+    assert_no_selector "#exercise-list details.exercise-done"
+    answer_right(first)
+    click_button "Controlla"
+    assert_selector "#feedback", text: "Corretto."
+    assert_selector "#exercise-list .exercise-group > ol.exercise-entries > .exercise-entry[data-item='#{first_key}']", text: "Fatto"
+    assert_no_selector "#exercise-list details.exercise-done", text: "Già fatti"
+    other = (NUMBER_KEYS - [ first_key ]).first
+    find("#{entry_selector(other)} .exercise-link").click
+    next_serve_after(first)
+    assert_selector "#exercise-list details.exercise-done summary", text: "Già fatti (1)"
+    assert_equal false, page.evaluate_script("document.querySelector('#exercise-list details.exercise-done').open")
+    assert_no_selector "#{entry_selector(first_key)}", visible: :visible
+    assert_equal (NUMBER_KEYS - [ first_key ]).sort, page.all(number_front, minimum: 2).map { |li| li["data-item"] }.sort
+    assert_selector "#exercise-list .exercise-list-count", text: "1 fatto su #{KINDS.size + 2}"
+    find("#exercise-list details.exercise-done summary").click
+    assert_selector "#{entry_selector(first_key)} .exercise-status", text: "Fatto"
+    assert_selector "#{entry_selector(first_key)} .exercise-act", text: "Rifai"
+    find("#{entry_selector(first_key)} .exercise-link").click
+    again = next_serve_after(first)
+    assert_equal first_key, item_key_of(again)
+    assert_no_selector "#exercise-list details.exercise-done", text: "Già fatti"
+    assert_selector "#exercise-list .exercise-group > ol.exercise-entries > .exercise-entry[data-item='#{first_key}']", text: "Adesso"
+    assert_clean "the done group"
   end
 
   def walk_contest_phone
@@ -797,13 +837,25 @@ class PracticeFlowTest < ApplicationSystemTestCase
     walk_sentence_and_typo
   end
 
-  test "a trial student: a wrong answer then «Salta» leaves the entry «Da finire»" do
+  test "a trial student: a right answer moves the exercise into the closed «Già fatti (1)», still clickable" do
+    build_flow_world(number_items: 3)
+    as_student
+    walk_done_group
+  end
+
+  test "the teacher in the preview: a right answer moves the exercise into the closed «Già fatti (1)», still clickable" do
+    build_flow_world(number_items: 3)
+    as_teacher_in_preview
+    walk_done_group
+  end
+
+  test "a trial student: a wrong answer then «Salta» leaves the entry «Finito» in «Già fatti»" do
     build_flow_world(number_items: 3)
     as_student
     walk_retry_status
   end
 
-  test "the teacher in the preview: a wrong answer then «Salta» leaves the entry «Da finire»" do
+  test "the teacher in the preview: a wrong answer then «Salta» leaves the entry «Finito» in «Già fatti»" do
     build_flow_world(number_items: 3)
     as_teacher_in_preview
     walk_retry_status
@@ -825,6 +877,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
     assert_selector "#next-actions a", text: "Torna all'argomento"
     assert_no_selector "#check", visible: :visible
     key = revision.item.key
+    find("#exercise-list details.exercise-done summary").click
     assert_selector "#{entry_selector(key)} .exercise-status", text: "Fatto"
     assert_equal 1, PracticePoolExhaustion.where(student: student, skill_key: SKILL).count
     assert_equal revision.instances.count, PracticeServe.where(student: student).count, "nothing was served"

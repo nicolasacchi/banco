@@ -222,7 +222,7 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     assert list["skills"].first["exercises"].all? { |e| e.keys.sort == LIST_KEYS }
   end
 
-  test "the statuses go todo, skipped, unfinished, done, and a solution after a try makes an exercise finished with the solution" do
+  test "the statuses go todo, skipped, unfinished (typed, no try), finished (answered), done, and a solution the student asks for after a try is finished with the solution" do
     build_nav_world
     assert_equal [ "todo" ], status_by_item(list_for(OFFICIAL)).values.uniq
 
@@ -255,10 +255,12 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     assert_equal "12", reopened["draft"]["raw"]
     assert_equal first_key, reopened["exercise"]["item"]
 
-    # a wrong try on the second: unfinished (answered once, can try again; D-339), one try; its solution closes it: finished with the solution (D-348)
+    # a wrong try on the second: finished (he answered; the serve is open, a click resumes it; D-353), one try; the solution he asks for closes it:
+    # finished with the solution (D-348)
     assert_equal "unrecognised", answer_for(OFFICIAL, second, "99999")["outcome"]
     left = list_for(OFFICIAL)
-    assert_equal "unfinished", entries(left)[second_key]["status"]
+    assert_equal "finished", entries(left)[second_key]["status"]
+    assert_equal second["serve_id"], entries(left)[second_key]["open_serve_id"], "still open: a click goes on with it"
     assert_equal 1, entries(left)[second_key]["tried"]
     post_json(OFFICIAL, "/practice/serves/#{second['serve_id']}/solution")
     assert_response :success
@@ -425,6 +427,8 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     approve_topic!(make_topic(@lesson_revision, { SKILL => [ @small ] }, course: @course))
   end
 
+  def solution_reasons(serve) = PracticeServe.find(serve["serve_id"]).events.where(kind: "solution_shown").map { |e| JSON.parse(e.payload_json)["reason"] }
+
   def slip_raw_of(serve) = JSON.parse(PracticeServe.find(serve["serve_id"]).item_instance.errors_json).first["value"]
 
   test "an exercise closed without a right answer is «finished», with the solution shown «finished_solution», then «done» after a right one" do
@@ -435,20 +439,47 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     assert_equal "finished", entries(list_for(OFFICIAL))[key]["status"], "closed, no solution shown"
     post_json(OFFICIAL, "/practice/serves/#{serve['serve_id']}/solution")
     assert_response :success
-    assert_equal "finished_solution", entries(list_for(OFFICIAL))[key]["status"], "closed with the solution"
+    assert_equal "finished_solution", entries(list_for(OFFICIAL))[key]["status"], "closed with the solution he asked for (reason after_wrong)"
     again = serve_for(OFFICIAL, item: key)
     assert_equal "correct", answer_for(OFFICIAL, again, right_raw(again))["outcome"]
     assert_equal "done", entries(list_for(OFFICIAL))[key]["status"]
   end
 
-  test "an exercise answered and closed with the solution is not «unfinished»: only an open serve with a try or a draft is" do
+  test "only an open serve with a typed draft and no try is «unfinished»; with a try it is «finished», and the solution he asks for makes it «finished_solution»" do
     build_nav_world
     serve = serve_for(OFFICIAL)
     key = item_key_of(serve)
-    answer_for(OFFICIAL, serve, "99999")
+    draft_for(OFFICIAL, serve["serve_id"], "12")
     assert_equal "unfinished", entries(list_for(OFFICIAL))[key]["status"]
+    answer_for(OFFICIAL, serve, "99999")
+    assert_equal "finished", entries(list_for(OFFICIAL))[key]["status"], "he answered: a try, not a draft"
+    assert_equal serve["serve_id"], entries(list_for(OFFICIAL))[key]["open_serve_id"]
     post_json(OFFICIAL, "/practice/serves/#{serve['serve_id']}/solution")
     assert_equal "finished_solution", entries(list_for(OFFICIAL))[key]["status"]
+  end
+
+  test "the solution the app shows by itself after the second wrong try is «finished», never «finished with the solution»" do
+    build_nav_world
+    serve = serve_for(OFFICIAL)
+    key = item_key_of(serve)
+    assert_equal "unrecognised", answer_for(OFFICIAL, serve, "99999")["outcome"]
+    reply = answer_for(OFFICIAL, serve, "88888")
+    assert reply["solution"], "the app shows the solution after the last try"
+    assert_equal [ "after_last_try" ], solution_reasons(serve), "the ledger says it came by itself"
+    entry = entries(list_for(OFFICIAL))[key]
+    assert_equal "finished", entry["status"]
+    assert_nil entry["open_serve_id"]
+    assert_equal [ 0, 1 ], entry.values_at("done", "tried"), "tried counts the serves with a try"
+    assert_equal I18n.t("practice.status_finished"), "Finito"
+  end
+
+  test "a solution asked for before any try is «finished with the solution»" do
+    build_nav_world
+    asked = serve_for(OFFICIAL)
+    post_json(OFFICIAL, "/practice/serves/#{asked['serve_id']}/solution")
+    assert_equal [ "requested" ], solution_reasons(asked)
+    assert_equal "finished_solution", entries(list_for(OFFICIAL))[item_key_of(asked)]["status"]
+    assert_equal "Finito: con la soluzione", I18n.t("practice.status_finished_solution")
   end
 
   test "the same exercise again says so on the page, once the item repeats, and not for a chosen exercise" do

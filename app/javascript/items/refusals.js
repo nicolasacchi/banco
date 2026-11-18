@@ -20,6 +20,11 @@ export class Refusals {
     return n
   }
 
+  // The button is inert for a moment without a refusal being counted (the same answer sent again, practice D-353).
+  cool(now) {
+    this.until = now + this.cooldownMs
+  }
+
   cooling(now) {
     return now < this.until
   }

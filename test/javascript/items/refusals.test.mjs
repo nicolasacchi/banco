@@ -36,3 +36,13 @@ test("the format is shown from the second refusal of the same item, and only for
   assert.equal(r.showFormat("b"), false)
   assert.equal(r.showFormat("a"), true)
 })
+
+test("cool makes the button inert for a moment without counting a refusal (the same answer sent again)", () => {
+  const r = new Refusals()
+  r.cool(1000)
+  assert.equal(r.cooling(1500), true)
+  assert.equal(r.cooling(2600), false)
+  assert.equal(r.showFormat("a"), false)
+  assert.equal(r.record("a", 3000), 1)
+  assert.equal(r.showFormat("a"), false)
+})

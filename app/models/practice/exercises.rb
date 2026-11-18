@@ -2,15 +2,20 @@ module Practice
   # The list of the exercises of a topic for one student (D-337): what the practice page draws as a sidebar. Per skill of the topic, the items
   # pinned on the topic revision this student sees, in pin order, each with its status from the student's serves. Read-only.
   #
-  #   status, in this order: "unfinished" when the open serve has a try or a non-empty draft (the student answered or typed and can go on, D-339);
-  #           "done" when any serve of the item closed correct; "finished_solution" when a serve with a try or a shown solution closed or was
-  #           abandoned without a correct answer and a solution was shown; "finished" when such a serve closed or was abandoned and none showed
-  #           a solution (D-348: an exercise closed with the solution is finished, not to redo); "skipped" when there is an open serve (no try,
-  #           nothing typed); else "todo". open_serve_id is set whenever the item has an open serve, so a click resumes it.
+  #   status, in this order: "unfinished" when the open serve has a non-empty draft and no try (typed, not answered: «Da finire»);
+  #           "done" when any serve of the item closed correct; "finished_solution" when a serve with a try or a shown solution ended (closed,
+  #           abandoned, or still open with a try) and the STUDENT asked for the solution (an event `solution_shown` with the reason
+  #           `requested`, or `after_wrong` on a serve already closed wrong: both are the «Mostra la soluzione» button); "finished" when such a serve ended and the
+  #           solution, if any, came by itself (after the last try, after a right answer, after «Fai controllare»), or the open serve has
+  #           a try (he answered; a click still resumes it); "skipped" when there is an open serve (no try, nothing typed); else "todo".
+  #           open_serve_id is set whenever the item has an open serve, so a click resumes it.
   #
   # The list never holds a key to an answer, an error value or the text of an instance: only the item's key (the page asks for that exercise
   # with it), its place and a title, the first sentence of the prompt's stem (the same for every instance).
   class Exercises
+    # The reasons of a `solution_shown` event that are the student's own request; the others (after_last_try, after_correct, after_undetermined,
+    # after_contest) are the app showing it.
+    ASKED_REASONS = %w[requested after_wrong].freeze
     TITLE_MAX = 90
     ELLIPSIS = "…".freeze
     STOPS = %w[. ? !].freeze
@@ -108,11 +113,11 @@ module Practice
     end
 
     def status(mine, open, facts)
-      return "unfinished" if open && (facts.tries(open.id).positive? || facts.draft?(open.id))
+      return "unfinished" if open && facts.tries(open.id).zero? && facts.draft?(open.id)
       return "done" if mine.any? { |r| r.status.closed_by == :correct }
 
-      ended = mine.select { |r| r.status.state != :open && (facts.tries(r.id).positive? || r.status.solution_sent) }
-      return (ended.any? { |r| r.status.solution_sent } ? "finished_solution" : "finished") if ended.any?
+      ended = mine.select { |r| (r.status.state != :open || r.id == open&.id) && (facts.tries(r.id).positive? || r.status.solution_sent) }
+      return (ended.any? { |r| facts.asked_solution?(r.id) } ? "finished_solution" : "finished") if ended.any?
 
       open ? "skipped" : "todo"
     end
@@ -124,17 +129,26 @@ module Practice
       def initialize(rows, drafts)
         @by_item = rows.group_by(&:item_id)
         @drafts = drafts
+        @asked = rows.empty? ? Set.new : asked_serves(rows)
         @tries = rows.empty? ? {} : PracticeAttempt.where(practice_serve_id: rows.map(&:id)).group(:practice_serve_id).count
       end
 
       def of_item(item_id) = @by_item.fetch(item_id, [])
       def tries(serve_id) = @tries.fetch(serve_id, 0)
       def draft?(serve_id) = @drafts.key?(serve_id)
+      def asked_solution?(serve_id) = @asked.include?(serve_id)
 
       # An item's only possible open serve is its latest one: a newer serve of the same item supersedes it (practice/3).
       def open_serve(item_id)
         latest = of_item(item_id).max_by(&:id)
         latest if latest&.status&.state == :open
+      end
+
+      private
+
+      def asked_serves(rows)
+        PracticeEvent.where(practice_serve_id: rows.map(&:id), kind: "solution_shown").pluck(:practice_serve_id, :payload_json)
+                     .filter_map { |id, json| id if ASKED_REASONS.include?(JSON.parse(json || "{}")["reason"]) }.to_set
       end
     end
   end

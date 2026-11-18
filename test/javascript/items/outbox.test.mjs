@@ -52,6 +52,22 @@ test("invalid also clears the entry: it is an answer the server will not take", 
   assert.equal(box.size, 0)
 })
 
+test("the practice outbox ends an entry on a same_answer reply: the server took no try and will not take it", async () => {
+  const storage = new MemoryStorage()
+  const box = new Outbox({
+    url: "/practice/answers", csrf: () => "token", storage, prefix: PRACTICE_PREFIX,
+    fields: ["serve_id", "client_attempt_id", "raw", "source"], statuses: ["graded", "invalid", "same_answer", "closed", "not_found"],
+    httpStatuses: [200, 404, 409],
+    fetchImpl: async () => reply({ json: { status: "same_answer", message_it: "x", actions: [] } })
+  })
+  box.add({ serve_id: 3, client_attempt_id: "p1", raw: "play", source: "text" })
+  const result = await box.flush()
+  assert.equal(result.blocked, false)
+  assert.equal(result.results.p1.status, "same_answer")
+  assert.equal(box.size, 0)
+  assert.equal(storage.length, 0)
+})
+
 const BLOCKS = {
   "an opaque redirect (session expired)": () => reply({ type: "opaqueredirect", status: 0 }),
   "a followed redirect": () => reply({ redirected: true }),

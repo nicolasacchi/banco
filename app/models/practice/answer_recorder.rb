@@ -113,21 +113,22 @@ module Practice
                             payload_json: payload.to_json, at: now, created_at: now)
     end
 
-    # The same answer as a try this serve already has: the raw stripped and its spaces collapsed, a text answer as the grader normalizes it.
+    # The same answer as a try this serve already has, read as the grader reads it: a whole sentence round a `___` blank is its words in the
+    # blank's place, then the spaces collapsed and a text answer normalized as the grader does.
     def repeated?(serve, spec, raw)
       mine = answer_key(spec, raw)
       serve.attempts.any? { |a| answer_key(spec, a.raw) == mine }
     end
 
     def answer_key(spec, raw)
-      text = raw.to_s.gsub(/[[:space:]]+/, " ").strip
+      text = (full_sentence_part(spec, raw.to_s) || raw.to_s).gsub(/[[:space:]]+/, " ").strip
       spec.component == "normalized_text" ? Grading::Closed::Text.normalize(text, case_sensitive: spec.case_sensitive) : text
     end
 
-    # Refused, not a try: the message offers «Fai controllare» only while a contest is allowed on the serve now.
+    # Refused, not a try, nothing stored: status `same_answer` (the page and its outbox end the entry on it; the page does not draw it as a
+    # verdict; HTTP 200, so the browser logs no failed request). `actions` lets the page offer «Fai controllare» while a contest is allowed.
     def same_answer(serve)
-      allowed = Loader.status_of(serve, now: @clock.now).actions.include?(:contest)
-      invalid(I18n.t(allowed ? "practice.same_answer" : "practice.same_answer_plain"))
+      Result.new(200, { status: "same_answer", message_it: I18n.t("practice.same_answer"), actions: Loader.status_of(serve, now: @clock.now).actions })
     end
 
     # The answer of A9.3 rebuilt from rows: what this attempt did, the same on the first reply and on a repeat.

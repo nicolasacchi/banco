@@ -25,6 +25,7 @@ const ENTRY_STATUS = {
   skipped: { icon: "next", tone: "muted" },
   now: { icon: "pin", tone: "info" }
 }
+const FINISHED_STATUSES = ["done", "finished", "finished_solution"]
 const DRAFT_WAIT_MS = 1500
 const DRAFT_TIMEOUT_MS = 4000
 const STATE_TONES = { demonstrated: "success", consolidated: "success", in_study: "info", to_recover: "nearly", to_review: "nearly", to_learn: "nearly", not_seen: "muted" }
@@ -40,10 +41,11 @@ export default class extends Controller {
     this.urls = practiceUrls(this.baseUrlValue)
     this.outbox = new Outbox({
       url: this.urls.answer, csrf: () => this.csrf(), prefix: PRACTICE_PREFIX,
-      fields: ["serve_id", "client_attempt_id", "raw", "source"], statuses: ["graded", "invalid", "closed", "not_found"],
+      fields: ["serve_id", "client_attempt_id", "raw", "source"], statuses: ["graded", "invalid", "same_answer", "closed", "not_found"],
       httpStatuses: [200, 404, 409]
     })
     this.serveId = null
+    this.itemKey = null
     this.handle = null
     this.refusals = new Refusals()
     this.busy = false
@@ -58,6 +60,7 @@ export default class extends Controller {
     this.draftTimer = null
     this.draftChain = Promise.resolve()
     this.listSeq = 0
+    this.doneOpen = new Set() // the skills whose «Già fatti» the student opened
     this.leaveSave = () => { this.saveDraft({ keepalive: true }) }
     this.hiddenSave = () => { if (document.visibilityState === "hidden") this.saveDraft({ keepalive: true }) }
     window.addEventListener("pagehide", this.leaveSave)
@@ -157,6 +160,7 @@ export default class extends Controller {
 
   async show(reply) {
     this.serveId = reply.serve_id
+    this.itemKey = reply.exercise?.item ?? null // the exercise on the page keeps its place in the list when it is answered and closed
     // "Commenta" (D-304): a comment on this exercise names the serve; the server checks it is this student's.
     this.itemBoxTarget.dataset.commentServeId = String(reply.serve_id)
     this.itemFormat = reply.item?.answer_format_it
@@ -262,6 +266,16 @@ export default class extends Controller {
   }
 
   answered(reply, hadContest = false) {
+    if (reply.status === "same_answer") {
+      // D-353: the same answer as a try of this serve (nothing stored): said plainly, not a verdict; the box keeps the text
+      const serve = this.serveId
+      this.refusals.cool(Date.now())
+      this.say(reply.message_it)
+      this.offerContest(reply.actions)
+      this.handle.focus()
+      setTimeout(() => { if (this.serveId === serve && this.handle) this.setControls(true) }, this.refusals.cooldownMs)
+      return null
+    }
     if (reply.status === "invalid") {
       // D-298: inert for a moment, the focus stays in the box, the answer format from the second refusal of the serve
       const serve = this.serveId
@@ -580,14 +594,18 @@ export default class extends Controller {
         heading.textContent = skill.label_it
         group.appendChild(heading)
       }
-      const list = document.createElement("ol")
-      list.className = "exercise-entries"
+      // D-353: what is still to do comes first; what is done or finished goes into one closed «Già fatti (N)» at the end, still clickable.
+      // The exercise on the page stays up with the first ones whatever its status, answered and closed included.
+      const first = []
+      const finished = []
       for (const exercise of exercises) {
         total += 1
         if (exercise.status === "done") done += 1
-        list.appendChild(this.entry(skill, exercise))
+        const onPage = skill.key === this.skillValue && this.serveId != null && exercise.item === this.itemKey
+        ;(!onPage && FINISHED_STATUSES.includes(exercise.status) ? finished : first).push(exercise)
       }
-      group.appendChild(list)
+      if (first.length > 0) group.appendChild(this.entries(skill, first))
+      if (finished.length > 0) group.appendChild(this.doneGroup(skill, finished))
       body.appendChild(group)
     }
     this.listTarget.hidden = total === 0
@@ -597,6 +615,30 @@ export default class extends Controller {
       const again = Array.from(body.querySelectorAll("li")).find((li) => li.dataset.skill === focused.skill && li.dataset.item === focused.item)
       again?.querySelector(".exercise-link")?.focus()
     }
+  }
+
+  entries(skill, exercises) {
+    const list = document.createElement("ol")
+    list.className = "exercise-entries"
+    for (const exercise of exercises) list.appendChild(this.entry(skill, exercise))
+    return list
+  }
+
+  // The closed group of the exercises already done or finished; it stays open or closed as the student left it while the list is drawn again.
+  doneGroup(skill, exercises) {
+    const details = document.createElement("details")
+    details.className = "disclosure exercise-done"
+    details.dataset.skill = skill.key
+    details.open = this.doneOpen.has(skill.key)
+    const summary = document.createElement("summary")
+    summary.textContent = this.labels.done_group.replace("%{n}", exercises.length)
+    details.appendChild(summary)
+    details.appendChild(this.entries(skill, exercises))
+    details.addEventListener("toggle", () => {
+      if (details.open) this.doneOpen.add(skill.key)
+      else this.doneOpen.delete(skill.key)
+    })
+    return details
   }
 
   // One exercise: a button on this skill, a link to the page of another; the status as an icon and a word.

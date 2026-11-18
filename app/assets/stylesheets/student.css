@@ -249,6 +249,10 @@ li.skill .skill-side .button { margin: 0; align-self: center; }
 .exercise-skill { margin: 0 0 var(--space-1); font-size: var(--text-m); }
 ol.exercise-entries { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
 .exercise-entry { min-width: 0; }
+/* «Già fatti (N)»: the exercises done or finished, closed, after the ones still to do (D-353). */
+details.exercise-done { margin: var(--space-2) 0 0; }
+details.exercise-done > summary { font-weight: 700; padding: var(--space-1) var(--space-3); }
+details.exercise-done > ol.exercise-entries { margin: 0; padding: 0 var(--space-2) var(--space-2); }
 .exercise-link {
   display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); width: 100%; min-width: 0; min-height: var(--tap); box-sizing: border-box;
   padding: var(--space-2) var(--space-3); font: inherit; text-align: left; text-decoration: none; color: var(--text); background: var(--surface);
