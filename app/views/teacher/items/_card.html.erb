@@ -7,6 +7,8 @@
         <%= ui_pill(t("teacher.skill.validation.#{card.revision.status}"), card.revision.status.to_s == "passed" ? :success : :muted) %>
       </div>
     </header>
+    <% item_rating = rating_line(rating_summaries[[ "item", card.item.key ]], kind: "item", target: card.item.key) %>
+    <% if item_rating %><p class="hint" data-item-rating><%= item_rating %></p><% end %>
     <div class="gate notice <%= card.gate.approvable ? 'success' : 'nearly' %>" data-approvable="<%= card.gate.approvable %>">
       <%= ui_icon(card.gate.approvable ? "circle-check" : "triangle-alert") %>
       <div class="notice-body">

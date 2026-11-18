@@ -1,0 +1,43 @@
+# «Valutazioni» (D-365): le stelle e i commenti dello studente su esercizi e lezioni, per il docente (sola lettura).
+it:
+  teacher:
+    menu:
+      ratings: "Valutazioni"
+    ratings:
+      title: "Valutazioni"
+      intro: "Quello che lo studente pensa degli esercizi e delle lezioni: da 1 a 5 stelle e un commento, tutti e due facoltativi. Non c'è nulla da rispondere e non cambia nessun voto. Le valutazioni degli account di prova si vedono, ma non entrano nelle medie."
+      line: "Valutazione: %{average} ★ (%{n})"
+      empty: "Nessuna valutazione con questi filtri."
+      total: "Valutazioni: %{n}."
+      summary: "Media: %{average} ★ (%{n})."
+      targets_title: "Per esercizio e per lezione"
+      list_title: "Una per una, dalla più recente"
+      more: "Ne vedi %{shown} su %{n}: restringi con i filtri."
+      target_note: "Solo «%{target}»."
+      stars_of: "%{n} stelle su 5"
+      no_stars: "Nessuna stella"
+      average: "%{average} ★ (%{n})"
+      revision: "revisione %{seq}"
+      official: "Studente"
+      trial: "Prova"
+      kind:
+        item: "Esercizio"
+        lesson: "Lezione"
+      col:
+        when: "Quando"
+        stars: "Stelle"
+        text: "Commento"
+        target: "Che cosa"
+        kind: "Tipo"
+        average: "Media"
+        rows: "Valutazioni"
+        revision: "Revisione"
+        who: "Chi"
+      filters:
+        label: "Filtri"
+        subject: "Materia"
+        topic: "Argomento"
+        kind: "Tipo"
+        all: "Tutti"
+        apply: "Filtra"
+        clear: "Togli i filtri"

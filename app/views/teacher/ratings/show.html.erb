@@ -1,0 +1,85 @@
+<% content_for :title, t("teacher.ratings.title") %>
+<main class="page wide" id="ratings-page">
+  <%= ui_page_header t("teacher.ratings.title"), back: [ t("teacher.menu.home"), with_student("/teacher") ], sub: t("teacher.ratings.intro") %>
+
+  <form class="ratings-filters" id="ratings-filters" method="get" action="<%= teacher_ratings_path %>" aria-label="<%= t("teacher.ratings.filters.label") %>">
+    <label for="ratings-subject"><%= t("teacher.ratings.filters.subject") %>
+      <select id="ratings-subject" name="subject" class="answer-input">
+        <option value=""><%= t("teacher.ratings.filters.all") %></option>
+        <% @subjects.each do |subject| %><option value="<%= subject.key %>"<%= " selected" if @filters[:subject] == subject.key %>><%= subject.name_it %></option><% end %>
+      </select>
+    </label>
+    <label for="ratings-topic"><%= t("teacher.ratings.filters.topic") %>
+      <select id="ratings-topic" name="topic" class="answer-input">
+        <option value=""><%= t("teacher.ratings.filters.all") %></option>
+        <% (@topics | [ @filters[:topic] ].compact).each do |key| %><option value="<%= key %>"<%= " selected" if @filters[:topic] == key %>><%= key %></option><% end %>
+      </select>
+    </label>
+    <label for="ratings-kind"><%= t("teacher.ratings.filters.kind") %>
+      <select id="ratings-kind" name="kind" class="answer-input">
+        <option value=""><%= t("teacher.ratings.filters.all") %></option>
+        <% Rating::KINDS.each do |kind| %><option value="<%= kind %>"<%= " selected" if @filters[:kind] == kind %>><%= t("teacher.ratings.kind.#{kind}") %></option><% end %>
+      </select>
+    </label>
+    <%= hidden_field_tag :target, @filters[:target], id: "ratings-target" if @filters[:target] %>
+    <button type="submit" class="button" id="ratings-filter-button"><%= t("teacher.ratings.filters.apply") %></button>
+    <% if @filters.any? %><a class="button secondary" id="ratings-filters-clear" href="<%= teacher_ratings_path %>"><%= t("teacher.ratings.filters.clear") %></a><% end %>
+  </form>
+  <% if @filters[:target] %><p class="hint" id="ratings-target-note"><%= t("teacher.ratings.target_note", target: @filters[:target]) %></p><% end %>
+
+  <% if @rows.empty? %>
+    <div id="ratings-empty"><%= ui_empty t("teacher.ratings.empty") %></div>
+  <% else %>
+    <p id="ratings-total" data-total="<%= @total %>">
+      <%= t("teacher.ratings.total", n: @total) %>
+      <% if @summary %><span id="ratings-summary"><%= t("teacher.ratings.summary", average: @summary.average_it, n: @summary.count) %></span><% end %>
+    </p>
+
+    <h2 id="ratings-targets-title"><%= t("teacher.ratings.targets_title") %></h2>
+    <%= ui_table_wrap(label: t("teacher.ratings.targets_title")) do %>
+      <table class="data stack" id="ratings-targets">
+        <thead><tr><th><%= t("teacher.ratings.col.target") %></th><th><%= t("teacher.ratings.col.kind") %></th><th><%= t("teacher.ratings.col.average") %></th><th><%= t("teacher.ratings.col.rows") %></th></tr></thead>
+        <tbody>
+          <% @targets.each do |entry| %>
+            <% sample = @rows.find { |r| r.target_kind == entry.kind && r.target_key == entry.key } %>
+            <tr data-kind="<%= entry.kind %>" data-target="<%= entry.key %>">
+              <td data-label="<%= t("teacher.ratings.col.target") %>"><%= render "teacher/ratings/target", rating: sample, kind: entry.kind, key: entry.key %></td>
+              <td data-label="<%= t("teacher.ratings.col.kind") %>"><%= t("teacher.ratings.kind.#{entry.kind}") %></td>
+              <td data-label="<%= t("teacher.ratings.col.average") %>" data-average="<%= entry.summary&.average&.round(1) %>">
+                <% if entry.summary %><%= t("teacher.ratings.average", average: entry.summary.average_it, n: entry.summary.count) %><% else %><span class="hint"><%= t("teacher.ratings.no_stars") %></span><% end %>
+              </td>
+              <td data-label="<%= t("teacher.ratings.col.rows") %>"><%= entry.rows %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+
+    <h2 id="ratings-list-title"><%= t("teacher.ratings.list_title") %></h2>
+    <%= ui_table_wrap(label: t("teacher.ratings.list_title")) do %>
+      <table class="data stack" id="ratings-table">
+        <thead><tr><th><%= t("teacher.ratings.col.when") %></th><th><%= t("teacher.ratings.col.stars") %></th><th><%= t("teacher.ratings.col.text") %></th><th><%= t("teacher.ratings.col.target") %></th><th><%= t("teacher.ratings.col.revision") %></th><th><%= t("teacher.ratings.col.who") %></th></tr></thead>
+        <tbody>
+          <% @rows.each do |rating| %>
+            <tr id="rating-<%= rating.id %>" data-kind="<%= rating.target_kind %>" data-target="<%= rating.target_key %>" data-stars="<%= rating.stars %>" data-trial="<%= rating.trial %>">
+              <td data-label="<%= t("teacher.ratings.col.when") %>"><%= ui_time(rating.created_at) %></td>
+              <td data-label="<%= t("teacher.ratings.col.stars") %>">
+                <% if rating.stars %>
+                  <span class="rating-stars-it" aria-hidden="true"><%= "★" * rating.stars %><%= "☆" * (5 - rating.stars) %></span><span class="sr-only"><%= t("teacher.ratings.stars_of", n: rating.stars) %></span>
+                <% else %><span class="hint"><%= t("teacher.ratings.no_stars") %></span><% end %>
+              </td>
+              <td data-label="<%= t("teacher.ratings.col.text") %>"><% if rating.text_it %><span class="rating-text-it"><%= rating.text_it %></span><% end %></td>
+              <td data-label="<%= t("teacher.ratings.col.target") %>"><%= render "teacher/ratings/target", rating: rating, kind: rating.target_kind, key: rating.target_key %></td>
+              <td data-label="<%= t("teacher.ratings.col.revision") %>"><%= t("teacher.ratings.revision", seq: (rating.item? ? rating.item_revision : rating.lesson_revision).seq) %></td>
+              <td data-label="<%= t("teacher.ratings.col.who") %>">
+                <%= rating.trial ? ui_pill(t("teacher.ratings.trial"), :muted) : ui_pill(t("teacher.ratings.official"), :info) %>
+                <span class="key"><%= rating.student.key %></span>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+    <% if @total > @rows.size %><p class="hint" id="ratings-more"><%= t("teacher.ratings.more", shown: @rows.size, n: @total) %></p><% end %>
+  <% end %>
+</main>

@@ -7,6 +7,9 @@
     <% if review.latest %><div class="page-actions"><%= review.approved_latest? ? ui_pill(t("teacher.topic.is_approved"), :success, icon: "circle-check") : ui_pill(t("teacher.topic.not_approved"), :nearly) %></div><% end %>
   </header>
   <% if review.extra? %><p class="hint" id="topic-extra-note"><%= t("teacher.path.extra_intro") %></p><% end %>
+  <%# «Valutazione: 4,2 ★ (5)» (D-365): the student's stars for this topic's lesson and exercises, linking to the list. %>
+  <% topic_rating = rating_line(Rating.summary(Rating.of_topic(review.key)), topic: review.key) %>
+  <% if topic_rating %><p class="hint" id="topic-rating" data-topic-rating><%= topic_rating %></p><% end %>
   <% if review.latest.nil? %>
     <%= ui_notice :info, t("teacher.topic.missing"), html: { id: "topic-missing" } %>
   <% else %>
@@ -54,6 +57,8 @@
               <%= t("teacher.topic.lesson_facts", kind: t("teacher.course.kind.#{lesson_body['kind']}"), minutes: lesson_body["minutes"], programme: t("teacher.topic.scope.#{lesson_body['scope']}", default: lesson_body["scope"]),
                                                   calculator: t("teacher.topic.calculator_#{lesson_body['calculator']}")) %>
             </p>
+            <% lesson_rating = rating_line(rating_summaries[[ "lesson", review.key ]], kind: "lesson", target: review.key) %>
+            <% if lesson_rating %><p class="hint" id="lesson-rating" data-lesson-rating><%= lesson_rating %></p><% end %>
             <% if lesson_body["uses"].any? %>
               <p class="hint"><%= t("teacher.topic.uses") %> <%= safe_join(lesson_body["uses"].map { |k| ref_for(k) }, ", ") %></p>
             <% end %>
@@ -114,6 +119,8 @@
             <article class="card exercise-card" id="exercise-card-<%= card.revision.id %>" data-exercise-card="<%= card.revision.id %>" data-topic-review-target="card" data-seen="<%= ex.seen %>" data-level="<%= ex.level %>" data-skill="<%= ex.skill %>">
               <h3><%= t("teacher.review.exercise_title", n: i + 1) %> <span class="badge" data-seen-label><%= ex.seen ? t("teacher.review.seen") : t("teacher.review.unseen") %></span></h3>
               <p class="exercise-meta"><%= ref_for(ex.skill) %> · <strong><%= t("teacher.review.level", n: ex.level) %></strong> · <%= ref_for(card.item) %> <span class="key"><%= t("teacher.skill.revision", seq: card.revision.seq) %></span></p>
+              <% item_rating = rating_line(rating_summaries[[ "item", card.item.key ]], kind: "item", target: card.item.key) %>
+              <% if item_rating %><p class="hint" data-item-rating><%= item_rating %></p><% end %>
               <p data-purpose><%= ex.purpose_it %></p>
               <p class="gate" data-approvable="<%= card.gate.approvable %>">
                 <% if card.gate.approvable %><strong><%= t("teacher.skill.ready") %></strong>

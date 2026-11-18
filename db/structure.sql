@@ -748,7 +748,40 @@ CREATE TRIGGER comment_events_no_update BEFORE UPDATE ON comment_events
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER comment_events_no_delete BEFORE DELETE ON comment_events
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "ratings" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "student_id" integer NOT NULL, "client_rating_id" varchar NOT NULL, "trial" boolean DEFAULT FALSE NOT NULL, "target_kind" varchar NOT NULL, "target_key" varchar NOT NULL, "subject_id" integer NOT NULL, "topic_revision_id" integer NOT NULL, "item_revision_id" integer, "lesson_revision_id" integer, "practice_serve_id" integer, "stars" integer, "text_it" text, "language" varchar NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_64a8be6c3b"
+FOREIGN KEY ("student_id")
+  REFERENCES "students" ("id")
+, CONSTRAINT "fk_rails_fbbdf5905e"
+FOREIGN KEY ("subject_id")
+  REFERENCES "subjects" ("id")
+, CONSTRAINT "fk_rails_29b97c3627"
+FOREIGN KEY ("topic_revision_id")
+  REFERENCES "topic_revisions" ("id")
+, CONSTRAINT "fk_rails_608bb71749"
+FOREIGN KEY ("item_revision_id")
+  REFERENCES "item_revisions" ("id")
+, CONSTRAINT "fk_rails_aca2cb1bb8"
+FOREIGN KEY ("lesson_revision_id")
+  REFERENCES "lesson_revisions" ("id")
+, CONSTRAINT "fk_rails_417080350c"
+FOREIGN KEY ("practice_serve_id")
+  REFERENCES "practice_serves" ("id")
+, CONSTRAINT ratings_target_kind CHECK (target_kind IN ('item','lesson')), CONSTRAINT ratings_stars CHECK (stars IS NULL OR stars BETWEEN 1 AND 5), CONSTRAINT ratings_text_length CHECK (text_it IS NULL OR length(text_it) BETWEEN 1 AND 2000), CONSTRAINT ratings_something_said CHECK (stars IS NOT NULL OR text_it IS NOT NULL), CONSTRAINT ratings_language CHECK (language IN ('it','en')), CONSTRAINT ratings_item_revision CHECK ((target_kind = 'item') = (item_revision_id IS NOT NULL)), CONSTRAINT ratings_lesson_revision CHECK ((target_kind = 'lesson') = (lesson_revision_id IS NOT NULL)), CONSTRAINT ratings_serve CHECK ((target_kind = 'item') = (practice_serve_id IS NOT NULL)));
+CREATE INDEX "index_ratings_on_student_id" ON "ratings" ("student_id") /*application='Banco'*/;
+CREATE INDEX "index_ratings_on_subject_id" ON "ratings" ("subject_id") /*application='Banco'*/;
+CREATE INDEX "index_ratings_on_topic_revision_id" ON "ratings" ("topic_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_ratings_on_item_revision_id" ON "ratings" ("item_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_ratings_on_lesson_revision_id" ON "ratings" ("lesson_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_ratings_on_practice_serve_id" ON "ratings" ("practice_serve_id") /*application='Banco'*/;
+CREATE UNIQUE INDEX "index_ratings_on_client_rating_id" ON "ratings" ("client_rating_id") /*application='Banco'*/;
+CREATE INDEX "index_ratings_on_student_and_target" ON "ratings" ("student_id", "target_kind", "target_key", "id") /*application='Banco'*/;
+CREATE INDEX "index_ratings_on_target" ON "ratings" ("target_kind", "target_key") /*application='Banco'*/;
+CREATE TRIGGER ratings_no_update BEFORE UPDATE ON ratings
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER ratings_no_delete BEFORE DELETE ON ratings
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261118130000'),
 ('20261118120000'),
 ('20261118110001'),
 ('20261118110000'),

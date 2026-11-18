@@ -19,7 +19,8 @@ class LocaleParityTest < ActiveSupport::TestCase
     "lesson_text.it.yml" => { en: "lesson_text.en.yml" },
     "lesson_checks.it.yml" => { en: "lesson_checks.en.yml" },
     "grading.it.yml" => { en: "grading.en.yml" },
-    "privacy.it.yml" => { en: "privacy.en.yml" }
+    "privacy.it.yml" => { en: "privacy.en.yml" },
+    "ratings.it.yml" => { en: "ratings.en.yml" }
   }.freeze
 
   # Strings that are the same in both languages: a name, a menu word («Privacy»), the voice samples that each speak their own language.

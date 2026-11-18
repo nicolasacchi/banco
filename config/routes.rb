@@ -29,6 +29,8 @@ Rails.application.routes.draw do
       get "activity" => "activity#show", as: :teacher_activity
       # The student's comments (D-304): the teacher reads and answers; a guest sees the counts only.
       get "comments" => "comments#show", as: :teacher_comments
+      # The student's ratings of exercises and lessons (D-365): read-only, for the teacher and the guest.
+      get "ratings" => "ratings#show", as: :teacher_ratings
       get "search" => "search#show", as: :teacher_search
       get "findings" => "findings#show", as: :teacher_findings
       get "students" => "students#show", as: :teacher_students
@@ -137,6 +139,8 @@ Rails.application.routes.draw do
       get "comments/:id" => "comments#show", constraints: { id: /\d+/ }, as: :comment
       post "comments" => "comments#create"
       post "comments/:id/reply" => "comments#reply", constraints: { id: /\d+/ }, as: :comment_reply
+      # «Ti è piaciuto?» (D-365): the student rates an exercise that is over or a lesson. Students only; no preview route.
+      post "ratings" => "ratings#create"
     end
 
     # The teacher's decisions (D-08): the only writes of DecisionRecorder. POST only,
@@ -300,6 +304,8 @@ Rails.application.routes.draw do
     get "api/v1/decisions" => "api/v1/decisions#index", format: false
     post "api/v1/decisions" => "api/v1/decisions#create", format: false
     get "api/v1/comments" => "api/v1/comments#index", format: false
+    # The student's ratings (D-365): bot_read and teacher tokens read them; nobody writes them over the API.
+    get "api/v1/ratings" => "api/v1/ratings#index", format: false
     comment = { id: /\d+/ }
     get "api/v1/comments/:id" => "api/v1/comments#show", constraints: comment, format: false
     %w[reply resolve reopen read].each do |action|

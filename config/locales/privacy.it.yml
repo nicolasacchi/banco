@@ -34,7 +34,7 @@ it:
         - "il test d'ingresso: capire da dove si parte in ogni materia;"
         - "il percorso: lezioni ed esercizi scelti in base a quello che sai già;"
         - "gli esercizi: correggere subito e decidere che cosa ripassare;"
-        - "i commenti: leggere e rispondere a quello che scrivi;"
+        - "i commenti e le valutazioni: leggere e rispondere a quello che scrivi, e vedere che cosa pensi di esercizi e lezioni;"
         - "il seguito del docente: vedere come procede la preparazione e decidere i passi successivi."
       after:
         - "Non li usiamo per nient'altro."
@@ -50,7 +50,7 @@ it:
         - "Il nome utente che ci arriva dal portale di accesso. La password non arriva mai a banco."
         - "Le risposte a test ed esercizi, con l'ora e il tempo impiegato, gli aiuti e le soluzioni che hai aperto."
         - "Gli eventi delle lezioni e degli esercizi: quali schede apri, quando, le prove che fai."
-        - "I commenti e le risposte del docente, con il contesto della pagina: quale pagina, le parole che hai selezionato, la grandezza dello schermo e il tema scelto."
+        - "I commenti e le risposte del docente, con il contesto della pagina: quale pagina, le parole che hai selezionato, la grandezza dello schermo e il tema scelto. Le stelle e i commenti che dai a esercizi e lezioni."
         - "Le preferenze: colori e grandezza dei testi."
         - "Il cookie del dispositivo (vedi più sotto)."
         - "L'indirizzo di rete (IP) della richiesta, salvato con le richieste che riguardano i commenti."

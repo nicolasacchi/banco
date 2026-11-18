@@ -1,0 +1,11 @@
+<%# The target of a rating: an exercise through RefsHelper#ref_for (by its key: one card per key and request), a lesson as its title linking to the
+    topic page. Locals: rating (a row of the target, for its revision and subject; nil when the page lists none of its rows), kind, key. %>
+<% if kind == "item" %>
+  <%= ref_for(key) %>
+<% else %>
+  <% revision = rating&.lesson_revision %>
+  <% @lesson_titles ||= {} %>
+  <% title = revision && (@lesson_titles[revision.id] ||= revision.body["title_it"]) %>
+  <% if rating %><a href="<%= teacher_topic_path(key: rating.subject.key, topic: key) %>"><%= title || key %></a><% else %><%= key %><% end %>
+  <span class="key">(<%= key %>)</span>
+<% end %>

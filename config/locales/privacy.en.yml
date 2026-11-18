@@ -32,7 +32,7 @@ en:
         - "the entry test: to see where to start in each subject;"
         - "the course: lessons and exercises chosen on what you already know;"
         - "the exercises: to correct at once and to decide what to review;"
-        - "the comments: to read and answer what you write;"
+        - "the comments and the ratings: to read and answer what you write, and to see what you think of exercises and lessons;"
         - "the teacher's follow-up: to see how the preparation is going and decide the next steps."
       after:
         - "We use them for nothing else."
@@ -48,7 +48,7 @@ en:
         - "The login name that reaches us from the access portal. The password never reaches banco."
         - "Your answers to tests and exercises, with the time and how long you took, the hints and the solutions you opened."
         - "The events of lessons and exercises: which cards you open, when, the tries you make."
-        - "Comments and the teacher's replies, with the context of the page: which page, the words you selected, the screen size and the theme."
+        - "Comments and the teacher's replies, with the context of the page: which page, the words you selected, the screen size and the theme. The stars and the comments you give to exercises and lessons."
         - "Your preferences: colours and text size."
         - "The device cookie (see below)."
         - "The network address (IP) of the request, saved with the requests that concern comments."

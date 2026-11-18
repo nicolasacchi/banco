@@ -256,6 +256,9 @@ export function renderLesson(root, body, config) {
         el("a", { class: "button", href: config.urls?.practice ?? "#", text: t.practice }),
         button(el("span", {}, icon("print"), document.createTextNode(` ${t.print_summary}`)), { class: "button secondary", "data-print-summary": "" }, () => printSummary()),
         button(el("span", {}, icon("restart"), document.createTextNode(` ${t.restart}`)), { class: "button secondary" }, () => goTo(0, { focus: true }))))
+    // «Ti è piaciuta questa lezione?» (D-365): the page holds the box in a template for the student only (never the preview or the render check).
+    const rating = config.mode === "student" && typeof document !== "undefined" ? document.getElementById("rating-template") : null
+    if (rating) box.appendChild(rating.content.cloneNode(true))
     return box
   }
 
