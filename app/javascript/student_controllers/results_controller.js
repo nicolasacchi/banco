@@ -5,6 +5,16 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static values = { flagUrl: String }
 
+  // «Vedi le soluzioni»: scroll to the section without adding a step to the history, so the arrow back leaves the page (D-355).
+  jump(event) {
+    const target = document.getElementById(event.currentTarget.hash.slice(1))
+    if (!target) return
+    event.preventDefault()
+    target.setAttribute("tabindex", "-1")
+    target.scrollIntoView({ block: "start" })
+    target.focus({ preventScroll: true })
+  }
+
   async flag(event) {
     const button = event.currentTarget
     button.disabled = true

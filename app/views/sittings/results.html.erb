@@ -10,7 +10,7 @@
     <% if groups[:learn].any? %><li><%= ui_icon("wrong-hint") %><span><%= t("summary.line_learn", n: groups[:learn].size) %></span></li><% end %>
   </ul>
   <div class="button-row">
-    <a class="button" href="#soluzioni"><%= t("summary.see") %></a>
+    <a class="button" href="#soluzioni" data-action="results#jump"><%= t("summary.see") %></a>
     <a class="button secondary" href="<%= preview? ? '/teacher/preview/test' : '/diagnosis' %>"><%= t("summary.later") %></a>
   </div>
 

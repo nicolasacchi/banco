@@ -64,7 +64,9 @@ export default class extends Controller {
       case "item": return this.showItem(reply)
       case "sitting_over": return this.showOnly(this.overTarget)
       case "wait": return this.showOnly(this.waitTarget)
-      case "final": window.location.assign(reply.results_url); return null
+      // D-355: the sitting's page leaves the history (replace, not assign): the arrow back from the results must go to the page the student
+      // came from, not to this one, which only redirects to the results again.
+      case "final": window.location.replace(reply.results_url); return null
       default: return this.showBlocked()
     }
   }
@@ -264,8 +266,9 @@ export default class extends Controller {
     if (this.active && document.visibilityState === "visible") this.postEvent("keepalive")
   }
 
+  // A hidden or paused page may be on its way out (the arrow back): keepalive lets the request finish after the page has gone (D-355).
   postEvent(kind) {
-    return this.postJson(this.eventsUrlValue, { kind }).catch(() => null)
+    return this.postJson(this.eventsUrlValue, { kind }, { keepalive: true }).catch(() => null)
   }
 
   // ---- helpers ------------------------------------------------------------------
@@ -282,10 +285,10 @@ export default class extends Controller {
   }
 
   // POST JSON; null when the reply is not JSON, is a redirect or is not a 200.
-  async postJson(url, body = {}) {
+  async postJson(url, body = {}, { keepalive = false } = {}) {
     try {
       const response = await fetch(url, {
-        method: "POST", redirect: "manual", credentials: "same-origin",
+        method: "POST", redirect: "manual", credentials: "same-origin", keepalive,
         headers: { "Content-Type": "application/json", Accept: "application/json", "X-CSRF-Token": this.csrf() },
         body: JSON.stringify(body)
       })
