@@ -40,12 +40,33 @@ module Grading
       def grade(spec, value)
         return Closed.invalid("unparseable") unless value.is_a?(String)
 
-        scientific = spec.form.include?("scientific")
-        answer, written_scientific = scientific ? parse_scientific(value, allow_dot: spec.allow_dot, unit: spec.unit, thousands: spec.thousands) : [ parse(value, allow_dot: spec.allow_dot, unit: spec.unit, thousands: spec.thousands), false ]
-        expected = expected_value(spec.answer)
+        members = Equation.members(value)
+        members ? written(spec, members) : graded(spec, value)
+      rescue Invalid => e
+        Closed.invalid(e.code)
+      end
+
+      # An answer written in full (D-362, Equation): «x = 7,4», «5+4 = 9», «5+4 = 9 = 9». The last member is graded as if it
+      # stood alone, so a wrong value stays wrong (and an unreadable one unreadable). It counts only when the left side is accepted
+      # (a letter, the expression shown) or the answer is a chain, and every member before the last equals the key; one that does
+      # not makes the answer wrong. A member that is not a number is unreadable. A slash stays unreadable, as in a bare number (D-295).
+      def written(spec, members)
+        *before, last = members
+        left_ok = Equation.left_side?(spec, before.first)
+        raise Invalid, "unreadable_number" unless left_ok || before.size > 1
+
+        steps = (left_ok ? before.drop(1) : before).map { |member| read(spec, member).first } # a step that is not a number: unreadable, whatever the last says
+        result = graded(spec, last)
+        return result unless %w[correct wrong_form].include?(result.verdict)
+
+        steps.all? { |value| key?(spec, value) } ? result : Closed.result("wrong", normalized: result.normalized)
+      end
+
+      def graded(spec, value)
+        answer, written_scientific = read(spec, value)
         normalized = format(answer)
-        if answer == expected || accepted?(spec.accept, answer)
-          if scientific && !scientific_shape?(answer, written_scientific)
+        if key?(spec, answer)
+          if spec.form.include?("scientific") && !scientific_shape?(answer, written_scientific)
             Closed.result("wrong_form", form_violations: [ "scientific_notation" ], normalized: normalized)
           else
             Closed.result("correct", normalized: normalized)
@@ -54,9 +75,19 @@ module Grading
           codes = error_codes(spec, answer)
           Closed.verdict_for_errors(codes, normalized: normalized)
         end
-      rescue Invalid => e
-        Closed.invalid(e.code)
       end
+
+      # [Rational, written_as_a·10^n] of a text, by the item's own rules (the form scientific, the unit, the dot, the thousands).
+      def read(spec, text)
+        if spec.form.include?("scientific")
+          parse_scientific(text, allow_dot: spec.allow_dot, unit: spec.unit, thousands: spec.thousands)
+        else
+          [ parse(text, allow_dot: spec.allow_dot, unit: spec.unit, thousands: spec.thousands), false ]
+        end
+      end
+
+      # The key, or a value the item accepts as right.
+      def key?(spec, answer) = answer == expected_value(spec.answer) || accepted?(spec.accept, answer)
 
       # Declared errors that match: exact, or (round_to: n, D-135) any answer that rounds half up
       # to the declared value at n decimals. The key is graded before this, so it always wins.

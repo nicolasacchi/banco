@@ -91,6 +91,18 @@ module Grading
       @case_sensitive = case_sensitive == true
     end
 
+    # The math the student was shown in the stems (the item's and the instance's): what sits between `$` signs, or a stem that is
+    # nothing but arithmetic («5+4», «12 : 3 − 1»). An answer written in full may repeat one of them on its left (D-362).
+    # Texts, not trees: the grader that reads them (Closed::Equation, the checker) decides what is an expression.
+    MATH_SEGMENT = /\$([^$]+)\$/
+    ARITHMETIC_ONLY = %r{\A(?=.*\d)[\d\s+\-−*·×÷:/().,^√²³]+\z}
+
+    def stem_expressions
+      texts = [ prompt_stem, display.is_a?(Hash) ? display["stem_it"] : nil ].grep(String)
+      found = texts.flat_map { |t| t.include?("$") ? t.scan(MATH_SEGMENT).flatten : (t.strip.match?(ARITHMETIC_ONLY) ? [ t ] : []) }
+      found.map(&:strip).reject(&:empty?).uniq
+    end
+
     # Error catalogue values of the instance: [[code, value], ...].
     def error_values
       errors.map { |e| [ e["code"], e["value"] ] }

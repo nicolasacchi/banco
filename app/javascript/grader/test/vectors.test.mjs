@@ -19,6 +19,7 @@ for (const c of expression) {
     assert.equal(got.verdict, c.expect.verdict);
     if (c.expect.error_codes) assert.deepEqual([...got.error_codes].sort(), [...c.expect.error_codes].sort());
     if (c.expect.form_violations) assert.deepEqual([...got.form_violations].sort(), [...c.expect.form_violations].sort());
+    if (c.expect.normalized) assert.equal(got.normalized, c.expect.normalized);
     // The registry name of an invalid answer (invalid_code) is mapped on the Ruby side.
     if (c.expect.method) assert.equal(String(got.method).startsWith('exact') ? 'exact' : 'float', c.expect.method);
   });

@@ -42,7 +42,8 @@ module Grading
       end
 
       # Checker item from the instance's key: answer is LaTeX, or
-      # {latex, unknown, domain}; each error value likewise.
+      # {latex, unknown, domain}; each error value likewise; stems are the math the student was shown (an answer written in
+      # full may repeat one on its left, D-362).
       def item_payload(spec)
         latex, unknown, domain = parts(spec.answer)
         {
@@ -50,7 +51,8 @@ module Grading
           "form" => spec.form,
           "errors" => spec.error_values.map { |code, value| { "code" => code, "latex" => parts(value).first } },
           "unknown" => unknown,
-          "domain" => domain || {}
+          "domain" => domain || {},
+          "stems" => spec.stem_expressions
         }
       end
 
