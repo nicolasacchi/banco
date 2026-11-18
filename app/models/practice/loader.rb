@@ -56,6 +56,12 @@ module Practice
       @contested_ids ||= PracticeContest.where(practice_serve_id: serves.map(&:id)).pluck(:practice_attempt_id).to_set
     end
 
+    # The teacher's resolutions of the student's practice tries (D-352, Practice::Resolutions): {attempt id => Resolution}, read once per student.
+    def resolutions(serve)
+      @resolutions ||= {}
+      @resolutions[serve.student_id] ||= Resolutions.for_student(serve.student_id)
+    end
+
     def voided_revisions
       Decision.where(kind: "void_revision_attempts", student_id: @student.id)
               .filter_map { |d| JSON.parse(d.payload_json)["item_revision_id"] }.to_set
@@ -72,14 +78,14 @@ module Practice
         serve.attempts.sort_by(&:try_number).filter_map do |attempt|
           started = previous
           previous = attempt.answered_at
-          grade = Instances.grade(attempt, spec, contested_ids: contested_ids(serve)) or next
+          grade = Instances.grade(attempt, spec, contested_ids: contested_ids(serve), resolution: resolutions(serve)[attempt.id]) or next
 
           Try.new(skill: serve.skill_key, at: attempt.answered_at, day: attempt.answered_at.in_time_zone(V5::ZONE).to_date, serve_id: serve.id,
                   fingerprint: instance.fingerprint, item_id: instance.item_revision.item_id, item_revision_id: instance.item_revision_id,
                   low_guess: low, try_number: attempt.try_number, aided: attempt.aided || serve.reason == "reseen", reseen: serve.reason == "reseen",
                   evidence: Outcome.evidence(grade.outcome), outcome: grade.outcome, error_codes: grade.codes, contested: grade.contested,
                   seconds: (attempt.answered_at - started).to_i.clamp(0, V5::TIME_CAP_SECONDS))
-        end
+        end.then { |list| ServeState.counted(list) } # a try after the one that closed the serve (a resolved earlier try) no longer counts (D-352)
       end
     end
 

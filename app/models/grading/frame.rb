@@ -1,16 +1,22 @@
 module Grading
-  # The sentence a `___` blank sits in (D-339), read from the instance display's stem_it. Pure: no database, no clock.
+  # The sentence a `___` blank sits in (D-339, D-352), read from the text the student was shown: the instance display's stem_it,
+  # else the item's own stem (prompt.stem_it) when the blank is there. Pure: no database, no clock.
   #
-  # The frame is the line of the stem that holds the blank, after the last → on that line, without the label before the
+  # The frame is the line of the text that holds the blank, after the last → before the blank, without the label before the
   # last colon that comes ahead of the blank («Negativa con will: She ___ the test.» is «She ___ the test.»). The prefix is the words before
   # the blank, the suffix the words after it. A bracketed cue right after the blank («___ (get)») is not a word of the
   # sentence. Words compare case-insensitively, without the punctuation around them, with the apostrophes made one mark
-  # and the direction of an accent ignored (D-296).
+  # and the direction of an accent ignored (D-296). A line that is the instruction itself («… al posto di ___») is not a sentence
+  # and does not count as a blank.
   #
   #   frame = Grading::Frame.from_stem("«La mia scuola non ha una biblioteca.» → My school ___ a library.")
   #   frame.part("My school doesn't have a library")  # => "doesn't have"
+  #   frame.fill("doesn't have")                      # => "My school doesn't have a library."
   class Frame
     BLANK = /_{3,}/
+    # «scrivi le parole che vanno al posto di ___»: the instruction names the blank, it is not the sentence that has one.
+    INSTRUCTION = /al[[:space:]]+posto[[:space:]]+di[[:space:]]+_{3,}/i
+    OPENING_APOSTROPHE = /\A(?:#{Closed::Text::APOSTROPHES.source}|')/
     # A label ends at a colon followed by a space: everything up to the last such colon before the blank is the instruction.
     LABEL_END = /:[[:space:]]/
     CUE = /(?<=_)[[:space:]]*\([^)]*\)/
@@ -18,22 +24,34 @@ module Grading
     # A word one letter off a word of the frame still counts as the frame's word (a plural, a typo) from this length.
     CLOSE_MIN_LETTERS = 4
 
-    attr_reader :prefix, :suffix
+    attr_reader :prefix, :suffix, :before, :after
 
     class << self
+      # The frame of what the student was shown for a spec: the instance's stem when it holds exactly one blank, else the
+      # item's stem and the instance's together (the blank may sit in the item's own prompt). nil when there is not exactly one
+      # blank in the sentences shown, or no word besides it.
+      def for_spec(spec)
+        instance = spec.display.is_a?(Hash) ? spec.display["stem_it"] : nil
+        from_stem(instance) || from_stem([ spec.prompt_stem, instance ].grep(String).join("\n"))
+      end
+
       # The frame of a stem, or nil when the stem does not hold exactly one blank or the sentence has no word besides it.
       def from_stem(stem)
         return nil unless stem.is_a?(String)
 
-        text = plain(stem)
+        text = plain(stem).lines.grep_v(INSTRUCTION).join
         return nil unless text.scan(BLANK).size == 1
 
-        line = text.lines.find { |l| l.match?(BLANK) }.split("→").last.to_s
-        cut = line[0...(line =~ BLANK)].rindex(LABEL_END)
+        line = text.lines.find { |l| l.match?(BLANK) }
+        blank = line =~ BLANK
+        arrow = line[0...blank].rindex("→")
+        line = line[(arrow + 1)..] if arrow
+        blank = line =~ BLANK
+        cut = line[0...blank].rindex(LABEL_END)
         line = line[(cut + 1)..] if cut
         line = line.sub(CUE, "")
         before, after = line.split(BLANK, 2)
-        frame = new(words(before), words(after))
+        frame = new(words(before), words(after), before: before.to_s.strip, after: after.to_s.strip)
         frame.prefix.empty? && frame.suffix.empty? ? nil : frame
       end
 
@@ -55,9 +73,20 @@ module Grading
       end
     end
 
-    def initialize(prefix, suffix)
+    # prefix, suffix: the word keys; before, after: the sentence's own text each side of the blank (no label, no cue).
+    def initialize(prefix, suffix, before: "", after: "")
       @prefix = prefix.freeze
       @suffix = suffix.freeze
+      @before = before.to_s.freeze
+      @after = after.to_s.freeze
+    end
+
+    # The whole sentence with +filler+ in the blank, as text. A filler that opens with an apostrophe ('s got) joins the word before it.
+    def fill(filler)
+      filler = filler.to_s.strip
+      head = before.empty? ? "" : (filler.match?(OPENING_APOSTROPHE) ? before : "#{before} ")
+      tail = after.empty? || after.match?(/\A[[:punct:]]/) ? after : " #{after}"
+      "#{head}#{filler}#{tail}"
     end
 
     # The words the student typed between the frame's prefix and suffix, as typed, when she wrote the whole sentence

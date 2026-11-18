@@ -248,7 +248,11 @@ module Diagnosis
     # {[skill, code] => [attempt, ...]} from each attempt's latest grading and from the
     # codes the teacher gave when resolving an attempt.
     def errors_observed
-      resolved = Decision.where(kind: "resolve_attempt", student_id: @student.id).order(:id).to_h { |d| (p = JSON.parse(d.payload_json)); [ p["attempt_id"].to_i, p ] }
+      # a resolution of a practice try (D-352) names a practice_attempts id: not an answer of this run
+      resolved = Decision.where(kind: "resolve_attempt", student_id: @student.id).order(:id).filter_map do |d|
+        p = JSON.parse(d.payload_json)
+        [ p["attempt_id"].to_i, p ] unless Practice::Resolutions.practice?(p)
+      end.to_h
       found = Hash.new { |h, k| h[k] = [] }
       attempts.each do |attempt|
         decision = resolved[attempt.id]

@@ -179,6 +179,69 @@ class FrameTest < ActiveSupport::TestCase
     assert_equal Grading::Result::MESSAGES_IT["blank_copied"], copied.message_it
   end
 
+  # ---- D-352: what the student was shown, and the whole sentence compared with the key's -----------------------------
+
+  def item(answer, display: {}, prompt_stem: nil, **opts)
+    Grading::Spec.from_hash({ "component" => "normalized_text", "subject" => "english", "answer" => answer, "display" => display,
+                              "prompt" => prompt_stem && { "stem_it" => prompt_stem } }.merge(opts.stringify_keys))
+  end
+
+  test "fill puts a filler in the blank; an apostrophe form joins the word before it" do
+    f = frame("→ My aunt ___ a red car.")
+    assert_equal "My aunt has a red car.", f.fill("has")
+    assert_equal "My aunt's got a red car.", f.fill("'s got")
+    assert_equal "Do you speak German?", frame("Domanda: ___ German?").fill("Do you speak")
+  end
+
+  test "the frame is read from the instance's stem, else from the item's own stem, and a line that only names the blank is no blank" do
+    shown = item("has", display: { "stem_it" => "→ My aunt ___ a red car." }, prompt_stem: "Scrivi le parole che vanno al posto di ___")
+    assert_equal %w[my aunt], Grading::Frame.for_spec(shown).prefix
+
+    in_prompt = item("Do you speak", display: { "stem_it" => "«Parli tedesco?»" }, prompt_stem: "Domanda: ___ German?")
+    assert_equal %w[german], Grading::Frame.for_spec(in_prompt).suffix
+
+    two = item("has", display: { "stem_it" => "My aunt ___ a car." }, prompt_stem: "Completa: My uncle ___ a bike.")
+    assert_equal %w[my aunt], Grading::Frame.for_spec(two).prefix # the instance's own stem has one blank: it is the sentence
+    both_in_prompt = item("has", display: { "stem_it" => "Traduci." }, prompt_stem: "My ___ ___ a car.")
+    assert_nil Grading::Frame.for_spec(both_in_prompt)
+    assert_nil Grading::Frame.for_spec(item("has", display: { "stem_it" => "Scrivi le parole che vanno al posto di ___" }))
+    assert_nil Grading::Frame.for_spec(item("has"))
+  end
+
+  test "the whole sentence with the key or an accepted value in the blank is right whatever the case, the punctuation and the apostrophes" do
+    s = item("has got", accept: [ "'s got" ], display: { "stem_it" => "→ My aunt ___ a red car." })
+    assert_equal "correct", Grading::Closed.grade(s, "my aunt, HAS got a red car!").verdict
+    assert_equal "correct", Grading::Closed.grade(s, "My aunt’s got a red car.").verdict
+    assert_equal "correct", Grading::Closed.grade(s, "has got").verdict
+    wrong = Grading::Closed.grade(s, "My aunt have got a red car.")
+    assert_equal [ "wrong", "full_sentence", "have got" ], [ wrong.verdict, wrong.observation, wrong.answer_part ]
+  end
+
+  test "with contractions en a contraction written out in the whole sentence is right (the table is the test fixture's)" do
+    Grading::Closed::Contractions.table = JSON.parse(Rails.root.join("test/fixtures/lesson2/contractions_table.json").read).fetch("contractions")
+    s = item("won't pass", contractions: "en", display: { "stem_it" => "Negativa: She ___ the test." })
+    result = Grading::Closed.grade(s, "She will not pass the test.")
+    assert_equal [ "correct", "full_sentence" ], [ result.verdict, result.observation ]
+  ensure
+    Grading::Closed::Contractions.reset!
+  end
+
+  test "a wrong filler in the frame keeps its error code; two blanks or none leave the answer as typed" do
+    s = item("has", errors: [ { "code" => "agreement", "value" => "have" } ], display: { "stem_it" => "→ My aunt ___ a red car." })
+    hit = Grading::Closed.grade(s, "My aunt have a red car.")
+    assert_equal [ "typical_error", [ "agreement" ] ], [ hit.verdict, hit.error_codes ]
+    two = item("has", display: { "stem_it" => "My aunt ___ a red car.\nMy uncle ___ a blue bike." })
+    assert_equal "wrong", Grading::Closed.grade(two, "My aunt has a red car.").verdict
+    none = item("has", display: { "stem_it" => "Completa la frase." })
+    assert_equal "wrong", Grading::Closed.grade(none, "My aunt has a red car.").verdict
+  end
+
+  test "a sentence in the item's own prompt is a frame when the instance shows none" do
+    s = item("Do you speak", display: { "stem_it" => "«Parli tedesco?»" }, prompt_stem: "Domanda: ___ German?")
+    result = Grading::Closed.grade(s, "do you speak german")
+    assert_equal [ "correct", "full_sentence" ], [ result.verdict, result.observation ]
+  end
+
   test "the diagnosis still refuses the two new codes" do
     assert_includes Diagnosis::AnswerRecorder::STILL_REFUSED, "blank_copied"
     assert_includes Diagnosis::AnswerRecorder::STILL_REFUSED, "not_in_frame"

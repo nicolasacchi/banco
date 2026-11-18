@@ -118,6 +118,7 @@ module Diagnosis
       Decision.where(student_id: @run.student_id, subject_id: @run.subject_id)
               .where(kind: %w[resolve_attempt confirm_grade extend_diagnosis_run close_diagnosis_run]).order(:id).filter_map do |d|
         payload = JSON.parse(d.payload_json)
+        next if d.kind == "resolve_attempt" && Practice::Resolutions.practice?(payload) # a practice try (D-352), not an answer of a run
         ev = { kind: d.kind, at: d.created_at }
         case d.kind
         when "resolve_attempt", "confirm_grade"

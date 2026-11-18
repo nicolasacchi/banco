@@ -66,7 +66,7 @@ module Teacher
       @decisions ||= Decision.where(kind: %w[confirm_grade reject_grade resolve_attempt void_revision_attempts]).order(:id).map { |d| [ d.kind, JSON.parse(d.payload_json) ] }
     end
 
-    def resolved_attempts = @resolved_attempts ||= decisions.select { |k, _| k == "resolve_attempt" }.map { |_, p| p["attempt_id"].to_i }.to_set
+    def resolved_attempts = @resolved_attempts ||= decisions.select { |k, p| k == "resolve_attempt" && !Practice::Resolutions.practice?(p) }.map { |_, p| p["attempt_id"].to_i }.to_set
     def confirmed_proposals = @confirmed_proposals ||= decisions.select { |k, _| k == "confirm_grade" }.map { |_, p| p["grade_proposal_id"].to_i }.to_set
     def rejected_proposals = @rejected_proposals ||= decisions.select { |k, _| k == "reject_grade" }.map { |_, p| p["grade_proposal_id"].to_i }.to_set
     def voided_revisions = @voided_revisions ||= decisions.select { |k, _| k == "void_revision_attempts" }.map { |_, p| p["item_revision_id"].to_i }.to_set

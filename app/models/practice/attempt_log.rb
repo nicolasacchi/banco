@@ -12,7 +12,8 @@ module Practice
   # Every try is listed, also one on a superseded item revision (`superseded: true`, `latest_revision_id`) and one on a voided revision:
   # the log is the ledger, the fold's exclusions are not applied. The outcome is the engine's: correct, correct_aided, typical_error,
   # unrecognised, form, near_miss, undetermined, contested (the student sent it to the teacher, D-339; `outcome_before_contest` is what
-  # it was before) and, for a stored text that is not a try, not_a_try (graded invalid or «Non lo so») or ungraded (no grading yet).
+  # it was before), the outcome the teacher gave it (D-352: `resolution` {verdict, reason_it, error_code?, at, decision_id}, `outcome_before_resolution`;
+  # a try after the one that closed its serve is `counted: false`) and, for a stored text that is not a try, not_a_try (graded invalid or «Non lo so») or ungraded (no grading yet).
   class AttemptLog
     OUTCOMES = (Outcome::OUTCOMES.map(&:to_s) + %w[not_a_try ungraded]).freeze
 
@@ -103,9 +104,10 @@ module Practice
       instance = serve.item_instance
       revision = instance.item_revision
       item = revision.item
-      grade = Instances.grade(attempt, spec_of(instance), contested_ids: contested)
+      resolution = resolutions[attempt.id]
+      grade = Instances.grade(attempt, spec_of(instance), contested_ids: contested, resolution: resolution)
       outcome = grade&.outcome || (attempt.latest_grading ? :not_a_try : :ungraded)
-      codes = JSON.parse(attempt.latest_grading&.error_codes_json || "[]")
+      codes = grade&.resolution ? grade.codes : JSON.parse(attempt.latest_grading&.error_codes_json || "[]")
       row = { id: attempt.id, at: stamp(attempt.answered_at), subject: item.subject.key, topic: serve.topic_revision.lesson.key, skill: serve.skill_key,
               item: item.key, revision_id: revision.id, superseded: revision.id != latest[item.id], item_instance_id: instance.id,
               practice_serve_id: serve.id, try_number: attempt.try_number, answer: attempt.raw, source: attempt.source, outcome: outcome.to_s,
@@ -114,7 +116,30 @@ module Practice
               seconds: seconds_of(attempt, serve) }
       row[:latest_revision_id] = latest[item.id] if row[:superseded]
       row[:outcome_before_contest] = Outcome.call(evidence_key: grade.key, aided: attempt.aided, near: grade.near).to_s if grade&.contested
+      if grade&.resolution
+        row[:outcome_before_resolution] = Instances.grade(attempt, spec_of(instance), contested_ids: contested)&.outcome.to_s
+        row[:resolution] = grade.resolution.to_h_for_api
+      end
+      row[:counted] = false if grade && !counted_numbers(serve).include?(attempt.try_number)
       row
+    end
+
+    # The teacher's resolutions of this student's practice tries (D-352), {attempt id => Resolution}.
+    def resolutions = @resolutions ||= Resolutions.for_student(@student.id)
+
+    # The try numbers of a serve that count (Practice::ServeState.counted): a try after the one that closed the serve, which only a
+    # resolution of an earlier try can cause, is listed with `counted: false`.
+    def counted_numbers(serve)
+      @counted ||= {}
+      @counted[serve.id] ||= begin
+        spec = spec_of(serve.item_instance)
+        contested = contested_ids(serve.attempts.map(&:id))
+        tries = serve.attempts.filter_map do |a|
+          g = Instances.grade(a, spec, contested_ids: contested, resolution: resolutions[a.id]) or next
+          ServeTry.new(a.try_number, g.outcome, g.contested)
+        end
+        ServeState.counted(tries).map(&:try_number)
+      end
     end
 
     def spec_of(instance) = @specs[instance.id] ||= Grading::Spec.from_instance(instance)

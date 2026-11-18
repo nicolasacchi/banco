@@ -193,6 +193,27 @@ class AttemptsApiTest < ActionDispatch::IntegrationTest
     assert_equal [ "contested", "unrecognised" ], row.values_at("outcome", "outcome_before_contest")
   end
 
+  test "a try the teacher resolved right shows the outcome he gave, the resolution, what it was before, and the try that no longer counts (D-352)" do
+    result = with_env("BANCO_TEACHER_USERS" => "nik", "BANCO_DECISIONS_ENABLED" => "1") do
+      DecisionConsole.call(kind: "resolve_attempt", teacher: "nik", reason: "Era giusta.", confirm: true, params: { attempt_id: "practice-#{@try1.id}", verdict: "correct" })
+    end
+    assert result.ok, result.errors.inspect
+
+    body = list
+    one = row_of(body, "practice") { |r| r["id"] == @try1.id }
+    assert_equal [ "correct_aided", "unrecognised" ], one.values_at("outcome", "outcome_before_resolution")
+    assert_equal [ "correct", "Era giusta." ], one["resolution"].values_at("verdict", "reason_it")
+    assert one["resolution"]["at"].present?
+    assert_not one.key?("counted")
+    two = row_of(body, "practice") { |r| r["id"] == @try2.id }
+    assert_equal [ "typical_error", false ], two.values_at("outcome", "counted")
+    assert_equal "correct_aided", list("outcome=correct_aided")["attempts"].find { |r| r["id"] == @try1.id }["outcome"]
+
+    detail = show("practice-#{@try1.id}")
+    assert_equal [ "correct_aided", "correct" ], [ detail["attempt"]["outcome"], detail["attempt"]["resolution"]["verdict"] ]
+    assert_equal [ true, false ], detail["tries"].map { |t| t.fetch("counted", true) }.then { |c| [ c.first, c.last ] }
+  end
+
   test "the filters: kind, subject, topic, skill, item, serve, dates and outcome" do
     assert_equal 6, list("kind=practice")["total"]
     assert_equal 4, list("kind=diagnosis,lesson")["total"]

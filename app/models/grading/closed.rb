@@ -30,12 +30,18 @@ module Grading
 
       def invalid(code) = Result.invalid(code, grader: GRADER)
 
-      # normalized_text. When the instance's stem holds exactly one `___` the student may write the whole sentence
-      # (D-339): what she wrote between the frame's words is graded exactly as if she had typed only that; the result says
-      # so (observation full_sentence, answer_part) and its normalized is the normalized part. The blank typed as it is, or
-      # a long answer that repeats the frame without fitting it, is refused (blank_copied, not_in_frame): never an attempt.
+      # normalized_text. When the text the student was shown holds exactly one `___` (Frame.for_spec: the instance's stem, else
+      # the item's) he may write the whole sentence (D-339, D-352). Two ways in, both graded by the item's own rules:
+      #   1. the sentence is the frame with the gap filled by the key or an accepted value: right, whatever the case, the
+      #      punctuation .,!?;: , the apostrophes and quotes (whole_sentence);
+      #   2. what he wrote between the frame's words is graded exactly as if he had typed only that (the declared error
+      #      values, accents and typos of the part: a wrong filler stays wrong, with its error code).
+      # The result says so (observation full_sentence, answer_part) and its normalized is the normalized part. The blank typed as
+      # it is, or a long answer that repeats the frame without fitting it, is refused (blank_copied, not_in_frame): never an attempt.
+      # Two blanks or none: no frame, the answer is graded as typed. Lesson checks reach this through Lessons::Checks (their
+      # prompt_it is the stem), so the rule is the same there.
       def normalized_text(spec, value)
-        frame = value.is_a?(String) && !binary?(spec) ? Frame.from_stem(spec.display["stem_it"]) : nil
+        frame = value.is_a?(String) && !binary?(spec) ? Frame.for_spec(spec) : nil
         return Text.grade(spec, value) unless frame
         return invalid("blank_copied") if value.match?(Frame::BLANK)
 
@@ -44,13 +50,31 @@ module Grading
         return plain if plain.verdict == "correct"
 
         part = frame.part(value)
-        if part
-          graded = Text.grade(spec, part)
-          return graded.invalid? ? graded : graded.full_sentence(part)
-        end
+        graded = part && Text.grade(spec, part)
+        return graded.full_sentence(part) if graded&.verdict == "correct"
+
+        filler = whole_sentence_filler(spec, frame, value)
+        return result("correct", normalized: Text.normalize(filler, case_sensitive: spec.case_sensitive)).full_sentence(part || filler) if filler
+
+        return graded.invalid? ? graded : graded.full_sentence(part) if graded
         return invalid("not_in_frame") if longer_than_a_blank_answer?(spec, frame, value)
 
         plain
+      end
+
+      # The key or accepted value whose frame, filled, is the answer (D-352); nil when none is. Compared with the grader's
+      # normalisation, the case, the punctuation .,!?;: … and the quotes ignored, the spaces collapsed, the direction of an accent ignored.
+      def whole_sentence_filler(spec, frame, value)
+        given = sentence_key(value, spec)
+        ([ spec.answer ] + spec.accept).map(&:to_s).find do |filler|
+          filled = sentence_key(frame.fill(filler), spec)
+          filled == given || (spec.contractions == "en" && Contractions.same?(filled, given))
+        end
+      end
+
+      def sentence_key(text, spec)
+        words = Text.normalize(text, case_sensitive: spec.case_sensitive).gsub(/[.,!?;:\u2026"]/, " ").gsub(/[[:space:]]+/, " ").strip
+        Text.fold_direction(words)
       end
 
       def binary?(spec) = spec.profile.is_a?(Hash) && spec.profile["name"] == "binary"

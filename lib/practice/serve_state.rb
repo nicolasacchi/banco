@@ -25,11 +25,29 @@ module Practice
     module_function
 
     def call(serve:, tries:, events:, hints_total:, now:, superseded: false)
-      tries = tries.sort_by(&:try_number)
+      w, near, closed_by, tries = scan(tries.sort_by(&:try_number))
+      solutions = events.select { |e| e.kind.to_s == "solution_shown" }
+      closed_by ||= :solution if solutions.any? { |e| e.reason.to_s == "requested" }
+      hints = events.select { |e| e.kind.to_s == "hint_shown" }.map(&:n).uniq.size
+      state = if closed_by then :closed
+      elsif superseded || now - serve_time(serve) > V5::OPEN_SERVE_HOURS * 3600 then :abandoned
+      else :open
+      end
+      Status.new(state: state, closed_by: closed_by, w: w, near_misses: near, hints_shown: [ hints, hints_total.to_i ].min,
+                 solution_sent: solutions.any?, next_try_number: state == :open ? tries.size + 1 : nil,
+                 actions: actions(state, closed_by, tries.last, solutions))
+    end
+
+    # The tries that count: up to and including the one that closed the serve. A try stored after it (the teacher resolved an
+    # earlier try right, D-352) is not part of the serve any more: not for its state, not for the fold.
+    def counted(tries) = scan(tries.sort_by(&:try_number)).last
+
+    # [wrong tries, near misses, closed_by or nil, the tries up to the closing one] of tries in order of try number.
+    def scan(tries)
       w = near = 0
       closed_by = nil
-      tries.each do |t|
-        break if closed_by
+      counted = tries.take_while do |t|
+        next false if closed_by
 
         case contested?(t) ? :contested : t.outcome.to_sym
         when :contested then closed_by = :contested
@@ -46,17 +64,9 @@ module Practice
         when :undetermined then closed_by = :undetermined
         else raise ArgumentError, "unknown outcome #{t.outcome.inspect}"
         end
+        true
       end
-      solutions = events.select { |e| e.kind.to_s == "solution_shown" }
-      closed_by ||= :solution if solutions.any? { |e| e.reason.to_s == "requested" }
-      hints = events.select { |e| e.kind.to_s == "hint_shown" }.map(&:n).uniq.size
-      state = if closed_by then :closed
-      elsif superseded || now - serve_time(serve) > V5::OPEN_SERVE_HOURS * 3600 then :abandoned
-      else :open
-      end
-      Status.new(state: state, closed_by: closed_by, w: w, near_misses: near, hints_shown: [ hints, hints_total.to_i ].min,
-                 solution_sent: solutions.any?, next_try_number: state == :open ? tries.size + 1 : nil,
-                 actions: actions(state, closed_by, tries.last, solutions))
+      [ w, near, closed_by, counted ]
     end
 
     def contested?(try) = try.contested || try.outcome.to_sym == :contested
