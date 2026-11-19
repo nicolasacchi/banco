@@ -218,6 +218,7 @@ lesson2:
   label_words_max: 6          # E-LESSON-DIAGRAM
   node_words_max: 6           # E-LESSON-DIAGRAM: concept map node text
   edge_words_max: 3           # E-LESSON-DIAGRAM: concept map edge label
+  flow_loops_max: 2           # E-LESSON-DIAGRAM: loops (an arrow back to a decision) of a tree flow (D-383)
   goals_words_max: 12         # E-LESSON-BLOCK: one goal in the front matter
   book_extra_words: 30        # E-LESSON-BOOK
   why_sentences: [2, 4]       # W-LESSON-WHY

@@ -13,6 +13,16 @@
 #
 # The student's text has no decision number and no jargon; it is second person and never blames. Newest first is the order of the pages, not of this file.
 entries:
+  - id: flowchart-diamond-and-loop
+    date: 2026-11-19
+    audience: [student]
+    kind: software
+    decisions: [D-383]
+    title_it: "Schemi di flusso: il rombo e la freccia che torna indietro"
+    body_it: "Negli schemi di flusso la domanda ora è un vero rombo. Quando una parte si ripete, come in un ciclo, una freccia torna su alla domanda, con la sua etichetta."
+    title_en: "Flowcharts: the diamond and the arrow that goes back"
+    body_en: "In flowcharts the question is now a real diamond. When a part repeats, as in a loop, an arrow goes back up to the question, with its label."
+
   - id: text-sizes-and-themes
     date: 2026-11-17
     audience: [student]

@@ -387,7 +387,7 @@ number line intervals.
 | `cartesian` | lines, systems | `x: [min, max]`, `y: [min, max]`, `grid`, `lines: [{id, eq, label_it?, role?}]` with `eq` as `y = 2x + 1`, `x = 3` or `2x + 3y = 6` (rational coefficients), `points: [{x, y, label_it?, role?, on_lines?: [ids]}]` (a point with `on_lines` lies exactly on each line), `segments` |
 | `sentence` | logical and grammatical analysis | `text_it`, `parts: [{id?, text_it, role, label_it?, question_it?, implied?}]` (exact substrings of `text_it`, in order, at most 10; an `implied` part such as "(noi)" is drawn dashed), `links`, `layout: line\|centre`, `states` with `op_it`, `next_label_it` (a part with the same `id` keeps its role) |
 | `concept_map` (schema) | classifications | `root`, `nodes: [{id, text_it, role?, icon?}]`, `edges: [{from, to, label_it?}]` forming a tree of depth at most 3 with at most 4 children per node, `links` (at most 3 cross links) |
-| `flow` (schema) | procedures | `nodes: [{id, kind: step\|decision\|end, text_it, role?}]`, `edges: [[from, to, "label"?]]`: one main chain, a decision has 2 or 3 branches, no cycles |
+| `flow` (schema) | procedures, and a loop (Do While) as a flowchart | `nodes: [{id, kind: step\|decision\|end, text_it, role?}]`, `edges: [[from, to, "label"?]]`: one main chain, a decision has 2 or 3 branches, no cycles among the edges; `loops: [{from, to, label_it?}]` (at most 2): the one way back, an arrow from a node under a decision to that decision (see «A flow that repeats»). A decision is drawn as a diamond |
 | `network` | who is linked to whom, by what | `layout: pair\|row\|triangle\|hub\|fan\|grid`, `centre` (hub), `into` (fan), `nodes: [{id, label_it, icon?, role?, note_it?, badge_it?}]` (2 to 8, label 6 words, note 25), `edges: [{from, to, kind, label_it?, what?}]` (at most 12 per state; `kind`: owes, pays, elects, trusts, appoints, commands, advises, votes_laws, vetoes, orders, promises, gives, sends; `what`: goods, money, document, order, promise, signature, information, vote), `holds: [{node, items_it}]`, `everyone: true` (a node "Tutti gli altri", id `everyone`), `filter: true` (hub: kind chips), states with `edges`, `holds`, `hide: [ids]`, `badges`, `op_it`. An arrow never reaches a hidden node |
 | `chain` | causes, effects, cycles | `layout: line\|fan\|ring`, `nodes: [{id, kind: cause\|event\|effect\|stage, area?, text_it}]` (3 to 10, 8 words) written in reading order (a fan: the causes, the one event, its effects), `links: [{from, to, word?, causal?: false, back?: true}]` (a link goes to the next node, or into the event of a fan; word: perché, quindi, per questo, porta a, poi; at most 2 not causal, 1 back, a line only), `remove: true` ("Togli una causa"), states with `show: [ids]`, `op_it`; a ring has stages only |
 | `timeline` | dated facts in order (years), or the order of tenses around now | `scale: years` (history, geography): `from`, `to` (signed years as text, `'-146'` is 146 a.C.; `'0'` is refused: there is no year 0), `every` (tick step), `centuries: true` (bands), `lanes: [{id, label_it}]` (1 to 3), `periods: [{from, to, label_it, role?}]` (6 per state), `events: [{id, at, label_it, note_it?, role?, approx?, lane?}]` (12 per state, label 6 words, note 25, written in any order), `spans: [{from, to, show_value?}]` (event ids; the duration is computed, never written), `measure: true` (extra cards: choose two events), states that zoom (`from`, `to`, `periods`, `events`, `spans`, `op_it`). `scale: tense` (english, spanish): `window: ['-3', '3']` (0 is now, the unit is the order), `marks: [{id, at, span: point\|range\|habit\|plan, to?, from?, text_en or text_es, label_it, role?, uncertain?}]` (8, the sentence 8 words; a range has `to`, a plan has `from` before `at`, a habit may have `to`), states with `marks`, `window`, `op_it`. Durations and centuries are always computed by the components (`verify: {fn: chrono.duration}` on a number check) |
@@ -413,6 +413,35 @@ number line intervals.
 What a balance cannot draw: negative terms, negative or zero solutions, and subtraction on a plate have no honest
 picture on a balance. For signs use a `number_line` (jumps); for equations with negative terms use the `example`
 steps and a `flow`; never a balance with the signs dropped.
+
+### A flow that repeats: `loops`
+
+A pre-test loop (`Do While n < 50` ... `Loop`) is a flow with a decision and a way back. The `edges` stay a tree: no cycle among them. The way back is written
+apart, in `loops`: `from` is the node that ends the body, `to` is the decision it goes back to, `label_it` (at most 6 words, optional) is written on the arrow.
+
+```
+::: diagram flow
+alt_it: "Un ciclo Do While: n parte da 1. Il rombo chiede se n è minore di 50. Sì: n diventa n per 3 e si torna alla domanda. No: si scrive n."
+nodes:
+  - {id: a, kind: step, text_it: "n vale 1"}
+  - {id: q, kind: decision, text_it: "n < 50?", role: condition}
+  - {id: b, kind: step, text_it: "n = n * 3"}
+  - {id: e, kind: end, text_it: "Scrivi n"}
+edges:
+  - [a, q]
+  - [q, b, "Sì"]
+  - [q, e, "No"]
+loops:
+  - {from: b, to: q, label_it: "torna alla domanda"}
+:::
+```
+
+- Never draw the way back as a node: no «Torna alla domanda» end node, no dead-end box. The `loops` arrow is the way back.
+- `to` is a `decision`; `from` is under it (reached from it along the `edges`) and is not an `end`; at most 2 loops; the same loop is not written twice.
+- A step that loops back has no edge: the loop is its next node (`b` above). A step has one next node, an edge or a loop, not both.
+- Two ends of an inner decision can both go back to the outer one: two loops (`{from: a, to: q}` and `{from: b, to: q}`).
+- The decision is drawn as a diamond sized to its text: a short question stays on one line, a long one is wrapped and the diamond widens, never a smaller text. Keep the question short anyway (a few words ending with `?`), the branch labels one word (`Sì`, `No`).
+- `loops` is for the tree layout. `layout: line` has `returns` (backwards along a lane) instead.
 
 Choose by subject: math uses `balance` for the principles, `number_line` for signs and inequalities, `area_model` for
 products, `cartesian` for lines and systems, `equation_parts` for anatomy; italian uses `sentence` for analysis,

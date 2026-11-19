@@ -3444,6 +3444,659 @@
    }
   },
   {
+   "name": "flow-loop-do-while",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "note": "a loop: the answer Sì goes to the body, which goes back to the decision (D-383)",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un ciclo Do While: n parte da 1. Il rombo chiede se n è minore di 50. Sì: n diventa n per 3 e si torna alla domanda. No: si scrive n.",
+    "caption_it": "n passa per 1, 3, 9, 27, 81. Con 81 la domanda è falsa: si scrive 81.",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "n vale 1"
+     },
+     {
+      "id": "q",
+      "kind": "decision",
+      "text_it": "n < 50?"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "n = n * 3"
+     },
+     {
+      "id": "e",
+      "kind": "end",
+      "text_it": "Scrivi n"
+     }
+    ],
+    "edges": [
+     [
+      "a",
+      "q"
+     ],
+     [
+      "q",
+      "b",
+      "Sì"
+     ],
+     [
+      "q",
+      "e",
+      "No"
+     ]
+    ],
+    "loops": [
+     {
+      "from": "b",
+      "to": "q",
+      "label_it": "torna alla domanda"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-loop-nested-two",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "note": "two loops, from the two ends of an inner decision, back to the outer one",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un ciclo con una domanda dentro. Finché n è diverso da 1: se n è pari si dimezza, altrimenti si triplica e si aggiunge 1; poi si torna alla prima domanda.",
+    "nodes": [
+     {
+      "id": "s",
+      "kind": "step",
+      "text_it": "n vale 27"
+     },
+     {
+      "id": "q",
+      "kind": "decision",
+      "text_it": "n è diverso da 1?"
+     },
+     {
+      "id": "d",
+      "kind": "decision",
+      "text_it": "n è un numero pari?"
+     },
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "n = n / 2"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "n = 3 * n + 1"
+     },
+     {
+      "id": "e",
+      "kind": "end",
+      "text_it": "Scrivi n"
+     }
+    ],
+    "edges": [
+     [
+      "s",
+      "q"
+     ],
+     [
+      "q",
+      "d",
+      "Sì"
+     ],
+     [
+      "q",
+      "e",
+      "No"
+     ],
+     [
+      "d",
+      "a",
+      "Sì"
+     ],
+     [
+      "d",
+      "b",
+      "No"
+     ]
+    ],
+    "loops": [
+     {
+      "from": "a",
+      "to": "q",
+      "label_it": "torna alla domanda"
+     },
+     {
+      "from": "b",
+      "to": "q"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-loop-long-question",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "note": "a long question is wrapped in its rhombus, and the loop starts under a chain of steps",
+   "data": {
+    "type": "flow",
+    "alt_it": "Una ripetizione con una domanda lunga: finché il saldo del conto resta sotto la soglia stabilita si aggiunge un versamento, poi si torna a controllare il saldo.",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "Apri il conto con un saldo iniziale"
+     },
+     {
+      "id": "q",
+      "kind": "decision",
+      "text_it": "Il saldo del conto è ancora sotto la soglia stabilita dal contratto?"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "Aggiungi il versamento del mese"
+     },
+     {
+      "id": "c",
+      "kind": "step",
+      "text_it": "Aggiorna il saldo"
+     },
+     {
+      "id": "e",
+      "kind": "end",
+      "text_it": "La soglia è stata raggiunta"
+     }
+    ],
+    "edges": [
+     [
+      "a",
+      "q"
+     ],
+     [
+      "q",
+      "b",
+      "Sì"
+     ],
+     [
+      "b",
+      "c"
+     ],
+     [
+      "q",
+      "e",
+      "No"
+     ]
+    ],
+    "loops": [
+     {
+      "from": "c",
+      "to": "q",
+      "label_it": "torna a controllare il saldo"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-loop-to-step",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/loops/0/to",
+   "note": "a loop goes back to a decision only",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un ciclo Do While: n parte da 1. Il rombo chiede se n è minore di 50. Sì: n diventa n per 3 e si torna alla domanda. No: si scrive n.",
+    "caption_it": "n passa per 1, 3, 9, 27, 81. Con 81 la domanda è falsa: si scrive 81.",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "n vale 1"
+     },
+     {
+      "id": "q",
+      "kind": "decision",
+      "text_it": "n < 50?"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "n = n * 3"
+     },
+     {
+      "id": "e",
+      "kind": "end",
+      "text_it": "Scrivi n"
+     }
+    ],
+    "edges": [
+     [
+      "a",
+      "q"
+     ],
+     [
+      "q",
+      "b",
+      "Sì"
+     ],
+     [
+      "q",
+      "e",
+      "No"
+     ]
+    ],
+    "loops": [
+     {
+      "from": "b",
+      "to": "a"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-loop-from-end",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/loops/0/from",
+   "note": "a loop does not start from an end node",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un ciclo Do While: n parte da 1. Il rombo chiede se n è minore di 50. Sì: n diventa n per 3 e si torna alla domanda. No: si scrive n.",
+    "caption_it": "n passa per 1, 3, 9, 27, 81. Con 81 la domanda è falsa: si scrive 81.",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "n vale 1"
+     },
+     {
+      "id": "q",
+      "kind": "decision",
+      "text_it": "n < 50?"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "n = n * 3"
+     },
+     {
+      "id": "e",
+      "kind": "end",
+      "text_it": "Scrivi n"
+     }
+    ],
+    "edges": [
+     [
+      "a",
+      "q"
+     ],
+     [
+      "q",
+      "b",
+      "Sì"
+     ],
+     [
+      "q",
+      "e",
+      "No"
+     ]
+    ],
+    "loops": [
+     {
+      "from": "e",
+      "to": "q"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-loop-not-below",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/loops/0/from",
+   "note": "the start of a loop is reached from its decision along the edges",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un ciclo Do While: n parte da 1. Il rombo chiede se n è minore di 50. Sì: n diventa n per 3 e si torna alla domanda. No: si scrive n.",
+    "caption_it": "n passa per 1, 3, 9, 27, 81. Con 81 la domanda è falsa: si scrive 81.",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "n vale 1"
+     },
+     {
+      "id": "q",
+      "kind": "decision",
+      "text_it": "n < 50?"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "n = n * 3"
+     },
+     {
+      "id": "e",
+      "kind": "end",
+      "text_it": "Scrivi n"
+     }
+    ],
+    "edges": [
+     [
+      "a",
+      "q"
+     ],
+     [
+      "q",
+      "b",
+      "Sì"
+     ],
+     [
+      "q",
+      "e",
+      "No"
+     ]
+    ],
+    "loops": [
+     {
+      "from": "a",
+      "to": "q"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-loop-unknown-node",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/loops/0",
+   "note": "a loop names nodes that exist",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un ciclo Do While: n parte da 1. Il rombo chiede se n è minore di 50. Sì: n diventa n per 3 e si torna alla domanda. No: si scrive n.",
+    "caption_it": "n passa per 1, 3, 9, 27, 81. Con 81 la domanda è falsa: si scrive 81.",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "n vale 1"
+     },
+     {
+      "id": "q",
+      "kind": "decision",
+      "text_it": "n < 50?"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "n = n * 3"
+     },
+     {
+      "id": "e",
+      "kind": "end",
+      "text_it": "Scrivi n"
+     }
+    ],
+    "edges": [
+     [
+      "a",
+      "q"
+     ],
+     [
+      "q",
+      "b",
+      "Sì"
+     ],
+     [
+      "q",
+      "e",
+      "No"
+     ]
+    ],
+    "loops": [
+     {
+      "from": "zz",
+      "to": "q"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-loop-twice",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/loops/1",
+   "note": "the same loop twice",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un ciclo Do While: n parte da 1. Il rombo chiede se n è minore di 50. Sì: n diventa n per 3 e si torna alla domanda. No: si scrive n.",
+    "caption_it": "n passa per 1, 3, 9, 27, 81. Con 81 la domanda è falsa: si scrive 81.",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "n vale 1"
+     },
+     {
+      "id": "q",
+      "kind": "decision",
+      "text_it": "n < 50?"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "n = n * 3"
+     },
+     {
+      "id": "e",
+      "kind": "end",
+      "text_it": "Scrivi n"
+     }
+    ],
+    "edges": [
+     [
+      "a",
+      "q"
+     ],
+     [
+      "q",
+      "b",
+      "Sì"
+     ],
+     [
+      "q",
+      "e",
+      "No"
+     ]
+    ],
+    "loops": [
+     {
+      "from": "b",
+      "to": "q"
+     },
+     {
+      "from": "b",
+      "to": "q"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-loop-step-two-exits",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-MAP",
+   "path": "/nodes/2",
+   "note": "a step with a loop has no edge: the loop is its next node",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un ciclo Do While: n parte da 1. Il rombo chiede se n è minore di 50. Sì: n diventa n per 3 e si torna alla domanda. No: si scrive n.",
+    "caption_it": "n passa per 1, 3, 9, 27, 81. Con 81 la domanda è falsa: si scrive 81.",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "n vale 1"
+     },
+     {
+      "id": "q",
+      "kind": "decision",
+      "text_it": "n < 50?"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "n = n * 3"
+     },
+     {
+      "id": "e",
+      "kind": "end",
+      "text_it": "Scrivi n"
+     }
+    ],
+    "edges": [
+     [
+      "a",
+      "q"
+     ],
+     [
+      "q",
+      "b",
+      "Sì"
+     ],
+     [
+      "q",
+      "e",
+      "No"
+     ],
+     [
+      "b",
+      "e"
+     ]
+    ],
+    "loops": [
+     {
+      "from": "b",
+      "to": "q",
+      "label_it": "torna alla domanda"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-loop-three",
+   "subject": "math",
+   "schema": "invalid",
+   "semantic": "ok",
+   "note": "at most two loops",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un ciclo Do While: n parte da 1. Il rombo chiede se n è minore di 50. Sì: n diventa n per 3 e si torna alla domanda. No: si scrive n.",
+    "caption_it": "n passa per 1, 3, 9, 27, 81. Con 81 la domanda è falsa: si scrive 81.",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "n vale 1"
+     },
+     {
+      "id": "q",
+      "kind": "decision",
+      "text_it": "n < 50?"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "n = n * 3"
+     },
+     {
+      "id": "e",
+      "kind": "end",
+      "text_it": "Scrivi n"
+     }
+    ],
+    "edges": [
+     [
+      "a",
+      "q"
+     ],
+     [
+      "q",
+      "b",
+      "Sì"
+     ],
+     [
+      "q",
+      "e",
+      "No"
+     ]
+    ],
+    "loops": [
+     {
+      "from": "b",
+      "to": "q"
+     },
+     {
+      "from": "a",
+      "to": "q"
+     },
+     {
+      "from": "e",
+      "to": "q"
+     }
+    ]
+   }
+  },
+  {
+   "name": "flow-loop-on-a-line",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "E-LESSON-DIAGRAM",
+   "path": "/loops",
+   "note": "loops are for the tree layout; a line has returns",
+   "data": {
+    "type": "flow",
+    "layout": "line",
+    "alt_it": "Un percorso con tre tappe: arrivo, controllo e consegna, una dopo l'altra, senza ritorni.",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "Arrivo"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "Controllo"
+     },
+     {
+      "id": "c",
+      "kind": "end",
+      "text_it": "Consegna"
+     }
+    ],
+    "loops": [
+     {
+      "from": "b",
+      "to": "a"
+     }
+    ]
+   }
+  },
+  {
    "name": "flow-decision-one-branch",
    "subject": "math",
    "schema": "valid",

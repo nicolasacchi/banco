@@ -546,7 +546,8 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 
 /* the schema (flow): ink-blue outlines, steps on the page colour, decisions tinted, ends on paper */
 .dg-flow .dg-node { stroke: var(--primary); stroke-width: 2.5; fill: var(--surface); }
-.dg-flow .dg-decision { fill: color-mix(in srgb, var(--brass) 22%, var(--surface)); }
+.dg-flow .dg-decision { fill: color-mix(in srgb, var(--brass) 22%, var(--surface)); stroke-linejoin: round; } /* a rhombus (D-383): its points do not spike out of the box */
+.dg-flow .dg-loop { stroke-linejoin: round; }
 .dg-flow .dg-end { fill: var(--paper); stroke-width: 3; }
 .dg-flow .dg-edge { stroke: var(--primary); stroke-width: 2.5; }
 .dg-flow .dg-arrowhead { fill: var(--primary); stroke: none; }

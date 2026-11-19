@@ -70,6 +70,17 @@ class LessonRenderRunnerTest < ActiveSupport::TestCase
     assert_not_includes codes(row), "E-DIAGRAM-TARGET", dump(row)
   end
 
+  # D-383: a Do While drawn as a flowchart (the question as a rhombus, a loop with its arrow back) and a nested decision with two loops, in a
+  # phone and a desktop viewport and a dark theme: the render check finds no layout error, no label under the base size.
+  test "a flow with a loop and a nested decision with two loops draws at every viewport" do
+    vectors = JSON.parse(Rails.root.join("test/fixtures/diagrams/vectors.json").read).fetch("vectors")
+    blocks = %w[flow-loop-do-while flow-loop-nested-two flow-loop-long-question].map { |name| { "type" => "diagram", "diagram" => vectors.find { |v| v["name"] == name }.fetch("data") } }
+    row = render(with_card(served("equations"), blocks))
+    keep_shots(row, "flow-loop")
+    assert_equal "passed", row.status, dump(row)
+    assert_equal [ "1280x800-cream", "1280x800-dark", "390x844-cream" ], row.shots.select { |s| s["card"] == row.shots.map { |t| t["card"] }.max }.map { |s| s["viewport"] }.sort
+  end
+
   test "a number line too dense for its labels is E-DIAGRAM-LAYOUT" do
     marks = (-5..5).map { |i| { "at" => i.to_s, "kind" => "dot", "role" => "known", "label_it" => "una etichetta davvero molto lunga #{i}" } }
     line = { "type" => "number_line", "alt_it" => "Retta dei numeri da meno cinque a cinque con molte etichette lunghe.", "min" => "-5", "max" => "5", "step" => "1", "labels" => "all", "marks" => marks }

@@ -772,6 +772,7 @@
      "layout",
      "branch",
      "returns",
+     "loops",
      "token",
      "walk",
      "case_it",

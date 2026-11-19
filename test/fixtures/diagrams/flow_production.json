@@ -1,0 +1,1610 @@
+{
+ "description": "The 20 trickiest flow diagrams (layout tree) of the production lessons, content only: the most decisions, the longest questions, formulas in a question, three branches, a node joined twice (indented layout), the tallest. flow_production.test.mjs lays each out at 390 and 1280 and checks that none errs, overlaps or lets a text out of its node (D-383). FLOW_PRODUCTION=/path/production_flows.json runs the whole export instead.",
+ "diagrams": [
+  {
+   "lesson": "ripasso.geography.climates-biomes",
+   "path": "/cards/12/blocks/1/schema",
+   "subject": "geography",
+   "diagram": {
+    "alt_it": "Schema: che clima è? Meno di 250 mm in un anno: deserto. Sopra 18 gradi in ogni mese: senza mesi aridi equatoriale; con mesi aridi tropicale fino a 2000 mm in un anno, monsonico oltre. Se no: mediterraneo con l'estate arida, altrimenti temperato o freddo.",
+    "nodes": [
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "Meno di 250 mm in un anno?"
+     },
+     {
+      "id": "des",
+      "kind": "end",
+      "text_it": "Deserto, caldo o freddo"
+     },
+     {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "Sopra 18 °C in ogni mese?"
+     },
+     {
+      "id": "q3",
+      "kind": "decision",
+      "text_it": "Ci sono mesi aridi?"
+     },
+     {
+      "id": "equ",
+      "kind": "end",
+      "text_it": "Equatoriale: foresta pluviale"
+     },
+     {
+      "id": "tro",
+      "kind": "end",
+      "text_it": "Tropicale: savana"
+     },
+     {
+      "id": "mon",
+      "kind": "end",
+      "text_it": "Monsonico"
+     },
+     {
+      "id": "med",
+      "kind": "end",
+      "text_it": "Mediterraneo: macchia"
+     },
+     {
+      "id": "tef",
+      "kind": "end",
+      "text_it": "Temperato o freddo"
+     }
+    ],
+    "edges": [
+     [
+      "q1",
+      "des",
+      "sì"
+     ],
+     [
+      "q1",
+      "q2",
+      "no"
+     ],
+     [
+      "q2",
+      "q3",
+      "sì"
+     ],
+     [
+      "q2",
+      "med",
+      "no, e l'estate è arida"
+     ],
+     [
+      "q2",
+      "tef",
+      "no, e l'estate non è arida"
+     ],
+     [
+      "q3",
+      "equ",
+      "no"
+     ],
+     [
+      "q3",
+      "tro",
+      "sì, fino a 2000 mm in un anno"
+     ],
+     [
+      "q3",
+      "mon",
+      "sì, oltre 2000 mm in un anno"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "lezione.law_economics.entrepreneur-business",
+   "path": "/cards/1/blocks/1/schema",
+   "subject": "law_economics",
+   "diagram": {
+    "alt_it": "Percorso: una persona fa un'attività. È abituale? È organizzata con mezzi e lavoro? Vende per coprire almeno i costi? Se tutte e tre le risposte sono sì, è imprenditore. Se una risposta è no, non lo è.",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "Una persona fa un'attività"
+     },
+     {
+      "id": "b",
+      "kind": "decision",
+      "text_it": "È abituale?"
+     },
+     {
+      "id": "c",
+      "kind": "decision",
+      "text_it": "È organizzata, con mezzi e lavoro?"
+     },
+     {
+      "id": "d",
+      "kind": "decision",
+      "text_it": "Vende per coprire almeno i costi?"
+     },
+     {
+      "id": "e",
+      "kind": "end",
+      "text_it": "È imprenditore"
+     },
+     {
+      "id": "f",
+      "kind": "end",
+      "text_it": "Non è imprenditore"
+     }
+    ],
+    "edges": [
+     [
+      "a",
+      "b"
+     ],
+     [
+      "b",
+      "c",
+      "sì"
+     ],
+     [
+      "c",
+      "d",
+      "sì"
+     ],
+     [
+      "d",
+      "e",
+      "sì"
+     ],
+     [
+      "b",
+      "f",
+      "no"
+     ],
+     [
+      "c",
+      "f",
+      "no"
+     ],
+     [
+      "d",
+      "f",
+      "no"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "lezione.computer_science.vb-mac-practice",
+   "path": "/cards/3/blocks/1/schema",
+   "subject": "computer_science",
+   "diagram": {
+    "alt_it": "Il programma legge il codice. Con 7500 scrive Dirottamento, con 7700 scrive Emergenza, in tutti gli altri casi scrive Codice normale.",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "Leggi il codice"
+     },
+     {
+      "id": "d",
+      "kind": "decision",
+      "text_it": "Quale caso?"
+     },
+     {
+      "id": "p",
+      "kind": "step",
+      "text_it": "Dirottamento!"
+     },
+     {
+      "id": "q",
+      "kind": "step",
+      "text_it": "Emergenza!"
+     },
+     {
+      "id": "n",
+      "kind": "step",
+      "text_it": "Codice normale."
+     },
+     {
+      "id": "e",
+      "kind": "end",
+      "text_it": "Schermo"
+     }
+    ],
+    "edges": [
+     [
+      "a",
+      "d"
+     ],
+     [
+      "d",
+      "p",
+      "Case 7500"
+     ],
+     [
+      "d",
+      "q",
+      "Case 7700"
+     ],
+     [
+      "d",
+      "n",
+      "Case Else"
+     ],
+     [
+      "p",
+      "e"
+     ],
+     [
+      "q",
+      "e"
+     ],
+     [
+      "n",
+      "e"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "extra.computer_science.online-safety",
+   "path": "/cards/5/blocks/1/schema",
+   "subject": "computer_science",
+   "diagram": {
+    "alt_it": "Schema: se un contenuto offende o umilia, non lo condividi e ne parli con un adulto. Per una notizia controlli la fonte; per foto di persone private serve il loro sì.",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "Vuoi condividere"
+     },
+     {
+      "id": "d0",
+      "kind": "decision",
+      "text_it": "È offensivo o umiliante?"
+     },
+     {
+      "id": "d1",
+      "kind": "decision",
+      "text_it": "È una notizia?"
+     },
+     {
+      "id": "d2",
+      "kind": "decision",
+      "text_it": "Fonte affidabile, oltre il titolo?"
+     },
+     {
+      "id": "e1",
+      "kind": "end",
+      "text_it": "Puoi condividere"
+     },
+     {
+      "id": "e2",
+      "kind": "end",
+      "text_it": "Non condividere"
+     },
+     {
+      "id": "d4",
+      "kind": "decision",
+      "text_it": "Foto, voci o messaggi di privati?"
+     },
+     {
+      "id": "e5",
+      "kind": "end",
+      "text_it": "Puoi condividere"
+     },
+     {
+      "id": "d3",
+      "kind": "decision",
+      "text_it": "Le persone private hanno detto sì?"
+     },
+     {
+      "id": "e3",
+      "kind": "end",
+      "text_it": "Puoi condividere"
+     },
+     {
+      "id": "e4",
+      "kind": "end",
+      "text_it": "Non condividere"
+     },
+     {
+      "id": "e0",
+      "kind": "end",
+      "text_it": "Non condividerla: parlane con un adulto"
+     }
+    ],
+    "edges": [
+     [
+      "a",
+      "d0"
+     ],
+     [
+      "d0",
+      "d1",
+      "no"
+     ],
+     [
+      "d1",
+      "d2",
+      "sì"
+     ],
+     [
+      "d2",
+      "e1",
+      "sì"
+     ],
+     [
+      "d2",
+      "e2",
+      "no"
+     ],
+     [
+      "d1",
+      "d4",
+      "no"
+     ],
+     [
+      "d4",
+      "e5",
+      "no"
+     ],
+     [
+      "d4",
+      "d3",
+      "sì"
+     ],
+     [
+      "d3",
+      "e3",
+      "sì"
+     ],
+     [
+      "d3",
+      "e4",
+      "no"
+     ],
+     [
+      "d0",
+      "e0",
+      "sì"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "lezione.chemistry.mixtures-separation",
+   "path": "/cards/11/blocks/1/schema",
+   "subject": "chemistry",
+   "diagram": {
+    "alt_it": "Schema per scegliere il metodo. Se vedi parti diverse: granelli non sciolti, filtrazione; strati o parti più dense, decantazione o centrifuga. Se non le vedi: per avere solo il liquido, distillazione; per separare i colori, cromatografia.",
+    "nodes": [
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "Vedi parti diverse?"
+     },
+     {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "Che cosa vedi?"
+     },
+     {
+      "id": "q3",
+      "kind": "decision",
+      "text_it": "Che cosa vuoi?"
+     },
+     {
+      "id": "m1",
+      "kind": "end",
+      "text_it": "Filtrazione"
+     },
+     {
+      "id": "m2",
+      "kind": "end",
+      "text_it": "Decantazione o centrifuga"
+     },
+     {
+      "id": "m3",
+      "kind": "end",
+      "text_it": "Distillazione"
+     },
+     {
+      "id": "m4",
+      "kind": "end",
+      "text_it": "Cromatografia"
+     }
+    ],
+    "edges": [
+     [
+      "q1",
+      "q2",
+      "sì"
+     ],
+     [
+      "q1",
+      "q3",
+      "no"
+     ],
+     [
+      "q2",
+      "m1",
+      "granelli non sciolti"
+     ],
+     [
+      "q2",
+      "m2",
+      "strati, parti dense"
+     ],
+     [
+      "q3",
+      "m3",
+      "solo il liquido"
+     ],
+     [
+      "q3",
+      "m4",
+      "i colori separati"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "lezione.chemistry.mixtures-separation",
+   "path": "/cards/3/blocks/0/schema",
+   "subject": "chemistry",
+   "diagram": {
+    "alt_it": "Schema con due domande. Quante sostanze? Una: sostanza pura, poi conta i tipi di atomi per dire elemento o composto. Più di una: miscuglio, poi guarda se vedi le parti.",
+    "nodes": [
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "Quante sostanze contiene?"
+     },
+     {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "Sostanza pura: quanti tipi di atomi?"
+     },
+     {
+      "id": "q3",
+      "kind": "decision",
+      "text_it": "Miscuglio: vedi parti diverse?"
+     },
+     {
+      "id": "e1",
+      "kind": "end",
+      "text_it": "Elemento"
+     },
+     {
+      "id": "e2",
+      "kind": "end",
+      "text_it": "Composto"
+     },
+     {
+      "id": "e3",
+      "kind": "end",
+      "text_it": "Eterogeneo"
+     },
+     {
+      "id": "e4",
+      "kind": "end",
+      "text_it": "Omogeneo"
+     }
+    ],
+    "edges": [
+     [
+      "q1",
+      "q2",
+      "una"
+     ],
+     [
+      "q1",
+      "q3",
+      "più di una"
+     ],
+     [
+      "q2",
+      "e1",
+      "uno"
+     ],
+     [
+      "q2",
+      "e2",
+      "più di uno"
+     ],
+     [
+      "q3",
+      "e3",
+      "sì"
+     ],
+     [
+      "q3",
+      "e4",
+      "no"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "lezione.italian.poetry-rhyme-stanza-forms",
+   "path": "/cards/9/blocks/1/schema",
+   "subject": "italian",
+   "diagram": {
+    "alt_it": "Schema per riconoscere la forma. Se la poesia ha quattro strofe e quattordici versi è un sonetto. Se ha una ripresa che ritorna è una ballata. Se ha stanze uguali e un congedo è una canzone. Se ha terzine incatenate è un poema in terza rima. Altrimenti è un'altra forma.",
+    "nodes": [
+     {
+      "id": "n1",
+      "kind": "decision",
+      "text_it": "Ha quattro strofe e 14 versi?"
+     },
+     {
+      "id": "e1",
+      "kind": "end",
+      "text_it": "Sonetto"
+     },
+     {
+      "id": "n2",
+      "kind": "decision",
+      "text_it": "Ha una ripresa che ritorna?"
+     },
+     {
+      "id": "e2",
+      "kind": "end",
+      "text_it": "Ballata"
+     },
+     {
+      "id": "n3",
+      "kind": "decision",
+      "text_it": "Ha stanze uguali e un congedo?"
+     },
+     {
+      "id": "e3",
+      "kind": "end",
+      "text_it": "Canzone"
+     },
+     {
+      "id": "n4",
+      "kind": "decision",
+      "text_it": "Ha terzine incatenate?"
+     },
+     {
+      "id": "e4",
+      "kind": "end",
+      "text_it": "Terza rima"
+     },
+     {
+      "id": "e5",
+      "kind": "end",
+      "text_it": "Un'altra forma"
+     }
+    ],
+    "edges": [
+     [
+      "n1",
+      "e1",
+      "sì"
+     ],
+     [
+      "n1",
+      "n2",
+      "no"
+     ],
+     [
+      "n2",
+      "e2",
+      "sì"
+     ],
+     [
+      "n2",
+      "n3",
+      "no"
+     ],
+     [
+      "n3",
+      "e3",
+      "sì"
+     ],
+     [
+      "n3",
+      "n4",
+      "no"
+     ],
+     [
+      "n4",
+      "e4",
+      "sì"
+     ],
+     [
+      "n4",
+      "e5",
+      "no"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "ripasso.italian.period-structure",
+   "path": "/cards/7/blocks/1/schema",
+   "subject": "italian",
+   "diagram": {
+    "alt_it": "Come decidi. Se il che sta al posto di un nome che viene prima, è una relativa. Se no, e prima c'è un verbo come bisogna o è giusto, è una soggettiva. Se risponde a che cosa detto al verbo, è un'oggettiva. Se no, è un altro tipo.",
+    "caption_it": "«Il film che ho visto»: il «che» sta per «il film», perché ho visto il film.",
+    "nodes": [
+     {
+      "id": "s",
+      "kind": "step",
+      "text_it": "Trova la subordinata con «che»"
+     },
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "«Che» sta al posto di un nome di prima?"
+     },
+     {
+      "id": "rel",
+      "kind": "end",
+      "text_it": "Relativa: parla di quel nome"
+     },
+     {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "Prima c'è un verbo come «bisogna» o «è giusto»?"
+     },
+     {
+      "id": "sog",
+      "kind": "end",
+      "text_it": "Soggettiva: fa da soggetto",
+      "role": "subject"
+     },
+     {
+      "id": "q3",
+      "kind": "decision",
+      "text_it": "Risponde a «che cosa?» detto al verbo?"
+     },
+     {
+      "id": "ogg",
+      "kind": "end",
+      "text_it": "Oggettiva: fa da oggetto",
+      "role": "object"
+     },
+     {
+      "id": "alt",
+      "kind": "end",
+      "text_it": "Un altro tipo: guarda il senso"
+     }
+    ],
+    "edges": [
+     [
+      "s",
+      "q1"
+     ],
+     [
+      "q1",
+      "rel",
+      "sì"
+     ],
+     [
+      "q1",
+      "q2",
+      "no"
+     ],
+     [
+      "q2",
+      "sog",
+      "sì"
+     ],
+     [
+      "q2",
+      "q3",
+      "no"
+     ],
+     [
+      "q3",
+      "ogg",
+      "sì"
+     ],
+     [
+      "q3",
+      "alt",
+      "no"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "ponte.math.fractional-equations",
+   "path": "/cards/7/blocks/0/schema",
+   "subject": "math",
+   "diagram": {
+    "alt_it": "Schema del metodo: scomponi i denominatori e scrivi le condizioni di esistenza; moltiplica ogni termine per il denominatore comune; risolvi l'equazione senza frazioni. Le x si cancellano? Se sì, guarda l'uguaglianza che resta. Se no, il numero trovato è escluso? Se no, è la soluzione. Se sì, scartalo.",
+    "nodes": [
+     {
+      "id": "s1",
+      "kind": "step",
+      "text_it": "Scomponi i denominatori e scrivi le C.E."
+     },
+     {
+      "id": "s2",
+      "kind": "step",
+      "text_it": "Moltiplica ogni termine per il denominatore comune"
+     },
+     {
+      "id": "s3",
+      "kind": "step",
+      "text_it": "Risolvi l'equazione senza frazioni"
+     },
+     {
+      "id": "d",
+      "kind": "decision",
+      "text_it": "Le $x$ si cancellano?"
+     },
+     {
+      "id": "e0",
+      "kind": "end",
+      "text_it": "Uguaglianza vera: indeterminata. Falsa: impossibile"
+     },
+     {
+      "id": "q",
+      "kind": "decision",
+      "text_it": "Il numero trovato è escluso?"
+     },
+     {
+      "id": "e1",
+      "kind": "end",
+      "text_it": "No: è la soluzione"
+     },
+     {
+      "id": "e2",
+      "kind": "end",
+      "text_it": "Sì: scartalo"
+     }
+    ],
+    "edges": [
+     [
+      "s1",
+      "s2"
+     ],
+     [
+      "s2",
+      "s3"
+     ],
+     [
+      "s3",
+      "d"
+     ],
+     [
+      "d",
+      "q",
+      "no"
+     ],
+     [
+      "d",
+      "e0",
+      "sì"
+     ],
+     [
+      "q",
+      "e1",
+      "no"
+     ],
+     [
+      "q",
+      "e2",
+      "sì"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "ripasso.math.linear-equations-integer",
+   "path": "/cards/13/blocks/1/schema",
+   "subject": "math",
+   "diagram": {
+    "alt_it": "Schema: sviluppa, elimina i termini uguali, sposta e somma fino ad ax = b. Se a è diverso da 0 è determinata, x = b/a, poi verifichi. Se a = 0 e b è diverso da 0 è impossibile. Se a = 0 e b = 0 è indeterminata.",
+    "nodes": [
+     {
+      "id": "s1",
+      "kind": "step",
+      "text_it": "Sviluppa parentesi e prodotti notevoli"
+     },
+     {
+      "id": "s1b",
+      "kind": "step",
+      "text_it": "Elimina i termini uguali nei due membri"
+     },
+     {
+      "id": "s2",
+      "kind": "step",
+      "text_it": "Sposta cambiando segno, poi somma"
+     },
+     {
+      "id": "s3",
+      "kind": "step",
+      "text_it": "Arrivi a $ax = b$"
+     },
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "$a \\neq 0$?"
+     },
+     {
+      "id": "det",
+      "kind": "end",
+      "text_it": "Determinata: $x = \\frac{b}{a}$, poi verifica"
+     },
+     {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "$b \\neq 0$?"
+     },
+     {
+      "id": "imp",
+      "kind": "end",
+      "text_it": "Impossibile: nessun numero"
+     },
+     {
+      "id": "ind",
+      "kind": "end",
+      "text_it": "Indeterminata: ogni numero"
+     }
+    ],
+    "edges": [
+     [
+      "s1",
+      "s1b"
+     ],
+     [
+      "s1b",
+      "s2"
+     ],
+     [
+      "s2",
+      "s3"
+     ],
+     [
+      "s3",
+      "q1"
+     ],
+     [
+      "q1",
+      "det",
+      "sì"
+     ],
+     [
+      "q1",
+      "q2",
+      "no"
+     ],
+     [
+      "q2",
+      "imp",
+      "sì"
+     ],
+     [
+      "q2",
+      "ind",
+      "no"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "lezione.math.linear-systems-cramer",
+   "path": "/cards/9/blocks/1/schema",
+   "subject": "math",
+   "diagram": {
+    "alt_it": "Schema: scrivi il sistema nella forma ax + by = c, calcola D. Se D è diverso da zero, trova x e y dividendo Dx e Dy per D. Se D è zero, guarda Dx e Dy: impossibile o indeterminato.",
+    "nodes": [
+     {
+      "id": "s1",
+      "kind": "step",
+      "text_it": "Forma $ax + by = c$"
+     },
+     {
+      "id": "s2",
+      "kind": "step",
+      "text_it": "Calcola $D$, $D_x$, $D_y$"
+     },
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "$D \\neq 0$?"
+     },
+     {
+      "id": "det",
+      "kind": "end",
+      "text_it": "Determinato: una sola coppia"
+     },
+     {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "$D_x \\neq 0$ o $D_y \\neq 0$?"
+     },
+     {
+      "id": "imp",
+      "kind": "end",
+      "text_it": "Impossibile: nessuna coppia"
+     },
+     {
+      "id": "ind",
+      "kind": "end",
+      "text_it": "Indeterminato: infinite coppie (con un coefficiente non nullo)"
+     }
+    ],
+    "edges": [
+     [
+      "s1",
+      "s2"
+     ],
+     [
+      "s2",
+      "q1"
+     ],
+     [
+      "q1",
+      "det",
+      "sì"
+     ],
+     [
+      "q1",
+      "q2",
+      "no"
+     ],
+     [
+      "q2",
+      "imp",
+      "sì"
+     ],
+     [
+      "q2",
+      "ind",
+      "no"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "lezione.italian.complements-time-cause-purpose",
+   "path": "/cards/5/blocks/1/schema",
+   "subject": "italian",
+   "diagram": {
+    "alt_it": "Come decidi con per. Prima chiedi per quanto tempo: se risponde è tempo continuato. Se no, prova a causa di o grazie a: se regge è causa. Se no, prova con un verbo: se regge è fine. Se no, è un altro complemento.",
+    "nodes": [
+     {
+      "id": "s",
+      "kind": "step",
+      "text_it": "Trovi un gruppo con «per»"
+     },
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "Risponde a «per quanto tempo?»",
+      "role": "time"
+     },
+     {
+      "id": "e1",
+      "kind": "end",
+      "text_it": "Tempo continuato: «per due ore»",
+      "role": "time"
+     },
+     {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "Regge con «a causa di» o «grazie a»?",
+      "role": "cause"
+     },
+     {
+      "id": "e2",
+      "kind": "end",
+      "text_it": "Causa: «per la neve»",
+      "role": "cause"
+     },
+     {
+      "id": "q3",
+      "kind": "decision",
+      "text_it": "Regge con un verbo, come «per prendere»?",
+      "role": "purpose"
+     },
+     {
+      "id": "e3",
+      "kind": "end",
+      "text_it": "Fine: «per un gelato»",
+      "role": "purpose"
+     },
+     {
+      "id": "e4",
+      "kind": "end",
+      "text_it": "Un altro complemento: chiedi «per dove?» o «per chi?»"
+     }
+    ],
+    "edges": [
+     [
+      "s",
+      "q1"
+     ],
+     [
+      "q1",
+      "e1",
+      "sì"
+     ],
+     [
+      "q1",
+      "q2",
+      "no"
+     ],
+     [
+      "q2",
+      "e2",
+      "sì"
+     ],
+     [
+      "q2",
+      "q3",
+      "no"
+     ],
+     [
+      "q3",
+      "e3",
+      "sì"
+     ],
+     [
+      "q3",
+      "e4",
+      "no"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "lezione.chemistry.reaction-types",
+   "path": "/cards/6/blocks/1/schema",
+   "subject": "chemistry",
+   "diagram": {
+    "alt_it": "Schema a domande. C'è un acido e una base? Sì: neutralizzazione. Altrimenti, un solo reagente? Sì: decomposizione. Altrimenti, un solo prodotto? Sì: sintesi. Altrimenti, un elemento libero tra i reagenti? Sì: scambio semplice. Altrimenti: doppio scambio.",
+    "nodes": [
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "Un acido e una base?"
+     },
+     {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "Un solo reagente?"
+     },
+     {
+      "id": "q3",
+      "kind": "decision",
+      "text_it": "Un solo prodotto?"
+     },
+     {
+      "id": "q4",
+      "kind": "decision",
+      "text_it": "Un elemento libero?"
+     },
+     {
+      "id": "t1",
+      "kind": "end",
+      "text_it": "Neutralizzazione"
+     },
+     {
+      "id": "t2",
+      "kind": "end",
+      "text_it": "Decomposizione"
+     },
+     {
+      "id": "t3",
+      "kind": "end",
+      "text_it": "Sintesi"
+     },
+     {
+      "id": "t4",
+      "kind": "end",
+      "text_it": "Scambio semplice"
+     },
+     {
+      "id": "t5",
+      "kind": "end",
+      "text_it": "Doppio scambio"
+     }
+    ],
+    "edges": [
+     [
+      "q1",
+      "t1",
+      "sì"
+     ],
+     [
+      "q1",
+      "q2",
+      "no"
+     ],
+     [
+      "q2",
+      "t2",
+      "sì"
+     ],
+     [
+      "q2",
+      "q3",
+      "no"
+     ],
+     [
+      "q3",
+      "t3",
+      "sì"
+     ],
+     [
+      "q3",
+      "q4",
+      "no"
+     ],
+     [
+      "q4",
+      "t4",
+      "sì"
+     ],
+     [
+      "q4",
+      "t5",
+      "no"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "lezione.spanish.pronoun-pairs",
+   "path": "/cards/11/blocks/1/schema",
+   "subject": "spanish",
+   "diagram": {
+    "alt_it": "La cosa è lo, la, los, las; a chi è le, les. Le e les davanti alla cosa diventano se. Prima a chi, poi la cosa. Prima del verbo coniugato vanno staccati: se lo doy. Dopo l'infinito o il gerundio vanno attaccati, con la tilde: voy a dárselo.",
+    "nodes": [
+     {
+      "id": "s1",
+      "kind": "step",
+      "text_it": "La cosa: [[es:lo, la, los, las]]. A chi: [[es:le, les]]."
+     },
+     {
+      "id": "s2",
+      "kind": "step",
+      "text_it": "[[es:Le]] e [[es:les]], davanti alla cosa, diventano [[es:se]]."
+     },
+     {
+      "id": "s3",
+      "kind": "step",
+      "text_it": "Prima a chi, poi la cosa: [[es:se lo]], [[es:se la]]."
+     },
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "Dove metti i due pronomi, prima o dopo il verbo?"
+     },
+     {
+      "id": "e1",
+      "kind": "end",
+      "text_it": "Staccati, due parole: [[es:se lo doy]], [[es:se lo voy a dar]]"
+     },
+     {
+      "id": "e2",
+      "kind": "end",
+      "text_it": "Attaccati, una parola con la tilde: [[es:voy a dárselo]]"
+     }
+    ],
+    "edges": [
+     [
+      "s1",
+      "s2"
+     ],
+     [
+      "s2",
+      "s3"
+     ],
+     [
+      "s3",
+      "q1"
+     ],
+     [
+      "q1",
+      "e1",
+      "prima del verbo coniugato"
+     ],
+     [
+      "q1",
+      "e2",
+      "dopo l'infinito o il gerundio"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "ripasso.italian.narrator-point-of-view",
+   "path": "/cards/5/blocks/1/schema",
+   "subject": "italian",
+   "diagram": {
+    "alt_it": "Come decidi. Chi racconta? Un personaggio che racconta la sua storia: interno protagonista. Un personaggio che racconta un altro: testimone. Una voce fuori dalla storia: conosce i pensieri di più personaggi? Sì: onnisciente. No: con il punto di vista di un personaggio.",
+    "nodes": [
+     {
+      "id": "s",
+      "kind": "step",
+      "text_it": "Leggi il brano"
+     },
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "Chi racconta?"
+     },
+     {
+      "id": "p",
+      "kind": "end",
+      "text_it": "Interno protagonista"
+     },
+     {
+      "id": "t",
+      "kind": "end",
+      "text_it": "Interno testimone"
+     },
+     {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "Conosce i pensieri di più personaggi?"
+     },
+     {
+      "id": "o",
+      "kind": "end",
+      "text_it": "Esterno onnisciente"
+     },
+     {
+      "id": "v",
+      "kind": "end",
+      "text_it": "Esterno, punto di vista di un personaggio"
+     }
+    ],
+    "edges": [
+     [
+      "s",
+      "q1"
+     ],
+     [
+      "q1",
+      "p",
+      "io, la mia storia"
+     ],
+     [
+      "q1",
+      "t",
+      "io, la storia di un altro"
+     ],
+     [
+      "q1",
+      "q2",
+      "una voce fuori"
+     ],
+     [
+      "q2",
+      "o",
+      "sì"
+     ],
+     [
+      "q2",
+      "v",
+      "no, di uno solo"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "ripasso.law_economics.contract-obligation",
+   "path": "/cards/11/blocks/1/schema",
+   "subject": "law_economics",
+   "diagram": {
+    "alt_it": "Schema in tre domande. Manca un requisito, o l'oggetto è illecito o impossibile? Se sì, il contratto è nullo. Se no: una parte era incapace o il consenso era viziato? Se sì, è annullabile. Se no, è valido.",
+    "nodes": [
+     {
+      "id": "n1",
+      "kind": "step",
+      "text_it": "Un contratto da giudicare"
+     },
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "Manca un requisito? L'oggetto è illecito o impossibile?"
+     },
+     {
+      "id": "e1",
+      "kind": "end",
+      "text_it": "Nullo"
+     },
+     {
+      "id": "q2",
+      "kind": "decision",
+      "text_it": "Una parte era incapace? Il consenso era viziato?"
+     },
+     {
+      "id": "e2",
+      "kind": "end",
+      "text_it": "Annullabile"
+     },
+     {
+      "id": "e3",
+      "kind": "end",
+      "text_it": "Valido"
+     }
+    ],
+    "edges": [
+     [
+      "n1",
+      "q1"
+     ],
+     [
+      "q1",
+      "e1",
+      "sì"
+     ],
+     [
+      "q1",
+      "q2",
+      "no"
+     ],
+     [
+      "q2",
+      "e2",
+      "sì"
+     ],
+     [
+      "q2",
+      "e3",
+      "no"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "ponte.math.literal-equations",
+   "path": "/cards/7/blocks/1/schema",
+   "subject": "math",
+   "diagram": {
+    "alt_it": "Schema della discussione. Se il coefficiente non vale 0, dividi: determinata. Se vale 0, sostituisci quel valore. Se il termine noto vale 0 è indeterminata, altrimenti impossibile.",
+    "nodes": [
+     {
+      "id": "q0",
+      "kind": "decision",
+      "text_it": "Con questo valore del parametro il coefficiente vale 0?"
+     },
+     {
+      "id": "det",
+      "kind": "end",
+      "text_it": "Determinata: dividi per il coefficiente"
+     },
+     {
+      "id": "sub",
+      "kind": "step",
+      "text_it": "Sostituisci quel valore nell'equazione"
+     },
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "Il termine noto vale 0?"
+     },
+     {
+      "id": "imp",
+      "kind": "end",
+      "text_it": "Impossibile: nessun numero"
+     },
+     {
+      "id": "ind",
+      "kind": "end",
+      "text_it": "Indeterminata: ogni numero"
+     }
+    ],
+    "edges": [
+     [
+      "q0",
+      "det",
+      "no"
+     ],
+     [
+      "q0",
+      "sub",
+      "sì"
+     ],
+     [
+      "sub",
+      "q1"
+     ],
+     [
+      "q1",
+      "imp",
+      "no"
+     ],
+     [
+      "q1",
+      "ind",
+      "sì"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "lezione.computer_science.sheet-formula-errors",
+   "path": "/cards/4/blocks/1/schema",
+   "subject": "computer_science",
+   "diagram": {
+    "alt_it": "Il rombo chiede se la formula dà un errore. Sì: la cella mostra il valore alternativo. No: la cella mostra il risultato della formula.",
+    "nodes": [
+     {
+      "id": "q",
+      "kind": "decision",
+      "text_it": "La formula dà un errore?",
+      "role": "condition"
+     },
+     {
+      "id": "y",
+      "kind": "step",
+      "text_it": "Scrive il valore alternativo"
+     },
+     {
+      "id": "n",
+      "kind": "step",
+      "text_it": "Scrive il risultato"
+     },
+     {
+      "id": "w",
+      "kind": "end",
+      "text_it": "Fine"
+     }
+    ],
+    "edges": [
+     [
+      "q",
+      "y",
+      "Sì"
+     ],
+     [
+      "q",
+      "n",
+      "No"
+     ],
+     [
+      "y",
+      "w"
+     ],
+     [
+      "n",
+      "w"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "ponte.chemistry.density-formulas",
+   "path": "/cards/6/blocks/1/schema",
+   "subject": "chemistry",
+   "diagram": {
+    "alt_it": "Schema: la massa è in grammi e il volume in centimetri cubi? Se no, converti prima: chilogrammi in grammi, litri in centimetri cubi. Poi dividi la massa per il volume.",
+    "nodes": [
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "Massa in g e volume in cm³?"
+     },
+     {
+      "id": "s1",
+      "kind": "step",
+      "text_it": "Converti: 1 kg = 1000 g, 1 L = 1000 cm³"
+     },
+     {
+      "id": "e1",
+      "kind": "end",
+      "text_it": "Dividi la massa per il volume"
+     }
+    ],
+    "edges": [
+     [
+      "q1",
+      "s1",
+      "no"
+     ],
+     [
+      "q1",
+      "e1",
+      "sì"
+     ],
+     [
+      "s1",
+      "e1"
+     ]
+    ],
+    "type": "flow"
+   }
+  },
+  {
+   "lesson": "ripasso.italian.object-and-indirect-complements",
+   "path": "/cards/8/blocks/1/schema",
+   "subject": "italian",
+   "diagram": {
+    "alt_it": "Schema per da. Se il verbo è passivo e il gruppo fa l'azione, è complemento d'agente. Con un verbo attivo fai la domanda: da dove è moto da luogo, verso chi è moto a luogo, altrimenti è un altro complemento.",
+    "nodes": [
+     {
+      "id": "q1",
+      "kind": "decision",
+      "text_it": "Verbo passivo e il gruppo fa l'azione?"
+     },
+     {
+      "id": "ag",
+      "kind": "end",
+      "text_it": "Agente: da chi?",
+      "role": "agent"
+     },
+     {
+      "id": "q3",
+      "kind": "decision",
+      "text_it": "Che domanda funziona?"
+     },
+     {
+      "id": "md",
+      "kind": "end",
+      "text_it": "Moto da luogo: parto da Roma"
+     },
+     {
+      "id": "ma",
+      "kind": "end",
+      "text_it": "Moto a luogo: vado dal medico"
+     },
+     {
+      "id": "al",
+      "kind": "end",
+      "text_it": "Un altro complemento"
+     }
+    ],
+    "edges": [
+     [
+      "q1",
+      "ag",
+      "sì"
+     ],
+     [
+      "q1",
+      "q3",
+      "no"
+     ],
+     [
+      "q3",
+      "md",
+      "da dove?"
+     ],
+     [
+      "q3",
+      "ma",
+      "verso chi?"
+     ],
+     [
+      "q3",
+      "al",
+      "nessuna"
+     ]
+    ],
+    "type": "flow"
+   }
+  }
+ ]
+}

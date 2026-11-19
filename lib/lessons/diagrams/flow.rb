@@ -3,7 +3,8 @@
 module Lessons
   module Diagrams
     # A flow (A8): one chain from the first node, decisions with 2 or 3 labelled branches, each ending in an end
-    # node or rejoining the chain, no cycles. `layout: line` (WAVE2 2.1, T4b) is a journey: the stations of the main lane in the order
+    # node or rejoining the chain, no cycles among the edges. The one way back is `loops` (D-383): at most two, each an arrow from a
+    # node under a decision back to that decision (a Do While: Yes, the body, and back to the question). `layout: line` (WAVE2 2.1, T4b) is a journey: the stations of the main lane in the order
     # they are written (the edges are that order, none is written), one second lane, at most three returns drawn as arcs, and a token
     # that moves from state to state along the drawn edges or the returns. The browser twin is lesson/diagrams/graph/flow_line.js.
     module Flow
@@ -33,11 +34,12 @@ module Lessons
             next
           end
           if from == to || reaches?(out, to, from)
-            c.map("/edges/#{i}", "no cycles: this edge leads back to #{to}", rule: "cycle#{i}")
+            c.map("/edges/#{i}", "no cycles among the edges: this one leads back to #{to}; a way back to a decision is written in loops", rule: "cycle#{i}")
             next
           end
           out[from] << [ to, i ]
         end
+        loops = check_loops(data, c, ids, out)
         nodes.each_with_index do |n, i|
           branches = out[n["id"]]
           case n["kind"]
@@ -45,13 +47,43 @@ module Lessons
             c.map("/nodes/#{i}", "a decision has 2 or 3 branches (here #{branches.size})", rule: "branches#{i}") unless (2..3).cover?(branches.size)
             branches.each { |_to, k| c.map("/edges/#{k}", "a branch of a decision says its answer (sì, no, ...)", rule: "branch-label#{k}") if data["edges"][k][2].to_s.empty? }
           when "step"
-            c.map("/nodes/#{i}", "a step leads to exactly one next node (here #{branches.size})", rule: "step-out#{i}") unless branches.size == 1
+            exits = branches.size + loops[n["id"]]
+            c.map("/nodes/#{i}", "a step leads to exactly one next node, or loops back once (here #{exits})", rule: "step-out#{i}") unless exits == 1
           when "end"
             c.map("/nodes/#{i}", "an end node leads nowhere", rule: "end-out#{i}") unless branches.empty?
           end
         end
         reached = reachable(out, ids.first)
         nodes.each_with_index { |n, i| c.map("/nodes/#{i}", "the node #{n['id']} is not reached from the first node", rule: "unreached#{i}") unless reached.include?(n["id"]) }
+      end
+
+      # The loops (D-383): each goes back to a decision, from a node drawn under it that is not an end. Returns how many loops leave each node
+      # (a step with a loop needs no edge: the loop is its next node).
+      def check_loops(data, c, ids, out)
+        loops = Array(data["loops"])
+        leaving = Hash.new(0)
+        max = Validation::Rules.get(:lesson2, :flow_loops_max)
+        c.diagram("/loops", "a flow has at most #{max} loops (here #{loops.size})", rule: "loops") if loops.size > max
+        kinds = data["nodes"].to_h { |n| [ n["id"], n["kind"] ] }
+        loops.each_with_index do |l, i|
+          at = "/loops/#{i}"
+          from = l["from"]
+          to = l["to"]
+          c.label("#{at}/label_it", l["label_it"])
+          unless ids.include?(from) && ids.include?(to)
+            c.map(at, "the loop names a node that does not exist", rule: "loop-node#{i}")
+            next
+          end
+          leaving[from] += 1
+          if kinds[to] != "decision"
+            c.map("#{at}/to", "a loop goes back to a decision, the question asked again (#{to} is a #{kinds[to]})", rule: "loop-to#{i}")
+          elsif from == to || !reaches?(out, to, from)
+            c.map("#{at}/from", "a loop starts from a node drawn under #{to}: #{from} cannot be reached from it", rule: "loop-reach#{i}")
+          end
+          c.map("#{at}/from", "a loop does not start from an end node (#{from})", rule: "loop-end#{i}") if kinds[from] == "end"
+          c.map(at, "the same loop is written twice", rule: "loop-twice#{i}") if loops.first(i).any? { |o| o["from"] == from && o["to"] == to }
+        end
+        leaving
       end
 
       def reaches?(out, from, target, seen = {})
@@ -93,7 +125,7 @@ module Lessons
       def printed(data, state)
         return line_printed(data, state) if data["layout"] == "line"
 
-        (data["nodes"].flat_map { |n| [ n["text_it"], n["actor_it"] ] } + data["edges"].map { |e| e[2] }).compact.map(&:to_s).reject(&:empty?).uniq
+        (data["nodes"].flat_map { |n| [ n["text_it"], n["actor_it"] ] } + data["edges"].map { |e| e[2] } + Array(data["loops"]).map { |l| l["label_it"] }).compact.map(&:to_s).reject(&:empty?).uniq
       end
 
       # ---- the line layout -------------------------------------------------------------------------------
@@ -128,6 +160,7 @@ module Lessons
         branch = data["branch"]
         c.diagram("/edges", "a line has no edges: the order of the stations is the order they are written", rule: "line-edges") if data.key?("edges")
         c.diagram("/walk", "walk is for the tree layout only", rule: "line-walk") if data["walk"] || data["case_it"]
+        c.diagram("/loops", "loops are for the tree layout only: a line has returns", rule: "line-loops") if data.key?("loops")
         extra = Array(branch && branch["nodes"])
         ids = main.map { |n| n["id"] } + extra.map { |n| n["id"] }
         c.map("/nodes", "node ids must be unique", rule: "ids") if ids.uniq.size != ids.size

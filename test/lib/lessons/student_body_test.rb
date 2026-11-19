@@ -209,7 +209,7 @@ class LessonsStudentBodyTest < ActiveSupport::TestCase
     "cartesian" => %w[type alt_it caption_it size x y grid points lines segments states],
     "sentence" => %w[type alt_it caption_it size text_it text_en text_es parts links layout mode states],
     "concept_map" => %w[type alt_it caption_it size root nodes edges links],
-    "flow" => %w[type alt_it caption_it size layout nodes edges branch returns token walk case_it states],
+    "flow" => %w[type alt_it caption_it size layout nodes edges branch returns loops token walk case_it states],
     "table" => %w[type alt_it caption_it size header rows]
   }.freeze
 

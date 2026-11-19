@@ -2102,6 +2102,31 @@
           "minItems": 0,
           "maxItems": 3
         },
+        "loops": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "to"
+            ],
+            "properties": {
+              "from": {
+                "$ref": "#/$defs/id"
+              },
+              "to": {
+                "$ref": "#/$defs/id"
+              },
+              "label_it": {
+                "$ref": "#/$defs/label"
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 2,
+          "description": "Tree only (D-383): the one way back, an arrow from a node under a decision to that decision (a Do While). Checked in Ruby; the cap is lesson2.flow_loops_max."
+        },
         "token": {
           "$ref": "#/$defs/id"
         },
@@ -2151,7 +2176,7 @@
       "x-banco-state-keys": [
         "token"
       ],
-      "description": "tree (the default): one main chain, decisions with 2 or 3 branches, no cycles (A8, checked in Ruby). line: a journey of stations with a token, one branch lane and at most 3 returns drawn as arcs (W2-1).",
+      "description": "tree (the default): one main chain, decisions with 2 or 3 branches, no cycles among the edges, and at most 2 `loops` (an arrow back to a decision, D-383) (A8, checked in Ruby). line: a journey of stations with a token, one branch lane and at most 3 returns drawn as arcs (W2-1).",
       "anyOf": [
         {
           "required": [
