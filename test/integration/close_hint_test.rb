@@ -3,7 +3,7 @@ require_relative "../support/multi_user"
 require_relative "../support/student_course_world"
 
 # What is still needed to close a topic (D-340): the rule once on the topic page, what each skill not yet demonstrated lacks (topic page, practice page,
-# the practice answer's skill), and one line in Oggi's «Riprendi» card. The rule itself (practice/5 section 5) is untouched.
+# the practice answer's skill), and one line in Oggi's «Riprendi» card. The rule itself (practice/6 section 5) is untouched.
 class CloseHintTest < ActionDispatch::IntegrationTest
   include MultiUser
   include StudentCourseWorld
@@ -14,7 +14,7 @@ class CloseHintTest < ActionDispatch::IntegrationTest
   setup do
     build_student_world
     # Mid-morning in Rome, so the answers of one test never straddle midnight.
-    @clock = Diagnosis::FakeClock.new(Time.current.in_time_zone(Practice::Rules::V5::ZONE).change(hour: 10))
+    @clock = Diagnosis::FakeClock.new(Time.current.in_time_zone(Practice::Rules::V6::ZONE).change(hour: 10))
   end
 
   # n exercises answered right without help, one minute apart; the last answer's body.

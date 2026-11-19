@@ -2,12 +2,12 @@
 
 module Practice
   module Rules
-    # Rules of the guided practice, version 5 (docs/rules/practice-5.md is the prose; this file holds the
+    # Rules of the guided practice, version 6 (docs/rules/practice-6.md is the prose; this file holds the
     # numbers, and a test fails when the two drift apart). Every serve records RULES_VERSION. A change of
     # any constant is a new version and a D- entry; every state is derived, so nothing is rewritten.
     # No I/O, no Rails.
-    module V5
-      RULES_VERSION = "practice/5"
+    module V6
+      RULES_VERSION = "practice/6"
       DEMONSTRATE_CORRECT_UNAIDED = 3   # distinct fingerprints
       DEMONSTRATE_MIN_LOW_GUESS = 2     # of those fingerprints; low guess as Diagnosis::Rules::V1.low_guess?
       CONSOLIDATE_AFTER_DAYS = 14
@@ -15,7 +15,7 @@ module Practice
       MAX_WRONG_TRIES = 2               # counted W tries per serve
       MAX_NEAR_MISS_RETRIES = 1         # a second near miss closes the serve
       MAX_TRIES = 3                     # stored tries per serve (follows from the two above)
-      ADVANCE_AFTER_CORRECT_UNAIDED = 2 # per pinned item, before the next item in pin order
+      ADVANCE_AFTER_CORRECT_UNAIDED = 1 # per pinned item, before the next item in pin order (D-366: 1; versions 1 to 5: 2)
       OPEN_SERVE_HOURS = 336     # 14 days: an exercise left half done is kept two weeks
       TIME_CAP_SECONDS = 600
       SUGGESTIONS_MAX = 3

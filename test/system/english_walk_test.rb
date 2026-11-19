@@ -56,6 +56,7 @@ class EnglishWalkTest < ApplicationSystemTestCase
     "the pages of the course" => :walk_pages,
     "the lesson" => :walk_lesson,
     "the practice page" => :walk_practice,
+    "the end of a topic" => :walk_topic_done,
     "the entry test, a sitting and its results" => :walk_entry_test,
     "the warm-up" => :walk_warmup,
     "comments, search, privacy and account" => :walk_comments_and_info
@@ -397,6 +398,24 @@ class EnglishWalkTest < ApplicationSystemTestCase
       visit "/topics/#{TOPIC}/practice/#{SKILL}"
       wait_until { page.has_selector?("#check:not([disabled])", wait: 0) || page.has_text?(en("practice.exhausted"), wait: 0) }
       check_page "Practice, on coming back"
+    end
+  end
+
+  # ---- the end of a topic (D-366) -----------------------------------------------------------------------
+
+  # Three exercises right without help demonstrate the skill: the practice page then says the topic is finished, in English, with the way back to Today.
+  # The world has one topic, so there is no next topic to offer; the offer and its button are in the integration and the system test of D-366.
+  def walk_topic_done
+    section("End of a topic") do
+      3.times do
+        choice = serve!(student: @student, topic: @topic_revision, skill: SKILL)
+        answer!(choice, correct_raw(choice), student: @student)
+      end
+      visit "/topics/#{TOPIC}/practice/#{SKILL}"
+      assert_selector "#topic-done h2", text: en("practice.topic_done.title"), wait: 30
+      assert_selector "#topic-done-actions a.button", text: en("practice.topic_done.today")
+      assert_no_selector "#check", visible: :visible
+      check_page "End of a topic"
     end
   end
 

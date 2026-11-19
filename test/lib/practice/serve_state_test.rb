@@ -183,7 +183,7 @@ class PracticeServeStateTest < ActiveSupport::TestCase
   end
 
   test "row 15: an open serve older than 14 days (336 hours) is abandoned and refuses everything" do
-    window = Practice::Rules::V5::OPEN_SERVE_HOURS * 3600
+    window = Practice::Rules::V6::OPEN_SERVE_HOURS * 3600
     assert_equal 14 * 24 * 3600, window
     old = serve_status([], now: T0 + window + 1)
     assert_equal [ :abandoned, nil, [] ], [ old.state, old.closed_by, old.actions ]
@@ -237,7 +237,7 @@ class PracticeServeStateTest < ActiveSupport::TestCase
     longest = 0
     walk = lambda do |p, depth|
       longest = [ longest, p.outcomes.size ].max
-      assert_operator p.outcomes.size, :<=, Practice::Rules::V5::MAX_TRIES
+      assert_operator p.outcomes.size, :<=, Practice::Rules::V6::MAX_TRIES
       next if p.status.state != :open
 
       outcomes.each do |o|

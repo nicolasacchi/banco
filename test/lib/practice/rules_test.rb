@@ -1,10 +1,10 @@
 require "test_helper"
 
-# docs/rules/practice-5.md and lib/practice/rules/v5.rb must say the same (the register is the prose,
+# docs/rules/practice-6.md and lib/practice/rules/v6.rb must say the same (the register is the prose,
 # the module the numbers).
 class PracticeRulesTest < ActiveSupport::TestCase
-  DOC = Rails.root.join("docs/rules/practice-5.md").read
-  V5 = Practice::Rules::V5
+  DOC = Rails.root.join("docs/rules/practice-6.md").read
+  V6 = Practice::Rules::V6
 
   def documented
     DOC[/## 1\. Constants\n(.*?)\n## 2/m, 1].lines.filter_map do |line|
@@ -15,10 +15,10 @@ class PracticeRulesTest < ActiveSupport::TestCase
 
   test "every documented constant exists with the documented value, and the reverse" do
     doc = documented
-    constants = V5.constants.map(&:to_s)
+    constants = V6.constants.map(&:to_s)
     assert_equal constants.sort, doc.keys.sort
     doc.each do |name, text|
-      value = V5.const_get(name)
+      value = V6.const_get(name)
       expected = case value
       when Array then value.join(" ")
       else value.to_s
@@ -28,12 +28,12 @@ class PracticeRulesTest < ActiveSupport::TestCase
   end
 
   test "the version names the rules" do
-    assert_equal "practice/5", V5::RULES_VERSION
-    assert_equal V5::MAX_WRONG_TRIES + V5::MAX_NEAR_MISS_RETRIES, V5::MAX_TRIES
+    assert_equal "practice/6", V6::RULES_VERSION
+    assert_equal V6::MAX_WRONG_TRIES + V6::MAX_NEAR_MISS_RETRIES, V6::MAX_TRIES
   end
 
   test "an exercise left half done is kept two weeks" do
-    assert_equal 14 * 24, V5::OPEN_SERVE_HOURS
+    assert_equal 14 * 24, V6::OPEN_SERVE_HOURS
   end
 
   test "the document keeps what version 2 changed: superseded serves, the item and advance cases, resume" do
@@ -53,8 +53,8 @@ class PracticeRulesTest < ActiveSupport::TestCase
   end
 
   test "the states are the seven of the register" do
-    assert_equal 7, V5::STATES.size
-    assert_equal V5::STATES.sort, I18n.t("states").keys.map(&:to_s).sort
+    assert_equal 7, V6::STATES.size
+    assert_equal V6::STATES.sort, I18n.t("states").keys.map(&:to_s).sort
   end
 
   test "the serve actions of the document are the actions the machine produces" do
@@ -87,10 +87,31 @@ class PracticeRulesTest < ActiveSupport::TestCase
     assert_match(/`PracticePoolExhaustion`/, section7)
     assert_match(/`exhausted`/, section7)
     assert_match(/Hai visto tutti gli\s+esercizi di questa abilità\. Ne stiamo preparando altri\./, section7)
-    assert_match(/Ti propongo un esercizio simile: per passare al\s+prossimo ne servono 2 giusti\./, section7)
-    assert_equal 2, V5::ADVANCE_AFTER_CORRECT_UNAIDED
+    assert_match(/Ti propongo un esercizio simile: per passare al\s+prossimo ne serve uno giusto\./, section7)
     assert_includes Rails.root.join("docs/rules/practice-4.md").read, "`practice/4`"
     assert_not Practice::Rules.const_defined?(:V4, false)
+  end
+
+  test "version 6 (D-366) changes one number: the selector moves on after each right answer without help, and demonstrating a skill is as before" do
+    assert_equal 1, V6::ADVANCE_AFTER_CORRECT_UNAIDED
+    assert_equal [ 3, 2 ], [ V6::DEMONSTRATE_CORRECT_UNAIDED, V6::DEMONSTRATE_MIN_LOW_GUESS ]
+    assert_match(/Version 6 \(D-366\) changes one number, `ADVANCE_AFTER_CORRECT_UNAIDED`, from 2 to 1/, DOC)
+    assert_includes Rails.root.join("docs/rules/practice-5.md").read, "`practice/5`"
+    assert_not Practice::Rules.const_defined?(:V5, false)
+    section5 = DOC[/## 5\. Skill states.*?## 6/m]
+    assert_match(/at least 3 distinct\s+fingerprints, with at least 2 of those fingerprints low-guess/, section5)
+  end
+
+  test "the end of a topic (D-366) is in section 7: the reply, the words, the next topic, not a lock" do
+    section7 = DOC[/## 7\. Serving.*?## 8/m]
+    assert_match(/11\. \*\*End of a topic\*\*/, section7)
+    assert_match(/`\{type: "topic_done"\}`/, section7)
+    assert_match(/Hai finito questo argomento!/, section7)
+    assert_match(/Vuoi farne un altro\? Eccolo: <title>/, section7)
+    assert_match(/Course::StudentView#next_topic/, section7)
+    assert_match(/It is a screen, not a lock/, section7)
+    assert_equal I18n.t("practice.topic_done.title"), "Hai finito questo argomento!"
+    assert_equal I18n.t("practice.topic_done.today"), "Torna a Oggi"
   end
 
   test "the record of version 2 stays" do

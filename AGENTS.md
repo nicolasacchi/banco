@@ -82,7 +82,7 @@ only), `HARNESS_PORT` 3200 (internal), `VIEW_PORT` 3400 (view links, GET only). 
 - `lib/diagnosis/`: the pure engine (no database): `Plan`, `Fold`, `Engine`,
   `Derivation`, `Simulator`; `app/models/diagnosis/`: the loaders that read rows
   for it. `banco diagnosis simulate` is a dry run of the same engine.
-- The practice engine (Phase 1b S2, D-235, rules `practice/5` in `docs/rules/practice-5.md` and `lib/practice/rules/v5.rb`; `practice-1.md` to `practice-4.md` stay as the record; D-348: no seen exercise is served on its own, `practice_pool_exhaustions`):
+- The practice engine (Phase 1b S2, D-235, rules `practice/6` in `docs/rules/practice-6.md` and `lib/practice/rules/v6.rb`; `practice-1.md` to `practice-5.md` stay as the record; D-348: no seen exercise is served on its own, `practice_pool_exhaustions`; D-366: the selector changes item after each right answer without help):
   `lib/practice/` (`Outcome`, `ServeState` with its transition table, `Fold` for the skill states, `Selector`, `Today`,
   `GraphOrder`), `app/models/practice/` (`Loader`, `Seeder`, `AnswerRecorder`, `Actions`, `Contest`, `Messages`, `Payload`, `Instances`) and
   `Course::Catalog` (what each student sees). Own ledger tables `practice_*`; `Grading` is shared. Tests: `test/lib/practice`,

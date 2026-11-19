@@ -12,7 +12,7 @@ class PracticeSelectorTest < ActiveSupport::TestCase
     choice = serve!
     assert_equal [ "next", true ], [ choice.reason, choice.created ]
     assert_equal @revisions.first.id, choice.instance.item_revision_id
-    assert_equal [ "practice/5", @skill, @student.id, @clock.now ], choice.serve.then { |s| [ s.rules_version, s.skill_key, s.student_id, s.created_at ] }
+    assert_equal [ "practice/6", @skill, @student.id, @clock.now ], choice.serve.then { |s| [ s.rules_version, s.skill_key, s.student_id, s.created_at ] }
     assert_kind_of Integer, choice.serve.seed
     assert_nil choice.parent_serve_id
     assert_nil choice.error_code
@@ -137,11 +137,12 @@ class PracticeSelectorTest < ActiveSupport::TestCase
     assert_equal oldest.item_instance_id, serve!(item: item_key(0)).instance.id
   end
 
-  test "after two correct unaided answers on an item the next item is served" do
-    two = correct_serves!(2)
-    assert_equal [ @revisions.first.id ] * 2, two.map { |s| s.item_instance.item_revision_id }
-    third = serve!
-    assert_equal @revisions.second.id, third.instance.item_revision_id
+  test "after one correct unaided answer on an item the next item is served (practice/6: ADVANCE_AFTER_CORRECT_UNAIDED is 1)" do
+    assert_equal 1, Practice::Rules::V6::ADVANCE_AFTER_CORRECT_UNAIDED
+    one = correct_serves!(1)
+    assert_equal [ @revisions.first.id ], one.map { |s| s.item_instance.item_revision_id }
+    second = serve!
+    assert_equal @revisions.second.id, second.instance.item_revision_id
   end
 
   test "wrong or aided answers do not advance the item" do
@@ -153,14 +154,14 @@ class PracticeSelectorTest < ActiveSupport::TestCase
     assert_equal @revisions.first.id, serve!.instance.item_revision_id
   end
 
-  test "when every item has its credits the item served least recently comes next" do
-    4.times { c = serve!; answer!(c, correct_raw(c)) }
-    # item 1 served first (ids 1,2), item 2 next (3,4); now both have 2 credits: item 1 was served least recently
-    fifth = serve!
-    assert_equal @revisions.first.id, fifth.instance.item_revision_id
-    answer!(fifth, correct_raw(fifth))
-    sixth = serve!
-    assert_equal @revisions.second.id, sixth.instance.item_revision_id
+  test "when every item has its credit the item served least recently comes next" do
+    2.times { c = serve!; answer!(c, correct_raw(c)) }
+    # item 1 served first (id 1), item 2 next (id 2); now both have 1 credit: item 1 was served least recently
+    third = serve!
+    assert_equal @revisions.first.id, third.instance.item_revision_id
+    answer!(third, correct_raw(third))
+    fourth = serve!
+    assert_equal @revisions.second.id, fourth.instance.item_revision_id
   end
 
   test "when an item has no unseen instance the next pinned item is used" do

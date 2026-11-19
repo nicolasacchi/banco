@@ -32,7 +32,7 @@ const STATE_TONES = { demonstrated: "success", consolidated: "success", in_study
 
 export default class extends Controller {
   static targets = ["skillState", "skillWhy", "skillMissing", "dots", "reason", "reminder", "work", "itemBox", "hints", "hintList", "controls", "check", "hintButton", "solutionButton",
-                    "feedback", "solutionBox", "nextActions", "skip", "list", "listPanel", "listCount", "listBody"]
+                    "feedback", "solutionBox", "nextActions", "done", "doneTitle", "doneOffer", "doneActions", "skip", "list", "listPanel", "listCount", "listBody"]
   static values = { topic: String, skill: String, baseUrl: String, backUrl: String, texts: Object, labels: Object }
 
   connect() {
@@ -135,12 +135,14 @@ export default class extends Controller {
     this.say(this.labels.loading)
     this.workTarget.hidden = true
     this.nextActionsTarget.hidden = true
+    this.doneTarget.hidden = true
     this.hideRating()
     this.nextActionsTarget.textContent = ""
     this.solutionBoxTarget.hidden = true
     this.solutionBoxTarget.textContent = ""
     const { body } = await this.post(this.urls.serve, { topic: this.topicValue, skill: this.skillValue, ...extra })
     if (body?.type === "exhausted") return this.showExhausted(body)
+    if (body?.type === "topic_done") return this.showTopicDone(body)
     if (!body || body.type !== "item") return this.say(this.labels.error)
     await this.show(body)
     return null
@@ -156,6 +158,39 @@ export default class extends Controller {
     this.showReason({})
     this.say(reply.message_it, { tone: "info", note: reply.note_it })
     this.showActions(["back"])
+    this.refreshList()
+    return null
+  }
+
+  // D-366: every skill of the topic is demonstrated, so no exercise is served on its own: the page closes the topic. The words, the next topic and the
+  // addresses come from the server (the same next topic as Oggi's, the preview's root); it speaks of this topic only. The list of exercises stays
+  // (a click redoes one, as before); the slot `#topic-done-extra` after the buttons is left alone for a later link.
+  showTopicDone(reply) {
+    this.serveId = null
+    this.itemKey = null
+    this.hideRating()
+    this.handle = null
+    this.showSkill(reply.skill)
+    this.showReason({})
+    this.say("")
+    this.doneTitleTarget.textContent = reply.title_it
+    const offer = this.doneOfferTarget
+    offer.textContent = ""
+    offer.hidden = !(reply.next && reply.offer_it)
+    if (!offer.hidden) offer.append(`${reply.offer_it} `, Object.assign(document.createElement("strong"), { className: "topic-done-next", textContent: reply.next.title_it }))
+    const actions = this.doneActionsTarget
+    actions.textContent = ""
+    const link = (spec, primary) => {
+      const a = document.createElement("a")
+      a.className = primary ? "button" : "button secondary"
+      a.href = spec.url
+      a.textContent = spec.label_it
+      actions.appendChild(a)
+    }
+    if (reply.next) link(reply.next, true)
+    link(reply.today, !reply.next)
+    this.doneTarget.hidden = false
+    this.doneTitleTarget.focus()
     this.refreshList()
     return null
   }

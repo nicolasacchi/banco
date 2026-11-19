@@ -8,7 +8,7 @@ module Practice
   # event does to it (table rows 1-18), so the recorder only writes what the step names. A contest («Fai controllare»,
   # practice/3) is the student sending the latest try to the teacher: the try is contested, the serve closes.
   module ServeState
-    V5 = Rules::V5
+    V6 = Rules::V6
 
     Status = Data.define(:state, :closed_by, :w, :near_misses, :hints_shown, :solution_sent, :next_try_number, :actions)
 
@@ -30,7 +30,7 @@ module Practice
       closed_by ||= :solution if solutions.any? { |e| e.reason.to_s == "requested" }
       hints = events.select { |e| e.kind.to_s == "hint_shown" }.map(&:n).uniq.size
       state = if closed_by then :closed
-      elsif superseded || now - serve_time(serve) > V5::OPEN_SERVE_HOURS * 3600 then :abandoned
+      elsif superseded || now - serve_time(serve) > V6::OPEN_SERVE_HOURS * 3600 then :abandoned
       else :open
       end
       Status.new(state: state, closed_by: closed_by, w: w, near_misses: near, hints_shown: [ hints, hints_total.to_i ].min,
@@ -57,10 +57,10 @@ module Practice
           closed_by = :wrong
         when :unrecognised, :form
           w += 1
-          closed_by = :wrong if w >= V5::MAX_WRONG_TRIES
+          closed_by = :wrong if w >= V6::MAX_WRONG_TRIES
         when :near_miss
           near += 1
-          closed_by = :near_miss if near > V5::MAX_NEAR_MISS_RETRIES
+          closed_by = :near_miss if near > V6::MAX_NEAR_MISS_RETRIES
         when :undetermined then closed_by = :undetermined
         else raise ArgumentError, "unknown outcome #{t.outcome.inspect}"
         end
@@ -146,7 +146,7 @@ module Practice
 
     # Rows 3, 4, 6.
     def wrong_step(status, outcome, hints_total)
-      return result(:accept, closes_as: :wrong, solution_reason: "after_last_try") if status.w >= V5::MAX_WRONG_TRIES - 1
+      return result(:accept, closes_as: :wrong, solution_reason: "after_last_try") if status.w >= V6::MAX_WRONG_TRIES - 1
 
       auto = outcome == :unrecognised && status.hints_shown < hints_total
       result(:accept, auto_hint: auto, hint_n: auto ? status.hints_shown + 1 : nil)

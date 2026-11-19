@@ -75,7 +75,7 @@ class PracticeReminderTest < ActionDispatch::IntegrationTest
     attempt = PracticeAttempt.find(right["attempt_id"])
     assert_equal [ false, 0 ], [ attempt.aided, attempt.hints_before ]
     assert_empty PracticeEvent.where(practice_serve_id: serve["serve_id"], kind: "hint_shown")
-    assert_equal "practice/5", PracticeServe.find(serve["serve_id"]).rules_version
+    assert_equal "practice/6", PracticeServe.find(serve["serve_id"]).rules_version
   end
 
   test "an item that does not declare the code shows nothing; nor does a student with no typical error" do

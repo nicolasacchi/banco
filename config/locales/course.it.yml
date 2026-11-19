@@ -200,11 +200,17 @@ it:
     back: "Torna all'argomento"
     not_counted: "Questo esercizio non conta per dimostrare l'abilità."
     reseen: "Questo esercizio l'hai già visto: non conta per dimostrare l'abilità."
-    # D-348: the exercise is of the same kind as the one before (the rule keeps the student on an item until n are right without help).
-    same_item: "Ti propongo un esercizio simile: per passare al prossimo ne servono %{n} giusti."
+    # D-348, D-366: the exercise is of the same kind as the one before (the rule keeps the student on an item until one is right without help).
+    same_item: "Ti propongo un esercizio simile: per passare al prossimo ne serve uno giusto."
     # D-348: every exercise of the skill was seen, none is open: nothing is served on its own and the teacher is told (practice_pool_exhaustions).
     exhausted: "Hai visto tutti gli esercizi di questa abilità. Ne stiamo preparando altri."
     exhausted_note: "Puoi rifare un esercizio dalla lista: non conta per dimostrare l'abilità."
+    # D-366: every skill of the topic is demonstrated: the page says so instead of serving another exercise; it speaks of this topic only.
+    topic_done:
+      title: "Hai finito questo argomento!"
+      offer: "Vuoi farne un altro? Eccolo:"
+      next: "Vai al prossimo argomento"
+      today: "Torna a Oggi"
     closed: "Questo esercizio è chiuso: scegline un altro."
     loading: "Un momento."
     saving: "Controllo la risposta."

@@ -300,7 +300,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
     click_button "Prova un esercizio simile"
     fresh = next_serve_after(serve)
     assert_equal [ "after_solution", serve.id ], [ fresh.reason, fresh.parent_serve_id ]
-    assert_selector "#serve-reason", text: "Ti propongo un esercizio simile: per passare al prossimo ne servono 2 giusti." # the same item again (D-348)
+    assert_selector "#serve-reason", text: "Ti propongo un esercizio simile: per passare al prossimo ne serve uno giusto." # the same item again (D-348)
     assert_clean "the solution"
   end
 

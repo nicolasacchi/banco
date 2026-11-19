@@ -120,7 +120,7 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
   test "a draft written on an abandoned serve is refused as closed" do
     build_nav_world
     id = serve_for(OFFICIAL)["serve_id"]
-    travel_to(Time.current + (Practice::Rules::V5::OPEN_SERVE_HOURS + 1).hours) do
+    travel_to(Time.current + (Practice::Rules::V6::OPEN_SERVE_HOURS + 1).hours) do
       assert_equal({ "status" => "closed" }, draft_for(OFFICIAL, id, "7"))
       assert_response :conflict
     end
@@ -417,7 +417,7 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
 
   # ---- the labels, the same exercise again, the pool that runs out (D-348) ------------------------------------
 
-  SAME_ITEM_IT = "Ti propongo un esercizio simile: per passare al prossimo ne servono 2 giusti.".freeze
+  SAME_ITEM_IT = "Ti propongo un esercizio simile: per passare al prossimo ne serve uno giusto.".freeze
   EXHAUSTED_IT = "Hai visto tutti gli esercizi di questa abilità. Ne stiamo preparando altri.".freeze
 
   # The world of the student's pages with an approved topic revision that pins one item of `instances` instances only.
@@ -482,20 +482,19 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     assert_equal "Finito: con la soluzione", I18n.t("practice.status_finished_solution")
   end
 
-  test "the same exercise again says so on the page, once the item repeats, and not for a chosen exercise" do
+  test "a right answer without help moves on to the next item (practice/6), with no line; the line is only for a repeat, and not for a chosen exercise" do
     build_nav_world
     first = serve_for(OFFICIAL)
     assert_nil first["reason_it"], "the first serve of the skill has no serve before it"
     assert_equal "correct", answer_for(OFFICIAL, first, right_raw(first))["outcome"]
     second = serve_for(OFFICIAL, advance: true)
-    assert_equal item_key_of(first), item_key_of(second), "the rule keeps the student on the item until 2 are right without help"
-    assert_equal SAME_ITEM_IT, second["reason_it"]
-    assert_equal 2, Practice::Rules::V5::ADVANCE_AFTER_CORRECT_UNAIDED, "the line's number is the rule's"
-    assert_equal SAME_ITEM_IT, serve_for(OFFICIAL)["reason_it"], "a reload resumes the open serve and says it again"
+    assert_equal 1, Practice::Rules::V6::ADVANCE_AFTER_CORRECT_UNAIDED, "the rule changes item after each right answer without help"
+    assert_not_equal item_key_of(first), item_key_of(second), "one right without help: the next item"
+    assert_nil second["reason_it"], "a different item: no line"
     assert_equal "correct", answer_for(OFFICIAL, second, right_raw(second))["outcome"]
     third = serve_for(OFFICIAL, advance: true)
-    assert_not_equal item_key_of(second), item_key_of(third), "two right without help: the next item"
-    assert_nil third["reason_it"], "a different item: no line"
+    assert_not_equal item_key_of(second), item_key_of(third)
+    assert_nil third["reason_it"]
     assert_equal "correct", answer_for(OFFICIAL, third, right_raw(third))["outcome"]
     chosen = serve_for(OFFICIAL, item: item_key_of(third))
     assert_equal item_key_of(third), item_key_of(chosen)
@@ -512,6 +511,7 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     assert_equal "after_solution", follow["reason"]
     assert_equal item_key_of(first), item_key_of(follow)
     assert_equal SAME_ITEM_IT, follow["reason_it"]
+    assert_equal SAME_ITEM_IT, serve_for(OFFICIAL)["reason_it"], "a reload resumes the open serve and says it again"
   end
 
   test "no unseen exercise left: nothing is served, the page says so, one row is recorded and a click or «Rifai» still works" do

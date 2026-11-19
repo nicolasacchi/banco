@@ -221,6 +221,11 @@ li.skill .skill-side .button { margin: 0; align-self: center; }
 /* «Mostrami la soluzione» and «Salta» are the two text actions: the same quiet style, never a filled block. */
 .exercise-card .actions .button.text { background: transparent; border-color: transparent; color: var(--text); }
 .exercise-card .actions .button.text:hover { background: var(--soft-primary); }
+/* The end of a topic (D-366): a short screen in the exercise's card, a title, one line naming the next topic and two buttons that wrap (rem lengths, D-354). */
+.topic-done { order: 0; min-width: 0; overflow-wrap: anywhere; }
+.topic-done h2 { font-size: var(--text-l); margin: 0 0 var(--space-2); }
+.topic-done p { margin: 0 0 var(--space-2); }
+.topic-done .actions { margin-top: var(--space-4); }
 .feedback { min-height: 0; margin: var(--space-3) 0 0; font-weight: 400; }
 .feedback:empty { margin: 0; }
 .feedback.notice { margin: var(--space-4) 0 0; }
