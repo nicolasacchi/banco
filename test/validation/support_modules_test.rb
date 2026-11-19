@@ -4,12 +4,13 @@ require "test_helper"
 # canonical form.
 class SupportModulesTest < ActiveSupport::TestCase
   test "the thresholds are the ones of the brief, and the file has a version" do
-    assert_equal 11, Validation::Rules.version
+    assert_equal 12, Validation::Rules.version
     assert_equal "seconda-2025-26", Validation::Rules.get(:course, :seconda_source)
     assert_equal [ 4, 8 ], Validation::Rules.list(:lesson, :exercises)
     assert_equal 500, Validation::Rules.get(:lesson, :max_words)
     assert_equal [ 2, 4 ], Validation::Rules.list(:practice, :hints)
     assert_equal 20, Validation::Rules.get(:practice, :topic_min_instances_per_skill)
+    assert_equal [ 4, 6, 4 ], %i[matching_rows_warn matching_rows_max judge_min_rows].map { |k| Validation::Rules.get(:practice, k) }
     assert_equal 24, Validation::Rules.get(:generator, :pool)
     assert_equal 200, Validation::Rules.get(:generator, :seeds)
     assert_equal 20, Validation::Rules.get(:generator, :min_distinct_displays)

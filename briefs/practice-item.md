@@ -76,6 +76,7 @@ stop at `awaiting_teacher`.
   instances (`E-PRACTICE-POOL`). Instances must differ in display and fingerprint.
 - Instances of one item must look different to the student: different cases or rows, not the same rows reshuffled (`W-INSTANCES-ALIKE`).
 - A `matching` with 2 categories (a right/wrong judge) has at least 2 rows of each category in every instance (`W-MATCHING-JUDGE-ROWS`).
+- A `matching` has at most 4 rows: 5 or 6 rows are `W-MATCHING-ROWS` (a warning), 7 or more `E-MATCHING-ROWS` (an error in a new submission); from 4 rows it is already hard to guess and more rows only use up his tries, so split a longer list into two items. A right/wrong judge has exactly 4 rows here (at least 4: `E-MATCHING-SIZE`; at least 2 of each option: `W-MATCHING-JUDGE-ROWS`).
 - Per skill a topic needs at least 20 distinct instances over its 2 to 4 pinned items, 12 of them hard
   to guess (written answers, an ordering or matching of 4 or more): plan the items so that the pool
   reaches that. Write the first, level 1, item first. An `extra` topic (outside the programme, D-324:

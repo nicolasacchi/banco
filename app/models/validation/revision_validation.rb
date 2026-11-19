@@ -15,7 +15,7 @@ module Validation
       subject = @revision.item.subject
       files = @revision.files
       result = ItemRunner.new(files: files, context: CourseContext.for(subject), harness_token: Harness.issue("rev", @revision.id),
-                              chrome: { wait: Rules.get(:generator, :batch_timeout_seconds) * 60 }, verify_inherited: verify_inherited?(files)).call
+                              chrome: { wait: Rules.get(:generator, :batch_timeout_seconds) * 60 }, verify_inherited: verify_inherited?(files), grandfathered: grandfathered?).call
       persist(result)
     end
 
@@ -32,6 +32,10 @@ module Validation
     end
 
     private
+
+    # A revision that passed before (under older rules, validated again by an identical resubmission, D-154) is not failed by a
+    # rule that came later and is only an error for a new submission (E-MATCHING-ROWS, D-370).
+    def grandfathered? = @revision.validations.where(status: "passed").exists?
 
     # verify.mjs equals the base revision's while another file changed (D-141).
     def verify_inherited?(files)

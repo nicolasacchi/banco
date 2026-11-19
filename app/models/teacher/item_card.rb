@@ -5,7 +5,11 @@ module Teacher
   module ItemCard
     SAMPLES = 4
 
-    Card = Data.define(:revision, :item, :body, :samples, :catalogue, :sources, :gate, :review, :blind, :findings, :send_backs, :superseded, :review_by, :blind_by)
+    Card = Data.define(:revision, :item, :body, :samples, :catalogue, :sources, :gate, :review, :blind, :findings, :send_backs, :superseded, :review_by, :blind_by, :rows)
+    # The rows of a matching's instances (D-370): the fewest and the most left rows over all its instances, or nil for any other item.
+    Rows = Data.define(:min, :max) do
+      def label = min == max ? max.to_s : "#{min}\u2013#{max}"
+    end
     # Who filed the latest review or blind solve, on which TRUE model (D-316), and whether it counts.
     Provenance = Data.define(:session, :independent)
     # opinion: the third reviewer's FindingOpinion (D-222). closure: for a minor finding without a decision,
@@ -36,7 +40,16 @@ module Teacher
       end
       Card.new(rev, rev.item, item_body, samples, catalogue_of(item_body), Array(item_body["sources"]), Review::Gate.check(rev),
                review && JSON.parse(review.checklist_json), blind && JSON.parse(blind.results_json), findings, back[rev.id] || [], later,
-               review && Provenance.new(review.agent_session, review.independent?), blind && Provenance.new(blind.agent_session, blind.independent?))
+               review && Provenance.new(review.agent_session, review.independent?), blind && Provenance.new(blind.agent_session, blind.independent?),
+               rows_of(rev, item_body))
+    end
+
+    # D-370: how many rows the student reads in a matching, from every instance stored for the revision.
+    def rows_of(rev, item_body)
+      return nil unless item_body["component"] == "matching"
+
+      sizes = rev.instances.map { |inst| Array(JSON.parse(inst.display_json)["left"]).size }
+      sizes.empty? ? nil : Rows.new(sizes.min, sizes.max)
     end
 
     # Only a blind-solve finding about an instance has evidence; a review finding quotes the item itself.

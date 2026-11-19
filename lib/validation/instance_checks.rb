@@ -93,8 +93,9 @@ module Validation
         f.add("E-MATCHING-SIZE", "#{label}/display/left", "a matching has at least #{MIN_PAIRS} pairs, not #{l}", count: l, seed: seed) if l < MIN_PAIRS
         if display["reuse_right"] == true
           # A classification (D-092): rows share categories, so the right column is shorter than the left.
-          unless (r >= MIN_CATEGORIES || (r == 2 && l >= MIN_ROWS_TWO_CATEGORIES)) && r < l
-            f.add("E-MATCHING-SIZE", "#{label}/display/right", "a classification has 3 or more categories (2 from #{MIN_ROWS_TWO_CATEGORIES} rows) and fewer categories than rows (#{l}), not #{r}", count: r, seed: seed)
+          judge_rows = judge_min_rows
+          unless (r >= MIN_CATEGORIES || (r == 2 && l >= judge_rows)) && r < l
+            f.add("E-MATCHING-SIZE", "#{label}/display/right", "a classification has 3 or more categories (2 from #{judge_rows} rows) and fewer categories than rows (#{l}), not #{r}", count: r, seed: seed)
           end
         elsif r != l + 1
           f.add("E-MATCHING-SIZE", "#{label}/display/right", "the right column has n+1 entries (#{l + 1}), not #{r}", count: r, seed: seed)
@@ -107,6 +108,10 @@ module Validation
         end
       end
     end
+
+    # Two categories (a judge) are allowed from MIN_ROWS_TWO_CATEGORIES rows in a diagnosis item and, in a practice item, from
+    # practice.judge_min_rows (D-370: a practice matching has at most 4 rows, judges included).
+    def judge_min_rows = @unit.body["kind"] == "practice_item" ? Rules.get(:practice, :judge_min_rows) : MIN_ROWS_TWO_CATEGORIES
 
     # W-MATCHING-JUDGE-ROWS (D-314): with two right options (right or wrong, true or false) an instance with a single
     # odd row lets one option for every row get all rows right but one. The grader no longer calls that nearly

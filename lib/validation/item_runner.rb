@@ -19,8 +19,10 @@ module Validation
     # what the harness serves the page with. chrome: options for ChromeRunner.session
     # (try: true for a dry run, which must not wait). verify_inherited: verify.mjs is the
     # base revision's, unchanged, while other files changed (D-141).
-    def initialize(files:, context:, harness_token: nil, chrome: {}, verify_inherited: false)
+    # grandfathered: the revision passed before under older rules (D-370: E-MATCHING-ROWS is then a warning).
+    def initialize(files:, context:, harness_token: nil, chrome: {}, verify_inherited: false, grandfathered: false)
       @files = files
+      @grandfathered = grandfathered
       @verify_inherited = verify_inherited
       @context = context
       @token = harness_token
@@ -181,6 +183,7 @@ module Validation
       end
       longest_correct(unit, list, checker)
       instances_alike(unit, list)
+      MatchingRows.call(unit, list, @findings, grandfathered: @grandfathered)
       never_generated(unit, list)
       message_gives_key(unit, list)
       accept_item_level(unit, list)
@@ -300,6 +303,7 @@ module Validation
 
         longest_correct(unit, stored.map { |c| c.transform_keys(&:to_s) }, checker)
         instances_alike(unit, stored.map { |c| c.transform_keys(&:to_s) })
+        MatchingRows.call(unit, clean.map { |c| c.transform_keys(&:to_s) }, @findings, grandfathered: @grandfathered)
         never_generated(unit, clean.map { |c| c.transform_keys(&:to_s) })
         Roundtrip.new(unit, subject: item["subject"], findings: @findings).call(stored.map { |c| c.transform_keys(&:to_s) }, label: "generated", tests: unit.body["tests"])
         verify_generated(unit, item, phase, gen, clean, stored)
