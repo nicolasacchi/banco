@@ -83,7 +83,7 @@ class ViewListenerTest < ActionDispatch::IntegrationTest
     redemptions = ViewLinkRedemption.count
     [ "/teacher", COURSE, "/teacher/subjects/math/graph", "/teacher/subjects/math/test", "/teacher/subjects/math/test/all",
       "/teacher/subjects/math/test/skills/math.number", "/teacher/subjects/math/topics/#{TopicWorld::TOPIC_KEY}", "/teacher/subjects/math/report",
-      "/teacher/corrections", "/teacher/items/#{@short.id}", "/teacher/items/#{@short.id}/play", "/teacher/refs/math.number" ].each do |path|
+      "/teacher/corrections", "/teacher/items/#{@short.id}", "/teacher/refs/math.number" ].each do |path|
       view_get(path)
       assert_response :success, path
       assert_select "form", 0, path
@@ -96,6 +96,12 @@ class ViewListenerTest < ActionDispatch::IntegrationTest
     end
     assert_equal before, counts, "a view session records nothing"
     assert_equal redemptions, ViewLinkRedemption.count, "only the redemption of the link is counted"
+  end
+
+  test "a view session cannot play an item: 403 as for a guest (D-376)" do
+    open_session!(path: COURSE)
+    view_get("/teacher/items/#{@short.id}/play")
+    assert_response :forbidden
   end
 
   test "the teacher's pages record nothing for a view link, with or without teacher headers" do

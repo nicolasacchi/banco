@@ -9,6 +9,7 @@ module Teacher
       @filters = filters
       @review = Teacher::GradingReview.new(student: @student, since: since_time, subject: @filters[:subject]) if @student
       @subjects = Subject.order(:position)
+      @subject_names = @subjects.to_h { |subject| [ subject.key, subject.name_it ] }
     end
 
     private

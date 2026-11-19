@@ -136,7 +136,7 @@ body.comment-mode [data-comment-ui] [data-comment-anchor] { outline: none; }
 .comment-reason[data-reason="not_working"] { --pill: var(--ch-not_working); }
 .comment-reason[data-reason="like"] { --pill: var(--ch-like); }
 .comment-reason .comment-icon { width: 1.1em; height: 1.1em; color: var(--pill); }
-.comment-quote { margin: 0; padding: 0.3rem 0.8rem; border-left: 3px solid var(--line); color: var(--muted); }
+.comment-quote { margin: 0; padding: 0.3rem 0.8rem; border-left: 3px solid var(--line); color: var(--muted); overflow-wrap: anywhere; }
 .comment-empty { display: grid; justify-items: start; gap: 0.5rem; max-width: 70ch; padding: 1.2rem; border: 2px dashed var(--line); border-radius: 1rem; background: var(--surface); }
 .comment-empty .comment-icon { width: 2.6rem; height: 2.6rem; color: var(--primary); }
 .comment-empty p { margin: 0; }
@@ -258,27 +258,30 @@ body.comment-mode [data-comment-ui] [data-comment-anchor] { outline: none; }
 .comment-fchip[aria-current="true"] { background: var(--primary); border-color: var(--primary); color: var(--primary-text); font-weight: 700; }
 .comment-fchip:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .comment-fchip .comment-icon { width: 1.05em; height: 1.05em; }
-.comment-inbox { list-style: none; padding: 0; margin: 1rem 0; display: grid; gap: 1rem; }
+.comment-inbox { list-style: none; padding: 0; margin: 1rem 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+/* One column that may shrink (minmax(0, 1fr)): an `auto` track is as wide as its widest unbroken word (a selection, a reply), which pushed the card past a phone's edge. */
 .comment-row {
-  --comment-accent: var(--line); display: grid; gap: 0.6rem; padding: 0.9rem 1rem; border: 2px solid var(--line); border-left: 0.6rem solid var(--comment-accent);
+  --comment-accent: var(--line); display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.6rem; min-width: 0; box-sizing: border-box; padding: 0.9rem 1rem; border: 2px solid var(--line); border-left: 0.6rem solid var(--comment-accent);
   border-radius: 0.9rem; background: var(--surface); max-width: 62rem;
 }
 .comment-row[data-state="sent"] { border-color: var(--cs-sent); border-left-color: var(--cs-sent); }
 .comment-row-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; }
-.comment-row-head .comment-who { flex: 1; min-width: 12rem; color: var(--muted); font-size: 0.9rem; }
-.comment-place-line { margin: 0; display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; align-items: baseline; }
+.comment-row-head .comment-who { flex: 1; min-width: min(12rem, 100%); color: var(--muted); font-size: 0.9rem; }
+.comment-place-line { margin: 0; display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; align-items: baseline; overflow-wrap: anywhere; }
 .comment-text { margin: 0; padding: 0.6rem 0.9rem; border-radius: 1rem 1rem 1rem 0.2rem; background: var(--bg); border: 2px solid var(--line); overflow-wrap: anywhere; }
-.comment-meta { margin: 0; color: var(--muted); font-size: 0.85rem; }
+.comment-meta { margin: 0; color: var(--muted); font-size: 0.85rem; overflow-wrap: anywhere; }
 .comment-thread { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
-.comment-thread li { margin: 0; padding: 0.4rem 0.8rem; border-radius: 0.8rem; border: 1px solid var(--line); background: var(--bg); font-size: 0.95rem; }
+.comment-thread li { margin: 0; padding: 0.4rem 0.8rem; border-radius: 0.8rem; border: 1px solid var(--line); background: var(--bg); font-size: 0.95rem; overflow-wrap: anywhere; }
 .comment-thread li[data-event="reply"] { border: 2px solid var(--cs-answered); background: color-mix(in srgb, var(--cs-answered) 14%, var(--surface)); margin-left: 1.5rem; }
 .comment-thread li[data-event="student_reply"] { border: 2px solid var(--line); margin-right: 1.5rem; }
+@media (max-width: 40rem) { .comment-thread li[data-event="reply"] { margin-left: 0.5rem; } .comment-thread li[data-event="student_reply"] { margin-right: 0.5rem; } }
 .comment-thread li[data-event="reply_seen"] { color: var(--muted); }
 .comment-thread p { margin: 0.2rem 0 0; }
 .comment-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
 .comment-actions form { margin: 0; }
 .comment-actions .button, .comment-reply-form .button { min-height: 2.75rem; display: inline-flex; align-items: center; gap: 0.4rem; }
-.comment-reply-form { display: grid; gap: 0.4rem; }
+.comment-reply-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.4rem; }
+.comment-reply-form textarea { box-sizing: border-box; width: 100%; max-width: 100%; }
 .comment-reply-form label { font-weight: 700; }
 .comment-reply-form textarea { min-height: 4.5rem; }
 .comment-reply-form .button { justify-self: start; }

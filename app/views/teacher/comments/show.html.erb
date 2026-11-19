@@ -123,9 +123,9 @@
                 <% if place.link %><a href="<%= place.link %>"><%= t("teacher.comments.open_place") %></a><% end %>
               </p>
               <% if comment.selected_text %><p class="comment-quote"><%= t("teacher.comments.selected") %>: <q><%= comment.selected_text %></q></p><% end %>
-              <p class="comment-text"><%= comment.text_it || t("teacher.comments.no_text") %></p>
+              <p class="comment-text"><%= comment.text_it || t("teacher.comments.selection_only") %></p>
               <p class="comment-meta">
-                <% if comment.anchor %><%= t("teacher.comments.element") %>: <code><%= comment.anchor %></code> · <% end %>
+                <% if (spot = comment_anchor_words(comment)) %><%= t("teacher.comments.element") %>: <%= spot %> · <% end %>
                 <%= t("teacher.comments.device", w: comment.viewport_width || "?", h: comment.viewport_height || "?", theme: comment.theme || "?", size: comment.text_size || "?") %>
               </p>
               <% if comment.events.any? %>

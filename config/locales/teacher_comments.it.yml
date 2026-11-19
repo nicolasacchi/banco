@@ -93,10 +93,11 @@ it:
       card: "Scheda %{n}: %{title}"
       block: "blocco %{n} (%{type})"
       open_place: "Apri la pagina"
-      element: "Elemento"
+      element: "Punto segnato"
       selected: "Parole scelte"
       text: "Testo"
       no_text: "(nessun testo)"
+      selection_only: "Solo il punto segnato, senza parole"
       device: "Schermo %{w}×%{h}, tema %{theme}, testo %{size}"
       history: "Cronologia"
       history_event:

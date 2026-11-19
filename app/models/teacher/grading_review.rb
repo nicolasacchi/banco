@@ -64,6 +64,27 @@ module Teacher
     # The not-right tries that have at least one signal.
     def suspect_tries = tries.select { |t| t[:signals].any? }
 
+    # What the student typed, in the words the teacher's corrections page uses (Diagnosis::AnswerText: the shown ids turned back into the texts he saw,
+    # a reading test one numbered line per question), for the page: {ref => text} of the tries with a signal. `answer` stays the stored raw text.
+    def answer_words
+      @answer_words ||= begin
+        rows = suspect_tries
+        practice = PracticeAttempt.where(id: rows.select { |t| t[:kind] == "practice" }.map { |t| t[:id] }).includes(practice_serve: :item_instance).index_by(&:id)
+        diagnosis = Attempt.where(id: rows.select { |t| t[:kind] == "diagnosis" }.map { |t| t[:id] }).includes(:item_instance).index_by(&:id)
+        served = ItemServed.where(diagnosis_event_id: diagnosis.values.map(&:served_event_id)).index_by(&:diagnosis_event_id)
+        rows.to_h do |t|
+          words = if t[:kind] == "practice"
+            attempt = practice.fetch(t[:id])
+            read_words(attempt, attempt.practice_serve)
+          else
+            attempt = diagnosis.fetch(t[:id])
+            read_words(attempt, served[attempt.served_event_id])
+          end
+          [ t[:ref], words ]
+        end
+      end
+    end
+
     def totals
       @totals ||= begin
         mine = window
@@ -87,6 +108,13 @@ module Teacher
     private
 
     def public_row(try) = try.slice(*ROW_KEYS)
+
+    # Diagnosis::AnswerText on the serve that showed the exercise; the stored text when the serve is gone or the answer does not read as that exercise's.
+    def read_words(attempt, serve)
+      serve ? Diagnosis::AnswerText.call(attempt, serve) : attempt.raw.to_s
+    rescue JSON::ParserError, NoMethodError, TypeError
+      attempt.raw.to_s
+    end
 
     # ---- the tries, with their signals
 

@@ -21,7 +21,8 @@ class TeacherGradingTest < ActionDispatch::IntegrationTest
 
   def page(path = "/teacher/grading", headers: TEACHER) = on(:web, path, headers: headers, remote_addr: EDGE)
 
-  def item_keys = css_select("#grading-items tbody tr").map { |tr| tr["data-item"] }
+  # The exercises of the list, the flagged table first and then the closed fold of the others.
+  def item_keys = css_select("#grading-items tbody tr, #grading-items-rest tbody tr").map { |tr| tr["data-item"] }
 
   def try_refs = css_select("#grading-tries tbody tr").map { |tr| tr["data-ref"] }
 
@@ -42,7 +43,8 @@ class TeacherGradingTest < ActionDispatch::IntegrationTest
       assert_select "td[data-manual='1']", text: "1 (25%)"
       assert_select ".hint", text: "corretto a mano"
     end
-    assert_select "#grading-items tr[data-item=?][data-flagged=false]", "demo-item-2" do
+    assert_select "#grading-items tr[data-item=?]", "demo-item-2", 0 # not flagged: in the fold of the others
+    assert_select "details#grading-items-others:not([open]) #grading-items-rest tr[data-item=?][data-flagged=false]", "demo-item-2" do
       assert_select "td[data-tries='6']"
       assert_select ".pill", 0
     end
@@ -74,7 +76,7 @@ class TeacherGradingTest < ActionDispatch::IntegrationTest
     end
     assert_select "#grading-try-practice-#{@resolved_try.id}" do
       assert_select "li[data-signal=resolved_right]", text: "resa giusta dal docente"
-      assert_select ".hint", text: "Corretto a mano: correct"
+      assert_select ".hint", text: "Corretto a mano: giusta"
     end
     assert_select "#grading-try-practice-#{@resend.id} li[data-signal=resend]", text: "reinvio identico"
     assert_select "#grading-try-practice-#{@contested_try.id} li[data-signal=contested]", text: "«Fai controllare»"
@@ -88,6 +90,7 @@ class TeacherGradingTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "#grading-empty"
     assert_select "#grading-items", 0
+    assert_select "#grading-empty", text: "Nessun tentativo con questi filtri."
     assert_select "#grading-filters-clear"
     page("/teacher/grading?since=#{@base.to_date}&subject=math")
     assert_response :success
@@ -107,6 +110,67 @@ class TeacherGradingTest < ActionDispatch::IntegrationTest
     assert_select "#grading-empty"
     page("/teacher/grading?student=nobody-1")
     assert_response :not_found
+  end
+
+  # A matching the student answered with a row-to-pair map, sent twice (the second is a resend, so it has a signal), and a reading test answered per question.
+  def make_structured_tries
+    revision = make_revision("pair-1", SKILL, component: "matching", instances: 0)
+    display = { left: [ { id: "l1", text: "cane" }, { id: "l2", text: "gatto" } ], right: [ { id: "r1", text: "abbaia" }, { id: "r2", text: "miagola" } ] }
+    instance = ItemInstance.create!(item_revision: revision, seed: 1, display_json: JSON.generate(display), answer_json: JSON.generate("l1" => "r1", "l2" => "r2"),
+                                    fingerprint: Digest::SHA256.hexdigest("pair-1-0"))
+    at = @text_t + 9000
+    serve = make_serve(@official, @topic_revision, instance, skill_key: SKILL, at: at)
+    raw = JSON.generate("l1" => "r2", "l2" => "r1")
+    @pair_tries = [ make_try(serve, try_number: 1, raw: raw, verdict: "wrong", at: at + 60), make_try(serve, try_number: 2, raw: raw, verdict: "wrong", at: at + 120) ]
+  end
+
+  test "the words of the page are Italian: the outcome, the hand correction and the subject's name, never a code or a key" do
+    page
+    assert_select "#grading-try-practice-#{@resolved_try.id} [data-outcome=?]", "unrecognised", text: "sbagliata"
+    assert_select "#grading-try-diagnosis-#{@diag_resolved.id} [data-outcome=?]", "wrong", text: "sbagliata"
+    assert_select "#grading-tries [data-outcome]" do |spans|
+      spans.each { |span| assert_not_includes %w[wrong undetermined correct unrecognised], span.text.strip, "a raw code" }
+    end
+    assert_select "#grading-try-diagnosis-#{@diag_resolved.id} .hint", text: "Corretto a mano: giusta"
+    names = css_select("#grading-items td[data-label=Materia], #grading-items-rest td[data-label=Materia]").map { |td| td.text.strip }.uniq
+    assert_equal [ Subject.find_by!(key: "math").name_it ], names
+    %w[undetermined near_miss contested typical_error].each { |code| assert I18n.exists?("teacher.grading.outcome.#{code}", :it), code }
+    (Practice::AttemptLog::OUTCOMES + Grading::VERDICTS).each { |code| assert I18n.exists?("teacher.grading.outcome.#{code}", :it), "no words for #{code}" }
+  end
+
+  test "a structured answer reads as the words the student saw, as on the corrections page, not as JSON" do
+    make_structured_tries
+    page
+    assert_select "#grading-try-practice-#{@pair_tries.last.id} q[data-student-text]", text: "cane – miagola; gatto – abbaia"
+    assert_not_includes response.body, "&quot;l1&quot;"
+    assert_not_includes response.body, '{"l1"'
+  end
+
+  test "the tries sit under their exercise: the flagged ones open, the others closed, each with its count" do
+    make_structured_tries
+    page
+    assert_select "#grading-tries details.grading-group[data-item=?][data-flagged=true][open]", WORD
+    assert_select "#grading-tries details.grading-group[data-item=?][data-flagged=false]:not([open])", "pair-1" do
+      assert_select "summary", text: /1 tentativo con un segnale/ # the second send is the resend; the first has no signal
+      assert_select "tr[data-ref]", 1
+    end
+    groups = css_select("#grading-tries details.grading-group").map { |d| d["data-flagged"] }
+    assert_equal groups.sort.reverse, groups, "the flagged exercises come first"
+    assert_equal css_select("#grading-tries tbody tr").size, css_select("#grading-tries tbody tr[data-ref]").size
+  end
+
+  test "the student picker keeps the subject and the day; the empty page says there is no try when no filter is set" do
+    page("/teacher/grading?subject=math&since=#{@base.to_date}")
+    link = css_select("#student-picker a[data-student=prova-1]").first
+    assert_not_nil link
+    query = Rack::Utils.parse_query(URI(link["href"]).query)
+    assert_equal({ "subject" => "math", "since" => @base.to_date.iso8601, "student" => "prova-1" }, query)
+    page("/teacher/grading?student=prova-1&subject=math")
+    assert_select "#grading-empty", text: "Nessun tentativo con questi filtri."
+    link = css_select("#student-picker a").first
+    assert_equal({ "subject" => "math" }, Rack::Utils.parse_query(URI(link["href"]).query), "back to the official student: no student parameter")
+    page("/teacher/grading?student=prova-1")
+    assert_select "#grading-empty", text: "Nessun tentativo."
   end
 
   test "the menu has the entry and marks it on the page" do

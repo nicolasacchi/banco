@@ -1,7 +1,10 @@
 module Teacher
   # "Prova": one instance of one item, drawn by the student's own renderer, so the teacher
-  # sees what S would see. Nothing is graded or stored: the page has no answer endpoint.
+  # sees what S would see. Nothing is graded or stored: the page has no answer endpoint. It is a preview, and a guest has none (D-217, D-376):
+  # a guest and a view link get a 403, as on /teacher/preview.
   class ItemPlaysController < Teacher::BaseController
+    before_action :require_teacher!
+
     def show
       @revision = ItemRevision.find_by(id: params[:revision_id]) or return head(:not_found)
 
