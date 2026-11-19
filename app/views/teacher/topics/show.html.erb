@@ -15,7 +15,7 @@
   <% else %>
     <% latest = review.latest %>
     <%# D-372: the topic's schema as the student sees it (the preview opens it whatever the progress). %>
-    <p class="hint" id="topic-schema-link"><a href="<%= ActingStudent::PREVIEW_ROOT %>/topics/<%= review.key %>/schema"><%= t("teacher.topic.schema_link") %></a></p>
+    <% unless reader_only? %><p class="hint" id="topic-schema-link"><a href="<%= ActingStudent::PREVIEW_ROOT %>/topics/<%= review.key %>/schema"><%= t("teacher.topic.schema_link") %></a></p><% end %>
     <% lesson_body = review.lesson_body %>
     <% blocker = decision_blocker %>
     <% writable = current_identity&.teacher? && request.cookies[DecisionRecorder::DEVICE_COOKIE].blank? %>
