@@ -136,6 +136,8 @@ a { color: var(--text); text-underline-offset: 0.2em; }
 form.inline { display: inline; }
 
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+/* A heading the script focuses (tabindex -1: «Hai finito questo argomento!») takes the screen reader to the new text; it is not a control, and a ring on it looks like an error box (D-379). */
+:is(h1, h2, h3, h4, h5, h6)[tabindex="-1"]:focus-visible { outline: none; }
 
 .answer-input, select.answer-input, textarea.answer-input {
   font: inherit;

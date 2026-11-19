@@ -64,12 +64,12 @@ class CloseHintTest < ActionDispatch::IntegrationTest
 
   test "the sentences of what is missing, skill by skill" do
     missing = ->(why) { Practice::Messages.missing_it(why) }
-    assert_equal "Ti mancano 3 esercizi giusti senza aiuto. 2 devono essere da scrivere, abbinare o mettere in ordine.", missing.({ code: :not_seen })
-    assert_equal "Ti mancano 2 esercizi giusti senza aiuto. 2 devono essere da scrivere, abbinare o mettere in ordine.", missing.({ code: :in_study, n: 1, low: 0 })
-    assert_equal "Ti mancano 2 esercizi giusti senza aiuto. Uno deve essere da scrivere, abbinare o mettere in ordine.", missing.({ code: :in_study, n: 1, low: 1 })
-    assert_equal "Ti manca un esercizio giusto senza aiuto, da scrivere, abbinare o mettere in ordine: quelli a scelta non bastano.", missing.({ code: :in_study, n: 3, low: 1 })
-    assert_equal "Ti mancano 2 esercizi giusti senza aiuto, da scrivere, abbinare o mettere in ordine: quelli a scelta non bastano.", missing.({ code: :in_study, n: 3, low: 0 })
-    assert_equal "Ti mancano 2 esercizi giusti senza aiuto, da scrivere, abbinare o mettere in ordine: quelli a scelta non bastano.", missing.({ code: :in_study, n: 2, low: 0 }),
+    assert_equal "Ti mancano 3 esercizi giusti senza aiuto. 2 devono essere da scrivere, abbinare o mettere in ordine: quelli non si possono indovinare.", missing.({ code: :not_seen })
+    assert_equal "Ti mancano 2 esercizi giusti senza aiuto. 2 devono essere da scrivere, abbinare o mettere in ordine: quelli non si possono indovinare.", missing.({ code: :in_study, n: 1, low: 0 })
+    assert_equal "Ti mancano 2 esercizi giusti senza aiuto. Uno deve essere da scrivere, abbinare o mettere in ordine: quelli non si possono indovinare.", missing.({ code: :in_study, n: 1, low: 1 })
+    assert_equal "Ti manca un esercizio giusto senza aiuto, da scrivere, abbinare o mettere in ordine: quelli a scelta si possono indovinare e non bastano.", missing.({ code: :in_study, n: 3, low: 1 })
+    assert_equal "Ti mancano 2 esercizi giusti senza aiuto, da scrivere, abbinare o mettere in ordine: quelli a scelta si possono indovinare e non bastano.", missing.({ code: :in_study, n: 3, low: 0 })
+    assert_equal "Ti mancano 2 esercizi giusti senza aiuto, da scrivere, abbinare o mettere in ordine: quelli a scelta si possono indovinare e non bastano.", missing.({ code: :in_study, n: 2, low: 0 }),
                  "two right ones of 3, both easy: the line speaks of the hard ones alone, so it never says «still 2» about the plain count of «2 su 3» (D-378)"
     [ { code: :demonstrated }, { code: :consolidated }, { code: :to_review, previous: "consolidated" } ].each do |why|
       assert_nil missing.(why), why.inspect
@@ -86,7 +86,7 @@ class CloseHintTest < ActionDispatch::IntegrationTest
         long_only = gap[:long].positive? && !gap[:more_long]
         assert_equal 3 - n, gap[:exercises], "n=#{n} low=#{low}: the plain count is what makes 3" unless long_only
         text = Practice::Messages.missing_it(why)
-        assert_match(/#{long_only ? 'quelli a scelta non bastano' : 'senza aiuto\.'}/, text, "n=#{n} low=#{low}")
+        assert_match(/#{long_only ? 'quelli a scelta si possono indovinare e non bastano' : 'senza aiuto\.'}/, text, "n=#{n} low=#{low}")
       end
     end
   end

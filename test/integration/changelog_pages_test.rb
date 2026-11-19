@@ -104,10 +104,12 @@ class ChangelogPagesTest < ActionDispatch::IntegrationTest
     comment = comment_on(@row, "/topics/#{TOPIC}/lesson", "lesson", at: 3.days.ago, card: 2)
     page(OFFICIAL, "/novita")
     assert_select "#changelog-followups", 0, "nothing was revised after the comment yet"
+    assert_select "#changelog-intro", text: "Qui leggi cosa c'è di nuovo: l'app e gli argomenti rivisti." # D-379: comments are named only when the section is there
     day = 1.day.ago
     travel_to(day) { revise! }
     page(OFFICIAL, "/novita")
     assert_select "#changelog-followups h2", "I tuoi commenti"
+    assert_select "#changelog-intro", text: "Qui leggi cosa c'è di nuovo: l'app, gli argomenti rivisti e i tuoi commenti."
     assert_select "#changelog-followups li[data-topic='#{TOPIC}']" do
       assert_select "h3", TOPIC_TITLE
       assert_select ".changelog-meta", /1 commento/

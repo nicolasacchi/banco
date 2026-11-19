@@ -172,11 +172,11 @@ en:
         other: "You still need %{count} exercises right without help."
       # Hard to guess (DEMONSTRATE_MIN_LOW_GUESS): a written answer, an ordering or a matching of 4 rows or more; never «longer».
       long:
-        one: "You still need one exercise right without help, to write, match or put in order: multiple-choice ones are not enough."
-        other: "You still need %{count} exercises right without help, to write, match or put in order: multiple-choice ones are not enough."
+        one: "You still need one exercise right without help, to write, match or put in order: multiple-choice ones can be guessed, so they are not enough."
+        other: "You still need %{count} exercises right without help, to write, match or put in order: multiple-choice ones can be guessed, so they are not enough."
       long_among:
-        one: "One must be one to write, match or put in order."
-        other: "%{count} must be ones to write, match or put in order."
+        one: "One must be one to write, match or put in order: those cannot be guessed."
+        other: "%{count} must be ones to write, match or put in order: those cannot be guessed."
     submit: "Check"
     hint: "Show a hint (%{n} of %{total})"
     solution: "Show me the solution"

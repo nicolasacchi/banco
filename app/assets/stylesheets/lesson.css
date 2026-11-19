@@ -856,6 +856,9 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 .block-code .code-box { background: var(--soft); }
 .block-code .code-screen { background: var(--surface); border-style: dashed; }
 .block-code .code-box code, .block-code .code-screen code { font: inherit; background: none; padding: 0; border: 0; white-space: inherit; }
+/* On a phone the side padding is slimmer (D-379): a screen's longest line was 8 px wider than the box at 390 px, so its last digit touched the border and the 8 px
+   of scroll had no cue. The border still keeps the text off the edge, and a longer line scrolls as before. */
+@media (max-width: 30em) { .block-code .code-box, .block-code .code-screen { padding-inline: 0.45em; } }
 /* A line that does not fit scrolls sideways (the text stays whole and copyable) and says so (D-378): a soft shadow on the side where more text waits
    (it goes when the edge is reached) and a scrollbar that is always drawn, also on a phone, where scrollbars otherwise hide until touched. */
 .block-code .code-box { --cover: var(--soft); }

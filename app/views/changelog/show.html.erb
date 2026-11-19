@@ -4,7 +4,7 @@
 <% fresh = ->(at) { @since && at > @since } %>
 <main class="page course changelog-page" id="changelog-page" data-comment-anchor="page">
   <h1><%= t("changelog.title") %></h1>
-  <p class="changelog-intro" id="changelog-intro"><%= t("changelog.intro") %></p>
+  <p class="changelog-intro" id="changelog-intro"><%= t(@feed.followups.any? ? "changelog.intro_comments" : "changelog.intro") %></p>
   <% if preview? %><%= ui_notice :info, t("changelog.preview_note"), html: { id: "changelog-preview-note" } %><% end %>
   <% if @feed.empty? %><p id="changelog-empty"><%= t("changelog.empty") %></p><% end %>
 

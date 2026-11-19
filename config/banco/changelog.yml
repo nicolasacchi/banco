@@ -399,3 +399,33 @@ entries:
     body_it: "Se l'indirizzo è sbagliato, la pagina «Questa pagina non c'è» ora è in italiano o in inglese, come hai scelto, e ha il menu e il pulsante «Commenta»."
     title_en: "The page that is not there speaks your language"
     body_en: "If the address is wrong, the page «This page is not there» is now in Italian or in English, as you chose, and has the menu and the «Comment» button."
+
+  - id: exercise-list-header-and-serve-line
+    date: 2026-11-19
+    audience: [student]
+    kind: fix
+    decisions: [D-379]
+    title_it: "Elenco esercizi in ordine, e una riga che sparisce a fine esercizio"
+    body_it: "In cima all'elenco degli esercizi «Esercizi» e la riga accanto («Questo argomento lo sapevi già», «Argomento fatto») non si sovrappongono più: la riga va sotto se non c'è posto. La riga «Ti propongo un esercizio simile…» sparisce quando l'esercizio è finito."
+    title_en: "Exercise list in order, and a line that goes when done"
+    body_en: "At the top of the list of exercises, «Exercises» and the line next to it («You already knew this topic», «Topic done») no longer overlap: the line moves below when there is no room. The line «I am giving you a similar exercise…» goes away when the exercise is over."
+
+  - id: diagram-note-fits
+    date: 2026-11-19
+    audience: [student]
+    kind: fix
+    decisions: [D-379]
+    title_it: "Nei diagrammi la nota «Ora siamo qui» sta nel suo riquadro"
+    body_it: "Nel diagramma di flusso la frase «Ora siamo qui: …» non esce più dal riquadro: il riquadro è largo e alto quanto serve per il testo, anche con il testo in grassetto o più grande."
+    title_en: "In diagrams the note «We are here» fits its box"
+    body_en: "In the flow diagram the sentence «We are here: …» no longer spills out of its box: the box is as wide and as tall as the text needs, also with bold or bigger text."
+
+  - id: small-reading-fixes-2
+    date: 2026-11-19
+    audience: [student]
+    kind: fix
+    decisions: [D-379]
+    title_it: "Piccoli ritocchi: titolo, uscita del programma, parole chiare"
+    body_it: "Il titolo di fine argomento non ha più il riquadro blu. Sul telefono «Sullo schermo vedi» non tocca più il bordo. Per gli esercizi difficili ora dice perché, e «Novità» nomina i commenti solo se ci sono."
+    title_en: "Small touches: title, program output, clearer words"
+    body_en: "The title at the end of a topic no longer has the blue box. On a phone «On the screen you see» no longer touches the border. For the hard exercises it now says why, and «What's new» names comments only when there are some."
