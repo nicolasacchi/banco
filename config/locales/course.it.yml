@@ -40,9 +40,11 @@ it:
     demonstrated: "Dimostrata"
     consolidated: "Consolidata"
     to_review: "Da ripassare"
+    # D-378: a skill (a topic) the entry test showed and nothing since moved; the same words on the subject list, the topic page, the practice page and the counters.
+    known: "Già sapevi"
   why:
     not_seen: "Non l'hai ancora provata."
-    seed_demonstrated: "Dimostrata nella diagnosi del %{date}."
+    seed_demonstrated: "Già sapevi: l'hai dimostrato nel test d'ingresso del %{date}."
     seed_implied: "Non serviva verificarla: hai dimostrato un'abilità che la usa."
     seed_to_recover: "Dal test d'ingresso: da ripassare."
     seed_to_learn: "Nella diagnosi: da imparare."
@@ -120,6 +122,7 @@ it:
       todo: "Da fare"
       in_progress: "In corso"
       done: "Fatto"
+      known: "Già sapevi"
     before: "Prima conviene fare: %{topic}"
     programme: "Dal programma, riga %{line}: «%{fragment}»"
     tag_recover: "Dal test: da ripassare"
@@ -168,8 +171,8 @@ it:
         other: "Ti mancano %{count} esercizi giusti senza aiuto."
       # Hard to guess (DEMONSTRATE_MIN_LOW_GUESS): a written answer, an ordering or a matching of 4 rows or more; never «longer».
       long:
-        one: "Ti manca un esercizio giusto senza aiuto di quelli da scrivere, abbinare o mettere in ordine."
-        other: "Ti mancano %{count} esercizi giusti senza aiuto di quelli da scrivere, abbinare o mettere in ordine."
+        one: "Ti manca un esercizio giusto senza aiuto, da scrivere, abbinare o mettere in ordine: quelli a scelta non bastano."
+        other: "Ti mancano %{count} esercizi giusti senza aiuto, da scrivere, abbinare o mettere in ordine: quelli a scelta non bastano."
       long_among:
         one: "Uno deve essere da scrivere, abbinare o mettere in ordine."
         other: "%{count} devono essere da scrivere, abbinare o mettere in ordine."
@@ -241,6 +244,10 @@ it:
     exercises: "Esercizi"
     exercises_count: "%{done} fatti su %{total}"
     exercises_count_one: "1 fatto su %{total}"
+    # D-378: the topic is done (the exercises were not needed, or all are): the list says so instead of «0 fatti su 3».
+    exercises_topic_known: "Questo argomento lo sapevi già"
+    exercises_topic_done: "Argomento fatto"
+    status_optional: "Facoltativo"
     exercise_n: "Esercizio %{n}"
     status_todo: "Da fare"
     status_done: "Fatto"

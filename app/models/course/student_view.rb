@@ -179,6 +179,17 @@ module Course
       held.uniq(&:first) + skills_without_topic(sv).map { |s| [ s, nil ] }
     end
 
+    # A done topic the entry test showed (D-367, D-378): it has skills and each is still in the state the diagnosis seeded it in (demonstrated,
+    # since the seed), so nothing the student did with the exercises moved it. The pages say «Già sapevi» for it, «Fatto» for the others.
+    def known?(topic) = status(topic) == :done && topic.skills.any? && topic.skills.all? { |skill| states[skill]&.known? }
+
+    # The topic's word on a list: «known», «done», «in_progress» or «todo» (one wording for a known topic everywhere, D-378).
+    def label_status(topic) = known?(topic) ? :known : status(topic)
+
+    # The topics the student has started (a serve, or the lesson opened) or that are next for him (`next_topic` of each subject): what «Novità»
+    # lists in full among the topics revised (D-378).
+    def in_play?(topic) = started_keys.include?(topic.key) || next_keys.include?(topic.key)
+
     # A serve that was replaced (D-377) is not where he left off: Oggi's «Riprendi» goes by the latest serve that was not.
     def last_topic
       states
@@ -195,6 +206,9 @@ module Course
 
     private
 
+    # The keys of the topic that is next for him in each subject (Oggi's own order, `next_topic`).
+    def next_keys = @next_keys ||= subjects.filter_map { |sv| next_topic(sv)&.topic&.key }.to_set
+
     def today_input
       programme = subjects.map { |sv| sv.with(topics: programme_topics(sv)) }.select { |sv| sv.topics.any? }
       { catalog: programme, states: states, graph_order: graph_order, last_topic: last_topic }
@@ -205,21 +219,13 @@ module Course
 
     def tally(topics)
       by_status = topics.map { |topic| status(topic) }.tally
-      known = topics.count { |topic| status(topic) == :done && known_from_entry?(topic) }
+      known = topics.count { |topic| known?(topic) }
       minutes_left = topics.sum { |topic| status(topic) == :done ? 0 : topic.minutes.to_i }
       Tally.new(total: topics.size, done: by_status[:done].to_i, in_progress: by_status[:in_progress].to_i, known: known, minutes_left: minutes_left)
     end
 
     # A done topic the entry test showed (D-367): it has skills and each is still in the state the diagnosis seeded it in (demonstrated, since
     # the seed), so nothing the student did with the exercises moved it.
-    def known_from_entry?(topic)
-      topic.skills.any? && topic.skills.all? do |skill|
-        state = states[skill]
-        seed = state&.seed
-        seed && seed.state.to_s == "demonstrated" && state.state == "demonstrated" && state.since == seed.at
-      end
-    end
-
     def graph_skills(sv)
       graph = JSON.parse(sv.course_revision.skill_graph_revision.body_json)["skills"]
       graph + sv.course_revision.body["skills"]

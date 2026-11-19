@@ -6,7 +6,7 @@ it:
       changelog: "Novità"
   changelog:
     title: "Novità"
-    intro: "Qui leggi cosa c'è di nuovo: l'app, gli argomenti rivisti e le tue segnalazioni."
+    intro: "Qui leggi cosa c'è di nuovo: l'app, gli argomenti rivisti e i tuoi commenti."
     preview_note: "Anteprima: questa pagina non registra nessuna visita."
     empty: "Per ora non c'è niente di nuovo."
     new: "Nuovo"
@@ -18,15 +18,25 @@ it:
     entries:
       title: "Novità dell'app"
       open: "Vai alla pagina"
+      older: "Novità più vecchie (%{count})"
     updates:
       title: "Argomenti aggiornati"
       line: "Aggiornato: %{topic}"
+      # What an update is, for the API's line (every topic says the same).
       note: "Esercizi o lezione rivisti."
-      open: "Apri l'argomento"
+      intro: "Esercizi o lezione rivisti negli ultimi %{days} giorni. Gli argomenti che hai iniziato o che vengono dopo sono qui sotto; gli altri sono raccolti in una riga."
+      others:
+        one: "Un altro argomento aggiornato"
+        other: "Altri %{count} argomenti aggiornati"
+    # One card for each topic (D-378): how many comments he wrote there and the day of the latest revision; never that a comment was fixed.
     followups:
-      title: "Le tue segnalazioni"
-      line: "Dopo la tua segnalazione su %{place}, l'argomento è stato rivisto il %{date}."
+      title: "I tuoi commenti"
+      count:
+        one: "%{count} commento"
+        other: "%{count} commenti"
+      revised: "Argomento rivisto il %{date}"
       open: "Apri la conversazione"
+      open_all: "Vedi i tuoi commenti"
   teacher:
     menu:
       changelog: "Novità"

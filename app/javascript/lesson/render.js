@@ -117,6 +117,7 @@ export function renderLesson(root, body, config) {
   }
   // The top bar already says "Scheda N di M": the kicker above the title keeps the part and the kind of card.
   const kickerOf = (card) => {
+    if (schema) return "" // the schema page has its own title and a «Stampa» button: «da stampare» above the card means nothing there (D-378)
     if (card.level !== "core") return positionOf(card).text
     const bits = []
     if (partTitle(card)) bits.push(partTitle(card))

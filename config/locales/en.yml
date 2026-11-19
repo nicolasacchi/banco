@@ -25,7 +25,8 @@ en:
     intro: "Choose the colours and the size of text and images. They apply to every page."
     saved: "Done. I saved your choice."
     saved_now: "Saved"
-    not_saved: "I could not save. Press Save."
+    not_saved: "I could not save. Try choosing again."
+    applies: "Every choice applies at once and saves itself: there is nothing to press."
   diagnosis:
     title: "Entry test"
     placeholder: "The entry test will be here."
@@ -61,7 +62,6 @@ en:
         it: "Italiano"
         en: "English"
       language_hint: "Changes the language of menus, buttons and messages. Lessons and exercises stay in Italian."
-      save: "Save"
     states:
       to_do: "To do"
       after_dependency: "After the first sitting of %{subjects}"

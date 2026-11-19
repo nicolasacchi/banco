@@ -357,6 +357,9 @@ Rails.application.routes.draw do
     get "lib/:file" => "harness#lib", constraints: { file: /rng\.mjs|fmt\.mjs/ }, format: false
   end
 
+  # A page of the web listener that is not there: the student's own 404 in his language (D-378; it is the bare 404 for anyone else).
+  constraints(web) { get "*path" => "student_not_found#show", format: false }
+
   # Everything else, including any route on the wrong listener: 404.
   match "*path", to: "not_found#show", via: :all
   root "not_found#show"

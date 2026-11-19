@@ -54,7 +54,7 @@
               <%= recover_note_once(state.state) %>
             </div>
             <div class="skill-side">
-              <span class="topic-meta"><%= ui_pill(Practice::Messages.state_it(state.state), skill_state_tone(state.state)) %></span>
+              <span class="topic-meta"><%= ui_pill(Practice::Messages.skill_state_it(state), skill_state_tone(state.state)) %></span>
               <a class="button small" href="<%= spath("/topics/#{@topic.key}/practice/#{skill}") %>"><%= t("topic.practise") %></a>
             </div>
           </li>

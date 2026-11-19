@@ -91,7 +91,8 @@ module Practice
 
     def call
       practice = @topic.topic_revision.body["practice"]
-      { topic: @topic.key, skills: @topic.skills.filter_map { |skill| (pins = practice.find { |p| p["skill"] == skill }) && skill_block(skill, pins["items"]) } }
+      { topic: @topic.key, done: @view.status(@topic) == :done, known: @view.known?(@topic),
+        skills: @topic.skills.filter_map { |skill| (pins = practice.find { |p| p["skill"] == skill }) && skill_block(skill, pins["items"]) } }
     end
 
     private
@@ -101,7 +102,7 @@ module Practice
       rows = Loader.for(@student, subject: @subject, skill: skill, seeds: false, now: @now, shown: @view.shown_revisions).serves
       revisions = ItemRevision.where(id: pins.map { |p| p["revision"] }).index_by(&:id)
       facts = Facts.new(rows, drafts_for(rows))
-      { key: skill, label_it: @view.label(skill), state: state&.state, state_it: Messages.state_it(state&.state),
+      { key: skill, label_it: @view.label(skill), state: state&.state, state_it: state ? Messages.skill_state_it(state) : Messages.state_it(nil),
         url: "#{@root}/topics/#{@topic.key}/practice/#{skill}",
         exercises: pins.each_with_index.map { |pin, i| exercise(pin, i + 1, revisions[pin["revision"]], facts) } }
     end

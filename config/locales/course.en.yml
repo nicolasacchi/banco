@@ -40,9 +40,11 @@ en:
     demonstrated: "Shown"
     consolidated: "Solid"
     to_review: "To review"
+    # D-378: a skill (a topic) the entry test showed and nothing since moved; the same words on the subject list, the topic page, the practice page and the counters.
+    known: "Already known"
   why:
     not_seen: "You haven't tried it yet."
-    seed_demonstrated: "Shown in the entry test of %{date}."
+    seed_demonstrated: "Already known: you showed it in the entry test of %{date}."
     seed_implied: "There was no need to check it: you showed a skill that uses it."
     seed_to_recover: "From the entry test: to review."
     seed_to_learn: "In the entry test: to learn."
@@ -120,6 +122,7 @@ en:
       todo: "To do"
       in_progress: "In progress"
       done: "Done"
+      known: "Already known"
     before: "It is better to do this first: %{topic}"
     programme: "From the programme, line %{line}: «%{fragment}»"
     tag_recover: "From the test: to review"
@@ -168,8 +171,8 @@ en:
         other: "You still need %{count} exercises right without help."
       # Hard to guess (DEMONSTRATE_MIN_LOW_GUESS): a written answer, an ordering or a matching of 4 rows or more; never «longer».
       long:
-        one: "You still need one exercise right without help of the kind to write, match or put in order."
-        other: "You still need %{count} exercises right without help of the kind to write, match or put in order."
+        one: "You still need one exercise right without help, to write, match or put in order: multiple-choice ones are not enough."
+        other: "You still need %{count} exercises right without help, to write, match or put in order: multiple-choice ones are not enough."
       long_among:
         one: "One must be one to write, match or put in order."
         other: "%{count} must be ones to write, match or put in order."
@@ -242,6 +245,10 @@ en:
     exercises: "Exercises"
     exercises_count: "%{done} done out of %{total}"
     exercises_count_one: "1 done out of %{total}"
+    # D-378: the topic is done (the exercises were not needed, or all are): the list says so instead of «0 done out of 3».
+    exercises_topic_known: "You already knew this topic"
+    exercises_topic_done: "Topic done"
+    status_optional: "Optional"
     exercise_n: "Exercise %{n}"
     status_todo: "To do"
     status_done: "Done"

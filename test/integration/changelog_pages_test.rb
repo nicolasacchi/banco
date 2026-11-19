@@ -71,15 +71,15 @@ class ChangelogPagesTest < ActionDispatch::IntegrationTest
     Changelog::Entries.for(:teacher).reject(&:student?).each { |entry| assert_not_includes response.body, entry.title_it }
   end
 
-  test "a topic that was approved again is one line «Aggiornato: <argomento>» with the day and a generic line, linked to the topic" do
-    travel_to(Time.zone.local(2026, 11, 19, 9, 30)) { revise!(lesson_findings_reason_it: REASON) }
+  test "a topic that was approved again is one line «Aggiornato: <argomento>» under its day, linked to the topic, with the generic line said once" do
+    day = 2.days.ago
+    travel_to(day) { revise!(lesson_findings_reason_it: REASON) }
     page(OFFICIAL, "/novita")
-    assert_select "#changelog-updates h3.changelog-day", "19 novembre 2026"
-    assert_select "#changelog-updates li[data-topic='#{TOPIC}']" do
-      assert_select "h4", /Aggiornato: Equazioni di primo grado/
-      assert_select "p", "Esercizi o lezione rivisti."
-      assert_select "a[href='/topics/#{TOPIC}']", "Apri l'argomento"
-    end
+    assert_select "#changelog-updates h3.changelog-day", I18n.l(day.in_time_zone.to_date, format: "%-d %B %Y")
+    assert_select "#changelog-updates .changelog-note", /Esercizi o lezione rivisti negli ultimi 14 giorni/
+    assert_select "#changelog-updates li[data-topic='#{TOPIC}'] a[href='/topics/#{TOPIC}']", "Aggiornato: Equazioni di primo grado"
+    assert_select "#changelog-updates li[data-topic] p", 0, "the generic line is not repeated on every topic"
+    assert_select "#changelog-updates details", 0, "nothing to fold: the only topic is the one he has to do"
   end
 
   test "a topic his course does not show is not in the page, and the page has no updates before any topic was approved again" do
@@ -91,36 +91,77 @@ class ChangelogPagesTest < ActionDispatch::IntegrationTest
     assert_no_match(/nascosto/, response.body)
   end
 
-  test "«Le tue segnalazioni»: a comment on the topic, then the topic revised, says so, links the thread and never says it was fixed" do
-    comment = comment_on(@row, "/topics/#{TOPIC}/lesson", "lesson", at: Time.zone.local(2026, 11, 18, 10, 0), card: 2)
+  test "a revision older than 14 days is not on the page" do
+    travel_to(20.days.ago) { revise! }
+    page(OFFICIAL, "/novita")
+    assert_select "#changelog-updates", 0
+    travel_to(13.days.ago) { revise! }
+    page(OFFICIAL, "/novita")
+    assert_select "#changelog-updates li[data-topic='#{TOPIC}']", 1
+  end
+
+  test "«I tuoi commenti»: a comment on the topic, then the topic revised, is one card with the topic, the count and the day; it links the thread and never says it was fixed" do
+    comment = comment_on(@row, "/topics/#{TOPIC}/lesson", "lesson", at: 3.days.ago, card: 2)
     page(OFFICIAL, "/novita")
     assert_select "#changelog-followups", 0, "nothing was revised after the comment yet"
-    travel_to(Time.zone.local(2026, 11, 19, 9, 30)) { revise! }
+    day = 1.day.ago
+    travel_to(day) { revise! }
     page(OFFICIAL, "/novita")
-    assert_select "#changelog-followups h2", "Le tue segnalazioni"
-    assert_select "#changelog-followups li[data-comment='#{comment.id}']" do
-      assert_select "p", /Dopo la tua segnalazione su Lezione: Equazioni di primo grado, scheda 2, l'argomento è stato rivisto il 19 novembre 2026\./
+    assert_select "#changelog-followups h2", "I tuoi commenti"
+    assert_select "#changelog-followups li[data-topic='#{TOPIC}']" do
+      assert_select "h3", TOPIC_TITLE
+      assert_select ".changelog-meta", /1 commento/
+      assert_select ".changelog-meta", /Argomento rivisto il #{Regexp.escape(I18n.l(day.in_time_zone.to_date, format: "%-d %B %Y"))}/
       assert_select "a[href='/comments/#{comment.id}']", "Apri la conversazione"
     end
-    assert_no_match(/risolt|corretto il tuo|sistemato/i, css_select("#changelog-followups").text)
+    text = css_select("#changelog-followups").text
+    assert_no_match(/risolt|corretto il tuo|sistemato/i, text)
+    assert_no_match(/segnalazion/i, text + css_select("#changelog-intro").text, "the word is «commento», as in the rest of the app")
+  end
+
+  test "several comments on one topic are one card: «3 commenti», the latest revision, and the list of his comments to open" do
+    at = 5.days.ago
+    3.times { |i| comment_on(@row, "/topics/#{TOPIC}/practice/#{SKILL}", "practice", at: at + i.hours) }
+    travel_to(4.days.ago) { revise! }
+    travel_to(1.day.ago) { revise! }
+    page(OFFICIAL, "/novita")
+    assert_select "#changelog-followups li", 1
+    assert_select "#changelog-followups li[data-count='3'] .changelog-meta", /3 commenti/
+    assert_select "#changelog-followups li .changelog-meta", /Argomento rivisto il #{Regexp.escape(I18n.l(1.day.ago.in_time_zone.to_date, format: "%-d %B %Y"))}/
+    assert_select "#changelog-followups li a[href='/comments']", "Vedi i tuoi commenti"
+    assert_select "#changelog-followups li a[href^='/comments/']", 0
   end
 
   test "the sections come in the order: his own comments, the entries, the updates" do
-    comment_on(@row, "/topics/#{TOPIC}", "topic", at: Time.zone.local(2026, 11, 18, 10, 0))
+    comment_on(@row, "/topics/#{TOPIC}", "topic", at: 3.days.ago)
     revise!
     page(OFFICIAL, "/novita")
     assert_equal %w[changelog-followups changelog-entries changelog-updates], css_select("section.changelog-section").map { |s| s["id"] }
   end
 
+  test "the newest entries are in full and the older ones in one closed bar" do
+    page(OFFICIAL, "/novita")
+    ids = Changelog::Entries.for(:student).map(&:id)
+    assert_operator ids.size, :>, Changelog::Feed::FEATURED_ENTRIES + 1
+    assert_equal ids, entry_ids, "every entry is on the page, newest first"
+    assert_select "#changelog-entries > ul > li[data-entry]", Changelog::Feed::FEATURED_ENTRIES
+    assert_select "#changelog-entries details#changelog-older:not([open]) > summary", "Novità più vecchie (#{ids.size - Changelog::Feed::FEATURED_ENTRIES})"
+    assert_select "#changelog-entries details#changelog-older li[data-entry]", ids.size - Changelog::Feed::FEATURED_ENTRIES
+  end
+
   test "in English the interface, the entries' twins and the updates are English; the topic's name stays Italian" do
     english!
     revise!
+    comment_on(@row, "/topics/#{TOPIC}", "topic", at: 3.days.ago)
     page(OFFICIAL, "/novita")
     assert_select "h1", "What's new"
     assert_select "#changelog-entries li[data-entry=my-schemas] h3", "My summaries"
     assert_select "#changelog-entries li[data-entry=my-schemas] time", "19 November 2026"
-    assert_select "#changelog-updates h4", /Updated: Equazioni di primo grado/
-    assert_select "#changelog-updates p", "Exercises or lesson revised."
+    assert_select "#changelog-updates li[data-topic='#{TOPIC}'] a", "Updated: Equazioni di primo grado"
+    assert_select "#changelog-updates .changelog-note", /Exercises or lesson revised in the last 14 days/
+    assert_select "#changelog-followups h2", "Your comments"
+    assert_select "#changelog-followups .changelog-meta", /1 comment\b/
+    assert_select "#changelog-followups .changelog-meta", /Topic revised on/
     assert_select "html[lang=en]"
     assert_select "#menu-changelog", /What's new/
   end

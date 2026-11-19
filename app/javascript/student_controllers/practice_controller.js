@@ -688,10 +688,12 @@ export default class extends Controller {
       return
     }
     if (seq !== this.listSeq || !Array.isArray(body?.skills)) return
-    this.drawList(body.skills)
+    this.drawList(body.skills, body)
   }
 
-  drawList(skills) {
+  // topic: the reply's own `done` and `known` (D-378): a done topic's list says so, whatever the exercises it holds, and its unanswered ones are optional.
+  drawList(skills, topic = {}) {
+    this.topicDone = topic.done === true
     const body = this.listBodyTarget
     const focused = body.contains(document.activeElement) ? document.activeElement.closest("li")?.dataset : null
     body.textContent = ""
@@ -724,7 +726,8 @@ export default class extends Controller {
     }
     this.listTarget.hidden = total === 0
     const count = done === 1 ? this.labels.exercises_count_one : this.labels.exercises_count
-    this.listCountTarget.textContent = count.replace("%{done}", done).replace("%{total}", total)
+    const text = topic.known ? this.labels.exercises_topic_known : topic.done ? this.labels.exercises_topic_done : count.replace("%{done}", done).replace("%{total}", total)
+    this.listCountTarget.textContent = text
     if (focused) {
       const again = Array.from(body.querySelectorAll("li")).find((li) => li.dataset.skill === focused.skill && li.dataset.item === focused.item)
       again?.querySelector(".exercise-link")?.focus()
@@ -792,7 +795,8 @@ export default class extends Controller {
     const pill = document.createElement("span")
     pill.className = `pill exercise-status ${look.tone}`
     pill.innerHTML = `<svg class="ic" aria-hidden="true" focusable="false"><use href="${SPRITE}#${look.icon}"></use></svg>`
-    pill.appendChild(document.createTextNode(status === "now" ? this.labels.now : this.labels[`status_${status}`]))
+    const word = status === "now" ? this.labels.now : status === "todo" && this.topicDone ? this.labels.status_optional : this.labels[`status_${status}`]
+    pill.appendChild(document.createTextNode(word))
     link.append(text, pill)
     if (!current && (exercise.status === "done" || exercise.status === "finished" || exercise.status === "finished_solution")) {
       const redo = document.createElement("span")

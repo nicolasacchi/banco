@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Settings (D-354): choosing a colour or a size changes the page and is saved at once, with no «Salva». The change goes to the page's own
-// preferences endpoint (the student's or the teacher preview's base path) as JSON; the form and its button stay for a browser without scripts.
+// Settings (D-354, D-378): choosing a colour, a size or a language changes the page and is saved at once; there is no «Salva» button. The change goes to the page's own
+// preferences endpoint (the student's or the teacher preview's base path) as JSON.
 // The page changes first: the choice is on screen even when the save fails, and then a line says it was not saved.
 export default class extends Controller {
   static targets = ["status"]
@@ -25,7 +25,7 @@ export default class extends Controller {
     if (input.name === "language") this.queue = this.queue.then(() => this.reloadIfLanguageChanged())
   }
 
-  // «Salva» with scripts: the choices are already on the page; send what is checked and stay here (no redirect, so no second entry in the history).
+  // The Enter key on a choice submits the form (there is no button): send what is checked and stay here (no redirect, so no second entry in the history).
   submit(event) {
     event.preventDefault()
     this.statusTarget.textContent = ""

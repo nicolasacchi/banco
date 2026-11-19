@@ -60,6 +60,10 @@ module Practice
 
     def state_it(state) = I18n.t("states.#{state}")
 
+    # The word for a skill the student reads on his pages (D-378): the state's, except a skill the entry test showed and nothing since moved, which
+    # is «Già sapevi» wherever the topic is listed (the subject list, the topic page, the practice header). +skill_state+: a Practice::SkillState.
+    def skill_state_it(skill_state) = skill_state.known? ? I18n.t("states.known") : state_it(skill_state.state)
+
     # Corrections without help counted toward demonstration (0..3), only while the skill is "in studio"; nil otherwise.
     def clean_count(why) = why[:code].to_s == "in_study" ? why[:n].to_i.clamp(0, 3) : nil
 
@@ -75,7 +79,9 @@ module Practice
     # What a skill still needs to be demonstrated (practice/6 section 5: 3 distinct exercises right without help, 2 of them hard
     # to guess), read from the fold's why: {exercises:, long:, more_long:} or nil when nothing is missing.
     #   exercises: new right exercises needed (the larger of the 3 in all and the 2 hard to guess); long: how many of them hard to guess;
-    #   more_long: true when the hard ones are asked on top of the plain count.
+    #   more_long: true when the hard ones are asked on top of the plain count (the plain count is the larger need). When the hard ones alone are
+    #   the larger need (two right ones, both easy: 2 of 3, and 2 hard ones still to go), the plain count is not named at all, so that the line
+    #   never says «2 of 3» next to «still 2» about the same thing (D-378).
     # A skill not begun, or only seeded to recover or to learn, lacks everything; demonstrated, consolidated and «da ripassare» lack nothing here.
     def missing(why)
       case why[:code].to_s
@@ -87,7 +93,9 @@ module Practice
       need_long = [ Rules::V6::DEMONSTRATE_MIN_LOW_GUESS - low, 0 ].max
       return nil if need.zero? && need_long.zero?
 
-      { exercises: [ need, need_long ].max, long: need_long, more_long: need.positive? && need_long.positive? }
+      return { exercises: need_long, long: need_long, more_long: false } if need_long > need
+
+      { exercises: need, long: need_long, more_long: need.positive? && need_long.positive? }
     end
 
     # The sentences of what is missing, as one text; nil when nothing is missing.

@@ -75,7 +75,7 @@ details.disclosure > :last-child { margin-bottom: var(--space-4); }
 .row-main { flex: 1 1 0; min-width: 0; }
 .row-title { font-weight: 700; display: block; }
 .row-meta { color: var(--muted); font-size: var(--text-s); display: block; }
-.row-end { flex: none; display: inline-flex; align-items: center; gap: var(--space-2); }
+.row-end { flex: 0 1 auto; min-width: 0; max-width: 100%; display: inline-flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: var(--space-2); }
 .row > .row-chev, .row-end .row-chev { color: var(--muted); }
 a.row-stretch { color: inherit; text-decoration: none; font-weight: 700; }
 a.row-stretch::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius-m); }
@@ -85,10 +85,11 @@ a.row-stretch:focus-visible { outline: none; }
 a.topic-title, a.subject-name, a.search-title { display: inline-flex; align-items: center; min-height: var(--tap); }
 
 /* Tag (a quiet label or a count) and pill (a state: word first, icon optional, tone by modifier) ------------------------- */
+/* They wrap rather than overflow (D-378): a long word at the largest text size, or a narrow row, never pushes a tag out of its card. */
 .tag, .pill {
   --tone: var(--line); display: inline-flex; align-items: center; gap: 0.3em; box-sizing: border-box; max-width: 100%;
   font-size: var(--text-s); font-weight: 700; line-height: 1.3; padding: 0.1em 0.7em; border-radius: var(--radius-pill);
-  border: 1.5px solid var(--tone); background: var(--surface); color: var(--text); white-space: nowrap;
+  border: 1.5px solid var(--tone); background: var(--surface); color: var(--text); white-space: normal; overflow-wrap: anywhere; text-align: start;
 }
 .tag { border-color: var(--line); font-weight: 400; }
 .pill { background: color-mix(in srgb, var(--tone) 12%, var(--surface)); }

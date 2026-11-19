@@ -7,6 +7,8 @@ module Changelog
   #   Changelog::ContentUpdates.for_student(course_view)  # => [Update] for the topics this student sees, from when his course was open
   #   Changelog::ContentUpdates.by_day(updates)           # => [[Date, [Update]]] newest day first, one update per topic and day
   module ContentUpdates
+    RECENT_DAYS = 14
+
     Update = Data.define(:decision_id, :at, :subject_key, :topic, :title_it, :old_revision_id, :new_revision_id, :reason_it, :via) do
       def date = at.in_time_zone.to_date
     end
@@ -44,6 +46,9 @@ module Changelog
         update.with(title_it: topic.title_it)
       end
     end
+
+    # The updates of the last +days+ days, today included (D-378): older ones are no news; the page does not list them.
+    def recent(updates, days: RECENT_DAYS, today: Date.current) = updates.select { |update| update.date > today - days }
 
     # One update per topic and day, grouped by day, newest day first (the day in the school's zone).
     def by_day(updates)

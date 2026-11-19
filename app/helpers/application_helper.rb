@@ -39,7 +39,8 @@ module ApplicationHelper
     t = I18n.t("practice")
     t.slice(:loading, :saving, :empty, :blocked, :error, :hint, :hint_n, :solution, :solution_title, :final, :skill_now, :try_this,
             :try_this_reason, :after_solution, :next, :back, :closed, :replaced, :not_counted, :reseen, :submit, :nearly, :earlier, :clean_of,
-            :skip, :exercises, :exercises_count, :exercises_count_one, :exercise_n, :status_todo, :status_done, :status_finished,
+            :skip, :exercises, :exercises_count, :exercises_count_one, :exercises_topic_known, :exercises_topic_done, :status_optional, :exercise_n,
+            :status_todo, :status_done, :status_finished,
             :status_finished_solution, :status_unfinished, :done_group, :status_skipped, :now, :redo, :draft_restored, :contest_note, :contest_button, :reminder_label)
   end
 

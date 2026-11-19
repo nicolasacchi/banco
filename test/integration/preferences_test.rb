@@ -85,12 +85,15 @@ class PreferencesTest < ActionDispatch::IntegrationTest
     assert_select "script[nonce]", text: /prefers-color-scheme/
   end
 
-  test "a choice on the settings page is posted as it is made: the form carries the endpoint, every radio its action, and «Salva» stays for no script (D-354)" do
+  test "a choice on the settings page is posted as it is made: the form carries the endpoint, every radio its action, and there is no «Salva» (D-354, D-378)" do
     as_student "/settings"
     assert_select "form#preferences[data-controller=settings][data-settings-url-value='/diagnosis/preferences'][data-settings-saved-value=Salvato]"
     assert_select "input[name=theme][data-action='change->settings#choose']", 4
     assert_select "input[name=size][data-action='change->settings#choose']", 7
-    assert_select "form#preferences button[type=submit]", "Salva"
+    assert_select "form#preferences button", 0
+    assert_select "form#preferences [type=submit]", 0
+    assert_no_match(/Salva\b(?!to)/, css_select("main").text, "nothing on the page says to press Salva")
+    assert_select "#settings-applies", /Ogni scelta vale subito/
     assert_select "#settings-status[role=status][data-settings-target=status]"
     as_student "/diagnosis/preferences", method: :post, params: { size: "tiny" }
     assert_redirected_to "/settings", "the form without a script still saves and goes back"

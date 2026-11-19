@@ -6,7 +6,7 @@ class ChangelogController < ApplicationController
   include StudentCourse
 
   def show
-    @feed = Changelog::Feed.student(acting_student, course_view)
+    @feed = Changelog::Feed.student(acting_student, course_view, recent: true)
     return if preview?
 
     # What counts as new is what came after the last visit; this visit is recorded after it was read.

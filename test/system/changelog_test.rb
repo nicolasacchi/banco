@@ -48,15 +48,16 @@ class ChangelogSystemTest < ApplicationSystemTestCase
     find("#student-menu-open").click
     assert_selector "#student-menu-dialog[open]"
     assert_selector "#menu-changelog #changelog-dot", visible: :all
-    page.execute_script("document.querySelector('#menu-changelog').scrollIntoView({ block: 'center' })")
+    page.execute_script("document.querySelector('#menu-changelog').scrollIntoView({ block: 'center', behavior: 'instant' })")
+    wait_until { page.evaluate_script("document.querySelector('#menu-changelog').getBoundingClientRect().top < window.innerHeight") }
     find("#menu-changelog").click
 
     assert_selector "h1", text: "Novità", wait: 10
     assert_current_path "/novita"
-    assert_selector "#changelog-followups li", text: /Dopo la tua segnalazione su Lezione: Equazioni di primo grado, scheda 1, l'argomento è stato rivisto il/
-    assert_selector "#changelog-entries li[data-entry=my-schemas] h3", text: "I miei schemi"
-    assert_selector "#changelog-updates h4", text: "Aggiornato: Equazioni di primo grado"
-    assert_selector "#changelog-updates p", text: "Esercizi o lezione rivisti."
+    assert_selector "#changelog-followups li[data-topic='#{TOPIC}']", text: /Equazioni di primo grado\s+1 commento\s+Argomento rivisto il/
+    assert_selector "#changelog-entries li[data-entry=my-schemas] h3", text: "I miei schemi", visible: :all
+    assert_selector "#changelog-updates li[data-topic='#{TOPIC}'] a", text: "Aggiornato: Equazioni di primo grado"
+    assert_selector "#changelog-updates .changelog-note", text: "Esercizi o lezione rivisti negli ultimi 14 giorni."
     assert_equal %w[changelog-followups changelog-entries changelog-updates], page.all("section.changelog-section").map { |s| s[:id] }
     assert_not page.has_text?("SEGRETO-DEL-DOCENTE"), "the teacher's reason is not on his page"
     assert page.has_selector?("[data-new=true]", minimum: 1), "what came after his account is marked new"
@@ -64,7 +65,7 @@ class ChangelogSystemTest < ApplicationSystemTestCase
 
     # every link and button of the page is a 44 px target and fits the window
     sizes = page.evaluate_script(<<~JS)
-      Array.from(document.querySelectorAll("#changelog-page a.button")).map((a) => { const r = a.getBoundingClientRect(); return [Math.round(r.height), Math.round(r.right), a.textContent.trim()] })
+      Array.from(document.querySelectorAll("#changelog-page a.button, #changelog-page a.changelog-topic-link")).filter((a) => a.offsetParent).map((a) => { const r = a.getBoundingClientRect(); return [Math.round(r.height), Math.round(r.right), a.textContent.trim()] })
     JS
     assert_operator sizes.size, :>=, 3
     sizes.each do |height, right, text|

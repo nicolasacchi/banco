@@ -1,0 +1,11 @@
+<%# One hand-written entry of «Novità» (D-375): the day, the kind, what is new; `fresh` says whether it came after his last visit. %>
+<li class="changelog-item" data-entry="<%= entry.id %>" data-kind="<%= entry.kind %>" data-new="<%= fresh ? "true" : "false" %>">
+  <p class="changelog-meta">
+    <time datetime="<%= entry.date.iso8601 %>"><%= I18n.l(entry.date, format: "%-d %B %Y") %></time>
+    <%= ui_pill(t("changelog.kinds.#{entry.kind}"), :muted) %>
+    <% if fresh %><%= ui_pill(t("changelog.new"), :nearly) %><% end %>
+  </p>
+  <h3><%= entry.title(locale) %></h3>
+  <p><%= entry.body(locale) %></p>
+  <% if entry.link %><a class="button secondary small" href="<%= spath(entry.link) %>"><%= t("changelog.entries.open") %></a><% end %>
+</li>

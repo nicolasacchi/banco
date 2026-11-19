@@ -487,16 +487,16 @@ class LessonTextSystemTest < ApplicationSystemTestCase
     visit "about:blank"
     visit "/settings"
     assert_selector "#voci .voice-server", count: 5, wait: 10
-    assert_equal SERVER["voices"].values.flatten, all("#voci .voice-server .voice-name").map(&:text)
+    assert_equal SERVER["voices"].values.flatten.map { |id| SERVER.dig("names", id, "it") }, all("#voci .voice-server .voice-name").map(&:text), "friendly names, never the ids (D-378)"
     assert_equal [], clips
-    find("#voci .voice-server", text: SERVER["voices"]["en"][1]).click_button "Prova"
+    find("#voci .voice-server", text: SERVER.dig("names", SERVER["voices"]["en"][1], "it")).click_button "Prova"
     assert_equal [ { "src" => clip_url(SERVER["voices"]["en"][1], "Hello, this is my voice."), "rate" => 1 } ], clips
     end_clip
-    find("#voci .voice-server", text: SERVER["voices"]["it"][0]).click_button "Prova"
+    find("#voci .voice-server", text: SERVER.dig("names", SERVER["voices"]["it"][0], "it")).click_button "Prova"
     assert_equal clip_url(SERVER["voices"]["it"][0], "Ciao, questa è la mia voce."), clips.last["src"]
     end_clip
     fail_clips!
-    row = find("#voci .voice-server", text: SERVER["voices"]["es"][1])
+    row = find("#voci .voice-server", text: SERVER.dig("names", SERVER["voices"]["es"][1], "it"))
     row.click_button "Prova"
     assert_selector "#voci .voice-server .voice-status", text: "non è ancora pronta", wait: 5
     assert_equal [], spoken
