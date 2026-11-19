@@ -34,15 +34,6 @@ class SchemasSystemTest < ApplicationSystemTestCase
     play_topic!(@topic_revision, SKILL, 3)
   end
 
-  # On a phone the menu dialog slides up (sheet-in); a click on a link while it moves can land on the backdrop and close it. Waits for the end of its animation.
-  def wait_until_still(selector, wait: 10)
-    deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + wait
-    until page.evaluate_script("document.querySelector(#{selector.to_json}).getAnimations().length === 0")
-      flunk "#{selector} was still animating after #{wait} s" if Process.clock_gettime(Process::CLOCK_MONOTONIC) > deadline
-      sleep 0.05
-    end
-  end
-
   def open_schema
     visit "about:blank"
     visit "/topics/#{TOPIC}/schema?n=#{SecureRandom.hex(3)}"

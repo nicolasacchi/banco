@@ -136,6 +136,16 @@ class ApplicationSystemTestCase < ActiveSupport::TestCase
     end
   end
 
+  # On a phone the menu dialog slides up (sheet-in); a click on a link while it moves can land on the backdrop (and close it) or on the item that
+  # passes under the pointer. Waits for the end of the element's animations.
+  def wait_until_still(selector, wait: 10)
+    deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + wait
+    until page.evaluate_script("document.querySelector(#{selector.to_json}).getAnimations().length === 0")
+      flunk "#{selector} was still animating after #{wait} s" if Process.clock_gettime(Process::CLOCK_MONOTONIC) > deadline
+      sleep 0.05
+    end
+  end
+
   def run
     Timeout.timeout(TEST_TIMEOUT_SECONDS, SystemTestHang, "#{self.class}##{name} took more than #{TEST_TIMEOUT_SECONDS} s: the browser or the server did not answer") { super }
   end

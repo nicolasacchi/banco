@@ -47,6 +47,7 @@ class ChangelogSystemTest < ApplicationSystemTestCase
     assert_selector "#student-menu-open .menu-dot", visible: :all, wait: 10
     find("#student-menu-open").click
     assert_selector "#student-menu-dialog[open]"
+    wait_until_still("#student-menu-dialog") # the sheet slides up: a click on it while it moves lands elsewhere («Impostazioni» on the runner's Chrome)
     assert_selector "#menu-changelog #changelog-dot", visible: :all
     page.execute_script("document.querySelector('#menu-changelog').scrollIntoView({ block: 'center', behavior: 'instant' })")
     wait_until { page.evaluate_script("document.querySelector('#menu-changelog').getBoundingClientRect().top < window.innerHeight") }
@@ -79,6 +80,7 @@ class ChangelogSystemTest < ApplicationSystemTestCase
     assert_no_selector "#student-menu-open .menu-dot", visible: :all
     find("#student-menu-open").click
     assert_selector "#student-menu-dialog[open]"
+    wait_until_still("#student-menu-dialog")
     assert_no_selector "#changelog-dot", visible: :all
     find("#student-menu-close").click
 
