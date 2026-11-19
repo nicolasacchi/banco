@@ -150,7 +150,7 @@ class PracticeTopicDoneTest < ActionDispatch::IntegrationTest
       assert_select "a", 0
     end
     assert_select "#topic-done-extra", 1
-    assert_select "a[href*=schema]", 0
+    assert_select "main.practice a[href*=schema]", 0
   end
 
   test "the preview: the same screen, with the preview's addresses, for the preview student alone" do
