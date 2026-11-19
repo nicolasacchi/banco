@@ -33,6 +33,8 @@ Rails.application.routes.draw do
       get "ratings" => "ratings#show", as: :teacher_ratings
       # «Contestazioni» (D-368): where the grader may be wrong, read-only (Teacher::GradingReview); a guest sees no word of the student's.
       get "grading" => "grading#show", as: :teacher_grading
+      # «Novità» (D-375): what changed for the student and the teacher, from git and the ledger; read-only, for the teacher and the guest.
+      get "changelog" => "changelog#show", as: :teacher_changelog
       get "search" => "search#show", as: :teacher_search
       get "findings" => "findings#show", as: :teacher_findings
       get "students" => "students#show", as: :teacher_students
@@ -117,6 +119,8 @@ Rails.application.routes.draw do
       # «I miei schemi» (D-372): the summary card of a topic (opens when the topic is done) and the list of the schemas.
       get "topics/:topic/schema" => "schemas#show", constraints: topic, as: :schema
       get "schemas" => "schemas#index", as: :schemas
+      # «Novità» (D-375): what is new for the student; the preview shows it and records no visit.
+      get "novita" => "changelog#show", as: :changelog
       post "topics/:topic/lesson/exercises/:n/solution" => "lessons#solution", constraints: topic.merge(n: /\d+/)
       # Lesson/2 (R3, A9, A11): the checks (a block, a blank of an example, an exercise's check) and the events batch.
       n = /\d+/
@@ -302,6 +306,8 @@ Rails.application.routes.draw do
     get "api/v1/students/:student/attempts" => "api/v1/attempts#index", constraints: { student: /[a-z0-9-]+/ }, format: false
     get "api/v1/students/:student/attempts/:id" => "api/v1/attempts#show", constraints: { student: /[a-z0-9-]+/, id: /(?:(?:practice|diagnosis|lesson)-)?\d+/ }, format: false
     get "api/v1/digest" => "api/v1/digest#show", format: false
+    # «Novità» (D-375): the changelog the student or the teacher reads, for every token role; read-only.
+    get "api/v1/changelog" => "api/v1/changelog#show", format: false
 
     # The public API (D-327): the teacher's decisions and the student's comments and pending answers, for the tokens of
     # the roles bot_read (reads) and teacher (reads, decisions, comment actions). Every write is a dry run unless the

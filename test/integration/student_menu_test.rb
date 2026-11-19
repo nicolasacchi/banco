@@ -50,14 +50,14 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     assert_select "#entry-warmup"
     assert_select "#entry-test a.button[href='/diagnosis/warmup']"
     assert_select "#entry-test-title", "Riscaldamento"
-    assert_equal [ "Oggi", "Riscaldamento", "I miei commenti", "Impostazioni", "Account e password", "Privacy" ], labels
+    assert_equal [ "Oggi", "Riscaldamento", "I miei commenti", "Novità", "Impostazioni", "Account e password", "Privacy" ], labels
     assert_select "#entry-test p", /i test si aprono|Il test non è ancora aperto/i
     warmup_done!(student("student"))
     page(OFFICIAL, "/today")
     assert_select "#entry-test[data-state=closed]"
     assert_select "#entry-warmup", /rifarla/
     assert_select "#entry-test a[href='/diagnosis/warmup']"
-    assert_equal [ "Oggi", "I miei commenti", "Impostazioni", "Account e password", "Privacy" ], labels
+    assert_equal [ "Oggi", "I miei commenti", "Novità", "Impostazioni", "Account e password", "Privacy" ], labels
   end
 
   test "released: the warm-up is a small optional link under the subjects, for the official and the trial student, never the main button" do
@@ -78,7 +78,7 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     assert_select "#entry-subjects li.subject[data-subject=math][data-state=not_started] .subject-state", "Da fare"
     assert_select "#entry-next", "Comincia"
     assert_select "form[action='/diagnosis/subjects/math'] #entry-next"
-    assert_equal [ "Oggi", "Test d'ingresso", "I miei commenti", "Impostazioni", "Account e password", "Privacy" ], labels
+    assert_equal [ "Oggi", "Test d'ingresso", "I miei commenti", "Novità", "Impostazioni", "Account e password", "Privacy" ], labels
   end
 
   test "in progress the button says Riprendi; all done leaves no list, a line with the results link and no button" do
@@ -150,7 +150,7 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     release_course!(@course)
     page(OFFICIAL, "/today")
     assert_select "#course-part li.topic[data-topic='#{TOPIC}']"
-    assert_equal [ "Oggi", "Materie", "I miei schemi", "Cerca", "I miei commenti", "Impostazioni", "Account e password", "Privacy" ], labels
+    assert_equal [ "Oggi", "Materie", "I miei schemi", "Cerca", "I miei commenti", "Novità", "Impostazioni", "Account e password", "Privacy" ], labels
   end
 
   test "a trial student sees the course drafts and Materie" do
@@ -165,7 +165,7 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
   test "the full menu on the course, practice, lesson and settings pages, with the current page marked" do
     build_student_world
     { "/today" => "Oggi", "/subjects" => "Materie", "/subjects/math" => "Materie", "/topics/#{TOPIC}" => "Materie", "/schemas" => "I miei schemi",
-      "/topics/#{TOPIC}/lesson" => "Materie", "/topics/#{TOPIC}/schema" => "I miei schemi", "/topics/#{TOPIC}/practice/#{SKILL}" => "Materie", "/settings" => "Impostazioni" }.each do |path, current|
+      "/topics/#{TOPIC}/lesson" => "Materie", "/topics/#{TOPIC}/schema" => "I miei schemi", "/topics/#{TOPIC}/practice/#{SKILL}" => "Materie", "/novita" => "Novità", "/settings" => "Impostazioni" }.each do |path, current|
       page(OFFICIAL, path)
       assert_response :success, path
       assert_select "nav.student-menu a", minimum: 3

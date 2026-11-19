@@ -136,6 +136,7 @@ it:
       not_found: "Una pagina che non c'è"
       schema: "Schema"
       schemas: "I miei schemi"
+      changelog: "Novità"
     card: "scheda %{n}"
     today_line: "Il docente ti ha risposto."
     today_link: "Leggi le risposte"

@@ -1,0 +1,19 @@
+/*
+ * «Novità» (D-375): the student's page and the teacher's. Lengths are rem or em, so the root size of D-354 scales the page.
+ * The small dot on the menu entry says that something is newer than the last visit.
+ */
+.changelog-page { max-width: 48rem; margin-inline: auto; }
+.changelog-page .changelog-intro { max-width: 40rem; }
+.changelog-section { margin: var(--space-5) 0; }
+.changelog-section > h2 { margin: 0 0 var(--space-3); font-size: var(--text-h2); }
+.changelog-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+.changelog-item { padding: var(--space-3) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface, transparent); }
+.changelog-item[data-new="true"] { border-color: var(--tone-nearly); }
+.changelog-item :is(h3, h4) { margin: 0 0 var(--space-1); font-size: var(--text-l); overflow-wrap: anywhere; }
+.changelog-item p { margin: 0 0 var(--space-2); overflow-wrap: anywhere; }
+.changelog-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-2); color: var(--muted, inherit); font-size: var(--text-s, 0.9em); }
+.changelog-day { margin: var(--space-4) 0 var(--space-2); font-size: var(--text-l); }
+.changelog-item a.button { display: inline-flex; align-items: center; min-height: var(--tap); }
+.changelog-followup a { overflow-wrap: anywhere; }
+.menu-new-dot { display: inline-block; width: 0.6rem; height: 0.6rem; margin-left: 0.4rem; border-radius: 50%; background: var(--tone-nearly); vertical-align: middle; }
+.changelog-teacher .changelog-item { overflow-wrap: anywhere; }

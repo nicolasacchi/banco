@@ -1,0 +1,70 @@
+# «Novità» (D-375): la pagina dello studente e quella del docente. Il gemello inglese è changelog.en.yml (il docente legge solo l'italiano:
+# la parte `teacher` non ha gemello). Frasi corte, in seconda persona, mai «sei indietro»; si dice cosa c'è di nuovo, non cosa non andava.
+it:
+  student:
+    menu:
+      changelog: "Novità"
+  changelog:
+    title: "Novità"
+    intro: "Qui leggi cosa c'è di nuovo: l'app, gli argomenti rivisti e le tue segnalazioni."
+    preview_note: "Anteprima: questa pagina non registra nessuna visita."
+    empty: "Per ora non c'è niente di nuovo."
+    new: "Nuovo"
+    menu_new: "C'è qualcosa di nuovo"
+    kinds:
+      software: "App"
+      content: "Contenuti"
+      fix: "Abbiamo corretto"
+    entries:
+      title: "Novità dell'app"
+      open: "Vai alla pagina"
+    updates:
+      title: "Argomenti aggiornati"
+      line: "Aggiornato: %{topic}"
+      note: "Esercizi o lezione rivisti."
+      open: "Apri l'argomento"
+    followups:
+      title: "Le tue segnalazioni"
+      line: "Dopo la tua segnalazione su %{place}, l'argomento è stato rivisto il %{date}."
+      open: "Apri la conversazione"
+  teacher:
+    menu:
+      changelog: "Novità"
+    changelog:
+      title: "Novità"
+      intro: "Tutto quello che è cambiato: le novità scritte a mano per lo studente e per te, e gli argomenti approvati di nuovo, letti dal registro delle decisioni."
+      filters:
+        label: "Filtri delle novità"
+        audience: "Per chi"
+        all: "Tutte"
+        student: "Studente"
+        teacher: "Docente"
+        since: "Dal giorno"
+        apply: "Filtra"
+        clear: "Togli i filtri"
+      entries:
+        title: "Novità scritte a mano"
+        empty: "Nessuna novità con questi filtri."
+        audience: "Per: %{who}"
+        who:
+          student: "studente"
+          teacher: "docente"
+        decisions: "Decisioni: %{list}"
+        open: "Apri la pagina"
+        kinds:
+          software: "App"
+          content: "Contenuti"
+          fix: "Correzione"
+      updates:
+        title: "Argomenti approvati di nuovo"
+        intro: "Ogni riga è una decisione approve_topic che ha sostituito una revisione già approvata dello stesso argomento. Lo studente legge solo «Aggiornato: argomento» e la data, e solo per gli argomenti che vede."
+        empty: "Nessun argomento è stato approvato di nuovo con questi filtri."
+        revisions: "Revisione %{new} al posto della %{old}"
+        reason: "Motivo: %{reason}"
+        no_reason: "Nessun motivo scritto."
+        decision: "Decisione n. %{id}"
+        via:
+          web: "dal browser"
+          console: "dalla console"
+          api: "da un bot"
+        open: "Apri l'argomento"

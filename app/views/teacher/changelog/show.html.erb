@@ -1,0 +1,67 @@
+<% content_for :title, t("teacher.changelog.title") %>
+<%# «Novità» (D-375), the teacher's side: every entry (for the student and for the teacher) and the topics approved again, with the reason and the revisions. %>
+<main class="page wide changelog-teacher" id="changelog-page">
+  <%= ui_page_header t("teacher.changelog.title"), back: [ t("teacher.menu.home"), "/teacher" ], sub: t("teacher.changelog.intro") %>
+
+  <form class="ratings-filters" id="changelog-filters" method="get" action="<%= teacher_changelog_path %>" aria-label="<%= t("teacher.changelog.filters.label") %>">
+    <label for="changelog-audience"><%= t("teacher.changelog.filters.audience") %>
+      <select id="changelog-audience" name="audience" class="answer-input">
+        <option value=""><%= t("teacher.changelog.filters.all") %></option>
+        <% Changelog::Entries::AUDIENCES.each do |who| %><option value="<%= who %>"<%= " selected" if @filters[:audience] == who %>><%= t("teacher.changelog.filters.#{who}") %></option><% end %>
+      </select>
+    </label>
+    <label for="changelog-since"><%= t("teacher.changelog.filters.since") %>
+      <input id="changelog-since" name="since" type="date" class="answer-input" value="<%= @filters[:since]&.iso8601 %>">
+    </label>
+    <button type="submit" class="button" id="changelog-filter-button"><%= t("teacher.changelog.filters.apply") %></button>
+    <% if @filters.any? %><a class="button secondary" id="changelog-filters-clear" href="<%= teacher_changelog_path %>"><%= t("teacher.changelog.filters.clear") %></a><% end %>
+  </form>
+
+  <section class="changelog-section" id="changelog-entries" aria-labelledby="changelog-entries-title">
+    <h2 id="changelog-entries-title"><%= t("teacher.changelog.entries.title") %></h2>
+    <% if @entries.empty? %>
+      <div id="changelog-entries-empty"><%= ui_empty t("teacher.changelog.entries.empty") %></div>
+    <% else %>
+      <ul class="changelog-list">
+        <% @entries.each do |entry| %>
+          <% href = teacher_changelog_link(entry.link) %>
+          <li class="changelog-item" data-entry="<%= entry.id %>" data-kind="<%= entry.kind %>" data-audience="<%= entry.audience.join(" ") %>">
+            <p class="changelog-meta">
+              <time datetime="<%= entry.date.iso8601 %>"><%= l(entry.date, format: "%-d %B %Y") %></time>
+              <%= ui_pill(t("teacher.changelog.entries.kinds.#{entry.kind}"), :muted) %>
+              <%= ui_tag(t("teacher.changelog.entries.audience", who: entry.audience.map { |who| t("teacher.changelog.entries.who.#{who}") }.join(" + "))) %>
+              <% if entry.decisions.any? %><span class="changelog-decisions"><%= t("teacher.changelog.entries.decisions", list: entry.decisions.join(", ")) %></span><% end %>
+            </p>
+            <h3><%= entry.title_it %></h3>
+            <p><%= entry.body_it %></p>
+            <% if href %><a class="button secondary small" href="<%= href %>"><%= t("teacher.changelog.entries.open") %></a><% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </section>
+
+  <section class="changelog-section" id="changelog-updates" aria-labelledby="changelog-updates-title">
+    <h2 id="changelog-updates-title"><%= t("teacher.changelog.updates.title") %></h2>
+    <p class="hint"><%= t("teacher.changelog.updates.intro") %></p>
+    <% if @updates.empty? %>
+      <div id="changelog-updates-empty"><%= ui_empty t("teacher.changelog.updates.empty") %></div>
+    <% else %>
+      <ul class="changelog-list">
+        <% @updates.each do |update| %>
+          <li class="changelog-item" data-decision="<%= update.decision_id %>" data-topic="<%= update.topic %>">
+            <p class="changelog-meta">
+              <time datetime="<%= update.at.utc.iso8601 %>"><%= l(update.at.in_time_zone, format: "%-d %B %Y, %H:%M") %></time>
+              <span><%= t("teacher.changelog.updates.decision", id: update.decision_id) %></span>
+              <span><%= t("teacher.changelog.updates.via.#{update.via}", default: update.via) %></span>
+            </p>
+            <h3><%= update.title_it %> <span class="key">(<%= update.topic %>)</span></h3>
+            <p class="update-revisions"><%= t("teacher.changelog.updates.revisions", old: update.old_revision_id, new: update.new_revision_id) %></p>
+            <p class="update-reason"><%= update.reason_it ? t("teacher.changelog.updates.reason", reason: update.reason_it) : t("teacher.changelog.updates.no_reason") %></p>
+            <% if update.subject_key %><a class="button secondary small" href="<%= teacher_topic_path(key: update.subject_key, topic: update.topic) %>"><%= t("teacher.changelog.updates.open") %></a><% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </section>
+</main>

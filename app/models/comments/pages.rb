@@ -12,6 +12,8 @@ module Comments
       [ %r{\A/civics\z}, "civics" ],
       # «I miei schemi» (D-372): the list and the schema of a topic.
       [ %r{\A/schemas\z}, "schemas" ],
+      # «Novità» (D-375).
+      [ %r{\A/novita\z}, "changelog" ],
       # The student's own 404 (D-361): the box on that page names the address it could not open after the prefix, so the teacher
       # reads what was asked for; the address is only ever shown as text.
       [ %r{\A/not-found(?:/\S{0,150})?\z}, "not_found" ],

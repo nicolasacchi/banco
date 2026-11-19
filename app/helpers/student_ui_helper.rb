@@ -2,7 +2,7 @@
 # tones of a skill state. The look is in app/assets/stylesheets/student.css on the shared components (D-306).
 module StudentUiHelper
   MENU_ICONS = { today: "nav-today", subjects: "nav-subjects", schemas: "map", search: "nav-search", diagnosis: "nav-diagnosis", comments: "comment",
-                 settings: "nav-settings", account: "locked", privacy: "info", logout: "back" }.freeze
+                 changelog: "tip", settings: "nav-settings", account: "locked", privacy: "info", logout: "back" }.freeze
   SUBJECT_ICONS = %w[math italian chemistry biology computer_science business english spanish geography history law_economics physical_education].freeze
 
   # The tone of a skill's state: never red and green. Done is teal, in study blue, to recover or review brass.

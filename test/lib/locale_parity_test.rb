@@ -21,13 +21,14 @@ class LocaleParityTest < ActiveSupport::TestCase
     "grading.it.yml" => { en: "grading.en.yml" },
     "privacy.it.yml" => { en: "privacy.en.yml" },
     "ratings.it.yml" => { en: "ratings.en.yml" },
-    "schemas.it.yml" => { en: "schemas.en.yml" }
+    "schemas.it.yml" => { en: "schemas.en.yml" },
+    "changelog.it.yml" => { en: "changelog.en.yml", skip: %w[teacher] }
   }.freeze
 
   # Strings that are the same in both languages: a name, a menu word («Privacy»), the voice samples that each speak their own language.
   SAME = %w[student.menu.label student.menu.bar_default diagnosis.preferences.languages.it diagnosis.preferences.languages.en lesson2.menu
             lesson2.voices.sentences.it lesson2.voices.sentences.en lesson2.voices.sentences.es
-            student.menu.privacy teacher.menu.privacy privacy.settings_links.privacy account.privacy_link comments.place.privacy].freeze
+            student.menu.privacy teacher.menu.privacy privacy.settings_links.privacy account.privacy_link comments.place.privacy changelog.kinds.software].freeze
 
   def leaves(node, path = [], out = {})
     case node

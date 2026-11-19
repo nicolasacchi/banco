@@ -13,6 +13,7 @@ module TeacherMenuHelper
     when "comments" then :comments
     when "ratings" then :ratings
     when "grading" then :grading
+    when "changelog" then :changelog
     when "students", "practice" then :students
     when "activity" then :activity
     when "previews" then :preview

@@ -91,7 +91,7 @@ module CommentsHelper
   def comment_place_link(comment)
     page = Comments::Pages.parse(comment.page_path) or return nil
     case page.kind
-    when "today", "settings", "search", "privacy", "account" then comment.page_path
+    when "today", "settings", "search", "privacy", "account", "changelog" then comment.page_path
     when "subjects" then comment.page_path if course_view.subjects.any?
     when "civics" then comment.page_path if Course::Civics.new(course_view).any?
     when "schemas" then comment.page_path if course_view.subjects.any?

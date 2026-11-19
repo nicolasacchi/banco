@@ -699,6 +699,15 @@
       "error_codes": ["E-AUTH", "E-NOT-FOUND"]
     },
     {
+      "name": "changelog",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/changelog",
+      "args": [],
+      "flags": ["--since", "--audience", "--student"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND"]
+    },
+    {
       "name": "changes",
       "local": false,
       "method": "GET",
