@@ -186,10 +186,10 @@ class EnglishWalkTest < ApplicationSystemTestCase
       assert_selector "h1", text: en("changelog.title")
       assert_selector "#changelog-intro", text: en("changelog.intro")
       assert_selector "#changelog-followups h2", text: en("changelog.followups.title")
-      assert_selector "#changelog-followups li", text: /Lesson: #{TOPIC_TITLE}, card 1/
-      assert_selector "#changelog-entries li[data-entry=my-schemas] h3", text: "My summaries"
-      assert_selector "#changelog-updates h4", text: en("changelog.updates.line", topic: TOPIC_TITLE)
-      assert_selector "#changelog-updates p", text: en("changelog.updates.note")
+      assert_selector "#changelog-followups li", text: /#{TOPIC_TITLE}\s+#{en('changelog.followups.count', count: 1)}\s+#{en('changelog.followups.revised', date: '')[0, 14]}/
+      assert_selector "#changelog-entries li[data-entry=my-schemas] h3", text: "My summaries", visible: :all # in the closed bar of the older news
+      assert_selector "#changelog-updates li[data-topic='#{TOPIC}'] a", text: en("changelog.updates.line", topic: TOPIC_TITLE)
+      assert_selector "#changelog-updates .changelog-note", text: en("changelog.updates.intro", days: Changelog::ContentUpdates::RECENT_DAYS)
       check_page "What's new"
     end
 

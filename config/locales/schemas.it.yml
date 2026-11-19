@@ -9,6 +9,7 @@ it:
     back: "I miei schemi"
     locked: "Si apre quando finisci l'argomento."
     locked_hint: "Finisci l'argomento e lo schema sarà qui."
+    locked_many: "Si aprono quando finisci l'argomento."
     locked_count:
       one: "Ancora chiuso: %{count} schema"
       other: "Ancora chiusi: %{count} schemi"

@@ -3,7 +3,8 @@
   <h1><%= t("settings.title") %></h1>
   <% if flash[:notice] %><%= ui_notice :success, flash[:notice], html: { id: "settings-saved" } %><% end %>
   <p><%= t("settings.intro") %></p>
-  <%# D-354: a choice applies and is saved at once (settings_controller.js posts it to the same endpoint); «Salva» stays for a browser without scripts. %>
+  <%# D-354, D-378: a choice applies and is saved at once (settings_controller.js posts it to the same endpoint); there is no «Salva», and the page says so. %>
+  <p class="field-help" id="settings-applies"><%= t("settings.applies") %></p>
   <%= form_with url: "#{base_path}/preferences", method: :post, class: "preferences", id: "preferences",
         data: { controller: "settings", action: "submit->settings#submit", settings_url_value: "#{base_path}/preferences", settings_saved_value: t("settings.saved_now"), settings_failed_value: t("settings.not_saved") } do %>
     <div class="card">
@@ -35,7 +36,7 @@
     <p class="field-help"><%= t("diagnosis.preferences.language_hint") %></p>
     </div>
     <% end %>
-    <div class="button-row"><button type="submit" class="button"><%= t("diagnosis.preferences.save") %></button> <span class="field-help" id="settings-status" role="status" data-settings-target="status"></span></div>
+    <p class="field-help" id="settings-status" role="status" data-settings-target="status"></p>
   <% end %>
   <%# the voices of this device, one sentence each (D-283): the operator listens here once, on the student's own device %>
   <section id="voci" class="voices card" data-comment-anchor="setting:voices" data-controller="voices" data-voices-labels-value="<%= t("lesson2.voices").to_json %>">

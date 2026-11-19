@@ -11,6 +11,7 @@ export default class extends Controller {
     this.speech = await import("lesson/speech")
     this.device = await import("lesson/speech_device")
     this.state = await import("lesson/speech_state")
+    this.names = (await import("lesson/voices")).default.server?.names ?? {}
     this.stopWatching = this.device.onChange(() => this.draw())
     this.draw()
   }
@@ -18,6 +19,12 @@ export default class extends Controller {
   disconnect() {
     this.stopWatching?.()
     this.speech?.stopAll()
+  }
+
+  // The friendly name of a server voice, in the language of the page (D-378); the machine's id only when no name was written for it.
+  voiceName(id) {
+    const names = this.names?.[id]
+    return names?.[document.documentElement.lang] ?? names?.it ?? id
   }
 
   draw() {
@@ -55,7 +62,7 @@ export default class extends Controller {
     li.className = "voice-row voice-server"
     const name = document.createElement("span")
     name.className = "voice-name"
-    name.textContent = sample.name
+    name.textContent = this.voiceName(sample.name)
     const status = document.createElement("span")
     status.className = "voice-status"
     status.textContent = t.server_voice

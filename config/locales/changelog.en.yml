@@ -17,12 +17,21 @@ en:
     entries:
       title: "News about the app"
       open: "Go to the page"
+      older: "Older news (%{count})"
     updates:
       title: "Topics updated"
       line: "Updated: %{topic}"
+      # What an update is, for the API's line (every topic says the same).
       note: "Exercises or lesson revised."
-      open: "Open the topic"
+      intro: "Exercises or lesson revised in the last %{days} days. The topics you started or that come next are shown here; the others are gathered in one line."
+      others:
+        one: "1 other topic updated"
+        other: "%{count} other topics updated"
     followups:
       title: "Your comments"
-      line: "After your comment on %{place}, the topic was revised on %{date}."
+      count:
+        one: "%{count} comment"
+        other: "%{count} comments"
+      revised: "Topic revised on %{date}"
       open: "Open the conversation"
+      open_all: "See your comments"

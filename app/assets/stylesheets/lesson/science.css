@@ -9,9 +9,11 @@
   --atom-H: var(--text); --atom-C: #55524a; --atom-N: #2f5fb3; --atom-O: #b5322e; --atom-Cl: #2c7d3d; --atom-Na: #7b45b5; --atom-Ca: #8a6a00;
   --atom-Fe: #b25a12; --atom-Co: #1d7a8c; --atom-S: #7a6400; --atom-def: #6a5a3a;
 }
-:root[data-theme="dark"], .l2-box[data-theme="dark"] {
-  --atom-H: var(--text); --atom-C: #c2bfb4; --atom-N: #86aef2; --atom-O: #f2827b; --atom-Cl: #66c97f; --atom-Na: #bb98f0; --atom-Ca: #dcbc4c;
-  --atom-Fe: #f1a45e; --atom-Co: #55c4d6; --atom-S: #e0c84a; --atom-def: #cfc6a8;
+@media not print {
+  :root[data-theme="dark"], .l2-box[data-theme="dark"] {
+    --atom-H: var(--text); --atom-C: #c2bfb4; --atom-N: #86aef2; --atom-O: #f2827b; --atom-Cl: #66c97f; --atom-Na: #bb98f0; --atom-Ca: #dcbc4c;
+    --atom-Fe: #f1a45e; --atom-Co: #55c4d6; --atom-S: #e0c84a; --atom-def: #cfc6a8;
+  }
 }
 .dg-atom-H { --atom: var(--atom-H); } .dg-atom-C { --atom: var(--atom-C); } .dg-atom-N { --atom: var(--atom-N); } .dg-atom-O { --atom: var(--atom-O); }
 .dg-atom-Cl { --atom: var(--atom-Cl); } .dg-atom-Na { --atom: var(--atom-Na); } .dg-atom-Ca { --atom: var(--atom-Ca); } .dg-atom-Fe { --atom: var(--atom-Fe); }
@@ -134,21 +136,23 @@
   --cp-vesicles-fill: #f4e8bf; --cp-vesicles-line: #7c6000;
   --cp-flagellum-fill: #e8e2d4; --cp-flagellum-line: #5a5344;
 }
-:root[data-theme="dark"], .l2-box[data-theme="dark"] {
-  --cp-wall-fill: #394026; --cp-wall-line: #c2d67a;
-  --cp-membrane-fill: #2e3934; --cp-membrane-line: #e2a95c;
-  --cp-cytoplasm-fill: #2e3934; --cp-cytoplasm-line: #e2a95c;
-  --cp-nucleoid-fill: #352f40; --cp-nucleoid-line: #c9a8f2;
-  --cp-nucleus-fill: #3a3049; --cp-nucleus-line: #c9a8f2;
-  --cp-dna-fill: #352f40; --cp-dna-line: #c9a8f2;
-  --cp-ribosomes-fill: #f291ad; --cp-ribosomes-line: #f6aec3;
-  --cp-mitochondria-fill: #4a3327; --cp-mitochondria-line: #f3a477;
-  --cp-chloroplasts-fill: #2c4530; --cp-chloroplasts-line: #93d38d;
-  --cp-vacuole-fill: #26364b; --cp-vacuole-line: #94bbf0;
-  --cp-er-fill: #223c40; --cp-er-line: #80cad4;
-  --cp-golgi-fill: #423b21; --cp-golgi-line: #e1c75e;
-  --cp-vesicles-fill: #423b21; --cp-vesicles-line: #e1c75e;
-  --cp-flagellum-fill: #3a372f; --cp-flagellum-line: #d3cbb6;
+@media not print {
+  :root[data-theme="dark"], .l2-box[data-theme="dark"] {
+    --cp-wall-fill: #394026; --cp-wall-line: #c2d67a;
+    --cp-membrane-fill: #2e3934; --cp-membrane-line: #e2a95c;
+    --cp-cytoplasm-fill: #2e3934; --cp-cytoplasm-line: #e2a95c;
+    --cp-nucleoid-fill: #352f40; --cp-nucleoid-line: #c9a8f2;
+    --cp-nucleus-fill: #3a3049; --cp-nucleus-line: #c9a8f2;
+    --cp-dna-fill: #352f40; --cp-dna-line: #c9a8f2;
+    --cp-ribosomes-fill: #f291ad; --cp-ribosomes-line: #f6aec3;
+    --cp-mitochondria-fill: #4a3327; --cp-mitochondria-line: #f3a477;
+    --cp-chloroplasts-fill: #2c4530; --cp-chloroplasts-line: #93d38d;
+    --cp-vacuole-fill: #26364b; --cp-vacuole-line: #94bbf0;
+    --cp-er-fill: #223c40; --cp-er-line: #80cad4;
+    --cp-golgi-fill: #423b21; --cp-golgi-line: #e1c75e;
+    --cp-vesicles-fill: #423b21; --cp-vesicles-line: #e1c75e;
+    --cp-flagellum-fill: #3a372f; --cp-flagellum-line: #d3cbb6;
+  }
 }
 .dg-cell .dg-svg { margin: 0 auto; }
 .dg-cp { stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; transition: opacity 250ms ease; }

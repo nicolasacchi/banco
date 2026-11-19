@@ -306,7 +306,7 @@ entries:
     decisions: [D-375]
     link: /novita
     title_it: "Novità"
-    body_it: "Qui leggi cosa c'è di nuovo, dal più recente. Se c'è qualcosa che non hai ancora letto, il menu ha un puntino. Se un argomento è stato rivisto dopo una tua segnalazione, lo trovi in «Le tue segnalazioni»."
+    body_it: "Qui leggi cosa c'è di nuovo, dal più recente. Se c'è qualcosa che non hai ancora letto, il menu ha un puntino. Se un argomento è stato rivisto dopo un tuo commento, lo trovi in «I tuoi commenti»."
     title_en: "What's new"
     body_en: "Here you read what is new, newest first. If there is something you have not read yet, the menu has a dot. If a topic was revised after one of your comments, you find it in «Your comments»."
 
@@ -336,3 +336,66 @@ entries:
     body_it: "Se un argomento viene aggiornato mentre hai un esercizio aperto, non ti torna più quello vecchio: te ne diamo uno nuovo. Le risposte che avevi dato contano ancora. «Ti è piaciuto?» arriva solo a esercizio finito, sotto la correzione."
     title_en: "Updated exercises reach you in the new version"
     body_en: "If a topic is updated while you have an exercise open, the old one does not come back: you get a new one. The answers you already gave still count. «Did you like it?» comes only when the exercise is over, below the correction."
+  - id: whats-new-shorter
+    date: 2026-11-19
+    audience: [student]
+    kind: software
+    decisions: [D-378]
+    link: /novita
+    title_it: "Novità più corta e più chiara"
+    body_it: "I tuoi commenti ora sono una scheda per argomento, con quanti commenti hai scritto. Gli argomenti rivisti sono quelli degli ultimi 14 giorni: in vista quelli che hai iniziato o che vengono dopo, gli altri in una riga."
+    title_en: "A shorter, clearer What's new"
+    body_en: "Your comments are now one card for each topic, with how many comments you wrote. The topics revised are those of the last 14 days: the ones you started or that come next are shown, the others are in one line."
+
+  - id: already-known-wording
+    date: 2026-11-19
+    audience: [student]
+    kind: fix
+    decisions: [D-378]
+    link: /subjects
+    title_it: "«Già sapevi» al posto di «Fatto» e «Dimostrata»"
+    body_it: "Un argomento che il test d'ingresso ti aveva già mostrato si chiama «Già sapevi» nell'elenco, nella pagina dell'argomento e negli esercizi. Se l'argomento è fatto, l'elenco degli esercizi lo dice e gli esercizi restano facoltativi."
+    title_en: "«Already known» instead of «Done» and «Shown»"
+    body_en: "A topic that the entry test had already shown is called «Already known» in the list, on the topic page and in the exercises. When the topic is done, the list of exercises says so and the exercises are optional."
+
+  - id: print-always-light
+    date: 2026-11-19
+    audience: [student]
+    kind: fix
+    decisions: [D-378]
+    link: /schemas
+    title_it: "Stampa chiara con ogni tema"
+    body_it: "Quando stampi uno schema o una lezione, la carta esce sempre con lo sfondo chiaro e il testo scuro, anche se usi il tema Scuro."
+    title_en: "Light printing with every theme"
+    body_en: "When you print a summary or a lesson, the paper always comes out with a light background and dark text, even if you use the Dark theme."
+
+  - id: settings-without-save
+    date: 2026-11-19
+    audience: [student]
+    kind: software
+    decisions: [D-378]
+    link: /settings
+    title_it: "Impostazioni senza «Salva», voci con un nome"
+    body_it: "In Impostazioni non c'è più il pulsante «Salva»: ogni scelta vale subito. Le voci da provare hanno un nome facile da leggere, per esempio «Voce italiana — Nicola»."
+    title_en: "Settings without «Save», voices with a name"
+    body_en: "In Settings there is no «Save» button any more: every choice applies at once. The voices to try have a name that is easy to read, for example «Italian voice — Nicola»."
+
+  - id: phone-reading-fixes
+    date: 2026-11-19
+    audience: [student]
+    kind: fix
+    decisions: [D-378]
+    title_it: "Sul telefono: codice da scorrere, etichette e pulsanti"
+    body_it: "Il codice delle lezioni si scorre di lato, e un'ombra e una barra dicono che c'è altro da leggere. «Ascolta» e «Più lento» hanno le parole anche sul telefono. Le etichette vanno a capo e non escono dalla scheda."
+    title_en: "On a phone: code that scrolls, labels and buttons"
+    body_en: "The code in the lessons scrolls sideways, and a shadow and a bar tell you there is more to read. «Listen» and «Slower» have their words on a phone too. Labels wrap and no longer leave their card."
+
+  - id: page-not-found-in-your-language
+    date: 2026-11-19
+    audience: [student]
+    kind: fix
+    decisions: [D-378]
+    title_it: "La pagina che non c'è parla la tua lingua"
+    body_it: "Se l'indirizzo è sbagliato, la pagina «Questa pagina non c'è» ora è in italiano o in inglese, come hai scelto, e ha il menu e il pulsante «Commenta»."
+    title_en: "The page that is not there speaks your language"
+    body_en: "If the address is wrong, the page «This page is not there» is now in Italian or in English, as you chose, and has the menu and the «Comment» button."

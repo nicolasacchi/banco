@@ -171,7 +171,7 @@ class SchemasTest < ActionDispatch::IntegrationTest
     assert_select "section[data-subject=math] li.row", 2
     assert_select "li.row[data-topic='#{TOPIC}'] a.schema-link[href='/topics/#{TOPIC}/schema']", TOPIC_TITLE
     assert_select "li.row[data-topic='#{PROGRESS_EXTRA_DONE}'] a.schema-link[href='/topics/#{PROGRESS_EXTRA_DONE}/schema']", "Percentuali"
-    assert_select "section[data-subject=math] .schemas-locked[data-locked='3']", /Ancora chiusi: 3 schemi\. #{Regexp.escape(LOCKED)}/
+    assert_select "section[data-subject=math] .schemas-locked[data-locked='3']", /Ancora chiusi: 3 schemi\. Si aprono quando finisci l'argomento\./
     [ "Frazioni", "Potenze", "Radici" ].each { |title| assert_not_includes response.body, title, "#{title} is not done: only counted" }
     assert_select "#schemas-empty", 0
   end

@@ -8,6 +8,7 @@ en:
     page_intro: "To remind you of the topic at a glance."
     back: "My summaries"
     locked: "It opens when you finish the topic."
+    locked_many: "They open when you finish the topic."
     locked_hint: "Finish the topic and the summary will be here."
     locked_count:
       one: "Still closed: %{count} summary"

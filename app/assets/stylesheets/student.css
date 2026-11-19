@@ -12,7 +12,8 @@
 .topbar .comment-open, .topbar .topbar-menu { flex: none; min-height: var(--tap); box-sizing: border-box; border-radius: var(--radius-pill); gap: var(--space-2); }
 .topbar .topbar-menu { padding-inline: var(--space-4); position: relative; }
 .topbar .topbar-menu .ic { margin: 0; }
-.menu-dot { position: absolute; top: 0.3rem; right: 0.3rem; width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--tone-nearly); border: 2px solid var(--bg); }
+/* The dot sits after the word «Menu», never over its last letter (D-378); where only the icon shows (below), it sits on the icon's corner. */
+.menu-dot { flex: none; width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--tone-nearly); border: 2px solid var(--bg); box-sizing: content-box; }
 .topbar.sitting .topbar-in { justify-content: space-between; flex-wrap: nowrap; }
 .topbar-leave { display: inline-flex; align-items: center; gap: var(--space-2); flex: 1 1 0; min-width: 0; min-height: var(--tap); color: var(--text); font-weight: 700; text-decoration: none; line-height: 1.2; }
 .topbar-leave .ic { flex: none; }
@@ -167,7 +168,7 @@ ul.topic-list > li.topic.now-card a.topic-title { font-size: var(--text-h2); }
 /* A subject's page: the list of its topics as rows with a number and a state. --------------------------------------------------- */
 ol.topic-list > li.topic.row { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); padding: var(--space-3) var(--space-4); border: var(--border-soft); }
 ol.topic-list > li.topic.row .row-main { display: grid; gap: 0; flex: 1 1 11rem; }
-ol.topic-list > li.topic.row .row-end { flex-wrap: wrap; justify-content: flex-end; margin-left: auto; }
+ol.topic-list > li.topic.row .row-end { flex-wrap: wrap; justify-content: flex-end; margin-left: auto; max-width: 100%; min-width: 0; }
 .topic-number { flex: none; display: inline-grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 50%; background: var(--soft-primary); border: 2px solid var(--primary); font-weight: 700; }
 /* Three looks for a topic (D-326): done has a green-teal side, a filled number and a check in its pill; in progress a blue side; to do is plain. */
 ol.topic-list > li.topic.row { border-left-width: 0.35rem; border-left-color: var(--line); }
@@ -370,4 +371,5 @@ article.solution.card { margin-top: var(--space-4); }
     position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
   }
   .topbar .comment-open, .topbar .topbar-menu { min-width: var(--tap); padding-inline: var(--space-3); }
+  .topbar .topbar-menu .menu-dot { position: absolute; top: 0.3rem; right: 0.3rem; }
 }

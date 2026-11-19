@@ -9,7 +9,7 @@ module ChangelogHelper
     student = respond_to?(:acting_student) && !preview? ? acting_student : nil
     @_changelog_new = !student.nil? && begin
       view = respond_to?(:course_view) ? course_view : Course::StudentView.new(student)
-      Changelog::Feed.student(student, view).newer_than?(Changelog::Visits.last_seen(student))
+      Changelog::Feed.student(student, view, recent: true).newer_than?(Changelog::Visits.last_seen(student))
     end
   end
 

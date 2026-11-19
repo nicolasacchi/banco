@@ -1,4 +1,4 @@
-<%# «Novità» (D-375): the entries git holds, the topics revised, and his own comments on a topic that was revised after them. Newest first. %>
+<%# «Novità» (D-375, D-378): his own comments on a topic that was revised after them (one card per topic), the entries git holds (the newest in full, the rest folded), and the topics revised in the last 14 days (those he started or that are next for him in full, the others folded). Newest first. %>
 <% content_for :title, t("changelog.title") %>
 <% locale = I18n.locale %>
 <% fresh = ->(at) { @since && at > @since } %>
@@ -12,11 +12,19 @@
     <section class="changelog-section" id="changelog-followups" aria-labelledby="changelog-followups-title">
       <h2 id="changelog-followups-title"><%= t("changelog.followups.title") %></h2>
       <ul class="changelog-list">
-        <% @feed.followups.each do |followup| %>
-          <li class="changelog-item changelog-followup" data-comment="<%= followup.comment_id %>" data-new="<%= fresh.(followup.revised_at) ? "true" : "false" %>">
-            <p><%= t("changelog.followups.line", place: followup.place_it, date: I18n.l(followup.date, format: "%-d %B %Y")) %>
-              <% if fresh.(followup.revised_at) %><%= ui_pill(t("changelog.new"), :nearly) %><% end %></p>
-            <a class="button secondary small" href="/comments/<%= followup.comment_id %>"><%= t("changelog.followups.open") %></a>
+        <% @feed.followups.each do |group| %>
+          <li class="changelog-item changelog-followup" data-topic="<%= group.topic %>" data-count="<%= group.count %>" data-comments="<%= group.comment_ids.join(" ") %>" data-new="<%= fresh.(group.revised_at) ? "true" : "false" %>">
+            <h3><%= group.title_it %></h3>
+            <p class="changelog-meta">
+              <span><%= t("changelog.followups.count", count: group.count) %></span>
+              <span><%= t("changelog.followups.revised", date: I18n.l(group.date, format: "%-d %B %Y")) %></span>
+              <% if fresh.(group.revised_at) %><%= ui_pill(t("changelog.new"), :nearly) %><% end %>
+            </p>
+            <% if group.count == 1 %>
+              <a class="button secondary small" href="/comments/<%= group.comment_id %>"><%= t("changelog.followups.open") %></a>
+            <% else %>
+              <a class="button secondary small" href="/comments"><%= t("changelog.followups.open_all") %></a>
+            <% end %>
           </li>
         <% end %>
       </ul>
@@ -24,39 +32,42 @@
   <% end %>
 
   <% if @feed.entries.any? %>
+    <% featured, older = @feed.featured_entries(@since) %>
     <section class="changelog-section" id="changelog-entries" aria-labelledby="changelog-entries-title">
       <h2 id="changelog-entries-title"><%= t("changelog.entries.title") %></h2>
       <ul class="changelog-list">
-        <% @feed.entries.each do |entry| %>
-          <li class="changelog-item" data-entry="<%= entry.id %>" data-kind="<%= entry.kind %>" data-new="<%= fresh.(entry.at) ? "true" : "false" %>">
-            <p class="changelog-meta">
-              <time datetime="<%= entry.date.iso8601 %>"><%= I18n.l(entry.date, format: "%-d %B %Y") %></time>
-              <%= ui_pill(t("changelog.kinds.#{entry.kind}"), :muted) %>
-              <% if fresh.(entry.at) %><%= ui_pill(t("changelog.new"), :nearly) %><% end %>
-            </p>
-            <h3><%= entry.title(locale) %></h3>
-            <p><%= entry.body(locale) %></p>
-            <% if entry.link %><a class="button secondary small" href="<%= spath(entry.link) %>"><%= t("changelog.entries.open") %></a><% end %>
-          </li>
-        <% end %>
+        <% featured.each do |entry| %><%= render "changelog/entry", entry: entry, locale: locale, fresh: fresh.(entry.at) %><% end %>
       </ul>
+      <% if older.any? %>
+        <details class="disclosure changelog-older" id="changelog-older">
+          <summary><%= t("changelog.entries.older", count: older.size) %></summary>
+          <ul class="changelog-list">
+            <% older.each do |entry| %><%= render "changelog/entry", entry: entry, locale: locale, fresh: fresh.(entry.at) %><% end %>
+          </ul>
+        </details>
+      <% end %>
     </section>
   <% end %>
 
   <% if @feed.days.any? %>
     <section class="changelog-section" id="changelog-updates" aria-labelledby="changelog-updates-title">
       <h2 id="changelog-updates-title"><%= t("changelog.updates.title") %></h2>
-      <% @feed.days.each do |date, list| %>
+      <p class="changelog-note"><%= t("changelog.updates.intro", days: Changelog::ContentUpdates::RECENT_DAYS) %></p>
+      <% @feed.day_groups.each do |date, in_play, others| %>
         <h3 class="changelog-day" data-day="<%= date.iso8601 %>"><%= I18n.l(date, format: "%-d %B %Y") %></h3>
-        <ul class="changelog-list">
-          <% list.each do |update| %>
-            <li class="changelog-item" data-topic="<%= update.topic %>" data-new="<%= fresh.(update.at) ? "true" : "false" %>">
-              <h4><%= t("changelog.updates.line", topic: update.title_it) %> <% if fresh.(update.at) %><%= ui_pill(t("changelog.new"), :nearly) %><% end %></h4>
-              <p><%= t("changelog.updates.note") %></p>
-              <a class="button secondary small" href="<%= spath("/topics/#{update.topic}") %>"><%= t("changelog.updates.open") %></a>
-            </li>
-          <% end %>
-        </ul>
+        <% if in_play.any? %>
+          <ul class="changelog-list changelog-topics">
+            <% in_play.each do |update| %><%= render "changelog/topic_update", update: update, fresh: fresh.(update.at) %><% end %>
+          </ul>
+        <% end %>
+        <% if others.any? %>
+          <details class="disclosure changelog-others" data-day="<%= date.iso8601 %>">
+            <summary><%= t("changelog.updates.others", count: others.size) %></summary>
+            <ul class="changelog-list changelog-topics">
+              <% others.each do |update| %><%= render "changelog/topic_update", update: update, fresh: fresh.(update.at) %><% end %>
+            </ul>
+          </details>
+        <% end %>
       <% end %>
     </section>
   <% end %>

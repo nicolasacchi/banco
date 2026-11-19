@@ -13,7 +13,7 @@
   </header>
   <% if draft? %><%= ui_notice :info, t("draft.notice"), html: { id: "draft-notice" } %><% end %>
   <div class="skill-status">
-    <span class="pill <%= skill_state_tone(@state.state) %>" id="skill-state" data-practice-target="skillState"><%= Practice::Messages.state_it(@state.state) %></span>
+    <span class="pill <%= skill_state_tone(@state.state) %>" id="skill-state" data-practice-target="skillState"><%= Practice::Messages.skill_state_it(@state) %></span>
     <span class="dots" role="img" data-practice-target="dots" aria-label="<%= t("practice.clean_of", n: clean.to_i) %>"<%= ' hidden'.html_safe if clean.nil? %>>
       <% 3.times do |i| %><span class="<%= 'on' if clean.to_i > i %>"></span><% end %>
     </span>

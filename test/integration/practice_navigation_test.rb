@@ -182,7 +182,7 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     list = list_for(OFFICIAL)
     assert_response :success
     assert_equal "no-store", response.headers["Cache-Control"]
-    assert_equal %w[skills topic], list.keys.sort
+    assert_equal %w[done known skills topic], list.keys.sort
     assert_equal TOPIC, list["topic"]
     assert_equal 1, list["skills"].size
     skill = list["skills"].first

@@ -139,7 +139,7 @@ class BackNavigationTest < ApplicationSystemTestCase
 
   # ---- Impostazioni --------------------------------------------------------------------------------------
 
-  test "Oggi, Impostazioni, a choice and «Salva», then back: Oggi again, with the choice on it and no second Impostazioni on the way" do
+  test "Oggi, Impostazioni, a choice (it applies and saves at once), then back: Oggi again, with the choice on it and no second Impostazioni on the way" do
     build_student_world(approve: true, release: true)
     sign_in_official
     visit "/today"
@@ -147,7 +147,6 @@ class BackNavigationTest < ApplicationSystemTestCase
     assert_current_path "/settings"
     choose "theme_dark"
     choose "size_large"
-    find("#preferences button[type=submit]").click
     wait_until { Diagnosis::Preferences.for(@official).values_at(:theme, :size) == %w[dark large] }
     assert_current_path "/settings"
 

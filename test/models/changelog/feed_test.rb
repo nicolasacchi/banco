@@ -61,11 +61,11 @@ class ChangelogFeedTest < ActiveSupport::TestCase
     assert_equal [ 1, 1 ], days.map { |_, list| list.size }
   end
 
-  # ---- «Le tue segnalazioni» ------------------------------------------------------------------------------
+  # ---- «I tuoi commenti» ----------------------------------------------------------------------------------
 
   def followups(student = @official) = Changelog::Followups.for(student, view(student), CU.for_student(view(student)))
 
-  test "a comment on a lesson, an exercise page or a topic gets one line when the topic is revised after it, in the comment's place" do
+  test "a comment on a lesson, an exercise page or a topic gets one follow-up when the topic is revised after it; the topic is named, not the page" do
     at = Time.zone.local(2026, 11, 18, 10, 0)
     lesson = comment_on(@official, "/topics/#{@topic_key}/lesson", "lesson", at: at, card: 3)
     practice = comment_on(@official, "/topics/#{@topic_key}/practice/#{SKILL}", "practice", at: at + 1.hour)
@@ -73,13 +73,11 @@ class ChangelogFeedTest < ActiveSupport::TestCase
     travel_to(Time.zone.local(2026, 11, 19, 8, 0)) { revise! }
     found = followups.index_by(&:comment_id)
     assert_equal [ lesson.id, practice.id, topic.id ].sort, found.keys.sort
-    assert_equal "Lezione: #{TOPIC_TITLE}, scheda 3", found[lesson.id].place_it
-    assert_equal "Esercizi: #{TOPIC_TITLE}", found[practice.id].place_it
-    assert_equal "Argomento: #{TOPIC_TITLE}", found[topic.id].place_it
+    assert_equal [ TOPIC_TITLE ], found.values.map(&:title_it).uniq
     assert_equal Date.new(2026, 11, 19), found[lesson.id].date
   end
 
-  test "no line when the revision came before the comment, when the page is not about a topic, for another student or for a topic he does not see" do
+  test "no follow-up when the revision came before the comment, when the page is not about a topic, for another student or for a topic he does not see" do
     travel_to(Time.zone.local(2026, 11, 18, 8, 0)) { revise! }
     comment_on(@official, "/topics/#{@topic_key}/lesson", "lesson", at: Time.zone.local(2026, 11, 18, 9, 0))
     assert_empty followups, "the revision was before the comment"
@@ -94,11 +92,24 @@ class ChangelogFeedTest < ActiveSupport::TestCase
     assert_empty followups, "a topic his course does not show is not named"
   end
 
-  test "the first revision after the comment is the one named, and the newest revision comes first" do
+  test "the latest revision after the comment is the day named (a topic revised again says so)" do
     comment_on(@official, "/topics/#{@topic_key}", "topic", at: Time.zone.local(2026, 11, 16, 9, 0))
     travel_to(Time.zone.local(2026, 11, 17, 9, 0)) { revise! }
     travel_to(Time.zone.local(2026, 11, 19, 9, 0)) { revise! }
-    assert_equal [ Date.new(2026, 11, 17) ], followups.map(&:date)
+    assert_equal [ Date.new(2026, 11, 19) ], followups.map(&:date)
+  end
+
+  test "one group per topic: how many comments, the latest revision, the thread to open when there is one comment" do
+    at = Time.zone.local(2026, 11, 16, 9, 0)
+    first = comment_on(@official, "/topics/#{@topic_key}", "topic", at: at)
+    second = comment_on(@official, "/topics/#{@topic_key}/lesson", "lesson", at: at + 1.hour, card: 2)
+    third = comment_on(@official, "/topics/#{@topic_key}/practice/#{SKILL}", "practice", at: at + 2.hours)
+    travel_to(Time.zone.local(2026, 11, 17, 9, 0)) { revise! }
+    travel_to(Time.zone.local(2026, 11, 19, 9, 0)) { revise! }
+    groups = Changelog::Followups.group(followups)
+    group = groups.sole
+    assert_equal [ @topic_key, TOPIC_TITLE, 3, [ first.id, second.id, third.id ], Date.new(2026, 11, 19) ], [ group.topic, group.title_it, group.count, group.comment_ids, group.date ]
+    assert_equal third.id, group.comment_id, "the newest comment is the thread to open"
   end
 
   # ---- the merge and the visits -------------------------------------------------------------------------
@@ -168,5 +179,61 @@ class ChangelogFeedBeforeReleaseTest < ActiveSupport::TestCase
     assert_equal 2, updates.all.size
     assert_equal [ after.id ], updates.for_student(Course::StudentView.new(@official)).map(&:new_revision_id)
     assert_equal 2, updates.for_student(Course::StudentView.new(@trial)).size
+  end
+end
+
+# D-378: the page keeps the last 14 days of topics revised, lists in full those he started or that are next for him and folds the others.
+class ChangelogRecentTest < ActiveSupport::TestCase
+  include ChangelogWorld
+
+  setup { build_progress_world }
+
+  def view = Course::StudentView.new(@official)
+
+  def revise_all!(at)
+    travel_to(at) { [ @topic_revision, *@progress_topics.values ].each { |revision| revise!(revision) } }
+  end
+
+  test "the last 14 days, today included: older updates stay in the ledger and the API, not on the page" do
+    revise_all!(20.days.ago)
+    revise_all!(13.days.ago)
+    revise_all!(2.days.ago)
+    all = Changelog::Feed.student(@official, view)
+    recent = Changelog::Feed.student(@official, view, recent: true)
+    assert_equal 15, all.updates.size
+    assert_equal 10, recent.updates.size, "20 days ago is out, 13 days ago and 2 days ago are in"
+    assert_equal 2, recent.days.size
+    assert_operator recent.updates.map(&:date).min, :>, Date.current - 14
+  end
+
+  test "each day lists in full the topics he has started or that are next for him, and folds the others" do
+    revise_all!(1.day.ago)
+    feed = Changelog::Feed.student(@official, view, recent: true)
+    started = [ TOPIC, PROGRESS_STARTED, PROGRESS_EXTRA_DONE ]
+    next_key = view.next_topic(view.subject("math"))&.topic&.key
+    in_play = (started + [ next_key ]).compact.uniq
+    date, shown, folded = feed.day_groups.sole
+    assert_equal Date.current - 1, date
+    assert_equal in_play.sort, shown.map(&:topic).sort
+    assert_equal (@progress_topics.keys + [ TOPIC ] - in_play).sort, folded.map(&:topic).sort
+    assert_operator folded.size, :>=, 1, "the topic he has not touched is folded"
+  end
+
+  test "an update older than 14 days is neither on the page nor news to the dot" do
+    revise_all!(20.days.ago)
+    feed = Changelog::Feed.student(@official, view, recent: true)
+    assert_empty feed.updates
+    assert_empty feed.day_groups
+  end
+
+  test "the newest entries are featured, and an entry newer than his last visit is featured too" do
+    feed = Changelog::Feed.student(@official, view)
+    featured, older = feed.featured_entries(nil)
+    assert_equal feed.entries.first(Changelog::Feed::FEATURED_ENTRIES), featured
+    assert_equal feed.entries.drop(Changelog::Feed::FEATURED_ENTRIES), older
+    since = feed.entries.last.at - 1.day
+    featured, older = feed.featured_entries(since)
+    assert_equal feed.entries, featured
+    assert_empty older
   end
 end

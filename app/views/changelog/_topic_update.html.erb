@@ -1,0 +1,5 @@
+<%# One topic revised on a day (D-378): a single line, the whole line is the link; `fresh` says whether it came after his last visit. %>
+<li class="changelog-topic" data-topic="<%= update.topic %>" data-new="<%= fresh ? "true" : "false" %>">
+  <a class="changelog-topic-link" href="<%= spath("/topics/#{update.topic}") %>"><%= t("changelog.updates.line", topic: update.title_it) %></a>
+  <% if fresh %><%= ui_pill(t("changelog.new"), :nearly) %><% end %>
+</li>

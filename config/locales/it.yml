@@ -33,7 +33,8 @@ it:
     intro: "Scegli i colori e la grandezza di testi e immagini. Valgono su tutte le pagine."
     saved: "Fatto. Ho salvato la scelta."
     saved_now: "Salvato"
-    not_saved: "Non sono riuscito a salvare. Premi Salva."
+    not_saved: "Non sono riuscito a salvare. Prova a scegliere di nuovo."
+    applies: "Ogni scelta vale subito e si salva da sola: non c'è niente da premere."
   diagnosis:
     title: "Test d'ingresso"
     placeholder: "La diagnosi d'ingresso sarà qui."
@@ -69,7 +70,6 @@ it:
         it: "Italiano"
         en: "English"
       language_hint: "Cambia la lingua di menu, pulsanti e messaggi. Le lezioni e gli esercizi restano in italiano."
-      save: "Salva"
     states:
       to_do: "Da fare"
       after_dependency: "Dopo la prima seduta di %{subjects}"

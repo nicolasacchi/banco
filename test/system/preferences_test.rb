@@ -24,7 +24,6 @@ class PreferencesSystemTest < ApplicationSystemTestCase
     cream = style("body", "backgroundColor")
     choose "Scuro"
     choose "Molto grande"
-    click_button "Salva"
     assert_selector "#settings-status", text: "Salvato"
     assert_selector "html[data-theme=dark][data-size=larger]"
     assert_equal "28px", style("html", "fontSize")
@@ -63,7 +62,6 @@ class PreferencesSystemTest < ApplicationSystemTestCase
   def choose_size(label)
     visit "/settings"
     choose label
-    click_button "Salva"
     assert_selector "#settings-status", text: "Salvato"
   end
 
@@ -77,10 +75,10 @@ class PreferencesSystemTest < ApplicationSystemTestCase
   test "the root size scales a button and a card, not only the text (D-350)" do
     choose_size "Piccolissimo"
     assert_equal "14px", style("html", "fontSize")
-    small = { button: box(".button-row .button"), card: box(".preferences .card"), padding: style(".preferences .card", "paddingTop") }
+    small = { button: box("label.choice"), card: box(".preferences .card"), padding: style(".preferences .card", "paddingTop") }
     choose_size "Molto grande"
     assert_equal "28px", style("html", "fontSize")
-    large = { button: box(".button-row .button"), card: box(".preferences .card"), padding: style(".preferences .card", "paddingTop") }
+    large = { button: box("label.choice"), card: box(".preferences .card"), padding: style(".preferences .card", "paddingTop") }
     # the root is twice as large, so the button (its height, its padding, its label) is twice as tall and wide; the card is twice as tall
     assert_in_delta 2.0, large[:button][1].to_f / small[:button][1], 0.08, "the button's height follows the root size"
     assert_in_delta 2.0, large[:button][0].to_f / small[:button][0], 0.15, "the button's width follows the root size"
@@ -91,7 +89,6 @@ class PreferencesSystemTest < ApplicationSystemTestCase
   test "Automatico follows the device: cream by day, dark by night, and again when the device changes" do
     visit "/settings"
     choose "Automatico"
-    click_button "Salva"
     assert_selector "#settings-status", text: "Salvato"
     assert_selector "html[data-theme-choice=auto]"
     emulate_scheme("light")
@@ -132,7 +129,6 @@ class PreferencesSystemTest < ApplicationSystemTestCase
   test "«Salva» with scripts saves and stays on the page, so the history has no second Impostazioni (D-354)" do
     visit "/settings"
     choose "Grande"
-    click_button "Salva"
     assert_selector "#settings-status", text: "Salvato"
     assert_equal "/settings", page.current_path
     assert_equal "large", Diagnosis::Preferences.for(@rows[:student])[:size]
@@ -165,7 +161,6 @@ class PreferencesSystemTest < ApplicationSystemTestCase
   test "Chiaro is white and neutral" do
     visit "/settings"
     choose "Chiaro"
-    click_button "Salva"
     assert_selector "html[data-theme=light][data-theme-choice=light]"
     assert_equal "rgb(255, 255, 255)", style("body", "backgroundColor")
   end
@@ -183,11 +178,11 @@ class PreferencesSystemTest < ApplicationSystemTestCase
     with_pointer(touch: true, size: [ 390, 844 ])
     choose_size "Minimo"
     assert_equal "12px", style("html", "fontSize")
-    assert_operator box(".button-row .button")[1], :>=, 44
+    assert_operator box("label.choice")[1], :>=, 44
     assert_operator box("label.choice")[1], :>=, 44
     visit "/settings"
     page.driver.browser.page.command("Emulation.setTouchEmulationEnabled", enabled: false)
-    assert_operator box(".button-row .button")[1], :<, 44, "with a mouse the button follows the size"
+    assert_operator box("label.choice")[1], :<, 44, "with a mouse the button follows the size"
   end
 
   def emulate_scheme(value)

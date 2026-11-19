@@ -15,5 +15,14 @@
 .changelog-day { margin: var(--space-4) 0 var(--space-2); font-size: var(--text-l); }
 .changelog-item a.button { display: inline-flex; align-items: center; min-height: var(--tap); }
 .changelog-followup a { overflow-wrap: anywhere; }
+/* D-378: the page is short. A topic revised is one line (the whole line is the link, a 44 px target); the older news and the other topics of a day wait in a closed bar. */
+.changelog-note { max-width: 40rem; margin: 0 0 var(--space-2); color: var(--muted); }
+.changelog-topics { gap: var(--space-1); }
+.changelog-topic { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); padding: 0 var(--space-3); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface, transparent); }
+.changelog-topic[data-new="true"] { border-color: var(--tone-nearly); }
+.changelog-topic-link { flex: 1 1 0; min-width: 0; display: flex; align-items: center; min-height: var(--tap); color: var(--text); font-weight: 700; overflow-wrap: anywhere; }
+details.changelog-others, details.changelog-older { margin: var(--space-2) 0 0; }
+details.changelog-others > summary, details.changelog-older > summary { font-weight: 700; }
+details.changelog-older > .changelog-list { margin-top: var(--space-2); }
 .menu-new-dot { display: inline-block; width: 0.6rem; height: 0.6rem; margin-left: 0.4rem; border-radius: 50%; background: var(--tone-nearly); vertical-align: middle; }
 .changelog-teacher .changelog-item { overflow-wrap: anywhere; }

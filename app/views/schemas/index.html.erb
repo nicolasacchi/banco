@@ -26,7 +26,7 @@
           </ul>
         <% end %>
         <% if group.locked_count.positive? %>
-          <p class="schemas-locked muted" data-locked="<%= group.locked_count %>"><%= ui_icon("locked") %> <span><%= t("schemas.locked_count", count: group.locked_count) %>. <%= t("schemas.locked") %></span></p>
+          <p class="schemas-locked muted" data-locked="<%= group.locked_count %>"><%= ui_icon("locked") %> <span><%= t("schemas.locked_count", count: group.locked_count) %>. <%= t(group.locked_count == 1 ? "schemas.locked" : "schemas.locked_many") %></span></p>
         <% end %>
       </section>
     <% end %>

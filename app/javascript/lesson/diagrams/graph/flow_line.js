@@ -109,7 +109,7 @@ export function buildLine(data, ctx) {
   const here = token ? nodes.get(token) : null
   if (here && !select) {
     const sentence = `${TEXT.path_here} ${plain(here.text_it)}.${here.actor_it ? ` ${cap(plain(here.actor_it))}.` : ""}`
-    const probe = ctx.measure(sentence, f, W - 36)
+    const probe = ctx.measure(sentence, f, W - 36, "dg-flow-here")
     shape(ctx, "rect", { x: 6, y: y + 6, w: W - 12, h: probe.h + 2 * ctx.pad + 4, r: 10, cls: "dg-graph-note", key: "herebox" })
     const note = label(ctx, sentence, 18, y + 6 + ctx.pad + 2, { anchor: "start", maxW: W - 36, cls: "dg-flow-here", key: "here" })
     y += note.h + 2 * ctx.pad + 16

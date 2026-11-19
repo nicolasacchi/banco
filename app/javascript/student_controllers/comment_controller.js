@@ -104,6 +104,7 @@ export default class extends Controller {
     this.reasonTargets.forEach((radio) => { radio.checked = false })
     this.clockNoteTarget.hidden = !this.eventsUrlValue
     this.boxOpen = true
+    this.bannerTarget.hidden = true // the picker bar has done its work: the box is the one thing open (closing the box ends the mode)
     this.dialogTarget.removeAttribute("data-placed")
     this.dialogTarget.style.cssText = ""
     this.dialogTarget.showModal()
