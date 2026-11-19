@@ -68,8 +68,8 @@
       <h2 id="topic-done-title" tabindex="-1" data-practice-target="doneTitle"></h2>
       <p id="topic-done-offer" data-practice-target="doneOffer" hidden></p>
       <div class="actions button-row" id="topic-done-actions" data-practice-target="doneActions"></div>
-      <%# A slot after the buttons: the Schemas slice adds «Vedi lo schema» here (the route /topics/:topic_key/schema). Nothing links to it from here. %>
-      <div class="topic-done-extra" id="topic-done-extra"></div>
+      <%# A slot after the buttons (D-373): practice_controller.js draws «Vedi lo schema» here, when the reply has the topic's schema. Empty before. %>
+      <div class="topic-done-extra" id="topic-done-extra" data-practice-target="doneExtra"></div>
     </section>
   </div>
   <%= render "course/question", topic: @topic.key, lesson_revision_id: @topic.lesson_revision.id, section: "practice" %>

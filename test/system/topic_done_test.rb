@@ -4,7 +4,8 @@ require_relative "../support/student_session"
 
 # The end of a topic (D-366) on a 390 px phone, in Chrome: the last exercise right without help, «Un altro esercizio», the closing screen with
 # the next topic and its two buttons, each of which works; the same for a topic known from the first visit, for the teacher in the preview
-# (its own addresses) and in English. No sideways scroll, targets of at least 44 px, no console or log error.
+# (its own addresses) and in English. D-373: after the two buttons, «Vedi lo schema» (a secondary button of 44 px) opens the topic's schema with the
+# summary drawn, also in the preview and in English. No sideways scroll, targets of at least 44 px, no console or log error.
 class TopicDoneSystemTest < ApplicationSystemTestCase
   include StudentCourseWorld
   include StudentSession
@@ -69,13 +70,13 @@ class TopicDoneSystemTest < ApplicationSystemTestCase
   end
 
   # The screen on the page: the title, the offer with the next topic's name, the two buttons and the free slot; nothing about anything else.
-  def assert_closing_screen(next_title:, title: TITLE, offer: "Vuoi farne un altro? Eccolo:", next_label: "Vai al prossimo argomento", today_label: "Torna a Oggi")
+  def assert_closing_screen(next_title:, title: TITLE, offer: "Vuoi farne un altro? Eccolo:", next_label: "Vai al prossimo argomento", today_label: "Torna a Oggi", schema_label: "Vedi lo schema")
     assert_selector "#topic-done h2", text: title, wait: 30
     assert_selector "#topic-done-offer", text: "#{offer} #{next_title}"
     assert_selector "#topic-done-actions a.button", count: 2
     assert_selector "#topic-done-actions a.button", text: next_label
     assert_selector "#topic-done-actions a.button", text: today_label
-    assert_selector "#topic-done-extra", visible: :all, text: ""
+    assert_selector "#topic-done-extra a.button.secondary", count: 1, text: schema_label
     assert_no_selector "#check", visible: :visible
     assert_no_selector "#next-actions", visible: :visible
     assert no_sideways_scroll?, "no sideways scroll with the closing screen"
@@ -84,6 +85,19 @@ class TopicDoneSystemTest < ApplicationSystemTestCase
       assert_operator box[1], :>=, 43.9, "button #{i + 1}: a target of at least 44 px"
       assert_operator box[2], :<=, 390, "button #{i + 1}: inside the phone's window"
     end
+    schema = page.evaluate_script("(() => { const r = document.querySelector('#topic-done-extra a.button').getBoundingClientRect(); const b = document.querySelector('#topic-done-actions').getBoundingClientRect(); return [r.width, r.height, r.right, r.top - b.bottom]; })()")
+    assert_operator schema[1], :>=, 43.9, "«#{schema_label}»: a target of at least 44 px"
+    assert_operator schema[2], :<=, 390, "«#{schema_label}»: inside the phone's window"
+    assert_operator schema[3], :>=, 0, "«#{schema_label}» is after the two buttons"
+  end
+
+  # The schema of the topic (D-372) the link opens: its page, with the summary of the lesson drawn (the world's lessons are the first format).
+  def assert_schema_page(topic, base: "", title: "Schema: ")
+    assert_current_path "#{base}/topics/#{topic}/schema"
+    assert_selector "h1", text: title
+    assert_selector "#schema-page[data-unlocked=true]"
+    assert_selector "#schema-summary", text: "Un termine che cambia lato cambia segno.", wait: 15
+    assert no_sideways_scroll?, "no sideways scroll on the schema"
   end
 
   def right_answer_on_page
@@ -108,6 +122,12 @@ class TopicDoneSystemTest < ApplicationSystemTestCase
     find("#topic-done-actions a.button", text: "Vai al prossimo argomento").click
     assert_current_path "/topics/#{TOPIC}"
     assert_selector "h1", text: TOPIC_TITLE
+
+    visit "/topics/#{PROGRESS_STARTED}/practice/#{started_skill}"
+    assert_closing_screen(next_title: TOPIC_TITLE)
+    find("#topic-done-extra a.button", text: "Vedi lo schema").click
+    assert_schema_page(PROGRESS_STARTED)
+    assert_selector "h1", text: "Frazioni"
 
     visit "/topics/#{PROGRESS_STARTED}/practice/#{started_skill}"
     assert_closing_screen(next_title: TOPIC_TITLE)
@@ -142,9 +162,14 @@ class TopicDoneSystemTest < ApplicationSystemTestCase
     click_button "Un altro esercizio"
     assert_closing_screen(next_title: TOPIC_TITLE)
     assert_equal [ "#{PREVIEW}/topics/#{TOPIC}", "#{PREVIEW}/today" ], page.all("#topic-done-actions a.button").map { |a| URI(a[:href]).path }
+    assert_equal [ "#{PREVIEW}/topics/#{PROGRESS_STARTED}/schema" ], page.all("#topic-done-extra a.button").map { |a| URI(a[:href]).path }
 
     find("#topic-done-actions a.button", text: "Vai al prossimo argomento").click
     assert_current_path "#{PREVIEW}/topics/#{TOPIC}"
+    visit "#{PREVIEW}/topics/#{PROGRESS_STARTED}/practice/#{started_skill}"
+    assert_closing_screen(next_title: TOPIC_TITLE)
+    find("#topic-done-extra a.button", text: "Vedi lo schema").click
+    assert_schema_page(PROGRESS_STARTED, base: PREVIEW)
     visit "#{PREVIEW}/topics/#{PROGRESS_STARTED}/practice/#{started_skill}"
     assert_closing_screen(next_title: TOPIC_TITLE)
     find("#topic-done-actions a.button", text: "Torna a Oggi").click
@@ -158,9 +183,16 @@ class TopicDoneSystemTest < ApplicationSystemTestCase
     play(@topic_revision, SKILL, 3)
     visit "/topics/#{TOPIC}/practice/#{SKILL}"
     assert_closing_screen(next_title: "Frazioni", title: "You have finished this topic!", offer: "Want to do another one? Here it is:",
-                          next_label: "Go to the next topic", today_label: "Back to Today")
+                          next_label: "Go to the next topic", today_label: "Back to Today", schema_label: "See the schema")
     assert_no_text "Hai finito"
     assert_no_text "Torna a Oggi"
+    assert_no_text "Vedi lo schema"
+    find("#topic-done-extra a.button", text: "See the schema").click
+    assert_schema_page(TOPIC, title: "Summary: ")
+    assert_selector "#schema-lesson", text: "Read the lesson again"
+    visit "/topics/#{TOPIC}/practice/#{SKILL}"
+    assert_closing_screen(next_title: "Frazioni", title: "You have finished this topic!", offer: "Want to do another one? Here it is:",
+                          next_label: "Go to the next topic", today_label: "Back to Today", schema_label: "See the schema")
     find("#topic-done-actions a.button", text: "Back to Today").click
     assert_current_path "/today"
     assert_selector "#topbar-title", text: "Today", visible: :all

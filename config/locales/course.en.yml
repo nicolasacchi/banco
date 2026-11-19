@@ -213,6 +213,7 @@ en:
       offer: "Want to do another one? Here it is:"
       next: "Go to the next topic"
       today: "Back to Today"
+      schema: "See the schema"
     closed: "This exercise is closed: choose another one."
     loading: "One moment."
     saving: "Checking the answer."

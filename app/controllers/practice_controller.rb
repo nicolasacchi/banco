@@ -124,12 +124,16 @@ class PracticeController < ApplicationController
   # D-366: the topic is done (Practice::Today.done?: every skill demonstrated or consolidated, from the practice or from the entry test). The closing
   # screen speaks of this topic only: its title, the topic Oggi proposes next for the subject (Course::StudentView#next_topic, the one `banco next`
   # gives; nil when none is left, and then there is no offer) and the way back to Oggi. Addresses come from here (student_root), never from a script.
+  # D-373: the topic's schema (D-372) is open by definition, since the topic is done: `schema` is in the reply only when the topic has one (its
+  # lesson has a summary), with the address built by `spath` (the preview's own in the preview).
   def topic_done_body(subject_view, topic, skill)
     pick = course_view.next_topic(subject_view)
     { type: "topic_done", skill: skill_block(skill, course_view.state(skill)), title_it: I18n.t("practice.topic_done.title"),
       offer_it: pick && I18n.t("practice.topic_done.offer"),
       next: pick && { topic: pick.topic.key, title_it: pick.topic.title_it, label_it: I18n.t("practice.topic_done.next"), url: "#{student_root}/topics/#{pick.topic.key}" },
-      today: { label_it: I18n.t("practice.topic_done.today"), url: "#{student_root}/today" } }
+      today: { label_it: I18n.t("practice.topic_done.today"), url: "#{student_root}/today" } }.tap do |body|
+      body[:schema] = { label_it: I18n.t("practice.topic_done.schema"), url: helpers.schema_href(topic.key) } if Course::Schemas.new(course_view).exists?(topic)
+    end
   end
 
   # A9.3: the open serve as the browser sees it. chosen: the student picked this exercise from the list (no line saying it is a similar one).

@@ -215,6 +215,7 @@ it:
       offer: "Vuoi farne un altro? Eccolo:"
       next: "Vai al prossimo argomento"
       today: "Torna a Oggi"
+      schema: "Vedi lo schema"
     closed: "Questo esercizio è chiuso: scegline un altro."
     loading: "Un momento."
     saving: "Controllo la risposta."

@@ -226,6 +226,8 @@ li.skill .skill-side .button { margin: 0; align-self: center; }
 .topic-done h2 { font-size: var(--text-l); margin: 0 0 var(--space-2); }
 .topic-done p { margin: 0 0 var(--space-2); }
 .topic-done .actions { margin-top: var(--space-4); }
+.topic-done-extra { margin-top: var(--space-3); }
+.topic-done-extra .button { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; }
 .feedback { min-height: 0; margin: var(--space-3) 0 0; font-weight: 400; }
 .feedback:empty { margin: 0; }
 .feedback.notice { margin: var(--space-4) 0 0; }
