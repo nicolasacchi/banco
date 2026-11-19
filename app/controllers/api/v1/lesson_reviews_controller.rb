@@ -15,7 +15,7 @@ module Api
         elsif request.headers["X-Banco-Session"].to_s.strip.empty?
           return refuse("E-AUTH", "authorization", "this token cannot review", "banco schema", 403) unless ApiToken.session_roles(@token.role).include?("reviewer")
         elsif !author_read?
-          session = require_session("reviewer", item: @lesson, next_step: next_session) or return
+          session = require_session("reviewer", item: @lesson, revision: @revision, next_step: next_session) or return
           return unless reviewer_ok?(session)
         end
 
@@ -34,7 +34,7 @@ module Api
       # POST /api/v1/lesson-revisions/:revision/review {review}
       def submit
         body = parse_json_body or return
-        session = require_session("reviewer", item: @lesson, next_step: next_session) or return
+        session = require_session("reviewer", item: @lesson, revision: @revision, next_step: next_session) or return
         return unless reviewer_ok?(session)
 
         latest = @lesson.latest_revision

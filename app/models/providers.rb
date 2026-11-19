@@ -46,10 +46,18 @@ module Providers
   end
 
   # The review or solve rows (ItemReview, BlindSolve, LessonReview, PageReview) that count, among +rows+ on +thing+
-  # (an Item, a Lesson or a Page): the ones whose session is independent of every author of the thing.
+  # (an Item, a Lesson or a Page): the ones whose session is independent of every author of the thing. On a Lesson
+  # (D-374) the authors are LessonSessions#model_authors of the revision the row reviewed: those after the last approved,
+  # independently reviewed base, else every author.
   def counting(rows, thing)
     rows = rows.to_a
     return rows if rows.empty?
+
+    if thing.is_a?(Lesson)
+      sessions = LessonSessions.new(thing)
+      by_revision = {}
+      return rows.select { |row| independent?(row.agent_session, by_revision[row.lesson_revision_id] ||= sessions.model_authors(row.lesson_revision)) }
+    end
 
     authors = ItemSessions.for(thing).sessions("author")
     rows.select { |row| independent?(row.agent_session, authors) }
@@ -61,8 +69,9 @@ module Providers
   end
 
   # nil when the session may act in its role on +item+ (nil: not item-specific),
-  # otherwise the reason, in English, for E-PROVIDER-NOT-ALLOWED.
-  def refusal(session, item: nil, finding: nil)
+  # otherwise the reason, in English, for E-PROVIDER-NOT-ALLOWED. +revision+: the lesson revision a lesson's reviewer
+  # is about to read; with it the authors compared are the same as in +counting+ (D-374).
+  def refusal(session, item: nil, finding: nil, revision: nil)
     rule = rule(session.role)
     family = session.family
     if rule["allow_families"] && !Array(rule["allow_families"]).include?(family)
@@ -71,7 +80,11 @@ module Providers
     return "the model #{session.model.inspect} is in no known family: add it to config/banco/providers.yml or use another model" if rule["known_family"] && family == "unknown"
 
     if rule["different_model_from"] && item
-      authors = ItemSessions.for(item).sessions(rule["different_model_from"])
+      authors = if revision && item.is_a?(Lesson) && rule["different_model_from"] == "author"
+        LessonSessions.new(item).model_authors(revision)
+      else
+        ItemSessions.for(item).sessions(rule["different_model_from"])
+      end
       mine = model_key(session.model)
       same = authors.find { |a| model_key(a.model) == mine }
       return "a #{session.role} must run on a different model than every author of the item: both are #{session.model.inspect}" if same
