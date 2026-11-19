@@ -1,0 +1,13 @@
+<%# The honest lines of the mandatory topics (D-367), on Materie, Materia and Oggi: how many there are, how many the entry test already
+    showed (Già sapevi), how many the exercises closed (Fatti con gli esercizi) and the time still to study in hours; never a percentage.
+    required: a Course::StudentView::Tally. %>
+<li class="progress-line" data-line="required">
+  <span class="progress-text"><%= required.none? ? t("progress.required_none") : t("progress.required", count: required.total) %></span>
+</li>
+<% unless required.none? %>
+  <li class="progress-line" data-line="known"><span class="progress-text"><%= t("progress.known", count: required.known) %></span></li>
+  <li class="progress-line" data-line="exercises"><span class="progress-text"><%= t("progress.exercises_done", count: required.exercises) %></span></li>
+  <li class="progress-line" data-line="time">
+    <span class="progress-text"><%= required.missing.zero? ? t("progress.time_left_none") : (required.hours_left.zero? ? t("progress.time_left_less") : t("progress.time_left", count: required.hours_left)) %></span>
+  </li>
+<% end %>

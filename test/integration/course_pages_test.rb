@@ -145,8 +145,8 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
   test "Materie and Materia: counts, status and tag" do
     build_student_world
     page(OFFICIAL, "/subjects")
-    assert_select "li.subject[data-subject=math] .progress-line[data-line=required] .progress-text", "Obbligatori: 0 fatti su 1"
-    assert_select "li.subject[data-subject=math] [role=progressbar][aria-valuenow='0']"
+    assert_select "li.subject[data-subject=math] .progress-line[data-line=required] .progress-text", "Obbligatori: 1 argomento"
+    assert_select "li.subject[data-subject=math] [role=progressbar]", 0, "no percentage bar (D-367)"
     assert_select "li.subject[data-subject=math] .progress-line[data-line=optional]", 0
     assert_select "li.subject[data-subject=math] .progress-line[data-line=entry]", 0, "the tests are not open: no line about them"
     page(OFFICIAL, "/subjects/math")
@@ -174,9 +174,13 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     with_entry(entry_rows(done: true, status: "completed", run_id: 77)) { page(OFFICIAL, "/subjects") }
     assert_response :success
     assert_select "li.subject[data-subject=math]" do
-      assert_select ".progress-line[data-line=required] .progress-text", "Obbligatori: 1 fatto su 3"
-      assert_select "[role=progressbar][aria-valuenow='33']"
-      assert_select ".progress-line[data-line=optional] .progress-text", "Facoltativi: 1 fatto su 2"
+      assert_select ".progress-line[data-line=required] .progress-text", "Obbligatori: 3 argomenti"
+      assert_select ".progress-line[data-line=known] .progress-text", "Già sapevi: 0"
+      assert_select ".progress-line[data-line=exercises] .progress-text", "Fatti con gli esercizi: 1"
+      assert_select ".progress-line[data-line=time] .progress-text", "Da studiare ancora: meno di un'ora"
+      assert_select "[role=progressbar]", 0
+      assert_select ".progress-line[data-line=correct]", 0, "the right exercises are on Materia"
+      assert_select ".progress-line[data-line=optional] .progress-text", "Facoltativi: 2. Già sapevi: 0. Fatti con gli esercizi: 1."
       assert_select ".progress-line[data-line=entry]", "Test d'ingresso: fatto"
       assert_select ".subject-state", 0
     end
@@ -192,15 +196,19 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     with_entry(entry_rows(done: true, status: "completed", run_id: 77)) { page(OFFICIAL, "/subjects/math") }
     assert_response :success
     assert_select "#subject-summary" do
-      assert_select ".progress-line[data-line=required] .progress-text", "Obbligatori: 1 fatto su 3"
-      assert_select ".progress-line[data-line=optional] .progress-text", "Facoltativi: 1 fatto su 2"
+      assert_select ".progress-line[data-line=required] .progress-text", "Obbligatori: 3 argomenti"
+      assert_select ".progress-line[data-line=exercises] .progress-text", "Fatti con gli esercizi: 1"
+      assert_select ".progress-line[data-line=correct] .progress-text", "Esercizi giusti: 7", "3 + 1 mandatory, 3 optional"
+      assert_select ".progress-line[data-line=optional] .progress-text", "Facoltativi: 2. Già sapevi: 0. Fatti con gli esercizi: 1."
       assert_select ".progress-line[data-line=entry]", /Test d'ingresso: fatto/
       assert_select ".progress-line[data-line=entry] a[href='/diagnosis/runs/77/results']", "Vedi i risultati"
     end
     assert_select "#programme-title", "Obbligatori · programma"
-    assert_select "#programme-section [data-section-count]", "1 fatto su 3"
+    assert_select "#programme-section [data-section-count=known]", "Già sapevi: 0"
+    assert_select "#programme-section [data-section-count=exercises]", "Con gli esercizi: 1"
     assert_select "#extra-topics-title", "Facoltativi · fuori programma"
-    assert_select "#extra-topics-section [data-section-count]", "1 fatto su 2"
+    assert_select "#extra-topics-section [data-section-count=known]", "Già sapevi: 0"
+    assert_select "#extra-topics-section [data-section-count=exercises]", "Con gli esercizi: 1"
     assert_select "#topics li.topic", 3
     assert_select "#topics li[data-topic=?][data-status=done] .pill.success", TOPIC, text: "Fatto"
     assert_select "#topics li[data-topic=?][data-status=in_progress] .pill.info", PROGRESS_STARTED, text: "In corso"
@@ -223,8 +231,10 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     assert_equal [ PROGRESS_STARTED, PROGRESS_TODO ], css_select("#topics li.topic").map { |li| li["data-topic"] }
     assert_equal %w[2 3], css_select("#topics .topic-number").map(&:text), "a topic keeps its place in the programme"
     assert_equal [ PROGRESS_EXTRA_TODO ], css_select("#extra-topics li.topic").map { |li| li["data-topic"] }
-    assert_select "#programme-section [data-section-count]", "1 fatto su 3"
-    assert_select "#subject-summary .progress-line[data-line=required] .progress-text", "Obbligatori: 1 fatto su 3"
+    assert_select "#programme-section [data-section-count=known]", "Già sapevi: 0"
+    assert_select "#programme-section [data-section-count=exercises]", "Con gli esercizi: 1"
+    assert_select "#subject-summary .progress-line[data-line=required] .progress-text", "Obbligatori: 3 argomenti"
+    assert_select "#subject-summary .progress-line[data-line=exercises] .progress-text", "Fatti con gli esercizi: 1"
   end
 
   test "Materia: when nothing is missing the filter says so" do
@@ -235,7 +245,9 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     assert_select "#programme-nothing-missing", "Qui non manca niente. Bravo."
     assert_select "#extra-nothing-missing", "Qui non manca niente. Bravo."
     assert_select "#topics", 0
-    assert_select "#subject-summary .progress-line[data-line=required] .progress-text", "Obbligatori: 3 fatti su 3"
+    assert_select "#subject-summary .progress-line[data-line=required] .progress-text", "Obbligatori: 3 argomenti"
+    assert_select "#subject-summary .progress-line[data-line=exercises] .progress-text", "Fatti con gli esercizi: 3"
+    assert_select "#subject-summary .progress-line[data-line=time] .progress-text", "Non resta niente da studiare."
   end
 
   test "Oggi: «I tuoi progressi» counts the mandatory topics done and the optional ones, and suggests only the programme" do
@@ -243,8 +255,12 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     page(OFFICIAL, "/today")
     assert_response :success
     assert_select "#my-path h2", "I tuoi progressi"
-    assert_select "#my-path .progress-line[data-line=required] .progress-text", "Argomenti obbligatori fatti: 1 su 3"
-    assert_select "#my-path .progress-line[data-line=optional] .progress-text", "Facoltativi fatti: 1"
+    assert_select "#my-path .progress-line[data-line=required] .progress-text", "Obbligatori: 3 argomenti"
+    assert_select "#my-path .progress-line[data-line=known] .progress-text", "Già sapevi: 0"
+    assert_select "#my-path .progress-line[data-line=exercises] .progress-text", "Fatti con gli esercizi: 1"
+    assert_select "#my-path .progress-line[data-line=time] .progress-text", "Da studiare ancora: meno di un'ora"
+    assert_select "#my-path [role=progressbar]", 0
+    assert_select "#my-path .progress-line[data-line=optional] .progress-text", "Facoltativi: 2. Già sapevi: 0. Fatti con gli esercizi: 1."
     assert_select "#my-path a[href='/subjects']", "Vedi le materie"
     assert_select "#course-part [data-topic=?]", PROGRESS_EXTRA_TODO, 0
   end
@@ -253,8 +269,8 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     build_progress_world
     with_entry(entry_rows(done: false, status: "not_started")) do
       page(TEACHER, "/teacher/preview/subjects")
-      assert_select "li.subject[data-subject=math] .progress-line[data-line=required] .progress-text", "Obbligatori: 0 fatti su 3"
-      assert_select "li.subject[data-subject=math] .progress-line[data-line=optional] .progress-text", "Facoltativi: 0 fatti su 2"
+      assert_select "li.subject[data-subject=math] .progress-line[data-line=required] .progress-text", "Obbligatori: 3 argomenti"
+      assert_select "li.subject[data-subject=math] .progress-line[data-line=optional] .progress-text", "Facoltativi: 2. Già sapevi: 0. Fatti con gli esercizi: 0."
       assert_select "li.subject[data-subject=math] .progress-line[data-line=entry]", "Test d'ingresso: da fare"
       page(TEACHER, "/teacher/preview/subjects/math?show=missing")
     end
@@ -263,7 +279,7 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     assert_select "#programme-title", "Obbligatori · programma"
     assert_select "#topics li.topic", 3
     page(TEACHER, "/teacher/preview/today")
-    assert_select "#my-path .progress-line[data-line=required] .progress-text", "Argomenti obbligatori fatti: 0 su 3"
+    assert_select "#my-path .progress-line[data-line=required] .progress-text", "Obbligatori: 3 argomenti"
     assert_select "#my-path a[href='/teacher/preview/subjects']", "Vedi le materie"
   end
 

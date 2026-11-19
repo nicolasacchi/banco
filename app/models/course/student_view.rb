@@ -5,7 +5,7 @@ module Course
   #   view = Course::StudentView.new(student)
   #   view.subjects            # visible subjects only (Catalog::SubjectView with topics)
   #   view.find_topic(key)     # => [SubjectView, TopicView] or nil when the topic is not visible to this student
-  #   view.progress(sv)        # => Progress(programme:, extra:), each a Tally(total, done, in_progress; missing)
+  #   view.progress(sv)        # => Progress(programme:, extra:), each a Tally(total, done, in_progress, known, minutes_left; missing, exercises, hours_left)
   #   view.today               # => {resume:, suggestions: [Practice::Today::Suggestion]}
   class StudentView
     DONE = Practice::Today::DONE
@@ -94,12 +94,32 @@ module Course
     # The progress of a subject in topics (D-326): how many of its programme topics are done (mandatory) and how many of
     # its extra topics (optional). Done = Practice::Today.done?; in progress = started and not done; missing = not done.
     # One pass over the statuses already computed; Oggi, Materie and Materia read these and never count on their own.
-    Tally = Data.define(:total, :done, :in_progress) do
+    #
+    # Honest progress (D-367), additive: `known` is the done topics that the entry test showed (every skill still in the state the
+    # diagnosis seeded, never studied) and `exercises` the other done ones, so done = known + exercises; `minutes_left` is the sum of
+    # the `minutes` of the topics not done, and `hours_left` that time in kind round hours. No count of `done` changes.
+    Tally = Data.define(:total, :done, :in_progress, :known, :minutes_left) do
+      def initialize(total:, done:, in_progress:, known: 0, minutes_left: 0) = super
       def missing = total - done
       def none? = total.zero?
+      # The done topics the student studied with the exercises (not shown by the entry test).
+      def exercises = done - known
       # Floor, so a bar never shows 100 % while one topic is missing.
       def percent = total.zero? ? 0 : (100 * done / total)
-      def +(other) = Tally.new(total + other.total, done + other.done, in_progress + other.in_progress)
+
+      # The time still to study in round hours, never a false precision: 0 is «less than an hour» (or nothing, when missing is
+      # zero); up to 19 h the nearest hour, from 20 h the nearest 5.
+      def hours_left
+        hours = minutes_left / 60.0
+        return 0 if hours < 0.75
+
+        hours < 20 ? hours.round : (hours / 5).round * 5
+      end
+
+      def +(other)
+        Tally.new(total: total + other.total, done: done + other.done, in_progress: in_progress + other.in_progress,
+                  known: known + other.known, minutes_left: minutes_left + other.minutes_left)
+      end
     end
     Progress = Data.define(:programme, :extra) do
       def +(other) = Progress.new(programme + other.programme, extra + other.extra)
@@ -112,7 +132,13 @@ module Course
 
     # The same, summed over every visible subject (Oggi's «I tuoi progressi»).
     def overall_progress
-      subjects.map { |sv| progress(sv) }.reduce(Progress.new(Tally.new(0, 0, 0), Tally.new(0, 0, 0)), :+)
+      subjects.map { |sv| progress(sv) }.reduce(Progress.new(Tally.new(total: 0, done: 0, in_progress: 0), Tally.new(total: 0, done: 0, in_progress: 0)), :+)
+    end
+
+    # The right answers the student gave in a subject (D-367): the skills of its visible topics, each unaided or aided; every
+    # right answer ends its serve, so this is the number of exercises answered right. It reads the folded counts and counts nothing new.
+    def correct_exercises(sv)
+      sv.topics.flat_map(&:skills).uniq.sum { |skill| (state = states[skill]) ? state.counts[:correct_unaided].to_i + state.counts[:correct_aided].to_i : 0 }
     end
 
     # Skills the diagnosis found to recover or learn that no visible topic holds.
@@ -171,7 +197,19 @@ module Course
 
     def tally(topics)
       by_status = topics.map { |topic| status(topic) }.tally
-      Tally.new(topics.size, by_status[:done].to_i, by_status[:in_progress].to_i)
+      known = topics.count { |topic| status(topic) == :done && known_from_entry?(topic) }
+      minutes_left = topics.sum { |topic| status(topic) == :done ? 0 : topic.minutes.to_i }
+      Tally.new(total: topics.size, done: by_status[:done].to_i, in_progress: by_status[:in_progress].to_i, known: known, minutes_left: minutes_left)
+    end
+
+    # A done topic the entry test showed (D-367): it has skills and each is still in the state the diagnosis seeded it in (demonstrated, since
+    # the seed), so nothing the student did with the exercises moved it.
+    def known_from_entry?(topic)
+      topic.skills.any? && topic.skills.all? do |skill|
+        state = states[skill]
+        seed = state&.seed
+        seed && seed.state.to_s == "demonstrated" && state.state == "demonstrated" && state.since == seed.at
+      end
     end
 
     def graph_skills(sv)

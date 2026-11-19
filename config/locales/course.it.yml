@@ -74,17 +74,23 @@ it:
         intro: "Stare in rete in sicurezza: dati, diritti, rispetto degli altri, fonti."
   # Where S is (D-326): mandatory topics (the programme) and optional ones (fuori programma), done out of all, and the state of the entry test.
   progress:
+    # Honest progress (D-367): what the entry test showed, what the exercises did, the time still to study in hours; never a percentage.
     required:
-      one: "Obbligatori: %{count} fatto su %{total}"
-      other: "Obbligatori: %{count} fatti su %{total}"
+      one: "Obbligatori: %{count} argomento"
+      other: "Obbligatori: %{count} argomenti"
     required_none: "Obbligatori: nessuno"
-    optional:
-      one: "Facoltativi: %{count} fatto su %{total}"
-      other: "Facoltativi: %{count} fatti su %{total}"
-    done_of:
-      one: "%{count} fatto su %{total}"
-      other: "%{count} fatti su %{total}"
-    meter: "Argomenti obbligatori fatti: %{done} su %{total}"
+    optional: "Facoltativi: %{total}. Già sapevi: %{known}. Fatti con gli esercizi: %{exercises}."
+    known: "Già sapevi: %{count}"
+    exercises_done: "Fatti con gli esercizi: %{count}"
+    section_exercises: "Con gli esercizi: %{count}"
+    time_left:
+      one: "Da studiare ancora: circa %{count} ora"
+      other: "Da studiare ancora: circa %{count} ore"
+    time_left_less: "Da studiare ancora: meno di un'ora"
+    time_left_none: "Non resta niente da studiare."
+    correct_exercises:
+      one: "Esercizi giusti: %{count}"
+      other: "Esercizi giusti: %{count}"
     entry_label: "Test d'ingresso"
     entry:
       done: "fatto"
@@ -97,8 +103,6 @@ it:
     nothing_missing: "Qui non manca niente. Bravo."
     today:
       title: "I tuoi progressi"
-      required: "Argomenti obbligatori fatti: %{done} su %{total}"
-      optional: "Facoltativi fatti: %{count}"
       link: "Vedi le materie"
   subject:
     topics: "Obbligatori · programma"

@@ -1,7 +1,7 @@
 module Course
   # What one student sees of their progress (D-328), for GET /api/v1/students/:key/progress: per subject the topics of
   # the programme and the extra ones with their status (done, in_progress, todo), the programme and extra tallies the pages
-  # show (Course::StudentView#progress, D-326), the skill states, and for every subject with an entry test its state in the student's list. It reads
+  # show (Course::StudentView#progress, D-326; split into «già sapevi» and «fatti con gli esercizi», with the hours left, D-367), the skill states, and for every subject with an entry test its state in the student's list. It reads
   # Course::StudentView (what the course pages read) and Diagnosis::Availability (the list of the diagnosis); no query of
   # its own, nothing written.
   class StudentProgress
@@ -12,7 +12,7 @@ module Course
     end
 
     def as_json(*)
-      { student: { key: @student.key, official: @student.official? }, overall: progress_json(@view.overall_progress), subjects: course_subjects,
+      { student: { key: @student.key, official: @student.official? }, overall: { **progress_json(@view.overall_progress), correct_exercises: @view.subjects.sum { |sv| @view.correct_exercises(sv) } }, subjects: course_subjects,
         closed_subjects: @view.closed_subjects.map { |sv| { key: sv.subject.key, name_it: sv.subject.name_it } }, entry_tests: entry_tests }
     end
 
@@ -25,7 +25,7 @@ module Course
         {
           key: sv.subject.key, name_it: sv.subject.name_it, released: sv.released, mode: sv.mode, course_revision_id: sv.course_revision.id,
           topics: programme.map { |t| topic(t) }, extra_topics: extra.map { |t| topic(t) },
-          **progress_json(@view.progress(sv)), entry_test: entry_tests.find { |e| e[:subject] == sv.subject.key },
+          **progress_json(@view.progress(sv)), correct_exercises: @view.correct_exercises(sv), entry_test: entry_tests.find { |e| e[:subject] == sv.subject.key },
           skills: skills_of(sv), skills_without_topic: @view.skills_without_topic(sv)
         }
       end
@@ -37,10 +37,14 @@ module Course
     end
 
     # What Materie and Materia show (D-326): the programme topics (mandatory) and the extra ones (optional), each total, done,
-    # in_progress, missing and percent.
+    # in_progress, missing and percent; and the honest split of D-367, added to them: known (done because the entry test showed it),
+    # exercises (done with the exercises), minutes_left and hours_left (the time still to study, hours in round numbers).
     def progress_json(progress) = { programme: tally_json(progress.programme), extra: tally_json(progress.extra) }
 
-    def tally_json(tally) = { total: tally.total, done: tally.done, in_progress: tally.in_progress, missing: tally.missing, percent: tally.percent }
+    def tally_json(tally)
+      { total: tally.total, done: tally.done, in_progress: tally.in_progress, missing: tally.missing, percent: tally.percent,
+        known: tally.known, exercises: tally.exercises, minutes_left: tally.minutes_left, hours_left: tally.hours_left }
+    end
 
     # The state of every skill of the visible topics of the subject (programme and extra), in the order of the topics; pool_exhausted_at is when the
     # student first saw every exercise of the skill and none was served on its own (D-348), nil otherwise.

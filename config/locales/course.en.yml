@@ -74,17 +74,23 @@ en:
         intro: "Staying safe online: data, rights, respect for others, sources."
   # Where S is (D-326): required topics (the programme) and optional ones (outside the programme), done out of all, and the state of the entry test.
   progress:
+    # Honest progress (D-367): what the entry test showed, what the exercises did, the time still to study in hours; never a percentage.
     required:
-      one: "Required: %{count} done out of %{total}"
-      other: "Required: %{count} done out of %{total}"
+      one: "Required: %{count} topic"
+      other: "Required: %{count} topics"
     required_none: "Required: none"
-    optional:
-      one: "Optional: %{count} done out of %{total}"
-      other: "Optional: %{count} done out of %{total}"
-    done_of:
-      one: "%{count} done out of %{total}"
-      other: "%{count} done out of %{total}"
-    meter: "Required topics done: %{done} out of %{total}"
+    optional: "Optional: %{total}. Already known: %{known}. Done with the exercises: %{exercises}."
+    known: "Already known: %{count}"
+    exercises_done: "Done with the exercises: %{count}"
+    section_exercises: "Done with exercises: %{count}"
+    time_left:
+      one: "Still to study: about %{count} hour"
+      other: "Still to study: about %{count} hours"
+    time_left_less: "Still to study: less than an hour"
+    time_left_none: "Nothing is left to study."
+    correct_exercises:
+      one: "Correct exercises: %{count}"
+      other: "Correct exercises: %{count}"
     entry_label: "Entry test"
     entry:
       done: "done"
@@ -97,8 +103,6 @@ en:
     nothing_missing: "Nothing is missing here. Well done."
     today:
       title: "Your progress"
-      required: "Required topics done: %{done} out of %{total}"
-      optional: "Optional done: %{count}"
       link: "See the subjects"
   subject:
     topics: "Required · programme"

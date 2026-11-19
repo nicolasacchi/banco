@@ -1,21 +1,18 @@
-<%# Where S is in a subject (D-326), the same three lines on Materie and on Materia: mandatory topics done out of the programme (with a
-    bar), optional ones done (only when the subject has any), the entry test in three words. results: link «Vedi i risultati» (Materia only;
-    on a Materie card the whole card is the link). %>
+<%# Where S is in a subject (D-326, D-367), the same lines on Materie and on Materia: the mandatory topics split into «Già sapevi» and
+    «Fatti con gli esercizi» with the hours still to study (course/required_lines), the optional ones (only when the subject has any), on
+    Materia the right exercises, the entry test in three words. results: Materia only: the link «Vedi i risultati» and the right exercises
+    (on a Materie card the whole card is the link). %>
 <% progress = course_view.progress(subject_view); required = progress.programme; optional = progress.extra
    entry = entry_test_for(subject_view.subject.key) %>
 <ul class="progress-lines">
-  <li class="progress-line" data-line="required">
-    <% if required.none? %>
-      <span class="progress-text"><%= t("progress.required_none") %></span>
-    <% else %>
-      <span class="progress-text"><%= t("progress.required", count: required.done, total: required.total) %></span>
-      <%= ui_meter(required.percent, t("progress.meter", done: required.done, total: required.total)) %>
-    <% end %>
-  </li>
+  <%= render "course/required_lines", required: required %>
   <% unless optional.none? %>
     <li class="progress-line" data-line="optional">
-      <span class="progress-text"><%= t("progress.optional", count: optional.done, total: optional.total) %></span>
+      <span class="progress-text"><%= t("progress.optional", total: optional.total, known: optional.known, exercises: optional.exercises) %></span>
     </li>
+  <% end %>
+  <% if results %>
+    <li class="progress-line" data-line="correct"><span class="progress-text"><%= t("progress.correct_exercises", count: course_view.correct_exercises(subject_view)) %></span></li>
   <% end %>
   <% if entry %>
     <li class="progress-line" data-line="entry" data-state="<%= entry[:state] %>">

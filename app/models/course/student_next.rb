@@ -46,7 +46,7 @@ module Course
     def done_text(tally)
       return I18n.t("progress.required_none") if tally.none?
 
-      I18n.t("progress.required", count: tally.done, total: tally.total)
+      [ I18n.t("progress.required", count: tally.total), I18n.t("progress.known", count: tally.known), I18n.t("progress.exercises_done", count: tally.exercises) ].join(". ") + "."
     end
   end
 end

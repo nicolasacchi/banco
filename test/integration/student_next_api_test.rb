@@ -70,7 +70,7 @@ class StudentNextApiTest < ActionDispatch::IntegrationTest
     assert_equal [ "Frazioni", "lezione", 20, 1 ], pick.values_at("title_it", "kind", "minutes", "term")
     assert_equal I18n.t("today.reason.course_next"), pick["why_it"]
     assert_not_operator pick["topic"], :start_with?, "extra."
-    assert_equal "Obbligatori: 1 fatto su 3", math["done_it"]
+    assert_equal "Obbligatori: 3 argomenti. Già sapevi: 0. Fatti con gli esercizi: 1.", math["done_it"]
     assert_empty math["skills_to_recover"]
   end
 
@@ -106,7 +106,7 @@ class StudentNextApiTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_nil math["next"]
     assert_empty math["skills_to_recover"]
-    assert_equal "Obbligatori: 3 fatti su 3", math["done_it"]
+    assert_equal "Obbligatori: 3 argomenti. Già sapevi: 0. Fatti con gli esercizi: 3.", math["done_it"]
   end
 
   test "a subject whose course was withdrawn is listed with next null" do

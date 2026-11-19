@@ -180,15 +180,15 @@ class CivicsViewTest < ActionDispatch::IntegrationTest
   test "the progress of the subjects and Oggi do not change because of it" do
     build_civics_world
     page(OFFICIAL, "/subjects")
-    assert_select "li.subject[data-subject=law_economics] .progress-line[data-line=required] .progress-text", "Obbligatori: 1 fatto su 2"
+    assert_select "li.subject[data-subject=law_economics] .progress-line[data-line=required] .progress-text", "Obbligatori: 2 argomenti"
     assert_select "li.subject[data-subject=geography] .progress-line[data-line=required] .progress-text", "Obbligatori: nessuno"
-    assert_select "li.subject[data-subject=geography] .progress-line[data-line=optional] .progress-text", "Facoltativi: 0 fatti su 1"
-    assert_select "li.subject[data-subject=computer_science] .progress-line[data-line=optional] .progress-text", "Facoltativi: 0 fatti su 1"
+    assert_select "li.subject[data-subject=geography] .progress-line[data-line=optional] .progress-text", "Facoltativi: 1. Già sapevi: 0. Fatti con gli esercizi: 0."
+    assert_select "li.subject[data-subject=computer_science] .progress-line[data-line=optional] .progress-text", "Facoltativi: 1. Già sapevi: 0. Fatti con gli esercizi: 0."
     assert_select "li.subject[data-subject]", 4, "math and the three subjects holding civics topics: the card is not a subject"
     page(OFFICIAL, "/today")
     assert_response :success
-    assert_select "#my-path .progress-line[data-line=required] .progress-text", "Argomenti obbligatori fatti: 1 su 3"
-    assert_select "#my-path .progress-line[data-line=optional] .progress-text", "Facoltativi fatti: 0"
+    assert_select "#my-path .progress-line[data-line=required] .progress-text", "Obbligatori: 3 argomenti"
+    assert_select "#my-path .progress-line[data-line=optional] .progress-text", "Facoltativi: 2. Già sapevi: 0. Fatti con gli esercizi: 0."
     assert_select "a[href='/civics']", 0
     assert_select "#civics-card", 0
     assert_select "#course-part [data-topic=?]", EXTRA_TOPIC, 0
