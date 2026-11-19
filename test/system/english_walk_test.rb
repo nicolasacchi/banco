@@ -452,6 +452,7 @@ class EnglishWalkTest < ApplicationSystemTestCase
       visit "/topics/#{TOPIC}/practice/#{SKILL}"
       assert_selector "#topic-done h2", text: en("practice.topic_done.title"), wait: 30
       assert_selector "#topic-done-actions a.button", text: en("practice.topic_done.today")
+      assert_selector "#topic-done-extra a.button.secondary[href='/topics/#{TOPIC}/schema']", text: en("practice.topic_done.schema") # D-373
       assert_no_selector "#check", visible: :visible
       check_page "End of a topic"
     end

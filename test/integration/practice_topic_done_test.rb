@@ -5,14 +5,16 @@ require_relative "../support/student_course_world"
 # The end of a topic (D-366): when every skill of the topic is demonstrated (by the practice or by the entry test), the practice page serves no
 # more exercises on its own: the reply is the closing screen, which names the next topic (the one of Course::StudentView#next_topic) and the way
 # back to Oggi, and speaks of this topic only. An exercise chosen from the list is still served: it is a screen, not a lock. The preview shows
-# the same, with its own addresses; the English twin is the page's language; the entry test has none.
+# the same, with its own addresses; the English twin is the page's language; the entry test has none. D-373: the reply also carries the topic's
+# schema (D-372) as «Vedi lo schema», open by definition and only when the topic has one (its lesson has a summary).
 class PracticeTopicDoneTest < ActionDispatch::IntegrationTest
   include MultiUser
   include StudentCourseWorld
 
   JSON_HEADERS = { "Content-Type" => "application/json", "Accept" => "application/json" }.freeze
   PREVIEW = "/teacher/preview".freeze
-  KEYS = %w[next offer_it skill title_it today type].freeze
+  KEYS = %w[next offer_it schema skill title_it today type].freeze
+  SCHEMA_IT = "Vedi lo schema".freeze
   TITLE_IT = "Hai finito questo argomento!".freeze
   OFFER_IT = "Vuoi farne un altro? Eccolo:".freeze
 
@@ -66,6 +68,7 @@ class PracticeTopicDoneTest < ActionDispatch::IntegrationTest
     assert_equal [ "topic_done", TITLE_IT, OFFER_IT ], done.values_at("type", "title_it", "offer_it")
     assert_equal({ "topic" => PROGRESS_TODO, "title_it" => "Potenze", "label_it" => "Vai al prossimo argomento", "url" => "/topics/#{PROGRESS_TODO}" }, done["next"])
     assert_equal({ "label_it" => "Torna a Oggi", "url" => "/today" }, done["today"])
+    assert_equal({ "label_it" => SCHEMA_IT, "url" => "/topics/#{topic}/schema" }, done["schema"], "the schema of the topic that is done")
     assert_equal "demonstrated", done.dig("skill", "state")
     assert_equal serves, PracticeServe.count, "nothing was served"
     assert_equal 0, PracticePoolExhaustion.count
@@ -83,6 +86,35 @@ class PracticeTopicDoneTest < ActionDispatch::IntegrationTest
     texts = [ done["title_it"], done["offer_it"], done.dig("next", "label_it"), done.dig("today", "label_it") ]
     assert_equal [ TITLE_IT, OFFER_IT, "Vai al prossimo argomento", "Torna a Oggi" ], texts
     assert_no_match(/materia|tutti|%|\d/i, texts.join(" "))
+  end
+
+  test "the schema: its address opens the summary of the topic, for a topic done by practice and for one known from the entry test" do
+    done = serve_for(OFFICIAL, TOPIC)
+    assert_equal({ "label_it" => SCHEMA_IT, "url" => "/topics/#{TOPIC}/schema" }, done["schema"])
+    page(OFFICIAL, done.dig("schema", "url"))
+    assert_response :success
+    assert_select "#schema-page[data-unlocked=true]"
+    with_demonstrated_seeds(PROGRESS_TODO) do
+      known = serve_for(OFFICIAL, PROGRESS_TODO)
+      assert_equal "topic_done", known["type"]
+      assert_equal({ "label_it" => SCHEMA_IT, "url" => "/topics/#{PROGRESS_TODO}/schema" }, known["schema"])
+      page(OFFICIAL, known.dig("schema", "url"))
+      assert_response :success
+      assert_select "#schema-page[data-unlocked=true]"
+    end
+  end
+
+  test "a topic whose lesson has no summary has no schema in the reply: nothing links to a page that is not there" do
+    revision = @progress_topics.fetch(PROGRESS_EXTRA_DONE).lesson_revision
+    body = revision.body
+    ActiveRecord::Base.connection.execute("DROP TRIGGER lesson_revisions_no_update") # revisions are append-only; this test's transaction rolls the change back
+    LessonRevision.where(id: revision.id).update_all(body_json: JSON.generate(body.merge("sections" => body["sections"].except("summary_it"))))
+    done = serve_for(OFFICIAL, PROGRESS_EXTRA_DONE)
+    assert_equal "topic_done", done["type"]
+    assert_equal %w[next offer_it skill title_it today type], done.keys.sort
+    assert_not done.key?("schema")
+    page(OFFICIAL, "/topics/#{PROGRESS_EXTRA_DONE}/schema")
+    assert_response :not_found
   end
 
   test "not a lock: an exercise chosen from the list is served, the list still has it, and the next call is the closing screen again" do
@@ -136,7 +168,8 @@ class PracticeTopicDoneTest < ActionDispatch::IntegrationTest
     assert_equal [ "topic_done", "You have finished this topic!", "Want to do another one? Here it is:" ], done.values_at("type", "title_it", "offer_it")
     assert_equal({ "topic" => PROGRESS_STARTED, "title_it" => "Frazioni", "label_it" => "Go to the next topic", "url" => "/topics/#{PROGRESS_STARTED}" }, done["next"])
     assert_equal({ "label_it" => "Back to Today", "url" => "/today" }, done["today"])
-    assert_no_match(/Hai finito|Vuoi farne|Torna a Oggi|Vai al prossimo/, done.to_json)
+    assert_equal({ "label_it" => "See the schema", "url" => "/topics/#{TOPIC}/schema" }, done["schema"])
+    assert_no_match(/Hai finito|Vuoi farne|Torna a Oggi|Vai al prossimo|Vedi lo schema/, done.to_json)
   end
 
   test "the practice page holds the closing screen, hidden, with a free slot after the buttons and no link to a schema" do
@@ -146,11 +179,12 @@ class PracticeTopicDoneTest < ActionDispatch::IntegrationTest
       assert_select "h2#topic-done-title[data-practice-target=doneTitle]"
       assert_select "p#topic-done-offer[hidden]"
       assert_select "#topic-done-actions[data-practice-target=doneActions]"
-      assert_select "#topic-done-extra", text: ""
+      assert_select "#topic-done-extra[data-practice-target=doneExtra]", text: ""
       assert_select "a", 0
     end
     assert_select "#topic-done-extra", 1
     assert_select "main.practice a[href*=schema]", 0
+    assert_no_match(/Vedi lo schema/, response.body, "the link is drawn from the reply, and only when the topic is done")
   end
 
   test "the preview: the same screen, with the preview's addresses, for the preview student alone" do
@@ -165,6 +199,7 @@ class PracticeTopicDoneTest < ActionDispatch::IntegrationTest
     assert_equal({ "topic" => TOPIC, "title_it" => TOPIC_TITLE, "label_it" => "Vai al prossimo argomento", "url" => "#{PREVIEW}/topics/#{TOPIC}" }, done["next"],
                  "the preview student has not done the first topic: it comes first in the course")
     assert_equal({ "label_it" => "Torna a Oggi", "url" => "#{PREVIEW}/today" }, done["today"])
+    assert_equal({ "label_it" => SCHEMA_IT, "url" => "#{PREVIEW}/topics/#{topic}/schema" }, done["schema"], "the preview's own address")
     assert_equal [ Student.current_preview.id ], PracticeServe.where(topic_revision: @progress_topics.fetch(PROGRESS_STARTED)).where.not(student_id: Student.find_by!(key: "student").id).pluck(:student_id).uniq
 
     page(TEACHER, "#{PREVIEW}/topics/#{topic}/practice/#{skill_for(topic)}")

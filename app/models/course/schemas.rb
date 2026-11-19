@@ -19,6 +19,15 @@ module Course
 
     def unlocked?(topic) = @open_all || @view.status(topic) == :done
 
+    # Has the topic a schema at all: its lesson revision has a summary (a lesson/2's core summary card, a lesson/1's `summary_it`)? The page
+    # of `SchemasController#show` is 404 without one, so nothing links to a schema that is not there.
+    def exists?(topic)
+      body = topic.lesson_revision.body
+      return body["cards"].to_a.any? { |c| c["role"] == "summary" && c["level"] == "core" } if body["schema"] == "banco.lesson/2"
+
+      body.dig("sections", "summary_it").present?
+    end
+
     # Every visible subject with at least one topic, the programme first and the extra topics after it (the order of the subject page).
     def groups
       @groups ||= @view.subjects.map do |sv|

@@ -32,7 +32,7 @@ const STATE_TONES = { demonstrated: "success", consolidated: "success", in_study
 
 export default class extends Controller {
   static targets = ["skillState", "skillWhy", "skillMissing", "dots", "reason", "reminder", "work", "itemBox", "hints", "hintList", "controls", "check", "hintButton", "solutionButton",
-                    "feedback", "solutionBox", "nextActions", "done", "doneTitle", "doneOffer", "doneActions", "skip", "list", "listPanel", "listCount", "listBody"]
+                    "feedback", "solutionBox", "nextActions", "done", "doneTitle", "doneOffer", "doneActions", "doneExtra", "skip", "list", "listPanel", "listCount", "listBody"]
   static values = { topic: String, skill: String, baseUrl: String, backUrl: String, texts: Object, labels: Object }
 
   connect() {
@@ -164,7 +164,7 @@ export default class extends Controller {
 
   // D-366: every skill of the topic is demonstrated, so no exercise is served on its own: the page closes the topic. The words, the next topic and the
   // addresses come from the server (the same next topic as Oggi's, the preview's root); it speaks of this topic only. The list of exercises stays
-  // (a click redoes one, as before); the slot `#topic-done-extra` after the buttons is left alone for a later link.
+  // (a click redoes one, as before); the slot `#topic-done-extra` after the buttons holds «Vedi lo schema» (D-373) when the reply carries the topic's schema.
   showTopicDone(reply) {
     this.serveId = null
     this.itemKey = null
@@ -189,6 +189,12 @@ export default class extends Controller {
     }
     if (reply.next) link(reply.next, true)
     link(reply.today, !reply.next)
+    const extra = this.doneExtraTarget
+    extra.textContent = ""
+    if (reply.schema) {
+      const a = Object.assign(document.createElement("a"), { className: "button secondary", id: "topic-done-schema", href: reply.schema.url, textContent: reply.schema.label_it })
+      extra.appendChild(a)
+    }
     this.doneTarget.hidden = false
     this.doneTitleTarget.focus()
     this.refreshList()
