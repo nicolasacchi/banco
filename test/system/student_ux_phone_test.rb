@@ -20,6 +20,10 @@ class StudentUxPhoneTest < ApplicationSystemTestCase
   end
 
   teardown do
+    if @saved_entries_path
+      Changelog::Entries.path = @saved_entries_path
+      Changelog::Entries.reset!
+    end
     begin
       page.driver.resize(1280, 900)
     rescue StandardError
@@ -52,12 +56,29 @@ class StudentUxPhoneTest < ApplicationSystemTestCase
   def height = page.evaluate_script("document.documentElement.scrollHeight")
   def no_sideways_scroll(where) = assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth"), "#{where}: the page scrolls sideways"
 
+  # D-379: the height of «Novità» is a measure of the crowd of revisions, not of how many entries the real changelog holds today (every entry newer than the
+  # student's last visit is shown in full, so each new one made the page longer and the bound had to be raised). The file here holds as many as D-378 had.
+  def use_entries!(count)
+    dir = Dir.mktmpdir
+    path = File.join(dir, "changelog.yml")
+    lines = Array.new(count) do |i|
+      day = Date.new(2026, 11, 10) + (i % 9)
+      "  - {id: crowd-entry-#{i}, date: #{day.iso8601}, audience: [student], kind: software, title_it: \"Una novità numero #{i}\", body_it: \"#{'Una frase di prova abbastanza lunga per fare altezza, ' * 2}fine.\", " \
+        "title_en: \"A piece of news number #{i}\", body_en: \"#{'A test sentence that is long enough to take some height, ' * 2}end.\"}"
+    end
+    File.write(path, "entries:\n#{lines.join("\n")}\n")
+    @saved_entries_path = Changelog::Entries.path
+    Changelog::Entries.path = path
+    Changelog::Entries.reset!
+  end
+
   def set_size(size, language)
     Diagnosis::Preferences.record(@official, size: size, language: language)
   end
 
   test "«Novità» on a phone with a crowd of revisions stays under 3000 px, with his comments one card per topic and the other topics folded" do
     build_crowd!
+    use_entries!(8)
     sign_in_as :student
     visit "/novita"
     assert_selector "h1", text: "Novità", wait: 10

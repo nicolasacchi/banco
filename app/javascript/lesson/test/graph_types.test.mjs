@@ -9,6 +9,7 @@ import { test } from "node:test"
 
 const root = new URL("../../../../", import.meta.url)
 const doc = (path) => JSON.parse(readFileSync(new URL(path, root), "utf8"))
+const { estimate } = await import("lesson/diagrams/common")
 const MODULES = {
   network: await import("lesson/diagrams/graph/network"),
   chain: await import("lesson/diagrams/graph/chain"),
@@ -176,6 +177,40 @@ test("flow line: horizontal when the words fit, vertical on a phone, the token f
   assert.ok(lay(1000, 3).shapes.some((s) => s.key === "ret:por>smi"))
   assert.ok(lay(390, 3).labels.some((l) => l.text_it.startsWith("Da Portalettere a Smistamento")))
   assert.ok(lay(1000, 2).live.includes("Portalettere"))
+})
+
+// D-379: «Ora siamo qui: ...» is drawn bold (.dg-label.dg-flow-here) and the measuring span in the page wears the label's classes only when it is told them.
+// A label measured as plain text came out 190 px wide in a pill of 192 and was drawn 213 px wide, past the border. Here a measure that knows a bold class is wider
+// stands for the browser's: the note, its pill and the figure's height must all come from the bold measure, at every width, size and state.
+test("flow line: the «here» note is measured with its own class, so the pill holds the text it is drawn with", () => {
+  const letter = doc("test/fixtures/diagrams/flow_line.json").vectors.find((v) => v.name === "flow-line-letter").data
+  const asked = []
+  const bold = (text, px, maxW, cls = "") => {
+    asked.push({ text, cls })
+    const plain = estimate(text, px, maxW)
+    return /dg-flow-here/.test(cls) ? { w: Math.ceil(plain.w * 1.2), h: plain.h * (maxW && plain.w * 1.2 > maxW ? 2 : 1) } : plain
+  }
+  let checked = 0
+  for (const width of WIDTHS) {
+    for (const fontPx of SIZES) {
+      for (let state = 0; state < 4; state++) {
+        const scene = MODULES.flow.layout(letter, { width, fontPx, subject: "law_economics", state, measure: bold })
+        const note = scene.labels.find((l) => l.key === "here")
+        if (!note) continue
+        const box = scene.shapes.find((s) => s.key === "herebox")
+        const where = `${width}/${fontPx}/state ${state}`
+        const real = bold(note.text_it, fontPx, width - 36, "dg-flow-here")
+        assert.equal(note.h, real.h, `${where}: the note is as tall as the bold text`)
+        assert.ok(note.w >= Math.min(real.w, width - 36) - 1, `${where}: the note is as wide as the bold text (${note.w} of ${real.w})`)
+        assert.ok(note.x + note.w <= box.x + box.w, `${where}: the text ends inside the pill`)
+        assert.ok(note.y + note.h <= box.y + box.h, `${where}: the text ends above the pill's bottom`)
+        assert.equal(Boolean(note.wrap), real.h > Math.ceil(fontPx * 1.4), `${where}: it wraps when the bold text does`)
+        checked += 1
+      }
+    }
+  }
+  assert.ok(checked > 0, "the notes were checked")
+  assert.ok(asked.some((a) => a.cls === "dg-flow-here"))
 })
 
 test("the tree flow is untouched by the line layout", () => {

@@ -31,8 +31,10 @@
   <aside class="exercise-list" id="exercise-list" aria-labelledby="exercise-list-title" data-practice-target="list" hidden>
     <details class="disclosure exercise-panel" data-practice-target="listPanel">
       <summary>
-        <span class="exercise-list-title" id="exercise-list-title"><%= t("practice.exercises") %></span>
-        <span class="exercise-list-count" data-practice-target="listCount"></span>
+        <span class="exercise-list-head">
+          <span class="exercise-list-title" id="exercise-list-title"><%= t("practice.exercises") %></span>
+          <span class="exercise-list-count" data-practice-target="listCount"></span>
+        </span>
       </summary>
       <div class="exercise-groups" data-practice-target="listBody"></div>
     </details>

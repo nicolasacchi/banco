@@ -255,8 +255,11 @@ li.skill .skill-side .button { margin: 0; align-self: center; }
 .page.course.practice { container: practice / inline-size; max-width: 64rem; }
 .exercise-list { min-width: 0; margin: 0 0 var(--space-4); }
 .exercise-panel { margin: 0; }
-.exercise-panel .exercise-list-title { flex: 1 1 auto; min-width: 0; font-weight: 700; }
-.exercise-panel .exercise-list-count { flex: none; }
+/* The header (D-379): the title keeps its size and its width, and the line next to it (a count, «Argomento fatto», «Questo argomento lo sapevi già»)
+   goes under it when it does not fit; the two never overlap, in a 215 px column or on a phone. */
+.exercise-panel .exercise-list-head { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--space-3); }
+.exercise-panel .exercise-list-title { flex: none; font-weight: 700; }
+.exercise-panel .exercise-list-count { flex: 0 1 auto; min-width: 0; overflow-wrap: anywhere; }
 .exercise-groups { display: grid; gap: var(--space-3); padding-top: var(--space-1); }
 .exercise-skill { margin: 0 0 var(--space-1); font-size: var(--text-m); }
 ol.exercise-entries { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }

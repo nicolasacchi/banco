@@ -5,7 +5,9 @@ en:
       changelog: "What's new"
   changelog:
     title: "What's new"
-    intro: "Here you read what is new: the app, the topics that were revised and your own comments."
+    intro: "Here you read what is new: the app and the topics that were revised."
+    # With the section of his comments on the page (D-379).
+    intro_comments: "Here you read what is new: the app, the topics that were revised and your own comments."
     preview_note: "Preview: this page does not record a visit."
     empty: "There is nothing new for now."
     new: "New"

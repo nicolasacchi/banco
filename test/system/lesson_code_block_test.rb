@@ -87,6 +87,34 @@ class LessonCodeBlockSystemTest < ApplicationSystemTestCase
     assert_equal "0", box["tab"], "the keyboard can reach the box to scroll it"
   end
 
+  # D-379: at 390 px the screen of a program showed a line 8 px wider than its box, and its last digit touched the border with no cue to scroll. The side
+  # padding is slimmer on a phone: a line that fills the space between the borders less 0.9 em (the old padding left room for 1.8 em) does not scroll.
+  test "at 390 px a line that fills the box less the slim padding does not scroll, in the program and in the screen" do
+    open_lesson([ 390, 844 ])
+    go(2)
+    assert_selector "#scheda-2 .code-screen"
+    %w[.code-box .code-screen].each do |box|
+      fit = page.evaluate_script(<<~JS)
+        (() => {
+          const pre = document.querySelector("#scheda-2 #{box}")
+          const code = pre.querySelector("code")
+          const kept = code.textContent
+          const style = getComputedStyle(pre)
+          const em = parseFloat(style.fontSize)
+          code.textContent = "0".repeat(100)
+          const digit = code.getBoundingClientRect().width / 100
+          const n = Math.floor((pre.clientWidth - 0.9 * em) / digit)
+          code.textContent = "0".repeat(n)
+          const result = { n, client: pre.clientWidth, scroll: pre.scrollWidth, padding: parseFloat(style.paddingLeft) + parseFloat(style.paddingRight), em }
+          code.textContent = kept
+          return result
+        })()
+      JS
+      assert_operator fit["padding"], :<=, 0.9 * fit["em"] + 0.5, "#{box}: the side padding on a phone is at most 0.9 em in all"
+      assert_operator fit["scroll"], :<=, fit["client"], "#{box}: #{fit['n']} characters fill the box and do not scroll (#{fit['scroll']} of #{fit['client']})"
+    end
+  end
+
   test "the box shows the program as written: every space, the empty lines, the lines apart" do
     open_lesson([ 1280, 900 ])
     [ 1, 2, 3, 4 ].each do |n|

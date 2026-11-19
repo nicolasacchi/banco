@@ -572,7 +572,7 @@ export default class extends Controller {
     }
   }
 
-  // The exercise is over: its input and helps are put away.
+  // The exercise is over: its input, its helps and the line of why it was served are put away.
   // `actions`: what the server offers next, when it is the exercise's own end; the rating box opens only then (D-377): the exercise is really
   // over (no «Mostra la soluzione» left to offer: a typical error closes the serve before the solution, and he can still ask for it) and it has
   // a try. A closed, replaced or unknown serve (a 409, a 404) never opens it.
@@ -583,6 +583,7 @@ export default class extends Controller {
     this.itemBoxTarget.inert = true
     this.controlsTarget.hidden = true
     this.hintButtonTarget.hidden = true
+    this.showReason({}) // the line above the exercise says why it was served: it has no use once the exercise is over (D-379)
     if (actions && this.tried && !actions.includes("show_solution")) this.showRating()
   }
 

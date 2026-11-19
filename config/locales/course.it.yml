@@ -172,11 +172,11 @@ it:
         other: "Ti mancano %{count} esercizi giusti senza aiuto."
       # Hard to guess (DEMONSTRATE_MIN_LOW_GUESS): a written answer, an ordering or a matching of 4 rows or more; never «longer».
       long:
-        one: "Ti manca un esercizio giusto senza aiuto, da scrivere, abbinare o mettere in ordine: quelli a scelta non bastano."
-        other: "Ti mancano %{count} esercizi giusti senza aiuto, da scrivere, abbinare o mettere in ordine: quelli a scelta non bastano."
+        one: "Ti manca un esercizio giusto senza aiuto, da scrivere, abbinare o mettere in ordine: quelli a scelta si possono indovinare e non bastano."
+        other: "Ti mancano %{count} esercizi giusti senza aiuto, da scrivere, abbinare o mettere in ordine: quelli a scelta si possono indovinare e non bastano."
       long_among:
-        one: "Uno deve essere da scrivere, abbinare o mettere in ordine."
-        other: "%{count} devono essere da scrivere, abbinare o mettere in ordine."
+        one: "Uno deve essere da scrivere, abbinare o mettere in ordine: quelli non si possono indovinare."
+        other: "%{count} devono essere da scrivere, abbinare o mettere in ordine: quelli non si possono indovinare."
     submit: "Controlla"
     hint: "Mostra un aiuto (%{n} di %{total})"
     solution: "Mostrami la soluzione"

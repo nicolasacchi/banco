@@ -6,7 +6,9 @@ it:
       changelog: "Novità"
   changelog:
     title: "Novità"
-    intro: "Qui leggi cosa c'è di nuovo: l'app, gli argomenti rivisti e i tuoi commenti."
+    intro: "Qui leggi cosa c'è di nuovo: l'app e gli argomenti rivisti."
+    # With the section of his comments on the page (D-379).
+    intro_comments: "Qui leggi cosa c'è di nuovo: l'app, gli argomenti rivisti e i tuoi commenti."
     preview_note: "Anteprima: questa pagina non registra nessuna visita."
     empty: "Per ora non c'è niente di nuovo."
     new: "Nuovo"

@@ -31,7 +31,7 @@ export const inside = (ctx, r) => r.x >= 0 && r.x + r.w <= ctx.width
 
 // A label with a plate behind it so that a line passing under stays readable: the plate is the label's own background (CSS dg-plate).
 export function plateLabel(ctx, text, cx, cy, { maxW, cls = "", key, role } = {}) {
-  const probe = ctx.measure(text, ctx.fontPx, maxW)
+  const probe = ctx.measure(text, ctx.fontPx, maxW, `dg-plate ${cls}`.trim())
   const w = Math.min(Math.ceil(probe.w), maxW ?? Infinity)
   return label(ctx, text, cx - w / 2, cy - probe.h / 2, { anchor: "start", maxW: maxW ? w : undefined, cls: `dg-plate ${cls}`.trim(), key, role })
 }

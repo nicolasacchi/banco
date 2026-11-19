@@ -184,7 +184,7 @@ class EnglishWalkTest < ApplicationSystemTestCase
       visit "/novita"
       assert_selector "html[lang=en]"
       assert_selector "h1", text: en("changelog.title")
-      assert_selector "#changelog-intro", text: en("changelog.intro")
+      assert_selector "#changelog-intro", text: en("changelog.intro_comments")
       assert_selector "#changelog-followups h2", text: en("changelog.followups.title")
       assert_selector "#changelog-followups li", text: /#{TOPIC_TITLE}\s+#{en('changelog.followups.count', count: 1)}\s+#{en('changelog.followups.revised', date: '')[0, 14]}/
       assert_selector "#changelog-entries li[data-entry=my-schemas] h3", text: "My summaries", visible: :all # in the closed bar of the older news

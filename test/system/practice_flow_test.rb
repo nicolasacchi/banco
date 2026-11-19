@@ -301,6 +301,16 @@ class PracticeFlowTest < ApplicationSystemTestCase
     fresh = next_serve_after(serve)
     assert_equal [ "after_solution", serve.id ], [ fresh.reason, fresh.parent_serve_id ]
     assert_selector "#serve-reason", text: "Ti propongo un esercizio simile: per passare al prossimo ne serve uno giusto." # the same item again (D-348)
+    # D-379: the line says why this one was served; a wrong try leaves it while he tries again, the right try that ends the exercise takes it away
+    answer_wrong(fresh)
+    click_button "Controlla"
+    assert_selector "#feedback", text: UNRECOGNISED
+    assert_selector "#serve-reason", text: "Ti propongo un esercizio simile"
+    answer_right(fresh)
+    click_button "Controlla"
+    assert_selector "#feedback", text: "Corretto, con un aiuto."
+    assert_no_selector "#serve-reason", visible: :visible
+    assert_selector "#next-actions button", text: "Un altro esercizio"
     assert_clean "the solution"
   end
 
