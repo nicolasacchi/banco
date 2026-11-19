@@ -318,3 +318,11 @@ entries:
     link: /teacher/changelog
     title_it: "Novità: cosa legge lo studente e cosa è cambiato"
     body_it: "La pagina Novità elenca le novità per lo studente e per te, e gli argomenti approvati di nuovo con il motivo e le due revisioni. Ogni cambiamento che lo studente o il docente possono vedere aggiunge una voce a config/banco/changelog.yml, nello stesso commit."
+
+  - id: teacher-phone-and-contestazioni
+    date: 2026-11-19
+    audience: [teacher]
+    kind: fix
+    decisions: [D-376]
+    title_it: "Commenti sul telefono e Contestazioni più chiare"
+    body_it: "I commenti stanno nello schermo del telefono. In Contestazioni gli esiti sono in italiano, la risposta si legge a parole e i filtri restano quando cambi studente. Le schede degli esercizi dell'argomento mostrano le righe; un ospite non apre più la pagina «Prova»."

@@ -322,3 +322,9 @@ body.teacher .row-end .pill, body.teacher .item-tags .pill { white-space: normal
 article.skill, .gm-legend li, .gm-strip li { overflow-wrap: anywhere; min-width: 0; }
 .skill-detail { margin: var(--space-2) 0 0; }
 .skill-more ul { padding-left: var(--space-4); }
+
+/* «Contestazioni» (D-368, D-376): one fold per exercise; the student's answer keeps its own lines (a reading test is one line per question) and breaks long words. */
+.grading-group > summary { flex-wrap: wrap; justify-content: flex-start; }
+.grading-group > summary .grading-group-title { flex: 1 1 14rem; min-width: 0; overflow-wrap: anywhere; }
+.grading-group > summary .grading-group-count { color: var(--muted); }
+.grading-answer { white-space: pre-line; overflow-wrap: anywhere; }

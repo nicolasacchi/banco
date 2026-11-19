@@ -44,6 +44,22 @@ module CommentsHelper
     controller_name == "sittings" && action_name == "show" && @run ? "#{base_path}/runs/#{@run.id}/events" : ""
   end
 
+  # The anchor of a comment in the student's own words ("Scheda 3 · Blocco 2 · La risposta"), the words the box showed him (`comments.anchors`, as
+  # `describeAnchor` in items/comment_anchor.js: an unknown segment is left out, the last three are kept). Nil when no segment has a name: a raw
+  # id (`id:my-path-title`) is never printed.
+  def comment_anchor_words(comment)
+    names = I18n.t("comments.anchors")
+    words = comment.anchor.to_s.split("/").filter_map do |segment|
+      name, value = segment.split(":", 2)
+      template = names[name.to_s.to_sym]
+      next unless template.is_a?(String)
+
+      template.include?("%{n}") ? (value && template.sub("%{n}", value)) : template
+    end
+    words = words.chunk_while { |a, b| a == b }.map(&:first)
+    words.empty? ? nil : words.last(3).join(" · ")
+  end
+
   # "Lezione: Le frazioni, scheda 3" for the student's list.
   def comment_place_it(comment)
     parts = [ t("comments.place.#{comment.page_kind}") ]

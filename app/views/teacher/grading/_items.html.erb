@@ -1,0 +1,24 @@
+<%# The exercises table of «Contestazioni»: rows are Teacher::GradingReview#items rows; id: the table's id; label: its caption for the screen reader. %>
+<%= ui_table_wrap(label: label) do %>
+  <table class="data stack" id="<%= id %>">
+    <thead><tr><th><%= t("teacher.grading.col.item") %></th><th><%= t("teacher.grading.col.subject") %></th><th><%= t("teacher.grading.col.tries") %></th><th><%= t("teacher.grading.col.not_right") %></th><th><%= t("teacher.grading.col.manual") %></th><th><%= t("teacher.grading.col.signals") %></th><th><%= t("teacher.grading.col.state") %></th></tr></thead>
+    <tbody>
+      <% rows.each do |item| %>
+        <tr data-item="<%= item[:item] %>" data-flagged="<%= item[:flagged] %>">
+          <td data-label="<%= t("teacher.grading.col.item") %>"><%= ref_for(item[:item]) %></td>
+          <td data-label="<%= t("teacher.grading.col.subject") %>"><%= @subject_names.fetch(item[:subject], item[:subject]) %></td>
+          <td data-label="<%= t("teacher.grading.col.tries") %>" data-tries="<%= item[:tries] %>"><%= item[:tries] %></td>
+          <td data-label="<%= t("teacher.grading.col.not_right") %>" data-not-right="<%= item[:not_right] %>"><%= item[:not_right] %> (<%= t("teacher.grading.percent", n: (item[:not_right_rate] * 100).round) %>)</td>
+          <td data-label="<%= t("teacher.grading.col.manual") %>" data-manual="<%= item[:manual_corrections] %>"><%= item[:manual_corrections] %> (<%= t("teacher.grading.percent", n: (item[:manual_correction_rate] * 100).round) %>)</td>
+          <td data-label="<%= t("teacher.grading.col.signals") %>" data-suspect="<%= item[:suspect_tries] %>"><%= item[:suspect_tries] %></td>
+          <td data-label="<%= t("teacher.grading.col.state") %>">
+            <% if item[:flagged] %>
+              <%= ui_pill(t("teacher.grading.flagged"), :nearly, icon: "alert") %>
+              <span class="hint"><%= item[:flag_reasons].map { |r| t("teacher.grading.reason.#{r}") }.join(", ") %></span>
+            <% else %><span class="hint"><%= t("teacher.grading.ok") %></span><% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

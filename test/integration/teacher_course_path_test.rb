@@ -211,6 +211,20 @@ class TeacherCoursePathTest < ActionDispatch::IntegrationTest
     assert_equal JSON.parse(Teacher::StoredPresentation.call(@ready_items.first.instances.order(:id).first, @ready_items.first).to_json), presentation
   end
 
+  test "a matching's card on the topic page says how many rows it has, as the skill page does (D-370, D-376)" do
+    pairs = make_practice_item("pairs-1", "math.number", subject: @subject, instances: 0, level: 1, component: "matching")
+    { 3 => 1, 4 => 2 }.each do |rows, seed|
+      display = { left: (1..rows).map { |n| { id: "l#{n}", text: "voce #{n}" } }, right: (1..rows).map { |n| { id: "r#{n}", text: "coppia #{n}" } } }
+      ItemInstance.create!(item_revision: pairs, seed: seed, display_json: JSON.generate(display), answer_json: JSON.generate((1..rows).to_h { |n| [ "l#{n}", "r#{n}" ] }),
+                           fingerprint: Digest::SHA256.hexdigest("pairs-1-#{seed}"))
+    end
+    make_topic(@ready_lesson, { "math.number" => @ready_items + [ pairs ] }, course: @course)
+    topic_page
+    assert_response :success
+    assert_select ".exercise-card[data-exercise-card='#{pairs.id}'] .exercise-meta .tag", text: "3\u20134 righe"
+    assert_select ".exercise-card[data-exercise-card='#{@ready_items.first.id}'] .exercise-meta .tag", 0
+  end
+
   test "the item play page goes back to the topic" do
     on(:web, "/teacher/items/#{@ready_items.first.id}/play?topic=#{CoursePathWorld::READY}", headers: TEACHER, remote_addr: EDGE)
     assert_response :success

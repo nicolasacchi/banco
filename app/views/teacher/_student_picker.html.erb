@@ -1,8 +1,10 @@
+<%# keep: the page's own filters (a hash), carried in each link so that switching student does not drop them %>
+<% keep = local_assigns.fetch(:keep, {}) %>
 <% if student_choices.any? %>
   <nav class="student-picker" id="student-picker" aria-label="<%= t('teacher.student_picker.label') %>">
     <%= t("teacher.student_picker.label") %>:
     <% student_choices.each do |student| %>
-      <% query = student.official? ? "" : "?#{{ student: student.key }.to_query}" %>
+      <% query = (student.official? ? keep : keep.merge(student: student.key)).to_query.then { |q| q.empty? ? "" : "?#{q}" } %>
       <% if student == viewed_student %><strong data-student="<%= student.key %>"><%= student_label(student) %></strong>
       <% else %><a data-student="<%= student.key %>" href="<%= request.path %><%= query %>"><%= student_label(student) %></a><% end %>
     <% end %>

@@ -54,8 +54,8 @@ class GuestReadOnlyTest < ActionDispatch::IntegrationTest
       if verb == "GET"
         on(:web, path, headers: GUEST, remote_addr: EDGE)
         # a stored image needs a stored render: the sample value of a sha256 names none
-        # D-334: the who-did-what page is the teachers' (a guest is refused); D-360: so is a student's data file
-        expected = path.start_with?("/teacher/preview") || path == "/teacher/activity" || path.match?(%r{\A/teacher/students/[^/]+/data\z}) ? :forbidden : path.include?("/shots/") ? :not_found : :success
+        # D-334: the who-did-what page is the teachers' (a guest is refused); D-360: so is a student's data file; D-376: so is the item play page (a preview)
+        expected = path.start_with?("/teacher/preview") || path == "/teacher/activity" || path.match?(%r{\A/teacher/students/[^/]+/data\z}) || path.match?(%r{\A/teacher/items/\d+/play(/data)?\z}) ? :forbidden : path.include?("/shots/") ? :not_found : :success
         assert_response expected, "GET #{path}"
       else
         on(:web, path, method: verb.downcase.to_sym, headers: GUEST.merge("X-CSRF-Token" => token, "Content-Type" => "application/json", "Accept" => "application/json"),
@@ -79,6 +79,21 @@ class GuestReadOnlyTest < ActionDispatch::IntegrationTest
     assert_select "#finding-#{finding.id} button", 0
   end
 
+  test "a guest cannot play an item: the play page and its data are a 403 (a guest has no preview, D-217), the teacher's is open and writes nothing" do
+    [ "/teacher/items/#{@short.id}/play", "/teacher/items/#{@short.id}/play?n=1", "/teacher/items/#{@short.id}/play/data?n=1" ].each do |path|
+      on(:web, path, headers: GUEST, remote_addr: EDGE)
+      assert_response :forbidden, path
+      assert_select "form", 0, path
+      assert_select "button", 0, path
+    end
+    before = counts
+    on(:web, "/teacher/items/#{@short.id}/play", headers: TEACHER, remote_addr: EDGE)
+    assert_response :success
+    on(:web, "/teacher/items/#{@short.id}/play/data?n=1", headers: TEACHER, remote_addr: EDGE)
+    assert_response :success
+    assert_equal before, counts
+  end
+
   test "the teacher is not refused on the same routes" do
     teacher_routes.select { |verb, path| verb == "GET" && !path.start_with?("/teacher/preview/") && !path.include?("/shots/") }.each do |_, path|
       on(:web, path, headers: TEACHER, remote_addr: EDGE)
@@ -99,7 +114,7 @@ class GuestReadOnlyTest < ActionDispatch::IntegrationTest
 
   test "no form and no action button is drawn for a guest, and the page says read only" do
     [ "/teacher", "/teacher/subjects/math/graph", "/teacher/subjects/math/test", "/teacher/subjects/math/test/all", "/teacher/subjects/math/test/skills/math.number",
-      "/teacher/subjects/math/report", "/teacher/corrections", "/teacher/items/#{@short.id}", "/teacher/items/#{@short.id}/play",
+      "/teacher/subjects/math/report", "/teacher/corrections", "/teacher/items/#{@short.id}",
       "/teacher/refs/math.number", "/teacher/refs/#{@short.item.key}", "/teacher/subjects/math/course", "/teacher/subjects/math/topics/#{TopicWorld::TOPIC_KEY}",
       "/teacher/subjects/math/practice", "/teacher/subjects/math/practice/skills/math.number" ].each do |path|
       on(:web, path, headers: GUEST, remote_addr: EDGE)
