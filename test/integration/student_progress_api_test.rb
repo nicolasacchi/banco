@@ -71,8 +71,10 @@ class StudentProgressApiTest < ActionDispatch::IntegrationTest
     assert_equal rows.select(&:last).map { |key, status, _| [ key, status ] }, subject["extra_topics"].map { |t| [ t["key"], t["status"] ] }
     assert_equal [ [ TOPIC, "todo" ] ], subject["topics"].map { |t| [ t["key"], t["status"] ] }
     assert_equal [ [ EXTRA, "todo" ] ], subject["extra_topics"].map { |t| [ t["key"], t["status"] ] }
-    assert_equal({ "total" => 1, "done" => 0, "in_progress" => 0, "missing" => 1, "percent" => 0 }, subject["programme"])
-    assert_equal({ "total" => 1, "done" => 0, "in_progress" => 0, "missing" => 1, "percent" => 0 }, subject["extra"])
+    assert_equal({ "total" => 1, "done" => 0, "in_progress" => 0, "missing" => 1, "percent" => 0, "known" => 0, "exercises" => 0, "minutes_left" => 30, "hours_left" => 0 }, subject["programme"])
+    assert_equal({ "total" => 1, "done" => 0, "in_progress" => 0, "missing" => 1, "percent" => 0, "known" => 0, "exercises" => 0, "minutes_left" => 20, "hours_left" => 0 }, subject["extra"])
+    assert_equal 0, subject["correct_exercises"]
+    assert_equal 0, json["overall"]["correct_exercises"]
     assert_equal subject["programme"], json["overall"]["programme"], "one subject: the overall is its programme"
     assert_equal subject["extra"], json["overall"]["extra"]
     assert_nil subject["entry_test"], "no entry test for this subject in the list"
@@ -92,9 +94,36 @@ class StudentProgressApiTest < ActionDispatch::IntegrationTest
     subject = json["subjects"].first
     assert_equal "in_progress", subject["topics"].first["status"]
     assert_equal true, subject["topics"].first["lesson_read"]
-    assert_equal({ "total" => 1, "done" => 0, "in_progress" => 1, "missing" => 1, "percent" => 0 }, subject["programme"])
+    assert_equal({ "total" => 1, "done" => 0, "in_progress" => 1, "missing" => 1, "percent" => 0, "known" => 0, "exercises" => 0, "minutes_left" => 30, "hours_left" => 0 }, subject["programme"])
     assert_equal subject["programme"], json["overall"]["programme"]
     assert_equal "todo", subject["extra_topics"].first["status"]
+  end
+
+  # D-367: the same split as the pages, added to the tallies; every field of D-328 is still there with the same meaning.
+  test "the programme tally says how many were known from the entry test and how many were done with the exercises, and the time left" do
+    seeds = { SKILL => Practice::Seed.new(skill: SKILL, state: "demonstrated", at: Time.current - 5.days, run_id: 1, implied: false) }
+    Practice::Seeder.stub(:call, seeds) do
+      api("/api/v1/students/student/progress")
+    end
+    subject = json["subjects"].first
+    assert_equal({ "total" => 1, "done" => 1, "in_progress" => 0, "missing" => 0, "percent" => 100, "known" => 1, "exercises" => 0, "minutes_left" => 0, "hours_left" => 0 }, subject["programme"])
+    assert_equal "done", subject["topics"].first["status"]
+    assert_equal 0, subject["correct_exercises"], "nothing was answered: the entry test is not an exercise"
+    assert_equal subject["programme"], json["overall"]["programme"]
+  end
+
+  test "a topic closed with the exercises is counted apart, with the right answers of the subject" do
+    @clock = Diagnosis::FakeClock.new(Time.current - 20.days)
+    play_topic!(@topic_revision, SKILL, 3)
+    api("/api/v1/students/student/progress")
+    subject = json["subjects"].first
+    assert_equal({ "total" => 1, "done" => 1, "in_progress" => 0, "missing" => 0, "percent" => 100, "known" => 0, "exercises" => 1, "minutes_left" => 0, "hours_left" => 0 }, subject["programme"])
+    assert_equal({ "total" => 1, "done" => 0, "in_progress" => 0, "missing" => 1, "percent" => 0, "known" => 0, "exercises" => 0, "minutes_left" => 20, "hours_left" => 0 }, subject["extra"])
+    assert_equal 3, subject["correct_exercises"]
+    assert_equal 3, json["overall"]["correct_exercises"]
+    page("/subjects/math")
+    assert_select "#subject-summary .progress-line[data-line=correct] .progress-text", "Esercizi giusti: 3"
+    assert_select "#subject-summary .progress-line[data-line=exercises] .progress-text", "Fatti con gli esercizi: 1"
   end
 
   test "the entry tests are the diagnosis list of the student" do

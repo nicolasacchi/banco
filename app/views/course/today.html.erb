@@ -113,12 +113,9 @@
       <h2 id="my-path-title"><%= t("progress.today.title") %></h2>
       <div class="card path-card">
         <ul class="progress-lines">
-          <li class="progress-line" data-line="required">
-            <span class="progress-text"><%= t("progress.today.required", done: all.programme.done, total: all.programme.total) %></span>
-            <%= ui_meter(all.programme.percent, t("progress.meter", done: all.programme.done, total: all.programme.total)) %>
-          </li>
+          <%= render "course/required_lines", required: all.programme %>
           <% unless all.extra.none? %>
-            <li class="progress-line" data-line="optional"><span class="progress-text"><%= t("progress.today.optional", count: all.extra.done) %></span></li>
+            <li class="progress-line" data-line="optional"><span class="progress-text"><%= t("progress.optional", total: all.extra.total, known: all.extra.known, exercises: all.extra.exercises) %></span></li>
           <% end %>
         </ul>
         <div class="button-row"><a class="button secondary" id="my-path-link" href="<%= spath("/subjects") %>"><%= t("progress.today.link") %></a></div>

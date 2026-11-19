@@ -618,15 +618,18 @@ and the extra topics (each `done`, `in_progress` or `todo`, the same word as on 
 ```json
 {
   "student": { "key": "student", "official": true },
-  "overall": { "programme": { "total": 19, "done": 4, "in_progress": 1, "missing": 15, "percent": 21 }, "extra": { "total": 7, "done": 0, "in_progress": 0, "missing": 7, "percent": 0 } },
+  "overall": { "programme": { "total": 19, "done": 4, "in_progress": 1, "missing": 15, "percent": 21, "known": 3, "exercises": 1, "minutes_left": 570, "hours_left": 10 },
+               "extra": { "total": 7, "done": 0, "in_progress": 0, "missing": 7, "percent": 0, "known": 0, "exercises": 0, "minutes_left": 140, "hours_left": 2 },
+               "correct_exercises": 41 },
   "subjects": [
     {
       "key": "geography", "name_it": "Geografia economica", "released": true, "mode": "official", "course_revision_id": 36,
       "topics": [ { "key": "ponte.geography.world-map-coordinates", "kind": "ponte", "title_it": "...", "term": 1, "minutes": 30, "skills": ["..."], "after": [],
                     "status": "in_progress", "lesson_read": true, "to_recover": false, "approved": true } ],
       "extra_topics": [ { "key": "extra.geography.europe", "status": "todo" } ],
-      "programme": { "total": 19, "done": 4, "in_progress": 1, "missing": 15, "percent": 21 },
-      "extra": { "total": 7, "done": 0, "in_progress": 0, "missing": 7, "percent": 0 },
+      "programme": { "total": 19, "done": 4, "in_progress": 1, "missing": 15, "percent": 21, "known": 3, "exercises": 1, "minutes_left": 570, "hours_left": 10 },
+      "extra": { "total": 7, "done": 0, "in_progress": 0, "missing": 7, "percent": 0, "known": 0, "exercises": 0, "minutes_left": 140, "hours_left": 2 },
+      "correct_exercises": 41,
       "entry_test": { "subject": "geography", "name_it": "Geografia economica", "status": "completed", "done": true, "startable": false, "suggested": false, "label_it": "Fatto", "run_id": 412 },
       "skills": [ { "key": "geography.coordinates-hemispheres", "label_it": "...", "state": "in_study", "since": "2026-11-12T09:00:00Z", "pool_exhausted_at": null } ],
       "skills_without_topic": []
@@ -640,6 +643,13 @@ and the extra topics (each `done`, `in_progress` or `todo`, the same word as on 
 `programme` counts the topics of the programme (mandatory) and `extra` the extra ones (optional), as Materie and Materia show them: `done`
 is every skill of the topic demonstrated, `in_progress` a topic started and not done, `missing` every topic not done (so it includes
 the ones in progress), `percent` is `done` over `total`, rounded down. `overall` sums the visible subjects (Oggi's «I tuoi progressi»).
+
+The honest split (D-367) is added to each tally; the fields above keep their meaning. `known` is the done topics that the entry test showed
+(«Già sapevi»: every skill of the topic is still in the state the diagnosis seeded, never studied), `exercises` the other done topics
+(«Fatti con gli esercizi»), so `done = known + exercises`. `minutes_left` is the sum of the `minutes` of the topics not done and `hours_left`
+that time in round hours (0 is «less than an hour», up to 19 h the nearest hour, from 20 h the nearest 5), what the pages say instead of a percentage («circa 150 ore»).
+`correct_exercises` (on each subject and in `overall`) is the number of exercises the student answered right, the positive unit Materia shows as «Esercizi giusti».
+`banco next` (`done_it`) says the same split in words: «Obbligatori: 250 argomenti. Già sapevi: 18. Fatti con gli esercizi: 1.»; `banco progress` prints these fields as they are.
 `entry_test` is the subject's row of `entry_tests` (`null` when the subject has no test in the student's list); `skills[].state` follows the
 practice rules (`not_seen` when nothing is known); `skills[].pool_exhausted_at` is the first time the student had seen every exercise of the skill and none was served on its own (D-348; `null` otherwise, and the same field is in `banco practice progress`). `closed_subjects` are the subjects whose course the teacher withdrew after opening it. The
 official student sees no subject before the teacher releases its course.
@@ -659,7 +669,7 @@ propose, the skills to recover and how much is done. Programme topics only, neve
  "subjects": [{"subject": "italian", "name_it": "Italiano",
                "next": {"topic": "lezione.italian.…", "title_it": "…", "kind": "lezione", "minutes": 45, "term": 2, "why_it": "…"},
                "skills_to_recover": [{"skill": "…", "label_it": "…", "taught_in": "<topic key>"}],
-               "done_it": "12 argomenti su 20"}]}
+               "done_it": "Obbligatori: 20 argomenti. Già sapevi: 3. Fatti con gli esercizi: 9."}]}
 ```
 
 `next` is Oggi's own pick for the subject (the topic the student left, else the first of Oggi's ranked suggestions) and `why_it` is Oggi's reason in its own words; it is `null`, with no skills,
