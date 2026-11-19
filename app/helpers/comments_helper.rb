@@ -60,6 +60,28 @@ module CommentsHelper
     words.empty? ? nil : words.last(3).join(" · ")
   end
 
+  # «Schermo 390×800, tema scuro, testo molto piccolo» (D-380): the teacher's card names the screen, the theme and the text size in the words the
+  # student reads in Impostazioni (`diagnosis.preferences`), never the stored codes (`dark`, `smallest`); a value he did not send is «non indicato».
+  def comment_device_line(comment)
+    unknown = I18n.t("teacher.comments.device_unknown", locale: :it)
+    name = ->(group, key) { key.present? ? I18n.t("diagnosis.preferences.#{group}.#{key}", locale: :it, default: nil)&.downcase || unknown : unknown }
+    screen = comment.viewport_width && comment.viewport_height ? I18n.t("teacher.comments.device_screen", w: comment.viewport_width, h: comment.viewport_height, locale: :it) : unknown
+    I18n.t("teacher.comments.device", screen: screen, theme: name.call(:themes, comment.theme), size: name.call(:sizes, comment.text_size), locale: :it)
+  end
+
+  # The context of one comment for the teacher's card (D-371's block, D-380): `Comments::Context` with his raw words (the teacher reads them, D-346),
+  # the revision numbers next to the ids, and the counts the summary line says.
+  def comment_context(comment)
+    context = Comments::Context.new(comment, words: true).to_h
+    revisions = { item: ItemRevision, lesson: LessonRevision }.filter_map do |kind, model|
+      block = context.dig(:revision, kind) or next
+      [ kind, block.merge(seen_seq: model.where(id: block[:seen_revision_id]).pick(:seq), current_seq: model.where(id: block[:current_revision_id]).pick(:seq)) ]
+    end.to_h
+    tries = context[:tries]
+    { revisions: revisions, tries: tries, n_tries: tries ? (tries.dig(:on_the_item, :total) || tries[:behind_the_comment].size) : 0,
+      earlier: context[:earlier_comments].to_a, exercise: comment.item_revision.present? }
+  end
+
   # "Lezione: Le frazioni, scheda 3" for the student's list.
   def comment_place_it(comment)
     parts = [ t("comments.place.#{comment.page_kind}") ]

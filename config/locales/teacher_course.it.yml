@@ -59,10 +59,9 @@ it:
       after: "Viene dopo:"
       skills: "Abilità nuove di seconda"
       skills_intro: "Ogni abilità cita la riga del programma da cui nasce. Controlla che la riga dica davvero questo."
-      ref: "Riga %{line} (%{role}):"
-      role:
-        taught_in: "si insegna qui"
-        needed_by: "serve a"
+      ref:
+        taught_in: "Riga %{line} del programma:"
+        needed_by: "Riga %{line} del programma (serve a):"
       programme_line: "Testo della riga:"
       errors: "Errori tipici:"
     topic:

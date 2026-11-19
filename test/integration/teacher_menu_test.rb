@@ -45,7 +45,7 @@ class TeacherMenuTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "the teacher sees Prova come S, the guest does not, Esci follows the variable" do
+  test "the teacher sees Prova come lo studente, the guest does not, Esci follows the variable" do
     page("/teacher")
     assert_select "#menu-preview"
     ENV["BANCO_GUEST_USERS"] = "guest-a@example.test"

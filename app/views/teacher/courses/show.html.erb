@@ -90,7 +90,7 @@
             <h3><%= skill.label_it %> <span class="key">(<%= skill.key %>)</span></h3>
             <ul class="plain refs">
               <% skill.refs.each do |r| %>
-                <li><%= t("teacher.course.ref", line: r.line, role: t("teacher.course.role.#{r.role}")) %>
+                <li><%= t("teacher.course.ref.#{r.role}", line: r.line) %>
                   <q><%= r.fragment %></q><% if r.text %><br><span class="hint"><%= t("teacher.course.programme_line") %></span> <%= r.text %><% end %></li>
               <% end %>
             </ul>

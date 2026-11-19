@@ -189,6 +189,15 @@ class TeacherCoursePathTest < ActionDispatch::IntegrationTest
     assert_select "#read-lesson", "Ho letto la lezione"
   end
 
+  test "the lesson's programme lines read «Riga N del programma» and every review point has an Italian text (D-380)" do
+    topic_page
+    assert_select "#topic-lesson ul.refs li", /\ARiga \d+ del programma/ if css_select("#topic-lesson ul.refs li").any?
+    assert_not_includes response.body, "si insegna qui"
+    assert_equal "Riga 13 del programma:", I18n.t("teacher.course.ref.taught_in", line: 13, locale: :it)
+    (1..11).each { |n| assert_not_includes I18n.t("teacher.review.point.p#{n}", locale: :it), "translation missing", "point #{n}" }
+    assert_equal "Immagini e schemi dicono lo stesso del testo.", I18n.t("teacher.review.point.p9", locale: :it)
+  end
+
   test "step two has one card per exercise in level order with four instances, hints, messages, solution and the review outcome" do
     topic_page
     cards = css_select(".exercise-card")
@@ -206,7 +215,7 @@ class TeacherCoursePathTest < ActionDispatch::IntegrationTest
     assert_select "#{card} details[data-more=errors]", /Hai sbagliato un segno/
     assert_select "#{card} details[data-more=solution] ol.steps li"
     assert_select "#{card} details[data-more=review] [data-blind=ok]"
-    assert_select "#{card} a[data-play='#{@ready_items.first.id}'][href*='topic=#{CoursePathWorld::READY}']", "Prova questo esercizio come S"
+    assert_select "#{card} a[data-play='#{@ready_items.first.id}'][href*='topic=#{CoursePathWorld::READY}']", "Prova questo esercizio come lo studente"
     presentation = JSON.parse(css_select("#{card} [data-presentation]").first["data-presentation"])
     assert_equal JSON.parse(Teacher::StoredPresentation.call(@ready_items.first.instances.order(:id).first, @ready_items.first).to_json), presentation
   end

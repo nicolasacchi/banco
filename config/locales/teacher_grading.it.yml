@@ -64,6 +64,7 @@ it:
         resolved_right: "resa giusta dal docente"
       outcome:
         correct: "giusta"
+        right: "giusta"
         correct_aided: "giusta, con aiuto"
         typical_error: "errore tipico"
         unrecognised: "sbagliata"

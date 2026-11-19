@@ -66,6 +66,7 @@ class TeacherRatingsTest < ActionDispatch::IntegrationTest
       assert_select ".rating-stars-it", text: "★★★★★"
       assert_select "td", text: "revisione #{@item.seq}"
       assert_select ".pill", text: "Studente"
+      assert_select "td[data-label=Chi] .key", 0 # D-380: the official student is «Studente», never the key «student»
       assert_select ".ref[data-ref-key=?]", @key
     end
     assert_select "#rating-#{@old.id} .rating-stars-it", text: "★★☆☆☆"

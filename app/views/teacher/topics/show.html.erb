@@ -65,7 +65,7 @@
               <p class="hint"><%= t("teacher.topic.uses") %> <%= safe_join(lesson_body["uses"].map { |k| ref_for(k) }, ", ") %></p>
             <% end %>
             <ul class="plain refs">
-              <% lesson_body["refs"].each do |r| %><li><%= t("teacher.course.ref", line: r["line"], role: t("teacher.course.role.#{r['role']}")) %> <q><%= r["fragment"] %></q></li><% end %>
+              <% lesson_body["refs"].each do |r| %><li><%= t("teacher.course.ref.#{r['role']}", line: r["line"]) %> <q><%= r["fragment"] %></q></li><% end %>
             </ul>
             <div class="student-view" id="lesson-text">
               <h3 class="lesson-title"><%= lesson_body["title_it"] %></h3>

@@ -126,8 +126,9 @@
               <p class="comment-text"><%= comment.text_it || t("teacher.comments.selection_only") %></p>
               <p class="comment-meta">
                 <% if (spot = comment_anchor_words(comment)) %><%= t("teacher.comments.element") %>: <%= spot %> · <% end %>
-                <%= t("teacher.comments.device", w: comment.viewport_width || "?", h: comment.viewport_height || "?", theme: comment.theme || "?", size: comment.text_size || "?") %>
+                <%= comment_device_line(comment) %>
               </p>
+              <%= render "teacher/comments/context", comment: comment %>
               <% if comment.events.any? %>
                 <details open>
                   <summary><%= t("teacher.comments.history") %></summary>

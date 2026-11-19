@@ -1,0 +1,11 @@
+<%# D-380: the tries listed on a comment's card, oldest first; his raw words are the teacher's (D-346). %>
+<ol class="comment-context-tries">
+  <% rows.each do |row| %>
+    <li data-try="<%= row[:ref] %>">
+      <%= t("teacher.comments.context.try_row", at: Time.zone.parse(row[:at]).strftime("%d/%m/%Y %H:%M"), kind: t("teacher.comments.context.kind.#{row[:kind]}"),
+            outcome: t("teacher.grading.outcome.#{row[:outcome]}", default: row[:outcome].to_s)) %><% if row[:try_number] %> · <%= t("teacher.comments.context.try_number", n: row[:try_number]) %><% end %>
+      <% if row[:answer].present? %><br><%= t("teacher.comments.context.answer", text: truncate(row[:answer].to_s, length: 200)) %><% end %>
+      <% if row[:anchor_row].present? %><br><%= t("teacher.comments.context.anchor_row", text: truncate(row[:anchor_row].to_s, length: 200)) %><% end %>
+    </li>
+  <% end %>
+</ol>

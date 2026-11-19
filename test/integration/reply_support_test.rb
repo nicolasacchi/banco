@@ -330,6 +330,59 @@ class ReplySupportTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, "Da poco."
   end
 
+  # ---- D-380: the context on the teacher's card (the page, not only the API) -------------------------------------
+
+  test "the card of a comment on an exercise with tries shows the revision he saw, his tries with his words, his earlier comments" do
+    earlier = practice_comment(text_it: "Prima volta.", created_at: 2.days.ago)
+    event(earlier, "reply", at: 2.days.ago + 600, text: "Guardo subito.")
+    comment = practice_comment(text_size: "smallest", theme: "dark", viewport_width: 1759, viewport_height: 979)
+    newest = newer_item_revision
+
+    on(:web, "/teacher/comments", headers: TEACHER, remote_addr: EDGE)
+    assert_response :success
+    assert_select "#comment-#{comment.id} .comment-meta", /Schermo 1759×979, tema scuro, testo molto piccolo/
+    assert_not_includes response.body, "tema dark"
+    assert_not_includes response.body, "testo smallest"
+    assert_select "#comment-#{comment.id} details.comment-context[data-exercise=true][data-changed=true]" do
+      assert_select "summary", /Contesto: revisione cambiata da allora · \d+ tentativ\w+ · 1 commento precedente/
+      assert_select "[data-context=revision]", /Revisione dell'esercizio che aveva davanti: #{@item.seq}\.\s+Ora c'è la revisione #{newest.seq}: è cambiata da allora/
+      assert_select "[data-context=tries-behind]", /Tentativi dietro il commento/
+      assert_select "ol li[data-try=?]", "practice-#{@try.id}", /Esercizi · sbagliata · tentativo #{@try.try_number}\s+Risposta: «99999 parola-sua»/
+      assert_select "[data-earlier-comment='#{earlier.id}']", /Prima volta\.\s+Risposta: Guardo subito\./
+    end
+  end
+
+  test "the card of a comment on an exercise with no try and no earlier comment says so in one line each" do
+    comment = make_comment(item_revision: @revisions[1], page_kind: "practice", page_path: PRACTICE_PATH, anchor: "exercise/item")
+
+    on(:web, "/teacher/comments", headers: TEACHER, remote_addr: EDGE)
+    assert_select "#comment-#{comment.id} details.comment-context[data-exercise=true][data-changed=false][data-tries='0'][data-earlier='0']" do
+      assert_select "summary", /Contesto: revisione ancora quella attuale · nessun tentativo · nessun commento precedente/
+      assert_select "[data-context=revision]", /È ancora l'ultima/
+      assert_select "[data-context=tries-none]", "Nessun tentativo dello studente su questo esercizio."
+      assert_select "[data-context=earlier-none]", "Nessun commento precedente su questo esercizio."
+    end
+  end
+
+  test "a comment on no exercise has the context too, without the exercise lines, and an unsent screen setting is named «non indicato»" do
+    comment = make_comment(theme: nil, text_size: nil, viewport_width: nil, viewport_height: nil)
+
+    on(:web, "/teacher/comments", headers: TEACHER, remote_addr: EDGE)
+    assert_select "#comment-#{comment.id} .comment-meta", /Schermo non indicato, tema non indicato, testo non indicato/
+    assert_select "#comment-#{comment.id} details.comment-context[data-exercise=false]" do
+      assert_select "[data-context=tries-none]", 0
+      assert_select "[data-context=earlier-none]", "Nessun commento precedente su questa pagina."
+    end
+  end
+
+  test "every theme and size a student can choose is named in Italian on the card, never by its stored code" do
+    names = { "cream" => "crema", "light" => "chiaro", "dark" => "scuro", "auto" => "automatico" }
+    sizes = { "minimum" => "minimo", "tiny" => "piccolissimo", "smallest" => "molto piccolo", "small" => "piccolo", "normal" => "normale", "large" => "grande", "larger" => "molto grande" }
+    helper = ApplicationController.helpers
+    names.each { |code, word| assert_includes helper.comment_device_line(make_comment(theme: code)), "tema #{word}" }
+    sizes.each { |code, word| assert_includes helper.comment_device_line(make_comment(text_size: code)), "testo #{word}" }
+  end
+
   test "an inbox with nothing waiting says so" do
     answered = make_comment
     event(answered, "reply", text: "Fatto.")
