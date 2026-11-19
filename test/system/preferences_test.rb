@@ -178,7 +178,8 @@ class PreferencesSystemTest < ApplicationSystemTestCase
     with_pointer(touch: true, size: [ 390, 844 ])
     choose_size "Minimo"
     assert_equal "12px", style("html", "fontSize")
-    assert_operator box("label.choice")[1], :>=, 44
+    # «Salva» used to reload the page here; the choice now applies in place, and Chrome reads the emulated touch pointer at a page load
+    visit "/settings"
     assert_operator box("label.choice")[1], :>=, 44
     visit "/settings"
     page.driver.browser.page.command("Emulation.setTouchEmulationEnabled", enabled: false)

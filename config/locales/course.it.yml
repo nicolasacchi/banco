@@ -32,6 +32,9 @@ it:
       exercises:
         one: "Per chiuderlo: in %{skill} fai ancora un esercizio giusto senza aiuto."
         other: "Per chiuderlo: in %{skill} fai ancora %{count} esercizi giusti senza aiuto."
+  # D-378: a skill (a topic) the entry test showed and nothing since moved; the same words on the subject list, the topic page, the practice page and the counters.
+  # Not one of the engine's states (those are `states`, which test/lib/practice/rules_test.rb pins to Rules::STATES).
+  state_known: "Già sapevi"
   states:
     not_seen: "Non ancora vista"
     to_recover: "Dal test: da ripassare"
@@ -40,8 +43,6 @@ it:
     demonstrated: "Dimostrata"
     consolidated: "Consolidata"
     to_review: "Da ripassare"
-    # D-378: a skill (a topic) the entry test showed and nothing since moved; the same words on the subject list, the topic page, the practice page and the counters.
-    known: "Già sapevi"
   why:
     not_seen: "Non l'hai ancora provata."
     seed_demonstrated: "Già sapevi: l'hai dimostrato nel test d'ingresso del %{date}."

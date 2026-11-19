@@ -62,7 +62,7 @@ module Practice
 
     # The word for a skill the student reads on his pages (D-378): the state's, except a skill the entry test showed and nothing since moved, which
     # is «Già sapevi» wherever the topic is listed (the subject list, the topic page, the practice header). +skill_state+: a Practice::SkillState.
-    def skill_state_it(skill_state) = skill_state.known? ? I18n.t("states.known") : state_it(skill_state.state)
+    def skill_state_it(skill_state) = skill_state.known? ? I18n.t("state_known") : state_it(skill_state.state)
 
     # Corrections without help counted toward demonstration (0..3), only while the skill is "in studio"; nil otherwise.
     def clean_count(why) = why[:code].to_s == "in_study" ? why[:n].to_i.clamp(0, 3) : nil
