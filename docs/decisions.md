@@ -384,6 +384,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-379 | 2026-11-19 | the student's pages after the recheck of D-376..D-378: the exercise list's header keeps its title and puts the line under it when it does not fit (a regression of D-378's longer line), the line of why an exercise was served goes when it is over, a heading the script focuses has no ring, the diagram note is measured with its own class, a screen's output on a phone fits its box, «Novità» names comments only when they are there, and the hard exercises line says why | implemented |
 | D-380 | 2026-11-19 | the teacher's pages after the second real-browser check: on a phone the topic page's progress bar scrolls with the text (it was 255 px of sticky bar) and the «i» of an exercise is as tall as a line; the comment card names the screen, theme and size in Italian and shows D-371's context (the revision he saw, his tries, his earlier comments, or one line saying there are none); «come lo studente» in place of «S», the review points 9 to 11 have a text, «Riga N del programma», the ratings' «Chi» is Italian only | implemented |
 | D-381 | 2026-11-19 | CI back to green: the private school name is out of the tree (not out of the history, the operator's call), the student's quote that held a term inside an Italian word is paraphrased, two Brakeman warnings fixed in code, a stale node stub, «Ascolta» no longer reads the lesson's rating box (the student's pages: the goldens stay as they were), two system tests that waited on the wrong thing | implemented |
+| D-382 | 2026-11-19 | security patch updates for bundler-audit (`scan` was red): Rails 8.1.4 → 8.1.4.1, rack 3.2.7 → 3.2.8, puma 8.0.2 → 8.0.4, nokogiri 1.19.4 → 1.19.7, loofah 2.25.2 → 2.25.3, rails-html-sanitizer 1.7.1 → 1.7.2, addressable 2.9.0 → 2.9.2, msgpack 1.8.5 → 1.8.7, sqlite3 2.9.6 → 2.10.2; only `Gemfile.lock` moves | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -4697,4 +4698,15 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Why:** a red `main` hides the next real failure.
 - **Status:** implemented.
 - **Tests:** `bin/hygiene`, `bin/brakeman --exit-on-warn`, `test/integration/student_not_found_test.rb` (HEAD), `practice_reminder_test.rb`, `course_pages_test.rb`, `test/javascript/items/draft_restore.test.mjs`, `test/system/schemas_test.rb`, `test/system/pages_system_test.rb`, `test/system/lesson_speech_golden_test.rb`.
+- **Back-port:** none.
+
+## D-382 · 2026-11-19 · security patch updates for bundler-audit
+
+- **Design ref:** D-381 (CI back to green).
+- **What was red:** the `scan` job (`bin/bundler-audit`): published advisories against the locked gems of a public service.
+- **We do:** `bundle update --conservative` on the gems named by the advisories, patch level only (`--patch` where the latest was a minor), nothing else moved. `Gemfile.lock` only, every platform entry kept, the bundler version of the lock unchanged. Rails 8.1.4 → 8.1.4.1 (the framework gems move together), rack 3.2.7 → 3.2.8, puma 8.0.2 → 8.0.4 (the latest 8.1 is a minor, not taken), nokogiri 1.19.4 → 1.19.7, loofah 2.25.2 → 2.25.3, rails-html-sanitizer 1.7.1 → 1.7.2, addressable 2.9.0 → 2.9.2, msgpack 1.8.5 → 1.8.7, sqlite3 2.9.6 → 2.10.2 (the fix is only in 2.10; the Gemfile's `~> 2.9` already allows it).
+- **Not done / must not change:** the `Gemfile`; any other gem; the product.
+- **Why:** the advisories (rack, sanitizer, nokogiri, Rails) touch what a public API serves.
+- **Status:** implemented.
+- **Tests:** `bin/bundler-audit` (no vulnerabilities), `bundle exec puma --version`, `test/integration test/models test/lib test/controllers test/jobs test/validation`, `test/system/practice_flow_test.rb`, `test/system/lesson2_page_test.rb`, `test/system/comments_system_test.rb`, `bin/check-structure`.
 - **Back-port:** none.
