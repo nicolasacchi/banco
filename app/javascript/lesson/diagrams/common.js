@@ -93,11 +93,12 @@ export function makeContext(data, opts) {
 
 // Puts a label. (ax, ay) is the anchor: anchor "start" (left edge), "middle" (centre) or "end" (right edge)
 // horizontally; valign "top" | "middle" | "bottom" vertically. maxW wraps. Returns the label (with its box).
-export function label(ctx, text, ax, ay, { anchor = "middle", valign = "top", maxW, cls = "", px, key, role, tag, lang } = {}) {
+export function label(ctx, text, ax, ay, { anchor = "middle", valign = "top", maxW, cls = "", px, key, role, tag, lang, measureCls = false } = {}) {
   const size = Math.max(px ?? ctx.fontPx, ctx.fontPx)
-  // measured wearing the label's own classes (bold, a plate): the box is the one the label is drawn in (D-379: a bold note measured as plain text
-  // was 190 px wide on the page and 213 px drawn, and spilled out of its pill)
-  const m = ctx.measure(text, size, maxW, cls)
+  // `measureCls`: measured wearing the label's own classes (bold, a plate): the box is the one the label is drawn in (D-379: a bold note measured as
+  // plain text was 190 px wide on the page and 213 px drawn, and spilled out of its pill). Opt-in: only the graph's notes and plates pass it; every
+  // other figure measures as before, so its labels do not move.
+  const m = ctx.measure(text, size, maxW, measureCls ? cls : undefined)
   const w = Math.min(m.w, maxW ?? m.w)
   const h = m.h
   const x = anchor === "start" ? ax : anchor === "end" ? ax - w : ax - w / 2

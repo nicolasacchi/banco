@@ -9,7 +9,7 @@ import { test } from "node:test"
 
 const root = new URL("../../../../", import.meta.url)
 const doc = (path) => JSON.parse(readFileSync(new URL(path, root), "utf8"))
-const { estimate } = await import("lesson/diagrams/common")
+const { estimate, label, makeContext } = await import("lesson/diagrams/common")
 const MODULES = {
   network: await import("lesson/diagrams/graph/network"),
   chain: await import("lesson/diagrams/graph/chain"),
@@ -211,6 +211,15 @@ test("flow line: the «here» note is measured with its own class, so the pill h
   }
   assert.ok(checked > 0, "the notes were checked")
   assert.ok(asked.some((a) => a.cls === "dg-flow-here"))
+})
+
+// The class-aware measure is opt-in (the graph's notes and plates): every other figure's label is measured as before D-379, with no class.
+test("label(): measures without classes unless measureCls is given", () => {
+  const seen = []
+  const ctx = makeContext({}, { width: 600, fontPx: 20, measure: (text, px, maxW, cls) => (seen.push(cls), estimate(text, px, maxW)) })
+  label(ctx, "Brasile", 10, 10, { cls: "dg-map-label bold" })
+  label(ctx, "Rio", 10, 40, { cls: "dg-plate x", measureCls: true })
+  assert.deepEqual(seen, [undefined, "dg-plate x"])
 })
 
 test("the tree flow is untouched by the line layout", () => {

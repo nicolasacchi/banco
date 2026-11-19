@@ -193,7 +193,7 @@ function build(data, ctx) {
       const sentence = `${grey.length ? `${TEXT.grey_tag[0].toUpperCase()}${TEXT.grey_tag.slice(1)}: ${listIt(grey.map((g) => plain(g.text_it)))}.` : TEXT.nothing_grey} ${TEXT.hypothesis}`
       const probe = ctx.measure(sentence, f, W - 36, "dg-chain-note")
       shape(ctx, "rect", { x: 6, y: top, w: W - 12, h: probe.h + 2 * pad + 4, r: 10, cls: "dg-graph-note", key: "notebox" })
-      const note = label(ctx, sentence, 18, top + pad + 2, { anchor: "start", maxW: W - 36, cls: "dg-chain-note", key: "note" })
+      const note = label(ctx, sentence, 18, top + pad + 2, { anchor: "start", maxW: W - 36, cls: "dg-chain-note", measureCls: true, key: "note" })
       top += note.h + 2 * pad + 12
     }
     const areas = [...new Set(data.nodes.filter((nd) => shown.has(nd.id) && nd.area).map((nd) => nd.area))]
