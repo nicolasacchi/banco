@@ -1,14 +1,21 @@
 """banco TTS service: lesson text in, MP3 out, Kokoro-82M on CPU.
 
 POST /synthesize  {"text", "voice", "lang", "speed"} -> 200 audio/mpeg | 400 JSON
-GET  /health      -> {"ok", "engine", "voices"}
+GET  /health      -> {"ok", "engine", "voices", "worker": {"runs", "rss_mb", "recycled"}}
 
 The service only ever sees lesson text sent by the Rails app's clip generator; it keeps no state
 and logs one line per request (voice, chars, ms), never the text.
+
+Memory (D-369): onnxruntime's memory only grows with the longest input it has seen, so (1) the session runs without the CPU memory
+arena and the memory pattern, (2) a text is synthesized one sentence at a time, (3) the process that holds the model is a worker
+that is replaced after BANCO_TTS_RECYCLE_AFTER sentences or at BANCO_TTS_RECYCLE_RSS_MB MiB resident. The clip's audio is the only
+thing that changes; the Rails side (clip keys, segment texts) never sees any of it.
 """
 import hashlib
 import json
+import multiprocessing
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -19,6 +26,16 @@ ENGINE = "kokoro-82m-v1.0"
 MAX_CHARS = 1000
 MAX_BODY_BYTES = 16 * 1024
 MIN_SPEED, MAX_SPEED = 0.5, 2.0
+
+# Sentences are synthesized one by one (D-369): a chunk is at most this long, and a shorter one is joined to its neighbour.
+MAX_CHUNK_CHARS = 200
+MIN_CHUNK_CHARS = 24
+PAUSE_SECONDS = 0.15  # silence between two sentences of one clip
+# The worker process that holds the model is replaced after this many sentences, or when its resident set reaches this many MiB.
+RECYCLE_AFTER = 100
+RECYCLE_RSS_MB = 1500
+READY_TIMEOUT_SECONDS = 120  # loading the model
+CHUNK_TIMEOUT_SECONDS = 120  # one sentence
 
 # voice -> request language. Same five voices as config/banco/voices.yml `server.voices`.
 VOICES = {
@@ -69,16 +86,115 @@ def validate(payload):
     return text, voice, lang, speed
 
 
+# --- Text in sentences -------------------------------------------------------------------------------------------------------------
+
+# A sentence ends at ., ! ? or … (and the closing quote or bracket after it) when what follows, after spaces, opens with a capital, a digit,
+# an inverted mark or an opening quote: «es. aperto» and «3,5 euro» stay in one piece.
+_SENTENCE_BREAK = re.compile(
+    r"""(?:(?<=[.!?…])|(?<=[.!?…][»”’"')\]]))\s+(?=[«“‘"'(\[]?[A-ZÀ-ÖØ-Þ0-9¿¡])"""
+)
+_CLAUSE_BREAK = re.compile(r"(?<=[,;:—–])\s+")
+
+
+def _wrap_words(piece, limit):
+    """Greedy lines of whole words, each at most `limit` long (a word longer than that is cut)."""
+    lines, current = [], ""
+    for word in piece.split():
+        while len(word) > limit:
+            if current:
+                lines.append(current)
+                current = ""
+            lines.append(word[:limit])
+            word = word[limit:]
+        if current and len(current) + 1 + len(word) > limit:
+            lines.append(current)
+            current = word
+        else:
+            current = f"{current} {word}" if current else word
+    if current:
+        lines.append(current)
+    return lines
+
+
+def _fit(sentence, limit):
+    """A sentence as pieces of at most `limit` characters, broken at clause marks first, at spaces last."""
+    if len(sentence) <= limit:
+        return [sentence]
+    pieces, current = [], ""
+    for clause in _CLAUSE_BREAK.split(sentence):
+        if len(clause) > limit:
+            if current:
+                pieces.append(current)
+                current = ""
+            pieces.extend(_wrap_words(clause, limit))
+        elif current and len(current) + 1 + len(clause) > limit:
+            pieces.append(current)
+            current = clause
+        else:
+            current = f"{current} {clause}" if current else clause
+    if current:
+        pieces.append(current)
+    return pieces
+
+
+def split_text(text, limit=MAX_CHUNK_CHARS, minimum=MIN_CHUNK_CHARS):
+    """The text as the chunks to synthesize one by one: sentences, never longer than `limit` characters; a chunk shorter than `minimum`
+    joins its neighbour when they fit together («1.» with its sentence, «Sì.» with the next). The words, in order, are all kept."""
+    chunks = []
+    for line in text.split("\n"):
+        for sentence in _SENTENCE_BREAK.split(line.strip()):
+            for piece in _fit(sentence.strip(), limit):
+                if piece:
+                    chunks.append(piece)
+    merged = []
+    for chunk in chunks:
+        if merged and (len(merged[-1]) < minimum or len(chunk) < minimum) and len(merged[-1]) + 1 + len(chunk) <= limit:
+            merged[-1] = f"{merged[-1]} {chunk}"
+        else:
+            merged.append(chunk)
+    return merged
+
+
+def join_audio(parts, rate, pause=PAUSE_SECONDS):
+    """The sentences' audio as one float32 array, with a short silence between them."""
+    if len(parts) == 1:
+        return parts[0]
+    import numpy
+
+    gap = numpy.zeros(int(rate * pause), dtype="float32")
+    joined = []
+    for i, part in enumerate(parts):
+        if i:
+            joined.append(gap)
+        joined.append(part)
+    return numpy.concatenate(joined)
+
+
+# --- The model ---------------------------------------------------------------------------------------------------------------------
+
+
+def session_options(ort):
+    """onnxruntime session options for a model whose input length changes with every sentence: the CPU memory arena and the memory
+    pattern cache both keep what an earlier, longer input needed, which is how the service reached 6 GB (D-369)."""
+    options = ort.SessionOptions()
+    options.enable_cpu_mem_arena = False
+    options.enable_mem_pattern = False
+    return options
+
+
 class KokoroSynthesizer:
-    """synthesize(text, voice, lang, speed) -> (float32 mono samples, sample rate)."""
+    """synthesize(text, voice, lang, speed) -> (float32 mono samples, sample rate), for one sentence. Runs in the worker process."""
 
     def __init__(self, models_dir):
+        import onnxruntime
         from kokoro_onnx import Kokoro
 
-        self._kokoro = Kokoro(
+        session = onnxruntime.InferenceSession(
             os.path.join(models_dir, MODEL_FILES[0]),
-            os.path.join(models_dir, MODEL_FILES[1]),
+            sess_options=session_options(onnxruntime),
+            providers=["CPUExecutionProvider"],
         )
+        self._kokoro = Kokoro.from_session(session, os.path.join(models_dir, MODEL_FILES[1]))
 
     def synthesize(self, text, voice, lang, speed):
         return self._kokoro.create(text, voice=voice, speed=speed, lang=KOKORO_LANG[lang])
@@ -99,17 +215,194 @@ def encode_mp3(samples, rate):
 
 
 class Service:
-    """One synthesis at a time: the model is not thread-safe and the host is small."""
+    """One synthesis at a time: the model is not thread-safe and the host is small.
 
-    def __init__(self, synthesizer, encoder=encode_mp3):
+    A text is split into sentences (split_text), each sentence is synthesized on its own and the audio is joined: the
+    onnxruntime memory grows with the longest input it ever saw, so no input is ever longer than one sentence."""
+
+    def __init__(self, synthesizer, encoder=encode_mp3, joiner=join_audio):
         self.synthesizer = synthesizer
         self.encoder = encoder
+        self.joiner = joiner
         self.lock = threading.Lock()
 
     def render(self, text, voice, lang, speed):
+        chunks = split_text(text)
         with self.lock:
-            samples, rate = self.synthesizer.synthesize(text, voice, lang, speed)
-            return self.encoder(samples, rate)
+            parts, rate = [], None
+            for chunk in chunks:
+                samples, rate = self.synthesizer.synthesize(chunk, voice, lang, speed)
+                parts.append(samples)
+            return self.encoder(self.joiner(parts, rate), rate)
+
+    def stats(self):
+        """What /health adds about the worker (empty when the synthesizer keeps no worker)."""
+        stats = getattr(self.synthesizer, "stats", None)
+        return {"worker": stats()} if stats else {}
+
+    def close(self):
+        close = getattr(self.synthesizer, "close", None)
+        if close:
+            close()
+
+
+class WorkerDied(Exception):
+    """The worker process is gone (killed by the OOM killer, crashed) or did not answer in time."""
+
+
+def process_rss_mb():
+    """Resident set of this process now, in MiB (from /proc; the peak from getrusage where /proc is missing)."""
+    try:
+        with open("/proc/self/statm", encoding="ascii") as f:
+            return int(f.read().split()[1]) * os.sysconf("SC_PAGE_SIZE") / (1024 * 1024)
+    except (OSError, ValueError, IndexError):
+        import resource
+
+        return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+
+
+def worker_loop(conn, synthesizer, rss=process_rss_mb):
+    """The worker's side of the pipe: a request is (text, voice, lang, speed), the answer ("ok", samples, rate, rss_mb) or
+    ("error", exception class name, rss_mb), never the text. None (or a closed pipe) ends the loop."""
+    while True:
+        try:
+            request = conn.recv()
+        except EOFError:
+            return
+        if request is None:
+            return
+        try:
+            samples, rate = synthesizer.synthesize(*request)
+            conn.send(("ok", samples, rate, rss()))
+        except Exception as e:
+            conn.send(("error", type(e).__name__, rss()))
+
+
+def _child_main(conn, models_dir):
+    synthesizer = KokoroSynthesizer(models_dir)
+    conn.send(("ready",))
+    worker_loop(conn, synthesizer)
+
+
+class ProcessWorker:
+    """One child process that holds the model. A spawned process, not a fork: the parent never loads onnxruntime."""
+
+    def __init__(self, models_dir, ready_timeout=READY_TIMEOUT_SECONDS, call_timeout=CHUNK_TIMEOUT_SECONDS):
+        self.call_timeout = call_timeout
+        ctx = multiprocessing.get_context("spawn")
+        self._conn, child_conn = ctx.Pipe()
+        self._proc = ctx.Process(target=_child_main, args=(child_conn, models_dir), daemon=True)
+        self._proc.start()
+        child_conn.close()
+        try:
+            if self._receive(ready_timeout) != ("ready",):
+                raise WorkerDied("unexpected first message")
+        except BaseException:
+            self.close()
+            raise
+
+    def run(self, text, voice, lang, speed):
+        """-> (samples, rate, rss_mb). Raises WorkerDied, or RuntimeError when the model refused this text."""
+        try:
+            self._conn.send((text, voice, lang, speed))
+        except (OSError, ValueError) as e:
+            raise WorkerDied(type(e).__name__)
+        answer = self._receive(self.call_timeout)
+        if answer[0] == "ok":
+            return answer[1], answer[2], answer[3]
+        raise RuntimeError(f"synthesis failed in the worker: {answer[1]}")
+
+    def _receive(self, timeout):
+        try:
+            if not self._conn.poll(timeout):
+                raise WorkerDied("no answer in %s s" % timeout)
+            return self._conn.recv()
+        except (EOFError, OSError) as e:
+            raise WorkerDied(type(e).__name__)
+
+    def close(self):
+        try:
+            self._conn.send(None)
+        except (OSError, ValueError):
+            pass
+        self._proc.join(3)
+        if self._proc.is_alive():
+            self._proc.kill()
+            self._proc.join(3)
+        self._conn.close()
+
+
+class RecyclingSynthesizer:
+    """synthesize(text, voice, lang, speed) through a worker that is replaced before it grows (onnxruntime's memory only goes up).
+
+    The worker is retired after `recycle_after` syntheses or as soon as its resident set reaches `recycle_rss_mb`, and the next one is
+    loaded in the background, so a request almost never waits for a model load. A worker that died (killed, crashed, no answer) is replaced
+    and the sentence is tried once more on the new one. `start_worker()` returns an object with run() and close() (ProcessWorker)."""
+
+    def __init__(self, start_worker, recycle_after=RECYCLE_AFTER, recycle_rss_mb=RECYCLE_RSS_MB, warm=True):
+        self._start_worker = start_worker
+        self.recycle_after = recycle_after
+        self.recycle_rss_mb = recycle_rss_mb
+        self._warm = warm
+        self._worker = None
+        self._lock = threading.Lock()
+        self.runs = 0
+        self.rss_mb = 0.0
+        self.recycled = 0
+
+    def start(self):
+        self._current()
+
+    def synthesize(self, text, voice, lang, speed):
+        for attempt in (1, 2):
+            worker = self._current()
+            try:
+                samples, rate, rss = worker.run(text, voice, lang, speed)
+            except WorkerDied as e:
+                print(f"worker lost ({e}), starting another", flush=True)
+                self._retire("died")
+                if attempt == 2:
+                    raise RuntimeError("the worker died twice")
+                continue
+            self.runs += 1
+            self.rss_mb = round(rss, 1)
+            if self.runs >= self.recycle_after:
+                self._retire("runs")
+            elif rss >= self.recycle_rss_mb:
+                self._retire("rss")
+            return samples, rate
+
+    def stats(self):
+        return {"runs": self.runs, "rss_mb": self.rss_mb, "recycled": self.recycled}
+
+    def close(self):
+        with self._lock:
+            worker, self._worker = self._worker, None
+        if worker:
+            worker.close()
+
+    def _current(self):
+        with self._lock:
+            if self._worker is None:
+                self._worker = self._start_worker()
+            return self._worker
+
+    def _retire(self, reason):
+        with self._lock:
+            worker, self._worker = self._worker, None
+            self.runs = 0
+            self.recycled += 1
+        if worker:
+            worker.close()
+        print(f"worker retired reason={reason} rss_mb={self.rss_mb}", flush=True)
+        if self._warm:
+            threading.Thread(target=self._warm_up, daemon=True).start()
+
+    def _warm_up(self):
+        try:
+            self._current()
+        except Exception as e:  # the next request starts one (and says why when that fails too)
+            print(f"worker warm-up failed: {type(e).__name__}", flush=True)
 
 
 def make_handler(service):
@@ -138,7 +431,7 @@ def make_handler(service):
 
         def do_GET(self):
             if self.path == "/health":
-                self._json(200, {"ok": True, "engine": ENGINE, "voices": list(VOICES)})
+                self._json(200, {"ok": True, "engine": ENGINE, "voices": list(VOICES), **service.stats()})
             else:
                 self._error(404, "not found")
 
@@ -214,7 +507,13 @@ def main():
     port = int(os.environ.get("BANCO_TTS_PORT", "8000"))
 
     verify_models(models_dir, os.path.join(here, "models.sha256"))
-    service = Service(KokoroSynthesizer(models_dir))
+    synthesizer = RecyclingSynthesizer(
+        lambda: ProcessWorker(models_dir),
+        recycle_after=int(os.environ.get("BANCO_TTS_RECYCLE_AFTER", RECYCLE_AFTER)),
+        recycle_rss_mb=int(os.environ.get("BANCO_TTS_RECYCLE_RSS_MB", RECYCLE_RSS_MB)),
+    )
+    synthesizer.start()  # the model is loaded before the first request and before /health answers
+    service = Service(synthesizer)
     server = make_server(service, port=port)
     print(f"banco-tts {ENGINE} listening on :{port}", flush=True)
     try:
@@ -223,6 +522,7 @@ def main():
         pass
     finally:
         server.server_close()
+        service.close()
 
 
 if __name__ == "__main__":

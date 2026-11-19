@@ -145,6 +145,11 @@ it:
         corrections:
           one: "Una correzione da fare."
           other: "%{count} correzioni da fare."
+        jobs:
+          one: "Un lavoro in background è fallito nelle ultime 24 ore: %{classes}."
+          other: "%{count} lavori in background sono falliti nelle ultime 24 ore: %{classes}."
+        backup_stale: "L'ultima copia di sicurezza ha %{hours} ore."
+        backup_missing: "Non trovo nessuna copia di sicurezza."
         release: "Puoi aprire la diagnosi. Manca ancora: %{missing}."
         release_ready: "Puoi aprire la diagnosi."
       missing:

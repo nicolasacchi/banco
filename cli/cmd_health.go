@@ -6,7 +6,8 @@ import (
 )
 
 // runHealth prints whether the installation is fit to serve (GET /api/v1/health):
-// database, queue, grader, Chrome and its egress, disk, backup, the decisions flag.
+// database, queue, grader, Chrome and its egress, disk, backup (age_hours of the newest copy), the failed jobs of the last 24 hours and the speech
+// queue's backlog (`jobs`), the decisions flag.
 // The answer is JSON with "ok"; the exit code is 0 either way, because the report
 // is the answer (use jq -e .ok to gate). --no-chrome leaves the browser out.
 func runHealth(e *env, args []string) error {

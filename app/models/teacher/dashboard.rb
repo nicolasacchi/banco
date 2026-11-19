@@ -36,9 +36,10 @@ module Teacher
       end
     end
 
-    # The pending actions, most blocking first: findings, graphs, tests ready, tests blocked, topics, corrections, release.
+    # The pending actions, most blocking first: findings, graphs, tests ready, tests blocked, topics, corrections, the system's lines
+    # (failed jobs, a late backup), release.
     def todos
-      @todos ||= [ findings, graphs, tests_ready, tests_blocked, topics, corrections, release_line ].flatten
+      @todos ||= [ findings, graphs, tests_ready, tests_blocked, topics, corrections, system_lines, release_line ].flatten
     end
 
     # The numbers of what waits, for the strip above the list: findings to decide, answers to correct, topics to approve, new comments.
@@ -78,6 +79,28 @@ module Teacher
 
     def corrections
       home.corrections_by_subject.sort_by { |s, _| s.position.to_i }.map { |s, n| Todo.new(:corrections, s, n, with_student("/teacher/corrections"), nil, nil, nil) }
+    end
+
+    # What the operator should look at on the installation (D-369): jobs that failed for good in the last 24 hours, and a backup that is late or
+    # missing. Each line is made only when there is something to say, and its Italian text is in `reason`. Nothing of it reaches the student.
+    def system_lines
+      [ jobs_line, backup_line ].compact
+    end
+
+    def jobs_line
+      failed = Health.jobs.dig(:failed_24h, :by_class) or return nil
+      return nil if failed.empty?
+
+      classes = failed.map { |name, n| "#{name} (#{n})" }.to_sentence(two_words_connector: " e ", last_word_connector: " e ")
+      Todo.new(:jobs, nil, failed.values.sum, nil, nil, nil, I18n.t("teacher.dashboard.todo.jobs", count: failed.values.sum, classes: classes))
+    end
+
+    def backup_line
+      backup = Health.backup
+      return nil unless backup.is_a?(Hash) && backup[:status] != "ok"
+
+      text = backup[:age_hours] ? I18n.t("teacher.dashboard.todo.backup_stale", hours: backup[:age_hours].floor) : I18n.t("teacher.dashboard.todo.backup_missing")
+      Todo.new(:backup, nil, nil, nil, nil, nil, text)
     end
 
     # Only when it is the teacher's turn: every subject is approved and the diagnosis is not open yet.

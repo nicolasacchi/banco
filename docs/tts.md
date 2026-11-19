@@ -24,7 +24,7 @@ The service is reachable on the internal compose network only (no Traefik labels
   in 0.5..2.0 (`speed` is optional, default 1.0).
 - `500` `{"error": "synthesis failed"}` if the model or ffmpeg fails.
 
-`GET /health` → `{"ok": true, "engine": "kokoro-82m-v1.0", "voices": [...]}`.
+`GET /health` → `{"ok": true, "engine": "kokoro-82m-v1.0", "voices": [...], "worker": {"runs": n, "rss_mb": n, "recycled": n}}`.
 
 One synthesis runs at a time (a lock); concurrent requests wait. On a CPU a sentence takes about a second.
 
@@ -76,7 +76,32 @@ cd services/tts && python3 -m unittest test_server
 ```
 
 They cover request validation, voice/language mismatch, the HTTP handler, the one-at-a-time lock, the log line
-(no text) and the checksum refusal. The ffmpeg encoder test runs only where numpy and ffmpeg are present.
+(no text), the checksum refusal, the splitting of a text into sentences, the audio join, the onnxruntime session options, the worker loop and the
+recycling of the worker (fake workers: no model, no processes). The ffmpeg encoder test runs only where numpy and ffmpeg are present.
+
+## Memory (D-369)
+
+onnxruntime's memory only goes up with the longest input it has seen (the model's input length changes with every sentence); the container was
+OOM-killed at 2 GB and three times at 6 GB (anon-rss 6.2 GB) under the backfill. Four measures, none of which changes a clip key or a segment text
+(the key is `sha256(engine|voice|text)` of the text Rails sends, `Speech::Plan` is untouched):
+
+1. **No CPU memory arena, no memory pattern** (`session_options`, `enable_cpu_mem_arena = False`, `enable_mem_pattern = False`): the session is
+   built here and handed to `Kokoro.from_session`.
+2. **One sentence at a time** (`split_text`): the text is cut at `. ! ? …` (and the quote or bracket after it) before a capital, a digit, `¿`, `¡` or an
+   opening quote, and at newlines; a sentence over `MAX_CHUNK_CHARS` (200) breaks at `, ; : — –` and then at spaces; a piece under `MIN_CHUNK_CHARS`
+   (24) joins its neighbour. Each chunk is synthesized on its own; the audio is joined with 0.15 s of silence between sentences. The 1000-character
+   limit of a request stays (lowering it would refuse segments that have clips today).
+3. **A worker process that is replaced** (`RecyclingSynthesizer`, `ProcessWorker`): the model lives in a spawned child; the parent (HTTP, ffmpeg)
+   never loads onnxruntime. The child is retired after `BANCO_TTS_RECYCLE_AFTER` sentences (default 100) or as soon as its resident set reaches
+   `BANCO_TTS_RECYCLE_RSS_MB` MiB (default 1500), and the next one loads in the background. A child that dies (OOM killer, crash, 120 s without an
+   answer) is replaced and the sentence is tried once more. `GET /health` shows `worker: {runs, rss_mb, recycled}`; the log says
+   `worker retired reason=runs|rss|died`.
+4. **`MALLOC_ARENA_MAX=2`** in the image (glibc keeps one arena per thread otherwise).
+
+**The memory limit to set afterwards.** The worst case is the child at its 1500 MiB threshold plus the sentence that crossed it, the parent (about 100 MiB)
+and one ffmpeg (about 50 MiB): well under 2 GiB. Keep `mem_limit: 6g` until `docker stats banco-tts` and `curl banco-tts:8000/health` (`rss_mb`) stay
+flat through one `bin/rails banco:speech:backfill CONFIRM=1`; then set `mem_limit: 3g` and `memswap_limit: 3g` (and `mem_reservation: 1g`). If `worker
+retired reason=rss` shows up on every few sentences, raise `BANCO_TTS_RECYCLE_RSS_MB` rather than the limit.
 
 ## Rails: the clips of the lessons (D-359)
 
