@@ -198,11 +198,17 @@ en:
     back: "Back to the topic"
     not_counted: "This exercise does not count towards showing the skill."
     reseen: "You have already seen this exercise: it does not count towards showing the skill."
-    # D-348: the exercise is of the same kind as the one before (the rule keeps the student on an item until n are right without help).
-    same_item: "I am giving you a similar exercise: to move on to the next one you need %{n} right."
+    # D-348, D-366: the exercise is of the same kind as the one before (the rule keeps the student on an item until one is right without help).
+    same_item: "I am giving you a similar exercise: to move on to the next one you need one right."
     # D-348: every exercise of the skill was seen, none is open: nothing is served on its own and the teacher is told (practice_pool_exhaustions).
     exhausted: "You have seen all the exercises for this skill. We are preparing more."
     exhausted_note: "You can redo an exercise from the list: it does not count towards showing the skill."
+    # D-366: every skill of the topic is demonstrated: the page says so instead of serving another exercise; it speaks of this topic only.
+    topic_done:
+      title: "You have finished this topic!"
+      offer: "Want to do another one? Here it is:"
+      next: "Go to the next topic"
+      today: "Back to Today"
     closed: "This exercise is closed: choose another one."
     loading: "One moment."
     saving: "Checking the answer."

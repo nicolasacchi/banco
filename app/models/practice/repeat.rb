@@ -4,7 +4,7 @@ module Practice
   # is stuck. This says when that is what happens: the serve is of the same item as the previous serve of the skill and the item has fewer of those
   # tries than the rule needs. Read-only; nothing is stored.
   module Repeat
-    NEEDED = Rules::V5::ADVANCE_AFTER_CORRECT_UNAIDED
+    NEEDED = Rules::V6::ADVANCE_AFTER_CORRECT_UNAIDED
 
     module_function
 

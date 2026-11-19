@@ -51,7 +51,7 @@ class PracticeMessagesTest < ActiveSupport::TestCase
     assert_equal "Un errore senza aiuto il 02/11/2026: servono 2 corrette per tornare consolidata.",
                  Practice::Messages.why_it(code: :to_review, date: Date.new(2026, 11, 2), previous: "consolidated")
     assert_equal "Dimostrata nella diagnosi del 02/11/2026.", Practice::Messages.why_it(code: :seed_demonstrated, date: Date.new(2026, 11, 2))
-    assert_equal [ "Non ancora vista", "Dal test: da ripassare", "Da imparare", "In studio", "Dimostrata", "Consolidata", "Da ripassare" ], Practice::Rules::V5::STATES.map { |s| Practice::Messages.state_it(s) }
+    assert_equal [ "Non ancora vista", "Dal test: da ripassare", "Da imparare", "In studio", "Dimostrata", "Consolidata", "Da ripassare" ], Practice::Rules::V6::STATES.map { |s| Practice::Messages.state_it(s) }
   end
 
   test "the locale texts keep the reading rules: no italics, no emphasis, no emoji" do

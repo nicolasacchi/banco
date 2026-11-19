@@ -147,7 +147,7 @@ module Practice
     # The loader's seconds: from the serve (or the try before) to this try, capped.
     def seconds_of(attempt, serve)
       before = serve.attempts.select { |a| a.try_number < attempt.try_number }.max_by(&:try_number)
-      (attempt.answered_at - (before&.answered_at || serve.created_at)).to_i.clamp(0, Rules::V5::TIME_CAP_SECONDS)
+      (attempt.answered_at - (before&.answered_at || serve.created_at)).to_i.clamp(0, Rules::V6::TIME_CAP_SECONDS)
     end
 
     def stamp(time) = time.utc.iso8601

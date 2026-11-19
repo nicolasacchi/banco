@@ -71,7 +71,7 @@ class PracticePropertiesTest < ActiveSupport::TestCase
     each_case do |i, rng|
       tries = history(rng)
       s = fold(tries)
-      assert_includes Practice::Rules::V5::STATES, s.state, "seed #{i}"
+      assert_includes Practice::Rules::V6::STATES, s.state, "seed #{i}"
       assert s.demonstrated_at, "seed #{i}: #{s.state} without demonstrated_at" if %w[demonstrated consolidated].include?(s.state)
       assert s.consolidated_at, "seed #{i}: consolidated without consolidated_at" if s.state == "consolidated"
       assert_equal "not_seen", s.state, "seed #{i}" if tries.empty?

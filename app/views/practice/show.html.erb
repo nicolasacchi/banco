@@ -63,6 +63,14 @@
     <div class="actions button-row" id="next-actions" data-practice-target="nextActions" hidden></div>
     <%# «Ti è piaciuto questo esercizio?» (D-365): under the exercise, shown by practice_controller.js once it is over; never in the preview. %>
     <% if rating_box? %><%= render "ratings/box", kind: "item", dom: "rating-box", hidden: true %><% end %>
+    <%# The end of the topic (D-366): drawn by practice_controller.js from the `topic_done` reply instead of another exercise. It speaks of this topic only. %>
+    <section class="topic-done" id="topic-done" data-practice-target="done" aria-labelledby="topic-done-title" hidden>
+      <h2 id="topic-done-title" tabindex="-1" data-practice-target="doneTitle"></h2>
+      <p id="topic-done-offer" data-practice-target="doneOffer" hidden></p>
+      <div class="actions button-row" id="topic-done-actions" data-practice-target="doneActions"></div>
+      <%# A slot after the buttons: the Schemas slice adds «Vedi lo schema» here (the route /topics/:topic_key/schema). Nothing links to it from here. %>
+      <div class="topic-done-extra" id="topic-done-extra"></div>
+    </section>
   </div>
   <%= render "course/question", topic: @topic.key, lesson_revision_id: @topic.lesson_revision.id, section: "practice" %>
   </div>

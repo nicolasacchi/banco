@@ -17,11 +17,13 @@ class PracticeController < ApplicationController
   end
 
   # POST /practice/serves {topic, skill, follow, item, advance}: item is an item key (that exercise), advance is «Avanti» and «Salta» (the next
-  # exercise, the open ones kept open); with neither, the exercise to resume (D-337).
+  # exercise, the open ones kept open); with neither, the exercise to resume (D-337). When every skill of the topic is demonstrated (D-366) the
+  # server serves nothing on its own: the answer is the closing screen of the topic; only a chosen exercise (`item`, the list) is served.
   def serve
-    _, topic = course_view.find_topic(params[:topic])
+    subject_view, topic = course_view.find_topic(params[:topic])
     skill = params[:skill].to_s
     return json_not_found unless topic && topic.skills.include?(skill)
+    return render(json: topic_done_body(subject_view, topic, skill)) if item_param.nil? && Practice::Today.done?(topic, course_view.states)
 
     choice = Practice::Selector.next(student: acting_student, topic_revision: topic.topic_revision, skill: skill, follow: follow_param,
                                      item: item_param, advance: ActiveModel::Type::Boolean.new.cast(params[:advance]), now: Time.current)
@@ -117,6 +119,17 @@ class PracticeController < ApplicationController
   def exhausted_body(skill)
     { type: "exhausted", message_it: I18n.t("practice.exhausted"), note_it: I18n.t("practice.exhausted_note"),
       skill: skill_block(skill, course_view.state(skill)) }
+  end
+
+  # D-366: the topic is done (Practice::Today.done?: every skill demonstrated or consolidated, from the practice or from the entry test). The closing
+  # screen speaks of this topic only: its title, the topic Oggi proposes next for the subject (Course::StudentView#next_topic, the one `banco next`
+  # gives; nil when none is left, and then there is no offer) and the way back to Oggi. Addresses come from here (student_root), never from a script.
+  def topic_done_body(subject_view, topic, skill)
+    pick = course_view.next_topic(subject_view)
+    { type: "topic_done", skill: skill_block(skill, course_view.state(skill)), title_it: I18n.t("practice.topic_done.title"),
+      offer_it: pick && I18n.t("practice.topic_done.offer"),
+      next: pick && { topic: pick.topic.key, title_it: pick.topic.title_it, label_it: I18n.t("practice.topic_done.next"), url: "#{student_root}/topics/#{pick.topic.key}" },
+      today: { label_it: I18n.t("practice.topic_done.today"), url: "#{student_root}/today" } }
   end
 
   # A9.3: the open serve as the browser sees it. chosen: the student picked this exercise from the list (no line saying it is a similar one).
