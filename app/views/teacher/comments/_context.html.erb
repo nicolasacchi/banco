@@ -1,0 +1,45 @@
+<%# D-380: what the teacher needs to answer this comment, on its card (D-371's `context`, in words): the revision he saw against the newest, his tries and
+    his earlier comments. A comment on an exercise always says it, also when there is nothing to show («Nessun tentativo…»). His raw words are the teacher's (D-346). %>
+<% ctx = comment_context(comment) %>
+<% revision = ctx[:revisions][:item] || ctx[:revisions][:lesson] %>
+<% changed = revision && revision[:changed] %>
+<details class="comment-context" data-comment-context="<%= comment.id %>" data-exercise="<%= ctx[:exercise] %>" data-changed="<%= changed ? "true" : "false" %>" data-tries="<%= ctx[:n_tries] %>" data-earlier="<%= ctx[:earlier].size %>">
+  <summary>
+    <%= t("teacher.comments.context.summary") %>:
+    <% if revision %><%= t("teacher.comments.context.#{changed ? 'changed' : 'unchanged'}") %> · <% end %><%= t("teacher.comments.context.tries", count: ctx[:n_tries]) %> · <%= t("teacher.comments.context.earlier", count: ctx[:earlier].size) %>
+  </summary>
+  <% if revision %>
+    <p data-context="revision">
+      <%= t("teacher.comments.context.revision_#{ctx[:revisions][:item] ? 'item' : 'lesson'}", seen: revision[:seen_seq]) %>
+      <%= changed ? t("teacher.comments.context.revision_changed", now: revision[:current_seq]) : t("teacher.comments.context.revision_same") %>
+    </p>
+  <% end %>
+  <% tries = ctx[:tries] %>
+  <% if tries.nil? %>
+    <% if ctx[:exercise] %><p data-context="tries-none"><%= t("teacher.comments.context.tries_none_item") %></p><% end %>
+  <% else %>
+    <% if tries[:behind_the_comment].any? %>
+      <p data-context="tries-behind"><strong><%= t("teacher.comments.context.tries_behind") %></strong></p>
+      <%= render "teacher/comments/context_tries", rows: tries[:behind_the_comment] %>
+    <% end %>
+    <% other = tries[:on_the_item] %>
+    <% if other && other[:rows].any? %>
+      <p data-context="tries-item"><strong><%= t("teacher.comments.context.tries_item", count: other[:total]) %></strong></p>
+      <%= render "teacher/comments/context_tries", rows: other[:rows] %>
+    <% end %>
+  <% end %>
+  <% if ctx[:earlier].any? %>
+    <p data-context="earlier"><strong><%= t("teacher.comments.context.earlier_title") %></strong></p>
+    <ul class="plain comment-context-earlier">
+      <% ctx[:earlier].each do |c| %>
+        <li data-earlier-comment="<%= c[:id] %>">
+          <%= t("teacher.comments.context.earlier_row", id: c[:id], state: t("teacher.comments.state.#{c[:state]}"), reason: t("teacher.comments.reason.#{c[:reason]}")) %>
+          <% if c[:text_it] %><br><%= c[:text_it] %><% end %>
+          <% Array(c[:replies]).each do |reply| %><br><em><%= t("teacher.comments.context.earlier_reply", text: reply[:text_it]) %></em><% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p data-context="earlier-none"><%= t("teacher.comments.context.earlier_none_#{ctx[:exercise] ? 'item' : 'page'}") %></p>
+  <% end %>
+</details>

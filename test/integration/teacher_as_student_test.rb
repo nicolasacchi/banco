@@ -55,7 +55,7 @@ class TeacherAsStudentTest < ActionDispatch::IntegrationTest
     page(TEACHER, ROOT)
     assert_response :success
     assert_select "#preview-banner", /Stai provando come studente/
-    assert_select "#preview-banner", /Vista: Come lo vede S/
+    assert_select "#preview-banner", /Vista: Come lo studente/
     assert_select "#preview-exit[href='/teacher'][aria-label='Esci dalla prova']", /Esci/
     # the phone's one row (D-315): «Opzioni» discloses the switch and the reset; each control's name is the whole action
     assert_select "#preview-more summary[aria-label='Opzioni della prova']", "Opzioni"
@@ -202,7 +202,7 @@ class TeacherAsStudentTest < ActionDispatch::IntegrationTest
     assert_response :not_found
     post_form(TEACHER, "#{ROOT}/view", { view: "nonsense" })
     page(TEACHER, "#{ROOT}/subjects")
-    assert_select "#preview-banner", /Vista: Come lo vede S/
+    assert_select "#preview-banner", /Vista: Come lo studente/
   end
 
   test "the switch comes back only to a preview address of this site" do

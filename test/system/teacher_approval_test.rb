@@ -72,7 +72,7 @@ class TeacherApprovalTest < ApplicationSystemTestCase
     assert_equal "dismissed", ReviewFinding.dispositions[@finding.id]
 
     # An item played as S, with the student's own renderer.
-    within("article.item-card") { click_link "Prova come S" }
+    within("article.item-card") { click_link "Prova come lo studente" }
     assert_selector ".banner", text: "Nessuna risposta viene salvata"
     assert_selector ".item-body .answer"
     find("input[inputmode=decimal]").set("8")
@@ -89,7 +89,7 @@ class TeacherApprovalTest < ApplicationSystemTestCase
     visit "/teacher/subjects/math/test"
     assert_selector "#test-approve button[disabled]"
     assert_text "Gioca il test fino in fondo"
-    click_button "Prova tutto il test come S"
+    click_button "Prova tutto il test come lo studente"
     assert_text "Stai provando come studente"
     click_button "Comincia"
     answered = 0

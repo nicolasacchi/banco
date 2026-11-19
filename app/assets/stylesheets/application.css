@@ -497,6 +497,8 @@ ul.checks li { padding: 0.25rem 0; }
 @media (max-width: 48rem) {
   .step-grid { grid-template-columns: minmax(0, 1fr); }
   .lesson-review { position: static; }
+  /* D-380: on a phone the progress bar (255 px of steps) scrolls away with the text instead of covering a third of the screen. */
+  .review-progress { position: static; }
   li.path-step { grid-template-columns: 2.5rem 1fr; gap: 0 0.5rem; }
   .review-progress .progress-line progress { width: 100%; }
   .review-steps { gap: 0.25rem 1rem; }

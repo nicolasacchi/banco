@@ -220,6 +220,11 @@ table.data th { background: var(--surface); }
   display: inline-flex; align-items: center; min-height: var(--tap);
 }
 .ref-info { min-width: 2.2rem; min-height: 2.2rem; margin-block: -0.3rem; vertical-align: middle; }
+/* D-380: on a phone the button is as tall as a line of text, so it never rides over the line above; the hit area stays about 44 px through ::before. */
+@media (max-width: 48rem) {
+  .ref-info { position: relative; min-width: 1.6em; min-height: 1.6em; margin-block: 0; padding: 0 0.3em; line-height: 1; }
+  .ref-info::before { content: ""; position: absolute; inset: -0.5rem; }
+}
 .gm-filters > summary, .gm-legend-title { padding-block: 0.45rem; }
 fieldset > legend { font-weight: 700; padding: 0; margin-bottom: var(--space-2); }
 .search-row .search-input { min-width: 0; }

@@ -73,7 +73,7 @@
               <td data-label="<%= t("teacher.ratings.col.revision") %>"><%= t("teacher.ratings.revision", seq: (rating.item? ? rating.item_revision : rating.lesson_revision).seq) %></td>
               <td data-label="<%= t("teacher.ratings.col.who") %>">
                 <%= rating.trial ? ui_pill(t("teacher.ratings.trial"), :muted) : ui_pill(t("teacher.ratings.official"), :info) %>
-                <span class="key"><%= rating.student.key %></span>
+                <% if rating.trial %><span class="key"><%= rating.student.key %></span><% end %>
               </td>
             </tr>
           <% end %>

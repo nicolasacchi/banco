@@ -305,3 +305,10 @@ body.comment-mode [data-comment-ui] [data-comment-anchor] { outline: none; }
 /* the lesson's own bar carries the control (the page hides the student menu) */
 .l2-ibtn.l2-commentbtn { background: var(--primary); color: var(--primary-text); border-color: var(--primary); }
 .l2-ibtn.l2-commentbtn .l2-ibl { font-weight: 700; }
+
+/* D-380: the context of a comment on the teacher's card (the revision he saw, his tries, his earlier comments). */
+.comment-context { margin: 0; font-size: 0.95rem; overflow-wrap: anywhere; }
+.comment-context > summary { cursor: pointer; font-weight: 700; min-height: 2.75rem; display: flex; align-items: center; }
+.comment-context p { margin: 0.3rem 0; }
+.comment-context ol, .comment-context ul { margin: 0.2rem 0 0.5rem; padding: 0; list-style: none; display: grid; gap: 0.4rem; }
+.comment-context li { padding: 0.3rem 0.7rem; border: 1px solid var(--line); border-radius: 0.6rem; background: var(--bg); }

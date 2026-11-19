@@ -73,15 +73,41 @@ class TeacherCoursePathSystemTest < ApplicationSystemTestCase
     assert_operator top, :<, 400
   end
 
-  test "the progress bar stays visible on a phone and the steps stack" do
+  test "on a phone the progress bar does not cover the text and the steps stack; on a desktop it stays on top (D-380)" do
     page.driver.resize(390, 844)
     visit "/teacher/subjects/math/topics/#{CoursePathWorld::READY}"
     assert_selector "#step-lesson"
+    width, window = page.evaluate_script("[document.documentElement.scrollWidth, window.innerWidth]")
+    assert_operator width, :<=, 390, "the page scrolls sideways (#{width} px in a #{window} px window)"
+    bar = page.evaluate_script("(() => { const e = document.getElementById('review-progress'); return [getComputedStyle(e).position, e.getBoundingClientRect().height]; })()")
+    assert(bar[0] != "sticky" || bar[1] < 120, "the bar is #{bar[1].round} px tall and sticky: it covers the text of a phone")
     page.execute_script("window.scrollTo(0, 1500)")
     top = page.evaluate_script("document.getElementById('review-progress').getBoundingClientRect().top")
-    assert_in_delta 0, top, 2
+    assert_operator top, :<, 0, "the bar scrolled away with the text" unless bar[0] == "sticky"
     lesson = page.evaluate_script("document.getElementById('lesson-text').getBoundingClientRect().left")
     aside = page.evaluate_script("document.querySelector('.lesson-review').getBoundingClientRect().left")
     assert_in_delta lesson, aside, 4, "the review sits below the lesson"
+  ensure
+    page.driver.resize(1280, 900)
+  end
+
+  test "on a phone the «i» button of an exercise is no taller than a line of text, so it does not ride over the line above (D-380)" do
+    page.driver.resize(390, 844)
+    visit "/teacher/subjects/math/topics/#{CoursePathWorld::READY}"
+    assert_selector ".exercise-meta .ref-info", minimum: 1
+    sizes = page.evaluate_script(<<~JS)
+      Array.from(document.querySelectorAll('.exercise-meta .ref-info')).map((b) => [b.getBoundingClientRect().height, parseFloat(getComputedStyle(b.closest('.exercise-meta')).lineHeight)])
+    JS
+    sizes.each { |height, line| assert_operator height, :<=, line + 1, "the button is #{height.round} px in a #{line.round} px line" }
+    target = page.evaluate_script("(() => { const b = document.querySelector('.exercise-meta .ref-info'); return getComputedStyle(b, '::before').position; })()")
+    assert_equal "absolute", target, "the hit area stays larger than the button"
+  ensure
+    page.driver.resize(1280, 900)
+  end
+
+  test "on a desktop the progress bar stays on top while the page scrolls (D-380)" do
+    visit "/teacher/subjects/math/topics/#{CoursePathWorld::READY}"
+    assert_selector "#step-lesson"
+    assert_equal "sticky", page.evaluate_script("getComputedStyle(document.getElementById('review-progress')).position")
   end
 end

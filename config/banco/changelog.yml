@@ -429,3 +429,11 @@ entries:
     body_it: "Il titolo di fine argomento non ha più il riquadro blu. Sul telefono «Sullo schermo vedi» non tocca più il bordo. Per gli esercizi difficili ora dice perché, e «Novità» nomina i commenti solo se ci sono."
     title_en: "Small touches: title, program output, clearer words"
     body_en: "The title at the end of a topic no longer has the blue box. On a phone «On the screen you see» no longer touches the border. For the hard exercises it now says why, and «What's new» names comments only when there are some."
+  - id: teacher-polish-comments-context
+    date: 2026-11-19
+    audience: [teacher]
+    kind: software
+    decisions: [D-380]
+    link: /teacher/comments
+    title_it: "Commenti con il contesto, e pagine in italiano"
+    body_it: "Ogni commento mostra la revisione che lo studente aveva davanti, i suoi tentativi e i commenti di prima; tema e testo sono a parole. Sul telefono la barra dell'argomento scorre con il testo. «Come lo studente» al posto di «S»."

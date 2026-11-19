@@ -92,7 +92,7 @@ class TeacherPreviewTest < ApplicationSystemTestCase
     assert_selector "#preview-view-name", text: wide ? "Vista: #{view}" : view, exact_text: true
     if %i[wide row].include?(form)
       assert_no_selector "#preview-more summary"
-      assert_selector "#preview-switch", text: "Passa a: #{view == "Con le bozze" ? "Come lo vede S" : "Con le bozze"}", exact_text: true
+      assert_selector "#preview-switch", text: "Passa a: #{view == "Con le bozze" ? "Come lo studente" : "Con le bozze"}", exact_text: true
       assert_selector "#preview-reset summary", text: "Ricomincia da capo"
       assert_selector "#preview-exit", text: "Esci dalla prova", exact_text: true
     else
@@ -109,7 +109,7 @@ class TeacherPreviewTest < ApplicationSystemTestCase
   def walk(draft:)
     visit ROOT
     assert_selector "#preview-banner", text: "Stai provando come studente"
-    assert_selector "#preview-banner", text: draft ? "Vista: Con le bozze" : "Vista: Come lo vede S"
+    assert_selector "#preview-banner", text: draft ? "Vista: Con le bozze" : "Vista: Come lo studente"
     shot("banner-#{draft ? 'drafts' : 'official'}") if draft == false
     find("#student-menu-open").click
     click_link "Materie"
@@ -164,7 +164,7 @@ class TeacherPreviewTest < ApplicationSystemTestCase
     visit ROOT
     assert_selector "#preview-switch", text: "Passa a: Con le bozze"
     BANNER_SIZES.each do |width, height, form|
-      assert_banner_form(width, height, form, view: "Come lo vede S")
+      assert_banner_form(width, height, form, view: "Come lo studente")
       shot_at("banner-#{form}", width, height)
     end
     page.driver.resize(1024, 768)
