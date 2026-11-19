@@ -102,6 +102,7 @@ class EnglishUiTest < ActionDispatch::IntegrationTest
     page(OFFICIAL, "/topics/#{TOPIC}/practice/#{SKILL}")
     assert_select "button#check", "Controlla"
     assert_equal "Controlla", labels_of("main.practice", "data-practice-labels-value")["submit"]
+    assert_equal "Aperto", labels_of("main.practice", "data-practice-labels-value")["status_opened"], "an exercise he only opened (D-384)"
     reply = answer_for(OFFICIAL, serve_for(OFFICIAL), "  ")
     assert_equal Grading::Result.message("empty"), reply["message_it"]
     assert_equal "Scrivi una risposta prima di continuare.", reply["message_it"]
@@ -159,6 +160,8 @@ class EnglishUiTest < ActionDispatch::IntegrationTest
     labels = labels_of("main.practice", "data-practice-labels-value")
     assert_equal "Check", labels["submit"]
     assert_equal I18n.t("practice.exercises", locale: :en), labels["exercises"]
+    assert_equal "Opened", labels["status_opened"], "an exercise he only opened (D-384)"
+    assert_nil labels["status_skipped"]
     texts = labels_of("main.practice", "data-practice-texts-value")
     assert_equal "Send", texts["send"]
     assert_equal "I don't know", texts["dont_know"]

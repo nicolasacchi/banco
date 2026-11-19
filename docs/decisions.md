@@ -385,6 +385,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-380 | 2026-11-19 | the teacher's pages after the second real-browser check: on a phone the topic page's progress bar scrolls with the text (it was 255 px of sticky bar) and the «i» of an exercise is as tall as a line; the comment card names the screen, theme and size in Italian and shows D-371's context (the revision he saw, his tries, his earlier comments, or one line saying there are none); «come lo studente» in place of «S», the review points 9 to 11 have a text, «Riga N del programma», the ratings' «Chi» is Italian only | implemented |
 | D-381 | 2026-11-19 | CI back to green: the private school name is out of the tree (not out of the history, the operator's call), the student's quote that held a term inside an Italian word is paraphrased, two Brakeman warnings fixed in code, a stale node stub, «Ascolta» no longer reads the lesson's rating box (the student's pages: the goldens stay as they were), two system tests that waited on the wrong thing | implemented |
 | D-382 | 2026-11-19 | security patch updates for bundler-audit (`scan` was red): Rails 8.1.4 → 8.1.4.1, rack 3.2.7 → 3.2.8, puma 8.0.2 → 8.0.4, nokogiri 1.19.4 → 1.19.7, loofah 2.25.2 → 2.25.3, rails-html-sanitizer 1.7.1 → 1.7.2, addressable 2.9.0 → 2.9.2, msgpack 1.8.5 → 1.8.7, sqlite3 2.9.6 → 2.10.2; only `Gemfile.lock` moves | implemented |
+| D-384 | 2026-11-19 | an exercise the student only opened (served, no try, nothing typed) reads «Aperto» / «Opened», not «Saltato» / «Skipped»: the status is `opened`, the icon an eye; a click still resumes the open serve | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -4711,4 +4712,16 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Why:** the advisories (rack, sanitizer, nokogiri, Rails) touch what a public API serves.
 - **Status:** implemented.
 - **Tests:** `bin/bundler-audit` (no vulnerabilities), `bundle exec puma --version`, `test/integration test/models test/lib test/controllers test/jobs test/validation`, `test/system/practice_flow_test.rb`, `test/system/lesson2_page_test.rb`, `test/system/comments_system_test.rb`, `bin/check-structure`.
+- **Back-port:** none.
+
+## D-384 · 2026-11-19 · An exercise only opened reads «Aperto», not «Saltato»
+
+- **Design ref:** D-337 (the exercise list and its statuses), D-353 (the honest labels), D-377 (a replaced serve takes no part in the status).
+- **Design said:** an open serve with no try and nothing typed was `skipped`, drawn «Saltato» with the «next» arrow.
+- **The operator said:** a student who only opened an exercise, with no try and nothing typed, has skipped nothing: the list must say «Aperto».
+- **We do:** `Practice::Exercises#status` returns `opened` (not `skipped`) for that case; the order of the statuses and every other rule are unchanged. `practice_controller.js` draws `opened` with the label `status_opened` («Aperto» / «Opened», `course.it.yml` and `course.en.yml`; `practice_labels` carries it) and the eye icon `show`, muted tone, so the word is never alone. `status_skipped` is gone from the locales, the helper and the script. A click on the entry still resumes the open serve (`open_serve_id` is unchanged). The API did not document the list's status values (`docs/api.md` has none for `/practice/exercises`), and no teacher page reads this list: nothing else moves. «Novità» has a student entry.
+- **Not done / must not change:** the «Salta» button and its word, the draft rule («Da finire» when something is typed), the serve logic.
+- **Why:** «Saltato» told a boy he had skipped something he had only opened.
+- **Status:** implemented.
+- **Tests:** `test/integration/practice_navigation_test.rb` and `practice_feedback_test.rb` (the status `opened`, the label), `english_ui_test.rb` («Aperto» in IT, «Opened» in EN, no `status_skipped`), `test/system/practice_flow_test.rb` («Aperto» in the list), `test/lib/locale_parity_test.rb`, the changelog tests.
 - **Back-port:** none.

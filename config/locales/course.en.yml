@@ -256,7 +256,7 @@ en:
     status_finished: "Finished"
     status_finished_solution: "Finished: with the solution"
     status_unfinished: "To finish"
-    status_skipped: "Skipped"
+    status_opened: "Opened"
     now: "Now"
     redo: "Redo"
     draft_restored: "I restored what you had written."

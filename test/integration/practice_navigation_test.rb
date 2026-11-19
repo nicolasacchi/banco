@@ -222,14 +222,14 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     assert list["skills"].first["exercises"].all? { |e| e.keys.sort == LIST_KEYS }
   end
 
-  test "the statuses go todo, skipped, unfinished (typed, no try), finished (answered), done, and a solution the student asks for after a try is finished with the solution" do
+  test "the statuses go todo, opened (served, nothing typed), unfinished (typed, no try), finished (answered), done, and a solution the student asks for after a try is finished with the solution" do
     build_nav_world
     assert_equal [ "todo" ], status_by_item(list_for(OFFICIAL)).values.uniq
 
     first = serve_for(OFFICIAL)
     first_key = item_key_of(first)
     list = list_for(OFFICIAL)
-    assert_equal "skipped", entries(list)[first_key]["status"], "served, nothing typed"
+    assert_equal "opened", entries(list)[first_key]["status"], "served, nothing typed"
     assert_equal first["serve_id"], entries(list)[first_key]["open_serve_id"]
     assert_equal [ "todo" ], status_by_item(list).except(first_key).values.uniq
 
@@ -239,13 +239,13 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     assert_not_equal first["serve_id"], second["serve_id"]
     assert_not_equal first_key, second_key, "another exercise"
     assert_equal first["serve_id"], entries(list_for(OFFICIAL))[first_key]["open_serve_id"]
-    assert_equal [ "skipped", "skipped" ], status_by_item(list_for(OFFICIAL)).values_at(first_key, second_key)
+    assert_equal [ "opened", "opened" ], status_by_item(list_for(OFFICIAL)).values_at(first_key, second_key)
     assert_equal 2, PracticeServe.where(student: @official).count
 
     # typed something and left: the draft, not a try
     draft_for(OFFICIAL, first["serve_id"], "12")
     after_draft = list_for(OFFICIAL)
-    assert_equal [ "unfinished", "skipped" ], status_by_item(after_draft).values_at(first_key, second_key)
+    assert_equal [ "unfinished", "opened" ], status_by_item(after_draft).values_at(first_key, second_key)
     assert_equal 0, entries(after_draft)[first_key]["tried"], "a draft is not a try"
     assert_equal 0, PracticeAttempt.count
 
@@ -315,7 +315,7 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     assert_equal 0, PracticeAttempt.count
     assert_equal 2, PracticeServe.where(student: @official).count
     input = Practice::Loader.for(@official, subject: @subject, skill: SKILL, seeds: false)
-    assert_empty input.tries, "a skipped serve has no try"
+    assert_empty input.tries, "an opened serve has no try"
     assert_equal 2, input.serves.size
     assert_not_equal "demonstrated", Course::StudentView.new(@official).state(SKILL).state
   end
@@ -324,7 +324,7 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     build_nav_world
     serve = serve_for(OFFICIAL)
     assert_equal [ "todo" ], status_by_item(list_for(TRIAL)).values.uniq
-    assert_equal "skipped", entries(list_for(OFFICIAL))[item_key_of(serve)]["status"]
+    assert_equal "opened", entries(list_for(OFFICIAL))[item_key_of(serve)]["status"]
     assert_nil entries(list_for(TRIAL))[item_key_of(serve)]["open_serve_id"]
   end
 
@@ -350,7 +350,7 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     assert_response :success
     skill = list["skills"].first
     assert_equal "#{PREVIEW}/topics/#{TOPIC}/practice/#{SKILL}", skill["url"], "the preview's links stay in the preview"
-    assert_equal "skipped", entries(list)[item_key_of(serve)]["status"]
+    assert_equal "opened", entries(list)[item_key_of(serve)]["status"]
 
     assert_equal({ "status" => "saved" }, draft_for(TEACHER, serve["serve_id"], "12", root: PREVIEW))
     assert_equal({ "status" => "unchanged" }, draft_for(TEACHER, serve["serve_id"], "12", root: PREVIEW))

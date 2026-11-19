@@ -264,9 +264,9 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
 
   # ---- the list ------------------------------------------------------------------------------------------
 
-  test "the list says «unfinished» for an open serve with a draft and no try, «finished» once he answered, «skipped» for neither" do
+  test "the list says «unfinished» for an open serve with a draft and no try, «finished» once he answered, «opened» for neither" do
     serve = serve_for(OFFICIAL, SENTENCE)
-    assert_equal "skipped", statuses(OFFICIAL)[SENTENCE]
+    assert_equal "opened", statuses(OFFICIAL)[SENTENCE]
     post_json(OFFICIAL, "/practice/serves/#{serve['serve_id']}/draft", { raw: "pla", source: "text" })
     assert_equal "unfinished", statuses(OFFICIAL)[SENTENCE]
     answer_for(OFFICIAL, serve, "play")
@@ -293,8 +293,8 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
   end
 
   test "the labels are in the locale" do
-    assert_equal [ "Da finire", "Finito", "Finito: con la soluzione", "Fatto", "Saltato", "Da fare" ],
-                 %w[unfinished finished finished_solution done skipped todo].map { |status| I18n.t("practice.status_#{status}") }
+    assert_equal [ "Da finire", "Finito", "Finito: con la soluzione", "Fatto", "Aperto", "Da fare" ],
+                 %w[unfinished finished finished_solution done opened todo].map { |status| I18n.t("practice.status_#{status}") }
     assert_equal "Fai controllare", I18n.t("practice.contest_button")
     assert_equal "Pensi che la tua risposta sia giusta? Premi «Fai controllare»: la vede il docente.", I18n.t("practice.contest_note")
   end

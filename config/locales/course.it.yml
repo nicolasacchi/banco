@@ -256,7 +256,7 @@ it:
     status_finished_solution: "Finito: con la soluzione"
     status_unfinished: "Da finire"
     done_group: "Già fatti (%{n})"
-    status_skipped: "Saltato"
+    status_opened: "Aperto"
     now: "Adesso"
     redo: "Rifai"
     draft_restored: "Ho ripreso quello che avevi scritto."

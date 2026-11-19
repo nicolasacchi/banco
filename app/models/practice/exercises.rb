@@ -7,7 +7,7 @@ module Practice
   #           abandoned, or still open with a try) and the STUDENT asked for the solution (an event `solution_shown` with the reason
   #           `requested`, or `after_wrong` on a serve already closed wrong: both are the «Mostra la soluzione» button); "finished" when such a serve ended and the
   #           solution, if any, came by itself (after the last try, after a right answer, after «Fai controllare»), or the open serve has
-  #           a try (he answered; a click still resumes it); "skipped" when there is an open serve (no try, nothing typed); else "todo".
+  #           a try (he answered; a click still resumes it); "opened" when there is an open serve (no try, nothing typed: he only opened it, D-384, «Aperto»); else "todo".
   #           open_serve_id is set whenever the item has an open serve, so a click resumes it. A replaced serve (the topic was revised while it was open,
   #           D-377) is neither open nor ended: it takes no part in the status, so the exercise reads as to do (or done by another serve) and a click serves it
   #           anew from the revision he is shown; its tries still count for the skill.
@@ -122,7 +122,7 @@ module Practice
       ended = mine.select { |r| (!%i[open replaced].include?(r.status.state) || r.id == open&.id) && (facts.tries(r.id).positive? || r.status.solution_sent) }
       return (ended.any? { |r| facts.asked_solution?(r.id) } ? "finished_solution" : "finished") if ended.any?
 
-      open ? "skipped" : "todo"
+      open ? "opened" : "todo"
     end
 
     def drafts_for(rows) = PracticeDraft.texts_for(rows.map(&:id))

@@ -456,3 +456,13 @@ entries:
     body_it: "Quando ascolti una lezione, la voce legge la lezione e si ferma lì: non legge più il riquadro in cui dai le stelle o scrivi un commento."
     title_en: "«Listen» no longer reads the rating box"
     body_en: "When you listen to a lesson, the voice reads the lesson and stops there: it no longer reads the box where you give stars or write a comment."
+
+  - id: exercise-opened-not-skipped
+    date: 2026-11-19
+    audience: [student]
+    kind: fix
+    decisions: [D-384]
+    title_it: "Un esercizio solo aperto dice «Aperto»"
+    body_it: "Nell'elenco degli esercizi, uno che hai solo aperto, senza risposte né scritto niente, ora dice «Aperto» e non più «Saltato»: non hai saltato niente. Un tocco e riprendi da dove eri."
+    title_en: "An exercise you only opened says «Opened»"
+    body_en: "In the exercise list, one you only opened, with no answers and nothing typed, now says «Opened» instead of «Skipped»: you skipped nothing. One tap and you pick up where you were."

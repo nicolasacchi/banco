@@ -22,7 +22,7 @@ const ENTRY_STATUS = {
   finished: { icon: "circle-check", tone: "muted" },
   finished_solution: { icon: "circle-check", tone: "muted" },
   unfinished: { icon: "notebook-pen", tone: "nearly" },
-  skipped: { icon: "next", tone: "muted" },
+  opened: { icon: "show", tone: "muted" },
   now: { icon: "pin", tone: "info" }
 }
 const FINISHED_STATUSES = ["done", "finished", "finished_solution"]

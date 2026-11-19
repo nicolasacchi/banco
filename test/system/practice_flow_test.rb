@@ -374,7 +374,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
   def draft_of(serve) = PracticeDraft.where(practice_serve_id: serve.id).order(:id).last&.raw
   def no_sideways_scroll? = page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
 
-  # The list shows every status; «Salta» keeps the typed answer and the exercise open; the entry says «Da finire» or «Saltato»;
+  # The list shows every status; «Salta» keeps the typed answer and the exercise open; the entry says «Da finire» or, for one he only opened, «Aperto» (D-384);
   # a click on an entry opens it with its answer back; the autosave is on the server and a reload resumes the exercise; a done
   # exercise is redone from «Rifai» on a new instance.
   def walk_navigation
@@ -402,11 +402,11 @@ class PracticeFlowTest < ApplicationSystemTestCase
     assert_equal "123", draft_of(first)
     assert_equal 0, first.attempts.count
 
-    # «Salta» with nothing typed: «Saltato»
+    # «Salta» with nothing typed: the exercise was only opened, «Aperto» (not «Saltato»)
     find("#skip-button").click
     third = next_serve_after(second)
     third_key = item_key_of(third)
-    assert_selector "#{entry_selector(second_key)} .exercise-status", text: "Saltato"
+    assert_selector "#{entry_selector(second_key)} .exercise-status", text: "Aperto"
     assert_equal NUMBER_KEYS.sort, [ first_key, second_key, third_key ].sort
 
     # a click on an entry opens that exercise, its answer back
@@ -415,7 +415,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
     assert_equal first.id, reopened.id
     wait_until { answer_box.value == "123" }
     assert_text "Ho ripreso quello che avevi scritto."
-    assert_selector "#{entry_selector(third_key)} .exercise-status", text: "Saltato"
+    assert_selector "#{entry_selector(third_key)} .exercise-status", text: "Aperto"
 
     # the autosave, then a reload resumes this exercise with the answer
     answer_box.set("456")
