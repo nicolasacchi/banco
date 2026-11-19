@@ -248,5 +248,269 @@ class EncodeMp3Test(unittest.TestCase):
         self.assertGreater(len(mp3), 1000)
 
 
+class SplitTextTest(unittest.TestCase):
+    def test_a_short_text_is_one_chunk(self):
+        self.assertEqual(server.split_text("Ciao a tutti"), ["Ciao a tutti"])
+
+    def test_sentences_become_chunks_in_order(self):
+        self.assertEqual(
+            server.split_text("Il gatto dorme sul divano. Il cane corre nel giardino! Chi arriva per primo alla porta?"),
+            ["Il gatto dorme sul divano.", "Il cane corre nel giardino!", "Chi arriva per primo alla porta?"],
+        )
+
+    def test_a_newline_ends_a_sentence(self):
+        self.assertEqual(
+            server.split_text("Il primo punto della lista\nIl secondo punto della lista"),
+            ["Il primo punto della lista", "Il secondo punto della lista"],
+        )
+
+    def test_a_tiny_sentence_joins_its_neighbour(self):
+        self.assertEqual(server.split_text("Sì. Va bene così."), ["Sì. Va bene così."])
+        self.assertEqual(
+            server.split_text("1. Leggi la prima frase con calma e senza fretta."),
+            ["1. Leggi la prima frase con calma e senza fretta."],
+        )
+
+    def test_an_abbreviation_or_a_decimal_does_not_end_a_sentence(self):
+        text = "Guarda es. aperto nel libro di testo, costa 3,5 euro."
+        self.assertEqual(server.split_text(text), [text])
+
+    def test_a_closing_quote_stays_with_its_sentence(self):
+        self.assertEqual(
+            server.split_text('He said "you should go home now." Then he left the room quietly.'),
+            ['He said "you should go home now."', "Then he left the room quietly."],
+        )
+
+    def test_spanish_inverted_marks_open_a_sentence(self):
+        self.assertEqual(
+            server.split_text("Hoy hace mucho calor aquí. ¿Quieres beber un poco de agua fría?"),
+            ["Hoy hace mucho calor aquí.", "¿Quieres beber un poco de agua fría?"],
+        )
+
+    def test_a_long_sentence_breaks_at_clauses_then_at_spaces(self):
+        clause = "il ragazzo legge con attenzione il testo che ha davanti"
+        text = ", ".join([clause] * 8) + "."
+        chunks = server.split_text(text)
+        self.assertGreater(len(chunks), 1)
+        self.assertTrue(all(len(c) <= server.MAX_CHUNK_CHARS for c in chunks))
+        self.assertTrue(all(c.endswith(",") or c.endswith(".") for c in chunks), chunks)
+        spaces = server.split_text(" ".join(["parola"] * 200))
+        self.assertTrue(all(len(c) <= server.MAX_CHUNK_CHARS for c in spaces))
+
+    def test_a_word_longer_than_the_limit_is_cut(self):
+        chunks = server.split_text("a" * 450)
+        self.assertEqual([len(c) for c in chunks], [200, 200, 50])
+
+    def test_no_word_is_lost_and_none_is_longer_than_the_limit(self):
+        samples = [
+            "Il Risorgimento. " * 60,
+            ("Nel 1861 nasce il Regno d'Italia; Torino è la prima capitale, poi Firenze, infine Roma. " * 20)[:1000],
+            "Hola, ¿cómo estás? Muy bien, gracias.\n\nY tú: ¿qué tal?" * 15,
+            "x " * 500,
+            "a" * 1000,
+        ]
+        for text in samples:
+            with self.subTest(text[:30]):
+                chunks = server.split_text(text)
+                self.assertTrue(chunks)
+                self.assertTrue(all(c and c == c.strip() and len(c) <= server.MAX_CHUNK_CHARS for c in chunks))
+                if " " in text.strip():
+                    self.assertEqual(" ".join(chunks).split(), text.split())
+                else:
+                    self.assertEqual("".join(chunks), text)
+
+
+class RenderInSentencesTest(unittest.TestCase):
+    def setUp(self):
+        self.synth = FakeSynthesizer()
+        self.joined = []
+
+        def joiner(parts, rate):
+            self.joined.append((len(parts), rate))
+            return "joined"
+
+        self.encoded = []
+
+        def encoder(samples, rate):
+            self.encoded.append((samples, rate))
+            return b"mp3"
+
+        self.service = server.Service(self.synth, encoder, joiner)
+
+    def test_each_sentence_is_synthesized_on_its_own_with_the_same_voice_and_speed(self):
+        out = self.service.render("Il gatto dorme sul divano. Il cane corre nel giardino.", "im_nicola", "it", 0.9)
+        self.assertEqual(out, b"mp3")
+        self.assertEqual(
+            self.synth.calls,
+            [
+                ("Il gatto dorme sul divano.", "im_nicola", "it", 0.9),
+                ("Il cane corre nel giardino.", "im_nicola", "it", 0.9),
+            ],
+        )
+        self.assertEqual(self.joined, [(2, 24000)])
+        self.assertEqual(self.encoded, [("joined", 24000)])
+
+    def test_no_synthesis_is_longer_than_a_sentence_chunk(self):
+        text = " ".join(f"Frase numero {i} del testo molto lungo che la voce deve leggere." for i in range(15))[: server.MAX_CHARS]
+        self.service.render(text, "im_nicola", "it", 1.0)
+        self.assertGreater(len(self.synth.calls), 5)
+        self.assertTrue(all(len(call[0]) <= server.MAX_CHUNK_CHARS for call in self.synth.calls))
+
+
+@unittest.skipUnless(numpy, "needs numpy")
+class JoinAudioTest(unittest.TestCase):
+    def test_one_part_is_returned_as_it_is(self):
+        part = numpy.ones(10, dtype="float32")
+        self.assertIs(server.join_audio([part], 24000), part)
+
+    def test_parts_are_joined_with_a_silence_between_them(self):
+        a, b, c = (numpy.ones(100, dtype="float32") * n for n in (1, 2, 3))
+        joined = server.join_audio([a, b, c], 24000, pause=0.01)
+        gap = int(24000 * 0.01)
+        self.assertEqual(len(joined), 300 + 2 * gap)
+        self.assertEqual(joined.dtype, numpy.float32)
+        self.assertTrue((joined[100 : 100 + gap] == 0).all())
+        self.assertEqual(joined[-1], 3.0)
+
+
+class SessionOptionsTest(unittest.TestCase):
+    def test_the_cpu_arena_and_the_memory_pattern_are_off(self):
+        import types
+
+        ort = types.SimpleNamespace(SessionOptions=lambda: types.SimpleNamespace(enable_cpu_mem_arena=True, enable_mem_pattern=True))
+        options = server.session_options(ort)
+        self.assertIs(options.enable_cpu_mem_arena, False)
+        self.assertIs(options.enable_mem_pattern, False)
+
+
+class FakeWorker:
+    def __init__(self, rss=100.0, die_on=None):
+        self.rss = rss
+        self.die_on = die_on  # the number of the run that finds the worker dead
+        self.runs = 0
+        self.closed = False
+        self.refuse = False
+
+    def run(self, text, voice, lang, speed):
+        self.runs += 1
+        if self.die_on == self.runs:
+            raise server.WorkerDied("gone")
+        if self.refuse:
+            raise RuntimeError("refused")
+        return [0.0], 24000, self.rss
+
+    def close(self):
+        self.closed = True
+
+
+class RecyclingSynthesizerTest(unittest.TestCase):
+    def make(self, **kwargs):
+        self.workers = []
+        self.spec = kwargs.pop("spec", {})
+
+        def start_worker():
+            worker = FakeWorker(**self.spec.get(len(self.workers), {}))
+            self.workers.append(worker)
+            return worker
+
+        return server.RecyclingSynthesizer(start_worker, warm=False, **kwargs)
+
+    def run_n(self, synth, n):
+        for _ in range(n):
+            self.assertEqual(synth.synthesize("Ciao a tutti", "im_nicola", "it", 1.0), ([0.0], 24000))
+
+    def test_the_worker_is_replaced_after_n_syntheses(self):
+        synth = self.make(recycle_after=3, recycle_rss_mb=1000)
+        self.run_n(synth, 7)
+        self.assertEqual([w.runs for w in self.workers], [3, 3, 1])
+        self.assertEqual([w.closed for w in self.workers], [True, True, False])
+        self.assertEqual(synth.stats()["recycled"], 2)
+        self.assertEqual(synth.stats()["runs"], 1)
+
+    def test_the_worker_is_replaced_when_it_grows_past_the_limit(self):
+        synth = self.make(recycle_after=100, recycle_rss_mb=1500, spec={0: {"rss": 1600.0}})
+        self.run_n(synth, 3)
+        self.assertEqual([w.runs for w in self.workers], [1, 2])
+        self.assertTrue(self.workers[0].closed)
+
+    def test_a_dead_worker_is_replaced_and_the_sentence_is_tried_again(self):
+        synth = self.make(spec={0: {"die_on": 2}})
+        self.run_n(synth, 3)
+        self.assertEqual(len(self.workers), 2)
+        self.assertTrue(self.workers[0].closed)
+        self.assertEqual(self.workers[1].runs, 2)
+
+    def test_a_worker_that_dies_twice_is_an_error(self):
+        synth = self.make(spec={0: {"die_on": 1}, 1: {"die_on": 1}})
+        with self.assertRaises(RuntimeError):
+            synth.synthesize("Ciao a tutti", "im_nicola", "it", 1.0)
+
+    def test_a_text_the_model_refuses_is_an_error_and_keeps_the_worker(self):
+        synth = self.make()
+        self.run_n(synth, 1)
+        self.workers[0].refuse = True
+        with self.assertRaises(RuntimeError):
+            synth.synthesize("Ciao a tutti", "im_nicola", "it", 1.0)
+        self.assertEqual(len(self.workers), 1)
+        self.assertFalse(self.workers[0].closed)
+
+    def test_the_next_worker_is_loaded_in_the_background_after_a_recycle(self):
+        started = threading.Event()
+        workers = []
+
+        def start_worker():
+            workers.append(FakeWorker())
+            if len(workers) == 2:
+                started.set()
+            return workers[-1]
+
+        synth = server.RecyclingSynthesizer(start_worker, recycle_after=1, recycle_rss_mb=1000)
+        synth.synthesize("Ciao a tutti", "im_nicola", "it", 1.0)
+        self.assertTrue(started.wait(5), "no replacement was loaded after the recycle")
+        synth.close()
+
+    def test_close_closes_the_worker(self):
+        synth = self.make()
+        self.run_n(synth, 1)
+        synth.close()
+        self.assertTrue(self.workers[0].closed)
+
+
+class WorkerLoopTest(unittest.TestCase):
+    def start(self, synthesizer):
+        import multiprocessing
+
+        parent, child = multiprocessing.Pipe()
+        thread = threading.Thread(target=server.worker_loop, args=(child, synthesizer, lambda: 321.5), daemon=True)
+        thread.start()
+        self.addCleanup(thread.join, 5)
+        self.addCleanup(parent.close)
+        return parent, thread
+
+    def test_answers_each_request_and_stops_on_none(self):
+        synth = FakeSynthesizer()
+        parent, thread = self.start(synth)
+        parent.send(("Ciao a tutti", "im_nicola", "it", 1.0))
+        self.assertEqual(parent.recv(), ("ok", [0.0] * 10, 24000, 321.5))
+        parent.send(None)
+        thread.join(5)
+        self.assertFalse(thread.is_alive())
+        self.assertEqual(synth.calls, [("Ciao a tutti", "im_nicola", "it", 1.0)])
+
+    def test_a_failure_is_answered_with_the_class_only_and_the_loop_goes_on(self):
+        synth = FakeSynthesizer()
+        synth.fail = True
+        parent, _ = self.start(synth)
+        parent.send(("secret words", "im_nicola", "it", 1.0))
+        self.assertEqual(parent.recv(), ("error", "RuntimeError", 321.5))
+        synth.fail = False
+        parent.send(("Ciao a tutti", "im_nicola", "it", 1.0))
+        self.assertEqual(parent.recv()[0], "ok")
+        parent.send(None)
+
+    def test_process_rss_is_a_positive_number_of_mib(self):
+        self.assertGreater(server.process_rss_mb(), 1)
+
+
 if __name__ == "__main__":
     unittest.main()

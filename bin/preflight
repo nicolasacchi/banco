@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby
 # Is this installation fit to serve the student right now? Database writable, queue
 # alive, grader worker answering, Chrome reachable (and, with the sidecar, closed to
-# the outside), disk space, backup freshness when BANCO_BACKUP_DIR is set, and the
-# state of the decisions flag. Prints one JSON document (--json is the default and
+# the outside), disk space, backup freshness when BANCO_BACKUP_DIR is set (the age in hours of the newest
+# file under it; stale after 36 h, D-369), the jobs that failed in the last 24 hours and the backlog of
+# the speech queue (reported, never gating), and the state of the decisions flag. Prints one JSON document (--json is the default and
 # the only format) and exits 0 when "ok" is true, 1 when not.
 #
 #   bin/preflight --json | jq -e '.ok'

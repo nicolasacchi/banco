@@ -29,6 +29,7 @@ module Teacher
         todo.reason.empty? ? I18n.t("teacher.dashboard.todo.release_ready") : I18n.t("teacher.dashboard.todo.release", missing: todo.reason.map { |m| I18n.t("teacher.dashboard.missing.#{m}") }.to_sentence(two_words_connector: " e ", last_word_connector: " e "))
       when :test_blocked then I18n.t("teacher.dashboard.todo.test_blocked", reason: todo.reason)
       when :topics, :corrections then I18n.t("teacher.dashboard.todo.#{todo.kind}", count: todo.count)
+      when :jobs, :backup then todo.reason
       else I18n.t("teacher.dashboard.todo.#{todo.kind}")
       end
       { kind: todo.kind, subject: todo.subject&.key, count: todo.count, clear_findings: todo.extra, text_it: text, page: todo.href }

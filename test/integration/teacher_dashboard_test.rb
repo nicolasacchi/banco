@@ -121,6 +121,31 @@ class TeacherDashboardTest < ActionDispatch::IntegrationTest
     assert_select "#todo-empty", "Niente da fare adesso."
   end
 
+  test "Da fare adesso: failed jobs and a late backup are lines of the installation, and nothing else when all is well (D-369)" do
+    page("/teacher/dashboard/fragment")
+    assert_select "li[data-todo=jobs]", 0
+    assert_select "li[data-todo=backup]", 0
+
+    jobs = { status: "failed", failed_24h: { total: 3, by_class: { "SpeakLessonRevisionJob" => 2, "SearchEmbedJob" => 1 } }, speech: { ready: 0, scheduled: 0, oldest_ready_minutes: nil } }
+    late = { status: "stale", age_hours: 40.3, max_age_hours: 36, newest: "2026-11-17/production.sqlite3.gz", newest_mb: 60.1 }
+    Health.stub(:jobs, jobs) do
+      Health.stub(:backup, late) do
+        page("/teacher/dashboard/fragment")
+        assert_select "li[data-todo=jobs]", "3 lavori in background sono falliti nelle ultime 24 ore: SpeakLessonRevisionJob (2) e SearchEmbedJob (1)."
+        assert_select "li[data-todo=backup]", "L'ultima copia di sicurezza ha 40 ore."
+        assert_select "#todo-empty", 0
+      end
+      Health.stub(:backup, { status: "missing", dir_present: false }) do
+        page("/teacher/dashboard/fragment")
+        assert_select "li[data-todo=backup]", "Non trovo nessuna copia di sicurezza."
+      end
+    end
+    Health.stub(:backup, { status: "ok", age_hours: 3.0, max_age_hours: 36 }) do
+      page("/teacher/dashboard/fragment")
+      assert_select "li[data-todo=backup]", 0
+    end
+  end
+
   test "the list is ordered: findings, then graph and test, then topics, then corrections; each line has the subject, the count and one link" do
     approve_graph_row!
     make_blueprint_approvable!

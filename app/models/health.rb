@@ -13,6 +13,8 @@ module Health
   DISK_MIN_FREE_MB = 1024
   BACKUP_MAX_AGE_HOURS = 36
   QUEUE_HEARTBEAT_SECONDS = 120
+  FAILED_WINDOW_HOURS = 24
+  SPEECH_QUEUE = "speech".freeze
   EGRESS_PROBE = "http://1.1.1.1/".freeze
 
   class << self
@@ -27,7 +29,7 @@ module Health
       }
       problems = parts.filter_map { |name, value| name if failing?(name, value) }
       { ok: problems.empty?, problems: problems.map(&:to_s) }.merge(parts).merge(
-        validation_queue: validation_queue,
+        validation_queue: validation_queue, jobs: jobs,
         decisions: { enabled: ENV["BANCO_DECISIONS_ENABLED"] == "1" },
         lesson2: { enabled: Banco::Lesson2.enabled? },
         diagnosis: { released: Diagnosis::Release.open? },
@@ -47,7 +49,52 @@ module Health
       end
     end
 
+    # The newest backup under BANCO_BACKUP_DIR must be younger than 36 hours (D-369). The host's backup.sh writes one directory per day
+    # (backup/banco/2026-11-19/production*.sqlite3.gz), so the search goes one level down as well as the directory itself; hidden entries
+    # (the script's .tmp.* working directory) never count. Read-only: the directory may be mounted read-only into the container.
+    # An empty or missing directory is "missing" and fails (a lost mount must not read as "no backup configured").
+    def backup
+      dir = ENV["BANCO_BACKUP_DIR"].presence
+      return "not_configured" unless dir
+
+      files = Dir.glob(File.join(dir, "{*,*/*}")).select { |f| File.file?(f) }
+      newest = files.max_by { |f| File.mtime(f) }
+      return { status: "missing", dir_present: Dir.exist?(dir) } unless newest
+
+      age = ((Time.current - File.mtime(newest)) / 3600.0).round(1)
+      { status: age <= BACKUP_MAX_AGE_HOURS ? "ok" : "stale", age_hours: age, max_age_hours: BACKUP_MAX_AGE_HOURS,
+        newest: newest.delete_prefix(dir).delete_prefix("/"), newest_mb: (File.size(newest) / 1_048_576.0).round(1) }
+    rescue StandardError => e
+      { status: "error: #{e.class}" }
+    end
+
+    # The background jobs, for the report and the teacher's dashboard (D-369). Informational, never gates (like validation_queue):
+    # the jobs that failed for good in the last 24 hours, by job class (a SpeakLessonRevisionJob that used up its 6 attempts lands here and
+    # nowhere else), and the backlog of the `speech` queue: jobs ready to run, jobs waiting for a retry, and the age in minutes of the oldest
+    # ready one (a backlog that does not move means the worker or the TTS service is stuck).
+    def jobs
+      return { status: "not_applicable" } unless solid_queue?
+
+      failed = SolidQueue::FailedExecution.where(created_at: FAILED_WINDOW_HOURS.hours.ago..).joins(:job).group("solid_queue_jobs.class_name").count
+      ready = SolidQueue::ReadyExecution.where(queue_name: SPEECH_QUEUE)
+      oldest = ready.minimum(:created_at)
+      {
+        status: failed.empty? ? "ok" : "failed",
+        failed_24h: { total: failed.values.sum, by_class: failed.sort.to_h },
+        speech: {
+          ready: ready.count,
+          scheduled: SolidQueue::ScheduledExecution.where(queue_name: SPEECH_QUEUE).count,
+          oldest_ready_minutes: oldest && ((Time.current - oldest) / 60).floor
+        }
+      }
+    rescue StandardError => e
+      { status: "error: #{e.class}" }
+    end
+
     private
+
+    # Production runs Solid Queue on its own database; elsewhere jobs run in the process.
+    def solid_queue? = Rails.application.config.active_job.queue_adapter.to_s == "solid_queue"
 
     OK_VALUES = %w[ok busy not_applicable not_configured skipped blocked].freeze
 
@@ -77,7 +124,7 @@ module Health
 
     # Production runs Solid Queue on its own database; elsewhere jobs run in the process.
     def queue
-      return "not_applicable" unless Rails.application.config.active_job.queue_adapter.to_s == "solid_queue"
+      return "not_applicable" unless solid_queue?
 
       fresh = SolidQueue::Process.where("last_heartbeat_at > ?", QUEUE_HEARTBEAT_SECONDS.seconds.ago).count
       fresh.positive? ? "ok" : "error: no Solid Queue process has a heartbeat in the last #{QUEUE_HEARTBEAT_SECONDS} s"
@@ -170,20 +217,6 @@ module Health
       path = ENV["BANCO_DATA_DIR"].presence || Rails.root.join("storage").to_s
       free_mb = `df -Pk #{Shellwords.escape(path)} 2>/dev/null`.lines.last.to_s.split[3].to_i / 1024
       { status: free_mb >= DISK_MIN_FREE_MB ? "ok" : "low", free_mb: free_mb, min_mb: DISK_MIN_FREE_MB }
-    rescue StandardError => e
-      { status: "error: #{e.class}" }
-    end
-
-    # The newest file of BANCO_BACKUP_DIR must be younger than 36 hours.
-    def backup
-      dir = ENV["BANCO_BACKUP_DIR"].presence
-      return "not_configured" unless dir
-
-      newest = Dir.glob(File.join(dir, "*")).select { |f| File.file?(f) }.max_by { |f| File.mtime(f) }
-      return { status: "missing", dir_present: Dir.exist?(dir) } unless newest
-
-      age = ((Time.current - File.mtime(newest)) / 3600.0).round(1)
-      { status: age <= BACKUP_MAX_AGE_HOURS ? "ok" : "stale", age_hours: age, max_age_hours: BACKUP_MAX_AGE_HOURS }
     rescue StandardError => e
       { status: "error: #{e.class}" }
     end
