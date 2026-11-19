@@ -3646,6 +3646,62 @@
    }
   },
   {
+   "name": "flow-loop-do-while-indented",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "note": "a Do While whose boxes are too wide for the centred tree on a phone: the indented layout draws it, each branch an arrow of its own",
+   "data": {
+    "type": "flow",
+    "alt_it": "Un ciclo Do While con parole lunghe: finché il totale è sotto cento si aggiunge il versamento, poi si torna alla domanda; altrimenti si scrive il totale.",
+    "nodes": [
+     {
+      "id": "a",
+      "kind": "step",
+      "text_it": "Il totale parte da zero"
+     },
+     {
+      "id": "q",
+      "kind": "decision",
+      "text_it": "Il totale è sotto cento?"
+     },
+     {
+      "id": "b",
+      "kind": "step",
+      "text_it": "Aggiungi il versamento al totale"
+     },
+     {
+      "id": "e",
+      "kind": "end",
+      "text_it": "Scrivi il totale finale"
+     }
+    ],
+    "edges": [
+     [
+      "a",
+      "q"
+     ],
+     [
+      "q",
+      "b",
+      "Sì"
+     ],
+     [
+      "q",
+      "e",
+      "No"
+     ]
+    ],
+    "loops": [
+     {
+      "from": "b",
+      "to": "q",
+      "label_it": "torna alla domanda"
+     }
+    ]
+   }
+  },
+  {
    "name": "flow-loop-to-step",
    "subject": "math",
    "schema": "valid",

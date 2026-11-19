@@ -49,7 +49,7 @@ export function audit(scene) {
     }
   }
   const loops = []
-  for (const s of scene.shapes.filter((q) => q.kind === "path")) {
+  for (const s of scene.shapes.filter((q) => q.kind === "path" && /dg-loop/.test(q.cls))) {
     const segs = segments(s.d)
     if (!segs) {
       bad.push(`a path that is not a loop: ${s.d}`)
@@ -77,3 +77,6 @@ export function audit(scene) {
   }
   return bad
 }
+
+// Which layout drew a tree flow: the indented one draws its steps' links as "dg-arrow" lines and its branches as "dg-branch" paths, the centred tree neither.
+export const indented = (scene) => scene.shapes.some((s) => /\bdg-(arrow|branch)\b/.test(s.cls ?? ""))

@@ -13,6 +13,16 @@
 #
 # The student's text has no decision number and no jargon; it is second person and never blames. Newest first is the order of the pages, not of this file.
 entries:
+  - id: flowchart-phone-arrows
+    date: 2026-11-19
+    audience: [student]
+    kind: software
+    decisions: [D-383]
+    title_it: "Schemi di flusso sul telefono: una freccia per ogni risposta"
+    body_it: "Sul telefono gli schemi con una domanda ora hanno una freccia per ogni risposta, che parte dal rombo e arriva al riquadro giusto. Così si vede bene dove porta il Sì e dove porta il No."
+    title_en: "Flowcharts on the phone: one arrow for each answer"
+    body_en: "On the phone, flowcharts with a question now have one arrow for each answer, from the diamond to the right box. You can see where Yes goes and where No goes."
+
   - id: flowchart-diamond-and-loop
     date: 2026-11-19
     audience: [student]

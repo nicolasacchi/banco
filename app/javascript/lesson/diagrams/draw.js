@@ -12,6 +12,7 @@ import { renderInlineRich, renderMath, renderRich, unglued } from "lesson/text"
 import { tableNode } from "lesson/blocks/table"
 import { defaultSegments } from "lesson/diagrams/contract"
 import { nearest, targetLabel } from "lesson/checks/select_model"
+import { onFontsLoaded } from "lesson/diagrams/fonts"
 import { controlNode, decorateTarget, defsNode, legendNode, padHit, patternRef, wireTargets } from "lesson/diagrams/scene_extras"
 
 const MARKERS = {
@@ -143,7 +144,7 @@ export function makeMeasure(host, ctx) {
     cache.set(key, result)
     return result
   }
-  return Object.assign(self, { measure, probe, drop: () => probe.remove() })
+  return Object.assign(self, { measure, probe, drop: () => probe.remove(), reset: () => cache.clear() })
 }
 
 // FLIP: the elements of the new scene that had the same key in the old one start where they were.
@@ -649,12 +650,18 @@ export function mountDiagram(data, ctx, options = {}) {
 
   let timer = null
   let observer = null
+  // what was measured before a face loaded is measured again, and the figure is laid out with it: the same data at the same width always draws the same
+  const stopFonts = onFontsLoaded(() => {
+    if (!measurer.current) return
+    measurer.current.reset()
+    draw()
+  })
   const schedule = () => {
     clearTimeout(timer)
     figure.dataset.settling = "1"
     timer = setTimeout(() => {
       const width = Math.floor(stage.clientWidth)
-      if (width && (Math.abs(width - state.width) > 1 || measurer.current?.degenerate)) draw()
+      if (width && (width !== state.width || measurer.current?.degenerate)) draw()
       delete figure.dataset.settling
     }, 60)
   }
@@ -711,6 +718,7 @@ export function mountDiagram(data, ctx, options = {}) {
       window.removeEventListener("beforeprint", beforePrint)
       window.removeEventListener("afterprint", afterPrint)
       observer?.disconnect()
+      stopFonts()
       clearTimeout(timer)
     }
   }

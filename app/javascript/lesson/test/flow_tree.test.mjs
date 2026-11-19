@@ -4,7 +4,7 @@ import "./setup.mjs"
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
-import { audit } from "./flow_audit.mjs"
+import { audit, indented } from "./flow_audit.mjs"
 
 const { layout, describe, printed, rhombus } = await import("lesson/diagrams/flow")
 const { makeContext } = await import("lesson/diagrams/common")
@@ -31,7 +31,7 @@ test("a wide tree is centred, with arrowheads and a dark first box", () => {
 test("a narrow screen, or a node joined twice, takes the indented layout", () => {
   const narrow = layout(tree, { width: 240, fontPx: 20, subject: "math" })
   assert.ok(!narrow.error, narrow.error?.message)
-  assert.equal(classes(narrow).filter((c) => c === "dg-arrowhead").length, 0)
+  assert.ok(indented(narrow))
   const joined = {
     ...tree,
     nodes: [{ id: "q", kind: "decision", text_it: "Domanda?" }, { id: "x", kind: "step", text_it: "Via sì" }, { id: "y", kind: "step", text_it: "Via no" }, { id: "z", kind: "end", text_it: "Fine" }],
@@ -39,7 +39,7 @@ test("a narrow screen, or a node joined twice, takes the indented layout", () =>
   }
   const wide = layout(joined, { width: 760, fontPx: 20, subject: "math" })
   assert.ok(!wide.error, wide.error?.message)
-  assert.equal(classes(wide).filter((c) => c === "dg-arrowhead").length, 0)
+  assert.ok(indented(wide))
 })
 
 // ---- D-383: the decision as a rhombus, and the loop (the way back to a decision) ----------------------------------------------------------------
@@ -47,7 +47,7 @@ test("a narrow screen, or a node joined twice, takes the indented layout", () =>
 const vectors = JSON.parse(readFileSync(new URL("../../../../test/fixtures/diagrams/vectors.json", import.meta.url), "utf8")).vectors
 const vector = (name) => vectors.find((v) => v.name === name).data
 const doWhile = vector("flow-loop-do-while")
-const paths = (scene) => scene.shapes.filter((s) => s.kind === "path")
+const paths = (scene) => scene.shapes.filter((s) => s.kind === "path" && /dg-loop/.test(s.cls))
 const heads = (scene) => scene.shapes.filter((s) => s.cls === "dg-arrowhead")
 
 test("a decision is drawn as a rhombus that holds its text, in both layouts", () => {
@@ -101,7 +101,7 @@ test("a Do While: a loop is an orthogonal arrow from the body up to the question
 })
 
 test("the loops of the vectors draw at every width and size, in the centred tree or the indented layout, with no arrow over a node", () => {
-  for (const name of ["flow-loop-do-while", "flow-loop-nested-two", "flow-loop-long-question"]) {
+  for (const name of ["flow-loop-do-while", "flow-loop-do-while-indented", "flow-loop-nested-two", "flow-loop-long-question"]) {
     for (const width of [320, 390, 768, 1280]) {
       for (const fontPx of [18, 20, 26]) {
         const scene = layout(vector(name), { width, fontPx, subject: "math" })
@@ -118,7 +118,7 @@ test("on a phone a loop takes the room it needs: the tree moves off the middle, 
   const phone = layout(doWhile, { width: 390, fontPx: 20, subject: "math" })
   assert.ok(heads(phone).length > 0, "the centred tree fits a Do While on a phone")
   const nested = layout(vector("flow-loop-nested-two"), { width: 390, fontPx: 20, subject: "math" })
-  assert.equal(heads(nested).length, 2, "the nested flow takes the indented layout at 390: no arrow of the tree, the two of the loops")
+  assert.ok(indented(nested), "the nested flow takes the indented layout at 390")
   assert.equal(paths(nested).length, 2)
 })
 

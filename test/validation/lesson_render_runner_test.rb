@@ -81,6 +81,16 @@ class LessonRenderRunnerTest < ActiveSupport::TestCase
     assert_equal [ "1280x800-cream", "1280x800-dark", "390x844-cream" ], row.shots.select { |s| s["card"] == row.shots.map { |t| t["card"] }.max }.map { |s| s["viewport"] }.sort
   end
 
+  # D-383 after the first real lesson: the Do While whose boxes are too wide for the centred tree on a phone is drawn by the indented layout (the node
+  # test flow_determinism.test.mjs holds that at 390), each branch an arrow of its own; at 1280 the same flow is the centred tree.
+  test "a Do While drawn by the indented layout at 390 passes the render check at every viewport" do
+    vectors = JSON.parse(Rails.root.join("test/fixtures/diagrams/vectors.json").read).fetch("vectors")
+    data = vectors.find { |v| v["name"] == "flow-loop-do-while-indented" }.fetch("data")
+    row = render(with_card(served("equations"), [ { "type" => "diagram", "diagram" => data } ]))
+    keep_shots(row, "flow-loop-indented")
+    assert_equal "passed", row.status, dump(row)
+  end
+
   test "a number line too dense for its labels is E-DIAGRAM-LAYOUT" do
     marks = (-5..5).map { |i| { "at" => i.to_s, "kind" => "dot", "role" => "known", "label_it" => "una etichetta davvero molto lunga #{i}" } }
     line = { "type" => "number_line", "alt_it" => "Retta dei numeri da meno cinque a cinque con molte etichette lunghe.", "min" => "-5", "max" => "5", "step" => "1", "labels" => "all", "marks" => marks }

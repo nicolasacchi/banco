@@ -241,7 +241,6 @@ function buildIndented(data, ctx) {
   const W = ctx.width
   const f = ctx.fontPx
   const m = 8
-  const indent = 26
   const loops = data.loops ?? []
   // the loops run in a gutter on the right, one channel each; the boxes keep to its left
   const R = W - (loops.length ? 12 * loops.length + 12 : 0)
@@ -274,25 +273,34 @@ function buildIndented(data, ctx) {
     if (b.icon) shape(ctx, "icon", { name: b.icon, x: x + ctx.pad + 2, y: top + (b.h - iconSize) / 2, size: iconSize, cls: `role-${n.role}` })
     label(ctx, b.pre, x + ctx.pad + 3 + b.iconW, top + ctx.pad, { anchor: "start", maxW: b.mt.h > ctx.lineH ? b.mt.w : undefined, cls: `dg-nodetext${n.role ? ` role-${n.role}` : ""}`, role: n.role })
   }
-  // where a line that comes down at `x + 14` meets a decision below it: on the lower left side of its rhombus
-  const edgeY = (b) => (b.rhombus ? b.h / 2 + (14 * b.h) / b.w : 0)
-  const visit = (id, depth, edgeText, trunkX, isRef) => {
+  const head = (tipX, tipY, dir) => shape(ctx, "polygon", { points: dir === "down" ? [[tipX - 6, tipY - 9], [tipX + 6, tipY - 9], [tipX, tipY]] : [[tipX - 9, tipY - 6], [tipX - 9, tipY + 6], [tipX, tipY]], cls: "dg-arrowhead" })
+  // Every branch of a decision is its own arrow (D-383, after the first real lesson): it leaves the rhombus itself, on its own rail, goes down to
+  // the first node of the branch and enters it with an arrowhead; the rails are 14 px apart, so that none of them touches the stub of another
+  // branch, and none runs on past its own stub: nothing joins the body of a loop to the exit. The line that comes into a decision is an elbow
+  // that ends on its top vertex, with its own arrowhead.
+  const RAIL = 14
+  const STUB = 16
+  const visit = (id, x, edgeText, branch, isRef) => {
     const n = byId.get(id)
-    const x = m + depth * indent
     if (edgeText) {
-      const l = label(ctx, edgeText, x + 8, y, { anchor: "start", cls: "dg-note dg-edgelabel", maxW: R - x - m })
+      const lx = branch ? branch.rx + 6 : x + 8
+      const l = label(ctx, edgeText, lx, y, { anchor: "start", cls: "dg-note dg-edgelabel", maxW: R - lx - m })
       y += l.h + 2
     }
     const ref = isRef || drawn.has(id)
     const b = box(n, x, R - x - m, ref)
     const top = y
     paint(n, b, x, top, ref)
-    rects.set(id, { x, y: top, w: b.w, h: b.h, cy: top + b.h / 2 })
-    if (trunkX !== null) shape(ctx, "line", { x1: trunkX, y1: top + b.h / 2, x2: x, y2: top + b.h / 2, cls: "dg-edge" })
+    const me = { x, y: top, w: b.w, h: b.h, cx: x + b.w / 2, cy: top + b.h / 2, rhombus: !!b.rhombus }
+    if (!ref) rects.set(id, me)
+    if (branch) {
+      shape(ctx, "path", { d: `M${branch.rx},${branch.y0} V${top + b.h / 2} H${x - 8}`, cls: "dg-edge dg-branch" })
+      head(x, top + b.h / 2, "right")
+    }
     y += b.h
     if (ref) {
       y += 12
-      return
+      return me
     }
     drawn.add(id)
     // the label of a loop that leaves this node sits under it, at the right
@@ -304,22 +312,35 @@ function buildIndented(data, ctx) {
     const kids = out.get(id)
     if (kids.length === 0) {
       y += 12
-      return
+      return me
     }
     const bottom = y
-    y += 14
     if (n.kind === "decision") {
-      const trunk = x + 14
-      for (const k of kids) visit(k.to, depth + 1, k.text, trunk, false)
-      shape(ctx, "line", { x1: trunk, y1: top + edgeY(b), x2: trunk, y2: y - 12 - 6, cls: "dg-edge" })
+      y += 14
+      const kidX = x + 6 + RAIL * (kids.length - 1) + STUB
+      kids.forEach((k, j) => {
+        const rx = x + 6 + RAIL * (kids.length - 1 - j)
+        // the rail leaves the lower left side of the rhombus (the bottom of a plain box)
+        const y0 = b.rhombus ? top + b.h / 2 + ((rx - x) * b.h) / b.w : top + b.h
+        visit(k.to, kidX, k.text, { rx, y0 }, false)
+      })
     } else {
       const next = byId.get(kids[0].to)
-      const into = next.kind === "decision" && !kids[0].text && !drawn.has(next.id) ? edgeY(box(next, x, R - x - m, false)) : 0
-      shape(ctx, "line", { x1: x + 14, y1: bottom, x2: x + 14, y2: y + into, cls: "dg-edge dg-arrow" })
-      visit(kids[0].to, depth, kids[0].text, null, false)
+      const toRhombus = next.kind === "decision" && !drawn.has(next.id)
+      y += toRhombus ? 30 : 14
+      const r = visit(kids[0].to, x, kids[0].text, null, false)
+      if (toRhombus && r.rhombus) {
+        const mid = bottom + 10
+        shape(ctx, "path", { d: `M${x + 14},${bottom} V${mid} H${r.cx} V${r.y - 8}`, cls: "dg-edge dg-branch" })
+        head(r.cx, r.y, "down")
+      } else {
+        shape(ctx, "line", { x1: x + 14, y1: bottom, x2: x + 14, y2: r.y - 8, cls: "dg-edge dg-arrow" })
+        head(x + 14, r.y, "down")
+      }
     }
+    return me
   }
-  visit(data.nodes[0].id, 0, null, null, false)
+  visit(data.nodes[0].id, m, null, null, false)
   // the loops: out of the right side of a node, up a channel of the gutter (the longer ones outside), into the right corner of the decision
   const span = (lp) => rects.get(lp.from).cy - rects.get(lp.to).cy
   const rank = new Map([...loops].sort((a, b) => span(b) - span(a)).map((lp, j) => [lp, j]))

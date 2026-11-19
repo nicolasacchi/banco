@@ -6,7 +6,7 @@ import "./setup.mjs"
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
-import { audit } from "./flow_audit.mjs"
+import { audit, indented } from "./flow_audit.mjs"
 
 const { layout } = await import("lesson/diagrams/flow")
 
@@ -15,12 +15,11 @@ const everything = process.env.FLOW_PRODUCTION
   ? JSON.parse(readFileSync(process.env.FLOW_PRODUCTION, "utf8")).filter((x) => x.diagram.layout !== "line").map((x) => ({ ...x, subject: x.lesson.split(".")[1] }))
   : null
 const cases = everything ?? fixture
-const drawn = (scene) => scene.shapes.some((s) => s.cls === "dg-arrowhead")
 
 test("the fixture holds 20 tree flows, with the two layouts among them", () => {
   assert.equal(fixture.length, 20)
   assert.ok(fixture.every((x) => x.diagram.type === "flow" && x.diagram.layout !== "line"))
-  const kinds = new Set(fixture.map((x) => drawn(layout(x.diagram, { width: 1280, fontPx: 20, subject: x.subject }))))
+  const kinds = new Set(fixture.map((x) => indented(layout(x.diagram, { width: 1280, fontPx: 20, subject: x.subject }))))
   assert.deepEqual([...kinds].sort(), [false, true], "some are centred trees, some take the indented layout, at 1280")
 })
 
