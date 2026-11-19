@@ -21,7 +21,7 @@ module EnglishAudit
     "it.yml" => "en.yml", "course.it.yml" => "course.en.yml", "comments.it.yml" => "comments.en.yml", "search.it.yml" => "search.en.yml",
     "lesson_pages.it.yml" => "lesson_pages.en.yml", "lesson_docs.it.yml" => "lesson_docs.en.yml", "lesson.it.yml" => "lesson.en.yml", "lesson_text.it.yml" => "lesson_text.en.yml",
     "lesson_checks.it.yml" => "lesson_checks.en.yml", "grading.it.yml" => "grading.en.yml", "privacy.it.yml" => "privacy.en.yml",
-    "subjects.it.yml" => "subjects.en.yml"
+    "subjects.it.yml" => "subjects.en.yml", "schemas.it.yml" => "schemas.en.yml"
   }.freeze
 
   # Italian subtrees that are not chrome: the refusal pages (no student language), the teacher's words, the samples that each voice says in its language.

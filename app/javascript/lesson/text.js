@@ -188,7 +188,7 @@ function inlineNodes(nodes, parent, ctx, display = false, tiles = false, glued =
       if (info?.carrier === "icon" && info.icon) span.appendChild(icon(info.icon, "role-ic"))
       inlineNodes(node.children, span, ctx)
       parent.appendChild(span)
-    } else if (node.t === "link" && ctx.noLinks) {
+    } else if (node.t === "link" && (ctx.noLinks || (ctx.noCardLinks && node.kind === "scheda"))) {
       const span = el("span")
       inlineNodes(node.children, span, ctx)
       parent.appendChild(span)

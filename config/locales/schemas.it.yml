@@ -1,0 +1,29 @@
+# «I miei schemi» (D-372): lo schema di ogni argomento (la scheda di riassunto della lezione), che si apre quando finisci l'argomento.
+# Il gemello inglese è schemas.en.yml. Frasi corte, in seconda persona, mai «sei indietro».
+it:
+  schemas:
+    title: "I miei schemi"
+    intro: "Un colpo d'occhio per ricordarti ogni argomento. Ogni schema si apre quando finisci l'argomento."
+    page_title: "Schema: %{topic}"
+    page_intro: "Per ricordarti l'argomento a colpo d'occhio."
+    back: "I miei schemi"
+    locked: "Si apre quando finisci l'argomento."
+    locked_hint: "Finisci l'argomento e lo schema sarà qui."
+    locked_count:
+      one: "Ancora chiuso: %{count} schema"
+      other: "Ancora chiusi: %{count} schemi"
+    open_count:
+      one: "%{count} schema aperto"
+      other: "%{count} schemi aperti"
+    none_open: "Nessuno schema aperto per ora."
+    empty: "Non c'è ancora nessuno schema. Si apre quando finisci un argomento."
+    reread: "Rileggi la lezione"
+    practise: "Esercizi"
+    print: "Stampa"
+    preview_open: "Anteprima: lo studente lo vede aperto solo dopo aver finito l'argomento."
+    topic_link: "Schema"
+    open_link: "Apri lo schema di %{topic}"
+    review:
+      title: "Ripassa uno schema"
+      line: "Un colpo d'occhio su %{topic}."
+      open: "Apri lo schema"

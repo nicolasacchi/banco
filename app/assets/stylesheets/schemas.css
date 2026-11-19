@@ -1,0 +1,43 @@
+/*
+ * «Schema: <argomento>» and «I miei schemi» (D-372). The schema is the summary card of the lesson, drawn by the lesson renderer on a page of its
+ * own (`.l2[data-schema]`: one card, no bar, no map). Lengths are rem or em, so the root size of D-354 scales the page.
+ * Print: one schema on one A4 page, black on white, only the schema (no menu, no comment box, no buttons).
+ */
+.schema-page { max-width: 60rem; margin-inline: auto; }
+.schema-card { margin: var(--space-4) 0; }
+/* the lesson's shell is a grid with a column for the map; here there is none, so the card takes the width (the lesson's own rule is wider than a phone) */
+.l2[data-schema] .l2-shell { display: block; max-width: none; margin: 0; }
+.l2[data-schema] .l2-stage { min-height: 0; }
+.schema-v1 { margin: var(--space-4) 0; }
+.schema-actions { margin-top: var(--space-4); }
+.schema-actions .button { display: inline-flex; align-items: center; gap: 0.4em; }
+.schema-locked-line { display: flex; align-items: center; gap: 0.5em; margin: 0 0 var(--space-2); font-size: var(--text-l); }
+.schema-locked-line .ic { flex: none; }
+
+.schemas-page .schemas-intro { max-width: 40rem; }
+.schemas-subject { margin: var(--space-5) 0; }
+.schemas-subject-title { margin: 0 0 var(--space-3); font-size: var(--text-h2); }
+.schemas-list { margin-bottom: var(--space-2); }
+.schemas-locked { display: flex; align-items: flex-start; gap: 0.5em; margin: var(--space-2) 0 0; }
+.schemas-locked .ic { flex: none; margin-top: 0.2em; }
+
+/* A4 for the schema page alone (a named page: the print of every other page keeps the browser's own sheet) */
+@page schema { size: A4 portrait; margin: 14mm; }
+@media print {
+  .schema-page { page: schema; max-width: none; margin: 0; padding: 0; break-inside: avoid; }
+  body.student:has(#schema-page) { background: #fff; color: #000; }
+  body.student:has(#schema-page) :is(.topbar, #student-menu, .preview-banner, #comment-root, .comment-banner, .comment-box, .comment-open, .trial-notice, .notice,
+    .schema-actions, .page-header .back, .topic-meta .subject-chip, .card-listen, .speak-card, .question, .card-foot, .l2 .dg-controls, .l2-end) { display: none !important; }
+  .schema-page .page-header { margin: 0 0 0.4em; }
+  .schema-page h1 { font-size: 20pt; margin: 0; }
+  .schema-page .topic-meta { margin: 0 0 0.6em; font-size: 11pt; color: #000; }
+  .schema-card { margin: 0; }
+  .schema-v1 { border: 1px solid #000; box-shadow: none; background: #fff; font-size: 13pt; break-inside: avoid; }
+  /* more than one schema in a document: each starts on a new page */
+  .schema-page + .schema-page { break-before: page; }
+}
+
+/* the «Schema» link of a done topic in a subject's list: above the row's stretched link, so it takes its own click */
+.schema-row-link { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 0.35em; }
+.schema-row-link .ic { width: 1em; height: 1em; }
+.topic-schema .button { display: inline-flex; align-items: center; gap: 0.4em; }

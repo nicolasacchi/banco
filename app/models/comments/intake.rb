@@ -112,7 +112,7 @@ module Comments
       parsed = page.parsed
       case page.kind
       when "topic" then topic_place(parsed)
-      when "lesson" then lesson_place(parsed)
+      when "lesson", "schema" then lesson_place(parsed)
       when "practice" then practice_place(parsed)
       when "sitting", "results" then run_place(parsed)
       when "subject" then subject_place(parsed)

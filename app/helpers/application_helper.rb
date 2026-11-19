@@ -72,6 +72,7 @@ module ApplicationHelper
   def student_menu_items
     items = [ [ :today, t("student.menu.today"), spath("/today") ] ]
     items << [ :subjects, t("student.menu.subjects"), spath("/subjects") ] if student_course_visible?
+    items << [ :schemas, t("student.menu.schemas"), spath("/schemas") ] if student_course_visible?
     items << [ :search, t("student.menu.search"), spath("/search") ] if student_course_visible?
     items << [ :diagnosis, t(diagnosis_open? ? "student.menu.diagnosis" : "student.menu.warmup"), preview? ? "#{student_root}/test" : "/diagnosis" ] if student_diagnosis_listed?
     items << [ :comments, t("student.menu.comments"), "/comments" ] unless preview?
@@ -87,6 +88,7 @@ module ApplicationHelper
     path = request.path.delete_prefix(student_root)
     case path
     when "/today", "" then :today
+    when %r{\A/schemas\z}, %r{\A/topics/[^/]+/schema\z} then :schemas
     when %r{\A/(subjects|topics|civics)(/|\z)} then :subjects
     when "/search" then :search
     when %r{\A/diagnosis(/|\z)}, %r{\A/(test|warmup|runs)(/|\z)} then :diagnosis

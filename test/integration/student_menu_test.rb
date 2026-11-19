@@ -150,7 +150,7 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
     release_course!(@course)
     page(OFFICIAL, "/today")
     assert_select "#course-part li.topic[data-topic='#{TOPIC}']"
-    assert_equal [ "Oggi", "Materie", "Cerca", "I miei commenti", "Impostazioni", "Account e password", "Privacy" ], labels
+    assert_equal [ "Oggi", "Materie", "I miei schemi", "Cerca", "I miei commenti", "Impostazioni", "Account e password", "Privacy" ], labels
   end
 
   test "a trial student sees the course drafts and Materie" do
@@ -164,8 +164,8 @@ class StudentMenuTest < ActionDispatch::IntegrationTest
 
   test "the full menu on the course, practice, lesson and settings pages, with the current page marked" do
     build_student_world
-    { "/today" => "Oggi", "/subjects" => "Materie", "/subjects/math" => "Materie", "/topics/#{TOPIC}" => "Materie",
-      "/topics/#{TOPIC}/lesson" => "Materie", "/topics/#{TOPIC}/practice/#{SKILL}" => "Materie", "/settings" => "Impostazioni" }.each do |path, current|
+    { "/today" => "Oggi", "/subjects" => "Materie", "/subjects/math" => "Materie", "/topics/#{TOPIC}" => "Materie", "/schemas" => "I miei schemi",
+      "/topics/#{TOPIC}/lesson" => "Materie", "/topics/#{TOPIC}/schema" => "I miei schemi", "/topics/#{TOPIC}/practice/#{SKILL}" => "Materie", "/settings" => "Impostazioni" }.each do |path, current|
       page(OFFICIAL, path)
       assert_response :success, path
       assert_select "nav.student-menu a", minimum: 3

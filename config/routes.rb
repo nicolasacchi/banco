@@ -114,6 +114,9 @@ Rails.application.routes.draw do
       get "civics" => "course#civics"
       get "topics/:topic" => "topics#show", constraints: topic
       get "topics/:topic/lesson" => "lessons#show", constraints: topic
+      # «I miei schemi» (D-372): the summary card of a topic (opens when the topic is done) and the list of the schemas.
+      get "topics/:topic/schema" => "schemas#show", constraints: topic, as: :schema
+      get "schemas" => "schemas#index", as: :schemas
       post "topics/:topic/lesson/exercises/:n/solution" => "lessons#solution", constraints: topic.merge(n: /\d+/)
       # Lesson/2 (R3, A9, A11): the checks (a block, a blank of an example, an exercise's check) and the events batch.
       n = /\d+/

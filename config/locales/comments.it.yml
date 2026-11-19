@@ -134,6 +134,8 @@ it:
       account: "Account e password"
       civics: "Educazione civica"
       not_found: "Una pagina che non c'è"
+      schema: "Schema"
+      schemas: "I miei schemi"
     card: "scheda %{n}"
     today_line: "Il docente ti ha risposto."
     today_link: "Leggi le risposte"

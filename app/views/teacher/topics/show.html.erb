@@ -14,6 +14,8 @@
     <%= ui_notice :info, t("teacher.topic.missing"), html: { id: "topic-missing" } %>
   <% else %>
     <% latest = review.latest %>
+    <%# D-372: the topic's schema as the student sees it (the preview opens it whatever the progress). %>
+    <p class="hint" id="topic-schema-link"><a href="<%= ActingStudent::PREVIEW_ROOT %>/topics/<%= review.key %>/schema"><%= t("teacher.topic.schema_link") %></a></p>
     <% lesson_body = review.lesson_body %>
     <% blocker = decision_blocker %>
     <% writable = current_identity&.teacher? && request.cookies[DecisionRecorder::DEVICE_COOKIE].blank? %>

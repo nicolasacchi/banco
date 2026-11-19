@@ -83,6 +83,12 @@ class TeacherCoursePagesTest < ActionDispatch::IntegrationTest
     assert_select "#topic-approve-why", /Per ora non puoi approvare|Leggi tutta la pagina/
   end
 
+  test "the topic page links to the topic's schema as the student sees it, in the preview (D-372)" do
+    on(:web, "/teacher/subjects/math/topics/#{TopicWorld::TOPIC_KEY}", headers: TEACHER, remote_addr: EDGE)
+    assert_response :success
+    assert_select "#topic-schema-link a[href='/teacher/preview/topics/#{TopicWorld::TOPIC_KEY}/schema']", "Schema di questo argomento, come lo vede lo studente"
+  end
+
   test "a lesson finding shows where it is, its id and the author's answer (D-313); the answer decides nothing" do
     finding = { severity: "major", section: "solutions", exercise: 1, quote: "x = 3", problem_it: "Manca un passaggio.", fix_it: "Aggiungilo." }
     review = review_lesson!(@lesson_revision, findings: [ finding, finding.merge(severity: "minor", problem_it: "Frase lunga.") ],

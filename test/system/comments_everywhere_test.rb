@@ -42,7 +42,7 @@ class CommentsEverywhereTest < ApplicationSystemTestCase
       "/today" => "today", "/subjects" => "subjects", "/subjects/math" => "subject", "/topics/#{TOPIC}" => "topic", "/topics/#{TOPIC}/lesson" => "lesson",
       "/topics/#{TOPIC}/practice/#{SKILL}" => "practice", "/search" => "search", "/settings" => "settings", "/privacy" => "privacy",
       "/account" => "account", "/comments" => "comments", "/comments/#{thread.id}" => "comments", "/diagnosis" => "diagnosis",
-      "/diagnosis/warmup" => "warmup"
+      "/diagnosis/warmup" => "warmup", "/schemas" => "schemas", "/topics/#{TOPIC}/schema" => "schema" # D-372; the topic is not done: the page says it is closed, and takes a comment
     }
     pages.each do |path, kind|
       visit path

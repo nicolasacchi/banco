@@ -3,7 +3,8 @@
 // renderLesson(root, body, config) returns { goTo, current, renderAll, setView, setReduceMotion, destroy }.
 //   body    the projection the page receives (Lessons::StudentBody): no answer in it
 //   config  { mode: "student" | "preview" | "render", expand, teacher, safe, topic, revisionId, urls, resume, view, reduceMotion,
-//             labels (t), items (the item templates' texts), seen, unavailableTopics, full, savePreferences, listen, slower }
+//             labels (t), items (the item templates' texts), seen, unavailableTopics, full, savePreferences, listen, slower,
+//             schema (D-372: only the summary card, drawn with no cover, bar, map or end box; nothing is recorded as seen) }
 //   urls    { check, events, solution, questions, practice, preferences, settings, topics }: the page's own addresses, which in the
 //           teacher's preview carry /teacher/preview (D-309); topics is the front of a topic page ("/topics" when absent)
 import { newId } from "items/outbox"
@@ -51,7 +52,9 @@ export function renderLesson(root, body, config) {
   const byN = new Map(cards.map((c) => [c.n, c]))
   const idToN = new Map(cards.map((c) => [c.id, c.n]))
   const seen = new Set(config.seen ?? [])
-  const state = { n: 0, view: config.view === "scroll" ? "scroll" : "cards", reduce: !!config.reduceMotion, teacher: !!config.teacher }
+  // The schema page of a topic (D-372): the one summary card, no cover, no bar, no map, no end box, nothing recorded as seen.
+  const schema = !!config.schema
+  const state = { n: 0, view: schema || config.view !== "scroll" ? "cards" : "scroll", reduce: !!config.reduceMotion, teacher: !!config.teacher }
   const motionQuery = typeof matchMedia === "function" ? matchMedia("(prefers-reduced-motion: reduce)") : null
   const printQuery = typeof matchMedia === "function" ? matchMedia("print") : null
   const trackers = new Set()
@@ -70,6 +73,7 @@ export function renderLesson(root, body, config) {
     noSpeech: config.mode === "render" || typeof document === "undefined", // the render check runs without voices
     // the render check (R4): everything open as in print, but what the student answers with is drawn as the student has it (D-311)
     renderCheck: config.mode === "render",
+    noCardLinks: schema, // a link to another card of the lesson has nowhere to go on the schema page: its words stay, the link goes
     subject: body.subject, t, items: config.items ?? {}, topic: config.topic, revisionId: config.revisionId,
     safe: !!config.safe, preview: config.mode === "preview", get teacher() { return state.teacher },
     // config.expand (the render check, R4): every "more" open, every mistake turned, every step shown, as in safe mode
@@ -123,7 +127,7 @@ export function renderLesson(root, body, config) {
   // drawn with its markup like the title (D-310); the live region says it in plain words.
   const shortOf = (card) => card.short_it || shortTitle(card.title_it)
   const titleSpan = (text, cls) => renderInlineRich(text, el("span", cls ? { class: cls } : {}), insideControl(ctx))
-  const sequence = [0, ...order.map((c) => c.n)]
+  const sequence = schema ? order.map((c) => c.n) : [0, ...order.map((c) => c.n)]
   // the roles each card introduces: the legend chip is on that card only; the map lists all of them
   const introduced = new Map()
   const allRoles = []
@@ -138,6 +142,7 @@ export function renderLesson(root, body, config) {
   root.dataset.subject = body.subject
   root.dataset.palette = body.subject // the colour roles are scoped by subject (palette v2); a figure of a home palette sets its own
   root.dataset.view = state.view
+  if (schema) root.dataset.schema = "1"
   root.dataset.motion = ctx.reduced() ? "reduced" : "full"
   clear(root)
   const live = el("div", { class: "sr-only", role: "status", "aria-live": "polite" })
@@ -167,7 +172,8 @@ export function renderLesson(root, body, config) {
   const shell = el("div", { class: "l2-shell" })
   const side = el("aside", { class: "l2-sidemap", "aria-label": t.map })
   const stage = el("main", { class: "l2-stage", id: "lesson-stage" })
-  shell.append(side, stage)
+  if (schema) shell.append(stage)
+  else shell.append(side, stage)
   const prevBtn = button(el("span", {}, icon("prev"), document.createTextNode(` ${t.back}`)), { class: "button secondary l2-prev" }, () => step(-1))
   const nextBtn = button(el("span"), { class: "button l2-next" }, () => step(1))
   const barNav = el("nav", { class: "l2-bar", "aria-label": t.navigation }, prevBtn, el("span", { class: "l2-bar-count" }), nextBtn)
@@ -175,7 +181,8 @@ export function renderLesson(root, body, config) {
   const mapDialog = el("dialog", { class: "l2-dialog l2-mapdialog", "aria-label": t.map })
   const menuDialog = el("dialog", { class: "l2-dialog l2-menudialog", "aria-label": t.menu })
   const settingsDialog = el("dialog", { class: "l2-dialog l2-settingsdialog", "aria-label": t.settings })
-  root.append(live, topbar, shell, barNav, mapDialog, settingsDialog, menuDialog)
+  if (schema) root.append(live, shell)
+  else root.append(live, topbar, shell, barNav, mapDialog, settingsDialog, menuDialog)
 
   // ---- cards: built once, kept ----
   const built = new Map()
@@ -183,7 +190,7 @@ export function renderLesson(root, body, config) {
     if (built.has(n)) return built.get(n)
     mounts = []
     const element = n === 0 ? coverNode() : renderCard(byN.get(n), ctx, { kicker: kickerOf(byN.get(n)), newRoles: introduced.get(n) ?? [] })
-    if (n !== 0 && byN.get(n).role === "summary") element.appendChild(endBox())
+    if (n !== 0 && byN.get(n).role === "summary" && !schema) element.appendChild(endBox())
     const entry = { element, mounts, mounted: false }
     built.set(n, entry)
     return entry
@@ -298,6 +305,7 @@ export function renderLesson(root, body, config) {
     return wrap
   }
   const refreshMap = () => {
+    if (schema) return
     clear(side)
     side.appendChild(mapContent(null))
   }
@@ -412,7 +420,7 @@ export function renderLesson(root, body, config) {
     }
     root.dataset.card = String(n)
     refreshMap()
-    if (location && config.mode === "student") {
+    if (location && config.mode === "student" && !schema) {
       const hash = `#scheda-${n}`
       try {
         // D-355: a card the student opens in the cards view is a step of the browser's history, so the arrow back goes to the card before
@@ -540,7 +548,7 @@ export function renderLesson(root, body, config) {
   const onPrintChange = () => {
     for (const api of trackers) api.relayout()
   }
-  window.addEventListener("beforeprint", onBeforePrint)
+  if (!schema) window.addEventListener("beforeprint", onBeforePrint)
   printQuery?.addEventListener?.("change", onPrintChange)
   const printButton = ibtn("print", t.print, "l2-printbtn", () => printAll())
   tools.append(printButton)
@@ -552,7 +560,7 @@ export function renderLesson(root, body, config) {
   let flushTimer = null
   function scheduleSeen(n) {
     clearTimeout(seenTimer)
-    if (config.mode !== "student" || ctx.safe) return
+    if (config.mode !== "student" || ctx.safe || schema) return
     seenTimer = setTimeout(() => {
       seen.add(n)
       refreshChrome()
@@ -622,8 +630,8 @@ export function renderLesson(root, body, config) {
       fromHistory = false
     }
   }
-  if (config.mode === "student") window.addEventListener("hashchange", onHash)
-  const start = config.mode === "student" ? fromHash() : (config.startCard ?? null)
+  if (config.mode === "student" && !schema) window.addEventListener("hashchange", onHash)
+  const start = schema ? order[0]?.n : config.mode === "student" ? fromHash() : (config.startCard ?? null)
   if (state.view === "scroll") {
     renderScroll()
     state.n = start && byN.has(start) ? start : 0

@@ -122,6 +122,8 @@ en:
       account: "Account and password"
       civics: "Civic education"
       not_found: "A page that is not there"
+      schema: "Summary"
+      schemas: "My summaries"
       subjects: "Subjects"
       subject: "Subject"
       topic: "Topic"

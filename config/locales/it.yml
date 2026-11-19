@@ -20,6 +20,7 @@ it:
       label: "Menu"
       today: "Oggi"
       subjects: "Materie"
+      schemas: "I miei schemi"
       search: "Cerca"
       diagnosis: "Test d'ingresso"
       warmup: "Riscaldamento"

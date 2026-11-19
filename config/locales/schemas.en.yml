@@ -1,0 +1,29 @@
+# «My summaries» (D-372): the summary of each topic (the summary card of the lesson), which opens when you finish the topic.
+# The Italian file is schemas.it.yml.
+en:
+  schemas:
+    title: "My summaries"
+    intro: "A quick look to remind you of each topic. Each summary opens when you finish the topic."
+    page_title: "Summary: %{topic}"
+    page_intro: "To remind you of the topic at a glance."
+    back: "My summaries"
+    locked: "It opens when you finish the topic."
+    locked_hint: "Finish the topic and the summary will be here."
+    locked_count:
+      one: "Still closed: %{count} summary"
+      other: "Still closed: %{count} summaries"
+    open_count:
+      one: "%{count} summary open"
+      other: "%{count} summaries open"
+    none_open: "No summary is open yet."
+    empty: "There is no summary yet. One opens when you finish a topic."
+    reread: "Read the lesson again"
+    practise: "Exercises"
+    print: "Print"
+    preview_open: "Preview: the student sees it open only after finishing the topic."
+    topic_link: "Summary"
+    open_link: "Open the summary of %{topic}"
+    review:
+      title: "Review a summary"
+      line: "A quick look at %{topic}."
+      open: "Open the summary"

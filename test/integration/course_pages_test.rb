@@ -10,7 +10,7 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
   include StudentCourseWorld
 
   JSON_HEADERS = { "Content-Type" => "application/json", "Accept" => "application/json" }.freeze
-  PAGES = [ "/today", "/subjects", "/subjects/math", "/topics/#{TOPIC}", "/topics/#{TOPIC}/lesson", "/topics/#{TOPIC}/practice/#{SKILL}" ].freeze
+  PAGES = [ "/today", "/subjects", "/subjects/math", "/topics/#{TOPIC}", "/topics/#{TOPIC}/lesson", "/topics/#{TOPIC}/schema", "/topics/#{TOPIC}/practice/#{SKILL}" ].freeze
 
   # A page as the browser asks for it.
   def page(headers, path) = on(:web, path, headers: headers, remote_addr: EDGE)
@@ -121,7 +121,7 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     assert_select "#resume", 0
     assert_select "li.topic[data-reason=course_next] .topic-why", "È il prossimo argomento del corso."
     assert_select "li.topic .topic-meta", /Ripasso di prima · 30 minuti/
-    assert_select "nav.student-menu a", 8
+    assert_select "nav.student-menu a", 9
     page(OFFICIAL, "/topics/#{TOPIC}/lesson")
     page(OFFICIAL, "/today")
     assert_select "#resume", "Riprendi"

@@ -39,7 +39,7 @@ module Comments
       return nil unless key
 
       case kind
-      when "lesson", "topic" then topic_key && "/teacher/subjects/#{key}/topics/#{topic_key}"
+      when "lesson", "topic", "schema" then topic_key && "/teacher/subjects/#{key}/topics/#{topic_key}"
       when "practice" then item_revision ? "/teacher/items/#{item_revision.id}" : "/teacher/subjects/#{key}/practice"
       when "sitting", "results" then item_revision ? "/teacher/items/#{item_revision.id}" : "/teacher/subjects/#{key}/test"
       when "subject" then "/teacher/subjects/#{key}/course"
