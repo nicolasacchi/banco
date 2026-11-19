@@ -437,3 +437,12 @@ entries:
     link: /teacher/comments
     title_it: "Commenti con il contesto, e pagine in italiano"
     body_it: "Ogni commento mostra la revisione che lo studente aveva davanti, i suoi tentativi e i commenti di prima; tema e testo sono a parole. Sul telefono la barra dell'argomento scorre con il testo. «Come lo studente» al posto di «S»."
+
+  - id: comment-context-in-words
+    date: 2026-11-19
+    audience: [teacher]
+    kind: fix
+    decisions: [D-380]
+    link: /teacher/comments
+    title_it: "Nel contesto dei commenti le risposte sono a parole"
+    body_it: "Sotto «Contesto» la risposta dello studente è scritta come la leggeva lui, per esempio «desinare – medio», e la riga segnata dice cosa ha dato e cosa era atteso: niente più dati grezzi. Il menu dice «Prova come lo studente»."

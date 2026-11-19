@@ -78,8 +78,50 @@ module CommentsHelper
       [ kind, block.merge(seen_seq: model.where(id: block[:seen_revision_id]).pick(:seq), current_seq: model.where(id: block[:current_revision_id]).pick(:seq)) ]
     end.to_h
     tries = context[:tries]
+    rows = tries ? tries[:behind_the_comment] + tries.dig(:on_the_item, :rows).to_a : []
     { revisions: revisions, tries: tries, n_tries: tries ? (tries.dig(:on_the_item, :total) || tries[:behind_the_comment].size) : 0,
-      earlier: context[:earlier_comments].to_a, exercise: comment.item_revision.present? }
+      earlier: context[:earlier_comments].to_a, exercise: comment.item_revision.present?, words: comment_try_words(rows) }
+  end
+
+  # The words of the tries on the card (D-380): {ref => what he gave, in the words he read} for every try with an answer, from the reader of the corrections
+  # page (Teacher::AnswerWords: the shown ids turned back into the texts he saw, a reading test one numbered line per question); nil, never the stored
+  # JSON, when the answer does not read in words. A lesson check keeps the text he typed.
+  def comment_try_words(rows)
+    read = Teacher::AnswerWords.call(rows)
+    rows.select { |row| row[:answer].present? }.to_h do |row|
+      text = read.fetch(row[:ref], row[:answer]).to_s
+      [ row[:ref], comment_raw_data?(text) ? nil : text ]
+    end
+  end
+
+  # The row an anchor points at, in words: «riga 2 «lato» · ha dato «medio», atteso «aulico»». Never the hash.
+  def comment_anchor_row_words(anchor)
+    n = anchor[:n]
+    label = anchor[:text].present? ? "«#{anchor[:text]}»" : I18n.t("teacher.comments.context.anchor_#{anchor[:segment].to_s.start_with?('option') ? 'option_n' : 'row_n'}", n: n, locale: :it)
+    detail = comment_anchor_detail(anchor)
+    detail ? I18n.t("teacher.comments.context.anchor_with", label: label, detail: detail, locale: :it) : label
+  end
+
+  def comment_anchor_detail(anchor)
+    scope = "teacher.comments.context"
+    return I18n.t("#{scope}.anchor_missing", locale: :it) if anchor[:resolved] == false
+
+    if anchor.key?(:chosen)
+      [ I18n.t("#{scope}.anchor_#{anchor[:chosen] ? 'chosen' : 'not_chosen'}", locale: :it),
+        I18n.t("#{scope}.anchor_#{anchor[:is_key] ? 'is_key' : 'not_key'}", locale: :it) ].join(", ")
+    elsif anchor.key?(:given_position) || anchor.key?(:key_position)
+      I18n.t("#{scope}.anchor_position", given: anchor[:given_position] || "–", key: anchor[:key_position] || "–", locale: :it)
+    elsif anchor.key?(:given_text) || anchor.key?(:key_text)
+      I18n.t("#{scope}.anchor_pair", given: anchor[:given_text] || "–", key: anchor[:key_text] || "–", locale: :it)
+    end
+  end
+
+  # A stored answer that is data and not words: an object, or a list of shown ids.
+  def comment_raw_data?(text)
+    parsed = JSON.parse(text)
+    parsed.is_a?(Hash) || (parsed.is_a?(Array) && parsed.all?(String))
+  rescue JSON::ParserError
+    false
   end
 
   # "Lezione: Le frazioni, scheda 3" for the student's list.
