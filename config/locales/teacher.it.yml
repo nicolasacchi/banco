@@ -579,6 +579,9 @@ it:
       seconds:
         one: "1 secondo previsto"
         other: "%{count} secondi previsti"
+      rows:
+        one: "%{rows} riga"
+        other: "%{rows} righe"
       mechanical: "Controllo meccanico:"
       validation:
         passed: "passato"

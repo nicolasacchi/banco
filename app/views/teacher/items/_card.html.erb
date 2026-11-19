@@ -4,6 +4,7 @@
       <div class="item-tags">
         <%= ui_tag(component_name(card.body["component"] || card.body["kind"])) %>
         <%= ui_tag(t("teacher.skill.seconds", count: card.body["expected_seconds"].to_i)) %>
+        <% if card.rows %><%= ui_tag(t("teacher.skill.rows", count: card.rows.max, rows: card.rows.label)) %><% end %>
         <%= ui_pill(t("teacher.skill.validation.#{card.revision.status}"), card.revision.status.to_s == "passed" ? :success : :muted) %>
       </div>
     </header>
