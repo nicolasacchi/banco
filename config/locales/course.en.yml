@@ -32,6 +32,9 @@ en:
       exercises:
         one: "To close it: in %{skill} do one more exercise right without help."
         other: "To close it: in %{skill} do %{count} more exercises right without help."
+  # D-378: a skill (a topic) the entry test showed and nothing since moved; the same words on the subject list, the topic page, the practice page and the counters.
+  # Not one of the engine's states (those are `states`, which test/lib/practice/rules_test.rb pins to Rules::STATES).
+  state_known: "Already known"
   states:
     not_seen: "Not seen yet"
     to_recover: "From the test: to review"
@@ -40,8 +43,6 @@ en:
     demonstrated: "Shown"
     consolidated: "Solid"
     to_review: "To review"
-    # D-378: a skill (a topic) the entry test showed and nothing since moved; the same words on the subject list, the topic page, the practice page and the counters.
-    known: "Already known"
   why:
     not_seen: "You haven't tried it yet."
     seed_demonstrated: "Already known: you showed it in the entry test of %{date}."
