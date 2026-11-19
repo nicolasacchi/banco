@@ -69,6 +69,19 @@ module Lessons
       out
     end
 
+    SCHEMA_FRONT = %w[key kind subject title_it minutes].freeze
+
+    # The schema page of a topic (D-372): the projection of the core summary card alone, the `summary` block and the `schema`, with the
+    # glossary the card's words need. It is `project`'s own card (the same blocks, the same whitelist), so nothing more is served than
+    # the lesson serves; nil when the body has no summary card (a lesson/2 always has one: E-LESSON-MAP).
+    def schema(body, revision_id:, seed:)
+      card = body["cards"].find { |c| c["role"] == "summary" && c["level"] == "core" } or return nil
+      out = body.slice(*SCHEMA_FRONT)
+      out["glossary"] = body["glossary"].map { |g| g.slice("term_it", "def_it", "example_it") } if body["glossary"]
+      out["cards"] = [ card_json(card, body["subject"], revision_id, seed) ]
+      out
+    end
+
     def card_json(card, subject, revision_id, seed)
       out = card.slice("n", "id", "role", "level", "title_it", "short_it", "icon", "tone", "part")
       out["blocks"] = card["blocks"].map { |b| block(b, subject, seed_for(seed, revision_id, card["n"], b["n"])) }

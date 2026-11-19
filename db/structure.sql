@@ -721,7 +721,7 @@ FOREIGN KEY ("item_revision_id")
 , CONSTRAINT "fk_rails_a75bd33006"
 FOREIGN KEY ("blueprint_revision_id")
   REFERENCES "blueprint_revisions" ("id")
-, CONSTRAINT comments_reason CHECK (reason IN ('not_understood','error','not_working','like','other')), CONSTRAINT comments_selected_length CHECK (selected_text IS NULL OR length(selected_text) BETWEEN 1 AND 300), CONSTRAINT comments_anchor_length CHECK (anchor IS NULL OR length(anchor) BETWEEN 1 AND 200), CONSTRAINT comments_page_kind CHECK (page_kind IN ('today','subjects','subject','topic','lesson','practice','diagnosis','warmup','sitting','results','settings','search','comments','privacy','account','civics','not_found')), CONSTRAINT comments_text_length CHECK (text_it IS NULL OR length(text_it) BETWEEN 1 AND 2000));
+, CONSTRAINT comments_reason CHECK (reason IN ('not_understood','error','not_working','like','other')), CONSTRAINT comments_selected_length CHECK (selected_text IS NULL OR length(selected_text) BETWEEN 1 AND 300), CONSTRAINT comments_anchor_length CHECK (anchor IS NULL OR length(anchor) BETWEEN 1 AND 200), CONSTRAINT comments_text_length CHECK (text_it IS NULL OR length(text_it) BETWEEN 1 AND 2000), CONSTRAINT comments_page_kind CHECK (page_kind IN ('today','subjects','subject','topic','lesson','practice','diagnosis','warmup','sitting','results','settings','search','comments','privacy','account','civics','not_found','schema','schemas')));
 CREATE INDEX "index_comments_on_student_id" ON "comments" ("student_id") /*application='Banco'*/;
 CREATE INDEX "index_comments_on_subject_id" ON "comments" ("subject_id") /*application='Banco'*/;
 CREATE INDEX "index_comments_on_topic_revision_id" ON "comments" ("topic_revision_id") /*application='Banco'*/;
@@ -781,6 +781,7 @@ BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER ratings_no_delete BEFORE DELETE ON ratings
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261119100000'),
 ('20261118130000'),
 ('20261118120000'),
 ('20261118110001'),

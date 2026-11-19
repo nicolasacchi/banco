@@ -15,6 +15,8 @@ class CourseController < ApplicationController
       found = view.find_topic(s.topic_key) or next
       { suggestion: s, subject_view: found[0], topic: found[1] }
     end
+    # «Ripassa uno schema» (D-372): one schema he has opened, the same all day.
+    @schema_pick = Course::Schemas.new(view, open_all: preview?).daily_pick(acting_student.key)
     load_diagnosis_block
     @nothing = !@course_open && @diagnosis.nil?
   end

@@ -62,5 +62,9 @@
       </ul>
     </li>
   </ol>
+  <%# D-372: a done topic has its schema, the summary card of the lesson at a glance. %>
+  <% if schema_open?(@topic) %>
+    <p class="topic-schema button-row" id="topic-schema"><a class="button secondary" id="schema-link" href="<%= schema_href(@topic.key) %>"><%= ui_icon("map") %> <%= t("schemas.topic_link") %></a></p>
+  <% end %>
   <%= render "course/question", topic: @topic.key, lesson_revision_id: @topic.lesson_revision.id %>
 </main>

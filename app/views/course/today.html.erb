@@ -123,6 +123,26 @@
     </section>
   <% end %>
 <% end %>
+<%# «Ripassa uno schema» (D-372): one schema he has opened, the same all day (Course::Schemas#daily_pick), no model. %>
+<% schema_html = capture do %>
+  <% if @course_open && @schema_pick %>
+    <% pick = @schema_pick %>
+    <section id="schema-review" class="today-block" data-comment-anchor="schema_review" aria-labelledby="schema-review-title" style="--subject: var(--accent-<%= pick.subject_view.subject.key %>, var(--soft-primary))">
+      <h2 id="schema-review-title"><%= t("schemas.review.title") %></h2>
+      <div class="card" data-topic="<%= pick.topic.key %>">
+        <div class="subject-line">
+          <%= subject_chip(pick.subject_view.subject.key) %>
+          <div class="subject-text">
+            <span class="topic-title"><%= pick.topic.title_it %></span>
+            <span class="topic-meta"><%= pick.subject_view.subject.name_it %></span>
+          </div>
+        </div>
+        <p><%= t("schemas.review.line", topic: pick.topic.title_it) %></p>
+        <div class="button-row"><a class="button secondary" id="schema-review-link" href="<%= schema_href(pick.topic.key) %>"><%= t("schemas.review.open") %></a></div>
+      </div>
+    </section>
+  <% end %>
+<% end %>
 <main class="page course today">
   <h1><%= t("today.title") %></h1>
   <% if comment_unread_count.positive? %>
@@ -132,8 +152,8 @@
     <%= ui_notice :info, t("today.closed"), html: { id: "course-closed" } %>
   <% end %>
   <% if now == :entry %>
-    <%= entry_html %><%= path_html %><%= course_html %>
+    <%= entry_html %><%= path_html %><%= course_html %><%= schema_html %>
   <% else %>
-    <%= course_html %><%= entry_html %><%= path_html %>
+    <%= course_html %><%= schema_html %><%= entry_html %><%= path_html %>
   <% end %>
 </main>

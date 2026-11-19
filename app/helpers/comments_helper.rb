@@ -11,7 +11,7 @@ module CommentsHelper
   # The icon of a page kind in "I miei commenti" and on the teacher's cards (all in the structural sprite).
   PLACE_ICONS = { "today" => "compass", "subjects" => "map", "subject" => "map", "topic" => "compass", "lesson" => "book-open", "practice" => "notebook-pen",
                   "diagnosis" => "list-checks", "warmup" => "list-checks", "sitting" => "circle-help", "results" => "list-checks", "settings" => "text-settings",
-                  "search" => "info", "comments" => "comment", "privacy" => "info", "account" => "info", "civics" => "map", "not_found" => "info" }.freeze
+                  "search" => "info", "comments" => "comment", "privacy" => "info", "account" => "info", "civics" => "map", "not_found" => "info", "schema" => "map", "schemas" => "map" }.freeze
 
   STATE_ICONS = { "sent" => "send", "read" => "show", "answered" => "teacher-reply", "closed" => "check" }.freeze
 
@@ -94,8 +94,9 @@ module CommentsHelper
     when "today", "settings", "search", "privacy", "account" then comment.page_path
     when "subjects" then comment.page_path if course_view.subjects.any?
     when "civics" then comment.page_path if Course::Civics.new(course_view).any?
+    when "schemas" then comment.page_path if course_view.subjects.any?
     when "subject" then comment.page_path if course_view.subject(page.subject_key)
-    when "topic", "practice" then comment.page_path if course_view.find_topic(page.topic)
+    when "topic", "practice", "schema" then comment.page_path if course_view.find_topic(page.topic)
     when "lesson" then (comment.card ? "#{comment.page_path}#scheda-#{comment.card}" : comment.page_path) if course_view.find_topic(page.topic)
     end
   end

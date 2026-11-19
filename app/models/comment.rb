@@ -3,7 +3,7 @@
 # API by a bot_read or teacher token (Api::V1::CommentsController); never by a content agent's token (a minor's words).
 class Comment < ApplicationRecord
   REASONS = %w[not_understood error not_working like other].freeze
-  PAGE_KINDS = %w[today subjects subject topic lesson practice diagnosis warmup sitting results settings search comments privacy account civics not_found].freeze
+  PAGE_KINDS = %w[today subjects subject topic lesson practice diagnosis warmup sitting results settings search comments privacy account civics not_found schema schemas].freeze
   # The states the student and the teacher read: new (sent), read, answered, closed. Derived, never stored.
   STATES = %w[sent read answered closed].freeze
   MESSAGE_KINDS = %w[reply student_reply].freeze

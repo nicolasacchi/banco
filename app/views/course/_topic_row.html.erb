@@ -18,6 +18,8 @@
     <% if topic.extra? %><span data-extra-badge><%= ui_pill(t("topic.extra_badge"), :muted) %></span><% end %>
     <% if recover %><%= ui_pill(t("topic.tag_#{recover == 'to_recover' ? 'recover' : 'review'}"), :nearly) %><% end %>
     <%= ui_pill(t("topic.status.#{status}"), topic_status_tone(status), icon: topic_status_icon(status)) %>
+    <%# D-372: a done topic has its schema; the link sits above the row's stretched link. %>
+    <% if schema_open?(topic) %><a class="button small secondary schema-row-link" href="<%= schema_href(topic.key) %>"><%= ui_icon("map") %> <%= t("schemas.topic_link") %></a><% end %>
     <%= ui_icon("next", css: "row-chev") %>
   </span>
 </li>

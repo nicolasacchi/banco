@@ -1,7 +1,7 @@
 # Small helpers of the student's pages (D-307, docs/ui.md): the top bar's title, the menu icons, the subject chip and the
 # tones of a skill state. The look is in app/assets/stylesheets/student.css on the shared components (D-306).
 module StudentUiHelper
-  MENU_ICONS = { today: "nav-today", subjects: "nav-subjects", search: "nav-search", diagnosis: "nav-diagnosis", comments: "comment",
+  MENU_ICONS = { today: "nav-today", subjects: "nav-subjects", schemas: "map", search: "nav-search", diagnosis: "nav-diagnosis", comments: "comment",
                  settings: "nav-settings", account: "locked", privacy: "info", logout: "back" }.freeze
   SUBJECT_ICONS = %w[math italian chemistry biology computer_science business english spanish geography history law_economics physical_education].freeze
 

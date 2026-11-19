@@ -82,6 +82,8 @@ it:
         account: "Account e password"
         civics: "Educazione civica"
         not_found: "Una pagina che non c'è"
+        schema: "Schema"
+        schemas: "I miei schemi"
       empty: "Nessun commento con questi filtri."
       trial: "account di prova"
       student: "Studente"

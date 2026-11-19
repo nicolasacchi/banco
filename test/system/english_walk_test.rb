@@ -124,7 +124,7 @@ class EnglishWalkTest < ApplicationSystemTestCase
       visit "/today"
       find("#student-menu-open").click
       assert_selector "#student-menu-dialog[open]"
-      { today: "student.menu.today", subjects: "student.menu.subjects", search: "student.menu.search", diagnosis: "student.menu.diagnosis",
+      { today: "student.menu.today", subjects: "student.menu.subjects", schemas: "student.menu.schemas", search: "student.menu.search", diagnosis: "student.menu.diagnosis",
         comments: "student.menu.comments", settings: "student.menu.settings", account: "student.menu.account", privacy: "student.menu.privacy" }.each do |id, key|
         assert_selector "#menu-#{id}", text: en(key)
       end
@@ -173,6 +173,44 @@ class EnglishWalkTest < ApplicationSystemTestCase
       assert_text en("question.sent")
       wait_until { StudentQuestion.count == 1 }
       check_page "The question box, sent"
+    end
+
+    # «My summaries» and the summary of a topic (D-372): closed first, then open once the topic is done.
+    section("My summaries and a summary, closed") do
+      visit "/schemas"
+      assert_selector "h1", text: en("schemas.title")
+      assert_selector "#schemas-intro", text: en("schemas.intro")
+      assert_selector ".schemas-locked", text: en("schemas.locked")
+      assert_selector ".schemas-locked", text: en("schemas.locked_count", count: 1)
+      check_page "My summaries, closed"
+      visit "/topics/#{TOPIC}/schema"
+      assert_selector "h1", text: en("schemas.page_title", topic: TOPIC_TITLE)
+      assert_selector "#schema-locked", text: en("schemas.locked")
+      assert_selector "#schema-practice", text: en("schemas.practise")
+      check_page "A summary, closed"
+    end
+
+    section("My summaries and a summary, open") do
+      @clock = Diagnosis::FakeClock.new(Time.current - 20.days)
+      play_topic!(@topic_revision, SKILL, 3) # three right answers on three days: the topic is done
+      visit "/schemas"
+      assert_selector "#schemas-page .schema-link", text: TOPIC_TITLE
+      check_page "My summaries, open"
+      visit "/subjects/math"
+      assert_selector ".schema-row-link", text: en("schemas.topic_link")
+      visit "/topics/#{TOPIC}"
+      assert_selector "#schema-link", text: en("schemas.topic_link")
+      visit "/today"
+      assert_selector "#schema-review-title", text: en("schemas.review.title")
+      check_page "Today, review a summary"
+      find("#schema-review-link").click
+      assert_selector "h1", text: en("schemas.page_title", topic: TOPIC_TITLE)
+      wait_for_lesson_ready(wait: 30)
+      assert_selector "#lesson-root[data-schema] article.l2-card[data-role=summary]", wait: 15
+      assert_selector "#schema-lesson", text: en("schemas.reread")
+      assert_selector "#schema-practice", text: en("schemas.practise")
+      assert_selector "#schema-print", text: en("schemas.print")
+      check_page "A summary, open"
     end
   end
 

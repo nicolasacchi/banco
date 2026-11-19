@@ -12,6 +12,7 @@ en:
       label: "Menu"
       today: "Today"
       subjects: "Subjects"
+      schemas: "My summaries"
       search: "Search"
       diagnosis: "Entry test"
       warmup: "Warm-up"

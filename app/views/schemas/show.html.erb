@@ -1,0 +1,64 @@
+<%# «Schema: <argomento>» (D-372): the summary card of the lesson revision he is shown, drawn by the lesson/2 renderer from the student's
+    projection (Lessons::StudentBody.schema: no answer is in it), or the summary of a lesson/1. Locked until the topic is done. %>
+<% title = t("schemas.page_title", topic: @topic.title_it) %>
+<% content_for :title, title %>
+<% subject = @subject_view.subject %>
+<% if @unlocked && @student_body %>
+  <% content_for :head do %>
+    <%= stylesheet_link_tag "lesson_roles" %>
+    <%= stylesheet_link_tag "lesson" %>
+    <%= stylesheet_link_tag "lesson/checks" %>
+    <%= stylesheet_link_tag "lesson/text" %>
+    <%= lesson_family_stylesheets(@student_body) %>
+  <% end %>
+<% end %>
+<main class="page course schema-page" id="schema-page" style="--subject: var(--accent-<%= subject.key %>, var(--soft-primary))" data-topic="<%= @topic.key %>" data-unlocked="<%= @unlocked %>">
+  <%= ui_page_header(title, back: [ t("schemas.back"), spath("/schemas") ]) %>
+  <p class="topic-meta cluster"><%= subject_chip(subject.key) %> <span><%= subject.name_it %></span></p>
+  <% if draft? %><%= ui_notice :info, t("draft.notice"), html: { id: "draft-notice" } %><% end %>
+  <% if @unlocked %>
+    <% if preview? %><%= ui_notice :info, t("schemas.preview_open"), html: { id: "schema-preview-note" } %><% end %>
+    <% if @student_body %>
+      <%# One card, no bar and no map: lesson2_controller.js draws it (lesson/render.js with `schema`); the comment box names the revision. %>
+      <div id="lesson-root" class="l2 schema-card"
+           data-controller="lesson2"
+           data-lesson2-topic-value="<%= @topic.key %>"
+           data-lesson2-revision-id-value="<%= @revision.id %>"
+           data-lesson2-schema-value="true"
+           data-comment-lesson-revision-id="<%= @revision.id %>"
+           data-lesson2-urls-value="<%= lesson2_urls(@topic.key).except(:questions).to_json %>"
+           data-lesson2-view-value="cards"
+           data-lesson2-reduce-motion-value="<%= @preferences[:reduce_motion] %>"
+           data-lesson2-listen-value="<%= @preferences[:listen] %>"
+           data-lesson2-slower-value="<%= @preferences[:slower] %>"
+           data-lesson2-safe-value="<%= @safe %>"
+           data-lesson2-labels-value="<%= lesson2_texts.to_json %>"
+           data-lesson2-items-value="<%= lesson2_item_texts.to_json %>"
+           data-lesson2-question-labels-value="<%= question_labels.to_json %>"
+           data-lesson2-unavailable-value="<%= lesson2_unavailable_topics(@student_body).to_json %>">
+        <noscript><p class="notice"><%= t("lesson2.no_script") %></p></noscript>
+      </div>
+      <script type="application/json" id="lesson-body"><%= json_escape(@student_body.to_json).html_safe %></script>
+    <% else %>
+      <%# A lesson of the first format: its summary, in the lesson's own markup. %>
+      <section class="schema-v1 card" id="schema-summary" data-controller="lesson" data-comment-lesson-revision-id="<%= @revision.id %>" data-lesson-solution-base-value="<%= spath("/topics/#{@topic.key}/lesson/exercises") %>" data-lesson-labels-value="<%= lesson_labels.to_json %>">
+        <h2><%= t("lesson.sections.summary_it") %></h2>
+        <div class="markup" data-lesson-markup><%= @summary_it %></div>
+      </section>
+    <% end %>
+    <p class="schema-actions button-row" data-controller="schema-print">
+      <a class="button" id="schema-lesson" href="<%= spath("/topics/#{@topic.key}/lesson") %>"><%= t("schemas.reread") %></a>
+      <a class="button secondary" id="schema-practice" href="<%= spath("/topics/#{@topic.key}") %>"><%= t("schemas.practise") %></a>
+      <button type="button" class="button secondary" id="schema-print" data-action="schema-print#print"><%= ui_icon("print") %> <%= t("schemas.print") %></button>
+    </p>
+  <% else %>
+    <section class="card schema-locked" id="schema-locked" data-state="locked">
+      <p class="schema-locked-line"><%= ui_icon("locked") %> <strong><%= t("schemas.locked") %></strong></p>
+      <p class="muted"><%= t("schemas.locked_hint") %></p>
+      <p class="button-row">
+        <a class="button" id="schema-practice" href="<%= spath("/topics/#{@topic.key}") %>"><%= t("schemas.practise") %></a>
+        <a class="button secondary" id="schema-lesson" href="<%= spath("/topics/#{@topic.key}/lesson") %>"><%= t("schemas.reread") %></a>
+      </p>
+    </section>
+  <% end %>
+</main>

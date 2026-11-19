@@ -11,8 +11,8 @@ class TeacherAsStudentTest < ActionDispatch::IntegrationTest
 
   JSON_HEADERS = { "Content-Type" => "application/json", "Accept" => "application/json" }.freeze
   ROOT = "/teacher/preview".freeze
-  PAGES = [ "", "/today", "/subjects", "/subjects/math", "/topics/#{TOPIC}", "/topics/#{TOPIC}/lesson", "/topics/#{TOPIC}/practice/#{SKILL}", "/search",
-            "/settings", "/test", "/warmup" ].freeze
+  PAGES = [ "", "/today", "/subjects", "/subjects/math", "/topics/#{TOPIC}", "/topics/#{TOPIC}/lesson", "/topics/#{TOPIC}/schema", "/topics/#{TOPIC}/practice/#{SKILL}", "/search",
+            "/settings", "/schemas", "/test", "/warmup" ].freeze
 
   def page(headers, path) = on(:web, path, headers: headers, remote_addr: EDGE)
 
@@ -153,7 +153,7 @@ class TeacherAsStudentTest < ActionDispatch::IntegrationTest
 
   test "no link, form or script address on a preview page leaves for the student's own pages" do
     build_student_world
-    own = %r{\A/(today|subjects|topics|practice|diagnosis|settings|search|comments|questions|warmup|runs)(/|\?|#|\z)}
+    own = %r{\A/(today|subjects|schemas|topics|practice|diagnosis|settings|search|comments|questions|warmup|runs)(/|\?|#|\z)}
     (PAGES + [ "/test" ]).uniq.each do |path|
       page(TEACHER, "#{ROOT}#{path}")
       assert_response :success, path

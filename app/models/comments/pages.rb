@@ -10,6 +10,8 @@ module Comments
       [ %r{\A/today\z}, "today" ], [ %r{\A/subjects\z}, "subjects" ], [ %r{\A/settings\z}, "settings" ],
       [ %r{\A/search\z}, "search" ], [ %r{\A/privacy\z}, "privacy" ], [ %r{\A/account\z}, "account" ], [ %r{\A/comments(?:/[1-9]\d{0,17})?\z}, "comments" ], [ %r{\A/diagnosis\z}, "diagnosis" ],
       [ %r{\A/civics\z}, "civics" ],
+      # «I miei schemi» (D-372): the list and the schema of a topic.
+      [ %r{\A/schemas\z}, "schemas" ],
       # The student's own 404 (D-361): the box on that page names the address it could not open after the prefix, so the teacher
       # reads what was asked for; the address is only ever shown as text.
       [ %r{\A/not-found(?:/\S{0,150})?\z}, "not_found" ],
@@ -17,6 +19,7 @@ module Comments
       [ %r{\A/subjects/(?<subject_key>[a-z_]+)\z}, "subject" ],
       [ %r{\A/topics/(?<topic>#{TOPIC})\z}, "topic" ],
       [ %r{\A/topics/(?<topic>#{TOPIC})/lesson\z}, "lesson" ],
+      [ %r{\A/topics/(?<topic>#{TOPIC})/schema\z}, "schema" ],
       [ %r{\A/topics/(?<topic>#{TOPIC})/practice/(?<skill>#{SKILL})\z}, "practice" ],
       [ %r{\A/diagnosis/runs/(?<run_id>[1-9]\d{0,17})\z}, "sitting" ],
       [ %r{\A/diagnosis/runs/(?<run_id>[1-9]\d{0,17})/results\z}, "results" ]
