@@ -39,9 +39,10 @@ module PracticeEngineHelper
     Practice::ServeEvent.new(kind: kind, n: n, reason: reason, auto: auto, at: T0)
   end
 
-  def serve_status(outcomes = [], events: [], hints_total: 3, now: T0 + 60, reason: "next", superseded: false)
+  def serve_status(outcomes = [], events: [], hints_total: 3, now: T0 + 60, reason: "next", superseded: false, replaced: false)
     tries = outcomes.each_with_index.map { |o, i| StubTry.new(i + 1, o, o == :contested) }
-    Practice::ServeState.call(serve: stub_serve(reason: reason), tries: tries, events: events, hints_total: hints_total, now: now, superseded: superseded)
+    Practice::ServeState.call(serve: stub_serve(reason: reason), tries: tries, events: events, hints_total: hints_total, now: now, superseded: superseded,
+                              replaced: replaced)
   end
 
   # A serve being played: applies events the way the recorder does (writes what the step names),
@@ -59,6 +60,9 @@ module PracticeEngineHelper
     end
 
     def status = serve_status(@outcomes, events: @events, hints_total: @hints_total, now: @now)
+
+    # The same serve when the topic's new revision withdrew it (D-377).
+    def replaced_status = serve_status(@outcomes, events: @events, hints_total: @hints_total, now: @now, replaced: true)
 
     def answer(outcome)
       st = status

@@ -2,14 +2,15 @@ module Practice
   # The hint and the solution of a practice serve (A8.3 rows 11-15, A8.4, A9.3). One short transaction
   # re-derives the serve state and writes only what the state machine names.
   #
-  #   actions = Practice::Actions.new(student:, clock:)
+  #   actions = Practice::Actions.new(student:, shown:, clock:)   # shown: as Practice::AnswerRecorder's (D-377)
   #   actions.hint(serve_id:, n:)      # => Result(http, body): {n, total, hint_it} | 409 | 422
   #   actions.solution(serve_id:)      # => Result(http, body): {solution, actions} | 409
   class Actions
     Result = AnswerRecorder::Result
 
-    def initialize(student:, clock: Diagnosis::Clock.new)
+    def initialize(student:, shown: nil, clock: Diagnosis::Clock.new)
       @student = student
+      @shown = shown
       @clock = clock
     end
 
@@ -18,7 +19,7 @@ module Practice
         total = Instances.hints(serve.item_instance).size
         step = ServeState.step(status, :hint, hint_n: n, hints_total: total)
         case step.result
-        when :closed then Result.new(409, Payload.closed)
+        when :closed then Result.new(409, Payload.refused(status))
         when :bad_hint then Result.new(422, { status: "bad_hint" })
         else
           event(serve, "hint_shown", { n: n, auto: false }, now) if step.result == :accept
@@ -30,10 +31,10 @@ module Practice
     def solution(serve_id:)
       run(serve_id) do |serve, status, now|
         step = ServeState.step(status, :solution_request)
-        next Result.new(409, Payload.closed) if step.result == :closed
+        next Result.new(409, Payload.refused(status)) if step.result == :closed
 
         event(serve, "solution_shown", { reason: step.solution_reason }, now) if step.result == :accept
-        after = Loader.status_of(serve.reload, now: now)
+        after = Loader.status_of(serve.reload, now: now, shown: @shown)
         Result.new(200, { solution: Payload.solution(serve.item_instance), actions: Payload.actions(after) })
       end
     end
@@ -46,7 +47,7 @@ module Practice
         serve = PracticeServe.includes(:events, attempts: :gradings, item_instance: { item_revision: :item }).find_by(id: serve_id, student_id: @student.id)
         next Result.new(404, { status: "not_found" }) unless serve
 
-        yield serve, Loader.status_of(serve, now: now), now
+        yield serve, Loader.status_of(serve, now: now, shown: @shown), now
       end
     end
 

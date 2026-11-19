@@ -42,12 +42,17 @@ module Course
     # {skill => Practice::SkillState} for the skills of every visible topic.
     def states
       @states ||= subjects.each_with_object({}) do |sv, all|
-        input = Practice::Loader.for(@student, subject: sv.subject, now: @now)
+        input = Practice::Loader.for(@student, subject: sv.subject, now: @now, shown: shown_revisions)
+        serve_rows.concat(input.serves)
         all.merge!(Practice::Fold.call(seeds: input.seeds, tries: input.tries, serves: input.serves, skills: sv.topics.flat_map(&:skills).uniq))
       end
     end
 
     def state(skill) = states[skill]
+
+    # The topic revision this student is shown for each lesson, {lesson id => TopicRevision}: what a serve must come from to be offered (D-377).
+    # An open serve of another revision of a shown lesson is `replaced` (Practice::Loader), never resumed.
+    def shown_revisions = @shown_revisions ||= subjects.flat_map(&:topics).to_h { |t| [ t.topic_revision.lesson_id, t.topic_revision ] }
 
     # The label of a graph or course skill of a visible subject.
     def label(skill)
@@ -174,8 +179,11 @@ module Course
       held.uniq(&:first) + skills_without_topic(sv).map { |s| [ s, nil ] }
     end
 
+    # A serve that was replaced (D-377) is not where he left off: Oggi's «Riprendi» goes by the latest serve that was not.
     def last_topic
-      serve = PracticeServe.where(student: @student).order(:id).last
+      states
+      row = serve_rows.reject { |r| r.status.state == :replaced }.max_by(&:id)
+      serve = row && PracticeServe.find(row.id)
       opened = PracticeEvent.where(student: @student, kind: "lesson_opened").order(:id).last
       pick = [ serve && [ serve.created_at, serve.topic_revision ], opened && [ opened.at, opened.topic_revision ] ].compact.max_by(&:first)
       pick&.last&.lesson&.key
@@ -216,6 +224,9 @@ module Course
       graph = JSON.parse(sv.course_revision.skill_graph_revision.body_json)["skills"]
       graph + sv.course_revision.body["skills"]
     end
+
+    # The ServeRows of every visible subject, read with the states.
+    def serve_rows = @serve_rows ||= []
 
     def started_keys
       @started_keys ||= (served_keys + opened_keys.to_a).to_set

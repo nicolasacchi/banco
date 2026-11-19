@@ -215,6 +215,8 @@ en:
       today: "Back to Today"
       schema: "See the schema"
     closed: "This exercise is closed: choose another one."
+    # D-377: the topic was revised while an exercise of it was open: the answer is not graded and the new version of the exercise comes with this line.
+    replaced: "This exercise has been updated: here it is in the new version."
     loading: "One moment."
     saving: "Checking the answer."
     empty: "Write an answer first."

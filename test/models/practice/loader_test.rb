@@ -203,6 +203,35 @@ class PracticeLoaderTest < ActiveSupport::TestCase
     assert_equal :abandoned, load_input(now: @serve_at + Practice::Rules::V6::OPEN_SERVE_HOURS * 3600 + 1).serves.first.status.state
   end
 
+  test "D-377: an open serve is replaced when its topic revision is not the one shown for its lesson, or its item revision is not pinned there" do
+    serve = serve_with
+    state = ->(shown) { Practice::Loader.for(@student, subject: @subject, now: @serve_at + 3600, shown: shown).serves.first.status.state }
+    same = { @lesson_revision.lesson_id => @topic }
+    assert_equal :open, state.(nil), "no knowledge of what he is shown: nothing is replaced"
+    assert_equal :open, state.(same)
+    assert_equal :open, state.({}), "a lesson he is not shown at all leaves it as it is"
+    revised = make_topic(@lesson_revision, { @skill => @revisions })
+    assert_equal :replaced, state.({ @lesson_revision.lesson_id => revised })
+    assert_equal :replaced, Practice::Loader.status_of(serve, now: @serve_at + 3600, shown: { @lesson_revision.lesson_id => revised }).state
+    assert_equal :open, Practice::Loader.status_of(serve, now: @serve_at + 3600).state
+    # the same topic revision, whose pins do not hold the serve's item revision (a body that does not match the serve)
+    other = TopicRevision.new(id: @topic.id, lesson_id: @topic.lesson_id, body_json: JSON.generate(practice: [ { skill: @skill, items: [ { item: "x", revision: 0 } ] } ]))
+    assert_equal :replaced, state.({ @lesson_revision.lesson_id => other })
+  end
+
+  test "D-377: a replaced serve keeps its tries in the loader's tries, and a closed one stays closed" do
+    open = serve_with
+    make_try(open, at: @serve_at + 60, verdict: "wrong", raw: "99999") # unrecognised: the serve stays open
+    revised = make_topic(@lesson_revision, { @skill => @revisions })
+    input = Practice::Loader.for(@student, subject: @subject, now: @serve_at + 3600, shown: { @lesson_revision.lesson_id => revised })
+    assert_equal [ open.id ], input.tries.map(&:serve_id).uniq
+    assert_equal :replaced, input.serves.first.status.state
+    done = serve_with(instance: @revisions.second.instances.order(:id).first, at: @serve_at + 120)
+    make_try(done, at: @serve_at + 180)
+    states = Practice::Loader.for(@student, subject: @subject, now: @serve_at + 3600, shown: { @lesson_revision.lesson_id => revised }).serves.to_h { |r| [ r.id, r.status.state ] }
+    assert_equal({ open.id => :replaced, done.id => :closed }, states)
+  end
+
   test "a serve is superseded by a newer serve of the same student on the same item, any revision" do
     old = serve_with
     other_item = serve_with(instance: @revisions.second.instances.order(:id).first, at: @serve_at + 30)

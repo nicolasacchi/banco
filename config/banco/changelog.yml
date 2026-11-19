@@ -326,3 +326,13 @@ entries:
     decisions: [D-376]
     title_it: "Commenti sul telefono e Contestazioni più chiare"
     body_it: "I commenti stanno nello schermo del telefono. In Contestazioni gli esiti sono in italiano, la risposta si legge a parole e i filtri restano quando cambi studente. Le schede degli esercizi dell'argomento mostrano le righe; un ospite non apre più la pagina «Prova»."
+  - id: updated-exercise-is-replaced
+    date: 2026-11-19
+    audience: [student]
+    kind: fix
+    decisions: [D-377]
+    link: /today
+    title_it: "Gli esercizi aggiornati ti arrivano nella versione nuova"
+    body_it: "Se un argomento viene aggiornato mentre hai un esercizio aperto, non ti torna più quello vecchio: te ne diamo uno nuovo. Le risposte che avevi dato contano ancora. «Ti è piaciuto?» arriva solo a esercizio finito, sotto la correzione."
+    title_en: "Updated exercises reach you in the new version"
+    body_en: "If a topic is updated while you have an exercise open, the old one does not come back: you get a new one. The answers you already gave still count. «Did you like it?» comes only when the exercise is over, below the correction."

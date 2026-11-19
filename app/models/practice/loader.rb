@@ -11,19 +11,21 @@ module Practice
     Input = Data.define(:seeds, :tries, :serves, :voided_item_revision_ids)
 
     # skill: only the serves of that skill; seeds: false skips the diagnosis seeds (the serving path does
-    # not need them and they are the costly part).
-    def self.for(student, subject:, now: Time.current, skill: nil, seeds: true) = new(student, subject, now, skill, seeds).input
+    # not need them and they are the costly part). shown: {lesson id => the TopicRevision the student is shown} (Course::StudentView#shown_revisions,
+    # D-377); an open serve made on another revision of a shown lesson is `replaced`. nil: nothing is known of what he is shown and no serve is.
+    def self.for(student, subject:, now: Time.current, skill: nil, seeds: true, shown: nil) = new(student, subject, now, skill, seeds, shown).input
 
-    # The ServeState::Status of one serve now, from its rows (a serve is abandoned when older than
-    # OPEN_SERVE_HOURS or superseded by a newer serve of the same student on the same item).
-    def self.status_of(serve, now: Time.current) = new(nil, nil, now).send(:status_for, serve)
+    # The ServeState::Status of one serve now, from its rows (a serve is replaced when the topic revision it came from is no longer the one
+    # the student is shown, abandoned when older than OPEN_SERVE_HOURS or superseded by a newer serve of the same student on the same item).
+    def self.status_of(serve, now: Time.current, shown: nil) = new(nil, nil, now, nil, true, shown).send(:status_for, serve)
 
-    def initialize(student, subject, now, skill = nil, seeds = true)
+    def initialize(student, subject, now, skill = nil, seeds = true, shown = nil)
       @student = student
       @subject = subject
       @now = now
       @skill = skill
       @seeds = seeds
+      @shown = shown
     end
 
     def input
@@ -44,7 +46,7 @@ module Practice
       # ESCAPE: SQLite's LIKE has no default escape character, so without it "law\_economics.%" matched nothing and a subject
       # with an underscore in its key (law_economics, computer_science) never folded its skills.
       scope = @skill ? scope.where(skill_key: @skill) : scope.where("skill_key LIKE ? ESCAPE '\\'", "#{PracticeServe.sanitize_sql_like(@subject.key)}.%")
-      @serves ||= scope.includes(:events, item_instance: { item_revision: :item }, attempts: :gradings).order(:id).to_a
+      @serves ||= scope.includes(:events, :topic_revision, item_instance: { item_revision: :item }, attempts: :gradings).order(:id).to_a
     end
 
     # The attempts that the student sent to the teacher (PracticeContest, practice/3): for a student's loader those of all
@@ -92,7 +94,22 @@ module Practice
     def status_for(serve)
       ServeState.call(serve: serve, tries: serve_tries(serve).map { |t| ServeTry.new(t.try_number, t.outcome, t.contested) },
                       events: serve.events.sort_by(&:id).map { |e| serve_event(e) }, hints_total: Instances.hints(serve.item_instance).size, now: @now,
-                      superseded: superseded?(serve))
+                      superseded: superseded?(serve), replaced: replaced?(serve))
+    end
+
+    # D-377: the serve came from a topic revision that is no longer the one the student is shown for that lesson, or its item revision is not
+    # pinned by the revision he is shown. A lesson he is not shown at all (a withdrawn release) leaves the serve as it is.
+    def replaced?(serve)
+      return false unless @shown
+
+      current = @shown[serve.topic_revision.lesson_id] or return false
+      current.id != serve.topic_revision_id || !pinned?(current, serve)
+    end
+
+    def pinned?(revision, serve)
+      @pins ||= {}
+      @pins[revision.id] ||= revision.body["practice"].flat_map { |p| p["items"].map { |pin| [ p["skill"], pin["revision"] ] } }.to_set
+      @pins[revision.id].include?([ serve.skill_key, serve.item_instance.item_revision_id ])
     end
 
     # A newer serve of the same student on the same item (any revision) exists. The loader of a student reads

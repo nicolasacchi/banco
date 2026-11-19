@@ -41,11 +41,12 @@ export default class extends Controller {
     this.urls = practiceUrls(this.baseUrlValue)
     this.outbox = new Outbox({
       url: this.urls.answer, csrf: () => this.csrf(), prefix: PRACTICE_PREFIX,
-      fields: ["serve_id", "client_attempt_id", "raw", "source"], statuses: ["graded", "invalid", "same_answer", "closed", "not_found"],
+      fields: ["serve_id", "client_attempt_id", "raw", "source"], statuses: ["graded", "invalid", "same_answer", "closed", "replaced", "not_found"],
       httpStatuses: [200, 404, 409]
     })
     this.serveId = null
     this.itemKey = null
+    this.tried = false // the exercise on the page has at least one try on the server (the rating box needs one, D-377)
     this.handle = null
     this.refusals = new Refusals()
     this.busy = false
@@ -96,7 +97,9 @@ export default class extends Controller {
     this.say(this.labels.loading)
     // An answer left in the outbox by an earlier page goes out first, on its own; the page was away, so its verdict is told
     // once the exercise is on the screen.
-    const left = this.outbox.size > 0 ? Object.values((await this.outbox.flush()).results).filter((reply) => reply?.status === "graded").pop() : null
+    const flushed = this.outbox.size > 0 ? Object.values((await this.outbox.flush()).results) : []
+    const left = flushed.filter((reply) => reply?.status === "graded").pop()
+    const updated = flushed.filter((reply) => reply?.status === "replaced").pop() // an answer to an exercise that was replaced by a newer version (D-377)
     // `?item=KEY` (a link from the list of another skill) opens that exercise once; a reload then resumes the last one.
     const url = new URL(window.location.href)
     const item = url.searchParams.get("item")
@@ -106,6 +109,7 @@ export default class extends Controller {
       window.history.replaceState(window.history.state, "", url)
     }
     if (left && !this.workTarget.hidden) this.sayEarlier(left)
+    else if (updated && !this.workTarget.hidden) this.say(updated.message_it, { tone: "info" })
   }
 
   // The verdict of the answer the last page left behind, above the exercise now served: the notice with a title of its own.
@@ -131,8 +135,15 @@ export default class extends Controller {
   }
 
   async serveNow(extra) {
-    this.drafting = false
+    this.clearPage()
     this.say(this.labels.loading)
+    const { body } = await this.post(this.urls.serve, { topic: this.topicValue, skill: this.skillValue, ...extra })
+    return this.showBody(body)
+  }
+
+  // The page as it is before an exercise is drawn: no exercise, no buttons, no solution, no rating box.
+  clearPage() {
+    this.drafting = false
     this.workTarget.hidden = true
     this.nextActionsTarget.hidden = true
     this.doneTarget.hidden = true
@@ -140,11 +151,30 @@ export default class extends Controller {
     this.nextActionsTarget.textContent = ""
     this.solutionBoxTarget.hidden = true
     this.solutionBoxTarget.textContent = ""
-    const { body } = await this.post(this.urls.serve, { topic: this.topicValue, skill: this.skillValue, ...extra })
+  }
+
+  // What POST /practice/serves answers: an exercise, the pool that ran out, or the end of the topic.
+  async showBody(body) {
     if (body?.type === "exhausted") return this.showExhausted(body)
     if (body?.type === "topic_done") return this.showTopicDone(body)
     if (!body || body.type !== "item") return this.say(this.labels.error)
     await this.show(body)
+    return null
+  }
+
+  // D-377: the answer went to an exercise the topic has replaced with a newer version; it was not graded. The server sends the line and the
+  // serve that takes its place, which is drawn at once; the line stays on top of it.
+  async replaced(reply) {
+    this.clearPage()
+    if (reply.serve) {
+      await this.showBody(reply.serve)
+    } else {
+      this.serveId = null
+      this.handle = null
+      this.showActions(["back"])
+    }
+    this.say(reply.message_it || this.labels.replaced, { tone: "info" })
+    this.refreshList()
     return null
   }
 
@@ -203,6 +233,7 @@ export default class extends Controller {
 
   async show(reply) {
     this.serveId = reply.serve_id
+    this.tried = (reply.next_try_number ?? 1) > 1
     this.ratingCurrent = reply.rating ?? null // his latest rating of this exercise, for the box that opens when it is over (D-365)
     this.hideRating()
     this.itemKey = reply.exercise?.item ?? null // the exercise on the page keeps its place in the list when it is answered and closed
@@ -307,6 +338,7 @@ export default class extends Controller {
     const entry = this.outbox.add({ serve_id: this.serveId, client_attempt_id: newId(), raw: this.handle.raw(), source: this.handle.source() })
     const reply = await this.deliver(entry)
     if (!reply) return this.serve({ advance: true })
+    if (reply.status === "replaced") return this.replaced(reply)
     // The try is on the server: what stays in the box goes up as a newer draft when the student leaves it.
     this.lastSaved = null
     this.answered(reply, hadContest)
@@ -360,6 +392,7 @@ export default class extends Controller {
       this.showActions(["next", "back"])
       return null
     }
+    this.tried = true // a graded reply: the try is stored
     const extra = []
     if (reply.skill) {
       this.showSkill(reply.skill)
@@ -457,7 +490,7 @@ export default class extends Controller {
       const { status, body } = await this.post(this.urls.contest(serve), {})
       if (serve !== this.serveId) return
       if (status === 200 && body?.status === "contested") {
-        this.close()
+        this.close(body.actions || ["next", "back"])
         this.say(body.message_it, { tone: "info" })
         if (body.solution) this.showSolution(body.solution)
         this.showActions(body.actions || ["next", "back"])
@@ -534,20 +567,23 @@ export default class extends Controller {
       this.updateHintButton()
       this.handle.focus()
     } else {
-      this.close()
+      this.close(list)
       this.showActions(list)
     }
   }
 
   // The exercise is over: its input and helps are put away.
-  close() {
+  // `actions`: what the server offers next, when it is the exercise's own end; the rating box opens only then (D-377): the exercise is really
+  // over (no «Mostra la soluzione» left to offer: a typical error closes the serve before the solution, and he can still ask for it) and it has
+  // a try. A closed, replaced or unknown serve (a 409, a 404) never opens it.
+  close(actions = null) {
     this.busy = false
     this.drafting = false
     clearTimeout(this.draftTimer)
     this.itemBoxTarget.inert = true
     this.controlsTarget.hidden = true
     this.hintButtonTarget.hidden = true
-    this.showRating()
+    if (actions && this.tried && !actions.includes("show_solution")) this.showRating()
   }
 
   // «Ti è piaciuto questo esercizio?» (D-365): the box under the exercise opens once it is over (right, solution shown, tries used up, sent

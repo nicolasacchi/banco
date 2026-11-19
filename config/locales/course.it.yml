@@ -217,6 +217,8 @@ it:
       today: "Torna a Oggi"
       schema: "Vedi lo schema"
     closed: "Questo esercizio è chiuso: scegline un altro."
+    # D-377: the topic was revised while an exercise of it was open: the answer is not graded and the new version of the exercise comes with this line.
+    replaced: "Questo esercizio è stato aggiornato: eccolo nella versione nuova."
     loading: "Un momento."
     saving: "Controllo la risposta."
     empty: "Scrivi prima una risposta."

@@ -434,6 +434,57 @@ class PracticeSelectorTest < ActiveSupport::TestCase
     assert_equal @revisions.second.item_id, item_of(serve!(advance: true))
   end
 
+  # D-377: the topic is revised (a new topic revision of the lesson) while a serve of the old one is open.
+  def revise_topic!(revisions = @revisions) = make_topic(@lesson_revision, { @skill => revisions })
+
+  test "a serve made on a replaced topic revision is not resumed: the next serve is of the same item, from the new revision" do
+    first = serve!
+    answer!(first, wrong_raw) # unrecognised: the serve stays open with one try
+    assert_equal first.serve.id, serve!.serve.id
+    revised = revise_topic!
+    assert_equal :replaced, Practice::Loader.status_of(first.serve.reload, now: @clock.now, shown: { @lesson_revision.lesson_id => revised }).state
+    again = serve!(topic: revised)
+    assert_not_equal first.serve.id, again.serve.id
+    assert again.created
+    assert_equal [ revised.id, item_of(first) ], [ again.serve.topic_revision_id, item_of(again) ]
+    assert_equal first.instance.id, again.instance.id, "its instance was never finished, so it is not a seen one"
+    assert_equal "next", again.reason
+    assert_equal again.serve.id, serve!(topic: revised).serve.id
+    assert_equal 1, PracticeAttempt.where(practice_serve_id: first.serve.id).count, "the old serve keeps its try"
+  end
+
+  test "a replaced serve of an item the new revision does not pin leaves the choice to the rule" do
+    first = serve!
+    revised = revise_topic!([ @revisions.second ])
+    again = serve!(topic: revised)
+    assert_equal [ @revisions.second.item_id, revised.id ], [ item_of(again), again.serve.topic_revision_id ]
+  end
+
+  test "a replaced serve never counts as the open serve of an item nor as a seen instance, whatever the age" do
+    first = serve!
+    revised = revise_topic!
+    advance(24 * 3600)
+    input = Practice::Loader.for(@student, subject: @subject, skill: @skill, seeds: false, now: @clock.now, shown: { @lesson_revision.lesson_id => revised })
+    assert_equal [ :replaced ], input.serves.map { |r| r.status.state }
+    assert_empty Practice::Selector.open_serves(input, @revisions.map(&:item_id).to_set)
+    assert_equal [ first.serve.id ], Practice::Selector.replaced_serves(input, @revisions.map(&:item_id).to_set).map(&:id)
+  end
+
+  test "the replaced serve of a skill the student also has open on the new revision: the open one is resumed" do
+    first = serve!
+    revised = revise_topic!
+    newer = serve!(topic: revised, item: item_key(1))
+    assert_equal newer.serve.id, serve!(topic: revised).serve.id, "the serve touched last is on the new revision"
+  end
+
+  test "a follow after a replaced serve works as before and a closed serve of the old revision still counts as seen" do
+    first = serve!
+    answer!(first, correct_raw(first))
+    revised = revise_topic!
+    again = serve!(topic: revised)
+    assert_not_equal first.instance.id, again.instance.id, "a finished instance is seen: it is not served again on its own"
+  end
+
   test "a follow skips the candidates of an item that has an open serve" do
     first = typical_serve! # item 1, closed wrong with code "slip"
     advance

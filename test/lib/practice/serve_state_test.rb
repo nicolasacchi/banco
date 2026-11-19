@@ -204,6 +204,25 @@ class PracticeServeStateTest < ActiveSupport::TestCase
     assert_equal :closed, Practice::ServeState.step(fresh, :solution_request).result
   end
 
+  test "D-377: an open serve whose topic revision was replaced is replaced at any age, keeps its tries and refuses everything" do
+    fresh = serve_status([ :unrecognised ], now: T0 + 60, replaced: true)
+    assert_equal [ :replaced, nil, [], nil, 1 ], [ fresh.state, fresh.closed_by, fresh.actions, fresh.next_try_number, fresh.w ]
+    assert_equal :replaced, serve_status([], now: T0 + 60, replaced: true, superseded: true).state, "replaced wins over superseded"
+    assert_equal :replaced, serve_status([], now: T0 + 15 * 24 * 3600, replaced: true).state, "and over age"
+    assert_equal :open, serve_status([ :unrecognised ], now: T0 + 60, replaced: false).state
+    %i[correct unrecognised].each { |o| assert_equal :closed, Practice::ServeState.step(fresh, :answer, outcome: o, hints_total: 3).result }
+    assert_equal :closed, Practice::ServeState.step(fresh, :hint, hint_n: 1, hints_total: 3).result
+    assert_equal :closed, Practice::ServeState.step(fresh, :solution_request).result
+    assert_equal :closed, Practice::ServeState.step(fresh, :contest).result
+  end
+
+  test "D-377: a closed serve stays closed when its topic revision was replaced" do
+    st = serve_status([ :correct ], now: T0 + 60, replaced: true)
+    assert_equal [ :closed, :correct, %i[next back] ], [ st.state, st.closed_by, st.actions ]
+    st = serve_status([ :typical_error ], now: T0 + 60, replaced: true)
+    assert_equal [ :closed, :wrong ], [ st.state, st.closed_by ]
+  end
+
   test "a closed serve is closed, not abandoned, even when superseded" do
     st = serve_status([ :correct ], now: T0 + 60, superseded: true)
     assert_equal [ :closed, :correct ], [ st.state, st.closed_by ]
