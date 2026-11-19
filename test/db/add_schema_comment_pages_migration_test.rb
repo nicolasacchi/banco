@@ -1,6 +1,7 @@
 require "test_helper"
 require "tmpdir"
 require Rails.root.join("db/migrate/20261119100000_add_schema_comment_pages")
+require Rails.root.join("db/migrate/20261119153000_add_changelog_comment_page")
 
 # D-372: `schema` and `schemas` are page kinds of a comment. SQLite cannot change a CHECK in place, so the migration rebuilds comments. This runs
 # it on a scratch database made from db/structure.sql with the old CHECK and a few rows, inside a transaction like the real migrator, and proves
@@ -13,7 +14,8 @@ class AddSchemaCommentPagesMigrationTest < ActiveSupport::TestCase
     ActiveRecord::Migration.verbose = false
     @dir = Dir.mktmpdir("schema-comment-migration")
     @conn = ActiveRecord::ConnectionAdapters::SQLite3Adapter.new(adapter: "sqlite3", database: File.join(@dir, "scratch.sqlite3"))
-    structure = File.read(Rails.root.join("db/structure.sql"))
+    # db/structure.sql is after AddChangelogCommentPage (D-375), which added a page kind to the CHECK this migration made
+    structure = File.read(Rails.root.join("db/structure.sql")).sub(AddChangelogCommentPage::KIND_NEW, AddChangelogCommentPage::KIND_OLD)
     assert_includes structure, M::KIND_NEW, "db/structure.sql has the new CHECK"
     @conn.raw_connection.execute_batch(structure.sub(M::KIND_NEW, M::KIND_OLD))
     @conn.execute("PRAGMA foreign_keys = ON")

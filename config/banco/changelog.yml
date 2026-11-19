@@ -1,0 +1,320 @@
+# «Novità» (D-375): what a student or a teacher can see that is new, written by hand, one entry per change, in the same commit as the change.
+# Checked by Changelog::Entries (test/models/changelog/entries_test.rb). Nothing of it is made by a model: every word is read here.
+#
+#   id         unique, lower case words and hyphens
+#   date       the day the change went live
+#   audience   student, teacher or both: who reads it (the teacher's page lists every entry)
+#   kind       software (the app), content (lessons, exercises) or fix (a mistake of ours)
+#   title_it, body_it   Italian: a short title and 1 to 3 short sentences in plain words, what is new for the reader, never what was wrong with him
+#   title_en, body_en   the English twin, required when the audience includes the student (the student may read the app in English)
+#   decisions  optional: the decisions of docs/decisions.md behind it, shown to the teacher only
+#   topics     optional: the keys of the topics it is about
+#   link       optional: a page of the app, for example /schemas
+#
+# The student's text has no decision number and no jargon; it is second person and never blames. Newest first is the order of the pages, not of this file.
+entries:
+  - id: text-sizes-and-themes
+    date: 2026-11-17
+    audience: [student]
+    kind: software
+    decisions: [D-350]
+    link: /settings
+    title_it: "Testo più grande o più piccolo, e i temi"
+    body_it: "In Impostazioni scegli quanto è grande il testo: tutta la pagina si adatta. Puoi anche scegliere il tema: Crema, Chiaro, Scuro o Automatico."
+    title_en: "Bigger or smaller text, and themes"
+    body_en: "In Settings you choose how big the text is, and the whole page follows. You can also choose the theme: Cream, Light, Dark or Automatic."
+
+  - id: today-entry-test-list
+    date: 2026-11-17
+    audience: [student]
+    kind: software
+    decisions: [D-351]
+    link: /today
+    title_it: "Oggi mostra solo i test d'ingresso da fare"
+    body_it: "Le materie già fatte stanno in una riga sola. Da lì puoi vedere i risultati."
+    title_en: "Today shows only the entry tests still to do"
+    body_en: "The subjects you have already done are on one line. From there you can see your results."
+
+  - id: whole-sentence-answers
+    date: 2026-11-18
+    audience: [student]
+    kind: fix
+    decisions: [D-352]
+    title_it: "Puoi rispondere con la frase intera"
+    body_it: "Negli esercizi con uno spazio da riempire puoi scrivere tutta la frase. Maiuscole, punteggiatura e apostrofi non contano."
+    title_en: "You can answer with the whole sentence"
+    body_en: "In fill-in exercises you can write the whole sentence. Capital letters, punctuation and apostrophes do not matter."
+
+  - id: teacher-resolves-practice-try
+    date: 2026-11-18
+    audience: [teacher]
+    kind: software
+    decisions: [D-352]
+    title_it: "Puoi segnare giusto un tentativo degli esercizi"
+    body_it: "Se un tentativo negli esercizi era giusto, lo segni giusto con una decisione. L'esercizio si chiude con quel tentativo e quelli dopo non contano."
+
+  - id: exercise-list-says-what-happened
+    date: 2026-11-18
+    audience: [student]
+    kind: software
+    decisions: [D-353]
+    title_it: "L'elenco degli esercizi è più chiaro"
+    body_it: "«Finito: con la soluzione» compare solo se hai chiesto la soluzione. Gli esercizi fatti vanno in «Già fatti», in fondo. Se mandi due volte la stessa risposta, te lo diciamo e non conta come tentativo."
+    title_en: "The exercise list is clearer"
+    body_en: "«Finished: with the solution» appears only if you asked for the solution. Exercises you have done go into «Already done», at the bottom. If you send the same answer twice, we tell you and it does not count as a try."
+
+  - id: settings-apply-on-click
+    date: 2026-11-18
+    audience: [student]
+    kind: software
+    decisions: [D-354]
+    link: /settings
+    title_it: "Le impostazioni valgono subito"
+    body_it: "Quando tocchi una scelta in Impostazioni, vale subito e resta salvata. Non serve più «Salva». Ci sono anche due misure del testo più piccole: «Piccolissimo» e «Minimo»."
+    title_en: "Settings apply at once"
+    body_en: "When you tap a choice in Settings, it applies at once and stays saved. You no longer need «Save». There are also two smaller text sizes: «Tiniest» and «Minimum»."
+
+  - id: back-button
+    date: 2026-11-18
+    audience: [student]
+    kind: fix
+    decisions: [D-355]
+    title_it: "Il tasto indietro funziona meglio"
+    body_it: "Tornando indietro vedi la pagina aggiornata con quello che hai appena fatto. Nelle lezioni a schede, indietro ti porta alla scheda di prima. Alla fine di un test, indietro ti porta a Oggi."
+    title_en: "The back button works better"
+    body_en: "When you go back, the page shows what you have just done. In lessons with cards, back takes you to the card before. At the end of a test, back takes you to Today."
+
+  - id: english-interface
+    date: 2026-11-18
+    audience: [student]
+    kind: software
+    decisions: [D-356, D-364]
+    link: /settings
+    title_it: "Puoi usare l'app in inglese"
+    body_it: "In Impostazioni, sotto «Lingua dell'app», scegli Italiano o English. Menu, pulsanti e messaggi cambiano; lezioni ed esercizi restano in italiano."
+    title_en: "You can use the app in English"
+    body_en: "In Settings, under «App language», choose Italiano or English. Menus, buttons and messages change; lessons and exercises stay in Italian."
+
+  - id: privacy-and-account-pages
+    date: 2026-11-18
+    audience: [student, teacher]
+    kind: software
+    decisions: [D-357]
+    link: /privacy
+    title_it: "Privacy e Account"
+    body_it: "Nella pagina Privacy leggi come usiamo i dati. Nella pagina Account trovi come funziona l'accesso e come cambiare la password."
+    title_en: "Privacy and Account"
+    body_en: "On the Privacy page you read how we use data. On the Account page you find how signing in works and how to change your password."
+
+  - id: reminder-before-answering
+    date: 2026-11-18
+    audience: [student]
+    kind: software
+    decisions: [D-358]
+    title_it: "«Ricorda:» prima di rispondere"
+    body_it: "Se in un tipo di esercizio ti capita più volte lo stesso errore, sopra la risposta trovi una riga «Ricorda:». Ti ricorda la regola, mai la risposta. Non è un aiuto e non cambia i tuoi progressi."
+    title_en: "«Remember:» before you answer"
+    body_en: "If you make the same mistake more than once in a type of exercise, a «Remember:» line appears above the answer. It reminds you of the rule, never the answer. It is not a hint and does not change your progress."
+
+  - id: listen-recorded-voices
+    date: 2026-11-18
+    audience: [student]
+    kind: software
+    decisions: [D-359]
+    link: /settings
+    title_it: "«Ascolta» ha voci nuove"
+    body_it: "Le lezioni si ascoltano con voci registrate prima, uguali su ogni telefono. Se per una frase non c'è la voce registrata, si usa quella del telefono."
+    title_en: "«Listen» has new voices"
+    body_en: "Lessons are read aloud with voices recorded ahead of time, the same on every phone. If a sentence has no recorded voice, your phone's own voice is used."
+
+  - id: teacher-audio-count
+    date: 2026-11-18
+    audience: [teacher]
+    kind: software
+    decisions: [D-359]
+    title_it: "Nella pagina dell'argomento vedi quante frasi hanno la voce"
+    body_it: "Sotto la lezione c'è «Audio: N di M frasi pronte». Le voci si fanno prima, una volta per ogni revisione della lezione, mai quando lo studente ascolta."
+
+  - id: download-my-data
+    date: 2026-11-18
+    audience: [student]
+    kind: software
+    decisions: [D-360]
+    link: /privacy
+    title_it: "Scarica i miei dati"
+    body_it: "Nella pagina Privacy c'è «Scarica i miei dati»: un solo file zip con tutto quello che l'app sa di te. Dentro trovi anche un riepilogo facile da leggere."
+    title_en: "Download my data"
+    body_en: "On the Privacy page there is «Download my data»: one zip file with everything the app knows about you. Inside there is also a summary that is easy to read."
+
+  - id: teacher-student-data
+    date: 2026-11-18
+    audience: [teacher]
+    kind: software
+    decisions: [D-360]
+    link: /teacher/students
+    title_it: "Puoi scaricare i dati dello studente"
+    body_it: "Nella pagina Studenti scarichi lo stesso file zip che scarica lo studente, con tutto quello che l'app ha di lui. Un ospite non può scaricarlo."
+
+  - id: longer-comments-everywhere
+    date: 2026-11-18
+    audience: [student]
+    kind: fix
+    decisions: [D-361]
+    title_it: "Commenti più lunghi, da ogni pagina"
+    body_it: "Un commento e le tue risposte al docente possono arrivare a 2000 caratteri. «Commenta» funziona da ogni pagina, anche in Educazione civica e quando una pagina non si trova."
+    title_en: "Longer comments, from every page"
+    body_en: "A comment and your replies to the teacher can be up to 2000 characters. «Comment» works from every page, including Civic education and when a page cannot be found."
+
+  - id: math-answers-in-full
+    date: 2026-11-18
+    audience: [student]
+    kind: fix
+    decisions: [D-362]
+    title_it: "Puoi scrivere la risposta come equazione intera"
+    body_it: "Per esempio x = 37/5 al posto di 37/5. Conta il valore: se è giusto, la risposta è giusta."
+    title_en: "You can write the answer as a whole equation"
+    body_en: "For example x = 37/5 instead of 37/5. The value is what counts: if it is right, the answer is right."
+
+  - id: rows-count-after-a-try
+    date: 2026-11-18
+    audience: [student]
+    kind: software
+    decisions: [D-363]
+    title_it: "«Giuste: N su M» dopo un tentativo"
+    body_it: "Dopo un abbinamento, un vero o falso o un ordine non ancora giusto, vedi quante righe sono giuste, per esempio «Giuste: 3 su 5». Non ti diciamo quali, così puoi ragionarci."
+    title_en: "«Right: N of M» after a try"
+    body_en: "After a matching, a true or false or an ordering that is not right yet, you see how many rows are right, for example «Right: 3 of 5». We do not say which ones, so you can work it out."
+
+  - id: stars-and-comments
+    date: 2026-11-18
+    audience: [student]
+    kind: software
+    decisions: [D-365]
+    title_it: "Stelle e commenti su esercizi e lezioni"
+    body_it: "Quando un esercizio è finito, e in ogni lezione, puoi dare da 1 a 5 stelle e scrivere un commento. Sono facoltativi e non cambiano i tuoi progressi."
+    title_en: "Stars and comments on exercises and lessons"
+    body_en: "When an exercise is over, and in every lesson, you can give 1 to 5 stars and write a comment. They are optional and do not change your progress."
+
+  - id: teacher-ratings-page
+    date: 2026-11-18
+    audience: [teacher]
+    kind: software
+    decisions: [D-365]
+    link: /teacher/ratings
+    title_it: "Valutazioni: le stelle dello studente"
+    body_it: "Nella pagina Valutazioni leggi le stelle e i commenti dello studente su esercizi e lezioni, con la media. Sono solo da leggere: niente risposta e niente decisioni."
+
+  - id: topic-done-screen
+    date: 2026-11-19
+    audience: [student]
+    kind: software
+    decisions: [D-366]
+    title_it: "«Hai finito questo argomento!»"
+    body_it: "Quando hai mostrato tutto di un argomento, una schermata te lo dice e ti propone quello dopo. Dopo ogni risposta giusta senza aiuto, l'esercizio cambia."
+    title_en: "«You have finished this topic!»"
+    body_en: "When you have shown everything in a topic, a screen tells you and suggests the next one. After each right answer without help, the exercise changes."
+
+  - id: already-knew-and-hours
+    date: 2026-11-19
+    audience: [student, teacher]
+    kind: software
+    decisions: [D-367]
+    link: /today
+    title_it: "«Già sapevi» e le ore che mancano"
+    body_it: "I progressi separano gli argomenti «Già sapevi» (li hai mostrati nel test d'ingresso) da quelli «Fatti con gli esercizi». Le ore che mancano sono tonde, per esempio «circa 150 ore»."
+    title_en: "«Already known» and the hours left"
+    body_en: "Your progress separates the topics «Already known» (you showed them in the entry test) from those «Done with the exercises». The hours left are round, for example «about 150 hours»."
+
+  - id: teacher-grading-review
+    date: 2026-11-19
+    audience: [teacher]
+    kind: software
+    decisions: [D-368]
+    link: /teacher/grading
+    title_it: "Contestazioni: dove la correzione può sbagliare"
+    body_it: "La pagina Contestazioni mostra gli esercizi dove il correttore può sbagliare, prima che lo studente lo dica. Per ogni tentativo non giusto vedi i segnali: frase intera, testo quasi giusto, risposta ripetuta, «Fai controllare»."
+
+  - id: teacher-health-and-backups
+    date: 2026-11-19
+    audience: [teacher]
+    kind: software
+    decisions: [D-369]
+    title_it: "Salute e backup"
+    body_it: "Il controllo di salute dice quanto è vecchio l'ultimo backup e segnala se è più di 36 ore. Elenca anche i lavori falliti nelle ultime 24 ore, con una riga «Da fare adesso»."
+
+  - id: shorter-matchings
+    date: 2026-11-19
+    audience: [student]
+    kind: content
+    decisions: [D-370]
+    title_it: "Abbinamenti più corti"
+    body_it: "Gli abbinamenti nuovi hanno al massimo 4 righe, così la lista è più breve da affrontare. Quelli che ci sono già cambiano quando li rivediamo."
+    title_en: "Shorter matchings"
+    body_en: "New matching exercises have at most 4 rows, so the list is shorter to work through. The ones already there change when we review them."
+
+  - id: teacher-matching-rows
+    date: 2026-11-19
+    audience: [teacher]
+    kind: content
+    decisions: [D-370]
+    title_it: "Abbinamenti: 4 righe al massimo"
+    body_it: "Chi scrive un abbinamento riceve un avviso sopra le 4 righe e un errore sopra le 6, nelle sottomissioni nuove. La scheda dell'esercizio mostra quante righe ha."
+
+  - id: teacher-reply-support
+    date: 2026-11-19
+    audience: [teacher]
+    kind: software
+    decisions: [D-371]
+    link: /teacher/comments
+    title_it: "Rispondere ai commenti, con più aiuto"
+    body_it: "Per ogni commento vedi la revisione che lo studente aveva davanti, i suoi tentativi e i commenti di prima. «In scadenza» conta le 24 ore dal suo primo messaggio senza risposta, e un controllo dei toni avvisa se una risposta sembra una colpa."
+
+  - id: my-schemas
+    date: 2026-11-19
+    audience: [student]
+    kind: software
+    decisions: [D-372]
+    link: /schemas
+    title_it: "I miei schemi"
+    body_it: "Quando finisci un argomento si apre il suo schema, un colpo d'occhio per ricordarlo. Li trovi tutti in «I miei schemi» e li puoi stampare."
+    title_en: "My summaries"
+    body_en: "When you finish a topic, its summary opens: a quick look to remind you of it. You find them all in «My summaries» and you can print them."
+
+  - id: teacher-schema-link
+    date: 2026-11-19
+    audience: [teacher]
+    kind: software
+    decisions: [D-372]
+    title_it: "Lo schema di ogni argomento, come lo vede lo studente"
+    body_it: "Nella pagina di un argomento c'è il link allo schema, aperto come nell'anteprima. Lo schema è la scheda di riassunto della lezione: non c'è un testo in più da scrivere."
+
+  - id: see-the-schema
+    date: 2026-11-19
+    audience: [student]
+    kind: software
+    decisions: [D-373]
+    link: /schemas
+    title_it: "«Vedi lo schema» a fine argomento"
+    body_it: "Nella schermata «Hai finito questo argomento!» c'è il pulsante «Vedi lo schema». Ti porta subito allo schema che si è appena aperto."
+    title_en: "«See the schema» at the end of a topic"
+    body_en: "On the «You have finished this topic!» screen there is a «See the schema» button. It takes you straight to the summary that has just opened."
+
+  - id: whats-new-page
+    date: 2026-11-19
+    audience: [student]
+    kind: software
+    decisions: [D-375]
+    link: /novita
+    title_it: "Novità"
+    body_it: "Qui leggi cosa c'è di nuovo, dal più recente. Se c'è qualcosa che non hai ancora letto, il menu ha un puntino. Se un argomento è stato rivisto dopo una tua segnalazione, lo trovi in «Le tue segnalazioni»."
+    title_en: "What's new"
+    body_en: "Here you read what is new, newest first. If there is something you have not read yet, the menu has a dot. If a topic was revised after one of your comments, you find it in «Your comments»."
+
+  - id: teacher-whats-new-page
+    date: 2026-11-19
+    audience: [teacher]
+    kind: software
+    decisions: [D-375]
+    link: /teacher/changelog
+    title_it: "Novità: cosa legge lo studente e cosa è cambiato"
+    body_it: "La pagina Novità elenca le novità per lo studente e per te, e gli argomenti approvati di nuovo con il motivo e le due revisioni. Ogni cambiamento che lo studente o il docente possono vedere aggiunge una voce a config/banco/changelog.yml, nello stesso commit."

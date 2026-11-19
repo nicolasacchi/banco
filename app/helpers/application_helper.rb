@@ -76,6 +76,7 @@ module ApplicationHelper
     items << [ :search, t("student.menu.search"), spath("/search") ] if student_course_visible?
     items << [ :diagnosis, t(diagnosis_open? ? "student.menu.diagnosis" : "student.menu.warmup"), preview? ? "#{student_root}/test" : "/diagnosis" ] if student_diagnosis_listed?
     items << [ :comments, t("student.menu.comments"), "/comments" ] unless preview?
+    items << [ :changelog, t("student.menu.changelog"), spath("/novita") ]
     items << [ :settings, t("student.menu.settings"), spath("/settings") ]
     items << [ :account, t("student.menu.account"), "/account" ] unless preview?
     items << [ :privacy, t("student.menu.privacy"), "/privacy" ] unless preview?
@@ -95,6 +96,7 @@ module ApplicationHelper
     when "/settings" then :settings
     when "/account" then :account
     when "/privacy" then :privacy
+    when "/novita" then :changelog
     when %r{\A/comments(/\d+)?\z} then :comments
     end
   end

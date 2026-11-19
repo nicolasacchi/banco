@@ -4,6 +4,7 @@ require_relative "../support/lesson2_page_world"
 require_relative "../support/student_ui_rows"
 require_relative "../support/student_session"
 require_relative "../support/sitting_answers"
+require_relative "../support/changelog_world"
 require_relative "../support/english_audit"
 
 # D-364. The student set the app to English (D-356) and wrote «perfetto… ma dà problemi». This walks every page and state of the student's site
@@ -18,6 +19,7 @@ class EnglishWalkTest < ApplicationSystemTestCase
   include LessonLinksWorld
   include StudentUiRows
   include SittingAnswers
+  include ChangelogWorld
   include StudentSession
   include EnglishAudit
 
@@ -125,7 +127,7 @@ class EnglishWalkTest < ApplicationSystemTestCase
       find("#student-menu-open").click
       assert_selector "#student-menu-dialog[open]"
       { today: "student.menu.today", subjects: "student.menu.subjects", schemas: "student.menu.schemas", search: "student.menu.search", diagnosis: "student.menu.diagnosis",
-        comments: "student.menu.comments", settings: "student.menu.settings", account: "student.menu.account", privacy: "student.menu.privacy" }.each do |id, key|
+        comments: "student.menu.comments", changelog: "student.menu.changelog", settings: "student.menu.settings", account: "student.menu.account", privacy: "student.menu.privacy" }.each do |id, key|
         assert_selector "#menu-#{id}", text: en(key)
       end
       check_page "The menu"
@@ -173,6 +175,22 @@ class EnglishWalkTest < ApplicationSystemTestCase
       assert_text en("question.sent")
       wait_until { StudentQuestion.count == 1 }
       check_page "The question box, sent"
+    end
+
+    # «What's new» (D-375): his own comment first, then the topic approved again; the entries are English, the topic's name stays Italian.
+    section("What's new") do
+      comment_on(@student, "/topics/#{TOPIC}/lesson", "lesson", at: 2.days.ago, card: 1)
+      revise!
+      visit "/novita"
+      assert_selector "html[lang=en]"
+      assert_selector "h1", text: en("changelog.title")
+      assert_selector "#changelog-intro", text: en("changelog.intro")
+      assert_selector "#changelog-followups h2", text: en("changelog.followups.title")
+      assert_selector "#changelog-followups li", text: /Lesson: #{TOPIC_TITLE}, card 1/
+      assert_selector "#changelog-entries li[data-entry=my-schemas] h3", text: "My summaries"
+      assert_selector "#changelog-updates h4", text: en("changelog.updates.line", topic: TOPIC_TITLE)
+      assert_selector "#changelog-updates p", text: en("changelog.updates.note")
+      check_page "What's new"
     end
 
     # «My summaries» and the summary of a topic (D-372): closed first, then open once the topic is done.

@@ -1,0 +1,28 @@
+# «What's new» (D-375): the student's page. The Italian file is changelog.it.yml (the teacher's words have no English twin).
+en:
+  student:
+    menu:
+      changelog: "What's new"
+  changelog:
+    title: "What's new"
+    intro: "Here you read what is new: the app, the topics that were revised and your own comments."
+    preview_note: "Preview: this page does not record a visit."
+    empty: "There is nothing new for now."
+    new: "New"
+    menu_new: "Something is new"
+    kinds:
+      software: "App"
+      content: "Content"
+      fix: "We fixed"
+    entries:
+      title: "News about the app"
+      open: "Go to the page"
+    updates:
+      title: "Topics updated"
+      line: "Updated: %{topic}"
+      note: "Exercises or lesson revised."
+      open: "Open the topic"
+    followups:
+      title: "Your comments"
+      line: "After your comment on %{place}, the topic was revised on %{date}."
+      open: "Open the conversation"

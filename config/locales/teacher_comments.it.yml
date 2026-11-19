@@ -84,6 +84,7 @@ it:
         not_found: "Una pagina che non c'è"
         schema: "Schema"
         schemas: "I miei schemi"
+        changelog: "Novità"
       empty: "Nessun commento con questi filtri."
       trial: "account di prova"
       student: "Studente"

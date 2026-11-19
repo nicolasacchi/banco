@@ -14,7 +14,7 @@
     <div class="topbar-in">
       <p class="topbar-title" id="topbar-title"><%= student_bar_title(current) %></p>
       <% unless preview? %><button type="button" class="comment-open" id="comment-open-menu" data-comment-open><%= comment_icon("comment") %><span><%= t("comments.button") %></span></button><% end %>
-      <button type="button" class="button secondary small topbar-menu" id="student-menu-open" aria-haspopup="dialog" data-student-menu-target="opener" data-action="student-menu#open"><%= ui_icon("menu") %><span><%= t("student.menu.label") %></span><% if comment_unread_count.positive? %><span class="menu-dot" aria-hidden="true"></span><% end %></button>
+      <button type="button" class="button secondary small topbar-menu" id="student-menu-open" aria-haspopup="dialog" data-student-menu-target="opener" data-action="student-menu#open"><%= ui_icon("menu") %><span><%= t("student.menu.label") %></span><% if comment_unread_count.positive? || changelog_new? %><span class="menu-dot" aria-hidden="true"></span><% end %></button>
     </div>
     <dialog class="dialog" id="student-menu-dialog" aria-labelledby="student-menu-title" data-student-menu-target="dialog" data-action="click->student-menu#backdrop">
       <div class="dialog-head">
@@ -27,7 +27,7 @@
             <% student_menu_items.each do |key, label, href| %>
               <li class="row">
                 <%= ui_icon(student_menu_icon(key)) %>
-                <div class="row-main"><a class="row-stretch" href="<%= href %>" id="<%= key == :logout ? 'logout-link' : "menu-#{key}" %>"<%= ' aria-current="page"'.html_safe if key == current %>><%= label %><% if key == :comments && comment_unread_count.positive? %> <span class="menu-badge" id="comments-badge" aria-label="<%= t("comments.menu_new", n: comment_unread_count) %>"><%= comment_unread_count %></span><% end %></a></div>
+                <div class="row-main"><a class="row-stretch" href="<%= href %>" id="<%= key == :logout ? 'logout-link' : "menu-#{key}" %>"<%= ' aria-current="page"'.html_safe if key == current %>><%= label %><% if key == :comments && comment_unread_count.positive? %> <span class="menu-badge" id="comments-badge" aria-label="<%= t("comments.menu_new", n: comment_unread_count) %>"><%= comment_unread_count %></span><% end %><% if key == :changelog && changelog_new? %><span class="menu-new-dot" id="changelog-dot" role="img" aria-label="<%= t("changelog.menu_new") %>"></span><% end %></a></div>
                 <span class="row-end"><%= ui_icon("next", css: "row-chev") unless key == :logout %></span>
               </li>
             <% end %>

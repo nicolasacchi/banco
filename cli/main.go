@@ -114,6 +114,7 @@ var commands = []command{
 	{name: "next", run: runNext},
 	{name: "digest", run: runDigest},
 	{name: "activity", run: runActivity},
+	{name: "changelog", run: runChangelog},
 	{name: "token", run: runToken},
 	{name: "changes", run: runChanges},
 	{name: "changes show", run: runChangesShow},

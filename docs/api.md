@@ -731,6 +731,38 @@ ledger already holds. For `bot_read` and `teacher` tokens; the same list is the 
 Where each actor's fact already lives: `GET /api/v1/decisions` rows carry `teacher`, `via` and `token`; the `events` of `GET /api/v1/comments/:id` carry `actor`, `origin` and `token`.
 Before acting on a comment or a decision that another teacher or bot may have handled, read this feed (or `banco digest`); see `docs/bot.md`.
 
+## What's new («Novità»)
+
+The student and the teacher read «Novità» in the browser (D-375): the student's `/novita` (in his menu, with a dot when something is newer than his last visit) and the
+teacher's `/teacher/changelog` (teacher, guest and view link). It has three sources and **no model**: the entries that git holds in `config/banco/changelog.yml`
+(one hand-written entry per change that the student or the teacher can see, added in the same commit as the change), the topics the teacher approved again (every
+`approve_topic` that replaced an earlier approved revision of the topic, read from the ledger: no table of its own), and, on the student's page alone, «Le tue segnalazioni»
+(his own comments on a topic that was revised after them; never in the API).
+
+### `banco changelog [--since DATE] [--audience student|teacher] [--student KEY] [--json]`
+
+`GET /api/v1/changelog[?audience=student|teacher][&since=DATE][&student=KEY]`: **every token role** reads it, and it writes nothing.
+
+- `audience=teacher` (the default): `entries` is every entry, newest first (the student's and the teacher's), each with `id`, `date`, `audience` (a list of `student` and/or `teacher`),
+  `kind` (`software`, `content` or `fix`), `title_it`, `body_it`, and when present `title_en`, `body_en` (every entry the student reads has them), `topics`, `link` and `decisions` (the
+  decision numbers behind it, for the teacher only). `content_updates` is every topic approved again, newest first: `at`, `date`, `subject`, `topic`, `title_it`, `old_revision_id`,
+  `new_revision_id`, `decision_id` and `reason_it`, the teacher's reason, **only for a `bot_read` or `teacher` token** (a content agent's token reads the ids without it).
+- `audience=student`: what the student reads. `entries` are those whose audience includes the student, with no `decisions`; `content_updates` are `{date, topics: [{topic, title_it, line_it}]}`
+  by day, one line per topic and day, only for the topics **his** course shows (`--student`, default the official student; a student key such as `prova-1`) and only from when his
+  course was open; no reason and no revision id. «Le tue segnalazioni» is not here: it holds his own words.
+- `since` is a day such as `2026-11-17`: the entries dated that day or later and the updates from that day on. A value that is not a day, an `audience` that is not `student` or `teacher`, or a
+  `student` without `audience=student` is `422 E-FILES`; a student that does not exist is `404 E-NOT-FOUND`.
+
+```json
+{"audience":"student","student":"student","since":"2026-11-19",
+ "entries":[{"id":"my-schemas","date":"2026-11-19","audience":["student"],"kind":"software","title_it":"I miei schemi","body_it":"Quando finisci un argomento si apre il suo schema…",
+             "title_en":"My summaries","body_en":"When you finish a topic, its summary opens…","link":"/schemas"}],
+ "content_updates":[{"date":"2026-11-19","topics":[{"topic":"ripasso.math.demo","title_it":"Equazioni di primo grado","line_it":"Esercizi o lezione rivisti."}]}]}
+```
+
+The curated file is the process: every change that a student or a teacher can see adds an entry to `config/banco/changelog.yml` in the same commit (`AGENTS.md`). Its schema is checked by
+`test/models/changelog/entries_test.rb`: the student's text is 1 to 3 short sentences with its English twin, no decision number and no jargon.
+
 ## View links
 
 A view link (D-332) is a temporary URL that opens the teacher's pages in a browser, **read-only and without a login**: the bot

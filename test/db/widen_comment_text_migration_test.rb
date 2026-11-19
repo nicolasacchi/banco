@@ -2,6 +2,7 @@ require "test_helper"
 require "tmpdir"
 require Rails.root.join("db/migrate/20261118120000_widen_comment_text_and_add_page_kinds")
 require Rails.root.join("db/migrate/20261119100000_add_schema_comment_pages")
+require Rails.root.join("db/migrate/20261119153000_add_changelog_comment_page")
 
 # D-361: a comment and a follow-up of the student may be 2000 characters, and `civics` and `not_found` are page kinds. SQLite cannot change a
 # CHECK in place, so the migration rebuilds comments and comment_events. This test runs it on a scratch database made from db/structure.sql
@@ -16,8 +17,9 @@ class WidenCommentTextMigrationTest < ActiveSupport::TestCase
     ActiveRecord::Migration.verbose = false
     @dir = Dir.mktmpdir("widen-comment-migration")
     @conn = ActiveRecord::ConnectionAdapters::SQLite3Adapter.new(adapter: "sqlite3", database: File.join(@dir, "scratch.sqlite3"))
-    # db/structure.sql is after AddSchemaCommentPages (D-372), which added two more page kinds to the CHECK this migration made
-    structure = File.read(Rails.root.join("db/structure.sql")).sub(AddSchemaCommentPages::KIND_NEW, AddSchemaCommentPages::KIND_OLD)
+    # db/structure.sql is after AddSchemaCommentPages (D-372) and AddChangelogCommentPage (D-375), which added page kinds to the CHECK this migration made
+    structure = File.read(Rails.root.join("db/structure.sql")).sub(AddChangelogCommentPage::KIND_NEW, AddChangelogCommentPage::KIND_OLD)
+                    .sub(AddSchemaCommentPages::KIND_NEW, AddSchemaCommentPages::KIND_OLD)
     CHECKS.each do |new, old|
       assert_includes structure, new
       structure = structure.sub(new, old)

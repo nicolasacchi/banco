@@ -124,6 +124,7 @@ en:
       not_found: "A page that is not there"
       schema: "Summary"
       schemas: "My summaries"
+      changelog: "What's new"
       subjects: "Subjects"
       subject: "Subject"
       topic: "Topic"
