@@ -33,7 +33,7 @@ export const inside = (ctx, r) => r.x >= 0 && r.x + r.w <= ctx.width
 export function plateLabel(ctx, text, cx, cy, { maxW, cls = "", key, role } = {}) {
   const probe = ctx.measure(text, ctx.fontPx, maxW, `dg-plate ${cls}`.trim())
   const w = Math.min(Math.ceil(probe.w), maxW ?? Infinity)
-  return label(ctx, text, cx - w / 2, cy - probe.h / 2, { anchor: "start", maxW: maxW ? w : undefined, cls: `dg-plate ${cls}`.trim(), key, role })
+  return label(ctx, text, cx - w / 2, cy - probe.h / 2, { anchor: "start", maxW: maxW ? w : undefined, cls: `dg-plate ${cls}`.trim(), measureCls: true, key, role })
 }
 
 // The numbered list of moves under a figure (the phone, and a crowded figure): a number in a round plate, then the move, one under
