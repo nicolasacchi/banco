@@ -327,6 +327,10 @@ step_tags:
     group: {label_it: "Raggruppa", icon: binary}
     copy: {label_it: "Copia la formula", icon: copy}
     lock: {label_it: "Blocca con $", icon: lock}
+    # What the student does at the computer (D-385); the verbs above are for what a program does.
+    paste: {label_it: "Incolla", icon: copy}
+    run: {label_it: "Avvia il programma", icon: code-xml}
+    type: {label_it: "Digita", icon: keyboard}
   business:
     read: {label_it: "Leggi i dati", icon: file-text}
     discount: {label_it: "Togli lo sconto", icon: tag}

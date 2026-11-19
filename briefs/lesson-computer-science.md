@@ -42,6 +42,7 @@ The `tag` of a step in a procedure, an example or a solution:
 - `group` (Raggruppa), icon `binary`.
 - `copy` (Copia la formula), icon `copy`.
 - `lock` (Blocca con $), icon `lock`.
+- `paste` (Incolla), icon `copy`; `run` (Avvia il programma), icon `code-xml`; `type` (Digita), icon `keyboard`: for the steps S does at the computer (the Mac procedure below); the program's own verbs (`read`, `write`, `assign`, `test`, `repeat`, …) stay for tracing what the program does.
 
 ## Icons
 

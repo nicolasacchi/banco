@@ -387,6 +387,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-382 | 2026-11-19 | security patch updates for bundler-audit (`scan` was red): Rails 8.1.4 → 8.1.4.1, rack 3.2.7 → 3.2.8, puma 8.0.2 → 8.0.4, nokogiri 1.19.4 → 1.19.7, loofah 2.25.2 → 2.25.3, rails-html-sanitizer 1.7.1 → 1.7.2, addressable 2.9.0 → 2.9.2, msgpack 1.8.5 → 1.8.7, sqlite3 2.9.6 → 2.10.2; only `Gemfile.lock` moves | implemented |
 | D-383 | 2026-11-19 | the tree flow draws a Do While: a decision is a rhombus sized to its text, and `loops` is the one way back (an orthogonal arrow from a node under a decision to it, with its label); the cycle check among `edges` stays | implemented |
 | D-384 | 2026-11-19 | an exercise the student only opened (served, no try, nothing typed) reads «Aperto» / «Opened», not «Saltato» / «Skipped»: the status is `opened`, the icon an eye; a click still resumes the open serve | implemented |
+| D-385 | 2026-11-19 | computer-science step verbs for what the student does at the computer: `paste`, `run`, `type` | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -4745,3 +4746,14 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Why:** «Saltato» told a boy he had skipped something he had only opened.
 - **Status:** implemented.
 - **Tests:** `test/integration/practice_navigation_test.rb` and `practice_feedback_test.rb` (the status `opened`, the label), `english_ui_test.rb` («Aperto» in IT, «Opened» in EN, no `status_skipped`), `test/system/practice_flow_test.rb` («Aperto» in the list), `test/lib/locale_parity_test.rb`, the changelog tests.
+
+## D-385 · 2026-11-19 · Computer-science step verbs for what the student does at the computer
+
+- **Design ref:** D-246 and D-264 (the step tags of `lesson_palette.yml`, the icon list of `icons.yml`), D-329 (the Mac procedure of a VB lesson, in the brief).
+- **Design said:** the computer-science step verbs are all about what a program does: `read` «Leggi», `write` «Scrivi», `verify` «Controlla», and so on.
+- **The operator said:** a browser check of the procedure «Sul Mac» found steps 1 and 2 both showing «Scrivi» (paste the program in `Program.vb`, type `dotnet run`), which is confusing.
+- **We do:** three verbs in `step_tags.computer_science`: `paste` «Incolla» (icon `copy`), `run` «Avvia il programma» (icon `code-xml`), `type` «Digita» (icon `keyboard`). All three icons were already in the subject's list in `icons.yml`: no new Lucide icon, the sprites do not change. `bin/build-palette` regenerated `palette.js`; the CSS is unchanged. `version` stays 2: it versions the scoping of the role variables and classes (D-264), and no earlier addition of step tags moved it; `step_tags` is not a subject palette and produces no CSS. The brief `briefs/lesson-computer-science.md` lists the three and says they are for the steps S does at the computer, while the program's verbs stay for tracing. No changelog entry: nothing is visible until a lesson uses the verbs.
+- **Not done / must not change:** the existing verbs and their words, the roles, the colours, the icon list, the lessons already published (none uses the new tags yet).
+- **Why:** a step that is S's action at the keyboard must not wear the word of an action of the program.
+- **Status:** implemented.
+- **Tests:** `bin/build-palette --check`, `bin/build-icons --check`, `test/lib/lesson_palette_test.rb` (the step tags name icons of the subject's list), `test/models/brief_test.rb` (every tag is in the brief), `test/lib/lesson_types_test.rb`, the procedure block tests, `node --test 'app/javascript/lesson/test/*.test.mjs'`.
