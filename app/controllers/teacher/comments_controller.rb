@@ -15,6 +15,7 @@ module Teacher
 
       @inbox = Comments::Inbox.new(params.permit(*Comments::Inbox::FILTERS).to_h.symbolize_keys)
       @rows = @inbox.rows
+      @due = Comments::Due.rows # D-371: «In scadenza», whatever the filters
       @subjects = Subject.order(:position)
     end
 

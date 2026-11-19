@@ -60,11 +60,24 @@ class Comment < ApplicationRecord
   # The teacher has the move (D-349): the student has the last word and nothing has closed the comment (state sent or read).
   def waiting_for_teacher? = %w[sent read].include?(state)
 
-  # Since when the comment waits for the teacher: the student's last message; nil when it does not wait.
-  def waiting_since = waiting_for_teacher? ? last_student_message_at : nil
+  # Since when the comment waits for the teacher (D-371): the first student message after the teacher's last reply (the
+  # comment itself when the teacher has not replied), so a second follow-up does not restart the clock; nil when it does not wait.
+  def waiting_since
+    return nil unless waiting_for_teacher?
+
+    messages = thread
+    last_teacher = messages.rindex { |m| m.from == :teacher }
+    messages[last_teacher ? last_teacher + 1 : 0].at
+  end
 
   # Waiting longer than the promised answer time (config/banco/comments.yml).
   def late? = Comments::ReplyWindow.late?(waiting_since)
+
+  # Hours left to answer within the promise (negative once late), rounded to a tenth; nil when the comment does not wait.
+  def due_in_hours(now = Time.current) = Comments::ReplyWindow.due_in_hours(waiting_since, now)
+
+  # The student wrote after the teacher's last reply and has had no answer since (D-371).
+  def student_followup? = waiting_for_teacher? && events.any? { |e| e.kind == "reply" }
 
   def replies = events.select { |e| e.kind == "reply" }
 

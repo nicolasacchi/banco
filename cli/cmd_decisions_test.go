@@ -166,7 +166,6 @@ func TestCommentsShowAndActions(t *testing.T) {
 		body map[string]any
 	}{
 		{[]string{"comments", "reply", "7", "--text", "Guarda la scheda 2."}, "/api/v1/comments/7/reply", map[string]any{"text_it": "Guarda la scheda 2.", "confirm": false}},
-		{[]string{"comments", "reply", "7", "--text", "Ok.", "--confirm"}, "/api/v1/comments/7/reply", map[string]any{"text_it": "Ok.", "confirm": true}},
 		{[]string{"comments", "resolve", "7"}, "/api/v1/comments/7/resolve", map[string]any{"confirm": false}},
 		{[]string{"comments", "resolve", "7", "--reason", "Detto a voce.", "--confirm"}, "/api/v1/comments/7/resolve", map[string]any{"reason_it": "Detto a voce.", "confirm": true}},
 		{[]string{"comments", "reopen", "7", "--confirm"}, "/api/v1/comments/7/reopen", map[string]any{"confirm": true}},
@@ -180,6 +179,84 @@ func TestCommentsShowAndActions(t *testing.T) {
 		if seen[0].method != "POST" || seen[0].path != c.path || !reflect.DeepEqual(seen[0].body, c.body) {
 			t.Errorf("%v: %+v, want %s %v", c.args, seen[0], c.path, c.body)
 		}
+	}
+}
+
+const lintWarning = `{"code":"blaming_phrase","phrase":"hai sbagliato","message":"reads as blaming the student: «hai sbagliato»; say what the page does, not what he did"}`
+
+// D-371: a reply is linted for tone; the warnings are printed to stderr and never stop it.
+func TestCommentsReplyDryRunPrintsTheWarnings(t *testing.T) {
+	answer := `{"recorded":false,"dry_run":true,"warnings":[` + lintWarning + `,{"code":"too_long","length":700,"max":600,"message":"700 characters; over 600 is hard for him to read: shorten it"}]}`
+	r, seen := runTeacher(t, [][2]string{{"200", answer}}, "comments", "reply", "7", "--text", "Hai sbagliato tu.")
+	if r.exit != ExitOK || len(seen) != 1 {
+		t.Fatalf("exit %d, %d requests: %s", r.exit, len(seen), r.stderr)
+	}
+	if seen[0].path != "/api/v1/comments/7/reply" || seen[0].body["confirm"] != false {
+		t.Errorf("%+v", seen[0])
+	}
+	if !strings.Contains(r.stderr, "warning: reads as blaming the student: «hai sbagliato»") || !strings.Contains(r.stderr, "warning: 700 characters") {
+		t.Errorf("stderr %q", r.stderr)
+	}
+	if !strings.Contains(r.stdout, `"dry_run":true`) || strings.Contains(r.stdout, "warning:") {
+		t.Errorf("stdout %q", r.stdout)
+	}
+}
+
+func TestCommentsReplyConfirmWarnsBeforeSendingAndStillSends(t *testing.T) {
+	r, seen := runTeacher(t, [][2]string{
+		{"200", `{"recorded":false,"dry_run":true,"warnings":[` + lintWarning + `]}`},
+		{"201", `{"recorded":true,"warnings":[` + lintWarning + `]}`},
+	}, "comments", "reply", "7", "--text", "Hai sbagliato tu.", "--confirm")
+	if r.exit != ExitOK || len(seen) != 2 {
+		t.Fatalf("exit %d, %d requests: %s", r.exit, len(seen), r.stderr)
+	}
+	if seen[0].body["confirm"] != false || seen[1].body["confirm"] != true || seen[1].body["text_it"] != "Hai sbagliato tu." {
+		t.Errorf("the dry run comes first, then the confirmed reply: %+v", seen)
+	}
+	if strings.Count(r.stderr, "warning:") != 1 {
+		t.Errorf("the warnings are printed once, before the send: %q", r.stderr)
+	}
+	if !strings.Contains(r.stdout, `"recorded":true`) {
+		t.Errorf("stdout %q", r.stdout)
+	}
+}
+
+func TestCommentsReplyWithoutWarningsIsQuiet(t *testing.T) {
+	r, seen := runTeacher(t, [][2]string{{"200", `{"recorded":false,"dry_run":true,"warnings":[]}`}, {"201", `{"recorded":true,"warnings":[]}`}}, "comments", "reply", "7", "--text", "Ok.", "--confirm")
+	if r.exit != ExitOK || len(seen) != 2 || r.stderr != "" {
+		t.Errorf("exit %d, %d requests, stderr %q", r.exit, len(seen), r.stderr)
+	}
+}
+
+// A refused dry run stops the confirmed reply: nothing is sent when the server refuses.
+func TestCommentsReplyConfirmStopsWhenTheDryRunIsRefused(t *testing.T) {
+	r, seen := runTeacher(t, [][2]string{{"403", `{"code":"E-TEACHER-REFUSED","field":"authorization","message":"refused: disabled","next":"ask the operator"}`}}, "comments", "reply", "7", "--text", "Ok.", "--confirm")
+	if r.exit != ExitAuth || len(seen) != 1 || seen[0].body["confirm"] != false {
+		t.Errorf("exit %d, requests %+v", r.exit, seen)
+	}
+	assertErrJSON(t, r.stderr, "E-TEACHER-REFUSED")
+}
+
+// The context block and the due hours come as the server writes them: the CLI passes the answer through.
+func TestCommentsShowPassesTheContextThrough(t *testing.T) {
+	answer := `{"comment":{"id":7,"due_in_hours":-12.0,"context":{"revision":{"item":{"changed":true,"note":"changed since: rev 4394"}},"reply":{"waiting":true,"due_in_hours":-12.0}}}}`
+	r, seen := runTeacher(t, [][2]string{{"200", answer}}, "comments", "show", "7")
+	if r.exit != ExitOK || len(seen) != 1 || seen[0].path != "/api/v1/comments/7" {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	if !strings.Contains(r.stdout, `"note":"changed since: rev 4394"`) || !strings.Contains(r.stdout, `"due_in_hours":-12.0`) {
+		t.Errorf("stdout %q", r.stdout)
+	}
+}
+
+func TestDigestPassesTheDueThreadsThrough(t *testing.T) {
+	answer := `{"comments":{"open":1,"due":{"within_hours":24,"waiting":1,"late":1,"followups":1,"rows":[{"id":46,"due_in_hours":-3.5,"late":true,"student_followup":true}]}}}`
+	r, seen := runTeacher(t, [][2]string{{"200", answer}}, "digest")
+	if r.exit != ExitOK || len(seen) != 1 || seen[0].path != "/api/v1/digest" {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	if !strings.Contains(r.stdout, `"due_in_hours":-3.5`) || !strings.Contains(r.stdout, `"student_followup":true`) {
+		t.Errorf("stdout %q", r.stdout)
 	}
 }
 

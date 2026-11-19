@@ -4,8 +4,9 @@ namespace :banco do
   # TEACHER=<login from BANCO_TEACHER_USERS>, and is recorded with origin "console".
   #
   #   bin/rails banco:comments:list [STATE=sent|read|answered|closed] [REASON=..] [KIND=lesson|..] [SUBJECT=key] [WHO=official|trial] [TYPE=comment|question]
-  #   bin/rails banco:comments:show ID=3
-  #   bin/rails banco:comments:reply ID=3 TEACHER=<login> TEXT_IT="La risposta del docente." [CONFIRM=1]
+  #   bin/rails banco:comments:show ID=3          (with the context, D-371: the revision he saw against the newest, his tries with his words,
+  #                                                 his earlier comments, the hours left of the 24 h promise)
+  #   bin/rails banco:comments:reply ID=3 TEACHER=<login> TEXT_IT="La risposta del docente." [CONFIRM=1]   (the tone lint warns first, never blocks, D-371)
   #   bin/rails banco:comments:resolve ID=3 TEACHER=<login> [REASON_IT="..."] [CONFIRM=1]
   #   bin/rails banco:comments:reopen ID=3 TEACHER=<login> [REASON_IT="..."] [CONFIRM=1]
   #   bin/rails banco:comments:read ID=3 TEACHER=<login> [CONFIRM=1]
@@ -45,6 +46,7 @@ namespace :banco do
       puts "selected: #{comment.selected_text}" if comment.selected_text
       puts "text: #{comment.text_it || '(none)'}"
       comment.events.each { |e| puts "  #{e.created_at.strftime('%Y-%m-%d %H:%M')}  #{e.kind}  #{e.origin}  #{e.actor}#{"  #{e.text_it}" if e.text_it}" }
+      puts JSON.pretty_generate(context: Comments::Context.new(comment, words: true).to_h) # the operator's console: his own words, as the teacher token
     end
 
     { reply: "Reply to a comment in the teacher's name: ID= TEACHER= TEXT_IT= [CONFIRM=1]",
@@ -55,6 +57,8 @@ namespace :banco do
       task action => :environment do
         teacher = ENV["TEACHER"].presence or abort "TEACHER=<login from BANCO_TEACHER_USERS> is required"
         id = ENV["ID"].presence or abort "ID= is required"
+        # Advisory (D-371): the tone lint prints before the reply goes and never stops it.
+        Comments::ReplyLint.call(ENV["TEXT_IT"]).each { |w| warn "warning: #{w.message}" } if action == :reply
         result = Comments::Console.call(action: action, id: id, teacher: teacher, text_it: ENV["TEXT_IT"], reason: ENV["REASON_IT"], confirm: ENV["CONFIRM"] == "1")
         unless result.ok
           warn "refused: #{action} #{id}"

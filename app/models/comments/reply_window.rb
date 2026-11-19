@@ -13,6 +13,14 @@ module Comments
 
     def late?(waiting_since, now = Time.current) = !waiting_since.nil? && now - waiting_since > limit
 
+    # Hours left until the promise is due, from the moment the student started waiting: 24.0 right then, 0.0 at the limit,
+    # negative when late (D-371); nil when nothing waits.
+    def due_in_hours(waiting_since, now = Time.current)
+      return nil if waiting_since.nil?
+
+      ((waiting_since + limit - now) / 3600.0).round(1)
+    end
+
     # "un giorno", "2 giorni", "un'ora", "6 ore": whole days when the span is a number of days, else hours (at least one).
     def span_it(seconds)
       total_hours = [ (seconds / 3600.0).round, 1 ].max

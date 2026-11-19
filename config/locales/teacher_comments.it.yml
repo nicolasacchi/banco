@@ -11,6 +11,17 @@ it:
       limit_line: "Si risponde entro %{span}."
       late: "In ritardo"
       waiting: "In attesa da %{span}"
+      # «In scadenza» (D-371): the threads that wait for the teacher, with the hours left of the promise (limit_line).
+      due:
+        title: "In scadenza"
+        empty: "Nessun commento aspetta una tua risposta."
+        row: "Commento %{id}"
+        left:
+          one: "1 ora rimasta"
+          other: "%{count} ore rimaste"
+        under_hour: "meno di un'ora rimasta"
+        late_by: "in ritardo di %{span}"
+        followup: "Ha scritto dopo la tua risposta"
       counts_title: "Quanti commenti"
       counts:
         sent: "Nuovi: %{n}"

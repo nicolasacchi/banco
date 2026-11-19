@@ -39,6 +39,23 @@
       </ul>
     </nav>
     <p class="comment-late-note" id="comment-late-count" data-late="<%= @counts["late"] %>"><%= t("teacher.comments.late_count", n: @counts["late"]) %> <span><%= t("teacher.comments.limit_line", span: Comments::ReplyWindow.span_it(Comments::ReplyWindow.limit.to_i)) %></span></p>
+    <section id="comment-due" class="comment-due" aria-labelledby="comment-due-title" data-due-waiting="<%= @due.size %>" data-due-followups="<%= @due.count(&:followup) %>">
+      <h2 id="comment-due-title"><%= t("teacher.comments.due.title") %></h2>
+      <% if @due.empty? %>
+        <p id="comment-due-empty"><%= t("teacher.comments.due.empty") %></p>
+      <% else %>
+        <ul id="comment-due-list">
+          <% @due.each do |row| %>
+            <li data-due-comment="<%= row.comment.id %>" data-due-late="<%= row.late %>" data-due-followup="<%= row.followup %>">
+              <a href="#comment-<%= row.comment.id %>"><%= t("teacher.comments.due.row", id: row.comment.id) %></a>
+              <span class="comment-due-left"><%= Comments::Due.left_it(row) %></span>
+              <% if row.comment.subject %><span><%= row.comment.subject.name_it %></span><% end %>
+              <% if row.followup %><span class="comment-pill comment-followup"><%= t("teacher.comments.due.followup") %></span><% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </section>
 
     <form id="comment-filters" class="filters" aria-label="<%= t("teacher.comments.filters.label") %>">
       <div class="comment-chiprow">
