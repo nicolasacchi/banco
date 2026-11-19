@@ -23,13 +23,8 @@ class PracticeController < ApplicationController
     subject_view, topic = course_view.find_topic(params[:topic])
     skill = params[:skill].to_s
     return json_not_found unless topic && topic.skills.include?(skill)
-    return render(json: topic_done_body(subject_view, topic, skill)) if item_param.nil? && Practice::Today.done?(topic, course_view.states)
 
-    choice = Practice::Selector.next(student: acting_student, topic_revision: topic.topic_revision, skill: skill, follow: follow_param,
-                                     item: item_param, advance: ActiveModel::Type::Boolean.new.cast(params[:advance]), now: Time.current)
-    return render(json: exhausted_body(skill)) if choice == Practice::Selector::EXHAUSTED
-
-    render json: serve_body(choice.serve, topic, chosen: item_param.present?)
+    render json: serve_reply(subject_view, topic, skill, item: item_param, follow: follow_param, advance: ActiveModel::Type::Boolean.new.cast(params[:advance]))
   rescue Practice::Selector::BadFollow
     render json: { status: "bad_follow" }, status: :unprocessable_entity
   rescue Practice::Selector::NotPinned
@@ -40,10 +35,11 @@ class PracticeController < ApplicationController
   def answer
     return json_not_found unless own_visible_serve?(params[:serve_id])
 
-    result = Practice::AnswerRecorder.new(student: acting_student).call(
+    result = Practice::AnswerRecorder.new(student: acting_student, shown: course_view.shown_revisions).call(
       serve_id: params[:serve_id], client_attempt_id: params[:client_attempt_id], raw: params[:raw], source: params[:source]
     )
-    render json: result.body, status: result.http
+    body = result.body[:status] == "replaced" ? replaced_body(result.body, params[:serve_id]) : result.body
+    render json: body, status: result.http
   end
 
   # POST /practice/serves/:serve_id/draft {raw, source}: what the student has typed, saved as a row. Only an open serve of the student's own.
@@ -56,7 +52,7 @@ class PracticeController < ApplicationController
 
     PracticeDraft.transaction do
       serve = PracticeServe.includes(:events, attempts: :gradings, item_instance: { item_revision: :item }).find(params[:serve_id].to_i)
-      next render(json: { status: "closed" }, status: :conflict) unless Practice::Loader.status_of(serve, now: Time.current).state == :open
+      next render(json: { status: "closed" }, status: :conflict) unless Practice::Loader.status_of(serve, now: Time.current, shown: course_view.shown_revisions).state == :open
       next render(json: { status: "too_long" }, status: :unprocessable_entity) if raw.length > PracticeDraft::MAX_RAW
       next render(json: { status: "unchanged" }) if raw == (PracticeDraft.current_for(serve)&.raw || "")
 
@@ -77,7 +73,7 @@ class PracticeController < ApplicationController
   def hint
     return json_not_found unless own_visible_serve?(params[:serve_id])
 
-    result = Practice::Actions.new(student: acting_student).hint(serve_id: params[:serve_id], n: Integer(params[:n].to_s, 10, exception: false))
+    result = Practice::Actions.new(student: acting_student, shown: course_view.shown_revisions).hint(serve_id: params[:serve_id], n: Integer(params[:n].to_s, 10, exception: false))
     render json: result.body, status: result.http
   end
 
@@ -85,7 +81,7 @@ class PracticeController < ApplicationController
   def solution
     return json_not_found unless own_visible_serve?(params[:serve_id])
 
-    result = Practice::Actions.new(student: acting_student).solution(serve_id: params[:serve_id])
+    result = Practice::Actions.new(student: acting_student, shown: course_view.shown_revisions).solution(serve_id: params[:serve_id])
     render json: result.body, status: result.http
   end
 
@@ -99,6 +95,29 @@ class PracticeController < ApplicationController
 
   private
 
+  # What POST /practice/serves answers: the end of the topic, the pool that ran out, or an exercise (the open one to resume, else a new one).
+  def serve_reply(subject_view, topic, skill, item: nil, follow: nil, advance: false)
+    return topic_done_body(subject_view, topic, skill) if item.nil? && Practice::Today.done?(topic, course_view.states)
+
+    choice = Practice::Selector.next(student: acting_student, topic_revision: topic.topic_revision, skill: skill, follow: follow, item: item,
+                                     advance: advance, shown: course_view.shown_revisions, now: Time.current)
+    return exhausted_body(skill) if choice == Practice::Selector::EXHAUSTED
+
+    serve_body(choice.serve, topic, chosen: item.present?)
+  end
+
+  # D-377: an answer came to a serve that the topic's new revision replaced. It was not graded (no try, no row); the reply says so and carries what
+  # POST /practice/serves would answer now, as `serve`: the same item from the revision he is shown when it is still pinned. Never a rating box: the
+  # exercise has no try. Without a serve to give (nothing is pinned any more) it is the line alone.
+  def replaced_body(body, serve_id)
+    old = PracticeServe.find(serve_id.to_i)
+    subject_view, topic = course_view.find_topic(old.topic_revision.lesson.key)
+    reply = topic && topic.skills.include?(old.skill_key) ? serve_reply(subject_view, topic, old.skill_key) : nil
+    body.merge(serve: reply)
+  rescue Practice::Selector::NotPinned
+    body.merge(serve: nil)
+  end
+
   def item_param = params[:item].is_a?(String) ? params[:item].presence : nil
 
   def follow_param
@@ -108,11 +127,11 @@ class PracticeController < ApplicationController
     raw.permit(:serve_id, :kind).to_h.symbolize_keys
   end
 
-  # A serve of this student, on a topic this student can see now (an official student loses the pages when the
-  # teacher withdraws the release).
+  # A serve of this student, on a topic (a lesson) this student can see now (an official student loses the pages when the teacher withdraws the
+  # release). Any revision of it: a serve of a replaced revision is answered by the serve's own state (D-377), not by a 404.
   def own_visible_serve?(id)
-    serve = PracticeServe.find_by(id: id.to_s.to_i, student_id: acting_student.id) or return false
-    course_view.subjects.any? { |sv| sv.topics.any? { |t| t.topic_revision.id == serve.topic_revision_id } }
+    serve = PracticeServe.includes(:topic_revision).find_by(id: id.to_s.to_i, student_id: acting_student.id) or return false
+    course_view.shown_revisions.key?(serve.topic_revision.lesson_id)
   end
 
   # D-348: no exercise of the skill is unseen and none is open: nothing is served and the page says so (the fact is recorded by the selector).
@@ -139,7 +158,7 @@ class PracticeController < ApplicationController
   # A9.3: the open serve as the browser sees it. chosen: the student picked this exercise from the list (no line saying it is a similar one).
   def serve_body(serve, topic, chosen: false)
     serve = PracticeServe.includes(:events, attempts: :gradings, item_instance: { item_revision: :item }).find(serve.id)
-    status = Practice::Loader.status_of(serve, now: Time.current)
+    status = Practice::Loader.status_of(serve, now: Time.current, shown: course_view.shown_revisions)
     instance = serve.item_instance
     hints = Practice::Instances.hints(instance)
     state = course_view.state(serve.skill_key)

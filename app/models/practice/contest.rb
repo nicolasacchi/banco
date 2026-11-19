@@ -37,7 +37,7 @@ module Practice
       now = @clock.now
       PracticeServe.transaction do
         serve = load(serve_id) or next Result.new(404, { status: "not_found" })
-        status = Loader.status_of(serve, now: now)
+        status = Loader.status_of(serve, now: now, shown: @view.shown_revisions)
         step = ServeState.step(status, :contest)
         next Result.new(409, { status: "not_contestable" }) if step.result == :closed
         next answer(serve, status) if step.result == :noop
@@ -46,7 +46,7 @@ module Practice
         PracticeContest.create!(student: @student, practice_serve: serve, practice_attempt: attempt, comment: comment_for(serve, attempt), created_at: now)
         event(serve, "solution_shown", { reason: step.solution_reason }, now) if step.solution_reason
         fresh = load(serve.id)
-        answer(fresh, Loader.status_of(fresh, now: now))
+        answer(fresh, Loader.status_of(fresh, now: now, shown: @view.shown_revisions))
       end
     end
 

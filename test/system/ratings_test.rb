@@ -134,6 +134,57 @@ class RatingsPracticeSystemTest < ApplicationSystemTestCase
     assert_clean "practice"
   end
 
+  # The top of an element, from the page's top, in CSS pixels.
+  def top_of(selector) = page.evaluate_script("document.querySelector(#{selector.to_json}).getBoundingClientRect().top + window.scrollY")
+  def bottom_of(selector) = page.evaluate_script("document.querySelector(#{selector.to_json}).getBoundingClientRect().bottom + window.scrollY")
+
+  test "D-377: the box is below the exercise, the verdict and the buttons, never above the exercise" do
+    visit "/topics/#{TOPIC}/practice/#{SKILL}"
+    assert_selector "#check:not([disabled])", wait: 30
+    serve = PracticeServe.order(:id).last
+    find("input[inputmode=decimal]").set(JSON.parse(serve.item_instance.answer_json).to_s)
+    find("#check").click
+    assert_selector "#rating-box", wait: 15
+    assert_selector "#next-actions .button", text: "Un altro esercizio"
+    assert_operator top_of("#rating-box"), :>=, bottom_of(".exercise-card .item") - 0.5, "the box starts under the exercise"
+    assert_operator top_of("#rating-box"), :>=, bottom_of("#feedback") - 0.5, "and under the verdict"
+    assert_operator top_of("#rating-box"), :>=, bottom_of("#next-actions") - 0.5, "and under the buttons"
+    assert_operator top_of("#feedback"), :<, top_of("#rating-box"), "the verdict is on the first screen of the answer, ahead of the box"
+  end
+
+  test "D-377: a typical error is told without the box; the box opens when the solution is shown, under it" do
+    visit "/topics/#{TOPIC}/practice/#{SKILL}"
+    assert_selector "#check:not([disabled])", wait: 30
+    serve = PracticeServe.order(:id).last
+    find("input[inputmode=decimal]").set(slip_raw(serve))
+    find("#check").click
+    assert_selector "#next-actions .button", text: "Mostrami la soluzione", wait: 15
+    assert_no_selector "#rating-box", wait: 1
+    find("#next-actions .button", text: "Mostrami la soluzione").click
+    assert_selector "#solution:not([hidden])", wait: 15
+    assert_selector "#rating-box", wait: 15
+    assert_operator top_of("#rating-box"), :>=, bottom_of("#solution") - 0.5
+    assert_equal 0, Rating.count
+  end
+
+  test "D-377: an answer to an exercise the topic has replaced gets the line and the new exercise, and no box" do
+    visit "/topics/#{TOPIC}/practice/#{SKILL}"
+    assert_selector "#check:not([disabled])", wait: 30
+    old = PracticeServe.order(:id).last
+    topic_b = make_topic(@lesson_revision, { SKILL => @revisions }, course: @course)
+    approve_topic!(topic_b)
+    find("input[inputmode=decimal]").set(JSON.parse(old.item_instance.answer_json).to_s)
+    find("#check").click
+    assert_selector "#feedback", text: "Questo esercizio è stato aggiornato: eccolo nella versione nuova.", wait: 15
+    assert_selector "#check:not([disabled])", wait: 15
+    assert_no_selector "#rating-box", wait: 1
+    fresh = PracticeServe.order(:id).last
+    assert_not_equal old.id, fresh.id
+    assert_equal topic_b.id, fresh.topic_revision_id
+    assert_equal 0, PracticeAttempt.where(practice_serve_id: old.id).count
+    assert_clean "practice"
+  end
+
   test "stars alone, a comment alone and nothing: «Invia» without either says so and sends nothing" do
     visit "/topics/#{TOPIC}/practice/#{SKILL}"
     assert_selector "#check:not([disabled])", wait: 30

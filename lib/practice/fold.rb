@@ -105,7 +105,7 @@ module Practice
       c = { serves: (tries.map(&:serve_id) + serves.map(&:id)).uniq.size, tries: tries.size,
             correct_unaided: 0, correct_aided: 0, wrong: 0, typical: Hash.new(0), unrecognised: 0, near_miss: 0, undetermined: 0,
             hints: serves.sum(&:hints_shown), solutions_requested: serves.count(&:solution_requested),
-            abandoned: serves.count { |s| s.status.state == :abandoned }, seconds: tries.sum { |t| [ t.seconds.to_i, V6::TIME_CAP_SECONDS ].min } }
+            abandoned: serves.count { |s| %i[abandoned replaced].include?(s.status.state) }, seconds: tries.sum { |t| [ t.seconds.to_i, V6::TIME_CAP_SECONDS ].min } }
       tries.each do |t|
         c[:wrong] += 1 if t.evidence == :W
         case t.outcome

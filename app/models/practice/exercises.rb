@@ -8,7 +8,9 @@ module Practice
   #           `requested`, or `after_wrong` on a serve already closed wrong: both are the «Mostra la soluzione» button); "finished" when such a serve ended and the
   #           solution, if any, came by itself (after the last try, after a right answer, after «Fai controllare»), or the open serve has
   #           a try (he answered; a click still resumes it); "skipped" when there is an open serve (no try, nothing typed); else "todo".
-  #           open_serve_id is set whenever the item has an open serve, so a click resumes it.
+  #           open_serve_id is set whenever the item has an open serve, so a click resumes it. A replaced serve (the topic was revised while it was open,
+  #           D-377) is neither open nor ended: it takes no part in the status, so the exercise reads as to do (or done by another serve) and a click serves it
+  #           anew from the revision he is shown; its tries still count for the skill.
   #
   # The list never holds a key to an answer, an error value or the text of an instance: only the item's key (the page asks for that exercise
   # with it), its place and a title, the first sentence of the prompt's stem (the same for every instance).
@@ -96,7 +98,7 @@ module Practice
 
     def skill_block(skill, pins)
       state = @view.state(skill)
-      rows = Loader.for(@student, subject: @subject, skill: skill, seeds: false, now: @now).serves
+      rows = Loader.for(@student, subject: @subject, skill: skill, seeds: false, now: @now, shown: @view.shown_revisions).serves
       revisions = ItemRevision.where(id: pins.map { |p| p["revision"] }).index_by(&:id)
       facts = Facts.new(rows, drafts_for(rows))
       { key: skill, label_it: @view.label(skill), state: state&.state, state_it: Messages.state_it(state&.state),
@@ -116,7 +118,7 @@ module Practice
       return "unfinished" if open && facts.tries(open.id).zero? && facts.draft?(open.id)
       return "done" if mine.any? { |r| r.status.closed_by == :correct }
 
-      ended = mine.select { |r| (r.status.state != :open || r.id == open&.id) && (facts.tries(r.id).positive? || r.status.solution_sent) }
+      ended = mine.select { |r| (!%i[open replaced].include?(r.status.state) || r.id == open&.id) && (facts.tries(r.id).positive? || r.status.solution_sent) }
       return (ended.any? { |r| facts.asked_solution?(r.id) } ? "finished_solution" : "finished") if ended.any?
 
       open ? "skipped" : "todo"

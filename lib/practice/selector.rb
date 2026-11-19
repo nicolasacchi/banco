@@ -8,7 +8,7 @@ module Practice
   # two tabs, an outbox retry or a reload get the same open serve and no instance is burnt twice (A8.4).
   # There is at most one open serve per student, skill and pinned item (practice/6, docs/rules/practice-6.md).
   #
-  #   Practice::Selector.next(student:, topic_revision:, skill:, follow: nil, item: nil, advance: false, now:)
+  #   Practice::Selector.next(student:, topic_revision:, skill:, follow: nil, item: nil, advance: false, shown: nil, now:)
   #     # => Choice(instance, reason, parent_serve_id, error_code, serve, created), or EXHAUSTED
   #
   # EXHAUSTED: the skill has no instance this student has not seen and no open serve to resume. Nothing is served on its own (D-348); the
@@ -17,6 +17,9 @@ module Practice
   # item: an item KEY: that item's open serve, else a new instance of it. follow: {serve_id:, kind:
   # "prova_questo" | "after_solution"}. advance: the next exercise that is not open («Avanti», «Salta»).
   # None of them: the open serve touched most recently (the first load of the page), else the next exercise.
+  # shown: {lesson id => TopicRevision} the student is shown (Course::StudentView#shown_revisions); nil: only `topic_revision`. A serve made on
+  # another revision of a shown lesson is replaced (D-377): never resumed, and its instance is not counted as seen. When the latest serve touched
+  # is a replaced one, the next serve is of its item if the revision still pins it.
   # Raises BadFollow (HTTP 422 bad_follow) and NotPinned (HTTP 404) as the spec says.
   module Selector
     V6 = Rules::V6
@@ -87,16 +90,18 @@ module Practice
 
     # ---- the serve, in one transaction ---------------------------------------------------------------
 
-    def next(student:, topic_revision:, skill:, follow: nil, item: nil, advance: false, now: Time.current)
+    def next(student:, topic_revision:, skill:, follow: nil, item: nil, advance: false, shown: nil, now: Time.current)
       practice = topic_revision.body["practice"].find { |p| p["skill"] == skill } or raise NotPinned, skill
       subject = Subject.find_by!(key: skill.split(".").first)
       revisions = practice["items"].map { |pin| ItemRevision.find(pin["revision"]) }
       item_id = pinned_item_id(item, revisions, skill)
       PracticeServe.transaction do
-        input = Loader.for(student, subject: subject, skill: skill, seeds: false, now: now)
+        input = Loader.for(student, subject: subject, skill: skill, seeds: false, now: now, shown: shown || { topic_revision.lesson_id => topic_revision })
         followed = validate_follow(input, follow)
-        open = open_serves(input, revisions.map(&:item_id).to_set)
-        touched = touched_at(student, input, open)
+        pinned = revisions.map(&:item_id).to_set
+        open = open_serves(input, pinned)
+        replaced = replaced_serves(input, pinned)
+        touched = touched_at(student, input, open + replaced)
         by_item = open.group_by(&:item_id).transform_values { |rows| rows.max_by(&:id) }
         if item_id
           resume(by_item[item_id]) || create_serve(student, topic_revision, skill, revisions, input, nil, now, pick_item_id: item_id) || raise(NotPinned, skill)
@@ -106,7 +111,11 @@ module Practice
           resume(child) || serve_or_resume(student, topic_revision, skill, revisions, input, followed, now, by_item.keys.to_set,
                                            by_item[followed&.item_id] || open.min_by { |s| [ touched[s.id], s.id ] })
         else
-          resume(open.max_by { |s| [ touched[s.id], s.id ] }) || serve_or_resume(student, topic_revision, skill, revisions, input, nil, now, Set.new, nil)
+          latest = (open + replaced).max_by { |s| [ touched[s.id], s.id ] }
+          # the exercise he was on was replaced by a new version of the topic: the same item again, from the revision he is shown now
+          made = latest && latest.status.state == :replaced && !by_item.key?(latest.item_id) &&
+                 create_serve(student, topic_revision, skill, revisions, input, nil, now, pick_item_id: latest.item_id)
+          made || resume(open.max_by { |s| [ touched[s.id], s.id ] }) || serve_or_resume(student, topic_revision, skill, revisions, input, nil, now, Set.new, nil)
         end
       end
     end
@@ -124,6 +133,11 @@ module Practice
     # The open serves of the skill on pinned items, as ServeRows.
     def open_serves(input, pinned_item_ids)
       input.serves.select { |s| s.status.state == :open && pinned_item_ids.include?(s.item_id) }
+    end
+
+    # The replaced serves of the skill on pinned items (D-377), as ServeRows: no longer offered, they only tell which exercise he was on.
+    def replaced_serves(input, pinned_item_ids)
+      input.serves.select { |s| s.status.state == :replaced && pinned_item_ids.include?(s.item_id) }
     end
 
     # {serve id => the latest of its creation, its last try and its last draft}.
@@ -175,7 +189,8 @@ module Practice
     # when the choice was not the student's own (no pick_item_id) and every instance of the skill was seen.
     def create_serve(student, topic_revision, skill, revisions, input, followed, now, open_item_ids: Set.new, pick_item_id: nil)
       pool = pool_for(revisions)
-      seen = input.serves.map(&:fingerprint).to_set
+      # a replaced serve was never finished and its exercise is withdrawn: its instance is not seen (D-377)
+      seen = input.serves.reject { |s| s.status.state == :replaced }.map(&:fingerprint).to_set
       pick = choose(pool: pool, student_id: student.id, follow: followed, open_item_ids: open_item_ids, pick_item_id: pick_item_id,
                     seen: seen, last_serve: last_by(input.serves, :fingerprint), item_last_serve: last_by(input.serves, :item_id),
                     credit_by_item: input.tries.select { |t| t.evidence == :C && !t.aided && !t.reseen }.group_by(&:item_id).transform_values(&:size))

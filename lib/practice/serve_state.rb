@@ -2,9 +2,10 @@
 
 module Practice
   # The serve state machine (A8.3), pure. A serve's state is derived from its tries, its hint and
-  # solution events and the clock; nothing is stored. An open serve is abandoned when it is older than
-  # OPEN_SERVE_HOURS or superseded (the caller says a newer serve of the same student on the same item exists).
-  # call derives the Status; step says what an
+  # solution events and the clock; nothing is stored. An open serve is replaced when the topic revision it was made on is no
+  # longer the one the student is shown, or the item revision is no longer pinned there (the caller says so, D-377); else
+  # abandoned when it is older than OPEN_SERVE_HOURS or superseded (the caller says a newer serve of the same student on the
+  # same item exists). A closed serve stays closed. call derives the Status; step says what an
   # event does to it (table rows 1-18), so the recorder only writes what the step names. A contest («Fai controllare»,
   # practice/3) is the student sending the latest try to the teacher: the try is contested, the serve closes.
   module ServeState
@@ -24,12 +25,13 @@ module Practice
 
     module_function
 
-    def call(serve:, tries:, events:, hints_total:, now:, superseded: false)
+    def call(serve:, tries:, events:, hints_total:, now:, superseded: false, replaced: false)
       w, near, closed_by, tries = scan(tries.sort_by(&:try_number))
       solutions = events.select { |e| e.kind.to_s == "solution_shown" }
       closed_by ||= :solution if solutions.any? { |e| e.reason.to_s == "requested" }
       hints = events.select { |e| e.kind.to_s == "hint_shown" }.map(&:n).uniq.size
       state = if closed_by then :closed
+      elsif replaced then :replaced
       elsif superseded || now - serve_time(serve) > V6::OPEN_SERVE_HOURS * 3600 then :abandoned
       else :open
       end
@@ -77,7 +79,7 @@ module Practice
     def aided?(reason:, w:, hints_shown:) = reason.to_s == "reseen" || w.to_i.positive? || hints_shown.to_i.positive?
 
     def actions(state, closed_by, last, solutions)
-      return [] if state == :abandoned
+      return [] if %i[abandoned replaced].include?(state)
 
       base = state == :open ? open_actions(last) : closed_actions(closed_by, last, solutions)
       contest_allowed?(state, closed_by, last) ? base + %i[contest] : base

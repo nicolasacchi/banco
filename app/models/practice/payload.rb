@@ -24,6 +24,12 @@ module Practice
 
     def closed = { status: "closed", message_it: I18n.t("practice.closed") }
 
+    # An exercise the topic has replaced with a newer version (D-377): the answer, the hint, the solution and the contest are not taken.
+    def replaced = { status: "replaced", message_it: I18n.t("practice.replaced") }
+
+    # The refusal of a serve that is not open: the line of a replaced one, else the line of a closed one.
+    def refused(status) = status.state == :replaced ? replaced : closed
+
     def actions(status) = status.actions.map(&:to_s)
   end
 end

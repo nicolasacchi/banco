@@ -123,6 +123,27 @@ class PracticePropertiesTest < ActiveSupport::TestCase
     end
   end
 
+  test "a replaced serve is the open one that the topic's new revision withdrew: it never opens, never closes and never loses a try (D-377)" do
+    each_case do |i, rng|
+      play = PracticeEngineHelper::Play.new(hints_total: rng.rand(0..4))
+      30.times do
+        event = %i[answer answer answer hint solution].sample(random: rng)
+        case event
+        when :answer then play.answer(%i[correct typical_error unrecognised form near_miss undetermined invalid].sample(random: rng))
+        when :hint then play.hint(rng.rand(0..5))
+        else play.solution
+        end
+        plain = play.status
+        replaced = play.replaced_status
+        assert_equal(plain.state == :closed ? :closed : :replaced, replaced.state, "seed #{i}")
+        assert_equal [ plain.closed_by, plain.w, plain.near_misses, plain.hints_shown, plain.solution_sent ],
+                     [ replaced.closed_by, replaced.w, replaced.near_misses, replaced.hints_shown, replaced.solution_sent ], "seed #{i}: the tries and events read the same"
+        assert_empty replaced.actions, "seed #{i}" if replaced.state == :replaced
+        assert_nil replaced.next_try_number, "seed #{i}" unless replaced.state == :open
+      end
+    end
+  end
+
   Candidate = Practice::Selector::Candidate
 
   test "choose never repeats a fingerprint on its own and is stable; a chosen item is redone with its oldest" do

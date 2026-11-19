@@ -214,6 +214,8 @@ li.skill .skill-side .button { margin: 0; align-self: center; }
 .exercise-card [data-practice-target="controls"] { order: 4; }
 .exercise-card #solution { order: 5; }
 .exercise-card #next-actions { order: 6; }
+/* «Ti è piaciuto?» (D-365, D-377): under the verdict, the solution and the buttons, never in front of the exercise. */
+.exercise-card #rating-box { order: 7; }
 .exercise-card .item { margin-bottom: var(--space-4); }
 .exercise-card .prompt, .sitting-card .prompt { font-size: var(--text-l); }
 .exercise-card .actions { margin: var(--space-4) 0 0; }

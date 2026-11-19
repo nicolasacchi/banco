@@ -80,10 +80,17 @@ module Ratings
     def item_target
       serve = PracticeServe.includes(:events, attempts: :gradings, item_instance: { item_revision: :item }).find_by(id: @params[:serve_id].to_s.to_i, student_id: @student.id)
       raise Invalid, "serve_id" unless serve && visible?(serve.topic_revision_id)
-      raise Invalid, "not_over" unless Practice::Loader.status_of(serve, now: Time.current).state == :closed
+      raise Invalid, "not_over" unless over?(serve)
 
       revision = serve.item_instance.item_revision
       { target_kind: "item", target_key: revision.item.key, item_revision: revision, practice_serve: serve, subject: revision.item.subject, topic_revision_id: serve.topic_revision_id }
+    end
+
+    # D-377: an exercise is over when its serve is closed AND the solution has come (a typical error closes the serve before it, and he can still
+    # ask for it or try a similar one) AND it has at least one try. An open, replaced or abandoned serve is never over.
+    def over?(serve)
+      status = Practice::Loader.status_of(serve, now: Time.current)
+      status.state == :closed && status.solution_sent && serve.attempts.any?
     end
 
     def lesson_target

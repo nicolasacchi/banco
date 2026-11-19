@@ -4,7 +4,7 @@ module Practice
   # state, refuses a closed serve, and appends the attempt, its grading and the events the state machine
   # names. A repeated client_attempt_id returns the stored answer rebuilt from rows.
   #
-  #   Practice::AnswerRecorder.new(student:, clock:).call(serve_id:, client_attempt_id:, raw:, source:)
+  #   Practice::AnswerRecorder.new(student:, shown:, clock:).call(serve_id:, client_attempt_id:, raw:, source:)
   #   # => Result(http:, body:)
   class AnswerRecorder
     Result = Data.define(:http, :body)
@@ -15,8 +15,11 @@ module Practice
     AUTO_SOLUTION_REASONS = %w[after_correct after_last_try after_undetermined].freeze
     ATTEMPTS = 3
 
-    def initialize(student:, clock: Diagnosis::Clock.new)
+    # shown: {lesson id => TopicRevision} (Course::StudentView#shown_revisions): what the student is shown now. An answer to an open serve made on
+    # another revision of a shown lesson is not taken: the reply is `replaced` (D-377), with no try, no event and no row.
+    def initialize(student:, shown: nil, clock: Diagnosis::Clock.new)
       @student = student
+      @shown = shown
       @clock = clock
     end
 
@@ -29,10 +32,11 @@ module Practice
       serve = PracticeServe.includes(:events, attempts: :gradings, item_instance: { item_revision: :item }).find_by(id: serve_id, student_id: @student.id) or return not_found
       existing = PracticeAttempt.find_by(client_attempt_id: client_id)
       return existing.practice_serve_id == serve.id && existing.student_id == @student.id ? stored(serve, existing) : not_found if existing
-      unless Loader.status_of(serve, now: @clock.now).state == :open
+      status = Loader.status_of(serve, now: @clock.now, shown: @shown)
+      unless status.state == :open
         # a twin of this very answer may have been stored and closed the serve since the lookup above
         twin = PracticeAttempt.find_by(client_attempt_id: client_id, student_id: @student.id, practice_serve_id: serve.id)
-        return twin ? stored(serve, twin) : closed
+        return twin ? stored(serve, twin) : refused(status)
       end
 
       source = SOURCES.include?(source.to_s) ? source.to_s : "text"
@@ -87,7 +91,7 @@ module Practice
       now = @clock.now
       PracticeAttempt.transaction do
         serve = PracticeServe.includes(:events, attempts: :gradings, item_instance: { item_revision: :item }).find(serve.id)
-        status = Loader.status_of(serve, now: now)
+        status = Loader.status_of(serve, now: now, shown: @shown)
         next nil unless status.state == :open
 
         spec = Grading::Spec.from_instance(serve.item_instance)
@@ -128,7 +132,7 @@ module Practice
     # Refused, not a try, nothing stored: status `same_answer` (the page and its outbox end the entry on it; the page does not draw it as a
     # verdict; HTTP 200, so the browser logs no failed request). `actions` lets the page offer «Fai controllare» while a contest is allowed.
     def same_answer(serve)
-      Result.new(200, { status: "same_answer", message_it: I18n.t("practice.same_answer"), actions: Loader.status_of(serve, now: @clock.now).actions })
+      Result.new(200, { status: "same_answer", message_it: I18n.t("practice.same_answer"), actions: Loader.status_of(serve, now: @clock.now, shown: @shown).actions })
     end
 
     # The answer of A9.3 rebuilt from rows: what this attempt did, the same on the first reply and on a repeat.
@@ -193,7 +197,7 @@ module Practice
     # The skill's state and "perché" after this try, and whether this try changed the state.
     def skill_block(serve, attempt)
       subject = Subject.find_by!(key: serve.skill_key.split(".").first)
-      input = Loader.for(@student, subject: subject, now: @clock.now)
+      input = Loader.for(@student, subject: subject, now: @clock.now, shown: @shown)
       mark = [ attempt.answered_at, serve.id, attempt.try_number ]
       key = ->(t) { [ t.at, t.serve_id, t.try_number ] }
       args = { seeds: input.seeds, serves: input.serves, skills: [ serve.skill_key ] }
@@ -209,6 +213,9 @@ module Practice
 
     def invalid(message) = Result.new(200, { status: "invalid", message_it: message })
     def closed = Result.new(409, Payload.closed)
+
+    # A serve that is not open takes no answer: a replaced one says so with HTTP 200 (the page asks for the new serve with it, D-377), else 409 closed.
+    def refused(status) = status.state == :replaced ? Result.new(200, Payload.replaced) : closed
     def not_found = Result.new(404, { status: "not_found" })
   end
 end

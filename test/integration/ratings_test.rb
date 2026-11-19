@@ -72,7 +72,13 @@ class RatingsTest < ActionDispatch::IntegrationTest
     assert_equal :open, Practice::Loader.status_of(open.serve.reload).state
     actions(student: @official).solution(serve_id: open.serve.id)
     assert_equal :closed, Practice::Loader.status_of(PracticeServe.find(open.serve.id)).state
-    assert_equal "recorded", rate(kind: "item", serve_id: open.serve.id, stars: 2)["status"], "the solution was shown"
+    assert_equal({ "status" => "invalid", "error" => "not_over" }, rate(kind: "item", serve_id: open.serve.id, stars: 2), "the solution came but he never tried (D-377)")
+
+    tried = serve!(student: @official, topic: @topic_revision, item: @revisions.second.item.key)
+    answer!(tried, wrong_raw, student: @official)
+    assert_equal :open, Practice::Loader.status_of(PracticeServe.find(tried.serve.id)).state
+    actions(student: @official).solution(serve_id: tried.serve.id)
+    assert_equal "recorded", rate(kind: "item", serve_id: tried.serve.id, stars: 2)["status"], "one try, then the solution was shown"
 
     tries = serve!(student: @trial, topic: @topic_revision)
     answer!(tries, wrong_raw, student: @trial)
@@ -80,6 +86,25 @@ class RatingsTest < ActionDispatch::IntegrationTest
     assert_equal :closed, Practice::Loader.status_of(PracticeServe.find(tries.serve.id)).state
     assert_equal "recorded", rate(TRIAL, kind: "item", serve_id: tries.serve.id, text_it: "Troppo difficile.")["status"], "the tries are used up"
     assert_equal [ 2, nil ], Rating.order(:id).map(&:stars)
+  end
+
+  test "D-377: a typical error closes the serve before the solution: not over until the solution is shown; a serve of a replaced revision takes no rating" do
+    serve = serve!(student: @official, topic: @topic_revision)
+    answer!(serve, slip_raw(serve), student: @official)
+    status = Practice::Loader.status_of(PracticeServe.find(serve.serve.id))
+    assert_equal [ :closed, :wrong, false, %i[prova_questo show_solution back] ], [ status.state, status.closed_by, status.solution_sent, status.actions ]
+    assert_equal({ "status" => "invalid", "error" => "not_over" }, rate(kind: "item", serve_id: serve.serve.id, stars: 1), "he is told he is wrong and can still ask for the solution")
+    assert_equal 0, Rating.count
+    actions(student: @official).solution(serve_id: serve.serve.id)
+    assert_equal "recorded", rate(kind: "item", serve_id: serve.serve.id, stars: 3)["status"], "the solution is shown: the exercise is over"
+
+    open = serve!(student: @official, topic: @topic_revision, item: @revisions.second.item.key)
+    answer!(open, wrong_raw, student: @official) # a try, the serve stays open
+    newer = make_topic(@lesson_revision, { SKILL => @revisions }, course: @course)
+    approve_topic!(newer)
+    reply = rate(kind: "item", serve_id: open.serve.id, stars: 5)
+    assert_response :unprocessable_entity
+    assert_equal "serve_id", reply["error"], "a serve of a revision he is no longer shown is refused, over or not"
   end
 
   test "stars alone, a comment alone, and neither: the last is refused, so are a star out of 1 to 5 and a text over 2000 characters" do
