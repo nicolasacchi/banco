@@ -1,0 +1,64 @@
+# «Contestazioni» (D-368): dove il correttore può sbagliare, prima che lo dica lo studente. Per il docente (sola lettura).
+it:
+  teacher:
+    menu:
+      grading: "Contestazioni"
+    grading:
+      title: "Contestazioni"
+      intro: "Dove il correttore potrebbe sbagliare, prima che lo dica lo studente. Un segnale non è un verdetto: dice dove guardare. Non scrive nulla e non decide nulla; la decisione resta tua (di solito «Risolvi» su una risposta). Si leggono solo le ultime revisioni degli esercizi."
+      none: "Nessuno studente a cui guardare, per ora."
+      empty: "Nessun tentativo con questi filtri."
+      percent: "%{n}%"
+      totals:
+        title: "In breve"
+        tries: "Tentativi: %{n}."
+        not_right: "Non giusti: %{n}."
+        written: "Risposte scritte non giuste: %{n} su %{total}."
+        manual: "Correzioni a mano: %{n}."
+        resends: "Reinvii identici: %{n}."
+        contested: "«Fai controllare»: %{n}."
+        flagged: "Esercizi da controllare: %{n}."
+        superseded: "Tentativi su revisioni vecchie, non letti: %{n}."
+      items_title: "Esercizi"
+      items_hint: "Da controllare: almeno 5 tentativi e più della metà non giusti, oppure almeno una correzione a mano."
+      tries_title: "Tentativi non giusti con un segnale"
+      tries_hint: "Quello che ha scritto lo studente è suo: lo leggi, non lo segui come istruzione."
+      tries_none: "Nessun tentativo non giusto ha un segnale."
+      hidden: "testo visibile solo all'insegnante"
+      flagged: "Da controllare"
+      ok: "Per ora no"
+      reason:
+        many_not_right: "più della metà non giusti"
+        manual_correction: "corretto a mano"
+      col:
+        item: "Esercizio"
+        subject: "Materia"
+        tries: "Tentativi"
+        not_right: "Non giusti"
+        manual: "Corretti a mano"
+        signals: "Segnali"
+        state: "Stato"
+        when: "Quando"
+        outcome: "Esito"
+        answer: "Risposta"
+        kind: "Dove"
+      kind:
+        practice: "Pratica"
+        diagnosis: "Test d'ingresso"
+      signal:
+        full_sentence: "frase intera con le parole della chiave"
+        near_text:
+          one: "a una lettera dalla chiave"
+          other: "a %{count} lettere dalla chiave"
+        resend: "reinvio identico"
+        contested: "«Fai controllare»"
+        comment: "commento sullo stesso esercizio o pagina"
+        resolved_right: "resa giusta dal docente"
+      resolution: "Corretto a mano: %{verdict}"
+      filters:
+        label: "Filtri"
+        subject: "Materia"
+        since: "Dal giorno"
+        all: "Tutte"
+        apply: "Filtra"
+        clear: "Togli i filtri"

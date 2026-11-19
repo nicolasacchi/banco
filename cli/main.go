@@ -103,6 +103,7 @@ var commands = []command{
 	{name: "comments reopen", run: runCommentsReopen},
 	{name: "comments read", run: runCommentsRead},
 	{name: "ratings list", run: runRatingsList},
+	{name: "grading review", run: runGradingReview},
 	{name: "answers pending", run: runAnswersPending},
 	{name: "attempts", run: runAttempts},
 	{name: "attempts show", run: runAttemptsShow},

@@ -1,0 +1,102 @@
+<% content_for :title, t("teacher.grading.title") %>
+<main class="page wide" id="grading-page">
+  <%= ui_page_header t("teacher.grading.title"), back: [ t("teacher.menu.home"), with_student("/teacher") ], sub: t("teacher.grading.intro") %>
+  <%= render "teacher/student_picker" %>
+
+  <form class="ratings-filters" id="grading-filters" method="get" action="<%= teacher_grading_path %>" aria-label="<%= t("teacher.grading.filters.label") %>">
+    <% student_param.each do |name, value| %><%= hidden_field_tag name, value, id: nil %><% end %>
+    <label for="grading-subject"><%= t("teacher.grading.filters.subject") %>
+      <select id="grading-subject" name="subject" class="answer-input">
+        <option value=""><%= t("teacher.grading.filters.all") %></option>
+        <% @subjects.each do |subject| %><option value="<%= subject.key %>"<%= " selected" if @filters[:subject] == subject.key %>><%= subject.name_it %></option><% end %>
+      </select>
+    </label>
+    <label for="grading-since"><%= t("teacher.grading.filters.since") %>
+      <input id="grading-since" name="since" type="date" class="answer-input" value="<%= @filters[:since] %>">
+    </label>
+    <button type="submit" class="button" id="grading-filter-button"><%= t("teacher.grading.filters.apply") %></button>
+    <% if @filters.any? %><a class="button secondary" id="grading-filters-clear" href="<%= teacher_grading_path(student_param) %>"><%= t("teacher.grading.filters.clear") %></a><% end %>
+  </form>
+
+  <% if @review.nil? %>
+    <div id="grading-none"><%= ui_empty t("teacher.grading.none") %></div>
+  <% elsif @review.items.empty? %>
+    <div id="grading-empty"><%= ui_empty t("teacher.grading.empty") %></div>
+  <% else %>
+    <% totals = @review.totals %>
+    <h2 id="grading-totals-title"><%= t("teacher.grading.totals.title") %></h2>
+    <ul class="plain" id="grading-totals">
+      <li data-total="tries"><%= t("teacher.grading.totals.tries", n: totals[:tries]) %></li>
+      <li data-total="not_right"><%= t("teacher.grading.totals.not_right", n: totals[:not_right]) %></li>
+      <li data-total="written"><%= t("teacher.grading.totals.written", n: totals[:written_not_right], total: totals[:written_tries]) %></li>
+      <li data-total="manual"><%= t("teacher.grading.totals.manual", n: totals[:manual_corrections]) %></li>
+      <li data-total="resends"><%= t("teacher.grading.totals.resends", n: totals[:resends]) %></li>
+      <li data-total="contested"><%= t("teacher.grading.totals.contested", n: totals[:contested]) %></li>
+      <li data-total="flagged"><%= t("teacher.grading.totals.flagged", n: totals[:flagged_items]) %></li>
+      <% if totals[:superseded].positive? %><li data-total="superseded" class="hint"><%= t("teacher.grading.totals.superseded", n: totals[:superseded]) %></li><% end %>
+    </ul>
+
+    <h2 id="grading-items-title"><%= t("teacher.grading.items_title") %></h2>
+    <p class="hint"><%= t("teacher.grading.items_hint") %></p>
+    <%= ui_table_wrap(label: t("teacher.grading.items_title")) do %>
+      <table class="data stack" id="grading-items">
+        <thead><tr><th><%= t("teacher.grading.col.item") %></th><th><%= t("teacher.grading.col.subject") %></th><th><%= t("teacher.grading.col.tries") %></th><th><%= t("teacher.grading.col.not_right") %></th><th><%= t("teacher.grading.col.manual") %></th><th><%= t("teacher.grading.col.signals") %></th><th><%= t("teacher.grading.col.state") %></th></tr></thead>
+        <tbody>
+          <% @review.items.each do |item| %>
+            <tr data-item="<%= item[:item] %>" data-flagged="<%= item[:flagged] %>">
+              <td data-label="<%= t("teacher.grading.col.item") %>"><%= ref_for(item[:item]) %></td>
+              <td data-label="<%= t("teacher.grading.col.subject") %>"><%= item[:subject] %></td>
+              <td data-label="<%= t("teacher.grading.col.tries") %>" data-tries="<%= item[:tries] %>"><%= item[:tries] %></td>
+              <td data-label="<%= t("teacher.grading.col.not_right") %>" data-not-right="<%= item[:not_right] %>"><%= item[:not_right] %> (<%= t("teacher.grading.percent", n: (item[:not_right_rate] * 100).round) %>)</td>
+              <td data-label="<%= t("teacher.grading.col.manual") %>" data-manual="<%= item[:manual_corrections] %>"><%= item[:manual_corrections] %> (<%= t("teacher.grading.percent", n: (item[:manual_correction_rate] * 100).round) %>)</td>
+              <td data-label="<%= t("teacher.grading.col.signals") %>" data-suspect="<%= item[:suspect_tries] %>"><%= item[:suspect_tries] %></td>
+              <td data-label="<%= t("teacher.grading.col.state") %>">
+                <% if item[:flagged] %>
+                  <%= ui_pill(t("teacher.grading.flagged"), :nearly, icon: "alert") %>
+                  <span class="hint"><%= item[:flag_reasons].map { |r| t("teacher.grading.reason.#{r}") }.join(", ") %></span>
+                <% else %><span class="hint"><%= t("teacher.grading.ok") %></span><% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+
+    <h2 id="grading-tries-title"><%= t("teacher.grading.tries_title") %></h2>
+    <% suspect = @review.suspect_tries %>
+    <% if suspect.empty? %>
+      <%= ui_empty t("teacher.grading.tries_none") %>
+    <% else %>
+      <p class="hint"><%= t("teacher.grading.tries_hint") %></p>
+      <%= ui_table_wrap(label: t("teacher.grading.tries_title")) do %>
+        <table class="data stack" id="grading-tries">
+          <thead><tr><th><%= t("teacher.grading.col.when") %></th><th><%= t("teacher.grading.col.kind") %></th><th><%= t("teacher.grading.col.item") %></th><th><%= t("teacher.grading.col.outcome") %></th><th><%= t("teacher.grading.col.answer") %></th><th><%= t("teacher.grading.col.signals") %></th></tr></thead>
+          <tbody>
+            <% suspect.each do |try| %>
+              <tr id="grading-try-<%= try[:ref] %>" data-ref="<%= try[:ref] %>" data-signals="<%= try[:signals].join(" ") %>">
+                <td data-label="<%= t("teacher.grading.col.when") %>"><%= ui_time(try[:at]) %></td>
+                <td data-label="<%= t("teacher.grading.col.kind") %>"><%= t("teacher.grading.kind.#{try[:kind]}") %></td>
+                <td data-label="<%= t("teacher.grading.col.item") %>"><%= ref_for(try[:item]) %></td>
+                <td data-label="<%= t("teacher.grading.col.outcome") %>">
+                  <span class="key"><%= try[:outcome] %></span>
+                  <% if try[:resolution] %><br><span class="hint"><%= t("teacher.grading.resolution", verdict: try[:resolution][:verdict]) %></span><% end %>
+                </td>
+                <td data-label="<%= t("teacher.grading.col.answer") %>">
+                  <% if reader_only? %><span class="hint" data-hidden-text><%= t("teacher.grading.hidden") %></span>
+                  <% else %><q class="student-text" data-student-text><%= try[:answer].to_s.truncate(300) %></q><% end %>
+                </td>
+                <td data-label="<%= t("teacher.grading.col.signals") %>">
+                  <ul class="plain">
+                    <% try[:signals].each do |signal| %>
+                      <li data-signal="<%= signal %>"><%= signal == "near_text" ? t("teacher.grading.signal.near_text", count: try[:near_distance]) : t("teacher.grading.signal.#{signal}") %></li>
+                    <% end %>
+                  </ul>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+    <% end %>
+  <% end %>
+</main>
