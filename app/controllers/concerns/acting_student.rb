@@ -77,7 +77,7 @@ module ActingStudent
   # designed 404 in the student's layout, with the menu and «Commenta» (D-361), so he can tell the teacher. A request that is no page
   # (a POST, a script's fetch) gets the bare 404.
   def page_not_found
-    return head(:not_found) unless request.get?
+    return head(:not_found) unless request.get? || request.head?
 
     render "shared/student_not_found", formats: [ :html ], status: :not_found
   end

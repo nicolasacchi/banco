@@ -47,6 +47,15 @@ test("the walker leaves out what is not visible: hidden, aria-hidden, a closed d
   assert.deepEqual(said(card), ["it: Visibile.", "it: Soluzione", "it: Aperta", "it: Dentro."])
 })
 
+test("the rating box at the end of a lesson (D-365) is not read: its section carries data-nospeech, the contract's marker (D-381)", () => {
+  const box = el("section", { class: "rating-box", id: "rating-box", "data-nospeech": "" },
+    el("h3", {}, "Ti è piaciuta questa lezione? ", el("span", {}, "Se vuoi.")),
+    el("label", {}, "Vuoi aggiungere un commento?"),
+    el("span", { class: "rating-count" }, "0 di 2000"))
+  const card = el("article", {}, el("p", {}, "Ora puoi esercitarti."), box)
+  assert.deepEqual(said(card), ["it: Ora puoi esercitarti."])
+})
+
 test("an unopened gloss and an unflipped back are not read; once they are open they are, after the word", () => {
   const pop = (hidden) => el("span", { class: "gloss-pop", ...(hidden ? { hidden: "" } : {}) }, "La firma che rende valida la legge.")
   const card = (hidden) => el("article", {}, el("p", {}, "La ", el("span", { class: "gloss" }, el("span", { class: "gloss-word" }, "promulgazione"), el("button", {}, "?"), pop(hidden)), " chiude l'iter."))

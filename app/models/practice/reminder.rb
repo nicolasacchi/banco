@@ -32,7 +32,7 @@ module Practice
       ids = Array(serve_ids)
       return {} if ids.empty?
 
-      AppEvent.where(kind: KIND).where("json_extract(payload_json, '$.serve_id') IN (#{ids.map { '?' }.join(', ')})", *ids)
+      AppEvent.where(kind: KIND).where("json_extract(payload_json, '$.serve_id') IN (?)", ids)
               .order(:id).each_with_object(Hash.new { |h, k| h[k] = [] }) do |event, out|
         payload = JSON.parse(event.payload_json.to_s)
         out[payload["serve_id"]] << { code: payload["code"], source: payload["source"], at: event.created_at }

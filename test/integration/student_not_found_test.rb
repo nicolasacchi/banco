@@ -46,6 +46,13 @@ class StudentNotFoundTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "a HEAD to an unknown address is a read of a page like a GET: his own 404 is rendered, the body is dropped by the server (D-381)" do
+    on(:web, "/zzz", method: :head, headers: OFFICIAL, remote_addr: EDGE)
+    assert_response :not_found
+    assert_predicate response.body, :empty?
+    assert_includes response.headers["Link"].to_s, "rel=preload", "the student's layout was rendered (its stylesheets are preloaded), not a bare head"
+  end
+
   test "a POST to an unknown address and an unconfigured student stay bare 404" do
     on(:web, "/zzz", method: :post, headers: OFFICIAL, remote_addr: EDGE)
     assert_response :not_found
