@@ -446,3 +446,13 @@ entries:
     link: /teacher/comments
     title_it: "Nel contesto dei commenti le risposte sono a parole"
     body_it: "Sotto «Contesto» la risposta dello studente è scritta come la leggeva lui, per esempio «desinare – medio», e la riga segnata dice cosa ha dato e cosa era atteso: niente più dati grezzi. Il menu dice «Prova come lo studente»."
+
+  - id: listen-skips-the-rating-box
+    date: 2026-11-19
+    audience: [student]
+    kind: fix
+    decisions: [D-381]
+    title_it: "«Ascolta» non legge più il riquadro della valutazione"
+    body_it: "Quando ascolti una lezione, la voce legge la lezione e si ferma lì: non legge più il riquadro in cui dai le stelle o scrivi un commento."
+    title_en: "«Listen» no longer reads the rating box"
+    body_en: "When you listen to a lesson, the voice reads the lesson and stops there: it no longer reads the box where you give stars or write a comment."

@@ -9,7 +9,7 @@ import { test } from "node:test"
 class Node {
   constructor(tag) {
     this.tag = tag; this.attrs = {}; this.children = []; this.own = ""; this.listeners = {}; this.parent = null
-    this.value = ""; this.checked = false; this.selectionStart = null; this.selectionEnd = null
+    this.value = ""; this.checked = false; this.selectionStart = null; this.selectionEnd = null; this.dataset = {}
     const node = this
     this.classList = {
       list: () => node.className.split(/\s+/).filter(Boolean),

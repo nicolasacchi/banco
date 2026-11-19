@@ -66,6 +66,18 @@ class PagesSystemTest < ApplicationSystemTestCase
   # A frame that is still being created has no execution context yet: look again a few times before giving up. The runner's Chrome also
   # leaves the initial main frame without any context for good (state :canceled): asking it for its url waits for one and, in two runs, never
   # came back (the 900 s watchdog stopped this test), so a frame with no context is not asked, and each answer is bounded.
+  # The value the block returns (not nil, not false) within `wait` seconds; fails with `what` otherwise.
+  def wait_for_value(what, wait: 15)
+    deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + wait
+    loop do
+      value = yield
+      return value if value
+
+      flunk "#{what} did not appear within #{wait} s" if Process.clock_gettime(Process::CLOCK_MONOTONIC) > deadline
+      sleep 0.1
+    end
+  end
+
   def frame_for_pages
     5.times do
       frame = page.driver.browser.page.frames.find do |f|
@@ -170,12 +182,22 @@ class PagesSystemTest < ApplicationSystemTestCase
     host.run
     begin
       page.driver.headers = {}
+      page.driver.clear_network_traffic
       visit "http://127.0.0.1:#{host.connected_ports.first}/"
-      sleep 2
-      frames = page.driver.browser.page.frames.reject { |f| f.main? }
-      assert_equal 1, frames.size
-      assert_match(/chrome-error:|\Aabout:blank\z/, frames.first.url.to_s, "the frame must not show the app")
-      assert_no_match(%r{/today}, frames.first.url.to_s)
+      # The frame is asked from Chrome's own frame tree, not from the driver's list of frames: a refused frame is swapped for an error page, and the
+      # runner's Chrome drops it from the driver's list (as it does not expose the sandboxed frame of a free page, see the skip below).
+      frames = wait_for_value("the refused frame") do
+        found = page.driver.browser.page.command("Page.getFrameTree").dig("frameTree", "childFrames").to_a.map { |child| child.fetch("frame") }
+        found if found.size == 1 && found.first["url"].to_s.match?(/\Achrome-error:/)
+      end
+      assert_match(/chrome-error:|\Aabout:blank\z/, frames.first["url"].to_s, "the frame must not show the app")
+      assert_no_match(%r{/today}, frames.first["url"].to_s)
+      # and the server's answer to the frame's request carried the refusal
+      exchange = page.driver.network_traffic.find { |e| e.url == "#{origin}/today" && e.response }
+      assert exchange, "Chrome asked the app for the page in the frame"
+      headers = exchange.response.headers.transform_keys(&:downcase)
+      assert_equal "DENY", headers["x-frame-options"]
+      assert_includes headers["content-security-policy"].to_s, "frame-ancestors 'none'"
     ensure
       host.stop(true)
     end

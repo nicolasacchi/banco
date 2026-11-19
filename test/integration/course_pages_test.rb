@@ -130,14 +130,14 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
 
   test "Materie, Materia and Oggi print the subject's name from Subject#name_it (D-343)" do
     build_student_world
-    I18n.backend.store_translations(:it, subjects: { display_name_it: { math: "Matematica del Marconi" } })
+    I18n.backend.store_translations(:it, subjects: { display_name_it: { math: "Matematica della scuola" } })
     page(OFFICIAL, "/subjects")
-    assert_select "li.subject[data-subject=math] .subject-name", "Matematica del Marconi"
+    assert_select "li.subject[data-subject=math] .subject-name", "Matematica della scuola"
     page(OFFICIAL, "/subjects/math")
-    assert_select "h1", /Matematica del Marconi/
+    assert_select "h1", /Matematica della scuola/
     page(OFFICIAL, "/topics/#{TOPIC}/lesson")
     page(OFFICIAL, "/today")
-    assert_select "#now-resume .topic-meta", /Matematica del Marconi/
+    assert_select "#now-resume .topic-meta", /Matematica della scuola/
   ensure
     I18n.backend.reload!
   end

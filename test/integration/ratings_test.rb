@@ -227,7 +227,7 @@ class RatingsTest < ActionDispatch::IntegrationTest
   # ---- the pages --------------------------------------------------------------------------------------------
 
   def assert_box(kind, hidden: false)
-    assert_select "section#rating-box.rating-box[data-controller=rating][data-rating-kind-value=?]#{'[hidden]' if hidden}", kind do
+    assert_select "section#rating-box.rating-box[data-controller=rating][data-nospeech][data-rating-kind-value=?]#{'[hidden]' if hidden}", kind do # «Ascolta» never reads it (D-381)
       assert_select "h3.rating-ask", text: kind == "item" ? "Ti è piaciuto questo esercizio? Se vuoi." : "Ti è piaciuta questa lezione? Se vuoi."
       assert_select "fieldset.rating-stars legend", text: "Da 1 a 5 stelle"
       assert_select "input[type=radio][name=rating-box-stars]", count: 5

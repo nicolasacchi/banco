@@ -1,9 +1,9 @@
 <%# «Ti è piaciuto?» (D-365): five stars as radio inputs with labels, an optional comment, «Invia», then «Grazie!» and what he sent with «Cambia».
     rating_controller.js is the whole behaviour. Locals: kind ("item": the practice page, hidden until the exercise is over; "lesson": the end of a lesson),
     dom (a unique id prefix), hidden, data (the Stimulus values that name the target: topic and lesson revision for a lesson), current (the student's
-    latest rating of it, {} when none). Never drawn in the teacher's preview or the entry test (rating_box?). %>
+    latest rating of it, {} when none). data-nospeech: «Ascolta» (lesson/speech.js) never reads it (D-381). Never drawn in the teacher's preview or the entry test (rating_box?). %>
 <% data = local_assigns.fetch(:data, {}) %>
-<section class="rating-box" id="<%= dom %>" aria-labelledby="<%= dom %>-ask" data-controller="rating"
+<section class="rating-box" id="<%= dom %>" aria-labelledby="<%= dom %>-ask" data-controller="rating" data-nospeech
          data-rating-url-value="/ratings" data-rating-kind-value="<%= kind %>"
          <% data.each do |name, value| %>data-rating-<%= name.to_s.dasherize %>-value="<%= value %>" <% end %>
          data-rating-current-value="<%= local_assigns.fetch(:current, {}).to_json %>" data-rating-labels-value="<%= rating_labels.to_json %>"<%= " hidden" if local_assigns[:hidden] %>>
