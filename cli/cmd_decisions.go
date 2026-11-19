@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io"
 	"net/url"
 	"os"
@@ -188,7 +189,8 @@ func runCommentsShow(e *env, args []string) error {
 }
 
 // runCommentAction is the body of reply, resolve, reopen and read: the teacher's side of a comment, a dry run
-// unless --confirm (POST /api/v1/comments/:id/ACTION).
+// unless --confirm (POST /api/v1/comments/:id/ACTION). A reply is linted for tone first (D-371): the warnings go to stderr
+// before it is sent, and never stop it.
 func runCommentAction(e *env, action string, args []string) error {
 	name := "comments " + action
 	fs := flag.NewFlagSet(name, flag.ContinueOnError)
@@ -235,7 +237,58 @@ func runCommentAction(e *env, action string, args []string) error {
 	if err != nil {
 		return newErr(ExitUsage, "E-USAGE", "args", err.Error(), next)
 	}
-	return send(e, name, "POST", "/api/v1/comments/"+id+"/"+action, payload, false)
+	path := "/api/v1/comments/" + id + "/" + action
+	if action == "reply" {
+		return sendReply(e, name, path, body)
+	}
+	return send(e, name, "POST", path, payload, false)
+}
+
+// sendReply posts a reply and prints the tone warnings of the server's lint (Comments::ReplyLint) to stderr, one `warning:` line
+// each, before the reply goes: with --confirm a dry run of the same reply comes first, so the warnings are read before anything is
+// recorded; the confirmed reply is then sent whatever they say. Without --confirm the dry run is the one request.
+func sendReply(e *env, name, path string, body map[string]any) error {
+	confirm := body["confirm"] == true
+	if confirm {
+		dry := map[string]any{"text_it": body["text_it"], "confirm": false}
+		payload, err := json.Marshal(dry)
+		if err != nil {
+			return newErr(ExitUsage, "E-USAGE", "args", err.Error(), "banco comments reply 3 --text TEXT")
+		}
+		out, err := e.client().doWith(name, "POST", path, payload, nil)
+		if err != nil {
+			return err
+		}
+		printReplyWarnings(e, out)
+	}
+	payload, err := json.Marshal(body)
+	if err != nil {
+		return newErr(ExitUsage, "E-USAGE", "args", err.Error(), "banco comments reply 3 --text TEXT")
+	}
+	out, err := e.client().doWith(name, "POST", path, payload, nil)
+	if err != nil {
+		return err
+	}
+	if !confirm {
+		printReplyWarnings(e, out)
+	}
+	_, err = e.stdout.Write(append(out, '\n'))
+	return err
+}
+
+// printReplyWarnings writes the `warnings` of a reply's answer to stderr, advisory lines that change nothing.
+func printReplyWarnings(e *env, answer []byte) {
+	var parsed struct {
+		Warnings []struct {
+			Message string `json:"message"`
+		} `json:"warnings"`
+	}
+	if json.Unmarshal(answer, &parsed) != nil {
+		return
+	}
+	for _, w := range parsed.Warnings {
+		fmt.Fprintf(e.stderr, "warning: %s\n", w.Message)
+	}
 }
 
 func runCommentsReply(e *env, args []string) error   { return runCommentAction(e, "reply", args) }

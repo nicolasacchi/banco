@@ -291,6 +291,11 @@ body.comment-mode [data-comment-ui] [data-comment-anchor] { outline: none; }
 .comment-waited { color: var(--muted); font-size: 0.9rem; }
 .comment-late { --pill: var(--cs-sent); }
 .comment-late .comment-icon { width: 1.1em; height: 1.1em; color: var(--pill); }
+.comment-due ul { list-style: none; padding: 0; margin: 0.25rem 0 0.75rem; }
+.comment-due li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.75rem; margin: 0.25rem 0; }
+.comment-due-left { font-weight: 700; }
+.comment-due li[data-due-late="true"] .comment-due-left { color: var(--cs-sent); }
+.comment-followup { --pill: var(--cs-sent); }
 
 @media print { .comment-banner, .comment-box, .comment-toast, .comment-open { display: none !important; } }
 

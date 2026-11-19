@@ -15,7 +15,9 @@ module Comments
     def summary(comment)
       { id: comment.id, state: comment.state, reason: comment.reason, student: comment.student.key, trial: comment.trial, page_kind: comment.page_kind,
         page_path: comment.page_path, subject: comment.subject&.key, text_it: comment.text_it, replies: comment.replies.size,
-        unread_reply: comment.unread_reply?, created_at: comment.created_at.utc.iso8601 }.compact
+        unread_reply: comment.unread_reply?, created_at: comment.created_at.utc.iso8601,
+        # D-371: only for a comment that waits for the teacher: hours left of the promised answer time (negative once late), and whether the student wrote after the last reply.
+        due_in_hours: comment.due_in_hours, student_followup: (true if comment.student_followup?) }.compact
     end
   end
 end

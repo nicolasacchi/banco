@@ -1,0 +1,21 @@
+# The tone lint of the teacher's replies (D-371): Comments::ReplyLint. Advisory only: it warns the operator, in `banco comments
+# reply` (dry run and --confirm) and `bin/rails banco:comments:reply`, and never blocks a reply. Nothing here reaches the
+# student; the reply is still the teacher's own words.
+#
+# phrases: wording that reads as blaming the student (he takes it as an accusation), matched whole-word, case-insensitive,
+# apostrophes and accents as typed. Add a phrase when a reply was taken the wrong way; do not remove one without a decision.
+# max_characters: a reply longer than this is hard for him to read (his reading difficulties, D-337).
+max_characters: 600
+phrases:
+  - "hai sbagliato"
+  - "il tuo browser"
+  - "il tuo dispositivo"
+  - "tuo dispositivo"
+  - "se ricordi"
+  - "ti ricordi"
+  - "non hai letto"
+  - "era finito il tempo"
+  - "è scaduto il tempo"
+  - "devi"
+  - "avresti dovuto"
+  - "non è vero"

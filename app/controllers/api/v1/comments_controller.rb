@@ -41,12 +41,15 @@ module Api
       end
 
       # GET /api/v1/comments/:id
+      # `context` (D-371): the revision he saw against the newest, his tries, his earlier comments on the item or page, the hours left to answer. His raw
+      # words in the tries only for a teacher token (D-346).
       def show
         comment = find_comment or return
-        render json: { notice: NOTICE, comment: detail(comment) }
+        render json: { notice: NOTICE, comment: detail(comment).merge(context: Comments::Context.new(comment, words: @token.role == "teacher").to_h) }
       end
 
       # POST /api/v1/comments/:id/reply {text_it, confirm}
+      # `warnings` (D-371): the tone lint, advisory, in the dry run and in the confirmed reply; it never stops the reply.
       def reply = act("reply") { |body| { text_it: body["text_it"] } }
 
       # POST /api/v1/comments/:id/resolve {reason_it, confirm}
@@ -84,14 +87,17 @@ module Api
         return answer_failure(result, invalid_code: "E-COMMENT-INVALID", next_step: "banco comments show #{params[:id]}") unless result.ok
 
         if result.recorded
-          render json: { recorded: true, dry_run: false, action: action, event: event_row(result.event), comment: detail(Comment.includes(:events, :student, :subject).find(params[:id])) }, status: :created
+          render json: { recorded: true, dry_run: false, action: action, event: event_row(result.event), comment: detail(Comment.includes(:events, :student, :subject).find(params[:id])) }.merge(warnings_of(result)), status: :created
         else
           render json: { recorded: false, dry_run: true, action: action, allowed: true,
-                         next: "send the same request with confirm: true (banco comments #{action} #{params[:id]} --confirm) to record it" }
+                         next: "send the same request with confirm: true (banco comments #{action} #{params[:id]} --confirm) to record it" }.merge(warnings_of(result))
         end
       end
 
       def summary(comment) = Comments::ApiRows.summary(comment)
+
+      # {warnings: [...]} for a reply (an empty list when it reads fine); nothing for the other actions.
+      def warnings_of(result) = params[:action] == "reply" ? { warnings: result.warnings.map(&:to_h) } : {}
 
       def detail(comment)
         labels = Activity.token_labels(comment.events.map { |e| JSON.parse(e.payload_json)["token"] })

@@ -8,6 +8,7 @@ module Api
     class DigestController < Api::BaseController
       LATEST = 5
       ACTIVITY = 15
+      DUE = 20
 
       before_action { require_token_roles("bot_read", "teacher") }
 
@@ -26,11 +27,12 @@ module Api
       private
 
       # The open comments as GET /api/v1/comments lists them (state open, every student): how many, how many are new to the teacher
-      # (state sent), the latest rows.
+      # (state sent), the latest rows, and `due` (D-371): the threads that wait for the teacher with the hours left of the 24 h promise, soonest first, and which are a follow-up of the student after the teacher's last reply.
       def comments
         rows = Comments::ApiRows.list(state: "open")
         { notice: CommentsController::NOTICE, open: rows.size, unread: rows.count { |c| c.state == "sent" },
-          latest: rows.first(LATEST).map { |c| Comments::ApiRows.summary(c) } }
+          latest: rows.first(LATEST).map { |c| Comments::ApiRows.summary(c) },
+          due: Comments::Due.api(comments: rows, limit: DUE) }
       end
 
       # As GET /api/v1/answers/pending?student=KEY.

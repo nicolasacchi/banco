@@ -5,10 +5,11 @@ module Comments
   # origin for a login of BANCO_TEACHER_USERS (or takes the one given) and hands the action to Comments::Responder, the only writer, so every
   # guard holds (flag on, a teacher of the list, the comment's state). A dry run (the default) runs the whole thing
   # inside a savepoint that is rolled back; confirm: true keeps the row. The reply is the operator's own words,
-  # delivered as the teacher's reply with origin "console"; the row says so.
+  # delivered as the teacher's reply with origin "console"; the row says so. A reply is linted for tone first (D-371,
+  # Comments::ReplyLint): the warnings come back in Result#warnings, dry run or confirmed, and never stop the reply.
   class Console
     # failure: nil when ok, else :refused (reason says why), :missing or :invalid; the API maps it to a status.
-    Result = Struct.new(:ok, :recorded, :event, :errors, :failure, :reason, keyword_init: true)
+    Result = Struct.new(:ok, :recorded, :event, :errors, :failure, :reason, :warnings, keyword_init: true)
 
     ACTIONS = { "reply" => "reply", "read" => "read", "resolve" => "resolved", "reopen" => "reopened" }.freeze
 
@@ -33,7 +34,7 @@ module Comments
         event = Responder.call(request: origin, comment_id: @id, kind: kind, text_it: @text, reason_it: @reason)
         raise ActiveRecord::Rollback unless @confirm
       end
-      Result.new(ok: true, recorded: @confirm, event: event, errors: [])
+      Result.new(ok: true, recorded: @confirm, event: event, errors: [], warnings: warnings)
     rescue DecisionRecorder::Refused => e
       fail_with("refused: #{e.reason}", failure: :refused, reason: e.reason)
     rescue DecisionRecorder::Missing => e
@@ -43,6 +44,9 @@ module Comments
     end
 
     private
+
+    # Advisory: only a reply has words to lint.
+    def warnings = @action == "reply" ? ReplyLint.call(@text) : []
 
     def fail_with(*errors, failure:, reason: nil) = Result.new(ok: false, recorded: false, errors: errors, failure: failure, reason: reason)
   end
