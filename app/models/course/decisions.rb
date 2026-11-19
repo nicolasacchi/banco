@@ -22,6 +22,14 @@ module Course
       nil
     end
 
+    # Every lesson revision id that an approve_topic decision of +lesson+ pinned (D-374), whenever it was recorded.
+    def approved_lesson_revision_ids(lesson)
+      Decision.where(kind: "approve_topic", subject_id: lesson.subject_id).pluck(:payload_json).filter_map do |json|
+        payload = JSON.parse(json)
+        payload["lesson_revision_id"] if payload["topic"] == lesson.key
+      end.uniq
+    end
+
     # The attestation words of the latest approve_topic of +key+ when it was a console approval that waived the
     # page-opened requirement (D-260), else nil.
     def attestation(key)
