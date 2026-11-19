@@ -594,6 +594,15 @@
       "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND"]
     },
     {
+      "name": "grading review",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/grading/review",
+      "args": [],
+      "flags": ["--since", "--subject", "--student"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND"]
+    },
+    {
       "name": "answers pending",
       "local": false,
       "method": "GET",
