@@ -318,7 +318,7 @@ it:
       skill: "Abilità:"
       status: "Controllo meccanico:"
     preview:
-      title: "Prova come studente"
+      title: "Prova come lo studente"
       test_title: "Test d'ingresso"
       back_to_today: "Torna a Oggi"
       intro: "Giochi il test come lo vedrebbe lo studente. Le risposte restano separate da quelle dello studente."

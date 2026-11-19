@@ -277,7 +277,7 @@ class TeacherAsStudentTest < ActionDispatch::IntegrationTest
       "/teacher/subjects/math/course", "/teacher/dashboard/state" ].each do |path|
       page(TEACHER, path)
       assert_response :success, path
-      assert_no_match(/preview(\.\d+)?\b/i, css_select("main, body").first.text.gsub(/Prova come studente|Anteprima|anteprima/, ""), path) unless path.end_with?("/state")
+      assert_no_match(/preview(\.\d+)?\b/i, css_select("main, body").first.text.gsub(/Prova come lo studente|Anteprima|anteprima/, ""), path) unless path.end_with?("/state")
       assert_not_includes response.body, "student=preview", path
     end
     page(TEACHER, "/teacher?student=preview")

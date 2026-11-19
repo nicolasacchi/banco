@@ -20,12 +20,12 @@
   <% else %>
     <% if tries[:behind_the_comment].any? %>
       <p data-context="tries-behind"><strong><%= t("teacher.comments.context.tries_behind") %></strong></p>
-      <%= render "teacher/comments/context_tries", rows: tries[:behind_the_comment] %>
+      <%= render "teacher/comments/context_tries", rows: tries[:behind_the_comment], words: ctx[:words] %>
     <% end %>
     <% other = tries[:on_the_item] %>
     <% if other && other[:rows].any? %>
       <p data-context="tries-item"><strong><%= t("teacher.comments.context.tries_item", count: other[:total]) %></strong></p>
-      <%= render "teacher/comments/context_tries", rows: other[:rows] %>
+      <%= render "teacher/comments/context_tries", rows: other[:rows], words: ctx[:words] %>
     <% end %>
   <% end %>
   <% if ctx[:earlier].any? %>

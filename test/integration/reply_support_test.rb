@@ -352,6 +352,58 @@ class ReplySupportTest < ActionDispatch::IntegrationTest
     end
   end
 
+  def matching_try
+    item = Item.create!(subject: @subject, key: "match-demo-1", kind: "practice_item")
+    body = { schema: "banco.item/1", schema_version: 1, kind: "practice_item", subject: "math", skill: SKILL, component: "matching", level: 1,
+             expected_seconds: 60, hints_it: [], error_catalogue: [] }
+    revision = ItemRevision.create!(item: item, seq: 1, body_json: JSON.generate(body), file_sessions_json: "{}")
+    ItemValidation.create!(item_revision: revision, seq: 1, status: "passed", codes_json: "[]")
+    left = %w[dimora desinare volto].each_with_index.map { |text, i| { id: "l#{i + 1}", text: text } }
+    right = %w[aulico medio popolare comune].each_with_index.map { |text, i| { id: "r#{i + 1}", text: text } }
+    instance = ItemInstance.create!(item_revision: revision, seed: 1, display_json: JSON.generate(stem_it: "Abbina le parole al loro registro.", left: left, right: right),
+                                    answer_json: JSON.generate(l1: "r3", l2: "r1", l3: "r4"), errors_json: "[]", hints_json: "[]",
+                                    solution_json: JSON.generate(steps: [], final: "x"), fingerprint: Digest::SHA256.hexdigest("match-demo-1"))
+    serve = make_serve(@official, @topic_revision, instance, skill_key: SKILL, at: 2.days.ago)
+    try = make_try(serve, raw: JSON.generate(l1: "r3", l2: "r2", l3: "r4"), verdict: "wrong", at: 2.days.ago + 60)
+    comment = make_comment(practice_serve: serve, item_instance: instance, item_revision: revision, page_kind: "practice", page_path: PRACTICE_PATH,
+                           anchor: "exercise/item/answer/row:2", text_it: "La seconda riga è giusta, mi sembra.")
+    [ comment, try ]
+  end
+
+  test "the card shows a matching try and the row of the anchor in words, never the stored data; the API's context stays raw" do
+    comment, try = matching_try
+
+    on(:web, "/teacher/comments", headers: TEACHER, remote_addr: EDGE)
+    assert_response :success
+    assert_select "#comment-#{comment.id} details.comment-context li[data-try=?]", "practice-#{try.id}" do |rows|
+      text = rows.first.text.squish
+      assert_includes text, "Risposta: «dimora – popolare; desinare – medio; volto – comune»"
+      assert_includes text, "Riga segnata: «desinare» · ha dato «medio», atteso «aulico»"
+    end
+    card = css_select("#comment-#{comment.id} details.comment-context").first.to_s
+    assert_not_includes card, "{"
+    assert_not_includes card, "&quot;"
+    assert_no_match(/\b[lr]\d\b/, css_select("#comment-#{comment.id} details.comment-context").first.text)
+
+    row = read_context(@teacher_token, comment)["tries"]["behind_the_comment"].first
+    assert_equal JSON.generate(l1: "r3", l2: "r2", l3: "r4"), row["answer"]
+    assert_equal({ "segment" => "row:2", "n" => 2, "column" => "left", "shown_id" => "l2", "stored_id" => "l2", "text" => "desinare", "resolved" => true,
+                   "given_text" => "medio", "key_text" => "aulico" }, row["anchor_row"])
+    assert_equal Comments::Context.new(comment, words: true).to_h.deep_stringify_keys["tries"], read_context(@teacher_token, comment)["tries"]
+  end
+
+  test "a typed answer reads as it is, and an answer that does not read in words says so in a short line, never its data" do
+    comment = practice_comment
+    make_try(@serve, try_number: 2, raw: JSON.generate(l1: "r4"), verdict: "wrong", at: 3.days.ago + 120)
+
+    on(:web, "/teacher/comments", headers: TEACHER, remote_addr: EDGE)
+    assert_select "#comment-#{comment.id} li[data-try=?]", "practice-#{@try.id}", /Risposta: «99999 parola-sua»/
+    assert_select "#comment-#{comment.id} li[data-try]", /Risposta: non si legge in parole/
+    card = css_select("#comment-#{comment.id} details.comment-context").first.to_s
+    assert_not_includes card, "r4"
+    assert_not_includes card, "&quot;"
+  end
+
   test "the card of a comment on an exercise with no try and no earlier comment says so in one line each" do
     comment = make_comment(item_revision: @revisions[1], page_kind: "practice", page_path: PRACTICE_PATH, anchor: "exercise/item")
 
