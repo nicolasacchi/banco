@@ -1,4 +1,5 @@
 require "test_helper"
+require "rake"
 require_relative "../support/lesson_events_world"
 require_relative "../support/multi_user"
 require_relative "../support/public_api_tokens"
