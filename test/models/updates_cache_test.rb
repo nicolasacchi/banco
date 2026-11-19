@@ -3,15 +3,15 @@ require "test_helper"
 # The decisions file (810 KB) and the two docs are read and parsed once per version of the file, not once per request:
 # the public routes of Updates cost a hash lookup (D-333).
 class UpdatesCacheTest < ActiveSupport::TestCase
-  PATH = Rails.root.join(Updates::DECISIONS)
-
-  # Runs the block with the decisions file at a new mtime (the file's own mtime comes back after); returns the parses.
+  # Runs the block with Updates reading its own copy of the decisions file (@path) at a new mtime: tests run in parallel
+  # processes, and the mtime of the repository's file is not theirs to move.
   def new_version
-    original = PATH.mtime
-    File.utime(Time.now, original + 5 + rand(1000), PATH)
-    yield
-  ensure
-    File.utime(Time.now, original, PATH)
+    Dir.mktmpdir("updates-cache") do |dir|
+      @path = Pathname(dir).join("decisions.md")
+      FileUtils.cp(Rails.root.join(Updates::DECISIONS), @path)
+      File.utime(Time.now, @path.mtime + 5 + rand(1000), @path)
+      Updates.stub(:decisions_path, @path) { yield }
+    end
   end
 
   # How many times the decisions file is parsed while the block runs.
@@ -40,7 +40,7 @@ class UpdatesCacheTest < ActiveSupport::TestCase
     new_version do
       assert_equal 1, parses { Updates.changes }
       assert_equal 0, parses { Updates.changes }
-      File.utime(Time.now, PATH.mtime + 1, PATH)
+      File.utime(Time.now, @path.mtime + 1, @path)
       assert_equal 1, parses { Updates.changes; Updates.decision("D-332") }
     end
   end

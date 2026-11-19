@@ -29,6 +29,9 @@ module Updates
 
   def dist = Pathname(dist_dir || Rails.root.join("dist"))
 
+  # The decisions file; the cache tests point it at a copy they may touch.
+  def decisions_path = Rails.root.join(DECISIONS)
+
   # The answer of GET /api/v1/updates. since: nil or a number (the changes after D-<since>).
   def summary(since: nil)
     build = build_info
@@ -80,7 +83,7 @@ module Updates
   # What the decisions file holds, parsed once per version of the file: rows (the index, oldest first), rows_by_number
   # (the first index row of each number) and sections (the first `## D-NNN` section of each number).
   def decisions_file
-    cached(Rails.root.join(DECISIONS)) { |text| parse_decisions(text) }
+    cached(decisions_path) { |text| parse_decisions(text) }
   end
 
   def parse_decisions(text)
