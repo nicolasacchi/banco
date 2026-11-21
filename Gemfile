@@ -5,7 +5,7 @@ ruby file: ".ruby-version"
 
 gem "rails", "~> 8.1.4"
 gem "sqlite3", "~> 2.9"
-gem "puma", "~> 8.0"
+gem "puma", "~> 8.1"
 gem "propshaft"
 gem "importmap-rails", "~> 2.2"
 gem "turbo-rails"
