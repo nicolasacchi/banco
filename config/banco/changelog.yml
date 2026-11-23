@@ -13,6 +13,22 @@
 #
 # The student's text has no decision number and no jargon; it is second person and never blames. Newest first is the order of the pages, not of this file.
 entries:
+  - id: exercises-rechecked-1123
+    date: 2026-11-23
+    audience: [student, teacher]
+    kind: content
+    title_it: "Esercizi ricontrollati"
+    body_it: "Abbiamo ricontrollato tutti gli esercizi. Dove una riga si poteva leggere in due modi, o una risposta giusta non era accettata, l'abbiamo corretta. Ora sono accettate più risposte giuste, e gli aiuti che dicevano già la soluzione sono stati riscritti."
+    title_en: "Exercises checked again"
+    body_en: "We checked every exercise again. Where a line could be read in two ways, or a right answer was not accepted, we fixed it. More right answers are accepted now, and the hints that gave away the solution have been rewritten."
+  - id: matching-left-out
+    date: 2026-11-23
+    audience: [student]
+    kind: fix
+    title_it: "Esercizi da abbinare: «una resta fuori»"
+    body_it: "Sopra gli esercizi da abbinare ora c'è scritto «una resta fuori»: una delle risposte non serve a nessuna riga."
+    title_en: "Matching exercises: «one is left over»"
+    body_en: "Above the matching exercises it now says that one answer is left over: it fits no line."
   - id: ordering-words-whole
     date: 2026-11-23
     audience: [student]
