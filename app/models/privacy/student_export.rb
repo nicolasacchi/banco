@@ -70,7 +70,7 @@ module Privacy
       Table.new(name: "comments", scope: mine.call(Comment), drop: [],
                 description_it: "i commenti che hai scritto, con la pagina, le parole che avevi selezionato, la grandezza dello schermo e il tema."),
       Table.new(name: "comment_events", scope: ->(student) { CommentEvent.where(comment_id: comments.call(student)) }, drop: %w[request_id],
-                description_it: "che cosa è successo a ogni commento: le risposte del docente, quando è stato letto, chiuso o riaperto, e le tue risposte. Il tuo indirizzo di rete c'è solo nelle righe scritte da te."),
+                description_it: "che cosa è successo a ogni commento: le risposte del docente, quando è stato letto, chiuso o riaperto, le tue risposte e quando ne hai cancellato uno (i commenti cancellati ci sono ancora). Il tuo indirizzo di rete c'è solo nelle righe scritte da te."),
       Table.new(name: "ratings", scope: mine.call(Rating), drop: [],
                 description_it: "le stelle e i commenti che hai dato agli esercizi e alle lezioni, con l'esercizio o la lezione e la versione che avevi davanti.")
     ].freeze

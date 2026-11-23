@@ -1,5 +1,6 @@
 <% content_for :title, t("comments.title") %>
 <main class="page course cm-page" data-comment-anchor="page">
+  <% if flash[:notice] %><%= ui_notice :success, flash[:notice], html: { id: "comment-withdrawn" } %><% end %>
   <div class="cm-shell" data-view="list">
     <%= render "comments/list", inbox: @inbox, current: nil, heading: "h1" %>
     <section class="cm-thread-pane cm-thread-none" aria-hidden="true">

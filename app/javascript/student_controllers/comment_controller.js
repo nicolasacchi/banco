@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { Outbox, newId } from "items/outbox"
-import { anchorPath, buildComment, clip, describeAnchor, listTargets, refsOf, SELECTED_MAX, TEXT_MAX } from "items/comment_anchor"
+import { anchorPath, buildComment, clip, listTargets, placeName, refsOf, SELECTED_MAX, TEXT_MAX } from "items/comment_anchor"
 
 // "Commenta" on every student page (D-304). A tap on a «Commenta» control (any element with data-comment-open)
 // starts the comment mode: the page's commentable elements are outlined and a tap picks one (or "Tutta la pagina",
@@ -116,13 +116,8 @@ export default class extends Controller {
     ;(focusList ? this.whereTarget : this.reasonTargets[0])?.focus()
   }
 
-  // The words for a place: its name from the anchor ("Scheda 3 · Blocco 2"), plus the start of its text.
-  nameOf(target) {
-    if (!target.anchor) return this.labelsValue.whole_page
-    const name = describeAnchor(target.anchor, this.labelsValue.anchors)
-    const label = target.label && target.label !== target.anchor ? clip(target.label, 30) : ""
-    return [name, label].filter(Boolean).join(" · ") || target.anchor
-  }
+  // The words for a place (placeName): its name from the anchor ("Scheda 3 · Blocco 2"), plus the start of its text; never a raw `id:…`.
+  nameOf(target) { return placeName(target, this.labelsValue.anchors, this.labelsValue.whole_page) }
 
   // The part chosen is echoed in the box: its name above (the list), a short excerpt of its words under it, and the part stays
   // outlined on the page behind the box.

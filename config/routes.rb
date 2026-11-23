@@ -148,6 +148,7 @@ Rails.application.routes.draw do
       get "comments/:id" => "comments#show", constraints: { id: /\d+/ }, as: :comment
       post "comments" => "comments#create"
       post "comments/:id/reply" => "comments#reply", constraints: { id: /\d+/ }, as: :comment_reply
+      post "comments/:id/withdraw" => "comments#withdraw", constraints: { id: /\d+/ }, as: :comment_withdraw # D-397: he deletes his own comment before any reply
       # «Ti è piaciuto?» (D-365): the student rates an exercise that is over or a lesson. Students only; no preview route.
       post "ratings" => "ratings#create"
       # «Per me va bene così» on a check of a lesson/2 (D-396): the latest wrong answer goes to the teacher as a comment. Students only; no preview route.

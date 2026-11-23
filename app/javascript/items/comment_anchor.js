@@ -88,3 +88,27 @@ export function describeAnchor(anchor, names) {
   }
   return words.length > 0 ? words.slice(-3).join(" · ") : null
 }
+
+// The start of a text for a name in the list: at most `max` characters, cut at the end of a word and closed with «…», never in the middle of one
+// (a student who reads literally reads «equa» as a word). A single word longer than `max` is cut where it is.
+const NAME_CHARS = 30
+export function excerpt(text, max) {
+  const full = clip(text, Infinity)
+  if (full.length <= max) return full
+  const head = full.slice(0, max + 1)
+  const space = head.lastIndexOf(" ")
+  return `${(space > 0 ? head.slice(0, space) : full.slice(0, max)).replace(/[\s.,;:]+$/, "")}…`
+}
+
+// The words for one place in the box's list (D-397): its name from the anchor ("Scheda 3 · Blocco 2") and the start of its own words,
+// never the raw anchor. A place whose segments have no name (the `id:…` stand-in, a name the locale does not know) is told by
+// its own words, else "Tutta la pagina". target: { node, anchor, label } as listTargets gives them (a tapped place has no label).
+export function placeName(target, names, wholePageLabel) {
+  if (!target.anchor) return wholePageLabel
+  const raw = target.node?.getAttribute?.("data-comment-anchor")
+  const label = target.label && target.label !== target.anchor && target.label !== raw ? excerpt(target.label, NAME_CHARS) : ""
+  const name = describeAnchor(target.anchor, names)
+  const words = name && label && name.toLowerCase().includes(label.replace(/…$/, "").toLowerCase()) ? "" : label // «Prova tu · Prova tu» says nothing more
+  if (name) return [name, words].filter(Boolean).join(" · ")
+  return words || excerpt(target.node?.textContent, NAME_CHARS) || wholePageLabel
+}

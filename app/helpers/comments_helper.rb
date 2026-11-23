@@ -13,7 +13,7 @@ module CommentsHelper
                   "diagnosis" => "list-checks", "warmup" => "list-checks", "sitting" => "circle-help", "results" => "list-checks", "settings" => "text-settings",
                   "search" => "info", "comments" => "comment", "privacy" => "info", "account" => "info", "civics" => "map", "not_found" => "info", "schema" => "map", "schemas" => "map" }.freeze
 
-  STATE_ICONS = { "sent" => "send", "read" => "show", "answered" => "teacher-reply", "closed" => "check" }.freeze
+  STATE_ICONS = { "sent" => "send", "read" => "show", "answered" => "teacher-reply", "closed" => "check", "withdrawn" => "close" }.freeze
 
   def comment_state_icon(state) = comment_icon(STATE_ICONS.fetch(state, "info"))
 

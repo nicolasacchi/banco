@@ -127,6 +127,7 @@ body.comment-mode [data-comment-ui] [data-comment-anchor] { outline: none; }
 .comment-state[data-state="read"] { --pill: var(--cs-read); }
 .comment-state[data-state="answered"] { --pill: var(--cs-answered); }
 .comment-state[data-state="closed"] { --pill: var(--cs-closed); }
+.comment-state[data-state="withdrawn"] { --pill: var(--cs-closed); }
 .comment-state .comment-icon { width: 1em; height: 1em; color: var(--pill); }
 .comment-reason { --pill: var(--ch-other); }
 .comment-reason[data-reason="not_understood"] { --pill: var(--ch-not_understood); }
@@ -170,6 +171,7 @@ body.comment-mode [data-comment-ui] [data-comment-anchor] { outline: none; }
 .cm-row-top, .cm-row-bottom { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
 .cm-row-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cm-row-time { flex: none; color: var(--muted); font-size: 0.85rem; }
+.cm-n, .comment-number { flex: none; color: var(--muted); font-size: 0.85rem; font-weight: 700; white-space: nowrap; }
 .cm-preview { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
 .cm-who { font-weight: 700; }
 .cm-row[data-unread="true"] .cm-row-title, .cm-row[data-unread="true"] .cm-preview, .cm-row[data-unread="true"] .cm-row-time { color: var(--text); font-weight: 700; }
@@ -231,6 +233,11 @@ body.comment-mode [data-comment-ui] [data-comment-anchor] { outline: none; }
 .cm-error { font-weight: 700; }
 .cm-waiting { display: flex; align-items: center; gap: 0.6rem; margin: 0; padding: 0.8rem 0.9rem; border-top: 2px solid var(--line); background: var(--bg); font-weight: 700; }
 .cm-waiting .comment-icon { color: var(--cs-sent); width: 1.4rem; height: 1.4rem; }
+.cm-withdraw { margin: 0; padding: 0.5rem 0.9rem 0.8rem; background: var(--bg); }
+.cm-withdraw > summary { display: inline-block; cursor: pointer; list-style: none; }
+.cm-withdraw > summary::-webkit-details-marker { display: none; }
+.cm-withdraw form { display: grid; gap: 0.5rem; justify-items: start; margin-top: 0.5rem; }
+.cm-withdraw p { margin: 0; font-weight: 700; }
 .cm-thread-pane > .notice { margin: 0.5rem 0.75rem 0; }
 @media (min-width: 62.5rem) {
   .cm-shell { grid-template-columns: minmax(19rem, 25rem) minmax(0, 1fr); height: max(calc(100dvh - 5.5rem), 24rem); }

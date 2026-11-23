@@ -3,7 +3,7 @@ namespace :banco do
   # are the API's, for a teacher token (D-327), and a content agent has no way to read a comment. Reading needs no flag; writing is a dry run unless CONFIRM=1, needs BANCO_DECISIONS_ENABLED=1 and
   # TEACHER=<login from BANCO_TEACHER_USERS>, and is recorded with origin "console".
   #
-  #   bin/rails banco:comments:list [STATE=sent|read|answered|closed] [REASON=..] [KIND=lesson|..] [SUBJECT=key] [WHO=official|trial] [TYPE=comment|question]
+  #   bin/rails banco:comments:list [STATE=sent|read|answered|closed|withdrawn] [REASON=..] [KIND=lesson|..] [SUBJECT=key] [WHO=official|trial] [TYPE=comment|question]
   #   bin/rails banco:comments:show ID=3          (with the context, D-371: the revision he saw against the newest, his tries with his words,
   #                                                 his earlier comments, the hours left of the 24 h promise)
   #   bin/rails banco:comments:reply ID=3 TEACHER=<login> TEXT_IT="La risposta del docente." [CONFIRM=1]   (the tone lint warns first, never blocks, D-371)

@@ -21,8 +21,8 @@ module Api
       before_action(only: %i[index show]) { require_token_roles("bot_read", "teacher") }
       before_action(only: ACTIONS.map(&:to_sym)) { require_token_roles("teacher") }
 
-      # GET /api/v1/comments[?state=open|all|sent|read|answered|closed][&subject=KEY][&who=official|trial][&reason=R][&kind=PAGE][&limit=N]
-      # Newest first; open (the default) is every state but closed.
+      # GET /api/v1/comments[?state=open|all|sent|read|answered|closed|withdrawn][&subject=KEY][&who=official|trial][&reason=R][&kind=PAGE][&limit=N]
+      # Newest first; open (the default) is every state but closed and withdrawn (D-397: the student deleted it; `state=withdrawn` and `all` list it).
       def index
         state = params[:state].presence || "open"
         return refuse("E-FILES", "state", "state is one of #{STATES.join(', ')}", "banco comments list --state open", 422) unless STATES.include?(state)

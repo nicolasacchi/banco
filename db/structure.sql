@@ -736,7 +736,7 @@ CREATE INDEX "index_comments_on_student_id_and_id" ON "comments" ("student_id", 
 CREATE TABLE "comment_events" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "comment_id" integer NOT NULL, "kind" varchar NOT NULL, "origin" varchar NOT NULL, "actor" varchar NOT NULL, "text_it" text, "remote_addr" varchar DEFAULT '' NOT NULL, "request_id" varchar, "payload_json" text DEFAULT '{}' NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_b32cfa76fe"
 FOREIGN KEY ("comment_id")
   REFERENCES "comments" ("id")
-, CONSTRAINT comment_events_reply_text CHECK (kind <> 'reply' OR (text_it IS NOT NULL AND length(text_it) BETWEEN 1 AND 2000)), CONSTRAINT comment_events_origin CHECK (origin IN ('web','console','api','student')), CONSTRAINT comment_events_kind CHECK (kind IN ('reply','read','resolved','reopened','sent_back','reply_seen','student_reply')), CONSTRAINT comment_events_seen_by_student CHECK ((kind IN ('reply_seen','student_reply')) = (origin = 'student')), CONSTRAINT comment_events_student_reply_text CHECK (kind <> 'student_reply' OR (text_it IS NOT NULL AND length(text_it) BETWEEN 1 AND 2000)));
+, CONSTRAINT comment_events_reply_text CHECK (kind <> 'reply' OR (text_it IS NOT NULL AND length(text_it) BETWEEN 1 AND 2000)), CONSTRAINT comment_events_origin CHECK (origin IN ('web','console','api','student')), CONSTRAINT comment_events_student_reply_text CHECK (kind <> 'student_reply' OR (text_it IS NOT NULL AND length(text_it) BETWEEN 1 AND 2000)), CONSTRAINT comment_events_kind CHECK (kind IN ('reply','read','resolved','reopened','sent_back','reply_seen','student_reply','student_withdrawn')), CONSTRAINT comment_events_seen_by_student CHECK ((kind IN ('reply_seen','student_reply','student_withdrawn')) = (origin = 'student')));
 CREATE INDEX "index_comment_events_on_comment_id" ON "comment_events" ("comment_id") /*application='Banco'*/;
 CREATE INDEX "index_comment_events_on_comment_id_and_id" ON "comment_events" ("comment_id", "id") /*application='Banco'*/;
 CREATE UNIQUE INDEX "index_comment_events_on_request_id" ON "comment_events" ("request_id") WHERE request_id IS NOT NULL /*application='Banco'*/;
@@ -782,6 +782,7 @@ CREATE TRIGGER ratings_no_delete BEFORE DELETE ON ratings
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
 ('20261123200000'),
+('20261123100000'),
 ('20261119153000'),
 ('20261119100000'),
 ('20261118130000'),

@@ -17,7 +17,7 @@
   <% if @pause %><%= ui_notice :info, t("summary.pause_suggestion"), html: { id: "pause-suggestion" } %><% end %>
 
   <% if groups[:known].any? %>
-  <section id="sai-gia-fare" class="card result-group" data-group="known">
+  <section id="sai-gia-fare" class="card result-group" data-comment-anchor="group:known" data-group="known">
     <h2 class="card-title"><%= ui_icon("circle-check") %> <%= t("summary.known") %></h2>
     <ul class="result-list">
       <% groups[:known].each do |s| %>
@@ -28,7 +28,7 @@
   <% end %>
 
   <% if groups[:recover].any? %>
-  <section id="da-riprendere" class="card result-group" data-group="recover">
+  <section id="da-riprendere" class="card result-group" data-comment-anchor="group:recover" data-group="recover">
     <h2 class="card-title"><%= ui_icon("triangle-alert") %> <%= t("summary.recover") %></h2>
     <ul class="result-list">
       <% groups[:recover].each do |s| %>
@@ -39,7 +39,7 @@
   <% end %>
 
   <% if groups[:learn].any? %>
-  <section id="da-imparare" class="card result-group" data-group="learn">
+  <section id="da-imparare" class="card result-group" data-comment-anchor="group:learn" data-group="learn">
     <h2 class="card-title"><%= ui_icon("wrong-hint") %> <%= t("summary.learn") %></h2>
     <p class="muted"><%= t("summary.learn_note") %></p>
     <ul class="tag-list">
@@ -51,7 +51,7 @@
   <% end %>
 
   <% if groups[:checking].any? %>
-    <section id="in-correzione" class="card result-group" data-group="checking">
+    <section id="in-correzione" class="card result-group" data-comment-anchor="group:checking" data-group="checking">
       <h2 class="card-title"><%= ui_icon("clock-minutes") %> <%= t("summary.checking") %></h2>
       <p class="muted"><%= t("summary.checking_note") %></p>
       <ul class="tag-list">
@@ -63,7 +63,7 @@
   <% end %>
 
   <% if groups[:not_asked].to_i.positive? %>
-  <section id="non-chiesto" class="card result-group" data-group="not_asked">
+  <section id="non-chiesto" class="card result-group" data-comment-anchor="group:not_asked" data-group="not_asked">
     <h2 class="card-title"><%= t("summary.not_asked") %></h2>
     <p><%= t("summary.not_asked_count", n: groups[:not_asked]) %></p>
   </section>
@@ -72,8 +72,8 @@
   <section id="soluzioni">
     <h2><%= t("summary.solutions") %></h2>
     <p><%= t("summary.solutions_first") %></p>
-    <% @summary.solutions.each do |s| %>
-      <article class="solution card" data-attempt="<%= s.attempt_id %>">
+    <% @summary.solutions.each_with_index do |s, i| %>
+      <article class="solution card" data-comment-anchor="result:<%= i + 1 %>" data-attempt="<%= s.attempt_id %>">
         <% tone, icon = { right: [ :success, "circle-check" ], nearly: [ :nearly, "triangle-alert" ], wrong: [ :hint, "wrong-hint" ],
                           dont_know: [ :muted, "circle-help" ], pending: [ :info, "clock-minutes" ] }.fetch(s.outcome) %>
         <p class="solution-outcome" data-outcome="<%= s.outcome %>"><%= ui_pill(t("summary.outcome.#{s.outcome}"), tone, icon: icon) %></p>

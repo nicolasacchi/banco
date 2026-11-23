@@ -1,6 +1,6 @@
 <%# One topic of a Materia (number given) or of Educazione civica (no number: the chip and the name of its subject instead): number, title, kind and minutes, why to wait, draft, tags and status (Fatto, In corso and Da fare look different: D-326). An extra topic (D-324) carries the «Fuori programma» badge. %>
 <% number = local_assigns[:number]; status = course_view.status(topic); before = course_view.before(subject_view, topic) %>
-<li class="topic row" data-topic="<%= topic.key %>" data-status="<%= status %>"<% if topic.extra? %> data-extra="true"<% end %>>
+<li class="topic row" data-comment-anchor="topic:<%= topic.key.tr('.', '_') %>" data-topic="<%= topic.key %>" data-status="<%= status %>"<% if topic.extra? %> data-extra="true"<% end %>>
   <% if number %>
     <span class="topic-number" aria-hidden="true"><%= number %></span>
   <% else %>

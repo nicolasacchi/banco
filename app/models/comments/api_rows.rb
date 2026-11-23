@@ -5,15 +5,16 @@ module Comments
   module ApiRows
     module_function
 
-    # Newest first; state "open" (the default) is every state but closed. Filters are the controller's checked values.
+    # Newest first; state "open" (the default) is every state but closed and withdrawn (D-397: nothing left to do). Filters are the controller's checked values.
     def list(state: "open", subject: nil, who: nil, reason: nil, kind: nil)
       inbox = Comments::Inbox.new(subject: subject, who: who, reason: reason, kind: kind, type: "comment", state: (state if Comment::STATES.include?(state)))
       rows = inbox.comments
-      state == "open" ? rows.reject { |c| c.state == "closed" } : rows
+      state == "open" ? rows.reject { |c| %w[closed withdrawn].include?(c.state) } : rows
     end
 
     def summary(comment)
-      { id: comment.id, state: comment.state, reason: comment.reason, student: comment.student.key, trial: comment.trial, page_kind: comment.page_kind,
+      { id: comment.id, state: comment.state, state_it: (I18n.t("teacher.comments.state.withdrawn", locale: :it).downcase if comment.withdrawn?), # D-397: «ritirato dallo studente»
+        reason: comment.reason, student: comment.student.key, trial: comment.trial, page_kind: comment.page_kind,
         page_path: comment.page_path, subject: comment.subject&.key, text_it: comment.text_it, replies: comment.replies.size,
         unread_reply: comment.unread_reply?, created_at: comment.created_at.utc.iso8601,
         # D-371: only for a comment that waits for the teacher: hours left of the promised answer time (negative once late), and whether the student wrote after the last reply.

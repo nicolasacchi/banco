@@ -59,6 +59,7 @@ module Comments
 
     def validate!(comment)
       state = comment.state
+      raise DecisionRecorder::Invalid, "the comment was withdrawn by the student" if state == "withdrawn" # D-397: nothing to answer
       case @kind
       when "reply"
         raise DecisionRecorder::Invalid, "the reply is empty" if @text.empty?

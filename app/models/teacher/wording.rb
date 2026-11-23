@@ -10,6 +10,7 @@ module Teacher
       [ /\Athe reply is empty\z/, ->(_names, *) { "Scrivi la risposta." } ],
       [ /\Athe reply is longer than (\d+) characters\z/, ->(_names, n) { "La risposta è troppo lunga: al massimo #{n} caratteri." } ],
       [ /\Athe comment is closed: reopen it first\z/, ->(_names, *) { "Il commento è chiuso: riaprilo prima di rispondere." } ],
+      [ /\Athe comment was withdrawn by the student\z/, ->(_names, *) { "Lo studente ha ritirato il commento: non c'è niente da fare." } ],
       [ /\Athe comment is already (\w+)\z/, ->(_names, *) { "Il commento è già stato letto, ha una risposta o è chiuso." } ],
       [ /\Athe comment is not closed\z/, ->(_names, *) { "Il commento non è chiuso." } ],
       [ /\Aenabled is true or false\z/, ->(_names, *) { "Scegli se accendere o spegnere il formulario." } ],

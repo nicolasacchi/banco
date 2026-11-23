@@ -872,4 +872,157 @@ class CommentsTest < ActionDispatch::IntegrationTest
       assert_no_match(/anthropic|openai|llm|Providers\.|AgentSession/i, File.read(f), f)
     end
   end
+
+  # ---- D-397: the number of a comment, and deleting his own before any reply ----------------------------------
+
+  def withdraw(comment, headers: OFFICIAL, token: nil, listener: :web, path: nil)
+    token ||= token_for(headers, "/today")
+    on(listener, path || "/comments/#{comment.id}/withdraw", method: :post, headers: headers.merge("X-CSRF-Token" => token), remote_addr: EDGE)
+  end
+
+  def own_comment(text = "Da cancellare")
+    send_comment(OFFICIAL, text_it: text)
+    Comment.where(student: @official).order(:id).last
+  end
+
+  test "the list, the conversation and the teacher's card show the number the teacher quotes, «n. 57» in Italian and «No. 57» in English" do
+    comment = own_comment
+    on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE)
+    assert_select "#comment-#{comment.id} .cm-n", "n. #{comment.id}"
+    on(:web, "/comments/#{comment.id}", headers: OFFICIAL, remote_addr: EDGE)
+    assert_select "#comment-number", "n. #{comment.id}"
+    on(:web, "/teacher/comments", headers: TEACHER, remote_addr: EDGE)
+    assert_select "#comment-#{comment.id} .comment-number", "Commento #{comment.id}"
+    assert_equal "No. 57", I18n.t("comments.number", id: 57, locale: :en)
+    assert_equal "n. 57", I18n.t("comments.number", id: 57, locale: :it)
+  end
+
+  test "he deletes his own comment before any reply: one student_withdrawn row, gone from his list and conversation, a repeat recorded once, the row kept" do
+    comment = own_comment("Da cancellare #{MARKER}")
+    on(:web, "/comments/#{comment.id}", headers: OFFICIAL, remote_addr: EDGE)
+    assert_select "#comment-withdraw summary", "Cancella"
+    assert_select "#comment-withdraw-ask", "Vuoi cancellare questo commento? Poi non lo vedrai più."
+    assert_select "form[action='/comments/#{comment.id}/withdraw'] button", "Sì, cancella"
+    2.times { withdraw(comment) }
+    assert_redirected_to "/comments"
+    events = comment.events.reload
+    assert_equal [ "student_withdrawn" ], events.map(&:kind)
+    assert_equal [ "student", @official.key, nil ], [ events.first.origin, events.first.actor, events.first.text_it ]
+    assert_equal "withdrawn", comment.state
+    on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE)
+    assert_select "#comment-withdrawn", /Commento cancellato\./
+    assert_select "#my-comments li", 0
+    assert_not_includes response.body, MARKER
+    assert_select ".cm-tab-n", text: "0", count: 4
+    on(:web, "/comments/#{comment.id}", headers: OFFICIAL, remote_addr: EDGE)
+    assert_response :not_found
+    assert_not_includes response.body, MARKER
+    assert Comment.exists?(comment.id), "the ledger keeps the row"
+    assert_equal 1, CommentEvent.where(comment_id: comment.id).count
+  end
+
+  test "the same words sent again after he deleted the comment are a new comment he can see (D-388 does not bring it back)" do
+    comment = own_comment("Di nuovo #{MARKER}")
+    withdraw(comment)
+    send_comment(OFFICIAL, text_it: "Di nuovo #{MARKER}")
+    again = Comment.where(student: @official).order(:id).last
+    assert_not_equal comment.id, again.id
+    assert_not again.withdrawn?
+    on(:web, "/comments", headers: OFFICIAL, remote_addr: EDGE)
+    assert_select "#my-comments li", 1
+    assert_select "#comment-#{again.id}"
+  end
+
+  test "once the teacher has replied it cannot be deleted: refused, nothing written, no button, and the conversation stays" do
+    comment = answered_comment
+    withdraw(comment)
+    assert_redirected_to "/comments/#{comment.id}"
+    assert_equal %w[reply], comment.events.reload.map(&:kind)
+    on(:web, "/comments/#{comment.id}", headers: OFFICIAL, remote_addr: EDGE)
+    assert_response :success
+    assert_select "#reply-error", /il docente ha già risposto/
+    assert_select "#comment-withdraw", 0
+    assert_select ".cm-msg", 2
+    student_reply(comment, "Un seguito.")
+    withdraw(comment)
+    assert_not_includes comment.events.reload.map(&:kind), "student_withdrawn"
+  end
+
+  test "only his own comment: another student's is a 404 and stays, the teacher, a guest, an unmapped login, the preview and the other listeners are refused" do
+    comment = own_comment
+    withdraw(comment, headers: TRIAL)
+    assert_response :not_found
+    [ TEACHER, GUEST, UNMAPPED, {} ].each do |who|
+      token = who.empty? ? "x" : token_for(who, "/teacher")
+      withdraw(comment, headers: who, token: token)
+      assert_includes [ 403, 404, 422 ], response.status, who.inspect
+    end
+    withdraw(comment, path: "/teacher/preview/comments/#{comment.id}/withdraw", headers: TEACHER)
+    assert_response :not_found
+    %i[api harness].each do |listener|
+      withdraw(comment, listener: listener)
+      assert_response :not_found, listener.to_s
+    end
+    on(:web, "/comments/#{comment.id}/withdraw", method: :post, headers: OFFICIAL, remote_addr: EDGE) # no token
+    assert_not_equal 303, response.status
+    withdraw(comment, path: "/comments/9999999/withdraw")
+    assert_response :not_found
+    assert_empty comment.events.reload
+    assert_not comment.withdrawn?
+  end
+
+  test "the teacher's page shows a withdrawn comment as «Ritirato dallo studente»: never due, nothing to answer, still listed and filterable; a guest only counts it" do
+    gone = own_comment("Ritirato #{MARKER}")
+    waiting = own_comment("Aspetta")
+    withdraw(gone)
+    on(:web, "/teacher/comments", headers: TEACHER, remote_addr: EDGE)
+    assert_response :success
+    assert_select "#comment-#{gone.id}[data-state=withdrawn]" do
+      assert_select ".comment-state", /Ritirato dallo studente/
+      assert_select ".comment-text", /Ritirato #{MARKER}/
+      assert_select "form.comment-reply-form", 0
+      assert_select ".comment-actions", 0
+      assert_select "[data-event=student_withdrawn]", /Lo studente ha ritirato il commento/
+    end
+    assert_select "#comment-#{waiting.id}[data-state=sent] form.comment-reply-form", 1
+    assert_select "#comment-due-list li[data-due-comment='#{gone.id}']", 0
+    assert_select "#comment-due-list li[data-due-comment='#{waiting.id}']", 1
+    assert_select "#comment-due[data-due-waiting='1']"
+    assert_select "#comment-tabs [data-tab=withdrawn]", /Ritirati/
+    assert_select "#comment-tabs [data-tab=withdrawn] .comment-tab-n", "1"
+    assert_select "#comment-tabs [data-tab=sent] .comment-tab-n", "1"
+    assert_select "#comment-tabs [data-tab=all] .comment-tab-n", "2"
+    on(:web, "/teacher/comments?state=withdrawn", headers: TEACHER, remote_addr: EDGE)
+    assert_select "#comment-inbox [data-comment]", 1
+    assert_select "#comment-#{gone.id}"
+    on(:web, "/teacher/comments", headers: GUEST, remote_addr: EDGE)
+    assert_select "#comment-counts li[data-state=withdrawn]", /Ritirati: 1/
+    assert_not_includes response.body, MARKER
+  end
+
+  test "the teacher cannot reply to, read, close or reopen a withdrawn comment" do
+    gone = own_comment
+    withdraw(gone)
+    teacher_post("reply", gone, { text_it: "Ciao" })
+    teacher_post("read", gone)
+    teacher_post("resolve", gone)
+    teacher_post("reopen", gone)
+    assert_equal %w[student_withdrawn], gone.events.reload.map(&:kind)
+    assert_equal "withdrawn", gone.state
+    assert_not gone.waiting_for_teacher?
+    assert_nil gone.waiting_since
+    assert_not gone.late?
+    assert_equal 0, Comments::Inbox.counts["late"]
+    assert_equal 1, Comments::Inbox.counts["withdrawn"]
+    assert_equal 0, Comments::Inbox.counts["sent"]
+  end
+
+  test "«Scarica i miei dati» still has the comment and its withdrawal" do
+    gone = own_comment("Nel download #{MARKER}")
+    withdraw(gone)
+    tables = Privacy::StudentExport.new(@official).tables
+    assert_equal [ gone.id ], tables["comments"].map { |r| r["id"] }
+    assert_equal [ "student_withdrawn" ], tables["comment_events"].map { |r| r["kind"] }
+    assert_equal "student", tables["comment_events"].first["origin"]
+  end
 end

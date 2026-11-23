@@ -28,6 +28,7 @@ it:
         read: "Letti: %{n}"
         answered: "Con risposta: %{n}"
         closed: "Chiusi: %{n}"
+        withdrawn: "Ritirati: %{n}"
         questions: "Domande «Ho una domanda»: %{n}"
       tabs:
         label: "Stato dei commenti"
@@ -36,6 +37,7 @@ it:
         read: "Letti"
         answered: "Risposti"
         closed: "Chiusi"
+        withdrawn: "Ritirati"
         questions: "Domande"
       reply_placeholder: "Scrivi una risposta breve e chiara."
       filters:
@@ -58,6 +60,7 @@ it:
         read: "Letto"
         answered: "Con risposta"
         closed: "Chiuso"
+        withdrawn: "Ritirato dallo studente"
       reason:
         not_understood: "Non capisco"
         error: "C'è un errore"
@@ -154,6 +157,7 @@ it:
         sent_back: "Rimandato all'autore"
         reply_seen: "Risposta letta dallo studente"
         student_reply: "Lo studente ha risposto"
+        student_withdrawn: "Lo studente ha ritirato il commento"
       by: "da %{actor}"
       from_console: "(da console)"
       from_api: "(da API)"

@@ -2,7 +2,7 @@ module Comments
   # «I miei commenti» of the student (D-349), the list of conversations like a mailbox: one row per comment, the newest
   # activity first (the last message of its thread, D-342), with the tabs Tutti, Risposte nuove (a teacher message not seen
   # yet), In attesa (the student has the last word) and Chiusi, each with its count. Reads only the student's own comments;
-  # it writes nothing (opening the list marks nothing seen, opening a conversation does).
+  # it writes nothing (opening the list marks nothing seen, opening a conversation does). A comment he withdrew (D-397) is not in it.
   class StudentInbox
     TABS = %w[all new waiting closed].freeze
     Row = Struct.new(:comment, :last, :unread, :state, keyword_init: true) do
@@ -17,7 +17,7 @@ module Comments
     end
 
     def all_rows
-      @all_rows ||= Comment.where(student: @student).includes(:events, :subject).to_a
+      @all_rows ||= Comment.where(student: @student).includes(:events, :subject).to_a.reject(&:withdrawn?)
                            .map { |c| Row.new(comment: c, last: c.thread.last, unread: c.unread_reply?, state: c.state) }
                            .sort_by { |r| [ -r.at.to_f, -r.comment.id ] }
     end

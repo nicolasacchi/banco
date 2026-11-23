@@ -20,7 +20,7 @@
   <% if @intro %><p id="intro"><%= @intro %></p><% end %>
 
   <ol class="topic-steps" aria-label="<%= t("topic.steps") %>">
-    <li class="topic-step card<%= ' action' unless @read %>" id="step-lesson" data-state="<%= @read ? 'done' : 'todo' %>">
+    <li class="topic-step card<%= ' action' unless @read %>" id="step-lesson" data-comment-anchor="step_lesson" data-state="<%= @read ? 'done' : 'todo' %>">
       <div class="step-head">
         <span class="step-number" aria-hidden="true">1</span>
         <h2 class="card-title"><%= ui_icon("step-lesson") %> <%= t("topic.step_lesson") %></h2>
@@ -33,7 +33,8 @@
       <a class="button<%= ' secondary' if @read %>" id="lesson-link" href="<%= spath("/topics/#{@topic.key}/lesson") %>"><%= t("topic.lesson") %></a>
     </li>
     <li class="topic-step card" id="step-practice" data-state="<%= done_count == skill_states.size && skill_states.any? ? 'done' : 'todo' %>">
-      <div class="step-head">
+      <%# D-397: the step's own point is its heading line; the skill rows below are points of their own, so no two names in the list start the same way. %>
+      <div class="step-head" data-comment-anchor="step_practice">
         <span class="step-number" aria-hidden="true">2</span>
         <h2 class="card-title"><%= ui_icon("step-practice") %> <%= t("topic.step_practice") %></h2>
         <% if skill_states.any? %>
@@ -43,9 +44,9 @@
       <p id="close-rule"><%= t("practice.close_rule") %></p>
       <p class="muted"><%= t("topic.step_practice_hint") %></p>
       <ul class="skills topic-skills" id="skills" aria-label="<%= t("topic.skills") %>">
-        <% @topic.skills.each do |skill| %>
+        <% @topic.skills.each_with_index do |skill, i| %>
           <% state = course_view.state(skill) %>
-          <li class="skill" data-skill="<%= skill %>" data-state="<%= state.state %>">
+          <li class="skill" data-skill="<%= skill %>" data-state="<%= state.state %>" data-comment-anchor="skill:<%= i + 1 %>">
             <div class="skill-main">
               <span class="skill-name"><%= course_view.label(skill) %></span>
               <span class="topic-why"><%= Practice::Messages.why_it(state.why) %></span>

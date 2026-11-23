@@ -6,7 +6,7 @@
   <% else %>
     <ul class="subjects subject-list cards" id="subjects">
       <% @subjects.each do |sv| %>
-        <li class="subject card subject-card" data-subject="<%= sv.subject.key %>" style="--subject: var(--accent-<%= sv.subject.key %>, var(--soft-primary))">
+        <li class="subject card subject-card" data-comment-anchor="subject:<%= sv.subject.key %>" data-subject="<%= sv.subject.key %>" style="--subject: var(--accent-<%= sv.subject.key %>, var(--soft-primary))">
           <div class="subject-line">
             <%= subject_chip(sv.subject.key) %>
             <div class="subject-text">
@@ -19,7 +19,7 @@
       <% end %>
       <%# Educazione civica (D-345): a view over topics of other subjects, mandatory (D-354) but never counted in a subject's progress nor in Oggi. %>
       <% if @civics.any? %>
-        <li class="subject card subject-card civics-card" id="civics-card" data-civics="true" style="--subject: var(--accent-civics, var(--soft-primary))">
+        <li class="subject card subject-card civics-card" id="civics-card" data-comment-anchor="subject:civics" data-civics="true" style="--subject: var(--accent-civics, var(--soft-primary))">
           <div class="subject-line">
             <%= subject_chip("civics") %>
             <div class="subject-text">

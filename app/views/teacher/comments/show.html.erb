@@ -103,6 +103,7 @@
             <li class="comment-row" id="comment-<%= comment.id %>" data-comment="<%= comment.id %>" data-state="<%= comment.state %>" data-reason="<%= comment.reason %>" style="<%= comment_accent_style(comment) %>">
               <div class="comment-row-head">
                 <span class="comment-place-badge"><%= comment_place_icon(comment) %></span>
+                <span class="comment-number"><%= t("teacher.comments.due.row", id: comment.id) %></span>
                 <span class="comment-state" data-state="<%= comment.state %>"><%= comment_state_icon(comment.state) %><%= t("teacher.comments.state.#{comment.state}") %></span>
                 <% if (since = comment.waiting_since) %>
                   <span class="comment-waited" data-waiting="true"><%= t("teacher.comments.waiting", span: Comments::ReplyWindow.waited_it(since)) %></span>
@@ -144,7 +145,7 @@
                   </ol>
                 </details>
               <% end %>
-              <% unless comment.state == "closed" %>
+              <% unless %w[closed withdrawn].include?(comment.state) %>
                 <%= form_with url: teacher_comment_reply_path(comment_id: comment.id), method: :post, class: "comment-reply-form" do %>
                   <%= hidden_field_tag :back, back %>
                   <label for="reply-<%= comment.id %>"><%= t("teacher.comments.reply_label") %></label>
@@ -152,6 +153,7 @@
                   <button type="submit" class="button small"><%= comment_icon("send") %><%= t("teacher.comments.send_reply") %></button>
                 <% end %>
               <% end %>
+              <% unless comment.state == "withdrawn" %><%# D-397: the student deleted it; nothing to answer, mark or close %>
               <div class="actions comment-actions">
                 <% if comment.state == "sent" %>
                   <%= button_to teacher_comment_read_path(comment_id: comment.id), params: { back: back }, class: "button secondary small", form: { class: "inline" } do %><%= comment_icon("show") %><%= t("teacher.comments.mark_read") %><% end %>
@@ -162,6 +164,7 @@
                   <%= button_to teacher_comment_resolve_path(comment_id: comment.id), params: { back: back }, class: "button secondary small", form: { class: "inline" } do %><%= comment_icon("check") %><%= t("teacher.comments.resolve") %><% end %>
                 <% end %>
               </div>
+              <% end %>
             </li>
           <% else %>
             <% question = row.record %>

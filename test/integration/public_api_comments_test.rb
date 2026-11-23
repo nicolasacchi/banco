@@ -221,4 +221,29 @@ class PublicApiCommentsTest < ActionDispatch::IntegrationTest
     api_as(@agent, "/api/v1/answers/pending")
     assert_response :forbidden
   end
+
+  # D-397: the student deleted it before any reply.
+  test "a comment the student withdrew is listed as withdrawn, ritirato dallo studente, never open and never due, and takes no action" do
+    gone = make_comment("Lo cancello.")
+    comment_event(gone, "student_withdrawn", origin: "student")
+    api_as(@bot, "/api/v1/comments")
+    assert_equal [ @sent.id ], json["comments"].map { |c| c["id"] }, "open leaves it out"
+    api_as(@teacher, "/api/v1/comments?state=withdrawn")
+    assert_equal [ gone.id ], json["comments"].map { |c| c["id"] }
+    row = json["comments"].first
+    assert_equal [ "withdrawn", "ritirato dallo studente" ], row.values_at("state", "state_it")
+    assert_nil row["due_in_hours"]
+    assert_nil row["student_followup"]
+    api_as(@teacher, "/api/v1/comments?state=all")
+    assert_includes json["comments"].map { |c| c["id"] }, gone.id
+    api_as(@teacher, "/api/v1/comments/#{gone.id}")
+    assert_equal [ "student_withdrawn", "student" ], json["comment"]["events"].last.values_at("kind", "origin")
+    assert_not_includes Comments::Due.rows.map { |r| r.comment.id }, gone.id
+    assert_not_includes Comments::ApiRows.list(state: "open").map(&:id), gone.id
+    act(@teacher, gone, "reply", { text_it: "Ciao.", confirm: true })
+    assert_response :unprocessable_entity
+    act(@teacher, gone, "resolve", { confirm: true })
+    assert_response :unprocessable_entity
+    assert_equal %w[student_withdrawn], events(gone).map(&:kind)
+  end
 end

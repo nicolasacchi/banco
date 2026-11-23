@@ -12,7 +12,7 @@
     <a class="cm-back" id="comment-back" href="<%= comments_path(comment_tab_query(inbox.tab)) %>" aria-label="<%= t("comments.thread.back") %>"><%= comment_icon("back") %></a>
     <span class="comment-place-badge"><%= comment_place_icon(comment) %></span>
     <div class="cm-thread-title">
-      <h1 id="cm-thread-title"><%= comment_place_it(comment) %></h1>
+      <h1 id="cm-thread-title"><%= comment_place_it(comment) %> <span class="cm-n" id="comment-number"><%= t("comments.number", id: comment.id) %></span></h1>
       <p class="cm-window"><%= Comments::ReplyWindow.line_it %></p>
       <span class="comment-state" data-state="<%= comment.state %>" data-comment-thread-target="chip"><%= comment_state_icon(comment.state) %><span data-comment-thread-target="chipLabel"><%= t("comments.state.#{comment.state}") %></span></span>
     </div>
@@ -56,5 +56,13 @@
     <% end %>
   <% else %>
     <p class="cm-waiting" id="comment-waiting"><%= comment_icon("clock-minutes") %><span><%= t("comments.thread.waiting") %></span></p>
+    <%# D-397: he may delete his own comment while the teacher has not replied; one line of confirmation, in plain words. %>
+    <details class="cm-withdraw" id="comment-withdraw">
+      <summary class="button secondary small" id="comment-withdraw-open"><%= t("comments.thread.withdraw") %></summary>
+      <%= form_with url: comment_withdraw_path(id: comment.id), method: :post, id: "withdraw-form-#{comment.id}" do %>
+        <p id="comment-withdraw-ask"><%= t("comments.thread.withdraw_ask") %></p>
+        <button type="submit" class="button danger small" id="comment-withdraw-confirm"><%= t("comments.thread.withdraw_yes") %></button>
+      <% end %>
+    </details>
   <% end %>
 </section>

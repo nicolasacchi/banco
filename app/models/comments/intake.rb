@@ -83,9 +83,10 @@ module Comments
         text_size: SIZES.include?(@params[:text_size].to_s) ? @params[:text_size].to_s : nil, created_at: Time.current }
     end
 
+    # A comment the student withdrew (D-397) is not one he can see: the same words sent again are a new comment.
     def recent_repeat(row)
       Comment.where(student_id: @student.id, reason: row[:reason], text_it: row[:text_it], page_path: row[:page_path], anchor: row[:anchor],
-                    practice_serve_id: row[:practice_serve]&.id, created_at: REPEAT_WINDOW.ago..).order(:id).first
+                    practice_serve_id: row[:practice_serve]&.id, created_at: REPEAT_WINDOW.ago..).includes(:events).order(:id).find { |c| !c.withdrawn? }
     end
 
     def clamp(value)

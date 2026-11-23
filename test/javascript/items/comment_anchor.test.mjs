@@ -1,7 +1,7 @@
 // The comment mode's pure parts (D-304): the anchor path, the ids a node carries, the payload and its limits.
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import { anchorPath, buildComment, clip, describeAnchor, listTargets, refsOf, REASONS, TEXT_MAX, validSegment } from "../../../app/javascript/items/comment_anchor.js"
+import { anchorPath, buildComment, clip, describeAnchor, excerpt, listTargets, placeName, refsOf, REASONS, TEXT_MAX, validSegment } from "../../../app/javascript/items/comment_anchor.js"
 
 // a node with just what the module reads
 const node = (attrs = {}, parent = null, id = "", text = "") => ({
@@ -101,4 +101,26 @@ test("an anchor path is said in words for the box (D-305)", () => {
   assert.equal(describeAnchor("id:entry-test", names), null)
   assert.equal(describeAnchor(null, names), null)
   assert.equal(describeAnchor("menu", null), null)
+})
+
+// D-397: the list in the box never prints a raw anchor.
+test("a place is named by its anchor and its words, and never by a raw id: (D-397)", () => {
+  const names = { step_practice: "Il passo Esercizi", skill: "Cosa eserciti, voce %{n}", subject: "La materia" }
+  const whole = "Tutta la pagina"
+  const step = node({ "data-comment-anchor": "step_practice" }, null, "step-practice", "Esercizi")
+  assert.equal(placeName({ node: step, anchor: "step_practice", label: "Esercizi" }, names, whole), "Il passo Esercizi", "a label the name already says is not repeated")
+  assert.equal(placeName({ node: step, anchor: "step_practice", label: "Moltiplicazioni" }, names, whole), "Il passo Esercizi · Moltiplicazioni")
+  assert.equal(placeName({ node: step, anchor: "step_practice" }, names, whole), "Il passo Esercizi", "a tapped place has no label")
+  const skill = node({ "data-comment-anchor": "skill:2" }, step, "", "")
+  assert.equal(placeName({ node: skill, anchor: "step_practice/skill:2", label: "skill:2" }, names, whole), "Il passo Esercizi · Cosa eserciti, voce 2", "an empty node's raw segment is not a label")
+  assert.equal(placeName({ node: null, anchor: null, label: whole }, names, whole), whole)
+  const intro = node({}, null, "intro", "  Qui impari   a risolvere le equazioni. ")
+  assert.equal(placeName({ node: intro, anchor: "id:intro" }, names, whole), "Qui impari a risolvere le…", "an id: stand-in is told by its words, cut at a word end")
+  assert.equal(placeName({ node: intro, anchor: "id:intro", label: "id:intro" }, names, whole), "Qui impari a risolvere le…")
+  assert.equal(excerpt("Una frase corta.", 30), "Una frase corta.")
+  assert.equal(excerpt("Esattamente trenta caratteri qu", 30), "Esattamente trenta caratteri…", "a word that does not fit goes whole to the cut")
+  assert.equal(excerpt("Supercalifragilistichespiralidoso e altro", 10), "Supercalif…", "one word longer than the limit is cut where it is")
+  assert.equal(placeName({ node: node({}, null, "intro", ""), anchor: "id:intro" }, names, whole), whole, "no words: the whole page")
+  assert.equal(placeName({ node: null, anchor: "id:intro" }, names, whole), whole)
+  assert.ok(!placeName({ node: intro, anchor: "id:intro", label: "id:intro" }, names, whole).startsWith("id:"))
 })

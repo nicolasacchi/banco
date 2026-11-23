@@ -12,7 +12,7 @@
     <h1 id="skill-name"><%= @skill_label %></h1>
   </header>
   <% if draft? %><%= ui_notice :info, t("draft.notice"), html: { id: "draft-notice" } %><% end %>
-  <div class="skill-status">
+  <div class="skill-status" data-comment-anchor="skill_status">
     <span class="pill <%= skill_state_tone(@state.state) %>" id="skill-state" data-practice-target="skillState"><%= Practice::Messages.skill_state_it(@state) %></span>
     <span class="dots" role="img" data-practice-target="dots" aria-label="<%= t("practice.clean_of", n: clean.to_i) %>"<%= ' hidden'.html_safe if clean.nil? %>>
       <% 3.times do |i| %><span class="<%= 'on' if clean.to_i > i %>"></span><% end %>
@@ -28,7 +28,7 @@
 
   <div class="practice-layout">
   <%# The list of the topic's exercises (D-337): drawn by the script from GET exercises?topic=. Open on a wide screen, closed on a phone. %>
-  <aside class="exercise-list" id="exercise-list" aria-labelledby="exercise-list-title" data-practice-target="list" hidden>
+  <aside class="exercise-list" id="exercise-list" data-comment-anchor="exercise_list" aria-labelledby="exercise-list-title" data-practice-target="list" hidden>
     <details class="disclosure exercise-panel" data-practice-target="listPanel">
       <summary>
         <span class="exercise-list-head">

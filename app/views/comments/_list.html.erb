@@ -29,6 +29,7 @@
             <span class="cm-row-main">
               <span class="cm-row-top">
                 <span class="cm-row-title"><%= comment_place_it(comment) %></span>
+                <span class="cm-n"><%= t("comments.number", id: comment.id) %></span>
                 <time class="cm-row-time" datetime="<%= row.at.iso8601 %>"><%= comment_when(row.at) %></time>
               </span>
               <span class="cm-row-bottom">

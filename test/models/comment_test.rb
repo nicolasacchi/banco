@@ -12,7 +12,7 @@ class CommentTest < ActiveSupport::TestCase
   end
 
   def event(kind, comment: @comment, **attrs)
-    origin = %w[reply_seen student_reply].include?(kind) ? "student" : "web"
+    origin = %w[reply_seen student_reply student_withdrawn].include?(kind) ? "student" : "web"
     CommentEvent.create!({ comment: comment, kind: kind, origin: origin, actor: origin == "student" ? "student" : "nik", created_at: Time.current }.merge(attrs))
   end
 
@@ -156,5 +156,94 @@ class CommentTest < ActiveSupport::TestCase
     event("reply", text_it: "Prego.")
     assert @comment.reload.unread_reply?
     assert_equal 1, Comment.unread_reply_count(@student)
+  end
+
+  # ---- D-397: the student deletes his own comment before any reply ----
+
+  test "student_withdrawn is a kind of the student's alone: origin student, no text needed, refused from any other origin" do
+    assert_includes CommentEvent::KINDS, "student_withdrawn"
+    assert_not_includes CommentEvent::TEACHER_KINDS, "student_withdrawn"
+    assert_nothing_raised { event("student_withdrawn") }
+    other = make
+    assert_raises(ActiveRecord::StatementInvalid) { event("student_withdrawn", comment: other, origin: "web") }
+    assert_raises(ActiveRecord::StatementInvalid) { event("student_withdrawn", comment: other, origin: "api") }
+    assert_raises(ActiveRecord::StatementInvalid) { event("student_withdrawn", comment: other, origin: "console") }
+  end
+
+  test "a withdrawn comment is in the state withdrawn, which nothing after it changes, and it is never due" do
+    assert_includes Comment::STATES, "withdrawn"
+    event("read")
+    assert_equal "read", @comment.reload.state
+    assert @comment.waiting_for_teacher?
+    event("student_withdrawn", origin: "student")
+    assert @comment.reload.withdrawn?
+    assert_equal "withdrawn", @comment.state
+    assert_not @comment.waiting_for_teacher?
+    assert_nil @comment.waiting_since
+    assert_not @comment.late?
+    assert_nil @comment.due_in_hours
+    assert_not @comment.student_followup?
+    assert_empty Comments::Due.rows([ @comment ])
+    event("resolved")
+    assert_equal "withdrawn", @comment.reload.state, "a later teacher row does not bring it back"
+    assert_not make.withdrawn?
+  end
+
+  test "StudentWithdraw records the student's own unanswered comment once, and refuses a reply, another student's and a non-student" do
+    row = Comments::StudentWithdraw.call(student: @student, comment_id: @comment.id)
+    assert_equal :recorded, row.status
+    assert_equal [ "student_withdrawn", "student", @student.key, nil ], [ row.event.kind, row.event.origin, row.event.actor, row.event.text_it ]
+    assert_equal [ :recorded, row.event.id ], Comments::StudentWithdraw.call(student: @student, comment_id: @comment.id).then { |r| [ r.status, r.event.id ] }
+    assert_equal 1, CommentEvent.where(comment: @comment, kind: "student_withdrawn").count
+    assert Comment.exists?(@comment.id), "the ledger keeps the comment"
+
+    answered = make
+    event("reply", comment: answered, text_it: "Guarda.")
+    refused = Comments::StudentWithdraw.call(student: @student, comment_id: answered.id)
+    assert_equal [ :invalid, "teacher_replied" ], [ refused.status, refused.error ]
+    assert_not answered.reload.withdrawn?
+    event("student_reply", comment: answered, text_it: "Grazie.")
+    assert_equal :invalid, Comments::StudentWithdraw.call(student: @student, comment_id: answered.id).status
+
+    stranger = Student.create!(key: "prova-1", kind: "student", created_at: Time.current)
+    mine = make
+    assert_equal :missing, Comments::StudentWithdraw.call(student: stranger, comment_id: mine.id).status
+    assert_equal :missing, Comments::StudentWithdraw.call(student: @student, comment_id: "nope").status
+    assert_not mine.reload.withdrawn?
+    teacher = Student.create!(key: "preview", kind: "preview", created_at: Time.current)
+    assert_equal :invalid, Comments::StudentWithdraw.call(student: teacher, comment_id: mine.id).status
+  end
+
+  test "the student's inbox leaves a withdrawn comment out of every tab, the teacher's inbox counts it as withdrawn" do
+    kept = make
+    gone = make
+    event("student_withdrawn", comment: gone, origin: "student")
+    inbox = Comments::StudentInbox.new(@student)
+    assert_equal [ kept.id, @comment.id ].sort, inbox.rows.map { |r| r.comment.id }.sort
+    assert_equal({ "all" => 2, "new" => 0, "waiting" => 2, "closed" => 0 }, inbox.counts)
+    counts = Comments::Inbox.counts
+    assert_equal [ 2, 1, 0 ], [ counts["sent"], counts["withdrawn"], counts["late"] ]
+    assert_equal [ gone.id ], Comments::Inbox.new(state: "withdrawn").comments.map(&:id)
+    assert_equal [ gone.id ], Comments::ApiRows.list(state: "withdrawn").map(&:id)
+    assert_not_includes Comments::ApiRows.list(state: "open").map(&:id), gone.id
+    assert_includes Comments::ApiRows.list(state: "all").map(&:id), gone.id
+    assert_equal "ritirato dallo studente", Comments::ApiRows.summary(gone.reload)[:state_it]
+    assert_nil Comments::ApiRows.summary(kept)[:state_it]
+  end
+
+  test "the teacher's Responder refuses every action on a withdrawn comment" do
+    event("student_withdrawn", origin: "student")
+    request = DecisionRecorder::Console.new(login: "nik", os_user: "nik")
+    ENV["BANCO_DECISIONS_ENABLED"] = "1"
+    ENV["BANCO_TEACHER_USERS"] = "nik"
+    %w[reply read resolved reopened].each do |kind|
+      error = assert_raises(DecisionRecorder::Invalid) { Comments::Responder.call(request: request, comment_id: @comment.id, kind: kind, text_it: "Ciao") }
+      assert_equal [ "the comment was withdrawn by the student" ], error.reasons, kind
+    end
+    assert_equal %w[student_withdrawn], @comment.events.reload.map(&:kind)
+    assert_equal "Lo studente ha ritirato il commento: non c'è niente da fare.", Teacher::Wording.italian("the comment was withdrawn by the student")
+  ensure
+    ENV.delete("BANCO_DECISIONS_ENABLED")
+    ENV.delete("BANCO_TEACHER_USERS")
   end
 end

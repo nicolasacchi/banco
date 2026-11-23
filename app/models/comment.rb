@@ -4,8 +4,9 @@
 class Comment < ApplicationRecord
   REASONS = %w[not_understood error not_working like other].freeze
   PAGE_KINDS = %w[today subjects subject topic lesson practice diagnosis warmup sitting results settings search comments privacy account civics not_found schema schemas changelog].freeze
-  # The states the student and the teacher read: new (sent), read, answered, closed. Derived, never stored.
-  STATES = %w[sent read answered closed].freeze
+  # The states the student and the teacher read: new (sent), read, answered, closed, and withdrawn (D-397: the student deleted
+  # it before any reply; his lists hide it, the teacher and the API still see it). Derived, never stored.
+  STATES = %w[sent read answered closed withdrawn].freeze
   MESSAGE_KINDS = %w[reply student_reply].freeze
   # A comment and the student's follow-up in a thread (D-361: was 500). Also in the CHECKs of comments and comment_events.
   TEXT_MAX = 2000
@@ -33,11 +34,12 @@ class Comment < ApplicationRecord
     [ first ] + events.select { |e| MESSAGE_KINDS.include?(e.kind) }.map { |e| Message.new(from: e.kind == "reply" ? :teacher : :student, text_it: e.text_it, event: e, at: e.created_at) }
   end
 
-  # sent -> read -> answered -> closed; a reopened comment is back to where its replies put it. A follow-up of the
+  # sent -> read -> answered -> closed; a comment the student withdrew (D-397) is "withdrawn" whatever else follows; a reopened comment is back to where its replies put it. A follow-up of the
   # student after a resolved reopens the comment like a reopened (D-342). When the latest message of the thread is the
   # student's follow-up, the comment waits for the teacher again: sent, or read once the teacher has marked it read after it.
   def state
     list = events.to_a
+    return "withdrawn" if list.any? { |e| e.kind == "student_withdrawn" }
     return "closed" if list.reverse.find { |e| %w[resolved reopened student_reply].include?(e.kind) }&.kind == "resolved"
 
     last_message = list.reverse.find { |e| MESSAGE_KINDS.include?(e.kind) }
@@ -47,6 +49,9 @@ class Comment < ApplicationRecord
 
     "sent"
   end
+
+  # The student deleted it (D-397): a student_withdrawn row. It is not due, and his lists no longer show it.
+  def withdrawn? = events.any? { |e| e.kind == "student_withdrawn" }
 
   # When the student last wrote: the latest follow-up, else the comment itself (the teacher's inbox sorts on it, so a
   # follow-up on an old comment comes back to the top).

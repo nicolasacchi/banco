@@ -31,6 +31,15 @@ entries:
     body_it: "Nelle domande delle lezioni e in «Prova tu», dopo una risposta sbagliata, trovi «Per me va bene così»: la tua risposta va al docente, come negli esercizi. Poi leggi la sua risposta in «I miei commenti»."
     title_en: "«It's fine for me» in the lessons too"
     body_en: "In the questions of the lessons and in «Your turn», after a wrong answer, you find «It's fine for me»: your answer goes to the teacher, as in the exercises. Then you read the reply in «My comments»."
+  - id: comments-number-delete-1123
+    date: 2026-11-23
+    audience: [student, teacher]
+    kind: software
+    decisions: [D-397]
+    title_it: "Commenti: il numero, più punti da scegliere, Cancella"
+    body_it: "Ogni commento ha il suo numero: è lo stesso che dice il docente. Quando commenti, hai più punti da scegliere. Se il docente non ha ancora risposto, puoi cancellare il tuo commento con «Cancella»."
+    title_en: "Comments: a number, more places to choose, Delete"
+    body_en: "Every comment has its number: the same one the teacher uses. When you comment, you have more places to choose from. If the teacher has not replied yet, you can delete your comment with «Delete»."
   - id: exercises-rechecked-1123
     date: 2026-11-23
     audience: [student, teacher]
