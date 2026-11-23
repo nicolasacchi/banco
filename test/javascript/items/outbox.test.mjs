@@ -187,3 +187,24 @@ test("a 409 closed serve is an answer, a 503 retry keeps the entry queued", asyn
   assert.equal(blocked.blocked, true)
   assert.equal(retry.size, 1)
 })
+
+test("a comment sent again under the same id after a failure is one entry, and one post goes out when the network is back (D-388)", async () => {
+  const storage = new MemoryStorage()
+  const calls = []
+  let online = false
+  const box = new Outbox({
+    url: "/comments", csrf: () => "token", storage, prefix: "banco.coutbox.", fields: ["client_comment_id", "text_it"],
+    fetchImpl: async (url, options) => { calls.push(options); if (!online) throw new TypeError("offline"); return reply({ json: { status: "recorded" } }) }
+  })
+  const comment = { client_comment_id: "c-12345678", client_attempt_id: "c-12345678", text_it: "Non funziona." }
+  box.add(comment)
+  assert.equal((await box.flush()).blocked, true)
+  box.add(comment) // the student presses «Invia» again: same id, same entry
+  assert.equal(box.size, 1)
+  assert.equal(storage.length, 1)
+  online = true
+  const result = await box.flush()
+  assert.equal(result.results["c-12345678"].status, "recorded")
+  assert.equal(calls.filter((_, i) => i > 0).length, 1)
+  assert.equal(box.size, 0)
+})

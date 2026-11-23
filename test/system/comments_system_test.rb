@@ -54,19 +54,64 @@ class CommentsSystemTest < ApplicationSystemTestCase
     assert_equal [], page.evaluate_script("Object.keys(localStorage).filter(function (k) { return k.indexOf('banco.coutbox.') === 0 })"), "the outbox is empty once sent"
   end
 
-  test "a comment written offline waits in the outbox and goes out when the network is back" do
+  test "a comment written offline keeps its text in the open box, says so, and goes out once when the network is back" do
     build_student_world(approve: true, release: true)
     visit "/today"
     page.execute_script("window.__realFetch = window.fetch; window.fetch = function () { return Promise.reject(new TypeError('offline')) }")
     find("#comment-open-menu").click
     find("#comment-whole").click
-    write_comment(reason: "Mi piace", text: "Bella.")
+    assert_selector "#comment-box[open]", wait: 10
+    choose "Mi piace"
+    fill_in "comment-text", with: "Bella."
+    find("#comment-send").click
+    assert_selector ".comment-error", text: "Il testo è ancora qui", wait: 10
+    assert_selector "#comment-box[open]"
+    assert_equal "Bella.", find("#comment-text").value
+    assert_not find("#comment-send").disabled?, "Invia is back, to try again"
     assert_equal 0, Comment.count
     assert_equal 1, page.evaluate_script("Object.keys(localStorage).filter(function (k) { return k.indexOf('banco.coutbox.') === 0 }).length")
-    page.execute_script("window.fetch = window.__realFetch; window.dispatchEvent(new Event('online'))")
+    page.execute_script("window.fetch = window.__realFetch")
+    find("#comment-send").click
+    assert_no_selector "#comment-box[open]", wait: 10
     wait_until { Comment.count == 1 }
     assert_equal "like", Comment.last.reason
     wait_until { page.evaluate_script("Object.keys(localStorage).filter(function (k) { return k.indexOf('banco.coutbox.') === 0 }).length").zero? }
+    sleep 0.5
+    assert_equal 1, Comment.count, "the retry is the same comment"
+  end
+
+  test "Invia is off from the tap until the server answers, and a second tap sends nothing more (D-388)" do
+    build_student_world(approve: true, release: true)
+    visit "/today"
+    # the server answers late: the fetch to /comments waits until the test lets it go
+    page.execute_script(<<~JS)
+      window.__realFetch = window.fetch; window.__posts = 0
+      window.fetch = function (url, options) {
+        if (String(url).indexOf('/comments') === 0 && options && options.method === 'POST') {
+          window.__posts += 1
+          return new Promise(function (resolve) { window.__release = function () { resolve(window.__realFetch(url, options)) } })
+        }
+        return window.__realFetch(url, options)
+      }
+    JS
+    find("#comment-open-menu").click
+    find("#comment-whole").click
+    assert_selector "#comment-box[open]", wait: 10
+    choose "Non funziona"
+    fill_in "comment-text", with: "Il pulsante non risponde."
+    find("#comment-send").click
+    assert_selector "#comment-send[disabled]", wait: 5
+    assert_selector "#comment-send[aria-busy=true]", text: "Invio"
+    page.execute_script("document.getElementById('comment-send').form.requestSubmit()") # Enter, a script: no second post either
+    sleep 0.3
+    assert_equal 1, page.evaluate_script("window.__posts")
+    assert_selector "#comment-box[open]"
+    page.execute_script("window.__release()")
+    assert_no_selector "#comment-box[open]", wait: 10
+    assert_selector "#comment-toast.show", text: "Inviato al docente", wait: 10
+    wait_until { Comment.count == 1 }
+    sleep 0.5
+    assert_equal 1, Comment.count
   end
 
   test "in a sitting the clock stops while the box is open, and the comment names the served event" do

@@ -25,8 +25,8 @@ it:
     send: "Invia"
     reason_required: "Scegli prima di che cosa si tratta."
     sent: "Inviato al docente"
-    queued: "Salvato. Lo mando quando torna la rete."
-    error: "Non riesco a inviare il commento. Riprova."
+    sending: "Invio…"
+    error: "Non sono riuscito a inviare il commento. Il testo è ancora qui: premi Invia per riprovare."
     clock_note: "Il tempo del test è fermo."
     anchors:
       page: "Tutta la pagina"

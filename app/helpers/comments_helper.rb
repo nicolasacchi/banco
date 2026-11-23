@@ -1,7 +1,7 @@
 # Comments anywhere (D-304): the student's control, the badge of unread replies and the place of a comment in words.
 module CommentsHelper
   # The texts of the comment box's script (config/locales/comments.it.yml).
-  def comment_labels = I18n.t("comments").slice(:whole_page, :chars, :reason_required, :sent, :queued, :error, :anchors)
+  def comment_labels = I18n.t("comments").slice(:whole_page, :chars, :reason_required, :sent, :sending, :error, :anchors)
 
   # A decorative icon of the ui sprite (bin/build-icons, config/banco/icons.yml): the word next to it carries the meaning.
   def comment_icon(name)

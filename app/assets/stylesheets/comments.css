@@ -115,8 +115,6 @@ body.comment-mode [data-comment-ui] [data-comment-anchor] { outline: none; }
 }
 .comment-toast .comment-icon { color: var(--cs-answered); width: 1.5em; height: 1.5em; }
 .comment-toast.show { opacity: 1; transform: translate(-50%, 0); }
-.comment-toast.queued { border-color: var(--cs-sent); }
-.comment-toast.queued .comment-icon { color: var(--cs-sent); }
 
 /* ---- «I miei commenti» ---- */
 .menu-badge { display: inline-block; min-width: 1.5rem; padding: 0 0.4rem; margin-left: 0.25rem; border: 2px solid currentColor; border-radius: 1rem; text-align: center; font-weight: 700; }

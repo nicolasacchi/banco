@@ -388,6 +388,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-383 | 2026-11-19 | the tree flow draws a Do While: a decision is a rhombus sized to its text, and `loops` is the one way back (an orthogonal arrow from a node under a decision to it, with its label); the cycle check among `edges` stays | implemented |
 | D-384 | 2026-11-19 | an exercise the student only opened (served, no try, nothing typed) reads «Aperto» / «Opened», not «Saltato» / «Skipped»: the status is `opened`, the icon an eye; a click still resumes the open serve | implemented |
 | D-385 | 2026-11-19 | computer-science step verbs for what the student does at the computer: `paste`, `run`, `type` | implemented |
+| D-388 | 2026-11-23 | a comment is sent once: «Invia» is off until the server answers and a failure keeps the text and the id; the server stores the same student's same reason, text and place within two minutes once | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -4768,3 +4769,17 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Why:** a step that is S's action at the keyboard must not wear the word of an action of the program.
 - **Status:** implemented.
 - **Tests:** `bin/build-palette --check`, `bin/build-icons --check`, `test/lib/lesson_palette_test.rb` (the step tags name icons of the subject's list), `test/models/brief_test.rb` (every tag is in the brief), `test/lib/lesson_types_test.rb`, the procedure block tests, `node --test 'app/javascript/lesson/test/*.test.mjs'`.
+
+## D-388 · 2026-11-23 · A comment is sent once: «Invia» off while sending, a repeat within two minutes is not stored again
+
+- **Design ref:** D-304 (comments; the outbox `banco.coutbox.`, idempotent on `client_comment_id`), D-305 (the box and its confirmation).
+- **Design said:** `send` wrote the comment to the outbox, waited for the flush and only then closed the box; `pendingId` was cleared right after `outbox.add`. The server was idempotent on `client_comment_id` only.
+- **What happened:** on 23/11 comments 57, 58 and 59 arrived with the same text on the same exercise, at 06:44:33, :40 and :46. «Invia» stayed active while the server was slow and the box stayed open, so each tap added a new entry under a new `client_comment_id` (`pendingId` was already null): three ids, three rows. The ids were different, so the server's idempotence could not see a repeat.
+- **We do:**
+  1. Client (`comment_controller.js`): `send` ignores a second call while one is on its way; «Invia» is `disabled`, `aria-busy="true"` and reads «Invio…» from the tap until the server answers (`setSending`). The comment keeps one id (`pendingId`) until it has gone out. Success (the server's `recorded`): the box closes and the confirmation «Inviato al docente» shows. Failure (network, redirect, 5xx, `invalid`): the box stays open with the text, says «Non sono riuscito a inviare il commento. Il testo è ancora qui: premi Invia per riprovare.», «Invia» is on again; the entry stays in the outbox, so a retry is the same id and goes out once (and if the box is closed it is sent when the network is back, as before). The «Salvato. Lo mando quando torna la rete.» pill (`queued`) is gone: the box says it instead. Opening a new box starts a new comment.
+  2. Server (`Comments::Intake`): after the checks, a comment of the same student with the same `reason`, `text_it` (spaces normalized, as stored), `page_path` and `anchor` created in the last two minutes (`REPEAT_WINDOW`) is not stored; the intake answers `recorded` with the existing one, as for a repeated `client_comment_id`. The controller's answer is unchanged. No update, no delete: `comments` stays append-only.
+  3. «Novità»: one student entry, Italian and English (`comment-send-once`).
+- **Not done / must not change:** no unique index and no migration: two requests that cross each other in the same instant could still both be stored (a tap the client now refuses); the replies of a conversation (`reply`, `client_reply_id`) are a different path; a comment on another place, with another text or reason, or after two minutes, is a new comment; the teacher's view and the API are unchanged.
+- **Why:** a boy who reads literally and quickly, with the box open and no sign that anything was happening, tapped again. Three identical rows looked like three problems to the teacher.
+- **Status:** implemented.
+- **Tests:** `test/integration/comments_test.rb` (the same comment twice under two ids is one row; a different text, anchor, reason, page or student is another; after two minutes it is stored again), `test/system/comments_system_test.rb` («Invia» disabled while the server is late and one post only; offline keeps the text in the open box and the retry is one comment), `test/javascript/items/outbox.test.mjs` (the same id after a failure is one entry, one post), `test/lib/locale_parity_test.rb`, the changelog tests.

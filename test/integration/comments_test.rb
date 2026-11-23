@@ -79,6 +79,35 @@ class CommentsTest < ActionDispatch::IntegrationTest
     assert_equal @trial.id, trial.student_id
   end
 
+  test "the same comment sent twice within a minute under two ids is stored once, and the second is answered as recorded (D-388)" do
+    assert_equal "recorded", send_comment(client_comment_id: cid)["status"]
+    assert_no_difference -> { Comment.count } do
+      assert_equal({ "status" => "recorded" }, send_comment(client_comment_id: cid))
+      assert_equal "recorded", send_comment(client_comment_id: cid, text_it: "  Non capisco   il passaggio. ")["status"] # spaces do not make it another text
+    end
+    assert_equal 1, Comment.count
+  end
+
+  test "a comment that differs in text, anchor, reason, page or student is another comment" do
+    send_comment
+    assert_difference -> { Comment.count }, 5 do
+      send_comment(text_it: "Un altro testo.")
+      send_comment(anchor: "card:2/block:2")
+      send_comment(reason: "error")
+      send_comment(page_path: "/settings", anchor: nil, refs: {})
+      send_comment(TRIAL)
+    end
+  end
+
+  test "the same comment after two minutes is stored again" do
+    send_comment
+    travel 3.minutes do
+      assert_difference -> { Comment.count }, 1 do
+        send_comment
+      end
+    end
+  end
+
   test "another student's client_comment_id is refused, not overwritten or shown" do
     one = cid
     send_comment(OFFICIAL, client_comment_id: one)

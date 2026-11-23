@@ -9,7 +9,7 @@ import { anchorPath, buildComment, clip, describeAnchor, listTargets, refsOf, SE
 // and comment_closed are posted to the run's events, and the fold leaves that interval out. A comment is written to
 // a local outbox first (banco.coutbox.) and sent when the network allows. Nothing here reads a grade or an answer.
 export default class extends Controller {
-  static targets = ["includeSelected", "banner", "dialog", "where", "text", "count", "status", "selected", "clockNote", "reason", "form", "excerpt", "toast"]
+  static targets = ["includeSelected", "banner", "dialog", "where", "text", "count", "status", "selected", "clockNote", "reason", "form", "excerpt", "toast", "send"]
   static values = { url: String, eventsUrl: String, pagePath: String, labels: Object, mode: { type: Boolean, default: false } }
 
   connect() {
@@ -17,6 +17,7 @@ export default class extends Controller {
       fields: ["client_comment_id", "reason", "text_it", "selected_text", "anchor", "refs", "page_path", "viewport_width", "viewport_height", "theme", "text_size"] })
     this.picked = null
     this.pendingId = null
+    this.sending = false
     this.boxOpen = false
     this.lastSelection = ""
     this.onClick = (event) => this.documentClick(event)
@@ -99,6 +100,8 @@ export default class extends Controller {
     this.selectedTarget.closest("p").hidden = !this.lastSelection
     this.includeSelectedTarget.checked = true
     this.textTarget.value = ""
+    this.pendingId = null
+    this.setSending(false)
     this.updateCount()
     this.statusTarget.textContent = ""
     this.reasonTargets.forEach((radio) => { radio.checked = false })
@@ -179,24 +182,55 @@ export default class extends Controller {
     return { node: chosen.node, anchor: chosen.anchor }
   }
 
+  // «Invia» is off from the tap until the server has answered (D-388): a second tap while the first is on its way sent the same
+  // comment again under a new id. The comment keeps one id until it has gone out, so a retry after a failure is the same comment.
+  // On failure the box stays open with the text and says so; the entry stays in the outbox and is sent again, with the same id,
+  // when the network is back.
   async send(event) {
     event.preventDefault()
+    if (this.sending) return
     const reason = this.reasonTargets.find((radio) => radio.checked)?.value
     if (!reason) { this.statusTarget.textContent = this.labelsValue.reason_required; this.reasonTargets[0]?.focus(); return }
     const place = this.currentPlace()
     this.pendingId ||= newId()
+    const id = this.pendingId
     const html = document.documentElement
     const payload = buildComment({
-      id: this.pendingId, reason, text: this.textTarget.value, selected: this.includeSelectedTarget.checked ? this.lastSelection : "", anchor: place.anchor,
+      id, reason, text: this.textTarget.value, selected: this.includeSelectedTarget.checked ? this.lastSelection : "", anchor: place.anchor,
       refs: refsOf(place.node, document), pagePath: this.pagePathValue || window.location.pathname,
       viewport: { width: window.innerWidth, height: window.innerHeight }, theme: html.dataset.theme, size: html.dataset.size
     })
     if (payload.error) { this.statusTarget.textContent = this.labelsValue.error; return }
-    this.outbox.add({ ...payload, client_attempt_id: payload.client_comment_id })
-    this.pendingId = null
-    const flushed = await this.outbox.flush()
-    this.dialogTarget.close()
-    this.announce(flushed.blocked ? this.labelsValue.queued : this.labelsValue.sent, flushed.blocked)
+    this.setSending(true)
+    this.statusTarget.textContent = ""
+    let outcome = "failed"
+    try {
+      this.outbox.add({ ...payload, client_attempt_id: payload.client_comment_id })
+      let flushed = await this.outbox.flush()
+      // a flush already on its way (the page's own, at load) may have started before this entry was added
+      if (!flushed.blocked && !flushed.results[id]) flushed = await this.outbox.flush()
+      if (flushed.results?.[id]?.status === "recorded") outcome = "sent"
+      else if (flushed.results?.[id]?.status === "invalid") { outcome = "refused"; this.pendingId = null }
+    } finally {
+      this.setSending(false)
+    }
+    if (outcome === "sent") {
+      this.pendingId = null
+      this.dialogTarget.close()
+      this.announce(this.labelsValue.sent)
+    } else {
+      this.statusTarget.textContent = this.labelsValue.error
+      this.textTarget.focus()
+    }
+  }
+
+  setSending(on) {
+    this.sending = on
+    if (!this.hasSendTarget) return
+    this.sendTarget.disabled = on
+    this.sendTarget.setAttribute("aria-busy", String(on))
+    const label = this.sendTarget.querySelector("[data-comment-send-label]")
+    if (label) label.textContent = on ? this.labelsValue.sending : this.sendTarget.dataset.label
   }
 
   async flush() {
@@ -206,11 +240,10 @@ export default class extends Controller {
   }
 
   // The confirmation: a pill that shows for a few seconds and fades; it is also the live region for a screen reader.
-  announce(text, queued = false) {
+  announce(text) {
     const live = this.element.querySelector("[data-comment-live]")
     if (live) live.textContent = text
     if (!this.hasToastTarget) return
-    this.toastTarget.classList.toggle("queued", queued)
     this.toastTarget.classList.add("show")
     clearTimeout(this.toastTimer)
     this.toastTimer = setTimeout(() => this.toastTarget.classList.remove("show"), 3500)

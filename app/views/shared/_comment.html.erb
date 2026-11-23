@@ -50,7 +50,7 @@
       </div>
       <p role="alert" class="comment-error" data-comment-target="status"></p>
       <div class="comment-footer">
-        <button type="submit" class="button comment-send" id="comment-send"><%= comment_icon("send") %><%= t("comments.send") %></button>
+        <button type="submit" class="button comment-send" id="comment-send" data-comment-target="send" data-label="<%= t("comments.send") %>"><%= comment_icon("send") %><span data-comment-send-label><%= t("comments.send") %></span></button>
         <button type="button" class="button secondary" id="comment-cancel" data-action="comment#cancel"><%= t("comments.cancel") %></button>
       </div>
     </form>

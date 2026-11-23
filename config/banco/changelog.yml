@@ -13,6 +13,16 @@
 #
 # The student's text has no decision number and no jargon; it is second person and never blames. Newest first is the order of the pages, not of this file.
 entries:
+  - id: comment-send-once
+    date: 2026-11-23
+    audience: [student]
+    kind: fix
+    decisions: [D-388]
+    title_it: "Commenti: un solo invio"
+    body_it: "Quando premi Invia, il pulsante resta spento finché il commento non è partito. Poi il riquadro si chiude e vedi «Inviato al docente». Se non parte, il testo resta lì e puoi riprovare."
+    title_en: "Comments: sent once"
+    body_en: "When you press Send, the button stays off until the comment has gone. Then the box closes and you see «Sent to the teacher». If it does not go, your text stays there and you can try again."
+
   - id: flowchart-phone-arrows
     date: 2026-11-19
     audience: [student]

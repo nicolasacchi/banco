@@ -9,7 +9,7 @@ class CommentsController < ApplicationController
 
   before_action { response.headers["Cache-Control"] = "no-store" }
 
-  # JSON answer for the page's outbox: "recorded" (also a repeat) or "invalid" (final, the outbox drops it).
+  # JSON answer for the page's outbox: "recorded" (also a repeat, of the id or of the same text and place within two minutes, D-388) or "invalid" (final, the outbox drops it).
   def create
     result = Comments::Intake.call(student: acting_student, course_view: course_view, params: params)
     if result.status == :recorded

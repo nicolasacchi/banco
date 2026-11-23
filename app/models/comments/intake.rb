@@ -7,11 +7,16 @@ module Comments
   #
   #   Comments::Intake.call(student: s, course_view: view, params: params)  # => Result(status:, comment:, error:)
   #
-  # status: :recorded (also a repeat of the same client_comment_id by the same student) or :invalid (final: the
+  # status: :recorded (also a repeat of the same client_comment_id by the same student, and the same comment again within
+  # two minutes under another id: the first one is answered, D-388) or :invalid (final: the
   # page's outbox drops it). The preview student and any non-student never get here (the controller refuses them,
   # and the preview has no route); the check is repeated below.
   class Intake
     Result = Struct.new(:status, :comment, :error, keyword_init: true)
+
+    # The same student, reason, text and place within this time is the same comment sent again (a second tap, a page that
+    # forgot its id): it is answered with the first one and not stored (D-388). The ledger stays append-only.
+    REPEAT_WINDOW = 2.minutes
 
     ID_FORMAT = /\A[A-Za-z0-9_-]{8,64}\z/
     # name or name:value, up to eight segments: card:3/block:2/option:1
@@ -44,6 +49,9 @@ module Comments
       end
 
       row = base_row(id).merge(place)
+      repeat = recent_repeat(row)
+      return Result.new(status: :recorded, comment: repeat) if repeat
+
       begin
         comment = Comment.create!(row)
       rescue ActiveRecord::RecordNotUnique
@@ -72,6 +80,11 @@ module Comments
         viewport_width: clamp(@params[:viewport_width]), viewport_height: clamp(@params[:viewport_height]),
         theme: THEMES.include?(@params[:theme].to_s) ? @params[:theme].to_s : nil,
         text_size: SIZES.include?(@params[:text_size].to_s) ? @params[:text_size].to_s : nil, created_at: Time.current }
+    end
+
+    def recent_repeat(row)
+      Comment.where(student_id: @student.id, reason: row[:reason], text_it: row[:text_it], page_path: row[:page_path], anchor: row[:anchor],
+                    created_at: REPEAT_WINDOW.ago..).order(:id).first
     end
 
     def clamp(value)

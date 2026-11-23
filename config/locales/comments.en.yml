@@ -25,8 +25,8 @@ en:
     send: "Send"
     reason_required: "First choose what it is about."
     sent: "Sent to the teacher"
-    queued: "Saved. I'll send it when the network is back."
-    error: "I can't send the comment. Try again."
+    sending: "Sending…"
+    error: "I couldn't send the comment. The text is still here: press Send to try again."
     clock_note: "The test clock is stopped."
     anchors:
       page: "Whole page"
