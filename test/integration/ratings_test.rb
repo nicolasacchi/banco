@@ -92,7 +92,7 @@ class RatingsTest < ActionDispatch::IntegrationTest
     serve = serve!(student: @official, topic: @topic_revision)
     answer!(serve, slip_raw(serve), student: @official)
     status = Practice::Loader.status_of(PracticeServe.find(serve.serve.id))
-    assert_equal [ :closed, :wrong, false, %i[prova_questo show_solution back] ], [ status.state, status.closed_by, status.solution_sent, status.actions ]
+    assert_equal [ :closed, :wrong, false, %i[prova_questo show_solution back contest] ], [ status.state, status.closed_by, status.solution_sent, status.actions ]
     assert_equal({ "status" => "invalid", "error" => "not_over" }, rate(kind: "item", serve_id: serve.serve.id, stars: 1), "he is told he is wrong and can still ask for the solution")
     assert_equal 0, Rating.count
     actions(student: @official).solution(serve_id: serve.serve.id)

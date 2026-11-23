@@ -6,8 +6,8 @@ module Practice
   # longer the one the student is shown, or the item revision is no longer pinned there (the caller says so, D-377); else
   # abandoned when it is older than OPEN_SERVE_HOURS or superseded (the caller says a newer serve of the same student on the
   # same item exists). A closed serve stays closed. call derives the Status; step says what an
-  # event does to it (table rows 1-18), so the recorder only writes what the step names. A contest («Fai controllare»,
-  # practice/3) is the student sending the latest try to the teacher: the try is contested, the serve closes.
+  # event does to it (table rows 1-18), so the recorder only writes what the step names. A contest («Per me va bene così»,
+  # practice/3, D-389) is the student sending the latest try, whatever is not right in it, to the teacher: the try is contested, the serve closes.
   module ServeState
     V6 = Rules::V6
 
@@ -21,7 +21,8 @@ module Practice
     EVENTS = %i[answer hint solution_request contest].freeze
     # A contested try is the student's act on a stored try, never the outcome of an answer.
     ANSWER_OUTCOMES = (Outcome::OUTCOMES - [ :contested ] + [ :invalid ]).freeze
-    CONTESTABLE = %i[unrecognised form].freeze
+    # D-389: every try that is not right (the student may be the one who is right: «Per me va bene così»); never a right try, an undetermined one or a contested one.
+    CONTESTABLE = %i[typical_error unrecognised form near_miss].freeze
 
     module_function
 
@@ -85,12 +86,13 @@ module Practice
       contest_allowed?(state, closed_by, last) ? base + %i[contest] : base
     end
 
-    # Row 16: a contest is allowed on the latest try when it is unrecognised or form and not contested yet, on an open
-    # serve (after try 1) or on one closed `wrong` (after try 2).
+    # Row 16 (D-389): a contest is allowed on the latest try when it is not right (CONTESTABLE: typical error, unrecognised, form,
+    # near miss) and not contested yet, on an open serve or on one closed `wrong` or `near_miss`; never without a try, on a right
+    # try, twice, or on a serve closed any other way (right, undetermined, solution, contested).
     def contest_allowed?(state, closed_by, last)
       return false unless last && !contested?(last) && CONTESTABLE.include?(last.outcome.to_sym)
 
-      state == :open || (state == :closed && closed_by == :wrong)
+      state == :open || (state == :closed && %i[wrong near_miss].include?(closed_by))
     end
 
     def closed_actions(closed_by, last, solutions)

@@ -13,7 +13,7 @@ page says so. The student can still redo an exercise by choosing it (`item`, «R
 Version 4 (D-341) drops the two-days condition: a skill is demonstrated on 3 distinct exercises right without help, 2 of them
 hard to guess, even on the same day (`DEMONSTRATE_DISTINCT_DAYS` is gone). Every other constant is as in version 3. Version 3
 (D-339) changed the feedback, not the numbers: a typo or one missing or added word is a near miss; the student can send a try
-she believes right to the teacher (a **contest**, «Fai controllare»).
+she believes right to the teacher (a **contest**, «Fai controllare»; since D-389 «Per me va bene così», on every try that is not right).
 
 This note is the prose of the rules the practice engine applies. The numbers live in
 `lib/practice/rules/v6.rb` (`Practice::Rules::V6`); a test (`test/lib/practice/rules_test.rb`) fails when the two drift
@@ -93,9 +93,10 @@ A serve is **open** unless a row below closed it. An open serve is **abandoned**
 older than `OPEN_SERVE_HOURS`, or when it is **superseded**: a newer serve of the same student on the same item
 (the item, any revision) exists. A serve the student skips is not closed: it stays open, with what she typed
 kept as a draft (not a try), and she can come back to it. `W` = W tries so far, `NM` = near-miss tries so far.
-A **contest** is the student's act on the LATEST try of a serve («Fai controllare»): it is allowed when that try's
-outcome is `unrecognised` or `form` and it is not contested yet, on an open serve (after try 1) or on a serve closed
-`wrong` (after try 2); never after a typical error, a near miss, a correct answer or on a serve closed in another way.
+A **contest** is the student's act on the LATEST try of a serve («Per me va bene così», D-389; «Fai controllare» before): it is
+allowed when that try's outcome is `typical_error`, `unrecognised`, `form` or `near_miss` (every try that is not right) and it is
+not contested yet, on an open serve or on a serve closed `wrong` or `near_miss`; never without a try, after a correct or
+undetermined answer, twice, or on a serve closed in another way (`correct`, `undetermined`, `solution`).
 The try's outcome becomes `contested` (N), the serve is closed `contested`, and the solution is sent (`after_contest`)
 unless it was already sent. The actions of a serve include `contest` exactly when a contest is allowed on it.
 
@@ -118,19 +119,20 @@ In breve: un esercizio lasciato a metà resta aperto per due settimane. Se lo ri
 | 13 | closed `wrong` (row 2) | "Mostra la soluzione" | unchanged | yes (`after_wrong`) | none | `after_solution`, `back` |
 | 14 | closed, solution already sent | "Mostra la soluzione" | unchanged | the same solution, no new event | none | unchanged |
 | 15 | closed or abandoned | answer, hint | unchanged; HTTP 409 `{"status":"closed"}` | none | none | none |
-| 16 | open, latest try unrecognised or form (W=1) | contest | closed `contested`; the try is `contested` (N) | yes (`after_contest`) | none | `next`, `back` |
-| 17 | closed `wrong` (row 6), latest try unrecognised or form | contest | closed `contested`; the try is `contested` (N) | yes (`after_contest`) unless already sent | none | `next`, `back` |
+| 16 | open, latest try typical_error, unrecognised, form or near_miss | contest | closed `contested`; the try is `contested` (N) | yes (`after_contest`) | none | `next`, `back` |
+| 17 | closed `wrong` (rows 2, 6) or closed `near_miss` (row 8), latest try not right | contest | closed `contested`; the try is `contested` (N) | yes (`after_contest`) unless already sent | none | `next`, `back` |
 | 18 | closed `contested` | contest again | unchanged; the same answer, no new event, no second contest | none | none | unchanged |
 
-Rows 3, 4 and 6 also carry the action `contest` when its latest try allows it (rows 16 and 17): `retry`, `show_solution`,
-`contest` on an open serve; `after_solution`, `back`, `contest` (or `show_solution`, `back`, `contest`) on one closed `wrong`.
+Rows 2, 3, 4, 6, 7 and 8 carry the action `contest`, last, when the latest try allows it (rows 16 and 17): `retry`, `show_solution`,
+`contest` on an open serve (`retry`, `contest` after a near miss); `after_solution`, `back`, `contest` (or `show_solution`, `back`, `contest`,
+or with `prova_questo` after a typical error) on one closed `wrong`; `after_solution`, `next`, `back`, `contest` on one closed `near_miss`.
 A contest not allowed (any other state, the serve closed otherwise, abandoned): HTTP 409 `{"status":"not_contestable"}`.
 
 Actions: `next` = new serve without follow; `prova_questo` = new serve with follow
 `{serve_id, kind: "prova_questo"}`; `after_solution` = follow `{serve_id, kind: "after_solution"}`; `retry` =
-answer the same serve; `back` = the topic page; `contest` = send the latest try to the teacher. At most three stored tries follow from rows 3 to 8.
+answer the same serve; `back` = the topic page; `contest` = «Per me va bene così»: send the latest try to the teacher. At most three stored tries follow from rows 3 to 8.
 
-In breve: se pensi che la tua risposta sia giusta, premi «Fai controllare»: la vede il docente. L'esercizio si chiude,
+In breve: se pensi che la tua risposta sia giusta, premi «Per me va bene così»: la vede il docente. L'esercizio si chiude,
 vedi la soluzione e non conta né a favore né contro.
 
 ## 4. Atomicity
@@ -223,6 +225,10 @@ the latest of a serve's creation, its last try and its last draft.
 6. Next: the pinned items of the skill in pin order; the current item is the first with fewer than
    `ADVANCE_AFTER_CORRECT_UNAIDED` C_unaided tries by this student (any revision); when all have them, the item
    served least recently. Pick its first unseen instance; if none, the next pinned item with one.
+   **Hard to guess first** (D-390): when the C_unaided tries of the skill, one per fingerprint, leave `DEMONSTRATE_MIN_LOW_GUESS` short and the
+   exercises still missing in all are no more than the hard ones missing (every one still to come must be hard to guess), the
+   unseen instances taken into account are the hard-to-guess ones (`Practice::Instances.low_guess?`) when any is unseen, and the
+   choice runs over them as above. Only the automatic choice (rule 6, not `item`, `prova_questo` or `after_solution`) follows it.
 7. "Unseen" = the instance **fingerprint** was never served to this student in practice. Among candidates the
    order is `sha256("#{student_id}:#{fingerprint}")` ascending.
 8. **No unseen instance left in the skill** (every instance of every pinned item has been served to this student), on a
@@ -246,6 +252,11 @@ the latest of a serve's creation, its last try and its last draft.
     left there is no offer, only «Torna a Oggi». It is a screen, not a lock: `item` (the list, «Rifai») still serves an exercise (rule 1)
     and the screen comes back when that exercise is over and he asks for the next. No state, no row and
     no number changes; the screen speaks of the topic only.
+12. **Every exercise done, the skill not shown** (D-390). When every exercise of a skill in the list is `done` and the skill is not
+    `demonstrated` (its why still names what is missing), the list of exercises of that skill carries `all_done_it`, one line:
+    «Hai fatto tutti gli esercizi. Per chiudere ne serve ancora uno giusto da scrivere, abbinare o mettere in ordine (or: senza aiuto):
+    premi «Un altro esercizio», ne arriva uno nuovo.» «Hard» when every exercise still to come must be hard to guess (as rule 6). The page
+    shows it under the skill's state. No state, no row and no number changes.
 
 In breve: lo studente può saltare un esercizio e tornarci; la scelta dell'esercizio nuovo non tocca quelli lasciati a metà.
 

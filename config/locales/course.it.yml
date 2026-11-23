@@ -177,6 +177,14 @@ it:
       long_among:
         one: "Uno deve essere da scrivere, abbinare o mettere in ordine: quelli non si possono indovinare."
         other: "%{count} devono essere da scrivere, abbinare o mettere in ordine: quelli non si possono indovinare."
+    # D-390: every exercise of the skill is «Fatto» and the skill is still not shown: what to do, in one line.
+    all_done:
+      plain:
+        one: "Hai fatto tutti gli esercizi. Per chiudere ne serve ancora uno giusto senza aiuto: premi «%{next}», ne arriva uno nuovo."
+        other: "Hai fatto tutti gli esercizi. Per chiudere ne servono ancora %{count} giusti senza aiuto: premi «%{next}», ne arrivano di nuovi."
+      long:
+        one: "Hai fatto tutti gli esercizi. Per chiudere ne serve ancora uno giusto da scrivere, abbinare o mettere in ordine: premi «%{next}», ne arriva uno nuovo."
+        other: "Hai fatto tutti gli esercizi. Per chiudere ne servono ancora %{count} giusti da scrivere, abbinare o mettere in ordine: premi «%{next}», ne arrivano di nuovi."
     submit: "Controlla"
     hint: "Mostra un aiuto (%{n} di %{total})"
     solution: "Mostrami la soluzione"
@@ -189,10 +197,11 @@ it:
     second_wrong: "Non è ancora giusta. Guarda la soluzione, poi prova un esercizio simile."
     near_miss: "Controlla come l'hai scritta: forse c'è un errore di battitura."
     undetermined: "Non riesco a correggere questa risposta da solo: la vedrà il docente."
-    contest_note: "Pensi che la tua risposta sia giusta? Premi «Fai controllare»: la vede il docente."
-    contest_button: "Fai controllare"
+    contest_note: "Pensi di avere ragione? Premi «Per me va bene così»: l'esercizio si chiude e lo guarda il docente."
+    contest_button: "Per me va bene così"
     contested: "Ho mandato la tua risposta al docente: ti risponde in «I miei commenti». Intanto ecco la soluzione: confrontala con la tua."
     contest_comment: "La mia risposta, secondo me giusta: «%{raw}»."
+    contest_comment_bare: "Secondo me la mia risposta è giusta."
     same_answer: "È la stessa risposta di prima: cambiala, oppure chiedi un aiuto."
     near_typo: "Ci sei quasi: controlla come l'hai scritta, forse c'è un errore di battitura."
     near_one_word: "Ci sei quasi: manca una parola, oppure ce n'è una in più."
@@ -256,6 +265,7 @@ it:
     status_done: "Fatto"
     status_finished: "Finito"
     status_finished_solution: "Finito: con la soluzione"
+    status_contested: "Mandato al docente"
     status_unfinished: "Da finire"
     done_group: "Già fatti (%{n})"
     status_opened: "Aperto"

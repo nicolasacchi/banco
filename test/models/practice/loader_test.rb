@@ -99,7 +99,7 @@ class PracticeLoaderTest < ActiveSupport::TestCase
     t = loaded_try(serve)
     assert_equal [ :near_miss, :N, false ], [ t.outcome, t.evidence, t.contested ]
     assert_equal :open, load_input.serves.first.status.state
-    assert_equal %i[retry], load_input.serves.first.status.actions # a near miss: one retry, no contest
+    assert_equal %i[retry contest], load_input.serves.first.status.actions # a near miss: one retry, or «Per me va bene così» (D-389)
   end
 
   test "near is derived for one missing or one added word, never for a substitution" do

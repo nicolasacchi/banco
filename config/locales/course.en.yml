@@ -177,6 +177,14 @@ en:
       long_among:
         one: "One must be one to write, match or put in order: those cannot be guessed."
         other: "%{count} must be ones to write, match or put in order: those cannot be guessed."
+    # D-390: every exercise of the skill is «Done» and the skill is still not shown: what to do, in one line.
+    all_done:
+      plain:
+        one: "You have done all the exercises. To close it you still need one right without help: press «%{next}», a new one comes."
+        other: "You have done all the exercises. To close it you still need %{count} right without help: press «%{next}», new ones come."
+      long:
+        one: "You have done all the exercises. To close it you still need one right, to write, match or put in order: press «%{next}», a new one comes."
+        other: "You have done all the exercises. To close it you still need %{count} right, to write, match or put in order: press «%{next}», new ones come."
     submit: "Check"
     hint: "Show a hint (%{n} of %{total})"
     solution: "Show me the solution"
@@ -189,10 +197,11 @@ en:
     second_wrong: "It is not right yet. Look at the solution, then try a similar exercise."
     near_miss: "Check how you wrote it: there may be a typo."
     undetermined: "I can't mark this answer by myself: the teacher will look at it."
-    contest_note: "Do you think your answer is right? Press «Ask for a check»: the teacher will see it."
-    contest_button: "Ask for a check"
+    contest_note: "Do you think you are right? Press «It's fine for me»: the exercise closes and the teacher will look at it."
+    contest_button: "It's fine for me"
     contested: "I sent your answer to the teacher: they will reply in «My comments». Meanwhile here is the solution: compare it with yours."
     contest_comment: "My answer, which I think is right: «%{raw}»."
+    contest_comment_bare: "I think my answer is right."
     same_answer: "It is the same answer as before: change it, or ask for a hint."
     near_typo: "Nearly there: check how you wrote it, there may be a typo."
     near_one_word: "Nearly there: one word is missing, or there is one too many."
@@ -257,6 +266,7 @@ en:
     status_done: "Done"
     status_finished: "Finished"
     status_finished_solution: "Finished: with the solution"
+    status_contested: "Sent to the teacher"
     status_unfinished: "To finish"
     status_opened: "Opened"
     now: "Now"

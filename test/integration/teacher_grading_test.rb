@@ -53,7 +53,7 @@ class TeacherGradingTest < ActionDispatch::IntegrationTest
   test "the totals line up with the review" do
     page
     { "tries" => "Tentativi: 17.", "not_right" => "Non giusti: 13.", "written" => "Risposte scritte non giuste: 10 su 11.", "manual" => "Correzioni a mano: 2.",
-      "resends" => "Reinvii identici: 1.", "contested" => "«Fai controllare»: 1.", "flagged" => "Esercizi da controllare: 3.",
+      "resends" => "Reinvii identici: 1.", "contested" => "«Per me va bene così»: 1.", "flagged" => "Esercizi da controllare: 3.",
       "superseded" => "Tentativi su revisioni vecchie, non letti: 1." }.each do |key, text|
       assert_select "#grading-totals li[data-total=?]", key, text: text
     end
@@ -79,7 +79,7 @@ class TeacherGradingTest < ActionDispatch::IntegrationTest
       assert_select ".hint", text: "Corretto a mano: giusta"
     end
     assert_select "#grading-try-practice-#{@resend.id} li[data-signal=resend]", text: "reinvio identico"
-    assert_select "#grading-try-practice-#{@contested_try.id} li[data-signal=contested]", text: "«Fai controllare»"
+    assert_select "#grading-try-practice-#{@contested_try.id} li[data-signal=contested]", text: "«Per me va bene così»"
     assert_select "#grading-try-practice-#{@commented_try.id} li[data-signal=comment]"
     assert_select "#grading-try-diagnosis-#{@diag_resolved.id} li[data-signal=full_sentence]"
   end

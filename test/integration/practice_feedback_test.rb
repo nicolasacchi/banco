@@ -88,7 +88,7 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
 
   test "a typo and a missing word are «ci sei quasi»; two near answers close the serve with the solution" do
     typo = answer_for(OFFICIAL, serve_for(OFFICIAL, WORD), "neighbourhod")
-    assert_equal [ "near_miss", "Ci sei quasi: controlla come l'hai scritta, forse c'è un errore di battitura.", %w[retry] ],
+    assert_equal [ "near_miss", "Ci sei quasi: controlla come l'hai scritta, forse c'è un errore di battitura.", %w[retry contest] ],
                  typo.values_at("outcome", "message_it", "actions")
     assert_nil typo["solution"]
 
@@ -96,7 +96,7 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
     missing = answer_for(OFFICIAL, serve, "don't")
     assert_equal [ "near_miss", "Ci sei quasi: manca una parola, oppure ce n'è una in più." ], missing.values_at("outcome", "message_it")
     second = answer_for(OFFICIAL, serve, "eat")
-    assert_equal [ "near_miss", I18n.t("practice.second_wrong"), %w[after_solution next back] ], second.values_at("outcome", "message_it", "actions")
+    assert_equal [ "near_miss", I18n.t("practice.second_wrong"), %w[after_solution next back contest] ], second.values_at("outcome", "message_it", "actions")
     assert second["solution"]
   end
 
@@ -129,7 +129,7 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
     same = answer_for(OFFICIAL, serve, "Neighbourhod ")
     assert_response :success
     assert_equal [ "same_answer", "È la stessa risposta di prima: cambiala, oppure chiedi un aiuto." ], same.values_at("status", "message_it")
-    assert_not_includes same["actions"], "contest"
+    assert_includes same["actions"], "contest" # D-389: a near miss may be contested too
     assert_equal 1, tries(serve)
   end
 
@@ -196,13 +196,8 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
     assert_equal "La mia risposta, secondo me giusta: «#{'x' * 200}».", Comment.last.text_it
   end
 
-  test "a contest is refused with 409 when it is not allowed: no try, a typical error, a right answer, a near miss" do
+  test "a contest is refused with 409 when it is not allowed: no try, a right answer, a second contest" do
     serve = serve_for(OFFICIAL, SENTENCE)
-    assert_equal({ "status" => "not_contestable" }, contest_for(OFFICIAL, serve))
-    assert_response :conflict
-
-    typical = answer_for(OFFICIAL, serve, "doesn't eat")
-    assert_equal [ "typical_error", SLIP_MESSAGE ], typical.values_at("outcome", "message_it")
     assert_equal({ "status" => "not_contestable" }, contest_for(OFFICIAL, serve))
     assert_response :conflict
 
@@ -210,12 +205,32 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
     answer_for(OFFICIAL, right, "don't eat")
     assert_equal({ "status" => "not_contestable" }, contest_for(OFFICIAL, right))
     assert_response :conflict
-
-    near = serve_for(OFFICIAL, WORD)
-    answer_for(OFFICIAL, near, "neighbourhod")
-    assert_equal({ "status" => "not_contestable" }, contest_for(OFFICIAL, near))
-    assert_response :conflict
     assert_equal [ 0, 0 ], [ PracticeContest.count, Comment.count ]
+  end
+
+  test "D-389: a near miss is contested with one tap: the serve closes contested, the comment carries the answer in words, the solution comes back" do
+    serve = serve_for(OFFICIAL, WORD)
+    near = answer_for(OFFICIAL, serve, "neighbourhod")
+    assert_equal [ "near_miss", %w[retry contest] ], near.values_at("outcome", "actions")
+    body = contest_for(OFFICIAL, serve)
+    assert_response :success
+    assert_equal [ "contested", %w[next back] ], body.values_at("status", "actions")
+    assert body["solution"]
+    assert_equal "La mia risposta, secondo me giusta: «neighbourhod».", Comment.last.text_it
+    assert_equal body, contest_for(OFFICIAL, serve)
+    assert_equal [ 1, 1 ], [ PracticeContest.count, Comment.count ]
+    assert_equal "contested", statuses(OFFICIAL)[WORD]
+  end
+
+  test "D-389: a typical error is contested too, and a refused answer never makes a try to contest" do
+    serve = serve_for(OFFICIAL, SENTENCE)
+    typical = answer_for(OFFICIAL, serve, "doesn't eat")
+    assert_equal [ "typical_error", %w[prova_questo show_solution back contest] ], typical.values_at("outcome", "actions")
+    body = contest_for(OFFICIAL, serve)
+    assert_response :success
+    assert_equal [ "contested", %w[next back] ], body.values_at("status", "actions")
+    assert_equal %w[after_contest], solution_events(serve)
+    assert_equal "La mia risposta, secondo me giusta: «doesn't eat».", Comment.last.text_it
   end
 
   test "another student's serve is a 404" do
@@ -274,6 +289,18 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
     assert_equal "todo", statuses(OFFICIAL)[WORD]
   end
 
+  test "D-389: a contested exercise reads «contested» («Mandato al docente»), and «done» once the teacher makes it right or he answers right" do
+    serve = serve_for(OFFICIAL, SENTENCE)
+    answer_for(OFFICIAL, serve, "play")
+    assert_equal "finished", statuses(OFFICIAL)[SENTENCE]
+    contest_for(OFFICIAL, serve)
+    assert_equal "contested", statuses(OFFICIAL)[SENTENCE]
+    assert_equal "todo", statuses(OFFICIAL)[WORD]
+    again = serve_for(OFFICIAL, SENTENCE)
+    answer_for(OFFICIAL, again, "don't eat")
+    assert_equal "done", statuses(OFFICIAL)[SENTENCE]
+  end
+
   test "an open serve with nothing typed on a done exercise keeps «done»; with a try it is «done» still (a right one counts)" do
     serve = serve_for(OFFICIAL, SENTENCE)
     answer_for(OFFICIAL, serve, "don't eat")
@@ -293,9 +320,10 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
   end
 
   test "the labels are in the locale" do
-    assert_equal [ "Da finire", "Finito", "Finito: con la soluzione", "Fatto", "Aperto", "Da fare" ],
-                 %w[unfinished finished finished_solution done opened todo].map { |status| I18n.t("practice.status_#{status}") }
-    assert_equal "Fai controllare", I18n.t("practice.contest_button")
-    assert_equal "Pensi che la tua risposta sia giusta? Premi «Fai controllare»: la vede il docente.", I18n.t("practice.contest_note")
+    assert_equal [ "Da finire", "Finito", "Finito: con la soluzione", "Fatto", "Aperto", "Da fare", "Mandato al docente" ],
+                 %w[unfinished finished finished_solution done opened todo contested].map { |status| I18n.t("practice.status_#{status}") }
+    assert_equal "Per me va bene così", I18n.t("practice.contest_button")
+    assert_equal "Pensi di avere ragione? Premi «Per me va bene così»: l'esercizio si chiude e lo guarda il docente.", I18n.t("practice.contest_note")
+    assert_equal [ "It's fine for me", "Sent to the teacher" ], [ I18n.t("practice.contest_button", locale: :en), I18n.t("practice.status_contested", locale: :en) ]
   end
 end

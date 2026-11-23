@@ -297,7 +297,7 @@ teacher said afterwards (a resolved try keeps the grader's own outcome: that is 
 | `full_sentence` | is a whole sentence that holds all the words of the key (or an accepted form), in order, with other words round them |
 | `near_text` | is one or two edits (`near_distance`) from the key or an accepted form of 5 letters or more |
 | `resend` | repeats an answer already sent for this exercise (practice; since D-339 the app refuses an identical answer, so it shows only in older tries and in a redo of the same exercise) |
-| `contested` | was sent to the teacher with «Fai controllare» |
+| `contested` | was sent to the teacher with «Per me va bene così» |
 | `comment` | has a comment of the student (not a «mi piace») on the same serve, exercise or practice page, written after it (`comment_ids`) |
 | `resolved_right` | was made right by a teacher `resolve_attempt` |
 
@@ -377,7 +377,7 @@ An attempt on an item revision that has since been replaced is listed too: `revi
 `outcome`, `error_code` (the first matched code) and `error_codes`, `hints_shown` (before this try), `aided`, `solution_requested` (the student asked for the
 solution on this serve), `seconds` (from the serve, or the try before, to this one; capped at 600 as the engine caps it). `outcome` is the practice engine's
 (`Practice::Instances.grade`, the one the pages and the skill states use): `correct`, `correct_aided`, `typical_error`, `unrecognised`, `form`,
-`near_miss`, `undetermined`, `contested` (the student sent it to the teacher with «Fai controllare», D-339: `outcome_before_contest` says what it was) and, for
+`near_miss`, `undetermined`, `contested` (the student sent it to the teacher with «Per me va bene così» (before D-389 «Fai controllare»), D-339: `outcome_before_contest` says what it was) and, for
 a stored text that is not a try, `not_a_try` or `ungraded`. A try the teacher resolved with `resolve_attempt` (D-352) shows the outcome he gave, `outcome_before_resolution`
 and `resolution` (`verdict`, `reason_it`, `error_code?`, `at`, `decision_id`); a try after the one that closed its serve (only an earlier try resolved right can cause it)
 has `counted: false`: it no longer counts for the serve or the skill.

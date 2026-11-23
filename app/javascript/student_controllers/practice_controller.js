@@ -21,11 +21,12 @@ const ENTRY_STATUS = {
   done: { icon: "circle-check", tone: "success" },
   finished: { icon: "circle-check", tone: "muted" },
   finished_solution: { icon: "circle-check", tone: "muted" },
+  contested: { icon: "send", tone: "muted" }, // D-389: sent to the teacher with «Per me va bene così»
   unfinished: { icon: "notebook-pen", tone: "nearly" },
   opened: { icon: "show", tone: "muted" },
   now: { icon: "pin", tone: "info" }
 }
-const FINISHED_STATUSES = ["done", "finished", "finished_solution"]
+const FINISHED_STATUSES = ["done", "finished", "finished_solution", "contested"]
 const DRAFT_WAIT_MS = 1500
 const DRAFT_TIMEOUT_MS = 4000
 const STATE_TONES = { demonstrated: "success", consolidated: "success", in_study: "info", to_recover: "nearly", to_review: "nearly", to_learn: "nearly", not_seen: "muted" }
@@ -708,6 +709,17 @@ export default class extends Controller {
         heading.textContent = skill.label_it
         group.appendChild(heading)
       }
+      // D-390: every exercise «Fatto» and the skill still not shown: the one line that says what to do, here and under the skill's state.
+      if (skill.all_done_it) {
+        const line = document.createElement("p")
+        line.className = "exercise-all-done"
+        line.textContent = skill.all_done_it
+        group.appendChild(line)
+        if (skill.key === this.skillValue && this.hasSkillMissingTarget) {
+          this.skillMissingTarget.textContent = skill.all_done_it
+          this.skillMissingTarget.hidden = false
+        }
+      }
       // D-353: what is still to do comes first; what is done or finished goes into one closed «Già fatti (N)» at the end, still clickable.
       // The exercise on the page stays up with the first ones whatever its status, answered and closed included.
       const first = []
@@ -796,7 +808,7 @@ export default class extends Controller {
     const word = status === "now" ? this.labels.now : status === "todo" && this.topicDone ? this.labels.status_optional : this.labels[`status_${status}`]
     pill.appendChild(document.createTextNode(word))
     link.append(text, pill)
-    if (!current && (exercise.status === "done" || exercise.status === "finished" || exercise.status === "finished_solution")) {
+    if (!current && FINISHED_STATUSES.includes(exercise.status)) {
       const redo = document.createElement("span")
       redo.className = "exercise-act"
       redo.textContent = this.labels.redo

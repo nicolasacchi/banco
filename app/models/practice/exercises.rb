@@ -3,14 +3,17 @@ module Practice
   # pinned on the topic revision this student sees, in pin order, each with its status from the student's serves. Read-only.
   #
   #   status, in this order: "unfinished" when the open serve has a non-empty draft and no try (typed, not answered: «Da finire»);
-  #           "done" when any serve of the item closed correct; "finished_solution" when a serve with a try or a shown solution ended (closed,
+  #           "done" when any serve of the item closed correct; "contested" when no serve is open and one closed `contested` (he sent it to the teacher with
+  #           «Per me va bene così», D-389: «Mandato al docente»); "finished_solution" when a serve with a try or a shown solution ended (closed,
   #           abandoned, or still open with a try) and the STUDENT asked for the solution (an event `solution_shown` with the reason
   #           `requested`, or `after_wrong` on a serve already closed wrong: both are the «Mostra la soluzione» button); "finished" when such a serve ended and the
-  #           solution, if any, came by itself (after the last try, after a right answer, after «Fai controllare»), or the open serve has
+  #           solution, if any, came by itself (after the last try, after a right answer, after «Per me va bene così»), or the open serve has
   #           a try (he answered; a click still resumes it); "opened" when there is an open serve (no try, nothing typed: he only opened it, D-384, «Aperto»); else "todo".
   #           open_serve_id is set whenever the item has an open serve, so a click resumes it. A replaced serve (the topic was revised while it was open,
   #           D-377) is neither open nor ended: it takes no part in the status, so the exercise reads as to do (or done by another serve) and a click serves it
   #           anew from the revision he is shown; its tries still count for the skill.
+  #
+  #           A skill whose exercises are all «done» while it is not shown yet carries `all_done_it` (D-390), the line that says what is still needed.
   #
   # The list never holds a key to an answer, an error value or the text of an instance: only the item's key (the page asks for that exercise
   # with it), its place and a title, the first sentence of the prompt's stem (the same for every instance).
@@ -102,9 +105,19 @@ module Practice
       rows = Loader.for(@student, subject: @subject, skill: skill, seeds: false, now: @now, shown: @view.shown_revisions).serves
       revisions = ItemRevision.where(id: pins.map { |p| p["revision"] }).index_by(&:id)
       facts = Facts.new(rows, drafts_for(rows))
+      exercises = pins.each_with_index.map { |pin, i| exercise(pin, i + 1, revisions[pin["revision"]], facts) }
       { key: skill, label_it: @view.label(skill), state: state&.state, state_it: state ? Messages.skill_state_it(state) : Messages.state_it(nil),
-        url: "#{@root}/topics/#{@topic.key}/practice/#{skill}",
-        exercises: pins.each_with_index.map { |pin, i| exercise(pin, i + 1, revisions[pin["revision"]], facts) } }
+        url: "#{@root}/topics/#{@topic.key}/practice/#{skill}", all_done_it: all_done_it(state, exercises), exercises: exercises }
+    end
+
+    # D-390: every exercise of the skill is «Fatto» and the skill is not shown yet (the fingerprints that count are fewer than 3, or fewer than 2
+    # of them hard to guess): the one line that says what to do, from what the fold says is missing. nil otherwise.
+    def all_done_it(state, exercises)
+      return nil unless state && exercises.any? && exercises.all? { |e| e[:status] == "done" }
+
+      gap = Messages.missing(state.why) or return nil
+      hard = gap[:long].positive? && gap[:long] >= gap[:exercises] # every one still to come must be hard to guess
+      I18n.t("practice.all_done.#{hard ? 'long' : 'plain'}", count: gap[:exercises], next: I18n.t("practice.next"))
     end
 
     def exercise(pin, n, revision, facts)
@@ -118,6 +131,7 @@ module Practice
     def status(mine, open, facts)
       return "unfinished" if open && facts.tries(open.id).zero? && facts.draft?(open.id)
       return "done" if mine.any? { |r| r.status.closed_by == :correct }
+      return "contested" if !open && mine.any? { |r| r.status.closed_by == :contested } # D-389: «Per me va bene così», sent to the teacher
 
       ended = mine.select { |r| (!%i[open replaced].include?(r.status.state) || r.id == open&.id) && (facts.tries(r.id).positive? || r.status.solution_sent) }
       return (ended.any? { |r| facts.asked_solution?(r.id) } ? "finished_solution" : "finished") if ended.any?

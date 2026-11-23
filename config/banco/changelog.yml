@@ -31,6 +31,35 @@ entries:
     body_it: "Se scrivi «2 minuti» e l'esercizio parla di minuti, la risposta conta come giusta, con un promemoria: basta il numero. Se la risposta non si può leggere, ora vedi subito quale parola togliere, e puoi riprovare."
     title_en: "Answers with the unit of measure are now accepted"
     body_en: "If you write «2 minutes» and the exercise is about minutes, the answer counts as right, with a reminder that only the number is needed. If an answer cannot be read, you now see at once which word to take out, and you can try again."
+  - id: fine-for-me-button
+    date: 2026-11-23
+    audience: [student]
+    kind: software
+    decisions: [D-389]
+    title_it: "«Per me va bene così»: se pensi di avere ragione"
+    body_it: "Dopo una risposta non giusta, anche quando ci eri quasi, ora c'è il pulsante «Per me va bene così». L'esercizio si chiude, vedi la soluzione e il docente guarda la tua risposta. Nella lista l'esercizio dice «Mandato al docente»."
+    title_en: "«It's fine for me»: when you think you are right"
+    body_en: "After an answer that is not right, even when you were almost there, there is now the button «It's fine for me». The exercise closes, you see the solution and the teacher looks at your answer. In the list the exercise says «Sent to the teacher»."
+
+  - id: all-done-what-is-missing
+    date: 2026-11-23
+    audience: [student]
+    kind: software
+    decisions: [D-390]
+    title_it: "Esercizi tutti fatti ma l'argomento è aperto: ora lo dice"
+    body_it: "Se hai fatto tutti gli esercizi di un'abilità ma ne manca ancora uno giusto, da scrivere o abbinare, la lista e la pagina ora lo dicono. «Un altro esercizio» ti porta un esercizio nuovo di quel tipo."
+    title_en: "All exercises done but the topic is open: now it says why"
+    body_en: "If you did all the exercises of a skill but one right one is still missing, to write or match, the list and the page now say so. «Another exercise» brings you a new exercise of that kind."
+
+  - id: contest-comment-in-words
+    date: 2026-11-23
+    audience: [student]
+    kind: fix
+    decisions: [D-387]
+    title_it: "«Per me va bene così»: il docente legge la tua risposta a parole"
+    body_it: "Quando premi «Per me va bene così» il commento per il docente ora riporta la tua risposta con le parole che hai visto: il testo della scelta, oppure «riga – scelta» per ogni riga di un abbinamento."
+    title_en: "«It's fine for me»: the teacher reads your answer in words"
+    body_en: "When you press «It's fine for me», the comment for the teacher now shows your answer in the words you saw: the text of the option you chose, or «row – choice» for each row of a matching."
 
   - id: flowchart-phone-arrows
     date: 2026-11-19

@@ -1,6 +1,6 @@
 module Practice
-  # «Fai controllare» (D-339): the student sends the latest try of a serve, which the engine called wrong, to the teacher. The state machine says
-  # when that is allowed (`contest` among the serve's actions: the latest try is unrecognised or form and not contested yet). One short transaction
+  # «Per me va bene così» (D-339 «Fai controllare», D-389): the student sends the latest try of a serve, which the engine did not call right, to the teacher. The state machine says
+  # when that is allowed (`contest` among the serve's actions: the latest try is a typical error, unrecognised, form or a near miss and not contested yet). One short transaction
   # writes the contest row, the comment the teacher reads (through Comments::Intake, like any comment of the student: reason `error`, the practice
   # page, anchored to the exercise's answer, the serve as its ref) and the solution event if it was not sent yet. A second call answers the same
   # and writes nothing. The teacher's preview writes the contest for the preview student and no comment (D-309). The grading, the attempt and
@@ -63,16 +63,44 @@ module Practice
     def comment_for(serve, attempt)
       return nil unless @student.kind == "student"
 
-      raw = attempt.raw.to_s.gsub(/[[:space:]]+/, " ").strip.first(RAW_CHARS)
       result = Comments::Intake.call(
         student: @student, course_view: @view,
-        params: { client_comment_id: "contest-#{attempt.id}", reason: "error", text_it: I18n.t("practice.contest_comment", raw: raw, locale: :it), # the teacher reads it: Italian, whatever the student's page speaks (D-356)
+        params: { client_comment_id: "contest-#{attempt.id}", reason: "error", text_it: comment_text(serve, attempt), # the teacher reads it: Italian, whatever the student's page speaks (D-356)
                   page_path: "/topics/#{serve.topic_revision.lesson.key}/practice/#{serve.skill_key}", anchor: COMMENT_ANCHOR,
                   refs: { "serve_id" => serve.id } }
       )
       raise "the contest's comment was refused: #{result.error}" unless result.status == :recorded
 
       result.comment
+    end
+
+    # The comment's words (D-387): his answer in the texts he read, never the code it travels as; without the answer when the words cannot be built.
+    def comment_text(serve, attempt)
+      words = answer_words(serve, attempt)
+      return I18n.t("practice.contest_comment_bare", locale: :it) unless words
+
+      I18n.t("practice.contest_comment", raw: words, locale: :it)
+    end
+
+    # Diagnosis::AnswerText (the reader of the teacher's pages, Teacher::AnswerWords): a matching is «riga – scelta; riga – scelta», a choice its option
+    # text, an ordering its items in his order, a typed answer as typed. nil when the answer does not read as that exercise's, or when the reader
+    # fell back to the stored code of a structured answer.
+    def answer_words(serve, attempt)
+      raw = attempt.raw.to_s
+      words = squish(Diagnosis::AnswerText.call(attempt, serve))
+      return nil if words.empty? || (words == squish(raw) && structured?(serve))
+
+      words.first(RAW_CHARS)
+    rescue JSON::ParserError, NoMethodError, TypeError
+      nil
+    end
+
+    def squish(text) = text.to_s.gsub(/[[:space:]]+/, " ").strip
+
+    # A choice, an ordering, a matching, a fraction or a reading test: its stored answer is ids, never words.
+    def structured?(serve)
+      body = JSON.parse(serve.item_instance.item_revision.body_json)
+      body["kind"] == "testlet" || %w[choice ordering matching fraction].include?(body["component"])
     end
 
     def event(serve, kind, payload, now)

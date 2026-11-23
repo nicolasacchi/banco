@@ -29,7 +29,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
   SENTENCE_KEY = "never eat".freeze
   CONTESTED = "Ho mandato la tua risposta al docente: ti risponde in «I miei commenti». Intanto ecco la soluzione: confrontala con la tua.".freeze
   SAME_ANSWER = "È la stessa risposta di prima: cambiala, oppure chiedi un aiuto.".freeze
-  CONTEST_NOTE = "Pensi che la tua risposta sia giusta? Premi «Fai controllare»: la vede il docente.".freeze
+  CONTEST_NOTE = "Pensi di avere ragione? Premi «Per me va bene così»: l'esercizio si chiude e lo guarda il docente.".freeze
 
   WATCH = <<~JS.freeze
     (() => {
@@ -497,7 +497,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
     assert_clean "the outbox"
   end
 
-  # ---- «Fai controllare», the same answer, a whole sentence, «Ci sei quasi» (D-339) ---------------------
+  # ---- «Per me va bene così», the same answer, a whole sentence, «Ci sei quasi» (D-339) ---------------------
 
   def sentence_box = find("input[type=text][lang]")
   def tries_of(serve) = serve.attempts.order(:try_number)
@@ -510,7 +510,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
   # The line under the message is smaller than the message; the button is there.
   def assert_contest_offered
     assert_selector "#feedback .contest-note", text: CONTEST_NOTE
-    assert_selector "#feedback #contest-button", text: "Fai controllare"
+    assert_selector "#feedback #contest-button", text: "Per me va bene così"
     sizes = page.evaluate_script("[document.querySelector('#feedback .feedback-text'), document.querySelector('#feedback .contest-note')].map(function (e) { return parseFloat(getComputedStyle(e).fontSize) })")
     assert_operator sizes[1], :<, sizes[0], "the contest line is smaller than the message"
   end
@@ -528,7 +528,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
     end
   end
 
-  # A wrong typed answer offers «Fai controllare»; the click writes the contest, shows the solution and the message, closes the exercise.
+  # A wrong typed answer offers «Per me va bene così»; the click writes the contest, shows the solution and the message, closes the exercise.
   def walk_contest
     serve = open_practice("sentence")
     type_and_check("xyz")
@@ -594,7 +594,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
     assert_clean "the same answer"
   end
 
-  # A whole sentence around the blank is right, with a note; a typo is «Ci sei quasi» and offers no contest.
+  # A whole sentence around the blank is right, with a note; a typo is «Ci sei quasi» and offers the contest too (D-389).
   def walk_sentence_and_typo
     serve = open_practice("sentence")
     assert_selector "[data-practice-target=itemBox]", text: "My parents ___ meat."
@@ -609,7 +609,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
     fresh = next_serve_after(serve)
     type_and_check("nevar eat")
     assert_selector "#feedback", text: "Ci sei quasi: controlla come l'hai scritta, forse c'è un errore di battitura."
-    assert_no_selector "#contest-button"
+    assert_selector "#feedback #contest-button", text: "Per me va bene così" # D-389: a near miss may be sent to the teacher too
     assert_equal [ "wrong" ], fresh.attempts.map { |a| a.gradings.first.verdict }
     assert_selector "#check:not([disabled])"
     sentence_box.set(SENTENCE_KEY)
@@ -798,26 +798,26 @@ class PracticeFlowTest < ApplicationSystemTestCase
     walk_phone
   end
 
-  test "a trial student: a wrong answer offers «Fai controllare» and the click sends it to the teacher" do
+  test "a trial student: a wrong answer offers «Per me va bene così» and the click sends it to the teacher" do
     build_flow_world(sentence: true)
     as_student
     walk_contest
   end
 
-  test "the teacher in the preview: «Fai controllare» writes the contest and no comment" do
+  test "the teacher in the preview: «Per me va bene così» writes the contest and no comment" do
     build_flow_world(sentence: true)
     as_teacher_in_preview
     walk_contest
     assert_equal "preview", acting_student.kind
   end
 
-  test "a trial student: after the second wrong try «Fai controllare» is still offered" do
+  test "a trial student: after the second wrong try «Per me va bene così» is still offered" do
     build_flow_world(sentence: true)
     as_student
     walk_contest_after_second_try
   end
 
-  test "the teacher in the preview: after the second wrong try «Fai controllare» is still offered" do
+  test "the teacher in the preview: after the second wrong try «Per me va bene così» is still offered" do
     build_flow_world(sentence: true)
     as_teacher_in_preview
     walk_contest_after_second_try
@@ -898,7 +898,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
     assert_clean "the pool that ran out"
   end
 
-  test "a trial student on a 390 px phone: «Fai controllare» does not scroll sideways" do
+  test "a trial student on a 390 px phone: «Per me va bene così» does not scroll sideways" do
     build_flow_world(sentence: true)
     as_student
     walk_contest_phone

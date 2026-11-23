@@ -1,4 +1,5 @@
 require "test_helper"
+require "minitest/mock"
 require_relative "../../support/practice_text_world"
 
 # «Fai controllare» (D-339) as the service: the contest row, the teacher's comment, the solution event, idempotence, what the loader makes of it,
@@ -52,21 +53,27 @@ class PracticeContestTest < ActiveSupport::TestCase
     assert_equal [ :contested, :N, true ], [ try.outcome, try.evidence, try.contested ]
   end
 
-  test "it is refused with 409 and writes nothing unless the latest try is unrecognised or form and not contested" do
+  test "it is refused with 409 and writes nothing with no try or on a right one (D-389)" do
     serve = serve_of(SENTENCE)
     refused = contest_for(@official).call(serve_id: serve.id)
     assert_equal [ 409, { status: "not_contestable" } ], [ refused.http, refused.body ]
-    wrong!(serve, "doesn't eat") # a typical error
-    assert_equal 409, contest_for(@official).call(serve_id: serve.id).http
 
     right = serve_of(SENTENCE)
     wrong!(right, "don't eat")
     assert_equal 409, contest_for(@official).call(serve_id: right.id).http
+    assert_equal [ 0, 0 ], [ PracticeContest.count, Comment.count ]
+  end
 
+  test "D-389: a typical error and a near miss are contested too, the comment carrying the answer as typed" do
+    typical = serve_of(SENTENCE)
+    wrong!(typical, "doesn't eat")
+    assert_equal 200, contest_for(@official).call(serve_id: typical.id).http
     near = serve_of(WORD)
     wrong!(near, "neighbourhod")
-    assert_equal 409, contest_for(@official).call(serve_id: near.id).http
-    assert_equal [ 0, 0 ], [ PracticeContest.count, Comment.count ]
+    assert_equal 200, contest_for(@official).call(serve_id: near.id).http
+    assert_equal [ "La mia risposta, secondo me giusta: «doesn't eat».", "La mia risposta, secondo me giusta: «neighbourhod»." ],
+                 PracticeContest.order(:id).map { |c| c.comment.text_it }
+    assert_equal %w[after_contest], solution_reasons(near)
   end
 
   test "another student's serve is a 404" do
@@ -113,5 +120,70 @@ class PracticeContestTest < ActiveSupport::TestCase
 
   test "the sentence of a contested try is the contested one" do
     assert_equal I18n.t("practice.contested"), Practice::Messages.feedback(:contested)
+  end
+
+  # ---- the comment says his answer in words, never in code (D-387) ----------------------------------
+
+  # A practice item of a closed component (choice, matching) pinned alone on a new approved topic revision; the serve's ids are re-keyed as the page does.
+  def closed_serve(key, component, display, answer)
+    item = Item.create!(subject: @subject, key: key, kind: "practice_item")
+    body = { schema: "banco.item/1", schema_version: 1, kind: "practice_item", subject: @subject.key, skill: SKILL, component: component, level: 1,
+             expected_seconds: 60, hints_it: [], error_catalogue: [] }
+    revision = ItemRevision.create!(item: item, seq: 1, body_json: JSON.generate(body), file_sessions_json: "{}")
+    ItemValidation.create!(item_revision: revision, seq: 1, status: "passed", codes_json: "[]")
+    6.times do |i|
+      ItemInstance.create!(item_revision: revision, seed: i + 1, display_json: JSON.generate(display), answer_json: JSON.generate(answer), errors_json: "[]",
+                           hints_json: "[]", solution_json: JSON.generate(steps: [ { text_it: "Passo." } ], final: "Vedi."),
+                           fingerprint: Digest::SHA256.hexdigest("#{key}-#{i}"))
+    end
+    topic = make_topic(@lesson_revision, { SKILL => [ revision ] }, course: @course)
+    approve_topic!(topic)
+    serve!(student: @official, topic: topic, skill: SKILL, item: key).serve
+  end
+
+  # The texts of the stored display by stored id, and the shown id's text through the serve's logged map.
+  def shown_texts(serve)
+    display = JSON.parse(serve.item_instance.display_json)
+    texts = (%w[options left right].flat_map { |k| Array(display[k]) }).to_h { |e| [ e["id"], e["text"] ] }
+    map = JSON.parse(serve.id_map_json.presence || "{}")
+    ->(shown_id) { texts.fetch(map.fetch(shown_id, shown_id)) }
+  end
+
+  test "the comment of a wrong choice is the option text he read, not its id" do
+    options = [ { id: "o1", text: "Produrre automobili" }, { id: "o2", text: "Vendere libri" }, { id: "o3", text: "Insegnare a scuola" }, { id: "o4", text: "Curare i malati" } ]
+    serve = closed_serve("closed-choice", "choice", { options: options }, "o1")
+    map = JSON.parse(serve.id_map_json.presence || "{}")
+    wrong_id = %w[o1 o2 o3 o4].find { |shown| map.fetch(shown, shown) != "o1" }
+    wrong!(serve, wrong_id)
+    assert_equal 200, contest_for(@official).call(serve_id: serve.id).http
+
+    text = PracticeContest.sole.comment.text_it
+    assert_equal "La mia risposta, secondo me giusta: «#{shown_texts(PracticeServe.find(serve.id)).call(wrong_id)}».", text
+    assert_no_match(/\bo\d\b|[{\[]/, text)
+  end
+
+  test "the comment of a wrong matching is «riga – scelta; riga – scelta» in the texts he read, with no braces and no l1" do
+    left = (1..4).map { |n| { id: "l#{n}", text: "Autore #{n}" } }
+    right = (1..4).map { |n| { id: "r#{n}", text: "Opera #{n}" } }
+    serve = closed_serve("closed-matching", "matching", { left: left, right: right }, { "l1" => "r1", "l2" => "r2", "l3" => "r3", "l4" => "r4" })
+    raw = { "l1" => "r1", "l2" => "r1", "l3" => "r1", "l4" => "r2" }
+    wrong!(serve, JSON.generate(raw))
+    assert_equal 200, contest_for(@official).call(serve_id: serve.id).http
+
+    text = PracticeContest.sole.comment.text_it
+    words = shown_texts(PracticeServe.find(serve.id))
+    expected = raw.map { |l, r| "#{words.call(l)} – #{words.call(r)}" }.join("; ")
+    assert_equal "La mia risposta, secondo me giusta: «#{expected}».", text
+    assert_no_match(/[{}\[\]]|\bl\d\b|\br\d\b/, text)
+  end
+
+  test "an answer that cannot be put in words goes without the answer, never as code" do
+    serve = closed_serve("closed-broken", "choice", { options: [ { id: "o1", text: "Uno" }, { id: "o2", text: "Due" } ] }, "o1")
+    wrong!(serve, "o2")
+    reader_fails = ->(*) { raise JSON::ParserError, "the answer does not read as this exercise's" }
+    Diagnosis::AnswerText.stub(:call, reader_fails) do
+      assert_equal 200, contest_for(@official).call(serve_id: serve.id).http
+    end
+    assert_equal "Secondo me la mia risposta è giusta.", PracticeContest.sole.comment.text_it
   end
 end

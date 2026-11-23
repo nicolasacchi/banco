@@ -553,4 +553,76 @@ class PracticeSelectorTest < ActiveSupport::TestCase
     assert_nil choose(open_item_ids: Set[2], seen: Set["a", "b"]), "the item left out has an unseen instance: nil, but not exhausted"
     assert_not Practice::Selector.exhausted?(pool: candidates, seen: Set["a", "b"])
   end
+
+  # ---- D-390: a skill that still needs hard-to-guess exercises serves one of those ----
+
+  # A practice item of the component choice (not hard to guess), pinned by the caller; its options are shown re-keyed, as the page does.
+  def make_choice_item(key, instances: 4)
+    item = Item.create!(subject: @subject, key: key, kind: "practice_item")
+    body = { schema: "banco.item/1", schema_version: 1, kind: "practice_item", subject: @subject.key, skill: @skill, component: "choice", level: 1,
+             expected_seconds: 60, hints_it: [], error_catalogue: [] }
+    revision = ItemRevision.create!(item: item, seq: 1, body_json: JSON.generate(body), file_sessions_json: "{}")
+    ItemValidation.create!(item_revision: revision, seq: 1, status: "passed", codes_json: "[]")
+    instances.times do |i|
+      options = (1..4).map { |n| { id: "o#{n}", text: "Scelta #{key} #{i} #{n}" } }
+      ItemInstance.create!(item_revision: revision, seed: i + 1, display_json: JSON.generate(options: options), answer_json: JSON.generate("o1"), errors_json: "[]",
+                           hints_json: "[]", solution_json: JSON.generate(steps: [ { text_it: "Passo." } ], final: "Scelta"),
+                           fingerprint: Digest::SHA256.hexdigest("#{key}-#{i}"))
+    end
+    revision
+  end
+
+  def right_choice_raw(serve)
+    map = JSON.parse(serve.serve.id_map_json.presence || "{}")
+    map.key("o1") || "o1"
+  end
+
+  test "D-390: with two choice items right and a written item still to come, the next exercise is a new instance of the written one" do
+    choices = [ make_choice_item("choice-a"), make_choice_item("choice-b") ]
+    written = @revisions.first
+    topic = make_topic(@lesson_revision, { @skill => [ *choices, written ] })
+    first = serve!(topic: topic, item: "choice-a")
+    assert_equal "correct", answer!(first, right_choice_raw(first)).body[:outcome]
+    advance
+    assert Practice::Selector.hard_needed?(Practice::Loader.for(@student, subject: @subject, skill: @skill, seeds: false, now: @clock.now).tries),
+           "one choice right: 2 exercises and 2 hard ones are still missing"
+
+    next_serve = serve!(topic: topic, advance: true)
+    assert_equal [ "next", written.item_id ], [ next_serve.reason, next_serve.instance.item_revision.item_id ],
+                 "without the rule the next one is choice-b: the first item with no credit"
+    assert_equal 1, PracticeServe.where(item_instance_id: next_serve.instance.id).count
+  end
+
+  test "D-390: when the pool has no hard-to-guess instance left, the automatic choice is as it was" do
+    choices = [ make_choice_item("choice-a"), make_choice_item("choice-b") ]
+    topic = make_topic(@lesson_revision, { @skill => choices })
+    first = serve!(topic: topic, item: "choice-a")
+    answer!(first, right_choice_raw(first))
+    advance
+    next_serve = serve!(topic: topic, advance: true)
+    assert_equal "choice-b", next_serve.instance.item_revision.item.key
+  end
+
+  FakeTry = Struct.new(:evidence, :aided, :reseen, :fingerprint, :low_guess)
+
+  test "D-390: hard_needed? counts the fingerprints right without help, never an aided or a repeated one" do
+    credit = ->(fp, low, aided: false) { FakeTry.new(:C, aided, false, fp, low) }
+    assert_not Practice::Selector.hard_needed?([ credit.("a", true), credit.("b", true), credit.("c", false) ]), "3 right, 2 hard: nothing is missing"
+    assert Practice::Selector.hard_needed?([ credit.("a", false), credit.("b", false), credit.("c", false), credit.("d", false) ]), "4 right, none hard"
+    assert Practice::Selector.hard_needed?([ credit.("a", false), credit.("b", true) ]), "2 right, 1 hard: 1 more in all, 1 more hard"
+    assert_not Practice::Selector.hard_needed?([ credit.("a", true) ]), "1 right and 1 hard: 2 more in all, 1 hard: any will do"
+    assert_not Practice::Selector.hard_needed?([ credit.("a", true, aided: true), credit.("b", true, aided: true) ]), "an aided try counts for nothing: 3 more in all, 2 hard: any will do"
+    assert Practice::Selector.hard_needed?([ credit.("a", false), credit.("b", false), credit.("c", true, aided: true) ]), "the aided hard one is no hard one: 2 more hard"
+    assert_not Practice::Selector.hard_needed?([]), "nothing done: 3 more in all, 2 hard: any will do"
+    assert Practice::Selector.hard_needed?([ credit.("a", false), credit.("a", false) ]), "a repeated fingerprint counts once"
+  end
+
+  test "choose with hard takes an unseen hard-to-guess instance, and the plain order when none is left" do
+    assert_equal 1, choose.candidate.item_id
+    assert_equal "c", choose(hard: Set[ "c" ]).candidate.fingerprint
+    assert_equal "a", choose(hard: Set[ "zzz" ]).candidate.fingerprint, "no hard one in the pool: the plain order"
+    assert_equal 1, choose(hard: Set[ "c" ], seen: Set[ "c" ]).candidate.item_id, "the hard one was seen"
+    assert_equal "next", choose(hard: Set[ "c" ], pick_item_id: 1).reason
+    assert_equal 1, choose(hard: Set[ "c" ], pick_item_id: 1).candidate.item_id, "a chosen item is served as chosen"
+  end
 end

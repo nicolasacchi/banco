@@ -43,9 +43,10 @@ module Practice
     # last_serve: {fingerprint => id of the latest serve}; item_last_serve: {item_id => same};
     # credit_by_item: {item_id => C_unaided tries}; follow: Follow or nil; open_item_ids: Set of the item ids
     # that have an open serve (their candidates are left out); pick_item_id: serve this item and no other
-    # (the open serve check is the caller's). Returns a Pick, or nil when no candidate is left. Without pick_item_id no seen instance is ever
+    # (the open serve check is the caller's). hard: the Set of the fingerprints of the hard-to-guess instances when the skill still needs them
+    # and nothing else (hard_needed?, D-390): the automatic choice then takes an unseen one of those when the pool has any. Returns a Pick, or nil when no candidate is left. Without pick_item_id no seen instance is ever
     # picked (D-348): nil also when every candidate was seen; exhausted? tells that case from the items having an open serve.
-    def choose(pool:, student_id:, seen:, last_serve:, item_last_serve:, credit_by_item:, follow: nil, open_item_ids: Set.new, pick_item_id: nil)
+    def choose(pool:, student_id:, seen:, last_serve:, item_last_serve:, credit_by_item:, follow: nil, open_item_ids: Set.new, pick_item_id: nil, hard: nil)
       pool = pool.select { |c| c.item_id == pick_item_id } if pick_item_id
       pool = pool.reject { |c| open_item_ids.include?(c.item_id) } unless pick_item_id
       return nil if pool.empty?
@@ -61,7 +62,7 @@ module Practice
         pick = unseen.find { |c| c.item_revision_id == follow.item_revision_id }
         return Pick.new(pick, "after_solution", nil, parent) if pick
       end
-      pick = next_unseen(pool, unseen, item_last_serve, credit_by_item)
+      pick = next_unseen(pool, prefer_hard(unseen, hard), item_last_serve, credit_by_item)
       return Pick.new(pick, "next", nil, parent) if pick
       return nil unless pick_item_id
 
@@ -71,6 +72,24 @@ module Practice
 
     # true when every candidate of the skill was served to this student: no unseen instance is left (the open serves do not matter).
     def exhausted?(pool:, seen:) = !pool.empty? && pool.all? { |c| seen.include?(c.fingerprint) }
+
+    # D-390: the unseen instances that are hard to guess when the skill needs those and some exist; else all of them.
+    def prefer_hard(unseen, hard)
+      return unseen unless hard
+
+      hard_ones = unseen.select { |c| hard.include?(c.fingerprint) }
+      hard_ones.empty? ? unseen : hard_ones
+    end
+
+    # D-390: true when the tries that count (right, without help, one per fingerprint) leave DEMONSTRATE_MIN_LOW_GUESS short and no fewer exercises
+    # are missing in all than hard ones: every exercise still to come must be hard to guess (a written answer, a matching, an ordering). `tries`: the
+    # skill's Practice::Try rows.
+    def hard_needed?(tries)
+      credits = tries.select { |t| t.evidence == :C && !t.aided && !t.reseen }.uniq(&:fingerprint)
+      need = [ V6::DEMONSTRATE_CORRECT_UNAIDED - credits.size, 0 ].max
+      need_hard = [ V6::DEMONSTRATE_MIN_LOW_GUESS - credits.count(&:low_guess), 0 ].max
+      need_hard.positive? && need_hard >= need
+    end
 
     # Rule 4: the current item (pin order, fewer than ADVANCE_AFTER_CORRECT_UNAIDED credits; else the item
     # served least recently), then the following pinned items with an unseen instance.
@@ -191,7 +210,8 @@ module Practice
       pool = pool_for(revisions)
       # a replaced serve was never finished and its exercise is withdrawn: its instance is not seen (D-377)
       seen = input.serves.reject { |s| s.status.state == :replaced }.map(&:fingerprint).to_set
-      pick = choose(pool: pool, student_id: student.id, follow: followed, open_item_ids: open_item_ids, pick_item_id: pick_item_id,
+      hard = hard_fingerprints(revisions) if !pick_item_id && hard_needed?(input.tries)
+      pick = choose(pool: pool, student_id: student.id, follow: followed, open_item_ids: open_item_ids, pick_item_id: pick_item_id, hard: hard,
                     seen: seen, last_serve: last_by(input.serves, :fingerprint), item_last_serve: last_by(input.serves, :item_id),
                     credit_by_item: input.tries.select { |t| t.evidence == :C && !t.aided && !t.reseen }.group_by(&:item_id).transform_values(&:size))
       unless pick
@@ -208,6 +228,11 @@ module Practice
                                     shown_order_json: rekeyed.shown_order.to_json, id_map_json: rekeyed.id_map.to_json,
                                     rules_version: V6::RULES_VERSION, created_at: now)
       Choice.new(instance, pick.reason, pick.parent_serve_id, pick.error_code, serve, true)
+    end
+
+    # The fingerprints of the hard-to-guess instances of the pinned revisions (Practice::Instances.low_guess?, the fold's own test).
+    def hard_fingerprints(revisions)
+      revisions.flat_map { |revision| revision.instances.select { |i| Instances.low_guess?(i) }.map(&:fingerprint) }.to_set
     end
 
     def last_by(serves, field)

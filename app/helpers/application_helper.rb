@@ -41,7 +41,7 @@ module ApplicationHelper
             :try_this_reason, :after_solution, :next, :back, :closed, :replaced, :not_counted, :reseen, :submit, :nearly, :earlier, :clean_of,
             :skip, :exercises, :exercises_count, :exercises_count_one, :exercises_topic_known, :exercises_topic_done, :status_optional, :exercise_n,
             :status_todo, :status_done, :status_finished,
-            :status_finished_solution, :status_unfinished, :done_group, :status_opened, :now, :redo, :draft_restored, :contest_note, :contest_button, :reminder_label)
+            :status_finished_solution, :status_contested, :status_unfinished, :done_group, :status_opened, :now, :redo, :draft_restored, :contest_note, :contest_button, :reminder_label)
   end
 
   # What a state tag means (D-348), said once per page and kind: the first tag of a page carries the line, the others do not. kind: "to_recover" or

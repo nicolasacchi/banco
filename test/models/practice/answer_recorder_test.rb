@@ -46,7 +46,7 @@ class PracticeAnswerRecorderTest < ActiveSupport::TestCase
     assert_equal [ "typical_error", "slip", "Hai sbagliato un segno." ], [ b[:outcome], b[:error_code], b[:message_it] ]
     assert_nil b[:solution]
     assert_nil b[:hint]
-    assert_equal %w[prova_questo show_solution back], b[:actions]
+    assert_equal %w[prova_questo show_solution back contest], b[:actions]
     assert_empty c.serve.events
   end
 
@@ -86,7 +86,7 @@ class PracticeAnswerRecorderTest < ActiveSupport::TestCase
     answer!(c, wrong_raw)
     b = body(answer!(c, slip_raw(c)))
     assert_equal [ "typical_error", "Hai sbagliato un segno." ], [ b[:outcome], b[:message_it] ]
-    assert_equal %w[prova_questo after_solution back], b[:actions]
+    assert_equal %w[prova_questo after_solution back contest], b[:actions]
     assert b[:solution]
   end
 
@@ -261,11 +261,11 @@ class PracticeAnswerRecorderTest < ActiveSupport::TestCase
     topic = make_topic(@lesson_revision, { @skill => [ near ] })
     c = serve!(topic: topic)
     one = answer!(c, "giardnio").body
-    assert_equal [ "near_miss", %w[retry] ], [ one[:outcome], one[:actions] ]
+    assert_equal [ "near_miss", %w[retry contest] ], [ one[:outcome], one[:actions] ]
     assert_equal "Controlla come l'hai scritta: forse c'è un errore di battitura.", one[:message_it]
     assert_nil one[:solution]
     two = answer!(c, "giardinoo").body
-    assert_equal [ "near_miss", %w[after_solution next back] ], [ two[:outcome], two[:actions] ]
+    assert_equal [ "near_miss", %w[after_solution next back contest] ], [ two[:outcome], two[:actions] ]
     assert two[:solution]
     assert_equal "Non è ancora giusta. Guarda la soluzione, poi prova un esercizio simile.", two[:message_it]
   end

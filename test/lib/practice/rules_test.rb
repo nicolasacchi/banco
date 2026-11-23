@@ -76,8 +76,8 @@ class PracticeRulesTest < ActiveSupport::TestCase
     assert_match(/In breve: .*(ci sei quasi|manca poco)/m, outcomes)
     section3 = DOC[/## 3\. Serve state machine.*?## 4/m]
     assert_match(/^\| 16 \|.*contest.*closed `contested`/, section3)
-    assert_match(/^\| 17 \|.*closed `wrong`.*contest/, section3)
-    assert_match(/Fai controllare/, section3)
+    assert_match(/^\| 17 \|.*closed `wrong`.*closed `near_miss`.*contest/, section3)
+    assert_match(/Per me va bene così/, section3)
     assert_match(/not_contestable/, section3)
   end
 

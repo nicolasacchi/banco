@@ -60,7 +60,7 @@ class PracticeActionsTest < ActiveSupport::TestCase
     c = serve!
     answer!(c, slip_raw(c))
     r = actions.solution(serve_id: c.serve.id)
-    assert_equal %w[after_solution back], r.body[:actions]
+    assert_equal %w[after_solution back contest], r.body[:actions]
     assert_equal({ "reason" => "after_wrong" }, JSON.parse(c.serve.events.last.payload_json))
     assert_equal 1, PracticeAttempt.count
   end

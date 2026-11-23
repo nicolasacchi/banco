@@ -565,4 +565,63 @@ class PracticeNavigationTest < ActionDispatch::IntegrationTest
     assert_raises(ActiveRecord::StatementInvalid) { PracticeDraft.where(id: row.id).delete_all }
     assert_equal "7", row.reload.raw
   end
+
+  # ---- D-390: every exercise «Fatto», the skill not shown yet ----
+
+  # A practice item of the component choice (a pick can be guessed, so it never makes the skill shown on its own).
+  def make_choice_item(key, instances: 4)
+    item = Item.create!(subject: @subject, key: key, kind: "practice_item")
+    body = { schema: "banco.item/1", schema_version: 1, kind: "practice_item", subject: @subject.key, skill: SKILL, component: "choice", level: 1,
+             expected_seconds: 60, hints_it: [], error_catalogue: [] }
+    revision = ItemRevision.create!(item: item, seq: 1, body_json: JSON.generate(body), file_sessions_json: "{}")
+    ItemValidation.create!(item_revision: revision, seq: 1, status: "passed", codes_json: "[]")
+    instances.times do |i|
+      options = (1..4).map { |n| { id: "o#{n}", text: "Scelta #{key} #{i} #{n}" } }
+      ItemInstance.create!(item_revision: revision, seed: i + 1, display_json: JSON.generate(options: options), answer_json: JSON.generate("o1"), errors_json: "[]",
+                           hints_json: "[]", solution_json: JSON.generate(steps: [ { text_it: "Passo." } ], final: "Scelta"),
+                           fingerprint: Digest::SHA256.hexdigest("#{key}-#{i}"))
+    end
+    revision
+  end
+
+  def right_choice_raw(serve)
+    map = JSON.parse(PracticeServe.find(serve["serve_id"]).id_map_json.presence || "{}")
+    map.key("o1") || "o1"
+  end
+
+  test "D-390: a skill whose exercises are all done and that is still in study says what to do, once, in one line" do
+    build_student_world
+    choices = %w[choice-a choice-b choice-c].map { |key| make_choice_item(key) }
+    topic = make_topic(@lesson_revision, { SKILL => choices }, course: @course)
+    approve_topic!(topic)
+    skill = ->(list) { list["skills"].first }
+    assert_nil skill.(list_for(OFFICIAL))["all_done_it"], "nothing done yet"
+
+    choices.each do |revision|
+      serve = serve_for(OFFICIAL, item: revision.item.key)
+      assert_equal "correct", answer_for(OFFICIAL, serve, right_choice_raw(serve))["outcome"]
+      line = skill.(list_for(OFFICIAL))["all_done_it"]
+      assert_nil line, "not every exercise is done yet" unless revision == choices.last
+    end
+    list = list_for(OFFICIAL)
+    assert_equal %w[done done done], list["skills"].first["exercises"].map { |e| e["status"] }
+    assert_equal "in_study", list["skills"].first["state"]
+    expected = "Hai fatto tutti gli esercizi. Per chiudere ne servono ancora 2 giusti da scrivere, abbinare o mettere in ordine: premi «Un altro esercizio», ne arrivano di nuovi."
+    assert_equal expected, list["skills"].first["all_done_it"]
+    assert_equal expected, I18n.t("practice.all_done.long", count: 2, next: I18n.t("practice.next"))
+  end
+
+  test "D-390: a skill that is shown has no such line, and neither has one with an exercise still to do" do
+    build_nav_world
+    list = list_for(OFFICIAL)
+    assert_nil list["skills"].first["all_done_it"]
+    @pinned_keys.each do |key|
+      serve = serve_for(OFFICIAL, item: key)
+      answer_for(OFFICIAL, serve, right_raw(serve))
+    end
+    list = list_for(OFFICIAL)
+    assert_equal %w[done done done], list["skills"].first["exercises"].map { |e| e["status"] }
+    assert_equal "demonstrated", list["skills"].first["state"], "three right without help, all hard to guess: the skill is shown"
+    assert_nil list["skills"].first["all_done_it"]
+  end
 end

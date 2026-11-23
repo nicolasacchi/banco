@@ -450,7 +450,7 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     answer = post_json(OFFICIAL, "/practice/answers", { serve_id: serve["serve_id"], client_attempt_id: SecureRandom.uuid, raw: slip, source: "text" })
     assert_equal [ "typical_error", "slip", "Hai sbagliato un segno." ], answer.values_at("outcome", "error_code", "message_it")
     assert_nil answer["solution"]
-    assert_equal %w[prova_questo show_solution back], answer["actions"]
+    assert_equal %w[prova_questo show_solution back contest], answer["actions"]
     assert_clean(answer, "answer")
     follow = serve_for(OFFICIAL, follow: { serve_id: serve["serve_id"], kind: "prova_questo" })
     assert_response :success
