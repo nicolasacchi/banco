@@ -91,6 +91,8 @@ export function renderLesson(root, body, config) {
     rich: (text) => el("div", { class: "rich" }, renderRich(text, ctx)),
     questions: config.mode === "student" && config.urls?.questions ? { url: config.urls.questions, labels: config.questionLabels } : null,
     full: config.full ? fullAccess(config.full) : null,
+    // «Per me va bene così» (D-396): only the student's page has the address (the teacher's preview and the render check never comment)
+    contest: config.mode === "student" && config.urls?.contest ? (loc) => postJson(config.urls.contest, { card: loc.card, block: loc.block, step: loc.step, ex: loc.ex, part: loc.part }) : null,
     postCheck: async (loc, payload) => {
       const base = config.urls.check
       const path = loc.ex ? `${base}/${loc.card}/${loc.block}/ex/${loc.ex}${loc.part ? `/${loc.part}` : ""}` : `${base}/${loc.card}/${loc.block}${loc.step ? `/${loc.step}` : ""}`

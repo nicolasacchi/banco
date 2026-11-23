@@ -185,6 +185,7 @@ it:
         cards: "%{seen} schede su %{total} viste"
         extra: "(approfondimenti %{seen} su %{total})"
         checks: "controlli giusti al primo tentativo %{right} su %{answered}"
+        contested: "controlli mandati al docente con «Per me va bene così» %{n}"
         last: "ultima apertura %{at}"
         never: "mai aperta"
       questions: "Domande «Non ho capito»"

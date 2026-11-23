@@ -4,6 +4,12 @@
 it:
   lesson2:
     checks:
+      # «Per me va bene così» (D-396): after a wrong try, the student sends his answer to the teacher; the check then shows it was sent
+      contest_note: "Pensi di avere ragione? Premi «Per me va bene così»: la tua risposta va al docente."
+      contest_button: "Per me va bene così"
+      contested: "Mandato al docente"
+      contested_note: "Ti risponde in «I miei commenti»."
+      contest_error: "Non riesco a mandarlo ora. Riprova."
       # the one line printed on the first use of a component in a lesson (A9)
       howto:
         select_many: "Tocca le zone giuste, poi premi Controlla."

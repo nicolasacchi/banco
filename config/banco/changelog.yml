@@ -22,6 +22,15 @@ entries:
     body_it: "Il pulsante torna anche quando riprendi un esercizio, e dopo «Mostrami la soluzione». Il commento per il docente ora riporta tutta la tua risposta. Se mandi un esercizio che avevi già fatto, la lista dice «Mandato al docente» finché il docente non risponde."
     title_en: "«It's fine for me» is there every time you can use it"
     body_en: "The button now comes back when you pick an exercise up again, and after «Show me the solution». The comment for the teacher now carries your whole answer. If you send an exercise you had already done, the list says «Sent to the teacher» until the teacher answers."
+  - id: lesson-contest-1123
+    date: 2026-11-23
+    audience: [student, teacher]
+    kind: software
+    decisions: [D-396]
+    title_it: "«Per me va bene così» anche nelle lezioni"
+    body_it: "Nelle domande delle lezioni e in «Prova tu», dopo una risposta sbagliata, trovi «Per me va bene così»: la tua risposta va al docente, come negli esercizi. Poi leggi la sua risposta in «I miei commenti»."
+    title_en: "«It's fine for me» in the lessons too"
+    body_en: "In the questions of the lessons and in «Your turn», after a wrong answer, you find «It's fine for me»: your answer goes to the teacher, as in the exercises. Then you read the reply in «My comments»."
   - id: exercises-rechecked-1123
     date: 2026-11-23
     audience: [student, teacher]

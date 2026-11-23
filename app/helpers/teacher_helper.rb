@@ -52,6 +52,7 @@ module TeacherHelper
     parts = [ t("teacher.practice.lesson.cards", seen: summary.core_seen, total: summary.core_total) ]
     parts[0] += " " + t("teacher.practice.lesson.extra", seen: summary.extra_seen, total: summary.extra_total) if summary.extra_total.positive?
     parts << t("teacher.practice.lesson.checks", right: summary.first_try_right, answered: summary.checks_answered) if summary.checks_answered.positive?
+    parts << t("teacher.practice.lesson.contested", n: summary.checks_contested) if summary.checks_contested.positive?
     parts << (summary.last_at ? t("teacher.practice.lesson.last", at: teacher_time(summary.last_at)) : t("teacher.practice.lesson.never"))
     t("teacher.practice.lesson.line", parts: parts.join(", "))
   end

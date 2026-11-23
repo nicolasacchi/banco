@@ -909,3 +909,9 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
   .l2 .card-listen .button, .l2 .card-listen .speak-slower { min-height: max(2.75rem, 44px); }
   .l2 summary { padding-block: 12px; }
 }
+/* «Per me va bene così» on a check (D-396): under the feedback, a small line and a text button; once sent, «Mandato al docente» */
+.l2 .check-contest { flex: 1 0 100%; min-width: 0; margin-top: 0.6em; }
+.l2 .check-contest .contest-note { margin: 0; font-size: 0.85em; color: var(--muted); overflow-wrap: anywhere; }
+.l2 .check-contest .contest-button { width: auto; max-width: 100%; margin: 0.2em 0 0; }
+.l2 .check-contest .contest-error { margin: 0.3em 0 0; font-weight: 700; }
+.l2 .check-contest .verdict-sent .verdict-ic { color: var(--m1); }

@@ -462,7 +462,7 @@ FOREIGN KEY ("topic_revision_id")
 , CONSTRAINT "fk_rails_0137648ef6"
 FOREIGN KEY ("lesson_revision_id")
   REFERENCES "lesson_revisions" ("id")
-, CONSTRAINT lesson_events_kind CHECK (kind IN ('card_seen','check_answered','more_opened','steps_shown','lesson_printed','page_opened','page_event','page_failed')), CONSTRAINT lesson_events_card CHECK (kind NOT IN ('card_seen','check_answered') OR card IS NOT NULL), CONSTRAINT lesson_events_check CHECK (kind <> 'check_answered' OR (block IS NOT NULL AND grader_version IS NOT NULL)));
+, CONSTRAINT lesson_events_check CHECK (kind <> 'check_answered' OR (block IS NOT NULL AND grader_version IS NOT NULL)), CONSTRAINT lesson_events_kind CHECK (kind IN ('card_seen','check_answered','more_opened','steps_shown','lesson_printed','page_opened','page_event','page_failed','check_contested')), CONSTRAINT lesson_events_card CHECK (kind NOT IN ('card_seen','check_answered','check_contested') OR card IS NOT NULL), CONSTRAINT lesson_events_contest CHECK (kind <> 'check_contested' OR block IS NOT NULL));
 CREATE INDEX "index_lesson_events_on_student_id" ON "lesson_events" ("student_id");
 CREATE INDEX "index_lesson_events_on_topic_revision_id" ON "lesson_events" ("topic_revision_id");
 CREATE INDEX "index_lesson_events_on_lesson_revision_id" ON "lesson_events" ("lesson_revision_id");
@@ -781,6 +781,7 @@ BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER ratings_no_delete BEFORE DELETE ON ratings
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261123200000'),
 ('20261119153000'),
 ('20261119100000'),
 ('20261118130000'),

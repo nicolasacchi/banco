@@ -7,8 +7,8 @@ module Lessons
   # (D-346) is here too: `check_index` and `check_tries`, called by Attempts::LessonLog.
   module Progress
     # The teacher's line: cards seen of the core and the extra cards, checks right at the first try over checks
-    # answered, the last opening.
-    Summary = Data.define(:core_seen, :core_total, :extra_seen, :extra_total, :first_try_right, :checks_answered, :last_at)
+    # answered (a check he sent to the teacher with «Per me va bene così» is answered, D-396), how many of those he sent, the last opening.
+    Summary = Data.define(:core_seen, :core_total, :extra_seen, :extra_total, :first_try_right, :checks_answered, :checks_contested, :last_at)
 
     # One answer to a check (a `check_answered` row): where it was given (card, block and, in a try block or a faded example, the exercise,
     # the part or the step), the response exactly as the page sent it, the grader's verdict (right|wrong), the matched error code and the
@@ -33,10 +33,12 @@ module Lessons
       extra = cards.select { |c| c["level"] == "extra" }.map { |c| c["n"] }
       events = LessonEvent.where(student: student, lesson_revision_id: revision.id).order(:id).to_a
       seen = events.select { |e| e.kind == "card_seen" }.map(&:card).uniq
-      answered = events.select { |e| e.kind == "check_answered" }.group_by { |e| [ e.card, e.block ] + e.payload.values_at("step", "ex", "part") }
+      place = ->(e) { [ e.card, e.block ] + e.payload.values_at("step", "ex", "part") }
+      answered = events.select { |e| e.kind == "check_answered" }.group_by(&place)
+      contested = events.select { |e| e.kind == "check_contested" }.map(&place).uniq
       first_right = answered.count { |_, rows| rows.first.payload["verdict"] == "right" }
       Summary.new(core_seen: (core & seen).size, core_total: core.size, extra_seen: (extra & seen).size, extra_total: extra.size,
-                  first_try_right: first_right, checks_answered: answered.size, last_at: events.last&.at)
+                  first_try_right: first_right, checks_answered: (answered.keys | contested).size, checks_contested: contested.size, last_at: events.last&.at)
     end
 
     # The card a new "Riprendi" on Oggi should open, or nil: the last card seen of the lesson revision the topic

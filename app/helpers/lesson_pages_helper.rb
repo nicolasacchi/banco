@@ -34,14 +34,15 @@ module LessonPagesHelper
   # The item templates' texts that the checks reuse (number, fraction, choice, text), and the accents label.
   def lesson2_item_texts = I18n.t("items").merge(accents_label: I18n.t("accents.label")).deep_stringify_keys
 
-  # The addresses of the student's page: the check endpoint, the events batch, the solutions, the questions, the topic pages
+  # The addresses of the student's page: the check endpoint, the events batch, the solutions, the questions, the contest of a check, the topic pages
   # that a lesson link opens, the preferences and the settings. All from spath, so the preview keeps to /teacher/preview.
   def lesson2_urls(topic_key)
     urls = { check: spath("/topics/#{topic_key}/lesson/checks"), events: spath("/topics/#{topic_key}/lesson/events"),
              solution: spath("/topics/#{topic_key}/lesson/exercises"), questions: "/questions", practice: spath("/topics/#{topic_key}"),
              topics: spath("/topics"), preferences: "#{base_path}/preferences", settings: spath("/settings") }
-    urls.delete(:questions) if preview? # no "Non ho capito" from the teacher's preview: the teacher reads those, never writes them (D-309)
-    urls
+    urls[:contest] = "/topics/#{topic_key}/lesson/contest"
+    # no "Non ho capito" and no «Per me va bene così» from the teacher's preview: the teacher reads those, never writes them (D-309, D-396)
+    preview? ? urls.except(:questions, :contest) : urls
   end
 
   # The topics the lesson's links name that this student's course does not open (not approved, not released, not in the programme): their

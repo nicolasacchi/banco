@@ -150,6 +150,8 @@ Rails.application.routes.draw do
       post "comments/:id/reply" => "comments#reply", constraints: { id: /\d+/ }, as: :comment_reply
       # «Ti è piaciuto?» (D-365): the student rates an exercise that is over or a lesson. Students only; no preview route.
       post "ratings" => "ratings#create"
+      # «Per me va bene così» on a check of a lesson/2 (D-396): the latest wrong answer goes to the teacher as a comment. Students only; no preview route.
+      post "topics/:topic/lesson/contest" => "lesson_contests#create", constraints: { topic: /(ripasso|ponte|lezione|extra)\.[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*/ }
     end
 
     # The teacher's decisions (D-08): the only writes of DecisionRecorder. POST only,

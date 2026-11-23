@@ -26,7 +26,7 @@
            data-lesson2-revision-id-value="<%= @revision.id %>"
            data-lesson2-schema-value="true"
            data-comment-lesson-revision-id="<%= @revision.id %>"
-           data-lesson2-urls-value="<%= lesson2_urls(@topic.key).except(:questions).to_json %>"
+           data-lesson2-urls-value="<%= lesson2_urls(@topic.key).except(:questions, :contest).to_json %>"
            data-lesson2-view-value="cards"
            data-lesson2-reduce-motion-value="<%= @preferences[:reduce_motion] %>"
            data-lesson2-listen-value="<%= @preferences[:listen] %>"

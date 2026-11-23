@@ -154,6 +154,39 @@ export function renderCheck(spec, ctx, loc, options = {}) {
     if (notes) form.appendChild(notes)
   }
 
+  // «Per me va bene così» (D-396): after a wrong try, under the feedback, and only on the student's page (ctx.contest). It sends the answer he gave last
+  // to the teacher; the check then shows «Mandato al docente» and is finished, as one answered right is.
+  const contestBox = ctx.contest ? el("div", { class: "check-contest", hidden: "" }) : null
+  if (contestBox) feedback.after(contestBox)
+  const offerContest = () => {
+    if (!contestBox || done) return
+    const note = el("p", { class: "contest-note", text: ctx.t.checks.contest_note })
+    const send = button(ctx.t.checks.contest_button, { class: "button text small contest-button" }, async () => {
+      send.disabled = true
+      let reply = null
+      try {
+        reply = await ctx.contest(loc)
+      } catch (_error) {
+        reply = null
+      }
+      if (reply?.status !== "contested") {
+        send.disabled = false
+        contestBox.appendChild(el("p", { class: "contest-error", role: "alert", text: ctx.t.checks.contest_error }))
+        return
+      }
+      done = true
+      lock(form)
+      if (reply.explain_it && !feedback.querySelector(".verdict-explain")) feedback.appendChild(el("div", { class: "verdict-explain" }, renderRich(reply.explain_it, ctx)))
+      contestBox.replaceChildren(
+        el("p", { class: "verdict verdict-sent", role: "status" }, icon("circle-check", "verdict-ic"), el("strong", { text: ctx.t.checks.contested })),
+        el("p", { class: "contest-note", text: ctx.t.checks.contested_note })
+      )
+      options.onDone?.(reply, tries)
+    })
+    contestBox.replaceChildren(note, send)
+    contestBox.hidden = false
+  }
+
   let tries = 0
   // the event id of an answer whose reply was lost: the same answer sent again keeps it (the server answers for the row it has), another answer has its own
   let pending = null
@@ -202,10 +235,12 @@ export function renderCheck(spec, ctx, loc, options = {}) {
     if (reply.verdict === "right") {
       say("right", reply.message_it, reply.explain_it)
       done = true
+      if (contestBox) contestBox.hidden = true
       lock(form)
       options.onDone?.(reply, tries)
     } else {
       say("wrong", reply.message_it || ctx.t.try_again, reply.explain_it)
+      offerContest()
       if (reply.explain_it || reply.steps) options.onDone?.(reply, tries)
     }
   })

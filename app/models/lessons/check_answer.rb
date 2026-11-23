@@ -51,6 +51,19 @@ module Lessons
     # teacher's read of a recorded answer (D-346). Located: check, seed, example, step_index.
     def located(locator) = locate(locator)
 
+    # The student's recorded answers to this one check (the same step, exercise and part), oldest first: the contest of a check (D-396) reads the last.
+    def answers(locator)
+      key = key_of(locator)
+      rows(locator).select { |r| r.payload.slice("step", "ex", "part") == key }
+    end
+
+    # What a finished check shows besides its verdict: the explanation, an oral's model answer, the rest of a faded example. nil when there is no such check.
+    # A contested check shows it as a check answered right, or wrong twice, does (D-396).
+    def revealed(locator)
+      located = locate(locator) or return nil
+      reveal(located.check, located)
+    end
+
     private
 
     # ---- where the check is ------------------------------------------------------------------------
@@ -136,10 +149,15 @@ module Lessons
     def reply(graded, check, located, try)
       out = { verdict: graded.verdict, try: try }
       out[:message_it] = graded.message_it if graded.message_it
-      reveal = graded.right? || try >= EXPLAIN_FROM_TRY
-      out[:explain_it] = check["explain_it"] if reveal && check["explain_it"].present?
-      out[:model_it] = check["model_it"] if reveal && check["model_it"].present? # an oral's model answer (withheld until now, L6)
-      out.merge!(rest_of_example(located)) if reveal && located.example
+      out.merge!(reveal(check, located)) if graded.right? || try >= EXPLAIN_FROM_TRY
+      out
+    end
+
+    def reveal(check, located)
+      out = {}
+      out[:explain_it] = check["explain_it"] if check["explain_it"].present?
+      out[:model_it] = check["model_it"] if check["model_it"].present? # an oral's model answer (withheld until now, L6)
+      out.merge!(rest_of_example(located)) if located.example
       out
     end
 
