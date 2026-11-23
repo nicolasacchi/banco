@@ -396,6 +396,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-391 | 2026-11-23 | the independence of a review and of a blind solve of an item revision is judged against the authors of the revisions AFTER the last approved base, when that base has both an independent review and an independent blind solve on record (`ItemSessions#model_authors`, `#base_of`; D-374's rule for items): an Opus fix to a Sonnet item can be reviewed and solved by a Sonnet; without such a base every author of the item counts, as before; one function behind the refusal (`Providers.refusal(..., revision:)` at `review open|submit` and `solve open|submit`) and the read-time counting (`Providers.counting`, `ItemRevision#counting_reviews` and `#counting_blind_solves`, so `Review::Gate` and `Approval::TopicGate` see the delta); nothing is rewritten | implemented |
 | D-392 | 2026-11-23 | ordering rows, option text and matching words wrap whole on a phone: «Gerusalemme» is no longer cut in the middle; only a word longer than the line breaks, with a hyphen | implemented |
 | D-393 | 2026-11-23 | a short formula in an item never draws a scrollbar of its own at 390 px (`E-ITEM-OVERFLOW` on every `\ce{}` and on `\sqrt[4]{}`): the overhang KaTeX draws past its last glyph is clipped at the formula's own box, a longer formula still scrolls inside its own box | implemented |
+| D-394 | 2026-11-23 | Ruby 3.4.10 → 3.4.13 (brakeman 8.1.1 reports a critical CVE in 3.4.10) in `.ruby-version`, the Dockerfile and `Gemfile.lock`; brakeman 8.1.0 → 8.1.1 | implemented |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -4872,3 +4873,13 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Why:** a scrollbar under `H2SO4` tells a boy who reads with effort that something is wrong with the line; nothing was.
 - **Status:** implemented.
 - **Tests:** `test/validation/item_render_runner_test.rb` (an item with `\ce{Fe(OH)3}`, `\ce{Cu(OH)2}`, `\ce{H2SO4}` and `\sqrt[4]{\square}` at 390 px: no formula box has `scrollWidth` over `clientWidth`, the page is at most 390 px wide, the shots give no finding; a formula longer than the line scrolls in its own box and the page stays at 390), the changelog tests.
+
+## D-394 · 2026-11-23 · Ruby 3.4.13
+
+- **Design ref:** `.ruby-version`, the Dockerfile's `ARG RUBY_VERSION`, `Gemfile.lock` (`RUBY VERSION`), `bin/brakeman` (`--ensure-latest`).
+- **Design said:** Ruby 3.4.10; brakeman 8.1.0.
+- **Cause:** `bin/brakeman` runs `--ensure-latest`, so it moved to 8.1.1, which reports a critical remote-code-execution CVE in Ruby 3.4.10. The server is public, and CI's scan step fails on it.
+- **We do:** Ruby 3.4.13 everywhere (the image builds from `ruby:3.4.13-slim`); brakeman 8.1.1. The lock keeps `BUNDLED WITH 4.0.3`. No gem changed besides brakeman.
+- **Not done / must not change:** no other upgrade rides along.
+- **Status:** implemented (main 9412c8a, in production since 10ced7f).
+- **Tests:** the full suite (4840 runs) under 3.4.13, `bin/brakeman --exit-on-warn`, `bundler-audit`, `test/lib/toolchain_test.rb`.
