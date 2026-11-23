@@ -12,7 +12,8 @@ export function render(part, ctx) {
     const text = renderInline(element.text, el("span", { class: "row-text" }))
     const up = el("button", { type: "button", class: "button secondary small", text: ctx.t.ordering_up })
     const down = el("button", { type: "button", class: "button secondary small", text: ctx.t.ordering_down })
-    const row = el("li", { class: "order-row", tabindex: "0", "data-id": element.id, "data-comment-anchor": `row:${index + 1}` }, text, up, down)
+    const moves = el("span", { class: "row-moves" }, up, down)
+    const row = el("li", { class: "order-row", tabindex: "0", "data-id": element.id, "data-comment-anchor": `row:${index + 1}` }, text, moves)
     up.addEventListener("click", () => move(row, -1, up))
     down.addEventListener("click", () => move(row, 1, down))
     row.addEventListener("keydown", (event) => {

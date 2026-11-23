@@ -13,6 +13,15 @@
 #
 # The student's text has no decision number and no jargon; it is second person and never blames. Newest first is the order of the pages, not of this file.
 entries:
+  - id: ordering-words-whole
+    date: 2026-11-23
+    audience: [student]
+    kind: fix
+    decisions: [D-392]
+    title_it: "Parole intere negli esercizi in ordine"
+    body_it: "Su un telefono ogni parola resta intera: se non c'è posto, va a capo tutta insieme. Anche i pulsanti Su e Giù vanno sotto la frase."
+    title_en: "Whole words in the ordering exercises"
+    body_en: "On a phone every word stays whole: if there is no room, it moves to the next line all together. The Up and Down buttons also go under the sentence."
   - id: comment-send-once
     date: 2026-11-23
     audience: [student]

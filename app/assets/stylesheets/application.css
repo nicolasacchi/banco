@@ -214,8 +214,11 @@ fieldset.answer.options > label.option { display: flex; }
 .whole { margin-right: 0.5rem; }
 
 ol.ordering { list-style: decimal; padding-left: 1.75rem; }
-.order-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.35rem 0; }
-.order-row .row-text { flex: 1; }
+/* D-392: a word goes to the next line whole. The text asks for a line of its own (12rem) and the Su/Giù pair wraps under it when the row is
+   narrow, so «Gerusalemme» is no longer squeezed beside two buttons and cut in the middle. */
+.order-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.75rem; padding: 0.35rem 0; }
+.order-row .row-text { flex: 1 1 12rem; }
+.order-row .row-moves { display: flex; flex: none; gap: 0.5rem; }
 .match-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin-bottom: 0.75rem; }
 .match-left { flex: 1 1 10rem; }
 .accent-keys { margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
@@ -321,8 +324,10 @@ li.skill .button { align-self: flex-start; margin-top: 0.5rem; }
    parts when it is wider than the line. An inline-block is one unit for the line breaker, which is why nowrap then holds it with the mark. */
 .nowrap { white-space: nowrap; }
 :is(.markup, .prompt, .option-text, .match-left, .row-text, .do-steps, [data-markup]) .nowrap > .math:not(.l2 *) { max-width: calc(100% - 3em); white-space: normal; }
-/* the flex items that hold such a formula may shrink under its width (min-width auto would keep them as wide as the formula) */
-.option-text, .match-left, .row-text { min-width: 0; }
+/* the flex items that hold such a formula may shrink under its width (min-width auto would keep them as wide as the formula).
+   D-392: the card's `overflow-wrap: anywhere` (components.css) would cut a word wherever the line is short; here a word breaks only when it is
+   longer than the whole line, and then with a hyphen. A URL or a code keeps `anywhere` where it is shown (.markup, the card itself). */
+.option-text, .match-left, .row-text { min-width: 0; overflow-wrap: break-word; hyphens: auto; }
 ol.exercises { padding-left: 1.5rem; }
 li.exercise { margin-bottom: 1.5rem; }
 .exercise-solution { background: var(--surface); padding: 0.25rem 0.75rem; margin: 0.5rem 0; }
