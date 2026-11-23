@@ -61,17 +61,17 @@ class D081Test < ActiveSupport::TestCase
 
   test "Spec.from_instance adds the instance accept list to the item's" do
     revision = Struct.new(:body_json).new(JSON.generate("kind" => "diagnosis_item", "component" => "normalized_text", "skill" => F::SKILL, "accept" => [ "a" ]))
-    row = Struct.new(:item_revision, :answer_json, :errors_json, :display_json, :accept_json).new(revision, '"zero"', nil, "{}", '["x zero"]')
+    row = Struct.new(:item_revision, :answer_json, :errors_json, :display_json, :accept_json, :solution_json).new(revision, '"zero"', nil, "{}", '["x zero"]', nil)
     assert_equal [ "a", "x zero" ], Grading::Spec.from_instance(row).accept
   end
 
   test "an instance display unit overrides the item unit in the spec (D-103)" do
     revision = Struct.new(:body_json).new(JSON.generate("kind" => "diagnosis_item", "component" => "number", "skill" => F::SKILL, "unit" => "g"))
-    row = Struct.new(:item_revision, :answer_json, :errors_json, :display_json, :accept_json).new(revision, "75", nil, '{"unit":"mg"}', nil)
+    row = Struct.new(:item_revision, :answer_json, :errors_json, :display_json, :accept_json, :solution_json).new(revision, "75", nil, '{"unit":"mg"}', nil, nil)
     spec = Grading::Spec.from_instance(row)
     assert_equal "mg", spec.unit
     assert_equal "correct", Grading::Closed::Numbers.grade(spec, "75 mg").verdict
-    assert_equal "g", Grading::Spec.from_instance(Struct.new(:item_revision, :answer_json, :errors_json, :display_json, :accept_json).new(revision, "75", nil, "{}", nil)).unit
+    assert_equal "g", Grading::Spec.from_instance(Struct.new(:item_revision, :answer_json, :errors_json, :display_json, :accept_json, :solution_json).new(revision, "75", nil, "{}", nil, nil)).unit
   end
 
   test "the item prompt is read with every instance: a choice key in it is E-SOLUTION-IN-DISPLAY" do

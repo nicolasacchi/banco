@@ -4,7 +4,7 @@
 # Production image. Build: docker build -t banco:dev .
 # .ruby-version is the single source of the Ruby version; test/lib/toolchain_test.rb
 # checks that this ARG matches it.
-ARG RUBY_VERSION=3.4.10
+ARG RUBY_VERSION=3.4.13
 ARG NODE_VERSION=26.7.0
 # The Go of go.mod (go 1.27); test/lib/toolchain_test.rb checks that they agree.
 ARG GO_VERSION=1.27.4
