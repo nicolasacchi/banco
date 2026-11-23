@@ -619,10 +619,10 @@ class PracticeSelectorTest < ActiveSupport::TestCase
 
   test "choose with hard takes an unseen hard-to-guess instance, and the plain order when none is left" do
     assert_equal 1, choose.candidate.item_id
-    assert_equal "c", choose(hard: Set[ "c" ]).candidate.fingerprint
-    assert_equal "a", choose(hard: Set[ "zzz" ]).candidate.fingerprint, "no hard one in the pool: the plain order"
-    assert_equal 1, choose(hard: Set[ "c" ], seen: Set[ "c" ]).candidate.item_id, "the hard one was seen"
-    assert_equal "next", choose(hard: Set[ "c" ], pick_item_id: 1).reason
-    assert_equal 1, choose(hard: Set[ "c" ], pick_item_id: 1).candidate.item_id, "a chosen item is served as chosen"
+    assert_equal "c", choose(hard: Set["c"]).candidate.fingerprint
+    assert_equal choose.candidate.fingerprint, choose(hard: Set["zzz"]).candidate.fingerprint, "no hard one in the pool: the plain order (sha256 of the fingerprint, not a to z)"
+    assert_equal 1, choose(hard: Set["c"], seen: Set["c"]).candidate.item_id, "the hard one was seen"
+    assert_equal "next", choose(hard: Set["c"], pick_item_id: 1).reason
+    assert_equal 1, choose(hard: Set["c"], pick_item_id: 1).candidate.item_id, "a chosen item is served as chosen"
   end
 end

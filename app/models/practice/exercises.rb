@@ -13,7 +13,7 @@ module Practice
   #           D-377) is neither open nor ended: it takes no part in the status, so the exercise reads as to do (or done by another serve) and a click serves it
   #           anew from the revision he is shown; its tries still count for the skill.
   #
-  #           A skill whose exercises are all «done» while it is not shown yet carries `all_done_it` (D-390), the line that says what is still needed.
+  #           A skill whose exercises are all «done» while it is not shown yet carries `all_done_it` (D-390; the key is absent otherwise), the line that says what is still needed.
   #
   # The list never holds a key to an answer, an error value or the text of an instance: only the item's key (the page asks for that exercise
   # with it), its place and a title, the first sentence of the prompt's stem (the same for every instance).
@@ -106,8 +106,10 @@ module Practice
       revisions = ItemRevision.where(id: pins.map { |p| p["revision"] }).index_by(&:id)
       facts = Facts.new(rows, drafts_for(rows))
       exercises = pins.each_with_index.map { |pin, i| exercise(pin, i + 1, revisions[pin["revision"]], facts) }
-      { key: skill, label_it: @view.label(skill), state: state&.state, state_it: state ? Messages.skill_state_it(state) : Messages.state_it(nil),
-        url: "#{@root}/topics/#{@topic.key}/practice/#{skill}", all_done_it: all_done_it(state, exercises), exercises: exercises }
+      block = { key: skill, label_it: @view.label(skill), state: state&.state, state_it: state ? Messages.skill_state_it(state) : Messages.state_it(nil),
+                url: "#{@root}/topics/#{@topic.key}/practice/#{skill}", exercises: exercises }
+      line = all_done_it(state, exercises)
+      line ? block.merge(all_done_it: line) : block
     end
 
     # D-390: every exercise of the skill is «Fatto» and the skill is not shown yet (the fingerprints that count are fewer than 3, or fewer than 2

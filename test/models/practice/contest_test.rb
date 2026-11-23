@@ -179,7 +179,8 @@ class PracticeContestTest < ActiveSupport::TestCase
 
   test "an answer that cannot be put in words goes without the answer, never as code" do
     serve = closed_serve("closed-broken", "choice", { options: [ { id: "o1", text: "Uno" }, { id: "o2", text: "Due" } ] }, "o1")
-    wrong!(serve, "o2")
+    map = JSON.parse(serve.id_map_json.presence || "{}")
+    wrong!(serve, %w[o1 o2].find { |shown| map.fetch(shown, shown) != "o1" }) # the options are re-keyed: the shown id that is not the key
     reader_fails = ->(*) { raise JSON::ParserError, "the answer does not read as this exercise's" }
     Diagnosis::AnswerText.stub(:call, reader_fails) do
       assert_equal 200, contest_for(@official).call(serve_id: serve.id).http
