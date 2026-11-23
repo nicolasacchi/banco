@@ -277,6 +277,37 @@ class ItemRenderRunnerTest < ActiveSupport::TestCase
     assert row.shots.all? { |s| LessonShots.exist?(s["sha256"]) }
   end
 
+  # D-393: KaTeX draws parts of a formula past its last glyph (mhchem's invisible \rlap{\phantom{X}} after every subscript, the negative margin of a root's
+  # index); in the scrolling box of an inline formula that was scrollable width, so a short formula drew a scrollbar of its own and E-ITEM-OVERFLOW.
+  test "a short inline formula, chemistry or a root, draws no scroll box of its own at 390 px, a long one scrolls inside its box and the page stays as wide as the phone" do
+    short = "Bilancia $\\ce{Fe(OH)3}$, $\\ce{Cu(OH)2}$ e $\\ce{H2SO4}$, poi calcola $\\sqrt[4]{\\square}$."
+    long = "Scrivi $\\ce{#{(1..14).map { |n| "Fe(OH)#{n}" }.join(' + ')}}$ per intero."
+    revision = revision_with("number", body: { kind: "practice_item", hints_it: [ "Primo aiuto." ] },
+                                       instances: [ [ { stem_it: short }, "7", [] ], [ { stem_it: long }, "7", [] ] ])
+    probe = <<~JS
+      (() => {
+        const boxes = [...document.querySelectorAll(".item .math")].map((box) => ({ text: box.textContent.slice(0, 24), scroll: box.scrollWidth, client: box.clientWidth }))
+        return { boxes: boxes, page: document.documentElement.scrollWidth, window: window.innerWidth, katex: document.querySelectorAll(".item .katex").length }
+      })()
+    JS
+    facts = Validation::ChromeRunner.session do |session|
+      session.context do |ctx|
+        [ 1, 2 ].map { |number| open_host(ctx, revision, number).evaluate(probe) }
+      end
+    end
+    shorts, longs = facts
+    assert_equal 4, shorts["katex"], "the four formulas are drawn (mhchem loaded): #{shorts}"
+    assert_equal 4, shorts["boxes"].size, shorts.to_s
+    shorts["boxes"].each { |box| assert_operator box["scroll"], :<=, box["client"], "a short formula makes its own scroll box: #{box}" }
+    assert_operator shorts["page"], :<=, 390
+    assert_equal 1, longs["boxes"].size, longs.to_s
+    assert_operator longs["boxes"].first["scroll"], :>, longs["boxes"].first["client"], "a formula longer than the line scrolls inside its own box"
+    assert_operator longs["page"], :<=, 390, "and never widens the page"
+    # the shots say the same: no finding on the short instance, only the long one is reported (it really scrolls)
+    row = draw(revision)
+    assert_equal [ 2 ], row.result["errors"].select { |e| e["code"] == "E-ITEM-OVERFLOW" }.map { |e| e["instance"] }.uniq, dump(row)
+  end
+
   test "a figure that does not draw is reported" do
     broken = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path d="M0 0L10 10"'
     revision = revision_with("choice", files: { "assets/broken.svg" => broken }, instances: [

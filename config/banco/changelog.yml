@@ -22,6 +22,15 @@ entries:
     body_it: "Su un telefono ogni parola resta intera: se non c'è posto, va a capo tutta insieme. Anche i pulsanti Su e Giù vanno sotto la frase."
     title_en: "Whole words in the ordering exercises"
     body_en: "On a phone every word stays whole: if there is no room, it moves to the next line all together. The Up and Down buttons also go under the sentence."
+  - id: short-formulas-no-scrollbar
+    date: 2026-11-23
+    audience: [student]
+    kind: fix
+    decisions: [D-393]
+    title_it: "Formule corte, senza barra di scorrimento"
+    body_it: "Le formule corte negli esercizi, come quelle di chimica o la radice, ora restano ferme nella riga. Solo una formula più lunga della riga scorre di lato, dentro il suo riquadro."
+    title_en: "Short formulas, no scroll bar"
+    body_en: "Short formulas in the exercises, like the chemistry ones or the root, now stay still in the line. Only a formula longer than the line scrolls sideways, inside its own box."
   - id: comment-send-once
     date: 2026-11-23
     audience: [student]

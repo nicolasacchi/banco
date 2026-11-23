@@ -317,7 +317,15 @@ li.skill .button { align-self: flex-start; margin-top: 0.5rem; }
    lesson body (.markup). Not the lesson renderer (.l2): it handles its own overflow (.block-math, .problem-eq). */
 :is(.markup, .prompt, .option-text, .match-left, .row-text, .do-steps, [data-markup]) .math:not(.l2 *) {
   display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle;
+  /* KaTeX draws parts of a formula past its last glyph: mhchem's invisible \rlap{\phantom{X}} (every \ce{} with a subscript, 3-6 px), the negative
+     margin of a root's index (\sqrt[4]{}). Past the end of this scrolling box that is scrollable width, so a short formula drew a scrollbar of its
+     own (D-393). The overhang is clipped where KaTeX's own box ends (.katex is made an inline-block that clips sideways: clip is not a scroll box,
+     and a box that clips is how the box above measures the formula): a formula that fits never scrolls, a longer one still does. */
 }
+:is(.markup, .prompt, .option-text, .match-left, .row-text, .do-steps, [data-markup]) .math:not(.l2 *) > .katex { display: inline-block; overflow-x: clip; overflow-clip-margin: 3px; }
+/* mhchem's invisible \rlap{\phantom{X}} is out of the flow (an absolutely placed child of a zero-width box) and transparent: it adds nothing but width
+   past the formula's end (14 px at the item's size), which a checker reads as a box that cuts its content. Not drawn at all. */
+:is(.markup, .prompt, .option-text, .match-left, .row-text, .do-steps, [data-markup]) .math:not(.l2 *) .rlap > .katex-inner > [style*="transparent"] { display: none; }
 /* A formula and the mark next to it (a full stop, «?», a closing bracket; an opening one before it) never part at a line end (D-335,
    items/formula_punct.js draws them in one span.nowrap). The formula keeps its own way of fitting: in an item it is the scrolling box above,
    which keeps room for the mark (3em) and breaks inside as before; in a lesson (lesson.css) it is an inline-block that breaks between its
