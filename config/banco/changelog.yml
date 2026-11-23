@@ -40,6 +40,15 @@ entries:
     body_it: "Ogni commento ha il suo numero: è lo stesso che dice il docente. Quando commenti, hai più punti da scegliere. Se il docente non ha ancora risposto, puoi cancellare il tuo commento con «Cancella»."
     title_en: "Comments: a number, more places to choose, Delete"
     body_en: "Every comment has its number: the same one the teacher uses. When you comment, you have more places to choose from. If the teacher has not replied yet, you can delete your comment with «Delete»."
+  - id: english-contractions-accepted
+    date: 2026-11-23
+    audience: [student, teacher]
+    kind: fix
+    decisions: [D-398]
+    title_it: "Inglese: «that's» e «that is» valgono lo stesso"
+    body_it: "Negli esercizi di inglese, se scrivi la forma corta o quella lunga (that's / that is, I'm / I am, don't / do not, can't / cannot, won't / will not) la risposta è giusta in tutti e due i modi."
+    title_en: "English: «that's» and «that is» count the same"
+    body_en: "In the English exercises, writing the short form or the long one (that's / that is, I'm / I am, don't / do not, can't / cannot, won't / will not) is right either way."
   - id: exercises-rechecked-1123
     date: 2026-11-23
     audience: [student, teacher]

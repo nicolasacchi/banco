@@ -18,6 +18,7 @@ words and names (`LessonChecksTeacherBoxTest`).
 - option `profile` (field `profile`; available, T1)
 - option `thousands` (field `thousands`; available, T1)
 - option `reachable_ok` (field `reachable_ok_it`; available, T1)
+- option `contractions` (field `contractions`; available, D-398): no picture; on for every typed answer of the subject english, whether or not the check says it; `test/lib/contractions_data_test.rb`
 
 ## Still to show
 
@@ -27,4 +28,3 @@ words and names (`LessonChecksTeacherBoxTest`).
 - option `listen` (field `listen`; reserved, batch w2-1, track T2)
 - option `chem_formula_profile` (field `profile`; draft, batch w2-2, track T7)
 - option `input_bits` (field `input`; reserved, batch w2-1, track T9)
-- option `contractions` (field `contractions`; reserved until the vetted table english/contractions is written; the engine is built and tested)

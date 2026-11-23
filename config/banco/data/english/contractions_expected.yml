@@ -1,0 +1,76 @@
+# english/contractions_expected: the second table of english/contractions (WAVE2 1.9; T3, D-398). The same facts by another route, The Editor's Manual
+# (Neha Karve), "Types of Contractions" (updated 2023-11-05): the list of the contracted forms, the table of the contracted not, the table of the
+# contractions with the subject pronouns, the examples with that, who, here and there, «let's», and the section on the contractions with nouns. Accessed 2026-11-23.
+#   forms  a written form with the whole of what it can stand for (the readings are what the page says: «she's» is she is or she has)
+#   kept   an English text the grader leaves as typed: a noun with 's or 'd, which may be a possessive (the page gives «Lulu's a dancer» = Lulu is,
+#          and the noun forms are «not generally seen in writing»); a possessive must never become a verb
+# test/lib/contractions_data_test.rb: every form is read as listed by Grading::Closed::Contractions, every whole-word row of english/contractions is
+# here, and every kept text is read as typed. Typed separately from english/contractions; a model of another family still reviews both (D-398).
+version: 1
+source: 'The Editor''s Manual (N. Karve), Types of Contractions, updated 2023-11-05; accessed 2026-11-23'
+forms:
+  "isn't": [is not]
+  "aren't": [are not]
+  "wasn't": [was not]
+  "weren't": [were not]
+  "doesn't": [does not]
+  "don't": [do not]
+  "didn't": [did not]
+  "hasn't": [has not]
+  "haven't": [have not]
+  "hadn't": [had not]
+  "can't": [cannot, can not]
+  "couldn't": [could not]
+  "shan't": [shall not]
+  "shouldn't": [should not]
+  "won't": [will not]
+  "wouldn't": [would not]
+  "mightn't": [might not]
+  "mustn't": [must not]
+  "needn't": [need not]
+  "I'm": [i am]
+  "you're": [you are]
+  "we're": [we are]
+  "they're": [they are]
+  "I've": [i have]
+  "we've": [we have]
+  "you've": [you have]
+  "they've": [they have]
+  "could've": [could have]
+  "would've": [would have]
+  "should've": [should have]
+  "I'll": [i will]
+  "you'll": [you will]
+  "he'll": [he will]
+  "she'll": [she will]
+  "it'll": [it will]
+  "we'll": [we will]
+  "they'll": [they will]
+  "let's": [let us]
+  "she's": [she is, she has]
+  "he's": [he is, he has]
+  "it's": [it is, it has]
+  "what's": [what is, what has]
+  "who's": [who is, who has]
+  "that's": [that is, that has]
+  "there's": [there is, there has]
+  "here's": [here is, here has]
+  "where's": [where is, where has]
+  "what've": [what have]
+  "where've": [where have]
+  "who've": [who have]
+  "I'd": [i would, i had]
+  "you'd": [you would, you had]
+  "he'd": [he would, he had]
+  "she'd": [she would, she had]
+  "it'd": [it would, it had]
+  "we'd": [we would, we had]
+  "they'd": [they would, they had]
+kept:
+  - "Lulu's"
+  - "the cat's"
+  - "Rita's book"
+  - "my sister's bike"
+  - "the dog's"
+  - "John's"
+  - "Anita'd"

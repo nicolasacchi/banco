@@ -145,8 +145,9 @@ check_options:
   profile: {field: profile, applies_to: [normalized_text], status: available, schema: final, batch: w2-1, track: T1}
   chem_formula_profile: {field: profile, value: chem_formula, applies_to: [normalized_text], status: draft, schema: draft, batch: w2-2, track: T7}
   input_bits: {field: input, value: bits, applies_to: [normalized_text], status: available, schema: final, batch: w2-1, track: T9}
-  # contractions: the engine is Grading::Closed::Contractions; it stays reserved until the vetted table config/banco/data/english/contractions.yml is
-  # written and reviewed (T3's data), because without it the option would grade as if it were off (a test holds this).
-  contractions: {field: contractions, applies_to: [normalized_text], status: reserved, schema: final, batch: w2-1, track: T1}
+  # contractions: the engine is Grading::Closed::Contractions and its vetted table is config/banco/data/english/contractions.yml (D-398). It is
+  # available only while that table is written (a test holds this): without it the option would grade as if it were off. English typed answers have
+  # it on whether or not the check says so; the option stays for a check that wants it written down.
+  contractions: {field: contractions, applies_to: [normalized_text], status: available, schema: final, batch: w2-1, track: T1}
   thousands: {field: thousands, applies_to: [number], status: available, schema: final, batch: w2-1, track: T1}
   reachable_ok: {field: reachable_ok_it, applies_to: all, status: available, schema: final, batch: w2-1, track: T1}

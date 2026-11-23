@@ -94,8 +94,9 @@ module Grading
       @profile = profile
       # number: a dot that groups exactly three digits before the decimal comma is read as a thousands separator (1.115,00 = 1115).
       @thousands = thousands == true
-      # normalized_text: "en" expands the contractions of english/contractions on both sides before the comparison.
-      @contractions = contractions.presence
+      # normalized_text: "en" expands the contractions of english/contractions on both sides before the comparison. It is on for the
+      # subject english whatever the author wrote (D-398), never for another subject unless the check says so.
+      @contractions = @component == "normalized_text" ? Closed::Contractions.option(@subject, contractions) : contractions.presence
       # The item's own stem (prompt.stem_it), shown above the instance's: the text a `___` blank may sit in (Grading::Frame).
       @prompt_stem = prompt_stem
       @item_texts = Array(item_texts)

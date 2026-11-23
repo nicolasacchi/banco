@@ -1,0 +1,153 @@
+require "test_helper"
+
+# D-398: an English typed answer is the same answer with its contractions expanded or not («that's why», «that is why»), through the vetted table
+# english/contractions. A possessive is never a verb; Italian, Spanish and every other subject are never expanded.
+class GradingContractionsTest < ActiveSupport::TestCase
+  Contractions = Grading::Closed::Contractions
+
+  setup { Contractions.reset! }
+  teardown { Contractions.reset! }
+
+  def spec(answer, subject: "english", **opts)
+    Grading::Spec.from_hash({ "component" => "normalized_text", "subject" => subject, "skill" => "#{subject}.x", "answer" => answer }.merge(opts.stringify_keys))
+  end
+
+  def verdict(answer, typed, **opts) = Grading::Closed.grade(spec(answer, **opts), typed).verdict
+
+  def lesson_check(answer, **opts) = { "component" => "normalized_text", "prompt_it" => "Completa.", "answer" => answer }.merge(opts.stringify_keys)
+
+  test "the vetted table is written, and the grader reads it" do
+    assert Lessons::VettedData.written?("english/contractions")
+    assert Contractions.ready?
+  end
+
+  PAIRS = {
+    "that's / that is" => [ "that's why", "that is why" ],
+    "I'm / I am" => [ "I'm happy", "I am happy" ],
+    "don't / do not" => [ "don't", "do not" ],
+    "can't / cannot" => [ "can't", "cannot" ],
+    "can't / can not" => [ "can't", "can not" ],
+    "cannot / can not" => [ "cannot", "can not" ],
+    "won't / will not" => [ "won't go", "will not go" ],
+    "it's / it is" => [ "it's raining", "it is raining" ],
+    "doesn't / does not" => [ "She doesn't know", "She does not know" ],
+    "they're / they are" => [ "they're late", "they are late" ],
+    "I've / I have" => [ "I've got it", "I have got it" ],
+    "I'll / I will" => [ "I'll stay", "I will stay" ],
+    "let's / let us" => [ "let's go", "let us go" ],
+    "I'd / I would" => [ "I'd like tea", "I would like tea" ]
+  }.freeze
+
+  PAIRS.each do |name, (short, long)|
+    test "#{name}: the short form and the long form are the same answer, both ways, with a curly apostrophe and any case" do
+      assert_equal "correct", verdict(short, long)
+      assert_equal "correct", verdict(long, short)
+      assert_equal "correct", verdict(long, short.tr("'", "’").upcase)
+      assert_equal "correct", verdict(short, short)
+    end
+  end
+
+  test "a form with two readings is read both ways: it's is it is or it has, I'd is I would or I had" do
+    assert_equal [ "it is", "it has" ], Contractions.readings("it's")
+    assert_equal "correct", verdict("it is", "it's")
+    assert_equal "correct", verdict("it has", "it's")
+    assert_equal "correct", verdict("it's", "it has")
+    assert_equal "correct", verdict("I would go", "I'd go")
+    assert_equal "correct", verdict("I had gone", "I'd gone")
+  end
+
+  test "the reading that the key does not have is wrong: it has is not it is, it was is neither" do
+    assert_equal "wrong", verdict("it is", "it has")
+    assert_equal "wrong", verdict("it's", "it was")
+    assert_equal "wrong", verdict("don't", "does not")
+    assert_equal "wrong", verdict("I will stay", "I would stay")
+    assert_equal "wrong", verdict("can't", "can")
+  end
+
+  test "a possessive is kept: 's after a noun is never turned into is or has, and 'd after a noun is never turned into would or had" do
+    assert_equal [ "anna's book" ], Contractions.readings("Anna's book")
+    assert_equal [ "the dog's bone" ], Contractions.readings("the dog's bone")
+    assert_equal [ "anita'd gone" ], Contractions.readings("Anita'd gone")
+    assert_equal "wrong", verdict("Anna's book", "Anna is book")
+    assert_equal "wrong", verdict("Anna's book", "Anna has book")
+    assert_equal "wrong", verdict("Anna is here", "Anna's here"), "a noun with 's is left as typed: the author lists it in accept"
+    assert_equal "correct", verdict("Anna is here", "Anna's here", accept: [ "Anna's here" ])
+    assert_equal "correct", verdict("Anna's book", "Anna’s book")
+  end
+
+  test "its and whose have no apostrophe: they are never read as a verb" do
+    assert_equal [ "its cover" ], Contractions.readings("its cover")
+    assert_equal "wrong", verdict("its cover", "it is cover")
+  end
+
+  test "the rule works through accept, the declared errors and the whole sentence of the blank" do
+    assert_equal "correct", verdict("do not go", "don't go", accept: [ "did not go" ])
+    assert_equal "correct", verdict("go", "didn't go", accept: [ "did not go" ])
+    hit = Grading::Closed.grade(spec("It works", errors: [ { "code" => "wrong_aux", "value" => "It doesn't work" } ]), "It does not work")
+    assert_equal [ "typical_error", [ "wrong_aux" ] ], [ hit.verdict, hit.error_codes ]
+    framed = spec("isn't", display: { "stem_it" => "She ___ here." })
+    assert_equal "correct", Grading::Closed.grade(framed, "She is not here.").verdict
+    assert_equal "correct", Grading::Closed.grade(spec("is not", display: { "stem_it" => "She ___ here." }), "She isn't here").verdict
+  end
+
+  test "the same rule grades a lesson check of an English lesson, and only for English" do
+    check = lesson_check("that's why")
+    assert Lessons::Checks.grade(check, "that is why", subject: "english").right?
+    assert Lessons::Checks.grade(lesson_check("that is why"), "That's why!", subject: "english").right?
+    assert Lessons::Checks.grade(lesson_check("won't"), "will not", subject: "english").right?
+    assert Lessons::Checks.grade(check, "that has why", subject: "english").right?, "'s after that is is or has: either reading fits the key's"
+    assert Lessons::Checks.grade(lesson_check("Anna's book"), "Anna is book", subject: "english").wrong?
+    assert Lessons::Checks.grade(check, "that is why", subject: "italian").wrong?
+    assert Lessons::Checks.grade(check, "that is why", subject: "spanish").wrong?
+    assert Lessons::Checks.grade(check, "that is why").wrong?
+    assert Lessons::Checks.grade(check.merge("contractions" => "en"), "that is why", subject: "history").right?, "the option written in the check still works"
+  end
+
+  test "the validators read an accept and an error value as the grader does" do
+    on = Contractions.option("english", nil)
+    assert Grading::Closed::Text.same_answer?("do not go", "don't go", contractions: on)
+    assert_not Grading::Closed::Text.same_answer?("do not go", "don't go", contractions: Contractions.option("italian", nil))
+    assert_not Grading::Closed::Text.same_answer?("Anna's book", "Anna is book", contractions: on)
+  end
+
+  test "Italian, Spanish and the other subjects are never expanded" do
+    assert_equal "wrong", verdict("c'è", "ci è", subject: "italian")
+    assert_equal "wrong", verdict("dov'è", "dove è", subject: "italian")
+    assert_equal "correct", verdict("dov'è", "dov’è", subject: "italian")
+    assert_equal "wrong", verdict("don't", "do not", subject: "spanish")
+    assert_equal "wrong", verdict("it's", "it is", subject: "history")
+    assert_equal "wrong", verdict("it is", "it's", subject: "geo")
+    assert_nil Grading::Spec.from_hash({ "component" => "normalized_text", "subject" => "italian", "answer" => "x" }).contractions
+    assert_nil Grading::Spec.from_hash({ "component" => "normalized_text", "skill" => "spanish.verbs", "answer" => "x" }).contractions
+    assert_equal "en", Grading::Spec.from_hash({ "component" => "normalized_text", "skill" => "english.verbs", "answer" => "x" }).contractions
+  end
+
+  test "a case-sensitive item stays case-sensitive after the expansion: Doesn't is Does not, I'd is I would" do
+    assert_equal [ "Does not have" ], Contractions.readings("Doesn't have", case_sensitive: true)
+    assert_equal [ "does not have" ], Contractions.readings("Doesn't have")
+    assert_equal [ "I would", "I had" ], Contractions.readings("I'd", case_sensitive: true)
+    assert_equal [ "It is", "It has" ], Contractions.readings("It's", case_sensitive: true)
+    assert_equal "correct", verdict("Does not have", "Doesn't have", case_sensitive: true)
+    assert_equal "correct", verdict("doesn't have", "does not have", case_sensitive: true)
+    assert_equal "correct", verdict("I would go", "I'd go", case_sensitive: true)
+    assert_equal "wrong", verdict("doesn't have", "Doesn't have", case_sensitive: true)
+    assert_equal "wrong", verdict("doesn't have", "Does not have", case_sensitive: true)
+    assert_equal "wrong", verdict("it's here", "It is here", case_sensitive: true)
+    assert_equal "correct", verdict("doesn't have", "Doesn't have"), "case is folded when the item does not ask for it"
+    assert_not Grading::Closed::Text.same_answer?("doesn't have", "Doesn't have", case_sensitive: true, contractions: "en")
+    assert Grading::Closed::Text.same_answer?("doesn't have", "Doesn't have", contractions: "en")
+  end
+
+  test "another component of an English item is not touched" do
+    choice = Grading::Spec.from_hash({ "component" => "choice", "subject" => "english", "answer" => "o1" })
+    assert_nil choice.contractions
+  end
+
+  test "the option helper: the author's value first, else en for english, else nothing" do
+    assert_equal "en", Contractions.option("english")
+    assert_equal "en", Contractions.option("history", "en")
+    assert_nil Contractions.option("italian")
+    assert_nil Contractions.option(nil)
+    assert_nil Contractions.option("spanish", "")
+  end
+end

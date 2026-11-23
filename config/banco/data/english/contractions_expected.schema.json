@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:banco:data:english-contractions-expected",
+  "title": "english/contractions_expected: the second table for english/contractions",
+  "description": "A separate extraction of the same facts by another route (The Editor's Manual, Types of Contractions): each written form with every reading the page gives it, and the texts the grader must leave as typed (a noun with 's or 'd may be a possessive); compared by the unit test with english/contractions; T3 (WAVE2 1.9, D-398).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "source",
+    "forms",
+    "kept"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "source": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 300
+    },
+    "forms": {
+      "type": "object",
+      "minProperties": 10,
+      "maxProperties": 100,
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24
+        },
+        "minItems": 1,
+        "maxItems": 3
+      }
+    },
+    "kept": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 40
+      },
+      "minItems": 1
+    }
+  }
+}

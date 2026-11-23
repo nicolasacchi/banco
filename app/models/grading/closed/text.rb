@@ -42,12 +42,12 @@ module Grading
         accepted = ([ spec.answer ] + spec.accept).map { |t| normalize(t.to_s, case_sensitive: spec.case_sensitive) }
         return Closed.result("correct", normalized: answer) if accepted.include?(answer)
         return Closed.result("correct", normalized: answer) if same_direction_as_any?(answer, accepted)
-        return Closed.result("correct", normalized: answer) if spec.contractions == "en" && accepted.any? { |t| Contractions.same?(t, answer) }
+        return Closed.result("correct", normalized: answer) if spec.contractions == "en" && accepted.any? { |t| Contractions.same?(t, answer, case_sensitive: spec.case_sensitive) }
         return Closed.invalid("spaces_in_code") if spaced_code?(answer, accepted)
 
         declared = Closed.error_hit(spec, answer) do |v, a|
           written = normalize(v.to_s, case_sensitive: spec.case_sensitive)
-          written == a || (spec.contractions == "en" && Contractions.same?(written, a))
+          written == a || (spec.contractions == "en" && Contractions.same?(written, a, case_sensitive: spec.case_sensitive))
         end
         return Closed.result("typical_error", error_codes: declared, normalized: answer) if declared.any?
 
@@ -98,7 +98,7 @@ module Grading
       def same_answer?(a, b, case_sensitive: false, contractions: nil)
         x = normalize(a.to_s, case_sensitive: case_sensitive)
         y = normalize(b.to_s, case_sensitive: case_sensitive)
-        x == y || fold_direction(x) == fold_direction(y) || (contractions == "en" && Contractions.same?(x, y))
+        x == y || fold_direction(x) == fold_direction(y) || (contractions == "en" && Contractions.same?(x, y, case_sensitive: case_sensitive))
       end
 
       def same_direction_as_any?(answer, accepted)

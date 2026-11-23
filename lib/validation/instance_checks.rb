@@ -196,10 +196,11 @@ module Validation
       return unless @unit.component == "normalized_text"
 
       case_sensitive = @unit.body["case_sensitive"] == true
+      contractions = Grading::Closed::Contractions.option(@unit.body["subject"], @unit.body["contractions"])
       (Array(@unit.accept) + Array(inst["accept"])).uniq.each do |text|
         Array(inst["errors"]).each_with_index do |e, i|
           next unless e.is_a?(Hash) && e["value"].is_a?(String) && text.is_a?(String)
-          next unless Grading::Closed::Text.same_answer?(text, e["value"], case_sensitive: case_sensitive)
+          next unless Grading::Closed::Text.same_answer?(text, e["value"], case_sensitive: case_sensitive, contractions: contractions)
 
           f.add("E-ACCEPT-IS-ERROR", "#{label}/errors/#{i}/value", "the error value #{e['value'].inspect} is also an accepted text: the grader checks accept first, so this wrong answer would be graded right", seed: seed)
         end

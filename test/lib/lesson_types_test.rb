@@ -146,7 +146,7 @@ class LessonTypesTest < ActiveSupport::TestCase
     assert_empty Lessons::Types.held_back_uses(:diagram, "flow", { "layout" => "tree" })
     assert_empty Lessons::Types.held_back_uses(:diagram, "sentence", { "states" => [ { "text_en" => "x" } ] }), "sentence neutral is built (D-273)"
     assert_empty Lessons::Types.held_back_options({ "component" => "choice", "listen" => {}, "verify" => {} }), "verify is available since T1 and listen since T2"
-    assert_equal [ "contractions" ], Lessons::Types.held_back_options({ "component" => "normalized_text", "contractions" => "en", "profile" => { "name" => "binary" } }).map(&:first)
+    assert_empty Lessons::Types.held_back_options({ "component" => "normalized_text", "contractions" => "en", "profile" => { "name" => "binary" } }), "contractions is available since D-398"
     assert_empty Lessons::Types.held_back_options({ "component" => "normalized_text", "input" => "bits" }), "input: bits is built (T9)"
     assert_empty Lessons::Types.held_back_options({ "component" => "number", "input" => "bits" })
   end
@@ -179,7 +179,7 @@ class LessonTypesTest < ActiveSupport::TestCase
     with_reserved(:block, "dialogue") { assert_match(/dialogue block is not available/, assert_raises(Lessons::Directives::Refused) { build("dialogue", nil, "title_it: x\n") }.message) }
     assert_match(/check component amount_words/, assert_raises(Lessons::Directives::Refused) { build("check", "amount_words", "prompt_it: x\n") }.message)
     assert_match(/flow walk/, assert_raises(Lessons::Directives::Refused) { build("diagram", "flow", "walk: true\nnodes: []\n") }.message)
-    assert_match(/check option contractions/, assert_raises(Lessons::Directives::Refused) { build("check", "normalized_text", "prompt_it: x\nanswer: y\ncontractions: en\n") }.message)
+    assert_equal "en", build("check", "normalized_text", "prompt_it: x\nanswer: y\ncontractions: en\n")[0]["contractions"], "contractions is available (D-398)"
     assert_equal "choice", build("check", "choice", "prompt_it: x\nlisten: {text_en: hello}\n")[0]["component"], "listen is available (T2)"
     assert_match(/unknown block type "venn"/, assert_raises(Lessons::Directives::Refused) { build("venn", nil, "a: 1\n") }.message)
     block, = build("page", nil, "key: x\n", allow_reserved: true)

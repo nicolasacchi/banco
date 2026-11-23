@@ -184,7 +184,7 @@ only), `HARNESS_PORT` 3200 (internal), `VIEW_PORT` 3400 (view links, GET only). 
   the commit of its look gate.
 - Wave 2 core checks (T1, D-273): `tiles`, `ordering` and `select` (`lesson/checks/{tiles,ordering,select}.js` with the pure `sequence_model.js` and `select_model.js`,
   `howto.js` for the first-use line and "Come si risponde", `draw.js` `mode: select`; Ruby `Lessons::Checks`, `Lessons::SelectTargets`, `Lessons::Blocks::Check`), the options
-  `thousands`, `profile` and `verify` (`Lessons::Verify`, `Grading::Spec#thousands`, `Grading::Closed::Contractions` held until `english/contractions` is written), the truth
+  `thousands`, `profile` and `verify` (`Lessons::Verify`, `Grading::Spec#thousands`, `Grading::Closed::Contractions`, on for every English typed answer since D-398 with the vetted table `english/contractions`), the truth
   rules L3 to L5 (`Lessons::Blocks::Truth`, which reads the figure types' optional hooks `target_names` and `select_signatures`), `lesson/preload.js` (lazy types and components
   are loaded before the page draws), `sentence` neutral. Texts `config/locales/lesson_checks.it.yml`, styles `app/assets/stylesheets/lesson/checks.css`. Tests:
   `test/lib/lessons/checks_wave2_test.rb`, `student_body_wave2_test.rb`, `test/validation/lesson_checks_wave2_test.rb`, `lesson/test/checks_t1.test.mjs`,

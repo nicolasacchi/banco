@@ -12,9 +12,11 @@ class LessonDataTest < ActiveSupport::TestCase
   T6_EXTRA = %w[geo/stations_expected].freeze
   # T7 adds the second tables of chem/elements, chem/molecules and bio/cell_parts (the second source of chem/terms is it.wikipedia, in its test).
   T7_EXTRA = %w[chem/elements_expected chem/molecules_expected bio/cell_parts_expected].freeze
+  # T3 (D-398): english/contractions is written, with its second table.
+  T3_EXTRA = %w[english/contractions_expected].freeze
 
   test "the 15 tables of the plan have a schema, each a valid JSON Schema that names its track and says a second table is compared" do
-    assert_equal (TABLES + T5_EXTRA + T6_EXTRA + T7_EXTRA).sort, Lessons::VettedData.names
+    assert_equal (TABLES + T5_EXTRA + T6_EXTRA + T7_EXTRA + T3_EXTRA).sort, Lessons::VettedData.names
     (TABLES + [ "history/regions" ]).each do |name|
       schema = Lessons::VettedData.schema(name)
       assert JSONSchemer.valid_schema?(schema), name

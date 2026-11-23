@@ -68,7 +68,7 @@ module Grading
         given = sentence_key(value, spec)
         ([ spec.answer ] + spec.accept).map(&:to_s).find do |filler|
           filled = sentence_key(frame.fill(filler), spec)
-          filled == given || (spec.contractions == "en" && Contractions.same?(filled, given))
+          filled == given || (spec.contractions == "en" && Contractions.same?(filled, given, case_sensitive: spec.case_sensitive))
         end
       end
 

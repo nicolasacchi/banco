@@ -1,0 +1,58 @@
+# english/contractions: the contractions of standard English and what they stand for (WAVE2 1.9; T3, D-398). Read by Grading::Closed::Contractions, which
+# expands them on both sides of a typed English answer before the comparison (D-268, D-398): «that's why» and «that is why» are one answer.
+#
+# Sources (each fact of the table comes from them; nothing from memory):
+#   Speakspeak (Stuart Cook), "Short forms (contractions): I'm, he's, she's, don't, let's, etc.": the tables of the short forms of am, is, are, have,
+#   has, would, will and of the negatives; "'s can mean is or has"; "'d can mean would or had"; let's = let us; the short forms of how, what, who,
+#   where, when, here, there and that. Accessed 2026-11-23.
+# The second table is english/contractions_expected (another route: The Editor's Manual, Neha Karve, "Types of Contractions"); test/lib/contractions_data_test.rb
+# compares the two and checks the table on its own. Changed only by a D entry.
+#
+# A row is {short, long: [readings], ambiguous?}:
+#   - a short form that starts with an apostrophe or with n' is a suffix: «'ll» turns «I'll» into «I will», «n't» turns «doesn't» into «does not»;
+#   - any other short form is a whole word and gives its readings: «won't» is «will not», «can't» is «cannot» or «can not»;
+#   - a form with two readings («it's»: is or has) gives both: two texts are the same when some reading of one equals some reading of the other;
+#   - a row marked ambiguous is never expanded. «'s» after a noun («Anna's», «the dog's») may be a possessive, and «'d» after a noun may be had
+#     or would: the answer stays as typed, so a possessive is never turned into a verb (D-398). An author who wants «Anna's here» for «Anna is here»
+#     writes it in `accept`.
+#   - «it's», «he's», «she's», «that's», «there's», «here's», «what's», «who's», «where's» (is, has) and the pronouns with «'d» (would, had) are
+#     whole-word rows, not ambiguous: a possessive never has this spelling (its, whose, hers are written without an apostrophe). Only forms that
+#     both sources give are listed («how's», «when's», «who'd» and «there'd» are in Speakspeak alone, so they are not: an author writes them in `accept`).
+#   - «ain't» is not listed: it is non-standard and stands for several verbs. «aren't» is «are not» (the «am not» of «aren't I?» is not expanded).
+version: 1
+source: 'Speakspeak (S. Cook), Short forms (contractions): I''m, he''s, she''s, don''t, let''s, etc.; accessed 2026-11-23'
+contractions:
+  # the verb to be, to have, will: suffixes
+  - {short: "'m", long: [am]}
+  - {short: "'re", long: [are]}
+  - {short: "'ve", long: [have]}
+  - {short: "'ll", long: [will]}
+  # not: a suffix for the regular ones (isn't, aren't, wasn't, weren't, doesn't, don't, didn't, hasn't, haven't, hadn't, couldn't, wouldn't, shouldn't,
+  # mustn't, needn't, mightn't, daren't); the irregular ones are rows of their own
+  - {short: "n't", long: [not]}
+  - {short: "won't", long: [will not]}
+  - {short: "shan't", long: [shall not]}
+  - {short: "can't", long: [cannot, can not]}
+  - {short: "cannot", long: [cannot, can not]}
+  - {short: "let's", long: [let us]}
+  # 's = is or has after a pronoun or a question word: both readings
+  - {short: "it's", long: [it is, it has]}
+  - {short: "he's", long: [he is, he has]}
+  - {short: "she's", long: [she is, she has]}
+  - {short: "that's", long: [that is, that has]}
+  - {short: "there's", long: [there is, there has]}
+  - {short: "here's", long: [here is, here has]}
+  - {short: "what's", long: [what is, what has]}
+  - {short: "who's", long: [who is, who has]}
+  - {short: "where's", long: [where is, where has]}
+  # 'd = would or had after a pronoun: both readings
+  - {short: "i'd", long: [i would, i had]}
+  - {short: "you'd", long: [you would, you had]}
+  - {short: "he'd", long: [he would, he had]}
+  - {short: "she'd", long: [she would, she had]}
+  - {short: "it'd", long: [it would, it had]}
+  - {short: "we'd", long: [we would, we had]}
+  - {short: "they'd", long: [they would, they had]}
+  # after anything else, 's and 'd may be a possessive or one of two verbs: never expanded
+  - {short: "'s", long: [is, has], ambiguous: true}
+  - {short: "'d", long: [would, had], ambiguous: true}

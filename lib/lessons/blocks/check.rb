@@ -76,7 +76,7 @@ module Lessons
           next unless text.is_a?(String)
 
           check["errors"].to_a.each_with_index do |e, j|
-            next unless e["answer"].is_a?(String) && Grading::Closed::Text.same_answer?(text, e["answer"], contractions: check["contractions"])
+            next unless e["answer"].is_a?(String) && Grading::Closed::Text.same_answer?(text, e["answer"], contractions: Grading::Closed::Contractions.option(ctx.subject, check["contractions"]))
 
             ctx.add("E-ACCEPT-IS-ERROR", "accept/#{i}", "the accepted text #{text.inspect} is also the error answer errors/#{j} (#{e['answer'].inspect}): the grader checks accept first, so that wrong answer would be graded right")
           end
