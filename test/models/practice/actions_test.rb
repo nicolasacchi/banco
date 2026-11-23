@@ -56,6 +56,15 @@ class PracticeActionsTest < ActiveSupport::TestCase
     assert_equal 0, PracticeAttempt.count
   end
 
+  test "D-395, row 12: the solution asked for on an open serve after a wrong try keeps «Per me va bene così»; with no try it does not" do
+    c = serve!
+    answer!(c, wrong_raw)
+    r = actions.solution(serve_id: c.serve.id)
+    assert_equal %w[after_solution back contest], r.body[:actions]
+    assert_equal({ "reason" => "requested" }, JSON.parse(c.serve.events.last.payload_json))
+    assert_equal 1, PracticeAttempt.count
+  end
+
   test "row 13: after a typical error the solution is sent with reason after_wrong, no try" do
     c = serve!
     answer!(c, slip_raw(c))

@@ -374,8 +374,20 @@ class PracticeServeStateTest < ActiveSupport::TestCase
     assert_equal :contested, p.status.closed_by
   end
 
-  test "a contest is not allowed on a serve closed by the solution request, nor on an abandoned one" do
-    p = play(:unrecognised)
+  test "D-395, row 16: a contest is allowed on the latest try after the solution was asked for on an open serve; the solution is not sent twice" do
+    %i[unrecognised form near_miss].each do |outcome|
+      p = play(outcome)
+      p.solution
+      assert_equal [ :closed, :solution, %i[after_solution back contest] ], [ p.status.state, p.status.closed_by, p.status.actions ], outcome.to_s
+      step = p.contest
+      assert_equal [ :accept, :contested, nil ], [ step.result, step.closes_as, step.solution_reason ], outcome.to_s
+      assert_equal [ :closed, :contested, %i[next back] ], [ p.status.state, p.status.closed_by, p.status.actions ], outcome.to_s
+      assert_equal 1, p.events.count { |e| e.kind == "solution_shown" }, outcome.to_s
+    end
+  end
+
+  test "a contest is not allowed on a solution asked for with no try, nor on an abandoned or a superseded serve" do
+    p = PracticeEngineHelper::Play.new
     p.solution
     assert_equal [ :closed, :solution, %i[after_solution back] ], [ p.status.state, p.status.closed_by, p.status.actions ]
     assert_equal :closed, p.contest.result
@@ -421,15 +433,19 @@ class PracticeServeStateTest < ActiveSupport::TestCase
     assert_equal :closed, Practice::ServeState.step(p.status, :hint, hint_n: 1, hints_total: 3).result
   end
 
-  test "the actions say contest exactly when a contest is allowed, over every sequence of three outcomes and the solution request" do
+  test "the actions say contest exactly when a contest is allowed, over every sequence of three outcomes, with and without the solution request" do
     outcomes = %i[correct typical_error unrecognised form near_miss undetermined]
-    outcomes.product(outcomes, outcomes).each do |seq|
-      p = PracticeEngineHelper::Play.new
-      seq.each { |o| p.answer(o) }
-      st = p.status
-      allowed = %i[typical_error unrecognised form near_miss].include?(p.outcomes.last) && (st.state == :open || (st.state == :closed && %i[wrong near_miss].include?(st.closed_by)))
-      assert_equal allowed, st.actions.include?(:contest), seq.inspect
-      assert_equal allowed ? :accept : :closed, Practice::ServeState.step(st, :contest).result, seq.inspect
+    [ false, true ].each do |ask|
+      outcomes.product(outcomes, outcomes).each do |seq|
+        p = PracticeEngineHelper::Play.new
+        seq.each { |o| p.answer(o) }
+        p.solution if ask
+        st = p.status
+        allowed = p.outcomes.any? && %i[typical_error unrecognised form near_miss].include?(p.outcomes.last) &&
+                  (st.state == :open || (st.state == :closed && %i[wrong near_miss solution].include?(st.closed_by)))
+        assert_equal allowed, st.actions.include?(:contest), [ seq, ask ].inspect
+        assert_equal allowed ? :accept : :closed, Practice::ServeState.step(st, :contest).result, [ seq, ask ].inspect
+      end
     end
   end
 end

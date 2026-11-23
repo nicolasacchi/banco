@@ -569,6 +569,84 @@ class PracticeFlowTest < ApplicationSystemTestCase
     assert_clean "the contest after the second try"
   end
 
+  # D-395: a resumed exercise offers «Per me va bene così» again when the server allows it: after a reload, and after «Salta» and back from the list.
+  def walk_contest_resumed
+    first = open_practice("number")
+    first_key = item_key_of(first)
+    answer_wrong(first)
+    click_button "Controlla"
+    assert_selector "#feedback", text: UNRECOGNISED
+    assert_contest_offered
+
+    visit current_url
+    assert_selector "#check:not([disabled])", wait: 30
+    assert_equal first.id, served.id
+    assert_selector "#feedback .contest-note", text: CONTEST_NOTE
+    assert_selector "#feedback #contest-button", text: "Per me va bene così"
+
+    find("#skip-button").click
+    second = next_serve_after(first)
+    assert_no_selector "#contest-button" # the other exercise has no try: nothing to send
+    find("#exercise-list details.exercise-done summary").click
+    find("#{entry_selector(first_key)} .exercise-link").click
+    assert_equal first.id, next_serve_after(second).id
+    assert_selector "#feedback .contest-note", text: CONTEST_NOTE
+    assert_selector "#feedback #contest-button", text: "Per me va bene così"
+
+    find("#contest-button").click
+    assert_selector "#feedback", text: CONTESTED
+    assert_no_selector "#contest-button"
+    assert_selector "#solution h2", text: "Soluzione"
+    assert_equal 1, PracticeContest.where(practice_serve_id: first.id).count
+    assert_clean "the contest on a resumed exercise"
+  end
+
+  # D-395: the answer the outbox sends at the next page load is told above the exercise, and the button is there with it.
+  def walk_contest_after_outbox
+    serve = open_practice("number")
+    page.execute_script("window.__realFetch = window.fetch; window.fetch = function () { return Promise.reject(new TypeError('offline')) }")
+    answer_wrong(serve)
+    click_button "Controlla"
+    assert_selector "#feedback", text: "Non riesco a salvare ora. Riprovo da solo, non perdi la risposta."
+    assert_equal 0, serve.attempts.count
+    visit current_url
+    assert_selector "#check:not([disabled])", wait: 30
+    assert_equal serve.id, served.id
+    assert_selector "#feedback", text: "La risposta di prima"
+    assert_selector "#feedback", text: UNRECOGNISED
+    assert_selector "#feedback .contest-note", text: CONTEST_NOTE
+    assert_selector "#feedback #contest-button", text: "Per me va bene così"
+    assert_equal 1, serve.reload.attempts.count
+    find("#contest-button").click
+    assert_selector "#feedback", text: CONTESTED
+    assert_equal 1, PracticeContest.where(practice_serve_id: serve.id).count
+    assert_clean "the contest after the outbox"
+  end
+
+  # D-395: «Mostrami la soluzione» on an open exercise with a try that is not right: the button is offered again with the solution; the tap sends it,
+  # and the solution is not sent twice.
+  def walk_contest_after_solution
+    serve = open_practice("sentence")
+    type_and_check("xyz")
+    assert_contest_offered
+    find("#solution-button").click
+    assert_selector "#solution h2", text: "Soluzione"
+    assert_selector "#next-actions button", text: "Prova un esercizio simile"
+    assert_selector "#feedback .contest-note", text: CONTEST_NOTE
+    assert_selector "#feedback #contest-button", text: "Per me va bene così"
+    assert_equal [ "requested" ], serve.events.where(kind: "solution_shown").map { |e| JSON.parse(e.payload_json)["reason"] }
+    assert_equal 0, PracticeContest.count
+
+    find("#contest-button").click
+    assert_selector "#feedback", text: CONTESTED
+    assert_no_selector "#contest-button"
+    assert_selector "#solution h2", text: "Soluzione"
+    assert_selector "#next-actions button", text: "Un altro esercizio"
+    assert_equal [ "requested" ], serve.events.reload.where(kind: "solution_shown").map { |e| JSON.parse(e.payload_json)["reason"] }
+    assert_contest_written(serve, "xyz")
+    assert_clean "the contest after the solution"
+  end
+
   # The same answer twice is refused (D-353) and is not a try, in the page and not as a verdict; the contest stays offered; going on to another exercise takes it away.
   def walk_same_answer
     serve = open_practice("sentence")
@@ -586,10 +664,18 @@ class PracticeFlowTest < ApplicationSystemTestCase
     assert_equal 1, serve.attempts.count
     assert_equal 0, page.evaluate_script("Object.keys(localStorage).filter((k) => k.startsWith('banco.poutbox.')).length"), "the outbox let the refused answer go"
     assert_selector "#check:not([disabled])", wait: 30
+    # The skill has one exercise: «Salta» gives that same open serve back, with its try, so the server's actions still offer the contest (D-395)
     find("#skip-button").click
+    assert_selector "#check:not([disabled])", wait: 30
+    assert_equal serve.id, served.id
+    assert_selector "#feedback #contest-button"
+    # going on to an exercise with no try takes it away: the button follows only the actions of the serve on the screen
+    find("#exercise-list a.exercise-link[href*='item=flow-fraction']").click
+    wait_until(15) { page.current_path.end_with?("/practice/#{skill_of('fraction')}") }
+    assert_selector "#check:not([disabled])", wait: 30
+    assert_not_equal serve.id, served.id
     assert_no_selector "#contest-button"
     assert_no_text CONTEST_NOTE
-    assert_selector "#check:not([disabled])", wait: 30
     assert_equal 0, PracticeContest.count
     assert_clean "the same answer"
   end
@@ -821,6 +907,36 @@ class PracticeFlowTest < ApplicationSystemTestCase
     build_flow_world(sentence: true)
     as_teacher_in_preview
     walk_contest_after_second_try
+  end
+
+  test "a trial student: a resumed exercise (reload, «Salta» and back) offers «Per me va bene così» again" do
+    build_flow_world(number_items: 3)
+    as_student
+    walk_contest_resumed
+  end
+
+  test "the teacher in the preview: a resumed exercise (reload, «Salta» and back) offers «Per me va bene così» again" do
+    build_flow_world(number_items: 3)
+    as_teacher_in_preview
+    walk_contest_resumed
+  end
+
+  test "a trial student: the answer the outbox sends at the next page load comes with «Per me va bene così»" do
+    build_flow_world
+    as_student
+    walk_contest_after_outbox
+  end
+
+  test "a trial student: after «Mostrami la soluzione» on an open exercise «Per me va bene così» is still offered" do
+    build_flow_world(sentence: true)
+    as_student
+    walk_contest_after_solution
+  end
+
+  test "the teacher in the preview: after «Mostrami la soluzione» on an open exercise «Per me va bene così» is still offered" do
+    build_flow_world(sentence: true)
+    as_teacher_in_preview
+    walk_contest_after_solution
   end
 
   test "a trial student: the same answer twice is refused and is not a try" do

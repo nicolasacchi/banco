@@ -13,6 +13,15 @@
 #
 # The student's text has no decision number and no jargon; it is second person and never blames. Newest first is the order of the pages, not of this file.
 entries:
+  - id: contest-everywhere-allowed
+    date: 2026-11-23
+    audience: [student]
+    kind: fix
+    decisions: [D-395]
+    title_it: "«Per me va bene così» c'è ogni volta che puoi usarlo"
+    body_it: "Il pulsante torna anche quando riprendi un esercizio, e dopo «Mostrami la soluzione». Il commento per il docente ora riporta tutta la tua risposta. Se mandi un esercizio che avevi già fatto, la lista dice «Mandato al docente» finché il docente non risponde."
+    title_en: "«It's fine for me» is there every time you can use it"
+    body_en: "The button now comes back when you pick an exercise up again, and after «Show me the solution». The comment for the teacher now carries your whole answer. If you send an exercise you had already done, the list says «Sent to the teacher» until the teacher answers."
   - id: exercises-rechecked-1123
     date: 2026-11-23
     audience: [student, teacher]

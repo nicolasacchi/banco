@@ -164,7 +164,7 @@ class PracticeController < ApplicationController
     state = course_view.state(serve.skill_key)
     {
       type: "item", serve_id: serve.id, reason: serve.reason, reason_it: reason_it(serve, chosen), reminder_it: reminder_it(serve),
-      status: status.state.to_s, next_try_number: status.next_try_number,
+      status: status.state.to_s, next_try_number: status.next_try_number, actions: Practice::Payload.actions(status), # D-395: «Per me va bene così» on a resumed exercise
       skill: skill_block(serve.skill_key, state),
       hints: { total: hints.size, shown: hints.first(status.hints_shown).each_with_index.map { |text, i| { n: i + 1, hint_it: text } } },
       item: item_part(serve, instance),

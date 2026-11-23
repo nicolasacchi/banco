@@ -14,8 +14,9 @@ module Comments
   class Intake
     Result = Struct.new(:status, :comment, :error, keyword_init: true)
 
-    # The same student, reason, text and place within this time is the same comment sent again (a second tap, a page that
-    # forgot its id): it is answered with the first one and not stored (D-388). The ledger stays append-only.
+    # The same student, reason, text and place (the serve too: the contests of two tries are two comments, D-395) within this time is the
+    # same comment sent again (a second tap, a page that forgot its id): it is answered with the first one and not stored (D-388). The ledger
+    # stays append-only.
     REPEAT_WINDOW = 2.minutes
 
     ID_FORMAT = /\A[A-Za-z0-9_-]{8,64}\z/
@@ -84,7 +85,7 @@ module Comments
 
     def recent_repeat(row)
       Comment.where(student_id: @student.id, reason: row[:reason], text_it: row[:text_it], page_path: row[:page_path], anchor: row[:anchor],
-                    created_at: REPEAT_WINDOW.ago..).order(:id).first
+                    practice_serve_id: row[:practice_serve]&.id, created_at: REPEAT_WINDOW.ago..).order(:id).first
     end
 
     def clamp(value)

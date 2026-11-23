@@ -86,13 +86,14 @@ module Practice
       contest_allowed?(state, closed_by, last) ? base + %i[contest] : base
     end
 
-    # Row 16 (D-389): a contest is allowed on the latest try when it is not right (CONTESTABLE: typical error, unrecognised, form,
-    # near miss) and not contested yet, on an open serve or on one closed `wrong` or `near_miss`; never without a try, on a right
-    # try, twice, or on a serve closed any other way (right, undetermined, solution, contested).
+    # Row 16 (D-389, D-395): a contest is allowed on the latest try when it is not right (CONTESTABLE: typical error, unrecognised, form,
+    # near miss) and not contested yet, on an open serve or on one closed `wrong`, `near_miss` or `solution` (the solution he asked for on
+    # an open serve does not take the try back); never without a try, on a right try, twice, or on a serve closed any other way (right,
+    # undetermined, contested).
     def contest_allowed?(state, closed_by, last)
       return false unless last && !contested?(last) && CONTESTABLE.include?(last.outcome.to_sym)
 
-      state == :open || (state == :closed && %i[wrong near_miss].include?(closed_by))
+      state == :open || (state == :closed && %i[wrong near_miss solution].include?(closed_by))
     end
 
     def closed_actions(closed_by, last, solutions)

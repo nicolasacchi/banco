@@ -95,8 +95,8 @@ older than `OPEN_SERVE_HOURS`, or when it is **superseded**: a newer serve of th
 kept as a draft (not a try), and she can come back to it. `W` = W tries so far, `NM` = near-miss tries so far.
 A **contest** is the student's act on the LATEST try of a serve («Per me va bene così», D-389; «Fai controllare» before): it is
 allowed when that try's outcome is `typical_error`, `unrecognised`, `form` or `near_miss` (every try that is not right) and it is
-not contested yet, on an open serve or on a serve closed `wrong` or `near_miss`; never without a try, after a correct or
-undetermined answer, twice, or on a serve closed in another way (`correct`, `undetermined`, `solution`).
+not contested yet, on an open serve or on a serve closed `wrong`, `near_miss` or `solution` (the solution he asked for on an open serve,
+D-395); never without a try, after a correct or undetermined answer, twice, or on a serve closed in another way (`correct`, `undetermined`).
 The try's outcome becomes `contested` (N), the serve is closed `contested`, and the solution is sent (`after_contest`)
 unless it was already sent. The actions of a serve include `contest` exactly when a contest is allowed on it.
 
@@ -120,12 +120,12 @@ In breve: un esercizio lasciato a metà resta aperto per due settimane. Se lo ri
 | 14 | closed, solution already sent | "Mostra la soluzione" | unchanged | the same solution, no new event | none | unchanged |
 | 15 | closed or abandoned | answer, hint | unchanged; HTTP 409 `{"status":"closed"}` | none | none | none |
 | 16 | open, latest try typical_error, unrecognised, form or near_miss | contest | closed `contested`; the try is `contested` (N) | yes (`after_contest`) | none | `next`, `back` |
-| 17 | closed `wrong` (rows 2, 6) or closed `near_miss` (row 8), latest try not right | contest | closed `contested`; the try is `contested` (N) | yes (`after_contest`) unless already sent | none | `next`, `back` |
+| 17 | closed `wrong` (rows 2, 6), closed `near_miss` (row 8) or closed `solution` (row 12), latest try not right | contest | closed `contested`; the try is `contested` (N) | yes (`after_contest`) unless already sent | none | `next`, `back` |
 | 18 | closed `contested` | contest again | unchanged; the same answer, no new event, no second contest | none | none | unchanged |
 
 Rows 2, 3, 4, 6, 7 and 8 carry the action `contest`, last, when the latest try allows it (rows 16 and 17): `retry`, `show_solution`,
 `contest` on an open serve (`retry`, `contest` after a near miss); `after_solution`, `back`, `contest` (or `show_solution`, `back`, `contest`,
-or with `prova_questo` after a typical error) on one closed `wrong`; `after_solution`, `next`, `back`, `contest` on one closed `near_miss`.
+or with `prova_questo` after a typical error) on one closed `wrong`; `after_solution`, `next`, `back`, `contest` on one closed `near_miss`; `after_solution`, `back`, `contest` on one closed `solution` after a try that is not right.
 A contest not allowed (any other state, the serve closed otherwise, abandoned): HTTP 409 `{"status":"not_contestable"}`.
 
 Actions: `next` = new serve without follow; `prova_questo` = new serve with follow

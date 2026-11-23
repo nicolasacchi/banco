@@ -118,6 +118,7 @@ export default class extends Controller {
     const right = reply.outcome === "correct" || reply.outcome === "correct_aided"
     const tone = right && reply.note_it ? "nearly" : (TONES[reply.outcome] || "info")
     this.say(reply.message_it, { tone, title: this.labels.earlier, note: [reply.note_it, reply.count_it].filter(Boolean).join(" ") })
+    this.offerContest(this.serveActions) // D-395: what the server allows now on the exercise on the screen, which the line above has just wiped
   }
 
   // ---- serving -------------------------------------------------------------------------------------
@@ -235,6 +236,7 @@ export default class extends Controller {
   async show(reply) {
     this.serveId = reply.serve_id
     this.tried = (reply.next_try_number ?? 1) > 1
+    this.serveActions = reply.actions ?? []
     this.ratingCurrent = reply.rating ?? null // his latest rating of this exercise, for the box that opens when it is over (D-365)
     this.hideRating()
     this.itemKey = reply.exercise?.item ?? null // the exercise on the page keeps its place in the list when it is answered and closed
@@ -269,6 +271,7 @@ export default class extends Controller {
     this.drafting = true
     this.lastSaved = ""
     this.restoreDraft(reply.draft)
+    this.offerContest(this.serveActions) // D-395: a resumed exercise whose latest try may go to the teacher offers «Per me va bene così» again; after the draft's line, which wipes it
     this.refreshList()
     return null
   }

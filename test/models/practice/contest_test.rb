@@ -76,6 +76,81 @@ class PracticeContestTest < ActiveSupport::TestCase
     assert_equal %w[after_contest], solution_reasons(near)
   end
 
+  test "D-395: after «Mostra la soluzione» on an open serve the latest try is still contested; the solution is not sent twice" do
+    serve = serve_of(SENTENCE)
+    wrong!(serve)
+    shown = Practice::Actions.new(student: @official, clock: @clock).solution(serve_id: serve.id)
+    assert_equal %w[after_solution back contest], shown.body[:actions]
+    assert_equal %w[requested], solution_reasons(serve)
+
+    result = contest_for(@official).call(serve_id: serve.id)
+    assert_equal [ 200, "contested", %w[next back] ], [ result.http, result.body[:status], result.body[:actions] ]
+    assert_equal "La mia risposta, secondo me giusta: «play».", PracticeContest.sole.comment.text_it
+    assert_equal %w[requested], solution_reasons(serve)
+    assert_equal [ :closed, :contested ], Practice::Loader.status_of(PracticeServe.find(serve.id), now: @clock.now).then { |st| [ st.state, st.closed_by ] }
+  end
+
+  test "D-395: a solution asked for with no try is not contestable" do
+    serve = serve_of(SENTENCE)
+    Practice::Actions.new(student: @official, clock: @clock).solution(serve_id: serve.id)
+    assert_equal 409, contest_for(@official).call(serve_id: serve.id).http
+    assert_equal [ 0, 0 ], [ PracticeContest.count, Comment.count ]
+  end
+
+  test "D-395: the contests of two serves with the same words are two comments, never one merged by the repeat check" do
+    first = serve_of(SENTENCE)
+    wrong!(first, "play")
+    second = serve_of(WORD)
+    wrong!(second, "play")
+    contest_for(@official).call(serve_id: first.id)
+    contest_for(@official).call(serve_id: second.id)
+
+    contests = PracticeContest.order(:id).to_a
+    assert_equal 2, Comment.count
+    assert_equal 2, contests.map(&:comment_id).uniq.size
+    assert_equal [ first.id, second.id ], contests.map { |c| c.comment.practice_serve_id }
+    assert_equal [ "La mia risposta, secondo me giusta: «play»." ], Comment.pluck(:text_it).uniq
+  end
+
+  test "D-395: a repeat of the same contest comment on the same serve is still one comment (D-388)" do
+    serve = serve_of(SENTENCE)
+    wrong!(serve, "play")
+    contest_for(@official).call(serve_id: serve.id)
+    again = Comments::Intake.call(student: @official, course_view: Course::StudentView.new(@official),
+                                  params: { client_comment_id: "other-id-1", reason: "error", text_it: Comment.sole.text_it, page_path: Comment.sole.page_path,
+                                            anchor: Practice::Contest::COMMENT_ANCHOR, refs: { "serve_id" => serve.id } })
+    assert_equal [ :recorded, Comment.sole.id ], [ again.status, again.comment.id ]
+    assert_equal 1, Comment.count
+  end
+
+  test "D-395: a long typed answer is carried up to the comment's limit less the template; over it, it is cut and ends with «…»" do
+    serve = serve_of(WORD)
+    wrong!(serve, "parola " * 100) # 700 characters: whole
+    contest_for(@official).call(serve_id: serve.id)
+    assert_equal "La mia risposta, secondo me giusta: «#{'parola ' * 99}parola».", Comment.sole.text_it
+
+    long = serve_of(WORD)
+    wrong!(long, "y" * 5000)
+    contest_for(@official).call(serve_id: long.id)
+    text = Comment.order(:id).last.text_it
+    assert_equal Comment::TEXT_MAX, text.length
+    assert_match(/\ALa mia risposta, secondo me giusta: «y+…»\.\z/, text)
+  end
+
+  test "D-395: a matching too long for the comment is cut at the last «; », a whole pair, and ends with «…»" do
+    left = (1..4).map { |n| { id: "l#{n}", text: "Autore #{n} #{'lungo ' * 40}".strip } }
+    right = (1..4).map { |n| { id: "r#{n}", text: "Opera #{n} #{'vasta ' * 40}".strip } }
+    serve = closed_serve("closed-matching-long", "matching", { left: left, right: right }, { "l1" => "r1", "l2" => "r2", "l3" => "r3", "l4" => "r4" })
+    raw = { "l1" => "r1", "l2" => "r1", "l3" => "r1", "l4" => "r2" }
+    wrong!(serve, JSON.generate(raw))
+    assert_equal 200, contest_for(@official).call(serve_id: serve.id).http
+
+    words = shown_texts(PracticeServe.find(serve.id))
+    pairs = raw.map { |l, r| "#{words.call(l)} – #{words.call(r)}" }
+    assert_operator pairs.join("; ").length, :>, Comment::TEXT_MAX - 60, "the whole answer does not fit"
+    assert_equal "La mia risposta, secondo me giusta: «#{pairs.first(3).join('; ')}…».", PracticeContest.sole.comment.text_it
+  end
+
   test "another student's serve is a 404" do
     serve = serve_of(SENTENCE)
     wrong!(serve)

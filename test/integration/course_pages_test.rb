@@ -402,7 +402,7 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     [ OFFICIAL, TRIAL ].each do |who|
       body = serve_for(who)
       assert_response :success
-      assert_equal %w[type serve_id reason reason_it reminder_it rating status next_try_number skill hints item draft exercise].sort, body.keys.sort
+      assert_equal %w[type serve_id reason reason_it reminder_it rating status next_try_number actions skill hints item draft exercise].sort, body.keys.sort
       assert_nil body["draft"]
       assert_equal [ SKILL, 1 ], body["exercise"].values_at("skill", "n")
       assert_equal [ "item", "next", "open", 1 ], [ body["type"], body["reason"], body["status"], body["next_try_number"] ]
@@ -482,7 +482,7 @@ class CoursePagesTest < ActionDispatch::IntegrationTest
     solution = post_json(OFFICIAL, "/practice/serves/#{id}/solution")
     assert_response :success
     assert_equal "Passo.", solution["solution"]["steps"].first["text_it"]
-    assert_equal %w[after_solution back], solution["actions"]
+    assert_equal %w[after_solution back contest], solution["actions"]
     post_json(OFFICIAL, "/practice/answers", { serve_id: id, client_attempt_id: SecureRandom.uuid, raw: "1", source: "text" })
     assert_response :conflict
     assert_equal "closed", response.parsed_body["status"]

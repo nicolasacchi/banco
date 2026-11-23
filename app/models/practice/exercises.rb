@@ -3,8 +3,9 @@ module Practice
   # pinned on the topic revision this student sees, in pin order, each with its status from the student's serves. Read-only.
   #
   #   status, in this order: "unfinished" when the open serve has a non-empty draft and no try (typed, not answered: «Da finire»);
-  #           "done" when any serve of the item closed correct; "contested" when no serve is open and one closed `contested` (he sent it to the teacher with
-  #           «Per me va bene così», D-389: «Mandato al docente»); "finished_solution" when a serve with a try or a shown solution ended (closed,
+  #           "contested" when no serve is open and the item's latest closed serve is closed `contested` (he sent it to the teacher with
+  #           «Per me va bene così», D-389, D-395: «Mandato al docente», even when an earlier serve of the item closed right; once the teacher resolves the try
+  #           the serve is no longer closed `contested`, and a later serve closed any other way takes its place); "done" when any serve of the item closed correct; "finished_solution" when a serve with a try or a shown solution ended (closed,
   #           abandoned, or still open with a try) and the STUDENT asked for the solution (an event `solution_shown` with the reason
   #           `requested`, or `after_wrong` on a serve already closed wrong: both are the «Mostra la soluzione» button); "finished" when such a serve ended and the
   #           solution, if any, came by itself (after the last try, after a right answer, after «Per me va bene così»), or the open serve has
@@ -132,14 +133,18 @@ module Practice
 
     def status(mine, open, facts)
       return "unfinished" if open && facts.tries(open.id).zero? && facts.draft?(open.id)
+      return "contested" if !open && contested_now?(mine) # D-389, D-395: «Per me va bene così», sent to the teacher and not resolved yet, even after a «Fatto»
       return "done" if mine.any? { |r| r.status.closed_by == :correct }
-      return "contested" if !open && mine.any? { |r| r.status.closed_by == :contested } # D-389: «Per me va bene così», sent to the teacher
 
       ended = mine.select { |r| (!%i[open replaced].include?(r.status.state) || r.id == open&.id) && (facts.tries(r.id).positive? || r.status.solution_sent) }
       return (ended.any? { |r| facts.asked_solution?(r.id) } ? "finished_solution" : "finished") if ended.any?
 
       open ? "opened" : "todo"
     end
+
+    # The latest closed serve of the item is closed `contested`: the teacher's resolution turns the try into the verdict's (Practice::Resolutions), so
+    # a resolved one is no longer closed `contested`; a later serve closed any other way takes its place.
+    def contested_now?(mine) = mine.select { |r| r.status.state == :closed }.max_by(&:id)&.status&.closed_by == :contested
 
     def drafts_for(rows) = PracticeDraft.texts_for(rows.map(&:id))
 

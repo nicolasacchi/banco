@@ -1,6 +1,6 @@
 module Practice
   # «Per me va bene così» (D-339 «Fai controllare», D-389): the student sends the latest try of a serve, which the engine did not call right, to the teacher. The state machine says
-  # when that is allowed (`contest` among the serve's actions: the latest try is a typical error, unrecognised, form or a near miss and not contested yet). One short transaction
+  # when that is allowed (`contest` among the serve's actions: the latest try is a typical error, unrecognised, form or a near miss and not contested yet, on an open serve or one closed wrong, near miss or by the solution he asked for, D-395). One short transaction
   # writes the contest row, the comment the teacher reads (through Comments::Intake, like any comment of the student: reason `error`, the practice
   # page, anchored to the exercise's answer, the serve as its ref) and the solution event if it was not sent yet. A second call answers the same
   # and writes nothing. The teacher's preview writes the contest for the preview student and no comment (D-309). The grading, the attempt and
@@ -12,7 +12,7 @@ module Practice
     Result = AnswerRecorder::Result
 
     COMMENT_ANCHOR = "exercise/item/answer".freeze
-    RAW_CHARS = 200
+    CUT = "…".freeze
 
     def initialize(student:, course_view:, clock: Diagnosis::Clock.new)
       @student = student
@@ -90,9 +90,20 @@ module Practice
       words = squish(Diagnosis::AnswerText.call(attempt, serve))
       return nil if words.empty? || (words == squish(raw) && structured?(serve))
 
-      words.first(RAW_CHARS)
+      fit(words)
     rescue JSON::ParserError, NoMethodError, TypeError
       nil
+    end
+
+    # D-395: all of his answer that the comment can hold (Comment::TEXT_MAX less the template). If it is still too long it is cut at the
+    # last «; » (a whole pair of a matching, a whole item) and ends with «…»; an answer with no «; » is cut at the limit.
+    def fit(words)
+      room = Comment::TEXT_MAX - I18n.t("practice.contest_comment", raw: "", locale: :it).length
+      return words if words.length <= room
+
+      head = words.first(room - CUT.length)
+      cut = head.rindex("; ")
+      "#{cut ? head.first(cut) : head}#{CUT}"
     end
 
     def squish(text) = text.to_s.gsub(/[[:space:]]+/, " ").strip

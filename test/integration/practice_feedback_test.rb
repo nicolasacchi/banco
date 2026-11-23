@@ -189,11 +189,19 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
     assert_equal "La mia risposta, secondo me giusta: «albero».", Comment.last.text_it
   end
 
-  test "the answer in the comment is cut at 200 characters" do
+  test "D-395: the comment carries a long answer whole, and one over the comment's limit is cut with «…» inside it" do
     serve = serve_for(OFFICIAL, WORD)
     answer_for(OFFICIAL, serve, "x" * 300)
     contest_for(OFFICIAL, serve)
-    assert_equal "La mia risposta, secondo me giusta: «#{'x' * 200}».", Comment.last.text_it
+    assert_equal "La mia risposta, secondo me giusta: «#{'x' * 300}».", Comment.last.text_it
+
+    long = serve_for(OFFICIAL, WORD)
+    refute_equal serve["serve_id"], long["serve_id"]
+    answer_for(OFFICIAL, long, "y" * 5000)
+    contest_for(OFFICIAL, long)
+    text = Comment.last.text_it
+    assert_equal Comment::TEXT_MAX, text.length
+    assert text.start_with?("La mia risposta, secondo me giusta: «y") && text.end_with?("y…».")
   end
 
   test "a contest is refused with 409 when it is not allowed: no try, a right answer, a second contest" do
@@ -231,6 +239,42 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
     assert_equal [ "contested", %w[next back] ], body.values_at("status", "actions")
     assert_equal %w[after_contest], solution_events(serve)
     assert_equal "La mia risposta, secondo me giusta: «doesn't eat».", Comment.last.text_it
+  end
+
+  test "D-395: after «Mostra la soluzione» on an open exercise the latest try may still go to the teacher: the solution reply offers it, one tap closes it contested" do
+    serve = serve_for(OFFICIAL, SENTENCE)
+    assert_equal %w[show_solution], serve["actions"]
+    answer_for(OFFICIAL, serve, "play")
+    shown = post_json(OFFICIAL, "/practice/serves/#{serve['serve_id']}/solution")
+    assert_equal %w[after_solution back contest], shown["actions"]
+    assert_equal %w[requested], solution_events(serve)
+
+    body = contest_for(OFFICIAL, serve)
+    assert_response :success
+    assert_equal [ "contested", %w[next back] ], body.values_at("status", "actions")
+    assert_equal %w[requested], solution_events(serve) # the solution is not sent twice
+    assert_equal "La mia risposta, secondo me giusta: «play».", Comment.last.text_it
+    assert_equal "contested", statuses(OFFICIAL)[SENTENCE]
+  end
+
+  test "D-395: a solution asked for before any try cannot be contested" do
+    serve = serve_for(OFFICIAL, SENTENCE)
+    shown = post_json(OFFICIAL, "/practice/serves/#{serve['serve_id']}/solution")
+    assert_equal %w[after_solution back], shown["actions"]
+    assert_equal({ "status" => "not_contestable" }, contest_for(OFFICIAL, serve))
+    assert_response :conflict
+  end
+
+  test "D-395: a resumed exercise carries the server's actions, «contest» among them when its latest try may go to the teacher" do
+    serve = serve_for(OFFICIAL, SENTENCE)
+    answer_for(OFFICIAL, serve, "play")
+    resumed = post_json(OFFICIAL, "/practice/serves", { topic: TOPIC, skill: SKILL })
+    assert_equal [ serve["serve_id"], "open", %w[retry show_solution contest] ], resumed.values_at("serve_id", "status", "actions")
+
+    contest_for(OFFICIAL, serve)
+    fresh = post_json(OFFICIAL, "/practice/serves", { topic: TOPIC, skill: SKILL })
+    refute_equal serve["serve_id"], fresh["serve_id"]
+    assert_equal %w[show_solution], fresh["actions"]
   end
 
   test "another student's serve is a 404" do
@@ -299,6 +343,40 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
     again = serve_for(OFFICIAL, SENTENCE)
     answer_for(OFFICIAL, again, "don't eat")
     assert_equal "done", statuses(OFFICIAL)[SENTENCE]
+  end
+
+  test "D-395: an exercise he had right, redone and contested, reads «contested» until the teacher resolves the try; then the usual status returns" do
+    serve = serve_for(OFFICIAL, SENTENCE)
+    answer_for(OFFICIAL, serve, "don't eat")
+    assert_equal "done", statuses(OFFICIAL)[SENTENCE]
+
+    again = serve_for(OFFICIAL, SENTENCE)
+    answer_for(OFFICIAL, again, "play")
+    assert_equal "done", statuses(OFFICIAL)[SENTENCE] # tried, not sent: the earlier right serve still shows
+    contest_for(OFFICIAL, again)
+    assert_equal "contested", statuses(OFFICIAL)[SENTENCE]
+    assert_equal "todo", statuses(OFFICIAL)[WORD]
+
+    word = serve_for(OFFICIAL, WORD) # no right serve before: the teacher's «right» is what turns «contested» into «done»
+    answer_for(OFFICIAL, word, "neighbourhod")
+    contest_for(OFFICIAL, word)
+    assert_equal "contested", statuses(OFFICIAL)[WORD]
+    attempt = PracticeAttempt.find_by!(practice_serve_id: word["serve_id"])
+    Decision.create!(kind: "resolve_attempt", subject: @subject, student: @official, request_id: SecureRandom.hex(4), teacher_login: "nik", remote_addr: "127.0.0.1",
+                     payload_json: JSON.generate(attempt_id: attempt.id, attempt_kind: "practice", practice_serve_id: attempt.practice_serve_id, try_number: 1,
+                                                 verdict: "correct", reason_it: "Era giusta."))
+    assert_equal "done", statuses(OFFICIAL)[WORD]
+    assert_equal "contested", statuses(OFFICIAL)[SENTENCE] # the other exercise is still waiting
+  end
+
+  test "D-395: a later serve closed any other way takes the place of the contested one" do
+    serve = serve_for(OFFICIAL, SENTENCE)
+    answer_for(OFFICIAL, serve, "play")
+    contest_for(OFFICIAL, serve)
+    assert_equal "contested", statuses(OFFICIAL)[SENTENCE]
+    again = serve_for(OFFICIAL, SENTENCE)
+    answer_for(OFFICIAL, again, "doesn't eat") # a typical error closes this serve «wrong»
+    assert_equal "finished", statuses(OFFICIAL)[SENTENCE]
   end
 
   test "an open serve with nothing typed on a done exercise keeps «done»; with a try it is «done» still (a right one counts)" do
