@@ -12,8 +12,9 @@ module Review
   # decides (firm rule 2). A fix request means the revision is to be replaced, so it
   # keeps the gate shut.
   #
-  # A review or a blind solve counts only when its session ran on another TRUE model than every author of the item
-  # (D-316, Providers.independent?, read each time with AgentSession#model, which a correction can change).
+  # A review or a blind solve counts only when its session ran on another TRUE model than the authors of the revision (D-316,
+  # Providers.independent?, read each time with AgentSession#model, which a correction can change; D-391: the authors of the
+  # revisions after the last approved, independently worked base, else every author of the item).
   module Gate
     Result = Struct.new(:approvable, :reasons, :open_findings, keyword_init: true) do
       def to_h = { approvable: approvable, reasons: reasons, open_findings: open_findings }

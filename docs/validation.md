@@ -80,8 +80,11 @@ not against intent: the model is declared, not proven.
 - The sessions that authored `item.json` or `generator.mjs`, the verifier, the reviewer
   and the solver of one item are disjoint (`E-SESSION-NOT-INDEPENDENT`), and a second
   round of review or solve uses a session that did not see the first.
-- Reviewer and blind solver: a model different from the model of every author session (the family may be the same, D-070);
-  grader: Claude only (`E-PROVIDER-NOT-ALLOWED`). Reviewer and solver receive item
+- Reviewer and blind solver: a model different from the model of every author session (the family may be the same, D-070). Since
+  D-391 "every author" means the authors of the revisions after the last approved base (a revision an approved topic or entry test
+  pins) that has an independent review and an independent blind solve on record (`ItemSessions#model_authors`); without such a
+  base, every author of the item. The refusal and the read-time counting use the same function, so `Review::Gate` and
+  `Approval::TopicGate` see the delta. Grader: Claude only (`E-PROVIDER-NOT-ALLOWED`). Reviewer and solver receive item
   text only; the grader reads the student's answers.
 - `banco review open|submit REV`: `review open` also reads without a session (D-158); `banco.review/1` with the 11-point checklist. Refused:
   evidence that says nothing, repeated or under 4 words (`E-REVIEW-EMPTY`), a fail

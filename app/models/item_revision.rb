@@ -9,9 +9,10 @@ class ItemRevision < ApplicationRecord
   has_many :reviews, class_name: "ItemReview"
   has_many :blind_solves, class_name: "BlindSolve"
 
-  # The reviews and the blind solves that count (D-316): the session ran on another TRUE model than every author of the item.
-  def counting_reviews = Providers.counting(reviews.includes(agent_session: :corrections), item)
-  def counting_blind_solves = Providers.counting(blind_solves.includes(agent_session: :corrections), item)
+  # The reviews and the blind solves that count (D-316): the session ran on another TRUE model than every author the revision
+  # is judged against (D-391): the authors of the revisions after the last approved, independently worked base, else every author of the item.
+  def counting_reviews = Providers.counting(reviews.includes(agent_session: :corrections), item, revision: self)
+  def counting_blind_solves = Providers.counting(blind_solves.includes(agent_session: :corrections), item, revision: self)
 
   # item.json is body_json; the other files (generator.mjs, verify.mjs, assets/*)
   # are files_json {name => text}.

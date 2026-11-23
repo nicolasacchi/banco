@@ -30,6 +30,15 @@ module Course
       end.uniq
     end
 
+    # Every revision id of an item of +item+'s subject that a topic approval or an entry test approval pinned (D-391), whenever it was
+    # recorded: the item_revision_ids of each approve_topic decision, and the items the blueprint revision of each approve_blueprint
+    # decision pins (entries and descent pool).
+    def approved_item_revision_ids(item)
+      topic = Decision.where(kind: "approve_topic", subject_id: item.subject_id).pluck(:payload_json).flat_map { |json| Array(JSON.parse(json)["item_revision_ids"]) }
+      blueprints = Decision.where(kind: "approve_blueprint", subject_id: item.subject_id).pluck(:payload_json).filter_map { |json| JSON.parse(json)["revision_id"] }
+      (topic + BlueprintRevision.where(id: blueprints).flat_map(&:pinned_item_revision_ids)).compact.map(&:to_i).uniq
+    end
+
     # The attestation words of the latest approve_topic of +key+ when it was a console approval that waived the
     # page-opened requirement (D-260), else nil.
     def attestation(key)

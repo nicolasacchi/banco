@@ -21,7 +21,7 @@ module Api
         elsif arbiter_read?
           # D-222: the third reviewer reads the item with its instances to judge a finding; it writes no review.
         else
-          session = require_session("reviewer", item: @item, next_step: next_session) or return
+          session = require_session("reviewer", item: @item, revision: @revision, next_step: next_session) or return
           return unless independent_role?(session, @item, "reviewer")
         end
 
@@ -60,7 +60,7 @@ module Api
       # POST /api/v1/revisions/:revision/review {review}
       def submit
         body = parse_json_body or return
-        session = require_session("reviewer", item: @item, next_step: next_session) or return
+        session = require_session("reviewer", item: @item, revision: @revision, next_step: next_session) or return
         return unless independent_role?(session, @item, "reviewer") && latest_and_passed?(@revision, @item, step: "review")
 
         doc = body["review"]

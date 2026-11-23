@@ -12,7 +12,7 @@ module Api
       # GET /api/v1/revisions/:revision/solve
       def open
         unless reader? # D-327: a bot_read or teacher token reads the solver's view without a session
-          session = require_session("solver", item: @item, next_step: next_session) or return
+          session = require_session("solver", item: @item, revision: @revision, next_step: next_session) or return
           return unless independent_role?(session, @item, "solver") && latest?(@revision, @item, step: "solve")
         end
 
@@ -33,7 +33,7 @@ module Api
       # POST /api/v1/revisions/:revision/solve {solve}
       def submit
         body = parse_json_body or return
-        session = require_session("solver", item: @item, next_step: next_session) or return
+        session = require_session("solver", item: @item, revision: @revision, next_step: next_session) or return
         return unless independent_role?(session, @item, "solver") && latest_and_passed?(@revision, @item)
 
         doc = body["solve"]

@@ -46,17 +46,22 @@ module Providers
   end
 
   # The review or solve rows (ItemReview, BlindSolve, LessonReview, PageReview) that count, among +rows+ on +thing+
-  # (an Item, a Lesson or a Page): the ones whose session is independent of every author of the thing. On a Lesson
-  # (D-374) the authors are LessonSessions#model_authors of the revision the row reviewed: those after the last approved,
-  # independently reviewed base, else every author.
-  def counting(rows, thing)
+  # (an Item, a Lesson or a Page): the ones whose session is independent of every author of the thing. On a Lesson (D-374)
+  # and on an Item (D-391) the authors are ItemSessions#model_authors of the revision the row reviewed: those after the last
+  # approved, independently reviewed base, else every author. +revision+: the item revision of every row, when the caller has it
+  # (else each row's own is read).
+  def counting(rows, thing, revision: nil)
     rows = rows.to_a
     return rows if rows.empty?
 
-    if thing.is_a?(Lesson)
-      sessions = LessonSessions.new(thing)
+    if thing.is_a?(Lesson) || thing.is_a?(Item)
+      sessions = ItemSessions.for(thing)
       by_revision = {}
-      return rows.select { |row| independent?(row.agent_session, by_revision[row.lesson_revision_id] ||= sessions.model_authors(row.lesson_revision)) }
+      counted = rows.select do |row|
+        reviewed = revision || (thing.is_a?(Lesson) ? row.lesson_revision : row.item_revision)
+        independent?(row.agent_session, by_revision[reviewed.id] ||= sessions.model_authors(reviewed))
+      end
+      return counted
     end
 
     authors = ItemSessions.for(thing).sessions("author")
@@ -69,8 +74,8 @@ module Providers
   end
 
   # nil when the session may act in its role on +item+ (nil: not item-specific),
-  # otherwise the reason, in English, for E-PROVIDER-NOT-ALLOWED. +revision+: the lesson revision a lesson's reviewer
-  # is about to read; with it the authors compared are the same as in +counting+ (D-374).
+  # otherwise the reason, in English, for E-PROVIDER-NOT-ALLOWED. +revision+: the lesson or item revision a reviewer or a
+  # solver is about to read; with it the authors compared are the same as in +counting+ (D-374, D-391).
   def refusal(session, item: nil, finding: nil, revision: nil)
     rule = rule(session.role)
     family = session.family
@@ -80,8 +85,8 @@ module Providers
     return "the model #{session.model.inspect} is in no known family: add it to config/banco/providers.yml or use another model" if rule["known_family"] && family == "unknown"
 
     if rule["different_model_from"] && item
-      authors = if revision && item.is_a?(Lesson) && rule["different_model_from"] == "author"
-        LessonSessions.new(item).model_authors(revision)
+      authors = if revision && (item.is_a?(Lesson) || item.is_a?(Item)) && rule["different_model_from"] == "author"
+        ItemSessions.for(item).model_authors(revision)
       else
         ItemSessions.for(item).sessions(rule["different_model_from"])
       end
