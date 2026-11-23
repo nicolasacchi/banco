@@ -35,9 +35,9 @@ entries:
     kind: fix
     decisions: [D-392]
     title_it: "Parole intere negli esercizi in ordine"
-    body_it: "Su un telefono ogni parola resta intera: se non c'è posto, va a capo tutta insieme. Anche i pulsanti Su e Giù vanno sotto la frase."
+    body_it: "Su un telefono ogni parola resta intera: se non c'è posto, va a capo tutta insieme. Se la riga è molto stretta, i pulsanti Su e Giù vanno sotto la frase."
     title_en: "Whole words in the ordering exercises"
-    body_en: "On a phone every word stays whole: if there is no room, it moves to the next line all together. The Up and Down buttons also go under the sentence."
+    body_en: "On a phone every word stays whole: if there is no room, it moves to the next line all together. If the line is very narrow, the Up and Down buttons go under the sentence."
   - id: short-formulas-no-scrollbar
     date: 2026-11-23
     audience: [student]
