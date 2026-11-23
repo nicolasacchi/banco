@@ -31,6 +31,18 @@ module Practice
       end
     end
 
+    # D-395: all of his answer that the comment can hold (Comment::TEXT_MAX less the template). If it is still too long it is cut at the
+    # last «; » (a whole pair of a matching, a whole item) and ends with «…»; an answer with no «; » is cut at the limit. Shared with the
+    # lesson checks' contest (D-396).
+    def self.fit(words)
+      room = Comment::TEXT_MAX - I18n.t("practice.contest_comment", raw: "", locale: :it).length
+      return words if words.length <= room
+
+      head = words.first(room - CUT.length)
+      cut = head.rindex("; ")
+      "#{cut ? head.first(cut) : head}#{CUT}"
+    end
+
     private
 
     def run(serve_id)
@@ -90,20 +102,9 @@ module Practice
       words = squish(Diagnosis::AnswerText.call(attempt, serve))
       return nil if words.empty? || (words == squish(raw) && structured?(serve))
 
-      fit(words)
+      self.class.fit(words)
     rescue JSON::ParserError, NoMethodError, TypeError
       nil
-    end
-
-    # D-395: all of his answer that the comment can hold (Comment::TEXT_MAX less the template). If it is still too long it is cut at the
-    # last «; » (a whole pair of a matching, a whole item) and ends with «…»; an answer with no «; » is cut at the limit.
-    def fit(words)
-      room = Comment::TEXT_MAX - I18n.t("practice.contest_comment", raw: "", locale: :it).length
-      return words if words.length <= room
-
-      head = words.first(room - CUT.length)
-      cut = head.rindex("; ")
-      "#{cut ? head.first(cut) : head}#{CUT}"
     end
 
     def squish(text) = text.to_s.gsub(/[[:space:]]+/, " ").strip

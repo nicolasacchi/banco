@@ -34,7 +34,7 @@ class AddCheckContestedLessonEventMigrationTest < ActiveSupport::TestCase
     @conn.execute("INSERT INTO skill_graph_revisions (id, subject_id, seq, body_json, created_at) VALUES (1, 1, 1, '{}', #{now})")
     @conn.execute("INSERT INTO course_revisions (id, subject_id, seq, skill_graph_revision_id, body_json, warnings_json, created_at) VALUES (1, 1, 1, 1, '{}', '[]', #{now})")
     @conn.execute("INSERT INTO lessons (id, subject_id, key, kind, created_at) VALUES (1, 1, 'ripasso.math.demo', 'ripasso', #{now})")
-    @conn.execute("INSERT INTO lesson_revisions (id, lesson_id, seq, source_md, source_sha256, body_json, rules_version, warnings_json, created_at) VALUES (1, 1, 1, '', 'x', '{}', 'r', '[]', #{now})")
+    @conn.execute("INSERT INTO lesson_revisions (id, lesson_id, seq, source_md, source_sha256, body_json, rules_version, warnings_json, created_at) VALUES (1, 1, 1, '', '#{'a' * 64}', '{}', 'r', '[]', #{now})")
     @conn.execute("INSERT INTO topic_revisions (id, lesson_id, seq, course_revision_id, lesson_revision_id, body_json, created_at) VALUES (1, 1, 1, 1, 1, '{}', #{now})")
     @conn.execute("INSERT INTO lesson_events (id, student_id, topic_revision_id, lesson_revision_id, kind, card, block, payload_json, grader_version, at, created_at) VALUES " \
                   "(5, 1, 1, 1, 'check_answered', 2, 3, '{}', 'x', #{now}, #{now}), (8, 1, 1, 1, 'card_seen', 2, NULL, '{}', NULL, #{now}, #{now})")
@@ -72,7 +72,7 @@ class AddCheckContestedLessonEventMigrationTest < ActiveSupport::TestCase
     assert_raises(ActiveRecord::StatementInvalid) { @conn.execute("UPDATE lesson_events SET card = 9 WHERE id = 5") }
     assert_raises(ActiveRecord::StatementInvalid) { @conn.execute("DELETE FROM lesson_events WHERE id = 8") }
     assert_raises(ActiveRecord::InvalidForeignKey) do
-      @conn.execute("INSERT INTO lesson_events (student_id, topic_revision_id, lesson_revision_id, kind, payload_json, at, created_at) VALUES (4242, 1, 1, 'card_seen', '{}', 'x', 'x')")
+      @conn.execute("INSERT INTO lesson_events (student_id, topic_revision_id, lesson_revision_id, kind, card, payload_json, at, created_at) VALUES (4242, 1, 1, 'card_seen', 2, '{}', 'x', 'x')")
     end
   end
 

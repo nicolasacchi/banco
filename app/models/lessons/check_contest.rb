@@ -99,7 +99,7 @@ module Lessons
         else response.is_a?(String) ? response : nil # number, normalized_text: as typed
         end
       words = words.to_s.gsub(/[[:space:]]+/, " ").strip
-      words.empty? ? nil : words.first(Practice::Contest::RAW_CHARS)
+      words.empty? ? nil : Practice::Contest.fit(words)
     end
 
     def shown(check, located, column) = Checks.rekey(check, located.seed).display.fetch(column) { [] }
