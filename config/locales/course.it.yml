@@ -199,6 +199,8 @@ it:
     # D-363: after a try that is not right on an item with rows, how many were right (never which)
     rows_right: "Giuste: %{right} su %{total}."
     full_sentence_note: "Bastava scrivere solo le parole che mancano: %{part}."
+    # D-386: a right number written with a unit word the exercise itself uses
+    unit_word_note: "Il numero è giusto. La prossima volta scrivi solo il numero, senza «%{word}»."
     # D-358: the line above an exercise that declares a typical error the student made lately; the item's own message follows.
     reminder_label: "Ricorda:"
     try_this: "Prova questo"

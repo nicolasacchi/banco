@@ -6,7 +6,7 @@ module Grading
   class Spec
     ATTRIBUTES = %i[component subject skill answer errors form form_skill accent_policy spelling_policy
                     paradigm_forms accept unit allow_dot display profile case_sensitive thousands contractions
-                    prompt_stem].freeze
+                    prompt_stem item_texts].freeze
 
     attr_reader(*ATTRIBUTES)
     # A testlet only: {sub item id => Spec}, in the order of the item's sub_items.
@@ -21,8 +21,20 @@ module Grading
         paradigm_forms: h["paradigm_forms"], accept: h["accept"], unit: h["unit"],
         allow_dot: h["allow_dot"], display: h["display"], profile: h["profile"],
         case_sensitive: h["case_sensitive"], thousands: h["thousands"], contractions: h["contractions"],
-        prompt_stem: h["prompt"].is_a?(Hash) ? h["prompt"]["stem_it"] : nil
+        prompt_stem: h["prompt"].is_a?(Hash) ? h["prompt"]["stem_it"] : nil,
+        item_texts: item_texts_of(h)
       )
+    end
+
+    # The words the student reads or is given with the item, as plain texts (D-386): both stems, the answer format, the solution.
+    # A number answer may end with a unit word that one of them uses (Grading::Closed::Numbers).
+    def self.item_texts_of(h)
+      display = h["display"].is_a?(Hash) ? h["display"] : {}
+      solution = h["solution"].is_a?(Hash) ? h["solution"] : {}
+      steps = Array(solution["steps"]).map { |step| step.is_a?(Hash) ? step["text_it"] : nil }
+      [ h.dig("prompt", "stem_it"), display["stem_it"], h["answer_format_it"], display["answer_format_it"], *steps, solution["final"] ].grep(String)
+    rescue TypeError
+      []
     end
 
     # The item rules come from the revision body (item.json), the answer, errors
@@ -39,6 +51,7 @@ module Grading
         "answer" => JSON.parse(instance.answer_json),
         "errors" => instance.errors_json.present? ? JSON.parse(instance.errors_json) : [],
         "display" => display,
+        "solution" => instance.solution_json.present? ? JSON.parse(instance.solution_json) : body["solution"],
         "unit" => display["unit"] || body["unit"]
       ))
     end
@@ -63,7 +76,7 @@ module Grading
 
     def initialize(component:, subject: nil, skill: nil, answer: nil, errors: nil, form: nil, form_skill: nil,
                    accent_policy: nil, spelling_policy: nil, paradigm_forms: nil, accept: nil, unit: nil,
-                   allow_dot: nil, display: nil, profile: nil, case_sensitive: nil, thousands: nil, contractions: nil, prompt_stem: nil)
+                   allow_dot: nil, display: nil, profile: nil, case_sensitive: nil, thousands: nil, contractions: nil, prompt_stem: nil, item_texts: nil)
       @component = component.to_s
       @subject = subject || skill.to_s.split(".").first
       @skill = skill
@@ -85,6 +98,7 @@ module Grading
       @contractions = contractions.presence
       # The item's own stem (prompt.stem_it), shown above the instance's: the text a `___` blank may sit in (Grading::Frame).
       @prompt_stem = prompt_stem
+      @item_texts = Array(item_texts)
       # banco.item/1 has no field to declare case sensitivity (decision D-032), so
       # this is false for every stored item; the attribute is the seam for a later
       # schema version.

@@ -97,8 +97,8 @@ module Lessons
       end
     end
 
-    def invalid(code, version = grader_version)
-      Graded.new(verdict: "invalid", code: code, message_it: Grading::Result.message(code), error_index: nil, normalized: nil, grader_version: version)
+    def invalid(code, version = grader_version, detail: nil)
+      Graded.new(verdict: "invalid", code: code, message_it: Grading::Result.message(code, detail: detail), error_index: nil, normalized: nil, grader_version: version)
     end
 
     # ---- the shared graders ----------------------------------------------------------------------
@@ -110,6 +110,7 @@ module Lessons
         errors: errors.each_with_index.map { |e, i| { "code" => "e#{i}", "value" => e["answer"] } },
         accept: check["accept"], unit: check["unit"], form: form,
         profile: check["profile"], thousands: check["thousands"], contractions: check["contractions"],
+        item_texts: [ check["prompt_it"], check["answer_format_it"] ].grep(String), # a number may end with a unit word they use (D-386)
         # a written word may be answered with the whole sentence around the check's `___` (D-339): the frame is its prompt
         display: { "options" => check["options"], "left" => check["left"], "right" => check["right"],
                    "stem_it" => (check["prompt_it"] if check["component"] == "normalized_text") }.compact
@@ -119,7 +120,7 @@ module Lessons
     end
 
     def from_result(result, errors, display = {})
-      return invalid(result.invalid_code, result.grader_version) if result.invalid?
+      return invalid(result.invalid_code, result.grader_version, detail: result.invalid_detail) if result.invalid?
 
       case result.verdict
       when "correct"

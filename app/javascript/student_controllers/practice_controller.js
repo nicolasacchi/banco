@@ -373,12 +373,9 @@ export default class extends Controller {
       // A refusal is not a verdict: «Fai controllare» stays if it was showing (the server's message points at it).
       const keepContest = hadContest
       this.refusals.record(serve, Date.now())
-      if (this.refusals.showFormat(serve)) {
-        this.say("")
-        showRefusalNotice(this.handle, { message: reply.message_it, format: this.itemFormat })
-      } else {
-        this.say(reply.message_it)
-      }
+      // The message always goes where the verdict goes (D-386): from the second refusal the format is added above the box, never instead of it.
+      this.say(reply.message_it)
+      if (this.refusals.showFormat(serve) && this.itemFormat) showRefusalNotice(this.handle, { message: null, format: this.itemFormat })
       this.offerContest(keepContest ? ["contest"] : reply.actions)
       this.handle.focus()
       // A matching with a row left empty marks the row (the other templates have nothing to mark).

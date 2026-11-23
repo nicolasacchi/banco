@@ -1,5 +1,5 @@
-// The block shown right above the input after an item is refused twice (D-298): the message of the
-// refusal and the item's answer format, in evidence. It is a polite live region and takes no focus.
+// The block shown right above the input after an item is refused twice (D-298): the item's answer format, in evidence, with the message
+// of the refusal when one is given (the practice page says it in its verdict line instead, D-386). It is a polite live region and takes no focus.
 import { el } from "items/dom"
 import { renderInline } from "items/markup"
 
@@ -14,7 +14,7 @@ export function showRefusalNotice(handle, { message, format }) {
     else handle.element.prepend(block)
   }
   block.textContent = ""
-  block.appendChild(el("p", { class: "refusal-message", text: message }))
+  if (message) block.appendChild(el("p", { class: "refusal-message", text: message }))
   if (format) block.appendChild(renderInline(format, el("p", { class: "refusal-format" })))
   return block
 }

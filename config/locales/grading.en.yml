@@ -5,6 +5,7 @@ en:
       empty: "Write an answer before you continue."
       unparseable: "I can't read the answer. Check it and try again."
       unreadable_number: "Write only the number, for example −3 or 2,5."
+      extra_word: "Write only the number, without «%{word}»."
       unreadable_fraction: "Write the fraction, for example −3/4."
       incomplete: "Put all the pieces in order, then check."
       incomplete_rows: "An answer is missing: choose an answer for every row, then check."

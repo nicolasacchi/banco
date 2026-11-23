@@ -8,6 +8,7 @@ it:
       empty: "Scrivi una risposta prima di continuare."
       unparseable: "Non riesco a leggere la risposta. Controllala e riprova."
       unreadable_number: "Scrivi solo il numero, per esempio −3 oppure 2,5."
+      extra_word: "Scrivi solo il numero, senza «%{word}»."
       unreadable_fraction: "Scrivi la frazione, per esempio −3/4."
       incomplete: "Metti tutti i pezzi in ordine, poi controlla."
       incomplete_rows: "Manca una risposta: scegli una risposta per ogni riga, poi controlla."

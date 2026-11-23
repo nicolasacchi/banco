@@ -22,6 +22,15 @@ entries:
     body_it: "Quando premi Invia, il pulsante resta spento finché il commento non è partito. Poi il riquadro si chiude e vedi «Inviato al docente». Se non parte, il testo resta lì e puoi riprovare."
     title_en: "Comments: sent once"
     body_en: "When you press Send, the button stays off until the comment has gone. Then the box closes and you see «Sent to the teacher». If it does not go, your text stays there and you can try again."
+  - id: number-answers-with-unit
+    date: 2026-11-23
+    audience: [student]
+    kind: fix
+    decisions: [D-386]
+    title_it: "Risposte con l'unità di misura: ora vanno bene"
+    body_it: "Se scrivi «2 minuti» e l'esercizio parla di minuti, la risposta conta come giusta, con un promemoria: basta il numero. Se la risposta non si può leggere, ora vedi subito quale parola togliere, e puoi riprovare."
+    title_en: "Answers with the unit of measure are now accepted"
+    body_en: "If you write «2 minutes» and the exercise is about minutes, the answer counts as right, with a reminder that only the number is needed. If an answer cannot be read, you now see at once which word to take out, and you can try again."
 
   - id: flowchart-phone-arrows
     date: 2026-11-19

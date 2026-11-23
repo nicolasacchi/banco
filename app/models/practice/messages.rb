@@ -43,6 +43,9 @@ module Practice
     # The note under a right answer written as a whole sentence around the blank: only the words in place of ___ were asked.
     def full_sentence_note(part) = I18n.t("practice.full_sentence_note", part: part)
 
+    # The note under a right number that was written with a unit word of the item (D-386): the number was graded, next time only the number.
+    def unit_word_note(word) = I18n.t("practice.unit_word_note", word: word)
+
     # The checker's form violations (and the fraction ones) as a sentence (grading.form.*); the generic one for a violation without its own.
     def form(violations)
       violation = Array(violations).first

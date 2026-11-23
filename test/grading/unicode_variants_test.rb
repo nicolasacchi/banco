@@ -49,7 +49,8 @@ class UnicodeVariantsTest < ActiveSupport::TestCase
     [ "2,5 g/cm\u00B3", "2,5 g/cm3", "2,5g/cm3", "2,5\u00A0g/cm3", "2,5" ].each do |text|
       assert_equal "correct", Grading::Closed::Numbers.grade(spec, text).verdict, text
     end
-    assert_equal "unreadable_number", Grading::Closed::Numbers.grade(spec, "2,5 gr").invalid_code
+    wrong_unit = Grading::Closed::Numbers.grade(spec, "2,5 gr")
+    assert_equal [ "extra_word", "gr" ], [ wrong_unit.invalid_code, wrong_unit.invalid_detail ] # a word the item does not use is refused, named (D-386)
     plain = Grading::Spec.new(component: "number", answer: "5/2", unit: "g/cm3")
     assert_equal "correct", Grading::Closed::Numbers.grade(plain, "2,5 g/cm\u00B3").verdict
   end

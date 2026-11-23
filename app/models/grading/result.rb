@@ -5,16 +5,17 @@ module Grading
   class Result
     # The sentence for an answer that cannot be read (config/locales/grading.*.yml, D-356): in the language of the page that asks, Italian
     # for the teacher; a code with no sentence says «unparseable».
-    def self.message(code) = I18n.t("grading.messages.#{code}", default: :"grading.messages.unparseable")
+    # detail: the word a message names (extra_word: «Scrivi solo il numero, senza «metri».», D-386).
+    def self.message(code, detail: nil) = I18n.t("grading.messages.#{code}", word: detail, default: :"grading.messages.unparseable")
 
     # observation and answer_part are NOT stored columns (to_attributes stays columns only): "full_sentence" says the
     # student wrote the whole sentence around a `___` blank (D-339) and answer_part is the words she wrote in place of
     # the blank, as typed; the stored `normalized` is then the normalized part, which is what was graded.
     attr_reader :verdict, :error_codes, :form_violations, :normalized, :grading_method, :grader,
-                :checker_version, :ce_version, :invalid_code, :reason, :observation, :answer_part
+                :checker_version, :ce_version, :invalid_code, :reason, :observation, :answer_part, :invalid_detail
 
     def initialize(verdict:, grader:, error_codes: [], form_violations: [], normalized: nil, grading_method: nil,
-                   checker_version: nil, ce_version: nil, invalid_code: nil, reason: nil, observation: nil, answer_part: nil)
+                   checker_version: nil, ce_version: nil, invalid_code: nil, reason: nil, observation: nil, answer_part: nil, invalid_detail: nil)
       @verdict = verdict
       @grader = grader
       @error_codes = error_codes
@@ -27,15 +28,16 @@ module Grading
       @reason = reason
       @observation = observation
       @answer_part = answer_part
+      @invalid_detail = invalid_detail
     end
 
-    def self.invalid(code, grader:, reason: nil)
-      new(verdict: "invalid", grader: grader, invalid_code: code, reason: reason)
+    def self.invalid(code, grader:, reason: nil, detail: nil)
+      new(verdict: "invalid", grader: grader, invalid_code: code, reason: reason, invalid_detail: detail)
     end
 
     def invalid? = verdict == "invalid"
 
-    def message_it = invalid? ? self.class.message(invalid_code) : nil
+    def message_it = invalid? ? self.class.message(invalid_code, detail: invalid_detail) : nil
 
     # grader_version of the row: git sha, plus the checker version for expressions.
     def grader_version

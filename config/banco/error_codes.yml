@@ -282,6 +282,7 @@ grader_codes:
   incomplete_rows: { description: "invalid: a matching with some rows empty and some chosen; the student is told a row is missing and the page marks the empty rows." }
   unparseable: { description: "invalid: the answer cannot be read." }
   unreadable_number: { description: "invalid: a number answer that cannot be read; the student is told to write only the number (D-295)." }
+  extra_word: { description: "invalid: a number followed by a word that the item does not use («2 metri»); the student is told to write only the number, without that word (D-386)." }
   unreadable_fraction: { description: "invalid: a fraction box that cannot be read; the student is told how to write a fraction (D-295)." }
   spaces_in_code: { description: "invalid: a bit string or letter code typed with spaces between its characters (D-114)." }
   ambiguous_exponent: { description: "invalid: an exponent that cannot be read with certainty." }

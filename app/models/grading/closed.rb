@@ -28,7 +28,7 @@ module Grading
         Result.new(verdict: verdict, grader: GRADER, grading_method: "exact", **attrs)
       end
 
-      def invalid(code) = Result.invalid(code, grader: GRADER)
+      def invalid(code, detail: nil) = Result.invalid(code, grader: GRADER, detail: detail)
 
       # normalized_text. When the text the student was shown holds exactly one `___` (Frame.for_spec: the instance's stem, else
       # the item's) he may write the whole sentence (D-339, D-352). Two ways in, both graded by the item's own rules:

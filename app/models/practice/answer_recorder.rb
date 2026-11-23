@@ -181,10 +181,13 @@ module Practice
         error_code: outcome == :typical_error ? code : nil }
     end
 
-    # The credit's own note, then (D-339) the full-sentence one: the whole sentence was written where only the words for the blank were asked.
+    # The credit's own note, then (D-339) the full-sentence one: the whole sentence was written where only the words for the blank were asked;
+    # then (D-386) the unit word that stood after a right number, which the item itself uses.
     def note(spec, grade, raw)
       part = full_sentence_part(spec, raw)
-      [ Messages.note(grade.key, violations: grade.violations, pair_note: grade.pair_note), part && Messages.full_sentence_note(part) ].compact.join(" ").presence
+      word = spec.component == "number" ? Grading::Closed::Numbers.own_unit_word(spec, raw) : nil
+      [ Messages.note(grade.key, violations: grade.violations, pair_note: grade.pair_note), part && Messages.full_sentence_note(part),
+        word && Messages.unit_word_note(word) ].compact.join(" ").presence
     end
 
     # The words written between the frame of the stem's `___` blank, as typed; nil when the answer is not a whole sentence (the grader's own rule).

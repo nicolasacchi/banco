@@ -4,11 +4,13 @@ module Grading
     # value is an exact Rational, never a Float. A dot is invalid unless the item
     # sets allow_dot (E-03).
     module Numbers
+      # detail: the word of an extra_word refusal, as the student typed it (the message names it).
       class Invalid < StandardError
-        attr_reader :code
+        attr_reader :code, :detail
 
-        def initialize(code)
+        def initialize(code, detail = nil)
           @code = code
+          @detail = detail
           super(code)
         end
       end
@@ -43,7 +45,7 @@ module Grading
         members = Equation.members(value)
         members ? written(spec, members) : graded(spec, value)
       rescue Invalid => e
-        Closed.invalid(e.code)
+        Closed.invalid(e.code, detail: e.detail)
       end
 
       # An answer written in full (D-362, Equation): «x = 7,4», «5+4 = 9», «5+4 = 9 = 9». The last member is graded as if it
@@ -79,11 +81,60 @@ module Grading
 
       # [Rational, written_as_a·10^n] of a text, by the item's own rules (the form scientific, the unit, the dot, the thousands).
       def read(spec, text)
+        text = without_item_unit(spec, text)
         if spec.form.include?("scientific")
           parse_scientific(text, allow_dot: spec.allow_dot, unit: spec.unit, thousands: spec.thousands)
         else
           [ parse(text, allow_dot: spec.allow_dot, unit: spec.unit, thousands: spec.thousands), false ]
         end
+      end
+
+      # A number followed by a word: «2 minuti», «2minuti», «n = 2 metri» (D-386). The word of the item itself (its stems, answer format
+      # or solution say it, as a plural or a singular) is dropped and the number is graded; the recorder adds the note. Any other word
+      # is refused with a message that names it. The item's own `unit`, % and «percento» are not touched here (D-107, D-317).
+      TRAILING_WORD = /\A(.*\d)#{SPACES}*(\p{L}+)\.?\z/m
+      NOT_A_UNIT = /\Aper#{SPACES}*cento\z/i
+      # Words that follow a number in a stem without being a unit («5 più 2»).
+      FUNCTION_WORDS = %w[più meno per diviso fratto elevato elevata alla alle del dei della delle dal dai nel con tra fra una uno che sono fanno vale uguale].freeze
+      # A word after a number («dura 5 minuti», «2minuti»; a $math$ part counts as a number), after «quanti/quante/quanto/quanta»
+      # («quanti minuti»), or after «espresso in» («espresso in metri»).
+      UNIT_CONTEXT = /(?:\d[\d.,]*#{SPACES}*|\b(?:quant[aeio]|espress[oa]\s+in|misurat[oa]\s+in)#{SPACES}+)(\p{L}{3,})/i
+
+      # [number text, word] of an answer that ends with a word after a number; nil when it does not, or when the item's own unit is there.
+      def split_trailing_word(spec, text)
+        s = clean(text)
+        return nil if strip_unit(s, spec.unit) != s
+
+        m = TRAILING_WORD.match(s)
+        m && !m[2].match?(NOT_A_UNIT) ? [ m[1], m[2] ] : nil
+      end
+
+      # The word the student wrote after the number when it is one the item itself uses; nil otherwise.
+      def own_unit_word(spec, text)
+        _, word = split_trailing_word(spec, text)
+        word if word && item_unit?(spec, word)
+      end
+
+      def without_item_unit(spec, text)
+        number, word = split_trailing_word(spec, text)
+        return text unless word
+        raise Invalid.new("extra_word", word) unless item_unit?(spec, word)
+
+        number
+      end
+
+      def item_unit?(spec, word)
+        wanted = unit_key(word)
+        spec.item_texts.any? do |text|
+          text.gsub(/\$[^$]*\$/, " 0 ").scan(UNIT_CONTEXT).flatten.any? { |w| !FUNCTION_WORDS.include?(w.downcase) && unit_key(w) == wanted }
+        end
+      end
+
+      # The word without its ending, so that minuto and minuti, ora and ore, metro and metri are one: a vowel off a word of 4 letters or more,
+      # a, e off one of 3. An invariable word (euro, sport) is the word itself.
+      def unit_key(word)
+        w = word.unicode_normalize(:nfc).downcase
+        w.length >= 4 ? w.sub(/[aeio]\z/, "") : w.sub(/[ae]\z/, "")
       end
 
       # The key, or a value the item accepts as right.

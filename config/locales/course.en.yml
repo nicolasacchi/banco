@@ -199,6 +199,8 @@ en:
     # D-363: after a try that is not right on an item with rows, how many were right (never which)
     rows_right: "Right: %{right} of %{total}."
     full_sentence_note: "It was enough to write only the missing words: %{part}."
+    # D-386: a right number written with a unit word the exercise itself uses
+    unit_word_note: "The number is right. Next time write only the number, without «%{word}»."
     try_this: "Try this"
     try_this_reason: "A similar exercise, for the same mistake."
     after_solution: "Try a similar exercise"
