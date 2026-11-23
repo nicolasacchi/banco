@@ -37,9 +37,7 @@ module SittingAnswers
         row.find("select").select(stored_text(display, answer[left_id]))
       end
     when "normalized_text" then find("input[type=text][lang]").set(answer)
-    when "expression"
-      find("math-field").click
-      type_keys(*answer.chars)
+    when "expression" then type_expression(answer)
     when "testlet"
       all(".sub-item").each do |section|
         sub = display["sub_items"].find { |s| s["id"] == section["data-sub"] }
@@ -48,6 +46,34 @@ module SittingAnswers
     when "short_answer" then find("textarea").set("Una risposta di prova scritta dallo studente.")
     else flunk "no way to answer #{component}"
     end
+  end
+
+  MATH_FIELD_STATE = <<~JS.freeze
+    (() => { const f = document.querySelector("math-field"); return { value: f.value, mounted: f.mathVirtualKeyboardPolicy === "manual" && !!f.shadowRoot, focused: !!(f.shadowRoot && f.shadowRoot.activeElement) } })()
+  JS
+
+  # Types into the MathLive field and waits until it holds what was typed. The field is drawn once its module has loaded and is configured when the
+  # item is mounted; a key sent before that, or before the click has given it the focus, is lost, and Invia would then say «Scrivi una risposta».
+  def type_expression(text)
+    assert_selector "math-field", wait: 30
+    assert math_field_poll(30) { |state| state["mounted"] }, "the math field was not ready: #{page.evaluate_script(MATH_FIELD_STATE).inspect}"
+    find("math-field").click
+    page.execute_script("document.querySelector('math-field').focus()") unless math_field_poll(2) { |state| state["focused"] }
+    assert math_field_poll(5) { |state| state["focused"] }, "the math field has no focus: #{page.evaluate_script(MATH_FIELD_STATE).inspect}"
+    type_keys(*text.chars)
+    plain = ->(latex) { latex.to_s.gsub(/\\[A-Za-z]+/, "").delete("{}\\ ") } # MathLive may wrap letters in \operatorname{..}
+    assert math_field_poll(10) { |state| plain.call(state["value"]) == plain.call(text) },
+           "the math field holds #{page.evaluate_script(MATH_FIELD_STATE).inspect}, not #{text.inspect}"
+  end
+
+  def math_field_poll(seconds)
+    deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + seconds
+    until yield(page.evaluate_script(MATH_FIELD_STATE))
+      return false if Process.clock_gettime(Process::CLOCK_MONOTONIC) > deadline
+
+      sleep 0.05
+    end
+    true
   end
 
   def pick_option(text, within:)

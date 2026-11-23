@@ -264,9 +264,11 @@ class BiologyFiguresTest < ApplicationSystemTestCase
     assert_equal "0s", page.evaluate_script("getComputedStyle(document.querySelector('#scheda-3 .dg-cp')).transitionDuration")
   end
 
-  test "screenshots for the look gate: every card at 390 and 1280 px, cream and dark, with no overflow" do
-    [ [ 390, 844 ], [ 1280, 900 ] ].each do |w, h|
-      %w[cream dark].each do |theme|
+  # One test per size and theme: 12 cards each. One test over all 48 shots took 225 s on the runner against a 300 s limit for a test, and a slow
+  # runner stopped it in `visit` (SystemTestHang) and held the whole step for an hour.
+  [ [ 390, 844 ], [ 1280, 900 ] ].each do |w, h|
+    %w[cream dark].each do |theme|
+      test "screenshots for the look gate: every card at #{w} px in the #{theme} theme, with no overflow" do
         (1..12).each do |n|
           open_card(n, size: [ w, h ])
           page.execute_script("document.documentElement.dataset.theme = '#{theme}'")
