@@ -900,7 +900,7 @@ with `--wait`, polls until it is done (`--timeout`, default 300 s: `E-TIMEOUT`; 
 `DIR/REV/instance-NN_390x844.webp` (NN is the instance number of `review open` and `solve open`; `DIR` defaults to `banco-figures`) and prints, per file,
 the `instance`, the `seed` and the `shown_order`: a choice, a matching and an ordering are shuffled with that fixed seed as the student's page shuffles
 them, and the number on an option (1, 2, …) is `shown_order.options[n-1]`, the stored id an answer uses (a matching's right column is a closed menu; its order is
-`shown_order.right`). A bilingual item (D-402) is pictured a second time for its first instance (`item_render.translation_instances`) with the Italian translation open: that shot says `state: "tr"` and is written as `instance-NN-tr_390x844.webp` beside the first. `review open` and `solve open` request the render themselves (best effort, never waiting) and print `item_shots.fetch`, this command.
+`shown_order.right`). A bilingual item (D-402) is pictured a second time for its first instance (`item_render.translation_instances`) with the Italian translation open: that shot says `state: "tr"` in the list (the pictures as drawn have no `state`) and is written as `instance-NN-tr_390x844.webp` beside the first, with `state` in its entry of `files`; two pictures that would be one file are `E-HTTP` (never a silent overwrite). `review open` and `solve open` request the render themselves (best effort, never waiting) and print `item_shots.fetch`, this command.
 
 ## Errors
 

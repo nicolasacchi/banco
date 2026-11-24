@@ -72,6 +72,13 @@ function inlineNodes(nodes, parent, glued = false) {
       code.className = "code-span"
       code.textContent = node.v
       parent.appendChild(code)
+    } else if (node.t === "lang") {
+      // Italian words quoted inside target-language text (D-402): lang="it" is the voice's cue, as in a lesson's language span
+      const span = document.createElement("span")
+      span.className = `lang lang-${node.lang}`
+      span.setAttribute("lang", node.lang)
+      span.textContent = node.v
+      parent.appendChild(span)
     } else if (node.t === "math") {
       const span = document.createElement("span")
       span.className = "math"

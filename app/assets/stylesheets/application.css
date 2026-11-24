@@ -244,9 +244,21 @@ math-field.math-input {
 .option-body { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
 .match-row > .tr, .order-row > .tr { flex: 1 1 100%; margin-top: 0; }
 .tr-block { min-width: 0; }
+/* A translation after a stem or a sentence is a block of its own: a little air above it, and the room of a paragraph below, so it never touches the next text
+   (the target's paragraph has its margin below it; the translation, a div, had none). A closed one takes no room. */
+.tr-block > .tr { margin: var(--space-2, 0.5rem) 0 var(--space-3, 0.75rem); }
 .passage > .tr { margin: var(--space-2, 0.5rem) 0 0; }
 figure > figcaption.tr { margin-top: var(--space-1, 0.25rem); }
 .do-steps li > .tr { margin-top: 0.15rem; }
+/* The Italian of a matching's right-hand labels (they sit in a native select, which holds text only): a small legend under the rows, open with the exercise's
+   translation like a .tr (same state, same rule on the left, same size). */
+.match-legend {
+  display: var(--tr-display, none); margin: var(--space-2) 0 0; padding: 0 0 0 0.6em; list-style: none;
+  border-left: 0.22em solid var(--line); color: var(--muted); font-size: 0.92em; line-height: 1.5; overflow-wrap: anywhere;
+}
+.match-legend li + li { margin-top: var(--space-1); }
+/* Italian words quoted inside target-language text ([[it:..]]): the same ink as a lesson's language span */
+.lang-it { color: var(--primary); font-weight: 650; }
 
 .sr-only {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;

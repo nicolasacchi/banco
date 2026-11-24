@@ -1,0 +1,99 @@
+{
+  "choice": {
+    "part": {
+      "component": "choice",
+      "lang": "en",
+      "stem_en": "Choose the form that completes the sentence.",
+      "stem_it": "Scegli la forma che completa la frase.",
+      "instance_stem_en": "My brother ___ thirteen.",
+      "options": [
+        {
+          "id": "o1",
+          "text": "am"
+        },
+        {
+          "id": "o2",
+          "text": "is"
+        },
+        {
+          "id": "o3",
+          "text": "are"
+        }
+      ],
+      "answer_format_en": "Pick one word for the gap.",
+      "answer_format_it": "Scegli una parola per lo spazio.",
+      "steps_en": [
+        "Read the sentence.",
+        "Look at the subject.",
+        "Choose the form."
+      ],
+      "steps_it": [
+        "Leggi la frase.",
+        "Guarda il soggetto.",
+        "Scegli la forma."
+      ]
+    },
+    "hint": {
+      "n": 1,
+      "total": 2,
+      "hint_en": "Look at who the sentence is about.",
+      "hint_it": "Guarda di chi parla la frase."
+    },
+    "solution": {
+      "steps": [
+        {
+          "text_en": "My brother is one person: «he» takes «is».",
+          "text_it": "Mio fratello è una persona: «he» vuole «is»."
+        }
+      ],
+      "final": "is"
+    }
+  },
+  "matching": {
+    "part": {
+      "component": "matching",
+      "lang": "en",
+      "stem_en": "Is each sentence right or wrong?",
+      "stem_it": "Ogni frase è giusta o sbagliata?",
+      "left": [
+        {
+          "id": "l1",
+          "text": "I am happy."
+        },
+        {
+          "id": "l2",
+          "text": "They is late."
+        }
+      ],
+      "right": [
+        {
+          "id": "r1",
+          "text": "correct",
+          "text_it": "giusta"
+        },
+        {
+          "id": "r2",
+          "text": "has a mistake",
+          "text_it": "ha un errore"
+        }
+      ],
+      "answer_format_en": "Pick a label for each sentence.",
+      "answer_format_it": "Scegli un'etichetta per ogni frase."
+    },
+    "hint": {
+      "n": 1,
+      "total": 1,
+      "hint_en": "Check the verb after the subject.",
+      "hint_it": "Controlla il verbo dopo il soggetto."
+    },
+    "solution": {
+      "steps": [
+        {
+          "text_en": "«They» takes «are».",
+          "text_it": "«They» vuole «are»."
+        }
+      ],
+      "final": "I am happy. = correct; They is late. = has a mistake"
+    }
+  }
+}

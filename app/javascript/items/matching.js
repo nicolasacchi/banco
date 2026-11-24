@@ -14,7 +14,7 @@ export function render(part, ctx) {
       (part.right || []).map((right) => el("option", { value: right.id, text: plain(right.text) })))
     const label = renderInline(left.text, el("label", { for: id, class: "match-left" }))
     // A bilingual row (D-402): the Italian of the left text under the row, when the exercise's translation is open. The right-hand answers are the
-    // options of a native select, which holds text only: they have no translation line.
+    // options of a native select, which holds text only: their Italian is the legend under the rows (legendOf).
     const { italian } = bare(left, "text", lang)
     if (lang) label.setAttribute("lang", lang)
     return { select, row: el("div", { class: "match-row", "data-comment-anchor": `row:${index + 1}` }, label, select, italian ? trNode(italian) : null) }
@@ -28,7 +28,7 @@ export function render(part, ctx) {
     })
   }
   if (!part.reuse_right) rows.forEach(({ select }) => select.addEventListener("change", sync))
-  const wrapper = el("div", { class: "answer" }, el("p", { class: "hint", text: part.reuse_right ? ctx.t.matching_reuse_label : ctx.t.matching_label }), rows.map((r) => r.row))
+  const wrapper = el("div", { class: "answer" }, el("p", { class: "hint", text: part.reuse_right ? ctx.t.matching_reuse_label : ctx.t.matching_label }), rows.map((r) => r.row), legendOf(part.right, lang))
   // A row left empty is marked (class missing on the row, aria-invalid on its select) by showMissing(); the mark goes when it gets an answer.
   const clearMarks = () => rows.forEach(({ select, row }) => {
     if (select.value === "") return
@@ -70,6 +70,22 @@ export function render(part, ctx) {
       clearMarks()
     }
   })
+}
+
+// The Italian of the right-hand answers (D-402): a native <select> holds text only, so a bilingual matching whose right labels have a `text_it` draws them as a
+// small legend under the rows, one line per label (the target text, then its Italian), shown with the exercise's translation and hidden with it. A label
+// without an Italian has no line, and an item with none (a form material: the labels are the forms the student judges) has no legend at all.
+// Returns the list, or null.
+function legendOf(right, lang) {
+  const lines = lang ? (right || []).map((label) => ({ label, italian: bare(label, "text", lang).italian })).filter((line) => line.italian) : []
+  if (lines.length === 0) return null
+  const list = el("ul", { class: "match-legend", "data-nospeech": "" })
+  for (const { label, italian } of lines) {
+    const target = renderInline(plain(label.text), el("span", { class: "match-legend-target", lang }))
+    const translation = renderInline(String(italian), el("span", { class: "match-legend-it", lang: "it" }))
+    list.appendChild(el("li", {}, target, document.createTextNode(" = "), translation))
+  }
+  return list
 }
 
 // <option> holds text only: markup marks are dropped there.

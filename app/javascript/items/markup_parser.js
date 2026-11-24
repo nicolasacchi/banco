@@ -1,9 +1,10 @@
 // The restricted markup of agent text (X-02). Agent text is plain text: no HTML.
-// Four things are recognised and nothing else:
+// Five things are recognised and nothing else:
 //
 //   **bold**            a keyword
 //   $latex$             a formula, rendered by KaTeX with trust: false (\$ is a dollar)
 //   [[code:x = 1]]      a program line, literal, up to the first "]]" and 40 characters (as in lessons, D-335)
+//   [[it:parole]]       Italian words quoted inside target-language text (D-402), as the lessons read the span: {t: "lang", lang: "it"}
 //   blank line          a new paragraph
 //   1. 2. 3. lines      a numbered list (every line of the block starts with "n. ")
 //
@@ -83,6 +84,7 @@ const SPAN_HEAD = /^\[\[([a-z]+(?:[_-][a-z]+)*)(\|it)?:/
 const LANG_SPANS = ["en", "es", "la", "it"] // D-402: [[it:..]] is Italian quoted inside target-language text
 const RESERVED_SPANS = [...LANG_SPANS, "code", "g"]
 const CODE_MAX = 40
+const ITEM_SPAN = /^\[\[(?:code|it):/
 const TERM = /^\p{L}[\p{L} '’-]*$/u
 const LINK = /^\[([^\]\[]+)\]\((scheda|argomento):([a-z0-9._-]*)\)/
 
@@ -101,7 +103,7 @@ export function checkTex(tex) {
   }
 }
 
-// Inline nodes: {t: "text", v}, {t: "bold", children}, {t: "math", v}, {t: "code", v}.
+// Inline nodes: {t: "text", v}, {t: "bold", children}, {t: "math", v}, {t: "code", v}, {t: "lang", lang, v}.
 export function inline(text, options = {}) {
   const roles = options.roles === true
   const nodes = []
@@ -144,14 +146,13 @@ export function inline(text, options = {}) {
       const start = i + head[0].length
       if (!head[2] && (LANG_SPANS.includes(name) || name === "code" || name === "g")) {
         // [[en:..]] [[es:..]] [[la:..]] [[it:..]] plain words; [[code:..]] literal, up to the first "]]"; [[g:term]] a glossary word (D-266)
-        const end = text.indexOf("]]", start)
-        const body = end > start ? text.slice(start, end) : ""
-        if (end > start && body.trim() !== "" && (name !== "code" || body.length <= CODE_MAX) && (name !== "g" || TERM.test(body.trim()))) {
+        const span = plainSpan(text, start, name)
+        if (span) {
           flush()
-          if (name === "code") nodes.push({ t: "code", v: body })
-          else if (name === "g") nodes.push({ t: "gloss", term: body.trim() })
-          else nodes.push({ t: "lang", lang: name, v: body })
-          i = end + 2
+          if (name === "code") nodes.push({ t: "code", v: span.body })
+          else if (name === "g") nodes.push({ t: "gloss", term: span.body.trim() })
+          else nodes.push({ t: "lang", lang: name, v: span.body })
+          i = span.end + 2
           continue
         }
         buffer += ch
@@ -170,12 +171,18 @@ export function inline(text, options = {}) {
         buffer += ch
         i += 1
       }
-    } else if (!roles && ch === "[" && text.startsWith("[[code:", i) && codeSpan(text, i)) {
-      // items (no roles): a code span is the one span they know, drawn as the lessons draw it (the same limits as the lesson reader's)
-      const span = codeSpan(text, i)
-      flush()
-      nodes.push({ t: "code", v: span.body })
-      i = span.end + 2
+    } else if (!roles && ch === "[" && ITEM_SPAN.test(text.slice(i, i + 8))) {
+      // items (no roles) know two spans, drawn as the lessons draw them: a program line ([[code:..]], D-335) and Italian quoted inside target text ([[it:..]], D-402)
+      const name = text.slice(i + 2, text.indexOf(":", i))
+      const span = plainSpan(text, i + name.length + 3, name)
+      if (span) {
+        flush()
+        nodes.push(name === "code" ? { t: "code", v: span.body } : { t: "lang", lang: name, v: span.body })
+        i = span.end + 2
+      } else {
+        buffer += ch
+        i += 1
+      }
     } else if (roles && ch === "[" && LINK.test(text.slice(i))) {
       const m = text.slice(i).match(LINK)
       flush()
@@ -190,12 +197,13 @@ export function inline(text, options = {}) {
   return nodes
 }
 
-// { body, end } of the [[code:..]] span that starts at +at+, or null when it is not closed, empty or longer than CODE_MAX.
-function codeSpan(text, at) {
-  const start = at + "[[code:".length
+// { body, end } of the plain span [[name:body]] whose head ends at +start+ (name: code, g or a language), where +end+ is the index of its "]]"; null when it is
+// empty, not closed, a code span longer than CODE_MAX or a glossary term that is not a word. Roles (lessons) and items read the spans through this one place.
+function plainSpan(text, start, name) {
   const end = text.indexOf("]]", start)
   const body = end > start ? text.slice(start, end) : ""
-  return end > start && body.trim() !== "" && body.length <= CODE_MAX ? { body, end } : null
+  const valid = end > start && body.trim() !== "" && (name !== "code" || body.length <= CODE_MAX) && (name !== "g" || TERM.test(body.trim()))
+  return valid ? { body, end } : null
 }
 
 // Index of the next unescaped "$" at or after +from+, or -1.

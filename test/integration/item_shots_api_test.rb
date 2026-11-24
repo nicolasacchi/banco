@@ -91,6 +91,24 @@ class ItemShotsApiTest < ActionDispatch::IntegrationTest
     assert_equal webp("instance 1"), response.body.b
   end
 
+  # D-402: a bilingual item has a second picture of instance 1, with the Italian translation open. It is its own shot (its own bytes, its own address), the list
+  # says `state: "tr"` for it and nothing for the pictures as drawn, so that a client can save the two apart (banco item shots: instance-01-tr_390x844.webp).
+  test "the picture with the translation open is a shot of its own in the list, with its state and its own address" do
+    plain = webp("instance 1 as drawn")
+    open = webp("instance 1 with the translation open")
+    shots = [ { "instance" => 1, "seed" => "item-shots|#{@revision.id}|1", "shown_order" => {}, "sha256" => LessonShots.put(plain), "bytes" => plain.bytesize, "height" => 700 },
+              { "instance" => 1, "state" => Items::ShotPresentation::TRANSLATION_STATE, "seed" => "item-shots|#{@revision.id}|1", "shown_order" => {}, "sha256" => LessonShots.put(open),
+                "bytes" => open.bytesize, "height" => 820 } ].map { |s| s.merge("viewport" => "390x844-cream", "width" => 390, "scale" => 1) }
+    ItemRender.create!(item_revision: @revision, status: "passed", rules_version: "10", harness_version: Validation::Harness.item_version, chrome_version: "Test/1", attempt: 1,
+                       result_json: JSON.generate("errors" => [], "instances" => 1, "instances_total" => 1, "viewport" => "390x844-cream"), shots_json: JSON.generate(shots))
+    api_as(@agent, shots_path)
+    assert_response :ok
+    assert_equal [ [ 1, nil ], [ 1, "tr" ] ], json["shots"].map { |s| [ s["instance"], s["state"] ] }
+    assert_not json["shots"].first.key?("state"), "the picture as drawn says no state"
+    assert_equal 2, json["shots"].map { |s| s["path"] }.uniq.size
+    assert_equal [ plain, open ], json["shots"].map { |s| api_as(@bot, s["path"]) && response.body.b }
+  end
+
   test "a purged image is said to be removed, an unknown one is not found, and an image of another revision is not served" do
     row = verdict!
     other = make_revision("shots-2", "math.number", instances: 1, component: "choice")

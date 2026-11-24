@@ -86,3 +86,17 @@ test("a code span that is empty, unclosed or longer than 40 characters stays tex
   assert.deepEqual(inline(`[[code:${long}]]`), [{ t: "text", v: `[[code:${long}]]` }])
   assert.deepEqual(inline("[[es:hablar]]"), [{ t: "text", v: "[[es:hablar]]" }])
 })
+
+// D-402: an item draws [[it:..]] (Italian quoted inside target-language text) as the lessons read it: one language node.
+test("[[it:..]] is an Italian language span in an item, the same node the lesson reader makes", () => {
+  assert.deepEqual(inline("Say [[it:ho fame]] now"), [{ t: "text", v: "Say " }, { t: "lang", lang: "it", v: "ho fame" }, { t: "text", v: " now" }])
+  assert.deepEqual(inline("**[[it:ciao]]** a $x$"), [{ t: "bold", children: [{ t: "lang", lang: "it", v: "ciao" }] }, { t: "text", v: " a " }, { t: "math", v: "x" }])
+  assert.deepEqual(inline("[[it:ho fame]]", { roles: true }), inline("[[it:ho fame]]"), "items and lessons read it through the same code")
+})
+
+test("an [[it:..]] that is empty or unclosed stays text; the other language spans stay text in an item", () => {
+  assert.deepEqual(inline("[[it:]]"), [{ t: "text", v: "[[it:]]" }])
+  assert.deepEqual(inline("[[it:   ]]"), [{ t: "text", v: "[[it:   ]]" }])
+  assert.deepEqual(inline("[[it:ciao"), [{ t: "text", v: "[[it:ciao" }])
+  assert.deepEqual(inline("[[en:hello]] [[la:ave]]"), [{ t: "text", v: "[[en:hello]] [[la:ave]]" }])
+})
