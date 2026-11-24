@@ -16,7 +16,7 @@
 //
 // Findings (all errors, they depend on the author's data): E-LESSON-RENDER (an exception, a KaTeX error, markup printed as text: D-310),
 // E-LESSON-OVERFLOW (something wider than its box or than the page), E-DIAGRAM-LAYOUT (a layout that answered an
-// error, two labels overlapping, a label outside the drawing, a box's text or icon outside its box), E-DIAGRAM-SMALL-TEXT
+// error, two labels overlapping, a leader line through a label, a label outside the drawing, a box's text or icon outside its box), E-DIAGRAM-SMALL-TEXT
 // (a label under the minimum), E-DIAGRAM-TARGET (a select target under 24 x 24 px).
 // Nothing here is sent anywhere; the CSP of the host allows no connection.
 import { renderLesson } from "lesson/render"
@@ -144,6 +144,14 @@ function figureFindings(figure, minPx, state, out) {
       if (overlap(boxes[i].rect, boxes[j].rect))
         out.push({ code: "E-DIAGRAM-LAYOUT", message: `the labels "${text(boxes[i].label)}" and "${text(boxes[j].label)}" overlap`, where: `${figure.dataset.type} figure, ${tag}` })
     }
+  }
+  // a leader (the thin vertical `.dg-connector` from a label to its mark) must not run through the text of any label, a tick number
+  // among them: it ends against its own label, so the top and bottom of every text are left out of the test
+  for (const line of figure.querySelectorAll("svg .dg-connector")) {
+    const c = line.getBoundingClientRect()
+    if (c.width > 1 || c.height < 1) continue
+    const hit = boxes.find(({ rect }) => c.left > rect.left + 1 && c.left < rect.right - 1 && Math.min(c.bottom, rect.bottom - 4) - Math.max(c.top, rect.top + 4) > 1)
+    if (hit) out.push({ code: "E-DIAGRAM-LAYOUT", message: `a leader line runs through the label "${text(hit.label)}"`, where: `${figure.dataset.type} figure, ${tag}` })
   }
   for (const t of figure.querySelectorAll("svg text")) {
     const px = parseFloat(getComputedStyle(t).fontSize)

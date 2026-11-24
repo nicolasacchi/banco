@@ -946,6 +946,213 @@
    }
   },
   {
+   "name": "number-line-labels-two-close",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta dei numeri da 14 a 18 con due punti vicini, uno su 17 e uno su 18, ciascuno con la sua etichetta.",
+    "min": "14",
+    "max": "18",
+    "step": "1",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "17",
+      "kind": "dot",
+      "label_it": "UK: auto"
+     },
+     {
+      "at": "18",
+      "kind": "dot",
+      "label_it": "Italia: B"
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-labels-three-close",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta dei numeri da 14 a 18 con tre punti, su 14, 17 e 18, ciascuno con la sua etichetta.",
+    "min": "14",
+    "max": "18",
+    "step": "1",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "14",
+      "kind": "dot",
+      "label_it": "Italia: AM"
+     },
+     {
+      "at": "17",
+      "kind": "dot",
+      "label_it": "UK: auto"
+     },
+     {
+      "at": "18",
+      "kind": "dot",
+      "label_it": "Italia: B"
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-labels-at-ends",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta dei numeri da 0 a 10 con punti ai due estremi e vicino a ciascuno, ognuno con la sua etichetta.",
+    "min": "0",
+    "max": "10",
+    "step": "1",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "0",
+      "kind": "dot",
+      "label_it": "inizio"
+     },
+     {
+      "at": "1",
+      "kind": "dot",
+      "label_it": "poco dopo"
+     },
+     {
+      "at": "9",
+      "kind": "dot",
+      "label_it": "poco prima"
+     },
+     {
+      "at": "10",
+      "kind": "dot",
+      "label_it": "fine"
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-labels-five-close",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta dei numeri da 0 a 6 con cinque punti vicini, ciascuno con la sua etichetta.",
+    "min": "0",
+    "max": "6",
+    "step": "1",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "1",
+      "kind": "dot",
+      "label_it": "uno"
+     },
+     {
+      "at": "2",
+      "kind": "dot",
+      "label_it": "due"
+     },
+     {
+      "at": "3",
+      "kind": "dot",
+      "label_it": "tre"
+     },
+     {
+      "at": "4",
+      "kind": "dot",
+      "label_it": "quattro"
+     },
+     {
+      "at": "5",
+      "kind": "dot",
+      "label_it": "cinque"
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-labels-and-jump",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta dei numeri da 14 a 18 con tre punti vicini e un salto da 14 a 17, ciascuno con la sua etichetta.",
+    "min": "14",
+    "max": "18",
+    "step": "1",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "14",
+      "kind": "dot",
+      "label_it": "Italia: AM"
+     },
+     {
+      "at": "17",
+      "kind": "dot",
+      "label_it": "UK: auto"
+     },
+     {
+      "at": "18",
+      "kind": "dot",
+      "label_it": "Italia: B"
+     }
+    ],
+    "jumps": [
+     {
+      "from": "14",
+      "by": "3",
+      "label_it": "+3"
+     }
+    ]
+   }
+  },
+  {
+   "name": "number-line-labels-interval-and-marks",
+   "subject": "math",
+   "schema": "valid",
+   "semantic": "ok",
+   "data": {
+    "type": "number_line",
+    "alt_it": "Retta dei numeri da 0 a 10 con un intervallo da 2 a 4 e due punti vicini, ciascuno con la sua etichetta.",
+    "min": "0",
+    "max": "10",
+    "step": "1",
+    "labels": "all",
+    "marks": [
+     {
+      "at": "3",
+      "kind": "dot",
+      "label_it": "a metà"
+     },
+     {
+      "at": "4",
+      "kind": "dot",
+      "label_it": "fine"
+     }
+    ],
+    "intervals": [
+     {
+      "from": "2",
+      "to": "4",
+      "from_closed": true,
+      "to_closed": true,
+      "label_it": "da 2 a 4"
+     }
+    ]
+   }
+  },
+  {
    "name": "equation-parts",
    "subject": "math",
    "schema": "valid",
