@@ -10,9 +10,10 @@
 import { newId } from "items/outbox"
 import { applyTheme } from "lesson/theme"
 import { button, clear, el, icon } from "lesson/dom"
-import { iconOf, renderCard, rolesUsed } from "lesson/cards"
+import { cardToggle, iconOf, renderCard, rolesUsed } from "lesson/cards"
 import { sample } from "lesson/blocks/legend"
-import { insideControl, plainText, renderInlineRich, renderRich, shortTitle } from "lesson/text"
+import { beside, inButton, noTranslation, plainText, renderInlineRich, renderRich, shortTitle } from "lesson/text"
+import { italianOf } from "lesson/lang"
 import { figureFor } from "lesson/blocks/diagram"
 import { firstUses } from "lesson/checks/howto"
 import { FAMILY, STATUS, preload } from "lesson/diagrams/registry"
@@ -69,7 +70,12 @@ export function renderLesson(root, body, config) {
     // a speaker for a language, or null where there is no server voice and the device has no accepted voice for it (the tiles' "Ascolta la frase" asks): { speak(text) }
     speaker: (lang) => (!(config.mode === "render" || typeof document === "undefined") && hasVoice(lang, { preview: config.mode === "preview" })
       ? { speak: (text) => speak([{ lang, text }], { preview: config.mode === "preview", slower: preferences().slower }) } : null),
-    glossary: new Map((body.glossary ?? []).map((g) => [g.term_it.toLowerCase(), g])),
+    // a bilingual lesson (D-402): `lang` is the target ("en", "es"; none in a legacy lesson, which is drawn as ever) and the Italian of a text is in the `tr` of the
+    // body, of its card and of its block (`trScopes`, nearest first: cards.js puts the block and the card in front of the body)
+    lang: body.lang ?? null,
+    trScopes: body.lang ? [body] : null,
+    // a [[g:term]] names the target term in the target text and the Italian one in its translation: one entry serves both
+    glossary: new Map((body.glossary ?? []).flatMap((g) => [[g.term_it.toLowerCase(), g], ...(body.lang && italianOf(g.term_it, body) ? [[italianOf(g.term_it, body).toLowerCase(), g]] : [])])),
     noSpeech: config.mode === "render" || typeof document === "undefined", // the render check runs without voices
     // the render check (R4): everything open as in print, but what the student answers with is drawn as the student has it (D-311)
     renderCheck: config.mode === "render",
@@ -129,7 +135,7 @@ export function renderLesson(root, body, config) {
   // A short name for the map and the Avanti button: the author's short_it, else the title up to its colon (never one inside a formula),
   // drawn with its markup like the title (D-310); the live region says it in plain words.
   const shortOf = (card) => card.short_it || shortTitle(card.title_it)
-  const titleSpan = (text, cls) => renderInlineRich(text, el("span", cls ? { class: cls } : {}), insideControl(ctx))
+  const titleSpan = (text, cls) => renderInlineRich(text, el("span", cls ? { class: cls } : {}), inButton(ctx))
   const sequence = schema ? order.map((c) => c.n) : [0, ...order.map((c) => c.n)]
   // the roles each card introduces: the legend chip is on that card only; the map lists all of them
   const introduced = new Map()
@@ -143,6 +149,12 @@ export function renderLesson(root, body, config) {
   // ---- the frame ----
   root.classList.add("l2")
   root.dataset.subject = body.subject
+  // the translation event of a bilingual lesson (D-402): where it is posted, and what it says about the page; only the student's page has an address
+  if (body.lang) {
+    root.setAttribute("data-tr-surface", "lesson")
+    if (config.topic) root.setAttribute("data-tr-topic", config.topic)
+    if (config.urls?.translations) root.setAttribute("data-tr-url", config.urls.translations)
+  }
   root.dataset.palette = body.subject // the colour roles are scoped by subject (palette v2); a figure of a home palette sets its own
   root.dataset.view = state.view
   if (schema) root.dataset.schema = "1"
@@ -220,19 +232,25 @@ export function renderLesson(root, body, config) {
       const m = para.match(/^(.+?[.!?])(\s|$)/)
       return m ? m[1] : para
     }
-    const lead = body.why_it ? renderInlineRich(firstSentence(body.why_it), el("p", { class: "cover-lead" }), ctx) : null
+    // the lead is a sentence cut out of the text: in a bilingual lesson it has no translation of its own, the whole text's is behind «Perché ti serve»
+    const lead = body.why_it ? renderInlineRich(firstSentence(body.why_it), el("p", { class: "cover-lead" }), noTranslation(ctx)) : null
     const why = body.why_it && String(body.why_it).trim().length > firstSentence(body.why_it).length + 2
       ? el("details", { class: "why" }, el("summary", { text: `${t.more}: ${t.why_you_need}` }), el("div", { class: "why-body" }, renderRich(body.why_it, ctx)))
       : null
+    const startRow = el("p", { class: "cover-start" }, start)
     const article = el("article", { class: "l2-cover", id: "scheda-0", "data-comment-anchor": "cover", "aria-labelledby": "scheda-0-title" },
       el("p", { class: "kicker", text: t.cover_kicker.replace("%{kind}", t.kind[body.kind] ?? body.kind).replace("%{subject}", t.subject[body.subject] ?? body.subject).replace("%{minutes}", body.minutes).replace("%{cards}", core.length) }),
-      el("h1", { id: "scheda-0-title", tabindex: "-1", text: body.title_it }),
+      beside(el("h1", { id: "scheda-0-title", tabindex: "-1", text: body.title_it }), body.title_it, ctx),
       lead,
-      el("p", { class: "cover-start" }, start),
+      startRow,
       hero ? el("div", { class: "cover-hero block-diagram" }, hero.node) : null,
       el("h2", { class: "cover-h", text: t.goals }), goals,
       why,
       el("details", { class: "cover-all" }, el("summary", { text: t.cards }), list))
+    if (body.lang) {
+      article.setAttribute("data-tr-scope", "card")
+      cardToggle(article, startRow, ctx)
+    }
     if (body.book_it) article.appendChild(el("div", { class: "cover-book" }, el("p", {}, el("strong", { text: `${t.on_book}: ` }), document.createTextNode(body.book_it.replace(/^["“]|["”]$/g, ""))), el("p", { class: "hint", text: t.book_note })))
     return article
   }

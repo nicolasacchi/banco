@@ -11,7 +11,7 @@ import { render as fractionT } from "items/fraction"
 import { render as choiceT } from "items/choice"
 import { render as textT } from "items/normalized_text"
 import { button, el, icon, uid } from "lesson/dom"
-import { insideControl, renderInlineRich, renderRich } from "lesson/text"
+import { beside, inButton, insideControl, renderInlineRich, renderRich, scoped } from "lesson/text"
 import { checkNotes } from "lesson/teacher_notes"
 import { moduleFor as checkModule } from "lesson/checks/registry"
 import { howtoNodes } from "lesson/checks/howto"
@@ -26,7 +26,7 @@ function matchingInput(spec, ctx) {
     spec.right.forEach((cat, j) => {
       const id = `${name}-${i}-${j}`
       const radio = el("input", { type: "radio", name: `${name}-${i}`, id, value: cat.id, class: "chip-input" })
-      group.appendChild(el("span", { class: "chip" }, radio, renderInlineRich(cat.text_it, el("label", { for: id, class: "chip-label" }), insideControl(ctx))))
+      group.appendChild(el("span", { class: "chip" }, radio, renderInlineRich(cat.text_it, el("label", { for: id, class: "chip-label" }), inButton(ctx))))
     })
     return { item, group, row: el("div", { class: "match-row" }, renderInlineRich(item.text_it, el("p", { class: "match-item", id: `${name}-l${i}` }), ctx), group) }
   })
@@ -45,6 +45,7 @@ function spanInput(spec, ctx) {
   const key = spec.text_en != null ? "text_en" : spec.text_es != null ? "text_es" : "text_it"
   const lang = key === "text_en" ? "en" : key === "text_es" ? "es" : null
   if (lang) box.setAttribute("lang", lang)
+  if (lang && ctx.lang) box.setAttribute("data-tr-exempt", "") // the sentence is the exercise: the prompt's translation says what to do with it
   let rest = spec[key]
   for (const span of spec.spans) {
     const at = rest.indexOf(span[key])
@@ -52,7 +53,7 @@ function spanInput(spec, ctx) {
     if (at > 0) box.appendChild(document.createTextNode(rest.slice(0, at)))
     const b = el("button", { type: "button", class: "span-chip", "aria-pressed": "false", "data-span": span.id })
     if (lang) b.appendChild(document.createTextNode(span[key]))
-    else renderInlineRich(span[key], b, insideControl(ctx))
+    else renderInlineRich(span[key], b, inButton(ctx))
     b.addEventListener("click", () => {
       if (chosen.has(span.id)) chosen.delete(span.id)
       else chosen.add(span.id)
@@ -132,7 +133,7 @@ export function renderCheck(spec, ctx, loc, options = {}) {
   if (spec.input_before) row.appendChild(renderInlineRich(spec.input_before, el("span", { class: "check-before" }), ctx))
   row.appendChild(handleInput.element)
   if (spec.input_after) row.appendChild(renderInlineRich(spec.input_after, el("span", { class: "check-after" }), ctx))
-  if (spec.answer_format_it) form.appendChild(el("p", { class: "hint", text: spec.answer_format_it }))
+  if (spec.answer_format_it) form.appendChild(beside(el("p", { class: "hint", text: spec.answer_format_it }), spec.answer_format_it, ctx))
   const submit = button(ctx.t.check_button, { class: `button small${line ? " check-go" : ""}`, type: "submit" })
   const feedback = el("div", { class: "feedback", "aria-live": "polite", role: "status" })
   if (line) {
@@ -176,7 +177,7 @@ export function renderCheck(spec, ctx, loc, options = {}) {
       }
       done = true
       lock(form)
-      if (reply.explain_it && !feedback.querySelector(".verdict-explain")) feedback.appendChild(el("div", { class: "verdict-explain" }, renderRich(reply.explain_it, ctx)))
+      if (reply.explain_it && !feedback.querySelector(".verdict-explain")) feedback.appendChild(el("div", { class: "verdict-explain" }, renderRich(reply.explain_it, replyCtx(reply))))
       contestBox.replaceChildren(
         el("p", { class: "verdict verdict-sent", role: "status" }, icon("circle-check", "verdict-ic"), el("strong", { text: ctx.t.checks.contested })),
         el("p", { class: "contest-note", text: ctx.t.checks.contested_note })
@@ -191,12 +192,15 @@ export function renderCheck(spec, ctx, loc, options = {}) {
   // the event id of an answer whose reply was lost: the same answer sent again keeps it (the server answers for the row it has), another answer has its own
   let pending = null
   let done = false
-  const say = (kind, text, explain) => {
+  // what the reply says is drawn with the reply's own table of translations in front of the block's (D-402)
+  const replyCtx = (reply) => (ctx.lang && reply?.tr ? scoped(ctx, reply) : ctx)
+  const say = (kind, text, explain, reply) => {
+    const cx = replyCtx(reply)
     clear(feedback)
     const head = el("p", { class: `verdict verdict-${kind}` }, icon(kind === "right" ? "circle-check" : "wrong-hint", "verdict-ic"), el("strong", { text: kind === "right" ? ctx.t.right : kind === "wrong" ? ctx.t.wrong : ctx.t.invalid }))
     feedback.appendChild(head)
-    if (text) feedback.appendChild(el("div", { class: "verdict-text" }, renderRich(text, ctx)))
-    if (explain) feedback.appendChild(el("div", { class: "verdict-explain" }, renderRich(explain, ctx)))
+    if (text) feedback.appendChild(el("div", { class: "verdict-text" }, renderRich(text, cx)))
+    if (explain) feedback.appendChild(el("div", { class: "verdict-explain" }, renderRich(explain, cx)))
   }
   const clear = (node) => {
     while (node.firstChild) node.removeChild(node.firstChild)
@@ -228,18 +232,18 @@ export function renderCheck(spec, ctx, loc, options = {}) {
     }
     pending = null
     if (reply.verdict === "invalid") {
-      say("invalid", reply.message_it || ctx.t.check_empty)
+      say("invalid", reply.message_it || ctx.t.check_empty, undefined, reply)
       return
     }
     tries = reply.try ?? tries + 1
     if (reply.verdict === "right") {
-      say("right", reply.message_it, reply.explain_it)
+      say("right", reply.message_it, reply.explain_it, reply)
       done = true
       if (contestBox) contestBox.hidden = true
       lock(form)
       options.onDone?.(reply, tries)
     } else {
-      say("wrong", reply.message_it || ctx.t.try_again, reply.explain_it)
+      say("wrong", reply.message_it || ctx.t.try_again, reply.explain_it, reply)
       offerContest()
       if (reply.explain_it || reply.steps) options.onDone?.(reply, tries)
     }

@@ -7,7 +7,7 @@
 import { newId } from "items/outbox"
 import { button, el, icon, uid } from "lesson/dom"
 import { isAvailable, load } from "lesson/checks/registry"
-import { renderInlineRich, renderRich } from "lesson/text"
+import { renderInlineRich, renderRich, scoped } from "lesson/text"
 
 // The stand-in outline: rows with Sposta su / Sposta giù. Returns { element, order(), focus() }.
 export function outlineList(outline, ctx) {
@@ -76,9 +76,10 @@ export function render(block, ctx, loc = {}) {
     if (ctx.safe) return root
   }
   const model = el("div", { class: "oral-model", "aria-live": "polite" })
-  const showModel = (text) => {
+  const showModel = (text, reply) => {
+    const cx = ctx.lang && reply?.tr ? scoped(ctx, reply) : ctx
     if (!text || model.childElementCount) return
-    model.append(el("h4", { class: "oral-model-title", text: ctx.t.docs.oral_model }), el("div", { class: "oral-model-text" }, renderRich(text, ctx)), selfCheck(ctx))
+    model.append(el("h4", { class: "oral-model-title", text: ctx.t.docs.oral_model }), el("div", { class: "oral-model-text" }, renderRich(text, cx)), selfCheck(ctx))
   }
   // the teacher's view and print show the model answer, from the full body (the student's page never has it before the check says so)
   if (ctx.openAll && !ctx.safe) showModel(ctx.full?.spec(loc)?.model_it)
@@ -95,9 +96,10 @@ export function render(block, ctx, loc = {}) {
     let tries = 0
     let pending = null // { id, key }: the event id of an answer whose reply was lost; the same answer sent again keeps it, another answer has its own
     let done = false
-    const say = (kind, text) => {
+    const say = (kind, text, reply) => {
+      const cx = ctx.lang && reply?.tr ? scoped(ctx, reply) : ctx
       feedback.replaceChildren(el("p", { class: `verdict verdict-${kind}` }, icon(kind === "right" ? "circle-check" : "wrong-hint", "verdict-ic"), el("strong", { text: kind === "right" ? ctx.t.right : kind === "wrong" ? ctx.t.wrong : ctx.t.invalid })))
-      if (text) feedback.appendChild(el("div", { class: "verdict-text" }, renderRich(text, ctx)))
+      if (text) feedback.appendChild(el("div", { class: "verdict-text" }, renderRich(text, cx)))
     }
     // the answer is the shown ids in the order S built; both the stand-in and T1's component end here
     const answer = async (response) => {
@@ -114,15 +116,15 @@ export function render(block, ctx, loc = {}) {
       submit.disabled = false
       if (!reply) return say("invalid", ctx.t.check_error)
       pending = null
-      if (reply.verdict === "invalid") return say("invalid", reply.message_it || ctx.t.check_empty)
+      if (reply.verdict === "invalid") return say("invalid", reply.message_it || ctx.t.check_empty, reply)
       tries = reply.try ?? tries + 1
       if (reply.verdict === "right") {
         say("right")
         done = true
         submit.disabled = true
         for (const b of form.querySelectorAll(".oral-move, .tile, button")) if (b !== submit) b.disabled = true
-      } else say("wrong", reply.message_it || ctx.t.try_again)
-      showModel(reply.model_it)
+      } else say("wrong", reply.message_it || ctx.t.try_again, reply)
+      showModel(reply.model_it, reply)
     }
     form.addEventListener("submit", (event) => {
       event.preventDefault()

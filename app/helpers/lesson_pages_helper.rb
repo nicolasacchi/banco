@@ -9,7 +9,8 @@ module LessonPagesHelper
   def lesson2_texts
     nested = LESSON_FAMILIES.to_h { |family| [ family, I18n.t("lesson_#{family}", default: {}).deep_stringify_keys ] }
     # the chart family (T6) reads its texts flat, by their chart_* names (t.chart_less); the others by their family (t.docs.x)
-    nested.merge(nested.fetch("chart")).merge(I18n.t("lesson2").deep_stringify_keys)
+    # `translation` (toggle, unit) is the button text of a bilingual lesson's «Traduzione» (D-402); items/translation.js reads the same keys
+    nested.merge(nested.fetch("chart")).merge(I18n.t("lesson2").deep_stringify_keys).merge("translation" => I18n.t("translation").deep_stringify_keys)
   end
 
   # The stylesheet of each wave 2 family whose blocks or figures a lesson uses (app/assets/stylesheets/lesson/FAMILY.css), found in the body: the
@@ -41,8 +42,10 @@ module LessonPagesHelper
              solution: spath("/topics/#{topic_key}/lesson/exercises"), questions: "/questions", practice: spath("/topics/#{topic_key}"),
              topics: spath("/topics"), preferences: "#{base_path}/preferences", settings: spath("/settings") }
     urls[:contest] = "/topics/#{topic_key}/lesson/contest"
+    # where opening a translation is told to the teacher (D-402, TranslationsController): the student's page only, the preview writes nothing
+    urls[:translations] = "/translations"
     # no "Non ho capito" and no «Per me va bene così» from the teacher's preview: the teacher reads those, never writes them (D-309, D-396)
-    preview? ? urls.except(:questions, :contest) : urls
+    preview? ? urls.except(:questions, :contest, :translations) : urls
   end
 
   # The topics the lesson's links name that this student's course does not open (not approved, not released, not in the programme): their

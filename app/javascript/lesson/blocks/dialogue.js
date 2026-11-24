@@ -63,7 +63,8 @@ export function render(block, ctx) {
     const sp = speakers.get(line.speaker)
     const n = i + 1
     const glossId = uid("gloss")
-    const textNode = el("p", { class: "dialogue-text", lang, text: textOf(line) })
+    // a line is target text with its own gloss button: it draws no translation of its own (D-402)
+    const textNode = el("p", { class: "dialogue-text", lang, "data-tr-exempt": ctx.lang ? "" : null, text: textOf(line) })
     const hiddenNote = el("p", { class: "dialogue-hidden-text", text: t.hidden_line.replace("%{n}", n) })
     const gloss = el("p", { class: "dialogue-gloss", id: glossId, lang: "it" })
     renderInlineRich(line.gloss_it, gloss, ctx)

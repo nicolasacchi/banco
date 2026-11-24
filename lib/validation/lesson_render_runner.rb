@@ -11,7 +11,9 @@ module Validation
   # minimum (E-DIAGRAM-SMALL-TEXT). All errors: they depend on the author's data. Then it takes a WebP shot of each
   # card (the cover and the core cards at every viewport, extra cards at the first only) and hands the bytes to LessonShots. A card has
   # further states (D-311): every other exercise of «Prova tu» shown in turn, and the card and each exercise with every
-  # closed disclosure open; each is measured like the card, and pictured as `shoot?` says.
+  # closed disclosure open; each is measured like the card, and pictured as `shoot?` says. A bilingual lesson (D-402) has two more: `tr`, the card with
+  # every translation open, and `exN-tr` for an exercise; and a finding, «translation missing» (a target-language text outside any translation unit),
+  # beside «translation empty» and «translation overflow», all E-LESSON-RENDER.
   #
   # The caller holds the ChromeRunner session. Nothing here judges beyond the findings and does not write the
   # database. Time: a budget per revision and per card-viewport (E-LESSON-RENDER "timeout"); infrastructure
@@ -176,6 +178,9 @@ module Validation
     end
 
     OPENED = /open\z/
+    # The states pictured at the first viewport of the card, the phone, whatever they found: another exercise (exN), the card with every translation open
+    # (tr) and an exercise shown with them open (exN-tr, D-402). The teacher sees the translation open without it being a finding. `exN-open` is measured only.
+    SHOWN_AT_FIRST_VIEWPORT = /\A(?:ex\d+|tr|ex\d+-tr)\z/
 
     # A card at one viewport: the card as drawn, then each other exercise of «Prova tu» (D-311), each state with its own time limit.
     # Answers the card's opened states ([card, state]: the card and each exercise with every closed part open), looked at later.
@@ -213,12 +218,12 @@ module Validation
 
     # Which states are pictured (the store stays bounded): the card as drawn at every viewport it is drawn at (the cover too, D-335: it
     # carries the lesson's hero figure and is drawn at every viewport, as a core card is);
-    # another exercise of «Prova tu» at the first viewport the card is drawn at (the phone); any further state where it found
+    # another exercise of «Prova tu» and the card with its translation open (`tr`, `exN-tr`) at the first viewport the card is drawn at (the phone); any further state where it found
     # something new, so that what was found can be seen. Otherwise the disclosures opened all at once are measured, not pictured.
     def shoot?(card, viewport, state, fresh)
       return true if state.nil? || fresh.positive?
 
-      state.match?(/\Aex\d+\z/) && viewport == first_viewport_of(card)
+      state.match?(SHOWN_AT_FIRST_VIEWPORT) && viewport == first_viewport_of(card)
     end
 
     def first_viewport_of(card)

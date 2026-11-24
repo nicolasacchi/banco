@@ -69,6 +69,21 @@
 .l2 .listen-text { margin: 0.6em 0 0; font-size: 1.1em; }
 .l2 .listen-note { margin: 0.4em 0 0; }
 
+/* the Italian translation of a bilingual lesson (D-402): the node and the state machine are translation.css; here only what the lesson page adds.
+   «Traduzione» of a card sits in its head beside «Ascolta» (it wraps under it on a phone), the unit button of a long block under the target text,
+   and the panel of a figure under the drawing, where a line cannot sit in the SVG. */
+.l2 .card-head .tr-toggle { flex: none; min-height: 2.75rem; padding: 0 var(--space-3); }
+.l2 .cover-start .tr-toggle { margin-inline-start: var(--space-3); min-height: 2.75rem; }
+.l2 .tr-unit { display: block; margin: var(--space-1) 0 0; }
+.l2 strong .tr, .l2 h1 .tr, .l2 h2 .tr, .l2 h3 .tr, .l2 h4 .tr { font-weight: 400; }
+.l2 .card-titles > .tr { margin-top: var(--space-1); }
+.l2 .dg-tr { margin-top: var(--space-2); }
+.l2 .dg-tr p { margin: 0; }
+.l2 .dg-tr-list { list-style: none; margin: var(--space-1) 0 0; padding: 0; }
+.l2 .dg-tr-list li { margin: 0 0 var(--space-1); }
+.l2 .dg-tr-target { font-weight: 650; }
+@media print { .l2 .tr-unit { display: none; } }
+
 @media (forced-colors: active) {
   .l2 .speak, .l2 .gloss-pop, .l2 .code-span, .l2 .check-listen { border-color: CanvasText; forced-color-adjust: auto; }
   .l2 .speaking { outline: 2px solid Highlight; background: none; box-shadow: none; }

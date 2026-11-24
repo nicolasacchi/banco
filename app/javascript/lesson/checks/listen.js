@@ -15,7 +15,8 @@ export function listenBox(spec, ctx) {
   const t = ctx.t.speech
   let shown = false
   let handle = null
-  const text = el("p", { class: `listen-text lang lang-${heard.lang}`, lang: heard.lang, hidden: "", text: heard.text })
+  // the sentence heard is the exercise itself: the check's prompt carries the translation, this text draws none (D-402)
+  const text = el("p", { class: `listen-text lang lang-${heard.lang}`, lang: heard.lang, "data-tr-exempt": ctx.lang ? "" : null, hidden: "", text: heard.text })
   const play = el("button", { type: "button", class: "button secondary listen-play", "aria-pressed": "false", hidden: "" }, icon("listen", "speak-ic"), el("span", { text: t.listen_sentence }))
   const toggle = button(t.show_text, { class: "button secondary small listen-show", "aria-expanded": "false" }, () => {
     const open = text.hidden

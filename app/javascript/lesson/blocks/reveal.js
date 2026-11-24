@@ -6,7 +6,7 @@
 // the teacher's view and in safe mode. The turning is lesson/blocks/flip, the same as a mistake's.
 import { el, icon, uid } from "lesson/dom"
 import { flip } from "lesson/blocks/flip"
-import { renderInlineRich, renderRich } from "lesson/text"
+import { noTranslation, renderInlineRich, renderRich } from "lesson/text"
 
 // "-27" is "27 a.C.", "14" is "14 d.C."
 export function yearLabel(year) {
@@ -18,7 +18,7 @@ export function yearLabel(year) {
 function plain(block, ctx) {
   const front = el("div", { class: "reveal-front" },
     el("p", { class: "reveal-tag" }, icon("circle-help", "reveal-ic"), el("strong", { text: ctx.t.docs.reveal_think })),
-    renderInlineRich(block.prompt_it, el("p", { class: "reveal-text" }), ctx))
+    renderInlineRich(block.prompt_it, el("p", { class: "reveal-text" }), noTranslation(ctx))) // the front is the card's button: no translation inside it
   const back = [
     el("p", { class: "reveal-tag reveal-tag-answer" }, icon("check", "reveal-ic"), el("strong", { text: ctx.t.docs.reveal_answer })),
     el("div", { class: "reveal-text" }, renderRich(block.answer_it, ctx))
@@ -46,7 +46,7 @@ function crossroads(block, ctx) {
   }
   for (const option of block.options) {
     const b = el("button", { type: "button", class: "reveal-option", "aria-pressed": "false", "data-id": option.id })
-    renderInlineRich(option.text_it, b, ctx)
+    renderInlineRich(option.text_it, b, noTranslation(ctx))
     b.append(el("span", { class: "reveal-real-mark", hidden: "" }, icon("check", "reveal-ic"), el("strong", { text: ` ${ctx.t.docs.cross_real_tag}` })))
     b.addEventListener("click", () => show(option))
     buttons.set(option.id, b)

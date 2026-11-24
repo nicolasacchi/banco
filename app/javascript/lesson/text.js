@@ -8,7 +8,8 @@ import { glueFormulas } from "items/formula_punct"
 import { el, icon } from "lesson/dom"
 import { colourTokens, displayPieces, displayTex } from "lesson/eq"
 import { speakerButton } from "lesson/speech_ui"
-import { targetOf } from "lesson/lang"
+import { italianOf, targetOf } from "lesson/lang"
+import { node as translationNode } from "items/translation"
 import { plain } from "lesson/diagrams/common"
 import { parsedText } from "lesson/raw_markup"
 
@@ -31,6 +32,64 @@ export const unglued = (ctx) => (ctx.noGlue ? ctx : { ...ctx, noGlue: true })
 // colours, roles, language spans, bold), with nothing that is itself a control: no speaker button, no glossary bubble, no link. A button or a
 // link inside a <label> would take the tap meant for the option (D-310).
 export const insideControl = (ctx) => ({ ...ctx, noSpeech: true, glossary: null, noLinks: true })
+
+// A control that is a button (a tile, a chip that is a button, a map item, a <summary>): the same, and it draws no translation, because a
+// translation is never inside a <button> (D-402). What it says is covered by the prompt's translation or is a fragment.
+export const inButton = (ctx) => ({ ...insideControl(ctx), noTr: true })
+
+// A place that was never a control but sits inside one (the front of a flip card, an option that is a button): its text draws no translation in a
+// bilingual lesson, and a legacy lesson draws it exactly as it did.
+export const noTranslation = (ctx) => (ctx.lang ? { ...ctx, noTr: true } : ctx)
+
+// ---- the Italian of a bilingual lesson (D-402) ----
+// A served bilingual lesson holds the TARGET text in every `_it` slot and the Italian in `tr` tables {target string: Italian}, one on the body, one on
+// each card and one on each block (Lessons::Bilingual.fold). `ctx.lang` is the page's language ("en", "es"; none in a legacy lesson, which is drawn
+// as it always was) and `ctx.trScopes` the objects whose `tr` a text is looked up in, the block first, then the card, then the body.
+
+// A copy of ctx for one scope (a block, a card, a check's reply): the same members, getters kept, its tables in front of the others. Its `rich` is its own.
+export function scoped(ctx, ...tables) {
+  const next = Object.defineProperties({}, Object.getOwnPropertyDescriptors(ctx))
+  const define = (name, value) => Object.defineProperty(next, name, { value, enumerable: true, writable: true, configurable: true })
+  define("trScopes", [...tables.filter(Boolean), ...(ctx.trScopes ?? [])])
+  define("rich", (text) => el("div", { class: "rich" }, renderRich(text, next)))
+  return next
+}
+
+// The Italian of a text in this ctx, or null (a legacy lesson, a place that draws none, a string no table has: one that code built).
+export const translationOf = (text, ctx) => (ctx.lang && !ctx.noTr && ctx.trScopes ? italianOf(text, ...ctx.trScopes) : null)
+
+// The ctx the Italian is drawn with: no lookup, no language of the target (its role spans are Italian, its spans keep their speaker).
+const italianCtx = (ctx) => ({ ...ctx, lang: null, noTr: true, translating: true })
+
+// A translation node for `text` in `ctx`, or null: `block` draws paragraphs and lists (a div), else the inline content (a span), both `.tr`.
+export function translationFor(text, ctx, { block = false, tag = block ? "div" : "span" } = {}) {
+  const italian = translationOf(text, ctx)
+  if (italian === null) return null
+  const holder = translationNode(null, { tag })
+  const inner = italianCtx(ctx)
+  if (block) holder.appendChild(renderRich(italian, inner))
+  else renderInlineRich(italian, holder, inner)
+  return holder
+}
+
+// Says what a drawn node is: target text (`lang`), with its translation (`data-translated`), or text that draws none on purpose (`data-tr-exempt`:
+// the render check does not ask for one). A node that already has a language (a gloss, a line of a dialogue) is its own business.
+function markTarget(node, ctx, translated) {
+  if (!ctx.lang || node.getAttribute("lang")) return
+  node.setAttribute("lang", ctx.lang)
+  if (translated) node.setAttribute("data-translated", "")
+  else if (ctx.noTr) node.setAttribute("data-tr-exempt", "")
+}
+
+// A plain text element (a hint line, a title drawn as text) with its translation beside it: the node, or a fragment of the node and its `.tr`.
+export function beside(node, text, ctx, { tag = "p" } = {}) {
+  const translation = translationFor(text, ctx, { tag })
+  markTarget(node, ctx, translation !== null)
+  if (!translation) return node
+  const fragment = document.createDocumentFragment()
+  fragment.append(node, translation)
+  return fragment
+}
 
 // A language span of one short word ("-emos", "hablar") never breaks, not even at its hyphen; a phrase wraps as text does (D-310).
 export const ONE_WORD_MAX = 24
@@ -130,8 +189,10 @@ function glossWord(term, ctx) {
   const t = ctx.t.gloss
   const pop = el("span", { class: "gloss-pop", role: "note", hidden: "" })
   const inner = { ...ctx, glossary: null } // a word inside a definition is only a word: no glossary inside the glossary
-  renderInlineRich(entry.def_it, pop.appendChild(el("span", { class: "gloss-def" })), inner)
-  if (entry.example_it) renderInlineRich(entry.example_it, pop.appendChild(el("span", { class: "gloss-example" })), inner)
+  // inside a translation the word is the Italian term and its bubble holds the Italian definition
+  const said = (text) => (ctx.translating ? italianOf(text, ...(ctx.trScopes ?? [])) ?? text : text)
+  renderInlineRich(said(entry.def_it), pop.appendChild(el("span", { class: "gloss-def" })), inner)
+  if (entry.example_it) renderInlineRich(said(entry.example_it), pop.appendChild(el("span", { class: "gloss-example" })), inner)
   const button = el("button", { type: "button", class: "gloss-btn", "aria-expanded": "false", "aria-label": `${t.what} ${term}?` }, icon("glossary", "gloss-ic"))
   const close = () => {
     pop.hidden = true
@@ -176,7 +237,8 @@ function inlineNodes(nodes, parent, ctx, display = false, tiles = false, glued =
       // [[en:..]] [[es:..]] [[la:..]]: words of another language, in the target ink, with a speaker where the device has a voice (D-266)
       const span = el("span", { class: `lang lang-${node.lang}${oneWord(node.v) ? " lang-word" : ""}`, lang: node.lang, text: node.v })
       parent.appendChild(span)
-      if (!ctx.safe && node.lang !== "la" && !ctx.noSpeech) parent.appendChild(speakerButton(ctx, { lang: node.lang, text: node.v, node: span }))
+      // in a bilingual lesson the target text is read by the card's «Ascolta», and a speaker on every span would put one on every word (D-402)
+      if (!ctx.safe && node.lang !== "la" && !ctx.noSpeech && !(ctx.lang && node.lang === ctx.lang)) parent.appendChild(speakerButton(ctx, { lang: node.lang, text: node.v, node: span }))
     } else if (node.t === "code") {
       parent.appendChild(el("code", { class: "code-span", text: node.v }))
     } else if (node.t === "gloss") {
@@ -207,13 +269,14 @@ function inlineNodes(nodes, parent, ctx, display = false, tiles = false, glued =
   }
 }
 
-function build(blocks, fragment, ctx, tiles = false) {
+function build(blocks, fragment, ctx, tiles = false, top = null) {
   for (const block of blocks) {
     if (block.type === "p") {
       const alone = block.children.length === 1 && block.children[0].t === "math"
       const p = el("p", alone ? { class: "eq-display" } : {})
       inlineNodes(block.children, p, ctx, alone, tiles)
       fragment.appendChild(p)
+      top?.push(p)
     } else {
       const list = el(block.type)
       if (block.start) list.setAttribute("start", String(block.start))
@@ -232,39 +295,52 @@ function build(blocks, fragment, ctx, tiles = false) {
         list.appendChild(li)
       }
       fragment.appendChild(list)
+      top?.push(list)
     }
   }
 }
 
 // Blocks (paragraphs, lists) into a fragment. A text the reader refuses is shown as plain text.
+// In a bilingual lesson (ctx.lang) each paragraph and list is target text, and the Italian of the whole text follows it as one `.tr` (D-402).
 export function renderRich(text, ctx, options = {}) {
   const fragment = document.createDocumentFragment()
+  const top = []
   let blocks
   try {
-    blocks = parse(text, { lists: "v2", roles: true, target: targetOf(ctx.subject) })
+    blocks = parse(text, { lists: "v2", roles: true, target: ctx.translating ? null : targetOf(ctx.subject) })
   } catch (error) {
     if (!(error instanceof Refused)) throw error
-    fragment.appendChild(el("p", { text: String(text) }))
-    return fragment
+    const p = el("p", { text: String(text) })
+    fragment.appendChild(p)
+    top.push(p)
+    blocks = null
   }
-  build(blocks, fragment, ctx, !!options.tiles)
+  if (blocks) build(blocks, fragment, ctx, !!options.tiles, top)
+  const translation = translationFor(text, ctx, { block: true })
+  for (const node of top) markTarget(node, ctx, translation !== null)
+  if (translation) fragment.appendChild(translation)
   return fragment
 }
 
-// Inline only (labels, buttons, table cells): the first paragraph's content, into `target`.
+// Inline only (labels, buttons, table cells): the first paragraph's content, into `target`. In a bilingual lesson `target` is target text and its
+// translation is a `span.tr` at its end, unless ctx says the place draws none (a button, a fragment: ctx.noTr).
 export function renderInlineRich(text, target, ctx, options = {}) {
-  let blocks
+  let blocks = null
   try {
-    blocks = parse(text, { lists: "v2", roles: true, target: targetOf(ctx.subject) })
+    blocks = parse(text, { lists: "v2", roles: true, target: ctx.translating ? null : targetOf(ctx.subject) })
   } catch (_error) {
     target.textContent = String(text)
-    return target
   }
-  if (blocks.length >= 1 && blocks[0].type === "p") {
-    const kids = blocks[0].children
-    inlineNodes(kids, target, ctx, !!options.display && kids.length === 1 && kids[0].t === "math", !!options.tiles)
+  if (blocks) {
+    if (blocks.length >= 1 && blocks[0].type === "p") {
+      const kids = blocks[0].children
+      inlineNodes(kids, target, ctx, !!options.display && kids.length === 1 && kids[0].t === "math", !!options.tiles)
+    }
+    else build(blocks, target, ctx, !!options.tiles)
   }
-  else build(blocks, target, ctx, !!options.tiles)
+  const translation = translationFor(text, ctx)
+  markTarget(target, ctx, translation !== null)
+  if (translation) target.appendChild(translation)
   return target
 }
 

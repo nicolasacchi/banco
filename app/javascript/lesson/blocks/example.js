@@ -7,7 +7,7 @@ import { button, el, icon } from "lesson/dom"
 import { renderCheck } from "lesson/blocks/check"
 import { figureFor } from "lesson/blocks/diagram"
 import { tagInfo } from "lesson/blocks/procedure"
-import { renderInlineRich, renderMath, renderRich } from "lesson/text"
+import { renderInlineRich, renderMath, renderRich, scoped } from "lesson/text"
 
 // "Risolvi $(x - 1)^2 = x^2 + 5$." -> the lead word and the formula, so that the formula can be the big picture of the card.
 export function splitProblem(text) {
@@ -16,7 +16,8 @@ export function splitProblem(text) {
 }
 
 function problemNode(text, ctx) {
-  const split = splitProblem(text)
+  // in a bilingual lesson the problem is a sentence with its translation, never the lead word of a big formula (the lead is a string code cut out)
+  const split = ctx.lang ? null : splitProblem(text)
   if (!split) return renderRich(text, ctx, { tiles: true })
   const box = el("div", { class: "problem-big" })
   if (split.lead) box.appendChild(el("p", { class: "problem-lead", text: split.lead }))
@@ -38,6 +39,9 @@ export function render(block, ctx, loc) {
   const result = el("div", { class: "example-result", hidden: "" })
   let shown = ctx.showAll ? steps.length : 0
   let resultText = block.result_it ?? null
+  // the table of the server's last answer to a blank: its steps and result are drawn with it in front of the block's (D-402)
+  let answered = null
+  const said = () => (ctx.lang && answered?.tr ? scoped(ctx, answered) : ctx)
   const rows = []
   const next = button(ctx.t.first_step, { class: "button" }, () => reveal(shown + 1))
   const all = button(ctx.t.all_steps, { class: "button secondary" }, () => reveal(steps.length))
@@ -46,6 +50,7 @@ export function render(block, ctx, loc) {
   const controls = el("p", { class: "example-controls" }, next, all, count)
 
   const stepNode = (step, i) => {
+    const ctx = said()
     const info = step.tag ? tagInfo(ctx.subject, step.tag) : null
     const li = el("li", { class: "example-step", hidden: "" })
     li.appendChild(el("p", { class: "step-tag" }, info ? icon(info.icon, "step-ic") : null, el("strong", { text: info ? info.label_it : `${ctx.t.step} ${i + 1}` })))
@@ -71,6 +76,7 @@ export function render(block, ctx, loc) {
   // the server's answer to a blank: the blank step's do_it and the steps after it
   const resolve = (index, reply) => {
     if (!Array.isArray(reply.steps)) return
+    answered = reply
     const tail = reply.steps
     steps.splice(index, steps.length - index, ...tail.map((s) => ({ ...s })))
     for (const row of rows.splice(index)) row.remove()
@@ -119,7 +125,7 @@ export function render(block, ctx, loc) {
     note.textContent = waiting ? ctx.t.answer_first : ""
     if (resultText && complete) {
       result.hidden = false
-      result.replaceChildren(el("p", { class: "example-label" }, icon("circle-check", "ex-ic"), el("strong", { text: ctx.t.result })), renderRich(resultText, ctx, { tiles: true }))
+      result.replaceChildren(el("p", { class: "example-label" }, icon("circle-check", "ex-ic"), el("strong", { text: ctx.t.result })), renderRich(resultText, said(), { tiles: true }))
     } else result.hidden = true
     if (figure?.setState && shown > 0) figure.setState(Math.min(shown, figure.total ?? shown) - 1)
   }

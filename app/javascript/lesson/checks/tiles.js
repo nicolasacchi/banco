@@ -15,7 +15,7 @@
 import { handle } from "items/dom"
 import { button, el, uid } from "lesson/dom"
 import { createTiles } from "lesson/checks/sequence_model"
-import { insideControl, plainText, renderInlineRich } from "lesson/text"
+import { inButton, plainText, renderInlineRich } from "lesson/text"
 
 export const type = "tiles"
 
@@ -34,8 +34,9 @@ const fill = (template, values) => String(template).replace(/%\{(\w+)\}/g, (_, k
 
 function tileLabel(tile, ctx) {
   const lang = langOf(tile)
-  if (lang) return el("span", { class: "tile-text", lang, text: textOf(tile) })
-  return renderInlineRich(textOf(tile), el("span", { class: "tile-text" }), insideControl(ctx))
+  // a tile is a fragment of the sentence and a button: it draws no translation, the prompt's covers it (D-402)
+  if (lang) return el("span", { class: "tile-text", lang, "data-tr-exempt": ctx.lang ? "" : null, text: textOf(tile) })
+  return renderInlineRich(textOf(tile), el("span", { class: "tile-text" }), inButton(ctx))
 }
 
 export function buildTiles(spec, ctx, options = {}) {

@@ -56,7 +56,7 @@ export function speakerButton(ctx, { lang, text, node }) {
   return button
 }
 
-// cardListen(article, ctx) : the card's "Ascolta" (it reads the rendered card) and its "Più lento" switch. Hidden until Italian can be read.
+// cardListen(article, ctx) : the card's "Ascolta" (it reads the rendered card) and its "Più lento" switch. Hidden until the voice of the card's language (Italian, or the target of a bilingual lesson) can be used.
 export function cardListen(article, ctx) {
   const t = ctx.t.speech
   const play = el("button", { type: "button", class: "button secondary speak-card", "aria-pressed": "false" }, icon("listen", "speak-ic"), el("span", { text: t.listen }))
@@ -90,7 +90,8 @@ export function cardListen(article, ctx) {
     setPreferences({ slower: on })
     ctx.savePreferences?.({ slower: on })
   })
-  follow(box, "it", ctx, (tried) => { play.title = tried ? t.unapproved : "" }) // the teacher's preview may try a voice nobody accepted yet, and says so
+  // a bilingual card is read in its own language (D-402): the voice that gates the button is the target's, the translation is never read
+  follow(box, ctx.lang ?? "it", ctx, (tried) => { play.title = tried ? t.unapproved : "" }) // the teacher's preview may try a voice nobody accepted yet, and says so
   // it stops when the focus leaves the card
   article.addEventListener("focusout", (event) => {
     if (handle && event.relatedTarget && !article.contains(event.relatedTarget)) stopAll()
