@@ -18,7 +18,7 @@ module ActingStudent
     # Do not declare `before_action :no_store` again in a controller: Rails replaces the callback of the same name, conditions and all.
     before_action :no_store
     before_action :mark_student_device, unless: -> { preview? || trial_account? }
-    helper_method :preview?, :base_path, :acting_student, :diagnosis_open?, :student_root, :preview_view
+    helper_method :preview?, :base_path, :acting_student, :diagnosis_open?, :student_root, :preview_view, :changelog_off?
   end
 
   def preview? = request.path_parameters[:preview] == true
@@ -42,6 +42,11 @@ module ActingStudent
   def diagnosis_open? = preview? || trial_account? || Diagnosis::Release.open?
 
   def context_name = preview? ? "teacher_preview" : "diagnosis"
+
+  # «Novità» is off for this student (D-401, BANCO_CHANGELOG_OFF). The teacher's preview follows the official student's setting, so it shows what he sees.
+  def changelog_off?
+    Banco::EdgeProxy.changelog_off?(preview? ? Student::OFFICIAL_KEY : acting_student.key)
+  end
 
   def acting_student
     @acting_student ||=

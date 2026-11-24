@@ -8,7 +8,7 @@ module MultiUser
   TRIAL = { "Remote-User" => "trial-x", "Remote-Groups" => "banco-student" }.freeze
   TRIAL_B = { "Remote-User" => "trial-y", "Remote-Groups" => "banco-student" }.freeze
   UNMAPPED = { "Remote-User" => "kid-z", "Remote-Groups" => "banco-student" }.freeze
-  ENV_KEYS = %w[BANCO_EDGE_PROXY BANCO_TEACHER_USERS BANCO_GUEST_USERS BANCO_STUDENT_USERS BANCO_LOGOUT_URL BANCO_DECISIONS_ENABLED].freeze
+  ENV_KEYS = %w[BANCO_EDGE_PROXY BANCO_TEACHER_USERS BANCO_GUEST_USERS BANCO_STUDENT_USERS BANCO_LOGOUT_URL BANCO_DECISIONS_ENABLED BANCO_CHANGELOG_OFF].freeze
 
   def self.included(base)
     base.setup do

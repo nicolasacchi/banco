@@ -47,6 +47,23 @@ class HealthTest < ActionDispatch::IntegrationTest
     with_env("BANCO_STUDENT_USERS" => "kid-a=student") { assert_equal "ok", Health.check(chrome: false)[:student_users] }
   end
 
+  test "BANCO_CHANGELOG_OFF is reported as parsed, and a key that is no known student is a warning that never fails the report (D-401)" do
+    with_env("BANCO_CHANGELOG_OFF" => nil, "BANCO_STUDENT_USERS" => "kid-a=student,kid-b=prova-1") do
+      assert_equal({ status: "not_configured", students: [] }, Health.check(chrome: false)[:changelog_off])
+    end
+    with_env("BANCO_CHANGELOG_OFF" => " student, prova-1 ,student", "BANCO_STUDENT_USERS" => "kid-a=student,kid-b=prova-1") do
+      assert_equal({ status: "ok", students: %w[student prova-1], unknown: [] }, Health.check(chrome: false)[:changelog_off])
+    end
+    with_env("BANCO_CHANGELOG_OFF" => "student,prova-9", "BANCO_STUDENT_USERS" => "kid-a=student,kid-b=prova-1") do
+      Health.stub(:disk, { status: "ok", free_mb: 50_000, min_mb: Health::DISK_MIN_FREE_MB }) do
+        report = Health.check(chrome: false)
+        assert_equal({ status: "warning", students: %w[student prova-9], unknown: %w[prova-9] }, report[:changelog_off])
+        assert_not_includes report[:problems], "changelog_off"
+        assert_equal true, report[:ok]
+      end
+    end
+  end
+
   test "the backup directory counts only when configured, and a stale copy fails it" do
     Dir.mktmpdir do |dir|
       with_env("BANCO_BACKUP_DIR" => dir) do

@@ -25,7 +25,7 @@ module Health
         chrome: chrome ? browser(chrome_wait) : "skipped",
         chrome_egress: chrome ? egress(chrome_wait) : "skipped",
         harness: chrome ? harness(chrome_wait) : "skipped",
-        disk: disk, backup: backup, student_users: student_users, pages: pages
+        disk: disk, backup: backup, student_users: student_users, changelog_off: changelog_off, pages: pages
       }
       problems = parts.filter_map { |name, value| name if failing?(name, value) }
       { ok: problems.empty?, problems: problems.map(&:to_s) }.merge(parts).merge(
@@ -96,7 +96,7 @@ module Health
     # Production runs Solid Queue on its own database; elsewhere jobs run in the process.
     def solid_queue? = Rails.application.config.active_job.queue_adapter.to_s == "solid_queue"
 
-    OK_VALUES = %w[ok busy not_applicable not_configured skipped blocked].freeze
+    OK_VALUES = %w[ok busy not_applicable not_configured skipped blocked warning].freeze
 
     def failing?(name, value)
       return !%w[ok not_applicable].include?(value) if name == :queue
@@ -200,6 +200,16 @@ module Health
       "busy"
     rescue StandardError => e
       "error: #{e.class}: #{e.message.to_s.first(120)}"
+    end
+
+    # BANCO_CHANGELOG_OFF (D-401): the student keys whose «Novità» page is off, as parsed. A key that is no known student (the official
+    # student or a key of BANCO_STUDENT_USERS) switches nothing off: a warning, never a failure.
+    def changelog_off
+      keys = Banco::EdgeProxy.changelog_off
+      return { status: "not_configured", students: [] } if keys.empty?
+
+      unknown = keys - Banco::EdgeProxy.student_keys
+      { status: unknown.empty? ? "ok" : "warning", students: keys.map { |key| key.first(40) }, unknown: unknown.map { |key| key.first(40) } }
     end
 
     # BANCO_STUDENT_USERS must be well formed once it is set (D-219): a bad pair is a problem, and the

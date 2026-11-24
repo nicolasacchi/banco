@@ -23,6 +23,10 @@
       },
       "backup": "not_configured",
       "student_users": "not_configured",
+      "changelog_off": {
+        "status": "not_configured",
+        "students": []
+      },
       "pages": {
         "status": "ok",
         "enabled": false,

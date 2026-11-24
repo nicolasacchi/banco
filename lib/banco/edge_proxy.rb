@@ -53,6 +53,16 @@ module Banco
       parsed_student_pairs(env).filter_map { |login, key, position| position unless valid_student_pair?(login, key) }
     end
 
+    # BANCO_CHANGELOG_OFF: "student,prova-1", the keys of the students whose «Novità» page is off (D-401): no menu entry, no dot, /novita goes
+    # to Oggi, no `changelog_viewed` row. Empty (the default) leaves it on for everybody. The teacher's preview follows the official student's setting.
+    def changelog_off(env = ENV) = list(env["BANCO_CHANGELOG_OFF"]).uniq
+
+    def changelog_off?(key, env = ENV) = changelog_off(env).include?(key.to_s)
+
+    # The student keys that exist for the operator: the official student and every key of BANCO_STUDENT_USERS (health names the others in
+    # BANCO_CHANGELOG_OFF).
+    def student_keys(env = ENV) = ([ Student::OFFICIAL_KEY ] + student_map(env).values).uniq
+
     # Where "Esci" goes, or nil (the link is hidden).
     def logout_url(env = ENV)
       url = env["BANCO_LOGOUT_URL"].to_s.strip
