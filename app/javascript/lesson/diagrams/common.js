@@ -19,6 +19,24 @@ export function plain(text) {
     .replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, "$1/$2").replace(/\\to/g, "→").replace(/\\[a-zA-Z]+/g, "").replace(/[{}]/g, "")
 }
 
+// The texts of a figure that a translation can be asked for (D-402): every `<base>_it` string of its data, a list of them too, in the order the data
+// has them, once each, the figure's own alt and caption left out (the alt is said first by the panel, the caption has its own translation line).
+// A bilingual lesson's figure holds the target text in these slots. Pure.
+export function figureStrings(data) {
+  const found = []
+  const add = (text) => {
+    if (typeof text === "string" && text.trim() !== "" && !found.includes(text)) found.push(text)
+  }
+  const walk = (value, key, top) => {
+    if (typeof value === "string") {
+      if (/_it$/.test(key ?? "") && !(top && (key === "alt_it" || key === "caption_it"))) add(value)
+    } else if (Array.isArray(value)) value.forEach((item) => walk(item, key, false))
+    else if (value && typeof value === "object") for (const [k, v] of Object.entries(value)) walk(v, k, false)
+  }
+  if (data && typeof data === "object") for (const [k, v] of Object.entries(data)) walk(v, k, true)
+  return found
+}
+
 // Atkinson-like metrics: good enough to lay out in node and to bound the browser's real measurement.
 export function estimate(text, px, maxW) {
   const lineH = Math.ceil(px * 1.4)

@@ -7,10 +7,12 @@ import { renderCheck } from "lesson/blocks/check"
 import { figureFor } from "lesson/blocks/diagram"
 import { tagInfo } from "lesson/blocks/procedure"
 import { questionControl } from "lesson/question"
-import { renderInlineRich, renderRich } from "lesson/text"
+import { renderInlineRich, renderRich, scoped } from "lesson/text"
 import { exerciseNotes } from "lesson/teacher_notes"
 
-function solutionNode(reply, ctx) {
+function solutionNode(reply, root) {
+  // the reply's own table of translations in front of the block's (D-402)
+  const ctx = root.lang && reply.tr ? scoped(root, reply) : root
   const box = el("div", { class: "solution" })
   box.appendChild(el("h4", { class: "solution-title", text: ctx.t.solution_title }))
   if (Array.isArray(reply.steps)) {

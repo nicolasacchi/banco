@@ -2,7 +2,7 @@
 // with its column's name, drawn from the header cell with the same inline markup (a formula, a word of another language: D-310), hidden on a
 // wide screen and in a kept grid, and from the voice and the screen reader (the head says it).
 import { el } from "lesson/dom"
-import { insideControl, plainText, renderInlineRich } from "lesson/text"
+import { inButton, plainText, renderInlineRich } from "lesson/text"
 
 // A grid read on a phone: the lesson's box is 312 px wide at a 390 px viewport (measured in Chrome, D-335; D-331 first took it as 295). A cell's
 // padding and border are 26 px (measured 26.6). A character is taken as 9 px: measured in the lesson font at 390 px (19 px type), a line of
@@ -53,7 +53,7 @@ export function tableNode(table, ctx) {
       // the row header carries its column's name too when rows stack (an empty corner header has none)
       const td = el(i === 0 ? "th" : "td", i === 0 ? { scope: "row" } : {})
       if (i > 0 || String(table.header[0] ?? "").trim() !== "") {
-        const label = renderInlineRich(table.header[i] ?? "", el("span", { class: "cell-label", "aria-hidden": "true" }), insideControl(ctx))
+        const label = renderInlineRich(table.header[i] ?? "", el("span", { class: "cell-label", "aria-hidden": "true" }), inButton(ctx))
         label.appendChild(document.createTextNode(": "))
         td.appendChild(label)
       }

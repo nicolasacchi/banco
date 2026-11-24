@@ -4,11 +4,13 @@
 // alternative and a "Descrizione". The layout is computed at the container's width with the body font
 // size and again on resize. If layout() answers { error } the figure shows alt_it and the description.
 import * as N from "lesson/num"
+import { figureStrings } from "lesson/diagrams/common"
 import { button, clear, el, icon, spriteHref, svg, uid } from "lesson/dom"
 import { FAMILY, HOME_PALETTE, STATUS, describe, layout, load, moduleFor, stateCount } from "lesson/diagrams/registry"
 import { tryValues, equationTex } from "lesson/diagrams/balance"
 import { buildChips, buildStrip, buildValueControls, declared, overlay } from "lesson/diagrams/controls"
-import { renderInlineRich, renderMath, renderRich, unglued } from "lesson/text"
+import { plainText, renderInlineRich, renderMath, renderRich, translationOf, unglued } from "lesson/text"
+import { node as translationNode } from "items/translation"
 import { tableNode } from "lesson/blocks/table"
 import { defaultSegments } from "lesson/diagrams/contract"
 import { nearest, targetLabel } from "lesson/checks/select_model"
@@ -175,6 +177,21 @@ function animate(oldBoxes, root, reduced) {
 
 // The figure. data: the diagram (already merged states, A2). options: ctx (subject, fontPx(), reduced(), t),
 // hero: a larger cover drawing.
+// The translation panel of a figure, or null when none of its texts has an Italian: a `.tr` of the alt's translation and the list «target → italiano» (D-402).
+export function translationPanel(data, ctx) {
+  const alt = typeof data?.alt_it === "string" ? translationOf(data.alt_it, ctx) : null
+  const pairs = figureStrings(data).map((text) => [text, translationOf(text, ctx)]).filter(([, italian]) => italian !== null)
+  if (alt === null && pairs.length === 0) return null
+  const panel = translationNode(null, { tag: "div" })
+  panel.setAttribute("class", "tr dg-tr")
+  if (alt !== null) panel.appendChild(el("p", { class: "dg-tr-alt", text: plainText(alt) }))
+  if (pairs.length > 0) {
+    panel.appendChild(el("ul", { class: "dg-tr-list" }, ...pairs.map(([text, italian]) => el("li", {},
+      el("span", { class: "dg-tr-target", lang: ctx.lang, text: plainText(text) }), document.createTextNode(" → "), el("span", { class: "dg-tr-it", lang: "it", text: plainText(italian) })))))
+  }
+  return panel
+}
+
 export function mountDiagram(data, ctx, options = {}) {
   const type = data?.type
   // ctx.mode of the component contract (WAVE2 1.2): "select" draws the figure of a select check with tap targets (options.select)
@@ -195,6 +212,15 @@ export function mountDiagram(data, ctx, options = {}) {
   const question = el("p", { class: "dg-question", "aria-live": "polite" })
   const caption = data?.caption_it ? el("figcaption", { class: "dg-caption" }) : null
   if (caption) renderInlineRich(data.caption_it, caption, ctx)
+  // a bilingual lesson's figure: its text is drawn in the drawing (SVG and labels), where a translation line cannot sit, so one panel under it says the
+  // alt's translation and then «target → italiano» for every text of the figure that has one (D-402)
+  const panel = ctx.lang ? translationPanel(data, ctx) : null
+  if (ctx.lang) {
+    for (const node of [labelsLayer, alt]) {
+      node.setAttribute("lang", ctx.lang)
+      if (panel) node.setAttribute("data-translated", "")
+    }
+  }
   const descText = el("p", { text: describe(data, { subject: ctx.subject, state: 0, mode: options.mode ?? "student", set: options.set ?? null }) })
   const desc = el("details", { class: "dg-desc" }, el("summary", {}, icon("description"), document.createTextNode(` ${ctx.t.description}`)), descText)
   // the numbers under a chart ("Vedi i numeri", WAVE2 P2): opened by the student, always printed
@@ -222,7 +248,7 @@ export function mountDiagram(data, ctx, options = {}) {
   // what a control just did, said once and politely (A6): spoken only (sr-only)
   const live = el("p", { class: "sr-only dg-live", "aria-live": "polite", role: "status" })
   side.appendChild(live)
-  figure.append(alt, ...(top ? [top] : []), stage, side, valuesBox, legendHost, ...(caption ? [caption] : []), desc, printHost)
+  figure.append(alt, ...(top ? [top] : []), stage, side, valuesBox, legendHost, ...(caption ? [caption] : []), ...(panel ? [panel] : []), desc, printHost)
 
   let mod = moduleFor(type)
   // the states of the figure: fixed, except for an example's linked figure, which the server completes after a blank (replaceData below)

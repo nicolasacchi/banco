@@ -11,6 +11,8 @@
 // exercise N of its «Prova tu» shown instead (the pager shows one exercise at a time); "open" and "ex<N>-open" are the same with every
 // closed disclosure opened at once (a closed <details>, the hidden text of a listening check, the glossary bubbles). inspect(n) answers
 // the card's further states in `states`; each inspect first undoes what the previous one changed, so the states never add up.
+// A bilingual lesson (D-402) has "tr" (the card with every translation open, as after «Traduzione») and "ex<N>-tr" (exercise N shown, translations open);
+// their findings and the one of the card as drawn («translation missing») are in lesson/translation_findings.js.
 //
 // Findings (all errors, they depend on the author's data): E-LESSON-RENDER (an exception, a KaTeX error, markup printed as text: D-310),
 // E-LESSON-OVERFLOW (something wider than its box or than the page), E-DIAGRAM-LAYOUT (a layout that answered an
@@ -21,6 +23,8 @@ import { renderLesson } from "lesson/render"
 import { preloadFor } from "lesson/preload"
 import { rawMarkupIn } from "lesson/raw_markup"
 import { fixedIn, heardIn } from "lesson/speech_segments"
+import { setScope } from "items/translation"
+import { translationEmpty, translationMissing, translationOverflow } from "lesson/translation_findings"
 
 const errors = []
 const note = (message) => errors.push(String(message).slice(0, 300))
@@ -311,15 +315,18 @@ function glossFindings(scope, out, heard = () => {}) {
 function statesOf(card) {
   const states = []
   if (closedParts(card).length > 0 || glossButtons(card).length > 0) states.push("open")
+  // «tr»: the card with every translation open; «exN-tr»: the same with exercise N shown (D-402). Only a card that has a translation has them.
+  if (card.querySelector(".tr")) states.push("tr")
   for (const ex of exercisesOf(card)) {
     if (ex.index === 0) continue
     states.push(`ex${ex.n}`)
     if (hasClosedParts(ex.li)) states.push(`ex${ex.n}-open`)
+    if (ex.li.querySelector(".tr")) states.push(`ex${ex.n}-tr`)
   }
   return states
 }
 
-const STATE = /^ex(\d+)(-open)?$|^open$/
+const STATE = /^ex(\d+)(-open|-tr)?$|^open$|^tr$/
 
 async function inspect(n, state = null) {
   const findings = []
@@ -346,7 +353,19 @@ async function inspect(n, state = null) {
       // a figure of a hidden exercise waited at width 0: drawn now at the width it has
       for (const figure of api.figures()) if (scope.contains(figure.element)) figure.relayout?.()
     }
-    if (state === "open" || match?.[2]) {
+    const translated = state === "tr" || match?.[2] === "-tr"
+    if (translated) {
+      // every translation of the card open, as the student has it after «Traduzione»; measured at this viewport, and closed again for the next state
+      setScope(card, true)
+      undo.push(() => setScope(card, false))
+      await frames()
+      // a figure's panel and a table that grew: what lays itself out when a line appears has done so before it is measured
+      for (const figure of api.figures()) if (scope.contains(figure.element) && shown(figure.element)) figure.relayout?.()
+      await frames()
+      overflowFindings(card, findings, scope)
+      translationOverflow(card, findings)
+      translationEmpty(card, findings)
+    } else if (state === "open" || match?.[2]) {
       // a disclosure lays out at once (nothing in one is a figure that waits for a redraw): measured as soon as it is open
       openParts(scope)
       hear()
@@ -371,6 +390,7 @@ async function inspect(n, state = null) {
       }
     }
     if (!state) {
+      translationMissing(card, findings) // a text in the target language with no translation unit (D-402), once
       katexFindings(card, findings) // a formula is drawn (or refused) when the card is built, shown or not: once is enough
       markupFindings(card, findings) // markup printed as text (D-310), likewise once
       segments.push(...fixedIn(body.cards.find((c) => c.n === n) ?? null, card)) // dialogues, listening checks and speakers: they do not depend on the state
