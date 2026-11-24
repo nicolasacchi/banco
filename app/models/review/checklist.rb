@@ -21,7 +21,16 @@ module Review
       "hints that are missing, give the key, or do not run from the rule to the next step",
       "a typical-error message that gives the key, or a solution step that is wrong or ends elsewhere than at the key"
     ].freeze
-    ALL_POINTS = (POINTS + PRACTICE_POINTS).freeze
+
+    # A bilingual item (english or spanish, D-402) is reviewed on two more points, with ids of their own (14 and 15), so that a review of an item
+    # that is not bilingual keeps its 11 or 13 points and the ids of a stored review still read from ALL_POINTS.
+    TRANSLATION_POINTS = [
+      "an Italian translation that is wrong, adds or drops something, or gives the key away",
+      "target-language text above the level, unclear, or with Italian words in it"
+    ].freeze
+    ALL_POINTS = (POINTS + PRACTICE_POINTS + TRANSLATION_POINTS).freeze
+    PRACTICE_IDS = (POINTS.size + 1..POINTS.size + PRACTICE_POINTS.size).to_a.freeze
+    TRANSLATION_IDS = (POINTS.size + PRACTICE_POINTS.size + 1..ALL_POINTS.size).to_a.freeze
 
     # Evidence that says nothing: what a bare "all verified" looks like.
     STOCK = /\A\W*(tutto|all|everything|nulla|niente|nessun problema|no problem|nothing|ok|okay|va bene|verificat[oa]|verified|checked|controllat[oa]|fine|bene|pass|passa|n\/a|na)(\W+(a posto|verificato|verified|checked|ok|controllato|fine|bene|to report|da segnalare))?\W*\z/i
@@ -29,10 +38,14 @@ module Review
 
     module_function
 
-    # 13 points for a practice item, 11 for any other.
-    def expected_count(practice:) = practice ? ALL_POINTS.size : POINTS.size
+    # The ids of the points of a review: 1..11, then 12 and 13 for a practice item, then 14 and 15 for a bilingual one (an item that is
+    # bilingual and not a practice item has 1..11, 14, 15).
+    def ids(practice:, bilingual: false) = (1..POINTS.size).to_a + (practice ? PRACTICE_IDS : []) + (bilingual ? TRANSLATION_IDS : [])
 
-    def all(practice: false) = ALL_POINTS.first(expected_count(practice: practice)).each_with_index.map { |text, i| { id: i + 1, point: text } }
+    # 13 points for a practice item, 11 for any other; two more for a bilingual one.
+    def expected_count(practice:, bilingual: false) = ids(practice: practice, bilingual: bilingual).size
+
+    def all(practice: false, bilingual: false) = ids(practice: practice, bilingual: bilingual).map { |id| { id: id, point: ALL_POINTS[id - 1] } }
 
     # The ids of checklist points whose evidence is empty talk, and whether the
     # eleven pieces of evidence are not all different.

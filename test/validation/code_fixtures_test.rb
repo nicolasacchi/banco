@@ -28,7 +28,7 @@ class CodeFixturesTest < ActiveSupport::TestCase
   # run by the lesson/2 checks (R1) and the render check (R4). Until then they are registered and have a fixture file.
   # (and the wave 2 codes whose fixture is only described under `pending` until their track writes it, rules version 9)
   LESSON2 = (Lesson2Fixtures::MANIFEST["bad"].map { |b| b["code"] } + Lesson2Fixtures::MANIFEST.dig("pending", "entries").map { |e| e["code"] } +
-             %w[E-LESSON-RENDER E-LESSON-OVERFLOW E-DIAGRAM-LAYOUT E-DIAGRAM-SMALL-TEXT E-ITEM-RENDER E-ITEM-OVERFLOW] + Validation::Codes.all.keys.grep(/PAGE|FREEPAGE/)).uniq.freeze
+             %w[E-LESSON-RENDER E-LESSON-OVERFLOW E-DIAGRAM-LAYOUT E-DIAGRAM-SMALL-TEXT E-ITEM-RENDER E-ITEM-OVERFLOW W-LANG-SPAN-REDUNDANT] + Validation::Codes.all.keys.grep(/PAGE|FREEPAGE/)).uniq.freeze
   LATER = (%w[E-VERIFY-AUTHOR E-SESSION-NOT-INDEPENDENT] + PHASE_1B + LESSON2).freeze
 
   test "every Phase 1b code of this list has a bad fixture in the lesson or the course tests" do
@@ -46,6 +46,15 @@ class CodeFixturesTest < ActiveSupport::TestCase
 
   def static_codes(doc, context: F.context, files: nil)
     Validation::ItemRunner.new(files: files || F.files_for(doc), context: context).call.findings.map(&:code).uniq
+  end
+
+  # The codes of the golden bilingual item (test/fixtures/lang/item_choice.json) after +change+ broke a copy of it.
+  def lang_codes
+    item = JSON.parse(Rails.root.join("test/fixtures/lang/item_choice.json").read)
+    yield item
+    skills = { "english.make-do" => { "key" => "english.make-do", "errors" => [] } }
+    context = Validation::Context.new(subject: "english", skill: ->(key) { skills[key] }, graph_present: true, source_line: ->(*) { nil }, reference_body: ->(_) { nil })
+    static_codes(item, context: context)
   end
 
   def chrome_codes(files, **opts)
@@ -384,6 +393,28 @@ class CodeFixturesTest < ActiveSupport::TestCase
     "W-CALCULATOR" => lambda {
       business = item("subject" => "business", "skill" => "business.invoice")
       static_codes(business, context: F.context(subject: "business", extra_skills: { "business.invoice" => { "key" => "business.invoice" } }))
+    },
+    # D-402: the bilingual courses; the golden item of slice 0 (english, two instances) is the good copy, each case breaks it once.
+    "E-LANG-BILINGUAL-REQUIRED" => lambda {
+      Validation::Rules.with(lang: { bilingual_required: %w[english] }) { lang_codes { |i| i.delete("bilingual") } }
+    },
+    "E-LANG-BILINGUAL-FLAG" => -> { lang_codes { |i| i.delete("bilingual") } },
+    "E-LANG-PAIR-MISSING" => -> { lang_codes { |i| i.delete("answer_format_it") } },
+    "E-LANG-PAIR-ORPHAN" => -> { lang_codes { |i| i["prompt"].delete("stem_en") } },
+    "E-LANG-PAIR-SHAPE" => -> { lang_codes { |i| i["instances"][0]["display"]["stem_it"] = "Il sabato io faccio il letto." } },
+    "E-LANG-PAIR-CONFLICT" => lambda {
+      found = Validation::Findings.new
+      Validation::Bilingual.check(found, { "text_en" => "The book", "text_it" => "Il libro", "again" => { "text_en" => "The book", "text_it" => "Il quaderno" } }, lang: "en")
+      found.map(&:code).uniq
+    },
+    "E-LANG-TRANSLATION-LANG" => -> { lang_codes { |i| i["prompt"]["stem_it"] = "Choose the two words that fill the gaps, in the order." } },
+    "E-LANG-TRANSLATION-COPY" => -> { lang_codes { |i| i["prompt"]["stem_it"] = i["prompt"]["stem_en"] } },
+    "W-TOPIC-LANG-MIXED" => lambda {
+      found = Validation::Findings.new
+      subject = Struct.new(:key).new("english")
+      lesson = Struct.new(:body).new({ "bilingual" => true })
+      Validation::TopicChecks.mixed({ "key" => "topic.english.x" }, { "title_it" => "Titolo" }, subject, lesson, [ { skill: "s", pins: [ { key: "i", bilingual: false } ] } ], found)
+      found.map(&:code).uniq
     }
   }.freeze
 

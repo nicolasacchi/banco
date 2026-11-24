@@ -30,6 +30,9 @@ module Banco
           "table" => { "header" => "header_it", "rows" => "rows_it" }, "solution" => { "final" => "final_it" }
         }
       }.freeze
+      # The words a bilingual item teaches, outside the first 3000 of the language (W-LANG-LEVEL), like a lesson's `teaches_en`: the item root only.
+      TEACHES = { "type" => "array", "maxItems" => 40, "items" => { "type" => "string", "minLength" => 1, "maxLength" => 40 }, "description" => "D-402: words of the target language the item teaches, never linted as above the level." }.freeze
+      TEACHES_AT = { "item" => [ [] ] }.freeze
 
       module_function
 
@@ -50,6 +53,10 @@ module Banco
           raise ArgumentError, "#{name}: no #{path.join('/')}" unless target.is_a?(Hash) && target["properties"].is_a?(Hash)
 
           target["properties"]["bilingual"] ||= MARKER.dup
+        end
+        TEACHES_AT.fetch(name.to_s, []).each do |path|
+          target = path.empty? ? out : out.dig(*path)
+          LANGS.each { |lang| target["properties"]["teaches_#{lang}"] ||= TEACHES.dup }
         end
         out
       end

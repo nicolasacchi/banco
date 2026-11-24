@@ -26,8 +26,20 @@ module Validation
       scope_markers(skills, context, findings)
       other_subject_refs(skills, context, findings)
       needed_by(skills, index, subject, findings)
+      language(graph, subject, findings)
       readability(skills, findings)
       findings
+    end
+
+    # D-402: a bilingual graph of english or spanish pairs every skill label (`label_en|_es` beside `label_it`); the teacher's `description_it`,
+    # `reason_it` and notes stay Italian. A sibling without the marker is E-LANG-BILINGUAL-FLAG.
+    def language(graph, subject, findings)
+      Bilingual.flag(findings, graph, subject: subject)
+      lang = Lessons::Lang.target(subject)
+      return unless lang && Bilingual.bilingual?(graph)
+
+      Bilingual.check(findings, graph, lang: lang, conflicts: false)
+      Bilingual.lint_target(findings, graph, lang)
     end
 
     # D-085: the *_it texts of the skills are linted like an item's; an E-READ there is

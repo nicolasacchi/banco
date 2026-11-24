@@ -8,7 +8,7 @@
   "component": "choice",
   "level": 2,
   "prompt": {
-    "stem_en": "Choose the two words that fill the gaps, in the order they are needed.",
+    "stem_en": "Choose the two words for the gaps, in the right order.",
     "stem_it": "Scegli le due parole che completano la frase, nell'ordine in cui servono."
   },
   "answer_format_en": "Each option has two parts, split by /. The first part goes in the first gap.",
@@ -16,7 +16,7 @@
   "steps_en": ["Read the whole sentence.", "Find the two gaps.", "Choose the pair in the order of the gaps."],
   "steps_it": ["Leggi tutta la frase.", "Trova i due spazi.", "Scegli la coppia nell'ordine degli spazi."],
   "hints_en": [
-    "Some verbs go with fixed nouns: you make some things and you do others.",
+    "Some verbs go with fixed nouns: make some, do others.",
     "Think of the nouns: a bed, the shopping. Which verb is the usual partner of each one?",
     "Say each phrase in your head with both verbs. Which one sounds right?"
   ],
@@ -56,7 +56,8 @@
       "answer": "o1",
       "errors": [
         { "code": "en_make_do_swap", "value": "o2" },
-        { "code": "en_make_for_both", "value": "o3" }
+        { "code": "en_make_for_both", "value": "o3" },
+        { "code": "en_make_for_both", "value": "o4" }
       ],
       "solution": {
         "steps": [
@@ -81,6 +82,7 @@
       "answer": "o1",
       "errors": [
         { "code": "en_make_do_swap", "value": "o2" },
+        { "code": "en_make_for_both", "value": "o3" },
         { "code": "en_make_for_both", "value": "o4" }
       ],
       "solution": {
@@ -91,7 +93,7 @@
         "final_it": "makes / do: la mamma fa una torta e io faccio i compiti."
       },
       "hints_en": [
-        "The first gap goes with Mum: look at the end of the verb.",
+        "The first gap goes with Mum: look at the verb ending.",
         "A cake is something you build from ingredients."
       ],
       "hints_it": [

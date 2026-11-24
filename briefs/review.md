@@ -39,7 +39,7 @@ step is its position in `shown_order` (printed with each file), the ids of the i
 
 Search for duplicates: `banco search "WORDS" --subject KEY` finds the lessons, items and findings that already exist, drafts included; a near copy of one of them is a finding. Check a cited reference text with `banco search "WORDS" --kind reference_article`. Run `banco search --like KEY` (a key, or a ref such as `item:KEY`; a whole lesson is `lesson:KEY`, its card N `lesson_card:KEY#N`) on what you review: its nearest neighbours are the candidates for duplicates.
 
-## The checklist (11 points, 13 for a practice item, in this order)
+## The checklist (11 points, 13 for a practice item, two more for a bilingual item, in this order)
 
 Each point gets `result` (`pass`, `fail`, `na`) and `evidence`: what you checked,
 on which instance, concretely.
@@ -65,8 +65,24 @@ and then the review has exactly 13 points; any other review has exactly 11 (`E-R
 13. Messages and solution: each typical-error message names the mistake and the rule without the key;
     each solution step is correct, says why, and ends at the key.
 
+An item of `english` or `spanish` written in the target language (`bilingual: true`, with `stem_en`/`stem_es` beside `stem_it`, options with
+`text` and `text_it`, and so on: `banco review open` shows both texts side by side) is reviewed on two more points, which keep their own
+numbers **14 and 15** whether the item is a practice item or not. A practice item that is bilingual has 15 points (1 to 15); another bilingual item
+has 13 (1 to 11, then 14 and 15); an item that is not bilingual keeps its 11 or 13 (`E-REVIEW-CHECKLIST`, which also checks the ids):
+
+14. The Italian translation: wrong, adding or dropping something, or giving the key away. Read every Italian text against its target-language
+    text, pair by pair (stem, options, hints, messages, solution steps, final): the student can always open it. A translation that
+    makes the answer obvious (a «translate this» task whose Italian prompt is the exercise, matching whose Italian options are the answer, a hint
+    or a stem in Italian that names the key) is a finding with `field` `translation_leak`; a translation that is wrong or that changes the meaning,
+    the level or the number of things is a finding with `field` `translation_fidelity`. The Italian of a reading passage is an exception: the
+    student has it only after answering, so it cannot leak, but it must still be faithful.
+15. The target-language text: above the level of a learner (sentences of at most 12 words, the first 3000 words of the language, plain
+    grammar), unclear, with Italian words in it, or with a name that is not a common given name (never the student's or his household's).
+
 The blind solver of a practice item sees what the student sees before asking for help: prompt and
-display, never hints, messages or solutions.
+display, never hints, messages or solutions. The blind solver of a bilingual item answers from the target-language text, with the Italian
+translation in front of it as the student has it when he opens it (never the Italian of a reading passage, which comes after the answer): if
+it can answer from the Italian alone, that is a `translation_leak`.
 
 ## Findings
 

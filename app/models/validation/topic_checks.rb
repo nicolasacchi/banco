@@ -24,17 +24,48 @@ module Validation
         return Result.new(findings: findings)
       end
 
+      language(doc, subject, findings)
       lesson, lesson_revision = lesson_pin(doc, key, entry, findings)
       practice_skills(doc, entry, findings)
       resolved = pins(doc, subject, findings)
       pool(resolved, findings, extra: entry["kind"] == "extra")
       instances_vs_lesson(resolved, lesson_revision, findings) if lesson_revision
+      mixed(doc, entry, subject, lesson_revision, resolved, findings)
       overlap(resolved, subject, findings)
       return Result.new(findings: findings) if findings.any_error? || lesson.nil?
 
       stored = doc.merge("lesson_revision" => lesson_revision.id,
                          "practice" => resolved.map { |entry_pins| { "skill" => entry_pins[:skill], "items" => entry_pins[:pins].map { |p| { "item" => p[:key], "revision" => p[:revision].id } } } })
       Result.new(findings: findings, stored: stored, lesson_revision: lesson_revision, item_revisions: resolved.flat_map { |e| e[:pins].map { |p| p[:revision] } })
+    end
+
+    # ---- the bilingual courses (D-402) ----------------------------------------------------------------
+
+    # The marker of the topic and, for a bilingual topic of english or spanish, the pair of its intro (and the lint of the target text).
+    def language(doc, subject, findings)
+      Bilingual.flag(findings, doc, subject: subject.key)
+      lang = Lessons::Lang.target(subject.key)
+      return unless lang && Bilingual.bilingual?(doc)
+
+      Bilingual.check(findings, doc, lang: lang, conflicts: false)
+      Bilingual.lint_target(findings, doc, lang)
+      Readability.lint_document(doc.slice("intro_it"), "", findings)
+    end
+
+    # W-TOPIC-LANG-MIXED: a topic is one unit of rewriting. When its lesson, its pinned items, its title or its intro are not all bilingual
+    # (and at least one is), the student reads English or Spanish in one place and today's pages in another: the warning lists the parts that
+    # are not. Nothing for a topic of another subject, or of one that is not bilingual at all.
+    def mixed(doc, entry, subject, lesson_revision, resolved, findings)
+      lang = Lessons::Lang.target(subject.key) or return
+      parts = []
+      parts << [ "the lesson", lesson_revision.body["bilingual"] == true ] if lesson_revision
+      resolved.each { |e| e[:pins].each { |p| parts << [ "the item #{p[:key]}", p[:bilingual] ] } }
+      parts << [ "the title", entry["bilingual"] == true || entry.key?("title_#{lang}") ]
+      parts << [ "the intro", doc.key?("intro_#{lang}") ] if doc.key?("intro_it") || doc.key?("intro_#{lang}")
+      return if parts.none?(&:last) || parts.all?(&:last)
+
+      missing = parts.reject(&:last).map(&:first)
+      findings.add("W-TOPIC-LANG-MIXED", "/key", "#{doc['key']} is partly bilingual: #{missing.join(', ')} #{missing.size == 1 ? 'is' : 'are'} not (a topic is rewritten as a whole: lesson, items, title and intro)", rule: "mixed", parts: missing)
     end
 
     def lesson_pin(doc, key, entry, findings)
@@ -87,7 +118,8 @@ module Validation
             findings.add("E-TOPIC-ITEM-KIND", field, "#{pin['item']} measures #{info.skills.join(', ')}, not #{entry['skill']}", rule: "skill-#{pin['item']}")
             next
           end
-          { key: pin["item"], revision: revision, info: info, level: JSON.parse(revision.body_json)["level"] }
+          body = JSON.parse(revision.body_json)
+          { key: pin["item"], revision: revision, info: info, level: body["level"], bilingual: body["bilingual"] == true }
         end
         { skill: entry["skill"], pins: list }
       end
@@ -143,10 +175,11 @@ module Validation
       resolved.each do |entry|
         entry[:pins].each do |pin|
           pin[:revision].instances.each do |inst|
-            stem = JSON.parse(inst.display_json)["stem_it"].to_s
-            next if stem.empty?
+            display = JSON.parse(inst.display_json)
+            stems = both(display, "stem").map(&:to_s).reject(&:empty?)
+            next if stems.empty?
 
-            next unless lines.any? { |line| same_line?(stem, line) }
+            next unless stems.any? { |stem| lines.any? { |line| same_line?(stem, line) } }
 
             findings.add("W-TOPIC-INSTANCE-IN-LESSON", "/practice", "an instance of #{pin[:key]} (seed #{inst.seed}) repeats a line of the lesson: S would see the worked answer", rule: "in_lesson-#{pin[:key]}", seed: inst.seed)
           end
@@ -161,6 +194,9 @@ module Validation
       body["exercises"].map { |e| e["text_it"] } + from_blocks
     end
 
+    # A text of a revision in both its layers: the Italian under `<base>_it` and, in a bilingual one, the target text under `<base>_en|_es`.
+    def both(hash, base) = ([ hash["#{base}_it"] ] + Lessons::Lang::PAIR_LANGS.map { |l| hash["#{base}_#{l}"] }).compact
+
     # The lines of a banco.lesson/2 that S could meet again as a practice instance (A12): the problem and the steps of a
     # worked example, the prompt of a check, the text of a try exercise, and the equation a balance draws.
     def lesson2_lines(body)
@@ -170,14 +206,14 @@ module Validation
         Lessons::Blocks.each_block(card) do |b, _|
           case b["type"]
           when "example"
-            lines << b["problem_it"]
-            lines.concat(b["steps"].to_a.map { |s| s["do_it"] })
-            lines.concat(b["steps"].to_a.filter_map { |s| s.dig("blank", "prompt_it") })
-          when "check" then lines << b["prompt_it"]
+            lines.concat(both(b, "problem"))
+            lines.concat(b["steps"].to_a.flat_map { |s| both(s, "do") })
+            lines.concat(b["steps"].to_a.flat_map { |s| s["blank"].is_a?(Hash) ? both(s["blank"], "prompt") : [] })
+          when "check" then lines.concat(both(b, "prompt"))
           when "try"
             b["exercises"].to_a.each do |e|
-              lines << e["text_it"]
-              lines.concat((e["checks"] || [ e["check"] ].compact).map { |c| c["prompt_it"] })
+              lines.concat(both(e, "text"))
+              lines.concat((e["checks"] || [ e["check"] ].compact).flat_map { |c| both(c, "prompt") })
             end
           end
           Lessons::Blocks.diagrams(b).each { |d| lines.concat(drawn_equations(d)) }

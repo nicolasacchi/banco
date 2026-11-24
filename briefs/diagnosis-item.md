@@ -137,8 +137,8 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
    A short text of your own to read before the question (an informative text, the
    text to summarise) goes in the item's `passage_it` (kinds `diagnosis_item` and
    `short_answer`; up to 2400 characters, linted as a passage, shown to the student,
-   the grader, the solver and the teacher above the question; in english and spanish the passage
-   and a rubric's `model_answer_it` are in that language and are not linted as Italian). It is not part of the
+   the grader, the solver and the teacher above the question; in a legacy revision of english or spanish (no `bilingual` flag) the passage
+   and a rubric's `model_answer_it` are in that language and are not linted as Italian; in a bilingual revision they are pairs, see below). It is not part of the
    stem, so the 60-word cap does not count it. A quoted excerpt of an imported text goes in `prompt.quote`
    `{ref, text}`, not in the stem: `banco reference list` shows the imported
    reference texts and `banco reference show --key KEY` their body; `text` must be
@@ -194,6 +194,27 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
     calculation.
 14. **Scope.** No content of the in-progress (star-empty) lines and no content of
     the following year inside items of skills the student has already studied.
+
+## English and Spanish in the target language, with the Italian (D-402)
+
+An item of `english` or `spanish` may be written in the language it teaches, with every student text also in Italian: `"bilingual": true` and the pairs
+`<base>_en|_es` + `<base>_it`. The whole of this is in `banco brief show practice-item`, «English and Spanish»: read it, it applies to diagnosis items,
+short answers and testlets too (a testlet's sub items inherit the flag). What changes in the rules above:
+
+- **Rule 6, readability.** The Italian lint runs on **every** `_it` text of a bilingual item, `passage_it` and `model_answer_it` included (they are the Italian
+  translations there: the passage is `passage_en|_es` + `passage_it`, the model answer `model_answer_en|_es` + `model_answer_it`). The target text is
+  linted as the target language: sentences of at most 12 words, the instruction at most 60, words of the first 3 000 of the language (`teaches_en|_es` for
+  the others), common given names only (Tom, Amy, Emma, Jack, Sophie; Lucía, Carlos, Marta, Pablo), never the student's or his household's.
+- **Rule 5, no key in the text.** The scans run twice, on the target text and on the Italian one (the student can always open it): `E-SOLUTION-IN-DISPLAY`
+  (the Italian of the key option is looked for as well), `E-SUPPORT-LEAK`, `W-TESTLET-LEAK`, `W-ANSWER-IN-STEM`, `W-MESSAGE-GIVES-KEY`. No exercise
+  whose Italian text is the answer.
+- **A reading passage is a comprehension text.** The passage's Italian is **not** shown to the student before he answers (it appears with the solution, or when the
+  item or sub items are closed), otherwise he would answer from the Italian: write it, complete and faithful, but never rely on it in the questions. The
+  instruction and the question stems have their Italian as usual, and so do the options.
+- **Rubric.** The rubric stays Italian (`expected_it`, a teacher text); the model answer is a pair.
+- **A legacy item** (no flag) is validated and served exactly as before; a bilingual one is checked for completeness (`E-LANG-PAIR-MISSING`, `-ORPHAN`),
+  shape (`E-LANG-PAIR-SHAPE`), language (`E-LANG-TRANSLATION-LANG`, `E-LANG-TRANSLATION-COPY`, `E-LESSON-LANG`) and the flag (`E-LANG-BILINGUAL-FLAG`).
+  The entry test is not in scope of the first rewrite: do not convert a diagnosis item unless the teacher asks.
 
 ## Supports: answer format and steps
 

@@ -5,6 +5,8 @@ module Review
   # item's skill cites. Never generator.mjs, verify.mjs, or another reviewer's work.
   class ItemText
     INSTANCES_OF_GENERATOR = 8
+    # The texts of a bilingual item are written twice, under `<base>_it` and `<base>_en|_es` (D-402).
+    SIBLINGS = %w[_it _en _es].freeze
 
     attr_reader :revision
 
@@ -32,21 +34,30 @@ module Review
 
     def instance_row(number) = number.is_a?(Integer) && number >= 1 ? instances[number - 1] : nil
 
-    # {instance, display, answer, errors, solution} for the reviewer.
+    # {instance, display, answer, errors, solution} for the reviewer. A bilingual item shows both layers (the display and the solution hold the
+    # target text and its Italian side by side, D-402); an instance's own hints are `hints_it` for a legacy item and `hints_<lang>` + `hints_it`
+    # for a bilingual one.
     def review_instances
       instances.each_with_index.map do |row, i|
+        hints = row.hints_json.present? ? JSON.parse(row.hints_json) : nil
         { instance: i + 1, display: figures.mark(with_passage(JSON.parse(row.display_json)), i + 1, keep: true), answer: JSON.parse(row.answer_json),
           errors: row.errors_json.present? ? JSON.parse(row.errors_json) : nil,
           solution: row.solution_json.present? ? JSON.parse(row.solution_json) : nil,
           accept: row.accept_json.present? ? JSON.parse(row.accept_json) : nil,
-          hints_it: row.hints_json.present? ? JSON.parse(row.hints_json) : nil }.compact
+          **(hints.is_a?(Hash) ? hints.symbolize_keys : { hints_it: hints }) }.compact
       end
     end
 
-    # {instance, display} for the blind solver: nothing that holds the key.
+    # {instance, display} for the blind solver: nothing that holds the key. The solver stands for the student with the translation open, so it
+    # reads both layers, except the Italian of a reading passage: the student has no translation of the passage before he has answered
+    # (a bilingual passage is `passage_<lang>` + `passage_it`), so the solver does not either.
     def solver_instances
-      instances.each_with_index.map { |row, i| { instance: i + 1, display: figures.mark(with_passage(JSON.parse(row.display_json)), i + 1) } }
+      instances.each_with_index.map { |row, i| { instance: i + 1, display: figures.mark(student_view(with_passage(JSON.parse(row.display_json))), i + 1) } }
     end
+
+    def bilingual? = body["bilingual"] == true
+
+    def student_view(display) = bilingual? ? display.except("passage_it") : display
 
     # The figures of the instances read so far (call review_instances or solver_instances first), each as a PNG of the
     # drawing alone (D-320); [] when no instance shows one.
@@ -58,6 +69,7 @@ module Review
     # its prompt (stem, table, quote, figure; an ordering's direction lives there).
     # The stored display of older revisions does not hold them. An instance's own
     # stem stays under stem_it; the prompt's stem then goes under prompt_stem_it (D-169).
+    # A bilingual item carries every text under its siblings (`stem_en` + `stem_it`, D-402); each is kept under its own name.
     def with_passage(display)
       return with_testlet_parts(display) if body["kind"] == "testlet"
 
@@ -70,19 +82,21 @@ module Review
         sub = Array(body["sub_items"]).find { |s| s["id"] == shown["id"] }
         sub && shown["display"].is_a?(Hash) ? shown.merge("display" => with_prompt(shown["display"], sub, passage: false)) : shown
       end
-      extra = body["passage_it"].present? && !display.key?("passage_it") ? { "passage_it" => body["passage_it"] } : {}
+      extra = SIBLINGS.to_h { |s| [ "passage#{s}", body["passage#{s}"] ] }.select { |k, v| v.present? && !display.key?(k) }
       extra.merge(display).merge("sub_items" => subs)
     end
 
     def with_prompt(display, source, passage: true)
       extra = {}
-      extra["passage_it"] = source["passage_it"] if passage && source["passage_it"].present?
+      SIBLINGS.each { |s| extra["passage#{s}"] = source["passage#{s}"] if passage && source["passage#{s}"].present? }
       prompt = source["prompt"].is_a?(Hash) ? source["prompt"] : {}
-      stem = prompt["stem_it"]
-      extra[display.key?("stem_it") ? "prompt_stem_it" : "stem_it"] = stem if stem.present?
+      SIBLINGS.each do |s|
+        key = "stem#{s}"
+        extra[display.key?(key) ? "prompt_#{key}" : key] = prompt[key] if prompt[key].present?
+      end
       %w[table quote figure].each { |k| extra[k] = prompt[k] if prompt[k].present? && !display.key?(k) }
       # The supports the student reads with the item (D-216): the item's own, unless the instance has its own.
-      %w[answer_format_it steps_it].each { |k| extra[k] = source[k] if source[k].present? && !display.key?(k) }
+      SIBLINGS.flat_map { |s| [ "answer_format#{s}", "steps#{s}" ] }.each { |k| extra[k] = source[k] if source[k].present? && !display.key?(k) }
       extra.merge(display)
     end
 

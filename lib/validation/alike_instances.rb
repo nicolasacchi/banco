@@ -39,7 +39,7 @@ module Validation
 
     def rows_of(component, display)
       d = display.is_a?(Hash) ? display : {}
-      stem = component == "choice" ? norm(d["stem_it"]) : nil
+      stem = component == "choice" ? norm(Lessons::Lang.pick(d, "stem")) : nil
       { stem: stem, rows: Array(d[KEYS.fetch(component)]).map { |e| norm(e.is_a?(Hash) ? e["text"] : e) }.reject(&:empty?).uniq }
     end
 

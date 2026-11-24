@@ -308,7 +308,7 @@
           "type": "object",
           "properties": {
             "id": {
-              "const": 12
+              "enum": [12, 14]
             },
             "result": {
               "enum": [
@@ -334,7 +334,59 @@
           "type": "object",
           "properties": {
             "id": {
-              "const": 13
+              "enum": [13, 15]
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 800
+            }
+          },
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "const": 14
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 800
+            }
+          },
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "const": 15
             },
             "result": {
               "enum": [
@@ -359,7 +411,7 @@
       ],
       "items": false,
       "minItems": 11,
-      "maxItems": 13
+      "maxItems": 15
     },
     "findings": {
       "type": "array",

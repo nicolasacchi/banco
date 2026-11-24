@@ -3,7 +3,7 @@
     "part": {
       "component": "choice",
       "lang": "en",
-      "stem_en": "Choose the two words that fill the gaps, in the order they are needed.",
+      "stem_en": "Choose the two words for the gaps, in the right order.",
       "stem_it": "Scegli le due parole che completano la frase, nell'ordine in cui servono.",
       "instance_stem_en": "On Saturdays I ___ my bed and then I ___ the shopping with Dad.",
       "instance_stem_it": "Il sabato io ___ il letto e poi io ___ la spesa con papà.",
@@ -19,13 +19,13 @@
       "steps_it": ["Leggi tutta la frase.", "Trova i due spazi.", "Scegli la coppia nell'ordine degli spazi."]
     },
     "exercise": {
-      "title_en": "Choose the two words that fill the gaps, in the order they are needed.",
+      "title_en": "Choose the two words for the gaps, in the right order.",
       "title_it": "Scegli le due parole che completano la frase, nell'ordine in cui servono."
     },
     "hint": {
       "n": 1,
       "total": 3,
-      "hint_en": "Some verbs go with fixed nouns: you make some things and you do others.",
+      "hint_en": "Some verbs go with fixed nouns: make some, do others.",
       "hint_it": "Alcuni verbi stanno con nomi fissi: certe cose si make e altre si do."
     },
     "feedback": {
@@ -67,7 +67,7 @@
     "hint": {
       "n": 2,
       "total": 3,
-      "hint_en": "With he, she and it the verb in the present is not the same as with I.",
+      "hint_en": "He, she and it take a different verb form from I.",
       "hint_it": "Con he, she e it il verbo al presente non è uguale a quello con I."
     },
     "feedback": {

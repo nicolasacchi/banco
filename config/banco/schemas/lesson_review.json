@@ -312,11 +312,63 @@
               "maxLength": 1200
             }
           }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "properties": {
+            "id": {
+              "const": 12
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 1200
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "result",
+            "evidence"
+          ],
+          "properties": {
+            "id": {
+              "const": 13
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fail",
+                "na"
+              ]
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 1200
+            }
+          }
         }
       ],
       "items": false,
       "minItems": 8,
-      "maxItems": 11
+      "maxItems": 13
     },
     "recomputed": {
       "type": "array",
@@ -474,5 +526,5 @@
       }
     }
   },
-  "description": "A review of a lesson revision. A lesson/1 revision has exactly 8 checklist points and findings by section; a lesson/2 revision has 11 points and findings by card (card 0 is the cover). The count that fits the revision is E-REVIEW-CHECKLIST, checked in Ruby (Review::LessonChecklist); the schema allows 8 to 11."
+  "description": "A review of a lesson revision. A lesson/1 revision has exactly 8 checklist points and findings by section; a lesson/2 revision has 11 points (13 for a bilingual one, D-402: two translation points) and findings by card (card 0 is the cover). The count that fits the revision is E-REVIEW-CHECKLIST, checked in Ruby (Review::LessonChecklist); the schema allows 8 to 13."
 }
