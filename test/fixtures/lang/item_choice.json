@@ -1,0 +1,111 @@
+{
+  "schema": "banco.item/1",
+  "schema_version": 1,
+  "kind": "practice_item",
+  "subject": "english",
+  "bilingual": true,
+  "skill": "english.make-do",
+  "component": "choice",
+  "level": 2,
+  "prompt": {
+    "stem_en": "Choose the two words that fill the gaps, in the order they are needed.",
+    "stem_it": "Scegli le due parole che completano la frase, nell'ordine in cui servono."
+  },
+  "answer_format_en": "Each option has two parts, split by /. The first part goes in the first gap.",
+  "answer_format_it": "Ogni opzione ha due parti, divise da /. La prima parte va nel primo spazio.",
+  "steps_en": ["Read the whole sentence.", "Find the two gaps.", "Choose the pair in the order of the gaps."],
+  "steps_it": ["Leggi tutta la frase.", "Trova i due spazi.", "Scegli la coppia nell'ordine degli spazi."],
+  "hints_en": [
+    "Some verbs go with fixed nouns: you make some things and you do others.",
+    "Think of the nouns: a bed, the shopping. Which verb is the usual partner of each one?",
+    "Say each phrase in your head with both verbs. Which one sounds right?"
+  ],
+  "hints_it": [
+    "Alcuni verbi stanno con nomi fissi: certe cose si make e altre si do.",
+    "Pensa ai nomi: un letto, la spesa. Quale verbo è il compagno abituale di ciascuno?",
+    "Di' ogni espressione a mente con tutti e due i verbi. Quale suona bene?"
+  ],
+  "error_catalogue": [
+    {
+      "code": "en_make_do_swap",
+      "description_it": "Scambia make e do.",
+      "message_en": "Look at the nouns again. Which verb is the partner of each one?",
+      "message_it": "Guarda di nuovo i nomi. Quale verbo è il compagno di ciascuno?",
+      "implicates": []
+    },
+    {
+      "code": "en_make_for_both",
+      "description_it": "Usa lo stesso verbo per tutti e due gli spazi.",
+      "message_en": "The two gaps need two different verbs.",
+      "message_it": "I due spazi vogliono due verbi diversi.",
+      "implicates": []
+    }
+  ],
+  "instances": [
+    {
+      "display": {
+        "stem_en": "On Saturdays I ___ my bed and then I ___ the shopping with Dad.",
+        "stem_it": "Il sabato io ___ il letto e poi io ___ la spesa con papà.",
+        "options": [
+          { "id": "o1", "text": "make / do", "text_it": "fare / fare" },
+          { "id": "o2", "text": "do / make", "text_it": "fare / fare" },
+          { "id": "o3", "text": "make / make", "text_it": "fare / fare" },
+          { "id": "o4", "text": "do / do", "text_it": "fare / fare" }
+        ]
+      },
+      "answer": "o1",
+      "errors": [
+        { "code": "en_make_do_swap", "value": "o2" },
+        { "code": "en_make_for_both", "value": "o3" }
+      ],
+      "solution": {
+        "steps": [
+          { "text_en": "We say «make the bed».", "text_it": "Si dice «make the bed»." },
+          { "text_en": "We say «do the shopping».", "text_it": "Si dice «do the shopping»." }
+        ],
+        "final": "make / do",
+        "final_it": "make / do: il sabato rifaccio il letto e faccio la spesa."
+      }
+    },
+    {
+      "display": {
+        "stem_en": "On Sunday Mum ___ a cake and I ___ my homework.",
+        "stem_it": "La domenica la mamma ___ una torta e io ___ i compiti.",
+        "options": [
+          { "id": "o1", "text": "makes / do", "text_it": "fa / faccio" },
+          { "id": "o2", "text": "does / make", "text_it": "fa / faccio" },
+          { "id": "o3", "text": "makes / make", "text_it": "fa / faccio" },
+          { "id": "o4", "text": "does / do", "text_it": "fa / faccio" }
+        ]
+      },
+      "answer": "o1",
+      "errors": [
+        { "code": "en_make_do_swap", "value": "o2" },
+        { "code": "en_make_for_both", "value": "o4" }
+      ],
+      "solution": {
+        "steps": [
+          { "text_en": "We say «make a cake» and «do homework».", "text_it": "Si dice «make a cake» e «do homework»." }
+        ],
+        "final": "makes / do",
+        "final_it": "makes / do: la mamma fa una torta e io faccio i compiti."
+      },
+      "hints_en": [
+        "The first gap goes with Mum: look at the end of the verb.",
+        "A cake is something you build from ingredients."
+      ],
+      "hints_it": [
+        "Il primo spazio sta con la mamma: guarda la fine del verbo.",
+        "Una torta è qualcosa che si costruisce con gli ingredienti."
+      ]
+    }
+  ],
+  "sources": [
+    { "kind": "seconda_line", "ref": "seconda-example:200", "fragment": "verbi" }
+  ],
+  "tests": {
+    "must_accept": ["o1"],
+    "must_reject": ["o2"],
+    "blank": "invalid"
+  }
+}

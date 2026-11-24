@@ -1,0 +1,9 @@
+# La traduzione in italiano dei corsi di inglese e spagnolo (D-402): il pulsante «Traduzione» di una scheda, di un esercizio e di un blocco,
+# e la scelta in Impostazioni. Il gemello inglese è translation.en.yml. Le stesse chiavi le legge anche il browser (items/translation.js).
+it:
+  translation:
+    toggle: "Traduzione"
+    unit: "Mostra la traduzione: %{words}"
+    settings_legend: "Traduzione in italiano"
+    settings_ask: "Quando la chiedo"
+    settings_always: "Sempre visibile"

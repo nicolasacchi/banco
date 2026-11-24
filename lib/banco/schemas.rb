@@ -2,6 +2,7 @@
 
 require "json"
 require "json_schemer"
+require_relative "schemas/bilingual"
 
 module Banco
   # The frozen content formats (A-03, A-05, B-07, C-01): banco.skill_graph/1,
@@ -10,6 +11,10 @@ module Banco
   # $defs.front_matter; banco.lesson/2 in the same file, D-245), banco.course/1, banco.topic/1, banco.lesson_review/1. JSON Schemas
   # in config/banco/schemas/, validated with json_schemer in production too: the
   # E-SCHEMA check of every submission depends on it.
+  #
+  # D-402: a subject that teaches a language (english, spanish) is checked against the same files read through Schemas::Bilingual.derive, which adds
+  # the `_en`/`_es` siblings of every `_it` property, the R2 keys and the marker `bilingual`; every other subject meets the files as they are.
+  # `schema(name)` is the file as it is; `for_subject(name, subject)` is the one to use where the subject is known.
   #
   # A change to a schema after authoring has started means a new version
   # (banco.item/2) and a small migration for drafts; schema_version is in every
@@ -29,22 +34,31 @@ module Banco
     class << self
       def root = defined?(Rails) ? Rails.root.to_s : File.expand_path("../..", __dir__)
 
-      def schema(name)
+      # With +bilingual+ the schema is the derived one (a reference to the diagram schema is derived too).
+      def schema(name, bilingual: false)
         name = name.to_s
         raise ArgumentError, "unknown schema #{name}" unless NAMES.include?(name)
 
         @schemers ||= {}
-        @schemers[name] ||= JSONSchemer.schema(read(name), ref_resolver: method(:resolve))
+        @schemers[[ name, bilingual ]] ||= JSONSchemer.schema(read(name, bilingual: bilingual), ref_resolver: ->(uri) { resolve(uri, bilingual: bilingual) })
       end
 
-      def read(name) = JSON.parse(File.read(File.join(SCHEMA_DIR.call(root), "#{name}.json")))
+      # The schema of a document of +subject+: derived for english and spanish, the file as it is for every other subject (and for nil).
+      def for_subject(name, subject) = schema(name, bilingual: bilingual_subject?(subject))
+
+      def bilingual_subject?(subject) = !subject.nil? && !Lessons::Lang.target(subject).nil?
+
+      def read(name, bilingual: false)
+        schema = JSON.parse(File.read(File.join(SCHEMA_DIR.call(root), "#{name}.json")))
+        bilingual && Bilingual::NAMES.include?(name.to_s) ? Bilingual.derive(schema, name) : schema
+      end
 
       # A schema may refer to another by "urn:banco:schema:NAME" (lesson.json to diagram.json).
-      def resolve(uri)
+      def resolve(uri, bilingual: false)
         name = uri.to_s.delete_prefix(URN)
         raise ArgumentError, "unknown schema reference #{uri}" unless uri.to_s.start_with?(URN) && NAMES.include?(name)
 
-        read(name)
+        read(name, bilingual: bilingual)
       end
 
       # Format string of a schema name: "item" -> "banco.item/1".
@@ -58,7 +72,7 @@ module Banco
 
       # [] when the document is valid, otherwise E-SCHEMA errors with a JSON pointer.
       def validate(name, data)
-        schema(name).validate(data).map do |e|
+        for_subject(name, subject_of(data)).validate(data).map do |e|
           Error.new(code: "E-SCHEMA", field: e["data_pointer"].to_s, message: e["error"].to_s)
         end
       end
@@ -70,15 +84,19 @@ module Banco
       # member; anything else is checked as lesson/1); field pointers start with /front_matter.
       def validate_front_matter(data)
         def_name = data.is_a?(Hash) && data["schema"] == "banco.lesson/2" ? "front_matter2" : "front_matter"
+        bilingual = bilingual_subject?(subject_of(data))
         @front_matters ||= {}
-        @front_matters[def_name] ||= begin
-          whole = read("lesson")
-          JSONSchemer.schema(whole.fetch("$defs").fetch(def_name).merge("$defs" => whole.fetch("$defs")), ref_resolver: method(:resolve))
+        @front_matters[[ def_name, bilingual ]] ||= begin
+          whole = read("lesson", bilingual: bilingual)
+          JSONSchemer.schema(whole.fetch("$defs").fetch(def_name).merge("$defs" => whole.fetch("$defs")), ref_resolver: ->(uri) { resolve(uri, bilingual: bilingual) })
         end
-        @front_matters[def_name].validate(data).map do |e|
+        @front_matters[[ def_name, bilingual ]].validate(data).map do |e|
           Error.new(code: "E-SCHEMA", field: "/front_matter#{e['data_pointer']}", message: e["error"].to_s)
         end
       end
+
+      # The subject a document names ("subject" member), nil when it names none.
+      def subject_of(data) = data.is_a?(Hash) ? data["subject"] : nil
 
       # Same, picking the schema from the document's own "schema" member.
       def validate_document(data)

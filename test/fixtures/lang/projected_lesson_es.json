@@ -1,0 +1,71 @@
+{
+  "key": "lezione.spanish.ser-y-estar",
+  "kind": "lezione",
+  "subject": "spanish",
+  "title_es": "Ser y estar",
+  "title_it": "Ser e estar",
+  "goals_es": ["**Usar** ser para decir cómo es algo"],
+  "goals_it": ["**Usare** ser per dire com'è qualcosa"],
+  "why_es": "En español hay dos verbos para decir «ser». Los usas en cada frase.",
+  "why_it": "In spagnolo ci sono due verbi per dire «essere». Li usi in ogni frase.",
+  "minutes": 30,
+  "scope": "studied",
+  "calculator": false,
+  "book_it": "Cerca «ser e estar» sul libro.",
+  "glossary": [
+    { "term_es": "estado", "term_it": "stato", "def_es": "Cómo está algo ahora.", "def_it": "Com'è qualcosa adesso." }
+  ],
+  "cards": [
+    {
+      "n": 1, "id": "ser", "role": "idea", "level": "core",
+      "title_es": "Ser: cómo es algo", "title_it": "Ser: com'è qualcosa",
+      "short_es": "Ser", "short_it": "Ser",
+      "icon": "hand-helping",
+      "blocks": [
+        {
+          "n": 1, "type": "text",
+          "text_es": "Usamos ser para decir quién es una persona o cómo es.",
+          "text_it": "Usiamo ser per dire chi è una persona o com'è."
+        },
+        {
+          "n": 2, "type": "check", "component": "choice",
+          "prompt_es": "Mi hermana ___ alta.",
+          "prompt_it": "Mia sorella ___ alta.",
+          "options": [
+            { "id": "o1", "text_es": "está", "text_it": "è" },
+            { "id": "o2", "text_es": "es", "text_it": "è" }
+          ]
+        }
+      ]
+    },
+    {
+      "n": 2, "id": "try", "role": "try", "level": "core",
+      "title_es": "Prueba tú", "title_it": "Prova tu",
+      "short_es": "Prueba", "short_it": "Prova tu",
+      "icon": "pencil",
+      "blocks": [
+        {
+          "n": 1, "type": "try",
+          "intro_es": "Elige la forma correcta.",
+          "intro_it": "Scegli la forma giusta.",
+          "exercises": [
+            {
+              "n": 1,
+              "text_es": "Hoy ___ cansado.",
+              "text_it": "Oggi ___ stanco.",
+              "check": {
+                "component": "choice",
+                "prompt_es": "¿Qué palabra va bien?",
+                "prompt_it": "Quale parola va bene?",
+                "options": [
+                  { "id": "o1", "text_es": "estoy", "text_it": "sono" },
+                  { "id": "o2", "text_es": "es", "text_it": "sono" }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "choice": {
+    "part": {
+      "component": "choice",
+      "lang": "en",
+      "stem_en": "Choose the two words that fill the gaps, in the order they are needed.",
+      "stem_it": "Scegli le due parole che completano la frase, nell'ordine in cui servono.",
+      "instance_stem_en": "On Saturdays I ___ my bed and then I ___ the shopping with Dad.",
+      "instance_stem_it": "Il sabato io ___ il letto e poi io ___ la spesa con papà.",
+      "options": [
+        { "id": "o1", "text": "do / make", "text_it": "fare / fare" },
+        { "id": "o2", "text": "make / do", "text_it": "fare / fare" },
+        { "id": "o3", "text": "do / do", "text_it": "fare / fare" },
+        { "id": "o4", "text": "make / make", "text_it": "fare / fare" }
+      ],
+      "answer_format_en": "Each option has two parts, split by /. The first part goes in the first gap.",
+      "answer_format_it": "Ogni opzione ha due parti, divise da /. La prima parte va nel primo spazio.",
+      "steps_en": ["Read the whole sentence.", "Find the two gaps.", "Choose the pair in the order of the gaps."],
+      "steps_it": ["Leggi tutta la frase.", "Trova i due spazi.", "Scegli la coppia nell'ordine degli spazi."]
+    },
+    "exercise": {
+      "title_en": "Choose the two words that fill the gaps, in the order they are needed.",
+      "title_it": "Scegli le due parole che completano la frase, nell'ordine in cui servono."
+    },
+    "hint": {
+      "n": 1,
+      "total": 3,
+      "hint_en": "Some verbs go with fixed nouns: you make some things and you do others.",
+      "hint_it": "Alcuni verbi stanno con nomi fissi: certe cose si make e altre si do."
+    },
+    "feedback": {
+      "status": "graded",
+      "outcome": "typical_error",
+      "try_number": 1,
+      "message_en": "Look at the nouns again. Which verb is the partner of each one?",
+      "message_it": "Guarda di nuovo i nomi. Quale verbo è il compagno di ciascuno?",
+      "note_it": null,
+      "count_it": null,
+      "error_code": "en_make_do_swap"
+    },
+    "reminder": {
+      "reminder_en": "Look at the nouns again. Which verb is the partner of each one?",
+      "reminder_it": "Guarda di nuovo i nomi. Quale verbo è il compagno di ciascuno?"
+    },
+    "solution": {
+      "steps": [
+        { "text_en": "We say «make the bed».", "text_it": "Si dice «make the bed»." },
+        { "text_en": "We say «do the shopping».", "text_it": "Si dice «do the shopping»." }
+      ],
+      "final": "make / do",
+      "final_it": "make / do: il sabato rifaccio il letto e faccio la spesa."
+    }
+  },
+  "blank": {
+    "part": {
+      "component": "normalized_text",
+      "lang": "en",
+      "stem_en": "Write the word that fits the gap.",
+      "stem_it": "Scrivi la parola che completa lo spazio.",
+      "instance_stem_en": "She ___ to school by bus.",
+      "instance_stem_it": "Lei ___ a scuola in autobus."
+    },
+    "exercise": {
+      "title_en": "Write the word that fits the gap.",
+      "title_it": "Scrivi la parola che completa lo spazio."
+    },
+    "hint": {
+      "n": 2,
+      "total": 3,
+      "hint_en": "With he, she and it the verb in the present is not the same as with I.",
+      "hint_it": "Con he, she e it il verbo al presente non è uguale a quello con I."
+    },
+    "feedback": {
+      "status": "graded",
+      "outcome": "typical_error",
+      "try_number": 1,
+      "message_en": "With she, the verb takes an ending.",
+      "message_it": "Con she il verbo prende una desinenza.",
+      "note_it": null,
+      "count_it": null,
+      "error_code": "en_missing_third_s"
+    },
+    "reminder": {
+      "reminder_en": "With she, the verb takes an ending.",
+      "reminder_it": "Con she il verbo prende una desinenza."
+    },
+    "solution": {
+      "steps": [
+        { "text_en": "With she the verb takes -es: goes.", "text_it": "Con she il verbo prende -es: goes." }
+      ],
+      "final": "goes",
+      "final_it": "goes: lei va a scuola in autobus."
+    }
+  }
+}

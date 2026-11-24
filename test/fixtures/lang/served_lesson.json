@@ -1,0 +1,120 @@
+{
+  "lang": "en",
+  "key": "lezione.english.can-and-should",
+  "kind": "lezione",
+  "subject": "english",
+  "title_it": "Modals: can and should",
+  "goals_it": [
+    "**Use** can and should with the base verb"
+  ],
+  "why_it": "Modal verbs help you ask, offer and say what is possible. You need them every day.",
+  "minutes": 30,
+  "scope": "studied",
+  "calculator": false,
+  "book_it": "Cerca «verbi modali» sul libro.",
+  "glossary": [
+    {
+      "term_it": "modal verb",
+      "def_it": "A verb that helps another verb."
+    }
+  ],
+  "cards": [
+    {
+      "n": 1,
+      "id": "base-verb",
+      "role": "idea",
+      "level": "core",
+      "title_it": "Can + the base verb",
+      "short_it": "Base verb",
+      "icon": "hand-helping",
+      "blocks": [
+        {
+          "n": 1,
+          "type": "text",
+          "text_it": "After a modal verb the next verb does not change: no -s, no to.",
+          "tr": {
+            "After a modal verb the next verb does not change: no -s, no to.": "Dopo un verbo modale il verbo che segue non cambia: niente -s, niente to."
+          }
+        },
+        {
+          "n": 2,
+          "type": "check",
+          "component": "choice",
+          "prompt_it": "My sister can ___ the guitar.",
+          "options": [
+            {
+              "id": "o1",
+              "text_it": "play"
+            },
+            {
+              "id": "o2",
+              "text_it": "plays"
+            }
+          ],
+          "tr": {
+            "My sister can ___ the guitar.": "Mia sorella sa ___ la chitarra.",
+            "play": "suonare",
+            "plays": "suona"
+          }
+        }
+      ],
+      "tr": {
+        "Can + the base verb": "Can + il verbo base",
+        "Base verb": "Verbo base"
+      }
+    },
+    {
+      "n": 2,
+      "id": "try",
+      "role": "try",
+      "level": "core",
+      "title_it": "Try it",
+      "short_it": "Try it",
+      "icon": "pencil",
+      "blocks": [
+        {
+          "n": 1,
+          "type": "try",
+          "intro_it": "Choose the right form.",
+          "exercises": [
+            {
+              "n": 1,
+              "text_it": "You should ___ more water.",
+              "check": {
+                "component": "choice",
+                "prompt_it": "Which word fits?",
+                "options": [
+                  {
+                    "id": "o1",
+                    "text_it": "drinks"
+                  },
+                  {
+                    "id": "o2",
+                    "text_it": "drink"
+                  }
+                ]
+              }
+            }
+          ],
+          "tr": {
+            "Choose the right form.": "Scegli la forma giusta.",
+            "You should ___ more water.": "Dovresti ___ più acqua.",
+            "Which word fits?": "Quale parola va bene?",
+            "drinks": "beve",
+            "drink": "bere"
+          }
+        }
+      ],
+      "tr": {
+        "Try it": "Prova tu"
+      }
+    }
+  ],
+  "tr": {
+    "Modals: can and should": "I modali: can e should",
+    "**Use** can and should with the base verb": "**Usare** can e should con il verbo base",
+    "Modal verbs help you ask, offer and say what is possible. You need them every day.": "I verbi modali servono a chiedere, offrire e dire che cosa è possibile. Ti servono ogni giorno.",
+    "modal verb": "verbo modale",
+    "A verb that helps another verb.": "Un verbo che aiuta un altro verbo."
+  }
+}

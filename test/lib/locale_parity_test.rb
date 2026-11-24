@@ -22,6 +22,7 @@ class LocaleParityTest < ActiveSupport::TestCase
     "privacy.it.yml" => { en: "privacy.en.yml" },
     "ratings.it.yml" => { en: "ratings.en.yml" },
     "schemas.it.yml" => { en: "schemas.en.yml" },
+    "translation.it.yml" => { en: "translation.en.yml" },
     "changelog.it.yml" => { en: "changelog.en.yml", skip: %w[teacher] }
   }.freeze
 

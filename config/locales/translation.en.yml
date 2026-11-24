@@ -1,0 +1,9 @@
+# The Italian translation of the english and spanish courses (D-402): the «Translation» button of a card, an exercise and a block,
+# and the choice in Settings. The Italian file is translation.it.yml. The browser reads the same keys (items/translation.js).
+en:
+  translation:
+    toggle: "Translation"
+    unit: "Show the translation: %{words}"
+    settings_legend: "Italian translation"
+    settings_ask: "When I ask for it"
+    settings_always: "Always visible"

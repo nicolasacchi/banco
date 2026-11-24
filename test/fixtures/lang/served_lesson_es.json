@@ -1,0 +1,121 @@
+{
+  "lang": "es",
+  "key": "lezione.spanish.ser-y-estar",
+  "kind": "lezione",
+  "subject": "spanish",
+  "title_it": "Ser y estar",
+  "goals_it": [
+    "**Usar** ser para decir cómo es algo"
+  ],
+  "why_it": "En español hay dos verbos para decir «ser». Los usas en cada frase.",
+  "minutes": 30,
+  "scope": "studied",
+  "calculator": false,
+  "book_it": "Cerca «ser e estar» sul libro.",
+  "glossary": [
+    {
+      "term_it": "estado",
+      "def_it": "Cómo está algo ahora."
+    }
+  ],
+  "cards": [
+    {
+      "n": 1,
+      "id": "ser",
+      "role": "idea",
+      "level": "core",
+      "title_it": "Ser: cómo es algo",
+      "short_it": "Ser",
+      "icon": "hand-helping",
+      "blocks": [
+        {
+          "n": 1,
+          "type": "text",
+          "text_it": "Usamos ser para decir quién es una persona o cómo es.",
+          "tr": {
+            "Usamos ser para decir quién es una persona o cómo es.": "Usiamo ser per dire chi è una persona o com'è."
+          }
+        },
+        {
+          "n": 2,
+          "type": "check",
+          "component": "choice",
+          "prompt_it": "Mi hermana ___ alta.",
+          "options": [
+            {
+              "id": "o1",
+              "text_it": "está"
+            },
+            {
+              "id": "o2",
+              "text_it": "es"
+            }
+          ],
+          "tr": {
+            "Mi hermana ___ alta.": "Mia sorella ___ alta.",
+            "está": "è",
+            "es": "è"
+          }
+        }
+      ],
+      "tr": {
+        "Ser: cómo es algo": "Ser: com'è qualcosa",
+        "Ser": "Ser"
+      }
+    },
+    {
+      "n": 2,
+      "id": "try",
+      "role": "try",
+      "level": "core",
+      "title_it": "Prueba tú",
+      "short_it": "Prueba",
+      "icon": "pencil",
+      "blocks": [
+        {
+          "n": 1,
+          "type": "try",
+          "intro_it": "Elige la forma correcta.",
+          "exercises": [
+            {
+              "n": 1,
+              "text_it": "Hoy ___ cansado.",
+              "check": {
+                "component": "choice",
+                "prompt_it": "¿Qué palabra va bien?",
+                "options": [
+                  {
+                    "id": "o1",
+                    "text_it": "estoy"
+                  },
+                  {
+                    "id": "o2",
+                    "text_it": "es"
+                  }
+                ]
+              }
+            }
+          ],
+          "tr": {
+            "Elige la forma correcta.": "Scegli la forma giusta.",
+            "Hoy ___ cansado.": "Oggi ___ stanco.",
+            "¿Qué palabra va bien?": "Quale parola va bene?",
+            "estoy": "sono",
+            "es": "sono"
+          }
+        }
+      ],
+      "tr": {
+        "Prueba tú": "Prova tu",
+        "Prueba": "Prova tu"
+      }
+    }
+  ],
+  "tr": {
+    "Ser y estar": "Ser e estar",
+    "**Usar** ser para decir cómo es algo": "**Usare** ser per dire com'è qualcosa",
+    "En español hay dos verbos para decir «ser». Los usas en cada frase.": "In spagnolo ci sono due verbi per dire «essere». Li usi in ogni frase.",
+    "estado": "stato",
+    "Cómo está algo ahora.": "Com'è qualcosa adesso."
+  }
+}

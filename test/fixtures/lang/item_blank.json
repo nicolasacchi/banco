@@ -1,0 +1,77 @@
+{
+  "schema": "banco.item/1",
+  "schema_version": 1,
+  "kind": "practice_item",
+  "subject": "english",
+  "bilingual": true,
+  "skill": "english.present-simple",
+  "component": "normalized_text",
+  "level": 1,
+  "prompt": {
+    "stem_en": "Write the word that fits the gap.",
+    "stem_it": "Scrivi la parola che completa lo spazio."
+  },
+  "hints_en": [
+    "Look at the subject of the sentence: she.",
+    "With he, she and it the verb in the present is not the same as with I.",
+    "The verb needs a few more letters at the end."
+  ],
+  "hints_it": [
+    "Guarda il soggetto della frase: she.",
+    "Con he, she e it il verbo al presente non è uguale a quello con I.",
+    "Al verbo servono ancora alcune lettere alla fine."
+  ],
+  "error_catalogue": [
+    {
+      "code": "en_missing_third_s",
+      "description_it": "Dimentica la -s della terza persona.",
+      "message_en": "With she, the verb takes an ending.",
+      "message_it": "Con she il verbo prende una desinenza.",
+      "implicates": []
+    }
+  ],
+  "instances": [
+    {
+      "display": {
+        "stem_en": "She ___ to school by bus.",
+        "stem_it": "Lei ___ a scuola in autobus."
+      },
+      "answer": "goes",
+      "errors": [
+        { "code": "en_missing_third_s", "value": "go" }
+      ],
+      "solution": {
+        "steps": [
+          { "text_en": "With she the verb takes -es: goes.", "text_it": "Con she il verbo prende -es: goes." }
+        ],
+        "final": "goes",
+        "final_it": "goes: lei va a scuola in autobus."
+      }
+    },
+    {
+      "display": {
+        "stem_en": "My brother ___ football on Fridays.",
+        "stem_it": "Mio fratello ___ a calcio il venerdì."
+      },
+      "answer": "plays",
+      "errors": [
+        { "code": "en_missing_third_s", "value": "play" }
+      ],
+      "solution": {
+        "steps": [
+          { "text_en": "My brother is «he»: the verb takes -s.", "text_it": "Mio fratello è «he»: il verbo prende -s." }
+        ],
+        "final": "plays",
+        "final_it": "plays: mio fratello gioca a calcio il venerdì."
+      }
+    }
+  ],
+  "sources": [
+    { "kind": "seconda_line", "ref": "seconda-example:200", "fragment": "presente" }
+  ],
+  "tests": {
+    "must_accept": ["goes"],
+    "must_reject": ["go"],
+    "blank": "invalid"
+  }
+}

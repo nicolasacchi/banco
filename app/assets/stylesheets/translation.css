@@ -1,0 +1,48 @@
+/*
+ * The Italian translation of the english and spanish courses (D-402). One state machine for the lessons and the practice pages
+ * (app/javascript/items/translation.js builds the nodes and the buttons; the views and the renderers only put the attributes on):
+ *
+ *   .tr[lang=it][data-nospeech]      a translation node, hidden until the scope around it is open;
+ *   [data-translation="on|off"]      a scope (a lesson card or block, a practice exercise, a sitting's item box, a list page): the nearest one wins;
+ *   html[data-translation="always"]  the student's preference «Sempre visibile», and the teacher's pages: every scope is open;
+ *   button.tr-toggle[aria-pressed]   «Traduzione» of a scope, and a small unit button (.tr-toggle-unit, an icon) on a long block.
+ *
+ * The state is a custom property, so it inherits and the nearest scope decides (a block's own «off» inside a card that is «on» hides that
+ * block only). A translation is told apart without colour: a left rule and the label «IT» in text. Lengths are em and rem, so the root size
+ * of D-350 scales it; the colours are the tokens of the four themes (cream, light, dark, auto), never a value of their own. Always stacked
+ * under the target text, never side by side, and it never forces a width: a 390 px phone and a long Italian line wrap.
+ */
+[data-translation="on"] { --tr-display: block; }
+[data-translation="off"] { --tr-display: none; }
+html[data-translation="always"], html[data-translation="always"] [data-translation] { --tr-display: block; }
+
+.tr {
+  display: var(--tr-display, none);
+  box-sizing: border-box; min-width: 0; max-width: 100%;
+  margin: var(--space-1) 0 0; padding: 0 0 0 0.6em;
+  border-left: 0.22em solid var(--line);
+  color: var(--muted); font-size: 0.92em; line-height: 1.5; text-align: left; overflow-wrap: anywhere;
+}
+/* the label: «IT», read by nobody (the node says lang="it" already), so the alt text of the content is empty where the browser knows it */
+.tr::before {
+  content: "IT"; content: "IT" / "";
+  display: inline-block; margin-right: 0.5em; padding: 0 0.3em; vertical-align: 0.1em;
+  border: 1px solid var(--line); border-radius: 0.25em;
+  font-size: 0.72em; font-weight: 700; letter-spacing: 0.06em; line-height: 1.4; color: var(--muted);
+}
+/* in an option, a cell, a matching row or a chip the translation sits under the text; the line is kept short */
+td .tr, th .tr, label .tr, li .tr { margin-top: var(--space-1); }
+
+.tr-toggle {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4em;
+  box-sizing: border-box; min-height: var(--tap-small); min-width: var(--tap-small); max-width: 100%;
+  padding: 0 var(--space-3); font: inherit; font-size: var(--text-s); line-height: 1.2; cursor: pointer;
+  color: var(--text); background: var(--surface); border: var(--border-soft); border-radius: var(--radius-s);
+}
+.tr-toggle:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+/* pressed is told by shape as well as colour: a heavier border and the filled button */
+.tr-toggle[aria-pressed="true"] { background: var(--primary); color: var(--primary-text); border: var(--border); border-color: var(--primary); }
+.tr-toggle svg { flex: none; width: 1.2em; height: 1.2em; }
+.tr-toggle-unit { padding: 0; width: var(--tap-small); vertical-align: middle; margin-inline-start: var(--space-2); }
+html[data-translation="always"] .tr-toggle { display: none; }
+@media print { .tr-toggle { display: none; } }
