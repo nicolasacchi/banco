@@ -2,7 +2,7 @@
 // a year is Chrono.position, so the drawing and the sums cannot disagree), periods as bars, events as role markers with their labels stacked
 // above, lanes, century bands, spans whose duration Chrono computes, and the zoom as states. Pure; layout and text are called by timeline.js.
 import { century, duration, position, roman } from "lesson/lib/chrono"
-import { effectiveState, label, listIt, plain, roleInfo, shape, stackLabels, words } from "lesson/diagrams/common"
+import { effectiveState, label, listIt, plain, roleInfo, shape, stackLabelsClear, words } from "lesson/diagrams/common"
 import { fill, TEXT } from "lesson/diagrams/time/texts"
 
 export const CAPS = { label_words: 6, note_words: 25, ticks: 40 }
@@ -309,18 +309,28 @@ export function buildYears(data, ctx, eff) {
       y += item.h + 2
     }
     const mine = events.filter((e) => (lane.id ? e.lane === lane.id : true))
-    const specs = select ? [] : mine.map((e) => ({
-      text: `${eventYearLabel(e, eff)}: ${plain(e.label_it)}`, cx: xOf(e.at), cls: `dg-tl-evlabel dg-tl-plate${e.role ? ` role-${e.role}` : ""}`, role: e.role, maxW: maxLabelW, key: `ev:${e.id}:label`, connectFrom: 0
-    }))
-    const lines = Math.max(1, ...specs.map((sp) => Math.round(ctx.measure(sp.text, f, sp.maxW).h / lineH)))
-    for (const sp of specs) sp.lines = lines
-    // a dry run for the height of the stack above the line
-    const scratch = { ...ctx, labels: [], shapes: [] }
-    const used = specs.length ? stackLabels(scratch, specs.map((s) => ({ ...s, connectFrom: 0 })), 1000, -1) : 0
+    // the labels at the widest, and, when no connector can then run clear of every label, at narrower widths (more lines each: the text size
+    // stays); the widest drawing stays when none of them is clear
+    const stackFor = (maxW) => {
+      const specs = select ? [] : mine.map((e) => ({
+        text: `${eventYearLabel(e, eff)}: ${plain(e.label_it)}`, cx: xOf(e.at), cls: `dg-tl-evlabel dg-tl-plate${e.role ? ` role-${e.role}` : ""}`, role: e.role, maxW, key: `ev:${e.id}:label`, connectFrom: 0
+      }))
+      const lines = Math.max(1, ...specs.map((sp) => Math.round(ctx.measure(sp.text, f, sp.maxW).h / lineH)))
+      for (const sp of specs) sp.lines = lines
+      // a dry run for the height of the stack above the line (its connectors start where the real ones will, just under the stack: the
+      // rows it needs depend on where they run)
+      const scratch = { ...ctx, labels: [], shapes: [] }
+      const dry = specs.length ? stackLabelsClear(scratch, specs.map((s) => ({ ...s, connectFrom: 1006 })), 1000, -1) : { used: 0, clear: true }
+      return { specs, ...dry }
+    }
+    const widths = [maxLabelW, ...[7, 5.5, 4.5].map((q) => Math.round(f * q))].filter((w, i, all) => w <= maxLabelW && all.indexOf(w) === i)
+    let stack = stackFor(widths[0])
+    if (!stack.clear) stack = widths.slice(1).map(stackFor).find((s) => s.clear) ?? stack
+    const { specs, used } = stack
     const base = y + (used ? used + 8 : 0) + r + 6
     baselines.push(base)
     for (const s of specs) s.connectFrom = base - r - 2
-    if (specs.length) stackLabels(ctx, specs, base - r - 8, -1)
+    if (specs.length) stackLabelsClear(ctx, specs, base - r - 8, -1)
     shape(ctx, "line", { x1: x0, y1: base, x2: x1, y2: base, cls: lanes.length === 1 ? "dg-tl-axis" : "dg-tl-laneline", key: `lane:${lane.id ?? "main"}:line` })
     for (const e of mine) {
       const cx = xOf(e.at)
