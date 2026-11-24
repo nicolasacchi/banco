@@ -36,8 +36,10 @@ class ItemFiguresSystemTest < ApplicationSystemTestCase
 
   def assert_picture_shown(width)
     assert_selector ".prompt figure img.figure[alt^='Un triangolo']", wait: 30
-    loaded = page.evaluate_script("(function(){ var i = document.querySelector('.prompt img.figure'); return i.complete && i.naturalWidth > 0 })()")
-    assert loaded, "the image did not load"
+    page.document.synchronize(30) do # the <img> is in the page before its bytes are: wait for the load
+      loaded = page.evaluate_script("(function(){ var i = document.querySelector('.prompt img.figure'); return !!i && i.complete && i.naturalWidth > 0 })()")
+      raise Capybara::ExpectationNotMet, "the image did not load" unless loaded
+    end
     box = page.evaluate_script("(function(){ var r = document.querySelector('.prompt img.figure').getBoundingClientRect(); return [r.width, r.height, r.right] })()")
     assert_operator box[0], :>, 150, "the picture is readable"
     assert_operator box[2], :<=, width

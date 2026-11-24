@@ -103,6 +103,7 @@ class StudentMenuSystemTest < ApplicationSystemTestCase
   test "in a sitting the menu is one item; leaving pauses and goes to Oggi" do
     visit "/today"
     click_button "Comincia"
+    assert_selector "[data-sitting-target=intro]" # the sitting page itself, not the /today still on screen while the click navigates
     assert_selector "nav.student-menu a", count: 1, text: "Pausa: torna a Oggi"
     shot "sitting-intro-desktop"
     click_button "Comincia"
