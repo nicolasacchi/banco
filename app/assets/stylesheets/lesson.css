@@ -266,6 +266,10 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) .topbar, body
 .example-result { margin-top: 0.8em; padding: 0.6em 0.9em; border-radius: 1em; background: var(--soft-primary); border: 2px solid var(--primary); }
 .step-blank { margin-top: 0.4em; padding: 0.5em 0.8em; border: 2px dashed var(--primary); border-radius: 0.8em; }
 .step-blank .check { border: 0; padding: 0; background: none; }
+/* the check of a step has no box of its own inside the dashed one (`.l2 .check` pads it later in this file): on a phone that padding left an option 181 px (D-402) */
+.l2 .step-blank .check { padding: 0.2em 0 0.3em; }
+/* a word of another language in an option wraps inside the option rather than widen it (a nowrap word in a narrow step made the fieldset overflow) */
+.l2 .option-text .lang-word { white-space: normal; overflow-wrap: anywhere; }
 .blank-label { display: flex; align-items: center; gap: 0.4em; margin: 0 0 0.3em; }
 
 /* mistakes: cards to turn, a uniform grid with equal heights */
@@ -829,6 +833,10 @@ details.more { border: 1px solid var(--rule); border-radius: 0.8em; padding: 0 1
 /* text before and after the box (D-310): the box is as wide as itself, so the formula, the box and the rest read as one line where it fits */
 .l2 .check .check-row.is-around > .answer { width: auto; flex: 0 1 auto; min-width: 0; }
 .l2 .check .check-row.is-around .answer-input { max-width: 100%; }
+/* a lone mark of punctuation after (or before) the box is glued to it: one no-wrap run, the box gives way (D-402: «.» alone under the box at 390 px) */
+.l2 .check .check-row .check-glue { display: inline-flex; flex-wrap: nowrap; align-items: baseline; gap: 0.15em; max-width: 100%; min-width: 0; }
+.l2 .check .check-row .check-glue > .answer { width: auto; flex: 0 1 auto; min-width: 0; }
+.l2 .check .check-row .check-glue > .check-before, .l2 .check .check-row .check-glue > .check-after { flex: 0 0 auto; }
 /* the helper keys (D-335) sit after the box on that same line: the box is narrower and gives way, the keys do not wrap under it */
 .l2 .check .check-row.is-around .field { flex-wrap: nowrap; align-items: center; gap: 0.35em; }
 .l2 .check .check-row.is-around .field .answer-input { width: 5em; flex: 0 1 5em; min-width: 3em; }

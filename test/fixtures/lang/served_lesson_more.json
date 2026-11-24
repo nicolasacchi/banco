@@ -1,0 +1,175 @@
+{
+  "lang": "en",
+  "schema": "banco.lesson/2",
+  "schema_version": 2,
+  "key": "lezione.english.more-fixture",
+  "kind": "lezione",
+  "subject": "english",
+  "title_it": "Modals: can and should (more box)",
+  "goals_it": [
+    "**Use** can and should with the base verb"
+  ],
+  "why_it": "Modal verbs help you ask, offer and say what is possible. You need them every day.",
+  "skills": [
+    "english.modals-can"
+  ],
+  "uses": [],
+  "refs": [
+    {
+      "source": "gallery-2026",
+      "fragment": "modals",
+      "role": "taught_in"
+    }
+  ],
+  "scope": "studied",
+  "minutes": 30,
+  "calculator": false,
+  "bilingual": true,
+  "book_it": "Cerca «verbi modali» sul libro.",
+  "glossary": [
+    {
+      "term_it": "modal verb",
+      "def_it": "A verb that helps another verb."
+    }
+  ],
+  "cards": [
+    {
+      "n": 1,
+      "id": "base-verb",
+      "role": "idea",
+      "level": "core",
+      "icon": "hand-helping",
+      "title_it": "Can + the base verb",
+      "short_it": "Base verb",
+      "blocks": [
+        {
+          "n": 1,
+          "type": "text",
+          "text_it": "After a modal verb the next verb does not change: no -s, no to.",
+          "tr": {
+            "After a modal verb the next verb does not change: no -s, no to.": "Dopo un verbo modale il verbo che segue non cambia: niente -s, niente to."
+          }
+        },
+        {
+          "n": 2,
+          "type": "more",
+          "title_it": "One more case",
+          "blocks": [
+            {
+              "n": 1,
+              "type": "text",
+              "text_it": "Questions go the other way: **Can** she play?"
+            },
+            {
+              "n": 2,
+              "type": "callout",
+              "kind": "tip",
+              "title_it": "Careful",
+              "text_it": "Never add -s after can."
+            }
+          ],
+          "tr": {
+            "One more case": "Un caso in più",
+            "Questions go the other way: **Can** she play?": "Nelle domande l'ordine cambia: **Can** she play?",
+            "Careful": "Attenzione",
+            "Never add -s after can.": "Dopo can non si aggiunge mai -s."
+          }
+        },
+        {
+          "n": 3,
+          "prompt_it": "Which form goes after can?",
+          "translate_material": false,
+          "options": [
+            {
+              "id": "a",
+              "text_it": "plays"
+            },
+            {
+              "id": "b",
+              "text_it": "play"
+            }
+          ],
+          "answer": "b",
+          "errors": [
+            {
+              "answer": "a",
+              "message_it": "After can, the verb has no -s."
+            }
+          ],
+          "explain_it": "After can the verb stays as it is: can play.",
+          "type": "check",
+          "component": "choice",
+          "tr": {
+            "Which form goes after can?": "Quale forma va dopo can?",
+            "After can the verb stays as it is: can play.": "Dopo can il verbo resta com'è: can play.",
+            "After can, the verb has no -s.": "Dopo can il verbo non prende -s."
+          }
+        }
+      ],
+      "tr": {
+        "Can + the base verb": "Can + il verbo base",
+        "Base verb": "Verbo base"
+      }
+    },
+    {
+      "n": 2,
+      "id": "try",
+      "role": "try",
+      "level": "core",
+      "icon": "pencil",
+      "title_it": "Try it",
+      "short_it": "Try it",
+      "blocks": [
+        {
+          "n": 1,
+          "intro_it": "Choose the right form.",
+          "exercises": [
+            {
+              "n": 1,
+              "translate_material": false,
+              "check": {
+                "component": "choice",
+                "prompt_it": "Which word fits?",
+                "options": [
+                  {
+                    "id": "a",
+                    "text_it": "drinks"
+                  },
+                  {
+                    "id": "b",
+                    "text_it": "drink"
+                  }
+                ],
+                "answer": "b"
+              },
+              "solution_it": "After should the verb has no -s: should drink.",
+              "text_it": "You should ___ more water.",
+              "final_it": "drink"
+            }
+          ],
+          "type": "try",
+          "tr": {
+            "Choose the right form.": "Scegli la forma giusta.",
+            "After should the verb has no -s: should drink.": "Dopo should il verbo non prende -s: should drink.",
+            "Which word fits?": "Quale parola va bene?"
+          }
+        }
+      ],
+      "tr": {
+        "Try it": "Prova tu"
+      }
+    }
+  ],
+  "words": {
+    "core": 20,
+    "extra": 13
+  },
+  "pages": [],
+  "tr": {
+    "Modals: can and should (more box)": "I modali: can e should",
+    "**Use** can and should with the base verb": "**Usare** can e should con il verbo base",
+    "Modal verbs help you ask, offer and say what is possible. You need them every day.": "I verbi modali servono a chiedere, offrire e dire che cosa è possibile. Ti servono ogni giorno.",
+    "modal verb": "verbo modale",
+    "A verb that helps another verb.": "Un verbo che aiuta un altro verbo."
+  }
+}

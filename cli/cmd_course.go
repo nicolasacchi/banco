@@ -273,6 +273,10 @@ func runLessonReviewSubmit(e *env, args []string) error {
 	return runKeyed(e, keyedCommand{"lesson-review submit", "/api/v1/lesson-revisions/", "/review", "review", idRe, "revision", "a revision id (a number)", "banco lesson-review submit REV --file review.json"}, args)
 }
 func runTopicOpen(e *env, args []string) error {
+	// the API opens a topic by key only (GET /api/v1/topics/:topic); a revision number gets a clear answer instead of a key error
+	if len(args) == 1 && idRe.MatchString(args[0]) {
+		return newErr(ExitUsage, "E-USAGE", "topic", "topic open takes a topic key, not a revision number: the server has no route that opens a topic by revision", "banco topic open ripasso.math.linear-equations-integer shows latest.revision_id and approved_revision_id of the key")
+	}
 	return runKeyed(e, keyedCommand{"topic open", "/api/v1/topics/", "", "", lessonKeyRe, "topic", "a topic key such as ripasso.math.linear-equations-integer", "banco topic open ripasso.math.linear-equations-integer"}, args)
 }
 

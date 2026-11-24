@@ -33,9 +33,9 @@ class LessonRenderTranslationTest < ActiveSupport::TestCase
   end
 
   # A bilingual lesson written as the author does (test/fixtures/lang/lesson_<lang>_figures.md, the figures of the pilot lessons), parsed and rendered.
-  def render_figures(lang)
+  def render_figures(lang, file = "lesson_#{lang}_figures.md")
     key = { "en" => "english", "es" => "spanish" }.fetch(lang)
-    md = Rails.root.join("test/fixtures/lang/lesson_#{lang}_figures.md").read
+    md = Rails.root.join("test/fixtures/lang/#{file}").read
     body = Lessons::Parser2.call(md, Validation::Findings.new).body
     subject = Subject.find_by(key: key) || Subject.create!(key: key, name_it: key.capitalize, position: 2)
     lesson = Lesson.create!(subject: subject, key: body["key"], kind: "lezione")
@@ -66,5 +66,20 @@ class LessonRenderTranslationTest < ActiveSupport::TestCase
       assert_empty row.result["errors"].select { |e| e["message"].to_s.start_with?("translation") }, dump(row)
       assert_equal "passed", row.status, dump(row)
     end
+  end
+
+  test "a `more` box of a bilingual lesson shows its translation: the title, the text and the callout inside have their Italian (no «translation missing»)" do
+    row = render_figures("en", "lesson_en_more.md")
+    assert_empty row.result["errors"].select { |e| e["message"].to_s.start_with?("translation") }, dump(row)
+    assert_equal "passed", row.status, dump(row)
+  end
+
+  test "a phone card with an example's choice step (two quoted options with a word of Italian), a typed gap ending in a lone full stop and suffixes with a leading hyphen: nothing overflows, nothing is missing" do
+    row = render_figures("en", "lesson_en_example_choice.md")
+    if ENV["BANCO_SHOT_DIR"]
+      FileUtils.mkdir_p(ENV["BANCO_SHOT_DIR"])
+      row.shots.each { |s| File.binwrite(File.join(ENV["BANCO_SHOT_DIR"], "example-choice-#{s['viewport']}-card#{s['card']}#{"-#{s['state']}" if s['state']}.webp"), LessonShots.read(s["sha256"])) }
+    end
+    assert_equal "passed", row.status, dump(row)
   end
 end

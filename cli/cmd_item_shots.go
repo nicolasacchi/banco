@@ -24,6 +24,9 @@ var itemShotViewportRe = regexp.MustCompile(`^([0-9]{3,4})x([0-9]{3,4})-(cream|d
 // the default folder: the one of the figures of an opened item (review open, solve open), so one folder per revision holds both
 const defaultItemShotsDir = "banco-figures"
 
+// defaultItemShotsTimeout is the wait of `--wait` in seconds: a Chrome lane with a queue of validations takes longer than 5 minutes (D-402 waves).
+const defaultItemShotsTimeout = 1200
+
 type itemShotsList struct {
 	Status    string            `json:"status"`
 	RenderID  int               `json:"render_id"`
@@ -91,7 +94,7 @@ func runItemShots(e *env, args []string) error {
 	dir := fs.String("dir", "", "folder for the images: DIR/REV/instance-NN_390x844.webp (default "+defaultItemShotsDir+")")
 	wait := fs.Bool("wait", false, "wait until the render is done (the Chrome lane runs one job at a time)")
 	force := fs.Bool("force", false, "draw the revision again even if it has been drawn")
-	timeout := fs.Int("timeout", 300, "seconds to wait with --wait")
+	timeout := fs.Int("timeout", defaultItemShotsTimeout, "seconds to wait with --wait (a busy Chrome lane can take many minutes)")
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
 	if err != nil {
@@ -146,7 +149,7 @@ func runItemShots(e *env, args []string) error {
 				return newErr(ExitServer, "E-CHROME-UNAVAILABLE", "revision", "the render could not run (Chrome did not answer): "+list.Message, "retry later: "+fetch+" --force")
 			}
 			if time.Now().After(deadline) {
-				return newErr(ExitServer, "E-TIMEOUT", "revision", "the render did not finish within "+strconv.Itoa(*timeout)+" s (the Chrome lane runs one job at a time)", fetch+" --timeout SECONDS")
+				return newErr(ExitServer, "E-TIMEOUT", "revision", "the render did not finish within "+strconv.Itoa(*timeout)+" s (the Chrome lane runs one job at a time and may be busy): run the command again to keep waiting, with a longer --timeout SECONDS (this run "+strconv.Itoa(*timeout)+", default "+strconv.Itoa(defaultItemShotsTimeout)+")", fetch+" --timeout "+strconv.Itoa(2**timeout))
 			}
 			time.Sleep(interval)
 		}

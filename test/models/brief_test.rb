@@ -5,13 +5,13 @@ class BriefTest < ActiveSupport::TestCase
   SUBJECT_BRIEFS = %w[biology business chemistry computer_science english geography history law_economics physical_education spanish].freeze
   NAMES = (%w[arbiter blueprint course diagnosis-item grade lesson lesson-review lesson-v1 page page-review practice-item review skill-graph solve topic] +
            SUBJECT_BRIEFS.map { |s| "lesson-#{s.tr('_', '-')}" }).sort.freeze
-  VERSION_2 = %w[arbiter diagnosis-item lesson lesson-review].freeze # D-227: practice items, review points 12-13; D-245: lesson/2 and its review; D-316: the arbiter without a second opinion; solve is 3 and review 4 (D-320: the figures; D-336: the pictures of the instances)
+  VERSION_2 = %w[arbiter diagnosis-item lesson-review].freeze # D-227: practice items, review points 12-13; D-245: lesson/2 and its review; D-316: the arbiter without a second opinion; lesson is 3 (D-402 tooling round 4: card caps, flow node cap, the one-page print, the course-map title), solve is 3 and review 4 (D-320: the figures; D-336: the pictures of the instances)
 
   test "the briefs exist (version 1, or 2 for the Phase 1b and rich-lesson deltas) with a body" do
     assert_equal NAMES, Brief.names
     NAMES.each do |name|
       brief = Brief.find(name)
-      assert_equal({ "review" => 4, "solve" => 3 }.fetch(name) { VERSION_2.include?(name) ? 2 : 1 }, brief.version, name)
+      assert_equal({ "review" => 4, "solve" => 3, "lesson" => 3 }.fetch(name) { VERSION_2.include?(name) ? 2 : 1 }, brief.version, name)
       assert_equal name, brief.name
       assert_operator brief.body.size, :>, 800, name
     end

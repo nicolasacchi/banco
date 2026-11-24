@@ -115,6 +115,9 @@ function input(spec, ctx, options = {}) {
   }
 }
 
+// text around a typed box that is only a mark of punctuation
+const LONE_PUNCTUATION = /^\s*[.,;:!?¿¡…]+\s*$/
+
 // loc: { card, block, step?, ex?, part? } -> the endpoint is built by ctx.checkUrl(loc).
 // options: { onDone(reply, tries) } called with the final reply of a right answer or the second wrong one.
 export function renderCheck(spec, ctx, loc, options = {}) {
@@ -136,9 +139,16 @@ export function renderCheck(spec, ctx, loc, options = {}) {
   const keys = around ? handleInput.element.querySelector(":scope > .accent-keys") : null
   // the words around the box are a fragment of the sentence the box completes, never translated alone (D-402): the prompt's translation says what to write
   const fragment = noTranslation(ctx)
-  if (spec.input_before) row.appendChild(renderInlineRich(spec.input_before, el("span", { class: "check-before" }), fragment, { inline: true }))
-  row.appendChild(handleInput.element)
-  if (spec.input_after) row.appendChild(renderInlineRich(spec.input_after, el("span", { class: "check-after" }), fragment, { inline: true }))
+  const before = spec.input_before ? renderInlineRich(spec.input_before, el("span", { class: "check-before" }), fragment, { inline: true }) : null
+  const after = spec.input_after ? renderInlineRich(spec.input_after, el("span", { class: "check-after" }), fragment, { inline: true }) : null
+  // a lone mark of punctuation («.», «?», «!», «,», «¿») belongs to the box, never a line of its own under it: it and the box stand in one no-wrap span
+  const lone = (text) => LONE_PUNCTUATION.test(text ?? "")
+  const lead = around && before && lone(spec.input_before) ? before : null
+  const tail = around && after && lone(spec.input_after) ? after : null
+  if (before && !lead) row.appendChild(before)
+  if (lead || tail) row.appendChild(el("span", { class: "check-glue" }, ...[lead, handleInput.element, tail].filter(Boolean)))
+  else row.appendChild(handleInput.element)
+  if (after && !tail) row.appendChild(after)
   if (spec.answer_format_it) form.appendChild(beside(el("p", { class: "hint", text: spec.answer_format_it }), spec.answer_format_it, ctx))
   const submit = button(ctx.t.check_button, { class: `button small${line ? " check-go" : ""}`, type: "submit" })
   const feedback = el("div", { class: "feedback", "aria-live": "polite", role: "status" })

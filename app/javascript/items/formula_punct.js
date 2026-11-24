@@ -1,12 +1,39 @@
 // A mark that stands right after a formula (a full stop, a comma, «?», a closing bracket or quote) or right before it (an opening bracket
 // or quote) must never be left alone at the start or the end of a line (D-335). The reader's inline nodes are rewritten so that the
 // formula and the mark run next to it share one {t: "nowrap", children} node, which the renderers draw as <span class="nowrap"> (white-space:
-// nowrap). Pure: the parsed tree is not changed, only the array it is read from; plainText and the voice (speech.js walks the DOM and
+// nowrap; a leading-hyphen word piece is one too, see hyphenPieces). Pure: the parsed tree is not changed, only the array it is read from; plainText and the voice (speech.js walks the DOM and
 // already takes a mark back to its word) read the same words as before.
 const CLOSING = /^[.,;:!?)\]»”’"'…]+/
 const OPENING = /[(\[«“‘„]+$/
 
-export function glueFormulas(nodes) {
+// A word piece that starts with a hyphen and goes on with letters ("-ing", "-o", "-áis", "-emos-la") is never split after its hyphen at the end of a line
+// (D-402): it is one {t: "nowrap"} node of its own, as a formula with its mark is, so the page draws one span with the characters as written (copying them
+// gives the same text, which a non-breaking hyphen would not). It starts a word: at the start of the text, after a space or after an opening mark;
+// text that follows another node with no space ("[[es:habl]]-ando") is the rest of a word, never a piece.
+const PIECE = /(^|[\s(\[«“‘„"'])(-\p{L}[\p{L}\p{M}]*(?:-\p{L}[\p{L}\p{M}]*)*)/gu
+
+export function hyphenPieces(nodes) {
+  if (!nodes.some((node) => node.t === "text" && node.v.includes("-"))) return nodes
+  const out = []
+  nodes.forEach((node, i) => {
+    if (node.t !== "text" || !node.v.includes("-")) { out.push(node); return }
+    const startsWord = i === 0
+    let last = 0
+    for (const m of node.v.matchAll(PIECE)) {
+      if (m[1] === "" && m.index === 0 && !startsWord) continue
+      const from = m.index + m[1].length
+      if (from > last) out.push({ t: "text", v: node.v.slice(last, from) })
+      out.push({ t: "nowrap", children: [{ t: "text", v: m[2] }] })
+      last = from + m[2].length
+    }
+    if (last === 0) out.push(node)
+    else if (last < node.v.length) out.push({ t: "text", v: node.v.slice(last) })
+  })
+  return out
+}
+
+export function glueFormulas(input) {
+  const nodes = hyphenPieces(input)
   if (!nodes.some((node) => node.t === "math")) return nodes
   const out = []
   for (let i = 0; i < nodes.length; i++) {

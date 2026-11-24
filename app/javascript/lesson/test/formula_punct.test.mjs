@@ -126,3 +126,31 @@ test("the voice says the same words with and without the wrapper", () => {
   assert.deepEqual(said(wrapped), said(plain))
   assert.deepEqual(said(opened), said(el("p", {}, "Vale (", katex("x + 1"), ") sempre.")))
 })
+
+// ---- a word piece with a leading hyphen (D-402) ----------------------------------------------------------------------------------
+
+test("a word piece that starts with a hyphen and letters is one nowrap node; a hyphen inside a word, before a digit or alone is not", () => {
+  assert.deepEqual(shape(glueFormulas(inline("El sufijo -áis y -ing."))), ['"El sufijo "', '["-áis"]', '" y "', '["-ing"]', '"."'])
+  assert.deepEqual(shape(glueFormulas(inline("-o, -es"))), ['["-o"]', '", "', '["-es"]'])
+  assert.deepEqual(shape(glueFormulas(inline("la forma (-ando) y «-ing»"))), ['"la forma ("', '["-ando"]', '") y «"', '["-ing"]', '"»"'])
+  assert.deepEqual(shape(glueFormulas(inline("tiene-me, 5 -3 y a - b"))), ['"tiene-me, 5 -3 y a - b"'])
+  // the rest of a word that follows another node is not a piece
+  assert.deepEqual(shape(glueFormulas(inline("[[es:habl]]-ando"))), ['"habl"', '"-ando"'])
+})
+
+test("a piece after a formula's own group keeps working: a leading-hyphen word next to a formula", () => {
+  assert.deepEqual(shape(glueFormulas(inline("Vale $x$ y -ing."))), ['"Vale "', "$x$", '" y "', '["-ing"]', '"."'])
+})
+
+test("the lesson and the items renderers draw a leading-hyphen piece in one span.nowrap with the characters as written, and the plain text is unchanged", () => {
+  withDom(() => {
+    const pieces = (root) => wrappers(root).map((n) => n.textContent)
+    assert.deepEqual(pieces(renderRich("Añade -áis o -ing al final.", { subject: "spanish", t: {} })), ["-áis", "-ing"])
+    const p = new Fake("p")
+    markup.renderInline("Añade -áis o -ing al final.", p)
+    assert.deepEqual(pieces(p), ["-áis", "-ing"])
+    assert.equal(p.textContent, "Añade -áis o -ing al final.", "the text a student copies has the ordinary hyphen")
+    assert.equal(pieces(renderRich("No cambia: bien-estar y a -3.", { subject: "spanish", t: {} })).length, 0)
+  })
+  assert.equal(plainText("Añade -áis o -ing al final."), "Añade -áis o -ing al final.")
+})

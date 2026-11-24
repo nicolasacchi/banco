@@ -138,7 +138,7 @@ export function renderCard(card, ctx, position) {
   const hasLegend = card.blocks.some((b) => b.type === "legend")
   const body = el("div", { class: "card-body" })
   if (isSplit(card.blocks)) body.classList.add("is-split")
-  const renderBlock = (block) => anchored(renderOne(block, card, ctx, renderBlock), block)
+  const renderBlock = (block, parent) => anchored(renderOne(block, card, ctx, renderBlock, parent), block)
   const blockCtx = (block) => (ctx.lang ? scoped(ctx, block, card) : ctx)
   let grid = null
   let group
@@ -216,10 +216,11 @@ function anchored(node, block) {
   return node
 }
 
-function renderOne(block, card, root, renderBlock) {
+function renderOne(block, card, root, renderBlock, parent = null) {
   const loc = { card: card.n, block: block.n }
-  // in a bilingual lesson a block draws with its own table of translations in front of its card's and the lesson's
-  const ctx = root.lang ? scoped(root, block, card) : root
+  // in a bilingual lesson a block draws with its own table of translations in front of its card's and the lesson's; a block inside a `more` finds its
+  // Italian in the table of the more (the fold gives a block of a card its own table, and what is inside it shares the more's)
+  const ctx = root.lang ? scoped(root, block, parent, card) : root
   return withUnitButton(drawBlock(block, ctx, loc, renderBlock), block, ctx)
 }
 

@@ -453,3 +453,23 @@ test("the legend's role name and question are the palette's own in the language 
   assert.match(list.textContent, /¿Qué\? ¿A quién\?/)
   assert.doesNotMatch(render({ roles: [{ role: "od" }] }, { ...ctx, lang: null, trScopes: null }).textContent, /directo/)
 })
+
+// A `more` box (D-402): the fold gives the more block one `tr` that holds its own title and everything inside it, so the blocks inside draw with the more's table
+// in front of the card's; the title's Italian is drawn after it in the summary (no button), as a callout's is.
+test("more_box.json: a text and a callout inside a `more` draw their Italian, and the box's title does too (no «translation missing» to come)", () => {
+  const body = fixture("served_lesson_more.json")
+  const article = draw(body, 1, { openMore: true })
+  const more = article.querySelector(".more")
+  assert.ok(more, "the more box is drawn")
+  const summary = more.querySelector("summary")
+  assert.equal(summary.querySelectorAll(".tr").length, 1, "the title has its Italian")
+  assert.equal(summary.querySelector(".tr").textContent, "Un caso in più")
+  const inside = more.querySelector(".more-body")
+  const italian = trNodes(inside).map((n) => n.textContent)
+  assert.ok(italian.includes("Nelle domande l'ordine cambia: Can she play?"), `the text inside has its translation: ${italian}`)
+  assert.ok(italian.includes("Dopo can non si aggiunge mai -s."), `the callout inside has its translation: ${italian}`)
+  assert.ok(italian.includes("Attenzione"), "the callout's title too")
+  const target = inside.querySelectorAll("[lang]").filter((n) => n.getAttribute("lang") === "en")
+  assert.ok(target.length >= 3)
+  assert.ok(target.every((n) => n.hasAttribute("data-translated") || n.hasAttribute("data-tr-exempt")), "no target text without its translation or an exemption")
+})

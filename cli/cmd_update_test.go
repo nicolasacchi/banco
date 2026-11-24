@@ -665,3 +665,67 @@ func TestTokenErrorPrintsNoWarning(t *testing.T) {
 		t.Errorf("exit %d, stdout %q, stderr %q", r.exit, r.stdout, r.stderr)
 	}
 }
+
+// `banco version` also reads the server's commit from the public GET /api/v1/updates (no token), and says it when the server does not answer.
+func TestVersionShowsTheServerCommit(t *testing.T) {
+	srv, seen := authServer(t, 200, `{"server":{"commit":"abc123def456","built_at":"2026-11-20T10:00:00Z"},"changes":[]}`)
+	r := runCLINoToken(t, srv.URL, fakeExe(t), "version")
+	if r.exit != ExitOK {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	var v map[string]any
+	if err := json.Unmarshal([]byte(r.stdout), &v); err != nil {
+		t.Fatal(err)
+	}
+	if v["server_commit"] != "abc123def456" || v["server_built_at"] != "2026-11-20T10:00:00Z" || v["cli_version"] != version {
+		t.Errorf("version: %v", v)
+	}
+	if len(*seen) != 1 || (*seen)[0].path != "/api/v1/updates" || (*seen)[0].auth != "" {
+		t.Errorf("requests %+v (one public GET /api/v1/updates, no Authorization)", *seen)
+	}
+}
+
+func TestVersionNamesTheCLICommitOfAReleaseBuild(t *testing.T) {
+	saved := version
+	t.Cleanup(func() { version = saved })
+	version = "0.1.0+0123456789ab.dirty"
+	srv, _ := authServer(t, 200, `{"server":{"commit":"c"},"changes":[]}`)
+	r := runCLINoToken(t, srv.URL, fakeExe(t), "version")
+	var v map[string]any
+	if err := json.Unmarshal([]byte(r.stdout), &v); err != nil {
+		t.Fatal(err)
+	}
+	if v["cli_commit"] != "0123456789ab.dirty" || v["cli_version"] != "0.1.0+0123456789ab.dirty" {
+		t.Errorf("version: %v", v)
+	}
+	version = "0.1.0"
+	r = runCLINoToken(t, srv.URL, fakeExe(t), "version")
+	v = map[string]any{}
+	_ = json.Unmarshal([]byte(r.stdout), &v)
+	if _, has := v["cli_commit"]; has {
+		t.Errorf("a build with no commit has no cli_commit: %v", v)
+	}
+}
+
+func TestVersionStillWorksWhenTheServerDoesNotAnswer(t *testing.T) {
+	srv, _ := authServer(t, 500, `{}`)
+	r := runCLINoToken(t, srv.URL, fakeExe(t), "version")
+	if r.exit != ExitOK {
+		t.Fatalf("exit %d: %s", r.exit, r.stderr)
+	}
+	var v map[string]any
+	if err := json.Unmarshal([]byte(r.stdout), &v); err != nil {
+		t.Fatal(err)
+	}
+	if v["server_commit"] != nil || v["server_error"] == nil || v["contract_sha256"] != contract.Digest() {
+		t.Errorf("version: %v", v)
+	}
+}
+
+func TestTopicOpenSaysWhyARevisionNumberIsNotAKey(t *testing.T) {
+	srv, seen := authServer(t, 200, `{}`)
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "topic", "open", "4855")
+	if r.exit != ExitUsage || !strings.Contains(r.stderr, "revision") || len(*seen) != 0 {
+		t.Errorf("exit %d, stderr %s, requests %+v", r.exit, r.stderr, *seen)
+	}
+}

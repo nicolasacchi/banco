@@ -149,3 +149,22 @@ test("the text around the box of a typed gap is inline: «14. cm» after the box
     assert.match(after.textContent, /14\. cm/)
   })
 })
+
+// D-402: a lone mark of punctuation around the box («.», «?», «!», «,», «¿») is glued to it in one no-wrap span, so it never wraps under the box at 390 px; a real
+// word after the box is still its own item of the row (it may wrap like text).
+test("a lone punctuation mark after (or before) the box is glued to it in one .check-glue; words are not", async () => {
+  await withDom(() => {
+    const spanish = { ...ctx, subject: "spanish", items: { ...ctx.items, text_label: "Scrivi", accents_label: "Lettere" } }
+    const names = (spec) => {
+      const root = render({ type: "try", exercises: [exercise({ component: "normalized_text", prompt_it: "Scrivi.", answer: "x", ...spec })] }, spanish, { card: 10, block: 1 })
+      const row = root.byClass("check-row")[0]
+      return { row: row.children.map((c) => c.className.split(" ")[0]), glue: row.byClass("check-glue")[0]?.children.map((c) => c.className.split(" ")[0]) }
+    }
+    for (const mark of [".", "?", "!", ",", " . "]) {
+      assert.deepEqual(names({ input_before: "Vivo en", input_after: mark }), { row: ["check-before", "check-glue"], glue: ["answer", "check-after"] }, `«${mark}»`)
+    }
+    assert.deepEqual(names({ input_before: "¿", input_after: "vive tu tía?" }), { row: ["check-glue", "check-after"], glue: ["check-before", "answer"] })
+    assert.deepEqual(names({ input_before: "Vivo en", input_after: "tía." }), { row: ["check-before", "answer", "check-after"], glue: undefined }, "a word after the box is not glued")
+    assert.deepEqual(names({ input_after: "cm" }), { row: ["answer", "check-after"], glue: undefined })
+  })
+})

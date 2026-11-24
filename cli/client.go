@@ -29,12 +29,12 @@ type client struct {
 
 // contractExempt are the commands that work when the CLI's contract differs from the server's (D-330): they are how
 // an out-of-date CLI learns what changed and replaces itself, so they must never be refused for being out of date.
-var contractExempt = map[string]bool{"token": true, "changes": true, "changes show": true, "docs show": true, "self-update": true}
+var contractExempt = map[string]bool{"token": true, "changes": true, "changes show": true, "docs show": true, "self-update": true, "version": true}
 
 // tokenless are the commands that need no token and send none (D-333): they read the public repo's content (the decisions
 // index, the two docs, the CLI release build), never a student's data, and the server answers them without looking at
 // Authorization. A machine with no token can still learn what changed and update its CLI.
-var tokenless = map[string]bool{"changes": true, "changes show": true, "docs show": true, "self-update": true}
+var tokenless = map[string]bool{"changes": true, "changes show": true, "docs show": true, "self-update": true, "version": true}
 
 // do performs one authenticated request and returns the body of a 2xx answer.
 // Every response must carry X-Banco-Contract equal to the embedded contract's

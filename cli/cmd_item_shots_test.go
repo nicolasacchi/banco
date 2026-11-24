@@ -227,6 +227,13 @@ func TestItemShotsErrorAndTimeoutAreFailures(t *testing.T) {
 	if res.exit != ExitServer || !strings.Contains(res.stderr, "E-TIMEOUT") {
 		t.Fatalf("timeout: exit %d stderr %s", res.exit, res.stderr)
 	}
+	// the error says how to wait longer, and the default wait covers a busy Chrome lane (20 minutes)
+	if !strings.Contains(res.stderr, "--timeout 2") || !strings.Contains(res.stderr, "default 1200") {
+		t.Errorf("the timeout error does not say how to wait longer: %s", res.stderr)
+	}
+	if defaultItemShotsTimeout != 1200 {
+		t.Errorf("default wait %d s, want 1200", defaultItemShotsTimeout)
+	}
 }
 
 func TestItemShotsATokenThatCannotRequestFailsUnlessARenderIsPending(t *testing.T) {

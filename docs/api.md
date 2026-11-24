@@ -896,7 +896,7 @@ the server's Chrome, for the reviewer and the blind solver. An aid: it decides n
 ### `banco item shots REV [--dir DIR] [--wait] [--force] [--timeout SECONDS]`
 
 Reads the status and always asks for the render: the server enqueues one only when none is pending and the verdict is missing or outdated (a `bot_read` or `teacher` token cannot ask; it reads the verdict there is or waits for one a content agent has queued) and,
-with `--wait`, polls until it is done (`--timeout`, default 300 s: `E-TIMEOUT`; an `error` row is `E-CHROME-UNAVAILABLE`). It writes
+with `--wait`, polls until it is done (`--timeout`, default 1200 s, enough for a busy Chrome lane: `E-TIMEOUT`, which says to run it again with a longer `--timeout`; an `error` row is `E-CHROME-UNAVAILABLE`). It writes
 `DIR/REV/instance-NN_390x844.webp` (NN is the instance number of `review open` and `solve open`; `DIR` defaults to `banco-figures`) and prints, per file,
 the `instance`, the `seed` and the `shown_order`: a choice, a matching and an ordering are shuffled with that fixed seed as the student's page shuffles
 them, and the number on an option (1, 2, …) is `shown_order.options[n-1]`, the stored id an answer uses (a matching's right column is a closed menu; its order is
@@ -954,7 +954,7 @@ A topic or test read (`banco teacher topic`, `banco teacher test`) runs the page
 
 `bin/build-cli-dist` (POSIX sh, needs Go) tests the CLI and cross-compiles it for linux, darwin and windows on amd64 and arm64 into
 `dist/` (git-ignored) with `dist/SHA256SUMS` and `dist/build.json` (`{version, built_at}`); the version is stamped from git (`banco version` prints
-`cli_version` as `<base>+<commit>`, with `.dirty` if `cli/` or `contract/` had uncommitted changes), or from `GIT_SHA` where there is no
+`cli_version` as `<base>+<commit>`, with `.dirty` if `cli/` or `contract/` had uncommitted changes, and that commit alone as `cli_commit`; it also prints the server's commit as `server_commit`, with `server_built_at`, read from the public `GET /api/v1/updates` with no token, and `server_error` instead when the server does not answer, never an exit code), or from `GIT_SHA` where there is no
 `.git`. The production image builds it in its `cli` stage (the Go of `go.mod`; the production build passes
 `--build-arg GIT_SHA=$(git rev-parse HEAD)`) and carries it at `/rails/dist`, owned by root and read-only (the app user cannot rewrite
 a binary or `SHA256SUMS`), so the server publishes the build of its own commit. The first time, copy the file for the bot's platform,

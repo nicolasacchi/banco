@@ -1,10 +1,10 @@
 ---
 name: lesson
-version: 2
+version: 3
 formats: banco.lesson/2
 ---
 
-# Brief: lessons (version 2, `banco.lesson/2`)
+# Brief: lessons (version 3, `banco.lesson/2`)
 
 You write one topic of the course for one student: a lesson made of short cards, one idea each, with
 a picture or a diagram on every idea, small questions to answer on the page, worked examples that
@@ -111,6 +111,8 @@ at least 2 cards; `E-LESSON-PARTS`). A level-2 heading starts a **card** and end
 - Core cards: 6 to 14 (`E-LESSON-CARDS`). Order: `idea` and `example` cards in any order, the first `idea`
   before the first `example`, then exactly one `mistakes`, exactly one `try`, exactly one `summary` (the last
   core card). Extra cards (`idea` or `example`, 0 to 4) come after the summary, outside the parts.
+- Counts by role: 1 to 9 `idea` cards and 1 to 3 `example` cards (`E-LESSON-CARDS`; a topic that needs more ideas is two topics, or its depth goes to `extra` cards),
+  and 1 to 6 blocks on every card (`E-CARD-BLOCKS`: a picture, its text, a callout, a check and a `more` already make five).
 - **One idea per card.** The title says the idea as a sentence ("Togli lo stesso peso dai due piatti", not
   "Primo principio"). The core path is complete without `more` blocks and extra cards.
 - **A visual on every `idea` card** (`E-CARD-NO-VISUAL`): a `diagram`, a `schema`, a `procedure`, or a `cases`
@@ -182,6 +184,12 @@ Release 1 blocks (the fields are in the schema; `banco lesson submit --dry-run` 
 | `diagram TYPE` | a drawing | see Diagrams |
 | `table` | a table, at most 4 columns and 10 rows | `caption_it?`, `header`, `rows` |
 | `try` | the exercises, one at a time | `intro_it?`, `exercises: [{text_it, diagram?, check or checks (up to 3, for parts a, b, c), final_it?, solution_it or solution_steps}]` (4 to 8, `E-LESSON-EXERCISES`) |
+
+**«Stampa riassunto e schema» is one A4 page.** The summary card and its schema (`schema concept_map|flow|table`) are printed together, and the render check, run on the
+stored revision, refuses a print that takes two pages (`E-LESSON-RENDER`, «Stampa riassunto e schema takes 2 pages»): the dry run cannot see it, so stay well under it. The
+summary is 3 to 5 points of at most 20 words, the schema is small: a `flow` with few nodes and texts of a few words (a flow node's `text_*` is **at most 80 characters, markup
+included**: `[[es:..]]`, `**bold**` and `$..$` count too, and a long node makes the print taller), a `concept_map` of at most 6 words a node (`E-LESSON-DIAGRAM`), a `table` of at most 4
+columns and a few rows. When the render check says two pages, cut nodes or words from the schema, never the summary's points.
 
 A step `tag` is one of the verbs of the subject (below). A `try` exercise answered with a `check` is graded by
 our code; one without a check keeps a `final_it` (`W-LESSON-FINAL-MISSING` when it has neither;
@@ -387,7 +395,7 @@ number line intervals.
 | `cartesian` | lines, systems | `x: [min, max]`, `y: [min, max]`, `grid`, `lines: [{id, eq, label_it?, role?}]` with `eq` as `y = 2x + 1`, `x = 3` or `2x + 3y = 6` (rational coefficients), `points: [{x, y, label_it?, role?, on_lines?: [ids]}]` (a point with `on_lines` lies exactly on each line), `segments` |
 | `sentence` | logical and grammatical analysis | `text_it`, `parts: [{id?, text_it, role, label_it?, question_it?, implied?}]` (exact substrings of `text_it`, in order, at most 10; an `implied` part such as "(noi)" is drawn dashed), `links`, `layout: line\|centre`, `states` with `op_it`, `next_label_it` (a part with the same `id` keeps its role) |
 | `concept_map` (schema) | classifications | `root`, `nodes: [{id, text_it, role?, icon?}]`, `edges: [{from, to, label_it?}]` forming a tree of depth at most 3 with at most 4 children per node, `links` (at most 3 cross links) |
-| `flow` (schema) | procedures, and a loop (Do While) as a flowchart | `nodes: [{id, kind: step\|decision\|end, text_it, role?}]`, `edges: [[from, to, "label"?]]`: one main chain, a decision has 2 or 3 branches, no cycles among the edges; `loops: [{from, to, label_it?}]` (at most 2): the one way back, an arrow from a node under a decision to that decision (see «A flow that repeats»). A decision is drawn as a diamond |
+| `flow` (schema) | procedures, and a loop (Do While) as a flowchart | `nodes: [{id, kind: step\|decision\|end, text_it (at most 80 characters, markup included), role?}]`, `edges: [[from, to, "label"?]]`: one main chain, a decision has 2 or 3 branches, no cycles among the edges; `loops: [{from, to, label_it?}]` (at most 2): the one way back, an arrow from a node under a decision to that decision (see «A flow that repeats»). A decision is drawn as a diamond |
 | `network` | who is linked to whom, by what | `layout: pair\|row\|triangle\|hub\|fan\|grid`, `centre` (hub), `into` (fan), `nodes: [{id, label_it, icon?, role?, note_it?, badge_it?}]` (2 to 8, label 6 words, note 25), `edges: [{from, to, kind, label_it?, what?}]` (at most 12 per state; `kind`: owes, pays, elects, trusts, appoints, commands, advises, votes_laws, vetoes, orders, promises, gives, sends; `what`: goods, money, document, order, promise, signature, information, vote), `holds: [{node, items_it}]`, `everyone: true` (a node "Tutti gli altri", id `everyone`), `filter: true` (hub: kind chips), states with `edges`, `holds`, `hide: [ids]`, `badges`, `op_it`. An arrow never reaches a hidden node |
 | `chain` | causes, effects, cycles | `layout: line\|fan\|ring`, `nodes: [{id, kind: cause\|event\|effect\|stage, area?, text_it}]` (3 to 10, 8 words) written in reading order (a fan: the causes, the one event, its effects), `links: [{from, to, word?, causal?: false, back?: true}]` (a link goes to the next node, or into the event of a fan; word: perché, quindi, per questo, porta a, poi; at most 2 not causal, 1 back, a line only), `remove: true` ("Togli una causa"), states with `show: [ids]`, `op_it`; a ring has stages only |
 | `timeline` | dated facts in order (years), or the order of tenses around now | `scale: years` (history, geography): `from`, `to` (signed years as text, `'-146'` is 146 a.C.; `'0'` is refused: there is no year 0), `every` (tick step), `centuries: true` (bands), `lanes: [{id, label_it}]` (1 to 3), `periods: [{from, to, label_it, role?}]` (6 per state), `events: [{id, at, label_it, note_it?, role?, approx?, lane?}]` (12 per state, label 6 words, note 25, written in any order), `spans: [{from, to, show_value?}]` (event ids; the duration is computed, never written), `measure: true` (extra cards: choose two events), states that zoom (`from`, `to`, `periods`, `events`, `spans`, `op_it`). `scale: tense` (english, spanish): `window: ['-3', '3']` (0 is now, the unit is the order), `marks: [{id, at, span: point\|range\|habit\|plan, to?, from?, text_en or text_es, label_it, role?, uncertain?}]` (8, the sentence 8 words; a range has `to`, a plan has `from` before `at`, a habit may have `to`), states with `marks`, `window`, `op_it`. Durations and centuries are always computed by the components (`verify: {fn: chrono.duration}` on a number check) |
@@ -576,6 +584,9 @@ the same bold words, the same colour roles (`[[subject:...]]` in both texts; the
 (`E-LANG-PAIR-SHAPE`). A translation that is the target text copied (`E-LANG-TRANSLATION-COPY`), that is not Italian (`E-LANG-TRANSLATION-LANG`), a target text
 that holds Italian words (`E-LESSON-LANG`), two equal target strings with two different Italian ones in one block (`E-LANG-PAIR-CONFLICT`), a translation with no
 target (`E-LANG-PAIR-ORPHAN`) and a `_en` pair in a lesson without the flag, or a `_en` in a spanish lesson (`E-LANG-BILINGUAL-FLAG`) are refused.
+
+**The topic's title in the course map is not yours.** `title_en|es` of the topic in the course map belongs to the **course revision** (the orchestrator's `banco course` work), never
+to the lesson or the topic file: ignore `W-TOPIC-LANG-MIXED` when it names only that title (it clears when the course revision has the pair). The lesson's own `title_*` is yours.
 
 **Level.** The target text is held to the target lint (`E-READ`: at most 12 words a sentence; `W-LANG-LEVEL`: the first 3000 words, the glossary, `teaches_en` /
 `teaches_es`, the common given names); the Italian to the Italian lint (25 words, `W-GULPEASE` on the translated core prose). The budgets (words a card,
