@@ -41,7 +41,9 @@
   </aside>
 
   <div class="practice-main">
-  <div class="card exercise-card">
+  <%# The translation scope of a bilingual exercise (D-402): practice_controller.js turns it on for such a serve (data-tr-scope, data-tr-serve) and puts the
+      «Traduzione» button in the action bar. Opening it is posted to /translations for the student; the preview writes nothing (no address). %>
+  <div class="card exercise-card" data-practice-target="scope" data-tr-surface="practice" data-tr-topic="<%= @topic.key %>"<% unless preview? %> data-tr-url="<%= spath("/translations") %>"<% end %>>
     <section data-practice-target="work" aria-label="<%= t("practice.exercise") %>" hidden>
       <p class="reminder" id="reminder" data-practice-target="reminder" hidden></p>
       <div class="item" data-practice-target="itemBox" data-comment-anchor="exercise" data-action="item-change->practice#changed"></div>

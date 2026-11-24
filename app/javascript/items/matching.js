@@ -3,15 +3,21 @@
 // answer is JSON text: {left id: right id}, with "" for a select left blank.
 import { announceChange, el, handle, parseDraft, uid } from "items/dom"
 import { renderInline } from "items/markup"
+import { bare, langOf, trNode } from "items/bilingual"
 
 export function render(part, ctx) {
+  const lang = langOf(part)
   const rows = (part.left || []).map((left, index) => {
     const id = uid("match")
     const select = el("select", { id, class: "answer-input", "data-left": left.id },
       el("option", { value: "", text: ctx.t.matching_blank }),
       (part.right || []).map((right) => el("option", { value: right.id, text: plain(right.text) })))
     const label = renderInline(left.text, el("label", { for: id, class: "match-left" }))
-    return { select, row: el("div", { class: "match-row", "data-comment-anchor": `row:${index + 1}` }, label, select) }
+    // A bilingual row (D-402): the Italian of the left text under the row, when the exercise's translation is open. The right-hand answers are the
+    // options of a native select, which holds text only: they have no translation line.
+    const { italian } = bare(left, "text", lang)
+    if (lang) label.setAttribute("lang", lang)
+    return { select, row: el("div", { class: "match-row", "data-comment-anchor": `row:${index + 1}` }, label, select, italian ? trNode(italian) : null) }
   })
   // Each answer is used at most once: an entry picked in one select is greyed out in the others.
   // A classification (reuse_right, D-092) lets several rows share an answer: nothing is greyed out.

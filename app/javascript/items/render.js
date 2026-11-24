@@ -4,6 +4,7 @@
 import { el } from "items/dom"
 import { renderInline } from "items/markup"
 import { renderPrompt, renderSteps } from "items/prompt"
+import { langOf, sides, trNode } from "items/bilingual"
 import { render as number } from "items/number"
 import { render as fraction } from "items/fraction"
 import { render as expression } from "items/expression"
@@ -28,10 +29,17 @@ export async function renderPart(part, ctx) {
   result.promptElement = renderPrompt(part, ctx)
   // "Commenta" (D-304): the answer area is a place of its own (the prompt and the item are set where they are built).
   if (!result.element.hasAttribute("data-comment-anchor")) result.element.setAttribute("data-comment-anchor", "answer")
-  // What to do (steps) goes with the prompt, above the input; the form of the answer sits under the input (D-216).
-  if (Array.isArray(part.steps_it) && part.steps_it.length > 0) result.promptElement.appendChild(renderSteps(part.steps_it, ctx))
-  if (part.answer_format_it) {
-    result.element.appendChild(renderInline(part.answer_format_it, el("p", { class: "answer-format" })))
+  // What to do (steps) goes with the prompt, above the input; the form of the answer sits under the input (D-216). A bilingual item has both
+  // texts (`steps_<lang>` + `steps_it`, `answer_format_<lang>` + `answer_format_it`, D-402); the Italian is a line under each, hidden until opened.
+  const lang = langOf(part)
+  const steps = sides(part, "steps", lang)
+  if (Array.isArray(steps?.text) && steps.text.length > 0) result.promptElement.appendChild(renderSteps(steps.text, ctx, lang ? steps.italian : null))
+  const format = sides(part, "answer_format", lang)
+  if (format?.text) {
+    const line = renderInline(format.text, el("p", { class: "answer-format" }))
+    if (lang) line.setAttribute("lang", lang)
+    result.element.appendChild(line)
+    if (lang && format.italian) result.element.appendChild(trNode(format.italian))
   }
   return result
 }

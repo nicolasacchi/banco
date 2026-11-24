@@ -6,6 +6,8 @@ import { renderHelp } from "items/help"
 import { renderMarkup } from "items/markup"
 import { Refusals } from "items/refusals"
 import { showRefusalNotice } from "items/refusal_notice"
+import { langOf, sides } from "items/bilingual"
+import { refresh as refreshTranslation, toggleButton } from "items/translation"
 
 // The one app page of a sitting (X-02, E-10): Turbo is not loaded. This controller
 // asks the server for each item as JSON (POST step), draws it with the templates in
@@ -13,7 +15,7 @@ import { showRefusalNotice } from "items/refusal_notice"
 // timer, bar or total. Pause and visibility are posted when they change; one request
 // every ten minutes while the page is visible keeps the session alive (B-05).
 export default class extends Controller {
-  static targets = ["intro", "stage", "heading", "itemBox", "sendButton", "unknownButton", "work", "status", "blocked", "over", "wait", "help", "helpBody", "sheetButton", "sheet", "sheetBody", "leaveBox"]
+  static targets = ["intro", "stage", "heading", "itemBox", "sendButton", "unknownButton", "work", "status", "blocked", "over", "wait", "help", "helpBody", "actions", "sheetButton", "sheet", "sheetBody", "leaveBox"]
   static values = { stepUrl: String, eventsUrl: String, supportUrl: String, answerUrl: String, listUrl: String, subject: String,
                     resuming: Boolean, keepaliveSeconds: { type: Number, default: 600 }, texts: Object }
 
@@ -92,10 +94,26 @@ export default class extends Controller {
     this.headingTarget.replaceChildren(subject, " · ", count)
     this.itemBoxTarget.appendChild(this.handle.element)
     this.handle.mounted()
+    this.setTranslation(reply.item)
     this.showSupports(reply)
     this.setButtons(true)
     this.handle.focus()
     return null
+  }
+
+  // A bilingual item (D-402) makes the sitting's card a translation scope with the button «Traduzione» in the action bar; a legacy item has neither.
+  // The passage's Italian is never on this page (a reading text, and the sitting has no after-answer view).
+  setTranslation(item) {
+    this.trButton?.remove()
+    this.trButton = null
+    const card = this.workTarget
+    for (const name of ["data-tr-scope", "data-translation"]) card.removeAttribute(name)
+    if (!langOf(item)) return
+    card.setAttribute("data-tr-scope", "item")
+    card.setAttribute("data-translation", "off")
+    this.trButton = toggleButton({ text: this.texts.translation_toggle })
+    this.actionsTarget.prepend(this.trButton)
+    refreshTranslation(card)
   }
 
   // ---- supports (D-216): "Come si risponde" and the declared formula sheet --------------------
@@ -170,7 +188,7 @@ export default class extends Controller {
     const count = this.refusals.record(item.served_event_id, Date.now())
     if (this.refusals.showFormat(item.served_event_id)) {
       this.setStatus("")
-      showRefusalNotice(this.handle, { message, format: item.item.answer_format_it })
+      showRefusalNotice(this.handle, { message, format: sides(item.item, "answer_format", langOf(item.item))?.text })
     } else {
       this.setStatus(message)
     }
