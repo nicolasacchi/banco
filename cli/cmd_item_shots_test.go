@@ -241,3 +241,36 @@ func TestItemShotsATokenThatCannotRequestFailsUnlessARenderIsPending(t *testing.
 		t.Fatalf("a pending render is waited for: exit %d stdout %s stderr %s", res.exit, res.stdout, res.stderr)
 	}
 }
+
+// A bilingual item has a second picture of instance 1 with the Italian translation open (state "tr", D-402): it is written beside the first, not over it.
+func TestItemShotsTheTranslationPictureIsAFileOfItsOwn(t *testing.T) {
+	sha := strings.Repeat("c", 64)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("X-Banco-Contract", contract.Digest())
+		switch {
+		case req.Method == "POST":
+			w.WriteHeader(200)
+			_, _ = w.Write([]byte(`{"enqueued":false,"status":"passed","render_id":8}`))
+		case req.URL.Path == "/api/v1/item-revisions/12/shots":
+			_, _ = w.Write([]byte(`{"revision_id":12,"status":"passed","render_id":8,"errors":[],"notes":[],"instances":1,"seed_note":"n","shots":[` +
+				`{"instance":1,"seed":"s","shown_order":{},"viewport":"390x844-cream","width":390,"height":700,"available":true,"path":"/api/v1/item-revisions/12/shots/` + sha + `"},` +
+				`{"instance":1,"state":"tr","seed":"s","shown_order":{},"viewport":"390x844-cream","width":390,"height":820,"available":true,"path":"/api/v1/item-revisions/12/shots/` + sha + `"}]}`))
+		default:
+			_, _ = w.Write([]byte("RIFFxxxxWEBP"))
+		}
+	}))
+	t.Cleanup(srv.Close)
+	dir := t.TempDir()
+	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", dir)
+	if res.exit != 0 {
+		t.Fatalf("item shots: exit %d, stderr %s", res.exit, res.stderr)
+	}
+	for _, name := range []string{"instance-01_390x844.webp", "instance-01-tr_390x844.webp"} {
+		if _, err := os.Stat(filepath.Join(dir, "12", name)); err != nil {
+			t.Errorf("%s: %v", name, err)
+		}
+	}
+	if !strings.Contains(res.stdout, `"state":"tr"`) {
+		t.Errorf("the file entry of the translation picture says its state: %s", res.stdout)
+	}
+}

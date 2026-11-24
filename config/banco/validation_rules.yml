@@ -351,4 +351,5 @@ item_render:
   budget_seconds: 150         # one revision (a timeout is findings, the shots already taken stay)
   instance_seconds: 12        # one instance: the page drawn, measured and pictured
   queued_stale_minutes: 30    # a `queued` row without a later row for this long is a lost job: a new request enqueues again
+  translation_instances: 1    # a bilingual item: the first n instances are pictured a second time with the Italian translation open (`-tr`, D-402)
   max_shot_height: 9000       # a taller instance is pictured to here and reported

@@ -416,7 +416,7 @@ banco attempts --comment 17
   through the same code as the student's page: `Diagnosis::Rekey.replay`, `Items::Part`; for the entry test `Diagnosis::ItemPresenter`), with the shown ids `o1…` (options),
   `e1…` (elements to order), `l1…`/`r1…` (the two columns of a matching). `shown_order` lists the **stored** ids in the order they were shown, per column, and `id_map` maps each shown
   id to the stored one, so the key and the error values, which are in stored ids, read against the answer. Also the serve's `reason` (`next`, `prova_questo`, `after_solution`,
-  `reseen`), its parent, its `at`; `reminders` (D-358) when the page showed a «Ricorda: …» line with this serve (`code`, `source` `item` or `graph`, `at`); for the entry test the `run_id`, `sitting` and `reason`.
+  `reseen`), its parent, its `at`; `reminders` (D-358) when the page showed a «Ricorda: …» line with this serve (`code`, `source` `item` or `graph`, `at`); `translations` (D-402) when the student opened the Italian translation of this exercise (`[{scope, at}]`, the `translation_opened` events of the serve: informational, it is not an aid and no state reads it); for the entry test the `run_id`, `sitting` and `reason`.
 - **`instance`**: the stored instance as the teacher reads it: the `stem`, the `key` (stored) and `key_words`, the `accept`ed forms, `answer_words` (the answer in the words
   of the shown display: «Produrre automobili», «tre → due → uno»), `errors` (the instance's declared errors with their values), `error_catalogue` (the item's), `matched_errors`
   (the grader's codes with the catalogue's text) and, for a practice try, `hints` (with `shown_before` for this try) and `hints_total`.
@@ -860,6 +860,17 @@ With no active link it answers `{"revoked": [], "count": 0}`. `banco view-link r
   edge (Traefik routers `banco-view` and `banco-view-redeem`, the latter with access logs off, so the token in the query never reaches Traefik's log; Rails filters `view_token` too),
   so `url` starts with `https://api.banco.scc.im`. `BANCO_VIEW_URL` names the host, so moving it later changes no command.
 
+## App events the student's pages write
+
+Not API calls: the student's browser posts them to the web listener (`POST /translations`, JSON, the session and the CSRF token of the page). They are rows of
+`app_events`, read by the teacher views and `banco attempts`; the student's own export (`/privacy/data`) holds them.
+
+- **`translation_opened`** (D-402): the student opened the Italian translation of a card, a block, an exercise or a list page of the english or spanish courses.
+  Payload `{surface: "lesson"|"practice"|"topics", scope: "card"|"block"|"item"|"page", topic?, card?, block?, serve_id?}`. Sent when a scope is opened, once per target per page load, never when
+  «Sempre visibile» is on (that preference is already a `student_preference` row) and never from the teacher's preview, which answers 204 and writes nothing; the teacher and a guest get 403.
+  A body of another shape is 422 and no row. It is **not an aid**: no counter, no `aided`, no skill state reads it. The teacher reads it as `served.translations` of `banco attempts show`
+  and as «Traduzione aperta in N esercizi su M» on the practice and topic review pages.
+
 ## Item shots
 
 The pictures of an item as the student sees it on a 390 px phone (D-336): one WebP of the whole page for each stored instance, drawn on demand in
@@ -867,7 +878,7 @@ the server's Chrome, for the reviewer and the blind solver. An aid: it decides n
 
 | Endpoint | Who | What |
 |---|---|---|
-| `GET /api/v1/item-revisions/:revision/shots` | every token role | `{status, render_id, requested_at, errors, notes, instances, viewport, seed_note, shots, next}`; `status` is `none`, `queued`, `passed`, `failed` (findings) or `error` (Chrome did not answer); `shots[]` is `{instance, seed, shown_order, viewport, width, height, scale, sha256, bytes, available, path}` (`width` is in CSS px, the device scale is 1); `errors[]` is `{code, instance, message, where}` with the codes `E-ITEM-OVERFLOW` and `E-ITEM-RENDER`; while a newer request is queued the pictures are those of the last verdict |
+| `GET /api/v1/item-revisions/:revision/shots` | every token role | `{status, render_id, requested_at, errors, notes, instances, viewport, seed_note, shots, next}`; `status` is `none`, `queued`, `passed`, `failed` (findings) or `error` (Chrome did not answer); `shots[]` is `{instance, state, seed, shown_order, viewport, width, height, scale, sha256, bytes, available, path}` (`width` is in CSS px, the device scale is 1); `errors[]` is `{code, instance, message, where}` with the codes `E-ITEM-OVERFLOW` and `E-ITEM-RENDER`; while a newer request is queued the pictures are those of the last verdict |
 | `POST /api/v1/item-revisions/:revision/shots[?force=1]` | the content roles (`agent_claude`, `agent_omp`, `ci`); a `bot_read` or `teacher` token is `403 E-AUTH` | enqueues the render **once**: `202 {enqueued: true, status: "queued", render_id}`; `200 {enqueued: false, why_not}` while one is queued or when the revision has been rendered (`force=1` draws it again); a revision with no instance is `422 E-ITEM-NOT-PASSED`; `X-Banco-Dry-Run: 1` says what it would do and queues nothing |
 | `GET /api/v1/item-revisions/:revision/shots/:sha` | every token role | the WebP; `404` «immagine rimossa» after the weekly purge (`banco item shots REV --force` draws it again) |
 
@@ -878,7 +889,7 @@ with `--wait`, polls until it is done (`--timeout`, default 300 s: `E-TIMEOUT`; 
 `DIR/REV/instance-NN_390x844.webp` (NN is the instance number of `review open` and `solve open`; `DIR` defaults to `banco-figures`) and prints, per file,
 the `instance`, the `seed` and the `shown_order`: a choice, a matching and an ordering are shuffled with that fixed seed as the student's page shuffles
 them, and the number on an option (1, 2, …) is `shown_order.options[n-1]`, the stored id an answer uses (a matching's right column is a closed menu; its order is
-`shown_order.right`). `review open` and `solve open` request the render themselves (best effort, never waiting) and print `item_shots.fetch`, this command.
+`shown_order.right`). A bilingual item (D-402) is pictured a second time for its first instance (`item_render.translation_instances`) with the Italian translation open: that shot says `state: "tr"` and is written as `instance-NN-tr_390x844.webp` beside the first. `review open` and `solve open` request the render themselves (best effort, never waiting) and print `item_shots.fetch`, this command.
 
 ## Errors
 

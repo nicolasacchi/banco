@@ -172,7 +172,12 @@ module Practice
       reminders = Reminder.shown(serve.id)[serve.id].map { |r| { code: r[:code], source: r[:source], at: stamp(r[:at]) } }
       { practice_serve_id: serve.id, reason: serve.reason, parent_serve_id: serve.parent_serve_id, error_code: serve.error_code, at: stamp(serve.created_at),
         rules_version: serve.rules_version, seed: serve.seed, shown_order: shown.shown_order, id_map: shown.id_map, item: item,
-        reminders: reminders.presence }.compact
+        reminders: reminders.presence, translations: translations_of(serve) }.compact
+    end
+
+    # Where the student opened the Italian translation of this exercise (D-402): [{scope, at}], nil when he never did. Not an aid.
+    def translations_of(serve)
+      TranslationUse.by_serve([ serve.id ])[serve.id]&.map { |opening| { scope: opening.scope, at: stamp(opening.at) } }
     end
 
     # The instance as the teacher reads it, and the hints with the ones this try had been shown.

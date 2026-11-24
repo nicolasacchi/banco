@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <% prefs = ui_preferences %>
-<html lang="<%= I18n.locale %>" data-theme="<%= ui_theme(prefs) %>" data-theme-choice="<%= prefs[:theme] %>" data-size="<%= prefs[:size] %>">
+<html lang="<%= I18n.locale %>" data-theme="<%= ui_theme(prefs) %>" data-theme-choice="<%= prefs[:theme] %>" data-size="<%= prefs[:size] %>" data-translation="<%= ui_translation %>">
   <head>
     <title><%= content_for(:title) || t("diagnosis.title") %></title>
     <meta charset="utf-8">

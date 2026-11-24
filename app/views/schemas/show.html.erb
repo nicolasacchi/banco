@@ -1,6 +1,7 @@
 <%# «Schema: <argomento>» (D-372): the summary card of the lesson revision he is shown, drawn by the lesson/2 renderer from the student's
     projection (Lessons::StudentBody.schema: no answer is in it), or the summary of a lesson/1. Locked until the topic is done. %>
-<% title = t("schemas.page_title", topic: @topic.title_it) %>
+<% title = t("schemas.page_title", topic: topic_title(@topic)) %>
+<% offered = @topic.title_paired? %>
 <% content_for :title, title %>
 <% subject = @subject_view.subject %>
 <% if @unlocked && @student_body %>
@@ -12,8 +13,9 @@
     <%= lesson_family_stylesheets(@student_body) %>
   <% end %>
 <% end %>
-<main class="page course schema-page" id="schema-page" style="--subject: var(--accent-<%= subject.key %>, var(--soft-primary))" data-topic="<%= @topic.key %>" data-unlocked="<%= @unlocked %>">
-  <%= ui_page_header(title, back: [ t("schemas.back"), spath("/schemas") ]) %>
+<main class="page course schema-page" id="schema-page" style="--subject: var(--accent-<%= subject.key %>, var(--soft-primary))" data-topic="<%= @topic.key %>" data-unlocked="<%= @unlocked %>" <%= tr_scope_attrs(offered, topic: @topic) %>>
+  <%= ui_page_header(title, back: [ t("schemas.back"), spath("/schemas") ], &tr_actions(offered)) %>
+  <% if offered %><%= tr_node(t("schemas.page_title", topic: @topic.title_it), tag: :p) %><% end %>
   <p class="topic-meta cluster"><%= subject_chip(subject.key) %> <span><%= subject.name_it %></span></p>
   <% if draft? %><%= ui_notice :info, t("draft.notice"), html: { id: "draft-notice" } %><% end %>
   <% if @unlocked %>

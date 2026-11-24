@@ -54,9 +54,19 @@ module Course
     # An open serve of another revision of a shown lesson is `replaced` (Practice::Loader), never resumed.
     def shown_revisions = @shown_revisions ||= subjects.flat_map(&:topics).to_h { |t| [ t.topic_revision.lesson_id, t.topic_revision ] }
 
-    # The label of a graph or course skill of a visible subject.
+    # The label of a graph or course skill of a visible subject: in the language the subject teaches when the skill has the pair
+    # (`label_en|es`, D-402), else the Italian one.
     def label(skill)
-      labels[skill] || skill
+      labels[skill]&.first || skill
+    end
+
+    # The Italian label of a skill, whatever the pair: what the API and the teacher's pages say (`label_it`).
+    def label_italian(skill) = italian_labels[skill] || skill
+
+    # The Italian label that goes with a target-language one (nil for a skill without the pair): the text of its translation node.
+    def label_translation(skill)
+      target, italian = labels[skill]
+      italian if target && italian
     end
 
     # The skill graph's description of one of the skill's typical errors (nil when it has none), for the reminder's fallback (D-358).
@@ -69,9 +79,14 @@ module Course
       nil
     end
 
+    def italian_labels
+      @italian_labels ||= subjects.each_with_object({}) { |sv, all| graph_skills(sv).each { |s| all[s["key"]] = s["label_it"] } }
+    end
+
     def labels
       @labels ||= subjects.each_with_object({}) do |sv, all|
-        graph_skills(sv).each { |s| all[s["key"]] = s["label_it"] }
+        lang = Lessons::Lang.target(sv.subject.key)
+        graph_skills(sv).each { |s| all[s["key"]] = [ (s["label_#{lang}"] if lang) || s["label_it"], (s["label_it"] if lang && s["label_#{lang}"]) ] }
       end
     end
 

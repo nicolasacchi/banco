@@ -31,7 +31,16 @@ module Items
         hints: Practice::Instances.hints(instance).size }
     end
 
-    # What a shot says about its instance, without the page's data: its number, the seed and the shown order.
-    def meta(presentation) = { "instance" => presentation[:number], "seed" => presentation[:seed], "shown_order" => presentation[:shown_order] }
+    # The shot of the same instance with the Italian translation open (D-402): the state of a picture drawn with `?tr=1`.
+    TRANSLATION_STATE = "tr".freeze
+
+    # Whether the revision has an Italian translation to picture (a bilingual item of english or spanish): a legacy item has no `-tr` shot.
+    def translation?(revision) = JSON.parse(revision.body_json)["bilingual"] == true
+
+    # What a shot says about its instance, without the page's data: its number, the seed and the shown order, and, for the picture drawn with the
+    # translation open, `state: "tr"` (the pictures as drawn have no state).
+    def meta(presentation, state: nil)
+      { "instance" => presentation[:number], "seed" => presentation[:seed], "shown_order" => presentation[:shown_order] }.tap { |meta| meta["state"] = state if state }
+    end
   end
 end

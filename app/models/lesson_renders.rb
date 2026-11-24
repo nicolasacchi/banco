@@ -2,27 +2,29 @@
 # teacher's one line. The rows themselves are LessonRender (append-only).
 module LessonRenders
   # The further states of a card the render check draws (D-311): "exN" (exercise N of «Prova tu» shown), "open" and "exN-open"
-  # (every closed part opened). A shot or an error without a state is the card as drawn.
-  STATE = /\A(?:ex(\d+))?(-?open)?\z/
+  # (every closed part opened), and (D-402) "tr" and "exN-tr" (every translation of the card opened). A shot or an error without a state is the card as drawn.
+  STATE = /\A(?:ex(\d+))?(?:(-?open)|(-?tr))?\z/
 
   module_function
 
-  # Where a state's pictures go on the teacher's page: the card as drawn, the card opened, then each exercise and its opened state.
+  # Where a state's pictures go on the teacher's page: the card as drawn, the card opened, with the translation open, then each exercise and its further states.
   def state_rank(state)
     return [ 0, 0 ] if state.nil?
 
-    n, open = state.to_s.match(STATE)&.captures
-    [ 1, (n.to_i * 2) + (open ? 1 : 0) ]
+    n, open, translation = state.to_s.match(STATE)&.captures
+    [ 1, (n.to_i * 3) + (open ? 1 : (translation ? 2 : 0)) ]
   end
 
   # The state in the teacher's words, or nil for the card as drawn.
   def state_words(state)
     return nil if state.nil?
 
-    n, open = state.to_s.match(STATE)&.captures
-    return state.to_s unless n || open
+    n, open, translation = state.to_s.match(STATE)&.captures
+    return state.to_s unless n || open || translation
 
-    key = n ? (open ? "state_ex_open" : "state_ex") : "state_open"
+    key = if translation then n ? "state_ex_tr" : "state_tr"
+    else n ? (open ? "state_ex_open" : "state_ex") : "state_open"
+    end
     I18n.t("teacher.render.shots.#{key}", n: n)
   end
 

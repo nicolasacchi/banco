@@ -53,7 +53,7 @@ module Course
       exhausted = PracticePoolExhaustion.first_by_skill(@student, keys)
       keys.map do |key|
         state = @view.state(key)
-        { key: key, label_it: @view.label(key), state: state&.state || "not_seen", since: state&.since&.utc&.iso8601, pool_exhausted_at: exhausted[key]&.utc&.iso8601 }
+        { key: key, label_it: @view.label_italian(key), state: state&.state || "not_seen", since: state&.since&.utc&.iso8601, pool_exhausted_at: exhausted[key]&.utc&.iso8601 }
       end
     end
 

@@ -7,7 +7,11 @@ class TopicsController < ApplicationController
   def show
     @lesson_body = @topic.lesson_revision.body
     @programme = programme_refs(@lesson_body)
-    @intro = @topic.topic_revision.body["intro_it"].presence
+    body = @topic.topic_revision.body
+    # D-402: the intro in the language the subject teaches when the revision has the pair, with its Italian to offer; else the Italian one.
+    target = @topic.lang && body["intro_#{@topic.lang}"].presence
+    @intro = target || body["intro_it"].presence
+    @intro_tr = body["intro_it"].presence if target
     @read = course_view.lesson_read?(@topic)
   end
 

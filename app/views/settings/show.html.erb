@@ -35,6 +35,15 @@
     </fieldset>
     <p class="field-help"><%= t("diagnosis.preferences.language_hint") %></p>
     </div>
+    <%# D-402: the Italian translation of the english and spanish courses, on request or always open (the preview always shows it, so it has no choice there: like the language, it sits inside the `unless preview?` above). %>
+    <div class="card">
+    <fieldset class="options choice-list" data-comment-anchor="setting:translation">
+      <legend><%= t("translation.settings_legend") %></legend>
+      <% Diagnosis::Preferences::TRANSLATIONS.each do |choice| %>
+        <label class="option choice"><%= radio_button_tag "translation", choice, @preferences[:translation] == choice, data: { action: "change->settings#choose" } %> <span><%= t("translation.settings_#{choice}") %></span></label>
+      <% end %>
+    </fieldset>
+    </div>
     <% end %>
     <p class="field-help" id="settings-status" role="status" data-settings-target="status"></p>
   <% end %>

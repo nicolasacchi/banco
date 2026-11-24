@@ -1,0 +1,14 @@
+# La traduzione in italiano dei corsi di inglese e spagnolo, letta dal docente (D-402): in quanti esercizi l'alunno l'ha aperta.
+# Solo italiano: le pagine del docente non hanno un gemello inglese.
+it:
+  teacher:
+    translation:
+      opened:
+        one: "Traduzione aperta in %{count} esercizio su %{total}"
+        other: "Traduzione aperta in %{count} esercizi su %{total}"
+    topic_lang:
+      mixed: "Argomento a metà (W-TOPIC-LANG-MIXED): l'alunno legge la lingua dove è stato riscritto e l'italiano di prima altrove. Ancora da riscrivere: %{todo}."
+      lesson: "la lezione"
+      title: "il titolo nella mappa del corso"
+      intro: "l'introduzione"
+      items: "%{todo} esercizi su %{total}"

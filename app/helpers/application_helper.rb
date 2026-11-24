@@ -15,6 +15,15 @@ module ApplicationHelper
     Diagnosis::Preferences.for(student)
   end
 
+  # The Italian translation of the language courses for data-translation on <html> (D-402): the student's own choice, "ask" or "always";
+  # "always" on the teacher's pages and in the preview, where the teacher reads Italian.
+  def ui_translation
+    return "always" if respond_to?(:preview?) && preview?
+
+    student = respond_to?(:acting_student) ? acting_student : nil
+    Diagnosis::Preferences.translation(student)
+  end
+
   # The theme in force for data-theme: the choice, except for "auto" (the device's own), which the page's first script
   # settles from prefers-color-scheme (D-350); cream until then and wherever scripts do not run.
   def ui_theme(prefs) = prefs[:theme] == "auto" ? "cream" : prefs[:theme]
@@ -29,6 +38,7 @@ module ApplicationHelper
     warmup = I18n.t("warmup")
     I18n.t("items").merge(I18n.t("sitting").except(:intro)).merge(
       accents_label: I18n.t("accents.label"),
+      translation_toggle: I18n.t("translation.toggle"), translation_unit: I18n.t("translation.unit"),
       retry: warmup[:retry], warmup_step: warmup[:step], warmup_paused: warmup[:paused], warmup_right: warmup[:right],
       warmup_skip: warmup[:skip], warmup_fallback_note: warmup[:fallback_note]
     )

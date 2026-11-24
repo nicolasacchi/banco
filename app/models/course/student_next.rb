@@ -27,7 +27,7 @@ module Course
       open = sv.topics.any?
       pick = open ? @view.next_topic(sv) : nil
       { subject: sv.subject.key, name_it: sv.subject.name_it, next: pick && next_json(pick),
-        skills_to_recover: open ? @view.skills_to_recover(sv).map { |skill, topic| { skill: skill, label_it: @view.label(skill), taught_in: topic } } : [],
+        skills_to_recover: open ? @view.skills_to_recover(sv).map { |skill, topic| { skill: skill, label_it: @view.label_italian(skill), taught_in: topic } } : [],
         done_it: open ? done_text(@view.progress(sv).programme) : I18n.t("today.closed") }
     end
 
@@ -38,7 +38,7 @@ module Course
 
     # Oggi's own words for the reason (course.it.yml today.reason).
     def why(pick)
-      return I18n.t("today.reason.#{pick.reason}", skill: @view.label(pick.skill)) if pick.skill
+      return I18n.t("today.reason.#{pick.reason}", skill: @view.label_italian(pick.skill)) if pick.skill
 
       I18n.t("today.reason.#{pick.reason}")
     end

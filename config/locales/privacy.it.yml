@@ -49,7 +49,7 @@ it:
       items:
         - "Il nome utente che ci arriva dal portale di accesso. La password non arriva mai a banco."
         - "Le risposte a test ed esercizi, con l'ora e il tempo impiegato, gli aiuti e le soluzioni che hai aperto."
-        - "Gli eventi delle lezioni e degli esercizi: quali schede apri, quando, le prove che fai."
+        - "Gli eventi delle lezioni e degli esercizi: quali schede apri, quando, le prove che fai e, nei corsi di inglese e spagnolo, quando apri la traduzione in italiano (non conta come aiuto)."
         - "I commenti e le risposte del docente, con il contesto della pagina: quale pagina, le parole che hai selezionato, la grandezza dello schermo e il tema scelto. Le stelle e i commenti che dai a esercizi e lezioni."
         - "Le preferenze: colori e grandezza dei testi."
         - "Il cookie del dispositivo (vedi più sotto)."

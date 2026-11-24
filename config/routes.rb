@@ -121,6 +121,8 @@ Rails.application.routes.draw do
       get "schemas" => "schemas#index", as: :schemas
       # «Novità» (D-375): what is new for the student; the preview shows it and records no visit.
       get "novita" => "changelog#show", as: :changelog
+      # The Italian translation of a language course opened (D-402): one informational app event; the preview answers and writes nothing.
+      post "translations" => "translations#create", as: :translations
       post "topics/:topic/lesson/exercises/:n/solution" => "lessons#solution", constraints: topic.merge(n: /\d+/)
       # Lesson/2 (R3, A9, A11): the checks (a block, a blank of an example, an exercise's check) and the events batch.
       n = /\d+/
