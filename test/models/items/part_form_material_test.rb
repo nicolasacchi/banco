@@ -38,4 +38,16 @@ class ItemsPartFormMaterialTest < ActiveSupport::TestCase
     right = SERVED["matching"]["part"]["right"]
     assert_equal %w[giusta ha\ un\ errore], right.map { |label| label["text_it"] }
   end
+
+  # The translated twin (test/fixtures/lang/served_item_translated.json, the stand-in of the practice-flow walk of a translated exercise): the authored
+  # item_choice_translated.json served with the Italian of the sentence, the options and the final.
+  test "the golden translated choice is served with the Italian of its material" do
+    served = JSON.parse(File.read(Rails.root.join("test/fixtures/lang/served_item_translated.json")))["choice"]
+    body = JSON.parse(File.read(Rails.root.join("test/fixtures/lang/item_choice_translated.json")))
+    display = body["instances"][0]["display"].merge("options" => served["part"]["options"])
+    part = Items::Part.new(subject: Subject.new("english")).call(body, "choice", display)
+    assert_equal served["part"], json(part)
+    instance = Instance.new(Revision.new(JSON.generate(body.except("instances"))), nil, JSON.generate(body["instances"][0]["solution"]), JSON.generate(display))
+    assert_equal served["solution"], json(Practice::Payload.solution(instance))
+  end
 end

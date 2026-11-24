@@ -10,7 +10,7 @@ require_relative "../support/student_session"
 # each kind of exercise the course practises. Then the list of the topic's exercises (D-337): the statuses, «Salta» keeping the typed
 # answer, the autosave and a reload that resumes the last exercise, another entry, «Rifai», a link to another skill, the phone's panel.
 # Any JavaScript error, console error or CSP violation fails the test.
-# D-402: a bilingual exercise (target text with its authored Italian, the golden test/fixtures/lang/served_item.json) is drawn with «Traduzione» in the action bar;
+# D-402: a bilingual exercise (target text with its authored Italian, the translated golden test/fixtures/lang/served_item_translated.json) is drawn with «Traduzione» in the action bar;
 # the practice endpoints are answered by the page's own stand-in (BILINGUAL_MOCK) so that this half of the walk does not depend on the serving side.
 class PracticeFlowTest < ApplicationSystemTestCase
   include StudentCourseWorld
@@ -46,7 +46,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
   JS
 
   # The practice endpoints of a bilingual exercise, answered inside the page (fetch is replaced before the page's own script runs). The shapes are the golden
-  # served fixture's (test/fixtures/lang/served_item.json): `part`, `hint`, `feedback`, `reminder`, `solution`. FIXTURE and EXTRA are JSON text.
+  # served fixture's (test/fixtures/lang/served_item_translated.json): `part`, `hint`, `feedback`, `reminder`, `solution`. FIXTURE and EXTRA are JSON text.
   BILINGUAL_MOCK = <<~JS.freeze
     (() => {
       const real = window.fetch.bind(window);
@@ -281,7 +281,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
 
   # ---- a bilingual exercise (D-402) ---------------------------------------------------------------------
 
-  def bilingual_fixture = File.read(Rails.root.join("test/fixtures/lang/served_item.json"))
+  def bilingual_fixture = File.read(Rails.root.join("test/fixtures/lang/served_item_translated.json"))
 
   # Opens the practice page of the number skill with the stand-in endpoints for `kind` ("choice" or "blank" of the golden fixture); `part` and `solution` replace
   # what the fixture serves (a testlet with a passage). The stand-in goes in before the page's own script and goes out again when the block ends.

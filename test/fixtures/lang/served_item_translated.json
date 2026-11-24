@@ -1,0 +1,84 @@
+{
+  "choice": {
+    "part": {
+      "component": "choice",
+      "lang": "en",
+      "stem_en": "Choose the two words for the gaps, in the right order.",
+      "stem_it": "Scegli le due parole che completano la frase, nell'ordine in cui servono.",
+      "instance_stem_en": "On Saturdays I ___ my bed and then I ___ the shopping with Dad.",
+      "instance_stem_it": "Il sabato io ___ il letto e poi io ___ la spesa con papà.",
+      "options": [
+        {
+          "id": "o1",
+          "text": "do / make",
+          "text_it": "fare / fare"
+        },
+        {
+          "id": "o2",
+          "text": "make / do",
+          "text_it": "fare / fare"
+        },
+        {
+          "id": "o3",
+          "text": "do / do",
+          "text_it": "fare / fare"
+        },
+        {
+          "id": "o4",
+          "text": "make / make",
+          "text_it": "fare / fare"
+        }
+      ],
+      "answer_format_en": "Each option has two parts, split by /. The first part goes in the first gap.",
+      "answer_format_it": "Ogni opzione ha due parti, divise da /. La prima parte va nel primo spazio.",
+      "steps_en": [
+        "Read the whole sentence.",
+        "Find the two gaps.",
+        "Choose the pair in the order of the gaps."
+      ],
+      "steps_it": [
+        "Leggi tutta la frase.",
+        "Trova i due spazi.",
+        "Scegli la coppia nell'ordine degli spazi."
+      ]
+    },
+    "exercise": {
+      "title_en": "Choose the two words for the gaps, in the right order.",
+      "title_it": "Scegli le due parole che completano la frase, nell'ordine in cui servono."
+    },
+    "hint": {
+      "n": 1,
+      "total": 3,
+      "hint_en": "Some verbs go with fixed nouns: make some, do others.",
+      "hint_it": "Alcuni verbi stanno con nomi fissi: certe cose si make e altre si do."
+    },
+    "feedback": {
+      "status": "graded",
+      "outcome": "typical_error",
+      "try_number": 1,
+      "message_en": "Look at the nouns again. Which verb is the partner of each one?",
+      "message_it": "Guarda di nuovo i nomi. Quale verbo è il compagno di ciascuno?",
+      "note_it": null,
+      "count_it": null,
+      "error_code": "en_make_do_swap"
+    },
+    "reminder": {
+      "reminder_en": "Look at the nouns again. Which verb is the partner of each one?",
+      "reminder_it": "Guarda di nuovo i nomi. Quale verbo è il compagno di ciascuno?"
+    },
+    "solution": {
+      "steps": [
+        {
+          "text_en": "We say «make the bed».",
+          "text_it": "Si dice «make the bed»."
+        },
+        {
+          "text_en": "We say «do the shopping».",
+          "text_it": "Si dice «do the shopping»."
+        }
+      ],
+      "final": "make / do",
+      "final_it": "make / do: il sabato rifaccio il letto e faccio la spesa."
+    }
+  }
+}
