@@ -21,6 +21,10 @@ module Lessons
     WIDE = lambda do |fields|
       fields.flat_map { |f| (base = f[/\A(.+)_it\z/, 1]) && !Bilingual::EXEMPT.include?(base) && !R2_TWINS.include?(f) ? [ f, "#{base}_en", "#{base}_es" ] : [ f ] }.uniq.freeze
     end
+    # D-402: the marker `translate_material: false` of a check, a `try` exercise, a `table` block or figure goes with the served text: the form material of it has
+    # no Italian text (the fold serves it in the `_it` slot with no `tr` entry), and the page does not ask for a translation of it. Not in the whitelist fixture:
+    # like the siblings it is a column of the derived schema (Banco::Schemas::Bilingual::MATERIAL_AT).
+    MATERIAL = Bilingual::MARKER
     FRONT = WIDE.call(%w[key kind subject title_it goals_it why_it minutes scope calculator book_it])
     CHECK_COLUMNS = {
       "choice" => %w[component prompt_it answer_format_it listen],
@@ -32,7 +36,7 @@ module Lessons
       "select" => %w[component prompt_it answer_format_it targets pick],
       "tiles" => %w[component prompt_it answer_format_it builds],
       "ordering" => %w[component prompt_it answer_format_it]
-    }.transform_values { |fields| WIDE.call(fields) }.freeze
+    }.transform_values { |fields| (WIDE.call(fields) + [ MATERIAL ]).freeze }.freeze
     # Simple blocks: the fields served; nested lists: {field => the fields of each element}.
     BLOCKS = {
       "text" => [ %w[n type text_it], {} ],
@@ -42,7 +46,7 @@ module Lessons
       "legend" => [ %w[n type], { "roles" => %w[role note_it question_it] } ],
       "mistake" => [ %w[n type group_it wrong_it right_it why_it], {} ],
       "summary" => [ %w[n type points_it], {} ],
-      "table" => [ %w[n type caption_it header rows header_it rows_it], {} ],
+      "table" => [ %w[n type caption_it header rows header_it rows_it translate_material], {} ],
       # wave 2, the docs family (T8): teaching content, served whole (L8); the oral and the compare of a source are special below
       "source" => [ %w[n type kind title_it ref open author_it year about_year for_whom_it where_it translation original], { "parts" => %w[text_it plain_it marks], "guide" => %w[span_it note_it] } ],
       "reveal" => [ %w[n type prompt_it answer_it year who_it situation_it real_it], { "options" => %w[id text_it then_it real] } ],
@@ -180,7 +184,7 @@ module Lessons
     def diagram_generic(data)
       type = data["type"]
       declared = Diagrams.schema_def(type).fetch("properties").keys
-      declared += R2_TWINS if type == "table" # the Italian of a table's cells, next to the cells in the subject's language (D-402)
+      declared += R2_TWINS + [ MATERIAL ] if type == "table" # the Italian of a table's cells, next to the cells in the subject's language (D-402), and the marker that has none
       solution = Diagrams.solution_fields(type)
       merged = Diagrams.merge_states(data)
       out = merged.slice(*declared).except(*solution)
@@ -296,10 +300,12 @@ module Lessons
     def try(b, subject, seed)
       out = b.slice(*WIDE.call(%w[n type intro_it]))
       out["exercises"] = b["exercises"].map do |e|
-        item = e.slice(*WIDE.call(%w[n text_it]))
+        item = e.slice(*WIDE.call(%w[n text_it]), MATERIAL)
         item["diagram"] = diagram(e["diagram"]) if e["diagram"]
-        item["check"] = check(e["check"], subject, seed_for_exercise(seed, e["n"])) if e["check"]
-        item["checks"] = e["checks"].each_with_index.map { |c, k| check(c, subject, seed_for_exercise(seed, e["n"], k)) } if e["checks"]
+        # an exercise that says the material has no translation says it of its checks too: the page reads the marker of the check it draws
+        inner = e[MATERIAL] == false ? { MATERIAL => false } : {}
+        item["check"] = check(e["check"], subject, seed_for_exercise(seed, e["n"])).merge(inner) if e["check"]
+        item["checks"] = e["checks"].each_with_index.map { |c, k| check(c, subject, seed_for_exercise(seed, e["n"], k)).merge(inner) } if e["checks"]
         item
       end
       out

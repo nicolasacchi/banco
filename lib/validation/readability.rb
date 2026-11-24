@@ -27,8 +27,9 @@ module Validation
 
     module_function
 
-    # Lints one text. role: :stem, :message, :passage or :text.
-    def lint(text, field:, role:, findings:)
+    # Lints one text. role: :stem, :message, :passage or :text. negation: false for the Italian of an instance sentence of a bilingual item (D-402): the sentence is
+    # the material the student works on, its negation is the content, not the way the instruction is phrased (W-NEGATIVE-STEM).
+    def lint(text, field:, role:, findings:, negation: true)
       return unless text.is_a?(String)
 
       plain = text.gsub(MATH, " m ")
@@ -48,12 +49,13 @@ module Validation
       if role == :message && sentences.size > Rules.get(:readability, :max_message_sentences)
         findings.add("E-MESSAGE", field, "the message has #{sentences.size} sentences (at most #{Rules.get(:readability, :max_message_sentences)})", sentences: sentences.size)
       end
-      warnings(text, plain, sentences, words, field, role, findings)
+      warnings(text, plain, sentences, words, field, role, findings, negation: negation)
     end
 
     # Walks a parsed JSON value and lints every *_it string by its key.
-    # skip: keys whose text is in the language being taught (D-112): not linted.
-    def lint_document(node, path, findings, skip: [])
+    # skip: keys whose text is in the language being taught (D-112): not linted. bilingual: the document is a bilingual item (D-402): the `stem_it` of an
+    # instance's display is the Italian of a sentence, never the instruction.
+    def lint_document(node, path, findings, skip: [], bilingual: false)
       case node
       when Hash
         node.each do |key, value|
@@ -61,16 +63,16 @@ module Validation
           if skip.include?(key.to_s) && value.is_a?(String)
             next
           elsif value.is_a?(String) && key.to_s.end_with?("_it")
-            lint(value, field: field, role: role_for(key.to_s), findings: findings)
+            lint(value, field: field, role: role_for(key.to_s), findings: findings, negation: !(bilingual && key.to_s == "stem_it" && path.end_with?("/display")))
           elsif value.is_a?(Array) && key.to_s.end_with?("_it") && value.all?(String)
             # steps_it: a list of short texts, each linted on its own (D-216).
             value.each_with_index { |text, i| lint(text, field: "#{field}/#{i}", role: :text, findings: findings) }
           elsif key.to_s != "quote"
-            lint_document(value, field, findings, skip: skip)
+            lint_document(value, field, findings, skip: skip, bilingual: bilingual)
           end
         end
       when Array
-        node.each_with_index { |v, i| lint_document(v, "#{path}/#{i}", findings, skip: skip) }
+        node.each_with_index { |v, i| lint_document(v, "#{path}/#{i}", findings, skip: skip, bilingual: bilingual) }
       end
     end
 
@@ -137,7 +139,7 @@ module Validation
     NOT_ONLY = /\bnon\s+(?:\p{L}+\s+){0,3}?(?:solo|soltanto)\b/
     SINGLE_ADJECTIVE = /\b((?:un|uno|una|il|lo|la|i|gli|le|ogni|questo|questa|quel|quella)(?:'|\s+)\p{L}+)\s+(?:solo|sola|soli|sole)(?=\s*(?:[,.;:!?)]|\z)|\s+(?:non|si)\b)/
 
-    def warnings(text, plain, sentences, words, field, role, findings)
+    def warnings(text, plain, sentences, words, field, role, findings, negation: true)
       body = strip_markup(plain)
       if role == :passage
         index = gulpease(body, sentences, words)
@@ -159,7 +161,7 @@ module Validation
       end
       # A negation inside «…», “…” or $…$ is the content being asked about, not the instruction.
       instruction = lower.gsub(/«[^»]*»|“[^”]*”/, " ").gsub(/\$[^$]*\$/, " ")
-      if role == :stem && Rules.list(:readability, :negative_stem).any? { |re| instruction.match?(Regexp.new(re)) }
+      if role == :stem && negation && Rules.list(:readability, :negative_stem).any? { |re| instruction.match?(Regexp.new(re)) }
         findings.add("W-NEGATIVE-STEM", field, "the instruction is phrased as a negation")
       end
       if body.match?(/\d\.\d{1,2}(?!\d)/)

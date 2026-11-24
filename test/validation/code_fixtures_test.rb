@@ -401,7 +401,7 @@ class CodeFixturesTest < ActiveSupport::TestCase
     "E-LANG-BILINGUAL-FLAG" => -> { lang_codes { |i| i.delete("bilingual") } },
     "E-LANG-PAIR-MISSING" => -> { lang_codes { |i| i.delete("answer_format_it") } },
     "E-LANG-PAIR-ORPHAN" => -> { lang_codes { |i| i["prompt"].delete("stem_en") } },
-    "E-LANG-PAIR-SHAPE" => -> { lang_codes { |i| i["instances"][0]["display"]["stem_it"] = "Il sabato io faccio il letto." } },
+    "E-LANG-PAIR-SHAPE" => -> { lang_codes { |i| i["answer_format_it"] = "Prima riga.\n\nSeconda riga." } },
     "E-LANG-PAIR-CONFLICT" => lambda {
       found = Validation::Findings.new
       Validation::Bilingual.check(found, { "text_en" => "The book", "text_it" => "Il libro", "again" => { "text_en" => "The book", "text_it" => "Il quaderno" } }, lang: "en")

@@ -211,6 +211,7 @@ short answers and testlets too (a testlet's sub items inherit the flag). What ch
 - **A reading passage is a comprehension text.** The passage's Italian is **not** shown to the student before he answers (it appears with the solution, or when the
   item or sub items are closed), otherwise he would answer from the Italian: write it, complete and faithful, but never rely on it in the questions. The
   instruction and the question stems have their Italian as usual, and so do the options.
+- **Form material is not translated.** An item that tests a form (choose the form, fill a gap with it, judge sentences) says `"translate_material": false` at its root: the instance sentence, the options and rows and the `final` are target-only, with no `stem_it` in the display, `text_it` or `final_it`; the instruction, hints, messages and solution steps stay paired. When to use it, the matching drop-down and typed gaps: `banco brief show practice-item`, «Form material is not translated».
 - **Rubric.** The rubric stays Italian (`expected_it`, a teacher text); the model answer is a pair.
 - **A legacy item** (no flag) is validated and served exactly as before; a bilingual one is checked for completeness (`E-LANG-PAIR-MISSING`, `-ORPHAN`),
   shape (`E-LANG-PAIR-SHAPE`), language (`E-LANG-TRANSLATION-LANG`, `E-LANG-TRANSLATION-COPY`, `E-LESSON-LANG`) and the flag (`E-LANG-BILINGUAL-FLAG`).

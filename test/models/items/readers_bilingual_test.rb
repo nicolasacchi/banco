@@ -8,7 +8,7 @@ class ItemsReadersBilingualTest < ActiveSupport::TestCase
   Row = Struct.new(:id, :item_revision, :display_json, :answer_json, :errors_json, :solution_json, :hints_json, :accept_json)
 
   BLANK = JSON.parse(File.read(Rails.root.join("test/fixtures/lang/item_blank.json")))
-  CHOICE = JSON.parse(File.read(Rails.root.join("test/fixtures/lang/item_choice.json")))
+  CHOICE = JSON.parse(File.read(Rails.root.join("test/fixtures/lang/item_choice_translated.json")))
 
   def row(item, n = 0)
     inst = item["instances"][n]

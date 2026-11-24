@@ -33,9 +33,10 @@ module Items
       out.merge!(passage(body, display))
       out.merge!(Items::Text.pair(prompt, "stem"))
       out.merge!(Items::Text.pair(display, "stem", "instance_stem"))
+      out.delete(:instance_stem_it) if Items::Text.material_off?(body) # the sentence with its blank is form material: target only
       %w[table quote].each { |k| out[k.to_sym] = display[k] || prompt[k] }
       out[:figure] = figure(display["figure"] || prompt["figure"])
-      %w[options elements left right].each { |k| out[k.to_sym] = display[k] if display[k] }
+      %w[options elements left right].each { |k| out[k.to_sym] = Items::Text.shown_entries(display[k], body) if display[k] }
       out[:reuse_right] = true if display["reuse_right"] == true
       out[:unit] = display["unit"] || body["unit"] if display["unit"] || body["unit"]
       out[:scientific] = true if component == "number" && Array(body["form"]).include?("scientific")

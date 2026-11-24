@@ -81,13 +81,17 @@ student text is written twice**, and both texts are yours to write: never leave 
   `display.stem_en|_it`, `solution.steps[].text_en|_it`, `display.figure.alt_en|_it`, `display.table.caption_en|_it`. A few keys have no suffix and
   already hold the target text: an option's, element's or row's `text`, a table's `header` and `rows`, `quote.text`, the solution's `final`; their
   Italian goes beside them as `text_it`, `header_it`, `rows_it` (the same shape), `quote.text_it`, `final_it`. Every option, element and row has its `text_it`
-  (a name or a number too: the check says «copy» only when the text has a word of four letters).
+  (a name or a number too: the check says «copy» only when the text has a word of four letters that is not quoted) **unless the item is form material, see below**.
 - **Not translated, on purpose.** The key and everything graded (`answer`, `accept`, `errors[].value`, `paradigm_forms`, `tests`), the typed fragments,
   `quote.ref`, and the teacher's own texts: `description_it`, `choice_only_reason_it`, `notes_it`, the rubric's `expected_it`. They stay as they are
   and in Italian. The sentences the practice page writes by itself («Giusto», «Ci sei quasi», «Giuste: N su M») are in the student's interface
   language, not content: do not write them.
-- **The target text** (`E-READ`, `W-LANG-LEVEL`, `E-LESSON-LANG`): sentences of at most **12 words**, the instruction at most 60; the words of the first 3 000 of the
-  language (a grammar word the item teaches, «verb», «noun», goes in the item's optional `teaches_en` / `teaches_es` list); no Italian word in a `_en` or `_es` text.
+- **The target text** (`E-READ`, `W-LANG-LEVEL`, `W-ABSOLUTE`, `E-LESSON-LANG`): sentences of at most **12 words** (a full stop, `?` or `!` ends one, also after a lone letter
+  «acaba en n. Lleva» and inside a closing quote `.»` `?»`; a `;` splits), the instruction at most 60; the words of the first 3 000 of the language, plus the grammar words
+  (`config/banco/lexicon/{en,es}_grammar.txt`: verb, noun, singular, plural, sílaba, tilde...) and the beginner words (`{en,es}_basic.txt`: thirteen, grandad, pen, lección...);
+  any other word the item teaches goes in the item's optional `teaches_en` / `teaches_es` list (at most 40). Words inside «...» or `[[en:..]]` / `[[es:..]]`, syllable pieces
+  (`ja-mon`, `-es`) and form material are not read for the level. An absolute word (always, never, only; siempre, nunca, solo) is `W-ABSOLUTE` here too.
+  No Italian word in a `_en` or `_es` text; to quote one write it inside «...» or `[[it:..]]` (an item's page may print `[[it:..]]` as text, `E-ITEM-RENDER`: prefer «...»).
   English is British by default. Use **common given names** (Tom, Amy, Emma, Jack, Sophie; Lucía, Carlos, Marta, Pablo; the lists are in
   `config/banco/lexicon/{en,es}_names.txt`), never the student's or his household's, and no famous person unless the skill is about him. Invented, plausible contexts.
 - **The Italian text** is a faithful, plain translation (not a gloss, not a hint), at most 25 words a sentence like every Italian text, and it says what the target says:
@@ -103,6 +107,31 @@ student text is written twice**, and both texts are yours to write: never leave 
 - **Generators** emit both layers in `display`, `solution` and `hints_*`; `verify.mjs` reads the target text (`instance.display.stem_en`). A static item lists both.
 - **Stored and served as written.** An item with no `bilingual` flag is validated and served exactly as before, until a new revision opts in. `bilingual` with a
   `_en` text in a revision without the flag, or a `_es` text in english, is `E-LANG-BILINGUAL-FLAG`.
+
+### Form material is not translated (`translate_material: false`)
+
+In an exercise that tests a **form** of the language (choose the right form, fill a gap with a form, judge a sentence right or wrong, put forms in order, match a form to its
+name) the **material** stays target-only: the instance sentence with its blank (`display.stem_en`), the options, elements or rows that are forms
+(`display.options|elements|left|right[].text`) and the `final`. Its Italian would give the key away («Quante/Quanti» → Cuántas/Cuántos; «am/is/are» → «essere»: all the same, or the
+answer) or mislead. Say it once, at the item's root: `"translate_material": false` (next to `"bilingual": true`; a testlet's sub items inherit it; without `bilingual` it is
+`E-LANG-BILINGUAL-FLAG`). Then:
+
+- no `stem_it` in the instance's `display`, no `text_it` in an option, element or row, no `final_it`; an Italian text beside material is `E-LANG-PAIR-ORPHAN`;
+  none is served to the student (the page draws no translation of it) and the solver and the Italian-layer leak scans read none;
+- the **instruction** (`prompt.stem_en|_it`, `answer_format_*`, `steps_*`), the **hints**, the **catalogue messages** and the **solution steps** stay paired as always: the
+  student can open the Italian of everything he is told about the exercise, never of what he has to work on;
+- the material is still linted for the sentence length (12 words) but not for the level or absolute words: a deliberate misspelling (`jámon`, `brujúla`) or a piece of a word is fine there.
+
+When to use it: every item whose options differ only in form (am/is/are, Do/Does, tilde or none, plural endings), every gap or typed answer that is a form, every right/wrong
+judge of sentences. Do **not** use it when the text is a plain translation task by nature (vocabulary where the Italian is the point is already forbidden: no «translate this»)
+or a reading text (a passage keeps its after-the-answer rule). Without the marker the rule is the old one: every text has its Italian.
+
+- **Matching.** The right-hand labels sit in a drop-down, where their Italian could not be seen; with the marker a form-to-name matching needs no `text_it` on either column.
+  The judge rows (`right`/`wrong`, `correct`/`has a mistake`) are the sentences themselves: material, with no Italian that would show the intended meaning.
+- **Typed gaps** (`normalized_text`): the sentence with the `___` and the answer are material; put a cue in brackets after the gap, `___ a bike? (you / have got)`; the instruction
+  and the hints carry the Italian. One blank per instance line (`W-LANG-FRAME-BLANK`), and a gap that stands for an auxiliary is a gap like any other.
+- **The `work` folder.** `banco work open ITEM` writes the latest revision into `item.json` and **overwrites** the file in the folder: a rewrite script that edits `item.json` must
+  run after `work open`, never before, and keep its own copy of anything it has not submitted.
 
 ## Pools
 

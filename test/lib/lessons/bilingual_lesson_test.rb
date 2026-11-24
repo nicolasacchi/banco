@@ -324,9 +324,9 @@ class BilingualLessonTest < ActiveSupport::TestCase
     skip "Validation::Bilingual has not landed" unless defined?(Validation::Bilingual) && Validation::Bilingual.respond_to?(:check)
     shape = edit("en", "Dopo un verbo modale il verbo che segue non cambia: niente -s, niente to.", "Dopo un verbo modale.\n\nIl verbo che segue non cambia.")
     assert(check(shape).findings.any? { |f| f.code == "E-LANG-PAIR-SHAPE" && f.field == "/cards/0/blocks/0/text_en" })
-    copied = edit("en", "Mia sorella sa ___ la chitarra.", "My sister can ___ the guitar.")
+    copied = edit("en", "Quale forma va dopo can?", "Which form goes after can?")
     assert(check(copied).findings.any? { |f| f.code == "E-LANG-TRANSLATION-COPY" })
-    conflict = edit("en", "options:\n  - {id: a, text_en: \"plays\", text_it: \"suona\"}", "options:\n  - {id: a, text_en: \"play\", text_it: \"suona\"}")
+    conflict = edit("en", "translate_material: false\noptions:\n  - {id: a, text_en: \"plays\"}\n  - {id: b, text_en: \"play\"}", "options:\n  - {id: a, text_en: \"play\", text_it: \"suona\"}\n  - {id: b, text_en: \"play\", text_it: \"suonare\"}")
     assert(check(conflict).findings.any? { |f| f.code == "E-LANG-PAIR-CONFLICT" })
   end
 end

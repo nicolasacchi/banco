@@ -56,7 +56,7 @@ module Diagnosis
         display = Array(stored["sub_items"]).find { |s| s["id"] == sub["id"] }&.fetch("display", {}) || {}
         shown = Rekey.replay(display: display, component: sub["component"], shown_order: shown_order[sub["id"]] || {})
         answers = JSON.parse(@served.item_instance.answer_json)
-        part(sub, sub["component"], shown, answer: answers.is_a?(Hash) ? answers[sub["id"]] : nil, accept: Items::Part.accepted(sub, nil)).merge(id: sub["id"])
+        part(Items::Text.inherit_material(body, sub), sub["component"], shown, answer: answers.is_a?(Hash) ? answers[sub["id"]] : nil, accept: Items::Part.accepted(sub, nil)).merge(id: sub["id"])
       end
       # the passage of a bilingual testlet is served in its target language only: its Italian would be the text the sub items are answered from
       lang = Items::Text.lang(body, "passage")

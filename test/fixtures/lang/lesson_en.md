@@ -32,11 +32,12 @@ Dopo un verbo modale il verbo che segue non cambia: niente -s, niente to.
 :::
 
 ::: check choice
-prompt_en: "My sister can ___ the guitar."
-prompt_it: "Mia sorella sa ___ la chitarra."
+prompt_en: "Which form goes after can?"
+prompt_it: "Quale forma va dopo can?"
+translate_material: false
 options:
-  - {id: a, text_en: "plays", text_it: "suona"}
-  - {id: b, text_en: "play", text_it: "suonare"}
+  - {id: a, text_en: "plays"}
+  - {id: b, text_en: "play"}
 answer: b
 errors:
   - {answer: a, message_en: "After can, the verb has no -s.", message_it: "Dopo can il verbo non prende -s."}
@@ -50,18 +51,17 @@ explain_it: "Dopo can il verbo resta com'è: can play."
 intro_en: "Choose the right form."
 intro_it: "Scegli la forma giusta."
 exercises:
-  - text_en: "You should ___ more water."
-    text_it: "Dovresti ___ più acqua."
+  - translate_material: false
+    text_en: "You should ___ more water."
     check:
       component: choice
       prompt_en: "Which word fits?"
       prompt_it: "Quale parola va bene?"
       options:
-        - {id: a, text_en: "drinks", text_it: "beve"}
-        - {id: b, text_en: "drink", text_it: "bere"}
+        - {id: a, text_en: "drinks"}
+        - {id: b, text_en: "drink"}
       answer: b
     solution_en: "After should the verb has no -s: should drink."
     solution_it: "Dopo should il verbo non prende -s: should drink."
     final_en: "drink"
-    final_it: "bere"
 :::

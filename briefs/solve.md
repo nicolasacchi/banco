@@ -92,6 +92,8 @@ alone, without reading the target text (a «translate this» task whose Italian 
 names it), say so in your report as a `translation_leak`: the teacher reads it. A mistake or a mismatch between the two texts is a `translation_fidelity` note, not
 a reason to change your answer.
 
+An item that says `translate_material: false` (form material) has no Italian for its sentence, options and rows: you read them in the target language only, as the student does; the instruction and hints keep their Italian.
+
 A reading passage has no Italian in your copy (`passage_it` is missing): the student reads that translation only after he has answered, so you answer
 from the English or Spanish passage alone, as he does.
 

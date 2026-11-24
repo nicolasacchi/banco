@@ -67,5 +67,15 @@ module Items
 
     # The keys of a body's passage that exist: `passage_it` alone in a legacy item, `passage_<lang>` and `passage_it` in a bilingual one.
     def passage_keys(body) = body.is_a?(Hash) ? body.slice("passage_it", *Lessons::Lang::PAIR_LANGS.map { |l| "passage_#{l}" }) : {}
+
+    # Form material is not translated (D-402): an item that says `translate_material: false` (its root) serves the instance sentence, the options and rows, and the
+    # final with no Italian text, whatever is stored (the validators refuse a stored one).
+    def material_off?(body) = body.is_a?(Hash) && body[Lessons::Bilingual::MARKER] == false
+
+    # +sub+ (a sub item of a testlet) with the marker of +root+: the sub items inherit it.
+    def inherit_material(root, sub) = material_off?(root) && !material_off?(sub) && sub.is_a?(Hash) ? sub.merge(Lessons::Bilingual::MARKER => false) : sub
+
+    # The options, elements or rows of a display as served: an entry without the Italian of its `text` when it is form material.
+    def shown_entries(list, body) = material_off?(body) && list.is_a?(Array) ? list.map { |e| e.is_a?(Hash) ? e.except("text_it") : e } : list
   end
 end

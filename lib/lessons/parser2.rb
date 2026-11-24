@@ -427,7 +427,8 @@ module Lessons
     end
 
     # A copy of +node+ in which each target text without its Italian is given itself as its Italian, so that the schema (which requires the `_it` of a field)
-    # leaves the missing translation to E-LANG-PAIR-MISSING (D-402). A lesson that is not bilingual (+lang+ nil) is checked as it is.
+    # leaves the missing translation to E-LANG-PAIR-MISSING (D-402). A lesson that is not bilingual (+lang+ nil) is checked as it is. The form material has no
+    # Italian by design: the derived schema asks for no `_it` of it (Banco::Schemas::Bilingual::MATERIAL_REQUIRED).
     def pad_pairs(node, lang)
       return node unless lang
 

@@ -139,15 +139,17 @@ class PracticeBilingualTest < ActionDispatch::IntegrationTest
     assert_equal instance_solution.slice("final", "final_it"), shown_solution["solution"].slice("final", "final_it")
   end
 
-  test "the golden choice item is served with the options in both layers, shuffled with their Italian" do
+  test "the golden choice item (form material, translate_material: false) is served with the options shuffled and no Italian for the sentence or the options" do
     serve = serve_for(CHOICE)
     part = serve["item"]
     golden = SERVED["choice"]["part"]
     assert_equal golden.except("options", "instance_stem_en", "instance_stem_it"), part.except("options", "instance_stem_en", "instance_stem_it")
     assert_equal %w[o1 o2 o3 o4], part["options"].map { |o| o["id"] }
     stored = LANG.("item_choice")["instances"].find { |i| i["display"]["stem_en"] == part["instance_stem_en"] }
-    assert_equal stored["display"]["options"].map { |o| o.slice("text", "text_it") }.sort_by(&:to_s), part["options"].map { |o| o.slice("text", "text_it") }.sort_by(&:to_s)
-    assert_equal stored["display"]["stem_it"], part["instance_stem_it"]
+    assert_equal stored["display"]["options"].map { |o| o.slice("text") }.sort_by(&:to_s), part["options"].map { |o| o.slice("text") }.sort_by(&:to_s)
+    assert_nil part["instance_stem_it"], "the sentence with its blank is target-only"
+    assert_empty part["options"].flat_map(&:keys) & %w[text_it], "no option carries an Italian text"
+    assert_includes part["stem_it"], "Scegli", "the instruction keeps its Italian"
 
     exercises = post_exercises
     entry = exercises.find { |e| e["item"] == CHOICE }

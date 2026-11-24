@@ -40,7 +40,8 @@
           "n": 2,
           "type": "check",
           "component": "choice",
-          "prompt_it": "My sister can ___ the guitar.",
+          "prompt_it": "Which form goes after can?",
+          "translate_material": false,
           "options": [
             {
               "id": "o1",
@@ -52,9 +53,7 @@
             }
           ],
           "tr": {
-            "My sister can ___ the guitar.": "Mia sorella sa ___ la chitarra.",
-            "play": "suonare",
-            "plays": "suona"
+            "Which form goes after can?": "Quale forma va dopo can?"
           }
         }
       ],
@@ -79,7 +78,7 @@
           "exercises": [
             {
               "n": 1,
-              "text_it": "You should ___ more water.",
+              "translate_material": false,
               "check": {
                 "component": "choice",
                 "prompt_it": "Which word fits?",
@@ -92,16 +91,15 @@
                     "id": "o2",
                     "text_it": "drink"
                   }
-                ]
-              }
+                ],
+                "translate_material": false
+              },
+              "text_it": "You should ___ more water."
             }
           ],
           "tr": {
             "Choose the right form.": "Scegli la forma giusta.",
-            "You should ___ more water.": "Dovresti ___ più acqua.",
-            "Which word fits?": "Quale parola va bene?",
-            "drinks": "beve",
-            "drink": "bere"
+            "Which word fits?": "Quale parola va bene?"
           }
         }
       ],

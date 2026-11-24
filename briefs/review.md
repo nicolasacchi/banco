@@ -76,6 +76,7 @@ has 13 (1 to 11, then 14 and 15); an item that is not bilingual keeps its 11 or 
     or a stem in Italian that names the key) is a finding with `field` `translation_leak`; a translation that is wrong or that changes the meaning,
     the level or the number of things is a finding with `field` `translation_fidelity`. The Italian of a reading passage is an exception: the
     student has it only after answering, so it cannot leak, but it must still be faithful.
+    An item with `translate_material: false` has **no** Italian of its instance sentence, options, rows and final by design: do not file their absence. Check instead that the marker is right: the material is a form, and no hint, message or Italian instruction gives the key; an exercise that translated a form item (Italian options that show the answer) is a `translation_leak`.
 15. The target-language text: above the level of a learner (sentences of at most 12 words, the first 3000 words of the language, plain
     grammar), unclear, with Italian words in it, or with a name that is not a common given name (never the student's or his household's).
 

@@ -32,7 +32,9 @@ class BilingualItemsTest < ActiveSupport::TestCase
   def codes(result) = result.findings.map(&:code).uniq
   def at(result, code) = result.findings.select { |f| f.code == code }.map(&:field)
 
-  def choice = golden("item_choice.json")
+  # The translated golden choice (every text paired, the options too) and the one that follows the form-material rule (translate_material: false).
+  def choice = golden("item_choice_translated.json")
+  def material_choice = golden("item_choice.json")
   def blank = golden("item_blank.json")
 
   # ---- the golden items -----------------------------------------------------------------------------------------------------------
@@ -120,7 +122,7 @@ class BilingualItemsTest < ActiveSupport::TestCase
     item = choice
     item["prompt"]["stem_it"] = "Choose the two words that fill the gaps, in the order they are needed."
     result = run_item(item)
-    assert_equal [ "/prompt/stem_en" ], at(result, "E-LANG-TRANSLATION-LANG")
+    assert_equal [ "/prompt/stem_it" ], at(result, "E-LANG-TRANSLATION-LANG") # the fault is in the Italian: the field names it
     quiet = choice
     quiet["prompt"]["stem_it"] = "Scegli le parole «the book and the pen» che completano la frase, nell'ordine in cui servono."
     assert_not_includes codes(run_item(quiet)), "E-LANG-TRANSLATION-LANG"
@@ -132,7 +134,7 @@ class BilingualItemsTest < ActiveSupport::TestCase
   test "E-LANG-TRANSLATION-COPY: an _it text equal to its target, only when it has a word of four letters" do
     item = choice
     item["prompt"]["stem_it"] = item["prompt"]["stem_en"]
-    assert_equal [ "/prompt/stem_en" ], at(run_item(item), "E-LANG-TRANSLATION-COPY")
+    assert_equal [ "/prompt/stem_it" ], at(run_item(item), "E-LANG-TRANSLATION-COPY")
     item = choice
     item["instances"][0]["display"]["options"][3]["text_it"] = "do / do"
     assert_not_includes codes(run_item(item)), "E-LANG-TRANSLATION-COPY", "do / do has no word of four letters"
@@ -323,7 +325,7 @@ class BilingualItemsTest < ActiveSupport::TestCase
     assert_equal "Scrivi due frasi brevi sulla tua giornata.", shown[:display]["stem_it"]
     assert_equal "I wake up at seven. I go to school.", shown[:solution]["model_answer_en"]
     broken = item.merge("passage_it" => "Tom wakes up at seven and he goes to the school with his bus.")
-    assert_equal [ "/passage_en" ], at(run_item(broken), "E-LANG-TRANSLATION-LANG")
+    assert_equal [ "/passage_it" ], at(run_item(broken), "E-LANG-TRANSLATION-LANG")
   end
 
   # ---- a reading text per instance (display.passage_*) --------------------------------------------------------------------------------------
@@ -357,10 +359,10 @@ class BilingualItemsTest < ActiveSupport::TestCase
     assert_includes at(run_item(item), "E-LESSON-LANG"), "/instances/1/display/passage_en"
     item = with_passages(blank)
     item["instances"][0]["display"]["passage_it"] = "She goes to the school with her bus and she is happy."
-    assert_equal [ "/instances/0/display/passage_en" ], at(run_item(item), "E-LANG-TRANSLATION-LANG")
+    assert_equal [ "/instances/0/display/passage_it" ], at(run_item(item), "E-LANG-TRANSLATION-LANG")
     item = with_passages(blank)
     item["instances"][0]["display"]["passage_it"] = item["instances"][0]["display"]["passage_en"]
-    assert_equal [ "/instances/0/display/passage_en" ], at(run_item(item), "E-LANG-TRANSLATION-COPY")
+    assert_equal [ "/instances/0/display/passage_it" ], at(run_item(item), "E-LANG-TRANSLATION-COPY")
   end
 
   test "the leak scan reads the instance's own passage in both layers: a long key option stated word for word is E-SOLUTION-IN-DISPLAY" do
