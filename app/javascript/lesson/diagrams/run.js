@@ -8,10 +8,15 @@ import { fail, makeContext, roleNames, walkRoles, words } from "lesson/diagrams/
 
 // The served form adds a computed `tilt` that the schema (agent data) does not know. It is accepted only
 // where the server puts it: when x_value is not served (it is replaced by tilt) or show_value shows it.
-// A figure of a bilingual lesson (D-402) also carries its own translation table `tr` (Lessons::Bilingual.fold), which is the page's, never the figure's data.
+// A figure of a bilingual lesson (D-402) also carries its own translation table `tr` (Lessons::Bilingual.fold), which is the page's, never the figure's data;
+// and a `table` figure its Italian cells `header_it` / `rows_it` (R2, which tableNode draws): the schema Ruby uses for every subject does not know them.
 function withoutServed(data) {
   const copy = { ...data }
   delete copy.tr
+  if (data.type === "table") {
+    delete copy.header_it
+    delete copy.rows_it
+  }
   if (data.x_value !== undefined && !data.show_value) return copy
   delete copy.tilt
   if (Array.isArray(copy.states)) copy.states = copy.states.map((s) => (s && typeof s === "object" ? (({ tilt, ...rest }) => rest)(s) : s))

@@ -325,3 +325,67 @@ test("a colour role in a translation is Italian text: parsed with no target, its
   assert.equal(italian.textContent, "Il gatto dorme.")
   assert.equal(italian.querySelectorAll("[lang=en], [lang=es]").length, 0, "the role word of the translation is not drawn as target-language text")
 })
+
+test("figureStrings: the labels of a flow's edges (third place) are texts of the figure; a mirror's Italian pieces are not", () => {
+  const flow = { type: "flow", alt_it: "A flow", nodes: [{ id: "a", text_it: "Start" }], edges: [["a", "b"], ["b", "c", "last"], ["b", "d", "last"], ["b", "e", "other"]] }
+  assert.deepEqual(figureStrings(flow), ["Start", "last", "other"])
+  const mirror = { type: "mirror", alt_it: "A mirror", rows: [{ pieces_it: ["Lei", "legge"], pieces_es: ["Ella", "lee"], notes: [{ side: "es", piece: 1, note_it: "a note" }] }] }
+  assert.deepEqual(figureStrings(mirror), ["a note"])
+})
+
+test("figureStrings reaches the strings of every state, the last too", () => {
+  const data = { type: "sentence", alt_it: "A sentence", parts: [{ label_it: "first label" }], states: [{ op_it: "One" }, { op_it: "Two", parts: [{ label_it: "last label" }] }] }
+  assert.deepEqual(figureStrings(data), ["first label", "One", "Two", "last label"])
+})
+
+const { markLabel } = await import("lesson/diagrams/draw")
+
+test("markLabel: a served slot with its Italian is target text with a translation; one without it is asked for; the layout's own words are Italian; target-only material is exempt", () => {
+  const body = fixture("served_lesson_es.json")
+  const ctx = scoped(contextOf(body), { tr: { "me agrada": "mi piace" } })
+  const served = new Set(["me agrada", "sin traducir"])
+  const mark = (label) => { const node = el("div"); markLabel(node, label, ctx, { served, figureCtx: ctx }); return node }
+  const said = mark({ text_it: "me agrada" })
+  assert.equal(said.getAttribute("lang"), "es")
+  assert.equal(said.hasAttribute("data-translated"), true)
+  const asked = mark({ text_it: "sin traducir" })
+  assert.equal(asked.getAttribute("lang"), "es")
+  assert.equal(asked.hasAttribute("data-translated"), false)
+  assert.equal(asked.hasAttribute("data-tr-exempt"), false, "the check asks for it")
+  const chrome = mark({ text_it: "Qui batte la voce" })
+  assert.equal(chrome.getAttribute("lang"), "it", "the legend line is interface text, never target text")
+  const material = mark({ text_it: "triste", lang: "es" })
+  assert.equal(material.getAttribute("lang"), "es")
+  assert.equal(material.hasAttribute("data-tr-exempt"), true)
+  const italianSide = mark({ text_it: "Lei", lang: "it" })
+  assert.equal(italianSide.getAttribute("lang"), "it")
+  const legacy = el("div")
+  markLabel(legacy, { text_it: "x" }, { ...ctx, lang: null }, { served, figureCtx: ctx })
+  assert.equal(legacy.getAttribute("lang"), null, "a legacy lesson is drawn as it was")
+})
+
+const { glossaryList } = await import("lesson/cards")
+
+test("the card's glossary lists an entry once, however the card names it: [[g:sílaba]] in the target and [[g:sillaba]] in its translation", () => {
+  const body = fixture("served_lesson_es.json")
+  const entry = { term_it: "sílaba", def_it: "Un trozo de palabra.", example_it: null }
+  const ctx = { ...contextOf(body), glossary: new Map([["sílaba", entry], ["sillaba", entry]]) }
+  const aCard = { n: 1, blocks: [{ type: "text", n: 1, text_it: "Cuenta las [[g:sílaba]]s.", tr: { "Cuenta las [[g:sílaba]]s.": "Conta le [[g:sillaba]]." } }] }
+  const list = glossaryList(aCard, ctx)
+  assert.equal(list.querySelectorAll("dt").length, 1)
+  assert.equal(list.querySelectorAll("dd").length, 1)
+})
+
+const { layout: layoutFigure } = await import("lesson/diagrams/registry")
+
+test("a served bilingual table figure (header_it, rows_it, tr) passes the schema check and carries its Italian cells to the drawing", () => {
+  const figure = { type: "table", alt_it: "A table of questions: the subject and the form.", header: ["Subject", "Question"], rows: [["he, she", "Has she got a dog?"]], header_it: ["Soggetto", "Domanda"], rows_it: [["lui, lei", "Ha un cane?"]], tr: { "A table of questions: the subject and the form.": "Una tabella." } }
+  const scene = layoutFigure(figure, { width: 320, fontPx: 16, subject: "english", measure: (text) => ({ w: String(text).length * 8, h: 20 }), state: 0 })
+  assert.ok(!scene.error, scene.error?.message)
+  assert.deepEqual(scene.table.header_it, ["Soggetto", "Domanda"])
+  assert.deepEqual(scene.table.rows_it, [["lui, lei", "Ha un cane?"]])
+  const legacy = layoutFigure({ ...figure, header_it: undefined, rows_it: undefined, tr: undefined }, { width: 320, fontPx: 16, subject: "math", measure: (text) => ({ w: String(text).length * 8, h: 20 }), state: 0 })
+  assert.ok(!legacy.error, "a legacy table is drawn as ever")
+  const stray = layoutFigure({ type: "flow", alt_it: "A flow of two steps.", nodes: [], header_it: ["x"] }, { width: 320, fontPx: 16, subject: "math", measure: () => ({ w: 1, h: 1 }), state: 0 })
+  assert.ok(stray.error, "header_it is allowed on a table figure only")
+})

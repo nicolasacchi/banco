@@ -40,6 +40,9 @@ export function translationOverflow(card, out) {
   let found = 0
   for (const tr of card.querySelectorAll(".tr")) {
     if (tr.getClientRects().length === 0 || found >= MAX_OVERFLOW) continue // a closed one has no box
+    // the head of a table whose rows stack on a phone is clipped to one pixel (lesson.css, kept for the screen reader): its translations are not on screen either
+    const head = tr.closest("thead")
+    if (head && head.getBoundingClientRect().width <= 2) continue
     const r = tr.getBoundingClientRect()
     if (tr.scrollWidth > tr.clientWidth + 3 || r.left < left || r.right > right) {
       found += 1

@@ -11,7 +11,7 @@ import { render as fractionT } from "items/fraction"
 import { render as choiceT } from "items/choice"
 import { render as textT } from "items/normalized_text"
 import { button, el, icon, uid } from "lesson/dom"
-import { beside, inButton, insideControl, renderInlineRich, renderRich, scoped } from "lesson/text"
+import { beside, inButton, insideControl, noTranslation, renderInlineRich, renderRich, scoped } from "lesson/text"
 import { checkNotes } from "lesson/teacher_notes"
 import { moduleFor as checkModule } from "lesson/checks/registry"
 import { howtoNodes } from "lesson/checks/howto"
@@ -130,9 +130,11 @@ export function renderCheck(spec, ctx, loc, options = {}) {
   const around = !line && Boolean(spec.input_before || spec.input_after)
   const row = el("div", { class: `check-row${line ? " is-line" : ""}${around ? " is-around" : ""}` })
   const hint = around ? handleInput.element.querySelector(":scope > label.hint") : null
-  if (spec.input_before) row.appendChild(renderInlineRich(spec.input_before, el("span", { class: "check-before" }), ctx))
+  // the words around the box are a fragment of the sentence the box completes, never translated alone (D-402): the prompt's translation says what to write
+  const fragment = noTranslation(ctx)
+  if (spec.input_before) row.appendChild(renderInlineRich(spec.input_before, el("span", { class: "check-before" }), fragment))
   row.appendChild(handleInput.element)
-  if (spec.input_after) row.appendChild(renderInlineRich(spec.input_after, el("span", { class: "check-after" }), ctx))
+  if (spec.input_after) row.appendChild(renderInlineRich(spec.input_after, el("span", { class: "check-after" }), fragment))
   if (spec.answer_format_it) form.appendChild(beside(el("p", { class: "hint", text: spec.answer_format_it }), spec.answer_format_it, ctx))
   const submit = button(ctx.t.check_button, { class: `button small${line ? " check-go" : ""}`, type: "submit" })
   const feedback = el("div", { class: "feedback", "aria-live": "polite", role: "status" })

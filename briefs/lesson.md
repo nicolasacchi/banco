@@ -541,6 +541,24 @@ sees the target text; the Italian opens with the button «Traduzione» (the card
 **Table cells.** A `table` block (and a figure of type `table`) keeps its cells in `header` / `rows` **in the target language** and adds the Italian as `header_it` /
 `rows_it`, the same shape (same number of columns and rows).
 
+**Flow edge labels.** An edge is `[from, to, "label"]`, a bare string with no `_it` beside it, so the label is written in the target language and its Italian goes in
+`edges_it`, a list **as long as `edges`**, one entry for each edge in the same order: the Italian label, or `~` (null) for an edge with no label.
+
+```
+edges:
+  - [s, q]
+  - [q, a, "última"]
+  - [q, b, "penúltima"]
+edges_it:
+  - ~
+  - "ultima"
+  - "penultima"
+```
+
+A flow with a labelled edge and no `edges_it` (or a label with `~` under it, or an Italian label under an edge without one) is `E-LANG-PAIR-MISSING`; the
+Italian label follows the rules of every pair (not the target copied, not the target's words). The labels of the `loops` and of the `branch` are `label_en|es` /
+`label_it` pairs as any other `label`; only the edges, which are lists and not objects, use `edges_it`.
+
 **Material, not translated piece by piece.** The sentence of a `span_select` (`text_en`) and its spans, the tiles, the text a check reads aloud (`listen: {text_en: ...}`), the sentence of a `sentence`
 figure (its `text_en`, never beside a `text_it`) and its parts (`parts[].text_en`) are target text with no Italian twin: translate the sentence in the check's `prompt_it` (or `explain_it`). A `sentence` figure puts its
 explanation in `alt` and `caption` (pairs), and the Italian names of the roles in `label_en` / `label_it`.

@@ -23,7 +23,14 @@ module Banco
         "lesson" => [ %w[$defs front_matter2], %w[$defs body2] ],
         "course" => [ %w[$defs topic_entry] ]
       }.freeze
-      # R2: schema => { $defs name => { property => the Italian twin's name } }.
+      # The Italian of a flow's edge labels (D-402): `edges` keeps the target label in its third place, `edges_it` is a list of the same length with the Italian
+      # label of each edge (null for an edge with no label). Not a copy of `edges`: its entries are labels, not edges.
+      EDGE_LABELS = {
+        "type" => "array", "minItems" => 2, "maxItems" => 14,
+        "items" => { "oneOf" => [ { "type" => "null" }, { "type" => "string", "minLength" => 1, "maxLength" => 40 } ] },
+        "description" => "D-402: the Italian label of each edge of `edges`, in the same order; null where the edge has no label."
+      }.freeze
+      # R2: schema => { $defs name => { property => the Italian twin's name, or [name, its own schema] when the twin is not a copy } }.
       R2 = {
         "item" => {
           "id_text" => { "text" => "text_it" }, "quote" => { "text" => "text_it" },
@@ -31,7 +38,7 @@ module Banco
         },
         # D-402, slice 3: the table block of a lesson and a figure of type `table` hold their cells in the subject's language, the Italian in `header_it` / `rows_it`.
         "lesson" => { "b_table" => { "header" => "header_it", "rows" => "rows_it" } },
-        "diagram" => { "table" => { "header" => "header_it", "rows" => "rows_it" } }
+        "diagram" => { "table" => { "header" => "header_it", "rows" => "rows_it" }, "flow" => { "edges" => [ "edges_it", EDGE_LABELS ] } }
       }.freeze
       # The words a bilingual item teaches, outside the first 3000 of the language (W-LANG-LEVEL), like a lesson's `teaches_en`: the item root only.
       TEACHES = { "type" => "array", "maxItems" => 40, "items" => { "type" => "string", "minLength" => 1, "maxLength" => 40 }, "description" => "D-402: words of the target language the item teaches, never linted as above the level." }.freeze
@@ -48,7 +55,8 @@ module Banco
           keys.each do |key, twin|
             raise ArgumentError, "#{name}: no #{def_name}.#{key}" unless properties.key?(key)
 
-            properties[twin] ||= copy(properties[key])
+            twin, own = twin
+            properties[twin] ||= copy(own || properties[key])
           end
         end
         MARKERS.fetch(name.to_s, []).each do |path|

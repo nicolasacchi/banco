@@ -112,3 +112,20 @@ test("a card drawn with one field the author did not pair shows up as «translat
   translationMissing(article, out)
   assert.ok(out.some((f) => /After a modal verb/.test(f.message)), JSON.stringify(out))
 })
+
+test("the translations in the clipped head of a table whose rows stack are not on screen: no «translation overflow» for them", () => {
+  const card = el("article", {})
+  card.rect = { left: 0, right: 390 }
+  const head = el("thead", {})
+  head.rect = { left: 0, right: 1, width: 1 } // lesson.css clips it to one pixel at the phone
+  const th = el("th", {}, el("span", { class: "tr", lang: "it", text: "Soggetto" }))
+  th.children[0].rect = { left: 0, right: 520, width: 520 }
+  head.append(th)
+  const shown = el("p", { class: "tr", lang: "it", text: "Una riga" })
+  shown.rect = { left: 0, right: 520, width: 520 }
+  card.append(head, shown)
+  const out = []
+  translationOverflow(card, out)
+  assert.equal(out.length, 1, "only the one that is on screen")
+  assert.equal(out[0].where, "Una riga")
+})

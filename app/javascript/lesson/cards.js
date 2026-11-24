@@ -61,9 +61,10 @@ export function glossTerms(card) {
   return found
 }
 
-// "Parole di questa scheda": the card's glossary words, one line each, always shown (a student who mis-taps a word still finds its meaning).
+// "Parole di questa scheda": the card's glossary words, one line each, always shown (a student who mis-taps a word still finds its meaning). An entry is
+// listed once however the card names it: a bilingual lesson says [[g:sílaba]] in the target text and [[g:sillaba]] in its translation (D-402), the one entry.
 export function glossaryList(card, ctx) {
-  const entries = glossTerms(card).map((t) => ctx.glossary?.get(t.toLowerCase())).filter(Boolean)
+  const entries = [...new Set(glossTerms(card).map((t) => ctx.glossary?.get(t.toLowerCase())).filter(Boolean))]
   if (entries.length === 0) return null
   const id = `scheda-${card.n}-words`
   const list = el("dl", { class: "card-glossary-list" })

@@ -44,6 +44,8 @@ module Validation
         italian = nil if italian.to_s.strip.empty?
         pair_lang = lang || pointer[/_(en|es)(?:\/\d+)*\z/, 1]
         add = ->(code, message) { findings.add(code, field, message, rule: "#{code}-#{field}", **at) }
+        # the key that holds the target text: `<base>_<lang>`, but a flow's edge label is the third place of an edge of `edges` (Lessons::Bilingual.edge_pairs)
+        key = base == "edges" ? "edges" : "#{base}_#{pair_lang}"
 
         if target.nil? && italian.nil?
           next
@@ -51,12 +53,12 @@ module Validation
           add.call("E-LANG-PAIR-MISSING", "#{base} has its #{pair_lang || 'target-language'} text but no Italian translation (#{base}_it)")
         elsif target.nil?
           add.call(pointer.match?(%r{/\d+\z}) ? "E-LANG-PAIR-MISSING" : "E-LANG-PAIR-ORPHAN",
-                   pointer.match?(%r{/\d+\z}) ? "#{base}_it has more entries than #{base}_#{pair_lang} (a list and its translation have the same length)" : "#{base}_it has no #{base}_#{pair_lang || 'en'} text to translate")
+                   pointer.match?(%r{/\d+\z}) ? "#{base}_it has more entries than #{key} (a list and its translation have the same length)" : "#{base}_it has no #{base == 'edges' ? 'edge label' : "#{base}_#{pair_lang || 'en'}"} text to translate")
         else
           shape_problems(target, italian).each { |problem| add.call("E-LANG-PAIR-SHAPE", "#{base}: the translation differs in shape: #{problem}") }
-          add.call("E-LESSON-LANG", "#{base}_#{pair_lang} holds Italian words (a key ending in _#{pair_lang} holds that language only)") if %w[en es].include?(pair_lang) && Lessons::Lang.italian?(target)
+          add.call("E-LESSON-LANG", "#{key} holds Italian words (a key ending in _#{pair_lang} holds that language only)") if %w[en es].include?(pair_lang) && Lessons::Lang.italian?(target)
           add.call("E-LANG-TRANSLATION-LANG", "#{base}_it is not Italian: it holds words of #{pair_lang == 'es' ? 'Spanish' : 'English'}") if translation_lang?(italian, pair_lang)
-          add.call("E-LANG-TRANSLATION-COPY", "#{base}_it is the same text as #{base}_#{pair_lang}: write the translation") if copy?(target, italian)
+          add.call("E-LANG-TRANSLATION-COPY", "#{base}_it is the same text as #{key}: write the translation") if copy?(target, italian)
           conflict(findings, table, field, target, italian, at) if conflicts
         end
       end
@@ -252,7 +254,7 @@ module Validation
         Lessons::Bilingual.twins(doc, lang, pointer, sentence: sentence).each do |base, tkey, ikey, kind|
           next if tkey.nil? || kind == :legacy
 
-          if kind == :r2
+          if kind == :r2 || kind == :edges
             out.delete(ikey)
           else
             out.delete(ikey)

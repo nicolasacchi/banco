@@ -127,7 +127,8 @@ export function makeMeasure(host, ctx) {
     probe.style.maxWidth = maxW ? `${maxW}px` : "none"
     probe.style.whiteSpace = maxW ? "normal" : "nowrap"
     probe.style.width = maxW ? `${maxW}px` : "auto"
-    renderInlineRich(text, probe, unglued(ctx))
+    // the probe only measures: it is no text of the page (no language, no translation), whatever string it was last given
+    renderInlineRich(text, probe, { ...unglued(ctx), lang: null })
     const rect = probe.getBoundingClientRect()
     const result = { w: Math.ceil(rect.width), h: Math.ceil(rect.height) }
     // a hidden host (a card not shown, display: none) measures every text as 0 x 0: never cached, and the figure draws again when it shows
@@ -192,6 +193,23 @@ export function translationPanel(data, ctx) {
   return panel
 }
 
+// What a label of a bilingual lesson's figure is (D-402), said on its node for the render check: only a text that came from a served slot is target text.
+//   `label.lang`            the layout says the text is written in that language (a part of a sentence, a word, a piece): target-only material is left out
+//                           of the check like the fragments of an exercise (data-tr-exempt), an Italian one is Italian;
+//   a served `_it` slot     target text; it has its Italian when the figure's `tr` has it (the panel lists it), else the check asks for it;
+//   anything else           text the layout wrote itself (the legend's «Qui batte la voce», a role's name, a counter): interface text, Italian.
+// A label never draws a `.tr` of its own: a text in the drawing has no room for a line under it, the figure's panel says it.
+export function markLabel(node, label, ctx, { served, figureCtx }) {
+  if (!ctx.lang) return
+  if (label.lang) {
+    node.setAttribute("lang", label.lang)
+    if (label.lang === ctx.lang) node.setAttribute("data-tr-exempt", "")
+  } else if (served.has(label.text_it)) {
+    node.setAttribute("lang", ctx.lang)
+    if (translationOf(label.text_it, figureCtx) !== null) node.setAttribute("data-translated", "")
+  } else node.setAttribute("lang", "it")
+}
+
 export function mountDiagram(data, ctx, options = {}) {
   const type = data?.type
   // ctx.mode of the component contract (WAVE2 1.2): "select" draws the figure of a select check with tap targets (options.select)
@@ -217,11 +235,13 @@ export function mountDiagram(data, ctx, options = {}) {
   // a bilingual lesson's figure: its text is drawn in the drawing (SVG and labels), where a translation line cannot sit, so one panel under it says the
   // alt's translation and then «target → italiano» for every text of the figure that has one (D-402)
   const panel = ctx.lang ? translationPanel(data, figureCtx) : null
+  // the texts the figure's data brings (its `_it` slots, the edge labels of a flow): the labels that are none of them are the layout's own words (markLabel)
+  const served = new Set(ctx.lang ? figureStrings(data) : [])
+  // the alt: a text of the figure when it has its Italian in the figure's `tr`; the neutral alt of a select check (what the figure shows, never what the answer is) is interface text
   if (ctx.lang) {
-    for (const node of [labelsLayer, alt]) {
-      node.setAttribute("lang", ctx.lang)
-      if (panel) node.setAttribute("data-translated", "")
-    }
+    const said = typeof data?.alt_it === "string" && translationOf(data.alt_it, figureCtx) !== null
+    alt.setAttribute("lang", said || mode !== "select" ? ctx.lang : "it")
+    if (said) alt.setAttribute("data-translated", "")
   }
   const descText = el("p", { text: describe(data, { subject: ctx.subject, state: 0, mode: options.mode ?? "student", set: options.set ?? null }) })
   const desc = el("details", { class: "dg-desc" }, el("summary", {}, icon("description"), document.createTextNode(` ${ctx.t.description}`)), descText)
@@ -403,7 +423,8 @@ export function mountDiagram(data, ctx, options = {}) {
         if (l.anchor !== "start") node.style.translate = l.anchor === "end" ? "-100% 0" : "-50% 0"
       }
       node.style.fontSize = `${l.px}px`
-      renderInlineRich(l.text_it, node, unglued(ctx))
+      markLabel(node, l, ctx, { served, figureCtx })
+      renderInlineRich(l.text_it, node, { ...unglued(figureCtx), noTr: true })
       if (l.key) node.dataset.key = l.key
       if (l.lang) node.setAttribute("lang", l.lang)
       labelsLayer.appendChild(node)
@@ -457,7 +478,7 @@ export function mountDiagram(data, ctx, options = {}) {
     renderValues(scene)
     op.textContent = ""
     const eff = total > 1 ? (data.states[state.i] ?? {}) : {}
-    if (eff.op_it) renderInlineRich(eff.op_it, op, unglued(ctx))
+    if (eff.op_it) renderInlineRich(eff.op_it, op, unglued(figureCtx)) // the step's own sentence: its Italian is in the figure's `tr`, whatever the step
     if (top) {
       eqLine.replaceChildren(renderMath(equationTex(data, state.i), el("span", { class: "dg-eqtex" }), ctx, true))
       pill.textContent = total > 1 ? ctx.t.balance_of.replace("%{n}", state.i + 1).replace("%{total}", total) : ctx.t.balance_one
@@ -658,7 +679,8 @@ export function mountDiagram(data, ctx, options = {}) {
         node.style.top = `${l.y}px`
         node.style.width = `${l.w + (l.wrap ? 0 : 2)}px`
         node.style.fontSize = `${l.px}px`
-        renderInlineRich(l.text_it, node, unglued(ctx))
+        markLabel(node, l, ctx, { served, figureCtx })
+        renderInlineRich(l.text_it, node, { ...unglued(figureCtx), noTr: true })
         texts.appendChild(node)
       }
       const cap = view.caption_it ?? data.states?.[view.state]?.op_it

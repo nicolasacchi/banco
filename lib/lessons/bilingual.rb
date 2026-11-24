@@ -28,6 +28,9 @@ module Lessons
       }.freeze,
       # The pointers of R2's `header` and `rows` that name a block or a figure of any type: the hash must say `type: table` to hold a table there.
       table_typed: %r{/(?:diagram|schema)\z|/blocks/\d+\z}.freeze,
+      # The labels of a flow's edges (D-402): `edges` is a list of [from, to, label] with the target label in the third place; the Italian labels are the list
+      # `edges_it`, one for each edge in the same order (null for an edge without a label). Value: the figure's `type`.
+      edge_labels_type: "flow",
       # The figure whose own text is target-language material, never a pair: a `sentence` figure's `text_<lang>` (and its states'), with the parts in `fragments`.
       # Its translation lives in `alt_it` and `caption_it`, which pair as usual. Value: the figure's `type`.
       sentence_type: "sentence",
@@ -58,7 +61,11 @@ module Lessons
       case node
       when Hash
         sentence = in_sentence?(node, sentence)
-        twins(node, lang, pointer, sentence: sentence).each { |base, tkey, ikey, _| leaves("#{pointer}/#{tkey || "#{base}_#{lang || Lang.sibling_lang(node, base) || Lang::PAIR_LANGS.first}"}", base, tkey && node[tkey], ikey && node[ikey], &block) }
+        twins(node, lang, pointer, sentence: sentence).each do |base, tkey, ikey, kind|
+          if kind == :edges then edge_pairs(node, pointer, &block)
+          else leaves("#{pointer}/#{tkey || "#{base}_#{lang || Lang.sibling_lang(node, base) || Lang::PAIR_LANGS.first}"}", base, tkey && node[tkey], ikey && node[ikey], &block)
+          end
+        end
         node.each { |k, v| pairs(v, lang, "#{pointer}/#{k}", sentence, &block) if v.is_a?(Hash) || v.is_a?(Array) }
       when Array
         node.each_with_index { |v, i| pairs(v, lang, "#{pointer}/#{i}", sentence, &block) if v.is_a?(Hash) || v.is_a?(Array) }
@@ -67,6 +74,23 @@ module Lessons
 
     # True inside a `sentence` figure (the figure itself, its states, its parts): +inherited+ is what the parent said.
     def in_sentence?(hash, inherited = false) = inherited || hash["type"] == FIELDS[:sentence_type]
+
+    # Is +hash+ a flow figure whose edges may carry labels (the pair of `edges` and `edges_it`)?
+    def edge_labels?(hash) = hash["type"] == FIELDS[:edge_labels_type] && hash["edges"].is_a?(Array)
+
+    # The label of each edge of a flow (its third place) as a list the size of `edges`: a string or nil.
+    def edge_labels(hash) = hash["edges"].map { |edge| edge.is_a?(Array) && edge[2].is_a?(String) ? edge[2] : nil }
+
+    # Yields the pairs of a flow's edge labels, (pointer of the label, "edges", label, Italian), one for each edge; an edge with neither is no pair.
+    def edge_pairs(hash, pointer)
+      labels = edge_labels(hash)
+      italians = hash["edges_it"].is_a?(Array) ? hash["edges_it"] : []
+      [ labels.size, italians.size ].max.times do |i|
+        target = labels[i]
+        italian = italians[i]
+        yield "#{pointer}/edges/#{i}/2", "edges", target, italian unless target.nil? && italian.nil?
+      end
+    end
 
     # Is +base+ of +hash+, at +pointer+, a key of rule R2 (a bare key that holds the target text)? `header` and `rows` of a block or a figure must belong to a table.
     def r2?(hash, base, pointer)
@@ -84,7 +108,11 @@ module Lessons
         twins(doc, nil, pointer, sentence: sentence).each do |base, tkey, ikey, kind|
           next if kind == :legacy || tkey.nil? || ikey.nil?
 
-          if kind == :r2
+          if kind == :edges
+            italians = Array(doc[ikey])
+            out["edges"] = doc["edges"].each_with_index.map { |edge, i| edge.is_a?(Array) && edge[2].is_a?(String) && italians[i].is_a?(String) ? [ *edge.first(2), italians[i] ] : edge }
+            out.delete(ikey)
+          elsif kind == :r2
             out[base] = doc[ikey]
             out.delete(ikey)
           else out.delete(tkey)
@@ -119,6 +147,10 @@ module Lessons
 
         tkey = langs.map { |l| "#{base}_#{l}" }.find { |k| hash.key?(k) }
         kind = :r1
+        if tkey.nil? && base == "edges" && edge_labels?(hash)
+          tkey = "edges"
+          kind = :edges
+        end
         if tkey.nil? && r2 && hash.key?(base) && r2?(hash, base, pointer)
           tkey = base
           kind = :r2
@@ -133,6 +165,8 @@ module Lessons
         taken << tkey if tkey
         out << [ base, tkey, key, kind ]
       end
+      # a flow's labelled edges without their `edges_it`: the target labels are orphans (the same list the pair would have)
+      out << [ "edges", "edges", nil, :edges ] if edge_labels?(hash) && !hash.key?("edges_it") && edge_labels(hash).any?
       hash.each_key do |key|
         next unless key.is_a?(String) && langs.include?(key[/_(en|es)\z/, 1]) && !taken.include?(key)
 
@@ -171,6 +205,11 @@ module Lessons
         out = node.dup
         sentence = in_sentence?(node, sentence)
         twins(node, lang, "", r2: false, sentence: sentence).each do |_base, tkey, ikey, kind|
+          if kind == :edges && ikey
+            record(tr, edge_labels(node), node[ikey])
+            out.delete(ikey)
+            next
+          end
           next unless kind == :r1 && tkey && ikey
 
           record(tr, node[tkey], node[ikey])
