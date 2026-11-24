@@ -153,6 +153,19 @@ module Validation
       token_match?(plain(haystack), n) || (squash(needle).length >= min && token_match?(squash(haystack), squash(needle)))
     end
 
+    # +contains?+ that leaves the first word of each line when it is the whole needle: an instruction, a hint, a message or a format line opens with its verb (Write,
+    # Escribe), and that verb may be an accepted answer of another instance. The same word later in the line, or a line that is nothing else, is still a leak.
+    def contains_after_lead?(haystack, needle, min: MIN_LEAK_CHARS)
+      word = plain(needle)
+      return contains?(haystack, needle, min: min) unless word.match?(/\A\p{L}+\z/)
+
+      lines = haystack.to_s.lines.map do |line|
+        rest = line.sub(/\A[[:space:][:punct:]]*#{Regexp.escape(word)}(?![[:alnum:]])/i, " ")
+        rest.match?(/\p{L}/) ? rest : line
+      end
+      contains?(lines.join, needle, min: min)
+    end
+
     def token_match?(haystack, needle)
       haystack.match?(/(?<![[:alnum:]])(?<![,.]\d)(?<!\d\.)#{Regexp.escape(needle)}(?![[:alnum:]])(?![,.]\d)/)
     end

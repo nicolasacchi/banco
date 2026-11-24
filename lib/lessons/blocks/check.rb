@@ -257,6 +257,15 @@ module Lessons
         end
       end
 
+      QUOTATION = /«[^»]*»|“[^”]*”|"[^"]*"|\[\[.*?\]\]/m
+
+      # What a prompt shows of a sentence, as against its own words: the quotations and spans, and what follows the first colon outside them.
+      def prompt_sentence(prompt)
+        text = prompt.to_s
+        bare = text.gsub(QUOTATION, " ")
+        (text.scan(QUOTATION) + [ bare.split(":", 2)[1] ]).compact.join(" ")
+      end
+
       def answer_in_prompt(check, ctx)
         # a choice lists its options and a span_select shows its sentence: the answer is rightly on the page
         return unless %w[number fraction normalized_text].include?(check["component"])
@@ -267,9 +276,11 @@ module Lessons
         squash = ->(s) { s.to_s.delete("$").gsub(/\s+/, " ").strip.downcase }
         # a cloze's bracketed cue right after the gap, "When I ___ (get) home", is the material, not a leak (D-110, D-266)
         cue = ->(s) { check["component"] == "normalized_text" ? s.to_s.gsub(/_{2,}\s*\([^)]*\)/, " ___ ") : s }
-        prompt = squash.call(cue.call(check["prompt_it"]))
         needle = squash.call(answer)
         return if needle.size < 2 && %w[number fraction].exclude?(check["component"]) && needle.match?(/\A\p{L}\z/)
+
+        # A word of one or two letters (el, is, se) is a function word of the instruction («Escribe el artículo»): only the sentence in the prompt can give it away
+        prompt = squash.call(cue.call(needle.match?(/\A\p{L}{1,2}\z/) ? prompt_sentence(check["prompt_it"]) : check["prompt_it"]))
 
         hit = prompt.match?(/(?<![\p{L}\p{N},])#{Regexp.escape(needle)}(?![\p{L}\p{N}]|,\d)/)
         ctx.add("W-CHECK-ANSWER-IN-PROMPT", "prompt_it", "the answer #{answer.inspect} appears in its own prompt") if hit

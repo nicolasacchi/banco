@@ -404,6 +404,11 @@ class CodeFixturesTest < ActiveSupport::TestCase
     "E-LANG-PAIR-SHAPE" => -> { lang_codes { |i| i["answer_format_it"] = "Prima riga.\n\nSeconda riga." } },
     "E-LANG-PAIR-CONFLICT" => lambda {
       found = Validation::Findings.new
+      Validation::Bilingual.check(found, { "text_en" => "The book is on the table", "text_it" => "Il libro è sul tavolo", "again" => { "text_en" => "The book is on the table", "text_it" => "Il quaderno è sul tavolo" } }, lang: "en")
+      found.map(&:code).uniq
+    },
+    "W-LANG-PAIR-CONFLICT" => lambda {
+      found = Validation::Findings.new
       Validation::Bilingual.check(found, { "text_en" => "The book", "text_it" => "Il libro", "again" => { "text_en" => "The book", "text_it" => "Il quaderno" } }, lang: "en")
       found.map(&:code).uniq
     },

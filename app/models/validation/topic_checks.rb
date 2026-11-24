@@ -48,7 +48,7 @@ module Validation
       return unless lang && Bilingual.bilingual?(doc)
 
       Bilingual.check(findings, doc, lang: lang, conflicts: false)
-      Bilingual.lint_target(findings, doc, lang)
+      Bilingual.lint_target(findings, doc, lang, known: Array(doc["teaches_#{lang}"]).flat_map { |w| w.to_s.downcase.scan(Lessons::Lexicon::WORD) })
       Readability.lint_document(doc.slice("intro_it"), "", findings)
     end
 

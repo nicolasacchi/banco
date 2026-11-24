@@ -106,7 +106,7 @@ class BilingualItemsTest < ActiveSupport::TestCase
   end
 
   test "E-LANG-PAIR-CONFLICT: the same target text with two translations in one scope; items are not one table" do
-    doc = { "text_en" => "The book", "text_it" => "Il libro", "again" => { "text_en" => "The book", "text_it" => "Il quaderno" } }
+    doc = { "text_en" => "The book is on the table", "text_it" => "Il libro è sul tavolo", "again" => { "text_en" => "The book is on the table", "text_it" => "Il quaderno è sul tavolo" } }
     found = Validation::Findings.new
     Validation::Bilingual.check(found, doc, lang: "en")
     assert_equal [ "/again/text_en" ], found.select { |f| f.code == "E-LANG-PAIR-CONFLICT" }.map(&:field)

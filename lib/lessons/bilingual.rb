@@ -48,9 +48,14 @@ module Lessons
       legacy: { "gloss" => "text", "label" => "form" }.freeze,
       # Both sides are drawn side by side by the figure itself (mirror: `pieces_it` and `pieces_en`): never folded, never an orphan.
       native: %w[pieces].freeze,
+      # What a `word_parts` word says of its pieces and of the whole word (decode view): an Italian gloss for the student, like `label_it`, so the word's `form_<lang>`
+      # needs no `parts_<lang>` or `meaning_<lang>` beside it. Never a pair, never an orphan when `_it` stands alone; written as a target pair (`parts_es` and
+      # `parts_it`) it is an ordinary pair and both sides must be complete.
+      gloss: %w[parts meaning].freeze,
       # Target text that is the exercise's own material and is translated by the prompt around it, never piece by piece (slice 3 and 5, D-402): a span_select's
-      # sentence (`text_en|es` of a check with that component) and its spans, the tiles, a `listen` text, the parts of a sentence figure. Never an orphan.
-      fragments: %r{/(?:spans|tiles|parts)/\d+\z|/listen\z}.freeze,
+      # sentence (`text_en|es` of a check with that component) and its spans, the tiles, a `listen` text, the parts of a sentence figure, the marks of a tense
+      # timeline (their `text_en|es` is the sentence the mark stands for; the schema has no `text_it` for it). Never an orphan.
+      fragments: %r{/(?:spans|tiles|parts|marks)/\d+\z|/listen\z}.freeze,
       # Target-language data with no Italian twin by design (vocabulary lists, forms, the `teaches_en` lexicon): never an orphan.
       target_only: %w[teaches form base past participle verb cells].freeze
     }.freeze
@@ -235,6 +240,8 @@ module Lessons
             base = target_base
           end
         end
+        next if tkey.nil? && FIELDS[:gloss].include?(base) && langs.any? { |l| hash.key?("form_#{l}") }
+
         kind = :material if kind != :legacy && material?(hash, base, pointer, material)
         taken << tkey if tkey
         out << [ base, tkey, key, kind ]

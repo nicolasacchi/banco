@@ -75,6 +75,31 @@ class GradingContractionsTest < ActiveSupport::TestCase
     assert_equal "correct", verdict("Anna's book", "Anna’s book")
   end
 
+  # Round 4 of the bilingual tooling: an author keeps `accept` short (10 entries), so the 's, 'm and 're forms of a key are never listed; the two-way reading is what accepts them.
+  test "'s, 'm and 're: the contracted form of a key's full form is right without accept, and so is the full form of a contracted key" do
+    {
+      "She is a doctor." => "She's a doctor.", "I am ready." => "I'm ready.", "You are late." => "You're late.",
+      "He is at home, and we are here." => "He's at home, and we're here.", "It is cold, and they are in the garden." => "It's cold, and they're in the garden."
+    }.each do |long, short|
+      assert_equal "correct", verdict(long, short), "#{short} for the key #{long}"
+      assert_equal "correct", verdict(short, long), "#{long} for the key #{short}"
+      assert_equal "correct", verdict(long, short.tr("'", "’")), "a curly apostrophe"
+    end
+    framed = spec("She is", display: { "stem_it" => "___ a doctor." })
+    assert_equal "correct", Grading::Closed.grade(framed, "She's a doctor.").verdict
+    assert_equal "correct", Grading::Closed.grade(spec("I'm", display: { "stem_it" => "___ ready." }), "I am ready.").verdict
+  end
+
+  test "'s, 'm and 're: a reading the key does not have is wrong, and a declared error value stays an error when it is neither reading" do
+    assert_equal "wrong", verdict("She is a doctor.", "She was a doctor.")
+    assert_equal "wrong", verdict("You are late.", "You were late.")
+    assert_equal "wrong", verdict("I'm ready.", "I was ready.")
+    hit = Grading::Closed.grade(spec("She is a doctor.", errors: [ { "code" => "wrong_tense", "value" => "She was a doctor." } ]), "She was a doctor.")
+    assert_equal [ "typical_error", [ "wrong_tense" ] ], [ hit.verdict, hit.error_codes ]
+    both = Grading::Closed.grade(spec("She is a doctor.", errors: [ { "code" => "wrong_tense", "value" => "She was a doctor." } ]), "She's a doctor.")
+    assert_equal "correct", both.verdict, "the contracted key is the key, not the error"
+  end
+
   test "its and whose have no apostrophe: they are never read as a verb" do
     assert_equal [ "its cover" ], Contractions.readings("its cover")
     assert_equal "wrong", verdict("its cover", "it is cover")

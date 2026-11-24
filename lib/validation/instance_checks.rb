@@ -39,16 +39,20 @@ module Validation
       layer_unit if @lang
     end
 
+    # The item's prompt as the target layer shows it: the Italian layer reads it beside its own (see +key_hints+).
+    attr_writer :target_prompt
+
     def call(inst, label:, seed: nil, generated: false)
       return run(inst, label: label, seed: seed, generated: generated) unless @lang && inst["display"].is_a?(Hash) && !inst["answer"].nil?
 
       renamed = @renamed.dup
-      found = run(Bilingual.target_layer(inst, @lang, "", renamed, false, @material), label: label, seed: seed, generated: generated, layered: true)
+      target = Bilingual.target_layer(inst, @lang, "", renamed, false, @material)
+      found = run(target, label: label, seed: seed, generated: generated, layered: true)
       f = Findings.new
       found.each { |x| f.add(x.code, Bilingual.author_pointer(x.field, @lang, renamed), x.message, **x.detail.except(:seeds), seed: x.detail[:seeds]&.first) }
       generated_layers(inst, label, seed, f) if generated
       italian = Findings.new
-      @italian.scan_italian(Lessons::Bilingual.italian_layer(inst, "", false, @material), target_key(inst), label, seed, italian)
+      @italian.scan_italian(Lessons::Bilingual.italian_layer(inst, "", false, @material), target_key(inst), label, seed, italian, shown: target["display"])
       italian.each { |x| f.add(x.code, x.field, "in the Italian translation: #{x.message}", **x.detail.except(:seeds), rule: "it-#{x.detail[:rule]}", seed: x.detail[:seeds]&.first) }
       f
     end
@@ -58,8 +62,10 @@ module Validation
     # are read as the Italian they are.
     # A needle of the Italian layer is distinctive (Lessons::Lang::DISTINCT_MIN letters, not an Italian function word): the translation of «porque» and
     # of «por qué» is «perché», which is no leak of either, and an Italian reply says «che» and «quale» as every text does.
-    def scan_italian(layer, target_text, label, seed, f)
+    # +shown+: the display of the target layer, which the student reads beside the translation: a word on screen there (the cue in brackets) is no leak of a hint.
+    def scan_italian(layer, target_text, label, seed, f, shown: nil)
       @distinct = true
+      @shown = shown
       display = layer["display"]
       answer = layer["answer"]
       return unless display.is_a?(Hash) && !answer.nil?
@@ -132,6 +138,7 @@ module Validation
       target = Units::Unit.new(**@unit.to_h.merge(body: Bilingual.target_layer(body, @lang, "", @renamed, false, @material)))
       italian = Units::Unit.new(**@unit.to_h.merge(body: Lessons::Bilingual.italian_layer(body, "", false, @material)))
       @italian = self.class.new(italian, context: @context, files: @files, subject: @subject, material: @material)
+      @italian.target_prompt = target.body["prompt"]
       @unit = target
     end
 
@@ -355,7 +362,7 @@ module Validation
         [ [ display["stem_it"], "#{label}/display/stem_it" ], [ prompt["stem_it"], "#{label}/prompt/stem_it" ] ].each do |stem, field|
           # A cloze's bracketed cue right after the gap, "___ (swim)", is the material, not a leak (D-110).
           text = component == "normalized_text" ? stem.to_s.gsub(/«[^»]*»/, " ").gsub(/_{2,}\s*\([^)]*\)/, " ___ ") : stem.to_s
-          next unless needles.any? { |n| Answers.contains?(text, n) }
+          next unless needles.any? { |n| Answers.contains_after_lead?(text, n) }
 
           f.add("W-ANSWER-IN-STEM", field, "the expected answer appears in the instruction", seed: seed)
         end
@@ -417,7 +424,7 @@ module Validation
 
       needles = distinct_needles(support_needles(display, answer, inst))
       texts.each do |field, text|
-        needle = needles.find { |n| Answers.contains?(text, n, min: support_min) }
+        needle = needles.find { |n| Answers.contains_after_lead?(text, n, min: support_min) }
         next unless needle
 
         f.add("E-SUPPORT-LEAK", field, "the answer format or the steps state the key or a declared error value (#{needle.to_s[0, 30].inspect})", seed: seed)
@@ -661,10 +668,11 @@ module Validation
 
     def key_hints(display, answer, inst, hints, label, seed, f)
       shown = Canonical.strings(display).map(&:last).join(" ") + " " + @unit.body["prompt"].to_h.slice("stem_it", "table", "quote").to_json
+      shown += " " + Canonical.strings(@shown).map(&:last).join(" ") + " " + @target_prompt.to_h.slice("stem_it", "table", "quote").to_json if @shown
       needles = distinct_needles(Answers.key_texts(@unit.component, answer, accept: @unit.accept + Array(inst["accept"]), min: support_min))
                 .reject { |n| Answers.contains?(shown, n, min: support_min) }
       hints.each_with_index do |hint, i|
-        needle = needles.find { |n| Answers.contains?(hint, n, min: support_min) }
+        needle = needles.find { |n| Answers.contains_after_lead?(hint, n, min: support_min) }
         next unless needle
 
         f.add("E-HINT-KEY", "#{label}/hints_it/#{i}", "the hint states the key (#{needle.to_s[0, 30].inspect}): a hint points at the next step, never at the answer", seed: seed)

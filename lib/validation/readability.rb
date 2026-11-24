@@ -31,8 +31,9 @@ module Validation
 
     # Lints one text. role: :stem, :message, :passage or :text. negation: false for the Italian of an instance sentence of a bilingual item (D-402): the sentence is
     # the material the student works on, its negation is the content, not the way the instruction is phrased (W-NEGATIVE-STEM). codes: true for the note of an answer
-    # to a finding, which may name an error code (ERROR_CODE passes the ALL-CAPS rule, being one word for the sentence length too).
-    def lint(text, field:, role:, findings:, negation: true, codes: false)
+    # to a finding, which may name an error code (ERROR_CODE passes the ALL-CAPS rule, being one word for the sentence length too). quotes: true for the Italian of a
+    # bilingual revision, and always for such a note: a «form» or «sentence» of the language it quotes is not counted in the length of a sentence.
+    def lint(text, field:, role:, findings:, negation: true, codes: false, quotes: false)
       return unless text.is_a?(String)
 
       plain = text.gsub(MATH, " m ")
@@ -41,7 +42,7 @@ module Validation
       caps(plain, field, findings, codes: codes)
       bold(text.gsub(MATH, " m "), field, findings)
       phrases(text, field, findings)
-      sentences = sentences_of(strip_markup(plain))
+      sentences = sentences_of(strip_markup(quotes || codes ? without_quotations(plain) : plain))
       words = sentences.sum { |s| count_words(s) }
       max = Rules.get(:readability, :max_sentence_words)
       long = sentences.map { |s| count_words(s) }.max.to_i
@@ -66,10 +67,10 @@ module Validation
           if skip.include?(key.to_s) && value.is_a?(String)
             next
           elsif value.is_a?(String) && key.to_s.end_with?("_it")
-            lint(value, field: field, role: role_for(key.to_s), findings: findings, negation: !(bilingual && key.to_s == "stem_it" && path.end_with?("/display")), codes: codes)
+            lint(value, field: field, role: role_for(key.to_s), findings: findings, negation: !(bilingual && key.to_s == "stem_it" && path.end_with?("/display")), codes: codes, quotes: bilingual)
           elsif value.is_a?(Array) && key.to_s.end_with?("_it") && value.all?(String)
             # steps_it: a list of short texts, each linted on its own (D-216).
-            value.each_with_index { |text, i| lint(text, field: "#{field}/#{i}", role: :text, findings: findings, codes: codes) }
+            value.each_with_index { |text, i| lint(text, field: "#{field}/#{i}", role: :text, findings: findings, codes: codes, quotes: bilingual) }
           elsif key.to_s != "quote"
             lint_document(value, field, findings, skip: skip, bilingual: bilingual, codes: codes)
           end
@@ -179,6 +180,12 @@ module Validation
     # ---- helpers ---------------------------------------------------------------
 
     def count_words(text) = text.gsub(DOTTED, "x").scan(WORD).size
+
+    # A quotation, «...» or “...”: a form or a sentence the text talks about, which the cap on a sentence does not read word by word.
+    QUOTATION = /«[^»]*»|“[^”]*”/
+
+    # +text+ without its quotations; one that ends with a stop leaves it, so that the sentence ends there as before.
+    def without_quotations(text) = text.gsub(QUOTATION) { |q| q.match?(/[.!?…]\s*[»”]\z/) ? " . " : " " }
 
     def strip_markup(text) = text.gsub(BOLD, '\1').gsub(/^\s*\d+\.\s+/, "")
 

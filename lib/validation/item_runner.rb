@@ -240,7 +240,7 @@ module Validation
 
       Array(unit.body["error_catalogue"]).each_with_index do |entry, i|
         %w[message_it message_en message_es].each do |key|
-          n = needles.find { |t| Answers.contains?(entry[key].to_s, t) }
+          n = needles.find { |t| Answers.contains_after_lead?(entry[key].to_s, t) }
           next unless n
 
           @findings.add("W-MESSAGE-GIVES-KEY", "#{unit.path}/error_catalogue/#{i}/#{key}", "the message states the key of an instance (#{n.to_s[0, 30].inspect}); a message points at the step, never at an answer", code: entry["code"])

@@ -7,7 +7,7 @@ module Validation
   #
   #   E-LANG-PAIR-MISSING / -ORPHAN   a text without its translation, a translation without its text, lists of different length
   #   E-LANG-PAIR-SHAPE               paragraphs, list items, ___ blanks, math, digits, bold words, [[g:..]] terms differ
-  #   E-LANG-PAIR-CONFLICT            two equal target strings in one scope with different Italian
+  #   E-LANG-PAIR-CONFLICT            two equal target strings in one scope with different Italian (W-LANG-PAIR-CONFLICT when the text is a label of 3 words or fewer)
   #   E-LANG-TRANSLATION-LANG         an `_it` text that is not Italian; E-LESSON-LANG for a `_en|_es` text that is Italian
   #   E-LANG-TRANSLATION-COPY         an `_it` text equal to its target text
   #   E-LANG-BILINGUAL-FLAG / -REQUIRED   the `bilingual` marker (flag) and the rule that asks for it (required)
@@ -119,13 +119,16 @@ module Validation
       end
     end
 
+    SHORT_LABEL_WORDS = 3
+
     def conflict(findings, table, field, target, italian, at)
       key = plain(target)
       first = table[key]
       if first.nil?
         table[key] = [ italian, field ]
       elsif plain(first[0]) != plain(italian)
-        findings.add("E-LANG-PAIR-CONFLICT", field, "the same text has another translation at #{first[1]}: the translation table is keyed by the target text, so write one Italian for it", rule: "conflict-#{field}", **at)
+        short = key.scan(Readability::WORD).size <= SHORT_LABEL_WORDS # a label of a few words (a state, a verb form) reads differently in two places: only the first translation is shown
+        findings.add(short ? "W-LANG-PAIR-CONFLICT" : "E-LANG-PAIR-CONFLICT", field, "the same text has another translation at #{first[1]}: the translation table is keyed by the target text, so write one Italian for it", rule: "conflict-#{field}", **at)
       end
     end
 
@@ -174,11 +177,16 @@ module Validation
       lists.any? { |list| (words & list).size >= 2 }
     end
 
-    # True when the Italian is the target text itself (after spans and markup) and holds a word of four or more letters that is not quoted: a target text that is
-    # all [[en:..]] / [[es:..]] spans or «...»-quoted forms (a form is the same in both languages) is no copy.
+    # True when the Italian is the target text itself (after spans and markup) and BOTH hold a word of four or more letters that is not quoted: a text that is all
+    # [[en:..]] / [[es:..]] spans or «...»-quoted forms (a form is the same in both languages), in either language, is no copy; nor is a text whose only other words
+    # are shared connectors («con», «a», «e») or pieces of words. The Italian one is read too: «[[es:hacer]]: [[es:hago]]» beside «hacer: hago» quotes its forms on purpose.
     def copy?(target, italian)
-      a = plain(target)
-      a == plain(italian) && plain(target.to_s.gsub(QUOTED_SPAN, " ").gsub(QUOTED, " ")).match?(/\p{L}{4,}/)
+      plain(target) == plain(italian) && [ target, italian ].all? { |text| own_words?(text) }
+    end
+
+    # Does +text+ hold a word of four letters outside its spans, quotations, formulas and pieces of words?
+    def own_words?(text)
+      plain(text.to_s.gsub(QUOTED_SPAN, " ").gsub(QUOTED, " ").gsub(PIECES, " ")).match?(/\p{L}{4,}/)
     end
 
     # ---- the marker -----------------------------------------------------------------------------------------------------------------
@@ -270,21 +278,28 @@ module Validation
     # Abbreviations whose full stop does not end the sentence. Any other letter or word followed by a full stop and a space does.
     ABBREVIATIONS = /(?<![\p{L}])(?:Mr|Mrs|Ms|Dr|Prof|St|Sr|Sra|Srta|Sres|Dña|vs|etc)\./
     # What the target-language lint reads of a text: the longest sentence in words, all the words (the instruction's length), the words outside the level
-    # and the absolute word, if any: {long:, words:, unknown:, absolute:}. +level+ false (form material): no unknown word, no absolute one.
-    def target_report(lang, text, known: [], level: true)
+    # and the absolute word, if any: {long:, words:, unknown:, absolute:}. +level+ false (form material): no unknown word, no absolute one; +absolute+ false: no absolute
+    # one (the words of the exercise's material: a sentence, an option, the text around a box).
+    def target_report(lang, text, known: [], level: true, absolute: true)
       counts = target_sentences(sentence_text(text)).map { |s| Readability.count_words(s) }
       out = { long: counts.max.to_i, words: counts.sum, unknown: [], absolute: nil }
       return out unless level
 
       read = level_text(text)
       out[:unknown] = Lessons::Lexicon.unknown(lang, read, known: known)
-      out[:absolute] = absolute_word(lang, read)
+      out[:absolute] = absolute_word(lang, read) if absolute
       out
     end
 
-    # The text of a target-language field as the sentence cap reads it: a formula and an Italian or code span count one word, other markup shows its words.
+    # A colon that follows a closing quote («...»:), or one followed by a quote, a capital letter or a span, ends a sentence like a semicolon does.
+    # (A lesson's text reaches this with its spans already read as ` m `, the one word they count.)
+    COLON_BREAK = /(?<=[»”"])\s*:\s*|\s*:\s+(?=\[\[|[«“"]|\p{Lu}|m\s)/
+
+    # The text of a target-language field as the sentence cap reads it: a formula and an Italian or code span count one word, a quotation («...», “...”: the forms
+    # and sentences the text talks about) and a piece of a word (-es, ja-mon) none, other markup shows its words; a colon of COLON_BREAK splits.
     def sentence_text(text)
-      Readability.strip_markup(text.to_s.gsub(Readability::MATH, " m ").gsub(/\[\[(?:it|code):.*?\]\](?!\])/m, " m ").gsub(MARKUP_SPAN, '\1').gsub(LINK, '\1'))
+      text = text.to_s.gsub(COLON_BREAK, "; ")
+      Readability.strip_markup(Readability.without_quotations(text.gsub(Readability::MATH, " m ").gsub(/\[\[(?:it|code):.*?\]\](?!\])/m, " m ")).gsub(MARKUP_SPAN, '\1').gsub(LINK, '\1').gsub(PIECES, " "))
     end
 
     # ... as the level lint reads it: no formula, no span of a language, no quoted form («jámon»), no piece of a word (ja-mon, -es); other markup shows its words.

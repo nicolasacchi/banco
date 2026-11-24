@@ -294,6 +294,6 @@ class BilingualTest < ActiveSupport::TestCase
     assert_equal [], Validation::Rules.get(:lang, :bilingual_required)
     codes = YAML.load_file(Rails.root.join("config/banco/error_codes.yml")).fetch("validation")
     %w[E-LANG-BILINGUAL-REQUIRED E-LANG-BILINGUAL-FLAG E-LANG-PAIR-MISSING E-LANG-PAIR-ORPHAN E-LANG-PAIR-SHAPE E-LANG-PAIR-CONFLICT
-       E-LANG-TRANSLATION-LANG E-LANG-TRANSLATION-COPY W-LANG-SPAN-REDUNDANT W-LANG-LEVEL W-TOPIC-LANG-MIXED].each { |code| assert codes.key?(code), code }
+       E-LANG-TRANSLATION-LANG E-LANG-TRANSLATION-COPY W-LANG-PAIR-CONFLICT W-LANG-SPAN-REDUNDANT W-LANG-LEVEL W-TOPIC-LANG-MIXED].each { |code| assert codes.key?(code), code }
   end
 end

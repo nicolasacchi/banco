@@ -327,6 +327,6 @@ class BilingualLessonTest < ActiveSupport::TestCase
     copied = edit("en", "Quale forma va dopo can?", "Which form goes after can?")
     assert(check(copied).findings.any? { |f| f.code == "E-LANG-TRANSLATION-COPY" })
     conflict = edit("en", "translate_material: false\noptions:\n  - {id: a, text_en: \"plays\"}\n  - {id: b, text_en: \"play\"}", "options:\n  - {id: a, text_en: \"play\", text_it: \"suona\"}\n  - {id: b, text_en: \"play\", text_it: \"suonare\"}")
-    assert(check(conflict).findings.any? { |f| f.code == "E-LANG-PAIR-CONFLICT" })
+    assert(check(conflict).findings.any? { |f| f.code == "W-LANG-PAIR-CONFLICT" }, "a label of one word: a warning (round 4)")
   end
 end

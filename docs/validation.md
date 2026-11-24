@@ -220,7 +220,7 @@ A revision of `english` or `spanish` with `bilingual: true` writes every student
 lesson checks run on two layers, the target layer (the target text under its legacy key, so every pre-D-402 check reads it unchanged, findings mapped back to `stem_en`) and the
 Italian layer (leak scans: E-SOLUTION-IN-DISPLAY, E-SUPPORT-LEAK, E-HINT-KEY, W-HINT-OPTION, W-STEPS-METHOD, in the finding's message «in the Italian translation»).
 
-- **Codes:** E-LANG-BILINGUAL-REQUIRED / -FLAG, E-LANG-PAIR-MISSING / -ORPHAN / -SHAPE / -CONFLICT, E-LANG-TRANSLATION-LANG / -COPY, E-LESSON-LANG (Italian in a `_en` text),
+- **Codes:** E-LANG-BILINGUAL-REQUIRED / -FLAG, E-LANG-PAIR-MISSING / -ORPHAN / -SHAPE / -CONFLICT (a warning, W-LANG-PAIR-CONFLICT, for a label of three words or fewer), E-LANG-TRANSLATION-LANG / -COPY, E-LESSON-LANG (Italian in a `_en` text),
   W-LANG-SPAN-REDUNDANT, W-LANG-LEVEL (now on items too), W-TOPIC-LANG-MIXED (a warning only), W-LANG-FRAME-BLANK. `lang.bilingual_required` is empty until the cut-over.
 - **W-LANG-FRAME-BLANK:** a bilingual typed-answer instance whose shown stems hold a second line with `___` that `Grading::Frame` does not read as the instruction
   («in place of ___», «en lugar de ___», «al posto di ___») switches the whole-sentence acceptance off; two gaps in one line are not a second line.

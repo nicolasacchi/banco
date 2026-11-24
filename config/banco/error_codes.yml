@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 36
+version: 37
 
 validation:
   # Skill graph (synchronous).
@@ -175,6 +175,7 @@ validation:
   E-LANG-PAIR-ORPHAN: { stage: ruby, severity: error, description: "An Italian translation (_it) without its target-language text, or a translation of a field that is not paired." }
   E-LANG-PAIR-SHAPE: { stage: ruby, severity: error, description: "The target text and its Italian differ in shape: paragraphs or list items, ___ blanks, math spans or digits, bold words, colour roles, [[g:..]] terms." }
   E-LANG-PAIR-CONFLICT: { stage: ruby, severity: error, description: "Two equal target-language strings in one block have different Italian translations (the lesson's translation table is keyed by the target string)." }
+  W-LANG-PAIR-CONFLICT: { stage: ruby, severity: warning, description: "The same short target-language label (3 words or fewer) has two Italian translations in one block; the translation table keeps the first, so the second is never shown (a longer text is E-LANG-PAIR-CONFLICT)." }
   E-LANG-TRANSLATION-LANG: { stage: ruby, severity: error, description: "An _it text with two function words of the target language outside spans: the translation is not Italian." }
   E-LANG-TRANSLATION-COPY: { stage: ruby, severity: error, description: "An _it text equal to its target-language text (a word of 4 or more letters): the translation was copied, not written." }
   W-LANG-SPAN-REDUNDANT: { stage: ruby, severity: warning, description: "A [[en:..]] or [[es:..]] span inside a text that is already all in that language, unless it marks a quoted unit the lesson then discusses." }

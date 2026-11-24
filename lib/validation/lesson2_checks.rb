@@ -539,6 +539,7 @@ module Validation
       def markup_block(block, path, layer: nil)
         Lessons::Blocks.markup_fields(block).each do |sub, text, lists|
           next if block["type"] == "check" && block["component"] == "span_select" && sub == "text_it" # text_en and text_es are not Italian markup at all
+          next if @lang && layer != :italian && block["type"] == "dialogue" && sub.end_with?("/gloss_it") # the gloss is Italian: the Italian pass reads it, never the target layer
 
           line = case block["type"]
           when "text" then block["line"]
@@ -606,7 +607,7 @@ module Validation
             end
             plain = unmark(text, layer)
             tmp = Findings.new
-            Readability.lint(plain, field: field, role: :text, findings: tmp)
+            Readability.lint(plain, field: field, role: :text, findings: tmp, quotes: layer == :italian)
             tmp.each do |f|
               next if SKIP_IN_LINT.include?(f.code)
 
@@ -678,7 +679,8 @@ module Validation
         if layer == :target && plain_words && lang == @lang && !quoted_unit?(text)
           add("W-LANG-SPAN-REDUNDANT", field, "line #{at}: [[#{lang}:#{text}]] is a #{LANGUAGE_NAMES[lang]} span in a text that is all #{LANGUAGE_NAMES[lang]}: leave it plain unless the lesson then discusses that unit (glossary, teaches_#{lang})", line: at, rule: "span-redundant-#{field}-#{at}")
         end
-        target_lint(field, lang, text, at, level: layer != :target) # a span of the target text is a quoted unit: the level lint leaves it to the glossary and teaches_*
+        # a span of the target text is a quoted unit: the level lint leaves it to the glossary and teaches_*; in the Italian text of a bilingual lesson it is a form quoted on purpose
+        target_lint(field, lang, text, at, level: !@lang && layer != :target)
       end
 
       # A unit the lesson discusses: all its words are in the glossary or in teaches_en / teaches_es.
@@ -688,6 +690,9 @@ module Validation
       end
 
       LANGUAGE_NAMES = { "en" => "English", "es" => "Spanish", "la" => "Latin", "it" => "Italian" }.freeze
+      # The words of a check that are its material, never a claim of the lesson (no W-ABSOLUTE): the text around the box of a typed gap, the sentence, an option, a row,
+      # a tile or an item. The prompt, the hints and the explanation are the lesson's own words.
+      MATERIAL_FIELD = %r{/(?:input_before|input_after|sentence_\w+|(?:options|elements|left|right|tiles|items)/\d+/text_\w+)\z}
 
       # The lint of words of another language (the target-language set, WAVE2 1.8): a short sentence, and words a learner of the lesson knows. A bilingual
       # lesson's target text (@lang) is read by Validation::Bilingual.target_report: sentences split after `.»`, `;` and a lone letter, no level for form material,
@@ -696,7 +701,7 @@ module Validation
         max = rule(:target_sentence_words)
         known = @known_words.fetch(lang, []) + common_names(lang)
         if @lang
-          report = Validation::Bilingual.target_report(lang, text, known: known, level: level && !@forms.include?(field))
+          report = Validation::Bilingual.target_report(lang, text, known: known, level: level && !@forms.include?(field), absolute: !MATERIAL_FIELD.match?(field))
           long = report[:long]
           unknown = report[:unknown]
           add("W-ABSOLUTE", field, "an absolute word (#{report[:absolute]}) needs a counterexample check", line: at, rule: "absolute-#{field}-#{at}", word: report[:absolute]) if report[:absolute]
