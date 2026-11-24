@@ -1,8 +1,8 @@
 require "test_helper"
 require_relative "../../support/lesson_events_world"
 
-# «Per me va bene così» on a check of a lesson/2 (D-396) as the service: the comment with his answer in words for every kind of check, the lesson
-# event, the anchor, idempotence, what is refused, and what Lessons::Progress makes of it.
+# «Per me va bene così» on a check of a lesson/2 (D-396) as the service: the lesson event with his answer in words for every kind of check and no
+# comment (D-400), the place, idempotence, what is refused, what Lessons::Progress makes of it and what the teacher's «Contestazioni» reads.
 class LessonsCheckContestTest < ActiveSupport::TestCase
   include LessonEventsWorld
 
@@ -22,7 +22,7 @@ class LessonsCheckContestTest < ActiveSupport::TestCase
 
   def contest(locator, student: @official)
     view = Course::StudentView.new(student)
-    Lessons::CheckContest.new(@lesson_revision, student: student, topic_revision: @topic_revision, course_view: view).call(locator)
+    Lessons::CheckContest.new(@lesson_revision, student: student, topic_revision: @topic_revision).call(locator)
   end
 
   # The stored answer as the page would send it: the shown ids of this student's shuffle.
@@ -50,54 +50,53 @@ class LessonsCheckContestTest < ActiveSupport::TestCase
     "span_select" => [ %w[s1], "La bambina" ],
     "matching" => [ { "l1" => "r2", "l2" => "r1", "l3" => "r3" }, "Marco – predicato; legge – soggetto; un libro – oggetto" ]
   }.each do |component, (stored, words)|
-    test "a wrong #{component} goes to the teacher with the answer in the words he read" do
+    test "a wrong #{component} goes to the teacher as an event holding the answer in the words he read, and no comment" do
       locator = locator_of(component)
       wrong!(locator, stored)
       result = contest(locator)
       assert_equal 200, result.status
       assert_equal "contested", result.body[:status]
-      comment = Comment.sole
-      assert_equal "La mia risposta, secondo me giusta: «#{words}».", comment.text_it
-      assert_equal [ "error", "lesson", "card:#{locator[:card]}/block:#{locator[:block]}", locator[:card] ],
-                   comment.attributes.values_at("reason", "page_kind", "anchor", "card")
-      assert_equal [ @official.id, @lesson_revision.id ], [ comment.student_id, comment.lesson_revision_id ]
+      assert_equal 0, Comment.count
+      event = LessonEvent.where(kind: "check_contested").sole
+      assert_equal words, event.payload["words"]
+      assert_equal [ @official.id, @lesson_revision.id, locator[:card], locator[:block] ], [ event.student_id, event.lesson_revision_id, event.card, event.block ]
+      row = Teacher::LessonContests.call(student: @official).sole
+      assert_equal [ event.id, words, locator[:card], locator[:block] ], row.values_at(:id, :answer, :card, :block)
     end
   end
 
-  test "the comment and the event are written once, and a second press answers the same" do
+  test "the event is written once, with no comment, and a second press answers the same" do
     locator = locator_of("normalized_text")
     wrong!(locator, "nome")
     first = contest(locator)
     event = LessonEvent.where(kind: "check_contested").sole
-    comment = Comment.sole
     assert_equal [ @official.id, locator[:card], locator[:block] ], [ event.student_id, event.card, event.block ]
-    assert_equal({ "of" => LessonEvent.where(kind: "check_answered").sole.id, "try" => 1, "comment_id" => comment.id }, event.payload)
+    assert_equal({ "of" => LessonEvent.where(kind: "check_answered").sole.id, "try" => 1, "words" => "nome" }, event.payload)
     assert_nil event.grader_version
     assert_equal first.body[:explain_it], block_of("normalized_text")["explain_it"], "the explanation a finished check shows"
     again = contest(locator)
     assert_equal first, again
-    assert_equal [ 1, 1 ], [ LessonEvent.where(kind: "check_contested").count, Comment.count ]
+    assert_equal [ 1, 0 ], [ LessonEvent.where(kind: "check_contested").count, Comment.count ]
   end
 
-  test "an exercise of «Prova tu» is anchored on its block and its exercise, and the event names the exercise" do
+  test "an exercise of «Prova tu»: the event names the exercise, and no comment is written" do
     locator = try_locator(1)
     wrong!(locator, "a")
     assert_equal 200, contest(locator).status
-    comment = Comment.sole
-    assert_equal "card:#{locator[:card]}/block:#{locator[:block]}/exercise:1", comment.anchor
-    assert_equal "La mia risposta, secondo me giusta: «Arriva».", comment.text_it
-    assert_equal 1, LessonEvent.where(kind: "check_contested").sole.payload["ex"]
+    assert_equal 0, Comment.count
+    event = LessonEvent.where(kind: "check_contested").sole
+    assert_equal [ 1, "Arriva" ], event.payload.values_at("ex", "words")
   end
 
-  test "two exercises of «Prova tu» are two comments, each on its own exercise" do
+  test "two exercises of «Prova tu» are two events, each on its own exercise, with its own words" do
     wrong!(try_locator(1), "a")
     other = try_locator(2)
     wrong!(other, %w[b a c])
     assert_equal 200, contest(try_locator(1)).status
     assert_equal 200, contest(other).status
-    assert_equal [ "exercise:1", "exercise:2" ], Comment.order(:id).map { |c| c.anchor.split("/").last }
-    assert_equal "La mia risposta, secondo me giusta: «legge Paola un fumetto».", Comment.order(:id).last.text_it
+    assert_equal 0, Comment.count
     assert_equal [ 1, 2 ], LessonEvent.where(kind: "check_contested").order(:id).map { |e| e.payload["ex"] }
+    assert_equal "legge Paola un fumetto", LessonEvent.where(kind: "check_contested").order(:id).last.payload["words"]
   end
 
   test "before the first try, on a right answer and on a check that is not there nothing is written" do
@@ -109,7 +108,7 @@ class LessonsCheckContestTest < ActiveSupport::TestCase
     assert_equal 200, contest(locator).status, "the latest answer is the wrong one"
     assert_equal 404, contest({ card: 99, block: 1 }).status
     assert_equal 404, contest(locator.merge(ex: 1)).status
-    assert_equal [ 1, 1 ], [ LessonEvent.where(kind: "check_contested").count, Comment.count ]
+    assert_equal [ 1, 0 ], [ LessonEvent.where(kind: "check_contested").count, Comment.count ]
   end
 
   test "a right answer after a wrong one closes the door, and another student's answer is not his" do

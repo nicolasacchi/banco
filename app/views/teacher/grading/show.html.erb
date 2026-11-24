@@ -20,7 +20,7 @@
 
   <% if @review.nil? %>
     <div id="grading-none"><%= ui_empty t("teacher.grading.none") %></div>
-  <% elsif @review.items.empty? %>
+  <% elsif @review.items.empty? && @review.lesson_contests.empty? %>
     <div id="grading-empty"><%= ui_empty t(@filters.any? ? "teacher.grading.empty" : "teacher.grading.empty_unfiltered") %></div>
   <% else %>
     <% totals = @review.totals %>
@@ -32,6 +32,7 @@
       <li data-total="manual"><%= t("teacher.grading.totals.manual", n: totals[:manual_corrections]) %></li>
       <li data-total="resends"><%= t("teacher.grading.totals.resends", n: totals[:resends]) %></li>
       <li data-total="contested"><%= t("teacher.grading.totals.contested", n: totals[:contested]) %></li>
+      <li data-total="lesson_contested"><%= t("teacher.grading.totals.lesson_contested", n: totals[:lesson_contested]) %></li>
       <li data-total="flagged"><%= t("teacher.grading.totals.flagged", n: totals[:flagged_items]) %></li>
       <% if totals[:superseded].positive? %><li data-total="superseded" class="hint"><%= t("teacher.grading.totals.superseded", n: totals[:superseded]) %></li><% end %>
     </ul>
@@ -100,6 +101,37 @@
           </details>
         <% end %>
       </div>
+    <% end %>
+
+    <%# the checks of the lessons that he sent with «Per me va bene così»: no comment is written for them (D-400), so this is where the teacher reads them %>
+    <% contests = @review.lesson_contests %>
+    <h2 id="grading-lesson-contests-title"><%= t("teacher.grading.lesson_contests.title") %></h2>
+    <% if contests.empty? %>
+      <%= ui_empty t("teacher.grading.lesson_contests.none") %>
+    <% else %>
+      <p class="hint"><%= t("teacher.grading.lesson_contests.hint") %></p>
+      <%= ui_table_wrap(label: t("teacher.grading.lesson_contests.title")) do %>
+        <table class="data stack" id="grading-lesson-contests">
+          <thead><tr><th><%= t("teacher.grading.col.when") %></th><th><%= t("teacher.grading.col.subject") %></th><th><%= t("teacher.grading.lesson_contests.lesson") %></th><th><%= t("teacher.grading.lesson_contests.place") %></th><th><%= t("teacher.grading.col.answer") %></th></tr></thead>
+          <tbody>
+            <% contests.each do |contest| %>
+              <tr id="grading-lesson-contest-<%= contest[:id] %>" data-ref="<%= contest[:ref] %>">
+                <td data-label="<%= t("teacher.grading.col.when") %>"><%= ui_time(contest[:at]) %></td>
+                <td data-label="<%= t("teacher.grading.col.subject") %>"><%= @subject_names.fetch(contest[:subject], contest[:subject]) %></td>
+                <td data-label="<%= t("teacher.grading.lesson_contests.lesson") %>"><%= contest[:topic] %></td>
+                <td data-label="<%= t("teacher.grading.lesson_contests.place") %>"><%= lesson_contest_place(contest) %></td>
+                <td data-label="<%= t("teacher.grading.col.answer") %>">
+                  <% if reader_only? %><span class="hint" data-hidden-text><%= t("teacher.grading.hidden") %></span>
+                  <% elsif contest[:answer] %><q class="student-text grading-answer" data-student-text><%= contest[:answer].to_s.truncate(600) %></q>
+                  <% elsif contest[:comment_ids].any? %><span class="hint"><%= t("teacher.grading.lesson_contests.in_comment", ids: contest[:comment_ids].join(", ")) %></span>
+                  <% else %><span class="hint"><%= t("teacher.grading.lesson_contests.no_words") %></span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
     <% end %>
   <% end %>
 </main>

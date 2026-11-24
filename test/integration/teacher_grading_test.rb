@@ -53,7 +53,8 @@ class TeacherGradingTest < ActionDispatch::IntegrationTest
   test "the totals line up with the review" do
     page
     { "tries" => "Tentativi: 17.", "not_right" => "Non giusti: 13.", "written" => "Risposte scritte non giuste: 10 su 11.", "manual" => "Correzioni a mano: 2.",
-      "resends" => "Reinvii identici: 1.", "contested" => "«Per me va bene così»: 1.", "flagged" => "Esercizi da controllare: 3.",
+      "resends" => "Reinvii identici: 1.", "contested" => "«Per me va bene così» negli esercizi: 1.",
+      "lesson_contested" => "«Per me va bene così» nelle lezioni: 1.", "flagged" => "Esercizi da controllare: 3.",
       "superseded" => "Tentativi su revisioni vecchie, non letti: 1." }.each do |key, text|
       assert_select "#grading-totals li[data-total=?]", key, text: text
     end
@@ -82,6 +83,21 @@ class TeacherGradingTest < ActionDispatch::IntegrationTest
     assert_select "#grading-try-practice-#{@contested_try.id} li[data-signal=contested]", text: "«Per me va bene così»"
     assert_select "#grading-try-practice-#{@commented_try.id} li[data-signal=comment]"
     assert_select "#grading-try-diagnosis-#{@diag_resolved.id} li[data-signal=full_sentence]"
+  end
+
+  test "D-400: the checks of the lessons he sent have their own table, with the place and his answer in words; a guest does not read the words" do
+    page
+    assert_select "#grading-lesson-contests-title"
+    assert_select "#grading-lesson-contest-#{@lesson_contest.id}[data-ref=?]", "lesson_check-#{@lesson_contest.id}" do
+      assert_select "td", text: "scheda 2, blocco 1, esercizio 2"
+      assert_select "q[data-student-text]", text: "legge Marco un libro"
+    end
+    assert_select "#grading-try-practice-#{@contested_try.id} li[data-signal=contested]"
+    page("/teacher/grading", headers: GUEST)
+    assert_response :success
+    assert_select "#grading-lesson-contest-#{@lesson_contest.id}"
+    assert_select "q[data-student-text]", 0
+    assert_not_includes response.body, "legge Marco un libro"
   end
 
   test "the filters: a subject, a day; a bad value is left out, not an error" do

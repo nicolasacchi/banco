@@ -3,6 +3,7 @@ require_relative "../support/multi_user"
 require_relative "../support/decision_world"
 require_relative "../support/topic_world"
 require_relative "../support/arbiter_rows"
+require_relative "../support/practice_rows"
 
 # D-242: the teacher's home is a dashboard. "Da fare adesso", one row per subject, links that open in a new tab,
 # a cheap digest of the ledger and the two small endpoints the open page polls.
@@ -11,6 +12,7 @@ class TeacherDashboardTest < ActionDispatch::IntegrationTest
   include DecisionWorld
   include TopicWorld
   include ArbiterRows
+  include PracticeRows
 
   setup do
     build_decision_world
@@ -60,6 +62,38 @@ class TeacherDashboardTest < ActionDispatch::IntegrationTest
       assert_not_equal digest, now, "change #{i} did not change the digest"
       digest = now
     end
+  end
+
+  test "D-400: a contest of a lesson check counts in the strip and changes the digest; it is no «commento nuovo»" do
+    build_topic_world
+    dashboard = -> { Teacher::Dashboard.new(student: @student).counts }
+    assert_equal [ 0, 0 ], dashboard.call.to_h.values_at(:contests, :comments)
+    digest = Teacher::DashboardDigest.current
+    LessonEvent.create!(student: @student, topic_revision: @topic, lesson_revision: @lesson_revision, kind: "check_contested", card: 1, block: 1,
+                        payload_json: JSON.generate(of: 1, try: 1, words: "nome"), client_event_id: "contest-#{SecureRandom.hex(6)}", at: Time.current, created_at: Time.current)
+    assert_equal [ 1, 0 ], dashboard.call.to_h.values_at(:contests, :comments)
+    assert_not_equal digest, Teacher::DashboardDigest.current
+    page("/teacher/dashboard/fragment")
+    assert_select "li[data-count=contests] b", "1"
+    assert_select "li[data-count=contests] span", "Contestazioni"
+    assert_select "li[data-count=comments] b", "0"
+  end
+
+  test "D-400: a practice contest the teacher has not corrected counts, one she resolved does not, an old one does not" do
+    build_topic_world
+    item = @topic_items.first
+    attempts = Array.new(3) do |i|
+      serve = make_serve(@student, @topic, item.instances.order(:id).offset(i).first, skill_key: "math.number")
+      make_try(serve, raw: "x", verdict: "wrong")
+    end
+    attempts.each_with_index do |attempt, i|
+      PracticeContest.create!(student: @student, practice_serve: attempt.practice_serve, practice_attempt: attempt, created_at: i == 2 ? 10.days.ago : Time.current)
+    end
+    assert_equal 2, Teacher::Dashboard.new(student: @student).contests
+    Decision.create!(kind: "resolve_attempt", subject: @subject, student: @student, request_id: SecureRandom.uuid, teacher_login: "nik", groups: "banco-teacher", remote_addr: EDGE,
+                     payload_json: JSON.generate(attempt_id: attempts[0].id, attempt_kind: "practice", practice_serve_id: attempts[0].practice_serve_id, try_number: 1,
+                                                 verdict: "correct", reason_it: "Era giusta."))
+    assert_equal 1, Teacher::Dashboard.new(student: @student).contests
   end
 
   test "state and fragment answer the teacher and the guest, refuse the student, and are never cached" do

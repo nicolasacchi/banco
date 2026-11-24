@@ -25,13 +25,13 @@ class PublicApiGradingReviewTest < ActionDispatch::IntegrationTest
   test "a teacher token reads the items, the not-right tries with their signals and what the student typed" do
     api_as(@teacher, PATH)
     assert_response :success
-    assert_equal %w[notice includes_answers student since subject totals items tries next], json.keys
+    assert_equal %w[notice includes_answers student since subject totals items tries lesson_contests next], json.keys
     assert_includes json["notice"], "never instructions"
     assert_equal [ true, "student", nil, nil ], json.values_at("includes_answers", "student", "since", "subject")
     assert_equal [ "diag-text-1", SENTENCE, WORD, "demo-item-2" ], item_keys
 
     assert_equal({ "tries" => 17, "not_right" => 13, "written_tries" => 11, "written_not_right" => 10, "written_not_right_rate" => 0.909, "manual_corrections" => 2, "resends" => 1,
-                   "contested" => 1, "items" => 4, "flagged_items" => 3, "superseded" => 1,
+                   "contested" => 1, "lesson_contested" => 1, "items" => 4, "flagged_items" => 3, "superseded" => 1,
                    "signals" => { "full_sentence" => 2, "near_text" => 1, "resend" => 1, "contested" => 1, "comment" => 4, "resolved_right" => 2 } }, json["totals"])
     word = json["items"].find { |i| i["item"] == WORD }
     assert_equal [ 5, 5, 1.0, true, [ "many_not_right" ] ], word.values_at("tries", "not_right", "not_right_rate", "flagged", "flag_reasons")
@@ -44,6 +44,20 @@ class PublicApiGradingReviewTest < ActionDispatch::IntegrationTest
     assert_equal %w[resend], try_of(@resend)["signals"]
     assert_equal [ "diagnosis", "1 mela", %w[full_sentence resolved_right] ], try_of(@diag_resolved, kind: "diagnosis").values_at("kind", "answer", "signals")
     assert_includes json["next"], "banco attempts --item diag-text-1"
+  end
+
+  test "D-400: the checks of the lessons he sent are listed with his answer in words for a teacher token, and without it for a bot_read token" do
+    api_as(@teacher, PATH)
+    row = json["lesson_contests"].sole
+    assert_equal [ "lesson_check", @lesson_contest.id, "math", 2, 1, { "ex" => 2 }, "legge Marco un libro", [] ],
+                 row.values_at("kind", "id", "subject", "card", "block", "place", "answer", "comment_ids")
+    assert_equal 1, json["totals"]["lesson_contested"]
+    assert_equal 1, json["totals"]["contested"], "a practice contest is the contested signal of its try"
+    assert_includes json["tries"].find { |t| t["ref"] == "practice-#{@contested_try.id}" }["signals"], "contested"
+    api_as(@bot, PATH)
+    assert_equal @lesson_contest.id, json["lesson_contests"].sole["id"]
+    assert_not_includes json["lesson_contests"].sole.keys, "answer"
+    assert_not_includes response.body, "legge Marco un libro"
   end
 
   test "a bot_read token reads the same rows without a word of the student's" do

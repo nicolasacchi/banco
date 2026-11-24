@@ -8,7 +8,7 @@ en:
       contest_note: "Do you think you are right? Press «It's fine for me»: your answer goes to the teacher."
       contest_button: "It's fine for me"
       contested: "Sent to the teacher"
-      contested_note: "They will reply in «My comments»."
+      contested_note: "The teacher will look at it."
       contest_error: "I can't send it now. Try again."
       # the one line printed on the first use of a component in a lesson (A9)
       howto:

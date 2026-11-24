@@ -215,7 +215,7 @@ class EnglishUiTest < ActionDispatch::IntegrationTest
     assert_equal "it", I18n.locale.to_s, "the locale is put back after a request"
   end
 
-  test "a contested answer: the message to the student is English, the comment the teacher reads is Italian" do
+  test "a contested answer: the message to the student is English, and no comment is written" do
     english!
     serve = serve_for(OFFICIAL)
     answer_for(OFFICIAL, serve, wrong_raw)
@@ -223,7 +223,8 @@ class EnglishUiTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal "contested", body["status"]
     assert_equal I18n.t("practice.contested", locale: :en), body["message_it"]
-    assert_equal "La mia risposta, secondo me giusta: «#{wrong_raw}».", PracticeContest.last.comment.text_it
+    assert_nil PracticeContest.last.comment_id
+    assert_equal 0, Comment.count
   end
 
   test "a subject's name follows the locale, and the search index is built in Italian whatever the locale of the job" do
