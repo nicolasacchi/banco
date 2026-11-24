@@ -363,6 +363,34 @@ class PracticeFlowTest < ApplicationSystemTestCase
     end
   end
 
+  # the form-material rule: the sentence, the forms and the final are target-only (no `_it`); «Traduzione» is still there and opens the instruction's Italian,
+  # the steps' and the solution steps', and no line appears under the material
+  def walk_bilingual_form_material
+    served = JSON.parse(File.read(Rails.root.join("test/fixtures/lang/served_item_form.json")))["choice"]
+    # the stand-in merges the solution over the golden one, which has a final_it: this one has none
+    with_bilingual_page("choice", part: served["part"], solution: served["solution"].merge("final_it" => nil)) do
+      assert_selector ".instance-stem", text: "My brother ___ thirteen."
+      assert_selector "fieldset.options .option-text", count: 3
+      assert_selector "#translation-button", text: "Traduzione", count: 1
+      assert_no_selector ".tr"
+      find("#translation-button").click
+      assert_equal "true", find("#translation-button")["aria-pressed"]
+      assert_selector ".prompt .tr", text: "Scegli la forma che completa la frase."
+      assert_selector ".do-steps .tr", count: 3
+      assert_selector ".answer-format + .tr", text: "Scegli una parola per lo spazio."
+      assert_no_selector ".instance-stem .tr"
+      assert_no_selector "label.option .tr"
+      assert_no_selector ".option .tr-toggle"
+      assert_no_text "Mio fratello ___ tredici"
+      assert_no_sideways_scroll
+      click_button "Mostrami la soluzione"
+      assert_selector "#solution li .tr", text: "Mio fratello è una persona"
+      assert_selector "#solution", text: "is"
+      assert_equal 1, all("#solution .tr").size, "the final has no translation line"
+      assert_clean "the form-material exercise"
+    end
+  end
+
   # the reading rule: the passage's Italian is not on the page before the answer, and comes with the solution
   def walk_bilingual_passage
     part = { component: "testlet", lang: "en", passage_en: PASSAGE_EN,
@@ -1186,6 +1214,10 @@ class PracticeFlowTest < ApplicationSystemTestCase
 
   test "a bilingual exercise on a 390 px phone: «Traduzione» next to «Controlla», the Italian under every text, the hint, the verdict and the solution join it" do
     walk_bilingual_choice
+  end
+
+  test "a bilingual exercise with a target-only material: the button and the instruction's Italian stay, the sentence and the forms have no translation line" do
+    walk_bilingual_form_material
   end
 
   test "a bilingual reading passage: its Italian reaches the page only with the solution" do

@@ -1,0 +1,80 @@
+{
+  "schema": "banco.item/1",
+  "schema_version": 1,
+  "kind": "practice_item",
+  "subject": "english",
+  "bilingual": true,
+  "skill": "english.be-forms",
+  "component": "choice",
+  "level": 2,
+  "prompt": {
+    "stem_en": "Choose the form that completes the sentence.",
+    "stem_it": "Scegli la forma che completa la frase."
+  },
+  "answer_format_en": "Pick one word for the gap.",
+  "answer_format_it": "Scegli una parola per lo spazio.",
+  "steps_en": [
+    "Read the sentence.",
+    "Look at the subject.",
+    "Choose the form."
+  ],
+  "steps_it": [
+    "Leggi la frase.",
+    "Guarda il soggetto.",
+    "Scegli la forma."
+  ],
+  "hints_en": [
+    "Look at who the sentence is about.",
+    "One subject, one form: my brother is one person."
+  ],
+  "hints_it": [
+    "Guarda di chi parla la frase.",
+    "Un soggetto, una forma: mio fratello è una persona sola."
+  ],
+  "error_catalogue": [
+    {
+      "code": "en_be_plural",
+      "description_it": "Usa are con un soggetto singolare.",
+      "message_en": "My brother is one person. Does it take am, is or are?",
+      "message_it": "Mio fratello è una persona sola. Vuole am, is o are?",
+      "implicates": []
+    }
+  ],
+  "instances": [
+    {
+      "display": {
+        "stem_en": "My brother ___ thirteen.",
+        "options": [
+          {
+            "id": "o1",
+            "text": "am"
+          },
+          {
+            "id": "o2",
+            "text": "is"
+          },
+          {
+            "id": "o3",
+            "text": "are"
+          }
+        ]
+      },
+      "answer": "o2",
+      "errors": [
+        {
+          "code": "en_be_plural",
+          "value": "o3"
+        }
+      ],
+      "solution": {
+        "steps": [
+          {
+            "text_en": "My brother is one person: «he» takes «is».",
+            "text_it": "Mio fratello è una persona: «he» vuole «is»."
+          }
+        ],
+        "final": "is"
+      }
+    }
+  ]
+}

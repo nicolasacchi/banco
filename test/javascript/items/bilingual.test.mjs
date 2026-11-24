@@ -280,7 +280,7 @@ test("a short answer's passage follows the same rule", async () => {
 
 // ---- the other templates ----------------------------------------------------------------------------------------
 
-test("matching: the Italian of a left text under its row, none on the right-hand answers", async () => {
+test("matching: the Italian of a left text under its row; the right-hand answers have theirs in a legend under the rows", async () => {
   const part = {
     component: "matching", lang: "en",
     left: [{ id: "l1", text: "dog", text_it: "cane" }, { id: "l2", text: "cat", text_it: "gatto" }],
@@ -292,6 +292,19 @@ test("matching: the Italian of a left text under its row, none on the right-hand
   assert.deepEqual(rows.map((r) => trNodes(r).map((n) => n.textContent)), [["cane"], ["gatto"]])
   assert.equal(handle.element.querySelectorAll("option").some((o) => /abbaia|fusa/.test(o.textContent)), false, "an <option> holds text only")
   assert.equal(buttons(handle.element).length, 0)
+  // the legend: after the rows, outside every select, one line per label, target then Italian, hidden with the exercise's translation (the state is on the list itself)
+  const legend = handle.element.querySelector(".match-legend")
+  assert.ok(legend)
+  const answer = handle.element.querySelector(".answer")
+  assert.equal(answer.children.indexOf(legend), answer.children.length - 1, "under the rows")
+  assert.equal(legend.closest("select"), null)
+  const lines = legend.querySelectorAll("li")
+  assert.deepEqual(lines.map((li) => li.querySelector(".match-legend-target").textContent), ["an animal that barks", "an animal that purrs"])
+  assert.deepEqual(lines.map((li) => li.querySelector(".match-legend-it").textContent), ["un animale che abbaia", "un animale che fa le fusa"])
+  assert.equal(lines[0].querySelector(".match-legend-target").getAttribute("lang"), "en")
+  assert.equal(lines[0].querySelector(".match-legend-it").getAttribute("lang"), "it")
+  assert.equal(legend.hasAttribute("data-nospeech"), true)
+  assert.equal(inside(legend, "button"), false)
 })
 
 test("ordering: a sentence has its Italian line, a word does not", async () => {
@@ -364,4 +377,89 @@ test("the golden hint, feedback, reminder and solution are pairs that sides() re
     for (const step of served.solution.steps) assert.ok(sides(step, "text", lang).italian)
     assert.ok(served.solution.final_it)
   }
+})
+
+// ---- [[it:..]] -----------------------------------------------------------------------------------------------------
+
+test("[[it:..]] is drawn as an Italian span (lang it, the span's own class), in a stem, an option and a hint, and never printed as markup", async () => {
+  const part = {
+    component: "choice", lang: "en", stem_en: "Say [[it:ho fame]] in English.", stem_it: "Di' «ho fame» in inglese.",
+    options: [{ id: "a", text: "I am hungry", text_it: "ho fame" }, { id: "b", text: "I have [[it:fame]]", text_it: "ho fame" }]
+  }
+  const handle = await renderItem(part, ctx)
+  const spans = handle.element.querySelectorAll("span.lang-it")
+  assert.deepEqual(spans.map((n) => [n.getAttribute("lang"), n.textContent]), [["it", "ho fame"], ["it", "fame"]])
+  assert.equal(spans[0].closest(".prompt") !== null, true)
+  assert.doesNotMatch(handle.element.textContent, /\[\[/)
+  assert.match(target(handle.element), /Say ho fame in English\./, "the words are in the text, in the sentence")
+  assert.equal(inside(spans[0], ".tr"), false, "it is part of the target text, not a translation node")
+  // a legacy (Italian-only) item draws the span too: the parser is the same
+  const legacy = await renderItem({ component: "choice", stem_it: "Come si dice [[it:ho fame]]?", options: [{ id: "a", text: "x" }] }, ctx)
+  assert.equal(legacy.element.querySelectorAll("span.lang-it").length, 1)
+  assert.doesNotMatch(legacy.element.textContent, /\[\[/)
+})
+
+// ---- form material: the instruction is a pair, the material is target-only ------------------------------------------------
+
+const formFixture = JSON.parse(readFileSync(new URL("../../fixtures/lang/served_item_form.json", import.meta.url)))
+
+test("a form-material choice (no _it on the sentence, the options, the final): no translation line or button on the material; the instruction, steps and format have theirs", async () => {
+  const { part } = formFixture.choice
+  assert.equal(langOf(part), "en")
+  assert.equal(part.instance_stem_it, undefined)
+  assert.equal(part.options.some((o) => "text_it" in o), false)
+  const handle = await renderItem(part, ctx)
+  const root = handle.element
+  assert.match(target(root), /My brother ___ thirteen\./)
+  assert.equal(trNodes(root.querySelector(".instance-stem")).length, 0, "the sentence is material")
+  assert.equal(root.querySelector(".instance-stem").getAttribute("lang"), "en", "it is still drawn as English text")
+  for (const label of root.querySelectorAll("label.option")) {
+    assert.equal(trNodes(label).length, 0, "an option is a form")
+    assert.equal(label.querySelectorAll(".option-body").length, 0, "no wrapper for a translation that is not there")
+  }
+  assert.equal(buttons(root).length, 0, "no unit button anywhere")
+  assert.deepEqual(trNodes(root).map((n) => n.textContent), [
+    "Scegli la forma che completa la frase.", "Leggi la frase.", "Guarda il soggetto.", "Scegli la forma.", "Scegli una parola per lo spazio."
+  ])
+  assert.doesNotMatch(target(root), /Scegli la forma|Leggi la frase|Guarda il soggetto|Scegli una parola|Mio fratello/, "the Italian is only in translation nodes")
+})
+
+test("a form-material item still has the «Traduzione» scope: it opens the instruction's Italian, the material stays alone", async () => {
+  const { part, hint, solution } = formFixture.choice
+  const handle = await renderItem(part, ctx)
+  const card = scoped(handle.element)
+  const button = T.toggleButton({ text: t.translation_toggle })
+  card.appendChild(button)
+  T.refresh(card)
+  button.click()
+  assert.equal(button.getAttribute("aria-pressed"), "true")
+  const open = trNodes(handle.element).filter((n) => T.state(n) === "on")
+  assert.equal(open.length, 5)
+  assert.equal(open.some((n) => inside(n, ".instance-stem") || inside(n, "label.option")), false)
+  // what comes later: the hint and the solution steps are pairs, the final is not
+  const lang = langOf(part)
+  assert.equal(sides(hint, "hint", lang).italian, "Guarda di chi parla la frase.")
+  assert.equal(sides(solution.steps[0], "text", lang).italian, "Mio fratello è una persona: «he» vuole «is».")
+  assert.deepEqual(bare(solution, "final", lang), { text: "is", italian: null })
+  assert.deepEqual(bare(part.options[0], "text", lang), { text: "am", italian: null })
+})
+
+test("a form-material matching: the rows alone, the verdict labels in the legend; a matching with no Italian on the right has no legend", async () => {
+  const { part } = formFixture.matching
+  const handle = await renderItem(part, ctx)
+  const rows = handle.element.querySelectorAll(".match-row")
+  assert.deepEqual(rows.map((r) => trNodes(r).length), [0, 0], "the sentences are material")
+  assert.deepEqual(handle.element.querySelector(".match-legend").querySelectorAll("li").map((li) => li.querySelector(".match-legend-it").textContent), ["giusta", "ha un errore"])
+  const bare_ = await renderItem({ ...part, right: part.right.map(({ id, text }) => ({ id, text })) }, ctx)
+  assert.equal(bare_.element.querySelector(".match-legend"), null)
+  const legacy = await renderItem({ component: "matching", left: [{ id: "l1", text: "cane" }], right: [{ id: "r1", text: "dog", text_it: "cane" }] }, ctx)
+  assert.equal(legacy.element.querySelector(".match-legend"), null, "a legacy item has no legend")
+})
+
+test("an item with a lang and no Italian at all draws the target text alone (no node, no button, nothing broken)", async () => {
+  const handle = await renderItem({ component: "choice", lang: "es", stem_es: "Elige.", instance_stem_es: "¿___ vives?", options: [{ id: "a", text: "Dónde" }] }, ctx)
+  assert.equal(trNodes(handle.element).length, 0)
+  assert.equal(buttons(handle.element).length, 0)
+  assert.match(target(handle.element), /Elige\./)
+  assert.match(target(handle.element), /¿___ vives\?/)
 })

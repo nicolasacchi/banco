@@ -196,6 +196,7 @@ func saveItemShots(e *env, list itemShotsList, target, next string) ([]map[strin
 		}
 	}
 	files := []map[string]any{}
+	written := map[string]bool{}
 	removed := 0
 	for _, s := range list.Shots {
 		if !s.Available {
@@ -216,6 +217,11 @@ func saveItemShots(e *env, list itemShotsList, target, next string) ([]map[strin
 			suffix = "-" + s.State
 		}
 		file := filepath.Join(target, fmt.Sprintf("instance-%02d%s_%sx%s.webp", s.Instance, suffix, m[1], m[2]))
+		// two pictures never share a file: the later would overwrite the earlier one without a word
+		if written[file] {
+			return nil, 0, newErr(ExitServer, "E-HTTP", "shots", "the server listed two pictures for "+filepath.Base(file)+" (instance "+strconv.Itoa(s.Instance)+", state "+strconv.Quote(s.State)+")", "banco health")
+		}
+		written[file] = true
 		if err := writeFile(file, data); err != nil {
 			return nil, 0, err
 		}

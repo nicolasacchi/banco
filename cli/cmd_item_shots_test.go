@@ -274,3 +274,82 @@ func TestItemShotsTheTranslationPictureIsAFileOfItsOwn(t *testing.T) {
 		t.Errorf("the file entry of the translation picture says its state: %s", res.stdout)
 	}
 }
+
+// The listing says which picture is which: the one as drawn has no state, the one with the translation open says "tr", and both files exist for instance 1
+// (the file of the second is never the first's name). The list the server sends is the one the CLI saves, in order.
+func TestItemShotsListingNamesTheStateOfEachFile(t *testing.T) {
+	sha := strings.Repeat("d", 64)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("X-Banco-Contract", contract.Digest())
+		switch {
+		case req.Method == "POST":
+			_, _ = w.Write([]byte(`{"enqueued":false,"status":"passed","render_id":8}`))
+		case req.URL.Path == "/api/v1/item-revisions/12/shots":
+			_, _ = w.Write([]byte(`{"revision_id":12,"status":"passed","render_id":8,"errors":[],"notes":[],"instances":2,"seed_note":"n","shots":[` +
+				`{"instance":1,"seed":"s1","shown_order":{},"viewport":"390x844-cream","width":390,"height":700,"available":true,"path":"/api/v1/item-revisions/12/shots/` + sha + `"},` +
+				`{"instance":1,"state":"tr","seed":"s1","shown_order":{},"viewport":"390x844-cream","width":390,"height":820,"available":true,"path":"/api/v1/item-revisions/12/shots/` + sha + `"},` +
+				`{"instance":2,"seed":"s2","shown_order":{},"viewport":"390x844-cream","width":390,"height":700,"available":true,"path":"/api/v1/item-revisions/12/shots/` + sha + `"}]}`))
+		default:
+			_, _ = w.Write([]byte("RIFFxxxxWEBP"))
+		}
+	}))
+	t.Cleanup(srv.Close)
+	dir := t.TempDir()
+	// a picture of an earlier fetch goes, the -tr one too
+	write(t, dir, "12/instance-01-tr_390x844.webp", "old")
+	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", dir)
+	if res.exit != 0 {
+		t.Fatalf("item shots: exit %d, stderr %s", res.exit, res.stderr)
+	}
+	var out struct {
+		Files []map[string]any `json:"files"`
+	}
+	if err := json.Unmarshal([]byte(res.stdout), &out); err != nil {
+		t.Fatalf("stdout %q: %v", res.stdout, err)
+	}
+	type entry struct {
+		instance float64
+		file     string
+		state    any
+	}
+	var got []entry
+	for _, f := range out.Files {
+		got = append(got, entry{f["instance"].(float64), filepath.Base(f["file"].(string)), f["state"]})
+	}
+	want := []entry{{1, "instance-01_390x844.webp", nil}, {1, "instance-01-tr_390x844.webp", "tr"}, {2, "instance-02_390x844.webp", nil}}
+	if len(got) != len(want) {
+		t.Fatalf("files %+v", got)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Errorf("file %d: got %+v, want %+v", i, got[i], want[i])
+		}
+	}
+	for _, e := range want {
+		if _, err := os.Stat(filepath.Join(dir, "12", e.file)); err != nil {
+			t.Errorf("%s: %v", e.file, err)
+		}
+	}
+}
+
+// Two pictures that would be the same file (the server listed instance 1 twice with no state) are an error, not a silent overwrite.
+func TestItemShotsRefusesTwoPicturesForOneFile(t *testing.T) {
+	sha := strings.Repeat("e", 64)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("X-Banco-Contract", contract.Digest())
+		switch {
+		case req.Method == "POST":
+			_, _ = w.Write([]byte(`{"enqueued":false,"status":"passed","render_id":8}`))
+		case req.URL.Path == "/api/v1/item-revisions/12/shots":
+			shot := `{"instance":1,"seed":"s","shown_order":{},"viewport":"390x844-cream","width":390,"height":700,"available":true,"path":"/api/v1/item-revisions/12/shots/` + sha + `"}`
+			_, _ = w.Write([]byte(`{"revision_id":12,"status":"passed","render_id":8,"errors":[],"notes":[],"instances":1,"seed_note":"n","shots":[` + shot + `,` + shot + `]}`))
+		default:
+			_, _ = w.Write([]byte("RIFFxxxxWEBP"))
+		}
+	}))
+	t.Cleanup(srv.Close)
+	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", t.TempDir())
+	if res.exit == 0 || !strings.Contains(res.stderr, "instance-01_390x844.webp") {
+		t.Errorf("exit %d, stderr %s", res.exit, res.stderr)
+	}
+}

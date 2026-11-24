@@ -1,0 +1,65 @@
+{
+  "schema": "banco.item/1",
+  "schema_version": 1,
+  "kind": "practice_item",
+  "subject": "english",
+  "bilingual": true,
+  "skill": "english.be-forms",
+  "component": "matching",
+  "level": 2,
+  "prompt": {
+    "stem_en": "Is each sentence right or wrong?",
+    "stem_it": "Ogni frase è giusta o sbagliata?"
+  },
+  "answer_format_en": "Pick a label for each sentence.",
+  "answer_format_it": "Scegli un'etichetta per ogni frase.",
+  "hints_en": [
+    "Check the verb after the subject."
+  ],
+  "hints_it": [
+    "Controlla il verbo dopo il soggetto."
+  ],
+  "error_catalogue": [],
+  "instances": [
+    {
+      "display": {
+        "left": [
+          {
+            "id": "l1",
+            "text": "I am happy."
+          },
+          {
+            "id": "l2",
+            "text": "They is late."
+          }
+        ],
+        "right": [
+          {
+            "id": "r1",
+            "text": "correct",
+            "text_it": "giusta"
+          },
+          {
+            "id": "r2",
+            "text": "has a mistake",
+            "text_it": "ha un errore"
+          }
+        ]
+      },
+      "answer": {
+        "l1": "r1",
+        "l2": "r2"
+      },
+      "errors": [],
+      "solution": {
+        "steps": [
+          {
+            "text_en": "«They» takes «are».",
+            "text_it": "«They» vuole «are»."
+          }
+        ],
+        "final": "I am happy. = correct; They is late. = has a mistake"
+      }
+    }
+  ]
+}
