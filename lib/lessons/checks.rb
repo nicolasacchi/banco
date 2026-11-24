@@ -103,6 +103,10 @@ module Lessons
 
     # ---- the shared graders ----------------------------------------------------------------------
 
+    # D-402: in a bilingual check the text the student read is the target one (`prompt_en`, `message_en`): `message_it` of a Graded is the message as the
+    # student reads it, the target text of a pair (the reply's `tr` gives the Italian), else the Italian text of a legacy check.
+    def message_of(entry) = entry && Lang.pick(entry, "message")
+
     def closed(check, response, id_map, subject, form: [])
       errors = check["errors"].to_a
       spec = Grading::Spec.new(
@@ -110,10 +114,10 @@ module Lessons
         errors: errors.each_with_index.map { |e, i| { "code" => "e#{i}", "value" => e["answer"] } },
         accept: check["accept"], unit: check["unit"], form: form,
         profile: check["profile"], thousands: check["thousands"], contractions: check["contractions"],
-        item_texts: [ check["prompt_it"], check["answer_format_it"] ].grep(String), # a number may end with a unit word they use (D-386)
+        item_texts: [ Lang.pick(check, "prompt"), Lang.pick(check, "answer_format") ].grep(String), # a number may end with a unit word they use (D-386)
         # a written word may be answered with the whole sentence around the check's `___` (D-339): the frame is its prompt
         display: { "options" => check["options"], "left" => check["left"], "right" => check["right"],
-                   "stem_it" => (check["prompt_it"] if check["component"] == "normalized_text") }.compact
+                   "stem_it" => (Lang.pick(check, "prompt") if check["component"] == "normalized_text") }.compact
       )
       result = Grading::Closed.grade(spec, response, id_map: id_map.presence)
       from_result(result, errors, spec.display)
@@ -131,7 +135,7 @@ module Lessons
         index = result.error_codes.filter_map { |c| c[/\Ae(\d+)\z/, 1]&.to_i }.first
         entry = index && errors[index]
         slip = result.error_codes.find { |c| SLIPS.include?(c) }
-        Graded.new(verdict: "wrong", code: entry&.[]("code") || slip, message_it: entry&.[]("message_it") || (slip && I18n.t("grading.slips.#{slip}")), error_index: index, normalized: result.normalized, grader_version: result.grader_version)
+        Graded.new(verdict: "wrong", code: entry&.[]("code") || slip, message_it: message_of(entry) || (slip && I18n.t("grading.slips.#{slip}")), error_index: index, normalized: result.normalized, grader_version: result.grader_version)
       else
         Graded.new(verdict: "wrong", code: nil, message_it: nil, error_index: nil, normalized: result.normalized, grader_version: result.grader_version)
       end
@@ -152,7 +156,7 @@ module Lessons
 
       index = check["errors"].to_a.index { |e| e["answer"].is_a?(Array) && e["answer"].sort == set }
       entry = index && check["errors"][index]
-      Graded.new(verdict: "wrong", code: entry&.[]("code"), message_it: entry&.[]("message_it"), error_index: index, normalized: normalized, grader_version: grader_version)
+      Graded.new(verdict: "wrong", code: entry&.[]("code"), message_it: message_of(entry), error_index: index, normalized: normalized, grader_version: grader_version)
     end
 
     # ---- tiles and ordering: a sequence of ids ------------------------------------------------------
@@ -173,7 +177,7 @@ module Lessons
 
       index = check["errors"].to_a.index { |e| e["answer"] == stored }
       entry = index && check["errors"][index]
-      Graded.new(verdict: "wrong", code: entry&.[]("code"), message_it: entry&.[]("message_it"), error_index: index, normalized: normalized, grader_version: grader_version)
+      Graded.new(verdict: "wrong", code: entry&.[]("code"), message_it: message_of(entry), error_index: index, normalized: normalized, grader_version: grader_version)
     end
 
     # ---- select: tap targets of a drawing -----------------------------------------------------------
@@ -194,7 +198,7 @@ module Lessons
 
       index = check["errors"].to_a.index { |e| e["answer"].is_a?(Array) && e["answer"].map(&:to_s).sort == set }
       entry = index && check["errors"][index]
-      Graded.new(verdict: "wrong", code: entry&.[]("code"), message_it: entry&.[]("message_it"), error_index: index, normalized: normalized, grader_version: grader_version)
+      Graded.new(verdict: "wrong", code: entry&.[]("code"), message_it: message_of(entry), error_index: index, normalized: normalized, grader_version: grader_version)
     end
   end
 end

@@ -17,11 +17,12 @@ module Lessons
     EXEMPT = %w[description choice_only_reason notes reachable_ok book reason scope_reason expected input].freeze
 
     FIELDS = {
-      # R2: bare item keys that hold the subject's language. Base => the pointer of the hash that holds it (the key's twin is `<base>_it`).
+      # R2: bare keys that hold the subject's language. Base => the pointer of the hash that holds it (the key's twin is `<base>_it`). The table of a lesson
+      # (the block, at /cards/N/blocks/M) and of a figure of type `table` (its pointer ends /diagram or /schema) is paired like an item's table (D-402, slice 3).
       r2: {
         "text" => %r{/(?:options|elements|left|right)/\d+\z|/quote\z},
-        "header" => %r{/table\z},
-        "rows" => %r{/table\z},
+        "header" => %r{/(?:table|diagram|schema)\z|/blocks/\d+\z},
+        "rows" => %r{/(?:table|diagram|schema)\z|/blocks/\d+\z},
         "final" => %r{/solution\z}
       }.freeze,
       # Pairs that a figure or a block already draws by its own shape, as (Italian base => target base): a dialogue line's `text_en` and
@@ -29,6 +30,9 @@ module Lessons
       legacy: { "gloss" => "text", "label" => "form" }.freeze,
       # Both sides are drawn side by side by the figure itself (mirror: `pieces_it` and `pieces_en`): never folded, never an orphan.
       native: %w[pieces].freeze,
+      # Target text that is the exercise's own material and is translated by the prompt around it, never piece by piece (slice 3 and 5, D-402): a span_select's
+      # sentence (`text_en|es` of a check with that component) and its spans, the tiles, a `listen` text, the parts of a sentence figure. Never an orphan.
+      fragments: %r{/(?:spans|tiles|parts)/\d+\z|/listen\z}.freeze,
       # Target-language data with no Italian twin by design (vocabulary lists, forms, the `teaches_en` lexicon): never an orphan.
       target_only: %w[teaches form base past participle verb cells].freeze
     }.freeze
@@ -117,6 +121,7 @@ module Lessons
 
         base = key.sub(/_(en|es)\z/, "")
         next if EXEMPT.include?(base) || FIELDS[:native].include?(base) || FIELDS[:target_only].include?(base)
+        next if base == "text" && (hash["component"] == "span_select" || FIELDS[:fragments].match?(pointer))
         next if hash.key?("#{base}_it")
 
         out << [ base, key, nil, :r1 ]

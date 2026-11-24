@@ -28,7 +28,10 @@ module Banco
         "item" => {
           "id_text" => { "text" => "text_it" }, "quote" => { "text" => "text_it" },
           "table" => { "header" => "header_it", "rows" => "rows_it" }, "solution" => { "final" => "final_it" }
-        }
+        },
+        # D-402, slice 3: the table block of a lesson and a figure of type `table` hold their cells in the subject's language, the Italian in `header_it` / `rows_it`.
+        "lesson" => { "b_table" => { "header" => "header_it", "rows" => "rows_it" } },
+        "diagram" => { "table" => { "header" => "header_it", "rows" => "rows_it" } }
       }.freeze
       # The words a bilingual item teaches, outside the first 3000 of the language (W-LANG-LEVEL), like a lesson's `teaches_en`: the item root only.
       TEACHES = { "type" => "array", "maxItems" => 40, "items" => { "type" => "string", "minLength" => 1, "maxLength" => 40 }, "description" => "D-402: words of the target language the item teaches, never linted as above the level." }.freeze

@@ -467,7 +467,8 @@ products, `cartesian` for lines and systems, `equation_parts` for anatomy; itali
   inside; the Italian lint skips them and a target-language sentence has at most 12 words (`E-READ`). Words beyond the first 3000 of the language, the
   lesson's glossary and `teaches_en` / `teaches_es` are `W-LANG-LEVEL`. In an english or spanish lesson a colour role span is target-language text
   (`[[time:when I arrive]]`); an Italian one says `[[time|it:momento]]`. A key holding such words ends in the language: `text_en`, `form_es`.
-  A cloze keeps its cue, `When I ___ (get) home`, without a warning.
+  A cloze keeps its cue, `When I ___ (get) home`, without a warning. In a bilingual lesson (below) a blank is written `___` on its own, in the text and in its
+  Italian alike. `[[it:ho fame]]` is the Italian twin: Italian words quoted inside target-language text, allowed only there.
 - **Code**: `[[code:soldi = soldi + 8]]`, at most 40 characters, literal (`<`, `>`, `=`, `"`, `;`, `$` allowed; `]]` cannot be typed), in the body font.
 - **Glossary** (front matter `glossary: [{term_it, def_it, example_it?}]`, at most 12, short Italian): `[[g:promulgazione]]` in a text gives the word
   with a small book icon that opens the definition; the card lists its words under it ("Parole di questa scheda", counted in the 250 apparatus words).
@@ -481,6 +482,85 @@ products, `cartesian` for lines and systems, `equation_parts` for anatomy; itali
   images, `*italic*`, `_italic_`, backticks, `>` quotes, `---`, bare math (any `^`, `_` or backslash outside
   `$...$`), an unclosed `$` or `**`, and in any formula `\htmlClass`, `\htmlId`, `\htmlStyle`, `\htmlData`,
   `\href`, `\url`, `\includegraphics`, `\def`, `\gdef`, `\newcommand`.
+
+## Bilingual lessons (english and spanish, D-402)
+
+The courses of `english` and `spanish` are written in the language they teach, and every text has its **authored Italian translation** one tap away. You write
+both: the target text first, then the Italian next to it. Open the lesson with `bilingual: true` in the front matter. (A lesson that passed before keeps being
+served as it was; the flag is required of new revisions once the courses are rewritten.) The Italian is never generated for the student: the student sees what you
+wrote. The lessons of every other subject are unchanged.
+
+**Front matter.** Every text is a pair, the target under `_en` (english) or `_es` (spanish), the Italian under `_it`:
+
+```yaml
+bilingual: true
+title_en: "Modals: can, could, should"
+title_it: "I modali: can, could, should"
+goals_en: ["**Use** can and should with the base verb"]
+goals_it: ["**Usare** can e should con il verbo base"]
+why_en: "Modal verbs help you ask, offer and say what is possible."
+why_it: "I verbi modali servono a chiedere, offrire e dire che cosa è possibile."
+glossary:
+  - {term_en: "modal verb", term_it: "verbo modale", def_en: "A verb that helps another verb.", def_it: "Un verbo che aiuta un altro verbo."}
+```
+
+`book_it` stays Italian only (it points to the Italian textbook). `[[g:modal verb]]` in target text names `term_en`; in the Italian text `[[g:verbo modale]]` names `term_it`.
+
+**Headings.** The title is the target text; the tag adds the Italian: `## Can + the base verb {idea short="Base verb" short_it="Verbo base" it="Can + il verbo base" icon=hand-helping}`
+(`short_it` is 2 to 28 characters like `short`). A part: `# Modals {it="I modali"}`. Without `it=` the title has no translation: `E-LANG-PAIR-MISSING`.
+
+**Prose blocks.** A paragraph run is the target text of a `text` block; the fence `::: it` **directly after it** (after one blank line) is its translation: the same
+number of paragraphs and list items. The same for a `callout` and a `summary` (one list of points, the Italian list in the fence). A fence that does not follow
+such a block, or follows one that already has its Italian, is `E-LESSON-BLOCK`; a text block without its fence is `E-LANG-PAIR-MISSING` with its line.
+
+```
+## Can + the base verb {idea short="Base verb" short_it="Verbo base" it="Can + il verbo base"}
+
+After a modal verb the next verb does not change: no -s, no to.
+
+::: it
+Dopo un verbo modale il verbo che segue non cambia: niente -s, niente to.
+:::
+
+::: callout tip "Remember" it="Ricorda"
+Say can play, never can plays.
+:::
+
+::: it
+Si dice can play, mai can plays.
+:::
+```
+
+A titled fence (`callout`, `procedure`, `cases`, `more`) writes its Italian title as `it="..."` after the target title.
+
+**YAML blocks** (checks, example, try, mistake, cases, legend, procedure, figures, ...) write the pair on adjacent keys: `prompt_en` then `prompt_it`, every option
+`{id: a, text_en: "plays", text_it: "suona"}`, `message_en` / `message_it` of an error, `explain_*`, `solution_*`, `final_*`, `intro_*`, `title_*`, `alt_*`, `caption_*`,
+`label_*`, `op_*`, `note_*`. Lists pair by index (the same length). The answer, `accept`, `errors[].answer` and the other graded keys are never paired. The student
+sees the target text; the Italian opens with the button «Traduzione» (the card, or one block), or always if he set it in Impostazioni.
+
+**Table cells.** A `table` block (and a figure of type `table`) keeps its cells in `header` / `rows` **in the target language** and adds the Italian as `header_it` /
+`rows_it`, the same shape (same number of columns and rows).
+
+**Material, not translated piece by piece.** The sentence of a `span_select` (`text_en`) and its spans, the tiles, the text a check reads aloud (`listen: {text_en: ...}`) and the parts of a `sentence`
+figure (`parts[].text_en`) are target text with no Italian twin: translate the sentence in the check's `prompt_it` (or `explain_it`). A `sentence` figure puts its
+explanation in `alt` and `caption` (pairs), and the Italian names of the roles in `label_en` / `label_it`.
+
+**Parity.** The Italian must say what the target says, no more, no less: the same paragraphs and list items, the same `___` blanks, the same formulas and digits,
+the same bold words, the same colour roles (`[[subject:...]]` in both texts; the Italian one may say `[[subject|it:...]]`) and the same `[[g:..]]` terms
+(`E-LANG-PAIR-SHAPE`). A translation that is the target text copied (`E-LANG-TRANSLATION-COPY`), that is not Italian (`E-LANG-TRANSLATION-LANG`), a target text
+that holds Italian words (`E-LESSON-LANG`), two equal target strings with two different Italian ones in one block (`E-LANG-PAIR-CONFLICT`), a translation with no
+target (`E-LANG-PAIR-ORPHAN`) and a `_en` pair in a lesson without the flag, or a `_en` in a spanish lesson (`E-LANG-BILINGUAL-FLAG`) are refused.
+
+**Level.** The target text is held to the target lint (`E-READ`: at most 12 words a sentence; `W-LANG-LEVEL`: the first 3000 words, the glossary, `teaches_en` /
+`teaches_es`, the common given names); the Italian to the Italian lint (25 words, `W-GULPEASE` on the translated core prose). The budgets (words a card,
+500 core words) count the target text. A `[[en:..]]` span inside English text is redundant (`W-LANG-SPAN-REDUNDANT`) unless it marks a unit the lesson discusses
+(a glossary term, a `teaches_en` word); the Italian text keeps its `[[en:..]]` spans for English words quoted in Italian.
+
+**Never a leak by translation.** The student can always open the Italian: a question whose Italian text is the answer (a «translate this» check whose Italian
+prompt is the key, vocabulary matching whose Italian side gives the answer) is a flaw even if no check refuses it; the reviewer files it as `translation_leak`.
+The Italian of an `explain`, a `message` and a `solution` is shown only after the answer, like the target text.
+
+Names in sentences are common given names (Tom, Amy, Lucía), never the student's or his household's.
 
 ## Colour roles, icons and verbs
 

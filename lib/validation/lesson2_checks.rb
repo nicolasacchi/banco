@@ -44,6 +44,38 @@ module Validation
       end
       LessonChecks.skills_known(fm, subject, context, findings)
       LessonChecks.refs(fm, subject, context, findings)
+      if (target = Lessons::Lang.target(subject)) # D-402: the pairs of the front matter need the flag, and the subject's own language
+        flag_pairs(fm, "/front_matter", fm["bilingual"] == true ? target : nil, target) { |field, why| findings.add("E-LANG-BILINGUAL-FLAG", field, why, rule: "flag-#{field}") }
+      end
+      required = begin
+        Array(Rules.get(:lang, :bilingual_required))
+      rescue KeyError
+        []
+      end
+      return unless required.include?(subject) && fm["bilingual"] != true
+
+      findings.add("E-LANG-BILINGUAL-REQUIRED", "/front_matter/bilingual", "a new #{subject} lesson is written in the target language with its Italian translation: bilingual: true", rule: "bilingual-required")
+    end
+
+    # Every pair `foo_en|es` + `foo_it` under +node+ that the flag does not allow: any pair in a lesson that is not bilingual (+lang+ nil), a pair in another
+    # language than the subject's +target+ in one that is. Yields (field, why). Fragments and the figures' own pairs (dialogue, mirror) are not pairs.
+    def flag_pairs(node, pointer, lang, target, &emit)
+      case node
+      when Hash
+        node.each_key do |key|
+          m = key.is_a?(String) && key.match(/\A(.+)_(en|es)\z/) or next
+          base = m[1]
+          next if !node.key?("#{base}_it") || Lessons::Bilingual::EXEMPT.include?(base) || Lessons::Bilingual::FIELDS[:native].include?(base)
+          next if base == "text" && (node["component"] == "span_select" || Lessons::Bilingual::FIELDS[:fragments].match?(pointer))
+          next if lang && m[2] == lang
+
+          names = { "en" => "English", "es" => "Spanish" }
+          why = lang ? "#{key} is in #{names[m[2]]} and the subject teaches #{names[target]}" : "#{key} and #{base}_it are a pair, and the lesson is not bilingual (bilingual: true in the front matter)"
+          emit.call("#{pointer}/#{key}", why)
+        end
+        node.each { |k, v| flag_pairs(v, "#{pointer}/#{k}", lang, target, &emit) if v.is_a?(Hash) || v.is_a?(Array) }
+      when Array then node.each_with_index { |v, i| flag_pairs(v, "#{pointer}/#{i}", lang, target, &emit) if v.is_a?(Hash) || v.is_a?(Array) }
+      end
     end
 
     # A finding about a front matter member names the line of that member.
@@ -59,9 +91,16 @@ module Validation
 
     # One pass over a parsed body.
     class Run
+      # D-402: a bilingual lesson (`bilingual: true`, english or spanish) is checked as two layers. The budgets, the block checks and the target-language lint read
+      # the TARGET layer through the `_it` slots they have always read (@body: Parser2.target_view, the pairs folded as the student is served them); the
+      # Italian lint reads the Italian layer (@italian: Bilingual.italian_layer); and the pairs themselves (completeness, shape, language) are
+      # Validation::Bilingual's. A legacy lesson has one layer, @body, and is checked exactly as before.
       def initialize(parsed, subject, context, findings)
         @parsed = parsed
-        @body = parsed.body
+        @raw = parsed.body
+        @lang = Lessons::Parser2.bilingual_lang(parsed.front_matter)
+        @body = @lang ? (target_layer || @raw) : @raw
+        @italian = @lang ? Lessons::Bilingual.italian_layer(@raw) : nil
         @subject = subject
         @context = context
         @findings = findings
@@ -72,6 +111,7 @@ module Validation
         @plain = [] # every markup text, for the whole-lesson budgets: [[text, line]]
         @target = Lessons::Lang.target(subject)
         @glossary = Array(@body["glossary"]).to_h { |g| [ g["term_it"].to_s.downcase, g ] }
+        @glossary_it = Array(@italian && @italian["glossary"]).to_h { |g| [ g["term_it"].to_s.downcase, g ] }
         @known_words = known_words
       end
 
@@ -80,11 +120,13 @@ module Validation
       def call
         return unless body_schema
 
+        flag_checks
         front_matter_texts
         hero
         structure
         @cards.each_with_index { |card, i| card_checks(card, i) }
         target_keys
+        bilingual_checks if @lang
         lesson_counts
         whole_text
       end
@@ -113,7 +155,8 @@ module Validation
 
         parts = "/#{pointer}".split("/").reject(&:empty?)
         until parts.empty?
-          hit = index["/#{parts.join('/')}"]
+          at = "/#{parts.join('/')}"
+          hit = (@lang && !@italian_pass && index[at.gsub(/_it(?=\/|\z)/, "_#{@lang}")]) || index[at] # a bilingual finding is about the target text, the line above its Italian
           return hit if hit
 
           parts.pop
@@ -124,11 +167,138 @@ module Validation
       # ---- schema -------------------------------------------------------------------------------
 
       def body_schema
-        shape = Banco::Schemas.schema("lesson").validate(Lessons::Parser2.for_schema(@body)).to_a
+        shape = Lessons::Parser2.body_errors(@raw, @subject, @lang)
         shape.first(12).each do |e|
           add("E-SCHEMA", "/body#{e['data_pointer']}", Validation::SchemaCheck.message(e), rule: e["type"].to_s)
         end
         shape.empty?
+      end
+
+      # ---- bilingual (D-402) ----------------------------------------------------------------------
+
+      # The target layer of the body. A target text whose Italian is missing is given itself as its Italian first, so that the checks that read the
+      # `_it` slot never meet a hole (the missing translation is E-LANG-PAIR-MISSING's).
+      def target_layer
+        Lessons::Parser2.target_view(Lessons::Parser2.pad_pairs(@raw, @lang), @lang)
+      rescue StandardError
+        nil
+      end
+
+      # The pairs of a language lesson that the flag does not allow: a sibling in a revision without the flag, or in another language than the subject's.
+      def flag_checks
+        return unless @target
+
+        Validation::Lesson2Checks.flag_pairs(@raw.slice("cards", "parts"), "", @lang, @target) do |field, why|
+          add("E-LANG-BILINGUAL-FLAG", field, why, line: pair_line(field), rule: "flag-#{field}")
+        end
+      end
+
+      # The line of a pointer into the body's pairs: a front matter key, a part, a card heading, a block, a field of a block's YAML.
+      def pair_line(pointer)
+        segs = pointer.split("/").reject(&:empty?)
+        if segs.first == "cards" && (card = @raw["cards"][segs[1].to_i])
+          node = card
+          line = card["line"]
+          at = 2
+          while segs[at] == "blocks" && (inner = node["blocks"]&.[](segs[at + 1].to_i))
+            node = inner
+            line = inner["line"]
+            at += 2
+          end
+          rest = segs.drop(at)
+          return line if rest.empty? || node.equal?(card)
+
+          case node["type"]
+          when "text" then line
+          when "callout" then rest.first.to_s.start_with?("title") ? line : line + 1
+          when "summary" then line + 1 + rest.last.to_i
+          else field_line(line, "/#{rest.join('/')}")
+          end
+        elsif segs.first == "parts" then @parsed.parts[segs[1].to_i]&.fetch(:line, nil)
+        elsif segs.first
+          Lessons::Parser2.front_line(@parsed.lines, segs.first) || Lessons::Parser2.front_line(@parsed.lines, segs.first.sub(/_(en|es)\z/, "_it"))
+        end
+      end
+
+      # The pairs: Validation::Bilingual walks them (completeness, shape, language, conflicts, one scope at a time: the front matter, the parts, a card's own
+      # texts, each block), the colour roles are mine. A scope is passed at its true place in the body (`wrap`), so that the pointers and R2 fields are the body's.
+      def bilingual_checks
+        front = @raw.slice(*%w[title_it title_en title_es goals_it goals_en goals_es why_it why_en why_es glossary])
+        pairs_check(front, "/front_matter")
+        pairs_check({ "parts" => @raw["parts"] }, "") if @raw["parts"]
+        @raw["cards"].each_with_index do |card, i|
+          pairs_check(wrap([ "cards", i ], card.except("blocks")), "")
+          card["blocks"].each_with_index { |block, j| block_pairs(block, [ "cards", i, "blocks", j ]) }
+        end
+        role_parity
+        italian_pass
+      end
+
+      def block_pairs(block, path)
+        pairs_check(wrap(path, block.except("blocks")), "")
+        Array(block["blocks"]).each_with_index { |inner, k| block_pairs(inner, path + [ "blocks", k ]) } if block["type"] == "more"
+      end
+
+      # +node+ at +path+ (["cards", 1, "blocks", 0]) inside an otherwise empty body: an index is padded with nils, so pointers are the body's.
+      def wrap(path, node) = path.reverse.reduce(node) { |inner, seg| seg.is_a?(Integer) ? Array.new(seg) + [ inner ] : { seg => inner } }
+
+      def pairs_check(doc, prefix)
+        line = ->(pointer) { pair_line(pointer) }
+        if defined?(Validation::Bilingual) && Validation::Bilingual.respond_to?(:check)
+          Validation::Bilingual.check(@findings, doc, lang: @lang, prefix: prefix, line: line)
+        else # until Validation::Bilingual lands (slice 2): completeness only
+          Lessons::Bilingual.pairs(doc, @lang).each do |pointer, base, target, italian|
+            next if target && italian
+
+            code = target ? "E-LANG-PAIR-MISSING" : "E-LANG-PAIR-ORPHAN"
+            add(code, "#{prefix}#{pointer}", "#{target ? 'the Italian translation of' : 'the target-language text of'} #{base} is missing", line: line.call(pointer), rule: "#{code}-#{prefix}#{pointer}")
+          end
+        end
+      end
+
+      # The same colour roles in a text and in its translation, so that the student maps the colours across the two languages (§2.3).
+      def role_parity
+        Lessons::Bilingual.pairs(@raw, @lang).each do |pointer, _base, target, italian|
+          next unless target.is_a?(String) && italian.is_a?(String) && (target.include?("[[") || italian.include?("[[") || target.include?("\\role") || italian.include?("\\role"))
+
+          roles = ->(text) { Lessons::Markup.roles_used(text).map(&:first).sort }
+          mine = roles.call(target)
+          theirs = roles.call(italian)
+          next if mine == theirs
+
+          add("E-LANG-PAIR-SHAPE", pointer, "the colour roles of the text (#{mine.join(', ').presence || 'none'}) and of its Italian (#{theirs.join(', ').presence || 'none'}) differ: mark the same roles in both", line: pair_line(pointer), rule: "pair-roles-#{pointer}")
+        rescue Lessons::Markup::Refused
+          next # the markup checks name it
+        end
+      end
+
+      # The Italian layer: the markup, the colour roles, the links, the language spans and the Italian lint of the translations (the target layer's own lint ran
+      # with the blocks). Its lines are the lines of the Italian keys.
+      def italian_pass
+        @italian_pass = true
+        lines = @parsed.lines
+        line_of = ->(key) { Lessons::Parser2.front_line(lines, key) || 1 }
+        Array(@italian["goals_it"]).each_with_index { |g, i| markup_field("/front_matter/goals_it/#{i}", g, line_of.call("goals_it"), false, layer: :italian) }
+        markup_field("/front_matter/why_it", @italian["why_it"], line_of.call("why_it"), false, layer: :italian) if @italian["why_it"]
+        Array(@italian["glossary"]).each_with_index do |g, i|
+          %w[def_it example_it].each { |k| markup_field("/front_matter/glossary/#{i}/#{k}", g[k], line_of.call("glossary"), false, layer: :italian) if g[k] }
+        end
+        @italian["cards"].each_with_index { |card, i| card["blocks"].each_with_index { |b, j| italian_block(b, "/cards/#{i}/blocks/#{j}") } }
+      ensure
+        @italian_pass = false
+      end
+
+      def italian_block(block, path)
+        markup_block(block, path, layer: :italian)
+        Array(block["blocks"]).each_with_index { |inner, k| italian_block(inner, "#{path}/blocks/#{k}") } if block["type"] == "more"
+      end
+
+      # The common given names that are no W-LANG-LEVEL (Validation::Bilingual.names, config/banco/lexicon/{en,es}_names.txt), none until that lands.
+      def common_names(lang)
+        return [] unless @lang
+
+        @names ||= {}
+        @names[lang] ||= defined?(Validation::Bilingual) && Validation::Bilingual.respond_to?(:names) ? Validation::Bilingual.names(lang).to_a : []
       end
 
       # ---- front matter ---------------------------------------------------------------------------
@@ -136,24 +306,24 @@ module Validation
       def front_matter_texts
         fm = @parsed.front_matter
         lines = @parsed.lines
-        line_of = ->(key) { Lessons::Parser2.front_line(lines, key) }
+        line_of = ->(key) { (@lang && Lessons::Parser2.front_line(lines, key.sub(/_it\z/, "_#{@lang}"))) || Lessons::Parser2.front_line(lines, key) }
         max = rule(:goals_words_max)
         Array(@body["goals_it"]).each_with_index do |g, i|
           n = Lessons::Blocks.words(g)
-          add("E-LESSON-BLOCK", "/front_matter/goals_it/#{i}", "a goal has #{n} words (at most #{max})", line: line_of.call("goals_it")) if n > max
-          add("E-LESSON-BLOCK", "/front_matter/goals_it/#{i}", "a goal starts with a verb in bold: **Risolvere** ...", line: line_of.call("goals_it")) unless g.match?(/\A\*\*[^*]+\*\*/)
+          add("E-LESSON-BLOCK", slot("/front_matter/goals_it/#{i}"), "a goal has #{n} words (at most #{max})", line: line_of.call("goals_it")) if n > max
+          add("E-LESSON-BLOCK", slot("/front_matter/goals_it/#{i}"), "a goal starts with a verb in bold: **Risolvere** ...", line: line_of.call("goals_it")) unless g.match?(/\A\*\*[^*]+\*\*/)
           markup_field("/front_matter/goals_it/#{i}", g, line_of.call("goals_it") || 1, false)
         end
         glossary_checks(line_of.call("glossary") || 1)
-        markup_field("/front_matter/why_it", fm["why_it"], line_of.call("why_it") || 1, false)
-        n = sentences(fm["why_it"])
+        markup_field("/front_matter/why_it", @body["why_it"], line_of.call("why_it") || 1, false)
+        n = sentences(@body["why_it"])
         lo, hi = rule(:why_sentences)
-        add("W-LESSON-WHY", "/front_matter/why_it", "why_it has #{n} sentence(s) (#{lo} to #{hi})", line: line_of.call("why_it")) unless (lo..hi).cover?(n)
+        add("W-LESSON-WHY", slot("/front_matter/why_it"), "#{slot('why_it')} has #{n} sentence(s) (#{lo} to #{hi})", line: line_of.call("why_it")) unless (lo..hi).cover?(n)
         return unless fm["book_it"]
 
         words = Lessons::Blocks.words(fm["book_it"])
         add("E-LESSON-BOOK", "/front_matter/book_it", "book_it has #{words} words (at most #{rule(:book_extra_words)})", line: line_of.call("book_it")) if words > rule(:book_extra_words)
-        markup_field("/front_matter/book_it", fm["book_it"], line_of.call("book_it") || 1, false)
+        markup_field("/front_matter/book_it", fm["book_it"], line_of.call("book_it") || 1, false, layer: (:italian if @lang))
       end
 
       def sentences(text)
@@ -223,6 +393,7 @@ module Validation
           over = blocks.find { |b| (running += Lessons::Blocks.prose(b).sum { |t| Lessons::Blocks.words(t) }) > rule(:max_card_words) }
           add("E-CARD-WORDS", base, "the card has #{n} words of prose (at most #{rule(:max_card_words)})", line: (over || card)["line"])
         end
+        target_lint("#{base}/title_#{@lang}", @lang, target_plain(card["title_it"]), line) if @lang
         add("E-LESSON-ICON", "#{base}/icon", "#{card['icon']} is not an icon of #{@subject} (config/banco/icons.yml)", line: line) unless Lessons::Icons.allowed?(@subject, card["icon"])
         add("E-LESSON-ROLE", "#{base}/tone", "#{card['tone']} is not a colour role of #{@subject}'s palette", line: line) if card["tone"] && !Lessons::Palette.role?(@subject, card["tone"])
         role_contract(card, base, line, extra)
@@ -339,7 +510,7 @@ module Validation
 
       # ---- markup, links, roles, readability ----------------------------------------------------------
 
-      def markup_block(block, path)
+      def markup_block(block, path, layer: nil)
         Lessons::Blocks.markup_fields(block).each do |sub, text, lists|
           next if block["type"] == "check" && block["component"] == "span_select" && sub == "text_it" # text_en and text_es are not Italian markup at all
 
@@ -349,11 +520,15 @@ module Validation
           when "summary" then block["line"] + 1 + sub.split("/").last.to_i
           else field_line(block["line"], sub)
           end
-          markup_field("#{path}/#{sub}", text, line, lists)
+          markup_field("#{path}/#{sub}", text, line, lists, layer: layer)
         end
       end
 
-      def markup_field(field, text, line, lists_allowed)
+      # +layer+: :target (the text of a bilingual lesson in its language, in the `_it` slot of the view: its field is named `_en`/`_es`), :italian (its translation), nil
+      # for a lesson that is not bilingual (the one layer, Italian prose with spans of the language it teaches).
+      def markup_field(field, text, line, lists_allowed, layer: nil)
+        layer ||= :target if @lang
+        field = slot(field) if layer == :target
         @plain << [ text, line ]
         begin
           blocks = Lessons::Markup.raw_blocks(text, line_offset: line, roles: true)
@@ -365,13 +540,16 @@ module Validation
             add("E-LESSON-ROLE", field, "line #{at}: #{name} is not a colour role of #{@subject}'s palette", line: at, rule: "role-#{name}-#{field}") unless Lessons::Palette.role?(@subject, name)
           end
           Lessons::Markup.links_used(text, line_offset: line).each { |kind, target, at| link(field, kind, target, at) }
-          spans(field, text, line)
+          spans(field, text, line, layer)
           formula_space(field, text, line)
-          lint(field, blocks)
+          lint(field, blocks, layer)
         rescue Lessons::Markup::Refused => e
           add("E-LESSON-MARKUP", field, "line #{e.line}: #{e.construct}", line: e.line, rule: "markup-#{field}", construct: e.construct)
         end
       end
+
+      # The field name of a text of the target layer: the view holds it in the `_it` slot, the author wrote it under `_en` / `_es`.
+      def slot(field) = @lang ? field.gsub(/_it(?=\/|\z)/, "_#{@lang}") : field
 
       # W-MATH-SPACE-PUNCT (D-335): a formula that ends in a spacing command right before a mark shows a gap before the mark.
       def formula_space(field, text, line)
@@ -391,11 +569,15 @@ module Validation
       def explicit_id?(id) = !id.match?(/\Ac\d+\z/) || @parsed.cards.any? { |c| c.dig(:tag, :id) == id }
 
       # Readability per paragraph or list item, on the text S reads (colour spans and links shown as their words).
-      def lint(field, blocks)
+      def lint(field, blocks, layer = nil)
         blocks.each do |b|
           units = b.type == :p ? [ [ b.text, b.line ] ] : b.items.flat_map { |it| ([ [ it[:text], it[:line] ] ] + it[:subs].map { |s| [ s, it[:line] ] }) }
           units.each_with_index do |(text, line), k|
-            plain = unmark(text)
+            if layer == :target # the target language has its own lint: short sentences, words a learner knows (D-402)
+              target_lint(field, @lang, target_plain(text), line)
+              next
+            end
+            plain = unmark(text, layer)
             tmp = Findings.new
             Readability.lint(plain, field: field, role: :text, findings: tmp)
             tmp.each do |f|
@@ -410,24 +592,31 @@ module Validation
       end
 
       # [[role:text]] and [text](scheda:x) shown as text; the words of another language, a code span and (in a language subject) a role
-      # span are out of the Italian lint (D-266): each stands for one word.
-      def unmark(text) = Lessons::Lang.split(text, target: @target).first
+      # span are out of the Italian lint (D-266): each stands for one word. In the translation of a bilingual lesson a role span is Italian words.
+      def unmark(text, layer = nil) = Lessons::Lang.split(text, target: layer == :italian ? nil : @target).first
+
+      # A text of the target layer as the target lint reads it: its words, the quoted Italian ([[it:..]]) and the formulas out.
+      def target_plain(text)
+        plain = Lessons::Lang.split(text.gsub(/\[\[it:.*?\]\]/m, " m "), target: nil).first
+        Readability.strip_markup(plain.gsub(Readability::MATH, " m "))
+      end
 
       # ---- the text layer (D-266): language spans, role spans of a language subject, code spans, glossary words ---------------------------------
 
-      def spans(field, text, line)
-        Lessons::Markup.each_node(text, line_offset: line, target: @target) do |n, at|
+      def spans(field, text, line, layer = nil)
+        Lessons::Markup.each_node(text, line_offset: line, target: layer == :italian ? nil : @target) do |n, at|
           case n["t"]
           when "lang"
-            language_span(field, n["lang"], n["v"], at)
+            language_span(field, n["lang"], n["v"], at, layer, plain_words: true)
           when "role"
             next unless n["lang"] && n["lang"] != "it"
 
-            language_span(field, n["lang"], plain_of(n), at)
+            language_span(field, n["lang"], plain_of(n), at, layer)
           when "math"
             chem_formula(field, n["v"], at)
           when "gloss"
-            add("E-LESSON-BLOCK", field, "line #{at}: [[g:#{n['term']}]] is not a term of the lesson's glossary (front matter glossary:)", line: at, rule: "gloss-#{n['term']}-#{field}") unless @glossary.key?(n["term"].downcase)
+            terms = layer == :italian ? @glossary_it : @glossary
+            add("E-LESSON-BLOCK", field, "line #{at}: [[g:#{n['term']}]] is not a term of the lesson's glossary (front matter glossary:)", line: at, rule: "gloss-#{n['term']}-#{field}") unless terms.key?(n["term"].downcase)
           end
         end
       end
@@ -450,21 +639,35 @@ module Validation
         Array(node["children"]).map { |c| c["t"] == "text" ? c["v"] : plain_of(c) }.join
       end
 
-      def language_span(field, lang, text, at)
+      # +plain_words+: a [[en:..]] span (words of a language), not a colour role span that happens to be in that language.
+      def language_span(field, lang, text, at, layer = nil, plain_words: false)
+        if lang == "it" # D-402: Italian words quoted inside target-language text
+          add("E-LESSON-LANG", field, "line #{at}: a [[it:...]] span belongs in the target-language text of a bilingual lesson, not here", line: at, rule: "lang-span-it-#{field}") unless layer == :target
+          return
+        end
         unless Lessons::Lang.taught?(@subject, lang)
           add("E-LESSON-LANG", field, "line #{at}: a [[#{lang}:...]] span in a #{@subject} lesson (#{@subject} does not teach #{LANGUAGE_NAMES[lang]})", line: at, rule: "lang-span-#{lang}-#{field}")
+        end
+        if layer == :target && plain_words && lang == @lang && !quoted_unit?(text)
+          add("W-LANG-SPAN-REDUNDANT", field, "line #{at}: [[#{lang}:#{text}]] is a #{LANGUAGE_NAMES[lang]} span in a text that is all #{LANGUAGE_NAMES[lang]}: leave it plain unless the lesson then discusses that unit (glossary, teaches_#{lang})", line: at, rule: "span-redundant-#{field}-#{at}")
         end
         target_lint(field, lang, text, at)
       end
 
-      LANGUAGE_NAMES = { "en" => "English", "es" => "Spanish", "la" => "Latin" }.freeze
+      # A unit the lesson discusses: all its words are in the glossary or in teaches_en / teaches_es.
+      def quoted_unit?(text)
+        words = text.to_s.downcase.scan(Lessons::Lexicon::WORD)
+        words.any? && (words - @known_words.fetch(@lang, [])).empty?
+      end
+
+      LANGUAGE_NAMES = { "en" => "English", "es" => "Spanish", "la" => "Latin", "it" => "Italian" }.freeze
 
       # The lint of words of another language (the target-language set, WAVE2 1.8): a short sentence, and words a learner of the lesson knows.
       def target_lint(field, lang, text, at)
         max = rule(:target_sentence_words)
         long = Readability.sentences_of(text.to_s).map { |t| Readability.count_words(t) }.max.to_i
         add("E-READ", field, "a #{LANGUAGE_NAMES.fetch(lang, lang)} sentence has #{long} words (at most #{max})", line: at, rule: "target_sentence_words-#{field}-#{at}", words: long) if long > max
-        unknown = Lessons::Lexicon.unknown(lang, text, known: @known_words.fetch(lang, []))
+        unknown = Lessons::Lexicon.unknown(lang, text, known: @known_words.fetch(lang, []) + common_names(lang))
         return if unknown.empty?
 
         add("W-LANG-LEVEL", field, "#{LANGUAGE_NAMES.fetch(lang, lang)} words outside the first #{rule(:target_vocabulary_top)} (and the glossary and teaches_#{lang}): #{unknown.first(6).join(', ')}", line: at, rule: "lang-level-#{field}-#{at}", words: unknown)
@@ -658,8 +861,9 @@ module Validation
           add("E-LESSON-PAGE", "/cards", "a page number: never name a page of the book", line: hit[1])
         end
 
-        prose = @cards.select { |c| c["level"] == "core" }.flat_map { |c| Lessons::Blocks.prose_of(c) }
-        text = Readability.strip_markup(unmark(prose.join(" ")).gsub(Readability::MATH, " m "))
+        cards = @lang ? @italian["cards"] : @cards # Gulpease is an Italian index: of the translation in a bilingual lesson
+        prose = cards.select { |c| c["level"] == "core" }.flat_map { |c| Lessons::Blocks.prose_of(c) }
+        text = Readability.strip_markup(unmark(prose.join(" "), (:italian if @lang)).gsub(Readability::MATH, " m "))
         sentences = Readability.sentences_of(text)
         n = sentences.sum { |s| Readability.count_words(s) }
         index = Readability.gulpease(text, sentences, n)

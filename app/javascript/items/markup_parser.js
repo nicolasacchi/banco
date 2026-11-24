@@ -80,8 +80,8 @@ export class Refused extends Error {}
 const FORBIDDEN_TEX = /\\(htmlClass|htmlId|htmlStyle|htmlData|href|url|includegraphics|def|gdef|edef|xdef|newcommand|renewcommand|providecommand|let|futurelet|global|char)(?![A-Za-z])/
 const ROLE_NAME = /^[a-z]+([_-][a-z]+)*$/
 const SPAN_HEAD = /^\[\[([a-z]+(?:[_-][a-z]+)*)(\|it)?:/
-const LANG_SPANS = ["en", "es", "la"]
-const RESERVED_SPANS = [...LANG_SPANS, "it", "code", "g"]
+const LANG_SPANS = ["en", "es", "la", "it"] // D-402: [[it:..]] is Italian quoted inside target-language text
+const RESERVED_SPANS = [...LANG_SPANS, "code", "g"]
 const CODE_MAX = 40
 const TERM = /^\p{L}[\p{L} '’-]*$/u
 const LINK = /^\[([^\]\[]+)\]\((scheda|argomento):([a-z0-9._-]*)\)/
@@ -143,7 +143,7 @@ export function inline(text, options = {}) {
       const name = head[1]
       const start = i + head[0].length
       if (!head[2] && (LANG_SPANS.includes(name) || name === "code" || name === "g")) {
-        // [[en:..]] [[es:..]] [[la:..]] plain words; [[code:..]] literal, up to the first "]]"; [[g:term]] a glossary word (D-266)
+        // [[en:..]] [[es:..]] [[la:..]] [[it:..]] plain words; [[code:..]] literal, up to the first "]]"; [[g:term]] a glossary word (D-266)
         const end = text.indexOf("]]", start)
         const body = end > start ? text.slice(start, end) : ""
         if (end > start && body.trim() !== "" && (name !== "code" || body.length <= CODE_MAX) && (name !== "g" || TERM.test(body.trim()))) {

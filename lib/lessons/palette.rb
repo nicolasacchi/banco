@@ -9,6 +9,8 @@ module Lessons
   # subjects; it may keep its own label and question.
   module Palette
     PATH = File.expand_path("../../config/banco/lesson_palette.yml", __dir__)
+    # The names and questions of a role (D-402: also in the language of an english or spanish lesson, with the Italian one under it); a `same_as` role keeps its own.
+    TEXTS = %w[label_it label_en label_es question_it question_en question_es].freeze
 
     module_function
 
@@ -38,7 +40,7 @@ module Lessons
       return role unless role["same_as"]
 
       owner_subject, owner_role = role["same_as"].split(".")
-      data.fetch(owner_subject).fetch("roles").fetch(owner_role).merge(role.slice("label_it", "question_it"))
+      data.fetch(owner_subject).fetch("roles").fetch(owner_role).merge(role.slice(*TEXTS))
     end
 
     def role?(subject, name) = roles(subject).key?(name.to_s)

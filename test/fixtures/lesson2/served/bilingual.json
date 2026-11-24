@@ -1,0 +1,145 @@
+{
+  "schema": "banco.lesson/2",
+  "schema_version": 2,
+  "key": "ripasso.english.demo-bilingual",
+  "kind": "ripasso",
+  "subject": "english",
+  "title_it": "I modali: can e should",
+  "goals_it": [
+    "**Usare** can e should con il verbo base"
+  ],
+  "why_it": "I verbi modali servono a chiedere, offrire e dire che cosa è possibile. Ti servono ogni giorno.",
+  "skills": [
+    "english.modals-can"
+  ],
+  "uses": [],
+  "refs": [
+    {
+      "source": "gallery-2026",
+      "line": 1,
+      "fragment": "modals",
+      "role": "taught_in"
+    }
+  ],
+  "scope": "studied",
+  "minutes": 30,
+  "calculator": false,
+  "bilingual": true,
+  "title_en": "Modals: can and should",
+  "goals_en": [
+    "**Use** can and should with the base verb"
+  ],
+  "why_en": "Modal verbs help you ask, offer and say what is possible. You need them every day.",
+  "book_it": "Cerca «verbi modali» sul libro.",
+  "glossary": [
+    {
+      "term_en": "modal verb",
+      "term_it": "verbo modale",
+      "def_en": "A verb that helps another verb.",
+      "def_it": "Un verbo che aiuta un altro verbo."
+    }
+  ],
+  "cards": [
+    {
+      "n": 1,
+      "id": "base-verb",
+      "role": "idea",
+      "level": "core",
+      "title_en": "Can + the base verb",
+      "icon": "hand-helping",
+      "title_it": "Can + il verbo base",
+      "short_en": "Base verb",
+      "short_it": "Verbo base",
+      "blocks": [
+        {
+          "n": 1,
+          "type": "text",
+          "text_en": "After a modal verb the next verb does not change: no -s, no to.",
+          "text_it": "Dopo un verbo modale il verbo che segue non cambia: niente -s, niente to."
+        },
+        {
+          "n": 2,
+          "prompt_en": "My sister can ___ the guitar.",
+          "prompt_it": "Mia sorella sa ___ la chitarra.",
+          "options": [
+            {
+              "id": "a",
+              "text_en": "plays",
+              "text_it": "suona"
+            },
+            {
+              "id": "b",
+              "text_en": "play",
+              "text_it": "suonare"
+            }
+          ],
+          "answer": "b",
+          "errors": [
+            {
+              "answer": "a",
+              "message_en": "After can, the verb has no -s.",
+              "message_it": "Dopo can il verbo non prende -s."
+            }
+          ],
+          "explain_en": "After can the verb stays as it is: can play.",
+          "explain_it": "Dopo can il verbo resta com'è: can play.",
+          "type": "check",
+          "component": "choice"
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "id": "try",
+      "role": "try",
+      "level": "core",
+      "title_en": "Try it",
+      "icon": "pencil",
+      "title_it": "Prova tu",
+      "short_en": "Try it",
+      "short_it": "Prova tu",
+      "blocks": [
+        {
+          "n": 1,
+          "intro_en": "Choose the right form.",
+          "intro_it": "Scegli la forma giusta.",
+          "exercises": [
+            {
+              "n": 1,
+              "text_en": "You should ___ more water.",
+              "text_it": "Dovresti ___ più acqua.",
+              "check": {
+                "component": "choice",
+                "prompt_en": "Which word fits?",
+                "prompt_it": "Quale parola va bene?",
+                "options": [
+                  {
+                    "id": "a",
+                    "text_en": "drinks",
+                    "text_it": "beve"
+                  },
+                  {
+                    "id": "b",
+                    "text_en": "drink",
+                    "text_it": "bere"
+                  }
+                ],
+                "answer": "b"
+              },
+              "solution_en": "After should the verb has no -s: should drink.",
+              "solution_it": "Dopo should il verbo non prende -s: should drink.",
+              "final_en": "drink",
+              "final_it": "bere"
+            }
+          ],
+          "type": "try"
+        }
+      ]
+    }
+  ],
+  "words": {
+    "core": 20,
+    "extra": 0
+  },
+  "pages": []
+}

@@ -60,8 +60,14 @@ Only `available` pieces can be used; `banco lesson submit --dry-run` says what i
 
 ## Rules of the subject
 
-- Spanish text sits in keys ending `_es` and in `[[es:...]]` spans; the explanations stay Italian. One target language per figure.
-- A target-language sentence has at most 12 words; the tilde and the stress are computed by our engine, never typed by the agent.
+- **Bilingual lessons (D-402, `bilingual: true`, the way new lessons are written; read `banco brief show lesson`, «Bilingual lessons»):** the lesson is in Spanish,
+  every text with its authored Italian translation (`_es` + `_it`, the `::: it` fence, `it=` in headings). The explanations, the goals, the prompts, the
+  messages and the solutions are Spanish; the Italian is the translation, faithful and plain, not a gloss. Italian words inside Spanish text are `[[it:..]]`. A
+  lesson that passed before is Italian prose with `_es` keys and `[[es:...]]` spans and is served as it was. One target language per figure.
+- A target-language sentence has at most 12 words; vocabulary beyond the first 3000 words is glossed or listed in `teaches_es`. Use common given names in
+  sentences (Lucía, Carlos, Marta, Pablo), never the student's or his household's. The tilde and the stress are computed by our engine, never typed by the agent
+  (and the accent direction is never tested).
+- Grammar terms are Spanish, with the Italian term in the glossary pair (`term_es: "verbo irregular"`, `term_it: "verbo irregolare"`).
 - The forms of verbs come from `spanish/verbs`: irregular forms only from the table.
 - Same meaning, same colour as in Italian: `verb` and `od` are the Italian predicate and object.
 - Name the traps of Italian where they are (`trap`, the `mirror` notes): a false friend is said once, with its reason.

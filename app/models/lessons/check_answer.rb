@@ -146,19 +146,34 @@ module Lessons
 
     # ---- the reply --------------------------------------------------------------------------------
 
+    # D-402: a reply of a bilingual lesson is what the served body is: the target text in the slots the page reads (`message_it`, `explain_it`, ...) and
+    # the Italian of those strings in the reply's own `tr` table {target string => Italian}. The reply is built with both texts (`message_en` + `message_it`)
+    # and folded by Lessons::Bilingual, like the body; a legacy check is answered as it always was.
     def reply(graded, check, located, try)
       out = { verdict: graded.verdict, try: try }
       out[:message_it] = graded.message_it if graded.message_it
       out.merge!(reveal(check, located)) if graded.right? || try >= EXPLAIN_FROM_TRY
-      out
+      lang = StudentBody.lang_of(@body)
+      return out unless lang
+
+      entry = graded.error_index && check["errors"].to_a[graded.error_index]
+      if entry && Lang.pair?(entry, "message")
+        out.delete(:message_it)
+        out.merge!(entry.slice("message_#{lang}", "message_it").transform_keys(&:to_sym))
+      end
+      Bilingual.fold(out.transform_keys(&:to_s), lang).except("lang").transform_keys(&:to_sym)
     end
 
     def reveal(check, located)
       out = {}
-      out[:explain_it] = check["explain_it"] if check["explain_it"].present?
-      out[:model_it] = check["model_it"] if check["model_it"].present? # an oral's model answer (withheld until now, L6)
+      %w[explain model].each { |base| copy_pair(out, check, base) } # `model`: an oral's model answer (withheld until now, L6)
       out.merge!(rest_of_example(located)) if located.example
       out
+    end
+
+    # The text of +base+ with its target sibling, when the source has them and they are not empty.
+    def copy_pair(out, source, base)
+      StudentBody.wide([ "#{base}_it" ]).each { |key| out[key.to_sym] = source[key] if source[key].present? }
     end
 
     # The blank step's do_it and the steps after it, up to the next blank (served as the page serves a first blank),
@@ -169,16 +184,16 @@ module Lessons
       following = example["steps"][(index + 1)..].to_a.index { |s| s["blank"] }
       stop = following ? index + 1 + following : example["steps"].size - 1
       steps = example["steps"][index..stop].each_with_index.map do |s, k|
-        item = s.slice("tag", "why_it")
+        item = s.slice(*StudentBody.wide(%w[tag why_it]))
         if following && index + k == stop
           item["blank"] = StudentBody.check(s["blank"], @body["subject"], StudentBody.seed_for_step(StudentBody.seed_for(@student_key, @revision.id, *example_address(example)), index + k))
         else
-          item["do_it"] = s["do_it"]
+          item.merge!(s.slice(*StudentBody.wide(%w[do_it])))
         end
         item
       end
       out = { steps: steps }
-      out[:result_it] = example["result_it"] if example["result_it"] && !following
+      out.merge!(example.slice(*StudentBody.wide(%w[result_it])).compact.transform_keys(&:to_sym)) unless following
       if example["diagram"]
         figure = StudentBody.diagram(example["diagram"])
         if figure["states"]
@@ -194,6 +209,22 @@ module Lessons
     def example_address(example)
       card = @body["cards"].find { |c| c["blocks"].include?(example) }
       [ card["n"], example["n"] ]
+    end
+
+    # The reply of the solution endpoints of a Prova tu exercise (the student's page, the teacher's preview): {n:, solution_it:} (or {n:, steps:} for tagged
+    # steps), and for a bilingual exercise the target text in the same slots with its final and the Italian in a `tr` table of the reply, as the check replies
+    # have it (D-402). A legacy exercise is answered as it always was: the final is never sent apart.
+    def self.solution(exercise)
+      steps = exercise["solution_steps"]
+      bilingual = steps ? steps.any? { |s| Lang.sibling_lang(s, "do") || Lang.sibling_lang(s, "why") } : !Lang.sibling_lang(exercise, "solution").nil?
+      return (steps ? { n: exercise["n"], steps: steps.map { |s| s.slice("tag", "do_it", "why_it") } } : { n: exercise["n"], solution_it: exercise["solution_it"] }) unless bilingual
+
+      out = if steps
+        { "n" => exercise["n"], "steps" => steps.map { |s| s.slice(*StudentBody.wide(%w[tag do_it why_it])) } }
+      else
+        { "n" => exercise["n"] }.merge(exercise.slice(*StudentBody.wide(%w[solution_it final_it])))
+      end
+      Bilingual.fold(out, nil).except("lang").transform_keys(&:to_sym)
     end
   end
 end

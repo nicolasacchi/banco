@@ -13,6 +13,7 @@ module Lessons
   #   {"type"=>"p",  "children"=>[node]}
   #   {"type"=>"ol"|"ul", "items"=>[{"children"=>[node], "sub"=>[[node]]}]}   (+ "start"=>n on an "ol" whose first number is not 1)
   # Nodes: {"t"=>"text","v"=>s} | {"t"=>"bold","children"=>[node]} | {"t"=>"math","v"=>latex}
+  # D-402: [[it:parole]] is the Italian twin of a language span ({"t"=>"lang","lang"=>"it","v"=>words}); where it may stand is the lesson check's business.
   #
   # With roles: true (banco.lesson/2, A5) two constructs more: a colour role span [[role:text]]
   # ({"t"=>"role","role"=>name,"children"=>[node]}) and a link [text](scheda:SLUG) or
@@ -41,6 +42,8 @@ module Lessons
     # Commands that would let an agent reach KaTeX's trust functions or redefine the macro (A5).
     FORBIDDEN_TEX = /\\(htmlClass|htmlId|htmlStyle|htmlData|href|url|includegraphics|def|gdef|edef|xdef|newcommand|renewcommand|providecommand|let|futurelet|global|class|cssId|raw|include|input)(?![A-Za-z])/
 
+    # The blank of an exercise sentence: three or more underscores on their own (D-402; a cloze in a language span was always allowed, D-282).
+    BLANK = /\A_{3,}(?![\p{L}\p{N}_])/
     ORDERED = /\A(\d+)\.\s+(.*)\z/
     ORDERED_EMPTY = /\A\d+\.\s*\z/
     BULLET = /\A-\s+(.*)\z/
@@ -197,6 +200,9 @@ module Lessons
           flush.call
           nodes << link_node(link[1], link[2], line, target)
           i += link[0].size
+        elsif roles && ch == "_" && (blank = text[i..].match(BLANK)) && (i.zero? || !text[i - 1].match?(/[\p{L}\p{N}]/))
+          buffer << blank[0] # D-402: the blank of an exercise sentence (___), kept in the translation too; only on its own, never ___word___ (that is italics)
+          i += blank[0].size
         else
           refuse_char(text, i, line)
           buffer << ch
@@ -227,14 +233,14 @@ module Lessons
       return role_span(text, start, line, target) unless head
 
       name = head[1]
-      if head[2].nil? && LANG_SPANS.include?(name) then lang_span(text, start, line, name, head[0].size)
+      if head[2].nil? && (LANG_SPANS.include?(name) || name == "it") then lang_span(text, start, line, name, head[0].size)
       elsif head[2].nil? && name == "code" then code_span(text, start, line, head[0].size)
       elsif head[2].nil? && name == "g" then gloss_span(text, start, line, head[0].size)
       else role_span(text, start, line, target)
       end
     end
 
-    # [[en:words]]: plain words of another language.
+    # [[en:words]]: plain words of another language; [[it:parole]] (D-402): Italian words quoted inside target-language text.
     def lang_span(text, start, line, lang, head_size)
       from = start + 2 + head_size
       stop = text.index("]]", from)
