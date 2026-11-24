@@ -41,14 +41,14 @@ module Banco
 
       # The schema named +name+ (a parsed hash) for a bilingual subject: a new hash, +schema+ is not changed.
       def derive(schema, name)
-        out = Marshal.load(Marshal.dump(schema))
+        out = copy(schema)
         siblings(out)
         R2.fetch(name.to_s, {}).each do |def_name, keys|
           properties = out.dig("$defs", def_name, "properties") or raise ArgumentError, "#{name}: no $defs/#{def_name}"
           keys.each do |key, twin|
             raise ArgumentError, "#{name}: no #{def_name}.#{key}" unless properties.key?(key)
 
-            properties[twin] ||= Marshal.load(Marshal.dump(properties[key]))
+            properties[twin] ||= copy(properties[key])
           end
         end
         MARKERS.fetch(name.to_s, []).each do |path|
@@ -79,9 +79,12 @@ module Banco
           base = key[/\A(.+)_it\z/, 1]
           next if base.nil? || Lessons::Bilingual::EXEMPT.include?(base)
 
-          LANGS.each { |lang| properties["#{base}_#{lang}"] ||= Marshal.load(Marshal.dump(properties[key])) }
+          LANGS.each { |lang| properties["#{base}_#{lang}"] ||= copy(properties[key]) }
         end
       end
+
+      # A deep copy of a parsed JSON value (a schema is plain JSON: hashes, arrays, strings, numbers, booleans, nil).
+      def copy(value) = JSON.parse(JSON.generate(value))
     end
   end
 end

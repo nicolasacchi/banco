@@ -431,7 +431,7 @@ module Lessons
     def pad_pairs(node, lang)
       return node unless lang
 
-      copy = Marshal.load(Marshal.dump(node))
+      copy = JSON.parse(JSON.generate(node)) # a deep copy of the parsed lesson (plain JSON values)
       Bilingual.pairs(copy, lang).to_a.each do |pointer, _base, target, italian|
         next unless target.is_a?(String) && italian.nil?
 
