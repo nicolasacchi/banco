@@ -28,7 +28,7 @@ class LessonRenderIconsTest < ActiveSupport::TestCase
         page.network.intercept(pattern: "*banco-sprite*")
         page.on(:request) { |request, done| request.url.include?("banco-sprite") ? (sleep 1.2; request.continue) : request.continue }
         page.command("Emulation.setDeviceMetricsOverride", width: 390, height: 844, deviceScaleFactor: 1, mobile: false)
-        page.go_to(Validation::Harness.lesson_page_url(token))
+        open_lesson_host(page, Validation::Harness.lesson_page_url(token))
         answer = page.evaluate_async("window.bancoLessonRender.ready.then(arguments[0])", 30)
         assert answer["ok"], answer.inspect
         JSON.parse(page.evaluate(script))

@@ -136,7 +136,7 @@ class LessonRenderViewportsTest < ActiveSupport::TestCase
       session.context do |ctx|
         %w[cream dark].map do |theme|
           page = ctx.create_page
-          page.go_to(Validation::Harness.lesson_page_url(token, theme: theme))
+          open_lesson_host(page, Validation::Harness.lesson_page_url(token, theme: theme))
           assert page.evaluate_async("window.bancoLessonRender.ready.then((r) => arguments[0](r.ok))", 30)
           count = page.evaluate("performance.getEntriesByType('resource').filter((r) => r.transferSize > 0).length")
           page.close
@@ -164,7 +164,7 @@ class LessonRenderViewportsTest < ActiveSupport::TestCase
             request.continue
           end
         end
-        page.go_to("#{Validation::Harness.lesson_page_url(token)}&ready_ms=2000")
+        open_lesson_host(page, "#{Validation::Harness.lesson_page_url(token)}&ready_ms=2000")
         page.evaluate_async("window.bancoLessonRender.ready.then(arguments[0])", 20)
       end
     end

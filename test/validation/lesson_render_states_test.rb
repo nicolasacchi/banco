@@ -291,10 +291,7 @@ class LessonRenderStatesTest < ActiveSupport::TestCase
       session.context do |ctx|
         page = ctx.create_page
         page.command("Emulation.setDeviceMetricsOverride", width: 390, height: 844, deviceScaleFactor: 1, mobile: false)
-        page.go_to(Validation::Harness.lesson_page_url(token))
-        # the host's module may still be loading when the navigation returns (the runner waits for it the same way, `defined_in?`)
-        deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + 20
-        sleep 0.25 until page.evaluate("typeof window.bancoLessonRender !== 'undefined'") || Process.clock_gettime(Process::CLOCK_MONOTONIC) > deadline
+        open_lesson_host(page, Validation::Harness.lesson_page_url(token))
         page.evaluate_async("window.bancoLessonRender.ready.then(arguments[0])", 30)
         page.evaluate_async("window.bancoLessonRender.inspect(1).then(arguments[0])", 10)
         page.evaluate("[!!document.querySelector('#scheda-1 .oral-form'), !!document.querySelector('#scheda-1 .oral-outline-plain'), document.querySelectorAll('#scheda-1 .oral-form li, #scheda-1 .oral-form [role=listitem]').length]")
