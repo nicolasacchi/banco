@@ -62,7 +62,7 @@ module Teacher
       since = CONTEST_DAYS.days.ago.beginning_of_day
       settled = Practice::Resolutions.for_student(student.id).keys
       practice = PracticeContest.where(student_id: student.id).where("created_at >= ?", since).where.not(practice_attempt_id: settled).count
-      practice + LessonEvent.where(student_id: student.id, kind: "check_contested").where("at >= ?", since).count
+      practice + Lessons::Contests.count(student: student, since: since)
     end
 
     # The cell of one student in one subject (D-217 student list).

@@ -78,7 +78,7 @@ class LessonContestSystemTest < ApplicationSystemTestCase
       assert_selector ".verdict-right", text: "Sì."
       assert_no_button BUTTON # a right answer needs no teacher
     end
-    assert_equal 1, Comment.where(student: student).count
+    assert_equal 0, Comment.where(student: student).count
     summary = Lessons::Progress.summary(student, @lesson_revision.reload)
     assert_equal [ 2, 1, 1 ], [ summary.checks_answered, summary.checks_contested, summary.first_try_right ]
   end

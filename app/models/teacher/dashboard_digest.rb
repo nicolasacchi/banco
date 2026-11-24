@@ -8,7 +8,6 @@ module Teacher
                 finding_assessments grade_proposals blueprint_revisions skill_graph_revisions course_revisions topic_revisions
                 lesson_revisions lesson_reviews lesson_finding_responses diagnosis_runs diagnosis_events attempts attempt_gradings practice_serves
                 practice_attempts practice_gradings practice_events practice_contests student_questions students].freeze
-    LESSON_CONTESTS_WHERE = "kind = 'check_contested'".freeze
     APP_EVENTS_WHERE = "kind <> '#{Minutes::KIND}'".freeze
 
     TTL = Rails.env.test? ? 0 : 5 # seconds: several open tabs share one computation
@@ -39,7 +38,7 @@ module Teacher
     def watermarks
       parts = TABLES.map { |t| "SELECT '#{t}' AS name, MAX(id) AS m FROM #{t}" }
       parts << "SELECT 'app_events', MAX(id) FROM app_events WHERE #{APP_EVENTS_WHERE}"
-      parts << "SELECT 'lesson_contests', MAX(id) FROM lesson_events WHERE #{LESSON_CONTESTS_WHERE}" # «Per me va bene così» on a lesson check (D-400); the other lesson events are the student's reading
+      parts << Lessons::Contests.sql_watermark # «Per me va bene così» on a lesson check (D-400); the other lesson events are the student's reading
       ApplicationRecord.connection.select_rows(parts.join(" UNION ALL "))
     end
   end
