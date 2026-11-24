@@ -1,0 +1,66 @@
+{
+  "hero": {
+    "type": "sentence",
+    "alt_it": "The sentence She reads a book, with the subject, the verb and the object in colour.",
+    "parts": [
+      {
+        "id": "s",
+        "text_en": "She",
+        "role": "subject",
+        "label_it": "subject"
+      },
+      {
+        "id": "v",
+        "text_en": "reads",
+        "role": "verb",
+        "label_it": "verb"
+      },
+      {
+        "id": "o",
+        "text_en": "a book",
+        "role": "object",
+        "label_it": "object"
+      }
+    ],
+    "layout": "line",
+    "text_en": "She reads a book",
+    "tr": {
+      "The sentence She reads a book, with the subject, the verb and the object in colour.": "La frase She reads a book, con il soggetto, il verbo e il complemento oggetto colorati.",
+      "subject": "soggetto",
+      "verb": "verbo",
+      "object": "complemento oggetto"
+    }
+  },
+  "block": {
+    "type": "sentence",
+    "alt_it": "The sentence She reads a book, with the subject, the verb and the object in colour.",
+    "parts": [
+      {
+        "id": "s",
+        "text_en": "She",
+        "role": "subject",
+        "label_it": "subject"
+      },
+      {
+        "id": "v",
+        "text_en": "reads",
+        "role": "verb",
+        "label_it": "verb"
+      },
+      {
+        "id": "o",
+        "text_en": "a book",
+        "role": "object",
+        "label_it": "object"
+      }
+    ],
+    "layout": "line",
+    "text_en": "She reads a book",
+    "tr": {
+      "The sentence She reads a book, with the subject, the verb and the object in colour.": "La frase She reads a book, con il soggetto, il verbo e il complemento oggetto colorati.",
+      "subject": "soggetto",
+      "verb": "verbo",
+      "object": "complemento oggetto"
+    }
+  }
+}

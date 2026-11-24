@@ -73,9 +73,9 @@ module Validation
     def r2_gaps(node, pointer = "", &block)
       case node
       when Hash
-        Lessons::Bilingual::FIELDS[:r2].each do |base, where|
+        Lessons::Bilingual::FIELDS[:r2].each_key do |base|
           value = node[base]
-          next unless where.match?(pointer) && !node.key?("#{base}_it") && (value.is_a?(String) ? !value.strip.empty? : value.is_a?(Array) && value.any?)
+          next unless Lessons::Bilingual.r2?(node, base, pointer) && !node.key?("#{base}_it") && (value.is_a?(String) ? !value.strip.empty? : value.is_a?(Array) && value.any?)
 
           yield "#{pointer}/#{base}", base
         end
@@ -244,11 +244,12 @@ module Validation
     # Italian translations are gone (`text_it`, `final_it`, `header_it`, ... of rule R2 too). Paired fields only; a text with no translation is
     # renamed all the same, an Italian text with no target stays. Findings made on this layer name the keys of the legacy shape: `renamed` lists
     # the bases that were renamed (see +author_pointer+).
-    def target_layer(doc, lang = nil, pointer = "", renamed = nil)
+    def target_layer(doc, lang = nil, pointer = "", renamed = nil, sentence = false)
       case doc
       when Hash
         out = doc.dup
-        Lessons::Bilingual.twins(doc, lang, pointer).each do |base, tkey, ikey, kind|
+        sentence = Lessons::Bilingual.in_sentence?(doc, sentence)
+        Lessons::Bilingual.twins(doc, lang, pointer, sentence: sentence).each do |base, tkey, ikey, kind|
           next if tkey.nil? || kind == :legacy
 
           if kind == :r2
@@ -260,8 +261,8 @@ module Validation
             renamed&.add(base)
           end
         end
-        out.to_h { |k, v| [ k, v.is_a?(Hash) || v.is_a?(Array) ? target_layer(v, lang, "#{pointer}/#{k}", renamed) : v ] }
-      when Array then doc.each_with_index.map { |v, i| v.is_a?(Hash) || v.is_a?(Array) ? target_layer(v, lang, "#{pointer}/#{i}", renamed) : v }
+        out.to_h { |k, v| [ k, v.is_a?(Hash) || v.is_a?(Array) ? target_layer(v, lang, "#{pointer}/#{k}", renamed, sentence) : v ] }
+      when Array then doc.each_with_index.map { |v, i| v.is_a?(Hash) || v.is_a?(Array) ? target_layer(v, lang, "#{pointer}/#{i}", renamed, sentence) : v }
       else doc
       end
     end

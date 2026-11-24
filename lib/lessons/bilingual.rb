@@ -18,13 +18,19 @@ module Lessons
 
     FIELDS = {
       # R2: bare keys that hold the subject's language. Base => the pointer of the hash that holds it (the key's twin is `<base>_it`). The table of a lesson
-      # (the block, at /cards/N/blocks/M) and of a figure of type `table` (its pointer ends /diagram or /schema) is paired like an item's table (D-402, slice 3).
+      # (the block, at /cards/N/blocks/M) and of a figure of type `table` (its pointer ends /diagram or /schema) is paired like an item's table (D-402, slice 3):
+      # `header` and `rows` there only count when the hash is of `type: table` (TYPED), so the `rows` of a mirror or a word_parts figure are not table rows.
       r2: {
         "text" => %r{/(?:options|elements|left|right)/\d+\z|/quote\z},
         "header" => %r{/(?:table|diagram|schema)\z|/blocks/\d+\z},
         "rows" => %r{/(?:table|diagram|schema)\z|/blocks/\d+\z},
         "final" => %r{/solution\z}
       }.freeze,
+      # The pointers of R2's `header` and `rows` that name a block or a figure of any type: the hash must say `type: table` to hold a table there.
+      table_typed: %r{/(?:diagram|schema)\z|/blocks/\d+\z}.freeze,
+      # The figure whose own text is target-language material, never a pair: a `sentence` figure's `text_<lang>` (and its states'), with the parts in `fragments`.
+      # Its translation lives in `alt_it` and `caption_it`, which pair as usual. Value: the figure's `type`.
+      sentence_type: "sentence",
       # Pairs that a figure or a block already draws by its own shape, as (Italian base => target base): a dialogue line's `text_en` and
       # `gloss_it`, a word_parts word's `form_en` and `label_it`. They count as pairs for the validators and are never folded.
       legacy: { "gloss" => "text", "label" => "form" }.freeze,
@@ -46,26 +52,36 @@ module Lessons
     # the pointer is the target field's (where it would be when missing), +target+ or +italian+ is nil when that side is missing. A list
     # pairs by index (a missing or extra item is a nil side), a table row by row. +lang+ is the subject's language, nil for any of them.
     # Orphans come out too (a target without its Italian, an Italian without its target); the validators decide what each means.
-    def pairs(node, lang = nil, pointer = "", &block)
-      return enum_for(:pairs, node, lang, pointer) unless block
+    def pairs(node, lang = nil, pointer = "", sentence = false, &block)
+      return enum_for(:pairs, node, lang, pointer, sentence) unless block
 
       case node
       when Hash
-        twins(node, lang, pointer).each { |base, tkey, ikey, _| leaves("#{pointer}/#{tkey || "#{base}_#{lang || Lang.sibling_lang(node, base) || Lang::PAIR_LANGS.first}"}", base, tkey && node[tkey], ikey && node[ikey], &block) }
-        node.each { |k, v| pairs(v, lang, "#{pointer}/#{k}", &block) if v.is_a?(Hash) || v.is_a?(Array) }
+        sentence = in_sentence?(node, sentence)
+        twins(node, lang, pointer, sentence: sentence).each { |base, tkey, ikey, _| leaves("#{pointer}/#{tkey || "#{base}_#{lang || Lang.sibling_lang(node, base) || Lang::PAIR_LANGS.first}"}", base, tkey && node[tkey], ikey && node[ikey], &block) }
+        node.each { |k, v| pairs(v, lang, "#{pointer}/#{k}", sentence, &block) if v.is_a?(Hash) || v.is_a?(Array) }
       when Array
-        node.each_with_index { |v, i| pairs(v, lang, "#{pointer}/#{i}", &block) if v.is_a?(Hash) || v.is_a?(Array) }
+        node.each_with_index { |v, i| pairs(v, lang, "#{pointer}/#{i}", sentence, &block) if v.is_a?(Hash) || v.is_a?(Array) }
       end
+    end
+
+    # True inside a `sentence` figure (the figure itself, its states, its parts): +inherited+ is what the parent said.
+    def in_sentence?(hash, inherited = false) = inherited || hash["type"] == FIELDS[:sentence_type]
+
+    # Is +base+ of +hash+, at +pointer+, a key of rule R2 (a bare key that holds the target text)? `header` and `rows` of a block or a figure must belong to a table.
+    def r2?(hash, base, pointer)
+      FIELDS[:r2][base]&.match?(pointer) && (!FIELDS[:table_typed].match?(pointer) || !%w[header rows].include?(base) || hash["type"] == "table")
     end
 
     # The Italian layer of +doc+ (§4.2 rule 5): each pair is replaced by its Italian, so a scan for the key finds what the student reads
     # with the translation open. R1 keys keep `<base>_it` and lose the target sibling; R2 keys take the Italian in the bare key. Orphans,
     # legacy and native pairs stay as they are. A new object; +doc+ is not changed.
-    def italian_layer(doc, pointer = "")
+    def italian_layer(doc, pointer = "", sentence = false)
       case doc
       when Hash
         out = doc.dup
-        twins(doc, nil, pointer).each do |base, tkey, ikey, kind|
+        sentence = in_sentence?(doc, sentence)
+        twins(doc, nil, pointer, sentence: sentence).each do |base, tkey, ikey, kind|
           next if kind == :legacy || tkey.nil? || ikey.nil?
 
           if kind == :r2
@@ -74,8 +90,8 @@ module Lessons
           else out.delete(tkey)
           end
         end
-        out.to_h { |k, v| [ k, v.is_a?(Hash) || v.is_a?(Array) ? italian_layer(v, "#{pointer}/#{k}") : v ] }
-      when Array then doc.each_with_index.map { |v, i| v.is_a?(Hash) || v.is_a?(Array) ? italian_layer(v, "#{pointer}/#{i}") : v }
+        out.to_h { |k, v| [ k, v.is_a?(Hash) || v.is_a?(Array) ? italian_layer(v, "#{pointer}/#{k}", sentence) : v ] }
+      when Array then doc.each_with_index.map { |v, i| v.is_a?(Hash) || v.is_a?(Array) ? italian_layer(v, "#{pointer}/#{i}", sentence) : v }
       else doc
       end
     end
@@ -92,17 +108,18 @@ module Lessons
     # ---- walking ------------------------------------------------------------------------------------------------------------
 
     # The pairs of one hash as [[base, target_key, italian_key, kind]]; a side that is missing is nil; kind is :r1, :r2 or :legacy.
-    def twins(hash, lang, pointer, r2: true)
+    # +sentence+: the hash is inside a `sentence` figure, whose `text` is target-only (see FIELDS[:sentence_type]); a walker passes `in_sentence?`.
+    def twins(hash, lang, pointer, r2: true, sentence: false)
       langs = lang ? [ lang ] : Lang::PAIR_LANGS
       out = []
       taken = []
       hash.each_key do |key|
         next unless key.is_a?(String) && (base = key[/\A(.+)_it\z/, 1])
-        next if EXEMPT.include?(base) || FIELDS[:native].include?(base)
+        next if EXEMPT.include?(base) || FIELDS[:native].include?(base) || (sentence && base == "text")
 
         tkey = langs.map { |l| "#{base}_#{l}" }.find { |k| hash.key?(k) }
         kind = :r1
-        if tkey.nil? && r2 && hash.key?(base) && FIELDS[:r2][base]&.match?(pointer)
+        if tkey.nil? && r2 && hash.key?(base) && r2?(hash, base, pointer)
           tkey = base
           kind = :r2
         end
@@ -121,7 +138,7 @@ module Lessons
 
         base = key.sub(/_(en|es)\z/, "")
         next if EXEMPT.include?(base) || FIELDS[:native].include?(base) || FIELDS[:target_only].include?(base)
-        next if base == "text" && (hash["component"] == "span_select" || FIELDS[:fragments].match?(pointer))
+        next if base == "text" && (sentence || hash["component"] == "span_select" || FIELDS[:fragments].match?(pointer))
         next if hash.key?("#{base}_it")
 
         out << [ base, key, nil, :r1 ]
@@ -141,18 +158,19 @@ module Lessons
 
     # ---- folding ------------------------------------------------------------------------------------------------------------
 
-    def fold_scope(node, lang, level)
+    def fold_scope(node, lang, level, sentence = false)
       tr = {}
-      out = fold_node(node, lang, level, tr)
+      out = fold_node(node, lang, level, tr, sentence)
       out["tr"] = tr unless tr.empty?
       out
     end
 
-    def fold_node(node, lang, level, tr)
+    def fold_node(node, lang, level, tr, sentence = false)
       case node
       when Hash
         out = node.dup
-        twins(node, lang, "", r2: false).each do |_base, tkey, ikey, kind|
+        sentence = in_sentence?(node, sentence)
+        twins(node, lang, "", r2: false, sentence: sentence).each do |_base, tkey, ikey, kind|
           next unless kind == :r1 && tkey && ikey
 
           record(tr, node[tkey], node[ikey])
@@ -161,12 +179,12 @@ module Lessons
         end
         out.to_h do |key, value|
           if value.is_a?(Array) && (inner = SCOPES[key]) && level == inner && value.all?(Hash)
-            [ key, value.map { |element| fold_scope(element, lang, key == "cards" ? :card : :block) } ]
+            [ key, value.map { |element| fold_scope(element, lang, key == "cards" ? :card : :block, sentence) } ]
           else
-            [ key, fold_node(value, lang, level, tr) ]
+            [ key, fold_node(value, lang, level, tr, sentence) ]
           end
         end
-      when Array then node.map { |value| fold_node(value, lang, level, tr) }
+      when Array then node.map { |value| fold_node(value, lang, level, tr, sentence) }
       else node
       end
     end

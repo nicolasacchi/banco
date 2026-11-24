@@ -1,0 +1,52 @@
+{
+  "hero": {
+    "type": "sentence",
+    "alt_it": "La frase Mi hermana lee un libro, con el verbo y el complemento directo en color.",
+    "parts": [
+      {
+        "id": "v",
+        "text_es": "lee",
+        "role": "verb",
+        "label_it": "el verbo"
+      },
+      {
+        "id": "o",
+        "text_es": "un libro",
+        "role": "od",
+        "label_it": "complemento directo"
+      }
+    ],
+    "layout": "line",
+    "text_es": "Mi hermana lee un libro",
+    "tr": {
+      "La frase Mi hermana lee un libro, con el verbo y el complemento directo en color.": "La frase Mi hermana lee un libro, con il verbo e il complemento diretto colorati.",
+      "el verbo": "il verbo",
+      "complemento directo": "complemento diretto"
+    }
+  },
+  "block": {
+    "type": "sentence",
+    "alt_it": "La frase Mi hermana lee un libro, con el verbo y el complemento directo en color.",
+    "parts": [
+      {
+        "id": "v",
+        "text_es": "lee",
+        "role": "verb",
+        "label_it": "el verbo"
+      },
+      {
+        "id": "o",
+        "text_es": "un libro",
+        "role": "od",
+        "label_it": "complemento directo"
+      }
+    ],
+    "layout": "line",
+    "text_es": "Mi hermana lee un libro",
+    "tr": {
+      "La frase Mi hermana lee un libro, con el verbo y el complemento directo en color.": "La frase Mi hermana lee un libro, con il verbo e il complemento diretto colorati.",
+      "el verbo": "il verbo",
+      "complemento directo": "complemento diretto"
+    }
+  }
+}

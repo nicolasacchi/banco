@@ -59,22 +59,23 @@ module Validation
 
     # Every pair `foo_en|es` + `foo_it` under +node+ that the flag does not allow: any pair in a lesson that is not bilingual (+lang+ nil), a pair in another
     # language than the subject's +target+ in one that is. Yields (field, why). Fragments and the figures' own pairs (dialogue, mirror) are not pairs.
-    def flag_pairs(node, pointer, lang, target, &emit)
+    def flag_pairs(node, pointer, lang, target, sentence = false, &emit)
       case node
       when Hash
+        sentence = Lessons::Bilingual.in_sentence?(node, sentence)
         node.each_key do |key|
           m = key.is_a?(String) && key.match(/\A(.+)_(en|es)\z/) or next
           base = m[1]
           next if !node.key?("#{base}_it") || Lessons::Bilingual::EXEMPT.include?(base) || Lessons::Bilingual::FIELDS[:native].include?(base)
-          next if base == "text" && (node["component"] == "span_select" || Lessons::Bilingual::FIELDS[:fragments].match?(pointer))
+          next if base == "text" && (sentence || node["component"] == "span_select" || Lessons::Bilingual::FIELDS[:fragments].match?(pointer))
           next if lang && m[2] == lang
 
           names = { "en" => "English", "es" => "Spanish" }
           why = lang ? "#{key} is in #{names[m[2]]} and the subject teaches #{names[target]}" : "#{key} and #{base}_it are a pair, and the lesson is not bilingual (bilingual: true in the front matter)"
           emit.call("#{pointer}/#{key}", why)
         end
-        node.each { |k, v| flag_pairs(v, "#{pointer}/#{k}", lang, target, &emit) if v.is_a?(Hash) || v.is_a?(Array) }
-      when Array then node.each_with_index { |v, i| flag_pairs(v, "#{pointer}/#{i}", lang, target, &emit) if v.is_a?(Hash) || v.is_a?(Array) }
+        node.each { |k, v| flag_pairs(v, "#{pointer}/#{k}", lang, target, sentence, &emit) if v.is_a?(Hash) || v.is_a?(Array) }
+      when Array then node.each_with_index { |v, i| flag_pairs(v, "#{pointer}/#{i}", lang, target, sentence, &emit) if v.is_a?(Hash) || v.is_a?(Array) }
       end
     end
 

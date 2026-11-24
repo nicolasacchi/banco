@@ -541,8 +541,8 @@ sees the target text; the Italian opens with the button «Traduzione» (the card
 **Table cells.** A `table` block (and a figure of type `table`) keeps its cells in `header` / `rows` **in the target language** and adds the Italian as `header_it` /
 `rows_it`, the same shape (same number of columns and rows).
 
-**Material, not translated piece by piece.** The sentence of a `span_select` (`text_en`) and its spans, the tiles, the text a check reads aloud (`listen: {text_en: ...}`) and the parts of a `sentence`
-figure (`parts[].text_en`) are target text with no Italian twin: translate the sentence in the check's `prompt_it` (or `explain_it`). A `sentence` figure puts its
+**Material, not translated piece by piece.** The sentence of a `span_select` (`text_en`) and its spans, the tiles, the text a check reads aloud (`listen: {text_en: ...}`), the sentence of a `sentence`
+figure (its `text_en`, never beside a `text_it`) and its parts (`parts[].text_en`) are target text with no Italian twin: translate the sentence in the check's `prompt_it` (or `explain_it`). A `sentence` figure puts its
 explanation in `alt` and `caption` (pairs), and the Italian names of the roles in `label_en` / `label_it`.
 
 **Parity.** The Italian must say what the target says, no more, no less: the same paragraphs and list items, the same `___` blanks, the same formulas and digits,
