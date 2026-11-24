@@ -110,7 +110,7 @@ class PagesApprovalTest < ActionDispatch::IntegrationTest
   end
 
   test "no new decision kind: the approval of the topic carries the confirmation of the pages" do
-    assert_equal 19, DecisionRecorder::KINDS.size
+    assert_equal 20, DecisionRecorder::KINDS.size # 19 and set_focus_subject (D-399); none of them is about a page
     assert_empty DecisionRecorder::KINDS.grep(/page/i)
   end
 end

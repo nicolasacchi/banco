@@ -25,7 +25,8 @@ module Teacher
       void_run: "void_diagnosis_run", extend_run: "extend_diagnosis_run", close_run: "close_diagnosis_run",
       void_revision_attempts: "void_revision_attempts", release: "release_diagnosis", consent: "record_consent",
       kind_override: "kind_override", send_back_item: "send_back_item", set_formula_sheet: "set_formula_sheet",
-      approve_topic: "approve_topic", send_back_lesson: "send_back_lesson", release_course: "release_course"
+      approve_topic: "approve_topic", send_back_lesson: "send_back_lesson", release_course: "release_course",
+      set_focus_subject: "set_focus_subject"
     }.each do |action, kind|
       define_method(action) { decide(kind) }
     end

@@ -117,6 +117,7 @@ module Activity
     key = decision.kind
     key += payload["enabled"] ? "_on" : "_off" if key == "set_formula_sheet"
     key += payload["open"] ? "_open" : "_closed" if key == "release_course"
+    key += payload["subject"].present? ? "_set" : "_clear" if key == "set_focus_subject"
     text = I18n.t("activity.decision.#{key}", default: I18n.t("activity.decision.other", kind: decision.kind))
     text += ": #{payload['topic']}" if payload["topic"].present?
     text + subject_suffix(decision.subject)

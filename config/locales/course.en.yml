@@ -20,6 +20,8 @@ en:
     start: "Start"
     suggestions: "For today"
     later: "Later"
+    # D-399: on the suggestion of the subject the teacher recommends, shown first.
+    focus: "Your teacher suggests you start from here."
     reason:
       to_recover: "From the test, to review: %{skill}."
       to_learn: "In the entry test, to learn: %{skill}."

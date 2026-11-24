@@ -6,7 +6,7 @@ module Course
   #   view.subjects            # visible subjects only (Catalog::SubjectView with topics)
   #   view.find_topic(key)     # => [SubjectView, TopicView] or nil when the topic is not visible to this student
   #   view.progress(sv)        # => Progress(programme:, extra:), each a Tally(total, done, in_progress, known, minutes_left; missing, exercises, hours_left)
-  #   view.today               # => {resume:, suggestions: [Practice::Today::Suggestion]}
+  #   view.today               # => {resume:, suggestions: [Practice::Today::Suggestion]}; the recommended subject's (D-399) first, marked `focus`
   class StudentView
     DONE = Practice::Today::DONE
 
@@ -211,8 +211,11 @@ module Course
 
     def today_input
       programme = subjects.map { |sv| sv.with(topics: programme_topics(sv)) }.select { |sv| sv.topics.any? }
-      { catalog: programme, states: states, graph_order: graph_order, last_topic: last_topic }
+      { catalog: programme, states: states, graph_order: graph_order, last_topic: last_topic, focus: focus_subject }
     end
+
+    # The subject the teacher recommends (D-399), one rule for every student this view shows: Oggi puts that subject's suggestion first.
+    def focus_subject = @focus_subject ||= Focus.subject_key
 
     # The whole ranked list of Oggi, not cut at SUGGESTIONS_MAX.
     def ranked_today = @ranked_today ||= Practice::Today.call(**today_input, limit: nil)

@@ -20,6 +20,8 @@ it:
     start: "Comincia"
     suggestions: "Per oggi"
     later: "Dopo"
+    # D-399: on the suggestion of the subject the teacher recommends, shown first.
+    focus: "Il docente ti consiglia di cominciare da qui."
     reason:
       to_recover: "Dal test è risultata da ripassare: %{skill}."
       to_learn: "Nella diagnosi è risultata da imparare: %{skill}."

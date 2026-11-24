@@ -58,6 +58,7 @@ module Teacher
       keep = ->(steps) { steps.select { |s| !only_ready || s.ready? } }
       out.merge(
         revision: { id: review.latest.id, seq: review.latest.seq }, open: review.open?, released_revision_id: review.released_id, released_latest: review.released_latest?,
+        focus_subject: Course::Focus.subject_key, recommended: Course::Focus.subject_key == review.subject.key,
         counts: review.counts.merge(ready: review.ready_count), notes_it: review.notes,
         warnings: review.warnings.map { |w| { code: w["code"], message: I18n.t("teacher.course.warning.#{w['code']}", default: w["message"]) } },
         topics: keep.call(review.programme_steps).map { |s| step(s, review.subject) },

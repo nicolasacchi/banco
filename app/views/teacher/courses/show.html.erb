@@ -80,6 +80,31 @@
       <% end %>
     </section>
 
+    <%# D-399: the subject the student starts from. One for the whole app; the latest decision counts. %>
+    <section id="course-focus" class="card" data-focus="<%= @focus&.key %>" data-this="<%= @focus&.id == @subject.id %>">
+      <h2 class="card-title"><%= t("teacher.course.focus.title") %></h2>
+      <% if @focus.nil? %>
+        <p><%= t("teacher.course.focus.none") %></p>
+      <% elsif @focus.id == @subject.id %>
+        <p><strong><%= t("teacher.course.focus.this") %></strong></p>
+      <% else %>
+        <p><%= t("teacher.course.focus.other", subject: @focus.name_it) %></p>
+      <% end %>
+      <p class="hint"><%= t("teacher.course.focus.hint") %></p>
+      <% unless @focus&.id == @subject.id %>
+        <%= decision_form("/teacher/focus", id: "course-focus-form") do %>
+          <%= hidden_field_tag :subject, @subject.key, id: "course-focus-subject" %>
+          <button type="submit" class="button" <%= "disabled" if blocker || !review.open? %>><%= t("teacher.course.focus.set") %></button>
+        <% end %>
+        <% unless review.open? %><p class="hint"><%= t("teacher.course.focus.needs_open") %></p><% end %>
+      <% end %>
+      <% if @focus %>
+        <%= decision_form("/teacher/focus", id: "course-focus-clear-form") do %>
+          <%= hidden_field_tag :subject, "", id: "course-focus-clear-subject" %>
+          <button type="submit" class="button secondary" <%= "disabled" if blocker %>><%= t("teacher.course.focus.clear") %></button>
+        <% end %>
+      <% end %>
+    </section>
 
     <% if review.skills.any? %>
       <details class="disclosure" id="course-skills">

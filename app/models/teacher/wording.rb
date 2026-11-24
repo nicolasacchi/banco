@@ -48,7 +48,11 @@ module Teacher
       [ /\Athe course is already open with this map\z/, ->(_names, *) { "Il corso è già aperto con questa mappa." } ],
       [ /\Athe course of (\w+) is not open\z/, ->(_names, *) { "Il corso non è aperto." } ],
       [ /\Athere is no course map for (\w+)\z/, ->(_names, *) { "Non c'è ancora una mappa del corso." } ],
-      [ /\Aopen is 1 or 0\z/, ->(_names, *) { "Scegli se aprire o chiudere il corso." } ]
+      [ /\Aopen is 1 or 0\z/, ->(_names, *) { "Scegli se aprire o chiudere il corso." } ],
+      [ /\Asubject is a subject key, or an empty string to clear the recommendation\z/, ->(_names, *) { "Scegli una materia, oppure togli il consiglio." } ],
+      [ /\Ano subject is recommended now\z/, ->(_names, *) { "Non c'è nessun consiglio da togliere." } ],
+      [ /\A(\w+) is already the recommended subject\z/, ->(_names, *) { "Questa materia è già quella consigliata." } ],
+      [ /\Athe course of (\w+) is not open to the student\z/, ->(_names, *) { "Il corso di questa materia non è ancora aperto allo studente." } ]
     ].freeze
 
     module_function

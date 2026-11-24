@@ -18,8 +18,8 @@ class PracticeTodayTest < ActiveSupport::TestCase
   def math = Subject.new("math", 1)
   def italian = Subject.new("italian", 2)
 
-  def call(catalog, states = {}, order: {}, last: nil)
-    Practice::Today.call(catalog: catalog, states: states, graph_order: order, last_topic: last)
+  def call(catalog, states = {}, order: {}, last: nil, focus: nil, limit: Practice::Today::V6::SUGGESTIONS_MAX)
+    Practice::Today.call(catalog: catalog, states: states, graph_order: order, last_topic: last, focus: focus, limit: limit)
   end
 
   test "graph order is Kahn with ties by key, and ignores prerequisites of other subjects" do
@@ -59,6 +59,59 @@ class PracticeTodayTest < ActiveSupport::TestCase
     states = %w[italian.a italian.b math.a math.b].to_h { |k| [ k, state(k, "to_recover") ] }
     out = call(cat, states, order: { "italian.a" => 0, "italian.b" => 1, "math.a" => 0, "math.b" => 1 })
     assert_equal %w[m1 i1 m2], out[:suggestions].map(&:topic_key)
+  end
+
+  # D-399: the subject the teacher recommends. Its first ranked suggestion goes before the round robin, marked; nothing else moves.
+  def two_subjects = catalog(View.new(math, [ topic("m1", "math.a"), topic("m2", "math.b") ]), View.new(italian, [ topic("i1", "italian.a"), topic("i2", "italian.b") ]))
+
+  test "a focus subject's suggestion comes first, marked, and the others keep the round robin" do
+    plain = call(two_subjects, limit: nil)
+    assert_equal %w[m1 i1 m2 i2], plain[:suggestions].map(&:topic_key)
+    assert_equal [ false ] * 4, plain[:suggestions].map(&:focus)
+
+    out = call(two_subjects, focus: "italian", limit: nil)
+    assert_equal %w[i1 m1 m2 i2], out[:suggestions].map(&:topic_key)
+    assert_equal [ true, false, false, false ], out[:suggestions].map(&:focus)
+    assert_equal :course_next, out[:suggestions].first.reason
+  end
+
+  test "the focus suggestion is the subject's own first one, by reason and graph order, and keeps its skill" do
+    cat = catalog(View.new(math, [ topic("m1", "math.a") ]), View.new(italian, [ topic("i1", "italian.a"), topic("i2", "italian.b"), topic("i3", "italian.c") ]))
+    states = { "math.a" => state("math.a", "to_recover"), "italian.b" => state("italian.b", "to_learn"), "italian.c" => state("italian.c", "to_recover") }
+    order = { "math.a" => 0, "italian.a" => 0, "italian.b" => 1, "italian.c" => 2 }
+    assert_equal %w[m1 i3 i2], call(cat, states, order: order)[:suggestions].map(&:topic_key)
+    out = call(cat, states, order: order, focus: "italian")
+    first = out[:suggestions].first
+    assert_equal [ "i3", :to_recover, "italian.c", true ], [ first.topic_key, first.reason, first.skill, first.focus ]
+    assert_equal %w[i3 m1 i2], out[:suggestions].map(&:topic_key)
+  end
+
+  test "the focus suggestion survives the cut at three, and a focus of the first subject changes nothing but the mark" do
+    cat = catalog(View.new(math, (1..4).map { |i| topic("m#{i}", "math.s#{i}") }), View.new(italian, [ topic("i1", "italian.a") ]))
+    assert_equal %w[m1 i1 m2], call(cat)[:suggestions].map(&:topic_key)
+    assert_equal %w[i1 m1 m2], call(cat, focus: "italian")[:suggestions].map(&:topic_key)
+    assert_equal %w[m1 i1 m2], call(cat, focus: "math")[:suggestions].map(&:topic_key)
+    assert_equal [ true, false, false ], call(cat, focus: "math")[:suggestions].map(&:focus)
+  end
+
+  test "a focus subject with nothing left, an unknown one, or none leaves Oggi as it was" do
+    done = { "math.a" => state("math.a", "demonstrated"), "math.b" => state("math.b", "demonstrated") }
+    assert_equal %w[i1 i2], call(two_subjects, done, focus: "math")[:suggestions].map(&:topic_key)
+    assert_equal [ false, false ], call(two_subjects, done, focus: "math")[:suggestions].map(&:focus)
+    assert_equal call(two_subjects), call(two_subjects, focus: "history")
+    assert_equal call(two_subjects), call(two_subjects, focus: nil)
+  end
+
+  test "a student resuming a topic of the focus subject gets no promotion; resuming another subject does not stop it" do
+    plain = call(two_subjects, last: "i1", focus: "italian")
+    assert_equal "i1", plain[:resume]
+    assert_equal %w[m1 i2 m2], plain[:suggestions].map(&:topic_key)
+    assert_equal [ false ] * 3, plain[:suggestions].map(&:focus)
+
+    other = call(two_subjects, last: "m1", focus: "italian")
+    assert_equal "m1", other[:resume]
+    assert_equal %w[i1 m2 i2], other[:suggestions].map(&:topic_key)
+    assert_equal true, other[:suggestions].first.focus
   end
 
   test "Riprendi is the last topic when visible and not done, and is left out of the suggestions" do

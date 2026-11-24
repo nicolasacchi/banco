@@ -13,6 +13,15 @@
 #
 # The student's text has no decision number and no jargon; it is second person and never blames. Newest first is the order of the pages, not of this file.
 entries:
+  - id: focus-subject-1124
+    date: 2026-11-24
+    audience: [student, teacher]
+    kind: software
+    decisions: [D-399]
+    title_it: "Il docente ti consiglia da quale materia cominciare"
+    body_it: "Il docente può consigliarti una materia. In Oggi, il primo argomento di quella materia viene per primo e dice: «Il docente ti consiglia di cominciare da qui.» Il docente lo imposta, o lo toglie, dalla pagina del corso della materia."
+    title_en: "Your teacher suggests which subject to start from"
+    body_en: "Your teacher can suggest a subject. In Today, the first topic of that subject comes first and says: «Your teacher suggests you start from here.» The teacher sets it, or removes it, on the subject's course page."
   - id: contest-everywhere-allowed
     date: 2026-11-23
     audience: [student]

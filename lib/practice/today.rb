@@ -8,10 +8,14 @@ module Practice
   #   states:     {skill => SkillState}
   #   graph_order: {skill => position} (Practice::GraphOrder)
   #   last_topic: key of the topic of the student's latest serve or lesson_opened, or nil
+  #   focus:      key of the subject the teacher recommends the student start from (D-399), or nil
   module Today
     V6 = Rules::V6
 
-    Suggestion = Data.define(:topic_key, :reason, :skill)
+    # focus: the suggestion was put first because the teacher recommends this subject (D-399); Oggi adds one line to it.
+    Suggestion = Data.define(:topic_key, :reason, :skill, :focus) do
+      def initialize(topic_key:, reason:, skill:, focus: false) = super
+    end
 
     DONE = %w[demonstrated consolidated].freeze
     # The states the tag on a topic marks (`banco next` lists the same skills, D-333), to_recover first.
@@ -21,7 +25,11 @@ module Practice
 
     # limit: how many suggestions to keep (Oggi's SUGGESTIONS_MAX); nil keeps the whole ranked list, whose first per subject is
     # the topic Oggi proposes for that subject (D-333, `banco next`).
-    def call(catalog:, states:, graph_order:, last_topic:, limit: V6::SUGGESTIONS_MAX)
+    #
+    # focus: the first ranked suggestion of that subject (the topic Oggi proposes for it) goes before the round robin, marked `focus`,
+    # unless the student is already resuming a topic of that subject (his «Riprendi» card is there already) or the subject has no topic
+    # left. Without a focus nothing changes.
+    def call(catalog:, states:, graph_order:, last_topic:, focus: nil, limit: V6::SUGGESTIONS_MAX)
       views = catalog.flat_map { |sv| sv.topics.each_with_index.map { |t, i| [ sv, t, i ] } }
       visible = views.to_h { |sv, t, i| [ t.key, [ sv, t, i ] ] }
       resume = last_topic if last_topic && visible.key?(last_topic) && !done?(visible.fetch(last_topic)[1], states)
@@ -42,7 +50,15 @@ module Practice
       end
       rest = open_views.reject { |_, t, _| taken.include?(t.key) }.map { |sv, t, i| [ sv, t, i, nil ] }
       add(suggestions, taken, rest, :course_next, graph_order, by_graph: false)
+      suggestions = promote(suggestions, visible, focus) unless focus.nil? || (resume && visible.fetch(resume)[0].subject.key == focus)
       { resume: resume, suggestions: limit ? suggestions.first(limit) : suggestions }
+    end
+
+    # The first suggestion of the subject `focus`, first of the list and marked; the list as it was when the subject has none.
+    def promote(suggestions, visible, focus)
+      index = suggestions.index { |s| visible.fetch(s.topic_key)[0].subject.key == focus } or return suggestions
+
+      suggestions.dup.tap { |list| list.unshift(list.delete_at(index).with(focus: true)) }
     end
 
     def add(suggestions, taken, rows, reason, graph_order, by_graph:)

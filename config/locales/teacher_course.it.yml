@@ -6,6 +6,7 @@ it:
       approve_topic: "Argomento approvato."
       send_back_lesson: "Lezione rimandata all'agente con il tuo commento."
       release_course: "Apertura del corso registrata."
+      set_focus_subject: "Consiglio sulla materia registrato."
     home:
       course_line: "Corso: %{approved} approvati su %{total} nella mappa"
       course_open: "aperto allo studente"
@@ -39,6 +40,16 @@ it:
         reopen: "Apri con la mappa nuova"
         hint: "Lo studente vedrà solo gli argomenti approvati."
         cannot_yet: "Per ora non puoi aprire il corso."
+      # D-399: the subject the student starts from, one for the whole app.
+      focus:
+        title: "Da quale materia cominciare"
+        none: "Per ora non consigli nessuna materia: Oggi le alterna."
+        this: "Consigli allo studente di cominciare da questa materia."
+        other: "Ora consigli di cominciare da %{subject}. Se scegli questa materia, il consiglio passa qui."
+        hint: "Oggi mostra per primo un argomento di questa materia, con una riga che dice che lo consigli tu."
+        set: "Consiglia di cominciare da questa materia"
+        clear: "Togli il consiglio"
+        needs_open: "Puoi consigliare una materia quando il suo corso è aperto allo studente."
       topics: "Argomenti, nell'ordine consigliato"
       topics_intro: "L'ordine è quello che l'agente consiglia. Apri un argomento per leggerlo e approvarlo."
       stage:

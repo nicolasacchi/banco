@@ -8,6 +8,7 @@ module Teacher
       @unit = "#{@subject.key}:course"
       @review = Teacher::CourseReview.new(@subject)
       @only_ready = params[:only] == "ready"
+      @focus = Course::Focus.subject
     end
   end
 end

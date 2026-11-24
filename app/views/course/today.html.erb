@@ -81,7 +81,7 @@
         <ul class="topics topic-list" id="suggestions">
           <% @suggestions.each_with_index do |row, i| %>
             <% topic = row[:topic]; s = row[:suggestion]; big = now == :suggestion && i.zero? %>
-            <li class="topic<%= ' now-card' if big %>" data-comment-anchor="topic:<%= topic.key.tr('.', '_') %>" data-topic="<%= topic.key %>" data-reason="<%= s.reason %>" style="--subject: var(--accent-<%= row[:subject_view].subject.key %>, var(--soft-primary))">
+            <li class="topic<%= ' now-card' if big %>" data-comment-anchor="topic:<%= topic.key.tr('.', '_') %>" data-topic="<%= topic.key %>" data-reason="<%= s.reason %>"<%= ' data-focus="true"'.html_safe if s.focus %> style="--subject: var(--accent-<%= row[:subject_view].subject.key %>, var(--soft-primary))">
               <% if big %><span class="pill info now-pill"><%= t("today.now") %></span><% end %>
               <div class="subject-line">
                 <%= subject_chip(row[:subject_view].subject.key) %>
@@ -91,6 +91,7 @@
                 </div>
                 <%= ui_icon("next", css: "row-chev") unless big %>
               </div>
+              <% if s.focus %><span class="topic-why" data-focus-line><%= t("today.focus") %></span><% end %>
               <% if s.skill %>
                 <span class="topic-why"><%= t("today.reason.#{s.reason}", skill: course_view.label(s.skill)) %></span>
               <% else %>

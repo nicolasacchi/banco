@@ -177,6 +177,8 @@ Rails.application.routes.draw do
       post "topic-revisions/:revision_id/approve", action: :approve_topic, constraints: { revision_id: id }
       post "lesson-revisions/:lesson_revision_id/send-back", action: :send_back_lesson, constraints: { lesson_revision_id: id }
       post "subjects/:subject/course-release", action: :release_course, constraints: { subject: /[a-z_]+/ }
+      # The subject the student starts from (D-399): subject in the body, an empty one clears the recommendation.
+      post "focus", action: :set_focus_subject
       post "release", action: :release
       post "consent", action: :consent
     end

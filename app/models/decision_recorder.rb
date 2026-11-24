@@ -26,7 +26,7 @@
 class DecisionRecorder
   KINDS = %w[approve_skill_graph approve_blueprint confirm_test_reviewed dispose_finding confirm_grade reject_grade resolve_attempt
              void_diagnosis_run void_revision_attempts extend_diagnosis_run close_diagnosis_run release_diagnosis
-             record_consent kind_override send_back_item set_formula_sheet approve_topic send_back_lesson release_course].freeze
+             record_consent kind_override send_back_item set_formula_sheet approve_topic send_back_lesson release_course set_focus_subject].freeze
   CSRF_KEY = "banco.csrf_valid".freeze
   DEVICE_COOKIE = "banco_device".freeze
   RESOLVE_VERDICTS = (Grading::VERDICTS - %w[invalid short_answer]).freeze
@@ -91,7 +91,7 @@ class DecisionRecorder
     # release_diagnosis (it opens the entry test to the student): those stay with the browser and the console.
     KINDS = %w[approve_skill_graph approve_blueprint confirm_test_reviewed dispose_finding confirm_grade reject_grade resolve_attempt
                void_diagnosis_run void_revision_attempts extend_diagnosis_run close_diagnosis_run kind_override send_back_item
-               set_formula_sheet approve_topic send_back_lesson release_course].freeze
+               set_formula_sheet approve_topic send_back_lesson release_course set_focus_subject].freeze
 
     attr_reader :login, :token_id, :remote_addr, :path, :request_id, :user_agent
 
@@ -503,6 +503,28 @@ class DecisionRecorder
 
       [ subject, Student.official, { subject: subject.key, open: false } ]
     end
+  end
+
+  # The subject the teacher recommends the student start from (D-399): {subject: KEY}, or {subject: ""} to clear it. Oggi puts that subject's
+  # suggestion first (Course::Focus, the latest decision wins). The subject's course must be open to the official student, and a decision
+  # that changes nothing is refused (the ledger keeps what changed). It takes no reason.
+  def set_focus_subject
+    raise Invalid, "subject is a subject key, or an empty string to clear the recommendation" unless @params.key?(:subject)
+
+    student = Student.official or raise Missing, "no student"
+    key = @params[:subject].to_s.strip
+    current = Course::Focus.subject_key
+    if key.empty?
+      raise Invalid, "no subject is recommended now" unless current
+
+      return [ nil, student, { subject: "" } ]
+    end
+
+    subject = Subject.find_by(key: key) or raise Missing, "no subject #{key.first(30).inspect}"
+    raise Invalid, "#{subject.key} is already the recommended subject" if current == subject.key
+    raise Invalid, "the course of #{subject.key} is not open to the student" unless Course::State.released_revision_id(subject)
+
+    [ subject, student, { subject: subject.key } ]
   end
 
   def truthy?(value) = ActiveModel::Type::Boolean.new.cast(value) == true

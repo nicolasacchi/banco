@@ -95,14 +95,14 @@ The row records the teacher login, `groups: api`, the client address, the token'
 
 - `KIND` is one of `approve_skill_graph approve_blueprint confirm_test_reviewed dispose_finding confirm_grade reject_grade
   resolve_attempt void_diagnosis_run void_revision_attempts extend_diagnosis_run close_diagnosis_run release_diagnosis
-  record_consent kind_override send_back_item set_formula_sheet approve_topic send_back_lesson release_course`.
+  record_consent kind_override send_back_item set_formula_sheet approve_topic send_back_lesson release_course set_focus_subject`.
 - `--params` carries the other parameters of the kind as a JSON object, as the teacher's form would send them. The usual ones:
   `{"subject":"math"}` (approvals of a graph or test take the subject's latest revision, or `{"revision_id":N}`),
   `{"revision_id":N}` (`approve_topic`), `{"finding_id":N,"disposition":"..."}` (`dispose_finding`),
   `{"grade_proposal_id":N}` (`confirm_grade`, `reject_grade`; `scores` edits a grade), `{"attempt_id":N,"verdict":"correct"}`
   (`resolve_attempt`: `attempt_id` is a diagnosis answer's number, or a ref `"practice-12"` / `"diagnosis-5"` as `banco attempts` names them; a bare number
   that is both a diagnosis answer and a practice try is refused, write the ref; a practice try marked `correct` closes its serve right and the tries after it stop counting, D-352),
-  `{"subject":"math","open":1}` (`release_course`), `{"item_revision_id":N,"reason_code":"...","comment_it":"..."}`
+  `{"subject":"math","open":1}` (`release_course`), `{"subject":"math"}` or `{"subject":""}` (`set_focus_subject`: the subject Oggi shows first, D-399; the empty string clears it; no reason), `{"item_revision_id":N,"reason_code":"...","comment_it":"..."}`
   (`send_back_item`). A dry run tells what is missing.
 - `--reason` is `reason_it`, the teacher's reason, in Italian, required by the kinds that ask for one. A kind that takes no reason keeps
   the words as `api_reason` in the payload.
@@ -517,6 +517,7 @@ apart, the release state, the warnings and the new skills of the map. `--only-re
 {
   "subject": { "key": "geography", "name_it": "Geografia economica" }, "present": true, "revision": { "id": 36, "seq": 5 },
   "open": true, "released_revision_id": 36, "released_latest": true,
+  "focus_subject": "math", "recommended": false,
   "counts": { "in_map": 26, "approved": 25, "awaiting": 1, "missing": 0, "ready": 1 },
   "notes_it": ["Ordine consigliato: ..."], "warnings": [],
   "topics": [
@@ -539,7 +540,8 @@ apart, the release state, the warnings and the new skills of the map. `--only-re
 
 `stage` is the one `banco topics list` uses (`missing`, `in_review`, `awaiting_teacher`, `approved`, `approved_newer_pending`) and `badge`
 the page's plain word (`missing`, `working`, `ready`, `approved`, `open`, `newer`). `progress` is the official student's when the
-course is open, else the trial students'.
+course is open, else the trial students'. `focus_subject` is the key of the subject the teacher recommends the student start from now
+(`set_focus_subject`, D-399), or `null`; `recommended` says whether it is this one.
 
 ### `banco teacher topic SUBJECT TOPIC`
 
