@@ -1,6 +1,6 @@
 ---
 name: lesson-computer-science
-version: 1
+version: 2
 formats: banco.lesson/2
 ---
 
@@ -58,7 +58,7 @@ Only these names, besides the structural ones of the lesson brief, and only with
 | `column_calc` | diagram | available | w2-1 | T9 (`op: repeated_division` is w2-3) |
 | `input: bits` | check option | available (it carries a `profile`, still T1's) | w2-1 | T9 |
 | `program` | diagram | draft | w2-2 | T9 |
-| `select` | check | reserved | w2-1 | T1 |
+| `select` | check | available | w2-1 | T1 |
 | `code` | block | available | r2 | - (D-329) |
 
 Only `available` pieces can be used; `banco lesson submit --dry-run` says what is not. Until a piece lands, use the per-card fallback of the card plan.

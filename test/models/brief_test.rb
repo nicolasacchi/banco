@@ -5,7 +5,7 @@ class BriefTest < ActiveSupport::TestCase
   SUBJECT_BRIEFS = %w[biology business chemistry computer_science english geography history law_economics physical_education spanish].freeze
   NAMES = (%w[arbiter blueprint course diagnosis-item grade lesson lesson-review lesson-v1 page page-review practice-item review skill-graph solve topic] +
            SUBJECT_BRIEFS.map { |s| "lesson-#{s.tr('_', '-')}" }).sort.freeze
-  VERSION_2 = %w[arbiter diagnosis-item].freeze # D-227: practice items, review points 12-13; D-245: lesson/2 and its review; D-316: the arbiter without a second opinion; lesson is 3 (D-402 tooling round 4: card caps, flow node cap, the one-page print, the course-map title), lesson-review is 3 (shots are drawn with every closed part open), solve is 3 and review 4 (D-320: the figures; D-336: the pictures of the instances)
+  VERSION_2 = %w[arbiter diagnosis-item lesson-business lesson-chemistry lesson-computer-science lesson-english lesson-geography lesson-history lesson-law-economics lesson-spanish].freeze # D-227: practice items, review points 12-13; D-245: lesson/2 and its review; D-316: the arbiter without a second opinion; lesson is 3 (D-402 tooling round 4: card caps, flow node cap, the one-page print, the course-map title), the subject briefs with a piece table are 2 (D-402 round 4: `tiles`, `select`, `bar_model`, `climograph`, `seats` are `available`); lesson-review is 3 (shots are drawn with every closed part open), solve is 3 and review 4 (D-320: the figures; D-336: the pictures of the instances)
 
   test "the briefs exist (version 1, or 2 for the Phase 1b and rich-lesson deltas) with a body" do
     assert_equal NAMES, Brief.names

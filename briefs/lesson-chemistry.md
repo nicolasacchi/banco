@@ -1,6 +1,6 @@
 ---
 name: lesson-chemistry
-version: 1
+version: 2
 formats: banco.lesson/2
 ---
 
@@ -58,7 +58,7 @@ Only these names, besides the structural ones of the lesson brief, and only with
 | `particles` | diagram | draft | w2-2 | T7 |
 | `phase_changes` | diagram | draft | w2-2 | T7 |
 | `chart` | diagram | draft | w2-2 | T6 |
-| `select` | check | reserved | w2-1 | T1 |
+| `select` | check | available | w2-1 | T1 |
 
 Only `available` pieces can be used; `banco lesson submit --dry-run` says what is not. Until a piece lands, use the per-card fallback of the card plan.
 

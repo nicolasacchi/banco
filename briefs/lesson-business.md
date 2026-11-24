@@ -1,6 +1,6 @@
 ---
 name: lesson-business
-version: 1
+version: 2
 formats: banco.lesson/2
 ---
 
@@ -53,9 +53,9 @@ Only these names, besides the structural ones of the lesson brief, and only with
 | Piece | Kind | Status | Batch | Track |
 |---|---|---|---|---|
 | `document` | diagram | available | w2-1 | T8 |
-| `bar_model` | diagram | reserved | w2-1 | T6 |
+| `bar_model` | diagram | available | w2-1 | T6 |
 | `network` | diagram | available | w2-1 | T4b |
-| `select` | check | reserved | w2-1 | T1 |
+| `select` | check | available | w2-1 | T1 |
 | `amount_words` | check | draft | w2-2 | T8 |
 
 Only `available` pieces can be used; `banco lesson submit --dry-run` says what is not. Until a piece lands, use the per-card fallback of the card plan.

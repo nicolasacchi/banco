@@ -1,6 +1,6 @@
 ---
 name: lesson-geography
-version: 1
+version: 2
 formats: banco.lesson/2
 ---
 
@@ -51,14 +51,14 @@ Only these names, besides the structural ones of the lesson brief, and only with
 
 | Piece | Kind | Status | Batch | Track |
 |---|---|---|---|---|
-| `climograph` | diagram | reserved | w2-1 | T6 |
+| `climograph` | diagram | available | w2-1 | T6 |
 | `map` | diagram | available | w2-1 | T5 |
 | `insolation` | diagram | available | w2-1 | T5 |
 | `cross_section` | diagram | available | w2-1 | T5 |
 | `chart` | diagram | draft | w2-2 | T6 |
 | `chain` | diagram | available | w2-1 | T4b |
 | `timeline` | diagram | available | w2-1 | T4a |
-| `select` | check | reserved | w2-1 | T1 |
+| `select` | check | available | w2-1 | T1 |
 
 Only `available` pieces can be used; `banco lesson submit --dry-run` says what is not. Until a piece lands, use the per-card fallback of the card plan.
 

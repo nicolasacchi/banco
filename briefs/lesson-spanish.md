@@ -1,6 +1,6 @@
 ---
 name: lesson-spanish
-version: 1
+version: 2
 formats: banco.lesson/2
 ---
 
@@ -53,7 +53,7 @@ Only these names, besides the structural ones of the lesson brief, and only with
 | `word_parts` | diagram | available | w2-1 | T3 |
 | `paradigm` | diagram | draft | w2-2 | T3 |
 | `dialogue` | block | available | w2-1 | T3 |
-| `tiles` | check | reserved | w2-1 | T1 |
+| `tiles` | check | available | w2-1 | T1 |
 | `listen` | check option | available | w2-1 | T2 |
 
 Only `available` pieces can be used; `banco lesson submit --dry-run` says what is not. Until a piece lands, use the per-card fallback of the card plan.

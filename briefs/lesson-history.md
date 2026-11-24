@@ -1,6 +1,6 @@
 ---
 name: lesson-history
-version: 1
+version: 2
 formats: banco.lesson/2
 ---
 
@@ -56,8 +56,8 @@ Only these names, besides the structural ones of the lesson brief, and only with
 | `reveal` | block | available | w2-1 | T8 |
 | `oral` | block | available | w2-1 | T8 |
 | `image` | block | draft | w2-2 | T8 |
-| `select` | check | reserved | w2-1 | T1 |
-| `tiles` | check | reserved | w2-1 | T1 |
+| `select` | check | available | w2-1 | T1 |
+| `tiles` | check | available | w2-1 | T1 |
 
 Only `available` pieces can be used; `banco lesson submit --dry-run` says what is not. Until a piece lands, use the per-card fallback of the card plan.
 
