@@ -14,7 +14,8 @@ export function semantic(data) {
 function build(data, ctx) {
   // a bilingual lesson's table (D-402) brings its Italian cells (header_it, rows_it), which tableNode draws under the target text
   const italian = data.header_it ? { header_it: data.header_it, rows_it: data.rows_it } : {}
-  return { width: ctx.width, height: 0, shapes: [], labels: [], states: 1, state: 0, table: { header: data.header, rows: data.rows, ...italian } }
+  const material = data.translate_material === false ? { translate_material: false } : {} // forms with no Italian (D-402): tableNode draws no translation for them
+  return { width: ctx.width, height: 0, shapes: [], labels: [], states: 1, state: 0, table: { header: data.header, rows: data.rows, ...italian, ...material } }
 }
 
 export function describe(data) {

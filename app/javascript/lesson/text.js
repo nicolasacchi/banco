@@ -41,6 +41,11 @@ export const inButton = (ctx) => ({ ...insideControl(ctx), noTr: true })
 // bilingual lesson, and a legacy lesson draws it exactly as it did.
 export const noTranslation = (ctx) => (ctx.lang ? { ...ctx, noTr: true } : ctx)
 
+// Form material (D-402): what a check, a `try` exercise or a table that says `translate_material: false` holds as forms to choose, fill or judge (its options, its
+// rows, the sentence with its blank) has no Italian: the server serves the target text in the `_it` slot with no entry in `tr`, and the page draws it as it is, with no
+// translation and no «translation missing» for it (the same as a fragment). The instruction, hints and messages around it keep their translation.
+export const materialOf = (spec, ctx) => (spec?.translate_material === false ? noTranslation(ctx) : ctx)
+
 // ---- the Italian of a bilingual lesson (D-402) ----
 // A served bilingual lesson holds the TARGET text in every `_it` slot and the Italian in `tr` tables {target string: Italian}, one on the body, one on
 // each card and one on each block (Lessons::Bilingual.fold). `ctx.lang` is the page's language ("en", "es"; none in a legacy lesson, which is drawn

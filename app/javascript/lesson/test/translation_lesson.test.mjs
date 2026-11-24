@@ -113,7 +113,12 @@ for (const file of ["served_lesson.json", "served_lesson_es.json"]) {
     const prompt = form.querySelector(".check-prompt")
     assert.equal(prompt.querySelector(".tr").textContent, card(body, 1).blocks[1].tr[card(body, 1).blocks[1].prompt_it])
     const optionTrs = form.querySelectorAll("label .tr")
-    assert.deepEqual(optionTrs.map((n) => n.textContent), card(body, 1).blocks[1].options.map((o) => card(body, 1).blocks[1].tr[o.text_it]))
+    const check = card(body, 1).blocks[1]
+    if (check.translate_material === false) {
+      // form material (D-402): the options are forms, served with no Italian: drawn as they are, left out of the render check on purpose
+      assert.deepEqual(optionTrs, [], "no translation under an option that is form material")
+      assert.equal(form.querySelectorAll("label [data-tr-exempt]").length, check.options.length)
+    } else assert.deepEqual(optionTrs.map((n) => n.textContent), check.options.map((o) => check.tr[o.text_it]))
     for (const tr of trNodes(article)) assert.equal(tr.closest("button"), null, "a translation is never inside a button")
   })
 
@@ -160,9 +165,15 @@ for (const file of ["served_lesson.json", "served_lesson_es.json"]) {
     const article = draw(body, 2)
     const block = card(body, 2).blocks[0]
     const trs = trNodes(article).map((n) => n.textContent)
-    for (const source of [block.intro_it, block.exercises[0].text_it, block.exercises[0].check.prompt_it, ...block.exercises[0].check.options.map((o) => o.text_it)]) {
-      assert.ok(trs.includes(block.tr[source]), `the translation of «${source}»`)
-    }
+    const exercise = block.exercises[0]
+    for (const source of [block.intro_it, exercise.check.prompt_it]) assert.ok(trs.includes(block.tr[source]), `the translation of «${source}»`)
+    const material = [exercise.text_it, ...exercise.check.options.map((o) => o.text_it)]
+    if (exercise.translate_material === false) {
+      // form material (D-402): the sentence with its blank and the options have no Italian and draw none
+      for (const source of material) assert.equal(block.tr?.[source], undefined, `no Italian for «${source}»`)
+      assert.equal(exercise.check.translate_material, false, "the marker is on the exercise's own check too")
+      assert.ok(article.querySelector(".exercise-text [data-tr-exempt]"), "the sentence is exempt, not missing")
+    } else for (const source of material) assert.ok(trs.includes(block.tr[source]), `the translation of «${source}»`)
   })
 
   test(`${file}: every target text on the card is in a translation unit or exempt (what the render check asks)`, () => {
@@ -388,4 +399,26 @@ test("a served bilingual table figure (header_it, rows_it, tr) passes the schema
   assert.ok(!legacy.error, "a legacy table is drawn as ever")
   const stray = layoutFigure({ type: "flow", alt_it: "A flow of two steps.", nodes: [], header_it: ["x"] }, { width: 320, fontPx: 16, subject: "math", measure: () => ({ w: 1, h: 1 }), state: 0 })
   assert.ok(stray.error, "header_it is allowed on a table figure only")
+})
+
+const { render: renderMistake } = await import("lesson/blocks/mistake")
+
+test("form material (translate_material: false): a table's cells and a mistake's right form draw no translation and are exempt from the render check", () => {
+  const body = fixture("served_lesson.json")
+  const ctx = scoped(contextOf(body), body.cards[0])
+  const material = renderTable({ type: "table", n: 3, translate_material: false, header: ["Subject", "Verb"], rows: [["he", "plays"]] }, scoped(contextOf(body), body.cards[0], { tr: { Subject: "Soggetto" } }))
+  assert.deepEqual(trNodes(material), [], "no translation under a form, even if a string of the table is in tr")
+  assert.ok(material.querySelector("td [data-tr-exempt], td[data-tr-exempt]"))
+  const mistake = renderMistake({ type: "mistake", n: 4, wrong_it: "He play", right_it: "He plays", why_it: "Add -s." }, scoped(contextOf(body), { tr: { "Add -s.": "Aggiungi -s." } }))
+  const rightText = mistake.querySelectorAll(".mistake-text")[1]
+  assert.equal(rightText.querySelector(".tr"), null)
+  assert.equal(rightText.hasAttribute("data-tr-exempt"), true)
+  assert.equal(mistake.querySelector(".mistake-why .tr").textContent, "Aggiungi -s.", "the why is still paired")
+})
+
+test("a served table figure that is form material passes the schema check and carries the marker to the drawing", () => {
+  const figure = { type: "table", alt_it: "A table of forms: the subject and the verb.", header: ["Subject", "Verb"], rows: [["he", "plays"]], translate_material: false, tr: {} }
+  const scene = layoutFigure(figure, { width: 320, fontPx: 16, subject: "english", measure: (text) => ({ w: String(text).length * 8, h: 20 }), state: 0 })
+  assert.ok(!scene.error, scene.error?.message)
+  assert.equal(scene.table.translate_material, false)
 })

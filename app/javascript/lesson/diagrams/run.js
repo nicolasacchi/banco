@@ -16,6 +16,7 @@ function withoutServed(data) {
   if (data.type === "table") {
     delete copy.header_it
     delete copy.rows_it
+    delete copy.translate_material
   }
   if (data.x_value !== undefined && !data.show_value) return copy
   delete copy.tilt

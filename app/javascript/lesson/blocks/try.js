@@ -7,7 +7,7 @@ import { renderCheck } from "lesson/blocks/check"
 import { figureFor } from "lesson/blocks/diagram"
 import { tagInfo } from "lesson/blocks/procedure"
 import { questionControl } from "lesson/question"
-import { renderInlineRich, renderRich, scoped } from "lesson/text"
+import { materialOf, renderInlineRich, renderRich, scoped } from "lesson/text"
 import { exerciseNotes } from "lesson/teacher_notes"
 
 function solutionNode(reply, root) {
@@ -41,7 +41,7 @@ export function render(block, ctx, loc) {
     const li = el("li", { class: "exercise", id: `exercise-${loc.card}-${ex.n}`, "data-n": ex.n })
     // the chips already say which exercise this is: the heading stays for the screen reader and the focus
     li.appendChild(el("h3", { class: "exercise-head sr-only" }, el("span", { text: `${ctx.t.exercise} ${ex.n}` }), el("span", { class: "exercise-sub", text: ` · ${ctx.t.on_notebook}` })))
-    li.appendChild(el("div", { class: "exercise-text" }, renderRich(ex.text_it, ctx, { tiles: true })))
+    li.appendChild(el("div", { class: "exercise-text" }, renderRich(ex.text_it, materialOf(ex, ctx), { tiles: true })))
     if (ex.diagram) li.appendChild(el("div", { class: "block-diagram" }, figureFor(ex.diagram, ctx).node))
     const checks = ctx.safe ? [] : ex.checks ?? (ex.check ? [ex.check] : [])
     checks.forEach((spec, k) => {

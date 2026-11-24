@@ -2,7 +2,7 @@
 // with its column's name, drawn from the header cell with the same inline markup (a formula, a word of another language: D-310), hidden on a
 // wide screen and in a kept grid, and from the voice and the screen reader (the head says it).
 import { el } from "lesson/dom"
-import { inButton, plainText, renderInlineRich } from "lesson/text"
+import { inButton, materialOf, plainText, renderInlineRich } from "lesson/text"
 
 // A grid read on a phone: the lesson's box is 312 px wide at a 390 px viewport (measured in Chrome, D-335; D-331 first took it as 295). A cell's
 // padding and border are 26 px (measured 26.6). A character is taken as 9 px: measured in the lesson font at 390 px (19 px type), a line of
@@ -44,8 +44,9 @@ export function keepsGrid(table) {
 export function tableNode(table, ctx) {
   const node = el("table", { class: keepsGrid(table) ? "dg-table dg-keep" : "dg-table" })
   if (table.caption_it) node.appendChild(renderInlineRich(table.caption_it, el("caption"), ctx))
+  const cells = materialOf(table, ctx) // `translate_material: false`: the cells are forms, with no Italian (D-402)
   const head = el("tr")
-  table.header.forEach((h, i) => head.appendChild(renderInlineRich(h, el("th", { scope: "col" }), ctx, { italian: table.header_it?.[i] })))
+  table.header.forEach((h, i) => head.appendChild(renderInlineRich(h, el("th", { scope: "col" }), cells, { italian: table.header_it?.[i] })))
   node.appendChild(el("thead", {}, head))
   const body = el("tbody")
   for (const [r, row] of table.rows.entries()) {
@@ -58,7 +59,7 @@ export function tableNode(table, ctx) {
         label.appendChild(document.createTextNode(": "))
         td.appendChild(label)
       }
-      tr.appendChild(renderInlineRich(cell, td, ctx, { italian: table.rows_it?.[r]?.[i] }))
+      tr.appendChild(renderInlineRich(cell, td, cells, { italian: table.rows_it?.[r]?.[i] }))
     })
     body.appendChild(tr)
   }

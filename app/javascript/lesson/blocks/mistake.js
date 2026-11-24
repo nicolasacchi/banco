@@ -14,7 +14,7 @@ export function render(block, ctx, options = {}) {
     renderInlineRich(block.wrong_it, el("p", { class: "mistake-text" }), noTranslation(ctx), { display: true, tiles: true })) // the front is the card's button: no translation inside it
   const back = [
     el("p", { class: "mistake-tag mistake-right" }, icon("check", "mistake-ic"), el("strong", { text: ctx.t.right_side })),
-    renderInlineRich(block.right_it, el("p", { class: "mistake-text" }), ctx, { display: true, tiles: true }),
+    renderInlineRich(block.right_it, el("p", { class: "mistake-text" }), noTranslation(ctx), { display: true, tiles: true }), // the right form is material too (D-402): the same Italian for both sides would give nothing
     el("div", { class: "mistake-why" }, renderRich(block.why_it, ctx))
   ]
   // the flip is said on every card, in words: the right side is behind it
