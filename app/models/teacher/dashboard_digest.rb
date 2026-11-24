@@ -7,7 +7,7 @@ module Teacher
     TABLES = %w[decisions item_revisions item_validations item_reviews blind_solves review_findings finding_responses
                 finding_assessments grade_proposals blueprint_revisions skill_graph_revisions course_revisions topic_revisions
                 lesson_revisions lesson_reviews lesson_finding_responses diagnosis_runs diagnosis_events attempts attempt_gradings practice_serves
-                practice_attempts practice_gradings practice_events student_questions students].freeze
+                practice_attempts practice_gradings practice_events practice_contests student_questions students].freeze
     APP_EVENTS_WHERE = "kind <> '#{Minutes::KIND}'".freeze
 
     TTL = Rails.env.test? ? 0 : 5 # seconds: several open tabs share one computation
@@ -17,7 +17,8 @@ module Teacher
     module_function
 
     def current
-      Digest::SHA256.hexdigest(watermarks.map { |name, max| "#{name}:#{max}" }.join(";"))[0, 16]
+      # the day too: the strip's «Contestazioni» counts the last days (Teacher::Dashboard::CONTEST_DAYS), so it changes at midnight with no new row
+      Digest::SHA256.hexdigest((watermarks.map { |name, max| "#{name}:#{max}" } << "day:#{Date.current}").join(";"))[0, 16]
     end
 
     # For the polling endpoint: the same value, at most TTL seconds old.
@@ -37,6 +38,7 @@ module Teacher
     def watermarks
       parts = TABLES.map { |t| "SELECT '#{t}' AS name, MAX(id) AS m FROM #{t}" }
       parts << "SELECT 'app_events', MAX(id) FROM app_events WHERE #{APP_EVENTS_WHERE}"
+      parts << Lessons::Contests.sql_watermark # «Per me va bene così» on a lesson check (D-400); the other lesson events are the student's reading
       ApplicationRecord.connection.select_rows(parts.join(" UNION ALL "))
     end
   end

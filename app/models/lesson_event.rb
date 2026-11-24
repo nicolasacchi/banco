@@ -3,7 +3,7 @@
 # this table (a test pins it).
 class LessonEvent < ApplicationRecord
   # Release 1 writes the first two; the others have their writer in 1.1 or 2 and are in the CHECK from the start. check_contested (D-396) is «Per me va bene così»
-  # on a check: written by Lessons::CheckContest, beside the student's comment.
+  # on a check: written by Lessons::CheckContest, with his answer in words (D-400: no comment).
   KINDS = %w[card_seen check_answered more_opened steps_shown lesson_printed page_opened page_event page_failed check_contested].freeze
   # card_seen (release 1) and the free page events (release 2, D-290): the page's own doings, never an outcome.
   PAGE_KINDS = %w[page_opened page_event page_failed].freeze

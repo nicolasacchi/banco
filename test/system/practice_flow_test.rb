@@ -29,7 +29,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
   # The skill with a sentence around a blank (D-339): the key «never eat» goes in the place of ___.
   SENTENCE_STEM = "Negativa: My parents ___ meat.".freeze
   SENTENCE_KEY = "never eat".freeze
-  CONTESTED = "Ho mandato la tua risposta al docente: ti risponde in «I miei commenti». Intanto ecco la soluzione: confrontala con la tua.".freeze
+  CONTESTED = "Ho mandato la tua risposta al docente. Intanto ecco la soluzione: confrontala con la tua.".freeze
   SAME_ANSWER = "È la stessa risposta di prima: cambiala, oppure chiedi un aiuto.".freeze
   CONTEST_NOTE = "Pensi di avere ragione? Premi «Per me va bene così»: l'esercizio si chiude e lo guarda il docente.".freeze
 
@@ -675,13 +675,11 @@ class PracticeFlowTest < ApplicationSystemTestCase
     contests = PracticeContest.where(practice_serve_id: serve.id)
     assert_equal 1, contests.count
     assert_equal acting_student.id, contests.first.student_id
-    if @base == PREVIEW
-      assert_equal 0, Comment.count, "the preview writes no comment"
-    else
-      wait_until { Comment.count == 1 }
-      visit "/comments"
-      assert_selector ".cm-row .cm-preview", text: "La mia risposta, secondo me giusta: «#{raw}»"
-    end
+    assert_equal 0, Comment.count, "«Per me va bene così» writes no comment (D-400)"
+    return if @base == PREVIEW
+
+    visit "/comments"
+    assert_no_selector ".cm-row"
   end
 
   # A wrong typed answer offers «Per me va bene così»; the click writes the contest, shows the solution and the message, closes the exercise.

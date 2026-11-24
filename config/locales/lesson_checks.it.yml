@@ -8,7 +8,7 @@ it:
       contest_note: "Pensi di avere ragione? Premi «Per me va bene così»: la tua risposta va al docente."
       contest_button: "Per me va bene così"
       contested: "Mandato al docente"
-      contested_note: "Ti risponde in «I miei commenti»."
+      contested_note: "Il docente la guarda."
       contest_error: "Non riesco a mandarlo ora. Riprova."
       # the one line printed on the first use of a component in a lesson (A9)
       howto:

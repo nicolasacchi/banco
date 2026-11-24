@@ -13,6 +13,15 @@
 #
 # The student's text has no decision number and no jargon; it is second person and never blames. Newest first is the order of the pages, not of this file.
 entries:
+  - id: contest-no-comment
+    date: 2026-11-24
+    audience: [student, teacher]
+    kind: software
+    decisions: [D-400]
+    title_it: "«Per me va bene così» non scrive più un commento"
+    body_it: "«Per me va bene così» manda la risposta al docente senza scrivere un commento a tuo nome. In «I miei commenti» ci sono solo i commenti che scrivi tu."
+    title_en: "«It's fine for me» no longer writes a comment"
+    body_en: "«It's fine for me» sends your answer to the teacher without writing a comment in your name. «My comments» only holds the comments you write yourself."
   - id: focus-subject-1124
     date: 2026-11-24
     audience: [student, teacher]

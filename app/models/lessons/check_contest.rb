@@ -2,24 +2,34 @@
 
 module Lessons
   # «Per me va bene così» on a check of a lesson/2 (D-396, as D-389 has it in practice): the student sends the answer he gave last to an inline check, a
-  # faded example's blank or an exercise of «Prova tu», which the grader called wrong, to the teacher. One short transaction writes the comment the
-  # teacher reads (through Comments::Intake, like any comment of the student: reason `error`, the lesson page, anchored on the block, the practice
-  # contest's wording with his answer in the texts he read) and the lesson event `check_contested` that says which answer it was. A second press of the
-  # same answer writes nothing and answers the same. The grading, the check_answered rows and every skill are not touched: the check is practice for his
+  # faded example's blank or an exercise of «Prova tu», which the grader called wrong, to the teacher. One short transaction writes the lesson event
+  # `check_contested` that says which answer it was and holds his answer in the texts he read (`words`, D-387's wording). It writes no comment (D-400): the
+  # teacher reads the contest in «Contestazioni» (Teacher::GradingReview#lesson_contests). A second press of the same answer writes nothing and answers the same. The grading, the check_answered rows and every skill are not touched: the check is practice for his
   # head, and a contest is the one thing that reaches the teacher. The check then shows what a finished one shows (the explanation, the rest of a faded
   # example). The teacher's preview has no route, so it never gets here.
   #
-  #   Lessons::CheckContest.new(revision, student:, topic_revision:, course_view:).call(locator)   # locator as Lessons::CheckAnswer's
+  #   Lessons::CheckContest.new(revision, student:, topic_revision:).call(locator)   # locator as Lessons::CheckAnswer's
   #   # => Lessons::CheckAnswer::Reply: 200 {status: "contested", explain_it?, model_it?, steps?...} | 409 {status: "not_contestable"} | 404 {status: "not_found"}
   class CheckContest
     Reply = CheckAnswer::Reply
     TEXT_KEYS = Blocks::Check::TEXT_KEYS
+    WORDS_MAX = 2000
+    CUT = "…".freeze
 
-    def initialize(revision, student:, topic_revision:, course_view:)
+    # All of his answer that the event can hold (WORDS_MAX). If it is longer it is cut at the last «; » (a whole pair of a matching, a whole item) and ends
+    # with «…»; an answer with no «; » is cut at the limit.
+    def self.fit(words)
+      return words if words.length <= WORDS_MAX
+
+      head = words.first(WORDS_MAX - CUT.length)
+      cut = head.rindex("; ")
+      "#{cut ? head.first(cut) : head}#{CUT}"
+    end
+
+    def initialize(revision, student:, topic_revision:)
       @revision = revision
       @student = student
       @topic_revision = topic_revision
-      @view = course_view
       @answer = CheckAnswer.new(revision, student_key: student.key, student: student, topic_revision: topic_revision)
     end
 
@@ -45,44 +55,12 @@ module Lessons
     def contest(locator, located, last)
       return if LessonEvent.exists?(student: @student, client_event_id: "contest-#{last.id}")
 
-      LessonEvent.transaction do
-        comment = comment_for(locator, located, last)
-        now = Time.current
-        key = locator.slice(:step, :ex, :part).compact.transform_keys(&:to_s)
-        LessonEvent.create!(student: @student, topic_revision: @topic_revision, lesson_revision: @revision, kind: "check_contested", card: locator[:card], block: locator[:block],
-                            payload_json: JSON.generate({ of: last.id, try: last.payload["try"], comment_id: comment.id }.merge(key)),
-                            client_event_id: "contest-#{last.id}", at: now, created_at: now)
-      end
-    end
-
-    def comment_for(locator, located, last)
-      result = Comments::Intake.call(
-        student: @student, course_view: @view,
-        params: { client_comment_id: "lesson-contest-#{last.id}", reason: "error", text_it: comment_text(located, last.payload["response"]), # the teacher reads it: Italian (D-356)
-                  page_path: "/topics/#{@topic_revision.lesson.key}/lesson", anchor: anchor(locator), refs: { "lesson_revision_id" => @revision.id } }
-      )
-      raise "the contest's comment was refused: #{result.error}" unless result.status == :recorded
-
-      result.comment
-    end
-
-    # The block (D-396: «anchored on that block»), and in «Prova tu» or a faded example the exercise, the part or the step, so that two contests of
-    # the same words on two exercises within two minutes are two comments (Comments::Intake's repeat window, D-388).
-    def anchor(locator)
-      segments = [ "card:#{locator[:card]}", "block:#{locator[:block]}" ]
-      segments << "exercise:#{locator[:ex]}" if locator[:ex]
-      segments << "part:#{locator[:part]}" if locator[:part]
-      segments << "step:#{locator[:step]}" if locator[:step]
-      segments.join("/")
-    end
-
-    # The practice contest's wording (D-387, `practice.contest_comment`) with his answer in the texts he read, never the code it travelled as; without
-    # the answer when the words cannot be built.
-    def comment_text(located, response)
-      words = answer_words(located, response)
-      return I18n.t("practice.contest_comment_bare", locale: :it) unless words
-
-      I18n.t("practice.contest_comment", raw: words, locale: :it)
+      now = Time.current
+      key = locator.slice(:step, :ex, :part).compact.transform_keys(&:to_s)
+      words = answer_words(located, last.payload["response"])
+      LessonEvent.create!(student: @student, topic_revision: @topic_revision, lesson_revision: @revision, kind: "check_contested", card: locator[:card], block: locator[:block],
+                          payload_json: JSON.generate({ of: last.id, try: last.payload["try"], words: words }.compact.merge(key)),
+                          client_event_id: "contest-#{last.id}", at: now, created_at: now)
     end
 
     def answer_words(located, response)
@@ -99,7 +77,7 @@ module Lessons
         else response.is_a?(String) ? response : nil # number, normalized_text: as typed
         end
       words = words.to_s.gsub(/[[:space:]]+/, " ").strip
-      words.empty? ? nil : Practice::Contest.fit(words)
+      words.empty? ? nil : self.class.fit(words)
     end
 
     def shown(check, located, column) = Checks.rekey(check, located.seed).display.fetch(column) { [] }

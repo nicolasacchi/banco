@@ -145,7 +145,7 @@ vedi la soluzione e non conta né a favore né contro.
   unique (`practice_serve_id`, `try_number`) and the unique `client_attempt_id` make a concurrent duplicate fail;
   a repeated `client_attempt_id` returns the stored answer. Expression worker down: HTTP 503
   `{"status":"retry"}`, nothing stored, the outbox resends.
-- **Contest**: one transaction writes the contest row, the comment for the teacher and, unless sent, the solution
+- **Contest**: one transaction writes the contest row (no comment, D-400) and, unless sent, the solution
   event; a second click answers the same.
 - **Hint**: the request carries `n`; the event is written only if `n` = shown + 1; `n` at most shown returns
   hint n again; anything else is 422.

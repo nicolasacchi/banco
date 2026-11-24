@@ -2,8 +2,7 @@ require "test_helper"
 require_relative "../support/multi_user"
 require_relative "../support/lesson_events_world"
 
-# «Per me va bene così» on a check of a lesson/2 (D-396), through the endpoint: POST /topics/:topic/lesson/contest. What it writes (the comment, the lesson
-# event), what it answers, who may press it, and that the teacher's preview has no button and no route.
+# «Per me va bene così» on a check of a lesson/2 (D-396), through the endpoint: POST /topics/:topic/lesson/contest. What it writes (one lesson event with his answer in words, no comment, D-400), what it answers, who may press it, and that the teacher's preview has no button and no route.
 class LessonContestTest < ActionDispatch::IntegrationTest
   include MultiUser
   include LessonEventsWorld
@@ -35,32 +34,36 @@ class LessonContestTest < ActionDispatch::IntegrationTest
     [ card, block, check ]
   end
 
-  test "S sends a wrong answer: one comment as any comment, one lesson event, the explanation, and the answer again changes nothing" do
+  test "S sends a wrong answer: one lesson event with his answer in words and no comment, the explanation, and the answer again changes nothing" do
     card, block, check = wrong_choice
     first = post_json(OFFICIAL, contest_url, { card: card, block: block })
     assert_response :success
     assert_equal [ "contested", check["explain_it"] ], first.values_at("status", "explain_it")
 
-    comment = Comment.sole
+    assert_equal 0, Comment.count, "no comment in his name"
     option = check["options"].find { |o| o["id"] == "a" }["text_it"]
-    assert_equal [ @official.id, "error", "lesson", "/topics/#{TOPIC}/lesson", "card:#{card}/block:#{block}", card, "La mia risposta, secondo me giusta: «#{option}»." ],
-                 comment.attributes.values_at("student_id", "reason", "page_kind", "page_path", "anchor", "card", "text_it")
     event = LessonEvent.where(kind: "check_contested").sole
-    assert_equal [ @official.id, card, block, 1, comment.id ], [ event.student_id, event.card, event.block, event.payload["try"], event.payload["comment_id"] ]
+    assert_equal [ @official.id, card, block, 1, option ], [ event.student_id, event.card, event.block, event.payload["try"], event.payload["words"] ]
+    assert_not event.payload.key?("comment_id")
 
     again = post_json(OFFICIAL, contest_url, { card: card, block: block })
     assert_equal first, again
-    assert_equal [ 1, 1 ], [ Comment.count, LessonEvent.where(kind: "check_contested").count ]
+    assert_equal [ 0, 1 ], [ Comment.count, LessonEvent.where(kind: "check_contested").count ]
     assert_equal %w[wrong], LessonEvent.where(kind: "check_answered").map { |e| e.payload["verdict"] }, "the grading is not touched"
   end
 
-  test "the comment is in S's own list, where the teacher answers" do
+  test "D-400: S's list of comments holds nothing he did not write, and the teacher's Contestazioni lists the contest with his answer" do
     wrong_choice
-    card, block = choice
+    card, block, check = choice
     post_json(OFFICIAL, contest_url, { card: card, block: block })
     page(OFFICIAL, "/comments")
     assert_response :success
-    assert_select "[data-comment='#{Comment.sole.id}']"
+    assert_select "[data-comment]", 0
+    page(TEACHER, "/teacher/grading")
+    assert_response :success
+    option = check["options"].find { |o| o["id"] == "a" }["text_it"]
+    assert_select "#grading-lesson-contests tbody tr", 1
+    assert_select "#grading-lesson-contests q[data-student-text]", text: option
   end
 
   test "a number typed in «Prova tu» is sent as typed, on its exercise" do
@@ -69,10 +72,8 @@ class LessonContestTest < ActionDispatch::IntegrationTest
     assert_equal "wrong", response.parsed_body["verdict"]
     post_json(OFFICIAL, contest_url, { card: card, block: block, ex: 1 })
     assert_equal "contested", response.parsed_body["status"]
-    comment = Comment.sole
-    assert_equal "La mia risposta, secondo me giusta: «98765».", comment.text_it
-    assert_equal "card:#{card}/block:#{block}/exercise:1", comment.anchor
-    assert_equal 1, LessonEvent.where(kind: "check_contested").sole.payload["ex"]
+    assert_equal 0, Comment.count
+    assert_equal [ 1, "98765" ], LessonEvent.where(kind: "check_contested").sole.payload.values_at("ex", "words")
   end
 
   test "a blank of an example sends the rest of the example with the contest" do
@@ -83,7 +84,7 @@ class LessonContestTest < ActionDispatch::IntegrationTest
     sent = post_json(OFFICIAL, contest_url, { card: card, block: block, step: index + 1 })
     assert_equal "contested", sent["status"]
     assert_equal example["steps"][index..].map { |s| s["do_it"] }, sent["steps"].map { |s| s["do_it"] }
-    assert_equal "card:#{card}/block:#{block}/step:#{index + 1}", Comment.sole.anchor
+    assert_equal 0, Comment.count
     assert_equal index + 1, LessonEvent.where(kind: "check_contested").sole.payload["step"]
   end
 
@@ -102,11 +103,11 @@ class LessonContestTest < ActionDispatch::IntegrationTest
     assert_equal [ 0, 0 ], [ Comment.count, LessonEvent.where(kind: "check_contested").count ]
   end
 
-  test "the trial student's contest is his own, flagged as a trial's comment" do
+  test "the trial student's contest is his own event, and no comment" do
     card, block = wrong_choice(TRIAL, @trial)
     post_json(TRIAL, contest_url, { card: card, block: block })
     assert_equal "contested", response.parsed_body["status"]
-    assert_equal [ @trial.id, true ], Comment.sole.attributes.values_at("student_id", "trial")
+    assert_equal [ 0, [ @trial.id ] ], [ Comment.count, LessonEvent.where(kind: "check_contested").map(&:student_id) ]
   end
 
   test "guests, the teacher and unmapped students get 403 and no row; a hidden topic is a 404; a lesson/1 topic has none" do

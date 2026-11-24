@@ -90,7 +90,7 @@ class TeacherViewsApiTest < ActionDispatch::IntegrationTest
     body = json
     page("/teacher")
     assert_response :success
-    %w[findings corrections topics comments].each do |kind|
+    %w[findings corrections topics comments contests].each do |kind|
       assert_equal css_select("li[data-count='#{kind}'] b").first.text.to_i, body["counts"][kind], kind
     end
     assert_equal css_select("#todo-list > li").map { |li| li["data-todo"] }, body["todos"].map { |t| t["kind"].to_s }

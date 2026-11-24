@@ -57,6 +57,14 @@ module TeacherHelper
     t("teacher.practice.lesson.line", parts: parts.join(", "))
   end
 
+  # Where a lesson check sits, as «scheda 3, blocco 2, esercizio 1» (a Teacher::LessonContests row): the card and the block, then the exercise, the part and the step it has.
+  def lesson_contest_place(contest)
+    place = contest[:place]
+    parts = [ t("teacher.grading.lesson_contests.card", n: contest[:card]), t("teacher.grading.lesson_contests.block", n: contest[:block]) ]
+    %w[ex part step].each { |key| parts << t("teacher.grading.lesson_contests.#{key}", n: place[key]) if place[key] }
+    parts.join(", ")
+  end
+
   def stage_label(stage) = t("teacher.stage.#{stage}")
 
   def scope_text(scope)

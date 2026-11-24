@@ -66,6 +66,42 @@ class TeacherGradingReviewTest < ActiveSupport::TestCase
     assert_equal %w[comment], signals(r, @commented_try)
   end
 
+  # ---- «Per me va bene così» writes no comment (D-400): the review is where the teacher reads every contest ----------------
+
+  test "D-400: a practice contest made now is the contested signal of its try, with no comment of its own, and is counted" do
+    serve = text_serve(@word, 4, at: @clock.now)
+    try = make_try(serve, raw: "play", verdict: "wrong", at: @clock.now)
+    comments = Comment.count
+    assert_equal 200, Practice::Contest.new(student: @official, course_view: Course::StudentView.new(@official), clock: @clock).call(serve_id: serve.id).http
+    assert_equal comments, Comment.count
+    r = review
+    assert_equal %w[contested], signals(r, try)
+    assert_equal 2, r.totals[:contested]
+    assert_equal "play", r.answer_words.fetch("practice-#{try.id}")
+  end
+
+  test "D-400: the checks of the lessons that he sent are listed with his answer in words, oldest first, in the window and the subject" do
+    r = review
+    row = r.lesson_contests.sole
+    assert_equal [ "lesson_check", "lesson_check-#{@lesson_contest.id}", @lesson_contest.id, @subject.key, TOPIC, 2, 1, { "ex" => 2 }, "legge Marco un libro", [] ],
+                 row.values_at(:kind, :ref, :id, :subject, :topic, :card, :block, :place, :answer, :comment_ids)
+    assert_equal 1, r.totals[:lesson_contested]
+
+    assert_equal 1, review(subject: @subject.key).lesson_contests.size
+    assert_empty review(subject: "no_such_subject").lesson_contests
+    assert_equal 1, review(since: @lesson_contest.at - 1).lesson_contests.size
+    assert_empty review(since: @lesson_contest.at + 1).lesson_contests
+    assert_empty Teacher::GradingReview.new(student: @trial).lesson_contests
+  end
+
+  test "D-400: a lesson contest of before has no words and points at its comment" do
+    old = make_comment(text_it: "La mia risposta, secondo me giusta: «nome».", page_kind: "lesson", page_path: "/topics/#{TOPIC}/lesson")
+    event = LessonEvent.create!(student: @official, topic_revision: @text_topic, lesson_revision: @lesson_revision, kind: "check_contested", card: 1, block: 1,
+                                payload_json: JSON.generate(of: 2, try: 1, comment_id: old.id), client_event_id: "contest-#{SecureRandom.hex(6)}", at: @text_t + 1000, created_at: @text_t + 1000)
+    row = review.lesson_contests.find { |c| c[:id] == event.id }
+    assert_equal [ nil, [ old.id ] ], row.values_at(:answer, :comment_ids)
+  end
+
   test "a resolution to wrong is a manual correction that is not a signal of a wrong grade" do
     decide_resolution(@plain_try, "wrong")
     r = review
@@ -111,7 +147,7 @@ class TeacherGradingReviewTest < ActiveSupport::TestCase
   # ---- the totals, the window and the filters ----------------------------------------------------------------------------
 
   test "the totals are the weekly measure: written answers not right, manual corrections, resends, contested" do
-    assert_equal({ tries: 17, not_right: 13, written_tries: 11, written_not_right: 10, written_not_right_rate: 0.909, manual_corrections: 2, resends: 1, contested: 1, items: 4,
+    assert_equal({ tries: 17, not_right: 13, written_tries: 11, written_not_right: 10, written_not_right_rate: 0.909, manual_corrections: 2, resends: 1, contested: 1, lesson_contested: 1, items: 4,
                    flagged_items: 3, superseded: 1,
                    signals: { "full_sentence" => 2, "near_text" => 1, "resend" => 1, "contested" => 1, "comment" => 4, "resolved_right" => 2 } }, review.totals)
   end
@@ -140,7 +176,9 @@ class TeacherGradingReviewTest < ActiveSupport::TestCase
     assert without[:tries].none? { |t| t.key?(:answer) }
     assert_equal with[:items], without[:items]
     assert_not_includes JSON.generate(without), "neighbourhod"
-    assert_equal %i[student since subject totals items tries], with.keys
+    assert_equal %i[student since subject totals items tries lesson_contests], with.keys
+    assert without[:lesson_contests].none? { |c| c.key?(:answer) }
+    assert_equal "legge Marco un libro", with[:lesson_contests].sole[:answer]
   end
 
   test "it reads and writes nothing: no row of the ledger changes" do

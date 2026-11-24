@@ -1,8 +1,8 @@
 # «Per me va bene così» on a check of a lesson/2 (D-396): POST /topics/:topic/lesson/contest with {card, block, step?, ex?, part?}, the place of the check as
-# LessonChecksController has it. The student's latest wrong answer to that check goes to the teacher as a comment, and a lesson event says so
-# (Lessons::CheckContest). The answer is {status: "contested", explain_it?, model_it?, steps?...} | {status: "not_contestable"} (no try yet, or the last one was
+# LessonChecksController has it. The student's latest wrong answer to that check goes to the teacher through a lesson event (Lessons::CheckContest),
+# which she reads in «Contestazioni»; no comment is written (D-400). The answer is {status: "contested", explain_it?, model_it?, steps?...} | {status: "not_contestable"} (no try yet, or the last one was
 # right) | {status: "not_found"}. Students only, official and trial; the teacher, a guest and the teacher's preview get 403 (the preview has no route: it never
-# comments, D-309).
+# contests, D-309).
 class LessonContestsController < ApplicationController
   include StudentCourse
 
@@ -16,7 +16,7 @@ class LessonContestsController < ApplicationController
     locator = { card: whole(:card), block: whole(:block), step: whole(:step), ex: whole(:ex), part: whole(:part) }.compact
     return json_not_found unless locator[:card] && locator[:block]
 
-    reply = Lessons::CheckContest.new(revision, student: acting_student, topic_revision: @topic.topic_revision, course_view: course_view).call(locator)
+    reply = Lessons::CheckContest.new(revision, student: acting_student, topic_revision: @topic.topic_revision).call(locator)
     render json: reply.body, status: reply.status
   end
 

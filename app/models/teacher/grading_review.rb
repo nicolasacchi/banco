@@ -1,7 +1,8 @@
 module Teacher
   # «Contestazioni» (D-368): where the grader may be wrong, before the student says so. A read model over the tries the teacher bot already reads
   # (Attempts::Log: the practice tries, Practice::AttemptLog, and the entry test's answers, Attempts::DiagnosisLog), the teacher's resolutions
-  # (Practice::Resolutions and the `resolve_attempt` decisions of the entry test), «Fai controllare» (PracticeContest) and the student's comments.
+  # (Practice::Resolutions and the `resolve_attempt` decisions of the entry test), «Per me va bene così» (PracticeContest, and, for the checks of the
+  # lessons, the lesson events `check_contested`: Teacher::LessonContests) and the student's comments.
   # It writes nothing, decides nothing and has no table: it is derived at read time, so it is not retroactive (the grader's later fixes, D-339 and
   # D-352, show only in the tries made after them).
   #
@@ -9,6 +10,7 @@ module Teacher
   #   review.items    # one row per exercise: tries, not-right rate, manual-correction rate, flagged («da controllare») and why
   #   review.tries    # the not-right tries, each with its signals
   #   review.totals   # the weekly measure: written tries not right, manual corrections, identical resends, contested
+  #   review.lesson_contests   # the checks of the lessons the student sent to the teacher, with his answer in words (D-400: no comment is written for them)
   #
   # A try is counted when it is one: a practice try the engine graded, an entry-test answer that is not «non lo so» and was graded. It is NOT RIGHT
   # when the grader did not call it right, whatever the teacher said later (a resolved try keeps the grader's own outcome: that is what a signal is
@@ -26,6 +28,8 @@ module Teacher
   #
   # An item is FLAGGED when it has FLAG_MIN_TRIES tries or more and more than half not right, or at least one manual correction (a `resolve_attempt`
   # of any verdict on one of its tries). The thresholds are high on purpose: a wrong alarm costs the teacher's attention.
+  #
+  # A contest writes no comment (D-400): a practice contest is the `contested` signal of its try, a lesson check's one row of `lesson_contests`.
   #
   # `answer` is what the student typed: his own words, for the teacher's token and page; `to_h(answers: false)` leaves it out for a reader that never sees it.
   class GradingReview
@@ -61,6 +65,9 @@ module Teacher
     # The not-right tries in the window, oldest first, each with its signals (an empty list: nothing in them looks like the grader's doing).
     def tries = @tries ||= window.select { |t| t[:not_right] }.map { |t| public_row(t) }
 
+    # The checks of the lessons that the student sent to the teacher in the window, oldest first (Teacher::LessonContests rows).
+    def lesson_contests = @lesson_contests ||= LessonContests.call(student: student, since: since, subject: subject)
+
     # The not-right tries that have at least one signal.
     def suspect_tries = tries.select { |t| t[:signals].any? }
 
@@ -77,7 +84,7 @@ module Teacher
         { tries: mine.size, not_right: not_right.size, written_tries: written.size, written_not_right: written_not_right,
           written_not_right_rate: ratio(written_not_right, written.size), manual_corrections: mine.count { |t| t[:resolution] },
           resends: mine.count { |t| t[:signals].include?("resend") }, contested: mine.count { |t| t[:signals].include?("contested") },
-          items: items.size, flagged_items: items.count { |i| i[:flagged] }, superseded: loaded.superseded,
+          lesson_contested: lesson_contests.size, items: items.size, flagged_items: items.count { |i| i[:flagged] }, superseded: loaded.superseded,
           signals: SIGNALS.to_h { |s| [ s, not_right.count { |t| t[:signals].include?(s) } ] } }
       end
     end
@@ -85,7 +92,8 @@ module Teacher
     # The JSON of the API and the console: the totals, the items and the not-right tries; answers: false leaves out what the student typed.
     def to_h(answers: true)
       rows = answers ? tries : tries.map { |t| t.except(:answer) }
-      { student: student.key, since: since&.utc&.iso8601, subject: subject, totals: totals, items: items, tries: rows }
+      contests = answers ? lesson_contests : lesson_contests.map { |c| c.except(:answer) }
+      { student: student.key, since: since&.utc&.iso8601, subject: subject, totals: totals, items: items, tries: rows, lesson_contests: contests }
     end
 
     private

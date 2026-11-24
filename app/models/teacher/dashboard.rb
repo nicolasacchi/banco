@@ -42,11 +42,27 @@ module Teacher
       @todos ||= [ findings, graphs, tests_ready, tests_blocked, topics, corrections, system_lines, release_line ].flatten
     end
 
-    # The numbers of what waits, for the strip above the list: findings to decide, answers to correct, topics to approve, new comments.
-    Counts = Data.define(:findings, :corrections, :topics, :comments)
+    # Days a «Per me va bene così» counts as waiting for the teacher (D-400: it writes no comment, so it is no «commento nuovo»).
+    CONTEST_DAYS = 7
+
+    # The numbers of what waits, for the strip above the list: findings to decide, answers to correct, topics to approve, new comments, contests.
+    Counts = Data.define(:findings, :corrections, :topics, :comments, :contests)
 
     def counts
-      @counts ||= Counts.new(rows.sum { |r| r.waiting.to_h[:findings].to_i }, home.corrections, rows.sum { |r| r.course&.awaiting.to_i }, Comments::Inbox.counts["sent"].to_i)
+      @counts ||= Counts.new(rows.sum { |r| r.waiting.to_h[:findings].to_i }, home.corrections, rows.sum { |r| r.course&.awaiting.to_i },
+                             Comments::Inbox.counts["sent"].to_i, contests)
+    end
+
+    # What the student sent to the teacher with «Per me va bene così» in the last CONTEST_DAYS days (from the start of the day, so the number
+    # changes at midnight only; DashboardDigest says so): the practice tries she has not corrected (no `resolve_attempt` on them) and the checks of the
+    # lessons. The page behind it is «Contestazioni».
+    def contests
+      return 0 unless student
+
+      since = CONTEST_DAYS.days.ago.beginning_of_day
+      settled = Practice::Resolutions.for_student(student.id).keys
+      practice = PracticeContest.where(student_id: student.id).where("created_at >= ?", since).where.not(practice_attempt_id: settled).count
+      practice + Lessons::Contests.count(student: student, since: since)
     end
 
     # The cell of one student in one subject (D-217 student list).

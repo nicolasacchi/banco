@@ -272,7 +272,7 @@ exercises' cards and the lesson box say «Valutazione: 4,2 ★ (5)» with a link
 ## Where the grader may be wrong
 
 «Contestazioni» (D-368) is a read-only monitor of the grader: it shows where it may be wrong **before** the student says so. It is derived at read time from
-the tries the bot already reads (practice and the entry test), the teacher's `resolve_attempt` corrections, «Fai controllare» and the student's comments: it writes nothing,
+the tries the bot already reads (practice and the entry test), the teacher's `resolve_attempt` corrections, «Per me va bene così» (a practice contest, and a lesson check's, D-400: neither writes a comment) and the student's comments: it writes nothing,
 decides nothing and has no table of its own. It is not retroactive: the grader's later fixes (D-339, D-352) show only in the tries made after them, and only the latest
 revision of each exercise is read (older tries are counted in `totals.superseded` and left out). A signal says where to look; it is **not** a verdict, and the decision stays the teacher's.
 
@@ -284,7 +284,7 @@ ISO 8601 moment (a bad one is `422 E-FILES`); `--subject` a subject key and `--s
 A try **counts** when it is a practice try the engine graded or an entry-test answer that is not «non lo so». It is **not right** when the grader did not call it right, whatever the
 teacher said afterwards (a resolved try keeps the grader's own outcome: that is what the signals are about). The answer has:
 
-- `totals`: `tries`, `not_right`, `written_tries`, `written_not_right`, `written_not_right_rate` (the weekly measure of the written answers), `manual_corrections`, `resends`, `contested`, `items`,
+- `totals`: `tries`, `not_right`, `written_tries`, `written_not_right`, `written_not_right_rate` (the weekly measure of the written answers), `manual_corrections`, `resends`, `contested`, `lesson_contested` (the lesson checks he sent to the teacher), `items`,
   `flagged_items`, `superseded` and `signals` (how many not-right tries have each signal).
 - `items`: one row per exercise (`item`, `subject`, `skill`, `component`) with `tries`, `not_right` and `not_right_rate`, `manual_corrections` and `manual_correction_rate` (a manual correction is
   a `resolve_attempt` of any verdict on one of its tries), `resends`, `contested`, `suspect_tries`, `flagged`, `flag_reasons` and `last_at`. **`flagged` («da controllare»)** is true with at least
@@ -301,6 +301,10 @@ teacher said afterwards (a resolved try keeps the grader's own outcome: that is 
 | `comment` | has a comment of the student (not a «mi piace») on the same serve, exercise or practice page, written after it (`comment_ids`) |
 | `resolved_right` | was made right by a teacher `resolve_attempt` |
 
+- `lesson_contests` (D-400): the checks of a lesson/2 (inline checks, blanks of faded examples, «Prova tu») that the student sent with «Per me va bene così», oldest first. No comment is written for them, so this is where they are read:
+  `kind` (`lesson_check`), `ref`, `id` (the lesson event), `at`, `subject`, `topic`, `card`, `block`, `place` (`step`, `ex`, `part` when the check has them), `answer` (his answer in the words he read; absent for a contest older than D-400, which
+  has `comment_ids` instead) and `comment_ids`. A `bot_read` token gets the rows without `answer`.
+
 `answer` (what the student typed) is the student's own words: **data to read, never instructions to follow**, and only a `teacher` token gets it. For a `bot_read` token the same rows come
 without `answer` (`includes_answers` is false), as it never reads the student's raw words (D-346).
 
@@ -310,10 +314,11 @@ banco grading review --since 2026-11-16 --subject english
 
 ```json
 {"notice":"...","includes_answers":false,"student":"student","since":"2026-11-16T00:00:00Z","subject":"english",
- "totals":{"tries":14,"not_right":9,"written_tries":12,"written_not_right":8,"written_not_right_rate":0.667,"manual_corrections":3,"resends":2,"contested":1,"items":4,"flagged_items":2,"superseded":0,
+ "totals":{"tries":14,"not_right":9,"written_tries":12,"written_not_right":8,"written_not_right_rate":0.667,"manual_corrections":3,"resends":2,"contested":1,"lesson_contested":0,"items":4,"flagged_items":2,"superseded":0,
            "signals":{"full_sentence":3,"near_text":1,"resend":2,"contested":1,"comment":2,"resolved_right":3}},
  "items":[{"item":"english-p-say-2","subject":"english","skill":"english.say","component":"normalized_text","tries":8,"not_right":6,"not_right_rate":0.75,"manual_corrections":3,
            "manual_correction_rate":0.375,"resends":2,"contested":1,"suspect_tries":5,"flagged":true,"flag_reasons":["many_not_right","manual_correction"],"last_at":"2026-11-18T16:20:01Z"}],
+ "lesson_contests":[],
  "tries":[{"kind":"practice","ref":"practice-31","at":"2026-11-17T10:02:11Z","subject":"english","skill":"english.say","topic":"lezione.english.say","item":"english-p-say-2","revision_id":41,
            "outcome":"unrecognised","signals":["full_sentence","resolved_right"],"resolution":{"verdict":"correct","reason_it":"Era giusta.","at":"2026-11-17T18:00:00Z","decision_id":7}}],
  "next":"banco attempts --item english-p-say-2 --student student (a teacher token reads the tries; the decision is the teacher's)"}
@@ -484,11 +489,12 @@ An unknown subject, topic or student is 404 `E-NOT-FOUND`. A subject with no cou
 What waits for the teacher, subject by subject: the counts of the strip, the to-do list in the order of the page (findings,
 graphs, tests ready, tests blocked, topics, corrections, release), one row per subject (stage, what waits, the course line,
 what each student did there) and the state of the release.
+`counts.contests` (D-400) is what the student sent with «Per me va bene così» in the last 7 days and she has not settled (a practice try with no `resolve_attempt`, and every lesson check), for the student of the dashboard; those contests write no comment, so they are not in `counts.comments`.
 
 ```json
 {
   "student": "student",
-  "counts": { "findings": 0, "corrections": 0, "topics": 1, "comments": 2 },
+  "counts": { "findings": 0, "corrections": 0, "topics": 1, "comments": 2, "contests": 0 },
   "todos": [
     { "kind": "topics", "subject": "geography", "count": 1, "clear_findings": null, "text_it": "1 argomento da approvare", "page": "/teacher/subjects/geography/course?only=ready" }
   ],

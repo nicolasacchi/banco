@@ -3,7 +3,7 @@ require_relative "../support/multi_user"
 require_relative "../support/practice_text_world"
 
 # D-339 over the real endpoints, for the student and for the teacher's preview: a whole sentence around a `___` blank, the same answer twice,
-# the plainer messages, «ci sei quasi», «Fai controllare» (the contest, its comment and its solution) and the list's statuses (D-353).
+# the plainer messages, «ci sei quasi», «Per me va bene così» (the contest, no comment, its solution) and the list's statuses (D-353).
 class PracticeFeedbackTest < ActionDispatch::IntegrationTest
   include MultiUser
   include PracticeTextWorld
@@ -144,29 +144,30 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
 
   # ---- «Fai controllare» ---------------------------------------------------------------------------------
 
-  test "a contest on an open serve: the comment for the teacher, the solution once, the same answer on a second click" do
+  test "a contest on an open serve: the row and no comment, the solution once, the same answer on a second click, and the teacher reads it in Contestazioni" do
     serve = serve_for(OFFICIAL, SENTENCE)
     answer_for(OFFICIAL, serve, WHOLE_WRONG)
     body = contest_for(OFFICIAL, serve)
     assert_response :success
     assert_equal "contested", body["status"]
-    assert_equal "Ho mandato la tua risposta al docente: ti risponde in «I miei commenti». Intanto ecco la soluzione: confrontala con la tua.", body["message_it"]
+    assert_equal "Ho mandato la tua risposta al docente. Intanto ecco la soluzione: confrontala con la tua.", body["message_it"]
     assert_equal "don't eat", body.dig("solution", "final")
     assert_equal %w[next back], body["actions"]
 
     contest = PracticeContest.last
     attempt = PracticeAttempt.find_by!(practice_serve_id: serve["serve_id"])
     assert_equal [ @official.id, serve["serve_id"], attempt.id ], [ contest.student_id, contest.practice_serve_id, contest.practice_attempt_id ]
-    comment = contest.comment
-    assert_equal [ @official.id, "error", "practice", "exercise/item/answer", serve["serve_id"], "/topics/#{TOPIC}/practice/#{SKILL}" ],
-                 [ comment.student_id, comment.reason, comment.page_kind, comment.anchor, comment.practice_serve_id, comment.page_path ]
-    assert_equal "La mia risposta, secondo me giusta: «#{WHOLE_WRONG}».", comment.text_it
-    assert_equal "sent", comment.state
+    assert_nil contest.comment_id
+    assert_equal 0, Comment.count, "no comment in his name (D-400)"
+    review = Teacher::GradingReview.new(student: @official)
+    listed = review.suspect_tries.find { |t| t[:id] == attempt.id }
+    assert_equal [ "contested" ], listed[:signals]
+    assert_equal WHOLE_WRONG, review.answer_words.fetch(listed[:ref])
     assert_equal %w[after_contest], solution_events(serve)
 
     assert_equal body, contest_for(OFFICIAL, serve)
     assert_response :success
-    assert_equal [ 1, 1 ], [ PracticeContest.count, Comment.count ]
+    assert_equal [ 1, 0 ], [ PracticeContest.count, Comment.count ]
     assert_equal %w[after_contest], solution_events(serve)
     closed = answer_for(OFFICIAL, serve, "something else")
     assert_response :conflict
@@ -186,22 +187,16 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
     assert body["solution"]
     assert_equal second["attempt_id"], PracticeContest.last.practice_attempt_id
     assert_equal %w[after_last_try], solution_events(serve)
-    assert_equal "La mia risposta, secondo me giusta: «albero».", Comment.last.text_it
+    assert_equal 0, Comment.count
   end
 
-  test "D-395: the comment carries a long answer whole, and one over the comment's limit is cut with «…» inside it" do
+  test "D-400: a long answer is not carried in a comment: «Contestazioni» reads it whole from the try" do
     serve = serve_for(OFFICIAL, WORD)
     answer_for(OFFICIAL, serve, "x" * 300)
     contest_for(OFFICIAL, serve)
-    assert_equal "La mia risposta, secondo me giusta: «#{'x' * 300}».", Comment.last.text_it
-
-    long = serve_for(OFFICIAL, WORD)
-    refute_equal serve["serve_id"], long["serve_id"]
-    answer_for(OFFICIAL, long, "y" * 5000)
-    contest_for(OFFICIAL, long)
-    text = Comment.last.text_it
-    assert_equal Comment::TEXT_MAX, text.length
-    assert text.start_with?("La mia risposta, secondo me giusta: «y") && text.end_with?("y…».")
+    assert_equal 0, Comment.count
+    review = Teacher::GradingReview.new(student: @official)
+    assert_equal [ "x" * 300 ], review.answer_words.values
   end
 
   test "a contest is refused with 409 when it is not allowed: no try, a right answer, a second contest" do
@@ -216,7 +211,7 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
     assert_equal [ 0, 0 ], [ PracticeContest.count, Comment.count ]
   end
 
-  test "D-389: a near miss is contested with one tap: the serve closes contested, the comment carries the answer in words, the solution comes back" do
+  test "D-389: a near miss is contested with one tap: the serve closes contested, no comment is written, the solution comes back" do
     serve = serve_for(OFFICIAL, WORD)
     near = answer_for(OFFICIAL, serve, "neighbourhod")
     assert_equal [ "near_miss", %w[retry contest] ], near.values_at("outcome", "actions")
@@ -224,9 +219,8 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal [ "contested", %w[next back] ], body.values_at("status", "actions")
     assert body["solution"]
-    assert_equal "La mia risposta, secondo me giusta: «neighbourhod».", Comment.last.text_it
     assert_equal body, contest_for(OFFICIAL, serve)
-    assert_equal [ 1, 1 ], [ PracticeContest.count, Comment.count ]
+    assert_equal [ 1, 0 ], [ PracticeContest.count, Comment.count ]
     assert_equal "contested", statuses(OFFICIAL)[WORD]
   end
 
@@ -238,7 +232,7 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal [ "contested", %w[next back] ], body.values_at("status", "actions")
     assert_equal %w[after_contest], solution_events(serve)
-    assert_equal "La mia risposta, secondo me giusta: «doesn't eat».", Comment.last.text_it
+    assert_equal 0, Comment.count
   end
 
   test "D-395: after «Mostra la soluzione» on an open exercise the latest try may still go to the teacher: the solution reply offers it, one tap closes it contested" do
@@ -253,7 +247,7 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal [ "contested", %w[next back] ], body.values_at("status", "actions")
     assert_equal %w[requested], solution_events(serve) # the solution is not sent twice
-    assert_equal "La mia risposta, secondo me giusta: «play».", Comment.last.text_it
+    assert_equal 0, Comment.count
     assert_equal "contested", statuses(OFFICIAL)[SENTENCE]
   end
 
@@ -285,12 +279,12 @@ class PracticeFeedbackTest < ActionDispatch::IntegrationTest
     assert_equal 0, PracticeContest.count
   end
 
-  test "a trial student's contest is the trial student's own, with a comment" do
+  test "a trial student's contest is the trial student's own, with no comment" do
     serve = serve_for(TRIAL, SENTENCE)
     answer_for(TRIAL, serve, "play")
     assert_equal "contested", contest_for(TRIAL, serve)["status"]
     assert_equal [ @trial.id ], [ PracticeContest.last.student_id ]
-    assert_equal [ @trial.id, true ], [ Comment.last.student_id, Comment.last.trial ]
+    assert_equal [ nil, 0 ], [ PracticeContest.last.comment_id, Comment.count ]
   end
 
   test "the preview contests as the preview student, writes no comment, sends the solution once, and answers the same on a second click" do

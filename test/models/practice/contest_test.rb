@@ -2,8 +2,8 @@ require "test_helper"
 require "minitest/mock"
 require_relative "../../support/practice_text_world"
 
-# «Fai controllare» (D-339) as the service: the contest row, the teacher's comment, the solution event, idempotence, what the loader makes of it,
-# and the table's append-only triggers.
+# «Per me va bene così» (D-339) as the service: the contest row, no comment (D-400), the solution event, idempotence, what the loader makes of it,
+# what the teacher's «Contestazioni» reads, and the table's append-only triggers.
 class PracticeContestTest < ActiveSupport::TestCase
   include PracticeTextWorld
 
@@ -17,7 +17,7 @@ class PracticeContestTest < ActiveSupport::TestCase
 
   def solution_reasons(serve) = serve.events.reload.select { |e| e.kind == "solution_shown" }.map { |e| JSON.parse(e.payload_json)["reason"] }
 
-  test "a contest on an open serve writes the row, the comment and the solution event, once" do
+  test "a contest on an open serve writes the row and the solution event, once, and no comment (D-400)" do
     serve = serve_of(SENTENCE)
     wrong!(serve)
     result = contest_for(@official).call(serve_id: serve.id)
@@ -29,14 +29,13 @@ class PracticeContestTest < ActiveSupport::TestCase
     contest = PracticeContest.sole
     attempt = serve.attempts.sole
     assert_equal [ @official, serve, attempt ], [ contest.student, contest.practice_serve, contest.practice_attempt ]
-    assert_equal "La mia risposta, secondo me giusta: «play».", contest.comment.text_it
-    assert_equal [ "error", "practice", "exercise/item/answer" ], contest.comment.attributes.values_at("reason", "page_kind", "anchor")
-    assert_equal [ serve.id, serve.item_instance_id ], [ contest.comment.practice_serve_id, contest.comment.item_instance_id ]
+    assert_nil contest.comment_id
+    assert_equal 0, Comment.count, "no comment in his name"
     assert_equal %w[after_contest], solution_reasons(serve)
 
     again = contest_for(@official).call(serve_id: serve.id)
     assert_equal result, again
-    assert_equal [ 1, 1, %w[after_contest] ], [ PracticeContest.count, Comment.count, solution_reasons(serve) ]
+    assert_equal [ 1, 0, %w[after_contest] ], [ PracticeContest.count, Comment.count, solution_reasons(serve) ]
   end
 
   test "the loader reads the contest: the try is contested and counts neither way, the serve is closed contested" do
@@ -64,15 +63,14 @@ class PracticeContestTest < ActiveSupport::TestCase
     assert_equal [ 0, 0 ], [ PracticeContest.count, Comment.count ]
   end
 
-  test "D-389: a typical error and a near miss are contested too, the comment carrying the answer as typed" do
+  test "D-389: a typical error and a near miss are contested too, with no comment" do
     typical = serve_of(SENTENCE)
     wrong!(typical, "doesn't eat")
     assert_equal 200, contest_for(@official).call(serve_id: typical.id).http
     near = serve_of(WORD)
     wrong!(near, "neighbourhod")
     assert_equal 200, contest_for(@official).call(serve_id: near.id).http
-    assert_equal [ "La mia risposta, secondo me giusta: «doesn't eat».", "La mia risposta, secondo me giusta: «neighbourhod»." ],
-                 PracticeContest.order(:id).map { |c| c.comment.text_it }
+    assert_equal [ 2, 0 ], [ PracticeContest.count, Comment.count ]
     assert_equal %w[after_contest], solution_reasons(near)
   end
 
@@ -85,7 +83,7 @@ class PracticeContestTest < ActiveSupport::TestCase
 
     result = contest_for(@official).call(serve_id: serve.id)
     assert_equal [ 200, "contested", %w[next back] ], [ result.http, result.body[:status], result.body[:actions] ]
-    assert_equal "La mia risposta, secondo me giusta: «play».", PracticeContest.sole.comment.text_it
+    assert_nil PracticeContest.sole.comment_id
     assert_equal %w[requested], solution_reasons(serve)
     assert_equal [ :closed, :contested ], Practice::Loader.status_of(PracticeServe.find(serve.id), now: @clock.now).then { |st| [ st.state, st.closed_by ] }
   end
@@ -97,7 +95,7 @@ class PracticeContestTest < ActiveSupport::TestCase
     assert_equal [ 0, 0 ], [ PracticeContest.count, Comment.count ]
   end
 
-  test "D-395: the contests of two serves with the same words are two comments, never one merged by the repeat check" do
+  test "D-395, D-400: the contests of two serves with the same words are two rows and no comment" do
     first = serve_of(SENTENCE)
     wrong!(first, "play")
     second = serve_of(WORD)
@@ -105,50 +103,9 @@ class PracticeContestTest < ActiveSupport::TestCase
     contest_for(@official).call(serve_id: first.id)
     contest_for(@official).call(serve_id: second.id)
 
-    contests = PracticeContest.order(:id).to_a
-    assert_equal 2, Comment.count
-    assert_equal 2, contests.map(&:comment_id).uniq.size
-    assert_equal [ first.id, second.id ], contests.map { |c| c.comment.practice_serve_id }
-    assert_equal [ "La mia risposta, secondo me giusta: «play»." ], Comment.pluck(:text_it).uniq
-  end
-
-  test "D-395: a repeat of the same contest comment on the same serve is still one comment (D-388)" do
-    serve = serve_of(SENTENCE)
-    wrong!(serve, "play")
-    contest_for(@official).call(serve_id: serve.id)
-    again = Comments::Intake.call(student: @official, course_view: Course::StudentView.new(@official),
-                                  params: { client_comment_id: "other-id-1", reason: "error", text_it: Comment.sole.text_it, page_path: Comment.sole.page_path,
-                                            anchor: Practice::Contest::COMMENT_ANCHOR, refs: { "serve_id" => serve.id } })
-    assert_equal [ :recorded, Comment.sole.id ], [ again.status, again.comment.id ]
-    assert_equal 1, Comment.count
-  end
-
-  test "D-395: a long typed answer is carried up to the comment's limit less the template; over it, it is cut and ends with «…»" do
-    serve = serve_of(WORD)
-    wrong!(serve, "parola " * 100) # 700 characters: whole
-    contest_for(@official).call(serve_id: serve.id)
-    assert_equal "La mia risposta, secondo me giusta: «#{'parola ' * 99}parola».", Comment.sole.text_it
-
-    long = serve_of(WORD)
-    wrong!(long, "y" * 5000)
-    contest_for(@official).call(serve_id: long.id)
-    text = Comment.order(:id).last.text_it
-    assert_equal Comment::TEXT_MAX, text.length
-    assert_match(/\ALa mia risposta, secondo me giusta: «y+…»\.\z/, text)
-  end
-
-  test "D-395: a matching too long for the comment is cut at the last «; », a whole pair, and ends with «…»" do
-    left = (1..4).map { |n| { id: "l#{n}", text: "Autore #{n} #{'lungo ' * 40}".strip } }
-    right = (1..4).map { |n| { id: "r#{n}", text: "Opera #{n} #{'vasta ' * 40}".strip } }
-    serve = closed_serve("closed-matching-long", "matching", { left: left, right: right }, { "l1" => "r1", "l2" => "r2", "l3" => "r3", "l4" => "r4" })
-    raw = { "l1" => "r1", "l2" => "r1", "l3" => "r1", "l4" => "r2" }
-    wrong!(serve, JSON.generate(raw))
-    assert_equal 200, contest_for(@official).call(serve_id: serve.id).http
-
-    words = shown_texts(PracticeServe.find(serve.id))
-    pairs = raw.map { |l, r| "#{words.call(l)} – #{words.call(r)}" }
-    assert_operator pairs.join("; ").length, :>, Comment::TEXT_MAX - 60, "the whole answer does not fit"
-    assert_equal "La mia risposta, secondo me giusta: «#{pairs.first(3).join('; ')}…».", PracticeContest.sole.comment.text_it
+    assert_equal [ first.id, second.id ], PracticeContest.order(:id).map(&:practice_serve_id)
+    assert_equal [ nil, nil ], PracticeContest.order(:id).map(&:comment_id)
+    assert_equal 0, Comment.count
   end
 
   test "another student's serve is a 404" do
@@ -224,7 +181,9 @@ class PracticeContestTest < ActiveSupport::TestCase
     ->(shown_id) { texts.fetch(map.fetch(shown_id, shown_id)) }
   end
 
-  test "the comment of a wrong choice is the option text he read, not its id" do
+  def review = Teacher::GradingReview.new(student: @official)
+
+  test "D-400: a wrong choice contested writes no comment; «Contestazioni» lists the try as contested with the option text he read" do
     options = [ { id: "o1", text: "Produrre automobili" }, { id: "o2", text: "Vendere libri" }, { id: "o3", text: "Insegnare a scuola" }, { id: "o4", text: "Curare i malati" } ]
     serve = closed_serve("closed-choice", "choice", { options: options }, "o1")
     map = JSON.parse(serve.id_map_json.presence || "{}")
@@ -232,12 +191,15 @@ class PracticeContestTest < ActiveSupport::TestCase
     wrong!(serve, wrong_id)
     assert_equal 200, contest_for(@official).call(serve_id: serve.id).http
 
-    text = PracticeContest.sole.comment.text_it
-    assert_equal "La mia risposta, secondo me giusta: «#{shown_texts(PracticeServe.find(serve.id)).call(wrong_id)}».", text
-    assert_no_match(/\bo\d\b|[{\[]/, text)
+    assert_equal 0, Comment.count
+    row = review.suspect_tries.sole
+    assert_equal [ "contested" ], row[:signals]
+    words = review.answer_words.fetch(row[:ref])
+    assert_equal shown_texts(PracticeServe.find(serve.id)).call(wrong_id), words
+    assert_no_match(/\bo\d\b|[{\[]/, words)
   end
 
-  test "the comment of a wrong matching is «riga – scelta; riga – scelta» in the texts he read, with no braces and no l1" do
+  test "D-400: a wrong matching contested is listed with «riga – scelta; riga – scelta» in the texts he read, with no braces and no l1" do
     left = (1..4).map { |n| { id: "l#{n}", text: "Autore #{n}" } }
     right = (1..4).map { |n| { id: "r#{n}", text: "Opera #{n}" } }
     serve = closed_serve("closed-matching", "matching", { left: left, right: right }, { "l1" => "r1", "l2" => "r2", "l3" => "r3", "l4" => "r4" })
@@ -245,21 +207,25 @@ class PracticeContestTest < ActiveSupport::TestCase
     wrong!(serve, JSON.generate(raw))
     assert_equal 200, contest_for(@official).call(serve_id: serve.id).http
 
-    text = PracticeContest.sole.comment.text_it
-    words = shown_texts(PracticeServe.find(serve.id))
-    expected = raw.map { |l, r| "#{words.call(l)} – #{words.call(r)}" }.join("; ")
-    assert_equal "La mia risposta, secondo me giusta: «#{expected}».", text
-    assert_no_match(/[{}\[\]]|\bl\d\b|\br\d\b/, text)
+    assert_equal 0, Comment.count
+    row = review.suspect_tries.sole
+    assert_includes row[:signals], "contested"
+    texts = shown_texts(PracticeServe.find(serve.id))
+    expected = raw.map { |l, r| "#{texts.call(l)} – #{texts.call(r)}" }.join("; ")
+    words = review.answer_words.fetch(row[:ref])
+    assert_equal expected, words
+    assert_no_match(/[{}\[\]]|\bl\d\b|\br\d\b/, words)
   end
 
-  test "an answer that cannot be put in words goes without the answer, never as code" do
-    serve = closed_serve("closed-broken", "choice", { options: [ { id: "o1", text: "Uno" }, { id: "o2", text: "Due" } ] }, "o1")
-    map = JSON.parse(serve.id_map_json.presence || "{}")
-    wrong!(serve, %w[o1 o2].find { |shown| map.fetch(shown, shown) != "o1" }) # the options are re-keyed: the shown id that is not the key
-    reader_fails = ->(*) { raise JSON::ParserError, "the answer does not read as this exercise's" }
-    Diagnosis::AnswerText.stub(:call, reader_fails) do
-      assert_equal 200, contest_for(@official).call(serve_id: serve.id).http
-    end
-    assert_equal "Secondo me la mia risposta è giusta.", PracticeContest.sole.comment.text_it
+  test "D-400: a typed answer contested is listed in «Contestazioni» with the text as typed, and its totals count it" do
+    serve = serve_of(SENTENCE)
+    wrong!(serve, "play")
+    contest_for(@official).call(serve_id: serve.id)
+
+    assert_equal 0, Comment.count
+    row = review.suspect_tries.sole
+    assert_equal [ "contested" ], row[:signals]
+    assert_equal "play", review.answer_words.fetch(row[:ref])
+    assert_equal 1, review.totals[:contested]
   end
 end

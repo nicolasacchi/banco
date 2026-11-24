@@ -3,7 +3,7 @@ require_relative "../support/lesson_events_world"
 require_relative "../support/student_session"
 
 # «Per me va bene così» on a check of a lesson/2 (D-396), in Chrome against the real endpoints (the trial student S, and the teacher in /teacher/preview): not before
-# the first try, not on a right answer; after a wrong one the button, one comment, «Mandato al docente», the check finished and the way on open. The teacher's
+# the first try, not on a right answer; after a wrong one the button, one event and no comment (D-400), «Mandato al docente», the check finished and the way on open. The teacher's
 # preview shows no button and writes no comment. The kinds of check are tested alone in lesson_check_kinds_test.rb, the service in
 # test/models/lessons/check_contest_test.rb.
 class LessonContestSystemTest < ApplicationSystemTestCase
@@ -42,7 +42,7 @@ class LessonContestSystemTest < ApplicationSystemTestCase
     assert_selector "article#scheda-#{card}", wait: 10
   end
 
-  test "S sends a wrong answer: the button after the first try only, one comment, «Mandato al docente», the check finished and the way on open" do
+  test "S sends a wrong answer: the button after the first try only, no comment, «Mandato al docente», the check finished and the way on open" do
     sign_in_as :student
     page.driver.headers = TRIAL_HEADERS
     open_lesson("")
@@ -64,10 +64,8 @@ class LessonContestSystemTest < ApplicationSystemTestCase
       assert_button "Controlla", disabled: true
     end
 
-    comment = Comment.where(student: student).sole
-    assert_equal [ "error", "lesson", "card:#{card}/block:#{comment.anchor[/block:(\d+)/, 1]}", "La mia risposta, secondo me giusta: «nome»." ],
-                 comment.attributes.values_at("reason", "page_kind", "anchor", "text_it")
-    assert_equal 1, LessonEvent.where(student: student, kind: "check_contested").count
+    assert_equal 0, Comment.where(student: student).count
+    assert_equal [ "nome" ], LessonEvent.where(student: student, kind: "check_contested").map { |e| e.payload["words"] }
     assert_equal [ "wrong" ], LessonEvent.where(student: student, kind: "check_answered").map { |e| e.payload["verdict"] }
 
     # the way on is open: the next card opens and its check is answered
@@ -80,7 +78,7 @@ class LessonContestSystemTest < ApplicationSystemTestCase
       assert_selector ".verdict-right", text: "Sì."
       assert_no_button BUTTON # a right answer needs no teacher
     end
-    assert_equal 1, Comment.where(student: student).count
+    assert_equal 0, Comment.where(student: student).count
     summary = Lessons::Progress.summary(student, @lesson_revision.reload)
     assert_equal [ 2, 1, 1 ], [ summary.checks_answered, summary.checks_contested, summary.first_try_right ]
   end

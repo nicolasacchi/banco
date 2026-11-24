@@ -1,7 +1,8 @@
 require_relative "practice_text_world"
 
 # A world for «Contestazioni» (D-368, Teacher::GradingReview): the official student's tries three days ago, written and not, right, wrong, made right
-# by the teacher, contested, sent twice, with a comment, on a superseded revision, and in the entry test. Every text is invented.
+# by the teacher, contested, sent twice, with a comment, on a superseded revision, and in the entry test, and one check of a lesson sent to the teacher
+# (@lesson_contest, D-400). Every text is invented.
 #
 #   text-sentence  4 tries  a «play» made right by the teacher (@resolved_try), the same sent to «Fai controllare» (@contested_try), «don't eat» right
 #                           (@right_try) and a whole sentence round the key's words (@sentence_try)   → flagged: manual_correction
@@ -23,6 +24,7 @@ module GradingReviewWorld
     make_number_tries
     make_superseded_try
     make_diagnosis_answers
+    make_lesson_contest
   end
 
   def instance_n(revision, n) = revision.instances.order(:id).offset(n).first
@@ -41,6 +43,9 @@ module GradingReviewWorld
     answer!(@contested_serve, "play", student: @official)
     @contested_try = @contested_serve.attempts.sole
     Practice::Contest.new(student: @official, course_view: Course::StudentView.new(@official), clock: @clock).call(serve_id: @contested_serve.id)
+    # the comment that «Per me va bene così» wrote before D-400 (the ledger keeps it): the review reads it as any comment on the exercise
+    @contest_comment = make_comment(practice_serve: @contested_serve, item_instance: @contested_serve.item_instance, page_kind: "practice",
+                                    page_path: "/topics/#{TOPIC}/practice/#{SKILL}", anchor: "exercise/item/answer", text_it: "La mia risposta, secondo me giusta: «play».")
     right = text_serve(@sentence, 2)
     answer!(right, "don't eat", student: @official)
     @right_try = right.attempts.sole
@@ -99,6 +104,14 @@ module GradingReviewWorld
     @diag_resolved, @diag_plain, @diag_dont_know = @diag_tries
     @diag_resolution = Decision.create!(kind: "resolve_attempt", subject: @subject, student: @official, request_id: SecureRandom.hex(4), teacher_login: "nik", remote_addr: "127.0.0.1",
                                         payload_json: JSON.generate(attempt_id: @diag_resolved.id, verdict: "correct", reason_it: "Va bene anche così."))
+  end
+
+  # A check of the lesson sent to the teacher with «Per me va bene così» (D-396, D-400): a lesson event with his answer in words, no comment.
+  def make_lesson_contest
+    at = @text_t + 900
+    @lesson_contest = LessonEvent.create!(student: @official, topic_revision: @text_topic, lesson_revision: @lesson_revision, kind: "check_contested", card: 2, block: 1,
+                                          payload_json: JSON.generate(of: 1, try: 1, words: "legge Marco un libro", ex: 2), client_event_id: "contest-#{SecureRandom.hex(6)}",
+                                          at: at, created_at: at)
   end
 
   # The row of the review's list for a ref such as practice-12.
