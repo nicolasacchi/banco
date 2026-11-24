@@ -233,6 +233,27 @@ class LessonRenderStatesTest < ActiveSupport::TestCase
     MD
   end
 
+  # The note of a wide piece starts clear of the piece: the piece is drawn bold and was measured plain, so at 390 px the note touched it.
+  test "the note of a wide mirror piece does not run into the piece at any viewport" do
+    md = <<~MD
+      ## Lo specchio {idea icon=languages}
+
+      Come in italiano.
+
+      ::: diagram mirror
+      alt_it: "Italiano sopra, spagnolo sotto: la scuola superiore e il suo nome in spagnolo, con una nota sull'età."
+      rows:
+        - pieces_it: ['La scuola superiore']
+          pieces_es: ['la escuela secundaria']
+          links: [[0, 0, false_friend]]
+          notes:
+            - {side: es, piece: 0, note_it: "In Spagna, a 12-16 anni"}
+      :::
+    MD
+    row = render_md("spanish", md)
+    assert_empty row.result["errors"].select { |e| e["code"] == "E-DIAGRAM-LAYOUT" }, dump(row)
+  end
+
   test "a mirror piece whose text runs out of its box at 390 px is E-DIAGRAM-LAYOUT; short pieces with the same roles pass" do
     # a word wider than the whole box (a word never wraps): D-310 puts the two pieces of a pair one under the other and a word that wide
     # still crosses its box (and leaves the figure: the author shortens the piece)

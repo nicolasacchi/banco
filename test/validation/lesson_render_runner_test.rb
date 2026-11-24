@@ -91,6 +91,16 @@ class LessonRenderRunnerTest < ActiveSupport::TestCase
     assert_equal "passed", row.status, dump(row)
   end
 
+  # The reviewer's figure (the youth lesson): two labels beside each other used to drop one to a lower row whose leader ran through the tick
+  # number above it. Now the label goes above the axis; the render check also reads a leader through a label as E-DIAGRAM-LAYOUT.
+  test "close labels on a number line pass the render check at every viewport: no leader through a tick number" do
+    marks = [ [ "14", "Italia: AM" ], [ "17", "UK: auto" ], [ "18", "Italia: B" ] ].map { |at, label| { "at" => at, "kind" => "dot", "label_it" => label } }
+    line = { "type" => "number_line", "alt_it" => "Retta dei numeri da 14 a 18 con tre punti, due vicini: la maggiore età in tre paesi.", "min" => "14", "max" => "18", "step" => "1", "labels" => "all", "marks" => marks }
+    row = render(with_card(served("equations"), [ { "type" => "diagram", "diagram" => line } ]))
+    keep_shots(row, "number-line-close-labels")
+    assert_equal "passed", row.status, dump(row)
+  end
+
   test "a number line too dense for its labels is E-DIAGRAM-LAYOUT" do
     marks = (-5..5).map { |i| { "at" => i.to_s, "kind" => "dot", "role" => "known", "label_it" => "una etichetta davvero molto lunga #{i}" } }
     line = { "type" => "number_line", "alt_it" => "Retta dei numeri da meno cinque a cinque con molte etichette lunghe.", "min" => "-5", "max" => "5", "step" => "1", "labels" => "all", "marks" => marks }

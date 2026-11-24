@@ -377,9 +377,10 @@ function build(data, ctx) {
   function notesBlock(row, i, key, lang) {
     for (const [k, n] of (row.notes ?? []).entries()) {
       const piece = show(n.side === "it" ? row.pieces_it[n.piece] : row[key][n.piece])
-      const pw = ctx.measure(piece, f).w
+      // the piece is drawn bold: measured as it is drawn (measureCls), else the note starts where the bold piece still runs (D-379)
+      const pw = ctx.measure(piece, f, undefined, "dg-mr-notepiece").w
       const room = W - 2 * marginX - pw - 18
-      const lab = label(ctx, piece, marginX + 4, y, { anchor: "start", cls: "dg-mr-notepiece", key: `r${i + 1}:np${k}`, lang: n.side === "it" ? undefined : lang })
+      const lab = label(ctx, piece, marginX + 4, y, { anchor: "start", cls: "dg-mr-notepiece", measureCls: true, key: `r${i + 1}:np${k}`, lang: n.side === "it" ? undefined : lang })
       const textX = marginX + 4 + pw + 12
       let m
       if (room >= f * 6) m = label(ctx, n.note_it, textX, y, { anchor: "start", maxW: room, cls: "dg-mr-note", key: `r${i + 1}:nt${k}` })

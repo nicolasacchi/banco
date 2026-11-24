@@ -2,7 +2,7 @@
 // intervals (a thick bar, open or closed ends, an arrow for infinity). Exact numbers (num.js); floats
 // only for pixel positions. Tick labels thin out (every k-th, keeping 0) when they would touch.
 import * as N from "lesson/num"
-import { effectiveState, finish, label, listIt, plain, shape, stackLabels, stateCount, words } from "lesson/diagrams/common"
+import { crosses, effectiveState, fail, finish, label, listIt, plain, shape, stateCount, words } from "lesson/diagrams/common"
 import { run } from "lesson/diagrams/run"
 
 export const states = stateCount
@@ -55,6 +55,73 @@ export function semantic(data) {
   return null
 }
 
+const ABOVE_GAP = 14 // from the axis to the bottom of the first row of labels above it (clears the ring of a closed mark)
+const LEADER_GAP = 12 // from the axis to where a leader going up starts
+const SIDE = 4 // a label's box keeps this far in from its leader's x at least
+const CLEAR = 3 // a leader keeps this far from a label's box and from another label's box
+
+// Where the labels of marks and intervals go, along x and in rows. Row 0 under the tick numbers (no leader) takes the labels, left to
+// right, that fit side by side as they are, centred on their marks. A label that would touch another goes above the axis, in the rows
+// there (row 0 right over its mark), or, with `up` false (jump arcs fill the space above), in rows under it, the labels of every row
+// looked at again.
+// A label of a row after the first has a vertical leader to its mark's x, which crosses no label of the rows between and beside which
+// no label of a row further out has its leader: a label slides sideways (its box still over its mark's x) or goes to another row for
+// that, and the fewest rows that allow it are used. Returns { below, above, belowRows, aboveRows } (each placed label
+// { spec, x, w, h, row }), or null when no way is free.
+function planLabels(ctx, specs, up) {
+  const W = ctx.width
+  const gap = 8
+  const boxes = specs
+    .map((spec) => {
+      const m = ctx.measure(spec.text, ctx.fontPx, spec.maxW, spec.cls)
+      const w = Math.min(Math.ceil(m.w), W - 8)
+      const x = Math.max(4, Math.min(Math.round(spec.cx - w / 2), W - w - 4))
+      return { spec, x, w, h: Math.ceil(m.h), row: 0 }
+    })
+    .sort((a, b) => a.spec.cx - b.spec.cx)
+  const first = []
+  const over = []
+  for (const b of boxes) (first.every((o) => b.x >= o.x + o.w + gap || b.x + b.w + gap <= o.x) ? first : over).push(b)
+  const used = (list) => list.reduce((n, p) => Math.max(n, p.row + 1), 0)
+  if (over.length === 0) return { below: first, above: [], belowRows: used(first), aboveRows: 0 }
+  // above the axis only the labels that did not fit under it move; under it (jump arcs above) every label is looked at again, since a
+  // wide label of the first row can stand where a leader of a further row must pass
+  const list = up ? over : boxes
+  for (let total = 1; total <= (up ? over.length : boxes.length); total++) {
+    const placed = arrange(Array.from({ length: total }, () => []), list, 0, { W, gap, budget: { left: 20000 } })
+    if (placed) return up ? { below: first, above: placed, belowRows: used(first), aboveRows: used(placed) } : { below: placed, above: [], belowRows: used(placed), aboveRows: 0 }
+  }
+  return null
+}
+
+// Puts over[k..] into `rows` (the rows are filled in place and emptied again when a try fails): for each label the rows from the first,
+// in each the places that keep its box over its mark's x (centred, then against the mark's right, then its left). Returns the placed labels.
+function arrange(rows, over, k, env) {
+  if (k === over.length) return []
+  const b = over[k]
+  const cx = b.spec.cx
+  const { W, gap, budget } = env
+  const xs = [b.x, Math.round(cx) - SIDE, Math.round(cx) + SIDE - b.w]
+    .map((x) => Math.max(4, Math.min(x, W - b.w - 4)))
+    .filter((x, i, all) => all.indexOf(x) === i && x + SIDE <= cx && cx <= x + b.w - SIDE)
+  for (let row = 0; row < rows.length; row++) {
+    // the leader of this label runs through the nearer rows at cx
+    if (row > 0 && rows.slice(0, row).some((r) => r.some((o) => cx >= o.x - CLEAR && cx <= o.x + o.w + CLEAR))) continue
+    for (const x of xs) {
+      if (--budget.left < 0) return null
+      const free = rows[row].every((o) => x >= o.x + o.w + gap || x + b.w + gap <= o.x)
+      const beside = rows.slice(row + 1).every((r) => r.every((o) => o.spec.cx < x - CLEAR || o.spec.cx > x + b.w + CLEAR))
+      if (!free || !beside) continue
+      const p = { ...b, x, row }
+      rows[row].push(p)
+      const rest = arrange(rows, over, k + 1, env)
+      if (rest) return [p, ...rest]
+      rows[row].pop()
+    }
+  }
+  return null
+}
+
 function build(data, ctx) {
   const eff = effectiveState(data, ctx.state)
   const { lo, hi, step } = range(data)
@@ -70,11 +137,29 @@ function build(data, ctx) {
   }
   const count = Number(N.div(N.sub(hi, lo), step).n)
 
-  // vertical plan: jump arcs above, axis, tick labels, then mark and interval labels
+  // the labels of marks and intervals are placed along x first: how many rows they need above the axis fixes where the axis goes
+  const specs = []
+  for (const m of eff.marks ?? []) {
+    if (m.label_it) specs.push({ text: m.label_it, cx: at(N.parse(m.at)), cls: `dg-note role-${m.role ?? "muted"}`, role: m.role })
+  }
+  for (const iv of eff.intervals ?? []) {
+    if (iv.label_it) {
+      const a = N.parse(iv.from, { allowInf: true })
+      const b = N.parse(iv.to, { allowInf: true })
+      specs.push({ text: iv.label_it, cx: (Math.max(at(a), x0) + Math.min(at(b), x1)) / 2, cls: `dg-note role-${iv.role ?? "muted"}`, role: iv.role })
+    }
+  }
   const jumps = eff.jumps ?? []
+  const plan = planLabels(ctx, specs, jumps.length === 0)
+  if (!plan) return fail("", "the labels of the marks are too many or too wide to place clear of each other and of the tick numbers: shorten them or label fewer marks", "E-DIAGRAM-LAYOUT")
+  const rowH = ctx.lineH + 4
+  const aboveH = plan.aboveRows * rowH
+  const belowUsed = plan.belowRows * rowH
+
+  // vertical plan: labels above the axis or jump arcs, axis, tick labels, then the rows of mark and interval labels
   const arcRow = Math.round(f * 0.9) + 14
   const jumpLabelH = jumps.some((j) => j.label_it) ? ctx.lineH + 4 : 0
-  const axisY = 14 + (jumps.length ? jumpLabelH + arcRow + (jumps.length - 1) * Math.round(arcRow * 0.55) : 6) + 10
+  const axisY = 14 + (jumps.length ? jumpLabelH + arcRow + (jumps.length - 1) * Math.round(arcRow * 0.55) : 6 + aboveH) + 10
   // axis and ticks
   shape(ctx, "line", { x1: x0, y1: axisY, x2: x1, y2: axisY, cls: "dg-axis" })
   const tickLabels = data.labels ?? "all"
@@ -142,21 +227,30 @@ function build(data, ctx) {
     shape(ctx, "polygon", { points: [[xb, axisY - 6], [xb - 8 * dir, axisY - 16], [xb - 1 * dir, axisY - 17]], cls: `mk-${role}` })
     if (j.label_it) label(ctx, j.label_it, mid, axisY - 8 - lift * 0.85 - ctx.lineH - 2, { cls: `dg-note role-${role}`, role })
   })
-  // labels of marks and intervals, in rows under the tick labels
-  const specs = []
-  for (const m of eff.marks ?? []) {
-    if (m.label_it) specs.push({ text: m.label_it, cx: at(N.parse(m.at)), cls: `dg-note role-${m.role ?? "muted"}`, role: m.role, connectFrom: axisY + 8 })
-  }
-  for (const iv of eff.intervals ?? []) {
-    if (iv.label_it) {
-      const a = N.parse(iv.from, { allowInf: true })
-      const b = N.parse(iv.to, { allowInf: true })
-      specs.push({ text: iv.label_it, cx: (Math.max(at(a), x0) + Math.min(at(b), x1)) / 2, cls: `dg-note role-${iv.role ?? "muted"}`, role: iv.role, connectFrom: axisY + 8 })
+  // labels of marks and intervals: the first row under the tick numbers; a label that would touch another goes above the axis
+  // (above its mark, none of the tick numbers there), or, when jump arcs fill the space above, in a lower row whose leader starts
+  // under the tick numbers. A leader never crosses a tick number, a label or another leader.
+  const leaders = []
+  const put = (p, y, leader) => {
+    const item = label(ctx, p.spec.text, p.x, y, { anchor: "start", cls: p.spec.cls, role: p.spec.role })
+    item.w = Math.max(item.w, p.w)
+    item.anchor = "middle"
+    if (leader) {
+      const s = { x1: p.spec.cx, y1: leader.from, x2: p.spec.cx, y2: leader.to(item), cls: "dg-connector" }
+      shape(ctx, "line", s)
+      leaders.push({ seg: s, own: item })
     }
   }
-  specs.sort((a, b) => a.cx - b.cx)
-  const used = specs.length ? stackLabels(ctx, specs, tickBottom + 4, 1) : 0
-  return finish(ctx, tickBottom + 4 + used + 6, { states: stateCount(data), state: ctx.state })
+  for (const p of plan.below) put(p, tickBottom + 4 + p.row * rowH, p.row > 0 && { from: tickBottom + 3, to: (item) => item.y })
+  for (const p of plan.above) put(p, axisY - ABOVE_GAP - p.h - p.row * rowH, p.row > 0 && { from: axisY - LEADER_GAP, to: (item) => item.y + item.h })
+  for (let i = 0; i < leaders.length; i++) {
+    const { seg, own } = leaders[i]
+    const hit = ctx.labels.find((l) => l !== own && crosses(seg, l, 1))
+    if (hit) return fail("", `a leader of a label crosses another label (${own.text_it} through ${hit.text_it})`, "E-DIAGRAM-LAYOUT")
+    if (leaders.some((o, j) => j !== i && Math.abs(o.seg.x1 - seg.x1) < 3 && Math.max(Math.min(o.seg.y1, o.seg.y2), Math.min(seg.y1, seg.y2)) < Math.min(Math.max(o.seg.y1, o.seg.y2), Math.max(seg.y1, seg.y2))))
+      return fail("", `two leaders of labels run over each other (${own.text_it})`, "E-DIAGRAM-LAYOUT")
+  }
+  return finish(ctx, tickBottom + 4 + belowUsed + 6, { states: stateCount(data), state: ctx.state })
 }
 
 export function describe(data) {
